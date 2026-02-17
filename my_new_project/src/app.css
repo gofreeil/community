@@ -1,0 +1,22 @@
+@import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&display=swap');
+
+:root {
+    --primary: #2563eb;
+    --primary-light: #60a5fa;
+    --bg-dark: #0f172a;
+    --text-light: #f8fafc;
+    --header-height: 80px;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Assistant', sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+    direction: rtl;
+}
+
+* {
+    box-sizing: border-box;
+}
