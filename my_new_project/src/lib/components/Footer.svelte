@@ -1,60 +1,48 @@
 <script lang="ts">
-    import { locale, t } from "svelte-i18n";
+    import { t } from "svelte-i18n";
 </script>
 
-<footer class="bg-gray-900 text-white py-8 mt-12">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div>
-                <h3 class="text-lg font-bold mb-4">{$t("about_us")}</h3>
-                <p class="text-gray-400 text-sm">
-                    {$t("footer_description")}
-                </p>
-            </div>
-            <div>
-                <h3 class="text-lg font-bold mb-4">{$t("quick_links")}</h3>
-                <ul class="space-y-2 text-sm">
-                    <li>
-                        <a href="/about" class="text-gray-400 hover:text-white"
-                            >{$t("about")}</a
-                        >
-                    </li>
-                    <li>
-                        <a href="/terms" class="text-gray-400 hover:text-white"
-                            >{$t("terms")}</a
-                        >
-                    </li>
-                    <li>
-                        <a
-                            href="/privacy"
-                            class="text-gray-400 hover:text-white"
-                            >{$t("privacy")}</a
-                        >
-                    </li>
-                    <li>
-                        <a
-                            href="/partners"
-                            class="text-gray-400 hover:text-white"
-                            >{$t("partners")}</a
-                        >
-                    </li>
-                </ul>
-            </div>
-            <div>
-                <h3 class="text-lg font-bold mb-4">{$t("contact_us")}</h3>
-                <p class="text-gray-400 text-sm">
-                    {$t("email")}:
-                    <a
-                        href="mailto:freedomhasbegun@gmail.com"
-                        class="hover:text-white">freedomhasbegun@gmail.com</a
-                    >
-                </p>
-            </div>
-        </div>
+<footer class="mt-auto border-t border-white/5 bg-[#070b14] py-4 text-gray-400">
+    <div class="mx-auto max-w-7xl px-4">
         <div
-            class="mt-8 pt-8 border-t border-gray-800 text-center text-gray-400 text-sm"
+            class="flex flex-col items-center justify-between gap-4 md:flex-row-reverse"
         >
-            <p>&copy; {new Date().getFullYear()} {$t("all_rights_reserved")}</p>
+            <!-- Logo & Small Desc (Left side in LTR, Right in RTL) -->
+            <div class="flex items-center gap-4">
+                <div class="flex flex-col text-right">
+                    <span class="text-xs font-bold text-gray-300"
+                        >לכלל פעילות התנועה החברתית</span
+                    >
+                    <span class="text-xs font-medium text-orange-400"
+                        >יוצאים לחירות 👈</span
+                    >
+                </div>
+                <img
+                    src="/images/logos/לוגו2.png"
+                    alt="לוגו"
+                    class="h-10 w-10 rounded-lg object-contain"
+                />
+            </div>
+
+            <!-- Links (Center) -->
+            <div class="flex items-center gap-4 text-xs font-medium">
+                <a href="/terms" class="hover:text-white transition-colors"
+                    >תנאי שימוש</a
+                >
+                <span class="text-white/10">|</span>
+                <a href="/privacy" class="hover:text-white transition-colors"
+                    >מדיניות פרטיות</a
+                >
+                <span class="text-white/10">|</span>
+                <a href="/contact" class="hover:text-white transition-colors"
+                    >צור קשר</a
+                >
+            </div>
+
+            <!-- Copyright (Right side in LTR, Left in RTL) -->
+            <div class="text-xs">
+                © {new Date().getFullYear()} כל הזכויות שמורות
+            </div>
         </div>
     </div>
 </footer>

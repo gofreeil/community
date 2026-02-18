@@ -11,18 +11,20 @@
 </script>
 
 <svelte:head>
-	<title>קהילת השכונה</title>
+	<title>מיצוי זכויות התושבים</title>
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-<div class="min-h-screen flex flex-col bg-gray-950">
+<div class="min-h-screen flex flex-col bg-[#070b14]">
 	<Header />
 
 	<div class="layout-container flex-grow">
+		<!-- Sidebar moved to the LEFT (start for RTL) as requested -->
+		<AdsSidebar />
+
 		<main class="main-content">
 			{@render children()}
 		</main>
-		<AdsSidebar />
 	</div>
 
 	<Footer />
@@ -30,10 +32,10 @@
 
 <style>
 	.layout-container {
-		max-width: 1280px;
+		max-width: 1400px;
 		margin: 0 auto;
 		display: flex;
-		gap: 2rem;
+		gap: 3rem;
 		padding: 2rem;
 		width: 100%;
 	}
@@ -46,7 +48,7 @@
 	@media (max-width: 1024px) {
 		.layout-container {
 			padding: 1rem;
-			flex-direction: column;
+			flex-direction: column-reverse; /* Put main content above sidebar on mobile */
 		}
 	}
 </style>

@@ -1,26 +1,69 @@
 @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&display=swap');
+@import "tailwindcss";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@theme {
+    --animate-pulse-slow: pulse-slow 11s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+    @keyframes pulse-slow {
+
+        0%,
+        100% {
+            opacity: 1;
+        }
+
+        36% {
+            opacity: 0.5;
+        }
+    }
+
+    --color-primary: #2563eb;
+    --color-primary-light: #60a5fa;
+    --color-bg-dark: #070b14;
+}
 
 :root {
-    --primary: #2563eb;
-    --primary-light: #60a5fa;
-    --bg-dark: #0f172a;
-    --text-light: #f8fafc;
-    --header-height: 80px;
+    --header-height: 90px;
+    --bg-deep: #070b14;
 }
 
 body {
     margin: 0;
     padding: 0;
     font-family: 'Assistant', sans-serif;
-    background-color: var(--bg-dark);
-    color: var(--text-light);
+    background-color: var(--bg-deep);
+    color: #f8fafc;
     direction: rtl;
 }
 
 * {
     box-sizing: border-box;
+}
+
+/* Premium Glow for Header */
+.header-glow {
+    position: relative;
+}
+
+.header-glow::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    left: 10%;
+    width: 200px;
+    height: 40px;
+    background: radial-gradient(circle, rgba(37, 99, 235, 0.4) 0%, transparent 70%);
+    filter: blur(15px);
+    z-index: -1;
+}
+
+/* Button variants from screenshots */
+.btn-premium {
+    background: linear-gradient(135deg, #2563eb, #9333ea);
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+    transition: all 0.3s ease;
+}
+
+.btn-premium:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
 }
