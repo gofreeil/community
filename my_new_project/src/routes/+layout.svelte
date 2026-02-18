@@ -1,7 +1,9 @@
 <script lang="ts">
-	import '../app.css';
-	import Header from '$lib/components/Header.svelte';
-	import favicon from '$lib/assets/favicon.svg';
+	import "../app.css";
+	import "flag-icons/css/flag-icons.min.css";
+	import "$lib/i18n";
+	import Header from "$lib/components/Header.svelte";
+	import favicon from "$lib/assets/favicon.svg";
 
 	let { children } = $props();
 </script>
@@ -23,4 +25,3 @@
 		padding: 2rem;
 	}
 </style>
-
