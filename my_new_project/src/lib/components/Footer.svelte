@@ -1,77 +1,60 @@
-<footer class="mt-20 border-t border-gray-800 bg-gray-900 py-12 text-gray-400">
+<script lang="ts">
+    import { locale, t } from "svelte-i18n";
+</script>
+
+<footer class="bg-gray-900 text-white py-8 mt-12">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
-            <!-- Logo & Desc -->
-            <div class="col-span-1 md:col-span-1">
-                <div class="flex items-center gap-3">
-                    <img
-                        src="/images/logos/לוגו2.png"
-                        alt="Logo"
-                        class="h-10 w-10 object-contain"
-                    />
-                    <span class="text-xl font-bold text-white"
-                        >קהילת השכונה</span
-                    >
-                </div>
-                <p class="mt-4 text-sm leading-6">
-                    הפלטפורמה המובילה למיצוי זכויות וקידום הקהילות המקומיות
-                    בישראל. ביחד בונים עתיד טוב יותר.
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div>
+                <h3 class="text-lg font-bold mb-4">{$t("about_us")}</h3>
+                <p class="text-gray-400 text-sm">
+                    {$t("footer_description")}
                 </p>
             </div>
-
-            <!-- Quick Links -->
             <div>
-                <h3
-                    class="text-sm font-semibold uppercase tracking-wider text-white"
-                >
-                    קישורים מהירים
-                </h3>
-                <ul class="mt-4 space-y-2">
+                <h3 class="text-lg font-bold mb-4">{$t("quick_links")}</h3>
+                <ul class="space-y-2 text-sm">
                     <li>
-                        <a
-                            href="/"
-                            class="hover:text-blue-500 transition-colors">בית</a
+                        <a href="/about" class="text-gray-400 hover:text-white"
+                            >{$t("about")}</a
+                        >
+                    </li>
+                    <li>
+                        <a href="/terms" class="text-gray-400 hover:text-white"
+                            >{$t("terms")}</a
                         >
                     </li>
                     <li>
                         <a
-                            href="/about"
-                            class="hover:text-blue-500 transition-colors"
-                            >אודות</a
+                            href="/privacy"
+                            class="text-gray-400 hover:text-white"
+                            >{$t("privacy")}</a
                         >
                     </li>
                     <li>
                         <a
-                            href="/contact"
-                            class="hover:text-blue-500 transition-colors"
-                            >צור קשר</a
+                            href="/partners"
+                            class="text-gray-400 hover:text-white"
+                            >{$t("partners")}</a
                         >
                     </li>
                 </ul>
             </div>
-
-            <!-- Contact -->
             <div>
-                <h3
-                    class="text-sm font-semibold uppercase tracking-wider text-white"
-                >
-                    צור קשר
-                </h3>
-                <ul class="mt-4 space-y-2 text-sm">
-                    <li class="flex items-center gap-2">
-                        <span>📧</span> contact@community.org.il
-                    </li>
-                    <li class="flex items-center gap-2">
-                        <span>📱</span> 050-1234567
-                    </li>
-                </ul>
+                <h3 class="text-lg font-bold mb-4">{$t("contact_us")}</h3>
+                <p class="text-gray-400 text-sm">
+                    {$t("email")}:
+                    <a
+                        href="mailto:freedomhasbegun@gmail.com"
+                        class="hover:text-white">freedomhasbegun@gmail.com</a
+                    >
+                </p>
             </div>
         </div>
-
-        <div class="mt-12 border-t border-gray-800 pt-8 text-center text-xs">
-            <p>
-                &copy; {new Date().getFullYear()} קהילת השכונה. כל הזכויות שמורות.
-            </p>
+        <div
+            class="mt-8 pt-8 border-t border-gray-800 text-center text-gray-400 text-sm"
+        >
+            <p>&copy; {new Date().getFullYear()} {$t("all_rights_reserved")}</p>
         </div>
     </div>
 </footer>
