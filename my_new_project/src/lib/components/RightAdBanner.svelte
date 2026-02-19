@@ -1,7 +1,7 @@
 <!-- RightAdBanner.svelte -->
-<aside class="hidden xl:block w-32 flex-shrink-0">
+<aside class="hidden xl:block w-24 flex-shrink-0">
     <div
-        class="sticky top-4 h-[calc(100vh-120px)] flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-blue-500/30 bg-blue-900/10 p-4 text-center transition-all hover:border-blue-500 hover:bg-blue-900/20 group"
+        class="sticky top-4 h-64 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-blue-500/30 bg-blue-900/10 p-4 text-center transition-all hover:border-blue-500 hover:bg-blue-900/20 group"
     >
         <div
             class="[writing-mode:vertical-rl] text-lg font-black text-blue-400 group-hover:text-blue-200 tracking-widest whitespace-nowrap"
