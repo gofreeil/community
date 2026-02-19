@@ -4,11 +4,16 @@
 
 <footer class="bg-[#0d1117] border-t border-white/10 py-4">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="flex flex-row-reverse items-center justify-between gap-3">
-            <!-- Right (first in RTL): Brand image + text -->
+        <div class="flex items-center justify-between gap-3">
+            <!-- Right: Brand image + text (ימין) -->
             <div class="flex items-center gap-3">
+                <img
+                    src="/images/יוצאים לחירות תמונה ויקיפדיה.png"
+                    alt="יוצאים לחירות"
+                    class="h-14 w-14 object-cover rounded-lg"
+                />
                 <div class="text-right leading-tight">
-                    <p class="text-[11px] text-gray-300">
+                    <p class="text-[11px] text-gray-300 cursor-pointer">
                         לכלל פעילות התנועה החברתית
                     </p>
                     <p
@@ -17,11 +22,6 @@
                         🌟 יוצאים לחירות
                     </p>
                 </div>
-                <img
-                    src="/images/יוצאים לחירות תמונה ויקיפדיה.png"
-                    alt="יוצאים לחירות"
-                    class="h-10 w-10 object-cover rounded-lg"
-                />
             </div>
 
             <!-- Center: Links -->
