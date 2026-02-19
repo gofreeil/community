@@ -4,38 +4,32 @@
         { id: "events", label: "אירועים קרובים", icon: "📅" },
         { id: "help", label: "עזרה הדדית", icon: "🤝" },
         { id: "security", label: "ביטחון שכונתי", icon: "🛡️" },
+        { id: "education", label: "חינוך וחוגים", icon: "🎓" },
+        { id: "realestate", label: 'נדל"ן בשכונה', icon: "🏠" },
+        { id: "transport", label: "תחבורה ושירותים", icon: "🚌" },
+        { id: "community", label: "מועצת תושבים", icon: "🗳️" },
     ];
 </script>
 
 <div
     class="relative w-full rounded-2xl border-4 border-purple-600 overflow-hidden shadow-2xl bg-[#0f172a]"
 >
-    <!-- Buttons Overlay -->
+    <!-- Buttons Overlay - More compact and doubled -->
     <div
-        class="absolute top-4 left-0 right-0 z-10 flex flex-wrap justify-center gap-3 px-4"
+        class="absolute top-2 left-0 right-0 z-10 flex flex-wrap justify-center gap-1.5 px-2"
     >
         {#each categories as category}
             <button
-                class="flex items-center gap-2 bg-white/90 hover:bg-white text-gray-900 px-4 py-2 rounded-full text-sm font-bold shadow-lg transition-all hover:scale-105 backdrop-blur-sm border border-purple-200"
+                class="flex items-center gap-1.5 bg-white/95 hover:bg-white text-gray-900 px-3 py-1.5 rounded-full text-xs font-black shadow-md transition-all hover:scale-105 backdrop-blur-sm border border-purple-200"
             >
-                <span>{category.icon}</span>
+                <span class="text-base">{category.icon}</span>
                 {category.label}
             </button>
         {/each}
     </div>
 
     <!-- Map Container -->
-    <div class="w-full h-[500px]">
-        <iframe
-            title="מפת ירושלים"
-            width="100%"
-            height="100%"
-            frameborder="0"
-            style="border:0"
-            src="https://www.google.com/maps/embed/v1/place?key=REPLACE_WITH_YOUR_API_KEY&q=Jerusalem,Israel&zoom=13"
-            allowfullscreen
-        ></iframe>
-        <!-- Fallback if no API key: usando Google Maps Embed sem API Key (standard search) -->
+    <div class="w-full h-[550px]">
         <iframe
             title="מפת ירושלים"
             width="100%"
@@ -58,8 +52,8 @@
 </div>
 
 <style>
-    /* Removing the first iframe if we are using the second one for stability without API key */
-    iframe:first-of-type {
-        display: none;
+    /* Ensure focus on map */
+    iframe {
+        filter: contrast(1.1) brightness(0.9);
     }
 </style>
