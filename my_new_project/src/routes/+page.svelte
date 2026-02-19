@@ -16,9 +16,11 @@
 
     <!-- Map Section -->
     <section class="max-w-5xl mx-auto px-4">
-        <div class="mb-6 flex items-center justify-between">
-            <h3 class="text-2xl font-bold text-white flex items-center gap-2">
-                <span class="text-purple-500">📍</span>
+        <div class="mb-8 flex justify-center">
+            <h3
+                class="text-3xl md:text-4xl font-black text-white flex items-center gap-3 bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent"
+            >
+                <span class="text-white">📍</span>
                 מפת הקהילה
             </h3>
         </div>
