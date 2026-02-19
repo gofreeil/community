@@ -12,9 +12,6 @@
         >
             {$t("welcome")}
         </h2>
-        <p class="text-xl text-gray-400 max-w-2xl mx-auto">
-            {$t("app_description")}
-        </p>
     </section>
 
     <!-- Map Section -->
