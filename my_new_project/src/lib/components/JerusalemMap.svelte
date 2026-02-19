@@ -3,6 +3,7 @@
         { id: "business", label: "עסקים בשכונה", icon: "🏪" },
         { id: "lostfound", label: "לוח אבדות ומציאות", icon: "🔍" },
         { id: "gemachim", label: 'גמ"חים', icon: "🎁" },
+        { id: "minyanim", label: "מניינים לתפילה", icon: "🕍" },
         { id: "events_board", label: "לוח אירועים", icon: "📅" },
         { id: "giveaway", label: "למסירה", icon: "📦" },
         { id: "help", label: "עזרה הדדית", icon: "🤝" },
