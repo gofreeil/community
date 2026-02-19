@@ -1,22 +1,67 @@
-<div class="welcome">
-    <h2>ברוכים הבאים לקהילת השכונה</h2>
-    <p>כאן תוכלו למצוא את כל מה שקורה בשכונה שלנו.</p>
+<script lang="ts">
+    import { t } from "svelte-i18n";
+    import JerusalemMap from "$lib/components/JerusalemMap.svelte";
+</script>
+
+<div class="space-y-12 pb-20">
+    <!-- Welcome Section -->
+    <section class="text-center pt-8">
+        <h2
+            class="text-4xl md:text-5xl font-extrabold mb-4 bg-gradient-to-r from-white to-blue-300 bg-clip-text text-transparent"
+        >
+            {$t("welcome")}
+        </h2>
+        <p class="text-xl text-gray-400 max-w-2xl mx-auto">
+            {$t("app_description")}
+        </p>
+    </section>
+
+    <!-- Map Section -->
+    <section class="max-w-5xl mx-auto px-4">
+        <div class="mb-6 flex items-center justify-between">
+            <h3 class="text-2xl font-bold text-white flex items-center gap-2">
+                <span class="text-purple-500">📍</span>
+                מפת הקהילה
+            </h3>
+            <p class="text-sm text-gray-400">מצאו עסקים ואירועים באזורכם</p>
+        </div>
+
+        <JerusalemMap />
+    </section>
+
+    <!-- CTA Section (Bottom Placeholder) -->
+    <section
+        class="max-w-5xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-6"
+    >
+        <div
+            class="p-8 rounded-2xl bg-gradient-to-br from-blue-600/20 to-purple-600/20 border border-white/10 backdrop-blur-sm"
+        >
+            <h4 class="text-xl font-bold mb-2">הוסף את העסק שלך</h4>
+            <p class="text-gray-400 text-sm mb-4">
+                היה חלק מהמפה הקהילתית שלנו וקבל חשיפה לכל תושבי השכונה.
+            </p>
+            <button
+                class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-bold transition-colors"
+            >
+                הוסף עסק עכשיו
+            </button>
+        </div>
+        <div
+            class="p-8 rounded-2xl bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-white/10 backdrop-blur-sm"
+        >
+            <h4 class="text-xl font-bold mb-2">דווח על שירות/עזרה</h4>
+            <p class="text-gray-400 text-sm mb-4">
+                ראית משהו שצריך תיקון? רוצה להציע עזרה לשכנים? דווח לנו.
+            </p>
+            <button
+                class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-bold transition-colors"
+            >
+                פתח פנייה
+            </button>
+        </div>
+    </section>
 </div>
 
 <style>
-    .welcome {
-        text-align: center;
-        margin-top: 4rem;
-    }
-    h2 {
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
-        background: linear-gradient(135deg, #fff, var(--primary-light));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-    p {
-        font-size: 1.25rem;
-        color: #94a3b8;
-    }
+    /* Base styles already in app.css, using Tailwind classes here */
 </style>

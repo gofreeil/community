@@ -3,6 +3,7 @@
 	import "flag-icons/css/flag-icons.min.css";
 	import "$lib/i18n";
 	import Header from "$lib/components/Header.svelte";
+	import NewsTicker from "$lib/components/NewsTicker.svelte";
 	import AdsSidebar from "$lib/components/AdsSidebar.svelte";
 	import Footer from "$lib/components/Footer.svelte";
 	import favicon from "$lib/assets/favicon.svg";
@@ -17,6 +18,7 @@
 
 <div class="min-h-screen flex flex-col bg-[#0f172a]">
 	<Header />
+	<NewsTicker />
 
 	<div class="layout-container flex-grow">
 		<main class="main-content">
