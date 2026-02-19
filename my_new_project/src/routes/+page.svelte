@@ -1,6 +1,7 @@
 <script lang="ts">
     import { t } from "svelte-i18n";
     import JerusalemMap from "$lib/components/JerusalemMap.svelte";
+    import LostAndFound from "$lib/components/LostAndFound.svelte";
 </script>
 
 <div class="space-y-12 pb-20">
@@ -16,6 +17,11 @@
         </p>
     </section>
 
+    <!-- Lost and Found Feature -->
+    <section class="max-w-6xl mx-auto px-4">
+        <LostAndFound />
+    </section>
+
     <!-- Map Section -->
     <section class="max-w-5xl mx-auto px-4">
         <div class="mb-6 flex items-center justify-between">
@@ -23,7 +29,9 @@
                 <span class="text-purple-500">📍</span>
                 מפת הקהילה
             </h3>
-            <p class="text-sm text-gray-400">מצאו עסקים ואירועים באזורכם</p>
+            <p class="text-sm text-gray-400">
+                מצאו שירותים, גמ"חים ואירועים באזורכם
+            </p>
         </div>
 
         <JerusalemMap />
@@ -63,5 +71,5 @@
 </div>
 
 <style>
-    /* Base styles already in app.css, using Tailwind classes here */
+    /* Base styles handled in app.css */
 </style>
