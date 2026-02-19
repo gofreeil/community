@@ -2,7 +2,7 @@
     import { t } from "svelte-i18n";
 </script>
 
-<footer class="bg-[#0d1117] border-t border-white/10 py-4">
+<footer class="bg-[#0d1117] border-t border-white/10 py-2">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between gap-3">
             <!-- Right: Brand image + text (ימין) -->
@@ -14,7 +14,7 @@
                 <img
                     src="/images/יוצאים לחירות תמונה ויקיפדיה.png"
                     alt="יוצאים לחירות"
-                    class="h-32 w-32 object-contain rounded-lg hover:scale-105 transition-transform"
+                    class="h-24 w-24 object-contain rounded-lg hover:scale-105 transition-transform cursor-pointer"
                 />
                 <div class="text-right leading-tight">
                     <p class="text-sm text-gray-300">
