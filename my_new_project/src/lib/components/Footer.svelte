@@ -9,12 +9,12 @@
             <a 
                 href="https://www.melecshop.com/" 
                 target="_blank"
-                class="flex items-center gap-3 hover:opacity-80 transition-opacity"
+                class="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer"
             >
                 <img
                     src="/images/יוצאים לחירות תמונה ויקיפדיה.png"
                     alt="יוצאים לחירות"
-                    class="h-24 w-24 object-contain rounded-lg hover:scale-105 transition-transform cursor-pointer"
+                    class="h-24 w-24 object-contain rounded-lg hover:scale-105 transition-transform"
                 />
                 <div class="text-right leading-tight">
                     <p class="text-sm text-gray-300">
