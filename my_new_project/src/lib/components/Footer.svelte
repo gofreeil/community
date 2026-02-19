@@ -10,7 +10,7 @@
                 <img
                     src="/images/יוצאים לחירות תמונה ויקיפדיה.png"
                     alt="יוצאים לחירות"
-                    class="h-14 w-14 object-cover rounded-lg"
+                    class="h-20 w-20 object-contain rounded-lg"
                 />
                 <div class="text-right leading-tight">
                     <p class="text-[11px] text-gray-300 cursor-pointer">

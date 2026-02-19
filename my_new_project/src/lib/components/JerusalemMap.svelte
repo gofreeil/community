@@ -2,9 +2,8 @@
     const categories = [
         { id: "gemachim", label: 'גמ"חים', icon: "🎁" },
         { id: "business", label: "בייבי סיטר", icon: "👶" },
-        { id: "minyanim", label: "מניינים לתפילה", icon: "🕍" },
+        { id: "minyanim", label: "מניינים לתפילה", icon: "✡️" },
         { id: "giveaway", label: "למסירה", icon: "📦" },
-        { id: "help", label: "עזרה הדדית", icon: "🤝" },
         { id: "security", label: "צימרים", icon: "🏡" },
         { id: "education", label: "חינוך וחוגים", icon: "🎓" },
         { id: "realestate", label: "בתי הארחה לשבת", icon: "🏠" },
