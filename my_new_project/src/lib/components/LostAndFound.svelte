@@ -21,35 +21,28 @@
             date: "הבוקר",
             type: "found",
         },
-        {
-            id: 4,
-            title: "אבדו משקפי ראייה",
-            location: "גן סאקר",
-            date: "יומיים",
-            type: "lost",
-        },
     ];
 </script>
 
 <div
-    class="rounded-3xl bg-[#0f172a] border-2 border-blue-500/30 overflow-hidden shadow-2xl"
+    class="rounded-3xl bg-[#0f172a] border-2 border-blue-500/30 overflow-hidden shadow-2xl flex flex-col h-full"
 >
     <div
-        class="bg-gradient-to-r from-blue-600 to-purple-600 p-4 flex items-center justify-between"
+        class="bg-gradient-to-r from-blue-600 to-purple-600 p-4 flex items-center justify-between flex-shrink-0"
     >
-        <h3 class="text-xl font-bold text-white flex items-center gap-2">
-            <span class="text-2xl">🔍</span>
-            לוח אבדות ומציאות קהילתי
+        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+            <span class="text-xl">🔍</span>
+            אבדות ומציאות
         </h3>
         <button
             class="bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-3 py-1.5 rounded-full transition-colors border border-white/20"
         >
-            פרסם מודעה חדשה +
+            + פרסם
         </button>
     </div>
 
-    <div class="p-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="p-4 flex-1 overflow-y-auto">
+        <div class="space-y-3">
             {#each lostItems as item}
                 <div
                     class="relative p-4 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all group overflow-hidden"
@@ -85,7 +78,7 @@
                     </div>
 
                     <button
-                        class="mt-4 w-full py-1.5 bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white rounded-lg text-xs font-bold transition-all border border-blue-500/30"
+                        class="mt-3 w-full py-1.5 bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white rounded-lg text-xs font-bold transition-all border border-blue-500/30"
                     >
                         פרטים ליצירת קשר
                     </button>
@@ -93,11 +86,11 @@
             {/each}
         </div>
 
-        <div class="mt-6 text-center">
+        <div class="mt-4 text-center">
             <button
                 class="text-blue-400 hover:text-white text-sm font-bold transition-colors underline underline-offset-4"
             >
-                לצפייה בכל המודעות בלוח...
+                לצפייה בכל המודעות...
             </button>
         </div>
     </div>

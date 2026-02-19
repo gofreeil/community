@@ -6,23 +6,19 @@
 </script>
 
 <div class="space-y-12 pb-20 pt-8">
-    <!-- Map Section -->
-    <section class="max-w-5xl mx-auto px-4">
-        <div class="mb-8 flex justify-center">
-            <h3
-                class="text-3xl md:text-4xl font-black text-white flex items-center gap-3 bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent"
-            >
-                <span class="text-white">📍</span>
-                מפת הקהילה
-            </h3>
+    <!-- Map + Lost and Found Section (side by side) -->
+    <section class="max-w-7xl mx-auto px-4">
+        <div class="flex flex-col lg:flex-row gap-6 items-stretch">
+            <!-- Map Section (3/4 width) -->
+            <div class="lg:w-3/4">
+                <JerusalemMap />
+            </div>
+
+            <!-- Lost and Found Section (1/4 width) -->
+            <div class="lg:w-1/4">
+                <LostAndFound />
+            </div>
         </div>
-
-        <JerusalemMap />
-    </section>
-
-    <!-- Lost and Found Feature -->
-    <section class="max-w-6xl mx-auto px-4">
-        <LostAndFound />
     </section>
 
     <!-- Referendum Banner -->
