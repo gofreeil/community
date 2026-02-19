@@ -4,16 +4,7 @@
     import LostAndFound from "$lib/components/LostAndFound.svelte";
 </script>
 
-<div class="space-y-12 pb-20">
-    <!-- Welcome Section -->
-    <section class="text-center pt-8">
-        <h2
-            class="text-4xl md:text-5xl font-extrabold mb-4 bg-gradient-to-r from-white to-blue-300 bg-clip-text text-transparent"
-        >
-            {$t("welcome")}
-        </h2>
-    </section>
-
+<div class="space-y-12 pb-20 pt-8">
     <!-- Map Section -->
     <section class="max-w-5xl mx-auto px-4">
         <div class="mb-8 flex justify-center">
