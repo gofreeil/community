@@ -4,13 +4,7 @@
 
 <footer class="bg-gray-900 text-white py-8 mt-12">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div>
-                <h3 class="text-lg font-bold mb-4">{$t("about_us")}</h3>
-                <p class="text-gray-400 text-sm">
-                    {$t("footer_description")}
-                </p>
-            </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
                 <h3 class="text-lg font-bold mb-4">{$t("quick_links")}</h3>
                 <ul class="space-y-2 text-sm">

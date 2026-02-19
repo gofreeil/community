@@ -12,7 +12,7 @@
 </script>
 
 <svelte:head>
-	<title>קהילת השכונה</title>
+	<title>קהילה בשכונה</title>
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
