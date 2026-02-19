@@ -13,7 +13,7 @@
             href="mailto:ads@shchuna.co.il"
             class="mt-6 rounded-full bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-lg hover:bg-blue-500 transition-colors"
         >
-            צור קשר
+            לפרטים
         </a>
     </div>
 </aside>

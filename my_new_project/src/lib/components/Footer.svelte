@@ -1,60 +1,49 @@
 <script lang="ts">
-    import { locale, t } from "svelte-i18n";
+    import { t } from "svelte-i18n";
 </script>
 
-<footer class="bg-gray-900 text-white py-8 mt-12">
+<footer class="bg-[#0d1117] border-t border-white/10 py-4">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div>
-                <h3 class="text-lg font-bold mb-4">{$t("about_us")}</h3>
-                <p class="text-gray-400 text-sm">
-                    {$t("footer_description")}
-                </p>
-            </div>
-            <div>
-                <h3 class="text-lg font-bold mb-4">{$t("quick_links")}</h3>
-                <ul class="space-y-2 text-sm">
-                    <li>
-                        <a href="/about" class="text-gray-400 hover:text-white"
-                            >{$t("about")}</a
-                        >
-                    </li>
-                    <li>
-                        <a href="/terms" class="text-gray-400 hover:text-white"
-                            >{$t("terms")}</a
-                        >
-                    </li>
-                    <li>
-                        <a
-                            href="/privacy"
-                            class="text-gray-400 hover:text-white"
-                            >{$t("privacy")}</a
-                        >
-                    </li>
-                    <li>
-                        <a
-                            href="/partners"
-                            class="text-gray-400 hover:text-white"
-                            >{$t("partners")}</a
-                        >
-                    </li>
-                </ul>
-            </div>
-            <div>
-                <h3 class="text-lg font-bold mb-4">{$t("contact_us")}</h3>
-                <p class="text-gray-400 text-sm">
-                    {$t("email")}:
-                    <a
-                        href="mailto:freedomhasbegun@gmail.com"
-                        class="hover:text-white">freedomhasbegun@gmail.com</a
+        <div class="flex flex-row-reverse items-center justify-between gap-3">
+            <!-- Right (first in RTL): Brand image + text -->
+            <div class="flex items-center gap-3">
+                <div class="text-right leading-tight">
+                    <p class="text-[11px] text-gray-300">
+                        לכלל פעילות התנועה החברתית
+                    </p>
+                    <p
+                        class="text-[11px] text-yellow-400 font-bold flex items-center gap-1 justify-end"
                     >
-                </p>
+                        🌟 יוצאים לחירות
+                    </p>
+                </div>
+                <img
+                    src="/images/יוצאים לחירות תמונה ויקיפדיה.png"
+                    alt="יוצאים לחירות"
+                    class="h-10 w-10 object-cover rounded-lg"
+                />
             </div>
-        </div>
-        <div
-            class="mt-8 pt-8 border-t border-gray-800 text-center text-gray-400 text-sm"
-        >
-            <p>&copy; {new Date().getFullYear()} {$t("all_rights_reserved")}</p>
+
+            <!-- Center: Links -->
+            <nav class="flex items-center gap-2 text-xs text-gray-400">
+                <a href="/terms" class="hover:text-white transition-colors"
+                    >תנאי שימוש</a
+                >
+                <span class="text-gray-600">|</span>
+                <a href="/privacy" class="hover:text-white transition-colors"
+                    >מדיניות פרטיות</a
+                >
+                <span class="text-gray-600">|</span>
+                <a
+                    href="mailto:freedomhasbegun@gmail.com"
+                    class="hover:text-white transition-colors">צור קשר</a
+                >
+            </nav>
+
+            <!-- Left: Copyright -->
+            <p class="text-gray-500 text-xs">
+                &copy; {new Date().getFullYear()} כל הזכויות שמורות
+            </p>
         </div>
     </div>
 </footer>
