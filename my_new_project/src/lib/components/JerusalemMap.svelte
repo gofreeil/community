@@ -1,12 +1,15 @@
 <script lang="ts">
     const categories = [
         { id: "business", label: "עסקים בשכונה", icon: "🏪" },
-        { id: "events", label: "אירועים קרובים", icon: "📅" },
+        { id: "lostfound", label: "לוח אבדות ומציאות", icon: "🔍" },
+        { id: "gemachim", label: 'גמ"חים', icon: "🎁" },
+        { id: "events_board", label: "לוח אירועים", icon: "📅" },
+        { id: "giveaway", label: "למסירה", icon: "📦" },
         { id: "help", label: "עזרה הדדית", icon: "🤝" },
         { id: "security", label: "ביטחון שכונתי", icon: "🛡️" },
         { id: "education", label: "חינוך וחוגים", icon: "🎓" },
         { id: "realestate", label: "בתי הארחה לשבת", icon: "🏠" },
-        { id: "transport", label: "תחבורה ושירותים", icon: "🚌" },
+        { id: "transport", label: "נסיעות", icon: "🚌" },
         { id: "community", label: "מועצת תושבים", icon: "🗳️" },
     ];
 </script>
@@ -35,7 +38,7 @@
                 height="100%"
                 style="border:0"
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3391.8864700000003!2d35.21371!3d31.768319!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1502d7d634c1f8b9%3A0x1028fca4a63b44a!2z15nXqNeV16nXnNep150!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil"
-                allowfullscreen=""
+                allowfullscreen
                 loading="lazy"
                 referrerpolicy="no-referrer-when-downgrade"
             >
