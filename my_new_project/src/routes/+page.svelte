@@ -24,9 +24,6 @@
                 <span class="text-purple-500">📍</span>
                 מפת הקהילה
             </h3>
-            <p class="text-sm text-gray-400">
-                מצאו שירותים, גמ"חים ואירועים באזורכם
-            </p>
         </div>
 
         <JerusalemMap />
