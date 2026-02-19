@@ -54,11 +54,11 @@
                 />
                 <div class="min-w-0 flex-1">
                     <h1
-                        class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-base font-bold text-transparent leading-tight truncate"
+                        class="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-base font-bold text-transparent leading-tight truncate"
                     >
                         {$t("welcome")}
                     </h1>
-                    <p class="text-xs text-gray-600 leading-tight truncate">
+                    <p class="text-xs text-gray-200 leading-tight truncate">
                         {$t("app_description")}
                     </p>
                 </div>
@@ -169,11 +169,11 @@
                 </div>
                 <div>
                     <h1
-                        class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-3xl font-bold text-transparent"
+                        class="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-3xl font-bold text-transparent"
                     >
                         {$t("welcome")}
                     </h1>
-                    <p class="font-medium text-gray-600 text-base">
+                    <p class="font-medium text-gray-200 text-base">
                         {$t("app_description")}
                     </p>
                 </div>
