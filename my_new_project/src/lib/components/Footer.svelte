@@ -6,23 +6,27 @@
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between gap-3">
             <!-- Right: Brand image + text (ימין) -->
-            <div class="flex items-center gap-3">
+            <a 
+                href="https://www.melecshop.com/" 
+                target="_blank"
+                class="flex items-center gap-3 hover:opacity-80 transition-opacity"
+            >
                 <img
                     src="/images/יוצאים לחירות תמונה ויקיפדיה.png"
                     alt="יוצאים לחירות"
-                    class="h-20 w-20 object-contain rounded-lg"
+                    class="h-32 w-32 object-contain rounded-lg hover:scale-105 transition-transform"
                 />
                 <div class="text-right leading-tight">
-                    <p class="text-[11px] text-gray-300 cursor-pointer">
+                    <p class="text-sm text-gray-300">
                         לכלל פעילות התנועה החברתית
                     </p>
                     <p
-                        class="text-[11px] text-yellow-400 font-bold flex items-center gap-1 justify-end"
+                        class="text-sm text-yellow-400 font-bold flex items-center gap-1 justify-end"
                     >
                         🌟 יוצאים לחירות
                     </p>
                 </div>
-            </div>
+            </a>
 
             <!-- Center: Links -->
             <nav class="flex items-center gap-2 text-xs text-gray-400">
