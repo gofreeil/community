@@ -17,11 +17,6 @@
         </p>
     </section>
 
-    <!-- Lost and Found Feature -->
-    <section class="max-w-6xl mx-auto px-4">
-        <LostAndFound />
-    </section>
-
     <!-- Map Section -->
     <section class="max-w-5xl mx-auto px-4">
         <div class="mb-6 flex items-center justify-between">
@@ -35,6 +30,11 @@
         </div>
 
         <JerusalemMap />
+    </section>
+
+    <!-- Lost and Found Feature -->
+    <section class="max-w-6xl mx-auto px-4">
+        <LostAndFound />
     </section>
 
     <!-- CTA Section (Bottom Placeholder) -->

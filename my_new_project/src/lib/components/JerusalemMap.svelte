@@ -6,7 +6,7 @@
         { id: "events_board", label: "לוח אירועים", icon: "📅" },
         { id: "giveaway", label: "למסירה", icon: "📦" },
         { id: "help", label: "עזרה הדדית", icon: "🤝" },
-        { id: "security", label: "ביטחון שכונתי", icon: "🛡️" },
+        { id: "security", label: "צימרים", icon: "🏡" },
         { id: "education", label: "חינוך וחוגים", icon: "🎓" },
         { id: "realestate", label: "בתי הארחה לשבת", icon: "🏠" },
         { id: "transport", label: "נסיעות", icon: "🚌" },
