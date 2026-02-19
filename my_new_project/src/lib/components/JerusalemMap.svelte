@@ -3,14 +3,12 @@
         { id: "business", label: "בייבי סיטר", icon: "🏪" },
         { id: "gemachim", label: 'גמ"חים', icon: "🎁" },
         { id: "minyanim", label: "מניינים לתפילה", icon: "🕍" },
-        { id: "events_board", label: "לוח אירועים", icon: "📅" },
         { id: "giveaway", label: "למסירה", icon: "📦" },
         { id: "help", label: "עזרה הדדית", icon: "🤝" },
         { id: "security", label: "צימרים", icon: "🏡" },
         { id: "education", label: "חינוך וחוגים", icon: "🎓" },
         { id: "realestate", label: "בתי הארחה לשבת", icon: "🏠" },
         { id: "transport", label: "נסיעות", icon: "🚌" },
-        { id: "community", label: "מועצת תושבים", icon: "🗳️" },
     ];
 </script>
 
