@@ -1,7 +1,7 @@
 import { register, init, getLocaleFromNavigator } from 'svelte-i18n';
 
 register('he', () => Promise.resolve({
-    welcome: "ברוכים הבאים לקהילה",
+    welcome: "קהילה בשכונה",
     app_description: "מיצוי פוטנציאל הקהילה שלך",
     hello: "שלום",
     greeting: "שלום,",
@@ -20,7 +20,7 @@ register('he', () => Promise.resolve({
 }));
 
 register('en', () => Promise.resolve({
-    welcome: "Welcome to Community",
+    welcome: "Neighborhood Community",
     app_description: "Empowering your local community",
     hello: "Hello",
     greeting: "Hello,",
@@ -39,7 +39,7 @@ register('en', () => Promise.resolve({
 }));
 
 register('ru', () => Promise.resolve({
-    welcome: "Добро пожаловать",
+    welcome: "Сообщество района",
     app_description: "Расширение возможностей вашего сообщества",
     hello: "Привет",
     greeting: "Привет,",
