@@ -2,6 +2,7 @@
     import { t } from "svelte-i18n";
     import JerusalemMap from "$lib/components/JerusalemMap.svelte";
     import LostAndFound from "$lib/components/LostAndFound.svelte";
+    import ReferendumBanner from "$lib/components/ReferendumBanner.svelte";
 </script>
 
 <div class="space-y-12 pb-20 pt-8">
@@ -22,6 +23,11 @@
     <!-- Lost and Found Feature -->
     <section class="max-w-6xl mx-auto px-4">
         <LostAndFound />
+    </section>
+
+    <!-- Referendum Banner -->
+    <section class="max-w-6xl mx-auto px-4">
+        <ReferendumBanner />
     </section>
 
     <!-- CTA Section (Bottom Placeholder) -->
