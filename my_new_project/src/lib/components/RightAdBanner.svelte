@@ -8,7 +8,7 @@
         >
             פרסום זה יכול להיות שלך
         </div>
-        <div class="mt-4 text-2xl animate-bounce">📢</div>
+        <div class="mt-4 text-2xl">📢</div>
         <a
             href="mailto:ads@shchuna.co.il"
             class="mt-6 rounded-full bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-lg hover:bg-blue-500 transition-colors"
