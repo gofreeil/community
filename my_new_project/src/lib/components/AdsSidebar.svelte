@@ -124,5 +124,25 @@
                 </div>
             </div>
         </a>
+
+        <!-- Ad 6 - מיצוי זכויות תושבים -->
+        <a
+            href="https://right-to-live.vercel.app/"
+            target="_blank"
+            class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105"
+        >
+            <img
+                src="/images/partners/מיצוי_זכויות.svg"
+                alt="מיצוי זכויות תושבים"
+                class="h-auto w-full object-cover"
+            />
+            <div
+                class="bg-gradient-to-r from-blue-700 to-blue-900 p-3 text-center"
+            >
+                <p class="text-white font-bold text-xs leading-tight">
+                    מערכת פניות ובקרת תושבים על העיריות - מצה את זכויותיך!
+                </p>
+            </div>
+        </a>
     </div>
 </aside>
