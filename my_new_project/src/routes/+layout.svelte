@@ -4,6 +4,7 @@
 	import "$lib/i18n";
 	import Header from "$lib/components/Header.svelte";
 	import NewsTicker from "$lib/components/NewsTicker.svelte";
+	import RightAdBanner from "$lib/components/RightAdBanner.svelte";
 	import AdsSidebar from "$lib/components/AdsSidebar.svelte";
 	import Footer from "$lib/components/Footer.svelte";
 	import favicon from "$lib/assets/favicon.svg";
@@ -21,6 +22,7 @@
 	<NewsTicker />
 
 	<div class="layout-container flex-grow">
+		<RightAdBanner />
 		<main class="main-content">
 			{@render children()}
 		</main>
@@ -32,7 +34,7 @@
 
 <style>
 	.layout-container {
-		max-width: 1280px;
+		max-width: 1440px;
 		margin: 0 auto;
 		display: flex;
 		gap: 2rem;
