@@ -37,6 +37,10 @@
                     הקול שלך משנה את המציאות
                 </p>
                 
+                <div class="text-lg font-bold text-yellow-300 mb-3">
+                    סנן:
+                </div>
+                
                 <div class="flex flex-wrap gap-3 justify-center md:justify-end mb-6">
                     <div class="badge">
                         <span class="text-2xl">✓</span>
