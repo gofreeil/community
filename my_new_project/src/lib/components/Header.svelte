@@ -105,7 +105,7 @@
                 </div>
 
                 <!-- User/Auth - Compact -->
-                {#if currentUser || onShowAuth}
+                {#if true}
                     {#if currentUser}
                         {@const userName = currentUser.username ?? "U"}
                         <div class="flex items-center gap-1">
@@ -125,12 +125,12 @@
                                 </button>
                             {/if}
                         </div>
-                    {:else if onShowAuth}
+                    {:else}
                         <button
                             onclick={onShowAuth}
                             class="rounded bg-gradient-to-r from-blue-600 to-purple-600 px-2 py-1 text-xs text-white"
                         >
-                            כניסה
+                            {$t("login_register")}
                         </button>
                     {/if}
                 {/if}
@@ -251,7 +251,7 @@
                     {/if}
                 </div>
             </div>
-            {#if currentUser || onShowAuth}
+            {#if true}
                 <div class="flex items-center">
                     {#if currentUser}
                         {@const userName = currentUser.username ?? "U"}
@@ -277,7 +277,7 @@
                                 </button>
                             {/if}
                         </div>
-                    {:else if onShowAuth}
+                    {:else}
                         <button
                             onclick={onShowAuth}
                             class="transform rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-3 font-medium text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl"
