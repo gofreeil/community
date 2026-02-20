@@ -15,20 +15,20 @@
                 <img
                     src="/images/יוצאים לחירות תמונה ויקיפדיה.png"
                     alt="יוצאים לחירות"
-                    class="h-20 w-20 object-contain rounded-lg hover:scale-105 transition-transform"
+                    class="h-24 w-24 object-contain rounded-lg hover:scale-105 transition-transform"
                 />
                 <div class="text-right leading-tight">
-                    <p class="text-sm text-gray-300">
+                    <p class="text-base text-gray-300">
                         לכלל פעילות התנועה החברתית
                     </p>
-                    <p class="text-sm text-yellow-400 font-bold flex items-center gap-1 justify-end">
+                    <p class="text-base text-yellow-400 font-bold flex items-center gap-1 justify-end">
                         👉 יוצאים לחירות
                     </p>
                 </div>
             </a>
 
             <!-- Center: Links -->
-            <nav class="flex items-center gap-2 text-xs text-gray-400">
+            <nav class="flex items-center gap-2 text-sm text-gray-400">
                 <a href="/terms" class="hover:text-white transition-colors">תנאי שימוש</a>
                 <span class="text-gray-600">|</span>
                 <a href="/privacy" class="hover:text-white transition-colors">מדיניות פרטיות</a>
@@ -37,7 +37,7 @@
             </nav>
 
             <!-- Left: Copyright -->
-            <p class="text-gray-500 text-xs">
+            <p class="text-gray-500 text-sm">
                 &copy; {new Date().getFullYear()} כל הזכויות שמורות
             </p>
         </div>
