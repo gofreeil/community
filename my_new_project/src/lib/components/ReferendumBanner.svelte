@@ -90,6 +90,41 @@
                 <div class="text-sm text-blue-200">שביעות רצון</div>
             </div>
         </div>
+
+        <!-- דוגמה למשאל - פינוי אשפה -->
+        <div class="mt-8 bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+            <div class="flex items-start gap-3 mb-4">
+                <span class="text-3xl">🗑️</span>
+                <div class="flex-1">
+                    <h3 class="text-xl font-bold text-white mb-2">משאל לדוגמה</h3>
+                    <p class="text-white/90 text-base leading-relaxed">
+                        האם אתם מעוניינים לעבור למערכת פינוי אשפה קהילתית חדשה שתוזיל את העלויות ב-30% ותשפר את השירות?
+                    </p>
+                </div>
+            </div>
+            
+            <div class="space-y-3">
+                <button class="poll-option poll-yes">
+                    <span class="text-xl">✅</span>
+                    <span class="font-bold">כן, אני בעד!</span>
+                    <span class="text-sm opacity-80">(67%)</span>
+                </button>
+                <button class="poll-option poll-no">
+                    <span class="text-xl">❌</span>
+                    <span class="font-bold">לא, אני מעדיף להשאר במצב הנוכחי</span>
+                    <span class="text-sm opacity-80">(23%)</span>
+                </button>
+                <button class="poll-option poll-maybe">
+                    <span class="text-xl">🤔</span>
+                    <span class="font-bold">צריך לבדוק עוד פרטים</span>
+                    <span class="text-sm opacity-80">(10%)</span>
+                </button>
+            </div>
+            
+            <div class="mt-4 text-center text-sm text-blue-200">
+                <span class="font-bold">1,247</span> תושבים הצביעו עד כה
+            </div>
+        </div>
     </div>
     
     <!-- אפקט זוהר בפינות -->
@@ -209,6 +244,43 @@
     
     .delay-1000 {
         animation-delay: 1s;
+    }
+
+    .poll-option {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem 1.5rem;
+        border-radius: 1rem;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: right;
+    }
+
+    .poll-option:hover {
+        transform: translateX(-4px);
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    .poll-yes:hover {
+        background: rgba(34, 197, 94, 0.2);
+        border-color: rgb(34, 197, 94);
+    }
+
+    .poll-no:hover {
+        background: rgba(239, 68, 68, 0.2);
+        border-color: rgb(239, 68, 68);
+    }
+
+    .poll-maybe:hover {
+        background: rgba(251, 191, 36, 0.2);
+        border-color: rgb(251, 191, 36);
     }
     
     @media (max-width: 768px) {
