@@ -116,11 +116,6 @@
 <style>
     .referendum-banner {
         min-height: 300px;
-        transition: transform 0.3s ease;
-    }
-    
-    .referendum-banner:hover {
-        transform: translateY(-4px);
     }
     
     @keyframes gradient {
