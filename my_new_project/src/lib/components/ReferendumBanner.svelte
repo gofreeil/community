@@ -111,10 +111,6 @@
             </div>
         </div>
     </div>
-    
-    <!-- אפקט זוהר בפינות -->
-    <div class="absolute top-0 right-0 w-32 h-32 bg-white rounded-full blur-3xl opacity-20 animate-pulse"></div>
-    <div class="absolute bottom-0 left-0 w-40 h-40 bg-yellow-300 rounded-full blur-3xl opacity-20 animate-pulse delay-1000"></div>
 </div>
 
 <style>
