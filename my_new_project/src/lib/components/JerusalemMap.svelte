@@ -5,7 +5,7 @@
         { id: "business", label: "בייבי סיטר", icon: "👶" },
         { id: "minyanim", label: "יהדות", icon: "✡️" },
         { id: "security", label: "צימרים", icon: "🏡" },
-        { id: "education", label: "חינוך וחוגים", icon: "🎓" },
+        { id: "education", label: "חוגים", icon: "🎨" },
         { id: "realestate", label: "בתי הארחה לשבת", icon: "🏠" },
         { id: "transport", label: "טרמפים", icon: "🚗" },
     ];
