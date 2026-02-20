@@ -24,8 +24,8 @@
         <div class="flex flex-col md:flex-row items-center justify-between gap-4">
             <!-- צד ימין - טקסט וקלפי -->
             <div class="flex-1 text-white text-center md:text-right">
-                <div class="flex items-center justify-center md:justify-end gap-4 mb-3">
-                    <div>
+                <div class="flex items-center justify-center gap-4 mb-3">
+                    <div class="text-center">
                         <h2 class="text-3xl md:text-4xl font-black leading-tight">
                             <span class="inline-block transform hover:scale-110 transition-transform">משאל</span>
                             <span class="inline-block transform hover:scale-110 transition-transform text-yellow-300"> עם</span>
