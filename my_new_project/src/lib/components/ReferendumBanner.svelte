@@ -91,14 +91,14 @@
             </div>
         </div>
 
-        <!-- דוגמה למשאל - פינוי אשפה -->
+        <!-- דוגמה למשאל - מיחזור אשפה -->
         <div class="mt-8 bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
             <div class="flex items-start gap-3 mb-4">
-                <span class="text-3xl">🗑️</span>
+                <span class="text-3xl">♻️</span>
                 <div class="flex-1">
                     <h3 class="text-xl font-bold text-white mb-2">משאל לדוגמה</h3>
                     <p class="text-white/90 text-base leading-relaxed">
-                        האם אתם מעוניינים לעבור למערכת פינוי אשפה קהילתית חדשה שתוזיל את העלויות ב-30% ותשפר את השירות?
+                        האם אתם מעוניינים לעבור למערכת מיחזור אשפה קהילתית חדשה שתוזיל את העלויות ב-30% ותשפר את השירות?
                     </p>
                 </div>
             </div>
