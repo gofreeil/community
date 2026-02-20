@@ -19,11 +19,11 @@
 
 <div class="min-h-screen flex flex-col bg-[#0f172a]">
 	<Header />
-	<NewsTicker />
 
 	<div class="layout-container flex-grow">
 		<RightAdBanner />
 		<main class="main-content">
+			<NewsTicker />
 			{@render children()}
 		</main>
 		<AdsSidebar />
