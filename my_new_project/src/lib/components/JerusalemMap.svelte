@@ -4,11 +4,11 @@
         { id: "giveaway", label: "למסירה", icon: "📦" },
         { id: "business", label: "בייבי סיטר", icon: "👶" },
         { id: "minyanim", label: "יהדות", icon: "✡️" },
+        { id: "realestate", label: "בתי הארחה לשבת", icon: "🏠" },
         { id: "security", label: "צימרים", icon: "🏡" },
         { id: "education", label: "חוגים", icon: "🎨" },
         { id: "kids", label: "לילדים", icon: "🧒" },
         { id: "shops", label: "חנויות", icon: "🏪" },
-        { id: "realestate", label: "בתי הארחה לשבת", icon: "🏠" },
         { id: "transport", label: "טרמפים", icon: "🚗" },
     ];
 </script>
