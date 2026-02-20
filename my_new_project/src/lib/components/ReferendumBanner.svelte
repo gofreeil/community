@@ -9,15 +9,8 @@
 </script>
 
 <div class="referendum-banner relative overflow-hidden rounded-2xl shadow-2xl my-8 group">
-    <!-- רקע גרדיאנט מונפש -->
-    <div class="absolute inset-0 bg-gradient-to-br from-purple-600 via-blue-600 to-cyan-500 animate-gradient"></div>
-    
-    <!-- גלים מונפשים -->
-    <div class="absolute inset-0 opacity-30">
-        <div class="wave wave1"></div>
-        <div class="wave wave2"></div>
-        <div class="wave wave3"></div>
-    </div>
+    <!-- רקע גרדיאנט -->
+    <div class="absolute inset-0 bg-gradient-to-br from-purple-600 via-blue-600 to-cyan-500"></div>
     
     <!-- תוכן -->
     <div class="relative z-10 p-6 md:p-8">

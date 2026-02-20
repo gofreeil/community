@@ -22,35 +22,35 @@
 </script>
 
 <div
-    class="news-ticker-container border-b border-blue-900/30 bg-[#0f172a]/90 py-3 backdrop-blur-md"
+    class="news-ticker-container border-b border-blue-900/30 bg-[#0f172a]/90 py-4 backdrop-blur-md"
 >
     <div class="mx-auto max-w-7xl flex items-center px-4">
         <!-- Ticker Label -->
         <div
-            class="z-10 bg-red-600 px-4 py-2 rounded-lg text-sm font-black text-white shadow-xl flex-shrink-0 ml-6 flex flex-col items-center justify-center border border-red-400"
+            class="z-10 bg-red-600 px-5 py-3 rounded-lg text-base font-black text-white shadow-xl flex-shrink-0 ml-6 flex flex-col items-center justify-center border border-red-400"
         >
             <span>חדשות</span>
             <span>הקהילה:</span>
         </div>
 
         <!-- Scrolling Content -->
-        <div class="overflow-hidden flex-grow relative h-14">
+        <div class="overflow-hidden flex-grow relative h-16">
             <div
                 class="ticker-content flex gap-16 items-center absolute right-0 whitespace-nowrap h-full"
             >
                 {#each [...newsItems, ...newsItems] as item}
                     <div class="flex items-center gap-16 h-full">
                         <div class="flex flex-col justify-center text-center">
-                            <span class="text-sm font-bold text-blue-100"
+                            <span class="text-base font-bold text-blue-100"
                                 >{item.line1}</span
                             >
-                            <span class="text-sm font-medium text-blue-300"
+                            <span class="text-base font-medium text-blue-300"
                                 >{item.line2}</span
                             >
                         </div>
                         <!-- Separator Line -->
                         <div
-                            class="h-10 w-px bg-gradient-to-b from-transparent via-gray-600 to-transparent"
+                            class="h-12 w-px bg-gradient-to-b from-transparent via-gray-600 to-transparent"
                         ></div>
                     </div>
                 {/each}
