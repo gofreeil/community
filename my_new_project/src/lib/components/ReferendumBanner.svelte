@@ -21,67 +21,63 @@
     
     <!-- תוכן -->
     <div class="relative z-10 p-6 md:p-8">
-        <div class="flex flex-col md:flex-row items-center justify-between gap-4">
-            <!-- צד ימין - טקסט וקלפי -->
-            <div class="flex-1 text-white text-center md:text-right">
-                <div class="flex items-center justify-center gap-4 mb-3">
-                    <div class="text-center">
-                        <h2 class="text-3xl md:text-4xl font-black leading-tight">
-                            <span class="inline-block transform hover:scale-110 transition-transform">משאל</span>
-                            <span class="inline-block transform hover:scale-110 transition-transform text-yellow-300"> עם</span>
-                        </h2>
-                        <p class="text-base md:text-lg font-bold text-blue-100">
-                            הקול שלך משנה את המציאות
-                        </p>
-                    </div>
-                    <span class="text-5xl md:text-6xl">🗳️</span>
-                </div>
-                
-                <div class="flex flex-wrap gap-2 justify-center md:justify-end mb-4">
-                    <div class="badge-small">
-                        <span class="text-lg">✓</span>
-                        <span>דמוקרטיה ישירה</span>
-                    </div>
-                    <div class="badge-small">
-                        <span class="text-lg">🎯</span>
-                        <span>השפעה אמיתית</span>
-                    </div>
-                    <div class="badge-small">
-                        <span class="text-lg">⚡</span>
-                        <span>תוצאות מיידיות</span>
-                    </div>
+        <!-- כותרת מרכזית עם קלפי -->
+        <div class="text-center mb-4">
+            <div class="flex items-center justify-center gap-3 mb-2">
+                <span class="text-5xl md:text-6xl">🗳️</span>
+                <div>
+                    <h2 class="text-3xl md:text-4xl font-black leading-tight">
+                        <span class="inline-block transform hover:scale-110 transition-transform">משאל</span>
+                        <span class="inline-block transform hover:scale-110 transition-transform text-yellow-300"> עם</span>
+                    </h2>
                 </div>
             </div>
+            <p class="text-base md:text-lg font-bold text-blue-100 mb-3">
+                הקול שלך משנה את המציאות
+            </p>
             
-            <!-- צד שמאל - כפתור פעולה -->
-            <div class="flex-shrink-0">
-                <button class="cta-button-small group-hover:scale-110 transition-all duration-300">
-                    <div class="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl blur-lg opacity-75 group-hover:opacity-100 transition-opacity"></div>
-                    <div class="relative bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl px-6 py-4 shadow-lg">
-                        <div class="text-center">
-                            <div class="text-2xl font-black text-purple-900 mb-1">
-                                השתתף עכשיו
-                            </div>
-                            <div class="text-xs font-bold text-purple-800">
-                                קולך נשמע! 📢
-                            </div>
+            <div class="flex flex-wrap gap-2 justify-center mb-4">
+                <div class="badge-small">
+                    <span class="text-lg">✓</span>
+                    <span>דמוקרטיה ישירה</span>
+                </div>
+                <div class="badge-small">
+                    <span class="text-lg">🎯</span>
+                    <span>השפעה אמיתית</span>
+                </div>
+                <div class="badge-small">
+                    <span class="text-lg">⚡</span>
+                    <span>תוצאות מיידיות</span>
+                </div>
+            </div>
+
+            <!-- כפתור פעולה -->
+            <button class="cta-button-small transition-all duration-300 hover:scale-105">
+                <div class="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl blur-lg opacity-75 group-hover:opacity-100 transition-opacity"></div>
+                <div class="relative bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl px-6 py-4 shadow-lg">
+                    <div class="text-center">
+                        <div class="text-2xl font-black text-purple-900 mb-1">
+                            השתתף עכשיו
+                        </div>
+                        <div class="text-xs font-bold text-purple-800">
+                            קולך נשמע! 📢
                         </div>
                     </div>
-                </button>
-            </div>
+                </div>
+            </button>
         </div>
         
         <!-- סטטיסטיקות מונפשות -->
         <div class="mt-4 grid grid-cols-3 gap-3 text-center">
-            <div class="stat-box-small">
+            <div class="stat-box">
                 <div class="text-2xl font-black text-yellow-300">12,847</div>
                 <div class="text-xs text-blue-200">משתתפים</div>
             </div>
-            <div class="stat-box-small">
+            <div class="stat-box">
                 <div class="text-2xl font-black text-yellow-300">156</div>
                 <div class="text-xs text-blue-200">משאלים פעילים</div>
             </div>
-            <div class="stat-box-small">
+            <div class="stat-box">
                 <div class="text-2xl font-black text-yellow-300">89%</div>
                 <div class="text-xs text-blue-200">שביעות רצון</div>
             </div>
