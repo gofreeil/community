@@ -20,38 +20,34 @@
     </div>
     
     <!-- תוכן -->
-    <div class="relative z-10 p-8 md:p-12">
-        <div class="flex flex-col md:flex-row items-center justify-between gap-6">
-            <!-- צד ימין - טקסט -->
+    <div class="relative z-10 p-6 md:p-8">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+            <!-- צד ימין - טקסט וקלפי -->
             <div class="flex-1 text-white text-center md:text-right">
-                <div class="inline-block mb-4">
-                    <span class="text-6xl md:text-7xl animate-bounce-slow">🗳️</span>
+                <div class="flex items-center justify-center md:justify-end gap-4 mb-3">
+                    <div>
+                        <h2 class="text-3xl md:text-4xl font-black leading-tight">
+                            <span class="inline-block transform hover:scale-110 transition-transform">משאל</span>
+                            <span class="inline-block transform hover:scale-110 transition-transform text-yellow-300"> עם</span>
+                        </h2>
+                        <p class="text-base md:text-lg font-bold text-blue-100">
+                            הקול שלך משנה את המציאות
+                        </p>
+                    </div>
+                    <span class="text-5xl md:text-6xl">🗳️</span>
                 </div>
                 
-                <h2 class="text-4xl md:text-5xl font-black mb-4 leading-tight">
-                    <span class="inline-block transform hover:scale-110 transition-transform">משאל</span>
-                    <span class="inline-block transform hover:scale-110 transition-transform text-yellow-300"> עם</span>
-                </h2>
-                
-                <p class="text-xl md:text-2xl font-bold mb-6 text-blue-100">
-                    הקול שלך משנה את המציאות
-                </p>
-                
-                <div class="text-lg font-bold text-yellow-300 mb-3">
-                    סנן:
-                </div>
-                
-                <div class="flex flex-wrap gap-3 justify-center md:justify-end mb-6">
-                    <div class="badge">
-                        <span class="text-2xl">✓</span>
+                <div class="flex flex-wrap gap-2 justify-center md:justify-end mb-4">
+                    <div class="badge-small">
+                        <span class="text-lg">✓</span>
                         <span>דמוקרטיה ישירה</span>
                     </div>
-                    <div class="badge">
-                        <span class="text-2xl">🎯</span>
+                    <div class="badge-small">
+                        <span class="text-lg">🎯</span>
                         <span>השפעה אמיתית</span>
                     </div>
-                    <div class="badge">
-                        <span class="text-2xl">⚡</span>
+                    <div class="badge-small">
+                        <span class="text-lg">⚡</span>
                         <span>תוצאות מיידיות</span>
                     </div>
                 </div>
@@ -59,14 +55,14 @@
             
             <!-- צד שמאל - כפתור פעולה -->
             <div class="flex-shrink-0">
-                <button class="cta-button group-hover:scale-110 transition-all duration-300">
-                    <div class="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl blur-xl opacity-75 group-hover:opacity-100 transition-opacity"></div>
-                    <div class="relative bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl px-8 py-6 shadow-lg">
+                <button class="cta-button-small group-hover:scale-110 transition-all duration-300">
+                    <div class="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl blur-lg opacity-75 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="relative bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl px-6 py-4 shadow-lg">
                         <div class="text-center">
-                            <div class="text-3xl font-black text-purple-900 mb-2">
+                            <div class="text-2xl font-black text-purple-900 mb-1">
                                 השתתף עכשיו
                             </div>
-                            <div class="text-sm font-bold text-purple-800">
+                            <div class="text-xs font-bold text-purple-800">
                                 קולך נשמע! 📢
                             </div>
                         </div>
@@ -76,52 +72,52 @@
         </div>
         
         <!-- סטטיסטיקות מונפשות -->
-        <div class="mt-8 grid grid-cols-3 gap-4 text-center">
-            <div class="stat-box">
-                <div class="text-3xl font-black text-yellow-300">12,847</div>
-                <div class="text-sm text-blue-200">משתתפים</div>
+        <div class="mt-4 grid grid-cols-3 gap-3 text-center">
+            <div class="stat-box-small">
+                <div class="text-2xl font-black text-yellow-300">12,847</div>
+                <div class="text-xs text-blue-200">משתתפים</div>
             </div>
-            <div class="stat-box">
-                <div class="text-3xl font-black text-yellow-300">156</div>
-                <div class="text-sm text-blue-200">משאלים פעילים</div>
+            <div class="stat-box-small">
+                <div class="text-2xl font-black text-yellow-300">156</div>
+                <div class="text-xs text-blue-200">משאלים פעילים</div>
             </div>
-            <div class="stat-box">
-                <div class="text-3xl font-black text-yellow-300">89%</div>
-                <div class="text-sm text-blue-200">שביעות רצון</div>
+            <div class="stat-box-small">
+                <div class="text-2xl font-black text-yellow-300">89%</div>
+                <div class="text-xs text-blue-200">שביעות רצון</div>
             </div>
         </div>
 
         <!-- דוגמה למשאל - מיחזור אשפה -->
-        <div class="mt-8 bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-            <div class="flex items-start gap-3 mb-4">
-                <span class="text-3xl">♻️</span>
+        <div class="mt-4 bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+            <div class="flex items-start gap-2 mb-3">
+                <span class="text-2xl">♻️</span>
                 <div class="flex-1">
-                    <h3 class="text-xl font-bold text-white mb-2">משאל לדוגמה</h3>
-                    <p class="text-white/90 text-base leading-relaxed">
+                    <h3 class="text-lg font-bold text-white mb-1">משאל לדוגמה</h3>
+                    <p class="text-white/90 text-sm leading-relaxed">
                         האם אתם מעוניינים לעבור למערכת מיחזור אשפה קהילתית חדשה שתוזיל את העלויות ב-30% ותשפר את השירות?
                     </p>
                 </div>
             </div>
             
-            <div class="space-y-3">
+            <div class="space-y-2">
                 <button class="poll-option poll-yes">
-                    <span class="text-xl">✅</span>
-                    <span class="font-bold">כן, אני בעד!</span>
-                    <span class="text-sm opacity-80">(67%)</span>
+                    <span class="text-lg">✅</span>
+                    <span class="font-bold text-sm">כן, אני בעד!</span>
+                    <span class="text-xs opacity-80">(67%)</span>
                 </button>
                 <button class="poll-option poll-no">
-                    <span class="text-xl">❌</span>
-                    <span class="font-bold">לא, אני מעדיף להשאר במצב הנוכחי</span>
-                    <span class="text-sm opacity-80">(23%)</span>
+                    <span class="text-lg">❌</span>
+                    <span class="font-bold text-sm">לא, אני מעדיף להשאר במצב הנוכחי</span>
+                    <span class="text-xs opacity-80">(23%)</span>
                 </button>
                 <button class="poll-option poll-maybe">
-                    <span class="text-xl">🤔</span>
-                    <span class="font-bold">צריך לבדוק עוד פרטים</span>
-                    <span class="text-sm opacity-80">(10%)</span>
+                    <span class="text-lg">🤔</span>
+                    <span class="font-bold text-sm">צריך לבדוק עוד פרטים</span>
+                    <span class="text-xs opacity-80">(10%)</span>
                 </button>
             </div>
             
-            <div class="mt-4 text-center text-sm text-blue-200">
+            <div class="mt-3 text-center text-xs text-blue-200">
                 <span class="font-bold">1,247</span> תושבים הצביעו עד כה
             </div>
         </div>
@@ -134,7 +130,7 @@
 
 <style>
     .referendum-banner {
-        min-height: 400px;
+        min-height: 300px;
         transition: transform 0.3s ease;
     }
     
@@ -188,12 +184,12 @@
     .badge {
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.375rem;
         background: rgba(255, 255, 255, 0.2);
         backdrop-filter: blur(10px);
-        padding: 0.5rem 1rem;
+        padding: 0.375rem 0.75rem;
         border-radius: 9999px;
-        font-size: 0.875rem;
+        font-size: 0.75rem;
         font-weight: 600;
         border: 1px solid rgba(255, 255, 255, 0.3);
         transition: all 0.3s ease;
@@ -218,8 +214,8 @@
     .stat-box {
         background: rgba(255, 255, 255, 0.1);
         backdrop-filter: blur(10px);
-        padding: 1rem;
-        border-radius: 1rem;
+        padding: 0.75rem;
+        border-radius: 0.75rem;
         border: 1px solid rgba(255, 255, 255, 0.2);
         transition: all 0.3s ease;
     }
@@ -250,9 +246,9 @@
         width: 100%;
         display: flex;
         align-items: center;
-        gap: 0.75rem;
-        padding: 1rem 1.5rem;
-        border-radius: 1rem;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        border-radius: 0.75rem;
         border: 2px solid rgba(255, 255, 255, 0.3);
         background: rgba(255, 255, 255, 0.1);
         backdrop-filter: blur(10px);
@@ -285,7 +281,7 @@
     
     @media (max-width: 768px) {
         .referendum-banner {
-            min-height: 500px;
+            min-height: 400px;
         }
     }
 </style>
