@@ -16,9 +16,9 @@
     <div class="flex flex-wrap justify-center gap-2 p-1">
         {#each categories as category}
             <button
-                class="flex items-center gap-2 bg-gradient-to-br from-white to-gray-200 hover:from-blue-100 hover:to-white text-gray-900 px-4 py-2 rounded-xl text-sm font-bold shadow-lg transition-all hover:scale-105 border border-purple-300"
+                class="flex items-center gap-1.5 bg-gradient-to-br from-white to-gray-200 hover:from-blue-100 hover:to-white text-gray-900 px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg transition-all hover:scale-105 border border-purple-300"
             >
-                <span class="text-lg">{category.icon}</span>
+                <span class="text-base">{category.icon}</span>
                 {category.label}
             </button>
         {/each}
