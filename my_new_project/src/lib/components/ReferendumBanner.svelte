@@ -8,7 +8,7 @@
     });
 </script>
 
-<div class="referendum-banner relative overflow-hidden rounded-2xl shadow-2xl my-8 group">
+<div class="referendum-banner relative overflow-hidden rounded-2xl shadow-2xl my-8">
     <!-- רקע גרדיאנט -->
     <div class="absolute inset-0 bg-gradient-to-br from-purple-600 via-blue-600 to-cyan-500"></div>
     
@@ -46,7 +46,6 @@
 
             <!-- כפתור פעולה -->
             <button class="cta-button-small transition-all duration-300 hover:scale-105">
-                <div class="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl blur-lg opacity-75 group-hover:opacity-100 transition-opacity"></div>
                 <div class="relative bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl px-6 py-4 shadow-lg">
                     <div class="text-center">
                         <div class="text-2xl font-black text-purple-900 mb-1">
