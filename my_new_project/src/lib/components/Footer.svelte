@@ -9,7 +9,8 @@
             <a 
                 href="https://www.melecshop.com/" 
                 target="_blank"
-                class="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer"
+                style="cursor: pointer;"
+                class="flex items-center gap-3 hover:opacity-80 transition-opacity"
             >
                 <img
                     src="/images/יוצאים לחירות תמונה ויקיפדיה.png"
