@@ -118,49 +118,6 @@
         min-height: 300px;
     }
     
-    @keyframes gradient {
-        0%, 100% {
-            background-position: 0% 50%;
-        }
-        50% {
-            background-position: 100% 50%;
-        }
-    }
-    
-    .animate-gradient {
-        background-size: 200% 200%;
-        animation: gradient 8s ease infinite;
-    }
-    
-    .wave {
-        position: absolute;
-        width: 200%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-        animation: wave 8s linear infinite;
-    }
-    
-    .wave1 {
-        animation-delay: 0s;
-    }
-    
-    .wave2 {
-        animation-delay: 2s;
-    }
-    
-    .wave3 {
-        animation-delay: 4s;
-    }
-    
-    @keyframes wave {
-        0% {
-            transform: translateX(-100%) skewX(-15deg);
-        }
-        100% {
-            transform: translateX(100%) skewX(-15deg);
-        }
-    }
-    
     .badge {
         display: inline-flex;
         align-items: center;
@@ -203,23 +160,6 @@
     .stat-box:hover {
         background: rgba(255, 255, 255, 0.2);
         transform: translateY(-2px);
-    }
-    
-    @keyframes bounce-slow {
-        0%, 100% {
-            transform: translateY(0);
-        }
-        50% {
-            transform: translateY(-10px);
-        }
-    }
-    
-    .animate-bounce-slow {
-        animation: bounce-slow 3s ease-in-out infinite;
-    }
-    
-    .delay-1000 {
-        animation-delay: 1s;
     }
 
     .poll-option {
