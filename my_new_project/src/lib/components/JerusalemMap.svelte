@@ -19,6 +19,7 @@
     <div class="flex flex-wrap justify-center gap-2 p-1">
         {#each categories as category}
             <button
+                title="לחץ כדי לסנן במפה"
                 class="flex items-center gap-1.5 bg-gradient-to-br from-white to-gray-200 hover:from-blue-100 hover:to-white text-gray-900 px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg transition-all hover:scale-105 border border-purple-300"
             >
                 <span class="text-base">{category.icon}</span>
