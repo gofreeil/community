@@ -1,5 +1,6 @@
 <script lang="ts">
     const categories = [
+        { id: "benefits", label: "כל היתרונות", icon: "⭐" },
         { id: "gemachim", label: 'גמ"חים', icon: "🎁" },
         { id: "giveaway", label: "למסירה", icon: "📦" },
         { id: "business", label: "בייבי סיטר", icon: "👶" },
