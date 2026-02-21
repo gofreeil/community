@@ -91,7 +91,7 @@
                             הצטרף עכשיו 🔥
                         </button>
                         <div class="mt-4 text-xs text-yellow-100 transition-colors duration-300 group-hover:text-white group-hover:font-bold">
-                            <span class="font-bold">127</span> חברים פעילים
+                            <span class="font-bold">127</span> חברים פעילים • <span class="font-bold">23</span> מחוברים כעת
                         </div>
                     </div>
                 </div>
