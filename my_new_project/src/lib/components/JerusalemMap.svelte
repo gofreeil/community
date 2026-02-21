@@ -32,7 +32,7 @@
     </div>
 
     <!-- כפתור הרמת יד מיוחד -->
-    <div class="flex justify-center">
+    <div class="flex justify-end px-1">
         <button
             title="הרם יד לשאול שאלה או להציע רעיון"
             class="relative group overflow-hidden bg-gradient-to-br from-red-500 via-pink-500 to-purple-600 hover:from-red-400 hover:via-pink-400 hover:to-purple-500 text-white px-8 py-4 rounded-2xl font-black text-lg shadow-2xl transition-all hover:scale-110 border-4 border-white/30 hover:border-white/50"
@@ -41,7 +41,6 @@
             <div class="relative flex items-center gap-3">
                 <span class="text-3xl animate-wave">✋</span>
                 <span>הרמת יד</span>
-                <span class="text-2xl">💡</span>
             </div>
         </button>
     </div>
