@@ -20,9 +20,9 @@
     let showHelpMenu = false;
 
     const helpOptions = [
+        { id: 3, text: "הלך ילד לאיבוד", icon: "👶" },
         { id: 1, text: "זקוק לעזרה למבוגר", icon: "👴" },
         { id: 2, text: "זקוק לעזרה עם הרכב להתנעה", icon: "🚗" },
-        { id: 3, text: "הלך ילד לאיבוד", icon: "👶" },
         { id: 4, text: "אחר - כתוב את העזרה הזקוקה לך", icon: "✍️" }
     ];
 
