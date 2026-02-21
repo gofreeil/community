@@ -107,12 +107,12 @@
                     {viewMode === 'map' ? 'עבור לתצוגת' : 'עבור לתצוגת'}
                 </text>
                 <text 
-                    x="50" 
+                    x="52" 
                     y="58" 
                     fill="white" 
                     font-size="14" 
                     font-weight="bold" 
-                    transform="rotate(-45 50 58)"
+                    transform="rotate(-45 52 58)"
                     text-anchor="middle"
                     class="pointer-events-none"
                 >
