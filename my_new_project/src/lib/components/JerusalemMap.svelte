@@ -74,24 +74,24 @@
                     class="transition-all duration-500"
                 />
                 <text 
-                    x="48" 
+                    x="50" 
                     y="42" 
                     fill="white" 
                     font-size="14" 
                     font-weight="bold" 
-                    transform="rotate(-45 48 42)"
+                    transform="rotate(-45 50 42)"
                     text-anchor="middle"
                     class="pointer-events-none"
                 >
                     {viewMode === 'map' ? 'עבור לתצוגת' : 'עבור לתצוגת'}
                 </text>
                 <text 
-                    x="48" 
+                    x="50" 
                     y="58" 
                     fill="white" 
                     font-size="14" 
                     font-weight="bold" 
-                    transform="rotate(-45 48 58)"
+                    transform="rotate(-45 50 58)"
                     text-anchor="middle"
                     class="pointer-events-none"
                 >

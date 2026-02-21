@@ -124,5 +124,24 @@
                 </div>
             </div>
         </a>
+
+        <!-- Ad 6 - Empty Ad Space -->
+        <a
+            href="mailto:contact@example.com?subject=מעוניין בפרסום"
+            class="block overflow-hidden rounded-lg border-4 border-dashed border-purple-400 bg-purple-50 shadow-lg transition-all hover:scale-105 hover:border-purple-500 hover:bg-purple-100"
+        >
+            <div
+                class="flex h-48 flex-col items-center justify-center p-4 text-center"
+            >
+                <div class="mb-2 text-4xl">🎯</div>
+                <p class="text-sm font-bold text-purple-700">מקום פרסום</p>
+                <p class="text-xs text-purple-600">זה יכול להיות שלך!</p>
+                <div
+                    class="mt-2 rounded bg-purple-500 px-3 py-1 text-xs font-bold text-white"
+                >
+                    לחץ לפרטים
+                </div>
+            </div>
+        </a>
     </div>
 </aside>
