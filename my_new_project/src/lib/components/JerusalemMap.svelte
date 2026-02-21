@@ -17,6 +17,14 @@
     let isFlipping = false;
     let expandedCategories: Set<string> = new Set();
     let isLoggedIn = false; // במציאות זה יבוא מניהול משתמשים
+    let showHelpMenu = false;
+
+    const helpOptions = [
+        { id: 1, text: "זקוק לעזרה למבוגר", icon: "👴" },
+        { id: 2, text: "זקוק לעזרה עם הרכב להתנעה", icon: "🚗" },
+        { id: 3, text: "הלך ילד לאיבוד", icon: "👶" },
+        { id: 4, text: "אחר - כתוב את העזרה הזקוקה לך", icon: "✍️" }
+    ];
 
     function handleViewToggle() {
         isFlipping = true;
@@ -55,6 +63,20 @@
         }
         // כאן תוכל להוסיף לוגיקה להוספת פריט
         alert(`הוספת פריט לקטגוריה: ${categories.find(c => c.id === categoryId)?.label}`);
+    }
+
+    function handleHelpRequest(optionId: number) {
+        const option = helpOptions.find(o => o.id === optionId);
+        if (optionId === 4) {
+            // אפשרות "אחר" - פתח טופס
+            const customHelp = prompt('תאר את העזרה שאתה זקוק לה:');
+            if (customHelp) {
+                alert(`בקשת עזרה נשלחה: ${customHelp}`);
+            }
+        } else {
+            alert(`בקשת עזרה נשלחה: ${option?.text}`);
+        }
+        showHelpMenu = false;
     }
 </script>
 
@@ -223,11 +245,11 @@
             <button
                 on:click={handleAddAdvantage}
                 title="הוסף יתרון חדש לשכונה"
-                class="relative group overflow-hidden bg-gradient-to-br from-green-500 via-emerald-500 to-teal-600 hover:from-green-400 hover:via-emerald-400 hover:to-teal-500 text-white px-3 py-1.5 rounded-lg font-bold text-lg shadow-xl transition-all hover:scale-105 border-2 border-purple-600"
+                class="relative group overflow-hidden bg-gradient-to-br from-green-500 via-emerald-500 to-teal-600 hover:from-green-400 hover:via-emerald-400 hover:to-teal-500 text-white px-3 py-1.5 rounded-lg font-bold text-base shadow-xl transition-all hover:scale-105 border-2 border-purple-600"
             >
                 <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer-once"></div>
                 <div class="relative flex items-center gap-1.5">
-                    <span class="text-xs">➕</span>
+                    <span class="text-[10px]">➕</span>
                     <span>הוסף</span>
                 </div>
             </button>
@@ -236,6 +258,7 @@
         <!-- כפתור הרמת יד מיוחד - בתחתית המפה -->
         <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 z-20">
             <button
+                on:click={() => showHelpMenu = !showHelpMenu}
                 title="בקש עזרה מהקהילה"
                 class="relative group overflow-hidden bg-gradient-to-br from-red-500 via-pink-500 to-purple-600 hover:from-red-400 hover:via-pink-400 hover:to-purple-500 text-white px-6 py-3 rounded-xl font-bold text-base shadow-xl transition-all hover:scale-105 border-4 border-purple-600"
             >
@@ -245,6 +268,32 @@
                     <span>הרמת יד</span>
                 </div>
             </button>
+
+            <!-- תפריט עזרה -->
+            {#if showHelpMenu}
+                <div class="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 w-80 bg-white rounded-xl shadow-2xl border-2 border-purple-600 overflow-hidden animate-slideDown">
+                    <div class="bg-gradient-to-r from-red-500 to-pink-500 p-3 text-center">
+                        <h3 class="text-white font-bold text-lg">באיזו עזרה אתה זקוק?</h3>
+                    </div>
+                    <div class="p-2">
+                        {#each helpOptions as option}
+                            <button
+                                on:click={() => handleHelpRequest(option.id)}
+                                class="w-full flex items-center gap-3 p-3 hover:bg-red-50 rounded-lg transition-colors text-right border-b border-gray-200 last:border-b-0"
+                            >
+                                <span class="text-2xl">{option.icon}</span>
+                                <span class="text-gray-800 font-medium text-sm">{option.text}</span>
+                            </button>
+                        {/each}
+                    </div>
+                    <button
+                        on:click={() => showHelpMenu = false}
+                        class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 py-2 text-sm font-bold transition-colors"
+                    >
+                        ביטול
+                    </button>
+                </div>
+            {/if}
         </div>
     </div>
 </div>
