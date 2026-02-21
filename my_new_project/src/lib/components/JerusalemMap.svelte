@@ -120,34 +120,34 @@
         <!-- כפתור מעבר תצוגה - משולש מקופל בפינה -->
         <button
             on:click={handleViewToggle}
-            class="page-corner absolute top-0 right-0 z-10 transition-all duration-500 hover:scale-110"
+            class="page-corner absolute top-0 left-0 z-10 transition-all duration-500 hover:scale-110"
             class:flipping={isFlipping}
         >
             <svg width="100" height="100" viewBox="0 0 100 100" class="transition-transform duration-500">
                 <polygon 
-                    points="100,0 100,100 0,0" 
+                    points="0,0 100,0 0,100" 
                     fill="#9333ea"
                     class="transition-all duration-500"
                 />
                 <text 
-                    x="70" 
+                    x="30" 
                     y="35" 
                     fill="white" 
                     font-size="9" 
                     font-weight="bold" 
-                    transform="rotate(-45 70 35)"
+                    transform="rotate(45 30 35)"
                     text-anchor="middle"
                     class="pointer-events-none"
                 >
                     {viewMode === 'map' ? 'עבור לתצוגת' : 'עבור לתצוגת'}
                 </text>
                 <text 
-                    x="70" 
+                    x="30" 
                     y="45" 
                     fill="white" 
                     font-size="9" 
                     font-weight="bold" 
-                    transform="rotate(-45 70 45)"
+                    transform="rotate(45 30 45)"
                     text-anchor="middle"
                     class="pointer-events-none"
                 >
