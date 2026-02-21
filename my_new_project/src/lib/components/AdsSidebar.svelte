@@ -72,24 +72,6 @@
                 </div>
             </a>
         {/each}
-        <a
-            href="https://index-chi-sage.vercel.app/"
-            target="_blank"
-            class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105"
-        >
-            <img
-                src="/images/partners/השקעות קבוצתיות.png"
-                alt="השקעות קבוצתיות"
-                class="h-auto w-full object-cover"
-            />
-            <div
-                class="bg-gradient-to-r from-amber-600 to-orange-600 p-3 text-center"
-            >
-                <p class="text-white font-bold text-xs leading-tight">
-                    התחבר עם קבוצת המשקיעים שלנו
-                </p>
-            </div>
-        </a>
 
         <!-- Ad 3 - מערכת לגידול ביתי -->
         <a
@@ -151,26 +133,18 @@
                 </div>
             </div>
         </a>
-
-        <!-- Ad 6 - מיצוי זכויות תושבים -->
-        <a
-            href="https://right-to-live.vercel.app/"
-            target="_blank"
-            class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105"
-        >
-            <img
-                src="/images/partners/מיצוי_זכויות.svg"
-                alt="מיצוי זכויות תושבים"
-                class="h-auto w-full object-cover"
-            />
-            <div
-                class="bg-gradient-to-r from-blue-700 to-blue-900 p-3 text-center"
-            >
-                <p class="text-white font-bold text-xs leading-tight">
-                    מערכת פניות ובקרת תושבים על העיריות - מצה את זכויותיך!
-                </p>
-            </div>
-        </a>
     </div>
 </aside>
 
+<style>
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
