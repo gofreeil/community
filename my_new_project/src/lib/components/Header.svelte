@@ -252,7 +252,14 @@
                 </div>
             </div>
             {#if true}
-                <div class="flex items-center">
+                <div class="flex items-center gap-4">
+                    <!-- מספר גולשים -->
+                    <div class="flex items-center gap-2 bg-blue-900/30 px-3 py-2 rounded-lg border border-blue-500/30">
+                        <span class="text-green-400 text-xl">●</span>
+                        <span class="text-white text-sm font-bold">47</span>
+                        <span class="text-gray-300 text-sm">מחוברים</span>
+                    </div>
+
                     {#if currentUser}
                         {@const userName = currentUser.username ?? "U"}
                         <div class="flex items-center space-x-3">
