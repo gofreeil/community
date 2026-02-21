@@ -106,15 +106,15 @@
             </div>
         </a>
 
-        <!-- Ad 5 - ביקורת על העיריה - יוצאים לחירות -->
+        <!-- Ad 5 - ביקורת על העיריה -->
         <a
             href="https://right-to-live.vercel.app/"
             target="_blank"
             class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105"
         >
             <img
-                src="/images/יוצאים לחירות תמונה ויקיפדיה.png"
-                alt="ביקורת על העיריה - יוצאים לחירות"
+                src="/images/ad_neighborhoods.png"
+                alt="ביקורת על העיריה"
                 class="h-auto w-full object-cover"
             />
             <div
