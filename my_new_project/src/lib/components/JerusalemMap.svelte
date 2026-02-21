@@ -64,31 +64,31 @@
             class="page-corner absolute top-0 left-0 z-10 transition-all duration-500 hover:scale-110"
             class:flipping={isFlipping}
         >
-            <svg width="100" height="100" viewBox="0 0 100 100" class="transition-transform duration-500">
+            <svg width="130" height="130" viewBox="0 0 130 130" class="transition-transform duration-500">
                 <path 
-                    d="M 0,24 Q 0,0 24,0 L 100,0 L 0,100 Z" 
+                    d="M 0,24 Q 0,0 24,0 L 130,0 L 0,130 Z" 
                     fill="#9333ea"
                     class="transition-all duration-500"
                 />
                 <text 
-                    x="38" 
-                    y="35" 
+                    x="50" 
+                    y="45" 
                     fill="white" 
-                    font-size="12" 
+                    font-size="14" 
                     font-weight="bold" 
-                    transform="rotate(-45 38 35)"
+                    transform="rotate(-45 50 45)"
                     text-anchor="middle"
                     class="pointer-events-none"
                 >
                     {viewMode === 'map' ? 'עבור לתצוגת' : 'עבור לתצוגת'}
                 </text>
                 <text 
-                    x="38" 
-                    y="48" 
+                    x="50" 
+                    y="60" 
                     fill="white" 
-                    font-size="12" 
+                    font-size="14" 
                     font-weight="bold" 
-                    transform="rotate(-45 38 48)"
+                    transform="rotate(-45 50 60)"
                     text-anchor="middle"
                     class="pointer-events-none"
                 >
