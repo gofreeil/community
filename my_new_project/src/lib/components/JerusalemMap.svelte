@@ -114,7 +114,7 @@
             </div>
         {:else}
             <!-- תצוגת רשימה -->
-            <div class="w-full h-[550px] overflow-y-auto p-6" style="border-radius: 20px;">
+            <div class="w-full h-[550px] overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900/20" style="border-radius: 20px;">
                 <h3 class="text-2xl font-bold text-white mb-6 text-center">כל היתרונות בשכונה</h3>
                 <div class="space-y-3">
                     {#each categories.filter(cat => cat.id !== 'benefits') as category}
@@ -236,6 +236,25 @@
         }
     }
 
+    @keyframes peelPage {
+        0% {
+            transform: rotate(0deg) scale(1);
+            transform-origin: top left;
+        }
+        50% {
+            transform: rotate(-15deg) scale(1.3);
+            transform-origin: top left;
+        }
+        100% {
+            transform: rotate(0deg) scale(1);
+            transform-origin: top left;
+        }
+    }
+
+    .page-corner.flipping {
+        animation: peelPage 0.5s ease-in-out;
+    }
+
     @keyframes slideDown {
         from {
             opacity: 0;
@@ -253,5 +272,25 @@
 
     iframe {
         filter: contrast(1.1) brightness(0.95);
+    }
+
+    /* Custom scrollbar styling */
+    :global(.scrollbar-thin::-webkit-scrollbar) {
+        width: 8px;
+    }
+
+    :global(.scrollbar-thin::-webkit-scrollbar-track) {
+        background: rgba(88, 28, 135, 0.2);
+        border-radius: 10px;
+        margin: 20px 0;
+    }
+
+    :global(.scrollbar-thin::-webkit-scrollbar-thumb) {
+        background: #9333ea;
+        border-radius: 10px;
+    }
+
+    :global(.scrollbar-thin::-webkit-scrollbar-thumb:hover) {
+        background: #a855f7;
     }
 </style>
