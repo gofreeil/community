@@ -10,7 +10,7 @@
         { id: "education", label: "חוגים", icon: "🎨", items: ["חוגי ספורט", "חוגי אומנות", "חוגי מוזיקה", "חוגי מדעים"] },
         { id: "kids", label: "לילדים", icon: "🧒", items: ["גני משחקים", "פעילויות לילדים", "ספריות לילדים", "מועדוניות"] },
         { id: "shops", label: "חנויות", icon: "🏪", items: ["מכולת", "מאפייה", "בית מרקחת", "חנות בגדים", "דואר", "מסעדות", "בנקים", "כספומט"] },
-        { id: "transport", label: "טרמפים", icon: "🚗", items: ["טרמפים לירושלים", "טרמפים לבני ברק", "טרמפים לתל אביב"] },
+        { id: "transport", label: "טרמפים", icon: "🚗", items: ["דרוש טרמפ לירושלים", "נוסע לירושלים", "דרוש טרמפ לבני ברק", "נוסע לבני ברק", "דרוש טרמפ לתל אביב", "נוסע לתל אביב"] },
     ];
 
     let viewMode: 'map' | 'list' = 'map';
