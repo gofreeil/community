@@ -55,7 +55,7 @@
 
     <!-- Map Container -->
     <div
-        class="relative w-full rounded-3xl border-4 border-purple-600 overflow-hidden shadow-2xl bg-[#0f172a]"
+        class="relative w-full rounded-3xl border-4 border-purple-600 shadow-2xl bg-[#0f172a] mb-8"
     >
         <!-- כפתור מעבר תצוגה - משולש מקופל בפינה -->
         <button
@@ -98,7 +98,7 @@
 
         {#if viewMode === 'map'}
             <!-- תצוגת מפה -->
-            <div class="w-full h-[550px]">
+            <div class="w-full h-[550px] overflow-hidden rounded-3xl">
                 <iframe
                     title="מפת ירושלים"
                     width="100%"
@@ -113,7 +113,7 @@
             </div>
         {:else}
             <!-- תצוגת רשימה -->
-            <div class="w-full h-[550px] overflow-y-auto p-6">
+            <div class="w-full h-[550px] overflow-y-auto p-6 rounded-3xl">
                 <h3 class="text-2xl font-bold text-white mb-6 text-center">כל היתרונות בשכונה</h3>
                 <div class="space-y-3">
                     {#each categories.filter(cat => cat.id !== 'benefits') as category}
