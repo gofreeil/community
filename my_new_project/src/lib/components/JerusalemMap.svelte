@@ -1,20 +1,21 @@
 <script lang="ts">
     const categories = [
         { id: "benefits", label: "כל היתרונות", icon: "⭐" },
-        { id: "gemachim", label: 'גמ"חים', icon: "🎁" },
-        { id: "giveaway", label: "למסירה", icon: "📦" },
-        { id: "business", label: "בייבי סיטר", icon: "👶" },
-        { id: "minyanim", label: "יהדות", icon: "✡️" },
-        { id: "realestate", label: "בתי הארחה לשבת", icon: "🏠" },
-        { id: "security", label: "צימרים", icon: "🏡" },
-        { id: "education", label: "חוגים", icon: "🎨" },
-        { id: "kids", label: "לילדים", icon: "🧒" },
-        { id: "shops", label: "חנויות", icon: "🏪" },
-        { id: "transport", label: "טרמפים", icon: "🚗" },
+        { id: "gemachim", label: 'גמ"חים', icon: "🎁", items: ["גמ\"ח ספרים", "גמ\"ח כלים", "גמ\"ח ציוד לתינוקות", "גמ\"ח בגדים"] },
+        { id: "giveaway", label: "למסירה", icon: "📦", items: ["רהיטים", "מוצרי חשמל", "ספרים", "בגדים", "צעצועים"] },
+        { id: "business", label: "בייבי סיטר", icon: "👶", items: ["בייבי סיטר בשעות הערב", "בייבי סיטר סופי שבוע", "בייבי סיטר קבוע"] },
+        { id: "minyanim", label: "יהדות", icon: "✡️", items: ["מניינים לתפילה", "שיעורי תורה", "מקוואות", "בתי כנסת"] },
+        { id: "realestate", label: "בתי הארחה לשבת", icon: "🏠", items: ["בתי הארחה משפחתיים", "בתי הארחה לזוגות", "בתי הארחה ליחידים"] },
+        { id: "security", label: "צימרים", icon: "🏡", items: ["צימרים זוגיים", "צימרים משפחתיים", "צימרים עם בריכה"] },
+        { id: "education", label: "חוגים", icon: "🎨", items: ["חוגי ספורט", "חוגי אומנות", "חוגי מוזיקה", "חוגי מדעים"] },
+        { id: "kids", label: "לילדים", icon: "🧒", items: ["גני משחקים", "פעילויות לילדים", "ספריות לילדים", "מועדוניות"] },
+        { id: "shops", label: "חנויות", icon: "🏪", items: ["מכולת", "מאפייה", "בית מרקחת", "חנות בגדים"] },
+        { id: "transport", label: "טרמפים", icon: "🚗", items: ["טרמפים לירושלים", "טרמפים לבני ברק", "טרמפים לתל אביב"] },
     ];
 
     let viewMode: 'map' | 'list' = 'map';
     let isFlipping = false;
+    let expandedCategories: Set<string> = new Set();
 
     function handleViewToggle() {
         isFlipping = true;
@@ -22,6 +23,15 @@
             viewMode = viewMode === 'map' ? 'list' : 'map';
             isFlipping = false;
         }, 250);
+    }
+
+    function toggleCategory(categoryId: string) {
+        if (expandedCategories.has(categoryId)) {
+            expandedCategories.delete(categoryId);
+        } else {
+            expandedCategories.add(categoryId);
+        }
+        expandedCategories = expandedCategories; // trigger reactivity
     }
 </script>
 
@@ -107,16 +117,44 @@
                 <h3 class="text-2xl font-bold text-white mb-6 text-center">רשימת שירותים בשכונה</h3>
                 <div class="space-y-3">
                     {#each categories.filter(cat => cat.id !== 'benefits') as category}
-                        <div class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-500/30 rounded-xl p-4 hover:border-purple-500 transition-all hover:scale-102 cursor-pointer">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-3">
-                                    <span class="text-3xl">{category.icon}</span>
-                                    <span class="text-white font-bold text-lg">{category.label}</span>
+                        <div class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-500/30 rounded-xl overflow-hidden transition-all">
+                            <button 
+                                on:click={() => toggleCategory(category.id)}
+                                class="w-full p-4 hover:border-purple-500 transition-all hover:bg-purple-900/20 cursor-pointer"
+                            >
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-3xl">{category.icon}</span>
+                                        <span class="text-white font-bold text-lg">{category.label}</span>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-purple-400 text-sm">{category.items?.length || 0} פריטים</span>
+                                        <svg 
+                                            class="w-6 h-6 text-purple-400 transition-transform duration-300 {expandedCategories.has(category.id) ? 'rotate-180' : ''}"
+                                            fill="none" 
+                                            stroke="currentColor" 
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
                                 </div>
-                                <button class="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors">
-                                    צפה בפרטים
-                                </button>
-                            </div>
+                            </button>
+                            
+                            {#if expandedCategories.has(category.id) && category.items}
+                                <div class="px-4 pb-4 space-y-2 animate-slideDown">
+                                    {#each category.items as item}
+                                        <div class="bg-purple-900/20 border border-purple-500/20 rounded-lg p-3 hover:bg-purple-900/30 hover:border-purple-500/40 transition-all cursor-pointer">
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-white text-sm">• {item}</span>
+                                                <button class="bg-purple-600 hover:bg-purple-500 text-white px-3 py-1 rounded text-xs font-bold transition-colors">
+                                                    פרטים
+                                                </button>
+                                            </div>
+                                        </div>
+                                    {/each}
+                                </div>
+                            {/if}
                         </div>
                     {/each}
                 </div>
@@ -195,6 +233,21 @@
         100% {
             transform: rotateY(0deg);
         }
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            max-height: 0;
+        }
+        to {
+            opacity: 1;
+            max-height: 500px;
+        }
+    }
+
+    .animate-slideDown {
+        animation: slideDown 0.3s ease-out;
     }
 
     iframe {
