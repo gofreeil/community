@@ -1,12 +1,5 @@
 {
-  "buildCommand": "cd my_new_project && npm install && npm run build",
-  "outputDirectory": "my_new_project/.svelte-kit",
+  "buildCommand": "cd my_new_project && npm run build",
   "installCommand": "cd my_new_project && npm install",
-  "framework": "sveltekit",
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/"
-    }
-  ]
+  "framework": null
 }
