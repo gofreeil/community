@@ -33,6 +33,7 @@ body {
     background-color: var(--bg-deep);
     color: #f8fafc;
     direction: rtl;
+    font-size: 16.5px;
 }
 
 * {
