@@ -36,11 +36,11 @@
         <div class="flex justify-end px-1">
             <button
                 title="הרם יד לשאול שאלה או להציע רעיון"
-                class="relative group overflow-hidden bg-gradient-to-br from-red-500 via-pink-500 to-purple-600 hover:from-red-400 hover:via-pink-400 hover:to-purple-500 text-white px-8 py-4 rounded-2xl font-black text-lg shadow-2xl transition-all hover:scale-110 border-4 border-white/30 hover:border-white/50"
+                class="relative group overflow-hidden bg-gradient-to-br from-red-500 via-pink-500 to-purple-600 hover:from-red-400 hover:via-pink-400 hover:to-purple-500 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-xl transition-all hover:scale-105 border-2 border-white/30 hover:border-white/50"
             >
-                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer"></div>
-                <div class="relative flex items-center gap-3">
-                    <span class="text-3xl animate-wave">✋</span>
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer-once"></div>
+                <div class="relative flex items-center gap-2">
+                    <span class="text-xl animate-wave-once">✋</span>
                     <span>הרמת יד</span>
                 </div>
             </button>
@@ -70,13 +70,13 @@
         }
     }
 
-    .animate-shimmer {
-        animation: shimmer 3s infinite;
+    .animate-shimmer-once {
+        animation: shimmer 2s ease-in-out 1;
     }
 
-    .animate-wave {
+    .animate-wave-once {
         display: inline-block;
-        animation: wave 2s ease-in-out infinite;
+        animation: wave 1.5s ease-in-out 1;
     }
 </style>
 
