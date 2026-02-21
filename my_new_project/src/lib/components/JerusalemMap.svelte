@@ -61,6 +61,44 @@
         style="border-radius: 24px; transform-style: preserve-3d;"
         class:flipping-container={isFlipping}
     >
+        <!-- כפתור מעבר תצוגה - משולש מקופל בפינה -->
+        <button
+            on:click={handleViewToggle}
+            class="page-corner absolute top-0 left-0 z-10 transition-all duration-500 hover:scale-110"
+            class:flipping={isFlipping}
+        >
+            <svg width="130" height="130" viewBox="0 0 130 130" class="transition-transform duration-500">
+                <path 
+                    d="M 0,24 Q 0,0 24,0 L 130,0 L 0,130 Z" 
+                    fill="#9333ea"
+                    class="transition-all duration-500"
+                />
+                <text 
+                    x="48" 
+                    y="42" 
+                    fill="white" 
+                    font-size="14" 
+                    font-weight="bold" 
+                    transform="rotate(-45 48 42)"
+                    text-anchor="middle"
+                    class="pointer-events-none"
+                >
+                    {viewMode === 'map' ? 'עבור לתצוגת' : 'עבור לתצוגת'}
+                </text>
+                <text 
+                    x="48" 
+                    y="58" 
+                    fill="white" 
+                    font-size="14" 
+                    font-weight="bold" 
+                    transform="rotate(-45 48 58)"
+                    text-anchor="middle"
+                    class="pointer-events-none"
+                >
+                    {viewMode === 'map' ? 'רשימה' : 'מפה'}
+                </text>
+            </svg>
+        </button>
 
         {#if viewMode === 'map'}
             <!-- תצוגת מפה -->
@@ -253,6 +291,11 @@
 
     iframe {
         filter: contrast(1.1) brightness(0.95);
+    }
+
+    /* Hide Google Maps controls */
+    iframe {
+        pointer-events: auto;
     }
 
     /* Custom scrollbar styling */
