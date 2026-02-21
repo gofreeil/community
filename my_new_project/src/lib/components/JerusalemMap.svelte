@@ -92,7 +92,7 @@
 <div class="flex flex-col gap-4">
     <div class="flex flex-col gap-2">
         <!-- Buttons Container -->
-        <div class="flex flex-wrap justify-center gap-2 p-1">
+        <div class="flex flex-wrap justify-center gap-3 p-2">
             {#each categories as category}
                 <button
                     title="לחץ כדי לסנן במפה"
