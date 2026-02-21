@@ -106,7 +106,27 @@
             </div>
         </a>
 
-        <!-- Ad 5 - Empty Ad Space -->
+        <!-- Ad 5 - ביקורת על העיריה -->
+        <a
+            href="https://right-to-live.vercel.app/"
+            target="_blank"
+            class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105"
+        >
+            <img
+                src="/images/ad_neighborhoods.png"
+                alt="ביקורת על העיריה"
+                class="h-auto w-full object-cover"
+            />
+            <div
+                class="bg-gradient-to-r from-red-600 to-pink-600 p-3 text-center"
+            >
+                <p class="text-white font-bold text-xs leading-tight">
+                    ביקורת על העיריה - הזכות לחיות
+                </p>
+            </div>
+        </a>
+
+        <!-- Ad 6 - Empty Ad Space -->
         <a
             href="mailto:contact@example.com?subject=מעוניין בפרסום"
             class="block overflow-hidden rounded-lg border-4 border-dashed border-gray-400 bg-gray-100 shadow-lg transition-all hover:scale-105 hover:border-blue-500 hover:bg-blue-50"
@@ -125,7 +145,7 @@
             </div>
         </a>
 
-        <!-- Ad 6 - Empty Ad Space -->
+        <!-- Ad 7 - Empty Ad Space -->
         <a
             href="mailto:contact@example.com?subject=מעוניין בפרסום"
             class="block overflow-hidden rounded-lg border-4 border-dashed border-purple-400 bg-purple-50 shadow-lg transition-all hover:scale-105 hover:border-purple-500 hover:bg-purple-100"
