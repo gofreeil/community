@@ -64,10 +64,16 @@
             class:flipping={isFlipping}
         >
             <svg width="100" height="100" viewBox="0 0 100 100" class="transition-transform duration-500">
+                <defs>
+                    <clipPath id="roundedCorner">
+                        <path d="M 0,0 L 100,0 Q 0,0 0,100 Z" />
+                    </clipPath>
+                </defs>
                 <polygon 
                     points="0,0 100,0 0,100" 
                     fill="#9333ea"
                     class="transition-all duration-500"
+                    clip-path="url(#roundedCorner)"
                 />
                 <text 
                     x="30" 
