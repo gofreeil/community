@@ -87,12 +87,12 @@
                         <p class="text-sm mb-4 text-yellow-100 transition-colors duration-300 group-hover:text-white">
                             הצטרף לכיתת הכוננות של השכונה
                         </p>
+                        <p class="text-xs mb-3 text-yellow-100 transition-colors duration-300 group-hover:text-white group-hover:font-bold">
+                            <span class="font-bold">127</span> חברים פעילים
+                        </p>
                         <button class="bg-white text-red-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-yellow-100 transition-all w-full group-hover:scale-105 group-hover:shadow-xl">
                             הצטרף עכשיו 🔥
                         </button>
-                        <div class="mt-4 text-xs text-yellow-100 transition-colors duration-300 group-hover:text-white group-hover:font-bold">
-                            <span class="font-bold">127</span> חברים פעילים • <span class="font-bold">23</span> מחוברים כעת
-                        </div>
                     </div>
                 </div>
             </div>
