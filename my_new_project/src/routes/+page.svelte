@@ -44,6 +44,7 @@
     </section>
 
     <!-- Emergency Team Banner -->
+    <!-- Force deployment update -->
     <section class="max-w-6xl mx-auto px-4">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <!-- הוסף עסק -->
