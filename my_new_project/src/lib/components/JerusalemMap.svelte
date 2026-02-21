@@ -77,7 +77,7 @@
                     x="30" 
                     y="35" 
                     fill="white" 
-                    font-size="9" 
+                    font-size="11" 
                     font-weight="bold" 
                     transform="rotate(-45 30 35)"
                     text-anchor="middle"
@@ -87,11 +87,11 @@
                 </text>
                 <text 
                     x="30" 
-                    y="45" 
+                    y="47" 
                     fill="white" 
-                    font-size="9" 
+                    font-size="11" 
                     font-weight="bold" 
-                    transform="rotate(-45 30 45)"
+                    transform="rotate(-45 30 47)"
                     text-anchor="middle"
                     class="pointer-events-none"
                 >
