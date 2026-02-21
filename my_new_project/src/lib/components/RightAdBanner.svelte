@@ -28,7 +28,7 @@
         ],
         [
             {
-                text: "הצטרף לקהילה הפעילה שלנו",
+                text: "פרסום זה יכול להיות שלך",
                 borderColor: "border-green-500/30",
                 bgColor: "bg-green-900/10",
                 hoverBorder: "hover:border-green-500",
@@ -38,7 +38,7 @@
                 buttonColor: "bg-green-600 hover:bg-green-500"
             },
             {
-                text: "שתף את העסק שלך עם השכונה",
+                text: "פרסום זה יכול להיות שלך",
                 borderColor: "border-orange-500/30",
                 bgColor: "bg-orange-900/10",
                 hoverBorder: "hover:border-orange-500",
