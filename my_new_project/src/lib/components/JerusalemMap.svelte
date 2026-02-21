@@ -13,15 +13,26 @@
         { id: "transport", label: "טרמפים", icon: "🚗", items: ["נוסע קבוע ל...", "נוסע חד פעמי ומוכן לצרף טרמפיסט", "דרוש טרמפ"] },
     ];
 
-    let viewMode: 'map' | 'list' = 'map';
+    let viewMode: 'map' | 'list' | 'add' = 'map';
     let isFlipping = false;
     let expandedCategories: Set<string> = new Set();
+    let isLoggedIn = false; // במציאות זה יבוא מניהול משתמשים
 
     function handleViewToggle() {
         isFlipping = true;
         setTimeout(() => {
             viewMode = viewMode === 'map' ? 'list' : 'map';
         }, 350); // Change content at middle of animation
+        setTimeout(() => {
+            isFlipping = false;
+        }, 700);
+    }
+
+    function handleAddAdvantage() {
+        isFlipping = true;
+        setTimeout(() => {
+            viewMode = 'add';
+        }, 350);
         setTimeout(() => {
             isFlipping = false;
         }, 700);
@@ -34,6 +45,16 @@
             expandedCategories.add(categoryId);
         }
         expandedCategories = expandedCategories; // trigger reactivity
+    }
+
+    function handleAddItem(categoryId: string) {
+        if (!isLoggedIn) {
+            alert('יש להירשם כדי להוסיף פריטים. מעבר לדף הרשמה...');
+            // כאן תוכל להוסיף ניווט לדף הרשמה
+            return;
+        }
+        // כאן תוכל להוסיף לוגיקה להוספת פריט
+        alert(`הוספת פריט לקטגוריה: ${categories.find(c => c.id === categoryId)?.label}`);
     }
 </script>
 
