@@ -219,15 +219,15 @@
         </div>
 
         <!-- כפתור הוסף יתרון - בחלק העליון -->
-        <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 z-20">
+        <div class="absolute -top-5 left-1/2 transform -translate-x-1/2 z-20">
             <button
                 on:click={handleAddAdvantage}
                 title="הוסף יתרון חדש לשכונה"
-                class="relative group overflow-hidden bg-gradient-to-br from-green-500 via-emerald-500 to-teal-600 hover:from-green-400 hover:via-emerald-400 hover:to-teal-500 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-xl transition-all hover:scale-105 border-4 border-purple-600"
+                class="relative group overflow-hidden bg-gradient-to-br from-green-500 via-emerald-500 to-teal-600 hover:from-green-400 hover:via-emerald-400 hover:to-teal-500 text-white px-3 py-1.5 rounded-lg font-bold text-xs shadow-xl transition-all hover:scale-105 border-2 border-purple-600"
             >
                 <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer-once"></div>
-                <div class="relative flex items-center gap-2">
-                    <span class="text-xl">➕</span>
+                <div class="relative flex items-center gap-1.5">
+                    <span class="text-base">➕</span>
                     <span>הוסף</span>
                 </div>
             </button>
