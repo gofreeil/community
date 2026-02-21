@@ -12,6 +12,8 @@
         { id: "shops", label: "חנויות", icon: "🏪" },
         { id: "transport", label: "טרמפים", icon: "🚗" },
     ];
+
+    let viewMode: 'map' | 'list' = 'map';
 </script>
 
 <div class="flex flex-col gap-4">
@@ -81,25 +83,57 @@
     <div
         class="relative w-full rounded-3xl border-4 border-purple-600 overflow-hidden shadow-2xl bg-[#0f172a]"
     >
-        <div class="w-full h-[550px]">
-            <iframe
-                title="מפת ירושלים"
-                width="100%"
-                height="100%"
-                style="border:0"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3391.8864700000003!2d35.21371!3d31.768319!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1502d7d634c1f8b9%3A0x1028fca4a63b44a!2z15nXqNeV16nXnNep150!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil"
-                allowfullscreen
-                loading="lazy"
-                referrerpolicy="no-referrer-when-downgrade"
-            >
-            </iframe>
-        </div>
+        <!-- כפתור מעבר תצוגה -->
+        <button
+            on:click={() => viewMode = viewMode === 'map' ? 'list' : 'map'}
+            class="absolute top-4 left-4 z-10 bg-gradient-to-br from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white px-4 py-2 rounded-lg shadow-xl transition-all hover:scale-105 font-bold text-sm border-2 border-white/30"
+            style="writing-mode: vertical-rl; transform: rotate(180deg);"
+        >
+            {viewMode === 'map' ? '📋 תצוגת רשימה' : '🗺️ תצוגת מפה'}
+        </button>
+
+        {#if viewMode === 'map'}
+            <!-- תצוגת מפה -->
+            <div class="w-full h-[550px]">
+                <iframe
+                    title="מפת ירושלים"
+                    width="100%"
+                    height="100%"
+                    style="border:0"
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3391.8864700000003!2d35.21371!3d31.768319!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1502d7d634c1f8b9%3A0x1028fca4a63b44a!2z15nXqNeV16nXnNep150!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil"
+                    allowfullscreen
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade"
+                >
+                </iframe>
+            </div>
+        {:else}
+            <!-- תצוגת רשימה -->
+            <div class="w-full h-[550px] overflow-y-auto p-6">
+                <h3 class="text-2xl font-bold text-white mb-6 text-center">רשימת שירותים בשכונה</h3>
+                <div class="space-y-3">
+                    {#each categories as category}
+                        <div class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-500/30 rounded-xl p-4 hover:border-purple-500 transition-all hover:scale-102 cursor-pointer">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-3xl">{category.icon}</span>
+                                    <span class="text-white font-bold text-lg">{category.label}</span>
+                                </div>
+                                <button class="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors">
+                                    צפה בפרטים
+                                </button>
+                            </div>
+                        </div>
+                    {/each}
+                </div>
+            </div>
+        {/if}
 
         <!-- Decoration -->
         <div
             class="absolute bottom-4 right-4 bg-purple-600/90 backdrop-blur-md text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-lg"
         >
-            📍 מפת הקהילה - ירושלים
+            {viewMode === 'map' ? '📍 מפת הקהילה - ירושלים' : '📋 רשימת שירותים'}
         </div>
     </div>
 </div>
