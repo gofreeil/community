@@ -55,8 +55,9 @@
 
     <!-- Map Container -->
     <div
-        class="relative w-full border-4 border-purple-600 shadow-2xl bg-[#0f172a] mb-8"
-        style="border-radius: 24px;"
+        class="relative w-full border-4 border-purple-600 shadow-2xl bg-[#0f172a] mb-8 transition-all duration-700"
+        style="border-radius: 24px; transform-style: preserve-3d;"
+        class:flipping-container={isFlipping}
     >
         <!-- כפתור מעבר תצוגה - משולש מקופל בפינה -->
         <button
@@ -249,6 +250,22 @@
             transform: rotate(0deg) scale(1);
             transform-origin: top left;
         }
+    }
+
+    @keyframes flipContainer {
+        0% {
+            transform: perspective(1000px) rotateY(0deg);
+        }
+        50% {
+            transform: perspective(1000px) rotateY(-90deg);
+        }
+        100% {
+            transform: perspective(1000px) rotateY(0deg);
+        }
+    }
+
+    .flipping-container {
+        animation: flipContainer 0.7s ease-in-out;
     }
 
     .page-corner.flipping {
