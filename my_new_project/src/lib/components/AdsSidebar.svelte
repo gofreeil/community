@@ -1,50 +1,77 @@
+<script lang="ts">
+    import { onMount } from 'svelte';
+
+    let currentAdSet = 0;
+
+    const adSets = [
+        [
+            {
+                href: "https://www.melecshop.com/page/peace-on-earth_VRHH",
+                img: "/images/news/ועדי שכונות.png",
+                alt: "ועדי שכונות",
+                text: "הצטרף לוועד שכונתך ותמוך במהפכת משילות העם על המוסדות!",
+                gradient: "from-blue-600 to-cyan-600"
+            },
+            {
+                href: "https://purchasing-groups.vercel.app/",
+                img: "/images/whatsapp_cta.png",
+                alt: "צור קשר בוואטסאפ",
+                text: "הצטרף לקבוצת הרכישה שלנו והוזל מיד את ההוצאות החודשיות שלך!",
+                gradient: "linear-gradient(to right, #3d5a3d, #2d4a2d)"
+            }
+        ],
+        [
+            {
+                href: "https://index-chi-sage.vercel.app/",
+                img: "/images/partners/השקעות קבוצתיות.png",
+                alt: "השקעות קבוצתיות",
+                text: "התחבר עם קבוצת המשקיעים שלנו",
+                gradient: "from-amber-600 to-orange-600"
+            },
+            {
+                href: "https://right-to-live.vercel.app/",
+                img: "/images/partners/מיצוי_זכויות.svg",
+                alt: "מיצוי זכויות תושבים",
+                text: "מערכת פניות ובקרת תושבים על העיריות - מצה את זכויותיך!",
+                gradient: "from-blue-700 to-blue-900"
+            }
+        ]
+    ];
+
+    onMount(() => {
+        const interval = setInterval(() => {
+            currentAdSet = (currentAdSet + 1) % adSets.length;
+        }, 6000);
+
+        return () => clearInterval(interval);
+    });
+</script>
+
 <!-- AdsSidebar.svelte -->
 <aside class="hidden lg:block w-48 flex-shrink-0">
     <div class="sticky top-4 space-y-4">
-        <!-- Ad 1 - ועדי שכונות -->
-        <a
-            href="https://www.melecshop.com/page/peace-on-earth_VRHH"
-            target="_blank"
-            class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105"
-        >
-            <img
-                src="/images/news/ועדי שכונות.png"
-                alt="ועדי שכונות"
-                class="h-auto w-full object-cover"
-            />
-            <div
-                class="bg-gradient-to-r from-blue-600 to-cyan-600 p-3 text-center"
+        {#each adSets[currentAdSet] as ad, index}
+            <a
+                href={ad.href}
+                target="_blank"
+                class="block overflow-hidden rounded-lg shadow-lg transition-all hover:scale-105 duration-700"
+                style="animation: fadeIn 0.7s ease-in-out;"
             >
-                <p class="text-white font-bold text-xs leading-tight">
-                    הצטרף לוועד שכונתך ותמוך במהפכת משילות העם על המוסדות!
-                </p>
-            </div>
-        </a>
-
-        <!-- WhatsApp CTA -->
-        <a
-            href="https://purchasing-groups.vercel.app/"
-            target="_blank"
-            class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105"
-        >
-            <div class="h-32 overflow-hidden">
                 <img
-                    src="/images/whatsapp_cta.png"
-                    alt="צור קשר בוואטסאפ"
-                    class="h-full w-full object-cover object-center"
+                    src={ad.img}
+                    alt={ad.alt}
+                    class="h-auto w-full object-cover"
                 />
-            </div>
-            <div
-                class="p-3 text-center"
-                style="background: linear-gradient(to right, #3d5a3d, #2d4a2d);"
-            >
-                <p class="text-white font-bold text-xs leading-tight">
-                    הצטרף לקבוצת הרכישה שלנו והוזל מיד את ההוצאות החודשיות שלך!
-                </p>
-            </div>
-        </a>
-
-        <!-- Ad 2 - השקעות קבוצתיות -->
+                <div
+                    class="bg-gradient-to-r {ad.gradient} p-3 text-center"
+                    style={ad.gradient.startsWith('linear') ? `background: ${ad.gradient};` : ''}
+                >
+                    <p class="text-white font-bold text-xs leading-tight">
+                        {ad.text}
+                    </p>
+                </div>
+            </a>
+        {/each}
         <a
             href="https://index-chi-sage.vercel.app/"
             target="_blank"
