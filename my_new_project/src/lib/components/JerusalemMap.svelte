@@ -169,14 +169,14 @@
         </div>
 
         <!-- כפתור הרמת יד מיוחד - בתחתית המפה -->
-        <div class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 z-20">
+        <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 z-20">
             <button
                 title="הרם יד לשאול שאלה או להציע רעיון"
-                class="relative group overflow-hidden bg-gradient-to-br from-red-500 via-pink-500 to-purple-600 hover:from-red-400 hover:via-pink-400 hover:to-purple-500 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-xl transition-all hover:scale-105 border-2 border-white/30 hover:border-white/50"
+                class="relative group overflow-hidden bg-gradient-to-br from-red-500 via-pink-500 to-purple-600 hover:from-red-400 hover:via-pink-400 hover:to-purple-500 text-white px-6 py-3 rounded-xl font-bold text-base shadow-xl transition-all hover:scale-105 border-4 border-purple-600"
             >
                 <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer-once"></div>
-                <div class="relative flex items-center gap-2">
-                    <span class="text-xl animate-wave-once">✋</span>
+                <div class="relative flex items-center gap-3">
+                    <span class="text-2xl animate-wave-once">✋</span>
                     <span>הרמת יד</span>
                 </div>
             </button>
