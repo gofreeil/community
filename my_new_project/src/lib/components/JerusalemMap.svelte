@@ -21,8 +21,10 @@
         isFlipping = true;
         setTimeout(() => {
             viewMode = viewMode === 'map' ? 'list' : 'map';
+        }, 350); // Change content at middle of animation
+        setTimeout(() => {
             isFlipping = false;
-        }, 250);
+        }, 700);
     }
 
     function toggleCategory(categoryId: string) {
