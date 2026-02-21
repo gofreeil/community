@@ -172,6 +172,20 @@
             {viewMode === 'map' ? '📍 מפת הקהילה - ירושלים' : '📋 רשימת שירותים'}
         </div>
 
+        <!-- כפתור הוסף יתרון - בחלק העליון -->
+        <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 z-20">
+            <button
+                title="הוסף יתרון חדש לשכונה"
+                class="relative group overflow-hidden bg-gradient-to-br from-green-500 via-emerald-500 to-teal-600 hover:from-green-400 hover:via-emerald-400 hover:to-teal-500 text-white px-6 py-3 rounded-xl font-bold text-base shadow-xl transition-all hover:scale-105 border-4 border-purple-600"
+            >
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer-once"></div>
+                <div class="relative flex items-center gap-3">
+                    <span class="text-2xl">➕</span>
+                    <span>הוסף יתרון</span>
+                </div>
+            </button>
+        </div>
+
         <!-- כפתור הרמת יד מיוחד - בתחתית המפה -->
         <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 z-20">
             <button
