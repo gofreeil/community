@@ -84,13 +84,31 @@
     <div
         class="relative w-full rounded-3xl border-4 border-purple-600 overflow-hidden shadow-2xl bg-[#0f172a]"
     >
-        <!-- כפתור מעבר תצוגה -->
+        <!-- כפתור מעבר תצוגה - משולש מקופל -->
         <button
             on:click={() => viewMode = viewMode === 'map' ? 'list' : 'map'}
-            class="absolute top-4 left-4 z-10 bg-gradient-to-br from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white px-4 py-2 rounded-lg shadow-xl transition-all hover:scale-105 font-bold text-sm border-2 border-white/30"
-            style="writing-mode: vertical-rl; transform: rotate(180deg);"
+            class="absolute top-0 left-0 z-10 bg-gradient-to-br from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white shadow-xl transition-all hover:scale-105 font-bold text-xs border-r-2 border-b-2 border-white/30"
+            style="
+                width: 0;
+                height: 0;
+                border-style: solid;
+                border-width: 0 0 120px 120px;
+                border-color: transparent transparent #7c3aed transparent;
+                background: none;
+                padding: 0;
+            "
         >
-            {viewMode === 'map' ? '📋 תצוגת רשימה' : '🗺️ תצוגת מפה'}
+            <span 
+                class="absolute text-white font-bold whitespace-nowrap"
+                style="
+                    bottom: 15px;
+                    left: -95px;
+                    transform: rotate(-45deg);
+                    font-size: 11px;
+                "
+            >
+                {viewMode === 'map' ? 'עבור לתצוגת רשימה' : 'עבור לתצוגת מפה'}
+            </span>
         </button>
 
         {#if viewMode === 'map'}
