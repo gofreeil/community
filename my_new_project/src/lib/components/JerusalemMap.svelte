@@ -10,7 +10,7 @@
         { id: "education", label: "חוגים", icon: "🎨", items: ["חוגי ספורט", "חוגי אומנות", "חוגי מוזיקה", "חוגי מדעים"] },
         { id: "kids", label: "לילדים", icon: "🧒", items: ["גני משחקים", "פעילויות לילדים", "ספריות לילדים", "מועדוניות"] },
         { id: "shops", label: "חנויות", icon: "🏪", items: ["מכולת", "מאפייה", "בית מרקחת", "חנות בגדים", "דואר", "מסעדות", "בנקים", "כספומט"] },
-        { id: "transport", label: "טרמפים", icon: "🚗", items: ["דרוש טרמפ לירושלים", "נוסע לירושלים", "דרוש טרמפ לבני ברק", "נוסע לבני ברק", "דרוש טרמפ לתל אביב", "נוסע לתל אביב"] },
+        { id: "transport", label: "טרמפים", icon: "🚗", items: ["נוסע קבוע ל...", "נוסע חד פעמי ומוכן לצרף טרמפיסט", "דרוש טרמפ"] },
     ];
 
     let viewMode: 'map' | 'list' = 'map';
@@ -171,7 +171,7 @@
         <!-- כפתור הרמת יד מיוחד - בתחתית המפה -->
         <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 z-20">
             <button
-                title="הרם יד לשאול שאלה או להציע רעיון"
+                title="בקש עזרה מהקהילה"
                 class="relative group overflow-hidden bg-gradient-to-br from-red-500 via-pink-500 to-purple-600 hover:from-red-400 hover:via-pink-400 hover:to-purple-500 text-white px-6 py-3 rounded-xl font-bold text-base shadow-xl transition-all hover:scale-105 border-4 border-purple-600"
             >
                 <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer-once"></div>
