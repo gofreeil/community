@@ -57,62 +57,6 @@
     </div>
 </div>
 
-<style>
-    @keyframes shimmer {
-        0% {
-            transform: translateX(-100%);
-        }
-        100% {
-            transform: translateX(100%);
-        }
-    }
-
-    @keyframes wave {
-        0%, 100% {
-            transform: rotate(0deg);
-        }
-        25% {
-            transform: rotate(-15deg);
-        }
-        75% {
-            transform: rotate(15deg);
-        }
-    }
-
-    .animate-shimmer-once {
-        animation: shimmer 2s ease-in-out 1;
-    }
-
-    .animate-wave-once {
-        display: inline-block;
-        animation: wave 1.5s ease-in-out 1;
-    }
-
-    .page-corner {
-        cursor: pointer;
-    }
-
-    .page-corner.flipping {
-        animation: flip 0.5s ease-in-out;
-    }
-
-    @keyframes flip {
-        0% {
-            transform: rotateY(0deg);
-        }
-        50% {
-            transform: rotateY(90deg);
-        }
-        100% {
-            transform: rotateY(0deg);
-        }
-    }
-
-    iframe {
-        filter: contrast(1.1) brightness(0.95);
-    }
-</style>
-
     <!-- Map Container -->
     <div
         class="relative w-full rounded-3xl border-4 border-purple-600 overflow-hidden shadow-2xl bg-[#0f172a]"
@@ -203,6 +147,56 @@
 </div>
 
 <style>
+    @keyframes shimmer {
+        0% {
+            transform: translateX(-100%);
+        }
+        100% {
+            transform: translateX(100%);
+        }
+    }
+
+    @keyframes wave {
+        0%, 100% {
+            transform: rotate(0deg);
+        }
+        25% {
+            transform: rotate(-15deg);
+        }
+        75% {
+            transform: rotate(15deg);
+        }
+    }
+
+    .animate-shimmer-once {
+        animation: shimmer 2s ease-in-out 1;
+    }
+
+    .animate-wave-once {
+        display: inline-block;
+        animation: wave 1.5s ease-in-out 1;
+    }
+
+    .page-corner {
+        cursor: pointer;
+    }
+
+    .page-corner.flipping {
+        animation: flip 0.5s ease-in-out;
+    }
+
+    @keyframes flip {
+        0% {
+            transform: rotateY(0deg);
+        }
+        50% {
+            transform: rotateY(90deg);
+        }
+        100% {
+            transform: rotateY(0deg);
+        }
+    }
+
     iframe {
         filter: contrast(1.1) brightness(0.95);
     }
