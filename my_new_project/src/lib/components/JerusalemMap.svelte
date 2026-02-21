@@ -42,7 +42,7 @@
         </div>
 
         <!-- כפתור הרמת יד מיוחד - מתחת לכפתורים בצד ימין -->
-        <div class="flex justify-end px-1">
+        <div class="flex justify-start px-1">
             <button
                 title="הרם יד לשאול שאלה או להציע רעיון"
                 class="relative group overflow-hidden bg-gradient-to-br from-red-500 via-pink-500 to-purple-600 hover:from-red-400 hover:via-pink-400 hover:to-purple-500 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-xl transition-all hover:scale-105 border-2 border-white/30 hover:border-white/50"

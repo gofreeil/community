@@ -1,6 +1,6 @@
 <!-- AdsSidebar.svelte -->
 <aside class="hidden lg:block w-48 flex-shrink-0">
-    <div class="sticky top-4 space-y-4">
+    <div class="space-y-4">
         <!-- Ad 1 - ועדי שכונות -->
         <a
             href="https://www.melecshop.com/page/peace-on-earth_VRHH"

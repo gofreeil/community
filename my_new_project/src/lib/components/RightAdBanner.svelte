@@ -61,7 +61,7 @@
 
 <!-- RightAdBanner.svelte -->
 <aside class="hidden xl:block w-24 flex-shrink-0">
-    <div class="sticky top-4 space-y-4">
+    <div class="space-y-4">
         {#each adSets[currentAdSet] as ad, index}
             <div
                 class="h-[512px] flex flex-col items-center justify-center rounded-2xl border-2 border-dashed {ad.borderColor} {ad.bgColor} p-4 text-center transition-all {ad.hoverBorder} {ad.hoverBg} group duration-700"
