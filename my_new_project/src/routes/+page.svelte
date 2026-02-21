@@ -81,7 +81,7 @@
                     <div class="text-center text-white">
                         <span class="text-4xl mb-2 block transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12">🚨</span>
                         <h3 class="text-xl font-black mb-2 transition-all duration-300 group-hover:text-yellow-200">
-                            <span class="group-hover:hidden">כיתת כוננות</span>
+                            <span class="group-hover:hidden">כיתת כוננות TEST</span>
                             <span class="hidden group-hover:inline">חזק את ביטחון השכונה</span>
                         </h3>
                         <p class="text-sm mb-4 text-yellow-100 transition-colors duration-300 group-hover:text-white">
