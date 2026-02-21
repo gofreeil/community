@@ -18,6 +18,7 @@
     let expandedCategories: Set<string> = new Set();
     let isLoggedIn = false; // במציאות זה יבוא מניהול משתמשים
     let showHelpMenu = false;
+    let showWaves = false;
 
     const helpOptions = [
         { id: 3, text: "הלך ילד לאיבוד", icon: "👶" },
@@ -67,6 +68,14 @@
 
     function handleHelpRequest(optionId: number) {
         const option = helpOptions.find(o => o.id === optionId);
+        showHelpMenu = false;
+        
+        // הפעל אנימציית גלים
+        showWaves = true;
+        setTimeout(() => {
+            showWaves = false;
+        }, 3000);
+
         if (optionId === 4) {
             // אפשרות "אחר" - פתח טופס
             const customHelp = prompt('תאר את העזרה שאתה זקוק לה:');
@@ -76,7 +85,6 @@
         } else {
             alert(`בקשת עזרה נשלחה: ${option?.text}`);
         }
-        showHelpMenu = false;
     }
 </script>
 
@@ -146,6 +154,17 @@
         {#if viewMode === 'map'}
             <!-- תצוגת מפה -->
             <div class="w-full h-[550px] overflow-hidden" style="border-radius: 20px;">
+                <!-- אנימציית גלים -->
+                {#if showWaves}
+                    <div class="absolute inset-0 flex items-end justify-center pointer-events-none z-10">
+                        <div class="wave-container">
+                            <div class="wave wave-1"></div>
+                            <div class="wave wave-2"></div>
+                            <div class="wave wave-3"></div>
+                            <div class="wave wave-4"></div>
+                        </div>
+                    </div>
+                {/if}
                 <iframe
                     title="מפת ירושלים"
                     width="100%"
@@ -374,6 +393,55 @@
         100% {
             transform: perspective(1000px) rotateY(0deg);
         }
+    }
+
+    @keyframes waveExpand {
+        0% {
+            width: 0;
+            height: 0;
+            opacity: 0.8;
+        }
+        50% {
+            opacity: 0.4;
+        }
+        100% {
+            width: 600px;
+            height: 600px;
+            opacity: 0;
+        }
+    }
+
+    .wave-container {
+        position: relative;
+        width: 0;
+        height: 0;
+        bottom: 0;
+    }
+
+    .wave {
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translate(-50%, 50%);
+        border: 3px solid #ef4444;
+        border-radius: 50%;
+        animation: waveExpand 3s ease-out;
+    }
+
+    .wave-1 {
+        animation-delay: 0s;
+    }
+
+    .wave-2 {
+        animation-delay: 0.5s;
+    }
+
+    .wave-3 {
+        animation-delay: 1s;
+    }
+
+    .wave-4 {
+        animation-delay: 1.5s;
     }
 
     .flipping-container {
