@@ -14,38 +14,23 @@
     
     <!-- תוכן -->
     <div class="relative z-10 p-6 md:p-8">
-        <!-- כותרת מרכזית עם קלפי -->
-        <div class="text-center mb-4">
-            <div class="flex items-center justify-center gap-3 mb-2">
+        <!-- כותרת עם כפתור בצד -->
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
                 <span class="text-5xl md:text-6xl">🗳️</span>
                 <div>
                     <h2 class="text-3xl md:text-4xl font-black leading-tight">
                         <span class="inline-block transform hover:scale-110 transition-transform">משאל</span>
                         <span class="inline-block transform hover:scale-110 transition-transform text-yellow-300"> עם</span>
                     </h2>
+                    <p class="text-base md:text-lg font-bold text-blue-100">
+                        הקול שלך משנה את המציאות
+                    </p>
                 </div>
             </div>
-            <p class="text-base md:text-lg font-bold text-blue-100 mb-3">
-                הקול שלך משנה את המציאות
-            </p>
             
-            <div class="flex flex-wrap gap-2 justify-center mb-4">
-                <div class="badge-small">
-                    <span class="text-lg">✓</span>
-                    <span>דמוקרטיה ישירה</span>
-                </div>
-                <div class="badge-small">
-                    <span class="text-lg">🎯</span>
-                    <span>השפעה אמיתית</span>
-                </div>
-                <div class="badge-small">
-                    <span class="text-lg">⚡</span>
-                    <span>תוצאות מיידיות</span>
-                </div>
-            </div>
-
             <!-- כפתור פעולה -->
-            <button class="cta-button-small transition-all duration-300 hover:scale-105">
+            <button class="cta-button-small transition-all duration-300 hover:scale-105 flex-shrink-0">
                 <div class="relative bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl px-6 py-4 shadow-lg">
                     <div class="text-center">
                         <div class="text-2xl font-black text-purple-900 mb-1">
@@ -57,6 +42,21 @@
                     </div>
                 </div>
             </button>
+        </div>
+        
+        <div class="flex flex-wrap gap-2 justify-center mb-4">
+            <div class="badge-small">
+                <span class="text-lg">✓</span>
+                <span>דמוקרטיה ישירה</span>
+            </div>
+            <div class="badge-small">
+                <span class="text-lg">🎯</span>
+                <span>השפעה אמיתית</span>
+            </div>
+            <div class="badge-small">
+                <span class="text-lg">⚡</span>
+                <span>תוצאות מיידיות</span>
+            </div>
         </div>
         
         <!-- סטטיסטיקות מונפשות -->
