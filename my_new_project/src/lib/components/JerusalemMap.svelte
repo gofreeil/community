@@ -219,7 +219,7 @@
         </div>
 
         <!-- כפתור הוסף יתרון - בחלק העליון -->
-        <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/3 z-20">
+        <div class="absolute left-1/2 transform -translate-x-1/2 z-20" style="top: -10px;">
             <button
                 on:click={handleAddAdvantage}
                 title="הוסף יתרון חדש לשכונה"
