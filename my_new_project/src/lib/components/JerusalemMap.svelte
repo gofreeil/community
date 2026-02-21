@@ -15,6 +15,7 @@
 </script>
 
 <div class="flex flex-col gap-4">
+<div class="flex flex-col gap-4">
     <!-- Buttons Container - Now OUTSIDE the map -->
     <div class="flex flex-wrap justify-center gap-2 p-1">
         {#each categories as category}
@@ -27,6 +28,54 @@
             </button>
         {/each}
     </div>
+
+    <!-- כפתור הרמת יד מיוחד -->
+    <div class="flex justify-center">
+        <button
+            title="הרם יד לשאול שאלה או להציע רעיון"
+            class="relative group overflow-hidden bg-gradient-to-br from-red-500 via-pink-500 to-purple-600 hover:from-red-400 hover:via-pink-400 hover:to-purple-500 text-white px-8 py-4 rounded-2xl font-black text-lg shadow-2xl transition-all hover:scale-110 border-4 border-white/30 hover:border-white/50"
+        >
+            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer"></div>
+            <div class="relative flex items-center gap-3">
+                <span class="text-3xl animate-wave">✋</span>
+                <span>הרמת יד</span>
+                <span class="text-2xl">💡</span>
+            </div>
+        </button>
+    </div>
+</div>
+
+<style>
+    @keyframes shimmer {
+        0% {
+            transform: translateX(-100%);
+        }
+        100% {
+            transform: translateX(100%);
+        }
+    }
+
+    @keyframes wave {
+        0%, 100% {
+            transform: rotate(0deg);
+        }
+        25% {
+            transform: rotate(-15deg);
+        }
+        75% {
+            transform: rotate(15deg);
+        }
+    }
+
+    .animate-shimmer {
+        animation: shimmer 3s infinite;
+    }
+
+    .animate-wave {
+        display: inline-block;
+        animation: wave 2s ease-in-out infinite;
+    }
+</style>
 
     <!-- Map Container -->
     <div
