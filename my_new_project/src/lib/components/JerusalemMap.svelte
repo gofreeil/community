@@ -114,7 +114,7 @@
         {:else}
             <!-- תצוגת רשימה -->
             <div class="w-full h-[550px] overflow-y-auto p-6">
-                <h3 class="text-2xl font-bold text-white mb-6 text-center">רשימת שירותים בשכונה</h3>
+                <h3 class="text-2xl font-bold text-white mb-6 text-center">כל היתרונות בשכונה</h3>
                 <div class="space-y-3">
                     {#each categories.filter(cat => cat.id !== 'benefits') as category}
                         <div class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-500/30 rounded-xl overflow-hidden transition-all">
