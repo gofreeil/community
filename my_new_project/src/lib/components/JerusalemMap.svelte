@@ -55,7 +55,8 @@
 
     <!-- Map Container -->
     <div
-        class="relative w-full rounded-3xl border-4 border-purple-600 shadow-2xl bg-[#0f172a] mb-8"
+        class="relative w-full border-4 border-purple-600 shadow-2xl bg-[#0f172a] mb-8"
+        style="border-radius: 24px;"
     >
         <!-- כפתור מעבר תצוגה - משולש מקופל בפינה -->
         <button
@@ -65,29 +66,29 @@
         >
             <svg width="100" height="100" viewBox="0 0 100 100" class="transition-transform duration-500">
                 <path 
-                    d="M 0,0 L 100,0 Q 85,15 70,30 Q 55,45 40,60 Q 25,75 10,90 L 0,100 Z" 
+                    d="M 0,24 Q 0,0 24,0 L 100,0 L 0,100 Z" 
                     fill="#9333ea"
                     class="transition-all duration-500"
                 />
                 <text 
-                    x="35" 
-                    y="32" 
+                    x="38" 
+                    y="35" 
                     fill="white" 
                     font-size="12" 
                     font-weight="bold" 
-                    transform="rotate(-45 35 32)"
+                    transform="rotate(-45 38 35)"
                     text-anchor="middle"
                     class="pointer-events-none"
                 >
                     {viewMode === 'map' ? 'עבור לתצוגת' : 'עבור לתצוגת'}
                 </text>
                 <text 
-                    x="35" 
-                    y="45" 
+                    x="38" 
+                    y="48" 
                     fill="white" 
                     font-size="12" 
                     font-weight="bold" 
-                    transform="rotate(-45 35 45)"
+                    transform="rotate(-45 38 48)"
                     text-anchor="middle"
                     class="pointer-events-none"
                 >
@@ -98,7 +99,7 @@
 
         {#if viewMode === 'map'}
             <!-- תצוגת מפה -->
-            <div class="w-full h-[550px] overflow-hidden rounded-3xl">
+            <div class="w-full h-[550px] overflow-hidden" style="border-radius: 20px;">
                 <iframe
                     title="מפת ירושלים"
                     width="100%"
@@ -113,7 +114,7 @@
             </div>
         {:else}
             <!-- תצוגת רשימה -->
-            <div class="w-full h-[550px] overflow-y-auto p-6 rounded-3xl">
+            <div class="w-full h-[550px] overflow-y-auto p-6" style="border-radius: 20px;">
                 <h3 class="text-2xl font-bold text-white mb-6 text-center">כל היתרונות בשכונה</h3>
                 <div class="space-y-3">
                     {#each categories.filter(cat => cat.id !== 'benefits') as category}
