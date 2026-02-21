@@ -3,6 +3,7 @@
     import JerusalemMap from "$lib/components/JerusalemMap.svelte";
     import LostAndFound from "$lib/components/LostAndFound.svelte";
     import ReferendumBanner from "$lib/components/ReferendumBanner.svelte";
+    import FacebookComments from "$lib/components/FacebookComments.svelte";
 </script>
 
 <div class="space-y-12 pb-20 pt-8">
