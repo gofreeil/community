@@ -76,24 +76,24 @@
                     clip-path="url(#roundedCorner)"
                 />
                 <text 
-                    x="30" 
-                    y="35" 
+                    x="35" 
+                    y="32" 
                     fill="white" 
-                    font-size="11" 
+                    font-size="12" 
                     font-weight="bold" 
-                    transform="rotate(-45 30 35)"
+                    transform="rotate(-45 35 32)"
                     text-anchor="middle"
                     class="pointer-events-none"
                 >
                     {viewMode === 'map' ? 'עבור לתצוגת' : 'עבור לתצוגת'}
                 </text>
                 <text 
-                    x="30" 
-                    y="47" 
+                    x="35" 
+                    y="45" 
                     fill="white" 
-                    font-size="11" 
+                    font-size="12" 
                     font-weight="bold" 
-                    transform="rotate(-45 30 47)"
+                    transform="rotate(-45 35 45)"
                     text-anchor="middle"
                     class="pointer-events-none"
                 >
