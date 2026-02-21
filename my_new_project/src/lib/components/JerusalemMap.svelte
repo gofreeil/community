@@ -115,7 +115,7 @@
                 >
                 </iframe>
             </div>
-        {:else}
+        {:else if viewMode === 'list'}
             <!-- תצוגת רשימה -->
             <div class="w-full h-[550px] overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900/20" style="border-radius: 20px;">
                 <h3 class="text-2xl font-bold text-white mb-6 text-center">כל היתרונות בשכונה</h3>
@@ -163,6 +163,31 @@
                     {/each}
                 </div>
             </div>
+        {:else}
+            <!-- תצוגת הוספת יתרון -->
+            <div class="w-full h-[550px] overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900/20" style="border-radius: 20px;">
+                <h3 class="text-2xl font-bold text-white mb-4 text-center">הוסף יתרון חדש</h3>
+                <p class="text-center text-gray-400 text-sm mb-6">בחר קטגוריה והוסף פריט חדש</p>
+                <div class="space-y-3">
+                    {#each categories.filter(cat => cat.id !== 'benefits') as category}
+                        <button
+                            on:click={() => handleAddItem(category.id)}
+                            class="w-full bg-gradient-to-r from-green-900/30 to-emerald-900/30 border border-green-500/30 rounded-xl p-4 hover:border-green-500 hover:from-green-900/40 hover:to-emerald-900/40 transition-all cursor-pointer"
+                        >
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-3xl">{category.icon}</span>
+                                    <span class="text-white font-bold text-lg">{category.label}</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-green-400 text-sm">הוסף פריט</span>
+                                    <span class="text-2xl text-green-400">➕</span>
+                                </div>
+                            </div>
+                        </button>
+                    {/each}
+                </div>
+            </div>
         {/if}
 
         <!-- Decoration -->
@@ -175,6 +200,7 @@
         <!-- כפתור הוסף יתרון - בחלק העליון -->
         <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 z-20">
             <button
+                on:click={handleAddAdvantage}
                 title="הוסף יתרון חדש לשכונה"
                 class="relative group overflow-hidden bg-gradient-to-br from-green-500 via-emerald-500 to-teal-600 hover:from-green-400 hover:via-emerald-400 hover:to-teal-500 text-white px-6 py-3 rounded-xl font-bold text-base shadow-xl transition-all hover:scale-105 border-4 border-purple-600"
             >
