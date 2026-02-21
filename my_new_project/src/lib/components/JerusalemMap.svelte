@@ -79,7 +79,7 @@
                     fill="white" 
                     font-size="9" 
                     font-weight="bold" 
-                    transform="rotate(45 30 35)"
+                    transform="rotate(-45 30 35)"
                     text-anchor="middle"
                     class="pointer-events-none"
                 >
@@ -91,7 +91,7 @@
                     fill="white" 
                     font-size="9" 
                     font-weight="bold" 
-                    transform="rotate(45 30 45)"
+                    transform="rotate(-45 30 45)"
                     text-anchor="middle"
                     class="pointer-events-none"
                 >
