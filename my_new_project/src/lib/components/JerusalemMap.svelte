@@ -14,6 +14,15 @@
     ];
 
     let viewMode: 'map' | 'list' = 'map';
+    let isFlipping = false;
+
+    function handleViewToggle() {
+        isFlipping = true;
+        setTimeout(() => {
+            viewMode = viewMode === 'map' ? 'list' : 'map';
+            isFlipping = false;
+        }, 250);
+    }
 </script>
 
 <div class="flex flex-col gap-4">
@@ -78,37 +87,73 @@
         display: inline-block;
         animation: wave 1.5s ease-in-out 1;
     }
+
+    .page-corner {
+        cursor: pointer;
+    }
+
+    .page-corner.flipping {
+        animation: flip 0.5s ease-in-out;
+    }
+
+    @keyframes flip {
+        0% {
+            transform: rotateY(0deg);
+        }
+        50% {
+            transform: rotateY(90deg);
+        }
+        100% {
+            transform: rotateY(0deg);
+        }
+    }
+
+    iframe {
+        filter: contrast(1.1) brightness(0.95);
+    }
 </style>
 
     <!-- Map Container -->
     <div
         class="relative w-full rounded-3xl border-4 border-purple-600 overflow-hidden shadow-2xl bg-[#0f172a]"
     >
-        <!-- כפתור מעבר תצוגה - משולש מקופל -->
+        <!-- כפתור מעבר תצוגה - משולש מקופל בפינה -->
         <button
-            on:click={() => viewMode = viewMode === 'map' ? 'list' : 'map'}
-            class="absolute top-0 left-0 z-10 bg-gradient-to-br from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white shadow-xl transition-all hover:scale-105 font-bold text-xs border-r-2 border-b-2 border-white/30"
-            style="
-                width: 0;
-                height: 0;
-                border-style: solid;
-                border-width: 0 0 120px 120px;
-                border-color: transparent transparent #7c3aed transparent;
-                background: none;
-                padding: 0;
-            "
+            on:click={handleViewToggle}
+            class="page-corner absolute top-0 right-0 z-10 transition-all duration-500 hover:scale-110"
+            class:flipping={isFlipping}
         >
-            <span 
-                class="absolute text-white font-bold whitespace-nowrap"
-                style="
-                    bottom: 15px;
-                    left: -95px;
-                    transform: rotate(-45deg);
-                    font-size: 11px;
-                "
-            >
-                {viewMode === 'map' ? 'עבור לתצוגת רשימה' : 'עבור לתצוגת מפה'}
-            </span>
+            <svg width="100" height="100" viewBox="0 0 100 100" class="transition-transform duration-500">
+                <polygon 
+                    points="100,0 100,100 0,0" 
+                    fill="#9333ea"
+                    class="transition-all duration-500"
+                />
+                <text 
+                    x="70" 
+                    y="35" 
+                    fill="white" 
+                    font-size="9" 
+                    font-weight="bold" 
+                    transform="rotate(-45 70 35)"
+                    text-anchor="middle"
+                    class="pointer-events-none"
+                >
+                    {viewMode === 'map' ? 'עבור לתצוגת' : 'עבור לתצוגת'}
+                </text>
+                <text 
+                    x="70" 
+                    y="45" 
+                    fill="white" 
+                    font-size="9" 
+                    font-weight="bold" 
+                    transform="rotate(-45 70 45)"
+                    text-anchor="middle"
+                    class="pointer-events-none"
+                >
+                    {viewMode === 'map' ? 'רשימה' : 'מפה'}
+                </text>
+            </svg>
         </button>
 
         {#if viewMode === 'map'}
