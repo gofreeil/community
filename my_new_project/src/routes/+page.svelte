@@ -73,6 +73,19 @@
             </div>
         </div>
     </section>
+
+    <!-- Facebook Comments Section -->
+    <section class="max-w-6xl mx-auto px-4">
+        <div class="rounded-2xl bg-gradient-to-br from-blue-900/20 to-purple-900/20 border border-white/10 backdrop-blur-sm p-6">
+            <h3 class="text-2xl font-bold text-white mb-4 text-center">
+                💬 תגובות הקהילה
+            </h3>
+            <p class="text-gray-400 text-center mb-6">
+                שתף את דעתך והצטרף לשיחה עם שאר חברי הקהילה
+            </p>
+            <FacebookComments numPosts={10} />
+        </div>
+    </section>
 </div>
 
 <style>
