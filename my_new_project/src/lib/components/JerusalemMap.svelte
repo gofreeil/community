@@ -22,7 +22,8 @@
 
     const helpOptions = [
         { id: 3, text: "הלך ילד לאיבוד", icon: "👶" },
-        { id: 1, text: "זקוק לעזרה למבוגר", icon: "👴" },
+        { id: 5, text: "אבד כלב", icon: "🐕" },
+        { id: 1, text: "מבוגר זקוק לעזרה", icon: "👴" },
         { id: 2, text: "זקוק לעזרה עם הרכב להתנעה", icon: "🚗" },
         { id: 4, text: "אחר - כתוב את העזרה הזקוקה לך", icon: "✍️" }
     ];
@@ -74,7 +75,7 @@
         showWaves = true;
         setTimeout(() => {
             showWaves = false;
-        }, 3000);
+        }, 2000);
 
         if (optionId === 4) {
             // אפשרות "אחר" - פתח טופס
@@ -125,24 +126,24 @@
                     class="transition-all duration-500"
                 />
                 <text 
-                    x="50" 
+                    x="52" 
                     y="42" 
                     fill="white" 
                     font-size="14" 
                     font-weight="bold" 
-                    transform="rotate(-45 50 42)"
+                    transform="rotate(-45 52 42)"
                     text-anchor="middle"
                     class="pointer-events-none"
                 >
                     {viewMode === 'map' ? 'עבור לתצוגת' : 'עבור לתצוגת'}
                 </text>
                 <text 
-                    x="52" 
+                    x="60" 
                     y="58" 
                     fill="white" 
                     font-size="14" 
                     font-weight="bold" 
-                    transform="rotate(-45 52 58)"
+                    transform="rotate(-45 60 58)"
                     text-anchor="middle"
                     class="pointer-events-none"
                 >
@@ -256,7 +257,7 @@
         <div
             class="absolute bottom-4 right-4 bg-purple-600/90 backdrop-blur-md text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-lg"
         >
-            {viewMode === 'map' ? '📍 מפת הקהילה - ירושלים [LIVE]' : '📋 רשימת שירותים'}
+            {viewMode === 'map' ? '📍 מפת הקהילה - ירושלים' : '📋 רשימת שירותים'}
         </div>
 
         <!-- כפתור הוסף יתרון - בחלק העליון -->
@@ -292,7 +293,7 @@
             {#if showHelpMenu}
                 <div class="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 w-80 bg-white rounded-xl shadow-2xl border-2 border-purple-600 overflow-hidden animate-slideDown">
                     <div class="bg-gradient-to-r from-red-500 to-pink-500 p-3 text-center">
-                        <h3 class="text-white font-bold text-lg">באיזו עזרה אתה זקוק?</h3>
+                        <h3 class="text-white font-bold text-lg">פתח קריאה</h3>
                     </div>
                     <div class="p-2">
                         {#each helpOptions as option}
@@ -425,7 +426,7 @@
         transform: translate(-50%, 50%);
         border: 3px solid #ef4444;
         border-radius: 50%;
-        animation: waveExpand 3s ease-out;
+        animation: waveExpand 2s ease-out;
     }
 
     .wave-1 {
