@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { onMount } from 'svelte';
+    
     const categories = [
         { id: "benefits", label: "כל היתרונות", icon: "⭐" },
         { id: "gemachim", label: 'גמ"חים', icon: "🎁", items: ["גמ\"ח ספרים", "גמ\"ח כלים", "גמ\"ח ציוד לתינוקות", "גמ\"ח בגדים"] },
@@ -19,6 +21,24 @@
     let isLoggedIn = false; // במציאות זה יבוא מניהול משתמשים
     let showHelpMenu = false;
     let showWaves = false;
+    let isMouseOver = false;
+    let autoSwitchInterval: number | null = null;
+    let showNeighborhoodsMenu = false;
+    let selectedCity = '';
+
+    const citiesAndNeighborhoods = {
+        'אילת': ['שכונת התמרים', 'שכונת הדקלים', 'שכונת השחמון'],
+        'באר שבע': ['רמות', 'נווה זאב', 'נווה נוי', 'רמת חן'],
+        'בני ברק': ['פרדס כץ', 'רמת אלחנן', 'שיכון ה'],
+        'הרצליה': ['הרצליה פיתוח', 'נוה עובד', 'נווה ישראל'],
+        'חיפה': ['כרמל צרפתי', 'נווה שאנן', 'רמת אלמוגי', 'בת גלים'],
+        'ירושלים': ['קרית משה', 'רחביה', 'גבעת שאול', 'רמות', 'גילה', 'קטמון', 'בקעה', 'מעלות דפנה'],
+        'נתניה': ['קרית השרון', 'רמת פולג', 'נווה גנים'],
+        'פתח תקווה': ['קרית אריה', 'נווה עוז', 'שיכון דן'],
+        'ראשון לציון': ['נווה דקלים', 'רמת אליהו', 'שיכון ותיקים'],
+        'רחובות': ['רמת רחובות', 'נווה חוף', 'שכונת הדרים'],
+        'תל אביב': ['רמת אביב', 'פלורנטין', 'נווה צדק', 'יפו העתיקה', 'רמת החייל']
+    };
 
     const helpOptions = [
         { id: 3, text: "הלך ילד לאיבוד", icon: "👶" },
@@ -27,6 +47,64 @@
         { id: 2, text: "זקוק לעזרה עם הרכב להתנעה", icon: "🚗" },
         { id: 4, text: "אחר - כתוב את העזרה הזקוקה לך", icon: "✍️" }
     ];
+
+    function startAutoSwitch() {
+        if (autoSwitchInterval) {
+            clearInterval(autoSwitchInterval);
+        }
+        
+        autoSwitchInterval = setInterval(() => {
+            if (!isMouseOver && viewMode !== 'add') {
+                handleViewToggle();
+            }
+        }, 20000); // 20 שניות
+    }
+
+    function handleMouseEnter() {
+        isMouseOver = true;
+    }
+
+    function handleMouseLeave() {
+        isMouseOver = false;
+    }
+
+    function toggleNeighborhoodsMenu() {
+        showNeighborhoodsMenu = !showNeighborhoodsMenu;
+        selectedCity = '';
+    }
+
+    function selectCity(city: string) {
+        selectedCity = selectedCity === city ? '' : city;
+    }
+
+    function selectNeighborhood(city: string, neighborhood: string) {
+        // כאן תוכל להוסיף לוגיקה לשינוי השכונה
+        alert(`נבחרה: ${neighborhood}, ${city}`);
+        showNeighborhoodsMenu = false;
+        selectedCity = '';
+    }
+
+    onMount(() => {
+        startAutoSwitch();
+        
+        // סגירת תפריט כשלוחצים מחוץ לו
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as HTMLElement;
+            if (showNeighborhoodsMenu && !target.closest('.neighborhoods-menu-container')) {
+                showNeighborhoodsMenu = false;
+                selectedCity = '';
+            }
+        };
+        
+        document.addEventListener('click', handleClickOutside);
+        
+        return () => {
+            if (autoSwitchInterval) {
+                clearInterval(autoSwitchInterval);
+            }
+            document.removeEventListener('click', handleClickOutside);
+        };
+    });
 
     function handleViewToggle() {
         isFlipping = true;
@@ -73,24 +151,101 @@
         
         // הפעל אנימציית גלים
         showWaves = true;
+        
+        // המתן שהאנימציה תתחיל לפני ה-alert
+        setTimeout(() => {
+            if (optionId === 4) {
+                // אפשרות "אחר" - פתח טופס
+                const customHelp = prompt('תאר את העזרה שאתה זקוק לה:');
+                if (customHelp) {
+                    alert(`בקשת עזרה נשלחה: ${customHelp}`);
+                }
+            } else {
+                alert(`בקשת עזרה נשלחה: ${option?.text}`);
+            }
+        }, 100);
+        
+        // כבה את הגלים אחרי 2 שניות
         setTimeout(() => {
             showWaves = false;
         }, 2000);
-
-        if (optionId === 4) {
-            // אפשרות "אחר" - פתח טופס
-            const customHelp = prompt('תאר את העזרה שאתה זקוק לה:');
-            if (customHelp) {
-                alert(`בקשת עזרה נשלחה: ${customHelp}`);
-            }
-        } else {
-            alert(`בקשת עזרה נשלחה: ${option?.text}`);
-        }
     }
 </script>
 
 <div class="flex flex-col gap-4">
 <div class="flex flex-col gap-4">
+    <!-- כותרת שכונה -->
+    <div class="text-center mb-2 relative neighborhoods-menu-container">
+        <div class="flex items-center justify-center gap-4">
+            <div class="relative group">
+                <h2 class="text-3xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent cursor-default">
+                    יתרונות קהילת קרית משה, ירושלים
+                </h2>
+                <!-- Tooltip -->
+                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-[9999] pointer-events-none">
+                    <div class="bg-gray-900 text-white text-sm rounded-lg px-4 py-2 shadow-xl whitespace-nowrap">
+                        גלה את כל מה שהשכונה שלך מציעה
+                        <div class="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-gray-900"></div>
+                    </div>
+                </div>
+            </div>
+            <button
+                on:click={toggleNeighborhoodsMenu}
+                class="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-lg transition-all hover:scale-105"
+            >
+                🏘️ לכלל השכונות
+            </button>
+        </div>
+        
+        <!-- תפריט ערים ושכונות -->
+        {#if showNeighborhoodsMenu}
+            <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-white rounded-xl shadow-2xl border-2 border-purple-600 overflow-hidden z-50 w-[600px] max-h-[500px] overflow-y-auto">
+                <div class="bg-gradient-to-r from-purple-600 to-blue-600 p-3 text-center sticky top-0 z-10">
+                    <h3 class="text-white font-bold text-lg">בחר עיר ושכונה</h3>
+                </div>
+                <div class="p-4">
+                    {#each Object.keys(citiesAndNeighborhoods).sort() as city}
+                        <div class="mb-2">
+                            <button
+                                on:click={() => selectCity(city)}
+                                class="w-full text-right p-3 rounded-lg hover:bg-purple-50 transition-colors border border-gray-200 flex items-center justify-between"
+                            >
+                                <span class="font-bold text-gray-800 text-lg">🏙️ {city}</span>
+                                <svg 
+                                    class="w-5 h-5 text-purple-600 transition-transform duration-300 {selectedCity === city ? 'rotate-180' : ''}"
+                                    fill="none" 
+                                    stroke="currentColor" 
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            
+                            {#if selectedCity === city}
+                                <div class="mr-4 mt-2 space-y-1 animate-slideDown">
+                                    {#each citiesAndNeighborhoods[city] as neighborhood}
+                                        <button
+                                            on:click={() => selectNeighborhood(city, neighborhood)}
+                                            class="w-full text-right p-2 rounded-lg hover:bg-blue-50 transition-colors text-gray-700 hover:text-blue-600 border border-transparent hover:border-blue-300"
+                                        >
+                                            📍 {neighborhood}
+                                        </button>
+                                    {/each}
+                                </div>
+                            {/if}
+                        </div>
+                    {/each}
+                </div>
+                <button
+                    on:click={toggleNeighborhoodsMenu}
+                    class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 py-3 text-sm font-bold transition-colors sticky bottom-0"
+                >
+                    סגור
+                </button>
+            </div>
+        {/if}
+    </div>
+    
     <div class="flex flex-col gap-2">
         <!-- Buttons Container -->
         <div class="flex flex-wrap justify-center gap-3 p-2">
@@ -112,6 +267,8 @@
         class="relative w-full border-4 border-purple-600 shadow-2xl bg-[#0f172a] mb-8 transition-all duration-700"
         style="border-radius: 24px; transform-style: preserve-3d;"
         class:flipping-container={isFlipping}
+        on:mouseenter={handleMouseEnter}
+        on:mouseleave={handleMouseLeave}
     >
         <!-- כפתור מעבר תצוגה - משולש מקופל בפינה -->
         <button
@@ -154,7 +311,7 @@
 
         {#if viewMode === 'map'}
             <!-- תצוגת מפה -->
-            <div class="w-full h-[550px] overflow-hidden" style="border-radius: 20px;">
+            <div class="w-full h-[550px] overflow-hidden relative" style="border-radius: 20px;">
                 <!-- אנימציית גלים -->
                 {#if showWaves}
                     <div class="absolute inset-0 flex items-end justify-center pointer-events-none z-10">
@@ -166,6 +323,70 @@
                         </div>
                     </div>
                 {/if}
+                
+                <!-- סמנים על המפה -->
+                <div class="absolute inset-0 z-10 pointer-events-none">
+                    <!-- גמ"ח ספרים -->
+                    <div class="absolute" style="top: 25%; left: 30%;">
+                        <div class="text-center">
+                            <span class="text-3xl drop-shadow-lg">🎁</span>
+                            <div class="bg-purple-600 text-white text-xs px-2 py-1 rounded mt-1 whitespace-nowrap font-bold shadow-lg">
+                                גמ"ח ספרים
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- בייבי סיטר -->
+                    <div class="absolute" style="top: 40%; left: 60%;">
+                        <div class="text-center">
+                            <span class="text-3xl drop-shadow-lg">👶</span>
+                            <div class="bg-pink-600 text-white text-xs px-2 py-1 rounded mt-1 whitespace-nowrap font-bold shadow-lg">
+                                בייבי סיטר
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- מניין תפילה -->
+                    <div class="absolute" style="top: 60%; left: 25%;">
+                        <div class="text-center">
+                            <span class="text-3xl drop-shadow-lg">✡️</span>
+                            <div class="bg-blue-600 text-white text-xs px-2 py-1 rounded mt-1 whitespace-nowrap font-bold shadow-lg">
+                                מניין שחרית
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- מכולת -->
+                    <div class="absolute" style="top: 35%; left: 75%;">
+                        <div class="text-center">
+                            <span class="text-3xl drop-shadow-lg">🏪</span>
+                            <div class="bg-green-600 text-white text-xs px-2 py-1 rounded mt-1 whitespace-nowrap font-bold shadow-lg">
+                                מכולת 24/7
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- למסירה - רהיטים -->
+                    <div class="absolute" style="top: 70%; left: 55%;">
+                        <div class="text-center">
+                            <span class="text-3xl drop-shadow-lg">📦</span>
+                            <div class="bg-orange-600 text-white text-xs px-2 py-1 rounded mt-1 whitespace-nowrap font-bold shadow-lg">
+                                ספה למסירה
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- חוג ספורט -->
+                    <div class="absolute" style="top: 50%; left: 45%;">
+                        <div class="text-center">
+                            <span class="text-3xl drop-shadow-lg">🎨</span>
+                            <div class="bg-red-600 text-white text-xs px-2 py-1 rounded mt-1 whitespace-nowrap font-bold shadow-lg">
+                                חוג כדורגל
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <iframe
                     title="מפת ירושלים"
                     width="100%"

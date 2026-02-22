@@ -254,7 +254,7 @@
             {#if true}
                 <div class="flex items-center gap-4">
                     <!-- מספר גולשים -->
-                    <div class="flex items-center gap-2 bg-blue-900/30 px-3 py-2 rounded-lg border border-blue-500/30 animate-pulse">
+                    <div class="flex items-center gap-2 bg-blue-900/30 px-3 py-2 rounded-lg border border-blue-500/30 online-counter">
                         <span class="text-green-400 text-xl">●</span>
                         <span class="text-white text-sm font-bold">47</span>
                         <span class="text-gray-300 text-sm">מחוברים</span>
@@ -311,5 +311,18 @@
 
     :global(.animate-pulse-slow) {
         animation: pulse-slow 11s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes blink-every-2min {
+        0%, 0.83%, 100% {
+            opacity: 1;
+        }
+        0.415% {
+            opacity: 0.3;
+        }
+    }
+
+    :global(.online-counter) {
+        animation: blink-every-2min 120s ease-in-out infinite;
     }
 </style>
