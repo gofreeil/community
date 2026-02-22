@@ -47,30 +47,33 @@
     <!-- Force deployment update -->
     <section class="max-w-6xl mx-auto px-4">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <!-- הוסף עסק -->
-            <div class="group p-6 rounded-2xl bg-gradient-to-br from-blue-600/20 to-purple-600/20 border border-white/10 backdrop-blur-sm hover:border-blue-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/20 hover:-translate-y-2">
+            <!-- כותל המשאלות -->
+            <a 
+                href="/community-fund"
+                class="group p-6 rounded-2xl bg-gradient-to-br from-blue-600/20 to-purple-600/20 border border-white/10 backdrop-blur-sm hover:border-blue-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/20 hover:-translate-y-2 block"
+            >
                 <div class="transition-transform duration-300 group-hover:scale-105">
-                    <div class="text-4xl mb-3 transition-transform duration-300 group-hover:rotate-12">💼</div>
-                    <h4 class="text-lg font-bold mb-2 transition-colors duration-300 group-hover:text-blue-400">הוסף את העסק שלך</h4>
+                    <div class="text-4xl mb-3 transition-transform duration-300 group-hover:rotate-12">🙏</div>
+                    <h4 class="text-lg font-bold mb-2 transition-colors duration-300 group-hover:text-blue-400">כותל המשאלות</h4>
                     <p class="text-gray-400 text-sm mb-4 transition-colors duration-300 group-hover:text-gray-300">
-                        היה חלק מהמפה הקהילתית שלנו וקבל חשיפה לכל תושבי השכונה.
+                        צריך עזרה כספית? קופת הקהילה כאן כדי לתמוך בך בזמנים קשים.
                     </p>
-                    <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all w-full group-hover:scale-105 group-hover:shadow-lg">
-                        הוסף עסק עכשיו
-                    </button>
+                    <div class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all w-full group-hover:scale-105 group-hover:shadow-lg text-center">
+                        בקש עזרה מקופת הקהילה
+                    </div>
                 </div>
-            </div>
+            </a>
 
-            <!-- דווח על שירות -->
+            <!-- פנה לוועד השכונה -->
             <div class="group p-6 rounded-2xl bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-white/10 backdrop-blur-sm hover:border-purple-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/20 hover:-translate-y-2">
                 <div class="transition-transform duration-300 group-hover:scale-105">
-                    <div class="text-4xl mb-3 transition-transform duration-300 group-hover:rotate-12">📢</div>
-                    <h4 class="text-lg font-bold mb-2 transition-colors duration-300 group-hover:text-purple-400">דווח על שירות/עזרה</h4>
+                    <div class="text-4xl mb-3 transition-transform duration-300 group-hover:rotate-12">🏛️</div>
+                    <h4 class="text-lg font-bold mb-2 transition-colors duration-300 group-hover:text-purple-400">פנה לוועד השכונה</h4>
                     <p class="text-gray-400 text-sm mb-4 transition-colors duration-300 group-hover:text-gray-300">
-                        ראית משהו שצריך תיקון? רוצה להציע עזרה לשכנים? דווח לנו.
+                        יש לך הצעה? צריך עזרה מול העיריה? הוועד כאן בשבילך!
                     </p>
                     <button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all w-full group-hover:scale-105 group-hover:shadow-lg">
-                        פתח פנייה
+                        צור קשר עם הוועד
                     </button>
                 </div>
             </div>

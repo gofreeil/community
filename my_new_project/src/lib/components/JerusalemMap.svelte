@@ -21,10 +21,47 @@
     let isLoggedIn = false; // במציאות זה יבוא מניהול משתמשים
     let showHelpMenu = false;
     let showWaves = false;
+    let showSuccessMessage = false;
+    let successMessageText = '';
     let isMouseOver = false;
+    let handRaised = false;
+    let showSurvey = false;
+    let raisedHandMessage = '';
+    let raisedHandIcon = '';
+    let selectedCategory = 'benefits'; // קטגוריה נבחרת
     let autoSwitchInterval: number | null = null;
     let showNeighborhoodsMenu = false;
     let selectedCity = '';
+
+    // מיפוי בין קטגוריות לסימונים במפה
+    const categoryMarkers: Record<string, string[]> = {
+        'benefits': ['gemach', 'babysitter', 'minyan', 'shop', 'giveaway', 'activity'],
+        'gemachim': ['gemach'],
+        'giveaway': ['giveaway'],
+        'business': ['babysitter'],
+        'minyanim': ['minyan'],
+        'shops': ['shop'],
+        'education': ['activity']
+    };
+
+    const mapMarkers = [
+        { id: 'gemach', category: 'gemachim', top: '25%', left: '30%', icon: '🎁', label: 'גמ"ח ספרים', color: 'purple' },
+        { id: 'babysitter', category: 'business', top: '40%', left: '60%', icon: '👶', label: 'בייבי סיטר', color: 'pink' },
+        { id: 'minyan', category: 'minyanim', top: '60%', left: '25%', icon: '✡️', label: 'מניין שחרית', color: 'blue' },
+        { id: 'shop', category: 'shops', top: '35%', left: '75%', icon: '🏪', label: 'מכולת 24/7', color: 'green' },
+        { id: 'giveaway', category: 'giveaway', top: '70%', left: '55%', icon: '📦', label: 'ספה למסירה', color: 'orange' },
+        { id: 'activity', category: 'education', top: '50%', left: '45%', icon: '🎨', label: 'חוג כדורגל', color: 'red' }
+    ];
+
+    function isMarkerVisible(markerId: string): boolean {
+        if (selectedCategory === 'benefits') return true;
+        const visibleMarkers = categoryMarkers[selectedCategory] || [];
+        return visibleMarkers.includes(markerId);
+    }
+
+    function handleCategoryClick(categoryId: string) {
+        selectedCategory = categoryId;
+    }
 
     const citiesAndNeighborhoods = {
         'אילת': ['שכונת התמרים', 'שכונת הדקלים', 'שכונת השחמון'],
@@ -151,24 +188,67 @@
         
         // הפעל אנימציית גלים
         showWaves = true;
-        
-        // המתן שהאנימציה תתחיל לפני ה-alert
-        setTimeout(() => {
-            if (optionId === 4) {
-                // אפשרות "אחר" - פתח טופס
-                const customHelp = prompt('תאר את העזרה שאתה זקוק לה:');
-                if (customHelp) {
-                    alert(`בקשת עזרה נשלחה: ${customHelp}`);
-                }
-            } else {
-                alert(`בקשת עזרה נשלחה: ${option?.text}`);
-            }
-        }, 100);
+        handRaised = true; // סמן שהיד מורמת
+        raisedHandMessage = option?.text || '';
+        raisedHandIcon = option?.icon || '🆘';
         
         // כבה את הגלים אחרי 2 שניות
         setTimeout(() => {
             showWaves = false;
         }, 2000);
+
+        if (optionId === 4) {
+            // אפשרות "אחר" - פתח טופס
+            setTimeout(() => {
+                const customHelp = prompt('תאר את העזרה שאתה זקוק לה:');
+                if (customHelp) {
+                    raisedHandMessage = customHelp;
+                    successMessageText = `בקשת עזרה נשלחה: ${customHelp}`;
+                    showSuccessMessage = true;
+                    setTimeout(() => {
+                        showSuccessMessage = false;
+                    }, 3000);
+                } else {
+                    // אם ביטל - הורד את היד
+                    handRaised = false;
+                    raisedHandMessage = '';
+                    raisedHandIcon = '';
+                }
+            }, 100);
+        } else {
+            successMessageText = `בקשת עזרה נשלחה: ${option?.text}`;
+            showSuccessMessage = true;
+            setTimeout(() => {
+                showSuccessMessage = false;
+            }, 3000);
+        }
+    }
+
+    function handleLowerHand() {
+        showSurvey = true;
+    }
+
+    function handleSurveyResponse(response: 'community' | 'other' | 'cancel') {
+        if (response === 'community') {
+            successMessageText = 'תודה! שמחים שהקהילה עזרה 🎉';
+            showSuccessMessage = true;
+            setTimeout(() => {
+                showSuccessMessage = false;
+            }, 3000);
+        } else if (response === 'other') {
+            successMessageText = 'תודה על המשוב! 👍';
+            showSuccessMessage = true;
+            setTimeout(() => {
+                showSuccessMessage = false;
+            }, 3000);
+        }
+        
+        if (response !== 'cancel') {
+            handRaised = false;
+            raisedHandMessage = '';
+            raisedHandIcon = '';
+        }
+        showSurvey = false;
     }
 </script>
 
@@ -251,8 +331,9 @@
         <div class="flex flex-wrap justify-center gap-3 p-2">
             {#each categories as category}
                 <button
+                    on:click={() => handleCategoryClick(category.id)}
                     title="לחץ כדי לסנן במפה"
-                    class="flex items-center gap-1.5 {category.id === 'benefits' ? 'bg-gradient-to-br from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-gray-900 border-yellow-500' : 'bg-gradient-to-br from-white to-gray-200 hover:from-blue-100 hover:to-white text-gray-900 border-purple-300'} px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg transition-all hover:scale-105 border"
+                    class="flex items-center gap-1.5 {selectedCategory === category.id ? (category.id === 'benefits' ? 'bg-gradient-to-br from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-gray-900 border-yellow-500 scale-110' : 'bg-gradient-to-br from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-purple-500 scale-110') : (category.id === 'benefits' ? 'bg-gradient-to-br from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-gray-900 border-yellow-500' : 'bg-gradient-to-br from-white to-gray-200 hover:from-blue-100 hover:to-white text-gray-900 border-purple-300')} px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg transition-all hover:scale-105 border"
                 >
                     <span class="text-base">{category.icon}</span>
                     {category.label}
@@ -324,67 +405,36 @@
                     </div>
                 {/if}
                 
+                <!-- בועת בקשת עזרה -->
+                {#if handRaised && raisedHandMessage}
+                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20">
+                        <div class="bg-red-600 text-white px-6 py-4 rounded-2xl shadow-2xl border-4 border-yellow-400 max-w-md">
+                            <div class="flex items-center gap-4">
+                                <span class="text-5xl">{raisedHandIcon}</span>
+                                <div>
+                                    <p class="font-black text-xl mb-1">🚨 בקשת עזרה פעילה</p>
+                                    <p class="text-lg font-bold">{raisedHandMessage}</p>
+                                    <p class="text-sm text-yellow-200 mt-2">ממתין לעזרה מהקהילה...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {/if}
+                
                 <!-- סמנים על המפה -->
                 <div class="absolute inset-0 z-10 pointer-events-none">
-                    <!-- גמ"ח ספרים -->
-                    <div class="absolute" style="top: 25%; left: 30%;">
-                        <div class="text-center">
-                            <span class="text-3xl drop-shadow-lg">🎁</span>
-                            <div class="bg-purple-600 text-white text-xs px-2 py-1 rounded mt-1 whitespace-nowrap font-bold shadow-lg">
-                                גמ"ח ספרים
+                    {#each mapMarkers as marker}
+                        {#if isMarkerVisible(marker.id)}
+                            <div class="absolute transition-all duration-500" style="top: {marker.top}; left: {marker.left};">
+                                <div class="text-center animate-fadeIn">
+                                    <span class="text-3xl drop-shadow-lg">{marker.icon}</span>
+                                    <div class="bg-{marker.color}-600 text-white text-xs px-2 py-1 rounded mt-1 whitespace-nowrap font-bold shadow-lg">
+                                        {marker.label}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                    
-                    <!-- בייבי סיטר -->
-                    <div class="absolute" style="top: 40%; left: 60%;">
-                        <div class="text-center">
-                            <span class="text-3xl drop-shadow-lg">👶</span>
-                            <div class="bg-pink-600 text-white text-xs px-2 py-1 rounded mt-1 whitespace-nowrap font-bold shadow-lg">
-                                בייבי סיטר
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- מניין תפילה -->
-                    <div class="absolute" style="top: 60%; left: 25%;">
-                        <div class="text-center">
-                            <span class="text-3xl drop-shadow-lg">✡️</span>
-                            <div class="bg-blue-600 text-white text-xs px-2 py-1 rounded mt-1 whitespace-nowrap font-bold shadow-lg">
-                                מניין שחרית
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- מכולת -->
-                    <div class="absolute" style="top: 35%; left: 75%;">
-                        <div class="text-center">
-                            <span class="text-3xl drop-shadow-lg">🏪</span>
-                            <div class="bg-green-600 text-white text-xs px-2 py-1 rounded mt-1 whitespace-nowrap font-bold shadow-lg">
-                                מכולת 24/7
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- למסירה - רהיטים -->
-                    <div class="absolute" style="top: 70%; left: 55%;">
-                        <div class="text-center">
-                            <span class="text-3xl drop-shadow-lg">📦</span>
-                            <div class="bg-orange-600 text-white text-xs px-2 py-1 rounded mt-1 whitespace-nowrap font-bold shadow-lg">
-                                ספה למסירה
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- חוג ספורט -->
-                    <div class="absolute" style="top: 50%; left: 45%;">
-                        <div class="text-center">
-                            <span class="text-3xl drop-shadow-lg">🎨</span>
-                            <div class="bg-red-600 text-white text-xs px-2 py-1 rounded mt-1 whitespace-nowrap font-bold shadow-lg">
-                                חוג כדורגל
-                            </div>
-                        </div>
-                    </div>
+                        {/if}
+                    {/each}
                 </div>
                 
                 <iframe
@@ -481,6 +531,21 @@
             {viewMode === 'map' ? '📍 מפת הקהילה - ירושלים' : '📋 רשימת שירותים'}
         </div>
 
+        <!-- הודעת הצלחה -->
+        {#if showSuccessMessage}
+            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 animate-slideDown">
+                <div class="bg-green-600 text-white px-6 py-4 rounded-xl shadow-2xl border-2 border-green-400">
+                    <div class="flex items-center gap-3">
+                        <span class="text-3xl">✅</span>
+                        <div>
+                            <p class="font-bold text-lg">הקריאה נשלחה בהצלחה!</p>
+                            <p class="text-sm text-green-100">{successMessageText}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {/if}
+
         <!-- כפתור הוסף יתרון - בחלק העליון -->
         <div class="absolute left-1/2 transform -translate-x-1/2 z-20" style="top: -10px;">
             <button
@@ -498,17 +563,32 @@
 
         <!-- כפתור הרמת יד מיוחד - בתחתית המפה -->
         <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 z-20">
-            <button
-                on:click={() => showHelpMenu = !showHelpMenu}
-                title="בקש עזרה מהקהילה"
-                class="relative group overflow-hidden bg-gradient-to-br from-red-500 via-pink-500 to-purple-600 hover:from-red-400 hover:via-pink-400 hover:to-purple-500 text-white px-6 py-3 rounded-xl font-bold text-base shadow-xl transition-all hover:scale-105 border-4 border-purple-600"
-            >
-                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer-once"></div>
-                <div class="relative flex items-center gap-3">
-                    <span class="text-2xl animate-wave-once">✋</span>
-                    <span>הרמת יד</span>
-                </div>
-            </button>
+            {#if !handRaised}
+                <!-- כפתור הרמת יד רגיל -->
+                <button
+                    on:click={() => showHelpMenu = !showHelpMenu}
+                    title="בקש עזרה מהקהילה"
+                    class="relative group overflow-hidden bg-gradient-to-br from-red-500 via-pink-500 to-purple-600 hover:from-red-400 hover:via-pink-400 hover:to-purple-500 text-white px-6 py-3 rounded-xl font-bold text-base shadow-xl transition-all hover:scale-105 border-4 border-purple-600"
+                >
+                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer-once"></div>
+                    <div class="relative flex items-center gap-3">
+                        <span class="text-2xl">✋</span>
+                        <span>הרמת יד</span>
+                    </div>
+                </button>
+            {:else}
+                <!-- כפתור יד מורמת -->
+                <button
+                    on:click={handleLowerHand}
+                    title="הורד את היד"
+                    class="relative group overflow-hidden bg-gradient-to-br from-yellow-500 via-orange-500 to-red-600 hover:from-yellow-400 hover:via-orange-400 hover:to-red-500 text-white px-6 py-3 rounded-xl font-bold text-base shadow-xl transition-all hover:scale-105 border-4 border-yellow-400 animate-pulse"
+                >
+                    <div class="relative flex items-center gap-3">
+                        <span class="text-2xl">🙋</span>
+                        <span>יד מורמת - לחץ להורדה</span>
+                    </div>
+                </button>
+            {/if}
 
             <!-- תפריט עזרה -->
             {#if showHelpMenu}
@@ -535,6 +615,43 @@
                     </button>
                 </div>
             {/if}
+
+            <!-- סקר הורדת יד -->
+            {#if showSurvey}
+                <div class="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 w-80 bg-white rounded-xl shadow-2xl border-2 border-yellow-600 overflow-hidden animate-slideDown">
+                    <div class="bg-gradient-to-r from-yellow-500 to-orange-500 p-3 text-center">
+                        <h3 class="text-white font-bold text-lg">איך הבעיה נפתרה?</h3>
+                    </div>
+                    <div class="p-4 space-y-3">
+                        <button
+                            on:click={() => handleSurveyResponse('community')}
+                            class="w-full flex items-center gap-3 p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors border-2 border-green-300"
+                        >
+                            <span class="text-3xl">🤝</span>
+                            <div class="text-right">
+                                <p class="font-bold text-green-800">הקהילה עזרה לי</p>
+                                <p class="text-xs text-green-600">תודה לכולם!</p>
+                            </div>
+                        </button>
+                        <button
+                            on:click={() => handleSurveyResponse('other')}
+                            class="w-full flex items-center gap-3 p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border-2 border-blue-300"
+                        >
+                            <span class="text-3xl">✅</span>
+                            <div class="text-right">
+                                <p class="font-bold text-blue-800">הבעיה נפתרה אחרת</p>
+                                <p class="text-xs text-blue-600">הכל בסדר עכשיו</p>
+                            </div>
+                        </button>
+                    </div>
+                    <button
+                        on:click={() => handleSurveyResponse('cancel')}
+                        class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 py-2 text-sm font-bold transition-colors"
+                    >
+                        ביטול
+                    </button>
+                </div>
+            {/if}
         </div>
     </div>
 </div>
@@ -547,6 +664,21 @@
         100% {
             transform: translateX(100%);
         }
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.8);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .animate-fadeIn {
+        animation: fadeIn 0.5s ease-out;
     }
 
     @keyframes wave {
