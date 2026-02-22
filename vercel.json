@@ -1,5 +1,0 @@
-{
-  "buildCommand": "cd my_new_project && npm run build",
-  "installCommand": "cd my_new_project && npm install",
-  "framework": null
-}
