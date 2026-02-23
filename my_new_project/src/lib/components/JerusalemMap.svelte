@@ -1,57 +1,142 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
-    import { t } from 'svelte-i18n';
-    
+    import { onMount } from "svelte";
+    import { t } from "svelte-i18n";
+
     const categories = [
         { id: "benefits", label: "כל היתרונות", icon: "⭐" },
-        { id: "gemachim", label: 'גמ"חים', icon: "🎁", items: ["גמ\"ח ספרים", "גמ\"ח כלים", "גמ\"ח ציוד לתינוקות", "גמ\"ח בגדים"] },
-        { id: "giveaway", label: "למסירה", icon: "📦", items: ["רהיטים", "מוצרי חשמל", "ספרים", "בגדים", "צעצועים"] },
-        { id: "business", label: "בייבי סיטר", icon: "👶", items: ["בייבי סיטר בשעות הערב", "בייבי סיטר סופי שבוע", "בייבי סיטר קבוע"] },
-        { id: "minyanim", label: "יהדות", icon: "✡️", items: ["מניינים לתפילה", "שיעורי תורה", "מקוואות", "בתי כנסת"] },
-        { id: "education", label: "חוגים", icon: "🎨", items: ["חוגי ספורט", "חוגי אומנות", "חוגי מוזיקה", "חוגי מדעים"] },
-        { id: "realestate", label: "בתי הארחה לשבת", icon: "🏠", items: ["בתי הארחה משפחתיים", "בתי הארחה לזוגות", "בתי הארחה ליחידים"] },
-        { id: "security", label: "צימרים", icon: "🏡", items: ["צימרים זוגיים", "צימרים משפחתיים", "צימרים עם בריכה"] },
-        { id: "kids", label: "לילדים", icon: "🧒", items: ["גני משחקים", "פעילויות לילדים", "ספריות לילדים", "מועדוניות"] },
-        { id: "shops", label: "חנויות", icon: "🏪", items: ["מכולת", "מאפייה", "בית מרקחת", "חנות בגדים", "דואר", "בנקים", "כספומט"] },
-        { id: "restaurants", label: "מסעדות", icon: "🍽️", items: ["מסעדה", "מזון מהיר"] },
-        { id: "transport", label: "טרמפים", icon: "🚗", items: ["נוסע קבוע ל...", "מציע טרמפ", "דרוש טרמפ"] },
+        {
+            id: "gemachim",
+            label: 'גמ"חים',
+            icon: "🎁",
+            items: [
+                'גמ"ח ספרים',
+                'גמ"ח כלים',
+                'גמ"ח ציוד לתינוקות',
+                'גמ"ח בגדים',
+            ],
+        },
+        {
+            id: "giveaway",
+            label: "למסירה",
+            icon: "📦",
+            items: ["רהיטים", "מוצרי חשמל", "ספרים", "בגדים", "צעצועים"],
+        },
+        {
+            id: "business",
+            label: "בייבי סיטר",
+            icon: "👶",
+            items: [
+                "בייבי סיטר בשעות הערב",
+                "בייבי סיטר סופי שבוע",
+                "בייבי סיטר קבוע",
+            ],
+        },
+        {
+            id: "minyanim",
+            label: "יהדות",
+            icon: "✡️",
+            items: ["מניינים לתפילה", "שיעורי תורה", "מקוואות", "בתי כנסת"],
+        },
+        {
+            id: "education",
+            label: "חוגים",
+            icon: "🎨",
+            items: ["חוגי ספורט", "חוגי אומנות", "חוגי מוזיקה", "חוגי מדעים"],
+        },
+        {
+            id: "realestate",
+            label: "בית הארחה לשבת",
+            icon: "🕯️🕯️",
+            items: [
+                "בתי הארחה משפחתיים",
+                "בתי הארחה לזוגות",
+                "בתי הארחה ליחידים",
+            ],
+        },
+        {
+            id: "security",
+            label: "צימרים",
+            icon: "🏡",
+            items: ["צימרים זוגיים", "צימרים משפחתיים", "צימרים עם בריכה"],
+        },
+        {
+            id: "kids",
+            label: "לילדים",
+            icon: "🧒",
+            items: [
+                "גני משחקים",
+                "פעילויות לילדים",
+                "ספריות לילדים",
+                "מועדוניות",
+            ],
+        },
+        {
+            id: "shops",
+            label: "חנויות",
+            icon: "🏪",
+            items: [
+                "מכולת",
+                "מאפייה",
+                "בית מרקחת",
+                "חנות בגדים",
+                "דואר",
+                "בנקים",
+                "כספומט",
+            ],
+        },
+        {
+            id: "restaurants",
+            label: "מסעדות",
+            icon: "🍽️",
+            items: ["מסעדה", "מזון מהיר"],
+        },
+        {
+            id: "transport",
+            label: "טרמפים",
+            icon: "🚗",
+            items: ["נוסע קבוע ל...", "מציע טרמפ", "דרוש טרמפ"],
+        },
     ];
 
-    let viewMode: 'map' | 'list' | 'add' = 'map';
+    let viewMode: "map" | "list" | "add" = "map";
     let isFlipping = false;
     let expandedCategories: Set<string> = new Set();
     let isLoggedIn = false; // במציאות זה יבוא מניהול משתמשים
     let showHelpMenu = false;
     let showWaves = false;
     let showSuccessMessage = false;
-    let successMessageText = '';
+    let successMessageText = "";
     let isMouseOver = false;
     let handRaised = false;
     let showSurvey = false;
-    let raisedHandMessage = '';
-    let raisedHandIcon = '';
-    let selectedCategory = 'benefits'; // קטגוריה נבחרת
+    let raisedHandMessage = "";
+    let raisedHandIcon = "";
+    let selectedCategory = "benefits"; // קטגוריה נבחרת
     let autoSwitchInterval: number | null = null;
     let isAutoSwitching = false;
     let autoReturnTimeout: number | null = null;
     let userInteracted = false; // האם המשתמש נגע בכפתור
     let showNeighborhoodsMenu = false;
-    let selectedNeighborhood = 'קרית משה';
-    let selectedNeighborhoodCity = 'ירושלים';
-    let selectedCity = '';
+    let selectedNeighborhood = "קרית משה";
+    let selectedNeighborhoodCity = "ירושלים";
+    let selectedCity = "";
 
     // עקוב אחרי שינויים ב-viewMode - חזור למפה אחרי 3 שניות אם לא היה אינטראקציה
     $: {
-        if (viewMode === 'list') {
+        if (viewMode === "list") {
             // ברגע שנכנסנו לתצוגת רשימה, התחל ספירה לחזרה
             if (autoReturnTimeout === null && !isMouseOver && !userInteracted) {
                 autoReturnTimeout = setTimeout(() => {
                     // בדוק שעדיין ברשימה, לא על המפה, ולא היה אינטראקציה
-                    if (viewMode === 'list' && !isMouseOver && !userInteracted) {
-                        console.log('Auto returning to map after 3 seconds');
+                    if (
+                        viewMode === "list" &&
+                        !isMouseOver &&
+                        !userInteracted
+                    ) {
+                        console.log("Auto returning to map after 3 seconds");
                         isFlipping = true;
                         setTimeout(() => {
-                            viewMode = 'map';
+                            viewMode = "map";
                             userInteracted = false;
                         }, 350);
                         setTimeout(() => {
@@ -73,63 +158,134 @@
     // מיפוי שכונות לכתובות Google Maps
     const neighborhoodMaps: Record<string, string> = {
         // ירושלים
-        'קרית משה': 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3391.8864700000003!2d35.21371!3d31.768319!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1502d7d634c1f8b9%3A0x1028fca4a63b44a!2z15nXqNeV16nXnNep150!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil',
-        'רחביה': 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3390.5!2d35.2137!3d31.7683!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1502d6df05982a2b%3A0x6f71c4d0e73b7e0a!2z16jXl9eR15nXlA!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil',
-        'גבעת שאול': 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3389.2!2d35.1937!3d31.7883!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1502d6c234567890%3A0x1234567890abcdef!2z15ble16LXqiDXqNeqSDXqdei15XXnA!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil',
-        'רמות': 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3387.8!2d35.2337!3d31.8083!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1502d5e123456789%3A0x9876543210fedcba!2z16jXnteV16o!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil',
-        'גילה': 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3393.1!2d35.2437!3d31.7483!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1502d8f987654321%3A0xabcdef1234567890!2z15ble15nXnNeU!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil',
-        'קטמון': 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3392.3!2d35.2237!3d31.7583!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1502d7f456789012%3A0x2468ace013579bdf!2z16fXmNeY157XldefXnA!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil',
-        'בקעה': 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3391.5!2d35.2037!3d31.7683!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1502d6e789012345%3A0x13579bdf2468ace0!2z15HXp16LXlNeU!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil',
-        'מעלות דפנה': 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3388.7!2d35.2537!3d31.7983!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1502d5d012345678%3A0xfedcba0987654321!2z157Xotec15XXqiDXk9ek16DXlA!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil',
-        
+        "קרית משה":
+            "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3391.8864700000003!2d35.21371!3d31.768319!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1502d7d634c1f8b9%3A0x1028fca4a63b44a!2z15nXqNeV16nXnNep150!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil",
+        רחביה: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3390.5!2d35.2137!3d31.7683!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1502d6df05982a2b%3A0x6f71c4d0e73b7e0a!2z16jXl9eR15nXlA!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil",
+        "גבעת שאול":
+            "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3389.2!2d35.1937!3d31.7883!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1502d6c234567890%3A0x1234567890abcdef!2z15ble16LXqiDXqNeqSDXqdei15XXnA!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil",
+        רמות: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3387.8!2d35.2337!3d31.8083!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1502d5e123456789%3A0x9876543210fedcba!2z16jXnteV16o!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil",
+        גילה: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3393.1!2d35.2437!3d31.7483!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1502d8f987654321%3A0xabcdef1234567890!2z15ble15nXnNeU!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil",
+        קטמון: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3392.3!2d35.2237!3d31.7583!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1502d7f456789012%3A0x2468ace013579bdf!2z16fXmNeY157XldefXnA!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil",
+        בקעה: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3391.5!2d35.2037!3d31.7683!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1502d6e789012345%3A0x13579bdf2468ace0!2z15HXp16LXlNeU!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil",
+        "מעלות דפנה":
+            "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3388.7!2d35.2537!3d31.7983!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1502d5d012345678%3A0xfedcba0987654321!2z157Xotec15XXqiDXk9ek16DXlA!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil",
+
         // תל אביב
-        'רמת אביב': 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3378.2!2d34.7937!3d32.1183!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151d4ca6193b7c1f%3A0x8b5e5b5e5b5e5b5e!2z16jXnteqINeQ15HXmdeR!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil',
-        'פלורנטין': 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3381.5!2d34.7637!3d32.0583!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151d4b36e5f6789a%3A0x1a2b3c4d5e6f7890!2z16TXnNeV16jXoNeY15nXnQ!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil',
-        'נווה צדק': 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3381.8!2d34.7537!3d32.0483!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151d4b2f123456ab%3A0xabcdef0123456789!2z16DXldeV15Ug16bXk9en!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil',
-        'יפו העתיקה': 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3382.1!2d34.7437!3d32.0383!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151d4b1e987654cd%3A0x9876543210fedcba!2z15nXpNeVINeU16LXqteZ15fXlA!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil',
-        'רמת החייל': 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3379.5!2d34.8037!3d32.0983!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151d4d5a456789ef%3A0x2468ace013579bdf!2z16jXnteqINeU15fXmdeZ15w!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil',
-        
+        "רמת אביב":
+            "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3378.2!2d34.7937!3d32.1183!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151d4ca6193b7c1f%3A0x8b5e5b5e5b5e5b5e!2z16jXnteqINeQ15HXmdeR!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil",
+        פלורנטין:
+            "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3381.5!2d34.7637!3d32.0583!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151d4b36e5f6789a%3A0x1a2b3c4d5e6f7890!2z16TXnNeV16jXoNeY15nXnQ!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil",
+        "נווה צדק":
+            "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3381.8!2d34.7537!3d32.0483!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151d4b2f123456ab%3A0xabcdef0123456789!2z16DXldeV15Ug16bXk9en!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil",
+        "יפו העתיקה":
+            "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3382.1!2d34.7437!3d32.0383!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151d4b1e987654cd%3A0x9876543210fedcba!2z15nXpNeVINeU16LXqteZ15fXlA!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil",
+        "רמת החייל":
+            "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3379.5!2d34.8037!3d32.0983!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151d4d5a456789ef%3A0x2468ace013579bdf!2z16jXnteqINeU15fXmdeZ15w!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil",
+
         // חיפה
-        'כרמל צרפתי': 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3348.2!2d34.9837!3d32.7983!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151dcf123456789a%3A0x1234567890abcdef!2z15vXqNee15wg16bXqNek16rXmQ!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil',
-        'נווה שאנן': 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3349.1!2d34.9737!3d32.7883!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151dcf987654321b%3A0xfedcba0987654321!2z16DXldeV15Ug16nXkNeQ16DXnQ!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil',
-        'רמת אלמוגי': 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3347.5!2d34.9937!3d32.8083!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151dcf456789012c%3A0x13579bdf2468ace0!2z16jXnteqINeQ15zXnteV15LXmQ!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil',
-        'בת גלים': 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3350.2!2d34.9637!3d32.7783!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151dcf789012345d%3A0x2468ace013579bdf!2z15HXqiDXnNec15nXnQ!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil',
-        
+        "כרמל צרפתי":
+            "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3348.2!2d34.9837!3d32.7983!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151dcf123456789a%3A0x1234567890abcdef!2z15vXqNee15wg16bXqNek16rXmQ!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil",
+        "נווה שאנן":
+            "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3349.1!2d34.9737!3d32.7883!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151dcf987654321b%3A0xfedcba0987654321!2z16DXldeV15Ug16nXkNeQ16DXnQ!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil",
+        "רמת אלמוגי":
+            "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3347.5!2d34.9937!3d32.8083!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151dcf456789012c%3A0x13579bdf2468ace0!2z16jXnteqINeQ15zXnteV15LXmQ!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil",
+        "בת גלים":
+            "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3350.2!2d34.9637!3d32.7783!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151dcf789012345d%3A0x2468ace013579bdf!2z15HXqiDXnNec15nXnQ!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil",
+
         // נתניה
-        'קרית השרון': 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3365.2!2d34.8537!3d32.3283!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151d4f123456789e%3A0x1234567890abcdef!2z16fXqNeZ16rXqiDXlNep16jXldefXnA!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil',
-        'רמת פולג': 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3364.8!2d34.8637!3d32.3383!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151d4f987654321f%3A0xfedcba0987654321!2z16jXnteqINeR15XXnNeL!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil',
-        'נווה גנים': 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3366.1!2d34.8437!3d32.3183!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151d4f456789012g%3A0x13579bdf2468ace0!2z16DXldeV15Ug15LXoNeZ150!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil'
+        "קרית השרון":
+            "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3365.2!2d34.8537!3d32.3283!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151d4f123456789e%3A0x1234567890abcdef!2z16fXqNeZ16rXqiDXlNep16jXldefXnA!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil",
+        "רמת פולג":
+            "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3364.8!2d34.8637!3d32.3383!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151d4f987654321f%3A0xfedcba0987654321!2z16jXnteqINeR15XXnNeL!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil",
+        "נווה גנים":
+            "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3366.1!2d34.8437!3d32.3183!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151d4f456789012g%3A0x13579bdf2468ace0!2z16DXldeV15Ug15LXoNeZ150!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil",
     };
 
     // פונקציה לקבלת כתובת המפה
     function getMapUrl(): string {
         const key = selectedNeighborhood;
-        return neighborhoodMaps[key] || neighborhoodMaps['קרית משה']; // ברירת מחדל
+        return neighborhoodMaps[key] || neighborhoodMaps["קרית משה"]; // ברירת מחדל
     }
 
     // מיפוי בין קטגוריות לסימונים במפה
     const categoryMarkers: Record<string, string[]> = {
-        'benefits': ['gemach', 'babysitter', 'minyan', 'shop', 'giveaway', 'activity', 'restaurant'],
-        'gemachim': ['gemach'],
-        'giveaway': ['giveaway'],
-        'business': ['babysitter'],
-        'minyanim': ['minyan'],
-        'shops': ['shop'],
-        'restaurants': ['restaurant'],
-        'education': ['activity']
+        benefits: [
+            "gemach",
+            "babysitter",
+            "minyan",
+            "shop",
+            "giveaway",
+            "activity",
+            "restaurant",
+        ],
+        gemachim: ["gemach"],
+        giveaway: ["giveaway"],
+        business: ["babysitter"],
+        minyanim: ["minyan"],
+        shops: ["shop"],
+        restaurants: ["restaurant"],
+        education: ["activity"],
     };
 
     const mapMarkers = [
-        { id: 'gemach', category: 'gemachim', top: '25%', left: '30%', icon: '🎁', label: 'גמ"ח ספרים', color: 'purple' },
-        { id: 'babysitter', category: 'business', top: '40%', left: '60%', icon: '👶', label: 'בייבי סיטר', color: 'pink' },
-        { id: 'minyan', category: 'minyanim', top: '60%', left: '25%', icon: '✡️', label: 'מניין שחרית', color: 'blue' },
-        { id: 'shop', category: 'shops', top: '35%', left: '75%', icon: '🏪', label: 'מכולת 24/7', color: 'green' },
-        { id: 'giveaway', category: 'giveaway', top: '70%', left: '55%', icon: '📦', label: 'ספה למסירה', color: 'orange' },
-        { id: 'activity', category: 'education', top: '50%', left: '45%', icon: '🎨', label: 'חוג כדורגל', color: 'red' }
+        {
+            id: "gemach",
+            category: "gemachim",
+            top: "25%",
+            left: "30%",
+            icon: "🎁",
+            label: 'גמ"ח ספרים',
+            color: "purple",
+        },
+        {
+            id: "babysitter",
+            category: "business",
+            top: "40%",
+            left: "60%",
+            icon: "👶",
+            label: "בייבי סיטר",
+            color: "pink",
+        },
+        {
+            id: "minyan",
+            category: "minyanim",
+            top: "60%",
+            left: "25%",
+            icon: "✡️",
+            label: "מניין שחרית",
+            color: "blue",
+        },
+        {
+            id: "shop",
+            category: "shops",
+            top: "35%",
+            left: "75%",
+            icon: "🏪",
+            label: "מכולת 24/7",
+            color: "green",
+        },
+        {
+            id: "giveaway",
+            category: "giveaway",
+            top: "70%",
+            left: "55%",
+            icon: "📦",
+            label: "ספה למסירה",
+            color: "orange",
+        },
+        {
+            id: "activity",
+            category: "education",
+            top: "50%",
+            left: "45%",
+            icon: "🎨",
+            label: "חוג כדורגל",
+            color: "red",
+        },
     ];
 
     function isMarkerVisible(markerId: string): boolean {
-        if (selectedCategory === 'benefits') return true;
+        if (selectedCategory === "benefits") return true;
         const visibleMarkers = categoryMarkers[selectedCategory] || [];
         return visibleMarkers.includes(markerId);
     }
@@ -139,17 +295,32 @@
     }
 
     const citiesAndNeighborhoods = {
-        'אילת': ['שכונת התמרים', 'שכונת הדקלים', 'שכונת השחמון'],
-        'באר שבע': ['רמות', 'נווה זאב', 'נווה נוי', 'רמת חן'],
-        'בני ברק': ['פרדס כץ', 'רמת אלחנן', 'שיכון ה'],
-        'הרצליה': ['הרצליה פיתוח', 'נוה עובד', 'נווה ישראל'],
-        'חיפה': ['כרמל צרפתי', 'נווה שאנן', 'רמת אלמוגי', 'בת גלים'],
-        'ירושלים': ['קרית משה', 'רחביה', 'גבעת שאול', 'רמות', 'גילה', 'קטמון', 'בקעה', 'מעלות דפנה'],
-        'נתניה': ['קרית השרון', 'רמת פולג', 'נווה גנים'],
-        'פתח תקווה': ['קרית אריה', 'נווה עוז', 'שיכון דן'],
-        'ראשון לציון': ['נווה דקלים', 'רמת אליהו', 'שיכון ותיקים'],
-        'רחובות': ['רמת רחובות', 'נווה חוף', 'שכונת הדרים'],
-        'תל אביב': ['רמת אביב', 'פלורנטין', 'נווה צדק', 'יפו העתיקה', 'רמת החייל']
+        אילת: ["שכונת התמרים", "שכונת הדקלים", "שכונת השחמון"],
+        "באר שבע": ["רמות", "נווה זאב", "נווה נוי", "רמת חן"],
+        "בני ברק": ["פרדס כץ", "רמת אלחנן", "שיכון ה"],
+        הרצליה: ["הרצליה פיתוח", "נוה עובד", "נווה ישראל"],
+        חיפה: ["כרמל צרפתי", "נווה שאנן", "רמת אלמוגי", "בת גלים"],
+        ירושלים: [
+            "קרית משה",
+            "רחביה",
+            "גבעת שאול",
+            "רמות",
+            "גילה",
+            "קטמון",
+            "בקעה",
+            "מעלות דפנה",
+        ],
+        נתניה: ["קרית השרון", "רמת פולג", "נווה גנים"],
+        "פתח תקווה": ["קרית אריה", "נווה עוז", "שיכון דן"],
+        "ראשון לציון": ["נווה דקלים", "רמת אליהו", "שיכון ותיקים"],
+        רחובות: ["רמת רחובות", "נווה חוף", "שכונת הדרים"],
+        "תל אביב": [
+            "רמת אביב",
+            "פלורנטין",
+            "נווה צדק",
+            "יפו העתיקה",
+            "רמת החייל",
+        ],
     };
 
     const helpOptions = [
@@ -157,30 +328,38 @@
         { id: 5, text: "אבד כלב", icon: "🐕" },
         { id: 1, text: "מבוגר זקוק לעזרה", icon: "👴" },
         { id: 2, text: "זקוק לעזרה עם הרכב להתנעה", icon: "🚗" },
-        { id: 4, text: "אחר - כתוב את העזרה הזקוקה לך", icon: "✍️" }
+        { id: 4, text: "אחר - כתוב את העזרה הזקוקה לך", icon: "✍️" },
     ];
 
     function startAutoSwitch() {
         if (autoSwitchInterval) {
             clearInterval(autoSwitchInterval);
         }
-        
+
         autoSwitchInterval = setInterval(() => {
-            if (!isMouseOver && viewMode !== 'add' && !userInteracted) {
+            if (!isMouseOver && viewMode !== "add" && !userInteracted) {
                 // עבור לרשימה רק אם אנחנו במפה
-                if (viewMode === 'map') {
+                if (viewMode === "map") {
                     isAutoSwitching = true;
                     setTimeout(() => {
                         isAutoSwitching = false;
                     }, 4000);
                     handleViewToggle();
-                    
+
                     // חזור למפה אחרי 3 שניות אלא אם כן המשתמש על הטבלה או לחץ על כפתור החלף
                     setTimeout(() => {
-                        console.log('Checking return to map:', { viewMode, isMouseOver, userInteracted });
+                        console.log("Checking return to map:", {
+                            viewMode,
+                            isMouseOver,
+                            userInteracted,
+                        });
                         // בדוק את המצב הנוכחי - אם עדיין ברשימה וללא אינטראקציה
-                        if (viewMode === 'list' && !isMouseOver && !userInteracted) {
-                            console.log('Returning to map view');
+                        if (
+                            viewMode === "list" &&
+                            !isMouseOver &&
+                            !userInteracted
+                        ) {
+                            console.log("Returning to map view");
                             isAutoSwitching = true;
                             setTimeout(() => {
                                 isAutoSwitching = false;
@@ -188,7 +367,7 @@
                             // החזר למפה ואתחל את userInteracted
                             isFlipping = true;
                             setTimeout(() => {
-                                viewMode = 'map';
+                                viewMode = "map";
                                 userInteracted = false; // אתחל את הדגל
                             }, 350);
                             setTimeout(() => {
@@ -213,13 +392,19 @@
     function handleMouseLeave() {
         isMouseOver = false;
         // Restart the auto-return timeout when mouse leaves if we're in list view
-        if (viewMode === 'list' && !userInteracted && autoReturnTimeout === null) {
+        if (
+            viewMode === "list" &&
+            !userInteracted &&
+            autoReturnTimeout === null
+        ) {
             autoReturnTimeout = setTimeout(() => {
-                if (viewMode === 'list' && !isMouseOver && !userInteracted) {
-                    console.log('Auto returning to map after 3 seconds (mouse left)');
+                if (viewMode === "list" && !isMouseOver && !userInteracted) {
+                    console.log(
+                        "Auto returning to map after 3 seconds (mouse left)",
+                    );
                     isFlipping = true;
                     setTimeout(() => {
-                        viewMode = 'map';
+                        viewMode = "map";
                         userInteracted = false;
                     }, 350);
                     setTimeout(() => {
@@ -233,49 +418,52 @@
 
     function toggleNeighborhoodsMenu() {
         showNeighborhoodsMenu = !showNeighborhoodsMenu;
-        selectedCity = '';
+        selectedCity = "";
     }
 
     function selectCity(city: string) {
-        selectedCity = selectedCity === city ? '' : city;
+        selectedCity = selectedCity === city ? "" : city;
     }
 
     function selectNeighborhood(city: string, neighborhood: string) {
         selectedNeighborhood = neighborhood;
         selectedNeighborhoodCity = city;
         showNeighborhoodsMenu = false;
-        selectedCity = '';
+        selectedCity = "";
     }
 
     onMount(() => {
         startAutoSwitch();
-        
+
         // סגירת תפריט כשלוחצים מחוץ לו
         const handleClickOutside = (event: MouseEvent) => {
             const target = event.target as HTMLElement;
-            if (showNeighborhoodsMenu && !target.closest('.neighborhoods-menu-container')) {
+            if (
+                showNeighborhoodsMenu &&
+                !target.closest(".neighborhoods-menu-container")
+            ) {
                 showNeighborhoodsMenu = false;
-                selectedCity = '';
+                selectedCity = "";
             }
         };
-        
-        document.addEventListener('click', handleClickOutside);
-        
+
+        document.addEventListener("click", handleClickOutside);
+
         return () => {
             if (autoSwitchInterval) {
                 clearInterval(autoSwitchInterval);
             }
-            document.removeEventListener('click', handleClickOutside);
+            document.removeEventListener("click", handleClickOutside);
         };
     });
 
     function handleViewToggle() {
         isFlipping = true;
         setTimeout(() => {
-            const newViewMode = viewMode === 'map' ? 'list' : 'map';
+            const newViewMode = viewMode === "map" ? "list" : "map";
             viewMode = newViewMode;
             // אם חוזרים למפה, אפס את userInteracted כדי שהספירה תתחיל מחדש
-            if (newViewMode === 'map') {
+            if (newViewMode === "map") {
                 userInteracted = false;
             } else {
                 // אם הולכים לרשימה, סמן שהיה אינטראקציה כדי שלא תחזור מיד
@@ -290,7 +478,7 @@
     function handleAddAdvantage() {
         isFlipping = true;
         setTimeout(() => {
-            viewMode = 'add';
+            viewMode = "add";
         }, 350);
         setTimeout(() => {
             isFlipping = false;
@@ -308,70 +496,81 @@
 
     function handleAddItem(categoryId: string) {
         if (!isLoggedIn) {
-            alert('יש להירשם כדי להוסיף פריטים. מעבר לדף הרשמה...');
+            alert("יש להירשם כדי להוסיף פריטים. מעבר לדף הרשמה...");
             // כאן תוכל להוסיף ניווט לדף הרשמה
             return;
         }
         // כאן תוכל להוסיף לוגיקה להוספת פריט
-        alert(`הוספת פריט לקטגוריה: ${categories.find(c => c.id === categoryId)?.label}`);
+        alert(
+            `הוספת פריט לקטגוריה: ${categories.find((c) => c.id === categoryId)?.label}`,
+        );
     }
 
     function handleHelpRequest(optionId: number) {
-        const option = helpOptions.find(o => o.id === optionId);
+        const option = helpOptions.find((o) => o.id === optionId);
         showHelpMenu = false;
-        
-        const wasNotInMapView = viewMode !== 'map';
-        
+
+        const wasNotInMapView = viewMode !== "map";
+
         // עבור לתצוגת מפה כדי לראות את הגלים
         if (wasNotInMapView) {
             isFlipping = true;
             setTimeout(() => {
-                viewMode = 'map';
+                viewMode = "map";
             }, 350);
             setTimeout(() => {
                 isFlipping = false;
             }, 700);
         }
-        
+
         // הפעל אנימציית גלים אחרי מעבר למפה
-        setTimeout(() => {
-            showWaves = true;
-            handRaised = true; // סמן שהיד מורמת
-            raisedHandMessage = option?.text || '';
-            raisedHandIcon = option?.icon || '🆘';
-            
-            // כבה את הגלים אחרי 2 שניות
-            setTimeout(() => {
-                showWaves = false;
-            }, 2000);
-        }, wasNotInMapView ? 750 : 0);
+        setTimeout(
+            () => {
+                showWaves = true;
+                handRaised = true; // סמן שהיד מורמת
+                raisedHandMessage = option?.text || "";
+                raisedHandIcon = option?.icon || "🆘";
+
+                // כבה את הגלים אחרי 2 שניות
+                setTimeout(() => {
+                    showWaves = false;
+                }, 2000);
+            },
+            wasNotInMapView ? 750 : 0,
+        );
 
         if (optionId === 4) {
             // אפשרות "אחר" - פתח טופס
-            setTimeout(() => {
-                const customHelp = prompt('תאר את העזרה שאתה זקוק לה:');
-                if (customHelp) {
-                    raisedHandMessage = customHelp;
-                    successMessageText = `בקשת עזרה נשלחה: ${customHelp}`;
+            setTimeout(
+                () => {
+                    const customHelp = prompt("תאר את העזרה שאתה זקוק לה:");
+                    if (customHelp) {
+                        raisedHandMessage = customHelp;
+                        successMessageText = `בקשת עזרה נשלחה: ${customHelp}`;
+                        showSuccessMessage = true;
+                        setTimeout(() => {
+                            showSuccessMessage = false;
+                        }, 3000);
+                    } else {
+                        // אם ביטל - הורד את היד
+                        handRaised = false;
+                        raisedHandMessage = "";
+                        raisedHandIcon = "";
+                    }
+                },
+                wasNotInMapView ? 850 : 100,
+            );
+        } else {
+            setTimeout(
+                () => {
+                    successMessageText = `בקשת עזרה נשלחה: ${option?.text}`;
                     showSuccessMessage = true;
                     setTimeout(() => {
                         showSuccessMessage = false;
                     }, 3000);
-                } else {
-                    // אם ביטל - הורד את היד
-                    handRaised = false;
-                    raisedHandMessage = '';
-                    raisedHandIcon = '';
-                }
-            }, wasNotInMapView ? 850 : 100);
-        } else {
-            setTimeout(() => {
-                successMessageText = `בקשת עזרה נשלחה: ${option?.text}`;
-                showSuccessMessage = true;
-                setTimeout(() => {
-                    showSuccessMessage = false;
-                }, 3000);
-            }, wasNotInMapView ? 750 : 0);
+                },
+                wasNotInMapView ? 750 : 0,
+            );
         }
     }
 
@@ -379,50 +578,62 @@
         showSurvey = true;
     }
 
-    function handleSurveyResponse(response: 'community' | 'other' | 'cancel') {
-        if (response === 'community') {
-            successMessageText = 'תודה! שמחים שהקהילה עזרה 🎉';
+    function handleSurveyResponse(response: "community" | "other" | "cancel") {
+        if (response === "community") {
+            successMessageText = "תודה! שמחים שהקהילה עזרה 🎉";
             showSuccessMessage = true;
             setTimeout(() => {
                 showSuccessMessage = false;
             }, 3000);
-        } else if (response === 'other') {
-            successMessageText = 'תודה על המשוב! 👍';
+        } else if (response === "other") {
+            successMessageText = "תודה על המשוב! 👍";
             showSuccessMessage = true;
             setTimeout(() => {
                 showSuccessMessage = false;
             }, 3000);
         }
-        
-        if (response !== 'cancel') {
+
+        if (response !== "cancel") {
             handRaised = false;
-            raisedHandMessage = '';
-            raisedHandIcon = '';
+            raisedHandMessage = "";
+            raisedHandIcon = "";
         }
         showSurvey = false;
     }
 </script>
 
 <div class="flex flex-col gap-4">
-<div class="flex flex-col gap-4">
-    <!-- כותרת שכונה - הוסרה לדף הראשי -->
-    
-    <div class="flex flex-col gap-2">
-        <!-- Buttons Container -->
-        <div class="flex flex-wrap justify-center gap-3 p-2">
-            {#each categories as category}
-                <button
-                    on:click={() => handleCategoryClick(category.id)}
-                    title="לחץ כדי לסנן במפה"
-                    class="flex items-center gap-1.5 {selectedCategory === category.id ? (category.id === 'benefits' ? 'bg-gradient-to-br from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-gray-900 border-yellow-500 scale-110' : 'bg-gradient-to-br from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-purple-500 scale-110') : (category.id === 'benefits' ? 'bg-gradient-to-br from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-gray-900 border-yellow-500' : 'bg-gradient-to-br from-white to-gray-200 hover:from-blue-100 hover:to-white text-gray-900 border-purple-300')} px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg transition-all hover:scale-105 border"
-                >
-                    <span class="text-base">{category.icon}</span>
-                    {category.label}
-                </button>
-            {/each}
+    <div class="flex flex-col gap-4">
+        <!-- כותרת שכונה - הוסרה לדף הראשי -->
+
+        <div class="flex flex-col gap-2">
+            <!-- Buttons Container -->
+            <div class="flex flex-wrap justify-center gap-3 p-2">
+                {#each categories as category}
+                    <button
+                        on:click={() => handleCategoryClick(category.id)}
+                        title="לחץ כדי לסנן במפה"
+                        class="flex items-center gap-1.5 {selectedCategory ===
+                        category.id
+                            ? category.id === 'benefits'
+                                ? 'bg-gradient-to-br from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-gray-900 border-yellow-500 scale-110'
+                                : 'bg-gradient-to-br from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-purple-500 scale-110'
+                            : category.id === 'benefits'
+                              ? 'bg-gradient-to-br from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-gray-900 border-yellow-500'
+                              : 'bg-gradient-to-br from-white to-gray-200 hover:from-blue-100 hover:to-white text-gray-900 border-purple-300'} px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg transition-all hover:scale-105 border"
+                    >
+                        <span
+                            class="text-base"
+                            style={category.id === "realestate"
+                                ? "letter-spacing: -0.25em; margin-left: 0.15em; display: inline-block;"
+                                : ""}>{category.icon}</span
+                        >
+                        {category.label}
+                    </button>
+                {/each}
+            </div>
         </div>
     </div>
-</div>
 
     <!-- Map Container -->
     <div
@@ -440,45 +651,55 @@
             class:auto-switching={isAutoSwitching}
             style="position: absolute; top: 0; left: 0;"
         >
-            <svg width="130" height="130" viewBox="0 0 130 130" class="transition-transform duration-500">
-                <path 
-                    d="M 0,24 Q 0,0 24,0 L 130,0 L 0,130 Z" 
+            <svg
+                width="130"
+                height="130"
+                viewBox="0 0 130 130"
+                class="transition-transform duration-500"
+            >
+                <path
+                    d="M 0,24 Q 0,0 24,0 L 130,0 L 0,130 Z"
                     fill="#9333ea"
                     class="transition-all duration-500"
                 />
-                <text 
-                    x="52" 
-                    y="42" 
-                    fill="white" 
-                    font-size="14" 
-                    font-weight="bold" 
+                <text
+                    x="52"
+                    y="42"
+                    fill="white"
+                    font-size="14"
+                    font-weight="bold"
                     transform="rotate(-45 52 42)"
                     text-anchor="middle"
                     class="pointer-events-none"
                 >
-                    {viewMode === 'map' ? 'עבור לתצוגת' : 'עבור לתצוגת'}
+                    {viewMode === "map" ? "עבור לתצוגת" : "עבור לתצוגת"}
                 </text>
-                <text 
-                    x="60" 
-                    y="58" 
-                    fill="white" 
-                    font-size="14" 
-                    font-weight="bold" 
+                <text
+                    x="60"
+                    y="58"
+                    fill="white"
+                    font-size="14"
+                    font-weight="bold"
                     transform="rotate(-45 60 58)"
                     text-anchor="middle"
                     class="pointer-events-none"
                 >
-                    {viewMode === 'map' ? 'רשימה' : 'מפה'}
+                    {viewMode === "map" ? "רשימה" : "מפה"}
                 </text>
             </svg>
         </button>
 
-        {#if viewMode === 'map'}
+        {#if viewMode === "map"}
             <!-- תצוגת מפה -->
-            <div class="w-full h-[450px] overflow-hidden relative" style="border-radius: 20px;">
+            <div
+                class="w-full h-[450px] overflow-hidden relative"
+                style="border-radius: 20px;"
+            >
                 <!-- אנימציית גלים -->
                 {#if showWaves}
-                    <div class="absolute inset-0 flex items-end justify-center pointer-events-none z-10">
+                    <div
+                        class="absolute inset-0 flex items-end justify-center pointer-events-none z-10"
+                    >
                         <div class="wave-container">
                             <div class="wave wave-1"></div>
                             <div class="wave wave-2"></div>
@@ -487,31 +708,48 @@
                         </div>
                     </div>
                 {/if}
-                
+
                 <!-- בועת בקשת עזרה -->
                 {#if handRaised && raisedHandMessage}
-                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20">
-                        <div class="bg-red-600 text-white px-6 py-4 rounded-2xl shadow-2xl border-4 border-yellow-400 max-w-md">
+                    <div
+                        class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20"
+                    >
+                        <div
+                            class="bg-red-600 text-white px-6 py-4 rounded-2xl shadow-2xl border-4 border-yellow-400 max-w-md"
+                        >
                             <div class="flex items-center gap-4">
                                 <span class="text-5xl">{raisedHandIcon}</span>
                                 <div>
-                                    <p class="font-black text-xl mb-1">🚨 בקשת עזרה פעילה</p>
-                                    <p class="text-lg font-bold">{raisedHandMessage}</p>
-                                    <p class="text-sm text-yellow-200 mt-2">ממתין לעזרה מהקהילה...</p>
+                                    <p class="font-black text-xl mb-1">
+                                        🚨 בקשת עזרה פעילה
+                                    </p>
+                                    <p class="text-lg font-bold">
+                                        {raisedHandMessage}
+                                    </p>
+                                    <p class="text-sm text-yellow-200 mt-2">
+                                        ממתין לעזרה מהקהילה...
+                                    </p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 {/if}
-                
+
                 <!-- סמנים על המפה -->
                 <div class="absolute inset-0 z-10 pointer-events-none">
                     {#each mapMarkers as marker}
                         {#if isMarkerVisible(marker.id)}
-                            <div class="absolute transition-all duration-500" style="top: {marker.top}; left: {marker.left};">
+                            <div
+                                class="absolute transition-all duration-500"
+                                style="top: {marker.top}; left: {marker.left};"
+                            >
                                 <div class="text-center animate-fadeIn">
-                                    <span class="text-3xl drop-shadow-lg">{marker.icon}</span>
-                                    <div class="bg-{marker.color}-600 text-white text-xs px-2 py-1 rounded mt-1 whitespace-nowrap font-bold shadow-lg">
+                                    <span class="text-3xl drop-shadow-lg"
+                                        >{marker.icon}</span
+                                    >
+                                    <div
+                                        class="bg-{marker.color}-600 text-white text-xs px-2 py-1 rounded mt-1 whitespace-nowrap font-bold shadow-lg"
+                                    >
                                         {marker.label}
                                     </div>
                                 </div>
@@ -519,7 +757,7 @@
                         {/if}
                     {/each}
                 </div>
-                
+
                 <iframe
                     title="מפת {selectedNeighborhood}, {selectedNeighborhoodCity}"
                     width="100%"
@@ -532,42 +770,73 @@
                 >
                 </iframe>
             </div>
-        {:else if viewMode === 'list'}
+        {:else if viewMode === "list"}
             <!-- תצוגת רשימה -->
-            <div class="w-full h-[450px] overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900/20" style="border-radius: 20px;">
+            <div
+                class="w-full h-[450px] overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900/20"
+                style="border-radius: 20px;"
+            >
                 <div class="space-y-3">
-                    {#each categories.filter(cat => cat.id !== 'benefits') as category}
-                        <div class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-500/30 rounded-xl overflow-hidden transition-all">
-                            <button 
+                    {#each categories.filter((cat) => cat.id !== "benefits") as category}
+                        <div
+                            class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-500/30 rounded-xl overflow-hidden transition-all"
+                        >
+                            <button
                                 on:click={() => toggleCategory(category.id)}
                                 class="w-full p-4 hover:border-purple-500 transition-all hover:bg-purple-900/20 cursor-pointer"
                             >
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-3">
-                                        <span class="text-3xl">{category.icon}</span>
-                                        <span class="text-white font-bold text-lg">{category.label}</span>
+                                        <span class="text-3xl"
+                                            >{category.icon}</span
+                                        >
+                                        <span
+                                            class="text-white font-bold text-lg"
+                                            >{category.label}</span
+                                        >
                                     </div>
                                     <div class="flex items-center gap-3">
-                                        <span class="text-purple-400 text-sm">{category.items?.length || 0} פריטים</span>
-                                        <svg 
-                                            class="w-6 h-6 text-purple-400 transition-transform duration-300 {expandedCategories.has(category.id) ? 'rotate-180' : ''}"
-                                            fill="none" 
-                                            stroke="currentColor" 
+                                        <span class="text-purple-400 text-sm"
+                                            >{category.items?.length || 0} פריטים</span
+                                        >
+                                        <svg
+                                            class="w-6 h-6 text-purple-400 transition-transform duration-300 {expandedCategories.has(
+                                                category.id,
+                                            )
+                                                ? 'rotate-180'
+                                                : ''}"
+                                            fill="none"
+                                            stroke="currentColor"
                                             viewBox="0 0 24 24"
                                         >
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M19 9l-7 7-7-7"
+                                            />
                                         </svg>
                                     </div>
                                 </div>
                             </button>
-                            
+
                             {#if expandedCategories.has(category.id) && category.items}
-                                <div class="px-4 pb-4 space-y-2 animate-slideDown">
+                                <div
+                                    class="px-4 pb-4 space-y-2 animate-slideDown"
+                                >
                                     {#each category.items as item}
-                                        <div class="bg-purple-900/20 border border-purple-500/20 rounded-lg p-3 hover:bg-purple-900/30 hover:border-purple-500/40 transition-all cursor-pointer">
-                                            <div class="flex items-center justify-between">
-                                                <span class="text-white text-sm">• {item}</span>
-                                                <button class="bg-purple-600 hover:bg-purple-500 text-white px-3 py-1 rounded text-xs font-bold transition-colors">
+                                        <div
+                                            class="bg-purple-900/20 border border-purple-500/20 rounded-lg p-3 hover:bg-purple-900/30 hover:border-purple-500/40 transition-all cursor-pointer"
+                                        >
+                                            <div
+                                                class="flex items-center justify-between"
+                                            >
+                                                <span class="text-white text-sm"
+                                                    >• {item}</span
+                                                >
+                                                <button
+                                                    class="bg-purple-600 hover:bg-purple-500 text-white px-3 py-1 rounded text-xs font-bold transition-colors"
+                                                >
                                                     פרטים
                                                 </button>
                                             </div>
@@ -581,23 +850,37 @@
             </div>
         {:else}
             <!-- תצוגת הוספת יתרון -->
-            <div class="w-full h-[450px] overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900/20" style="border-radius: 20px;">
-                <h3 class="text-2xl font-bold text-white mb-4 text-center">הוסף יתרון חדש</h3>
-                <p class="text-center text-gray-400 text-sm mb-6">בחר קטגוריה והוסף פריט חדש</p>
+            <div
+                class="w-full h-[450px] overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900/20"
+                style="border-radius: 20px;"
+            >
+                <h3 class="text-2xl font-bold text-white mb-4 text-center">
+                    הוסף יתרון חדש
+                </h3>
+                <p class="text-center text-gray-400 text-sm mb-6">
+                    בחר קטגוריה והוסף פריט חדש
+                </p>
                 <div class="space-y-3">
-                    {#each categories.filter(cat => cat.id !== 'benefits') as category}
+                    {#each categories.filter((cat) => cat.id !== "benefits") as category}
                         <button
                             on:click={() => handleAddItem(category.id)}
                             class="w-full bg-gradient-to-r from-green-900/30 to-emerald-900/30 border border-green-500/30 rounded-xl p-4 hover:border-green-500 hover:from-green-900/40 hover:to-emerald-900/40 transition-all cursor-pointer"
                         >
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-3">
-                                    <span class="text-3xl">{category.icon}</span>
-                                    <span class="text-white font-bold text-lg">{category.label}</span>
+                                    <span class="text-3xl">{category.icon}</span
+                                    >
+                                    <span class="text-white font-bold text-lg"
+                                        >{category.label}</span
+                                    >
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <span class="text-green-400 text-sm">הוסף פריט</span>
-                                    <span class="text-2xl text-green-400">➕</span>
+                                    <span class="text-green-400 text-sm"
+                                        >הוסף פריט</span
+                                    >
+                                    <span class="text-2xl text-green-400"
+                                        >➕</span
+                                    >
                                 </div>
                             </div>
                         </button>
@@ -610,18 +893,28 @@
         <div
             class="absolute bottom-4 right-4 bg-purple-600/90 backdrop-blur-md text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-lg"
         >
-            {viewMode === 'map' ? `📍 מפת הקהילה - ${selectedNeighborhood}, ${selectedNeighborhoodCity}` : '📋 רשימת שירותים'}
+            {viewMode === "map"
+                ? `📍 מפת הקהילה - ${selectedNeighborhood}, ${selectedNeighborhoodCity}`
+                : "📋 רשימת שירותים"}
         </div>
 
         <!-- הודעת הצלחה -->
         {#if showSuccessMessage}
-            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 animate-slideDown">
-                <div class="bg-green-600 text-white px-6 py-4 rounded-xl shadow-2xl border-2 border-green-400">
+            <div
+                class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 animate-slideDown"
+            >
+                <div
+                    class="bg-green-600 text-white px-6 py-4 rounded-xl shadow-2xl border-2 border-green-400"
+                >
                     <div class="flex items-center gap-3">
                         <span class="text-3xl">✅</span>
                         <div>
-                            <p class="font-bold text-lg">הקריאה נשלחה בהצלחה!</p>
-                            <p class="text-sm text-green-100">{successMessageText}</p>
+                            <p class="font-bold text-lg">
+                                הקריאה נשלחה בהצלחה!
+                            </p>
+                            <p class="text-sm text-green-100">
+                                {successMessageText}
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -629,13 +922,18 @@
         {/if}
 
         <!-- כפתור הוסף יתרון - בחלק העליון -->
-        <div class="absolute left-1/2 transform -translate-x-1/2 z-20" style="top: -10px;">
+        <div
+            class="absolute left-1/2 transform -translate-x-1/2 z-20"
+            style="top: -10px;"
+        >
             <button
                 on:click={handleAddAdvantage}
                 title="הוסף יתרון חדש לשכונה"
                 class="relative group overflow-hidden bg-gradient-to-br from-green-500 via-emerald-500 to-teal-600 hover:from-green-400 hover:via-emerald-400 hover:to-teal-500 text-white px-3 py-1.5 rounded-lg font-bold text-base shadow-xl transition-all hover:scale-105 border-2 border-purple-600"
             >
-                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer-once"></div>
+                <div
+                    class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer-once"
+                ></div>
                 <div class="relative flex items-center gap-1.5">
                     <span class="text-[10px]">➕</span>
                     <span>הוסף</span>
@@ -644,15 +942,19 @@
         </div>
 
         <!-- כפתור הרמת יד מיוחד - בתחתית המפה -->
-        <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 z-20">
+        <div
+            class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 z-20"
+        >
             {#if !handRaised}
                 <!-- כפתור הרמת יד רגיל -->
                 <button
-                    on:click={() => showHelpMenu = !showHelpMenu}
+                    on:click={() => (showHelpMenu = !showHelpMenu)}
                     title="בקש עזרה מהקהילה"
                     class="relative group overflow-hidden bg-gradient-to-br from-red-500 via-pink-500 to-purple-600 hover:from-red-400 hover:via-pink-400 hover:to-purple-500 text-white px-6 py-3 rounded-xl font-bold text-base shadow-xl transition-all hover:scale-105 border-4 border-purple-600"
                 >
-                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer-once"></div>
+                    <div
+                        class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer-once"
+                    ></div>
                     <div class="relative flex items-center gap-3">
                         <span class="text-2xl">✋</span>
                         <span>הרמת יד</span>
@@ -674,8 +976,12 @@
 
             <!-- תפריט עזרה -->
             {#if showHelpMenu}
-                <div class="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 w-80 bg-white rounded-xl shadow-2xl border-2 border-purple-600 overflow-hidden animate-slideDown">
-                    <div class="bg-gradient-to-r from-red-500 to-pink-500 p-3 text-center">
+                <div
+                    class="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 w-80 bg-white rounded-xl shadow-2xl border-2 border-purple-600 overflow-hidden animate-slideDown"
+                >
+                    <div
+                        class="bg-gradient-to-r from-red-500 to-pink-500 p-3 text-center"
+                    >
                         <h3 class="text-white font-bold text-lg">פתח קריאה</h3>
                     </div>
                     <div class="p-2">
@@ -685,12 +991,14 @@
                                 class="w-full flex items-center gap-3 p-3 hover:bg-red-50 rounded-lg transition-colors text-right border-b border-gray-200 last:border-b-0"
                             >
                                 <span class="text-2xl">{option.icon}</span>
-                                <span class="text-gray-800 font-medium text-sm">{option.text}</span>
+                                <span class="text-gray-800 font-medium text-sm"
+                                    >{option.text}</span
+                                >
                             </button>
                         {/each}
                     </div>
                     <button
-                        on:click={() => showHelpMenu = false}
+                        on:click={() => (showHelpMenu = false)}
                         class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 py-2 text-sm font-bold transition-colors"
                     >
                         ביטול
@@ -700,34 +1008,48 @@
 
             <!-- סקר הורדת יד -->
             {#if showSurvey}
-                <div class="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 w-80 bg-white rounded-xl shadow-2xl border-2 border-yellow-600 overflow-hidden animate-slideDown">
-                    <div class="bg-gradient-to-r from-yellow-500 to-orange-500 p-3 text-center">
-                        <h3 class="text-white font-bold text-lg">איך הבעיה נפתרה?</h3>
+                <div
+                    class="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 w-80 bg-white rounded-xl shadow-2xl border-2 border-yellow-600 overflow-hidden animate-slideDown"
+                >
+                    <div
+                        class="bg-gradient-to-r from-yellow-500 to-orange-500 p-3 text-center"
+                    >
+                        <h3 class="text-white font-bold text-lg">
+                            איך הבעיה נפתרה?
+                        </h3>
                     </div>
                     <div class="p-4 space-y-3">
                         <button
-                            on:click={() => handleSurveyResponse('community')}
+                            on:click={() => handleSurveyResponse("community")}
                             class="w-full flex items-center gap-3 p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors border-2 border-green-300"
                         >
                             <span class="text-3xl">🤝</span>
                             <div class="text-right">
-                                <p class="font-bold text-green-800">הקהילה עזרה לי</p>
-                                <p class="text-xs text-green-600">תודה לכולם!</p>
+                                <p class="font-bold text-green-800">
+                                    הקהילה עזרה לי
+                                </p>
+                                <p class="text-xs text-green-600">
+                                    תודה לכולם!
+                                </p>
                             </div>
                         </button>
                         <button
-                            on:click={() => handleSurveyResponse('other')}
+                            on:click={() => handleSurveyResponse("other")}
                             class="w-full flex items-center gap-3 p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border-2 border-blue-300"
                         >
                             <span class="text-3xl">✅</span>
                             <div class="text-right">
-                                <p class="font-bold text-blue-800">הבעיה נפתרה אחרת</p>
-                                <p class="text-xs text-blue-600">הכל בסדר עכשיו</p>
+                                <p class="font-bold text-blue-800">
+                                    הבעיה נפתרה אחרת
+                                </p>
+                                <p class="text-xs text-blue-600">
+                                    הכל בסדר עכשיו
+                                </p>
                             </div>
                         </button>
                     </div>
                     <button
-                        on:click={() => handleSurveyResponse('cancel')}
+                        on:click={() => handleSurveyResponse("cancel")}
                         class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 py-2 text-sm font-bold transition-colors"
                     >
                         ביטול
@@ -764,7 +1086,8 @@
     }
 
     @keyframes wave {
-        0%, 100% {
+        0%,
+        100% {
             transform: rotate(0deg);
         }
         25% {
@@ -897,7 +1220,7 @@
     }
 
     .page-corner.auto-switching::before {
-        content: '';
+        content: "";
         position: absolute;
         top: 50%;
         left: 50%;
@@ -918,27 +1241,37 @@
         15% {
             transform: translate(200px, -200px) scale(2);
             opacity: 1;
-            box-shadow: 0 0 30px rgba(255, 255, 255, 1), 0 0 60px rgba(147, 51, 234, 0.8);
+            box-shadow:
+                0 0 30px rgba(255, 255, 255, 1),
+                0 0 60px rgba(147, 51, 234, 0.8);
         }
         30% {
             transform: translate(100px, -100px) scale(3);
             opacity: 1;
-            box-shadow: 0 0 40px rgba(255, 255, 255, 1), 0 0 80px rgba(147, 51, 234, 1);
+            box-shadow:
+                0 0 40px rgba(255, 255, 255, 1),
+                0 0 80px rgba(147, 51, 234, 1);
         }
         45% {
             transform: translate(50px, -50px) scale(4);
             opacity: 1;
-            box-shadow: 0 0 50px rgba(255, 255, 255, 1), 0 0 100px rgba(147, 51, 234, 1);
+            box-shadow:
+                0 0 50px rgba(255, 255, 255, 1),
+                0 0 100px rgba(147, 51, 234, 1);
         }
         60% {
             transform: translate(0, 0) scale(6);
             opacity: 1;
-            box-shadow: 0 0 60px rgba(255, 255, 255, 1), 0 0 120px rgba(147, 51, 234, 1);
+            box-shadow:
+                0 0 60px rgba(255, 255, 255, 1),
+                0 0 120px rgba(147, 51, 234, 1);
         }
         80% {
             transform: translate(0, 0) scale(4);
             opacity: 0.9;
-            box-shadow: 0 0 40px rgba(255, 255, 255, 0.8), 0 0 80px rgba(147, 51, 234, 0.8);
+            box-shadow:
+                0 0 40px rgba(255, 255, 255, 0.8),
+                0 0 80px rgba(147, 51, 234, 0.8);
         }
         100% {
             transform: translate(0, 0) scale(0);
@@ -952,14 +1285,17 @@
     }
 
     @keyframes buttonGlow {
-        0%, 40% {
+        0%,
+        40% {
             filter: brightness(1) drop-shadow(0 0 0 rgba(147, 51, 234, 0));
         }
         60% {
-            filter: brightness(2.5) drop-shadow(0 0 25px rgba(255, 255, 255, 1)) drop-shadow(0 0 50px rgba(147, 51, 234, 1));
+            filter: brightness(2.5) drop-shadow(0 0 25px rgba(255, 255, 255, 1))
+                drop-shadow(0 0 50px rgba(147, 51, 234, 1));
         }
         80% {
-            filter: brightness(2) drop-shadow(0 0 20px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 40px rgba(147, 51, 234, 0.8));
+            filter: brightness(2) drop-shadow(0 0 20px rgba(255, 255, 255, 0.8))
+                drop-shadow(0 0 40px rgba(147, 51, 234, 0.8));
         }
         100% {
             filter: brightness(1) drop-shadow(0 0 0 rgba(147, 51, 234, 0));
