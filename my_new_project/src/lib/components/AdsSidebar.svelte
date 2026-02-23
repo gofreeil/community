@@ -113,7 +113,7 @@
             class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105"
         >
             <img
-                src="/images/ad_neighborhoods.png"
+                src="/images/ביקורת על העיריה.png"
                 alt="ביקורת על העיריה"
                 class="h-auto w-full object-cover"
             />
