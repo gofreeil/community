@@ -1,6 +1,42 @@
 <!-- AdsSidebar.svelte -->
 <aside class="hidden lg:block w-48 flex-shrink-0">
     <div class="sticky top-4 space-y-4">
+        <!-- Ad 0 - בתי הפיוס (חדש - ראשון) -->
+        <a
+            href="https://www.melecshop.com/page/peace-on-earth"
+            target="_blank"
+            class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105 group relative"
+        >
+            <div class="relative overflow-hidden bg-gradient-to-br from-orange-500 to-red-600 h-32">
+                <!-- רקע דקורטיבי -->
+                <div class="absolute inset-0 opacity-20">
+                    <div class="absolute top-2 left-2 text-6xl">⚖️</div>
+                    <div class="absolute bottom-2 right-2 text-4xl">🤝</div>
+                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-5xl opacity-30">🕊️</div>
+                </div>
+                
+                <!-- תוכן הפרסומת -->
+                <div class="relative z-10 h-full flex flex-col justify-center items-center text-center p-4 transition-opacity duration-1500 group-hover:opacity-0">
+                    <div class="text-3xl mb-2">⚖️</div>
+                    <h3 class="text-white font-bold text-sm mb-1">יש לך סיכסוך?</h3>
+                    <p class="text-orange-100 text-xs">מומחי המשפט והשלום</p>
+                </div>
+                
+                <!-- Hover overlay -->
+                <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1500 flex items-center justify-center bg-gradient-to-br from-orange-600/90 to-red-700/90 backdrop-blur-sm">
+                    <div class="relative z-10 text-center px-4">
+                        <h3 class="text-white font-bold text-lg mb-2">בתי הפיוס</h3>
+                        <p class="text-gray-200 text-sm">פתרון סיכסוכים בקהילה</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gradient-to-r from-orange-600 to-red-600 p-3 text-center">
+                <p class="text-white font-bold text-xs leading-tight">
+                    מומחי המשפט והשלום בקהילה יפתרו
+                </p>
+            </div>
+        </a>
+
         <!-- Ad 1 - ועדי שכונות -->
         <a
             href="https://www.melecshop.com/page/peace-on-earth_VRHH"
