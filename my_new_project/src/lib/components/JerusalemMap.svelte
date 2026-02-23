@@ -341,13 +341,8 @@
     <div class="text-center mb-2 relative neighborhoods-menu-container">
         <div class="flex items-center justify-center gap-4">
             <div class="relative group">
-                <h2 class="text-5xl font-black cursor-default">
-                    <span class="bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
-                        {$t('neighborhood_advantages')}
-                    </span>
-                    <span class="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 bg-clip-text text-transparent">
-                        {selectedNeighborhood}, {selectedNeighborhoodCity}
-                    </span>
+                <h2 class="text-5xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent cursor-default">
+                    {$t('neighborhood_advantages')} {selectedNeighborhood}, {selectedNeighborhoodCity}
                 </h2>
                 <!-- Tooltip -->
                 <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-[9999] pointer-events-none">
