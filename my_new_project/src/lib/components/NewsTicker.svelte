@@ -41,10 +41,10 @@
                 {#each [...newsItems, ...newsItems] as item}
                     <div class="flex items-center gap-16 h-full">
                         <div class="flex flex-col justify-center text-center">
-                            <span class="text-lg font-bold text-blue-100"
+                            <span class="text-xl font-bold text-blue-100"
                                 >{item.line1}</span
                             >
-                            <span class="text-lg font-medium text-blue-300"
+                            <span class="text-xl font-medium text-blue-300"
                                 >{item.line2}</span
                             >
                         </div>
