@@ -183,22 +183,22 @@
                             <div
                                 in:fade={{ duration: 600, delay: 200 }}
                                 out:fade={{ duration: 600 }}
-                                class="absolute inset-0 flex flex-col items-center justify-center text-center p-2"
+                                class="absolute inset-0 flex flex-col items-center justify-center p-2"
                             >
                                 <span
-                                    class="text-[10px] text-blue-400 font-black uppercase tracking-widest mb-1 opacity-60"
+                                    class="text-[10px] text-blue-400 font-black uppercase tracking-widest mb-1 opacity-60 text-right w-full px-1"
                                     >הקהילה ממליצה בחום:</span
                                 >
                                 <h2
-                                    class="text-lg font-black bg-gradient-to-r {ads[
+                                    class="text-2xl font-black bg-gradient-to-r {ads[
                                         currentAdIndex
                                     ]
-                                        .color} bg-clip-text text-transparent leading-tight mb-1"
+                                        .color} bg-clip-text text-transparent leading-tight mb-1 w-full text-center"
                                 >
                                     {ads[currentAdIndex].title}
                                 </h2>
                                 <p
-                                    class="text-xs text-gray-300 font-medium truncate max-w-[95%]"
+                                    class="text-xs text-gray-300 font-medium truncate max-w-[95%] w-full text-center"
                                 >
                                     {ads[currentAdIndex].description}
                                 </p>
