@@ -146,7 +146,9 @@
                     
                     // חזור למפה אחרי 3 שניות
                     setTimeout(() => {
-                        if (viewMode === 'list' && !isMouseOver && viewMode !== 'add' && !userInteracted) {
+                        console.log('Checking return to map:', { viewMode, isMouseOver, userInteracted });
+                        if (viewMode === 'list' && !isMouseOver && !userInteracted) {
+                            console.log('Returning to map view');
                             isAutoSwitching = true;
                             setTimeout(() => {
                                 isAutoSwitching = false;
