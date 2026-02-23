@@ -50,51 +50,51 @@
             <!-- כותל המשאלות -->
             <a 
                 href="/community-fund"
-                class="group p-6 rounded-2xl bg-gradient-to-br from-blue-600/20 to-purple-600/20 border border-white/10 backdrop-blur-sm hover:border-blue-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/20 hover:-translate-y-2 block"
+                class="group p-6 rounded-2xl bg-gradient-to-br from-blue-600/20 to-purple-600/20 border border-white/10 backdrop-blur-sm hover:border-blue-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/20 hover:-translate-y-2 block flex flex-col"
             >
-                <div class="transition-transform duration-300 group-hover:scale-105">
+                <div class="transition-transform duration-300 group-hover:scale-105 flex flex-col flex-grow">
                     <div class="text-4xl mb-3 transition-transform duration-300 group-hover:rotate-12">🙏</div>
                     <h4 class="text-lg font-bold mb-2 transition-colors duration-300 group-hover:text-blue-400">כותל המשאלות</h4>
-                    <p class="text-gray-400 text-sm mb-4 transition-colors duration-300 group-hover:text-gray-300">
+                    <p class="text-gray-400 text-sm mb-4 transition-colors duration-300 group-hover:text-gray-300 flex-grow">
                         קופת השכונה לסייע לנזקקים
                     </p>
-                    <div class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all w-full group-hover:scale-105 group-hover:shadow-lg text-center">
+                    <div class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all w-full group-hover:scale-105 group-hover:shadow-lg text-center mt-auto">
                         בקש עזרה מקופת הקהילה
                     </div>
                 </div>
             </a>
 
             <!-- פנה לוועד השכונה -->
-            <div class="group p-6 rounded-2xl bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-white/10 backdrop-blur-sm hover:border-purple-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/20 hover:-translate-y-2">
-                <div class="transition-transform duration-300 group-hover:scale-105">
+            <div class="group p-6 rounded-2xl bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-white/10 backdrop-blur-sm hover:border-purple-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/20 hover:-translate-y-2 flex flex-col">
+                <div class="transition-transform duration-300 group-hover:scale-105 flex flex-col flex-grow">
                     <div class="text-4xl mb-3 transition-transform duration-300 group-hover:rotate-12">🏛️</div>
                     <h4 class="text-lg font-bold mb-2 transition-colors duration-300 group-hover:text-purple-400">פנה לוועד השכונה</h4>
-                    <p class="text-gray-400 text-sm mb-4 transition-colors duration-300 group-hover:text-gray-300">
+                    <p class="text-gray-400 text-sm mb-4 transition-colors duration-300 group-hover:text-gray-300 flex-grow">
                         יש לך הצעה? רוצה לשפר את השכונה? הוועד כאן בשבילך!
                     </p>
-                    <button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all w-full group-hover:scale-105 group-hover:shadow-lg">
+                    <button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all w-full group-hover:scale-105 group-hover:shadow-lg mt-auto">
                         צור קשר עם הוועד
                     </button>
                 </div>
             </div>
 
             <!-- כיתת כוננות -->
-            <div class="group relative overflow-hidden rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-orange-500/30 transition-all duration-300 hover:-translate-y-2">
+            <div class="group relative overflow-hidden rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-orange-500/30 transition-all duration-300 hover:-translate-y-2 flex flex-col">
                 <div class="absolute inset-0 bg-gradient-to-br from-red-600 via-orange-600 to-yellow-500 transition-transform duration-300 group-hover:scale-110"></div>
-                <div class="relative z-10 p-6 transition-transform duration-300 group-hover:scale-105">
-                    <div class="text-center text-white">
+                <div class="relative z-10 p-6 transition-transform duration-300 group-hover:scale-105 flex flex-col flex-grow">
+                    <div class="text-center text-white flex flex-col flex-grow">
                         <span class="text-4xl mb-2 block transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12">🚨</span>
                         <h3 class="text-xl font-black mb-2 transition-all duration-300 group-hover:text-yellow-200">
                             <span class="group-hover:hidden">כיתת כוננות</span>
                             <span class="hidden group-hover:inline">חזק את ביטחון השכונה</span>
                         </h3>
-                        <p class="text-sm mb-4 text-yellow-100 transition-colors duration-300 group-hover:text-white">
+                        <p class="text-sm mb-4 text-yellow-100 transition-colors duration-300 group-hover:text-white flex-grow">
                             הצטרף לכיתת הכוננות של השכונה
                         </p>
                         <p class="text-xs mb-3 text-yellow-100 transition-colors duration-300 group-hover:text-white group-hover:font-bold">
                             <span class="font-bold">127</span> חברים פעילים
                         </p>
-                        <button class="bg-white text-red-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-yellow-100 transition-all w-full group-hover:scale-105 group-hover:shadow-xl">
+                        <button class="bg-white text-red-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-yellow-100 transition-all w-full group-hover:scale-105 group-hover:shadow-xl mt-auto">
                             הצטרף עכשיו 🔥
                         </button>
                     </div>
