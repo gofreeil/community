@@ -5,13 +5,26 @@
         <a
             href="https://www.melecshop.com/page/peace-on-earth_VRHH"
             target="_blank"
-            class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105"
+            class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105 group relative"
         >
-            <img
-                src="/images/news/ועדי שכונות.png"
-                alt="ועדי שכונות"
-                class="h-auto w-full object-cover"
-            />
+            <div class="relative overflow-hidden">
+                <img
+                    src="/images/news/ועדי שכונות.png"
+                    alt="ועדי שכונות"
+                    class="h-auto w-full object-cover transition-opacity duration-1500 group-hover:opacity-0"
+                />
+                <!-- Hover overlay with blurred background -->
+                <div 
+                    class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1500 flex items-center justify-center"
+                    style="background-image: url('/images/news/ועדי שכונות.png'); background-size: cover; background-position: center;"
+                >
+                    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+                    <div class="relative z-10 text-center px-4">
+                        <h3 class="text-white font-bold text-lg mb-2">ועדי שכונות</h3>
+                        <p class="text-gray-200 text-sm">מהפכת משילות העם על המוסדות</p>
+                    </div>
+                </div>
+            </div>
             <div
                 class="bg-gradient-to-r from-blue-600 to-cyan-600 p-3 text-center"
             >
@@ -25,14 +38,25 @@
         <a
             href="https://purchasing-groups.vercel.app/"
             target="_blank"
-            class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105"
+            class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105 group relative"
         >
-            <div class="h-32 overflow-hidden">
+            <div class="h-32 overflow-hidden relative">
                 <img
                     src="/images/whatsapp_cta.png"
                     alt="צור קשר בוואטסאפ"
-                    class="h-full w-full object-cover object-center"
+                    class="h-full w-full object-cover object-center transition-opacity duration-1500 group-hover:opacity-0"
                 />
+                <!-- Hover overlay -->
+                <div 
+                    class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1500 flex items-center justify-center"
+                    style="background-image: url('/images/whatsapp_cta.png'); background-size: cover; background-position: center;"
+                >
+                    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+                    <div class="relative z-10 text-center px-4">
+                        <h3 class="text-white font-bold text-lg mb-2">קבוצת רכישה</h3>
+                        <p class="text-gray-200 text-sm">הוזל את ההוצאות שלך</p>
+                    </div>
+                </div>
             </div>
             <div
                 class="p-3 text-center"
@@ -48,13 +72,26 @@
         <a
             href="https://www.melecshop.com/page/free"
             target="_blank"
-            class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105"
+            class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105 group relative"
         >
-            <img
-                src="/images/partners/השקעות קבוצתיות.png"
-                alt="השקעות קבוצתיות"
-                class="h-auto w-full object-cover"
-            />
+            <div class="relative overflow-hidden">
+                <img
+                    src="/images/partners/השקעות קבוצתיות.png"
+                    alt="השקעות קבוצתיות"
+                    class="h-auto w-full object-cover transition-opacity duration-1500 group-hover:opacity-0"
+                />
+                <!-- Hover overlay -->
+                <div 
+                    class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1500 flex items-center justify-center"
+                    style="background-image: url('/images/partners/השקעות קבוצתיות.png'); background-size: cover; background-position: center;"
+                >
+                    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+                    <div class="relative z-10 text-center px-4">
+                        <h3 class="text-white font-bold text-lg mb-2">השקעות קבוצתיות</h3>
+                        <p class="text-gray-200 text-sm">התחבר עם קבוצת המשקיעים</p>
+                    </div>
+                </div>
+            </div>
             <div
                 class="bg-gradient-to-r from-amber-600 to-orange-600 p-3 text-center"
             >
@@ -68,17 +105,30 @@
         <a
             href="https://index-chi-sage.vercel.app/"
             target="_blank"
-            class="block relative overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105"
+            class="block relative overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105 group"
         >
-            <img
-                src="/images/partners/מערכת לגידול ביתי.png"
-                alt="מערכת לגידול ביתי"
-                class="h-auto w-full object-cover"
-            />
-            <div
-                class="absolute top-4 right-4 bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg transform rotate-12"
-            >
-                <p class="font-bold text-sm">בקרוב</p>
+            <div class="relative overflow-hidden">
+                <img
+                    src="/images/partners/מערכת לגידול ביתי.png"
+                    alt="מערכת לגידול ביתי"
+                    class="h-auto w-full object-cover transition-opacity duration-1500 group-hover:opacity-0"
+                />
+                <!-- Hover overlay -->
+                <div 
+                    class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1500 flex items-center justify-center"
+                    style="background-image: url('/images/partners/מערכת לגידול ביתי.png'); background-size: cover; background-position: center;"
+                >
+                    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+                    <div class="relative z-10 text-center px-4">
+                        <h3 class="text-white font-bold text-lg mb-2">גידול ביתי</h3>
+                        <p class="text-gray-200 text-sm">מערכת לגידול ביתי</p>
+                    </div>
+                </div>
+                <div
+                    class="absolute top-4 right-4 bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg transform rotate-12 z-20"
+                >
+                    <p class="font-bold text-sm">בקרוב</p>
+                </div>
             </div>
             <div
                 class="bg-gradient-to-r from-teal-500 to-teal-600 p-2 text-center text-xs font-bold text-white"
@@ -91,13 +141,26 @@
         <a
             href="https://index-chi-sage.vercel.app/"
             target="_blank"
-            class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105"
+            class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105 group relative"
         >
-            <img
-                src="/images/בעלי מקצוע כשירים.png"
-                alt="מחפש בעל מקצוע איכותי באזורך?"
-                class="h-auto w-full object-cover"
-            />
+            <div class="relative overflow-hidden">
+                <img
+                    src="/images/בעלי מקצוע כשירים.png"
+                    alt="מחפש בעל מקצוע איכותי באזורך?"
+                    class="h-auto w-full object-cover transition-opacity duration-1500 group-hover:opacity-0"
+                />
+                <!-- Hover overlay -->
+                <div 
+                    class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1500 flex items-center justify-center"
+                    style="background-image: url('/images/בעלי מקצוע כשירים.png'); background-size: cover; background-position: center;"
+                >
+                    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+                    <div class="relative z-10 text-center px-4">
+                        <h3 class="text-white font-bold text-lg mb-2">בעלי מקצוע כשירים</h3>
+                        <p class="text-gray-200 text-sm">מחפש בעל מקצוע איכותי?</p>
+                    </div>
+                </div>
+            </div>
             <div
                 class="p-2 text-center text-xs font-bold text-white"
                 style="background: linear-gradient(to right, #fbbf24, #f97316);"
@@ -110,13 +173,26 @@
         <a
             href="https://right-to-live.vercel.app/"
             target="_blank"
-            class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105"
+            class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105 group relative"
         >
-            <img
-                src="/images/ביקורת על העיריה.png"
-                alt="ביקורת על העיריה"
-                class="h-auto w-full object-cover"
-            />
+            <div class="relative overflow-hidden">
+                <img
+                    src="/images/ביקורת על העיריה.png"
+                    alt="ביקורת על העיריה"
+                    class="h-auto w-full object-cover transition-opacity duration-1500 group-hover:opacity-0"
+                />
+                <!-- Hover overlay -->
+                <div 
+                    class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1500 flex items-center justify-center"
+                    style="background-image: url('/images/ביקורת על העיריה.png'); background-size: cover; background-position: center;"
+                >
+                    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+                    <div class="relative z-10 text-center px-4">
+                        <h3 class="text-white font-bold text-lg mb-2">ביקורת על העיריה</h3>
+                        <p class="text-gray-200 text-sm">הזכות לחיות</p>
+                    </div>
+                </div>
+            </div>
             <div
                 class="bg-gradient-to-r from-red-600 to-pink-600 p-3 text-center"
             >
