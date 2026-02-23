@@ -22,6 +22,8 @@
             type: "found",
         },
     ];
+
+    let showAll = $state(false);
 </script>
 
 <div
@@ -45,7 +47,7 @@
 
     <div class="p-2.5 md:p-4 flex-1">
         <div class="space-y-2 md:space-y-3">
-            {#each lostItems as item}
+            {#each showAll ? lostItems : lostItems.slice(0, 2) as item}
                 <div
                     class="relative p-2.5 md:p-4 rounded-xl md:rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all group overflow-hidden"
                 >
@@ -88,12 +90,17 @@
             {/each}
         </div>
 
-        <div class="mt-3 md:mt-4 text-center">
-            <button
-                class="text-blue-400 hover:text-white text-xs md:text-sm font-bold transition-colors underline underline-offset-4"
-            >
-                לצפייה בכל המודעות...
-            </button>
-        </div>
+        {#if lostItems.length > 2}
+            <div class="mt-3 md:mt-4 text-center">
+                <button
+                    onclick={() => (showAll = !showAll)}
+                    class="text-blue-400 hover:text-white text-xs md:text-sm font-bold transition-colors underline underline-offset-4"
+                >
+                    {showAll
+                        ? "הצג פחות..."
+                        : `לצפייה בכל המודעות (${lostItems.length})...`}
+                </button>
+            </div>
+        {/if}
     </div>
 </div>

@@ -586,7 +586,9 @@
 
         <div class="flex flex-col gap-2">
             <!-- Buttons Container -->
-            <div class="flex flex-wrap justify-center gap-2 p-2">
+            <div
+                class="grid grid-cols-3 md:flex md:flex-wrap justify-center gap-2 p-2 w-full"
+            >
                 {#each categories as category}
                     <button
                         on:click={() => handleCategoryClick(category.id)}
@@ -599,7 +601,7 @@
                             : category.id === 'benefits'
                               ? 'bg-gradient-to-br from-yellow-400/90 to-orange-500/90 text-gray-900 border-yellow-500'
                               : 'bg-white/10 backdrop-blur-md text-white border-white/20 hover:bg-white/20'} 
-                               px-4 py-2 rounded-xl text-[11px] font-bold shadow-lg transition-all border min-w-[85px] text-center"
+                               px-2 py-2.5 rounded-xl text-[10px] font-bold shadow-lg transition-all border w-full text-center leading-tight h-full"
                     >
                         {category.label}
                     </button>
@@ -918,20 +920,20 @@
 
         <!-- כפתור הרמת יד מיוחד - בתחתית המפה -->
         <div
-            class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 z-20"
+            class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 z-20"
         >
             {#if !handRaised}
                 <!-- כפתור הרמת יד רגיל -->
                 <button
                     on:click={() => (showHelpMenu = !showHelpMenu)}
                     title="בקש עזרה מהקהילה"
-                    class="relative group overflow-hidden bg-gradient-to-br from-red-500 via-pink-500 to-purple-600 hover:from-red-400 hover:via-pink-400 hover:to-purple-500 text-white px-6 py-3 rounded-xl font-bold text-base shadow-xl transition-all hover:scale-105 border-4 border-purple-600"
+                    class="relative group overflow-hidden bg-gradient-to-br from-red-500 via-pink-500 to-purple-600 hover:from-red-400 hover:via-pink-400 hover:to-purple-500 text-white px-4 py-2 rounded-full font-bold text-sm shadow-xl transition-all hover:scale-105"
                 >
                     <div
                         class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer-once"
                     ></div>
-                    <div class="relative flex items-center gap-3">
-                        <span class="text-2xl">✋</span>
+                    <div class="relative flex items-center gap-2">
+                        <span class="text-xl">✋</span>
                         <span>הרמת יד</span>
                     </div>
                 </button>
@@ -940,11 +942,11 @@
                 <button
                     on:click={handleLowerHand}
                     title="הורד את היד"
-                    class="relative group overflow-hidden bg-gradient-to-br from-yellow-500 via-orange-500 to-red-600 hover:from-yellow-400 hover:via-orange-400 hover:to-red-500 text-white px-6 py-3 rounded-xl font-bold text-base shadow-xl transition-all hover:scale-105 border-4 border-yellow-400 animate-pulse"
+                    class="relative group overflow-hidden bg-gradient-to-br from-yellow-500 via-orange-500 to-red-600 hover:from-yellow-400 hover:via-orange-400 hover:to-red-500 text-white px-4 py-2 rounded-full font-bold text-sm shadow-xl transition-all hover:scale-105 animate-pulse"
                 >
-                    <div class="relative flex items-center gap-3">
-                        <span class="text-2xl">🙋</span>
-                        <span>יד מורמת - לחץ להורדה</span>
+                    <div class="relative flex items-center gap-2">
+                        <span class="text-xl">🙋</span>
+                        <span>יד מורמת</span>
                     </div>
                 </button>
             {/if}
@@ -1203,8 +1205,50 @@
         height: 4px;
         background: linear-gradient(45deg, #ffffff, #9333ea, #ffffff);
         border-radius: 50%;
-        animation: lightningStrike 4s ease-in-out;
+        animation: lightningStrike 4s ease-in-out infinite;
         z-index: 20;
+    }
+
+    @media (max-width: 768px) {
+        .page-corner.auto-switching::before {
+            content: "☝️";
+            background: none;
+            width: auto;
+            height: auto;
+            font-size: 32px;
+            animation: fingerTouch 2.5s ease-out infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+    }
+
+    @keyframes fingerTouch {
+        0% {
+            transform: translate(30px, -30px) scale(0.8);
+            opacity: 0;
+        }
+        20% {
+            transform: translate(0, 0) scale(1.1);
+            opacity: 1;
+        }
+        40% {
+            transform: translate(0, 0) scale(1);
+            opacity: 1;
+        }
+        60% {
+            transform: translate(0, 0) scale(0.9);
+            opacity: 1;
+        }
+        80% {
+            transform: translate(0, 0) scale(1.2);
+            opacity: 0;
+        }
+        100% {
+            transform: translate(0, 0) scale(1.2);
+            opacity: 0;
+        }
     }
 
     @keyframes lightningStrike {

@@ -6,16 +6,18 @@
     import ReferendumBanner from "$lib/components/ReferendumBanner.svelte";
 </script>
 
-<div class="space-y-12 pb-20 pt-8">
+<div class="space-y-12 pb-8 pt-8">
     <!-- Title Section - centered across full width -->
     <section class="max-w-7xl mx-auto px-4">
         <div class="text-center mb-8 relative neighborhoods-menu-container">
-            <div class="flex items-center justify-center gap-4">
+            <div
+                class="flex flex-col md:flex-row items-center justify-center gap-6"
+            >
                 <div class="relative group">
                     <h2
-                        class="text-2xl md:text-5xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent cursor-default whitespace-nowrap"
+                        class="text-3xl md:text-5xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent cursor-default leading-tight"
                     >
-                        יתרונות שכונת קרית משה, ירושלים
+                        יתרונות שכונת <br class="md:hidden" /> קרית משה, ירושלים
                     </h2>
                     <!-- Tooltip -->
                     <div
@@ -32,7 +34,7 @@
                     </div>
                 </div>
                 <button
-                    class="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-lg transition-all hover:scale-105"
+                    class="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-xl transition-all hover:scale-105 active:scale-95 border border-white/10"
                 >
                     🏘️ לכלל השכונות
                 </button>
@@ -53,6 +55,11 @@
                 <LostAndFound />
             </div>
         </div>
+    </section>
+
+    <!-- Referendum Banner -->
+    <section class="max-w-6xl mx-auto px-4">
+        <ReferendumBanner />
     </section>
 
     <!-- Facebook Comments Section -->
@@ -77,11 +84,6 @@
             </h3>
             <FacebookComments numPosts={10} />
         </div>
-    </section>
-
-    <!-- Referendum Banner -->
-    <section class="max-w-6xl mx-auto px-4">
-        <ReferendumBanner />
     </section>
 
     <!-- Emergency Team Banner -->
