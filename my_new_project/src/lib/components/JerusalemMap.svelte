@@ -419,6 +419,7 @@
             on:click={handleViewToggle}
             class="page-corner absolute top-0 left-0 z-10 transition-all duration-500 hover:scale-110"
             class:flipping={isFlipping}
+            class:auto-switching={isAutoSwitching}
         >
             <svg width="130" height="130" viewBox="0 0 130 130" class="transition-transform duration-500">
                 <path 
@@ -866,6 +867,29 @@
 
     .page-corner.flipping {
         animation: peelPage 0.5s ease-in-out;
+    }
+
+    .page-corner.auto-switching {
+        animation: flashButton 1s ease-in-out;
+    }
+
+    @keyframes flashButton {
+        0%, 100% {
+            filter: brightness(1);
+            box-shadow: 0 0 0 rgba(147, 51, 234, 0);
+        }
+        25% {
+            filter: brightness(1.5);
+            box-shadow: 0 0 20px rgba(147, 51, 234, 0.8);
+        }
+        50% {
+            filter: brightness(2);
+            box-shadow: 0 0 30px rgba(147, 51, 234, 1);
+        }
+        75% {
+            filter: brightness(1.5);
+            box-shadow: 0 0 20px rgba(147, 51, 234, 0.8);
+        }
     }
 
     @keyframes slideDown {
