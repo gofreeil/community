@@ -203,7 +203,7 @@
                                     {ads[currentAdIndex].description}
                                 </p>
                                 <div
-                                    class="mt-1 text-[10px] text-gray-500 font-bold flex items-center gap-2"
+                                    class="mt-1 text-xs text-gray-500 font-bold flex items-center justify-start w-full gap-2 px-1"
                                 >
                                     <span>לחץ לפרטים מלאים</span>
                                     <span>👇</span>

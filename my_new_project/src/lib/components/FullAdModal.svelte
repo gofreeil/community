@@ -57,10 +57,6 @@
             >
                 {ad.cta}
             </a>
-
-            <p class="mt-4 text-gray-500 text-sm">
-                * המידע באחריות המפרסם בלבד
-            </p>
         </div>
     </div>
 </div>

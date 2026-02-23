@@ -8,30 +8,32 @@
             class="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-3"
         >
             <!-- Right: Brand image + text (ימין) -->
-            <a
-                href="https://www.melecshop.com/"
-                target="_blank"
-                style="cursor: pointer;"
-                class="flex flex-col md:flex-row items-center gap-3 hover:opacity-80 transition-opacity"
-            >
-                <img
-                    src="/images/יוצאים לחירות תמונה ויקיפדיה.png"
-                    alt="יוצאים לחירות"
-                    class="h-16 w-16 md:h-24 md:w-24 object-contain rounded-lg hover:scale-105 transition-transform"
-                />
-                <div class="text-center md:text-right leading-tight text-right">
-                    <p class="text-sm md:text-base text-gray-300">
-                        לכלל פעילות התנועה החברתית
-                    </p>
-                    <p
-                        class="text-base md:text-yellow-400 font-bold flex items-center gap-1 justify-center md:justify-end text-yellow-400"
-                    >
-                        <span class="md:hidden">👇</span><span
-                            class="hidden md:inline">👉</span
-                        > יוצאים לחירות
-                    </p>
-                </div>
-            </a>
+            <div class="flex flex-col items-center md:items-end gap-2">
+                <p class="text-sm md:text-base text-gray-400 font-medium">
+                    לכלל פעילות התנועה החברתית
+                </p>
+                <a
+                    href="https://www.melecshop.com/"
+                    target="_blank"
+                    style="cursor: pointer;"
+                    class="flex flex-col md:flex-row items-center gap-3 hover:opacity-80 transition-opacity"
+                >
+                    <img
+                        src="/images/יוצאים לחירות תמונה ויקיפדיה.png"
+                        alt="יוצאים לחירות"
+                        class="h-16 w-16 md:h-24 md:w-24 object-contain rounded-lg hover:scale-105 transition-transform"
+                    />
+                    <div class="text-center md:text-right leading-tight">
+                        <p
+                            class="text-base md:text-yellow-400 font-bold flex items-center gap-1 justify-center md:justify-end text-yellow-400"
+                        >
+                            <span class="md:hidden">👇</span><span
+                                class="hidden md:inline">👉</span
+                            > יוצאים לחירות
+                        </p>
+                    </div>
+                </a>
+            </div>
 
             <!-- Center: Links -->
             <nav

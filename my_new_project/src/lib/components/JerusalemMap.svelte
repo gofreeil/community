@@ -890,7 +890,7 @@
 
         <!-- Decoration -->
         <div
-            class="absolute bottom-4 right-4 bg-purple-600/90 backdrop-blur-md text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-lg"
+            class="hidden md:block absolute bottom-4 right-4 bg-purple-600/90 backdrop-blur-md text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-lg"
         >
             {viewMode === "map"
                 ? `📍 מפת הקהילה - ${selectedNeighborhood}, ${selectedNeighborhoodCity}`
