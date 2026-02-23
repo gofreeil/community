@@ -21,13 +21,13 @@
                     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
                     <div class="relative z-10 text-center px-4">
                         <h3 class="text-white font-bold text-lg mb-2">בתי הפיוס</h3>
-                        <p class="text-gray-200 text-sm">פתרון סיכסוכים בקהילה</p>
+                        <p class="text-gray-200 text-sm">בתי הפיוס מתנדבים לתת לך עזרה מלאה בדין / פיוס בכל סיכסוך</p>
                     </div>
                 </div>
             </div>
             <div class="bg-gradient-to-r from-orange-600 to-red-600 p-3 text-center">
                 <p class="text-white font-bold text-xs leading-tight">
-                    בתי הפיוס מתנדבים לתת לך עזרה מלאה בדין / פיוס בכל סיכסוך
+                    יש לך סיכסוך? לחץ לפתרון
                 </p>
             </div>
         </a>
