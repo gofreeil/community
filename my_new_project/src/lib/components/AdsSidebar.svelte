@@ -46,7 +46,7 @@
 
         <!-- Ad 2 - השקעות קבוצתיות -->
         <a
-            href="https://index-chi-sage.vercel.app/"
+            href="https://www.melecshop.com/page/free"
             target="_blank"
             class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105"
         >
