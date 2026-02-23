@@ -186,16 +186,31 @@
         const option = helpOptions.find(o => o.id === optionId);
         showHelpMenu = false;
         
-        // הפעל אנימציית גלים
-        showWaves = true;
-        handRaised = true; // סמן שהיד מורמת
-        raisedHandMessage = option?.text || '';
-        raisedHandIcon = option?.icon || '🆘';
+        const wasNotInMapView = viewMode !== 'map';
         
-        // כבה את הגלים אחרי 2 שניות
+        // עבור לתצוגת מפה כדי לראות את הגלים
+        if (wasNotInMapView) {
+            isFlipping = true;
+            setTimeout(() => {
+                viewMode = 'map';
+            }, 350);
+            setTimeout(() => {
+                isFlipping = false;
+            }, 700);
+        }
+        
+        // הפעל אנימציית גלים אחרי מעבר למפה
         setTimeout(() => {
-            showWaves = false;
-        }, 2000);
+            showWaves = true;
+            handRaised = true; // סמן שהיד מורמת
+            raisedHandMessage = option?.text || '';
+            raisedHandIcon = option?.icon || '🆘';
+            
+            // כבה את הגלים אחרי 2 שניות
+            setTimeout(() => {
+                showWaves = false;
+            }, 2000);
+        }, wasNotInMapView ? 750 : 0);
 
         if (optionId === 4) {
             // אפשרות "אחר" - פתח טופס
@@ -214,13 +229,15 @@
                     raisedHandMessage = '';
                     raisedHandIcon = '';
                 }
-            }, 100);
+            }, wasNotInMapView ? 850 : 100);
         } else {
-            successMessageText = `בקשת עזרה נשלחה: ${option?.text}`;
-            showSuccessMessage = true;
             setTimeout(() => {
-                showSuccessMessage = false;
-            }, 3000);
+                successMessageText = `בקשת עזרה נשלחה: ${option?.text}`;
+                showSuccessMessage = true;
+                setTimeout(() => {
+                    showSuccessMessage = false;
+                }, 3000);
+            }, wasNotInMapView ? 750 : 0);
         }
     }
 
@@ -452,7 +469,6 @@
         {:else if viewMode === 'list'}
             <!-- תצוגת רשימה -->
             <div class="w-full h-[550px] overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900/20" style="border-radius: 20px;">
-                <h3 class="text-2xl font-bold text-white mb-6 text-center">כל היתרונות בשכונה</h3>
                 <div class="space-y-3">
                     {#each categories.filter(cat => cat.id !== 'benefits') as category}
                         <div class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-500/30 rounded-xl overflow-hidden transition-all">

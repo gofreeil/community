@@ -70,7 +70,7 @@
                     <div class="text-4xl mb-3 transition-transform duration-300 group-hover:rotate-12">🏛️</div>
                     <h4 class="text-lg font-bold mb-2 transition-colors duration-300 group-hover:text-purple-400">פנה לוועד השכונה</h4>
                     <p class="text-gray-400 text-sm mb-4 transition-colors duration-300 group-hover:text-gray-300">
-                        יש לך הצעה? צריך עזרה מול העיריה? הוועד כאן בשבילך!
+                        יש לך הצעה? רוצה לשפר את השכונה? הוועד כאן בשבילך!
                     </p>
                     <button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all w-full group-hover:scale-105 group-hover:shadow-lg">
                         צור קשר עם הוועד
