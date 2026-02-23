@@ -121,7 +121,7 @@
                 class="bg-gradient-to-r from-red-600 to-pink-600 p-3 text-center"
             >
                 <p class="text-white font-bold text-xs leading-tight">
-                    ביקורת על העיריה - הזכות לחיות
+                    יש לך תלונה לעיריה שמזלזלים בה - לא עוד
                 </p>
             </div>
         </a>
