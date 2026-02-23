@@ -134,11 +134,25 @@
         
         autoSwitchInterval = setInterval(() => {
             if (!isMouseOver && viewMode !== 'add') {
-                isAutoSwitching = true;
-                setTimeout(() => {
-                    isAutoSwitching = false;
-                }, 1000); // האנימציה תימשך שנייה
-                handleViewToggle();
+                if (viewMode === 'map') {
+                    // עבור לרשימה ל-3 שניות
+                    isAutoSwitching = true;
+                    setTimeout(() => {
+                        isAutoSwitching = false;
+                    }, 1000);
+                    handleViewToggle();
+                    
+                    // חזור למפה אחרי 3 שניות
+                    setTimeout(() => {
+                        if (viewMode === 'list' && !isMouseOver) {
+                            isAutoSwitching = true;
+                            setTimeout(() => {
+                                isAutoSwitching = false;
+                            }, 1000);
+                            handleViewToggle();
+                        }
+                    }, 3000);
+                }
             }
         }, 30000); // 30 שניות
     }
@@ -870,25 +884,29 @@
     }
 
     .page-corner.auto-switching {
-        animation: flashButton 1s ease-in-out;
+        animation: pulseGlow 2s ease-in-out;
     }
 
-    @keyframes flashButton {
+    @keyframes pulseGlow {
         0%, 100% {
+            transform: scale(1);
             filter: brightness(1);
             box-shadow: 0 0 0 rgba(147, 51, 234, 0);
         }
         25% {
-            filter: brightness(1.5);
-            box-shadow: 0 0 20px rgba(147, 51, 234, 0.8);
+            transform: scale(1.05);
+            filter: brightness(1.2);
+            box-shadow: 0 0 15px rgba(147, 51, 234, 0.6);
         }
         50% {
-            filter: brightness(2);
-            box-shadow: 0 0 30px rgba(147, 51, 234, 1);
+            transform: scale(1.1);
+            filter: brightness(1.4);
+            box-shadow: 0 0 25px rgba(147, 51, 234, 0.8);
         }
         75% {
-            filter: brightness(1.5);
-            box-shadow: 0 0 20px rgba(147, 51, 234, 0.8);
+            transform: scale(1.05);
+            filter: brightness(1.2);
+            box-shadow: 0 0 15px rgba(147, 51, 234, 0.6);
         }
     }
 
