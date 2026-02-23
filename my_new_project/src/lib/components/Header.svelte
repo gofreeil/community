@@ -81,7 +81,7 @@
                 <!-- Language - Flag Only -->
                 <div class="lang-dropdown-container relative">
                     <button
-                        class="flex items-center justify-center rounded bg-blue-600 px-3 py-2 text-base font-bold text-white"
+                        class="flex items-center justify-center rounded bg-purple-600 px-3 py-2 text-base font-bold text-white hover:bg-purple-500 transition-colors"
                         onclick={() => (showLangDropdown = !showLangDropdown)}
                     >
                         <span
@@ -213,7 +213,7 @@
                 <!-- Language Dropdown -->
                 <div class="lang-dropdown-container relative">
                     <button
-                        class="flex items-center rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-700 hover:bg-gray-200"
+                        class="flex items-center rounded-lg bg-purple-100 px-3 py-2 text-sm text-purple-700 hover:bg-purple-200 transition-colors"
                         onclick={() => (showLangDropdown = !showLangDropdown)}
                     >
                         <span
