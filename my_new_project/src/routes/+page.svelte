@@ -6,12 +6,12 @@
     import ReferendumBanner from "$lib/components/ReferendumBanner.svelte";
 </script>
 
-<div class="space-y-12 pb-8 pt-8">
+<div class="space-y-6 md:space-y-12 pb-8 pt-6">
     <!-- Title Section - centered across full width -->
     <section class="max-w-7xl mx-auto px-4">
-        <div class="text-center mb-8 relative neighborhoods-menu-container">
+        <div class="text-center relative neighborhoods-menu-container">
             <div
-                class="flex flex-col md:flex-row items-center justify-center gap-6"
+                class="flex flex-col md:flex-row items-center justify-center gap-4"
             >
                 <div class="relative group">
                     <h2

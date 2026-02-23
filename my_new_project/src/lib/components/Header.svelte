@@ -50,7 +50,7 @@
             if (showAdsMode) {
                 currentAdIndex = (currentAdIndex + 1) % ads.length;
             }
-        }, 5000);
+        }, 10000);
 
         document.addEventListener("click", handleClickOutside);
         return () => {
@@ -74,100 +74,149 @@
     style="background: linear-gradient(to bottom, rgb(17, 24, 39) 0%, rgb(17, 24, 39) 66%, rgba(17, 24, 39, 0.2) 100%);"
 >
     <div class="relative mx-auto max-w-7xl px-2 sm:px-4 lg:px-8">
-        {#if !showAdsMode}
-            <!-- Original Mobile Header -->
-            <div
-                class="flex md:hidden items-center justify-between py-3 px-1"
-                transition:fade
-            >
-                <!-- Left: Logo + Title -->
-                <a href="/" class="flex items-center gap-2.5 flex-1 min-w-0">
-                    <div class="relative">
-                        <img
-                            src="/images/logos/לוגו2.png"
-                            alt="לוגו"
-                            class="h-10 w-10 object-contain flex-shrink-0"
-                        />
-                        <div
-                            class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-slate-900 animate-pulse"
-                        ></div>
-                    </div>
-                    <div class="min-w-0 flex-1">
-                        <h1
-                            class="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-[15px] font-black text-transparent leading-tight truncate"
+        <div class="relative">
+            <!-- Mobile Header Area -->
+            <div class="md:hidden">
+                {#if !showAdsMode}
+                    <!-- Original Mobile Header -->
+                    <div
+                        class="flex items-center justify-between py-3 px-1"
+                        transition:fade
+                    >
+                        <!-- Left: Logo + Title -->
+                        <a
+                            href="/"
+                            class="flex items-center gap-2.5 flex-1 min-w-0"
                         >
-                            {$t("welcome")}
-                        </h1>
-                        <p
-                            class="text-[10px] text-gray-400 leading-tight truncate font-medium"
-                        >
-                            {$t("app_description")}
-                        </p>
-                    </div>
-                </a>
-
-                <!-- Right Side: Language + User -->
-                <div class="flex items-center gap-2">
-                    <div class="lang-dropdown-container relative">
-                        <button
-                            class="flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 border border-white/10 p-1.5 active:scale-95"
-                            onclick={() =>
-                                (showLangDropdown = !showLangDropdown)}
-                        >
-                            <span
-                                class="fi fi-{languages.find(
-                                    (l) => l.code === $locale,
-                                )?.flag || 'un'}"
-                                style="font-size: 1.2rem;"
-                            ></span>
-                        </button>
-                        {#if showLangDropdown}
-                            <div
-                                class="absolute left-0 z-[160] mt-2 w-32 rounded-xl bg-slate-900 border border-white/10 shadow-2xl p-1"
-                            >
-                                {#each languages as langOption}
-                                    <button
-                                        class="flex w-full items-center gap-2 px-3 py-2 text-right hover:bg-white/5 rounded-lg transition-colors"
-                                        onclick={() => {
-                                            changeLang(langOption);
-                                            showLangDropdown = false;
-                                        }}
-                                    >
-                                        <span
-                                            class="fi fi-{langOption.flag}"
-                                            style="font-size: 1.1rem;"
-                                        ></span>
-                                        <span class="text-xs text-gray-200"
-                                            >{langOption.name}</span
-                                        >
-                                    </button>
-                                {/each}
+                            <div class="relative">
+                                <img
+                                    src="/images/logos/לוגו2.png"
+                                    alt="לוגו"
+                                    class="h-10 w-10 object-contain flex-shrink-0"
+                                />
+                                <div
+                                    class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-slate-900 shadow-[0_0_8px_rgba(34,197,94,0.6)]"
+                                ></div>
                             </div>
-                        {/if}
-                    </div>
-                    {#if currentUser}
-                        <div
-                            class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-green-400 to-blue-500 shadow-lg border border-white/10"
-                        >
-                            <span class="font-bold text-white text-xs"
-                                >{currentUser.username?.charAt(0) || "U"}</span
-                            >
+                            <div class="min-w-0 flex-1">
+                                <h1
+                                    class="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-[15px] font-black text-transparent leading-tight truncate"
+                                >
+                                    {$t("welcome")}
+                                </h1>
+                                <p
+                                    class="text-[10px] text-gray-400 leading-tight truncate font-medium"
+                                >
+                                    {$t("app_description")}
+                                </p>
+                            </div>
+                        </a>
+
+                        <!-- Right Side: Language + User -->
+                        <div class="flex items-center gap-2">
+                            <div class="lang-dropdown-container relative">
+                                <button
+                                    class="flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 border border-white/10 p-1.5 active:scale-95"
+                                    onclick={() =>
+                                        (showLangDropdown = !showLangDropdown)}
+                                >
+                                    <span
+                                        class="fi fi-{languages.find(
+                                            (l) => l.code === $locale,
+                                        )?.flag || 'un'}"
+                                        style="font-size: 1.2rem;"
+                                    ></span>
+                                </button>
+                                {#if showLangDropdown}
+                                    <div
+                                        class="absolute left-0 z-[160] mt-2 w-32 rounded-xl bg-slate-900 border border-white/10 shadow-2xl p-1"
+                                    >
+                                        {#each languages as langOption}
+                                            <button
+                                                class="flex w-full items-center gap-2 px-3 py-2 text-right hover:bg-white/5 rounded-lg transition-colors"
+                                                onclick={() => {
+                                                    changeLang(langOption);
+                                                    showLangDropdown = false;
+                                                }}
+                                            >
+                                                <span
+                                                    class="fi fi-{langOption.flag}"
+                                                    style="font-size: 1.1rem;"
+                                                ></span>
+                                                <span
+                                                    class="text-xs text-gray-200"
+                                                    >{langOption.name}</span
+                                                >
+                                            </button>
+                                        {/each}
+                                    </div>
+                                {/if}
+                            </div>
+                            {#if currentUser}
+                                <div
+                                    class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-green-400 to-blue-500 shadow-lg border border-white/10"
+                                >
+                                    <span class="font-bold text-white text-xs"
+                                        >{currentUser.username?.charAt(0) ||
+                                            "U"}</span
+                                    >
+                                </div>
+                            {:else}
+                                <button
+                                    onclick={onShowAuth}
+                                    class="h-9 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-[11px] font-bold text-white shadow-lg active:scale-95"
+                                >
+                                    {$t("login_register")}
+                                </button>
+                            {/if}
                         </div>
-                    {:else}
-                        <button
-                            onclick={onShowAuth}
-                            class="h-9 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-[11px] font-bold text-white shadow-lg active:scale-95"
-                        >
-                            {$t("login_register")}
-                        </button>
-                    {/if}
-                </div>
+                    </div>
+                {:else}
+                    <!-- Advertisement Banner Mode (Mobile Only) -->
+                    <div
+                        class="flex items-center justify-center h-[72px] w-full px-4 overflow-hidden relative cursor-pointer"
+                        transition:fade
+                        onclick={() =>
+                            (selectedAdForModal = ads[currentAdIndex])}
+                    >
+                        {#key currentAdIndex}
+                            <div
+                                in:fade={{ duration: 600, delay: 200 }}
+                                out:fade={{ duration: 600 }}
+                                class="absolute inset-0 flex flex-col items-center justify-center text-center p-2"
+                            >
+                                <span
+                                    class="text-[10px] text-blue-400 font-black uppercase tracking-widest mb-1 opacity-60"
+                                    >הקהילה ממליצה בחום:</span
+                                >
+                                <h2
+                                    class="text-lg font-black bg-gradient-to-r {ads[
+                                        currentAdIndex
+                                    ]
+                                        .color} bg-clip-text text-transparent leading-tight mb-1"
+                                >
+                                    {ads[currentAdIndex].title}
+                                </h2>
+                                <p
+                                    class="text-xs text-gray-300 font-medium truncate max-w-[95%]"
+                                >
+                                    {ads[currentAdIndex].description}
+                                </p>
+                                <div
+                                    class="mt-1 text-[10px] text-gray-500 font-bold flex items-center gap-2"
+                                >
+                                    <span>לחץ לפרטים מלאים</span>
+                                    <span>👇</span>
+                                </div>
+                            </div>
+                        {/key}
+                    </div>
+                {/if}
             </div>
 
-            <!-- Original Desktop Header -->
+            <!-- Original Desktop Header (Always Visible on Desktop) -->
             <div
                 class="hidden md:flex flex-col items-center py-6 md:flex-row md:items-center md:justify-between"
-                transition:fade
             >
                 <div class="flex items-center space-x-4">
                     <a
@@ -230,46 +279,7 @@
                     {/if}
                 </div>
             </div>
-        {:else}
-            <!-- Advertisement Banner Mode (Both Mobile and Desktop) -->
-            <div
-                class="flex items-center justify-center h-[72px] md:h-[100px] w-full px-4 overflow-hidden relative cursor-pointer"
-                transition:fade
-                onclick={() => (selectedAdForModal = ads[currentAdIndex])}
-            >
-                {#key currentAdIndex}
-                    <div
-                        in:fade={{ duration: 600, delay: 200 }}
-                        out:fade={{ duration: 600 }}
-                        class="absolute inset-0 flex flex-col items-center justify-center text-center p-2"
-                    >
-                        <span
-                            class="text-[10px] md:text-xs text-blue-400 font-black uppercase tracking-widest mb-1 opacity-60"
-                            >הקהילה ממליצה בחום:</span
-                        >
-                        <h2
-                            class="text-lg md:text-3xl font-black bg-gradient-to-r {ads[
-                                currentAdIndex
-                            ]
-                                .color} bg-clip-text text-transparent leading-tight mb-1"
-                        >
-                            {ads[currentAdIndex].title}
-                        </h2>
-                        <p
-                            class="text-xs md:text-base text-gray-300 font-medium truncate max-w-[90%]"
-                        >
-                            {ads[currentAdIndex].description}
-                        </p>
-                        <div
-                            class="mt-1 md:mt-2 text-[10px] md:text-xs text-gray-500 font-bold flex items-center gap-2 animate-pulse"
-                        >
-                            <span>לחץ לפרטים מלאים</span>
-                            <span>👈</span>
-                        </div>
-                    </div>
-                {/key}
-            </div>
-        {/if}
+        </div>
     </div>
 </header>
 

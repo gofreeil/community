@@ -98,47 +98,43 @@
         },
     ];
 
-    let viewMode: "map" | "list" | "add" = "map";
-    let isFlipping = false;
-    let expandedCategories: Set<string> = new Set();
+    let viewMode = $state<"map" | "list" | "add">("map");
+    let isFlipping = $state(false);
+    let expandedCategories = $state(new Set<string>());
     let isLoggedIn = false; // במציאות זה יבוא מניהול משתמשים
-    let showHelpMenu = false;
-    let showWaves = false;
-    let showSuccessMessage = false;
-    let successMessageText = "";
-    let isMouseOver = false;
-    let handRaised = false;
-    let showSurvey = false;
-    let raisedHandMessage = "";
-    let raisedHandIcon = "";
-    let selectedCategory = "benefits"; // קטגוריה נבחרת
+    let showHelpMenu = $state(false);
+    let showWaves = $state(false);
+    let showSuccessMessage = $state(false);
+    let successMessageText = $state("");
+    let isMouseOver = $state(false);
+    let handRaised = $state(false);
+    let showSurvey = $state(false);
+    let raisedHandMessage = $state("");
+    let raisedHandIcon = $state("");
+    let selectedCategory = $state("benefits"); // קטגוריה נבחרת
     let autoSwitchInterval: number | null = null;
-    let isAutoSwitching = false;
+    let isAutoSwitching = $state(false);
     let autoReturnTimeout: number | null = null;
-    let userInteracted = false; // האם המשתמש נגע בכפתור
-    let showNeighborhoodsMenu = false;
-    let selectedNeighborhood = "קרית משה";
-    let selectedNeighborhoodCity = "ירושלים";
-    let selectedCity = "";
+    let userInteracted = $state(false); // האם המשתמש נגע בכפתור
+    let showNeighborhoodsMenu = $state(false);
+    let selectedNeighborhood = $state("קרית משה");
+    let selectedNeighborhoodCity = $state("ירושלים");
+    let selectedCity = $state("");
 
     // עקוב אחרי שינויים ב-viewMode - חזור למפה אחרי 3 שניות אם לא היה אינטראקציה
-    $: {
+    $effect(() => {
         if (viewMode === "list") {
-            // ברגע שנכנסנו לתצוגת רשימה, התחל ספירה לחזרה
             if (autoReturnTimeout === null && !isMouseOver && !userInteracted) {
                 autoReturnTimeout = setTimeout(() => {
-                    // בדוק שעדיין ברשימה, לא על המפה, ולא היה אינטראקציה
                     if (
                         viewMode === "list" &&
                         !isMouseOver &&
                         !userInteracted
                     ) {
-                        console.log("Auto returning to map after 3 seconds");
                         isAutoSwitching = true;
                         setTimeout(() => {
                             isAutoSwitching = false;
                         }, 4000);
-
                         isFlipping = true;
                         setTimeout(() => {
                             viewMode = "map";
@@ -152,13 +148,12 @@
                 }, 3000);
             }
         } else {
-            // אם יצאנו מתצוגת רשימה, בטל את הספירה
             if (autoReturnTimeout !== null) {
                 clearTimeout(autoReturnTimeout);
                 autoReturnTimeout = null;
             }
         }
-    }
+    });
 
     // מיפוי שכונות לכתובות Google Maps
     const neighborhoodMaps: Record<string, string> = {
@@ -591,7 +586,10 @@
             >
                 {#each categories as category}
                     <button
-                        on:click={() => handleCategoryClick(category.id)}
+                        onclick={() => {
+                            handleCategoryClick(category.id);
+                            userInteracted = true;
+                        }}
                         title="לחץ כדי לסנן במפה"
                         class="flex items-center justify-center {selectedCategory ===
                         category.id
@@ -617,12 +615,12 @@
         class="relative w-full border-[12px] md:border-4 border-purple-600 shadow-2xl bg-[#0f172a] mb-12 transition-all duration-700 p-2 md:p-0"
         style="border-radius: 28px; transform-style: preserve-3d;"
         class:flipping-container={isFlipping}
-        on:mouseenter={handleMouseEnter}
-        on:mouseleave={handleMouseLeave}
+        onmouseenter={handleMouseEnter}
+        onmouseleave={handleMouseLeave}
     >
         <!-- כפתור מעבר תצוגה - משולש מקופל בפינה -->
         <button
-            on:click={() => handleViewToggle(false)}
+            onclick={() => handleViewToggle(false)}
             class="page-corner absolute top-0 left-0 z-30 transition-all duration-500 hover:scale-110"
             class:flipping={isFlipping}
             class:auto-switching={isAutoSwitching}
@@ -664,6 +662,27 @@
                     {viewMode === "map" ? "רשימה" : "מפה"}
                 </text>
             </svg>
+
+            <!-- אנימציית טביעת אצבע למעבר אוטומטי -->
+            {#if isAutoSwitching}
+                <div class="fingerprint-animation-container">
+                    <div class="fingerprint-ripple"></div>
+                    <div class="fingerprint-ripple delay-1"></div>
+                    <svg
+                        class="fingerprint-svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                    >
+                        <path
+                            d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-4.94-2.07c-1.218-1.559-1.99-3.5-2.001-5.613a4.04 4.04 0 0 1 .42-1.8m2.18-5.32c.506-.21 1.05-.33 1.62-.35a3.99 3.99 0 0 1 3.5 1.99m0 0A3.99 3.99 0 0 1 12 11V11c0 3.517-1.009 6.799-2.753 9.571m0 0c1.744-2.772 2.753-6.054 2.753-9.571m0 0c0-1.033.42-1.99 1.1-.285C14.735 12.866 17 15.366 17 19m1.2-1.2c.48-1.05.744-2.22.744-3.454a7.99 7.99 0 0 0-4.044-7.001m.594 13.92a7.99 7.99 0 0 0 3.45-5.92c0-1.637-.492-3.159-1.341-4.428"
+                            stroke-width="1.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        />
+                    </svg>
+                </div>
+            {/if}
         </button>
 
         {#if viewMode === "map"}
@@ -759,7 +778,7 @@
                             class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-500/30 rounded-xl overflow-hidden transition-all"
                         >
                             <button
-                                on:click={() => toggleCategory(category.id)}
+                                onclick={() => toggleCategory(category.id)}
                                 class="w-full p-4 hover:border-purple-500 transition-all hover:bg-purple-900/20 cursor-pointer"
                             >
                                 <div class="flex items-center justify-between">
@@ -840,7 +859,10 @@
                 <div class="space-y-3">
                     {#each categories.filter((cat) => cat.id !== "benefits") as category}
                         <button
-                            on:click={() => handleAddItem(category.id)}
+                            onclick={() => {
+                                handleAddItem(category.id);
+                                userInteracted = true;
+                            }}
                             class="w-full bg-gradient-to-r from-green-900/30 to-emerald-900/30 border border-green-500/30 rounded-xl p-4 hover:border-green-500 hover:from-green-900/40 hover:to-emerald-900/40 transition-all cursor-pointer"
                         >
                             <div class="flex items-center justify-between">
@@ -904,7 +926,10 @@
             style="top: -10px;"
         >
             <button
-                on:click={handleAddAdvantage}
+                onclick={() => {
+                    handleAddAdvantage();
+                    userInteracted = true;
+                }}
                 title="הוסף יתרון חדש לשכונה"
                 class="relative group overflow-hidden bg-gradient-to-br from-green-500 via-emerald-500 to-teal-600 hover:from-green-400 hover:via-emerald-400 hover:to-teal-500 text-white px-3 py-1.5 rounded-lg font-bold text-base shadow-xl transition-all hover:scale-105 border-2 border-purple-600"
             >
@@ -925,7 +950,10 @@
             {#if !handRaised}
                 <!-- כפתור הרמת יד רגיל -->
                 <button
-                    on:click={() => (showHelpMenu = !showHelpMenu)}
+                    onclick={() => {
+                        showHelpMenu = !showHelpMenu;
+                        userInteracted = true;
+                    }}
                     title="בקש עזרה מהקהילה"
                     class="relative group overflow-hidden bg-gradient-to-br from-red-500 via-pink-500 to-purple-600 hover:from-red-400 hover:via-pink-400 hover:to-purple-500 text-white px-4 py-2 rounded-full font-bold text-sm shadow-xl transition-all hover:scale-105"
                 >
@@ -940,7 +968,10 @@
             {:else}
                 <!-- כפתור יד מורמת -->
                 <button
-                    on:click={handleLowerHand}
+                    onclick={() => {
+                        handleLowerHand();
+                        userInteracted = true;
+                    }}
                     title="הורד את היד"
                     class="relative group overflow-hidden bg-gradient-to-br from-yellow-500 via-orange-500 to-red-600 hover:from-yellow-400 hover:via-orange-400 hover:to-red-500 text-white px-4 py-2 rounded-full font-bold text-sm shadow-xl transition-all hover:scale-105 animate-pulse"
                 >
@@ -964,7 +995,10 @@
                     <div class="p-2">
                         {#each helpOptions as option}
                             <button
-                                on:click={() => handleHelpRequest(option.id)}
+                                onclick={() => {
+                                    handleHelpRequest(option.id);
+                                    userInteracted = true;
+                                }}
                                 class="w-full flex items-center gap-3 p-3 hover:bg-red-50 rounded-lg transition-colors text-right border-b border-gray-200 last:border-b-0"
                             >
                                 <span class="text-2xl">{option.icon}</span>
@@ -975,7 +1009,10 @@
                         {/each}
                     </div>
                     <button
-                        on:click={() => (showHelpMenu = false)}
+                        onclick={() => {
+                            showHelpMenu = false;
+                            userInteracted = true;
+                        }}
                         class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 py-2 text-sm font-bold transition-colors"
                     >
                         ביטול
@@ -997,7 +1034,10 @@
                     </div>
                     <div class="p-4 space-y-3">
                         <button
-                            on:click={() => handleSurveyResponse("community")}
+                            onclick={() => {
+                                handleSurveyResponse("community");
+                                userInteracted = true;
+                            }}
                             class="w-full flex items-center gap-3 p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors border-2 border-green-300"
                         >
                             <span class="text-3xl">🤝</span>
@@ -1011,7 +1051,10 @@
                             </div>
                         </button>
                         <button
-                            on:click={() => handleSurveyResponse("other")}
+                            onclick={() => {
+                                handleSurveyResponse("other");
+                                userInteracted = true;
+                            }}
                             class="w-full flex items-center gap-3 p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border-2 border-blue-300"
                         >
                             <span class="text-3xl">✅</span>
@@ -1026,7 +1069,10 @@
                         </button>
                     </div>
                     <button
-                        on:click={() => handleSurveyResponse("cancel")}
+                        onclick={() => {
+                            handleSurveyResponse("cancel");
+                            userInteracted = true;
+                        }}
                         class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 py-2 text-sm font-bold transition-colors"
                     >
                         ביטול
@@ -1209,45 +1255,75 @@
         z-index: 20;
     }
 
-    @media (max-width: 768px) {
-        .page-corner.auto-switching::before {
-            content: "☝️";
-            background: none;
-            width: auto;
-            height: auto;
-            font-size: 32px;
-            animation: fingerTouch 2.5s ease-out infinite;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    .fingerprint-animation-container {
+        position: absolute;
+        top: 25px;
+        left: 25px;
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 50;
+        pointer-events: none;
+    }
+
+    .fingerprint-svg {
+        width: 32px;
+        height: 32px;
+        color: white;
+        filter: drop-shadow(0 0 8px rgba(147, 51, 234, 0.8));
+        animation: fingerprintScale 2s ease-in-out infinite;
+        z-index: 2;
+    }
+
+    .fingerprint-ripple {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.4);
+        animation: fingerprintRipple 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+        z-index: 1;
+    }
+
+    .fingerprint-ripple.delay-1 {
+        animation-delay: 1s;
+    }
+
+    @keyframes fingerprintScale {
+        0%,
+        100% {
+            transform: scale(1);
+            opacity: 0.8;
+        }
+        50% {
+            transform: scale(1.2);
+            opacity: 1;
         }
     }
 
-    @keyframes fingerTouch {
+    @keyframes fingerprintRipple {
         0% {
-            transform: translate(30px, -30px) scale(0.8);
-            opacity: 0;
-        }
-        20% {
-            transform: translate(0, 0) scale(1.1);
-            opacity: 1;
-        }
-        40% {
-            transform: translate(0, 0) scale(1);
-            opacity: 1;
-        }
-        60% {
-            transform: translate(0, 0) scale(0.9);
-            opacity: 1;
-        }
-        80% {
-            transform: translate(0, 0) scale(1.2);
-            opacity: 0;
+            transform: scale(0.5);
+            opacity: 0.8;
         }
         100% {
-            transform: translate(0, 0) scale(1.2);
+            transform: scale(2.5);
             opacity: 0;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .fingerprint-animation-container {
+            top: 15px;
+            left: 15px;
+            width: 40px;
+            height: 40px;
+        }
+        .fingerprint-svg {
+            width: 24px;
+            height: 24px;
         }
     }
 
