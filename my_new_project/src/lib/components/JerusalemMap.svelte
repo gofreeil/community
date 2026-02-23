@@ -134,6 +134,11 @@
                         !userInteracted
                     ) {
                         console.log("Auto returning to map after 3 seconds");
+                        isAutoSwitching = true;
+                        setTimeout(() => {
+                            isAutoSwitching = false;
+                        }, 4000);
+
                         isFlipping = true;
                         setTimeout(() => {
                             viewMode = "map";
@@ -344,37 +349,7 @@
                     setTimeout(() => {
                         isAutoSwitching = false;
                     }, 4000);
-                    handleViewToggle();
-
-                    // חזור למפה אחרי 3 שניות אלא אם כן המשתמש על הטבלה או לחץ על כפתור החלף
-                    setTimeout(() => {
-                        console.log("Checking return to map:", {
-                            viewMode,
-                            isMouseOver,
-                            userInteracted,
-                        });
-                        // בדוק את המצב הנוכחי - אם עדיין ברשימה וללא אינטראקציה
-                        if (
-                            viewMode === "list" &&
-                            !isMouseOver &&
-                            !userInteracted
-                        ) {
-                            console.log("Returning to map view");
-                            isAutoSwitching = true;
-                            setTimeout(() => {
-                                isAutoSwitching = false;
-                            }, 4000);
-                            // החזר למפה ואתחל את userInteracted
-                            isFlipping = true;
-                            setTimeout(() => {
-                                viewMode = "map";
-                                userInteracted = false; // אתחל את הדגל
-                            }, 350);
-                            setTimeout(() => {
-                                isFlipping = false;
-                            }, 700);
-                        }
-                    }, 3000);
+                    handleViewToggle(true);
                 }
             }
         }, 25000); // 25 שניות
@@ -457,7 +432,9 @@
         };
     });
 
-    function handleViewToggle() {
+    function handleViewToggle(isAutoParam = false) {
+        const isAuto = isAutoParam === true; // וודא שזה בוליאני ולא אובייקט אירוע
+
         isFlipping = true;
         setTimeout(() => {
             const newViewMode = viewMode === "map" ? "list" : "map";
@@ -466,8 +443,8 @@
             if (newViewMode === "map") {
                 userInteracted = false;
             } else {
-                // אם הולכים לרשימה, סמן שהיה אינטראקציה כדי שלא תחזור מיד
-                userInteracted = true;
+                // אם הולכים לרשימה, סמן שהיה אינטראקציה רק אם זה לא אוטומטי
+                userInteracted = !isAuto;
             }
         }, 350); // Change content at middle of animation
         setTimeout(() => {
@@ -517,6 +494,7 @@
             isFlipping = true;
             setTimeout(() => {
                 viewMode = "map";
+                userInteracted = false;
             }, 350);
             setTimeout(() => {
                 isFlipping = false;
@@ -637,6 +615,8 @@
 
     <!-- Map Container -->
     <div
+        role="region"
+        aria-label="Map and List View Container"
         class="relative w-full border-4 border-purple-600 shadow-2xl bg-[#0f172a] mb-8 transition-all duration-700"
         style="border-radius: 24px; transform-style: preserve-3d;"
         class:flipping-container={isFlipping}
@@ -645,7 +625,7 @@
     >
         <!-- כפתור מעבר תצוגה - משולש מקופל בפינה -->
         <button
-            on:click={handleViewToggle}
+            on:click={() => handleViewToggle(false)}
             class="page-corner absolute top-0 left-0 z-30 transition-all duration-500 hover:scale-110"
             class:flipping={isFlipping}
             class:auto-switching={isAutoSwitching}
