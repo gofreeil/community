@@ -40,6 +40,36 @@
     let selectedNeighborhoodCity = 'ירושלים';
     let selectedCity = '';
 
+    // עקוב אחרי שינויים ב-viewMode - חזור למפה אחרי 3 שניות אם לא היה אינטראקציה
+    $: {
+        if (viewMode === 'list') {
+            // ברגע שנכנסנו לתצוגת רשימה, התחל ספירה לחזרה
+            if (autoReturnTimeout === null && !isMouseOver && !userInteracted) {
+                autoReturnTimeout = setTimeout(() => {
+                    // בדוק שעדיין ברשימה, לא על המפה, ולא היה אינטראקציה
+                    if (viewMode === 'list' && !isMouseOver && !userInteracted) {
+                        console.log('Auto returning to map after 3 seconds');
+                        isFlipping = true;
+                        setTimeout(() => {
+                            viewMode = 'map';
+                            userInteracted = false;
+                        }, 350);
+                        setTimeout(() => {
+                            isFlipping = false;
+                        }, 700);
+                    }
+                    autoReturnTimeout = null;
+                }, 3000);
+            }
+        } else {
+            // אם יצאנו מתצוגת רשימה, בטל את הספירה
+            if (autoReturnTimeout !== null) {
+                clearTimeout(autoReturnTimeout);
+                autoReturnTimeout = null;
+            }
+        }
+    }
+
     // מיפוי שכונות לכתובות Google Maps
     const neighborhoodMaps: Record<string, string> = {
         // ירושלים
@@ -145,16 +175,25 @@
                     }, 4000);
                     handleViewToggle();
                     
-                    // חזור למפה אחרי 3 שניות
+                    // חזור למפה אחרי 3 שניות אלא אם כן המשתמש על הטבלה או לחץ על כפתור החלף
                     setTimeout(() => {
                         console.log('Checking return to map:', { viewMode, isMouseOver, userInteracted });
+                        // בדוק את המצב הנוכחי - אם עדיין ברשימה וללא אינטראקציה
                         if (viewMode === 'list' && !isMouseOver && !userInteracted) {
                             console.log('Returning to map view');
                             isAutoSwitching = true;
                             setTimeout(() => {
                                 isAutoSwitching = false;
                             }, 4000);
-                            handleViewToggle();
+                            // החזר למפה ואתחל את userInteracted
+                            isFlipping = true;
+                            setTimeout(() => {
+                                viewMode = 'map';
+                                userInteracted = false; // אתחל את הדגל
+                            }, 350);
+                            setTimeout(() => {
+                                isFlipping = false;
+                            }, 700);
                         }
                     }, 3000);
                 }
@@ -164,10 +203,32 @@
 
     function handleMouseEnter() {
         isMouseOver = true;
+        // Clear the auto-return timeout when mouse enters
+        if (autoReturnTimeout !== null) {
+            clearTimeout(autoReturnTimeout);
+            autoReturnTimeout = null;
+        }
     }
 
     function handleMouseLeave() {
         isMouseOver = false;
+        // Restart the auto-return timeout when mouse leaves if we're in list view
+        if (viewMode === 'list' && !userInteracted && autoReturnTimeout === null) {
+            autoReturnTimeout = setTimeout(() => {
+                if (viewMode === 'list' && !isMouseOver && !userInteracted) {
+                    console.log('Auto returning to map after 3 seconds (mouse left)');
+                    isFlipping = true;
+                    setTimeout(() => {
+                        viewMode = 'map';
+                        userInteracted = false;
+                    }, 350);
+                    setTimeout(() => {
+                        isFlipping = false;
+                    }, 700);
+                }
+                autoReturnTimeout = null;
+            }, 3000);
+        }
     }
 
     function toggleNeighborhoodsMenu() {
@@ -209,10 +270,17 @@
     });
 
     function handleViewToggle() {
-        userInteracted = true; // סמן שהמשתמש נגע בכפתור
         isFlipping = true;
         setTimeout(() => {
-            viewMode = viewMode === 'map' ? 'list' : 'map';
+            const newViewMode = viewMode === 'map' ? 'list' : 'map';
+            viewMode = newViewMode;
+            // אם חוזרים למפה, אפס את userInteracted כדי שהספירה תתחיל מחדש
+            if (newViewMode === 'map') {
+                userInteracted = false;
+            } else {
+                // אם הולכים לרשימה, סמן שהיה אינטראקציה כדי שלא תחזור מיד
+                userInteracted = true;
+            }
         }, 350); // Change content at middle of animation
         setTimeout(() => {
             isFlipping = false;

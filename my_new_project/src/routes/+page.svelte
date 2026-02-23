@@ -3,6 +3,7 @@
     import JerusalemMap from "$lib/components/JerusalemMap.svelte";
     import LostAndFound from "$lib/components/LostAndFound.svelte";
     import FacebookComments from "$lib/components/FacebookComments.svelte";
+    import ReferendumBanner from "$lib/components/ReferendumBanner.svelte";
 </script>
 
 <div class="space-y-12 pb-20 pt-8">
@@ -60,6 +61,11 @@
             </h3>
             <FacebookComments numPosts={10} />
         </div>
+    </section>
+
+    <!-- Referendum Banner -->
+    <section class="max-w-6xl mx-auto px-4">
+        <ReferendumBanner />
     </section>
 
     <!-- Emergency Team Banner -->

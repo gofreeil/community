@@ -1,5 +1,5 @@
 <!-- AdsSidebar.svelte -->
-<aside class="hidden lg:block w-48 flex-shrink-0">
+<aside class="hidden lg:block w-48 flex-shrink-0 sticky top-4 h-fit">
     <div class="space-y-4">
         <!-- Ad 0 - בתי הפיוס (חדש - ראשון) -->
         <a
