@@ -883,30 +883,26 @@
         animation: peelPage 0.5s ease-in-out;
     }
 
-    .page-corner.auto-switching {
+    .page-corner.auto-switching svg {
         animation: pulseGlow 2s ease-in-out;
     }
 
     @keyframes pulseGlow {
         0%, 100% {
             transform: scale(1);
-            filter: brightness(1);
-            box-shadow: 0 0 0 rgba(147, 51, 234, 0);
+            filter: brightness(1) drop-shadow(0 0 0 rgba(147, 51, 234, 0));
         }
         25% {
             transform: scale(1.05);
-            filter: brightness(1.2);
-            box-shadow: 0 0 15px rgba(147, 51, 234, 0.6);
+            filter: brightness(1.2) drop-shadow(0 0 8px rgba(147, 51, 234, 0.6));
         }
         50% {
             transform: scale(1.1);
-            filter: brightness(1.4);
-            box-shadow: 0 0 25px rgba(147, 51, 234, 0.8);
+            filter: brightness(1.4) drop-shadow(0 0 15px rgba(147, 51, 234, 0.8));
         }
         75% {
             transform: scale(1.05);
-            filter: brightness(1.2);
-            box-shadow: 0 0 15px rgba(147, 51, 234, 0.6);
+            filter: brightness(1.2) drop-shadow(0 0 8px rgba(147, 51, 234, 0.6));
         }
     }
 
