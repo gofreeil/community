@@ -141,7 +141,7 @@
                     isAutoSwitching = true;
                     setTimeout(() => {
                         isAutoSwitching = false;
-                    }, 2000);
+                    }, 4000);
                     handleViewToggle();
                     
                     // חזור למפה אחרי 3 שניות
@@ -150,7 +150,7 @@
                             isAutoSwitching = true;
                             setTimeout(() => {
                                 isAutoSwitching = false;
-                            }, 2000);
+                            }, 4000);
                             handleViewToggle();
                         }
                     }, 3000);
@@ -900,62 +900,65 @@
         position: absolute;
         top: 50%;
         left: 50%;
-        width: 2px;
-        height: 2px;
+        width: 4px;
+        height: 4px;
         background: linear-gradient(45deg, #ffffff, #9333ea, #ffffff);
         border-radius: 50%;
-        animation: lightningStrike 2s ease-in-out;
+        animation: lightningStrike 4s ease-in-out;
         z-index: 20;
     }
 
     @keyframes lightningStrike {
         0% {
-            transform: translate(200px, -200px) scale(0);
+            transform: translate(300px, -300px) scale(0);
             opacity: 0;
-            box-shadow: 0 0 0 rgba(147, 51, 234, 0);
+            box-shadow: 0 0 0 rgba(255, 255, 255, 0);
         }
-        10% {
-            transform: translate(150px, -150px) scale(1);
+        15% {
+            transform: translate(200px, -200px) scale(2);
             opacity: 1;
-            box-shadow: 0 0 20px rgba(147, 51, 234, 0.8);
-        }
-        20% {
-            transform: translate(100px, -100px) scale(1.5);
-            opacity: 1;
-            box-shadow: 0 0 30px rgba(147, 51, 234, 1);
+            box-shadow: 0 0 30px rgba(255, 255, 255, 1), 0 0 60px rgba(147, 51, 234, 0.8);
         }
         30% {
-            transform: translate(50px, -50px) scale(2);
+            transform: translate(100px, -100px) scale(3);
             opacity: 1;
-            box-shadow: 0 0 40px rgba(147, 51, 234, 1);
+            box-shadow: 0 0 40px rgba(255, 255, 255, 1), 0 0 80px rgba(147, 51, 234, 1);
         }
-        50% {
-            transform: translate(0, 0) scale(3);
+        45% {
+            transform: translate(50px, -50px) scale(4);
             opacity: 1;
-            box-shadow: 0 0 50px rgba(147, 51, 234, 1);
+            box-shadow: 0 0 50px rgba(255, 255, 255, 1), 0 0 100px rgba(147, 51, 234, 1);
         }
-        70% {
-            transform: translate(0, 0) scale(2);
-            opacity: 0.8;
-            box-shadow: 0 0 30px rgba(147, 51, 234, 0.8);
+        60% {
+            transform: translate(0, 0) scale(6);
+            opacity: 1;
+            box-shadow: 0 0 60px rgba(255, 255, 255, 1), 0 0 120px rgba(147, 51, 234, 1);
+        }
+        80% {
+            transform: translate(0, 0) scale(4);
+            opacity: 0.9;
+            box-shadow: 0 0 40px rgba(255, 255, 255, 0.8), 0 0 80px rgba(147, 51, 234, 0.8);
         }
         100% {
             transform: translate(0, 0) scale(0);
             opacity: 0;
-            box-shadow: 0 0 0 rgba(147, 51, 234, 0);
+            box-shadow: 0 0 0 rgba(255, 255, 255, 0);
         }
     }
 
     .page-corner.auto-switching svg {
-        animation: buttonGlow 2s ease-in-out;
+        animation: buttonGlow 4s ease-in-out;
     }
 
     @keyframes buttonGlow {
-        0%, 30% {
+        0%, 40% {
             filter: brightness(1) drop-shadow(0 0 0 rgba(147, 51, 234, 0));
         }
-        50% {
-            filter: brightness(1.8) drop-shadow(0 0 15px rgba(147, 51, 234, 1));
+        60% {
+            filter: brightness(2.5) drop-shadow(0 0 25px rgba(255, 255, 255, 1)) drop-shadow(0 0 50px rgba(147, 51, 234, 1));
+        }
+        80% {
+            filter: brightness(2) drop-shadow(0 0 20px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 40px rgba(147, 51, 234, 0.8));
         }
         100% {
             filter: brightness(1) drop-shadow(0 0 0 rgba(147, 51, 234, 0));
