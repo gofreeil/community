@@ -41,8 +41,8 @@
         </button>
     </div>
 
-    <div class="p-4 flex-1 overflow-y-auto">
-        <div class="space-y-3">
+    <div class="p-4 flex-1 overflow-hidden">
+        <div class="space-y-4">
             {#each lostItems as item}
                 <div
                     class="relative p-4 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all group overflow-hidden"
@@ -86,7 +86,7 @@
             {/each}
         </div>
 
-        <div class="mt-4 text-center">
+        <div class="mt-8 text-center">
             <button
                 class="text-blue-400 hover:text-white text-sm font-bold transition-colors underline underline-offset-4"
             >

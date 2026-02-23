@@ -98,31 +98,31 @@
         },
     ];
 
-    let viewMode: "map" | "list" | "add" = "map";
-    let isFlipping = false;
-    let expandedCategories: Set<string> = new Set();
-    let isLoggedIn = false; // במציאות זה יבוא מניהול משתמשים
-    let showHelpMenu = false;
-    let showWaves = false;
-    let showSuccessMessage = false;
-    let successMessageText = "";
-    let isMouseOver = false;
-    let handRaised = false;
-    let showSurvey = false;
-    let raisedHandMessage = "";
-    let raisedHandIcon = "";
-    let selectedCategory = "benefits"; // קטגוריה נבחרת
+    let viewMode = $state<"map" | "list" | "add">("map");
+    let isFlipping = $state(false);
+    let expandedCategories = $state(new Set<string>());
+    let isLoggedIn = $state(false);
+    let showHelpMenu = $state(false);
+    let showWaves = $state(false);
+    let showSuccessMessage = $state(false);
+    let successMessageText = $state("");
+    let isMouseOver = $state(false);
+    let handRaised = $state(false);
+    let showSurvey = $state(false);
+    let raisedHandMessage = $state("");
+    let raisedHandIcon = $state("");
+    let selectedCategory = $state("benefits");
     let autoSwitchInterval: number | null = null;
-    let isAutoSwitching = false;
+    let isAutoSwitching = $state(false);
     let autoReturnTimeout: number | null = null;
-    let userInteracted = false; // האם המשתמש נגע בכפתור
-    let showNeighborhoodsMenu = false;
-    let selectedNeighborhood = "קרית משה";
-    let selectedNeighborhoodCity = "ירושלים";
-    let selectedCity = "";
+    let userInteracted = $state(false);
+    let showNeighborhoodsMenu = $state(false);
+    let selectedNeighborhood = $state("קרית משה");
+    let selectedNeighborhoodCity = $state("ירושלים");
+    let selectedCity = $state("");
 
     // עקוב אחרי שינויים ב-viewMode - חזור למפה אחרי 3 שניות אם לא היה אינטראקציה
-    $: {
+    $effect(() => {
         if (viewMode === "list") {
             // ברגע שנכנסנו לתצוגת רשימה, התחל ספירה לחזרה
             if (autoReturnTimeout === null && !isMouseOver && !userInteracted) {
@@ -158,7 +158,7 @@
                 autoReturnTimeout = null;
             }
         }
-    }
+    });
 
     // מיפוי שכונות לכתובות Google Maps
     const neighborhoodMaps: Record<string, string> = {
@@ -877,29 +877,6 @@
                 ? `📍 מפת הקהילה - ${selectedNeighborhood}, ${selectedNeighborhoodCity}`
                 : "📋 רשימת שירותים"}
         </div>
-
-        <!-- הודעת הצלחה -->
-        {#if showSuccessMessage}
-            <div
-                class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 animate-slideDown"
-            >
-                <div
-                    class="bg-green-600 text-white px-6 py-4 rounded-xl shadow-2xl border-2 border-green-400"
-                >
-                    <div class="flex items-center gap-3">
-                        <span class="text-3xl">✅</span>
-                        <div>
-                            <p class="font-bold text-lg">
-                                הקריאה נשלחה בהצלחה!
-                            </p>
-                            <p class="text-sm text-green-100">
-                                {successMessageText}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        {/if}
 
         <!-- כפתור הוסף יתרון - בחלק העליון -->
         <div

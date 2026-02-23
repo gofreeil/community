@@ -9,6 +9,10 @@
         onShowAuth?: () => void;
     }
 
+    import { fade } from "svelte/transition";
+    import { ads, type Ad } from "$lib/adsData";
+    import FullAdModal from "./FullAdModal.svelte";
+
     let { currentUser, onLogout, onShowAuth }: Props = $props();
 
     let languages = [
@@ -20,24 +24,40 @@
     let showLangDropdown = $state(false);
     let onlineUsers = $state(1);
 
+    // Ads Mode Logic (Mobile Only)
+    let showAdsMode = $state(false);
+    let currentAdIndex = $state(0);
+    let selectedAdForModal = $state<Ad | null>(null);
+
     function changeLang(language: { name: string; code: string }) {
         locale.set(language.code);
     }
 
     function updateOnlineUsers() {
-        onlineUsers = Math.floor(Math.random() * 15) + 1; // מספר רנדומלי בין 1-15
+        onlineUsers = Math.floor(Math.random() * 15) + 1;
     }
 
     onMount(() => {
-        // עדכון ראשוני
         updateOnlineUsers();
-        
-        // עדכון כל 30 שניות
-        const interval = setInterval(updateOnlineUsers, 30000);
-        
+        const usersInterval = setInterval(updateOnlineUsers, 30000);
+
+        // Switch to Ads Mode after 10 seconds (Mobile only logic will use this)
+        const adsTimer = setTimeout(() => {
+            showAdsMode = true;
+        }, 10000);
+
+        // Rotate ads every 5 seconds
+        const rotateAdsInterval = setInterval(() => {
+            if (showAdsMode) {
+                currentAdIndex = (currentAdIndex + 1) % ads.length;
+            }
+        }, 5000);
+
         document.addEventListener("click", handleClickOutside);
         return () => {
-            clearInterval(interval);
+            clearInterval(usersInterval);
+            clearInterval(rotateAdsInterval);
+            clearTimeout(adsTimer);
             document.removeEventListener("click", handleClickOutside);
         };
     });
@@ -55,98 +75,138 @@
     style="background: linear-gradient(to bottom, rgb(17, 24, 39) 0%, rgb(17, 24, 39) 66%, rgba(17, 24, 39, 0.2) 100%);"
 >
     <div class="relative mx-auto max-w-7xl px-2 sm:px-4 lg:px-8">
-        <!-- Mobile Header - Compact Single Row -->
-        <div class="flex md:hidden items-center justify-between py-3">
-            <!-- Left: Logo + Title -->
-            <a href="/" class="flex items-center gap-2 flex-1 min-w-0">
-                <img
-                    src="/images/logos/לוגו2.png"
-                    alt="לוגו"
-                    class="h-10 w-10 object-contain flex-shrink-0"
-                />
-                <div class="min-w-0 flex-1">
-                    <h1
-                        class="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-base font-bold text-transparent leading-tight truncate"
+        <!-- Mobile Header Area -->
+        <div class="md:hidden">
+            {#if !showAdsMode}
+                <!-- Original Mobile Header (0-10 seconds) -->
+                <div
+                    class="flex items-center justify-between py-3 px-1"
+                    transition:fade
+                >
+                    <a
+                        href="/"
+                        class="flex items-center gap-2.5 flex-1 min-w-0"
                     >
-                        {$t("welcome")}
-                    </h1>
-                    <p class="text-xs text-gray-200 leading-tight truncate">
-                        {$t("app_description")}
-                    </p>
-                </div>
-            </a>
-
-            <!-- Right Side: Language + User -->
-            <div class="flex items-center gap-1.5">
-                <!-- Language - Flag Only -->
-                <div class="lang-dropdown-container relative">
-                    <button
-                        class="flex items-center justify-center rounded bg-purple-600 px-3 py-2 text-base font-bold text-white hover:bg-purple-500 transition-colors"
-                        onclick={() => (showLangDropdown = !showLangDropdown)}
-                    >
-                        <span
-                            class="fi fi-{languages.find(
-                                (l) => l.code === $locale,
-                            )?.flag || 'un'}"
-                            style="font-size: 1.5rem;"
-                        ></span>
-                    </button>
-                    {#if showLangDropdown}
-                        <div
-                            class="absolute left-0 z-[160] mt-1 w-36 rounded-lg bg-white shadow-xl"
-                        >
-                            {#each languages as langOption}
-                                <button
-                                    class="flex w-full items-center gap-3 px-3 py-2 text-right hover:bg-blue-100"
-                                    onclick={() => {
-                                        changeLang(langOption);
-                                        showLangDropdown = false;
-                                    }}
-                                >
-                                    <span
-                                        class="fi fi-{langOption.flag}"
-                                        style="font-size: 1.5rem;"
-                                    ></span>
-                                    <span class="text-sm"
-                                        >{langOption.name}</span
-                                    >
-                                </button>
-                            {/each}
-                        </div>
-                    {/if}
-                </div>
-
-                <!-- User/Auth - Compact -->
-                {#if true}
-                    {#if currentUser}
-                        {@const userName = currentUser.username ?? "U"}
-                        <div class="flex items-center gap-1">
+                        <div class="relative">
+                            <img
+                                src="/images/logos/לוגו2.png"
+                                alt="לוגו"
+                                class="h-10 w-10 object-contain flex-shrink-0"
+                            />
                             <div
-                                class="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-blue-500"
+                                class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-slate-900 animate-pulse"
+                            ></div>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <h1
+                                class="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-[15px] font-black text-transparent leading-tight truncate"
                             >
-                                <span class="font-bold text-white text-xs"
-                                    >{userName.charAt(0)}</span
+                                {$t("welcome")}
+                            </h1>
+                            <p
+                                class="text-[10px] text-gray-400 leading-tight truncate font-medium"
+                            >
+                                {$t("app_description")}
+                            </p>
+                        </div>
+                    </a>
+
+                    <div class="flex items-center gap-2">
+                        <div class="lang-dropdown-container relative">
+                            <button
+                                class="flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 border border-white/10 p-1.5 active:scale-95"
+                                onclick={() =>
+                                    (showLangDropdown = !showLangDropdown)}
+                            >
+                                <span
+                                    class="fi fi-{languages.find(
+                                        (l) => l.code === $locale,
+                                    )?.flag || 'un'}"
+                                    style="font-size: 1.2rem;"
+                                ></span>
+                            </button>
+                            {#if showLangDropdown}
+                                <div
+                                    class="absolute left-0 z-[160] mt-2 w-32 rounded-xl bg-slate-900 border border-white/10 shadow-2xl p-1"
                                 >
-                            </div>
-                            {#if onLogout}
-                                <button
-                                    onclick={onLogout}
-                                    class="rounded bg-red-500 px-1.5 py-0.5 text-xs text-white"
-                                >
-                                    ✕
-                                </button>
+                                    {#each languages as langOption}
+                                        <button
+                                            class="flex w-full items-center gap-2 px-3 py-2 text-right hover:bg-white/5 rounded-lg transition-colors"
+                                            onclick={() => {
+                                                changeLang(langOption);
+                                                showLangDropdown = false;
+                                            }}
+                                        >
+                                            <span
+                                                class="fi fi-{langOption.flag}"
+                                                style="font-size: 1.1rem;"
+                                            ></span>
+                                            <span class="text-xs text-gray-200"
+                                                >{langOption.name}</span
+                                            >
+                                        </button>
+                                    {/each}
+                                </div>
                             {/if}
                         </div>
-                    {:else}
-                        <button
-                            onclick={onShowAuth}
-                            class="rounded bg-gradient-to-r from-blue-600 to-purple-600 px-2 py-1 text-xs text-white"
+                        {#if currentUser}
+                            <div
+                                class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-green-400 to-blue-500 shadow-lg border border-white/10"
+                            >
+                                <span class="font-bold text-white text-xs"
+                                    >{currentUser.username?.charAt(0) ||
+                                        "U"}</span
+                                >
+                            </div>
+                        {:else}
+                            <button
+                                onclick={onShowAuth}
+                                class="h-9 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-[11px] font-bold text-white shadow-lg active:scale-95"
+                            >
+                                {$t("login_register")}
+                            </button>
+                        {/if}
+                    </div>
+                </div>
+            {:else}
+                <!-- Advertisement Banner Mode -->
+                <div
+                    class="flex items-center justify-center h-[72px] w-full px-4 overflow-hidden relative cursor-pointer"
+                    transition:fade
+                    onclick={() => (selectedAdForModal = ads[currentAdIndex])}
+                >
+                    {#key currentAdIndex}
+                        <div
+                            in:fade={{ duration: 600, delay: 200 }}
+                            out:fade={{ duration: 600 }}
+                            class="absolute inset-0 flex flex-col items-center justify-center text-center p-2"
                         >
-                            {$t("login_register")}
-                        </button>
-                    {/if}
-                {/if}
-            </div>
+                            <span
+                                class="text-[10px] text-blue-400 font-black uppercase tracking-widest mb-1 opacity-60"
+                                >הקהילה ממליצה בחום:</span
+                            >
+                            <h2
+                                class="text-lg font-black bg-gradient-to-r {ads[
+                                    currentAdIndex
+                                ]
+                                    .color} bg-clip-text text-transparent leading-tight mb-1"
+                            >
+                                {ads[currentAdIndex].title}
+                            </h2>
+                            <p
+                                class="text-xs text-gray-300 font-medium truncate max-w-[95%]"
+                            >
+                                {ads[currentAdIndex].description}
+                            </p>
+                            <div
+                                class="mt-1 text-xs text-gray-500 font-bold flex items-center gap-2 animate-pulse"
+                            >
+                                <span>לחץ לפרטים</span><span>👇</span>
+                            </div>
+                        </div>
+                    {/key}
+                </div>
+            {/if}
         </div>
 
         <!-- Desktop Header - Full Layout -->
@@ -266,9 +326,13 @@
             {#if true}
                 <div class="flex items-center gap-4">
                     <!-- מספר גולשים -->
-                    <div class="flex items-center gap-2 bg-blue-900/30 px-3 py-2 rounded-lg border border-blue-500/30 online-counter">
+                    <div
+                        class="flex items-center gap-2 bg-blue-900/30 px-3 py-2 rounded-lg border border-blue-500/30 online-counter"
+                    >
                         <span class="text-green-400 text-xl">●</span>
-                        <span class="text-white text-sm font-bold">{onlineUsers}</span>
+                        <span class="text-white text-sm font-bold"
+                            >{onlineUsers}</span
+                        >
                         <span class="text-gray-300 text-sm">מחוברים</span>
                     </div>
 
@@ -310,6 +374,13 @@
     </div>
 </header>
 
+{#if selectedAdForModal}
+    <FullAdModal
+        ad={selectedAdForModal}
+        onClose={() => (selectedAdForModal = null)}
+    />
+{/if}
+
 <style>
     @keyframes pulse-slow {
         0%,
@@ -326,7 +397,9 @@
     }
 
     @keyframes blink-every-2min {
-        0%, 0.83%, 100% {
+        0%,
+        0.83%,
+        100% {
             opacity: 1;
         }
         0.415% {
