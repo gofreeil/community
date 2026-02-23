@@ -14,18 +14,26 @@
                     class="h-auto w-full object-cover transition-opacity duration-1500 group-hover:opacity-0"
                 />
                 <!-- Hover overlay -->
-                <div 
+                <div
                     class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1500 flex items-center justify-center"
                     style="background-image: url('/images/בתי הפיוס.png'); background-size: cover; background-position: center;"
                 >
-                    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+                    <div
+                        class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                    ></div>
                     <div class="relative z-10 text-center px-4">
-                        <h3 class="text-white font-bold text-lg mb-2">בתי הפיוס</h3>
-                        <p class="text-gray-200 text-sm">מתנדבים לתת לך עזרה מלאה בדין / פיוס בכל סיכסוך</p>
+                        <h3 class="text-white font-bold text-lg mb-2">
+                            בתי הפיוס
+                        </h3>
+                        <p class="text-gray-200 text-sm">
+                            מתנדבים לתת לך עזרה מלאה בדין / פיוס בכל סיכסוך
+                        </p>
                     </div>
                 </div>
             </div>
-            <div class="bg-gradient-to-r from-orange-600 to-red-600 p-3 text-center">
+            <div
+                class="bg-gradient-to-r from-orange-600 to-red-600 p-3 text-center"
+            >
                 <p class="text-white font-bold text-xs leading-tight">
                     יש לך סיכסוך? לחץ לפתרון
                 </p>
@@ -45,14 +53,20 @@
                     class="h-auto w-full object-cover transition-opacity duration-1500 group-hover:opacity-0"
                 />
                 <!-- Hover overlay with blurred background -->
-                <div 
+                <div
                     class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1500 flex items-center justify-center"
                     style="background-image: url('/images/news/ועדי שכונות.png'); background-size: cover; background-position: center;"
                 >
-                    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+                    <div
+                        class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                    ></div>
                     <div class="relative z-10 text-center px-4">
-                        <h3 class="text-white font-bold text-lg mb-2">ועדי שכונות</h3>
-                        <p class="text-gray-200 text-sm">מהפכת משילות העם על המוסדות</p>
+                        <h3 class="text-white font-bold text-lg mb-2">
+                            ועדי שכונות
+                        </h3>
+                        <p class="text-gray-200 text-sm">
+                            מהפכת משילות העם על המוסדות
+                        </p>
                     </div>
                 </div>
             </div>
@@ -78,13 +92,17 @@
                     class="h-full w-full object-cover object-center transition-opacity duration-1500 group-hover:opacity-0"
                 />
                 <!-- Hover overlay -->
-                <div 
+                <div
                     class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1500 flex items-center justify-center"
                     style="background-image: url('/images/whatsapp_cta.png'); background-size: cover; background-position: center;"
                 >
-                    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+                    <div
+                        class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                    ></div>
                     <div class="relative z-10 text-center px-4">
-                        <h3 class="text-white font-bold text-lg mb-2">קבוצת רכישה</h3>
+                        <h3 class="text-white font-bold text-lg mb-2">
+                            קבוצת רכישה
+                        </h3>
                         <p class="text-gray-200 text-sm">הוזל את ההוצאות שלך</p>
                     </div>
                 </div>
@@ -131,14 +149,20 @@
                     class="h-auto w-full object-cover transition-opacity duration-1500 group-hover:opacity-0"
                 />
                 <!-- Hover overlay -->
-                <div 
+                <div
                     class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1500 flex items-center justify-center"
                     style="background-image: url('/images/partners/השקעות קבוצתיות.png'); background-size: cover; background-position: center;"
                 >
-                    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+                    <div
+                        class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                    ></div>
                     <div class="relative z-10 text-center px-4">
-                        <h3 class="text-white font-bold text-lg mb-2">השקעות קבוצתיות</h3>
-                        <p class="text-gray-200 text-sm">התחבר עם קבוצת המשקיעים</p>
+                        <h3 class="text-white font-bold text-lg mb-2">
+                            השקעות קבוצתיות
+                        </h3>
+                        <p class="text-gray-200 text-sm">
+                            התחבר עם קבוצת המשקיעים
+                        </p>
                     </div>
                 </div>
             </div>
@@ -153,7 +177,7 @@
 
         <!-- Ad 3 - מערכת לגידול ביתי -->
         <a
-            href="https://index-chi-sage.vercel.app/"
+            href="https://www.melecshop.com/page/free"
             target="_blank"
             class="block relative overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105 group"
         >
@@ -164,13 +188,17 @@
                     class="h-auto w-full object-cover transition-opacity duration-1500 group-hover:opacity-0"
                 />
                 <!-- Hover overlay -->
-                <div 
+                <div
                     class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1500 flex items-center justify-center"
                     style="background-image: url('/images/partners/מערכת לגידול ביתי.png'); background-size: cover; background-position: center;"
                 >
-                    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+                    <div
+                        class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                    ></div>
                     <div class="relative z-10 text-center px-4">
-                        <h3 class="text-white font-bold text-lg mb-2">גידול ביתי</h3>
+                        <h3 class="text-white font-bold text-lg mb-2">
+                            גידול ביתי
+                        </h3>
                         <p class="text-gray-200 text-sm">מערכת לגידול ביתי</p>
                     </div>
                 </div>
@@ -200,14 +228,20 @@
                     class="h-auto w-full object-cover transition-opacity duration-1500 group-hover:opacity-0"
                 />
                 <!-- Hover overlay -->
-                <div 
+                <div
                     class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1500 flex items-center justify-center"
                     style="background-image: url('/images/בעלי מקצוע כשירים.png'); background-size: cover; background-position: center;"
                 >
-                    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+                    <div
+                        class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                    ></div>
                     <div class="relative z-10 text-center px-4">
-                        <h3 class="text-white font-bold text-lg mb-2">בעלי מקצוע כשירים</h3>
-                        <p class="text-gray-200 text-sm">חתמו על תנאי הקהילה ונותנים לנו הנחות והטבות יחודיות</p>
+                        <h3 class="text-white font-bold text-lg mb-2">
+                            בעלי מקצוע כשירים
+                        </h3>
+                        <p class="text-gray-200 text-sm">
+                            חתמו על תנאי הקהילה ונותנים לנו הנחות והטבות יחודיות
+                        </p>
                     </div>
                 </div>
             </div>
@@ -232,13 +266,17 @@
                     class="h-auto w-full object-cover transition-opacity duration-1500 group-hover:opacity-0"
                 />
                 <!-- Hover overlay -->
-                <div 
+                <div
                     class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1500 flex items-center justify-center"
                     style="background-image: url('/images/ביקורת על העיריה.png'); background-size: cover; background-position: center;"
                 >
-                    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+                    <div
+                        class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                    ></div>
                     <div class="relative z-10 text-center px-4">
-                        <h3 class="text-white font-bold text-lg mb-2">ביקורת על העיריה</h3>
+                        <h3 class="text-white font-bold text-lg mb-2">
+                            ביקורת על העיריה
+                        </h3>
                         <p class="text-gray-200 text-sm">הזכות לחיות</p>
                     </div>
                 </div>
