@@ -32,6 +32,7 @@
     let selectedCategory = 'benefits'; // קטגוריה נבחרת
     let autoSwitchInterval: number | null = null;
     let isAutoSwitching = false;
+    let autoReturnTimeout: number | null = null;
     let showNeighborhoodsMenu = false;
     let selectedNeighborhood = 'קרית משה';
     let selectedNeighborhoodCity = 'ירושלים';
@@ -134,21 +135,21 @@
         
         autoSwitchInterval = setInterval(() => {
             if (!isMouseOver && viewMode !== 'add') {
+                // עבור לרשימה רק אם אנחנו במפה
                 if (viewMode === 'map') {
-                    // עבור לרשימה ל-3 שניות
                     isAutoSwitching = true;
                     setTimeout(() => {
                         isAutoSwitching = false;
-                    }, 1000);
+                    }, 2000);
                     handleViewToggle();
                     
                     // חזור למפה אחרי 3 שניות
                     setTimeout(() => {
-                        if (viewMode === 'list' && !isMouseOver) {
+                        if (viewMode === 'list' && !isMouseOver && viewMode !== 'add') {
                             isAutoSwitching = true;
                             setTimeout(() => {
                                 isAutoSwitching = false;
-                            }, 1000);
+                            }, 2000);
                             handleViewToggle();
                         }
                     }, 3000);
