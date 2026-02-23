@@ -434,9 +434,10 @@
         <!-- כפתור מעבר תצוגה - משולש מקופל בפינה -->
         <button
             on:click={handleViewToggle}
-            class="page-corner absolute top-0 left-0 z-10 transition-all duration-500 hover:scale-110"
+            class="page-corner absolute top-0 left-0 z-30 transition-all duration-500 hover:scale-110"
             class:flipping={isFlipping}
             class:auto-switching={isAutoSwitching}
+            style="position: absolute; top: 0; left: 0;"
         >
             <svg width="130" height="130" viewBox="0 0 130 130" class="transition-transform duration-500">
                 <path 
@@ -784,6 +785,10 @@
 
     .page-corner {
         cursor: pointer;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        z-index: 30 !important;
     }
 
     .page-corner.flipping {
