@@ -19,7 +19,7 @@ register('he', () => Promise.resolve({
     all_rights_reserved: "כל הזכויות שמורות",
     
     // כותרות ראשיות
-    neighborhood_advantages: "יתרונות השכונה",
+    neighborhood_advantages: "יתרונות שכונת",
     all_neighborhoods: "לכלל השכונות",
     discover_neighborhood: "גלה את כל מה שהשכונה שלך מציעה",
     

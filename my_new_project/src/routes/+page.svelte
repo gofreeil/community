@@ -2,29 +2,48 @@
     import { t } from "svelte-i18n";
     import JerusalemMap from "$lib/components/JerusalemMap.svelte";
     import LostAndFound from "$lib/components/LostAndFound.svelte";
-    import ReferendumBanner from "$lib/components/ReferendumBanner.svelte";
     import FacebookComments from "$lib/components/FacebookComments.svelte";
 </script>
 
 <div class="space-y-12 pb-20 pt-8">
+    <!-- Title Section - centered across full width -->
+    <section class="max-w-7xl mx-auto px-4">
+        <div class="text-center mb-8 relative neighborhoods-menu-container">
+            <div class="flex items-center justify-center gap-4">
+                <div class="relative group">
+                    <h2 class="text-5xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent cursor-default">
+                        יתרונות שכונת קרית משה, ירושלים
+                    </h2>
+                    <!-- Tooltip -->
+                    <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-[9999] pointer-events-none">
+                        <div class="bg-gray-900 text-white text-sm rounded-lg px-4 py-2 shadow-xl whitespace-nowrap">
+                            גלה את כל מה שהשכונה שלך מציעה
+                            <div class="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-gray-900"></div>
+                        </div>
+                    </div>
+                </div>
+                <button
+                    class="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-lg transition-all hover:scale-105"
+                >
+                    🏘️ לכלל השכונות
+                </button>
+            </div>
+        </div>
+    </section>
+
     <!-- Map + Lost and Found Section (side by side) -->
     <section class="max-w-7xl mx-auto px-4">
-        <div class="flex flex-col lg:flex-row gap-6 items-stretch">
+        <div class="flex flex-col lg:flex-row gap-6">
             <!-- Map Section (3/4 width) -->
             <div class="lg:w-3/4">
                 <JerusalemMap />
             </div>
 
-            <!-- Lost and Found Section (1/4 width) -->
+            <!-- Lost and Found Section (1/4 width) - starts from top -->
             <div class="lg:w-1/4">
                 <LostAndFound />
             </div>
         </div>
-    </section>
-
-    <!-- Referendum Banner -->
-    <section class="max-w-6xl mx-auto px-4">
-        <ReferendumBanner />
     </section>
 
     <!-- Facebook Comments Section -->

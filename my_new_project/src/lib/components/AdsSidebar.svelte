@@ -1,6 +1,6 @@
 <!-- AdsSidebar.svelte -->
 <aside class="hidden lg:block w-48 flex-shrink-0">
-    <div class="sticky top-4 space-y-4">
+    <div class="space-y-4">
         <!-- Ad 0 - בתי הפיוס (חדש - ראשון) -->
         <a
             href="https://www.melecshop.com/page/peace-on-earth"
@@ -60,7 +60,7 @@
                 class="bg-gradient-to-r from-blue-600 to-cyan-600 p-3 text-center"
             >
                 <p class="text-white font-bold text-xs leading-tight">
-                    הצטרף לוועד שכונתך ותמוך במהפכת משילות העם על המוסדות!
+                    הצטרף לווצאפ וועד שכונתך ותמוך במהפכת משילות העם על המוסדות!
                 </p>
             </div>
         </a>
@@ -96,6 +96,25 @@
                 <p class="text-white font-bold text-xs leading-tight">
                     הצטרף לקבוצת הרכישה שלנו והוזל מיד את ההוצאות החודשיות שלך!
                 </p>
+            </div>
+        </a>
+
+        <!-- Ad 6 - Empty Ad Space -->
+        <a
+            href="mailto:contact@example.com?subject=מעוניין בפרסום"
+            class="block overflow-hidden rounded-lg border-4 border-dashed border-blue-400/50 bg-blue-900/10 backdrop-blur-sm shadow-lg transition-all hover:scale-105 hover:border-blue-500 hover:bg-blue-900/20"
+        >
+            <div
+                class="flex h-48 flex-col items-center justify-center p-4 text-center"
+            >
+                <div class="mb-2 text-4xl">📢</div>
+                <p class="text-sm font-bold text-blue-300">מקום פרסום</p>
+                <p class="text-xs text-blue-400">זה יכול להיות שלך!</p>
+                <div
+                    class="mt-2 rounded bg-blue-500 px-3 py-1 text-xs font-bold text-white"
+                >
+                    לחץ לפרטים
+                </div>
             </div>
         </a>
 
@@ -188,7 +207,7 @@
                     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
                     <div class="relative z-10 text-center px-4">
                         <h3 class="text-white font-bold text-lg mb-2">בעלי מקצוע כשירים</h3>
-                        <p class="text-gray-200 text-sm">מחפש בעל מקצוע איכותי?</p>
+                        <p class="text-gray-200 text-sm">חתמו על תנאי הקהילה ונותנים לנו הנחות והטבות יחודיות</p>
                     </div>
                 </div>
             </div>
@@ -230,44 +249,6 @@
                 <p class="text-white font-bold text-xs leading-tight">
                     יש לך תלונה לעיריה שמזלזלים בה? - לא עוד
                 </p>
-            </div>
-        </a>
-
-        <!-- Ad 6 - Empty Ad Space -->
-        <a
-            href="mailto:contact@example.com?subject=מעוניין בפרסום"
-            class="block overflow-hidden rounded-lg border-4 border-dashed border-blue-400/50 bg-blue-900/10 backdrop-blur-sm shadow-lg transition-all hover:scale-105 hover:border-blue-500 hover:bg-blue-900/20"
-        >
-            <div
-                class="flex h-48 flex-col items-center justify-center p-4 text-center"
-            >
-                <div class="mb-2 text-4xl">📢</div>
-                <p class="text-sm font-bold text-blue-300">מקום פרסום</p>
-                <p class="text-xs text-blue-400">זה יכול להיות שלך!</p>
-                <div
-                    class="mt-2 rounded bg-blue-500 px-3 py-1 text-xs font-bold text-white"
-                >
-                    לחץ לפרטים
-                </div>
-            </div>
-        </a>
-
-        <!-- Ad 7 - Empty Ad Space -->
-        <a
-            href="mailto:contact@example.com?subject=מעוניין בפרסום"
-            class="block overflow-hidden rounded-lg border-4 border-dashed border-purple-400/50 bg-purple-900/10 backdrop-blur-sm shadow-lg transition-all hover:scale-105 hover:border-purple-500 hover:bg-purple-900/20"
-        >
-            <div
-                class="flex h-48 flex-col items-center justify-center p-4 text-center"
-            >
-                <div class="mb-2 text-4xl">🎯</div>
-                <p class="text-sm font-bold text-purple-300">מקום פרסום</p>
-                <p class="text-xs text-purple-400">זה יכול להיות שלך!</p>
-                <div
-                    class="mt-2 rounded bg-purple-500 px-3 py-1 text-xs font-bold text-white"
-                >
-                    לחץ לפרטים
-                </div>
             </div>
         </a>
     </div>

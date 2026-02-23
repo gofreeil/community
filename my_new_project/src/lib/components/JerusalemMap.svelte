@@ -337,77 +337,7 @@
 
 <div class="flex flex-col gap-4">
 <div class="flex flex-col gap-4">
-    <!-- כותרת שכונה -->
-    <div class="text-center mb-2 relative neighborhoods-menu-container">
-        <div class="flex items-center justify-center gap-4">
-            <div class="relative group">
-                <h2 class="text-5xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent cursor-default">
-                    {$t('neighborhood_advantages')} {selectedNeighborhood}, {selectedNeighborhoodCity}
-                </h2>
-                <!-- Tooltip -->
-                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-[9999] pointer-events-none">
-                    <div class="bg-gray-900 text-white text-sm rounded-lg px-4 py-2 shadow-xl whitespace-nowrap">
-                        גלה את כל מה שהשכונה שלך מציעה
-                        <div class="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-gray-900"></div>
-                    </div>
-                </div>
-            </div>
-            <button
-                on:click={toggleNeighborhoodsMenu}
-                class="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-lg transition-all hover:scale-105"
-            >
-                🏘️ לכלל השכונות
-            </button>
-        </div>
-        
-        <!-- תפריט ערים ושכונות -->
-        {#if showNeighborhoodsMenu}
-            <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-white rounded-xl shadow-2xl border-2 border-purple-600 overflow-hidden z-50 w-[600px] max-h-[500px] overflow-y-auto">
-                <div class="bg-gradient-to-r from-purple-600 to-blue-600 p-3 text-center sticky top-0 z-10">
-                    <h3 class="text-white font-bold text-lg">בחר עיר ושכונה</h3>
-                </div>
-                <div class="p-4">
-                    {#each Object.keys(citiesAndNeighborhoods).sort() as city}
-                        <div class="mb-2">
-                            <button
-                                on:click={() => selectCity(city)}
-                                class="w-full text-right p-3 rounded-lg hover:bg-purple-50 transition-colors border border-gray-200 flex items-center justify-between"
-                            >
-                                <span class="font-bold text-gray-800 text-lg">🏙️ {city}</span>
-                                <svg 
-                                    class="w-5 h-5 text-purple-600 transition-transform duration-300 {selectedCity === city ? 'rotate-180' : ''}"
-                                    fill="none" 
-                                    stroke="currentColor" 
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
-                            
-                            {#if selectedCity === city}
-                                <div class="mr-4 mt-2 space-y-1 animate-slideDown">
-                                    {#each citiesAndNeighborhoods[city] as neighborhood}
-                                        <button
-                                            on:click={() => selectNeighborhood(city, neighborhood)}
-                                            class="w-full text-right p-2 rounded-lg hover:bg-blue-50 transition-colors text-gray-700 hover:text-blue-600 border border-transparent hover:border-blue-300"
-                                        >
-                                            📍 {neighborhood}
-                                        </button>
-                                    {/each}
-                                </div>
-                            {/if}
-                        </div>
-                    {/each}
-                </div>
-                <button
-                    on:click={toggleNeighborhoodsMenu}
-                    class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 py-3 text-sm font-bold transition-colors sticky bottom-0"
-                >
-                    סגור
-                </button>
-            </div>
-        {/if}
-    </div>
+    <!-- כותרת שכונה - הוסרה לדף הראשי -->
     
     <div class="flex flex-col gap-2">
         <!-- Buttons Container -->
@@ -477,7 +407,7 @@
 
         {#if viewMode === 'map'}
             <!-- תצוגת מפה -->
-            <div class="w-full h-[550px] overflow-hidden relative" style="border-radius: 20px;">
+            <div class="w-full h-[450px] overflow-hidden relative" style="border-radius: 20px;">
                 <!-- אנימציית גלים -->
                 {#if showWaves}
                     <div class="absolute inset-0 flex items-end justify-center pointer-events-none z-10">
@@ -536,7 +466,7 @@
             </div>
         {:else if viewMode === 'list'}
             <!-- תצוגת רשימה -->
-            <div class="w-full h-[550px] overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900/20" style="border-radius: 20px;">
+            <div class="w-full h-[450px] overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900/20" style="border-radius: 20px;">
                 <div class="space-y-3">
                     {#each categories.filter(cat => cat.id !== 'benefits') as category}
                         <div class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-500/30 rounded-xl overflow-hidden transition-all">
@@ -583,7 +513,7 @@
             </div>
         {:else}
             <!-- תצוגת הוספת יתרון -->
-            <div class="w-full h-[550px] overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900/20" style="border-radius: 20px;">
+            <div class="w-full h-[450px] overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900/20" style="border-radius: 20px;">
                 <h3 class="text-2xl font-bold text-white mb-4 text-center">הוסף יתרון חדש</h3>
                 <p class="text-center text-gray-400 text-sm mb-6">בחר קטגוריה והוסף פריט חדש</p>
                 <div class="space-y-3">
