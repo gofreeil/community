@@ -314,7 +314,7 @@
     <div class="text-center mb-2 relative neighborhoods-menu-container">
         <div class="flex items-center justify-center gap-4">
             <div class="relative group">
-                <h2 class="text-3xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent cursor-default">
+                <h2 class="text-4xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent cursor-default">
                     יתרונות קהילת {selectedNeighborhood}, {selectedNeighborhoodCity}
                 </h2>
                 <!-- Tooltip -->
