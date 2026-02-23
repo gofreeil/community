@@ -33,6 +33,7 @@
     let autoSwitchInterval: number | null = null;
     let isAutoSwitching = false;
     let autoReturnTimeout: number | null = null;
+    let userInteracted = false; // האם המשתמש נגע בכפתור
     let showNeighborhoodsMenu = false;
     let selectedNeighborhood = 'קרית משה';
     let selectedNeighborhoodCity = 'ירושלים';
@@ -134,7 +135,7 @@
         }
         
         autoSwitchInterval = setInterval(() => {
-            if (!isMouseOver && viewMode !== 'add') {
+            if (!isMouseOver && viewMode !== 'add' && !userInteracted) {
                 // עבור לרשימה רק אם אנחנו במפה
                 if (viewMode === 'map') {
                     isAutoSwitching = true;
@@ -145,7 +146,7 @@
                     
                     // חזור למפה אחרי 3 שניות
                     setTimeout(() => {
-                        if (viewMode === 'list' && !isMouseOver && viewMode !== 'add') {
+                        if (viewMode === 'list' && !isMouseOver && viewMode !== 'add' && !userInteracted) {
                             isAutoSwitching = true;
                             setTimeout(() => {
                                 isAutoSwitching = false;
@@ -205,6 +206,7 @@
     });
 
     function handleViewToggle() {
+        userInteracted = true; // סמן שהמשתמש נגע בכפתור
         isFlipping = true;
         setTimeout(() => {
             viewMode = viewMode === 'map' ? 'list' : 'map';
