@@ -7,11 +7,12 @@
         { id: "giveaway", label: "למסירה", icon: "📦", items: ["רהיטים", "מוצרי חשמל", "ספרים", "בגדים", "צעצועים"] },
         { id: "business", label: "בייבי סיטר", icon: "👶", items: ["בייבי סיטר בשעות הערב", "בייבי סיטר סופי שבוע", "בייבי סיטר קבוע"] },
         { id: "minyanim", label: "יהדות", icon: "✡️", items: ["מניינים לתפילה", "שיעורי תורה", "מקוואות", "בתי כנסת"] },
+        { id: "education", label: "חוגים", icon: "🎨", items: ["חוגי ספורט", "חוגי אומנות", "חוגי מוזיקה", "חוגי מדעים"] },
         { id: "realestate", label: "בתי הארחה לשבת", icon: "🏠", items: ["בתי הארחה משפחתיים", "בתי הארחה לזוגות", "בתי הארחה ליחידים"] },
         { id: "security", label: "צימרים", icon: "🏡", items: ["צימרים זוגיים", "צימרים משפחתיים", "צימרים עם בריכה"] },
-        { id: "education", label: "חוגים", icon: "🎨", items: ["חוגי ספורט", "חוגי אומנות", "חוגי מוזיקה", "חוגי מדעים"] },
         { id: "kids", label: "לילדים", icon: "🧒", items: ["גני משחקים", "פעילויות לילדים", "ספריות לילדים", "מועדוניות"] },
-        { id: "shops", label: "חנויות", icon: "🏪", items: ["מכולת", "מאפייה", "בית מרקחת", "חנות בגדים", "דואר", "מסעדות", "בנקים", "כספומט"] },
+        { id: "shops", label: "חנויות", icon: "🏪", items: ["מכולת", "מאפייה", "בית מרקחת", "חנות בגדים", "דואר", "בנקים", "כספומט"] },
+        { id: "restaurants", label: "מסעדות", icon: "🍽️", items: ["מסעדה בשרית", "מסעדה חלבית", "פיצריה", "פלאפל", "שווארמה", "קפה ועוגות"] },
         { id: "transport", label: "טרמפים", icon: "🚗", items: ["נוסע קבוע ל...", "מציע טרמפ", "דרוש טרמפ"] },
     ];
 
@@ -74,12 +75,13 @@
 
     // מיפוי בין קטגוריות לסימונים במפה
     const categoryMarkers: Record<string, string[]> = {
-        'benefits': ['gemach', 'babysitter', 'minyan', 'shop', 'giveaway', 'activity'],
+        'benefits': ['gemach', 'babysitter', 'minyan', 'shop', 'giveaway', 'activity', 'restaurant'],
         'gemachim': ['gemach'],
         'giveaway': ['giveaway'],
         'business': ['babysitter'],
         'minyanim': ['minyan'],
         'shops': ['shop'],
+        'restaurants': ['restaurant'],
         'education': ['activity']
     };
 
@@ -133,7 +135,7 @@
             if (!isMouseOver && viewMode !== 'add') {
                 handleViewToggle();
             }
-        }, 35000); // 35 שניות
+        }, 30000); // 30 שניות
     }
 
     function handleMouseEnter() {
