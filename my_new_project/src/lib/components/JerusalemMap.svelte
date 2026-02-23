@@ -586,26 +586,21 @@
 
         <div class="flex flex-col gap-2">
             <!-- Buttons Container -->
-            <div class="flex flex-wrap justify-center gap-3 p-2">
+            <div class="flex flex-wrap justify-center gap-2 p-2">
                 {#each categories as category}
                     <button
                         on:click={() => handleCategoryClick(category.id)}
                         title="לחץ כדי לסנן במפה"
-                        class="flex items-center gap-1.5 {selectedCategory ===
+                        class="flex items-center justify-center {selectedCategory ===
                         category.id
                             ? category.id === 'benefits'
-                                ? 'bg-gradient-to-br from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-gray-900 border-yellow-500 scale-110'
-                                : 'bg-gradient-to-br from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-purple-500 scale-110'
+                                ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-gray-900 border-yellow-500 scale-105 shadow-yellow-500/20'
+                                : 'bg-gradient-to-br from-purple-600 to-blue-600 text-white border-purple-500 scale-105 shadow-purple-500/20'
                             : category.id === 'benefits'
-                              ? 'bg-gradient-to-br from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-gray-900 border-yellow-500'
-                              : 'bg-gradient-to-br from-white to-gray-200 hover:from-blue-100 hover:to-white text-gray-900 border-purple-300'} px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg transition-all hover:scale-105 border"
+                              ? 'bg-gradient-to-br from-yellow-400/90 to-orange-500/90 text-gray-900 border-yellow-500'
+                              : 'bg-white/10 backdrop-blur-md text-white border-white/20 hover:bg-white/20'} 
+                               px-4 py-2 rounded-xl text-[11px] font-bold shadow-lg transition-all border min-w-[85px] text-center"
                     >
-                        <span
-                            class="text-base"
-                            style={category.id === "realestate"
-                                ? "letter-spacing: -0.25em; margin-left: 0.15em; display: inline-block;"
-                                : ""}>{category.icon}</span
-                        >
                         {category.label}
                     </button>
                 {/each}
@@ -617,8 +612,8 @@
     <div
         role="region"
         aria-label="Map and List View Container"
-        class="relative w-full border-4 border-purple-600 shadow-2xl bg-[#0f172a] mb-8 transition-all duration-700"
-        style="border-radius: 24px; transform-style: preserve-3d;"
+        class="relative w-full border-[12px] md:border-4 border-purple-600 shadow-2xl bg-[#0f172a] mb-12 transition-all duration-700 p-2 md:p-0"
+        style="border-radius: 28px; transform-style: preserve-3d;"
         class:flipping-container={isFlipping}
         on:mouseenter={handleMouseEnter}
         on:mouseleave={handleMouseLeave}
@@ -632,10 +627,10 @@
             style="position: absolute; top: 0; left: 0;"
         >
             <svg
-                width="130"
-                height="130"
+                width="90"
+                height="90"
                 viewBox="0 0 130 130"
-                class="transition-transform duration-500"
+                class="transition-transform duration-500 md:w-[110px] md:h-[110px]"
             >
                 <path
                     d="M 0,24 Q 0,0 24,0 L 130,0 L 0,130 Z"
