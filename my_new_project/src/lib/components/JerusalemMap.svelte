@@ -133,7 +133,7 @@
             if (!isMouseOver && viewMode !== 'add') {
                 handleViewToggle();
             }
-        }, 20000); // 20 שניות
+        }, 35000); // 35 שניות
     }
 
     function handleMouseEnter() {
