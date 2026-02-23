@@ -56,7 +56,7 @@
                     <div class="text-4xl mb-3 transition-transform duration-300 group-hover:rotate-12">🙏</div>
                     <h4 class="text-lg font-bold mb-2 transition-colors duration-300 group-hover:text-blue-400">כותל המשאלות</h4>
                     <p class="text-gray-400 text-sm mb-4 transition-colors duration-300 group-hover:text-gray-300">
-                        צריך עזרה כספית? קופת הקהילה כאן כדי לתמוך בך בזמנים קשים.
+                        קופת השכונה לסייע לנזקקים
                     </p>
                     <div class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all w-full group-hover:scale-105 group-hover:shadow-lg text-center">
                         בקש עזרה מקופת הקהילה
