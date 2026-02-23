@@ -121,7 +121,7 @@
                 class="bg-gradient-to-r from-red-600 to-pink-600 p-3 text-center"
             >
                 <p class="text-white font-bold text-xs leading-tight">
-                    יש לך תלונה לעיריה שמזלזלים בה - לא עוד
+                    יש לך תלונה לעיריה שמזלזלים בה? - לא עוד
                 </p>
             </div>
         </a>

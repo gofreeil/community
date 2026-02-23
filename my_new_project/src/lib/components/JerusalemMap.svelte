@@ -31,6 +31,7 @@
     let raisedHandIcon = '';
     let selectedCategory = 'benefits'; // קטגוריה נבחרת
     let autoSwitchInterval: number | null = null;
+    let isAutoSwitching = false;
     let showNeighborhoodsMenu = false;
     let selectedNeighborhood = 'קרית משה';
     let selectedNeighborhoodCity = 'ירושלים';
@@ -133,6 +134,10 @@
         
         autoSwitchInterval = setInterval(() => {
             if (!isMouseOver && viewMode !== 'add') {
+                isAutoSwitching = true;
+                setTimeout(() => {
+                    isAutoSwitching = false;
+                }, 1000); // האנימציה תימשך שנייה
                 handleViewToggle();
             }
         }, 30000); // 30 שניות
