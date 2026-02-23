@@ -883,26 +883,74 @@
         animation: peelPage 0.5s ease-in-out;
     }
 
-    .page-corner.auto-switching svg {
-        animation: pulseGlow 2s ease-in-out;
+    .page-corner.auto-switching {
+        position: relative;
     }
 
-    @keyframes pulseGlow {
-        0%, 100% {
-            transform: scale(1);
-            filter: brightness(1) drop-shadow(0 0 0 rgba(147, 51, 234, 0));
+    .page-corner.auto-switching::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 2px;
+        height: 2px;
+        background: linear-gradient(45deg, #ffffff, #9333ea, #ffffff);
+        border-radius: 50%;
+        animation: lightningStrike 2s ease-in-out;
+        z-index: 20;
+    }
+
+    @keyframes lightningStrike {
+        0% {
+            transform: translate(200px, -200px) scale(0);
+            opacity: 0;
+            box-shadow: 0 0 0 rgba(147, 51, 234, 0);
         }
-        25% {
-            transform: scale(1.05);
-            filter: brightness(1.2) drop-shadow(0 0 8px rgba(147, 51, 234, 0.6));
+        10% {
+            transform: translate(150px, -150px) scale(1);
+            opacity: 1;
+            box-shadow: 0 0 20px rgba(147, 51, 234, 0.8);
+        }
+        20% {
+            transform: translate(100px, -100px) scale(1.5);
+            opacity: 1;
+            box-shadow: 0 0 30px rgba(147, 51, 234, 1);
+        }
+        30% {
+            transform: translate(50px, -50px) scale(2);
+            opacity: 1;
+            box-shadow: 0 0 40px rgba(147, 51, 234, 1);
         }
         50% {
-            transform: scale(1.1);
-            filter: brightness(1.4) drop-shadow(0 0 15px rgba(147, 51, 234, 0.8));
+            transform: translate(0, 0) scale(3);
+            opacity: 1;
+            box-shadow: 0 0 50px rgba(147, 51, 234, 1);
         }
-        75% {
-            transform: scale(1.05);
-            filter: brightness(1.2) drop-shadow(0 0 8px rgba(147, 51, 234, 0.6));
+        70% {
+            transform: translate(0, 0) scale(2);
+            opacity: 0.8;
+            box-shadow: 0 0 30px rgba(147, 51, 234, 0.8);
+        }
+        100% {
+            transform: translate(0, 0) scale(0);
+            opacity: 0;
+            box-shadow: 0 0 0 rgba(147, 51, 234, 0);
+        }
+    }
+
+    .page-corner.auto-switching svg {
+        animation: buttonGlow 2s ease-in-out;
+    }
+
+    @keyframes buttonGlow {
+        0%, 30% {
+            filter: brightness(1) drop-shadow(0 0 0 rgba(147, 51, 234, 0));
+        }
+        50% {
+            filter: brightness(1.8) drop-shadow(0 0 15px rgba(147, 51, 234, 1));
+        }
+        100% {
+            filter: brightness(1) drop-shadow(0 0 0 rgba(147, 51, 234, 0));
         }
     }
 
