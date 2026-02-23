@@ -27,7 +27,7 @@
             </div>
             <div class="bg-gradient-to-r from-orange-600 to-red-600 p-3 text-center">
                 <p class="text-white font-bold text-xs leading-tight">
-                    יש לך סיכסוך? מומחי המשפט והשלום בקהילה יפתרו
+                    בתי הפיוס מתנדבים לתת לך עזרה מלאה בדין / פיוס בכל סיכסוך
                 </p>
             </div>
         </a>
