@@ -18,14 +18,26 @@
     ];
 
     let showLangDropdown = $state(false);
+    let onlineUsers = $state(1);
 
     function changeLang(language: { name: string; code: string }) {
         locale.set(language.code);
     }
 
+    function updateOnlineUsers() {
+        onlineUsers = Math.floor(Math.random() * 15) + 1; // מספר רנדומלי בין 1-15
+    }
+
     onMount(() => {
+        // עדכון ראשוני
+        updateOnlineUsers();
+        
+        // עדכון כל 30 שניות
+        const interval = setInterval(updateOnlineUsers, 30000);
+        
         document.addEventListener("click", handleClickOutside);
         return () => {
+            clearInterval(interval);
             document.removeEventListener("click", handleClickOutside);
         };
     });
@@ -256,7 +268,7 @@
                     <!-- מספר גולשים -->
                     <div class="flex items-center gap-2 bg-blue-900/30 px-3 py-2 rounded-lg border border-blue-500/30 online-counter">
                         <span class="text-green-400 text-xl">●</span>
-                        <span class="text-white text-sm font-bold">47</span>
+                        <span class="text-white text-sm font-bold">{onlineUsers}</span>
                         <span class="text-gray-300 text-sm">מחוברים</span>
                     </div>
 
