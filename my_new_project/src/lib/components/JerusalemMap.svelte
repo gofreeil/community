@@ -98,43 +98,47 @@
         },
     ];
 
-    let viewMode = $state<"map" | "list" | "add">("map");
-    let isFlipping = $state(false);
-    let expandedCategories = $state(new Set<string>());
+    let viewMode: "map" | "list" | "add" = "map";
+    let isFlipping = false;
+    let expandedCategories: Set<string> = new Set();
     let isLoggedIn = false; // במציאות זה יבוא מניהול משתמשים
-    let showHelpMenu = $state(false);
-    let showWaves = $state(false);
-    let showSuccessMessage = $state(false);
-    let successMessageText = $state("");
-    let isMouseOver = $state(false);
-    let handRaised = $state(false);
-    let showSurvey = $state(false);
-    let raisedHandMessage = $state("");
-    let raisedHandIcon = $state("");
-    let selectedCategory = $state("benefits"); // קטגוריה נבחרת
+    let showHelpMenu = false;
+    let showWaves = false;
+    let showSuccessMessage = false;
+    let successMessageText = "";
+    let isMouseOver = false;
+    let handRaised = false;
+    let showSurvey = false;
+    let raisedHandMessage = "";
+    let raisedHandIcon = "";
+    let selectedCategory = "benefits"; // קטגוריה נבחרת
     let autoSwitchInterval: number | null = null;
-    let isAutoSwitching = $state(false);
+    let isAutoSwitching = false;
     let autoReturnTimeout: number | null = null;
-    let userInteracted = $state(false); // האם המשתמש נגע בכפתור
-    let showNeighborhoodsMenu = $state(false);
-    let selectedNeighborhood = $state("קרית משה");
-    let selectedNeighborhoodCity = $state("ירושלים");
-    let selectedCity = $state("");
+    let userInteracted = false; // האם המשתמש נגע בכפתור
+    let showNeighborhoodsMenu = false;
+    let selectedNeighborhood = "קרית משה";
+    let selectedNeighborhoodCity = "ירושלים";
+    let selectedCity = "";
 
     // עקוב אחרי שינויים ב-viewMode - חזור למפה אחרי 3 שניות אם לא היה אינטראקציה
-    $effect(() => {
+    $: {
         if (viewMode === "list") {
+            // ברגע שנכנסנו לתצוגת רשימה, התחל ספירה לחזרה
             if (autoReturnTimeout === null && !isMouseOver && !userInteracted) {
                 autoReturnTimeout = setTimeout(() => {
+                    // בדוק שעדיין ברשימה, לא על המפה, ולא היה אינטראקציה
                     if (
                         viewMode === "list" &&
                         !isMouseOver &&
                         !userInteracted
                     ) {
+                        console.log("Auto returning to map after 3 seconds");
                         isAutoSwitching = true;
                         setTimeout(() => {
                             isAutoSwitching = false;
                         }, 4000);
+
                         isFlipping = true;
                         setTimeout(() => {
                             viewMode = "map";
@@ -148,12 +152,13 @@
                 }, 3000);
             }
         } else {
+            // אם יצאנו מתצוגת רשימה, בטל את הספירה
             if (autoReturnTimeout !== null) {
                 clearTimeout(autoReturnTimeout);
                 autoReturnTimeout = null;
             }
         }
-    });
+    }
 
     // מיפוי שכונות לכתובות Google Maps
     const neighborhoodMaps: Record<string, string> = {
@@ -581,26 +586,26 @@
 
         <div class="flex flex-col gap-2">
             <!-- Buttons Container -->
-            <div
-                class="grid grid-cols-3 md:flex md:flex-wrap justify-center gap-2 p-2 w-full"
-            >
+            <div class="flex flex-wrap justify-center gap-3 p-2">
                 {#each categories as category}
                     <button
-                        onclick={() => {
-                            handleCategoryClick(category.id);
-                            userInteracted = true;
-                        }}
+                        on:click={() => handleCategoryClick(category.id)}
                         title="לחץ כדי לסנן במפה"
-                        class="flex items-center justify-center {selectedCategory ===
+                        class="flex items-center gap-1.5 {selectedCategory ===
                         category.id
                             ? category.id === 'benefits'
-                                ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-gray-900 border-yellow-500 scale-105 shadow-yellow-500/20'
-                                : 'bg-gradient-to-br from-purple-600 to-blue-600 text-white border-purple-500 scale-105 shadow-purple-500/20'
+                                ? 'bg-gradient-to-br from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-gray-900 border-yellow-500 scale-110'
+                                : 'bg-gradient-to-br from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-purple-500 scale-110'
                             : category.id === 'benefits'
-                              ? 'bg-gradient-to-br from-yellow-400/90 to-orange-500/90 text-gray-900 border-yellow-500'
-                              : 'bg-white/10 backdrop-blur-md text-white border-white/20 hover:bg-white/20'} 
-                               px-2 py-2.5 rounded-xl text-[10px] font-bold shadow-lg transition-all border w-full text-center leading-tight h-full"
+                              ? 'bg-gradient-to-br from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-gray-900 border-yellow-500'
+                              : 'bg-gradient-to-br from-white to-gray-200 hover:from-blue-100 hover:to-white text-gray-900 border-purple-300'} px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg transition-all hover:scale-105 border"
                     >
+                        <span
+                            class="text-base"
+                            style={category.id === "realestate"
+                                ? "letter-spacing: -0.25em; margin-left: 0.15em; display: inline-block;"
+                                : ""}>{category.icon}</span
+                        >
                         {category.label}
                     </button>
                 {/each}
@@ -612,25 +617,25 @@
     <div
         role="region"
         aria-label="Map and List View Container"
-        class="relative w-full border-[12px] md:border-4 border-purple-600 shadow-2xl bg-[#0f172a] mb-12 transition-all duration-700 p-2 md:p-0"
-        style="border-radius: 28px; transform-style: preserve-3d;"
+        class="relative w-full border-4 border-purple-600 shadow-2xl bg-[#0f172a] mb-8 transition-all duration-700"
+        style="border-radius: 24px; transform-style: preserve-3d;"
         class:flipping-container={isFlipping}
-        onmouseenter={handleMouseEnter}
-        onmouseleave={handleMouseLeave}
+        on:mouseenter={handleMouseEnter}
+        on:mouseleave={handleMouseLeave}
     >
         <!-- כפתור מעבר תצוגה - משולש מקופל בפינה -->
         <button
-            onclick={() => handleViewToggle(false)}
+            on:click={() => handleViewToggle(false)}
             class="page-corner absolute top-0 left-0 z-30 transition-all duration-500 hover:scale-110"
             class:flipping={isFlipping}
             class:auto-switching={isAutoSwitching}
             style="position: absolute; top: 0; left: 0;"
         >
             <svg
-                width="90"
-                height="90"
+                width="130"
+                height="130"
                 viewBox="0 0 130 130"
-                class="transition-transform duration-500 md:w-[110px] md:h-[110px]"
+                class="transition-transform duration-500"
             >
                 <path
                     d="M 0,24 Q 0,0 24,0 L 130,0 L 0,130 Z"
@@ -662,27 +667,6 @@
                     {viewMode === "map" ? "רשימה" : "מפה"}
                 </text>
             </svg>
-
-            <!-- אנימציית טביעת אצבע למעבר אוטומטי -->
-            {#if isAutoSwitching}
-                <div class="fingerprint-animation-container">
-                    <div class="fingerprint-ripple"></div>
-                    <div class="fingerprint-ripple delay-1"></div>
-                    <svg
-                        class="fingerprint-svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                    >
-                        <path
-                            d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-4.94-2.07c-1.218-1.559-1.99-3.5-2.001-5.613a4.04 4.04 0 0 1 .42-1.8m2.18-5.32c.506-.21 1.05-.33 1.62-.35a3.99 3.99 0 0 1 3.5 1.99m0 0A3.99 3.99 0 0 1 12 11V11c0 3.517-1.009 6.799-2.753 9.571m0 0c1.744-2.772 2.753-6.054 2.753-9.571m0 0c0-1.033.42-1.99 1.1-.285C14.735 12.866 17 15.366 17 19m1.2-1.2c.48-1.05.744-2.22.744-3.454a7.99 7.99 0 0 0-4.044-7.001m.594 13.92a7.99 7.99 0 0 0 3.45-5.92c0-1.637-.492-3.159-1.341-4.428"
-                            stroke-width="1.5"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                        />
-                    </svg>
-                </div>
-            {/if}
         </button>
 
         {#if viewMode === "map"}
@@ -778,7 +762,7 @@
                             class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-500/30 rounded-xl overflow-hidden transition-all"
                         >
                             <button
-                                onclick={() => toggleCategory(category.id)}
+                                on:click={() => toggleCategory(category.id)}
                                 class="w-full p-4 hover:border-purple-500 transition-all hover:bg-purple-900/20 cursor-pointer"
                             >
                                 <div class="flex items-center justify-between">
@@ -859,10 +843,7 @@
                 <div class="space-y-3">
                     {#each categories.filter((cat) => cat.id !== "benefits") as category}
                         <button
-                            onclick={() => {
-                                handleAddItem(category.id);
-                                userInteracted = true;
-                            }}
+                            on:click={() => handleAddItem(category.id)}
                             class="w-full bg-gradient-to-r from-green-900/30 to-emerald-900/30 border border-green-500/30 rounded-xl p-4 hover:border-green-500 hover:from-green-900/40 hover:to-emerald-900/40 transition-all cursor-pointer"
                         >
                             <div class="flex items-center justify-between">
@@ -890,7 +871,7 @@
 
         <!-- Decoration -->
         <div
-            class="hidden md:block absolute bottom-4 right-4 bg-purple-600/90 backdrop-blur-md text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-lg"
+            class="absolute bottom-4 right-4 bg-purple-600/90 backdrop-blur-md text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-lg"
         >
             {viewMode === "map"
                 ? `📍 מפת הקהילה - ${selectedNeighborhood}, ${selectedNeighborhoodCity}`
@@ -926,10 +907,7 @@
             style="top: -10px;"
         >
             <button
-                onclick={() => {
-                    handleAddAdvantage();
-                    userInteracted = true;
-                }}
+                on:click={handleAddAdvantage}
                 title="הוסף יתרון חדש לשכונה"
                 class="relative group overflow-hidden bg-gradient-to-br from-green-500 via-emerald-500 to-teal-600 hover:from-green-400 hover:via-emerald-400 hover:to-teal-500 text-white px-3 py-1.5 rounded-lg font-bold text-base shadow-xl transition-all hover:scale-105 border-2 border-purple-600"
             >
@@ -945,39 +923,33 @@
 
         <!-- כפתור הרמת יד מיוחד - בתחתית המפה -->
         <div
-            class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 z-20"
+            class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 z-20"
         >
             {#if !handRaised}
                 <!-- כפתור הרמת יד רגיל -->
                 <button
-                    onclick={() => {
-                        showHelpMenu = !showHelpMenu;
-                        userInteracted = true;
-                    }}
+                    on:click={() => (showHelpMenu = !showHelpMenu)}
                     title="בקש עזרה מהקהילה"
-                    class="relative group overflow-hidden bg-gradient-to-br from-red-500 via-pink-500 to-purple-600 hover:from-red-400 hover:via-pink-400 hover:to-purple-500 text-white px-4 py-2 rounded-full font-bold text-sm shadow-xl transition-all hover:scale-105"
+                    class="relative group overflow-hidden bg-gradient-to-br from-red-500 via-pink-500 to-purple-600 hover:from-red-400 hover:via-pink-400 hover:to-purple-500 text-white px-6 py-3 rounded-xl font-bold text-base shadow-xl transition-all hover:scale-105 border-4 border-purple-600"
                 >
                     <div
                         class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer-once"
                     ></div>
-                    <div class="relative flex items-center gap-2">
-                        <span class="text-xl">✋</span>
+                    <div class="relative flex items-center gap-3">
+                        <span class="text-2xl">✋</span>
                         <span>הרמת יד</span>
                     </div>
                 </button>
             {:else}
                 <!-- כפתור יד מורמת -->
                 <button
-                    onclick={() => {
-                        handleLowerHand();
-                        userInteracted = true;
-                    }}
+                    on:click={handleLowerHand}
                     title="הורד את היד"
-                    class="relative group overflow-hidden bg-gradient-to-br from-yellow-500 via-orange-500 to-red-600 hover:from-yellow-400 hover:via-orange-400 hover:to-red-500 text-white px-4 py-2 rounded-full font-bold text-sm shadow-xl transition-all hover:scale-105 animate-pulse"
+                    class="relative group overflow-hidden bg-gradient-to-br from-yellow-500 via-orange-500 to-red-600 hover:from-yellow-400 hover:via-orange-400 hover:to-red-500 text-white px-6 py-3 rounded-xl font-bold text-base shadow-xl transition-all hover:scale-105 border-4 border-yellow-400 animate-pulse"
                 >
-                    <div class="relative flex items-center gap-2">
-                        <span class="text-xl">🙋</span>
-                        <span>יד מורמת</span>
+                    <div class="relative flex items-center gap-3">
+                        <span class="text-2xl">🙋</span>
+                        <span>יד מורמת - לחץ להורדה</span>
                     </div>
                 </button>
             {/if}
@@ -995,10 +967,7 @@
                     <div class="p-2">
                         {#each helpOptions as option}
                             <button
-                                onclick={() => {
-                                    handleHelpRequest(option.id);
-                                    userInteracted = true;
-                                }}
+                                on:click={() => handleHelpRequest(option.id)}
                                 class="w-full flex items-center gap-3 p-3 hover:bg-red-50 rounded-lg transition-colors text-right border-b border-gray-200 last:border-b-0"
                             >
                                 <span class="text-2xl">{option.icon}</span>
@@ -1009,10 +978,7 @@
                         {/each}
                     </div>
                     <button
-                        onclick={() => {
-                            showHelpMenu = false;
-                            userInteracted = true;
-                        }}
+                        on:click={() => (showHelpMenu = false)}
                         class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 py-2 text-sm font-bold transition-colors"
                     >
                         ביטול
@@ -1034,10 +1000,7 @@
                     </div>
                     <div class="p-4 space-y-3">
                         <button
-                            onclick={() => {
-                                handleSurveyResponse("community");
-                                userInteracted = true;
-                            }}
+                            on:click={() => handleSurveyResponse("community")}
                             class="w-full flex items-center gap-3 p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors border-2 border-green-300"
                         >
                             <span class="text-3xl">🤝</span>
@@ -1051,10 +1014,7 @@
                             </div>
                         </button>
                         <button
-                            onclick={() => {
-                                handleSurveyResponse("other");
-                                userInteracted = true;
-                            }}
+                            on:click={() => handleSurveyResponse("other")}
                             class="w-full flex items-center gap-3 p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border-2 border-blue-300"
                         >
                             <span class="text-3xl">✅</span>
@@ -1069,10 +1029,7 @@
                         </button>
                     </div>
                     <button
-                        onclick={() => {
-                            handleSurveyResponse("cancel");
-                            userInteracted = true;
-                        }}
+                        on:click={() => handleSurveyResponse("cancel")}
                         class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 py-2 text-sm font-bold transition-colors"
                     >
                         ביטול
@@ -1251,80 +1208,8 @@
         height: 4px;
         background: linear-gradient(45deg, #ffffff, #9333ea, #ffffff);
         border-radius: 50%;
-        animation: lightningStrike 4s ease-in-out infinite;
+        animation: lightningStrike 4s ease-in-out;
         z-index: 20;
-    }
-
-    .fingerprint-animation-container {
-        position: absolute;
-        top: 25px;
-        left: 25px;
-        width: 48px;
-        height: 48px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 50;
-        pointer-events: none;
-    }
-
-    .fingerprint-svg {
-        width: 32px;
-        height: 32px;
-        color: white;
-        filter: drop-shadow(0 0 8px rgba(147, 51, 234, 0.8));
-        animation: fingerprintScale 2s ease-in-out infinite;
-        z-index: 2;
-    }
-
-    .fingerprint-ripple {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.4);
-        animation: fingerprintRipple 2s cubic-bezier(0, 0, 0.2, 1) infinite;
-        z-index: 1;
-    }
-
-    .fingerprint-ripple.delay-1 {
-        animation-delay: 1s;
-    }
-
-    @keyframes fingerprintScale {
-        0%,
-        100% {
-            transform: scale(1);
-            opacity: 0.8;
-        }
-        50% {
-            transform: scale(1.2);
-            opacity: 1;
-        }
-    }
-
-    @keyframes fingerprintRipple {
-        0% {
-            transform: scale(0.5);
-            opacity: 0.8;
-        }
-        100% {
-            transform: scale(2.5);
-            opacity: 0;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .fingerprint-animation-container {
-            top: 15px;
-            left: 15px;
-            width: 40px;
-            height: 40px;
-        }
-        .fingerprint-svg {
-            width: 24px;
-            height: 24px;
-        }
     }
 
     @keyframes lightningStrike {

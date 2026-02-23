@@ -95,6 +95,24 @@
                     </p>
                 </div>
             </div>
+
+            <!-- כפתור פעולה -->
+            <button
+                class="cta-button-small transition-all duration-300 hover:scale-105 flex-shrink-0"
+            >
+                <div
+                    class="relative bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl px-6 py-4 shadow-lg"
+                >
+                    <div class="text-center">
+                        <div class="text-2xl font-black text-purple-900 mb-1">
+                            השתתף עכשיו
+                        </div>
+                        <div class="text-xs font-bold text-purple-800">
+                            קולך נשמע! 📢
+                        </div>
+                    </div>
+                </div>
+            </button>
         </div>
 
         <!-- סטטיסטיקות מונפשות -->

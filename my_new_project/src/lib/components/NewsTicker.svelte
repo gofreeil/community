@@ -27,7 +27,7 @@
     <div class="mx-auto max-w-7xl flex items-center px-4">
         <!-- Ticker Label -->
         <div
-            class="hidden md:flex z-10 bg-red-600 px-6 py-4 rounded-lg text-lg font-black text-white shadow-xl flex-shrink-0 ml-6 flex-col items-center justify-center border border-red-400"
+            class="z-10 bg-red-600 px-6 py-4 rounded-lg text-lg font-black text-white shadow-xl flex-shrink-0 ml-6 flex flex-col items-center justify-center border border-red-400"
         >
             <span>חדשות</span>
             <span>הקהילה:</span>
