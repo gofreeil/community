@@ -120,45 +120,10 @@
     let selectedNeighborhood = $state("קרית משה");
     let selectedNeighborhoodCity = $state("ירושלים");
     let selectedCity = $state("");
+    let hasShownListAnimation = $state(false); // עקוב אם כבר הראינו את האנימציה
 
-    // עקוב אחרי שינויים ב-viewMode - חזור למפה אחרי 3 שניות אם לא היה אינטראקציה
-    $effect(() => {
-        if (viewMode === "list") {
-            // ברגע שנכנסנו לתצוגת רשימה, התחל ספירה לחזרה
-            if (autoReturnTimeout === null && !isMouseOver && !userInteracted) {
-                autoReturnTimeout = setTimeout(() => {
-                    // בדוק שעדיין ברשימה, לא על המפה, ולא היה אינטראקציה
-                    if (
-                        viewMode === "list" &&
-                        !isMouseOver &&
-                        !userInteracted
-                    ) {
-                        console.log("Auto returning to map after 3 seconds");
-                        isAutoSwitching = true;
-                        setTimeout(() => {
-                            isAutoSwitching = false;
-                        }, 4000);
-
-                        isFlipping = true;
-                        setTimeout(() => {
-                            viewMode = "map";
-                            userInteracted = false;
-                        }, 350);
-                        setTimeout(() => {
-                            isFlipping = false;
-                        }, 700);
-                    }
-                    autoReturnTimeout = null;
-                }, 3000);
-            }
-        } else {
-            // אם יצאנו מתצוגת רשימה, בטל את הספירה
-            if (autoReturnTimeout !== null) {
-                clearTimeout(autoReturnTimeout);
-                autoReturnTimeout = null;
-            }
-        }
-    });
+    // אנימציה של רשימה פעם אחת בלבד אחרי 15 שניות מכניסה לאתר
+    let listAnimationTimeout: number | null = null;
 
     // מיפוי שכונות לכתובות Google Maps
     const neighborhoodMaps: Record<string, string> = {
@@ -410,6 +375,36 @@
     onMount(() => {
         startAutoSwitch();
 
+        // אנימציה של רשימה פעם אחת בלבד אחרי 15 שניות
+        listAnimationTimeout = setTimeout(() => {
+            if (!hasShownListAnimation) {
+                hasShownListAnimation = true;
+                console.log("Showing list animation after 15 seconds");
+                isAutoSwitching = true;
+                
+                // עבור לרשימה
+                isFlipping = true;
+                setTimeout(() => {
+                    viewMode = "list";
+                }, 350);
+                setTimeout(() => {
+                    isFlipping = false;
+                }, 700);
+                
+                // חזור למפה אחרי 3 שניות
+                setTimeout(() => {
+                    isFlipping = true;
+                    setTimeout(() => {
+                        viewMode = "map";
+                    }, 350);
+                    setTimeout(() => {
+                        isFlipping = false;
+                        isAutoSwitching = false;
+                    }, 700);
+                }, 3000);
+            }
+        }, 15000);
+
         // סגירת תפריט כשלוחצים מחוץ לו
         const handleClickOutside = (event: MouseEvent) => {
             const target = event.target as HTMLElement;
@@ -427,6 +422,9 @@
         return () => {
             if (autoSwitchInterval) {
                 clearInterval(autoSwitchInterval);
+            }
+            if (listAnimationTimeout) {
+                clearTimeout(listAnimationTimeout);
             }
             document.removeEventListener("click", handleClickOutside);
         };
@@ -586,19 +584,24 @@
 
         <div class="flex flex-col gap-2">
             <!-- Buttons Container -->
-            <div class="flex flex-wrap justify-center gap-3 p-2">
-                {#each categories as category}
+            <div class="flex flex-wrap justify-start gap-3 p-2 w-full">
+                {#each categories as category, index}
                     <button
                         on:click={() => handleCategoryClick(category.id)}
                         title="לחץ כדי לסנן במפה"
-                        class="flex items-center gap-1.5 {selectedCategory ===
+                        class="flex items-center justify-center gap-1.5 {selectedCategory ===
                         category.id
                             ? category.id === 'benefits'
                                 ? 'bg-gradient-to-br from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-gray-900 border-yellow-500 scale-110'
                                 : 'bg-gradient-to-br from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-purple-500 scale-110'
                             : category.id === 'benefits'
                               ? 'bg-gradient-to-br from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-gray-900 border-yellow-500'
-                              : 'bg-gradient-to-br from-white to-gray-200 hover:from-blue-100 hover:to-white text-gray-900 border-purple-300'} px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg transition-all hover:scale-105 border"
+                              : 'bg-gradient-to-br from-white to-gray-200 hover:from-blue-100 hover:to-white text-gray-900 border-purple-300'} px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg transition-all hover:scale-105 border {category.id ===
+                            'education' || category.id === 'transport'
+                            ? 'w-[105px]'
+                            : category.id === 'realestate'
+                            ? 'flex-basis-full'
+                            : ''}"
                     >
                         <span
                             class="text-base"
@@ -1191,26 +1194,26 @@
 
     @keyframes lightningStrike {
         0% {
-            transform: translate(300px, -300px) scale(0);
+            transform: translate(100px, -100px) scale(0);
             opacity: 0;
             box-shadow: 0 0 0 rgba(255, 255, 255, 0);
         }
         15% {
-            transform: translate(200px, -200px) scale(2);
+            transform: translate(70px, -70px) scale(2);
             opacity: 1;
             box-shadow:
                 0 0 30px rgba(255, 255, 255, 1),
                 0 0 60px rgba(147, 51, 234, 0.8);
         }
         30% {
-            transform: translate(100px, -100px) scale(3);
+            transform: translate(40px, -40px) scale(3);
             opacity: 1;
             box-shadow:
                 0 0 40px rgba(255, 255, 255, 1),
                 0 0 80px rgba(147, 51, 234, 1);
         }
         45% {
-            transform: translate(50px, -50px) scale(4);
+            transform: translate(20px, -20px) scale(4);
             opacity: 1;
             box-shadow:
                 0 0 50px rgba(255, 255, 255, 1),

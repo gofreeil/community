@@ -42,7 +42,7 @@
     on:mouseleave={handleMouseLeave}
     on:mousemove={handleMouseMove}
     role="banner"
-    class="referendum-banner group relative overflow-hidden rounded-2xl shadow-2xl my-8 cursor-help"
+    class="referendum-banner group relative overflow-hidden rounded-2xl shadow-2xl my-8 cursor-default"
 >
     <!-- רקע גרדיאנט -->
     <div
@@ -53,7 +53,7 @@
     {#if showTooltip}
         <div
             transition:fade={{ duration: 1500, delay: 3000 }}
-            class="pointer-events-none absolute z-50 flex flex-col gap-2 p-3 bg-white/10 backdrop-blur-xl border border-white/30 rounded-xl shadow-2xl transition-all duration-75 ease-out"
+            class="pointer-events-none absolute z-50 flex flex-row gap-2 p-3 bg-white/10 backdrop-blur-xl border border-white/30 rounded-xl shadow-2xl transition-all duration-75 ease-out"
             style="left: {mouseX + 20}px; top: {mouseY +
                 20}px; transform: translate(0, 0);"
         >
