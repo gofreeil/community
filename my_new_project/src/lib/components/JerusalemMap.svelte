@@ -597,11 +597,9 @@
                             : category.id === 'benefits'
                               ? 'bg-gradient-to-br from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-gray-900 border-yellow-500'
                               : 'bg-gradient-to-br from-white to-gray-200 hover:from-blue-100 hover:to-white text-gray-900 border-purple-300'} px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg transition-all hover:scale-105 border {category.id ===
-                            'education' || category.id === 'transport'
-                            ? 'w-[105px]'
-                            : category.id === 'realestate'
+                            'realestate'
                             ? 'flex-basis-full'
-                            : ''}"
+                            : 'min-w-[80px] max-w-[120px]'}"
                     >
                         <span
                             class="text-base"
@@ -1194,26 +1192,26 @@
 
     @keyframes lightningStrike {
         0% {
-            transform: translate(100px, -100px) scale(0);
+            transform: translate(50px, -50px) scale(0);
             opacity: 0;
             box-shadow: 0 0 0 rgba(255, 255, 255, 0);
         }
         15% {
-            transform: translate(70px, -70px) scale(2);
+            transform: translate(35px, -35px) scale(2);
             opacity: 1;
             box-shadow:
                 0 0 30px rgba(255, 255, 255, 1),
                 0 0 60px rgba(147, 51, 234, 0.8);
         }
         30% {
-            transform: translate(40px, -40px) scale(3);
+            transform: translate(20px, -20px) scale(3);
             opacity: 1;
             box-shadow:
                 0 0 40px rgba(255, 255, 255, 1),
                 0 0 80px rgba(147, 51, 234, 1);
         }
         45% {
-            transform: translate(20px, -20px) scale(4);
+            transform: translate(10px, -10px) scale(4);
             opacity: 1;
             box-shadow:
                 0 0 50px rgba(255, 255, 255, 1),

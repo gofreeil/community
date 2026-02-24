@@ -5,7 +5,19 @@
 
     const ads = [
         {
-            text: "קהילה בשכונה",
+            text: "בתי הפיוס",
+            description: "עזרה בדין ופיוס",
+            borderColor: "border-orange-500/30",
+            bgColor: "bg-orange-900/10",
+            hoverBorder: "hover:border-orange-500",
+            hoverBg: "hover:bg-orange-900/20",
+            textColor: "text-orange-400",
+            hoverText: "group-hover:text-orange-200",
+            buttonColor: "bg-orange-600 hover:bg-orange-500"
+        },
+        {
+            text: "ועדי שכונות",
+            description: "הצטרף לוועד",
             borderColor: "border-blue-500/30",
             bgColor: "bg-blue-900/10",
             hoverBorder: "hover:border-blue-500",
@@ -15,27 +27,8 @@
             buttonColor: "bg-blue-600 hover:bg-blue-500"
         },
         {
-            text: "קהילה בשכונה",
-            borderColor: "border-purple-500/30",
-            bgColor: "bg-purple-900/10",
-            hoverBorder: "hover:border-purple-500",
-            hoverBg: "hover:bg-purple-900/20",
-            textColor: "text-purple-400",
-            hoverText: "group-hover:text-purple-200",
-            buttonColor: "bg-purple-600 hover:bg-purple-500"
-        },
-        {
-            text: "קהילה בשכונה",
-            borderColor: "border-pink-500/30",
-            bgColor: "bg-pink-900/10",
-            hoverBorder: "hover:border-pink-500",
-            hoverBg: "hover:bg-pink-900/20",
-            textColor: "text-pink-400",
-            hoverText: "group-hover:text-pink-200",
-            buttonColor: "bg-pink-600 hover:bg-pink-500"
-        },
-        {
-            text: "קהילה בשכונה",
+            text: "קבוצת רכישה",
+            description: "הוזל הוצאות",
             borderColor: "border-green-500/30",
             bgColor: "bg-green-900/10",
             hoverBorder: "hover:border-green-500",
@@ -43,6 +36,17 @@
             textColor: "text-green-400",
             hoverText: "group-hover:text-green-200",
             buttonColor: "bg-green-600 hover:bg-green-500"
+        },
+        {
+            text: "השקעות קבוצתיות",
+            description: "התחבר למשקיעים",
+            borderColor: "border-amber-500/30",
+            bgColor: "bg-amber-900/10",
+            hoverBorder: "hover:border-amber-500",
+            hoverBg: "hover:bg-amber-900/20",
+            textColor: "text-amber-400",
+            hoverText: "group-hover:text-amber-200",
+            buttonColor: "bg-amber-600 hover:bg-amber-500"
         }
     ];
 
@@ -63,18 +67,25 @@
                 class="h-[560px] flex flex-col items-center justify-center rounded-2xl border-2 border-dashed {ad.borderColor} {ad.bgColor} p-3 text-center transition-all {ad.hoverBorder} {ad.hoverBg} group duration-700"
                 style="animation: fadeIn 0.7s ease-in-out;"
             >
-                <div
-                    class="[writing-mode:vertical-rl] text-base font-black {ad.textColor} {ad.hoverText} tracking-widest whitespace-nowrap"
-                >
-                    {ad.text}
+                <div class="flex flex-col items-center justify-center h-full">
+                    <div
+                        class="[writing-mode:vertical-rl] text-base font-black {ad.textColor} {ad.hoverText} tracking-widest whitespace-nowrap mb-4"
+                    >
+                        {ad.text}
+                    </div>
+                    <div
+                        class="[writing-mode:vertical-rl] text-xs {ad.textColor} {ad.hoverText} opacity-80 tracking-normal whitespace-nowrap mb-6"
+                    >
+                        {ad.description}
+                    </div>
+                    <div class="mt-3 text-xl">📢</div>
+                    <a
+                        href="mailto:ads@shchuna.co.il"
+                        class="mt-4 rounded-full {ad.buttonColor} px-3 py-1.5 text-xs font-bold text-white shadow-lg transition-colors"
+                    >
+                        לפרטים
+                    </a>
                 </div>
-                <div class="mt-3 text-xl">📢</div>
-                <a
-                    href="mailto:ads@shchuna.co.il"
-                    class="mt-4 rounded-full {ad.buttonColor} px-3 py-1.5 text-xs font-bold text-white shadow-lg transition-colors"
-                >
-                    לפרטים
-                </a>
             </div>
         {/each}
     </div>
