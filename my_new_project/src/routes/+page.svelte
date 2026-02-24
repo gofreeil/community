@@ -4,9 +4,11 @@
     import LostAndFound from "$lib/components/LostAndFound.svelte";
     import FacebookComments from "$lib/components/FacebookComments.svelte";
     import ReferendumBanner from "$lib/components/ReferendumBanner.svelte";
+    import MobileAdsBanner from "$lib/components/MobileAdsBanner.svelte";
 </script>
 
 <div class="space-y-12 pb-20 pt-8">
+    <MobileAdsBanner />
     <!-- Title Section - centered across full width -->
     <section class="max-w-7xl mx-auto px-4">
         <div class="text-center mb-8 relative neighborhoods-menu-container">
