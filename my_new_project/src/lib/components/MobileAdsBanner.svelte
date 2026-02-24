@@ -112,11 +112,11 @@
                             on:click={() => toggleExpand(ad.id)}
                             class="w-full flex items-center justify-between bg-gradient-to-r {ad.color} p-3 rounded-lg text-white hover:shadow-lg transition-all"
                         >
-                            <div class="text-left">
+                            <span class="text-lg mr-2">→</span>
+                            <div class="text-left flex-1">
                                 <p class="font-bold text-sm">{ad.title}</p>
                                 <p class="text-xs opacity-90">{ad.summary}</p>
                             </div>
-                            <span class="text-lg">→</span>
                         </button>
                     {/if}
                 {/each}
