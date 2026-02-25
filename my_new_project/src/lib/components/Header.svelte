@@ -27,6 +27,7 @@
     // Ads Mode Logic (Mobile Only)
     let showAdsMode = $state(false);
     let currentAdIndex = $state(0);
+    let adsShownCount = $state(0);
     // selectedAdForModal state removed
 
     function changeLang(language: { name: string; code: string }) {
@@ -44,12 +45,25 @@
         // Switch to Ads Mode after 10 seconds (Mobile only logic will use this)
         const adsTimer = setTimeout(() => {
             showAdsMode = true;
+            adsShownCount = 0;
         }, 10000);
 
         // Rotate ads every 5 seconds
         const rotateAdsInterval = setInterval(() => {
             if (showAdsMode) {
-                currentAdIndex = (currentAdIndex + 1) % ads.length;
+                adsShownCount++;
+                if (adsShownCount >= 3) {
+                    // After 3 ads, go back to original header
+                    showAdsMode = false;
+                    adsShownCount = 0;
+                    // Wait 5 seconds then show ads again
+                    setTimeout(() => {
+                        showAdsMode = true;
+                        currentAdIndex = 0;
+                    }, 5000);
+                } else {
+                    currentAdIndex = (currentAdIndex + 1) % ads.length;
+                }
             }
         }, 5000);
 
@@ -76,12 +90,11 @@
 >
     <div class="relative mx-auto max-w-7xl px-2 sm:px-4 lg:px-8">
         <!-- Mobile Header Area -->
-        <div class="md:hidden">
+        <div class="md:hidden h-[80px] relative">
             {#if !showAdsMode}
                 <!-- Original Mobile Header (0-10 seconds) -->
                 <div
-                    class="flex items-center justify-between py-3 px-1"
-                    transition:fade
+                    class="flex items-center justify-between h-full px-1 absolute inset-0"
                 >
                     <a
                         href="/"
@@ -171,13 +184,10 @@
             {:else}
                 <!-- Advertisement Banner Mode -->
                 <div
-                    class="flex items-center justify-center h-[80px] w-full px-4 relative cursor-pointer"
-                    transition:fade
+                    class="flex items-center justify-center h-full w-full px-4 relative cursor-pointer absolute inset-0"
                 >
                     {#key currentAdIndex}
                         <div
-                            in:fade={{ duration: 600, delay: 200 }}
-                            out:fade={{ duration: 600 }}
                             class="absolute inset-0 flex flex-col items-center justify-center text-center px-2 py-1"
                         >
                             <h2
@@ -194,9 +204,9 @@
                                 {ads[currentAdIndex].description}
                             </p>
                             <div
-                                class="text-[10px] text-gray-500 font-bold flex items-center gap-1 animate-pulse justify-end w-full pr-4"
+                                class="text-sm text-gray-500 font-bold flex flex-col items-center gap-0 absolute left-4 top-1/2 -translate-y-1/2"
                             >
-                                <span>לפרטים</span><span>👇</span>
+                                <span>לפרטים</span><span class="text-lg">👇</span>
                             </div>
                         </div>
                     {/key}
