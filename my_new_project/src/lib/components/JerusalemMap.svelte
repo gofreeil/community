@@ -851,34 +851,34 @@
         {:else if viewMode === "list"}
             <!-- תצוגת רשימה -->
             <div
-                class="w-full h-[450px] overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900/20"
+                class="w-full h-[450px] overflow-y-auto p-3 md:p-6 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900/20"
                 style="border-radius: 20px;"
             >
-                <div class="space-y-3">
+                <div class="space-y-2 md:space-y-3">
                     {#each categories.filter((cat) => cat.id !== "benefits") as category}
                         <div
-                            class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-500/30 rounded-xl overflow-hidden transition-all"
+                            class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-500/30 rounded-lg md:rounded-xl overflow-hidden transition-all"
                         >
                             <button
                                 on:click={() => toggleCategory(category.id)}
-                                class="w-full p-4 hover:border-purple-500 transition-all hover:bg-purple-900/20 cursor-pointer"
+                                class="w-full p-2 md:p-4 hover:border-purple-500 transition-all hover:bg-purple-900/20 cursor-pointer"
                             >
                                 <div class="flex items-center justify-between">
-                                    <div class="flex items-center gap-3">
-                                        <span class="text-3xl"
+                                    <div class="flex items-center gap-2 md:gap-3">
+                                        <span class="text-xl md:text-3xl"
                                             >{category.icon}</span
                                         >
                                         <span
-                                            class="text-white font-bold text-lg"
+                                            class="text-white font-bold text-sm md:text-lg"
                                             >{category.label}</span
                                         >
                                     </div>
-                                    <div class="flex items-center gap-3">
-                                        <span class="text-purple-400 text-sm"
+                                    <div class="flex items-center gap-2 md:gap-3">
+                                        <span class="text-purple-400 text-xs md:text-sm"
                                             >{category.items?.length || 0} פריטים</span
                                         >
                                         <svg
-                                            class="w-6 h-6 text-purple-400 transition-transform duration-300 {expandedCategories.has(
+                                            class="w-4 h-4 md:w-6 md:h-6 text-purple-400 transition-transform duration-300 {expandedCategories.has(
                                                 category.id,
                                             )
                                                 ? 'rotate-180'
