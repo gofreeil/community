@@ -4,11 +4,9 @@
     import LostAndFound from "$lib/components/LostAndFound.svelte";
     import FacebookComments from "$lib/components/FacebookComments.svelte";
     import ReferendumBanner from "$lib/components/ReferendumBanner.svelte";
-    import MobileAdsBanner from "$lib/components/MobileAdsBanner.svelte";
 </script>
 
 <div class="space-y-12 pb-20 pt-8">
-    <MobileAdsBanner />
     <!-- Title Section - centered across full width -->
     <section class="max-w-7xl mx-auto px-4">
         <div class="text-center mb-8 relative neighborhoods-menu-container">
@@ -73,7 +71,8 @@
     <!-- Emergency Team Banner -->
     <!-- Force deployment update -->
     <section class="max-w-6xl mx-auto px-4">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Desktop: 3 columns, Mobile: horizontal scroll -->
+        <div class="hidden md:grid md:grid-cols-3 gap-6">
             <!-- כותל המשאלות -->
             <a 
                 href="/community-fund"
@@ -124,6 +123,55 @@
                         <button class="bg-white text-red-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-yellow-100 transition-all w-full group-hover:scale-105 group-hover:shadow-xl mt-auto">
                             הצטרף עכשיו 🔥
                         </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile: 3 cards in one row, equal width -->
+        <div class="md:hidden">
+            <div class="grid grid-cols-3 gap-2 h-32">
+                <!-- כותל המשאלות - Mobile -->
+                <a 
+                    href="/community-fund"
+                    class="p-3 rounded-lg bg-gradient-to-br from-blue-600/20 to-purple-600/20 border border-white/10 backdrop-blur-sm flex flex-col h-full"
+                >
+                    <div class="text-xl mb-1">🙏</div>
+                    <h4 class="text-xs font-bold mb-1 text-blue-400">כותל המשאלות</h4>
+                    <p class="text-gray-400 text-[10px] mb-2 leading-tight flex-grow">
+                        קופת השכונה
+                    </p>
+                    <div class="bg-blue-600 text-white px-2 py-1 rounded text-[10px] font-bold text-center">
+                        בקש עזרה
+                    </div>
+                </a>
+
+                <!-- פנה לוועד השכונה - Mobile -->
+                <div class="p-3 rounded-lg bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-white/10 backdrop-blur-sm flex flex-col h-full">
+                    <div class="text-xl mb-1">🏛️</div>
+                    <h4 class="text-xs font-bold mb-1 text-purple-400">ועד השכונה</h4>
+                    <p class="text-gray-400 text-[10px] mb-2 leading-tight flex-grow">
+                        יש לך הצעה?
+                    </p>
+                    <button class="bg-purple-600 text-white px-2 py-1 rounded text-[10px] font-bold w-full">
+                        צור קשר
+                    </button>
+                </div>
+
+                <!-- כיתת כוננות - Mobile -->
+                <div class="relative overflow-hidden rounded-lg h-full">
+                    <div class="absolute inset-0 bg-gradient-to-br from-red-600 via-orange-600 to-yellow-500"></div>
+                    <div class="relative z-10 p-3 h-full flex flex-col">
+                        <div class="text-center text-white flex flex-col flex-grow">
+                            <span class="text-xl mb-1 block">🚨</span>
+                            <h3 class="text-xs font-black mb-1">כיתת כוננות</h3>
+                            <p class="text-[10px] mb-2 text-yellow-100 leading-tight flex-grow">
+                                127 חברים
+                            </p>
+                            <button class="bg-white text-red-600 px-2 py-1 rounded text-[10px] font-bold w-full">
+                                הצטרף
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

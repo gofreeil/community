@@ -419,27 +419,98 @@
 
         document.addEventListener("click", handleClickOutside);
 
-        // Mobile scroll indicators logic
+        // Mobile scroll indicators logic - simplified
         const setupScrollIndicators = () => {
+            console.log("Setting up scroll indicators...");
             const buttonsContainer = document.querySelector('.flex.flex-wrap.justify-start.gap-3.p-2.w-full') as HTMLElement;
-            if (!buttonsContainer) return;
-
-            const checkScroll = () => {
-                const isScrolled = buttonsContainer.scrollLeft > 0;
-                const isAtEnd = buttonsContainer.scrollLeft + buttonsContainer.clientWidth >= buttonsContainer.scrollWidth - 1;
-                
-                // Hide/show right arrow based on scroll position
-                const rightArrow = buttonsContainer.querySelector('.right-arrow-indicator');
-                if (rightArrow) {
-                    (rightArrow as HTMLElement).style.opacity = isAtEnd ? '0' : '0.7';
-                }
-            };
-
-            // Add scroll listener
-            buttonsContainer.addEventListener('scroll', checkScroll);
+            if (!buttonsContainer) {
+                console.log("Buttons container not found");
+                return;
+            }
             
-            // Initial check
-            checkScroll();
+            console.log("Buttons container found:", buttonsContainer);
+
+            // Check if container needs scrolling
+            const needsScroll = buttonsContainer.scrollWidth > buttonsContainer.clientWidth;
+            console.log("Needs scroll:", needsScroll, "scrollWidth:", buttonsContainer.scrollWidth, "clientWidth:", buttonsContainer.clientWidth);
+            
+            if (!needsScroll) {
+                console.log("No scrolling needed, hiding arrows");
+                return;
+            }
+            
+            // Add CSS class to enable arrows
+            buttonsContainer.classList.add('scrollable-mobile');
+            console.log("Added scrollable-mobile class");
+            
+            // Add click handlers for arrows
+            setTimeout(() => {
+                const leftArrow = document.querySelector('.flex.flex-wrap.justify-start.gap-3.p-2.w-full.scrollable-mobile::before') as HTMLElement;
+                const rightArrow = document.querySelector('.flex.flex-wrap.justify-start.gap-3.p-2.w-full.scrollable-mobile::after') as HTMLElement;
+                
+                // Since pseudo-elements can't have event listeners, we'll create actual elements
+                const createClickableArrows = () => {
+                    // Remove existing arrows
+                    const existingArrows = document.querySelectorAll('.mobile-scroll-arrow');
+                    existingArrows.forEach(arrow => arrow.remove());
+                    
+                    // Get buttons container position
+                    const containerRect = buttonsContainer.getBoundingClientRect();
+                    const containerParent = buttonsContainer.parentElement;
+                    
+                    if (!containerParent) return;
+                    
+                    // Make parent relative for absolute positioning
+                    containerParent.style.position = 'relative';
+                    
+                    console.log("Container position:", containerRect);
+                    
+                    // Create left arrow only
+                    const leftArrowEl = document.createElement('div');
+                    leftArrowEl.className = 'mobile-scroll-arrow mobile-scroll-arrow-left';
+                    leftArrowEl.innerHTML = '←';
+                    leftArrowEl.style.cssText = `
+                        position: absolute !important;
+                        left: -25px !important;
+                        top: 50% !important;
+                        transform: translateY(-50%) !important;
+                        background: rgba(147, 51, 234, 0.9) !important;
+                        color: white !important;
+                        width: 35px !important;
+                        height: 35px !important;
+                        border-radius: 7px !important;
+                        display: flex !important;
+                        align-items: center !important;
+                        justify-content: center !important;
+                        font-size: 18px !important;
+                        z-index: 99999 !important;
+                        cursor: pointer !important;
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
+                        opacity: 0.8 !important;
+                        transition: all 0.3s ease !important;
+                        pointer-events: auto !important;
+                    `;
+                    leftArrowEl.addEventListener('click', () => {
+                        console.log("Left arrow clicked");
+                        buttonsContainer.scrollBy({ left: -120, behavior: 'smooth' });
+                    });
+                    leftArrowEl.addEventListener('mouseenter', () => {
+                        leftArrowEl.style.transform = 'translateY(-50%) scale(1.1)';
+                        leftArrowEl.style.boxShadow = '0 6px 16px rgba(0,0,0,0.5)';
+                    });
+                    leftArrowEl.addEventListener('mouseleave', () => {
+                        leftArrowEl.style.transform = 'translateY(-50%) scale(1)';
+                        leftArrowEl.style.boxShadow = '0 4px 12px rgba(0,0,0,0.4)';
+                    });
+                    
+                    // Add only left arrow to parent container
+                    containerParent.appendChild(leftArrowEl);
+                    
+                    console.log("Only left arrow created with absolute positioning");
+                };
+                
+                createClickableArrows();
+            }, 200);
         };
 
         // Setup scroll indicators after a short delay to ensure DOM is ready
@@ -1358,52 +1429,15 @@
             position: relative !important;
         }
         
-        /* Add scroll indicators */
-        .flex.flex-wrap.justify-start.gap-3.p-2.w-full::before {
-            content: '←' !important;
-            position: absolute !important;
-            left: 0 !important;
-            top: 50% !important;
-            transform: translateY(-50%) !important;
-            background: rgba(147, 51, 234, 0.9) !important;
-            color: white !important;
-            width: 24px !important;
-            height: 24px !important;
-            border-radius: 50% !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            font-size: 12px !important;
-            z-index: 10 !important;
-            cursor: pointer !important;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+        /* Remove CSS pseudo-elements to prevent duplicates */
+        .flex.flex-wrap.justify-start.gap-3.p-2.w-full.scrollable-mobile::before,
+        .flex.flex-wrap.justify-start.gap-3.p-2.w-full.scrollable-mobile::after {
+            display: none !important;
         }
         
-        .flex.flex-wrap.justify-start.gap-3.p-2.w-full::after {
-            content: '→' !important;
-            position: absolute !important;
-            right: 0 !important;
-            top: 50% !important;
-            transform: translateY(-50%) !important;
-            background: rgba(147, 51, 234, 0.9) !important;
-            color: white !important;
-            width: 24px !important;
-            height: 24px !important;
-            border-radius: 50% !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            font-size: 12px !important;
-            z-index: 10 !important;
-            cursor: pointer !important;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
-            opacity: 0 !important;
-            transition: opacity 0.3s ease !important;
-        }
-        
-        /* Hide arrows when not scrollable */
-        .flex.flex-wrap.justify-start.gap-3.p-2.w-full:not(:hover)::before {
-            opacity: 0.7 !important;
+        /* Hide right arrow in buttons above map */
+        .mobile-scroll-arrow-right {
+            display: none !important;
         }
         
         /* Reduce gaps on mobile - minimal between title and buttons, reasonable between buttons and map */
@@ -1427,6 +1461,16 @@
         /* Add margin to map container */
         .relative.w-full.border-4 {
             margin-top: 8px !important;
+        }
+        
+        /* Make triangle button smaller on mobile */
+        .page-corner svg {
+            width: 80px !important;
+            height: 80px !important;
+        }
+        
+        .page-corner text {
+            font-size: 14px !important;
         }
     }
 </style>
