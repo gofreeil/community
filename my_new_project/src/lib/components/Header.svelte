@@ -11,7 +11,7 @@
 
     import { fade } from "svelte/transition";
     import { ads, type Ad } from "$lib/adsData";
-    // FullAdModal import removed
+    import FullAdModal from "$lib/components/FullAdModal.svelte";
 
     let { currentUser, onLogout, onShowAuth }: Props = $props();
 
@@ -28,7 +28,7 @@
     let showAdsMode = $state(false);
     let currentAdIndex = $state(0);
     let adsShownCount = $state(0);
-    // selectedAdForModal state removed
+    let selectedAdForModal = $state<Ad | null>(null);
 
     function changeLang(language: { name: string; code: string }) {
         locale.set(language.code);
@@ -94,6 +94,8 @@
             {#if !showAdsMode}
                 <!-- Original Mobile Header (0-10 seconds) -->
                 <div
+                    in:fade={{ duration: 1000, delay: 400 }}
+                    out:fade={{ duration: 800 }}
                     class="flex items-center justify-between h-full px-1 absolute inset-0"
                 >
                     <a
@@ -184,10 +186,15 @@
             {:else}
                 <!-- Advertisement Banner Mode -->
                 <div
+                    in:fade={{ duration: 1000, delay: 400 }}
+                    out:fade={{ duration: 800 }}
                     class="flex items-center justify-center h-full w-full px-4 relative cursor-pointer absolute inset-0"
+                    onclick={() => selectedAdForModal = ads[currentAdIndex]}
                 >
                     {#key currentAdIndex}
                         <div
+                            in:fade={{ duration: 1000, delay: 400 }}
+                            out:fade={{ duration: 800 }}
                             class="absolute inset-0 flex flex-col items-center justify-center text-center px-2 py-1"
                         >
                             <h2
@@ -203,13 +210,13 @@
                             >
                                 {ads[currentAdIndex].description}
                             </p>
-                            <div
-                                class="text-sm text-gray-500 font-bold flex flex-col items-center gap-0 absolute left-4 top-1/2 -translate-y-1/2"
-                            >
-                                <span>לפרטים</span><span class="text-lg">👇</span>
-                            </div>
                         </div>
                     {/key}
+                    <div
+                        class="text-sm text-gray-500 font-bold flex flex-col items-center gap-0 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
+                    >
+                        <span>לפרטים</span><span class="text-lg">👇</span>
+                    </div>
                 </div>
             {/if}
         </div>
@@ -379,7 +386,10 @@
     </div>
 </header>
 
-<!-- FullAdModal popup removed -->
+<!-- FullAdModal popup -->
+{#if selectedAdForModal}
+    <FullAdModal ad={selectedAdForModal} onClose={() => selectedAdForModal = null} />
+{/if}
 
 <style>
     @keyframes pulse-slow {
