@@ -11,7 +11,7 @@
 
     import { fade } from "svelte/transition";
     import { ads, type Ad } from "$lib/adsData";
-    import FullAdModal from "./FullAdModal.svelte";
+    // FullAdModal import removed
 
     let { currentUser, onLogout, onShowAuth }: Props = $props();
 
@@ -27,7 +27,7 @@
     // Ads Mode Logic (Mobile Only)
     let showAdsMode = $state(false);
     let currentAdIndex = $state(0);
-    let selectedAdForModal = $state<Ad | null>(null);
+    // selectedAdForModal state removed
 
     function changeLang(language: { name: string; code: string }) {
         locale.set(language.code);
@@ -173,7 +173,6 @@
                 <div
                     class="flex items-center justify-center h-[72px] w-full px-4 overflow-hidden relative cursor-pointer"
                     transition:fade
-                    onclick={() => (selectedAdForModal = ads[currentAdIndex])}
                 >
                     {#key currentAdIndex}
                         <div
@@ -374,12 +373,7 @@
     </div>
 </header>
 
-{#if selectedAdForModal}
-    <FullAdModal
-        ad={selectedAdForModal}
-        onClose={() => (selectedAdForModal = null)}
-    />
-{/if}
+<!-- FullAdModal popup removed -->
 
 <style>
     @keyframes pulse-slow {
