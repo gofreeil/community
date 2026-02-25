@@ -56,11 +56,11 @@
                     // After 3 ads, go back to original header
                     showAdsMode = false;
                     adsShownCount = 0;
-                    // Wait 5 seconds then show ads again
+                    // Wait 7 seconds then show ads again
                     setTimeout(() => {
                         showAdsMode = true;
                         currentAdIndex = 0;
-                    }, 5000);
+                    }, 7000);
                 } else {
                     currentAdIndex = (currentAdIndex + 1) % ads.length;
                 }

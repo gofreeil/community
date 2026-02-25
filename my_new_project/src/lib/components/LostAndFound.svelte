@@ -28,14 +28,14 @@
     class="rounded-2xl md:rounded-3xl bg-[#0f172a] border md:border-2 border-blue-500/30 overflow-hidden shadow-2xl flex flex-col h-full"
 >
     <div
-        class="bg-gradient-to-r from-blue-600 to-purple-600 p-2 md:p-4 flex items-center justify-between flex-shrink-0"
+        class="bg-gradient-to-r from-blue-600 to-purple-600 p-2 md:p-4 flex items-center justify-between flex-shrink-0 h-12 md:h-auto"
     >
-        <h3 class="text-xs md:text-lg font-bold text-white flex items-center gap-1 md:gap-2">
-            <span class="text-sm md:text-xl">🔍</span>
+        <h3 class="text-sm md:text-lg font-bold text-white flex items-center gap-1 md:gap-2">
+            <span class="text-base md:text-xl">🔍</span>
             אבדות ומציאות
         </h3>
         <button
-            class="bg-white/20 hover:bg-white/30 text-white text-[10px] md:text-xs font-bold px-2 md:px-3 py-1 md:py-1.5 rounded-full transition-colors border border-white/20"
+            class="bg-white/20 hover:bg-white/30 text-white text-xs md:text-xs font-bold px-2 md:px-3 py-1 md:py-1.5 rounded-full transition-colors border border-white/20"
         >
             + פרסם
         </button>

@@ -76,12 +76,12 @@
                 <div class="lg:hidden grid grid-cols-2 gap-2">
                     <!-- Left: Message Board -->
                     <div class="rounded-2xl bg-[#0f172a] border border-blue-500/30 overflow-hidden shadow-2xl flex flex-col h-full">
-                        <div class="bg-gradient-to-r from-green-600 to-teal-600 p-2 flex items-center justify-between flex-shrink-0">
-                            <h3 class="text-xs font-bold text-white flex items-center gap-1">
-                                <span class="text-sm">📢</span>
+                        <div class="bg-gradient-to-r from-green-600 to-teal-600 p-2 flex items-center justify-between flex-shrink-0 h-12">
+                            <h3 class="text-sm font-bold text-white flex items-center gap-1">
+                                <span class="text-base">📢</span>
                                 לוח הודעות
                             </h3>
-                            <button class="bg-white/20 hover:bg-white/30 text-white text-[10px] font-bold px-2 py-1 rounded-full transition-colors border border-white/20">
+                            <button class="bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-2 py-1 rounded-full transition-colors border border-white/20">
                                 + הוסף
                             </button>
                         </div>
@@ -99,6 +99,11 @@
         </div>
     </section>
 
+    <!-- Referendum Banner -->
+    <section class="max-w-6xl mx-auto px-4">
+        <ReferendumBanner />
+    </section>
+
     <!-- Facebook Comments Section -->
     <section class="max-w-6xl mx-auto px-4">
         <div 
@@ -113,11 +118,6 @@
             </h3>
             <FacebookComments numPosts={10} />
         </div>
-    </section>
-
-    <!-- Referendum Banner -->
-    <section class="max-w-6xl mx-auto px-4">
-        <ReferendumBanner />
     </section>
 
     <!-- Emergency Team Banner -->
