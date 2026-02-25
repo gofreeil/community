@@ -22,7 +22,7 @@
 </script>
 
 <div
-    class="news-ticker-container border-b border-blue-900/30 bg-[#0f172a]/90 py-4 backdrop-blur-md"
+    class="news-ticker-container border-b border-blue-900/30 bg-[#0f172a]/90 py-4 backdrop-blur-md lg:block hidden"
 >
     <div class="mx-auto max-w-7xl flex items-center px-4">
         <!-- Ticker Label -->
