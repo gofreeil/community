@@ -993,7 +993,7 @@
 
         <!-- Decoration -->
         <div
-            class="absolute bottom-4 right-4 bg-purple-600/90 backdrop-blur-md text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-lg"
+            class="hidden md:block absolute bottom-4 right-4 bg-purple-600/90 backdrop-blur-md text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-lg"
         >
             {viewMode === "map"
                 ? `📍 מפת הקהילה - ${selectedNeighborhood}, ${selectedNeighborhoodCity}`
@@ -1029,13 +1029,13 @@
                 <button
                     on:click={() => (showHelpMenu = !showHelpMenu)}
                     title="בקש עזרה מהקהילה"
-                    class="relative group overflow-hidden bg-gradient-to-br from-red-500 via-pink-500 to-purple-600 hover:from-red-400 hover:via-pink-400 hover:to-purple-500 text-white px-6 py-3 rounded-xl font-bold text-base shadow-xl transition-all hover:scale-105 border-4 border-purple-600"
+                    class="relative group overflow-hidden bg-gradient-to-br from-red-500 via-pink-500 to-purple-600 hover:from-red-400 hover:via-pink-400 hover:to-purple-500 text-white px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl font-bold text-sm md:text-base shadow-xl transition-all hover:scale-105 border-2 md:border-4 border-purple-600"
                 >
                     <div
                         class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer-once"
                     ></div>
-                    <div class="relative flex items-center gap-3">
-                        <span class="text-2xl">✋</span>
+                    <div class="relative flex items-center gap-2 md:gap-3">
+                        <span class="text-xl md:text-2xl">✋</span>
                         <span>הרמת יד</span>
                     </div>
                 </button>
@@ -1044,10 +1044,10 @@
                 <button
                     on:click={handleLowerHand}
                     title="הורד את היד"
-                    class="relative group overflow-hidden bg-gradient-to-br from-yellow-500 via-orange-500 to-red-600 hover:from-yellow-400 hover:via-orange-400 hover:to-red-500 text-white px-6 py-3 rounded-xl font-bold text-base shadow-xl transition-all hover:scale-105 border-4 border-yellow-400 animate-pulse"
+                    class="relative group overflow-hidden bg-gradient-to-br from-yellow-500 via-orange-500 to-red-600 hover:from-yellow-400 hover:via-orange-400 hover:to-red-500 text-white px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl font-bold text-sm md:text-base shadow-xl transition-all hover:scale-105 border-2 md:border-4 border-yellow-400 animate-pulse"
                 >
-                    <div class="relative flex items-center gap-3">
-                        <span class="text-2xl">🙋</span>
+                    <div class="relative flex items-center gap-2 md:gap-3">
+                        <span class="text-xl md:text-2xl">🙋</span>
                         <span>יד מורמת - לחץ להורדה</span>
                     </div>
                 </button>
