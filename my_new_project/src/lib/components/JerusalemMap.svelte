@@ -485,7 +485,7 @@
                             align-items: center !important;
                             justify-content: center !important;
                             font-size: 18px !important;
-                            z-index: 99999 !important;
+                            z-index: 10 !important;
                             cursor: pointer !important;
                             box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
                             opacity: 0.8 !important;

@@ -1,8 +1,59 @@
 <script lang="ts">
     import { fade, scale } from "svelte/transition";
     import type { Ad } from "$lib/adsData";
+    import { onMount } from "svelte";
 
     let { ad, onClose }: { ad: Ad; onClose: () => void } = $props();
+    
+    let startY = 0;
+    let currentY = 0;
+    let isDragging = false;
+    let modalElement: HTMLDivElement;
+    
+    onMount(() => {
+        const handleTouchStart = (e: TouchEvent) => {
+            startY = e.touches[0].clientY;
+            isDragging = true;
+        };
+        
+        const handleTouchMove = (e: TouchEvent) => {
+            if (!isDragging) return;
+            currentY = e.touches[0].clientY;
+            const diff = currentY - startY;
+            
+            // If swiping up (negative diff), move the modal up
+            if (diff < 0 && modalElement) {
+                modalElement.style.transform = `translateY(${diff}px) scale(0.9)`;
+                modalElement.style.opacity = `${1 + diff / 300}`;
+            }
+        };
+        
+        const handleTouchEnd = () => {
+            if (!isDragging) return;
+            isDragging = false;
+            
+            const diff = currentY - startY;
+            
+            // If swiped up more than 100px, close the modal
+            if (diff < -100) {
+                onClose();
+            } else if (modalElement) {
+                // Reset position
+                modalElement.style.transform = 'scale(0.9)';
+                modalElement.style.opacity = '1';
+            }
+        };
+        
+        document.addEventListener('touchstart', handleTouchStart);
+        document.addEventListener('touchmove', handleTouchMove);
+        document.addEventListener('touchend', handleTouchEnd);
+        
+        return () => {
+            document.removeEventListener('touchstart', handleTouchStart);
+            document.removeEventListener('touchmove', handleTouchMove);
+            document.removeEventListener('touchend', handleTouchEnd);
+        };
+    });
 </script>
 
 <div
@@ -14,7 +65,8 @@
     tabindex="0"
 >
     <div
-        class="bg-[#0f172a] w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl border border-white/10 relative"
+        bind:this={modalElement}
+        class="bg-[#0f172a] w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl border border-white/10 relative transition-all duration-200"
         transition:scale={{ start: 0.9, duration: 300 }}
         onclick={(e) => e.stopPropagation()}
         role="presentation"

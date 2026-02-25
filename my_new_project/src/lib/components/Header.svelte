@@ -114,12 +114,12 @@
                         </div>
                         <div class="min-w-0 flex-1">
                             <h1
-                                class="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-[15px] font-black text-transparent leading-tight truncate"
+                                class="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-lg font-black text-transparent leading-tight truncate"
                             >
                                 {$t("welcome")}
                             </h1>
                             <p
-                                class="text-[10px] text-gray-400 leading-tight truncate font-medium"
+                                class="text-xs text-gray-400 leading-tight truncate font-medium"
                             >
                                 {$t("app_description")}
                             </p>
@@ -198,7 +198,7 @@
                             class="absolute inset-0 flex flex-col items-center justify-center text-center px-2 py-1"
                         >
                             <h2
-                                class="text-lg font-black bg-gradient-to-r {ads[
+                                class="text-xl font-black bg-gradient-to-r {ads[
                                     currentAdIndex
                                 ]
                                     .color} bg-clip-text text-transparent leading-tight mb-0.5"
@@ -206,7 +206,7 @@
                                 {ads[currentAdIndex].title}
                             </h2>
                             <p
-                                class="text-xs text-gray-300 font-medium max-w-[95%] line-clamp-2"
+                                class="text-sm text-gray-300 font-medium max-w-[95%] line-clamp-2"
                             >
                                 {ads[currentAdIndex].description}
                             </p>
