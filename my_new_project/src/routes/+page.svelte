@@ -6,7 +6,7 @@
     import ReferendumBanner from "$lib/components/ReferendumBanner.svelte";
 </script>
 
-<div class="space-y-12 pb-20 pt-8">
+<div class="space-y-12 pb-0 md:pb-20 pt-8">
     <!-- Title Section - centered across full width -->
     <section class="max-w-7xl mx-auto px-4">
         <div class="text-center mb-8 relative neighborhoods-menu-container">
@@ -35,14 +35,42 @@
     <!-- Map + Lost and Found Section (side by side) -->
     <section class="max-w-7xl mx-auto px-4">
         <div class="flex flex-col lg:flex-row gap-6">
-            <!-- Map Section (3/4 width) -->
+            <!-- Map Section (3/4 width on desktop, full width on mobile) -->
             <div class="lg:w-3/4">
                 <JerusalemMap />
             </div>
 
-            <!-- Lost and Found Section (1/4 width) - starts from top -->
+            <!-- Lost and Found Section (1/4 width on desktop) -->
+            <!-- On mobile: split into 2 columns -->
             <div class="lg:w-1/4">
-                <LostAndFound />
+                <!-- Desktop: single column -->
+                <div class="hidden lg:block">
+                    <LostAndFound />
+                </div>
+                
+                <!-- Mobile: two columns side by side -->
+                <div class="lg:hidden grid grid-cols-2 gap-2">
+                    <!-- Left: Lost and Found -->
+                    <div>
+                        <LostAndFound />
+                    </div>
+                    
+                    <!-- Right: Placeholder for future board -->
+                    <div class="rounded-2xl bg-[#0f172a] border border-blue-500/30 overflow-hidden shadow-2xl flex flex-col h-full">
+                        <div class="bg-gradient-to-r from-green-600 to-teal-600 p-2 flex items-center justify-between flex-shrink-0">
+                            <h3 class="text-xs font-bold text-white flex items-center gap-1">
+                                <span class="text-sm">📢</span>
+                                לוח הודעות
+                            </h3>
+                            <button class="bg-white/20 hover:bg-white/30 text-white text-[10px] font-bold px-2 py-1 rounded-full transition-colors border border-white/20">
+                                + הוסף
+                            </button>
+                        </div>
+                        <div class="p-2 flex-1 flex items-center justify-center">
+                            <p class="text-gray-400 text-xs text-center">בקרוב...</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
