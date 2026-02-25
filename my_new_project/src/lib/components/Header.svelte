@@ -171,36 +171,32 @@
             {:else}
                 <!-- Advertisement Banner Mode -->
                 <div
-                    class="flex items-center justify-center h-[72px] w-full px-4 overflow-hidden relative cursor-pointer"
+                    class="flex items-center justify-center h-[80px] w-full px-4 relative cursor-pointer"
                     transition:fade
                 >
                     {#key currentAdIndex}
                         <div
                             in:fade={{ duration: 600, delay: 200 }}
                             out:fade={{ duration: 600 }}
-                            class="absolute inset-0 flex flex-col items-center justify-center text-center p-2"
+                            class="absolute inset-0 flex flex-col items-center justify-center text-center px-2 py-1"
                         >
-                            <span
-                                class="text-[10px] text-blue-400 font-black uppercase tracking-widest mb-1 opacity-60"
-                                >הקהילה ממליצה בחום:</span
-                            >
                             <h2
                                 class="text-lg font-black bg-gradient-to-r {ads[
                                     currentAdIndex
                                 ]
-                                    .color} bg-clip-text text-transparent leading-tight mb-1"
+                                    .color} bg-clip-text text-transparent leading-tight mb-0.5"
                             >
                                 {ads[currentAdIndex].title}
                             </h2>
                             <p
-                                class="text-xs text-gray-300 font-medium truncate max-w-[95%]"
+                                class="text-xs text-gray-300 font-medium max-w-[95%] line-clamp-2"
                             >
                                 {ads[currentAdIndex].description}
                             </p>
                             <div
-                                class="mt-1 text-xs text-gray-500 font-bold flex items-center gap-2 animate-pulse"
+                                class="text-[10px] text-gray-500 font-bold flex items-center gap-1 animate-pulse justify-end w-full pr-4"
                             >
-                                <span>לחץ לפרטים</span><span>👇</span>
+                                <span>לפרטים</span><span>👇</span>
                             </div>
                         </div>
                     {/key}
