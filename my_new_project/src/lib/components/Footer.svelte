@@ -5,30 +5,40 @@
 <footer class="bg-[#0d1117] border-t border-white/10 py-2">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div
-            class="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-3"
+            class="flex flex-col md:flex-row items-center justify-between gap-3 md:gap-6"
         >
             <!-- Right: Brand image + text (ימין) -->
             <a
                 href="https://www.melecshop.com/"
                 target="_blank"
                 style="cursor: pointer;"
-                class="flex flex-col md:flex-row items-center gap-3 hover:opacity-80 transition-opacity"
+                class="flex items-center gap-3 hover:opacity-80 transition-opacity"
             >
                 <img
                     src="/images/יוצאים לחירות תמונה ויקיפדיה.png"
                     alt="יוצאים לחירות"
-                    class="h-16 w-16 md:h-24 md:w-24 object-contain rounded-lg hover:scale-105 transition-transform"
+                    class="h-20 w-20 md:h-24 md:w-24 object-contain rounded-lg hover:scale-105 transition-transform flex-shrink-0"
                 />
-                <div class="text-center md:text-right leading-tight">
+                
+                <!-- Mobile: horizontal layout -->
+                <div class="flex md:hidden flex-col text-right leading-tight text-xs">
+                    <p class="text-yellow-400 font-bold">
+                        יוצאים לחירות
+                    </p>
+                    <p class="text-gray-400 font-medium">
+                        לכלל פעילות התנועה החברתית
+                    </p>
+                </div>
+                
+                <!-- Desktop: original layout -->
+                <div class="hidden md:flex md:flex-col text-right leading-tight">
                     <p class="text-sm md:text-base text-gray-400 font-medium">
                         לכלל פעילות התנועה החברתית
                     </p>
                     <p
-                        class="text-base md:text-yellow-400 font-bold flex items-center gap-1 justify-center md:justify-end text-yellow-400"
+                        class="text-base md:text-yellow-400 font-bold flex items-center gap-1 justify-end text-yellow-400"
                     >
-                        <span class="md:hidden">👇</span><span
-                            class="hidden md:inline">👉</span
-                        > יוצאים לחירות
+                        <span>👉</span> יוצאים לחירות
                     </p>
                 </div>
             </a>
