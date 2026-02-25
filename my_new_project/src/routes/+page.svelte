@@ -74,12 +74,7 @@
                 
                 <!-- Mobile: two columns side by side -->
                 <div class="lg:hidden grid grid-cols-2 gap-2">
-                    <!-- Left: Lost and Found -->
-                    <div>
-                        <LostAndFound />
-                    </div>
-                    
-                    <!-- Right: Placeholder for future board -->
+                    <!-- Left: Message Board -->
                     <div class="rounded-2xl bg-[#0f172a] border border-blue-500/30 overflow-hidden shadow-2xl flex flex-col h-full">
                         <div class="bg-gradient-to-r from-green-600 to-teal-600 p-2 flex items-center justify-between flex-shrink-0">
                             <h3 class="text-xs font-bold text-white flex items-center gap-1">
@@ -94,6 +89,11 @@
                             <p class="text-gray-400 text-xs text-center">בקרוב...</p>
                         </div>
                     </div>
+                    
+                    <!-- Right: Lost and Found -->
+                    <div>
+                        <LostAndFound />
+                    </div>
                 </div>
             </div>
         </div>
@@ -102,11 +102,11 @@
     <!-- Facebook Comments Section -->
     <section class="max-w-6xl mx-auto px-4">
         <div 
-            class="rounded-2xl bg-gradient-to-br from-blue-900/20 to-purple-900/20 border border-white/10 backdrop-blur-sm p-6"
+            class="rounded-2xl bg-gradient-to-br from-blue-900/20 to-purple-900/20 border border-white/10 backdrop-blur-sm p-3 md:p-6"
             title="שאל שאלה, הבע דעתך והצטרף לשיח בשכונה"
         >
-            <h3 class="text-2xl font-bold text-white mb-6 text-center flex items-center justify-center gap-2">
-                <svg class="w-8 h-8 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+            <h3 class="text-lg md:text-2xl font-bold text-white mb-3 md:mb-6 text-center flex items-center justify-center gap-2">
+                <svg class="w-5 h-5 md:w-8 md:h-8 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                 </svg>
                 שיח פתוח
@@ -137,7 +137,7 @@
                         קופת השכונה לסייע לנזקקים
                     </p>
                     <div class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all w-full group-hover:scale-105 group-hover:shadow-lg text-center mt-auto">
-                        בקש עזרה מקופת הקהילה
+                        הוסף משאלה
                     </div>
                 </div>
             </a>
@@ -188,24 +188,24 @@
                     href="/community-fund"
                     class="p-3 rounded-lg bg-gradient-to-br from-blue-600/20 to-purple-600/20 border border-white/10 backdrop-blur-sm flex flex-col h-full"
                 >
-                    <div class="text-xl mb-1">🙏</div>
-                    <h4 class="text-xs font-bold mb-1 text-blue-400">כותל המשאלות</h4>
-                    <p class="text-gray-400 text-[10px] mb-2 leading-tight flex-grow">
+                    <div class="text-2xl mb-1">🙏</div>
+                    <h4 class="text-sm font-bold mb-1 text-blue-400">כותל המשאלות</h4>
+                    <p class="text-gray-400 text-xs mb-2 leading-tight flex-grow">
                         קופת השכונה
                     </p>
-                    <div class="bg-blue-600 text-white px-2 py-1 rounded text-[10px] font-bold text-center">
-                        בקש עזרה
+                    <div class="bg-blue-600 text-white px-2 py-1 rounded text-xs font-bold text-center">
+                        הוסף משאלה
                     </div>
                 </a>
 
                 <!-- פנה לוועד השכונה - Mobile -->
                 <div class="p-3 rounded-lg bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-white/10 backdrop-blur-sm flex flex-col h-full">
-                    <div class="text-xl mb-1">🏛️</div>
-                    <h4 class="text-xs font-bold mb-1 text-purple-400">ועד השכונה</h4>
-                    <p class="text-gray-400 text-[10px] mb-2 leading-tight flex-grow">
+                    <div class="text-2xl mb-1">🏛️</div>
+                    <h4 class="text-sm font-bold mb-1 text-purple-400">ועד השכונה</h4>
+                    <p class="text-gray-400 text-xs mb-2 leading-tight flex-grow">
                         יש לך הצעה?
                     </p>
-                    <button class="bg-purple-600 text-white px-2 py-1 rounded text-[10px] font-bold w-full">
+                    <button class="bg-purple-600 text-white px-2 py-1 rounded text-xs font-bold w-full">
                         צור קשר
                     </button>
                 </div>
@@ -215,12 +215,12 @@
                     <div class="absolute inset-0 bg-gradient-to-br from-red-600 via-orange-600 to-yellow-500"></div>
                     <div class="relative z-10 p-3 h-full flex flex-col">
                         <div class="text-center text-white flex flex-col flex-grow">
-                            <span class="text-xl mb-1 block">🚨</span>
-                            <h3 class="text-xs font-black mb-1">כיתת כוננות</h3>
-                            <p class="text-[10px] mb-2 text-yellow-100 leading-tight flex-grow">
+                            <span class="text-2xl mb-1 block">🚨</span>
+                            <h3 class="text-sm font-black mb-1">כיתת כוננות</h3>
+                            <p class="text-xs mb-2 text-yellow-100 leading-tight flex-grow">
                                 127 חברים
                             </p>
-                            <button class="bg-white text-red-600 px-2 py-1 rounded text-[10px] font-bold w-full">
+                            <button class="bg-white text-red-600 px-2 py-1 rounded text-xs font-bold w-full">
                                 הצטרף
                             </button>
                         </div>

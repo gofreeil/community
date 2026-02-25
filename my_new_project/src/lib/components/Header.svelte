@@ -195,7 +195,7 @@
                         <div
                             in:fade={{ duration: 1000, delay: 400 }}
                             out:fade={{ duration: 800 }}
-                            class="absolute inset-0 flex flex-col items-center justify-center text-center px-2 py-1"
+                            class="absolute inset-0 flex flex-col items-center justify-center text-center px-2 py-1 pl-16"
                         >
                             <h2
                                 class="text-2xl font-black bg-gradient-to-r {ads[

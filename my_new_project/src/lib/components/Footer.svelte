@@ -62,7 +62,7 @@
             </nav>
 
             <!-- Left: Copyright -->
-            <p class="text-gray-500 text-[10px] md:text-sm">
+            <p class="hidden md:block text-gray-500 text-sm">
                 &copy; {new Date().getFullYear()} כל הזכויות שמורות
             </p>
         </div>
