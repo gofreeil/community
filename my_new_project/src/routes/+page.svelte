@@ -10,9 +10,31 @@
     <!-- Title Section - centered across full width -->
     <section class="max-w-7xl mx-auto px-4">
         <div class="text-center mb-8 relative neighborhoods-menu-container">
-            <div class="flex items-center justify-center gap-4">
+            <!-- Mobile: title with button on left side -->
+            <div class="md:hidden">
+                <div class="relative group text-center mb-1 w-full">
+                    <h2 class="text-3xl md:text-2xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent cursor-default leading-tight w-full">
+                        יתרונות שכונת ק' משה
+                    </h2>
+                </div>
+                <div class="flex items-center justify-center gap-2 w-full">
+                    <div class="relative group text-center">
+                        <h2 class="text-3xl md:text-2xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent cursor-default leading-tight">
+                            ירושלים
+                        </h2>
+                    </div>
+                    <button
+                        class="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white px-3 py-1.5 rounded-md font-bold text-xs shadow-lg transition-all hover:scale-105 whitespace-nowrap flex-shrink-0"
+                    >
+                        🏘️ כל השכונות
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Desktop: original layout -->
+            <div class="hidden md:flex items-center justify-center gap-4">
                 <div class="relative group">
-                    <h2 class="text-3xl md:text-5xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent cursor-default">
+                    <h2 class="text-5xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent cursor-default">
                         יתרונות שכונת קרית משה, ירושלים
                     </h2>
                     <!-- Tooltip -->
