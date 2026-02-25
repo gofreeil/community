@@ -514,10 +514,30 @@
                 
                 createClickableArrows();
             }, 200);
+            
+            // Add resize listener to remove arrows on desktop
+            const handleResize = () => {
+                if (window.innerWidth >= 768) {
+                    const existingArrows = document.querySelectorAll('.mobile-scroll-arrow');
+                    existingArrows.forEach(arrow => arrow.remove());
+                } else {
+                    createClickableArrows();
+                }
+            };
+            
+            window.addEventListener('resize', handleResize);
+            
+            // Return cleanup function for resize listener
+            return () => {
+                window.removeEventListener('resize', handleResize);
+            };
         };
 
         // Setup scroll indicators after a short delay to ensure DOM is ready
-        setTimeout(setupScrollIndicators, 100);
+        const scrollCleanup = setupScrollIndicators();
+        setTimeout(() => {
+            if (scrollCleanup) scrollCleanup();
+        }, 100);
 
         return () => {
             if (autoSwitchInterval) {
@@ -527,6 +547,7 @@
                 clearTimeout(listAnimationTimeout);
             }
             document.removeEventListener("click", handleClickOutside);
+            if (scrollCleanup) scrollCleanup();
         };
     });
 
@@ -696,13 +717,13 @@
                                 : 'bg-gradient-to-br from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-purple-500 scale-110'
                             : category.id === 'benefits'
                               ? 'bg-gradient-to-br from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-gray-900 border-yellow-500'
-                              : 'bg-gradient-to-br from-white to-gray-200 hover:from-blue-100 hover:to-white text-gray-900 border-purple-300'} px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg transition-all hover:scale-105 border {category.id ===
+                              : 'bg-gradient-to-br from-white to-gray-200 hover:from-blue-100 hover:to-white text-gray-900 border-purple-300'} px-3 py-1.5 rounded-lg text-sm md:text-xs font-bold shadow-lg transition-all hover:scale-105 border {category.id ===
                         'realestate'
                             ? 'flex-basis-full'
                             : 'min-w-[80px] max-w-[120px]'} map-category-button"
                     >
                         <span
-                            class="text-base icon"
+                            class="text-lg md:text-base icon"
                             style={category.id === "realestate"
                                 ? "letter-spacing: -0.25em; margin-left: 0.15em; display: inline-block;"
                                 : ""}>{category.icon}</span
@@ -718,7 +739,7 @@
     <div
         role="region"
         aria-label="Map and List View Container"
-        class="relative w-full border-4 border-purple-600 shadow-2xl bg-[#0f172a] mb-8 transition-all duration-700"
+        class="relative w-full border-8 md:border-4 border-purple-600 shadow-2xl bg-[#0f172a] mb-8 transition-all duration-700"
         style="border-radius: 24px; transform-style: preserve-3d;"
         class:flipping-container={isFlipping}
         on:mouseenter={handleMouseEnter}
@@ -773,7 +794,7 @@
         {#if viewMode === "map"}
             <!-- תצוגת מפה -->
             <div
-                class="w-full h-[450px] overflow-hidden relative"
+                class="w-full h-[350px] md:h-[450px] overflow-hidden relative"
                 style="border-radius: 20px;"
             >
                 <!-- אנימציית גלים -->
@@ -854,7 +875,7 @@
         {:else if viewMode === "list"}
             <!-- תצוגת רשימה -->
             <div
-                class="w-full h-[450px] overflow-y-auto p-3 md:p-6 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900/20"
+                class="w-full h-[350px] md:h-[450px] overflow-y-auto p-3 md:p-6 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900/20"
                 style="border-radius: 20px;"
             >
                 <div class="space-y-2 md:space-y-3">
@@ -868,20 +889,20 @@
                             >
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-2 md:gap-3">
-                                        <span class="text-xl md:text-3xl"
+                                        <span class="text-2xl md:text-xl md:text-3xl"
                                             >{category.icon}</span
                                         >
                                         <span
-                                            class="text-white font-bold text-sm md:text-lg"
+                                            class="text-white font-bold text-base md:text-sm md:text-lg"
                                             >{category.label}</span
                                         >
                                     </div>
                                     <div class="flex items-center gap-2 md:gap-3">
-                                        <span class="text-purple-400 text-xs md:text-sm"
+                                        <span class="text-purple-400 text-sm md:text-xs md:text-sm"
                                             >{category.items?.length || 0} פריטים</span
                                         >
                                         <svg
-                                            class="w-4 h-4 md:w-6 md:h-6 text-purple-400 transition-transform duration-300 {expandedCategories.has(
+                                            class="w-5 h-5 md:w-4 md:h-4 md:w-6 md:h-6 text-purple-400 transition-transform duration-300 {expandedCategories.has(
                                                 category.id,
                                             )
                                                 ? 'rotate-180'
@@ -932,7 +953,7 @@
         {:else}
             <!-- תצוגת הוספת יתרון -->
             <div
-                class="w-full h-[450px] overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900/20"
+                class="w-full h-[350px] md:h-[450px] overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900/20"
                 style="border-radius: 20px;"
             >
                 <h3 class="text-2xl font-bold text-white mb-4 text-center">
