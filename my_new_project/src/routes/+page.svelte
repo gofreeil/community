@@ -133,4 +133,26 @@
 
 <style>
     /* Base styles handled in app.css */
+    
+    /* Remove all spacing under title on mobile */
+    @media (max-width: 768px) {
+        .text-center.mb-8 {
+            margin-bottom: 0 !important;
+            padding-bottom: 0 !important;
+        }
+        
+        .neighborhoods-menu-container {
+            margin-bottom: 0 !important;
+            padding-bottom: 0 !important;
+        }
+        
+        section {
+            margin-bottom: 0 !important;
+            padding-bottom: 0 !important;
+        }
+        
+        .space-y-12 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 0 !important;
+        }
+    }
 </style>

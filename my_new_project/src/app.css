@@ -68,3 +68,15 @@ body {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
 }
+
+/* Mobile-specific styles for benefit buttons */
+@media (max-width: 640px) {
+    .benefit-button {
+        padding: 0.25rem 0.5rem !important;
+        font-size: 0.75rem !important;
+    }
+
+    .benefit-button .icon {
+        display: none !important;
+    }
+}

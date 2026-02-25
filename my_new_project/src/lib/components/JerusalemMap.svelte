@@ -45,7 +45,7 @@
         },
         {
             id: "realestate",
-            label: "בית הארחה לשבת",
+            label: "הארחה לשבת",
             icon: "🕯️🕯️",
             items: [
                 "בתי הארחה משפחתיים",
@@ -381,7 +381,7 @@
                 hasShownListAnimation = true;
                 console.log("Showing list animation after 15 seconds");
                 isAutoSwitching = true;
-                
+
                 // עבור לרשימה
                 isFlipping = true;
                 setTimeout(() => {
@@ -390,7 +390,7 @@
                 setTimeout(() => {
                     isFlipping = false;
                 }, 700);
-                
+
                 // חזור למפה אחרי 3 שניות
                 setTimeout(() => {
                     isFlipping = true;
@@ -418,6 +418,32 @@
         };
 
         document.addEventListener("click", handleClickOutside);
+
+        // Mobile scroll indicators logic
+        const setupScrollIndicators = () => {
+            const buttonsContainer = document.querySelector('.flex.flex-wrap.justify-start.gap-3.p-2.w-full') as HTMLElement;
+            if (!buttonsContainer) return;
+
+            const checkScroll = () => {
+                const isScrolled = buttonsContainer.scrollLeft > 0;
+                const isAtEnd = buttonsContainer.scrollLeft + buttonsContainer.clientWidth >= buttonsContainer.scrollWidth - 1;
+                
+                // Hide/show right arrow based on scroll position
+                const rightArrow = buttonsContainer.querySelector('.right-arrow-indicator');
+                if (rightArrow) {
+                    (rightArrow as HTMLElement).style.opacity = isAtEnd ? '0' : '0.7';
+                }
+            };
+
+            // Add scroll listener
+            buttonsContainer.addEventListener('scroll', checkScroll);
+            
+            // Initial check
+            checkScroll();
+        };
+
+        // Setup scroll indicators after a short delay to ensure DOM is ready
+        setTimeout(setupScrollIndicators, 100);
 
         return () => {
             if (autoSwitchInterval) {
@@ -597,12 +623,12 @@
                             : category.id === 'benefits'
                               ? 'bg-gradient-to-br from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-gray-900 border-yellow-500'
                               : 'bg-gradient-to-br from-white to-gray-200 hover:from-blue-100 hover:to-white text-gray-900 border-purple-300'} px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg transition-all hover:scale-105 border {category.id ===
-                            'realestate'
+                        'realestate'
                             ? 'flex-basis-full'
-                            : 'min-w-[80px] max-w-[120px]'}"
+                            : 'min-w-[80px] max-w-[120px]'} map-category-button"
                     >
                         <span
-                            class="text-base"
+                            class="text-base icon"
                             style={category.id === "realestate"
                                 ? "letter-spacing: -0.25em; margin-left: 0.15em; display: inline-block;"
                                 : ""}>{category.icon}</span
@@ -1302,5 +1328,105 @@
 
     :global(.scrollbar-thin::-webkit-scrollbar-thumb:hover) {
         background: #a855f7;
+    }
+
+    /* Mobile buttons layout - compact and minimalist */
+    @media (max-width: 768px) {
+        .map-category-button span.icon,
+        .map-category-button span[style*="letter-spacing"] {
+            display: none !important;
+        }
+        
+        .map-category-button {
+            min-width: 60px !important;
+            max-width: 80px !important;
+            padding: 6px 8px !important;
+            font-size: 11px !important;
+            margin: 2px !important;
+            flex: 0 0 auto !important;
+        }
+        
+        .flex.flex-wrap.justify-start.gap-3.p-2.w-full {
+            gap: 8px !important;
+            justify-content: flex-start !important;
+            flex-wrap: nowrap !important;
+            overflow-x: auto !important;
+            padding: 8px !important;
+            margin-bottom: 8px !important;
+            scroll-behavior: smooth !important;
+            -webkit-overflow-scrolling: touch !important;
+            position: relative !important;
+        }
+        
+        /* Add scroll indicators */
+        .flex.flex-wrap.justify-start.gap-3.p-2.w-full::before {
+            content: '←' !important;
+            position: absolute !important;
+            left: 0 !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+            background: rgba(147, 51, 234, 0.9) !important;
+            color: white !important;
+            width: 24px !important;
+            height: 24px !important;
+            border-radius: 50% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 12px !important;
+            z-index: 10 !important;
+            cursor: pointer !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+        }
+        
+        .flex.flex-wrap.justify-start.gap-3.p-2.w-full::after {
+            content: '→' !important;
+            position: absolute !important;
+            right: 0 !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+            background: rgba(147, 51, 234, 0.9) !important;
+            color: white !important;
+            width: 24px !important;
+            height: 24px !important;
+            border-radius: 50% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 12px !important;
+            z-index: 10 !important;
+            cursor: pointer !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+            opacity: 0 !important;
+            transition: opacity 0.3s ease !important;
+        }
+        
+        /* Hide arrows when not scrollable */
+        .flex.flex-wrap.justify-start.gap-3.p-2.w-full:not(:hover)::before {
+            opacity: 0.7 !important;
+        }
+        
+        /* Reduce gaps on mobile - minimal between title and buttons, reasonable between buttons and map */
+        div > .flex.flex-col.gap-4 {
+            gap: 16px !important;
+        }
+        
+        .flex.flex-col.gap-2 {
+            gap: 0px !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
+        /* Target the first div with gap-4 specifically */
+        .flex.flex-col.gap-4:first-child {
+            gap: 0px !important;
+            margin-bottom: 0 !important;
+            padding-bottom: 0 !important;
+        }
+        
+        /* Add margin to map container */
+        .relative.w-full.border-4 {
+            margin-top: 8px !important;
+        }
     }
 </style>
