@@ -465,48 +465,51 @@
                     
                     console.log("Container position:", containerRect);
                     
-                    // Create left arrow only
-                    const leftArrowEl = document.createElement('div');
-                    leftArrowEl.className = 'mobile-scroll-arrow mobile-scroll-arrow-left';
-                    leftArrowEl.innerHTML = '←';
-                    leftArrowEl.style.cssText = `
-                        position: absolute !important;
-                        left: -25px !important;
-                        top: 50% !important;
-                        transform: translateY(-50%) !important;
-                        background: rgba(147, 51, 234, 0.9) !important;
-                        color: white !important;
-                        width: 35px !important;
-                        height: 35px !important;
-                        border-radius: 7px !important;
-                        display: flex !important;
-                        align-items: center !important;
-                        justify-content: center !important;
-                        font-size: 18px !important;
-                        z-index: 99999 !important;
-                        cursor: pointer !important;
-                        box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
-                        opacity: 0.8 !important;
-                        transition: all 0.3s ease !important;
-                        pointer-events: auto !important;
-                    `;
-                    leftArrowEl.addEventListener('click', () => {
-                        console.log("Left arrow clicked");
-                        buttonsContainer.scrollBy({ left: -120, behavior: 'smooth' });
-                    });
-                    leftArrowEl.addEventListener('mouseenter', () => {
-                        leftArrowEl.style.transform = 'translateY(-50%) scale(1.1)';
-                        leftArrowEl.style.boxShadow = '0 6px 16px rgba(0,0,0,0.5)';
-                    });
-                    leftArrowEl.addEventListener('mouseleave', () => {
-                        leftArrowEl.style.transform = 'translateY(-50%) scale(1)';
-                        leftArrowEl.style.boxShadow = '0 4px 12px rgba(0,0,0,0.4)';
-                    });
-                    
-                    // Add only left arrow to parent container
-                    containerParent.appendChild(leftArrowEl);
-                    
-                    console.log("Only left arrow created with absolute positioning");
+                    // Create left arrow only (mobile only)
+                    // Check if we're on mobile (screen width < 768px)
+                    if (window.innerWidth < 768) {
+                        const leftArrowEl = document.createElement('div');
+                        leftArrowEl.className = 'mobile-scroll-arrow mobile-scroll-arrow-left';
+                        leftArrowEl.innerHTML = '←';
+                        leftArrowEl.style.cssText = `
+                            position: absolute !important;
+                            left: -25px !important;
+                            top: 50% !important;
+                            transform: translateY(-50%) !important;
+                            background: rgba(147, 51, 234, 0.9) !important;
+                            color: white !important;
+                            width: 35px !important;
+                            height: 35px !important;
+                            border-radius: 7px !important;
+                            display: flex !important;
+                            align-items: center !important;
+                            justify-content: center !important;
+                            font-size: 18px !important;
+                            z-index: 99999 !important;
+                            cursor: pointer !important;
+                            box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
+                            opacity: 0.8 !important;
+                            transition: all 0.3s ease !important;
+                            pointer-events: auto !important;
+                        `;
+                        leftArrowEl.addEventListener('click', () => {
+                            console.log("Left arrow clicked");
+                            buttonsContainer.scrollBy({ left: -120, behavior: 'smooth' });
+                        });
+                        leftArrowEl.addEventListener('mouseenter', () => {
+                            leftArrowEl.style.transform = 'translateY(-50%) scale(1.1)';
+                            leftArrowEl.style.boxShadow = '0 6px 16px rgba(0,0,0,0.5)';
+                        });
+                        leftArrowEl.addEventListener('mouseleave', () => {
+                            leftArrowEl.style.transform = 'translateY(-50%) scale(1)';
+                            leftArrowEl.style.boxShadow = '0 4px 12px rgba(0,0,0,0.4)';
+                        });
+                        
+                        // Add only left arrow to parent container
+                        containerParent.appendChild(leftArrowEl);
+                        
+                        console.log("Only left arrow created with absolute positioning (mobile only)");
+                    }
                 };
                 
                 createClickableArrows();
