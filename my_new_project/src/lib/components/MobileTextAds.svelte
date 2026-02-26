@@ -26,7 +26,7 @@
     onMount(() => {
         const interval = setInterval(() => {
             currentIndex = (currentIndex + 1) % ads.length;
-        }, 5000);
+        }, 6000);
 
         return () => clearInterval(interval);
     });

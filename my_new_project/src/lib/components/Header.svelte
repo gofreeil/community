@@ -28,6 +28,7 @@
     let showAdsMode = $state(false);
     let currentAdIndex = $state(0);
     let adsShownCount = $state(0);
+    let nextAdsStartIndex = $state(0);
     let selectedAdForModal = $state<Ad | null>(null);
 
     function changeLang(language: { name: string; code: string }) {
@@ -45,24 +46,28 @@
         // Switch to Ads Mode after 10 seconds (Mobile only logic will use this)
         const adsTimer = setTimeout(() => {
             showAdsMode = true;
-            adsShownCount = 0;
+            currentAdIndex = nextAdsStartIndex;
+            adsShownCount = 1;
         }, 10000);
 
         // Rotate ads every 5 seconds
         const rotateAdsInterval = setInterval(() => {
             if (showAdsMode) {
-                adsShownCount++;
                 if (adsShownCount >= 3) {
                     // After 3 ads, go back to original header
                     showAdsMode = false;
                     adsShownCount = 0;
+                    // Advance the start index so the next session continues through all ads
+                    nextAdsStartIndex = (nextAdsStartIndex + 3) % ads.length;
                     // Wait 7 seconds then show ads again
                     setTimeout(() => {
                         showAdsMode = true;
-                        currentAdIndex = 0;
+                        currentAdIndex = nextAdsStartIndex;
+                        adsShownCount = 1;
                     }, 7000);
                 } else {
                     currentAdIndex = (currentAdIndex + 1) % ads.length;
+                    adsShownCount = adsShownCount + 1;
                 }
             }
         }, 5000);

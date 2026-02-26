@@ -58,7 +58,7 @@
 </script>
 
 <!-- Mobile Ads Banner - Hidden on desktop -->
-<div class="lg:hidden fixed bottom-0 left-0 right-0 z-40">
+<div class="lg:hidden fixed bottom-0 left-0 right-0 z-[200]">
     {#if showBanner}
         <div class="bg-gradient-to-t from-black/90 to-black/70 backdrop-blur-sm p-4">
             <div class="space-y-2">
