@@ -121,7 +121,7 @@
     let selectedNeighborhoodCity = $state("ירושלים");
     let selectedCity = $state("");
     let hasShownListAnimation = $state(false); // עקוב אם כבר הראינו את האנימציה
-    let communityHelpCount = $state(35);
+    let communityHelpCount = $state(135);
     const currentYear = new Date().getFullYear();
 
     // אנימציה של רשימה פעם אחת בלבד אחרי 15 שניות מכניסה לאתר
@@ -424,7 +424,7 @@
         // Mobile scroll indicators logic - simplified
         const setupScrollIndicators = () => {
             console.log("Setting up scroll indicators...");
-            const buttonsContainer = document.querySelector('.flex.flex-wrap.justify-start.gap-3.p-2.w-full') as HTMLElement;
+            const buttonsContainer = document.querySelector('.category-buttons-container') as HTMLElement;
             if (!buttonsContainer) {
                 console.log("Buttons container not found");
                 return;
@@ -709,7 +709,7 @@
 
         <div class="flex flex-col gap-2">
             <!-- Buttons Container -->
-            <div class="flex flex-wrap justify-start gap-3 p-2 w-full">
+            <div class="category-buttons-container flex flex-wrap justify-start gap-2 md:gap-3 p-2 w-full">
                 {#each categories as category, index}
                     <button
                         on:click={() => handleCategoryClick(category.id)}
