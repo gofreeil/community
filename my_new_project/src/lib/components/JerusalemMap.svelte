@@ -582,12 +582,13 @@
     }
 
     function toggleCategory(categoryId: string) {
-        if (expandedCategories.has(categoryId)) {
-            expandedCategories.delete(categoryId);
+        const next = new Set(expandedCategories);
+        if (next.has(categoryId)) {
+            next.delete(categoryId);
         } else {
-            expandedCategories.add(categoryId);
+            next.add(categoryId);
         }
-        expandedCategories = expandedCategories; // trigger reactivity
+        expandedCategories = next;
     }
 
     function handleAddItem(categoryId: string) {
@@ -1022,7 +1023,7 @@
 
         <!-- כפתור הרמת יד מיוחד - בתחתית המפה -->
         <div
-            class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 z-20"
+            class="absolute -bottom-8 md:-bottom-8 left-1/2 transform -translate-x-1/2 z-20"
         >
             {#if !handRaised}
                 <!-- כפתור הרמת יד רגיל -->
@@ -1056,7 +1057,7 @@
             <!-- תפריט עזרה -->
             {#if showHelpMenu}
                 <div
-                    class="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 w-80 bg-white rounded-xl shadow-2xl border-2 border-purple-600 overflow-hidden animate-slideDown"
+                    class="fixed md:absolute top-20 md:top-auto md:bottom-full left-1/2 transform -translate-x-1/2 md:mb-2 w-80 max-w-[90vw] bg-white rounded-xl shadow-2xl border-2 border-purple-600 overflow-hidden animate-slideDown z-[100]"
                 >
                     <div
                         class="bg-gradient-to-r from-red-500 to-pink-500 p-3 text-center"
@@ -1088,7 +1089,7 @@
             <!-- סקר הורדת יד -->
             {#if showSurvey}
                 <div
-                    class="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 w-80 bg-white rounded-xl shadow-2xl border-2 border-yellow-600 overflow-hidden animate-slideDown"
+                    class="fixed md:absolute top-20 md:top-auto md:bottom-full left-1/2 transform -translate-x-1/2 md:mb-2 w-80 max-w-[90vw] bg-white rounded-xl shadow-2xl border-2 border-yellow-600 overflow-hidden animate-slideDown z-[100]"
                 >
                     <div
                         class="bg-gradient-to-r from-yellow-500 to-orange-500 p-3 text-center"

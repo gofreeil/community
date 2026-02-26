@@ -105,7 +105,7 @@
     </section>
 
     <!-- Facebook Comments Section -->
-    <section class="max-w-6xl mx-auto px-4">
+    <section class="max-w-6xl mx-auto px-4 mb-8">
         <div 
             class="rounded-2xl bg-gradient-to-br from-blue-900/20 to-purple-900/20 border border-white/10 backdrop-blur-sm p-3 md:p-6"
             title="שאל שאלה, הבע דעתך והצטרף לשיח בשכונה"
@@ -122,7 +122,7 @@
 
     <!-- Emergency Team Banner -->
     <!-- Force deployment update -->
-    <section class="max-w-6xl mx-auto px-4">
+    <section class="max-w-6xl mx-auto px-4 mt-6 md:mt-0">
         <!-- Desktop: 3 columns, Mobile: horizontal scroll -->
         <div class="hidden md:grid md:grid-cols-3 gap-6">
             <!-- כותל המשאלות -->
