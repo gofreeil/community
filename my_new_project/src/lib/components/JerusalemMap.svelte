@@ -121,6 +121,8 @@
     let selectedNeighborhoodCity = $state("ירושלים");
     let selectedCity = $state("");
     let hasShownListAnimation = $state(false); // עקוב אם כבר הראינו את האנימציה
+    let communityHelpCount = $state(35);
+    const currentYear = new Date().getFullYear();
 
     // אנימציה של רשימה פעם אחת בלבד אחרי 15 שניות מכניסה לאתר
     let listAnimationTimeout: number | null = null;
@@ -678,6 +680,7 @@
 
     function handleSurveyResponse(response: "community" | "other" | "cancel") {
         if (response === "community") {
+            communityHelpCount = communityHelpCount + 1;
             successMessageText = "תודה! שמחים שהקהילה עזרה 🎉";
             showSuccessMessage = true;
             setTimeout(() => {
@@ -1138,6 +1141,10 @@
             {/if}
         </div>
     </div>
+</div>
+
+<div class="text-white text-lg text-center mt-2">
+    הקהילה עזרה לפתור {communityHelpCount} קריאות בשנת {currentYear}
 </div>
 
 <style>
