@@ -45,12 +45,11 @@
         },
         {
             id: "realestate",
-            label: "הארחה לשבת",
+            label: "אירוח לשבת",
             icon: "🕯️🕯️",
             items: [
-                "בתי הארחה משפחתיים",
-                "בתי הארחה לזוגות",
-                "בתי הארחה ליחידים",
+                "מציע לארח",
+                "מחפש להתארח",
             ],
         },
         {
@@ -358,7 +357,7 @@
         }
     }
 
-    function toggleNeighborhoodsMenu() {
+    export function toggleNeighborhoodsMenu() {
         showNeighborhoodsMenu = !showNeighborhoodsMenu;
         selectedCity = "";
     }

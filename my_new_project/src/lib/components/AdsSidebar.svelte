@@ -1,42 +1,6 @@
 <!-- AdsSidebar.svelte -->
 <aside class="hidden lg:block w-48 flex-shrink-0 sticky top-4 h-fit">
     <div class="space-y-4">
-        <!-- Ad - סיוע לנפגעים מינית -->
-        <a
-            href="https://www.melecshop.com/page/kids_FNL3"
-            target="_blank"
-            class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105 group relative"
-        >
-            <div class="relative overflow-hidden">
-                <img
-                    src="/images/סיוע לנפגעים מינית.jpeg"
-                    alt="סיוע לנפגעים מינית"
-                    class="h-auto w-full object-cover transition-opacity duration-1500 group-hover:opacity-0"
-                />
-                <!-- Hover overlay -->
-                <div
-                    class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1500 flex items-center justify-center"
-                    style="background-image: url('/images/סיוע לנפגעים מינית.jpeg'); background-size: cover; background-position: center;"
-                >
-                    <div
-                        class="absolute inset-0 bg-black/60 backdrop-blur-sm"
-                    ></div>
-                    <div class="relative z-10 text-center px-4">
-                        <h3 class="text-white font-bold text-lg mb-2">
-                            סיוע לנפגעים מינית
-                        </h3>
-                    </div>
-                </div>
-            </div>
-            <div
-                class="bg-gradient-to-r from-fuchsia-600 to-pink-600 p-3 text-center"
-            >
-                <p class="text-white font-bold text-xs leading-tight">
-                    לחץ לפרטים
-                </p>
-            </div>
-        </a>
-
         <!-- Ad 0 - בתי הפיוס (חדש - ראשון) -->
         <a
             href="https://www.melecshop.com/page/peace-on-earth"
@@ -322,6 +286,42 @@
             >
                 <p class="text-white font-bold text-xs leading-tight">
                     יש לך תלונה לעיריה שמזלזלים בה? - לא עוד
+                </p>
+            </div>
+        </a>
+
+        <!-- Ad - סיוע לנפגעים מינית -->
+        <a
+            href="https://www.melecshop.com/page/kids_FNL3"
+            target="_blank"
+            class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105 group relative"
+        >
+            <div class="relative overflow-hidden">
+                <img
+                    src="/images/סיוע לנפגעים מינית.jpeg"
+                    alt="סיוע לנפגעים מינית"
+                    class="h-auto w-full object-cover transition-opacity duration-1500 group-hover:opacity-0"
+                />
+                <!-- Hover overlay -->
+                <div
+                    class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1500 flex items-center justify-center"
+                    style="background-image: url('/images/סיוע לנפגעים מינית.jpeg'); background-size: cover; background-position: center;"
+                >
+                    <div
+                        class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                    ></div>
+                    <div class="relative z-10 text-center px-4">
+                        <h3 class="text-white font-bold text-lg mb-2">
+                            סיוע לנפגעים מינית
+                        </h3>
+                    </div>
+                </div>
+            </div>
+            <div
+                class="bg-gradient-to-r from-fuchsia-600 to-pink-600 p-3 text-center"
+            >
+                <p class="text-white font-bold text-xs leading-tight">
+                    לחץ לפרטים
                 </p>
             </div>
         </a>

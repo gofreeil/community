@@ -4,6 +4,7 @@
     import LostAndFound from "$lib/components/LostAndFound.svelte";
     import FacebookComments from "$lib/components/FacebookComments.svelte";
     import ReferendumBanner from "$lib/components/ReferendumBanner.svelte";
+    import { toggleNeighborhoodsMenu } from "$lib/components/JerusalemMap.svelte";
 </script>
 
 <div class="space-y-12 pb-0 md:pb-20 pt-4 md:pt-8">
@@ -20,6 +21,7 @@
                 <div class="relative flex items-center w-full">
                     <div class="absolute left-0">
                         <button
+                            onclick={toggleNeighborhoodsMenu}
                             class="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white px-3 py-1.5 rounded-md font-bold text-xs shadow-lg transition-all hover:scale-105 whitespace-nowrap"
                         >
                             🏘️ כל השכונות
@@ -48,6 +50,7 @@
                     </div>
                 </div>
                 <button
+                    onclick={toggleNeighborhoodsMenu}
                     class="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-lg transition-all hover:scale-105"
                 >
                     🏘️ לכלל השכונות

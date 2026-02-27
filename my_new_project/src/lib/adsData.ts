@@ -71,5 +71,14 @@ export const ads: Ad[] = [
         href: "https://right-to-live.vercel.app/",
         image: "/images/ביקורת על העיריה.png",
         color: "from-red-600 to-pink-600"
+    },
+    {
+        id: 8,
+        title: "סיוע לנפגעים מינית",
+        description: "תמיכה וסיוע לנפגעים מינית",
+        cta: "לחץ לפרטים",
+        href: "https://www.melecshop.com/page/kids_FNL3",
+        image: "/images/סיוע לנפגעים מינית.jpeg",
+        color: "from-fuchsia-600 to-pink-600"
     }
 ];
