@@ -188,21 +188,27 @@
         <!-- Desktop: 3 columns, Mobile: horizontal scroll -->
         <div class="hidden md:grid md:grid-cols-3 gap-6">
             <!-- כותל המשאלות -->
-            <a 
-                href="/community-fund"
-                class="group p-6 rounded-2xl bg-gradient-to-br from-blue-600/20 to-purple-600/20 border border-white/10 backdrop-blur-sm hover:border-blue-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/20 hover:-translate-y-2 block flex flex-col"
-            >
-                <div class="transition-transform duration-300 group-hover:scale-105 flex flex-col flex-grow">
-                    <div class="text-4xl mb-3 transition-transform duration-300 group-hover:rotate-12">🙏</div>
-                    <h4 class="text-lg font-bold mb-2 transition-colors duration-300 group-hover:text-blue-400">כותל המשאלות</h4>
-                    <p class="text-gray-400 text-sm mb-4 transition-colors duration-300 group-hover:text-gray-300 flex-grow">
-                        קופת השכונה לסייע לנזקקים
-                    </p>
-                    <div class="bg-blue-600/50 hover:bg-blue-600/70 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all w-full group-hover:scale-105 group-hover:shadow-lg text-center mt-auto">
-                        הוסף משאלה
+            <div class="group relative overflow-hidden rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-blue-500/30 transition-all duration-300 hover:-translate-y-2 flex flex-col">
+                <!-- Background image with light blur -->
+                <div class="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110" style="background-image: url('/images/2.png'); filter: blur(0.5px) brightness(0.5);"></div>
+                <!-- Gradient overlay - stronger at bottom -->
+                <div class="absolute inset-0 bg-gradient-to-b from-transparent via-blue-600/40 to-purple-600/80 transition-transform duration-300 group-hover:scale-110"></div>
+                <div class="relative z-10 p-6 transition-transform duration-300 group-hover:scale-105 flex flex-col flex-grow">
+                    <div class="text-center text-white flex flex-col flex-grow">
+                        <span class="text-4xl mb-2 block transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12">🙏</span>
+                        <h3 class="text-xl font-black mb-2 transition-all duration-300 group-hover:text-blue-200">
+                            <span class="group-hover:hidden">כותל המשאלות</span>
+                            <span class="hidden group-hover:inline">קופת השכונה</span>
+                        </h3>
+                        <p class="text-sm mb-4 text-blue-100 transition-colors duration-300 group-hover:text-white flex-grow">
+                            קופת השכונה לסייע לנזקקים
+                        </p>
+                        <div class="bg-blue-600/50 hover:bg-blue-600/70 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all w-full group-hover:scale-105 group-hover:shadow-lg text-center mt-auto">
+                            הוסף משאלה
+                        </div>
                     </div>
                 </div>
-            </a>
+            </div>
 
             <!-- פנה לוועד השכונה -->
             <div class="group relative overflow-hidden rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-purple-500/30 transition-all duration-300 hover:-translate-y-2 flex flex-col">
@@ -259,19 +265,24 @@
         <div class="md:hidden">
             <div class="grid grid-cols-3 gap-2 h-32">
                 <!-- כותל המשאלות - Mobile -->
-                <a 
-                    href="/community-fund"
-                    class="p-3 rounded-lg bg-gradient-to-br from-blue-600/20 to-purple-600/20 border border-white/10 backdrop-blur-sm flex flex-col h-full"
-                >
-                    <div class="text-2xl mb-1">🙏</div>
-                    <h4 class="text-sm font-bold mb-1 text-blue-400">כותל המשאלות</h4>
-                    <p class="text-gray-400 text-xs mb-2 leading-tight flex-grow">
-                        קופת השכונה
-                    </p>
-                    <div class="bg-blue-600/50 text-white px-2 py-1 rounded text-xs font-bold text-center">
-                        הוסף משאלה
+                <div class="relative overflow-hidden rounded-lg h-full">
+                    <!-- Background image with light blur -->
+                    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('/images/2.png'); filter: blur(0.5px) brightness(0.5);"></div>
+                    <!-- Gradient overlay - stronger at bottom -->
+                    <div class="absolute inset-0 bg-gradient-to-b from-transparent via-blue-600/40 to-purple-600/80"></div>
+                    <div class="relative z-10 p-3 h-full flex flex-col">
+                        <div class="text-center text-white flex flex-col flex-grow">
+                            <span class="text-2xl mb-1 block">🙏</span>
+                            <h3 class="text-sm font-black mb-1">כותל המשאלות</h3>
+                            <p class="text-xs mb-2 text-blue-100 leading-tight flex-grow">
+                                קופת השכונה
+                            </p>
+                            <div class="bg-blue-600/50 text-white px-2 py-1 rounded text-xs font-bold text-center">
+                                הוסף משאלה
+                            </div>
+                        </div>
                     </div>
-                </a>
+                </div>
 
                 <!-- פנה לוועד השכונה - Mobile -->
                 <div class="relative overflow-hidden rounded-lg h-full">
@@ -300,7 +311,7 @@
                 <!-- כיתת כוננות - Mobile -->
                 <div class="relative overflow-hidden rounded-lg h-full">
                     <!-- Background image with light blur -->
-                    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('/images/כוננות.png'); filter: blur(0.5px) brightness(0.5);"></div>
+                    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('/images/2.png'); filter: blur(0.5px) brightness(0.5);"></div>
                     <!-- Gradient overlay - stronger at bottom -->
                     <div class="absolute inset-0 bg-gradient-to-b from-transparent via-red-600/40 to-orange-600/80"></div>
                     <div class="relative z-10 p-3 h-full flex flex-col">
