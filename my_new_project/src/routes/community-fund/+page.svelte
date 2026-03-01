@@ -78,7 +78,7 @@
 
                 <!-- כפתור שליחה -->
                 <button 
-                    on:click={handleSubmit}
+                    onclick={handleSubmit}
                     class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold py-4 rounded-lg transition-all hover:scale-105 shadow-lg"
                 >
                     🙏 הוסף משאלה לכותל

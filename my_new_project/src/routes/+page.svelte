@@ -4,7 +4,8 @@
     import LostAndFound from "$lib/components/LostAndFound.svelte";
     import FacebookComments from "$lib/components/FacebookComments.svelte";
     import ReferendumBanner from "$lib/components/ReferendumBanner.svelte";
-    import { toggleNeighborhoodsMenu } from "$lib/components/JerusalemMap.svelte";
+
+    let jerusalemMapRef: any;
 </script>
 
 <div class="space-y-12 pb-0 md:pb-20 pt-4 md:pt-8">
@@ -21,7 +22,7 @@
                 <div class="relative flex items-center w-full">
                     <div class="absolute left-0">
                         <button
-                            onclick={toggleNeighborhoodsMenu}
+                            onclick={() => jerusalemMapRef?.toggleMenu()}
                             class="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white px-3 py-1.5 rounded-md font-bold text-xs shadow-lg transition-all hover:scale-105 whitespace-nowrap"
                         >
                             🏘️ כל השכונות
@@ -64,7 +65,7 @@
         <div class="flex flex-col lg:flex-row gap-6">
             <!-- Map Section (3/4 width on desktop, full width on mobile) -->
             <div class="lg:w-3/4">
-                <JerusalemMap />
+                <JerusalemMap bind:this={jerusalemMapRef} />
             </div>
 
             <!-- Lost and Found Section (1/4 width on desktop) -->

@@ -77,7 +77,7 @@
                 {/each}
             </div>
             <button
-                on:click={() => (showBanner = false)}
+                onclick={() => (showBanner = false)}
                 class="w-full mt-2 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg text-xs font-bold transition-colors"
             >
                 סגור

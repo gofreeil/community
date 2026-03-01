@@ -38,9 +38,9 @@
 
 <div
     bind:this={container}
-    on:mouseenter={handleMouseEnter}
-    on:mouseleave={handleMouseLeave}
-    on:mousemove={handleMouseMove}
+    onmouseenter={handleMouseEnter}
+    onmouseleave={handleMouseLeave}
+    onmousemove={handleMouseMove}
     role="banner"
     class="referendum-banner group relative overflow-hidden rounded-2xl shadow-2xl my-8 cursor-default"
 >

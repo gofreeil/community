@@ -357,10 +357,13 @@
         }
     }
 
-    export function toggleNeighborhoodsMenu() {
+    function toggleMenu() {
         showNeighborhoodsMenu = !showNeighborhoodsMenu;
         selectedCity = "";
     }
+
+    // Expose the function to parent components
+    export { toggleMenu };
 
     function selectCity(city: string) {
         selectedCity = selectedCity === city ? "" : city;
@@ -745,8 +748,8 @@
         class="relative w-full border-8 md:border-4 border-purple-600 shadow-2xl bg-[#0f172a] mb-8 transition-all duration-700"
         style="border-radius: 24px; transform-style: preserve-3d;"
         class:flipping-container={isFlipping}
-        on:mouseenter={handleMouseEnter}
-        on:mouseleave={handleMouseLeave}
+        onmouseenter={handleMouseEnter}
+        onmouseleave={handleMouseLeave}
     >
         <!-- כפתור מעבר תצוגה - משולש מקופל בפינה -->
         <button
