@@ -296,32 +296,31 @@
             target="_blank"
             class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105 group relative"
         >
-            <div class="relative overflow-hidden">
+            <div class="relative overflow-hidden bg-gradient-to-br from-blue-900 to-cyan-900" style="height: 180px;">
                 <img
-                    src="/images/סיוע לנפגעים מינית.jpeg"
+                    src="/images/סיוע לנפגעים.png?v=4"
                     alt="סיוע לנפגעים מינית"
-                    class="h-auto w-full object-cover transition-opacity duration-1500 group-hover:opacity-0"
+                    class="h-full w-full object-contain transition-opacity duration-1500 group-hover:opacity-0"
                 />
                 <!-- Hover overlay -->
                 <div
-                    class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1500 flex items-center justify-center"
-                    style="background-image: url('/images/סיוע לנפגעים מינית.jpeg'); background-size: cover; background-position: center;"
+                    class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1500 flex items-center justify-center bg-gradient-to-br from-blue-900 to-cyan-900"
                 >
                     <div
                         class="absolute inset-0 bg-black/60 backdrop-blur-sm"
                     ></div>
                     <div class="relative z-10 text-center px-4">
-                        <h3 class="text-white font-bold text-lg mb-2">
-                            סיוע לנפגעים מינית
+                        <h3 class="text-white font-bold text-xl mb-2">
+                            נפגעת? אנו נסייע!
                         </h3>
                     </div>
                 </div>
             </div>
             <div
-                class="bg-gradient-to-r from-fuchsia-600 to-pink-600 p-3 text-center"
+                class="bg-gradient-to-r from-purple-600 to-violet-600 p-3 text-center"
             >
                 <p class="text-white font-bold text-xs leading-tight">
-                    לחץ לפרטים
+                    סיוע לנפגעים מינית
                 </p>
             </div>
         </a>
