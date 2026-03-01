@@ -1,6 +1,11 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { t } from "svelte-i18n";
+    import { createEventDispatcher } from 'svelte';
+
+    const dispatch = createEventDispatcher();
+
+    let { showNeighborhoodsMenu = $bindable(false) } = $props();
 
     const categories = [
         { id: "benefits", label: "כל היתרונות", icon: "⭐" },
@@ -115,7 +120,6 @@
     let isAutoSwitching = $state(false);
     let autoReturnTimeout: number | null = null;
     let userInteracted = $state(false);
-    let showNeighborhoodsMenu = $state(false);
     let selectedNeighborhood = $state("קרית משה");
     let selectedNeighborhoodCity = $state("ירושלים");
     let selectedCity = $state("");
@@ -360,10 +364,14 @@
     function toggleMenu() {
         showNeighborhoodsMenu = !showNeighborhoodsMenu;
         selectedCity = "";
+        dispatch('toggleMenu');
     }
 
-    // Expose the function to parent components
-    export { toggleMenu };
+    // Public method that can be called from parent
+    export function openMenu() {
+        showNeighborhoodsMenu = true;
+        selectedCity = "";
+    }
 
     function selectCity(city: string) {
         selectedCity = selectedCity === city ? "" : city;
@@ -1412,7 +1420,7 @@
     }
 
     iframe {
-        filter: contrast(1.1) brightness(0.95);
+        filter: contrast(1.1);
     }
 
     /* Hide Google Maps controls */

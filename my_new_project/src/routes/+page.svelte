@@ -5,7 +5,13 @@
     import FacebookComments from "$lib/components/FacebookComments.svelte";
     import ReferendumBanner from "$lib/components/ReferendumBanner.svelte";
 
-    let jerusalemMapRef: any;
+    let showNeighborhoodsMenu = $state(false);
+    
+    function handleToggleMenu() {
+        console.log('Toggle menu clicked! Current state:', showNeighborhoodsMenu);
+        showNeighborhoodsMenu = !showNeighborhoodsMenu;
+        console.log('New state:', showNeighborhoodsMenu);
+    }
 </script>
 
 <div class="space-y-12 pb-0 md:pb-20 pt-4 md:pt-8">
@@ -20,15 +26,15 @@
                     </h2>
                 </div>
                 <div class="relative flex items-center w-full">
-                    <div class="absolute left-0">
+                    <div class="absolute left-0 z-50">
                         <button
-                            onclick={() => jerusalemMapRef?.toggleMenu()}
-                            class="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white px-3 py-1.5 rounded-md font-bold text-xs shadow-lg transition-all hover:scale-105 whitespace-nowrap"
+                            onclick={handleToggleMenu}
+                            class="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white px-3 py-1.5 rounded-md font-bold text-xs shadow-lg transition-all hover:scale-105 whitespace-nowrap relative z-50 pointer-events-auto"
                         >
                             🏘️ כל השכונות
                         </button>
                     </div>
-                    <div class="relative group w-full text-center">
+                    <div class="relative group w-full text-center pointer-events-none">
                         <h2 class="text-[2.2rem] md:text-2xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent cursor-default leading-tight">
                             ירושלים
                         </h2>
@@ -51,12 +57,64 @@
                     </div>
                 </div>
                 <button
-                    onclick={toggleNeighborhoodsMenu}
+                    onclick={handleToggleMenu}
                     class="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-lg transition-all hover:scale-105"
                 >
                     🏘️ לכלל השכונות
                 </button>
             </div>
+
+            <!-- Neighborhoods Menu -->
+            {#if showNeighborhoodsMenu}
+                <!-- Backdrop -->
+                <div 
+                    class="fixed inset-0 bg-black/50 z-[9998]"
+                    onclick={() => showNeighborhoodsMenu = false}
+                ></div>
+                
+                <!-- Menu -->
+                <div class="fixed md:absolute top-20 md:top-full left-1/2 transform -translate-x-1/2 mt-0 md:mt-4 bg-gray-900 rounded-xl shadow-2xl p-4 md:p-6 z-[9999] max-w-4xl w-[95vw] md:w-full max-h-[80vh] overflow-y-auto">
+                    <h3 class="text-white text-lg md:text-xl font-bold mb-3 md:mb-4 text-center">בחר עיר ושכונה</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                        {#each Object.entries({
+                            אילת: ["שכונת התמרים", "שכונת הדקלים", "שכונת השחמון"],
+                            "באר שבע": ["רמות", "נווה זאב", "נווה נוי", "רמת חן"],
+                            "בני ברק": ["פרדס כץ", "רמת אלחנן", "שיכון ה"],
+                            הרצליה: ["הרצליה פיתוח", "נוה עובד", "נווה ישראל"],
+                            חיפה: ["כרמל צרפתי", "נווה שאנן", "רמת אלמוגי", "בת גלים"],
+                            ירושלים: ["קרית משה", "רחביה", "גבעת שאול", "רמות", "גילה", "קטמון", "בקעה", "מעלות דפנה"],
+                            נתניה: ["קרית השרון", "רמת פולג", "נווה גנים"],
+                            "פתח תקווה": ["קרית אריה", "נווה עוז", "שיכון דן"],
+                            "ראשון לציון": ["נווה דקלים", "רמת אליהו", "שיכון ותיקים"],
+                            רחובות: ["רמת רחובות", "נווה חוף", "שכונת הדרים"],
+                            "תל אביב": ["רמת אביב", "פלורנטין", "נווה צדק", "יפו העתיקה", "רמת החייל"],
+                        }) as [city, neighborhoods]}
+                            <div class="bg-gray-800 rounded-lg p-3">
+                                <h4 class="text-purple-400 font-bold mb-2 text-sm md:text-base">{city}</h4>
+                                <div class="space-y-1">
+                                    {#each neighborhoods as neighborhood}
+                                        <button
+                                            onclick={() => {
+                                                showNeighborhoodsMenu = false;
+                                                alert(`נבחרה: ${neighborhood}, ${city}`);
+                                            }}
+                                            class="block w-full text-right text-white text-xs md:text-sm hover:bg-purple-600 px-2 py-1 rounded transition-colors"
+                                        >
+                                            {neighborhood}
+                                        </button>
+                                    {/each}
+                                </div>
+                            </div>
+                        {/each}
+                    </div>
+                    <button
+                        onclick={() => showNeighborhoodsMenu = false}
+                        class="mt-4 w-full bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg font-bold text-sm transition-colors"
+                    >
+                        סגור
+                    </button>
+                </div>
+            {/if}
         </div>
     </section>
 
@@ -65,7 +123,7 @@
         <div class="flex flex-col lg:flex-row gap-6">
             <!-- Map Section (3/4 width on desktop, full width on mobile) -->
             <div class="lg:w-3/4">
-                <JerusalemMap bind:this={jerusalemMapRef} />
+                <JerusalemMap bind:showNeighborhoodsMenu={showNeighborhoodsMenu} />
             </div>
 
             <!-- Lost and Found Section (1/4 width on desktop) -->
