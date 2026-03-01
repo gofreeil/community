@@ -2,6 +2,7 @@
     import { onMount } from "svelte";
     import { t } from "svelte-i18n";
     import { createEventDispatcher } from "svelte";
+    import { slide } from "svelte/transition";
 
     const dispatch = createEventDispatcher();
 
@@ -99,7 +100,8 @@
         },
     ];
 
-    let viewMode = $state<"map" | "list" | "add">("map");
+    let viewMode = $state<"map" | "list">("map");
+    let showAddMenu = $state(false);
     let isFlipping = $state(false);
     let expandedCategories = $state(new Set<string>());
     let isLoggedIn = $state(false);
@@ -309,7 +311,7 @@
         }
 
         autoSwitchInterval = setInterval(() => {
-            if (!isMouseOver && viewMode !== "add" && !userInteracted) {
+            if (!isMouseOver && !showAddMenu && !userInteracted) {
                 // עבור לרשימה רק אם אנחנו במפה
                 if (viewMode === "map") {
                     isAutoSwitching = true;
@@ -463,91 +465,82 @@
             console.log("Added scrollable-mobile class");
 
             // Add click handlers for arrows
-            setTimeout(() => {
-                const leftArrow = document.querySelector(
-                    ".flex.flex-wrap.justify-start.gap-3.p-2.w-full.scrollable-mobile::before",
-                ) as HTMLElement;
-                const rightArrow = document.querySelector(
-                    ".flex.flex-wrap.justify-start.gap-3.p-2.w-full.scrollable-mobile::after",
-                ) as HTMLElement;
+            const createClickableArrows = () => {
+                // Remove existing arrows
+                const existingArrows = document.querySelectorAll(
+                    ".mobile-scroll-arrow",
+                );
+                existingArrows.forEach((arrow) => arrow.remove());
 
-                // Since pseudo-elements can't have event listeners, we'll create actual elements
-                const createClickableArrows = () => {
-                    // Remove existing arrows
-                    const existingArrows = document.querySelectorAll(
-                        ".mobile-scroll-arrow",
+                // Get buttons container position
+                const containerRect = buttonsContainer.getBoundingClientRect();
+                const containerParent = buttonsContainer.parentElement;
+
+                if (!containerParent) return;
+
+                // Make parent relative for absolute positioning
+                containerParent.style.position = "relative";
+
+                console.log("Container position:", containerRect);
+
+                // Create left arrow only (mobile only)
+                // Check if we're on mobile (screen width < 768px)
+                if (window.innerWidth < 768) {
+                    const leftArrowEl = document.createElement("div");
+                    leftArrowEl.className =
+                        "mobile-scroll-arrow mobile-scroll-arrow-left";
+                    leftArrowEl.innerHTML = "←";
+                    leftArrowEl.style.cssText = `
+                        position: absolute !important;
+                        left: -25px !important;
+                        top: 50% !important;
+                        transform: translateY(-50%) !important;
+                        background: rgba(147, 51, 234, 0.9) !important;
+                        color: white !important;
+                        width: 35px !important;
+                        height: 35px !important;
+                        border-radius: 7px !important;
+                        display: flex !important;
+                        align-items: center !important;
+                        justify-content: center !important;
+                        font-size: 18px !important;
+                        z-index: 10 !important;
+                        cursor: pointer !important;
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
+                        opacity: 0.8 !important;
+                        transition: all 0.3s ease !important;
+                        pointer-events: auto !important;
+                    `;
+                    leftArrowEl.addEventListener("click", () => {
+                        console.log("Left arrow clicked");
+                        buttonsContainer.scrollBy({
+                            left: -120,
+                            behavior: "smooth",
+                        });
+                    });
+                    leftArrowEl.addEventListener("mouseenter", () => {
+                        leftArrowEl.style.transform =
+                            "translateY(-50%) scale(1.1)";
+                        leftArrowEl.style.boxShadow =
+                            "0 6px 16px rgba(0,0,0,0.5)";
+                    });
+                    leftArrowEl.addEventListener("mouseleave", () => {
+                        leftArrowEl.style.transform =
+                            "translateY(-50%) scale(1)";
+                        leftArrowEl.style.boxShadow =
+                            "0 4px 12px rgba(0,0,0,0.4)";
+                    });
+
+                    // Add only left arrow to parent container
+                    containerParent.appendChild(leftArrowEl);
+
+                    console.log(
+                        "Only left arrow created with absolute positioning (mobile only)",
                     );
-                    existingArrows.forEach((arrow) => arrow.remove());
+                }
+            };
 
-                    // Get buttons container position
-                    const containerRect =
-                        buttonsContainer.getBoundingClientRect();
-                    const containerParent = buttonsContainer.parentElement;
-
-                    if (!containerParent) return;
-
-                    // Make parent relative for absolute positioning
-                    containerParent.style.position = "relative";
-
-                    console.log("Container position:", containerRect);
-
-                    // Create left arrow only (mobile only)
-                    // Check if we're on mobile (screen width < 768px)
-                    if (window.innerWidth < 768) {
-                        const leftArrowEl = document.createElement("div");
-                        leftArrowEl.className =
-                            "mobile-scroll-arrow mobile-scroll-arrow-left";
-                        leftArrowEl.innerHTML = "←";
-                        leftArrowEl.style.cssText = `
-                            position: absolute !important;
-                            left: -25px !important;
-                            top: 50% !important;
-                            transform: translateY(-50%) !important;
-                            background: rgba(147, 51, 234, 0.9) !important;
-                            color: white !important;
-                            width: 35px !important;
-                            height: 35px !important;
-                            border-radius: 7px !important;
-                            display: flex !important;
-                            align-items: center !important;
-                            justify-content: center !important;
-                            font-size: 18px !important;
-                            z-index: 10 !important;
-                            cursor: pointer !important;
-                            box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
-                            opacity: 0.8 !important;
-                            transition: all 0.3s ease !important;
-                            pointer-events: auto !important;
-                        `;
-                        leftArrowEl.addEventListener("click", () => {
-                            console.log("Left arrow clicked");
-                            buttonsContainer.scrollBy({
-                                left: -120,
-                                behavior: "smooth",
-                            });
-                        });
-                        leftArrowEl.addEventListener("mouseenter", () => {
-                            leftArrowEl.style.transform =
-                                "translateY(-50%) scale(1.1)";
-                            leftArrowEl.style.boxShadow =
-                                "0 6px 16px rgba(0,0,0,0.5)";
-                        });
-                        leftArrowEl.addEventListener("mouseleave", () => {
-                            leftArrowEl.style.transform =
-                                "translateY(-50%) scale(1)";
-                            leftArrowEl.style.boxShadow =
-                                "0 4px 12px rgba(0,0,0,0.4)";
-                        });
-
-                        // Add only left arrow to parent container
-                        containerParent.appendChild(leftArrowEl);
-
-                        console.log(
-                            "Only left arrow created with absolute positioning (mobile only)",
-                        );
-                    }
-                };
-
+            setTimeout(() => {
                 createClickableArrows();
             }, 200);
 
@@ -590,6 +583,8 @@
     });
 
     function handleViewToggle(isAutoParam = false) {
+        if (showAddMenu) showAddMenu = false;
+
         const isAuto = isAutoParam === true; // וודא שזה בוליאני ולא אובייקט אירוע
 
         isFlipping = true;
@@ -610,13 +605,7 @@
     }
 
     function handleAddAdvantage() {
-        isFlipping = true;
-        setTimeout(() => {
-            viewMode = "add";
-        }, 350);
-        setTimeout(() => {
-            isFlipping = false;
-        }, 700);
+        showAddMenu = !showAddMenu;
     }
 
     function toggleCategory(categoryId: string) {
@@ -642,6 +631,7 @@
     }
 
     function handleHelpRequest(optionId: number) {
+        if (showAddMenu) showAddMenu = false;
         const option = helpOptions.find((o) => o.id === optionId);
         showHelpMenu = false;
 
@@ -999,18 +989,15 @@
                     {/each}
                 </div>
             </div>
-        {:else}
-            <!-- תצוגת הוספת יתרון -->
+        {/if}
+
+        {#if showAddMenu}
+            <!-- תצוגת הוספת יתרון (וילון גלילה) -->
             <div
-                class="w-full h-[350px] md:h-[450px] overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900/20"
-                style="border-radius: 20px;"
+                transition:slide={{ duration: 400 }}
+                class="absolute top-0 inset-x-0 w-full h-full min-h-[350px] md:min-h-[450px] overflow-y-auto p-6 pt-12 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900/20 bg-[#0f172a] shadow-2xl z-40"
+                style="border-radius: 18px;"
             >
-                <h3 class="text-2xl font-bold text-white mb-4 text-center">
-                    הוסף יתרון חדש
-                </h3>
-                <p class="text-center text-gray-400 text-sm mb-6">
-                    בחר קטגוריה והוסף פריט חדש
-                </p>
                 <div class="grid grid-cols-2 gap-2 md:gap-3">
                     {#each categories.filter((cat) => cat.id !== "benefits") as category}
                         <button
@@ -1051,7 +1038,7 @@
 
         <!-- כפתור הוסף יתרון - בחלק העליון -->
         <div
-            class="absolute left-1/2 transform -translate-x-1/2 z-20"
+            class="absolute left-1/2 transform -translate-x-1/2 z-50"
             style="top: -10px;"
         >
             <button
@@ -1071,7 +1058,7 @@
 
         <!-- כפתור הרמת יד מיוחד - בתחתית המפה -->
         <div
-            class="absolute -bottom-8 md:-bottom-8 left-1/2 transform -translate-x-1/2 z-20"
+            class="absolute -bottom-8 md:-bottom-8 left-1/2 transform -translate-x-1/2 z-50"
         >
             {#if !handRaised}
                 <!-- כפתור הרמת יד רגיל -->
