@@ -711,7 +711,7 @@
             <div class="category-buttons-container flex flex-wrap justify-start gap-2 md:gap-3 p-2 w-full">
                 {#each categories as category, index}
                     <button
-                        on:click={() => handleCategoryClick(category.id)}
+                        onclick={() => handleCategoryClick(category.id)}
                         title="לחץ כדי לסנן במפה"
                         class="flex items-center justify-center gap-1.5 {selectedCategory ===
                         category.id
@@ -750,7 +750,7 @@
     >
         <!-- כפתור מעבר תצוגה - משולש מקופל בפינה -->
         <button
-            on:click={() => handleViewToggle(false)}
+            onclick={() => handleViewToggle(false)}
             class="page-corner absolute top-0 left-0 z-30 transition-all duration-500 hover:scale-110"
             class:flipping={isFlipping}
             class:auto-switching={isAutoSwitching}
@@ -888,7 +888,7 @@
                             class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-500/30 rounded-lg md:rounded-xl overflow-hidden transition-all"
                         >
                             <button
-                                on:click={() => toggleCategory(category.id)}
+                                onclick={() => toggleCategory(category.id)}
                                 class="w-full p-2 md:p-4 hover:border-purple-500 transition-all hover:bg-purple-900/20 cursor-pointer"
                             >
                                 <div class="flex items-center justify-between">
@@ -969,7 +969,7 @@
                 <div class="space-y-3">
                     {#each categories.filter((cat) => cat.id !== "benefits") as category}
                         <button
-                            on:click={() => handleAddItem(category.id)}
+                            onclick={() => handleAddItem(category.id)}
                             class="w-full bg-gradient-to-r from-green-900/30 to-emerald-900/30 border border-green-500/30 rounded-xl p-4 hover:border-green-500 hover:from-green-900/40 hover:to-emerald-900/40 transition-all cursor-pointer"
                         >
                             <div class="flex items-center justify-between">
@@ -1010,7 +1010,7 @@
             style="top: -10px;"
         >
             <button
-                on:click={handleAddAdvantage}
+                onclick={handleAddAdvantage}
                 title="הוסף יתרון חדש לשכונה"
                 class="relative group overflow-hidden bg-gradient-to-br from-green-500 via-emerald-500 to-teal-600 hover:from-green-400 hover:via-emerald-400 hover:to-teal-500 text-white px-3 py-1.5 rounded-lg font-bold text-base shadow-xl transition-all hover:scale-105 border-2 border-purple-600"
             >
@@ -1031,7 +1031,7 @@
             {#if !handRaised}
                 <!-- כפתור הרמת יד רגיל -->
                 <button
-                    on:click={() => (showHelpMenu = !showHelpMenu)}
+                    onclick={() => (showHelpMenu = !showHelpMenu)}
                     title="בקש עזרה מהקהילה"
                     class="relative group overflow-hidden bg-gradient-to-br from-red-500 via-pink-500 to-purple-600 hover:from-red-400 hover:via-pink-400 hover:to-purple-500 text-white px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl font-bold text-sm md:text-base shadow-xl transition-all hover:scale-105 border-2 md:border-4 border-purple-600"
                 >
@@ -1046,7 +1046,7 @@
             {:else}
                 <!-- כפתור יד מורמת -->
                 <button
-                    on:click={handleLowerHand}
+                    onclick={handleLowerHand}
                     title="הורד את היד"
                     class="relative group overflow-hidden bg-gradient-to-br from-yellow-500 via-orange-500 to-red-600 hover:from-yellow-400 hover:via-orange-400 hover:to-red-500 text-white px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl font-bold text-sm md:text-base shadow-xl transition-all hover:scale-105 border-2 md:border-4 border-yellow-400 animate-pulse"
                 >
@@ -1070,7 +1070,7 @@
                     <div class="p-2">
                         {#each helpOptions as option}
                             <button
-                                on:click={() => handleHelpRequest(option.id)}
+                                onclick={() => handleHelpRequest(option.id)}
                                 class="w-full flex items-center gap-3 p-3 hover:bg-red-50 rounded-lg transition-colors text-right border-b border-gray-200 last:border-b-0"
                             >
                                 <span class="text-2xl">{option.icon}</span>
@@ -1081,7 +1081,7 @@
                         {/each}
                     </div>
                     <button
-                        on:click={() => (showHelpMenu = false)}
+                        onclick={() => (showHelpMenu = false)}
                         class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 py-2 text-sm font-bold transition-colors"
                     >
                         ביטול
@@ -1103,7 +1103,7 @@
                     </div>
                     <div class="p-4 space-y-3">
                         <button
-                            on:click={() => handleSurveyResponse("community")}
+                            onclick={() => handleSurveyResponse("community")}
                             class="w-full flex items-center gap-3 p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors border-2 border-green-300"
                         >
                             <span class="text-3xl">🤝</span>
@@ -1117,7 +1117,7 @@
                             </div>
                         </button>
                         <button
-                            on:click={() => handleSurveyResponse("other")}
+                            onclick={() => handleSurveyResponse("other")}
                             class="w-full flex items-center gap-3 p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border-2 border-blue-300"
                         >
                             <span class="text-3xl">✅</span>
@@ -1132,7 +1132,7 @@
                         </button>
                     </div>
                     <button
-                        on:click={() => handleSurveyResponse("cancel")}
+                        onclick={() => handleSurveyResponse("cancel")}
                         class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 py-2 text-sm font-bold transition-colors"
                     >
                         ביטול

@@ -191,17 +191,6 @@
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
 
-    .cta-button {
-        position: relative;
-        cursor: pointer;
-        border: none;
-        background: transparent;
-    }
-
-    .cta-button:hover {
-        transform: scale(1.05);
-    }
-
     .stat-box {
         background: rgba(255, 255, 255, 0.1);
         backdrop-filter: blur(10px);
