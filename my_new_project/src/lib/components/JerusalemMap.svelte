@@ -694,7 +694,7 @@
         <div class="flex flex-col gap-2">
             <!-- Buttons Container -->
             <div
-                class="category-buttons-container flex flex-wrap justify-start gap-2 md:gap-3 p-2 w-full"
+                class="category-buttons-container flex flex-wrap justify-start md:justify-between gap-2 md:gap-x-2 md:gap-y-3 p-2 w-full"
             >
                 {#each categories as category, index}
                     <button
@@ -709,8 +709,8 @@
                               ? 'bg-gradient-to-br from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-gray-900 border-yellow-500'
                               : 'bg-gradient-to-br from-white to-gray-200 hover:from-blue-100 hover:to-white text-gray-900 border-purple-300'} px-3 py-1.5 rounded-lg text-sm md:text-xs font-bold shadow-lg transition-all hover:scale-105 border {category.id ===
                         'realestate'
-                            ? 'flex-basis-full'
-                            : 'min-w-[80px] max-w-[120px]'} map-category-button"
+                            ? 'flex-basis-full md:basis-auto'
+                            : 'min-w-[80px] max-w-[120px] md:max-w-none'} md:flex-1 md:min-w-[15%] md:whitespace-nowrap map-category-button"
                     >
                         <span
                             class="text-lg md:text-base icon"
