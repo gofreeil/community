@@ -198,23 +198,33 @@
                     <p class="text-gray-400 text-sm mb-4 transition-colors duration-300 group-hover:text-gray-300 flex-grow">
                         קופת השכונה לסייע לנזקקים
                     </p>
-                    <div class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all w-full group-hover:scale-105 group-hover:shadow-lg text-center mt-auto">
+                    <div class="bg-blue-600/50 hover:bg-blue-600/70 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all w-full group-hover:scale-105 group-hover:shadow-lg text-center mt-auto">
                         הוסף משאלה
                     </div>
                 </div>
             </a>
 
             <!-- פנה לוועד השכונה -->
-            <div class="group p-6 rounded-2xl bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-white/10 backdrop-blur-sm hover:border-purple-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/20 hover:-translate-y-2 flex flex-col">
-                <div class="transition-transform duration-300 group-hover:scale-105 flex flex-col flex-grow">
-                    <div class="text-4xl mb-3 transition-transform duration-300 group-hover:rotate-12">🏛️</div>
-                    <h4 class="text-lg font-bold mb-2 transition-colors duration-300 group-hover:text-purple-400">פנה לוועד השכונה</h4>
-                    <p class="text-gray-400 text-sm mb-4 transition-colors duration-300 group-hover:text-gray-300 flex-grow">
-                        יש לך הצעה? רוצה לשפר את השכונה? הוועד כאן בשבילך!
-                    </p>
-                    <button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all w-full group-hover:scale-105 group-hover:shadow-lg mt-auto">
-                        צור קשר עם הוועד
-                    </button>
+            <div class="group relative overflow-hidden rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-purple-500/30 transition-all duration-300 hover:-translate-y-2 flex flex-col">
+                <!-- Background image with light blur and gradient overlay -->
+                <div class="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110" style="background-image: url('/images/ועד שכונה.png'); filter: blur(0.5px) brightness(0.5);"></div>
+                <!-- Gradient overlay - stronger at bottom and right side for darker effect -->
+                <div class="absolute inset-0 bg-gradient-to-b from-transparent via-purple-600/40 to-pink-600/80 transition-transform duration-300 group-hover:scale-110"></div>
+                <div class="absolute inset-0 bg-gradient-to-l from-black/60 via-transparent to-transparent transition-transform duration-300 group-hover:scale-110"></div>
+                <div class="relative z-10 p-6 transition-transform duration-300 group-hover:scale-105 flex flex-col flex-grow">
+                    <div class="text-center text-white flex flex-col flex-grow">
+                        <span class="text-4xl mb-2 block transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12">🏛️</span>
+                        <h3 class="text-xl font-black mb-2 transition-all duration-300 group-hover:text-purple-200">
+                            <span class="group-hover:hidden">פנה לוועד השכונה</span>
+                            <span class="hidden group-hover:inline">הוועד כאן בשבילך</span>
+                        </h3>
+                        <p class="text-sm mb-4 text-purple-100 transition-colors duration-300 group-hover:text-white flex-grow">
+                            יש לך הצעה? רוצה לשפר את השכונה?
+                        </p>
+                        <button class="bg-purple-600/50 hover:bg-purple-600/70 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all w-full group-hover:scale-105 group-hover:shadow-xl mt-auto">
+                            צור קשר עכשיו
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -237,8 +247,8 @@
                         <p class="text-xs mb-3 text-yellow-100 transition-colors duration-300 group-hover:text-white group-hover:font-bold">
                             <span class="font-bold">127</span> חברים פעילים
                         </p>
-                        <button class="bg-white text-red-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-yellow-100 transition-all w-full group-hover:scale-105 group-hover:shadow-xl mt-auto">
-                            הצטרף עכשיו 🔥
+                        <button class="bg-red-600/50 hover:bg-red-600/70 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all w-full group-hover:scale-105 group-hover:shadow-xl mt-auto">
+                            הצטרף עכשיו
                         </button>
                     </div>
                 </div>
@@ -258,21 +268,33 @@
                     <p class="text-gray-400 text-xs mb-2 leading-tight flex-grow">
                         קופת השכונה
                     </p>
-                    <div class="bg-blue-600 text-white px-2 py-1 rounded text-xs font-bold text-center">
+                    <div class="bg-blue-600/50 text-white px-2 py-1 rounded text-xs font-bold text-center">
                         הוסף משאלה
                     </div>
                 </a>
 
                 <!-- פנה לוועד השכונה - Mobile -->
-                <div class="p-3 rounded-lg bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-white/10 backdrop-blur-sm flex flex-col h-full">
-                    <div class="text-2xl mb-1">🏛️</div>
-                    <h4 class="text-sm font-bold mb-1 text-purple-400">ועד השכונה</h4>
-                    <p class="text-gray-400 text-xs mb-2 leading-tight flex-grow">
-                        יש לך הצעה?
-                    </p>
-                    <button class="bg-purple-600 text-white px-2 py-1 rounded text-xs font-bold w-full">
-                        צור קשר
-                    </button>
+                <div class="relative overflow-hidden rounded-lg h-full">
+                    <!-- Background image with light blur and gradient overlay -->
+                    <div class="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110" style="background-image: url('/images/ועד שכונה.png'); filter: blur(0.5px) brightness(0.5);"></div>
+                    <!-- Gradient overlay - stronger at bottom and right side for darker effect -->
+                    <div class="absolute inset-0 bg-gradient-to-b from-transparent via-purple-600/40 to-pink-600/80 transition-transform duration-300 group-hover:scale-110"></div>
+                    <div class="absolute inset-0 bg-gradient-to-l from-black/60 via-transparent to-transparent transition-transform duration-300 group-hover:scale-110"></div>
+                    <div class="relative z-10 p-3 h-full flex flex-col">
+                        <div class="text-center text-white flex flex-col flex-grow">
+                            <span class="text-2xl mb-1 block transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12">🏛️</span>
+                            <h3 class="text-sm font-black mb-1 transition-all duration-300 group-hover:text-purple-200">
+                                <span class="group-hover:hidden">ועד השכונה</span>
+                                <span class="hidden group-hover:inline">הוועד כאן בשבילך</span>
+                            </h3>
+                            <p class="text-xs mb-2 text-purple-100 leading-tight flex-grow transition-colors duration-300 group-hover:text-white">
+                                יש לך הצעה?
+                            </p>
+                            <button class="bg-purple-600/50 text-white px-2 py-1 rounded text-xs font-bold w-full transition-all group-hover:scale-105 group-hover:shadow-xl hover:bg-purple-600/70">
+                                צור קשר
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- כיתת כוננות - Mobile -->
@@ -288,7 +310,7 @@
                             <p class="text-xs mb-2 text-yellow-100 leading-tight flex-grow">
                                 127 חברים
                             </p>
-                            <button class="bg-white text-red-600 px-2 py-1 rounded text-xs font-bold w-full">
+                            <button class="bg-red-600/50 text-white px-2 py-1 rounded text-xs font-bold w-full">
                                 הצטרף
                             </button>
                         </div>
