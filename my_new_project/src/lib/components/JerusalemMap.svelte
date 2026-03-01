@@ -116,9 +116,7 @@
     let raisedHandMessage = $state("");
     let raisedHandIcon = $state("");
     let selectedCategory = $state("benefits");
-    let autoSwitchInterval: number | null = null;
     let isAutoSwitching = $state(false);
-    let autoReturnTimeout: number | null = null;
     let userInteracted = $state(false);
     let selectedNeighborhood = $state("קרית משה");
     let selectedNeighborhoodCity = $state("ירושלים");
@@ -306,59 +304,14 @@
         { id: 4, text: "אחר - כתוב את העזרה הזקוקה לך", icon: "✍️" },
     ];
 
-    function startAutoSwitch() {
-        if (autoSwitchInterval) {
-            clearInterval(autoSwitchInterval);
-        }
-
-        autoSwitchInterval = setInterval(() => {
-            if (!isMouseOver && !showAddMenu && !userInteracted) {
-                // עבור לרשימה רק אם אנחנו במפה
-                if (viewMode === "map") {
-                    isAutoSwitching = true;
-                    setTimeout(() => {
-                        isAutoSwitching = false;
-                    }, 4000);
-                    handleViewToggle(true);
-                }
-            }
-        }, 25000); // 25 שניות
-    }
+    // Automatic switching was removed as per user request to keep it manual
 
     function handleMouseEnter() {
         isMouseOver = true;
-        // Clear the auto-return timeout when mouse enters
-        if (autoReturnTimeout !== null) {
-            clearTimeout(autoReturnTimeout);
-            autoReturnTimeout = null;
-        }
     }
 
     function handleMouseLeave() {
         isMouseOver = false;
-        // Restart the auto-return timeout when mouse leaves if we're in list view
-        if (
-            viewMode === "list" &&
-            !userInteracted &&
-            autoReturnTimeout === null
-        ) {
-            autoReturnTimeout = setTimeout(() => {
-                if (viewMode === "list" && !isMouseOver && !userInteracted) {
-                    console.log(
-                        "Auto returning to map after 3 seconds (mouse left)",
-                    );
-                    isFlipping = true;
-                    setTimeout(() => {
-                        viewMode = "map";
-                        userInteracted = false;
-                    }, 350);
-                    setTimeout(() => {
-                        isFlipping = false;
-                    }, 700);
-                }
-                autoReturnTimeout = null;
-            }, 3000);
-        }
     }
 
     function toggleMenu() {
@@ -385,13 +338,16 @@
     }
 
     onMount(() => {
-        startAutoSwitch();
-
-        // אנימציה של רשימה פעם אחת בלבד אחרי 15 שניות
+        // אנימציה של רשימה פעם אחת בלבד! מצוין כמשיכת תשומת לב
         listAnimationTimeout = setTimeout(() => {
-            if (!hasShownListAnimation) {
+            // בצע רק אם המשתמש לא לחץ או שינה לפני כן
+            if (
+                !hasShownListAnimation &&
+                !userInteracted &&
+                !showAddMenu &&
+                viewMode === "map"
+            ) {
                 hasShownListAnimation = true;
-                console.log("Showing list animation after 15 seconds");
                 isAutoSwitching = true;
 
                 // עבור לרשימה
@@ -403,19 +359,23 @@
                     isFlipping = false;
                 }, 700);
 
-                // חזור למפה אחרי 3 שניות
+                // חזור למפה אחרי 3.5 שניות
                 setTimeout(() => {
-                    isFlipping = true;
-                    setTimeout(() => {
-                        viewMode = "map";
-                    }, 350);
-                    setTimeout(() => {
-                        isFlipping = false;
+                    if (!userInteracted && viewMode === "list") {
+                        isFlipping = true;
+                        setTimeout(() => {
+                            viewMode = "map";
+                        }, 350);
+                        setTimeout(() => {
+                            isFlipping = false;
+                            isAutoSwitching = false;
+                        }, 700);
+                    } else {
                         isAutoSwitching = false;
-                    }, 700);
-                }, 3000);
+                    }
+                }, 3500);
             }
-        }, 15000);
+        }, 8000); // 8 שניות
 
         // סגירת תפריט כשלוחצים מחוץ לו
         const handleClickOutside = (event: MouseEvent) => {
@@ -572,9 +532,6 @@
         }, 100);
 
         return () => {
-            if (autoSwitchInterval) {
-                clearInterval(autoSwitchInterval);
-            }
             if (listAnimationTimeout) {
                 clearTimeout(listAnimationTimeout);
             }
