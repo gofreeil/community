@@ -6,11 +6,14 @@
     import ReferendumBanner from "$lib/components/ReferendumBanner.svelte";
 
     let showNeighborhoodsMenu = $state(false);
-    
+
     function handleToggleMenu() {
-        console.log('Toggle menu clicked! Current state:', showNeighborhoodsMenu);
+        console.log(
+            "Toggle menu clicked! Current state:",
+            showNeighborhoodsMenu,
+        );
         showNeighborhoodsMenu = !showNeighborhoodsMenu;
-        console.log('New state:', showNeighborhoodsMenu);
+        console.log("New state:", showNeighborhoodsMenu);
     }
 </script>
 
@@ -21,7 +24,9 @@
             <!-- Mobile: title with button on left side -->
             <div class="md:hidden mb-2">
                 <div class="relative group text-center mb-1 w-full">
-                    <h2 class="text-[2.2rem] md:text-2xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent cursor-default leading-tight w-full">
+                    <h2
+                        class="text-[2.2rem] md:text-2xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent cursor-default leading-tight w-full"
+                    >
                         יתרונות שכונת ק' משה
                     </h2>
                 </div>
@@ -34,25 +39,37 @@
                             🏘️ כל השכונות
                         </button>
                     </div>
-                    <div class="relative group w-full text-center pointer-events-none">
-                        <h2 class="text-[2.2rem] md:text-2xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent cursor-default leading-tight">
+                    <div
+                        class="relative group w-full text-center pointer-events-none"
+                    >
+                        <h2
+                            class="text-[2.2rem] md:text-2xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent cursor-default leading-tight"
+                        >
                             ירושלים
                         </h2>
                     </div>
                 </div>
             </div>
-            
+
             <!-- Desktop: original layout -->
             <div class="hidden md:flex items-center justify-center gap-4">
                 <div class="relative group">
-                    <h2 class="text-5xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent cursor-default">
+                    <h2
+                        class="text-5xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent cursor-default"
+                    >
                         יתרונות שכונת קרית משה, ירושלים
                     </h2>
                     <!-- Tooltip -->
-                    <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-[9999] pointer-events-none">
-                        <div class="bg-gray-900 text-white text-sm rounded-lg px-4 py-2 shadow-xl whitespace-nowrap">
+                    <div
+                        class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-[9999] pointer-events-none"
+                    >
+                        <div
+                            class="bg-gray-900 text-white text-sm rounded-lg px-4 py-2 shadow-xl whitespace-nowrap"
+                        >
                             גלה את כל מה שהשכונה שלך מציעה
-                            <div class="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-gray-900"></div>
+                            <div
+                                class="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-gray-900"
+                            ></div>
                         </div>
                     </div>
                 </div>
@@ -67,36 +84,36 @@
             <!-- Neighborhoods Menu -->
             {#if showNeighborhoodsMenu}
                 <!-- Backdrop -->
-                <div 
+                <div
                     class="fixed inset-0 bg-black/50 z-[9998]"
-                    onclick={() => showNeighborhoodsMenu = false}
+                    onclick={() => (showNeighborhoodsMenu = false)}
                 ></div>
-                
+
                 <!-- Menu -->
-                <div class="fixed md:absolute top-20 md:top-full left-1/2 transform -translate-x-1/2 mt-0 md:mt-4 bg-gray-900 rounded-xl shadow-2xl p-4 md:p-6 z-[9999] max-w-4xl w-[95vw] md:w-full max-h-[80vh] overflow-y-auto">
-                    <h3 class="text-white text-lg md:text-xl font-bold mb-3 md:mb-4 text-center">בחר עיר ושכונה</h3>
+                <div
+                    class="fixed md:absolute top-20 md:top-full left-1/2 transform -translate-x-1/2 mt-0 md:mt-4 bg-gray-900 rounded-xl shadow-2xl p-4 md:p-6 z-[9999] max-w-4xl w-[95vw] md:w-full max-h-[80vh] overflow-y-auto"
+                >
+                    <h3
+                        class="text-white text-lg md:text-xl font-bold mb-3 md:mb-4 text-center"
+                    >
+                        בחר עיר ושכונה
+                    </h3>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
-                        {#each Object.entries({
-                            אילת: ["שכונת התמרים", "שכונת הדקלים", "שכונת השחמון"],
-                            "באר שבע": ["רמות", "נווה זאב", "נווה נוי", "רמת חן"],
-                            "בני ברק": ["פרדס כץ", "רמת אלחנן", "שיכון ה"],
-                            הרצליה: ["הרצליה פיתוח", "נוה עובד", "נווה ישראל"],
-                            חיפה: ["כרמל צרפתי", "נווה שאנן", "רמת אלמוגי", "בת גלים"],
-                            ירושלים: ["קרית משה", "רחביה", "גבעת שאול", "רמות", "גילה", "קטמון", "בקעה", "מעלות דפנה"],
-                            נתניה: ["קרית השרון", "רמת פולג", "נווה גנים"],
-                            "פתח תקווה": ["קרית אריה", "נווה עוז", "שיכון דן"],
-                            "ראשון לציון": ["נווה דקלים", "רמת אליהו", "שיכון ותיקים"],
-                            רחובות: ["רמת רחובות", "נווה חוף", "שכונת הדרים"],
-                            "תל אביב": ["רמת אביב", "פלורנטין", "נווה צדק", "יפו העתיקה", "רמת החייל"],
-                        }) as [city, neighborhoods]}
+                        {#each Object.entries( { אילת: ["שכונת התמרים", "שכונת הדקלים", "שכונת השחמון"], "באר שבע": ["רמות", "נווה זאב", "נווה נוי", "רמת חן"], "בני ברק": ["פרדס כץ", "רמת אלחנן", "שיכון ה"], הרצליה: ["הרצליה פיתוח", "נוה עובד", "נווה ישראל"], חיפה: ["כרמל צרפתי", "נווה שאנן", "רמת אלמוגי", "בת גלים"], ירושלים: ["קרית משה", "רחביה", "גבעת שאול", "רמות", "גילה", "קטמון", "בקעה", "מעלות דפנה"], נתניה: ["קרית השרון", "רמת פולג", "נווה גנים"], "פתח תקווה": ["קרית אריה", "נווה עוז", "שיכון דן"], "ראשון לציון": ["נווה דקלים", "רמת אליהו", "שיכון ותיקים"], רחובות: ["רמת רחובות", "נווה חוף", "שכונת הדרים"], "תל אביב": ["רמת אביב", "פלורנטין", "נווה צדק", "יפו העתיקה", "רמת החייל"] }, ) as [city, neighborhoods]}
                             <div class="bg-gray-800 rounded-lg p-3">
-                                <h4 class="text-purple-400 font-bold mb-2 text-sm md:text-base">{city}</h4>
+                                <h4
+                                    class="text-purple-400 font-bold mb-2 text-sm md:text-base"
+                                >
+                                    {city}
+                                </h4>
                                 <div class="space-y-1">
                                     {#each neighborhoods as neighborhood}
                                         <button
                                             onclick={() => {
                                                 showNeighborhoodsMenu = false;
-                                                alert(`נבחרה: ${neighborhood}, ${city}`);
+                                                alert(
+                                                    `נבחרה: ${neighborhood}, ${city}`,
+                                                );
                                             }}
                                             class="block w-full text-right text-white text-xs md:text-sm hover:bg-purple-600 px-2 py-1 rounded transition-colors"
                                         >
@@ -108,7 +125,7 @@
                         {/each}
                     </div>
                     <button
-                        onclick={() => showNeighborhoodsMenu = false}
+                        onclick={() => (showNeighborhoodsMenu = false)}
                         class="mt-4 w-full bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg font-bold text-sm transition-colors"
                     >
                         סגור
@@ -123,7 +140,7 @@
         <div class="flex flex-col lg:flex-row gap-6">
             <!-- Map Section (3/4 width on desktop, full width on mobile) -->
             <div class="lg:w-3/4">
-                <JerusalemMap bind:showNeighborhoodsMenu={showNeighborhoodsMenu} />
+                <JerusalemMap bind:showNeighborhoodsMenu />
             </div>
 
             <!-- Lost and Found Section (1/4 width on desktop) -->
@@ -133,25 +150,37 @@
                 <div class="hidden lg:block">
                     <LostAndFound />
                 </div>
-                
+
                 <!-- Mobile: two columns side by side -->
                 <div class="lg:hidden grid grid-cols-2 gap-2">
                     <!-- Left: Message Board -->
-                    <div class="rounded-2xl bg-[#0f172a] border border-blue-500/30 overflow-hidden shadow-2xl flex flex-col h-full">
-                        <div class="bg-gradient-to-r from-green-600 to-teal-600 p-2 flex items-center justify-between flex-shrink-0 h-12">
-                            <h3 class="text-sm font-bold text-white flex items-center gap-1">
+                    <div
+                        class="rounded-2xl bg-[#0f172a] border border-blue-500/30 overflow-hidden shadow-2xl flex flex-col h-full"
+                    >
+                        <div
+                            class="bg-gradient-to-r from-green-600 to-teal-600 p-2 flex items-center justify-between flex-shrink-0 h-12"
+                        >
+                            <h3
+                                class="text-sm font-bold text-white flex items-center gap-1"
+                            >
                                 <span class="text-base">📢</span>
                                 לוח הודעות
                             </h3>
-                            <button class="bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-2 py-1 rounded-full transition-colors border border-white/20">
+                            <button
+                                class="bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-2 py-1 rounded-full transition-colors border border-white/20"
+                            >
                                 + הוסף
                             </button>
                         </div>
-                        <div class="p-2 flex-1 flex items-center justify-center">
-                            <p class="text-gray-400 text-xs text-center">בקרוב...</p>
+                        <div
+                            class="p-2 flex-1 flex items-center justify-center"
+                        >
+                            <p class="text-gray-400 text-xs text-center">
+                                בקרוב...
+                            </p>
                         </div>
                     </div>
-                    
+
                     <!-- Right: Lost and Found -->
                     <div>
                         <LostAndFound />
@@ -168,13 +197,21 @@
 
     <!-- Facebook Comments Section -->
     <section class="max-w-6xl mx-auto px-4 mb-8">
-        <div 
+        <div
             class="rounded-2xl bg-gradient-to-br from-blue-900/20 to-purple-900/20 border border-white/10 backdrop-blur-sm p-3 md:p-6"
             title="שאל שאלה, הבע דעתך והצטרף לשיח בשכונה"
         >
-            <h3 class="text-lg md:text-2xl font-bold text-white mb-3 md:mb-6 text-center flex items-center justify-center gap-2">
-                <svg class="w-5 h-5 md:w-8 md:h-8 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+            <h3
+                class="text-lg md:text-2xl font-bold text-white mb-3 md:mb-6 text-center flex items-center justify-center gap-2"
+            >
+                <svg
+                    class="w-5 h-5 md:w-8 md:h-8 text-blue-400"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
+                    />
                 </svg>
                 שיח פתוח
             </h3>
@@ -188,22 +225,44 @@
         <!-- Desktop: 3 columns, Mobile: horizontal scroll -->
         <div class="hidden md:grid md:grid-cols-3 gap-6">
             <!-- כותל המשאלות -->
-            <div class="group relative overflow-hidden rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-blue-500/30 transition-all duration-300 hover:-translate-y-2 flex flex-col">
-                <!-- Background image with light blur -->
-                <div class="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110" style="background-image: url('/images/2.png'); filter: blur(0.5px) brightness(0.5);"></div>
-                <!-- Gradient overlay - stronger at bottom -->
-                <div class="absolute inset-0 bg-gradient-to-b from-transparent via-blue-600/40 to-purple-600/80 transition-transform duration-300 group-hover:scale-110"></div>
-                <div class="relative z-10 p-6 transition-transform duration-300 group-hover:scale-105 flex flex-col flex-grow">
+            <div
+                class="group relative overflow-hidden rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-blue-500/30 transition-all duration-300 hover:-translate-y-2 flex flex-col"
+            >
+                <!-- Background image -->
+                <div
+                    class="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110"
+                    style="background-image: url('/images/2.png');"
+                ></div>
+                <!-- Dark gradient overlay -->
+                <div
+                    class="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/30 transition-transform duration-300 group-hover:scale-110"
+                ></div>
+                <div
+                    class="relative z-10 p-6 transition-transform duration-300 group-hover:scale-105 flex flex-col flex-grow"
+                >
                     <div class="text-center text-white flex flex-col flex-grow">
-                        <span class="text-4xl mb-2 block transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12">🙏</span>
-                        <h3 class="text-xl font-black mb-2 transition-all duration-300 group-hover:text-blue-200">
-                            <span class="group-hover:hidden">כותל המשאלות השכונתי</span>
-                            <span class="hidden group-hover:inline">קופת השכונה</span>
+                        <span
+                            class="text-4xl mb-2 block transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12"
+                            >🙏</span
+                        >
+                        <h3
+                            class="text-xl font-black mb-2 transition-all duration-300 group-hover:text-blue-200"
+                        >
+                            <span class="group-hover:hidden"
+                                >כותל המשאלות השכונתי</span
+                            >
+                            <span class="hidden group-hover:inline"
+                                >קופת השכונה</span
+                            >
                         </h3>
-                        <p class="text-sm mb-4 text-blue-100 transition-colors duration-300 group-hover:text-white flex-grow">
+                        <p
+                            class="text-sm mb-4 text-blue-100 transition-colors duration-300 group-hover:text-white flex-grow"
+                        >
                             קופת השכונה לסייע לנזקקים
                         </p>
-                        <div class="bg-blue-600/50 hover:bg-blue-600/70 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all w-full group-hover:scale-105 group-hover:shadow-lg text-center mt-auto">
+                        <div
+                            class="bg-blue-600/50 hover:bg-blue-600/70 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all w-full group-hover:scale-105 group-hover:shadow-lg text-center mt-auto"
+                        >
                             הוסף משאלה
                         </div>
                     </div>
@@ -211,23 +270,44 @@
             </div>
 
             <!-- פנה לוועד השכונה -->
-            <div class="group relative overflow-hidden rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-purple-500/30 transition-all duration-300 hover:-translate-y-2 flex flex-col">
-                <!-- Background image with light blur and gradient overlay -->
-                <div class="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110" style="background-image: url('/images/ועד שכונה.png'); filter: blur(0.5px) brightness(0.5);"></div>
-                <!-- Gradient overlay - stronger at bottom and right side for darker effect -->
-                <div class="absolute inset-0 bg-gradient-to-b from-transparent via-purple-600/40 to-pink-600/80 transition-transform duration-300 group-hover:scale-110"></div>
-                <div class="absolute inset-0 bg-gradient-to-l from-black/60 via-transparent to-transparent transition-transform duration-300 group-hover:scale-110"></div>
-                <div class="relative z-10 p-6 transition-transform duration-300 group-hover:scale-105 flex flex-col flex-grow">
+            <div
+                class="group relative overflow-hidden rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-purple-500/30 transition-all duration-300 hover:-translate-y-2 flex flex-col"
+            >
+                <!-- Background image -->
+                <div
+                    class="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110"
+                    style="background-image: url('/images/ועד שכונה.png');"
+                ></div>
+                <!-- Dark gradient overlay -->
+                <div
+                    class="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/30 transition-transform duration-300 group-hover:scale-110"
+                ></div>
+                <div
+                    class="relative z-10 p-6 transition-transform duration-300 group-hover:scale-105 flex flex-col flex-grow"
+                >
                     <div class="text-center text-white flex flex-col flex-grow">
-                        <span class="text-4xl mb-2 block transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12">🏛️</span>
-                        <h3 class="text-xl font-black mb-2 transition-all duration-300 group-hover:text-purple-200">
-                            <span class="group-hover:hidden">פנה לוועד השכונה</span>
-                            <span class="hidden group-hover:inline">הוועד כאן בשבילך</span>
+                        <span
+                            class="text-4xl mb-2 block transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12"
+                            >🏛️</span
+                        >
+                        <h3
+                            class="text-xl font-black mb-2 transition-all duration-300 group-hover:text-purple-200"
+                        >
+                            <span class="group-hover:hidden"
+                                >פנה לוועד השכונה</span
+                            >
+                            <span class="hidden group-hover:inline"
+                                >הוועד כאן בשבילך</span
+                            >
                         </h3>
-                        <p class="text-sm mb-4 text-purple-100 transition-colors duration-300 group-hover:text-white flex-grow">
+                        <p
+                            class="text-sm mb-4 text-purple-100 transition-colors duration-300 group-hover:text-white flex-grow"
+                        >
                             יש לך הצעה? רוצה לשפר את השכונה?
                         </p>
-                        <button class="bg-purple-600/50 hover:bg-purple-600/70 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all w-full group-hover:scale-105 group-hover:shadow-xl mt-auto">
+                        <button
+                            class="bg-purple-600/50 hover:bg-purple-600/70 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all w-full group-hover:scale-105 group-hover:shadow-xl mt-auto"
+                        >
                             צור קשר עכשיו
                         </button>
                     </div>
@@ -235,25 +315,47 @@
             </div>
 
             <!-- כיתת כוננות -->
-            <div class="group relative overflow-hidden rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-orange-500/30 transition-all duration-300 hover:-translate-y-2 flex flex-col">
-                <!-- Background image with light blur -->
-                <div class="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110" style="background-image: url('/images/כוננות.png'); filter: blur(0.5px) brightness(0.5);"></div>
-                <!-- Gradient overlay - stronger at bottom -->
-                <div class="absolute inset-0 bg-gradient-to-b from-transparent via-red-600/40 to-orange-600/80 transition-transform duration-300 group-hover:scale-110"></div>
-                <div class="relative z-10 p-6 transition-transform duration-300 group-hover:scale-105 flex flex-col flex-grow">
+            <div
+                class="group relative overflow-hidden rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-orange-500/30 transition-all duration-300 hover:-translate-y-2 flex flex-col"
+            >
+                <!-- Background image -->
+                <div
+                    class="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110"
+                    style="background-image: url('/images/כוננות.png');"
+                ></div>
+                <!-- Dark gradient overlay -->
+                <div
+                    class="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/30 transition-transform duration-300 group-hover:scale-110"
+                ></div>
+                <div
+                    class="relative z-10 p-6 transition-transform duration-300 group-hover:scale-105 flex flex-col flex-grow"
+                >
                     <div class="text-center text-white flex flex-col flex-grow">
-                        <span class="text-4xl mb-2 block transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12">🚨</span>
-                        <h3 class="text-xl font-black mb-2 transition-all duration-300 group-hover:text-yellow-200">
+                        <span
+                            class="text-4xl mb-2 block transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12"
+                            >🚨</span
+                        >
+                        <h3
+                            class="text-xl font-black mb-2 transition-all duration-300 group-hover:text-yellow-200"
+                        >
                             <span class="group-hover:hidden">כיתת כוננות</span>
-                            <span class="hidden group-hover:inline">חזק את ביטחון השכונה</span>
+                            <span class="hidden group-hover:inline"
+                                >חזק את ביטחון השכונה</span
+                            >
                         </h3>
-                        <p class="text-sm mb-4 text-yellow-100 transition-colors duration-300 group-hover:text-white flex-grow">
+                        <p
+                            class="text-sm mb-4 text-yellow-100 transition-colors duration-300 group-hover:text-white flex-grow"
+                        >
                             הצטרף לכיתת הכוננות של השכונה
                         </p>
-                        <p class="text-xs mb-3 text-yellow-100 transition-colors duration-300 group-hover:text-white group-hover:font-bold">
+                        <p
+                            class="text-xs mb-3 text-yellow-100 transition-colors duration-300 group-hover:text-white group-hover:font-bold"
+                        >
                             <span class="font-bold">127</span> חברים פעילים
                         </p>
-                        <button class="bg-red-600/50 hover:bg-red-600/70 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all w-full group-hover:scale-105 group-hover:shadow-xl mt-auto">
+                        <button
+                            class="bg-red-600/50 hover:bg-red-600/70 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all w-full group-hover:scale-105 group-hover:shadow-xl mt-auto"
+                        >
                             הצטרף עכשיו
                         </button>
                     </div>
@@ -266,18 +368,31 @@
             <div class="grid grid-cols-3 gap-2 h-32">
                 <!-- כותל המשאלות - Mobile -->
                 <div class="relative overflow-hidden rounded-lg h-full">
-                    <!-- Background image with light blur -->
-                    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('/images/2.png'); filter: blur(0.5px) brightness(0.5);"></div>
-                    <!-- Gradient overlay - stronger at bottom -->
-                    <div class="absolute inset-0 bg-gradient-to-b from-transparent via-blue-600/40 to-purple-600/80"></div>
+                    <!-- Background image -->
+                    <div
+                        class="absolute inset-0 bg-cover bg-center"
+                        style="background-image: url('/images/2.png');"
+                    ></div>
+                    <!-- Dark gradient overlay -->
+                    <div
+                        class="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/30"
+                    ></div>
                     <div class="relative z-10 p-3 h-full flex flex-col">
-                        <div class="text-center text-white flex flex-col flex-grow">
+                        <div
+                            class="text-center text-white flex flex-col flex-grow"
+                        >
                             <span class="text-2xl mb-1 block">🙏</span>
-                            <h3 class="text-sm font-black mb-1">כותל המשאלות השכונתי</h3>
-                            <p class="text-xs mb-2 text-blue-100 leading-tight flex-grow">
+                            <h3 class="text-sm font-black mb-1">
+                                כותל המשאלות השכונתי
+                            </h3>
+                            <p
+                                class="text-xs mb-2 text-blue-100 leading-tight flex-grow"
+                            >
                                 קופת השכונה
                             </p>
-                            <div class="bg-blue-600/50 text-white px-2 py-1 rounded text-xs font-bold text-center">
+                            <div
+                                class="bg-blue-600/50 text-white px-2 py-1 rounded text-xs font-bold text-center"
+                            >
                                 הוסף משאלה
                             </div>
                         </div>
@@ -286,22 +401,41 @@
 
                 <!-- פנה לוועד השכונה - Mobile -->
                 <div class="relative overflow-hidden rounded-lg h-full">
-                    <!-- Background image with light blur and gradient overlay -->
-                    <div class="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110" style="background-image: url('/images/ועד שכונה.png'); filter: blur(0.5px) brightness(0.5);"></div>
-                    <!-- Gradient overlay - stronger at bottom and right side for darker effect -->
-                    <div class="absolute inset-0 bg-gradient-to-b from-transparent via-purple-600/40 to-pink-600/80 transition-transform duration-300 group-hover:scale-110"></div>
-                    <div class="absolute inset-0 bg-gradient-to-l from-black/60 via-transparent to-transparent transition-transform duration-300 group-hover:scale-110"></div>
+                    <!-- Background image -->
+                    <div
+                        class="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110"
+                        style="background-image: url('/images/ועד שכונה.png');"
+                    ></div>
+                    <!-- Dark gradient overlay -->
+                    <div
+                        class="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/30 transition-transform duration-300 group-hover:scale-110"
+                    ></div>
                     <div class="relative z-10 p-3 h-full flex flex-col">
-                        <div class="text-center text-white flex flex-col flex-grow">
-                            <span class="text-2xl mb-1 block transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12">🏛️</span>
-                            <h3 class="text-sm font-black mb-1 transition-all duration-300 group-hover:text-purple-200">
-                                <span class="group-hover:hidden">ועד השכונה</span>
-                                <span class="hidden group-hover:inline">הוועד כאן בשבילך</span>
+                        <div
+                            class="text-center text-white flex flex-col flex-grow"
+                        >
+                            <span
+                                class="text-2xl mb-1 block transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12"
+                                >🏛️</span
+                            >
+                            <h3
+                                class="text-sm font-black mb-1 transition-all duration-300 group-hover:text-purple-200"
+                            >
+                                <span class="group-hover:hidden"
+                                    >ועד השכונה</span
+                                >
+                                <span class="hidden group-hover:inline"
+                                    >הוועד כאן בשבילך</span
+                                >
                             </h3>
-                            <p class="text-xs mb-2 text-purple-100 leading-tight flex-grow transition-colors duration-300 group-hover:text-white">
+                            <p
+                                class="text-xs mb-2 text-purple-100 leading-tight flex-grow transition-colors duration-300 group-hover:text-white"
+                            >
                                 יש לך הצעה?
                             </p>
-                            <button class="bg-purple-600/50 text-white px-2 py-1 rounded text-xs font-bold w-full transition-all group-hover:scale-105 group-hover:shadow-xl hover:bg-purple-600/70">
+                            <button
+                                class="bg-purple-600/50 text-white px-2 py-1 rounded text-xs font-bold w-full transition-all group-hover:scale-105 group-hover:shadow-xl hover:bg-purple-600/70"
+                            >
                                 צור קשר
                             </button>
                         </div>
@@ -310,18 +444,29 @@
 
                 <!-- כיתת כוננות - Mobile -->
                 <div class="relative overflow-hidden rounded-lg h-full">
-                    <!-- Background image with light blur -->
-                    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('/images/2.png'); filter: blur(0.5px) brightness(0.5);"></div>
-                    <!-- Gradient overlay - stronger at bottom -->
-                    <div class="absolute inset-0 bg-gradient-to-b from-transparent via-red-600/40 to-orange-600/80"></div>
+                    <!-- Background image -->
+                    <div
+                        class="absolute inset-0 bg-cover bg-center"
+                        style="background-image: url('/images/2.png');"
+                    ></div>
+                    <!-- Dark gradient overlay -->
+                    <div
+                        class="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/30"
+                    ></div>
                     <div class="relative z-10 p-3 h-full flex flex-col">
-                        <div class="text-center text-white flex flex-col flex-grow">
+                        <div
+                            class="text-center text-white flex flex-col flex-grow"
+                        >
                             <span class="text-2xl mb-1 block">🚨</span>
                             <h3 class="text-sm font-black mb-1">כיתת כוננות</h3>
-                            <p class="text-xs mb-2 text-yellow-100 leading-tight flex-grow">
+                            <p
+                                class="text-xs mb-2 text-yellow-100 leading-tight flex-grow"
+                            >
                                 127 חברים
                             </p>
-                            <button class="bg-red-600/50 text-white px-2 py-1 rounded text-xs font-bold w-full">
+                            <button
+                                class="bg-red-600/50 text-white px-2 py-1 rounded text-xs font-bold w-full"
+                            >
                                 הצטרף
                             </button>
                         </div>
@@ -334,24 +479,24 @@
 
 <style>
     /* Base styles handled in app.css */
-    
+
     /* Remove all spacing under title on mobile */
     @media (max-width: 768px) {
         .text-center.mb-8 {
             margin-bottom: 0 !important;
             padding-bottom: 0 !important;
         }
-        
+
         .neighborhoods-menu-container {
             margin-bottom: 0 !important;
             padding-bottom: 0 !important;
         }
-        
+
         section {
             margin-bottom: 0 !important;
             padding-bottom: 0 !important;
         }
-        
+
         .space-y-12 > :not([hidden]) ~ :not([hidden]) {
             margin-top: 0 !important;
         }
