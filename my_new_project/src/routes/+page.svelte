@@ -162,7 +162,10 @@
 
             <!-- כיתת כוננות -->
             <div class="group relative overflow-hidden rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-orange-500/30 transition-all duration-300 hover:-translate-y-2 flex flex-col">
-                <div class="absolute inset-0 bg-gradient-to-br from-red-600 via-orange-600 to-yellow-500 transition-transform duration-300 group-hover:scale-110"></div>
+                <!-- Background image with light blur -->
+                <div class="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110" style="background-image: url('/images/כוננות.png'); filter: blur(0.5px) brightness(0.5);"></div>
+                <!-- Gradient overlay - stronger at bottom -->
+                <div class="absolute inset-0 bg-gradient-to-b from-transparent via-red-600/40 to-orange-600/80 transition-transform duration-300 group-hover:scale-110"></div>
                 <div class="relative z-10 p-6 transition-transform duration-300 group-hover:scale-105 flex flex-col flex-grow">
                     <div class="text-center text-white flex flex-col flex-grow">
                         <span class="text-4xl mb-2 block transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12">🚨</span>
@@ -216,7 +219,10 @@
 
                 <!-- כיתת כוננות - Mobile -->
                 <div class="relative overflow-hidden rounded-lg h-full">
-                    <div class="absolute inset-0 bg-gradient-to-br from-red-600 via-orange-600 to-yellow-500"></div>
+                    <!-- Background image with light blur -->
+                    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('/images/כוננות.png'); filter: blur(0.5px) brightness(0.5);"></div>
+                    <!-- Gradient overlay - stronger at bottom -->
+                    <div class="absolute inset-0 bg-gradient-to-b from-transparent via-red-600/40 to-orange-600/80"></div>
                     <div class="relative z-10 p-3 h-full flex flex-col">
                         <div class="text-center text-white flex flex-col flex-grow">
                             <span class="text-2xl mb-1 block">🚨</span>
