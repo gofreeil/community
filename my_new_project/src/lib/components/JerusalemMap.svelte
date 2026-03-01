@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { t } from "svelte-i18n";
-    import { createEventDispatcher } from 'svelte';
+    import { createEventDispatcher } from "svelte";
 
     const dispatch = createEventDispatcher();
 
@@ -52,10 +52,7 @@
             id: "realestate",
             label: "אירוח לשבת",
             icon: "🕯️🕯️",
-            items: [
-                "מציע לארח",
-                "מחפש להתארח",
-            ],
+            items: ["מציע לארח", "מחפש להתארח"],
         },
         {
             id: "security",
@@ -364,7 +361,7 @@
     function toggleMenu() {
         showNeighborhoodsMenu = !showNeighborhoodsMenu;
         selectedCity = "";
-        dispatch('toggleMenu');
+        dispatch("toggleMenu");
     }
 
     // Public method that can be called from parent
@@ -434,55 +431,73 @@
         // Mobile scroll indicators logic - simplified
         const setupScrollIndicators = () => {
             console.log("Setting up scroll indicators...");
-            const buttonsContainer = document.querySelector('.category-buttons-container') as HTMLElement;
+            const buttonsContainer = document.querySelector(
+                ".category-buttons-container",
+            ) as HTMLElement;
             if (!buttonsContainer) {
                 console.log("Buttons container not found");
                 return;
             }
-            
+
             console.log("Buttons container found:", buttonsContainer);
 
             // Check if container needs scrolling
-            const needsScroll = buttonsContainer.scrollWidth > buttonsContainer.clientWidth;
-            console.log("Needs scroll:", needsScroll, "scrollWidth:", buttonsContainer.scrollWidth, "clientWidth:", buttonsContainer.clientWidth);
-            
+            const needsScroll =
+                buttonsContainer.scrollWidth > buttonsContainer.clientWidth;
+            console.log(
+                "Needs scroll:",
+                needsScroll,
+                "scrollWidth:",
+                buttonsContainer.scrollWidth,
+                "clientWidth:",
+                buttonsContainer.clientWidth,
+            );
+
             if (!needsScroll) {
                 console.log("No scrolling needed, hiding arrows");
                 return;
             }
-            
+
             // Add CSS class to enable arrows
-            buttonsContainer.classList.add('scrollable-mobile');
+            buttonsContainer.classList.add("scrollable-mobile");
             console.log("Added scrollable-mobile class");
-            
+
             // Add click handlers for arrows
             setTimeout(() => {
-                const leftArrow = document.querySelector('.flex.flex-wrap.justify-start.gap-3.p-2.w-full.scrollable-mobile::before') as HTMLElement;
-                const rightArrow = document.querySelector('.flex.flex-wrap.justify-start.gap-3.p-2.w-full.scrollable-mobile::after') as HTMLElement;
-                
+                const leftArrow = document.querySelector(
+                    ".flex.flex-wrap.justify-start.gap-3.p-2.w-full.scrollable-mobile::before",
+                ) as HTMLElement;
+                const rightArrow = document.querySelector(
+                    ".flex.flex-wrap.justify-start.gap-3.p-2.w-full.scrollable-mobile::after",
+                ) as HTMLElement;
+
                 // Since pseudo-elements can't have event listeners, we'll create actual elements
                 const createClickableArrows = () => {
                     // Remove existing arrows
-                    const existingArrows = document.querySelectorAll('.mobile-scroll-arrow');
-                    existingArrows.forEach(arrow => arrow.remove());
-                    
+                    const existingArrows = document.querySelectorAll(
+                        ".mobile-scroll-arrow",
+                    );
+                    existingArrows.forEach((arrow) => arrow.remove());
+
                     // Get buttons container position
-                    const containerRect = buttonsContainer.getBoundingClientRect();
+                    const containerRect =
+                        buttonsContainer.getBoundingClientRect();
                     const containerParent = buttonsContainer.parentElement;
-                    
+
                     if (!containerParent) return;
-                    
+
                     // Make parent relative for absolute positioning
-                    containerParent.style.position = 'relative';
-                    
+                    containerParent.style.position = "relative";
+
                     console.log("Container position:", containerRect);
-                    
+
                     // Create left arrow only (mobile only)
                     // Check if we're on mobile (screen width < 768px)
                     if (window.innerWidth < 768) {
-                        const leftArrowEl = document.createElement('div');
-                        leftArrowEl.className = 'mobile-scroll-arrow mobile-scroll-arrow-left';
-                        leftArrowEl.innerHTML = '←';
+                        const leftArrowEl = document.createElement("div");
+                        leftArrowEl.className =
+                            "mobile-scroll-arrow mobile-scroll-arrow-left";
+                        leftArrowEl.innerHTML = "←";
                         leftArrowEl.style.cssText = `
                             position: absolute !important;
                             left: -25px !important;
@@ -504,44 +519,55 @@
                             transition: all 0.3s ease !important;
                             pointer-events: auto !important;
                         `;
-                        leftArrowEl.addEventListener('click', () => {
+                        leftArrowEl.addEventListener("click", () => {
                             console.log("Left arrow clicked");
-                            buttonsContainer.scrollBy({ left: -120, behavior: 'smooth' });
+                            buttonsContainer.scrollBy({
+                                left: -120,
+                                behavior: "smooth",
+                            });
                         });
-                        leftArrowEl.addEventListener('mouseenter', () => {
-                            leftArrowEl.style.transform = 'translateY(-50%) scale(1.1)';
-                            leftArrowEl.style.boxShadow = '0 6px 16px rgba(0,0,0,0.5)';
+                        leftArrowEl.addEventListener("mouseenter", () => {
+                            leftArrowEl.style.transform =
+                                "translateY(-50%) scale(1.1)";
+                            leftArrowEl.style.boxShadow =
+                                "0 6px 16px rgba(0,0,0,0.5)";
                         });
-                        leftArrowEl.addEventListener('mouseleave', () => {
-                            leftArrowEl.style.transform = 'translateY(-50%) scale(1)';
-                            leftArrowEl.style.boxShadow = '0 4px 12px rgba(0,0,0,0.4)';
+                        leftArrowEl.addEventListener("mouseleave", () => {
+                            leftArrowEl.style.transform =
+                                "translateY(-50%) scale(1)";
+                            leftArrowEl.style.boxShadow =
+                                "0 4px 12px rgba(0,0,0,0.4)";
                         });
-                        
+
                         // Add only left arrow to parent container
                         containerParent.appendChild(leftArrowEl);
-                        
-                        console.log("Only left arrow created with absolute positioning (mobile only)");
+
+                        console.log(
+                            "Only left arrow created with absolute positioning (mobile only)",
+                        );
                     }
                 };
-                
+
                 createClickableArrows();
             }, 200);
-            
+
             // Add resize listener to remove arrows on desktop
             const handleResize = () => {
                 if (window.innerWidth >= 768) {
-                    const existingArrows = document.querySelectorAll('.mobile-scroll-arrow');
-                    existingArrows.forEach(arrow => arrow.remove());
+                    const existingArrows = document.querySelectorAll(
+                        ".mobile-scroll-arrow",
+                    );
+                    existingArrows.forEach((arrow) => arrow.remove());
                 } else {
                     createClickableArrows();
                 }
             };
-            
-            window.addEventListener('resize', handleResize);
-            
+
+            window.addEventListener("resize", handleResize);
+
             // Return cleanup function for resize listener
             return () => {
-                window.removeEventListener('resize', handleResize);
+                window.removeEventListener("resize", handleResize);
             };
         };
 
@@ -719,7 +745,9 @@
 
         <div class="flex flex-col gap-2">
             <!-- Buttons Container -->
-            <div class="category-buttons-container flex flex-wrap justify-start gap-2 md:gap-3 p-2 w-full">
+            <div
+                class="category-buttons-container flex flex-wrap justify-start gap-2 md:gap-3 p-2 w-full"
+            >
                 {#each categories as category, index}
                     <button
                         onclick={() => handleCategoryClick(category.id)}
@@ -903,8 +931,11 @@
                                 class="w-full p-2 md:p-4 hover:border-purple-500 transition-all hover:bg-purple-900/20 cursor-pointer"
                             >
                                 <div class="flex items-center justify-between">
-                                    <div class="flex items-center gap-2 md:gap-3">
-                                        <span class="text-2xl md:text-xl md:text-3xl"
+                                    <div
+                                        class="flex items-center gap-2 md:gap-3"
+                                    >
+                                        <span
+                                            class="text-2xl md:text-xl md:text-3xl"
                                             >{category.icon}</span
                                         >
                                         <span
@@ -912,8 +943,11 @@
                                             >{category.label}</span
                                         >
                                     </div>
-                                    <div class="flex items-center gap-2 md:gap-3">
-                                        <span class="text-purple-400 text-sm md:text-xs md:text-sm"
+                                    <div
+                                        class="flex items-center gap-2 md:gap-3"
+                                    >
+                                        <span
+                                            class="text-purple-400 text-sm md:text-xs md:text-sm"
                                             >{category.items?.length || 0} פריטים</span
                                         >
                                         <svg
@@ -977,25 +1011,25 @@
                 <p class="text-center text-gray-400 text-sm mb-6">
                     בחר קטגוריה והוסף פריט חדש
                 </p>
-                <div class="space-y-3">
+                <div class="grid grid-cols-2 gap-2 md:gap-3">
                     {#each categories.filter((cat) => cat.id !== "benefits") as category}
                         <button
                             onclick={() => handleAddItem(category.id)}
-                            class="w-full bg-gradient-to-r from-green-900/30 to-emerald-900/30 border border-green-500/30 rounded-xl p-4 hover:border-green-500 hover:from-green-900/40 hover:to-emerald-900/40 transition-all cursor-pointer"
+                            class="w-full bg-gradient-to-r from-green-900/30 to-emerald-900/30 border border-green-500/30 rounded-xl p-2 md:p-3 hover:border-green-500 hover:from-green-900/40 hover:to-emerald-900/40 transition-all cursor-pointer"
                         >
                             <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-3">
-                                    <span class="text-3xl">{category.icon}</span
+                                <div class="flex items-center gap-1.5 md:gap-2">
+                                    <span class="text-xl md:text-2xl"
+                                        >{category.icon}</span
                                     >
-                                    <span class="text-white font-bold text-lg"
+                                    <span
+                                        class="text-white font-bold text-xs md:text-sm"
                                         >{category.label}</span
                                     >
                                 </div>
-                                <div class="flex items-center gap-2">
-                                    <span class="text-green-400 text-sm"
-                                        >הוסף פריט</span
-                                    >
-                                    <span class="text-2xl text-green-400"
+                                <div class="flex items-center">
+                                    <span
+                                        class="text-lg md:text-xl text-green-400"
                                         >➕</span
                                     >
                                 </div>
@@ -1454,7 +1488,7 @@
         .map-category-button span[style*="letter-spacing"] {
             display: none !important;
         }
-        
+
         .map-category-button {
             min-width: 60px !important;
             max-width: 80px !important;
@@ -1463,7 +1497,7 @@
             margin: 2px !important;
             flex: 0 0 auto !important;
         }
-        
+
         .flex.flex-wrap.justify-start.gap-3.p-2.w-full {
             gap: 8px !important;
             justify-content: flex-start !important;
@@ -1475,47 +1509,47 @@
             -webkit-overflow-scrolling: touch !important;
             position: relative !important;
         }
-        
+
         /* Remove CSS pseudo-elements to prevent duplicates */
         .flex.flex-wrap.justify-start.gap-3.p-2.w-full.scrollable-mobile::before,
         .flex.flex-wrap.justify-start.gap-3.p-2.w-full.scrollable-mobile::after {
             display: none !important;
         }
-        
+
         /* Hide right arrow in buttons above map */
         .mobile-scroll-arrow-right {
             display: none !important;
         }
-        
+
         /* Reduce gaps on mobile - minimal between title and buttons, reasonable between buttons and map */
         div > .flex.flex-col.gap-4 {
             gap: 16px !important;
         }
-        
+
         .flex.flex-col.gap-2 {
             gap: 0px !important;
             margin: 0 !important;
             padding: 0 !important;
         }
-        
+
         /* Target the first div with gap-4 specifically */
         .flex.flex-col.gap-4:first-child {
             gap: 0px !important;
             margin-bottom: 0 !important;
             padding-bottom: 0 !important;
         }
-        
+
         /* Add margin to map container */
         .relative.w-full.border-4 {
             margin-top: 8px !important;
         }
-        
+
         /* Make triangle button smaller on mobile */
         .page-corner svg {
             width: 80px !important;
             height: 80px !important;
         }
-        
+
         .page-corner text {
             font-size: 14px !important;
         }
