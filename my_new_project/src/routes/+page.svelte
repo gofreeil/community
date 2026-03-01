@@ -197,7 +197,7 @@
                     <div class="text-center text-white flex flex-col flex-grow">
                         <span class="text-4xl mb-2 block transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12">🙏</span>
                         <h3 class="text-xl font-black mb-2 transition-all duration-300 group-hover:text-blue-200">
-                            <span class="group-hover:hidden">כותל המשאלות</span>
+                            <span class="group-hover:hidden">כותל המשאלות השכונתי</span>
                             <span class="hidden group-hover:inline">קופת השכונה</span>
                         </h3>
                         <p class="text-sm mb-4 text-blue-100 transition-colors duration-300 group-hover:text-white flex-grow">
@@ -273,7 +273,7 @@
                     <div class="relative z-10 p-3 h-full flex flex-col">
                         <div class="text-center text-white flex flex-col flex-grow">
                             <span class="text-2xl mb-1 block">🙏</span>
-                            <h3 class="text-sm font-black mb-1">כותל המשאלות</h3>
+                            <h3 class="text-sm font-black mb-1">כותל המשאלות השכונתי</h3>
                             <p class="text-xs mb-2 text-blue-100 leading-tight flex-grow">
                                 קופת השכונה
                             </p>
