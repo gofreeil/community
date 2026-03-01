@@ -19,24 +19,30 @@
                     alt="יוצאים לחירות"
                     class="h-20 w-20 md:h-24 md:w-24 object-contain rounded-lg hover:scale-105 transition-transform flex-shrink-0"
                 />
-                
+
                 <!-- Mobile: horizontal layout -->
-                <div class="flex md:hidden flex-col text-right leading-tight text-xs">
-                    <p class="text-yellow-400 font-bold">
+                <div
+                    class="flex md:hidden flex-col text-right leading-tight text-sm"
+                >
+                    <p class="text-yellow-400 font-black text-lg">
                         יוצאים לחירות
                     </p>
-                    <p class="text-gray-400 font-medium">
+                    <p class="text-gray-300 font-extrabold text-base">
                         לכלל פעילות התנועה החברתית
                     </p>
                 </div>
-                
+
                 <!-- Desktop: original layout -->
-                <div class="hidden md:flex md:flex-col text-right leading-tight">
-                    <p class="text-sm md:text-base text-gray-400 font-medium">
+                <div
+                    class="hidden md:flex md:flex-col text-right leading-tight gap-1"
+                >
+                    <p
+                        class="text-base md:text-xl text-gray-300 font-extrabold"
+                    >
                         לכלל פעילות התנועה החברתית
                     </p>
                     <p
-                        class="text-base md:text-yellow-400 font-bold flex items-center gap-1 justify-end text-yellow-400"
+                        class="text-lg md:text-2xl font-black flex items-center gap-2 justify-end text-yellow-500"
                     >
                         <span>👉</span> יוצאים לחירות
                     </p>
@@ -45,16 +51,16 @@
 
             <!-- Center: Links -->
             <nav
-                class="flex items-center gap-4 text-xs md:text-sm text-gray-400"
+                class="flex items-center gap-4 text-base md:text-lg text-gray-300 font-bold"
             >
                 <a href="/terms" class="hover:text-white transition-colors"
                     >תנאי שימוש</a
                 >
-                <span class="text-gray-700">|</span>
+                <span class="text-gray-600 font-black">|</span>
                 <a href="/privacy" class="hover:text-white transition-colors"
                     >מדיניות פרטיות</a
                 >
-                <span class="text-gray-700">|</span>
+                <span class="text-gray-600 font-black">|</span>
                 <a
                     href="mailto:freedomhasbegun@gmail.com"
                     class="hover:text-white transition-colors">צור קשר</a
@@ -62,7 +68,7 @@
             </nav>
 
             <!-- Left: Copyright -->
-            <p class="hidden md:block text-gray-500 text-sm">
+            <p class="hidden md:block text-gray-400 font-bold text-lg">
                 &copy; {new Date().getFullYear()} כל הזכויות שמורות
             </p>
         </div>
