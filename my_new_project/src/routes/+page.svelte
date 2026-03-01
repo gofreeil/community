@@ -225,8 +225,9 @@
         <!-- Desktop: 3 columns, Mobile: horizontal scroll -->
         <div class="hidden md:grid md:grid-cols-3 gap-6">
             <!-- כותל המשאלות -->
-            <div
-                class="group relative overflow-hidden rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-blue-500/30 transition-all duration-300 hover:-translate-y-2 flex flex-col"
+            <a
+                href="/community-fund"
+                class="group relative overflow-hidden rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-blue-500/30 transition-all duration-300 hover:-translate-y-2 flex flex-col cursor-pointer"
             >
                 <!-- Background image -->
                 <div
@@ -267,7 +268,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </a>
 
             <!-- פנה לוועד השכונה -->
             <div
@@ -367,7 +368,10 @@
         <div class="md:hidden">
             <div class="grid grid-cols-3 gap-2 h-32">
                 <!-- כותל המשאלות - Mobile -->
-                <div class="relative overflow-hidden rounded-lg h-full">
+                <a
+                    href="/community-fund"
+                    class="relative overflow-hidden rounded-lg h-full block cursor-pointer"
+                >
                     <!-- Background image -->
                     <div
                         class="absolute inset-0 bg-cover bg-center"
@@ -397,7 +401,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </a>
 
                 <!-- פנה לוועד השכונה - Mobile -->
                 <div class="relative overflow-hidden rounded-lg h-full">
