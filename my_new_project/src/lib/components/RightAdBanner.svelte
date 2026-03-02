@@ -60,7 +60,7 @@
 </script>
 
 <!-- RightAdBanner.svelte -->
-<aside class="hidden xl:block w-36 flex-shrink-0">
+<aside class="hidden xl:block w-36 flex-shrink-0 sticky top-4 h-fit pb-8">
     <div class="space-y-3">
         {#each ads as ad, index}
             <div

@@ -38,7 +38,7 @@
 		margin: 0 auto;
 		display: flex;
 		gap: 2rem;
-		padding: 2rem;
+		padding: 2rem 2rem 0 2rem;
 		width: 100%;
 	}
 

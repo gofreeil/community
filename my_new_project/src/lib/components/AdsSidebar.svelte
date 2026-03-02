@@ -1,5 +1,4 @@
-<!-- AdsSidebar.svelte -->
-<aside class="hidden lg:block w-48 flex-shrink-0 sticky top-4 h-fit">
+<aside class="hidden lg:block w-48 flex-shrink-0 sticky top-4 h-fit pb-8">
     <div class="space-y-4">
         <!-- Ad 0 - בתי הפיוס (חדש - ראשון) -->
         <a
@@ -296,7 +295,10 @@
             target="_blank"
             class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105 group relative"
         >
-            <div class="relative overflow-hidden bg-gradient-to-br from-blue-900 to-cyan-900" style="height: 180px;">
+            <div
+                class="relative overflow-hidden bg-gradient-to-br from-blue-900 to-cyan-900"
+                style="height: 180px;"
+            >
                 <img
                     src="/images/סיוע לנפגעים.png?v=4"
                     alt="סיוע לנפגעים מינית"
