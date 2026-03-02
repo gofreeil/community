@@ -91,6 +91,36 @@
             ],
         },
         {
+            id: "restaurants",
+            label: "חנות מזון",
+            icon: "🍱",
+            items: [
+                { id: "pizza-local", label: "פיצה השכונה" },
+                { id: "falafel-hot", label: "פלאפל חם וטרי" },
+                { id: "grocery-delivery", label: "משלוחי פירות וירקות" },
+            ],
+        },
+        {
+            id: "rides",
+            label: "טרמפים",
+            icon: "🚗",
+            items: [
+                { id: "ride-jerusalem", label: "טרמפ יומי לירושלים (7:00)" },
+                { id: "ride-tel-aviv", label: 'מציע טרמפ למרכז בסופ"ש' },
+                { id: "ride-request", label: "מחפש טרמפ קבוע לבני ברק" },
+            ],
+        },
+        {
+            id: "for_kids",
+            label: "לילדים",
+            icon: "🎈",
+            items: [
+                { id: "jamboree", label: "ג'ימבורי שכונתי" },
+                { id: "story-time", label: "שעת סיפור בספרייה" },
+                { id: "playground-updates", label: "עדכוני גינות משחקים" },
+            ],
+        },
+        {
             id: "jobs",
             label: "דרושים עובדים",
             icon: "💼",
@@ -213,7 +243,9 @@
         business: ["babysitter-shira"],
         minyanim: ["minyan-shacharit"],
         shops: ["shop-makolet"],
-        restaurants: [],
+        restaurants: ["pizza-local", "falafel-hot"],
+        rides: ["ride-jerusalem"],
+        for_kids: ["jamboree"],
         education: ["activity-soccer"],
     };
 
@@ -271,6 +303,33 @@
             icon: "🎨",
             label: "חוג כדורגל",
             color: "red",
+        },
+        {
+            id: "pizza-local",
+            category: "restaurants",
+            top: "45%",
+            left: "20%",
+            icon: "🍕",
+            label: "פיצה השכונה",
+            color: "orange",
+        },
+        {
+            id: "ride-jerusalem",
+            category: "rides",
+            top: "80%",
+            left: "40%",
+            icon: "🚗",
+            label: "טרמפים",
+            color: "green",
+        },
+        {
+            id: "jamboree",
+            category: "for_kids",
+            top: "15%",
+            left: "65%",
+            icon: "🎈",
+            label: "ג'ימבורי",
+            color: "pink",
         },
     ];
 
