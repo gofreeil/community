@@ -1,7 +1,9 @@
 <script lang="ts">
     import { onMount } from "svelte";
 
-    let currentAd = 0;
+    let currentGroup = $state(0);
+    let totalSwaps = $state(0);
+    const MAX_SWAPS = 6; // 3 full cycles of 2 groups
 
     const ads = [
         {
@@ -48,25 +50,85 @@
             hoverText: "group-hover:text-amber-200",
             buttonColor: "bg-amber-600 hover:bg-amber-500",
         },
+        {
+            text: "מקום פרסום",
+            description: "זה יכול להיות שלך",
+            borderColor: "border-purple-500/30",
+            bgColor: "bg-purple-900/10",
+            hoverBorder: "hover:border-purple-500",
+            hoverBg: "hover:bg-purple-900/20",
+            textColor: "text-purple-400",
+            hoverText: "group-hover:text-purple-200",
+            buttonColor: "bg-purple-600 hover:bg-purple-500",
+        },
+        {
+            text: "מקום פרסום",
+            description: "זה יכול להיות שלך",
+            borderColor: "border-red-500/30",
+            bgColor: "bg-red-900/10",
+            hoverBorder: "hover:border-red-500",
+            hoverBg: "hover:bg-red-900/20",
+            textColor: "text-red-400",
+            hoverText: "group-hover:text-red-200",
+            buttonColor: "bg-red-600 hover:bg-red-500",
+        },
+        {
+            text: "מקום פרסום",
+            description: "זה יכול להיות שלך",
+            borderColor: "border-indigo-500/30",
+            bgColor: "bg-indigo-900/10",
+            hoverBorder: "hover:border-indigo-500",
+            hoverBg: "hover:bg-indigo-900/20",
+            textColor: "text-indigo-400",
+            hoverText: "group-hover:text-indigo-200",
+            buttonColor: "bg-indigo-600 hover:bg-indigo-500",
+        },
+        {
+            text: "מקום פרסום",
+            description: "זה יכול להיות שלך",
+            borderColor: "border-teal-500/30",
+            bgColor: "bg-teal-900/10",
+            hoverBorder: "hover:border-teal-500",
+            hoverBg: "hover:bg-teal-900/20",
+            textColor: "text-teal-400",
+            hoverText: "group-hover:text-teal-200",
+            buttonColor: "bg-teal-600 hover:bg-teal-500",
+        },
     ];
 
     onMount(() => {
         const interval = setInterval(() => {
-            currentAd = (currentAd + 1) % ads.length;
+            if (totalSwaps < MAX_SWAPS) {
+                currentGroup = (currentGroup + 1) % 2;
+                totalSwaps++;
+            } else {
+                clearInterval(interval);
+            }
         }, 6000);
 
         return () => clearInterval(interval);
     });
+
+    let displayedAds = $derived(
+        ads.slice(currentGroup * 4, (currentGroup + 1) * 4),
+    );
 </script>
 
 <!-- RightAdBanner.svelte -->
 <aside class="hidden xl:block w-36 flex-shrink-0 sticky top-4 h-fit pb-8">
     <div class="space-y-3">
-        {#each ads as ad, index}
+        {#each displayedAds as ad, index}
             <div
-                class="h-[560px] flex flex-col items-center justify-center rounded-2xl border-2 border-dashed {ad.borderColor} {ad.bgColor} p-3 text-center transition-all {ad.hoverBorder} {ad.hoverBg} group duration-700"
+                class="h-[560px] flex flex-col items-center justify-center rounded-2xl border-2 border-dashed {ad.borderColor} {ad.bgColor} p-3 text-center transition-all {ad.hoverBorder} {ad.hoverBg} group duration-700 relative overflow-hidden"
                 style="animation: fadeIn 0.7s ease-in-out;"
             >
+                <!-- Ad Numbering -->
+                <div
+                    class="absolute top-2 left-2 text-[10px] font-bold text-white/40 bg-white/5 px-2 py-0.5 rounded-full"
+                >
+                    {currentGroup * 4 + index + 1}/8
+                </div>
+
                 <div
                     class="flex flex-col items-center justify-between h-full py-6 relative overflow-hidden w-full"
                 >
