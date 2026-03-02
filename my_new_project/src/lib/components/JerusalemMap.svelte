@@ -147,6 +147,16 @@
                 { id: "event-kumzitz", label: "קומזיץ שכונתי" },
             ],
         },
+        {
+            id: "attractions",
+            label: "אטרקציות",
+            icon: "🎡",
+            items: [
+                { id: "attraction-park", label: "פארק שעשועים מקומי" },
+                { id: "attraction-museum", label: "מוזיאון המדע לילדים" },
+                { id: "attraction-zoo", label: "פינת חי קהילתית" },
+            ],
+        },
     ];
 
     let viewMode = $state<"map" | "list">("map");
@@ -246,6 +256,7 @@
         restaurants: ["pizza-local", "falafel-hot"],
         rides: ["ride-jerusalem"],
         for_kids: ["jamboree"],
+        attractions: ["attraction-park", "attraction-museum"],
         education: ["activity-soccer"],
     };
 
@@ -330,6 +341,24 @@
             icon: "🎈",
             label: "ג'ימבורי",
             color: "pink",
+        },
+        {
+            id: "attraction-park",
+            category: "attractions",
+            top: "10%",
+            left: "15%",
+            icon: "🎡",
+            label: "פארק שעשועים",
+            color: "indigo",
+        },
+        {
+            id: "attraction-museum",
+            category: "attractions",
+            top: "20%",
+            left: "85%",
+            icon: "🏛️",
+            label: "מוזיאון המדע",
+            color: "indigo",
         },
     ];
 
