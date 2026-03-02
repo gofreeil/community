@@ -1,6 +1,7 @@
 <script lang="ts">
     import { t } from "svelte-i18n";
     import JerusalemMap from "$lib/components/JerusalemMap.svelte";
+    import NewsTicker from "$lib/components/NewsTicker.svelte";
     import LostAndFound from "$lib/components/LostAndFound.svelte";
     import FacebookComments from "$lib/components/FacebookComments.svelte";
     import ReferendumBanner from "$lib/components/ReferendumBanner.svelte";
@@ -134,6 +135,11 @@
             {/if}
         </div>
     </section>
+
+    <!-- News Ticker - under title -->
+    <div class="max-w-7xl mx-auto px-4 -mt-4 mb-4">
+        <NewsTicker />
+    </div>
 
     <!-- Map + Lost and Found Section (side by side) -->
     <section class="max-w-7xl mx-auto px-4">

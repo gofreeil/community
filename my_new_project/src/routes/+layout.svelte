@@ -23,7 +23,6 @@
 	<div class="layout-container flex-grow">
 		<RightAdBanner />
 		<main class="main-content">
-			<NewsTicker />
 			{@render children()}
 		</main>
 		<AdsSidebar />
