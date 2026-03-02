@@ -3,6 +3,7 @@
     import { t } from "svelte-i18n";
     import { createEventDispatcher } from "svelte";
     import { slide } from "svelte/transition";
+    import { items as itemsData } from "$lib/itemsData";
 
     const dispatch = createEventDispatcher();
 
@@ -15,62 +16,68 @@
             label: 'גמ"חים',
             icon: "🎁",
             items: [
-                'גמ"ח כלי עבודה',
-                'גמ"ח לתינוקות וילדים',
-                'גמ"ח בגדים',
-                'גמ"ח אוכל',
-                'לאתר הגמ"חים הארצי',
+                { id: "gemach-books", label: 'גמ"ח ספרים' },
+                { id: "gemach-tools", label: 'גמ"ח כלי עבודה' },
+                { id: "gemach-baby", label: 'גמ"ח לתינוקות וילדים' },
+                { id: "gemach-national", label: 'לאתר הגמ"חים הארצי' },
             ],
         },
         {
             id: "giveaway",
             label: "למסירה",
             icon: "📦",
-            items: ["רהיטים", "מוצרי חשמל", "ספרים", "בגדים", "צעצועים"],
+            items: [
+                { id: "giveaway-sofa", label: "ספה למסירה" },
+                { id: "giveaway-fridge", label: "מקרר במצב מצוין" },
+                { id: "giveaway-books", label: "ארגז ספרי קודש" },
+            ],
         },
         {
             id: "business",
             label: "בייבי סיטר",
             icon: "👶",
             items: [
-                "בייבי סיטר בשעות הערב",
-                "בייבי סיטר סופי שבוע",
-                "בייבי סיטר קבוע",
+                { id: "babysitter-shira", label: "שירה בייביסיטר" },
+                { id: "babysitter-evening", label: "בייבי סיטר בשעות הערב" },
+                { id: "babysitter-regular", label: "בייבי סיטר קבוע" },
             ],
         },
         {
             id: "minyanim",
             label: "יהדות",
             icon: "✡️",
-            items: ["מניינים לתפילה", "שיעורי תורה", "מקוואות", "בתי כנסת"],
+            items: [
+                { id: "minyan-shacharit", label: "מניין שחרית מרכזי" },
+                { id: "torah-class", label: "שיעור דף היומי" },
+                { id: "mikveh", label: "מקוואות בשכונה" },
+            ],
         },
         {
             id: "education",
             label: "חוגים",
             icon: "🎨",
-            items: ["חוגי ספורט", "חוגי אומנות", "חוגי מוזיקה", "חוגי מדעים"],
+            items: [
+                { id: "activity-soccer", label: "חוג כדורגל לילדים" },
+                { id: "art-class", label: "חוג ציור ופיסול" },
+                { id: "music-class", label: "חוג נגינה בגיטרה" },
+            ],
         },
         {
             id: "realestate",
             label: "אירוח לשבת",
             icon: "🕯️🕯️",
-            items: ["מציע לארח", "מחפש להתארח"],
+            items: [
+                { id: "host-offer", label: "מציע לארח משפחה" },
+                { id: "guest-request", label: "מחפש להתארח בשבת" },
+            ],
         },
         {
             id: "security",
             label: "צימרים",
             icon: "🏡",
-            items: ["צימרים זוגיים", "צימרים משפחתיים", "צימרים עם בריכה"],
-        },
-        {
-            id: "kids",
-            label: "לילדים",
-            icon: "🧒",
             items: [
-                "גני משחקים",
-                "פעילויות לילדים",
-                "ספריות לילדים",
-                "מועדוניות",
+                { id: "zimmer-pair", label: "צימר לזוגות" },
+                { id: "zimmer-family", label: "צימר למשפחות" },
             ],
         },
         {
@@ -78,38 +85,28 @@
             label: "חנויות",
             icon: "🏪",
             items: [
-                "מכולת",
-                "מאפייה",
-                "בית מרקחת",
-                "חנות בגדים",
-                "דואר",
-                "בנקים",
-                "כספומט",
+                { id: "shop-makolet", label: "מכולת השכונה 24/7" },
+                { id: "bakery", label: "מאפיית הבית" },
+                { id: "pharmacy", label: "בית מרקחת שכונתי" },
             ],
-        },
-        {
-            id: "restaurants",
-            label: "מסעדות",
-            icon: "🍽️",
-            items: ["מסעדה", "מזון מהיר"],
-        },
-        {
-            id: "transport",
-            label: "טרמפים",
-            icon: "🚗",
-            items: ["נוסע קבוע ל...", "מציע טרמפ", "דרוש טרמפ"],
         },
         {
             id: "jobs",
             label: "דרושים עובדים",
             icon: "💼",
-            items: ["משרה מלאה", "משרה חלקית", "עבודה מהבית", "נוער"],
+            items: [
+                { id: "job-full", label: "דרוש/ה עובד/ת למשרה מלאה" },
+                { id: "job-teen", label: "עבודה לנוער בחופש" },
+            ],
         },
         {
             id: "singles",
             label: "פנויים/פנויות",
             icon: "❤️",
-            items: ["הצעה לשידוך", "מפגשים", "מחפש/ת"],
+            items: [
+                { id: "match-offer", label: "הצעה לשידוך איכותי" },
+                { id: "singles-meeting", label: "מפגש פנויים פנויות" },
+            ],
         },
     ];
 
@@ -195,26 +192,25 @@
     // מיפוי בין קטגוריות לסימונים במפה
     const categoryMarkers: Record<string, string[]> = {
         benefits: [
-            "gemach",
-            "babysitter",
-            "minyan",
-            "shop",
-            "giveaway",
-            "activity",
-            "restaurant",
+            "gemach-books",
+            "babysitter-shira",
+            "minyan-shacharit",
+            "shop-makolet",
+            "giveaway-sofa",
+            "activity-soccer",
         ],
-        gemachim: ["gemach"],
-        giveaway: ["giveaway"],
-        business: ["babysitter"],
-        minyanim: ["minyan"],
-        shops: ["shop"],
-        restaurants: ["restaurant"],
-        education: ["activity"],
+        gemachim: ["gemach-books"],
+        giveaway: ["giveaway-sofa"],
+        business: ["babysitter-shira"],
+        minyanim: ["minyan-shacharit"],
+        shops: ["shop-makolet"],
+        restaurants: [],
+        education: ["activity-soccer"],
     };
 
     const mapMarkers = [
         {
-            id: "gemach",
+            id: "gemach-books",
             category: "gemachim",
             top: "25%",
             left: "30%",
@@ -223,16 +219,16 @@
             color: "purple",
         },
         {
-            id: "babysitter",
+            id: "babysitter-shira",
             category: "business",
             top: "40%",
             left: "60%",
             icon: "👶",
-            label: "בייבי סיטר",
+            label: "בייבי סיטר (שירה)",
             color: "pink",
         },
         {
-            id: "minyan",
+            id: "minyan-shacharit",
             category: "minyanim",
             top: "60%",
             left: "25%",
@@ -241,7 +237,7 @@
             color: "blue",
         },
         {
-            id: "shop",
+            id: "shop-makolet",
             category: "shops",
             top: "35%",
             left: "75%",
@@ -250,7 +246,7 @@
             color: "green",
         },
         {
-            id: "giveaway",
+            id: "giveaway-sofa",
             category: "giveaway",
             top: "70%",
             left: "55%",
@@ -259,7 +255,7 @@
             color: "orange",
         },
         {
-            id: "activity",
+            id: "activity-soccer",
             category: "education",
             top: "50%",
             left: "45%",
@@ -844,21 +840,25 @@
                 <div class="absolute inset-0 z-10 pointer-events-none">
                     {#each mapMarkers as marker}
                         {#if isMarkerVisible(marker.id)}
-                            <div
-                                class="absolute transition-all duration-500"
+                            <a
+                                href="/items/{marker.id}"
+                                class="absolute transition-all duration-500 pointer-events-auto group/marker"
                                 style="top: {marker.top}; left: {marker.left};"
                             >
-                                <div class="text-center animate-fadeIn">
-                                    <span class="text-3xl drop-shadow-lg"
+                                <div
+                                    class="text-center animate-fadeIn transform transition-transform group-hover/marker:scale-110"
+                                >
+                                    <span
+                                        class="text-3xl drop-shadow-lg block group-hover/marker:bounce"
                                         >{marker.icon}</span
                                     >
                                     <div
-                                        class="bg-{marker.color}-600 text-white text-xs px-2 py-1 rounded mt-1 whitespace-nowrap font-bold shadow-lg"
+                                        class="bg-{marker.color}-600 text-white text-xs px-2 py-1 rounded mt-1 whitespace-nowrap font-bold shadow-lg group-hover/marker:bg-{marker.color}-500 transition-colors"
                                     >
                                         {marker.label}
                                     </div>
                                 </div>
-                            </div>
+                            </a>
                         {/if}
                     {/each}
                 </div>
@@ -936,22 +936,19 @@
                                     class="px-4 pb-4 space-y-2 animate-slideDown"
                                 >
                                     {#each category.items as item}
-                                        <div
-                                            class="bg-purple-900/20 border border-purple-500/20 rounded-lg p-3 hover:bg-purple-900/30 hover:border-purple-500/40 transition-all cursor-pointer"
+                                        <a
+                                            href="/items/{item.id}"
+                                            class="bg-purple-900/20 border border-purple-500/20 rounded-lg p-3 hover:bg-purple-900/30 hover:border-purple-500/40 transition-all cursor-pointer flex items-center justify-between group/item"
                                         >
-                                            <div
-                                                class="flex items-center justify-between"
+                                            <span class="text-white text-sm"
+                                                >• {item.label}</span
                                             >
-                                                <span class="text-white text-sm"
-                                                    >• {item}</span
-                                                >
-                                                <button
-                                                    class="bg-purple-600 hover:bg-purple-500 text-white px-3 py-1 rounded text-xs font-bold transition-colors"
-                                                >
-                                                    פרטים
-                                                </button>
+                                            <div
+                                                class="bg-purple-600 group-hover/item:bg-purple-500 text-white px-3 py-1 rounded text-xs font-bold transition-colors"
+                                            >
+                                                צפה בפרטים
                                             </div>
-                                        </div>
+                                        </a>
                                     {/each}
                                 </div>
                             {/if}
