@@ -451,7 +451,7 @@
                     <!-- Background image -->
                     <div
                         class="absolute inset-0 bg-cover bg-center"
-                        style="background-image: url('/images/2.png');"
+                        style="background-image: url('/images/כוננות.png');"
                     ></div>
                     <!-- Dark gradient overlay -->
                     <div
