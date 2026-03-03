@@ -1,4 +1,11 @@
-<aside class="hidden lg:block w-48 flex-shrink-0 sticky top-4 h-fit pb-8">
+<aside
+    class="hidden lg:block w-48 flex-shrink-0 sticky top-4 h-fit pb-8 text-center"
+>
+    <h4
+        class="text-[10px] font-bold text-gray-400/80 uppercase tracking-widest mb-2 px-2"
+    >
+        מתקדמים לחברה מתוקנת ועצמאית
+    </h4>
     <div class="space-y-4">
         <!-- Ad 0 - בתי הפיוס (חדש - ראשון) -->
         <a

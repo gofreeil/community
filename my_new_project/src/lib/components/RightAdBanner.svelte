@@ -159,7 +159,14 @@
 </script>
 
 <!-- RightAdBanner.svelte -->
-<aside class="hidden xl:block w-36 flex-shrink-0 sticky top-4 h-fit pb-8">
+<aside
+    class="hidden xl:block w-36 flex-shrink-0 sticky top-4 h-fit pb-8 text-center"
+>
+    <h4
+        class="text-[10px] font-bold text-gray-400/80 uppercase tracking-widest mb-2 px-2"
+    >
+        תוכן שיווקי
+    </h4>
     <div class="space-y-3">
         {#each displayedAds as ad, index}
             <div
