@@ -255,22 +255,15 @@
                         <h3
                             class="text-xl font-black mb-2 transition-all duration-300 group-hover:text-blue-200"
                         >
-                            <span class="group-hover:hidden"
-                                >כותל המשאלות השכונתי</span
-                            >
+                            <span class="group-hover:hidden">כותל המשאלות</span>
                             <span class="hidden group-hover:inline"
-                                >קופת השכונה</span
+                                >עניי עירך קודמין</span
                             >
                         </h3>
-                        <p
-                            class="text-sm mb-4 text-blue-100 transition-colors duration-300 group-hover:text-white flex-grow"
-                        >
-                            קופת השכונה לסייע לנזקקים
-                        </p>
                         <div
                             class="bg-blue-600/50 hover:bg-blue-600/70 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all w-full group-hover:scale-105 group-hover:shadow-lg text-center mt-auto"
                         >
-                            הוסף משאלה
+                            קופת השכונה
                         </div>
                     </div>
                 </div>
@@ -393,17 +386,12 @@
                         >
                             <span class="text-2xl mb-1 block">🙏</span>
                             <h3 class="text-sm font-black mb-1">
-                                כותל המשאלות השכונתי
+                                כותל המשאלות
                             </h3>
-                            <p
-                                class="text-xs mb-2 text-blue-100 leading-tight flex-grow"
-                            >
-                                קופת השכונה
-                            </p>
                             <div
                                 class="bg-blue-600/50 text-white px-2 py-1 rounded text-xs font-bold text-center"
                             >
-                                הוסף משאלה
+                                קופת השכונה
                             </div>
                         </div>
                     </div>
