@@ -293,22 +293,17 @@
                         <h3
                             class="text-xl font-black mb-2 transition-all duration-300 group-hover:text-purple-200"
                         >
-                            <span class="group-hover:hidden"
-                                >פנה לוועד השכונה</span
-                            >
-                            <span class="hidden group-hover:inline"
-                                >הוועד כאן בשבילך</span
-                            >
+                            ועד השכונה
                         </h3>
                         <p
-                            class="text-sm mb-4 text-purple-100 transition-colors duration-300 group-hover:text-white flex-grow"
+                            class="text-sm mb-4 text-purple-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex-grow"
                         >
                             יש לך הצעה? רוצה לשפר את השכונה?
                         </p>
                         <button
                             class="bg-purple-600/50 hover:bg-purple-600/70 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all w-full group-hover:scale-105 group-hover:shadow-xl mt-auto"
                         >
-                            צור קשר עכשיו
+                            פנה לועד השכונה
                         </button>
                     </div>
                 </div>
@@ -419,22 +414,12 @@
                             <h3
                                 class="text-sm font-black mb-1 transition-all duration-300 group-hover:text-purple-200"
                             >
-                                <span class="group-hover:hidden"
-                                    >ועד השכונה</span
-                                >
-                                <span class="hidden group-hover:inline"
-                                    >הוועד כאן בשבילך</span
-                                >
+                                ועד השכונה
                             </h3>
-                            <p
-                                class="text-xs mb-2 text-purple-100 leading-tight flex-grow transition-colors duration-300 group-hover:text-white"
-                            >
-                                יש לך הצעה?
-                            </p>
                             <button
                                 class="bg-purple-600/50 text-white px-2 py-1 rounded text-xs font-bold w-full transition-all group-hover:scale-105 group-hover:shadow-xl hover:bg-purple-600/70"
                             >
-                                צור קשר
+                                פנה לועד השכונה
                             </button>
                         </div>
                     </div>
