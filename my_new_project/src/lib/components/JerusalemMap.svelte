@@ -571,6 +571,10 @@
                 // Create left arrow only (mobile only)
                 // Check if we're on mobile (screen width < 768px)
                 if (window.innerWidth < 768) {
+                    // Check if it already exists to prevent duplicates
+                    if (document.querySelector(".mobile-scroll-arrow-left"))
+                        return;
+
                     const leftArrowEl = document.createElement("div");
                     leftArrowEl.className =
                         "mobile-scroll-arrow mobile-scroll-arrow-left";
@@ -637,7 +641,10 @@
                     );
                     existingArrows.forEach((arrow) => arrow.remove());
                 } else {
-                    createClickableArrows();
+                    // Only recreate if not already present to avoid flicker
+                    if (!document.querySelector(".mobile-scroll-arrow")) {
+                        createClickableArrows();
+                    }
                 }
             };
 
@@ -1566,24 +1573,31 @@
         }
 
         .map-category-button {
-            min-width: 60px !important;
-            max-width: 80px !important;
-            padding: 6px 8px !important;
-            font-size: 11px !important;
-            margin: 2px !important;
+            min-width: auto !important;
+            max-width: none !important;
+            padding: 8px 12px !important;
+            font-size: 14px !important;
+            margin: 0 !important;
             flex: 0 0 auto !important;
+            border-radius: 9999px !important; /* כפתורי "גלולה" */
+            white-space: nowrap !important;
         }
 
-        .flex.flex-wrap.justify-start.gap-3.p-2.w-full {
-            gap: 8px !important;
-            justify-content: flex-start !important;
+        .category-buttons-container {
+            display: flex !important;
             flex-wrap: nowrap !important;
             overflow-x: auto !important;
-            padding: 8px !important;
-            margin-bottom: 8px !important;
+            overflow-y: hidden !important;
+            gap: 8px !important;
+            padding: 12px 16px !important;
+            margin-bottom: 4px !important;
             scroll-behavior: smooth !important;
             -webkit-overflow-scrolling: touch !important;
-            position: relative !important;
+            scrollbar-width: none !important; /* הסתרת סרגל גלילה ב-Firefox */
+        }
+
+        .category-buttons-container::-webkit-scrollbar {
+            display: none !important; /* הסתרת סרגל גלילה ב-Chrome/Safari */
         }
 
         /* Remove CSS pseudo-elements to prevent duplicates */
