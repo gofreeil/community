@@ -157,6 +157,15 @@
                 { id: "attraction-zoo", label: "פינת חי קהילתית" },
             ],
         },
+        {
+            id: "safe-space",
+            label: "מרחב מוגן",
+            icon: "🛡️",
+            items: [
+                { id: "safe-1", label: "מקלט ציבורי מרכזי" },
+                { id: "safe-2", label: "מרחב מוגן קהילתי" },
+            ],
+        },
     ];
 
     let viewMode = $state<"map" | "list">("map");
@@ -258,6 +267,7 @@
         for_kids: ["jamboree"],
         attractions: ["attraction-park", "attraction-museum"],
         education: ["activity-soccer"],
+        "safe-space": ["safe-1"],
     };
 
     const mapMarkers = [
@@ -359,6 +369,15 @@
             icon: "🏛️",
             label: "מוזיאון המדע",
             color: "indigo",
+        },
+        {
+            id: "safe-1",
+            category: "safe-space",
+            top: "30%",
+            left: "50%",
+            icon: "🛡️",
+            label: "מרחב מוגן",
+            color: "yellow",
         },
     ];
 
