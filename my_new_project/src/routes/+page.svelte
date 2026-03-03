@@ -253,7 +253,7 @@
                             >🙏</span
                         >
                         <h3
-                            class="text-xl font-black mb-2 transition-all duration-300 group-hover:text-blue-200"
+                            class="text-xl font-black mb-2 transition-all duration-300 group-hover:text-yellow-200"
                         >
                             <span class="group-hover:hidden">כותל המשאלות</span>
                             <span class="hidden group-hover:inline"
@@ -291,7 +291,7 @@
                             >🏛️</span
                         >
                         <h3
-                            class="text-xl font-black mb-2 transition-all duration-300 group-hover:text-purple-200"
+                            class="text-xl font-black mb-2 transition-all duration-300 group-hover:text-yellow-200"
                         >
                             ועד השכונה
                         </h3>
@@ -338,11 +338,6 @@
                                 >חזק את ביטחון השכונה</span
                             >
                         </h3>
-                        <p
-                            class="text-sm mb-4 text-yellow-100 transition-colors duration-300 group-hover:text-white flex-grow"
-                        >
-                            הצטרף לכיתת הכוננות של השכונה
-                        </p>
                         <p
                             class="text-xs mb-3 text-yellow-100 transition-colors duration-300 group-hover:text-white group-hover:font-bold"
                         >
