@@ -3,7 +3,7 @@
 
     let currentGroup = $state(0);
     let totalSwaps = $state(0);
-    const MAX_SWAPS = 6; // 3 full cycles of 2 groups
+    const MAX_SWAPS = 8; // 3 full cycles of 3 groups (original + 8 swaps = 9 steps)
 
     const ads = [
         {
@@ -94,12 +94,56 @@
             hoverText: "group-hover:text-teal-200",
             buttonColor: "bg-teal-600 hover:bg-teal-500",
         },
+        {
+            text: "מקום פרסום",
+            description: "זה יכול להיות שלך",
+            borderColor: "border-pink-500/30",
+            bgColor: "bg-pink-900/10",
+            hoverBorder: "hover:border-pink-500",
+            hoverBg: "hover:bg-pink-900/20",
+            textColor: "text-pink-400",
+            hoverText: "group-hover:text-pink-200",
+            buttonColor: "bg-pink-600 hover:bg-pink-500",
+        },
+        {
+            text: "מקום פרסום",
+            description: "זה יכול להיות שלך",
+            borderColor: "border-yellow-500/30",
+            bgColor: "bg-yellow-900/10",
+            hoverBorder: "hover:border-yellow-500",
+            hoverBg: "hover:bg-yellow-900/20",
+            textColor: "text-yellow-400",
+            hoverText: "group-hover:text-yellow-200",
+            buttonColor: "bg-yellow-600 hover:bg-yellow-500",
+        },
+        {
+            text: "מקום פרסום",
+            description: "זה יכול להיות שלך",
+            borderColor: "border-emerald-500/30",
+            bgColor: "bg-emerald-900/10",
+            hoverBorder: "hover:border-emerald-500",
+            hoverBg: "hover:bg-emerald-900/20",
+            textColor: "text-emerald-400",
+            hoverText: "group-hover:text-emerald-200",
+            buttonColor: "bg-emerald-600 hover:bg-emerald-500",
+        },
+        {
+            text: "מקום פרסום",
+            description: "זה יכול להיות שלך",
+            borderColor: "border-fuchsia-500/30",
+            bgColor: "bg-fuchsia-900/10",
+            hoverBorder: "hover:border-fuchsia-500",
+            hoverBg: "hover:bg-fuchsia-900/20",
+            textColor: "text-fuchsia-400",
+            hoverText: "group-hover:text-fuchsia-200",
+            buttonColor: "bg-fuchsia-600 hover:bg-fuchsia-500",
+        },
     ];
 
     onMount(() => {
         const interval = setInterval(() => {
             if (totalSwaps < MAX_SWAPS) {
-                currentGroup = (currentGroup + 1) % 2;
+                currentGroup = (currentGroup + 1) % 3;
                 totalSwaps++;
             } else {
                 clearInterval(interval);
