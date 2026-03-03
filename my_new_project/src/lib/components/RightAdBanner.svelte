@@ -8,7 +8,7 @@
     const ads = [
         {
             text: "מקום פרסום",
-            description: "זה יכול להיות שלך",
+            description: "יכול להיות שלך",
             borderColor: "border-orange-500/30",
             bgColor: "bg-orange-900/10",
             hoverBorder: "hover:border-orange-500",
@@ -19,7 +19,7 @@
         },
         {
             text: "מקום פרסום",
-            description: "זה יכול להיות שלך",
+            description: "יכול להיות שלך",
             borderColor: "border-blue-500/30",
             bgColor: "bg-blue-900/10",
             hoverBorder: "hover:border-blue-500",
@@ -30,7 +30,7 @@
         },
         {
             text: "מקום פרסום",
-            description: "זה יכול להיות שלך",
+            description: "יכול להיות שלך",
             borderColor: "border-green-500/30",
             bgColor: "bg-green-900/10",
             hoverBorder: "hover:border-green-500",
@@ -41,7 +41,7 @@
         },
         {
             text: "מקום פרסום",
-            description: "זה יכול להיות שלך",
+            description: "יכול להיות שלך",
             borderColor: "border-amber-500/30",
             bgColor: "bg-amber-900/10",
             hoverBorder: "hover:border-amber-500",
@@ -52,7 +52,7 @@
         },
         {
             text: "מקום פרסום",
-            description: "זה יכול להיות שלך",
+            description: "יכול להיות שלך",
             borderColor: "border-purple-500/30",
             bgColor: "bg-purple-900/10",
             hoverBorder: "hover:border-purple-500",
@@ -63,7 +63,7 @@
         },
         {
             text: "מקום פרסום",
-            description: "זה יכול להיות שלך",
+            description: "יכול להיות שלך",
             borderColor: "border-red-500/30",
             bgColor: "bg-red-900/10",
             hoverBorder: "hover:border-red-500",
@@ -74,7 +74,7 @@
         },
         {
             text: "מקום פרסום",
-            description: "זה יכול להיות שלך",
+            description: "יכול להיות שלך",
             borderColor: "border-indigo-500/30",
             bgColor: "bg-indigo-900/10",
             hoverBorder: "hover:border-indigo-500",
@@ -85,7 +85,7 @@
         },
         {
             text: "מקום פרסום",
-            description: "זה יכול להיות שלך",
+            description: "יכול להיות שלך",
             borderColor: "border-teal-500/30",
             bgColor: "bg-teal-900/10",
             hoverBorder: "hover:border-teal-500",
@@ -96,7 +96,7 @@
         },
         {
             text: "מקום פרסום",
-            description: "זה יכול להיות שלך",
+            description: "יכול להיות שלך",
             borderColor: "border-pink-500/30",
             bgColor: "bg-pink-900/10",
             hoverBorder: "hover:border-pink-500",
@@ -107,7 +107,7 @@
         },
         {
             text: "מקום פרסום",
-            description: "זה יכול להיות שלך",
+            description: "יכול להיות שלך",
             borderColor: "border-yellow-500/30",
             bgColor: "bg-yellow-900/10",
             hoverBorder: "hover:border-yellow-500",
@@ -118,7 +118,7 @@
         },
         {
             text: "מקום פרסום",
-            description: "זה יכול להיות שלך",
+            description: "יכול להיות שלך",
             borderColor: "border-emerald-500/30",
             bgColor: "bg-emerald-900/10",
             hoverBorder: "hover:border-emerald-500",
@@ -129,7 +129,7 @@
         },
         {
             text: "מקום פרסום",
-            description: "זה יכול להיות שלך",
+            description: "יכול להיות שלך",
             borderColor: "border-fuchsia-500/30",
             bgColor: "bg-fuchsia-900/10",
             hoverBorder: "hover:border-fuchsia-500",
@@ -168,7 +168,7 @@
             >
                 <!-- Ad Numbering -->
                 <div
-                    class="absolute top-3 left-3 text-sm font-black text-white/60 bg-white/10 px-3 py-1 rounded-full border border-white/5 backdrop-blur-sm shadow-sm"
+                    class="absolute top-3 right-3 text-sm font-black text-white/60 bg-white/10 px-3 py-1 rounded-full border border-white/5 backdrop-blur-sm shadow-sm"
                 >
                     {currentGroup * 4 + index + 1}
                 </div>
@@ -191,7 +191,7 @@
                             <span
                                 class="text-2xl font-black {ad.textColor} {ad.hoverText} tracking-wider drop-shadow-sm"
                             >
-                                {ad.text}
+                                {ad.text} זה
                             </span>
                             <span
                                 class="text-base font-bold {ad.textColor} {ad.hoverText} opacity-90 drop-shadow-sm"
