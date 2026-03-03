@@ -124,9 +124,9 @@
             >
                 <!-- Ad Numbering -->
                 <div
-                    class="absolute top-2 left-2 text-[10px] font-bold text-white/40 bg-white/5 px-2 py-0.5 rounded-full"
+                    class="absolute top-3 left-3 text-sm font-black text-white/60 bg-white/10 px-3 py-1 rounded-full border border-white/5 backdrop-blur-sm shadow-sm"
                 >
-                    {currentGroup * 4 + index + 1}/8
+                    {currentGroup * 4 + index + 1}
                 </div>
 
                 <div
