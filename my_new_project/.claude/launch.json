@@ -1,0 +1,18 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dev",
+      "runtimeExecutable": "powershell",
+      "runtimeArgs": ["-Command", "npm run dev"],
+      "port": 5173,
+      "autoPort": true
+    },
+    {
+      "name": "preview",
+      "runtimeExecutable": "npm.cmd",
+      "runtimeArgs": ["run", "preview"],
+      "port": 4173
+    }
+  ]
+}
