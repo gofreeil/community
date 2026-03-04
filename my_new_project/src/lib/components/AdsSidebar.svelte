@@ -125,7 +125,7 @@
 
         <!-- Ad 6 - Empty Ad Space -->
         <a
-            href="mailto:contact@example.com?subject=מעוניין בפרסום"
+            href="/advertise"
             class="block overflow-hidden rounded-lg border-4 border-dashed border-blue-400/50 bg-blue-900/10 backdrop-blur-sm shadow-lg transition-all hover:scale-105 hover:border-blue-500 hover:bg-blue-900/20"
         >
             <div
