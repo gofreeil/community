@@ -1,0 +1,114 @@
+<script lang="ts">
+    const packages = [
+        {
+            name: "באנר צד",
+            icon: "📌",
+            location: "סרגל ימין/שמאל",
+            size: "144×560px",
+            color: "from-blue-600 to-cyan-600",
+            border: "border-blue-500/40",
+            bg: "bg-blue-900/10",
+            features: ["חשיפה גבוהה בכל עמוד", "קהל מקומי ממוקד", "לינק לאתר שלך"],
+        },
+        {
+            name: "כרטיס תוכן",
+            icon: "🖼️",
+            location: "עמוד הבית - סרגל שמאל",
+            size: "192×auto",
+            color: "from-purple-600 to-pink-600",
+            border: "border-purple-500/40",
+            bg: "bg-purple-900/10",
+            features: ["תמונה + כותרת + תיאור", "hover עם מידע נוסף", "לינק לאתר שלך"],
+        },
+        {
+            name: "פרסומת נייד",
+            icon: "📱",
+            location: "בנר תחתון בנייד",
+            size: "מסך מלא",
+            color: "from-green-600 to-emerald-600",
+            border: "border-green-500/40",
+            bg: "bg-green-900/10",
+            features: ["נראות מקסימלית בנייד", "מופיע לכל מבקר", "קישור ישיר לעסק"],
+        },
+    ];
+
+    const stats = [
+        { value: "500+", label: "מבקרים יומיים" },
+        { value: "קרית משה", label: "קהל מקומי" },
+        { value: "100%", label: "חשיפה שכונתית" },
+    ];
+</script>
+
+<svelte:head>
+    <title>פרסום באתר | קהילה בשכונה</title>
+</svelte:head>
+
+<div class="max-w-4xl mx-auto px-4 py-8 md:py-12" dir="rtl">
+    <!-- Header -->
+    <div class="text-center mb-10 md:mb-14">
+        <div class="text-5xl mb-4">📢</div>
+        <h1 class="text-3xl md:text-5xl font-black bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 bg-clip-text text-transparent mb-4">
+            פרסם באתר הקהילה
+        </h1>
+        <p class="text-gray-300 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
+            הגע לתושבי השכונה ישירות — קהל מקומי, ממוקד ומעורב
+        </p>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-3 gap-4 mb-12">
+        {#each stats as stat}
+            <div class="rounded-2xl bg-white/5 border border-white/10 p-4 md:p-6 text-center">
+                <div class="text-2xl md:text-4xl font-black text-amber-400 mb-1">{stat.value}</div>
+                <div class="text-xs md:text-sm text-gray-400">{stat.label}</div>
+            </div>
+        {/each}
+    </div>
+
+    <!-- Packages -->
+    <h2 class="text-xl md:text-2xl font-black text-white mb-6 text-center">אפשרויות פרסום</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
+        {#each packages as pkg}
+            <div class="rounded-2xl border-2 {pkg.border} {pkg.bg} p-5 flex flex-col">
+                <div class="text-3xl mb-3">{pkg.icon}</div>
+                <h3 class="text-lg font-black text-white mb-1">{pkg.name}</h3>
+                <p class="text-xs text-gray-400 mb-3">{pkg.location}</p>
+                <div class="text-xs bg-white/10 rounded-lg px-2 py-1 text-gray-300 mb-4 inline-block w-fit">
+                    {pkg.size}
+                </div>
+                <ul class="space-y-1.5 mt-auto">
+                    {#each pkg.features as feature}
+                        <li class="text-sm text-gray-300 flex items-center gap-2">
+                            <span class="text-green-400 flex-shrink-0">✓</span>
+                            {feature}
+                        </li>
+                    {/each}
+                </ul>
+            </div>
+        {/each}
+    </div>
+
+    <!-- Contact CTA -->
+    <div class="rounded-2xl bg-gradient-to-br from-amber-900/30 to-yellow-900/20 border-2 border-amber-500/40 p-6 md:p-10 text-center">
+        <h2 class="text-2xl md:text-3xl font-black text-amber-400 mb-3">מעוניינים לפרסם?</h2>
+        <p class="text-gray-300 mb-6 text-base md:text-lg">
+            צרו איתנו קשר ונחזור אליכם עם כל הפרטים
+        </p>
+        <div class="flex flex-col sm:flex-row gap-3 justify-center">
+            <a
+                href="mailto:ads@shchuna.co.il"
+                class="inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-black font-black px-6 py-3 rounded-xl text-base transition-all hover:scale-105 shadow-lg shadow-amber-500/30"
+            >
+                ✉️ שלח מייל
+            </a>
+            <a
+                href="https://wa.me/972500000000"
+                target="_blank"
+                class="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-black px-6 py-3 rounded-xl text-base transition-all hover:scale-105 shadow-lg shadow-green-500/30"
+            >
+                💬 וואטסאפ
+            </a>
+        </div>
+        <p class="text-gray-500 text-sm mt-4">ads@shchuna.co.il</p>
+    </div>
+</div>

@@ -2,7 +2,7 @@
     class="hidden lg:block w-48 flex-shrink-0 sticky top-4 h-fit pb-8 text-center"
 >
     <h4
-        class="text-[10px] font-bold text-gray-400/80 uppercase tracking-widest mb-2 px-2 truncate"
+        class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-2 px-2"
     >
         מתקדמים לחברה מתוקנת ועצמאית
     </h4>
@@ -125,7 +125,7 @@
 
         <!-- Ad 6 - Empty Ad Space -->
         <a
-            href="mailto:contact@example.com?subject=מעוניין בפרסום"
+            href="/advertise"
             class="block overflow-hidden rounded-lg border-4 border-dashed border-blue-400/50 bg-blue-900/10 backdrop-blur-sm shadow-lg transition-all hover:scale-105 hover:border-blue-500 hover:bg-blue-900/20"
         >
             <div

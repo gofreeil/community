@@ -163,7 +163,7 @@
     class="hidden xl:block w-36 flex-shrink-0 sticky top-4 h-fit pb-8 text-center"
 >
     <h4
-        class="text-[10px] font-bold text-gray-400/80 uppercase tracking-widest mb-2 px-2"
+        class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-2 px-2"
     >
         תוכן שיווקי
     </h4>
@@ -209,7 +209,7 @@
                     </div>
 
                     <a
-                        href="mailto:ads@shchuna.co.il"
+                        href="/advertise"
                         class="mb-4 z-10 rounded-full {ad.buttonColor} px-5 py-2 text-sm font-bold text-white shadow-xl transition-transform hover:scale-105"
                     >
                         לפרטים
