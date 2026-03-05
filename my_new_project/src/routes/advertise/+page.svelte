@@ -48,30 +48,40 @@
         { num: 7, type: "פרסומת קבועה",  half: 60,  total: 360, single: 85, reach: "ארצי בלבד",         details: "קבוע" },
     ];
 
-    // --- Calculator state ---
-    let selected = $state<Set<number>>(new Set());
+    // ---- Calculator state: each row can be 'half' | 'single' | unset ----
+    type Plan = 'half' | 'single';
+    let planMap = $state<Map<number, Plan>>(new Map());
 
-    function toggleRow(num: number) {
-        const next = new Set(selected);
-        if (next.has(num)) {
-            next.delete(num);
+    function setPlan(num: number, plan: Plan) {
+        const next = new Map(planMap);
+        if (next.get(num) === plan) {
+            next.delete(num);           // clicking active side = turn off
         } else {
-            next.add(num);
+            next.set(num, plan);
         }
-        selected = next;
+        planMap = next;
     }
 
-    let selectedItems  = $derived(rows.filter(r => selected.has(r.num)));
-    let monthlyHalf    = $derived(selectedItems.reduce((s, r) => s + r.half,   0));
-    let totalSixMonths = $derived(selectedItems.reduce((s, r) => s + r.total,  0));
-    let monthlySingle  = $derived(selectedItems.reduce((s, r) => s + r.single, 0));
-    let hasSelection   = $derived(selected.size > 0);
+    let selectedItems  = $derived(
+        rows
+            .filter(r  => planMap.has(r.num))
+            .map(r => ({ ...r, plan: planMap.get(r.num)! }))
+    );
 
-    // Discount percentage for 6-month deal
-    let discountPct = $derived(
-        monthlySingle > 0
-            ? Math.round((1 - monthlyHalf / monthlySingle) * 100)
-            : 0
+    // What they actually pay: half → 6-month package price, single → one month
+    let totalPayment   = $derived(selectedItems.reduce((s, r) => s + (r.plan === 'half' ? r.total  : r.single), 0));
+    // Monthly equivalent (for display)
+    let totalMonthly   = $derived(selectedItems.reduce((s, r) => s + (r.plan === 'half' ? r.half   : r.single), 0));
+
+    let halfItems      = $derived(selectedItems.filter(r => r.plan === 'half'));
+    let singleItems    = $derived(selectedItems.filter(r => r.plan === 'single'));
+    let hasSelection   = $derived(planMap.size > 0);
+
+    // Build mailto body
+    let mailtoBody = $derived(
+        selectedItems.map(r =>
+            `${r.type} — ${r.plan === 'half' ? `חצי שנה ₪${r.total}` : `חודש בודד ₪${r.single}`}`
+        ).join('%0A') + `%0A%0Aסה״כ: ₪${totalPayment}`
     );
 </script>
 
@@ -80,6 +90,7 @@
 </svelte:head>
 
 <div class="max-w-4xl mx-auto px-4 py-8 md:py-12" dir="rtl">
+
     <!-- Header -->
     <div class="text-center mb-10 md:mb-14">
         <div class="text-5xl mb-4">📢</div>
@@ -109,9 +120,7 @@
                 <div class="text-3xl mb-3">{pkg.icon}</div>
                 <h3 class="text-lg font-black text-white mb-1">{pkg.name}</h3>
                 <p class="text-xs text-gray-400 mb-3">{pkg.location}</p>
-                <div class="text-xs bg-white/10 rounded-lg px-2 py-1 text-gray-300 mb-4 inline-block w-fit">
-                    {pkg.size}
-                </div>
+                <div class="text-xs bg-white/10 rounded-lg px-2 py-1 text-gray-300 mb-4 inline-block w-fit">{pkg.size}</div>
                 <ul class="space-y-1.5 mt-auto">
                     {#each pkg.features as feature}
                         <li class="text-sm text-gray-300 flex items-center gap-2">
@@ -128,55 +137,106 @@
     <h2 class="text-xl md:text-2xl font-black text-white mb-2 text-center flex items-center justify-center gap-2">
         💰 מחירון
     </h2>
-    <p class="text-gray-400 text-sm text-center mb-6">סמן שורות כדי לחשב את עלות הפרסום שלך ↓</p>
+    <p class="text-gray-400 text-sm text-center mb-6">
+        הזז את המתג לבחירת תוכנית — המחשבון יחשב אוטומטית ↓
+    </p>
+
     <div class="mb-6 overflow-x-auto rounded-2xl border border-white/10">
         <table class="w-full text-sm text-right">
             <thead>
                 <tr class="bg-amber-500/20 border-b border-amber-500/30">
-                    <th class="px-3 py-3 font-black text-amber-400 text-center w-12">בחר</th>
+                    <!-- Toggle column header -->
+                    <th class="px-3 py-3 text-center">
+                        <div class="flex flex-col items-center gap-0.5">
+                            <span class="text-[10px] font-bold text-amber-400/70">חצי שנה</span>
+                            <div class="flex items-center gap-1">
+                                <div class="h-px w-4 bg-amber-500/40"></div>
+                                <div class="w-1.5 h-1.5 rounded-full bg-amber-400/60"></div>
+                                <div class="h-px w-4 bg-white/20"></div>
+                            </div>
+                            <span class="text-[10px] font-bold text-gray-500">חודש</span>
+                        </div>
+                    </th>
                     <th class="px-3 py-3 font-black text-amber-400 text-center">#</th>
                     <th class="px-3 py-3 font-black text-amber-400">סוג</th>
-                    <th class="px-3 py-3 font-black text-amber-400 whitespace-nowrap">לחודש ₪<br/><span class="text-xs font-normal text-amber-400/70">(חצי שנה)</span></th>
-                    <th class="px-3 py-3 font-black text-amber-400 whitespace-nowrap">לחודש<br/><span class="text-xs font-normal text-amber-400/70">בודד</span></th>
+                    <th class="px-3 py-3 font-black text-amber-400 whitespace-nowrap text-center">
+                        לחודש ₪<br/><span class="text-xs font-normal text-amber-400/70">(חצי שנה)</span>
+                    </th>
+                    <th class="px-3 py-3 font-black text-amber-400 whitespace-nowrap text-center">
+                        לחודש<br/><span class="text-xs font-normal text-amber-400/70">בודד</span>
+                    </th>
                     <th class="px-3 py-3 font-black text-amber-400">פריסה</th>
                     <th class="px-3 py-3 font-black text-amber-400">פרטים</th>
                 </tr>
             </thead>
             <tbody>
                 {#each rows as row, i}
-                    {@const isSelected = selected.has(row.num)}
-                    <tr
-                        class="border-b border-white/5 transition-colors cursor-pointer
-                            {isSelected
-                                ? 'bg-amber-500/15 border-amber-500/20'
-                                : i % 2 === 0 ? 'bg-white/3 hover:bg-amber-500/5' : 'bg-white/5 hover:bg-amber-500/5'}"
-                        onclick={() => toggleRow(row.num)}
-                    >
-                        <!-- Checkbox button -->
+                    {@const plan = planMap.get(row.num)}
+                    <tr class="border-b border-white/5 transition-colors
+                        {plan === 'half'   ? 'bg-amber-500/10'
+                         : plan === 'single' ? 'bg-blue-500/10'
+                         : i % 2 === 0      ? 'bg-white/3'
+                         :                    'bg-white/5'}">
+
+                        <!-- 3-state toggle -->
                         <td class="px-3 py-3 text-center">
-                            <button
-                                type="button"
-                                onclick={(e) => { e.stopPropagation(); toggleRow(row.num); }}
-                                class="w-7 h-7 rounded-lg border-2 flex items-center justify-center mx-auto transition-all
-                                    {isSelected
-                                        ? 'bg-amber-500 border-amber-500 text-black shadow-lg shadow-amber-500/30 scale-110'
-                                        : 'border-white/30 bg-white/5 hover:border-amber-400 hover:bg-amber-500/10'}"
-                                aria-label="בחר שורה"
-                            >
-                                {#if isSelected}
-                                    <span class="text-sm font-black leading-none">✓</span>
-                                {/if}
-                            </button>
+                            <div class="flex justify-center" onclick={(e) => e.stopPropagation()}>
+                                <!-- Pill container -->
+                                <div
+                                    class="relative inline-flex h-8 rounded-full transition-all duration-300"
+                                    style="
+                                        padding: 2px;
+                                        background: {plan === 'half' ? 'rgba(245,158,11,0.15)' : plan === 'single' ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.05)'};
+                                        border: 1.5px solid {plan === 'half' ? 'rgba(245,158,11,0.5)' : plan === 'single' ? 'rgba(59,130,246,0.5)' : 'rgba(255,255,255,0.12)'};
+                                    "
+                                >
+                                    <!-- Half-year segment (right side in RTL — first child) -->
+                                    <button
+                                        type="button"
+                                        onclick={() => setPlan(row.num, 'half')}
+                                        class="relative z-10 rounded-full px-2.5 text-[10px] font-black transition-all duration-200 whitespace-nowrap leading-none flex items-center"
+                                        style="
+                                            background: {plan === 'half' ? '#f59e0b' : 'transparent'};
+                                            color:      {plan === 'half' ? '#000'    : '#6b7280'};
+                                        "
+                                        title="חצי שנה"
+                                    >½שנה</button>
+
+                                    <!-- Divider dot (only when off) -->
+                                    {#if !plan}
+                                        <div class="self-center w-1 h-1 rounded-full bg-white/20 mx-0.5 flex-shrink-0"></div>
+                                    {/if}
+
+                                    <!-- Single-month segment (left side in RTL — second child) -->
+                                    <button
+                                        type="button"
+                                        onclick={() => setPlan(row.num, 'single')}
+                                        class="relative z-10 rounded-full px-2.5 text-[10px] font-black transition-all duration-200 whitespace-nowrap leading-none flex items-center"
+                                        style="
+                                            background: {plan === 'single' ? '#3b82f6' : 'transparent'};
+                                            color:      {plan === 'single' ? '#fff'    : '#6b7280'};
+                                        "
+                                        title="חודש בודד"
+                                    >חודש</button>
+                                </div>
+                            </div>
                         </td>
-                        <td class="px-3 py-3 text-center font-bold {isSelected ? 'text-amber-400' : 'text-gray-400'}">{row.num}</td>
-                        <td class="px-3 py-3 font-bold {isSelected ? 'text-amber-300' : 'text-white'}">{row.type}</td>
+
+                        <td class="px-3 py-3 text-center font-bold
+                            {plan ? 'text-amber-400' : 'text-gray-400'}">{row.num}</td>
+
+                        <td class="px-3 py-3 font-bold
+                            {plan === 'half' ? 'text-amber-300' : plan === 'single' ? 'text-blue-300' : 'text-white'}">{row.type}</td>
+
                         <td class="px-3 py-3 text-center">
-                            <span class="font-black {isSelected ? 'text-amber-300' : 'text-amber-400'}">₪{row.half}</span>
+                            <span class="font-black {plan === 'half' ? 'text-amber-300' : 'text-amber-400'}">₪{row.half}</span>
                             <span class="text-gray-500 text-xs block">סה"כ ₪{row.total}</span>
                         </td>
+
                         <td class="px-3 py-3 text-center">
-                            <span class="font-bold {isSelected ? 'text-white' : 'text-gray-300'}">₪{row.single}</span>
+                            <span class="font-bold {plan === 'single' ? 'text-blue-300' : 'text-gray-300'}">₪{row.single}</span>
                         </td>
+
                         <td class="px-3 py-3 text-gray-300 text-xs">{row.reach}</td>
                         <td class="px-3 py-3 text-gray-400 text-xs">{row.details}</td>
                     </tr>
@@ -187,119 +247,130 @@
 
     <!-- ===== Calculator Banner ===== -->
     {#if hasSelection}
-        <div class="mb-12 rounded-2xl border-2 border-amber-500/50 bg-gradient-to-br from-amber-950/60 to-yellow-950/40 p-6 md:p-8 shadow-xl shadow-amber-500/10"
+        <div class="mb-12 rounded-2xl border-2 border-white/20 bg-gradient-to-br from-gray-900 to-gray-950 p-6 md:p-8 shadow-2xl"
              style="animation: slideDown 0.3s ease-out;">
+
             <!-- Title -->
             <div class="flex items-center justify-center gap-3 mb-6">
                 <span class="text-3xl">🧮</span>
-                <h2 class="text-xl md:text-2xl font-black text-amber-400">מחשבון פרסום</h2>
-                <span class="bg-amber-500 text-black text-xs font-black px-2 py-0.5 rounded-full">
-                    {selected.size} נבחרו
+                <h2 class="text-xl md:text-2xl font-black text-white">מחשבון פרסום</h2>
+                <span class="bg-white/10 border border-white/20 text-gray-300 text-xs font-black px-2 py-0.5 rounded-full">
+                    {planMap.size} נבחרו
                 </span>
             </div>
 
             <!-- Selected items breakdown -->
-            <div class="bg-black/30 rounded-xl border border-white/10 mb-6 overflow-hidden">
-                <div class="px-4 py-2 bg-white/5 border-b border-white/10">
+            <div class="bg-black/40 rounded-xl border border-white/10 mb-6 overflow-hidden">
+                <div class="px-4 py-2 bg-white/5 border-b border-white/10 flex items-center justify-between">
                     <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">פרסומות שנבחרו</p>
+                    <div class="flex gap-3 text-[10px]">
+                        {#if halfItems.length > 0}
+                            <span class="text-amber-400 font-bold">🟡 {halfItems.length} חצי שנה</span>
+                        {/if}
+                        {#if singleItems.length > 0}
+                            <span class="text-blue-400 font-bold">🔵 {singleItems.length} חודש בודד</span>
+                        {/if}
+                    </div>
                 </div>
                 <ul class="divide-y divide-white/5">
                     {#each selectedItems as item}
-                        <li class="flex items-center justify-between px-4 py-3">
-                            <div class="flex items-center gap-2">
+                        <li class="flex items-center justify-between px-4 py-3 gap-3">
+                            <div class="flex items-center gap-2 min-w-0">
                                 <button
                                     type="button"
-                                    onclick={() => toggleRow(item.num)}
-                                    class="text-gray-500 hover:text-red-400 transition-colors text-xs leading-none"
+                                    onclick={() => { const n = new Map(planMap); n.delete(item.num); planMap = n; }}
+                                    class="text-gray-600 hover:text-red-400 transition-colors text-xs flex-shrink-0"
                                     aria-label="הסר"
                                 >✕</button>
-                                <span class="text-white font-bold text-sm">{item.type}</span>
-                                <span class="text-gray-500 text-xs">({item.reach})</span>
+                                <span class="font-bold text-sm truncate
+                                    {item.plan === 'half' ? 'text-amber-200' : 'text-blue-200'}">{item.type}</span>
                             </div>
-                            <div class="text-left flex gap-4 shrink-0">
-                                <div class="text-center">
-                                    <span class="text-amber-400 font-black text-sm">₪{item.half}</span>
-                                    <span class="text-gray-500 text-xs block">לחודש</span>
-                                </div>
-                                <div class="text-center">
-                                    <span class="text-gray-400 font-bold text-sm">₪{item.single}</span>
-                                    <span class="text-gray-600 text-xs block">בודד</span>
-                                </div>
+                            <div class="flex items-center gap-3 flex-shrink-0">
+                                <!-- Plan badge -->
+                                <span class="text-[10px] font-black px-2 py-0.5 rounded-full
+                                    {item.plan === 'half'
+                                        ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                                        : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'}">
+                                    {item.plan === 'half' ? '½ שנה' : 'חודש'}
+                                </span>
+                                <!-- Price -->
+                                <span class="font-black text-sm {item.plan === 'half' ? 'text-amber-400' : 'text-blue-400'}">
+                                    ₪{item.plan === 'half' ? item.total : item.single}
+                                </span>
+                                <span class="text-gray-600 text-xs">
+                                    {item.plan === 'half' ? 'ל-6 חודשים' : 'לחודש'}
+                                </span>
                             </div>
                         </li>
                     {/each}
                 </ul>
             </div>
 
-            <!-- Totals -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                <!-- Half-year monthly -->
-                <div class="rounded-xl bg-amber-500/15 border border-amber-500/30 p-4 text-center">
-                    <p class="text-xs text-amber-400/70 mb-1 font-bold uppercase tracking-wide">לחודש (חצי שנה)</p>
-                    <p class="text-3xl font-black text-amber-400">₪{monthlyHalf}</p>
-                    {#if discountPct > 0}
-                        <p class="text-xs text-green-400 mt-1 font-bold">חיסכון של {discountPct}%</p>
+            <!-- Total -->
+            <div class="rounded-2xl border-2 border-white/20 bg-white/5 p-6 text-center mb-6">
+                <p class="text-gray-400 text-sm mb-2 font-bold">סה"כ לתשלום</p>
+                <p class="text-5xl md:text-6xl font-black text-white mb-2">₪{totalPayment}</p>
+                <p class="text-gray-500 text-sm">
+                    {#if halfItems.length > 0 && singleItems.length > 0}
+                        כולל {halfItems.length} חבילות חצי שנה + {singleItems.length} חודשים בודדים
+                    {:else if halfItems.length > 0}
+                        חבילת חצי שנה • שווה ₪{totalMonthly} לחודש
+                    {:else}
+                        {singleItems.length} פרסומות לחודש אחד
                     {/if}
-                </div>
-
-                <!-- 6-month total -->
-                <div class="rounded-xl bg-white/5 border border-white/10 p-4 text-center">
-                    <p class="text-xs text-gray-400 mb-1 font-bold uppercase tracking-wide">סה"כ ל-6 חודשים</p>
-                    <p class="text-3xl font-black text-white">₪{totalSixMonths}</p>
-                    <p class="text-xs text-gray-500 mt-1">תשלום חד-פעמי</p>
-                </div>
-
-                <!-- Single month -->
-                <div class="rounded-xl bg-white/5 border border-white/10 p-4 text-center">
-                    <p class="text-xs text-gray-400 mb-1 font-bold uppercase tracking-wide">חודש בודד</p>
-                    <p class="text-3xl font-black text-gray-300">₪{monthlySingle}</p>
-                    <p class="text-xs text-gray-500 mt-1">ללא הנחה</p>
-                </div>
+                </p>
             </div>
 
-            <!-- Savings callout -->
-            {#if discountPct > 0}
-                <div class="rounded-xl bg-green-900/20 border border-green-500/30 px-4 py-3 mb-6 flex items-center gap-3">
-                    <span class="text-2xl">💡</span>
-                    <p class="text-sm text-green-300">
-                        <span class="font-black">חבילת חצי שנה חוסכת לך ₪{monthlySingle * 6 - totalSixMonths}</span>
-                        <span class="text-green-400/70"> לעומת חודש בודד × 6</span>
-                    </p>
+            <!-- Breakdown cards (only if both plan types selected) -->
+            {#if halfItems.length > 0 && singleItems.length > 0}
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <div class="rounded-xl bg-amber-500/10 border border-amber-500/20 p-3 text-center">
+                        <p class="text-[10px] text-amber-400/70 font-bold uppercase mb-1">חצי שנה</p>
+                        <p class="text-xl font-black text-amber-400">₪{halfItems.reduce((s,r) => s + r.total, 0)}</p>
+                        <p class="text-[10px] text-gray-500">{halfItems.length} פרסומות × 6 חודשים</p>
+                    </div>
+                    <div class="rounded-xl bg-blue-500/10 border border-blue-500/20 p-3 text-center">
+                        <p class="text-[10px] text-blue-400/70 font-bold uppercase mb-1">חודש בודד</p>
+                        <p class="text-xl font-black text-blue-400">₪{singleItems.reduce((s,r) => s + r.single, 0)}</p>
+                        <p class="text-[10px] text-gray-500">{singleItems.length} פרסומות × חודש</p>
+                    </div>
                 </div>
             {/if}
 
             <!-- CTA buttons -->
             <div class="flex flex-col sm:flex-row gap-3 justify-center">
                 <a
-                    href="mailto:ads@shchuna.co.il?subject=בקשת פרסום — {selectedItems.map(i => i.type).join(', ')}&body=שלום, אני מעוניין לפרסם: {selectedItems.map(i => `${i.type} (₪${i.half} לחודש)`).join(', ')}. סה״כ: ₪{monthlyHalf} לחודש (חצי שנה)."
-                    class="inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-black font-black px-6 py-3 rounded-xl text-sm transition-all hover:scale-105 shadow-lg shadow-amber-500/30"
+                    href="mailto:ads@shchuna.co.il?subject=בקשת פרסום&body={mailtoBody}"
+                    class="inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-black font-black px-6 py-3 rounded-xl text-sm transition-all hover:scale-105 shadow-lg shadow-amber-500/20"
                 >
-                    ✉️ שלח בקשה למחיר זה
+                    ✉️ שלח בקשה — ₪{totalPayment}
                 </a>
                 <a
-                    href="https://wa.me/972500000000?text=שלום, אני מעוניין לפרסם: {selectedItems.map(i => i.type).join(', ')}. סה״כ ₪{monthlyHalf} לחודש (חצי שנה)."
+                    href="https://wa.me/972500000000?text=שלום, אני מעוניין לפרסם: {selectedItems.map(r => r.type).join(', ')}. סה״כ ₪{totalPayment}."
                     target="_blank"
-                    class="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-black px-6 py-3 rounded-xl text-sm transition-all hover:scale-105 shadow-lg shadow-green-500/30"
+                    class="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-black px-6 py-3 rounded-xl text-sm transition-all hover:scale-105 shadow-lg shadow-green-500/20"
                 >
                     💬 שלח בוואטסאפ
                 </a>
             </div>
 
-            <!-- Clear selection -->
+            <!-- Clear -->
             <div class="text-center mt-4">
                 <button
                     type="button"
-                    onclick={() => selected = new Set()}
-                    class="text-xs text-gray-500 hover:text-gray-300 transition-colors underline underline-offset-2"
-                >
-                    נקה בחירה
-                </button>
+                    onclick={() => planMap = new Map()}
+                    class="text-xs text-gray-600 hover:text-gray-400 transition-colors underline underline-offset-2"
+                >נקה בחירה</button>
             </div>
         </div>
+
     {:else}
-        <!-- Empty state hint -->
-        <div class="mb-12 rounded-2xl border-2 border-dashed border-white/10 bg-white/2 p-6 text-center">
-            <p class="text-gray-500 text-sm">🧮 סמן שורות בטבלה כדי לפתוח את <span class="text-amber-400 font-bold">מחשבון הפרסום</span></p>
+        <!-- Empty state -->
+        <div class="mb-12 rounded-2xl border-2 border-dashed border-white/10 bg-white/2 p-5 text-center">
+            <p class="text-gray-500 text-sm">
+                🧮 הזז מתג בטבלה כדי לפתוח את
+                <span class="text-white font-bold">מחשבון הפרסום</span>
+            </p>
         </div>
     {/if}
 
@@ -312,44 +383,29 @@
             התשלום מתבצע בצורה מאובטחת דרך חברת הסליקה — פרטי האשראי שלך לא מגיעים אלינו
         </p>
 
-        <!-- Payment methods -->
         <div class="flex flex-wrap justify-center gap-3 mb-6">
             {#each ["Visa", "Mastercard", "American Express", "Bit", "PayPal"] as method}
-                <div class="bg-white/10 border border-white/10 rounded-lg px-4 py-2 text-sm font-bold text-gray-300">
-                    {method}
-                </div>
+                <div class="bg-white/10 border border-white/10 rounded-lg px-4 py-2 text-sm font-bold text-gray-300">{method}</div>
             {/each}
         </div>
 
-        <!-- Meshulam integration placeholder -->
         <div class="rounded-xl border-2 border-dashed border-blue-500/40 bg-blue-900/10 p-6 text-center">
             <div class="text-3xl mb-3">💳</div>
             <h3 class="text-white font-black mb-1">סליקה מאובטחת</h3>
-            <p class="text-gray-400 text-sm mb-4">
-                מחוברים לחברת סליקה מורשית — עסקה מאובטחת ב-SSL
-            </p>
+            <p class="text-gray-400 text-sm mb-4">מחוברים לחברת סליקה מורשית — עסקה מאובטחת ב-SSL</p>
             <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                <a
-                    href="https://meshulam.co.il"
-                    target="_blank"
-                    class="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-black px-6 py-3 rounded-xl text-sm transition-all hover:scale-105"
-                >
+                <a href="https://meshulam.co.il" target="_blank"
+                   class="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-black px-6 py-3 rounded-xl text-sm transition-all hover:scale-105">
                     🔗 לדף התשלום — משולם
                 </a>
-                <a
-                    href="https://grow.co.il"
-                    target="_blank"
-                    class="inline-flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-500 text-white font-black px-6 py-3 rounded-xl text-sm transition-all hover:scale-105"
-                >
+                <a href="https://grow.co.il" target="_blank"
+                   class="inline-flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-500 text-white font-black px-6 py-3 rounded-xl text-sm transition-all hover:scale-105">
                     🔗 לדף התשלום — Grow
                 </a>
             </div>
-            <p class="text-gray-600 text-xs mt-4">
-                * לאחר השלמת הרכישה נצור איתכם קשר לתיאום פרסום תוך 24 שעות
-            </p>
+            <p class="text-gray-600 text-xs mt-4">* לאחר השלמת הרכישה נצור איתכם קשר לתיאום פרסום תוך 24 שעות</p>
         </div>
 
-        <!-- Security badges -->
         <div class="flex flex-wrap justify-center gap-4 mt-5">
             {#each [
                 { icon: "🔒", label: "SSL מאובטח" },
@@ -368,21 +424,14 @@
     <!-- Contact CTA -->
     <div class="mt-8 rounded-2xl bg-gradient-to-br from-amber-900/30 to-yellow-900/20 border-2 border-amber-500/40 p-6 md:p-10 text-center">
         <h2 class="text-2xl md:text-3xl font-black text-amber-400 mb-3">ליצירת קשר</h2>
-        <p class="text-gray-300 mb-6 text-base md:text-lg">
-            ליצירת קשר אנושי
-        </p>
+        <p class="text-gray-300 mb-6 text-base md:text-lg">ליצירת קשר אנושי</p>
         <div class="flex flex-col sm:flex-row gap-3 justify-center">
-            <a
-                href="mailto:ads@shchuna.co.il"
-                class="inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-black font-black px-6 py-3 rounded-xl text-base transition-all hover:scale-105 shadow-lg shadow-amber-500/30"
-            >
+            <a href="mailto:ads@shchuna.co.il"
+               class="inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-black font-black px-6 py-3 rounded-xl text-base transition-all hover:scale-105 shadow-lg shadow-amber-500/30">
                 ✉️ שלח מייל
             </a>
-            <a
-                href="https://wa.me/972500000000"
-                target="_blank"
-                class="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-black px-6 py-3 rounded-xl text-base transition-all hover:scale-105 shadow-lg shadow-green-500/30"
-            >
+            <a href="https://wa.me/972500000000" target="_blank"
+               class="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-black px-6 py-3 rounded-xl text-base transition-all hover:scale-105 shadow-lg shadow-green-500/30">
                 💬 וואטסאפ
             </a>
         </div>
@@ -392,7 +441,7 @@
 
 <style>
     @keyframes slideDown {
-        from { opacity: 0; transform: translateY(-12px); }
+        from { opacity: 0; transform: translateY(-10px); }
         to   { opacity: 1; transform: translateY(0); }
     }
 </style>
