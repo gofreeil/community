@@ -155,4 +155,66 @@
         </div>
         <p class="text-gray-500 text-sm mt-4">ads@shchuna.co.il</p>
     </div>
+
+    <!-- Secure Payment -->
+    <div class="mt-8 rounded-2xl bg-white/3 border border-white/10 p-6 md:p-8" dir="rtl">
+        <h2 class="text-xl md:text-2xl font-black text-white mb-2 text-center flex items-center justify-center gap-2">
+            🔒 תשלום מאובטח
+        </h2>
+        <p class="text-gray-400 text-sm text-center mb-6">
+            התשלום מתבצע בצורה מאובטחת דרך חברת הסליקה — פרטי האשראי שלך לא מגיעים אלינו
+        </p>
+
+        <!-- Payment methods -->
+        <div class="flex flex-wrap justify-center gap-3 mb-6">
+            {#each ["Visa", "Mastercard", "American Express", "Bit", "PayPal"] as method}
+                <div class="bg-white/10 border border-white/10 rounded-lg px-4 py-2 text-sm font-bold text-gray-300">
+                    {method}
+                </div>
+            {/each}
+        </div>
+
+        <!-- Meshulam integration placeholder -->
+        <div class="rounded-xl border-2 border-dashed border-blue-500/40 bg-blue-900/10 p-6 text-center">
+            <div class="text-3xl mb-3">💳</div>
+            <h3 class="text-white font-black mb-1">סליקה מאובטחת</h3>
+            <p class="text-gray-400 text-sm mb-4">
+                מחוברים לחברת סליקה מורשית — עסקה מאובטחת ב-SSL
+            </p>
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <a
+                    href="https://meshulam.co.il"
+                    target="_blank"
+                    class="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-black px-6 py-3 rounded-xl text-sm transition-all hover:scale-105"
+                >
+                    🔗 לדף התשלום — משולם
+                </a>
+                <a
+                    href="https://grow.co.il"
+                    target="_blank"
+                    class="inline-flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-500 text-white font-black px-6 py-3 rounded-xl text-sm transition-all hover:scale-105"
+                >
+                    🔗 לדף התשלום — Grow
+                </a>
+            </div>
+            <p class="text-gray-600 text-xs mt-4">
+                * לאחר השלמת הרכישה נצור איתכם קשר לתיאום פרסום תוך 24 שעות
+            </p>
+        </div>
+
+        <!-- Security badges -->
+        <div class="flex flex-wrap justify-center gap-4 mt-5">
+            {#each [
+                { icon: "🔒", label: "SSL מאובטח" },
+                { icon: "✅", label: "PCI DSS תקן" },
+                { icon: "🏦", label: "בנק ישראל מורשה" },
+                { icon: "↩️", label: "החזר כספי תוך 14 יום" },
+            ] as badge}
+                <div class="flex items-center gap-1.5 text-xs text-gray-400">
+                    <span>{badge.icon}</span>
+                    <span>{badge.label}</span>
+                </div>
+            {/each}
+        </div>
+    </div>
 </div>
