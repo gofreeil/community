@@ -44,7 +44,7 @@
         { num: 3, type: "חוג",            half: 15,  total: 90,  single: 25, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
         { num: 4, type: "צימר / סאבלט",  half: 45,  total: 270, single: 60, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
         { num: 5, type: "דרושים לעבודה", half: 15,  total: 90,  single: 25, reach: "לכל שכונה רצויה",   details: "מופיע רק ברשימה" },
-        { num: 6, type: "פניות פניות",   half: 20,  total: 120, single: 30, reach: "כולל רשימה ארצית",  details: "מופיע פניות" },
+        { num: 6, type: "פנויים פנויות", half: 20,  total: 120, single: 30, reach: "כולל רשימה ארצית",  details: "מופיע פניות" },
         { num: 7, type: "פרסומת קבועה",  half: 60,  total: 360, single: 85, reach: "ארצי בלבד",         details: "קבוע" },
     ];
 
