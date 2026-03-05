@@ -6,15 +6,20 @@
     import FacebookComments from "$lib/components/FacebookComments.svelte";
     import ReferendumBanner from "$lib/components/ReferendumBanner.svelte";
 
+    import { citiesAndNeighborhoods, LS_KEY, DEFAULT_NEIGHBORHOOD } from "$lib/neighborhoodsData";
+    import { browser } from "$app/environment";
+
     let showNeighborhoodsMenu = $state(false);
 
     function handleToggleMenu() {
-        console.log(
-            "Toggle menu clicked! Current state:",
-            showNeighborhoodsMenu,
-        );
         showNeighborhoodsMenu = !showNeighborhoodsMenu;
-        console.log("New state:", showNeighborhoodsMenu);
+    }
+
+    function selectNeighborhood(neighborhood: string, city: string) {
+        if (browser) {
+            localStorage.setItem(LS_KEY, JSON.stringify({ neighborhood, city }));
+        }
+        showNeighborhoodsMenu = false;
     }
 </script>
 
@@ -100,7 +105,7 @@
                         בחר עיר ושכונה
                     </h3>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
-                        {#each Object.entries( { אילת: ["שכונת התמרים", "שכונת הדקלים", "שכונת השחמון"], "באר שבע": ["רמות", "נווה זאב", "נווה נוי", "רמת חן"], "בני ברק": ["פרדס כץ", "רמת אלחנן", "שיכון ה"], הרצליה: ["הרצליה פיתוח", "נוה עובד", "נווה ישראל"], חיפה: ["כרמל צרפתי", "נווה שאנן", "רמת אלמוגי", "בת גלים"], ירושלים: ["קרית משה", "רחביה", "גבעת שאול", "רמות", "גילה", "קטמון", "בקעה", "מעלות דפנה"], נתניה: ["קרית השרון", "רמת פולג", "נווה גנים"], "פתח תקווה": ["קרית אריה", "נווה עוז", "שיכון דן"], "ראשון לציון": ["נווה דקלים", "רמת אליהו", "שיכון ותיקים"], רחובות: ["רמת רחובות", "נווה חוף", "שכונת הדרים"], "תל אביב": ["רמת אביב", "פלורנטין", "נווה צדק", "יפו העתיקה", "רמת החייל"] }, ) as [city, neighborhoods]}
+                        {#each Object.entries(citiesAndNeighborhoods) as [city, neighborhoods]}
                             <div class="bg-gray-800 rounded-lg p-3">
                                 <h4
                                     class="text-purple-400 font-bold mb-2 text-sm md:text-base"
@@ -110,12 +115,7 @@
                                 <div class="space-y-1">
                                     {#each neighborhoods as neighborhood}
                                         <button
-                                            onclick={() => {
-                                                showNeighborhoodsMenu = false;
-                                                alert(
-                                                    `נבחרה: ${neighborhood}, ${city}`,
-                                                );
-                                            }}
+                                            onclick={() => selectNeighborhood(neighborhood, city)}
                                             class="block w-full text-right text-white text-xs md:text-sm hover:bg-purple-600 px-2 py-1 rounded transition-colors"
                                         >
                                             {neighborhood}

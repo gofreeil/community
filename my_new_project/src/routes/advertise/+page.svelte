@@ -1,4 +1,8 @@
 <script lang="ts">
+    import { onMount } from "svelte";
+    import { browser } from "$app/environment";
+    import { citiesData, LS_KEY, DEFAULT_NEIGHBORHOOD } from "$lib/neighborhoodsData";
+
     const packages = [
         {
             name: "באנר צד",
@@ -34,9 +38,59 @@
 
     const stats = [
         { value: "500+", label: "מבקרים יומיים" },
-        { value: "קרית משה", label: "קהל מקומי" },
         { value: "100%", label: "חשיפה שכונתית" },
     ];
+
+    // ---- Neighborhood selection ----
+    let selectedNeighborhoods = $state<Set<string>>(new Set([DEFAULT_NEIGHBORHOOD]));
+    let isNational = $state(false);
+    let showPicker = $state(false);
+
+    onMount(() => {
+        if (!browser) return;
+        // Read last neighborhood chosen on the home page
+        const saved = localStorage.getItem(LS_KEY);
+        if (saved) {
+            try {
+                const { neighborhood } = JSON.parse(saved);
+                if (neighborhood) selectedNeighborhoods = new Set([neighborhood]);
+            } catch {}
+        }
+    });
+
+    function toggleNeighborhood(name: string) {
+        const next = new Set(selectedNeighborhoods);
+        if (next.has(name)) {
+            if (next.size > 1) next.delete(name); // keep at least one
+        } else {
+            next.add(name);
+        }
+        selectedNeighborhoods = next;
+        isNational = false;
+    }
+
+    function setNational() {
+        isNational = true;
+        selectedNeighborhoods = new Set();
+    }
+
+    let neighborhoodLabel = $derived(
+        isNational
+            ? "ארצי — כל הארץ"
+            : selectedNeighborhoods.size === 1
+                ? [...selectedNeighborhoods][0]
+                : `${[...selectedNeighborhoods][0]} +${selectedNeighborhoods.size - 1}`
+    );
+
+    // ---- Toast ----
+    let toastVisible = $state(false);
+    let toastTimer: ReturnType<typeof setTimeout> | null = null;
+
+    function showToast() {
+        toastVisible = true;
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => { toastVisible = false; }, 5000);
+    }
 
     const rows = [
         { num: 1, type: "פרסומת ארוכה",  half: 15,  total: 90,  single: 25, reach: "לכל שכונה רצויה",   details: "מופיע ל-6 שניות ונעלם 12 שניות" },
@@ -58,6 +112,7 @@
             next.delete(num);           // clicking active side = turn off
         } else {
             next.set(num, plan);
+            showToast();                // remind user which neighborhood they're advertising in
         }
         planMap = next;
     }
@@ -79,6 +134,7 @@
 
     // Build mailto body
     let mailtoBody = $derived(
+        `שכונות: ${neighborhoodLabel}%0A` +
         selectedItems.map(r =>
             `${r.type} — ${r.plan === 'half' ? `חצי שנה ₪${r.total}` : `חודש בודד ₪${r.single}`}`
         ).join('%0A') + `%0A%0Aסה״כ: ₪${totalPayment}`
@@ -102,15 +158,87 @@
         </p>
     </div>
 
-    <!-- Stats -->
-    <div class="grid grid-cols-3 gap-4 mb-12">
+    <!-- Stats + Neighborhood picker -->
+    <div class="grid grid-cols-3 gap-4 mb-4">
+        <!-- Static stats -->
         {#each stats as stat}
             <div class="rounded-2xl bg-white/5 border border-white/10 p-4 md:p-6 text-center">
                 <div class="text-2xl md:text-4xl font-black text-amber-400 mb-1">{stat.value}</div>
                 <div class="text-xs md:text-sm text-gray-400">{stat.label}</div>
             </div>
         {/each}
+        <!-- Interactive neighborhood card -->
+        <button
+            type="button"
+            onclick={() => showPicker = !showPicker}
+            class="rounded-2xl border-2 p-4 md:p-6 text-center transition-all cursor-pointer col-span-1
+                {showPicker
+                    ? 'bg-amber-500/20 border-amber-500/60 shadow-lg shadow-amber-500/10'
+                    : 'bg-white/5 border-white/10 hover:border-amber-400/40 hover:bg-amber-900/10'}"
+        >
+            <div class="text-lg md:text-2xl font-black text-amber-400 mb-1 leading-tight truncate" title={neighborhoodLabel}>
+                {neighborhoodLabel}
+            </div>
+            <div class="text-xs md:text-sm text-gray-400 flex items-center justify-center gap-1">
+                <span>קהל מקומי</span>
+                <span class="text-amber-500/70">✏️</span>
+            </div>
+        </button>
     </div>
+
+    <!-- Neighborhood Picker Panel -->
+    {#if showPicker}
+        <div class="mb-8 rounded-2xl border border-amber-500/30 bg-gray-950/95 backdrop-blur p-5 shadow-2xl"
+             style="animation: slideDown 0.2s ease-out;">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-white font-black text-base flex items-center gap-2">
+                    📍 בחר שכונות לפרסום
+                </h3>
+                <button
+                    type="button"
+                    onclick={() => showPicker = false}
+                    class="text-gray-500 hover:text-white transition-colors text-sm font-bold px-3 py-1 rounded-lg bg-white/5 hover:bg-white/10"
+                >אישור ✓</button>
+            </div>
+
+            <!-- National option -->
+            <button
+                type="button"
+                onclick={setNational}
+                class="w-full mb-4 flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all font-bold text-sm
+                    {isNational
+                        ? 'border-purple-500 bg-purple-500/20 text-white'
+                        : 'border-white/10 bg-white/3 text-gray-400 hover:border-purple-400/40 hover:text-gray-200'}"
+            >
+                <span class="text-lg">🌍</span>
+                <span>ארצי — כל הארץ (מופיע בכל השכונות)</span>
+                {#if isNational}<span class="mr-auto text-purple-400">✓</span>{/if}
+            </button>
+
+            <!-- City groups -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {#each citiesData as cityEntry}
+                    <div>
+                        <p class="text-xs font-black text-gray-500 uppercase tracking-widest mb-2">{cityEntry.city}</p>
+                        <div class="flex flex-wrap gap-2">
+                            {#each cityEntry.neighborhoods as n}
+                                <button
+                                    type="button"
+                                    onclick={() => toggleNeighborhood(n)}
+                                    class="px-3 py-1.5 rounded-full text-xs font-bold border transition-all
+                                        {!isNational && selectedNeighborhoods.has(n)
+                                            ? 'bg-amber-500 border-amber-500 text-black'
+                                            : 'bg-white/5 border-white/15 text-gray-400 hover:border-amber-400/50 hover:text-gray-200'}"
+                                >{n}</button>
+                            {/each}
+                        </div>
+                    </div>
+                {/each}
+            </div>
+
+            <p class="text-gray-600 text-xs mt-4 text-center">ניתן לבחור מספר שכונות · לחץ שוב על שכונה לביטול</p>
+        </div>
+    {/if}
 
     <!-- Packages -->
     <h2 class="text-xl md:text-2xl font-black text-white mb-6 text-center">אפשרויות פרסום</h2>
@@ -432,9 +560,43 @@
     </div>
 </div>
 
+<!-- Toast: neighborhood reminder -->
+{#if toastVisible}
+    <div
+        class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-max max-w-xs md:max-w-sm"
+        style="animation: slideUp 0.3s ease-out;"
+        dir="rtl"
+    >
+        <div class="rounded-2xl bg-gray-900 border border-amber-500/50 shadow-2xl px-5 py-4 flex items-start gap-3">
+            <span class="text-2xl flex-shrink-0">📍</span>
+            <div class="flex-1 min-w-0">
+                <p class="text-white font-bold text-sm leading-snug">
+                    מפרסם ב: <span class="text-amber-400">{neighborhoodLabel}</span>
+                </p>
+                <p class="text-gray-400 text-xs mt-0.5">רוצה לפרסם בשכונות נוספות?</p>
+                <button
+                    type="button"
+                    onclick={() => { toastVisible = false; showPicker = true; window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                    class="text-amber-400 text-xs hover:text-amber-300 transition-colors mt-1 underline underline-offset-2 font-bold"
+                >שנה שכונות ←</button>
+            </div>
+            <button
+                type="button"
+                onclick={() => toastVisible = false}
+                class="text-gray-600 hover:text-white transition-colors text-sm flex-shrink-0 mt-0.5"
+                aria-label="סגור"
+            >✕</button>
+        </div>
+    </div>
+{/if}
+
 <style>
     @keyframes slideDown {
         from { opacity: 0; transform: translateY(-10px); }
         to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideUp {
+        from { opacity: 0; transform: translate(-50%, 16px); }
+        to   { opacity: 1; transform: translate(-50%, 0); }
     }
 </style>

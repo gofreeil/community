@@ -4,6 +4,7 @@
     import { createEventDispatcher } from "svelte";
     import { slide } from "svelte/transition";
     import { items as itemsData } from "$lib/itemsData";
+    import { citiesAndNeighborhoods, LS_KEY, DEFAULT_NEIGHBORHOOD } from "$lib/neighborhoodsData";
 
     const dispatch = createEventDispatcher();
 
@@ -391,34 +392,7 @@
         selectedCategory = categoryId;
     }
 
-    const citiesAndNeighborhoods = {
-        אילת: ["שכונת התמרים", "שכונת הדקלים", "שכונת השחמון"],
-        "באר שבע": ["רמות", "נווה זאב", "נווה נוי", "רמת חן"],
-        "בני ברק": ["פרדס כץ", "רמת אלחנן", "שיכון ה"],
-        הרצליה: ["הרצליה פיתוח", "נוה עובד", "נווה ישראל"],
-        חיפה: ["כרמל צרפתי", "נווה שאנן", "רמת אלמוגי", "בת גלים"],
-        ירושלים: [
-            "קרית משה",
-            "רחביה",
-            "גבעת שאול",
-            "רמות",
-            "גילה",
-            "קטמון",
-            "בקעה",
-            "מעלות דפנה",
-        ],
-        נתניה: ["קרית השרון", "רמת פולג", "נווה גנים"],
-        "פתח תקווה": ["קרית אריה", "נווה עוז", "שיכון דן"],
-        "ראשון לציון": ["נווה דקלים", "רמת אליהו", "שיכון ותיקים"],
-        רחובות: ["רמת רחובות", "נווה חוף", "שכונת הדרים"],
-        "תל אביב": [
-            "רמת אביב",
-            "פלורנטין",
-            "נווה צדק",
-            "יפו העתיקה",
-            "רמת החייל",
-        ],
-    };
+    // citiesAndNeighborhoods imported from $lib/neighborhoodsData
 
     const helpOptions = [
         { id: 3, text: "הלך ילד לאיבוד", icon: "👶" },
