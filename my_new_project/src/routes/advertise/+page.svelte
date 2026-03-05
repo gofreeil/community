@@ -198,7 +198,7 @@
     <div class="mt-8 rounded-2xl bg-gradient-to-br from-amber-900/30 to-yellow-900/20 border-2 border-amber-500/40 p-6 md:p-10 text-center">
         <h2 class="text-2xl md:text-3xl font-black text-amber-400 mb-3">ליצירת קשר</h2>
         <p class="text-gray-300 mb-6 text-base md:text-lg">
-            צרו איתנו קשר ונחזור אליכם עם כל הפרטים
+            ליצירת קשר אנושי
         </p>
         <div class="flex flex-col sm:flex-row gap-3 justify-center">
             <a
