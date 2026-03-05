@@ -41,7 +41,7 @@
     const rows = [
         { num: 1, type: "פרסומת ארוכה",  half: 15,  total: 90,  single: 25, reach: "לכל שכונה רצויה",   details: "מופיע ל-6 שניות בעולמות של 12 שניות" },
         { num: 2, type: "עסק",            half: 25,  total: 150, single: 35, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
-        { num: 3, type: "הוד",            half: 15,  total: 90,  single: 25, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
+        { num: 3, type: "חוג",            half: 15,  total: 90,  single: 25, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
         { num: 4, type: "צימר / סאבלט",  half: 45,  total: 270, single: 60, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
         { num: 5, type: "דרושים לעבודה", half: 15,  total: 90,  single: 25, reach: "לכל שכונה רצויה",   details: "מופיע רק ברשימה" },
         { num: 6, type: "פניות פניות",   half: 20,  total: 120, single: 30, reach: "כולל רשימה ארצית",  details: "מופיע פניות" },
@@ -145,18 +145,6 @@
         <table class="w-full text-sm text-right">
             <thead>
                 <tr class="bg-amber-500/20 border-b border-amber-500/30">
-                    <!-- Toggle column header -->
-                    <th class="px-3 py-3 text-center">
-                        <div class="flex flex-col items-center gap-0.5">
-                            <span class="text-[10px] font-bold text-amber-400/70">חצי שנה</span>
-                            <div class="flex items-center gap-1">
-                                <div class="h-px w-4 bg-amber-500/40"></div>
-                                <div class="w-1.5 h-1.5 rounded-full bg-amber-400/60"></div>
-                                <div class="h-px w-4 bg-white/20"></div>
-                            </div>
-                            <span class="text-[10px] font-bold text-gray-500">חודש</span>
-                        </div>
-                    </th>
                     <th class="px-3 py-3 font-black text-amber-400 text-center">#</th>
                     <th class="px-3 py-3 font-black text-amber-400">סוג</th>
                     <th class="px-3 py-3 font-black text-amber-400 whitespace-nowrap text-center">
@@ -167,6 +155,18 @@
                     </th>
                     <th class="px-3 py-3 font-black text-amber-400">פריסה</th>
                     <th class="px-3 py-3 font-black text-amber-400">פרטים</th>
+                    <!-- Toggle column header — last = left side in RTL -->
+                    <th class="px-3 py-3 text-center bg-white/8 border-r border-white/10">
+                        <div class="flex flex-col items-center gap-0.5">
+                            <span class="text-[10px] font-bold text-amber-400/80">½שנה</span>
+                            <div class="flex items-center gap-1">
+                                <div class="h-px w-3 bg-amber-500/50"></div>
+                                <div class="w-1.5 h-1.5 rounded-full bg-white/30"></div>
+                                <div class="h-px w-3 bg-blue-400/40"></div>
+                            </div>
+                            <span class="text-[10px] font-bold text-blue-400/80">חודש</span>
+                        </div>
+                    </th>
                 </tr>
             </thead>
             <tbody>
@@ -177,50 +177,6 @@
                          : plan === 'single' ? 'bg-blue-500/10'
                          : i % 2 === 0      ? 'bg-white/3'
                          :                    'bg-white/5'}">
-
-                        <!-- 3-state toggle -->
-                        <td class="px-3 py-3 text-center">
-                            <div class="flex justify-center" onclick={(e) => e.stopPropagation()}>
-                                <!-- Pill container -->
-                                <div
-                                    class="relative inline-flex h-8 rounded-full transition-all duration-300"
-                                    style="
-                                        padding: 2px;
-                                        background: {plan === 'half' ? 'rgba(245,158,11,0.15)' : plan === 'single' ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.05)'};
-                                        border: 1.5px solid {plan === 'half' ? 'rgba(245,158,11,0.5)' : plan === 'single' ? 'rgba(59,130,246,0.5)' : 'rgba(255,255,255,0.12)'};
-                                    "
-                                >
-                                    <!-- Half-year segment (right side in RTL — first child) -->
-                                    <button
-                                        type="button"
-                                        onclick={() => setPlan(row.num, 'half')}
-                                        class="relative z-10 rounded-full px-2.5 text-[10px] font-black transition-all duration-200 whitespace-nowrap leading-none flex items-center"
-                                        style="
-                                            background: {plan === 'half' ? '#f59e0b' : 'transparent'};
-                                            color:      {plan === 'half' ? '#000'    : '#6b7280'};
-                                        "
-                                        title="חצי שנה"
-                                    >½שנה</button>
-
-                                    <!-- Divider dot (only when off) -->
-                                    {#if !plan}
-                                        <div class="self-center w-1 h-1 rounded-full bg-white/20 mx-0.5 flex-shrink-0"></div>
-                                    {/if}
-
-                                    <!-- Single-month segment (left side in RTL — second child) -->
-                                    <button
-                                        type="button"
-                                        onclick={() => setPlan(row.num, 'single')}
-                                        class="relative z-10 rounded-full px-2.5 text-[10px] font-black transition-all duration-200 whitespace-nowrap leading-none flex items-center"
-                                        style="
-                                            background: {plan === 'single' ? '#3b82f6' : 'transparent'};
-                                            color:      {plan === 'single' ? '#fff'    : '#6b7280'};
-                                        "
-                                        title="חודש בודד"
-                                    >חודש</button>
-                                </div>
-                            </div>
-                        </td>
 
                         <td class="px-3 py-3 text-center font-bold
                             {plan ? 'text-amber-400' : 'text-gray-400'}">{row.num}</td>
@@ -239,6 +195,43 @@
 
                         <td class="px-3 py-3 text-gray-300 text-xs">{row.reach}</td>
                         <td class="px-3 py-3 text-gray-400 text-xs">{row.details}</td>
+
+                        <!-- 3-state toggle — last column = left side in RTL -->
+                        <td class="px-3 py-3 text-center border-r border-white/10"
+                            style="background: {plan === 'half' ? 'rgba(245,158,11,0.12)' : plan === 'single' ? 'rgba(59,130,246,0.12)' : 'rgba(255,255,255,0.06)'}">
+                            <div class="flex justify-center" onclick={(e) => e.stopPropagation()}>
+                                <div
+                                    class="relative inline-flex h-8 rounded-full transition-all duration-300"
+                                    style="
+                                        padding: 2px;
+                                        background: {plan === 'half' ? 'rgba(245,158,11,0.15)' : plan === 'single' ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.05)'};
+                                        border: 1.5px solid {plan === 'half' ? 'rgba(245,158,11,0.5)' : plan === 'single' ? 'rgba(59,130,246,0.5)' : 'rgba(255,255,255,0.12)'};
+                                    "
+                                >
+                                    <!-- Half-year segment (right in RTL = first child) -->
+                                    <button
+                                        type="button"
+                                        onclick={() => setPlan(row.num, 'half')}
+                                        class="relative z-10 rounded-full px-2.5 text-[10px] font-black transition-all duration-200 whitespace-nowrap leading-none flex items-center"
+                                        style="background: {plan === 'half' ? '#f59e0b' : 'transparent'}; color: {plan === 'half' ? '#000' : '#6b7280'};"
+                                        title="חצי שנה"
+                                    >½שנה</button>
+
+                                    {#if !plan}
+                                        <div class="self-center w-1 h-1 rounded-full bg-white/20 mx-0.5 flex-shrink-0"></div>
+                                    {/if}
+
+                                    <!-- Single-month segment (left in RTL = second child) -->
+                                    <button
+                                        type="button"
+                                        onclick={() => setPlan(row.num, 'single')}
+                                        class="relative z-10 rounded-full px-2.5 text-[10px] font-black transition-all duration-200 whitespace-nowrap leading-none flex items-center"
+                                        style="background: {plan === 'single' ? '#3b82f6' : 'transparent'}; color: {plan === 'single' ? '#fff' : '#6b7280'};"
+                                        title="חודש בודד"
+                                    >חודש</button>
+                                </div>
+                            </div>
+                        </td>
                     </tr>
                 {/each}
             </tbody>
