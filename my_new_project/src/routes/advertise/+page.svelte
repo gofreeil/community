@@ -142,29 +142,29 @@
     </p>
 
     <div class="mb-6 overflow-x-auto rounded-2xl border border-white/10">
-        <table class="w-full text-sm text-right">
+        <table class="w-full text-base text-right">
             <thead>
                 <tr class="bg-amber-500/20 border-b border-amber-500/30">
-                    <th class="px-3 py-3 font-black text-amber-400 text-center">#</th>
-                    <th class="px-3 py-3 font-black text-amber-400">סוג</th>
-                    <th class="px-3 py-3 font-black text-amber-400 whitespace-nowrap text-center">
-                        לחודש ₪<br/><span class="text-xs font-normal text-amber-400/70">(חצי שנה)</span>
+                    <th class="px-4 py-4 font-black text-amber-400 text-center">#</th>
+                    <th class="px-4 py-4 font-black text-amber-400">סוג</th>
+                    <th class="px-4 py-4 font-black text-amber-400 whitespace-nowrap text-center">
+                        לחודש ₪<br/><span class="text-sm font-normal text-amber-400/70">(חצי שנה)</span>
                     </th>
-                    <th class="px-3 py-3 font-black text-amber-400 whitespace-nowrap text-center">
-                        לחודש<br/><span class="text-xs font-normal text-amber-400/70">בודד</span>
+                    <th class="px-4 py-4 font-black text-amber-400 whitespace-nowrap text-center">
+                        לחודש<br/><span class="text-sm font-normal text-amber-400/70">בודד</span>
                     </th>
-                    <th class="px-3 py-3 font-black text-amber-400">פריסה</th>
-                    <th class="px-3 py-3 font-black text-amber-400">פרטים</th>
+                    <th class="px-4 py-4 font-black text-amber-400">פריסה</th>
+                    <th class="px-4 py-4 font-black text-amber-400">פרטים</th>
                     <!-- Toggle column header — last = left side in RTL -->
-                    <th class="px-3 py-3 text-center bg-white/8 border-r border-white/10">
-                        <div class="flex flex-col items-center gap-0.5">
-                            <span class="text-[10px] font-bold text-amber-400/80">½שנה</span>
+                    <th class="px-4 py-4 text-center bg-white/8 border-r border-white/10">
+                        <div class="flex flex-col items-center gap-1">
+                            <span class="text-xs font-bold text-amber-400/80">½שנה</span>
                             <div class="flex items-center gap-1">
-                                <div class="h-px w-3 bg-amber-500/50"></div>
-                                <div class="w-1.5 h-1.5 rounded-full bg-white/30"></div>
-                                <div class="h-px w-3 bg-blue-400/40"></div>
+                                <div class="h-px w-4 bg-amber-500/50"></div>
+                                <div class="w-2 h-2 rounded-full bg-white/30"></div>
+                                <div class="h-px w-4 bg-blue-400/40"></div>
                             </div>
-                            <span class="text-[10px] font-bold text-blue-400/80">חודש</span>
+                            <span class="text-xs font-bold text-blue-400/80">חודש</span>
                         </div>
                     </th>
                 </tr>
@@ -178,30 +178,30 @@
                          : i % 2 === 0      ? 'bg-white/3'
                          :                    'bg-white/5'}">
 
-                        <td class="px-3 py-3 text-center font-bold
+                        <td class="px-4 py-4 text-center font-bold
                             {plan ? 'text-amber-400' : 'text-gray-400'}">{row.num}</td>
 
-                        <td class="px-3 py-3 font-bold
+                        <td class="px-4 py-4 font-bold
                             {plan === 'half' ? 'text-amber-300' : plan === 'single' ? 'text-blue-300' : 'text-white'}">{row.type}</td>
 
-                        <td class="px-3 py-3 text-center">
+                        <td class="px-4 py-4 text-center">
                             <span class="font-black {plan === 'half' ? 'text-amber-300' : 'text-amber-400'}">₪{row.half}</span>
-                            <span class="text-gray-500 text-xs block">סה"כ ₪{row.total}</span>
+                            <span class="text-gray-500 text-sm block">סה"כ ₪{row.total}</span>
                         </td>
 
-                        <td class="px-3 py-3 text-center">
+                        <td class="px-4 py-4 text-center">
                             <span class="font-bold {plan === 'single' ? 'text-blue-300' : 'text-gray-300'}">₪{row.single}</span>
                         </td>
 
-                        <td class="px-3 py-3 text-gray-300 text-xs">{row.reach}</td>
-                        <td class="px-3 py-3 text-gray-400 text-xs">{row.details}</td>
+                        <td class="px-4 py-4 text-gray-300 text-sm">{row.reach}</td>
+                        <td class="px-4 py-4 text-gray-400 text-sm">{row.details}</td>
 
                         <!-- 3-state toggle — last column = left side in RTL -->
                         <td class="px-3 py-3 text-center border-r border-white/10"
                             style="background: {plan === 'half' ? 'rgba(245,158,11,0.12)' : plan === 'single' ? 'rgba(59,130,246,0.12)' : 'rgba(255,255,255,0.06)'}">
                             <div class="flex justify-center" onclick={(e) => e.stopPropagation()}>
                                 <div
-                                    class="relative inline-flex h-8 rounded-full transition-all duration-300"
+                                    class="relative inline-flex h-9 rounded-full transition-all duration-300"
                                     style="
                                         padding: 2px;
                                         background: {plan === 'half' ? 'rgba(245,158,11,0.15)' : plan === 'single' ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.05)'};
@@ -212,7 +212,7 @@
                                     <button
                                         type="button"
                                         onclick={() => setPlan(row.num, 'half')}
-                                        class="relative z-10 rounded-full px-2.5 text-[10px] font-black transition-all duration-200 whitespace-nowrap leading-none flex items-center"
+                                        class="relative z-10 rounded-full px-3 text-xs font-black transition-all duration-200 whitespace-nowrap leading-none flex items-center"
                                         style="background: {plan === 'half' ? '#f59e0b' : 'transparent'}; color: {plan === 'half' ? '#000' : '#6b7280'};"
                                         title="חצי שנה"
                                     >½שנה</button>
@@ -225,7 +225,7 @@
                                     <button
                                         type="button"
                                         onclick={() => setPlan(row.num, 'single')}
-                                        class="relative z-10 rounded-full px-2.5 text-[10px] font-black transition-all duration-200 whitespace-nowrap leading-none flex items-center"
+                                        class="relative z-10 rounded-full px-3 text-xs font-black transition-all duration-200 whitespace-nowrap leading-none flex items-center"
                                         style="background: {plan === 'single' ? '#3b82f6' : 'transparent'}; color: {plan === 'single' ? '#fff' : '#6b7280'};"
                                         title="חודש בודד"
                                     >חודש</button>
