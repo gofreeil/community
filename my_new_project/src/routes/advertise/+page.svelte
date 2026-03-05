@@ -123,10 +123,17 @@
             .map(r => ({ ...r, plan: planMap.get(r.num)! }))
     );
 
-    // What they actually pay: half → 6-month package price, single → one month
-    let totalPayment   = $derived(selectedItems.reduce((s, r) => s + (r.plan === 'half' ? r.total  : r.single), 0));
-    // Monthly equivalent (for display)
-    let totalMonthly   = $derived(selectedItems.reduce((s, r) => s + (r.plan === 'half' ? r.half   : r.single), 0));
+    // How many neighborhoods are selected (affects the total price)
+    const totalNeighborhoodsCount = citiesData.reduce((s, c) => s + c.neighborhoods.length, 0);
+    let neighborhoodCount = $derived(isNational ? totalNeighborhoodsCount : Math.max(1, selectedNeighborhoods.size));
+
+    // Base price per neighborhood (before multiplying)
+    let basePayment  = $derived(selectedItems.reduce((s, r) => s + (r.plan === 'half' ? r.total  : r.single), 0));
+    let baseMonthly  = $derived(selectedItems.reduce((s, r) => s + (r.plan === 'half' ? r.half   : r.single), 0));
+
+    // Actual totals after × neighborhoods
+    let totalPayment = $derived(basePayment  * neighborhoodCount);
+    let totalMonthly = $derived(baseMonthly  * neighborhoodCount);
 
     let halfItems      = $derived(selectedItems.filter(r => r.plan === 'half'));
     let singleItems    = $derived(selectedItems.filter(r => r.plan === 'single'));
@@ -134,9 +141,9 @@
 
     // Build mailto body
     let mailtoBody = $derived(
-        `שכונות: ${neighborhoodLabel}%0A` +
+        `שכונות: ${neighborhoodLabel} (×${neighborhoodCount})%0A` +
         selectedItems.map(r =>
-            `${r.type} — ${r.plan === 'half' ? `חצי שנה ₪${r.total}` : `חודש בודד ₪${r.single}`}`
+            `${r.type} — ${r.plan === 'half' ? `חצי שנה ₪${r.total * neighborhoodCount}` : `חודש בודד ₪${r.single * neighborhoodCount}`}`
         ).join('%0A') + `%0A%0Aסה״כ: ₪${totalPayment}`
     );
 </script>
@@ -154,7 +161,7 @@
             פרסם באתר הקהילה
         </h1>
         <p class="text-gray-300 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
-            הגע לתושבי השכונה ישירות — קהל מקומי, ממוקד ומעורב
+            היחשף לתושבי השכונה ישירות — קהל מקומי, ממוקד ומעורב
         </p>
     </div>
 
@@ -262,8 +269,8 @@
     </div>
 
     <!-- Pricing Table -->
-    <h2 class="text-xl md:text-2xl font-black text-white mb-2 text-center flex items-center justify-center gap-2">
-        💰 מחירון
+    <h2 class="text-xl md:text-2xl font-black text-white mb-2 text-center">
+        מחירון
     </h2>
     <p class="text-gray-400 text-sm text-center mb-6">
         הזז את המתג לבחירת תוכנית — המחשבון יחשב אוטומטית ↓
@@ -372,12 +379,17 @@
              style="animation: slideDown 0.3s ease-out;">
 
             <!-- Title -->
-            <div class="flex items-center justify-center gap-3 mb-6">
+            <div class="flex flex-wrap items-center justify-center gap-2 mb-6">
                 <span class="text-3xl">🧮</span>
                 <h2 class="text-xl md:text-2xl font-black text-white">מחשבון פרסום</h2>
                 <span class="bg-white/10 border border-white/20 text-gray-300 text-xs font-black px-2 py-0.5 rounded-full">
                     {planMap.size} נבחרו
                 </span>
+                {#if neighborhoodCount > 1}
+                    <span class="bg-amber-500/20 border border-amber-500/40 text-amber-400 text-xs font-black px-2 py-0.5 rounded-full">
+                        × {neighborhoodCount} שכונות
+                    </span>
+                {/if}
             </div>
 
             <!-- Selected items breakdown -->
@@ -415,12 +427,20 @@
                                     {item.plan === 'half' ? '½ שנה' : 'חודש'}
                                 </span>
                                 <!-- Price -->
-                                <span class="font-black text-sm {item.plan === 'half' ? 'text-amber-400' : 'text-blue-400'}">
-                                    ₪{item.plan === 'half' ? item.total : item.single}
-                                </span>
-                                <span class="text-gray-600 text-xs">
-                                    {item.plan === 'half' ? 'ל-6 חודשים' : 'לחודש'}
-                                </span>
+                                <div class="flex flex-col items-end gap-0.5">
+                                    <span class="font-black text-sm {item.plan === 'half' ? 'text-amber-400' : 'text-blue-400'}">
+                                        ₪{item.plan === 'half' ? item.total * neighborhoodCount : item.single * neighborhoodCount}
+                                    </span>
+                                    {#if neighborhoodCount > 1}
+                                        <span class="text-gray-600 text-[10px] whitespace-nowrap">
+                                            ₪{item.plan === 'half' ? item.total : item.single} × {neighborhoodCount}
+                                        </span>
+                                    {:else}
+                                        <span class="text-gray-600 text-xs">
+                                            {item.plan === 'half' ? 'ל-6 חודשים' : 'לחודש'}
+                                        </span>
+                                    {/if}
+                                </div>
                             </div>
                         </li>
                     {/each}
@@ -430,6 +450,9 @@
             <!-- Total -->
             <div class="rounded-2xl border-2 border-white/20 bg-white/5 p-6 text-center mb-6">
                 <p class="text-gray-400 text-sm mb-2 font-bold">סה"כ לתשלום</p>
+                {#if neighborhoodCount > 1}
+                    <p class="text-gray-500 text-xs mb-1">₪{basePayment} × {neighborhoodCount} שכונות</p>
+                {/if}
                 <p class="text-5xl md:text-6xl font-black text-white mb-2">₪{totalPayment}</p>
                 <p class="text-gray-500 text-sm">
                     {#if halfItems.length > 0 && singleItems.length > 0}
@@ -447,13 +470,13 @@
                 <div class="grid grid-cols-2 gap-3 mb-6">
                     <div class="rounded-xl bg-amber-500/10 border border-amber-500/20 p-3 text-center">
                         <p class="text-[10px] text-amber-400/70 font-bold uppercase mb-1">חצי שנה</p>
-                        <p class="text-xl font-black text-amber-400">₪{halfItems.reduce((s,r) => s + r.total, 0)}</p>
-                        <p class="text-[10px] text-gray-500">{halfItems.length} פרסומות × 6 חודשים</p>
+                        <p class="text-xl font-black text-amber-400">₪{halfItems.reduce((s,r) => s + r.total, 0) * neighborhoodCount}</p>
+                        <p class="text-[10px] text-gray-500">{halfItems.length} פרסומות × 6 חודשים{neighborhoodCount > 1 ? ` × ${neighborhoodCount}` : ''}</p>
                     </div>
                     <div class="rounded-xl bg-blue-500/10 border border-blue-500/20 p-3 text-center">
                         <p class="text-[10px] text-blue-400/70 font-bold uppercase mb-1">חודש בודד</p>
-                        <p class="text-xl font-black text-blue-400">₪{singleItems.reduce((s,r) => s + r.single, 0)}</p>
-                        <p class="text-[10px] text-gray-500">{singleItems.length} פרסומות × חודש</p>
+                        <p class="text-xl font-black text-blue-400">₪{singleItems.reduce((s,r) => s + r.single, 0) * neighborhoodCount}</p>
+                        <p class="text-[10px] text-gray-500">{singleItems.length} פרסומות × חודש{neighborhoodCount > 1 ? ` × ${neighborhoodCount}` : ''}</p>
                     </div>
                 </div>
             {/if}
