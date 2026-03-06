@@ -45,7 +45,7 @@ export const citiesData: CityEntry[] = [
     },
     {
         city: "באר שבע",
-        neighborhoods: ["רמות", "נווה זאב", "נווה נוי", "רמת חן"],
+        neighborhoods: ["רמות ב.ש.", "נווה זאב", "נווה נוי", "רמת חן"],
     },
     {
         city: "אילת",
