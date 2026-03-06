@@ -36,11 +36,6 @@
         },
     ];
 
-    const stats = [
-        { value: "500+", label: "מבקרים יומיים" },
-        { value: "100%", label: "חשיפה שכונתית" },
-    ];
-
     // ---- Neighborhood selection ----
     let selectedNeighborhoods = $state<Set<string>>(new Set([DEFAULT_NEIGHBORHOOD]));
     let isNational = $state(false);
@@ -72,6 +67,21 @@
     function setNational() {
         isNational = true;
         selectedNeighborhoods = new Set();
+    }
+
+    function toggleCity(cityEntry: { city: string; neighborhoods: string[] }) {
+        const allSelected = !isNational && cityEntry.neighborhoods.every(n => selectedNeighborhoods.has(n));
+        const next = new Set(selectedNeighborhoods);
+        if (allSelected) {
+            // בטל בחירת כל השכונות בעיר — שמור לפחות אחת
+            cityEntry.neighborhoods.forEach(n => next.delete(n));
+            if (next.size === 0) next.add(cityEntry.neighborhoods[0]);
+        } else {
+            // סמן את כל השכונות בעיר
+            cityEntry.neighborhoods.forEach(n => next.add(n));
+        }
+        selectedNeighborhoods = next;
+        isNational = false;
     }
 
     let neighborhoodLabel = $derived(
@@ -135,9 +145,10 @@
     let totalPayment = $derived(basePayment  * neighborhoodCount);
     let totalMonthly = $derived(baseMonthly  * neighborhoodCount);
 
-    let halfItems      = $derived(selectedItems.filter(r => r.plan === 'half'));
-    let singleItems    = $derived(selectedItems.filter(r => r.plan === 'single'));
-    let hasSelection   = $derived(planMap.size > 0);
+    let halfItems        = $derived(selectedItems.filter(r => r.plan === 'half'));
+    let singleItems      = $derived(selectedItems.filter(r => r.plan === 'single'));
+    let hasSelection     = $derived(planMap.size > 0);
+    let isKiryatMoshe   = $derived(!isNational && selectedNeighborhoods.size === 1 && selectedNeighborhoods.has('קרית משה'));
 
     // Build mailto body
     let mailtoBody = $derived(
@@ -165,33 +176,60 @@
         </p>
     </div>
 
-    <!-- Stats + Neighborhood picker -->
-    <div class="grid grid-cols-3 gap-4 mb-4">
-        <!-- Static stats -->
-        {#each stats as stat}
-            <div class="rounded-2xl bg-white/5 border border-white/10 p-4 md:p-6 text-center">
-                <div class="text-2xl md:text-4xl font-black text-amber-400 mb-1">{stat.value}</div>
-                <div class="text-xs md:text-sm text-gray-400">{stat.label}</div>
+    <!-- Packages -->
+    <h2 class="text-xl md:text-2xl font-black text-white mb-6 text-center">אפשרויות פרסום</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
+        {#each packages as pkg}
+            <div class="rounded-2xl border-2 {pkg.border} {pkg.bg} p-5 flex flex-col">
+                <div class="text-3xl mb-3">{pkg.icon}</div>
+                <h3 class="text-lg font-black text-white mb-1">{pkg.name}</h3>
+                <p class="text-xs text-gray-400 mb-3">{pkg.location}</p>
+                <div class="text-xs bg-white/10 rounded-lg px-2 py-1 text-gray-300 mb-4 inline-block w-fit">{pkg.size}</div>
+                <ul class="space-y-1.5 mt-auto">
+                    {#each pkg.features as feature}
+                        <li class="text-sm text-gray-300 flex items-center gap-2">
+                            <span class="text-green-400 flex-shrink-0">✓</span>
+                            {feature}
+                        </li>
+                    {/each}
+                </ul>
             </div>
         {/each}
-        <!-- Interactive neighborhood card -->
-        <button
-            type="button"
-            onclick={() => showPicker = !showPicker}
-            class="rounded-2xl border-2 p-4 md:p-6 text-center transition-all cursor-pointer col-span-1
-                {showPicker
-                    ? 'bg-amber-500/20 border-amber-500/60 shadow-lg shadow-amber-500/10'
+    </div>
+
+    <!-- Pricing Table heading -->
+    <h2 class="text-xl md:text-2xl font-black text-white mb-6 text-center">מחירון</h2>
+
+    <!-- Neighborhood picker trigger -->
+    <p class="text-gray-300 text-base font-bold text-center mb-3">תחילה בחר עיר / שכונה</p>
+    <button
+        type="button"
+        onclick={() => showPicker = !showPicker}
+        class="w-full rounded-2xl border-2 px-6 py-5 text-center transition-all cursor-pointer mb-4 relative overflow-hidden
+            {showPicker
+                ? 'border-amber-500/60 shadow-lg shadow-amber-500/10'
+                : isKiryatMoshe
+                    ? 'border-amber-500/40 hover:border-amber-400/70'
                     : 'bg-white/5 border-white/10 hover:border-amber-400/40 hover:bg-amber-900/10'}"
-        >
-            <div class="text-lg md:text-2xl font-black text-amber-400 mb-1 leading-tight truncate" title={neighborhoodLabel}>
+        style={isKiryatMoshe
+            ? "background-image: url('/images/kiryat-moshe-vaad.jfif'); background-size: cover; background-position: center top;"
+            : ""}
+    >
+        {#if isKiryatMoshe}
+            <!-- dark overlay so text stays readable -->
+            <div class="absolute inset-0 bg-black/55 rounded-2xl"></div>
+        {/if}
+        <div class="relative z-10">
+            <div class="text-xl md:text-2xl font-black text-amber-400 mb-1 leading-tight drop-shadow-lg" title={neighborhoodLabel}>
                 {neighborhoodLabel}
             </div>
-            <div class="text-xs md:text-sm text-gray-400 flex items-center justify-center gap-1">
+            <div class="text-xs md:text-sm flex items-center justify-center gap-1
+                {isKiryatMoshe ? 'text-gray-200' : 'text-gray-400'}">
                 <span>קהל מקומי</span>
                 <span class="text-amber-500/70">✏️</span>
             </div>
-        </button>
-    </div>
+        </div>
+    </button>
 
     <!-- Neighborhood Picker Panel -->
     {#if showPicker}
@@ -225,8 +263,20 @@
             <!-- City groups -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {#each citiesData as cityEntry}
+                    {@const cityFullySelected = !isNational && cityEntry.neighborhoods.every(n => selectedNeighborhoods.has(n))}
                     <div>
-                        <p class="text-xs font-black text-gray-500 uppercase tracking-widest mb-2">{cityEntry.city}</p>
+                        <!-- City name = כפתור לבחירת כל השכונות -->
+                        <button
+                            type="button"
+                            onclick={() => toggleCity(cityEntry)}
+                            class="text-xs font-black uppercase tracking-widest mb-2 flex items-center gap-1.5 transition-colors
+                                {cityFullySelected
+                                    ? 'text-amber-400'
+                                    : 'text-gray-500 hover:text-gray-300'}"
+                        >
+                            {#if cityFullySelected}<span>✓</span>{/if}
+                            {cityEntry.city}
+                        </button>
                         <div class="flex flex-wrap gap-2">
                             {#each cityEntry.neighborhoods as n}
                                 <button
@@ -247,32 +297,8 @@
         </div>
     {/if}
 
-    <!-- Packages -->
-    <h2 class="text-xl md:text-2xl font-black text-white mb-6 text-center">אפשרויות פרסום</h2>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
-        {#each packages as pkg}
-            <div class="rounded-2xl border-2 {pkg.border} {pkg.bg} p-5 flex flex-col">
-                <div class="text-3xl mb-3">{pkg.icon}</div>
-                <h3 class="text-lg font-black text-white mb-1">{pkg.name}</h3>
-                <p class="text-xs text-gray-400 mb-3">{pkg.location}</p>
-                <div class="text-xs bg-white/10 rounded-lg px-2 py-1 text-gray-300 mb-4 inline-block w-fit">{pkg.size}</div>
-                <ul class="space-y-1.5 mt-auto">
-                    {#each pkg.features as feature}
-                        <li class="text-sm text-gray-300 flex items-center gap-2">
-                            <span class="text-green-400 flex-shrink-0">✓</span>
-                            {feature}
-                        </li>
-                    {/each}
-                </ul>
-            </div>
-        {/each}
-    </div>
-
     <!-- Pricing Table -->
-    <h2 class="text-xl md:text-2xl font-black text-white mb-2 text-center">
-        מחירון
-    </h2>
-    <p class="text-gray-400 text-sm text-center mb-6">
+    <p class="text-gray-200 text-base font-bold text-center mb-6">
         הזז את המתג לבחירת תוכנית — המחשבון יחשב אוטומטית ↓
     </p>
 
