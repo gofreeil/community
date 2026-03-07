@@ -442,8 +442,21 @@
                         <td class="px-4 py-4 text-center font-bold
                             {plan ? 'text-amber-400' : 'text-gray-400'}">{row.num}</td>
 
-                        <td class="px-4 py-4 font-bold
-                            {plan === 'half' ? 'text-amber-300' : plan === 'single' ? 'text-blue-300' : 'text-white'}">{row.type}</td>
+                        <td class="px-4 py-4 font-bold relative group/typecell
+                            {plan === 'half' ? 'text-amber-300' : plan === 'single' ? 'text-blue-300' : 'text-white'}">
+                            {row.type}
+                            {#if row.num === 1}
+                                <!-- Tooltip: "פרסומת ארוכה" = הפרסומות שבצד ימין -->
+                                <div class="pointer-events-none absolute z-50 left-1/2 -translate-x-1/2 bottom-full mb-2
+                                            opacity-0 group-hover/typecell:opacity-100 transition-opacity duration-200
+                                            bg-gray-900 border border-purple-500/60 text-white text-xs font-medium
+                                            px-3 py-1.5 rounded-lg shadow-xl whitespace-nowrap">
+                                    📢 הפרסומות שבצד ימין
+                                    <div class="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0
+                                                border-x-4 border-x-transparent border-t-4 border-t-gray-900"></div>
+                                </div>
+                            {/if}
+                        </td>
 
                         <td class="px-4 py-4 text-center">
                             <span class="font-black {plan === 'half' ? 'text-amber-300' : 'text-amber-400'}">₪{row.half}</span>
