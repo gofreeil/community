@@ -873,6 +873,34 @@
             </svg>
         </button>
 
+        <!-- ===== קישורי דפים ארציים (תמיד גלויים) ===== -->
+        <div class="flex flex-wrap gap-2 px-1 mb-3">
+            <a href="/national/singles"
+               class="inline-flex items-center gap-1.5 text-xs bg-red-500/15 border border-red-500/30
+                      hover:bg-red-500/25 text-red-300 hover:text-red-200 px-3 py-1.5 rounded-full
+                      transition-all font-medium">
+                ❤️ שידוכים ארציים
+            </a>
+            <a href="/national/security"
+               class="inline-flex items-center gap-1.5 text-xs bg-green-500/15 border border-green-500/30
+                      hover:bg-green-500/25 text-green-300 hover:text-green-200 px-3 py-1.5 rounded-full
+                      transition-all font-medium">
+                🏡 צימרים ארציים
+            </a>
+            <a href="/national/attractions"
+               class="inline-flex items-center gap-1.5 text-xs bg-indigo-500/15 border border-indigo-500/30
+                      hover:bg-indigo-500/25 text-indigo-300 hover:text-indigo-200 px-3 py-1.5 rounded-full
+                      transition-all font-medium">
+                🎯 אטרקציות ארציות
+            </a>
+            <a href="/national/jobs"
+               class="inline-flex items-center gap-1.5 text-xs bg-blue-500/15 border border-blue-500/30
+                      hover:bg-blue-500/25 text-blue-300 hover:text-blue-200 px-3 py-1.5 rounded-full
+                      transition-all font-medium">
+                💼 דרושים ארציים
+            </a>
+        </div>
+
         {#if viewMode === "map"}
             <!-- תצוגת מפה -->
             <div

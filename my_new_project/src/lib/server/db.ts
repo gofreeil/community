@@ -3,7 +3,11 @@ import { join } from 'path';
 
 // ---- Singleton (מונע multiple connections ב-HMR) ----
 const globalDb = globalThis as typeof globalThis & { __communityDb?: Database.Database };
-const db: Database.Database = globalDb.__communityDb ?? new Database(join(process.cwd(), 'community.db'));
+// ב-Vercel (production) — הכתיבה מותרת רק ב-/tmp; בפיתוח — בתיקיית הפרויקט
+const dbPath = process.env.NODE_ENV === 'production'
+    ? '/tmp/community.db'
+    : join(process.cwd(), 'community.db');
+const db: Database.Database = globalDb.__communityDb ?? new Database(dbPath);
 globalDb.__communityDb = db;
 
 db.pragma('journal_mode = WAL');
