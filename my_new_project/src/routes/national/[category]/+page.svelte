@@ -1,5 +1,10 @@
 <script lang="ts">
-	import type { DbItem } from '$lib/server/db';
+	// טיפוס מקומי — לא מייבאים מ-$lib/server (אסור בקומפוננטת client)
+	interface Item {
+		id: string; label: string; description: string; icon: string;
+		city: string; neighborhood: string; phone: string; contact: string;
+		category: string; created_at: string; status: string;
+	}
 
 	let { data } = $props();
 
@@ -9,12 +14,12 @@
 
 	// ערים ייחודיות מתוך הפריטים
 	let availableCities = $derived(
-		[...new Set((data.items as DbItem[]).map((i) => i.city).filter(Boolean))].sort()
+		[...new Set((data.items as Item[]).map((i) => i.city).filter(Boolean))].sort()
 	);
 
 	// פריטים מסוננים
 	let filteredItems = $derived(
-		(data.items as DbItem[]).filter((item) => {
+		(data.items as Item[]).filter((item) => {
 			const matchSearch =
 				!searchQuery ||
 				item.label.includes(searchQuery) ||
