@@ -1,14 +1,23 @@
-import { error } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import { categoryConfig } from '$lib/categoryFields';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ params }) => {
-    const config = categoryConfig[params.category];
-    if (!config) {
-        error(404, `קטגוריה "${params.category}" לא קיימת`);
+export const load: PageServerLoad = async (event) => {
+    // ---- Auth guard: חובה להיות מחובר ----
+    const session = await event.locals.auth();
+    if (!session?.user) {
+        throw redirect(302, `/login?redirect=/add/${event.params.category}`);
     }
+
+    // ---- טעינת קונפיגורציית קטגוריה ----
+    const config = categoryConfig[event.params.category];
+    if (!config) {
+        error(404, `קטגוריה "${event.params.category}" לא קיימת`);
+    }
+
     return {
-        categoryId: params.category,
+        categoryId: event.params.category,
         config,
+        userId: session.user.id,
     };
 };

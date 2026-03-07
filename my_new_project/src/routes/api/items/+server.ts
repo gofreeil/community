@@ -12,10 +12,13 @@ export const GET: RequestHandler = async () => {
 };
 
 // ---- POST: create a new item ----
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async (event) => {
+    // קבל את פרטי המשתמש המחובר (אופציונלי — guard נעשה בדף הטופס)
+    const session = await event.locals.auth();
+
     let body: Record<string, unknown>;
     try {
-        body = await request.json();
+        body = await event.request.json();
     } catch {
         return json({ success: false, message: 'נתונים לא תקינים' }, { status: 400 });
     }
@@ -57,6 +60,7 @@ export const POST: RequestHandler = async ({ request }) => {
         neighborhood: String(neighborhood ?? ''),
         city:         String(city ?? ''),
         extra_fields: (extra_fields ?? {}) as Record<string, unknown>,
+        user_id:     session?.user?.id ?? undefined,
     });
 
     // ---- שלח מייל לאדמין ----

@@ -28,6 +28,7 @@
 		"vite": "^7.3.1"
 	},
 	"dependencies": {
+		"@auth/sveltekit": "^1.11.1",
 		"better-sqlite3": "^12.6.2",
 		"resend": "^6.9.3"
 	}

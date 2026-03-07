@@ -8,8 +8,26 @@
 	import AdsSidebar from "$lib/components/AdsSidebar.svelte";
 	import Footer from "$lib/components/Footer.svelte";
 	import favicon from "$lib/assets/favicon.svg";
+	import { signOut } from "@auth/sveltekit/client";
+	import { goto } from "$app/navigation";
+	import { page } from "$app/state";
 
-	let { children } = $props();
+	let { children, data } = $props();
+
+	// ממפה את session.user לצורה שה-Header מצפה לה
+	let currentUser = $derived(
+		data.session?.user
+			? { username: data.session.user.name ?? data.session.user.email ?? 'משתמש' }
+			: undefined
+	);
+
+	async function handleLogout() {
+		await signOut({ redirectTo: '/' });
+	}
+
+	function handleShowAuth() {
+		goto(`/login?redirect=${encodeURIComponent(page.url.pathname)}`);
+	}
 </script>
 
 <svelte:head>
@@ -18,7 +36,11 @@
 </svelte:head>
 
 <div class="min-h-screen flex flex-col bg-[#0f172a]">
-	<Header />
+	<Header
+		currentUser={currentUser}
+		onLogout={handleLogout}
+		onShowAuth={handleShowAuth}
+	/>
 
 	<div class="layout-container flex-grow">
 		<RightAdBanner />
