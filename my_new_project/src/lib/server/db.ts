@@ -125,9 +125,10 @@ const insertItemStmt = db.prepare(`
     VALUES (@id, @category, @label, @description, @contact, @phone, @address, @icon, @color, @neighborhood, @city, @extra_fields, @user_id)
 `);
 
-const getAllItemsStmt   = db.prepare(`SELECT * FROM items WHERE status = 'active' ORDER BY created_at DESC`);
-const getItemByIdStmt  = db.prepare(`SELECT * FROM items WHERE id = ? AND status = 'active'`);
-const getByUserIdStmt  = db.prepare(`SELECT * FROM items WHERE user_id = ? ORDER BY created_at DESC`);
+const getAllItemsStmt      = db.prepare(`SELECT * FROM items WHERE status = 'active' ORDER BY created_at DESC`);
+const getItemByIdStmt     = db.prepare(`SELECT * FROM items WHERE id = ? AND status = 'active'`);
+const getByUserIdStmt     = db.prepare(`SELECT * FROM items WHERE user_id = ? ORDER BY created_at DESC`);
+const getByCategoryStmt   = db.prepare(`SELECT * FROM items WHERE category = ? AND status = 'active' ORDER BY created_at DESC`);
 
 export function createItem(data: CreateItemData): DbItem {
     const row = {
@@ -159,6 +160,10 @@ export function getDbItemById(id: string): DbItem | undefined {
 
 export function getItemsByUserId(userId: string): DbItem[] {
     return getByUserIdStmt.all(userId) as DbItem[];
+}
+
+export function getItemsByCategory(category: string): DbItem[] {
+    return getByCategoryStmt.all(category) as DbItem[];
 }
 
 // ============================================================

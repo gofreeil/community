@@ -988,6 +988,7 @@
                     {#each categories.filter((cat) => cat.id !== "benefits") as category}
                         {@const categoryDbItems = dbItems.filter(d => d.category === category.id)}
                         {@const totalItems = (category.items?.length || 0) + categoryDbItems.length}
+                        {@const hasNationalPage = ['singles','security','attractions','jobs'].includes(category.id)}
                         <div
                             class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-500/30 rounded-lg md:rounded-xl overflow-hidden transition-all"
                         >
@@ -1040,6 +1041,24 @@
                                     </div>
                                 </div>
                             </button>
+
+                            <!-- קישור לרשימה הארצית (רק לקטגוריות הרלוונטיות) -->
+                            {#if hasNationalPage}
+                                <div class="px-3 md:px-4 pb-2 pt-0 border-t border-white/5">
+                                    <a
+                                        href="/national/{category.id}"
+                                        onclick={(e) => e.stopPropagation()}
+                                        class="inline-flex items-center gap-1.5 text-xs text-purple-400 hover:text-purple-300
+                                               transition-colors py-1.5 font-medium group/nat"
+                                    >
+                                        <span class="text-sm">🗺️</span>
+                                        <span class="underline underline-offset-2 decoration-purple-500/40 group-hover/nat:decoration-purple-400">
+                                            לרשימה הארצית
+                                        </span>
+                                        <span class="opacity-60 group-hover/nat:opacity-100 transition-opacity">←</span>
+                                    </a>
+                                </div>
+                            {/if}
 
                             {#if expandedCategories.has(category.id)}
                                 <div
