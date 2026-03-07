@@ -41,8 +41,13 @@
     let isNational = $state(false);
     let showPicker = $state(false);
 
+    // Pre-selected item info coming from /add/[category] flow
+    let pendingItemLabel    = $state('');
+    let pendingItemCategory = $state('');
+
     onMount(() => {
         if (!browser) return;
+
         // Read last neighborhood chosen on the home page
         const saved = localStorage.getItem(LS_KEY);
         if (saved) {
@@ -51,6 +56,20 @@
                 if (neighborhood) selectedNeighborhoods = new Set([neighborhood]);
             } catch {}
         }
+
+        // Auto-select pricing row from /add/[category] redirect
+        try {
+            const pending = localStorage.getItem('pending_ad');
+            if (pending) {
+                const { priceRow, categoryLabel, itemLabel } = JSON.parse(pending);
+                if (typeof priceRow === 'number' && priceRow >= 1 && priceRow <= 7) {
+                    planMap = new Map([[priceRow, 'half']]);
+                }
+                if (categoryLabel) pendingItemCategory = String(categoryLabel);
+                if (itemLabel)     pendingItemLabel     = String(itemLabel);
+                localStorage.removeItem('pending_ad');
+            }
+        } catch {}
     });
 
     function toggleNeighborhood(name: string) {
@@ -102,6 +121,47 @@
         toastTimer = setTimeout(() => { toastVisible = false; }, 5000);
     }
 
+    // ---- Email confirmation ----
+    let userEmail      = $state('');
+    let emailSending   = $state(false);
+    let emailSent      = $state(false);
+    let emailError     = $state('');
+
+    async function sendOrderEmail() {
+        if (!userEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userEmail)) {
+            emailError = 'נא להזין כתובת אימייל תקינה';
+            return;
+        }
+        emailError   = '';
+        emailSending = true;
+
+        try {
+            const res = await fetch('/api/send-order-email', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email:             userEmail,
+                    selectedItems,
+                    neighborhoodLabel,
+                    neighborhoodCount,
+                    totalPayment,
+                    totalMonthly,
+                }),
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                emailSent = true;
+            } else {
+                emailError = data.message || 'שגיאה בשליחת המייל';
+            }
+        } catch {
+            emailError = 'בעיית תקשורת — נסה שוב';
+        } finally {
+            emailSending = false;
+        }
+    }
+
     const rows = [
         { num: 1, type: "פרסומת ארוכה",  half: 15,  total: 90,  single: 25, reach: "לכל שכונה רצויה",   details: "מופיע ל-6 שניות ונעלם 12 שניות" },
         { num: 2, type: "עסק",            half: 25,  total: 150, single: 35, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
@@ -148,7 +208,32 @@
     let halfItems        = $derived(selectedItems.filter(r => r.plan === 'half'));
     let singleItems      = $derived(selectedItems.filter(r => r.plan === 'single'));
     let hasSelection     = $derived(planMap.size > 0);
-    let isKiryatMoshe   = $derived(!isNational && selectedNeighborhoods.size === 1 && selectedNeighborhoods.has('קרית משה'));
+
+    // תמונת רקע לכל שכונה — מוצגת בכפתור הבחירה כשבוחרים שכונה בודדת
+    const neighborhoodImages: Record<string, string> = {
+        'קרית משה':    '/images/kiryat-moshe-vaad.jfif',
+        'רחביה':       '/images/neighborhoods/rehavia.jpg',
+        'גבעת שאול':   '/images/neighborhoods/givat-shaul.jpg',
+        'רמות':        '/images/neighborhoods/ramot.jpg',
+        'גילה':        '/images/neighborhoods/gilo.jpg',
+        'קטמון':       '/images/neighborhoods/katamon.jpg',
+        'בקעה':        '/images/neighborhoods/baka.jpg',
+        'מעלות דפנה':  '/images/neighborhoods/maalot-dafna.jpg',
+        'רמת אביב':    '/images/neighborhoods/ramat-aviv.jpg',
+        'פלורנטין':    '/images/neighborhoods/florentin.jpg',
+        'נווה צדק':    '/images/neighborhoods/neve-tzedek.jpg',
+        'יפו העתיקה':  '/images/neighborhoods/jaffa.jpg',
+        'רמת החייל':   '/images/neighborhoods/ramat-hahail.jpg',
+        'כרמל צרפתי':  '/images/neighborhoods/french-carmel.jpg',
+        'נווה שאנן':   '/images/neighborhoods/neve-shaanan.jpg',
+        'בת גלים':     '/images/neighborhoods/bat-galim.jpg',
+    };
+
+    let neighborhoodImage = $derived(
+        !isNational && selectedNeighborhoods.size === 1
+            ? (neighborhoodImages[[...selectedNeighborhoods][0]] ?? null)
+            : null
+    );
 
     // Build mailto body
     let mailtoBody = $derived(
@@ -165,11 +250,26 @@
 
 <div class="max-w-4xl mx-auto px-4 py-8 md:py-12" dir="rtl">
 
+    <!-- Success banner from /add/[category] flow -->
+    {#if pendingItemLabel}
+        <div class="mb-8 rounded-2xl border-2 border-green-500/40 bg-green-900/20 p-5 text-center"
+             style="animation: slideDown 0.4s ease-out;">
+            <div class="text-3xl mb-2">✅</div>
+            <p class="text-green-300 font-black text-base mb-1">
+                "{pendingItemLabel}" נשמר בהצלחה!
+            </p>
+            <p class="text-gray-400 text-sm">
+                הפריט כבר מופיע ברשימת השכונה.
+                כעת בחר תוכנית פרסום כדי לשפר את החשיפה שלו ↓
+            </p>
+        </div>
+    {/if}
+
     <!-- Header -->
     <div class="text-center mb-10 md:mb-14">
         <div class="text-5xl mb-4">📢</div>
         <h1 class="text-3xl md:text-5xl font-black bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 bg-clip-text text-transparent mb-4">
-            פרסם באתר הקהילה
+            {pendingItemLabel ? 'שדרג את החשיפה שלך' : 'פרסם באתר הקהילה'}
         </h1>
         <p class="text-gray-300 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
             היחשף לתושבי השכונה ישירות — קהל מקומי, ממוקד ומעורב
@@ -208,14 +308,14 @@
         class="w-full rounded-2xl border-2 px-6 py-5 text-center transition-all cursor-pointer mb-4 relative overflow-hidden
             {showPicker
                 ? 'border-amber-500/60 shadow-lg shadow-amber-500/10'
-                : isKiryatMoshe
+                : neighborhoodImage
                     ? 'border-amber-500/40 hover:border-amber-400/70'
                     : 'bg-white/5 border-white/10 hover:border-amber-400/40 hover:bg-amber-900/10'}"
-        style={isKiryatMoshe
-            ? "background-image: url('/images/kiryat-moshe-vaad.jfif'); background-size: cover; background-position: center top;"
+        style={neighborhoodImage
+            ? `background-image: url('${neighborhoodImage}'); background-size: cover; background-position: center;`
             : ""}
     >
-        {#if isKiryatMoshe}
+        {#if neighborhoodImage}
             <!-- dark overlay so text stays readable -->
             <div class="absolute inset-0 bg-black/55 rounded-2xl"></div>
         {/if}
@@ -224,7 +324,7 @@
                 {neighborhoodLabel}
             </div>
             <div class="text-xs md:text-sm flex items-center justify-center gap-1
-                {isKiryatMoshe ? 'text-gray-200' : 'text-gray-400'}">
+                {neighborhoodImage ? 'text-gray-200' : 'text-gray-400'}">
                 <span>קהל מקומי</span>
                 <span class="text-amber-500/70">✏️</span>
             </div>
@@ -507,14 +607,65 @@
                 </div>
             {/if}
 
+            <!-- ===== Email confirmation section ===== -->
+            {#if emailSent}
+                <!-- Success state -->
+                <div class="rounded-2xl border-2 border-green-500/40 bg-green-900/20 p-5 text-center mb-4"
+                     style="animation: slideDown 0.3s ease-out;">
+                    <div class="text-3xl mb-2">✅</div>
+                    <p class="text-green-300 font-black text-base mb-1">המייל נשלח בהצלחה!</p>
+                    <p class="text-gray-400 text-sm">
+                        שלחנו אישור הזמנה לכתובת
+                        <span class="text-green-400 font-bold">{userEmail}</span>
+                    </p>
+                    <p class="text-gray-500 text-xs mt-2">ניצור איתך קשר תוך 24 שעות לתיאום הסופי</p>
+                </div>
+            {:else}
+                <!-- Email input -->
+                <div class="rounded-2xl border border-white/15 bg-white/3 p-5 mb-4"
+                     style="animation: slideDown 0.25s ease-out;">
+                    <p class="text-gray-300 text-sm font-bold mb-3 text-center">
+                        📧 קבל אישור הזמנה למייל
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <input
+                            type="email"
+                            bind:value={userEmail}
+                            placeholder="your@email.com"
+                            dir="ltr"
+                            class="flex-1 rounded-xl border border-white/15 bg-white/5 px-4 py-3
+                                   text-white placeholder:text-gray-600 text-sm
+                                   focus:outline-none focus:border-amber-500/60 focus:bg-amber-900/10
+                                   transition-all"
+                            onkeydown={(e) => { if (e.key === 'Enter') sendOrderEmail(); }}
+                        />
+                        <button
+                            type="button"
+                            onclick={sendOrderEmail}
+                            disabled={emailSending}
+                            class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3
+                                   font-black text-sm transition-all shadow-lg
+                                   {emailSending
+                                       ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                                       : 'bg-amber-500 hover:bg-amber-400 text-black hover:scale-105 shadow-amber-500/20'}"
+                        >
+                            {#if emailSending}
+                                <span class="inline-block w-4 h-4 border-2 border-gray-500 border-t-amber-400 rounded-full"
+                                      style="animation: spin 0.7s linear infinite;"></span>
+                                שולח…
+                            {:else}
+                                ✉️ שלח אישור — ₪{totalPayment}
+                            {/if}
+                        </button>
+                    </div>
+                    {#if emailError}
+                        <p class="text-red-400 text-xs mt-2 text-center font-bold">{emailError}</p>
+                    {/if}
+                </div>
+            {/if}
+
             <!-- CTA buttons -->
             <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                <a
-                    href="mailto:ads@shchuna.co.il?subject=בקשת פרסום&body={mailtoBody}"
-                    class="inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-black font-black px-6 py-3 rounded-xl text-sm transition-all hover:scale-105 shadow-lg shadow-amber-500/20"
-                >
-                    ✉️ שלח בקשה — ₪{totalPayment}
-                </a>
                 <a
                     href="https://wa.me/972500000000?text=שלום, אני מעוניין לפרסם: {selectedItems.map(r => r.type).join(', ')}. סה״כ ₪{totalPayment}."
                     target="_blank"
@@ -647,5 +798,8 @@
     @keyframes slideUp {
         from { opacity: 0; transform: translate(-50%, 16px); }
         to   { opacity: 1; transform: translate(-50%, 0); }
+    }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
     }
 </style>

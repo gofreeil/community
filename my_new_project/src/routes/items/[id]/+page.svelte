@@ -1,11 +1,10 @@
 <script lang="ts">
-    import { page } from "$app/state";
-    import { getItemById } from "$lib/itemsData";
     import { onMount } from "svelte";
     import { fade, fly, scale } from "svelte/transition";
+    import type { PageData } from './$types';
 
-    const id = page.params.id as string;
-    const item = getItemById(id);
+    let { data }: { data: PageData } = $props();
+    const item = $derived(data.item);
 
     let mounted = $state(false);
 
@@ -21,6 +20,28 @@
 <svelte:head>
     <title>{item ? item.label : "לא נמצא"} | קהילה בשכונה</title>
 </svelte:head>
+
+<!-- Extra fields display for user-submitted items -->
+{#snippet extraFieldsBlock()}
+    {#if item?.isUserSubmitted && item.extraFields && Object.keys(item.extraFields).length > 0}
+        <section>
+            <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <span class="w-1.5 h-8 bg-green-500 rounded-full"></span>
+                פרטים נוספים
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {#each Object.entries(item.extraFields) as [key, value]}
+                    {#if value}
+                        <div class="bg-white/5 p-4 rounded-xl border border-white/5">
+                            <p class="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">{key}</p>
+                            <p class="text-white font-medium">{value}</p>
+                        </div>
+                    {/if}
+                {/each}
+            </div>
+        </section>
+    {/if}
+{/snippet}
 
 <div class="min-h-screen bg-[#070b14] py-12 px-4 md:px-8">
     <div class="max-w-4xl mx-auto">
@@ -175,6 +196,8 @@
                                     {/if}
                                 </div>
                             </section>
+
+                            {@render extraFieldsBlock()}
                         </div>
 
                         <!-- Sidebar / Actions -->

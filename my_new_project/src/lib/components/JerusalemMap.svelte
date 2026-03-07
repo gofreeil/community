@@ -3,12 +3,14 @@
     import { t } from "svelte-i18n";
     import { createEventDispatcher } from "svelte";
     import { slide } from "svelte/transition";
+    import { goto } from "$app/navigation";
     import { items as itemsData } from "$lib/itemsData";
     import { citiesAndNeighborhoods, LS_KEY, DEFAULT_NEIGHBORHOOD } from "$lib/neighborhoodsData";
+    import type { DbItem } from "$lib/server/db";
 
     const dispatch = createEventDispatcher();
 
-    let { showNeighborhoodsMenu = $bindable(false) } = $props();
+    let { showNeighborhoodsMenu = $bindable(false), dbItems = [] as DbItem[] } = $props();
 
     const categories = [
         { id: "benefits", label: "כל היתרונות", icon: "⭐" },
@@ -682,15 +684,8 @@
     }
 
     function handleAddItem(categoryId: string) {
-        if (!isLoggedIn) {
-            alert("יש להירשם כדי להוסיף פריטים. מעבר לדף הרשמה...");
-            // כאן תוכל להוסיף ניווט לדף הרשמה
-            return;
-        }
-        // כאן תוכל להוסיף לוגיקה להוספת פריט
-        alert(
-            `הוספת פריט לקטגוריה: ${categories.find((c) => c.id === categoryId)?.label}`,
-        );
+        showAddMenu = false;
+        goto(`/add/${categoryId}`);
     }
 
     function handleHelpRequest(optionId: number) {
@@ -971,6 +966,17 @@
                     referrerpolicy="no-referrer-when-downgrade"
                 >
                 </iframe>
+
+                <!-- Badge לפריטים חדשים -->
+                {#if dbItems.length > 0}
+                    <button
+                        onclick={() => handleViewToggle(false)}
+                        class="absolute bottom-4 left-4 z-20 bg-green-600/90 backdrop-blur-sm text-white text-xs font-black px-3 py-1.5 rounded-full shadow-lg border border-green-400/50 hover:bg-green-500/90 transition-all hover:scale-105"
+                        title="עבור לרשימה לצפייה בפריטים החדשים"
+                    >
+                        🆕 {dbItems.length} פריטים חדשים — לחץ לצפייה
+                    </button>
+                {/if}
             </div>
         {:else if viewMode === "list"}
             <!-- תצוגת רשימה -->
@@ -980,6 +986,8 @@
             >
                 <div class="space-y-2 md:space-y-3">
                     {#each categories.filter((cat) => cat.id !== "benefits") as category}
+                        {@const categoryDbItems = dbItems.filter(d => d.category === category.id)}
+                        {@const totalItems = (category.items?.length || 0) + categoryDbItems.length}
                         <div
                             class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-500/30 rounded-lg md:rounded-xl overflow-hidden transition-all"
                         >
@@ -999,13 +1007,18 @@
                                             class="text-white font-bold text-base md:text-sm md:text-lg"
                                             >{category.label}</span
                                         >
+                                        {#if categoryDbItems.length > 0}
+                                            <span class="bg-green-500/20 border border-green-500/40 text-green-400 text-[10px] font-black px-2 py-0.5 rounded-full">
+                                                🆕 {categoryDbItems.length} חדש
+                                            </span>
+                                        {/if}
                                     </div>
                                     <div
                                         class="flex items-center gap-2 md:gap-3"
                                     >
                                         <span
                                             class="text-purple-400 text-sm md:text-xs md:text-sm"
-                                            >{category.items?.length || 0} פריטים</span
+                                            >{totalItems} פריטים</span
                                         >
                                         <svg
                                             class="w-5 h-5 md:w-4 md:h-4 md:w-6 md:h-6 text-purple-400 transition-transform duration-300 {expandedCategories.has(
@@ -1028,11 +1041,12 @@
                                 </div>
                             </button>
 
-                            {#if expandedCategories.has(category.id) && category.items}
+                            {#if expandedCategories.has(category.id)}
                                 <div
                                     class="px-4 pb-4 space-y-2 animate-slideDown"
                                 >
-                                    {#each category.items as item}
+                                    <!-- פריטים סטטיים קיימים -->
+                                    {#each category.items ?? [] as item}
                                         <a
                                             href="/items/{item.id}"
                                             class="bg-purple-900/20 border border-purple-500/20 rounded-lg p-3 hover:bg-purple-900/30 hover:border-purple-500/40 transition-all cursor-pointer flex items-center justify-between group/item"
@@ -1042,6 +1056,30 @@
                                             >
                                             <div
                                                 class="bg-purple-600 group-hover/item:bg-purple-500 text-white px-3 py-1 rounded text-xs font-bold transition-colors"
+                                            >
+                                                צפה בפרטים
+                                            </div>
+                                        </a>
+                                    {/each}
+
+                                    <!-- פריטים מה-DB (חדשים) -->
+                                    {#each categoryDbItems as dbItem}
+                                        <a
+                                            href="/items/{dbItem.id}"
+                                            class="bg-green-900/15 border border-green-500/25 rounded-lg p-3 hover:bg-green-900/25 hover:border-green-500/40 transition-all cursor-pointer flex items-center justify-between group/item"
+                                        >
+                                            <div class="flex items-center gap-2 min-w-0">
+                                                <span class="text-lg flex-shrink-0">{dbItem.icon}</span>
+                                                <div class="min-w-0">
+                                                    <span class="text-white text-sm block truncate">• {dbItem.label}</span>
+                                                    {#if dbItem.neighborhood}
+                                                        <span class="text-gray-500 text-xs">{dbItem.neighborhood}</span>
+                                                    {/if}
+                                                </div>
+                                                <span class="bg-green-500/20 text-green-400 text-[10px] font-black px-1.5 py-0.5 rounded flex-shrink-0">חדש</span>
+                                            </div>
+                                            <div
+                                                class="bg-green-700 group-hover/item:bg-green-600 text-white px-3 py-1 rounded text-xs font-bold transition-colors flex-shrink-0 mr-2"
                                             >
                                                 צפה בפרטים
                                             </div>

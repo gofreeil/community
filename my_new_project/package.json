@@ -16,6 +16,7 @@
 		"@sveltejs/kit": "^2.50.2",
 		"@sveltejs/vite-plugin-svelte": "^6.2.4",
 		"@tailwindcss/postcss": "^4.2.0",
+		"@types/better-sqlite3": "^7.6.13",
 		"autoprefixer": "^10.4.24",
 		"flag-icons": "^7.5.0",
 		"postcss": "^8.5.6",
@@ -25,5 +26,9 @@
 		"tailwindcss": "^4.2.0",
 		"typescript": "^5.9.3",
 		"vite": "^7.3.1"
+	},
+	"dependencies": {
+		"better-sqlite3": "^12.6.2",
+		"resend": "^6.9.3"
 	}
 }

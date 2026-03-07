@@ -8,6 +8,9 @@
 
     import { citiesAndNeighborhoods, LS_KEY, DEFAULT_NEIGHBORHOOD } from "$lib/neighborhoodsData";
     import { browser } from "$app/environment";
+    import type { PageData } from './$types';
+
+    let { data }: { data: PageData } = $props();
 
     let showNeighborhoodsMenu = $state(false);
 
@@ -146,7 +149,7 @@
         <div class="flex flex-col lg:flex-row gap-6">
             <!-- Map Section (3/4 width on desktop, full width on mobile) -->
             <div class="lg:w-3/4">
-                <JerusalemMap bind:showNeighborhoodsMenu />
+                <JerusalemMap bind:showNeighborhoodsMenu dbItems={data.dbItems} />
             </div>
 
             <!-- Lost and Found Section (1/4 width on desktop) -->
