@@ -873,34 +873,6 @@
             </svg>
         </button>
 
-        <!-- ===== קישורי דפים ארציים (תמיד גלויים) ===== -->
-        <div class="flex flex-wrap gap-2 px-1 mb-3">
-            <a href="/national/singles"
-               class="inline-flex items-center gap-1.5 text-xs bg-red-500/15 border border-red-500/30
-                      hover:bg-red-500/25 text-red-300 hover:text-red-200 px-3 py-1.5 rounded-full
-                      transition-all font-medium">
-                ❤️ שידוכים ארציים
-            </a>
-            <a href="/national/security"
-               class="inline-flex items-center gap-1.5 text-xs bg-green-500/15 border border-green-500/30
-                      hover:bg-green-500/25 text-green-300 hover:text-green-200 px-3 py-1.5 rounded-full
-                      transition-all font-medium">
-                🏡 צימרים ארציים
-            </a>
-            <a href="/national/attractions"
-               class="inline-flex items-center gap-1.5 text-xs bg-indigo-500/15 border border-indigo-500/30
-                      hover:bg-indigo-500/25 text-indigo-300 hover:text-indigo-200 px-3 py-1.5 rounded-full
-                      transition-all font-medium">
-                🎯 אטרקציות ארציות
-            </a>
-            <a href="/national/jobs"
-               class="inline-flex items-center gap-1.5 text-xs bg-blue-500/15 border border-blue-500/30
-                      hover:bg-blue-500/25 text-blue-300 hover:text-blue-200 px-3 py-1.5 rounded-full
-                      transition-all font-medium">
-                💼 דרושים ארציים
-            </a>
-        </div>
-
         {#if viewMode === "map"}
             <!-- תצוגת מפה -->
             <div
@@ -1032,6 +1004,18 @@
                                                 🆕 {categoryDbItems.length} חדש
                                             </span>
                                         {/if}
+                                        {#if hasNationalPage}
+                                            <!-- קישור ארצי — ליד שם הקטגוריה בשורת הכותרת -->
+                                            <span
+                                                role="link"
+                                                tabindex="0"
+                                                onclick={(e) => { e.stopPropagation(); goto(`/national/${category.id}`); }}
+                                                onkeydown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); goto(`/national/${category.id}`); } }}
+                                                class="text-[11px] text-purple-400 hover:text-purple-300 cursor-pointer
+                                                       underline underline-offset-2 decoration-purple-500/40 hover:decoration-purple-400
+                                                       transition-colors font-medium whitespace-nowrap"
+                                            >← לרשימה הארצית</span>
+                                        {/if}
                                     </div>
                                     <div
                                         class="flex items-center gap-2 md:gap-3"
@@ -1061,23 +1045,6 @@
                                 </div>
                             </button>
 
-                            <!-- קישור לרשימה הארצית (רק לקטגוריות הרלוונטיות) -->
-                            {#if hasNationalPage}
-                                <div class="px-3 md:px-4 pb-2 pt-0 border-t border-white/5">
-                                    <a
-                                        href="/national/{category.id}"
-                                        onclick={(e) => e.stopPropagation()}
-                                        class="inline-flex items-center gap-1.5 text-xs text-purple-400 hover:text-purple-300
-                                               transition-colors py-1.5 font-medium group/nat"
-                                    >
-                                        <span class="text-sm">🗺️</span>
-                                        <span class="underline underline-offset-2 decoration-purple-500/40 group-hover/nat:decoration-purple-400">
-                                            לרשימה הארצית
-                                        </span>
-                                        <span class="opacity-60 group-hover/nat:opacity-100 transition-opacity">←</span>
-                                    </a>
-                                </div>
-                            {/if}
 
                             {#if expandedCategories.has(category.id)}
                                 <div
