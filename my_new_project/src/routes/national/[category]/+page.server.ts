@@ -23,11 +23,17 @@ export const load: PageServerLoad = async ({ params }) => {
         error(404, `קטגוריה לא קיימת`);
     }
 
-    const items = getItemsByCategory(categoryId);
+    let items: import('$lib/server/db').DbItem[] = [];
+    try {
+        items = getItemsByCategory(categoryId);
+    } catch (err) {
+        console.error(`[national/${categoryId}] getItemsByCategory failed:`, err);
+    }
 
     return {
         categoryId,
-        config,
+        // מחזירים רק את מה שהעמוד צריך (icon + label) — מונע בעיות serialization
+        config: { icon: config.icon, label: config.label },
         items,
         meta: nationalCategories[categoryId],
     };
