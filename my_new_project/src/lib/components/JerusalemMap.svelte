@@ -142,15 +142,6 @@
             ],
         },
         {
-            id: "events",
-            label: "אירועים",
-            icon: "📅",
-            items: [
-                { id: "event-lecture", label: "הרצאה מרתקת" },
-                { id: "event-kumzitz", label: "קומזיץ שכונתי" },
-            ],
-        },
-        {
             id: "attractions",
             label: "אטרקציות",
             icon: "🎡",
