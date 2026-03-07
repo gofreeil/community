@@ -4,7 +4,8 @@ import { getItemsByCategory } from '$lib/server/db';
 import { categoryConfig } from '$lib/categoryFields';
 
 // קטגוריות שיש להן דף ארצי
-export const nationalCategories: Record<string, { slug: string; title: string }> = {
+// ⚠️ אין export — SvelteKit מאפשר רק: load, actions, prerender, csr, ssr, trailingSlash, config, entries, או עם '_' prefix
+const nationalCategories: Record<string, { slug: string; title: string }> = {
     singles:     { slug: 'singles',     title: 'שידוכים — פנויים ופנויות' },
     security:    { slug: 'security',    title: 'צימרים ונופש' },
     attractions: { slug: 'attractions', title: 'אטרקציות' },
