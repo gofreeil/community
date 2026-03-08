@@ -7,6 +7,7 @@
 	import RightAdBanner from "$lib/components/RightAdBanner.svelte";
 	import AdsSidebar from "$lib/components/AdsSidebar.svelte";
 	import Footer from "$lib/components/Footer.svelte";
+	import CoinAnimation from "$lib/components/CoinAnimation.svelte";
 	import favicon from "$lib/assets/favicon.svg";
 	import { signOut } from "@auth/sveltekit/client";
 	import { goto } from "$app/navigation";
@@ -35,6 +36,7 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
+<CoinAnimation />
 <div class="min-h-screen flex flex-col bg-[#0f172a]">
 	<Header
 		currentUser={currentUser}

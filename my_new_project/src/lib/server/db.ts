@@ -44,6 +44,15 @@ function getDb(): Database.Database {
         // העמודה כבר קיימת — בסדר
     }
 
+    // ---- Schema: טבלת community_fund ----
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS community_fund (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        amount     REAL    NOT NULL,
+        created_at TEXT    DEFAULT (datetime('now'))
+      )
+    `);
+
     // ---- Schema: טבלת users ----
     db.exec(`
       CREATE TABLE IF NOT EXISTS users (
@@ -200,6 +209,32 @@ export function getUserById(id: string): DbUser | undefined {
 export function getUserByEmail(email: string): DbUser | undefined {
     return getDb().prepare(`SELECT * FROM users WHERE email = ?`).get(email) as DbUser | undefined;
 }
+
+// ============================================================
+// ---- Community Fund ----
+// ============================================================
+
+export function addFundDonation(amount: number): number {
+    const db = getDb();
+    db.prepare(`INSERT INTO community_fund (amount) VALUES (?)`).run(amount);
+    const row = db.prepare(`SELECT COALESCE(SUM(amount), 0) AS total FROM community_fund`).get() as { total: number };
+    return row.total;
+}
+
+// נקרא מ-send-order-email: מחשב 10% ומוסיף לקופה
+export function addFundContribution(_neighborhood: string, totalPayment: number): number {
+    const tithe = Math.round(totalPayment * 0.1);
+    return addFundDonation(tithe);
+}
+
+export function getFundTotal(): number {
+    const row = getDb().prepare(`SELECT COALESCE(SUM(amount), 0) AS total FROM community_fund`).get() as { total: number };
+    return row.total;
+}
+
+// ============================================================
+// ---- Users ----
+// ============================================================
 
 export function updateUserProfile(id: string, data: UpdateProfileData): DbUser | undefined {
     const fields: string[] = [];

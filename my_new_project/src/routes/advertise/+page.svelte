@@ -2,6 +2,7 @@
     import { onMount } from "svelte";
     import { browser } from "$app/environment";
     import { citiesData, LS_KEY, DEFAULT_NEIGHBORHOOD } from "$lib/neighborhoodsData";
+    import { coinAnim } from "$lib/coinAnimationState.svelte";
 
     const packages = [
         {
@@ -152,6 +153,11 @@
             const data = await res.json();
             if (data.success) {
                 emailSent = true;
+                // השרת כבר הוסיף את המעשר — מפעיל אנימציה עם הנתונים שחזרו
+                const tithe = Math.round(totalPayment * 0.1);
+                if (tithe > 0) {
+                    coinAnim.trigger(tithe, totalPayment, data.fundTotal ?? tithe);
+                }
             } else {
                 emailError = data.message || 'שגיאה בשליחת המייל';
             }

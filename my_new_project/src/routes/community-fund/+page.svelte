@@ -1,10 +1,24 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+
 	let wishText = $state('');
 	let showSuccess = $state(false);
 
-	// נתוני הקופה — בעתיד אפשר לחבר ל-DB
-	let totalDonated = $state(0);
+	let totalDonated     = $state(0);
 	let totalDistributed = $state(0);
+
+	onMount(async () => {
+		try {
+			const res = await fetch('/api/community-fund');
+			if (res.ok) {
+				const data = await res.json();
+				totalDonated     = data.totalDonated     ?? 0;
+				totalDistributed = data.totalDistributed ?? 0;
+			}
+		} catch {
+			// אם ה-API לא זמין — נשאר 0
+		}
+	});
 
 	function handleSubmit() {
 		if (!wishText.trim()) {
