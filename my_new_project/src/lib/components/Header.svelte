@@ -268,13 +268,6 @@
                 </div>
             </div>
             <div class="flex items-center gap-2">
-                <!-- ניווט ראשי -->
-                <nav class="hidden md:flex items-center gap-2">
-                    <a
-                        href="/advertise"
-                        class="flex items-center gap-1 rounded-lg bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-500 hover:to-teal-500 px-3 py-2 text-sm font-bold text-white transition-all shadow-md"
-                    >📢 פרסם כאן</a>
-                </nav>
                 <button
                     class="relative group flex items-center rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2 font-medium text-white shadow-lg transition-all duration-200 hover:shadow-xl"
                     onclick={() => goto("/about")}

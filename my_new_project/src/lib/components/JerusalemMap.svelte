@@ -152,6 +152,16 @@
             ],
         },
         {
+            id: "halls",
+            label: "אולמות",
+            icon: "🏛️",
+            items: [
+                { id: "hall-events", label: "אולם אירועים שכונתי" },
+                { id: "hall-community", label: "אולם קהילתי להשכרה" },
+                { id: "hall-wedding", label: "אולם שמחות" },
+            ],
+        },
+        {
             id: "safe-space",
             label: "מרחב מוגן",
             icon: "🛡️",

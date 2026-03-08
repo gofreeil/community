@@ -37,8 +37,9 @@
         },
     ];
 
-    // ---- Neighborhood selection ----
-    let selectedNeighborhoods = $state<Set<string>>(new Set([DEFAULT_NEIGHBORHOOD]));
+    // ---- City selection (price × number of active neighborhoods in city) ----
+    const defaultCity = citiesData.find(c => c.neighborhoods.includes(DEFAULT_NEIGHBORHOOD))?.city ?? citiesData[0].city;
+    let selectedCities = $state<Set<string>>(new Set([defaultCity]));
     let isNational = $state(false);
     let showPicker = $state(false);
 
@@ -49,12 +50,15 @@
     onMount(() => {
         if (!browser) return;
 
-        // Read last neighborhood chosen on the home page
+        // Read last neighborhood chosen on the home page — map to its city
         const saved = localStorage.getItem(LS_KEY);
         if (saved) {
             try {
                 const { neighborhood } = JSON.parse(saved);
-                if (neighborhood) selectedNeighborhoods = new Set([neighborhood]);
+                if (neighborhood) {
+                    const found = citiesData.find(c => c.neighborhoods.includes(neighborhood));
+                    if (found) selectedCities = new Set([found.city]);
+                }
             } catch {}
         }
 
@@ -63,7 +67,7 @@
             const pending = localStorage.getItem('pending_ad');
             if (pending) {
                 const { priceRow, categoryLabel, itemLabel } = JSON.parse(pending);
-                if (typeof priceRow === 'number' && priceRow >= 1 && priceRow <= 7) {
+                if (typeof priceRow === 'number' && priceRow >= 1 && priceRow <= 9) {
                     planMap = new Map([[priceRow, 'half']]);
                 }
                 if (categoryLabel) pendingItemCategory = String(categoryLabel);
@@ -73,43 +77,28 @@
         } catch {}
     });
 
-    function toggleNeighborhood(name: string) {
-        const next = new Set(selectedNeighborhoods);
-        if (next.has(name)) {
-            if (next.size > 1) next.delete(name); // keep at least one
-        } else {
-            next.add(name);
-        }
-        selectedNeighborhoods = next;
-        isNational = false;
-    }
-
     function setNational() {
         isNational = true;
-        selectedNeighborhoods = new Set();
+        selectedCities = new Set();
     }
 
-    function toggleCity(cityEntry: { city: string; neighborhoods: string[] }) {
-        const allSelected = !isNational && cityEntry.neighborhoods.every(n => selectedNeighborhoods.has(n));
-        const next = new Set(selectedNeighborhoods);
-        if (allSelected) {
-            // בטל בחירת כל השכונות בעיר — שמור לפחות אחת
-            cityEntry.neighborhoods.forEach(n => next.delete(n));
-            if (next.size === 0) next.add(cityEntry.neighborhoods[0]);
+    function toggleCity(cityName: string) {
+        const next = new Set(selectedCities);
+        if (next.has(cityName)) {
+            if (next.size > 1) next.delete(cityName); // keep at least one
         } else {
-            // סמן את כל השכונות בעיר
-            cityEntry.neighborhoods.forEach(n => next.add(n));
+            next.add(cityName);
         }
-        selectedNeighborhoods = next;
+        selectedCities = next;
         isNational = false;
     }
 
     let neighborhoodLabel = $derived(
         isNational
             ? "ארצי — כל הארץ"
-            : selectedNeighborhoods.size === 1
-                ? [...selectedNeighborhoods][0]
-                : `${[...selectedNeighborhoods][0]} +${selectedNeighborhoods.size - 1}`
+            : selectedCities.size === 1
+                ? [...selectedCities][0]
+                : `${[...selectedCities][0]} +${selectedCities.size - 1}`
     );
 
     // ---- Toast ----
@@ -177,6 +166,7 @@
         { num: 6, type: "פנויים פנויות", half: 20,  total: 120, single: 30, reach: "כולל רשימה ארצית",  details: "מופיע רק ברשימה" },
         { num: 7, type: "פרסומת קבועה",  half: 60,  total: 360, single: 85, reach: "ארצי בלבד",         details: "קבוע" },
         { num: 8, type: "בייבי סיטר",    half: 8,   total: 48,  single: 20, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
+        { num: 9, type: "אולמות",         half: 45,  total: 270, single: 60, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
     ];
 
     // ---- Calculator state: each row can be 'half' | 'single' | unset ----
@@ -200,9 +190,15 @@
             .map(r => ({ ...r, plan: planMap.get(r.num)! }))
     );
 
-    // How many neighborhoods are selected (affects the total price)
+    // Price multiplier = total neighborhoods in selected cities
     const totalNeighborhoodsCount = citiesData.reduce((s, c) => s + c.neighborhoods.length, 0);
-    let neighborhoodCount = $derived(isNational ? totalNeighborhoodsCount : Math.max(1, selectedNeighborhoods.size));
+    let neighborhoodCount = $derived(
+        isNational
+            ? totalNeighborhoodsCount
+            : Math.max(1, citiesData
+                .filter(c => selectedCities.has(c.city))
+                .reduce((s, c) => s + c.neighborhoods.length, 0))
+    );
 
     // Base price per neighborhood (before multiplying)
     let basePayment  = $derived(selectedItems.reduce((s, r) => s + (r.plan === 'half' ? r.total  : r.single), 0));
@@ -236,15 +232,22 @@
         'בת גלים':     '/images/neighborhoods/bat-galim.jpg',
     };
 
+    // City images — keyed by city name
+    const cityImages: Record<string, string> = {
+        'ירושלים':       '/images/kiryat-moshe-vaad.jfif',
+        'תל אביב':       '/images/neighborhoods/florentin.jpg',
+        'חיפה':          '/images/neighborhoods/french-carmel.jpg',
+    };
+
     let neighborhoodImage = $derived(
-        !isNational && selectedNeighborhoods.size === 1
-            ? (neighborhoodImages[[...selectedNeighborhoods][0]] ?? null)
+        !isNational && selectedCities.size === 1
+            ? (cityImages[[...selectedCities][0]] ?? null)
             : null
     );
 
     // Build mailto body
     let mailtoBody = $derived(
-        `שכונות: ${neighborhoodLabel} (×${neighborhoodCount})%0A` +
+        `ערים: ${neighborhoodLabel} (×${neighborhoodCount} שכונות)%0A` +
         selectedItems.map(r =>
             `${r.type} — ${r.plan === 'half' ? `חצי שנה ₪${r.total * neighborhoodCount}` : `חודש בודד ₪${r.single * neighborhoodCount}`}`
         ).join('%0A') + `%0A%0Aסה״כ: ₪${totalPayment}`
@@ -338,13 +341,13 @@
         </div>
     </button>
 
-    <!-- Neighborhood Picker Panel -->
+    <!-- City Picker Panel -->
     {#if showPicker}
         <div class="mb-8 rounded-2xl border border-amber-500/30 bg-gray-950/95 backdrop-blur p-5 shadow-2xl"
              style="animation: slideDown 0.2s ease-out;">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-white font-black text-base flex items-center gap-2">
-                    📍 בחר שכונות לפרסום
+                    📍 בחר ערים לפרסום
                 </h3>
                 <button
                     type="button"
@@ -363,44 +366,37 @@
                         : 'border-white/10 bg-white/3 text-gray-400 hover:border-purple-400/40 hover:text-gray-200'}"
             >
                 <span class="text-lg">🌍</span>
-                <span>ארצי — כל הארץ (מופיע בכל השכונות)</span>
+                <div class="flex flex-col items-start">
+                    <span>ארצי — כל הארץ</span>
+                    <span class="text-xs font-normal text-gray-500">{totalNeighborhoodsCount} שכונות פעילות</span>
+                </div>
                 {#if isNational}<span class="mr-auto text-purple-400">✓</span>{/if}
             </button>
 
-            <!-- City groups -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- City buttons -->
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {#each citiesData as cityEntry}
-                    {@const cityFullySelected = !isNational && cityEntry.neighborhoods.every(n => selectedNeighborhoods.has(n))}
-                    <div>
-                        <!-- City name = כפתור לבחירת כל השכונות -->
-                        <button
-                            type="button"
-                            onclick={() => toggleCity(cityEntry)}
-                            class="text-xs font-black uppercase tracking-widest mb-2 flex items-center gap-1.5 transition-colors
-                                {cityFullySelected
-                                    ? 'text-amber-400'
-                                    : 'text-gray-500 hover:text-gray-300'}"
-                        >
-                            {#if cityFullySelected}<span>✓</span>{/if}
-                            {cityEntry.city}
-                        </button>
-                        <div class="flex flex-wrap gap-2">
-                            {#each cityEntry.neighborhoods as n}
-                                <button
-                                    type="button"
-                                    onclick={() => toggleNeighborhood(n)}
-                                    class="px-3 py-1.5 rounded-full text-xs font-bold border transition-all
-                                        {!isNational && selectedNeighborhoods.has(n)
-                                            ? 'bg-amber-500 border-amber-500 text-black'
-                                            : 'bg-white/5 border-white/15 text-gray-400 hover:border-amber-400/50 hover:text-gray-200'}"
-                                >{n}</button>
-                            {/each}
+                    {@const selected = !isNational && selectedCities.has(cityEntry.city)}
+                    <button
+                        type="button"
+                        onclick={() => toggleCity(cityEntry.city)}
+                        class="flex flex-col items-start px-4 py-3 rounded-xl border-2 transition-all text-right
+                            {selected
+                                ? 'border-amber-500 bg-amber-500/15 text-white'
+                                : 'border-white/10 bg-white/3 text-gray-400 hover:border-amber-400/40 hover:text-gray-200'}"
+                    >
+                        <div class="flex items-center justify-between w-full">
+                            <span class="font-black text-sm">{cityEntry.city}</span>
+                            {#if selected}<span class="text-amber-400 text-base">✓</span>{/if}
                         </div>
-                    </div>
+                        <span class="text-xs mt-0.5 {selected ? 'text-amber-400/80' : 'text-gray-600'}">
+                            {cityEntry.neighborhoods.length} שכונות
+                        </span>
+                    </button>
                 {/each}
             </div>
 
-            <p class="text-gray-600 text-xs mt-4 text-center">ניתן לבחור מספר שכונות · לחץ שוב על שכונה לביטול</p>
+            <p class="text-gray-600 text-xs mt-4 text-center">המחיר מחושב לפי מספר השכונות הפעילות בכל עיר · ניתן לבחור מספר ערים</p>
         </div>
     {/if}
 
