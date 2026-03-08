@@ -20,7 +20,7 @@
 	<div class="drawer" class:drawer-open={open} aria-hidden={!open}>
 		<!-- כותרת Drawer -->
 		<div class="drawer-header">
-			<span class="drawer-title">📢 פרסומות</span>
+			<span class="drawer-title">🌟 הטבות חשובות לקהילה</span>
 			<button class="close-btn" onclick={() => open = false} aria-label="סגור">✕</button>
 		</div>
 
@@ -57,14 +57,14 @@
 		</div>
 	</div>
 
-	<!-- לשונית קטנה בצד ימין (נראית כשה-Drawer סגור) -->
+	<!-- לשונית קטנה בצד שמאל (נראית כשה-Drawer סגור) -->
 	{#if !open}
 	<button
 		class="tab"
 		onclick={() => open = true}
-		aria-label="פתח פרסומות"
+		aria-label="פתח הטבות לקהילה"
 	>
-		<span class="tab-text">פרסומות</span>
+		<span class="tab-text">הטבות חשובות לקהילה</span>
 	</button>
 	{/if}
 
@@ -86,18 +86,18 @@
 	.drawer {
 		position: fixed;
 		top: 0;
-		right: 0;
+		left: 0;
 		height: 100dvh;
 		width: min(300px, 82vw);
 		background: linear-gradient(180deg, #0a0f1e 0%, #070b14 100%);
-		border-right: none;
-		border-left: 1px solid rgba(99, 102, 241, 0.2);
+		border-left: none;
+		border-right: 1px solid rgba(99, 102, 241, 0.2);
 		z-index: 1200;
 		display: flex;
 		flex-direction: column;
-		transform: translateX(100%);
+		transform: translateX(-100%);
 		transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-		box-shadow: -8px 0 32px rgba(0, 0, 0, 0.5);
+		box-shadow: 8px 0 32px rgba(0, 0, 0, 0.5);
 	}
 
 	.drawer-open {
@@ -244,21 +244,21 @@
 	.tab {
 		position: fixed;
 		top: 50%;
-		right: 0;
+		left: 0;
 		transform: translateY(-50%);
 		z-index: 1050;
 		background: linear-gradient(180deg, #4f46e5, #7c3aed);
 		border: none;
-		border-radius: 8px 0 0 8px;
+		border-radius: 0 8px 8px 0;
 		padding: 0.6rem 0.3rem;
 		cursor: pointer;
-		box-shadow: -3px 0 12px rgba(79,70,229,0.4);
+		box-shadow: 3px 0 12px rgba(79,70,229,0.4);
 		transition: padding 0.2s, box-shadow 0.2s;
 	}
 
 	.tab:hover {
 		padding: 0.7rem 0.4rem;
-		box-shadow: -4px 0 18px rgba(79,70,229,0.6);
+		box-shadow: 4px 0 18px rgba(79,70,229,0.6);
 	}
 
 	.tab-text {
