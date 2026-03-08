@@ -87,7 +87,7 @@
 		top: 0;
 		left: 0;
 		height: 100dvh;
-		width: min(300px, 82vw);
+		width: min(340px, 92vw);
 		background: linear-gradient(180deg, #0a0f1e 0%, #070b14 100%);
 		border-left: none;
 		border-right: 1px solid rgba(99, 102, 241, 0.2);
@@ -151,15 +151,15 @@
 	/* ---- כרטיס פרסומת ---- */
 	.ad-card {
 		display: flex;
-		gap: 0.6rem;
+		gap: 0.75rem;
 		background: rgba(255,255,255,0.05);
 		border: 1px solid rgba(99,102,241,0.15);
 		border-radius: 0.75rem;
 		overflow: hidden;
 		text-decoration: none;
 		transition: background 0.2s, border-color 0.2s, transform 0.15s;
-		padding: 0.5rem;
-		align-items: center;
+		padding: 0.7rem;
+		align-items: flex-start;
 	}
 
 	.ad-card:hover {
@@ -170,8 +170,8 @@
 
 	.ad-img-wrap {
 		position: relative;
-		width: 56px;
-		height: 56px;
+		width: 72px;
+		height: 72px;
 		border-radius: 0.5rem;
 		overflow: hidden;
 		flex-shrink: 0;
@@ -189,33 +189,34 @@
 	}
 
 	.ad-title {
-		font-size: 0.82rem;
+		font-size: 0.9rem;
 		font-weight: 700;
 		color: #f1f5f9;
-		margin: 0 0 0.15rem;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
+		margin: 0 0 0.2rem;
+		line-height: 1.3;
+		white-space: normal;
+		word-break: break-word;
 	}
 
 	.ad-desc {
-		font-size: 0.68rem;
+		font-size: 0.75rem;
 		color: #94a3b8;
-		margin: 0 0 0.25rem;
+		margin: 0 0 0.3rem;
 		display: -webkit-box;
-		-webkit-line-clamp: 1;
+		-webkit-line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
+		line-height: 1.4;
 	}
 
 	.ad-cta {
 		display: inline-block;
-		font-size: 0.63rem;
+		font-size: 0.7rem;
 		color: #a5b4fc;
 		font-weight: 600;
 		background: rgba(99,102,241,0.12);
 		border-radius: 4px;
-		padding: 0.1rem 0.35rem;
+		padding: 0.15rem 0.45rem;
 	}
 
 	/* ---- כרטיס ריק ---- */
