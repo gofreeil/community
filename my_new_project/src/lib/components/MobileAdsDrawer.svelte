@@ -2,6 +2,24 @@
 	import { ads } from '$lib/adsData';
 
 	let open = $state(false);
+
+	// ---- Swipe-to-close (מושכים שמאלה סוגר) ----
+	let touchStartX = 0;
+	let touchStartY = 0;
+
+	function onTouchStart(e: TouchEvent) {
+		touchStartX = e.touches[0].clientX;
+		touchStartY = e.touches[0].clientY;
+	}
+
+	function onTouchEnd(e: TouchEvent) {
+		const dx = e.changedTouches[0].clientX - touchStartX;
+		const dy = e.changedTouches[0].clientY - touchStartY;
+		// משיכה שמאלה (dx < -50) ותנועה אופקית יותר מאנכית
+		if (dx < -50 && Math.abs(dx) > Math.abs(dy)) {
+			open = false;
+		}
+	}
 </script>
 
 <!-- מוצג רק בנייד -->
@@ -17,7 +35,10 @@
 	{/if}
 
 	<!-- Drawer -->
-	<div class="drawer" class:drawer-open={open} aria-hidden={!open}>
+	<div class="drawer" class:drawer-open={open} aria-hidden={!open}
+		ontouchstart={onTouchStart}
+		ontouchend={onTouchEnd}
+	>
 		<!-- כותרת Drawer -->
 		<div class="drawer-header">
 			<span class="drawer-title">🌟 הטבות חשובות לקהילה</span>
