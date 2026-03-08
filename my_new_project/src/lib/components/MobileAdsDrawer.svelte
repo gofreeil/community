@@ -284,6 +284,7 @@
 	.tab-text {
 		writing-mode: vertical-rl;
 		text-orientation: mixed;
+		transform: rotate(180deg);
 		font-size: 0.7rem;
 		font-weight: 700;
 		color: #fff;
