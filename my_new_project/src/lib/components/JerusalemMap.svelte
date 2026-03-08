@@ -512,115 +512,7 @@
                 return;
             }
 
-            // Add CSS class to enable arrows
-            buttonsContainer.classList.add("scrollable-mobile");
-            console.log("Added scrollable-mobile class");
-
-            // Add click handlers for arrows
-            const createClickableArrows = () => {
-                // Remove existing arrows
-                const existingArrows = document.querySelectorAll(
-                    ".mobile-scroll-arrow",
-                );
-                existingArrows.forEach((arrow) => arrow.remove());
-
-                // Get buttons container position
-                const containerRect = buttonsContainer.getBoundingClientRect();
-                const containerParent = buttonsContainer.parentElement;
-
-                if (!containerParent) return;
-
-                // Make parent relative for absolute positioning
-                containerParent.style.position = "relative";
-
-                console.log("Container position:", containerRect);
-
-                // Create left arrow only (mobile only)
-                // Check if we're on mobile (screen width < 768px)
-                if (window.innerWidth < 768) {
-                    // Check if it already exists to prevent duplicates
-                    if (document.querySelector(".mobile-scroll-arrow-left"))
-                        return;
-
-                    const leftArrowEl = document.createElement("div");
-                    leftArrowEl.className =
-                        "mobile-scroll-arrow mobile-scroll-arrow-left";
-                    leftArrowEl.innerHTML = "←";
-                    leftArrowEl.style.cssText = `
-                        position: absolute !important;
-                        left: -25px !important;
-                        top: 50% !important;
-                        transform: translateY(-50%) !important;
-                        background: rgba(147, 51, 234, 0.9) !important;
-                        color: white !important;
-                        width: 35px !important;
-                        height: 35px !important;
-                        border-radius: 7px !important;
-                        display: flex !important;
-                        align-items: center !important;
-                        justify-content: center !important;
-                        font-size: 18px !important;
-                        z-index: 10 !important;
-                        cursor: pointer !important;
-                        box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
-                        opacity: 0.8 !important;
-                        transition: all 0.3s ease !important;
-                        pointer-events: auto !important;
-                    `;
-                    leftArrowEl.addEventListener("click", () => {
-                        console.log("Left arrow clicked");
-                        buttonsContainer.scrollBy({
-                            left: -120,
-                            behavior: "smooth",
-                        });
-                    });
-                    leftArrowEl.addEventListener("mouseenter", () => {
-                        leftArrowEl.style.transform =
-                            "translateY(-50%) scale(1.1)";
-                        leftArrowEl.style.boxShadow =
-                            "0 6px 16px rgba(0,0,0,0.5)";
-                    });
-                    leftArrowEl.addEventListener("mouseleave", () => {
-                        leftArrowEl.style.transform =
-                            "translateY(-50%) scale(1)";
-                        leftArrowEl.style.boxShadow =
-                            "0 4px 12px rgba(0,0,0,0.4)";
-                    });
-
-                    // Add only left arrow to parent container
-                    containerParent.appendChild(leftArrowEl);
-
-                    console.log(
-                        "Only left arrow created with absolute positioning (mobile only)",
-                    );
-                }
-            };
-
-            setTimeout(() => {
-                createClickableArrows();
-            }, 200);
-
-            // Add resize listener to remove arrows on desktop
-            const handleResize = () => {
-                if (window.innerWidth >= 768) {
-                    const existingArrows = document.querySelectorAll(
-                        ".mobile-scroll-arrow",
-                    );
-                    existingArrows.forEach((arrow) => arrow.remove());
-                } else {
-                    // Only recreate if not already present to avoid flicker
-                    if (!document.querySelector(".mobile-scroll-arrow")) {
-                        createClickableArrows();
-                    }
-                }
-            };
-
-            window.addEventListener("resize", handleResize);
-
-            // Return cleanup function for resize listener
-            return () => {
-                window.removeEventListener("resize", handleResize);
-            };
+            // Scrollable on mobile via touch/swipe (no arrow buttons needed)
         };
 
         // Setup scroll indicators after a short delay to ensure DOM is ready
@@ -1623,11 +1515,6 @@
             display: none !important;
         }
 
-        /* Hide scroll arrows in buttons above map */
-        .mobile-scroll-arrow-right,
-        .mobile-scroll-arrow-left {
-            display: none !important;
-        }
 
         /* Reduce gaps on mobile - minimal between title and buttons, reasonable between buttons and map */
         div > .flex.flex-col.gap-4 {

@@ -171,11 +171,13 @@
 	/* ---- רשימת פרסומות ---- */
 	.ads-list {
 		overflow-y: auto;
+		-webkit-overflow-scrolling: touch;
 		flex: 1;
+		min-height: 0;
 		padding: 0.75rem;
 		display: flex;
 		flex-direction: column;
-		gap: 0.6rem;
+		gap: 0.75rem;
 		scrollbar-width: thin;
 		scrollbar-color: rgba(99,102,241,0.3) transparent;
 	}
@@ -187,11 +189,11 @@
 		background: rgba(255,255,255,0.05);
 		border: 1px solid rgba(99,102,241,0.15);
 		border-radius: 0.75rem;
-		overflow: hidden;
 		text-decoration: none;
 		transition: background 0.2s, border-color 0.2s, transform 0.15s;
-		padding: 0.7rem;
-		align-items: flex-start;
+		padding: 0.75rem;
+		align-items: center;
+		min-height: 96px;
 	}
 
 	.ad-card:hover {
