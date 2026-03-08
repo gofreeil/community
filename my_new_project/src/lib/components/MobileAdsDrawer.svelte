@@ -3,7 +3,7 @@
 
 	let open = $state(false);
 
-	// ---- Swipe-to-close (מושכים שמאלה סוגר) ----
+	// ---- Swipe gestures ----
 	let touchStartX = 0;
 	let touchStartY = 0;
 
@@ -12,12 +12,21 @@
 		touchStartY = e.touches[0].clientY;
 	}
 
-	function onTouchEnd(e: TouchEvent) {
+	// על הדרואר: משיכה שמאלה → סגור
+	function onDrawerTouchEnd(e: TouchEvent) {
 		const dx = e.changedTouches[0].clientX - touchStartX;
 		const dy = e.changedTouches[0].clientY - touchStartY;
-		// משיכה שמאלה (dx < -50) ותנועה אופקית יותר מאנכית
 		if (dx < -50 && Math.abs(dx) > Math.abs(dy)) {
 			open = false;
+		}
+	}
+
+	// על הלשונית: משיכה ימינה → פתח
+	function onTabTouchEnd(e: TouchEvent) {
+		const dx = e.changedTouches[0].clientX - touchStartX;
+		const dy = e.changedTouches[0].clientY - touchStartY;
+		if (dx > 30 && Math.abs(dx) > Math.abs(dy)) {
+			open = true;
 		}
 	}
 </script>
@@ -37,7 +46,7 @@
 	<!-- Drawer -->
 	<div class="drawer" class:drawer-open={open} aria-hidden={!open}
 		ontouchstart={onTouchStart}
-		ontouchend={onTouchEnd}
+		ontouchend={onDrawerTouchEnd}
 	>
 		<!-- כותרת Drawer -->
 		<div class="drawer-header">
@@ -82,6 +91,8 @@
 	<button
 		class="tab"
 		onclick={() => open = true}
+		ontouchstart={onTouchStart}
+		ontouchend={onTabTouchEnd}
 		aria-label="פתח הטבות לקהילה"
 	>
 		<span class="tab-text">הטבות חשובות לקהילה</span>
