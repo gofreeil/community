@@ -1623,8 +1623,9 @@
             display: none !important;
         }
 
-        /* Hide right arrow in buttons above map */
-        .mobile-scroll-arrow-right {
+        /* Hide scroll arrows in buttons above map */
+        .mobile-scroll-arrow-right,
+        .mobile-scroll-arrow-left {
             display: none !important;
         }
 
