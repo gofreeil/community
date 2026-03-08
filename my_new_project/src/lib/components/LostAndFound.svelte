@@ -50,7 +50,7 @@
                 >
                     <!-- Type Badge -->
                     <div
-                        class="absolute top-0 left-0 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider {item.type ===
+                        class="absolute top-0 left-0 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wider {item.type ===
                         'found'
                             ? 'bg-green-500 text-white'
                             : 'bg-red-500 text-white'} rounded-br"
@@ -64,7 +64,7 @@
                         >
                             {item.title}
                         </h4>
-                        <div class="flex items-center gap-1.5 text-[10px] text-gray-400">
+                        <div class="flex items-center gap-1.5 text-xs text-gray-400">
                             <span>📍 {item.location}</span>
                             <span>•</span>
                             <span>🕒 {item.date}</span>

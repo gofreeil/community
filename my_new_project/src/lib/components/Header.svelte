@@ -267,30 +267,24 @@
                     </p>
                 </div>
             </div>
-            <div class="flex items-center space-x-2">
+            <div class="flex items-center gap-2">
+                <!-- ניווט ראשי -->
+                <nav class="hidden md:flex items-center gap-2">
+                    <a
+                        href="/advertise"
+                        class="flex items-center gap-1 rounded-lg bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-500 hover:to-teal-500 px-3 py-2 text-sm font-bold text-white transition-all shadow-md"
+                    >📢 פרסם כאן</a>
+                </nav>
                 <button
                     class="relative group flex items-center rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2 font-medium text-white shadow-lg transition-all duration-200 hover:shadow-xl"
                     onclick={() => goto("/about")}
                 >
                     אודות
-                    <!-- Tooltip -->
-                    <div
-                        class="absolute top-full left-1/2 -translate-x-1/2 mt-2 hidden group-hover:block z-[9999]"
-                    >
-                        <div
-                            class="bg-gray-900 text-white text-sm rounded-lg px-4 py-2 shadow-xl whitespace-nowrap"
-                        >
-                            הבן את חשיבות הפלטפורמה
-                            <div
-                                class="absolute bottom-full left-1/2 -translate-x-1/2 border-8 border-transparent border-b-gray-900"
-                            ></div>
-                        </div>
-                    </div>
                 </button>
                 <!-- Language Dropdown -->
                 <div class="lang-dropdown-container relative">
                     <button
-                        class="flex items-center rounded-lg bg-purple-100 px-3 py-2 text-sm text-purple-700 hover:bg-purple-200 transition-colors"
+                        class="flex items-center rounded-lg bg-white/10 hover:bg-white/20 px-3 py-2 text-sm text-white transition-colors"
                         onclick={() => (showLangDropdown = !showLangDropdown)}
                     >
                         <span
@@ -317,11 +311,11 @@
                     </button>
                     {#if showLangDropdown}
                         <div
-                            class="absolute right-0 z-[160] mt-2 w-44 rounded-lg bg-white shadow-xl"
+                            class="absolute right-0 z-[160] mt-2 w-44 rounded-lg bg-[#0f172a] border border-white/10 shadow-xl"
                         >
                             {#each languages as langOption}
                                 <button
-                                    class="flex w-full items-center gap-4 px-4 py-2 text-right hover:bg-blue-100"
+                                    class="flex w-full items-center gap-4 px-4 py-2 text-right text-white hover:bg-white/10 transition-colors"
                                     onclick={() => {
                                         changeLang(langOption);
                                         showLangDropdown = false;

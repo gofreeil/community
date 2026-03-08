@@ -68,7 +68,7 @@
             </nav>
 
             <!-- Left: Copyright -->
-            <p class="hidden md:block text-gray-400 font-bold text-lg">
+            <p class="text-gray-400 font-bold text-sm md:text-lg text-center md:text-right">
                 &copy; {new Date().getFullYear()} כל הזכויות שמורות
             </p>
         </div>

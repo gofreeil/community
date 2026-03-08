@@ -62,7 +62,7 @@
 <style>
     .ticker-content {
         right: 0;
-        animation: ticker-move 50s linear infinite;
+        animation: ticker-move 85s linear infinite;
     }
 
     @keyframes ticker-move {
