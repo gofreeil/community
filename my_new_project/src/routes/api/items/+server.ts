@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { createItem, getAllItems } from '$lib/server/db';
 import { categoryConfig, getCategoryIcon, getCategoryColor } from '$lib/categoryFields';
-import { RESEND_API_KEY, FROM_EMAIL } from '$env/static/private';
+import { RESEND_API_KEY, FROM_EMAIL } from '$env/dynamic/private';
 import { Resend } from 'resend';
 import type { RequestHandler } from './$types';
 

@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { Resend } from 'resend';
-import { RESEND_API_KEY, FROM_EMAIL } from '$env/static/private';
+import { RESEND_API_KEY, FROM_EMAIL } from '$env/dynamic/private';
 import type { RequestHandler } from './$types';
 
 interface OrderItem {
