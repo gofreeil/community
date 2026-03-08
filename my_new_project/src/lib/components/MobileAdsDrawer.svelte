@@ -36,7 +36,7 @@
 			>
 				<div class="ad-img-wrap">
 					<img src={ad.image} alt={ad.title} class="ad-img" loading="lazy" />
-					<div class="ad-gradient bg-gradient-to-t {ad.color}"></div>
+					<div class="ad-gradient"></div>
 				</div>
 				<div class="ad-body">
 					<p class="ad-title">{ad.title}</p>
@@ -153,18 +153,19 @@
 	.ad-card {
 		display: flex;
 		gap: 0.6rem;
-		background: rgba(255,255,255,0.04);
-		border: 1px solid rgba(255,255,255,0.07);
+		background: rgba(255,255,255,0.05);
+		border: 1px solid rgba(99,102,241,0.15);
 		border-radius: 0.75rem;
 		overflow: hidden;
 		text-decoration: none;
-		transition: background 0.2s, transform 0.15s;
+		transition: background 0.2s, border-color 0.2s, transform 0.15s;
 		padding: 0.5rem;
 		align-items: center;
 	}
 
 	.ad-card:hover {
-		background: rgba(255,255,255,0.08);
+		background: rgba(99,102,241,0.12);
+		border-color: rgba(99,102,241,0.35);
 		transform: scale(1.01);
 	}
 
@@ -183,10 +184,11 @@
 		object-fit: cover;
 	}
 
+	/* שכבת עמעום כהה אחידה מלמטה — ללא צבע ייחודי לכל מודעה */
 	.ad-gradient {
 		position: absolute;
 		inset: 0;
-		opacity: 0.45;
+		background: linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 60%);
 	}
 
 	.ad-body {
@@ -195,9 +197,9 @@
 	}
 
 	.ad-title {
-		font-size: 0.8rem;
+		font-size: 0.82rem;
 		font-weight: 700;
-		color: #e2e8f0;
+		color: #f1f5f9;
 		margin: 0 0 0.15rem;
 		white-space: nowrap;
 		overflow: hidden;
@@ -207,7 +209,7 @@
 	.ad-desc {
 		font-size: 0.68rem;
 		color: #94a3b8;
-		margin: 0 0 0.2rem;
+		margin: 0 0 0.25rem;
 		display: -webkit-box;
 		-webkit-line-clamp: 1;
 		-webkit-box-orient: vertical;
@@ -215,9 +217,13 @@
 	}
 
 	.ad-cta {
-		font-size: 0.65rem;
-		color: #818cf8;
+		display: inline-block;
+		font-size: 0.63rem;
+		color: #a5b4fc;
 		font-weight: 600;
+		background: rgba(99,102,241,0.12);
+		border-radius: 4px;
+		padding: 0.1rem 0.35rem;
 	}
 
 	/* ---- כרטיס ריק ---- */
