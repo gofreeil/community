@@ -172,8 +172,8 @@
                             <h3
                                 class="text-sm font-bold text-white flex items-center gap-1"
                             >
-                                <span class="text-base">📢</span>
-                                לוח הודעות
+                                <span class="text-base">🗓️</span>
+                                לוח אירועים
                             </h3>
                             <button
                                 class="bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-2 py-1 rounded-full transition-colors border border-white/20"
@@ -181,12 +181,51 @@
                                 + הוסף
                             </button>
                         </div>
-                        <div
-                            class="p-2 flex-1 flex items-center justify-center"
-                        >
-                            <p class="text-gray-400 text-xs text-center">
-                                בקרוב...
-                            </p>
+                        <div class="p-2 flex-1 overflow-y-auto flex flex-col gap-1.5">
+                            <!-- אירוע 1 -->
+                            <div class="flex gap-2 items-start bg-white/5 rounded-xl p-2 border border-white/8">
+                                <div class="flex flex-col items-center bg-green-600/20 rounded-lg px-1.5 py-1 min-w-[36px] text-center flex-shrink-0">
+                                    <span class="text-green-400 font-bold text-sm leading-none">15</span>
+                                    <span class="text-green-300/70 text-[9px] leading-none mt-0.5">מרץ</span>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="text-white text-xs font-bold leading-tight">🎤 ערב שירה קהילתי</p>
+                                    <p class="text-gray-400 text-[10px] mt-0.5">בית הכנסת הגדול, 20:00</p>
+                                </div>
+                            </div>
+                            <!-- אירוע 2 -->
+                            <div class="flex gap-2 items-start bg-white/5 rounded-xl p-2 border border-white/8">
+                                <div class="flex flex-col items-center bg-blue-600/20 rounded-lg px-1.5 py-1 min-w-[36px] text-center flex-shrink-0">
+                                    <span class="text-blue-400 font-bold text-sm leading-none">18</span>
+                                    <span class="text-blue-300/70 text-[9px] leading-none mt-0.5">מרץ</span>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="text-white text-xs font-bold leading-tight">👨‍👩‍👧 יום משפחה בפארק</p>
+                                    <p class="text-gray-400 text-[10px] mt-0.5">פארק השעשועים, 10:00–14:00</p>
+                                </div>
+                            </div>
+                            <!-- אירוע 3 -->
+                            <div class="flex gap-2 items-start bg-white/5 rounded-xl p-2 border border-white/8">
+                                <div class="flex flex-col items-center bg-purple-600/20 rounded-lg px-1.5 py-1 min-w-[36px] text-center flex-shrink-0">
+                                    <span class="text-purple-400 font-bold text-sm leading-none">22</span>
+                                    <span class="text-purple-300/70 text-[9px] leading-none mt-0.5">מרץ</span>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="text-white text-xs font-bold leading-tight">📚 הרצאה: מיצוי זכויות</p>
+                                    <p class="text-gray-400 text-[10px] mt-0.5">מרכז קהילתי, 19:30 — זום</p>
+                                </div>
+                            </div>
+                            <!-- אירוע 4 -->
+                            <div class="flex gap-2 items-start bg-white/5 rounded-xl p-2 border border-white/8">
+                                <div class="flex flex-col items-center bg-orange-600/20 rounded-lg px-1.5 py-1 min-w-[36px] text-center flex-shrink-0">
+                                    <span class="text-orange-400 font-bold text-sm leading-none">28</span>
+                                    <span class="text-orange-300/70 text-[9px] leading-none mt-0.5">מרץ</span>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="text-white text-xs font-bold leading-tight">🌱 סדנת גינון עירוני</p>
+                                    <p class="text-gray-400 text-[10px] mt-0.5">גינת השכונה, 09:00</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -266,7 +305,7 @@
                         <div
                             class="bg-blue-600/50 hover:bg-blue-600/70 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all w-full group-hover:scale-105 group-hover:shadow-lg text-center mt-auto"
                         >
-                            קופת השכונה
+                            וקופת השכונה
                         </div>
                     </div>
                 </div>
@@ -358,7 +397,7 @@
 
         <!-- Mobile: 3 cards in one row, equal width -->
         <div class="md:hidden">
-            <div class="grid grid-cols-3 gap-2 h-32">
+            <div class="grid grid-cols-3 gap-2 h-44">
                 <!-- כותל המשאלות - Mobile -->
                 <a
                     href="/community-fund"
@@ -373,19 +412,15 @@
                     <div
                         class="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/30"
                     ></div>
-                    <div class="relative z-10 p-3 h-full flex flex-col">
+                    <div class="relative z-10 p-2 h-full flex flex-col justify-between">
+                        <div class="text-center text-white">
+                            <span class="text-xl mb-1 block">🙏</span>
+                            <h3 class="text-xs font-black leading-tight">כותל המשאלות</h3>
+                        </div>
                         <div
-                            class="text-center text-white flex flex-col flex-grow"
+                            class="bg-blue-600/50 text-white px-1 py-1 rounded text-[10px] font-bold text-center w-full"
                         >
-                            <span class="text-2xl mb-1 block">🙏</span>
-                            <h3 class="text-sm font-black mb-1">
-                                כותל המשאלות
-                            </h3>
-                            <div
-                                class="bg-blue-600/50 text-white px-2 py-1 rounded text-xs font-bold text-center"
-                            >
-                                קופת השכונה
-                            </div>
+                            וקופת השכונה
                         </div>
                     </div>
                 </a>
@@ -401,25 +436,16 @@
                     <div
                         class="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/30 transition-transform duration-300 group-hover:scale-110"
                     ></div>
-                    <div class="relative z-10 p-3 h-full flex flex-col">
-                        <div
-                            class="text-center text-white flex flex-col flex-grow"
-                        >
-                            <span
-                                class="text-2xl mb-1 block transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12"
-                                >🏛️</span
-                            >
-                            <h3
-                                class="text-sm font-black mb-1 transition-all duration-300 group-hover:text-purple-200"
-                            >
-                                ועד השכונה
-                            </h3>
-                            <button
-                                class="bg-purple-600/50 text-white px-2 py-1 rounded text-xs font-bold w-full transition-all group-hover:scale-105 group-hover:shadow-xl hover:bg-purple-600/70"
-                            >
-                                פנה לועד השכונה
-                            </button>
+                    <div class="relative z-10 p-2 h-full flex flex-col justify-between">
+                        <div class="text-center text-white">
+                            <span class="text-xl mb-1 block">🏛️</span>
+                            <h3 class="text-xs font-black leading-tight">ועד השכונה</h3>
                         </div>
+                        <button
+                            class="bg-purple-600/50 text-white px-1 py-1 rounded text-[10px] font-bold w-full hover:bg-purple-600/70"
+                        >
+                            פנה לועד השכונה
+                        </button>
                     </div>
                 </div>
 
@@ -434,23 +460,17 @@
                     <div
                         class="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/30"
                     ></div>
-                    <div class="relative z-10 p-3 h-full flex flex-col">
-                        <div
-                            class="text-center text-white flex flex-col flex-grow"
-                        >
-                            <span class="text-2xl mb-1 block">🚨</span>
-                            <h3 class="text-sm font-black mb-1">כיתת כוננות</h3>
-                            <p
-                                class="text-xs mb-2 text-yellow-100 leading-tight flex-grow"
-                            >
-                                127 חברים
-                            </p>
-                            <button
-                                class="bg-red-600/50 text-white px-2 py-1 rounded text-xs font-bold w-full"
-                            >
-                                הצטרף
-                            </button>
+                    <div class="relative z-10 p-2 h-full flex flex-col justify-between">
+                        <div class="text-center text-white">
+                            <span class="text-xl mb-1 block">🚨</span>
+                            <h3 class="text-xs font-black leading-tight">כיתת כוננות</h3>
+                            <p class="text-[10px] text-yellow-100 mt-0.5">127 חברים</p>
                         </div>
+                        <button
+                            class="bg-red-600/50 text-white px-1 py-1 rounded text-[10px] font-bold w-full"
+                        >
+                            הצטרף
+                        </button>
                     </div>
                 </div>
             </div>
