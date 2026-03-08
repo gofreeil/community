@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { Resend } from 'resend';
-import { RESEND_API_KEY, FROM_EMAIL } from '$env/dynamic/private';
+
 import type { RequestHandler } from './$types';
 
 interface OrderItem {
@@ -197,8 +197,8 @@ export const POST: RequestHandler = async ({ request }) => {
         return json({ success: false, message: 'לא נבחרו פרסומות' }, { status: 400 });
     }
 
-    const resend = new Resend(RESEND_API_KEY);
-    const fromEmail = FROM_EMAIL || 'onboarding@resend.dev';
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    const fromEmail = process.env.FROM_EMAIL || 'onboarding@resend.dev';
 
     try {
         const { error } = await resend.emails.send({

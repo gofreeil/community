@@ -1,7 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { createItem, getAllItems } from '$lib/server/db';
 import { categoryConfig, getCategoryIcon, getCategoryColor } from '$lib/categoryFields';
-import { RESEND_API_KEY, FROM_EMAIL } from '$env/dynamic/private';
 import { Resend } from 'resend';
 import type { RequestHandler } from './$types';
 
@@ -65,8 +64,8 @@ export const POST: RequestHandler = async (event) => {
 
     // ---- שלח מייל לאדמין ----
     try {
-        const resend  = new Resend(RESEND_API_KEY);
-        const fromAddr = FROM_EMAIL || 'onboarding@resend.dev';
+        const resend  = new Resend(process.env.RESEND_API_KEY);
+        const fromAddr = process.env.FROM_EMAIL || 'onboarding@resend.dev';
         const catLabel = categoryConfig[category]?.label ?? category;
         const extraStr = Object.entries(extra_fields ?? {})
             .map(([k, v]) => `<tr><td style="padding:4px 8px;color:#94a3b8;font-size:13px;">${k}</td><td style="padding:4px 8px;color:#e2e8f0;font-size:13px;">${v}</td></tr>`)

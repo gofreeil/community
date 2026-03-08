@@ -2,25 +2,17 @@ import { SvelteKitAuth } from '@auth/sveltekit';
 import Google from '@auth/sveltekit/providers/google';
 import Facebook from '@auth/sveltekit/providers/facebook';
 import { upsertUser } from '$lib/server/db';
-import {
-    AUTH_SECRET,
-    AUTH_GOOGLE_ID,
-    AUTH_GOOGLE_SECRET,
-    AUTH_FACEBOOK_ID,
-    AUTH_FACEBOOK_SECRET,
-} from '$env/dynamic/private';
-
 export const { handle, signIn, signOut } = SvelteKitAuth({
-    secret: AUTH_SECRET,
+    secret: process.env.AUTH_SECRET,
 
     providers: [
         Google({
-            clientId:     AUTH_GOOGLE_ID,
-            clientSecret: AUTH_GOOGLE_SECRET,
+            clientId:     process.env.AUTH_GOOGLE_ID    ?? '',
+            clientSecret: process.env.AUTH_GOOGLE_SECRET ?? '',
         }),
         Facebook({
-            clientId:     AUTH_FACEBOOK_ID,
-            clientSecret: AUTH_FACEBOOK_SECRET,
+            clientId:     process.env.AUTH_FACEBOOK_ID    ?? '',
+            clientSecret: process.env.AUTH_FACEBOOK_SECRET ?? '',
         }),
     ],
 
