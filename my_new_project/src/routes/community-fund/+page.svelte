@@ -33,7 +33,7 @@
 		</div>
 
 		<!-- ===== קופת העיר ===== -->
-		<div class="text-center mb-10">
+		<div class="text-center mb-10 fund-bg">
 			<h2 class="text-2xl font-bold text-yellow-300 mb-6">קופת העיר</h2>
 
 			<!-- תמונת קופת העיר -->
@@ -211,6 +211,22 @@
 		left: 12px;
 		border-width: 0 0 2px 2px;
 		border-radius: 0 0 6px 0;
+	}
+
+	/* ===== רקע סקציית הקופה ===== */
+	.fund-bg {
+		background: linear-gradient(to bottom,
+			#070b14 0%,
+			#000000 8%,
+			#000000 92%,
+			#070b14 100%
+		);
+		padding-top: 1.5rem;
+		padding-bottom: 1.5rem;
+		margin-left: -1rem;
+		margin-right: -1rem;
+		padding-left: 1rem;
+		padding-right: 1rem;
 	}
 
 	/* ===== סצנת הקופה ===== */
