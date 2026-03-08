@@ -36,7 +36,6 @@
 			>
 				<div class="ad-img-wrap">
 					<img src={ad.image} alt={ad.title} class="ad-img" loading="lazy" />
-					<div class="ad-gradient"></div>
 				</div>
 				<div class="ad-body">
 					<p class="ad-title">{ad.title}</p>
@@ -184,14 +183,7 @@
 		object-fit: cover;
 	}
 
-	/* שכבת עמעום כהה אחידה מלמטה — ללא צבע ייחודי לכל מודעה */
-	.ad-gradient {
-		position: absolute;
-		inset: 0;
-		background: linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 60%);
-	}
-
-	.ad-body {
+.ad-body {
 		flex: 1;
 		min-width: 0;
 	}
