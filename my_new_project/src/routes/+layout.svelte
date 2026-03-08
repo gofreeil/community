@@ -8,6 +8,7 @@
 	import AdsSidebar from "$lib/components/AdsSidebar.svelte";
 	import Footer from "$lib/components/Footer.svelte";
 	import CoinAnimation from "$lib/components/CoinAnimation.svelte";
+	import MobileAdsDrawer from "$lib/components/MobileAdsDrawer.svelte";
 	import favicon from "$lib/assets/favicon.svg";
 	import { signOut } from "@auth/sveltekit/client";
 	import { goto } from "$app/navigation";
@@ -37,6 +38,7 @@
 </svelte:head>
 
 <CoinAnimation />
+<MobileAdsDrawer />
 <div class="min-h-screen flex flex-col bg-[#0f172a]">
 	<Header
 		currentUser={currentUser}

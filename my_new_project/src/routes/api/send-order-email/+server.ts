@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { Resend } from 'resend';
-
+import { addFundContribution, getFundTotal } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
 interface OrderItem {
@@ -213,7 +213,15 @@ export const POST: RequestHandler = async ({ request }) => {
             return json({ success: false, message: 'שגיאה בשליחת המייל' }, { status: 500 });
         }
 
-        return json({ success: true, message: 'המייל נשלח בהצלחה!' });
+        // ---- 10% לקופת השכונה ----
+        try {
+            addFundContribution(payload.neighborhoodLabel, payload.totalPayment);
+        } catch (fundErr) {
+            console.warn('[send-order-email] fund contribution failed:', fundErr);
+        }
+        const fundTotal = getFundTotal();
+
+        return json({ success: true, message: 'המייל נשלח בהצלחה!', fundTotal });
 
     } catch (err) {
         console.error('Unexpected error sending email:', err);
