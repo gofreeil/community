@@ -132,43 +132,6 @@
                     </a>
 
                     <div class="flex items-center gap-2">
-                        <div class="lang-dropdown-container relative">
-                            <button
-                                class="flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 border border-white/10 p-1.5 active:scale-95"
-                                onclick={() =>
-                                    (showLangDropdown = !showLangDropdown)}
-                            >
-                                <span
-                                    class="fi fi-{languages.find(
-                                        (l) => l.code === $locale,
-                                    )?.flag || 'un'}"
-                                    style="font-size: 1.2rem;"
-                                ></span>
-                            </button>
-                            {#if showLangDropdown}
-                                <div
-                                    class="absolute left-0 z-[160] mt-2 w-32 rounded-xl bg-slate-900 border border-white/10 shadow-2xl p-1"
-                                >
-                                    {#each languages as langOption}
-                                        <button
-                                            class="flex w-full items-center gap-2 px-3 py-2 text-right hover:bg-white/5 rounded-lg transition-colors"
-                                            onclick={() => {
-                                                changeLang(langOption);
-                                                showLangDropdown = false;
-                                            }}
-                                        >
-                                            <span
-                                                class="fi fi-{langOption.flag}"
-                                                style="font-size: 1.1rem;"
-                                            ></span>
-                                            <span class="text-xs text-gray-200"
-                                                >{langOption.name}</span
-                                            >
-                                        </button>
-                                    {/each}
-                                </div>
-                            {/if}
-                        </div>
                         {#if currentUser}
                             <div
                                 class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-green-400 to-blue-500 shadow-lg border border-white/10"
