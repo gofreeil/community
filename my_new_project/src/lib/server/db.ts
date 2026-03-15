@@ -150,6 +150,7 @@ interface StrapiItem {
     city: string | null;
     extra_fields: Record<string, unknown> | null;
     status1: string | null;
+    user_id: string | null;
     createdAt: string;
 }
 
@@ -177,7 +178,7 @@ function mapStrapiItem(item: StrapiItem): DbItem {
             ? JSON.stringify(item.extra_fields)
             : '{}',
         status:       item.status1      ?? 'active',
-        user_id:      null,
+        user_id:      item.user_id      ?? null,
         created_at:   item.createdAt    ?? '',
     };
 }
@@ -210,6 +211,7 @@ export async function createItem(data: CreateItemData): Promise<DbItem> {
             city:         data.city         ?? '',
             extra_fields: data.extra_fields ?? {},
             status1:      'active',
+            user_id:      data.user_id ?? null,
             publishedAt:  new Date().toISOString(),   // פרסם מיד (לא draft)
         },
     });
@@ -237,9 +239,13 @@ export async function getItemsByCategory(category: string): Promise<DbItem[]> {
     return (res.data ?? []).map(mapStrapiItem);
 }
 
-export async function getItemsByUserId(_userId: string): Promise<DbItem[]> {
-    // TODO: לאחר העברת משתמשים ל-Strapi, להחזיר פריטים לפי user relation
-    return [];
+export async function getItemsByUserId(userId: string): Promise<DbItem[]> {
+    const res = await strapiGet<{ data: StrapiItem[] }>('/api/items', {
+        'filters[user_id][$eq]': userId,
+        'sort':                  'createdAt:desc',
+        'pagination[limit]':     '1000',
+    });
+    return (res.data ?? []).map(mapStrapiItem);
 }
 
 // ============================================================
