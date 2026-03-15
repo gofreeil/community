@@ -1,11 +1,11 @@
 import { redirect, fail } from '@sveltejs/kit';
 import { signIn } from '../../auth';
+import { getUserByEmail } from '$lib/server/db';
 import type { PageServerLoad, Actions } from './$types';
 
 export const load: PageServerLoad = async (event) => {
     const session = await event.locals.auth();
 
-    // כבר מחובר — הפנה ליעד המבוקש או לדף הבית
     if (session?.user) {
         const redirectTo = event.url.searchParams.get('redirect') ?? '/';
         throw redirect(302, redirectTo);
@@ -20,32 +20,45 @@ export const load: PageServerLoad = async (event) => {
 
 export const actions: Actions = {
     credentials: async (event) => {
-        const formData  = await event.request.formData();
-        const email     = formData.get('email')      as string;
-        const password  = formData.get('password')   as string;
+        const formData   = await event.request.formData();
+        const email      = (formData.get('email')    as string)?.trim().toLowerCase();
+        const password   = formData.get('password')  as string;
         const redirectTo = formData.get('redirectTo') as string || '/';
 
         if (!email || !password) {
             return fail(400, { error: 'יש למלא אימייל וסיסמה' });
         }
 
+        // בדיקה אם המשתמש בכלל קיים
+        const existingUser = getUserByEmail(email);
+        if (!existingUser) {
+            return fail(401, { error: 'אימייל זה לא רשום. האם ברצונך להירשם?' });
+        }
+        if (existingUser.provider !== 'credentials') {
+            return fail(401, { error: `חשבון זה מחובר דרך ${existingUser.provider}. התחבר עם הכפתור המתאים.` });
+        }
+
         try {
             await signIn('credentials', {
                 email,
                 password,
-                redirect:    false,
+                redirect: false,
             });
         } catch (e) {
-            // Auth.js זורק redirect — אם זה redirect זה הצלחה
+            // Auth.js זורק redirect בהצלחה
             if (e instanceof Response || (e as { status?: number })?.status === 302) {
                 throw redirect(302, redirectTo);
             }
-            // שגיאה אמיתית
-            const msg = e instanceof Error ? e.message : '';
-            if (msg.includes('CredentialsSignin') || msg.includes('401')) {
-                return fail(401, { error: 'אימייל או סיסמה שגויים' });
+            const msg = e instanceof Error ? e.message : String(e);
+            if (
+                msg.includes('CredentialsSignin') ||
+                msg.includes('401') ||
+                msg.includes('credentials')
+            ) {
+                return fail(401, { error: 'סיסמה שגויה. נסה שוב.' });
             }
-            return fail(500, { error: 'שגיאה בהתחברות. נסה שוב.' });
+            console.error('[login] error:', msg);
+            return fail(500, { error: `שגיאה: ${msg}` });
         }
 
         throw redirect(302, redirectTo);
