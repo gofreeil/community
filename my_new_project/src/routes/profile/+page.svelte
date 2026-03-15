@@ -2,9 +2,12 @@
 	import { enhance } from '$app/forms';
 	import { signOut } from '@auth/sveltekit/client';
 	import { page } from '$app/state';
+	import { onMount } from 'svelte';
 	import type { CityEntry } from '$lib/neighborhoodsData';
 
 	let { data, form } = $props();
+
+	const DRAFT_KEY = 'profile_draft';
 
 	let isEditing   = $state(!data.user?.name || data.user.name.length < 2);
 	let saveSuccess = $state(false);
@@ -19,6 +22,37 @@
 	let business      = $state(data.user?.business      ?? '');
 	let family_status = $state(data.user?.family_status ?? '');
 	let notifications = $state(data.user?.notifications !== 0);
+
+	// טען טיוטה מ-localStorage — תמיד, כדי לשחזר שינויים שלא נשמרו
+	onMount(() => {
+		try {
+			const saved = localStorage.getItem(DRAFT_KEY);
+			if (saved) {
+				const draft = JSON.parse(saved);
+				if (draft.name)          name          = draft.name;
+				if (draft.nickname)      nickname      = draft.nickname;
+				if (draft.phone)         phone         = draft.phone;
+				if (draft.city)          city          = draft.city;
+				if (draft.neighborhood)  neighborhood  = draft.neighborhood;
+				if (draft.business)      business      = draft.business;
+				if (draft.family_status) family_status = draft.family_status;
+				if (draft.notifications !== undefined) notifications = draft.notifications;
+			}
+		} catch {}
+	});
+
+	// שמור טיוטה ב-localStorage בכל שינוי
+	$effect(() => {
+		try {
+			localStorage.setItem(DRAFT_KEY, JSON.stringify({
+				name, nickname, phone, city, neighborhood, business, family_status, notifications
+			}));
+		} catch {}
+	});
+
+	function clearDraft() {
+		try { localStorage.removeItem(DRAFT_KEY); } catch {}
+	}
 
 	let availableNeighborhoods = $derived(
 		(data.citiesData as CityEntry[]).find((c) => c.city === city)?.neighborhoods ?? []
@@ -145,6 +179,7 @@
 					if (result.type === 'success') {
 						isEditing = false;
 						saveSuccess = true;
+						clearDraft();
 						setTimeout(() => (saveSuccess = false), 4000);
 					}
 				};
