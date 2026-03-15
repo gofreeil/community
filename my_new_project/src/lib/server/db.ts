@@ -40,7 +40,7 @@ function getDb(): Database.Database {
         password_hash        TEXT,
         nickname             TEXT DEFAULT '',
         business             TEXT DEFAULT '',
-        notifications        INTEGER DEFAULT 0,
+        notifications        INTEGER DEFAULT 1,
         family_status        TEXT DEFAULT '',
         created_at           TEXT DEFAULT (datetime('now'))
       )
@@ -51,7 +51,7 @@ function getDb(): Database.Database {
     const colNames = existingCols.map(c => c.name);
     if (!colNames.includes('nickname'))      db.exec(`ALTER TABLE users ADD COLUMN nickname TEXT DEFAULT ''`);
     if (!colNames.includes('business'))      db.exec(`ALTER TABLE users ADD COLUMN business TEXT DEFAULT ''`);
-    if (!colNames.includes('notifications')) db.exec(`ALTER TABLE users ADD COLUMN notifications INTEGER DEFAULT 0`);
+    if (!colNames.includes('notifications')) db.exec(`ALTER TABLE users ADD COLUMN notifications INTEGER DEFAULT 1`);
     if (!colNames.includes('family_status')) db.exec(`ALTER TABLE users ADD COLUMN family_status TEXT DEFAULT ''`);
 
     return db;

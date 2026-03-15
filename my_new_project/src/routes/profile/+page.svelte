@@ -18,7 +18,7 @@
 	let neighborhood  = $state(data.user?.neighborhood  ?? '');
 	let business      = $state(data.user?.business      ?? '');
 	let family_status = $state(data.user?.family_status ?? '');
-	let notifications = $state(data.user?.notifications === 1);
+	let notifications = $state(data.user?.notifications !== 0);
 
 	let availableNeighborhoods = $derived(
 		(data.citiesData as CityEntry[]).find((c) => c.city === city)?.neighborhoods ?? []
