@@ -21,6 +21,7 @@
 	let neighborhood  = $state(data.user?.neighborhood  ?? '');
 	let business      = $state(data.user?.business      ?? '');
 	let family_status = $state(data.user?.family_status ?? '');
+	let gender        = $state(data.user?.gender        ?? '');
 	let notifications = $state(data.user?.notifications !== 0);
 
 	// טען טיוטה מ-localStorage — תמיד, כדי לשחזר שינויים שלא נשמרו
@@ -36,6 +37,7 @@
 				if (draft.neighborhood)  neighborhood  = draft.neighborhood;
 				if (draft.business)      business      = draft.business;
 				if (draft.family_status) family_status = draft.family_status;
+				if (draft.gender)        gender        = draft.gender;
 				if (draft.notifications !== undefined) notifications = draft.notifications;
 			}
 		} catch {}
@@ -45,7 +47,7 @@
 	$effect(() => {
 		try {
 			localStorage.setItem(DRAFT_KEY, JSON.stringify({
-				name, nickname, phone, city, neighborhood, business, family_status, notifications
+				name, nickname, phone, city, neighborhood, business, family_status, gender, notifications
 			}));
 		} catch {}
 	});
@@ -240,7 +242,39 @@
 					{/if}
 				</div>
 
-				<!-- טלפון -->
+				<!-- מגדר -->
+				<div>
+					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">מגדר</label>
+					{#if isEditing}
+						<div class="flex gap-3">
+							<button type="button"
+								onclick={() => gender = 'male'}
+								class="flex-1 py-3 rounded-xl border font-bold text-sm transition-all cursor-pointer
+								       {gender === 'male'
+								         ? 'bg-blue-600/30 border-blue-500/60 text-blue-300'
+								         : 'bg-white/5 border-white/10 text-gray-400 hover:border-blue-500/30 hover:text-blue-300'}"
+							>
+								👨 זכר
+							</button>
+							<button type="button"
+								onclick={() => gender = 'female'}
+								class="flex-1 py-3 rounded-xl border font-bold text-sm transition-all cursor-pointer
+								       {gender === 'female'
+								         ? 'bg-pink-600/30 border-pink-500/60 text-pink-300'
+								         : 'bg-white/5 border-white/10 text-gray-400 hover:border-pink-500/30 hover:text-pink-300'}"
+							>
+								👩 נקבה
+							</button>
+						</div>
+						<input type="hidden" name="gender" value={gender} />
+					{:else}
+						<p class="text-white font-medium py-3 px-1">
+							{gender === 'male' ? '👨 זכר' : gender === 'female' ? '👩 נקבה' : '—'}
+						</p>
+					{/if}
+				</div>
+
+			<!-- טלפון -->
 				<div>
 					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">טלפון</label>
 					{#if isEditing}
@@ -306,7 +340,7 @@
 						<select name="family_status" bind:value={family_status}
 							class="w-full bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl
 							       px-4 py-3 text-white text-sm transition-colors outline-none appearance-none">
-							<option value="">לא צוין</option>
+							<option value="">בחר סטטוס</option>
 							<option value="single_m">פנוי</option>
 							<option value="single_f">פנויה</option>
 							<option value="family">בעל משפחה</option>
@@ -365,6 +399,22 @@
 				</div>
 			{/if}
 		</form>
+	</div>
+
+	<!-- ===== התנתקות ===== -->
+	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 mb-6 shadow-xl">
+		<h2 class="text-xl font-black text-white flex items-center gap-2 mb-4">
+			<span class="w-1.5 h-7 bg-red-500 rounded-full inline-block"></span>
+			התנתקות
+		</h2>
+		<p class="text-gray-400 text-sm mb-5">לחץ כדי להתנתק מהחשבון שלך.</p>
+		<button
+			onclick={() => signOut({ callbackUrl: '/' })}
+			class="bg-red-600/20 hover:bg-red-600/40 border border-red-500/30 hover:border-red-500/60
+			       text-red-400 hover:text-red-300 font-bold px-6 py-3 rounded-xl transition-all cursor-pointer"
+		>
+			🚪 התנתק
+		</button>
 	</div>
 
 	<!-- ===== הפרסומות שלי ===== -->
