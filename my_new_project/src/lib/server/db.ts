@@ -8,6 +8,7 @@
 import Database from 'better-sqlite3';
 import { join } from 'path';
 import { strapiGet, strapiPost } from './strapiClient.js';
+import bcrypt from 'bcryptjs';
 
 // ============================================================
 // ---- SQLite Singleton (למשתמשים בלבד) ----
@@ -28,15 +29,16 @@ function getDb(): Database.Database {
 
     db.exec(`
       CREATE TABLE IF NOT EXISTS users (
-        id           TEXT PRIMARY KEY,
-        name         TEXT,
-        email        TEXT UNIQUE,
-        phone        TEXT DEFAULT '',
-        neighborhood TEXT DEFAULT '',
-        city         TEXT DEFAULT '',
-        avatar_url   TEXT,
-        provider     TEXT,
-        created_at   TEXT DEFAULT (datetime('now'))
+        id            TEXT PRIMARY KEY,
+        name          TEXT,
+        email         TEXT UNIQUE,
+        phone         TEXT DEFAULT '',
+        neighborhood  TEXT DEFAULT '',
+        city          TEXT DEFAULT '',
+        avatar_url    TEXT,
+        provider      TEXT,
+        password_hash TEXT,
+        created_at    TEXT DEFAULT (datetime('now'))
       )
     `);
 
@@ -299,4 +301,41 @@ export function updateUserProfile(id: string, data: UpdateProfileData): DbUser |
     return getDb().prepare(
         `UPDATE users SET ${fields.join(', ')} WHERE id = @id RETURNING *`
     ).get(values) as DbUser | undefined;
+}
+
+// ============================================================
+// ---- Credentials Auth (SQLite — סיסמאות מוצפנות) ----
+// ============================================================
+
+export async function registerWithCredentials(
+    name: string,
+    email: string,
+    password: string,
+): Promise<DbUser> {
+    const existing = getUserByEmail(email);
+    if (existing) throw new Error('Email already taken');
+
+    const password_hash = await bcrypt.hash(password, 12);
+    const id = `credentials_${email}`;
+
+    getDb().prepare(`
+        INSERT INTO users (id, name, email, provider, password_hash)
+        VALUES (@id, @name, @email, 'credentials', @password_hash)
+    `).run({ id, name, email, password_hash });
+
+    return getUserById(id)!;
+}
+
+export async function verifyCredentials(
+    email: string,
+    password: string,
+): Promise<DbUser | null> {
+    const row = getDb().prepare(
+        `SELECT * FROM users WHERE email = ? AND provider = 'credentials'`
+    ).get(email) as (DbUser & { password_hash?: string }) | undefined;
+
+    if (!row?.password_hash) return null;
+
+    const valid = await bcrypt.compare(password, row.password_hash);
+    return valid ? row : null;
 }

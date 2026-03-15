@@ -2,8 +2,7 @@ import { SvelteKitAuth } from '@auth/sveltekit';
 import Google from '@auth/sveltekit/providers/google';
 import Facebook from '@auth/sveltekit/providers/facebook';
 import Credentials from '@auth/sveltekit/providers/credentials';
-import { upsertUser } from '$lib/server/db';
-import { strapiLogin } from '$lib/server/strapiClient';
+import { upsertUser, verifyCredentials } from '$lib/server/db';
 import {
     AUTH_SECRET,
     AUTH_GOOGLE_ID,
@@ -34,29 +33,18 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
             async authorize(credentials) {
                 if (!credentials?.email || !credentials?.password) return null;
 
-                try {
-                    const { jwt, user } = await strapiLogin(
-                        credentials.email as string,
-                        credentials.password as string,
-                    );
+                const user = await verifyCredentials(
+                    credentials.email as string,
+                    credentials.password as string,
+                );
 
-                    const stableId = `credentials_${user.email}`;
-                    upsertUser({
-                        id:       stableId,
-                        name:     user.username,
-                        email:    user.email,
-                        provider: 'credentials',
-                    });
+                if (!user) return null;
 
-                    return {
-                        id:        stableId,
-                        name:      user.username,
-                        email:     user.email,
-                        strapiJwt: jwt,
-                    };
-                } catch {
-                    return null;
-                }
+                return {
+                    id:    user.id,
+                    name:  user.name ?? '',
+                    email: user.email ?? '',
+                };
             },
         }),
     ],
