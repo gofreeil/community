@@ -133,14 +133,19 @@
 
                     <div class="flex items-center gap-2">
                         {#if currentUser}
-                            <div
-                                class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-green-400 to-blue-500 shadow-lg border border-white/10"
-                            >
-                                <span class="font-bold text-white text-xs"
-                                    >{currentUser.username?.charAt(0) ||
-                                        "U"}</span
-                                >
-                            </div>
+                            <a href="/profile" class="relative group flex-shrink-0">
+                                {#if currentUser.avatar_url}
+                                    <img
+                                        src={currentUser.avatar_url}
+                                        alt={currentUser.username ?? "U"}
+                                        class="h-9 w-9 rounded-full object-cover border-2 border-purple-500/40 shadow-lg"
+                                    />
+                                {:else}
+                                    <div class="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-blue-500 shadow-lg border border-white/10">
+                                        <span class="font-bold text-white text-xs">{currentUser.username?.charAt(0) || "U"}</span>
+                                    </div>
+                                {/if}
+                            </a>
                         {:else}
                             <button
                                 onclick={onShowAuth}
@@ -305,19 +310,31 @@
 
                     {#if currentUser}
                         {@const userName = currentUser.username ?? "U"}
-                        <div class="flex items-center space-x-3">
-                            <div
-                                class="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-blue-500 shadow-lg"
-                            >
-                                <span class="font-bold text-white"
-                                    >{userName.charAt(0)}</span
-                                >
-                            </div>
-                            <div class="hidden sm:block">
-                                <span class="font-medium text-gray-700 text-sm"
-                                    >{$t("greeting")} {userName}</span
-                                >
-                            </div>
+                        <div class="flex items-center gap-3">
+                            <!-- תמונת פרופיל עם hover -->
+                            <a href="/profile" class="relative group flex-shrink-0">
+                                {#if currentUser.avatar_url}
+                                    <img
+                                        src={currentUser.avatar_url}
+                                        alt={userName}
+                                        class="h-10 w-10 rounded-full object-cover border-2 border-purple-500/40
+                                               shadow-lg group-hover:border-purple-400 transition-all"
+                                    />
+                                {:else}
+                                    <div class="flex h-10 w-10 items-center justify-center rounded-full
+                                                bg-gradient-to-br from-green-400 to-blue-500 shadow-lg
+                                                border-2 border-transparent group-hover:border-purple-400 transition-all">
+                                        <span class="font-bold text-white text-sm">{userName.charAt(0)}</span>
+                                    </div>
+                                {/if}
+                                <!-- Tooltip -->
+                                <div class="absolute top-full left-1/2 -translate-x-1/2 mt-2 hidden group-hover:block z-[9999]">
+                                    <div class="bg-gray-900 text-white text-xs rounded-lg px-3 py-1.5 shadow-xl whitespace-nowrap border border-white/10">
+                                        ✏️ ערוך פרופיל
+                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-gray-900"></div>
+                                    </div>
+                                </div>
+                            </a>
                             {#if onLogout}
                                 <button
                                     onclick={onLogout}

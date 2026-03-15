@@ -13,32 +13,41 @@ export const load: PageServerLoad = async (event) => {
     const user  = getUserById(session.user.id);
     const items = await getItemsByUserId(session.user.id);
 
-    return {
-        user,
-        items,
-        citiesData,
-    };
+    return { user, items, citiesData };
 };
 
 export const actions: Actions = {
     updateProfile: async (event) => {
         const session = await event.locals.auth();
-        if (!session?.user?.id) {
-            throw redirect(302, '/login?redirect=/profile');
-        }
+        if (!session?.user?.id) throw redirect(302, '/login?redirect=/profile');
 
-        const formData = await event.request.formData();
-        const name         = formData.get('name')?.toString().trim()         ?? '';
-        const phone        = formData.get('phone')?.toString().trim()        ?? '';
-        const neighborhood = formData.get('neighborhood')?.toString().trim() ?? '';
-        const city         = formData.get('city')?.toString().trim()         ?? '';
+        const formData      = await event.request.formData();
+        const name          = formData.get('name')?.toString().trim()          ?? '';
+        const nickname      = formData.get('nickname')?.toString().trim()      ?? '';
+        const phone         = formData.get('phone')?.toString().trim()         ?? '';
+        const city          = formData.get('city')?.toString().trim()          ?? '';
+        const neighborhood  = formData.get('neighborhood')?.toString().trim()  ?? '';
+        const business      = formData.get('business')?.toString().trim()      ?? '';
+        const family_status = formData.get('family_status')?.toString()        ?? '';
+        const notifications = formData.get('notifications') === 'true' ? 1 : 0;
+        const avatarBase64  = formData.get('avatar_base64')?.toString()        ?? '';
 
         if (!name || name.length < 2) {
             return fail(400, { error: 'שם חייב להכיל לפחות 2 תווים' });
         }
 
         try {
-            updateUserProfile(session.user.id, { name, phone, neighborhood, city });
+            updateUserProfile(session.user.id, {
+                name,
+                nickname,
+                phone,
+                city,
+                neighborhood,
+                business,
+                family_status,
+                notifications,
+                ...(avatarBase64 ? { avatar_url: avatarBase64 } : {}),
+            });
             return { success: true };
         } catch {
             return fail(500, { error: 'שגיאה בעדכון הפרופיל' });

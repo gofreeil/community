@@ -29,18 +29,30 @@ function getDb(): Database.Database {
 
     db.exec(`
       CREATE TABLE IF NOT EXISTS users (
-        id            TEXT PRIMARY KEY,
-        name          TEXT,
-        email         TEXT UNIQUE,
-        phone         TEXT DEFAULT '',
-        neighborhood  TEXT DEFAULT '',
-        city          TEXT DEFAULT '',
-        avatar_url    TEXT,
-        provider      TEXT,
-        password_hash TEXT,
-        created_at    TEXT DEFAULT (datetime('now'))
+        id                   TEXT PRIMARY KEY,
+        name                 TEXT,
+        email                TEXT UNIQUE,
+        phone                TEXT DEFAULT '',
+        neighborhood         TEXT DEFAULT '',
+        city                 TEXT DEFAULT '',
+        avatar_url           TEXT,
+        provider             TEXT,
+        password_hash        TEXT,
+        nickname             TEXT DEFAULT '',
+        business             TEXT DEFAULT '',
+        notifications        INTEGER DEFAULT 0,
+        family_status        TEXT DEFAULT '',
+        created_at           TEXT DEFAULT (datetime('now'))
       )
     `);
+
+    // הוסף עמודות חסרות למסד נתונים קיים
+    const existingCols = db.prepare(`PRAGMA table_info(users)`).all() as {name: string}[];
+    const colNames = existingCols.map(c => c.name);
+    if (!colNames.includes('nickname'))      db.exec(`ALTER TABLE users ADD COLUMN nickname TEXT DEFAULT ''`);
+    if (!colNames.includes('business'))      db.exec(`ALTER TABLE users ADD COLUMN business TEXT DEFAULT ''`);
+    if (!colNames.includes('notifications')) db.exec(`ALTER TABLE users ADD COLUMN notifications INTEGER DEFAULT 0`);
+    if (!colNames.includes('family_status')) db.exec(`ALTER TABLE users ADD COLUMN family_status TEXT DEFAULT ''`);
 
     return db;
 }
@@ -92,6 +104,10 @@ export interface DbUser {
     city: string;
     avatar_url: string | null;
     provider: string | null;
+    nickname: string;
+    business: string;
+    notifications: number;
+    family_status: string;
     created_at: string;
 }
 
@@ -108,6 +124,11 @@ export interface UpdateProfileData {
     phone?: string;
     neighborhood?: string;
     city?: string;
+    nickname?: string;
+    business?: string;
+    notifications?: number;
+    family_status?: string;
+    avatar_url?: string;
 }
 
 // ============================================================
@@ -295,6 +316,11 @@ export function updateUserProfile(id: string, data: UpdateProfileData): DbUser |
     if (data.phone        !== undefined) { fields.push('phone = @phone');               values.phone        = data.phone; }
     if (data.neighborhood !== undefined) { fields.push('neighborhood = @neighborhood'); values.neighborhood = data.neighborhood; }
     if (data.city         !== undefined) { fields.push('city = @city');                 values.city         = data.city; }
+    if (data.nickname     !== undefined) { fields.push('nickname = @nickname');         values.nickname     = data.nickname; }
+    if (data.business     !== undefined) { fields.push('business = @business');         values.business     = data.business; }
+    if (data.notifications!== undefined) { fields.push('notifications = @notifications'); values.notifications = data.notifications; }
+    if (data.family_status!== undefined) { fields.push('family_status = @family_status'); values.family_status = data.family_status; }
+    if (data.avatar_url   !== undefined) { fields.push('avatar_url = @avatar_url');    values.avatar_url   = data.avatar_url; }
 
     if (fields.length === 0) return getUserById(id);
 

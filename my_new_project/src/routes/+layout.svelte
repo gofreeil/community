@@ -19,7 +19,10 @@
 	// ממפה את session.user לצורה שה-Header מצפה לה
 	let currentUser = $derived(
 		data.session?.user
-			? { username: data.session.user.name ?? data.session.user.email ?? 'משתמש' }
+			? {
+				username:   data.session.user.name  ?? data.session.user.email ?? 'משתמש',
+				avatar_url: (data.session.user as { avatar_url?: string }).avatar_url ?? data.session.user.image ?? null,
+			  }
 			: undefined
 	);
 

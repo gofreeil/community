@@ -37,6 +37,6 @@ export const actions: Actions = {
             return fail(500, { error: 'שגיאה בהרשמה. נסה שוב.', username, email });
         }
 
-        throw redirect(302, '/login?registered=1');
+        throw redirect(302, '/profile?new=1');
     },
 };
