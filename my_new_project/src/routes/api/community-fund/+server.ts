@@ -1,9 +1,9 @@
 import { json } from '@sveltejs/kit';
 import { addFundDonation, getFundTotal } from '$lib/server/db';
 
-export function GET() {
+export async function GET() {
     try {
-        const totalDonated = getFundTotal();
+        const totalDonated = await getFundTotal();
         return json({ totalDonated, totalDistributed: 0 });
     } catch (e) {
         console.error('[community-fund GET]', e);
@@ -16,6 +16,6 @@ export async function POST({ request }) {
     if (!amount || typeof amount !== 'number' || amount <= 0) {
         return json({ error: 'סכום לא תקין' }, { status: 400 });
     }
-    const newTotal = addFundDonation(amount);
+    const newTotal = await addFundDonation(amount);
     return json({ success: true, newTotal });
 }

@@ -26,7 +26,7 @@ export const load: PageServerLoad = async ({ params }) => {
 
     let items: import('$lib/server/db').DbItem[] = [];
     try {
-        items = getItemsByCategory(categoryId);
+        items = await getItemsByCategory(categoryId);
     } catch (err) {
         console.error(`[national/${categoryId}] getItemsByCategory failed:`, err);
     }

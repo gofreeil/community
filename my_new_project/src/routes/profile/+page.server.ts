@@ -11,7 +11,7 @@ export const load: PageServerLoad = async (event) => {
     }
 
     const user  = getUserById(session.user.id);
-    const items = getItemsByUserId(session.user.id);
+    const items = await getItemsByUserId(session.user.id);
 
     return {
         user,

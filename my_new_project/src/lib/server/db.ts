@@ -1,7 +1,18 @@
+// ============================================================
+// db.ts — שכבת הנתונים
+//
+// פריטים + קופת קהילה  → Strapi 5 (async)
+// משתמשים              → SQLite מקומי (sync) — תואם auth.js
+// ============================================================
+
 import Database from 'better-sqlite3';
 import { join } from 'path';
+import { strapiGet, strapiPost } from './strapiClient.js';
 
-// ---- Singleton lazy (לא נפתח בזמן build — רק בזמן runtime) ----
+// ============================================================
+// ---- SQLite Singleton (למשתמשים בלבד) ----
+// ============================================================
+
 const globalDb = globalThis as typeof globalThis & { __communityDb?: Database.Database };
 
 function getDb(): Database.Database {
@@ -13,58 +24,19 @@ function getDb(): Database.Database {
 
     const db = new Database(dbPath);
     globalDb.__communityDb = db;
-
     db.pragma('journal_mode = WAL');
 
-    // ---- Schema: טבלת items ----
-    db.exec(`
-      CREATE TABLE IF NOT EXISTS items (
-        id          TEXT PRIMARY KEY,
-        category    TEXT NOT NULL,
-        label       TEXT NOT NULL,
-        description TEXT,
-        contact     TEXT,
-        phone       TEXT,
-        address     TEXT,
-        icon        TEXT DEFAULT '📌',
-        color       TEXT DEFAULT 'purple',
-        neighborhood TEXT DEFAULT '',
-        city        TEXT DEFAULT '',
-        extra_fields TEXT DEFAULT '{}',
-        status      TEXT DEFAULT 'active',
-        user_id     TEXT,
-        created_at  TEXT DEFAULT (datetime('now'))
-      )
-    `);
-
-    // Migration: הוסף user_id אם לא קיים (safe for existing DBs)
-    try {
-        db.exec(`ALTER TABLE items ADD COLUMN user_id TEXT`);
-    } catch {
-        // העמודה כבר קיימת — בסדר
-    }
-
-    // ---- Schema: טבלת community_fund ----
-    db.exec(`
-      CREATE TABLE IF NOT EXISTS community_fund (
-        id         INTEGER PRIMARY KEY AUTOINCREMENT,
-        amount     REAL    NOT NULL,
-        created_at TEXT    DEFAULT (datetime('now'))
-      )
-    `);
-
-    // ---- Schema: טבלת users ----
     db.exec(`
       CREATE TABLE IF NOT EXISTS users (
-        id          TEXT PRIMARY KEY,
-        name        TEXT,
-        email       TEXT UNIQUE,
-        phone       TEXT DEFAULT '',
+        id           TEXT PRIMARY KEY,
+        name         TEXT,
+        email        TEXT UNIQUE,
+        phone        TEXT DEFAULT '',
         neighborhood TEXT DEFAULT '',
-        city        TEXT DEFAULT '',
-        avatar_url  TEXT,
-        provider    TEXT,
-        created_at  TEXT DEFAULT (datetime('now'))
+        city         TEXT DEFAULT '',
+        avatar_url   TEXT,
+        provider     TEXT,
+        created_at   TEXT DEFAULT (datetime('now'))
       )
     `);
 
@@ -87,14 +59,14 @@ export interface DbItem {
     color: string;
     neighborhood: string;
     city: string;
-    extra_fields: string;   // JSON string
+    extra_fields: string;   // JSON string (תואם לשאר הקוד)
     status: string;
     user_id: string | null;
     created_at: string;
 }
 
 export interface CreateItemData {
-    id: string;
+    id?: string;            // לא בשימוש — Strapi מייצר documentId
     category: string;
     label: string;
     description?: string;
@@ -137,51 +109,154 @@ export interface UpdateProfileData {
 }
 
 // ============================================================
-// ---- Items ----
+// ---- Strapi internal types (Strapi 5 — attributes at top-level) ----
 // ============================================================
 
-export function createItem(data: CreateItemData): DbItem {
-    const db = getDb();
-    const row = {
-        id:           data.id,
-        category:     data.category,
-        label:        data.label,
-        description:  data.description  ?? '',
-        contact:      data.contact      ?? '',
-        phone:        data.phone        ?? '',
-        address:      data.address      ?? '',
-        icon:         data.icon         ?? '📌',
-        color:        data.color        ?? 'purple',
-        neighborhood: data.neighborhood ?? '',
-        city:         data.city         ?? '',
-        extra_fields: JSON.stringify(data.extra_fields ?? {}),
-        user_id:      data.user_id      ?? null,
+interface StrapiItem {
+    id: number;
+    documentId: string;
+    label: string;
+    category: string;
+    description: string | null;
+    contact: string | null;
+    phone: string | null;
+    address: string | null;
+    icon: string | null;
+    color: string | null;
+    neighborhood: string | null;
+    city: string | null;
+    extra_fields: Record<string, unknown> | null;
+    status1: string | null;
+    createdAt: string;
+}
+
+interface StrapiFundEntry {
+    id: number;
+    documentId: string;
+    amount: number;
+}
+
+// ממיר StrapiItem → DbItem (תואם לכל הקוד הקיים)
+function mapStrapiItem(item: StrapiItem): DbItem {
+    return {
+        id:           item.documentId,
+        category:     item.category     ?? '',
+        label:        item.label        ?? '',
+        description:  item.description  ?? '',
+        contact:      item.contact      ?? '',
+        phone:        item.phone        ?? '',
+        address:      item.address      ?? '',
+        icon:         item.icon         ?? '📌',
+        color:        item.color        ?? 'purple',
+        neighborhood: item.neighborhood ?? '',
+        city:         item.city         ?? '',
+        extra_fields: item.extra_fields && typeof item.extra_fields === 'object'
+            ? JSON.stringify(item.extra_fields)
+            : '{}',
+        status:       item.status1      ?? 'active',
+        user_id:      null,
+        created_at:   item.createdAt    ?? '',
     };
-    db.prepare(`
-        INSERT INTO items (id, category, label, description, contact, phone, address, icon, color, neighborhood, city, extra_fields, user_id)
-        VALUES (@id, @category, @label, @description, @contact, @phone, @address, @icon, @color, @neighborhood, @city, @extra_fields, @user_id)
-    `).run(row);
-    return db.prepare(`SELECT * FROM items WHERE id = ? AND status = 'active'`).get(row.id) as DbItem;
-}
-
-export function getAllItems(): DbItem[] {
-    return getDb().prepare(`SELECT * FROM items WHERE status = 'active' ORDER BY created_at DESC`).all() as DbItem[];
-}
-
-export function getDbItemById(id: string): DbItem | undefined {
-    return getDb().prepare(`SELECT * FROM items WHERE id = ? AND status = 'active'`).get(id) as DbItem | undefined;
-}
-
-export function getItemsByUserId(userId: string): DbItem[] {
-    return getDb().prepare(`SELECT * FROM items WHERE user_id = ? ORDER BY created_at DESC`).all(userId) as DbItem[];
-}
-
-export function getItemsByCategory(category: string): DbItem[] {
-    return getDb().prepare(`SELECT * FROM items WHERE category = ? AND status = 'active' ORDER BY created_at DESC`).all(category) as DbItem[];
 }
 
 // ============================================================
-// ---- Users ----
+// ---- Items (Strapi) ----
+// ============================================================
+
+export async function getAllItems(): Promise<DbItem[]> {
+    const res = await strapiGet<{ data: StrapiItem[] }>('/api/items', {
+        'filters[status1][$eq]': 'active',
+        'sort':                  'createdAt:desc',
+        'pagination[limit]':     '1000',
+    });
+    return (res.data ?? []).map(mapStrapiItem);
+}
+
+export async function createItem(data: CreateItemData): Promise<DbItem> {
+    const res = await strapiPost<{ data: StrapiItem }>('/api/items', {
+        data: {
+            label:        data.label,
+            category:     data.category,
+            description:  data.description  ?? '',
+            contact:      data.contact      ?? '',
+            phone:        data.phone        ?? '',
+            address:      data.address      ?? '',
+            icon:         data.icon         ?? '📌',
+            color:        data.color        ?? 'purple',
+            neighborhood: data.neighborhood ?? '',
+            city:         data.city         ?? '',
+            extra_fields: data.extra_fields ?? {},
+            status1:      'active',
+            publishedAt:  new Date().toISOString(),   // פרסם מיד (לא draft)
+        },
+    });
+    return mapStrapiItem(res.data);
+}
+
+export async function getDbItemById(id: string): Promise<DbItem | undefined> {
+    try {
+        // ב-Strapi 5 ניתן לבקש לפי documentId ישירות
+        const res = await strapiGet<{ data: StrapiItem }>(`/api/items/${id}`);
+        if (!res.data) return undefined;
+        return mapStrapiItem(res.data);
+    } catch {
+        return undefined;
+    }
+}
+
+export async function getItemsByCategory(category: string): Promise<DbItem[]> {
+    const res = await strapiGet<{ data: StrapiItem[] }>('/api/items', {
+        'filters[category][$eq]':  category,
+        'filters[status1][$eq]':   'active',
+        'sort':                    'createdAt:desc',
+        'pagination[limit]':       '1000',
+    });
+    return (res.data ?? []).map(mapStrapiItem);
+}
+
+export async function getItemsByUserId(_userId: string): Promise<DbItem[]> {
+    // TODO: לאחר העברת משתמשים ל-Strapi, להחזיר פריטים לפי user relation
+    return [];
+}
+
+// ============================================================
+// ---- Community Fund (Strapi) ----
+// ============================================================
+
+export async function getFundTotal(): Promise<number> {
+    const res = await strapiGet<{ data: StrapiFundEntry[] }>('/api/community-funds', {
+        'pagination[limit]': '1000',
+    });
+    return (res.data ?? []).reduce((sum, entry) => sum + (entry.amount ?? 0), 0);
+}
+
+export async function addFundDonation(amount: number): Promise<number> {
+    await strapiPost('/api/community-funds', {
+        data: {
+            amount,
+            source:      'donation',
+            publishedAt: new Date().toISOString(),
+        },
+    });
+    return getFundTotal();
+}
+
+// נקרא מ-send-order-email: מחשב 10% ומוסיף לקופה
+export async function addFundContribution(neighborhood: string, totalPayment: number): Promise<number> {
+    const tithe = Math.round(totalPayment * 0.1);
+    await strapiPost('/api/community-funds', {
+        data: {
+            amount:      tithe,
+            source:      'order',
+            note:        `10% מהזמנת פרסום — ${neighborhood}`,
+            publishedAt: new Date().toISOString(),
+        },
+    });
+    return getFundTotal();
+}
+
+// ============================================================
+// ---- Users (SQLite — נשאר מקומי לצורך auth.js) ----
 // ============================================================
 
 export function upsertUser(data: UpsertUserData): void {
@@ -189,10 +264,10 @@ export function upsertUser(data: UpsertUserData): void {
         INSERT INTO users (id, name, email, avatar_url, provider)
         VALUES (@id, @name, @email, @avatar_url, @provider)
         ON CONFLICT(id) DO UPDATE SET
-            name      = COALESCE(excluded.name, users.name),
-            email     = COALESCE(excluded.email, users.email),
+            name       = COALESCE(excluded.name, users.name),
+            email      = COALESCE(excluded.email, users.email),
             avatar_url = COALESCE(excluded.avatar_url, users.avatar_url),
-            provider  = COALESCE(excluded.provider, users.provider)
+            provider   = COALESCE(excluded.provider, users.provider)
     `).run({
         id:         data.id,
         name:       data.name       ?? null,
@@ -210,32 +285,6 @@ export function getUserByEmail(email: string): DbUser | undefined {
     return getDb().prepare(`SELECT * FROM users WHERE email = ?`).get(email) as DbUser | undefined;
 }
 
-// ============================================================
-// ---- Community Fund ----
-// ============================================================
-
-export function addFundDonation(amount: number): number {
-    const db = getDb();
-    db.prepare(`INSERT INTO community_fund (amount) VALUES (?)`).run(amount);
-    const row = db.prepare(`SELECT COALESCE(SUM(amount), 0) AS total FROM community_fund`).get() as { total: number };
-    return row.total;
-}
-
-// נקרא מ-send-order-email: מחשב 10% ומוסיף לקופה
-export function addFundContribution(_neighborhood: string, totalPayment: number): number {
-    const tithe = Math.round(totalPayment * 0.1);
-    return addFundDonation(tithe);
-}
-
-export function getFundTotal(): number {
-    const row = getDb().prepare(`SELECT COALESCE(SUM(amount), 0) AS total FROM community_fund`).get() as { total: number };
-    return row.total;
-}
-
-// ============================================================
-// ---- Users ----
-// ============================================================
-
 export function updateUserProfile(id: string, data: UpdateProfileData): DbUser | undefined {
     const fields: string[] = [];
     const values: Record<string, unknown> = { id };
@@ -251,4 +300,3 @@ export function updateUserProfile(id: string, data: UpdateProfileData): DbUser |
         `UPDATE users SET ${fields.join(', ')} WHERE id = @id RETURNING *`
     ).get(values) as DbUser | undefined;
 }
-

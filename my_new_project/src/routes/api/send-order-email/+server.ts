@@ -214,12 +214,13 @@ export const POST: RequestHandler = async ({ request }) => {
         }
 
         // ---- 10% לקופת השכונה ----
+        let fundTotal = 0;
         try {
-            addFundContribution(payload.neighborhoodLabel, payload.totalPayment);
+            fundTotal = await addFundContribution(payload.neighborhoodLabel, payload.totalPayment);
         } catch (fundErr) {
             console.warn('[send-order-email] fund contribution failed:', fundErr);
+            try { fundTotal = await getFundTotal(); } catch { fundTotal = 0; }
         }
-        const fundTotal = getFundTotal();
 
         return json({ success: true, message: 'המייל נשלח בהצלחה!', fundTotal });
 

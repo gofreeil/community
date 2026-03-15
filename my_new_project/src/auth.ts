@@ -1,24 +1,72 @@
 import { SvelteKitAuth } from '@auth/sveltekit';
 import Google from '@auth/sveltekit/providers/google';
 import Facebook from '@auth/sveltekit/providers/facebook';
+import Credentials from '@auth/sveltekit/providers/credentials';
 import { upsertUser } from '$lib/server/db';
+import { strapiLogin } from '$lib/server/strapiClient';
+import {
+    AUTH_SECRET,
+    AUTH_GOOGLE_ID,
+    AUTH_GOOGLE_SECRET,
+    AUTH_FACEBOOK_ID,
+    AUTH_FACEBOOK_SECRET,
+} from '$env/static/private';
+
 export const { handle, signIn, signOut } = SvelteKitAuth({
-    secret: process.env.AUTH_SECRET,
+    secret: AUTH_SECRET,
 
     providers: [
         Google({
-            clientId:     process.env.AUTH_GOOGLE_ID    ?? '',
-            clientSecret: process.env.AUTH_GOOGLE_SECRET ?? '',
+            clientId:     AUTH_GOOGLE_ID,
+            clientSecret: AUTH_GOOGLE_SECRET,
         }),
         Facebook({
-            clientId:     process.env.AUTH_FACEBOOK_ID    ?? '',
-            clientSecret: process.env.AUTH_FACEBOOK_SECRET ?? '',
+            clientId:     AUTH_FACEBOOK_ID,
+            clientSecret: AUTH_FACEBOOK_SECRET,
+        }),
+        Credentials({
+            id:   'credentials',
+            name: 'Email & Password',
+            credentials: {
+                email:    { label: 'Email',    type: 'email'    },
+                password: { label: 'Password', type: 'password' },
+            },
+            async authorize(credentials) {
+                if (!credentials?.email || !credentials?.password) return null;
+
+                try {
+                    const { jwt, user } = await strapiLogin(
+                        credentials.email as string,
+                        credentials.password as string,
+                    );
+
+                    const stableId = `credentials_${user.email}`;
+                    upsertUser({
+                        id:       stableId,
+                        name:     user.username,
+                        email:    user.email,
+                        provider: 'credentials',
+                    });
+
+                    return {
+                        id:        stableId,
+                        name:      user.username,
+                        email:     user.email,
+                        strapiJwt: jwt,
+                    };
+                } catch {
+                    return null;
+                }
+            },
         }),
     ],
 
     callbacks: {
         signIn({ user, account }) {
             if (!account || !user) return false;
+
+            // Credentials provider — upsert כבר נעשה ב-authorize
+            if (account.provider === 'credentials') return true;
 
             // מזהה יציב: provider_providerAccountId (ייחודי חוצה-ספקים)
             const stableId = `${account.provider}_${account.providerAccountId}`;
@@ -43,19 +91,27 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
         jwt({ token, user, account }) {
             // user + account מועברים רק ב-sign-in הראשון
             if (user && account) {
-                token.dbUserId = `${account.provider}_${account.providerAccountId}`;
+                token.dbUserId = account.provider === 'credentials'
+                    ? user.id
+                    : `${account.provider}_${account.providerAccountId}`;
                 token.provider = account.provider;
+            }
+            // שמור Strapi JWT (רק ב-credentials login)
+            if (user && (user as { strapiJwt?: string }).strapiJwt) {
+                token.strapiJwt = (user as { strapiJwt?: string }).strapiJwt;
             }
             return token;
         },
 
         session({ session, token }) {
-            // הוסף dbUserId לsession.user
             if (token.dbUserId) {
                 session.user.id = token.dbUserId as string;
             }
             if (token.provider) {
                 (session.user as { provider?: string }).provider = token.provider as string;
+            }
+            if (token.strapiJwt) {
+                (session.user as { strapiJwt?: string }).strapiJwt = token.strapiJwt as string;
             }
             return session;
         },

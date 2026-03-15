@@ -4,7 +4,7 @@ import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params }) => {
     // נסה קודם ב-DB (פריטים שהמשתמשים הוסיפו)
-    const dbItem = getDbItemById(params.id);
+    const dbItem = await getDbItemById(params.id);
     if (dbItem) {
         // המר לפורמט תואם עם ממשק Item הקיים
         const extraFields = (() => {

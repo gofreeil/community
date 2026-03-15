@@ -6,7 +6,7 @@ import type { RequestHandler } from './$types';
 
 // ---- GET: list all active items ----
 export const GET: RequestHandler = async () => {
-    const items = getAllItems();
+    const items = await getAllItems();
     return json(items);
 };
 
@@ -42,12 +42,10 @@ export const POST: RequestHandler = async (event) => {
         return json({ success: false, message: 'קטגוריה לא תקינה' }, { status: 400 });
     }
 
-    const id = `user-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
     const icon  = getCategoryIcon(category);
     const color = getCategoryColor(category);
 
-    const item = createItem({
-        id,
+    const item = await createItem({
         category,
         label: String(label),
         description: String(rest.description ?? ''),
@@ -79,7 +77,7 @@ export const POST: RequestHandler = async (event) => {
               <h2 style="color:#f59e0b;">📌 פריט חדש נוסף לאתר</h2>
               <table style="border-collapse:collapse;width:100%;max-width:600px;background:#0f172a;border-radius:12px;overflow:hidden;border:1px solid #1e2a3a;">
                 <tr><td style="padding:8px 16px;background:#1e2a3a;color:#94a3b8;font-size:12px;font-weight:700;">שדה</td><td style="padding:8px 16px;background:#1e2a3a;color:#94a3b8;font-size:12px;font-weight:700;">ערך</td></tr>
-                <tr><td style="padding:8px 16px;color:#94a3b8;">מזהה</td><td style="padding:8px 16px;">${id}</td></tr>
+                <tr><td style="padding:8px 16px;color:#94a3b8;">מזהה</td><td style="padding:8px 16px;">${item.id}</td></tr>
                 <tr><td style="padding:8px 16px;color:#94a3b8;">קטגוריה</td><td style="padding:8px 16px;">${icon} ${catLabel}</td></tr>
                 <tr><td style="padding:8px 16px;color:#94a3b8;">כותרת</td><td style="padding:8px 16px;font-weight:700;">${label}</td></tr>
                 <tr><td style="padding:8px 16px;color:#94a3b8;">שכונה</td><td style="padding:8px 16px;">${neighborhood ?? ''}, ${city ?? ''}</td></tr>
@@ -89,7 +87,7 @@ export const POST: RequestHandler = async (event) => {
                 <tr><td style="padding:8px 16px;color:#94a3b8;">תיאור</td><td style="padding:8px 16px;">${rest.description ?? ''}</td></tr>
                 ${extraStr}
               </table>
-              <p style="color:#64748b;font-size:12px;margin-top:16px;">הפריט כבר פעיל באתר. ניתן להסיר מה-DB אם נדרש.</p>
+              <p style="color:#64748b;font-size:12px;margin-top:16px;">הפריט כבר פעיל באתר. ניתן להסיר מה-Admin אם נדרש.</p>
             </body></html>`,
         });
     } catch (e) {
@@ -97,5 +95,5 @@ export const POST: RequestHandler = async (event) => {
         console.warn('Admin email failed:', e);
     }
 
-    return json({ success: true, id });
+    return json({ success: true, id: item.id });
 };
