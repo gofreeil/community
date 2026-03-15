@@ -10,10 +10,20 @@ export const load: PageServerLoad = async (event) => {
         throw redirect(302, '/login?redirect=/profile');
     }
 
-    const user  = getUserById(session.user.id);
-    const items = await getItemsByUserId(session.user.id);
+    let user, items;
+    try {
+        user  = getUserById(session.user.id);
+    } catch (e) {
+        console.warn('[profile] getUserById failed:', e);
+    }
+    try {
+        items = await getItemsByUserId(session.user.id);
+    } catch (e) {
+        console.warn('[profile] getItemsByUserId failed:', e);
+        items = [];
+    }
 
-    return { user, items, citiesData };
+    return { user, items: items ?? [], citiesData };
 };
 
 export const actions: Actions = {
