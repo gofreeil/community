@@ -335,14 +335,6 @@
                                     </div>
                                 </div>
                             </a>
-                            {#if onLogout}
-                                <button
-                                    onclick={onLogout}
-                                    class="transform rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:bg-red-600 hover:shadow-xl"
-                                >
-                                    {$t("logout")}
-                                </button>
-                            {/if}
                         </div>
                     {:else}
                         <button
