@@ -22,7 +22,8 @@
 	let business      = $state(data.user?.business      ?? '');
 	let family_status = $state(data.user?.family_status ?? '');
 	let gender        = $state(data.user?.gender        ?? '');
-	let notifications = $state(data.user?.notifications !== 0);
+	let notifications  = $state(data.user?.notifications !== 0);
+	let termsAccepted  = $state(false);
 
 	// טען טיוטה מ-localStorage — תמיד, כדי לשחזר שינויים שלא נשמרו
 	onMount(() => {
@@ -124,9 +125,11 @@
 					</p>
 				{/if}
 				<div class="flex gap-3 mt-2 flex-wrap">
-					<span class="text-xs bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2.5 py-1 rounded-full font-bold">
-						{data.items.length} פרסומות
-					</span>
+					{#if data.items.length > 0}
+						<span class="text-xs bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2.5 py-1 rounded-full font-bold">
+							{data.items.length} פרסומות
+						</span>
+					{/if}
 					{#if data.user?.business}
 						<span class="text-xs bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded-full font-bold">
 							🏢 {data.user.business}
@@ -177,12 +180,13 @@
 			enctype="multipart/form-data"
 			use:enhance={() => {
 				return async ({ result, update }) => {
-					await update();
 					if (result.type === 'success') {
 						isEditing = false;
 						saveSuccess = true;
 						clearDraft();
 						setTimeout(() => (saveSuccess = false), 4000);
+					} else {
+						await update();
 					}
 				};
 			}}
@@ -361,11 +365,11 @@
 					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-3">התראות</label>
 					{#if isEditing}
 						<label class="flex items-center gap-3 cursor-pointer group">
-							<div class="relative">
+							<div class="relative" dir="ltr">
 								<input type="checkbox" bind:checked={notifications}
 									class="sr-only peer" />
 								<div class="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:bg-purple-600
-								            transition-colors after:content-[''] after:absolute after:top-0.5 after:start-0.5
+								            transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5
 								            after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all
 								            peer-checked:after:translate-x-5"></div>
 							</div>
@@ -389,10 +393,21 @@
 
 			{#if isEditing}
 				<div class="mt-6">
+					<label class="flex items-start gap-3 cursor-pointer mb-4">
+						<input type="checkbox" bind:checked={termsAccepted}
+							class="mt-1 w-4 h-4 accent-purple-500 cursor-pointer flex-shrink-0" />
+						<span class="text-sm text-gray-300">
+							אני מאשר את
+							<a href="/terms" target="_blank" class="text-purple-400 hover:underline">תנאי השימוש</a>
+							ו<a href="/privacy" target="_blank" class="text-purple-400 hover:underline">מדיניות הפרטיות</a>
+							של האתר
+						</span>
+					</label>
 					<button type="submit"
+						disabled={!termsAccepted}
 						class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500
 						       text-white font-bold px-7 py-3 rounded-xl shadow-lg transition-all hover:-translate-y-0.5
-						       cursor-pointer"
+						       cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0"
 					>
 						שמור שינויים
 					</button>
