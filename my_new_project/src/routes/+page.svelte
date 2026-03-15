@@ -26,6 +26,10 @@
     }
 </script>
 
+<svelte:head>
+    <title>קהילה בשכונה</title>
+</svelte:head>
+
 <div class="space-y-12 pb-0 md:pb-20 pt-4 md:pt-8">
     <!-- Title Section - centered across full width -->
     <section class="max-w-7xl mx-auto px-4">
