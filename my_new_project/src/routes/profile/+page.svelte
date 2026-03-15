@@ -99,13 +99,6 @@
 				</div>
 			</div>
 
-			<button
-				onclick={() => signOut({ redirectTo: '/' })}
-				class="flex-shrink-0 text-xs text-gray-500 hover:text-red-400 transition-colors border border-white/10
-				       hover:border-red-500/30 px-3 py-2 rounded-xl cursor-pointer"
-			>
-				התנתקות
-			</button>
 		</div>
 	</div>
 
