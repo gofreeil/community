@@ -161,13 +161,6 @@
 	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 mb-6 shadow-xl">
 		<div class="flex items-center gap-5 relative">
 
-			<!-- הארנק שלי -->
-			<div class="flex-shrink-0 flex flex-col items-center gap-1.5 cursor-pointer group select-none">
-				<img src="/images/כרטיס אשראי מזומן.png" alt="הארנק שלי"
-					class="w-16 h-auto rounded-xl shadow-lg group-hover:scale-105 transition-transform duration-200 border border-white/10" />
-				<span class="text-[11px] text-gray-300 font-bold">הארנק שלי</span>
-			</div>
-
 			<!-- אווטר + מעגל מילוי -->
 			<div class="relative flex-shrink-0 mb-3 cursor-pointer"
 				onmouseenter={() => (showRingTooltip = true)}
@@ -213,6 +206,13 @@
 				<span class="absolute top-0 left-0 text-base leading-none">
 					{data.user?.provider === 'google' ? '🔵' : data.user?.provider === 'facebook' ? '🟦' : '👤'}
 				</span>
+			</div>
+
+			<!-- הארנק שלי — משמאל לתמונת הפרופיל -->
+			<div class="flex-shrink-0 flex flex-col items-center gap-2 cursor-pointer group select-none">
+				<img src="/images/כרטיס אשראי מזומן.png" alt="הארנק שלי"
+					class="w-24 h-auto rounded-xl shadow-lg group-hover:scale-105 transition-transform duration-200 border border-white/10" />
+				<span class="text-xs text-gray-300 font-bold">הארנק שלי</span>
 			</div>
 
 			<div class="min-w-0 flex-1">
