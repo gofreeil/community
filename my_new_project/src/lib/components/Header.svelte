@@ -28,8 +28,8 @@
     let showProfileTooltip = $state(false);
 
     function handleProfileMouseMove(e: MouseEvent) {
-        tooltipX = e.clientX + 16;
-        tooltipY = e.clientY - 52;
+        tooltipX = e.clientX + 12;
+        tooltipY = e.clientY + 18;
     }
 
     // Ads Mode Logic (Mobile Only)
