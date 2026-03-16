@@ -187,9 +187,12 @@
 					<img src={avatarPreview} alt={tFn("profile_photo")}
 						class="w-20 h-20 rounded-full border-2 border-purple-500/40 shadow-xl object-cover" />
 				{:else}
-					<div class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-600 to-purple-700
-					            flex items-center justify-center border-2 border-purple-500/40 shadow-xl">
-						<span class="text-3xl font-black text-white">{avatarLetter}</span>
+					<div class="w-20 h-20 rounded-full bg-gray-700
+					            flex items-center justify-center border-2 border-gray-600 shadow-xl">
+						<svg viewBox="0 0 24 24" class="w-12 h-12 text-gray-400" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+								<circle cx="12" cy="8" r="4"/>
+								<path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+							</svg>
 					</div>
 				{/if}
 
@@ -322,9 +325,12 @@
 							<img src={avatarPreview} alt={tFn("profile_photo")}
 								class="w-20 h-20 rounded-full object-cover border-4 border-purple-500/40" />
 						{:else}
-							<div class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-600 to-purple-700
-							            flex items-center justify-center border-4 border-purple-500/40">
-								<span class="text-3xl font-black text-white">{avatarLetter}</span>
+							<div class="w-20 h-20 rounded-full bg-gray-700
+							            flex items-center justify-center border-4 border-gray-600">
+								<svg viewBox="0 0 24 24" class="w-12 h-12 text-gray-400" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+								<circle cx="12" cy="8" r="4"/>
+								<path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+							</svg>
 							</div>
 						{/if}
 					</div>
