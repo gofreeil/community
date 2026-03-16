@@ -32,7 +32,12 @@ export const load: PageServerLoad = async (event) => {
           }
         : null;
 
-    return { user: resolvedUser, items: items ?? [], citiesData };
+    return {
+        user: resolvedUser,
+        items: items ?? [],
+        citiesData,
+        oauth_image: session.user?.image ?? null,
+    };
 };
 
 export const actions: Actions = {

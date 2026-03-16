@@ -330,12 +330,28 @@
 					</div>
 					<div>
 						<p class="text-xs text-gray-400 font-bold mb-2">{tFn("profile_photo")}</p>
-						<label class="cursor-pointer bg-white/5 hover:bg-white/10 border border-white/10
-						              hover:border-purple-500/40 rounded-xl px-4 py-2 text-sm text-gray-300
-						              transition-all inline-block">
-							{tFn("choose_photo")}
-							<input type="file" accept="image/*" class="hidden" onchange={handleImageChange} />
-						</label>
+						<div class="flex flex-wrap gap-2">
+							<label class="cursor-pointer bg-white/5 hover:bg-white/10 border border-white/10
+							              hover:border-purple-500/40 rounded-xl px-4 py-2 text-sm text-gray-300
+							              transition-all inline-block">
+								{tFn("choose_photo")}
+								<input type="file" accept="image/*" class="hidden" onchange={handleImageChange} />
+							</label>
+							{#if data.oauth_image && (data.user?.provider === 'google' || data.user?.provider === 'facebook')}
+								<button type="button"
+									onclick={() => { avatarPreview = data.oauth_image; avatarBase64 = data.oauth_image ?? ''; }}
+									class="cursor-pointer bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 hover:border-blue-400/60 rounded-xl px-4 py-2 text-sm text-blue-300 transition-all inline-flex items-center gap-1.5"
+								>
+									{#if data.user?.provider === 'google'}
+										<img src="https://www.google.com/favicon.ico" class="w-3.5 h-3.5" alt="G" />
+										קח מגוגל
+									{:else}
+										<img src="https://www.facebook.com/favicon.ico" class="w-3.5 h-3.5" alt="F" />
+										קח מפייסבוק
+									{/if}
+								</button>
+							{/if}
+						</div>
 					</div>
 				</div>
 				{/if}
