@@ -17,7 +17,7 @@
                 <img
                     src="/images/יוצאים לחירות תמונה ויקיפדיה.png"
                     alt="יוצאים לחירות"
-                    class="h-20 w-20 md:h-24 md:w-24 object-contain rounded-lg hover:scale-105 transition-transform flex-shrink-0"
+                    class="h-24 w-24 md:h-28 md:w-28 object-contain rounded-lg hover:scale-105 transition-transform flex-shrink-0"
                 />
 
                 <!-- Mobile: horizontal layout -->
@@ -27,7 +27,7 @@
                     <p class="text-yellow-400 font-black text-lg">
                         יוצאים לחירות
                     </p>
-                    <p class="text-gray-300 font-extrabold text-base">
+                    <p class="text-gray-300 font-normal text-base">
                         לכלל פעילות התנועה החברתית
                     </p>
                 </div>
@@ -37,7 +37,7 @@
                     class="hidden md:flex md:flex-col text-right leading-tight gap-1"
                 >
                     <p
-                        class="text-base md:text-xl text-gray-300 font-extrabold"
+                        class="text-base md:text-xl text-gray-300 font-normal"
                     >
                         לכלל פעילות התנועה החברתית
                     </p>
