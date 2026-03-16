@@ -159,11 +159,21 @@
 
 	<!-- ===== קומה 1: האזור האישי ===== -->
 	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 mb-6 shadow-xl">
-		<div class="flex items-center gap-2 mb-5">
-			<span class="w-6 h-6 rounded-full bg-purple-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">1</span>
-			<h2 class="text-base font-black text-white">{tFn("section_personal_area")}</h2>
+		<!-- כותרת + כפתור התנתקות -->
+		<div class="flex items-center justify-between mb-5">
+			<button
+				onclick={() => signOut({ callbackUrl: '/' })}
+				class="text-sm font-bold text-gray-400 hover:text-red-400 transition-colors cursor-pointer px-4 py-2 rounded-xl hover:bg-red-500/10 border border-white/10 hover:border-red-500/30"
+				title={tFn("logout_btn")}
+			>
+				{tFn("logout_btn")}
+			</button>
+			<div class="flex items-center gap-2">
+				<span class="w-6 h-6 rounded-full bg-purple-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">1</span>
+				<h2 class="text-base font-black text-white">{tFn("section_personal_area")}</h2>
+			</div>
 		</div>
-		<div class="flex items-center gap-5 relative">
+		<div class="flex items-center gap-5">
 
 			<!-- אווטר + מעגל מילוי -->
 			<div class="relative flex-shrink-0 mb-3 cursor-pointer"
@@ -238,20 +248,14 @@
 					{/if}
 				</div>
 			</div>
-			<!-- הארנק שלי — קצה שמאל -->
-			<div class="flex-shrink-0 flex flex-col items-center gap-1.5 cursor-pointer group select-none ms-auto">
-				<img src="/images/wallet.png" alt="המזומן שלי"
-					class="w-40 h-auto rounded-3xl shadow-xl group-hover:scale-105 transition-transform duration-200 border-2 border-white/10" />
+			<!-- הארנק שלי — ממורכז -->
+			<div class="flex-shrink-0 flex flex-col items-center gap-2 cursor-pointer group select-none">
+				<div class="w-52 overflow-hidden rounded-[2.5rem] shadow-xl border-2 border-white/10 group-hover:scale-105 transition-transform duration-200">
+					<img src="/images/wallet.png" alt="המזומן שלי" class="w-full h-auto block" />
+				</div>
 				<span class="text-xs text-gray-300 font-bold">המזומן שלי</span>
 			</div>
 
-			<button
-				onclick={() => signOut({ callbackUrl: '/' })}
-				class="absolute top-0 left-0 text-sm text-gray-400 hover:text-red-400 transition-colors cursor-pointer px-2 py-1 rounded-lg hover:bg-red-500/10"
-				title={tFn("logout_btn")}
-			>
-				{tFn("logout_btn")}
-			</button>
 		</div>
 	</div>
 
