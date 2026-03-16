@@ -161,6 +161,13 @@
 	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 mb-6 shadow-xl">
 		<div class="flex items-center gap-5 relative">
 
+			<!-- הארנק שלי -->
+			<div class="flex-shrink-0 flex flex-col items-center gap-1.5 cursor-pointer group select-none">
+				<img src="/images/כרטיס אשראי מזומן.png" alt="הארנק שלי"
+					class="w-16 h-auto rounded-xl shadow-lg group-hover:scale-105 transition-transform duration-200 border border-white/10" />
+				<span class="text-[11px] text-gray-300 font-bold">הארנק שלי</span>
+			</div>
+
 			<!-- אווטר + מעגל מילוי -->
 			<div class="relative flex-shrink-0 mb-3 cursor-pointer"
 				onmouseenter={() => (showRingTooltip = true)}
@@ -250,7 +257,7 @@
 		<div class="flex items-center justify-between mb-6">
 			<h2 class="text-xl font-black text-white flex items-center gap-2">
 				<span class="w-1.5 h-7 bg-purple-500 rounded-full inline-block"></span>
-				פרטים אישיים
+				{tFn("personal_details")}
 			</h2>
 			<button
 				onclick={() => { isEditing = !isEditing; saveSuccess = false; }}
@@ -303,7 +310,7 @@
 				<div class="md:col-span-2 flex items-center gap-5">
 					<div class="relative flex-shrink-0">
 						{#if avatarPreview}
-							<img src={avatarPreview} alt="תצוגה מקדימה"
+							<img src={avatarPreview} alt={tFn("profile_photo")}
 								class="w-20 h-20 rounded-full object-cover border-4 border-purple-500/40" />
 						{:else}
 							<div class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-600 to-purple-700
@@ -313,7 +320,7 @@
 						{/if}
 					</div>
 					<div>
-						<p class="text-xs text-gray-400 font-bold mb-2">תמונת פרופיל</p>
+						<p class="text-xs text-gray-400 font-bold mb-2">{tFn("profile_photo")}</p>
 						<label class="cursor-pointer bg-white/5 hover:bg-white/10 border border-white/10
 						              hover:border-purple-500/40 rounded-xl px-4 py-2 text-sm text-gray-300
 						              transition-all inline-block">
@@ -373,7 +380,7 @@
 								         ? 'bg-blue-600/30 border-blue-500/60 text-blue-300'
 								         : 'bg-white/5 border-white/10 text-gray-400 hover:border-blue-500/30 hover:text-blue-300'}"
 							>
-								👨 זכר
+								👨 {tFn('male')}
 							</button>
 							<button type="button"
 								onclick={() => gender = 'female'}
@@ -382,7 +389,7 @@
 								         ? 'bg-pink-600/30 border-pink-500/60 text-pink-300'
 								         : 'bg-white/5 border-white/10 text-gray-400 hover:border-pink-500/30 hover:text-pink-300'}"
 							>
-								👩 נקבה
+								👩 {tFn('female')}
 							</button>
 						</div>
 						<input type="hidden" name="gender" value={gender} />
@@ -512,11 +519,11 @@
 						<input type="checkbox" bind:checked={termsAccepted}
 							class="mt-1 w-4 h-4 accent-purple-500 cursor-pointer flex-shrink-0" />
 						<span class="text-sm text-gray-300">
-							אני מאשר את
+							{tFn("terms_agree_prefix")}
 							<a href="/terms" target="_blank" class="text-purple-400 hover:underline">{tFn("terms")}</a>
 							ו<a href="/privacy" target="_blank" class="text-purple-400 hover:underline">{tFn("privacy")}</a>
 								{tFn("terms_agree_suffix")}
-							של האתר
+							
 						</span>
 					</label>
 					<button type="submit"
