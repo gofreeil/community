@@ -9,7 +9,7 @@ import {
     AUTH_GOOGLE_SECRET,
     AUTH_FACEBOOK_ID,
     AUTH_FACEBOOK_SECRET,
-} from '$env/static/private';
+} from '$env/dynamic/private';
 
 export const { handle, signIn, signOut } = SvelteKitAuth({
     secret: AUTH_SECRET,
