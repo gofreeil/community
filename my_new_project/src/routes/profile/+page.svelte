@@ -584,28 +584,25 @@
 			</div>
 
 			{#if isEditing}
-				<div class="mt-6">
-					<label class="flex items-start gap-3 cursor-pointer mb-4">
+				<div class="mt-6 flex items-center gap-4 flex-wrap">
+					<label class="flex items-center gap-3 cursor-pointer flex-1 min-w-0">
 						<input type="checkbox" bind:checked={termsAccepted}
-							class="mt-1 w-4 h-4 accent-purple-500 cursor-pointer flex-shrink-0" />
+							class="w-4 h-4 accent-purple-500 cursor-pointer flex-shrink-0" />
 						<span class="text-sm text-gray-300">
 							{tFn("terms_agree_prefix")}
 							<a href="/terms" target="_blank" class="text-purple-400 hover:underline">{tFn("terms")}</a>
 							ו<a href="/privacy" target="_blank" class="text-purple-400 hover:underline">{tFn("privacy")}</a>
-								{tFn("terms_agree_suffix")}
-							
+							{tFn("terms_agree_suffix")}
 						</span>
 					</label>
-					<div class="flex justify-start">
-						<button type="submit"
-							disabled={!termsAccepted}
-							class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500
-							       text-white font-black px-12 py-4 rounded-2xl shadow-xl text-base transition-all hover:-translate-y-0.5
-							       cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0"
-						>
-							{tFn("save_changes")}
-						</button>
-					</div>
+					<button type="submit"
+						disabled={!termsAccepted}
+						class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500
+						       text-white font-black px-8 py-3 rounded-2xl shadow-xl text-sm transition-all hover:-translate-y-0.5
+						       cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 flex-shrink-0"
+					>
+						{tFn("save_changes")}
+					</button>
 				</div>
 			{/if}
 		</form>
