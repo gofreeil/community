@@ -8,7 +8,7 @@
 </script>
 
 <svelte:head>
-	<title>{("register_title")}</title>
+	<title>{$t("register_title")}</title>
 </svelte:head>
 
 <div class="min-h-[80vh] flex items-center justify-center px-4 py-12" dir="rtl">
@@ -29,8 +29,8 @@
 							<span class="text-3xl">🏘️</span>
 						</div>
 					</div>
-					<h1 class="text-2xl font-black text-white mb-2">{("join_community")}</h1>
-					<p class="text-gray-400 text-sm">{("create_account")}</p>
+					<h1 class="text-2xl font-black text-white mb-2">{$t("join_community")}</h1>
+					<p class="text-gray-400 text-sm">{$t("create_account")}</p>
 				</div>
 
 				<!-- הודעת שגיאה -->
@@ -52,7 +52,7 @@
 					}}
 				>
 					<div class="mb-4">
-						<label for="username" class="block text-sm font-medium text-gray-400 mb-2">{("username_label")}</label>
+						<label for="username" class="block text-sm font-medium text-gray-400 mb-2">{$t("username_label")}</label>
 						<input
 							id="username"
 							name="username"
@@ -63,12 +63,12 @@
 							class="w-full bg-[#1e293b] border border-white/10 rounded-xl px-4 py-3
 							       text-white placeholder-gray-500 focus:outline-none focus:border-purple-500
 							       focus:ring-1 focus:ring-purple-500 transition-colors"
-							placeholder={("username_placeholder")}
+							placeholder={$t("username_placeholder")}
 						/>
 					</div>
 
 					<div class="mb-4">
-						<label for="email" class="block text-sm font-medium text-gray-400 mb-2">{("email")}</label>
+						<label for="email" class="block text-sm font-medium text-gray-400 mb-2">{$t("email")}</label>
 						<input
 							id="email"
 							name="email"
@@ -84,7 +84,7 @@
 					</div>
 
 					<div class="mb-4">
-						<label for="password" class="block text-sm font-medium text-gray-400 mb-2">{("password_label")}</label>
+						<label for="password" class="block text-sm font-medium text-gray-400 mb-2">{$t("password_label")}</label>
 						<div class="relative">
 							<input
 								id="password"
@@ -95,14 +95,14 @@
 								class="w-full bg-[#1e293b] border border-white/10 rounded-xl px-4 py-3 pl-11
 								       text-white placeholder-gray-500 focus:outline-none focus:border-purple-500
 								       focus:ring-1 focus:ring-purple-500 transition-colors"
-								placeholder={("password_min")}
+								placeholder={$t("password_min")}
 								minlength="6"
 							/>
 							<button
 								type="button"
 								onclick={() => (showPassword = !showPassword)}
 								class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-								aria-label={showPassword ? ('hide_password') : ('show_password')}
+								aria-label={showPassword ? $t('hide_password') : $t('show_password')}
 							>
 								{#if showPassword}
 									<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -119,7 +119,7 @@
 					</div>
 
 					<div class="mb-6">
-						<label for="confirmPassword" class="block text-sm font-medium text-gray-400 mb-2">{("confirm_password_label")}</label>
+						<label for="confirmPassword" class="block text-sm font-medium text-gray-400 mb-2">{$t("confirm_password_label")}</label>
 						<div class="relative">
 							<input
 								id="confirmPassword"
@@ -130,13 +130,13 @@
 								class="w-full bg-[#1e293b] border border-white/10 rounded-xl px-4 py-3 pl-11
 								       text-white placeholder-gray-500 focus:outline-none focus:border-purple-500
 								       focus:ring-1 focus:ring-purple-500 transition-colors"
-								placeholder={("confirm_password_placeholder")}
+								placeholder={$t("confirm_password_placeholder")}
 							/>
 							<button
 								type="button"
 								onclick={() => (showConfirm = !showConfirm)}
 								class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-								aria-label={showConfirm ? ('hide_password') : ('show_password')}
+								aria-label={showConfirm ? $t('hide_password') : $t('show_password')}
 							>
 								{#if showConfirm}
 									<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -166,7 +166,7 @@
 								נרשם...
 							</span>
 						{:else}
-							{("register_btn")}
+							{$t("register_btn")}
 						{/if}
 					</button>
 				</form>

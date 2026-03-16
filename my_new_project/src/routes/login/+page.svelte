@@ -38,7 +38,7 @@
 </script>
 
 <svelte:head>
-	<title>{("login_title")}</title>
+	<title>{$t("login_title")}</title>
 </svelte:head>
 
 <div class="min-h-[80vh] flex items-center justify-center px-4 py-12" dir="rtl">
@@ -59,8 +59,8 @@
 							<span class="text-3xl">🏘️</span>
 						</div>
 					</div>
-					<h1 class="text-2xl font-black text-white mb-2">{("welcome_back")}</h1>
-					<p class="text-gray-400 text-sm">{("login_subtitle")}</p>
+					<h1 class="text-2xl font-black text-white mb-2">{$t("welcome_back")}</h1>
+					<p class="text-gray-400 text-sm">{$t("login_subtitle")}</p>
 				</div>
 
 				<!-- הודעת שגיאה -->
@@ -76,7 +76,7 @@
 				{/if}
 				{#if data.registered}
 					<div class="mb-6 rounded-xl bg-green-500/10 border border-green-500/30 px-4 py-3 text-center">
-						<p class="text-green-400 text-sm font-medium">{("registered_success")}</p>
+						<p class="text-green-400 text-sm font-medium">{$t("registered_success")}</p>
 					</div>
 				{/if}
 
@@ -100,7 +100,7 @@
 								<path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
 							</svg>
 						{/if}
-						<span>{("continue_google")}</span>
+						<span>{$t("continue_google")}</span>
 					</button>
 
 					<!-- כפתור Facebook -->
@@ -119,13 +119,13 @@
 								<path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
 							</svg>
 						{/if}
-						<span>{("continue_facebook")}</span>
+						<span>{$t("continue_facebook")}</span>
 					</button>
 
 					<!-- מפריד -->
 					<div class="flex items-center gap-3 mb-6">
 						<div class="flex-1 h-px bg-white/10"></div>
-						<span class="text-xs text-gray-500">{("or")}</span>
+						<span class="text-xs text-gray-500">{$t("or")}</span>
 						<div class="flex-1 h-px bg-white/10"></div>
 					</div>
 
@@ -144,7 +144,7 @@
 						<input type="hidden" name="redirectTo" value={data.redirectTo} />
 
 						<div class="mb-4">
-							<label for="email" class="block text-sm font-medium text-gray-400 mb-2">{("email")}</label>
+							<label for="email" class="block text-sm font-medium text-gray-400 mb-2">{$t("email")}</label>
 							<input
 								id="email"
 								name="email"
@@ -159,7 +159,7 @@
 						</div>
 
 						<div class="mb-6">
-							<label for="password" class="block text-sm font-medium text-gray-400 mb-2">{("password_label")}</label>
+							<label for="password" class="block text-sm font-medium text-gray-400 mb-2">{$t("password_label")}</label>
 							<div class="relative">
 								<input
 									id="password"
@@ -176,7 +176,7 @@
 									type="button"
 									onclick={() => (showPassword = !showPassword)}
 									class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-									aria-label={showPassword ? ('hide_password') : ('show_password')}
+									aria-label={showPassword ? $t('hide_password') : $t('show_password')}
 								>
 									{#if showPassword}
 										<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
