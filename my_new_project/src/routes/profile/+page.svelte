@@ -380,7 +380,7 @@
 								         ? 'bg-blue-600/30 border-blue-500/60 text-blue-300'
 								         : 'bg-white/5 border-white/10 text-gray-400 hover:border-blue-500/30 hover:text-blue-300'}"
 							>
-								👨 {tFn('male')}
+								{tFn('male')}
 							</button>
 							<button type="button"
 								onclick={() => gender = 'female'}
@@ -389,7 +389,7 @@
 								         ? 'bg-pink-600/30 border-pink-500/60 text-pink-300'
 								         : 'bg-white/5 border-white/10 text-gray-400 hover:border-pink-500/30 hover:text-pink-300'}"
 							>
-								👩 {tFn('female')}
+								{tFn('female')}
 							</button>
 						</div>
 						<input type="hidden" name="gender" value={gender} />
@@ -466,7 +466,6 @@
 						<select name="family_status" bind:value={family_status}
 							class="w-full bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl
 							       px-4 py-3 text-white text-sm transition-colors outline-none appearance-none">
-							<option value="">{tFn("choose_status")}</option>
 							<option value="single_m">{tFn("status_single_m")}</option>
 							<option value="single_f">{tFn("status_single_f")}</option>
 							<option value="family">{tFn("status_family")}</option>
