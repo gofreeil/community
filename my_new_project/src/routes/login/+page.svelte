@@ -135,7 +135,7 @@
 						class="w-full py-3 px-6 rounded-2xl border border-white/10 text-gray-300 hover:text-white
 						       hover:border-white/20 hover:bg-white/5 transition-all duration-200 text-sm font-medium cursor-pointer"
 					>
-						התחברות עם אימייל וסיסמה
+						{$t("login_with_email")}
 					</button>
 
 				{:else}
@@ -207,12 +207,12 @@
 						onclick={() => (mode = 'oauth')}
 						class="w-full py-2 text-sm text-gray-500 hover:text-gray-400 transition-colors cursor-pointer mb-4"
 					>
-						← חזרה להתחברות עם Google/Facebook
+						{$t("back_to_oauth")}
 					</button>
 
 					<!-- לינק להרשמה -->
 					<p class="text-center text-sm text-gray-500">
-						אין לך חשבון?
+						{$t("no_account")}
 						<a href="/register" class="text-purple-400 hover:text-purple-300 font-medium transition-colors">
 							הירשם כאן
 						</a>

@@ -163,7 +163,7 @@
 						{#if isLoading}
 							<span class="inline-flex items-center gap-2">
 								<span class="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>
-								נרשם...
+								{$t("registering")}
 							</span>
 						{:else}
 							{$t("register_btn")}
@@ -173,7 +173,7 @@
 
 				<!-- לינק ללוגין -->
 				<p class="mt-6 text-center text-sm text-gray-500">
-					כבר רשום?
+					{$t("already_registered")}
 					<a href="/login" class="text-purple-400 hover:text-purple-300 font-medium transition-colors">
 						התחבר כאן
 					</a>
