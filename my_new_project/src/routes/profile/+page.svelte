@@ -685,7 +685,7 @@
 		            {profileCompletion >= 100
 		              ? 'bg-green-900/90 text-green-300 border-green-500/30'
 		              : 'bg-gray-900/95 text-yellow-300 border-yellow-500/30'}">
-			{tFn(nextTipKey)}
+			{tFn(nextTipKey)}{profileCompletion < 100 ? ` — ${tFn('tip_location')}` : ''}
 		</div>
 	</div>
 {/if}
