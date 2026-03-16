@@ -94,7 +94,7 @@
 
 	<!-- ===== Header Card ===== -->
 	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 mb-6 shadow-xl">
-		<div class="flex items-center gap-5">
+		<div class="flex items-center gap-5 relative">
 
 			<!-- אווטר -->
 			<div class="relative flex-shrink-0">
@@ -138,6 +138,13 @@
 				</div>
 			</div>
 
+			<button
+				onclick={() => signOut({ callbackUrl: '/' })}
+				class="absolute top-0 left-0 text-xs text-gray-500 hover:text-red-400 transition-colors cursor-pointer"
+				title="התנתק"
+			>
+				🚪 התנתק
+			</button>
 		</div>
 	</div>
 
@@ -368,7 +375,7 @@
 							<div class="relative" dir="ltr">
 								<input type="checkbox" bind:checked={notifications}
 									class="sr-only peer" />
-								<div class="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:bg-purple-600
+								<div class="w-11 h-6 bg-gray-700 rounded-full peer-checked:bg-purple-600
 								            transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5
 								            after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all
 								            peer-checked:after:translate-x-5"></div>
@@ -414,22 +421,6 @@
 				</div>
 			{/if}
 		</form>
-	</div>
-
-	<!-- ===== התנתקות ===== -->
-	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 mb-6 shadow-xl">
-		<h2 class="text-xl font-black text-white flex items-center gap-2 mb-4">
-			<span class="w-1.5 h-7 bg-red-500 rounded-full inline-block"></span>
-			התנתקות
-		</h2>
-		<p class="text-gray-400 text-sm mb-5">לחץ כדי להתנתק מהחשבון שלך.</p>
-		<button
-			onclick={() => signOut({ callbackUrl: '/' })}
-			class="bg-red-600/20 hover:bg-red-600/40 border border-red-500/30 hover:border-red-500/60
-			       text-red-400 hover:text-red-300 font-bold px-6 py-3 rounded-xl transition-all cursor-pointer"
-		>
-			🚪 התנתק
-		</button>
 	</div>
 
 	<!-- ===== הפרסומות שלי ===== -->
