@@ -4,6 +4,7 @@
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import type { CityEntry } from '$lib/neighborhoodsData';
+import { t } from 'svelte-i18n';
 
 	let { data, form } = $props();
 
