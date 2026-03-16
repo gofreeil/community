@@ -140,7 +140,7 @@
 
 			<button
 				onclick={() => signOut({ callbackUrl: '/' })}
-				class="absolute top-0 left-0 text-xs text-gray-500 hover:text-red-400 transition-colors cursor-pointer"
+				class="absolute top-0 left-0 text-sm text-gray-400 hover:text-red-400 transition-colors cursor-pointer px-2 py-1 rounded-lg hover:bg-red-500/10"
 				title="התנתק"
 			>
 				🚪 התנתק
