@@ -266,13 +266,13 @@
                         </div>
                     </div>
                 </div>
-                <a href="/">
+                <a href="/" class="group">
                     <h1
-                        class="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-3xl font-bold text-transparent hover:opacity-80 transition-opacity"
+                        class="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-3xl font-bold text-transparent group-hover:opacity-80 transition-opacity"
                     >
                         {tFn("welcome")}
                     </h1>
-                    <p class="text-lg text-gray-100 font-extrabold hover:opacity-80 transition-opacity">{tFn("app_description")}</p>
+                    <p class="text-lg text-gray-100 font-extrabold group-hover:opacity-80 transition-opacity">{tFn("app_description")}</p>
                 </a>
             </div>
             <div class="flex items-center gap-2">
