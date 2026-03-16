@@ -1,58 +1,11 @@
 // ============================================================
 // db.ts — שכבת הנתונים
 //
-// פריטים + קופת קהילה  → Strapi 5 (async)
-// משתמשים              → Turso / libSQL (async, cloud-persistent)
+// פריטים + קופת קהילה + משתמשים → Strapi 5 (async, cloud-persistent)
 // ============================================================
 
-import { createClient, type Client } from '@libsql/client';
-import { strapiGet, strapiPost } from './strapiClient.js';
+import { strapiGet, strapiPost, strapiPut } from './strapiClient.js';
 import bcrypt from 'bcryptjs';
-
-// ============================================================
-// ---- libSQL Singleton ----
-// ============================================================
-
-const globalWithDb = globalThis as typeof globalThis & {
-    __libsqlClient?: Client;
-    __libsqlReady?: boolean;
-};
-
-function getClient(): Client {
-    if (globalWithDb.__libsqlClient) return globalWithDb.__libsqlClient;
-    globalWithDb.__libsqlClient = createClient({
-        url:       process.env.TURSO_DATABASE_URL ?? 'file:community.db',
-        authToken: process.env.TURSO_AUTH_TOKEN,
-    });
-    return globalWithDb.__libsqlClient;
-}
-
-async function ensureSchema(): Promise<void> {
-    if (globalWithDb.__libsqlReady) return;
-    const db = getClient();
-    await db.executeMultiple(`
-        CREATE TABLE IF NOT EXISTS users (
-            id            TEXT PRIMARY KEY,
-            name          TEXT,
-            email         TEXT UNIQUE,
-            phone         TEXT DEFAULT '',
-            neighborhood  TEXT DEFAULT '',
-            city          TEXT DEFAULT '',
-            avatar_url    TEXT,
-            provider      TEXT,
-            password_hash TEXT,
-            nickname      TEXT DEFAULT '',
-            business      TEXT DEFAULT '',
-            notifications INTEGER DEFAULT 1,
-            family_status TEXT DEFAULT '',
-            gender        TEXT DEFAULT '',
-            birth_date    TEXT DEFAULT '',
-            balance       REAL DEFAULT 0,
-            created_at    TEXT DEFAULT (datetime('now'))
-        );
-    `);
-    globalWithDb.__libsqlReady = true;
-}
 
 // ============================================================
 // ---- Types ----
@@ -70,14 +23,14 @@ export interface DbItem {
     color: string;
     neighborhood: string;
     city: string;
-    extra_fields: string;   // JSON string (תואם לשאר הקוד)
+    extra_fields: string;   // JSON string
     status: string;
     user_id: string | null;
     created_at: string;
 }
 
 export interface CreateItemData {
-    id?: string;            // לא בשימוש — Strapi מייצר documentId
+    id?: string;
     category: string;
     label: string;
     description?: string;
@@ -135,7 +88,7 @@ export interface UpdateProfileData {
 }
 
 // ============================================================
-// ---- Strapi internal types (Strapi 5 — attributes at top-level) ----
+// ---- Strapi internal types (Items) ----
 // ============================================================
 
 interface StrapiItem {
@@ -163,7 +116,32 @@ interface StrapiFundEntry {
     amount: number;
 }
 
-// ממיר StrapiItem → DbItem (תואם לכל הקוד הקיים)
+interface StrapiCommunityUser {
+    id: number;
+    documentId: string;
+    external_id: string;
+    name: string | null;
+    email: string | null;
+    phone: string | null;
+    neighborhood: string | null;
+    city: string | null;
+    avatar_url: string | null;
+    provider: string | null;
+    password_hash: string | null;
+    nickname: string | null;
+    business: string | null;
+    notifications: boolean | null;
+    family_status: string | null;
+    gender: string | null;
+    birth_date: string | null;
+    balance: number | null;
+    createdAt: string;
+}
+
+// ============================================================
+// ---- Mappers ----
+// ============================================================
+
 function mapStrapiItem(item: StrapiItem): DbItem {
     return {
         id:           item.documentId,
@@ -183,6 +161,27 @@ function mapStrapiItem(item: StrapiItem): DbItem {
         status:       item.status1      ?? 'active',
         user_id:      item.user_id      ?? null,
         created_at:   item.createdAt    ?? '',
+    };
+}
+
+function mapStrapiUser(u: StrapiCommunityUser): DbUser {
+    return {
+        id:            u.external_id,
+        name:          u.name          ?? null,
+        email:         u.email         ?? null,
+        phone:         u.phone         ?? '',
+        neighborhood:  u.neighborhood  ?? '',
+        city:          u.city          ?? '',
+        avatar_url:    u.avatar_url    ?? null,
+        provider:      u.provider      ?? null,
+        nickname:      u.nickname      ?? '',
+        business:      u.business      ?? '',
+        notifications: u.notifications ? 1 : 0,
+        family_status: u.family_status ?? '',
+        gender:        u.gender        ?? '',
+        birth_date:    u.birth_date    ?? '',
+        balance:       u.balance       ?? 0,
+        created_at:    u.createdAt     ?? '',
     };
 }
 
@@ -215,7 +214,7 @@ export async function createItem(data: CreateItemData): Promise<DbItem> {
             extra_fields: data.extra_fields ?? {},
             status1:      'active',
             user_id:      data.user_id ?? null,
-            publishedAt:  new Date().toISOString(),   // פרסם מיד (לא draft)
+            publishedAt:  new Date().toISOString(),
         },
     });
     return mapStrapiItem(res.data);
@@ -223,7 +222,6 @@ export async function createItem(data: CreateItemData): Promise<DbItem> {
 
 export async function getDbItemById(id: string): Promise<DbItem | undefined> {
     try {
-        // ב-Strapi 5 ניתן לבקש לפי documentId ישירות
         const res = await strapiGet<{ data: StrapiItem }>(`/api/items/${id}`);
         if (!res.data) return undefined;
         return mapStrapiItem(res.data);
@@ -273,7 +271,6 @@ export async function addFundDonation(amount: number): Promise<number> {
     return getFundTotal();
 }
 
-// נקרא מ-send-order-email: מחשב 10% ומוסיף לקופה
 export async function addFundContribution(neighborhood: string, totalPayment: number): Promise<number> {
     const tithe = Math.round(totalPayment * 0.1);
     await strapiPost('/api/community-funds', {
@@ -288,74 +285,85 @@ export async function addFundContribution(neighborhood: string, totalPayment: nu
 }
 
 // ============================================================
-// ---- Users (Turso / libSQL — cloud-persistent) ----
+// ---- Users (Strapi — cloud-persistent) ----
 // ============================================================
 
-export async function upsertUser(data: UpsertUserData): Promise<void> {
-    await ensureSchema();
-    await getClient().execute({
-        sql: `INSERT INTO users (id, name, email, avatar_url, provider)
-              VALUES (?, ?, ?, ?, ?)
-              ON CONFLICT(id) DO UPDATE SET
-                  name       = COALESCE(excluded.name, users.name),
-                  email      = COALESCE(excluded.email, users.email),
-                  avatar_url = CASE
-                      WHEN users.avatar_url LIKE 'data:%' THEN users.avatar_url
-                      ELSE COALESCE(excluded.avatar_url, users.avatar_url)
-                  END,
-                  provider   = COALESCE(excluded.provider, users.provider)`,
-        args: [data.id, data.name ?? null, data.email ?? null, data.avatar_url ?? null, data.provider ?? null],
+async function findStrapiUser(externalId: string): Promise<StrapiCommunityUser | undefined> {
+    const res = await strapiGet<{ data: StrapiCommunityUser[] }>('/api/community-users', {
+        'filters[external_id][$eq]': externalId,
+        'pagination[limit]':         '1',
     });
+    return res.data?.[0];
+}
+
+export async function upsertUser(data: UpsertUserData): Promise<void> {
+    const existing = await findStrapiUser(data.id);
+    if (!existing) {
+        await strapiPost('/api/community-users', {
+            data: {
+                external_id: data.id,
+                name:        data.name        ?? null,
+                email:       data.email       ?? null,
+                avatar_url:  data.avatar_url  ?? null,
+                provider:    data.provider    ?? null,
+                publishedAt: new Date().toISOString(),
+            },
+        });
+    } else {
+        const updates: Record<string, unknown> = {};
+        if (data.name  && !existing.name)  updates.name  = data.name;
+        if (data.email && !existing.email) updates.email = data.email;
+        if (data.provider && !existing.provider) updates.provider = data.provider;
+        // אל תדרוס תמונה מותאמת אישית (base64) בתמונת גוגל
+        if (data.avatar_url && !existing.avatar_url?.startsWith('data:')) {
+            updates.avatar_url = data.avatar_url;
+        }
+        if (Object.keys(updates).length > 0) {
+            await strapiPut(`/api/community-users/${existing.documentId}`, { data: updates });
+        }
+    }
 }
 
 export async function getUserById(id: string): Promise<DbUser | undefined> {
-    await ensureSchema();
-    const res = await getClient().execute({
-        sql:  `SELECT * FROM users WHERE id = ?`,
-        args: [id],
-    });
-    return res.rows[0] as unknown as DbUser | undefined;
+    const u = await findStrapiUser(id);
+    return u ? mapStrapiUser(u) : undefined;
 }
 
 export async function getUserByEmail(email: string): Promise<DbUser | undefined> {
-    await ensureSchema();
-    const res = await getClient().execute({
-        sql:  `SELECT * FROM users WHERE email = ?`,
-        args: [email],
+    const res = await strapiGet<{ data: StrapiCommunityUser[] }>('/api/community-users', {
+        'filters[email][$eq]': email,
+        'pagination[limit]':   '1',
     });
-    return res.rows[0] as unknown as DbUser | undefined;
+    const u = res.data?.[0];
+    return u ? mapStrapiUser(u) : undefined;
 }
 
 export async function updateUserProfile(id: string, data: UpdateProfileData): Promise<DbUser | undefined> {
-    await ensureSchema();
-    const fields: string[] = [];
-    const args: unknown[]  = [];
+    const existing = await findStrapiUser(id);
+    if (!existing) return undefined;
 
-    if (data.name          !== undefined) { fields.push('name = ?');          args.push(data.name); }
-    if (data.email         !== undefined) { fields.push('email = ?');         args.push(data.email); }
-    if (data.phone         !== undefined) { fields.push('phone = ?');         args.push(data.phone); }
-    if (data.neighborhood  !== undefined) { fields.push('neighborhood = ?');  args.push(data.neighborhood); }
-    if (data.city          !== undefined) { fields.push('city = ?');          args.push(data.city); }
-    if (data.nickname      !== undefined) { fields.push('nickname = ?');      args.push(data.nickname); }
-    if (data.business      !== undefined) { fields.push('business = ?');      args.push(data.business); }
-    if (data.notifications !== undefined) { fields.push('notifications = ?'); args.push(data.notifications); }
-    if (data.family_status !== undefined) { fields.push('family_status = ?'); args.push(data.family_status); }
-    if (data.gender        !== undefined) { fields.push('gender = ?');        args.push(data.gender); }
-    if (data.avatar_url    !== undefined) { fields.push('avatar_url = ?');    args.push(data.avatar_url); }
-    if (data.birth_date    !== undefined) { fields.push('birth_date = ?');    args.push(data.birth_date); }
+    const updates: Record<string, unknown> = {};
+    if (data.name          !== undefined) updates.name          = data.name;
+    if (data.email         !== undefined) updates.email         = data.email;
+    if (data.phone         !== undefined) updates.phone         = data.phone;
+    if (data.neighborhood  !== undefined) updates.neighborhood  = data.neighborhood;
+    if (data.city          !== undefined) updates.city          = data.city;
+    if (data.nickname      !== undefined) updates.nickname      = data.nickname;
+    if (data.business      !== undefined) updates.business      = data.business;
+    if (data.notifications !== undefined) updates.notifications = data.notifications === 1;
+    if (data.family_status !== undefined) updates.family_status = data.family_status;
+    if (data.gender        !== undefined) updates.gender        = data.gender;
+    if (data.avatar_url    !== undefined) updates.avatar_url    = data.avatar_url;
+    if (data.birth_date    !== undefined) updates.birth_date    = data.birth_date;
 
-    if (fields.length === 0) return getUserById(id);
+    if (Object.keys(updates).length === 0) return getUserById(id);
 
-    args.push(id);
-    const res = await getClient().execute({
-        sql:  `UPDATE users SET ${fields.join(', ')} WHERE id = ? RETURNING *`,
-        args,
-    });
-    return res.rows[0] as unknown as DbUser | undefined;
+    await strapiPut(`/api/community-users/${existing.documentId}`, { data: updates });
+    return getUserById(id);
 }
 
 // ============================================================
-// ---- Credentials Auth (סיסמאות מוצפנות) ----
+// ---- Credentials Auth ----
 // ============================================================
 
 export async function registerWithCredentials(
@@ -369,9 +377,15 @@ export async function registerWithCredentials(
     const password_hash = await bcrypt.hash(password, 12);
     const id = `credentials_${email}`;
 
-    await getClient().execute({
-        sql:  `INSERT INTO users (id, name, email, provider, password_hash) VALUES (?, ?, ?, 'credentials', ?)`,
-        args: [id, name, email, password_hash],
+    await strapiPost('/api/community-users', {
+        data: {
+            external_id:   id,
+            name,
+            email,
+            provider:      'credentials',
+            password_hash,
+            publishedAt:   new Date().toISOString(),
+        },
     });
 
     return (await getUserById(id))!;
@@ -381,13 +395,16 @@ export async function verifyCredentials(
     email: string,
     password: string,
 ): Promise<DbUser | null> {
-    await ensureSchema();
-    const res = await getClient().execute({
-        sql:  `SELECT * FROM users WHERE email = ? AND provider = 'credentials'`,
-        args: [email],
-    });
-    const row = res.rows[0] as unknown as (DbUser & { password_hash?: string }) | undefined;
+    const res = await strapiGet<{ data: (StrapiCommunityUser & { password_hash?: string })[] }>(
+        '/api/community-users',
+        {
+            'filters[email][$eq]':    email,
+            'filters[provider][$eq]': 'credentials',
+            'pagination[limit]':      '1',
+        },
+    );
+    const row = res.data?.[0];
     if (!row?.password_hash) return null;
     const valid = await bcrypt.compare(password, row.password_hash);
-    return valid ? row : null;
+    return valid ? mapStrapiUser(row) : null;
 }
