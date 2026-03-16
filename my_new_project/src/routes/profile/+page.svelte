@@ -161,6 +161,10 @@
 	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 mb-6 shadow-xl">
 		<!-- כותרת + כפתור התנתקות -->
 		<div class="flex items-center justify-between mb-5">
+			<div class="flex items-center gap-2">
+				<span class="w-6 h-6 rounded-full bg-purple-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">1</span>
+				<h2 class="text-base font-black text-white">{tFn("section_personal_area")}</h2>
+			</div>
 			<button
 				onclick={() => signOut({ callbackUrl: '/' })}
 				class="text-sm font-bold text-gray-400 hover:text-red-400 transition-colors cursor-pointer px-4 py-2 rounded-xl hover:bg-red-500/10 border border-white/10 hover:border-red-500/30"
@@ -168,10 +172,6 @@
 			>
 				{tFn("logout_btn")}
 			</button>
-			<div class="flex items-center gap-2">
-				<span class="w-6 h-6 rounded-full bg-purple-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">1</span>
-				<h2 class="text-base font-black text-white">{tFn("section_personal_area")}</h2>
-			</div>
 		</div>
 		<div class="flex items-center gap-5">
 
