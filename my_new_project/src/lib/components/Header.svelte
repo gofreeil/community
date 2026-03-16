@@ -99,7 +99,7 @@
 
 <header
     class="sticky top-0 z-50 border-b-2 md:border-b-4 border-blue-600 shadow-lg backdrop-blur-lg"
-    style="background: linear-gradient(to bottom, rgb(17, 24, 39) 0%, rgb(17, 24, 39) 66%, rgba(17, 24, 39, 0.2) 100%);"
+    style="background: linear-gradient(to bottom, rgba(17, 24, 39, 0.88) 0%, rgba(17, 24, 39, 0.88) 66%, rgba(17, 24, 39, 0.1) 100%);"
 >
     <div class="relative mx-auto max-w-7xl px-2 sm:px-4 lg:px-8">
         <!-- Mobile Header Area -->
@@ -202,7 +202,7 @@
 
         <!-- Desktop Header - Full Layout -->
         <div
-            class="hidden md:flex flex-col items-center py-2 md:flex-row md:items-center md:justify-between"
+            class="hidden md:flex flex-col items-center pt-2 pb-3 md:flex-row md:items-center md:justify-between"
         >
             <div class="flex items-center space-x-4">
                 <div class="relative group">
@@ -236,7 +236,7 @@
                     >
                         {$t("welcome")}
                     </h1>
-                    <p class="text-sm text-gray-300 font-medium">{$t("app_description")}</p>
+                    <p class="text-base text-gray-200 font-bold">{$t("app_description")}</p>
                 </div>
             </div>
             <div class="flex items-center gap-2">
