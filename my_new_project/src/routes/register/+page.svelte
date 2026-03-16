@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { get } from 'svelte/store';
+	import { t, locale } from 'svelte-i18n';
 
 	let { form } = $props();
 	let isLoading    = $state(false);

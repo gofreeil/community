@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { signIn } from '@auth/sveltekit/client';
+	import { get } from 'svelte/store';
+	import { t, locale } from 'svelte-i18n';
 	import { enhance } from '$app/forms';
 
 	let { data, form } = $props();
