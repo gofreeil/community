@@ -443,39 +443,41 @@
 					{/if}
 				</div>
 
-				<!-- עיר -->
-				<div>
-					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("city_label")}</label>
-					{#if isEditing}
-						<select name="city" bind:value={city} onchange={() => (neighborhood = '')}
-							class="w-full bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl
-							       px-4 py-3 text-white text-sm transition-colors outline-none appearance-none">
-							<option value="">{tFn("choose_city")}</option>
-							{#each (data.citiesData as CityEntry[]) as c}
-								<option value={c.city}>{c.city}</option>
-							{/each}
-						</select>
-					{:else}
-						<p class="text-white font-medium py-3 px-1">{city || '—'}</p>
-					{/if}
-				</div>
-
-				<!-- שכונה -->
-				<div>
-					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("neighborhood_label")}</label>
-					{#if isEditing}
-						<select name="neighborhood" bind:value={neighborhood} disabled={!city}
-							class="w-full bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl
-							       px-4 py-3 text-white text-sm transition-colors outline-none appearance-none
-							       disabled:opacity-40 disabled:cursor-not-allowed">
-							<option value="">{tFn("choose_neighborhood")}</option>
-							{#each availableNeighborhoods as n}
-								<option value={n}>{n}</option>
-							{/each}
-						</select>
-					{:else}
-						<p class="text-white font-medium py-3 px-1">{neighborhood || '—'}</p>
-					{/if}
+				<!-- עיר + שכונה — תמיד ביחד -->
+				<div class="md:col-span-2 grid grid-cols-2 gap-3 rounded-2xl border border-purple-500/20 bg-purple-500/5 p-3">
+					<!-- עיר -->
+					<div>
+						<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("city_label")}</label>
+						{#if isEditing}
+							<select name="city" bind:value={city} onchange={() => (neighborhood = '')}
+								class="w-full bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl
+								       px-4 py-3 text-white text-sm transition-colors outline-none appearance-none">
+								<option value="">{tFn("choose_city")}</option>
+								{#each (data.citiesData as CityEntry[]) as c}
+									<option value={c.city}>{c.city}</option>
+								{/each}
+							</select>
+						{:else}
+							<p class="text-white font-medium py-3 px-1">{city || '—'}</p>
+						{/if}
+					</div>
+					<!-- שכונה -->
+					<div>
+						<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("neighborhood_label")}</label>
+						{#if isEditing}
+							<select name="neighborhood" bind:value={neighborhood} disabled={!city}
+								class="w-full bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl
+								       px-4 py-3 text-white text-sm transition-colors outline-none appearance-none
+								       disabled:opacity-40 disabled:cursor-not-allowed">
+								<option value="">{tFn("choose_neighborhood")}</option>
+								{#each availableNeighborhoods as n}
+									<option value={n}>{n}</option>
+								{/each}
+							</select>
+						{:else}
+							<p class="text-white font-medium py-3 px-1">{neighborhood || '—'}</p>
+						{/if}
+					</div>
 				</div>
 
 				<!-- עסק -->
