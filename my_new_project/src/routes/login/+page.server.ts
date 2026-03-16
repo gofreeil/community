@@ -30,7 +30,7 @@ export const actions: Actions = {
         }
 
         // בדיקה אם המשתמש בכלל קיים
-        const existingUser = getUserByEmail(email);
+        const existingUser = await getUserByEmail(email);
         if (!existingUser) {
             return fail(401, { error: 'אימייל זה לא רשום. האם ברצונך להירשם?' });
         }

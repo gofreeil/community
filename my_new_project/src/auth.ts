@@ -48,7 +48,7 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
     ],
 
     callbacks: {
-        signIn({ user, account }) {
+        async signIn({ user, account }) {
             if (!account || !user) return false;
 
             // Credentials provider — upsert כבר נעשה ב-authorize
@@ -58,7 +58,7 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
             const stableId = `${account.provider}_${account.providerAccountId}`;
 
             try {
-                upsertUser({
+                await upsertUser({
                     id:         stableId,
                     name:       user.name,
                     email:      user.email,

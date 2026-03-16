@@ -2,66 +2,56 @@
 // db.ts — שכבת הנתונים
 //
 // פריטים + קופת קהילה  → Strapi 5 (async)
-// משתמשים              → SQLite מקומי (sync) — תואם auth.js
+// משתמשים              → Turso / libSQL (async, cloud-persistent)
 // ============================================================
 
-import Database from 'better-sqlite3';
-import { join } from 'path';
+import { createClient, type Client } from '@libsql/client';
 import { strapiGet, strapiPost } from './strapiClient.js';
 import bcrypt from 'bcryptjs';
 
 // ============================================================
-// ---- SQLite Singleton (למשתמשים בלבד) ----
+// ---- libSQL Singleton ----
 // ============================================================
 
-const globalDb = globalThis as typeof globalThis & { __communityDb?: Database.Database };
+const globalWithDb = globalThis as typeof globalThis & {
+    __libsqlClient?: Client;
+    __libsqlReady?: boolean;
+};
 
-function getDb(): Database.Database {
-    if (globalDb.__communityDb) return globalDb.__communityDb;
+function getClient(): Client {
+    if (globalWithDb.__libsqlClient) return globalWithDb.__libsqlClient;
+    globalWithDb.__libsqlClient = createClient({
+        url:       process.env.TURSO_DATABASE_URL ?? 'file:community.db',
+        authToken: process.env.TURSO_AUTH_TOKEN,
+    });
+    return globalWithDb.__libsqlClient;
+}
 
-    const dbPath = process.env.NODE_ENV === 'production'
-        ? '/tmp/community.db'
-        : join(process.cwd(), 'community.db');
-
-    const db = new Database(dbPath);
-    globalDb.__communityDb = db;
-    db.pragma('journal_mode = WAL');
-
-    db.exec(`
-      CREATE TABLE IF NOT EXISTS users (
-        id                   TEXT PRIMARY KEY,
-        name                 TEXT,
-        email                TEXT UNIQUE,
-        phone                TEXT DEFAULT '',
-        neighborhood         TEXT DEFAULT '',
-        city                 TEXT DEFAULT '',
-        avatar_url           TEXT,
-        provider             TEXT,
-        password_hash        TEXT,
-        nickname             TEXT DEFAULT '',
-        business             TEXT DEFAULT '',
-        notifications        INTEGER DEFAULT 1,
-        family_status        TEXT DEFAULT '',
-        gender               TEXT DEFAULT '',
-        birth_date           TEXT DEFAULT '',
-        balance              REAL DEFAULT 0,
-        created_at           TEXT DEFAULT (datetime('now'))
-      )
+async function ensureSchema(): Promise<void> {
+    if (globalWithDb.__libsqlReady) return;
+    const db = getClient();
+    await db.executeMultiple(`
+        CREATE TABLE IF NOT EXISTS users (
+            id            TEXT PRIMARY KEY,
+            name          TEXT,
+            email         TEXT UNIQUE,
+            phone         TEXT DEFAULT '',
+            neighborhood  TEXT DEFAULT '',
+            city          TEXT DEFAULT '',
+            avatar_url    TEXT,
+            provider      TEXT,
+            password_hash TEXT,
+            nickname      TEXT DEFAULT '',
+            business      TEXT DEFAULT '',
+            notifications INTEGER DEFAULT 1,
+            family_status TEXT DEFAULT '',
+            gender        TEXT DEFAULT '',
+            birth_date    TEXT DEFAULT '',
+            balance       REAL DEFAULT 0,
+            created_at    TEXT DEFAULT (datetime('now'))
+        );
     `);
-    // מיגרציה — הוסף balance אם לא קיים
-    try { db.exec(`ALTER TABLE users ADD COLUMN balance REAL DEFAULT 0`); } catch {}
-
-    // הוסף עמודות חסרות למסד נתונים קיים
-    const existingCols = db.prepare(`PRAGMA table_info(users)`).all() as {name: string}[];
-    const colNames = existingCols.map(c => c.name);
-    if (!colNames.includes('nickname'))      db.exec(`ALTER TABLE users ADD COLUMN nickname TEXT DEFAULT ''`);
-    if (!colNames.includes('business'))      db.exec(`ALTER TABLE users ADD COLUMN business TEXT DEFAULT ''`);
-    if (!colNames.includes('notifications')) db.exec(`ALTER TABLE users ADD COLUMN notifications INTEGER DEFAULT 1`);
-    if (!colNames.includes('family_status')) db.exec(`ALTER TABLE users ADD COLUMN family_status TEXT DEFAULT ''`);
-    if (!colNames.includes('gender'))        db.exec(`ALTER TABLE users ADD COLUMN gender TEXT DEFAULT ''`);
-    if (!colNames.includes('birth_date'))    db.exec(`ALTER TABLE users ADD COLUMN birth_date TEXT DEFAULT ''`);
-
-    return db;
+    globalWithDb.__libsqlReady = true;
 }
 
 // ============================================================
@@ -116,6 +106,7 @@ export interface DbUser {
     notifications: number;
     family_status: string;
     gender: string;
+    birth_date: string;
     balance: number;
     created_at: string;
 }
@@ -140,6 +131,7 @@ export interface UpdateProfileData {
     family_status?: string;
     gender?: string;
     avatar_url?: string;
+    birth_date?: string;
 }
 
 // ============================================================
@@ -296,63 +288,74 @@ export async function addFundContribution(neighborhood: string, totalPayment: nu
 }
 
 // ============================================================
-// ---- Users (SQLite — נשאר מקומי לצורך auth.js) ----
+// ---- Users (Turso / libSQL — cloud-persistent) ----
 // ============================================================
 
-export function upsertUser(data: UpsertUserData): void {
-    getDb().prepare(`
-        INSERT INTO users (id, name, email, avatar_url, provider)
-        VALUES (@id, @name, @email, @avatar_url, @provider)
-        ON CONFLICT(id) DO UPDATE SET
-            name       = COALESCE(excluded.name, users.name),
-            email      = COALESCE(excluded.email, users.email),
-            avatar_url = CASE
-                WHEN users.avatar_url LIKE 'data:%' THEN users.avatar_url
-                ELSE COALESCE(excluded.avatar_url, users.avatar_url)
-            END,
-            provider   = COALESCE(excluded.provider, users.provider)
-    `).run({
-        id:         data.id,
-        name:       data.name       ?? null,
-        email:      data.email      ?? null,
-        avatar_url: data.avatar_url ?? null,
-        provider:   data.provider   ?? null,
+export async function upsertUser(data: UpsertUserData): Promise<void> {
+    await ensureSchema();
+    await getClient().execute({
+        sql: `INSERT INTO users (id, name, email, avatar_url, provider)
+              VALUES (?, ?, ?, ?, ?)
+              ON CONFLICT(id) DO UPDATE SET
+                  name       = COALESCE(excluded.name, users.name),
+                  email      = COALESCE(excluded.email, users.email),
+                  avatar_url = CASE
+                      WHEN users.avatar_url LIKE 'data:%' THEN users.avatar_url
+                      ELSE COALESCE(excluded.avatar_url, users.avatar_url)
+                  END,
+                  provider   = COALESCE(excluded.provider, users.provider)`,
+        args: [data.id, data.name ?? null, data.email ?? null, data.avatar_url ?? null, data.provider ?? null],
     });
 }
 
-export function getUserById(id: string): DbUser | undefined {
-    return getDb().prepare(`SELECT * FROM users WHERE id = ?`).get(id) as DbUser | undefined;
+export async function getUserById(id: string): Promise<DbUser | undefined> {
+    await ensureSchema();
+    const res = await getClient().execute({
+        sql:  `SELECT * FROM users WHERE id = ?`,
+        args: [id],
+    });
+    return res.rows[0] as unknown as DbUser | undefined;
 }
 
-export function getUserByEmail(email: string): DbUser | undefined {
-    return getDb().prepare(`SELECT * FROM users WHERE email = ?`).get(email) as DbUser | undefined;
+export async function getUserByEmail(email: string): Promise<DbUser | undefined> {
+    await ensureSchema();
+    const res = await getClient().execute({
+        sql:  `SELECT * FROM users WHERE email = ?`,
+        args: [email],
+    });
+    return res.rows[0] as unknown as DbUser | undefined;
 }
 
-export function updateUserProfile(id: string, data: UpdateProfileData): DbUser | undefined {
+export async function updateUserProfile(id: string, data: UpdateProfileData): Promise<DbUser | undefined> {
+    await ensureSchema();
     const fields: string[] = [];
-    const values: Record<string, unknown> = { id };
+    const args: unknown[]  = [];
 
-    if (data.name         !== undefined) { fields.push('name = @name');                 values.name         = data.name; }
-    if (data.email        !== undefined) { fields.push('email = @email');               values.email        = data.email; }
-    if (data.phone        !== undefined) { fields.push('phone = @phone');               values.phone        = data.phone; }
-    if (data.neighborhood !== undefined) { fields.push('neighborhood = @neighborhood'); values.neighborhood = data.neighborhood; }
-    if (data.city         !== undefined) { fields.push('city = @city');                 values.city         = data.city; }
-    if (data.nickname     !== undefined) { fields.push('nickname = @nickname');         values.nickname     = data.nickname; }
-    if (data.business     !== undefined) { fields.push('business = @business');         values.business     = data.business; }
-    if (data.notifications!== undefined) { fields.push('notifications = @notifications'); values.notifications = data.notifications; }
-    if (data.family_status!== undefined) { fields.push('family_status = @family_status'); values.family_status = data.family_status; }
-    if (data.gender       !== undefined) { fields.push('gender = @gender');             values.gender       = data.gender; }
-    if (data.avatar_url   !== undefined) { fields.push('avatar_url = @avatar_url');    values.avatar_url   = data.avatar_url; }
+    if (data.name          !== undefined) { fields.push('name = ?');          args.push(data.name); }
+    if (data.email         !== undefined) { fields.push('email = ?');         args.push(data.email); }
+    if (data.phone         !== undefined) { fields.push('phone = ?');         args.push(data.phone); }
+    if (data.neighborhood  !== undefined) { fields.push('neighborhood = ?');  args.push(data.neighborhood); }
+    if (data.city          !== undefined) { fields.push('city = ?');          args.push(data.city); }
+    if (data.nickname      !== undefined) { fields.push('nickname = ?');      args.push(data.nickname); }
+    if (data.business      !== undefined) { fields.push('business = ?');      args.push(data.business); }
+    if (data.notifications !== undefined) { fields.push('notifications = ?'); args.push(data.notifications); }
+    if (data.family_status !== undefined) { fields.push('family_status = ?'); args.push(data.family_status); }
+    if (data.gender        !== undefined) { fields.push('gender = ?');        args.push(data.gender); }
+    if (data.avatar_url    !== undefined) { fields.push('avatar_url = ?');    args.push(data.avatar_url); }
+    if (data.birth_date    !== undefined) { fields.push('birth_date = ?');    args.push(data.birth_date); }
 
     if (fields.length === 0) return getUserById(id);
 
-    return getDb().prepare(
-        `UPDATE users SET ${fields.join(', ')} WHERE id = @id RETURNING *`
-    ).get(values) as DbUser | undefined;
+    args.push(id);
+    const res = await getClient().execute({
+        sql:  `UPDATE users SET ${fields.join(', ')} WHERE id = ? RETURNING *`,
+        args,
+    });
+    return res.rows[0] as unknown as DbUser | undefined;
 }
 
 // ============================================================
-// ---- Credentials Auth (SQLite — סיסמאות מוצפנות) ----
+// ---- Credentials Auth (סיסמאות מוצפנות) ----
 // ============================================================
 
 export async function registerWithCredentials(
@@ -360,30 +363,31 @@ export async function registerWithCredentials(
     email: string,
     password: string,
 ): Promise<DbUser> {
-    const existing = getUserByEmail(email);
+    const existing = await getUserByEmail(email);
     if (existing) throw new Error('Email already taken');
 
     const password_hash = await bcrypt.hash(password, 12);
     const id = `credentials_${email}`;
 
-    getDb().prepare(`
-        INSERT INTO users (id, name, email, provider, password_hash)
-        VALUES (@id, @name, @email, 'credentials', @password_hash)
-    `).run({ id, name, email, password_hash });
+    await getClient().execute({
+        sql:  `INSERT INTO users (id, name, email, provider, password_hash) VALUES (?, ?, ?, 'credentials', ?)`,
+        args: [id, name, email, password_hash],
+    });
 
-    return getUserById(id)!;
+    return (await getUserById(id))!;
 }
 
 export async function verifyCredentials(
     email: string,
     password: string,
 ): Promise<DbUser | null> {
-    const row = getDb().prepare(
-        `SELECT * FROM users WHERE email = ? AND provider = 'credentials'`
-    ).get(email) as (DbUser & { password_hash?: string }) | undefined;
-
+    await ensureSchema();
+    const res = await getClient().execute({
+        sql:  `SELECT * FROM users WHERE email = ? AND provider = 'credentials'`,
+        args: [email],
+    });
+    const row = res.rows[0] as unknown as (DbUser & { password_hash?: string }) | undefined;
     if (!row?.password_hash) return null;
-
     const valid = await bcrypt.compare(password, row.password_hash);
     return valid ? row : null;
 }

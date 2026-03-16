@@ -12,7 +12,7 @@ export const load: PageServerLoad = async (event) => {
 
     let user, items;
     try {
-        user  = getUserById(session.user.id);
+        user  = await getUserById(session.user.id);
     } catch (e) {
         console.warn('[profile] getUserById failed:', e);
     }
@@ -27,14 +27,14 @@ export const load: PageServerLoad = async (event) => {
     if (!user && session.user?.id) {
         try {
             const provider = (session.user as { provider?: string }).provider ?? 'google';
-            upsertUser({
+            await upsertUser({
                 id:         session.user.id,
                 name:       session.user.name  ?? null,
                 email:      session.user.email ?? null,
                 avatar_url: session.user.image ?? null,
                 provider,
             });
-            user = getUserById(session.user.id);
+            user = await getUserById(session.user.id);
         } catch (e) {
             console.warn('[profile] auto-upsert failed:', e);
         }
@@ -95,7 +95,7 @@ export const actions: Actions = {
         }
 
         try {
-            updateUserProfile(session.user.id, {
+            await updateUserProfile(session.user.id, {
                 name,
                 email,
                 nickname,
