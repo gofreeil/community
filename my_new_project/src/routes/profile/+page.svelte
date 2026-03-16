@@ -591,14 +591,16 @@
 							
 						</span>
 					</label>
-					<button type="submit"
-						disabled={!termsAccepted}
-						class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500
-						       text-white font-bold px-7 py-3 rounded-xl shadow-lg transition-all hover:-translate-y-0.5
-						       cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0"
-					>
-						{tFn("save_changes")}
-					</button>
+					<div class="flex justify-start">
+						<button type="submit"
+							disabled={!termsAccepted}
+							class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500
+							       text-white font-black px-12 py-4 rounded-2xl shadow-xl text-base transition-all hover:-translate-y-0.5
+							       cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+						>
+							{tFn("save_changes")}
+						</button>
+					</div>
 				</div>
 			{/if}
 		</form>
