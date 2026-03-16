@@ -32,6 +32,29 @@
         tooltipY = e.clientY + 18;
     }
 
+    // מעגל מילוי פרופיל בהדר
+    const headerRingC = 2 * Math.PI * 30; // r=30, SVG 68×68
+
+    let headerCompletion = $derived(
+        currentUser ? Math.round([
+            !!currentUser.avatar_url,
+            !!currentUser.name,
+            !!currentUser.nickname,
+            !!currentUser.phone,
+            !!currentUser.city,
+            !!currentUser.neighborhood,
+            !!currentUser.gender,
+            !!currentUser.business,
+            !!currentUser.family_status,
+            !!currentUser.notifications,
+        ].filter(Boolean).length / 10 * 100) : 0
+    );
+
+    let headerRingColor = $derived(
+        headerCompletion < 40 ? '#ef4444' :
+        headerCompletion < 70 ? '#eab308' : '#22c55e'
+    );
+
     // Ads Mode Logic (Mobile Only)
     let showAdsMode = $state(false);
     let currentAdIndex = $state(0);
