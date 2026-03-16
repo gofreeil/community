@@ -1,5 +1,6 @@
 <script lang="ts">
-    import { locale, t } from "svelte-i18n";
+    import { t, locale } from 'svelte-i18n';
+	import { get } from 'svelte/store';
     import { goto } from "$app/navigation";
     import { onMount } from "svelte";
 
@@ -125,6 +126,11 @@
             showLangDropdown = false;
         }
     }
+	// tFn: תרגום reactive — $t אסור ב-Svelte 5
+	let _loc = $state(get(locale));
+	$effect(() => locale.subscribe(l => (_loc = l)));
+	const tFn = (k: string) => (_loc, get(t)(k));
+
 </script>
 
 <header
@@ -159,10 +165,10 @@
                             <h1
                                 class="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-xl font-black text-transparent leading-tight truncate"
                             >
-                                {$t("welcome")}
+                                {tFn("welcome")}
                             </h1>
                             <p class="text-xs text-gray-400 leading-tight truncate">
-                                {$t("app_description")}
+                                {tFn("app_description")}
                             </p>
                         </div>
                     </a>
@@ -187,7 +193,7 @@
                                 onclick={onShowAuth}
                                 class="h-9 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-[11px] font-bold text-white shadow-lg active:scale-95"
                             >
-                                {$t("login_register")}
+                                {tFn("login_register")}
                             </button>
                         {/if}
                     </div>
@@ -264,9 +270,9 @@
                     <h1
                         class="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-3xl font-bold text-transparent"
                     >
-                        {$t("welcome")}
+                        {tFn("welcome")}
                     </h1>
-                    <p class="text-lg text-gray-100 font-extrabold">{$t("app_description")}</p>
+                    <p class="text-lg text-gray-100 font-extrabold">{tFn("app_description")}</p>
                 </div>
             </div>
             <div class="flex items-center gap-2">
@@ -289,7 +295,7 @@
                             style="font-size: 1.5rem; margin-left: 0.75rem;"
                         ></span>
                         {languages.find((l) => l.code === $locale)?.name ||
-                            $t("hello")}
+                            tFn("hello")}
                         <svg
                             class="mr-1 h-4 w-4"
                             fill="none"
@@ -374,7 +380,7 @@
                             onclick={onShowAuth}
                             class="transform rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-3 font-medium text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl"
                         >
-                            {$t("login_register")}
+                            {tFn("login_register")}
                         </button>
                     {/if}
                 </div>
