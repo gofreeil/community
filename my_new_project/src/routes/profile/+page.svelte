@@ -110,6 +110,26 @@
 		profileCompletion < 70 ? '#eab308' : '#22c55e'
 	);
 
+	// טיפ למעגל — המפתח של השדה הבא שלא מולא
+	const ringTipKeys = [
+		'tip_avatar', 'tip_name', 'tip_email', 'tip_nickname',
+		'tip_phone', 'tip_city', 'tip_neighborhood', 'tip_gender',
+		'tip_business', 'tip_family_status', 'tip_notifications',
+	] as const;
+	let nextTipKey = $derived(
+		profileCompletion >= 100
+			? 'profile_complete'
+			: ringTipKeys[profileFields.findIndex(f => !f)] ?? 'profile_complete'
+	);
+
+	let showRingTooltip = $state(false);
+	let ringTipX = $state(0);
+	let ringTipY = $state(0);
+	function handleRingMouseMove(e: MouseEvent) {
+		ringTipX = e.clientX + 14;
+		ringTipY = e.clientY + 20;
+	}
+
 	function handleImageChange(e: Event) {
 		const file = (e.target as HTMLInputElement).files?.[0];
 		if (!file) return;
@@ -142,7 +162,13 @@
 		<div class="flex items-center gap-5 relative">
 
 			<!-- אווטר + מעגל מילוי -->
-			<div class="relative flex-shrink-0 mb-3">
+			<div class="relative flex-shrink-0 mb-3 cursor-pointer"
+				onmouseenter={() => (showRingTooltip = true)}
+				onmouseleave={() => (showRingTooltip = false)}
+				onmousemove={handleRingMouseMove}
+				role="img"
+				aria-label={tFn(nextTipKey)}
+			>
 				{#if avatarPreview}
 					<img src={avatarPreview} alt={tFn("profile_photo")}
 						class="w-20 h-20 rounded-full border-2 border-purple-500/40 shadow-xl object-cover" />
@@ -574,6 +600,18 @@
 		style="left: {editTooltipX}px; top: {editTooltipY}px;">
 		<div class="bg-gray-900 text-white text-xs rounded-lg px-3 py-1.5 shadow-xl whitespace-nowrap border border-white/10">
 			{tFn("edit_tooltip")}
+		</div>
+	</div>
+{/if}
+
+{#if showRingTooltip}
+	<div class="fixed z-[9999] pointer-events-none"
+		style="left: {ringTipX}px; top: {ringTipY}px;">
+		<div class="text-xs rounded-lg px-3 py-2 shadow-xl whitespace-nowrap border
+		            {profileCompletion >= 100
+		              ? 'bg-green-900/90 text-green-300 border-green-500/30'
+		              : 'bg-gray-900/95 text-yellow-300 border-yellow-500/30'}">
+			{tFn(nextTipKey)}
 		</div>
 	</div>
 {/if}
