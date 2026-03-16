@@ -219,10 +219,6 @@
 					{profileCompletion}%
 				</div>
 
-				<!-- אייקון ספק -->
-				<span class="absolute top-0 left-0 text-base leading-none">
-					{data.user?.provider === 'google' ? '🔵' : data.user?.provider === 'facebook' ? '🟦' : '👤'}
-				</span>
 			</div>
 
 
