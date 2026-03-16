@@ -131,6 +131,9 @@
                             >
                                 {$t("welcome")}
                             </h1>
+                            <p class="text-xs text-gray-400 leading-tight truncate">
+                                {$t("app_description")}
+                            </p>
                         </div>
                     </a>
 
@@ -233,6 +236,7 @@
                     >
                         {$t("welcome")}
                     </h1>
+                    <p class="text-sm text-gray-300 font-medium">{$t("app_description")}</p>
                 </div>
             </div>
             <div class="flex items-center gap-2">
@@ -355,9 +359,8 @@
         class="fixed z-[9999] pointer-events-none"
         style="left: {tooltipX}px; top: {tooltipY}px;"
     >
-        <div class="bg-gray-900 text-white text-xs rounded-lg px-3 py-2 shadow-xl whitespace-nowrap border border-white/10 text-center">
-            <div class="font-semibold">{$t("app_description")}</div>
-            <div class="text-gray-400 mt-0.5">✏️ ערוך פרופיל</div>
+        <div class="bg-gray-900 text-white text-xs rounded-lg px-3 py-1.5 shadow-xl whitespace-nowrap border border-white/10">
+            ✏️ ערוך פרופיל
         </div>
     </div>
 {/if}
