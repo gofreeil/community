@@ -3,13 +3,11 @@ import Google from '@auth/sveltekit/providers/google';
 import Facebook from '@auth/sveltekit/providers/facebook';
 import Credentials from '@auth/sveltekit/providers/credentials';
 import { upsertUser, verifyCredentials } from '$lib/server/db';
-import {
-    AUTH_SECRET,
-    AUTH_GOOGLE_ID,
-    AUTH_GOOGLE_SECRET,
-    AUTH_FACEBOOK_ID,
-    AUTH_FACEBOOK_SECRET,
-} from '$env/dynamic/private';
+const AUTH_SECRET         = process.env.AUTH_SECRET         ?? '';
+const AUTH_GOOGLE_ID      = process.env.AUTH_GOOGLE_ID      ?? '';
+const AUTH_GOOGLE_SECRET  = process.env.AUTH_GOOGLE_SECRET  ?? '';
+const AUTH_FACEBOOK_ID    = process.env.AUTH_FACEBOOK_ID    ?? '';
+const AUTH_FACEBOOK_SECRET= process.env.AUTH_FACEBOOK_SECRET?? '';
 
 export const { handle, signIn, signOut } = SvelteKitAuth({
     secret: AUTH_SECRET,
