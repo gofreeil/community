@@ -213,10 +213,9 @@
 			</div>
 
 			<!-- הארנק שלי — משמאל לתמונת הפרופיל -->
-			<div class="flex-shrink-0 flex flex-col items-center gap-2 cursor-pointer group select-none">
-				<img src="/images/כרטיס אשראי מזומן.png" alt="הארנק שלי"
-					class="w-24 h-auto rounded-xl shadow-lg group-hover:scale-105 transition-transform duration-200 border border-white/10" />
-				<span class="text-xs text-gray-300 font-bold">הארנק שלי</span>
+			<div class="flex-shrink-0 cursor-pointer group select-none" title="הארנק שלי">
+				<img src="/images/wallet.png" alt="הארנק שלי"
+					class="w-32 h-auto rounded-xl shadow-lg group-hover:scale-105 transition-transform duration-200 border border-white/10" />
 			</div>
 
 			<div class="min-w-0 flex-1">
