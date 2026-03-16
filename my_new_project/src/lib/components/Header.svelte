@@ -244,7 +244,7 @@
                 <div class="relative group">
                     <a
                         href="/"
-                        class="flex h-12 w-12 animate-pulse-slow items-center justify-center rounded-xl shadow-lg transition-transform hover:scale-105"
+                        class="flex h-16 w-16 animate-pulse-slow items-center justify-center rounded-xl shadow-lg transition-transform hover:scale-105"
                     >
                         <img
                             src="/images/logos/לוגו2.png"
