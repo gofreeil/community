@@ -38,6 +38,7 @@ export const actions: Actions = {
 
         const formData      = await event.request.formData();
         const name          = formData.get('name')?.toString().trim()          ?? '';
+        const email         = formData.get('email')?.toString().trim()         ?? '';
         const nickname      = formData.get('nickname')?.toString().trim()      ?? '';
         const phone         = formData.get('phone')?.toString().trim()         ?? '';
         const city          = formData.get('city')?.toString().trim()          ?? '';
@@ -55,6 +56,7 @@ export const actions: Actions = {
         try {
             updateUserProfile(session.user.id, {
                 name,
+                email,
                 nickname,
                 phone,
                 city,

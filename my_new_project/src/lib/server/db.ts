@@ -124,6 +124,7 @@ export interface UpsertUserData {
 
 export interface UpdateProfileData {
     name?: string;
+    email?: string;
     phone?: string;
     neighborhood?: string;
     city?: string;
@@ -323,6 +324,7 @@ export function updateUserProfile(id: string, data: UpdateProfileData): DbUser |
     const values: Record<string, unknown> = { id };
 
     if (data.name         !== undefined) { fields.push('name = @name');                 values.name         = data.name; }
+    if (data.email        !== undefined) { fields.push('email = @email');               values.email        = data.email; }
     if (data.phone        !== undefined) { fields.push('phone = @phone');               values.phone        = data.phone; }
     if (data.neighborhood !== undefined) { fields.push('neighborhood = @neighborhood'); values.neighborhood = data.neighborhood; }
     if (data.city         !== undefined) { fields.push('city = @city');                 values.city         = data.city; }

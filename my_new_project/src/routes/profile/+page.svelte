@@ -22,6 +22,7 @@
 	let avatarBase64  = $state('');
 
 	let name          = $state(data.user?.name          ?? '');
+	let email         = $state(data.user?.email         ?? '');
 	let nickname      = $state(data.user?.nickname      ?? '');
 	let phone         = $state(data.user?.phone         ?? '');
 	let city          = $state(data.user?.city          ?? '');
@@ -39,6 +40,7 @@
 			if (saved) {
 				const draft = JSON.parse(saved);
 				if (draft.name)          name          = draft.name;
+				if (draft.email)         email         = draft.email;
 				if (draft.nickname)      nickname      = draft.nickname;
 				if (draft.phone)         phone         = draft.phone;
 				if (draft.city)          city          = draft.city;
@@ -55,7 +57,7 @@
 	$effect(() => {
 		try {
 			localStorage.setItem(DRAFT_KEY, JSON.stringify({
-				name, nickname, phone, city, neighborhood, business, family_status, gender, notifications
+				name, email, nickname, phone, city, neighborhood, business, family_status, gender, notifications
 			}));
 		} catch {}
 	});
@@ -88,6 +90,7 @@
 	let profileFields = $derived([
 		!!avatarPreview,
 		!!name,
+		!!email,
 		!!nickname,
 		!!phone,
 		!!city,
@@ -307,7 +310,20 @@
 					{/if}
 				</div>
 
-				<!-- כינוי -->
+				<!-- אימייל -->
+				<div>
+					<label for="email" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("email")}</label>
+					{#if isEditing}
+						<input id="email" name="email" type="email" bind:value={email}
+							autocomplete="email"
+							class="w-full bg-white/5 border border-white/10 focus:border-purple-500/50 rounded-xl
+							       px-4 py-3 text-white text-sm transition-colors outline-none" />
+					{:else}
+						<p class="text-white font-medium py-3 px-1">{email || '—'}</p>
+					{/if}
+				</div>
+
+			<!-- כינוי -->
 				<div>
 					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("nickname_label")}</label>
 					{#if isEditing}
