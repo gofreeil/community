@@ -103,6 +103,11 @@ register('he', () => Promise.resolve({
     select_city_neighborhood: "בחר עיר ושכונה",
     close: "סגור",
 
+    // קומות דף פרופיל
+    section_personal_area:   "האזור האישי",
+    section_profile_details: "פרטי פרופיל",
+    section_my_info:         "המידע שלי",
+
     // דף פרופיל
     profile_complete: "🎉 הפרופיל שלך מלא לחלוטין!",
     tip_avatar:        "💡 הוסף תמונת פרופיל",
@@ -283,6 +288,9 @@ register('en', () => Promise.resolve({
     wish_added: "Wish added successfully!",
     wish_added_wall: "Your wish was added to the wall",
     back_home: "Back to Home",
+    section_personal_area:   "Personal Area",
+    section_profile_details: "Profile Details",
+    section_my_info:         "My Information",
 
     select_city_neighborhood: "Select City and Neighborhood",
     close: "Close",

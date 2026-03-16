@@ -157,8 +157,12 @@
 		</div>
 	{/if}
 
-	<!-- ===== Header Card ===== -->
+	<!-- ===== קומה 1: האזור האישי ===== -->
 	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 mb-6 shadow-xl">
+		<div class="flex items-center gap-2 mb-5">
+			<span class="w-6 h-6 rounded-full bg-purple-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">1</span>
+			<h2 class="text-base font-black text-white">{tFn("section_personal_area")}</h2>
+		</div>
 		<div class="flex items-center gap-5 relative">
 
 			<!-- אווטר + מעגל מילוי -->
@@ -251,13 +255,13 @@
 		</div>
 	</div>
 
-	<!-- ===== פרטים אישיים ===== -->
+	<!-- ===== קומה 2: פרטי פרופיל ===== -->
 	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 mb-6 shadow-xl">
 
 		<div class="flex items-center justify-between mb-6">
 			<h2 class="text-xl font-black text-white flex items-center gap-2">
-				<span class="w-1.5 h-7 bg-purple-500 rounded-full inline-block"></span>
-				{tFn("personal_details")}
+				<span class="w-6 h-6 rounded-full bg-purple-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">2</span>
+				{tFn("section_profile_details")}
 			</h2>
 			<button
 				onclick={() => { isEditing = !isEditing; saveSuccess = false; }}
@@ -538,11 +542,11 @@
 		</form>
 	</div>
 
-	<!-- ===== הפרסומות שלי ===== -->
+	<!-- ===== קומה 3: המידע שלי ===== -->
 	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl">
 		<h2 class="text-xl font-black text-white flex items-center gap-2 mb-6">
-			<span class="w-1.5 h-7 bg-blue-500 rounded-full inline-block"></span>
-			{tFn("my_publications")}
+			<span class="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">3</span>
+			{tFn("section_my_info")}
 			{#if data.items.length > 0}
 				<span class="text-xs bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2.5 py-0.5 rounded-full font-bold">
 					{data.items.length}
