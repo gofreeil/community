@@ -57,6 +57,16 @@
 		try { localStorage.removeItem(DRAFT_KEY); } catch {}
 	}
 
+	// טולטיפ כפתור עריכה
+	let showEditTooltip = $state(false);
+	let editTooltipX    = $state(0);
+	let editTooltipY    = $state(0);
+
+	function handleEditMouseMove(e: MouseEvent) {
+		editTooltipX = e.clientX + 14;
+		editTooltipY = e.clientY + 20;
+	}
+
 	let availableNeighborhoods = $derived(
 		(data.citiesData as CityEntry[]).find((c) => c.city === city)?.neighborhoods ?? []
 	);
@@ -535,3 +545,12 @@
 	</div>
 
 </div>
+
+{#if showEditTooltip}
+	<div class="fixed z-[9999] pointer-events-none"
+		style="left: {editTooltipX}px; top: {editTooltipY}px;">
+		<div class="bg-gray-900 text-white text-xs rounded-lg px-3 py-1.5 shadow-xl whitespace-nowrap border border-white/10">
+			ניתן לערוך את הפרופיל בכל עת
+		</div>
+	</div>
+{/if}
