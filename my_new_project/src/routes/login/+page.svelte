@@ -214,7 +214,7 @@
 					<p class="text-center text-sm text-gray-500">
 						{$t("no_account")}
 						<a href="/register" class="text-purple-400 hover:text-purple-300 font-medium transition-colors">
-							הירשם כאן
+							{$t("register_here")}
 						</a>
 					</p>
 				{/if}
@@ -236,7 +236,7 @@
 		<!-- קישור חזרה -->
 		<div class="text-center mt-6">
 			<a href="/" class="text-gray-500 hover:text-gray-400 text-sm transition-colors">
-				← חזרה לדף הבית
+				{$t("back_home_arrow")}
 			</a>
 		</div>
 

@@ -175,7 +175,7 @@
 				<p class="mt-6 text-center text-sm text-gray-500">
 					{$t("already_registered")}
 					<a href="/login" class="text-purple-400 hover:text-purple-300 font-medium transition-colors">
-						התחבר כאן
+						{$t("login_here")}
 					</a>
 				</p>
 
@@ -185,7 +185,7 @@
 		<!-- קישור חזרה -->
 		<div class="text-center mt-6">
 			<a href="/" class="text-gray-500 hover:text-gray-400 text-sm transition-colors">
-				← חזרה לדף הבית
+				{$t("back_home_arrow")}
 			</a>
 		</div>
 
