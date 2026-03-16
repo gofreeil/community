@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { onMount } from "svelte";
     import { t } from "svelte-i18n";
     import JerusalemMap from "$lib/components/JerusalemMap.svelte";
     import NewsTicker from "$lib/components/NewsTicker.svelte";
@@ -6,22 +7,25 @@
     import FacebookComments from "$lib/components/FacebookComments.svelte";
     import ReferendumBanner from "$lib/components/ReferendumBanner.svelte";
 
-    import { citiesAndNeighborhoods, LS_KEY, DEFAULT_NEIGHBORHOOD } from "$lib/neighborhoodsData";
-    import { browser } from "$app/environment";
+    import { citiesAndNeighborhoods } from "$lib/neighborhoodsData";
+    import { neighborhoodState } from "$lib/neighborhoodState.svelte";
     import type { PageData } from './$types';
 
     let { data }: { data: PageData } = $props();
 
     let showNeighborhoodsMenu = $state(false);
 
+    onMount(() => {
+        // אתחל עם נתוני פרופיל מהשרת (או localStorage כ-fallback)
+        neighborhoodState.init(data.userNeighborhood, data.userCity);
+    });
+
     function handleToggleMenu() {
         showNeighborhoodsMenu = !showNeighborhoodsMenu;
     }
 
     function selectNeighborhood(neighborhood: string, city: string) {
-        if (browser) {
-            localStorage.setItem(LS_KEY, JSON.stringify({ neighborhood, city }));
-        }
+        neighborhoodState.select(neighborhood, city);
         showNeighborhoodsMenu = false;
     }
 </script>
@@ -40,7 +44,7 @@
                     <h2
                         class="text-[2.2rem] md:text-2xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent cursor-default leading-tight w-full"
                     >
-                        יתרונות שכונת ק' משה
+                        יתרונות שכונת {neighborhoodState.neighborhood}
                     </h2>
                 </div>
                 <div class="relative flex items-center w-full">
@@ -58,7 +62,7 @@
                         <h2
                             class="text-[2.2rem] md:text-2xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent cursor-default leading-tight"
                         >
-                            ירושלים
+                            {neighborhoodState.city}
                         </h2>
                     </div>
                 </div>
@@ -70,7 +74,7 @@
                     <h2
                         class="text-5xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent cursor-default"
                     >
-                        יתרונות שכונת קרית משה, ירושלים
+                        יתרונות שכונת {neighborhoodState.neighborhood}, {neighborhoodState.city}
                     </h2>
                     <!-- Tooltip -->
                     <div

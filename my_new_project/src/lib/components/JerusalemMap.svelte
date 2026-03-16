@@ -5,7 +5,8 @@
     import { slide } from "svelte/transition";
     import { goto } from "$app/navigation";
     import { items as itemsData } from "$lib/itemsData";
-    import { citiesAndNeighborhoods, LS_KEY, DEFAULT_NEIGHBORHOOD } from "$lib/neighborhoodsData";
+    import { citiesAndNeighborhoods } from "$lib/neighborhoodsData";
+    import { neighborhoodState } from "$lib/neighborhoodState.svelte";
     import type { DbItem } from "$lib/server/db";
 
     const dispatch = createEventDispatcher();
@@ -189,9 +190,15 @@
     let selectedCategory = $state("benefits");
     let isAutoSwitching = $state(false);
     let userInteracted = $state(false);
-    let selectedNeighborhood = $state("קרית משה");
-    let selectedNeighborhoodCity = $state("ירושלים");
     let selectedCity = $state("");
+
+    // פריטים מהשכונה הנוכחית — ריאקטיבי לשינויי neighborhoodState
+    let neighborhoodDbItems = $derived(
+        dbItems.filter(d =>
+            d.neighborhood === neighborhoodState.neighborhood ||
+            (d.neighborhood === '' && d.city === neighborhoodState.city)
+        )
+    );
     let hasShownListAnimation = $state(false); // עקוב אם כבר הראינו את האנימציה
     let communityHelpCount = $state(135);
     const currentYear = new Date().getFullYear();
@@ -247,7 +254,7 @@
 
     // פונקציה לקבלת כתובת המפה
     function getMapUrl(): string {
-        const key = selectedNeighborhood;
+        const key = neighborhoodState.neighborhood;
         return neighborhoodMaps[key] || neighborhoodMaps["קרית משה"]; // ברירת מחדל
     }
 
@@ -432,13 +439,15 @@
     }
 
     function selectNeighborhood(city: string, neighborhood: string) {
-        selectedNeighborhood = neighborhood;
-        selectedNeighborhoodCity = city;
+        neighborhoodState.select(neighborhood, city);
         showNeighborhoodsMenu = false;
         selectedCity = "";
     }
 
     onMount(() => {
+        // אתחל שכונה מ-localStorage (אם הדף הראשי לא אתחל כבר)
+        neighborhoodState.init();
+
         // אנימציה של רשימה פעם אחת בלבד! מצוין כמשיכת תשומת לב
         listAnimationTimeout = setTimeout(() => {
             // בצע רק אם המשתמש לא לחץ או שינה לפני כן
@@ -849,7 +858,7 @@
                 </div>
 
                 <iframe
-                    title="מפת {selectedNeighborhood}, {selectedNeighborhoodCity}"
+                    title="מפת {neighborhoodState.neighborhood}, {neighborhoodState.city}"
                     width="100%"
                     height="100%"
                     style="border:0"
@@ -860,14 +869,14 @@
                 >
                 </iframe>
 
-                <!-- Badge לפריטים חדשים -->
-                {#if dbItems.length > 0}
+                <!-- Badge לפריטים חדשים בשכונה -->
+                {#if neighborhoodDbItems.length > 0}
                     <button
                         onclick={() => handleViewToggle(false)}
                         class="absolute bottom-4 left-4 z-20 bg-green-600/90 backdrop-blur-sm text-white text-xs font-black px-3 py-1.5 rounded-full shadow-lg border border-green-400/50 hover:bg-green-500/90 transition-all hover:scale-105"
                         title="עבור לרשימה לצפייה בפריטים החדשים"
                     >
-                        🆕 {dbItems.length} פריטים חדשים — לחץ לצפייה
+                        🆕 {neighborhoodDbItems.length} פריטים ב{neighborhoodState.neighborhood} — לחץ לצפייה
                     </button>
                 {/if}
             </div>
@@ -879,7 +888,11 @@
             >
                 <div class="space-y-2 md:space-y-3">
                     {#each categories.filter((cat) => cat.id !== "benefits") as category}
-                        {@const categoryDbItems = dbItems.filter(d => d.category === category.id)}
+                        {@const categoryDbItems = dbItems.filter(d =>
+                            d.category === category.id &&
+                            (d.neighborhood === neighborhoodState.neighborhood ||
+                             (d.neighborhood === '' && d.city === neighborhoodState.city))
+                        )}
                         {@const totalItems = (category.items?.length || 0) + categoryDbItems.length}
                         {@const hasNationalPage = ['singles','security','attractions','jobs'].includes(category.id)}
                         <div
@@ -1041,7 +1054,7 @@
             class="hidden md:block absolute bottom-4 right-4 bg-purple-600/90 backdrop-blur-md text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-lg"
         >
             {viewMode === "map"
-                ? `📍 מפת הקהילה - ${selectedNeighborhood}, ${selectedNeighborhoodCity}`
+                ? `📍 מפת הקהילה - ${neighborhoodState.neighborhood}, ${neighborhoodState.city}`
                 : "📋 רשימת שירותים"}
         </div>
 

@@ -6,6 +6,7 @@
 	import type { CityEntry } from '$lib/neighborhoodsData';
 	import { t, locale } from 'svelte-i18n';
 	import { get } from 'svelte/store';
+	import { neighborhoodState } from '$lib/neighborhoodState.svelte';
 
 	let { data, form } = $props();
 
@@ -305,6 +306,10 @@
 						isEditing = false;
 						saveSuccess = true;
 						clearDraft();
+						// סנכרן שכונה ועיר לstate המשותף → מעדכן דף הבית + מפה
+						if (neighborhood && city) {
+							neighborhoodState.select(neighborhood, city);
+						}
 						setTimeout(() => (saveSuccess = false), 4000);
 					} else {
 						await update();
