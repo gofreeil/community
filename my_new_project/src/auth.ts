@@ -81,6 +81,7 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
                     ? user.id
                     : `${account.provider}_${account.providerAccountId}`;
                 token.provider = account.provider;
+                if (user.email) token.email = user.email;
             }
             // שמור Strapi JWT (רק ב-credentials login)
             if (user && (user as { strapiJwt?: string }).strapiJwt) {
@@ -92,6 +93,9 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
         session({ session, token }) {
             if (token.dbUserId) {
                 session.user.id = token.dbUserId as string;
+            }
+            if (token.email) {
+                session.user.email = token.email as string;
             }
             if (token.provider) {
                 (session.user as { provider?: string }).provider = token.provider as string;
