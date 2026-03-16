@@ -198,10 +198,10 @@
 					class="absolute pointer-events-none"
 					style="top: -6px; left: -6px; transform: rotate(-90deg)">
 					<circle cx="46" cy="46" r="43" fill="none"
-						stroke="rgba(255,255,255,0.08)" stroke-width="3.5" />
+						stroke="rgba(255,255,255,0.08)" stroke-width="6" />
 					<circle cx="46" cy="46" r="43" fill="none"
 						stroke={ringColor}
-						stroke-width="3.5"
+						stroke-width="6"
 						stroke-linecap="round"
 						stroke-dasharray={ringCircumference}
 						stroke-dashoffset={ringCircumference * (1 - profileCompletion / 100)}
