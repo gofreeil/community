@@ -212,11 +212,6 @@
 				</span>
 			</div>
 
-			<!-- הארנק שלי — משמאל לתמונת הפרופיל -->
-			<div class="flex-shrink-0 cursor-pointer group select-none" title="הארנק שלי">
-				<img src="/images/wallet.png" alt="הארנק שלי"
-					class="w-32 h-auto rounded-xl shadow-lg group-hover:scale-105 transition-transform duration-200 border border-white/10" />
-			</div>
 
 			<div class="min-w-0 flex-1">
 				<h1 class="text-2xl font-black text-white truncate">
@@ -242,6 +237,12 @@
 						</span>
 					{/if}
 				</div>
+			</div>
+			<!-- הארנק שלי — קצה שמאל -->
+			<div class="flex-shrink-0 flex flex-col items-center gap-1.5 cursor-pointer group select-none ms-auto">
+				<img src="/images/wallet.png" alt="המזומן שלי"
+					class="w-40 h-auto rounded-3xl shadow-xl group-hover:scale-105 transition-transform duration-200 border-2 border-white/10" />
+				<span class="text-xs text-gray-300 font-bold">המזומן שלי</span>
 			</div>
 
 			<button
