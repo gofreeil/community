@@ -300,7 +300,10 @@ export function upsertUser(data: UpsertUserData): void {
         ON CONFLICT(id) DO UPDATE SET
             name       = COALESCE(excluded.name, users.name),
             email      = COALESCE(excluded.email, users.email),
-            avatar_url = COALESCE(excluded.avatar_url, users.avatar_url),
+            avatar_url = CASE
+                WHEN users.avatar_url LIKE 'data:%' THEN users.avatar_url
+                ELSE COALESCE(excluded.avatar_url, users.avatar_url)
+            END,
             provider   = COALESCE(excluded.provider, users.provider)
     `).run({
         id:         data.id,
