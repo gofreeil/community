@@ -123,11 +123,6 @@
                             >
                                 {$t("welcome")}
                             </h1>
-                            <p
-                                class="text-sm text-gray-400 leading-tight truncate font-medium tracking-tight"
-                            >
-                                {$t("app_description")}
-                            </p>
                         </div>
                     </a>
 
@@ -196,7 +191,7 @@
 
         <!-- Desktop Header - Full Layout -->
         <div
-            class="hidden md:flex flex-col items-center py-6 md:flex-row md:items-center md:justify-between"
+            class="hidden md:flex flex-col items-center py-2 md:flex-row md:items-center md:justify-between"
         >
             <div class="flex items-center space-x-4">
                 <div class="relative group">
@@ -230,9 +225,6 @@
                     >
                         {$t("welcome")}
                     </h1>
-                    <p class="font-medium text-gray-200 text-base">
-                        {$t("app_description")}
-                    </p>
                 </div>
             </div>
             <div class="flex items-center gap-2">
@@ -329,8 +321,9 @@
                                 {/if}
                                 <!-- Tooltip -->
                                 <div class="absolute top-full left-1/2 -translate-x-1/2 mt-2 hidden group-hover:block z-[9999]">
-                                    <div class="bg-gray-900 text-white text-xs rounded-lg px-3 py-1.5 shadow-xl whitespace-nowrap border border-white/10">
-                                        ✏️ ערוך פרופיל
+                                    <div class="bg-gray-900 text-white text-xs rounded-lg px-3 py-2 shadow-xl whitespace-nowrap border border-white/10 text-center">
+                                        <div class="font-semibold mb-0.5">{$t("app_description")}</div>
+                                        <div class="text-gray-400">✏️ ערוך פרופיל</div>
                                         <div class="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-gray-900"></div>
                                     </div>
                                 </div>
