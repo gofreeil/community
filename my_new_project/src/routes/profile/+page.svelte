@@ -705,7 +705,7 @@
 						disabled={!termsAccepted}
 						class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500
 						       text-white font-black px-8 py-3 rounded-2xl shadow-xl text-sm transition-all hover:-translate-y-0.5
-						       cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 self-start"
+						       cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 self-end"
 					>
 						{tFn("save_changes")}
 					</button>
