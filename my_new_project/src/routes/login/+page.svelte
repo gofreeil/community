@@ -90,6 +90,7 @@
 				{#if mode === 'oauth'}
 					<!-- כפתור Google -->
 					<button
+						type="button"
 						onclick={() => loginWith('google')}
 						disabled={isLoading}
 						class="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-50 active:bg-gray-100
@@ -112,6 +113,7 @@
 
 					<!-- כפתור Facebook -->
 					<button
+						type="button"
 						onclick={() => loginWith('facebook')}
 						disabled={isLoading}
 						class="w-full flex items-center justify-center gap-3 bg-[#1877F2] hover:bg-[#166FE5] active:bg-[#1466D4]
@@ -138,6 +140,7 @@
 
 					<!-- מעבר לאימייל/סיסמה -->
 					<button
+						type="button"
 						onclick={() => (mode = 'email')}
 						class="w-full py-3 px-6 rounded-2xl border border-white/10 text-gray-300 hover:text-white
 						       hover:border-white/20 hover:bg-white/5 transition-all duration-200 text-sm font-medium cursor-pointer"
@@ -211,6 +214,7 @@
 
 					<!-- חזרה ל-OAuth -->
 					<button
+						type="button"
 						onclick={() => (mode = 'oauth')}
 						class="w-full py-2 text-sm text-gray-500 hover:text-gray-400 transition-colors cursor-pointer mb-4"
 					>
