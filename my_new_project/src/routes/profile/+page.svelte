@@ -223,6 +223,14 @@
 			</div>
 
 
+			<!-- הארנק שלי — ממורכז -->
+			<div class="flex-shrink-0 flex flex-col items-center gap-2 cursor-pointer group select-none">
+				<div class="w-52 overflow-hidden rounded-[2.5rem] shadow-xl border-2 border-white/10 group-hover:scale-105 transition-transform duration-200">
+					<img src="/images/wallet.png" alt="המזומן שלי" class="w-full h-auto block" />
+				</div>
+				<span class="text-xs text-gray-300 font-bold">המזומן שלי</span>
+			</div>
+
 			<div class="min-w-0 flex-1">
 				<h1 class="text-2xl font-black text-white truncate">
 					{data.user?.nickname || data.user?.name || ''}
@@ -247,13 +255,6 @@
 						</span>
 					{/if}
 				</div>
-			</div>
-			<!-- הארנק שלי — ממורכז -->
-			<div class="flex-shrink-0 flex flex-col items-center gap-2 cursor-pointer group select-none">
-				<div class="w-52 overflow-hidden rounded-[2.5rem] shadow-xl border-2 border-white/10 group-hover:scale-105 transition-transform duration-200">
-					<img src="/images/wallet.png" alt="המזומן שלי" class="w-full h-auto block" />
-				</div>
-				<span class="text-xs text-gray-300 font-bold">המזומן שלי</span>
 			</div>
 
 		</div>
