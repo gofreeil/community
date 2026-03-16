@@ -38,6 +38,17 @@
 	let notifications  = $state(data.user?.notifications !== 0);
 	let termsAccepted  = $state(false);
 
+	// ===== חיתוך תמונה =====
+	const CROP_VP    = 280;
+	let showCrop     = $state(false);
+	let cropSrc      = $state('');
+	let cropScale    = $state(1);
+	let cropMinScale = $state(0.5);
+	let cropOffsetX  = $state(0);
+	let cropOffsetY  = $state(0);
+	let cropNatW     = $state(0);
+	let cropNatH     = $state(0);
+
 	// טען טיוטה מ-localStorage — תמיד, כדי לשחזר שינויים שלא נשמרו
 	onMount(() => {
 		try {
@@ -140,10 +151,105 @@
 		if (!file) return;
 		const reader = new FileReader();
 		reader.onload = (ev) => {
-			avatarPreview = ev.target?.result as string;
-			avatarBase64  = ev.target?.result as string;
+			cropSrc     = ev.target?.result as string;
+			cropOffsetX = 0;
+			cropOffsetY = 0;
+			showCrop    = true;
 		};
 		reader.readAsDataURL(file);
+	}
+
+	function onCropLoad(e: Event) {
+		const img    = e.target as HTMLImageElement;
+		cropNatW     = img.naturalWidth;
+		cropNatH     = img.naturalHeight;
+		const minS   = Math.max(CROP_VP / cropNatW, CROP_VP / cropNatH);
+		cropMinScale = minS;
+		cropScale    = minS;
+		cropOffsetX  = 0;
+		cropOffsetY  = 0;
+	}
+
+	function cropInteraction(node: HTMLElement) {
+		let dragging = false, sx = 0, sy = 0, sox = 0, soy = 0;
+
+		function wheel(ev: WheelEvent) {
+			ev.preventDefault();
+			const f = ev.deltaY > 0 ? 0.92 : 1.09;
+			cropScale = Math.max(cropMinScale, Math.min(cropScale * f, cropMinScale * 6));
+		}
+		function mdown(ev: MouseEvent) {
+			dragging = true; sx = ev.clientX; sy = ev.clientY; sox = cropOffsetX; soy = cropOffsetY;
+		}
+		function mmove(ev: MouseEvent) {
+			if (!dragging) return;
+			cropOffsetX = sox + ev.clientX - sx;
+			cropOffsetY = soy + ev.clientY - sy;
+		}
+		function mup() { dragging = false; }
+		function tstart(ev: TouchEvent) {
+			ev.preventDefault();
+			dragging = true; sx = ev.touches[0].clientX; sy = ev.touches[0].clientY;
+			sox = cropOffsetX; soy = cropOffsetY;
+		}
+		function tmove(ev: TouchEvent) {
+			ev.preventDefault();
+			if (!dragging) return;
+			cropOffsetX = sox + ev.touches[0].clientX - sx;
+			cropOffsetY = soy + ev.touches[0].clientY - sy;
+		}
+		function tend() { dragging = false; }
+
+		node.addEventListener('wheel',      wheel,  { passive: false });
+		node.addEventListener('mousedown',  mdown);
+		node.addEventListener('mousemove',  mmove);
+		node.addEventListener('mouseup',    mup);
+		node.addEventListener('mouseleave', mup);
+		node.addEventListener('touchstart', tstart, { passive: false });
+		node.addEventListener('touchmove',  tmove,  { passive: false });
+		node.addEventListener('touchend',   tend);
+
+		return {
+			destroy() {
+				node.removeEventListener('wheel',      wheel);
+				node.removeEventListener('mousedown',  mdown);
+				node.removeEventListener('mousemove',  mmove);
+				node.removeEventListener('mouseup',    mup);
+				node.removeEventListener('mouseleave', mup);
+				node.removeEventListener('touchstart', tstart);
+				node.removeEventListener('touchmove',  tmove);
+				node.removeEventListener('touchend',   tend);
+			}
+		};
+	}
+
+	async function confirmCrop() {
+		const OUT    = 400;
+		const canvas = document.createElement('canvas');
+		canvas.width  = OUT;
+		canvas.height = OUT;
+		const ctx = canvas.getContext('2d')!;
+
+		ctx.beginPath();
+		ctx.arc(OUT / 2, OUT / 2, OUT / 2, 0, Math.PI * 2);
+		ctx.clip();
+
+		const img = new Image();
+		img.src = cropSrc;
+		await new Promise<void>(r => { if (img.complete) r(); else img.onload = () => r(); });
+
+		const factor  = OUT / CROP_VP;
+		const scaledW = cropNatW * cropScale;
+		const scaledH = cropNatH * cropScale;
+		const drawX   = (CROP_VP / 2 + cropOffsetX - scaledW / 2) * factor;
+		const drawY   = (CROP_VP / 2 + cropOffsetY - scaledH / 2) * factor;
+
+		ctx.drawImage(img, drawX, drawY, scaledW * factor, scaledH * factor);
+
+		const result  = canvas.toDataURL('image/jpeg', 0.92);
+		avatarPreview = result;
+		avatarBase64  = result;
+		showCrop      = false;
 	}
 </script>
 
@@ -584,7 +690,7 @@
 			</div>
 
 			{#if isEditing}
-				<div class="mt-6 flex items-center gap-4 flex-wrap">
+				<div class="mt-4 flex items-center gap-3">
 					<label class="flex items-center gap-3 cursor-pointer flex-1 min-w-0">
 						<input type="checkbox" bind:checked={termsAccepted}
 							class="w-4 h-4 accent-purple-500 cursor-pointer flex-shrink-0" />
@@ -670,6 +776,69 @@
 	</div>
 
 </div>
+
+{#if showCrop}
+<div class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-5 shadow-2xl flex flex-col items-center gap-4 w-full max-w-sm">
+		<h3 class="text-white font-black text-lg">מיקום התמונה</h3>
+		<p class="text-gray-400 text-xs -mt-2 text-center">גרור להזזה · גלגל העכבר / הסלידר לזום</p>
+
+		<!-- מעגל חיתוך -->
+		<div
+			use:cropInteraction
+			class="relative overflow-hidden rounded-full border-2 border-purple-500/50 cursor-grab active:cursor-grabbing select-none touch-none"
+			style="width: {CROP_VP}px; height: {CROP_VP}px; flex-shrink: 0;"
+		>
+			{#if cropSrc}
+				<img
+					src={cropSrc}
+					alt="crop"
+					onload={onCropLoad}
+					draggable="false"
+					class="absolute pointer-events-none select-none"
+					style="
+						left: 50%; top: 50%;
+						transform: translate(calc(-50% + {cropOffsetX}px), calc(-50% + {cropOffsetY}px)) scale({cropScale});
+						transform-origin: center center;
+						max-width: none; width: auto; height: auto;
+						-webkit-user-drag: none;
+					"
+				/>
+			{/if}
+		</div>
+
+		<!-- סלידר זום -->
+		<div class="w-full flex items-center gap-3 px-2">
+			<span class="text-gray-400 text-xl font-bold select-none leading-none">−</span>
+			<input
+				type="range"
+				min={cropMinScale}
+				max={cropMinScale * 5}
+				step="0.01"
+				bind:value={cropScale}
+				class="flex-1 accent-purple-500 cursor-pointer"
+			/>
+			<span class="text-gray-200 text-xl font-bold select-none leading-none">+</span>
+		</div>
+
+		<!-- כפתורים -->
+		<div class="flex gap-3 w-full">
+			<button
+				onclick={() => { showCrop = false; }}
+				class="flex-1 py-2.5 rounded-xl border border-white/10 text-gray-300 hover:bg-white/5 text-sm font-bold transition-colors cursor-pointer"
+			>
+				ביטול
+			</button>
+			<button
+				onclick={confirmCrop}
+				class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-black text-sm transition-all cursor-pointer"
+			>
+				אשר תמונה ✓
+			</button>
+		</div>
+	</div>
+</div>
+{/if}
 
 {#if showEditTooltip}
 	<div class="fixed z-[9999] pointer-events-none"
