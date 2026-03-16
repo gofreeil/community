@@ -65,20 +65,24 @@
 		(data.user?.name ?? data.user?.email ?? 'U').charAt(0).toUpperCase()
 	);
 
-	// מעגל מילוי פרופיל
+	// מעגל מילוי פרופיל — דינמי: כל שדה שווה 100/מספר_שדות
 	const ringCircumference = 2 * Math.PI * 43; // r=43, SVG 92×92
 
+	let profileFields = $derived([
+		!!avatarPreview,
+		!!name,
+		!!nickname,
+		!!phone,
+		!!city,
+		!!neighborhood,
+		!!gender,
+		!!business,
+		!!family_status,
+		!!notifications,
+	]);
+
 	let profileCompletion = $derived(
-		(avatarPreview ? 20 : 0) +
-		(name        ? 15 : 0) +
-		(nickname    ? 10 : 0) +
-		(phone       ? 10 : 0) +
-		(city        ? 10 : 0) +
-		(neighborhood? 10 : 0) +
-		(gender      ? 10 : 0) +
-		(business    ?  5 : 0) +
-		(family_status?  5 : 0) +
-		(notifications?  5 : 0)
+		Math.round(profileFields.filter(Boolean).length / profileFields.length * 100)
 	);
 
 	let ringColor = $derived(
