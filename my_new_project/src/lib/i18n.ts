@@ -17,12 +17,12 @@ register('he', () => Promise.resolve({
     contact_us: "צור קשר",
     email: "אימייל",
     all_rights_reserved: "כל הזכויות שמורות",
-    
+
     // כותרות ראשיות
     neighborhood_advantages: "יתרונות שכונת",
     all_neighborhoods: "לכלל השכונות",
     discover_neighborhood: "גלה את כל מה שהשכונה שלך מציעה",
-    
+
     // קטגוריות
     all_benefits: "כל היתרונות",
     gemachim: "גמ\"חים",
@@ -36,14 +36,14 @@ register('he', () => Promise.resolve({
     shops: "חנויות",
     restaurants: "מסעדות",
     rides: "טרמפים",
-    
+
     // פריטי קטגוריות
     restaurant: "מסעדה",
     fast_food: "מזון מהיר",
     regular_passenger: "נוסע קבוע ל...",
     offer_ride: "מציע טרמפ",
     need_ride: "דרוש טרמפ",
-    
+
     // כפתורים ופעולות
     add_advantage: "הוסף",
     add_item: "הוסף פריט",
@@ -52,14 +52,14 @@ register('he', () => Promise.resolve({
     open_call: "פתח קריאה",
     cancel: "ביטול",
     details: "פרטים",
-    
+
     // אפשרויות עזרה
     lost_child: "הלך ילד לאיבוד",
     lost_dog: "אבד כלב",
     elderly_help: "מבוגר זקוק לעזרה",
     car_help: "זקוק לעזרה עם הרכב להתנעה",
     other_help: "אחר - כתוב את העזרה הזקוקה לך",
-    
+
     // הודעות מערכת
     login_required: "יש להירשם כדי להוסיף פריטים. מעבר לדף הרשמה...",
     help_sent: "בקשת עזרה נשלחה",
@@ -67,7 +67,7 @@ register('he', () => Promise.resolve({
     community_helped: "הקהילה עזרה לי",
     problem_solved_other: "הבעיה נפתרה אחרת",
     waiting_for_help: "ממתין לעזרה מהקהילה...",
-    
+
     // באנרים
     wishing_wall: "כותל המשאלות",
     community_fund_help: "קופת השכונה לסייע לנזקקים",
@@ -75,20 +75,20 @@ register('he', () => Promise.resolve({
     contact_committee: "פנה לוועד השכונה",
     committee_suggestion: "יש לך הצעה? רוצה לשפר את השכונה? הוועד כאן בשבילך!",
     contact_committee_btn: "צור קשר עם הוועד",
-    emergency_team: "כיתת כוننות",
+    emergency_team: "כיתת כוננות",
     strengthen_security: "חזק את ביטחון השכונה",
     join_emergency: "הצטרף לכיתת הכוננות של השכונה",
     active_members: "חברים פעילים",
     join_now: "הצטרף עכשיו",
-    
+
     // חדשות
     news_community: "חדשות הקהילה:",
-    
+
     // פרסומות
     peace_houses: "בתי הפיוס",
     have_conflict: "יש לך סיכסוך? לחץ לפתרון",
     volunteers_help: "מתנדבים לתת לך עזרה מלאה בדין / פיוס בכל סיכסוך",
-    
+
     // כותל המשאלות
     add_wish: "הוסף משאלה",
     your_wish: "המשאלה שלך",
@@ -98,10 +98,89 @@ register('he', () => Promise.resolve({
     wish_added: "המשאלה נוספה בהצלחה!",
     wish_added_wall: "המשאלה שלך נוספה לכותל",
     back_home: "חזרה לדף הבית",
-    
+
     // ערים ושכונות
     select_city_neighborhood: "בחר עיר ושכונה",
-    close: "סגור"
+    close: "סגור",
+
+    // דף פרופיל
+    profile_title: "הפרופיל שלי | קהילה בשכונה",
+    welcome_community: "ברוך הבא לקהילה!",
+    registration_complete: "ההרשמה הושלמה בהצלחה. מלא את פרטי הפרופיל שלך כדי שהקהילה תכיר אותך.",
+    default_user: "משתמש",
+    publications_count: "פרסומות",
+    personal_details: "פרטים אישיים",
+    edit_btn: "✏️ עריכה",
+    save_changes: "שמור שינויים",
+    profile_updated: "✅ הפרופיל עודכן בהצלחה!",
+    edit_tooltip: "ניתן לערוך את הפרופיל בכל עת",
+    profile_photo: "תמונת פרופיל",
+    choose_photo: "📷 בחר תמונה",
+    full_name_label: "שם מלא *",
+    full_name_placeholder: "השם המלא שלך",
+    nickname_label: "כינוי שיופיע באתר",
+    nickname_placeholder: "למשל: יוסי מירושלים",
+    gender_label: "מגדר",
+    male: "👨 זכר",
+    female: "👩 נקבה",
+    phone_label: "טלפון",
+    city_label: "עיר",
+    choose_city: "בחר עיר",
+    neighborhood_label: "שכונה",
+    choose_neighborhood: "בחר שכונה",
+    business_label: "עסק (אם יש)",
+    business_placeholder: "שם העסק שלך",
+    family_status_label: "סטטוס משפחתי",
+    choose_status: "בחר סטטוס",
+    status_single_m: "פנוי",
+    status_single_f: "פנויה",
+    status_family: "בעל משפחה",
+    not_shown_public: "(לא מוצג לרבים)",
+    notifications_label: "התראות",
+    notifications_agree: "מסכים לקבל התראות מחברי השכונה בשעת צרה",
+    notifications_yes: "כן, מסכים לקבל התראות",
+    notifications_no: "לא מסכים לקבל התראות",
+    terms_agree_prefix: "אני מאשר את",
+    terms_and: "ו",
+    terms_agree_suffix: "של האתר",
+    my_publications: "הפרסומות שלי",
+    no_items: "עדיין לא פרסמת שום פריט בקהילה",
+    publish_first: "פרסם פריט ראשון",
+    status_active: "● פעיל",
+    logout_btn: "🚪 התנתק",
+
+    // דף התחברות
+    login_title: "התחברות | קהילה בשכונה",
+    welcome_back: "ברוכים הבאים",
+    login_subtitle: "התחבר כדי להוסיף פריטים לקהילה",
+    continue_google: "המשך עם Google",
+    continue_facebook: "המשך עם Facebook",
+    or: "או",
+    login_with_email: "התחברות עם אימייל וסיסמה",
+    password_label: "סיסמה",
+    show_password: "הצג סיסמה",
+    hide_password: "הסתר סיסמה",
+    login_btn: "התחברות",
+    back_to_oauth: "← חזרה להתחברות עם Google/Facebook",
+    no_account: "אין לך חשבון?",
+    register_here: "הירשם כאן",
+    login_terms: "בהתחברות אתה מאשר את",
+    back_home_arrow: "← חזרה לדף הבית",
+    registered_success: "✅ נרשמת בהצלחה! אפשר להתחבר עכשיו.",
+
+    // דף הרשמה
+    register_title: "הרשמה | קהילה בשכונה",
+    join_community: "הצטרף לקהילה",
+    create_account: "צור חשבון חדש כדי להתחיל",
+    username_label: "שם משתמש",
+    username_placeholder: "השם שלך",
+    confirm_password_label: "אימות סיסמה",
+    confirm_password_placeholder: "הכנס סיסמה שוב",
+    password_min: "לפחות 6 תווים",
+    registering: "נרשם...",
+    register_btn: "הירשם",
+    already_registered: "כבר רשום?",
+    login_here: "התחבר כאן",
 }));
 
 register('en', () => Promise.resolve({
@@ -116,18 +195,16 @@ register('en', () => Promise.resolve({
     quick_links: "Quick Links",
     about: "About",
     terms: "Terms of Use",
-    privacy: "Privacy",
+    privacy: "Privacy Policy",
     partners: "Partners",
     contact_us: "Contact Us",
     email: "Email",
     all_rights_reserved: "All rights reserved",
-    
-    // Main titles
+
     neighborhood_advantages: "Neighborhood Advantages",
     all_neighborhoods: "All Neighborhoods",
     discover_neighborhood: "Discover everything your neighborhood has to offer",
-    
-    // Categories
+
     all_benefits: "All Benefits",
     gemachim: "Gemachim",
     giveaway: "Giveaway",
@@ -140,15 +217,13 @@ register('en', () => Promise.resolve({
     shops: "Shops",
     restaurants: "Restaurants",
     rides: "Rides",
-    
-    // Category items
+
     restaurant: "Restaurant",
     fast_food: "Fast Food",
     regular_passenger: "Regular passenger to...",
     offer_ride: "Offering ride",
     need_ride: "Need ride",
-    
-    // Buttons and actions
+
     add_advantage: "Add",
     add_item: "Add Item",
     raise_hand: "Raise Hand",
@@ -156,23 +231,20 @@ register('en', () => Promise.resolve({
     open_call: "Open Call",
     cancel: "Cancel",
     details: "Details",
-    
-    // Help options
+
     lost_child: "Lost Child",
     lost_dog: "Lost Dog",
     elderly_help: "Elderly Needs Help",
     car_help: "Need Help with Car",
     other_help: "Other - Describe the help you need",
-    
-    // System messages
+
     login_required: "Please register to add items. Go to registration page...",
     help_sent: "Help request sent",
     call_sent_success: "Call sent successfully!",
     community_helped: "The community helped me",
     problem_solved_other: "Problem solved otherwise",
     waiting_for_help: "Waiting for community help...",
-    
-    // Banners
+
     wishing_wall: "Wishing Wall",
     community_fund_help: "Neighborhood fund to help those in need",
     ask_help_fund: "Ask for help from community fund",
@@ -184,16 +256,13 @@ register('en', () => Promise.resolve({
     join_emergency: "Join the neighborhood emergency team",
     active_members: "active members",
     join_now: "Join Now",
-    
-    // News
+
     news_community: "Community News:",
-    
-    // Ads
+
     peace_houses: "Peace Houses",
     have_conflict: "Have a conflict? Click for solution",
     volunteers_help: "Volunteers to give you full help in law / mediation in any conflict",
-    
-    // Wishing wall
+
     add_wish: "Add Wish",
     your_wish: "Your Wish",
     write_wish: "Write your wish here...",
@@ -202,10 +271,88 @@ register('en', () => Promise.resolve({
     wish_added: "Wish added successfully!",
     wish_added_wall: "Your wish was added to the wall",
     back_home: "Back to Home",
-    
-    // Cities and neighborhoods
+
     select_city_neighborhood: "Select City and Neighborhood",
-    close: "Close"
+    close: "Close",
+
+    // Profile page
+    profile_title: "My Profile | Neighborhood Community",
+    welcome_community: "Welcome to the Community!",
+    registration_complete: "Registration complete. Fill in your profile so the community can get to know you.",
+    default_user: "User",
+    publications_count: "Publications",
+    personal_details: "Personal Details",
+    edit_btn: "✏️ Edit",
+    save_changes: "Save Changes",
+    profile_updated: "✅ Profile updated successfully!",
+    edit_tooltip: "You can edit your profile at any time",
+    profile_photo: "Profile Photo",
+    choose_photo: "📷 Choose Photo",
+    full_name_label: "Full Name *",
+    full_name_placeholder: "Your full name",
+    nickname_label: "Nickname shown on site",
+    nickname_placeholder: "e.g. Joe from Jerusalem",
+    gender_label: "Gender",
+    male: "👨 Male",
+    female: "👩 Female",
+    phone_label: "Phone",
+    city_label: "City",
+    choose_city: "Select city",
+    neighborhood_label: "Neighborhood",
+    choose_neighborhood: "Select neighborhood",
+    business_label: "Business (if any)",
+    business_placeholder: "Your business name",
+    family_status_label: "Family Status",
+    choose_status: "Select status",
+    status_single_m: "Single (M)",
+    status_single_f: "Single (F)",
+    status_family: "Married",
+    not_shown_public: "(Not shown publicly)",
+    notifications_label: "Notifications",
+    notifications_agree: "I agree to receive alerts from community members in times of need",
+    notifications_yes: "Yes, agreed to receive notifications",
+    notifications_no: "Not agreed to receive notifications",
+    terms_agree_prefix: "I agree to the",
+    terms_and: "and",
+    terms_agree_suffix: "of the site",
+    my_publications: "My Publications",
+    no_items: "You haven't published any items yet",
+    publish_first: "Publish First Item",
+    status_active: "● Active",
+    logout_btn: "🚪 Logout",
+
+    // Login page
+    login_title: "Login | Neighborhood Community",
+    welcome_back: "Welcome",
+    login_subtitle: "Login to add items to the community",
+    continue_google: "Continue with Google",
+    continue_facebook: "Continue with Facebook",
+    or: "or",
+    login_with_email: "Login with Email and Password",
+    password_label: "Password",
+    show_password: "Show password",
+    hide_password: "Hide password",
+    login_btn: "Login",
+    back_to_oauth: "← Back to Google/Facebook login",
+    no_account: "Don't have an account?",
+    register_here: "Register here",
+    login_terms: "By logging in you agree to the",
+    back_home_arrow: "← Back to Home",
+    registered_success: "✅ Registered successfully! You can login now.",
+
+    // Register page
+    register_title: "Register | Neighborhood Community",
+    join_community: "Join the Community",
+    create_account: "Create a new account to get started",
+    username_label: "Username",
+    username_placeholder: "Your name",
+    confirm_password_label: "Confirm Password",
+    confirm_password_placeholder: "Enter password again",
+    password_min: "At least 6 characters",
+    registering: "Registering...",
+    register_btn: "Register",
+    already_registered: "Already registered?",
+    login_here: "Login here",
 }));
 
 register('ru', () => Promise.resolve({
@@ -220,18 +367,16 @@ register('ru', () => Promise.resolve({
     quick_links: "Быстрые ссылки",
     about: "О проекте",
     terms: "Условия использования",
-    privacy: "Конфиденциальность",
+    privacy: "Политика конфиденциальности",
     partners: "Партнеры",
     contact_us: "Связаться с нами",
     email: "Email",
     all_rights_reserved: "Все права защищены",
-    
-    // Основные заголовки
+
     neighborhood_advantages: "Преимущества района",
     all_neighborhoods: "Все районы",
     discover_neighborhood: "Откройте для себя все, что может предложить ваш район",
-    
-    // Категории
+
     all_benefits: "Все преимущества",
     gemachim: "Гемахи",
     giveaway: "Раздача",
@@ -244,15 +389,13 @@ register('ru', () => Promise.resolve({
     shops: "Магазины",
     restaurants: "Рестораны",
     rides: "Поездки",
-    
-    // Элементы категорий
+
     restaurant: "Ресторан",
     fast_food: "Быстрое питание",
     regular_passenger: "Постоянный пассажир в...",
     offer_ride: "Предлагаю поездку",
     need_ride: "Нужна поездка",
-    
-    // Кнопки и действия
+
     add_advantage: "Добавить",
     add_item: "Добавить элемент",
     raise_hand: "Поднять руку",
@@ -260,23 +403,20 @@ register('ru', () => Promise.resolve({
     open_call: "Открыть вызов",
     cancel: "Отмена",
     details: "Подробности",
-    
-    // Варианты помощи
+
     lost_child: "Потерялся ребенок",
     lost_dog: "Потерялась собака",
     elderly_help: "Пожилому нужна помощь",
     car_help: "Нужна помощь с машиной",
     other_help: "Другое - опишите нужную помощь",
-    
-    // Системные сообщения
+
     login_required: "Пожалуйста, зарегистрируйтесь для добавления элементов. Перейти на страницу регистрации...",
     help_sent: "Запрос о помощи отправлен",
     call_sent_success: "Вызов отправлен успешно!",
     community_helped: "Сообщество помогло мне",
     problem_solved_other: "Проблема решена по-другому",
     waiting_for_help: "Ожидание помощи от сообщества...",
-    
-    // Баннеры
+
     wishing_wall: "Стена желаний",
     community_fund_help: "Фонд района для помощи нуждающимся",
     ask_help_fund: "Попросить помощь у фонда сообщества",
@@ -288,16 +428,13 @@ register('ru', () => Promise.resolve({
     join_emergency: "Присоединиться к команде экстренного реагирования района",
     active_members: "активных участников",
     join_now: "Присоединиться сейчас",
-    
-    // Новости
+
     news_community: "Новости сообщества:",
-    
-    // Реклама
+
     peace_houses: "Дома мира",
     have_conflict: "Есть конфликт? Нажмите для решения",
     volunteers_help: "Волонтеры окажут вам полную помощь в правовых вопросах / посредничестве в любом конфликте",
-    
-    // Стена желаний
+
     add_wish: "Добавить желание",
     your_wish: "Ваше желание",
     write_wish: "Напишите здесь ваше желание...",
@@ -306,13 +443,91 @@ register('ru', () => Promise.resolve({
     wish_added: "Желание успешно добавлено!",
     wish_added_wall: "Ваше желание добавлено на стену",
     back_home: "Вернуться домой",
-    
-    // Города и районы
+
     select_city_neighborhood: "Выберите город и район",
-    close: "Закрыть"
+    close: "Закрыть",
+
+    // Страница профиля
+    profile_title: "Мой профиль | Сообщество района",
+    welcome_community: "Добро пожаловать в сообщество!",
+    registration_complete: "Регистрация завершена. Заполните профиль, чтобы сообщество вас узнало.",
+    default_user: "Пользователь",
+    publications_count: "Публикации",
+    personal_details: "Личные данные",
+    edit_btn: "✏️ Изменить",
+    save_changes: "Сохранить изменения",
+    profile_updated: "✅ Профиль успешно обновлён!",
+    edit_tooltip: "Вы можете редактировать профиль в любое время",
+    profile_photo: "Фото профиля",
+    choose_photo: "📷 Выбрать фото",
+    full_name_label: "Полное имя *",
+    full_name_placeholder: "Ваше полное имя",
+    nickname_label: "Псевдоним на сайте",
+    nickname_placeholder: "напр.: Йосси из Иерусалима",
+    gender_label: "Пол",
+    male: "👨 Мужской",
+    female: "👩 Женский",
+    phone_label: "Телефон",
+    city_label: "Город",
+    choose_city: "Выберите город",
+    neighborhood_label: "Район",
+    choose_neighborhood: "Выберите район",
+    business_label: "Бизнес (если есть)",
+    business_placeholder: "Название вашего бизнеса",
+    family_status_label: "Семейное положение",
+    choose_status: "Выберите статус",
+    status_single_m: "Холост",
+    status_single_f: "Не замужем",
+    status_family: "Женат/Замужем",
+    not_shown_public: "(Не показывается публично)",
+    notifications_label: "Уведомления",
+    notifications_agree: "Согласен получать уведомления от членов сообщества в трудную минуту",
+    notifications_yes: "Да, согласен получать уведомления",
+    notifications_no: "Не согласен получать уведомления",
+    terms_agree_prefix: "Я принимаю",
+    terms_and: "и",
+    terms_agree_suffix: "сайта",
+    my_publications: "Мои публикации",
+    no_items: "Вы ещё не публиковали ничего в сообществе",
+    publish_first: "Опубликовать первый элемент",
+    status_active: "● Активен",
+    logout_btn: "🚪 Выйти",
+
+    // Страница входа
+    login_title: "Вход | Сообщество района",
+    welcome_back: "Добро пожаловать",
+    login_subtitle: "Войдите, чтобы добавлять элементы в сообщество",
+    continue_google: "Продолжить с Google",
+    continue_facebook: "Продолжить с Facebook",
+    or: "или",
+    login_with_email: "Войти с Email и паролем",
+    password_label: "Пароль",
+    show_password: "Показать пароль",
+    hide_password: "Скрыть пароль",
+    login_btn: "Войти",
+    back_to_oauth: "← Назад к входу через Google/Facebook",
+    no_account: "Нет аккаунта?",
+    register_here: "Зарегистрируйтесь здесь",
+    login_terms: "Входя, вы соглашаетесь с",
+    back_home_arrow: "← На главную",
+    registered_success: "✅ Вы успешно зарегистрировались! Теперь можно войти.",
+
+    // Страница регистрации
+    register_title: "Регистрация | Сообщество района",
+    join_community: "Присоединиться к сообществу",
+    create_account: "Создайте аккаунт, чтобы начать",
+    username_label: "Имя пользователя",
+    username_placeholder: "Ваше имя",
+    confirm_password_label: "Подтвердите пароль",
+    confirm_password_placeholder: "Введите пароль ещё раз",
+    password_min: "Не менее 6 символов",
+    registering: "Регистрация...",
+    register_btn: "Зарегистрироваться",
+    already_registered: "Уже зарегистрированы?",
+    login_here: "Войдите здесь",
 }));
 
 init({
     fallbackLocale: 'he',
-    initialLocale: 'he' || getLocaleFromNavigator(),
+    initialLocale: (typeof window !== 'undefined' && localStorage.getItem('lang')) || getLocaleFromNavigator() || 'he',
 });

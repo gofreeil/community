@@ -64,6 +64,7 @@
 
     function changeLang(language: { name: string; code: string }) {
         locale.set(language.code);
+        try { localStorage.setItem('lang', language.code); } catch {}
     }
 
     function updateOnlineUsers() {
@@ -71,6 +72,12 @@
     }
 
     onMount(() => {
+        // שחזר שפה שמורה
+        try {
+            const saved = localStorage.getItem('lang');
+            if (saved) locale.set(saved);
+        } catch {}
+
         updateOnlineUsers();
         const usersInterval = setInterval(updateOnlineUsers, 30000);
 
