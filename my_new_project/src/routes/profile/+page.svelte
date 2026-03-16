@@ -65,6 +65,27 @@
 		(data.user?.name ?? data.user?.email ?? 'U').charAt(0).toUpperCase()
 	);
 
+	// מעגל מילוי פרופיל
+	const ringCircumference = 2 * Math.PI * 43; // r=43, SVG 92×92
+
+	let profileCompletion = $derived(
+		(avatarPreview ? 20 : 0) +
+		(name        ? 15 : 0) +
+		(nickname    ? 10 : 0) +
+		(phone       ? 10 : 0) +
+		(city        ? 10 : 0) +
+		(neighborhood? 10 : 0) +
+		(gender      ? 10 : 0) +
+		(business    ?  5 : 0) +
+		(family_status?  5 : 0) +
+		(notifications?  5 : 0)
+	);
+
+	let ringColor = $derived(
+		profileCompletion < 40 ? '#ef4444' :
+		profileCompletion < 70 ? '#eab308' : '#22c55e'
+	);
+
 	function handleImageChange(e: Event) {
 		const file = (e.target as HTMLInputElement).files?.[0];
 		if (!file) return;
@@ -96,18 +117,43 @@
 	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 mb-6 shadow-xl">
 		<div class="flex items-center gap-5 relative">
 
-			<!-- אווטר -->
-			<div class="relative flex-shrink-0">
+			<!-- אווטר + מעגל מילוי -->
+			<div class="relative flex-shrink-0 mb-3">
 				{#if avatarPreview}
 					<img src={avatarPreview} alt="תמונת פרופיל"
-						class="w-20 h-20 rounded-full border-4 border-purple-500/40 shadow-xl object-cover" />
+						class="w-20 h-20 rounded-full border-2 border-purple-500/40 shadow-xl object-cover" />
 				{:else}
 					<div class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-600 to-purple-700
-					            flex items-center justify-center border-4 border-purple-500/40 shadow-xl">
+					            flex items-center justify-center border-2 border-purple-500/40 shadow-xl">
 						<span class="text-3xl font-black text-white">{avatarLetter}</span>
 					</div>
 				{/if}
-				<span class="absolute -bottom-1 -left-1 text-lg leading-none">
+
+				<!-- מעגל SVG -->
+				<svg width="92" height="92"
+					class="absolute pointer-events-none"
+					style="top: -6px; left: -6px; transform: rotate(-90deg)">
+					<circle cx="46" cy="46" r="43" fill="none"
+						stroke="rgba(255,255,255,0.08)" stroke-width="3.5" />
+					<circle cx="46" cy="46" r="43" fill="none"
+						stroke={ringColor}
+						stroke-width="3.5"
+						stroke-linecap="round"
+						stroke-dasharray={ringCircumference}
+						stroke-dashoffset={ringCircumference * (1 - profileCompletion / 100)}
+						style="transition: stroke-dashoffset 0.6s ease, stroke 0.4s ease" />
+				</svg>
+
+				<!-- אחוז מילוי -->
+				<div class="absolute -bottom-4 left-1/2 -translate-x-1/2
+				            bg-[#0f172a] border rounded-full px-1.5 py-0.5
+				            text-[10px] font-bold whitespace-nowrap z-10"
+					style="color: {ringColor}; border-color: {ringColor}55">
+					{profileCompletion}%
+				</div>
+
+				<!-- אייקון ספק -->
+				<span class="absolute top-0 left-0 text-base leading-none">
 					{data.user?.provider === 'google' ? '🔵' : data.user?.provider === 'facebook' ? '🟦' : '👤'}
 				</span>
 			</div>
