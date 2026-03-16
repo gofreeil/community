@@ -225,7 +225,7 @@
 
 			<!-- הארנק שלי — ממורכז -->
 			<div class="flex-shrink-0 flex flex-col items-center gap-2 cursor-pointer group select-none">
-				<div class="w-52 group-hover:scale-105 transition-transform duration-200" style="-webkit-mask-image: radial-gradient(ellipse 75% 75% at 50% 50%, black 40%, transparent 100%); mask-image: radial-gradient(ellipse 75% 75% at 50% 50%, black 40%, transparent 100%);">
+				<div class="w-52 group-hover:scale-105 transition-transform duration-200" style="-webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 80%); mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 80%);">
 					<img src="/images/wallet.png" alt="המזומן שלי" class="w-full h-auto block" />
 				</div>
 				<span class="text-xs text-gray-300 font-bold">המזומן שלי</span>
