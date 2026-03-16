@@ -99,7 +99,7 @@
 
 <header
     class="sticky top-0 z-50 border-b-2 md:border-b-4 border-blue-600 shadow-lg backdrop-blur-lg"
-    style="background: linear-gradient(to bottom, rgba(17, 24, 39, 0.88) 0%, rgba(17, 24, 39, 0.88) 66%, rgba(17, 24, 39, 0.1) 100%);"
+    style="background: linear-gradient(to bottom, rgba(17, 24, 39, 0.72) 0%, rgba(17, 24, 39, 0.72) 66%, rgba(17, 24, 39, 0.05) 100%);"
 >
     <div class="relative mx-auto max-w-7xl px-2 sm:px-4 lg:px-8">
         <!-- Mobile Header Area -->
