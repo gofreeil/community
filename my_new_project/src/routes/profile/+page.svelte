@@ -230,7 +230,7 @@
 							class="w-full bg-white/5 border border-white/10 focus:border-purple-500/50 rounded-xl
 							       px-4 py-3 text-white text-sm transition-colors outline-none" />
 					{:else}
-						<p class="text-white font-medium py-3 px-1">{data.user?.name || '—'}</p>
+						<p class="text-white font-medium py-3 px-1">{name || '—'}</p>
 					{/if}
 				</div>
 
@@ -242,7 +242,7 @@
 							class="w-full bg-white/5 border border-white/10 focus:border-purple-500/50 rounded-xl
 							       px-4 py-3 text-white text-sm transition-colors outline-none" />
 					{:else}
-						<p class="text-white font-medium py-3 px-1">{data.user?.nickname || '—'}</p>
+						<p class="text-white font-medium py-3 px-1">{nickname || '—'}</p>
 					{/if}
 				</div>
 
@@ -286,7 +286,7 @@
 							class="w-full bg-white/5 border border-white/10 focus:border-purple-500/50 rounded-xl
 							       px-4 py-3 text-white text-sm transition-colors outline-none" />
 					{:else}
-						<p class="text-white font-medium py-3 px-1">{data.user?.phone || '—'}</p>
+						<p class="text-white font-medium py-3 px-1">{phone || '—'}</p>
 					{/if}
 				</div>
 
@@ -303,7 +303,7 @@
 							{/each}
 						</select>
 					{:else}
-						<p class="text-white font-medium py-3 px-1">{data.user?.city || '—'}</p>
+						<p class="text-white font-medium py-3 px-1">{city || '—'}</p>
 					{/if}
 				</div>
 
@@ -321,7 +321,7 @@
 							{/each}
 						</select>
 					{:else}
-						<p class="text-white font-medium py-3 px-1">{data.user?.neighborhood || '—'}</p>
+						<p class="text-white font-medium py-3 px-1">{neighborhood || '—'}</p>
 					{/if}
 				</div>
 
@@ -333,7 +333,7 @@
 							class="w-full bg-white/5 border border-white/10 focus:border-purple-500/50 rounded-xl
 							       px-4 py-3 text-white text-sm transition-colors outline-none" />
 					{:else}
-						<p class="text-white font-medium py-3 px-1">{data.user?.business || '—'}</p>
+						<p class="text-white font-medium py-3 px-1">{business || '—'}</p>
 					{/if}
 				</div>
 
@@ -351,9 +351,9 @@
 						</select>
 					{:else}
 						<p class="text-white font-medium py-3 px-1">
-							{data.user?.family_status === 'single_m' ? 'פנוי'
-							 : data.user?.family_status === 'single_f' ? 'פנויה'
-							 : data.user?.family_status === 'family'   ? 'בעל משפחה'
+							{family_status === 'single_m' ? 'פנוי'
+							 : family_status === 'single_f' ? 'פנויה'
+							 : family_status === 'family'   ? 'בעל משפחה'
 							 : '—'}
 						</p>
 					{/if}
@@ -380,7 +380,7 @@
 						<input type="hidden" name="notifications" value={notifications ? 'true' : 'false'} />
 					{:else}
 						<p class="text-white font-medium py-1 px-1 flex items-center gap-2">
-							{#if data.user?.notifications === 1}
+							{#if notifications}
 								<span class="text-green-400">✅</span> כן, מסכים לקבל התראות
 							{:else}
 								<span class="text-gray-500">❌</span> לא מסכים לקבל התראות

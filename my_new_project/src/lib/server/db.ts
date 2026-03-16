@@ -42,6 +42,7 @@ function getDb(): Database.Database {
         business             TEXT DEFAULT '',
         notifications        INTEGER DEFAULT 1,
         family_status        TEXT DEFAULT '',
+        gender               TEXT DEFAULT '',
         created_at           TEXT DEFAULT (datetime('now'))
       )
     `);
@@ -53,6 +54,7 @@ function getDb(): Database.Database {
     if (!colNames.includes('business'))      db.exec(`ALTER TABLE users ADD COLUMN business TEXT DEFAULT ''`);
     if (!colNames.includes('notifications')) db.exec(`ALTER TABLE users ADD COLUMN notifications INTEGER DEFAULT 1`);
     if (!colNames.includes('family_status')) db.exec(`ALTER TABLE users ADD COLUMN family_status TEXT DEFAULT ''`);
+    if (!colNames.includes('gender'))        db.exec(`ALTER TABLE users ADD COLUMN gender TEXT DEFAULT ''`);
 
     return db;
 }
@@ -108,6 +110,7 @@ export interface DbUser {
     business: string;
     notifications: number;
     family_status: string;
+    gender: string;
     created_at: string;
 }
 
@@ -128,6 +131,7 @@ export interface UpdateProfileData {
     business?: string;
     notifications?: number;
     family_status?: string;
+    gender?: string;
     avatar_url?: string;
 }
 
@@ -326,6 +330,7 @@ export function updateUserProfile(id: string, data: UpdateProfileData): DbUser |
     if (data.business     !== undefined) { fields.push('business = @business');         values.business     = data.business; }
     if (data.notifications!== undefined) { fields.push('notifications = @notifications'); values.notifications = data.notifications; }
     if (data.family_status!== undefined) { fields.push('family_status = @family_status'); values.family_status = data.family_status; }
+    if (data.gender       !== undefined) { fields.push('gender = @gender');             values.gender       = data.gender; }
     if (data.avatar_url   !== undefined) { fields.push('avatar_url = @avatar_url');    values.avatar_url   = data.avatar_url; }
 
     if (fields.length === 0) return getUserById(id);

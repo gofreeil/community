@@ -39,6 +39,7 @@ export const actions: Actions = {
         const neighborhood  = formData.get('neighborhood')?.toString().trim()  ?? '';
         const business      = formData.get('business')?.toString().trim()      ?? '';
         const family_status = formData.get('family_status')?.toString()        ?? '';
+        const gender        = formData.get('gender')?.toString()               ?? '';
         const notifications = formData.get('notifications') === 'true' ? 1 : 0;
         const avatarBase64  = formData.get('avatar_base64')?.toString()        ?? '';
 
@@ -55,6 +56,7 @@ export const actions: Actions = {
                 neighborhood,
                 business,
                 family_status,
+                gender,
                 notifications,
                 ...(avatarBase64 ? { avatar_url: avatarBase64 } : {}),
             });
