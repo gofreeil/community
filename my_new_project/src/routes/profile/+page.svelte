@@ -4,9 +4,15 @@
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import type { CityEntry } from '$lib/neighborhoodsData';
-import { t } from 'svelte-i18n';
+	import { t, locale } from 'svelte-i18n';
+	import { get } from 'svelte/store';
 
 	let { data, form } = $props();
+
+	// tFn: פונקציית תרגום reactive — לא משתמשים ב-$t ישירות כי Prettier מוחק אותו
+	let _loc = $state(get(locale));
+	$effect(() => locale.subscribe(l => (_loc = l)));
+	const tFn = (k: string) => (_loc, get(t)(k));
 
 	const DRAFT_KEY = 'profile_draft';
 
@@ -114,17 +120,17 @@ import { t } from 'svelte-i18n';
 </script>
 
 <svelte:head>
-	<title>{("")}</title>
+	<title>{tFn("profile_title")}</title>
 </svelte:head>
 
 <div class="max-w-3xl mx-auto px-4 py-8" dir="rtl">
 
 	<!-- ===== ברוך הבא — הרשמה חדשה ===== -->
-	{#if page.url.searchParams.get('') === '1'}
+	{#if page.url.searchParams.get('new') === '1'}
 		<div class="mb-6 rounded-2xl bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-purple-500/30 px-6 py-5 text-center shadow-lg">
 			<p class="text-2xl mb-1">🎉</p>
-			<h2 class="text-white font-black text-lg mb-1">{("")}</h2>
-			<p class="text-gray-300 text-sm">{("")}</p>
+			<h2 class="text-white font-black text-lg mb-1">{tFn("welcome_community")}</h2>
+			<p class="text-gray-300 text-sm">{tFn("registration_complete")}</p>
 		</div>
 	{/if}
 
@@ -135,7 +141,7 @@ import { t } from 'svelte-i18n';
 			<!-- אווטר + מעגל מילוי -->
 			<div class="relative flex-shrink-0 mb-3">
 				{#if avatarPreview}
-					<img src={avatarPreview} alt={("")}
+					<img src={avatarPreview} alt={tFn("profile_photo")}
 						class="w-20 h-20 rounded-full border-2 border-purple-500/40 shadow-xl object-cover" />
 				{:else}
 					<div class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-600 to-purple-700
@@ -175,20 +181,20 @@ import { t } from 'svelte-i18n';
 
 			<div class="min-w-0 flex-1">
 				<h1 class="text-2xl font-black text-white truncate">
-					{('') && (data.user?.nickname || data.user?.name || (''))}
+					{data.user?.nickname || data.user?.name || tFn('default_user')}
 				</h1>
 				{#if data.user?.email}
 					<p class="text-gray-400 text-sm mt-0.5">{data.user.email}</p>
 				{/if}
 				{#if data.user?.neighborhood || data.user?.city}
 					<p class="text-purple-400 text-sm mt-1">
-						📍 {[data.user?.neighborhood, data.user?.city].filter(Boolean).join('')}
+						📍 {[data.user?.neighborhood, data.user?.city].filter(Boolean).join(', ')}
 					</p>
 				{/if}
 				<div class="flex gap-3 mt-2 flex-wrap">
 					{#if data.items.length > 0}
 						<span class="text-xs bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2.5 py-1 rounded-full font-bold">
-							{data.items.length} {$t("publications_count")}
+							{data.items.length} {tFn("publications_count")}
 						</span>
 					{/if}
 					{#if data.user?.business}
@@ -202,9 +208,9 @@ import { t } from 'svelte-i18n';
 			<button
 				onclick={() => signOut({ callbackUrl: '/' })}
 				class="absolute top-0 left-0 text-sm text-gray-400 hover:text-red-400 transition-colors cursor-pointer px-2 py-1 rounded-lg hover:bg-red-500/10"
-				title={$t("logout_btn")}
+				title={tFn("logout_btn")}
 			>
-				{$t("logout_btn")}
+				{tFn("logout_btn")}
 			</button>
 		</div>
 	</div>
@@ -215,7 +221,7 @@ import { t } from 'svelte-i18n';
 		<div class="flex items-center justify-between mb-6">
 			<h2 class="text-xl font-black text-white flex items-center gap-2">
 				<span class="w-1.5 h-7 bg-purple-500 rounded-full inline-block"></span>
-				{("")}
+				פרטים אישיים
 			</h2>
 			<button
 				onclick={() => { isEditing = !isEditing; saveSuccess = false; }}
@@ -224,14 +230,14 @@ import { t } from 'svelte-i18n';
 				         ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
 				         : 'bg-purple-600/30 text-purple-300 hover:bg-purple-600/50 border border-purple-500/30'}"
 			>
-				{isEditing ? ('') : ('')}
+				{isEditing ? tFn('cancel') : tFn('edit_btn')}
 			</button>
 		</div>
 
 
 		{#if saveSuccess}
 			<div class="mb-5 rounded-xl bg-green-500/10 border border-green-500/30 px-4 py-3 text-center">
-				<p class="text-green-400 text-sm font-bold">{("")}</p>
+				<p class="text-green-400 text-sm font-bold">{tFn("profile_updated")}</p>
 			</div>
 		{/if}
 
@@ -268,7 +274,7 @@ import { t } from 'svelte-i18n';
 				<div class="md:col-span-2 flex items-center gap-5">
 					<div class="relative flex-shrink-0">
 						{#if avatarPreview}
-							<img src={avatarPreview} alt={("")}
+							<img src={avatarPreview} alt="תצוגה מקדימה"
 								class="w-20 h-20 rounded-full object-cover border-4 border-purple-500/40" />
 						{:else}
 							<div class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-600 to-purple-700
@@ -278,11 +284,11 @@ import { t } from 'svelte-i18n';
 						{/if}
 					</div>
 					<div>
-						<p class="text-xs text-gray-400 font-bold mb-2">{("")}</p>
+						<p class="text-xs text-gray-400 font-bold mb-2">תמונת פרופיל</p>
 						<label class="cursor-pointer bg-white/5 hover:bg-white/10 border border-white/10
 						              hover:border-purple-500/40 rounded-xl px-4 py-2 text-sm text-gray-300
 						              transition-all inline-block">
-							{("")}
+							{tFn("choose_photo")}
 							<input type="file" accept="image/*" class="hidden" onchange={handleImageChange} />
 						</label>
 					</div>
@@ -291,9 +297,9 @@ import { t } from 'svelte-i18n';
 
 				<!-- שם מלא -->
 				<div>
-					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{("")}</label>
+					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("full_name_label")}</label>
 					{#if isEditing}
-						<input name="name" type="text" bind:value={name} placeholder={("")} required
+						<input name="name" type="text" bind:value={name} placeholder={tFn("full_name_placeholder")} required
 							class="w-full bg-white/5 border border-white/10 focus:border-purple-500/50 rounded-xl
 							       px-4 py-3 text-white text-sm transition-colors outline-none" />
 					{:else}
@@ -303,9 +309,9 @@ import { t } from 'svelte-i18n';
 
 				<!-- כינוי -->
 				<div>
-					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{("")}</label>
+					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("nickname_label")}</label>
 					{#if isEditing}
-						<input name="nickname" type="text" bind:value={nickname} placeholder={("")}
+						<input name="nickname" type="text" bind:value={nickname} placeholder={tFn("nickname_placeholder")}
 							class="w-full bg-white/5 border border-white/10 focus:border-purple-500/50 rounded-xl
 							       px-4 py-3 text-white text-sm transition-colors outline-none" />
 					{:else}
@@ -315,7 +321,7 @@ import { t } from 'svelte-i18n';
 
 				<!-- מגדר -->
 				<div>
-					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{("")}</label>
+					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("gender_label")}</label>
 					{#if isEditing}
 						<div class="flex gap-3">
 							<button type="button"
@@ -340,14 +346,14 @@ import { t } from 'svelte-i18n';
 						<input type="hidden" name="gender" value={gender} />
 					{:else}
 						<p class="text-white font-medium py-3 px-1">
-							{gender === 'male' ? ('') : gender === 'female' ? ('') : '—'}
+							{gender === 'male' ? tFn('male') : gender === 'female' ? tFn('female') : '—'}
 						</p>
 					{/if}
 				</div>
 
 			<!-- טלפון -->
 				<div>
-					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{("")}</label>
+					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("phone_label")}</label>
 					{#if isEditing}
 						<input name="phone" type="tel" bind:value={phone} placeholder="050-0000000"
 							class="w-full bg-white/5 border border-white/10 focus:border-purple-500/50 rounded-xl
@@ -359,12 +365,12 @@ import { t } from 'svelte-i18n';
 
 				<!-- עיר -->
 				<div>
-					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{("")}</label>
+					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("city_label")}</label>
 					{#if isEditing}
 						<select name="city" bind:value={city} onchange={() => (neighborhood = '')}
 							class="w-full bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl
 							       px-4 py-3 text-white text-sm transition-colors outline-none appearance-none">
-							<option value="">{("")}</option>
+							<option value="">{tFn("choose_city")}</option>
 							{#each (data.citiesData as CityEntry[]) as c}
 								<option value={c.city}>{c.city}</option>
 							{/each}
@@ -376,13 +382,13 @@ import { t } from 'svelte-i18n';
 
 				<!-- שכונה -->
 				<div>
-					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{("")}</label>
+					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("neighborhood_label")}</label>
 					{#if isEditing}
 						<select name="neighborhood" bind:value={neighborhood} disabled={!city}
 							class="w-full bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl
 							       px-4 py-3 text-white text-sm transition-colors outline-none appearance-none
 							       disabled:opacity-40 disabled:cursor-not-allowed">
-							<option value="">{("")}</option>
+							<option value="">{tFn("choose_neighborhood")}</option>
 							{#each availableNeighborhoods as n}
 								<option value={n}>{n}</option>
 							{/each}
@@ -394,9 +400,9 @@ import { t } from 'svelte-i18n';
 
 				<!-- עסק -->
 				<div>
-					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{("")}</label>
+					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("business_label")}</label>
 					{#if isEditing}
-						<input name="business" type="text" bind:value={business} placeholder={("")}
+						<input name="business" type="text" bind:value={business} placeholder={tFn("business_placeholder")}
 							class="w-full bg-white/5 border border-white/10 focus:border-purple-500/50 rounded-xl
 							       px-4 py-3 text-white text-sm transition-colors outline-none" />
 					{:else}
@@ -406,30 +412,30 @@ import { t } from 'svelte-i18n';
 
 				<!-- סטטוס משפחתי -->
 				<div>
-					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{("")}</label>
+					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("family_status_label")}</label>
 					{#if isEditing}
 						<select name="family_status" bind:value={family_status}
 							class="w-full bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl
 							       px-4 py-3 text-white text-sm transition-colors outline-none appearance-none">
-							<option value="">{("")}</option>
-							<option value="single_m">{("")}</option>
-							<option value="single_f">{("")}</option>
-							<option value="family">{("")}</option>
+							<option value="">{tFn("choose_status")}</option>
+							<option value="single_m">{tFn("status_single_m")}</option>
+							<option value="single_f">{tFn("status_single_f")}</option>
+							<option value="family">{tFn("status_family")}</option>
 						</select>
 					{:else}
 						<p class="text-white font-medium py-3 px-1">
-							{family_status === 'single_m' ? ('')
-							 : family_status === 'single_f' ? ('')
-							 : family_status === 'family'   ? ('')
+							{family_status === 'single_m' ? tFn('status_single_m')
+							 : family_status === 'single_f' ? tFn('status_single_f')
+							 : family_status === 'family'   ? tFn('status_family')
 							 : '—'}
 						</p>
 					{/if}
-					<p class="text-gray-600 text-xs mt-1 px-1">{("")}</p>
+					<p class="text-gray-600 text-xs mt-1 px-1">{tFn("not_shown_public")}</p>
 				</div>
 
 				<!-- התראות -->
 				<div class="md:col-span-2">
-					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-3">{("")}</label>
+					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-3">{tFn("notifications_label")}</label>
 					{#if isEditing}
 						<label class="flex items-center gap-3 cursor-pointer group">
 							<div class="relative" dir="ltr">
@@ -441,16 +447,16 @@ import { t } from 'svelte-i18n';
 								            peer-checked:after:translate-x-5"></div>
 							</div>
 							<span class="text-sm text-gray-300 group-hover:text-white transition-colors">
-								{("")}
+								מסכים לקבל התראות מחברי השכונה בשעת צרה
 							</span>
 						</label>
 						<input type="hidden" name="notifications" value={notifications ? 'true' : 'false'} />
 					{:else}
 						<p class="text-white font-medium py-1 px-1 flex items-center gap-2">
 							{#if notifications}
-								<span class="text-green-400">✅</span> {("")}
+								<span class="text-green-400">✅</span> {tFn("notifications_yes")}
 							{:else}
-								<span class="text-gray-500">❌</span> {("")}
+								<span class="text-gray-500">❌</span> {tFn("notifications_no")}
 							{/if}
 						</p>
 					{/if}
@@ -464,10 +470,11 @@ import { t } from 'svelte-i18n';
 						<input type="checkbox" bind:checked={termsAccepted}
 							class="mt-1 w-4 h-4 accent-purple-500 cursor-pointer flex-shrink-0" />
 						<span class="text-sm text-gray-300">
-							{("")}
-							<a href="/terms" target="_blank" class="text-purple-400 hover:underline">{("")}</a>
-							{("")}<a href="/privacy" target="_blank" class="text-purple-400 hover:underline">{("")}</a>
-							{("")}
+							אני מאשר את
+							<a href="/terms" target="_blank" class="text-purple-400 hover:underline">{tFn("terms")}</a>
+							ו<a href="/privacy" target="_blank" class="text-purple-400 hover:underline">{tFn("privacy")}</a>
+								{tFn("terms_agree_suffix")}
+							של האתר
 						</span>
 					</label>
 					<button type="submit"
@@ -476,7 +483,7 @@ import { t } from 'svelte-i18n';
 						       text-white font-bold px-7 py-3 rounded-xl shadow-lg transition-all hover:-translate-y-0.5
 						       cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0"
 					>
-						{$t("save_changes")}
+						{tFn("save_changes")}
 					</button>
 				</div>
 			{/if}
@@ -487,7 +494,7 @@ import { t } from 'svelte-i18n';
 	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl">
 		<h2 class="text-xl font-black text-white flex items-center gap-2 mb-6">
 			<span class="w-1.5 h-7 bg-blue-500 rounded-full inline-block"></span>
-			{("")}
+			{tFn("my_publications")}
 			{#if data.items.length > 0}
 				<span class="text-xs bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2.5 py-0.5 rounded-full font-bold">
 					{data.items.length}
@@ -498,11 +505,11 @@ import { t } from 'svelte-i18n';
 		{#if data.items.length === 0}
 			<div class="text-center py-12">
 				<span class="text-6xl block mb-4">📭</span>
-				<p class="text-gray-400 mb-6 text-sm">{("")}</p>
+				<p class="text-gray-400 mb-6 text-sm">{tFn("no_items")}</p>
 				<a href="/"
 					class="inline-block bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500
 					       text-white font-bold px-6 py-3 rounded-xl shadow-lg transition-all hover:-translate-y-0.5">
-					{("")}
+					{tFn("publish_first")}
 				</a>
 			</div>
 		{:else}
@@ -522,7 +529,7 @@ import { t } from 'svelte-i18n';
 									  {item.status === 'active'
 									    ? 'bg-green-500/20 text-green-400 border border-green-500/30'
 									    : 'bg-gray-500/20 text-gray-400 border border-gray-500/30'}">
-										{item.status === 'active' ? ('') : item.status}
+										{item.status === 'active' ? tFn('status_active') : item.status}
 									</span>
 								</div>
 								{#if item.description}
@@ -533,7 +540,7 @@ import { t } from 'svelte-i18n';
 										<span class="text-purple-400/70 text-xs">📍 {item.neighborhood}</span>
 									{/if}
 									<span class="text-gray-600 text-xs">
-										{new Date(item.created_at).toLocaleDateString('')}
+										{new Date(item.created_at).toLocaleDateString('he-IL')}
 									</span>
 								</div>
 							</div>
@@ -550,7 +557,7 @@ import { t } from 'svelte-i18n';
 	<div class="fixed z-[9999] pointer-events-none"
 		style="left: {editTooltipX}px; top: {editTooltipY}px;">
 		<div class="bg-gray-900 text-white text-xs rounded-lg px-3 py-1.5 shadow-xl whitespace-nowrap border border-white/10">
-			{("")}
+			{tFn("edit_tooltip")}
 		</div>
 	</div>
 {/if}
