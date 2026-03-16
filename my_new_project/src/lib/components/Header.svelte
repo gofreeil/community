@@ -202,7 +202,7 @@
 
         <!-- Desktop Header - Full Layout -->
         <div
-            class="hidden md:flex flex-col items-center pt-2 pb-3 md:flex-row md:items-center md:justify-between"
+            class="hidden md:flex flex-col items-center pt-2 pb-5 md:flex-row md:items-center md:justify-between"
         >
             <div class="flex items-center space-x-4">
                 <div class="relative group">
@@ -236,7 +236,7 @@
                     >
                         {$t("welcome")}
                     </h1>
-                    <p class="text-base text-gray-200 font-bold">{$t("app_description")}</p>
+                    <p class="text-lg text-gray-100 font-extrabold">{$t("app_description")}</p>
                 </div>
             </div>
             <div class="flex items-center gap-2">
@@ -327,11 +327,11 @@
                                     <img
                                         src={currentUser.avatar_url}
                                         alt={userName}
-                                        class="h-10 w-10 rounded-full object-cover border-2 border-purple-500/40
+                                        class="h-14 w-14 rounded-full object-cover border-2 border-purple-500/40
                                                shadow-lg hover:border-purple-400 transition-all"
                                     />
                                 {:else}
-                                    <div class="flex h-10 w-10 items-center justify-center rounded-full
+                                    <div class="flex h-14 w-14 items-center justify-center rounded-full
                                                 bg-gradient-to-br from-green-400 to-blue-500 shadow-lg
                                                 border-2 border-transparent hover:border-purple-400 transition-all">
                                         <span class="font-bold text-white text-sm">{userName.charAt(0)}</span>
