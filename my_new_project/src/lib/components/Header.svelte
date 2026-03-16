@@ -23,6 +23,14 @@
 
     let showLangDropdown = $state(false);
     let onlineUsers = $state(1);
+    let tooltipX = $state(0);
+    let tooltipY = $state(0);
+    let showProfileTooltip = $state(false);
+
+    function handleProfileMouseMove(e: MouseEvent) {
+        tooltipX = e.clientX + 16;
+        tooltipY = e.clientY - 52;
+    }
 
     // Ads Mode Logic (Mobile Only)
     let showAdsMode = $state(false);
@@ -197,12 +205,12 @@
                 <div class="relative group">
                     <a
                         href="/"
-                        class="flex h-20 w-20 animate-pulse-slow items-center justify-center rounded-2xl shadow-lg transition-transform hover:scale-105"
+                        class="flex h-12 w-12 animate-pulse-slow items-center justify-center rounded-xl shadow-lg transition-transform hover:scale-105"
                     >
                         <img
                             src="/images/logos/לוגו2.png"
                             alt="מיצוי זכויות מקומיות"
-                            class="h-16 w-auto object-contain"
+                            class="h-10 w-auto object-contain"
                         />
                     </a>
                     <!-- Tooltip - Below Logo -->
@@ -304,29 +312,27 @@
                         {@const userName = currentUser.username ?? "U"}
                         <div class="flex items-center gap-3">
                             <!-- תמונת פרופיל עם hover -->
-                            <a href="/profile" class="relative group flex-shrink-0">
+                            <a
+                                href="/profile"
+                                class="relative flex-shrink-0"
+                                onmouseenter={() => showProfileTooltip = true}
+                                onmouseleave={() => showProfileTooltip = false}
+                                onmousemove={handleProfileMouseMove}
+                            >
                                 {#if currentUser.avatar_url}
                                     <img
                                         src={currentUser.avatar_url}
                                         alt={userName}
                                         class="h-10 w-10 rounded-full object-cover border-2 border-purple-500/40
-                                               shadow-lg group-hover:border-purple-400 transition-all"
+                                               shadow-lg hover:border-purple-400 transition-all"
                                     />
                                 {:else}
                                     <div class="flex h-10 w-10 items-center justify-center rounded-full
                                                 bg-gradient-to-br from-green-400 to-blue-500 shadow-lg
-                                                border-2 border-transparent group-hover:border-purple-400 transition-all">
+                                                border-2 border-transparent hover:border-purple-400 transition-all">
                                         <span class="font-bold text-white text-sm">{userName.charAt(0)}</span>
                                     </div>
                                 {/if}
-                                <!-- Tooltip -->
-                                <div class="absolute top-full left-1/2 -translate-x-1/2 mt-2 hidden group-hover:block z-[9999]">
-                                    <div class="bg-gray-900 text-white text-xs rounded-lg px-3 py-2 shadow-xl whitespace-nowrap border border-white/10 text-center">
-                                        <div class="font-semibold mb-0.5">{$t("app_description")}</div>
-                                        <div class="text-gray-400">✏️ ערוך פרופיל</div>
-                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-gray-900"></div>
-                                    </div>
-                                </div>
                             </a>
                         </div>
                     {:else}
@@ -342,6 +348,19 @@
         </div>
     </div>
 </header>
+
+<!-- Cursor-following profile tooltip -->
+{#if showProfileTooltip}
+    <div
+        class="fixed z-[9999] pointer-events-none"
+        style="left: {tooltipX}px; top: {tooltipY}px;"
+    >
+        <div class="bg-gray-900 text-white text-xs rounded-lg px-3 py-2 shadow-xl whitespace-nowrap border border-white/10 text-center">
+            <div class="font-semibold">{$t("app_description")}</div>
+            <div class="text-gray-400 mt-0.5">✏️ ערוך פרופיל</div>
+        </div>
+    </div>
+{/if}
 
 <!-- FullAdModal popup -->
 {#if selectedAdForModal}
