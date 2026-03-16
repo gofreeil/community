@@ -54,6 +54,12 @@ export const actions: Actions = {
         const neighborhood  = formData.get('neighborhood')?.toString().trim()  ?? '';
         const business      = formData.get('business')?.toString().trim()      ?? '';
         const family_status = formData.get('family_status')?.toString()        ?? '';
+        const birth_day    = formData.get('birth_day')?.toString()   ?? '';
+        const birth_month  = formData.get('birth_month')?.toString() ?? '';
+        const birth_year   = formData.get('birth_year')?.toString()  ?? '';
+        const birth_date   = (birth_day && birth_month && birth_year)
+            ? `${birth_year}-${birth_month.padStart(2,'0')}-${birth_day.padStart(2,'0')}`
+            : '';
         const gender        = formData.get('gender')?.toString()               ?? '';
         const notifications = formData.get('notifications') === 'true' ? 1 : 0;
         const avatarBase64  = formData.get('avatar_base64')?.toString()        ?? '';
@@ -72,6 +78,7 @@ export const actions: Actions = {
                 neighborhood,
                 business,
                 family_status,
+                birth_date,
                 gender,
                 notifications,
                 ...(avatarBase64 ? { avatar_url: avatarBase64 } : {}),

@@ -30,6 +30,10 @@
 	let business      = $state(data.user?.business      ?? '');
 	let family_status = $state(data.user?.family_status ?? '');
 	let gender        = $state(data.user?.gender        ?? '');
+	const birthParts  = (data.user?.birth_date ?? '').split('-');
+	let birthYear     = $state(birthParts[0] ?? '');
+	let birthMonth    = $state(birthParts[1] ? String(parseInt(birthParts[1])) : '');
+	let birthDay      = $state(birthParts[2] ? String(parseInt(birthParts[2])) : '');
 	let notifications  = $state(data.user?.notifications !== 0);
 	let termsAccepted  = $state(false);
 
@@ -114,7 +118,7 @@
 	const ringTipKeys = [
 		'tip_avatar', 'tip_name', 'tip_email', 'tip_nickname',
 		'tip_phone', 'tip_city', 'tip_neighborhood', 'tip_gender',
-		'tip_business', 'tip_family_status', 'tip_notifications',
+		'tip_business', 'tip_family_status', 'tip_birth_date', 'tip_notifications',
 	] as const;
 	let nextTipKey = $derived(
 		profileCompletion >= 100
@@ -504,6 +508,39 @@
 							 : family_status === 'family'   ? tFn('status_family')
 							 : '—'}
 						</p>
+					{/if}
+					<p class="text-gray-600 text-xs mt-1 px-1">{tFn("not_shown_public")}</p>
+				</div>
+
+				<!-- תאריך לידה -->
+				<div>
+					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("birth_date_label")}</label>
+					{#if isEditing}
+						<div class="flex gap-2">
+							<select name="birth_day" bind:value={birthDay}
+								class="flex-1 bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl px-3 py-3 text-white text-sm outline-none appearance-none text-center">
+								<option value="">{tFn("birth_day")}</option>
+								{#each Array.from({length: 31}, (_, i) => i + 1) as d}
+									<option value={String(d)}>{d}</option>
+								{/each}
+							</select>
+							<select name="birth_month" bind:value={birthMonth}
+								class="flex-[2] bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl px-3 py-3 text-white text-sm outline-none appearance-none text-center">
+								<option value="">{tFn("birth_month")}</option>
+								{#each tFn("months_list").split(",") as month, i}
+									<option value={String(i + 1)}>{month}</option>
+								{/each}
+							</select>
+							<select name="birth_year" bind:value={birthYear}
+								class="flex-[1.5] bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl px-3 py-3 text-white text-sm outline-none appearance-none text-center">
+								<option value="">{tFn("birth_year")}</option>
+								{#each Array.from({length: 100}, (_, i) => new Date().getFullYear() - i) as y}
+									<option value={String(y)}>{y}</option>
+								{/each}
+							</select>
+						</div>
+					{:else}
+						<p class="text-white font-medium py-3 px-1">{birthDay && birthMonth && birthYear ? `${birthDay} / ${tFn("months_list").split(",")[parseInt(birthMonth)-1]} / ${birthYear}` : '—'}</p>
 					{/if}
 					<p class="text-gray-600 text-xs mt-1 px-1">{tFn("not_shown_public")}</p>
 				</div>

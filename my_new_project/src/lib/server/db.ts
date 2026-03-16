@@ -43,6 +43,7 @@ function getDb(): Database.Database {
         notifications        INTEGER DEFAULT 1,
         family_status        TEXT DEFAULT '',
         gender               TEXT DEFAULT '',
+        birth_date           TEXT DEFAULT '',
         balance              REAL DEFAULT 0,
         created_at           TEXT DEFAULT (datetime('now'))
       )
@@ -58,6 +59,7 @@ function getDb(): Database.Database {
     if (!colNames.includes('notifications')) db.exec(`ALTER TABLE users ADD COLUMN notifications INTEGER DEFAULT 1`);
     if (!colNames.includes('family_status')) db.exec(`ALTER TABLE users ADD COLUMN family_status TEXT DEFAULT ''`);
     if (!colNames.includes('gender'))        db.exec(`ALTER TABLE users ADD COLUMN gender TEXT DEFAULT ''`);
+    if (!colNames.includes('birth_date'))    db.exec(`ALTER TABLE users ADD COLUMN birth_date TEXT DEFAULT ''`);
 
     return db;
 }
