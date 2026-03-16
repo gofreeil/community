@@ -25,7 +25,11 @@ export const load: PageServerLoad = async (event) => {
 
     // fallback לתמונת OAuth אם אין avatar_url ב-DB
     const resolvedUser = user
-        ? { ...user, avatar_url: user.avatar_url || session.user?.image || null }
+        ? {
+            ...user,
+            avatar_url: user.avatar_url || session.user?.image || null,
+            email:      user.email      || session.user?.email || null,
+          }
         : null;
 
     return { user: resolvedUser, items: items ?? [], citiesData };
