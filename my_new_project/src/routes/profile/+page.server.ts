@@ -1,6 +1,6 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { getUserById, updateUserProfile, getItemsByUserId } from '$lib/server/db';
+import { getUserById, updateUserProfile, getItemsByUserId, upsertUser } from '$lib/server/db';
 import { citiesData } from '$lib/neighborhoodsData';
 
 export const load: PageServerLoad = async (event) => {
@@ -23,14 +23,40 @@ export const load: PageServerLoad = async (event) => {
         items = [];
     }
 
+    // אם המשתמש לא נמצא ב-DB (DB אופס), ניצור אותו מחדש מה-session
+    if (!user && session.user?.id) {
+        try {
+            const provider = (session.user as { provider?: string }).provider ?? 'google';
+            upsertUser({
+                id:         session.user.id,
+                name:       session.user.name  ?? null,
+                email:      session.user.email ?? null,
+                avatar_url: session.user.image ?? null,
+                provider,
+            });
+            user = getUserById(session.user.id);
+        } catch (e) {
+            console.warn('[profile] auto-upsert failed:', e);
+        }
+    }
+
     // fallback לתמונת OAuth אם אין avatar_url ב-DB
     const resolvedUser = user
         ? {
             ...user,
             avatar_url: user.avatar_url || session.user?.image || null,
             email:      user.email      || session.user?.email || null,
+            name:       user.name       || session.user?.name  || null,
           }
-        : null;
+        : {
+            id:           session.user.id ?? '',
+            name:         session.user?.name  ?? null,
+            email:        session.user?.email ?? null,
+            avatar_url:   session.user?.image ?? null,
+            phone: '', nickname: '', city: '', neighborhood: '',
+            business: '', gender: '', family_status: '', birth_date: '',
+            notifications: 1, provider: null, password_hash: null, created_at: '',
+          };
 
     return {
         user: resolvedUser,
