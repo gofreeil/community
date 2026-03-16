@@ -690,7 +690,7 @@
 			</div>
 
 			{#if isEditing}
-				<div class="mt-6 flex items-center gap-4 flex-wrap">
+				<div class="mt-4 flex items-center gap-3">
 					<label class="flex items-center gap-3 cursor-pointer flex-1 min-w-0">
 						<input type="checkbox" bind:checked={termsAccepted}
 							class="w-4 h-4 accent-purple-500 cursor-pointer flex-shrink-0" />
