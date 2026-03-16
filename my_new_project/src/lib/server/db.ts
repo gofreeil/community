@@ -43,9 +43,12 @@ function getDb(): Database.Database {
         notifications        INTEGER DEFAULT 1,
         family_status        TEXT DEFAULT '',
         gender               TEXT DEFAULT '',
+        balance              REAL DEFAULT 0,
         created_at           TEXT DEFAULT (datetime('now'))
       )
     `);
+    // מיגרציה — הוסף balance אם לא קיים
+    try { db.exec(`ALTER TABLE users ADD COLUMN balance REAL DEFAULT 0`); } catch {}
 
     // הוסף עמודות חסרות למסד נתונים קיים
     const existingCols = db.prepare(`PRAGMA table_info(users)`).all() as {name: string}[];
@@ -111,6 +114,7 @@ export interface DbUser {
     notifications: number;
     family_status: string;
     gender: string;
+    balance: number;
     created_at: string;
 }
 

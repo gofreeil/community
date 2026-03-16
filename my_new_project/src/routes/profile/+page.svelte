@@ -173,7 +173,7 @@
 				{tFn("logout_btn")}
 			</button>
 		</div>
-		<div class="flex items-center gap-5">
+		<div class="flex items-center justify-between gap-5">
 
 			<!-- אווטר + מעגל מילוי -->
 			<div class="relative flex-shrink-0 mb-3 cursor-pointer"
@@ -228,10 +228,10 @@
 				<div class="w-52 group-hover:scale-105 transition-transform duration-200" style="-webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 80%); mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 80%);">
 					<img src="/images/wallet.png" alt="המזומן שלי" class="w-full h-auto block" />
 				</div>
-				<span class="text-xs text-gray-300 font-bold">המזומן שלי</span>
+				<span class="text-xs text-gray-300 font-bold">היתרה שלי: <span class="text-green-400">{data.user?.balance ?? 0}₪</span></span>
 			</div>
 
-			<div class="min-w-0 flex-1">
+			<div class="min-w-0">
 				<h1 class="text-2xl font-black text-white truncate">
 					{data.user?.nickname || data.user?.name || ''}
 				</h1>
