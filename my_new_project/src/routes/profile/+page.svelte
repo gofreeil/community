@@ -220,7 +220,7 @@
 
 			<div class="min-w-0 flex-1">
 				<h1 class="text-2xl font-black text-white truncate">
-					{data.user?.nickname || data.user?.name || tFn('default_user')}
+					{data.user?.nickname || data.user?.name || ''}
 				</h1>
 				{#if data.user?.email}
 					<p class="text-gray-400 text-sm mt-0.5">{data.user.email}</p>
