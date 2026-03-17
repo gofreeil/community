@@ -42,10 +42,13 @@ export async function strapiPost<T = unknown>(path: string, body: unknown): Prom
     return res.json() as Promise<T>;
 }
 
-export async function strapiPut<T = unknown>(path: string, body: unknown): Promise<T> {
+export async function strapiPut<T = unknown>(path: string, body: unknown, jwt?: string): Promise<T> {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    const token = jwt ?? STRAPI_TOKEN;
+    if (token) headers['Authorization'] = `Bearer ${token}`;
     const res = await fetch(STRAPI_URL + path, {
         method:  'PUT',
-        headers: getHeaders(),
+        headers,
         body:    JSON.stringify(body),
     });
     if (!res.ok) {

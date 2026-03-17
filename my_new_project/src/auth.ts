@@ -2,12 +2,39 @@ import { SvelteKitAuth } from '@auth/sveltekit';
 import Google from '@auth/sveltekit/providers/google';
 import Facebook from '@auth/sveltekit/providers/facebook';
 import Credentials from '@auth/sveltekit/providers/credentials';
+import { createHash } from 'crypto';
 import { upsertUser, verifyCredentials } from '$lib/server/db';
+import { strapiLogin, strapiRegister } from '$lib/server/strapiClient';
+
 const AUTH_SECRET         = process.env.AUTH_SECRET         ?? '';
 const AUTH_GOOGLE_ID      = process.env.AUTH_GOOGLE_ID      ?? '';
 const AUTH_GOOGLE_SECRET  = process.env.AUTH_GOOGLE_SECRET  ?? '';
 const AUTH_FACEBOOK_ID    = process.env.AUTH_FACEBOOK_ID    ?? '';
 const AUTH_FACEBOOK_SECRET= process.env.AUTH_FACEBOOK_SECRET?? '';
+
+// ============================================================
+// קבלת JWT של Strapi עבור משתמשי OAuth
+// יוצר חשבון Strapi users-permissions דטרמיניסטי לכל OAuth user
+// ============================================================
+async function getOrCreateStrapiJwt(email: string | null | undefined, stableId: string): Promise<string | null> {
+    if (!email) return null;
+    // סיסמה דטרמיניסטית — sha256(stableId + AUTH_SECRET), קבועה לכל login
+    const password = createHash('sha256').update(stableId + AUTH_SECRET).digest('hex').slice(0, 32);
+    const username = stableId.replace(/[^a-zA-Z0-9_]/g, '_').slice(0, 30);
+    try {
+        const { jwt } = await strapiLogin(email, password);
+        return jwt;
+    } catch {
+        // משתמש לא קיים — ניצור אותו
+        try {
+            const { jwt } = await strapiRegister(username, email, password);
+            return jwt;
+        } catch (err) {
+            console.warn('[auth] getOrCreateStrapiJwt failed:', err);
+            return null;
+        }
+    }
+}
 
 export const { handle, signIn, signOut } = SvelteKitAuth({
     secret: AUTH_SECRET,
@@ -67,6 +94,9 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
                 });
                 // נעביר את ה-stableId לתוך token דרך jwt callback
                 user.id = stableId;
+                // קבל JWT של Strapi עבור OAuth user ושמור ב-session
+                const strapiJwt = await getOrCreateStrapiJwt(user.email, stableId);
+                if (strapiJwt) (user as { strapiJwt?: string }).strapiJwt = strapiJwt;
                 return true;
             } catch (error) {
                 console.error('Failed to upsert user:', error);

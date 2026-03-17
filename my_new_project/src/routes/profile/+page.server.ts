@@ -71,6 +71,10 @@ export const actions: Actions = {
         const session = await event.locals.auth();
         if (!session?.user?.id) throw redirect(302, '/login?redirect=/profile');
 
+        const strapiJwt = event.cookies.get('strapi_jwt')
+            ?? (session.user as { strapiJwt?: string }).strapiJwt
+            ?? undefined;
+
         const formData      = await event.request.formData();
         const name          = formData.get('name')?.toString().trim()          ?? '';
         const email         = formData.get('email')?.toString().trim()         ?? '';
@@ -108,7 +112,7 @@ export const actions: Actions = {
                 gender,
                 notifications,
                 ...(avatarBase64 ? { avatar_url: avatarBase64 } : {}),
-            });
+            }, strapiJwt);
             return { success: true };
         } catch {
             return fail(500, { error: 'שגיאה בעדכון הפרופיל' });

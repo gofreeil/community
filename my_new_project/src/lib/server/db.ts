@@ -338,7 +338,7 @@ export async function getUserByEmail(email: string): Promise<DbUser | undefined>
     return u ? mapStrapiUser(u) : undefined;
 }
 
-export async function updateUserProfile(id: string, data: UpdateProfileData): Promise<DbUser | undefined> {
+export async function updateUserProfile(id: string, data: UpdateProfileData, jwt?: string): Promise<DbUser | undefined> {
     const existing = await findStrapiUser(id);
     if (!existing) return undefined;
 
@@ -358,7 +358,7 @@ export async function updateUserProfile(id: string, data: UpdateProfileData): Pr
 
     if (Object.keys(updates).length === 0) return getUserById(id);
 
-    await strapiPut(`/api/community-users/${existing.documentId}`, { data: updates });
+    await strapiPut(`/api/community-users/${existing.documentId}`, { data: updates }, jwt);
     return getUserById(id);
 }
 
