@@ -295,7 +295,7 @@
 		<div class="flex items-center justify-between gap-5">
 
 			<!-- אווטר + מעגל מילוי -->
-			<div class="flex-shrink-0 flex flex-col items-center gap-5">
+			<div class="flex-shrink-0 flex flex-col items-center gap-8">
 				<div class="relative cursor-pointer"
 					onmouseenter={() => (showRingTooltip = true)}
 					onmouseleave={() => (showRingTooltip = false)}
@@ -350,7 +350,7 @@
 						📍 {[neighborhood, city].filter(Boolean).join(', ')}
 					</p>
 				{/if}
-				<div class="mt-3 flex items-center gap-1.5">
+				<div class="mt-6 flex items-center gap-1.5">
 					<span class="text-white/50 text-xs font-bold">דרגה:</span>
 					{#if userLevel >= 2}
 						<span class="text-emerald-400 text-xs font-black">
