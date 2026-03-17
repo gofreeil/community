@@ -353,6 +353,14 @@
 						📍 {[data.user?.neighborhood, data.user?.city].filter(Boolean).join(', ')}
 					</p>
 				{/if}
+				<div class="mt-2">
+					<span class="text-white font-black text-sm">הרשאות: </span>
+					{#if data.user?.city && data.user?.neighborhood}
+						<span class="text-green-400 text-sm font-bold">רשאי להעלות מידע ולענות על משאלים בשכונה</span>
+					{:else}
+						<span class="text-gray-400 text-sm font-bold">הסתכלות ללא שימוש</span>
+					{/if}
+				</div>
 				<div class="flex gap-3 mt-2 flex-wrap">
 					{#if data.items.length > 0}
 						<span class="text-xs bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2.5 py-1 rounded-full font-bold">
