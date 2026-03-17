@@ -18,6 +18,7 @@
 	const DRAFT_KEY = 'profile_draft';
 
 	let isEditing   = $state(!data.user?.name || data.user.name.length < 2);
+	let showLevels  = $state(false);
 	let saveSuccess = $state(false);
 	let avatarPreview = $state<string | null>(data.user?.avatar_url ?? null);
 	let avatarBase64  = $state('');
@@ -750,12 +751,30 @@
 	</div>
 
 	<!-- ===== קומה 3: דרגה והרשאות ===== -->
-	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl">
-		<h2 class="text-xl font-black text-white flex items-center gap-2 mb-6">
-			<span class="w-6 h-6 rounded-full bg-emerald-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">3</span>
-			דרגה והרשאות
-		</h2>
+	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl mb-6">
+		<div
+			class="flex items-center justify-between cursor-pointer select-none {showLevels ? 'mb-6' : ''}"
+			onclick={() => (showLevels = !showLevels)}
+			role="button"
+			tabindex={0}
+			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') showLevels = !showLevels; }}
+		>
+			<h2 class="text-xl font-black text-white flex items-center gap-2">
+				<span class="w-6 h-6 rounded-full bg-emerald-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">3</span>
+				דרגה והרשאות
+			</h2>
+			<!-- סיכום דרגה נוכחית -->
+			<div class="flex items-center gap-2">
+				{#if userLevel >= 2}
+					<span class="text-xs bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1 rounded-full font-bold">⭐ משתמש</span>
+				{:else}
+					<span class="text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full font-bold">👁 צופה</span>
+				{/if}
+				<span class="text-gray-400 text-lg transition-transform duration-300 {showLevels ? 'rotate-180' : ''}">⌄</span>
+			</div>
+		</div>
 
+		{#if showLevels}
 		<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
 			<!-- דרגה 1: צופה -->
@@ -876,7 +895,8 @@
 				<p class="text-gray-600 text-[11px]">בקרוב — בהמשך הפיתוח</p>
 			</div>
 
-	</div>
+		</div>
+		{/if}
 	</div>
 
 	<!-- ===== קומה 4: המידע שלי ===== -->
