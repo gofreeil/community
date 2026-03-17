@@ -802,15 +802,15 @@
 					</div>
 					<div class="flex items-center gap-1.5">
 						<span class="text-red-400 text-sm">✕</span>
-						<span class="text-gray-400 text-xs">משתתף במשאלי עם שכונתיים</span>
+						<span class="text-gray-200 text-xs">משתתף במשאלי עם שכונתיים</span>
 					</div>
 					<div class="flex items-center gap-1.5">
 						<span class="text-red-400 text-sm">✕</span>
-						<span class="text-gray-400 text-xs">העלאת תוכן</span>
+						<span class="text-gray-200 text-xs">העלאת תוכן</span>
 					</div>
 					<div class="flex items-center gap-1.5">
 						<span class="text-red-400 text-sm">✕</span>
-						<span class="text-gray-400 text-xs">ניהול תוכן</span>
+						<span class="text-gray-200 text-xs">ניהול תוכן</span>
 					</div>
 				</div>
 			</div>
@@ -848,7 +848,7 @@
 					</div>
 					<div class="flex items-center gap-1.5">
 						<span class="text-red-400 text-sm">✕</span>
-						<span class="text-gray-400 text-xs">ניהול תוכן</span>
+						<span class="text-gray-200 text-xs">ניהול תוכן</span>
 					</div>
 				</div>
 				{#if userLevel < 2}
