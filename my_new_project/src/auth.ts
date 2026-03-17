@@ -79,7 +79,13 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
             if (!account || !user) return false;
 
             // Credentials provider — upsert כבר נעשה ב-authorize
-            if (account.provider === 'credentials') return true;
+            // קבל JWT של Strapi גם עבור credentials user
+            if (account.provider === 'credentials') {
+                const stableId = user.id ?? `credentials_${user.email}`;
+                const strapiJwt = await getOrCreateStrapiJwt(user.email, stableId);
+                if (strapiJwt) (user as { strapiJwt?: string }).strapiJwt = strapiJwt;
+                return true;
+            }
 
             // מזהה יציב: provider_providerAccountId (ייחודי חוצה-ספקים)
             const stableId = `${account.provider}_${account.providerAccountId}`;
