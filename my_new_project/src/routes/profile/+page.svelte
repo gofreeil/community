@@ -288,35 +288,38 @@
 		<div class="flex items-center justify-between gap-5">
 
 			<!-- אווטר + מעגל מילוי -->
-			<div class="relative flex-shrink-0 mb-3 cursor-pointer"
-				onmouseenter={() => (showRingTooltip = true)}
-				onmouseleave={() => (showRingTooltip = false)}
-				onmousemove={handleRingMouseMove}
-				role="img"
-				aria-label={tFn(nextTipKey)}
-			>
-				{#if avatarPreview}
-					<img src={avatarPreview} alt={tFn("profile_photo")}
-						class="w-20 h-20 rounded-full border-2 border-purple-500/40 shadow-xl object-cover" />
-				{:else}
-					<div class="w-20 h-20 rounded-full bg-gray-700
-					            flex items-center justify-center border-2 border-gray-600 shadow-xl">
-						<svg viewBox="0 0 24 24" class="w-12 h-12 text-gray-400" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-								<circle cx="12" cy="8" r="4"/>
-								<path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
-							</svg>
-					</div>
-				{/if}
+			<div class="flex-shrink-0 mb-3 flex flex-col items-center gap-1">
+				<div class="relative cursor-pointer"
+					onmouseenter={() => (showRingTooltip = true)}
+					onmouseleave={() => (showRingTooltip = false)}
+					onmousemove={handleRingMouseMove}
+					role="img"
+					aria-label={tFn(nextTipKey)}
+				>
+					{#if avatarPreview}
+						<img src={avatarPreview} alt={tFn("profile_photo")}
+							class="w-20 h-20 rounded-full border-2 border-purple-500/40 shadow-xl object-cover" />
+					{:else}
+						<div class="w-20 h-20 rounded-full bg-gray-700
+						            flex items-center justify-center border-2 border-gray-600 shadow-xl">
+							<svg viewBox="0 0 24 24" class="w-12 h-12 text-gray-400" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+									<circle cx="12" cy="8" r="4"/>
+									<path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+								</svg>
+						</div>
+					{/if}
 
-				<!-- עיגול הודעות -->
-				<div class="absolute -top-1 -left-1 min-w-[22px] h-[22px] px-1
-				            bg-red-500 border-2 border-[#0f172a] rounded-full
-				            flex items-center justify-center
-				            text-white text-[11px] font-black leading-none
-				            shadow-lg">
-					3
+					<!-- עיגול הודעות — שמאל מטה -->
+					<div class="absolute -bottom-1 -left-1 min-w-[22px] h-[22px] px-1
+					            bg-red-500 border-2 border-[#0f172a] rounded-full
+					            flex items-center justify-center
+					            text-white text-[11px] font-black leading-none shadow-lg">
+						3
+					</div>
 				</div>
 
+				<!-- תווית מתחת לתמונה -->
+				<span class="text-[11px] text-red-400 font-bold">הודעות אישיות</span>
 			</div>
 
 
