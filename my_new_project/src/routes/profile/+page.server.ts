@@ -10,7 +10,8 @@ export const load: PageServerLoad = async (event) => {
         throw redirect(302, '/login?redirect=/profile');
     }
 
-    let user, items;
+    let user: Awaited<ReturnType<typeof getUserById>>;
+    let items: Awaited<ReturnType<typeof getItemsByUserId>> = [];
     try {
         user  = await getUserById(session.user.id);
     } catch (e) {

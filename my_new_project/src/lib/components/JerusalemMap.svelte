@@ -204,7 +204,7 @@
     const currentYear = new Date().getFullYear();
 
     // אנימציה של רשימה פעם אחת בלבד אחרי 15 שניות מכניסה לאתר
-    let listAnimationTimeout: number | null = null;
+    let listAnimationTimeout: ReturnType<typeof setTimeout> | null = null;
 
     // מיפוי שכונות לכתובות Google Maps
     const neighborhoodMaps: Record<string, string> = {
@@ -535,9 +535,9 @@
         };
 
         // Setup scroll indicators after a short delay to ensure DOM is ready
-        const scrollCleanup = setupScrollIndicators();
+        setupScrollIndicators();
         setTimeout(() => {
-            if (scrollCleanup) scrollCleanup();
+            setupScrollIndicators();
         }, 100);
 
         return () => {
@@ -545,7 +545,6 @@
                 clearTimeout(listAnimationTimeout);
             }
             document.removeEventListener("click", handleClickOutside);
-            if (scrollCleanup) scrollCleanup();
         };
     });
 

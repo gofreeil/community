@@ -13,7 +13,7 @@
 	// tFn: פונקציית תרגום reactive — לא משתמשים ב-$t ישירות כי Prettier מוחק אותו
 	let _loc = $state(get(locale));
 	$effect(() => locale.subscribe(l => (_loc = l)));
-	const tFn = (k: string) => (_loc, get(t)(k));
+	const tFn = (k: string) => { void _loc; return get(t)(k); };
 
 	const DRAFT_KEY = 'profile_draft';
 
@@ -332,7 +332,7 @@
 				<div class="w-52 group-hover:scale-105 transition-transform duration-200" style="-webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 80%); mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 80%);">
 					<img src="/images/wallet.png" alt="המזומן שלי" class="w-full h-auto block" />
 				</div>
-				<span class="text-xs text-gray-300 font-bold">היתרה שלי: <span class="text-green-400">{data.user?.balance ?? 0}₪</span></span>
+				<span class="text-xs text-gray-300 font-bold">היתרה שלי: <span class="text-green-400">{(data.user as {balance?:number})?.balance ?? 0}₪</span></span>
 			</div>
 
 			<div class="min-w-0">

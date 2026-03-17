@@ -26,3 +26,9 @@ vite.config.ts.timestamp-*
 community.db
 community.db-shm
 community.db-wal
+
+# Claude worktrees
+.claude/worktrees/
+
+# Windows null device
+nul

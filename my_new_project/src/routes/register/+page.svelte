@@ -10,7 +10,7 @@
 	// tFn: תרגום reactive — $t אסור ב-Svelte 5
 	let _loc = $state(get(locale));
 	$effect(() => locale.subscribe(l => (_loc = l)));
-	const tFn = (k: string) => (_loc, get(t)(k));
+	const tFn = (k: string) => { void _loc; return get(t)(k); };
 
 </script>
 

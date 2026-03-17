@@ -12,8 +12,10 @@
     onMount(() => {
         if (browser) {
             // טעינת Facebook SDK
-            window.fbAsyncInit = function() {
-                FB.init({
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (window as any).fbAsyncInit = function() {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (window as any).FB.init({
                     appId: appId || 'YOUR_APP_ID', // צריך להחליף ב-App ID אמיתי
                     xfbml: true,
                     version: 'v18.0'

@@ -56,7 +56,8 @@ export const actions: Actions = {
         }
 
         try {
-            await signIn('credentials', {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            await (signIn as any)('credentials', {
                 email,
                 password,
                 redirect: false,
