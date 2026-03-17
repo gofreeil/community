@@ -775,6 +775,14 @@
 					<span class="text-emerald-400 text-sm">✓</span>
 					<span class="text-gray-300 text-xs font-bold">כניסה וצפיה באתר</span>
 				</div>
+				<div class="flex items-center gap-1.5">
+					<span class="text-red-400/60 text-sm">✕</span>
+					<span class="text-gray-500 text-xs line-through">העלאת תוכן</span>
+				</div>
+				<div class="flex items-center gap-1.5">
+					<span class="text-red-400/60 text-sm">✕</span>
+					<span class="text-gray-500 text-xs line-through">ניהול תוכן</span>
+				</div>
 			</div>
 
 			<!-- דרגה 2: משתמש -->
@@ -798,6 +806,10 @@
 					<div class="flex items-center gap-1.5">
 						<span class="text-purple-400 text-sm">✓</span>
 						<span class="text-gray-300 text-xs font-bold">העלאת תוכן</span>
+					</div>
+					<div class="flex items-center gap-1.5">
+						<span class="text-red-400/60 text-sm">✕</span>
+						<span class="text-gray-500 text-xs line-through">ניהול תוכן</span>
 					</div>
 				</div>
 				{#if userLevel < 2}
