@@ -308,28 +308,6 @@
 					</div>
 				{/if}
 
-				<!-- מעגל SVG -->
-				<svg width="92" height="92"
-					class="absolute pointer-events-none"
-					style="top: -6px; left: -6px; transform: rotate(-90deg)">
-					<circle cx="46" cy="46" r="43" fill="none"
-						stroke="rgba(255,255,255,0.08)" stroke-width="6" />
-					<circle cx="46" cy="46" r="43" fill="none"
-						stroke={ringColor}
-						stroke-width="6"
-						stroke-linecap="round"
-						stroke-dasharray={ringCircumference}
-						stroke-dashoffset={ringCircumference * (1 - profileCompletion / 100)}
-						style="transition: stroke-dashoffset 0.6s ease, stroke 0.4s ease" />
-				</svg>
-
-				<!-- אחוז מילוי -->
-				<div class="absolute -bottom-4 left-1/2 -translate-x-1/2
-				            bg-[#0f172a] border rounded-full px-1.5 py-0.5
-				            text-[10px] font-bold whitespace-nowrap z-10"
-					style="color: {ringColor}; border-color: {ringColor}55">
-					{profileCompletion}%
-				</div>
 
 			</div>
 
@@ -393,6 +371,18 @@
 				<span class="w-6 h-6 rounded-full bg-purple-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">2</span>
 				{tFn("section_profile_details")}
 			</h2>
+			<!-- מעגל אחוז מילוי -->
+			<div class="relative flex items-center justify-center" style="width:36px;height:36px;">
+				<svg width="36" height="36" class="absolute" style="top:0;left:0;transform:rotate(-90deg)">
+					<circle cx="18" cy="18" r="16" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="4" />
+					<circle cx="18" cy="18" r="16" fill="none"
+						stroke={ringColor} stroke-width="4" stroke-linecap="round"
+						stroke-dasharray={2 * Math.PI * 16}
+						stroke-dashoffset={2 * Math.PI * 16 * (1 - profileCompletion / 100)}
+						style="transition: stroke-dashoffset 0.6s ease, stroke 0.4s ease" />
+				</svg>
+				<span class="text-[9px] font-black z-10" style="color:{ringColor}">{profileCompletion}%</span>
+			</div>
 			<button
 				onclick={(e) => { e.stopPropagation(); isEditing = !isEditing; saveSuccess = false; }}
 				class="text-sm font-bold px-4 py-2 rounded-xl transition-all cursor-pointer
