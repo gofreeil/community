@@ -348,11 +348,6 @@
 				{#if data.user?.email}
 					<p class="text-gray-400 text-sm mt-0.5">{data.user.email}</p>
 				{/if}
-				{#if data.user?.birth_date}
-					{@const bp = data.user.birth_date.split("-")}
-					{@const months = tFn("months_list").split(",")}
-					<p class="text-gray-400 text-sm mt-0.5">🎂 {parseInt(bp[2])} / {months[parseInt(bp[1]) - 1]} / {bp[0]}</p>
-				{/if}
 				{#if data.user?.neighborhood || data.user?.city}
 					<p class="text-purple-400 text-sm mt-1">
 						📍 {[data.user?.neighborhood, data.user?.city].filter(Boolean).join(', ')}
