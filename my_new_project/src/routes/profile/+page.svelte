@@ -759,40 +759,44 @@
 		<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
 			<!-- דרגה 1: צופה -->
-			<div class="rounded-2xl border-2 p-5 flex flex-col gap-3 transition-all
-			            {userLevel === 1
+			<div class="relative rounded-2xl border-2 p-5 flex flex-col gap-3 transition-all
+			            {userLevel >= 1
 			              ? 'border-emerald-500 bg-emerald-500/10 shadow-lg shadow-emerald-500/10'
 			              : 'border-white/10 bg-white/3 opacity-60'}">
+				{#if userLevel >= 1}
+					<div class="absolute -top-4 -right-4 w-9 h-9 rounded-full bg-emerald-500 border-[3px] border-[#0f172a] flex items-center justify-center shadow-lg shadow-emerald-500/50 z-10">
+						<span class="text-white font-black text-lg leading-none">✓</span>
+					</div>
+				{/if}
 				<div class="flex items-center gap-2">
 					<span class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0
-					             {userLevel === 1 ? 'bg-emerald-500 text-white' : 'bg-white/10 text-gray-400'}">1</span>
+					             {userLevel >= 1 ? 'bg-emerald-500 text-white' : 'bg-white/10 text-gray-400'}">1</span>
 					<span class="font-black text-white text-base">צופה</span>
 					{#if userLevel === 1}
 						<span class="mr-auto text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold">הדרגה שלך</span>
 					{/if}
 				</div>
-				<div class="flex items-center gap-1.5">
-					<span class="text-emerald-400 text-sm">✓</span>
-					<span class="text-gray-300 text-xs font-bold">כניסה וצפיה באתר</span>
-				</div>
-				<div class="flex items-center gap-1.5">
-					<span class="text-red-400/60 text-sm">✕</span>
-					<span class="text-gray-500 text-xs">העלאת תוכן</span>
-				</div>
-				<div class="flex items-center gap-1.5">
-					<span class="text-red-400/60 text-sm">✕</span>
-					<span class="text-gray-500 text-xs">ניהול תוכן</span>
+				<div class="flex flex-col gap-1.5">
+					<div class="flex items-center gap-1.5">
+						<span class="text-emerald-400 text-sm">✓</span>
+						<span class="text-gray-300 text-xs font-bold">כניסה וצפיה באתר</span>
+					</div>
 				</div>
 			</div>
 
 			<!-- דרגה 2: משתמש -->
-			<div class="rounded-2xl border-2 p-5 flex flex-col gap-3 transition-all
-			            {userLevel === 2
+			<div class="relative rounded-2xl border-2 p-5 flex flex-col gap-3 transition-all
+			            {userLevel >= 2
 			              ? 'border-purple-500 bg-purple-500/10 shadow-lg shadow-purple-500/10'
 			              : 'border-white/10 bg-white/3 opacity-60'}">
+				{#if userLevel >= 2}
+					<div class="absolute -top-4 -right-4 w-9 h-9 rounded-full bg-purple-500 border-[3px] border-[#0f172a] flex items-center justify-center shadow-lg shadow-purple-500/50 z-10">
+						<span class="text-white font-black text-lg leading-none">✓</span>
+					</div>
+				{/if}
 				<div class="flex items-center gap-2">
 					<span class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0
-					             {userLevel === 2 ? 'bg-purple-500 text-white' : 'bg-white/10 text-gray-400'}">2</span>
+					             {userLevel >= 2 ? 'bg-purple-500 text-white' : 'bg-white/10 text-gray-400'}">2</span>
 					<span class="font-black text-white text-base">משתמש</span>
 					{#if userLevel === 2}
 						<span class="mr-auto text-[10px] bg-purple-500/20 text-purple-400 border border-purple-500/30 px-2 py-0.5 rounded-full font-bold">הדרגה שלך</span>
@@ -807,24 +811,25 @@
 						<span class="text-purple-400 text-sm">✓</span>
 						<span class="text-gray-300 text-xs font-bold">העלאת תוכן</span>
 					</div>
-					<div class="flex items-center gap-1.5">
-						<span class="text-red-400/60 text-sm">✕</span>
-						<span class="text-gray-500 text-xs">ניהול תוכן</span>
-					</div>
 				</div>
 				{#if userLevel < 2}
-					<p class="text-yellow-500/70 text-[11px]">נדרש: מילוי עיר ושכונה בפרופיל</p>
+					<p class="text-yellow-500/70 text-[11px]">נדרש: מילוי כל שדות הפרופיל</p>
 				{/if}
 			</div>
 
 			<!-- דרגה 3: רכז שכונה -->
-			<div class="rounded-2xl border-2 p-5 flex flex-col gap-3 transition-all
-			            {userLevel === 3
+			<div class="relative rounded-2xl border-2 p-5 flex flex-col gap-3 transition-all
+			            {userLevel >= 3
 			              ? 'border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/10'
 			              : 'border-white/10 bg-white/3 opacity-60'}">
+				{#if userLevel >= 3}
+					<div class="absolute -top-4 -right-4 w-9 h-9 rounded-full bg-blue-500 border-[3px] border-[#0f172a] flex items-center justify-center shadow-lg shadow-blue-500/50 z-10">
+						<span class="text-white font-black text-lg leading-none">✓</span>
+					</div>
+				{/if}
 				<div class="flex items-center gap-2">
 					<span class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0
-					             {userLevel === 3 ? 'bg-blue-500 text-white' : 'bg-white/10 text-gray-400'}">3</span>
+					             {userLevel >= 3 ? 'bg-blue-500 text-white' : 'bg-white/10 text-gray-400'}">3</span>
 					<span class="font-black text-white text-base">רכז שכונה</span>
 					{#if userLevel === 3}
 						<span class="mr-auto text-[10px] bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded-full font-bold">הדרגה שלך</span>
@@ -847,152 +852,4 @@
 				<p class="text-gray-600 text-[11px]">בקרוב — בהמשך הפיתוח</p>
 			</div>
 
-		</div>
-	</div>
-
-	<!-- ===== קומה 4: המידע שלי ===== -->
-	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl">
-		<h2 class="text-xl font-black text-white flex items-center gap-2 mb-6">
-			<span class="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">4</span>
-			{tFn("section_my_info")}
-			{#if data.items.length > 0}
-				<span class="text-xs bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2.5 py-0.5 rounded-full font-bold">
-					{data.items.length}
-				</span>
-			{/if}
-		</h2>
-
-		{#if data.items.length === 0}
-			<div class="text-center py-12">
-				<span class="text-6xl block mb-4">📭</span>
-				<p class="text-gray-400 mb-6 text-sm">{tFn("no_items")}</p>
-				<a href="/"
-					class="inline-block bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500
-					       text-white font-bold px-6 py-3 rounded-xl shadow-lg transition-all hover:-translate-y-0.5">
-					{tFn("publish_first")}
-				</a>
-			</div>
-		{:else}
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-				{#each data.items as item}
-					<a href="/items/{item.id}"
-						class="bg-white/5 rounded-2xl border border-white/10 p-4
-						       hover:border-purple-500/30 hover:bg-white/8 transition-all group block">
-						<div class="flex items-start gap-3">
-							<span class="text-3xl flex-shrink-0 mt-0.5">{item.icon ?? '📋'}</span>
-							<div class="min-w-0 flex-1">
-								<div class="flex items-center gap-2 flex-wrap mb-1">
-									<h3 class="text-white font-bold text-sm truncate group-hover:text-purple-300 transition-colors">
-										{item.label}
-									</h3>
-									<span class="text-xs px-2 py-0.5 rounded-full font-bold flex-shrink-0
-									  {item.status === 'active'
-									    ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-									    : 'bg-gray-500/20 text-gray-400 border border-gray-500/30'}">
-										{item.status === 'active' ? tFn('status_active') : item.status}
-									</span>
-								</div>
-								{#if item.description}
-									<p class="text-gray-400 text-xs line-clamp-2">{item.description}</p>
-								{/if}
-								<div class="flex items-center gap-3 mt-1.5">
-									{#if item.neighborhood}
-										<span class="text-purple-400/70 text-xs">📍 {item.neighborhood}</span>
-									{/if}
-									<span class="text-gray-600 text-xs">
-										{new Date(item.created_at).toLocaleDateString('he-IL')}
-									</span>
-								</div>
-							</div>
-						</div>
-					</a>
-				{/each}
-			</div>
-		{/if}
-	</div>
-
-</div>
-
-{#if showCrop}
-<div class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-5 shadow-2xl flex flex-col items-center gap-4 w-full max-w-sm">
-		<h3 class="text-white font-black text-lg">מיקום התמונה</h3>
-		<p class="text-gray-400 text-xs -mt-2 text-center">גרור להזזה · גלגל העכבר / הסלידר לזום</p>
-
-		<!-- מעגל חיתוך -->
-		<div
-			use:cropInteraction
-			class="relative overflow-hidden rounded-full border-2 border-purple-500/50 cursor-grab active:cursor-grabbing select-none touch-none"
-			style="width: {CROP_VP}px; height: {CROP_VP}px; flex-shrink: 0;"
-		>
-			{#if cropSrc}
-				<img
-					src={cropSrc}
-					alt="crop"
-					onload={onCropLoad}
-					draggable="false"
-					class="absolute pointer-events-none select-none"
-					style="
-						left: 50%; top: 50%;
-						transform: translate(calc(-50% + {cropOffsetX}px), calc(-50% + {cropOffsetY}px)) scale({cropScale});
-						transform-origin: center center;
-						max-width: none; width: auto; height: auto;
-						-webkit-user-drag: none;
-					"
-				/>
-			{/if}
-		</div>
-
-		<!-- סלידר זום -->
-		<div class="w-full flex items-center gap-3 px-2">
-			<span class="text-gray-400 text-xl font-bold select-none leading-none">−</span>
-			<input
-				type="range"
-				min={cropMinScale}
-				max={cropMinScale * 5}
-				step="0.01"
-				bind:value={cropScale}
-				class="flex-1 accent-purple-500 cursor-pointer"
-			/>
-			<span class="text-gray-200 text-xl font-bold select-none leading-none">+</span>
-		</div>
-
-		<!-- כפתורים -->
-		<div class="flex gap-3 w-full">
-			<button
-				onclick={() => { showCrop = false; }}
-				class="flex-1 py-2.5 rounded-xl border border-white/10 text-gray-300 hover:bg-white/5 text-sm font-bold transition-colors cursor-pointer"
-			>
-				ביטול
-			</button>
-			<button
-				onclick={confirmCrop}
-				class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-black text-sm transition-all cursor-pointer"
-			>
-				אשר תמונה ✓
-			</button>
-		</div>
-	</div>
-</div>
-{/if}
-
-{#if showEditTooltip}
-	<div class="fixed z-[9999] pointer-events-none"
-		style="left: {editTooltipX}px; top: {editTooltipY}px;">
-		<div class="bg-gray-900 text-white text-xs rounded-lg px-3 py-1.5 shadow-xl whitespace-nowrap border border-white/10">
-			{tFn("edit_tooltip")}
-		</div>
-	</div>
-{/if}
-
-{#if showRingTooltip}
-	<div class="fixed z-[9999] pointer-events-none"
-		style="left: {ringTipX}px; top: {ringTipY}px;">
-		<div class="text-xs rounded-lg px-3 py-2 shadow-xl whitespace-nowrap border
-		            {profileCompletion >= 100
-		              ? 'bg-green-900/90 text-green-300 border-green-500/30'
-		              : 'bg-gray-900/95 text-yellow-300 border-yellow-500/30'}">
-			{tFn(nextTipKey)}{profileCompletion < 100 ? ` — ${tFn('tip_location')}` : ''}
-		</div>
-	</div>
-{/if}
+}
