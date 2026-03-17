@@ -852,4 +852,7 @@
 				<p class="text-gray-600 text-[11px]">בקרוב — בהמשך הפיתוח</p>
 			</div>
 
-}
+	</div>
+	</div>
+
+</div>
