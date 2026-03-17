@@ -867,4 +867,65 @@
 	</div>
 	</div>
 
+	<!-- ===== קומה 4: המידע שלי ===== -->
+	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl">
+		<h2 class="text-xl font-black text-white flex items-center gap-2 mb-6">
+			<span class="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">4</span>
+			{tFn("section_my_info")}
+			{#if data.items.length > 0}
+				<span class="text-xs bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2.5 py-0.5 rounded-full font-bold">
+					{data.items.length}
+				</span>
+			{/if}
+		</h2>
+
+		{#if data.items.length === 0}
+			<div class="text-center py-12">
+				<span class="text-6xl block mb-4">📭</span>
+				<p class="text-gray-400 mb-6 text-sm">{tFn("no_items")}</p>
+				<a href="/"
+					class="inline-block bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500
+					       text-white font-bold px-6 py-3 rounded-xl shadow-lg transition-all hover:-translate-y-0.5">
+					{tFn("publish_first")}
+				</a>
+			</div>
+		{:else}
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+				{#each data.items as item}
+					<a href="/items/{item.id}"
+						class="bg-white/5 rounded-2xl border border-white/10 p-4
+						       hover:border-purple-500/30 hover:bg-white/8 transition-all group block">
+						<div class="flex items-start gap-3">
+							<span class="text-3xl flex-shrink-0 mt-0.5">{item.icon ?? '📋'}</span>
+							<div class="min-w-0 flex-1">
+								<div class="flex items-center gap-2 flex-wrap mb-1">
+									<h3 class="text-white font-bold text-sm truncate group-hover:text-purple-300 transition-colors">
+										{item.label}
+									</h3>
+									<span class="text-xs px-2 py-0.5 rounded-full font-bold flex-shrink-0
+									  {item.status === 'active'
+									    ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+									    : 'bg-gray-500/20 text-gray-400 border border-gray-500/30'}">
+										{item.status === 'active' ? tFn('status_active') : item.status}
+									</span>
+								</div>
+								{#if item.description}
+									<p class="text-gray-400 text-xs line-clamp-2">{item.description}</p>
+								{/if}
+								<div class="flex items-center gap-3 mt-1.5">
+									{#if item.neighborhood}
+										<span class="text-purple-400/70 text-xs">📍 {item.neighborhood}</span>
+									{/if}
+									<span class="text-gray-600 text-xs">
+										{new Date(item.created_at).toLocaleDateString('he-IL')}
+									</span>
+								</div>
+							</div>
+						</div>
+					</a>
+				{/each}
+			</div>
+		{/if}
+	</div>
+
 </div>
