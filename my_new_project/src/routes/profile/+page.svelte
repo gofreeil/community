@@ -980,7 +980,7 @@
 {#if levelTipShow && !showLevels}
 	<div class="fixed z-[9999] pointer-events-none"
 		style="left: {levelTipX + 14}px; top: {levelTipY + 14}px;">
-		<div class="bg-gradient-to-l from-emerald-600/90 to-purple-600/90 backdrop-blur-sm
+		<div class="bg-gray-900/95 backdrop-blur-sm
 		            text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xl
 		            border border-white/10 whitespace-nowrap">
 			פתח לפרטים
