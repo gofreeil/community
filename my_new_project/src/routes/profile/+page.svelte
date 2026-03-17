@@ -345,9 +345,9 @@
 				{#if data.user?.email}
 					<p class="text-gray-400 text-sm mt-0.5">{data.user.email}</p>
 				{/if}
-				{#if data.user?.neighborhood || data.user?.city}
+				{#if neighborhood || city}
 					<p class="text-purple-400 text-sm mt-1">
-						📍 {[data.user?.neighborhood, data.user?.city].filter(Boolean).join(', ')}
+						📍 {[neighborhood, city].filter(Boolean).join(', ')}
 					</p>
 				{/if}
 				<div class="mt-3 flex items-center gap-1.5">
@@ -781,6 +781,14 @@
 						<span class="text-emerald-400 text-sm">✓</span>
 						<span class="text-gray-300 text-xs font-bold">כניסה וצפיה באתר</span>
 					</div>
+					<div class="flex items-center gap-1.5">
+						<span class="text-red-400 text-sm">✕</span>
+						<span class="text-gray-400 text-xs">העלאת תוכן</span>
+					</div>
+					<div class="flex items-center gap-1.5">
+						<span class="text-red-400 text-sm">✕</span>
+						<span class="text-gray-400 text-xs">ניהול תוכן</span>
+					</div>
 				</div>
 			</div>
 
@@ -810,6 +818,10 @@
 					<div class="flex items-center gap-1.5">
 						<span class="text-purple-400 text-sm">✓</span>
 						<span class="text-gray-300 text-xs font-bold">העלאת תוכן</span>
+					</div>
+					<div class="flex items-center gap-1.5">
+						<span class="text-red-400 text-sm">✕</span>
+						<span class="text-gray-400 text-xs">ניהול תוכן</span>
 					</div>
 				</div>
 				{#if userLevel < 2}
