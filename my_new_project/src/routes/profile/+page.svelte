@@ -738,10 +738,100 @@
 		{/if}
 	</div>
 
-	<!-- ===== קומה 3: המידע שלי ===== -->
+	<!-- ===== קומה 3: דרגה והרשאות ===== -->
 	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl">
 		<h2 class="text-xl font-black text-white flex items-center gap-2 mb-6">
-			<span class="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">3</span>
+			<span class="w-6 h-6 rounded-full bg-emerald-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">3</span>
+			דרגה והרשאות
+		</h2>
+
+		<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+			<!-- דרגה 1: צופה -->
+			{@const level = data.user?.city && data.user?.neighborhood ? (false ? 3 : 2) : 1}
+			<div class="rounded-2xl border-2 p-5 flex flex-col gap-3 transition-all
+			            {level === 1
+			              ? 'border-emerald-500 bg-emerald-500/10 shadow-lg shadow-emerald-500/10'
+			              : 'border-white/10 bg-white/3 opacity-60'}">
+				<div class="flex items-center gap-2">
+					<span class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0
+					             {level === 1 ? 'bg-emerald-500 text-white' : 'bg-white/10 text-gray-400'}">1</span>
+					<span class="font-black text-white text-base">צופה</span>
+					{#if level === 1}
+						<span class="mr-auto text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold">הדרגה שלך</span>
+					{/if}
+				</div>
+				<div class="flex items-center gap-1.5">
+					<span class="text-emerald-400 text-sm">✓</span>
+					<span class="text-gray-300 text-xs font-bold">כניסה וצפיה באתר</span>
+				</div>
+			</div>
+
+			<!-- דרגה 2: משתמש -->
+			<div class="rounded-2xl border-2 p-5 flex flex-col gap-3 transition-all
+			            {level === 2
+			              ? 'border-purple-500 bg-purple-500/10 shadow-lg shadow-purple-500/10'
+			              : 'border-white/10 bg-white/3 opacity-60'}">
+				<div class="flex items-center gap-2">
+					<span class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0
+					             {level === 2 ? 'bg-purple-500 text-white' : 'bg-white/10 text-gray-400'}">2</span>
+					<span class="font-black text-white text-base">משתמש</span>
+					{#if level === 2}
+						<span class="mr-auto text-[10px] bg-purple-500/20 text-purple-400 border border-purple-500/30 px-2 py-0.5 rounded-full font-bold">הדרגה שלך</span>
+					{/if}
+				</div>
+				<div class="flex flex-col gap-1.5">
+					<div class="flex items-center gap-1.5">
+						<span class="text-purple-400 text-sm">✓</span>
+						<span class="text-gray-300 text-xs font-bold">כניסה וצפיה באתר</span>
+					</div>
+					<div class="flex items-center gap-1.5">
+						<span class="text-purple-400 text-sm">✓</span>
+						<span class="text-gray-300 text-xs font-bold">העלאת תוכן</span>
+					</div>
+				</div>
+				{#if level < 2}
+					<p class="text-yellow-500/70 text-[11px]">נדרש: מילוי עיר ושכונה בפרופיל</p>
+				{/if}
+			</div>
+
+			<!-- דרגה 3: רכז שכונה -->
+			<div class="rounded-2xl border-2 p-5 flex flex-col gap-3 transition-all
+			            {level === 3
+			              ? 'border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/10'
+			              : 'border-white/10 bg-white/3 opacity-60'}">
+				<div class="flex items-center gap-2">
+					<span class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0
+					             {level === 3 ? 'bg-blue-500 text-white' : 'bg-white/10 text-gray-400'}">3</span>
+					<span class="font-black text-white text-base">רכז שכונה</span>
+					{#if level === 3}
+						<span class="mr-auto text-[10px] bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded-full font-bold">הדרגה שלך</span>
+					{/if}
+				</div>
+				<div class="flex flex-col gap-1.5">
+					<div class="flex items-center gap-1.5">
+						<span class="text-blue-400 text-sm">✓</span>
+						<span class="text-gray-300 text-xs font-bold">כניסה וצפיה באתר</span>
+					</div>
+					<div class="flex items-center gap-1.5">
+						<span class="text-blue-400 text-sm">✓</span>
+						<span class="text-gray-300 text-xs font-bold">העלאת תוכן</span>
+					</div>
+					<div class="flex items-center gap-1.5">
+						<span class="text-blue-400 text-sm">✓</span>
+						<span class="text-gray-300 text-xs font-bold">ניהול תוכן</span>
+					</div>
+				</div>
+				<p class="text-gray-600 text-[11px]">בקרוב — בהמשך הפיתוח</p>
+			</div>
+
+		</div>
+	</div>
+
+	<!-- ===== קומה 4: המידע שלי ===== -->
+	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl">
+		<h2 class="text-xl font-black text-white flex items-center gap-2 mb-6">
+			<span class="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">4</span>
 			{tFn("section_my_info")}
 			{#if data.items.length > 0}
 				<span class="text-xs bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2.5 py-0.5 rounded-full font-bold">
