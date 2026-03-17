@@ -400,12 +400,6 @@
 
 		{#if isEditing}
 
-		{#if form?.error}
-			<div class="mb-5 rounded-xl bg-red-500/10 border border-red-500/30 px-4 py-3">
-				<p class="text-red-400 text-sm">{form.error}</p>
-			</div>
-		{/if}
-
 		<form
 			method="POST"
 			action="?/updateProfile"
@@ -708,6 +702,9 @@
 					</label>
 					{#if showTermsError}
 						<p class="text-red-400 text-xs font-bold">יש לאשר את תנאי השימוש ומדיניות הפרטיות לפני השמירה</p>
+					{/if}
+					{#if form?.error}
+						<p class="text-red-400 text-xs font-bold">{form.error}</p>
 					{/if}
 					<button type="submit"
 						onclick={(e) => { if (!termsAccepted) { e.preventDefault(); showTermsError = true; } }}
