@@ -295,7 +295,7 @@
 		<div class="flex items-end justify-between gap-5">
 
 			<!-- אווטר + מעגל מילוי -->
-			<div class="flex-shrink-0 flex flex-col items-center gap-3 -mt-6">
+			<div class="flex-shrink-0 flex flex-col items-center gap-5 -mt-4">
 				<div class="relative cursor-pointer"
 					onmouseenter={() => (showRingTooltip = true)}
 					onmouseleave={() => (showRingTooltip = false)}
@@ -305,9 +305,9 @@
 				>
 					{#if avatarPreview}
 						<img src={avatarPreview} alt={tFn("profile_photo")}
-							class="w-28 h-28 rounded-full border-2 border-purple-500/40 shadow-xl object-cover" />
+							class="w-24 h-24 rounded-full border-2 border-purple-500/40 shadow-xl object-cover" />
 					{:else}
-						<div class="w-28 h-28 rounded-full bg-gray-700
+						<div class="w-24 h-24 rounded-full bg-gray-700
 						            flex items-center justify-center border-2 border-gray-600 shadow-xl">
 							<svg viewBox="0 0 24 24" class="w-12 h-12 text-gray-400" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
 									<circle cx="12" cy="8" r="4"/>
