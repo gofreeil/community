@@ -689,7 +689,7 @@
 			</div>
 
 			{#if isEditing}
-				<div class="mt-4 flex flex-col gap-3">
+				<div class="mt-4 flex flex-col gap-3 items-end">
 					<label class="flex items-center gap-3 cursor-pointer">
 						<input type="checkbox" bind:checked={termsAccepted}
 							class="w-4 h-4 accent-purple-500 cursor-pointer flex-shrink-0" />
@@ -704,7 +704,7 @@
 						disabled={!termsAccepted}
 						class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500
 						       text-white font-black px-8 py-3 rounded-2xl shadow-xl text-sm transition-all hover:-translate-y-0.5
-						       cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 self-end"
+						       cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0"
 					>
 						{tFn("save_changes")}
 					</button>
