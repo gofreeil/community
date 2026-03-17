@@ -130,8 +130,7 @@
 	// דרגה 1 = צופה (נרשם בלבד)
 	// דרגה 2 = משתמש (מילא את כל שדות הפרופיל)
 	let userLevel = $derived(
-		(data.user?.name && data.user?.email && data.user?.nickname && data.user?.phone &&
-		 data.user?.city && data.user?.neighborhood && data.user?.gender && data.user?.family_status)
+		(name && email && nickname && phone && city && neighborhood && gender && family_status)
 			? 2 : 1
 	);
 
