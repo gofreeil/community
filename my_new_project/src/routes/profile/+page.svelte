@@ -361,11 +361,11 @@
 	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 mb-6 shadow-xl">
 
 		<div
-			class="flex items-center justify-between {isEditing ? 'mb-6' : ''} {!isEditing ? 'cursor-pointer select-none' : ''}"
-			onclick={() => { if (!isEditing) { isEditing = true; saveSuccess = false; } }}
+			class="flex items-center justify-between cursor-pointer select-none {isEditing ? 'mb-6' : ''}"
+			onclick={() => { isEditing = !isEditing; saveSuccess = false; }}
 			role="button"
-			tabindex={!isEditing ? 0 : -1}
-			onkeydown={(e) => { if (!isEditing && (e.key === 'Enter' || e.key === ' ')) { isEditing = true; saveSuccess = false; } }}
+			tabindex={0}
+			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { isEditing = !isEditing; saveSuccess = false; } }}
 		>
 			<h2 class="text-xl font-black text-white flex items-center gap-2">
 				<span class="w-6 h-6 rounded-full bg-purple-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">2</span>
