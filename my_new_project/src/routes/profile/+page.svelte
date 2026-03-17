@@ -373,7 +373,7 @@
 	<!-- ===== קומה 2: פרטי פרופיל ===== -->
 	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 mb-6 shadow-xl">
 
-		<div class="flex items-center justify-between mb-6">
+		<div class="flex items-center justify-between {isEditing ? 'mb-6' : ''}">
 			<h2 class="text-xl font-black text-white flex items-center gap-2">
 				<span class="w-6 h-6 rounded-full bg-purple-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">2</span>
 				{tFn("section_profile_details")}
@@ -389,12 +389,11 @@
 			</button>
 		</div>
 
-
 		{#if saveSuccess}
-			<div class="mb-5 rounded-xl bg-green-500/10 border border-green-500/30 px-4 py-3 text-center">
-				<p class="text-green-400 text-sm font-bold">{tFn("profile_updated")}</p>
-			</div>
+			<p class="text-green-400 text-sm font-bold mt-2 text-center">{tFn("profile_updated")}</p>
 		{/if}
+
+		{#if isEditing}
 
 		{#if form?.error}
 			<div class="mb-5 rounded-xl bg-red-500/10 border border-red-500/30 px-4 py-3">
@@ -712,6 +711,7 @@
 				</div>
 			{/if}
 		</form>
+		{/if}
 	</div>
 
 	<!-- ===== קומה 3: המידע שלי ===== -->
