@@ -783,6 +783,10 @@
 					</div>
 					<div class="flex items-center gap-1.5">
 						<span class="text-red-400 text-sm">✕</span>
+						<span class="text-gray-400 text-xs">משתתף במשאלי עם שכונתיים</span>
+					</div>
+					<div class="flex items-center gap-1.5">
+						<span class="text-red-400 text-sm">✕</span>
 						<span class="text-gray-400 text-xs">העלאת תוכן</span>
 					</div>
 					<div class="flex items-center gap-1.5">
@@ -820,6 +824,10 @@
 						<span class="text-gray-300 text-xs font-bold">העלאת תוכן</span>
 					</div>
 					<div class="flex items-center gap-1.5">
+						<span class="text-purple-400 text-sm">✓</span>
+						<span class="text-gray-300 text-xs font-bold">משתתף במשאלי עם שכונתיים</span>
+					</div>
+					<div class="flex items-center gap-1.5">
 						<span class="text-red-400 text-sm">✕</span>
 						<span class="text-gray-400 text-xs">ניהול תוכן</span>
 					</div>
@@ -855,6 +863,10 @@
 					<div class="flex items-center gap-1.5">
 						<span class="text-blue-400 text-sm">✓</span>
 						<span class="text-gray-300 text-xs font-bold">העלאת תוכן</span>
+					</div>
+					<div class="flex items-center gap-1.5">
+						<span class="text-blue-400 text-sm">✓</span>
+						<span class="text-gray-300 text-xs font-bold">משתתף במשאלי עם שכונתיים</span>
 					</div>
 					<div class="flex items-center gap-1.5">
 						<span class="text-blue-400 text-sm">✓</span>
