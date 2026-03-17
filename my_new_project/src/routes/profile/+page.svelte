@@ -753,7 +753,7 @@
 	<!-- ===== קומה 3: דרגה והרשאות ===== -->
 	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl mb-6">
 		<div
-			class="flex items-center justify-between cursor-pointer select-none {showLevels ? 'mb-6' : ''}"
+			class="flex items-center justify-between cursor-pointer select-none rounded-xl transition-colors hover:bg-white/5 px-2 py-1 -mx-2 {showLevels ? 'mb-5' : ''}"
 			onclick={() => (showLevels = !showLevels)}
 			role="button"
 			tabindex={0}
@@ -770,7 +770,7 @@
 				{:else}
 					<span class="text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full font-bold">👁 צופה</span>
 				{/if}
-				<span class="text-gray-400 text-lg transition-transform duration-300 {showLevels ? 'rotate-180' : ''}">⌄</span>
+				<svg class="w-4 h-4 text-gray-400 transition-transform duration-300 flex-shrink-0 {showLevels ? 'rotate-180' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
 			</div>
 		</div>
 
