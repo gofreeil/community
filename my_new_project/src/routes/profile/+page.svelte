@@ -285,10 +285,10 @@
 				{tFn("logout_btn")}
 			</button>
 		</div>
-		<div class="flex items-center justify-between gap-5">
+		<div class="flex items-end justify-between gap-5">
 
 			<!-- אווטר + מעגל מילוי -->
-			<div class="flex-shrink-0 mb-3 flex flex-col items-center gap-1">
+			<div class="flex-shrink-0 flex flex-col items-center gap-1">
 				<div class="relative cursor-pointer"
 					onmouseenter={() => (showRingTooltip = true)}
 					onmouseleave={() => (showRingTooltip = false)}
