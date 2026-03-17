@@ -338,7 +338,7 @@
 				<span class="text-xs text-gray-300 font-bold">היתרה שלי: <span class="text-green-400">{(data.user as {balance?:number})?.balance ?? 0}₪</span></span>
 			</div>
 
-			<div class="min-w-0">
+			<div class="min-w-0 -mt-2">
 				<h1 class="text-2xl font-black text-white truncate">
 					{data.user?.nickname || data.user?.name || ''}
 				</h1>
@@ -350,14 +350,14 @@
 						📍 {[data.user?.neighborhood, data.user?.city].filter(Boolean).join(', ')}
 					</p>
 				{/if}
-				<div class="mt-2 flex items-center gap-2">
-					<span class="text-white/60 text-xs font-bold">דרגה:</span>
+				<div class="mt-3 flex items-center gap-1.5">
+					<span class="text-white/50 text-xs font-bold">דרגה:</span>
 					{#if userLevel >= 2}
-						<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-500/20 text-emerald-400">
+						<span class="text-emerald-400 text-xs font-black">
 							⭐ משתמש
 						</span>
 					{:else}
-						<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black bg-gray-500/20 text-gray-400">
+						<span class="text-gray-400 text-xs font-black">
 							👁 צופה
 						</span>
 					{/if}
