@@ -127,8 +127,12 @@
 		profileCompletion < 70 ? '#eab308' : '#22c55e'
 	);
 
+	// דרגה 1 = צופה (נרשם בלבד)
+	// דרגה 2 = משתמש (מילא את כל שדות הפרופיל)
 	let userLevel = $derived(
-		data.user?.city && data.user?.neighborhood ? 2 : 1
+		(data.user?.name && data.user?.email && data.user?.nickname && data.user?.phone &&
+		 data.user?.city && data.user?.neighborhood && data.user?.gender && data.user?.family_status)
+			? 2 : 1
 	);
 
 	// טיפ למעגל — המפתח של השדה הבא שלא מולא
@@ -347,12 +351,16 @@
 						📍 {[data.user?.neighborhood, data.user?.city].filter(Boolean).join(', ')}
 					</p>
 				{/if}
-				<div class="mt-2">
-					<span class="text-white font-black text-sm">דרגה: </span>
-					{#if data.user?.city && data.user?.neighborhood}
-						<span class="text-green-400 text-sm font-bold">רשאי להעלות מידע ולענות על משאלים בשכונה</span>
+				<div class="mt-2 flex items-center gap-2">
+					<span class="text-white/60 text-xs font-bold">דרגה:</span>
+					{#if userLevel >= 2}
+						<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+							⭐ משתמש
+						</span>
 					{:else}
-						<span class="text-gray-400 text-sm font-bold">הסתכלות ללא שימוש</span>
+						<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black bg-gray-500/20 text-gray-400 border border-gray-500/30">
+							👁 צופה
+						</span>
 					{/if}
 				</div>
 				<div class="flex gap-3 mt-2 flex-wrap">
