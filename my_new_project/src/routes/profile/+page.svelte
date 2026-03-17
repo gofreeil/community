@@ -37,6 +37,7 @@
 	let birthDay      = $state(birthParts[2] ? String(parseInt(birthParts[2])) : '');
 	let notifications  = $state(data.user?.notifications !== 0);
 	let termsAccepted  = $state(false);
+	let showTermsError = $state(false);
 
 	// ===== חיתוך תמונה =====
 	const CROP_VP    = 280;
@@ -706,6 +707,7 @@
 				<div class="mt-4 flex flex-col gap-3 items-end">
 					<label class="flex items-center gap-3 cursor-pointer">
 						<input type="checkbox" bind:checked={termsAccepted}
+							onchange={() => { if (termsAccepted) showTermsError = false; }}
 							class="w-4 h-4 accent-purple-500 cursor-pointer flex-shrink-0" />
 						<span class="text-sm text-gray-300">
 							{tFn("terms_agree_prefix")}
@@ -714,11 +716,14 @@
 							{tFn("terms_agree_suffix")}
 						</span>
 					</label>
+					{#if showTermsError}
+						<p class="text-red-400 text-xs font-bold">יש לאשר את תנאי השימוש ומדיניות הפרטיות לפני השמירה</p>
+					{/if}
 					<button type="submit"
-						disabled={!termsAccepted}
+						onclick={(e) => { if (!termsAccepted) { e.preventDefault(); showTermsError = true; } }}
 						class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500
 						       text-white font-black px-8 py-3 rounded-2xl shadow-xl text-sm transition-all hover:-translate-y-0.5
-						       cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+						       cursor-pointer"
 					>
 						{tFn("save_changes")}
 					</button>
