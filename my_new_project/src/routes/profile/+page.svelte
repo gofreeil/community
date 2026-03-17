@@ -597,7 +597,7 @@
 				</div>
 
 				<!-- עסק -->
-				<div>
+				<div class="md:col-span-2">
 					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("business_label")}</label>
 					{#if isEditing}
 						<input name="business" type="text" bind:value={business} placeholder={tFn("business_placeholder")}
