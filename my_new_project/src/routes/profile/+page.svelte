@@ -18,7 +18,11 @@
 	const DRAFT_KEY = 'profile_draft';
 
 	let isEditing   = $state(!data.user?.name || data.user.name.length < 2);
-	let showLevels  = $state(false);
+	let showLevels    = $state(false);
+	let levelTipShow  = $state(false);
+	let levelTipX     = $state(0);
+	let levelTipY     = $state(0);
+	function handleLevelMouseMove(e: MouseEvent) { levelTipX = e.clientX; levelTipY = e.clientY; }
 	let saveSuccess = $state(false);
 	let avatarPreview = $state<string | null>(data.user?.avatar_url ?? null);
 	let avatarBase64  = $state('');
@@ -751,17 +755,20 @@
 	</div>
 
 	<!-- ===== קומה 3: דרגה והרשאות ===== -->
-	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl mb-6">
+	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl mb-6 group/sec3">
 		<div
-			class="flex items-center justify-between cursor-pointer select-none rounded-xl transition-colors hover:bg-white/5 px-2 py-1 -mx-2 {showLevels ? 'mb-5' : ''}"
+			class="flex items-center justify-between cursor-pointer select-none rounded-xl transition-all px-2 py-1 -mx-2 {showLevels ? 'mb-5' : ''}"
 			onclick={() => (showLevels = !showLevels)}
+			onmouseenter={() => (levelTipShow = true)}
+			onmouseleave={() => (levelTipShow = false)}
+			onmousemove={handleLevelMouseMove}
 			role="button"
 			tabindex={0}
 			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') showLevels = !showLevels; }}
 		>
-			<h2 class="text-xl font-black text-white flex items-center gap-2">
-				<span class="w-6 h-6 rounded-full bg-emerald-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">3</span>
-				דרגה והרשאות
+			<h2 class="text-xl font-black flex items-center gap-2">
+				<span class="w-6 h-6 rounded-full bg-gradient-to-br from-emerald-500 to-purple-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">3</span>
+				<span class="bg-gradient-to-l from-emerald-400 via-teal-300 to-purple-400 bg-clip-text text-transparent">דרגה והרשאות</span>
 			</h2>
 			<!-- סיכום דרגה נוכחית -->
 			<div class="flex items-center gap-2">
@@ -773,6 +780,10 @@
 				<svg class="w-4 h-4 text-gray-400 transition-transform duration-300 flex-shrink-0 {showLevels ? 'rotate-180' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
 			</div>
 		</div>
+
+		<!-- קו מדורג מתחת לכותרת — מאיר בהובר -->
+		<div class="h-px w-full bg-gradient-to-l from-emerald-500/60 via-teal-400/40 to-purple-500/60
+		            transition-opacity duration-300 mt-1 {showLevels ? 'opacity-0 mb-5' : 'opacity-60 group-hover/sec3:opacity-100 group-hover/sec3:shadow-[0_0_8px_rgba(52,211,153,0.4)]'}"></div>
 
 		{#if showLevels}
 		<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -961,3 +972,14 @@
 	</div>
 
 </div>
+
+{#if levelTipShow && !showLevels}
+	<div class="fixed z-[9999] pointer-events-none"
+		style="left: {levelTipX + 14}px; top: {levelTipY + 14}px;">
+		<div class="bg-gradient-to-l from-emerald-600/90 to-purple-600/90 backdrop-blur-sm
+		            text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xl
+		            border border-white/10 whitespace-nowrap">
+			פתח לפרטים
+		</div>
+	</div>
+{/if}
