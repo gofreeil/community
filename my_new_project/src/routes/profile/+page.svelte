@@ -300,7 +300,7 @@
 		<div class="flex items-center justify-between gap-5">
 
 			<!-- אווטר + מעגל מילוי -->
-			<div class="flex-shrink-0 flex flex-col items-center gap-8">
+			<div class="flex-shrink-0 flex flex-col items-center gap-14">
 				<div class="relative cursor-pointer"
 					onmouseenter={() => (showRingTooltip = true)}
 					onmouseleave={() => (showRingTooltip = false)}
@@ -331,7 +331,7 @@
 				</div>
 
 				<!-- תווית מתחת לתמונה -->
-				<span class="text-[11px] text-red-400 font-bold">הודעות אישיות</span>
+				<span class="text-xs text-red-400 font-bold">הודעות אישיות</span>
 			</div>
 
 
