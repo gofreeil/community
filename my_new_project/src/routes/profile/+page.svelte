@@ -372,7 +372,7 @@
 				{tFn("section_profile_details")}
 			</h2>
 			<!-- מעגל אחוז מילוי -->
-			<div class="relative flex items-center justify-center" style="width:56px;height:56px;">
+			<div class="relative flex items-center justify-center group/ring" style="width:56px;height:56px;">
 				<svg width="56" height="56" class="absolute" style="top:0;left:0;transform:rotate(-90deg)">
 					<circle cx="28" cy="28" r="25" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="4" />
 					<circle cx="28" cy="28" r="25" fill="none"
@@ -382,6 +382,13 @@
 						style="transition: stroke-dashoffset 0.6s ease, stroke 0.4s ease" />
 				</svg>
 				<span class="text-[11px] font-black z-10" style="color:{ringColor}">{profileCompletion}%</span>
+				{#if profileCompletion >= 100}
+					<div class="absolute bottom-full mb-2 right-1/2 translate-x-1/2 whitespace-nowrap
+					            bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-lg shadow-lg
+					            opacity-0 group-hover/ring:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
+						הפרופיל מעודכן ✓
+					</div>
+				{/if}
 			</div>
 			<button
 				onclick={(e) => { e.stopPropagation(); isEditing = !isEditing; saveSuccess = false; }}
