@@ -355,7 +355,7 @@
 						📍 {[neighborhood, city].filter(Boolean).join(', ')}
 					</p>
 				{/if}
-				<div class="mt-6 flex items-center gap-1.5">
+				<div class="mt-12 flex items-center gap-1.5">
 					<span class="text-white/50 text-xs font-bold">דרגה:</span>
 					{#if userLevel >= 2}
 						<span class="text-emerald-400 text-xs font-black">
