@@ -333,7 +333,7 @@
 					</p>
 				{/if}
 				<div class="mt-2">
-					<span class="text-white font-black text-sm">הרשאות: </span>
+					<span class="text-white font-black text-sm">דרגה: </span>
 					{#if data.user?.city && data.user?.neighborhood}
 						<span class="text-green-400 text-sm font-bold">רשאי להעלות מידע ולענות על משאלים בשכונה</span>
 					{:else}
