@@ -757,7 +757,11 @@
 	<!-- ===== קומה 3: דרגה והרשאות ===== -->
 	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl mb-6 group/sec3">
 		<div
-			class="flex items-center justify-between cursor-pointer select-none rounded-xl transition-all px-2 py-1 -mx-2 {showLevels ? 'mb-5' : ''}"
+			class="relative flex items-center justify-between cursor-pointer select-none rounded-2xl transition-all px-3 py-2 -mx-3 overflow-hidden
+			       before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/5 before:to-transparent before:opacity-100
+			       hover:before:from-purple-500/15 hover:before:to-emerald-500/5
+			       before:transition-all before:duration-400
+			       {showLevels ? 'mb-5' : ''}"
 			onclick={() => (showLevels = !showLevels)}
 			onmouseenter={() => (levelTipShow = true)}
 			onmouseleave={() => (levelTipShow = false)}
@@ -766,9 +770,9 @@
 			tabindex={0}
 			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') showLevels = !showLevels; }}
 		>
-			<h2 class="text-xl font-black flex items-center gap-2">
-				<span class="w-6 h-6 rounded-full bg-gradient-to-br from-emerald-500 to-purple-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">3</span>
-				<span class="bg-gradient-to-l from-emerald-400 via-teal-300 to-purple-400 bg-clip-text text-transparent">דרגה והרשאות</span>
+			<h2 class="relative text-xl font-black text-white flex items-center gap-2">
+				<span class="w-6 h-6 rounded-full bg-emerald-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">3</span>
+				דרגה והרשאות
 			</h2>
 			<!-- סיכום דרגה נוכחית -->
 			<div class="flex items-center gap-2">
@@ -781,9 +785,9 @@
 			</div>
 		</div>
 
-		<!-- קו מדורג מתחת לכותרת — מאיר בהובר -->
-		<div class="h-px w-full bg-gradient-to-l from-emerald-500/60 via-teal-400/40 to-purple-500/60
-		            transition-opacity duration-300 mt-1 {showLevels ? 'opacity-0 mb-5' : 'opacity-60 group-hover/sec3:opacity-100 group-hover/sec3:shadow-[0_0_8px_rgba(52,211,153,0.4)]'}"></div>
+		<!-- קו עדין מתחת לכותרת -->
+		<div class="h-px w-full bg-white/10 transition-all duration-300 mt-1
+		            {showLevels ? 'opacity-0 mb-5' : 'group-hover/sec3:bg-purple-500/40'}"></div>
 
 		{#if showLevels}
 		<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
