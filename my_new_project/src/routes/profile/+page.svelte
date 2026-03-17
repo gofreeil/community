@@ -308,6 +308,14 @@
 					</div>
 				{/if}
 
+				<!-- עיגול הודעות -->
+				<div class="absolute -top-1 -left-1 min-w-[22px] h-[22px] px-1
+				            bg-red-500 border-2 border-[#0f172a] rounded-full
+				            flex items-center justify-center
+				            text-white text-[11px] font-black leading-none
+				            shadow-lg">
+					3
+				</div>
 
 			</div>
 
