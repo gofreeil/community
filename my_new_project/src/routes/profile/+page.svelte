@@ -127,6 +127,10 @@
 		profileCompletion < 70 ? '#eab308' : '#22c55e'
 	);
 
+	let userLevel = $derived(
+		data.user?.city && data.user?.neighborhood ? 2 : 1
+	);
+
 	// טיפ למעגל — המפתח של השדה הבא שלא מולא
 	const ringTipKeys = [
 		'tip_avatar', 'tip_name', 'tip_email', 'tip_nickname',
@@ -748,16 +752,15 @@
 		<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
 			<!-- דרגה 1: צופה -->
-			{@const level = data.user?.city && data.user?.neighborhood ? (false ? 3 : 2) : 1}
 			<div class="rounded-2xl border-2 p-5 flex flex-col gap-3 transition-all
-			            {level === 1
+			            {userLevel === 1
 			              ? 'border-emerald-500 bg-emerald-500/10 shadow-lg shadow-emerald-500/10'
 			              : 'border-white/10 bg-white/3 opacity-60'}">
 				<div class="flex items-center gap-2">
 					<span class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0
-					             {level === 1 ? 'bg-emerald-500 text-white' : 'bg-white/10 text-gray-400'}">1</span>
+					             {userLevel === 1 ? 'bg-emerald-500 text-white' : 'bg-white/10 text-gray-400'}">1</span>
 					<span class="font-black text-white text-base">צופה</span>
-					{#if level === 1}
+					{#if userLevel === 1}
 						<span class="mr-auto text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold">הדרגה שלך</span>
 					{/if}
 				</div>
@@ -769,14 +772,14 @@
 
 			<!-- דרגה 2: משתמש -->
 			<div class="rounded-2xl border-2 p-5 flex flex-col gap-3 transition-all
-			            {level === 2
+			            {userLevel === 2
 			              ? 'border-purple-500 bg-purple-500/10 shadow-lg shadow-purple-500/10'
 			              : 'border-white/10 bg-white/3 opacity-60'}">
 				<div class="flex items-center gap-2">
 					<span class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0
-					             {level === 2 ? 'bg-purple-500 text-white' : 'bg-white/10 text-gray-400'}">2</span>
+					             {userLevel === 2 ? 'bg-purple-500 text-white' : 'bg-white/10 text-gray-400'}">2</span>
 					<span class="font-black text-white text-base">משתמש</span>
-					{#if level === 2}
+					{#if userLevel === 2}
 						<span class="mr-auto text-[10px] bg-purple-500/20 text-purple-400 border border-purple-500/30 px-2 py-0.5 rounded-full font-bold">הדרגה שלך</span>
 					{/if}
 				</div>
@@ -790,21 +793,21 @@
 						<span class="text-gray-300 text-xs font-bold">העלאת תוכן</span>
 					</div>
 				</div>
-				{#if level < 2}
+				{#if userLevel < 2}
 					<p class="text-yellow-500/70 text-[11px]">נדרש: מילוי עיר ושכונה בפרופיל</p>
 				{/if}
 			</div>
 
 			<!-- דרגה 3: רכז שכונה -->
 			<div class="rounded-2xl border-2 p-5 flex flex-col gap-3 transition-all
-			            {level === 3
+			            {userLevel === 3
 			              ? 'border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/10'
 			              : 'border-white/10 bg-white/3 opacity-60'}">
 				<div class="flex items-center gap-2">
 					<span class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0
-					             {level === 3 ? 'bg-blue-500 text-white' : 'bg-white/10 text-gray-400'}">3</span>
+					             {userLevel === 3 ? 'bg-blue-500 text-white' : 'bg-white/10 text-gray-400'}">3</span>
 					<span class="font-black text-white text-base">רכז שכונה</span>
-					{#if level === 3}
+					{#if userLevel === 3}
 						<span class="mr-auto text-[10px] bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded-full font-bold">הדרגה שלך</span>
 					{/if}
 				</div>
