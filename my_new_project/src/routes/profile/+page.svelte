@@ -292,10 +292,10 @@
 				{tFn("logout_btn")}
 			</button>
 		</div>
-		<div class="flex items-start justify-between gap-5">
+		<div class="flex items-center justify-between gap-5">
 
 			<!-- אווטר + מעגל מילוי -->
-			<div class="flex-shrink-0 flex flex-col items-center gap-5 -mt-4">
+			<div class="flex-shrink-0 flex flex-col items-center gap-5">
 				<div class="relative cursor-pointer"
 					onmouseenter={() => (showRingTooltip = true)}
 					onmouseleave={() => (showRingTooltip = false)}
@@ -338,7 +338,7 @@
 				<span class="text-xs text-gray-300 font-bold">היתרה שלי: <span class="text-green-400">{(data.user as {balance?:number})?.balance ?? 0}₪</span></span>
 			</div>
 
-			<div class="min-w-0 mt-1">
+			<div class="min-w-0">
 				<h1 class="text-2xl font-black text-white truncate">
 					{data.user?.nickname || data.user?.name || ''}
 				</h1>
