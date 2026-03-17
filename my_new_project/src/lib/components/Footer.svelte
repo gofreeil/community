@@ -17,17 +17,17 @@
                 <img
                     src="/images/יוצאים לחירות תמונה ויקיפדיה.png"
                     alt="יוצאים לחירות"
-                    class="h-24 w-24 md:h-32 md:w-32 object-contain rounded-lg hover:scale-105 transition-transform flex-shrink-0"
+                    class="h-28 w-28 md:h-32 md:w-32 object-contain rounded-lg hover:scale-105 transition-transform flex-shrink-0"
                 />
 
                 <!-- Mobile: horizontal layout -->
                 <div
                     class="flex md:hidden flex-col text-right leading-tight text-sm"
                 >
-                    <p class="text-yellow-400 font-black text-lg">
+                    <p class="text-yellow-400 font-black text-sm">
                         יוצאים לחירות
                     </p>
-                    <p class="text-gray-300 font-normal text-base">
+                    <p class="text-gray-300 font-normal text-xs">
                         לכלל פעילות התנועה החברתית
                     </p>
                 </div>
