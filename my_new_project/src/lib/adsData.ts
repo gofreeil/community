@@ -38,7 +38,7 @@ export const ads: Ad[] = [
     },
     {
         id: 4,
-        title: "השקעות קבוצתיות",
+        title: "מועדון המשקיעים החברתי",
         description: "התחבר עם קבוצת המשקיעים שלנו",
         cta: "התחבר עם קבוצת המשקיעים שלנו",
         href: "https://www.melecshop.com/page/free",
