@@ -285,11 +285,7 @@
 	{/if}
 
 	<!-- ===== קומה 1: האזור האישי ===== -->
-	<div class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl mb-6 overflow-hidden
-	            before:absolute before:inset-x-0 before:top-0 before:h-16 before:rounded-t-3xl
-	            before:bg-gradient-to-b before:from-white/4 before:to-transparent
-	            before:transition-all before:duration-300
-	            hover:before:from-white/10">
+	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl mb-6">
 		<!-- כותרת + כפתור התנתקות -->
 		<div class="flex items-center justify-between mb-5">
 			<div class="flex items-center gap-2">
@@ -394,7 +390,11 @@
 	</div>
 
 	<!-- ===== קומה 2: פרטי פרופיל ===== -->
-	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 mb-6 shadow-xl">
+	<div class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 mb-6 shadow-xl overflow-hidden
+	            before:absolute before:inset-x-0 before:top-0 before:h-16 before:rounded-t-3xl
+	            before:bg-gradient-to-b before:from-white/4 before:to-transparent
+	            before:transition-all before:duration-300
+	            hover:before:from-white/10">
 
 		<div
 			class="flex items-center justify-between cursor-pointer select-none {isEditing ? 'mb-6' : ''}"
