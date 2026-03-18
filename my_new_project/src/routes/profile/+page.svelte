@@ -924,7 +924,7 @@
 	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl">
 		<h2 class="text-xl font-black text-white flex items-center gap-2 mb-6">
 			<span class="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">4</span>
-			{tFn("section_my_info")}
+			{tFn("section_my_info")} והמלצות מערכת
 			{#if data.items.length > 0}
 				<span class="text-xs bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2.5 py-0.5 rounded-full font-bold">
 					{data.items.length}
