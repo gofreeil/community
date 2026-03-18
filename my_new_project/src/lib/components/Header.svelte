@@ -290,12 +290,12 @@
                     >
                         <span
                             class="fi fi-{languages.find(
-                                (l) => l.code === $locale,
-                            )?.flag || 'un'} ml-2"
+                                (l) => l.code === $locale || $locale?.startsWith(l.code),
+                            )?.flag || 'il'} ml-2"
                             style="font-size: 1.5rem; margin-left: 0.75rem;"
                         ></span>
-                        {languages.find((l) => l.code === $locale)?.name ||
-                            tFn("hello")}
+                        {languages.find((l) => l.code === $locale || $locale?.startsWith(l.code))?.name ||
+                            'עברית'}
                         <svg
                             class="mr-1 h-4 w-4"
                             fill="none"
