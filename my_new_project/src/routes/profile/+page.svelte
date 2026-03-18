@@ -427,7 +427,7 @@
 			</h2>
 			<div class="flex items-center gap-2">
 				<span class="text-xs bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1 rounded-full font-bold">{profileCompletion}% הושלם</span>
-				<svg class="w-4 h-4 text-gray-400 transition-transform duration-300 flex-shrink-0 {isEditing ? 'rotate-180' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+				<svg class="w-4 h-4 text-yellow-400 transition-transform duration-300 flex-shrink-0 {isEditing ? 'rotate-180' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
 			</div>
 		</div>
 
@@ -785,7 +785,7 @@
 				{:else}
 					<span class="text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full font-bold">דרגה נוכחית — צופה</span>
 				{/if}
-				<svg class="w-4 h-4 text-gray-400 transition-transform duration-300 flex-shrink-0 {showLevels ? 'rotate-180' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+				<svg class="w-4 h-4 text-yellow-400 transition-transform duration-300 flex-shrink-0 {showLevels ? 'rotate-180' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
 			</div>
 		</div>
 
