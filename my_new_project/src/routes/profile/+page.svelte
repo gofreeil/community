@@ -915,7 +915,6 @@
 						<span class="text-gray-300 text-xs font-bold">ניהול תוכן</span>
 					</div>
 				</div>
-				<p class="text-gray-400 text-xs">בקרוב — בהמשך הפיתוח</p>
 			</div>
 
 		</div>
