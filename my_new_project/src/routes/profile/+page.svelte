@@ -975,7 +975,7 @@
 					</span>
 				{/if}
 			</h2>
-			<svg class="w-4 h-4 text-gray-400 transition-transform duration-300 {showMyInfo ? 'rotate-180' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+			<svg class="w-4 h-4 text-yellow-400 transition-transform duration-300 flex-shrink-0 {showMyInfo ? 'rotate-180' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
 		</div>
 
 		{#if showMyInfo}
