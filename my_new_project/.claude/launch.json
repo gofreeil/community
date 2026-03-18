@@ -14,5 +14,11 @@
       "runtimeArgs": ["run", "preview"],
       "port": 4173
     }
+    ,{
+      "name": "strapi-backend",
+      "runtimeExecutable": "powershell",
+      "runtimeArgs": ["-Command", "cd 'D:\\Users\\User\\Documents\\GitHub\\community\\community-backend' ; npm run develop"],
+      "port": 1337
+    }
   ]
 }
