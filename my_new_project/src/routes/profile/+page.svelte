@@ -425,34 +425,10 @@
 				<span class="w-6 h-6 rounded-full bg-purple-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">2</span>
 				{tFn("section_profile_details")}
 			</h2>
-			<!-- מעגל אחוז מילוי -->
-			<div class="relative flex items-center justify-center group/ring" style="width:56px;height:56px;">
-				<svg width="56" height="56" class="absolute" style="top:0;left:0;transform:rotate(-90deg);transform-origin:28px 28px">
-					<circle cx="28" cy="28" r="25" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="4" />
-					<circle cx="28" cy="28" r="25" fill="none"
-						stroke={ringColor} stroke-width="4" stroke-linecap="butt"
-						stroke-dasharray={2 * Math.PI * 25}
-						stroke-dashoffset={2 * Math.PI * 25 * (1 - profileCompletion / 100)}
-						style="transition: stroke-dashoffset 0.6s ease, stroke 0.4s ease" />
-				</svg>
-				<span class="text-[11px] font-black z-10" style="color:{ringColor}">{profileCompletion}%</span>
-				{#if profileCompletion >= 100}
-					<div class="absolute bottom-full mb-2 right-1/2 translate-x-1/2 whitespace-nowrap
-					            bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-lg shadow-lg
-					            opacity-0 group-hover/ring:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
-						הפרופיל מעודכן ✓
-					</div>
-				{/if}
+			<div class="flex items-center gap-2">
+				<span class="text-xs bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1 rounded-full font-bold">{profileCompletion}% הושלם</span>
+				<svg class="w-4 h-4 text-gray-400 transition-transform duration-300 flex-shrink-0 {isEditing ? 'rotate-180' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
 			</div>
-			<button
-				onclick={(e) => { e.stopPropagation(); isEditing = !isEditing; saveSuccess = false; }}
-				class="text-xs font-bold px-3 py-1.5 rounded-xl transition-all cursor-pointer
-				       {isEditing
-				         ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-				         : 'bg-purple-600/30 text-purple-300 hover:bg-purple-600/50 border border-purple-500/30'}"
-			>
-				{isEditing ? tFn('cancel') : tFn('edit_btn')}
-			</button>
 		</div>
 
 		{#if saveSuccess}
