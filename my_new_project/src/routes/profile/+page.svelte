@@ -408,9 +408,9 @@
 				{tFn("section_profile_details")}
 			</h2>
 			<!-- מעגל אחוז מילוי -->
-			<div class="relative flex items-center justify-center group/ring" style="width:56px;height:56px;">
-				<svg width="56" height="56" class="absolute" style="top:0;left:0;transform:rotate(-90deg)">
-					<circle cx="28" cy="28" r="25" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="4" />
+			<div class="relative flex items-center justify-center group/ring" style="width:36px;height:36px;">
+				<svg width="36" height="36" class="absolute" style="top:0;left:0;transform:rotate(-90deg)">
+					<circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="3" />
 					<circle cx="28" cy="28" r="25" fill="none"
 						stroke={ringColor} stroke-width="4" stroke-linecap="round"
 						stroke-dasharray={2 * Math.PI * 25}
@@ -428,7 +428,7 @@
 			</div>
 			<button
 				onclick={(e) => { e.stopPropagation(); isEditing = !isEditing; saveSuccess = false; }}
-				class="text-sm font-bold px-4 py-2 rounded-xl transition-all cursor-pointer
+				class="text-xs font-bold px-3 py-1.5 rounded-xl transition-all cursor-pointer
 				       {isEditing
 				         ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
 				         : 'bg-purple-600/30 text-purple-300 hover:bg-purple-600/50 border border-purple-500/30'}"
