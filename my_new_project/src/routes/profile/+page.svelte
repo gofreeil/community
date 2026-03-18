@@ -19,6 +19,7 @@
 
 	let isEditing   = $state(!data.user?.name || data.user.name.length < 2);
 	let showLevels    = $state(false);
+	let showMessages  = $state(false);
 	let levelTipShow  = $state(false);
 	let levelTipX     = $state(0);
 	let levelTipY     = $state(0);
