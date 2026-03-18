@@ -7,6 +7,7 @@
 	import { t, locale } from 'svelte-i18n';
 	import { get } from 'svelte/store';
 	import { neighborhoodState } from '$lib/neighborhoodState.svelte';
+	import { findWhatsAppGroups } from '$lib/data/whatsapp-groups';
 
 	let { data, form } = $props();
 
@@ -52,6 +53,7 @@
 	let business      = $state(data.user?.business      ?? '');
 	let family_status = $state(data.user?.family_status ?? '');
 	let gender        = $state(data.user?.gender        ?? '');
+	let whatsappMatches = $derived(findWhatsAppGroups(city, neighborhood));
 	const birthParts  = (data.user?.birth_date ?? '').split('-');
 	let birthYear     = $state(birthParts[0] ?? '');
 	let birthMonth    = $state(birthParts[1] ? String(parseInt(birthParts[1])) : '');
@@ -979,7 +981,7 @@
 		{#if showMyInfo}
 
 		<!-- המלצות מותאמות אישית -->
-		{#if business || family_status === 'single_m' || family_status === 'single_f'}
+		{#if business || family_status === 'single_m' || family_status === 'single_f' || whatsappMatches.length > 0}
 		<div class="mb-6 flex flex-col gap-3">
 			<p class="text-xs text-gray-400 uppercase tracking-widest font-bold">המלצות עבורך</p>
 
@@ -1008,6 +1010,19 @@
 				</div>
 			</a>
 			{/if}
+
+			{#each whatsappMatches as group}
+			<a href={group.url} target="_blank" rel="noopener noreferrer"
+				class="flex items-center gap-4 bg-green-500/10 border border-green-500/30
+				       hover:bg-green-500/20 hover:border-green-400/50 transition-all
+				       rounded-2xl px-5 py-4 group">
+				<span class="text-3xl flex-shrink-0">💬</span>
+				<div class="flex-1 text-right">
+					<p class="text-white font-bold text-sm">{group.label}</p>
+					<p class="text-green-300/80 text-xs mt-0.5">הצטרף לקבוצת הווטסאפ של השכונה שלך ←</p>
+				</div>
+			</a>
+			{/each}
 		</div>
 		{/if}
 
