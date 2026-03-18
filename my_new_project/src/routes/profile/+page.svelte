@@ -27,7 +27,11 @@
 		{ from: 'מערכת', text: 'יש עדכון חדש זמין בפרופיל שלך.', time: 'לפני שבוע', read: false },
 	]);
 	let unreadCount = $derived(messages.filter(m => !m.read).length);
-	let levelTipShow  = $state(false);
+	let secTipShow    = $state(false);
+	let secTipX       = $state(0);
+	let secTipY       = $state(0);
+	let secTipIsOpen  = $state(false);
+	function handleSecMouseMove(e: MouseEvent, isOpen: boolean) { secTipX = e.clientX; secTipY = e.clientY; secTipIsOpen = isOpen; }
 	let levelTipX     = $state(0);
 	let levelTipY     = $state(0);
 	function handleLevelMouseMove(e: MouseEvent) { levelTipX = e.clientX; levelTipY = e.clientY; }
@@ -409,10 +413,13 @@
 
 		<div
 			class="flex items-center justify-between cursor-pointer select-none {isEditing ? 'mb-6' : ''}"
-			onclick={() => { isEditing = !isEditing; saveSuccess = false; }}
+			onclick={() => { if (isEditing) { isEditing = false; saveSuccess = false; scrollToTop(); } else { isEditing = true; } }}
+			onmouseenter={() => { secTipShow = true; secTipIsOpen = isEditing; }}
+			onmouseleave={() => (secTipShow = false)}
+			onmousemove={(e) => handleSecMouseMove(e, isEditing)}
 			role="button"
 			tabindex={0}
-			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { isEditing = !isEditing; saveSuccess = false; } }}
+			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { if (isEditing) { isEditing = false; saveSuccess = false; scrollToTop(); } else { isEditing = true; } } }}
 		>
 			<h2 class="text-xl font-black text-white flex items-center gap-2">
 				<span class="w-6 h-6 rounded-full bg-purple-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">2</span>
@@ -783,10 +790,10 @@
 		<div
 			class="relative flex items-center justify-between cursor-pointer select-none transition-all
 			       {showLevels ? 'mb-5' : ''}"
-			onclick={() => { if (showLevels) { scrollToTop(); } else { showLevels = true; } }}
-			onmouseenter={() => (levelTipShow = true)}
-			onmouseleave={() => (levelTipShow = false)}
-			onmousemove={handleLevelMouseMove}
+			onclick={() => { if (showLevels) { showLevels = false; scrollToTop(); } else { showLevels = true; } }}
+			onmouseenter={() => { secTipShow = true; secTipIsOpen = showMyInfo; }}
+			onmouseleave={() => (secTipShow = false)}
+			onmousemove={(e) => handleSecMouseMove(e, showMyInfo)}
 			role="button"
 			tabindex={0}
 			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') showLevels = !showLevels; }}
@@ -938,9 +945,12 @@
 	            hover:before:from-white/10">
 		<div
 			class="relative flex items-center justify-between cursor-pointer select-none {showMessages ? 'mb-6' : ''}"
-			onclick={() => (showMessages = !showMessages)}
+			onclick={() => { if (showMessages) { showMessages = false; scrollToTop(); } else { showMessages = true; } }}
 			role="button" tabindex={0}
-			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') showMessages = !showMessages; }}
+			onmouseenter={() => { secTipShow = true; secTipIsOpen = showMessages; }}
+			onmouseleave={() => (secTipShow = false)}
+			onmousemove={(e) => handleSecMouseMove(e, showMessages)}
+			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { if (showMessages) { showMessages = false; scrollToTop(); } else { showMessages = true; } } }}
 		>
 			<h2 class="text-xl font-black text-white flex items-center gap-2">
 				<span class="w-6 h-6 rounded-full bg-orange-500 text-white text-xs font-black flex items-center justify-center flex-shrink-0">4</span>
@@ -1044,13 +1054,13 @@
 
 </div>
 
-{#if levelTipShow}
+{#if secTipShow}
 	<div class="fixed z-[9999] pointer-events-none"
-		style="left: {levelTipX + 14}px; top: {levelTipY + 14}px;">
+		style="left: {secTipX + 14}px; top: {secTipY + 14}px;">
 		<div class="bg-gray-900/95 backdrop-blur-sm
 		            text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xl
 		            border border-white/10 whitespace-nowrap">
-			{(showLevels || showMyInfo) ? "גלול מעלה" : "פתח לפרטים"}
+			{secTipIsOpen ? "גלול מעלה" : "לפרטים — גלול מטה"}
 		</div>
 	</div>
 {/if}
