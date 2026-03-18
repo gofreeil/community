@@ -922,7 +922,7 @@
 	</div>
 
 	<!-- ===== קומה 4: הודעות אישיות ===== -->
-	<div id="sec-messages" class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl overflow-hidden
+	<div id="sec-messages" class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl mb-6 overflow-hidden
 	            before:absolute before:inset-x-0 before:top-0 before:h-16 before:rounded-t-3xl
 	            before:bg-gradient-to-b before:from-white/4 before:to-transparent
 	            before:transition-all before:duration-300 before:pointer-events-none
