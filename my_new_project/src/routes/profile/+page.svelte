@@ -413,13 +413,13 @@
 
 		<div
 			class="flex items-center justify-between cursor-pointer select-none {isEditing ? 'mb-6' : ''}"
-			onclick={() => { if (isEditing) { isEditing = false; saveSuccess = false; scrollToTop(); } else { isEditing = true; } }}
+			onclick={() => { if (isEditing) { isEditing = false; saveSuccess = false; } else { isEditing = true; } }}
 			onmouseenter={() => { secTipShow = true; secTipIsOpen = isEditing; }}
 			onmouseleave={() => (secTipShow = false)}
 			onmousemove={(e) => handleSecMouseMove(e, isEditing)}
 			role="button"
 			tabindex={0}
-			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { if (isEditing) { isEditing = false; saveSuccess = false; scrollToTop(); } else { isEditing = true; } } }}
+			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { if (isEditing) { isEditing = false; saveSuccess = false; } else { isEditing = true; } } }}
 		>
 			<h2 class="text-xl font-black text-white flex items-center gap-2">
 				<span class="w-6 h-6 rounded-full bg-purple-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">2</span>
@@ -790,7 +790,7 @@
 		<div
 			class="relative flex items-center justify-between cursor-pointer select-none transition-all
 			       {showLevels ? 'mb-5' : ''}"
-			onclick={() => { if (showLevels) { showLevels = false; scrollToTop(); } else { showLevels = true; } }}
+			onclick={() => { if (showLevels) { showLevels = false; } else { showLevels = true; } }}
 			onmouseenter={() => { secTipShow = true; secTipIsOpen = showMyInfo; }}
 			onmouseleave={() => (secTipShow = false)}
 			onmousemove={(e) => handleSecMouseMove(e, showMyInfo)}
@@ -945,12 +945,12 @@
 	            hover:before:from-white/10">
 		<div
 			class="relative flex items-center justify-between cursor-pointer select-none {showMessages ? 'mb-6' : ''}"
-			onclick={() => { if (showMessages) { showMessages = false; scrollToTop(); } else { showMessages = true; } }}
+			onclick={() => { if (showMessages) { showMessages = false; } else { showMessages = true; } }}
 			role="button" tabindex={0}
 			onmouseenter={() => { secTipShow = true; secTipIsOpen = showMessages; }}
 			onmouseleave={() => (secTipShow = false)}
 			onmousemove={(e) => handleSecMouseMove(e, showMessages)}
-			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { if (showMessages) { showMessages = false; scrollToTop(); } else { showMessages = true; } } }}
+			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { if (showMessages) { showMessages = false; } else { showMessages = true; } } }}
 		>
 			<h2 class="text-xl font-black text-white flex items-center gap-2">
 				<span class="w-6 h-6 rounded-full bg-orange-500 text-white text-xs font-black flex items-center justify-center flex-shrink-0">4</span>
@@ -981,7 +981,7 @@
 	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl">
 		<div
 			class="flex items-center justify-between cursor-pointer select-none {showMyInfo ? 'mb-6' : ''}"
-			onclick={() => { if (showMyInfo) { showMyInfo = false; scrollToTop(); } else { showMyInfo = true; } }}
+			onclick={() => { if (showMyInfo) { showMyInfo = false; } else { showMyInfo = true; } }}
 			onmouseenter={() => { secTipShow = true; secTipIsOpen = showMyInfo; }}
 			onmouseleave={() => (secTipShow = false)}
 			onmousemove={(e) => handleSecMouseMove(e, showMyInfo)}
