@@ -981,10 +981,10 @@
 	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl">
 		<div
 			class="flex items-center justify-between cursor-pointer select-none {showMyInfo ? 'mb-6' : ''}"
-			onclick={() => { if (showMyInfo) { scrollToTop(); } else { showMyInfo = true; } }}
-			onmouseenter={() => (levelTipShow = true)}
-			onmouseleave={() => (levelTipShow = false)}
-			onmousemove={handleLevelMouseMove}
+			onclick={() => { if (showMyInfo) { showMyInfo = false; scrollToTop(); } else { showMyInfo = true; } }}
+			onmouseenter={() => { secTipShow = true; secTipIsOpen = showMyInfo; }}
+			onmouseleave={() => (secTipShow = false)}
+			onmousemove={(e) => handleSecMouseMove(e, showMyInfo)}
 			role="button" tabindex={0}
 			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { if (showMyInfo) scrollToTop(); else showMyInfo = true; } }}
 		>
