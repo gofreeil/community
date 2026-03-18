@@ -1,5 +1,8 @@
 <script lang="ts">
     import { onMount } from "svelte";
+    import { locale, t } from "svelte-i18n";
+    import { get } from "svelte/store";
+    const tFn = (k: string) => { void $state.snapshot(locale); return get(t)(k); };
     import { fade, fly, scale } from "svelte/transition";
     import type { PageData } from './$types';
 
@@ -18,7 +21,7 @@
 </script>
 
 <svelte:head>
-    <title>{item ? item.label : "לא נמצא"} | קהילה בשכונה</title>
+    <title>{item ? item.label : tFn("item_not_found")} | קהילה בשכונה</title>
 </svelte:head>
 
 <!-- Extra fields display for user-submitted items -->
@@ -26,9 +29,7 @@
     {#if item?.isUserSubmitted && item.extraFields && Object.keys(item.extraFields).length > 0}
         <section>
             <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-                <span class="w-1.5 h-8 bg-green-500 rounded-full"></span>
-                פרטים נוספים
-            </h2>
+                <span class="w-1.5 h-8 bg-green-500 rounded-full"></span>{tFn("more_details")}</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {#each Object.entries(item.extraFields) as [key, value]}
                     {#if value}
@@ -54,7 +55,7 @@
                 class="text-xl group-hover:-translate-x-1 transition-transform"
                 >←</span
             >
-            <span class="font-bold">חזרה למפה</span>
+            <span class="font-bold">{tFn("back_to_map")}</span>
         </button>
 
         {#if item}
@@ -257,18 +258,14 @@
                 in:scale={{ duration: 500 }}
             >
                 <span class="text-8xl mb-8 block">🔍</span>
-                <h1 class="text-4xl font-black text-white mb-4">
-                    הפריט לא נמצא
-                </h1>
+                <h1 class="text-4xl font-black text-white mb-4">{tFn("item_not_found")}</h1>
                 <p class="text-gray-400 mb-8">
                     נראה שהדף שאתה מחפש הוסר או שמעולם לא היה קיים.
                 </p>
                 <button
                     onclick={goBack}
                     class="bg-purple-600 text-white px-8 py-3 rounded-xl font-bold hover:scale-105 transition-transform"
-                >
-                    חזרה למפה
-                </button>
+                >{tFn("back_to_map")}</button>
             </div>
         {/if}
     </div>

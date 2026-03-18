@@ -1,5 +1,7 @@
 <script lang="ts">
-    import { t } from "svelte-i18n";
+    import { t, locale } from "svelte-i18n";
+    import { get } from "svelte/store";
+    const tFn = (k: string) => { void $state.snapshot(locale); return get(t)(k); };
 </script>
 
 <footer class="bg-[#0d1117] border-t border-white/10 py-2 mt-8 md:mt-0">
@@ -54,22 +56,22 @@
                 class="flex items-center gap-4 text-base md:text-lg text-gray-300 font-bold"
             >
                 <a href="/terms" class="hover:text-white transition-colors"
-                    >תנאי שימוש</a
+                    >{tFn("terms")}</a
                 >
                 <span class="text-gray-600 font-black">|</span>
                 <a href="/privacy" class="hover:text-white transition-colors"
-                    >מדיניות פרטיות</a
+                    >{tFn("privacy")}</a
                 >
                 <span class="text-gray-600 font-black">|</span>
                 <a
                     href="mailto:freedomhasbegun@gmail.com"
-                    class="hover:text-white transition-colors">צור קשר</a
+                    class="hover:text-white transition-colors">{tFn("contact_us")}</a
                 >
             </nav>
 
             <!-- Left: Copyright -->
             <p class="text-gray-400 font-bold text-sm md:text-lg text-center md:text-right">
-                &copy; {new Date().getFullYear()} כל הזכויות שמורות
+                &copy; {new Date().getFullYear()} {tFn("all_rights_reserved")}
             </p>
         </div>
     </div>

@@ -230,7 +230,7 @@
                     <div
                         class="text-sm text-gray-500 font-bold flex flex-col items-center gap-0 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
                     >
-                        <span>לפרטים</span><span class="text-lg">👇</span>
+                        <span>{tFn("for_details")}</span><span class="text-lg">👇</span>
                     </div>
                 </div>
             {/if}
@@ -259,7 +259,7 @@
                         <div
                             class="bg-gray-900 text-white text-sm rounded-lg px-4 py-2 shadow-xl whitespace-nowrap"
                         >
-                            לדף הבית
+                            {tFn("back_home")}
                             <div
                                 class="absolute bottom-full left-1/2 -translate-x-1/2 border-8 border-transparent border-b-gray-900"
                             ></div>
@@ -280,7 +280,7 @@
                     class="relative group flex items-center rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2 font-medium text-white shadow-lg transition-all duration-200 hover:shadow-xl"
                     onclick={() => goto("/about")}
                 >
-                    אודות
+                    {tFn("about")}
                 </button>
                 <!-- Language Dropdown -->
                 <div class="lang-dropdown-container relative">
@@ -345,7 +345,7 @@
                         <span class="text-white text-sm font-bold"
                             >{onlineUsers}</span
                         >
-                        <span class="text-gray-300 text-sm">מחוברים</span>
+                        <span class="text-gray-300 text-sm">{tFn("connected")}</span>
                     </div>
 
                     {#if currentUser}
