@@ -304,7 +304,7 @@
 		<!-- כותרת + כפתור התנתקות -->
 		<div class="flex items-center justify-between mb-5">
 			<div class="flex items-center gap-2">
-				<span class="w-6 h-6 rounded-full bg-yellow-500 text-black text-xs font-black flex items-center justify-center flex-shrink-0">1</span>
+				<span class="w-6 h-6 rounded-full text-black text-xs font-black flex items-center justify-center flex-shrink-0" style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">1</span>
 				<h2 class="text-base font-black text-white">{tFn("section_personal_area")}</h2>
 			</div>
 			<button
@@ -408,10 +408,10 @@
 
 	<!-- ===== קומה 2: פרטי פרופיל ===== -->
 	<div class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 mb-6 shadow-xl overflow-hidden
-	            before:absolute before:inset-x-0 before:top-0 before:h-16 before:rounded-t-3xl
-	            before:bg-gradient-to-b before:from-white/4 before:to-transparent
+	            before:absolute before:inset-x-0 before:top-0 before:h-24 before:rounded-t-3xl
+	            before:bg-gradient-to-b before:from-white/8 before:to-transparent
 	            before:transition-all before:duration-300 before:pointer-events-none
-	            hover:before:from-white/10">
+	            hover:before:from-white/18">
 
 		<div
 			class="flex items-center justify-between cursor-pointer select-none {isEditing ? 'mb-6' : ''}"
@@ -424,7 +424,7 @@
 			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { if (isEditing) { isEditing = false; saveSuccess = false; } else { isEditing = true; } } }}
 		>
 			<h2 class="text-xl font-black text-white flex items-center gap-2">
-				<span class="w-6 h-6 rounded-full bg-yellow-500 text-black text-xs font-black flex items-center justify-center flex-shrink-0">2</span>
+				<span class="w-6 h-6 rounded-full text-black text-xs font-black flex items-center justify-center flex-shrink-0" style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">2</span>
 				{tFn("section_profile_details")}
 			</h2>
 			<div class="flex items-center gap-2">
@@ -761,10 +761,10 @@
 
 	<!-- ===== קומה 3: דרגה והרשאות ===== -->
 	<div class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl mb-6 overflow-hidden
-	            before:absolute before:inset-x-0 before:top-0 before:h-16 before:rounded-t-3xl
-	            before:bg-gradient-to-b before:from-white/4 before:to-transparent
+	            before:absolute before:inset-x-0 before:top-0 before:h-24 before:rounded-t-3xl
+	            before:bg-gradient-to-b before:from-white/8 before:to-transparent
 	            before:transition-all before:duration-300 before:pointer-events-none
-	            hover:before:from-white/10 group/sec3">
+	            hover:before:from-white/18 group/sec3">
 		<div
 			class="relative flex items-center justify-between cursor-pointer select-none transition-all
 			       {showLevels ? 'mb-5' : ''}"
@@ -777,7 +777,7 @@
 			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') showLevels = !showLevels; }}
 		>
 			<h2 class="relative text-xl font-black text-white flex items-center gap-2">
-				<span class="w-6 h-6 rounded-full bg-yellow-500 text-black text-xs font-black flex items-center justify-center flex-shrink-0">3</span>
+				<span class="w-6 h-6 rounded-full text-black text-xs font-black flex items-center justify-center flex-shrink-0" style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">3</span>
 				דרגה והרשאות
 			</h2>
 			<!-- סיכום דרגה נוכחית -->
@@ -917,10 +917,10 @@
 
 	<!-- ===== קומה 4: הודעות אישיות ===== -->
 	<div id="sec-messages" class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl mb-6 overflow-hidden
-	            before:absolute before:inset-x-0 before:top-0 before:h-16 before:rounded-t-3xl
-	            before:bg-gradient-to-b before:from-white/4 before:to-transparent
+	            before:absolute before:inset-x-0 before:top-0 before:h-24 before:rounded-t-3xl
+	            before:bg-gradient-to-b before:from-white/8 before:to-transparent
 	            before:transition-all before:duration-300 before:pointer-events-none
-	            hover:before:from-white/10">
+	            hover:before:from-white/18">
 		<div
 			class="relative flex items-center justify-between cursor-pointer select-none {showMessages ? 'mb-6' : ''}"
 			onclick={() => { if (showMessages) { showMessages = false; } else { showMessages = true; } }}
@@ -931,7 +931,7 @@
 			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { if (showMessages) { showMessages = false; } else { showMessages = true; } } }}
 		>
 			<h2 class="text-xl font-black text-white flex items-center gap-2">
-				<span class="w-6 h-6 rounded-full bg-yellow-500 text-black text-xs font-black flex items-center justify-center flex-shrink-0">4</span>
+				<span class="w-6 h-6 rounded-full text-black text-xs font-black flex items-center justify-center flex-shrink-0" style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">4</span>
 				הודעות אישיות
 			</h2>
 			<div class="flex items-center gap-2">
@@ -958,7 +958,11 @@
 		{/if}
 	</div>
 	<!-- ===== קומה 5: המידע שלי ===== -->
-	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl">
+	<div class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl overflow-hidden
+	            before:absolute before:inset-x-0 before:top-0 before:h-24 before:rounded-t-3xl
+	            before:bg-gradient-to-b before:from-white/8 before:to-transparent
+	            before:transition-all before:duration-300 before:pointer-events-none
+	            hover:before:from-white/18">
 		<div
 			class="flex items-center justify-between cursor-pointer select-none {showMyInfo ? 'mb-6' : ''}"
 			onclick={() => { if (showMyInfo) { showMyInfo = false; } else { showMyInfo = true; } }}
@@ -969,7 +973,7 @@
 			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { if (showMyInfo) scrollToTop(); else showMyInfo = true; } }}
 		>
 			<h2 class="text-xl font-black text-white flex items-center gap-2">
-				<span class="w-6 h-6 rounded-full bg-yellow-500 text-black text-xs font-black flex items-center justify-center flex-shrink-0">5</span>
+				<span class="w-6 h-6 rounded-full text-black text-xs font-black flex items-center justify-center flex-shrink-0" style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">5</span>
 				{tFn("section_my_info")} והמלצות מערכת
 			</h2>
 			<div class="flex items-center gap-2">
