@@ -755,12 +755,13 @@
 	</div>
 
 	<!-- ===== קומה 3: דרגה והרשאות ===== -->
-	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl mb-6 group/sec3">
+	<div class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl mb-6 group/sec3 overflow-hidden
+	            before:absolute before:inset-x-0 before:top-0 before:h-16 before:rounded-t-3xl
+	            before:bg-gradient-to-b before:from-white/4 before:to-transparent
+	            before:transition-all before:duration-300
+	            hover:before:from-purple-500/12">
 		<div
-			class="relative flex items-center justify-between cursor-pointer select-none rounded-2xl transition-all px-3 py-2 -mx-3 overflow-hidden
-			       before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/5 before:to-transparent before:opacity-100
-			       hover:before:from-purple-500/15 hover:before:to-emerald-500/5
-			       before:transition-all before:duration-400
+			class="relative flex items-center justify-between cursor-pointer select-none transition-all
 			       {showLevels ? 'mb-5' : ''}"
 			onclick={() => (showLevels = !showLevels)}
 			onmouseenter={() => (levelTipShow = true)}
@@ -784,10 +785,6 @@
 				<svg class="w-4 h-4 text-gray-400 transition-transform duration-300 flex-shrink-0 {showLevels ? 'rotate-180' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
 			</div>
 		</div>
-
-		<!-- קו עדין מתחת לכותרת -->
-		<div class="h-px w-full bg-white/10 transition-all duration-300 mt-1
-		            {showLevels ? 'opacity-0 mb-5' : 'group-hover/sec3:bg-purple-500/40'}"></div>
 
 		{#if showLevels}
 		<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
