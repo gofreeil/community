@@ -415,7 +415,7 @@
 				<svg width="36" height="36" class="absolute" style="top:0;left:0;transform:rotate(-90deg)">
 					<circle cx="28" cy="28" r="25" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="4" />
 					<circle cx="28" cy="28" r="25" fill="none"
-						stroke={ringColor} stroke-width="4" stroke-linecap="round"
+						stroke={ringColor} stroke-width="4" stroke-linecap="butt"
 						stroke-dasharray={2 * Math.PI * 25}
 						stroke-dashoffset={2 * Math.PI * 25 * (1 - profileCompletion / 100)}
 						style="transition: stroke-dashoffset 0.6s ease, stroke 0.4s ease" />
