@@ -799,7 +799,7 @@
 			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') showLevels = !showLevels; }}
 		>
 			<h2 class="relative text-xl font-black text-white flex items-center gap-2">
-				<span class="w-6 h-6 rounded-full bg-emerald-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">3</span>
+				<span class="w-6 h-6 rounded-full bg-purple-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">3</span>
 				דרגה והרשאות
 			</h2>
 			<!-- סיכום דרגה נוכחית -->
@@ -953,7 +953,7 @@
 			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { if (showMessages) { showMessages = false; } else { showMessages = true; } } }}
 		>
 			<h2 class="text-xl font-black text-white flex items-center gap-2">
-				<span class="w-6 h-6 rounded-full bg-orange-500 text-white text-xs font-black flex items-center justify-center flex-shrink-0">4</span>
+				<span class="w-6 h-6 rounded-full bg-purple-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">4</span>
 				הודעות אישיות
 				<span class="text-xs bg-orange-500/20 text-orange-400 border border-orange-500/30 px-2.5 py-0.5 rounded-full font-bold">{unreadCount}</span>
 			</h2>
@@ -989,7 +989,7 @@
 			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { if (showMyInfo) scrollToTop(); else showMyInfo = true; } }}
 		>
 			<h2 class="text-xl font-black text-white flex items-center gap-2">
-				<span class="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">5</span>
+				<span class="w-6 h-6 rounded-full bg-purple-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">5</span>
 				{tFn("section_my_info")} והמלצות מערכת
 				{#if data.items.length > 0}
 					<span class="text-xs bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2.5 py-0.5 rounded-full font-bold">
