@@ -1,6 +1,11 @@
 <script lang="ts">
 	import { ads } from '$lib/adsData';
 
+	interface Props {
+		currentUser?: { username: string; avatar_url?: string | null };
+	}
+	let { currentUser }: Props = $props();
+
 	let open = $state(false);
 
 	// ---- Swipe gestures ----
@@ -50,8 +55,42 @@
 	>
 		<!-- כותרת Drawer -->
 		<div class="drawer-header">
-			<span class="drawer-title">🌟 הטבות חשובות לקהילה</span>
+			<span class="drawer-title">🌟 לאזור האישי והטבות</span>
 			<button class="close-btn" onclick={() => open = false} aria-label="סגור">✕</button>
+		</div>
+
+		<!-- כפתור התחברות / אזור אישי -->
+		<div class="auth-section">
+			{#if currentUser}
+			<a href="/profile" class="profile-btn" onclick={() => open = false}>
+				{#if currentUser.avatar_url}
+				<img src={currentUser.avatar_url} alt="avatar" class="profile-avatar" />
+				{:else}
+				<span class="profile-avatar-placeholder">👤</span>
+				{/if}
+				<div class="profile-btn-text">
+					<span class="profile-btn-name">{currentUser.username}</span>
+					<span class="profile-btn-sub">לאזור האישי שלי ←</span>
+				</div>
+			</a>
+			{:else}
+			<a href="/login?redirect=/profile" class="login-btn" onclick={() => open = false}>
+				<div class="anon-avatar-wrap">
+					<span class="anon-avatar">
+						<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" width="40" height="40">
+							<circle cx="20" cy="20" r="20" fill="#374151"/>
+							<circle cx="20" cy="16" r="7" fill="#6b7280"/>
+							<ellipse cx="20" cy="34" rx="12" ry="8" fill="#6b7280"/>
+						</svg>
+					</span>
+					<span class="login-icon">🔐</span>
+				</div>
+				<div class="login-btn-text">
+					<span class="login-btn-title">התחברות / הרשמה</span>
+					<span class="login-btn-sub">לאזור האישי שלך ←</span>
+				</div>
+			</a>
+			{/if}
 		</div>
 
 		<!-- רשימת פרסומות -->
@@ -95,7 +134,7 @@
 		ontouchend={onTabTouchEnd}
 		aria-label="פתח הטבות לקהילה"
 	>
-		<span class="tab-text">הטבות חשובות לקהילה</span>
+		<span class="tab-text">לאזור האישי והטבות</span>
 	</button>
 	{/if}
 
@@ -167,6 +206,101 @@
 	}
 
 	.close-btn:hover { background: rgba(255,255,255,0.15); }
+
+	/* ---- כפתור auth ---- */
+	.auth-section {
+		padding: 0.75rem;
+		border-bottom: 1px solid rgba(99,102,241,0.15);
+		flex-shrink: 0;
+	}
+
+	.profile-btn, .login-btn {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		width: 100%;
+		padding: 0.75rem 1rem;
+		border-radius: 0.75rem;
+		text-decoration: none;
+		transition: background 0.2s;
+	}
+
+	.profile-btn {
+		background: rgba(99,102,241,0.12);
+		border: 1px solid rgba(99,102,241,0.3);
+	}
+	.profile-btn:hover { background: rgba(99,102,241,0.22); }
+
+	.login-btn {
+		background: rgba(250,204,21,0.1);
+		border: 1px solid rgba(250,204,21,0.3);
+	}
+	.login-btn:hover { background: rgba(250,204,21,0.18); }
+
+	.profile-avatar {
+		width: 40px;
+		height: 40px;
+		border-radius: 50%;
+		object-fit: cover;
+		flex-shrink: 0;
+		border: 2px solid rgba(99,102,241,0.5);
+	}
+
+	.profile-avatar-placeholder {
+		width: 40px;
+		height: 40px;
+		border-radius: 50%;
+		background: rgba(99,102,241,0.2);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 1.2rem;
+		flex-shrink: 0;
+	}
+
+	.anon-avatar-wrap {
+		position: relative;
+		flex-shrink: 0;
+		display: flex;
+		align-items: center;
+	}
+
+	.anon-avatar {
+		border-radius: 50%;
+		overflow: hidden;
+		display: flex;
+	}
+
+	.login-icon {
+		font-size: 0.9rem;
+		position: absolute;
+		bottom: -2px;
+		left: -4px;
+	}
+
+	.profile-btn-text, .login-btn-text {
+		display: flex;
+		flex-direction: column;
+		text-align: right;
+		flex: 1;
+	}
+
+	.profile-btn-name {
+		font-size: 0.9rem;
+		font-weight: 700;
+		color: #e0e7ff;
+	}
+
+	.profile-btn-sub, .login-btn-sub {
+		font-size: 0.7rem;
+		color: #94a3b8;
+	}
+
+	.login-btn-title {
+		font-size: 0.9rem;
+		font-weight: 700;
+		color: #fde047;
+	}
 
 	/* ---- רשימת פרסומות ---- */
 	.ads-list {

@@ -41,7 +41,7 @@
 </svelte:head>
 
 <CoinAnimation />
-<MobileAdsDrawer />
+<MobileAdsDrawer currentUser={currentUser} />
 <div class="min-h-screen flex flex-col bg-[#0f172a]">
 	<Header
 		currentUser={currentUser}
