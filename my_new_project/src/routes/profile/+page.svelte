@@ -339,6 +339,25 @@
 						</div>
 					{/if}
 
+					<!-- מעגל מילוי פרופיל -->
+					<svg
+						class="absolute inset-0 w-full h-full -rotate-90 pointer-events-none"
+						viewBox="0 0 92 92"
+						xmlns="http://www.w3.org/2000/svg"
+					>
+						<circle cx="46" cy="46" r="43" stroke="rgba(255,255,255,0.08)" stroke-width="3" fill="none" />
+						<circle
+							cx="46" cy="46" r="43"
+							stroke={ringColor}
+							stroke-width="3"
+							fill="none"
+							stroke-linecap="round"
+							stroke-dasharray={ringCircumference}
+							stroke-dashoffset={ringCircumference * (1 - profileCompletion / 100)}
+							style="transition: stroke-dashoffset 0.6s ease, stroke 0.4s ease; filter: drop-shadow(0 0 4px {ringColor}88);"
+						/>
+					</svg>
+
 					<!-- עיגול הודעות — שמאל מטה -->
 					<button onclick={scrollToMessages}
 					class="absolute -bottom-1 -left-1 px-2 h-[22px]
@@ -1082,6 +1101,22 @@
 
 
 </div>
+
+{#if showRingTooltip}
+	<div class="fixed z-[9999] pointer-events-none"
+		style="left: {ringTipX}px; top: {ringTipY}px;">
+		<div class="bg-[#1e293b]/95 backdrop-blur-sm border border-white/10 shadow-2xl
+		            rounded-xl px-3 py-2 text-center max-w-[200px]">
+			<div class="text-xs font-black mb-1"
+				style="color: {ringColor}">
+				{profileCompletion}% הושלם
+			</div>
+			<div class="text-white text-xs leading-snug">
+				{tFn(nextTipKey)}
+			</div>
+		</div>
+	</div>
+{/if}
 
 {#if secTipShow}
 	<div class="fixed z-[9999] pointer-events-none"

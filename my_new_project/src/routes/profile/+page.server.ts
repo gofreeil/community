@@ -20,7 +20,12 @@ export const load: PageServerLoad = async (event) => {
         };
     }
 
-    const session = await event.locals.auth();
+    let session = null;
+    try {
+        session = await event.locals.auth();
+    } catch {
+        // cookie פגום — מפנה להתחברות
+    }
 
     if (!session?.user?.id) {
         throw redirect(302, '/login?redirect=/profile');
@@ -85,7 +90,8 @@ export const load: PageServerLoad = async (event) => {
 
 export const actions: Actions = {
     updateProfile: async (event) => {
-        const session = await event.locals.auth();
+        let session = null;
+        try { session = await event.locals.auth(); } catch {}
         if (!session?.user?.id) throw redirect(302, '/login?redirect=/profile');
 
         const strapiJwt = event.cookies.get('strapi_jwt')

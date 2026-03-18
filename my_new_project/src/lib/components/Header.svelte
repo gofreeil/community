@@ -396,7 +396,7 @@
         style="left: {tooltipX}px; top: {tooltipY}px;"
     >
         <div class="bg-gray-900 text-white text-xs rounded-lg px-3 py-1.5 shadow-xl whitespace-nowrap border border-white/10">
-            ✏️ ערוך פרופיל
+            👤 לאזור האישי
         </div>
     </div>
 {/if}
