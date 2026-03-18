@@ -349,17 +349,19 @@
 			</a>
 
 			<div class="min-w-0 flex flex-col justify-between">
-				<h1 class="text-2xl font-black text-white truncate">
-					{data.user?.nickname || data.user?.name || ''}
-				</h1>
-				{#if data.user?.email}
-					<p class="text-gray-400 text-sm mt-0.5">{data.user.email}</p>
-				{/if}
-				{#if neighborhood || city}
-					<p class="text-purple-400 text-sm mt-1">
-						📍 {[neighborhood, city].filter(Boolean).join(', ')}
-					</p>
-				{/if}
+				<div class="flex flex-col gap-0.5">
+					<h1 class="text-2xl font-black text-white truncate">
+						{data.user?.nickname || data.user?.name || ''}
+					</h1>
+					{#if data.user?.email}
+						<p class="text-gray-400 text-sm">{data.user.email}</p>
+					{/if}
+					{#if neighborhood || city}
+						<p class="text-purple-400 text-sm">
+							📍 {[neighborhood, city].filter(Boolean).join(', ')}
+						</p>
+					{/if}
+				</div>
 				<div class="flex items-center gap-1.5">
 					<span class="text-white/50 text-xs font-bold">דרגה:</span>
 					{#if userLevel >= 2}
