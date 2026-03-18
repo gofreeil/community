@@ -510,18 +510,36 @@
 								{tFn("choose_photo")}
 								<input type="file" accept="image/*" class="hidden" onchange={handleImageChange} />
 							</label>
-							{#if data.oauth_image && (data.user?.provider === 'google' || data.user?.provider === 'facebook')}
+														<!-- כפתור גוגל -->
+							{#if data.user?.provider === 'google' && data.oauth_image}
 								<button type="button"
 									onclick={() => { avatarPreview = data.oauth_image; avatarBase64 = data.oauth_image ?? ''; }}
-									class="cursor-pointer bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 hover:border-blue-400/60 rounded-xl px-4 py-2 text-sm text-blue-300 transition-all inline-flex items-center gap-1.5"
+									class="cursor-pointer bg-white/5 hover:bg-white/10 border border-white/15 hover:border-red-400/50 rounded-xl px-3 py-2 text-sm text-gray-200 transition-all inline-flex items-center gap-2"
 								>
-									{#if data.user?.provider === 'google'}
-										<img src="https://www.google.com/favicon.ico" class="w-3.5 h-3.5" alt="G" />
-										קח מגוגל
-									{:else}
-										<img src="https://www.facebook.com/favicon.ico" class="w-3.5 h-3.5" alt="F" />
-										קח מפייסבוק
-									{/if}
+									<img src="https://www.google.com/favicon.ico" class="w-4 h-4" alt="Google" />
+									השתמש בתמונת הגוגל
+								</button>
+							{:else}
+								<span class="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-white/8 text-sm text-gray-600 cursor-not-allowed">
+									<img src="https://www.google.com/favicon.ico" class="w-4 h-4 opacity-30" alt="Google" />
+									תמונת גוגל <span class="text-[10px]">(לא מחובר)</span>
+								</span>
+							{/if}
+							<!-- כפתור פייסבוק -->
+							{#if data.user?.provider === 'facebook' && data.oauth_image}
+								<button type="button"
+									onclick={() => { avatarPreview = data.oauth_image; avatarBase64 = data.oauth_image ?? ''; }}
+									class="cursor-pointer bg-white/5 hover:bg-white/10 border border-white/15 hover:border-blue-400/50 rounded-xl px-3 py-2 text-sm text-gray-200 transition-all inline-flex items-center gap-2"
+								>
+									<img src="https://www.facebook.com/favicon.ico" class="w-4 h-4" alt="Facebook" />
+									השתמש בתמונת הפייסבוק
+								</button>
+							{:else}
+								<span class="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-white/8 text-sm text-gray-600 cursor-not-allowed">
+									<img src="https://www.facebook.com/favicon.ico" class="w-4 h-4 opacity-30" alt="Facebook" />
+									תמונת פייסבוק <span class="text-[10px]">(לא מחובר)</span>
+								</span>
+							{/if}
 								</button>
 							{/if}
 						</div>
@@ -993,7 +1011,7 @@
 		>
 			<h2 class="text-xl font-black text-white flex items-center gap-2">
 				<span class="w-6 h-6 rounded-full text-black text-xs font-black flex items-center justify-center flex-shrink-0" style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">5</span>
-				{tFn("section_my_info")} והמלצות מערכת
+				הנכסים שלי
 			</h2>
 			<div class="flex items-center gap-2">
 				<span class="text-xs bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1 rounded-full font-bold">{data.items.length} פריטים פורסמו</span>
