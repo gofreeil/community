@@ -395,7 +395,7 @@
 	<div class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 mb-6 shadow-xl overflow-hidden
 	            before:absolute before:inset-x-0 before:top-0 before:h-16 before:rounded-t-3xl
 	            before:bg-gradient-to-b before:from-white/4 before:to-transparent
-	            before:transition-all before:duration-300
+	            before:transition-all before:duration-300 before:pointer-events-none
 	            hover:before:from-white/10">
 
 		<div
@@ -769,7 +769,7 @@
 	<div class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl mb-6 overflow-hidden
 	            before:absolute before:inset-x-0 before:top-0 before:h-16 before:rounded-t-3xl
 	            before:bg-gradient-to-b before:from-white/4 before:to-transparent
-	            before:transition-all before:duration-300
+	            before:transition-all before:duration-300 before:pointer-events-none
 	            hover:before:from-white/10 group/sec3">
 		<div
 			class="relative flex items-center justify-between cursor-pointer select-none transition-all
@@ -925,7 +925,7 @@
 	<div id="sec-messages" class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl overflow-hidden
 	            before:absolute before:inset-x-0 before:top-0 before:h-16 before:rounded-t-3xl
 	            before:bg-gradient-to-b before:from-white/4 before:to-transparent
-	            before:transition-all before:duration-300
+	            before:transition-all before:duration-300 before:pointer-events-none
 	            hover:before:from-white/10">
 		<h2 class="relative text-xl font-black text-white flex items-center gap-2 mb-6">
 			<span class="w-6 h-6 rounded-full bg-orange-500 text-white text-xs font-black flex items-center justify-center flex-shrink-0">4</span>
