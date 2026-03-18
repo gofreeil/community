@@ -419,8 +419,8 @@
 				{tFn("section_profile_details")}
 			</h2>
 			<!-- מעגל אחוז מילוי -->
-			<div class="relative flex items-center justify-center group/ring" style="width:36px;height:36px;">
-				<svg width="36" height="36" class="absolute" style="top:0;left:0;transform:rotate(-90deg)">
+			<div class="relative flex items-center justify-center group/ring" style="width:56px;height:56px;">
+				<svg width="56" height="56" class="absolute" style="top:0;left:0;transform:rotate(-90deg);transform-origin:28px 28px">
 					<circle cx="28" cy="28" r="25" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="4" />
 					<circle cx="28" cy="28" r="25" fill="none"
 						stroke={ringColor} stroke-width="4" stroke-linecap="butt"
