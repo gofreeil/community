@@ -931,9 +931,11 @@
 			<h2 class="text-xl font-black text-white flex items-center gap-2">
 				<span class="w-6 h-6 rounded-full bg-purple-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">4</span>
 				הודעות אישיות
-				<span class="text-xs bg-orange-500/20 text-orange-400 border border-orange-500/30 px-2.5 py-0.5 rounded-full font-bold">{unreadCount}</span>
 			</h2>
-			<svg class="w-4 h-4 text-gray-400 transition-transform duration-300 {showMessages ? 'rotate-180' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+			<div class="flex items-center gap-2">
+				<span class="text-xs bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1 rounded-full font-bold">{unreadCount} הודעות שלא נקראו</span>
+				<svg class="w-4 h-4 text-yellow-400 transition-transform duration-300 flex-shrink-0 {showMessages ? 'rotate-180' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+			</div>
 		</div>
 
 		{#if showMessages}
