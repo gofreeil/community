@@ -920,10 +920,41 @@
 		{/if}
 	</div>
 
-	<!-- ===== קומה 4: המידע שלי ===== -->
+	<!-- ===== קומה 4: הודעות אישיות ===== -->
+	<div id="sec-messages" class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl overflow-hidden
+	            before:absolute before:inset-x-0 before:top-0 before:h-16 before:rounded-t-3xl
+	            before:bg-gradient-to-b before:from-white/4 before:to-transparent
+	            before:transition-all before:duration-300
+	            hover:before:from-white/10">
+		<h2 class="relative text-xl font-black text-white flex items-center gap-2 mb-6">
+			<span class="w-6 h-6 rounded-full bg-red-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">4</span>
+			הודעות אישיות
+			<span class="text-xs bg-red-500/20 text-red-400 border border-red-500/30 px-2.5 py-0.5 rounded-full font-bold">3</span>
+		</h2>
+
+		<div class="flex flex-col gap-3">
+			{#each [
+				{ from: 'מערכת', text: 'ברוך הבא לקהילה! השלם את הפרופיל שלך.', time: 'לפני 2 ימים', read: false },
+				{ from: 'מנהל', text: 'הצטרפות שלך אושרה. כעת תוכל לפרסם תוכן.', time: 'לפני 5 ימים', read: false },
+				{ from: 'מערכת', text: 'יש עדכון חדש זמין בפרופיל שלך.', time: 'לפני שבוע', read: false },
+			] as msg}
+				<div class="flex items-start gap-3 bg-white/5 rounded-2xl border {msg.read ? 'border-white/5' : 'border-red-500/20'} px-4 py-3 transition-all hover:border-white/15">
+					<div class="w-2 h-2 rounded-full {msg.read ? 'bg-white/10' : 'bg-red-500'} mt-1.5 flex-shrink-0"></div>
+					<div class="min-w-0 flex-1">
+						<div class="flex items-center justify-between gap-2 mb-0.5">
+							<span class="text-white text-xs font-black">{msg.from}</span>
+							<span class="text-gray-600 text-[10px] flex-shrink-0">{msg.time}</span>
+						</div>
+						<p class="text-gray-300 text-xs">{msg.text}</p>
+					</div>
+				</div>
+			{/each}
+		</div>
+	</div>
+	<!-- ===== קומה 5: המידע שלי ===== -->
 	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl">
 		<h2 class="text-xl font-black text-white flex items-center gap-2 mb-6">
-			<span class="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">4</span>
+			<span class="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">5</span>
 			{tFn("section_my_info")} והמלצות מערכת
 			{#if data.items.length > 0}
 				<span class="text-xs bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2.5 py-0.5 rounded-full font-bold">
@@ -981,37 +1012,6 @@
 		{/if}
 	</div>
 
-	<!-- ===== קומה 5: הודעות אישיות ===== -->
-	<div id="sec-messages" class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl overflow-hidden
-	            before:absolute before:inset-x-0 before:top-0 before:h-16 before:rounded-t-3xl
-	            before:bg-gradient-to-b before:from-white/4 before:to-transparent
-	            before:transition-all before:duration-300
-	            hover:before:from-white/10">
-		<h2 class="relative text-xl font-black text-white flex items-center gap-2 mb-6">
-			<span class="w-6 h-6 rounded-full bg-red-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">5</span>
-			הודעות אישיות
-			<span class="text-xs bg-red-500/20 text-red-400 border border-red-500/30 px-2.5 py-0.5 rounded-full font-bold">3</span>
-		</h2>
-
-		<div class="flex flex-col gap-3">
-			{#each [
-				{ from: 'מערכת', text: 'ברוך הבא לקהילה! השלם את הפרופיל שלך.', time: 'לפני 2 ימים', read: false },
-				{ from: 'מנהל', text: 'הצטרפות שלך אושרה. כעת תוכל לפרסם תוכן.', time: 'לפני 5 ימים', read: false },
-				{ from: 'מערכת', text: 'יש עדכון חדש זמין בפרופיל שלך.', time: 'לפני שבוע', read: false },
-			] as msg}
-				<div class="flex items-start gap-3 bg-white/5 rounded-2xl border {msg.read ? 'border-white/5' : 'border-red-500/20'} px-4 py-3 transition-all hover:border-white/15">
-					<div class="w-2 h-2 rounded-full {msg.read ? 'bg-white/10' : 'bg-red-500'} mt-1.5 flex-shrink-0"></div>
-					<div class="min-w-0 flex-1">
-						<div class="flex items-center justify-between gap-2 mb-0.5">
-							<span class="text-white text-xs font-black">{msg.from}</span>
-							<span class="text-gray-600 text-[10px] flex-shrink-0">{msg.time}</span>
-						</div>
-						<p class="text-gray-300 text-xs">{msg.text}</p>
-					</div>
-				</div>
-			{/each}
-		</div>
-	</div>
 
 </div>
 
