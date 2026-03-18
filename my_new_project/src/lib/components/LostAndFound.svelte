@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { triggerAdPopup } from '$lib/adPopupStore';
+
     const lostItems = [
         {
             id: 1,
@@ -46,7 +48,11 @@
         <div class="md:hidden space-y-2">
             {#each lostItems.slice(0, 2) as item}
                 <div
-                    class="relative p-2 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-all group overflow-hidden"
+                    class="relative p-2 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-all group overflow-hidden cursor-pointer"
+                    role="button"
+                    tabindex="0"
+                    onclick={() => triggerAdPopup()}
+                    onkeydown={(e) => e.key === 'Enter' && triggerAdPopup()}
                 >
                     <!-- Type Badge -->
                     <div

@@ -4,6 +4,7 @@
     import { createEventDispatcher } from "svelte";
     import { slide } from "svelte/transition";
     import { goto } from "$app/navigation";
+    import { triggerAdPopup } from "$lib/adPopupStore";
     import { items as itemsData } from "$lib/itemsData";
     import { citiesAndNeighborhoods } from "$lib/neighborhoodsData";
     import { neighborhoodState } from "$lib/neighborhoodState.svelte";
@@ -837,6 +838,12 @@
                                 href="/items/{marker.id}"
                                 class="absolute transition-all duration-500 pointer-events-auto group/marker"
                                 style="top: {marker.top}; left: {marker.left};"
+                                onclick={(e) => {
+                                    if (window.innerWidth < 1024) {
+                                        e.preventDefault();
+                                        triggerAdPopup(`/items/${marker.id}`);
+                                    }
+                                }}
                             >
                                 <div
                                     class="text-center animate-fadeIn transform transition-transform group-hover/marker:scale-110"

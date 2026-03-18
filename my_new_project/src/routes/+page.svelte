@@ -6,6 +6,7 @@
     import LostAndFound from "$lib/components/LostAndFound.svelte";
     import FacebookComments from "$lib/components/FacebookComments.svelte";
     import ReferendumBanner from "$lib/components/ReferendumBanner.svelte";
+    import { triggerAdPopup } from "$lib/adPopupStore";
 
     import { citiesAndNeighborhoods } from "$lib/neighborhoodsData";
     import { neighborhoodState } from "$lib/neighborhoodState.svelte";
@@ -191,7 +192,7 @@
                         </div>
                         <div class="p-2 flex-1 overflow-y-auto flex flex-col gap-1.5">
                             <!-- אירוע 1 -->
-                            <div class="flex gap-2 items-start bg-white/5 rounded-xl p-2 border border-white/8">
+                            <div class="flex gap-2 items-start bg-white/5 rounded-xl p-2 border border-white/8 cursor-pointer" role="button" tabindex="0" onclick={() => triggerAdPopup()} onkeydown={(e) => e.key === 'Enter' && triggerAdPopup()}>
                                 <div class="flex flex-col items-center bg-green-600/20 rounded-lg px-1.5 py-1 min-w-[36px] text-center flex-shrink-0">
                                     <span class="text-green-400 font-bold text-sm leading-none">15</span>
                                     <span class="text-green-300/70 text-[9px] leading-none mt-0.5">מרץ</span>
@@ -202,7 +203,7 @@
                                 </div>
                             </div>
                             <!-- אירוע 2 -->
-                            <div class="flex gap-2 items-start bg-white/5 rounded-xl p-2 border border-white/8">
+                            <div class="flex gap-2 items-start bg-white/5 rounded-xl p-2 border border-white/8 cursor-pointer" role="button" tabindex="0" onclick={() => triggerAdPopup()} onkeydown={(e) => e.key === 'Enter' && triggerAdPopup()}>
                                 <div class="flex flex-col items-center bg-blue-600/20 rounded-lg px-1.5 py-1 min-w-[36px] text-center flex-shrink-0">
                                     <span class="text-blue-400 font-bold text-sm leading-none">18</span>
                                     <span class="text-blue-300/70 text-[9px] leading-none mt-0.5">מרץ</span>
@@ -213,7 +214,7 @@
                                 </div>
                             </div>
                             <!-- אירוע 3 -->
-                            <div class="flex gap-2 items-start bg-white/5 rounded-xl p-2 border border-white/8">
+                            <div class="flex gap-2 items-start bg-white/5 rounded-xl p-2 border border-white/8 cursor-pointer" role="button" tabindex="0" onclick={() => triggerAdPopup()} onkeydown={(e) => e.key === 'Enter' && triggerAdPopup()}>
                                 <div class="flex flex-col items-center bg-purple-600/20 rounded-lg px-1.5 py-1 min-w-[36px] text-center flex-shrink-0">
                                     <span class="text-purple-400 font-bold text-sm leading-none">22</span>
                                     <span class="text-purple-300/70 text-[9px] leading-none mt-0.5">מרץ</span>
@@ -224,7 +225,7 @@
                                 </div>
                             </div>
                             <!-- אירוע 4 -->
-                            <div class="flex gap-2 items-start bg-white/5 rounded-xl p-2 border border-white/8">
+                            <div class="flex gap-2 items-start bg-white/5 rounded-xl p-2 border border-white/8 cursor-pointer" role="button" tabindex="0" onclick={() => triggerAdPopup()} onkeydown={(e) => e.key === 'Enter' && triggerAdPopup()}>
                                 <div class="flex flex-col items-center bg-orange-600/20 rounded-lg px-1.5 py-1 min-w-[36px] text-center flex-shrink-0">
                                     <span class="text-orange-400 font-bold text-sm leading-none">28</span>
                                     <span class="text-orange-300/70 text-[9px] leading-none mt-0.5">מרץ</span>
