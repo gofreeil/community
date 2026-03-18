@@ -927,12 +927,21 @@
 	            before:bg-gradient-to-b before:from-white/4 before:to-transparent
 	            before:transition-all before:duration-300 before:pointer-events-none
 	            hover:before:from-white/10">
-		<h2 class="relative text-xl font-black text-white flex items-center gap-2 mb-6">
-			<span class="w-6 h-6 rounded-full bg-orange-500 text-white text-xs font-black flex items-center justify-center flex-shrink-0">4</span>
-			הודעות אישיות
-			<span class="text-xs bg-orange-500/20 text-orange-400 border border-orange-500/30 px-2.5 py-0.5 rounded-full font-bold">3</span>
-		</h2>
+		<div
+			class="relative flex items-center justify-between cursor-pointer select-none {showMessages ? 'mb-6' : ''}"
+			onclick={() => (showMessages = !showMessages)}
+			role="button" tabindex={0}
+			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') showMessages = !showMessages; }}
+		>
+			<h2 class="text-xl font-black text-white flex items-center gap-2">
+				<span class="w-6 h-6 rounded-full bg-orange-500 text-white text-xs font-black flex items-center justify-center flex-shrink-0">4</span>
+				הודעות אישיות
+				<span class="text-xs bg-orange-500/20 text-orange-400 border border-orange-500/30 px-2.5 py-0.5 rounded-full font-bold">3</span>
+			</h2>
+			<svg class="w-4 h-4 text-gray-400 transition-transform duration-300 {showMessages ? 'rotate-180' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+		</div>
 
+		{#if showMessages}
 		<div class="flex flex-col gap-3">
 			{#each [
 				{ from: 'מערכת', text: 'ברוך הבא לקהילה! השלם את הפרופיל שלך.', time: 'לפני 2 ימים', read: false },
@@ -951,6 +960,7 @@
 				</div>
 			{/each}
 		</div>
+		{/if}
 	</div>
 	<!-- ===== קומה 5: המידע שלי ===== -->
 	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl">
