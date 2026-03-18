@@ -297,10 +297,10 @@
 				{tFn("logout_btn")}
 			</button>
 		</div>
-		<div class="flex items-center justify-between gap-5">
+		<div class="flex items-stretch justify-between gap-5">
 
 			<!-- אווטר + מעגל מילוי -->
-			<div class="flex-shrink-0 flex flex-col items-center gap-14">
+			<div class="flex-shrink-0 flex flex-col items-center justify-between min-h-[120px]">
 				<div class="relative cursor-pointer"
 					onmouseenter={() => (showRingTooltip = true)}
 					onmouseleave={() => (showRingTooltip = false)}
@@ -336,14 +336,14 @@
 
 
 			<!-- הארנק שלי — ממורכז -->
-			<a href="/receipts" class="flex-shrink-0 flex flex-col items-center gap-2 cursor-pointer group select-none no-underline">
+			<a href="/receipts" class="flex-shrink-0 flex flex-col items-center justify-between cursor-pointer group select-none no-underline">
 				<div class="w-52 group-hover:scale-105 transition-transform duration-200" style="-webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 80%); mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 80%);">
 					<img src="/images/wallet.png" alt="המזומן שלי" class="w-full h-auto block" />
 				</div>
 				<span class="text-xs text-gray-300 font-bold">היתרה שלי: <span class="text-green-400">{(data.user as {balance?:number})?.balance ?? 0}₪</span></span>
 			</a>
 
-			<div class="min-w-0">
+			<div class="min-w-0 flex flex-col justify-between">
 				<h1 class="text-2xl font-black text-white truncate">
 					{data.user?.nickname || data.user?.name || ''}
 				</h1>
@@ -355,7 +355,7 @@
 						📍 {[neighborhood, city].filter(Boolean).join(', ')}
 					</p>
 				{/if}
-				<div class="mt-20 flex items-center gap-1.5">
+				<div class="flex items-center gap-1.5">
 					<span class="text-white/50 text-xs font-bold">דרגה:</span>
 					{#if userLevel >= 2}
 						<span class="text-emerald-400 text-xs font-black">
