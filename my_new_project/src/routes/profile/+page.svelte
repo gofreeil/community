@@ -969,16 +969,48 @@
 			<h2 class="text-xl font-black text-white flex items-center gap-2">
 				<span class="w-6 h-6 rounded-full bg-yellow-500 text-black text-xs font-black flex items-center justify-center flex-shrink-0">5</span>
 				{tFn("section_my_info")} והמלצות מערכת
-				{#if data.items.length > 0}
-					<span class="text-xs bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2.5 py-0.5 rounded-full font-bold">
-						{data.items.length}
-					</span>
-				{/if}
 			</h2>
-			<svg class="w-4 h-4 text-yellow-400 transition-transform duration-300 flex-shrink-0 {showMyInfo ? 'rotate-180' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+			<div class="flex items-center gap-2">
+				<span class="text-xs bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1 rounded-full font-bold">{data.items.length} פריטים פורסמו</span>
+				<svg class="w-4 h-4 text-yellow-400 transition-transform duration-300 flex-shrink-0 {showMyInfo ? 'rotate-180' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+			</div>
 		</div>
 
 		{#if showMyInfo}
+
+		<!-- המלצות מותאמות אישית -->
+		{#if business || family_status === 'single_m' || family_status === 'single_f'}
+		<div class="mb-6 flex flex-col gap-3">
+			<p class="text-xs text-gray-400 uppercase tracking-widest font-bold">המלצות עבורך</p>
+
+			{#if business}
+			<a href="https://index-chi-sage.vercel.app/" target="_blank" rel="noopener noreferrer"
+				class="flex items-center gap-4 bg-amber-500/10 border border-amber-500/30
+				       hover:bg-amber-500/20 hover:border-amber-400/50 transition-all
+				       rounded-2xl px-5 py-4 group">
+				<span class="text-3xl flex-shrink-0">🏪</span>
+				<div class="flex-1 text-right">
+					<p class="text-white font-bold text-sm">מועדון בעלי העסקים הכשרים</p>
+					<p class="text-amber-300/80 text-xs mt-0.5">הצטרף לרשת בעלי העסקים הכשרים בישראל ←</p>
+				</div>
+			</a>
+			{/if}
+
+			{#if family_status === 'single_m' || family_status === 'single_f'}
+			<a href="/national/singles"
+				class="flex items-center gap-4 bg-pink-500/10 border border-pink-500/30
+				       hover:bg-pink-500/20 hover:border-pink-400/50 transition-all
+				       rounded-2xl px-5 py-4 group">
+				<span class="text-3xl flex-shrink-0">💑</span>
+				<div class="flex-1 text-right">
+					<p class="text-white font-bold text-sm">רשימת הפנויים והפנויות הארצית</p>
+					<p class="text-pink-300/80 text-xs mt-0.5">הצטרף לרשימה ומצא את השידוך המתאים ←</p>
+				</div>
+			</a>
+			{/if}
+		</div>
+		{/if}
+
 		{#if data.items.length === 0}
 			<div class="text-center py-12">
 				<span class="text-6xl block mb-4">📭</span>
