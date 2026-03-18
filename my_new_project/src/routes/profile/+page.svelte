@@ -20,6 +20,7 @@
 	let isEditing   = $state(!data.user?.name || data.user.name.length < 2);
 	let showLevels    = $state(false);
 	let showMessages  = $state(false);
+	let showMyInfo    = $state(false);
 	let messages = $state([
 		{ from: 'מערכת', text: 'ברוך הבא לקהילה! השלם את הפרופיל שלך.', time: 'לפני 2 ימים', read: false },
 		{ from: 'מנהל', text: 'הצטרפות שלך אושרה. כעת תוכל לפרסם תוכן.', time: 'לפני 5 ימים', read: false },
@@ -30,6 +31,7 @@
 	let levelTipX     = $state(0);
 	let levelTipY     = $state(0);
 	function handleLevelMouseMove(e: MouseEvent) { levelTipX = e.clientX; levelTipY = e.clientY; }
+	function scrollToTop() { window.scrollTo({ top: 0, behavior: "smooth" }); }
 	function scrollToMessages() {
 		document.getElementById('sec-messages')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 	}
@@ -781,7 +783,7 @@
 		<div
 			class="relative flex items-center justify-between cursor-pointer select-none transition-all
 			       {showLevels ? 'mb-5' : ''}"
-			onclick={() => (showLevels = !showLevels)}
+			onclick={() => { if (showLevels) { scrollToTop(); } else { showLevels = true; } }}
 			onmouseenter={() => (levelTipShow = true)}
 			onmouseleave={() => (levelTipShow = false)}
 			onmousemove={handleLevelMouseMove}
@@ -967,16 +969,28 @@
 	</div>
 	<!-- ===== קומה 5: המידע שלי ===== -->
 	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl">
-		<h2 class="text-xl font-black text-white flex items-center gap-2 mb-6">
-			<span class="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">5</span>
-			{tFn("section_my_info")} והמלצות מערכת
-			{#if data.items.length > 0}
-				<span class="text-xs bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2.5 py-0.5 rounded-full font-bold">
-					{data.items.length}
-				</span>
-			{/if}
-		</h2>
+		<div
+			class="flex items-center justify-between cursor-pointer select-none {showMyInfo ? 'mb-6' : ''}"
+			onclick={() => { if (showMyInfo) { scrollToTop(); } else { showMyInfo = true; } }}
+			onmouseenter={() => (levelTipShow = true)}
+			onmouseleave={() => (levelTipShow = false)}
+			onmousemove={handleLevelMouseMove}
+			role="button" tabindex={0}
+			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { if (showMyInfo) scrollToTop(); else showMyInfo = true; } }}
+		>
+			<h2 class="text-xl font-black text-white flex items-center gap-2">
+				<span class="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">5</span>
+				{tFn("section_my_info")} והמלצות מערכת
+				{#if data.items.length > 0}
+					<span class="text-xs bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2.5 py-0.5 rounded-full font-bold">
+						{data.items.length}
+					</span>
+				{/if}
+			</h2>
+			<svg class="w-4 h-4 text-gray-400 transition-transform duration-300 {showMyInfo ? 'rotate-180' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+		</div>
 
+		{#if showMyInfo}
 		{#if data.items.length === 0}
 			<div class="text-center py-12">
 				<span class="text-6xl block mb-4">📭</span>
@@ -1024,18 +1038,19 @@
 				{/each}
 			</div>
 		{/if}
+		{/if}
 	</div>
 
 
 </div>
 
-{#if levelTipShow && !showLevels}
+{#if levelTipShow}
 	<div class="fixed z-[9999] pointer-events-none"
 		style="left: {levelTipX + 14}px; top: {levelTipY + 14}px;">
 		<div class="bg-gray-900/95 backdrop-blur-sm
 		            text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xl
 		            border border-white/10 whitespace-nowrap">
-			פתח לפרטים
+			{(showLevels || showMyInfo) ? "גלול מעלה" : "פתח לפרטים"}
 		</div>
 	</div>
 {/if}
