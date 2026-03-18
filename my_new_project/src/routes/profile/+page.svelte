@@ -358,7 +358,7 @@
 						<p class="text-gray-400 text-sm">{data.user.email}</p>
 					{/if}
 					{#if neighborhood || city}
-						<p class="text-purple-400 text-sm">
+						<p class="text-purple-400 text-sm mb-8">
 							📍 {[neighborhood, city].filter(Boolean).join(', ')}
 						</p>
 					{/if}
