@@ -3,6 +3,7 @@
 	import { get } from 'svelte/store';
 	import { t, locale } from 'svelte-i18n';
 	import { enhance } from '$app/forms';
+	import { goto } from '$app/navigation';
 
 	let { data, form } = $props();
 
@@ -48,8 +49,13 @@
 	<title>{tFn("login_title")}</title>
 </svelte:head>
 
-<div class="min-h-[80vh] flex items-center justify-center px-4 py-12" dir="rtl">
-	<div class="w-full max-w-md">
+<div
+	class="min-h-[80vh] flex items-center justify-center px-4 py-12 cursor-pointer"
+	dir="rtl"
+	onclick={() => goto('/')}
+	role="presentation"
+>
+	<div class="w-full max-w-md" onclick={(e) => e.stopPropagation()} role="presentation">
 
 		<!-- כרטיס -->
 		<div class="bg-[#0f172a] rounded-3xl border border-white/10 shadow-2xl overflow-hidden">
