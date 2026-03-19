@@ -540,8 +540,6 @@
 									תמונת פייסבוק <span class="text-[10px]">(לא מחובר)</span>
 								</span>
 							{/if}
-								</button>
-							{/if}
 						</div>
 					</div>
 				</div>
