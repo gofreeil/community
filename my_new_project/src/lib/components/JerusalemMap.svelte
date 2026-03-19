@@ -1083,9 +1083,9 @@
                 <div
                     class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer-once"
                 ></div>
-                <div class="relative flex items-center justify-center gap-1.5">
-                    <span class="text-[10px]">{showAddMenu ? "✖️" : "➕"}</span>
-                    <span>{showAddMenu ? "סגור" : "הוסף"}</span>
+                <div class="relative flex flex-row items-center justify-center gap-1.5 whitespace-nowrap">
+                    <span class="text-[10px] leading-none">{showAddMenu ? "✖️" : "➕"}</span>
+                    <span class="leading-none">{showAddMenu ? "סגור" : "הוסף"}</span>
                 </div>
             </button>
         </div>

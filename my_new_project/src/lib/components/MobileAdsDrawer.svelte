@@ -48,31 +48,74 @@
 
 	let open = $state(false);
 
-	// ---- Swipe gestures ----
-	let touchStartX = 0;
-	let touchStartY = 0;
+	// ---- Swipe gestures (Drawer) ----
+	let drawerTouchStartX = 0;
+	let drawerTouchStartY = 0;
 
-	function onTouchStart(e: TouchEvent) {
-		touchStartX = e.touches[0].clientX;
-		touchStartY = e.touches[0].clientY;
+	function onDrawerTouchStart(e: TouchEvent) {
+		drawerTouchStartX = e.touches[0].clientX;
+		drawerTouchStartY = e.touches[0].clientY;
 	}
 
 	// על הדרואר: משיכה שמאלה → סגור
 	function onDrawerTouchEnd(e: TouchEvent) {
-		const dx = e.changedTouches[0].clientX - touchStartX;
-		const dy = e.changedTouches[0].clientY - touchStartY;
+		const dx = e.changedTouches[0].clientX - drawerTouchStartX;
+		const dy = e.changedTouches[0].clientY - drawerTouchStartY;
 		if (dx < -50 && Math.abs(dx) > Math.abs(dy)) {
 			open = false;
 		}
 	}
 
-	// על הלשונית: משיכה ימינה → פתח
-	function onTabTouchEnd(e: TouchEvent) {
-		const dx = e.changedTouches[0].clientX - touchStartX;
-		const dy = e.changedTouches[0].clientY - touchStartY;
-		if (dx > 30 && Math.abs(dx) > Math.abs(dy)) {
-			open = true;
+	// ---- לשונית: גרירה אנכית + פתיחה ----
+	let tabY = $state(0);          // מיקום אנכי בפיקסלים
+	let tabDragging = $state(false);
+	let tabDragStartClientY = 0;
+	let tabDragStartTabY = 0;
+	let tabTouchStartX = 0;
+	let tabTouchStartY = 0;
+	let tabTouchStartTime = 0;
+
+	$effect(() => {
+		if (typeof window !== 'undefined' && tabY === 0) {
+			tabY = window.innerHeight / 2;
 		}
+	});
+
+	function onTabTouchStart(e: TouchEvent) {
+		tabTouchStartX        = e.touches[0].clientX;
+		tabTouchStartY        = e.touches[0].clientY;
+		tabDragStartClientY   = e.touches[0].clientY;
+		tabDragStartTabY      = tabY;
+		tabTouchStartTime     = Date.now();
+		tabDragging           = false;
+	}
+
+	function onTabTouchMove(e: TouchEvent) {
+		const dx = e.touches[0].clientX - tabTouchStartX;
+		const dy = e.touches[0].clientY - tabDragStartClientY;
+		// רק תנועה אנכית ברורה → גרירה
+		if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 8) {
+			tabDragging = true;
+			let newY = tabDragStartTabY + dy;
+			newY = Math.max(60, Math.min(window.innerHeight - 60, newY));
+			tabY = newY;
+			e.preventDefault(); // מניעת גלילה
+		}
+	}
+
+	function onTabTouchEnd(e: TouchEvent) {
+		const dx       = e.changedTouches[0].clientX - tabTouchStartX;
+		const dy       = e.changedTouches[0].clientY - tabTouchStartY;
+		const duration = Date.now() - tabTouchStartTime;
+
+		if (!tabDragging) {
+			// קליק קצר או משיכה ימינה → פתח
+			if ((duration < 300 && Math.abs(dx) < 15 && Math.abs(dy) < 15) ||
+				(dx > 30 && Math.abs(dx) > Math.abs(dy))) {
+				open = true;
+			}
+		}
+		tabDragging = false;
 	}
 </script>
 
@@ -90,7 +133,7 @@
 
 	<!-- Drawer -->
 	<div class="drawer" class:drawer-open={open} aria-hidden={!open}
-		ontouchstart={onTouchStart}
+		ontouchstart={onDrawerTouchStart}
 		ontouchend={onDrawerTouchEnd}
 	>
 		<!-- כותרת Drawer -->
@@ -220,12 +263,15 @@
 		</div>
 	</div>
 
-	<!-- לשונית קטנה בצד שמאל (נראית כשה-Drawer סגור) -->
+	<!-- לשונית קטנה בצד שמאל (נראית כשה-Drawer סגור) - ניתנת לגרירה אנכית -->
 	{#if !open}
 	<button
 		class="tab"
-		onclick={() => open = true}
-		ontouchstart={onTouchStart}
+		class:tab-dragging={tabDragging}
+		style="top: {tabY}px; transform: translateY(-50%);"
+		onclick={() => { if (!tabDragging) open = true; }}
+		ontouchstart={onTabTouchStart}
+		ontouchmove={onTabTouchMove}
 		ontouchend={onTabTouchEnd}
 		aria-label="פתח הטבות לקהילה"
 	>
@@ -505,22 +551,29 @@
 	/* ---- לשונית ---- */
 	.tab {
 		position: fixed;
-		top: 50%;
 		left: 0;
-		transform: translateY(-50%);
+		/* top + transform מגיעים כ-inline style דינמי */
 		z-index: 1050;
 		background: linear-gradient(180deg, #4f46e5, #7c3aed);
 		border: none;
 		border-radius: 0 8px 8px 0;
 		padding: 0.6rem 0.3rem;
-		cursor: pointer;
+		cursor: grab;
 		box-shadow: 3px 0 12px rgba(79,70,229,0.4);
-		transition: padding 0.2s, box-shadow 0.2s;
+		transition: padding 0.2s, box-shadow 0.2s, opacity 0.15s;
+		touch-action: none; /* מאפשר ontouchmove מותאם */
+		user-select: none;
 	}
 
 	.tab:hover {
 		padding: 0.7rem 0.4rem;
 		box-shadow: 4px 0 18px rgba(79,70,229,0.6);
+	}
+
+	.tab-dragging {
+		cursor: grabbing;
+		opacity: 0.85;
+		transition: none; /* ללא אנימציה בזמן גרירה */
 	}
 
 	.tab-text {
