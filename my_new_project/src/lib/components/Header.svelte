@@ -196,12 +196,12 @@
                 <div class="relative group">
                     <a
                         href="/"
-                        class="flex h-16 w-16 animate-pulse-slow items-center justify-center rounded-xl shadow-lg transition-transform hover:scale-105"
+                        class="flex h-20 w-20 animate-pulse-slow items-center justify-center rounded-xl shadow-lg transition-transform hover:scale-105"
                     >
                         <img
                             src="/images/logos/לוגו2.png"
                             alt="מיצוי זכויות מקומיות"
-                            class="h-10 w-auto object-contain"
+                            class="h-16 w-auto object-contain"
                         />
                     </a>
                     <!-- Tooltip - Below Logo -->
@@ -365,7 +365,7 @@
             opacity: 1;
         }
         36% {
-            opacity: 0.5;
+            opacity: 0.75;
         }
     }
 
