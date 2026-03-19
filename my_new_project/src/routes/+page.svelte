@@ -104,6 +104,7 @@
                 <!-- Backdrop -->
                 <div
                     class="fixed inset-0 bg-black/50 z-[9998]"
+                    role="presentation"
                     onclick={() => (showNeighborhoodsMenu = false)}
                 ></div>
 
@@ -277,7 +278,6 @@
     </section>
 
     <!-- Emergency Team Banner -->
-    <!-- Force deployment update -->
     <section class="max-w-6xl mx-auto px-4 mt-6 md:mt-0">
         <!-- Desktop: 3 columns, Mobile: horizontal scroll -->
         <div class="hidden md:grid md:grid-cols-3 gap-6">

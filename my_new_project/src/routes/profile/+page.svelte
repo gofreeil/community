@@ -11,6 +11,9 @@
 
 	let { data, form } = $props();
 
+	// snapshot ראשוני של נתוני המשתמש לאתחול שדות הטופס (intentional — form manages its own state)
+	const _ud = data.user;
+
 	// tFn: פונקציית תרגום reactive — לא משתמשים ב-$t ישירות כי Prettier מוחק אותו
 	let _loc = $state(get(locale));
 	$effect(() => locale.subscribe(l => (_loc = l)));
@@ -18,7 +21,7 @@
 
 	const DRAFT_KEY = 'profile_draft';
 
-	let isEditing   = $state(!data.user?.name || data.user.name.length < 2);
+	let isEditing   = $state(!_ud?.name || (_ud?.name?.length ?? 0) < 2);
 	let showLevels    = $state(false);
 	let showMessages  = $state(false);
 	let showMyInfo    = $state(false);
@@ -41,24 +44,24 @@
 		document.getElementById('sec-messages')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 	}
 	let saveSuccess = $state(false);
-	let avatarPreview = $state<string | null>(data.user?.avatar_url ?? null);
+	let avatarPreview = $state<string | null>(_ud?.avatar_url ?? null);
 	let avatarBase64  = $state('');
 
-	let name          = $state(data.user?.name          ?? '');
-	let email         = $state(data.user?.email         ?? '');
-	let nickname      = $state(data.user?.nickname      ?? '');
-	let phone         = $state(data.user?.phone         ?? '');
-	let city          = $state(data.user?.city          ?? '');
-	let neighborhood  = $state(data.user?.neighborhood  ?? '');
-	let business      = $state(data.user?.business      ?? '');
-	let family_status = $state(data.user?.family_status ?? '');
-	let gender        = $state(data.user?.gender        ?? '');
+	let name          = $state(_ud?.name          ?? '');
+	let email         = $state(_ud?.email         ?? '');
+	let nickname      = $state(_ud?.nickname      ?? '');
+	let phone         = $state(_ud?.phone         ?? '');
+	let city          = $state(_ud?.city          ?? '');
+	let neighborhood  = $state(_ud?.neighborhood  ?? '');
+	let business      = $state(_ud?.business      ?? '');
+	let family_status = $state(_ud?.family_status ?? '');
+	let gender        = $state(_ud?.gender        ?? '');
 	let whatsappMatches = $derived(findWhatsAppGroups(city, neighborhood));
-	const birthParts  = (data.user?.birth_date ?? '').split('-');
+	const birthParts  = (_ud?.birth_date ?? '').split('-');
 	let birthYear     = $state(birthParts[0] ?? '');
 	let birthMonth    = $state(birthParts[1] ? String(parseInt(birthParts[1])) : '');
 	let birthDay      = $state(birthParts[2] ? String(parseInt(birthParts[2])) : '');
-	let notifications  = $state(data.user?.notifications !== 0);
+	let notifications  = $state(_ud?.notifications !== 0);
 	let termsAccepted  = $state(false);
 	let showTermsError = $state(false);
 
@@ -183,6 +186,7 @@
 		!!gender,
 		!!business,
 		!!family_status,
+		!!(birthYear && birthMonth && birthDay),
 		!!notifications,
 	]);
 
@@ -578,9 +582,9 @@
 
 				<!-- שם מלא -->
 				<div>
-					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("full_name_label")}</label>
+					<label for="p-name" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("full_name_label")}</label>
 					{#if isEditing}
-						<input name="name" type="text" bind:value={name} placeholder={tFn("full_name_placeholder")} required
+						<input id="p-name" name="name" type="text" bind:value={name} placeholder={tFn("full_name_placeholder")} required
 							class="w-full bg-white/5 border border-white/10 focus:border-purple-500/50 rounded-xl
 							       px-4 py-3 text-white text-sm transition-colors outline-none" />
 					{:else}
@@ -603,9 +607,9 @@
 
 			<!-- כינוי -->
 				<div>
-					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("nickname_label")}</label>
+					<label for="p-nickname" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("nickname_label")}</label>
 					{#if isEditing}
-						<input name="nickname" type="text" bind:value={nickname} placeholder={tFn("nickname_placeholder")}
+						<input id="p-nickname" name="nickname" type="text" bind:value={nickname} placeholder={tFn("nickname_placeholder")}
 							class="w-full bg-white/5 border border-white/10 focus:border-purple-500/50 rounded-xl
 							       px-4 py-3 text-white text-sm transition-colors outline-none" />
 					{:else}
@@ -615,7 +619,7 @@
 
 				<!-- מגדר -->
 				<div>
-					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("gender_label")}</label>
+					<p class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("gender_label")}</p>
 					{#if isEditing}
 						<div class="flex gap-3">
 							<button type="button"
@@ -647,9 +651,9 @@
 
 			<!-- טלפון -->
 				<div>
-					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("phone_label")}</label>
+					<label for="p-phone" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("phone_label")}</label>
 					{#if isEditing}
-						<input name="phone" type="tel" bind:value={phone} placeholder="050-0000000"
+						<input id="p-phone" name="phone" type="tel" bind:value={phone} placeholder="050-0000000"
 							class="w-full bg-white/5 border border-white/10 focus:border-purple-500/50 rounded-xl
 							       px-4 py-3 text-white text-sm transition-colors outline-none" />
 					{:else}
@@ -661,11 +665,11 @@
 				<div class="md:col-span-2 grid grid-cols-2 gap-3 rounded-2xl border border-purple-500/20 bg-purple-500/5 p-3">
 					<!-- עיר -->
 					<div>
-						<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
+						<label for="p-city" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
 							{tFn("city_label")} <span class="text-red-400">*</span>
 						</label>
 						{#if isEditing}
-							<select name="city" bind:value={city} onchange={() => (neighborhood = '')} required
+							<select id="p-city" name="city" bind:value={city} onchange={() => (neighborhood = '')} required
 								class="w-full bg-[#070b14] border {!city ? 'border-red-500/50' : 'border-white/10'} focus:border-purple-500/50 rounded-xl
 								       px-4 py-3 text-white text-sm transition-colors outline-none appearance-none">
 								<option value="">{tFn("choose_city")}</option>
@@ -679,11 +683,11 @@
 					</div>
 					<!-- שכונה -->
 					<div>
-						<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
+						<label for="p-neighborhood" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
 							{tFn("neighborhood_label")} <span class="text-red-400">*</span>
 						</label>
 						{#if isEditing}
-							<select name="neighborhood" bind:value={neighborhood} disabled={!city} required
+							<select id="p-neighborhood" name="neighborhood" bind:value={neighborhood} disabled={!city} required
 								class="w-full bg-[#070b14] border {!neighborhood ? 'border-red-500/50' : 'border-white/10'} focus:border-purple-500/50 rounded-xl
 								       px-4 py-3 text-white text-sm transition-colors outline-none appearance-none
 								       disabled:opacity-40 disabled:cursor-not-allowed">
@@ -700,9 +704,9 @@
 
 				<!-- עסק -->
 				<div>
-					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("business_label")}</label>
+					<label for="p-business" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("business_label")}</label>
 					{#if isEditing}
-						<input name="business" type="text" bind:value={business} placeholder={tFn("business_placeholder")}
+						<input id="p-business" name="business" type="text" bind:value={business} placeholder={tFn("business_placeholder")}
 							class="w-full bg-white/5 border border-white/10 focus:border-purple-500/50 rounded-xl px-4 py-3 text-white text-sm transition-colors outline-none placeholder:text-white/15 hover:placeholder:text-transparent focus:placeholder:text-transparent placeholder:transition-colors placeholder:duration-200" />
 					{:else}
 						<p class="text-white font-medium py-3 px-1">{business || '—'}</p>
@@ -711,9 +715,9 @@
 
 				<!-- סטטוס משפחתי -->
 				<div>
-					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("family_status_label")}</label>
+					<label for="p-family-status" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("family_status_label")}</label>
 					{#if isEditing}
-						<select name="family_status" bind:value={family_status}
+						<select id="p-family-status" name="family_status" bind:value={family_status}
 							class="w-full bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl
 							       px-4 py-3 text-white text-sm transition-colors outline-none appearance-none">
 							<option value="single_m">{tFn("status_single_m")}</option>
@@ -733,10 +737,10 @@
 
 				<!-- תאריך לידה -->
 				<div>
-					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("birth_date_label")}</label>
+					<label for="p-birth-day" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("birth_date_label")}</label>
 					{#if isEditing}
 						<div class="flex gap-2">
-							<select name="birth_day" bind:value={birthDay}
+							<select id="p-birth-day" name="birth_day" bind:value={birthDay}
 								class="flex-1 bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl px-3 py-3 text-white text-sm outline-none appearance-none text-center">
 								<option value="">{tFn("birth_day")}</option>
 								{#each Array.from({length: 31}, (_, i) => i + 1) as d}
@@ -766,7 +770,7 @@
 
 				<!-- התראות -->
 				<div class="md:col-span-2">
-					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-3">{tFn("notifications_label")}</label>
+					<p class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-3">{tFn("notifications_label")}</p>
 					{#if isEditing}
 						<label class="flex items-center gap-3 cursor-pointer group">
 							<div class="relative" dir="ltr">
