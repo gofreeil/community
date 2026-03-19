@@ -36,11 +36,12 @@
             <span class="text-base md:text-xl">🔍</span>
             אבדות ומציאות
         </h3>
-        <button
+        <a
+            href="/lost-and-found/add"
             class="bg-white/20 hover:bg-white/30 text-white text-xs md:text-xs font-bold px-2 md:px-3 py-1 md:py-1.5 rounded-full transition-colors border border-white/20"
         >
-            + פרסם
-        </button>
+            + הוסף
+        </a>
     </div>
 
     <div class="p-2 md:p-4 flex-1 overflow-hidden">
