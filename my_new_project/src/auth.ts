@@ -3,7 +3,7 @@ import Google from '@auth/sveltekit/providers/google';
 import Facebook from '@auth/sveltekit/providers/facebook';
 import Credentials from '@auth/sveltekit/providers/credentials';
 import { createHash } from 'crypto';
-import { upsertUser, verifyCredentials } from '$lib/server/db';
+import { upsertUser, verifyCredentials, getUserByEmail } from '$lib/server/db';
 import { strapiLogin, strapiRegister } from '$lib/server/strapiClient';
 
 const AUTH_SECRET         = process.env.AUTH_SECRET         ?? '';
@@ -87,8 +87,12 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
                 return true;
             }
 
-            // מזהה יציב: provider_providerAccountId (ייחודי חוצה-ספקים)
-            const stableId = `${account.provider}_${account.providerAccountId}`;
+            // בדוק אם קיים משתמש עם אותו אימייל (קישור חשבונות)
+            const existingByEmail = user.email ? await getUserByEmail(user.email) : null;
+
+            // אם קיים — השתמש ב-ID שלו (מיזוג חשבונות)
+            // אם לא — צור מזהה חדש: provider_providerAccountId
+            const stableId = existingByEmail?.id ?? `${account.provider}_${account.providerAccountId}`;
 
             try {
                 await upsertUser({

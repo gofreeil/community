@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { signOut } from '@auth/sveltekit/client';
+	import { signOut, signIn } from '@auth/sveltekit/client';
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import type { CityEntry } from '$lib/neighborhoodsData';
@@ -61,6 +61,51 @@
 	let notifications  = $state(data.user?.notifications !== 0);
 	let termsAccepted  = $state(false);
 	let showTermsError = $state(false);
+
+	// ===== שליפת תמונה מגוגל/פייסבוק =====
+	let showSocialPhotoModal = $state<'google' | 'facebook' | null>(null);
+	let socialPhotoInput     = $state('');
+	let socialPhotoError     = $state('');
+	let socialPhotoLoading   = $state(false);
+
+	async function fetchSocialPhoto() {
+		socialPhotoError = '';
+		socialPhotoLoading = true;
+		try {
+			let url = '';
+			if (showSocialPhotoModal === 'facebook') {
+				// חילוץ שם משתמש מ-URL או שימוש ישיר
+				const username = socialPhotoInput.trim()
+					.replace(/^https?:\/\/(www\.)?facebook\.com\//, '')
+					.replace(/\/$/, '');
+				url = `https://graph.facebook.com/${username}/picture?type=large&redirect=true`;
+			} else if (showSocialPhotoModal === 'google') {
+				// Google: קבלת URL ישיר של תמונת פרופיל
+				url = socialPhotoInput.trim();
+				if (!url.startsWith('http')) {
+					socialPhotoError = 'הכנס URL תקין של תמונת הפרופיל';
+					socialPhotoLoading = false;
+					return;
+				}
+			}
+			// טעינת התמונה כ-base64
+			const res = await fetch(url);
+			if (!res.ok) throw new Error('לא ניתן לטעון את התמונה');
+			const blob = await res.blob();
+			const reader = new FileReader();
+			reader.onload = (e) => {
+				avatarPreview = e.target?.result as string;
+				avatarBase64  = e.target?.result as string;
+				showSocialPhotoModal = null;
+				socialPhotoInput = '';
+			};
+			reader.readAsDataURL(blob);
+		} catch {
+			socialPhotoError = 'לא הצלחנו לטעון את התמונה. נסה שנית.';
+		} finally {
+			socialPhotoLoading = false;
+		}
+	}
 
 	// ===== חיתוך תמונה =====
 	const CROP_VP    = 280;
@@ -510,36 +555,22 @@
 								{tFn("choose_photo")}
 								<input type="file" accept="image/*" class="hidden" onchange={handleImageChange} />
 							</label>
-														<!-- כפתור גוגל -->
-							{#if data.user?.provider === 'google' && data.oauth_image}
-								<button type="button"
-									onclick={() => { avatarPreview = data.oauth_image; avatarBase64 = data.oauth_image ?? ''; }}
-									class="cursor-pointer bg-white/5 hover:bg-white/10 border border-white/15 hover:border-red-400/50 rounded-xl px-3 py-2 text-sm text-gray-200 transition-all inline-flex items-center gap-2"
-								>
-									<img src="https://www.google.com/favicon.ico" class="w-4 h-4" alt="Google" />
-									השתמש בתמונת הגוגל
-								</button>
-							{:else}
-								<span class="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-white/8 text-sm text-gray-600 cursor-not-allowed">
-									<img src="https://www.google.com/favicon.ico" class="w-4 h-4 opacity-30" alt="Google" />
-									תמונת גוגל <span class="text-[10px]">(לא מחובר)</span>
-								</span>
-							{/if}
-							<!-- כפתור פייסבוק -->
-							{#if data.user?.provider === 'facebook' && data.oauth_image}
-								<button type="button"
-									onclick={() => { avatarPreview = data.oauth_image; avatarBase64 = data.oauth_image ?? ''; }}
-									class="cursor-pointer bg-white/5 hover:bg-white/10 border border-white/15 hover:border-blue-400/50 rounded-xl px-3 py-2 text-sm text-gray-200 transition-all inline-flex items-center gap-2"
-								>
-									<img src="https://www.facebook.com/favicon.ico" class="w-4 h-4" alt="Facebook" />
-									השתמש בתמונת הפייסבוק
-								</button>
-							{:else}
-								<span class="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-white/8 text-sm text-gray-600 cursor-not-allowed">
-									<img src="https://www.facebook.com/favicon.ico" class="w-4 h-4 opacity-30" alt="Facebook" />
-									תמונת פייסבוק <span class="text-[10px]">(לא מחובר)</span>
-								</span>
-							{/if}
+							<!-- כפתור גוגל - תמיד פעיל -->
+							<button type="button"
+								onclick={() => signIn('google', { callbackUrl: '/profile' })}
+								class="cursor-pointer bg-white/5 hover:bg-white/10 border border-white/15 hover:border-red-400/50 rounded-xl px-3 py-2 text-sm text-gray-200 transition-all inline-flex items-center gap-2"
+							>
+								<img src="https://www.google.com/favicon.ico" class="w-4 h-4" alt="Google" />
+								העתק מחשבון גוגל
+							</button>
+							<!-- כפתור פייסבוק - תמיד פעיל -->
+							<button type="button"
+								onclick={() => { showSocialPhotoModal = 'facebook'; socialPhotoInput = ''; socialPhotoError = ''; }}
+								class="cursor-pointer bg-white/5 hover:bg-white/10 border border-white/15 hover:border-blue-400/50 rounded-xl px-3 py-2 text-sm text-gray-200 transition-all inline-flex items-center gap-2"
+							>
+								<img src="https://www.facebook.com/favicon.ico" class="w-4 h-4" alt="Facebook" />
+								העתק מחשבון פייסבוק
+							</button>
 						</div>
 					</div>
 				</div>
@@ -1129,6 +1160,77 @@
 			</div>
 			<div class="text-white text-xs leading-snug">
 				{tFn(nextTipKey)}
+			</div>
+		</div>
+	</div>
+{/if}
+
+<!-- מודל שליפת תמונה מגוגל/פייסבוק -->
+{#if showSocialPhotoModal}
+	<div
+		class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+		onclick={() => (showSocialPhotoModal = null)}
+		role="presentation"
+	>
+		<div
+			class="bg-[#0f172a] border border-white/10 rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl"
+			onclick={(e) => e.stopPropagation()}
+			role="presentation"
+		>
+			<div class="flex items-center gap-3 mb-4">
+				{#if showSocialPhotoModal === 'google'}
+					<img src="https://www.google.com/favicon.ico" class="w-6 h-6" alt="Google" />
+					<h3 class="text-white font-bold text-lg">קח תמונה מגוגל</h3>
+				{:else}
+					<img src="https://www.facebook.com/favicon.ico" class="w-6 h-6" alt="Facebook" />
+					<h3 class="text-white font-bold text-lg">קח תמונה מפייסבוק</h3>
+				{/if}
+			</div>
+
+			<p class="text-gray-400 text-sm mb-4">
+				{#if showSocialPhotoModal === 'google'}
+					הכנס את ה-URL של תמונת הפרופיל שלך בגוגל
+				{:else}
+					הכנס את שם המשתמש שלך בפייסבוק או קישור לפרופיל
+				{/if}
+			</p>
+
+			<input
+				type="text"
+				bind:value={socialPhotoInput}
+				placeholder={showSocialPhotoModal === 'google' ? 'https://lh3.googleusercontent.com/...' : 'שם משתמש או קישור לפרופיל'}
+				class="w-full bg-white/5 border border-white/10 focus:border-purple-500/50 rounded-xl
+				       px-4 py-3 text-white text-sm placeholder-gray-500 outline-none transition-colors mb-3"
+				onkeydown={(e) => e.key === 'Enter' && fetchSocialPhoto()}
+			/>
+
+			{#if socialPhotoError}
+				<p class="text-red-400 text-xs mb-3">{socialPhotoError}</p>
+			{/if}
+
+			<div class="flex gap-2">
+				<button
+					type="button"
+					onclick={fetchSocialPhoto}
+					disabled={!socialPhotoInput.trim() || socialPhotoLoading}
+					class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600
+					       hover:from-blue-500 hover:to-purple-500 text-white text-sm font-bold
+					       transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+				>
+					{#if socialPhotoLoading}
+						<span class="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+					{:else}
+						טען תמונה
+					{/if}
+				</button>
+				<button
+					type="button"
+					onclick={() => (showSocialPhotoModal = null)}
+					class="px-4 py-2.5 rounded-xl border border-white/10 text-gray-400 hover:text-white
+					       hover:border-white/20 text-sm transition-all cursor-pointer"
+				>
+					ביטול
+				</button>
 			</div>
 		</div>
 	</div>

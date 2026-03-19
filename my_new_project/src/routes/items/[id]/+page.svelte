@@ -2,7 +2,9 @@
     import { onMount } from "svelte";
     import { locale, t } from "svelte-i18n";
     import { get } from "svelte/store";
-    const tFn = (k: string) => { void $state.snapshot(locale); return get(t)(k); };
+    let _loc = $state(get(locale));
+    $effect(() => locale.subscribe(l => (_loc = l)));
+    const tFn = (k: string) => { void _loc; return get(t)(k); };
     import { fade, fly, scale } from "svelte/transition";
     import type { PageData } from './$types';
 
