@@ -42,7 +42,7 @@
 </svelte:head>
 
 <CoinAnimation />
-<MobileAdsDrawer currentUser={currentUser} />
+<MobileAdsDrawer currentUser={currentUser} layoutUser={data.layoutUser} />
 <MobileAdPopup />
 <div class="min-h-screen flex flex-col bg-[#0f172a]">
 	<Header

@@ -1,10 +1,50 @@
 <script lang="ts">
 	import { ads } from '$lib/adsData';
 
+	interface LayoutUser {
+		id: string;
+		name: string | null;
+		email: string | null;
+		nickname: string;
+		phone: string;
+		city: string;
+		neighborhood: string;
+		avatar_url: string | null;
+		gender: string;
+		business: string;
+		family_status: string;
+		birth_date: string;
+		notifications: number;
+		balance: number;
+	}
+
 	interface Props {
 		currentUser?: { username: string; avatar_url?: string | null };
+		layoutUser?: LayoutUser | null;
 	}
-	let { currentUser }: Props = $props();
+	let { currentUser, layoutUser }: Props = $props();
+
+	// חישוב אחוז מילוי פרופיל
+	let profileCompletion = $derived(layoutUser ? Math.round([
+		!!layoutUser.avatar_url,
+		!!layoutUser.name,
+		!!layoutUser.email,
+		!!layoutUser.nickname,
+		!!layoutUser.phone,
+		!!layoutUser.city,
+		!!layoutUser.neighborhood,
+		!!layoutUser.gender,
+		!!layoutUser.business,
+		!!layoutUser.family_status,
+		!!layoutUser.birth_date,
+		!!layoutUser.notifications,
+	].filter(Boolean).length / 12 * 100) : 0);
+
+	let ringColor = $derived(
+		profileCompletion < 40 ? '#ef4444' :
+		profileCompletion < 70 ? '#eab308' : '#22c55e'
+	);
+	const ringC = 2 * Math.PI * 43; // r=43
 
 	let open = $state(false);
 
@@ -61,7 +101,62 @@
 
 		<!-- כפתור התחברות / אזור אישי -->
 		<div class="auth-section">
-			{#if currentUser}
+			{#if currentUser && layoutUser}
+			<!-- מיני-כרטיס פרופיל -->
+			<a href="/profile" onclick={() => open = false}
+				class="block w-full bg-white/5 hover:bg-white/8 border border-white/10 rounded-2xl p-4 transition-all no-underline">
+				<div class="flex items-center gap-4">
+
+					<!-- תמונה + מעגל מילוי -->
+					<div class="relative flex-shrink-0">
+						{#if layoutUser.avatar_url}
+							<img src={layoutUser.avatar_url} alt="avatar"
+								class="w-16 h-16 rounded-full object-cover border-2 border-purple-500/40" />
+						{:else}
+							<div class="w-16 h-16 rounded-full bg-gray-700 flex items-center justify-center border-2 border-gray-600">
+								<svg viewBox="0 0 24 24" class="w-8 h-8 text-gray-400" fill="currentColor">
+									<circle cx="12" cy="8" r="4"/>
+									<path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+								</svg>
+							</div>
+						{/if}
+						<!-- מעגל אחוזים -->
+						<svg class="absolute inset-0 w-full h-full -rotate-90 pointer-events-none"
+							viewBox="0 0 92 92">
+							<circle cx="46" cy="46" r="43" stroke="rgba(255,255,255,0.08)" stroke-width="3" fill="none"/>
+							<circle cx="46" cy="46" r="43"
+								stroke={ringColor} stroke-width="3" fill="none"
+								stroke-linecap="round"
+								stroke-dasharray={ringC}
+								stroke-dashoffset={ringC * (1 - profileCompletion / 100)}
+								style="transition: stroke-dashoffset 0.6s ease; filter: drop-shadow(0 0 4px {ringColor}88);"
+							/>
+						</svg>
+						<!-- % -->
+						<span class="absolute -bottom-1 -right-1 text-[10px] font-black px-1.5 py-0.5 rounded-full border-2 border-[#0f172a]"
+							style="background:{ringColor}; color:#000;">
+							{profileCompletion}%
+						</span>
+					</div>
+
+					<!-- שם + הודעות -->
+					<div class="flex flex-col gap-1 min-w-0">
+						<span class="text-white font-black text-base truncate">
+							{layoutUser.nickname || layoutUser.name || currentUser.username}
+						</span>
+						<span class="text-orange-400 text-xs font-bold">📩 הודעות אישיות</span>
+						<span class="text-gray-400 text-xs">לאזור האישי ←</span>
+					</div>
+
+					<!-- יתרה -->
+					<div class="flex-shrink-0 flex flex-col items-center gap-1 mr-auto">
+						<img src="/images/wallet.png" alt="ארנק" class="w-10 h-10 object-contain" />
+						<span class="text-green-400 text-xs font-black">{layoutUser.balance ?? 0}₪</span>
+					</div>
+
+				</div>
+			</a>
+			{:else if currentUser}
 			<a href="/profile" class="profile-btn" onclick={() => open = false}>
 				{#if currentUser.avatar_url}
 				<img src={currentUser.avatar_url} alt="avatar" class="profile-avatar" />

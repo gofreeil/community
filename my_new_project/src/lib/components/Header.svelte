@@ -56,11 +56,6 @@
         headerCompletion < 70 ? '#eab308' : '#22c55e'
     );
 
-    // Ads Mode Logic (Mobile Only)
-    let showAdsMode = $state(false);
-    let currentAdIndex = $state(0);
-    let adsShownCount = $state(0);
-    let nextAdsStartIndex = $state(0);
     let selectedAdForModal = $state<Ad | null>(null);
 
     function changeLang(language: { name: string; code: string }) {
@@ -82,40 +77,9 @@
         updateOnlineUsers();
         const usersInterval = setInterval(updateOnlineUsers, 30000);
 
-        // Switch to Ads Mode after 10 seconds (Mobile only logic will use this)
-        const adsTimer = setTimeout(() => {
-            showAdsMode = true;
-            currentAdIndex = nextAdsStartIndex;
-            adsShownCount = 1;
-        }, 10000);
-
-        // Rotate ads every 5 seconds
-        const rotateAdsInterval = setInterval(() => {
-            if (showAdsMode) {
-                if (adsShownCount >= 3) {
-                    // After 3 ads, go back to original header
-                    showAdsMode = false;
-                    adsShownCount = 0;
-                    // Advance the start index so the next session continues through all ads
-                    nextAdsStartIndex = (nextAdsStartIndex + 3) % ads.length;
-                    // Wait 7 seconds then show ads again
-                    setTimeout(() => {
-                        showAdsMode = true;
-                        currentAdIndex = nextAdsStartIndex;
-                        adsShownCount = 1;
-                    }, 7000);
-                } else {
-                    currentAdIndex = (currentAdIndex + 1) % ads.length;
-                    adsShownCount = adsShownCount + 1;
-                }
-            }
-        }, 5000);
-
         document.addEventListener("click", handleClickOutside);
         return () => {
             clearInterval(usersInterval);
-            clearInterval(rotateAdsInterval);
-            clearTimeout(adsTimer);
             document.removeEventListener("click", handleClickOutside);
         };
     });
@@ -140,11 +104,8 @@
     <div class="relative mx-auto max-w-7xl px-2 sm:px-4 lg:px-8">
         <!-- Mobile Header Area -->
         <div class="md:hidden h-[80px] relative">
-            {#if !showAdsMode}
-                <!-- Original Mobile Header (0-10 seconds) -->
+                <!-- Mobile Header -->
                 <div
-                    in:fade={{ duration: 1000, delay: 400 }}
-                    out:fade={{ duration: 800 }}
                     class="flex items-center justify-between h-full px-1 absolute inset-0"
                 >
                     <a
@@ -225,42 +186,6 @@
                         {/if}
                     </div>
                 </div>
-            {:else}
-                <!-- Advertisement Banner Mode -->
-                <div
-                    in:fade={{ duration: 1000, delay: 400 }}
-                    out:fade={{ duration: 800 }}
-                    class="flex items-center justify-center h-full w-full px-4 relative cursor-pointer absolute inset-0"
-                    onclick={() => selectedAdForModal = ads[currentAdIndex]}
-                >
-                    {#key currentAdIndex}
-                        <div
-                            in:fade={{ duration: 1000, delay: 400 }}
-                            out:fade={{ duration: 800 }}
-                            class="absolute inset-0 flex flex-col items-center justify-center text-center px-2 py-1 pl-16"
-                        >
-                            <h2
-                                class="text-2xl font-black bg-gradient-to-r {ads[
-                                    currentAdIndex
-                                ]
-                                    .color} bg-clip-text text-transparent leading-tight mb-0.5"
-                            >
-                                {ads[currentAdIndex].title}
-                            </h2>
-                            <p
-                                class="text-sm text-gray-300 font-medium max-w-[95%] line-clamp-2"
-                            >
-                                {ads[currentAdIndex].description}
-                            </p>
-                        </div>
-                    {/key}
-                    <div
-                        class="text-sm text-gray-500 font-bold flex flex-col items-center gap-0 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
-                    >
-                        <span>{tFn("for_details")}</span><span class="text-lg">👇</span>
-                    </div>
-                </div>
-            {/if}
         </div>
 
         <!-- Desktop Header - Full Layout -->
