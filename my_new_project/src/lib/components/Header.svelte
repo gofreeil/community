@@ -174,6 +174,33 @@
                     </a>
 
                     <div class="flex items-center gap-2">
+                        <!-- כפתור דגל שפה - מובייל -->
+                        <div class="relative lang-dropdown-container">
+                            <button
+                                onclick={() => (showLangDropdown = !showLangDropdown)}
+                                class="flex items-center justify-center w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors"
+                                aria-label="בחר שפה"
+                            >
+                                <span
+                                    class="fi fi-{languages.find((l) => l.code === $locale || $locale?.startsWith(l.code))?.flag || 'il'}"
+                                    style="font-size: 1.4rem;"
+                                ></span>
+                            </button>
+                            {#if showLangDropdown}
+                                <div class="absolute left-0 z-[160] mt-2 w-36 rounded-lg bg-[#0f172a] border border-white/10 shadow-xl">
+                                    {#each languages as langOption}
+                                        <button
+                                            class="flex w-full items-center gap-3 px-3 py-2 text-right text-white hover:bg-white/10 transition-colors"
+                                            onclick={() => { changeLang(langOption); showLangDropdown = false; }}
+                                        >
+                                            <span class="fi fi-{langOption.flag}" style="font-size: 1.2rem;"></span>
+                                            <span class="text-sm">{langOption.name}</span>
+                                        </button>
+                                    {/each}
+                                </div>
+                            {/if}
+                        </div>
+
                         {#if currentUser}
                             <a href="/profile" class="relative group flex-shrink-0">
                                 {#if currentUser.avatar_url}
