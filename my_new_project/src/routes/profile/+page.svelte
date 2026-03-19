@@ -478,7 +478,7 @@
 	            hover:before:from-white/18">
 
 		<div
-			class="flex items-center justify-between cursor-pointer select-none {isEditing ? 'mb-6' : ''}"
+			class="relative flex items-center justify-between cursor-pointer select-none -mx-6 px-6 -mt-6 pt-6 md:-mx-8 md:px-8 md:-mt-8 md:pt-8 {isEditing ? 'pb-6 mb-6' : 'pb-6'}"
 			onclick={() => { if (isEditing) { isEditing = false; saveSuccess = false; } else { isEditing = true; } }}
 			onmouseenter={() => { secTipShow = true; secTipIsOpen = isEditing; }}
 			onmouseleave={() => (secTipShow = false)}
@@ -661,10 +661,12 @@
 				<div class="md:col-span-2 grid grid-cols-2 gap-3 rounded-2xl border border-purple-500/20 bg-purple-500/5 p-3">
 					<!-- עיר -->
 					<div>
-						<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("city_label")}</label>
+						<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
+							{tFn("city_label")} <span class="text-red-400">*</span>
+						</label>
 						{#if isEditing}
-							<select name="city" bind:value={city} onchange={() => (neighborhood = '')}
-								class="w-full bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl
+							<select name="city" bind:value={city} onchange={() => (neighborhood = '')} required
+								class="w-full bg-[#070b14] border {!city ? 'border-red-500/50' : 'border-white/10'} focus:border-purple-500/50 rounded-xl
 								       px-4 py-3 text-white text-sm transition-colors outline-none appearance-none">
 								<option value="">{tFn("choose_city")}</option>
 								{#each (data.citiesData as CityEntry[]) as c}
@@ -677,10 +679,12 @@
 					</div>
 					<!-- שכונה -->
 					<div>
-						<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("neighborhood_label")}</label>
+						<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
+							{tFn("neighborhood_label")} <span class="text-red-400">*</span>
+						</label>
 						{#if isEditing}
-							<select name="neighborhood" bind:value={neighborhood} disabled={!city}
-								class="w-full bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl
+							<select name="neighborhood" bind:value={neighborhood} disabled={!city} required
+								class="w-full bg-[#070b14] border {!neighborhood ? 'border-red-500/50' : 'border-white/10'} focus:border-purple-500/50 rounded-xl
 								       px-4 py-3 text-white text-sm transition-colors outline-none appearance-none
 								       disabled:opacity-40 disabled:cursor-not-allowed">
 								<option value="">{tFn("choose_neighborhood")}</option>
@@ -695,12 +699,11 @@
 				</div>
 
 				<!-- עסק -->
-				<div class="md:col-span-2">
+				<div>
 					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("business_label")}</label>
 					{#if isEditing}
 						<input name="business" type="text" bind:value={business} placeholder={tFn("business_placeholder")}
-							class="w-full bg-white/5 border border-white/10 focus:border-purple-500/50 rounded-xl
-							       px-4 py-3 text-white text-sm transition-colors outline-none" />
+							class="w-full bg-white/5 border border-white/10 focus:border-purple-500/50 rounded-xl px-4 py-3 text-white text-sm transition-colors outline-none placeholder:text-white/15 hover:placeholder:text-transparent focus:placeholder:text-transparent placeholder:transition-colors placeholder:duration-200" />
 					{:else}
 						<p class="text-white font-medium py-3 px-1">{business || '—'}</p>
 					{/if}
@@ -812,7 +815,7 @@
 						<p class="text-red-400 text-xs font-bold">{form.error}</p>
 					{/if}
 					<button type="submit"
-						onclick={(e) => { if (!termsAccepted) { e.preventDefault(); showTermsError = true; } }}
+						onclick={(e) => { if (!termsAccepted) { e.preventDefault(); showTermsError = true; return; } if (!city || !neighborhood) { e.preventDefault(); alert('יש למלא עיר ושכונה לפני השמירה'); return; } }}
 						class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500
 						       text-white font-black px-8 py-3 rounded-2xl shadow-xl text-sm transition-all hover:-translate-y-0.5
 						       cursor-pointer"
@@ -988,7 +991,7 @@
 	            before:transition-all before:duration-300 before:pointer-events-none
 	            hover:before:from-white/18">
 		<div
-			class="relative flex items-center justify-between cursor-pointer select-none {showMessages ? 'mb-6' : ''}"
+		class="relative flex items-center justify-between cursor-pointer select-none -mx-6 px-6 -mt-6 pt-6 md:-mx-8 md:px-8 md:-mt-8 md:pt-8 {showMessages ? 'pb-6 mb-6' : 'pb-6'}"
 			onclick={() => { if (showMessages) { showMessages = false; } else { showMessages = true; } }}
 			role="button" tabindex={0}
 			onmouseenter={() => { secTipShow = true; secTipIsOpen = showMessages; }}
@@ -1030,7 +1033,7 @@
 	            before:transition-all before:duration-300 before:pointer-events-none
 	            hover:before:from-white/18">
 		<div
-			class="flex items-center justify-between cursor-pointer select-none {showMyInfo ? 'mb-6' : ''}"
+			class="relative flex items-center justify-between cursor-pointer select-none -mx-6 px-6 -mt-6 pt-6 md:-mx-8 md:px-8 md:-mt-8 md:pt-8 {showMyInfo ? 'pb-6 mb-6' : 'pb-6'}"
 			onclick={() => { if (showMyInfo) { showMyInfo = false; } else { showMyInfo = true; } }}
 			onmouseenter={() => { secTipShow = true; secTipIsOpen = showMyInfo; }}
 			onmouseleave={() => (secTipShow = false)}

@@ -153,7 +153,7 @@ register('he', () => Promise.resolve({
     neighborhood_label: "שכונה",
     choose_neighborhood: "בחר שכונה",
     business_label: "עסק פרטי",
-    business_placeholder: "שם העסק שלך",
+    business_placeholder: "רואה חשבון",
     family_status_label: "סטטוס משפחתי",
     choose_status: "בחר סטטוס",
     status_single_m: "פנוי",
