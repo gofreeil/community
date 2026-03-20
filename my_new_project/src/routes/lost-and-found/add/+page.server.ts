@@ -6,11 +6,7 @@ export const load: PageServerLoad = async (event) => {
     let session = null;
     try { session = await event.locals.auth(); } catch {}
 
-    if (!session?.user?.id) {
-        throw redirect(302, '/login?redirect=/lost-and-found/add');
-    }
-
-    return { userId: session.user.id };
+    return { userId: session?.user?.id ?? null };
 };
 
 export const actions: Actions = {
@@ -19,13 +15,14 @@ export const actions: Actions = {
         try { session = await event.locals.auth(); } catch {}
         if (!session?.user?.id) throw redirect(302, '/login?redirect=/lost-and-found/add');
 
-        const fd          = await event.request.formData();
-        const type        = fd.get('type')?.toString()        ?? '';   // 'lost' | 'found'
-        const title       = fd.get('title')?.toString().trim()       ?? '';
-        const description = fd.get('description')?.toString().trim() ?? '';
-        const location    = fd.get('location')?.toString().trim()    ?? '';
-        const phone       = fd.get('phone')?.toString().trim()       ?? '';
-        const contact     = fd.get('contact')?.toString().trim()     ?? '';
+        const fd           = await event.request.formData();
+        const type         = fd.get('type')?.toString()               ?? '';
+        const title        = fd.get('title')?.toString().trim()       ?? '';
+        const description  = fd.get('description')?.toString().trim() ?? '';
+        const location     = fd.get('location')?.toString().trim()    ?? '';
+        const phone        = fd.get('phone')?.toString().trim()       ?? '';
+        const contact      = fd.get('contact')?.toString().trim()     ?? '';
+        const image_base64 = fd.get('image_base64')?.toString()       ?? '';
 
         if (!type)     return fail(400, { error: 'יש לבחור אבד או נמצא' });
         if (!title)    return fail(400, { error: 'יש למלא כותרת' });
@@ -42,7 +39,7 @@ export const actions: Actions = {
                 address:     location,
                 icon:        type === 'lost' ? '❓' : '✅',
                 color:       type === 'lost' ? 'red' : 'green',
-                extra_fields: { type, location },
+                extra_fields: { type, location, ...(image_base64 ? { image: image_base64 } : {}) },
                 user_id:     session.user.id,
             });
         } catch (e) {

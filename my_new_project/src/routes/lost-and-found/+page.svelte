@@ -15,6 +15,11 @@
         }
     }
 
+    function getItemImage(extraFields: string): string {
+        try { return JSON.parse(extraFields)?.image ?? ''; }
+        catch { return ''; }
+    }
+
     function formatDate(iso: string): string {
         if (!iso) return '';
         const diff = Date.now() - new Date(iso).getTime();
@@ -96,15 +101,23 @@
     {:else}
         <div class="space-y-3">
             {#each filtered as item}
-                {@const type = getItemType(item.extra_fields)}
-                <div class="relative rounded-2xl border border-white/10 bg-white/5 p-4 hover:bg-white/8 transition-all">
+                {@const type  = getItemType(item.extra_fields)}
+                {@const image = getItemImage(item.extra_fields)}
+                <div class="relative rounded-2xl border border-white/10 bg-white/5 overflow-hidden hover:bg-white/8 transition-all">
+                    {#if image}
+                        <div class="relative w-full h-40">
+                            <img src={image} alt={item.label} class="w-full h-full object-cover" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-[#0f172a]/80 to-transparent"></div>
+                        </div>
+                    {/if}
+
                     <!-- Type badge -->
-                    <div class="absolute top-0 right-0 px-3 py-1 text-[10px] font-black uppercase tracking-wider rounded-br-none rounded-tl-none rounded-bl-xl rounded-tr-2xl
+                    <div class="absolute top-0 right-0 px-3 py-1 text-[10px] font-black uppercase tracking-wider rounded-bl-xl
                         {type === 'found' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}">
                         {type === 'found' ? '✅ נמצא' : '❓ אבד'}
                     </div>
 
-                    <div class="mt-3">
+                    <div class="p-4 {image ? '' : 'mt-3'}">
                         <h3 class="font-black text-white text-base mb-2 leading-tight">{item.label}</h3>
 
                         {#if item.description}

@@ -6,6 +6,43 @@
 
     let type        = $state<'lost' | 'found' | ''>('');
     let submitting  = $state(false);
+    let imageBase64 = $state('');
+    let imagePreview = $state('');
+
+    function handleImageChange(e: Event) {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (!file) return;
+
+        const MAX = 900;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const src = ev.target?.result as string;
+            const img = new Image();
+            img.onload = () => {
+                let w = img.naturalWidth;
+                let h = img.naturalHeight;
+                if (w > MAX || h > MAX) {
+                    const ratio = Math.min(MAX / w, MAX / h);
+                    w = Math.round(w * ratio);
+                    h = Math.round(h * ratio);
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width  = w;
+                canvas.height = h;
+                canvas.getContext('2d')!.drawImage(img, 0, 0, w, h);
+                const b64 = canvas.toDataURL('image/jpeg', 0.82);
+                imageBase64  = b64;
+                imagePreview = b64;
+            };
+            img.src = src;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function removeImage() {
+        imageBase64  = '';
+        imagePreview = '';
+    }
 </script>
 
 <svelte:head>
@@ -98,6 +135,37 @@
                         placeholder="תיאור הפריט, סימנים מזהים, נסיבות האבדה / מציאה..."
                         class="w-full bg-white/5 border border-white/10 focus:border-blue-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none transition-colors placeholder:text-gray-600 resize-none"
                     ></textarea>
+                </div>
+
+                <!-- Image upload -->
+                <div>
+                    <p class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
+                        תמונה (אופציונלי)
+                    </p>
+                    {#if imagePreview}
+                        <div class="relative w-full rounded-xl overflow-hidden border border-white/10">
+                            <img src={imagePreview} alt="תצוגה מקדימה" class="w-full max-h-52 object-contain bg-black/30" />
+                            <button
+                                type="button"
+                                onclick={removeImage}
+                                class="absolute top-2 left-2 w-7 h-7 rounded-full bg-black/60 hover:bg-red-600 text-white text-sm flex items-center justify-center transition-colors"
+                                aria-label="הסר תמונה"
+                            >✕</button>
+                        </div>
+                    {:else}
+                        <label class="flex flex-col items-center justify-center gap-2 w-full h-28 rounded-xl border-2 border-dashed border-white/15 hover:border-blue-500/50 bg-white/3 hover:bg-blue-900/10 cursor-pointer transition-all">
+                            <span class="text-2xl">📷</span>
+                            <span class="text-gray-400 text-sm font-bold">לחץ להעלאת תמונה</span>
+                            <span class="text-gray-600 text-xs">JPG, PNG עד 5MB</span>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                class="hidden"
+                                onchange={handleImageChange}
+                            />
+                        </label>
+                    {/if}
+                    <input type="hidden" name="image_base64" value={imageBase64} />
                 </div>
 
                 <!-- Location -->
