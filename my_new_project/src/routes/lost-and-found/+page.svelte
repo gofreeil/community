@@ -156,7 +156,10 @@
                 <button onclick={() => resolveModal = null} class="text-gray-400 hover:text-white text-xl leading-none">✕</button>
             </div>
 
-            <p class="text-gray-400 text-sm mb-5">
+            <p class="text-gray-300 text-sm mb-3 leading-relaxed">
+                נודה לך שתדווח גם כשהאבדה שבה — כדי שנשמח יחד ונקדם חברה מתוקנת יותר 🤝
+            </p>
+            <p class="text-gray-500 text-sm mb-5">
                 לפני הסרת המודעה <span class="text-white font-bold">"{resolveModal.label}"</span>,
                 נשמח לדעת:
             </p>
