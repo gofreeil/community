@@ -38,7 +38,7 @@
         </h3>
         <a
             href="/lost-and-found/add"
-            class="inline-flex items-center self-center bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-2 py-1 rounded-full transition-colors border border-white/20 flex-shrink-0"
+            class="inline-flex items-center self-center bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-2 md:px-3 py-1 md:py-1.5 rounded-full transition-colors border border-white/20 flex-shrink-0"
         >
             + הוסף
         </a>

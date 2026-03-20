@@ -186,7 +186,7 @@
                                 לוח אירועים
                             </h3>
                             <button
-                                class="bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-2 py-1 rounded-full transition-colors border border-white/20"
+                                class="inline-flex items-center self-center bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-2 py-1 rounded-full transition-colors border border-white/20 flex-shrink-0"
                             >
                                 + הוסף
                             </button>
