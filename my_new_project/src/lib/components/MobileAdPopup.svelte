@@ -4,13 +4,13 @@
     import { onDestroy } from 'svelte';
 
     let popup = $state<{ ad: any; pendingHref?: string } | null>(null);
-    let countdown = $state(3);
+    let countdown = $state(5);
     let timer: ReturnType<typeof setInterval> | null = null;
 
     const unsubscribe = adPopup.subscribe(val => {
         popup = val;
         if (val) {
-            countdown = 3;
+            countdown = 5;
             if (timer) clearInterval(timer);
             timer = setInterval(() => {
                 countdown -= 1;
@@ -53,7 +53,7 @@
         <div class="absolute top-0 left-0 right-0 h-1 bg-white/20 z-10">
             <div
                 class="h-full bg-purple-500 transition-[width] duration-1000 ease-linear"
-                style="width: {(countdown / 3) * 100}%"
+                style="width: {(countdown / 5) * 100}%"
             ></div>
         </div>
 
