@@ -212,6 +212,12 @@
                     </div>
                 </div>
 
+                        <!-- 30-day notice -->
+                <div class="flex items-start gap-2 px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-300 text-xs">
+                    <span class="flex-shrink-0 mt-0.5">⏳</span>
+                    <span>המודעה תימחק אוטומטית לאחר <strong>30 יום</strong></span>
+                </div>
+
                 <!-- Submit -->
                 <button
                     type="submit"

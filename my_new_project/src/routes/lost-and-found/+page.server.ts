@@ -1,12 +1,57 @@
-import { getItemsByCategory } from '$lib/server/db';
-import type { PageServerLoad } from './$types';
+import { getItemsByCategory, createItem } from '$lib/server/db';
+import { fail } from '@sveltejs/kit';
+import type { PageServerLoad, Actions } from './$types';
 
 export const load: PageServerLoad = async () => {
     try {
         const items = await getItemsByCategory('lost_and_found');
-        return { items };
+        return { items, msgSent: false };
     } catch (e) {
         console.warn('[lost-and-found] load failed:', e instanceof Error ? e.message : e);
-        return { items: [] };
+        return { items: [], msgSent: false };
     }
+};
+
+export const actions: Actions = {
+    sendMessage: async (event) => {
+        const fd           = await event.request.formData();
+        const recipient_id = fd.get('recipient_id')?.toString()        ?? '';
+        const item_label   = fd.get('item_label')?.toString()          ?? '';
+        const message      = fd.get('message')?.toString().trim()      ?? '';
+        const sender_name  = fd.get('sender_name')?.toString().trim()  ?? '';
+        const sender_phone = fd.get('sender_phone')?.toString().trim() ?? '';
+
+        if (!recipient_id) return fail(400, { msgError: 'לא ניתן לזהות את הפורסם' });
+        if (!message)      return fail(400, { msgError: 'יש לכתוב הודעה' });
+        if (!sender_name)  return fail(400, { msgError: 'יש למלא שם ליצירת קשר' });
+        if (!sender_phone) return fail(400, { msgError: 'יש למלא מספר טלפון' });
+
+        let session = null;
+        try { session = await event.locals.auth(); } catch {}
+
+        try {
+            await createItem({
+                category:    'message',
+                label:       `הודעה על: ${item_label}`,
+                description: message,
+                contact:     sender_name,
+                phone:       sender_phone,
+                user_id:     recipient_id,
+                icon:        '✉️',
+                color:       'blue',
+                extra_fields: {
+                    sender_id:    session?.user?.id ?? null,
+                    sender_name,
+                    sender_phone,
+                    item_label,
+                    read:         false,
+                },
+            });
+        } catch (e) {
+            console.error('[sendMessage] failed:', e);
+            return fail(500, { msgError: 'שגיאה בשליחה, נסה שוב' });
+        }
+
+        return { msgSent: true };
+    },
 };

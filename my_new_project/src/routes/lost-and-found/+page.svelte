@@ -1,10 +1,19 @@
 <script lang="ts">
-    import type { PageData } from './$types';
+    import { enhance } from '$app/forms';
+    import type { PageData, ActionData } from './$types';
 
-    let { data }: { data: PageData } = $props();
+    let { data, form }: { data: PageData; form: ActionData } = $props();
 
     type LafType = 'all' | 'lost' | 'found';
     let filter = $state<LafType>('all');
+
+    // Message modal state
+    let msgModal = $state<{ id: string; label: string; user_id: string } | null>(null);
+    let msgSending = $state(false);
+
+    $effect(() => {
+        if (form?.msgSent) msgModal = null;
+    });
 
     function getItemType(extraFields: string): 'lost' | 'found' {
         try {
@@ -49,6 +58,86 @@
     <title>אבדות ומציאות | קהילה בשכונה</title>
 </svelte:head>
 
+<!-- Message modal -->
+{#if msgModal}
+    <div class="fixed inset-0 bg-black/70 z-[200] flex items-center justify-center px-4" dir="rtl">
+        <div class="w-full max-w-md bg-[#1e293b] rounded-2xl border border-white/10 shadow-2xl p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="font-black text-white text-lg">✉️ שלח הודעה לפורסם</h2>
+                <button onclick={() => msgModal = null} class="text-gray-400 hover:text-white text-xl leading-none">✕</button>
+            </div>
+            <p class="text-gray-400 text-sm mb-4">
+                בנוגע ל: <span class="text-blue-300 font-bold">{msgModal.label}</span>
+            </p>
+
+            {#if form?.msgSent}
+                <div class="text-center py-6">
+                    <div class="text-4xl mb-2">✅</div>
+                    <p class="text-green-300 font-bold">ההודעה נשלחה בהצלחה!</p>
+                    <p class="text-gray-400 text-sm mt-1">הפורסם יראה אותה בהודעות האישיות שלו</p>
+                    <button onclick={() => msgModal = null}
+                        class="mt-4 px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-colors text-sm">
+                        סגור
+                    </button>
+                </div>
+            {:else}
+                {#if form?.msgError}
+                    <div class="mb-3 px-4 py-2 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 text-sm">
+                        ⚠️ {form.msgError}
+                    </div>
+                {/if}
+
+                <form method="POST" action="?/sendMessage"
+                    use:enhance={() => {
+                        msgSending = true;
+                        return async ({ update }) => { await update(); msgSending = false; };
+                    }}
+                    class="space-y-4">
+                    <input type="hidden" name="recipient_id" value={msgModal.user_id} />
+                    <input type="hidden" name="item_label" value={msgModal.label} />
+
+                    <div>
+                        <label for="msg-body" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-1.5">
+                            ההודעה שלך *
+                        </label>
+                        <textarea
+                            id="msg-body"
+                            name="message"
+                            rows="3"
+                            required
+                            placeholder="כתוב את הודעתך כאן..."
+                            class="w-full bg-white/5 border border-white/10 focus:border-blue-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none transition-colors placeholder:text-gray-600 resize-none"
+                        ></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label for="msg-name" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-1.5">
+                                שמך *
+                            </label>
+                            <input id="msg-name" type="text" name="sender_name" required placeholder="שם פרטי"
+                                class="w-full bg-white/5 border border-white/10 focus:border-blue-500/50 rounded-xl px-3 py-2.5 text-white text-sm outline-none transition-colors placeholder:text-gray-600" />
+                        </div>
+                        <div>
+                            <label for="msg-phone" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-1.5">
+                                טלפון *
+                            </label>
+                            <input id="msg-phone" type="tel" name="sender_phone" required placeholder="050-0000000"
+                                class="w-full bg-white/5 border border-white/10 focus:border-blue-500/50 rounded-xl px-3 py-2.5 text-white text-sm outline-none transition-colors placeholder:text-gray-600" />
+                        </div>
+                    </div>
+
+                    <button type="submit" disabled={msgSending}
+                        class="w-full py-3 rounded-xl font-black text-sm transition-all
+                            {msgSending ? 'bg-white/10 text-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white shadow-lg'}">
+                        {msgSending ? 'שולח...' : '✉️ שלח הודעה'}
+                    </button>
+                </form>
+            {/if}
+        </div>
+    </div>
+{/if}
+
 <div class="max-w-2xl mx-auto px-4 py-8" dir="rtl">
 
     <!-- Header -->
@@ -70,9 +159,9 @@
     <!-- Filter tabs -->
     <div class="flex gap-2 mb-6">
         {#each [
-            { value: 'all',   label: '🔍 הכל',    count: data.items.length },
-            { value: 'lost',  label: '❓ אבד',     count: data.items.filter(i => getItemType(i.extra_fields) === 'lost').length },
-            { value: 'found', label: '✅ נמצא',    count: data.items.filter(i => getItemType(i.extra_fields) === 'found').length },
+            { value: 'all',   label: '🔍 הכל',  count: data.items.length },
+            { value: 'lost',  label: '❓ אבד',   count: data.items.filter(i => getItemType(i.extra_fields) === 'lost').length },
+            { value: 'found', label: '✅ נמצא',  count: data.items.filter(i => getItemType(i.extra_fields) === 'found').length },
         ] as tab}
             <button
                 onclick={() => filter = tab.value as LafType}
@@ -125,39 +214,34 @@
                         {/if}
 
                         <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 mb-3">
-                            {#if item.address}
-                                <span>📍 {item.address}</span>
-                            {/if}
-                            {#if item.contact}
-                                <span>👤 {item.contact}</span>
-                            {/if}
-                            {#if item.created_at}
-                                <span>🕒 {formatDate(item.created_at)}</span>
-                            {/if}
+                            {#if item.address}<span>📍 {item.address}</span>{/if}
+                            {#if item.contact}<span>👤 {item.contact}</span>{/if}
+                            {#if item.created_at}<span>🕒 {formatDate(item.created_at)}</span>{/if}
                         </div>
 
-                        {#if item.phone}
-                            <div class="flex gap-2">
-                                <a
-                                    href="tel:{item.phone}"
-                                    class="flex-1 text-center py-2 rounded-xl bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white text-sm font-bold transition-all border border-blue-500/30"
+                        <div class="flex flex-col gap-2">
+                            {#if item.phone}
+                                <div class="flex gap-2">
+                                    <a href="tel:{item.phone}"
+                                        class="flex-1 text-center py-2 rounded-xl bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white text-sm font-bold transition-all border border-blue-500/30">
+                                        📞 {item.phone}
+                                    </a>
+                                    <a href={waLink(item.phone)} target="_blank" rel="noopener noreferrer"
+                                        class="px-4 py-2 rounded-xl bg-green-600/20 hover:bg-green-600 text-green-300 hover:text-white text-sm font-bold transition-all border border-green-500/30">
+                                        💬
+                                    </a>
+                                </div>
+                            {/if}
+
+                            {#if item.user_id}
+                                <button
+                                    onclick={() => msgModal = { id: item.id, label: item.label, user_id: item.user_id! }}
+                                    class="w-full py-2 rounded-xl bg-purple-600/20 hover:bg-purple-600 text-purple-300 hover:text-white text-sm font-bold transition-all border border-purple-500/30"
                                 >
-                                    📞 {item.phone}
-                                </a>
-                                <a
-                                    href={waLink(item.phone)}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    class="px-4 py-2 rounded-xl bg-green-600/20 hover:bg-green-600 text-green-300 hover:text-white text-sm font-bold transition-all border border-green-500/30"
-                                >
-                                    💬
-                                </a>
-                            </div>
-                        {:else}
-                            <div class="py-2 rounded-xl bg-white/5 text-gray-500 text-sm text-center border border-white/10">
-                                אין פרטי קשר
-                            </div>
-                        {/if}
+                                    ✉️ שלח הודעה לפורסם
+                                </button>
+                            {/if}
+                        </div>
                     </div>
                 </div>
             {/each}

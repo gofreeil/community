@@ -363,6 +363,10 @@
 			>
 				{tFn("logout_btn")}
 			</button>
+			<a href="/messages"
+				class="text-sm font-bold text-purple-300 hover:text-white transition-colors px-3 py-2 rounded-xl hover:bg-purple-500/10 border border-purple-500/20 flex items-center gap-1.5">
+				✉️ הודעות
+			</a>
 		</div>
 		<div class="flex items-stretch justify-between gap-5">
 

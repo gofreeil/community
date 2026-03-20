@@ -249,6 +249,16 @@ export async function getItemsByUserId(userId: string): Promise<DbItem[]> {
     return (res.data ?? []).map(mapStrapiItem);
 }
 
+export async function getMessagesByUserId(userId: string): Promise<DbItem[]> {
+    const res = await strapiGet<{ data: StrapiItem[] }>('/api/items', {
+        'filters[category][$eq]': 'message',
+        'filters[user_id][$eq]':  userId,
+        'sort':                   'createdAt:desc',
+        'pagination[limit]':      '200',
+    });
+    return (res.data ?? []).map(mapStrapiItem);
+}
+
 // ============================================================
 // ---- Community Fund (Strapi) ----
 // ============================================================
