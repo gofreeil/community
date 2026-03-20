@@ -592,9 +592,14 @@
 
     function handleHelpRequest(optionId: number) {
         if (showAddMenu) showAddMenu = false;
-        const option = helpOptions.find((o) => o.id === optionId);
         showHelpMenu = false;
 
+        // נווט לטופס פרטי קריאת העזרה
+        goto(`/raise-hand/add?option=${optionId}`);
+        return;
+
+        // הקוד שלמטה נשמר כ-fallback אם הניווט נכשל
+        const option = helpOptions.find((o) => o.id === optionId);
         const wasNotInMapView = viewMode !== "map";
 
         // עבור לתצוגת מפה כדי לראות את הגלים
