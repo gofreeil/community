@@ -44,9 +44,9 @@
             >
                 <!-- Type selection -->
                 <div>
-                    <label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
+                    <p class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
                         סוג המודעה *
-                    </label>
+                    </p>
                     <div class="grid grid-cols-2 gap-3">
                         <label class="cursor-pointer">
                             <input type="radio" name="type" value="lost" class="sr-only"
@@ -73,10 +73,11 @@
 
                 <!-- Title -->
                 <div>
-                    <label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
+                    <label for="laf-title" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
                         {type === 'found' ? 'מה מצאתי' : 'מה אבד לי'} *
                     </label>
                     <input
+                        id="laf-title"
                         name="title"
                         type="text"
                         required
@@ -87,10 +88,11 @@
 
                 <!-- Description -->
                 <div>
-                    <label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
+                    <label for="laf-description" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
                         תיאור מפורט
                     </label>
                     <textarea
+                        id="laf-description"
                         name="description"
                         rows="3"
                         placeholder="תיאור הפריט, סימנים מזהים, נסיבות האבדה / מציאה..."
@@ -100,10 +102,11 @@
 
                 <!-- Location -->
                 <div>
-                    <label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
+                    <label for="laf-location" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
                         מיקום *
                     </label>
                     <input
+                        id="laf-location"
                         name="location"
                         type="text"
                         required
@@ -115,10 +118,11 @@
                 <!-- Contact -->
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
+                        <label for="laf-contact" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
                             שם ליצירת קשר
                         </label>
                         <input
+                            id="laf-contact"
                             name="contact"
                             type="text"
                             placeholder="שם פרטי"
@@ -126,10 +130,11 @@
                         />
                     </div>
                     <div>
-                        <label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
+                        <label for="laf-phone" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
                             טלפון *
                         </label>
                         <input
+                            id="laf-phone"
                             name="phone"
                             type="tel"
                             required

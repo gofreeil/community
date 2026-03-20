@@ -1,29 +1,52 @@
 <script lang="ts">
     import { triggerAdPopup } from '$lib/adPopupStore';
 
-    const lostItems = [
-        {
-            id: 1,
-            title: "מצאתי צרור מפתחות",
-            location: "רחוב המלך ג'ורג'",
-            date: "לפני שעתיים",
-            type: "found",
-        },
-        {
-            id: 2,
-            title: "אבד כלב מסוג פודל",
-            location: "שכונת רחביה",
-            date: "אתמול",
-            type: "lost",
-        },
-        {
-            id: 3,
-            title: "נמצא כרטיס רב-קו",
-            location: "תחנה מרכזית",
-            date: "הבוקר",
-            type: "found",
-        },
+    interface LafItem {
+        id: string;
+        label: string;
+        address: string;
+        phone: string;
+        contact: string;
+        extra_fields: string;
+        created_at: string;
+    }
+
+    interface Props {
+        items?: LafItem[];
+    }
+
+    let { items = [] }: Props = $props();
+
+    const mockItems: LafItem[] = [
+        { id: 'm1', label: 'מצאתי צרור מפתחות', address: "רחוב המלך ג'ורג'", extra_fields: '{"type":"found"}', phone: '', contact: '', created_at: '' },
+        { id: 'm2', label: 'אבד כלב מסוג פודל',  address: 'שכונת רחביה',         extra_fields: '{"type":"lost"}',  phone: '', contact: '', created_at: '' },
+        { id: 'm3', label: 'נמצא כרטיס רב-קו',   address: 'תחנה מרכזית',          extra_fields: '{"type":"found"}', phone: '', contact: '', created_at: '' },
     ];
+
+    let displayItems = $derived(items.length > 0 ? items : mockItems);
+    let isMock       = $derived(items.length === 0);
+
+    function getType(ef: string): 'lost' | 'found' {
+        try { return JSON.parse(ef)?.type === 'lost' ? 'lost' : 'found'; }
+        catch { return 'found'; }
+    }
+
+    function formatDate(iso: string): string {
+        if (!iso) return '';
+        const diff  = Date.now() - new Date(iso).getTime();
+        const mins  = Math.floor(diff / 60000);
+        if (mins < 60) return `לפני ${mins} דק'`;
+        const hours = Math.floor(mins / 60);
+        if (hours < 24) return `לפני ${hours} שע'`;
+        const days = Math.floor(hours / 24);
+        if (days === 1) return 'אתמול';
+        return `לפני ${days} ימים`;
+    }
+
+    function waLink(phone: string): string {
+        const digits = phone.replace(/\D/g, '').replace(/^0/, '972');
+        return `https://wa.me/${digits}`;
+    }
 </script>
 
 <div
@@ -47,91 +70,116 @@
     <div class="p-2 md:p-4 flex-1 overflow-hidden">
         <!-- Mobile: show only 2 items -->
         <div class="md:hidden space-y-2">
-            {#each lostItems.slice(0, 2) as item}
+            {#each displayItems.slice(0, 2) as item}
+                {@const type = getType(item.extra_fields)}
                 <div
                     class="relative p-2 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-all group overflow-hidden cursor-pointer"
                     role="button"
                     tabindex="0"
-                    onclick={() => triggerAdPopup()}
-                    onkeydown={(e) => e.key === 'Enter' && triggerAdPopup()}
+                    onclick={() => isMock ? triggerAdPopup() : null}
+                    onkeydown={(e) => e.key === 'Enter' && isMock ? triggerAdPopup() : null}
                 >
                     <!-- Type Badge -->
                     <div
-                        class="absolute top-0 left-0 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wider {item.type ===
-                        'found'
+                        class="absolute top-0 left-0 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wider {type === 'found'
                             ? 'bg-green-500 text-white'
                             : 'bg-red-500 text-white'} rounded-br"
                     >
-                        {item.type === "found" ? "נמצא" : "אבד"}
+                        {type === 'found' ? 'נמצא' : 'אבד'}
                     </div>
 
                     <div class="mt-2">
                         <h4
                             class="font-bold text-white text-xs mb-1 group-hover:text-blue-400 transition-colors leading-tight"
                         >
-                            {item.title}
+                            {item.label}
                         </h4>
                         <div class="flex items-center gap-1.5 text-xs text-gray-400">
-                            <span>📍 {item.location}</span>
-                            <span>•</span>
-                            <span>🕒 {item.date}</span>
+                            {#if item.address}<span>📍 {item.address}</span>{/if}
+                            {#if item.created_at}<span>•</span><span>🕒 {formatDate(item.created_at)}</span>{/if}
                         </div>
+                        {#if !isMock && item.phone}
+                            <a
+                                href="tel:{item.phone}"
+                                class="mt-1.5 flex items-center gap-1 text-[10px] text-blue-400 font-bold"
+                                onclick={(e) => e.stopPropagation()}
+                            >
+                                📞 {item.phone}
+                            </a>
+                        {/if}
                     </div>
                 </div>
             {/each}
         </div>
 
-        <!-- Desktop: show all items -->
+        <!-- Desktop: show up to 3 items -->
         <div class="hidden md:block space-y-4">
-            {#each lostItems as item}
+            {#each displayItems.slice(0, 3) as item}
+                {@const type = getType(item.extra_fields)}
                 <div
                     class="relative p-4 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all group overflow-hidden"
                 >
                     <!-- Type Badge -->
                     <div
-                        class="absolute top-0 left-0 px-3 py-1 text-[10px] font-black uppercase tracking-wider {item.type ===
-                        'found'
+                        class="absolute top-0 left-0 px-3 py-1 text-[10px] font-black uppercase tracking-wider {type === 'found'
                             ? 'bg-green-500 text-white'
                             : 'bg-red-500 text-white'} rounded-br-xl"
                     >
-                        {item.type === "found" ? "נמצא" : "אבד"}
+                        {type === 'found' ? 'נמצא' : 'אבד'}
                     </div>
 
                     <div class="mt-4">
                         <h4
                             class="font-bold text-white text-sm mb-1 group-hover:text-blue-400 transition-colors"
                         >
-                            {item.title}
+                            {item.label}
                         </h4>
                         <div class="flex flex-col gap-1">
-                            <span
-                                class="text-[11px] text-gray-400 flex items-center gap-1"
-                            >
-                                📍 {item.location}
-                            </span>
-                            <span
-                                class="text-[11px] text-gray-500 flex items-center gap-1"
-                            >
-                                🕒 {item.date}
-                            </span>
+                            {#if item.address}
+                                <span class="text-[11px] text-gray-400 flex items-center gap-1">📍 {item.address}</span>
+                            {/if}
+                            {#if item.created_at}
+                                <span class="text-[11px] text-gray-500 flex items-center gap-1">🕒 {formatDate(item.created_at)}</span>
+                            {/if}
                         </div>
                     </div>
 
-                    <button
-                        class="mt-3 w-full py-1.5 bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white rounded-lg text-xs font-bold transition-all border border-blue-500/30"
-                    >
-                        פרטים ליצירת קשר
-                    </button>
+                    {#if !isMock && item.phone}
+                        <div class="mt-3 flex gap-2">
+                            <a
+                                href="tel:{item.phone}"
+                                class="flex-1 py-1.5 text-center bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white rounded-lg text-xs font-bold transition-all border border-blue-500/30"
+                            >
+                                📞 {item.phone}
+                            </a>
+                            <a
+                                href={waLink(item.phone)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="px-3 py-1.5 bg-green-600/20 hover:bg-green-600 text-green-300 hover:text-white rounded-lg text-xs font-bold transition-all border border-green-500/30"
+                            >
+                                💬
+                            </a>
+                        </div>
+                    {:else if isMock}
+                        <button
+                            onclick={() => triggerAdPopup()}
+                            class="mt-3 w-full py-1.5 bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white rounded-lg text-xs font-bold transition-all border border-blue-500/30"
+                        >
+                            פרטים ליצירת קשר
+                        </button>
+                    {/if}
                 </div>
             {/each}
         </div>
 
         <div class="mt-2 md:mt-8 text-center">
-            <button
+            <a
+                href="/lost-and-found"
                 class="text-blue-400 hover:text-white text-[10px] md:text-sm font-bold transition-colors underline underline-offset-2"
             >
-                לצפייה בכל המודעות...
-            </button>
+                לצפייה בכל המודעות ({displayItems.length})...
+            </a>
         </div>
     </div>
 </div>

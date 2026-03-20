@@ -42,7 +42,7 @@ export const actions: Actions = {
                 address:     location,
                 icon:        type === 'lost' ? '❓' : '✅',
                 color:       type === 'lost' ? 'red' : 'green',
-                extra_fields: JSON.stringify({ type, location }),
+                extra_fields: { type, location },
                 user_id:     session.user.id,
             });
         } catch (e) {

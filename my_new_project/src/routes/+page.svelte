@@ -167,7 +167,7 @@
             <div class="lg:w-1/4">
                 <!-- Desktop: single column -->
                 <div class="hidden lg:block">
-                    <LostAndFound />
+                    <LostAndFound items={data.dbItems.filter(i => i.category === 'lost_and_found')} />
                 </div>
 
                 <!-- Mobile: two columns side by side -->
@@ -241,7 +241,7 @@
 
                     <!-- Right: Lost and Found -->
                     <div>
-                        <LostAndFound />
+                        <LostAndFound items={data.dbItems.filter(i => i.category === 'lost_and_found')} />
                     </div>
                 </div>
             </div>
