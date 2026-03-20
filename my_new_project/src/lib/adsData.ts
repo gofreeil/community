@@ -22,7 +22,7 @@ export const ads: Ad[] = [
         id: 2,
         title: "ועדי שכונות",
         description: "מהפכת משילות העם על המוסדות",
-        cta: "הצטרף לחזון ועדי השכונות ותמוך במהפכת משילות העם על המוסדות!",
+        cta: "הכר והשתתף במהפכת משילות העם על מוסדותיו",
         href: "https://www.melecshop.com/page/peace-on-earth_VRHH",
         image: "/images/news/ועדי שכונות.png",
         color: "from-blue-600 to-cyan-600"
