@@ -119,7 +119,7 @@
                                 class="h-10 w-10 object-contain flex-shrink-0"
                             />
                             <div
-                                class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-slate-900 animate-pulse"
+                                class="hidden absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-slate-900 animate-pulse"
                             ></div>
                         </div>
                         <div class="min-w-0 flex-1">
