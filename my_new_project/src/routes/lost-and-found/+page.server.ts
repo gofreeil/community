@@ -1,14 +1,17 @@
-import { getItemsByCategory, createItem } from '$lib/server/db';
+import { getItemsByCategory, createItem, resolveItem } from '$lib/server/db';
 import { fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async (event) => {
+    let session = null;
+    try { session = await event.locals.auth(); } catch {}
+
     try {
         const items = await getItemsByCategory('lost_and_found');
-        return { items, msgSent: false };
+        return { items, currentUserId: session?.user?.id ?? null };
     } catch (e) {
         console.warn('[lost-and-found] load failed:', e instanceof Error ? e.message : e);
-        return { items: [], msgSent: false };
+        return { items: [], currentUserId: null };
     }
 };
 
@@ -53,5 +56,28 @@ export const actions: Actions = {
         }
 
         return { msgSent: true };
+    },
+
+    resolveItem: async (event) => {
+        let session = null;
+        try { session = await event.locals.auth(); } catch {}
+        if (!session?.user?.id) return fail(401, { resolveError: 'נדרשת התחברות' });
+
+        const fd             = await event.request.formData();
+        const item_id        = fd.get('item_id')?.toString()          ?? '';
+        const item_user_id   = fd.get('item_user_id')?.toString()     ?? '';
+        const resolver_phone = fd.get('resolver_phone')?.toString().trim() ?? '';
+
+        if (session.user.id !== item_user_id) return fail(403, { resolveError: 'אין הרשאה' });
+        if (!resolver_phone)                  return fail(400, { resolveError: 'יש למלא מספר טלפון' });
+
+        try {
+            await resolveItem(item_id, resolver_phone);
+        } catch (e) {
+            console.error('[resolveItem] failed:', e);
+            return fail(500, { resolveError: 'שגיאה בהסרת המודעה, נסה שוב' });
+        }
+
+        return { resolved: true, resolvedItemId: item_id };
     },
 };

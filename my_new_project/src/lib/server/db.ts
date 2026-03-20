@@ -249,6 +249,15 @@ export async function getItemsByUserId(userId: string): Promise<DbItem[]> {
     return (res.data ?? []).map(mapStrapiItem);
 }
 
+export async function resolveItem(documentId: string, resolverPhone: string): Promise<void> {
+    await strapiPut(`/api/items/${documentId}`, {
+        data: {
+            status1:     'resolved',
+            description: `[הוסר על ידי הפורסם — טלפון מחזיר: ${resolverPhone}]`,
+        },
+    });
+}
+
 export async function getMessagesByUserId(userId: string): Promise<DbItem[]> {
     const res = await strapiGet<{ data: StrapiItem[] }>('/api/items', {
         'filters[category][$eq]': 'message',

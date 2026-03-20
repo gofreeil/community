@@ -11,8 +11,17 @@
     let msgModal = $state<{ id: string; label: string; user_id: string } | null>(null);
     let msgSending = $state(false);
 
+    // Resolve modal state
+    let resolveModal = $state<{ id: string; label: string; user_id: string; type: 'lost' | 'found' } | null>(null);
+    let resolveSending = $state(false);
+    let resolvedIds = $state<string[]>([]);
+
     $effect(() => {
         if (form?.msgSent) msgModal = null;
+        if (form?.resolved && form.resolvedItemId) {
+            resolvedIds = [...resolvedIds, form.resolvedItemId];
+            resolveModal = null;
+        }
     });
 
     function getItemType(extraFields: string): 'lost' | 'found' {
@@ -138,6 +147,68 @@
     </div>
 {/if}
 
+<!-- Resolve modal -->
+{#if resolveModal}
+    <div class="fixed inset-0 bg-black/70 z-[200] flex items-center justify-center px-4" dir="rtl">
+        <div class="w-full max-w-md bg-[#1e293b] rounded-2xl border border-white/10 shadow-2xl p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="font-black text-white text-lg">✅ הורדת מודעה</h2>
+                <button onclick={() => resolveModal = null} class="text-gray-400 hover:text-white text-xl leading-none">✕</button>
+            </div>
+
+            <p class="text-gray-400 text-sm mb-5">
+                לפני הסרת המודעה <span class="text-white font-bold">"{resolveModal.label}"</span>,
+                נשמח לדעת:
+            </p>
+
+            {#if form?.resolveError}
+                <div class="mb-3 px-4 py-2 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 text-sm">
+                    ⚠️ {form.resolveError}
+                </div>
+            {/if}
+
+            <form method="POST" action="?/resolveItem"
+                use:enhance={() => {
+                    resolveSending = true;
+                    return async ({ update }) => { await update(); resolveSending = false; };
+                }}
+                class="space-y-4">
+                <input type="hidden" name="item_id" value={resolveModal.id} />
+                <input type="hidden" name="item_user_id" value={resolveModal.user_id} />
+
+                <div>
+                    <label for="resolver-phone" class="block text-sm font-bold text-white mb-2">
+                        {resolveModal.type === 'lost'
+                            ? '📞 מה מספר הטלפון של מי שהחזיר לך את האבדה?'
+                            : '📞 מה מספר הטלפון של מי שקיבל ממך את הפריט?'}
+                    </label>
+                    <input
+                        id="resolver-phone"
+                        type="tel"
+                        name="resolver_phone"
+                        required
+                        placeholder="050-0000000"
+                        class="w-full bg-white/5 border border-white/10 focus:border-green-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none transition-colors placeholder:text-gray-600"
+                    />
+                    <p class="text-gray-500 text-xs mt-1.5">הפרטים נשמרים לצורך מעקב ואינם מפורסמים</p>
+                </div>
+
+                <div class="flex gap-3">
+                    <button type="button" onclick={() => resolveModal = null}
+                        class="flex-1 py-3 rounded-xl font-bold text-sm bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all border border-white/10">
+                        ביטול
+                    </button>
+                    <button type="submit" disabled={resolveSending}
+                        class="flex-1 py-3 rounded-xl font-black text-sm transition-all
+                            {resolveSending ? 'bg-white/10 text-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-500 hover:to-teal-500 text-white shadow-lg'}">
+                        {resolveSending ? 'מסיר...' : '✅ הסר מודעה'}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+{/if}
+
 <div class="max-w-2xl mx-auto px-4 py-8" dir="rtl">
 
     <!-- Header -->
@@ -189,9 +260,10 @@
         </div>
     {:else}
         <div class="space-y-3">
-            {#each filtered as item}
-                {@const type  = getItemType(item.extra_fields)}
-                {@const image = getItemImage(item.extra_fields)}
+            {#each filtered.filter(i => !resolvedIds.includes(i.id)) as item}
+                {@const type    = getItemType(item.extra_fields)}
+                {@const image   = getItemImage(item.extra_fields)}
+                {@const isOwner = data.currentUserId && item.user_id === data.currentUserId}
                 <div class="relative rounded-2xl border border-white/10 bg-white/5 overflow-hidden hover:bg-white/8 transition-all">
                     {#if image}
                         <div class="relative w-full h-40">
@@ -233,12 +305,21 @@
                                 </div>
                             {/if}
 
-                            {#if item.user_id}
+                            {#if item.user_id && !isOwner}
                                 <button
                                     onclick={() => msgModal = { id: item.id, label: item.label, user_id: item.user_id! }}
                                     class="w-full py-2 rounded-xl bg-purple-600/20 hover:bg-purple-600 text-purple-300 hover:text-white text-sm font-bold transition-all border border-purple-500/30"
                                 >
                                     ✉️ שלח הודעה לפורסם
+                                </button>
+                            {/if}
+
+                            {#if isOwner}
+                                <button
+                                    onclick={() => resolveModal = { id: item.id, label: item.label, user_id: item.user_id!, type }}
+                                    class="w-full py-2 rounded-xl bg-red-600/15 hover:bg-red-600/30 text-red-400 hover:text-red-300 text-xs font-bold transition-all border border-red-500/20"
+                                >
+                                    🗑️ הורד מודעה
                                 </button>
                             {/if}
                         </div>
