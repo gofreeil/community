@@ -221,6 +221,9 @@
                 🔍 אבדות ומציאות
             </h1>
             <p class="text-gray-400 text-sm mt-0.5">{data.items.length} מודעות פעילות</p>
+            {#if data.returnedCount > 0}
+                <p class="text-green-400 text-xs mt-1 font-bold">🕊️ {data.returnedCount} אבידות הושבו דרך הקהילה</p>
+            {/if}
         </div>
         <a
             href="/lost-and-found/add"

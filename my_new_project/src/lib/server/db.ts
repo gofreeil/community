@@ -258,6 +258,16 @@ export async function resolveItem(documentId: string, resolverPhone: string): Pr
     });
 }
 
+export async function getResolvedCount(category: string): Promise<number> {
+    const res = await strapiGet<{ data: StrapiItem[] }>('/api/items', {
+        'filters[category][$eq]':  category,
+        'filters[status1][$eq]':   'resolved',
+        'pagination[limit]':       '1',
+        'pagination[withCount]':   'true',
+    });
+    return (res as unknown as { meta?: { pagination?: { total?: number } } }).meta?.pagination?.total ?? 0;
+}
+
 export async function getMessagesByUserId(userId: string): Promise<DbItem[]> {
     const res = await strapiGet<{ data: StrapiItem[] }>('/api/items', {
         'filters[category][$eq]': 'message',

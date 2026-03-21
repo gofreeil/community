@@ -1,4 +1,4 @@
-import { getItemsByCategory, createItem, resolveItem } from '$lib/server/db';
+import { getItemsByCategory, createItem, resolveItem, getResolvedCount } from '$lib/server/db';
 import { fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 
@@ -7,11 +7,14 @@ export const load: PageServerLoad = async (event) => {
     try { session = await event.locals.auth(); } catch {}
 
     try {
-        const items = await getItemsByCategory('lost_and_found');
-        return { items, currentUserId: session?.user?.id ?? null };
+        const [items, returnedCount] = await Promise.all([
+            getItemsByCategory('lost_and_found'),
+            getResolvedCount('lost_and_found'),
+        ]);
+        return { items, currentUserId: session?.user?.id ?? null, returnedCount };
     } catch (e) {
         console.warn('[lost-and-found] load failed:', e instanceof Error ? e.message : e);
-        return { items: [], currentUserId: null };
+        return { items: [], currentUserId: null, returnedCount: 0 };
     }
 };
 
