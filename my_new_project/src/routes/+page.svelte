@@ -154,7 +154,7 @@
         <NewsTicker />
     </div>
 
-    <!-- Map + Lost and Found Section (side by side) -->
+    <!-- Map + Events Section (side by side on desktop) -->
     <section class="max-w-7xl mx-auto px-4">
         <div class="flex flex-col lg:flex-row gap-6">
             <!-- Map Section (3/4 width on desktop, full width on mobile) -->
@@ -162,17 +162,68 @@
                 <JerusalemMap bind:showNeighborhoodsMenu dbItems={data.dbItems} />
             </div>
 
-            <!-- Lost and Found Section (1/4 width on desktop) -->
-            <!-- On mobile: split into 2 columns -->
+            <!-- Sidebar (1/4 width on desktop) -->
             <div class="lg:w-1/4">
-                <!-- Desktop: single column -->
+                <!-- Desktop: Events Board -->
                 <div class="hidden lg:block">
-                    <LostAndFound items={data.dbItems.filter(i => i.category === 'lost_and_found')} />
+                    <div class="rounded-2xl md:rounded-3xl bg-[#0f172a] border md:border-2 border-green-500/30 overflow-hidden shadow-2xl flex flex-col h-full">
+                        <div class="bg-gradient-to-r from-green-600 to-teal-600 p-3 md:p-4 flex items-center justify-between flex-shrink-0">
+                            <h3 class="text-sm md:text-lg font-bold text-white flex items-center gap-2">
+                                <span class="text-base md:text-xl">🗓️</span>
+                                לוח אירועים
+                            </h3>
+                            <button class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-3 py-1.5 rounded-full transition-colors border border-white/20">
+                                + הוסף
+                            </button>
+                        </div>
+                        <div class="p-3 md:p-4 flex-1 overflow-y-auto flex flex-col gap-3">
+                            <div class="flex gap-3 items-start bg-white/5 rounded-xl p-3 border border-white/8 cursor-pointer hover:bg-white/10 transition-all" role="button" tabindex="0" onclick={() => triggerAdPopup()} onkeydown={(e) => e.key === 'Enter' && triggerAdPopup()}>
+                                <div class="flex flex-col items-center bg-green-600/20 rounded-lg px-2 py-1.5 min-w-[44px] text-center flex-shrink-0">
+                                    <span class="text-green-400 font-bold text-base leading-none">15</span>
+                                    <span class="text-green-300/70 text-[10px] leading-none mt-0.5">מרץ</span>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="text-white text-sm font-bold leading-tight">🎤 ערב שירה קהילתי</p>
+                                    <p class="text-gray-400 text-xs mt-0.5">בית הכנסת הגדול, 20:00</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-3 items-start bg-white/5 rounded-xl p-3 border border-white/8 cursor-pointer hover:bg-white/10 transition-all" role="button" tabindex="0" onclick={() => triggerAdPopup()} onkeydown={(e) => e.key === 'Enter' && triggerAdPopup()}>
+                                <div class="flex flex-col items-center bg-blue-600/20 rounded-lg px-2 py-1.5 min-w-[44px] text-center flex-shrink-0">
+                                    <span class="text-blue-400 font-bold text-base leading-none">18</span>
+                                    <span class="text-blue-300/70 text-[10px] leading-none mt-0.5">מרץ</span>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="text-white text-sm font-bold leading-tight">👨‍👩‍👧 יום משפחה בפארק</p>
+                                    <p class="text-gray-400 text-xs mt-0.5">פארק השעשועים, 10:00–14:00</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-3 items-start bg-white/5 rounded-xl p-3 border border-white/8 cursor-pointer hover:bg-white/10 transition-all" role="button" tabindex="0" onclick={() => triggerAdPopup()} onkeydown={(e) => e.key === 'Enter' && triggerAdPopup()}>
+                                <div class="flex flex-col items-center bg-purple-600/20 rounded-lg px-2 py-1.5 min-w-[44px] text-center flex-shrink-0">
+                                    <span class="text-purple-400 font-bold text-base leading-none">22</span>
+                                    <span class="text-purple-300/70 text-[10px] leading-none mt-0.5">מרץ</span>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="text-white text-sm font-bold leading-tight">📚 הרצאה: מיצוי זכויות</p>
+                                    <p class="text-gray-400 text-xs mt-0.5">מרכז קהילתי, 19:30 — זום</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-3 items-start bg-white/5 rounded-xl p-3 border border-white/8 cursor-pointer hover:bg-white/10 transition-all" role="button" tabindex="0" onclick={() => triggerAdPopup()} onkeydown={(e) => e.key === 'Enter' && triggerAdPopup()}>
+                                <div class="flex flex-col items-center bg-orange-600/20 rounded-lg px-2 py-1.5 min-w-[44px] text-center flex-shrink-0">
+                                    <span class="text-orange-400 font-bold text-base leading-none">28</span>
+                                    <span class="text-orange-300/70 text-[10px] leading-none mt-0.5">מרץ</span>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="text-white text-sm font-bold leading-tight">🌱 סדנת גינון עירוני</p>
+                                    <p class="text-gray-400 text-xs mt-0.5">גינת השכונה, 09:00</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Mobile: two columns side by side -->
+                <!-- Mobile: two columns side by side (Events + Lost and Found) -->
                 <div class="lg:hidden grid grid-cols-2 gap-2">
-                    <!-- Left: Message Board -->
+                    <!-- Left: Events Board -->
                     <div
                         class="rounded-2xl bg-[#0f172a] border border-blue-500/30 overflow-hidden shadow-2xl flex flex-col h-full"
                     >
@@ -248,69 +299,17 @@
         </div>
     </section>
 
-    <!-- Referendum Banner + Events (desktop: side by side) -->
+    <!-- Referendum Banner + Lost and Found (desktop: side by side) -->
     <section class="max-w-6xl mx-auto px-4">
-        <!-- Desktop: events board + referendum side by side -->
+        <!-- Desktop: lost and found + referendum side by side -->
         <div class="hidden md:flex gap-6">
-            <!-- Events Board (1/3) -->
-            <div class="w-1/3">
-                <div class="rounded-2xl md:rounded-3xl bg-[#0f172a] border md:border-2 border-green-500/30 overflow-hidden shadow-2xl flex flex-col h-full">
-                    <div class="bg-gradient-to-r from-green-600 to-teal-600 p-3 md:p-4 flex items-center justify-between flex-shrink-0">
-                        <h3 class="text-sm md:text-lg font-bold text-white flex items-center gap-2">
-                            <span class="text-base md:text-xl">🗓️</span>
-                            לוח אירועים
-                        </h3>
-                        <button class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-3 py-1.5 rounded-full transition-colors border border-white/20">
-                            + הוסף
-                        </button>
-                    </div>
-                    <div class="p-3 md:p-4 flex-1 overflow-y-auto flex flex-col gap-3">
-                        <div class="flex gap-3 items-start bg-white/5 rounded-xl p-3 border border-white/8 cursor-pointer hover:bg-white/10 transition-all" role="button" tabindex="0" onclick={() => triggerAdPopup()} onkeydown={(e) => e.key === 'Enter' && triggerAdPopup()}>
-                            <div class="flex flex-col items-center bg-green-600/20 rounded-lg px-2 py-1.5 min-w-[44px] text-center flex-shrink-0">
-                                <span class="text-green-400 font-bold text-base leading-none">15</span>
-                                <span class="text-green-300/70 text-[10px] leading-none mt-0.5">מרץ</span>
-                            </div>
-                            <div class="min-w-0">
-                                <p class="text-white text-sm font-bold leading-tight">🎤 ערב שירה קהילתי</p>
-                                <p class="text-gray-400 text-xs mt-0.5">בית הכנסת הגדול, 20:00</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-3 items-start bg-white/5 rounded-xl p-3 border border-white/8 cursor-pointer hover:bg-white/10 transition-all" role="button" tabindex="0" onclick={() => triggerAdPopup()} onkeydown={(e) => e.key === 'Enter' && triggerAdPopup()}>
-                            <div class="flex flex-col items-center bg-blue-600/20 rounded-lg px-2 py-1.5 min-w-[44px] text-center flex-shrink-0">
-                                <span class="text-blue-400 font-bold text-base leading-none">18</span>
-                                <span class="text-blue-300/70 text-[10px] leading-none mt-0.5">מרץ</span>
-                            </div>
-                            <div class="min-w-0">
-                                <p class="text-white text-sm font-bold leading-tight">👨‍👩‍👧 יום משפחה בפארק</p>
-                                <p class="text-gray-400 text-xs mt-0.5">פארק השעשועים, 10:00–14:00</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-3 items-start bg-white/5 rounded-xl p-3 border border-white/8 cursor-pointer hover:bg-white/10 transition-all" role="button" tabindex="0" onclick={() => triggerAdPopup()} onkeydown={(e) => e.key === 'Enter' && triggerAdPopup()}>
-                            <div class="flex flex-col items-center bg-purple-600/20 rounded-lg px-2 py-1.5 min-w-[44px] text-center flex-shrink-0">
-                                <span class="text-purple-400 font-bold text-base leading-none">22</span>
-                                <span class="text-purple-300/70 text-[10px] leading-none mt-0.5">מרץ</span>
-                            </div>
-                            <div class="min-w-0">
-                                <p class="text-white text-sm font-bold leading-tight">📚 הרצאה: מיצוי זכויות</p>
-                                <p class="text-gray-400 text-xs mt-0.5">מרכז קהילתי, 19:30 — זום</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-3 items-start bg-white/5 rounded-xl p-3 border border-white/8 cursor-pointer hover:bg-white/10 transition-all" role="button" tabindex="0" onclick={() => triggerAdPopup()} onkeydown={(e) => e.key === 'Enter' && triggerAdPopup()}>
-                            <div class="flex flex-col items-center bg-orange-600/20 rounded-lg px-2 py-1.5 min-w-[44px] text-center flex-shrink-0">
-                                <span class="text-orange-400 font-bold text-base leading-none">28</span>
-                                <span class="text-orange-300/70 text-[10px] leading-none mt-0.5">מרץ</span>
-                            </div>
-                            <div class="min-w-0">
-                                <p class="text-white text-sm font-bold leading-tight">🌱 סדנת גינון עירוני</p>
-                                <p class="text-gray-400 text-xs mt-0.5">גינת השכונה, 09:00</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Referendum (2/3) -->
+            <!-- Referendum (2/3) — right side in RTL -->
             <div class="w-2/3">
                 <ReferendumBanner />
+            </div>
+            <!-- Lost and Found (1/3) — left side in RTL -->
+            <div class="w-1/3">
+                <LostAndFound items={data.dbItems.filter(i => i.category === 'lost_and_found')} />
             </div>
         </div>
         <!-- Mobile: referendum full width -->
