@@ -303,13 +303,15 @@
     <section class="max-w-6xl mx-auto px-4">
         <!-- Desktop: lost and found + referendum side by side -->
         <div class="hidden md:flex gap-6">
-            <!-- Referendum (2/3) — right side in RTL -->
-            <div class="w-2/3">
+            <!-- Referendum (3/4) — right side in RTL, defines the row height -->
+            <div class="w-3/4">
                 <ReferendumBanner />
             </div>
-            <!-- Lost and Found (1/3) — left side in RTL -->
-            <div class="w-1/3">
-                <LostAndFound items={data.dbItems.filter(i => i.category === 'lost_and_found')} />
+            <!-- Lost and Found (1/4) — left side in RTL, constrained to referendum height -->
+            <div class="w-1/4 relative">
+                <div class="absolute inset-0 overflow-y-auto rounded-2xl">
+                    <LostAndFound items={data.dbItems.filter(i => i.category === 'lost_and_found')} />
+                </div>
             </div>
         </div>
         <!-- Mobile: referendum full width -->
