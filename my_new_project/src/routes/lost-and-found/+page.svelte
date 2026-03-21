@@ -5,7 +5,7 @@
     let { data, form }: { data: PageData; form: ActionData } = $props();
 
     type LafType = 'all' | 'lost' | 'found';
-    let filter = $state<LafType>('all');
+    let filter = $state<LafType>('found');
 
     // Message modal state
     let msgModal = $state<{ id: string; label: string; user_id: string } | null>(null);
