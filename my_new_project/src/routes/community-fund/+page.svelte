@@ -187,46 +187,6 @@
 </div>
 
 <style>
-	/* ===== מסגרת קופת העיר ===== */
-	.city-fund-frame {
-		padding: 2rem 1.5rem 1.75rem;
-		border-radius: 2rem;
-		background: linear-gradient(135deg,
-			rgba(251,191,36,0.07) 0%,
-			rgba(217,119,6,0.05) 40%,
-			rgba(120,53,15,0.08) 100%
-		);
-		border: 1px solid rgba(251,191,36,0.18);
-		box-shadow:
-			0 0 0 1px rgba(251,191,36,0.06),
-			0 4px 32px rgba(251,191,36,0.08),
-			inset 0 1px 0 rgba(255,255,255,0.04);
-		backdrop-filter: blur(8px);
-		position: relative;
-	}
-
-	.city-fund-frame::before,
-	.city-fund-frame::after {
-		content: '';
-		position: absolute;
-		width: 28px;
-		height: 28px;
-		border-color: rgba(251,191,36,0.35);
-		border-style: solid;
-	}
-	.city-fund-frame::before {
-		top: 12px;
-		right: 12px;
-		border-width: 2px 2px 0 0;
-		border-radius: 0 6px 0 0;
-	}
-	.city-fund-frame::after {
-		bottom: 12px;
-		left: 12px;
-		border-width: 0 0 2px 2px;
-		border-radius: 0 0 6px 0;
-	}
-
 	/* ===== רקע סקציית הקופה ===== */
 	.fund-bg {
 		background: linear-gradient(to bottom,
@@ -254,14 +214,6 @@
 		align-items: center;
 	}
 
-	.coins-svg {
-		width: 200px;
-		height: 80px;
-		margin-bottom: -20px;
-		position: relative;
-		z-index: 2;
-	}
-
 	.bag-img {
 		width: 480px;
 		height: auto;
@@ -281,22 +233,6 @@
 	@keyframes bag-bob {
 		0%, 100% { transform: translateY(0); }
 		50%       { transform: translateY(-7px); }
-	}
-
-	/* מטבעות נופלות */
-	.coin-anim {
-		animation: coin-drop linear infinite;
-		opacity: 0;
-	}
-	.c1 { animation-duration: 2.4s; animation-delay: 0s; }
-	.c2 { animation-duration: 2.4s; animation-delay: 0.8s; }
-	.c3 { animation-duration: 2.4s; animation-delay: 1.6s; }
-
-	@keyframes coin-drop {
-		0%   { opacity: 0;   transform: translateY(-8px); }
-		12%  { opacity: 1; }
-		78%  { opacity: 1; }
-		100% { opacity: 0;   transform: translateY(75px); }
 	}
 
 	/* ===== שורות סטטיסטיקה ===== */

@@ -29,7 +29,7 @@
     // ---- Form state ----
     // Build a flat record of key → value
     let formValues = $state<Record<string, string>>(
-        Object.fromEntries(data.config.fields.map(f => [f.key, '']))
+        Object.fromEntries(config.fields.map(f => [f.key, '']))
     );
 
     // label and description/phone/address are always top-level

@@ -476,7 +476,7 @@
                         <!-- 3-state toggle — last column = left side in RTL -->
                         <td class="px-3 py-3 text-center border-r border-white/10"
                             style="background: {plan === 'half' ? 'rgba(245,158,11,0.12)' : plan === 'single' ? 'rgba(59,130,246,0.12)' : 'rgba(255,255,255,0.06)'}">
-                            <div class="flex justify-center" onclick={(e) => e.stopPropagation()}>
+                            <div class="flex justify-center" role="presentation" onclick={(e) => e.stopPropagation()}>
                                 <div
                                     class="relative inline-flex h-9 rounded-full transition-all duration-300"
                                     style="
