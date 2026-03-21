@@ -72,9 +72,10 @@
         <div class="md:hidden space-y-2">
             {#each displayItems.slice(0, 2) as item}
                 {@const type = getType(item.extra_fields)}
-                <div
-                    class="relative p-2 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-all group overflow-hidden cursor-pointer"
-                    role="button"
+                <a
+                    href={isMock ? undefined : `/lost-and-found/${item.id}`}
+                    class="relative p-2 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-all group overflow-hidden cursor-pointer block no-underline"
+                    role={isMock ? 'button' : undefined}
                     tabindex="0"
                     onclick={() => isMock ? triggerAdPopup() : null}
                     onkeydown={(e) => e.key === 'Enter' && isMock ? triggerAdPopup() : null}
@@ -108,7 +109,7 @@
                             </a>
                         {/if}
                     </div>
-                </div>
+                </a>
             {/each}
         </div>
 
@@ -116,8 +117,10 @@
         <div class="hidden md:block space-y-4">
             {#each displayItems.slice(0, 3) as item}
                 {@const type = getType(item.extra_fields)}
-                <div
-                    class="relative p-4 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all group overflow-hidden"
+                <a
+                    href={isMock ? undefined : `/lost-and-found/${item.id}`}
+                    class="relative p-4 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all group overflow-hidden block no-underline cursor-pointer"
+                    onclick={() => isMock ? triggerAdPopup() : null}
                 >
                     <!-- Type Badge -->
                     <div
@@ -163,13 +166,17 @@
                         </div>
                     {:else if isMock}
                         <button
-                            onclick={() => triggerAdPopup()}
+                            onclick={(e) => { e.preventDefault(); triggerAdPopup(); }}
                             class="mt-3 w-full py-1.5 bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white rounded-lg text-xs font-bold transition-all border border-blue-500/30"
                         >
                             פרטים ליצירת קשר
                         </button>
+                    {:else}
+                        <div class="mt-3 w-full py-1.5 text-center text-blue-400 text-xs font-bold">
+                            לחץ לפרטים ←
+                        </div>
                     {/if}
-                </div>
+                </a>
             {/each}
         </div>
 

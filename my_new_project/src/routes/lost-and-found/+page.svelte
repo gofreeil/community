@@ -267,7 +267,7 @@
                 {@const type    = getItemType(item.extra_fields)}
                 {@const image   = getItemImage(item.extra_fields)}
                 {@const isOwner = data.currentUserId && item.user_id === data.currentUserId}
-                <div class="relative rounded-2xl border border-white/10 bg-white/5 overflow-hidden hover:bg-white/8 transition-all">
+                <a href="/lost-and-found/{item.id}" class="relative rounded-2xl border border-white/10 bg-white/5 overflow-hidden hover:bg-white/8 transition-all block no-underline group">
                     {#if image}
                         <div class="relative w-full h-40">
                             <img src={image} alt={item.label} class="w-full h-full object-cover" />
@@ -294,7 +294,7 @@
                             {#if item.created_at}<span>🕒 {formatDate(item.created_at)}</span>{/if}
                         </div>
 
-                        <div class="flex flex-col gap-2">
+                        <div class="flex flex-col gap-2" onclick={(e) => e.stopPropagation()}>
                             {#if item.phone}
                                 <div class="flex gap-2">
                                     <a href="tel:{item.phone}"
@@ -327,7 +327,7 @@
                             {/if}
                         </div>
                     </div>
-                </div>
+                </a>
             {/each}
         </div>
     {/if}
