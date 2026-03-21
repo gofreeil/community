@@ -47,6 +47,6 @@ export const actions: Actions = {
             return fail(500, { error: 'שגיאה בשמירת המודעה, נסה שוב' });
         }
 
-        throw redirect(302, '/?submitted=lost');
+        return { success: true };
     },
 };

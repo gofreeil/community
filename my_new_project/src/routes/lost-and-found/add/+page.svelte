@@ -4,6 +4,8 @@
 
     let { form }: { form: ActionData } = $props();
 
+    let submitted = $derived(!!form?.success);
+
     let type        = $state<'lost' | 'found' | ''>('');
     let submitting  = $state(false);
     let imageBase64 = $state('');
@@ -58,6 +60,30 @@
             <h1 class="text-2xl font-black text-white mb-1">אבדות ומציאות</h1>
             <p class="text-gray-400 text-sm">מלא את הפרטים ונפרסם עבורך בקהילה</p>
         </div>
+
+        {#if submitted}
+            <!-- Success screen -->
+            <div class="bg-[#1e293b] border border-white/10 rounded-2xl p-8 shadow-2xl text-center">
+                <div class="text-6xl mb-4">🕊️</div>
+                <h2 class="text-xl font-black text-white mb-3 leading-snug">
+                    מברכים אותך במצוות השבת אבדה
+                </h2>
+                <p class="text-amber-300 font-bold mb-1">אנא ציין כאשר האבדה שבה</p>
+                <p class="text-gray-400 text-sm leading-relaxed mb-6">
+                    כדי שנשמח יחד ונחזק את מורל הקהילה!
+                </p>
+                <div class="flex flex-col gap-3">
+                    <a href="/lost-and-found"
+                        class="w-full py-3 rounded-xl font-black text-sm bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white shadow-lg transition-all">
+                        🔍 לדף האבדות
+                    </a>
+                    <a href="/"
+                        class="w-full py-3 rounded-xl font-bold text-sm bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all border border-white/10">
+                        חזרה לדף הראשי
+                    </a>
+                </div>
+            </div>
+        {:else}
 
         <!-- Form card -->
         <div class="bg-[#1e293b] border border-white/10 rounded-2xl p-6 shadow-2xl">
@@ -242,5 +268,7 @@
                 ← חזרה לדף הראשי
             </a>
         </div>
+
+        {/if}
     </div>
 </div>
