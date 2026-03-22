@@ -5,8 +5,9 @@ import { getUserById } from '$lib/server/db';
 export const load: PageServerLoad = async (event) => {
     const session = await event.locals.auth();
 
+    // TEMP_BYPASS — if (!session?.user?.id) { throw redirect(302, '/login?redirect=/receipts'); }
     if (!session?.user?.id) {
-        throw redirect(302, '/login?redirect=/receipts');
+        return { user: null, receipts: [], balance: 0 };
     }
 
     let user = null;
