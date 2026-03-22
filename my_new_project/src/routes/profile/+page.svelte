@@ -24,7 +24,7 @@
 	let isEditing   = $state(!_ud?.name || (_ud?.name?.length ?? 0) < 2);
 	let showLevels    = $state(false);
 	let showMessages  = $state(false);
-	let showMyInfo    = $state(false);
+	let showMyInfo    = $state(true);
 	let messages = $state([
 		{ from: 'מערכת', text: 'ברוך הבא לקהילה! השלם את הפרופיל שלך.', time: 'לפני 2 ימים', read: false },
 		{ from: 'מנהל', text: 'הצטרפות שלך אושרה. כעת תוכל לפרסם תוכן.', time: 'לפני 5 ימים', read: false },
@@ -423,7 +423,7 @@
 				</div>
 
 				<!-- תווית מתחת לתמונה -->
-				<button onclick={scrollToMessages} class="text-sm text-orange-400 font-bold hover:text-orange-300 transition-colors cursor-pointer bg-transparent border-0 p-0">הודעות אישיות</button>
+				<button onclick={scrollToMessages} class="text-base text-orange-400 font-bold hover:text-orange-300 transition-colors cursor-pointer bg-transparent border-0 p-0">הודעות אישיות</button>
 			</div>
 
 
@@ -432,7 +432,7 @@
 				<div class="w-52 group-hover:scale-105 transition-transform duration-200 -mt-8" style="-webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 80%); mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 80%);">
 					<img src="/images/wallet.png" alt="המזומן שלי" class="w-full h-auto block" />
 				</div>
-				<span class="text-sm text-gray-300 font-bold">היתרה שלי: <span class="text-green-400">{(data.user as {balance?:number})?.balance ?? 0}₪</span></span>
+				<span class="text-base text-gray-300 font-bold">היתרה שלי: <span class="text-green-400">{(data.user as {balance?:number})?.balance ?? 0}₪</span></span>
 			</a>
 
 			<div class="min-w-0 flex flex-col justify-between">
@@ -450,20 +450,20 @@
 					{/if}
 				</div>
 				<div class="flex items-center gap-1.5">
-					<span class="text-white/50 text-sm font-bold">דרגה:</span>
+					<span class="text-white/50 text-base font-bold">דרגה:</span>
 					{#if userLevel >= 2}
-						<span class="text-emerald-400 text-sm font-black">
+						<span class="text-emerald-400 text-base font-black">
 							משתמש
 						</span>
 					{:else}
-						<span class="text-gray-400 text-sm font-black">
+						<span class="text-gray-400 text-base font-black">
 							צופה
 						</span>
 					{/if}
 				</div>
 				<div class="flex gap-3 mt-2 flex-wrap">
 					{#if data.items.length > 0}
-						<span class="text-xs bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2.5 py-1 rounded-full font-bold">
+						<span class="text-sm bg-blue-500/20 text-blue-400 border border-blue-500/30 px-3 py-1.5 rounded-full font-bold">
 							{data.items.length} {tFn("publications_count")}
 						</span>
 					{/if}
@@ -500,7 +500,7 @@
 				{tFn("section_profile_details")}
 			</h2>
 			<div class="flex items-center gap-2">
-				<span class="text-xs bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1 rounded-full font-bold">{profileCompletion}% הושלם</span>
+				<span class="text-sm bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1.5 rounded-full font-bold">{profileCompletion}% הושלם</span>
 				<svg class="w-4 h-4 text-yellow-400 transition-transform duration-300 flex-shrink-0 {isEditing ? 'rotate-180' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
 			</div>
 		</div>
@@ -860,9 +860,9 @@
 			<!-- סיכום דרגה נוכחית -->
 			<div class="flex items-center gap-2">
 				{#if userLevel >= 2}
-					<span class="text-xs bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1 rounded-full font-bold">דרגה נוכחית — משתמש</span>
+					<span class="text-sm bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1.5 rounded-full font-bold">דרגה נוכחית — משתמש</span>
 				{:else}
-					<span class="text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full font-bold">דרגה נוכחית — צופה</span>
+					<span class="text-sm bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-full font-bold">דרגה נוכחית — צופה</span>
 				{/if}
 				<svg class="w-4 h-4 text-yellow-400 transition-transform duration-300 flex-shrink-0 {showLevels ? 'rotate-180' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
 			</div>
@@ -1012,7 +1012,7 @@
 				הודעות אישיות
 			</h2>
 			<div class="flex items-center gap-2">
-				<span class="text-xs bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1 rounded-full font-bold">{unreadCount} הודעות שלא נקראו</span>
+				<span class="text-sm bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1.5 rounded-full font-bold">{unreadCount} הודעות שלא נקראו</span>
 				<svg class="w-4 h-4 text-yellow-400 transition-transform duration-300 flex-shrink-0 {showMessages ? 'rotate-180' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
 			</div>
 		</div>
@@ -1054,7 +1054,7 @@
 				הנכסים שלי
 			</h2>
 			<div class="flex items-center gap-2">
-				<span class="text-xs bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1 rounded-full font-bold">{data.items.length} פריטים פורסמו</span>
+				<span class="text-sm bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1.5 rounded-full font-bold">{data.items.length} פריטים פורסמו</span>
 				<svg class="w-4 h-4 text-yellow-400 transition-transform duration-300 flex-shrink-0 {showMyInfo ? 'rotate-180' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
 			</div>
 		</div>

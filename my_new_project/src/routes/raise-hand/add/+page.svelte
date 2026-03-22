@@ -69,8 +69,10 @@
     <title>{data.option.icon} {data.option.text} | קהילה בשכונה</title>
 </svelte:head>
 
-<div class="min-h-screen flex items-start justify-center pt-8 pb-16 px-4" dir="rtl">
-    <div class="w-full max-w-lg">
+<div class="min-h-screen flex items-start justify-center pt-8 pb-16 px-4 cursor-pointer" dir="rtl"
+    onclick={(e) => { if (e.target === e.currentTarget) history.back(); }}
+    role="button" tabindex="-1">
+    <div class="w-full max-w-lg cursor-default" onclick={(e) => e.stopPropagation()}>
 
         <!-- Header -->
         <div class="text-center mb-8">
