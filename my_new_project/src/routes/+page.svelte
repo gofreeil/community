@@ -236,27 +236,31 @@
                     <div class="bg-gradient-to-r from-amber-600 to-orange-600 p-2 flex items-center justify-between flex-shrink-0">
                         <h3 class="text-xs font-bold text-white flex items-center gap-1">
                             <span>📢</span>
-                            חם בשכונה
+                            הלוחות המלאים
                         </h3>
                         <span class="text-[9px] text-amber-200/70 font-bold">LIVE</span>
                     </div>
                     <div class="p-2 flex-1 overflow-y-auto flex flex-col gap-2 text-[11px]">
-                        <div class="flex items-start gap-1.5 bg-white/5 rounded-lg p-1.5 border border-white/8">
+                        <a href="/singles" class="flex items-start gap-1.5 bg-white/5 rounded-lg p-1.5 border border-white/8 hover:bg-white/10 transition-all">
                             <span class="flex-shrink-0">💑</span>
-                            <p class="text-white font-bold leading-tight">פנויים חדשים בשכונה</p>
-                        </div>
-                        <div class="flex items-start gap-1.5 bg-white/5 rounded-lg p-1.5 border border-white/8">
-                            <span class="flex-shrink-0">🙏</span>
-                            <p class="text-white font-bold leading-tight">צדקה חולקה מהמשאלות</p>
-                        </div>
-                        <div class="flex items-start gap-1.5 bg-white/5 rounded-lg p-1.5 border border-white/8">
+                            <p class="text-white font-bold leading-tight">לוח פנויים פנויות</p>
+                        </a>
+                        <a href="/lost-and-found" class="flex items-start gap-1.5 bg-white/5 rounded-lg p-1.5 border border-white/8 hover:bg-white/10 transition-all">
+                            <span class="flex-shrink-0">🔍</span>
+                            <p class="text-white font-bold leading-tight">לוח אבדות ומציאות</p>
+                        </a>
+                        <a href="/rides" class="flex items-start gap-1.5 bg-white/5 rounded-lg p-1.5 border border-white/8 hover:bg-white/10 transition-all">
                             <span class="flex-shrink-0">🚗</span>
-                            <p class="text-white font-bold leading-tight">טרמפ קבוע לב"ש</p>
-                        </div>
-                        <div class="flex items-start gap-1.5 bg-white/5 rounded-lg p-1.5 border border-white/8">
-                            <span class="flex-shrink-0">🕊️</span>
-                            <p class="text-white font-bold leading-tight">אבדה הושבה!</p>
-                        </div>
+                            <p class="text-white font-bold leading-tight">לוח טרמפים</p>
+                        </a>
+                        <a href="/events" class="flex items-start gap-1.5 bg-white/5 rounded-lg p-1.5 border border-white/8 hover:bg-white/10 transition-all">
+                            <span class="flex-shrink-0">🗓️</span>
+                            <p class="text-white font-bold leading-tight">לוח אירועים</p>
+                        </a>
+                        <a href="/gmachim" class="flex items-start gap-1.5 bg-white/5 rounded-lg p-1.5 border border-white/8 hover:bg-white/10 transition-all">
+                            <span class="flex-shrink-0">🤝</span>
+                            <p class="text-white font-bold leading-tight">לוח גמחים</p>
+                        </a>
                     </div>
                 </div>
             </div>
