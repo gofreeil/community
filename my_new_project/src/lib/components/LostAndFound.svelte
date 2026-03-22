@@ -168,12 +168,12 @@
             {/each}
         </div>
 
-        <div class="mt-2 md:mt-8 text-center">
+        <div class="mt-2 md:mt-4 text-center">
             <a
                 href="/lost-and-found"
                 class="text-blue-400 hover:text-white text-[10px] md:text-sm font-bold transition-colors underline underline-offset-2"
             >
-                לצפייה בכל המודעות ({displayItems.length})...
+                ללוח המלא...
             </a>
         </div>
     </div>
