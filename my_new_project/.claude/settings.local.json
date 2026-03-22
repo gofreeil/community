@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Claude_Preview__preview_start",
+      "Bash(npm run:*)",
+      "Bash(node -e \":*)",
+      "Bash(gh api:*)",
+      "Bash(netstat -ano)",
+      "Bash(findstr \":5173\")",
+      "Bash(python3:*)",
+      "Bash(tasklist)",
+      "Bash(ls -la \"D:\\\\Users\\\\User\\\\Documents\\\\GitHub\\\\community\\\\my_new_project\\\\src\\\\routes\"\" 2>/dev/null || find \"D:/Users/User/Documents/GitHub/community/my_new_project/src/routes \" -maxdepth 2 -type f)",
+      "Bash(git diff:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(ls D:/Users/User/Documents/GitHub/community/.git/index*)",
+      "Bash(find /d/Users/User/Documents/GitHub/community/my_new_project/src/lib/server -type f -name *.ts)",
+      "Bash(git show:*)",
+      "Bash(curl -s \"http://localhost:1337/api/items?pagination[limit]=1\")",
+      "Bash(python -m json.tool)",
+      "Bash(cmd.exe /c \"dir D:\\\\Users\\\\User\\\\Documents\\\\GitHub\\\\community\\\\.git\\\\index.lock\")",
+      "Bash(powershell -Command \"Remove-Item ''D:\\\\Users\\\\User\\\\Documents\\\\GitHub\\\\community\\\\.git\\\\index.lock'' -Force -ErrorAction SilentlyContinue; Write-Host ''done''\")",
+      "Bash(powershell -Command \"Get-Process | Where-Object { $_.Name -like ''*git*'' } | Select-Object Id, Name, Path\")",
+      "Bash(powershell -Command \"if \\(Test-Path ''D:\\\\Users\\\\User\\\\Documents\\\\GitHub\\\\community\\\\.git\\\\index.lock''\\) { Write-Host ''EXISTS''; \\(Get-Item ''D:\\\\Users\\\\User\\\\Documents\\\\GitHub\\\\community\\\\.git\\\\index.lock''\\).LastWriteTime } else { Write-Host ''NOT FOUND'' }\")",
+      "Bash(GIT_TRACE=1 git add src/routes/+page.svelte)",
+      "Bash(GIT_TRACE=1 git commit -m \"test\")",
+      "Bash(powershell -Command \"Remove-Item -Force ''D:\\\\Users\\\\User\\\\Documents\\\\GitHub\\\\community\\\\.git\\\\index.lock''\")"
+    ]
+  }
+}

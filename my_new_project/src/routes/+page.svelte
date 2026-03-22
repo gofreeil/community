@@ -160,14 +160,17 @@
         <div class="hidden lg:flex gap-4">
             <!-- Left column (3/4): Map on top, Referendum below -->
             <div class="lg:w-3/4 flex flex-col gap-3">
-                <JerusalemMap bind:showNeighborhoodsMenu dbItems={data.dbItems} />
+                <div>
+                    <JerusalemMap bind:showNeighborhoodsMenu dbItems={data.dbItems} />
+                </div>
                 <ReferendumBanner />
             </div>
 
-            <!-- Right column (1/4): 3 boards spanning full height, pb matches left gap -->
-            <div class="lg:w-1/4 flex flex-col gap-2 pb-[32px]">
-                <!-- 1. Events Board -->
-                <div class="flex-shrink-0 rounded-2xl bg-[#0f172a] border border-2 border-green-500/30 overflow-hidden shadow-2xl flex flex-col">
+            <!-- Right column (1/4): boards constrained to left column height -->
+            <div class="lg:w-1/4 relative">
+                <div class="absolute top-0 right-0 left-0 bottom-8 flex flex-col gap-2 overflow-hidden">
+                    <!-- 1. Events Board -->
+                    <div class="flex-1 min-h-0 rounded-2xl bg-[#0f172a] border border-2 border-green-500/30 overflow-hidden shadow-2xl flex flex-col">
                     <div class="bg-gradient-to-r from-green-600 to-teal-600 p-3 flex items-center justify-between flex-shrink-0">
                         <h3 class="text-sm font-bold text-white flex items-center gap-2">
                             <span class="text-base">🗓️</span>
@@ -177,7 +180,7 @@
                             + הוסף
                         </button>
                     </div>
-                    <div class="p-3 flex-1 overflow-y-auto flex flex-col gap-3">
+                    <div class="p-3 flex-1 overflow-hidden flex flex-col justify-evenly">
                         <div class="flex gap-3 items-start bg-white/5 rounded-xl p-3 border border-white/8 cursor-pointer hover:bg-white/10 transition-all" role="button" tabindex="0" onclick={() => triggerAdPopup()} onkeydown={(e) => e.key === 'Enter' && triggerAdPopup()}>
                             <div class="flex flex-col items-center bg-green-600/20 rounded-lg px-2 py-1.5 min-w-[44px] text-center flex-shrink-0">
                                 <span class="text-green-400 font-bold text-base leading-none">15</span>
@@ -227,39 +230,39 @@
                 </div>
 
                 <!-- 2. Lost and Found -->
-                <div class="flex-shrink-0 overflow-hidden">
+                <div class="flex-1 min-h-0 overflow-hidden">
                     <LostAndFound items={data.dbItems.filter(i => i.category === 'lost_and_found')} />
                 </div>
 
                 <!-- 3. Community Feed -->
                 <div class="flex-1 min-h-0 rounded-2xl bg-[#0f172a] border border-2 border-amber-500/30 overflow-hidden shadow-2xl flex flex-col">
-                    <div class="bg-gradient-to-r from-amber-600 to-orange-600 p-2 flex items-center justify-between flex-shrink-0">
-                        <h3 class="text-xs font-bold text-white flex items-center gap-1">
-                            <span>📢</span>
+                    <div class="bg-gradient-to-r from-amber-600 to-orange-600 p-3 flex items-center justify-between flex-shrink-0">
+                        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                            <span class="text-base">📢</span>
                             הלוחות המלאים
                         </h3>
-                        <span class="text-[9px] text-amber-200/70 font-bold">LIVE</span>
+                        <span class="text-[10px] text-amber-200/70 font-bold">LIVE</span>
                     </div>
-                    <div class="p-2 flex-1 overflow-y-auto flex flex-col gap-2 text-[11px]">
-                        <a href="/singles" class="flex items-start gap-1.5 bg-white/5 rounded-lg p-1.5 border border-white/8 hover:bg-white/10 transition-all">
-                            <span class="flex-shrink-0">💑</span>
-                            <p class="text-white font-bold leading-tight">לוח פנויים פנויות</p>
+                    <div class="p-2 flex-1 overflow-hidden flex flex-col justify-evenly text-xs">
+                        <a href="/singles" class="flex items-center gap-2 bg-white/5 rounded-lg p-2.5 border border-white/8 hover:bg-white/10 transition-all">
+                            <span class="flex-shrink-0 text-base">💑</span>
+                            <p class="text-white font-bold">לוח פנויים פנויות</p>
                         </a>
-                        <a href="/lost-and-found" class="flex items-start gap-1.5 bg-white/5 rounded-lg p-1.5 border border-white/8 hover:bg-white/10 transition-all">
-                            <span class="flex-shrink-0">🔍</span>
-                            <p class="text-white font-bold leading-tight">לוח אבדות ומציאות</p>
+                        <a href="/lost-and-found" class="flex items-center gap-2 bg-white/5 rounded-lg p-2.5 border border-white/8 hover:bg-white/10 transition-all">
+                            <span class="flex-shrink-0 text-base">🔍</span>
+                            <p class="text-white font-bold">לוח אבדות ומציאות</p>
                         </a>
-                        <a href="/rides" class="flex items-start gap-1.5 bg-white/5 rounded-lg p-1.5 border border-white/8 hover:bg-white/10 transition-all">
-                            <span class="flex-shrink-0">🚗</span>
-                            <p class="text-white font-bold leading-tight">לוח טרמפים</p>
+                        <a href="/rides" class="flex items-center gap-2 bg-white/5 rounded-lg p-2.5 border border-white/8 hover:bg-white/10 transition-all">
+                            <span class="flex-shrink-0 text-base">🚗</span>
+                            <p class="text-white font-bold">לוח טרמפים</p>
                         </a>
-                        <a href="/events" class="flex items-start gap-1.5 bg-white/5 rounded-lg p-1.5 border border-white/8 hover:bg-white/10 transition-all">
-                            <span class="flex-shrink-0">🗓️</span>
-                            <p class="text-white font-bold leading-tight">לוח אירועים</p>
+                        <a href="/events" class="flex items-center gap-2 bg-white/5 rounded-lg p-2.5 border border-white/8 hover:bg-white/10 transition-all">
+                            <span class="flex-shrink-0 text-base">🗓️</span>
+                            <p class="text-white font-bold">לוח אירועים</p>
                         </a>
-                        <a href="/gmachim" class="flex items-start gap-1.5 bg-white/5 rounded-lg p-1.5 border border-white/8 hover:bg-white/10 transition-all">
-                            <span class="flex-shrink-0">🤝</span>
-                            <p class="text-white font-bold leading-tight">לוח גמחים</p>
+                        <a href="/gmachim" class="flex items-center gap-2 bg-white/5 rounded-lg p-2.5 border border-white/8 hover:bg-white/10 transition-all">
+                            <span class="flex-shrink-0 text-base">🤝</span>
+                            <p class="text-white font-bold">לוח גמחים</p>
                         </a>
                     </div>
                 </div>
