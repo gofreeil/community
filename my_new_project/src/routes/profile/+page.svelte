@@ -41,7 +41,11 @@
 	function handleLevelMouseMove(e: MouseEvent) { levelTipX = e.clientX; levelTipY = e.clientY; }
 	function scrollToTop() { window.scrollTo({ top: 0, behavior: "smooth" }); }
 	function scrollToMessages() {
-		document.getElementById('sec-messages')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+		showMessages = true;
+		// Wait for DOM to render the messages section, then scroll
+		setTimeout(() => {
+			document.getElementById('sec-messages')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		}, 50);
 	}
 	let saveSuccess = $state(false);
 	let avatarPreview = $state<string | null>(_ud?.avatar_url ?? null);
@@ -353,7 +357,7 @@
 		<!-- כותרת + כפתור התנתקות -->
 		<div class="flex items-center justify-between mb-5">
 			<div class="flex items-center gap-2">
-				<span class="w-6 h-6 rounded-full text-black text-xs font-black flex items-center justify-center flex-shrink-0" style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">1</span>
+				<span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0" style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">1</span>
 				<h2 class="text-base font-black text-white">{tFn("section_personal_area")}</h2>
 			</div>
 			<button
@@ -419,7 +423,7 @@
 				</div>
 
 				<!-- תווית מתחת לתמונה -->
-				<button onclick={scrollToMessages} class="text-xs text-orange-400 font-bold hover:text-orange-300 transition-colors cursor-pointer bg-transparent border-0 p-0">הודעות אישיות</button>
+				<button onclick={scrollToMessages} class="text-sm text-orange-400 font-bold hover:text-orange-300 transition-colors cursor-pointer bg-transparent border-0 p-0">הודעות אישיות</button>
 			</div>
 
 
@@ -428,7 +432,7 @@
 				<div class="w-52 group-hover:scale-105 transition-transform duration-200 -mt-8" style="-webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 80%); mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 80%);">
 					<img src="/images/wallet.png" alt="המזומן שלי" class="w-full h-auto block" />
 				</div>
-				<span class="text-xs text-gray-300 font-bold">היתרה שלי: <span class="text-green-400">{(data.user as {balance?:number})?.balance ?? 0}₪</span></span>
+				<span class="text-sm text-gray-300 font-bold">היתרה שלי: <span class="text-green-400">{(data.user as {balance?:number})?.balance ?? 0}₪</span></span>
 			</a>
 
 			<div class="min-w-0 flex flex-col justify-between">
@@ -446,13 +450,13 @@
 					{/if}
 				</div>
 				<div class="flex items-center gap-1.5">
-					<span class="text-white/50 text-xs font-bold">דרגה:</span>
+					<span class="text-white/50 text-sm font-bold">דרגה:</span>
 					{#if userLevel >= 2}
-						<span class="text-emerald-400 text-xs font-black">
+						<span class="text-emerald-400 text-sm font-black">
 							משתמש
 						</span>
 					{:else}
-						<span class="text-gray-400 text-xs font-black">
+						<span class="text-gray-400 text-sm font-black">
 							צופה
 						</span>
 					{/if}
@@ -492,7 +496,7 @@
 			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { if (isEditing) { isEditing = false; saveSuccess = false; } else { isEditing = true; } } }}
 		>
 			<h2 class="text-xl font-black text-white flex items-center gap-2">
-				<span class="w-6 h-6 rounded-full text-black text-xs font-black flex items-center justify-center flex-shrink-0" style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">2</span>
+				<span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0" style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">2</span>
 				{tFn("section_profile_details")}
 			</h2>
 			<div class="flex items-center gap-2">
@@ -850,7 +854,7 @@
 			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') showLevels = !showLevels; }}
 		>
 			<h2 class="relative text-xl font-black text-white flex items-center gap-2">
-				<span class="w-6 h-6 rounded-full text-black text-xs font-black flex items-center justify-center flex-shrink-0" style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">3</span>
+				<span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0" style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">3</span>
 				דרגה והרשאות
 			</h2>
 			<!-- סיכום דרגה נוכחית -->
@@ -1004,7 +1008,7 @@
 			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { if (showMessages) { showMessages = false; } else { showMessages = true; } } }}
 		>
 			<h2 class="text-xl font-black text-white flex items-center gap-2">
-				<span class="w-6 h-6 rounded-full text-black text-xs font-black flex items-center justify-center flex-shrink-0" style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">4</span>
+				<span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0" style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">4</span>
 				הודעות אישיות
 			</h2>
 			<div class="flex items-center gap-2">
@@ -1046,7 +1050,7 @@
 			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { if (showMyInfo) scrollToTop(); else showMyInfo = true; } }}
 		>
 			<h2 class="text-xl font-black text-white flex items-center gap-2">
-				<span class="w-6 h-6 rounded-full text-black text-xs font-black flex items-center justify-center flex-shrink-0" style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">5</span>
+				<span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0" style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">5</span>
 				הנכסים שלי
 			</h2>
 			<div class="flex items-center gap-2">
