@@ -27,18 +27,8 @@ export const load: PageServerLoad = async (event) => {
         // cookie פגום — מפנה להתחברות
     }
 
-    // TEMP_BYPASS — if (!session?.user?.id) { throw redirect(302, '/login?redirect=/profile'); }
     if (!session?.user?.id) {
-        return {
-            user: {
-                id: 'guest', name: 'אורח', email: '', nickname: '', phone: '',
-                city: '', neighborhood: '', business: '', family_status: '',
-                gender: '', birth_date: '', notifications: 0,
-                avatar_url: null, level: 1, points: 0,
-            },
-            items: [],
-            citiesData,
-        };
+        throw redirect(302, '/login?redirect=/profile');
     }
 
     let user: Awaited<ReturnType<typeof getUserById>>;
@@ -102,8 +92,7 @@ export const actions: Actions = {
     updateProfile: async (event) => {
         let session = null;
         try { session = await event.locals.auth(); } catch {}
-        // TEMP_BYPASS — if (!session?.user?.id) throw redirect(302, '/login?redirect=/profile');
-        if (!session?.user?.id) return fail(403, { error: 'יש להתחבר כדי לעדכן פרופיל' });
+        if (!session?.user?.id) throw redirect(302, '/login?redirect=/profile');
 
         const strapiJwt = event.cookies.get('strapi_jwt')
             ?? (session.user as { strapiJwt?: string }).strapiJwt

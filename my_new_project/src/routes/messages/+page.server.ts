@@ -6,9 +6,8 @@ export const load: PageServerLoad = async (event) => {
     let session = null;
     try { session = await event.locals.auth(); } catch {}
 
-    // TEMP_BYPASS — if (!session?.user?.id) { throw redirect(302, '/login?redirect=/messages'); }
     if (!session?.user?.id) {
-        return { messages: [] };
+        throw redirect(302, '/login?redirect=/messages');
     }
 
     try {
