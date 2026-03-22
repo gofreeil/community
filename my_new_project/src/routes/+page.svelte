@@ -239,7 +239,7 @@
                     <div class="bg-gradient-to-r from-amber-600 to-orange-600 p-3 flex items-center justify-between flex-shrink-0">
                         <h3 class="text-sm font-bold text-white flex items-center gap-2">
                             <span class="text-base">📢</span>
-                            הלוחות המלאים
+                            הלוחות הארציים
                         </h3>
                         <span class="text-[10px] text-amber-200/70 font-bold">LIVE</span>
                     </div>
