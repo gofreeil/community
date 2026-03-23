@@ -386,10 +386,10 @@
                                 : 'border-white/10 bg-white/3 text-gray-400 hover:border-amber-400/40 hover:text-gray-200'}"
                     >
                         <div class="flex items-center justify-between w-full">
-                            <span class="font-black text-sm">{cityEntry.city}</span>
+                            <span class="font-black text-base">{cityEntry.city}</span>
                             {#if selected}<span class="text-amber-400 text-base">✓</span>{/if}
                         </div>
-                        <span class="text-xs mt-0.5 {selected ? 'text-amber-400/80' : 'text-gray-600'}">
+                        <span class="text-sm mt-0.5 {selected ? 'text-amber-400/80' : 'text-gray-400'}">
                             {cityEntry.neighborhoods.length} שכונות
                         </span>
                     </button>
