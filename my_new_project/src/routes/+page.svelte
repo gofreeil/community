@@ -268,6 +268,7 @@
                 </div>
             </div>
         </div>
+        </div>
 
         <!-- Mobile: Map, then Events+LostAndFound side by side, then Referendum -->
         <div class="lg:hidden flex flex-col gap-4">
