@@ -29,13 +29,73 @@
         neighborhoodState.select(neighborhood, city);
         showNeighborhoodsMenu = false;
     }
+
+    // --- Calendar sync (ICS + Google Calendar) ---
+    interface CalEvent {
+        title: string;
+        location: string;
+        date: string;      // e.g. '2026-03-15'
+        startTime: string;  // e.g. '20:00'
+        endTime: string;    // e.g. '21:30'
+        description?: string;
+    }
+
+    const mockEvents: (CalEvent & { bgColor: string; textColor: string; subColor: string })[] = [
+        { title: '🎤 ערב שירה קהילתי', location: 'בית הכנסת הגדול', date: '2026-03-15', startTime: '20:00', endTime: '21:30', bgColor: 'bg-green-600/20', textColor: 'text-green-400', subColor: 'text-green-300/70' },
+        { title: '👨‍👩‍👧 יום משפחה בפארק', location: 'פארק השעשועים', date: '2026-03-18', startTime: '10:00', endTime: '14:00', bgColor: 'bg-blue-600/20', textColor: 'text-blue-400', subColor: 'text-blue-300/70' },
+        { title: '📚 הרצאה: מיצוי זכויות', location: 'מרכז קהילתי — זום', date: '2026-03-22', startTime: '19:30', endTime: '21:00', bgColor: 'bg-purple-600/20', textColor: 'text-purple-400', subColor: 'text-purple-300/70' },
+        { title: '🌱 סדנת גינון עירוני', location: 'גינת השכונה', date: '2026-03-28', startTime: '09:00', endTime: '11:00', bgColor: 'bg-orange-600/20', textColor: 'text-orange-400', subColor: 'text-orange-300/70' },
+    ];
+
+    let calMenuOpen = $state<number | null>(null);
+
+    function toICSDate(date: string, time: string): string {
+        return date.replace(/-/g, '') + 'T' + time.replace(':', '') + '00';
+    }
+
+    function downloadICS(ev: CalEvent) {
+        const ics = [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:-//קהילה בשכונה//Events//HE',
+            'BEGIN:VEVENT',
+            `DTSTART:${toICSDate(ev.date, ev.startTime)}`,
+            `DTEND:${toICSDate(ev.date, ev.endTime)}`,
+            `SUMMARY:${ev.title}`,
+            `LOCATION:${ev.location}`,
+            `DESCRIPTION:אירוע קהילתי מ"קהילה בשכונה"`,
+            'END:VEVENT',
+            'END:VCALENDAR'
+        ].join('\r\n');
+        const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${ev.title.replace(/[^\w\u0590-\u05FF ]/g, '')}.ics`;
+        a.click();
+        URL.revokeObjectURL(url);
+        calMenuOpen = null;
+    }
+
+    function openGoogleCalendar(ev: CalEvent) {
+        const start = toICSDate(ev.date, ev.startTime);
+        const end = toICSDate(ev.date, ev.endTime);
+        const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(ev.title)}&dates=${start}/${end}&location=${encodeURIComponent(ev.location)}&details=${encodeURIComponent('אירוע קהילתי מ"קהילה בשכונה"')}`;
+        window.open(url, '_blank');
+        calMenuOpen = null;
+    }
+
+    function handleCalClick(index: number, e: MouseEvent) {
+        e.stopPropagation();
+        calMenuOpen = calMenuOpen === index ? null : index;
+    }
 </script>
 
 <svelte:head>
     <title>קהילה בשכונה</title>
 </svelte:head>
 
-<div class="pb-0 md:pb-20 pt-4 md:pt-8">
+<div class="pb-0 md:pb-20 pt-4 md:pt-8" onclick={() => calMenuOpen = null}>
     <!-- Title Section - centered across full width -->
     <section class="max-w-7xl mx-auto px-4">
         <div class="text-center mb-8 relative neighborhoods-menu-container">
@@ -181,46 +241,43 @@
                         </button>
                     </div>
                     <div class="p-3 flex-1 overflow-hidden flex flex-col justify-evenly">
-                        <div class="flex gap-3 items-start bg-white/5 rounded-xl p-3 border border-white/8 cursor-pointer hover:bg-white/10 transition-all" role="button" tabindex="0" onclick={() => triggerAdPopup()} onkeydown={(e) => e.key === 'Enter' && triggerAdPopup()}>
-                            <div class="flex flex-col items-center bg-green-600/20 rounded-lg px-2 py-1.5 min-w-[44px] text-center flex-shrink-0">
-                                <span class="text-green-400 font-bold text-base leading-none">15</span>
-                                <span class="text-green-300/70 text-[10px] leading-none mt-0.5">מרץ</span>
+                        {#each mockEvents as ev, i}
+                            {@const day = ev.date.split('-')[2]}
+                            {@const months = ['', 'ינו', 'פבר', 'מרץ', 'אפר', 'מאי', 'יונ', 'יול', 'אוג', 'ספט', 'אוק', 'נוב', 'דצמ']}
+                            {@const month = months[parseInt(ev.date.split('-')[1])]}
+                            <div class="relative flex gap-3 items-start bg-white/5 rounded-xl p-3 border border-white/8 cursor-pointer hover:bg-white/10 transition-all group">
+                                <div class="flex flex-col items-center {ev.bgColor} rounded-lg px-2 py-1.5 min-w-[44px] text-center flex-shrink-0">
+                                    <span class="{ev.textColor} font-bold text-base leading-none">{day}</span>
+                                    <span class="{ev.subColor} text-[10px] leading-none mt-0.5">{month}</span>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-white text-sm font-bold leading-tight">{ev.title}</p>
+                                    <p class="text-gray-400 text-xs mt-0.5">{ev.location}, {ev.startTime}</p>
+                                </div>
+                                <!-- Calendar sync button -->
+                                <button
+                                    onclick={(e) => handleCalClick(i, e)}
+                                    class="flex-shrink-0 opacity-60 group-hover:opacity-100 hover:scale-110 transition-all text-white/70 hover:text-green-400"
+                                    title="הוסף ליומן"
+                                >
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11v4m0 0h-2m2 0h2"/>
+                                    </svg>
+                                </button>
+                                <!-- Calendar dropdown -->
+                                {#if calMenuOpen === i}
+                                    <div class="absolute left-0 top-full mt-1 z-50 bg-[#1e293b] border border-white/20 rounded-xl shadow-2xl p-2 flex flex-col gap-1 min-w-[180px]">
+                                        <button onclick={() => openGoogleCalendar(ev)} class="flex items-center gap-2 text-xs text-white hover:bg-white/10 rounded-lg px-3 py-2 transition-colors text-right w-full">
+                                            <span class="text-base">📅</span> Google Calendar
+                                        </button>
+                                        <button onclick={() => downloadICS(ev)} class="flex items-center gap-2 text-xs text-white hover:bg-white/10 rounded-lg px-3 py-2 transition-colors text-right w-full">
+                                            <span class="text-base">📲</span> Apple / Outlook (.ics)
+                                        </button>
+                                    </div>
+                                {/if}
                             </div>
-                            <div class="min-w-0">
-                                <p class="text-white text-sm font-bold leading-tight">🎤 ערב שירה קהילתי</p>
-                                <p class="text-gray-400 text-xs mt-0.5">בית הכנסת הגדול, 20:00</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-3 items-start bg-white/5 rounded-xl p-3 border border-white/8 cursor-pointer hover:bg-white/10 transition-all" role="button" tabindex="0" onclick={() => triggerAdPopup()} onkeydown={(e) => e.key === 'Enter' && triggerAdPopup()}>
-                            <div class="flex flex-col items-center bg-blue-600/20 rounded-lg px-2 py-1.5 min-w-[44px] text-center flex-shrink-0">
-                                <span class="text-blue-400 font-bold text-base leading-none">18</span>
-                                <span class="text-blue-300/70 text-[10px] leading-none mt-0.5">מרץ</span>
-                            </div>
-                            <div class="min-w-0">
-                                <p class="text-white text-sm font-bold leading-tight">👨‍👩‍👧 יום משפחה בפארק</p>
-                                <p class="text-gray-400 text-xs mt-0.5">פארק השעשועים, 10:00–14:00</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-3 items-start bg-white/5 rounded-xl p-3 border border-white/8 cursor-pointer hover:bg-white/10 transition-all" role="button" tabindex="0" onclick={() => triggerAdPopup()} onkeydown={(e) => e.key === 'Enter' && triggerAdPopup()}>
-                            <div class="flex flex-col items-center bg-purple-600/20 rounded-lg px-2 py-1.5 min-w-[44px] text-center flex-shrink-0">
-                                <span class="text-purple-400 font-bold text-base leading-none">22</span>
-                                <span class="text-purple-300/70 text-[10px] leading-none mt-0.5">מרץ</span>
-                            </div>
-                            <div class="min-w-0">
-                                <p class="text-white text-sm font-bold leading-tight">📚 הרצאה: מיצוי זכויות</p>
-                                <p class="text-gray-400 text-xs mt-0.5">מרכז קהילתי, 19:30 — זום</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-3 items-start bg-white/5 rounded-xl p-3 border border-white/8 cursor-pointer hover:bg-white/10 transition-all" role="button" tabindex="0" onclick={() => triggerAdPopup()} onkeydown={(e) => e.key === 'Enter' && triggerAdPopup()}>
-                            <div class="flex flex-col items-center bg-orange-600/20 rounded-lg px-2 py-1.5 min-w-[44px] text-center flex-shrink-0">
-                                <span class="text-orange-400 font-bold text-base leading-none">28</span>
-                                <span class="text-orange-300/70 text-[10px] leading-none mt-0.5">מרץ</span>
-                            </div>
-                            <div class="min-w-0">
-                                <p class="text-white text-sm font-bold leading-tight">🌱 סדנת גינון עירוני</p>
-                                <p class="text-gray-400 text-xs mt-0.5">גינת השכונה, 09:00</p>
-                            </div>
-                        </div>
+                        {/each}
                     </div>
                     <div class="px-3 pb-2 flex-shrink-0">
                         <a href="/events" class="block text-center text-green-400 hover:text-white text-xs font-bold transition-colors underline underline-offset-2">
@@ -286,46 +343,41 @@
                         </button>
                     </div>
                     <div class="p-2 flex-1 overflow-y-auto flex flex-col gap-1.5">
-                        <div class="flex gap-2 items-start bg-white/5 rounded-xl p-2 border border-white/8 cursor-pointer" role="button" tabindex="0" onclick={() => triggerAdPopup()} onkeydown={(e) => e.key === 'Enter' && triggerAdPopup()}>
-                            <div class="flex flex-col items-center bg-green-600/20 rounded-lg px-1.5 py-1 min-w-[36px] text-center flex-shrink-0">
-                                <span class="text-green-400 font-bold text-sm leading-none">15</span>
-                                <span class="text-green-300/70 text-[9px] leading-none mt-0.5">מרץ</span>
+                        {#each mockEvents as ev, i}
+                            {@const day = ev.date.split('-')[2]}
+                            {@const months = ['', 'ינו', 'פבר', 'מרץ', 'אפר', 'מאי', 'יונ', 'יול', 'אוג', 'ספט', 'אוק', 'נוב', 'דצמ']}
+                            {@const month = months[parseInt(ev.date.split('-')[1])]}
+                            <div class="relative flex gap-2 items-start bg-white/5 rounded-xl p-2 border border-white/8 cursor-pointer">
+                                <div class="flex flex-col items-center {ev.bgColor} rounded-lg px-1.5 py-1 min-w-[36px] text-center flex-shrink-0">
+                                    <span class="{ev.textColor} font-bold text-sm leading-none">{day}</span>
+                                    <span class="{ev.subColor} text-[9px] leading-none mt-0.5">{month}</span>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-white text-xs font-bold leading-tight">{ev.title}</p>
+                                    <p class="text-gray-400 text-[10px] mt-0.5">{ev.location}, {ev.startTime}</p>
+                                </div>
+                                <button
+                                    onclick={(e) => handleCalClick(100 + i, e)}
+                                    class="flex-shrink-0 text-white/50 active:text-green-400 transition-all"
+                                    title="הוסף ליומן"
+                                >
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11v4m0 0h-2m2 0h2"/>
+                                    </svg>
+                                </button>
+                                {#if calMenuOpen === 100 + i}
+                                    <div class="absolute left-0 top-full mt-1 z-50 bg-[#1e293b] border border-white/20 rounded-xl shadow-2xl p-2 flex flex-col gap-1 min-w-[160px]">
+                                        <button onclick={() => openGoogleCalendar(ev)} class="flex items-center gap-2 text-xs text-white hover:bg-white/10 rounded-lg px-3 py-2 transition-colors text-right w-full">
+                                            <span>📅</span> Google Calendar
+                                        </button>
+                                        <button onclick={() => downloadICS(ev)} class="flex items-center gap-2 text-xs text-white hover:bg-white/10 rounded-lg px-3 py-2 transition-colors text-right w-full">
+                                            <span>📲</span> Apple / Outlook
+                                        </button>
+                                    </div>
+                                {/if}
                             </div>
-                            <div class="min-w-0">
-                                <p class="text-white text-xs font-bold leading-tight">🎤 ערב שירה קהילתי</p>
-                                <p class="text-gray-400 text-[10px] mt-0.5">בית הכנסת הגדול, 20:00</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-2 items-start bg-white/5 rounded-xl p-2 border border-white/8 cursor-pointer" role="button" tabindex="0" onclick={() => triggerAdPopup()} onkeydown={(e) => e.key === 'Enter' && triggerAdPopup()}>
-                            <div class="flex flex-col items-center bg-blue-600/20 rounded-lg px-1.5 py-1 min-w-[36px] text-center flex-shrink-0">
-                                <span class="text-blue-400 font-bold text-sm leading-none">18</span>
-                                <span class="text-blue-300/70 text-[9px] leading-none mt-0.5">מרץ</span>
-                            </div>
-                            <div class="min-w-0">
-                                <p class="text-white text-xs font-bold leading-tight">👨‍👩‍👧 יום משפחה בפארק</p>
-                                <p class="text-gray-400 text-[10px] mt-0.5">פארק השעשועים, 10:00–14:00</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-2 items-start bg-white/5 rounded-xl p-2 border border-white/8 cursor-pointer" role="button" tabindex="0" onclick={() => triggerAdPopup()} onkeydown={(e) => e.key === 'Enter' && triggerAdPopup()}>
-                            <div class="flex flex-col items-center bg-purple-600/20 rounded-lg px-1.5 py-1 min-w-[36px] text-center flex-shrink-0">
-                                <span class="text-purple-400 font-bold text-sm leading-none">22</span>
-                                <span class="text-purple-300/70 text-[9px] leading-none mt-0.5">מרץ</span>
-                            </div>
-                            <div class="min-w-0">
-                                <p class="text-white text-xs font-bold leading-tight">📚 הרצאה: מיצוי זכויות</p>
-                                <p class="text-gray-400 text-[10px] mt-0.5">מרכז קהילתי, 19:30 — זום</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-2 items-start bg-white/5 rounded-xl p-2 border border-white/8 cursor-pointer" role="button" tabindex="0" onclick={() => triggerAdPopup()} onkeydown={(e) => e.key === 'Enter' && triggerAdPopup()}>
-                            <div class="flex flex-col items-center bg-orange-600/20 rounded-lg px-1.5 py-1 min-w-[36px] text-center flex-shrink-0">
-                                <span class="text-orange-400 font-bold text-sm leading-none">28</span>
-                                <span class="text-orange-300/70 text-[9px] leading-none mt-0.5">מרץ</span>
-                            </div>
-                            <div class="min-w-0">
-                                <p class="text-white text-xs font-bold leading-tight">🌱 סדנת גינון עירוני</p>
-                                <p class="text-gray-400 text-[10px] mt-0.5">גינת השכונה, 09:00</p>
-                            </div>
-                        </div>
+                        {/each}
                     </div>
                 </div>
                 <!-- Right: Lost and Found -->
