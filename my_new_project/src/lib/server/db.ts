@@ -288,6 +288,27 @@ export async function adminDeleteItem(documentId: string, adminId: string): Prom
     });
 }
 
+/** שליפת כל המשתמשים (אדמין בלבד) */
+export async function getAllUsers(jwt?: string): Promise<DbUser[]> {
+    const res = await strapiGet<{ data: StrapiCommunityUser[] }>('/api/community-users', {
+        'pagination[limit]': '1000',
+        'sort':              'createdAt:desc',
+    }, jwt);
+    return (res.data ?? []).map(mapStrapiUser);
+}
+
+/** שינוי role של משתמש (סופר-אדמין בלבד) */
+export async function setUserRole(externalId: string, role: string, neighborhood?: string): Promise<void> {
+    const user = await findStrapiUser(externalId);
+    if (!user) throw new Error('משתמש לא נמצא');
+    await strapiPut(`/api/community-users/${user.documentId}`, {
+        data: {
+            role,
+            ...(neighborhood !== undefined ? { neighborhood } : {}),
+        },
+    });
+}
+
 /** חסימת משתמש (אדמין בלבד) */
 export async function banUser(externalId: string): Promise<void> {
     const user = await findStrapiUser(externalId);

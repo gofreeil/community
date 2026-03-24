@@ -1,5 +1,4 @@
 import { redirect, fail } from '@sveltejs/kit';
-import { signIn } from '../../auth';
 import { getUserByEmail } from '$lib/server/db';
 import { strapiLogin } from '$lib/server/strapiClient';
 import type { PageServerLoad, Actions } from './$types';
@@ -20,18 +19,22 @@ export const load: PageServerLoad = async (event) => {
 };
 
 export const actions: Actions = {
+    /**
+     * שלב 1: בדיקת אימייל+סיסמה בשרת (validation + Strapi JWT cookie).
+     * אם הכל תקין, מחזיר { success: true } —
+     * ואז הקליינט קורא ל-signIn('credentials') של Auth.js.
+     */
     credentials: async (event) => {
-        const { request, cookies } = event;
-        const formData   = await request.formData();
+        const { cookies } = event;
+        const formData   = await event.request.formData();
         const email      = (formData.get('email')    as string)?.trim().toLowerCase();
         const password   = formData.get('password')  as string;
-        const redirectTo = formData.get('redirectTo') as string || '/';
 
         if (!email || !password) {
             return fail(400, { error: 'יש למלא אימייל וסיסמה' });
         }
 
-        // בדיקה אם המשתמש בכלל קיים
+        // בדיקה אם המשתמש קיים
         const existingUser = await getUserByEmail(email);
         if (!existingUser) {
             return fail(401, { error: 'אימייל זה לא רשום. האם ברצונך להירשם?' });
@@ -51,34 +54,10 @@ export const actions: Actions = {
                 maxAge:   60 * 60 * 24 * 7, // 7 ימים
             });
         } catch {
-            // סיסמה שגויה לפי Strapi
             return fail(401, { error: 'סיסמה שגויה. נסה שוב.' });
         }
 
-        try {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            await (signIn as any)('credentials', {
-                email,
-                password,
-                redirect: false,
-            });
-        } catch (e) {
-            // Auth.js זורק redirect בהצלחה
-            if (e instanceof Response || (e as { status?: number })?.status === 302) {
-                throw redirect(302, redirectTo);
-            }
-            const msg = e instanceof Error ? e.message : String(e);
-            if (
-                msg.includes('CredentialsSignin') ||
-                msg.includes('401') ||
-                msg.includes('credentials')
-            ) {
-                return fail(401, { error: 'סיסמה שגויה. נסה שוב.' });
-            }
-            console.error('[login] error:', msg);
-            return fail(500, { error: `שגיאה: ${msg}` });
-        }
-
-        throw redirect(302, redirectTo);
+        // הצלחה — הקליינט ימשיך עם signIn של Auth.js
+        return { success: true };
     },
 };

@@ -8,9 +8,10 @@
 	let { data, form } = $props();
 
 	let isLoading       = $state(false);
-	let loadingProvider = $state<'google' | 'facebook' | null>(null);
+	let loadingProvider = $state<'google' | 'facebook' | 'credentials' | null>(null);
 	let mode            = $state<'oauth' | 'email'>('oauth');
 	let showPassword    = $state(false);
+	let credError       = $state<string | null>(null);
 
 	async function loginWith(provider: 'google' | 'facebook') {
 		isLoading = true;
@@ -82,9 +83,9 @@
 						<p class="text-red-400 text-sm font-medium">{errorMessage(data.error)}</p>
 					</div>
 				{/if}
-				{#if form?.error}
+				{#if form?.error || credError}
 					<div class="mb-6 rounded-xl bg-red-500/10 border border-red-500/30 px-4 py-3 text-center">
-						<p class="text-red-400 text-sm font-medium">{form.error}</p>
+						<p class="text-red-400 text-sm font-medium">{credError ?? form?.error}</p>
 					</div>
 				{/if}
 				{#if data.registered}
@@ -156,7 +157,31 @@
 
 				{:else}
 					<!-- טופס אימייל/סיסמה -->
-					<form method="POST" action="?/credentials" use:enhance>
+					<form method="POST" action="?/credentials" use:enhance={() => {
+						isLoading = true;
+						loadingProvider = 'credentials';
+						credError = null;
+						return async ({ result }) => {
+							if (result.type === 'success') {
+								// שרת אישר — עכשיו signIn דרך Auth.js
+								const formEl = document.querySelector('form[action="?/credentials"]') as HTMLFormElement;
+								const email = (formEl?.querySelector('#email') as HTMLInputElement)?.value;
+								const password = (formEl?.querySelector('#password') as HTMLInputElement)?.value;
+								await signIn('credentials', {
+									email,
+									password,
+									callbackUrl: data.redirectTo || '/',
+								});
+							} else if (result.type === 'failure') {
+								credError = (result.data as { error?: string })?.error ?? 'שגיאה לא ידועה';
+								isLoading = false;
+								loadingProvider = null;
+							} else {
+								isLoading = false;
+								loadingProvider = null;
+							}
+						};
+					}}>
 						<input type="hidden" name="redirectTo" value={data.redirectTo} />
 
 						<div class="mb-4">

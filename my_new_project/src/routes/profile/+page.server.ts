@@ -57,7 +57,8 @@ export const load: PageServerLoad = async (event) => {
                 avatar_url: session.user.image ?? null,
                 provider,
             });
-            user = await getUserById(session.user.id, jwt);
+            const retryJwt = event.cookies.get('strapi_jwt');
+            user = await getUserById(session.user.id, retryJwt);
         } catch (e) {
             console.warn('[profile] auto-upsert failed:', e);
         }

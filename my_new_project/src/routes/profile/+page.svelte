@@ -179,6 +179,7 @@
 	// מעגל מילוי פרופיל — דינמי: כל שדה שווה 100/מספר_שדות
 	const ringCircumference = 2 * Math.PI * 43; // r=43, SVG 92×92
 
+	// שדות פרופיל שהמשתמש צריך למלא (לא notifications שמגיע כברירת מחדל)
 	let profileFields = $derived([
 		!!avatarPreview,
 		!!name,
@@ -191,7 +192,6 @@
 		!!business,
 		!!family_status,
 		!!(birthYear && birthMonth && birthDay),
-		!!notifications,
 	]);
 
 	let profileCompletion = $derived(
@@ -214,7 +214,7 @@
 	const ringTipKeys = [
 		'tip_avatar', 'tip_name', 'tip_email', 'tip_nickname',
 		'tip_phone', 'tip_city', 'tip_neighborhood', 'tip_gender',
-		'tip_business', 'tip_family_status', 'tip_birth_date', 'tip_notifications',
+		'tip_business', 'tip_family_status', 'tip_birth_date',
 	] as const;
 	let nextTipKey = $derived(
 		profileCompletion >= 100
@@ -441,31 +441,28 @@
 						<h1 class="text-2xl font-black text-white truncate">
 							{data.user?.nickname || data.user?.name || ''}
 						</h1>
-						{#if (data.user as any)?.role === 'neighborhood_admin'}
-							<span class="text-xs font-bold bg-gradient-to-r from-amber-500 to-orange-500 text-black px-2.5 py-0.5 rounded-full whitespace-nowrap">🛡️ אדמין שכונתי</span>
-						{:else if (data.user as any)?.role === 'super_admin'}
-							<span class="text-xs font-bold bg-gradient-to-r from-red-500 to-pink-500 text-white px-2.5 py-0.5 rounded-full whitespace-nowrap">👑 מנהל ראשי</span>
-						{/if}
 					</div>
 					{#if data.user?.email}
 						<p class="text-gray-400 text-sm">{data.user.email}</p>
 					{/if}
-					{#if neighborhood || city}
-						<p class="text-purple-400 text-sm mb-16">
-							📍 {[neighborhood, city].filter(Boolean).join(', ')}
-						</p>
-					{/if}
+					<p class="text-purple-400 text-sm mb-16">
+						{#if data.user?.neighborhood || data.user?.city}
+							📍 {[data.user.neighborhood, data.user.city].filter(Boolean).join(', ')}
+						{:else}
+							📍 שכונה לא ידועה
+						{/if}
+					</p>
 				</div>
 				<div class="flex items-center gap-1.5">
 					<span class="text-white/50 text-base font-bold">דרגה:</span>
-					{#if userLevel >= 2}
-						<span class="text-emerald-400 text-base font-black">
-							משתמש
-						</span>
+					{#if (data.user as any)?.role === 'super_admin'}
+						<span class="text-red-400 text-base font-black">מנהל ראשי 👑</span>
+					{:else if (data.user as any)?.role === 'neighborhood_admin'}
+						<span class="text-amber-400 text-base font-black">אדמין שכונתי 🛡️</span>
+					{:else if userLevel >= 2}
+						<span class="text-emerald-400 text-base font-black">משתמש</span>
 					{:else}
-						<span class="text-gray-400 text-base font-black">
-							צופה
-						</span>
+						<span class="text-gray-400 text-base font-black">צופה</span>
 					{/if}
 				</div>
 				<div class="flex gap-3 mt-2 flex-wrap">
