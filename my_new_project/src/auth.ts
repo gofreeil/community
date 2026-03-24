@@ -76,7 +76,11 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
 
     callbacks: {
         async signIn({ user, account }) {
-            if (!account || !user) return false;
+            console.log('[auth] signIn called — provider:', account?.provider, 'email:', user?.email);
+            if (!account || !user) {
+                console.warn('[auth] signIn rejected — missing account or user');
+                return false;
+            }
 
             // Credentials provider
             if (account.provider === 'credentials') {
