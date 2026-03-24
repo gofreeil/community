@@ -125,24 +125,9 @@
 	let cropNatW     = $state(0);
 	let cropNatH     = $state(0);
 
-	// טען טיוטה מ-localStorage — תמיד, כדי לשחזר שינויים שלא נשמרו
+	// נקה טיוטה ישנה — הנתונים מגיעים מהשרת בלבד
 	onMount(() => {
-		try {
-			const saved = localStorage.getItem(DRAFT_KEY);
-			if (saved) {
-				const draft = JSON.parse(saved);
-				if (draft.name)          name          = draft.name;
-				if (draft.email)         email         = draft.email;
-				if (draft.nickname)      nickname      = draft.nickname;
-				if (draft.phone)         phone         = draft.phone;
-				if (draft.city)          city          = draft.city;
-				if (draft.neighborhood)  neighborhood  = draft.neighborhood;
-				if (draft.business)      business      = draft.business;
-				if (draft.family_status) family_status = draft.family_status;
-				if (draft.gender)        gender        = draft.gender;
-				if (draft.notifications !== undefined) notifications = draft.notifications;
-			}
-		} catch {}
+		try { localStorage.removeItem(DRAFT_KEY); } catch {}
 	});
 
 	// שמור טיוטה ב-localStorage בכל שינוי
@@ -208,6 +193,10 @@
 	let userLevel = $derived(
 		(name && email && nickname && phone && city && neighborhood && gender && family_status)
 			? 2 : 1
+	);
+
+	let isUserAdmin = $derived(
+		(data.user as any)?.role === 'neighborhood_admin' || (data.user as any)?.role === 'super_admin'
 	);
 
 	// טיפ למעגל — המפתח של השדה הבא שלא מולא
@@ -455,10 +444,10 @@
 				</div>
 				<div class="flex items-center gap-1.5">
 					<span class="text-white/50 text-base font-bold">דרגה:</span>
-					{#if (data.user as any)?.role === 'super_admin'}
-						<span class="text-red-400 text-base font-black">מנהל ראשי 👑</span>
-					{:else if (data.user as any)?.role === 'neighborhood_admin'}
-						<span class="text-amber-400 text-base font-black">אדמין שכונתי 🛡️</span>
+					{#if isUserAdmin}
+						<a href="/admin" class="text-red-400 text-base font-black hover:text-red-300 transition-colors no-underline" title="ערוך את הפרטים בשכונה שלך">
+							{(data.user as any)?.role === 'super_admin' ? 'מנהל ראשי 👑' : 'אדמין שכונתי 🛡️'}
+						</a>
 					{:else if userLevel >= 2}
 						<span class="text-emerald-400 text-base font-black">משתמש</span>
 					{:else}
@@ -471,12 +460,7 @@
 							{data.items.length} {tFn("publications_count")}
 						</span>
 					{/if}
-					{#if data.user?.business}
-						<span class="text-xs bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded-full font-bold">
-							🏢 {data.user.business}
-						</span>
-					{/if}
-				</div>
+					</div>
 			</div>
 
 		</div>
@@ -865,7 +849,9 @@
 			</h2>
 			<!-- סיכום דרגה נוכחית -->
 			<div class="flex items-center gap-2">
-				{#if userLevel >= 2}
+				{#if isUserAdmin}
+					<span class="text-sm bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1.5 rounded-full font-bold">דרגה נוכחית — רכז שכונה</span>
+				{:else if userLevel >= 2}
 					<span class="text-sm bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1.5 rounded-full font-bold">דרגה נוכחית — משתמש</span>
 				{:else}
 					<span class="text-sm bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-full font-bold">דרגה נוכחית — צופה</span>
@@ -957,20 +943,24 @@
 			</div>
 
 			<!-- דרגה 3: רכז שכונה -->
-			<div class="relative rounded-2xl border-2 p-5 flex flex-col gap-3 transition-all
-			            {userLevel >= 3
-			              ? 'border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/10'
-			              : 'border-white/10 bg-white/3 opacity-60'}">
-				{#if userLevel >= 3}
+			<a
+				href={isUserAdmin ? '/admin' : undefined}
+				class="relative rounded-2xl border-2 p-5 flex flex-col gap-3 transition-all no-underline
+				       {isUserAdmin
+				         ? 'border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/10 hover:bg-blue-500/20 cursor-pointer'
+				         : 'border-white/10 bg-white/3 opacity-60 pointer-events-none'}"
+				title={isUserAdmin ? 'ערוך את הפרטים בשכונה שלך' : ''}
+			>
+				{#if isUserAdmin}
 					<div class="absolute -top-4 -right-4 w-9 h-9 rounded-full bg-blue-500 border-[3px] border-[#0f172a] flex items-center justify-center shadow-lg shadow-blue-500/50 z-10">
 						<span class="text-white font-black text-lg leading-none">✓</span>
 					</div>
 				{/if}
 				<div class="flex items-center gap-2">
 					<span class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0
-					             {userLevel >= 3 ? 'bg-blue-500 text-white' : 'bg-white/10 text-gray-400'}">3</span>
+					             {isUserAdmin ? 'bg-blue-500 text-white' : 'bg-white/10 text-gray-400'}">3</span>
 					<span class="font-black text-white text-base">רכז שכונה</span>
-					{#if userLevel === 3}
+					{#if isUserAdmin}
 						<span class="mr-auto text-[10px] bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded-full font-bold">הדרגה שלך</span>
 					{/if}
 				</div>
@@ -992,7 +982,7 @@
 						<span class="text-gray-300 text-xs font-bold">ניהול תוכן</span>
 					</div>
 				</div>
-			</div>
+			</a>
 
 		</div>
 		{/if}

@@ -4,22 +4,6 @@ import { getUserById, updateUserProfile, getItemsByUserId, upsertUser } from '$l
 import { citiesData } from '$lib/neighborhoodsData';
 
 export const load: PageServerLoad = async (event) => {
-    // DEV PREVIEW — ?preview=1 מאפשר צפייה בלי התחברות (פיתוח בלבד)
-    const isPreview = import.meta.env.DEV && event.url.searchParams.get('preview') === '1';
-    if (isPreview) {
-        return {
-            user: {
-                id: 'preview', name: 'ישראל ישראלי', email: 'test@example.com',
-                nickname: 'ישראלי', phone: '050-0000000', city: 'רחובות',
-                neighborhood: 'שעריים', business: '', family_status: 'family',
-                gender: 'male', birth_date: '1990-05-15', notifications: 1,
-                avatar_url: null, level: 3, points: 150,
-            },
-            items: [],
-            citiesData,
-        };
-    }
-
     let session = null;
     try {
         session = await event.locals.auth();
