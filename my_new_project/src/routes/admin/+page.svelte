@@ -69,8 +69,7 @@
 		<!-- כותרת -->
 		<div class="flex items-center justify-between mb-8">
 			<div>
-				<h1 class="text-3xl font-black flex items-center gap-3">
-					<span class="text-4xl">👑</span>
+				<h1 class="text-3xl font-black">
 					לוח ניהול
 				</h1>
 				<p class="text-gray-400 mt-1">ניהול משתמשים, תוכן והרשאות</p>
