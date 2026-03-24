@@ -22,6 +22,9 @@ declare module '@auth/core/types' {
             id: string;
             provider?: string;
             strapiJwt?: string;
+            role?: 'user' | 'neighborhood_admin' | 'super_admin';
+            neighborhood?: string;
+            banned?: boolean;
         } & DefaultSession['user'];
     }
 }
@@ -31,6 +34,9 @@ declare module '@auth/core/jwt' {
         dbUserId?: string;
         provider?: string;
         strapiJwt?: string;
+        role?: 'user' | 'neighborhood_admin' | 'super_admin';
+        neighborhood?: string;
+        banned?: boolean;
     }
 }
 

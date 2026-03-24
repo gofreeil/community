@@ -3,7 +3,7 @@ import Google from '@auth/sveltekit/providers/google';
 import Facebook from '@auth/sveltekit/providers/facebook';
 import Credentials from '@auth/sveltekit/providers/credentials';
 import { createHash } from 'crypto';
-import { upsertUser, verifyCredentials, getUserByEmail } from '$lib/server/db';
+import { upsertUser, verifyCredentials, getUserByEmail, getUserById } from '$lib/server/db';
 import { strapiLogin, strapiRegister } from '$lib/server/strapiClient';
 
 const AUTH_SECRET         = process.env.AUTH_SECRET         ?? '';
@@ -114,7 +114,7 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
             }
         },
 
-        jwt({ token, user, account }) {
+        async jwt({ token, user, account }) {
             // user + account מועברים רק ב-sign-in הראשון
             if (user && account) {
                 token.dbUserId = account.provider === 'credentials'
@@ -126,6 +126,17 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
             // שמור Strapi JWT (רק ב-credentials login)
             if (user && (user as { strapiJwt?: string }).strapiJwt) {
                 token.strapiJwt = (user as { strapiJwt?: string }).strapiJwt;
+            }
+            // שלוף role, neighborhood, banned מהדאטאבייס (בכל refresh של token)
+            if (token.dbUserId) {
+                try {
+                    const dbUser = await getUserById(token.dbUserId as string);
+                    if (dbUser) {
+                        token.role = dbUser.role;
+                        token.neighborhood = dbUser.neighborhood;
+                        token.banned = dbUser.banned;
+                    }
+                } catch { /* ignore — fallback to 'user' */ }
             }
             return token;
         },
@@ -143,6 +154,10 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
             if (token.strapiJwt) {
                 (session.user as { strapiJwt?: string }).strapiJwt = token.strapiJwt as string;
             }
+            // העבר role, neighborhood, banned לסשן
+            session.user.role = (token.role as typeof session.user.role) ?? 'user';
+            session.user.neighborhood = (token.neighborhood as string) ?? '';
+            session.user.banned = (token.banned as boolean) ?? false;
             return session;
         },
     },

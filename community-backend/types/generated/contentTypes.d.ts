@@ -577,6 +577,7 @@ export interface ApiCommunityUserCommunityUser
   attributes: {
     avatar_url: Schema.Attribute.Text;
     balance: Schema.Attribute.Decimal;
+    banned: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     birth_date: Schema.Attribute.String;
     business: Schema.Attribute.String;
     city: Schema.Attribute.String;
@@ -601,6 +602,10 @@ export interface ApiCommunityUserCommunityUser
     phone: Schema.Attribute.String;
     provider: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
+    role: Schema.Attribute.Enumeration<
+      ['user', 'neighborhood_admin', 'super_admin']
+    > &
+      Schema.Attribute.DefaultTo<'user'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;

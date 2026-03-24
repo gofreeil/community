@@ -147,7 +147,7 @@
 			{#if currentUser && layoutUser}
 			<!-- מיני-כרטיס פרופיל -->
 			<a href="/profile" onclick={() => open = false}
-				class="block w-full bg-white/5 hover:bg-white/8 border border-white/10 rounded-2xl p-4 transition-all no-underline">
+				class="block w-full bg-gradient-to-br from-indigo-900/40 to-purple-900/40 hover:from-indigo-900/60 hover:to-purple-900/60 border-2 border-purple-500/50 rounded-2xl p-4 transition-all no-underline shadow-lg shadow-purple-500/10">
 				<div class="flex items-center gap-4">
 
 					<!-- תמונה + מעגל מילוי -->
@@ -351,6 +351,8 @@
 	/* ---- כפתור auth ---- */
 	.auth-section {
 		padding: 0.75rem;
+		padding-bottom: 1rem;
+		margin-bottom: 0.5rem;
 		border-bottom: 1px solid rgba(99,102,241,0.15);
 		flex-shrink: 0;
 	}

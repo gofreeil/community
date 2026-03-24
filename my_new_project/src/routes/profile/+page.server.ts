@@ -78,6 +78,7 @@ export const load: PageServerLoad = async (event) => {
             phone: '', nickname: '', city: '', neighborhood: '',
             business: '', gender: '', family_status: '', birth_date: '',
             notifications: 1, provider: null, password_hash: null, created_at: '',
+            role: 'user' as const, banned: false,
           };
 
     return {

@@ -61,6 +61,8 @@ export interface DbUser {
     gender: string;
     birth_date: string;
     balance: number;
+    role: 'user' | 'neighborhood_admin' | 'super_admin';
+    banned: boolean;
     created_at: string;
 }
 
@@ -135,6 +137,8 @@ interface StrapiCommunityUser {
     gender: string | null;
     birth_date: string | null;
     balance: number | null;
+    role: string | null;
+    banned: boolean | null;
     createdAt: string;
 }
 
@@ -181,6 +185,8 @@ function mapStrapiUser(u: StrapiCommunityUser): DbUser {
         gender:        u.gender        ?? '',
         birth_date:    u.birth_date    ?? '',
         balance:       u.balance       ?? 0,
+        role:          (u.role as DbUser['role']) ?? 'user',
+        banned:        u.banned        ?? false,
         created_at:    u.createdAt     ?? '',
     };
 }
@@ -266,6 +272,38 @@ export async function getResolvedCount(category: string): Promise<number> {
         'pagination[withCount]':   'true',
     });
     return (res as unknown as { meta?: { pagination?: { total?: number } } }).meta?.pagination?.total ?? 0;
+}
+
+// ============================================================
+// ---- Admin actions ----
+// ============================================================
+
+/** מחיקת פריט (אדמין בלבד) — מעביר לסטטוס deleted */
+export async function adminDeleteItem(documentId: string, adminId: string): Promise<void> {
+    await strapiPut(`/api/items/${documentId}`, {
+        data: {
+            status1:     'deleted',
+            description: `[הוסר ע"י אדמין: ${adminId}]`,
+        },
+    });
+}
+
+/** חסימת משתמש (אדמין בלבד) */
+export async function banUser(externalId: string): Promise<void> {
+    const user = await findStrapiUser(externalId);
+    if (!user) throw new Error('משתמש לא נמצא');
+    await strapiPut(`/api/community-users/${user.documentId}`, {
+        data: { banned: true },
+    });
+}
+
+/** ביטול חסימת משתמש */
+export async function unbanUser(externalId: string): Promise<void> {
+    const user = await findStrapiUser(externalId);
+    if (!user) throw new Error('משתמש לא נמצא');
+    await strapiPut(`/api/community-users/${user.documentId}`, {
+        data: { banned: false },
+    });
 }
 
 export async function getMessagesByUserId(userId: string): Promise<DbItem[]> {

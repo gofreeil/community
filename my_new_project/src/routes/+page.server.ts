@@ -1,4 +1,5 @@
 import { getAllItems, getUserById } from '$lib/server/db';
+import { isAdmin } from '$lib/server/auth';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
@@ -18,9 +19,15 @@ export const load: PageServerLoad = async (event) => {
 
     try {
         const dbItems = await getAllItems();
-        return { dbItems, userNeighborhood, userCity };
+        return {
+            dbItems,
+            userNeighborhood,
+            userCity,
+            isAdmin: isAdmin(session),
+            userRole: session?.user?.role ?? 'user',
+        };
     } catch (e) {
         console.warn('[home] getAllItems failed:', e instanceof Error ? e.message : e);
-        return { dbItems: [], userNeighborhood, userCity };
+        return { dbItems: [], userNeighborhood, userCity, isAdmin: false, userRole: 'user' as const };
     }
 };

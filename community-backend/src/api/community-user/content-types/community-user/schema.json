@@ -59,6 +59,15 @@
     },
     "balance": {
       "type": "decimal"
+    },
+    "role": {
+      "type": "enumeration",
+      "enum": ["user", "neighborhood_admin", "super_admin"],
+      "default": "user"
+    },
+    "banned": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

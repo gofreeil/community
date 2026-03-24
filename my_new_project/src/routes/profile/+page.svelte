@@ -437,9 +437,16 @@
 
 			<div class="min-w-0 flex flex-col justify-between">
 				<div class="flex flex-col gap-0.5">
-					<h1 class="text-2xl font-black text-white truncate">
-						{data.user?.nickname || data.user?.name || ''}
-					</h1>
+					<div class="flex items-center gap-2">
+						<h1 class="text-2xl font-black text-white truncate">
+							{data.user?.nickname || data.user?.name || ''}
+						</h1>
+						{#if (data.user as any)?.role === 'neighborhood_admin'}
+							<span class="text-xs font-bold bg-gradient-to-r from-amber-500 to-orange-500 text-black px-2.5 py-0.5 rounded-full whitespace-nowrap">🛡️ אדמין שכונתי</span>
+						{:else if (data.user as any)?.role === 'super_admin'}
+							<span class="text-xs font-bold bg-gradient-to-r from-red-500 to-pink-500 text-white px-2.5 py-0.5 rounded-full whitespace-nowrap">👑 מנהל ראשי</span>
+						{/if}
+					</div>
 					{#if data.user?.email}
 						<p class="text-gray-400 text-sm">{data.user.email}</p>
 					{/if}

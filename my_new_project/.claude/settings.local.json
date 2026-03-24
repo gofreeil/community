@@ -24,7 +24,8 @@
       "Bash(powershell -Command \"if \\(Test-Path ''D:\\\\Users\\\\User\\\\Documents\\\\GitHub\\\\community\\\\.git\\\\index.lock''\\) { Write-Host ''EXISTS''; \\(Get-Item ''D:\\\\Users\\\\User\\\\Documents\\\\GitHub\\\\community\\\\.git\\\\index.lock''\\).LastWriteTime } else { Write-Host ''NOT FOUND'' }\")",
       "Bash(GIT_TRACE=1 git add src/routes/+page.svelte)",
       "Bash(GIT_TRACE=1 git commit -m \"test\")",
-      "Bash(powershell -Command \"Remove-Item -Force ''D:\\\\Users\\\\User\\\\Documents\\\\GitHub\\\\community\\\\.git\\\\index.lock''\")"
+      "Bash(powershell -Command \"Remove-Item -Force ''D:\\\\Users\\\\User\\\\Documents\\\\GitHub\\\\community\\\\.git\\\\index.lock''\")",
+      "Bash(npx svelte-kit:*)"
     ]
   }
 }
