@@ -96,16 +96,19 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
             }
 
             // OAuth providers (Google, Facebook)
-            // 1. קודם JWT — יוצר users-permissions user אם לא קיים
             const tempId = `${account.provider}_${account.providerAccountId}`;
-            const strapiJwt = await getOrCreateStrapiJwt(user.email, tempId);
-            if (strapiJwt) (user as { strapiJwt?: string }).strapiJwt = strapiJwt;
-
-            // 2. בדוק אם קיים community-user עם אותו אימייל (מיזוג חשבונות)
-            const existingByEmail = user.email ? await getUserByEmail(user.email, strapiJwt ?? undefined) : null;
-            const stableId = existingByEmail?.id ?? tempId;
+            let strapiJwt: string | null = null;
+            let stableId = tempId;
 
             try {
+                // 1. קודם JWT
+                strapiJwt = await getOrCreateStrapiJwt(user.email, tempId);
+                if (strapiJwt) (user as { strapiJwt?: string }).strapiJwt = strapiJwt;
+
+                // 2. בדוק אם קיים community-user עם אותו אימייל (מיזוג חשבונות)
+                const existingByEmail = user.email ? await getUserByEmail(user.email, strapiJwt ?? undefined) : null;
+                stableId = existingByEmail?.id ?? tempId;
+
                 // 3. upsert עם JWT
                 await upsertUser({
                     id:         stableId,
@@ -114,15 +117,13 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
                     avatar_url: user.image,
                     provider:   account.provider,
                 }, strapiJwt ?? undefined);
-
-                user.id = stableId;
-                return true;
             } catch (error) {
-                console.error('Failed to upsert user:', error);
-                // אפשר להמשיך גם אם upsert נכשל
-                user.id = stableId;
-                return true;
+                console.error('[auth] OAuth community-user sync failed:', error);
+                // ממשיכים — ההתחברות לא תיכשל בגלל community-user
             }
+
+            user.id = stableId;
+            return true;
         },
 
         async jwt({ token, user, account }) {
