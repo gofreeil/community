@@ -710,7 +710,8 @@
 					</div>
 				</div>
 
-				<!-- עסק -->
+				<!-- עסק + סטטוס משפחתי + תאריך לידה — שורה אחת בדסקטופ -->
+				<div class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-5">
 				<div>
 					<label for="p-business" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("business_label")}</label>
 					{#if isEditing}
@@ -743,27 +744,27 @@
 					<p class="text-gray-600 text-xs mt-1 px-1">{tFn("not_shown_public")}</p>
 				</div>
 
-				<!-- תאריך לידה -->
+				<!-- תאריך לידה — באותה שורה עם עסק וסטטוס -->
 				<div>
 					<label for="p-birth-day" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("birth_date_label")}</label>
 					{#if isEditing}
-						<div class="flex gap-2">
+						<div class="flex gap-1.5">
 							<select id="p-birth-day" name="birth_day" bind:value={birthDay}
-								class="flex-1 bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl px-3 py-3 text-white text-sm outline-none appearance-none text-center">
+								class="flex-1 bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl px-2 py-3 text-white text-sm outline-none appearance-none text-center">
 								<option value="">{tFn("birth_day")}</option>
 								{#each Array.from({length: 31}, (_, i) => i + 1) as d}
 									<option value={String(d)}>{d}</option>
 								{/each}
 							</select>
 							<select name="birth_month" bind:value={birthMonth}
-								class="flex-[2] bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl px-3 py-3 text-white text-sm outline-none appearance-none text-center">
+								class="flex-[1.5] bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl px-2 py-3 text-white text-sm outline-none appearance-none text-center">
 								<option value="">{tFn("birth_month")}</option>
 								{#each tFn("months_list").split(",") as month, i}
 									<option value={String(i + 1)}>{month}</option>
 								{/each}
 							</select>
 							<select name="birth_year" bind:value={birthYear}
-								class="flex-[1.5] bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl px-3 py-3 text-white text-sm outline-none appearance-none text-center">
+								class="flex-1 bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl px-2 py-3 text-white text-sm outline-none appearance-none text-center">
 								<option value="">{tFn("birth_year")}</option>
 								{#each Array.from({length: 100}, (_, i) => new Date().getFullYear() - i) as y}
 									<option value={String(y)}>{y}</option>
@@ -775,6 +776,7 @@
 					{/if}
 					<p class="text-gray-600 text-xs mt-1 px-1">{tFn("not_shown_public")}</p>
 				</div>
+				</div>
 
 				<!-- התראות -->
 				<div class="md:col-span-2">
@@ -784,13 +786,13 @@
 							<div class="relative" dir="ltr">
 								<input type="checkbox" bind:checked={notifications}
 									class="sr-only peer" />
-								<div class="w-11 h-6 bg-gray-700 rounded-full peer-checked:bg-purple-600
+								<div class="w-12 h-7 bg-gray-700 rounded-full peer-checked:bg-green-500
 								            transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5
-								            after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all
-								            peer-checked:after:translate-x-5"></div>
+								            after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all
+								            peer-checked:after:translate-x-5 shadow-inner"></div>
 							</div>
-							<span class="text-sm text-gray-300 group-hover:text-white transition-colors">
-								מסכים לקבל התראות מחברי השכונה בשעת צרה
+							<span class="text-sm transition-colors {notifications ? 'text-green-400 font-bold' : 'text-gray-500'}">
+								{notifications ? '✅ מסכים לקבל התראות מחברי השכונה בשעת צרה' : '❌ לא מסכים לקבל התראות'}
 							</span>
 						</label>
 						<input type="hidden" name="notifications" value={notifications ? 'true' : 'false'} />
