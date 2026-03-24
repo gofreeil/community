@@ -4,24 +4,24 @@
 // ============================================================
 
 const STRAPI_URL   = process.env.STRAPI_URL   ?? 'http://localhost:1337';
-const STRAPI_TOKEN = process.env.STRAPI_TOKEN ?? '';
 
-function getHeaders(): HeadersInit {
+function getHeaders(jwt?: string): HeadersInit {
     return {
         'Content-Type': 'application/json',
-        ...(STRAPI_TOKEN ? { Authorization: `Bearer ${STRAPI_TOKEN}` } : {}),
+        ...(jwt ? { Authorization: `Bearer ${jwt}` } : {}),
     };
 }
 
 export async function strapiGet<T = unknown>(
     path: string,
-    params?: Record<string, string>
+    params?: Record<string, string>,
+    jwt?: string
 ): Promise<T> {
     const url = new URL(STRAPI_URL + path);
     if (params) {
         Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
     }
-    const res = await fetch(url.toString(), { headers: getHeaders() });
+    const res = await fetch(url.toString(), { headers: getHeaders(jwt) });
     if (!res.ok) {
         const text = await res.text();
         throw new Error(`[Strapi] GET ${path} → ${res.status}: ${text}`);
@@ -29,10 +29,10 @@ export async function strapiGet<T = unknown>(
     return res.json() as Promise<T>;
 }
 
-export async function strapiPost<T = unknown>(path: string, body: unknown): Promise<T> {
+export async function strapiPost<T = unknown>(path: string, body: unknown, jwt?: string): Promise<T> {
     const res = await fetch(STRAPI_URL + path, {
         method:  'POST',
-        headers: getHeaders(),
+        headers: getHeaders(jwt),
         body:    JSON.stringify(body),
     });
     if (!res.ok) {
@@ -43,12 +43,9 @@ export async function strapiPost<T = unknown>(path: string, body: unknown): Prom
 }
 
 export async function strapiPut<T = unknown>(path: string, body: unknown, jwt?: string): Promise<T> {
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    const token = jwt ?? STRAPI_TOKEN;
-    if (token) headers['Authorization'] = `Bearer ${token}`;
     const res = await fetch(STRAPI_URL + path, {
         method:  'PUT',
-        headers,
+        headers: getHeaders(jwt),
         body:    JSON.stringify(body),
     });
     if (!res.ok) {

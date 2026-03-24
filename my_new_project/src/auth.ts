@@ -78,39 +78,50 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
         async signIn({ user, account }) {
             if (!account || !user) return false;
 
-            // Credentials provider — upsert כבר נעשה ב-authorize
-            // קבל JWT של Strapi גם עבור credentials user
+            // Credentials provider
             if (account.provider === 'credentials') {
                 const stableId = user.id ?? `credentials_${user.email}`;
+                // קודם JWT, אחר כך upsert עם ה-JWT
                 const strapiJwt = await getOrCreateStrapiJwt(user.email, stableId);
-                if (strapiJwt) (user as { strapiJwt?: string }).strapiJwt = strapiJwt;
+                if (strapiJwt) {
+                    (user as { strapiJwt?: string }).strapiJwt = strapiJwt;
+                    try {
+                        await upsertUser({
+                            id: stableId, name: user.name, email: user.email,
+                            avatar_url: user.image, provider: 'credentials',
+                        }, strapiJwt);
+                    } catch (e) { console.warn('[auth] upsert credentials user failed:', e); }
+                }
                 return true;
             }
 
-            // בדוק אם קיים משתמש עם אותו אימייל (קישור חשבונות)
-            const existingByEmail = user.email ? await getUserByEmail(user.email) : null;
+            // OAuth providers (Google, Facebook)
+            // 1. קודם JWT — יוצר users-permissions user אם לא קיים
+            const tempId = `${account.provider}_${account.providerAccountId}`;
+            const strapiJwt = await getOrCreateStrapiJwt(user.email, tempId);
+            if (strapiJwt) (user as { strapiJwt?: string }).strapiJwt = strapiJwt;
 
-            // אם קיים — השתמש ב-ID שלו (מיזוג חשבונות)
-            // אם לא — צור מזהה חדש: provider_providerAccountId
-            const stableId = existingByEmail?.id ?? `${account.provider}_${account.providerAccountId}`;
+            // 2. בדוק אם קיים community-user עם אותו אימייל (מיזוג חשבונות)
+            const existingByEmail = user.email ? await getUserByEmail(user.email, strapiJwt ?? undefined) : null;
+            const stableId = existingByEmail?.id ?? tempId;
 
             try {
+                // 3. upsert עם JWT
                 await upsertUser({
                     id:         stableId,
                     name:       user.name,
                     email:      user.email,
                     avatar_url: user.image,
                     provider:   account.provider,
-                });
-                // נעביר את ה-stableId לתוך token דרך jwt callback
+                }, strapiJwt ?? undefined);
+
                 user.id = stableId;
-                // קבל JWT של Strapi עבור OAuth user ושמור ב-session
-                const strapiJwt = await getOrCreateStrapiJwt(user.email, stableId);
-                if (strapiJwt) (user as { strapiJwt?: string }).strapiJwt = strapiJwt;
                 return true;
             } catch (error) {
                 console.error('Failed to upsert user:', error);
-                return false;
+                // אפשר להמשיך גם אם upsert נכשל
+                user.id = stableId;
+                return true;
             }
         },
 
@@ -130,7 +141,7 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
             // שלוף role, neighborhood, banned מהדאטאבייס (בכל refresh של token)
             if (token.dbUserId) {
                 try {
-                    const dbUser = await getUserById(token.dbUserId as string);
+                    const dbUser = await getUserById(token.dbUserId as string, token.strapiJwt as string);
                     if (dbUser) {
                         token.role = dbUser.role;
                         token.neighborhood = dbUser.neighborhood;

@@ -355,16 +355,16 @@ export async function addFundContribution(neighborhood: string, totalPayment: nu
 // ---- Users (Strapi — cloud-persistent) ----
 // ============================================================
 
-async function findStrapiUser(externalId: string): Promise<StrapiCommunityUser | undefined> {
+async function findStrapiUser(externalId: string, jwt?: string): Promise<StrapiCommunityUser | undefined> {
     const res = await strapiGet<{ data: StrapiCommunityUser[] }>('/api/community-users', {
         'filters[external_id][$eq]': externalId,
         'pagination[limit]':         '1',
-    });
+    }, jwt);
     return res.data?.[0];
 }
 
-export async function upsertUser(data: UpsertUserData): Promise<void> {
-    const existing = await findStrapiUser(data.id);
+export async function upsertUser(data: UpsertUserData, jwt?: string): Promise<void> {
+    const existing = await findStrapiUser(data.id, jwt);
     if (!existing) {
         await strapiPost('/api/community-users', {
             data: {
@@ -375,32 +375,31 @@ export async function upsertUser(data: UpsertUserData): Promise<void> {
                 provider:    data.provider    ?? null,
                 publishedAt: new Date().toISOString(),
             },
-        });
+        }, jwt);
     } else {
         const updates: Record<string, unknown> = {};
         if (data.name  && !existing.name)  updates.name  = data.name;
         if (data.email && !existing.email) updates.email = data.email;
         if (data.provider && !existing.provider) updates.provider = data.provider;
-        // אל תדרוס תמונה מותאמת אישית (base64) בתמונת גוגל
         if (data.avatar_url && !existing.avatar_url?.startsWith('data:')) {
             updates.avatar_url = data.avatar_url;
         }
         if (Object.keys(updates).length > 0) {
-            await strapiPut(`/api/community-users/${existing.documentId}`, { data: updates });
+            await strapiPut(`/api/community-users/${existing.documentId}`, { data: updates }, jwt);
         }
     }
 }
 
-export async function getUserById(id: string): Promise<DbUser | undefined> {
-    const u = await findStrapiUser(id);
+export async function getUserById(id: string, jwt?: string): Promise<DbUser | undefined> {
+    const u = await findStrapiUser(id, jwt);
     return u ? mapStrapiUser(u) : undefined;
 }
 
-export async function getUserByEmail(email: string): Promise<DbUser | undefined> {
+export async function getUserByEmail(email: string, jwt?: string): Promise<DbUser | undefined> {
     const res = await strapiGet<{ data: StrapiCommunityUser[] }>('/api/community-users', {
         'filters[email][$eq]': email,
         'pagination[limit]':   '1',
-    });
+    }, jwt);
     const u = res.data?.[0];
     return u ? mapStrapiUser(u) : undefined;
 }

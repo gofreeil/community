@@ -11,7 +11,8 @@ export const load: PageServerLoad = async (event) => {
 
     if (session?.user?.id) {
         try {
-            const user = await getUserById(session.user.id);
+            const jwt = event.cookies.get('strapi_jwt');
+            const user = await getUserById(session.user.id, jwt);
             if (user?.neighborhood) userNeighborhood = user.neighborhood;
             if (user?.city)         userCity         = user.city;
         } catch {}

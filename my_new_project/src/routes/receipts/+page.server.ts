@@ -11,7 +11,8 @@ export const load: PageServerLoad = async (event) => {
 
     let user = null;
     try {
-        user = await getUserById(session.user.id);
+        const jwt = event.cookies.get('strapi_jwt');
+        user = await getUserById(session.user.id, jwt);
     } catch (e) {
         console.warn('[receipts] getUserById failed:', e);
     }

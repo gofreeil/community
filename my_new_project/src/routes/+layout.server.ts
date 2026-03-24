@@ -13,7 +13,8 @@ export const load: LayoutServerLoad = async (event) => {
     let layoutUser = null;
     if (session?.user?.id) {
         try {
-            layoutUser = await getUserById(session.user.id as string);
+            const jwt = event.cookies.get('strapi_jwt');
+            layoutUser = await getUserById(session.user.id as string, jwt);
         } catch { /* שקט */ }
     }
 

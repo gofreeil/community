@@ -34,7 +34,8 @@ export const load: PageServerLoad = async (event) => {
     let user: Awaited<ReturnType<typeof getUserById>>;
     let items: Awaited<ReturnType<typeof getItemsByUserId>> = [];
     try {
-        user  = await getUserById(session.user.id);
+        const jwt = event.cookies.get('strapi_jwt');
+        user  = await getUserById(session.user.id, jwt);
     } catch (e) {
         console.warn('[profile] getUserById failed:', e);
     }
@@ -56,7 +57,7 @@ export const load: PageServerLoad = async (event) => {
                 avatar_url: session.user.image ?? null,
                 provider,
             });
-            user = await getUserById(session.user.id);
+            user = await getUserById(session.user.id, jwt);
         } catch (e) {
             console.warn('[profile] auto-upsert failed:', e);
         }
