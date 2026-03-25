@@ -214,6 +214,12 @@
 	let showRingTooltip = $state(false);
 	let ringTipX = $state(0);
 	let ringTipY = $state(0);
+	function scrollToEditProfile() {
+		isEditing = true;
+		setTimeout(() => {
+			document.getElementById('sec-edit-profile')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		}, 50);
+	}
 	function handleRingMouseMove(e: MouseEvent) {
 		ringTipX = e.clientX + 14;
 		ringTipY = e.clientY + 20;
@@ -365,7 +371,10 @@
 					onmouseenter={() => (showRingTooltip = true)}
 					onmouseleave={() => (showRingTooltip = false)}
 					onmousemove={handleRingMouseMove}
-					role="img"
+					onclick={scrollToEditProfile}
+					onkeydown={(e) => { if (e.key === "Enter" || e.key === " ") scrollToEditProfile(); }}
+					role="button"
+					tabindex={0}
 					aria-label={tFn(nextTipKey)}
 				>
 					{#if avatarPreview}
@@ -467,7 +476,7 @@
 	</div>
 
 	<!-- ===== קומה 2: פרטי פרופיל ===== -->
-	<div class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 mb-6 shadow-xl overflow-hidden
+	<div id="sec-edit-profile" class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 mb-6 shadow-xl overflow-hidden
 	            before:absolute before:inset-x-0 before:top-0 before:h-24 before:rounded-t-3xl
 	            before:bg-gradient-to-b before:from-white/8 before:to-transparent
 	            before:transition-all before:duration-300 before:pointer-events-none
