@@ -80,7 +80,7 @@
                 class="bg-gradient-to-r from-blue-600 to-cyan-600 p-3 text-center"
             >
                 <p class="text-white font-bold text-xs leading-tight">
-                    הצטרף לווצאפ וועד שכונתך ותמוך במהפכת משילות העם על המוסדות!
+                    הכר והצטרף למהפכת המשילות של העם על מוסדותיו!
                 </p>
             </div>
         </a>
