@@ -46,7 +46,7 @@
 			const el = document.getElementById('sec-messages');
 			if (!el) return;
 			const top = el.getBoundingClientRect().top + window.scrollY - 80;
-			window.scrollTo({ top, behavior: 'smooth' });
+			slowScrollTo(top);
 		}, 50);
 	}
 	let saveSuccess = $state(false);
@@ -216,6 +216,32 @@
 	let showRingTooltip = $state(false);
 	let ringTipX = $state(0);
 	let ringTipY = $state(0);
+	function slowScrollTo(targetTop: number, duration = 800) {
+		const start = window.scrollY;
+		const dist = targetTop - start;
+		const startTime = performance.now();
+		function step(now: number) {
+			const elapsed = now - startTime;
+			const progress = Math.min(elapsed / duration, 1);
+			// easeInOutCubic
+			const ease = progress < 0.5
+				? 4 * progress * progress * progress
+				: 1 - Math.pow(-2 * progress + 2, 3) / 2;
+			window.scrollTo(0, start + dist * ease);
+			if (progress < 1) requestAnimationFrame(step);
+		}
+		requestAnimationFrame(step);
+	}
+	function scrollToLevels() {
+		if (showLevels) return;
+		showLevels = true;
+		setTimeout(() => {
+			const el = document.getElementById('sec-levels');
+			if (!el) return;
+			const top = el.getBoundingClientRect().top + window.scrollY - 80 + 120;
+			slowScrollTo(top);
+		}, 50);
+	}
 	function scrollToEditProfile() {
 		if (profileCompletion >= 100) return;
 		if (isEditing) return;
@@ -224,7 +250,7 @@
 			const el = document.getElementById('sec-edit-profile');
 			if (!el) return;
 			const top = el.getBoundingClientRect().top + window.scrollY - 80;
-			window.scrollTo({ top, behavior: 'smooth' });
+			slowScrollTo(top);
 		}, 50);
 	}
 	function handleRingMouseMove(e: MouseEvent) {
@@ -458,12 +484,14 @@
 						{/if}
 					</p>
 				</div>
-				<div class="flex items-center gap-1.5">
+				<div class="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity"
+					onclick={scrollToLevels}
+					onkeydown={(e) => { if (e.key === "Enter" || e.key === " ") scrollToLevels(); }}
+					role="button"
+					tabindex={0}>
 					<span class="text-white/50 text-base font-bold">דרגה:</span>
 					{#if isUserAdmin}
-						<a href="/admin" class="text-red-400 text-base font-black hover:text-red-300 transition-colors no-underline" title="ערוך את הפרטים בשכונה שלך">
-							{(data.user as any)?.role === 'super_admin' ? 'מנהל ראשי 👑' : 'אדמין שכונתי 🛡️'}
-						</a>
+						<span class="text-red-400 text-base font-black">{(data.user as any)?.role === 'super_admin' ? 'מנהל ראשי 👑' : 'אדמין שכונתי 🛡️'}</span>
 					{:else if userLevel >= 2}
 						<span class="text-emerald-400 text-base font-black">משתמש</span>
 					{:else}
@@ -843,7 +871,7 @@
 	</div>
 
 	<!-- ===== קומה 3: דרגה והרשאות ===== -->
-	<div class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl mb-6 overflow-hidden
+	<div id="sec-levels" class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl mb-6 overflow-hidden
 	            before:absolute before:inset-x-0 before:top-0 before:h-24 before:rounded-t-3xl
 	            before:bg-gradient-to-b before:from-white/8 before:to-transparent
 	            before:transition-all before:duration-300 before:pointer-events-none

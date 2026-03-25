@@ -29,6 +29,15 @@
 		<div class="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-purple-500/10 blur-lg"></div>
 	</div>
 
+	<!-- קומת שיטת התגמול -->
+	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 mb-8 shadow-xl">
+		<h2 class="text-lg font-black text-white mb-4 flex items-center gap-2">
+			<span class="w-6 h-6 rounded-full bg-yellow-500/20 text-yellow-400 text-xs font-black flex items-center justify-center">🏆</span>
+			שיטת התגמול
+		</h2>
+		<p class="text-gray-400 text-sm">תוכן בקרוב...</p>
+	</div>
+
 	<!-- כותרת רשימה -->
 	<h2 class="text-lg font-black text-white mb-4 flex items-center gap-2">
 		<span class="w-5 h-5 rounded-full bg-purple-600 text-white text-xs font-black flex items-center justify-center">₪</span>
