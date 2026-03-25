@@ -29,15 +29,6 @@
 		<div class="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-purple-500/10 blur-lg"></div>
 	</div>
 
-	<!-- קומת שיטת התגמול -->
-	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 mb-8 shadow-xl">
-		<h2 class="text-lg font-black text-white mb-4 flex items-center gap-2">
-			<span class="w-6 h-6 rounded-full bg-yellow-500/20 text-yellow-400 text-xs font-black flex items-center justify-center">🏆</span>
-			שיטת התגמול
-		</h2>
-		<p class="text-gray-400 text-sm">תוכן בקרוב...</p>
-	</div>
-
 	<!-- כותרת רשימה -->
 	<h2 class="text-lg font-black text-white mb-4 flex items-center gap-2">
 		<span class="w-5 h-5 rounded-full bg-purple-600 text-white text-xs font-black flex items-center justify-center">₪</span>
@@ -65,5 +56,18 @@
 			{/each}
 		</div>
 	{/if}
+
+	<!-- קומת שיטת התגמול -->
+	<div class="mt-8 rounded-3xl p-6 shadow-xl relative overflow-hidden"
+		style="background: linear-gradient(135deg, #1a1035 0%, #0f172a 60%); border: 1px solid rgba(234,179,8,0.25);">
+		<div class="absolute inset-0 opacity-10 pointer-events-none"
+			style="background: radial-gradient(ellipse at 30% 50%, #eab308 0%, transparent 60%);"></div>
+		<h2 class="relative text-lg font-black text-white mb-4 flex items-center gap-2">
+			<span class="w-7 h-7 rounded-full flex items-center justify-center text-sm"
+				style="background: linear-gradient(135deg, #eab308, #f59e0b);">🏆</span>
+			שיטת התגמול
+		</h2>
+		<p class="relative text-gray-400 text-sm">תוכן בקרוב...</p>
+	</div>
 
 </div>
