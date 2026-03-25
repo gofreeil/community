@@ -836,9 +836,9 @@
 			class="relative flex items-center justify-between cursor-pointer select-none transition-all
 			       {showLevels ? 'mb-5' : ''}"
 			onclick={() => { if (showLevels) { showLevels = false; } else { showLevels = true; } }}
-			onmouseenter={() => { secTipShow = true; secTipIsOpen = showMyInfo; }}
+			onmouseenter={() => { secTipShow = true; secTipIsOpen = showLevels; }}
 			onmouseleave={() => (secTipShow = false)}
-			onmousemove={(e) => handleSecMouseMove(e, showMyInfo)}
+			onmousemove={(e) => handleSecMouseMove(e, showLevels)}
 			role="button"
 			tabindex={0}
 			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') showLevels = !showLevels; }}
