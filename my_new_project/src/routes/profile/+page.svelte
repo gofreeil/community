@@ -42,9 +42,11 @@
 	function scrollToTop() { window.scrollTo({ top: 0, behavior: "smooth" }); }
 	function scrollToMessages() {
 		showMessages = true;
-		// Wait for DOM to render the messages section, then scroll
 		setTimeout(() => {
-			document.getElementById('sec-messages')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			const el = document.getElementById('sec-messages');
+			if (!el) return;
+			const top = el.getBoundingClientRect().top + window.scrollY - 80;
+			window.scrollTo({ top, behavior: 'smooth' });
 		}, 50);
 	}
 	let saveSuccess = $state(false);
@@ -215,9 +217,14 @@
 	let ringTipX = $state(0);
 	let ringTipY = $state(0);
 	function scrollToEditProfile() {
+		if (profileCompletion >= 100) return;
+		if (isEditing) return;
 		isEditing = true;
 		setTimeout(() => {
-			document.getElementById('sec-edit-profile')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			const el = document.getElementById('sec-edit-profile');
+			if (!el) return;
+			const top = el.getBoundingClientRect().top + window.scrollY - 80;
+			window.scrollTo({ top, behavior: 'smooth' });
 		}, 50);
 	}
 	function handleRingMouseMove(e: MouseEvent) {
@@ -1175,7 +1182,7 @@
 				{profileCompletion}% הושלם
 			</div>
 			<div class="text-white text-xs leading-snug">
-				{tFn(nextTipKey)}
+				{profileCompletion >= 100 ? 'לעריכת פרופיל' : tFn(nextTipKey)}
 			</div>
 		</div>
 	</div>
