@@ -176,7 +176,7 @@
                 class="bg-gradient-to-r from-amber-600 to-orange-600 p-3 text-center"
             >
                 <p class="text-white font-bold text-xs leading-tight">
-                    התחבר עם קבוצת המשקיעים שלנו
+                    הצטרף אל מועדון המשקיעים של מהפכת הכלכלה המבוזרת!
                 </p>
             </div>
         </a>

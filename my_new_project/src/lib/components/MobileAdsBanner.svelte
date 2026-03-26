@@ -24,7 +24,7 @@
         },
         {
             title: 'השקעות קבוצתיות',
-            summary: 'התחבר עם קבוצת המשקיעים',
+            summary: 'הצטרף אל מועדון המשקיעים של מהפכת הכלכלה המבוזרת!',
             url: 'https://www.melecshop.com/page/free',
             color: 'from-amber-600 to-orange-600'
         },
