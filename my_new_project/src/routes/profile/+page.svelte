@@ -238,7 +238,7 @@
 		setTimeout(() => {
 			const el = document.getElementById('sec-levels');
 			if (!el) return;
-			const top = el.getBoundingClientRect().top + window.scrollY - 80 + 120;
+			const top = el.getBoundingClientRect().top + window.scrollY - 80;
 			slowScrollTo(top);
 		}, 50);
 	}
