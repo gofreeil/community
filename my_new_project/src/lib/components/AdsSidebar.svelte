@@ -281,9 +281,9 @@
                     ></div>
                     <div class="relative z-10 text-center px-4">
                         <h3 class="text-white font-bold text-lg mb-2">
-                            ביקורת על העיריה
+                            יותר אתה לא לבד!
                         </h3>
-                        <p class="text-gray-200 text-sm">הזכות לחיות</p>
+                        <p class="text-gray-200 text-sm font-bold">מנצחים את הבירוקרטיה!</p>
                     </div>
                 </div>
             </div>
