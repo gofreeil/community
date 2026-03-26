@@ -25,11 +25,19 @@
 	let showLevels    = $state(false);
 	let showMessages  = $state(false);
 	let showMyInfo    = $state(true);
-	let messages = $state([
-		{ from: 'מערכת', text: 'ברוך הבא לקהילה! השלם את הפרופיל שלך.', time: 'לפני 2 ימים', read: false },
-		{ from: 'מנהל', text: 'הצטרפות שלך אושרה. כעת תוכל לפרסם תוכן.', time: 'לפני 5 ימים', read: false },
-		{ from: 'מערכת', text: 'יש עדכון חדש זמין בפרופיל שלך.', time: 'לפני שבוע', read: false },
-	]);
+	let messages = $state(
+		(data.messages ?? []).length > 0
+			? (data.messages ?? []).map((m: import('$lib/server/db').DbItem) => ({
+				from: m.label ?? 'מערכת',
+				text: m.description ?? '',
+				time: new Date(m.created_at).toLocaleDateString('he-IL'),
+				read: false,
+			}))
+			: [
+				{ from: 'מערכת', text: 'ברוך הבא לקהילה! השלם את הפרופיל שלך.', time: 'לפני 2 ימים', read: false },
+				{ from: 'מנהל', text: 'הצטרפות שלך אושרה. כעת תוכל לפרסם תוכן.', time: 'לפני 5 ימים', read: false },
+			]
+	);
 	let unreadCount = $derived(messages.filter(m => !m.read).length);
 	let secTipShow    = $state(false);
 	let secTipX       = $state(0);
@@ -1197,6 +1205,46 @@
 		{/if}
 	</div>
 
+	<!-- ===== קומה 6: הודעה למערכת ===== -->
+	<div class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl overflow-hidden
+	            before:absolute before:inset-x-0 before:top-0 before:h-24 before:rounded-t-3xl
+	            before:bg-gradient-to-b before:from-white/8 before:to-transparent
+	            before:transition-all before:duration-300 before:pointer-events-none
+	            hover:before:from-white/18">
+		<h2 class="relative text-xl font-black text-white flex items-center gap-2 mb-5">
+			<span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+				style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">6</span>
+			הודעה למערכת
+		</h2>
+		<p class="relative text-gray-400 text-sm mb-5">כתוב לנו כיצד לשפר את האתר עבורך — הצוות של יוצאים לחירות יקרא ויחזור אליך.</p>
+
+		{#if form?.feedbackSuccess}
+			<div class="relative bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-4 text-emerald-400 text-sm font-bold text-center">
+				✅ פנייתך נשלחה בהצלחה! נחזור אליך בהקדם.
+			</div>
+		{:else}
+			<form method="POST" action="?/sendFeedback" use:enhance class="relative flex flex-col gap-4">
+				<textarea
+					name="feedback_text"
+					rows="5"
+					placeholder="כתוב כאן את הצעתך / תלונתך / בקשתך..."
+					class="w-full bg-[#1e293b] border border-white/10 rounded-2xl px-4 py-3 text-white text-sm
+					       placeholder:text-gray-600 focus:outline-none focus:border-purple-500/50 resize-none
+					       transition-colors"
+					required
+					minlength="5"
+				></textarea>
+				{#if form?.feedbackError}
+					<p class="text-red-400 text-xs">{form.feedbackError}</p>
+				{/if}
+				<button type="submit"
+					class="self-end bg-gradient-to-l from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500
+					       text-white font-bold text-sm px-6 py-2.5 rounded-full transition-all shadow-lg">
+					שלח פנייה ←
+				</button>
+			</form>
+		{/if}
+	</div>
 
 </div>
 

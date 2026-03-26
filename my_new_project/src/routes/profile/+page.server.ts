@@ -1,6 +1,6 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { getUserById, updateUserProfile, getItemsByUserId, upsertUser } from '$lib/server/db';
+import { getUserById, updateUserProfile, getItemsByUserId, upsertUser, getMessagesByUserId, createItem } from '$lib/server/db';
 import { citiesData } from '$lib/neighborhoodsData';
 
 export const load: PageServerLoad = async (event) => {
@@ -67,9 +67,17 @@ export const load: PageServerLoad = async (event) => {
             role: 'user' as const, banned: false,
           };
 
+    let messages: Awaited<ReturnType<typeof getMessagesByUserId>> = [];
+    try {
+        messages = await getMessagesByUserId(session.user.id);
+    } catch (e) {
+        console.warn('[profile] getMessagesByUserId failed:', e);
+    }
+
     return {
         user: resolvedUser,
         items: items ?? [],
+        messages,
         citiesData,
         oauth_image: session.user?.image ?? null,
     };
@@ -126,6 +134,44 @@ export const actions: Actions = {
             return { success: true };
         } catch {
             return fail(500, { error: 'שגיאה בעדכון הפרופיל' });
+        }
+    },
+
+    sendFeedback: async (event) => {
+        let session = null;
+        try { session = await event.locals.auth(); } catch {}
+        if (!session?.user?.id) throw redirect(302, '/login?redirect=/profile');
+
+        const formData = await event.request.formData();
+        const text = formData.get('feedback_text')?.toString().trim() ?? '';
+
+        if (!text || text.length < 5) {
+            return fail(400, { feedbackError: 'אנא כתוב הודעה של לפחות 5 תווים' });
+        }
+
+        try {
+            // שמור את הפנייה כפריט מסוג user_feedback
+            await createItem({
+                category:    'user_feedback',
+                label:       `פנייה מ-${session.user.name ?? session.user.id}`,
+                description: text,
+                user_id:     session.user.id,
+                extra_fields: {
+                    from_name:  session.user.name  ?? '',
+                    from_email: session.user.email ?? '',
+                    sent_at:    new Date().toISOString(),
+                },
+            });
+            // שלח הודעת אישור לתיבת ההודעות של המשתמש
+            await createItem({
+                category:    'message',
+                label:       'פנייתך התקבלה',
+                description: 'תודה על פנייתך! הצוות של יוצאים לחירות יחזור אליך בהקדם.',
+                user_id:     session.user.id,
+            });
+            return { feedbackSuccess: true };
+        } catch {
+            return fail(500, { feedbackError: 'שגיאה בשליחת הפנייה, נסה שוב' });
         }
     },
 };
