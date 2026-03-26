@@ -118,7 +118,8 @@
                 style="background: linear-gradient(to right, #3d5a3d, #2d4a2d);"
             >
                 <p class="text-white font-bold text-xs leading-tight">
-                    הצטרף לקבוצת הרכישה שלנו והוזל מיד את ההוצאות החודשיות שלך!
+                    הוזל מיד את ההוצאות החודשיות שלך
+                    כוחנו באחדותנו
                 </p>
             </div>
         </a>
