@@ -230,7 +230,8 @@
             <div class="lg:w-1/4 relative">
                 <div class="absolute top-0 right-0 left-0 bottom-8 flex flex-col gap-2 overflow-hidden">
                     <!-- 1. Events Board -->
-                    <div class="flex-1 min-h-0 rounded-2xl bg-[#0f172a] border border-2 border-green-500/30 overflow-hidden shadow-2xl flex flex-col">
+                    <div class="flex-1 min-h-0 flex flex-col gap-1">
+                    <div class="rounded-2xl bg-[#0f172a] border border-2 border-green-500/30 overflow-hidden shadow-2xl flex flex-col flex-1 min-h-0">
                     <div class="bg-gradient-to-r from-green-600 to-teal-600 p-3 flex items-center justify-between flex-shrink-0">
                         <h3 class="text-sm font-bold text-white flex items-center gap-2">
                             <span class="text-base">🗓️</span>
@@ -281,12 +282,11 @@
                         <!-- fade-out overlay -->
                         <div class="pointer-events-none absolute bottom-0 left-0 right-0 h-20 rounded-b-xl" style="background: linear-gradient(to bottom, transparent, #0f172a 90%);"></div>
                     </div>
-                    <div class="px-3 pb-3 flex-shrink-0">
-                        <a href="/events" class="block text-center bg-green-600/20 hover:bg-green-600/40 text-green-300 hover:text-white text-xs font-bold py-2 rounded-lg transition-all border border-green-500/30">
-                            לכל האירועים ←
-                        </a>
                     </div>
-                </div>
+                    <a href="/events" class="block text-center text-green-400 hover:text-white text-xs font-bold transition-colors underline underline-offset-2 py-1 flex-shrink-0">
+                        לכל האירועים...
+                    </a>
+                    </div>
 
                 <!-- 2. Lost and Found -->
                 <div class="flex-1 min-h-0 overflow-hidden">
@@ -338,7 +338,8 @@
             <JerusalemMap bind:showNeighborhoodsMenu dbItems={data.dbItems} />
             <div class="grid grid-cols-2 gap-2">
                 <!-- Left: Events Board -->
-                <div class="rounded-2xl bg-[#0f172a] border border-blue-500/30 overflow-hidden shadow-2xl flex flex-col h-full">
+                <div class="flex flex-col gap-1">
+                <div class="rounded-2xl bg-[#0f172a] border border-blue-500/30 overflow-hidden shadow-2xl flex flex-col">
                     <div class="bg-gradient-to-r from-green-600 to-teal-600 p-2 flex items-center justify-between flex-shrink-0 h-12">
                         <h3 class="text-sm font-bold text-white flex items-center gap-1">
                             <span class="text-base">🗓️</span>
@@ -385,6 +386,10 @@
                             </div>
                         {/each}
                     </div>
+                </div>
+                <a href="/events" class="block text-center text-green-400 hover:text-white text-[10px] font-bold transition-colors underline underline-offset-2 py-1">
+                    לכל האירועים...
+                </a>
                 </div>
                 <!-- Right: Lost and Found -->
                 <div>

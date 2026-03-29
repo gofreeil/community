@@ -138,19 +138,19 @@
             {/each}
             <a
                 href="/lost-and-found"
-                class="block text-center bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 hover:text-white text-xs font-bold py-2 rounded-lg transition-all border border-blue-500/30 mt-1"
+                class="block text-center text-blue-400 hover:text-white text-xs font-bold transition-colors underline underline-offset-2 py-2"
             >
-                ללוח המלא ←
+                ללוח המלא...
             </a>
         </div>
 
         <!-- Mobile link -->
-        <div class="mt-2 md:hidden text-center px-3">
+        <div class="mt-2 md:hidden text-center">
             <a
                 href="/lost-and-found"
-                class="block text-center bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 hover:text-white text-xs font-bold py-2 rounded-lg transition-all border border-blue-500/30"
+                class="text-blue-400 hover:text-white text-[10px] font-bold transition-colors underline underline-offset-2"
             >
-                ללוח המלא ←
+                ללוח המלא...
             </a>
         </div>
     </div>
