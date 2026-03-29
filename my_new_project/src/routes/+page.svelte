@@ -373,8 +373,7 @@
             <JerusalemMap bind:showNeighborhoodsMenu dbItems={data.dbItems} />
             <div class="grid grid-cols-2 gap-2">
                 <!-- Left: Events Board -->
-                <div class="flex flex-col gap-1">
-                <div class="rounded-2xl bg-[#0f172a] border border-blue-500/30 overflow-hidden shadow-2xl flex flex-col">
+                <div class="rounded-2xl bg-[#0f172a] border border-blue-500/30 overflow-hidden shadow-2xl flex flex-col self-start">
                     <div class="bg-gradient-to-r from-green-600 to-teal-600 p-2 flex items-center justify-between flex-shrink-0 h-12">
                         <h3 class="text-sm font-bold text-white flex items-center gap-1">
                             <span class="text-base">🗓️</span>
@@ -423,10 +422,9 @@
                         <!-- fade-out overlay on last event -->
                         <div class="pointer-events-none absolute bottom-0 left-0 right-0 h-16 rounded-b-xl" style="background: linear-gradient(to bottom, transparent, #0f172a 90%);"></div>
                     </div>
-                </div>
-                <a href="/events" class="block text-center text-blue-400 hover:text-white text-[10px] font-bold transition-colors underline underline-offset-2 py-1">
-                    לכל האירועים...
-                </a>
+                    <a href="/events" class="block text-center text-yellow-400 hover:text-white text-[10px] font-bold transition-colors underline underline-offset-2 py-1.5 flex-shrink-0">
+                        לכל האירועים...
+                    </a>
                 </div>
                 <!-- Right: Lost and Found -->
                 <div>

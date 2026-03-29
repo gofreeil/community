@@ -138,7 +138,7 @@
             {/each}
             <a
                 href="/lost-and-found"
-                class="block text-center text-blue-400 hover:text-white text-xs font-bold transition-colors underline underline-offset-2 py-2"
+                class="block text-center text-yellow-400 hover:text-white text-xs font-bold transition-colors underline underline-offset-2 py-2"
             >
                 ללוח המלא...
             </a>
@@ -148,7 +148,7 @@
         <div class="mt-2 md:hidden text-center">
             <a
                 href="/lost-and-found"
-                class="text-blue-400 hover:text-white text-[10px] font-bold transition-colors underline underline-offset-2"
+                class="text-yellow-400 hover:text-white text-[10px] font-bold transition-colors underline underline-offset-2"
             >
                 ללוח המלא...
             </a>
