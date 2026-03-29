@@ -90,6 +90,12 @@
             showLangDropdown = false;
         }
     }
+
+    function handleLangKeydown(event: KeyboardEvent) {
+        if (event.key === 'Escape') {
+            showLangDropdown = false;
+        }
+    }
 	// tFn: תרגום reactive — $t אסור ב-Svelte 5
 	let _loc = $state(get(locale));
 	$effect(() => locale.subscribe(l => (_loc = l)));
@@ -139,22 +145,33 @@
                         <div class="relative lang-dropdown-container">
                             <button
                                 onclick={() => (showLangDropdown = !showLangDropdown)}
+                                onkeydown={handleLangKeydown}
                                 class="flex items-center justify-center w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors"
                                 aria-label="בחר שפה"
+                                aria-haspopup="listbox"
+                                aria-expanded={showLangDropdown}
                             >
                                 <span
                                     class="fi fi-{languages.find((l) => l.code === $locale || $locale?.startsWith(l.code))?.flag || 'il'}"
                                     style="font-size: 1.4rem;"
+                                    aria-hidden="true"
                                 ></span>
                             </button>
                             {#if showLangDropdown}
-                                <div class="absolute left-0 z-[160] mt-2 w-36 rounded-lg bg-[#0f172a] border border-white/10 shadow-xl">
+                                <div
+                                    class="absolute left-0 z-[160] mt-2 w-36 rounded-lg bg-[#0f172a] border border-white/10 shadow-xl"
+                                    role="listbox"
+                                    aria-label="בחר שפה"
+                                >
                                     {#each languages as langOption}
                                         <button
                                             class="flex w-full items-center gap-3 px-3 py-2 text-right text-white hover:bg-white/10 transition-colors"
                                             onclick={() => { changeLang(langOption); showLangDropdown = false; }}
+                                            onkeydown={handleLangKeydown}
+                                            role="option"
+                                            aria-selected={$locale === langOption.code || $locale?.startsWith(langOption.code)}
                                         >
-                                            <span class="fi fi-{langOption.flag}" style="font-size: 1.2rem;"></span>
+                                            <span class="fi fi-{langOption.flag}" style="font-size: 1.2rem;" aria-hidden="true"></span>
                                             <span class="text-sm">{langOption.name}</span>
                                         </button>
                                     {/each}
@@ -163,15 +180,15 @@
                         </div>
 
                         {#if currentUser}
-                            <a href="/profile" class="relative group flex-shrink-0">
+                            <a href="/profile" class="relative group flex-shrink-0" aria-label="לאזור האישי – {currentUser.username ?? 'משתמש'}">
                                 {#if currentUser.avatar_url}
                                     <img
                                         src={currentUser.avatar_url}
-                                        alt={currentUser.username ?? "U"}
+                                        alt=""
                                         class="h-9 w-9 rounded-full object-cover border-2 border-purple-500/40 shadow-lg"
                                     />
                                 {:else}
-                                    <div class="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-blue-500 shadow-lg border border-white/10">
+                                    <div class="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-blue-500 shadow-lg border border-white/10" aria-hidden="true">
                                         <span class="font-bold text-white text-xs">{currentUser.username?.charAt(0) || "U"}</span>
                                     </div>
                                 {/if}
@@ -239,12 +256,17 @@
                     <button
                         class="flex items-center rounded-lg bg-white/10 hover:bg-white/20 px-3 py-2 text-sm text-white transition-colors"
                         onclick={() => (showLangDropdown = !showLangDropdown)}
+                        onkeydown={handleLangKeydown}
+                        aria-label="בחר שפה"
+                        aria-haspopup="listbox"
+                        aria-expanded={showLangDropdown}
                     >
                         <span
                             class="fi fi-{languages.find(
                                 (l) => l.code === $locale || $locale?.startsWith(l.code),
                             )?.flag || 'il'} ml-2"
                             style="font-size: 1.5rem; margin-left: 0.75rem;"
+                            aria-hidden="true"
                         ></span>
                         {languages.find((l) => l.code === $locale || $locale?.startsWith(l.code))?.name ||
                             'עברית'}
@@ -253,6 +275,7 @@
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
+                            aria-hidden="true"
                         >
                             <path
                                 stroke-linecap="round"
@@ -265,6 +288,8 @@
                     {#if showLangDropdown}
                         <div
                             class="absolute right-0 z-[160] mt-2 w-44 rounded-lg bg-[#0f172a] border border-white/10 shadow-xl"
+                            role="listbox"
+                            aria-label="בחר שפה"
                         >
                             {#each languages as langOption}
                                 <button
@@ -273,13 +298,15 @@
                                         changeLang(langOption);
                                         showLangDropdown = false;
                                     }}
+                                    onkeydown={handleLangKeydown}
+                                    role="option"
+                                    aria-selected={$locale === langOption.code || $locale?.startsWith(langOption.code)}
                                 >
-                                    <span class="text-sm"
-                                        >{langOption.name}</span
-                                    >
+                                    <span class="text-sm">{langOption.name}</span>
                                     <span
                                         class="fi fi-{langOption.flag}"
                                         style="font-size: 1.5rem;"
+                                        aria-hidden="true"
                                     ></span>
                                 </button>
                             {/each}
@@ -292,12 +319,12 @@
                     <!-- מספר גולשים -->
                     <div
                         class="flex items-center gap-2 bg-blue-900/30 px-3 py-2 rounded-lg border border-blue-500/30 online-counter"
+                        aria-label="{onlineUsers} משתמשים מחוברים כעת"
+                        role="status"
                     >
-                        <span class="text-green-400 text-xl">●</span>
-                        <span class="text-white text-sm font-bold"
-                            >{onlineUsers}</span
-                        >
-                        <span class="text-gray-300 text-sm">{tFn("connected")}</span>
+                        <span class="text-green-400 text-xl" aria-hidden="true">●</span>
+                        <span class="text-white text-sm font-bold" aria-hidden="true">{onlineUsers}</span>
+                        <span class="text-gray-300 text-sm" aria-hidden="true">{tFn("connected")}</span>
                     </div>
 
                     {#if currentUser}
@@ -307,6 +334,7 @@
                             <a
                                 href="/profile"
                                 class="relative flex-shrink-0"
+                                aria-label="לאזור האישי – {userName}"
                                 onmouseenter={() => showProfileTooltip = true}
                                 onmouseleave={() => showProfileTooltip = false}
                                 onmousemove={handleProfileMouseMove}
@@ -314,14 +342,15 @@
                                 {#if currentUser.avatar_url}
                                     <img
                                         src={currentUser.avatar_url}
-                                        alt={userName}
+                                        alt=""
                                         class="h-14 w-14 rounded-full object-cover border-2 border-purple-500/40
                                                shadow-lg hover:border-purple-400 transition-all"
                                     />
                                 {:else}
                                     <div class="flex h-14 w-14 items-center justify-center rounded-full
                                                 bg-gradient-to-br from-green-400 to-blue-500 shadow-lg
-                                                border-2 border-transparent hover:border-purple-400 transition-all">
+                                                border-2 border-transparent hover:border-purple-400 transition-all"
+                                         aria-hidden="true">
                                         <span class="font-bold text-white text-sm">{userName.charAt(0)}</span>
                                     </div>
                                 {/if}

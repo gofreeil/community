@@ -51,10 +51,12 @@
         <!-- Back button -->
         <button
             onclick={goBack}
+            aria-label="חזרה לדף הקודם"
             class="mb-8 flex items-center gap-2 text-purple-400 hover:text-purple-300 transition-colors group"
         >
             <span
                 class="text-xl group-hover:-translate-x-1 transition-transform"
+                aria-hidden="true"
                 >←</span
             >
             <span class="font-bold">{tFn("back_to_map")}</span>
@@ -90,11 +92,11 @@
                                 class="text-4xl p-3 bg-white/10 backdrop-blur-md rounded-2xl shadow-xl"
                                 >{item.icon}</span
                             >
-                            <h1
+                            <h2
                                 class="text-4xl md:text-6xl font-black tracking-tight drop-shadow-2xl"
                             >
                                 {item.label}
-                            </h1>
+                            </h2>
                         </div>
                     </div>
                 </div>
@@ -217,11 +219,13 @@
                                 </p>
                                 <a
                                     href="tel:{item.phone}"
+                                    aria-label="התקשר עכשיו – {item.phone}"
                                     class="block w-full bg-white text-purple-600 font-bold py-3 rounded-xl text-center shadow-lg hover:scale-105 transition-transform"
                                 >
                                     התקשר עכשיו
                                 </a>
                                 <button
+                                    aria-label="שלח הודעה למפרסם"
                                     class="block w-full mt-3 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-xl text-center transition-all border border-white/20"
                                 >
                                     שלח הודעה
@@ -236,17 +240,17 @@
                                 </h4>
                                 <div class="flex gap-4">
                                     <button
+                                        aria-label="שתף בוואטסאפ"
                                         class="bg-green-600/20 hover:bg-green-600/40 p-3 rounded-xl transition-all"
-                                        >🟢</button
-                                    >
+                                    ><span aria-hidden="true">🟢</span></button>
                                     <button
+                                        aria-label="שתף בפייסבוק"
                                         class="bg-blue-600/20 hover:bg-blue-600/40 p-3 rounded-xl transition-all"
-                                        >🔵</button
-                                    >
+                                    ><span aria-hidden="true">🔵</span></button>
                                     <button
+                                        aria-label="העתק קישור"
                                         class="bg-white/10 hover:bg-white/20 p-3 rounded-xl transition-all"
-                                        >📋</button
-                                    >
+                                    ><span aria-hidden="true">📋</span></button>
                                 </div>
                             </div>
                         </div>
@@ -259,13 +263,14 @@
                 class="text-center py-24 bg-[#0f172a] rounded-3xl border border-white/10"
                 in:scale={{ duration: 500 }}
             >
-                <span class="text-8xl mb-8 block">🔍</span>
-                <h1 class="text-4xl font-black text-white mb-4">{tFn("item_not_found")}</h1>
+                <span class="text-8xl mb-8 block" aria-hidden="true">🔍</span>
+                <h2 class="text-4xl font-black text-white mb-4">{tFn("item_not_found")}</h2>
                 <p class="text-gray-400 mb-8">
                     נראה שהדף שאתה מחפש הוסר או שמעולם לא היה קיים.
                 </p>
                 <button
                     onclick={goBack}
+                    aria-label="חזרה לדף הקודם"
                     class="bg-purple-600 text-white px-8 py-3 rounded-xl font-bold hover:scale-105 transition-transform"
                 >{tFn("back_to_map")}</button>
             </div>

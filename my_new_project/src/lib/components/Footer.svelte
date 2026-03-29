@@ -15,6 +15,8 @@
             <a
                 href="https://www.melecshop.com/"
                 target="_blank"
+                rel="noopener noreferrer"
+                aria-label="יוצאים לחירות – לכלל פעילות התנועה החברתית (נפתח בחלון חדש)"
                 style="cursor: pointer;"
                 class="flex items-center gap-3 hover:opacity-80 transition-opacity"
             >
@@ -55,16 +57,21 @@
 
             <!-- Center: Links -->
             <nav
+                aria-label="ניווט תחתון"
                 class="flex items-center gap-4 text-base md:text-lg text-gray-300 font-bold"
             >
                 <a href="/legal" class="hover:text-white transition-colors"
                     >תנאי שימוש ופרטיות</a
                 >
-                <span class="text-gray-600 font-black">|</span>
+                <span class="text-gray-600 font-black" aria-hidden="true">|</span>
                 <a
                     href="mailto:freedomhasbegun@gmail.com"
-                    class="hover:text-white transition-colors">{tFn("contact_us")}</a
+                    class="hover:text-white transition-colors"
+                    aria-label="צור קשר – שלח אימייל"
+                >{tFn("contact_us")}</a
                 >
+                <span class="text-gray-600 font-black" aria-hidden="true">|</span>
+                <a href="/accessibility" class="hover:text-white transition-colors">הצהרת נגישות</a>
             </nav>
 
             <!-- Left: Copyright -->

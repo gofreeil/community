@@ -41,6 +41,7 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
+<a href="#main-content" class="skip-link">דלג לתוכן הראשי</a>
 <CoinAnimation />
 <MobileAdsDrawer currentUser={currentUser} layoutUser={data.layoutUser} />
 <MobileAdPopup />
@@ -53,7 +54,7 @@
 
 	<div class="layout-container flex-grow">
 		<RightAdBanner />
-		<main class="main-content">
+		<main id="main-content" tabindex="-1" class="main-content">
 			{@render children()}
 		</main>
 		<AdsSidebar />

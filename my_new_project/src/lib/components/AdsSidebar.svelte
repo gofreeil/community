@@ -1,4 +1,5 @@
 <aside
+    aria-label="פרסומות ושותפים"
     class="hidden lg:block w-48 flex-shrink-0 sticky top-4 h-fit pb-8 text-center"
 >
     <h4
@@ -11,6 +12,8 @@
         <a
             href="https://www.melecshop.com/page/peace-on-earth"
             target="_blank"
+            rel="noopener noreferrer"
+            aria-label="בתי הפיוס – עזרה בדין ופיוס בסיכסוכים (נפתח בחלון חדש)"
             class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105 group relative"
         >
             <div class="relative overflow-hidden">
@@ -50,6 +53,8 @@
         <a
             href="https://www.melecshop.com/page/peace-on-earth_VRHH"
             target="_blank"
+            rel="noopener noreferrer"
+            aria-label="ועדי שכונות – מהפכת משילות העם על המוסדות (נפתח בחלון חדש)"
             class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105 group relative"
         >
             <div class="relative overflow-hidden">
@@ -89,6 +94,8 @@
         <a
             href="https://purchasing-groups.vercel.app/"
             target="_blank"
+            rel="noopener noreferrer"
+            aria-label="קבוצת רכישה – הוזל את ההוצאות החודשיות שלך (נפתח בחלון חדש)"
             class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105 group relative"
         >
             <div class="h-32 overflow-hidden relative">
@@ -127,6 +134,7 @@
         <!-- Ad 6 - Empty Ad Space -->
         <a
             href="/advertise"
+            aria-label="מקום פרסום פנוי – לחץ לפרטים על פרסום"
             class="block overflow-hidden rounded-lg border-4 border-dashed border-blue-400/50 bg-blue-900/10 backdrop-blur-sm shadow-lg transition-all hover:scale-105 hover:border-blue-500 hover:bg-blue-900/20"
         >
             <div
@@ -147,6 +155,8 @@
         <a
             href="https://www.melecshop.com/page/free"
             target="_blank"
+            rel="noopener noreferrer"
+            aria-label="השקעות קבוצתיות – הצטרף אל מועדון המשקיעים (נפתח בחלון חדש)"
             class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105 group relative"
         >
             <div class="relative overflow-hidden">
@@ -186,6 +196,8 @@
         <a
             href="https://www.melecshop.com/page/free"
             target="_blank"
+            rel="noopener noreferrer"
+            aria-label="מערכת לגידול ביתי – בקרוב (נפתח בחלון חדש)"
             class="block relative overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105 group"
         >
             <div class="relative overflow-hidden">
@@ -226,6 +238,8 @@
         <a
             href="https://index-chi-sage.vercel.app/"
             target="_blank"
+            rel="noopener noreferrer"
+            aria-label="בעלי מקצוע כשירים – מצא בעל מקצוע איכותי באזורך (נפתח בחלון חדש)"
             class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105 group relative"
         >
             <div class="relative overflow-hidden">
@@ -264,6 +278,8 @@
         <a
             href="https://right-to-live.vercel.app/"
             target="_blank"
+            rel="noopener noreferrer"
+            aria-label="ביקורת על העיריה – ניצחון על הבירוקרטיה (נפתח בחלון חדש)"
             class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105 group relative"
         >
             <div class="relative overflow-hidden">
@@ -301,6 +317,8 @@
         <a
             href="https://www.melecshop.com/page/kids_FNL3"
             target="_blank"
+            rel="noopener noreferrer"
+            aria-label="סיוע לנפגעים מינית – אנו כאן לעזור (נפתח בחלון חדש)"
             class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105 group relative"
         >
             <div

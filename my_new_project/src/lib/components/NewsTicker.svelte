@@ -21,10 +21,18 @@
     ];
 </script>
 
-<div
+<section
+    aria-label="חדשות הקהילה"
     class="news-ticker-container border-b border-blue-900/30 bg-[#0f172a]/90 py-4 backdrop-blur-md"
 >
-    <div class="mx-auto max-w-7xl flex items-center px-4">
+    <!-- תוכן נגיש לקוראי מסך (מוסתר ויזואלית) -->
+    <ul class="sr-only">
+        {#each newsItems as item}
+            <li>{item.line1} – {item.line2}</li>
+        {/each}
+    </ul>
+
+    <div class="mx-auto max-w-7xl flex items-center px-4" aria-hidden="true">
         <!-- Ticker Label -->
         <div
             class="z-10 bg-red-600 px-6 py-4 rounded-lg text-lg font-black text-white shadow-xl flex-shrink-0 ml-6 flex-col items-center justify-center border border-red-400 lg:flex hidden"
@@ -57,7 +65,7 @@
             </div>
         </div>
     </div>
-</div>
+</section>
 
 <style>
     .ticker-content {

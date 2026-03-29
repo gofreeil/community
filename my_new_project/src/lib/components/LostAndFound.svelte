@@ -62,6 +62,7 @@
         </h3>
         <a
             href="/lost-and-found/add"
+            aria-label="הוסף אבידה או מציאה"
             class="inline-flex items-center self-center bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-2 md:px-3 py-1 md:py-1.5 rounded-full transition-colors border border-white/20 flex-shrink-0"
         >
             + הוסף
@@ -75,6 +76,7 @@
                 {@const type = getType(item.extra_fields)}
                 <a
                     href={isMock ? '/lost-and-found' : `/lost-and-found/${item.id}`}
+                    aria-label="{type === 'found' ? 'נמצא' : 'אבד'}: {item.label}{item.address ? ' – ' + item.address : ''}"
                     class="relative p-2 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-all group overflow-hidden cursor-pointer block no-underline flex-shrink-0"
                 >
                     <div
@@ -106,6 +108,7 @@
         <div class="flex-1"></div>
         <a
             href="/lost-and-found"
+            aria-label="לוח אבדות ומציאות המלא"
             class="flex-shrink-0 block text-center text-yellow-400 hover:text-white text-[10px] font-bold transition-colors underline underline-offset-2 py-1.5"
         >
             ללוח המלא...
@@ -119,6 +122,7 @@
                 {@const type = getType(item.extra_fields)}
                 <a
                     href={isMock ? '/lost-and-found' : `/lost-and-found/${item.id}`}
+                    aria-label="{type === 'found' ? 'נמצא' : 'אבד'}: {item.label}{item.address ? ' – ' + item.address : ''}"
                     class="relative p-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all group overflow-hidden block no-underline cursor-pointer"
                 >
                     <div
@@ -140,6 +144,7 @@
             {/each}
             <a
                 href="/lost-and-found"
+                aria-label="לוח אבדות ומציאות המלא"
                 class="block text-center text-yellow-400 hover:text-white text-xs font-bold transition-colors underline underline-offset-2 py-2"
             >
                 ללוח המלא...

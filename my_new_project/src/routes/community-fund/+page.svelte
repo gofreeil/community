@@ -38,9 +38,9 @@
 
 		<!-- כותרת -->
 		<div class="text-center mb-8">
-			<h1 class="text-4xl font-black bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-4">
+			<h2 class="text-4xl font-black bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-4">
 				🙏 כותל המשאלות
-			</h1>
+			</h2>
 			<p class="text-gray-300 text-lg">
 				מקום לחלוק את המשאלות והחלומות שלך עם הקהילה
 			</p>
@@ -137,42 +137,54 @@
 
 		<!-- טופס הוספת משאלה -->
 		<div class="bg-gradient-to-br from-purple-900/30 to-pink-900/30 border border-purple-500/30 rounded-2xl p-8 backdrop-blur-sm">
-			<h2 class="text-2xl font-bold text-white mb-6">הוסף משאלה</h2>
-			<div class="space-y-6">
+			<h3 class="text-2xl font-bold text-white mb-6">הוסף משאלה</h3>
+			<form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }} class="space-y-6" novalidate>
 				<div>
-					<label for="wish-input" class="block text-white font-bold mb-2">המשאלה שלך</label>
+					<label for="wish-input" class="block text-white font-bold mb-2">
+						המשאלה שלך
+						<span class="text-red-400 mr-1" aria-hidden="true">*</span>
+						<span class="sr-only">(שדה חובה)</span>
+					</label>
 					<textarea
 						id="wish-input"
 						bind:value={wishText}
 						placeholder="כתוב כאן את המשאלה שלך..."
 						rows="6"
+						required
+						aria-required="true"
 						class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-4 py-3 focus:outline-none focus:border-purple-500"
 					></textarea>
-					<p class="text-sm text-gray-400 mt-2">💡 טיפ: כתוב משאלה חיובית ומלאת תקווה</p>
+					<p class="text-sm text-gray-400 mt-2" aria-live="polite">💡 טיפ: כתוב משאלה חיובית ומלאת תקווה</p>
 				</div>
 				<button
-					onclick={handleSubmit}
+					type="submit"
 					class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold py-4 rounded-lg transition-all hover:scale-105 shadow-lg"
 				>
 					🙏 הוסף משאלה לכותל
 				</button>
-			</div>
+			</form>
 		</div>
 
-		<!-- הודעת הצלחה -->
-		{#if showSuccess}
-			<div class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 animate-slideDown">
-				<div class="bg-green-600 text-white px-8 py-6 rounded-xl shadow-2xl border-2 border-green-400">
-					<div class="flex items-center gap-4">
-						<span class="text-4xl">✨</span>
-						<div>
-							<p class="font-bold text-xl">המשאלה נוספה בהצלחה!</p>
-							<p class="text-sm text-green-100">המשאלה שלך נוספה לכותל</p>
-						</div>
-					</div>
-				</div>
-			</div>
-		{/if}
+		<!-- הודעת הצלחה – aria-live מבטיח שקורא מסך יכריז עליה -->
+		<div
+            role="status"
+            aria-live="assertive"
+            aria-atomic="true"
+        >
+            {#if showSuccess}
+                <div class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 animate-slideDown">
+                    <div class="bg-green-600 text-white px-8 py-6 rounded-xl shadow-2xl border-2 border-green-400">
+                        <div class="flex items-center gap-4">
+                            <span class="text-4xl" aria-hidden="true">✨</span>
+                            <div>
+                                <p class="font-bold text-xl">המשאלה נוספה בהצלחה!</p>
+                                <p class="text-sm text-green-100">המשאלה שלך נוספה לכותל</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {/if}
+        </div>
 
 		<!-- חזרה לדף הבית -->
 		<div class="text-center mt-8">
