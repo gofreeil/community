@@ -67,16 +67,15 @@
         </a>
     </div>
 
-    <div class="p-2 flex-1 overflow-hidden">
-        <!-- Mobile: show up to 3 items -->
-        <div class="md:hidden space-y-2">
+    <!-- Mobile layout: items + fade + link -->
+    <div class="md:hidden flex flex-col flex-1 min-h-0 p-2">
+        <div class="max-h-[162px] flex-shrink-0 overflow-hidden relative flex flex-col gap-2">
             {#each displayItems.slice(0, 3) as item}
                 {@const type = getType(item.extra_fields)}
                 <a
                     href={isMock ? '/lost-and-found' : `/lost-and-found/${item.id}`}
-                    class="relative p-2 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-all group overflow-hidden cursor-pointer block no-underline"
+                    class="relative p-2 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-all group overflow-hidden cursor-pointer block no-underline flex-shrink-0"
                 >
-                    <!-- Type Badge -->
                     <div
                         class="absolute top-0 left-0 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wider {type === 'found'
                             ? 'bg-green-500 text-white'
@@ -84,11 +83,8 @@
                     >
                         {type === 'found' ? 'נמצא' : 'אבד'}
                     </div>
-
                     <div class="mt-2">
-                        <h4
-                            class="font-bold text-white text-xs mb-1 group-hover:text-blue-400 transition-colors leading-tight"
-                        >
+                        <h4 class="font-bold text-white text-xs mb-1 group-hover:text-blue-400 transition-colors leading-tight">
                             {item.label}
                         </h4>
                         <div class="flex items-center gap-1.5 text-xs text-gray-400">
@@ -96,28 +92,34 @@
                             {#if item.created_at}<span>•</span><span>🕒 {formatDate(item.created_at)}</span>{/if}
                         </div>
                         {#if !isMock && item.phone}
-                            <a
-                                href="tel:{item.phone}"
-                                class="mt-1.5 flex items-center gap-1 text-[10px] text-blue-400 font-bold"
-                                onclick={(e) => e.stopPropagation()}
-                            >
+                            <a href="tel:{item.phone}" class="mt-1.5 flex items-center gap-1 text-[10px] text-blue-400 font-bold" onclick={(e) => e.stopPropagation()}>
                                 📞 {item.phone}
                             </a>
                         {/if}
                     </div>
                 </a>
             {/each}
+            <!-- fade overlay covering ~2/3 of last item -->
+            <div class="pointer-events-none absolute bottom-0 left-0 right-0 h-10" style="background: linear-gradient(to bottom, transparent, #0f172a 90%);"></div>
         </div>
+        <div class="flex-1"></div>
+        <a
+            href="/lost-and-found"
+            class="flex-shrink-0 block text-center text-yellow-400 hover:text-white text-[10px] font-bold transition-colors underline underline-offset-2 py-1.5"
+        >
+            ללוח המלא...
+        </a>
+    </div>
 
-        <!-- Desktop: show up to 3 items + link -->
-        <div class="hidden md:flex flex-col justify-evenly h-full">
+    <!-- Desktop layout -->
+    <div class="hidden md:flex flex-col flex-1 overflow-hidden p-2">
+        <div class="flex flex-col justify-evenly h-full">
             {#each displayItems.slice(0, 3) as item}
                 {@const type = getType(item.extra_fields)}
                 <a
                     href={isMock ? '/lost-and-found' : `/lost-and-found/${item.id}`}
                     class="relative p-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all group overflow-hidden block no-underline cursor-pointer"
                 >
-                    <!-- Type Badge -->
                     <div
                         class="absolute top-0 left-0 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider {type === 'found'
                             ? 'bg-green-500 text-white'
@@ -125,7 +127,6 @@
                     >
                         {type === 'found' ? 'נמצא' : 'אבד'}
                     </div>
-
                     <div class="mt-3">
                         <h4 class="font-bold text-white text-xs group-hover:text-blue-400 transition-colors leading-tight">
                             {item.label}
@@ -139,16 +140,6 @@
             <a
                 href="/lost-and-found"
                 class="block text-center text-yellow-400 hover:text-white text-xs font-bold transition-colors underline underline-offset-2 py-2"
-            >
-                ללוח המלא...
-            </a>
-        </div>
-
-        <!-- Mobile link -->
-        <div class="mt-2 md:hidden text-center">
-            <a
-                href="/lost-and-found"
-                class="text-yellow-400 hover:text-white text-[10px] font-bold transition-colors underline underline-offset-2"
             >
                 ללוח המלא...
             </a>
