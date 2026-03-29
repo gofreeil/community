@@ -584,7 +584,7 @@
 		margin-bottom: 1.75rem;
 	}
 	.doc-title {
-		font-size: 1.6rem;
+		font-size: 1.85rem;
 		font-weight: 900;
 		background: linear-gradient(to left, #60a5fa, #a78bfa, #f472b6);
 		-webkit-background-clip: text;
@@ -594,7 +594,7 @@
 	}
 	.doc-date {
 		color: #6b7280;
-		font-size: 0.82rem;
+		font-size: 0.95rem;
 	}
 
 	.toc {
@@ -608,13 +608,13 @@
 		font-weight: 800;
 		color: #93c5fd;
 		margin-bottom: 0.6rem;
-		font-size: 0.9rem;
+		font-size: 1rem;
 	}
 	.toc-list {
 		list-style: decimal;
 		padding-right: 1.2rem;
 		color: #9ca3af;
-		font-size: 0.85rem;
+		font-size: 0.95rem;
 		line-height: 1.8;
 	}
 
@@ -629,7 +629,7 @@
 	}
 
 	.sec-title {
-		font-size: 1.1rem;
+		font-size: 1.2rem;
 		font-weight: 800;
 		color: #e2e8f0;
 		margin-bottom: 0.75rem;
@@ -638,7 +638,7 @@
 	}
 
 	.sub-title {
-		font-size: 0.95rem;
+		font-size: 1.05rem;
 		font-weight: 700;
 		color: #a78bfa;
 		margin: 0.9rem 0 0.45rem;
@@ -646,8 +646,8 @@
 
 	.sec p {
 		color: #cbd5e1;
-		font-size: 0.9rem;
-		line-height: 1.85;
+		font-size: 1rem;
+		line-height: 1.9;
 		margin-bottom: 0.5rem;
 	}
 
@@ -658,8 +658,8 @@
 	}
 	.bullet-list li {
 		color: #cbd5e1;
-		font-size: 0.9rem;
-		line-height: 1.75;
+		font-size: 1rem;
+		line-height: 1.85;
 		padding-right: 1.1rem;
 		position: relative;
 	}
@@ -688,20 +688,20 @@
 		border-radius: 0.6rem;
 		padding: 0.6rem 1rem;
 		color: #e2e8f0;
-		font-size: 0.875rem;
+		font-size: 1rem;
 		font-weight: 600;
 		text-decoration: none;
 		transition: background 0.2s;
 	}
 	.contact-item:hover { background: rgba(139,92,246,0.2); }
-	.contact-icon { font-size: 1rem; }
+	.contact-icon { font-size: 1.1rem; }
 
 	.inline-link {
 		background: none;
 		border: none;
 		color: #818cf8;
 		cursor: pointer;
-		font-size: 0.85rem;
+		font-size: 0.95rem;
 		padding: 0;
 		text-decoration: underline;
 		margin-right: 0.25rem;
