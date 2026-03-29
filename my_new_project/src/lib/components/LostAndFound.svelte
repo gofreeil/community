@@ -69,7 +69,7 @@
     </div>
 
     <!-- Mobile layout: items + fade + link -->
-    <div class="md:hidden flex flex-col flex-1 min-h-0 p-2">
+    <div class="md:hidden flex flex-col flex-1 min-h-0 px-2 pt-2">
         <div class="max-h-[227px] flex-shrink-0 overflow-hidden relative flex flex-col gap-2">
             {#each displayItems.slice(0, 4) as item}
                 {@const type = getType(item.extra_fields)}
