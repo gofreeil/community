@@ -94,6 +94,44 @@
     function handleLangKeydown(event: KeyboardEvent) {
         if (event.key === 'Escape') {
             showLangDropdown = false;
+            return;
+        }
+
+        // פתיחת הרשימה עם חץ למטה כשהיא סגורה
+        if (event.key === 'ArrowDown' && !showLangDropdown) {
+            event.preventDefault();
+            showLangDropdown = true;
+            setTimeout(() => {
+                const container = (event.target as HTMLElement).closest('.lang-dropdown-container');
+                const firstOption = container?.querySelector('[role="option"]') as HTMLElement;
+                firstOption?.focus();
+            }, 0);
+            return;
+        }
+
+        if (!showLangDropdown) return;
+
+        const target = event.target as HTMLElement;
+        const container = target.closest('.lang-dropdown-container');
+        if (!container) return;
+
+        const options = Array.from(container.querySelectorAll('[role="option"]')) as HTMLElement[];
+        if (options.length === 0) return;
+
+        const currentIndex = options.indexOf(target);
+
+        if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            options[currentIndex < options.length - 1 ? currentIndex + 1 : 0].focus();
+        } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            options[currentIndex > 0 ? currentIndex - 1 : options.length - 1].focus();
+        } else if (event.key === 'Home') {
+            event.preventDefault();
+            options[0].focus();
+        } else if (event.key === 'End') {
+            event.preventDefault();
+            options[options.length - 1].focus();
         }
     }
 	// tFn: תרגום reactive — $t אסור ב-Svelte 5

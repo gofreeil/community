@@ -103,14 +103,14 @@
                 <div class="rounded-2xl md:rounded-3xl bg-[#0f172a] border md:border-2 border-green-500/30 overflow-hidden shadow-2xl">
                     <!-- Month Navigation -->
                     <div class="bg-gradient-to-r from-green-600 to-teal-600 p-4 flex items-center justify-between">
-                        <button onclick={nextMonth} class="text-white hover:bg-white/20 rounded-lg px-3 py-1.5 transition-colors font-bold text-lg">
-                            ←
+                        <button onclick={nextMonth} aria-label="חודש הבא" class="text-white hover:bg-white/20 rounded-lg px-3 py-1.5 transition-colors font-bold text-lg">
+                            <span aria-hidden="true">←</span>
                         </button>
-                        <h2 class="text-xl md:text-2xl font-bold text-white">
+                        <h2 id="calendar-title" class="text-xl md:text-2xl font-bold text-white">
                             {hebrewMonths[currentMonth]} {currentYear}
                         </h2>
-                        <button onclick={prevMonth} class="text-white hover:bg-white/20 rounded-lg px-3 py-1.5 transition-colors font-bold text-lg">
-                            →
+                        <button onclick={prevMonth} aria-label="חודש קודם" class="text-white hover:bg-white/20 rounded-lg px-3 py-1.5 transition-colors font-bold text-lg">
+                            <span aria-hidden="true">→</span>
                         </button>
                     </div>
 
@@ -125,29 +125,31 @@
                         </div>
 
                         <!-- Calendar Grid -->
-                        <div class="grid grid-cols-7 gap-1">
+                        <div class="grid grid-cols-7 gap-1" role="grid" aria-labelledby="calendar-title">
                             {#each calendarDays as day}
                                 {#if day === null}
-                                    <div class="aspect-square"></div>
+                                    <div class="aspect-square" role="gridcell" aria-label=" "></div>
                                 {:else}
                                     {@const dayEvents = getEventsForDay(day)}
                                     <button
+                                        role="gridcell"
+                                        aria-label="{day} {hebrewMonths[currentMonth]}{dayEvents.length > 0 ? ' – ' + dayEvents.length + ' אירועים' : ''}{isToday(day) ? ' (היום)' : ''}"
                                         class="aspect-square rounded-xl border transition-all flex flex-col items-center justify-center gap-0.5 relative
                                             {isToday(day) ? 'bg-green-600/30 border-green-500/50 ring-2 ring-green-400/50' : 'border-white/5 hover:border-white/20 hover:bg-white/5'}
                                             {dayEvents.length > 0 ? 'cursor-pointer' : 'cursor-default'}"
                                         onclick={() => { if (dayEvents.length > 0) selectedEvent = dayEvents[0]; }}
                                     >
-                                        <span class="text-sm md:text-base font-bold {isToday(day) ? 'text-green-300' : 'text-white/80'}">
+                                        <span class="text-sm md:text-base font-bold {isToday(day) ? 'text-green-300' : 'text-white/80'}" aria-hidden="true">
                                             {day}
                                         </span>
                                         {#if dayEvents.length > 0}
-                                            <div class="flex gap-0.5">
-                                                {#each dayEvents as ev}
+                                            <div class="flex gap-0.5" aria-hidden="true">
+                                                {#each dayEvents as _ev}
                                                     <span class="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-green-400"></span>
                                                 {/each}
                                             </div>
                                             <!-- Desktop: show event title -->
-                                            <span class="hidden md:block text-[9px] text-green-300/70 leading-tight text-center truncate w-full px-1">
+                                            <span class="hidden md:block text-[9px] text-green-300/70 leading-tight text-center truncate w-full px-1" aria-hidden="true">
                                                 {dayEvents[0].icon} {dayEvents[0].title.slice(0, 12)}
                                             </span>
                                         {/if}

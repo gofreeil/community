@@ -664,11 +664,12 @@
 
 				<!-- מגדר -->
 				<div>
-					<p class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("gender_label")}</p>
+					<p id="gender-label" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("gender_label")}</p>
 					{#if isEditing}
-						<div class="flex gap-3">
+						<div class="flex gap-3" role="group" aria-labelledby="gender-label">
 							<button type="button"
 								onclick={() => gender = 'male'}
+								aria-pressed={gender === 'male'}
 								class="flex-1 py-3 rounded-xl border font-bold text-sm transition-all cursor-pointer
 								       {gender === 'male'
 								         ? 'bg-blue-600/30 border-blue-500/60 text-blue-300'
@@ -678,6 +679,7 @@
 							</button>
 							<button type="button"
 								onclick={() => gender = 'female'}
+								aria-pressed={gender === 'female'}
 								class="flex-1 py-3 rounded-xl border font-bold text-sm transition-all cursor-pointer
 								       {gender === 'female'
 								         ? 'bg-pink-600/30 border-pink-500/60 text-pink-300'

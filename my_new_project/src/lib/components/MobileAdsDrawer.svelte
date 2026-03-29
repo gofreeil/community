@@ -117,6 +117,16 @@
 		}
 		tabDragging = false;
 	}
+
+	$effect(() => {
+		function handleKeydown(e: KeyboardEvent) {
+			if (e.key === 'Escape' && open) {
+				open = false;
+			}
+		}
+		document.addEventListener('keydown', handleKeydown);
+		return () => document.removeEventListener('keydown', handleKeydown);
+	});
 </script>
 
 <!-- מוצג רק בנייד -->
@@ -132,7 +142,11 @@
 	{/if}
 
 	<!-- Drawer -->
-	<div class="drawer" class:drawer-open={open} aria-hidden={!open}
+	<div class="drawer" class:drawer-open={open}
+		role="dialog"
+		aria-modal="true"
+		aria-label="האזור האישי וההטבות מהקהילה הארצית"
+		aria-hidden={!open}
 		ontouchstart={onDrawerTouchStart}
 		ontouchend={onDrawerTouchEnd}
 	>

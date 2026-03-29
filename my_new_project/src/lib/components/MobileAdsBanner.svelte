@@ -48,17 +48,27 @@
         }
     ];
 
+    function handleKeydown(e: KeyboardEvent) {
+        if (e.key === 'Escape' && showBanner) {
+            showBanner = false;
+        }
+    }
+
     onMount(() => {
         const timer = setTimeout(() => {
             showBanner = true;
         }, 5000);
 
-        return () => clearTimeout(timer);
+        document.addEventListener('keydown', handleKeydown);
+        return () => {
+            clearTimeout(timer);
+            document.removeEventListener('keydown', handleKeydown);
+        };
     });
 </script>
 
 <!-- Mobile Ads Banner - Hidden on desktop -->
-<div class="lg:hidden fixed bottom-0 left-0 right-0 z-[200]">
+<div class="lg:hidden fixed bottom-0 left-0 right-0 z-[200]" aria-live="polite" aria-atomic="true">
     {#if showBanner}
         <div
             role="region"
