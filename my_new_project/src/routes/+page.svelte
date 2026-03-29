@@ -384,7 +384,7 @@
                             + הוסף
                         </button>
                     </div>
-                    <div class="p-2 flex-1 overflow-y-auto flex flex-col gap-1.5">
+                    <div class="p-2 overflow-hidden flex flex-col gap-1.5 relative max-h-[415px]">
                         {#each mockEvents as ev, i}
                             {@const day = ev.date.split('-')[2]}
                             {@const months = ['', 'ינו', 'פבר', 'מרץ', 'אפר', 'מאי', 'יונ', 'יול', 'אוג', 'ספט', 'אוק', 'נוב', 'דצמ']}
@@ -420,9 +420,11 @@
                                 {/if}
                             </div>
                         {/each}
+                        <!-- fade-out overlay on last event -->
+                        <div class="pointer-events-none absolute bottom-0 left-0 right-0 h-16 rounded-b-xl" style="background: linear-gradient(to bottom, transparent, #0f172a 90%);"></div>
                     </div>
                 </div>
-                <a href="/events" class="block text-center text-green-400 hover:text-white text-[10px] font-bold transition-colors underline underline-offset-2 py-1">
+                <a href="/events" class="block text-center text-blue-400 hover:text-white text-[10px] font-bold transition-colors underline underline-offset-2 py-1">
                     לכל האירועים...
                 </a>
                 </div>

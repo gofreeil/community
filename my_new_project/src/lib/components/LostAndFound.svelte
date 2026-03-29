@@ -68,9 +68,9 @@
     </div>
 
     <div class="p-2 flex-1 overflow-hidden">
-        <!-- Mobile: show only 2 items -->
+        <!-- Mobile: show up to 3 items -->
         <div class="md:hidden space-y-2">
-            {#each displayItems.slice(0, 2) as item}
+            {#each displayItems.slice(0, 3) as item}
                 {@const type = getType(item.extra_fields)}
                 <a
                     href={isMock ? '/lost-and-found' : `/lost-and-found/${item.id}`}
