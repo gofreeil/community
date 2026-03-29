@@ -71,7 +71,7 @@
                 >{tFn("contact_us")}</a
                 >
                 <span class="text-gray-600 font-black" aria-hidden="true">|</span>
-                <a href="/accessibility" class="hover:text-white transition-colors">הצהרת נגישות</a>
+                <a href="/legal#accessibility" class="hover:text-white transition-colors">הצהרת נגישות</a>
             </nav>
 
             <!-- Left: Copyright -->

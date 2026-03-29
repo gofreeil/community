@@ -7,7 +7,7 @@
 		{ id: 'terms',         label: 'תנאי שימוש',                   icon: '📋' },
 		{ id: 'privacy',       label: 'מדיניות פרטיות ו‑Cookies',     icon: '🔒' },
 		{ id: 'regulations',   label: 'תקנון האתר',                   icon: '📜' },
-		{ id: 'accessibility', label: 'מדיניות נגישות',                icon: '♿' },
+		{ id: 'accessibility', label: 'הצהרת נגישות',                 icon: '♿' },
 	];
 
 	let activeTab = $state<TabId>('terms');
@@ -36,7 +36,7 @@
 			<h1 class="text-3xl md:text-4xl font-black bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-3">
 				מסמכים משפטיים
 			</h1>
-			<p class="text-gray-400 text-base">תנאי שימוש, מדיניות פרטיות ו‑Cookies, תקנון האתר ומדיניות נגישות</p>
+			<p class="text-gray-400 text-base">תנאי שימוש, מדיניות פרטיות ו‑Cookies, תקנון האתר והצהרת נגישות</p>
 		</div>
 
 		<!-- טאבים -->
@@ -437,16 +437,18 @@
 		</div>
 		{/if}
 
-		<!-- ===== מדיניות נגישות ===== -->
+		<!-- ===== הצהרת נגישות ===== -->
 		{#if activeTab === 'accessibility'}
 		<div class="doc-card">
 			<div class="doc-header">
-				<h2 class="doc-title">♿ מדיניות נגישות</h2>
+				<h2 class="doc-title">♿ הצהרת נגישות</h2>
+				<p class="text-gray-400 text-sm mt-1">עדכון אחרון: מרץ 2026</p>
 			</div>
 
 			<section class="sec">
-				<h3 class="sec-title">מטרה</h3>
-				<p>האתר מחויב להנגיש את התכנים והשירותים שלו ככל הניתן, כדי לאפשר גישה שווה ונוחה למשתמשים עם מוגבלויות.</p>
+				<h3 class="sec-title">מטרה והתחייבות</h3>
+				<p>אתר "קהילה בשכונה" מחויב לנגישות דיגיטלית מלאה לכלל המשתמשים, לרבות אנשים עם מוגבלויות.
+				האתר פועל לעמוד בדרישות תקן ישראלי 5568 (WCAG 2.1 ברמה AA), וכולל התאמות לאנשים עם לקויות ראייה, שמיעה, קוגניציה ומוטוריקה.</p>
 			</section>
 
 			<section class="sec">
@@ -466,13 +468,36 @@
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">התאמות פרטניות</h3>
-				<p>משתמשים הזקוקים להתאמות מיוחדות מוזמנים לפנות לצוות האתר; האתר ישקול בקשות סבירות ויפעל לספק פתרונות בהתאם ליכולת הטכנית והמשאבים.</p>
+				<h3 class="sec-title">התאמות שבוצעו</h3>
+				<ul class="bullet-list">
+					<li><strong class="text-green-400">✓</strong> הגדרת שפת הדף כעברית (<code lang="en" class="text-blue-300">lang="he" dir="rtl"</code>) לתמיכה בקוראי מסך</li>
+					<li><strong class="text-green-400">✓</strong> קישור "דלג לתוכן הראשי" מופיע עם פוקוס מקלדת לניווט מהיר</li>
+					<li><strong class="text-green-400">✓</strong> כל הכפתורים, הקישורים והשדות כוללים תיאורי <code lang="en" class="text-blue-300">aria-label</code> ברורים</li>
+					<li><strong class="text-green-400">✓</strong> חלונות קופצים מיישמים מלכודת פוקוס ומחזירים פוקוס לרכיב הפותח עם הסגירה</li>
+					<li><strong class="text-green-400">✓</strong> הודעות דינמיות מוכרזות אוטומטית לקוראי מסך באמצעות <code lang="en" class="text-blue-300">aria-live</code></li>
+					<li><strong class="text-green-400">✓</strong> תפריטי שפה כוללים <code lang="en" class="text-blue-300">aria-haspopup</code> ו-<code lang="en" class="text-blue-300">aria-expanded</code> לציון מצב הפתיחה</li>
+					<li><strong class="text-green-400">✓</strong> אנימציות מושבתות אוטומטית עם <code lang="en" class="text-blue-300">prefers-reduced-motion</code></li>
+					<li><strong class="text-green-400">✓</strong> תמונות דקורטיביות כוללות <code lang="en" class="text-blue-300">alt=""</code> ותמונות תוכן כוללות תיאור מלא</li>
+					<li><strong class="text-green-400">✓</strong> מבנה כותרות היררכי (<code lang="en" class="text-blue-300">h1 → h2 → h3</code>) בכל עמוד</li>
+					<li><strong class="text-green-400">✓</strong> ניגודיות טקסט עומדת בדרישות WCAG AA (לפחות 4.5:1 לטקסט רגיל)</li>
+					<li><strong class="text-green-400">✓</strong> טיקר החדשות הנע מוסתר מקוראי מסך; התוכן זמין בגרסה נגישה מקבילה</li>
+					<li><strong class="text-green-400">✓</strong> כל קישורים חיצוניים מסומנים בבירור כ"נפתח בחלון חדש"</li>
+					<li><strong class="text-green-400">✓</strong> טפסים כוללים <code lang="en" class="text-blue-300">&lt;label&gt;</code> מקושר לכל שדה, סימון שדות חובה וטיפול בשגיאות</li>
+				</ul>
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">מגבלות</h3>
-				<p>ייתכנו תכנים או שירותים שאינם ניתנים להנגשה מלאה מטעמי טכנולוגיה או צד שלישי; האתר יפעל לציין מגבלות אלה ולחפש חלופות.</p>
+				<h3 class="sec-title">מגבלות ידועות</h3>
+				<ul class="bullet-list">
+					<li><strong class="text-yellow-400">⚠</strong> מפת השכונות האינטראקטיבית מבוססת על Google Maps Embed — ייתכן שחלק מפונקציות המפה אינן נגישות במלואן לקוראי מסך. ניתן לגשת לרשימת הקטגוריות כחלופה מלאה.</li>
+					<li><strong class="text-yellow-400">⚠</strong> חלק מהרכיבים המורכבים (כמו מסך בחירת שכונה) ממשיכים לשפר מיפוי ARIA. עבודה בתהליך.</li>
+					<li><strong class="text-yellow-400">⚠</strong> ייתכנו תכנים או שירותים שאינם ניתנים להנגשה מלאה מטעמי טכנולוגיה או צד שלישי; האתר יפעל לציין מגבלות אלה ולחפש חלופות.</li>
+				</ul>
+			</section>
+
+			<section class="sec">
+				<h3 class="sec-title">התאמות פרטניות</h3>
+				<p>משתמשים הזקוקים להתאמות מיוחדות מוזמנים לפנות לצוות האתר; האתר ישקול בקשות סבירות ויפעל לספק פתרונות בהתאם ליכולת הטכנית והמשאבים.</p>
 			</section>
 
 			<section class="sec">
