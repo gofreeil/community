@@ -21,6 +21,7 @@
         { id: 'm1', label: 'מצאתי צרור מפתחות', address: "רחוב המלך ג'ורג'", extra_fields: '{"type":"found"}', phone: '', contact: '', created_at: '' },
         { id: 'm2', label: 'אבד כלב מסוג פודל',  address: 'שכונת רחביה',         extra_fields: '{"type":"lost"}',  phone: '', contact: '', created_at: '' },
         { id: 'm3', label: 'נמצא כרטיס רב-קו',   address: 'תחנה מרכזית',          extra_fields: '{"type":"found"}', phone: '', contact: '', created_at: '' },
+        { id: 'm4', label: 'אבד טלפון סמסונג שחור', address: 'שוק מחנה יהודה',    extra_fields: '{"type":"lost"}',  phone: '', contact: '', created_at: '' },
     ];
 
     let displayItems = $derived(items.length > 0 ? items : mockItems);
@@ -69,8 +70,8 @@
 
     <!-- Mobile layout: items + fade + link -->
     <div class="md:hidden flex flex-col flex-1 min-h-0 p-2">
-        <div class="max-h-[162px] flex-shrink-0 overflow-hidden relative flex flex-col gap-2">
-            {#each displayItems.slice(0, 3) as item}
+        <div class="max-h-[227px] flex-shrink-0 overflow-hidden relative flex flex-col gap-2">
+            {#each displayItems.slice(0, 4) as item}
                 {@const type = getType(item.extra_fields)}
                 <a
                     href={isMock ? '/lost-and-found' : `/lost-and-found/${item.id}`}
