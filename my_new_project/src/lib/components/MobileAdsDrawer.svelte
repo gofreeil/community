@@ -138,7 +138,7 @@
 	>
 		<!-- כותרת Drawer -->
 		<div class="drawer-header">
-			<span class="drawer-title">🌟 האזור האישי וההטבות מהקהילה הארצית</span>
+			<span class="drawer-title">🌟 האזור האישי וההטבות מהקהילה הארצית — יוצאים לחירות</span>
 			<button class="close-btn" onclick={() => open = false} aria-label="סגור">✕</button>
 		</div>
 
@@ -319,10 +319,16 @@
 	.drawer-header {
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
+		justify-content: center;
+		position: relative;
 		padding: 1rem;
 		border-bottom: 1px solid rgba(99, 102, 241, 0.15);
 		flex-shrink: 0;
+	}
+
+	.drawer-header .close-btn {
+		position: absolute;
+		left: 1rem;
 	}
 
 	.drawer-title {
