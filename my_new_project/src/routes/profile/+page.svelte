@@ -25,6 +25,7 @@
 	let showLevels    = $state(false);
 	let showMessages  = $state(false);
 	let showMyInfo    = $state(true);
+	let showFeedback  = $state(false);
 	let messages = $state(
 		(data.messages ?? []).length > 0
 			? (data.messages ?? []).map((m: import('$lib/server/db').DbItem) => ({
@@ -1204,17 +1205,30 @@
 		{/if}
 	</div>
 
-	<!-- ===== קומה 6: הודעה למערכת ===== -->
+	<!-- ===== קומה 6: כתוב למערכת ===== -->
 	<div class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl overflow-hidden
 	            before:absolute before:inset-x-0 before:top-0 before:h-24 before:rounded-t-3xl
 	            before:bg-gradient-to-b before:from-white/8 before:to-transparent
 	            before:transition-all before:duration-300 before:pointer-events-none
 	            hover:before:from-white/18">
-		<h2 class="relative text-xl font-black text-white flex items-center gap-2 mb-5">
-			<span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
-				style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">6</span>
-			הודעה למערכת
-		</h2>
+		<div
+			class="relative flex items-center justify-between cursor-pointer select-none -mx-6 px-6 -mt-6 pt-6 md:-mx-8 md:px-8 md:-mt-8 md:pt-8 {showFeedback ? 'pb-6 mb-6' : 'pb-6'}"
+			onclick={() => { showFeedback = !showFeedback; }}
+			onmouseenter={() => { secTipShow = true; secTipIsOpen = showFeedback; }}
+			onmouseleave={() => (secTipShow = false)}
+			onmousemove={(e) => handleSecMouseMove(e, showFeedback)}
+			role="button" tabindex={0}
+			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') showFeedback = !showFeedback; }}
+		>
+			<h2 class="text-xl font-black text-white flex items-center gap-2">
+				<span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+					style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">6</span>
+				כתוב למערכת
+			</h2>
+			<svg class="w-4 h-4 text-yellow-400 transition-transform duration-300 flex-shrink-0 {showFeedback ? 'rotate-180' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+		</div>
+
+		{#if showFeedback}
 		<p class="relative text-gray-400 text-sm mb-5">כתוב לנו כיצד לשפר את האתר עבורך — הצוות של יוצאים לחירות יקרא ויחזור אליך.</p>
 
 		{#if form?.feedbackSuccess}
@@ -1242,6 +1256,7 @@
 					שלח פנייה ←
 				</button>
 			</form>
+		{/if}
 		{/if}
 	</div>
 
