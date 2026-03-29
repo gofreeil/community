@@ -587,7 +587,7 @@
 
         <!-- Mobile: 3 cards in one row, equal width -->
         <div class="md:hidden">
-            <div class="grid grid-cols-3 gap-2 h-44">
+            <div class="grid grid-cols-3 gap-2 h-28">
                 <!-- כותל המשאלות - Mobile -->
                 <a
                     href="/community-fund"
