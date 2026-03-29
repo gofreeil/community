@@ -28,7 +28,7 @@
 	<title>תנאי שימוש ומדיניות – קהילה בשכונה</title>
 </svelte:head>
 
-<div class="min-h-screen py-10 px-4" dir="rtl">
+<div class="min-h-screen py-10 px-4 page-bg" dir="rtl">
 	<div class="max-w-4xl mx-auto">
 
 		<!-- כותרת -->
@@ -40,7 +40,7 @@
 		</div>
 
 		<!-- טאבים -->
-		<div class="sticky top-0 z-30 bg-[#0f172a]/95 backdrop-blur-sm pt-2 pb-3 mb-8 border-b border-white/10">
+		<div class="sticky top-0 z-30 tabs-bar pt-2 pb-3 mb-8 border-b border-white/10">
 			<div class="flex flex-wrap gap-2 justify-center">
 				{#each tabs as tab}
 					<button
@@ -523,35 +523,47 @@
 </div>
 
 <style>
+	.page-bg {
+		background: linear-gradient(135deg, #0d0b2e 0%, #0f172a 35%, #1a0a3d 65%, #0c1a3a 100%);
+	}
+
+	.tabs-bar {
+		background: rgba(10, 8, 40, 0.92);
+		backdrop-filter: blur(10px);
+	}
+
 	.tab-btn {
 		display: flex;
 		align-items: center;
 		gap: 0.4rem;
-		padding: 0.5rem 1rem;
+		padding: 0.55rem 1.1rem;
 		border-radius: 9999px;
-		font-weight: 700;
-		font-size: 0.85rem;
+		font-weight: 800;
+		font-size: 0.88rem;
 		transition: all 0.2s;
-		border: none;
+		border: 2px solid transparent;
 		cursor: pointer;
 	}
 	.tab-active {
-		background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+		background: linear-gradient(135deg, #2563eb, #7c3aed);
 		color: #fff;
-		box-shadow: 0 0 14px rgba(139,92,246,0.4);
+		border-color: #a78bfa;
+		box-shadow: 0 0 18px rgba(124,58,237,0.55), 0 0 6px rgba(37,99,235,0.4);
 	}
 	.tab-inactive {
-		background: rgba(255,255,255,0.07);
-		color: #9ca3af;
+		background: rgba(255,255,255,0.08);
+		color: #c4b5fd;
+		border-color: rgba(167,139,250,0.25);
 	}
 	.tab-inactive:hover {
-		background: rgba(255,255,255,0.13);
-		color: #e5e7eb;
+		background: rgba(124,58,237,0.2);
+		color: #e9d5ff;
+		border-color: rgba(167,139,250,0.5);
 	}
 
 	.doc-card {
-		background: linear-gradient(135deg, rgba(15,23,42,0.95), rgba(30,27,75,0.6));
-		border: 1px solid rgba(139,92,246,0.25);
+		background: linear-gradient(135deg, rgba(13,11,46,0.97), rgba(30,20,80,0.85));
+		border: 1px solid rgba(139,92,246,0.35);
 		border-radius: 1.25rem;
 		padding: 2rem;
 		backdrop-filter: blur(8px);
