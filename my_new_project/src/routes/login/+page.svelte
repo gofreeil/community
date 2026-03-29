@@ -266,8 +266,7 @@
 					<div class="mt-6 text-center">
 						<p class="text-xs text-gray-500 leading-relaxed">
 							בהתחברות אתה מאשר את
-							<a href="/" class="text-purple-400 hover:text-purple-300 transition-colors">תנאי השימוש</a>
-							ו<a href="/" class="text-purple-400 hover:text-purple-300 transition-colors">מדיניות הפרטיות</a>
+							<a href="/legal" target="_blank" class="text-purple-400 hover:text-purple-300 transition-colors">תנאי השימוש ומדיניות הפרטיות</a>
 						</p>
 					</div>
 				{/if}

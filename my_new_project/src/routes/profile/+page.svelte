@@ -853,8 +853,7 @@
 							class="w-4 h-4 accent-purple-500 cursor-pointer flex-shrink-0" />
 						<span class="text-sm text-gray-300">
 							{tFn("terms_agree_prefix")}
-							<a href="/terms" target="_blank" class="text-purple-400 hover:underline">{tFn("terms")}</a>
-							ו<a href="/privacy" target="_blank" class="text-purple-400 hover:underline">{tFn("privacy")}</a>
+							<a href="/legal" target="_blank" class="text-purple-400 hover:underline">תנאי השימוש ומדיניות הפרטיות</a>
 							{tFn("terms_agree_suffix")}
 						</span>
 					</label>
