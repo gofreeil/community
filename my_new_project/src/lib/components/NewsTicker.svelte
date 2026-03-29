@@ -1,4 +1,6 @@
 <script lang="ts">
+    let paused = $state(false);
+
     const newsItems = [
         {
             line1: "מערכת חדשה לניהול ועדי שכונות",
@@ -32,6 +34,15 @@
         {/each}
     </ul>
 
+    <!-- כפתור עצירה/הפעלה — נגיש למקלדת, מוסתר ויזואלית -->
+    <button
+        onclick={() => (paused = !paused)}
+        class="sr-only focus:not-sr-only focus:fixed focus:top-16 focus:right-4 focus:z-50 focus:bg-blue-700 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm"
+        aria-label={paused ? 'המשך הפעלת טיקר חדשות' : 'עצור טיקר חדשות'}
+    >
+        {paused ? '▶ המשך' : '⏸ עצור'}
+    </button>
+
     <div class="mx-auto max-w-7xl flex items-center px-4" aria-hidden="true">
         <!-- Ticker Label -->
         <div
@@ -45,6 +56,7 @@
         <div class="overflow-hidden flex-grow relative h-16">
             <div
                 class="ticker-content flex gap-16 items-center absolute right-0 whitespace-nowrap h-full"
+                class:paused
             >
                 {#each [...newsItems, ...newsItems] as item}
                     <div class="flex items-center gap-16 h-full">
@@ -82,8 +94,19 @@
         }
     }
 
-    /* Support for hover to pause */
-    .news-ticker-container:hover .ticker-content {
+    /* עצירה בריחוף ובמצב paused */
+    .news-ticker-container:hover .ticker-content,
+    .ticker-content.paused {
         animation-play-state: paused;
+    }
+
+    /* כיבוי אנימציה למשתמשים עם העדפת תנועה מופחתת */
+    @media (prefers-reduced-motion: reduce) {
+        .ticker-content {
+            animation: none;
+            position: static;
+            white-space: normal;
+            flex-wrap: wrap;
+        }
     }
 </style>

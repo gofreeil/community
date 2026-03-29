@@ -160,6 +160,7 @@
 
 <!-- RightAdBanner.svelte -->
 <aside
+    aria-label="פרסומות"
     class="hidden xl:block w-36 flex-shrink-0 sticky top-4 h-fit pb-8 text-center"
 >
     <h4

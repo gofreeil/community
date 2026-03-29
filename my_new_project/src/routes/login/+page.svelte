@@ -51,12 +51,11 @@
 </svelte:head>
 
 <div
-	class="min-h-[80vh] flex items-center justify-center px-4 py-12 cursor-pointer"
+	class="min-h-[80vh] flex items-center justify-center px-4 py-12"
 	dir="rtl"
 	onclick={() => goto('/')}
-	role="presentation"
 >
-	<div class="w-full max-w-md" onclick={(e) => e.stopPropagation()} role="presentation">
+	<div class="w-full max-w-md" onclick={(e) => e.stopPropagation()}>
 
 		<!-- כרטיס -->
 		<div class="bg-[#0f172a] rounded-3xl border border-white/10 shadow-2xl overflow-hidden">
@@ -79,17 +78,17 @@
 
 				<!-- הודעת שגיאה -->
 				{#if data.error}
-					<div class="mb-6 rounded-xl bg-red-500/10 border border-red-500/30 px-4 py-3 text-center">
+					<div role="alert" class="mb-6 rounded-xl bg-red-500/10 border border-red-500/30 px-4 py-3 text-center">
 						<p class="text-red-400 text-sm font-medium">{errorMessage(data.error)}</p>
 					</div>
 				{/if}
 				{#if form?.error || credError}
-					<div class="mb-6 rounded-xl bg-red-500/10 border border-red-500/30 px-4 py-3 text-center">
+					<div role="alert" class="mb-6 rounded-xl bg-red-500/10 border border-red-500/30 px-4 py-3 text-center">
 						<p class="text-red-400 text-sm font-medium">{credError ?? form?.error}</p>
 					</div>
 				{/if}
 				{#if data.registered}
-					<div class="mb-6 rounded-xl bg-green-500/10 border border-green-500/30 px-4 py-3 text-center">
+					<div role="status" class="mb-6 rounded-xl bg-green-500/10 border border-green-500/30 px-4 py-3 text-center">
 						<p class="text-green-400 text-sm font-medium">{tFn("registered_success")}</p>
 					</div>
 				{/if}

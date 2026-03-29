@@ -9,6 +9,7 @@
     let mouseY = 0;
     let showTooltip = false;
     let tooltipTimeout: ReturnType<typeof setTimeout>;
+    let selectedOption = $state<'yes' | 'no' | 'maybe' | null>(null);
 
     function handleMouseMove(e: MouseEvent) {
         if (!container) return;
@@ -20,13 +21,25 @@
     function handleMouseEnter() {
         showTooltip = true;
         clearTimeout(tooltipTimeout);
-        // הטיימר מכסה גם את זמן התצוגה (3 שניות) וגם את זמן הדעיכה (1.5 שניות)
         tooltipTimeout = setTimeout(() => {
             showTooltip = false;
         }, 4500);
     }
 
     function handleMouseLeave() {
+        showTooltip = false;
+        clearTimeout(tooltipTimeout);
+    }
+
+    function handleFocusIn() {
+        showTooltip = true;
+        clearTimeout(tooltipTimeout);
+        tooltipTimeout = setTimeout(() => {
+            showTooltip = false;
+        }, 4500);
+    }
+
+    function handleFocusOut() {
         showTooltip = false;
         clearTimeout(tooltipTimeout);
     }
@@ -41,6 +54,8 @@
     onmouseenter={handleMouseEnter}
     onmouseleave={handleMouseLeave}
     onmousemove={handleMouseMove}
+    onfocusin={handleFocusIn}
+    onfocusout={handleFocusOut}
     role="banner"
     class="referendum-banner group relative overflow-hidden rounded-2xl shadow-2xl my-8 cursor-default"
 >
@@ -99,6 +114,7 @@
             <!-- כפתור פעולה - Hidden on mobile -->
             <button
                 class="hidden md:block cta-button-small transition-all duration-300 hover:scale-105 flex-shrink-0"
+                aria-label="השתתף במשאל הקהילה עכשיו"
             >
                 <div
                     class="relative bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl px-6 py-4 shadow-lg"
@@ -148,21 +164,31 @@
                 </div>
             </div>
 
-            <div class="space-y-1.5 md:space-y-2">
-                <button class="poll-option poll-yes">
-                    <span class="text-base md:text-lg">✅</span>
+            <div class="space-y-1.5 md:space-y-2" role="group" aria-label="אפשרויות הצבעה">
+                <button
+                    class="poll-option poll-yes"
+                    aria-pressed={selectedOption === 'yes'}
+                    onclick={() => (selectedOption = 'yes')}
+                >
+                    <span class="text-base md:text-lg" aria-hidden="true">✅</span>
                     <span class="font-bold text-xs md:text-sm">כן, אני בעד!</span>
                     <span class="text-[10px] md:text-xs opacity-80">(67%)</span>
                 </button>
-                <button class="poll-option poll-no">
-                    <span class="text-base md:text-lg">❌</span>
-                    <span class="font-bold text-xs md:text-sm"
-                        >לא, אני מעדיף להשאר במצב הנוכחי</span
-                    >
+                <button
+                    class="poll-option poll-no"
+                    aria-pressed={selectedOption === 'no'}
+                    onclick={() => (selectedOption = 'no')}
+                >
+                    <span class="text-base md:text-lg" aria-hidden="true">❌</span>
+                    <span class="font-bold text-xs md:text-sm">לא, אני מעדיף להשאר במצב הנוכחי</span>
                     <span class="text-[10px] md:text-xs opacity-80">(23%)</span>
                 </button>
-                <button class="poll-option poll-maybe">
-                    <span class="text-base md:text-lg">🤔</span>
+                <button
+                    class="poll-option poll-maybe"
+                    aria-pressed={selectedOption === 'maybe'}
+                    onclick={() => (selectedOption = 'maybe')}
+                >
+                    <span class="text-base md:text-lg" aria-hidden="true">🤔</span>
                     <span class="font-bold text-xs md:text-sm">צריך לבדוק עוד פרטים</span>
                     <span class="text-[10px] md:text-xs opacity-80">(10%)</span>
                 </button>

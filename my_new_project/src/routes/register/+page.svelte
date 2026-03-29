@@ -42,7 +42,7 @@
 
 				<!-- הודעת שגיאה -->
 				{#if form?.error}
-					<div class="mb-6 rounded-xl bg-red-500/10 border border-red-500/30 px-4 py-3 text-center">
+					<div role="alert" class="mb-6 rounded-xl bg-red-500/10 border border-red-500/30 px-4 py-3 text-center">
 						<p class="text-red-400 text-sm font-medium">{form.error}</p>
 					</div>
 				{/if}
@@ -143,7 +143,7 @@
 								type="button"
 								onclick={() => (showConfirm = !showConfirm)}
 								class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-								aria-label={showConfirm ? tFn('hide_password') : tFn('show_password')}
+								aria-label={showConfirm ? 'הסתר אישור סיסמה' : 'הצג אישור סיסמה'}
 							>
 								{#if showConfirm}
 									<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

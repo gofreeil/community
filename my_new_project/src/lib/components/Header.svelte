@@ -121,7 +121,7 @@
                         <div class="relative">
                             <img
                                 src="/images/logos/לוגו2.png"
-                                alt="לוגו"
+                                alt=""
                                 class="h-10 w-10 object-contain flex-shrink-0"
                             />
                             <div
@@ -217,7 +217,7 @@
                     >
                         <img
                             src="/images/logos/לוגו2.png"
-                            alt="מיצוי זכויות מקומיות"
+                            alt=""
                             class="h-16 w-auto object-contain"
                         />
                     </a>
