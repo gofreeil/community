@@ -117,8 +117,8 @@
 
     <!-- Desktop layout -->
     <div class="hidden md:flex flex-col flex-1 overflow-hidden p-2">
-        <div class="flex flex-col justify-evenly h-full">
-            {#each displayItems.slice(0, 3) as item}
+        <div class="relative flex flex-col justify-evenly flex-1 min-h-0 overflow-hidden">
+            {#each displayItems.slice(0, 4) as item}
                 {@const type = getType(item.extra_fields)}
                 <a
                     href={isMock ? '/lost-and-found' : `/lost-and-found/${item.id}`}
@@ -142,13 +142,15 @@
                     </div>
                 </a>
             {/each}
-            <a
-                href="/lost-and-found"
-                aria-label="לוח אבדות ומציאות המלא"
-                class="block text-center text-yellow-400 hover:text-white text-xs font-bold transition-colors underline underline-offset-2 py-2"
-            >
-                ללוח המלא...
-            </a>
+            <!-- fade overlay -->
+            <div class="pointer-events-none absolute bottom-0 left-0 right-0 h-10" style="background: linear-gradient(to bottom, transparent, #0f172a 90%);"></div>
         </div>
+        <a
+            href="/lost-and-found"
+            aria-label="לוח אבדות ומציאות המלא"
+            class="flex-shrink-0 block text-center text-yellow-400 hover:text-white text-xs font-bold transition-colors underline underline-offset-2 py-2"
+        >
+            ללוח המלא...
+        </a>
     </div>
 </div>
