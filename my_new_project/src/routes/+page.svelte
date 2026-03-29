@@ -247,26 +247,22 @@
                             {@const day = ev.date.split('-')[2]}
                             {@const months = ['', 'ינו', 'פבר', 'מרץ', 'אפר', 'מאי', 'יונ', 'יול', 'אוג', 'ספט', 'אוק', 'נוב', 'דצמ']}
                             {@const month = months[parseInt(ev.date.split('-')[1])]}
-                            <div class="relative flex gap-3 items-start bg-white/5 rounded-xl p-3 border border-white/8 cursor-pointer hover:bg-white/10 transition-all group">
-                                <div class="flex flex-col items-center {ev.bgColor} rounded-lg px-2 py-1.5 min-w-[44px] text-center flex-shrink-0">
+                            <div class="relative flex gap-3 items-center bg-white/5 rounded-xl p-3 border border-white/8 cursor-pointer hover:bg-white/10 transition-all group">
+                                <button
+                                    onclick={(e) => handleCalClick(i, e)}
+                                    class="flex flex-col items-center {ev.bgColor} rounded-lg px-2 py-1.5 min-w-[44px] text-center flex-shrink-0 active:opacity-70 transition-opacity"
+                                    title="הוסף ליומן"
+                                >
                                     <span class="{ev.textColor} font-bold text-base leading-none">{day}</span>
                                     <span class="{ev.subColor} text-[10px] leading-none mt-0.5">{month}</span>
-                                </div>
+                                    <svg class="w-3.5 h-3.5 mt-1 {ev.textColor} opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                </button>
                                 <div class="min-w-0 flex-1">
                                     <p class="text-white text-sm font-bold leading-tight">{ev.title}</p>
                                     <p class="text-gray-400 text-xs mt-0.5">{ev.location}, {ev.startTime}</p>
                                 </div>
-                                <!-- Calendar sync button -->
-                                <button
-                                    onclick={(e) => handleCalClick(i, e)}
-                                    class="flex-shrink-0 opacity-60 group-hover:opacity-100 hover:scale-110 transition-all text-white/70 hover:text-green-400"
-                                    title="הוסף ליומן"
-                                >
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11v4m0 0h-2m2 0h2"/>
-                                    </svg>
-                                </button>
                                 <!-- Calendar dropdown -->
                                 {#if calMenuOpen === i}
                                     <div class="absolute left-0 top-full mt-1 z-50 bg-[#1e293b] border border-white/20 rounded-xl shadow-2xl p-2 flex flex-col gap-1 min-w-[180px]">
@@ -284,7 +280,7 @@
                         <div class="pointer-events-none absolute bottom-0 left-0 right-0 h-20 rounded-b-xl" style="background: linear-gradient(to bottom, transparent, #0f172a 90%);"></div>
                     </div>
                     <div class="px-3 pb-2 flex-shrink-0">
-                        <a href="/events" class="block text-center text-green-400 hover:text-white text-xs font-bold transition-colors underline underline-offset-2 py-1">
+                        <a href="/events" class="block text-center text-yellow-400 hover:text-white text-xs font-bold transition-colors underline underline-offset-2 py-1">
                             לכל האירועים...
                         </a>
                     </div>
