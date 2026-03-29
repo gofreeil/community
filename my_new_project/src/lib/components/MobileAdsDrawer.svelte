@@ -138,7 +138,7 @@
 	>
 		<!-- כותרת Drawer -->
 		<div class="drawer-header">
-			<span class="drawer-title">🌟 לאזור האישי והטבות</span>
+			<span class="drawer-title">🌟 האזור האישי וההטבות מהקהילה הארצית</span>
 			<button class="close-btn" onclick={() => open = false} aria-label="סגור">✕</button>
 		</div>
 
@@ -275,7 +275,7 @@
 		ontouchend={onTabTouchEnd}
 		aria-label="פתח הטבות לקהילה"
 	>
-		<span class="tab-text">לאזור האישי והטבות</span>
+		<span class="tab-text">האזור האישי וההטבות מהקהילה הארצית</span>
 	</button>
 	{/if}
 
