@@ -699,7 +699,10 @@
         <!-- כותרת שכונה - הוסרה לדף הראשי -->
 
         <div class="flex flex-col gap-2">
-            <!-- Buttons Container -->
+            <!-- Buttons Container with left-edge fade for mobile -->
+            <div class="relative">
+                <!-- fade on left edge: indicates hidden buttons off-screen (RTL) -->
+                <div class="md:hidden pointer-events-none absolute top-0 left-0 bottom-0 w-12 z-10" style="background: linear-gradient(to right, #070b14 20%, transparent);"></div>
             <div
                 class="category-buttons-container flex flex-wrap justify-start md:justify-between gap-2 md:gap-x-2 md:gap-y-3 p-2 w-full"
             >
@@ -729,6 +732,7 @@
                     </button>
                 {/each}
             </div>
+            </div><!-- /relative wrapper -->
         </div>
     </div>
 
