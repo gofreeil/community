@@ -373,7 +373,7 @@
             <JerusalemMap bind:showNeighborhoodsMenu dbItems={data.dbItems} />
             <div class="grid grid-cols-2 gap-2">
                 <!-- Left: Events Board -->
-                <div class="rounded-2xl bg-[#0f172a] border border-blue-500/30 overflow-hidden shadow-2xl flex flex-col self-start">
+                <div class="rounded-2xl bg-[#0f172a] border border-blue-500/30 overflow-hidden shadow-2xl flex flex-col h-full">
                     <div class="bg-gradient-to-r from-green-600 to-teal-600 p-2 flex items-center justify-between flex-shrink-0 h-12">
                         <h3 class="text-sm font-bold text-white flex items-center gap-1">
                             <span class="text-base">🗓️</span>
@@ -383,30 +383,29 @@
                             + הוסף
                         </button>
                     </div>
-                    <div class="p-2 overflow-hidden flex flex-col gap-1.5 relative max-h-[415px]">
+                    <div class="p-1.5 overflow-hidden flex flex-col gap-1 relative flex-1 min-h-0">
                         {#each mockEvents as ev, i}
                             {@const day = ev.date.split('-')[2]}
                             {@const months = ['', 'ינו', 'פבר', 'מרץ', 'אפר', 'מאי', 'יונ', 'יול', 'אוג', 'ספט', 'אוק', 'נוב', 'דצמ']}
                             {@const month = months[parseInt(ev.date.split('-')[1])]}
-                            <div class="relative flex gap-2 items-start bg-white/5 rounded-xl p-2 border border-white/8 cursor-pointer">
-                                <div class="flex flex-col items-center {ev.bgColor} rounded-lg px-1.5 py-1 min-w-[36px] text-center flex-shrink-0">
-                                    <span class="{ev.textColor} font-bold text-sm leading-none">{day}</span>
-                                    <span class="{ev.subColor} text-[9px] leading-none mt-0.5">{month}</span>
-                                </div>
-                                <div class="min-w-0 flex-1">
-                                    <p class="text-white text-xs font-bold leading-tight">{ev.title}</p>
-                                    <p class="text-gray-400 text-[10px] mt-0.5">{ev.location}, {ev.startTime}</p>
-                                </div>
+                            <div class="relative flex gap-1.5 items-center bg-white/5 rounded-lg p-1.5 border border-white/8 cursor-pointer">
+                                <!-- Date + cal button stacked on left -->
                                 <button
                                     onclick={(e) => handleCalClick(100 + i, e)}
-                                    class="flex-shrink-0 text-white/50 active:text-green-400 transition-all"
+                                    class="flex flex-col items-center {ev.bgColor} rounded-md px-1 py-1 min-w-[32px] text-center flex-shrink-0 active:opacity-70 transition-opacity"
                                     title="הוסף ליומן"
                                 >
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <span class="{ev.textColor} font-bold text-xs leading-none">{day}</span>
+                                    <span class="{ev.subColor} text-[8px] leading-none">{month}</span>
+                                    <svg class="w-2.5 h-2.5 mt-0.5 {ev.textColor} opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11v4m0 0h-2m2 0h2"/>
                                     </svg>
                                 </button>
+                                <!-- Text: full width -->
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-white text-[11px] font-bold leading-tight truncate">{ev.title}</p>
+                                    <p class="text-gray-400 text-[9px] truncate">{ev.location}, {ev.startTime}</p>
+                                </div>
                                 {#if calMenuOpen === 100 + i}
                                     <div class="absolute left-0 top-full mt-1 z-50 bg-[#1e293b] border border-white/20 rounded-xl shadow-2xl p-2 flex flex-col gap-1 min-w-[160px]">
                                         <button onclick={() => openGoogleCalendar(ev)} class="flex items-center gap-2 text-xs text-white hover:bg-white/10 rounded-lg px-3 py-2 transition-colors text-right w-full">
@@ -420,14 +419,14 @@
                             </div>
                         {/each}
                         <!-- fade-out overlay on last event -->
-                        <div class="pointer-events-none absolute bottom-0 left-0 right-0 h-16 rounded-b-xl" style="background: linear-gradient(to bottom, transparent, #0f172a 90%);"></div>
+                        <div class="pointer-events-none absolute bottom-0 left-0 right-0 h-12 rounded-b-lg" style="background: linear-gradient(to bottom, transparent, #0f172a 90%);"></div>
                     </div>
                     <a href="/events" class="block text-center text-yellow-400 hover:text-white text-[10px] font-bold transition-colors underline underline-offset-2 py-1.5 flex-shrink-0">
                         לכל האירועים...
                     </a>
                 </div>
                 <!-- Right: Lost and Found -->
-                <div>
+                <div class="h-full">
                     <LostAndFound items={data.dbItems.filter(i => i.category === 'lost_and_found')} />
                 </div>
             </div>
