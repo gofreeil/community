@@ -57,12 +57,8 @@
             <nav
                 class="flex items-center gap-4 text-base md:text-lg text-gray-300 font-bold"
             >
-                <a href="/legal#terms" class="hover:text-white transition-colors"
-                    >{tFn("terms")}</a
-                >
-                <span class="text-gray-600 font-black">|</span>
-                <a href="/legal#privacy" class="hover:text-white transition-colors"
-                    >{tFn("privacy")}</a
+                <a href="/legal" class="hover:text-white transition-colors"
+                    >תנאי שימוש ופרטיות</a
                 >
                 <span class="text-gray-600 font-black">|</span>
                 <a
