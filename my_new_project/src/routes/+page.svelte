@@ -7,6 +7,7 @@
     import FacebookComments from "$lib/components/FacebookComments.svelte";
     import ReferendumBanner from "$lib/components/ReferendumBanner.svelte";
     import { triggerAdPopup } from "$lib/adPopupStore";
+    import { ads } from "$lib/adsData";
 
     import { citiesAndNeighborhoods } from "$lib/neighborhoodsData";
     import { neighborhoodState } from "$lib/neighborhoodState.svelte";
@@ -48,6 +49,16 @@
     ];
 
     let calMenuOpen = $state<number | null>(null);
+
+    // Rotating compact ad for desktop right column
+    let compactAdIndex = $state(0);
+    let compactAd = $derived(ads[compactAdIndex]);
+    onMount(() => {
+        const interval = setInterval(() => {
+            compactAdIndex = (compactAdIndex + 1) % ads.length;
+        }, 7000);
+        return () => clearInterval(interval);
+    });
 
     function toICSDate(date: string, time: string): string {
         return date.replace(/-/g, '') + 'T' + time.replace(':', '') + '00';
@@ -292,6 +303,30 @@
                 <div class="flex-1 min-h-0 overflow-hidden">
                     <LostAndFound items={data.dbItems.filter(i => i.category === 'lost_and_found')} />
                 </div>
+
+                <!-- 2.5 Compact Ad -->
+                <a
+                    href={compactAd.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onclick={() => triggerAdPopup(compactAd.href)}
+                    class="flex-shrink-0 rounded-xl overflow-hidden shadow-xl block no-underline group transition-transform hover:-translate-y-0.5"
+                >
+                    <div class="bg-gradient-to-r {compactAd.color} flex items-center gap-2 p-2">
+                        <img
+                            src={compactAd.image}
+                            alt={compactAd.title}
+                            class="w-12 h-12 object-cover rounded-lg flex-shrink-0 shadow"
+                        />
+                        <div class="min-w-0 flex-1">
+                            <p class="text-white font-black text-xs leading-tight">{compactAd.title}</p>
+                            <p class="text-white/80 text-[10px] leading-snug mt-0.5 line-clamp-2">{compactAd.description}</p>
+                        </div>
+                    </div>
+                    <div class="bg-black/40 text-white text-[10px] font-bold text-center py-1 px-2 group-hover:bg-black/50 transition-colors">
+                        {compactAd.cta} ←
+                    </div>
+                </a>
 
                 <!-- 3. Community Feed -->
                 <div class="flex-1 min-h-0 rounded-2xl bg-[#0f172a] border border-2 border-amber-500/30 overflow-hidden shadow-2xl flex flex-col">
