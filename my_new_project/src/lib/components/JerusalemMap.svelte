@@ -704,23 +704,19 @@
                 <!-- fade on left edge: indicates hidden buttons off-screen (RTL) -->
                 <div class="md:hidden pointer-events-none absolute top-0 left-0 bottom-0 w-6 z-10" style="background: linear-gradient(to right, rgba(7,11,20,0.75) 0%, transparent);"></div>
             <div
-                class="category-buttons-container flex flex-wrap justify-start md:justify-between gap-2 md:gap-x-2 md:gap-y-3 p-2 w-full"
+                class="category-buttons-container grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-9 gap-2 p-2 w-full"
             >
                 {#each categories as category, index}
                     <button
                         onclick={() => handleCategoryClick(category.id)}
                         title="לחץ כדי לסנן במפה"
-                        class="flex items-center justify-center gap-1.5 {selectedCategory ===
-                        category.id
+                        class="flex items-center justify-center gap-1.5 {selectedCategory === category.id
                             ? category.id === 'benefits'
-                                ? 'bg-gradient-to-br from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-gray-900 border-yellow-500 scale-110'
-                                : 'bg-gradient-to-br from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-purple-500 scale-110'
+                                ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-gray-900 border-yellow-500 ring-2 ring-yellow-300'
+                                : 'bg-gradient-to-br from-purple-600 to-blue-600 text-white border-purple-500 ring-2 ring-purple-300'
                             : category.id === 'benefits'
                               ? 'bg-gradient-to-br from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-gray-900 border-yellow-500'
-                              : 'bg-gradient-to-br from-white to-gray-200 hover:from-blue-100 hover:to-white text-gray-900 border-purple-300'} px-3 py-1.5 rounded-lg text-sm md:text-xs font-bold shadow-lg transition-all hover:scale-105 border {category.id ===
-                        'realestate'
-                            ? 'flex-basis-full md:basis-auto'
-                            : 'min-w-[80px] max-w-[120px] md:max-w-none'} md:flex-1 md:min-w-[15%] md:whitespace-nowrap map-category-button"
+                              : 'bg-gradient-to-br from-white to-gray-200 hover:from-blue-100 hover:to-white text-gray-900 border-purple-300'} px-2 py-1.5 rounded-lg text-xs font-bold shadow-lg transition-all hover:scale-105 border w-full whitespace-nowrap map-category-button"
                     >
                         <span
                             class="text-lg md:text-base icon"
@@ -1534,20 +1530,11 @@
         }
 
         .category-buttons-container {
-            display: flex !important;
-            flex-wrap: nowrap !important;
-            overflow-x: auto !important;
-            overflow-y: hidden !important;
-            gap: 8px !important;
-            padding: 12px 16px !important;
-            margin-bottom: 4px !important;
-            scroll-behavior: smooth !important;
-            -webkit-overflow-scrolling: touch !important;
-            scrollbar-width: none !important; /* הסתרת סרגל גלילה ב-Firefox */
-        }
-
-        .category-buttons-container::-webkit-scrollbar {
-            display: none !important; /* הסתרת סרגל גלילה ב-Chrome/Safari */
+            display: grid !important;
+            grid-template-columns: repeat(4, 1fr) !important;
+            gap: 6px !important;
+            padding: 8px !important;
+            overflow: visible !important;
         }
 
         /* Remove CSS pseudo-elements to prevent duplicates */
