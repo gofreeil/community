@@ -91,6 +91,7 @@
                                 📞 {sender.phone}
                             </a>
                             <a href={waLink(sender.phone)} target="_blank" rel="noopener noreferrer"
+                                aria-label="שלח הודעת וואטסאפ (נפתח בחלון חדש)"
                                 class="px-4 py-2 rounded-xl bg-green-600/20 hover:bg-green-600 text-green-300 hover:text-white text-sm font-bold transition-all border border-green-500/30">
                                 💬 וואטסאפ
                             </a>

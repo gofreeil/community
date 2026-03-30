@@ -602,7 +602,7 @@
 							              hover:border-purple-500/40 rounded-xl px-4 py-2 text-sm text-gray-300
 							              transition-all inline-block">
 								{tFn("choose_photo")}
-								<input type="file" accept="image/*" class="hidden" onchange={handleImageChange} />
+								<input type="file" accept="image/*" class="hidden" aria-label={tFn("choose_photo")} onchange={handleImageChange} />
 							</label>
 							<!-- כפתור גוגל - תמיד פעיל -->
 							<button type="button"
@@ -788,6 +788,7 @@
 					<label for="p-birth-day" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("birth_date_label")}</label>
 					{#if isEditing}
 						<div class="flex gap-1.5">
+							<label for="p-birth-day" class="sr-only">יום לידה</label>
 							<select id="p-birth-day" name="birth_day" bind:value={birthDay}
 								class="flex-1 bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl px-2 py-3 text-white text-sm outline-none appearance-none text-center">
 								<option value="">{tFn("birth_day")}</option>
@@ -795,14 +796,16 @@
 									<option value={String(d)}>{d}</option>
 								{/each}
 							</select>
-							<select name="birth_month" bind:value={birthMonth}
+							<label for="p-birth-month" class="sr-only">חודש לידה</label>
+							<select id="p-birth-month" name="birth_month" bind:value={birthMonth}
 								class="flex-[1.5] bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl px-2 py-3 text-white text-sm outline-none appearance-none text-center">
 								<option value="">{tFn("birth_month")}</option>
 								{#each tFn("months_list").split(",") as month, i}
 									<option value={String(i + 1)}>{month}</option>
 								{/each}
 							</select>
-							<select name="birth_year" bind:value={birthYear}
+							<label for="p-birth-year" class="sr-only">שנת לידה</label>
+							<select id="p-birth-year" name="birth_year" bind:value={birthYear}
 								class="flex-1 bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl px-2 py-3 text-white text-sm outline-none appearance-none text-center">
 								<option value="">{tFn("birth_year")}</option>
 								{#each Array.from({length: 100}, (_, i) => new Date().getFullYear() - i) as y}
@@ -824,6 +827,9 @@
 						<label class="flex items-center gap-3 cursor-pointer group">
 							<div class="relative" dir="ltr">
 								<input type="checkbox" bind:checked={notifications}
+									id="notifications-toggle"
+									role="switch"
+									aria-checked={notifications}
 									class="sr-only peer" />
 								<div class="w-12 h-7 bg-gray-700 rounded-full peer-checked:bg-green-500
 								            transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5
@@ -1118,6 +1124,7 @@
 
 			{#if business}
 			<a href="https://index-chi-sage.vercel.app/" target="_blank" rel="noopener noreferrer"
+				aria-label="מועדון בעלי העסקים הכשרים – הצטרף לרשת בעלי העסקים (נפתח בחלון חדש)"
 				class="flex items-center gap-4 bg-amber-500/10 border border-amber-500/30
 				       hover:bg-amber-500/20 hover:border-amber-400/50 transition-all
 				       rounded-2xl px-5 py-4 group">
@@ -1144,6 +1151,7 @@
 
 			{#each whatsappMatches as group}
 			<a href={group.url} target="_blank" rel="noopener noreferrer"
+				aria-label="{group.label} – הצטרף לקבוצת הווטסאפ (נפתח בחלון חדש)"
 				class="flex items-center gap-4 bg-green-500/10 border border-green-500/30
 				       hover:bg-green-500/20 hover:border-green-400/50 transition-all
 				       rounded-2xl px-5 py-4 group">

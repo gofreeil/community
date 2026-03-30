@@ -685,6 +685,8 @@
                 <a
                     href="https://wa.me/972500000000?text=שלום, אני מעוניין לפרסם: {selectedItems.map(r => r.type).join(', ')}. סה״כ ₪{totalPayment}."
                     target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="שלח הזמנת פרסום בוואטסאפ (נפתח בחלון חדש)"
                     class="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-black px-6 py-3 rounded-xl text-sm transition-all hover:scale-105 shadow-lg shadow-green-500/20"
                 >
                     💬 שלח בוואטסאפ
@@ -731,11 +733,13 @@
             <h3 class="text-white font-black mb-1">סליקה מאובטחת</h3>
             <p class="text-gray-400 text-sm mb-4">מחוברים לחברת סליקה מורשית — עסקה מאובטחת ב-SSL</p>
             <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                <a href="https://meshulam.co.il" target="_blank"
+                <a href="https://meshulam.co.il" target="_blank" rel="noopener noreferrer"
+                   aria-label="לדף התשלום – משולם (נפתח בחלון חדש)"
                    class="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-black px-6 py-3 rounded-xl text-sm transition-all hover:scale-105">
                     🔗 לדף התשלום — משולם
                 </a>
-                <a href="https://grow.co.il" target="_blank"
+                <a href="https://grow.co.il" target="_blank" rel="noopener noreferrer"
+                   aria-label="לדף התשלום – Grow (נפתח בחלון חדש)"
                    class="inline-flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-500 text-white font-black px-6 py-3 rounded-xl text-sm transition-all hover:scale-105">
                     🔗 לדף התשלום — Grow
                 </a>
@@ -767,7 +771,8 @@
                class="inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-black font-black px-6 py-3 rounded-xl text-base transition-all hover:scale-105 shadow-lg shadow-amber-500/30">
                 ✉️ שלח מייל
             </a>
-            <a href="https://wa.me/972500000000" target="_blank"
+            <a href="https://wa.me/972500000000" target="_blank" rel="noopener noreferrer"
+               aria-label="צור קשר בוואטסאפ (נפתח בחלון חדש)"
                class="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-black px-6 py-3 rounded-xl text-base transition-all hover:scale-105 shadow-lg shadow-green-500/30">
                 💬 וואטסאפ
             </a>

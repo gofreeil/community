@@ -11,8 +11,26 @@
 	$effect(() => {
 		if (!coinAnim.active) { stage = 0; return; }
 
-		stage = 1;
+		const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 		prevTotal = coinAnim.newFundTotal - coinAnim.amount;
+
+		if (prefersReduced) {
+			// דלג ישירות לסיכום ללא אנימציה
+			displayTotal = coinAnim.newFundTotal;
+			stage = 4;
+			countdown = 3;
+			const cd = setInterval(() => {
+				countdown--;
+				if (countdown <= 0) {
+					clearInterval(cd);
+					coinAnim.reset();
+					goto('/');
+				}
+			}, 1000);
+			return () => clearInterval(cd);
+		}
+
+		stage = 1;
 
 		// Stage 1 → 2 after 1.8s
 		const t1 = setTimeout(() => { stage = 2; }, 1800);

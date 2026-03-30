@@ -86,6 +86,7 @@
                 href={popup.ad.href}
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="{popup.ad.cta} – {popup.ad.title} (נפתח בחלון חדש)"
                 onclick={() => closeAdPopup()}
                 class="block w-full text-center py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-bold hover:from-purple-500 hover:to-indigo-500 transition-all"
             >
