@@ -56,7 +56,8 @@
     onmousemove={handleMouseMove}
     onfocusin={handleFocusIn}
     onfocusout={handleFocusOut}
-    role="banner"
+    role="region"
+    aria-label="משאל עם קהילתי"
     class="referendum-banner group relative overflow-hidden rounded-2xl shadow-2xl my-8 cursor-default"
 >
     <!-- רקע גרדיאנט -->
