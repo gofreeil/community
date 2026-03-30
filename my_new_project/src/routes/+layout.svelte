@@ -39,6 +39,8 @@
 <svelte:head>
 	<title>קהילה בשכונה</title>
 	<link rel="icon" href={favicon} />
+	<script src="https://widget.tabnav.com/widget.min.js.gz" defer></script>
+	<noscript>נדרש ג'אווה סקריפט כדי ש<a href="https://tabnav.com/he">הנגשת אתרים</a> תעבוד כראוי.</noscript>
 </svelte:head>
 
 <a href="#main-content" class="skip-link">דלג לתוכן הראשי</a>
