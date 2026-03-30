@@ -754,12 +754,15 @@
             class:auto-switching={isAutoSwitching}
             class:menu-open={showHelpMenu || showSurvey}
             style="position: absolute; top: 0; left: 0;"
+            aria-label={viewMode === "map" ? "עבור לתצוגת רשימה" : "עבור לתצוגת מפה"}
         >
             <svg
                 width="130"
                 height="130"
                 viewBox="0 0 130 130"
                 class="transition-transform duration-500"
+                aria-hidden="true"
+                focusable="false"
             >
                 <path
                     d="M 0,24 Q 0,0 24,0 L 130,0 L 0,130 Z"
