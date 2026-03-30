@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { signOut, signIn } from '@auth/sveltekit/client';
+	import { subscribeToPush, unsubscribeFromPush, saveSubscription, deleteSubscription } from '$lib/push.js';
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import type { CityEntry } from '$lib/neighborhoodsData';
@@ -78,6 +79,26 @@
 	let birthDay      = $state(birthParts[2] ? String(parseInt(birthParts[2])) : '');
 	let notifications  = $state(_ud?.notifications !== 0);
 	let termsAccepted  = $state(false);
+
+	// ===== Web Push =====
+	async function handleNotificationsToggle(enabled: boolean) {
+		if (enabled) {
+			const sub = await subscribeToPush();
+			if (sub) {
+				await saveSubscription(sub, data.user?.id);
+			} else {
+				// המשתמש סירב להרשאה — החזר toggle
+				notifications = false;
+			}
+		} else {
+			const reg = await navigator.serviceWorker?.getRegistration?.('/');
+			const sub = await reg?.pushManager?.getSubscription?.();
+			if (sub) {
+				await deleteSubscription(sub);
+				await unsubscribeFromPush();
+			}
+		}
+	}
 	let showTermsError = $state(false);
 
 	// ===== שליפת תמונה מגוגל/פייסבוק =====
@@ -830,7 +851,8 @@
 									id="notifications-toggle"
 									role="switch"
 									aria-checked={notifications}
-									class="sr-only peer" />
+									class="sr-only peer"
+									onchange={(e) => handleNotificationsToggle((e.target as HTMLInputElement).checked)} />
 								<div class="w-12 h-7 bg-gray-700 rounded-full peer-checked:bg-green-500
 								            transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5
 								            after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all
