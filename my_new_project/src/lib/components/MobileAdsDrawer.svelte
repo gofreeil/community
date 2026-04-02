@@ -289,7 +289,7 @@
 		ontouchend={onTabTouchEnd}
 		aria-label="פתח הטבות לקהילה"
 	>
-		<span class="tab-text">לאזור אישי ולהטבות</span>
+		<span class="tab-text">לאזור האישי ולהטבות</span>
 	</button>
 	{/if}
 
