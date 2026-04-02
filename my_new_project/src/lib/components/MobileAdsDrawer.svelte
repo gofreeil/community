@@ -104,16 +104,9 @@
 	}
 
 	function onTabTouchEnd(e: TouchEvent) {
-		const dx       = e.changedTouches[0].clientX - tabTouchStartX;
-		const dy       = e.changedTouches[0].clientY - tabTouchStartY;
-		const duration = Date.now() - tabTouchStartTime;
-
 		if (!tabDragging) {
-			// קליק קצר או משיכה ימינה → פתח
-			if ((duration < 300 && Math.abs(dx) < 15 && Math.abs(dy) < 15) ||
-				(dx > 30 && Math.abs(dx) > Math.abs(dy))) {
-				open = true;
-			}
+			// כל טאפ שאינו גרירה → פתח
+			open = true;
 		}
 		tabDragging = false;
 	}
