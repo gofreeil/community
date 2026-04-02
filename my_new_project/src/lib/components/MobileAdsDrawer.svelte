@@ -93,19 +93,22 @@
 	function onTabTouchMove(e: TouchEvent) {
 		const dx = e.touches[0].clientX - tabTouchStartX;
 		const dy = e.touches[0].clientY - tabDragStartClientY;
-		// רק תנועה אנכית ברורה → גרירה
-		if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 8) {
+		// סף גבוה יותר (20px) כדי לא לסמן גרירה בטעות בטאפ
+		if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 20) {
 			tabDragging = true;
 			let newY = tabDragStartTabY + dy;
 			newY = Math.max(60, Math.min(window.innerHeight - 60, newY));
 			tabY = newY;
-			e.preventDefault(); // מניעת גלילה
+			e.preventDefault();
 		}
 	}
 
 	function onTabTouchEnd(e: TouchEvent) {
-		if (!tabDragging) {
-			// כל טאפ שאינו גרירה → פתח
+		const dx = e.changedTouches[0].clientX - tabTouchStartX;
+		const dy = e.changedTouches[0].clientY - tabTouchStartY;
+		const totalMove = Math.sqrt(dx * dx + dy * dy);
+		// פתח אם לא גרירה, או אם תנועה קטנה מ-25px (טאפ עם רעש קטן)
+		if (!tabDragging || totalMove < 25) {
 			open = true;
 		}
 		tabDragging = false;
