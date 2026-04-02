@@ -255,7 +255,14 @@
 				onclick={() => open = false}
 			>
 				<div class="ad-img-wrap">
-					<img src={ad.image} alt={ad.title} class="ad-img" loading="lazy" />
+					<div class="img-skeleton"></div>
+					<img
+						src={ad.image}
+						alt={ad.title}
+						class="ad-img"
+						loading="lazy"
+						onload={(e) => (e.currentTarget as HTMLImageElement).classList.add('loaded')}
+					/>
 				</div>
 				<div class="ad-body">
 					<p class="ad-title">{ad.title}</p>
@@ -531,12 +538,41 @@
 		border-radius: 0.5rem;
 		overflow: hidden;
 		flex-shrink: 0;
+		background: #1e293b;
 	}
 
+	/* Skeleton shimmer */
+	.img-skeleton {
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+		background-size: 200% 100%;
+		animation: shimmer 1.4s infinite;
+		z-index: 1;
+	}
+
+	@keyframes shimmer {
+		0%   { background-position: 200% 0; }
+		100% { background-position: -200% 0; }
+	}
+
+	/* Blur-up: מתחיל מטושטש ומתבהר */
 	.ad-img {
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
+		position: relative;
+		z-index: 2;
+		filter: blur(8px);
+		transform: scale(1.08);
+		transition: filter 0.45s ease, transform 0.45s ease, opacity 0.3s ease;
+		opacity: 0;
+	}
+
+	.ad-img.loaded {
+		filter: blur(0);
+		transform: scale(1);
+		opacity: 1;
 	}
 
 .ad-body {
