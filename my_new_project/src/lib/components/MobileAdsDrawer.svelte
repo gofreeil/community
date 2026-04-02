@@ -342,6 +342,7 @@
 		font-size: 1rem;
 		font-weight: 700;
 		color: #e0e7ff;
+		text-align: center;
 	}
 
 	.close-btn {
