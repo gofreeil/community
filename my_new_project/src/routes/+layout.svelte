@@ -10,7 +10,6 @@
 	import CoinAnimation from "$lib/components/CoinAnimation.svelte";
 	import MobileAdsDrawer from "$lib/components/MobileAdsDrawer.svelte";
 	import MobileAdPopup from "$lib/components/MobileAdPopup.svelte";
-	import favicon from "$lib/assets/favicon.svg";
 	import { signOut } from "@auth/sveltekit/client";
 	import { goto } from "$app/navigation";
 	import { page } from "$app/state";
@@ -38,7 +37,7 @@
 
 <svelte:head>
 	<title>קהילה בשכונה</title>
-	<link rel="icon" href={favicon} />
+	<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 	<script src="https://widget.tabnav.com/widget.min.js.gz" defer></script>
 	<noscript>נדרש ג'אווה סקריפט כדי ש<a href="https://tabnav.com/he">הנגשת אתרים</a> תעבוד כראוי.</noscript>
 </svelte:head>
