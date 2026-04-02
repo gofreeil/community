@@ -145,11 +145,11 @@
 	>
 		<!-- כותרת Drawer -->
 		<div class="drawer-header">
-			<span class="drawer-title">🌟 האזור האישי וההטבות מהקהילה הארצית — יוצאים לחירות</span>
 			<button class="close-btn" onclick={() => open = false} aria-label="סגור">✕</button>
 		</div>
 
 		<!-- כפתור התחברות / אזור אישי -->
+		<div class="section-title">האזור האישי</div>
 		<div class="auth-section">
 			{#if currentUser && layoutUser}
 			<!-- מיני-כרטיס פרופיל -->
@@ -237,6 +237,9 @@
 			</a>
 			{/if}
 		</div>
+
+		<!-- כותרת הטבות -->
+		<div class="section-title">הטבות ארציות <span class="title-gold">יוצאים לחירות</span></div>
 
 		<!-- רשימת פרסומות -->
 		<div class="ads-list">
@@ -326,16 +329,37 @@
 	.drawer-header {
 		display: flex;
 		align-items: center;
-		justify-content: center;
+		justify-content: flex-end;
 		position: relative;
-		padding: 1rem;
-		border-bottom: 1px solid rgba(99, 102, 241, 0.15);
+		padding: 0.5rem 1rem;
 		flex-shrink: 0;
 	}
 
-	.drawer-header .close-btn {
-		position: absolute;
-		left: 1rem;
+	/* ---- כותרת סקציה ---- */
+	.section-title {
+		font-size: 1.25rem;
+		font-weight: 900;
+		background: linear-gradient(90deg, #38bdf8, #818cf8, #a78bfa);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		text-align: center;
+		padding: 0.9rem 1.25rem 0.6rem;
+		letter-spacing: 0.05em;
+		flex-shrink: 0;
+		border-top: 2px solid rgba(56, 189, 248, 0.25);
+		text-shadow: none;
+		position: relative;
+	}
+
+	.section-title::after {
+		content: '';
+		display: block;
+		margin: 0.4rem auto 0;
+		width: 48px;
+		height: 3px;
+		border-radius: 2px;
+		background: linear-gradient(90deg, #38bdf8, #818cf8, #a78bfa);
 	}
 
 	.drawer-title {
@@ -343,6 +367,10 @@
 		font-weight: 700;
 		color: #e0e7ff;
 		text-align: center;
+	}
+
+	.title-gold {
+		color: #fbbf24;
 	}
 
 	.close-btn {
