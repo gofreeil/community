@@ -704,7 +704,7 @@
                 <!-- fade on left edge: indicates hidden buttons off-screen (RTL) -->
                 <div class="md:hidden pointer-events-none absolute top-0 left-0 bottom-0 w-6 z-10" style="background: linear-gradient(to right, rgba(7,11,20,0.75) 0%, transparent);"></div>
             <div
-                class="category-buttons-container flex flex-wrap justify-start md:justify-between gap-2 md:gap-x-2 md:gap-y-3 p-2 w-full"
+                class="category-buttons-container flex flex-nowrap md:flex-wrap justify-start md:justify-between gap-2 md:gap-x-2 md:gap-y-3 overflow-x-auto md:overflow-x-visible px-4 py-3 md:p-2 w-full"
             >
                 {#each categories as category, index}
                     <button
@@ -716,7 +716,7 @@
                                 : 'bg-gradient-to-br from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-purple-500 ring-2 ring-purple-300'
                             : category.id === 'benefits'
                               ? 'bg-gradient-to-br from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-gray-900 border-yellow-500'
-                              : 'bg-gradient-to-br from-white to-gray-200 hover:from-blue-100 hover:to-white text-gray-900 border-purple-300'} px-3 py-1.5 rounded-lg text-sm md:text-xs font-bold shadow-lg transition-all hover:scale-105 border min-w-[80px] max-w-[120px] md:max-w-none md:flex-1 md:min-w-[15%] md:whitespace-nowrap map-category-button"
+                              : 'bg-gradient-to-br from-white to-gray-200 hover:from-blue-100 hover:to-white text-gray-900 border-purple-300'} px-3 py-2 md:py-1.5 rounded-full md:rounded-lg text-sm md:text-xs font-bold shadow-lg transition-all hover:scale-105 border shrink-0 whitespace-nowrap md:flex-1 md:min-w-[15%] map-category-button"
                     >
                         <span
                             class="text-lg md:text-base icon"
@@ -1511,39 +1511,21 @@
         background: #a855f7;
     }
 
-    /* Mobile buttons layout - compact and minimalist */
+    /* Mobile buttons layout */
     @media (max-width: 768px) {
         .map-category-button span.icon,
         .map-category-button span[style*="letter-spacing"] {
             display: none !important;
         }
 
-        .map-category-button {
-            min-width: auto !important;
-            max-width: none !important;
-            padding: 8px 12px !important;
-            font-size: 14px !important;
-            margin: 0 !important;
-            flex: 0 0 auto !important;
-            border-radius: 9999px !important; /* כפתורי "גלולה" */
-            white-space: nowrap !important;
-        }
-
         .category-buttons-container {
-            display: flex !important;
-            flex-wrap: nowrap !important;
-            overflow-x: auto !important;
-            overflow-y: hidden !important;
-            gap: 8px !important;
-            padding: 12px 16px !important;
-            margin-bottom: 4px !important;
-            scroll-behavior: smooth !important;
-            -webkit-overflow-scrolling: touch !important;
-            scrollbar-width: none !important;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
         }
 
         .category-buttons-container::-webkit-scrollbar {
-            display: none !important;
+            display: none;
         }
 
         /* Remove CSS pseudo-elements to prevent duplicates */

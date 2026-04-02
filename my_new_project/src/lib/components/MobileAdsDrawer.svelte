@@ -278,7 +278,7 @@
 	</div>
 
 	<!-- לשונית קטנה בצד שמאל (נראית כשה-Drawer סגור) - ניתנת לגרירה אנכית -->
-	{#if !open}
+	{#if !open && tabY > 0}
 	<button
 		class="tab"
 		class:tab-dragging={tabDragging}
@@ -289,7 +289,7 @@
 		ontouchend={onTabTouchEnd}
 		aria-label="פתח הטבות לקהילה"
 	>
-		<span class="tab-text">האזור האישי וההטבות מהקהילה הארצית</span>
+		<span class="tab-text">לאזור אישי ולהטבות</span>
 	</button>
 	{/if}
 
@@ -579,33 +579,36 @@
 		z-index: 1050;
 		background: linear-gradient(180deg, #4f46e5, #7c3aed);
 		border: none;
-		border-radius: 0 8px 8px 0;
-		padding: 0.6rem 0.3rem;
+		border-radius: 0 10px 10px 0;
+		padding: 0.75rem 0.4rem;
 		cursor: grab;
-		box-shadow: 3px 0 12px rgba(79,70,229,0.4);
-		transition: padding 0.2s, box-shadow 0.2s, opacity 0.15s;
-		touch-action: none; /* מאפשר ontouchmove מותאם */
+		box-shadow: 2px 0 6px rgba(79,70,229,0.25);
+		transition: padding 0.2s, box-shadow 0.2s;
+		touch-action: none;
 		user-select: none;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.4rem;
 	}
 
 	.tab:hover {
-		padding: 0.7rem 0.4rem;
-		box-shadow: 4px 0 18px rgba(79,70,229,0.6);
+		box-shadow: 2px 0 10px rgba(79,70,229,0.45);
 	}
 
 	.tab-dragging {
 		cursor: grabbing;
 		opacity: 0.85;
-		transition: none; /* ללא אנימציה בזמן גרירה */
+		transition: none;
 	}
 
 	.tab-text {
 		writing-mode: vertical-rl;
 		text-orientation: mixed;
 		transform: rotate(180deg);
-		font-size: 0.7rem;
+		font-size: 0.65rem;
 		font-weight: 700;
 		color: #fff;
-		letter-spacing: 0.08em;
+		letter-spacing: 0.06em;
 	}
 </style>
