@@ -1076,7 +1076,8 @@
 	            before:absolute before:inset-x-0 before:top-0 before:h-24 before:rounded-t-3xl
 	            before:bg-gradient-to-b before:from-white/8 before:to-transparent
 	            before:transition-all before:duration-300 before:pointer-events-none
-	            hover:before:from-white/18">
+	            hover:before:from-white/18 {!showMessages ? 'cursor-pointer' : ''}"
+	onclick={() => { if (!showMessages) showMessages = true; }}>
 		<div
 		class="relative flex items-center justify-between cursor-pointer select-none -mx-6 px-6 -mt-6 pt-6 md:-mx-8 md:px-8 md:-mt-8 md:pt-8 min-h-24 {showMessages ? 'pb-6 mb-6' : 'pb-6'}"
 			onclick={() => { if (showMessages) { showMessages = false; } else { showMessages = true; } }}
@@ -1097,7 +1098,7 @@
 		</div>
 
 		{#if showMessages}
-		<div class="flex flex-col gap-3">
+		<div class="flex flex-col gap-3" onclick={(e) => e.stopPropagation()}>
 			{#each messages as msg}
 				<div class="flex items-start gap-3 bg-white/5 rounded-2xl border {msg.read ? 'border-white/5' : 'border-orange-500/20'} px-4 py-3 transition-all hover:border-white/15">
 					<div class="w-2 h-2 rounded-full {msg.read ? 'bg-white/10' : 'bg-orange-500'} mt-1.5 flex-shrink-0"></div>
