@@ -1105,10 +1105,17 @@
                     {/if}
                 </div>
 
+                <!-- תמונה מתחת לחיפוש -->
+                {#if !searchQuery.trim()}
+                    <div class="flex justify-center mb-3">
+                        <img src="/images/ועדי שכונות חיפוש.png" alt="" class="max-w-[220px] w-full rounded-xl opacity-80" />
+                    </div>
+                {/if}
+
                 <!-- תוצאות -->
                 <div class="flex-1 overflow-y-auto space-y-2 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-transparent">
                     {#if !searchQuery.trim()}
-                        <div class="text-center py-12 text-gray-500">
+                        <div class="text-center py-4 text-gray-500">
                             <div class="text-4xl mb-3">🔍</div>
                             <p class="text-sm">הקלד מה אתה מחפש</p>
                         </div>
