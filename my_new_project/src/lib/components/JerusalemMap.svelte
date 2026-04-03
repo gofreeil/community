@@ -1152,8 +1152,8 @@
                 : "📋 רשימת שירותים"}
         </div>
 
-        <!-- כפתור חיפוש - פינה ימנית עליונה -->
-        <div class="absolute right-4 z-50" style="top: -14px;">
+        <!-- כפתור חיפוש - שליש עליון -->
+        <div class="absolute right-4 z-50" style="top: 33%;">
             <button
                 onclick={() => { viewMode = viewMode === 'search' ? 'list' : 'search'; searchQuery = ''; }}
                 title="חיפוש"
