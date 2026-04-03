@@ -99,7 +99,6 @@
 			let newY = tabDragStartTabY + dy;
 			newY = Math.max(60, Math.min(window.innerHeight - 60, newY));
 			tabY = newY;
-			e.preventDefault();
 		}
 	}
 
