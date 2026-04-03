@@ -7,15 +7,28 @@
 
     let { data }: { data: PageData } = $props();
 
-    // Server-rendered static data — safe to access directly
-    const { categoryId, config } = data;
+    const { categoryId, config, userId } = data;
+
+    const DRAFT_KEY = `add_draft_${categoryId}`;
 
     // ---- Neighborhood from localStorage ----
     let neighborhood = $state(DEFAULT_NEIGHBORHOOD);
     let city         = $state('ירושלים');
 
+    // ---- Form state ----
+    let formValues = $state<Record<string, string>>(
+        Object.fromEntries(config.fields.map(f => [f.key, '']))
+    );
+
+    let submitting      = $state(false);
+    let errorMsg        = $state('');
+    let submitted       = $state(false);
+    let redirectingMsg  = $state(''); // הודעה לפני מעבר להרשמה
+
     onMount(() => {
         if (!browser) return;
+
+        // שחזר שכונה
         try {
             const saved = localStorage.getItem(LS_KEY);
             if (saved) {
@@ -24,18 +37,20 @@
                 if (parsed.city)         city         = parsed.city;
             }
         } catch {}
+
+        // שחזר טיוטא אם קיימת
+        try {
+            const draft = localStorage.getItem(DRAFT_KEY);
+            if (draft) {
+                const parsed = JSON.parse(draft);
+                if (parsed.formValues) formValues   = { ...formValues, ...parsed.formValues };
+                if (parsed.neighborhood) neighborhood = parsed.neighborhood;
+                if (parsed.city)         city         = parsed.city;
+                // מחק טיוטא אחרי שחזור (תישמר מחדש אם יידרש)
+                localStorage.removeItem(DRAFT_KEY);
+            }
+        } catch {}
     });
-
-    // ---- Form state ----
-    // Build a flat record of key → value
-    let formValues = $state<Record<string, string>>(
-        Object.fromEntries(config.fields.map(f => [f.key, '']))
-    );
-
-    // label and description/phone/address are always top-level
-    let submitting = $state(false);
-    let errorMsg   = $state('');
-    let submitted  = $state(false);
 
     function getFieldValue(key: string): string {
         return formValues[key] ?? '';
@@ -55,6 +70,12 @@
         return null;
     }
 
+    // ---- שמירת טיוטא ל-localStorage ----
+    function saveDraft() {
+        if (!browser) return;
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({ formValues, neighborhood, city }));
+    }
+
     // ---- Submit ----
     async function handleSubmit(e: Event) {
         e.preventDefault();
@@ -62,9 +83,18 @@
         const err = validate();
         if (err) { errorMsg = err; return; }
 
+        // אם לא מחובר — שמור טיוטא והפנה להרשמה
+        if (!userId) {
+            saveDraft();
+            redirectingMsg = 'הטיוטה שלך נשמרה ✓\nאתה מועבר להרשמה — הפרסום יושלם מיד לאחריה.';
+            setTimeout(() => {
+                goto(`/login?redirect=/add/${categoryId}`);
+            }, 2200);
+            return;
+        }
+
         submitting = true;
 
-        // Separate known top-level fields from extra_fields
         const topLevelKeys = ['label', 'description', 'contact', 'phone', 'address'];
         const topLevel: Record<string, string> = {};
         const extra: Record<string, string> = {};
@@ -77,7 +107,6 @@
             }
         }
 
-        // label fallback: some categories use a different key as the main title
         if (!topLevel.label) {
             const labelField = config.fields.find(f => f.key === 'label');
             topLevel.label = extra[labelField?.key ?? ''] ?? config.label;
@@ -103,22 +132,19 @@
                 return;
             }
 
-            // ---- הצלחה ----
             submitted = true;
 
             if (config.priceRow !== null) {
-                // יש תשלום — שמור ב-localStorage והפנה לדף המחירון
                 if (browser) {
                     localStorage.setItem('pending_ad', JSON.stringify({
-                        priceRow:     config.priceRow,
+                        priceRow:      config.priceRow,
                         categoryLabel: config.label,
-                        itemLabel:    topLevel.label,
-                        itemId:       result.id,
+                        itemLabel:     topLevel.label,
+                        itemId:        result.id,
                     }));
                 }
                 setTimeout(() => goto('/advertise'), 1500);
             } else {
-                // חינמי — הצג הודעה וחזור לדף הבית אחרי 2 שניות
                 setTimeout(() => goto('/'), 2500);
             }
 
@@ -128,7 +154,6 @@
         }
     }
 
-    // Colors map for styling
     const colorClasses: Record<string, { border: string; bg: string; text: string; btn: string }> = {
         purple: { border: 'border-purple-500/40', bg: 'bg-purple-900/10', text: 'text-purple-400', btn: 'bg-purple-600 hover:bg-purple-500' },
         orange: { border: 'border-orange-500/40', bg: 'bg-orange-900/10', text: 'text-orange-400', btn: 'bg-orange-600 hover:bg-orange-500' },
@@ -183,7 +208,21 @@
         {/if}
     </div>
 
-    {#if submitted}
+    {#if redirectingMsg}
+        <!-- הודעת מעבר להרשמה -->
+        <div class="rounded-2xl border-2 border-blue-500/40 bg-blue-900/20 p-8 text-center"
+             style="animation: fadeIn 0.4s ease-out;">
+            <div class="text-4xl mb-4">💾</div>
+            {#each redirectingMsg.split('\n') as line}
+                <p class="text-blue-200 font-bold text-base mb-2">{line}</p>
+            {/each}
+            <div class="mt-4 flex justify-center">
+                <span class="inline-block w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full"
+                      style="animation: spin 0.7s linear infinite;"></span>
+            </div>
+        </div>
+
+    {:else if submitted}
         <!-- Success -->
         <div class="rounded-2xl border-2 border-green-500/40 bg-green-900/20 p-8 text-center"
              style="animation: fadeIn 0.4s ease-out;">
@@ -195,6 +234,7 @@
                 <p class="text-gray-400 text-sm">הפריט שלך נוסף לשכונה! מועבר לדף הבית...</p>
             {/if}
         </div>
+
     {:else}
         <!-- Form -->
         <form
