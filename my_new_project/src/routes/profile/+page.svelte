@@ -916,6 +916,7 @@
 	            hover:before:from-white/18 group/sec3">
 		<div
 			class="relative flex items-center justify-between cursor-pointer select-none transition-all
+			       -mx-6 px-6 -mt-6 pt-6 md:-mx-8 md:px-8 md:-mt-8 md:pt-8 pb-6 min-h-24
 			       {showLevels ? 'mb-5' : ''}"
 			onclick={() => { if (showLevels) { showLevels = false; } else { showLevels = true; } }}
 			onmouseenter={() => { secTipShow = true; secTipIsOpen = showLevels; }}
@@ -1077,7 +1078,7 @@
 	            before:transition-all before:duration-300 before:pointer-events-none
 	            hover:before:from-white/18">
 		<div
-		class="relative flex items-center justify-between cursor-pointer select-none -mx-6 px-6 -mt-6 pt-6 md:-mx-8 md:px-8 md:-mt-8 md:pt-8 {showMessages ? 'pb-6 mb-6' : 'pb-6'}"
+		class="relative flex items-center justify-between cursor-pointer select-none -mx-6 px-6 -mt-6 pt-6 md:-mx-8 md:px-8 md:-mt-8 md:pt-8 min-h-24 {showMessages ? 'pb-6 mb-6' : 'pb-6'}"
 			onclick={() => { if (showMessages) { showMessages = false; } else { showMessages = true; } }}
 			role="button" tabindex={0}
 			onmouseenter={() => { secTipShow = true; secTipIsOpen = showMessages; }}
@@ -1119,7 +1120,7 @@
 	            before:transition-all before:duration-300 before:pointer-events-none
 	            hover:before:from-white/18">
 		<div
-			class="relative flex items-center justify-between cursor-pointer select-none -mx-6 px-6 -mt-6 pt-6 md:-mx-8 md:px-8 md:-mt-8 md:pt-8 {showMyInfo ? 'pb-6 mb-6' : 'pb-6'}"
+			class="relative flex items-center justify-between cursor-pointer select-none -mx-6 px-6 -mt-6 pt-6 md:-mx-8 md:px-8 md:-mt-8 md:pt-8 min-h-24 {showMyInfo ? 'pb-6 mb-6' : 'pb-6'}"
 			onclick={() => { if (showMyInfo) { showMyInfo = false; } else { showMyInfo = true; } }}
 			onmouseenter={() => { secTipShow = true; secTipIsOpen = showMyInfo; }}
 			onmouseleave={() => (secTipShow = false)}
@@ -1244,7 +1245,7 @@
 	            before:transition-all before:duration-300 before:pointer-events-none
 	            hover:before:from-white/18">
 		<div
-			class="relative flex items-center justify-between cursor-pointer select-none -mx-6 px-6 -mt-6 pt-6 md:-mx-8 md:px-8 md:-mt-8 md:pt-8 {showFeedback ? 'pb-6 mb-6' : 'pb-6'}"
+			class="relative flex items-center justify-between cursor-pointer select-none -mx-6 px-6 -mt-6 pt-6 md:-mx-8 md:px-8 md:-mt-8 md:pt-8 min-h-24 {showFeedback ? 'pb-6 mb-6' : 'pb-6'}"
 			onclick={() => { showFeedback = !showFeedback; }}
 			onmouseenter={() => { secTipShow = true; secTipIsOpen = showFeedback; }}
 			onmouseleave={() => (secTipShow = false)}
