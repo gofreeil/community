@@ -174,7 +174,7 @@
         },
     ];
 
-    let viewMode = $state<"map" | "list">("map");
+    let viewMode = $state<"map" | "list" | "search">("map");
     let showAddMenu = $state(false);
     let isFlipping = $state(false);
     let expandedCategories = $state(new Set<string>());
@@ -192,6 +192,27 @@
     let isAutoSwitching = $state(false);
     let userInteracted = $state(false);
     let selectedCity = $state("");
+
+    // מצב חיפוש
+    let searchQuery   = $state('');
+    let searchResults = $derived(() => {
+        const q = searchQuery.trim().toLowerCase();
+        if (!q) return [];
+        return dbItems.filter(item =>
+            item.label?.toLowerCase().includes(q) ||
+            item.description?.toLowerCase().includes(q) ||
+            item.category?.toLowerCase().includes(q)
+        ).sort((a, b) => {
+            // השכונה שלך — ראשון
+            const aNeigh = a.neighborhood === neighborhoodState.neighborhood ? 0 : 1;
+            const bNeigh = b.neighborhood === neighborhoodState.neighborhood ? 0 : 1;
+            if (aNeigh !== bNeigh) return aNeigh - bNeigh;
+            // אחר כך העיר
+            const aCity = a.city === neighborhoodState.city ? 0 : 1;
+            const bCity = b.city === neighborhoodState.city ? 0 : 1;
+            return aCity - bCity;
+        });
+    });
 
     // פריטים מהשכונה הנוכחית — ריאקטיבי לשינויי neighborhoodState
     let neighborhoodDbItems = $derived(
@@ -1061,6 +1082,65 @@
                     {/each}
                 </div>
             </div>
+        {:else if viewMode === "search"}
+            <!-- מצב חיפוש -->
+            <div class="w-full h-[350px] md:h-[450px] flex flex-col p-3 md:p-5" style="border-radius: 20px;">
+                <!-- שדה חיפוש -->
+                <div class="flex gap-2 mb-4">
+                    <input
+                        bind:value={searchQuery}
+                        type="text"
+                        placeholder="חפש חוג, גמ&quot;ח, שמרטפ, מניין..."
+                        autofocus
+                        class="flex-1 bg-white/8 border border-white/20 rounded-xl px-4 py-2.5
+                               text-white placeholder:text-gray-500 text-sm focus:outline-none
+                               focus:border-purple-500/60 transition-colors"
+                        dir="rtl"
+                    />
+                    {#if searchQuery}
+                        <button
+                            onclick={() => searchQuery = ''}
+                            class="text-gray-400 hover:text-white px-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors text-sm cursor-pointer"
+                        >✕</button>
+                    {/if}
+                </div>
+
+                <!-- תוצאות -->
+                <div class="flex-1 overflow-y-auto space-y-2 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-transparent">
+                    {#if !searchQuery.trim()}
+                        <div class="text-center py-12 text-gray-500">
+                            <div class="text-4xl mb-3">🔍</div>
+                            <p class="text-sm">הקלד מה אתה מחפש</p>
+                        </div>
+                    {:else if searchResults().length === 0}
+                        <div class="text-center py-12 text-gray-500">
+                            <div class="text-4xl mb-3">😕</div>
+                            <p class="text-sm">לא נמצאו תוצאות</p>
+                        </div>
+                    {:else}
+                        <p class="text-xs text-gray-500 mb-2">{searchResults().length} תוצאות</p>
+                        {#each searchResults() as item}
+                            <a
+                                href="/items/{item.id}"
+                                class="flex items-center gap-3 bg-white/4 hover:bg-white/8 border border-white/8 hover:border-purple-500/40 rounded-xl px-3 py-2.5 transition-all"
+                            >
+                                <span class="text-xl flex-shrink-0">{item.icon ?? '📌'}</span>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-white font-bold text-sm truncate">{item.label}</p>
+                                    {#if item.description}
+                                        <p class="text-gray-400 text-xs line-clamp-1">{item.description}</p>
+                                    {/if}
+                                </div>
+                                {#if item.neighborhood === neighborhoodState.neighborhood}
+                                    <span class="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full flex-shrink-0">השכונה שלך</span>
+                                {:else if item.city === neighborhoodState.city}
+                                    <span class="text-[10px] bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full flex-shrink-0">{item.city}</span>
+                                {/if}
+                            </a>
+                        {/each}
+                    {/if}
+                </div>
+            </div>
         {/if}
 
         <!-- Decoration -->
@@ -1070,6 +1150,21 @@
             {viewMode === "map"
                 ? `📍 מפת הקהילה - ${neighborhoodState.neighborhood}, ${neighborhoodState.city}`
                 : "📋 רשימת שירותים"}
+        </div>
+
+        <!-- כפתור חיפוש - פינה ימנית עליונה -->
+        <div class="absolute right-4 z-50" style="top: -14px;">
+            <button
+                onclick={() => { viewMode = viewMode === 'search' ? 'list' : 'search'; searchQuery = ''; }}
+                title="חיפוש"
+                class="flex items-center gap-1.5 bg-[#0f172a] border-2 {viewMode === 'search' ? 'border-purple-500 text-purple-300' : 'border-white/20 text-white/70'} hover:border-purple-500/70 hover:text-white px-3 py-1.5 rounded-lg font-bold text-sm shadow-xl transition-all hover:scale-105"
+            >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <circle cx="11" cy="11" r="7"/>
+                    <path d="m21 21-4.35-4.35"/>
+                </svg>
+                <span class="text-xs hidden md:inline">חיפוש</span>
+            </button>
         </div>
 
         <!-- כפתור הוסף יתרון - בחלק העליון -->
