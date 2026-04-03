@@ -1388,7 +1388,7 @@
 		<div class="bg-gray-900/95 backdrop-blur-sm
 		            text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xl
 		            border border-white/10 whitespace-nowrap">
-			{secTipIsOpen ? "גלול מעלה" : "לפרטים — גלול מטה"}
+			{secTipIsOpen ? "גלול מעלה" : "גלול מטה לפרטים"}
 		</div>
 	</div>
 {/if}
