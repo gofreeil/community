@@ -246,6 +246,20 @@ export async function getItemsByCategory(category: string): Promise<DbItem[]> {
     return (res.data ?? []).map(mapStrapiItem);
 }
 
+export async function searchItems(query: string): Promise<DbItem[]> {
+    const q = query.trim();
+    if (!q) return [];
+    const res = await strapiGet<{ data: StrapiItem[] }>('/api/items', {
+        'filters[$or][0][label][$containsi]':       q,
+        'filters[$or][1][description][$containsi]': q,
+        'filters[$or][2][category][$containsi]':    q,
+        'filters[status1][$eq]':                    'active',
+        'sort':                                     'createdAt:desc',
+        'pagination[limit]':                        '500',
+    });
+    return (res.data ?? []).map(mapStrapiItem);
+}
+
 export async function getItemsByUserId(userId: string): Promise<DbItem[]> {
     const res = await strapiGet<{ data: StrapiItem[] }>('/api/items', {
         'filters[user_id][$eq]': userId,

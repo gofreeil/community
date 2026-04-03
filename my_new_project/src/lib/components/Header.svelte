@@ -3,6 +3,7 @@
 	import { get } from 'svelte/store';
     import { goto } from "$app/navigation";
     import { onMount } from "svelte";
+    import { page } from '$app/state';
 
     interface Props {
         currentUser?: any;
@@ -57,6 +58,22 @@
     );
 
     let selectedAdForModal = $state<Ad | null>(null);
+
+    // חיפוש
+    let searchQuery     = $state('');
+    let showMobileSearch = $state(false);
+
+    function doSearch() {
+        const q = searchQuery.trim();
+        if (!q) return;
+        goto(`/search?q=${encodeURIComponent(q)}`);
+        showMobileSearch = false;
+        searchQuery = '';
+    }
+    function handleSearchKey(e: KeyboardEvent) {
+        if (e.key === 'Enter') doSearch();
+        if (e.key === 'Escape') { showMobileSearch = false; searchQuery = ''; }
+    }
 
     function changeLang(language: { name: string; code: string }) {
         locale.set(language.code);
@@ -179,6 +196,14 @@
                     </a>
 
                     <div class="flex items-center gap-2">
+                        <!-- כפתור חיפוש - מובייל -->
+                        <button
+                            onclick={() => (showMobileSearch = !showMobileSearch)}
+                            class="flex items-center justify-center w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 transition-colors"
+                            aria-label="חיפוש"
+                        >
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
+                        </button>
                         <!-- כפתור דגל שפה - מובייל -->
                         <div class="relative lang-dropdown-container">
                             <button
@@ -243,6 +268,27 @@
                 </div>
         </div>
 
+        <!-- Mobile Search Bar -->
+        {#if showMobileSearch}
+            <div class="md:hidden pb-3 px-1 flex gap-2">
+                <input
+                    bind:value={searchQuery}
+                    onkeydown={handleSearchKey}
+                    type="text"
+                    placeholder="חפש חוג, שירות, עסק..."
+                    autofocus
+                    class="flex-1 bg-white/10 border border-white/20 rounded-xl px-4 py-2
+                           text-white placeholder:text-gray-400 text-sm focus:outline-none
+                           focus:border-purple-500/60 transition-colors"
+                    dir="rtl"
+                />
+                <button
+                    onclick={doSearch}
+                    class="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors cursor-pointer"
+                >חפש</button>
+            </div>
+        {/if}
+
         <!-- Desktop Header - Full Layout -->
         <div
             class="hidden md:flex flex-col items-center pt-2 pb-5 md:flex-row md:items-center md:justify-between"
@@ -282,6 +328,26 @@
                     <p class="text-lg text-gray-100 font-extrabold group-hover:opacity-80 transition-opacity">{tFn("app_description")}</p>
                 </a>
             </div>
+            <!-- שדה חיפוש דסקטופ -->
+            <div class="flex-1 max-w-sm mx-6">
+                <div class="flex gap-2">
+                    <input
+                        bind:value={searchQuery}
+                        onkeydown={handleSearchKey}
+                        type="text"
+                        placeholder="🔍  חפש חוג, שירות, עסק..."
+                        class="w-full bg-white/8 border border-white/15 rounded-xl px-4 py-2
+                               text-white placeholder:text-gray-400 text-sm focus:outline-none
+                               focus:border-purple-500/60 transition-colors"
+                        dir="rtl"
+                    />
+                    <button
+                        onclick={doSearch}
+                        class="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors cursor-pointer flex-shrink-0"
+                    >חפש</button>
+                </div>
+            </div>
+
             <div class="flex items-center gap-2">
                 <button
                     class="relative group flex items-center rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2 font-medium text-white shadow-lg transition-all duration-200 hover:shadow-xl"
