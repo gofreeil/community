@@ -1086,7 +1086,7 @@
             <!-- מצב חיפוש -->
             <div class="w-full h-[350px] md:h-[450px] flex flex-col p-3 md:p-5" style="border-radius: 20px;">
                 <!-- שדה חיפוש -->
-                <div class="flex gap-2 mb-4 mt-16">
+                <div class="flex gap-2 mb-4 mt-16 max-w-xs mx-auto w-full">
                     <input
                         bind:value={searchQuery}
                         type="text"
