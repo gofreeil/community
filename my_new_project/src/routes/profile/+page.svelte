@@ -473,7 +473,7 @@
 					</svg>
 
 					<!-- עיגול הודעות — שמאל מטה -->
-					<button onclick={scrollToMessages}
+					<button onclick={(e) => { e.stopPropagation(); scrollToMessages(); }}
 					class="absolute -bottom-1 -left-1 px-2 h-[22px]
 					       bg-orange-500 border-2 border-[#0f172a] rounded-full
 					       flex items-center justify-center cursor-pointer
