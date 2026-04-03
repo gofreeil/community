@@ -411,7 +411,7 @@
 	{/if}
 
 	<!-- ===== קומה 1: האזור האישי ===== -->
-	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl mb-6">
+	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-4 md:p-6 shadow-xl mb-2">
 		<!-- כותרת + כפתור התנתקות -->
 		<div class="flex items-center justify-between mb-5">
 			<div class="flex items-center gap-2">
@@ -541,14 +541,14 @@
 	</div>
 
 	<!-- ===== קומה 2: פרטי פרופיל ===== -->
-	<div id="sec-edit-profile" class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 mb-6 shadow-xl overflow-hidden
+	<div id="sec-edit-profile" class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-4 md:p-6 mb-2 shadow-xl overflow-hidden
 	            before:absolute before:inset-x-0 before:top-0 before:h-24 before:rounded-t-3xl
 	            before:bg-gradient-to-b before:from-white/8 before:to-transparent
 	            before:transition-all before:duration-300 before:pointer-events-none
 	            hover:before:from-white/18">
 
 		<div
-			class="relative flex items-center justify-between cursor-pointer select-none -mx-6 px-6 -mt-6 pt-4 md:-mx-8 md:px-8 md:-mt-8 md:pt-5 {isEditing ? 'pb-4 mb-4' : 'pb-4'}"
+			class="relative flex items-center justify-between cursor-pointer select-none -mx-4 px-4 -mt-4 pt-3 md:-mx-6 md:px-6 md:-mt-6 md:pt-4 {isEditing ? 'pb-4 mb-4' : 'pb-4'}"
 			onclick={() => { if (isEditing) { isEditing = false; saveSuccess = false; } else { isEditing = true; } }}
 			onmouseenter={() => { secTipShow = true; secTipIsOpen = isEditing; }}
 			onmouseleave={() => (secTipShow = false)}
@@ -909,14 +909,14 @@
 	</div>
 
 	<!-- ===== קומה 3: דרגה והרשאות ===== -->
-	<div id="sec-levels" class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl mb-6 overflow-hidden
+	<div id="sec-levels" class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-4 md:p-6 shadow-xl mb-2 overflow-hidden
 	            before:absolute before:inset-x-0 before:top-0 before:h-24 before:rounded-t-3xl
 	            before:bg-gradient-to-b before:from-white/8 before:to-transparent
 	            before:transition-all before:duration-300 before:pointer-events-none
 	            hover:before:from-white/18 group/sec3">
 		<div
 			class="relative flex items-center justify-between cursor-pointer select-none transition-all
-			       -mx-6 px-6 -mt-6 pt-4 md:-mx-8 md:px-8 md:-mt-8 md:pt-5 pb-4 min-h-14
+			       -mx-4 px-4 -mt-4 pt-3 md:-mx-6 md:px-6 md:-mt-6 md:pt-4 pb-4 min-h-14
 			       {showLevels ? 'mb-5' : ''}"
 			onclick={() => { if (showLevels) { showLevels = false; } else { showLevels = true; } }}
 			onmouseenter={() => { secTipShow = true; secTipIsOpen = showLevels; }}
@@ -1072,14 +1072,14 @@
 	</div>
 
 	<!-- ===== קומה 4: הודעות אישיות ===== -->
-	<div id="sec-messages" class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl mb-6 overflow-hidden
+	<div id="sec-messages" class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-4 md:p-6 shadow-xl mb-2 overflow-hidden
 	            before:absolute before:inset-x-0 before:top-0 before:h-24 before:rounded-t-3xl
 	            before:bg-gradient-to-b before:from-white/8 before:to-transparent
 	            before:transition-all before:duration-300 before:pointer-events-none
 	            hover:before:from-white/18 {!showMessages ? 'cursor-pointer' : ''}"
 	onclick={() => { if (!showMessages) showMessages = true; }}>
 		<div
-		class="relative flex items-center justify-between cursor-pointer select-none -mx-6 px-6 -mt-6 pt-4 md:-mx-8 md:px-8 md:-mt-8 md:pt-5 min-h-14 {showMessages ? 'pb-4 mb-4' : 'pb-4'}"
+		class="relative flex items-center justify-between cursor-pointer select-none -mx-4 px-4 -mt-4 pt-3 md:-mx-6 md:px-6 md:-mt-6 md:pt-4 min-h-14 {showMessages ? 'pb-4 mb-4' : 'pb-4'}"
 			onclick={() => { if (showMessages) { showMessages = false; } else { showMessages = true; } }}
 			role="button" tabindex={0}
 			onmouseenter={() => { secTipShow = true; secTipIsOpen = showMessages; }}
@@ -1114,14 +1114,69 @@
 		</div>
 		{/if}
 	</div>
-	<!-- ===== קומה 5: המידע שלי ===== -->
-	<div class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl overflow-hidden
+	<!-- ===== קומה 5: כתוב למערכת ===== -->
+	<div class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-4 md:p-6 shadow-xl overflow-hidden
 	            before:absolute before:inset-x-0 before:top-0 before:h-24 before:rounded-t-3xl
 	            before:bg-gradient-to-b before:from-white/8 before:to-transparent
 	            before:transition-all before:duration-300 before:pointer-events-none
 	            hover:before:from-white/18">
 		<div
-			class="relative flex items-center justify-between cursor-pointer select-none -mx-6 px-6 -mt-6 pt-4 md:-mx-8 md:px-8 md:-mt-8 md:pt-5 min-h-14 {showMyInfo ? 'pb-4 mb-4' : 'pb-4'}"
+			class="relative flex items-center justify-between cursor-pointer select-none -mx-4 px-4 -mt-4 pt-3 md:-mx-6 md:px-6 md:-mt-6 md:pt-4 min-h-14 {showFeedback ? 'pb-4 mb-4' : 'pb-4'}"
+			onclick={() => { showFeedback = !showFeedback; }}
+			onmouseenter={() => { secTipShow = true; secTipIsOpen = showFeedback; }}
+			onmouseleave={() => (secTipShow = false)}
+			onmousemove={(e) => handleSecMouseMove(e, showFeedback)}
+			role="button" tabindex={0}
+			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') showFeedback = !showFeedback; }}
+		>
+			<h2 class="text-xl font-black text-white flex items-center gap-2">
+				<span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+					style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">5</span>
+				כתוב למערכת
+			</h2>
+			<svg class="w-4 h-4 text-yellow-400 transition-transform duration-300 flex-shrink-0 {showFeedback ? 'rotate-180' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+		</div>
+
+		{#if showFeedback}
+		<p class="relative text-gray-400 text-sm mb-5">כתוב לנו כיצד לשפר את האתר עבורך — הצוות של יוצאים לחירות יקרא ויחזור אליך.</p>
+
+		{#if form?.feedbackSuccess}
+			<div class="relative bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-4 text-emerald-400 text-sm font-bold text-center">
+				✅ פנייתך נשלחה בהצלחה! נחזור אליך בהקדם.
+			</div>
+		{:else}
+			<form method="POST" action="?/sendFeedback" use:enhance class="relative flex flex-col gap-4">
+				<textarea
+					name="feedback_text"
+					rows="5"
+					placeholder="כתוב כאן את הצעתך / תלונתך / בקשתך..."
+					class="w-full bg-[#1e293b] border border-white/10 rounded-2xl px-4 py-3 text-white text-sm
+					       placeholder:text-gray-600 focus:outline-none focus:border-purple-500/50 resize-none
+					       transition-colors"
+					required
+					minlength="5"
+				></textarea>
+				{#if form?.feedbackError}
+					<p class="text-red-400 text-xs">{form.feedbackError}</p>
+				{/if}
+				<button type="submit"
+					class="self-end bg-gradient-to-l from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500
+					       text-white font-bold text-sm px-6 py-2.5 rounded-full transition-all shadow-lg">
+					שלח פנייה ←
+				</button>
+			</form>
+		{/if}
+		{/if}
+	</div>
+
+	<!-- ===== קומה 6: המידע שלי ===== -->
+	<div class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-4 md:p-6 shadow-xl overflow-hidden
+	            before:absolute before:inset-x-0 before:top-0 before:h-24 before:rounded-t-3xl
+	            before:bg-gradient-to-b before:from-white/8 before:to-transparent
+	            before:transition-all before:duration-300 before:pointer-events-none
+	            hover:before:from-white/18">
+		<div
+			class="relative flex items-center justify-between cursor-pointer select-none -mx-4 px-4 -mt-4 pt-3 md:-mx-6 md:px-6 md:-mt-6 md:pt-4 min-h-14 {showMyInfo ? 'pb-4 mb-4' : 'pb-4'}"
 			onclick={() => { if (showMyInfo) { showMyInfo = false; } else { showMyInfo = true; } }}
 			onmouseenter={() => { secTipShow = true; secTipIsOpen = showMyInfo; }}
 			onmouseleave={() => (secTipShow = false)}
@@ -1130,7 +1185,7 @@
 			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { if (showMyInfo) scrollToTop(); else showMyInfo = true; } }}
 		>
 			<h2 class="text-xl font-black text-white flex items-center gap-2">
-				<span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0" style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">5</span>
+				<span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0" style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">6</span>
 				הנכסים שלי
 			</h2>
 			<div class="flex items-center gap-2">
@@ -1235,61 +1290,6 @@
 					</a>
 				{/each}
 			</div>
-		{/if}
-		{/if}
-	</div>
-
-	<!-- ===== קומה 6: כתוב למערכת ===== -->
-	<div class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 shadow-xl overflow-hidden
-	            before:absolute before:inset-x-0 before:top-0 before:h-24 before:rounded-t-3xl
-	            before:bg-gradient-to-b before:from-white/8 before:to-transparent
-	            before:transition-all before:duration-300 before:pointer-events-none
-	            hover:before:from-white/18">
-		<div
-			class="relative flex items-center justify-between cursor-pointer select-none -mx-6 px-6 -mt-6 pt-4 md:-mx-8 md:px-8 md:-mt-8 md:pt-5 min-h-14 {showFeedback ? 'pb-4 mb-4' : 'pb-4'}"
-			onclick={() => { showFeedback = !showFeedback; }}
-			onmouseenter={() => { secTipShow = true; secTipIsOpen = showFeedback; }}
-			onmouseleave={() => (secTipShow = false)}
-			onmousemove={(e) => handleSecMouseMove(e, showFeedback)}
-			role="button" tabindex={0}
-			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') showFeedback = !showFeedback; }}
-		>
-			<h2 class="text-xl font-black text-white flex items-center gap-2">
-				<span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
-					style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">6</span>
-				כתוב למערכת
-			</h2>
-			<svg class="w-4 h-4 text-yellow-400 transition-transform duration-300 flex-shrink-0 {showFeedback ? 'rotate-180' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-		</div>
-
-		{#if showFeedback}
-		<p class="relative text-gray-400 text-sm mb-5">כתוב לנו כיצד לשפר את האתר עבורך — הצוות של יוצאים לחירות יקרא ויחזור אליך.</p>
-
-		{#if form?.feedbackSuccess}
-			<div class="relative bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-4 text-emerald-400 text-sm font-bold text-center">
-				✅ פנייתך נשלחה בהצלחה! נחזור אליך בהקדם.
-			</div>
-		{:else}
-			<form method="POST" action="?/sendFeedback" use:enhance class="relative flex flex-col gap-4">
-				<textarea
-					name="feedback_text"
-					rows="5"
-					placeholder="כתוב כאן את הצעתך / תלונתך / בקשתך..."
-					class="w-full bg-[#1e293b] border border-white/10 rounded-2xl px-4 py-3 text-white text-sm
-					       placeholder:text-gray-600 focus:outline-none focus:border-purple-500/50 resize-none
-					       transition-colors"
-					required
-					minlength="5"
-				></textarea>
-				{#if form?.feedbackError}
-					<p class="text-red-400 text-xs">{form.feedbackError}</p>
-				{/if}
-				<button type="submit"
-					class="self-end bg-gradient-to-l from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500
-					       text-white font-bold text-sm px-6 py-2.5 rounded-full transition-all shadow-lg">
-					שלח פנייה ←
-				</button>
-			</form>
 		{/if}
 		{/if}
 	</div>
