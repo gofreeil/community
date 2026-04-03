@@ -1086,31 +1086,24 @@
             <!-- מצב חיפוש -->
             <div class="w-full h-[350px] md:h-[450px] flex flex-col p-3 md:p-5" style="border-radius: 20px;">
                 <!-- שדה חיפוש -->
-                <div class="flex gap-2 mb-4 mt-16 max-w-xs mx-auto w-full">
+                <div class="flex gap-2 mb-4 mt-16 max-w-sm mx-auto w-full">
                     <input
                         bind:value={searchQuery}
                         type="text"
                         placeholder="חפש חוג, גמ&quot;ח, שמרטפ, מניין..."
                         autofocus
-                        class="flex-1 bg-white/8 border border-white/20 rounded-xl px-4 py-2.5
-                               text-white placeholder:text-gray-500 text-sm focus:outline-none
+                        class="flex-1 bg-white/8 border border-white/20 rounded-xl px-5 py-3.5
+                               text-white placeholder:text-gray-500 text-base focus:outline-none
                                focus:border-purple-500/60 transition-colors"
                         dir="rtl"
                     />
                     {#if searchQuery}
                         <button
                             onclick={() => searchQuery = ''}
-                            class="text-gray-400 hover:text-white px-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors text-sm cursor-pointer"
+                            class="text-gray-400 hover:text-white px-4 rounded-xl bg-white/5 hover:bg-white/10 transition-colors text-base cursor-pointer"
                         >✕</button>
                     {/if}
                 </div>
-
-                <!-- תמונה מתחת לחיפוש -->
-                {#if !searchQuery.trim()}
-                    <div class="flex justify-center mb-3">
-                        <img src="/images/ועדי שכונות חיפוש.png" alt="" class="max-w-[220px] w-full rounded-xl opacity-80" />
-                    </div>
-                {/if}
 
                 <!-- תוצאות -->
                 <div class="flex-1 overflow-y-auto space-y-2 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-transparent">
@@ -1118,6 +1111,9 @@
                         <div class="text-center py-4 text-gray-500">
                             <div class="text-4xl mb-3">🔍</div>
                             <p class="text-sm">הקלד מה אתה מחפש</p>
+                        </div>
+                        <div class="flex justify-center mt-3">
+                            <img src="/images/ועדי שכונות חיפוש.png" alt="" class="max-w-[320px] w-full rounded-xl opacity-80" />
                         </div>
                     {:else if searchResults().length === 0}
                         <div class="text-center py-12 text-gray-500">
