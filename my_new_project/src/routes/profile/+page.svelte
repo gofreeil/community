@@ -548,7 +548,7 @@
 	            hover:before:from-white/18">
 
 		<div
-			class="relative flex items-center justify-between cursor-pointer select-none -mx-6 px-6 -mt-6 pt-6 md:-mx-8 md:px-8 md:-mt-8 md:pt-8 {isEditing ? 'pb-6 mb-6' : 'pb-6'}"
+			class="relative flex items-center justify-between cursor-pointer select-none -mx-6 px-6 -mt-6 pt-4 md:-mx-8 md:px-8 md:-mt-8 md:pt-5 {isEditing ? 'pb-4 mb-4' : 'pb-4'}"
 			onclick={() => { if (isEditing) { isEditing = false; saveSuccess = false; } else { isEditing = true; } }}
 			onmouseenter={() => { secTipShow = true; secTipIsOpen = isEditing; }}
 			onmouseleave={() => (secTipShow = false)}
@@ -916,7 +916,7 @@
 	            hover:before:from-white/18 group/sec3">
 		<div
 			class="relative flex items-center justify-between cursor-pointer select-none transition-all
-			       -mx-6 px-6 -mt-6 pt-6 md:-mx-8 md:px-8 md:-mt-8 md:pt-8 pb-6 min-h-24
+			       -mx-6 px-6 -mt-6 pt-4 md:-mx-8 md:px-8 md:-mt-8 md:pt-5 pb-4 min-h-14
 			       {showLevels ? 'mb-5' : ''}"
 			onclick={() => { if (showLevels) { showLevels = false; } else { showLevels = true; } }}
 			onmouseenter={() => { secTipShow = true; secTipIsOpen = showLevels; }}
@@ -1079,7 +1079,7 @@
 	            hover:before:from-white/18 {!showMessages ? 'cursor-pointer' : ''}"
 	onclick={() => { if (!showMessages) showMessages = true; }}>
 		<div
-		class="relative flex items-center justify-between cursor-pointer select-none -mx-6 px-6 -mt-6 pt-6 md:-mx-8 md:px-8 md:-mt-8 md:pt-8 min-h-24 {showMessages ? 'pb-6 mb-6' : 'pb-6'}"
+		class="relative flex items-center justify-between cursor-pointer select-none -mx-6 px-6 -mt-6 pt-4 md:-mx-8 md:px-8 md:-mt-8 md:pt-5 min-h-14 {showMessages ? 'pb-4 mb-4' : 'pb-4'}"
 			onclick={() => { if (showMessages) { showMessages = false; } else { showMessages = true; } }}
 			role="button" tabindex={0}
 			onmouseenter={() => { secTipShow = true; secTipIsOpen = showMessages; }}
@@ -1121,7 +1121,7 @@
 	            before:transition-all before:duration-300 before:pointer-events-none
 	            hover:before:from-white/18">
 		<div
-			class="relative flex items-center justify-between cursor-pointer select-none -mx-6 px-6 -mt-6 pt-6 md:-mx-8 md:px-8 md:-mt-8 md:pt-8 min-h-24 {showMyInfo ? 'pb-6 mb-6' : 'pb-6'}"
+			class="relative flex items-center justify-between cursor-pointer select-none -mx-6 px-6 -mt-6 pt-4 md:-mx-8 md:px-8 md:-mt-8 md:pt-5 min-h-14 {showMyInfo ? 'pb-4 mb-4' : 'pb-4'}"
 			onclick={() => { if (showMyInfo) { showMyInfo = false; } else { showMyInfo = true; } }}
 			onmouseenter={() => { secTipShow = true; secTipIsOpen = showMyInfo; }}
 			onmouseleave={() => (secTipShow = false)}
@@ -1246,7 +1246,7 @@
 	            before:transition-all before:duration-300 before:pointer-events-none
 	            hover:before:from-white/18">
 		<div
-			class="relative flex items-center justify-between cursor-pointer select-none -mx-6 px-6 -mt-6 pt-6 md:-mx-8 md:px-8 md:-mt-8 md:pt-8 min-h-24 {showFeedback ? 'pb-6 mb-6' : 'pb-6'}"
+			class="relative flex items-center justify-between cursor-pointer select-none -mx-6 px-6 -mt-6 pt-4 md:-mx-8 md:px-8 md:-mt-8 md:pt-5 min-h-14 {showFeedback ? 'pb-4 mb-4' : 'pb-4'}"
 			onclick={() => { showFeedback = !showFeedback; }}
 			onmouseenter={() => { secTipShow = true; secTipIsOpen = showFeedback; }}
 			onmouseleave={() => (secTipShow = false)}
