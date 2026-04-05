@@ -54,16 +54,17 @@
     class="rounded-2xl md:rounded-3xl bg-[#0f172a] border md:border-2 border-blue-500/30 overflow-hidden shadow-2xl flex flex-col h-full"
 >
     <div
-        class="bg-gradient-to-r from-blue-600 to-purple-600 p-2 md:p-4 flex items-center justify-between flex-shrink-0 h-12 md:h-auto"
+        class="bg-gradient-to-r from-blue-600 to-purple-600 p-2 md:p-4 flex items-center justify-between flex-shrink-0 h-12 md:h-auto relative"
     >
-        <h3 class="text-sm font-bold text-white flex items-center gap-1 md:gap-2">
+        <a href="/lost-and-found" class="absolute inset-0 z-0" aria-hidden="true"></a>
+        <a href="/lost-and-found" class="text-sm font-bold text-white flex items-center gap-1 md:gap-2 hover:text-yellow-200 transition-colors relative z-10">
             <span class="text-base">🔍</span>
             אבדות ומציאות
-        </h3>
+        </a>
         <a
             href="/lost-and-found/add"
             aria-label="הוסף אבידה או מציאה"
-            class="inline-flex items-center self-center bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-2 md:px-3 py-1 md:py-1.5 rounded-full transition-colors border border-white/20 flex-shrink-0"
+            class="inline-flex items-center self-center bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-2 md:px-3 py-1 md:py-1.5 rounded-full transition-colors border border-white/20 flex-shrink-0 relative z-10"
         >
             + הוסף
         </a>

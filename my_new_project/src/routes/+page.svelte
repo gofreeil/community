@@ -233,12 +233,13 @@
                 <div class="absolute top-0 right-0 left-0 bottom-8 flex flex-col gap-2 overflow-hidden">
                     <!-- 1. Events Board -->
                     <div class="flex-1 min-h-0 rounded-2xl bg-[#0f172a] border border-2 border-green-500/30 shadow-2xl flex flex-col overflow-hidden">
-                    <div class="bg-gradient-to-r from-green-600 to-teal-600 p-3 flex items-center justify-between flex-shrink-0">
-                        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                    <div class="bg-gradient-to-r from-green-600 to-teal-600 p-3 flex items-center justify-between flex-shrink-0 relative">
+                        <a href="/events" class="absolute inset-0 z-0" aria-hidden="true"></a>
+                        <a href="/events" class="text-sm font-bold text-white flex items-center gap-2 hover:text-yellow-200 transition-colors relative z-10">
                             <span class="text-base">🗓️</span>
                             לוח אירועים
-                        </h3>
-                        <button class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-3 py-1.5 rounded-full transition-colors border border-white/20">
+                        </a>
+                        <button class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-3 py-1.5 rounded-full transition-colors border border-white/20 relative z-10">
                             + הוסף
                         </button>
                     </div>
@@ -337,12 +338,13 @@
             <div class="grid grid-cols-2 gap-2">
                 <!-- Left: Events Board -->
                 <div class="rounded-2xl bg-[#0f172a] border border-blue-500/30 overflow-hidden shadow-2xl flex flex-col h-full">
-                    <div class="bg-gradient-to-r from-green-600 to-teal-600 p-2 flex items-center justify-between flex-shrink-0 h-12">
-                        <h3 class="text-sm font-bold text-white flex items-center gap-1">
+                    <div class="bg-gradient-to-r from-green-600 to-teal-600 p-2 flex items-center justify-between flex-shrink-0 h-12 relative">
+                        <a href="/events" class="absolute inset-0 z-0" aria-hidden="true"></a>
+                        <a href="/events" class="text-sm font-bold text-white flex items-center gap-1 hover:text-yellow-200 transition-colors relative z-10">
                             <span class="text-base">🗓️</span>
                             לוח אירועים
-                        </h3>
-                        <button class="inline-flex items-center self-center bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-2 py-1 rounded-full transition-colors border border-white/20 flex-shrink-0">
+                        </a>
+                        <button class="inline-flex items-center self-center bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-2 py-1 rounded-full transition-colors border border-white/20 flex-shrink-0 relative z-10">
                             + הוסף
                         </button>
                     </div>
