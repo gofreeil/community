@@ -287,17 +287,17 @@
     </div>
 
     <!-- Packages -->
-    <h2 class="text-xl md:text-2xl font-black text-white mb-6 text-center">אפשרויות פרסום</h2>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
+    <h2 class="text-xl md:text-2xl font-black text-white mb-4 text-center">אפשרויות פרסום</h2>
+    <div class="grid grid-cols-3 gap-2 mb-12">
         {#each packages as pkg}
-            <div class="rounded-2xl border-2 {pkg.border} {pkg.bg} p-5 flex flex-col">
-                <div class="text-3xl mb-3">{pkg.icon}</div>
-                <h3 class="text-lg font-black text-white mb-1">{pkg.name}</h3>
-                <p class="text-xs text-gray-400 mb-3">{pkg.location}</p>
-                <div class="text-xs bg-white/10 rounded-lg px-2 py-1 text-gray-300 mb-4 inline-block w-fit">{pkg.size}</div>
-                <ul class="space-y-1.5 mt-auto">
+            <div class="rounded-xl border {pkg.border} {pkg.bg} p-2.5 flex flex-col">
+                <div class="text-xl mb-1.5">{pkg.icon}</div>
+                <h3 class="text-xs font-black text-white mb-0.5 leading-tight">{pkg.name}</h3>
+                <p class="text-[10px] text-gray-400 mb-1.5 leading-tight">{pkg.location}</p>
+                <div class="text-[10px] bg-white/10 rounded px-1.5 py-0.5 text-gray-300 mb-2 inline-block w-fit">{pkg.size}</div>
+                <ul class="space-y-1 mt-auto">
                     {#each pkg.features as feature}
-                        <li class="text-sm text-gray-300 flex items-center gap-2">
+                        <li class="text-[10px] text-gray-300 flex items-start gap-1 leading-tight">
                             <span class="text-green-400 flex-shrink-0">✓</span>
                             {feature}
                         </li>
@@ -405,7 +405,64 @@
         הזז את המתג לבחירת תוכנית — המחשבון יחשב אוטומטית ↓
     </p>
 
-    <div class="mb-6 overflow-x-auto rounded-2xl border border-white/10">
+    <!-- Mobile cards (visible only on small screens) -->
+    <div class="md:hidden space-y-3 mb-6">
+        {#each rows as row}
+            {@const plan = planMap.get(row.num)}
+            <div class="rounded-2xl border transition-colors px-4 py-3
+                {plan === 'half'   ? 'border-amber-500/50 bg-amber-500/10'
+                 : plan === 'single' ? 'border-blue-500/50 bg-blue-500/10'
+                 :                    'border-white/10 bg-white/3'}">
+                <!-- Row: name + toggle -->
+                <div class="flex items-center justify-between gap-3 mb-2">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <span class="text-xs font-black text-gray-500 flex-shrink-0">#{row.num}</span>
+                        <span class="font-black text-white text-sm truncate">{row.type}</span>
+                    </div>
+                    <!-- Toggle -->
+                    <div
+                        class="relative inline-flex h-9 rounded-full flex-shrink-0 transition-all duration-300"
+                        style="padding: 2px;
+                               background: {plan === 'half' ? 'rgba(245,158,11,0.15)' : plan === 'single' ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.05)'};
+                               border: 1.5px solid {plan === 'half' ? 'rgba(245,158,11,0.5)' : plan === 'single' ? 'rgba(59,130,246,0.5)' : 'rgba(255,255,255,0.12)'};"
+                    >
+                        <button
+                            type="button"
+                            onclick={() => setPlan(row.num, 'half')}
+                            class="relative z-10 rounded-full px-3 text-xs font-black transition-all duration-200 whitespace-nowrap leading-none flex items-center"
+                            style="background: {plan === 'half' ? '#f59e0b' : 'transparent'}; color: {plan === 'half' ? '#000' : '#6b7280'};"
+                        >½שנה</button>
+                        {#if !plan}
+                            <div class="self-center w-1 h-1 rounded-full bg-white/20 mx-0.5 flex-shrink-0"></div>
+                        {/if}
+                        <button
+                            type="button"
+                            onclick={() => setPlan(row.num, 'single')}
+                            class="relative z-10 rounded-full px-3 text-xs font-black transition-all duration-200 whitespace-nowrap leading-none flex items-center"
+                            style="background: {plan === 'single' ? '#3b82f6' : 'transparent'}; color: {plan === 'single' ? '#fff' : '#6b7280'};"
+                        >חודש</button>
+                    </div>
+                </div>
+                <!-- Prices row -->
+                <div class="flex gap-4 text-sm">
+                    <div>
+                        <span class="text-gray-500 text-xs">חצי שנה — </span>
+                        <span class="font-black text-amber-400">₪{row.half}</span>
+                        <span class="text-gray-600 text-xs">/חודש</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-500 text-xs">חודש בודד — </span>
+                        <span class="font-bold text-gray-300">₪{row.single}</span>
+                    </div>
+                </div>
+                <!-- Details -->
+                <p class="text-[11px] text-gray-500 mt-1">{row.reach} · {row.details}</p>
+            </div>
+        {/each}
+    </div>
+
+    <!-- Desktop table (hidden on mobile) -->
+    <div class="hidden md:block mb-6 overflow-x-auto rounded-2xl border border-white/10">
         <table class="w-full text-base text-right">
             <thead>
                 <tr class="bg-amber-500/20 border-b border-amber-500/30">
