@@ -568,42 +568,16 @@
 
         // Mobile scroll indicators logic - simplified
         const setupScrollIndicators = () => {
-            console.log("Setting up scroll indicators...");
             const buttonsContainer = document.querySelector(
                 ".category-buttons-container",
             ) as HTMLElement;
-            if (!buttonsContainer) {
-                console.log("Buttons container not found");
-                return;
-            }
-
-            console.log("Buttons container found:", buttonsContainer);
-
-            // Check if container needs scrolling
-            const needsScroll =
-                buttonsContainer.scrollWidth > buttonsContainer.clientWidth;
-            console.log(
-                "Needs scroll:",
-                needsScroll,
-                "scrollWidth:",
-                buttonsContainer.scrollWidth,
-                "clientWidth:",
-                buttonsContainer.clientWidth,
-            );
-
-            if (!needsScroll) {
-                console.log("No scrolling needed, hiding arrows");
-                return;
-            }
+            if (!buttonsContainer) return;
 
             // Scrollable on mobile via touch/swipe (no arrow buttons needed)
         };
 
-        // Setup scroll indicators after a short delay to ensure DOM is ready
+        // Setup scroll indicators after DOM is ready
         setupScrollIndicators();
-        setTimeout(() => {
-            setupScrollIndicators();
-        }, 100);
 
         return () => {
             if (listAnimationTimeout) {
@@ -1194,14 +1168,6 @@
             </div>
         {/if}
 
-        <!-- Decoration -->
-        <div
-            class="hidden md:block absolute bottom-4 right-4 bg-purple-600/90 backdrop-blur-md text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-lg"
-        >
-            {viewMode === "map"
-                ? `📍 מפת הקהילה - ${neighborhoodState.neighborhood}, ${neighborhoodState.city}`
-                : "📋 רשימת שירותים"}
-        </div>
 
         <!-- כפתור חיפוש - פינה ימנית עליונה -->
         <div class="absolute right-4 z-50" style="top: -14px;">
