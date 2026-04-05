@@ -37,7 +37,8 @@
 
 <svelte:head>
 	<title>קהילה בשכונה</title>
-	<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+	<link rel="icon" href="/images/logos/לוגו2.png" type="image/png" />
+	<link rel="apple-touch-icon" href="/images/logos/לוגו2.png" />
 	<!-- tabnav: מושבת לבינתיים — לא רשום על הדומיין הנוכחי -->
 	<!-- <script src="https://widget.tabnav.com/widget.min.js.gz" defer></script> -->
 	<!-- <noscript>נדרש ג'אווה סקריפט כדי ש<a href="https://tabnav.com/he">הנגשת אתרים</a> תעבוד כראוי.</noscript> -->
