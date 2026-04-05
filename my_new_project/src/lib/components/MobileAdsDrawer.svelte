@@ -106,8 +106,11 @@
 		const dx = e.changedTouches[0].clientX - tabTouchStartX;
 		const dy = e.changedTouches[0].clientY - tabTouchStartY;
 		const totalMove = Math.sqrt(dx * dx + dy * dy);
-		// פתח אם לא גרירה, או אם תנועה קטנה מ-25px (טאפ עם רעש קטן)
-		if (!tabDragging || totalMove < 25) {
+
+		const isTap        = totalMove < 20;                            // לחיצה
+		const isSwipeRight = dx > 40 && Math.abs(dx) > Math.abs(dy);   // גרירה ימינה
+
+		if (isTap || isSwipeRight || (!tabDragging && totalMove < 25)) {
 			open = true;
 		}
 		tabDragging = false;
