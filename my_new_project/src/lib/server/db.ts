@@ -4,7 +4,7 @@
 // פריטים + קופת קהילה + משתמשים → Strapi 5 (async, cloud-persistent)
 // ============================================================
 
-import { strapiGet, strapiPost, strapiPut } from './strapiClient.js';
+import { strapiGet, strapiPost, strapiPut, StrapiContentTypeError } from './strapiClient.js';
 import bcrypt from 'bcryptjs';
 
 // ============================================================
@@ -196,12 +196,20 @@ function mapStrapiUser(u: StrapiCommunityUser): DbUser {
 // ============================================================
 
 export async function getAllItems(): Promise<DbItem[]> {
-    const res = await strapiGet<{ data: StrapiItem[] }>('/api/items', {
-        'filters[status1][$eq]': 'active',
-        'sort':                  'createdAt:desc',
-        'pagination[limit]':     '1000',
-    });
-    return (res.data ?? []).map(mapStrapiItem);
+    try {
+        const res = await strapiGet<{ data: StrapiItem[] }>('/api/items', {
+            'filters[status1][$eq]': 'active',
+            'sort':                  'createdAt:desc',
+            'pagination[limit]':     '1000',
+        });
+        return (res.data ?? []).map(mapStrapiItem);
+    } catch (e) {
+        if (e instanceof StrapiContentTypeError) {
+            console.warn('[db] getAllItems: content type not registered, returning []');
+            return [];
+        }
+        throw e;
+    }
 }
 
 export async function createItem(data: CreateItemData): Promise<DbItem> {
@@ -237,27 +245,37 @@ export async function getDbItemById(id: string): Promise<DbItem | undefined> {
 }
 
 export async function getItemsByCategory(category: string): Promise<DbItem[]> {
-    const res = await strapiGet<{ data: StrapiItem[] }>('/api/items', {
-        'filters[category][$eq]':  category,
-        'filters[status1][$eq]':   'active',
-        'sort':                    'createdAt:desc',
-        'pagination[limit]':       '1000',
-    });
-    return (res.data ?? []).map(mapStrapiItem);
+    try {
+        const res = await strapiGet<{ data: StrapiItem[] }>('/api/items', {
+            'filters[category][$eq]':  category,
+            'filters[status1][$eq]':   'active',
+            'sort':                    'createdAt:desc',
+            'pagination[limit]':       '1000',
+        });
+        return (res.data ?? []).map(mapStrapiItem);
+    } catch (e) {
+        if (e instanceof StrapiContentTypeError) return [];
+        throw e;
+    }
 }
 
 export async function searchItems(query: string): Promise<DbItem[]> {
     const q = query.trim();
     if (!q) return [];
-    const res = await strapiGet<{ data: StrapiItem[] }>('/api/items', {
-        'filters[$or][0][label][$containsi]':       q,
-        'filters[$or][1][description][$containsi]': q,
-        'filters[$or][2][category][$containsi]':    q,
-        'filters[status1][$eq]':                    'active',
-        'sort':                                     'createdAt:desc',
-        'pagination[limit]':                        '500',
-    });
-    return (res.data ?? []).map(mapStrapiItem);
+    try {
+        const res = await strapiGet<{ data: StrapiItem[] }>('/api/items', {
+            'filters[$or][0][label][$containsi]':       q,
+            'filters[$or][1][description][$containsi]': q,
+            'filters[$or][2][category][$containsi]':    q,
+            'filters[status1][$eq]':                    'active',
+            'sort':                                     'createdAt:desc',
+            'pagination[limit]':                        '500',
+        });
+        return (res.data ?? []).map(mapStrapiItem);
+    } catch (e) {
+        if (e instanceof StrapiContentTypeError) return [];
+        throw e;
+    }
 }
 
 export async function getItemsByUserId(userId: string): Promise<DbItem[]> {
@@ -304,11 +322,16 @@ export async function adminDeleteItem(documentId: string, adminId: string): Prom
 
 /** שליפת כל המשתמשים (אדמין בלבד) */
 export async function getAllUsers(jwt?: string): Promise<DbUser[]> {
-    const res = await strapiGet<{ data: StrapiCommunityUser[] }>('/api/community-users', {
-        'pagination[limit]': '1000',
-        'sort':              'createdAt:desc',
-    }, jwt);
-    return (res.data ?? []).map(mapStrapiUser);
+    try {
+        const res = await strapiGet<{ data: StrapiCommunityUser[] }>('/api/community-users', {
+            'pagination[limit]': '1000',
+            'sort':              'createdAt:desc',
+        }, jwt);
+        return (res.data ?? []).map(mapStrapiUser);
+    } catch (e) {
+        if (e instanceof StrapiContentTypeError) return [];
+        throw e;
+    }
 }
 
 /** שינוי role של משתמש (סופר-אדמין בלבד) */
@@ -356,10 +379,15 @@ export async function getMessagesByUserId(userId: string): Promise<DbItem[]> {
 // ============================================================
 
 export async function getFundTotal(): Promise<number> {
-    const res = await strapiGet<{ data: StrapiFundEntry[] }>('/api/community-funds', {
-        'pagination[limit]': '1000',
-    });
-    return (res.data ?? []).reduce((sum, entry) => sum + (entry.amount ?? 0), 0);
+    try {
+        const res = await strapiGet<{ data: StrapiFundEntry[] }>('/api/community-funds', {
+            'pagination[limit]': '1000',
+        });
+        return (res.data ?? []).reduce((sum, entry) => sum + (entry.amount ?? 0), 0);
+    } catch (e) {
+        if (e instanceof StrapiContentTypeError) return 0;
+        throw e;
+    }
 }
 
 export async function addFundDonation(amount: number): Promise<number> {
