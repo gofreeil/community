@@ -4,7 +4,9 @@
     const NATIONAL_NEWS_API = 'https://right-to-live.vercel.app/api/national-news';
 
     // חדשות ברירת מחדל אם ה-API לא זמין
-    const fallbackItems = [
+    type NewsItem = { line1: string; line2: string; sourceUrl?: string | null; documentId?: string };
+
+    const fallbackItems: NewsItem[] = [
         { line1: "מערכת חדשה לניהול ועדי שכונות", line2: "הושקה השבוע בהצלחה רבה" },
         { line1: "קבוצת הרכישה למזון אורגני", line2: "חצתה את רף 200 המשפחות" },
         { line1: "מיזם 'בעלי מקצוע כשירים'", line2: "התרחב ל-5 ערים נוספות" },
@@ -14,7 +16,7 @@
     ];
 
     let paused = $state(false);
-    let newsItems = $state(fallbackItems);
+    let newsItems = $state<NewsItem[]>(fallbackItems);
 
     onMount(async () => {
         try {
