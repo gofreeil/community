@@ -57,16 +57,24 @@ export async function strapiGet<T = unknown>(
 
             const text = await res.text();
 
+            // content type לא רשום — אין טעם לנסות שוב
             if (isContentTypeError(res.status, text)) {
                 throw new StrapiContentTypeError(path, res.status);
             }
+            // שגיאת HTTP שאינה זמנית — אין טעם לנסות שוב
             if (!isRetryable(res.status)) {
                 throw new Error(`[Strapi] GET ${path} → ${res.status}: ${text}`);
             }
+            // שגיאה זמנית (5xx/429) — נמשיך לנסות
             lastError = new Error(`[Strapi] GET ${path} → ${res.status}: ${text}`);
         } catch (e) {
+            // StrapiContentTypeError + שגיאות HTTP קבועות — זורקים מיד בלי retry
             if (e instanceof StrapiContentTypeError) throw e;
-            lastError = e instanceof Error ? e : new Error(String(e));
+            const err = e instanceof Error ? e : new Error(String(e));
+            const isHttp = err.message.startsWith('[Strapi] GET') && !err.message.includes('fetch failed');
+            if (isHttp) throw err;
+            // שגיאת רשת (fetch failed) — נסה שוב
+            lastError = err;
         }
 
         if (attempt < RETRY_ATTEMPTS) {
