@@ -782,6 +782,40 @@ export interface ApiProfileProfile extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiPushSubscriptionPushSubscription
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'push_subscriptions';
+  info: {
+    description: 'Web Push notification subscriptions';
+    displayName: 'Push Subscription';
+    pluralName: 'push-subscriptions';
+    singularName: 'push-subscription';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    auth: Schema.Attribute.Text & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    endpoint: Schema.Attribute.Text & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::push-subscription.push-subscription'
+    > &
+      Schema.Attribute.Private;
+    p256dh: Schema.Attribute.Text & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user_agent: Schema.Attribute.String;
+    user_id: Schema.Attribute.String;
+  };
+}
+
 export interface PluginContentReleasesRelease
   extends Struct.CollectionTypeSchema {
   collectionName: 'strapi_releases';
@@ -1302,6 +1336,7 @@ declare module '@strapi/strapi' {
       'api::lost-found-request.lost-found-request': ApiLostFoundRequestLostFoundRequest;
       'api::news-ticker-item.news-ticker-item': ApiNewsTickerItemNewsTickerItem;
       'api::profile.profile': ApiProfileProfile;
+      'api::push-subscription.push-subscription': ApiPushSubscriptionPushSubscription;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;
