@@ -1,5 +1,11 @@
 <script lang="ts">
 	import { ads } from '$lib/adsData';
+	import { page } from '$app/stores';
+
+	let isAuthPage = $derived(
+		$page.url.pathname === '/login' ||
+		$page.url.pathname === '/register'
+	);
 
 	interface LayoutUser {
 		id: string;
@@ -294,7 +300,7 @@
 	</div>
 
 	<!-- לשונית קטנה בצד שמאל (נראית כשה-Drawer סגור) - ניתנת לגרירה אנכית -->
-	{#if !open && tabY > 0}
+	{#if !open && tabY > 0 && !isAuthPage}
 	<button
 		class="tab"
 		class:tab-dragging={tabDragging}
