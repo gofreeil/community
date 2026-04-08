@@ -41,9 +41,9 @@ export const actions: Actions = {
             return fail(500, { error: 'שגיאה בהרשמה. נסה שוב.', username, email });
         }
 
-        // 2. יצירת רשומת פרופיל ב-community-users
+        // 2. יצירת רשומת פרופיל ב-community-users (עם JWT של המשתמש החדש)
         try {
-            await registerWithCredentials(username, email, password);
+            await registerWithCredentials(username, email, password, strapiJwt ?? undefined);
         } catch (e) {
             const msg = e instanceof Error ? e.message : '';
             if (msg.includes('Email already taken')) {

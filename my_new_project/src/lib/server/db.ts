@@ -499,6 +499,7 @@ export async function registerWithCredentials(
     name: string,
     email: string,
     password: string,
+    jwt?: string,
 ): Promise<DbUser> {
     const existing = await getUserByEmail(email);
     if (existing) throw new Error('Email already taken');
@@ -515,7 +516,7 @@ export async function registerWithCredentials(
             password_hash,
             publishedAt:   new Date().toISOString(),
         },
-    });
+    }, jwt);
 
     return (await getUserById(id))!;
 }
