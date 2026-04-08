@@ -1,5 +1,4 @@
 import { redirect, fail } from '@sveltejs/kit';
-import { getUserByEmail } from '$lib/server/db';
 import { strapiLogin } from '$lib/server/strapiClient';
 import type { PageServerLoad, Actions } from './$types';
 
@@ -34,23 +33,7 @@ export const actions: Actions = {
             return fail(400, { error: 'יש למלא אימייל וסיסמה' });
         }
 
-        // בדיקה אם המשתמש קיים
-        let existingUser;
-        try {
-            existingUser = await getUserByEmail(email);
-        } catch (e) {
-            console.error('[login] getUserByEmail failed:', e);
-            return fail(500, { error: 'שגיאת שרת. נסה שוב מאוחר יותר.' });
-        }
-
-        if (!existingUser) {
-            return fail(401, { error: 'אימייל זה לא רשום. האם ברצונך להירשם?' });
-        }
-        if (existingUser.provider !== 'credentials') {
-            return fail(401, { error: `חשבון זה מחובר דרך ${existingUser.provider}. התחבר עם הכפתור המתאים.` });
-        }
-
-        // אימות סיסמה
+        // התחברות ישירה דרך Strapi
         try {
             const { jwt } = await strapiLogin(email, password);
             cookies.set('strapi_jwt', jwt, {
@@ -61,7 +44,7 @@ export const actions: Actions = {
                 maxAge:   60 * 60 * 24 * 7,
             });
         } catch {
-            return fail(401, { error: 'סיסמה שגויה. נסה שוב.' });
+            return fail(401, { error: 'אימייל או סיסמה שגויים.' });
         }
 
         return { success: true };
