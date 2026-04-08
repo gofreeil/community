@@ -5,8 +5,8 @@
 
 	let { form } = $props();
 	let isLoading    = $state(false);
-	let showPassword = $state(false);
-	let showConfirm  = $state(false);
+	let showPassword = $state(true);
+	let showConfirm  = $state(true);
 	// tFn: תרגום reactive — $t אסור ב-Svelte 5
 	let _loc = $state(get(locale));
 	$effect(() => locale.subscribe(l => (_loc = l)));
