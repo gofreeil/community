@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { ads } from '$lib/adsData';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
 	let isAuthPage = $derived(
-		$page.url.pathname === '/login' ||
-		$page.url.pathname === '/register'
+		page.url.pathname === '/login' ||
+		page.url.pathname === '/register'
 	);
 
 	interface LayoutUser {
