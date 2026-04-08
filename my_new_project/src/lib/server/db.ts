@@ -501,7 +501,7 @@ export async function registerWithCredentials(
     password: string,
     jwt?: string,
 ): Promise<DbUser> {
-    const existing = await getUserByEmail(email);
+    const existing = await getUserByEmail(email, jwt);
     if (existing) throw new Error('Email already taken');
 
     const password_hash = await bcrypt.hash(password, 12);
