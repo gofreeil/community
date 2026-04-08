@@ -3,7 +3,7 @@ import Google from '@auth/sveltekit/providers/google';
 import Facebook from '@auth/sveltekit/providers/facebook';
 import Credentials from '@auth/sveltekit/providers/credentials';
 import { createHash } from 'crypto';
-import { upsertUser, verifyCredentials, getUserByEmail, getUserById } from '$lib/server/db';
+import { upsertUser, getUserByEmail, getUserById } from '$lib/server/db';
 import { strapiLogin, strapiRegister } from '$lib/server/strapiClient';
 
 const AUTH_SECRET         = process.env.AUTH_SECRET         ?? '';
@@ -57,19 +57,21 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
             },
             async authorize(credentials) {
                 if (!credentials?.email || !credentials?.password) return null;
-
-                const user = await verifyCredentials(
-                    credentials.email as string,
-                    credentials.password as string,
-                );
-
-                if (!user) return null;
-
-                return {
-                    id:    user.id,
-                    name:  user.name ?? '',
-                    email: user.email ?? '',
-                };
+                try {
+                    const { jwt } = await strapiLogin(
+                        credentials.email as string,
+                        credentials.password as string,
+                    );
+                    const communityUser = await getUserByEmail(credentials.email as string, jwt);
+                    const id = communityUser?.id ?? `credentials_${credentials.email}`;
+                    return {
+                        id,
+                        name:  communityUser?.name  ?? '',
+                        email: communityUser?.email ?? credentials.email as string,
+                    };
+                } catch {
+                    return null;
+                }
             },
         }),
     ],
