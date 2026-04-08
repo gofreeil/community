@@ -59,7 +59,7 @@ export const actions: Actions = {
                 secure:   process.env.NODE_ENV === 'production',
                 sameSite: 'strict',
                 path:     '/',
-                maxAge:   60 * 60 * 24 * 7, // 7 ימים
+                maxAge:   60 * 60 * 24 * 365, // שנה
             });
         }
 

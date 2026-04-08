@@ -41,7 +41,7 @@ export const actions: Actions = {
                 secure:   process.env.NODE_ENV === 'production',
                 sameSite: 'strict',
                 path:     '/',
-                maxAge:   60 * 60 * 24 * 7,
+                maxAge:   60 * 60 * 24 * 365,
             });
         } catch {
             return fail(401, { error: 'אימייל או סיסמה שגויים.' });
