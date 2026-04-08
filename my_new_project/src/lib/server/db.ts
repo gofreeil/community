@@ -335,33 +335,33 @@ export async function getAllUsers(jwt?: string): Promise<DbUser[]> {
 }
 
 /** שינוי role של משתמש (סופר-אדמין בלבד) */
-export async function setUserRole(externalId: string, role: string, neighborhood?: string): Promise<void> {
-    const user = await findStrapiUser(externalId);
+export async function setUserRole(externalId: string, role: string, neighborhood?: string, jwt?: string): Promise<void> {
+    const user = await findStrapiUser(externalId, jwt);
     if (!user) throw new Error('משתמש לא נמצא');
     await strapiPut(`/api/community-users/${user.documentId}`, {
         data: {
             role,
             ...(neighborhood !== undefined ? { neighborhood } : {}),
         },
-    });
+    }, jwt);
 }
 
 /** חסימת משתמש (אדמין בלבד) */
-export async function banUser(externalId: string): Promise<void> {
-    const user = await findStrapiUser(externalId);
+export async function banUser(externalId: string, jwt?: string): Promise<void> {
+    const user = await findStrapiUser(externalId, jwt);
     if (!user) throw new Error('משתמש לא נמצא');
     await strapiPut(`/api/community-users/${user.documentId}`, {
         data: { banned: true },
-    });
+    }, jwt);
 }
 
 /** ביטול חסימת משתמש */
-export async function unbanUser(externalId: string): Promise<void> {
-    const user = await findStrapiUser(externalId);
+export async function unbanUser(externalId: string, jwt?: string): Promise<void> {
+    const user = await findStrapiUser(externalId, jwt);
     if (!user) throw new Error('משתמש לא נמצא');
     await strapiPut(`/api/community-users/${user.documentId}`, {
         data: { banned: false },
-    });
+    }, jwt);
 }
 
 export async function getMessagesByUserId(userId: string): Promise<DbItem[]> {
@@ -468,7 +468,7 @@ export async function getUserByEmail(email: string, jwt?: string): Promise<DbUse
 }
 
 export async function updateUserProfile(id: string, data: UpdateProfileData, jwt?: string): Promise<DbUser | undefined> {
-    const existing = await findStrapiUser(id);
+    const existing = await findStrapiUser(id, jwt);
     if (!existing) return undefined;
 
     const updates: Record<string, unknown> = {};
@@ -485,10 +485,10 @@ export async function updateUserProfile(id: string, data: UpdateProfileData, jwt
     if (data.avatar_url    !== undefined) updates.avatar_url    = data.avatar_url;
     if (data.birth_date    !== undefined) updates.birth_date    = data.birth_date;
 
-    if (Object.keys(updates).length === 0) return getUserById(id);
+    if (Object.keys(updates).length === 0) return getUserById(id, jwt);
 
     await strapiPut(`/api/community-users/${existing.documentId}`, { data: updates }, jwt);
-    return getUserById(id);
+    return getUserById(id, jwt);
 }
 
 // ============================================================
@@ -518,7 +518,7 @@ export async function registerWithCredentials(
         },
     }, jwt);
 
-    return (await getUserById(id))!;
+    return (await getUserById(id, jwt))!;
 }
 
 export async function verifyCredentials(
