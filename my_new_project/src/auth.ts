@@ -64,11 +64,13 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
                     );
                     const communityUser = await getUserByEmail(credentials.email as string, jwt);
                     const id = communityUser?.id ?? `credentials_${credentials.email}`;
+                    // מעביר את ה-JWT הלאה דרך ה-user object
                     return {
                         id,
-                        name:  communityUser?.name  ?? '',
-                        email: communityUser?.email ?? credentials.email as string,
-                    };
+                        name:       communityUser?.name  ?? '',
+                        email:      communityUser?.email ?? credentials.email as string,
+                        strapiJwt:  jwt,
+                    } as { id: string; name: string; email: string; strapiJwt: string };
                 } catch {
                     return null;
                 }
@@ -84,13 +86,11 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
                 return false;
             }
 
-            // Credentials provider
+            // Credentials provider — ה-JWT מגיע מה-authorize callback דרך ה-user object
             if (account.provider === 'credentials') {
-                const stableId = user.id ?? `credentials_${user.email}`;
-                // קודם JWT, אחר כך upsert עם ה-JWT
-                const strapiJwt = await getOrCreateStrapiJwt(user.email, stableId);
+                const strapiJwt = (user as { strapiJwt?: string }).strapiJwt;
+                const stableId  = user.id ?? `credentials_${user.email}`;
                 if (strapiJwt) {
-                    (user as { strapiJwt?: string }).strapiJwt = strapiJwt;
                     try {
                         await upsertUser({
                             id: stableId, name: user.name, email: user.email,
