@@ -35,7 +35,14 @@ export const actions: Actions = {
         }
 
         // בדיקה אם המשתמש קיים
-        const existingUser = await getUserByEmail(email);
+        let existingUser;
+        try {
+            existingUser = await getUserByEmail(email);
+        } catch (e) {
+            console.error('[login] getUserByEmail failed:', e);
+            return fail(500, { error: 'שגיאת שרת. נסה שוב מאוחר יותר.' });
+        }
+
         if (!existingUser) {
             return fail(401, { error: 'אימייל זה לא רשום. האם ברצונך להירשם?' });
         }
@@ -43,7 +50,7 @@ export const actions: Actions = {
             return fail(401, { error: `חשבון זה מחובר דרך ${existingUser.provider}. התחבר עם הכפתור המתאים.` });
         }
 
-        // קבלת Strapi JWT ושמירה ב-HTTP-only cookie
+        // אימות סיסמה
         try {
             const { jwt } = await strapiLogin(email, password);
             cookies.set('strapi_jwt', jwt, {
@@ -51,13 +58,12 @@ export const actions: Actions = {
                 secure:   process.env.NODE_ENV === 'production',
                 sameSite: 'strict',
                 path:     '/',
-                maxAge:   60 * 60 * 24 * 7, // 7 ימים
+                maxAge:   60 * 60 * 24 * 7,
             });
         } catch {
             return fail(401, { error: 'סיסמה שגויה. נסה שוב.' });
         }
 
-        // הצלחה — הקליינט ימשיך עם signIn של Auth.js
         return { success: true };
     },
 };
