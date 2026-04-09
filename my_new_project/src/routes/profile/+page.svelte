@@ -826,6 +826,7 @@
 							<p class="text-white font-medium py-3 px-1">{neighborhood || '—'}</p>
 						{/if}
 					</div>
+				</div><!-- סגירת מסגרת עיר+שכונה -->
 
 				<!-- מיקום שאינו מופיע ברשימה -->
 				{#if isEditing}
