@@ -20,7 +20,7 @@
 	let currentUser = $derived(
 		data.session?.user
 			? {
-				username:   data.layoutUser?.nickname || data.layoutUser?.name || data.session.user.name  ?? data.session.user.email ?? 'משתמש',
+				username:   data.layoutUser?.nickname || data.layoutUser?.name || (data.session.user.name ?? data.session.user.email ?? 'משתמש'),
 				avatar_url: data.layoutUser?.avatar_url ?? data.session.user.image ?? null,
 			  }
 			: undefined
