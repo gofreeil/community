@@ -116,8 +116,9 @@ export const actions: Actions = {
             ? `${birth_year}-${birth_month.padStart(2,'0')}-${birth_day.padStart(2,'0')}`
             : '';
         const gender        = formData.get('gender')?.toString()               ?? '';
-        const notifications = formData.get('notifications') === 'true' ? 1 : 0;
-        const avatarBase64  = formData.get('avatar_base64')?.toString()        ?? '';
+        const notifications    = formData.get('notifications') === 'true' ? 1 : 0;
+        const avatarBase64     = formData.get('avatar_base64')?.toString()     ?? '';
+        const customLocation   = formData.get('custom_location')?.toString().trim() ?? '';
 
         if (!name || name.length < 2) {
             return fail(400, { error: 'שם חייב להכיל לפחות 2 תווים' });
@@ -138,6 +139,29 @@ export const actions: Actions = {
                 notifications,
                 ...(avatarBase64 ? { avatar_url: avatarBase64 } : {}),
             }, strapiJwt);
+
+            // אם המשתמש ביקש להוסיף מיקום חדש — שלח בקשה לסופר אדמין
+            if (customLocation) {
+                try {
+                    await createItem({
+                        category:    'location_request',
+                        label:       `בקשה להוספת מיקום: ${customLocation}`,
+                        description: `המשתמש ${name || session.user.id} (${email || (session.user.email ?? '')}) ביקש להוסיף את המיקום הבא:\n\n"${customLocation}"`,
+                        icon:        '📍',
+                        color:       'yellow',
+                        user_id:     session.user.id,
+                        extra_fields: {
+                            requested_by_name:  name  || '',
+                            requested_by_email: email || session.user.email || '',
+                            requested_by_id:    session.user.id,
+                            requested_at:       new Date().toISOString(),
+                        },
+                    });
+                } catch (e) {
+                    console.warn('[profile] location_request createItem failed:', e);
+                }
+            }
+
             return { success: true };
         } catch {
             return fail(500, { error: 'שגיאה בעדכון הפרופיל' });

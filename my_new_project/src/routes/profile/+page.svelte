@@ -70,6 +70,7 @@
 	let city          = $state(_ud?.city          ?? '');
 	let neighborhood  = $state(_ud?.neighborhood  ?? '');
 	let business      = $state(_ud?.business      ?? '');
+	let customLocation = $state('');
 	let family_status = $state(_ud?.family_status ?? '');
 	let gender        = $state(_ud?.gender        ?? '');
 	let whatsappMatches = $derived(findWhatsAppGroups(city, neighborhood));
@@ -825,7 +826,28 @@
 							<p class="text-white font-medium py-3 px-1">{neighborhood || '—'}</p>
 						{/if}
 					</div>
+
+				<!-- מיקום שאינו מופיע ברשימה -->
+				{#if isEditing}
+				<div class="md:col-span-2">
+					<div class="rounded-2xl border border-yellow-500/25 bg-yellow-500/5 p-4">
+						<label for="p-custom-location" class="block text-xs text-yellow-400 font-bold uppercase tracking-wider mb-1.5">
+							📍 מיקום שאינו מופיע ברשימה?
+						</label>
+						<p class="text-gray-500 text-xs mb-3">כתוב כאן את העיר או השכונה שלך — הבקשה תישלח למנהל האתר להוספה</p>
+						<input
+							id="p-custom-location"
+							name="custom_location"
+							type="text"
+							bind:value={customLocation}
+							placeholder="לדוגמה: רמת השרון, שכונת הצפון..."
+							class="w-full bg-[#070b14] border border-yellow-500/20 focus:border-yellow-500/50
+							       rounded-xl px-4 py-3 text-white text-sm transition-colors outline-none
+							       placeholder:text-white/20"
+						/>
+					</div>
 				</div>
+				{/if}
 
 				<!-- עסק + סטטוס משפחתי + תאריך לידה — שורה אחת בדסקטופ -->
 				<div class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-5">
