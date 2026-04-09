@@ -61,7 +61,7 @@
 		}, 50);
 	}
 	let saveSuccess = $state(_photoDone); // הצג הצלחה אם חזרנו מהעתקת תמונה
-	if (_photoDone) setTimeout(() => (saveSuccess = false), 4000);
+	if (_photoDone) setTimeout(() => (saveSuccess = false), 3000);
 	let avatarPreview = $state<string | null>(_ud?.avatar_url ?? null);
 	let avatarBase64  = $state('');
 
@@ -625,10 +625,6 @@
 			</div>
 		</div>
 
-		{#if saveSuccess}
-			<p class="text-green-400 text-sm font-bold mt-2 text-center">{tFn("profile_updated")}</p>
-		{/if}
-
 		{#if isEditing}
 
 		<form
@@ -645,7 +641,7 @@
 						if (neighborhood && city) {
 							neighborhoodState.select(neighborhood, city);
 						}
-						setTimeout(() => (saveSuccess = false), 4000);
+						setTimeout(() => (saveSuccess = false), 3000);
 						// גלול למעלה לאט כדי שהמשתמש יראה את עדכון האחוזים במעגל
 						setTimeout(() => slowScrollTo(0, 1400), 150);
 					} else {
@@ -678,6 +674,11 @@
 					</div>
 					<div>
 						<p class="text-xs text-gray-400 font-bold mb-2">{tFn("profile_photo")}</p>
+						{#if saveSuccess}
+							<p class="text-green-400 text-xs font-bold mb-2 flex items-center gap-1">
+								<span>✓</span> {tFn("profile_updated")}
+							</p>
+						{/if}
 						<div class="flex flex-wrap gap-2">
 							<label class="cursor-pointer bg-white/5 hover:bg-white/10 border border-white/10
 							              hover:border-purple-500/40 rounded-xl px-4 py-2 text-sm text-gray-300
