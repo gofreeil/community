@@ -26,7 +26,9 @@ export const load: PageServerLoad = async (event) => {
     const copyPhoto = event.url.searchParams.get('copy_photo') === '1';
     if (copyPhoto && session.user?.image) {
         try {
-            const jwt = event.cookies.get('strapi_jwt');
+            const jwt = event.cookies.get('strapi_jwt')
+                ?? (session.user as { strapiJwt?: string }).strapiJwt
+                ?? undefined;
             await updateUserProfile(session.user.id, { avatar_url: session.user.image }, jwt);
         } catch (e) {
             console.warn('[profile] copy_photo update failed:', e);

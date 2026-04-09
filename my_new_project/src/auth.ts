@@ -135,9 +135,9 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
         async jwt({ token, user, account }) {
             // user + account מועברים רק ב-sign-in הראשון
             if (user && account) {
-                token.dbUserId = account.provider === 'credentials'
-                    ? user.id
-                    : `${account.provider}_${account.providerAccountId}`;
+                // user.id כבר הוגדר ל-stableId בעת מיזוג חשבונות (ב-signIn callback)
+                // לכן נשתמש בו תמיד — גם עבור OAuth — כדי שה-ID יתאים לרשומה ב-DB
+                token.dbUserId = user.id;
                 token.provider = account.provider;
                 if (user.email) token.email = user.email;
             }
