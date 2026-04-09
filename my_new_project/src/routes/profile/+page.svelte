@@ -78,7 +78,11 @@
 	let birthMonth    = $state(birthParts[1] ? String(parseInt(birthParts[1])) : '');
 	let birthDay      = $state(birthParts[2] ? String(parseInt(birthParts[2])) : '');
 	let notifications  = $state(_ud?.notifications !== 0);
-	let termsAccepted  = $state(false);
+	let termsAccepted  = $state(
+		typeof localStorage !== 'undefined'
+			? localStorage.getItem('terms_accepted') === '1'
+			: false
+	);
 
 	// ===== Web Push =====
 	async function handleNotificationsToggle(enabled: boolean) {
@@ -933,7 +937,12 @@
 				<div class="mt-4 flex flex-col gap-3 items-end">
 					<label class="flex items-center gap-3 cursor-pointer">
 						<input type="checkbox" bind:checked={termsAccepted}
-							onchange={() => { if (termsAccepted) showTermsError = false; }}
+							onchange={() => {
+								if (termsAccepted) {
+									showTermsError = false;
+									try { localStorage.setItem('terms_accepted', '1'); } catch {}
+								}
+							}}
 							class="w-4 h-4 accent-purple-500 cursor-pointer flex-shrink-0" />
 						<span class="text-sm text-gray-300">
 							{tFn("terms_agree_prefix")}
