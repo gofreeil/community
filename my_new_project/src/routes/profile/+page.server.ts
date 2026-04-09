@@ -33,7 +33,7 @@ export const load: PageServerLoad = async (event) => {
         } catch (e) {
             console.warn('[profile] copy_photo update failed:', e);
         }
-        throw redirect(302, '/profile');
+        throw redirect(302, '/profile?photo_done=1');
     }
 
     let user: Awaited<ReturnType<typeof getUserById>>;

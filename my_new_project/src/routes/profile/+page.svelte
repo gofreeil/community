@@ -22,7 +22,8 @@
 
 	const DRAFT_KEY = 'profile_draft';
 
-	let isEditing   = $state(!_ud?.name || (_ud?.name?.length ?? 0) < 2);
+	const _photoDone = page.url.searchParams.get('photo_done') === '1';
+	let isEditing   = $state(!_ud?.name || (_ud?.name?.length ?? 0) < 2 || _photoDone);
 	let showLevels    = $state(false);
 	let showMessages  = $state(false);
 	let showMyInfo    = $state(true);
@@ -59,7 +60,8 @@
 			slowScrollTo(top);
 		}, 50);
 	}
-	let saveSuccess = $state(false);
+	let saveSuccess = $state(_photoDone); // הצג הצלחה אם חזרנו מהעתקת תמונה
+	if (_photoDone) setTimeout(() => (saveSuccess = false), 4000);
 	let avatarPreview = $state<string | null>(_ud?.avatar_url ?? null);
 	let avatarBase64  = $state('');
 
