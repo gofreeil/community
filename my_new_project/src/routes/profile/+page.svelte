@@ -685,7 +685,7 @@
 							</label>
 							<!-- כפתור גוגל - תמיד פעיל -->
 							<button type="button"
-								onclick={(e) => { e.stopPropagation(); signIn('google', { callbackUrl: '/profile' }); }}
+								onclick={(e) => { e.stopPropagation(); signIn('google', { callbackUrl: '/profile?copy_photo=1' }); }}
 								class="cursor-pointer bg-white/5 hover:bg-white/10 border border-white/15 hover:border-red-400/50 rounded-xl px-3 py-2 text-sm text-gray-200 transition-all inline-flex items-center gap-2"
 							>
 								<img src="https://www.google.com/favicon.ico" class="w-4 h-4" alt="Google" />

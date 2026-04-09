@@ -22,6 +22,18 @@ export const load: PageServerLoad = async (event) => {
         };
     }
 
+    // העתקת תמונה מגוגל — המשתמש לחץ "העתק מחשבון גוגל" וחזר עם ?copy_photo=1
+    const copyPhoto = event.url.searchParams.get('copy_photo') === '1';
+    if (copyPhoto && session.user?.image) {
+        try {
+            const jwt = event.cookies.get('strapi_jwt');
+            await updateUserProfile(session.user.id, { avatar_url: session.user.image }, jwt);
+        } catch (e) {
+            console.warn('[profile] copy_photo update failed:', e);
+        }
+        throw redirect(302, '/profile');
+    }
+
     let user: Awaited<ReturnType<typeof getUserById>>;
     let items: Awaited<ReturnType<typeof getItemsByUserId>> = [];
     try {
