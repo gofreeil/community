@@ -401,6 +401,57 @@
 
 <div class="max-w-3xl mx-auto px-4 py-8" dir="rtl">
 
+	<!-- ===== אורח — לא מחובר ===== -->
+	{#if !data.user}
+		<div class="flex flex-col items-center justify-center min-h-[60vh] gap-6">
+			<div class="bg-[#0f172a] rounded-3xl border border-white/10 shadow-2xl overflow-hidden w-full max-w-md">
+				<div class="h-1.5 bg-gradient-to-r from-purple-500 via-blue-600 to-pink-500"></div>
+				<div class="p-8 text-center">
+					<div class="flex justify-center mb-4">
+						<div class="h-20 w-20 rounded-2xl bg-gradient-to-br from-purple-600 to-blue-700 flex items-center justify-center shadow-xl">
+							<span class="text-4xl">🏘️</span>
+						</div>
+					</div>
+					<h1 class="text-2xl font-black text-white mb-2">האזור האישי שלך</h1>
+					<p class="text-gray-400 text-sm mb-8">התחבר כדי לצפות בפרופיל שלך, לערוך פרטים ולנהל את הפעילות שלך בקהילה</p>
+
+					<div class="flex flex-col gap-3">
+						<a href="/login?redirect=/profile"
+							class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-purple-600 to-blue-600
+							       hover:from-purple-500 hover:to-blue-500 text-white font-bold shadow-lg
+							       transition-all duration-200 hover:-translate-y-0.5 text-center block">
+							כניסה לחשבון
+						</a>
+						<a href="/register"
+							class="w-full py-3 px-6 rounded-2xl border border-white/15 hover:border-purple-500/50
+							       text-gray-300 hover:text-white font-bold transition-all duration-200
+							       hover:bg-white/5 text-center block">
+							הרשמה חינם
+						</a>
+					</div>
+
+					<div class="mt-6 pt-6 border-t border-white/10">
+						<p class="text-xs text-gray-500 mb-3">או התחבר עם</p>
+						<div class="flex gap-3 justify-center">
+							<button type="button"
+								onclick={() => signIn('google', { callbackUrl: '/profile' })}
+								class="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-red-400/40 rounded-xl px-4 py-2.5 text-sm text-gray-300 transition-all cursor-pointer">
+								<img src="https://www.google.com/favicon.ico" class="w-4 h-4" alt="Google" />
+								Google
+							</button>
+							<button type="button"
+								onclick={() => signIn('facebook', { callbackUrl: '/profile' })}
+								class="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-blue-400/40 rounded-xl px-4 py-2.5 text-sm text-gray-300 transition-all cursor-pointer">
+								<img src="https://www.facebook.com/favicon.ico" class="w-4 h-4" alt="Facebook" />
+								Facebook
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	{:else}
+
 	<!-- ===== ברוך הבא — הרשמה חדשה ===== -->
 	{#if page.url.searchParams.get('new') === '1'}
 		<div class="mb-6 rounded-2xl bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-purple-500/30 px-6 py-5 text-center shadow-lg">
@@ -1296,6 +1347,7 @@
 		{/if}
 	</div>
 
+	{/if}<!-- סוף בלוק {:else} מחובר -->
 </div>
 
 {#if showRingTooltip}
@@ -1377,6 +1429,65 @@
 					onclick={() => (showSocialPhotoModal = null)}
 					class="px-4 py-2.5 rounded-xl border border-white/10 text-gray-400 hover:text-white
 					       hover:border-white/20 text-sm transition-all cursor-pointer"
+				>
+					ביטול
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}
+
+<!-- ===== מודל חיתוך תמונה ===== -->
+{#if showCrop}
+	<div
+		class="fixed inset-0 z-[10000] flex items-center justify-center bg-black/75 backdrop-blur-sm"
+		role="presentation"
+	>
+		<div class="bg-[#0f172a] border border-white/10 rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl flex flex-col items-center gap-4">
+			<h3 class="text-white font-black text-lg">חתוך את התמונה</h3>
+			<p class="text-gray-400 text-xs text-center">גרור להזזה · גלגלת עכבר להגדלה/הקטנה</p>
+
+			<!-- אזור חיתוך -->
+			<div
+				class="relative overflow-hidden rounded-full border-2 border-purple-500/50 cursor-grab active:cursor-grabbing select-none touch-none"
+				style="width: {CROP_VP}px; height: {CROP_VP}px;"
+				use:cropInteraction
+			>
+				{#if cropSrc}
+					<img
+						src={cropSrc}
+						alt="חיתוך"
+						onload={onCropLoad}
+						draggable="false"
+						style="
+							position: absolute;
+							width: {cropNatW * cropScale}px;
+							height: {cropNatH * cropScale}px;
+							left: {CROP_VP / 2 + cropOffsetX - (cropNatW * cropScale) / 2}px;
+							top:  {CROP_VP / 2 + cropOffsetY - (cropNatH * cropScale) / 2}px;
+							pointer-events: none;
+							user-select: none;
+						"
+					/>
+				{/if}
+				<!-- עיגול הנחיה -->
+				<div class="absolute inset-0 rounded-full ring-2 ring-purple-500/30 pointer-events-none"></div>
+			</div>
+
+			<div class="flex gap-3 w-full">
+				<button
+					type="button"
+					onclick={confirmCrop}
+					class="flex-1 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600
+					       hover:from-purple-500 hover:to-blue-500 text-white font-bold transition-all cursor-pointer"
+				>
+					אשר תמונה
+				</button>
+				<button
+					type="button"
+					onclick={() => { showCrop = false; cropSrc = ''; }}
+					class="px-5 py-3 rounded-xl border border-white/10 text-gray-400 hover:text-white
+					       hover:border-white/20 transition-all cursor-pointer"
 				>
 					ביטול
 				</button>

@@ -11,8 +11,15 @@ export const load: PageServerLoad = async (event) => {
         // cookie פגום — מפנה להתחברות
     }
 
+    // אורח — מאפשרים כניסה לדף אך ללא נתוני משתמש
     if (!session?.user?.id) {
-        throw redirect(302, '/login?redirect=/profile');
+        return {
+            user:       null,
+            items:      [],
+            messages:   [],
+            citiesData,
+            oauth_image: null,
+        };
     }
 
     let user: Awaited<ReturnType<typeof getUserById>>;
