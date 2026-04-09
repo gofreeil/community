@@ -588,6 +588,8 @@
 							neighborhoodState.select(neighborhood, city);
 						}
 						setTimeout(() => (saveSuccess = false), 4000);
+						// גלול למעלה לאט כדי שהמשתמש יראה את עדכון האחוזים במעגל
+						setTimeout(() => slowScrollTo(0, 1400), 150);
 					} else {
 						await update();
 					}
@@ -627,7 +629,7 @@
 							</label>
 							<!-- כפתור גוגל - תמיד פעיל -->
 							<button type="button"
-								onclick={() => signIn('google', { callbackUrl: '/profile' })}
+								onclick={(e) => { e.stopPropagation(); signIn('google', { callbackUrl: '/profile' }); }}
 								class="cursor-pointer bg-white/5 hover:bg-white/10 border border-white/15 hover:border-red-400/50 rounded-xl px-3 py-2 text-sm text-gray-200 transition-all inline-flex items-center gap-2"
 							>
 								<img src="https://www.google.com/favicon.ico" class="w-4 h-4" alt="Google" />
@@ -635,7 +637,7 @@
 							</button>
 							<!-- כפתור פייסבוק - תמיד פעיל -->
 							<button type="button"
-								onclick={() => { showSocialPhotoModal = 'facebook'; socialPhotoInput = ''; socialPhotoError = ''; }}
+								onclick={(e) => { e.stopPropagation(); showSocialPhotoModal = 'facebook'; socialPhotoInput = ''; socialPhotoError = ''; }}
 								class="cursor-pointer bg-white/5 hover:bg-white/10 border border-white/15 hover:border-blue-400/50 rounded-xl px-3 py-2 text-sm text-gray-200 transition-all inline-flex items-center gap-2"
 							>
 								<img src="https://www.facebook.com/favicon.ico" class="w-4 h-4" alt="Facebook" />
@@ -1115,7 +1117,7 @@
 		{/if}
 	</div>
 	<!-- ===== קומה 5: כתוב למערכת ===== -->
-	<div class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-4 md:p-6 shadow-xl overflow-hidden
+	<div class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-4 md:p-6 shadow-xl mb-2 overflow-hidden
 	            before:absolute before:inset-x-0 before:top-0 before:h-24 before:rounded-t-3xl
 	            before:bg-gradient-to-b before:from-white/8 before:to-transparent
 	            before:transition-all before:duration-300 before:pointer-events-none
