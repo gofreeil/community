@@ -47,12 +47,12 @@ export const ads: Ad[] = [
     },
     {
         id: 5,
-        title: "גידול ביתי",
-        description: "מערכת לגידול ביתי (בקרוב)",
-        cta: "מערכת לגידול ביתי - לחץ לפרטים",
-        href: "https://www.melecshop.com/page/free",
-        image: "/images/partners/מערכת לגידול ביתי.png",
-        color: "from-teal-500 to-teal-600"
+        title: "ביקורת על רשויות המדינה ומיצוי זכויות התושב",
+        description: "ממצים את הזכות של התושב מול הרשויות",
+        cta: "ממצים את הזכות של התושב מול הרשויות",
+        href: "https://right-to-live.vercel.app/",
+        image: "/images/מבקר רשויות המדינה.png",
+        color: "from-blue-700 to-indigo-700"
     },
     {
         id: 6,
