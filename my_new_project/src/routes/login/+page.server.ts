@@ -6,12 +6,12 @@ export const load: PageServerLoad = async (event) => {
     const session = await event.locals.auth();
 
     if (session?.user) {
-        const redirectTo = event.url.searchParams.get('redirect') ?? '/';
+        const redirectTo = event.url.searchParams.get('redirect') ?? '/profile';
         throw redirect(302, redirectTo);
     }
 
     return {
-        redirectTo:  event.url.searchParams.get('redirect') ?? '/',
+        redirectTo:  event.url.searchParams.get('redirect') ?? '/profile',
         error:       event.url.searchParams.get('error') ?? null,
         registered:  event.url.searchParams.get('registered') === '1',
     };

@@ -63,6 +63,6 @@ export const actions: Actions = {
             });
         }
 
-        throw redirect(302, '/login?registered=1');
+        throw redirect(302, '/login?redirect=/profile%3Fnew%3D1');
     },
 };
