@@ -50,6 +50,17 @@ export const ads: Ad[] = [
         imageScale: 1.2,
     },
     {
+        id: 10,
+        title: "דירוג ציבורי",
+        description: "העם מדרג את הרשויות ועובדי הציבור",
+        cta: "העם מדרג את הרשויות ועובדי הציבור",
+        href: "https://public-rating-il.vercel.app/",
+        image: "/images/דירוג ציבורי.jpeg",
+        color: "from-indigo-600 to-blue-600",
+        imageHeight: "200px",
+        imageScale: 0.9,
+    },
+    {
         id: 3,
         title: "קבוצת רכישה",
         description: "הוזל את ההוצאות שלך",
@@ -66,15 +77,6 @@ export const ads: Ad[] = [
         href: "https://www.melecshop.com/page/free",
         image: "/images/partners/השקעות קבוצתיות.png",
         color: "from-amber-600 to-orange-600"
-    },
-    {
-        id: 10,
-        title: "דירוג ציבורי",
-        description: "העם מדרג את הרשויות ועובדי הציבור",
-        cta: "העם מדרג את הרשויות ועובדי הציבור",
-        href: "https://public-rating-il.vercel.app/",
-        image: "/images/דירוג ציבורי.jpeg",
-        color: "from-indigo-600 to-blue-600",
     },
     {
         id: 6,
