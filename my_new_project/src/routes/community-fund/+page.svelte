@@ -83,7 +83,7 @@
 				-->
 
 				<img
-					src="/images/קופת העיר.png"
+					src="/images/kupat-hair.png"
 					alt="קופת העיר"
 					class="bag-img"
 				/>

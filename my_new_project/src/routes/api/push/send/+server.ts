@@ -44,7 +44,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         title: body.title,
         body:  body.body,
         url:   body.url  ?? '/',
-        icon:  body.icon ?? '/images/logos/לוגו2.png',
+        icon:  body.icon ?? '/images/logos/logo2.png',
         tag:   body.tag  ?? 'kahal',
     });
 

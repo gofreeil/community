@@ -475,7 +475,7 @@
                 <!-- Background image -->
                 <div
                     class="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110"
-                    style="background-image: url('/images/ועד שכונה.png');"
+                    style="background-image: url('/images/vaad-shchuna.png');"
                 ></div>
                 <!-- Dark gradient overlay -->
                 <div
@@ -515,7 +515,7 @@
                 <!-- Background image -->
                 <div
                     class="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110"
-                    style="background-image: url('/images/כוננות.png');"
+                    style="background-image: url('/images/konanut.png');"
                 ></div>
                 <!-- Dark gradient overlay -->
                 <div
@@ -587,7 +587,7 @@
                     <!-- Background image -->
                     <div
                         class="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110"
-                        style="background-image: url('/images/ועד שכונה.png');"
+                        style="background-image: url('/images/vaad-shchuna.png');"
                     ></div>
                     <!-- Dark gradient overlay -->
                     <div
@@ -611,7 +611,7 @@
                     <!-- Background image -->
                     <div
                         class="absolute inset-0 bg-cover bg-center"
-                        style="background-image: url('/images/כוננות.png');"
+                        style="background-image: url('/images/konanut.png');"
                     ></div>
                     <!-- Dark gradient overlay -->
                     <div
