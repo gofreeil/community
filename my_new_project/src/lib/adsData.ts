@@ -28,6 +28,15 @@ export const ads: Ad[] = [
         color: "from-blue-600 to-cyan-600"
     },
     {
+        id: 5,
+        title: "ביקורת על רשויות המדינה ומיצוי זכויות התושב",
+        description: "ממצים את הזכות של התושב מול הרשויות",
+        cta: "ממצים את הזכות של התושב מול הרשויות",
+        href: "https://right-to-live.vercel.app/",
+        image: "/images/מבקר רשויות המדינה.png",
+        color: "from-blue-700 to-indigo-700"
+    },
+    {
         id: 3,
         title: "קבוצת רכישה",
         description: "הוזל את ההוצאות שלך",
@@ -44,15 +53,6 @@ export const ads: Ad[] = [
         href: "https://www.melecshop.com/page/free",
         image: "/images/partners/השקעות קבוצתיות.png",
         color: "from-amber-600 to-orange-600"
-    },
-    {
-        id: 5,
-        title: "ביקורת על רשויות המדינה ומיצוי זכויות התושב",
-        description: "ממצים את הזכות של התושב מול הרשויות",
-        cta: "ממצים את הזכות של התושב מול הרשויות",
-        href: "https://right-to-live.vercel.app/",
-        image: "/images/מבקר רשויות המדינה.png",
-        color: "from-blue-700 to-indigo-700"
     },
     {
         id: 6,
