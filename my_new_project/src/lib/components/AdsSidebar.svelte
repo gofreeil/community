@@ -80,6 +80,36 @@
             </div>
         </a>
 
+        <!-- Ad - מבקר רשויות המדינה -->
+        <a
+            href="https://right-to-live.vercel.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="ביקורת על רשויות המדינה ומיצוי זכויות התושב (נפתח בחלון חדש)"
+            class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105 group relative"
+        >
+            <div class="relative overflow-hidden">
+                <img
+                    src="/images/מבקר רשויות המדינה.png"
+                    alt="מבקר רשויות המדינה"
+                    class="h-auto w-full object-cover transition-opacity duration-1500 group-hover:opacity-0"
+                />
+                <div
+                    class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1500 flex items-center justify-center"
+                    style="background-image: url('/images/מבקר רשויות המדינה.png'); background-size: cover; background-position: center;"
+                >
+                    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+                    <div class="relative z-10 text-center px-4">
+                        <h3 class="text-white font-bold text-lg mb-2">ביקורת על רשויות המדינה</h3>
+                        <p class="text-gray-200 text-sm">ממצים את הזכות של התושב מול הרשויות</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gradient-to-r from-blue-700 to-indigo-700 p-3 text-center">
+                <p class="text-white font-bold text-xs leading-tight">ממצים את הזכות של התושב מול הרשויות</p>
+            </div>
+        </a>
+
         <!-- Ad 1 - ועדי שכונות -->
         <a
             href="https://www.melecshop.com/page/peace-on-earth_VRHH"
@@ -200,48 +230,6 @@
                 <p class="text-white font-bold text-xs leading-tight">
                     הצטרף אל מועדון המשקיעים של מהפכת הכלכלה המבוזרת!
                 </p>
-            </div>
-        </a>
-
-        <!-- Ad 3 - מערכת לגידול ביתי -->
-        <a
-            href="https://www.melecshop.com/page/free"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="מערכת לגידול ביתי – בקרוב (נפתח בחלון חדש)"
-            class="block relative overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105 group"
-        >
-            <div class="relative overflow-hidden">
-                <img
-                    src="/images/partners/מערכת לגידול ביתי.png"
-                    alt="מערכת לגידול ביתי"
-                    class="h-auto w-full object-cover transition-opacity duration-1500 group-hover:opacity-0"
-                />
-                <!-- Hover overlay -->
-                <div
-                    class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1500 flex items-center justify-center"
-                    style="background-image: url('/images/partners/מערכת לגידול ביתי.png'); background-size: cover; background-position: center;"
-                >
-                    <div
-                        class="absolute inset-0 bg-black/60 backdrop-blur-sm"
-                    ></div>
-                    <div class="relative z-10 text-center px-4">
-                        <h3 class="text-white font-bold text-lg mb-2">
-                            גידול ביתי
-                        </h3>
-                        <p class="text-gray-200 text-sm">מערכת לגידול ביתי</p>
-                    </div>
-                </div>
-                <div
-                    class="absolute top-4 right-4 bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg transform rotate-12 z-20"
-                >
-                    <p class="font-bold text-sm">בקרוב</p>
-                </div>
-            </div>
-            <div
-                class="bg-gradient-to-r from-teal-500 to-teal-600 p-2 text-center text-xs font-bold text-white"
-            >
-                מערכת לגידול ביתי
             </div>
         </a>
 
