@@ -18,16 +18,17 @@
                 aria-label="{ad.title} – {ad.description} (נפתח בחלון חדש)"
                 class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105 group relative"
             >
-                <div class="relative overflow-hidden">
+                <div class="relative overflow-hidden" style={ad.imageHeight ? `height: ${ad.imageHeight}` : ''}>
                     <img
                         src={ad.image}
                         alt={ad.title}
-                        class="h-auto w-full object-cover transition-opacity duration-[1500ms] group-hover:opacity-0"
+                        class="w-full object-cover transition-opacity duration-[1500ms] group-hover:opacity-0"
+                        style="height: {ad.imageHeight ?? 'auto'}; transform: scale({ad.imageScale ?? 1}); transform-origin: center center;"
                     />
                     <!-- Hover overlay -->
                     <div
                         class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-[1500ms] flex items-center justify-center"
-                        style="background-image: url('{ad.image}'); background-size: cover; background-position: center;"
+                        style="background-image: url('{ad.image}'); background-size: {ad.imageScale ? `${ad.imageScale * 100}%` : 'cover'}; background-position: center;"
                     >
                         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
                         <div class="relative z-10 text-center px-4">

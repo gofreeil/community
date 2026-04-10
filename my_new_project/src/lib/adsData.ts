@@ -6,6 +6,8 @@ export interface Ad {
     href: string;
     image: string;
     color: string;
+    imageHeight?: string;   // גובה מותאם לתמונה (ברירת מחדל: auto)
+    imageScale?: number;    // זום על התמונה (ברירת מחדל: 1)
 }
 
 export const ads: Ad[] = [
@@ -29,12 +31,14 @@ export const ads: Ad[] = [
     },
     {
         id: 5,
-        title: "ביקורת על רשויות המדינה ומיצוי זכויות התושב",
-        description: "ממצים את הזכות של התושב מול הרשויות",
-        cta: "ממצים את הזכות של התושב מול הרשויות",
+        title: "מבקר רשויות המדינה",
+        description: "מבקרים את הרשויות, ממצים את זכות התושב",
+        cta: "מבקרים את הרשויות, ממצים את זכות התושב",
         href: "https://right-to-live.vercel.app/",
         image: "/images/מבקר רשויות המדינה.png",
-        color: "from-blue-700 to-indigo-700"
+        color: "from-blue-700 to-indigo-700",
+        imageHeight: "120px",
+        imageScale: 1.3,
     },
     {
         id: 3,
