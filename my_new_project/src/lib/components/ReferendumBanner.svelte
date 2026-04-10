@@ -89,13 +89,13 @@
     {/if}
 
     <!-- תוכן -->
-    <div class="relative z-10 p-4 md:p-6 md:p-8">
+    <div class="relative z-10 p-3 md:p-6 md:p-8">
         <!-- כותרת עם כפתור בצד -->
-        <div class="flex items-center justify-between mb-3 md:mb-4">
+        <div class="flex items-center justify-between mb-2 md:mb-4">
             <div class="flex items-center gap-2 md:gap-3">
-                <span class="text-4xl md:text-5xl md:text-6xl">🗳️</span>
+                <span class="text-3xl md:text-5xl md:text-6xl">🗳️</span>
                 <div>
-                    <h2 class="text-2xl md:text-3xl md:text-4xl font-black leading-tight">
+                    <h2 class="text-xl md:text-3xl md:text-4xl font-black leading-tight">
                         <span
                             class="inline-block transform hover:scale-110 transition-transform"
                             >משאל</span
@@ -106,7 +106,7 @@
                             עם</span
                         >
                     </h2>
-                    <p class="text-sm md:text-base md:text-lg font-bold text-blue-100">
+                    <p class="text-xs md:text-base md:text-lg font-bold text-blue-100">
                         הקול שלך משנה את המציאות
                     </p>
                 </div>
@@ -133,39 +133,39 @@
         </div>
 
         <!-- סטטיסטיקות מונפשות -->
-        <div class="mt-3 md:mt-4 grid grid-cols-3 gap-2 md:gap-3 text-center">
+        <div class="mt-2 md:mt-4 grid grid-cols-3 gap-1.5 md:gap-3 text-center">
             <div class="stat-box">
-                <div class="text-xl md:text-2xl font-black text-yellow-300">12,847</div>
-                <div class="text-[10px] md:text-xs text-blue-200">משתתפים</div>
+                <div class="text-base md:text-2xl font-black text-yellow-300">12,847</div>
+                <div class="text-[9px] md:text-xs text-blue-200">משתתפים</div>
             </div>
             <div class="stat-box">
-                <div class="text-xl md:text-2xl font-black text-yellow-300">156</div>
-                <div class="text-[10px] md:text-xs text-blue-200">משאלים פעילים</div>
+                <div class="text-base md:text-2xl font-black text-yellow-300">156</div>
+                <div class="text-[9px] md:text-xs text-blue-200">משאלים פעילים</div>
             </div>
             <div class="stat-box">
-                <div class="text-xl md:text-2xl font-black text-yellow-300">89%</div>
-                <div class="text-[10px] md:text-xs text-blue-200">שביעות רצון</div>
+                <div class="text-base md:text-2xl font-black text-yellow-300">89%</div>
+                <div class="text-[9px] md:text-xs text-blue-200">שביעות רצון</div>
             </div>
         </div>
 
         <!-- דוגמה למשאל - מיחזור אשפה -->
         <div
-            class="mt-3 md:mt-4 bg-white/10 backdrop-blur-md rounded-xl p-3 md:p-4 border border-white/20"
+            class="mt-2 md:mt-4 bg-white/10 backdrop-blur-md rounded-xl p-2 md:p-4 border border-white/20"
         >
-            <div class="flex items-start gap-2 mb-2 md:mb-3">
-                <span class="text-xl md:text-2xl">♻️</span>
+            <div class="flex items-start gap-2 mb-1.5 md:mb-3">
+                <span class="text-lg md:text-2xl">♻️</span>
                 <div class="flex-1">
-                    <h3 class="text-base md:text-lg font-bold text-white mb-1">
+                    <h3 class="text-sm md:text-lg font-bold text-white mb-0.5">
                         משאל לדוגמה
                     </h3>
-                    <p class="text-white/90 text-xs md:text-sm leading-relaxed">
+                    <p class="text-white/90 text-xs md:text-sm leading-snug">
                         האם אתם מעוניינים לעבור למערכת מיחזור אשפה קהילתית חדשה
                         שתוזיל את העלויות ב-30% ותשפר את השירות
                     </p>
                 </div>
             </div>
 
-            <div class="space-y-1.5 md:space-y-2" role="group" aria-label="אפשרויות הצבעה">
+            <div class="space-y-1 md:space-y-2" role="group" aria-label="אפשרויות הצבעה">
                 <button
                     class="poll-option poll-yes"
                     aria-pressed={selectedOption === 'yes'}
@@ -195,7 +195,7 @@
                 </button>
             </div>
 
-            <div class="mt-2 md:mt-3 text-center text-[10px] md:text-xs text-blue-200">
+            <div class="mt-1.5 md:mt-3 text-center text-[9px] md:text-xs text-blue-200">
                 <span class="font-bold">1,247</span> תושבים הצביעו עד כה
             </div>
         </div>
@@ -221,10 +221,16 @@
     .stat-box {
         background: rgba(255, 255, 255, 0.1);
         backdrop-filter: blur(10px);
-        padding: 0.75rem;
+        padding: 0.4rem 0.25rem;
         border-radius: 0.75rem;
         border: 1px solid rgba(255, 255, 255, 0.2);
         transition: all 0.3s ease;
+    }
+
+    @media (min-width: 768px) {
+        .stat-box {
+            padding: 0.75rem;
+        }
     }
 
     .stat-box:hover {
@@ -236,9 +242,9 @@
         width: 100%;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        padding: 0.75rem 1rem;
-        border-radius: 0.75rem;
+        gap: 0.4rem;
+        padding: 0.45rem 0.6rem;
+        border-radius: 0.6rem;
         border: 2px solid rgba(255, 255, 255, 0.3);
         background: rgba(255, 255, 255, 0.1);
         backdrop-filter: blur(10px);
@@ -246,6 +252,14 @@
         cursor: pointer;
         transition: all 0.3s ease;
         text-align: right;
+    }
+
+    @media (min-width: 768px) {
+        .poll-option {
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+        }
     }
 
     .poll-option:hover {
@@ -271,7 +285,7 @@
 
     @media (max-width: 768px) {
         .referendum-banner {
-            min-height: 200px;
+            min-height: unset;
         }
     }
 </style>
