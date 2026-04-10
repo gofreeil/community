@@ -68,6 +68,15 @@ export const ads: Ad[] = [
         color: "from-amber-600 to-orange-600"
     },
     {
+        id: 10,
+        title: "דירוג ציבורי",
+        description: "העם מדרג את הרשויות ועובדי הציבור",
+        cta: "העם מדרג את הרשויות ועובדי הציבור",
+        href: "https://public-rating-il.vercel.app/",
+        image: "/images/דירוג ציבורי.jpeg",
+        color: "from-indigo-600 to-blue-600",
+    },
+    {
         id: 6,
         title: "בעלי מקצוע כשירים",
         description: "חתמו על תנאי הקהילה ונותנים לנו הנחות והטבות יחודיות",
