@@ -38,7 +38,7 @@ export const ads: Ad[] = [
         image: "/images/מבקר רשויות המדינה.png",
         color: "from-blue-700 to-indigo-700",
         imageHeight: "120px",
-        imageScale: 1.3,
+        imageScale: 1.2,
     },
     {
         id: 3,
