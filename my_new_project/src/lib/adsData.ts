@@ -21,6 +21,15 @@ export const ads: Ad[] = [
         color: "from-orange-600 to-red-600"
     },
     {
+        id: 9,
+        title: 'הגמ"ח הארצי',
+        description: 'כל הגמחים תחת קורת גג אחת',
+        cta: 'הגמ"ח הארצי – כל הגמחים תחת קורת גג אחת',
+        href: "https://national-gemach.vercel.app/",
+        image: "/images/גמח הארצי.png",
+        color: "from-pink-600 via-fuchsia-600 to-purple-700",
+    },
+    {
         id: 2,
         title: "ועדי שכונות",
         description: "מהפכת משילות העם על המוסדות",
