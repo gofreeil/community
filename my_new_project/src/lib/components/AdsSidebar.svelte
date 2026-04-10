@@ -19,21 +19,22 @@
                 class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105 group relative"
             >
                 <div class="relative overflow-hidden" style="height: {ad.imageHeight ?? '160px'}">
-                    <img
-                        src={ad.image}
-                        alt={ad.title}
-                        class="absolute inset-0 w-full h-full object-cover transition-opacity duration-[1500ms] group-hover:opacity-0"
-                        style="transform: scale({ad.imageScale ?? 1}); transform-origin: center center;"
-                    />
+                    <!-- wrapper לזום — לא absolute כדי לא לשבור overflow:hidden -->
+                    <div class="absolute inset-0 overflow-hidden">
+                        <img
+                            src={ad.image}
+                            alt={ad.title}
+                            class="w-full h-full object-cover transition-opacity duration-[1500ms] group-hover:opacity-0"
+                            style="transform: scale({ad.imageScale ?? 1}); transform-origin: center center;"
+                        />
+                    </div>
                     <!-- Hover overlay -->
                     <div
-                        class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-[1500ms] flex items-center justify-center"
-                        style="background-image: url('{ad.image}'); background-size: cover; background-position: center;"
+                        class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-[1500ms] flex items-center justify-center bg-black/60 backdrop-blur-sm"
                     >
-                        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
                         <div class="relative z-10 text-center px-4">
-                            <h3 class="text-white font-bold text-lg mb-2">{ad.title}</h3>
-                            <p class="text-gray-200 text-sm">{ad.description}</p>
+                            <h3 class="text-white font-bold text-base mb-1">{ad.title}</h3>
+                            <p class="text-gray-200 text-xs">{ad.description}</p>
                         </div>
                     </div>
                 </div>
