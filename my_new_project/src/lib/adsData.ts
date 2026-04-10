@@ -77,15 +77,6 @@ export const ads: Ad[] = [
         color: "from-yellow-500 to-orange-500"
     },
     {
-        id: 7,
-        title: "ביקורת על העיריה",
-        description: "הזכות לחיות - תלונות לעיריה",
-        cta: "יש לך תלונה לעיריה שמזלזלים בה? - לא עוד",
-        href: "https://right-to-live.vercel.app/",
-        image: "/images/ביקורת על העיריה.png",
-        color: "from-red-600 to-pink-600"
-    },
-    {
         id: 8,
         title: "סיוע לנפגעים מינית",
         description: "תמיכה וסיוע לנפגעים מינית",
