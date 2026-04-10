@@ -17,7 +17,7 @@ export const ads: Ad[] = [
         description: "מתנדבים לתת לך עזרה מלאה בדין / פיוס בכל סיכסוך",
         cta: "יש לך סיכסוך? לחץ לפתרון",
         href: "https://www.melecshop.com/page/peace-on-earth",
-        image: "/images/בתי הפיוס.png",
+        image: "/images/bati-hapius.png",
         color: "from-orange-600 to-red-600"
     },
     {
@@ -26,7 +26,7 @@ export const ads: Ad[] = [
         description: 'כל הגמחים תחת קורת גג אחת',
         cta: 'הגמ"ח הארצי – כל הגמחים תחת קורת גג אחת',
         href: "https://national-gemach.vercel.app/",
-        image: "/images/גמח הארצי.png",
+        image: "/images/gemach-harzi.png",
         color: "from-pink-600 via-fuchsia-600 to-purple-700",
     },
     {
@@ -35,7 +35,7 @@ export const ads: Ad[] = [
         description: "מהפכת משילות העם על המוסדות",
         cta: "הכר והשתתף במהפכת משילות העם על מוסדותיו",
         href: "https://www.melecshop.com/page/peace-on-earth_VRHH",
-        image: "/images/news/ועדי שכונות.png",
+        image: "/images/news/vaadei-shchunot.png",
         color: "from-blue-600 to-cyan-600"
     },
     {
@@ -55,7 +55,7 @@ export const ads: Ad[] = [
         description: "העם מדרג את הרשויות ועובדי הציבור",
         cta: "העם מדרג את הרשויות ועובדי הציבור",
         href: "https://public-rating-il.vercel.app/",
-        image: "/images/דירוג ציבורי.jpeg",
+        image: "/images/public-rating.jpeg",
         color: "from-indigo-600 to-blue-600",
         imageHeight: "200px",
         imageScale: 0.9,
@@ -75,7 +75,7 @@ export const ads: Ad[] = [
         description: "התחבר עם קבוצת המשקיעים שלנו",
         cta: "התחבר עם קבוצת המשקיעים שלנו",
         href: "https://www.melecshop.com/page/free",
-        image: "/images/partners/השקעות קבוצתיות.png",
+        image: "/images/partners/investments.png",
         color: "from-amber-600 to-orange-600"
     },
     {
@@ -84,7 +84,7 @@ export const ads: Ad[] = [
         description: "חתמו על תנאי הקהילה ונותנים לנו הנחות והטבות יחודיות",
         cta: "מחפש בעל מקצוע איכותי באזורך?",
         href: "https://index-chi-sage.vercel.app/",
-        image: "/images/בעלי מקצוע כשירים.png",
+        image: "/images/professionals.png",
         color: "from-yellow-500 to-orange-500"
     },
     {
@@ -93,7 +93,7 @@ export const ads: Ad[] = [
         description: "תמיכה וסיוע לנפגעים מינית",
         cta: "לחץ לפרטים",
         href: "https://www.melecshop.com/page/kids_FNL3",
-        image: "/images/סיוע לנפגעים מינית.jpeg",
+        image: "/images/support-victims.jpeg",
         color: "from-fuchsia-600 to-pink-600"
     }
 ];
