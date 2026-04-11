@@ -541,8 +541,8 @@
 
 	.ad-img-wrap {
 		position: relative;
-		width: 72px;
-		height: 72px;
+		width: 88px;
+		height: 88px;
 		border-radius: 0.5rem;
 		overflow: hidden;
 		flex-shrink: 0;
