@@ -275,15 +275,6 @@
 				onclick={() => open = false}
 			>
 				<div class="ad-img-wrap">
-					<!-- שלב 1: תמונה מפוקסלת מהפרונטאנד — נטענת מיד, מוסתרת מאחורי blur -->
-					<img
-						src={ad.image}
-						alt=""
-						aria-hidden="true"
-						class="ad-img-thumb"
-						decoding="async"
-					/>
-					<!-- שלב 2: תמונה מלאה — מופיעה בהדרגה אחרי טעינה (כולל cache) -->
 					<img
 						src={ad.image}
 						alt={ad.title}
@@ -569,29 +560,14 @@
 		background: #1e293b;
 	}
 
-	/* שלב 1 — תמונה מפוקסלת (מלאה אבל מטושטשת מאוד) */
-	.ad-img-thumb {
-		position: absolute;
-		inset: 0;
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		z-index: 1;
-		filter: blur(12px);
-		transform: scale(1.12);
-		image-rendering: pixelated;
-	}
-
-	/* שלב 2 — תמונה מלאה, מופיעה על גבי ה-thumb */
 	.ad-img {
 		position: absolute;
 		inset: 0;
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
-		z-index: 2;
 		opacity: 0;
-		transition: opacity 0.5s ease;
+		transition: opacity 0.3s ease;
 	}
 
 	.ad-img.loaded {
