@@ -54,6 +54,16 @@
 
 	let open = $state(false);
 
+	// ---- Action: תיקון onload שלא יורה כשתמונה כבר ב-cache ----
+	function imgLoaded(node: HTMLImageElement) {
+		if (node.complete && node.naturalWidth > 0) {
+			node.classList.add('loaded');
+		}
+		const handler = () => node.classList.add('loaded');
+		node.addEventListener('load', handler);
+		return { destroy: () => node.removeEventListener('load', handler) };
+	}
+
 	// ---- Swipe gestures (Drawer) ----
 	let drawerTouchStartX = 0;
 	let drawerTouchStartY = 0;
@@ -113,11 +123,13 @@
 		const dy = e.changedTouches[0].clientY - tabTouchStartY;
 		const totalMove = Math.sqrt(dx * dx + dy * dy);
 
-		const isTap        = totalMove < 20;                            // לחיצה
-		const isSwipeRight = dx > 40 && Math.abs(dx) > Math.abs(dy);   // גרירה ימינה
+		const isTap        = totalMove < 15;                            // לחיצה
+		const isSwipeRight = dx > 35 && Math.abs(dx) > Math.abs(dy);   // גרירה ימינה
 
-		if (isTap || isSwipeRight || (!tabDragging && totalMove < 25)) {
+		if (!tabDragging && (isTap || isSwipeRight)) {
 			open = true;
+			// מניעת click מסונתז שהדפדפן מייצר אחרי touch
+			e.preventDefault();
 		}
 		tabDragging = false;
 	}
@@ -271,13 +283,13 @@
 						class="ad-img-thumb"
 						decoding="async"
 					/>
-					<!-- שלב 2: תמונה מלאה — מופיעה בהדרגה אחרי טעינה -->
+					<!-- שלב 2: תמונה מלאה — מופיעה בהדרגה אחרי טעינה (כולל cache) -->
 					<img
 						src={ad.image}
 						alt={ad.title}
 						class="ad-img"
 						decoding="async"
-						onload={(e) => (e.currentTarget as HTMLImageElement).classList.add('loaded')}
+						use:imgLoaded
 					/>
 				</div>
 				<div class="ad-body">
@@ -305,7 +317,7 @@
 		class="tab"
 		class:tab-dragging={tabDragging}
 		style="top: {tabY}px; transform: translateY(-50%);"
-		onclick={() => { if (!tabDragging) open = true; }}
+		onclick={() => open = true}
 		ontouchstart={onTabTouchStart}
 		ontouchmove={onTabTouchMove}
 		ontouchend={onTabTouchEnd}
