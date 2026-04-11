@@ -5,7 +5,7 @@ import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
     const session = await event.locals.auth();
-    if (session?.user) throw redirect(302, '/');
+    if (session?.user) throw redirect(302, '/profile');
     return {};
 };
 
@@ -63,6 +63,6 @@ export const actions: Actions = {
             });
         }
 
-        throw redirect(302, '/login?redirect=/profile%3Fnew%3D1');
+        return { success: true };
     },
 };

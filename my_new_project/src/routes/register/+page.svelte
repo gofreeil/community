@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { signIn } from '@auth/sveltekit/client';
 	import { get } from 'svelte/store';
 	import { t, locale } from 'svelte-i18n';
 
@@ -50,11 +51,22 @@
 				<!-- טופס הרשמה -->
 				<form
 					method="POST"
-					use:enhance={() => {
+					use:enhance={({ formElement }) => {
 						isLoading = true;
-						return async ({ update }) => {
-							isLoading = false;
-							await update();
+						return async ({ result, update }) => {
+							if (result.type === 'success') {
+								// הרשמה הצליחה — מתחברים אוטומטית בלי לדרוש כניסה מחדש
+								const email    = (formElement.querySelector('#email')    as HTMLInputElement)?.value;
+								const password = (formElement.querySelector('#password') as HTMLInputElement)?.value;
+								await signIn('credentials', {
+									email,
+									password,
+									callbackUrl: '/profile?new=1',
+								});
+							} else {
+								isLoading = false;
+								await update();
+							}
 						};
 					}}
 				>

@@ -18,7 +18,7 @@
 		loadingProvider = provider;
 		try {
 			await signIn(provider, {
-				callbackUrl: data.redirectTo || '/',
+				callbackUrl: data.redirectTo || '/profile',
 			});
 		} catch {
 			isLoading = false;
@@ -169,7 +169,7 @@
 								await signIn('credentials', {
 									email,
 									password,
-									callbackUrl: data.redirectTo || '/',
+									callbackUrl: data.redirectTo || '/profile',
 								});
 							} else if (result.type === 'failure') {
 								credError = (result.data as { error?: string })?.error ?? 'שגיאה לא ידועה';
