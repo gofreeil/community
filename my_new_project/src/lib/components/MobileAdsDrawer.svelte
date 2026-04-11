@@ -54,16 +54,6 @@
 
 	let open = $state(false);
 
-	// ---- Action: תיקון onload שלא יורה כשתמונה כבר ב-cache ----
-	function imgLoaded(node: HTMLImageElement) {
-		if (node.complete && node.naturalWidth > 0) {
-			node.classList.add('loaded');
-		}
-		const handler = () => node.classList.add('loaded');
-		node.addEventListener('load', handler);
-		return { destroy: () => node.removeEventListener('load', handler) };
-	}
-
 	// ---- Swipe gestures (Drawer) ----
 	let drawerTouchStartX = 0;
 	let drawerTouchStartY = 0;
@@ -280,7 +270,6 @@
 						alt={ad.title}
 						class="ad-img"
 						decoding="async"
-						use:imgLoaded
 					/>
 				</div>
 				<div class="ad-body">
@@ -566,12 +555,6 @@
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
-		opacity: 0;
-		transition: opacity 0.3s ease;
-	}
-
-	.ad-img.loaded {
-		opacity: 1;
 	}
 
 .ad-body {
