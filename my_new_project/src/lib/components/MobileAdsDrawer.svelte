@@ -529,8 +529,7 @@
 		text-decoration: none;
 		transition: background 0.2s, border-color 0.2s, transform 0.15s;
 		padding: 0.75rem;
-		align-items: center;
-		min-height: 96px;
+		align-items: stretch;
 	}
 
 	.ad-card:hover {
@@ -542,7 +541,7 @@
 	.ad-img-wrap {
 		position: relative;
 		width: 88px;
-		height: 88px;
+		min-height: 88px;
 		border-radius: 0.5rem;
 		overflow: hidden;
 		flex-shrink: 0;
