@@ -475,8 +475,9 @@
 				<!-- שם + כפתורי כניסה -->
 				<div class="flex flex-col gap-3 min-w-0">
 					<a href="/login?redirect=/profile"
-					   class="text-2xl font-black text-white hover:text-purple-400 transition-colors leading-tight">
-						התחבר / הרשם
+					   class="group text-2xl font-black text-white hover:text-purple-400 transition-colors leading-tight">
+						<span class="group-hover:hidden">התחבר / הרשם</span>
+						<span class="hidden group-hover:inline">האזור האישי</span>
 					</a>
 					<p class="text-gray-400 text-sm">התחבר כדי לנהל את הפרופיל שלך</p>
 					<div class="flex flex-wrap gap-2 mt-1">
