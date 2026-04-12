@@ -251,9 +251,19 @@
                         {:else}
                             <button
                                 onclick={onShowAuth}
-                                class="h-9 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-[11px] font-bold text-white shadow-lg active:scale-95"
+                                class="relative group flex-shrink-0"
+                                aria-label="התחבר / הרשם"
                             >
-                                {tFn("login_register")}
+                                <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-9 w-9 rounded-full border-2 border-white/20 group-hover:border-purple-400 transition-all">
+                                    <circle cx="20" cy="20" r="20" fill="#374151"/>
+                                    <circle cx="20" cy="16" r="7" fill="#6b7280"/>
+                                    <ellipse cx="20" cy="34" rx="12" ry="8" fill="#6b7280"/>
+                                </svg>
+                                <span class="absolute bottom-full right-1/2 translate-x-1/2 mb-2 hidden group-hover:block
+                                             bg-gray-900 text-white text-[10px] font-bold rounded-lg px-2 py-1
+                                             whitespace-nowrap border border-white/10 shadow-xl pointer-events-none">
+                                    התחבר / הרשם
+                                </span>
                             </button>
                         {/if}
                     </div>
@@ -414,9 +424,19 @@
                     {:else}
                         <button
                             onclick={onShowAuth}
-                            class="transform rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-3 font-medium text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl"
+                            class="relative group flex-shrink-0"
+                            aria-label="התחבר / הרשם"
                         >
-                            {tFn("login_register")}
+                            <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-14 w-14 rounded-full border-2 border-white/20 group-hover:border-purple-400 transition-all">
+                                <circle cx="20" cy="20" r="20" fill="#374151"/>
+                                <circle cx="20" cy="16" r="7" fill="#6b7280"/>
+                                <ellipse cx="20" cy="34" rx="12" ry="8" fill="#6b7280"/>
+                            </svg>
+                            <span class="absolute bottom-full right-1/2 translate-x-1/2 mb-2 hidden group-hover:block
+                                         bg-gray-900 text-white text-sm font-bold rounded-lg px-3 py-1.5
+                                         whitespace-nowrap border border-white/10 shadow-xl pointer-events-none">
+                                התחבר / הרשם
+                            </span>
                         </button>
                     {/if}
                 </div>
