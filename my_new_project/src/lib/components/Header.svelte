@@ -438,9 +438,9 @@
                                 <circle cx="20" cy="16" r="7" fill="#6b7280"/>
                                 <ellipse cx="20" cy="34" rx="12" ry="8" fill="#6b7280"/>
                             </svg>
-                            <span class="absolute bottom-full right-1/2 translate-x-1/2 mb-2 hidden group-hover:block
+                            <span class="absolute top-full right-1/2 translate-x-1/2 mt-2 hidden group-hover:block
                                          bg-gray-900 text-white text-sm font-bold rounded-lg px-3 py-1.5
-                                         whitespace-nowrap border border-white/10 shadow-xl pointer-events-none">
+                                         whitespace-nowrap border border-white/10 shadow-xl pointer-events-none z-50">
                                 התחבר / הרשם
                             </span>
                         </button>
