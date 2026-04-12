@@ -114,26 +114,28 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
                 console.warn('[auth] getOrCreateStrapiJwt failed:', e);
             }
 
-            try {
-                // 2. בדוק אם קיים community-user עם אותו אימייל (מיזוג חשבונות)
-                // תחילה נסה לפי credentials ID הצפוי — לא דורש STRAPI_TOKEN
-                if (user.email) {
-                    const credentialsId = `credentials_${user.email}`;
-                    const existingById = await getUserById(credentialsId, strapiJwt ?? undefined).catch(() => null);
+            // 2. מיזוג חשבונות: קבע stableId ישירות לפי credentials_email (לא דורש STRAPI_TOKEN)
+            // אם נרשמת קודם עם credentials — הID שלך הוא credentials_<email>
+            if (user.email) {
+                const credentialsId = `credentials_${user.email}`;
+                // נסה לאמת דרך Strapi אם אפשר, אחרת פשוט השתמש ב-credentialsId
+                try {
+                    const existingById = await getUserById(credentialsId, strapiJwt ?? undefined);
                     if (existingById) {
                         stableId = credentialsId;
-                        console.log('[auth] merged OAuth → credentials user by ID:', credentialsId);
+                        console.log('[auth] merged OAuth → credentials user:', credentialsId);
                     } else {
-                        // fallback: חפש לפי אימייל (דורש STRAPI_TOKEN)
                         const existingByEmail = await getUserByEmail(user.email, strapiJwt ?? undefined).catch(() => null);
                         if (existingByEmail) {
                             stableId = existingByEmail.id;
-                            console.log('[auth] merged OAuth → existing user by email:', existingByEmail.id);
+                            console.log('[auth] merged OAuth → user by email:', existingByEmail.id);
                         }
                     }
+                } catch {
+                    // Strapi לא נגיש (403/network) — הנח שמשתמש credentials קיים
+                    stableId = credentialsId;
+                    console.log('[auth] Strapi unreachable — assuming credentials user:', credentialsId);
                 }
-            } catch (e) {
-                console.warn('[auth] merge lookup failed:', e);
             }
 
             try {
