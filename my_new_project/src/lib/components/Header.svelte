@@ -255,8 +255,8 @@
                                 {/if}
                             </a>
                         {:else}
-                            <button
-                                onclick={onShowAuth}
+                            <a
+                                href="/profile"
                                 class="relative group flex-shrink-0"
                                 aria-label="התחבר / הרשם"
                             >
@@ -270,7 +270,7 @@
                                              whitespace-nowrap border border-white/10 shadow-xl pointer-events-none">
                                     התחבר / הרשם
                                 </span>
-                            </button>
+                            </a>
                         {/if}
                     </div>
                 </div>
@@ -428,8 +428,8 @@
                             </a>
                         </div>
                     {:else}
-                        <button
-                            onclick={onShowAuth}
+                        <a
+                            href="/profile"
                             class="relative group flex-shrink-0"
                             aria-label="התחבר / הרשם"
                         >
@@ -443,7 +443,7 @@
                                          whitespace-nowrap border border-white/10 shadow-xl pointer-events-none z-50">
                                 התחבר / הרשם
                             </span>
-                        </button>
+                        </a>
                     {/if}
                 </div>
             {/if}
@@ -458,7 +458,7 @@
         style="left: {tooltipX}px; top: {tooltipY}px;"
     >
         <div class="bg-gray-900 text-white text-xs rounded-lg px-3 py-1.5 shadow-xl whitespace-nowrap border border-white/10">
-            👤 לאזור האישי
+            👤 לפרופיל שלי
         </div>
     </div>
 {/if}

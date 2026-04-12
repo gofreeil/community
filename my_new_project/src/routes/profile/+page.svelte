@@ -459,49 +459,52 @@
 
 	<!-- ===== אורח — לא מחובר ===== -->
 	{#if !data.user}
-		<div class="flex flex-col items-center justify-center min-h-[60vh] gap-6">
-			<div class="bg-[#0f172a] rounded-3xl border border-white/10 shadow-2xl overflow-hidden w-full max-w-md">
-				<div class="h-1.5 bg-gradient-to-r from-purple-500 via-blue-600 to-pink-500"></div>
-				<div class="p-8 text-center">
-					<div class="flex justify-center mb-4">
-						<div class="h-20 w-20 rounded-2xl bg-gradient-to-br from-purple-600 to-blue-700 flex items-center justify-center shadow-xl">
-							<span class="text-4xl">🏘️</span>
-						</div>
+		<!-- אורח — מבנה פרופיל עם "התחבר / הרשם" במקום השם -->
+		<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-4 md:p-6 shadow-xl mb-6">
+			<div class="flex items-center gap-5">
+				<!-- אווטר אנונימי -->
+				<div class="flex-shrink-0">
+					<div class="w-24 h-24 rounded-full bg-gray-700 flex items-center justify-center border-2 border-gray-600 shadow-xl">
+						<svg viewBox="0 0 24 24" class="w-12 h-12 text-gray-400" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+							<circle cx="12" cy="8" r="4"/>
+							<path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+						</svg>
 					</div>
-					<h1 class="text-2xl font-black text-white mb-2">האזור האישי שלך</h1>
-					<p class="text-gray-400 text-sm mb-8">התחבר כדי לצפות בפרופיל שלך, לערוך פרטים ולנהל את הפעילות שלך בקהילה</p>
+				</div>
 
-					<div class="flex flex-col gap-3">
+				<!-- שם + כפתורי כניסה -->
+				<div class="flex flex-col gap-3 min-w-0">
+					<a href="/login?redirect=/profile"
+					   class="text-2xl font-black text-white hover:text-purple-400 transition-colors leading-tight">
+						התחבר / הרשם
+					</a>
+					<p class="text-gray-400 text-sm">התחבר כדי לנהל את הפרופיל שלך</p>
+					<div class="flex flex-wrap gap-2 mt-1">
 						<a href="/login?redirect=/profile"
-							class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-purple-600 to-blue-600
-							       hover:from-purple-500 hover:to-blue-500 text-white font-bold shadow-lg
-							       transition-all duration-200 hover:-translate-y-0.5 text-center block">
+						   class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600
+						          hover:from-purple-500 hover:to-blue-500 text-white text-sm font-bold
+						          shadow-lg transition-all duration-200 hover:-translate-y-0.5">
 							כניסה לחשבון
 						</a>
 						<a href="/register"
-							class="w-full py-3 px-6 rounded-2xl border border-white/15 hover:border-purple-500/50
-							       text-gray-300 hover:text-white font-bold transition-all duration-200
-							       hover:bg-white/5 text-center block">
+						   class="px-4 py-2 rounded-xl border border-white/15 hover:border-purple-500/50
+						          text-gray-300 hover:text-white text-sm font-bold transition-all hover:bg-white/5">
 							הרשמה חינם
 						</a>
-					</div>
-
-					<div class="mt-6 pt-6 border-t border-white/10">
-						<p class="text-xs text-gray-500 mb-3">או התחבר עם</p>
-						<div class="flex gap-3 justify-center">
-							<button type="button"
-								onclick={() => signIn('google', { callbackUrl: '/profile' })}
-								class="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-red-400/40 rounded-xl px-4 py-2.5 text-sm text-gray-300 transition-all cursor-pointer">
-								<img src="https://www.google.com/favicon.ico" class="w-4 h-4" alt="Google" />
-								Google
-							</button>
-							<button type="button"
-								onclick={() => signIn('facebook', { callbackUrl: '/profile' })}
-								class="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-blue-400/40 rounded-xl px-4 py-2.5 text-sm text-gray-300 transition-all cursor-pointer">
-								<img src="https://www.facebook.com/favicon.ico" class="w-4 h-4" alt="Facebook" />
-								Facebook
-							</button>
-						</div>
+						<button type="button"
+							onclick={() => signIn('google', { callbackUrl: '/profile' })}
+							class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10
+							       border border-white/10 hover:border-red-400/40 text-sm text-gray-300 transition-all cursor-pointer">
+							<img src="https://www.google.com/favicon.ico" class="w-4 h-4" alt="" />
+							Google
+						</button>
+						<button type="button"
+							onclick={() => signIn('facebook', { callbackUrl: '/profile' })}
+							class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10
+							       border border-white/10 hover:border-blue-400/40 text-sm text-gray-300 transition-all cursor-pointer">
+							<img src="https://www.facebook.com/favicon.ico" class="w-4 h-4" alt="" />
+							Facebook
+						</button>
 					</div>
 				</div>
 			</div>
