@@ -329,6 +329,25 @@ export async function adminDeleteItem(documentId: string, adminId: string): Prom
     });
 }
 
+/** מציאת רכז שכונה — אם אין, מחזיר סופר אדמין */
+export async function findAdminForNeighborhood(neighborhood: string): Promise<DbUser | undefined> {
+    // קודם מחפש neighborhood_admin של השכונה הספציפית
+    if (neighborhood) {
+        const arr = await findStrapiUpUsers({
+            'filters[app_role][$eq]':    'neighborhood_admin',
+            'filters[neighborhood][$eq]': neighborhood,
+            'pagination[limit]':          '1',
+        });
+        if (arr.length > 0) return mapUpUser(arr[0] as StrapiUpUser);
+    }
+    // fallback — סופר אדמין
+    const arr = await findStrapiUpUsers({
+        'filters[app_role][$eq]': 'super_admin',
+        'pagination[limit]':      '1',
+    });
+    return arr.length > 0 ? mapUpUser(arr[0] as StrapiUpUser) : undefined;
+}
+
 /** שליפת כל המשתמשים (אדמין בלבד) */
 export async function getAllUsers(_jwt?: string): Promise<DbUser[]> {
     try {
