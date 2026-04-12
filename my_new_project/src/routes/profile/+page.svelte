@@ -252,6 +252,56 @@
 
 	let showRingTooltip = $state(false);
 	let ringTipX = $state(0);
+
+	// אנימציה מדורגת של המעגל — מופעלת רק כשנכנס לתצוגה
+	let animatedCompletion = $state(0);
+	let ringAnimated = $state(false);
+
+	function animateRing(target: number) {
+		if (ringAnimated) return;
+		ringAnimated = true;
+		const duration = 1400; // ms
+		const steps = 60;
+		const stepTime = duration / steps;
+		let current = 0;
+		const increment = target / steps;
+
+		// אפקט קולי — טון קצר עולה
+		try {
+			const ctx = new AudioContext();
+			const osc = ctx.createOscillator();
+			const gain = ctx.createGain();
+			osc.connect(gain);
+			gain.connect(ctx.destination);
+			osc.type = 'sine';
+			osc.frequency.setValueAtTime(300, ctx.currentTime);
+			osc.frequency.linearRampToValueAtTime(target > 60 ? 880 : 550, ctx.currentTime + duration / 1000);
+			gain.gain.setValueAtTime(0.18, ctx.currentTime);
+			gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration / 1000 + 0.2);
+			osc.start(ctx.currentTime);
+			osc.stop(ctx.currentTime + duration / 1000 + 0.2);
+		} catch { /* אין תמיכה ב-AudioContext */ }
+
+		const timer = setInterval(() => {
+			current = Math.min(current + increment, target);
+			animatedCompletion = Math.round(current);
+			if (current >= target) clearInterval(timer);
+		}, stepTime);
+	}
+
+	function ringObserver(node: SVGElement) {
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (entries[0].isIntersecting) {
+					setTimeout(() => animateRing(profileCompletion), 400);
+					observer.disconnect();
+				}
+			},
+			{ threshold: 0.5 }
+		);
+		observer.observe(node);
+		return { destroy: () => observer.disconnect() };
+	}
 	let ringTipY = $state(0);
 	function slowScrollTo(targetTop: number, duration = 800) {
 		const start = window.scrollY;
@@ -516,6 +566,7 @@
 						class="absolute inset-0 w-full h-full -rotate-90 pointer-events-none"
 						viewBox="0 0 92 92"
 						xmlns="http://www.w3.org/2000/svg"
+						use:ringObserver
 					>
 						<circle cx="46" cy="46" r="43" stroke="rgba(255,255,255,0.08)" stroke-width="3" fill="none" />
 						<circle
@@ -525,8 +576,8 @@
 							fill="none"
 							stroke-linecap="round"
 							stroke-dasharray={ringCircumference}
-							stroke-dashoffset={ringCircumference * (1 - profileCompletion / 100)}
-							style="transition: stroke-dashoffset 0.6s ease, stroke 0.4s ease; filter: drop-shadow(0 0 4px {ringColor}88);"
+							stroke-dashoffset={ringCircumference * (1 - animatedCompletion / 100)}
+							style="filter: drop-shadow(0 0 4px {ringColor}88);"
 						/>
 					</svg>
 
