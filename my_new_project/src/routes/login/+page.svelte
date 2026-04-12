@@ -11,6 +11,8 @@
 	let loadingProvider = $state<'google' | 'facebook' | 'credentials' | null>(null);
 	let showPassword    = $state(false);
 	let credError       = $state<string | null>(null);
+	let emailValue      = $state('');
+	let passwordValue   = $state('');
 
 	async function loginWith(provider: 'google' | 'facebook') {
 		isLoading = true;
@@ -127,6 +129,7 @@
 							type="email"
 							required
 							autocomplete="email"
+							bind:value={emailValue}
 							aria-describedby={data.error || credError || form?.error ? 'login-error' : undefined}
 							class="w-full bg-[#1e293b] border border-white/10 rounded-xl px-4 py-3
 							       text-white placeholder-gray-500 focus:outline-none focus:border-purple-500
@@ -144,6 +147,7 @@
 								type={showPassword ? 'text' : 'password'}
 								required
 								autocomplete="current-password"
+								bind:value={passwordValue}
 								class="w-full bg-[#1e293b] border border-white/10 rounded-xl px-4 py-3 pl-11
 								       text-white placeholder-gray-500 focus:outline-none focus:border-purple-500
 								       focus:ring-1 focus:ring-purple-500 transition-colors"
@@ -182,6 +186,8 @@
 								<span class="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>
 								מתחבר...
 							</span>
+						{:else if emailValue && passwordValue}
+							התחבר
 						{:else}
 							התחבר עם אימייל וסיסמה
 						{/if}
