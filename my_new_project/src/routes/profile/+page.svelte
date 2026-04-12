@@ -457,51 +457,32 @@
 
 <div class="max-w-3xl mx-auto px-4 py-8" dir="rtl">
 
-	<!-- ===== אורח — לא מחובר ===== -->
+	<!-- כפתור התחברות/הרשמה לאורחים בלבד -->
 	{#if !data.user}
-		<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-8 shadow-xl mb-2 flex flex-col items-center gap-5 text-center">
-			<!-- אייקון + דרגת צופה -->
-			<div class="flex flex-col items-center gap-2">
-				<div class="w-20 h-20 rounded-full bg-gray-700 flex items-center justify-center border-2 border-gray-600 shadow-xl">
-					<svg viewBox="0 0 24 24" class="w-10 h-10 text-gray-400" fill="currentColor">
-						<circle cx="12" cy="8" r="4"/>
-						<path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
-					</svg>
-				</div>
-				<span class="text-xs bg-gray-700/60 text-gray-300 border border-white/10 px-3 py-1 rounded-full font-bold">👁️ דרגה: צופה</span>
-			</div>
-
-			<div>
-				<h2 class="text-xl font-black text-white mb-1">האזור האישי</h2>
-				<p class="text-gray-400 text-sm">התחבר או הרשם כדי לגשת לפרופיל שלך</p>
-			</div>
-
-			<div class="flex flex-wrap justify-center gap-2">
-				<a href="/login?redirect=/profile"
-				   class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600
-				          hover:from-purple-500 hover:to-blue-500 text-white text-sm font-bold
-				          shadow-lg transition-all duration-200 hover:-translate-y-0.5">
-					כניסה לחשבון
-				</a>
-				<a href="/register"
-				   class="px-5 py-2.5 rounded-xl border border-white/15 hover:border-purple-500/50
-				          text-gray-300 hover:text-white text-sm font-bold transition-all hover:bg-white/5">
-					הרשמה חינם
-				</a>
-				<button type="button" onclick={() => signIn('google', { callbackUrl: '/profile' })}
-					class="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10
-					       border border-white/10 hover:border-red-400/40 text-sm text-gray-300 transition-all cursor-pointer">
-					<img src="https://www.google.com/favicon.ico" class="w-4 h-4" alt="" />Google
-				</button>
-				<button type="button" onclick={() => signIn('facebook', { callbackUrl: '/profile' })}
-					class="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10
-					       border border-white/10 hover:border-blue-400/40 text-sm text-gray-300 transition-all cursor-pointer">
-					<img src="https://www.facebook.com/favicon.ico" class="w-4 h-4" alt="" />Facebook
-				</button>
-			</div>
+		<div class="flex flex-wrap justify-center gap-2 mb-4 p-4 bg-[#0f172a] rounded-2xl border border-white/10">
+			<a href="/login?redirect=/profile"
+			   class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600
+			          hover:from-purple-500 hover:to-blue-500 text-white text-sm font-bold
+			          shadow-lg transition-all duration-200 hover:-translate-y-0.5">
+				כניסה לחשבון
+			</a>
+			<a href="/register"
+			   class="px-5 py-2.5 rounded-xl border border-white/15 hover:border-purple-500/50
+			          text-gray-300 hover:text-white text-sm font-bold transition-all hover:bg-white/5">
+				הרשמה חינם
+			</a>
+			<button type="button" onclick={() => signIn('google', { callbackUrl: '/profile' })}
+				class="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10
+				       border border-white/10 hover:border-red-400/40 text-sm text-gray-300 transition-all cursor-pointer">
+				<img src="https://www.google.com/favicon.ico" class="w-4 h-4" alt="" />Google
+			</button>
+			<button type="button" onclick={() => signIn('facebook', { callbackUrl: '/profile' })}
+				class="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10
+				       border border-white/10 hover:border-blue-400/40 text-sm text-gray-300 transition-all cursor-pointer">
+				<img src="https://www.facebook.com/favicon.ico" class="w-4 h-4" alt="" />Facebook
+			</button>
 		</div>
-
-	{:else}
+	{/if}
 
 	<!-- ===== ברוך הבא — הרשמה חדשה ===== -->
 	{#if page.url.searchParams.get('new') === '1'}
@@ -1427,7 +1408,6 @@
 		{/if}
 	</div>
 
-	{/if}<!-- סוף בלוק {:else} מחובר -->
 </div>
 
 {#if showRingTooltip}
