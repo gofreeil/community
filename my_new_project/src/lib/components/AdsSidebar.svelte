@@ -25,7 +25,6 @@
                             src={ad.image}
                             alt={ad.title}
                             class="w-full h-full object-cover transition-opacity duration-[1500ms] group-hover:opacity-0"
-                            style="transform: scale({ad.imageScale ?? 1}); transform-origin: center center;"
                         />
                     </div>
                     <!-- Hover overlay -->
