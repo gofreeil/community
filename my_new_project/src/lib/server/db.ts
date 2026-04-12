@@ -461,6 +461,7 @@ export async function getUserById(id: string, jwt?: string): Promise<DbUser | un
 export async function getUserByEmail(email: string, jwt?: string): Promise<DbUser | undefined> {
     const res = await strapiGet<{ data: StrapiCommunityUser[] }>('/api/community-users', {
         'filters[email][$eq]': email,
+        'sort[0]':             'createdAt:asc',  // מעדיף את הרשומה הוותיקה (credentials) על פני חדשה (OAuth)
         'pagination[limit]':   '1',
     }, jwt);
     const u = res.data?.[0];
