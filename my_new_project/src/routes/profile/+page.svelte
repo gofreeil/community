@@ -228,10 +228,9 @@
 	);
 
 	// דרגה 1 = צופה (נרשם בלבד)
-	// דרגה 2 = משתמש (מילא את כל שדות הפרופיל)
+	// דרגה 2 = משתמש (מילא עיר ושכונה)
 	let userLevel = $derived(
-		(name && email && nickname && phone && city && neighborhood && gender && family_status)
-			? 2 : 1
+		(city && neighborhood) ? 2 : 1
 	);
 
 	let isUserAdmin = $derived(
