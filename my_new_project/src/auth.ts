@@ -110,11 +110,33 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
                 // 1. קודם JWT
                 strapiJwt = await getOrCreateStrapiJwt(user.email, tempId);
                 if (strapiJwt) (user as { strapiJwt?: string }).strapiJwt = strapiJwt;
+            } catch (e) {
+                console.warn('[auth] getOrCreateStrapiJwt failed:', e);
+            }
 
+            try {
                 // 2. בדוק אם קיים community-user עם אותו אימייל (מיזוג חשבונות)
-                const existingByEmail = user.email ? await getUserByEmail(user.email, strapiJwt ?? undefined) : null;
-                stableId = existingByEmail?.id ?? tempId;
+                // תחילה נסה לפי credentials ID הצפוי — לא דורש STRAPI_TOKEN
+                if (user.email) {
+                    const credentialsId = `credentials_${user.email}`;
+                    const existingById = await getUserById(credentialsId, strapiJwt ?? undefined).catch(() => null);
+                    if (existingById) {
+                        stableId = credentialsId;
+                        console.log('[auth] merged OAuth → credentials user by ID:', credentialsId);
+                    } else {
+                        // fallback: חפש לפי אימייל (דורש STRAPI_TOKEN)
+                        const existingByEmail = await getUserByEmail(user.email, strapiJwt ?? undefined).catch(() => null);
+                        if (existingByEmail) {
+                            stableId = existingByEmail.id;
+                            console.log('[auth] merged OAuth → existing user by email:', existingByEmail.id);
+                        }
+                    }
+                }
+            } catch (e) {
+                console.warn('[auth] merge lookup failed:', e);
+            }
 
+            try {
                 // 3. upsert עם JWT
                 await upsertUser({
                     id:         stableId,
