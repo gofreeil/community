@@ -25,6 +25,16 @@
 
     let showLangDropdown = $state(false);
     let onlineUsers = $state(1);
+
+    async function pingServer() {
+        try {
+            const res = await fetch('/api/ping', { method: 'POST' });
+            if (res.ok) {
+                const data = await res.json();
+                onlineUsers = data.count;
+            }
+        } catch { /* ignore */ }
+    }
     let tooltipX = $state(0);
     let tooltipY = $state(0);
     let showProfileTooltip = $state(false);
@@ -80,10 +90,6 @@
         try { localStorage.setItem('lang', language.code); } catch {}
     }
 
-    function updateOnlineUsers() {
-        onlineUsers = Math.floor(Math.random() * 15) + 1;
-    }
-
     onMount(() => {
         // שחזר שפה שמורה
         try {
@@ -91,8 +97,8 @@
             if (saved) locale.set(saved);
         } catch {}
 
-        updateOnlineUsers();
-        const usersInterval = setInterval(updateOnlineUsers, 30000);
+        pingServer();
+        const usersInterval = setInterval(pingServer, 30000);
 
         document.addEventListener("click", handleClickOutside);
         return () => {
