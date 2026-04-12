@@ -39,6 +39,10 @@ async function getOrCreateStrapiJwt(email: string | null | undefined, stableId: 
 export const { handle, signIn, signOut } = SvelteKitAuth({
     secret: AUTH_SECRET,
 
+    session: {
+        maxAge: 30 * 24 * 60 * 60, // 30 יום
+    },
+
     providers: [
         Google({
             clientId:     AUTH_GOOGLE_ID,
