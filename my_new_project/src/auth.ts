@@ -40,7 +40,8 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
     secret: AUTH_SECRET,
 
     session: {
-        maxAge: 400 * 24 * 60 * 60, // 400 יום (מקסימום דפדפן)
+        maxAge:    365 * 24 * 60 * 60, // שנה אחת
+        updateAge:  24 * 60 * 60,       // מרענן ב-כל ביקור יומי — מאריך שנה נוספת
     },
 
     cookies: {
@@ -50,7 +51,7 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
                 sameSite: 'lax' as const,
                 path: '/',
                 secure: true,
-                maxAge: 400 * 24 * 60 * 60, // 400 יום
+                maxAge: 365 * 24 * 60 * 60, // שנה
             },
         },
     },
