@@ -1,6 +1,6 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { getUserById, updateUserProfile, getItemsByUserId, upsertUser, getMessagesByUserId, createItem } from '$lib/server/db';
+import { getUserById, getUserByEmail, updateUserProfile, getItemsByUserId, upsertUser, getMessagesByUserId, createItem } from '$lib/server/db';
 import { citiesData } from '$lib/neighborhoodsData';
 
 export const load: PageServerLoad = async (event) => {
@@ -51,7 +51,20 @@ export const load: PageServerLoad = async (event) => {
         items = [];
     }
 
-    // אם המשתמש לא נמצא ב-DB (DB אופס), ניצור אותו מחדש מה-session
+    // אם המשתמש לא נמצא לפי ID — נסה לפי אימייל (מיזוג OAuth+credentials)
+    if (!user && session.user?.email) {
+        try {
+            const byEmail = await getUserByEmail(session.user.email);
+            if (byEmail) {
+                user = byEmail;
+                console.log('[profile] merged account by email:', session.user.email, '→', byEmail.id);
+            }
+        } catch (e) {
+            console.warn('[profile] getUserByEmail fallback failed:', e);
+        }
+    }
+
+    // אם עדיין לא נמצא — צור משתמש חדש מה-session (רק אם אין קיים עם אותו אימייל)
     if (!user && session.user?.id) {
         try {
             const provider = (session.user as { provider?: string }).provider ?? 'google';
