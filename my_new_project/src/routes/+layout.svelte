@@ -42,6 +42,15 @@
 	<!-- tabnav: מושבת לבינתיים — לא רשום על הדומיין הנוכחי -->
 	<!-- <script src="https://widget.tabnav.com/widget.min.js.gz" defer></script> -->
 	<!-- <noscript>נדרש ג'אווה סקריפט כדי ש<a href="https://tabnav.com/he">הנגשת אתרים</a> תעבוד כראוי.</noscript> -->
+	<!-- Google Analytics -->
+	<!-- svelte-ignore -->
+	{@html `<script async src="https://www.googletagmanager.com/gtag/js?id=G-05DGN7JQ4M"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-05DGN7JQ4M');
+</script>`}
 </svelte:head>
 
 <a href="#main-content" class="skip-link">דלג לתוכן הראשי</a>
