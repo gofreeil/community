@@ -539,8 +539,8 @@
 							stroke-width="3"
 							fill="none"
 							stroke-linecap="round"
-							stroke-dasharray={animatedCompletion >= 100 ? undefined : ringCircumference}
-							stroke-dashoffset={animatedCompletion >= 100 ? 0 : ringCircumference * (1 - animatedCompletion / 100)}
+							stroke-dasharray={ringCircumference}
+							stroke-dashoffset={ringCircumference * (1 - Math.min(animatedCompletion, 100) / 100)}
 							style="filter: drop-shadow(0 0 4px {ringColor}88);"
 						/>
 					</svg>
