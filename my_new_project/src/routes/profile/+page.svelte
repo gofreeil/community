@@ -205,9 +205,9 @@
 
 	// שדות פרופיל שהמשתמש צריך למלא (לא notifications שמגיע כברירת מחדל)
 	let profileFields = $derived([
-		!!avatarPreview,
 		!!name,
 		!!email,
+		!!avatarPreview,
 		!!nickname,
 		!!phone,
 		!!city,
@@ -239,7 +239,7 @@
 
 	// טיפ למעגל — המפתח של השדה הבא שלא מולא
 	const ringTipKeys = [
-		'tip_avatar', 'tip_name', 'tip_email', 'tip_nickname',
+		'tip_name', 'tip_email', 'tip_avatar', 'tip_nickname',
 		'tip_phone', 'tip_city', 'tip_neighborhood', 'tip_gender',
 		'tip_business', 'tip_family_status', 'tip_birth_date',
 	] as const;
@@ -675,6 +675,31 @@
 
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
 
+				<!-- שם מלא -->
+				<div>
+					<label for="p-name" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("full_name_label")}</label>
+					{#if isEditing}
+						<input id="p-name" name="name" type="text" bind:value={name} placeholder={tFn("full_name_placeholder")} required
+							class="w-full bg-white/5 border border-white/10 focus:border-purple-500/50 rounded-xl
+							       px-4 py-3 text-white text-sm transition-colors outline-none" />
+					{:else}
+						<p class="text-white font-medium py-3 px-1">{name || '—'}</p>
+					{/if}
+				</div>
+
+				<!-- אימייל -->
+				<div>
+					<label for="email" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("email")}</label>
+					{#if isEditing}
+						<input id="email" name="email" type="email" bind:value={email}
+							autocomplete="email"
+							class="w-full bg-white/5 border border-white/10 focus:border-purple-500/50 rounded-xl
+							       px-4 py-3 text-white text-sm transition-colors outline-none" />
+					{:else}
+						<p class="text-white font-medium py-3 px-1">{email || '—'}</p>
+					{/if}
+				</div>
+
 				<!-- תמונת פרופיל -->
 				{#if isEditing}
 				<div class="md:col-span-2 flex items-center gap-5">
@@ -726,31 +751,6 @@
 					</div>
 				</div>
 				{/if}
-
-				<!-- שם מלא -->
-				<div>
-					<label for="p-name" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("full_name_label")}</label>
-					{#if isEditing}
-						<input id="p-name" name="name" type="text" bind:value={name} placeholder={tFn("full_name_placeholder")} required
-							class="w-full bg-white/5 border border-white/10 focus:border-purple-500/50 rounded-xl
-							       px-4 py-3 text-white text-sm transition-colors outline-none" />
-					{:else}
-						<p class="text-white font-medium py-3 px-1">{name || '—'}</p>
-					{/if}
-				</div>
-
-				<!-- אימייל -->
-				<div>
-					<label for="email" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{tFn("email")}</label>
-					{#if isEditing}
-						<input id="email" name="email" type="email" bind:value={email}
-							autocomplete="email"
-							class="w-full bg-white/5 border border-white/10 focus:border-purple-500/50 rounded-xl
-							       px-4 py-3 text-white text-sm transition-colors outline-none" />
-					{:else}
-						<p class="text-white font-medium py-3 px-1">{email || '—'}</p>
-					{/if}
-				</div>
 
 			<!-- כינוי -->
 				<div>
