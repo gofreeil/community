@@ -459,21 +459,54 @@
 
 	<!-- ===== אורח — לא מחובר ===== -->
 	{#if !data.user}
-		<!-- אורח — מבנה פרופיל עם "התחבר / הרשם" במקום השם -->
-		<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-4 md:p-6 shadow-xl mb-6">
-			<div class="flex items-center gap-5">
-				<!-- אווטר אנונימי -->
-				<div class="flex-shrink-0">
-					<div class="w-24 h-24 rounded-full bg-gray-700 flex items-center justify-center border-2 border-gray-600 shadow-xl">
-						<svg viewBox="0 0 24 24" class="w-12 h-12 text-gray-400" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-							<circle cx="12" cy="8" r="4"/>
-							<path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+		<!-- ===== אורח — דף פרופיל מלא עם 0% + סקשנים נעולים ===== -->
+
+		<!-- סקשן 1: כרטיס אישי עם מעגל 0% -->
+		<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-4 md:p-6 shadow-xl mb-2">
+			<div class="flex items-center justify-between mb-5">
+				<div class="flex items-center gap-2">
+					<span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+					      style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">1</span>
+					<h2 class="text-base font-black text-white">האזור האישי</h2>
+				</div>
+				<a href="/login?redirect=/profile"
+				   class="text-sm font-bold text-gray-400 hover:text-purple-400 transition-colors px-4 py-2 rounded-xl hover:bg-purple-500/10 border border-white/10 hover:border-purple-500/30">
+					התחבר / הרשם
+				</a>
+			</div>
+			<div class="flex items-stretch justify-between gap-5">
+				<!-- אווטר אנונימי עם מעגל 0% -->
+				<div class="flex-shrink-0 flex flex-col items-center justify-between min-h-[120px]">
+					<div class="relative">
+						<div class="w-24 h-24 rounded-full bg-gray-700 flex items-center justify-center border-2 border-gray-600 shadow-xl">
+							<svg viewBox="0 0 24 24" class="w-12 h-12 text-gray-400" fill="currentColor">
+								<circle cx="12" cy="8" r="4"/>
+								<path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+							</svg>
+						</div>
+						<!-- מעגל 0% -->
+						<svg class="absolute inset-0 w-full h-full -rotate-90 pointer-events-none" viewBox="0 0 92 92">
+							<circle cx="46" cy="46" r="43" stroke="rgba(255,255,255,0.08)" stroke-width="3" fill="none"/>
+							<circle cx="46" cy="46" r="43" stroke="#ef4444" stroke-width="3" fill="none"
+							        stroke-linecap="round"
+							        stroke-dasharray={2 * Math.PI * 43}
+							        stroke-dashoffset={2 * Math.PI * 43}
+							        style="filter: drop-shadow(0 0 4px #ef444488);"/>
 						</svg>
 					</div>
+					<span class="text-xs text-gray-500 mt-2">0% מילוי</span>
+				</div>
+
+				<!-- ארנק ריק (placeholder) -->
+				<div class="flex-shrink-0 flex flex-col items-center justify-center opacity-30 select-none">
+					<div class="w-40 h-24 rounded-2xl bg-gray-700/50 flex items-center justify-center">
+						<span class="text-4xl">💳</span>
+					</div>
+					<span class="text-base text-gray-400 font-bold mt-2">היתרה שלי: 0₪</span>
 				</div>
 
 				<!-- שם + כפתורי כניסה -->
-				<div class="flex flex-col gap-3 min-w-0">
+				<div class="min-w-0 flex flex-col justify-center gap-3">
 					<a href="/login?redirect=/profile"
 					   class="group text-2xl font-black text-white hover:text-purple-400 transition-colors leading-tight">
 						<span class="group-hover:hidden">התחבר / הרשם</span>
@@ -492,24 +525,122 @@
 						          text-gray-300 hover:text-white text-sm font-bold transition-all hover:bg-white/5">
 							הרשמה חינם
 						</a>
-						<button type="button"
-							onclick={() => signIn('google', { callbackUrl: '/profile' })}
+						<button type="button" onclick={() => signIn('google', { callbackUrl: '/profile' })}
 							class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10
 							       border border-white/10 hover:border-red-400/40 text-sm text-gray-300 transition-all cursor-pointer">
-							<img src="https://www.google.com/favicon.ico" class="w-4 h-4" alt="" />
-							Google
+							<img src="https://www.google.com/favicon.ico" class="w-4 h-4" alt="" />Google
 						</button>
-						<button type="button"
-							onclick={() => signIn('facebook', { callbackUrl: '/profile' })}
+						<button type="button" onclick={() => signIn('facebook', { callbackUrl: '/profile' })}
 							class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10
 							       border border-white/10 hover:border-blue-400/40 text-sm text-gray-300 transition-all cursor-pointer">
-							<img src="https://www.facebook.com/favicon.ico" class="w-4 h-4" alt="" />
-							Facebook
+							<img src="https://www.facebook.com/favicon.ico" class="w-4 h-4" alt="" />Facebook
 						</button>
 					</div>
 				</div>
 			</div>
 		</div>
+
+		<!-- סקשן 2: עריכת פרופיל — תצוגה מקדימה -->
+		<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-4 md:p-6 shadow-xl mb-2">
+			<div class="flex items-center justify-between mb-4">
+				<div class="flex items-center gap-2">
+					<span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+					      style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">2</span>
+					<h2 class="text-base font-black text-white">✏️ עריכת פרופיל</h2>
+				</div>
+			</div>
+			<div class="grid grid-cols-2 gap-3 pointer-events-none select-none opacity-40">
+				{#each ['שם מלא','כינוי','עיר','שכונה','טלפון','סטטוס משפחתי'] as lbl}
+					<div class="flex flex-col gap-1">
+						<span class="text-xs text-gray-400">{lbl}</span>
+						<div class="h-9 rounded-xl bg-white/5 border border-white/10"></div>
+					</div>
+				{/each}
+			</div>
+			<a href="/login?redirect=/profile"
+			   class="mt-4 flex items-center justify-center gap-2 w-full py-2 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 text-purple-300 text-sm font-bold transition-all">
+				התחבר כדי לערוך
+			</a>
+		</div>
+
+		<!-- סקשן 3: דרגות ויתרונות — תצוגה מקדימה -->
+		<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-4 md:p-6 shadow-xl mb-2">
+			<div class="flex items-center justify-between mb-4">
+				<div class="flex items-center gap-2">
+					<span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+					      style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">3</span>
+					<h2 class="text-base font-black text-white">⭐ דרגות ויתרונות</h2>
+				</div>
+			</div>
+			<div class="flex gap-3 overflow-x-auto pb-1 pointer-events-none select-none">
+				{#each [
+					{ icon: '👁️', label: 'צופה', sub: 'נרשם', active: true },
+					{ icon: '🌱', label: 'תושב', sub: 'פרופיל מלא', active: false },
+					{ icon: '🏘️', label: 'שכן', sub: 'פעיל בקהילה', active: false },
+					{ icon: '⭐', label: 'חבר', sub: 'תורם', active: false },
+				] as lvl}
+					<div class="flex-shrink-0 flex flex-col items-center gap-1 px-4 py-3 rounded-2xl border {lvl.active ? 'border-yellow-500/50 bg-yellow-500/10' : 'border-white/10 bg-white/5 opacity-40'}">
+						<span class="text-2xl">{lvl.icon}</span>
+						<span class="text-xs font-black text-white">{lvl.label}</span>
+						<span class="text-[10px] text-gray-400">{lvl.sub}</span>
+					</div>
+				{/each}
+			</div>
+			<a href="/login?redirect=/profile"
+			   class="mt-4 flex items-center justify-center gap-2 w-full py-2 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 text-purple-300 text-sm font-bold transition-all">
+				התחבר לפתיחת דרגות
+			</a>
+		</div>
+
+		<!-- סקשן 4: הודעות — תצוגה מקדימה -->
+		<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-4 md:p-6 shadow-xl mb-2">
+			<div class="flex items-center justify-between mb-4">
+				<div class="flex items-center gap-2">
+					<span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+					      style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">4</span>
+					<h2 class="text-base font-black text-white">✉️ הודעות אישיות</h2>
+				</div>
+			</div>
+			<div class="space-y-2 pointer-events-none select-none opacity-40">
+				{#each ['ברוך הבא לקהילה! השלם את הפרופיל שלך.','הצטרפות שלך אושרה. כעת תוכל לפרסם תוכן.'] as txt}
+					<div class="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
+						<span class="text-lg mt-0.5">💬</span>
+						<div class="flex-1 min-w-0">
+							<span class="text-xs font-bold text-purple-300">מערכת</span>
+							<p class="text-sm text-gray-300 truncate">{txt}</p>
+						</div>
+					</div>
+				{/each}
+			</div>
+			<a href="/login?redirect=/profile"
+			   class="mt-4 flex items-center justify-center gap-2 w-full py-2 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 text-purple-300 text-sm font-bold transition-all">
+				התחבר לקבלת הודעות
+			</a>
+		</div>
+
+		<!-- סקשן 5: נכסים ופרסומים — תצוגה מקדימה -->
+		<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-4 md:p-6 shadow-xl mb-2">
+			<div class="flex items-center justify-between mb-4">
+				<div class="flex items-center gap-2">
+					<span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+					      style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">5</span>
+					<h2 class="text-base font-black text-white">📦 נכסים ופרסומים</h2>
+				</div>
+			</div>
+			<div class="grid grid-cols-3 gap-2 pointer-events-none select-none opacity-40">
+				{#each [['📢','מודעה'],['🏠','נכס'],['🎁','מסירה']] as [ico, lbl]}
+					<div class="flex flex-col items-center gap-2 p-3 rounded-2xl bg-white/5 border border-white/10">
+						<span class="text-2xl">{ico}</span>
+						<span class="text-xs text-gray-400">{lbl}</span>
+					</div>
+				{/each}
+			</div>
+			<a href="/login?redirect=/profile"
+			   class="mt-4 flex items-center justify-center gap-2 w-full py-2 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 text-purple-300 text-sm font-bold transition-all">
+				התחבר לניהול פרסומים
+			</a>
+		</div>
+
 	{:else}
 
 	<!-- ===== ברוך הבא — הרשמה חדשה ===== -->
