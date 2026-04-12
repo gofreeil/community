@@ -265,21 +265,7 @@
 		let current = 0;
 		const increment = target / steps;
 
-		// אפקט קולי — טון קצר עולה
-		try {
-			const ctx = new AudioContext();
-			const osc = ctx.createOscillator();
-			const gain = ctx.createGain();
-			osc.connect(gain);
-			gain.connect(ctx.destination);
-			osc.type = 'sine';
-			osc.frequency.setValueAtTime(300, ctx.currentTime);
-			osc.frequency.linearRampToValueAtTime(target > 60 ? 880 : 550, ctx.currentTime + duration / 1000);
-			gain.gain.setValueAtTime(0.18, ctx.currentTime);
-			gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration / 1000 + 0.2);
-			osc.start(ctx.currentTime);
-			osc.stop(ctx.currentTime + duration / 1000 + 0.2);
-		} catch { /* אין תמיכה ב-AudioContext */ }
+		// אפקט קולי — מבוטל זמנית
 
 		const timer = setInterval(() => {
 			current = Math.min(current + increment, target);
