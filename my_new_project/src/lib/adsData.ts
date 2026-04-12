@@ -89,7 +89,7 @@ export const ads: Ad[] = [
     },
     {
         id: 8,
-        title: "נפגת?",
+        title: "נפגעת?",
         description: "אנו נסייע לך!",
         cta: "סיוע לנפגעי תקיפה מינית",
         href: "https://www.melecshop.com/page/kids_FNL3",
