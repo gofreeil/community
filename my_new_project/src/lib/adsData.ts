@@ -8,6 +8,7 @@ export interface Ad {
     color: string;
     imageHeight?: string;   // גובה מותאם לתמונה (ברירת מחדל: auto)
     imageScale?: number;    // זום על התמונה (ברירת מחדל: 1)
+    hover?: string;         // טקסט tooltip בריחוף מעל כפתור ה-CTA
 }
 
 export const ads: Ad[] = [
@@ -24,7 +25,8 @@ export const ads: Ad[] = [
         id: 9,
         title: 'הגמ"ח הארצי',
         description: 'כל הגמחים תחת קורת גג אחת',
-        cta: 'הגמ"ח הארצי – כל הגמחים תחת קורת גג אחת',
+        cta: 'לאתר הגמ"ח הארצי',
+        hover: 'מצא כל גמח בקלות!',
         href: "https://national-gemach.vercel.app/",
         image: "/images/gemach-harzi.png",
         color: "from-pink-600 via-fuchsia-600 to-purple-700",

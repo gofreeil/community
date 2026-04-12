@@ -275,7 +275,7 @@
 				<div class="ad-body">
 					<p class="ad-title">{ad.title}</p>
 					<p class="ad-desc">{ad.description}</p>
-					<span class="ad-cta">← {ad.cta}</span>
+					<span class="ad-cta" title={ad.hover ?? undefined}>← {ad.cta}</span>
 				</div>
 			</a>
 			{/each}
