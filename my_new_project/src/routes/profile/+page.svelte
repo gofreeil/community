@@ -960,7 +960,7 @@
 							<option value="שם החיה הראשונה שלך">שם החיה הראשונה שלך</option>
 							<option value="שם בית הספר היסודי שלך">שם בית הספר היסודי שלך</option>
 							<option value="עיר הולדתך">עיר הולדתך</option>
-							<option value="שם האמא שלך לפני הנישואים">שם האמא שלך לפני הנישואים</option>
+							<option value="שם משפחה של אמא לפני הנישואים">שם משפחה של אמא לפני הנישואים</option>
 						</select>
 						{#if security_question}
 							<input type="text" name="security_answer" bind:value={security_answer}
