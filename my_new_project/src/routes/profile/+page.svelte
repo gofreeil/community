@@ -657,7 +657,7 @@
 
 		<div
 			class="relative flex items-center justify-between cursor-pointer select-none -mx-4 px-4 -mt-4 pt-3 md:-mx-6 md:px-6 md:-mt-6 md:pt-4 {isEditing ? 'pb-4 mb-4' : 'pb-4'}"
-			onclick={() => { if (isEditing) { isEditing = false; saveSuccess = false; } else { isEditing = true; } }}
+			onclick={() => { if (isEditing) { isEditing = false; saveSuccess = false; scrollToTop(); } else { isEditing = true; } }}
 			onmouseenter={() => { secTipShow = true; secTipIsOpen = isEditing; }}
 			onmouseleave={() => (secTipShow = false)}
 			onmousemove={(e) => handleSecMouseMove(e, isEditing)}
@@ -1056,7 +1056,7 @@
 			class="relative flex items-center justify-between cursor-pointer select-none transition-all
 			       -mx-4 px-4 -mt-4 pt-3 md:-mx-6 md:px-6 md:-mt-6 md:pt-4 pb-4 min-h-14
 			       {showLevels ? 'mb-5' : ''}"
-			onclick={() => { if (showLevels) { showLevels = false; } else { showLevels = true; } }}
+			onclick={() => { if (showLevels) { showLevels = false; scrollToTop(); } else { showLevels = true; } }}
 			onmouseenter={() => { secTipShow = true; secTipIsOpen = showLevels; }}
 			onmouseleave={() => (secTipShow = false)}
 			onmousemove={(e) => handleSecMouseMove(e, showLevels)}
@@ -1218,7 +1218,7 @@
 	onclick={() => { if (!showMessages) showMessages = true; }}>
 		<div
 		class="relative flex items-center justify-between cursor-pointer select-none -mx-4 px-4 -mt-4 pt-3 md:-mx-6 md:px-6 md:-mt-6 md:pt-4 min-h-14 {showMessages ? 'pb-4 mb-4' : 'pb-4'}"
-			onclick={() => { if (showMessages) { showMessages = false; } else { showMessages = true; } }}
+			onclick={() => { if (showMessages) { showMessages = false; scrollToTop(); } else { showMessages = true; } }}
 			role="button" tabindex={0}
 			onmouseenter={() => { secTipShow = true; secTipIsOpen = showMessages; }}
 			onmouseleave={() => (secTipShow = false)}
@@ -1315,7 +1315,7 @@
 	            hover:before:from-white/18">
 		<div
 			class="relative flex items-center justify-between cursor-pointer select-none -mx-4 px-4 -mt-4 pt-3 md:-mx-6 md:px-6 md:-mt-6 md:pt-4 min-h-14 {showMyInfo ? 'pb-4 mb-4' : 'pb-4'}"
-			onclick={() => { if (showMyInfo) { showMyInfo = false; } else { showMyInfo = true; } }}
+			onclick={() => { if (showMyInfo) { showMyInfo = false; scrollToTop(); } else { showMyInfo = true; } }}
 			onmouseenter={() => { secTipShow = true; secTipIsOpen = showMyInfo; }}
 			onmouseleave={() => (secTipShow = false)}
 			onmousemove={(e) => handleSecMouseMove(e, showMyInfo)}
