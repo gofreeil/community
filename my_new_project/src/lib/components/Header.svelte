@@ -258,7 +258,7 @@
                             <a
                                 href="/profile"
                                 class="relative group flex-shrink-0"
-                                aria-label="התחבר / הרשם"
+                                aria-label="האזור האישי"
                             >
                                 <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-9 w-9 rounded-full border-2 border-white/20 group-hover:border-purple-400 transition-all">
                                     <circle cx="20" cy="20" r="20" fill="#374151"/>
@@ -268,7 +268,7 @@
                                 <span class="absolute bottom-full right-1/2 translate-x-1/2 mb-2 hidden group-hover:block
                                              bg-gray-900 text-white text-[10px] font-bold rounded-lg px-2 py-1
                                              whitespace-nowrap border border-white/10 shadow-xl pointer-events-none">
-                                    התחבר / הרשם
+                                    האזור האישי
                                 </span>
                             </a>
                         {/if}
@@ -431,7 +431,7 @@
                         <a
                             href="/profile"
                             class="relative group flex-shrink-0"
-                            aria-label="התחבר / הרשם"
+                            aria-label="האזור האישי"
                         >
                             <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-14 w-14 rounded-full border-2 border-white/20 group-hover:border-purple-400 transition-all">
                                 <circle cx="20" cy="20" r="20" fill="#374151"/>
@@ -441,7 +441,7 @@
                             <span class="absolute top-full right-1/2 translate-x-1/2 mt-2 hidden group-hover:block
                                          bg-gray-900 text-white text-sm font-bold rounded-lg px-3 py-1.5
                                          whitespace-nowrap border border-white/10 shadow-xl pointer-events-none z-50">
-                                התחבר / הרשם
+                                האזור האישי
                             </span>
                         </a>
                     {/if}
