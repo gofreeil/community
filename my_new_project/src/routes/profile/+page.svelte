@@ -228,9 +228,9 @@
 	);
 
 	// דרגה 1 = צופה (נרשם בלבד)
-	// דרגה 2 = משתמש (מילא עיר ושכונה)
+	// דרגה 2 = משתמש (מילא עיר, שכונה, אימייל וטלפון)
 	let userLevel = $derived(
-		(city && neighborhood) ? 2 : 1
+		(city && neighborhood && email && phone) ? 2 : 1
 	);
 
 	let isUserAdmin = $derived(
