@@ -4,8 +4,7 @@
 // פריטים + קופת קהילה + משתמשים → Strapi 5 (async, cloud-persistent)
 // ============================================================
 
-import { strapiGet, strapiPost, strapiPut, StrapiContentTypeError } from './strapiClient.js';
-import bcrypt from 'bcryptjs';
+import { strapiGet, strapiPost, strapiPut, StrapiContentTypeError, findStrapiUpUsers, updateStrapiUpUser } from './strapiClient.js';
 
 // ============================================================
 // ---- Types ----
@@ -118,27 +117,28 @@ interface StrapiFundEntry {
     amount: number;
 }
 
-interface StrapiCommunityUser {
-    id: number;
-    documentId: string;
-    external_id: string;
-    name: string | null;
-    email: string | null;
-    phone: string | null;
-    neighborhood: string | null;
+// users-permissions User (טבלת up_users)
+interface StrapiUpUser {
+    id: number;               // מזהה מספרי של Strapi
+    username: string;         // שם משתמש לכניסה
+    email: string;
+    confirmed: boolean;
+    blocked: boolean;
+    provider: string;
+    // שדות מותאמים שהוספנו דרך extension:
+    external_id: string | null;
     city: string | null;
-    avatar_url: string | null;
-    provider: string | null;
-    password_hash: string | null;
+    neighborhood: string | null;
+    phone: string | null;
     nickname: string | null;
     business: string | null;
-    notifications: boolean | null;
     family_status: string | null;
     gender: string | null;
     birth_date: string | null;
+    avatar_url: string | null;
     balance: number | null;
-    role: string | null;
-    banned: boolean | null;
+    notifications: boolean | null;
+    app_role: string | null;
     createdAt: string;
 }
 
@@ -168,10 +168,11 @@ function mapStrapiItem(item: StrapiItem): DbItem {
     };
 }
 
-function mapStrapiUser(u: StrapiCommunityUser): DbUser {
+function mapUpUser(u: StrapiUpUser): DbUser {
     return {
-        id:            u.external_id,
-        name:          u.name          ?? null,
+        id:            u.external_id   ?? String(u.id),
+        // nickname (שם עריך) גובר על username (שם כניסה)
+        name:          u.nickname      || u.username  || null,
         email:         u.email         ?? null,
         phone:         u.phone         ?? '',
         neighborhood:  u.neighborhood  ?? '',
@@ -185,8 +186,8 @@ function mapStrapiUser(u: StrapiCommunityUser): DbUser {
         gender:        u.gender        ?? '',
         birth_date:    u.birth_date    ?? '',
         balance:       u.balance       ?? 0,
-        role:          (u.role as DbUser['role']) ?? 'user',
-        banned:        u.banned        ?? false,
+        role:          (u.app_role as DbUser['role']) ?? 'user',
+        banned:        u.blocked       ?? false,
         created_at:    u.createdAt     ?? '',
     };
 }
@@ -321,47 +322,41 @@ export async function adminDeleteItem(documentId: string, adminId: string): Prom
 }
 
 /** שליפת כל המשתמשים (אדמין בלבד) */
-export async function getAllUsers(jwt?: string): Promise<DbUser[]> {
+export async function getAllUsers(_jwt?: string): Promise<DbUser[]> {
     try {
-        const res = await strapiGet<{ data: StrapiCommunityUser[] }>('/api/community-users', {
+        const arr = await findStrapiUpUsers({
             'pagination[limit]': '1000',
             'sort':              'createdAt:desc',
-        }, jwt);
-        return (res.data ?? []).map(mapStrapiUser);
+        });
+        return (arr as StrapiUpUser[]).map(mapUpUser);
     } catch (e) {
-        if (e instanceof StrapiContentTypeError) return [];
-        throw e;
+        console.warn('[db] getAllUsers failed:', e);
+        return [];
     }
 }
 
 /** שינוי role של משתמש (סופר-אדמין בלבד) */
-export async function setUserRole(externalId: string, role: string, neighborhood?: string, jwt?: string): Promise<void> {
-    const user = await findStrapiUser(externalId, jwt);
+export async function setUserRole(externalId: string, role: string, neighborhood?: string, _jwt?: string): Promise<void> {
+    const user = await findUpUser(externalId);
     if (!user) throw new Error('משתמש לא נמצא');
-    await strapiPut(`/api/community-users/${user.documentId}`, {
-        data: {
-            role,
-            ...(neighborhood !== undefined ? { neighborhood } : {}),
-        },
-    }, jwt);
+    await updateStrapiUpUser(user.id, {
+        app_role: role,
+        ...(neighborhood !== undefined ? { neighborhood } : {}),
+    });
 }
 
 /** חסימת משתמש (אדמין בלבד) */
-export async function banUser(externalId: string, jwt?: string): Promise<void> {
-    const user = await findStrapiUser(externalId, jwt);
+export async function banUser(externalId: string, _jwt?: string): Promise<void> {
+    const user = await findUpUser(externalId);
     if (!user) throw new Error('משתמש לא נמצא');
-    await strapiPut(`/api/community-users/${user.documentId}`, {
-        data: { banned: true },
-    }, jwt);
+    await updateStrapiUpUser(user.id, { blocked: true });
 }
 
 /** ביטול חסימת משתמש */
-export async function unbanUser(externalId: string, jwt?: string): Promise<void> {
-    const user = await findStrapiUser(externalId, jwt);
+export async function unbanUser(externalId: string, _jwt?: string): Promise<void> {
+    const user = await findUpUser(externalId);
     if (!user) throw new Error('משתמש לא נמצא');
-    await strapiPut(`/api/community-users/${user.documentId}`, {
-        data: { banned: false },
-    }, jwt);
+    await updateStrapiUpUser(user.id, { blocked: false });
 }
 
 export async function getMessagesByUserId(userId: string): Promise<DbItem[]> {
@@ -415,65 +410,66 @@ export async function addFundContribution(neighborhood: string, totalPayment: nu
 }
 
 // ============================================================
-// ---- Users (Strapi — cloud-persistent) ----
+// ---- Users (users-permissions — up_users table) ----
 // ============================================================
 
-async function findStrapiUser(externalId: string, jwt?: string): Promise<StrapiCommunityUser | undefined> {
-    const res = await strapiGet<{ data: StrapiCommunityUser[] }>('/api/community-users', {
-        'filters[external_id][$eq]': externalId,
-        'pagination[limit]':         '1',
-    }, jwt);
-    return res.data?.[0];
+/** מחפש משתמש לפי external_id (מזהה Auth.js) */
+async function findUpUser(externalId: string): Promise<StrapiUpUser | undefined> {
+    const arr = await findStrapiUpUsers({ 'filters[external_id][$eq]': externalId, 'pagination[limit]': '1' });
+    return arr[0] as StrapiUpUser | undefined;
 }
 
-export async function upsertUser(data: UpsertUserData, jwt?: string): Promise<void> {
-    const existing = await findStrapiUser(data.id, jwt);
-    if (!existing) {
-        await strapiPost('/api/community-users', {
-            data: {
-                external_id: data.id,
-                name:        data.name        ?? null,
-                email:       data.email       ?? null,
-                avatar_url:  data.avatar_url  ?? null,
-                provider:    data.provider    ?? null,
-                publishedAt: new Date().toISOString(),
-            },
-        }, jwt);
-    } else {
-        const updates: Record<string, unknown> = {};
-        if (data.name  && !existing.name)  updates.name  = data.name;
-        if (data.email && !existing.email) updates.email = data.email;
-        if (data.provider && !existing.provider) updates.provider = data.provider;
-        if (data.avatar_url && !existing.avatar_url?.startsWith('data:')) {
-            updates.avatar_url = data.avatar_url;
-        }
-        if (Object.keys(updates).length > 0) {
-            await strapiPut(`/api/community-users/${existing.documentId}`, { data: updates }, jwt);
-        }
+/** מחפש משתמש לפי אימייל (מעדיף רשומה ישנה — credentials) */
+async function findUpUserByEmail(email: string): Promise<StrapiUpUser | undefined> {
+    const arr = await findStrapiUpUsers({
+        'filters[email][$eq]': email,
+        'sort[0]':             'createdAt:asc',
+        'pagination[limit]':   '1',
+    });
+    return arr[0] as StrapiUpUser | undefined;
+}
+
+export async function upsertUser(data: UpsertUserData, _jwt?: string): Promise<void> {
+    // מחפש לפי external_id קודם, אחר כך לפי אימייל
+    let user = await findUpUser(data.id);
+    if (!user && data.email) {
+        user = await findUpUserByEmail(data.email);
+    }
+    if (!user) {
+        console.warn('[upsertUser] user not found in users-permissions:', data.id, data.email);
+        return;
+    }
+
+    const updates: Record<string, unknown> = {};
+    if (!user.external_id) updates.external_id = data.id;
+    if (data.provider && !user.provider) updates.provider = data.provider;
+    // avatar_url — מעדכן רק אם אין כבר תמונה מקומית (base64)
+    if (data.avatar_url && !user.avatar_url?.startsWith('data:')) {
+        updates.avatar_url = data.avatar_url;
+    }
+
+    if (Object.keys(updates).length > 0) {
+        await updateStrapiUpUser(user.id, updates);
     }
 }
 
-export async function getUserById(id: string, jwt?: string): Promise<DbUser | undefined> {
-    const u = await findStrapiUser(id, jwt);
-    return u ? mapStrapiUser(u) : undefined;
+export async function getUserById(id: string, _jwt?: string): Promise<DbUser | undefined> {
+    const u = await findUpUser(id);
+    return u ? mapUpUser(u) : undefined;
 }
 
-export async function getUserByEmail(email: string, jwt?: string): Promise<DbUser | undefined> {
-    const res = await strapiGet<{ data: StrapiCommunityUser[] }>('/api/community-users', {
-        'filters[email][$eq]': email,
-        'sort[0]':             'createdAt:asc',  // מעדיף את הרשומה הוותיקה (credentials) על פני חדשה (OAuth)
-        'pagination[limit]':   '1',
-    }, jwt);
-    const u = res.data?.[0];
-    return u ? mapStrapiUser(u) : undefined;
+export async function getUserByEmail(email: string, _jwt?: string): Promise<DbUser | undefined> {
+    const u = await findUpUserByEmail(email);
+    return u ? mapUpUser(u) : undefined;
 }
 
-export async function updateUserProfile(id: string, data: UpdateProfileData, jwt?: string): Promise<DbUser | undefined> {
-    const existing = await findStrapiUser(id, jwt);
-    if (!existing) return undefined;
+export async function updateUserProfile(id: string, data: UpdateProfileData, _jwt?: string): Promise<DbUser | undefined> {
+    const user = await findUpUser(id);
+    if (!user) return undefined;
 
     const updates: Record<string, unknown> = {};
-    if (data.name          !== undefined) updates.name          = data.name;
+    // "שם" בפרופיל → nickname (לא username — username הוא שם כניסה ויחודי)
+    if (data.name          !== undefined) updates.nickname      = data.name;
     if (data.email         !== undefined) updates.email         = data.email;
     if (data.phone         !== undefined) updates.phone         = data.phone;
     if (data.neighborhood  !== undefined) updates.neighborhood  = data.neighborhood;
@@ -486,56 +482,42 @@ export async function updateUserProfile(id: string, data: UpdateProfileData, jwt
     if (data.avatar_url    !== undefined) updates.avatar_url    = data.avatar_url;
     if (data.birth_date    !== undefined) updates.birth_date    = data.birth_date;
 
-    if (Object.keys(updates).length === 0) return getUserById(id, jwt);
+    if (Object.keys(updates).length === 0) return mapUpUser(user);
 
-    await strapiPut(`/api/community-users/${existing.documentId}`, { data: updates }, jwt);
-    return getUserById(id, jwt);
+    const updated = await updateStrapiUpUser(user.id, updates);
+    return mapUpUser(updated as StrapiUpUser);
 }
 
 // ============================================================
 // ---- Credentials Auth ----
 // ============================================================
 
+/**
+ * קישור משתמש שנרשם דרך Strapi users-permissions לשדה external_id
+ * נקרא אחרי strapiRegister — המשתמש כבר קיים ב-up_users, רק מגדירים external_id
+ */
 export async function registerWithCredentials(
-    name: string,
+    _name: string,
     email: string,
-    password: string,
-    jwt?: string,
+    _password: string,
+    _jwt?: string,
 ): Promise<DbUser> {
-    const existing = await getUserByEmail(email, jwt);
-    if (existing) throw new Error('Email already taken');
+    const externalId = `credentials_${email}`;
+    const user = await findUpUserByEmail(email);
+    if (!user) throw new Error('Email already taken');
 
-    const password_hash = await bcrypt.hash(password, 12);
-    const id = `credentials_${email}`;
+    // אם ה-external_id כבר מוגדר — משתמש קיים
+    if (user.external_id && user.external_id !== externalId) {
+        throw new Error('Email already taken');
+    }
 
-    await strapiPost('/api/community-users', {
-        data: {
-            external_id:   id,
-            name,
-            email,
-            provider:      'credentials',
-            password_hash,
-            publishedAt:   new Date().toISOString(),
-        },
-    }, jwt);
+    // הגדרת external_id + provider
+    if (!user.external_id) {
+        await updateStrapiUpUser(user.id, {
+            external_id: externalId,
+            provider:    'local',
+        });
+    }
 
-    return (await getUserById(id, jwt))!;
-}
-
-export async function verifyCredentials(
-    email: string,
-    password: string,
-): Promise<DbUser | null> {
-    const res = await strapiGet<{ data: (StrapiCommunityUser & { password_hash?: string })[] }>(
-        '/api/community-users',
-        {
-            'filters[email][$eq]':    email,
-            'filters[provider][$eq]': 'credentials',
-            'pagination[limit]':      '1',
-        },
-    );
-    const row = res.data?.[0];
-    if (!row?.password_hash) return null;
-    const valid = await bcrypt.compare(password, row.password_hash);
-    return valid ? mapStrapiUser(row) : null;
+    return mapUpUser({ ...user, external_id: externalId });
 }

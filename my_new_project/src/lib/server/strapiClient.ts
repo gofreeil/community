@@ -148,6 +148,44 @@ export async function strapiLogin(identifier: string, password: string): Promise
     return res.json() as Promise<StrapiAuthResponse>;
 }
 
+// ============================================================
+// ---- Users-Permissions User API ----
+// ============================================================
+
+/**
+ * GET /api/users (users-permissions) — returns array directly (no {data} wrapper)
+ * Uses STRAPI_TOKEN for admin access by default
+ */
+export async function findStrapiUpUsers(params: Record<string, string>, jwt?: string): Promise<unknown[]> {
+    const url = new URL(STRAPI_URL + '/api/users');
+    Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+    const res = await fetch(url.toString(), { headers: getHeaders(jwt) });
+    if (!res.ok) {
+        if (res.status === 401 || res.status === 403) return [];
+        const text = await res.text();
+        throw new Error(`[Strapi] GET /api/users → ${res.status}: ${text}`);
+    }
+    const data = await res.json();
+    return Array.isArray(data) ? data : (data.data ?? []);
+}
+
+/**
+ * PUT /api/users/:id (users-permissions)
+ * Uses STRAPI_TOKEN by default; pass user jwt to use user's own permissions
+ */
+export async function updateStrapiUpUser(id: number, data: Record<string, unknown>, jwt?: string): Promise<unknown> {
+    const res = await fetch(STRAPI_URL + `/api/users/${id}`, {
+        method:  'PUT',
+        headers: getHeaders(jwt),
+        body:    JSON.stringify(data),
+    });
+    if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`[Strapi] PUT /api/users/${id} → ${res.status}: ${text}`);
+    }
+    return res.json();
+}
+
 /** הרשמה עם שם משתמש, אימייל + סיסמה */
 export async function strapiRegister(username: string, email: string, password: string): Promise<StrapiAuthResponse> {
     const res = await fetch(STRAPI_URL + '/api/auth/local/register', {
