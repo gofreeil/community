@@ -80,7 +80,9 @@
 	let birthYear     = $state(birthParts[0] ?? '');
 	let birthMonth    = $state(birthParts[1] ? String(parseInt(birthParts[1])) : '');
 	let birthDay      = $state(birthParts[2] ? String(parseInt(birthParts[2])) : '');
-	let notifications  = $state(_ud?.notifications !== 0);
+	let notifications       = $state(_ud?.notifications !== 0);
+	let security_question   = $state(_ud?.security_question ?? '');
+	let security_answer     = $state(_ud?.security_answer   ?? '');
 	let termsAccepted  = $state(
 		typeof localStorage !== 'undefined'
 			? localStorage.getItem('terms_accepted') === '1'
@@ -216,6 +218,7 @@
 		!!business,
 		!!family_status,
 		!!(birthYear && birthMonth && birthDay),
+		!!(security_question && security_answer),
 	]);
 
 	let profileCompletion = $derived(
@@ -241,7 +244,7 @@
 	const ringTipKeys = [
 		'tip_name', 'tip_email', 'tip_avatar', 'tip_nickname',
 		'tip_phone', 'tip_city', 'tip_neighborhood', 'tip_gender',
-		'tip_business', 'tip_family_status', 'tip_birth_date',
+		'tip_business', 'tip_family_status', 'tip_birth_date', 'tip_security',
 	] as const;
 	let nextTipKey = $derived(
 		profileCompletion >= 100
@@ -942,6 +945,32 @@
 					{/if}
 					<p class="text-gray-600 text-xs mt-1 px-1">{tFn("not_shown_public")}</p>
 				</div>
+				</div>
+
+				<!-- שאלת ביטחון — אופציונלי -->
+				<div class="md:col-span-2">
+					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
+						🛡️ שאלת ביטחון <span class="text-purple-400 text-xs font-normal normal-case">(אופציונלי — לשחזור סיסמה)</span>
+					</label>
+					{#if isEditing}
+						<select name="security_question" bind:value={security_question}
+							class="w-full bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none mb-2">
+							<option value="">— בחר שאלה —</option>
+							<option value="שם הרחוב שגדלת בו">שם הרחוב שגדלת בו</option>
+							<option value="שם החיה הראשונה שלך">שם החיה הראשונה שלך</option>
+							<option value="שם בית הספר היסודי שלך">שם בית הספר היסודי שלך</option>
+							<option value="עיר הולדתך">עיר הולדתך</option>
+							<option value="שם האמא שלך לפני הנישואים">שם האמא שלך לפני הנישואים</option>
+						</select>
+						{#if security_question}
+							<input type="text" name="security_answer" bind:value={security_answer}
+								placeholder="תשובה (לא תוצג בפומבי)"
+								class="w-full bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none placeholder-white/20" />
+						{/if}
+					{:else}
+						<p class="text-white font-medium py-3 px-1">{security_question || '—'}</p>
+					{/if}
+					<p class="text-gray-600 text-xs mt-1 px-1">משמש לאימות זהות בעת שחזור סיסמה</p>
 				</div>
 
 				<!-- התראות -->

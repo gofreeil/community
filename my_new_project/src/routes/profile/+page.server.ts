@@ -99,6 +99,7 @@ export const load: PageServerLoad = async (event) => {
             business: '', gender: '', family_status: '', birth_date: '',
             notifications: 1, provider: null, password_hash: null, created_at: '',
             role: 'user' as const, banned: false,
+            security_question: '', security_answer: '',
           };
 
     let messages: Awaited<ReturnType<typeof getMessagesByUserId>> = [];
@@ -143,7 +144,9 @@ export const actions: Actions = {
             ? `${birth_year}-${birth_month.padStart(2,'0')}-${birth_day.padStart(2,'0')}`
             : '';
         const gender        = formData.get('gender')?.toString()               ?? '';
-        const notifications    = formData.get('notifications') === 'true' ? 1 : 0;
+        const notifications      = formData.get('notifications') === 'true' ? 1 : 0;
+        const security_question  = formData.get('security_question')?.toString().trim() ?? '';
+        const security_answer    = formData.get('security_answer')?.toString().trim()   ?? '';
         const avatarBase64     = formData.get('avatar_base64')?.toString()     ?? '';
         const customLocation   = formData.get('custom_location')?.toString().trim() ?? '';
 
@@ -165,6 +168,7 @@ export const actions: Actions = {
                 gender,
                 notifications,
                 ...(avatarBase64 ? { avatar_url: avatarBase64 } : {}),
+                ...(security_question ? { security_question, security_answer } : {}),
             }, strapiJwt);
 
             // אם המשתמש ביקש להוסיף מיקום חדש — שלח בקשה לסופר אדמין

@@ -63,6 +63,8 @@ export interface DbUser {
     role: 'user' | 'neighborhood_admin' | 'super_admin';
     banned: boolean;
     created_at: string;
+    security_question: string;
+    security_answer: string;
 }
 
 export interface UpsertUserData {
@@ -86,6 +88,8 @@ export interface UpdateProfileData {
     gender?: string;
     avatar_url?: string;
     birth_date?: string;
+    security_question?: string;
+    security_answer?: string;
 }
 
 // ============================================================
@@ -139,6 +143,8 @@ interface StrapiUpUser {
     balance: number | null;
     notifications: boolean | null;
     app_role: string | null;
+    security_question: string | null;
+    security_answer: string | null;
     createdAt: string;
 }
 
@@ -186,9 +192,11 @@ function mapUpUser(u: StrapiUpUser): DbUser {
         gender:        u.gender        ?? '',
         birth_date:    u.birth_date    ?? '',
         balance:       u.balance       ?? 0,
-        role:          (u.app_role as DbUser['role']) ?? 'user',
-        banned:        u.blocked       ?? false,
-        created_at:    u.createdAt     ?? '',
+        role:              (u.app_role as DbUser['role']) ?? 'user',
+        banned:            u.blocked           ?? false,
+        created_at:        u.createdAt         ?? '',
+        security_question: u.security_question ?? '',
+        security_answer:   u.security_answer   ?? '',
     };
 }
 
@@ -479,8 +487,10 @@ export async function updateUserProfile(id: string, data: UpdateProfileData, _jw
     if (data.notifications !== undefined) updates.notifications = data.notifications === 1;
     if (data.family_status !== undefined) updates.family_status = data.family_status;
     if (data.gender        !== undefined) updates.gender        = data.gender;
-    if (data.avatar_url    !== undefined) updates.avatar_url    = data.avatar_url;
-    if (data.birth_date    !== undefined) updates.birth_date    = data.birth_date;
+    if (data.avatar_url        !== undefined) updates.avatar_url        = data.avatar_url;
+    if (data.birth_date        !== undefined) updates.birth_date        = data.birth_date;
+    if (data.security_question !== undefined) updates.security_question = data.security_question;
+    if (data.security_answer   !== undefined) updates.security_answer   = data.security_answer;
 
     if (Object.keys(updates).length === 0) return mapUpUser(user);
 
