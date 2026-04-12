@@ -3,7 +3,11 @@
 // כל הבקשות לבאקאנד עוברות דרך כאן
 // ============================================================
 
-const STRAPI_URL = process.env.STRAPI_URL ?? 'http://localhost:1337';
+const STRAPI_URL   = process.env.STRAPI_URL   ?? 'http://localhost:1337';
+// STRAPI_TOKEN — Strapi API Token עם הרשאות Full Access.
+// משמש כ-fallback כשאין user JWT (למשל: מיזוג חשבונות OAuth+credentials).
+// ניצור אותו ב: Strapi Admin → Settings → API Tokens → Create new token
+const STRAPI_TOKEN = process.env.STRAPI_TOKEN ?? '';
 
 const RETRY_ATTEMPTS = 3;
 const RETRY_DELAY_MS = 800;
@@ -17,9 +21,11 @@ export class StrapiContentTypeError extends Error {
 }
 
 function getHeaders(jwt?: string): HeadersInit {
+    // עדיפות: user JWT → STRAPI_TOKEN (admin fallback) → ללא auth
+    const token = jwt || STRAPI_TOKEN || undefined;
     return {
         'Content-Type': 'application/json',
-        ...(jwt ? { Authorization: `Bearer ${jwt}` } : {}),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
     };
 }
 
