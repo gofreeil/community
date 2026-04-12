@@ -134,6 +134,45 @@ export interface StrapiAuthResponse {
     user: StrapiUser;
 }
 
+/** שליחת מייל לאיפוס סיסמה */
+export async function forgotPassword(email: string): Promise<void> {
+    const res = await fetch(STRAPI_URL + '/api/auth/forgot-password', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ email }),
+    });
+    if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`[Strapi] FORGOT_PASSWORD → ${res.status}: ${text}`);
+    }
+}
+
+/** איפוס סיסמה עם קוד מהמייל */
+export async function resetPassword(code: string, password: string, passwordConfirmation: string): Promise<void> {
+    const res = await fetch(STRAPI_URL + '/api/auth/reset-password', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ code, password, passwordConfirmation }),
+    });
+    if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`[Strapi] RESET_PASSWORD → ${res.status}: ${text}`);
+    }
+}
+
+/** שליחת מייל אישור מחדש */
+export async function resendConfirmation(email: string): Promise<void> {
+    const res = await fetch(STRAPI_URL + '/api/auth/send-email-confirmation', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ email }),
+    });
+    if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`[Strapi] RESEND_CONFIRMATION → ${res.status}: ${text}`);
+    }
+}
+
 /** לוגין עם אימייל + סיסמה */
 export async function strapiLogin(identifier: string, password: string): Promise<StrapiAuthResponse> {
     const res = await fetch(STRAPI_URL + '/api/auth/local', {

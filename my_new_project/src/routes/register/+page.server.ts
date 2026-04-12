@@ -10,7 +10,7 @@ export const load: PageServerLoad = async (event) => {
 };
 
 export const actions: Actions = {
-    default: async ({ request, cookies }) => {
+    default: async ({ request }) => {
         const formData        = await request.formData();
         const username        = (formData.get('username')       as string)?.trim();
         const email           = (formData.get('email')          as string)?.trim().toLowerCase();
@@ -27,42 +27,27 @@ export const actions: Actions = {
             return fail(400, { error: 'הסיסמאות אינן תואמות', username, email });
         }
 
-        // 1. יצירת משתמש ב-Strapi users-permissions → קבלת JWT
-        let strapiJwt: string | null = null;
+        // 1. יצירת משתמש ב-Strapi users-permissions
+        // כשה-email confirmation מופעל — Strapi שולח מייל אישור ולא מחזיר JWT
         try {
-            const { jwt } = await strapiRegister(username, email, password);
-            strapiJwt = jwt;
+            await strapiRegister(username, email, password);
         } catch (e) {
             const msg = e instanceof Error ? e.message : '';
-            if (msg.includes('Email already taken') || msg.includes('400') || msg.includes('email')) {
+            if (msg.includes('Email already taken') || msg.includes('400')) {
                 return fail(409, { error: 'אימייל זה כבר רשום. נסה להתחבר.', username, email });
             }
             console.error('[register] strapi error:', msg);
             return fail(500, { error: 'שגיאה בהרשמה. נסה שוב.', username, email });
         }
 
-        // 2. יצירת רשומת פרופיל ב-community-users (עם JWT של המשתמש החדש)
+        // 2. קישור external_id (ייתכן שיכשל אם Strapi לא מחזיר JWT לפני אישור מייל — זה בסדר)
         try {
-            await registerWithCredentials(username, email, password, strapiJwt ?? undefined);
-        } catch (e) {
-            const msg = e instanceof Error ? e.message : '';
-            if (msg.includes('Email already taken')) {
-                return fail(409, { error: 'אימייל זה כבר רשום. נסה להתחבר.', username, email });
-            }
-            console.warn('[register] community-users failed:', msg);
+            await registerWithCredentials(username, email, password);
+        } catch {
+            // לא קריטי — external_id יוגדר בכניסה הראשונה
         }
 
-        // 3. שמירת Strapi JWT ב-HTTP-only cookie
-        if (strapiJwt) {
-            cookies.set('strapi_jwt', strapiJwt, {
-                httpOnly: true,
-                secure:   process.env.NODE_ENV === 'production',
-                sameSite: 'strict',
-                path:     '/',
-                maxAge:   60 * 60 * 24 * 365, // שנה
-            });
-        }
-
-        return { success: true };
+        // 3. מחזירים success עם בקשה לאמת אימייל (לא מתחברים אוטומטית)
+        return { success: true, email };
     },
 };

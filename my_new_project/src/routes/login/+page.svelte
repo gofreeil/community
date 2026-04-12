@@ -35,7 +35,7 @@
 			OAuthCallback:         'שגיאה בחזרה מהספק. נסה שוב.',
 			OAuthAccountNotLinked: 'החשבון כבר קיים עם ספק אחר.',
 			Callback:              'שגיאה בתהליך ההתחברות.',
-			CredentialsSignin:     'אימייל או סיסמה שגויים.',
+			CredentialsSignin:     'אימייל או סיסמה שגויים. אם נרשמת לאחרונה — ודא שאישרת את האימייל.',
 			Default:               'שגיאה לא ידועה. נסה שוב.',
 		};
 		return map[code] ?? map['Default'];
@@ -171,6 +171,13 @@
 								{/if}
 							</button>
 						</div>
+					</div>
+
+					<!-- קישור שכחתי סיסמה -->
+					<div class="text-left mb-4">
+						<a href="/forgot-password" class="text-purple-400 hover:text-purple-300 text-sm transition-colors">
+							שכחתי סיסמה
+						</a>
 					</div>
 
 					<button

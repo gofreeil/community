@@ -41,6 +41,20 @@
 					<p class="text-gray-400 text-sm">{tFn("create_account")}</p>
 				</div>
 
+				<!-- הרשמה הצליחה — בדוק אימייל -->
+				{#if form?.success}
+					<div class="text-center py-4">
+						<div class="text-5xl mb-4">📧</div>
+						<h2 class="text-xl font-bold text-white mb-2">נשלח אימייל אישור!</h2>
+						<p class="text-white/60 text-sm mb-1">שלחנו קישור אישור לכתובת:</p>
+						<p class="text-purple-400 font-semibold mb-4">{form.email}</p>
+						<p class="text-white/50 text-sm mb-6">לחץ על הקישור במייל כדי להפעיל את החשבון ואז תוכל להתחבר.</p>
+						<a href="/login" class="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold hover:opacity-90 transition text-sm">
+							עבור לכניסה
+						</a>
+					</div>
+				{:else}
+
 				<!-- הודעת שגיאה -->
 				{#if form?.error}
 					<div role="alert" class="mb-6 rounded-xl bg-red-500/10 border border-red-500/30 px-4 py-3 text-center">
@@ -51,22 +65,11 @@
 				<!-- טופס הרשמה -->
 				<form
 					method="POST"
-					use:enhance={({ formElement }) => {
+					use:enhance={() => {
 						isLoading = true;
-						return async ({ result, update }) => {
-							if (result.type === 'success') {
-								// הרשמה הצליחה — מתחברים אוטומטית בלי לדרוש כניסה מחדש
-								const email    = (formElement.querySelector('#email')    as HTMLInputElement)?.value;
-								const password = (formElement.querySelector('#password') as HTMLInputElement)?.value;
-								await signIn('credentials', {
-									email,
-									password,
-									callbackUrl: '/profile?new=1',
-								});
-							} else {
-								isLoading = false;
-								await update();
-							}
+						return async ({ update }) => {
+							isLoading = false;
+							await update();
 						};
 					}}
 				>
@@ -197,6 +200,8 @@
 						{tFn("login_here")}
 					</a>
 				</p>
+
+				{/if}
 
 			</div>
 		</div>
