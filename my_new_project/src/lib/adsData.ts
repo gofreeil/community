@@ -89,9 +89,9 @@ export const ads: Ad[] = [
     },
     {
         id: 8,
-        title: "סיוע לנפגעי תקיפה מינית",
-        description: "תמיכה וסיוע לנפגעים מינית",
-        cta: "נפגת? אנו נסייע לך",
+        title: "נפגת?",
+        description: "אנו נסייע לך!",
+        cta: "סיוע לנפגעי תקיפה מינית",
         href: "https://www.melecshop.com/page/kids_FNL3",
         image: "/images/support-victims.jpeg",
         color: "from-fuchsia-600 to-pink-600"
