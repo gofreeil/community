@@ -317,11 +317,14 @@
             "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3366.1!2d34.8437!3d32.3183!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151d4f456789012g%3A0x13579bdf2468ace0!2z16DXldeV15Ug15LXoNeZ150!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil",
     };
 
-    // פונקציה לקבלת כתובת המפה
-    function getMapUrl(): string {
-        const key = neighborhoodState.neighborhood;
-        return neighborhoodMaps[key] || neighborhoodMaps["קרית משה"]; // ברירת מחדל
-    }
+    // כתובת המפה — ריאקטיבית לשינויי neighborhoodState
+    let mapUrl = $derived(
+        neighborhoodMaps[neighborhoodState.neighborhood] ??
+        // fallback דינמי: חיפוש גוגל לפי שם שכונה + עיר מהפרופיל
+        (neighborhoodState.neighborhood && neighborhoodState.city
+            ? `https://maps.google.com/maps?q=${encodeURIComponent(neighborhoodState.neighborhood + ', ' + neighborhoodState.city + ', ישראל')}&output=embed&hl=iw&z=15`
+            : neighborhoodMaps["קרית משה"])
+    );
 
     // מיפוי בין קטגוריות לסימונים במפה
     const categoryMarkers: Record<string, string[]> = {
@@ -919,7 +922,7 @@
                     width="100%"
                     height="100%"
                     style="border:0"
-                    src={getMapUrl()}
+                    src={mapUrl}
                     allowfullscreen
                     loading="lazy"
                     referrerpolicy="no-referrer-when-downgrade"
