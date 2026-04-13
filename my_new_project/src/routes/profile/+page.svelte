@@ -583,7 +583,7 @@
 				</div>
 
 				<!-- תווית מתחת לתמונה -->
-				<button onclick={scrollToMessages} class="text-base text-orange-400 font-bold hover:text-orange-300 transition-colors cursor-pointer bg-transparent border-0 p-0">הודעות אישיות</button>
+				<button onclick={scrollToMessages} class="text-base text-orange-400 font-bold hover:text-orange-300 transition-colors cursor-pointer bg-transparent border-0 p-0">סטטוס</button>
 			</div>
 
 
