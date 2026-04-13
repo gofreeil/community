@@ -43,6 +43,18 @@
 	);
 	let unreadCount = $derived(messages.filter(m => !m.read).length);
 	let secTipShow    = $state(false);
+	let showStatusMenu = $state(false);
+
+	async function updateStatus(newStatus: string) {
+		status = newStatus;
+		showStatusMenu = false;
+		// שמירה מיידית ב-Strapi
+		try {
+			const formData = new FormData();
+			formData.set('status', newStatus);
+			await fetch('?/updateStatus', { method: 'POST', body: formData });
+		} catch {}
+	}
 	let secTipX       = $state(0);
 	let secTipY       = $state(0);
 	let secTipIsOpen  = $state(false);
@@ -583,14 +595,37 @@
 				</div>
 
 			<!-- תווית סטטוס מתחת לתמונה -->
-				<div class="flex items-center gap-2 flex-wrap justify-center mt-auto pt-4">
-					<button onclick={scrollToMessages} class="text-base text-orange-400 font-bold hover:text-orange-300 transition-colors cursor-pointer bg-transparent border-0 p-0">סטטוס</button>
+				<div class="relative flex items-center gap-2 flex-wrap justify-center mt-auto pt-4">
+					<span class="text-base text-orange-400 font-bold">סטטוס</span>
 					{#if true}
 						{@const currentStatus = statusOptions().find(o => o.value === status)}
-						<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold
-							{status === 'active' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-purple-500/20 text-purple-300 border border-purple-500/30'}">
-							{currentStatus?.emoji ?? '🟢'} {currentStatus?.label ?? 'פעיל/ה'}
-						</span>
+						<button
+							type="button"
+							onclick={() => showStatusMenu = !showStatusMenu}
+							class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold cursor-pointer transition-all hover:scale-105
+								{status === 'active' ? 'bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30' : 'bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30'}">
+							{currentStatus?.emoji ?? '🟢'} {currentStatus?.label ?? 'פעיל/ה'} ▾
+						</button>
+					{/if}
+
+					{#if showStatusMenu}
+						<!-- backdrop -->
+						<button type="button" class="fixed inset-0 z-40" onclick={() => showStatusMenu = false} aria-label="סגור תפריט"></button>
+						<!-- תפריט -->
+						<div class="absolute bottom-full mb-2 right-0 z-50 bg-[#0f172a] border border-white/15 rounded-2xl shadow-2xl p-2 min-w-[180px] flex flex-col gap-1">
+							{#each statusOptions() as opt}
+								<button
+									type="button"
+									onclick={() => updateStatus(opt.value)}
+									class="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-bold transition-all cursor-pointer text-right
+										{status === opt.value
+											? 'bg-purple-600/30 text-white'
+											: 'text-gray-300 hover:bg-white/8 hover:text-white'}">
+									{opt.emoji} {opt.label}
+									{#if status === opt.value}<span class="mr-auto text-purple-400 text-xs">✓</span>{/if}
+								</button>
+							{/each}
+						</div>
 					{/if}
 				</div>
 			</div>

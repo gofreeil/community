@@ -201,6 +201,22 @@ export const actions: Actions = {
         }
     },
 
+    updateStatus: async (event) => {
+        let session = null;
+        try { session = await event.locals.auth(); } catch {}
+        if (!session?.user?.id) return fail(401, { error: 'לא מחובר' });
+
+        const formData = await event.request.formData();
+        const status   = formData.get('status')?.toString().trim() ?? 'active';
+
+        try {
+            await updateUserProfile(session.user.id, { status });
+            return { success: true };
+        } catch {
+            return fail(500, { error: 'שגיאה בעדכון סטטוס' });
+        }
+    },
+
     sendFeedback: async (event) => {
         let session = null;
         try { session = await event.locals.auth(); } catch {}
