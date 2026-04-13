@@ -582,8 +582,17 @@
 				</button>
 				</div>
 
-				<!-- תווית מתחת לתמונה -->
-				<button onclick={scrollToMessages} class="text-base text-orange-400 font-bold hover:text-orange-300 transition-colors cursor-pointer bg-transparent border-0 p-0">סטטוס</button>
+				<!-- תווית סטטוס מתחת לתמונה -->
+				<div class="flex flex-col items-center gap-1">
+					<button onclick={scrollToMessages} class="text-base text-orange-400 font-bold hover:text-orange-300 transition-colors cursor-pointer bg-transparent border-0 p-0">סטטוס</button>
+					{#if (data.user as any)?.family_status === 'single_f' || (data.user as any)?.family_status === 'single_m'}
+						{@const currentStatus = statusOptions().find(o => o.value === status)}
+						<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold
+							{status === 'active' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-purple-500/20 text-purple-300 border border-purple-500/30'}">
+							{currentStatus?.emoji ?? '🟢'} {currentStatus?.label ?? 'פעיל/ה'}
+						</span>
+					{/if}
+				</div>
 			</div>
 
 
@@ -612,13 +621,6 @@
 							📍 שכונה לא ידועה
 						{/if}
 					</p>
-					{#if (data.user as any)?.family_status === 'single_f' || (data.user as any)?.family_status === 'single_m'}
-						{@const currentStatus = statusOptions().find(o => o.value === status)}
-						<span class="inline-flex items-center gap-1.5 mt-1 px-3 py-1 rounded-full text-sm font-bold
-							{status === 'active' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-purple-500/20 text-purple-300 border border-purple-500/30'}">
-							{currentStatus?.emoji ?? '🟢'} {currentStatus?.label ?? 'פעיל/ה'}
-						</span>
-					{/if}
 				</div>
 				<div class="flex-1"></div>
 				<div class="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity"
