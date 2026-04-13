@@ -578,7 +578,7 @@
 				<span class="text-base text-gray-300 font-bold">היתרה שלי: <span class="text-green-400">{(data.user as {balance?:number})?.balance ?? 0}₪</span></span>
 			</a>
 
-			<div class="min-w-0 flex-shrink-0 flex flex-col justify-between">
+			<div class="min-w-0 flex-shrink-0 flex flex-col justify-between pl-4 md:pl-8">
 				<div class="flex flex-col gap-0.5">
 					<div class="flex items-center gap-2">
 						<h1 class="text-2xl font-black text-white truncate">
