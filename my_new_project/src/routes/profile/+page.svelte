@@ -1356,6 +1356,54 @@
 					</div>
 				</div>
 			{/each}
+
+			<!-- המלצות מותאמות אישית -->
+			{#if business || family_status === 'single_m' || family_status === 'single_f' || whatsappMatches.length > 0}
+			<div class="mt-2 flex flex-col gap-3">
+				<p class="text-xs text-gray-400 uppercase tracking-widest font-bold">המלצות עבורך</p>
+
+				{#if business}
+				<a href="https://index-chi-sage.vercel.app/" target="_blank" rel="noopener noreferrer"
+					aria-label="מועדון בעלי העסקים הכשרים – הצטרף לרשת בעלי העסקים (נפתח בחלון חדש)"
+					class="flex items-center gap-4 bg-amber-500/10 border border-amber-500/30
+					       hover:bg-amber-500/20 hover:border-amber-400/50 transition-all
+					       rounded-2xl px-5 py-4 group">
+					<span class="text-3xl flex-shrink-0">🏪</span>
+					<div class="flex-1 text-right">
+						<p class="text-white font-bold text-sm">מועדון בעלי העסקים הכשרים</p>
+						<p class="text-amber-300/80 text-xs mt-0.5">הצטרף לרשת בעלי העסקים הכשרים בישראל ←</p>
+					</div>
+				</a>
+				{/if}
+
+				{#if family_status === 'single_m' || family_status === 'single_f'}
+				<a href="/national/singles"
+					class="flex items-center gap-4 bg-pink-500/10 border border-pink-500/30
+					       hover:bg-pink-500/20 hover:border-pink-400/50 transition-all
+					       rounded-2xl px-5 py-4 group">
+					<span class="text-3xl flex-shrink-0">💑</span>
+					<div class="flex-1 text-right">
+						<p class="text-white font-bold text-sm">רשימת הפנויים והפנויות הארצית</p>
+						<p class="text-pink-300/80 text-xs mt-0.5">הצטרף לרשימה ומצא את השידוך המתאים ←</p>
+					</div>
+				</a>
+				{/if}
+
+				{#each whatsappMatches as group}
+				<a href={group.url} target="_blank" rel="noopener noreferrer"
+					aria-label="{group.label} – הצטרף לקבוצת הווטסאפ (נפתח בחלון חדש)"
+					class="flex items-center gap-4 bg-green-500/10 border border-green-500/30
+					       hover:bg-green-500/20 hover:border-green-400/50 transition-all
+					       rounded-2xl px-5 py-4 group">
+					<span class="text-3xl flex-shrink-0">💬</span>
+					<div class="flex-1 text-right">
+						<p class="text-white font-bold text-sm">{group.label}</p>
+						<p class="text-green-300/80 text-xs mt-0.5">הצטרף לקבוצת הווטסאפ של השכונה שלך ←</p>
+					</div>
+				</a>
+				{/each}
+			</div>
+			{/if}
 		</div>
 		{/if}
 	</div>
@@ -1440,54 +1488,6 @@
 		</div>
 
 		{#if showMyInfo}
-
-		<!-- המלצות מותאמות אישית -->
-		{#if business || family_status === 'single_m' || family_status === 'single_f' || whatsappMatches.length > 0}
-		<div class="mb-6 flex flex-col gap-3">
-			<p class="text-xs text-gray-400 uppercase tracking-widest font-bold">המלצות עבורך</p>
-
-			{#if business}
-			<a href="https://index-chi-sage.vercel.app/" target="_blank" rel="noopener noreferrer"
-				aria-label="מועדון בעלי העסקים הכשרים – הצטרף לרשת בעלי העסקים (נפתח בחלון חדש)"
-				class="flex items-center gap-4 bg-amber-500/10 border border-amber-500/30
-				       hover:bg-amber-500/20 hover:border-amber-400/50 transition-all
-				       rounded-2xl px-5 py-4 group">
-				<span class="text-3xl flex-shrink-0">🏪</span>
-				<div class="flex-1 text-right">
-					<p class="text-white font-bold text-sm">מועדון בעלי העסקים הכשרים</p>
-					<p class="text-amber-300/80 text-xs mt-0.5">הצטרף לרשת בעלי העסקים הכשרים בישראל ←</p>
-				</div>
-			</a>
-			{/if}
-
-			{#if family_status === 'single_m' || family_status === 'single_f'}
-			<a href="/national/singles"
-				class="flex items-center gap-4 bg-pink-500/10 border border-pink-500/30
-				       hover:bg-pink-500/20 hover:border-pink-400/50 transition-all
-				       rounded-2xl px-5 py-4 group">
-				<span class="text-3xl flex-shrink-0">💑</span>
-				<div class="flex-1 text-right">
-					<p class="text-white font-bold text-sm">רשימת הפנויים והפנויות הארצית</p>
-					<p class="text-pink-300/80 text-xs mt-0.5">הצטרף לרשימה ומצא את השידוך המתאים ←</p>
-				</div>
-			</a>
-			{/if}
-
-			{#each whatsappMatches as group}
-			<a href={group.url} target="_blank" rel="noopener noreferrer"
-				aria-label="{group.label} – הצטרף לקבוצת הווטסאפ (נפתח בחלון חדש)"
-				class="flex items-center gap-4 bg-green-500/10 border border-green-500/30
-				       hover:bg-green-500/20 hover:border-green-400/50 transition-all
-				       rounded-2xl px-5 py-4 group">
-				<span class="text-3xl flex-shrink-0">💬</span>
-				<div class="flex-1 text-right">
-					<p class="text-white font-bold text-sm">{group.label}</p>
-					<p class="text-green-300/80 text-xs mt-0.5">הצטרף לקבוצת הווטסאפ של השכונה שלך ←</p>
-				</div>
-			</a>
-			{/each}
-		</div>
-		{/if}
 
 		{#if data.items.length === 0}
 			<div class="text-center py-12">
