@@ -280,6 +280,11 @@
 			: ringTipKeys[profileFields.findIndex(f => !f)] ?? 'profile_complete'
 	);
 
+	// ספירת שדות ביטחון שנשארו (שאלה + תשובה = 2 שדות)
+	let securityFieldsRemaining = $derived(
+		(security_question ? 0 : 1) + (security_answer ? 0 : 1)
+	);
+
 	let showRingTooltip = $state(false);
 	let ringTipX = $state(0);
 
@@ -1546,7 +1551,18 @@
 				{profileCompletion}% הושלם
 			</div>
 			<div class="text-white text-xs leading-snug">
-				{profileCompletion >= 100 ? 'לעריכת פרופיל' : tFn(nextTipKey)}
+				{#if profileCompletion >= 100}
+					לעריכת פרופיל
+				{:else if nextTipKey === 'tip_security'}
+					🛡️ הוסף שאלת ביטחון לחשבונך
+					{#if securityFieldsRemaining > 0}
+						<div class="text-orange-300 text-[10px] mt-0.5">
+							נותרו {securityFieldsRemaining} שדות מתוך 2 להגדרה
+						</div>
+					{/if}
+				{:else}
+					{tFn(nextTipKey)}
+				{/if}
 			</div>
 		</div>
 	</div>
