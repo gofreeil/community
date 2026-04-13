@@ -106,7 +106,6 @@
 			{ value: 'postbirth', emoji: '👶', label: 'אחרי לידה',  femaleOnly: true },
 			{ value: 'vacation',  emoji: '🏖️', label: isFemale ? 'בחופשה'              : 'בחופשה' },
 			{ value: 'sick',      emoji: '🤒', label: isFemale ? 'חולה'                : 'חולה' },
-			{ value: 'abroad',    emoji: '✈️', label: isFemale ? 'בחו״ל'               : 'בחו״ל' },
 			{ value: 'moving',    emoji: '📦', label: isFemale ? 'עוברת דירה'          : 'עובר דירה' },
 			{ value: 'studying',  emoji: '🎓', label: isFemale ? 'בלימודים אינטנסיביים' : 'בלימודים אינטנסיביים' },
 			{ value: 'timeout',     emoji: '🙏', label: isFemale ? 'פסק זמן אישי'        : 'פסק זמן אישי' },
