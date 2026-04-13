@@ -583,7 +583,7 @@
 				</div>
 
 			<!-- תווית סטטוס מתחת לתמונה -->
-				<div class="flex items-center gap-2 flex-wrap justify-center">
+				<div class="flex items-center gap-2 flex-wrap justify-center mt-auto pt-4">
 					<button onclick={scrollToMessages} class="text-base text-orange-400 font-bold hover:text-orange-300 transition-colors cursor-pointer bg-transparent border-0 p-0">סטטוס</button>
 					{#if true}
 						{@const currentStatus = statusOptions().find(o => o.value === status)}
@@ -601,7 +601,7 @@
 				<div class="w-52 group-hover:scale-105 transition-transform duration-200 -mt-8" style="-webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 80%); mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 80%);">
 					<img src="/images/wallet.png" alt="המזומן שלי" class="w-full h-auto block" />
 				</div>
-				<span class="text-base text-gray-300 font-bold">היתרה שלי: <span class="text-green-400">{(data.user as {balance?:number})?.balance ?? 0}₪</span></span>
+				<span class="text-base text-gray-300 font-bold pt-4 mt-auto">היתרה שלי: <span class="text-green-400">{(data.user as {balance?:number})?.balance ?? 0}₪</span></span>
 			</a>
 
 			<div class="min-w-0 flex-shrink-0 flex flex-col justify-between pl-4 md:pl-8">
@@ -622,7 +622,7 @@
 						{/if}
 					</p>
 				</div>
-				<div class="flex-1 min-h-[20px]"></div>
+				<div class="flex-1 min-h-[24px]"></div>
 				<div class="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity"
 					onclick={scrollToLevels}
 					onkeydown={(e) => { if (e.key === "Enter" || e.key === " ") scrollToLevels(); }}
