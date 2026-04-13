@@ -612,7 +612,7 @@
 						<!-- backdrop -->
 						<button type="button" class="fixed inset-0 z-40" onclick={() => showStatusMenu = false} aria-label="סגור תפריט"></button>
 						<!-- תפריט -->
-						<div class="absolute bottom-full mb-2 right-0 z-50 bg-[#0f172a] border border-white/15 rounded-2xl shadow-2xl p-2 min-w-[180px] flex flex-col gap-1">
+						<div class="absolute top-full mt-2 right-0 z-50 bg-[#0f172a] border border-white/15 rounded-2xl shadow-2xl p-2 min-w-[180px] flex flex-col gap-1">
 							{#each statusOptions() as opt}
 								<button
 									type="button"
