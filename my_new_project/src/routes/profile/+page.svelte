@@ -1012,8 +1012,10 @@
 				</div>
 				{/if}
 
+				<!-- שאלת ביטחון + התראות — שורה אחת -->
+				<div class="md:col-span-2 grid md:grid-cols-2 gap-4 items-start">
 				<!-- שאלת ביטחון — אופציונלי -->
-				<div class="md:col-span-2">
+				<div>
 					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
 						🛡️ שאלת ביטחון <span class="text-purple-400 text-xs font-normal normal-case">(אופציונלי — לשחזור סיסמה)</span>
 					</label>
@@ -1035,11 +1037,11 @@
 					{:else}
 						<p class="text-white font-medium py-3 px-1">{security_question || '—'}</p>
 					{/if}
-					<p class="text-gray-600 text-xs mt-1 px-1">משמש לאימות זהות בעת שחזור סיסמה</p>
+					<p class="text-gray-400 text-sm mt-1 px-1">משמש לאימות זהות בעת שחזור סיסמה</p>
 				</div>
 
 				<!-- התראות -->
-				<div class="md:col-span-2">
+				<div>
 					<p class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-3">{tFn("notifications_label")}</p>
 					{#if isEditing}
 						<label class="flex items-center gap-3 cursor-pointer group">
@@ -1070,11 +1072,12 @@
 						</p>
 					{/if}
 				</div>
+				</div> <!-- סוף grid שאלת ביטחון + התראות -->
 
 			</div>
 
 			{#if isEditing}
-				<div class="mt-4 flex flex-col gap-3 items-end">
+				<div class="mt-2 flex flex-col gap-3 items-end">
 					<label class="flex items-center gap-3 cursor-pointer">
 						<input type="checkbox" bind:checked={termsAccepted}
 							onchange={() => {
