@@ -524,7 +524,7 @@
 				{tFn("logout_btn")}
 			</button>
 		</div>
-		<div class="flex flex-wrap md:flex-nowrap items-start gap-4 md:gap-6 w-full">
+		<div class="flex flex-wrap md:flex-nowrap items-stretch gap-4 md:gap-6 w-full">
 
 			<!-- אווטר + מעגל מילוי -->
 			<div class="flex-shrink-0 flex flex-col items-center justify-between min-h-[120px]">
@@ -619,7 +619,7 @@
 							{currentStatus?.emoji ?? '🟢'} {currentStatus?.label ?? 'פעיל/ה'}
 						</span>
 					{/if}
-					<div class="mb-14"></div>
+					<div class="flex-1"></div>
 				</div>
 				<div class="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity"
 					onclick={scrollToLevels}
