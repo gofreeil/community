@@ -1301,6 +1301,13 @@
 
 		{#if showMessages}
 		<div class="flex flex-col gap-3" onclick={(e) => e.stopPropagation()}>
+			<button
+				type="button"
+				onclick={(e) => { e.stopPropagation(); showMessages = false; scrollToTop(); }}
+				class="self-center px-4 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10
+				       text-gray-400 hover:text-white text-xs font-bold transition-all cursor-pointer mb-1">
+				↑ גלול מעלה
+			</button>
 			{#each messages as msg}
 				<div class="flex items-start gap-3 bg-white/5 rounded-2xl border {msg.read ? 'border-white/5' : 'border-orange-500/20'} px-4 py-3 transition-all hover:border-white/15">
 					<div class="w-2 h-2 rounded-full {msg.read ? 'bg-white/10' : 'bg-orange-500'} mt-1.5 flex-shrink-0"></div>
