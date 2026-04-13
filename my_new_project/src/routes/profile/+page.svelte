@@ -507,7 +507,7 @@
 				{tFn("logout_btn")}
 			</button>
 		</div>
-		<div class="flex flex-wrap md:flex-nowrap items-start justify-between gap-2 md:gap-5">
+		<div class="flex flex-wrap md:flex-nowrap items-start gap-4 md:gap-6 w-full">
 
 			<!-- אווטר + מעגל מילוי -->
 			<div class="flex-shrink-0 flex flex-col items-center justify-between min-h-[120px]">
@@ -571,14 +571,14 @@
 
 
 			<!-- הארנק שלי — נסתר בנייד, מוצג בדסקטופ -->
-			<a href="/receipts" class="hidden md:flex flex-shrink-0 flex-col items-center justify-between cursor-pointer group select-none no-underline">
+			<a href="/receipts" class="hidden md:flex flex-1 flex-col items-center justify-between cursor-pointer group select-none no-underline">
 				<div class="w-52 group-hover:scale-105 transition-transform duration-200 -mt-8" style="-webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 80%); mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 80%);">
 					<img src="/images/wallet.png" alt="המזומן שלי" class="w-full h-auto block" />
 				</div>
 				<span class="text-base text-gray-300 font-bold">היתרה שלי: <span class="text-green-400">{(data.user as {balance?:number})?.balance ?? 0}₪</span></span>
 			</a>
 
-			<div class="min-w-0 flex-1 flex flex-col justify-between">
+			<div class="min-w-0 flex-shrink-0 flex flex-col justify-between">
 				<div class="flex flex-col gap-0.5">
 					<div class="flex items-center gap-2">
 						<h1 class="text-2xl font-black text-white truncate">
