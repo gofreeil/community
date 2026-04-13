@@ -65,6 +65,7 @@ export interface DbUser {
     created_at: string;
     security_question: string;
     security_answer: string;
+    status: string;
 }
 
 export interface UpsertUserData {
@@ -90,6 +91,7 @@ export interface UpdateProfileData {
     birth_date?: string;
     security_question?: string;
     security_answer?: string;
+    status?: string;
 }
 
 // ============================================================
@@ -145,6 +147,7 @@ interface StrapiUpUser {
     app_role: string | null;
     security_question: string | null;
     security_answer: string | null;
+    status: string | null;
     createdAt: string;
 }
 
@@ -197,6 +200,7 @@ function mapUpUser(u: StrapiUpUser): DbUser {
         created_at:        u.createdAt         ?? '',
         security_question: u.security_question ?? '',
         security_answer:   u.security_answer   ?? '',
+        status:            u.status            ?? 'active',
     };
 }
 
@@ -510,6 +514,7 @@ export async function updateUserProfile(id: string, data: UpdateProfileData, _jw
     if (data.birth_date        !== undefined) updates.birth_date        = data.birth_date;
     if (data.security_question !== undefined) updates.security_question = data.security_question;
     if (data.security_answer   !== undefined) updates.security_answer   = data.security_answer;
+    if (data.status            !== undefined) updates.status            = data.status;
 
     if (Object.keys(updates).length === 0) return mapUpUser(user);
 

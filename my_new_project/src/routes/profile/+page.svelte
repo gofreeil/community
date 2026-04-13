@@ -83,6 +83,23 @@
 	let notifications       = $state(_ud?.notifications !== 0);
 	let security_question   = $state(_ud?.security_question ?? '');
 	let security_answer     = $state(_ud?.security_answer   ?? '');
+	let status              = $state((_ud as any)?.status   ?? 'active');
+
+	// סטטוסים לפי מגדר
+	const statusOptions = $derived(() => {
+		const isFemale = gender === 'female';
+		return [
+			{ value: 'active',    emoji: '🟢', label: isFemale ? 'פעילה'               : 'פעיל' },
+			{ value: 'pregnant',  emoji: '🤰', label: 'לפני לידה',  femaleOnly: true },
+			{ value: 'postbirth', emoji: '👶', label: 'אחרי לידה',  femaleOnly: true },
+			{ value: 'vacation',  emoji: '🏖️', label: isFemale ? 'בחופשה'              : 'בחופשה' },
+			{ value: 'sick',      emoji: '🤒', label: isFemale ? 'חולה'                : 'חולה' },
+			{ value: 'abroad',    emoji: '✈️', label: isFemale ? 'בחו״ל'               : 'בחו״ל' },
+			{ value: 'moving',    emoji: '📦', label: isFemale ? 'עוברת דירה'          : 'עובר דירה' },
+			{ value: 'studying',  emoji: '🎓', label: isFemale ? 'בלימודים אינטנסיביים' : 'בלימודים אינטנסיביים' },
+			{ value: 'timeout',   emoji: '🙏', label: isFemale ? 'פסק זמן אישי'        : 'פסק זמן אישי' },
+		].filter(o => !('femaleOnly' in o) || isFemale);
+	});
 	let termsAccepted  = $state(
 		typeof localStorage !== 'undefined'
 			? localStorage.getItem('terms_accepted') === '1'
@@ -588,13 +605,21 @@
 					{#if data.user?.email}
 						<p class="text-gray-400 text-sm">{data.user.email}</p>
 					{/if}
-					<p class="text-purple-400 text-sm mb-16">
+					<p class="text-purple-400 text-sm">
 						{#if data.user?.neighborhood || data.user?.city}
 							📍 {[data.user.neighborhood, data.user.city].filter(Boolean).join(', ')}
 						{:else}
 							📍 שכונה לא ידועה
 						{/if}
 					</p>
+					{#if (data.user as any)?.family_status === 'single_f' || (data.user as any)?.family_status === 'single_m'}
+						{@const currentStatus = statusOptions().find(o => o.value === status)}
+						<span class="inline-flex items-center gap-1.5 mt-1 px-3 py-1 rounded-full text-sm font-bold
+							{status === 'active' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-purple-500/20 text-purple-300 border border-purple-500/30'}">
+							{currentStatus?.emoji ?? '🟢'} {currentStatus?.label ?? 'פעיל/ה'}
+						</span>
+					{/if}
+					<div class="mb-14"></div>
 				</div>
 				<div class="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity"
 					onclick={scrollToLevels}
@@ -955,6 +980,37 @@
 					<p class="text-gray-600 text-xs mt-1 px-1">{tFn("not_shown_public")}</p>
 				</div>
 				</div>
+
+				<!-- סטטוס — מוצג לקהילה, רק לרווקים/רווקות -->
+				{#if family_status === 'single_f' || family_status === 'single_m'}
+				<div class="md:col-span-2">
+					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
+						🟢 סטטוס <span class="text-purple-400 text-xs font-normal normal-case">(גלוי לכל הקהילה)</span>
+					</label>
+					{#if isEditing}
+						<div class="flex flex-wrap gap-2">
+							{#each statusOptions() as opt}
+								<button
+									type="button"
+									onclick={() => status = opt.value}
+									class="px-3 py-2 rounded-xl border text-sm font-bold transition-all cursor-pointer
+										{status === opt.value
+											? 'bg-purple-600/30 border-purple-500 text-white'
+											: 'bg-white/5 border-white/10 text-gray-400 hover:border-purple-500/40 hover:text-white'}"
+								>
+									{opt.emoji} {opt.label}
+								</button>
+							{/each}
+						</div>
+						<input type="hidden" name="status" value={status} />
+					{:else}
+						<p class="text-white font-medium py-3 px-1">
+							{statusOptions().find(o => o.value === status)?.emoji ?? '🟢'}
+							{statusOptions().find(o => o.value === status)?.label ?? 'פעיל/ה'}
+						</p>
+					{/if}
+				</div>
+				{/if}
 
 				<!-- שאלת ביטחון — אופציונלי -->
 				<div class="md:col-span-2">
