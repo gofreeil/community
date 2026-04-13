@@ -619,8 +619,8 @@
 							{currentStatus?.emoji ?? '🟢'} {currentStatus?.label ?? 'פעיל/ה'}
 						</span>
 					{/if}
-					<div class="flex-1"></div>
 				</div>
+				<div class="flex-1"></div>
 				<div class="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity"
 					onclick={scrollToLevels}
 					onkeydown={(e) => { if (e.key === "Enter" || e.key === " ") scrollToLevels(); }}
