@@ -1282,7 +1282,7 @@
 	onclick={() => { if (!showMessages) showMessages = true; }}>
 		<div
 		class="relative flex items-center justify-between cursor-pointer select-none -mx-4 px-4 -mt-4 pt-3 md:-mx-6 md:px-6 md:-mt-6 md:pt-4 min-h-14 {showMessages ? 'pb-4 mb-4' : 'pb-4'}"
-			onclick={() => { showMessages = !showMessages; }}
+			onclick={(e) => { e.stopPropagation(); showMessages = !showMessages; }}
 			role="button" tabindex={0}
 			onmouseenter={() => { secTipShow = true; secTipIsOpen = showMessages; }}
 			onmouseleave={() => (secTipShow = false)}
