@@ -598,8 +598,8 @@
 			<div class="min-w-0 flex-shrink-0 flex flex-col justify-between pl-4 md:pl-8">
 				<div class="flex flex-col gap-0.5">
 					<div class="flex items-center gap-2">
-						<h1 class="text-2xl font-black text-white truncate">
-							{data.user?.nickname || data.user?.name || ''}
+						<h1 class="text-2xl font-black truncate {data.user?.nickname || data.user?.name ? 'text-white' : 'text-gray-500 italic'}">
+							{data.user?.nickname || data.user?.name || 'צופה אנונימי'}
 						</h1>
 					</div>
 					{#if data.user?.email}
