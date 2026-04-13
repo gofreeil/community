@@ -4,7 +4,7 @@
 // פריטים + קופת קהילה + משתמשים → Strapi 5 (async, cloud-persistent)
 // ============================================================
 
-import { strapiGet, strapiPost, strapiPut, StrapiContentTypeError, findStrapiUpUsers, updateStrapiUpUser } from './strapiClient.js';
+import { strapiGet, strapiPost, strapiPut, strapiDelete, StrapiContentTypeError, findStrapiUpUsers, updateStrapiUpUser } from './strapiClient.js';
 
 // ============================================================
 // ---- Types ----
@@ -66,6 +66,7 @@ export interface DbUser {
     security_question: string;
     security_answer: string;
     status: string;
+    coordinator_of: string[];
 }
 
 export interface UpsertUserData {
@@ -92,6 +93,7 @@ export interface UpdateProfileData {
     security_question?: string;
     security_answer?: string;
     status?: string;
+    coordinator_of?: string[];
 }
 
 // ============================================================
@@ -148,6 +150,7 @@ interface StrapiUpUser {
     security_question: string | null;
     security_answer: string | null;
     status: string | null;
+    coordinator_of: string[] | null;
     createdAt: string;
 }
 
@@ -201,6 +204,7 @@ function mapUpUser(u: StrapiUpUser): DbUser {
         security_question: u.security_question ?? '',
         security_answer:   u.security_answer   ?? '',
         status:            u.status            ?? 'active',
+        coordinator_of: Array.isArray(u.coordinator_of) ? u.coordinator_of : [],
     };
 }
 
@@ -317,6 +321,110 @@ export async function getResolvedCount(category: string): Promise<number> {
         'pagination[withCount]':   'true',
     });
     return (res as unknown as { meta?: { pagination?: { total?: number } } }).meta?.pagination?.total ?? 0;
+}
+
+// ============================================================
+// ---- Events ----
+// ============================================================
+
+export interface DbEvent {
+    id: string;
+    title: string;
+    date: string;
+    time: string;
+    location: string;
+    icon: string;
+    color: string;
+    neighborhood: string;
+    city: string;
+    created_by_id: string;
+    description: string;
+    created_at: string;
+}
+
+export interface CreateEventData {
+    title: string;
+    date: string;
+    time?: string;
+    location?: string;
+    icon?: string;
+    color?: string;
+    neighborhood: string;
+    city?: string;
+    created_by_id: string;
+    description?: string;
+}
+
+interface StrapiEvent {
+    id: number;
+    documentId: string;
+    title: string;
+    date: string;
+    time: string | null;
+    location: string | null;
+    icon: string | null;
+    color: string | null;
+    neighborhood: string | null;
+    city: string | null;
+    created_by_id: string | null;
+    description: string | null;
+    createdAt: string;
+}
+
+function mapStrapiEvent(e: StrapiEvent): DbEvent {
+    return {
+        id:            e.documentId,
+        title:         e.title        ?? '',
+        date:          e.date         ?? '',
+        time:          e.time         ?? '',
+        location:      e.location     ?? '',
+        icon:          e.icon         ?? '📅',
+        color:         e.color        ?? 'blue',
+        neighborhood:  e.neighborhood ?? '',
+        city:          e.city         ?? '',
+        created_by_id: e.created_by_id ?? '',
+        description:   e.description  ?? '',
+        created_at:    e.createdAt    ?? '',
+    };
+}
+
+export async function getEvents(neighborhood?: string): Promise<DbEvent[]> {
+    try {
+        const params: Record<string,string> = {
+            'sort': 'date:asc',
+            'pagination[limit]': '500',
+        };
+        if (neighborhood) {
+            params['filters[neighborhood][$eq]'] = neighborhood;
+        }
+        const res = await strapiGet<{ data: StrapiEvent[] }>('/api/events', params);
+        return (res.data ?? []).map(mapStrapiEvent);
+    } catch (e) {
+        if (e instanceof StrapiContentTypeError) return [];
+        throw e;
+    }
+}
+
+export async function createEvent(data: CreateEventData): Promise<DbEvent> {
+    const res = await strapiPost<{ data: StrapiEvent }>('/api/events', {
+        data: {
+            title:         data.title,
+            date:          data.date,
+            time:          data.time         ?? '',
+            location:      data.location     ?? '',
+            icon:          data.icon         ?? '📅',
+            color:         data.color        ?? 'blue',
+            neighborhood:  data.neighborhood,
+            city:          data.city         ?? '',
+            created_by_id: data.created_by_id,
+            description:   data.description  ?? '',
+        },
+    });
+    return mapStrapiEvent(res.data);
+}
+
+export async function deleteEvent(documentId: string): Promise<void> {
+    await strapiDelete(`/api/events/${documentId}`);
 }
 
 // ============================================================
@@ -515,6 +623,7 @@ export async function updateUserProfile(id: string, data: UpdateProfileData, _jw
     if (data.security_question !== undefined) updates.security_question = data.security_question;
     if (data.security_answer   !== undefined) updates.security_answer   = data.security_answer;
     if (data.status            !== undefined) updates.status            = data.status;
+    if (data.coordinator_of    !== undefined) updates.coordinator_of    = data.coordinator_of;
 
     if (Object.keys(updates).length === 0) return mapUpUser(user);
 

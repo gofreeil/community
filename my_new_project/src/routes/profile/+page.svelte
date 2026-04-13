@@ -718,6 +718,8 @@
 					<span class="text-white/50 text-base font-bold">דרגה:</span>
 					{#if isUserAdmin}
 						<span class="text-red-400 text-base font-black">{(data.user as any)?.role === 'super_admin' ? 'מנהל ראשי 👑' : 'אדמין שכונתי 🛡️'}</span>
+					{:else if (data.user as any)?.coordinator_of?.length > 0}
+						<span class="text-amber-400 text-base font-black">רכז שכונה 🏘️</span>
 					{:else if userLevel >= 2}
 						<span class="text-emerald-400 text-base font-black">משתמש</span>
 					{:else}

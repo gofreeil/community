@@ -105,6 +105,17 @@ export async function strapiPost<T = unknown>(path: string, body: unknown, jwt?:
     return res.json() as Promise<T>;
 }
 
+export async function strapiDelete(path: string, jwt?: string): Promise<void> {
+    const res = await fetch(STRAPI_URL + path, {
+        method:  'DELETE',
+        headers: getHeaders(jwt),
+    });
+    if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`[Strapi] DELETE ${path} → ${res.status}: ${text}`);
+    }
+}
+
 export async function strapiPut<T = unknown>(path: string, body: unknown, jwt?: string): Promise<T> {
     const res = await fetch(STRAPI_URL + path, {
         method:  'PUT',
