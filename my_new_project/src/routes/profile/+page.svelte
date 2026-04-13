@@ -543,7 +543,7 @@
 		<div class="flex flex-wrap md:flex-nowrap items-stretch gap-4 md:gap-6 w-full">
 
 			<!-- אווטר + מעגל מילוי -->
-			<div class="flex-shrink-0 flex flex-col items-center justify-between min-h-[120px]">
+			<div class="flex-shrink-0 flex flex-col items-center justify-between min-h-[120px] mr-2">
 				<div class="relative cursor-pointer"
 					onmouseenter={() => (showRingTooltip = true)}
 					onmouseleave={() => (showRingTooltip = false)}
@@ -706,7 +706,7 @@
 
 		<div
 			class="relative flex items-center justify-between cursor-pointer select-none -mx-4 px-4 -mt-4 pt-3 md:-mx-6 md:px-6 md:-mt-6 md:pt-4 {isEditing ? 'pb-4 mb-4' : 'pb-4'}"
-			onclick={() => { if (isEditing) { isEditing = false; saveSuccess = false; scrollToTop(); } else { isEditing = true; } }}
+			onclick={() => { if (isEditing) { isEditing = false; saveSuccess = false; } else { isEditing = true; } }}
 			onmouseenter={() => { secTipShow = true; secTipIsOpen = isEditing; }}
 			onmouseleave={() => (secTipShow = false)}
 			onmousemove={(e) => handleSecMouseMove(e, isEditing)}
@@ -1163,7 +1163,7 @@
 			class="relative flex items-center justify-between cursor-pointer select-none transition-all
 			       -mx-4 px-4 -mt-4 pt-3 md:-mx-6 md:px-6 md:-mt-6 md:pt-4 pb-4 min-h-14
 			       {showLevels ? 'mb-5' : ''}"
-			onclick={() => { if (showLevels) { showLevels = false; scrollToTop(); } else { showLevels = true; } }}
+			onclick={() => { showLevels = !showLevels; }}
 			onmouseenter={() => { secTipShow = true; secTipIsOpen = showLevels; }}
 			onmouseleave={() => (secTipShow = false)}
 			onmousemove={(e) => handleSecMouseMove(e, showLevels)}
@@ -1422,12 +1422,12 @@
 	            hover:before:from-white/18">
 		<div
 			class="relative flex items-center justify-between cursor-pointer select-none -mx-4 px-4 -mt-4 pt-3 md:-mx-6 md:px-6 md:-mt-6 md:pt-4 min-h-14 {showMyInfo ? 'pb-4 mb-4' : 'pb-4'}"
-			onclick={() => { if (showMyInfo) { showMyInfo = false; scrollToTop(); } else { showMyInfo = true; } }}
+			onclick={() => { showMyInfo = !showMyInfo; }}
 			onmouseenter={() => { secTipShow = true; secTipIsOpen = showMyInfo; }}
 			onmouseleave={() => (secTipShow = false)}
 			onmousemove={(e) => handleSecMouseMove(e, showMyInfo)}
 			role="button" tabindex={0}
-			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { if (showMyInfo) scrollToTop(); else showMyInfo = true; } }}
+			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') showMyInfo = !showMyInfo; }}
 		>
 			<h2 class="text-xl font-black text-white flex items-center gap-2">
 				<span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0" style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">6</span>
