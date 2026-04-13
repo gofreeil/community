@@ -622,7 +622,7 @@
 						{/if}
 					</p>
 				</div>
-				<div class="flex-1"></div>
+				<div class="flex-1 min-h-[20px]"></div>
 				<div class="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity"
 					onclick={scrollToLevels}
 					onkeydown={(e) => { if (e.key === "Enter" || e.key === " ") scrollToLevels(); }}
@@ -647,7 +647,7 @@
 			</div>
 
 		</div>
-		<div class="mt-6"></div>
+		<div class="mt-2"></div>
 
 		<!-- הארנק בנייד — מוצג מתחת השורה הראשונה -->
 		<a href="/receipts" class="flex md:hidden items-center justify-between mt-3 cursor-pointer group select-none no-underline px-1">
