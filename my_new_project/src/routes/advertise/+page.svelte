@@ -416,8 +416,8 @@
                 <!-- Row: name + toggle -->
                 <div class="flex items-center justify-between gap-3 mb-2">
                     <div class="flex items-center gap-2 min-w-0">
-                        <span class="text-xs font-black text-gray-500 flex-shrink-0">#{row.num}</span>
-                        <span class="font-black text-white text-sm truncate">{row.type}</span>
+                        <span class="text-xs font-black text-gray-400 flex-shrink-0">#{row.num}</span>
+                        <span class="font-black text-white text-base truncate">{row.type}</span>
                     </div>
                     <!-- Toggle -->
                     <div
@@ -446,17 +446,17 @@
                 <!-- Prices row -->
                 <div class="flex gap-4 text-sm">
                     <div>
-                        <span class="text-gray-500 text-xs">חצי שנה — </span>
+                        <span class="text-gray-400 text-xs">חצי שנה — </span>
                         <span class="font-black text-amber-400">₪{row.half}</span>
-                        <span class="text-gray-600 text-xs">/חודש</span>
+                        <span class="text-gray-400 text-xs">/חודש</span>
                     </div>
                     <div>
-                        <span class="text-gray-500 text-xs">חודש בודד — </span>
-                        <span class="font-bold text-gray-300">₪{row.single}</span>
+                        <span class="text-gray-400 text-xs">חודש בודד — </span>
+                        <span class="font-bold text-gray-200">₪{row.single}</span>
                     </div>
                 </div>
                 <!-- Details -->
-                <p class="text-[11px] text-gray-500 mt-1">{row.reach} · {row.details}</p>
+                <p class="text-xs text-gray-400 mt-1">{row.reach} · {row.details}</p>
             </div>
         {/each}
     </div>
