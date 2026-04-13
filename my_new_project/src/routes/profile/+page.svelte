@@ -507,7 +507,7 @@
 				{tFn("logout_btn")}
 			</button>
 		</div>
-		<div class="flex items-start justify-between gap-2 md:gap-5">
+		<div class="flex flex-wrap items-start justify-between gap-2 md:gap-5">
 
 			<!-- אווטר + מעגל מילוי -->
 			<div class="flex-shrink-0 flex flex-col items-center justify-between min-h-[120px]">
