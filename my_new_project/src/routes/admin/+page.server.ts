@@ -1,7 +1,7 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { requireSuperAdmin, requireAdmin } from '$lib/server/auth';
-import { getAllUsers, banUser, unbanUser, setUserRole, getAllItems, adminDeleteItem } from '$lib/server/db';
+import { getAllUsers, banUser, unbanUser, setUserRole, setCoordinatorOf, getAllItems, adminDeleteItem } from '$lib/server/db';
 
 export const load: PageServerLoad = async (event) => {
     const session = await event.locals.auth();
@@ -80,6 +80,30 @@ export const actions: Actions = {
             return { success: true, message: `תפקיד עודכן ל-${role}` };
         } catch (e) {
             return fail(500, { error: `שגיאה בעדכון תפקיד: ${e instanceof Error ? e.message : e}` });
+        }
+    },
+
+    setCoordinator: async (event) => {
+        const session = await event.locals.auth();
+        requireSuperAdmin(session);
+
+        const formData = await event.request.formData();
+        const userId       = formData.get('userId') as string;
+        const neighborhoods = (formData.get('neighborhoods') as string ?? '')
+            .split('\n')
+            .map(s => s.trim())
+            .filter(Boolean);
+
+        if (!userId) return fail(400, { error: 'חסר מזהה משתמש' });
+
+        try {
+            await setCoordinatorOf(userId, neighborhoods);
+            const msg = neighborhoods.length > 0
+                ? `המשתמש מונה לרכז של: ${neighborhoods.join(', ')}`
+                : 'הרכזות הוסרה מהמשתמש';
+            return { success: true, message: msg };
+        } catch (e) {
+            return fail(500, { error: `שגיאה: ${e instanceof Error ? e.message : e}` });
         }
     },
 

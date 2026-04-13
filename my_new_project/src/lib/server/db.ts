@@ -526,6 +526,13 @@ export async function setUserRole(externalId: string, role: string, neighborhood
     });
 }
 
+/** עדכון שכונות שרכז מנהל (סופר-אדמין בלבד) */
+export async function setCoordinatorOf(externalId: string, neighborhoods: string[]): Promise<void> {
+    const user = await findUpUser(externalId);
+    if (!user) throw new Error('משתמש לא נמצא');
+    await updateStrapiUpUser(user.id, { coordinator_of: neighborhoods });
+}
+
 /** חסימת משתמש (אדמין בלבד) */
 export async function banUser(externalId: string, _jwt?: string): Promise<void> {
     const user = await findUpUser(externalId);
