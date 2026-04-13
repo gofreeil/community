@@ -101,15 +101,14 @@
 	const statusOptions = $derived(() => {
 		const isFemale = gender === 'female';
 		return [
-			{ value: 'active',    emoji: '🟢', label: isFemale ? 'פעילה'               : 'פעיל' },
-			{ value: 'pregnant',  emoji: '🤰', label: 'לפני לידה',  femaleOnly: true },
-			{ value: 'postbirth', emoji: '👶', label: 'אחרי לידה',  femaleOnly: true },
-			{ value: 'vacation',  emoji: '🏖️', label: isFemale ? 'בחופשה'              : 'בחופשה' },
-			{ value: 'sick',      emoji: '🤒', label: isFemale ? 'חולה'                : 'חולה' },
-			{ value: 'moving',    emoji: '📦', label: isFemale ? 'עוברת דירה'          : 'עובר דירה' },
-			{ value: 'studying',  emoji: '🎓', label: isFemale ? 'בלימודים אינטנסיביים' : 'בלימודים אינטנסיביים' },
-			{ value: 'timeout',     emoji: '🙏', label: isFemale ? 'פסק זמן אישי'        : 'פסק זמן אישי' },
-			{ value: 'unavailable', emoji: '🔴', label: isFemale ? 'לא זמינה'             : 'לא זמין' },
+			{ value: 'active',      emoji: '🟢', label: isFemale ? 'פעילה'        : 'פעיל' },
+			{ value: 'unavailable', emoji: '🔴', label: isFemale ? 'לא זמינה'     : 'לא זמין' },
+			{ value: 'pregnant',    emoji: '🤰', label: 'לפני לידה',  femaleOnly: true },
+			{ value: 'postbirth',   emoji: '👶', label: 'אחרי לידה',  femaleOnly: true },
+			{ value: 'vacation',    emoji: '🏖️', label: 'בחופשה' },
+			{ value: 'sick',        emoji: '🤒', label: 'חולה' },
+			{ value: 'miluim',      emoji: '🪖', label: 'במילואים' },
+			{ value: 'timeout',     emoji: '🙏', label: 'פסק זמן אישי' },
 		].filter(o => !('femaleOnly' in o) || isFemale);
 	});
 	let termsAccepted  = $state(
