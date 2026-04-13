@@ -268,14 +268,23 @@
 		let current = 0;
 		const increment = target / steps;
 
-		// אפקט קולי — מבוטל זמנית
-
 		const timer = setInterval(() => {
 			current = Math.min(current + increment, target);
 			animatedCompletion = Math.round(current);
-			if (current >= target) clearInterval(timer);
+			if (current >= target) {
+				clearInterval(timer);
+				// ודא שהערך הסופי תמיד מדויק
+				animatedCompletion = target;
+			}
 		}, stepTime);
 	}
+
+	// אם profileCompletion משתנה אחרי האנימציה (נטען מהשרת), עדכן ישירות
+	$effect(() => {
+		if (ringAnimated) {
+			animatedCompletion = profileCompletion;
+		}
+	});
 
 	function ringObserver(node: SVGElement) {
 		const observer = new IntersectionObserver(
