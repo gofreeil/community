@@ -17,14 +17,8 @@ export const load: PageServerLoad = async (event) => {
         console.warn('[receipts] getUserById failed:', e);
     }
 
-    // לדוגמה: תקבולים דמה — בהמשך יבואו מ-Strapi
-    const receipts = [
-        { id: 1, date: '2025-03-10', description: 'תרומה לקהילה',   amount: -50,  type: 'out' },
-        { id: 2, date: '2025-03-08', description: 'פרסום מודעה',     amount: -30,  type: 'out' },
-        { id: 3, date: '2025-03-05', description: 'קרדיט הצטרפות',  amount: +100, type: 'in'  },
-        { id: 4, date: '2025-02-20', description: 'פרסום מודעה',     amount: -30,  type: 'out' },
-        { id: 5, date: '2025-02-15', description: 'בונוס פעילות',    amount: +25,  type: 'in'  },
-    ];
+    // תקבולים — בהמשך יבואו מ-Strapi
+    const receipts: { id: number; date: string; description: string; amount: number; type: string }[] = [];
 
     return {
         user,
