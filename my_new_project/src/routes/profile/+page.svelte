@@ -109,7 +109,8 @@
 			{ value: 'abroad',    emoji: '✈️', label: isFemale ? 'בחו״ל'               : 'בחו״ל' },
 			{ value: 'moving',    emoji: '📦', label: isFemale ? 'עוברת דירה'          : 'עובר דירה' },
 			{ value: 'studying',  emoji: '🎓', label: isFemale ? 'בלימודים אינטנסיביים' : 'בלימודים אינטנסיביים' },
-			{ value: 'timeout',   emoji: '🙏', label: isFemale ? 'פסק זמן אישי'        : 'פסק זמן אישי' },
+			{ value: 'timeout',     emoji: '🙏', label: isFemale ? 'פסק זמן אישי'        : 'פסק זמן אישי' },
+			{ value: 'unavailable', emoji: '🔴', label: isFemale ? 'לא זמינה'             : 'לא זמין' },
 		].filter(o => !('femaleOnly' in o) || isFemale);
 	});
 	let termsAccepted  = $state(
