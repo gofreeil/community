@@ -28,6 +28,28 @@
 	let showMessages  = $state(false);
 	let showMyInfo    = $state(true);
 	let showFeedback  = $state(false);
+
+	// ניהול המלצות — מחיקה / דחייה לאוחר
+	function loadRecSet(key: string): Set<string> {
+		if (typeof localStorage === 'undefined') return new Set();
+		try { return new Set(JSON.parse(localStorage.getItem(key) ?? '[]')); } catch { return new Set(); }
+	}
+	function saveRecSet(key: string, s: Set<string>) {
+		if (typeof localStorage !== 'undefined') localStorage.setItem(key, JSON.stringify([...s]));
+	}
+	let dismissedRecs = $state<Set<string>>(loadRecSet('rec_dismissed'));
+	let snoozedRecs   = $state<Set<string>>(loadRecSet('rec_snoozed'));
+	function dismissRec(id: string) {
+		dismissedRecs = new Set([...dismissedRecs, id]);
+		saveRecSet('rec_dismissed', dismissedRecs);
+	}
+	function snoozeRec(id: string) {
+		snoozedRecs = new Set([...snoozedRecs, id]);
+		saveRecSet('rec_snoozed', snoozedRecs);
+	}
+	function isRecVisible(id: string) {
+		return !dismissedRecs.has(id) && !snoozedRecs.has(id);
+	}
 	let messages = $state(
 		(data.messages ?? []).length > 0
 			? (data.messages ?? []).map((m: import('$lib/server/db').DbItem) => ({
@@ -1357,50 +1379,55 @@
 
 			<!-- המלצות מותאמות אישית -->
 			{#if business || family_status === 'single_m' || family_status === 'single_f' || whatsappMatches.length > 0}
+			{@const allRecs = [
+				...(business ? [{ id: 'biz', emoji: '🏪', title: 'מועדון בעלי העסקים הכשרים', sub: 'הצטרף לרשת בעלי העסקים הכשרים בישראל', href: 'https://index-chi-sage.vercel.app/', external: true, color: 'amber' }] : []),
+				...(family_status === 'single_m' || family_status === 'single_f' ? [{ id: 'singles', emoji: '💑', title: 'רשימת הפנויים והפנויות הארצית', sub: 'הצטרף לרשימה ומצא את השידוך המתאים', href: '/national/singles', external: false, color: 'pink' }] : []),
+				...whatsappMatches.map(g => ({ id: 'wa_' + g.label, emoji: '💬', title: g.label, sub: 'הצטרף לקבוצת הווטסאפ של השכונה שלך', href: g.url, external: true, color: 'green' }))
+			]}
+			{@const visibleRecs = allRecs.filter(r => isRecVisible(r.id))}
+			{#if visibleRecs.length > 0}
 			<div class="mt-2 flex flex-col gap-3">
 				<p class="text-xs text-gray-400 uppercase tracking-widest font-bold">המלצות עבורך</p>
-
-				{#if business}
-				<a href="https://index-chi-sage.vercel.app/" target="_blank" rel="noopener noreferrer"
-					aria-label="מועדון בעלי העסקים הכשרים – הצטרף לרשת בעלי העסקים (נפתח בחלון חדש)"
-					class="flex items-center gap-4 bg-amber-500/10 border border-amber-500/30
-					       hover:bg-amber-500/20 hover:border-amber-400/50 transition-all
-					       rounded-2xl px-5 py-4 group">
-					<span class="text-3xl flex-shrink-0">🏪</span>
-					<div class="flex-1 text-right">
-						<p class="text-white font-bold text-sm">מועדון בעלי העסקים הכשרים</p>
-						<p class="text-amber-300/80 text-xs mt-0.5">הצטרף לרשת בעלי העסקים הכשרים בישראל ←</p>
+				{#each visibleRecs as rec}
+				<div class="rounded-2xl border px-4 pt-4 pb-3
+					{rec.color === 'amber' ? 'bg-amber-500/10 border-amber-500/30' :
+					 rec.color === 'pink'  ? 'bg-pink-500/10  border-pink-500/30'  :
+					                        'bg-green-500/10 border-green-500/30'}">
+					<!-- תוכן -->
+					<div class="flex items-center gap-3 mb-3">
+						<span class="text-3xl flex-shrink-0">{rec.emoji}</span>
+						<div class="flex-1 text-right">
+							<p class="text-white font-bold text-sm">{rec.title}</p>
+							<p class="text-xs mt-0.5
+								{rec.color === 'amber' ? 'text-amber-300/80' :
+								 rec.color === 'pink'  ? 'text-pink-300/80'  :
+								                        'text-green-300/80'}">{rec.sub} ←</p>
+						</div>
 					</div>
-				</a>
-				{/if}
-
-				{#if family_status === 'single_m' || family_status === 'single_f'}
-				<a href="/national/singles"
-					class="flex items-center gap-4 bg-pink-500/10 border border-pink-500/30
-					       hover:bg-pink-500/20 hover:border-pink-400/50 transition-all
-					       rounded-2xl px-5 py-4 group">
-					<span class="text-3xl flex-shrink-0">💑</span>
-					<div class="flex-1 text-right">
-						<p class="text-white font-bold text-sm">רשימת הפנויים והפנויות הארצית</p>
-						<p class="text-pink-300/80 text-xs mt-0.5">הצטרף לרשימה ומצא את השידוך המתאים ←</p>
+					<!-- כפתורי פעולה -->
+					<div class="flex items-center gap-2 justify-end border-t border-white/8 pt-2.5">
+						<button type="button"
+							onclick={() => dismissRec(rec.id)}
+							class="text-[11px] text-gray-500 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10">
+							🗑 מחק
+						</button>
+						<button type="button"
+							onclick={() => snoozeRec(rec.id)}
+							class="text-[11px] text-gray-500 hover:text-yellow-300 transition-colors px-2 py-1 rounded-lg hover:bg-yellow-500/10">
+							🔔 הזכר לי מאוחר יותר
+						</button>
+						<a href={rec.href} target={rec.external ? '_blank' : '_self'} rel={rec.external ? 'noopener noreferrer' : ''}
+							class="text-[11px] font-bold text-white px-3 py-1 rounded-lg
+							{rec.color === 'amber' ? 'bg-amber-500/25 hover:bg-amber-500/40' :
+							 rec.color === 'pink'  ? 'bg-pink-500/25  hover:bg-pink-500/40'  :
+							                        'bg-green-500/25 hover:bg-green-500/40'} transition-colors">
+							עבור אל ←
+						</a>
 					</div>
-				</a>
-				{/if}
-
-				{#each whatsappMatches as group}
-				<a href={group.url} target="_blank" rel="noopener noreferrer"
-					aria-label="{group.label} – הצטרף לקבוצת הווטסאפ (נפתח בחלון חדש)"
-					class="flex items-center gap-4 bg-green-500/10 border border-green-500/30
-					       hover:bg-green-500/20 hover:border-green-400/50 transition-all
-					       rounded-2xl px-5 py-4 group">
-					<span class="text-3xl flex-shrink-0">💬</span>
-					<div class="flex-1 text-right">
-						<p class="text-white font-bold text-sm">{group.label}</p>
-						<p class="text-green-300/80 text-xs mt-0.5">הצטרף לקבוצת הווטסאפ של השכונה שלך ←</p>
-					</div>
-				</a>
+				</div>
 				{/each}
 			</div>
+			{/if}
 			{/if}
 		</div>
 		{/if}
