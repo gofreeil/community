@@ -23,7 +23,7 @@
 	const DRAFT_KEY = 'profile_draft';
 
 	const _photoDone = page.url.searchParams.get('photo_done') === '1';
-	let isEditing   = $state(!_ud?.name || (_ud?.name?.length ?? 0) < 2 || _photoDone);
+	let isEditing   = $state(_photoDone);
 	let showLevels    = $state(false);
 	let showMessages  = $state(false);
 	let showMyInfo    = $state(true);
