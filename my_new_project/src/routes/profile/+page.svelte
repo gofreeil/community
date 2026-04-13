@@ -28,6 +28,7 @@
 	let showMessages  = $state(false);
 	let showMyInfo    = $state(true);
 	let showFeedback  = $state(false);
+	let mobileTab     = $state<'main'|'profile'|'messages'|'items'|'levels'>('main');
 
 	// ניהול המלצות — מחיקה / דחייה לאוחר
 	function loadRecSet(key: string): Set<string> {
@@ -546,8 +547,29 @@
 		</div>
 	{/if}
 
+	<!-- ===== לשוניות ניווט — נייד בלבד ===== -->
+	<div class="md:hidden flex gap-1 overflow-x-auto pb-1 mb-3 scrollbar-none">
+		{#each [
+			{ id: 'main',     icon: '🏠', label: 'ראשי'    },
+			{ id: 'profile',  icon: '✏️', label: 'פרופיל'  },
+			{ id: 'messages', icon: '💬', label: 'הודעות'  },
+			{ id: 'items',    icon: '📦', label: 'נכסים'   },
+			{ id: 'levels',   icon: '🏆', label: 'דרגות'   },
+		] as tab}
+			<button type="button"
+				onclick={() => mobileTab = tab.id as typeof mobileTab}
+				class="flex-shrink-0 flex flex-col items-center gap-0.5 px-3 py-2 rounded-2xl text-[11px] font-bold transition-all
+					{mobileTab === tab.id
+						? 'bg-purple-600/30 border border-purple-500/50 text-white'
+						: 'bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10'}">
+				<span class="text-base leading-none">{tab.icon}</span>
+				<span>{tab.label}</span>
+			</button>
+		{/each}
+	</div>
+
 	<!-- ===== קומה 1: האזור האישי ===== -->
-	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-4 md:p-6 shadow-xl mb-2">
+	<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-4 md:p-6 shadow-xl mb-2 {mobileTab !== 'main' ? 'hidden md:block' : ''}">
 		<!-- כותרת + כפתור התנתקות -->
 		<div class="flex items-center justify-between mb-5">
 			<div class="flex items-center gap-2">
@@ -657,8 +679,8 @@
 			</div>
 
 
-			<!-- הארנק שלי — נסתר בנייד, מוצג בדסקטופ -->
-			<a href="/receipts" class="hidden md:flex flex-1 flex-col items-center justify-between cursor-pointer group select-none no-underline">
+			<!-- הארנק שלי — גם בנייד בלשונית ראשי -->
+			<a href="/receipts" class="{mobileTab === 'main' ? 'flex' : 'hidden md:flex'} flex-1 flex-col items-center justify-between cursor-pointer group select-none no-underline">
 				<div class="w-52 group-hover:scale-105 transition-transform duration-200 -mt-8" style="-webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 80%); mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 80%);">
 					<img src="/images/wallet.png" alt="המזומן שלי" class="w-full h-auto block" />
 				</div>
@@ -710,13 +732,6 @@
 		</div>
 		<div class="mt-2"></div>
 
-		<!-- הארנק בנייד — מוצג מתחת השורה הראשונה -->
-		<a href="/receipts" class="flex md:hidden items-center justify-between mt-3 cursor-pointer group select-none no-underline px-1">
-			<span class="text-sm text-gray-300 font-bold">היתרה שלי: <span class="text-green-400">{(data.user as {balance?:number})?.balance ?? 0}₪</span></span>
-			<div class="w-24 group-hover:scale-105 transition-transform duration-200" style="-webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 80%); mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 80%);">
-				<img src="/images/wallet.png" alt="המזומן שלי" class="w-full h-auto block" />
-			</div>
-		</a>
 	</div>
 
 	<!-- ===== קומה 2: פרטי פרופיל ===== -->
@@ -724,7 +739,7 @@
 	            before:absolute before:inset-x-0 before:top-0 before:h-24 before:rounded-t-3xl
 	            before:bg-gradient-to-b before:from-white/8 before:to-transparent
 	            before:transition-all before:duration-300 before:pointer-events-none
-	            hover:before:from-white/18">
+	            hover:before:from-white/18 {mobileTab !== 'profile' ? 'hidden md:block' : ''}">
 
 		<div
 			class="relative flex items-center justify-between cursor-pointer select-none -mx-4 px-4 -mt-4 pt-3 md:-mx-6 md:px-6 md:-mt-6 md:pt-4 {isEditing ? 'pb-4 mb-4' : 'pb-4'}"
@@ -1178,7 +1193,7 @@
 	            before:absolute before:inset-x-0 before:top-0 before:h-24 before:rounded-t-3xl
 	            before:bg-gradient-to-b before:from-white/8 before:to-transparent
 	            before:transition-all before:duration-300 before:pointer-events-none
-	            hover:before:from-white/18 group/sec3">
+	            hover:before:from-white/18 group/sec3 {mobileTab !== 'levels' ? 'hidden md:block' : ''}">
 		<div
 			class="relative flex items-center justify-between cursor-pointer select-none transition-all
 			       -mx-4 px-4 -mt-4 pt-3 md:-mx-6 md:px-6 md:-mt-6 md:pt-4 pb-4 min-h-14
@@ -1341,7 +1356,7 @@
 	            before:absolute before:inset-x-0 before:top-0 before:h-24 before:rounded-t-3xl
 	            before:bg-gradient-to-b before:from-white/8 before:to-transparent
 	            before:transition-all before:duration-300 before:pointer-events-none
-	            hover:before:from-white/18 {!showMessages ? 'cursor-pointer' : ''}"
+	            hover:before:from-white/18 {!showMessages ? 'cursor-pointer' : ''} {mobileTab !== 'messages' ? 'hidden md:block' : ''}"
 	onclick={() => { if (!showMessages) showMessages = true; }}>
 		<div
 		class="relative flex items-center justify-between cursor-pointer select-none -mx-4 px-4 -mt-4 pt-3 md:-mx-6 md:px-6 md:-mt-6 md:pt-4 min-h-14 {showMessages ? 'pb-4 mb-4' : 'pb-4'}"
@@ -1437,7 +1452,7 @@
 	            before:absolute before:inset-x-0 before:top-0 before:h-24 before:rounded-t-3xl
 	            before:bg-gradient-to-b before:from-white/8 before:to-transparent
 	            before:transition-all before:duration-300 before:pointer-events-none
-	            hover:before:from-white/18">
+	            hover:before:from-white/18 {mobileTab !== 'messages' ? 'hidden md:block' : ''}">
 		<div
 			class="relative flex items-center justify-between cursor-pointer select-none -mx-4 px-4 -mt-4 pt-3 md:-mx-6 md:px-6 md:-mt-6 md:pt-4 min-h-14 {showFeedback ? 'pb-4 mb-4' : 'pb-4'}"
 			onclick={() => { showFeedback = !showFeedback; }}
@@ -1492,7 +1507,7 @@
 	            before:absolute before:inset-x-0 before:top-0 before:h-24 before:rounded-t-3xl
 	            before:bg-gradient-to-b before:from-white/8 before:to-transparent
 	            before:transition-all before:duration-300 before:pointer-events-none
-	            hover:before:from-white/18">
+	            hover:before:from-white/18 {mobileTab !== 'items' ? 'hidden md:block' : ''}">
 		<div
 			class="relative flex items-center justify-between cursor-pointer select-none -mx-4 px-4 -mt-4 pt-3 md:-mx-6 md:px-6 md:-mt-6 md:pt-4 min-h-14 {showMyInfo ? 'pb-4 mb-4' : 'pb-4'}"
 			onclick={() => { showMyInfo = !showMyInfo; }}
