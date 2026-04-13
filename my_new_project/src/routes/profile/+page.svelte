@@ -453,7 +453,7 @@
 	<title>{tFn("profile_title")}</title>
 </svelte:head>
 
-<div class="w-full px-4 py-8 overflow-x-hidden" dir="rtl">
+<div class="max-w-3xl mx-auto px-4 py-8 overflow-x-hidden" dir="rtl">
 
 	<!-- כפתור התחברות/הרשמה לאורחים בלבד -->
 	{#if !data.user}
