@@ -327,6 +327,8 @@ export async function getResolvedCount(category: string): Promise<number> {
 // ---- Events ----
 // ============================================================
 
+export type EventStatus = 'pending' | 'approved' | 'rejected';
+
 export interface DbEvent {
     id: string;
     title: string;
@@ -338,7 +340,11 @@ export interface DbEvent {
     neighborhood: string;
     city: string;
     created_by_id: string;
+    submitted_by_id: string;
     description: string;
+    status: EventStatus;
+    price: number;
+    price_description: string;
     created_at: string;
 }
 
@@ -352,7 +358,11 @@ export interface CreateEventData {
     neighborhood: string;
     city?: string;
     created_by_id: string;
+    submitted_by_id?: string;
     description?: string;
+    status?: EventStatus;
+    price?: number;
+    price_description?: string;
 }
 
 interface StrapiEvent {
@@ -367,37 +377,61 @@ interface StrapiEvent {
     neighborhood: string | null;
     city: string | null;
     created_by_id: string | null;
+    submitted_by_id: string | null;
     description: string | null;
+    status: EventStatus | null;
+    price: number | null;
+    price_description: string | null;
     createdAt: string;
 }
 
 function mapStrapiEvent(e: StrapiEvent): DbEvent {
     return {
-        id:            e.documentId,
-        title:         e.title        ?? '',
-        date:          e.date         ?? '',
-        time:          e.time         ?? '',
-        location:      e.location     ?? '',
-        icon:          e.icon         ?? '📅',
-        color:         e.color        ?? 'blue',
-        neighborhood:  e.neighborhood ?? '',
-        city:          e.city         ?? '',
-        created_by_id: e.created_by_id ?? '',
-        description:   e.description  ?? '',
-        created_at:    e.createdAt    ?? '',
+        id:               e.documentId,
+        title:            e.title            ?? '',
+        date:             e.date             ?? '',
+        time:             e.time             ?? '',
+        location:         e.location         ?? '',
+        icon:             e.icon             ?? '📅',
+        color:            e.color            ?? 'blue',
+        neighborhood:     e.neighborhood     ?? '',
+        city:             e.city             ?? '',
+        created_by_id:    e.created_by_id    ?? '',
+        submitted_by_id:  e.submitted_by_id  ?? '',
+        description:      e.description      ?? '',
+        status:           e.status           ?? 'pending',
+        price:            e.price            ?? 0,
+        price_description: e.price_description ?? '',
+        created_at:       e.createdAt        ?? '',
     };
 }
 
+/** מחזיר אירועים מאושרים לשכונה (ציבורי) */
 export async function getEvents(neighborhood?: string): Promise<DbEvent[]> {
     try {
         const params: Record<string,string> = {
-            'sort': 'date:asc',
-            'pagination[limit]': '500',
+            'filters[status][$eq]': 'approved',
+            'sort':                 'date:asc',
+            'pagination[limit]':    '500',
         };
-        if (neighborhood) {
-            params['filters[neighborhood][$eq]'] = neighborhood;
-        }
+        if (neighborhood) params['filters[neighborhood][$eq]'] = neighborhood;
         const res = await strapiGet<{ data: StrapiEvent[] }>('/api/events', params);
+        return (res.data ?? []).map(mapStrapiEvent);
+    } catch (e) {
+        if (e instanceof StrapiContentTypeError) return [];
+        throw e;
+    }
+}
+
+/** מחזיר אירועים ממתינים לאישור (לרכז בלבד) */
+export async function getPendingEvents(neighborhood: string): Promise<DbEvent[]> {
+    try {
+        const res = await strapiGet<{ data: StrapiEvent[] }>('/api/events', {
+            'filters[neighborhood][$eq]': neighborhood,
+            'filters[status][$eq]':      'pending',
+            'sort':                      'createdAt:desc',
+            'pagination[limit]':         '100',
+        });
         return (res.data ?? []).map(mapStrapiEvent);
     } catch (e) {
         if (e instanceof StrapiContentTypeError) return [];
@@ -408,19 +442,27 @@ export async function getEvents(neighborhood?: string): Promise<DbEvent[]> {
 export async function createEvent(data: CreateEventData): Promise<DbEvent> {
     const res = await strapiPost<{ data: StrapiEvent }>('/api/events', {
         data: {
-            title:         data.title,
-            date:          data.date,
-            time:          data.time         ?? '',
-            location:      data.location     ?? '',
-            icon:          data.icon         ?? '📅',
-            color:         data.color        ?? 'blue',
-            neighborhood:  data.neighborhood,
-            city:          data.city         ?? '',
-            created_by_id: data.created_by_id,
-            description:   data.description  ?? '',
+            title:             data.title,
+            date:              data.date,
+            time:              data.time              ?? '',
+            location:          data.location          ?? '',
+            icon:              data.icon              ?? '📅',
+            color:             data.color             ?? 'blue',
+            neighborhood:      data.neighborhood,
+            city:              data.city              ?? '',
+            created_by_id:     data.created_by_id,
+            submitted_by_id:   data.submitted_by_id  ?? data.created_by_id,
+            description:       data.description       ?? '',
+            status:            data.status            ?? 'pending',
+            price:             data.price             ?? 0,
+            price_description: data.price_description ?? '',
         },
     });
     return mapStrapiEvent(res.data);
+}
+
+export async function updateEventStatus(documentId: string, status: EventStatus): Promise<void> {
+    await strapiPut(`/api/events/${documentId}`, { data: { status } });
 }
 
 export async function deleteEvent(documentId: string): Promise<void> {

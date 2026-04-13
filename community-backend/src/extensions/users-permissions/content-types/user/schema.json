@@ -123,6 +123,10 @@
     "status": {
       "type": "string",
       "default": "active"
+    },
+    "coordinator_of": {
+      "type": "json",
+      "default": []
     }
   }
 }
