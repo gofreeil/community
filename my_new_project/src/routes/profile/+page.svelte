@@ -647,7 +647,7 @@
 			</div>
 
 		</div>
-		<div class="mt-3"></div>
+		<div class="mt-6"></div>
 
 		<!-- הארנק בנייד — מוצג מתחת השורה הראשונה -->
 		<a href="/receipts" class="flex md:hidden items-center justify-between mt-3 cursor-pointer group select-none no-underline px-1">
