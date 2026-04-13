@@ -170,8 +170,9 @@
     ];
 
     // ---- Calculator state: each row can be 'half' | 'single' | unset ----
+    // ברירת מחדל: חצי שנה לכל השורות
     type Plan = 'half' | 'single';
-    let planMap = $state<Map<number, Plan>>(new Map());
+    let planMap = $state<Map<number, Plan>>(new Map(rows.map(r => [r.num, 'half' as Plan])));
 
     function setPlan(num: number, plan: Plan) {
         const next = new Map(planMap);
