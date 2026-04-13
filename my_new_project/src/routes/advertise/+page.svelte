@@ -444,19 +444,19 @@
                     </div>
                 </div>
                 <!-- Prices row -->
-                <div class="flex gap-4 text-sm">
-                    <div>
-                        <span class="text-gray-400 text-xs">חצי שנה — </span>
-                        <span class="font-black text-amber-400">₪{row.half}</span>
-                        <span class="text-gray-400 text-xs">/חודש</span>
+                <div class="flex gap-4 text-sm mt-1">
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-gray-300 text-sm font-semibold">חצי שנה —</span>
+                        <span class="font-black text-amber-400 text-sm">₪{row.half}</span>
+                        <span class="text-gray-300 text-sm font-semibold">/חודש</span>
                     </div>
-                    <div>
-                        <span class="text-gray-400 text-xs">חודש בודד — </span>
-                        <span class="font-bold text-gray-200">₪{row.single}</span>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-gray-300 text-sm font-semibold">חודש בודד —</span>
+                        <span class="font-black text-white text-sm">₪{row.single}</span>
                     </div>
                 </div>
                 <!-- Details -->
-                <p class="text-xs text-gray-400 mt-1">{row.reach} · {row.details}</p>
+                <p class="text-sm text-gray-300 mt-1.5 font-medium">{row.reach} · {row.details}</p>
             </div>
         {/each}
     </div>
