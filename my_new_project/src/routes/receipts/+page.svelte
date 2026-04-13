@@ -9,18 +9,18 @@
 
 <div class="min-h-screen bg-[#080f1e] text-white px-4 py-8 max-w-2xl mx-auto" dir="rtl">
 
-	<!-- כפתור חזרה + כותרת דף -->
-	<div class="flex items-center justify-between mb-6">
-		<a href="/profile" class="inline-flex items-center gap-2 text-gray-400 hover:text-white text-sm font-bold transition-colors group">
-			<svg class="w-4 h-4 rotate-180 group-hover:-translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-				<polyline points="9 18 15 12 9 6"/>
-			</svg>
-			חזרה לפרופיל
-		</a>
-		<div class="text-right">
-			<h1 class="text-xl font-black text-white leading-tight">ארנק חשבונות ותגמולים</h1>
-			<p class="text-purple-400 text-xs mt-0.5">מעקב יתרה, הוצאות ורווחים</p>
-		</div>
+	<!-- כפתור חזרה -->
+	<a href="/profile" class="inline-flex items-center gap-2 text-gray-400 hover:text-white text-sm font-bold mb-6 transition-colors group">
+		<svg class="w-4 h-4 rotate-180 group-hover:-translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+			<polyline points="9 18 15 12 9 6"/>
+		</svg>
+		חזרה לפרופיל
+	</a>
+
+	<!-- כותרת דף -->
+	<div class="text-center mb-8">
+		<h1 class="text-3xl font-black text-white leading-tight">ארנק חשבונות ותגמולים</h1>
+		<p class="text-purple-400 text-sm mt-1">מעקב יתרה, הוצאות ורווחים</p>
 	</div>
 
 	<!-- כרטיס יתרה -->
