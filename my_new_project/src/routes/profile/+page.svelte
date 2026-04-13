@@ -582,10 +582,10 @@
 				</button>
 				</div>
 
-				<!-- תווית סטטוס מתחת לתמונה -->
+			<!-- תווית סטטוס מתחת לתמונה -->
 				<div class="flex items-center gap-2 flex-wrap justify-center">
 					<button onclick={scrollToMessages} class="text-base text-orange-400 font-bold hover:text-orange-300 transition-colors cursor-pointer bg-transparent border-0 p-0">סטטוס</button>
-					{#if (data.user as any)?.family_status === 'single_f' || (data.user as any)?.family_status === 'single_m'}
+					{#if true}
 						{@const currentStatus = statusOptions().find(o => o.value === status)}
 						<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold
 							{status === 'active' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-purple-500/20 text-purple-300 border border-purple-500/30'}">
@@ -983,8 +983,7 @@
 				</div>
 				</div>
 
-				<!-- סטטוס — מוצג לקהילה, רק לרווקים/רווקות -->
-				{#if family_status === 'single_f' || family_status === 'single_m'}
+				<!-- סטטוס — מוצג לקהילה -->
 				<div class="md:col-span-2">
 					<label class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
 						🟢 סטטוס <span class="text-purple-400 text-xs font-normal normal-case">(גלוי לכל הקהילה)</span>
@@ -1012,7 +1011,6 @@
 						</p>
 					{/if}
 				</div>
-				{/if}
 
 				<!-- שאלת ביטחון + התראות — שורה אחת -->
 				<div class="md:col-span-2 grid md:grid-cols-2 gap-4 items-start">
