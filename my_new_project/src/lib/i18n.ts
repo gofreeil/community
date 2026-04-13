@@ -109,7 +109,7 @@ register('he', () => Promise.resolve({
     close: "סגור",
 
     // קומות דף פרופיל
-    section_personal_area:   "האזור האישי",
+    section_personal_area:   "לוח הבקרה",
     section_profile_details: "פרטי פרופיל",
     section_my_info:         "המידע שלי",
 
