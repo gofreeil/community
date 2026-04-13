@@ -584,10 +584,11 @@
 				{tFn("logout_btn")}
 			</button>
 		</div>
-		<div class="flex flex-wrap md:flex-nowrap items-stretch gap-4 md:gap-6 w-full">
+		<!-- נייד: שם(ימין)|אווטר(מרכז)|ארנק קטן(שמאל) | דסקטופ: RTL אווטר|ארנק|שם -->
+		<div class="flex flex-wrap md:flex-nowrap items-stretch gap-3 md:gap-6 w-full">
 
 			<!-- אווטר + מעגל מילוי -->
-			<div class="flex-shrink-0 flex flex-col items-center justify-between min-h-[120px] mr-2">
+			<div class="order-2 md:order-1 flex-shrink-0 flex flex-col items-center justify-between min-h-[120px] mr-2">
 				<div class="relative cursor-pointer"
 					onmouseenter={() => (showRingTooltip = true)}
 					onmouseleave={() => (showRingTooltip = false)}
@@ -680,14 +681,14 @@
 
 
 			<!-- הארנק שלי — גם בנייד בלשונית ראשי -->
-			<a href="/receipts" class="{mobileTab === 'main' ? 'flex' : 'hidden md:flex'} flex-1 flex-col items-center justify-between cursor-pointer group select-none no-underline">
-				<div class="w-52 group-hover:scale-105 transition-transform duration-200 -mt-8" style="-webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 80%); mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 80%);">
+			<a href="/receipts" class="order-3 md:order-2 {mobileTab === 'main' ? 'flex' : 'hidden md:flex'} flex-col items-center justify-between cursor-pointer group select-none no-underline">
+				<div class="w-20 md:w-52 group-hover:scale-105 transition-transform duration-200 md:-mt-8" style="-webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 80%); mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 80%);">
 					<img src="/images/wallet.png" alt="המזומן שלי" class="w-full h-auto block" />
 				</div>
-				<span class="text-base text-gray-300 font-bold pt-4 mt-auto">היתרה שלי: <span class="text-green-400">{(data.user as {balance?:number})?.balance ?? 0}₪</span></span>
+				<span class="text-xs md:text-base text-gray-300 font-bold pt-1 md:pt-4 mt-auto text-center">היתרה שלי:<br class="md:hidden"/><span class="text-green-400"> {(data.user as {balance?:number})?.balance ?? 0}₪</span></span>
 			</a>
 
-			<div class="min-w-0 flex-shrink-0 flex flex-col justify-between pl-4 md:pl-8">
+			<div class="order-1 md:order-3 min-w-0 flex-shrink-0 flex flex-col justify-between pl-4 md:pl-8">
 				<div class="flex flex-col gap-0.5">
 					<div class="flex items-center gap-2">
 						<h1 class="text-2xl font-black truncate {data.user?.nickname || data.user?.name ? 'text-white' : 'text-gray-500 italic'}">
