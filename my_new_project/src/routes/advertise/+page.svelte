@@ -170,9 +170,8 @@
     ];
 
     // ---- Calculator state: each row can be 'half' | 'single' | unset ----
-    // ברירת מחדל: חצי שנה לכל השורות
     type Plan = 'half' | 'single';
-    let planMap = $state<Map<number, Plan>>(new Map(rows.map(r => [r.num, 'half' as Plan])));
+    let planMap = $state<Map<number, Plan>>(new Map());
 
     function setPlan(num: number, plan: Plan) {
         const next = new Map(planMap);
@@ -424,23 +423,23 @@
                     <div
                         class="relative inline-flex h-9 rounded-full flex-shrink-0 transition-all duration-300"
                         style="padding: 2px;
-                               background: {plan === 'half' ? 'rgba(245,158,11,0.15)' : plan === 'single' ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.05)'};
-                               border: 1.5px solid {plan === 'half' ? 'rgba(245,158,11,0.5)' : plan === 'single' ? 'rgba(59,130,246,0.5)' : 'rgba(255,255,255,0.12)'};"
+                               background: {plan === 'half' ? 'rgba(245,158,11,0.2)' : plan === 'single' ? 'rgba(59,130,246,0.2)' : 'rgba(255,255,255,0.12)'};
+                               border: 1.5px solid {plan === 'half' ? 'rgba(245,158,11,0.7)' : plan === 'single' ? 'rgba(59,130,246,0.7)' : 'rgba(255,255,255,0.3)'};"
                     >
                         <button
                             type="button"
                             onclick={() => setPlan(row.num, 'half')}
                             class="relative z-10 rounded-full px-3 text-xs font-black transition-all duration-200 whitespace-nowrap leading-none flex items-center"
-                            style="background: {plan === 'half' ? '#f59e0b' : 'transparent'}; color: {plan === 'half' ? '#000' : '#6b7280'};"
+                            style="background: {plan === 'half' ? '#f59e0b' : 'transparent'}; color: {plan === 'half' ? '#000' : plan ? '#9ca3af' : '#e5e7eb'};"
                         >½שנה</button>
                         {#if !plan}
-                            <div class="self-center w-1 h-1 rounded-full bg-white/20 mx-0.5 flex-shrink-0"></div>
+                            <div class="self-center w-1 h-1 rounded-full bg-white/40 mx-0.5 flex-shrink-0"></div>
                         {/if}
                         <button
                             type="button"
                             onclick={() => setPlan(row.num, 'single')}
                             class="relative z-10 rounded-full px-3 text-xs font-black transition-all duration-200 whitespace-nowrap leading-none flex items-center"
-                            style="background: {plan === 'single' ? '#3b82f6' : 'transparent'}; color: {plan === 'single' ? '#fff' : '#6b7280'};"
+                            style="background: {plan === 'single' ? '#3b82f6' : 'transparent'}; color: {plan === 'single' ? '#fff' : plan ? '#9ca3af' : '#e5e7eb'};"
                         >חודש</button>
                     </div>
                 </div>
@@ -539,8 +538,8 @@
                                     class="relative inline-flex h-9 rounded-full transition-all duration-300"
                                     style="
                                         padding: 2px;
-                                        background: {plan === 'half' ? 'rgba(245,158,11,0.15)' : plan === 'single' ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.05)'};
-                                        border: 1.5px solid {plan === 'half' ? 'rgba(245,158,11,0.5)' : plan === 'single' ? 'rgba(59,130,246,0.5)' : 'rgba(255,255,255,0.12)'};
+                                        background: {plan === 'half' ? 'rgba(245,158,11,0.2)' : plan === 'single' ? 'rgba(59,130,246,0.2)' : 'rgba(255,255,255,0.12)'};
+                                        border: 1.5px solid {plan === 'half' ? 'rgba(245,158,11,0.7)' : plan === 'single' ? 'rgba(59,130,246,0.7)' : 'rgba(255,255,255,0.3)'};
                                     "
                                 >
                                     <!-- Half-year segment (right in RTL = first child) -->
@@ -548,12 +547,12 @@
                                         type="button"
                                         onclick={() => setPlan(row.num, 'half')}
                                         class="relative z-10 rounded-full px-3 text-xs font-black transition-all duration-200 whitespace-nowrap leading-none flex items-center"
-                                        style="background: {plan === 'half' ? '#f59e0b' : 'transparent'}; color: {plan === 'half' ? '#000' : '#6b7280'};"
+                                        style="background: {plan === 'half' ? '#f59e0b' : 'transparent'}; color: {plan === 'half' ? '#000' : plan ? '#9ca3af' : '#e5e7eb'};"
                                         title="חצי שנה"
                                     >½שנה</button>
 
                                     {#if !plan}
-                                        <div class="self-center w-1 h-1 rounded-full bg-white/20 mx-0.5 flex-shrink-0"></div>
+                                        <div class="self-center w-1 h-1 rounded-full bg-white/40 mx-0.5 flex-shrink-0"></div>
                                     {/if}
 
                                     <!-- Single-month segment (left in RTL = second child) -->
@@ -561,7 +560,7 @@
                                         type="button"
                                         onclick={() => setPlan(row.num, 'single')}
                                         class="relative z-10 rounded-full px-3 text-xs font-black transition-all duration-200 whitespace-nowrap leading-none flex items-center"
-                                        style="background: {plan === 'single' ? '#3b82f6' : 'transparent'}; color: {plan === 'single' ? '#fff' : '#6b7280'};"
+                                        style="background: {plan === 'single' ? '#3b82f6' : 'transparent'}; color: {plan === 'single' ? '#fff' : plan ? '#9ca3af' : '#e5e7eb'};"
                                         title="חודש בודד"
                                     >חודש</button>
                                 </div>
