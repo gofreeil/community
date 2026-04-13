@@ -583,7 +583,7 @@
 				</div>
 
 				<!-- תווית סטטוס מתחת לתמונה -->
-				<div class="flex flex-col items-center gap-1">
+				<div class="flex items-center gap-2 flex-wrap justify-center">
 					<button onclick={scrollToMessages} class="text-base text-orange-400 font-bold hover:text-orange-300 transition-colors cursor-pointer bg-transparent border-0 p-0">סטטוס</button>
 					{#if (data.user as any)?.family_status === 'single_f' || (data.user as any)?.family_status === 'single_m'}
 						{@const currentStatus = statusOptions().find(o => o.value === status)}
