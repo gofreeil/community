@@ -131,7 +131,6 @@
 			{ value: 'vacation',    emoji: '🏖️', label: 'בחופשה' },
 			{ value: 'sick',        emoji: '🤒', label: 'חולה' },
 			{ value: 'miluim',      emoji: '🪖', label: 'במילואים' },
-			{ value: 'timeout',     emoji: '🙏', label: 'פסק זמן אישי' },
 		].filter(o => !('femaleOnly' in o) || isFemale);
 	});
 	let termsAccepted  = $state(
@@ -710,6 +709,13 @@
 					</p>
 				</div>
 				<div class="flex-1 min-h-[24px]"></div>
+				<div class="flex gap-3 mt-2 flex-wrap">
+					{#if data.items.length > 0}
+						<span class="text-sm bg-blue-500/20 text-blue-400 border border-blue-500/30 px-3 py-1.5 rounded-full font-bold">
+							{data.items.length} {tFn("publications_count")}
+						</span>
+					{/if}
+				</div>
 				<div class="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity"
 					onclick={scrollToLevels}
 					onkeydown={(e) => { if (e.key === "Enter" || e.key === " ") scrollToLevels(); }}
@@ -724,13 +730,6 @@
 						<span class="text-emerald-400 text-base font-black">משתמש</span>
 					{:else}
 						<span class="text-gray-400 text-base font-black">צופה</span>
-					{/if}
-				</div>
-				<div class="flex gap-3 mt-2 flex-wrap">
-					{#if data.items.length > 0}
-						<span class="text-sm bg-blue-500/20 text-blue-400 border border-blue-500/30 px-3 py-1.5 rounded-full font-bold">
-							{data.items.length} {tFn("publications_count")}
-						</span>
 					{/if}
 				</div>
 			</div>
