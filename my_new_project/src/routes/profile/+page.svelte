@@ -588,7 +588,7 @@
 			</button>
 		</div>
 		<!-- נייד: שם(ימין)|אווטר(מרכז)|ארנק קטן(שמאל) | דסקטופ: RTL אווטר|ארנק|שם -->
-		<div class="flex flex-wrap md:flex-nowrap items-stretch gap-3 md:gap-6 w-full">
+		<div class="flex flex-wrap md:flex-nowrap items-stretch gap-3 md:gap-6 w-full" style="justify-content: space-between;">
 
 			<!-- אווטר + מעגל מילוי -->
 			<div class="order-2 md:order-1 flex-shrink-0 flex flex-col items-center justify-between min-h-[120px] mr-2">
@@ -684,7 +684,7 @@
 
 
 			<!-- הארנק שלי — גם בנייד בלשונית ראשי -->
-			<a href="/receipts" class="order-3 md:order-2 {mobileTab === 'main' ? 'flex' : 'hidden md:flex'} flex-col items-center justify-between cursor-pointer group select-none no-underline">
+			<a href="/receipts" class="order-3 md:order-2 flex-1 {mobileTab === 'main' ? 'flex' : 'hidden md:flex'} flex-col items-center justify-between cursor-pointer group select-none no-underline">
 				<div class="w-20 md:w-52 group-hover:scale-105 transition-transform duration-200 md:-mt-8" style="-webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 80%); mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 80%);">
 					<img src="/images/wallet.png" alt="המזומן שלי" class="w-full h-auto block" />
 				</div>
