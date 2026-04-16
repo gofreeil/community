@@ -11,10 +11,14 @@ async function runMigrations(strapi: Core.Strapi) {
     return;
   }
 
+  // __dirname ב-build = dist/ → migrations נמצא ב-root של הפרויקט
   const migrationsDir = path.join(__dirname, '..', 'migrations');
+  // fallback אם הbuild שונה
+  const migrationsDir2 = path.join(process.cwd(), 'migrations');
+  const finalMigrationsDir = fs.existsSync(migrationsDir) ? migrationsDir : migrationsDir2;
 
-  if (!fs.existsSync(migrationsDir)) {
-    strapi.log.warn('[migrations] No migrations folder found');
+  if (!fs.existsSync(finalMigrationsDir)) {
+    strapi.log.warn(`[migrations] No migrations folder found (checked: ${migrationsDir}, ${migrationsDir2})`);
     return;
   }
 
@@ -28,7 +32,7 @@ async function runMigrations(strapi: Core.Strapi) {
   `);
 
   const files = fs
-    .readdirSync(migrationsDir)
+    .readdirSync(finalMigrationsDir)
     .filter((f) => f.endsWith('.sql'))
     .sort();
 
@@ -42,7 +46,7 @@ async function runMigrations(strapi: Core.Strapi) {
       continue;
     }
 
-    const sql = fs.readFileSync(path.join(migrationsDir, filename), 'utf8');
+    const sql = fs.readFileSync(path.join(finalMigrationsDir, filename), 'utf8');
 
     try {
       await db.connection.raw(sql);
@@ -56,10 +60,38 @@ async function runMigrations(strapi: Core.Strapi) {
   }
 }
 
+async function ensureSuperAdmin(strapi: Core.Strapi) {
+  const email = process.env.SUPER_ADMIN_EMAIL;
+  if (!email) return;
+  try {
+    const users = await strapi.db.query('plugin::users-permissions.user').findMany({
+      where: { email: { $eqi: email } },
+      limit: 1,
+    });
+    if (users.length === 0) {
+      strapi.log.warn(`[bootstrap] Super admin user not found: ${email}`);
+      return;
+    }
+    const user = users[0] as { id: number; app_role?: string };
+    if (user.app_role !== 'super_admin') {
+      await strapi.db.query('plugin::users-permissions.user').update({
+        where: { id: user.id },
+        data: { app_role: 'super_admin' },
+      });
+      strapi.log.info(`[bootstrap] ✅ Set super_admin for: ${email}`);
+    } else {
+      strapi.log.info(`[bootstrap] Already super_admin: ${email}`);
+    }
+  } catch (e) {
+    strapi.log.warn('[bootstrap] ensureSuperAdmin failed:', e);
+  }
+}
+
 export default {
   register(/* { strapi }: { strapi: Core.Strapi } */) {},
 
   async bootstrap({ strapi }: { strapi: Core.Strapi }) {
     await runMigrations(strapi);
+    await ensureSuperAdmin(strapi);
   },
 };
