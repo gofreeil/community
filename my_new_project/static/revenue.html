@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>שיטת התגמול — קהילה בשכונה</title>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+	* { box-sizing: border-box; margin: 0; padding: 0; }
+	html, body { font-family: 'Assistant', system-ui, sans-serif; background: #080f1e; color: #fff; direction: rtl; }
+	body { min-height: 100vh; padding: 32px 16px 96px; }
+	.wrap { max-width: 1080px; margin: 0 auto; }
+
+	/* Hero */
+	.hero {
+		position: relative;
+		padding: 56px 32px;
+		border-radius: 28px;
+		background: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4c1d95 100%);
+		overflow: hidden;
+		text-align: center;
+		margin-bottom: 40px;
+		box-shadow: 0 20px 60px rgba(76,29,149,0.35);
+	}
+	.hero::after {
+		content: ''; position: absolute; inset: 0;
+		background: radial-gradient(ellipse at 70% 30%, rgba(124,58,237,0.35) 0%, transparent 60%);
+		pointer-events: none;
+	}
+	.hero-badge {
+		display: inline-block; padding: 6px 16px; border-radius: 999px;
+		background: rgba(250,204,21,0.15); border: 1px solid rgba(250,204,21,0.35);
+		color: #facc15; font-weight: 800; font-size: 13px; margin-bottom: 16px;
+	}
+	.hero h1 { font-size: clamp(32px, 5vw, 54px); font-weight: 800; line-height: 1.15; margin-bottom: 14px; }
+	.hero p { font-size: clamp(15px, 2vw, 19px); color: #c7d2fe; max-width: 720px; margin: 0 auto; }
+
+	.hero-stats {
+		position: relative; z-index: 1;
+		display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+		gap: 16px; margin-top: 36px;
+	}
+	.hero-stat {
+		background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+		border-radius: 18px; padding: 20px; backdrop-filter: blur(6px);
+	}
+	.hero-stat .num { font-size: 32px; font-weight: 800; color: #facc15; line-height: 1; }
+	.hero-stat .lbl { font-size: 13px; color: #c7d2fe; margin-top: 6px; font-weight: 600; }
+
+	/* Section */
+	.section { margin-bottom: 48px; }
+	.section-title {
+		display: flex; align-items: center; gap: 12px;
+		font-size: 26px; font-weight: 800; margin-bottom: 20px;
+	}
+	.section-title .dot {
+		width: 34px; height: 34px; border-radius: 999px;
+		background: linear-gradient(135deg, #facc15, #f59e0b);
+		display: inline-flex; align-items: center; justify-content: center;
+		font-size: 16px; color: #1a1035;
+	}
+	.section-sub { color: #94a3b8; font-size: 15px; margin-bottom: 24px; max-width: 780px; }
+
+	/* Channels grid */
+	.channels { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+	.channel {
+		background: linear-gradient(135deg, #111827 0%, #1e293b 100%);
+		border: 1px solid rgba(255,255,255,0.08);
+		border-radius: 18px; padding: 22px; transition: all 0.2s;
+	}
+	.channel:hover { border-color: rgba(250,204,21,0.4); transform: translateY(-2px); }
+	.channel-icon {
+		width: 48px; height: 48px; border-radius: 14px;
+		display: inline-flex; align-items: center; justify-content: center;
+		font-size: 24px; margin-bottom: 12px;
+	}
+	.channel h3 { font-size: 17px; font-weight: 800; margin-bottom: 6px; }
+	.channel p { color: #94a3b8; font-size: 13px; line-height: 1.55; }
+	.channel .tag {
+		display: inline-block; margin-top: 12px; padding: 3px 10px;
+		border-radius: 999px; font-size: 11px; font-weight: 700;
+		background: rgba(250,204,21,0.12); color: #facc15;
+	}
+
+	/* Cost breakdown */
+	.costs {
+		background: linear-gradient(135deg, #1a1035 0%, #0f172a 60%);
+		border: 1px solid rgba(234,179,8,0.25);
+		border-radius: 22px; padding: 32px;
+	}
+	.costs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: center; }
+	@media (max-width: 720px) { .costs-grid { grid-template-columns: 1fr; } }
+	.cost-items { display: flex; flex-direction: column; gap: 14px; }
+	.cost-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px;
+		background: rgba(255,255,255,0.04); border-radius: 12px; border-right: 3px solid #facc15; }
+	.cost-row .name { font-weight: 600; }
+	.cost-row .pct { font-weight: 800; color: #facc15; font-size: 18px; }
+
+	/* Distribution */
+	.dist-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+	.dist-card {
+		border-radius: 20px; padding: 28px 22px; text-align: center;
+		background: linear-gradient(135deg, var(--from), var(--to));
+		position: relative; overflow: hidden;
+		box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+	}
+	.dist-card .emoji { font-size: 40px; margin-bottom: 10px; }
+	.dist-card .pct { font-size: 48px; font-weight: 800; line-height: 1; margin-bottom: 8px; }
+	.dist-card .title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+	.dist-card .desc { font-size: 13px; opacity: 0.9; line-height: 1.5; }
+
+	/* Flow */
+	.flow {
+		background: #0f172a; border: 1px solid rgba(255,255,255,0.08);
+		border-radius: 22px; padding: 32px;
+	}
+	.flow-row {
+		display: flex; align-items: stretch; justify-content: space-between;
+		flex-wrap: wrap; gap: 12px;
+	}
+	.flow-node {
+		flex: 1 1 180px; background: linear-gradient(135deg, #1e293b, #111827);
+		border: 1px solid rgba(124,58,237,0.3); border-radius: 14px;
+		padding: 18px; text-align: center; min-width: 170px;
+	}
+	.flow-node .ico { font-size: 28px; margin-bottom: 8px; }
+	.flow-node .t { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+	.flow-node .s { font-size: 12px; color: #94a3b8; }
+	.flow-arrow { align-self: center; font-size: 24px; color: #facc15; font-weight: 800; }
+	@media (max-width: 720px) { .flow-arrow { transform: rotate(90deg); } }
+
+	/* Charts */
+	.charts { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+	@media (max-width: 720px) { .charts { grid-template-columns: 1fr; } }
+	.chart-box {
+		background: linear-gradient(135deg, #111827, #1e293b);
+		border: 1px solid rgba(255,255,255,0.08);
+		border-radius: 18px; padding: 24px;
+	}
+	.chart-box h3 { font-size: 17px; font-weight: 800; margin-bottom: 14px; color: #facc15; }
+	.chart-canvas-wrap { position: relative; height: 300px; }
+
+	/* Back link */
+	.back-link {
+		display: inline-flex; align-items: center; gap: 8px; color: #94a3b8;
+		text-decoration: none; font-weight: 700; margin-bottom: 24px; transition: color 0.2s;
+	}
+	.back-link:hover { color: #fff; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+	<a href="/receipts" class="back-link">← חזרה לארנק</a>
+
+	<!-- HERO -->
+	<div class="hero">
+		<div style="position: relative; z-index: 1;">
+			<span class="hero-badge">🏆 שיטת התגמול של קהילה בשכונה</span>
+			<h1>איך הקהילה מייצרת ערך — ומחזירה אותו לחברים</h1>
+			<p>מודל שקוף שבו כל שקל שנכנס מתחלק בין בעלים, צדקה ורכזים — וכולם מרוויחים יחד עם הקהילה.</p>
+
+			<div class="hero-stats">
+				<div class="hero-stat"><div class="num">8</div><div class="lbl">ערוצי הכנסה</div></div>
+				<div class="hero-stat"><div class="num">35%</div><div class="lbl">עלויות תפעול</div></div>
+				<div class="hero-stat"><div class="num">65%</div><div class="lbl">רווח נקי לחלוקה</div></div>
+				<div class="hero-stat"><div class="num">3</div><div class="lbl">נהנים בכל עסקה</div></div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 8 CHANNELS -->
+	<div class="section">
+		<h2 class="section-title"><span class="dot">💰</span> 8 ערוצי ההכנסה</h2>
+		<p class="section-sub">מקורות ההכנסה של הפלטפורמה — כולם מבוססים על ערך אמיתי לתושבים ולעסקים המקומיים.</p>
+		<div class="channels">
+			<div class="channel">
+				<div class="channel-icon" style="background: rgba(59,130,246,0.15); color: #60a5fa;">📣</div>
+				<h3>פרסומות ממומנות</h3>
+				<p>עסקים מקומיים מפרסמים שירותים לתושבי השכונה במחיר הוגן.</p>
+				<span class="tag">ערוץ ראשי</span>
+			</div>
+			<div class="channel">
+				<div class="channel-icon" style="background: rgba(16,185,129,0.15); color: #34d399;">🤝</div>
+				<h3>עמלת שירותים</h3>
+				<p>עמלה קטנה על השארת פרטים לבעלי מקצוע בשכונה.</p>
+				<span class="tag">עמלה</span>
+			</div>
+			<div class="channel">
+				<div class="channel-icon" style="background: rgba(234,179,8,0.15); color: #facc15;">🎫</div>
+				<h3>כרטיסים לאירועים</h3>
+				<p>מכירת כרטיסים לאירועים שכונתיים — הרצאות, מופעים, סיורים.</p>
+				<span class="tag">עמלה</span>
+			</div>
+			<div class="channel">
+				<div class="channel-icon" style="background: rgba(236,72,153,0.15); color: #f472b6;">🏠</div>
+				<h3>השכרת צימרים</h3>
+				<p>קומיסיון על השכרות קצרות טווח שמתאמים דרך הפלטפורמה.</p>
+				<span class="tag">עמלה</span>
+			</div>
+			<div class="channel">
+				<div class="channel-icon" style="background: rgba(139,92,246,0.15); color: #a78bfa;">👶</div>
+				<h3>בייביסיטינג</h3>
+				<p>התאמת שמרטפים למשפחות — עמלת תיווך לכל שיבוץ.</p>
+				<span class="tag">עמלה</span>
+			</div>
+			<div class="channel">
+				<div class="channel-icon" style="background: rgba(249,115,22,0.15); color: #fb923c;">🎓</div>
+				<h3>חוגים ושיעורים</h3>
+				<p>פלטפורמה לרישום לחוגים בשכונה — עמלה קטנה על כל רישום.</p>
+				<span class="tag">עמלה</span>
+			</div>
+			<div class="channel">
+				<div class="channel-icon" style="background: rgba(14,165,233,0.15); color: #38bdf8;">🚗</div>
+				<h3>טרמפים משותפים</h3>
+				<p>תמורה סמלית על ארגון נסיעות משותפות — חוסך ומקרב.</p>
+				<span class="tag">סמלי</span>
+			</div>
+			<div class="channel">
+				<div class="channel-icon" style="background: rgba(244,63,94,0.15); color: #fb7185;">⭐</div>
+				<h3>חבילות Premium</h3>
+				<p>מנוי פרימיום לעסקים: בולטות, דוחות, כלי ניהול מתקדמים.</p>
+				<span class="tag">מנוי</span>
+			</div>
+		</div>
+	</div>
+
+	<!-- COSTS -->
+	<div class="section">
+		<h2 class="section-title"><span class="dot">⚙️</span> מבנה עלויות — 35%</h2>
+		<p class="section-sub">35% מההכנסות מופנים לתפעול ואחזקה — כל השאר (65%) יוצא לחלוקה.</p>
+		<div class="costs">
+			<div class="costs-grid">
+				<div class="cost-items">
+					<div class="cost-row"><span class="name">תפעול טכני (שרתים, דומיין, API)</span><span class="pct">12%</span></div>
+					<div class="cost-row"><span class="name">פיתוח ותחזוקה שוטפת</span><span class="pct">10%</span></div>
+					<div class="cost-row"><span class="name">שיווק ותמיכה</span><span class="pct">8%</span></div>
+					<div class="cost-row"><span class="name">משפטי, חשבונאות ומיסוי</span><span class="pct">5%</span></div>
+				</div>
+				<div class="chart-canvas-wrap"><canvas id="costsChart"></canvas></div>
+			</div>
+		</div>
+	</div>
+
+	<!-- DISTRIBUTION -->
+	<div class="section">
+		<h2 class="section-title"><span class="dot">🤲</span> חלוקת הרווחים</h2>
+		<p class="section-sub">מהרווח הנקי (65% מהברוטו) — כל שקל מתחלק בין שלושה גורמים:</p>
+		<div class="dist-grid">
+			<div class="dist-card" style="--from:#1e3a8a; --to:#3b82f6;">
+				<div class="emoji">🏛️</div>
+				<div class="pct">50%</div>
+				<div class="title">בעלי הפלטפורמה</div>
+				<div class="desc">תמורה על ההשקעה, הסיכון וההובלה של המיזם לאורך זמן.</div>
+			</div>
+			<div class="dist-card" style="--from:#064e3b; --to:#10b981;">
+				<div class="emoji">❤️</div>
+				<div class="pct">20%</div>
+				<div class="title">צדקה ונזקקים</div>
+				<div class="desc">חלק קבוע שיוצא לפעילות חברתית ולסיוע למשפחות בשכונה.</div>
+			</div>
+			<div class="dist-card" style="--from:#78350f; --to:#f59e0b;">
+				<div class="emoji">👥</div>
+				<div class="pct">30%</div>
+				<div class="title">רכזי השכונות</div>
+				<div class="desc">תגמול למי שמפעילים בפועל את הקהילה ומייצרים פעילות בשטח.</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- FLOW -->
+	<div class="section">
+		<h2 class="section-title"><span class="dot">🔁</span> זרימת הכסף</h2>
+		<p class="section-sub">מההכנסה הראשונית ועד לחלוקה הסופית:</p>
+		<div class="flow">
+			<div class="flow-row">
+				<div class="flow-node"><div class="ico">💳</div><div class="t">הכנסה גולמית</div><div class="s">100%</div></div>
+				<div class="flow-arrow">←</div>
+				<div class="flow-node" style="border-color: rgba(239,68,68,0.3);"><div class="ico">⚙️</div><div class="t">עלויות תפעול</div><div class="s">35%</div></div>
+				<div class="flow-arrow">←</div>
+				<div class="flow-node" style="border-color: rgba(250,204,21,0.4);"><div class="ico">💰</div><div class="t">רווח נקי</div><div class="s">65%</div></div>
+				<div class="flow-arrow">←</div>
+				<div class="flow-node" style="border-color: rgba(16,185,129,0.4);"><div class="ico">🤲</div><div class="t">חלוקה</div><div class="s">לשלושה גורמים</div></div>
+			</div>
+		</div>
+	</div>
+
+	<!-- CHARTS -->
+	<div class="section">
+		<h2 class="section-title"><span class="dot">📊</span> הדמיה גרפית</h2>
+		<p class="section-sub">שני תרשימים שממחישים את המודל:</p>
+		<div class="charts">
+			<div class="chart-box">
+				<h3>חלוקת הרווח הנקי</h3>
+				<div class="chart-canvas-wrap"><canvas id="distChart"></canvas></div>
+			</div>
+			<div class="chart-box">
+				<h3>הכנסה חזויה לפי ערוץ (דוגמה)</h3>
+				<div class="chart-canvas-wrap"><canvas id="channelsChart"></canvas></div>
+			</div>
+		</div>
+	</div>
+
+</div>
+
+<script>
+	Chart.defaults.font.family = 'Assistant, sans-serif';
+	Chart.defaults.color = '#cbd5e1';
+
+	// Costs doughnut
+	new Chart(document.getElementById('costsChart'), {
+		type: 'doughnut',
+		data: {
+			labels: ['תפעול טכני', 'פיתוח', 'שיווק ותמיכה', 'משפטי וחשבונאות', 'רווח נקי'],
+			datasets: [{
+				data: [12, 10, 8, 5, 65],
+				backgroundColor: ['#60a5fa', '#a78bfa', '#fb923c', '#f472b6', '#facc15'],
+				borderWidth: 0
+			}]
+		},
+		options: {
+			responsive: true, maintainAspectRatio: false,
+			plugins: { legend: { position: 'bottom', labels: { padding: 12, font: { size: 12 } } } }
+		}
+	});
+
+	// Distribution pie
+	new Chart(document.getElementById('distChart'), {
+		type: 'pie',
+		data: {
+			labels: ['בעלי הפלטפורמה (50%)', 'צדקה (20%)', 'רכזי שכונות (30%)'],
+			datasets: [{
+				data: [50, 20, 30],
+				backgroundColor: ['#3b82f6', '#10b981', '#f59e0b'],
+				borderWidth: 2, borderColor: '#0f172a'
+			}]
+		},
+		options: {
+			responsive: true, maintainAspectRatio: false,
+			plugins: { legend: { position: 'bottom', labels: { padding: 12 } } }
+		}
+	});
+
+	// Channels bar
+	new Chart(document.getElementById('channelsChart'), {
+		type: 'bar',
+		data: {
+			labels: ['פרסומות', 'שירותים', 'אירועים', 'צימרים', 'בייביסיטר', 'חוגים', 'טרמפים', 'Premium'],
+			datasets: [{
+				label: 'חלק יחסי (%)',
+				data: [28, 18, 12, 10, 9, 9, 4, 10],
+				backgroundColor: 'rgba(250,204,21,0.7)',
+				borderColor: '#facc15', borderWidth: 1, borderRadius: 6
+			}]
+		},
+		options: {
+			responsive: true, maintainAspectRatio: false,
+			plugins: { legend: { display: false } },
+			scales: {
+				x: { ticks: { font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
+				y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } }
+			}
+		}
+	});
+</script>
+</body>
+</html>

@@ -77,7 +77,15 @@
 				style="background: linear-gradient(135deg, #eab308, #f59e0b);">🏆</span>
 			שיטת התגמול
 		</h2>
-		<p class="relative text-gray-400 text-sm">תוכן בקרוב...</p>
+		<p class="relative text-gray-400 text-sm mb-4">הכירו את שיטת התגמול של הקהילה — איך צוברים ומקבלים יתרה.</p>
+		<a href="/revenue.html"
+			class="relative inline-flex items-center justify-center gap-2 w-full px-5 py-3 rounded-xl font-black text-sm text-[#1a1035] transition-transform hover:scale-[1.02] shadow-lg"
+			style="background: linear-gradient(135deg, #facc15, #f59e0b);">
+			לצפייה בשיטת התגמול
+			<svg class="w-4 h-4 rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+				<polyline points="9 18 15 12 9 6"/>
+			</svg>
+		</a>
 	</div>
 
 </div>
