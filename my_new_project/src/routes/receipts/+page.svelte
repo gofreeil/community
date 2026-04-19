@@ -1,6 +1,23 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	let { data }: { data: PageData } = $props();
+
+	type TxCategory = 'all' | 'income' | 'transfer' | 'purchase' | 'charity';
+	let activeCategory = $state<TxCategory>('all');
+
+	const categories: { id: TxCategory; label: string; icon: string }[] = [
+		{ id: 'all',      label: 'הכל',    icon: '💳' },
+		{ id: 'income',   label: 'הכנסות', icon: '📈' },
+		{ id: 'transfer', label: 'העברות', icon: '🔄' },
+		{ id: 'purchase', label: 'רכישות', icon: '🛒' },
+		{ id: 'charity',  label: 'צדקה',   icon: '🤲' },
+	];
+
+	const filteredReceipts = $derived(
+		activeCategory === 'all'
+			? data.receipts
+			: data.receipts.filter(r => (r as any).category === activeCategory)
+	);
 </script>
 
 <svelte:head>
@@ -39,6 +56,23 @@
 		<div class="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-purple-500/10 blur-lg"></div>
 	</div>
 
+	<!-- טאבי קטגוריות -->
+	<div class="flex gap-2 overflow-x-auto pb-1 mb-6 scrollbar-none">
+		{#each categories as cat}
+			<button
+				type="button"
+				onclick={() => (activeCategory = cat.id)}
+				class="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold transition-all cursor-pointer
+					{activeCategory === cat.id
+						? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
+						: 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white border border-white/10'}"
+			>
+				<span>{cat.icon}</span>
+				{cat.label}
+			</button>
+		{/each}
+	</div>
+
 	<!-- כותרת רשימה -->
 	<h2 class="text-lg font-black text-white mb-4 flex items-center gap-2">
 		<span class="w-5 h-5 rounded-full bg-purple-600 text-white text-xs font-black flex items-center justify-center">₪</span>
@@ -46,14 +80,14 @@
 	</h2>
 
 	<!-- רשימת תקבולים -->
-	{#if data.receipts.length === 0}
+	{#if filteredReceipts.length === 0}
 		<div class="text-center py-16 text-gray-500">
 			<span class="text-5xl block mb-4">📭</span>
 			<p class="text-sm">אין תקבולים להצגה</p>
 		</div>
 	{:else}
 		<div class="flex flex-col gap-3">
-			{#each data.receipts as r}
+			{#each filteredReceipts as r}
 				<div class="bg-[#0f172a] rounded-2xl border border-white/10 px-5 py-4 flex items-center justify-between transition-all hover:border-purple-500/30">
 					<div class="flex flex-col gap-0.5">
 						<span class="text-white font-bold text-sm">{r.description}</span>
