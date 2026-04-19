@@ -6,7 +6,6 @@ const DEFAULT_STATS = [
     { num: '8',   lbl: 'ערוצי הכנסה' },
     { num: '35%', lbl: 'עלויות תפעול' },
     { num: '65%', lbl: 'רווח נקי לחלוקה' },
-    { num: '3',   lbl: 'נהנים בכל עסקה' },
 ];
 
 const DEFAULT_CHANNELS = [
