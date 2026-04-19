@@ -2193,6 +2193,33 @@
 					</div>
 				{/each}
 
+				<!-- קריאות שכונה שפרסמתי -->
+				{#if (data.communityRequests ?? []).length > 0}
+					<div class="mt-2 mb-1">
+						<p class="text-xs font-black text-orange-400 mb-2 px-1">קריאות שכונה שפרסמתי</p>
+						<div class="flex flex-col gap-2">
+							{#each data.communityRequests as req}
+								<div class="flex items-start gap-3 bg-orange-500/5 rounded-2xl border border-orange-500/20 px-4 py-3">
+									<span class="text-xl flex-shrink-0">{req.icon ?? '🆘'}</span>
+									<div class="min-w-0 flex-1">
+										<div class="flex items-center justify-between gap-2 mb-0.5">
+											<span class="text-white text-xs font-black">{req.label}</span>
+											<span class="text-gray-600 text-[10px] flex-shrink-0">{new Date(req.created_at).toLocaleDateString('he-IL')}</span>
+										</div>
+										{#if req.description}
+											<p class="text-gray-400 text-xs line-clamp-2">{req.description}</p>
+										{/if}
+										<span class="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full font-bold
+											{req.status === 'active' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-gray-500/20 text-gray-400 border border-gray-500/30'}">
+											{req.status === 'active' ? 'פעיל' : req.status}
+										</span>
+									</div>
+								</div>
+							{/each}
+						</div>
+					</div>
+				{/if}
+
 				<!-- המלצות מותאמות אישית -->
 				{#if business || family_status === "single_m" || family_status === "single_f" || whatsappMatches.length > 0}
 					{@const allRecs = [

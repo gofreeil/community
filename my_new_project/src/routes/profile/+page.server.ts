@@ -2,6 +2,12 @@ import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { getUserById, getUserByEmail, updateUserProfile, getItemsByUserId, upsertUser, getMessagesByUserId, createItem } from '$lib/server/db';
 import { citiesData } from '$lib/neighborhoodsData';
+import { categoryConfig } from '$lib/categoryFields';
+
+// קטגוריות פרסום אמיתיות (גמ"ח, למסירה, חוגים וכו') — לא קריאות שכונה
+const PUBLICATION_CATEGORIES = new Set(Object.keys(categoryConfig));
+// קטגוריות קריאות קהילתיות — יוצגו בהודעות
+const COMMUNITY_CALL_CATEGORIES = new Set(['raise_hand', 'lost_and_found', 'admin_alert', 'location_request', 'user_feedback']);
 
 export const load: PageServerLoad = async (event) => {
     let session = null;
@@ -109,9 +115,15 @@ export const load: PageServerLoad = async (event) => {
         console.warn('[profile] getMessagesByUserId failed:', e);
     }
 
+    // פרסומים אמיתיים — רק קטגוריות מ-categoryConfig
+    const publicationItems = (items ?? []).filter(i => PUBLICATION_CATEGORIES.has(i.category));
+    // קריאות קהילתיות — יוצגו בהודעות
+    const communityRequests = (items ?? []).filter(i => COMMUNITY_CALL_CATEGORIES.has(i.category));
+
     return {
         user: resolvedUser,
-        items: items ?? [],
+        items: publicationItems,
+        communityRequests,
         messages,
         citiesData,
         oauth_image: session.user?.image ?? null,
