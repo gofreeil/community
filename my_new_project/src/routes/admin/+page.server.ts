@@ -1,11 +1,20 @@
-import { redirect, fail } from '@sveltejs/kit';
+import { redirect, fail, error } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { requireSuperAdmin, requireAdmin } from '$lib/server/auth';
-import { getAllUsers, banUser, unbanUser, setUserRole, setCoordinatorOf, getAllItems, adminDeleteItem } from '$lib/server/db';
+import { getAllUsers, banUser, unbanUser, setUserRole, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById } from '$lib/server/db';
 
 export const load: PageServerLoad = async (event) => {
     const session = await event.locals.auth();
-    requireSuperAdmin(session);
+
+    // בדיקת הרשאה — ישירות מ-DB (מונע תקלות של session מיושן)
+    let isSuperAdmin = session?.user?.role === 'super_admin';
+    if (!isSuperAdmin && session?.user?.id) {
+        try {
+            const dbUser = await getUserById(session.user.id);
+            isSuperAdmin = dbUser?.role === 'super_admin';
+        } catch { /* ignore */ }
+    }
+    if (!isSuperAdmin) throw error(403, 'נדרשת הרשאת מנהל ראשי');
 
     const jwt = event.cookies.get('strapi_jwt');
 
