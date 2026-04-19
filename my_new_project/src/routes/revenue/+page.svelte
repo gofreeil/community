@@ -132,12 +132,8 @@
 		<div class="absolute inset-0 pointer-events-none"
 			style="background: radial-gradient(ellipse at 70% 30%, rgba(124,58,237,0.35) 0%, transparent 60%);"></div>
 		<div class="relative z-10">
-			<span class="inline-block px-4 py-1.5 rounded-full text-xs font-black mb-4"
-				style="background: rgba(250,204,21,0.15); border: 1px solid rgba(250,204,21,0.35); color: #facc15;">
+			<h1 class="text-4xl md:text-6xl font-black leading-tight mb-4" style="color:#facc15;">
 				🏆 שיטת התגמול של קהילה בשכונה
-			</span>
-			<h1 class="text-3xl md:text-5xl font-black leading-tight mb-4">
-				{data.hero_title}
 			</h1>
 			<p class="text-indigo-200 text-base md:text-lg max-w-2xl mx-auto">
 				{data.hero_subtitle}
