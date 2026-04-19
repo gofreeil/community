@@ -103,7 +103,7 @@
 				style="background: linear-gradient(135deg,#facc15,#f59e0b);">💰</span>
 			ערוצי ההכנסה
 		</h2>
-		<p class="text-gray-400 text-sm mb-6 max-w-2xl">מקורות ההכנסה של הפלטפורמה מגיעים מהפרסומים :</p>
+		<p class="text-gray-400 text-sm mb-6 max-w-2xl">מקורות ההכנסה של הפלטפורמה מגיעים מפרסומים ומשיתופי פעולה</p>
 		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 			{#each data.channels as ch}
 				<div class="rounded-2xl p-5 transition-all hover:-translate-y-0.5 hover:border-yellow-400/40"
