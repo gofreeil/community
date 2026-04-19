@@ -35,6 +35,15 @@
 			options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 10, font: { size: 11 }, boxWidth: 12 } } } }
 		});
 
+		new Chart(document.getElementById('charityChart'), {
+			type: 'doughnut',
+			data: {
+				labels: ['יוצאים לחירות', 'קופת הצדקה', 'הגרלת הקהילה'],
+				datasets: [{ data: [10, 9, 1], backgroundColor: ['#34d399','#a78bfa','#fbbf24'], borderWidth: 2, borderColor: '#0f172a' }]
+			},
+			options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 10, font: { size: 11 }, boxWidth: 12 } } } }
+		});
+
 		new Chart(document.getElementById('coordinatorChart'), {
 			type: 'doughnut',
 			data: {
@@ -318,6 +327,87 @@
 				</div>
 			</div>
 			<div class="text-4xl font-black text-yellow-300">50%</div>
+		</div>
+	</div>
+
+	<!-- 6. חברה צדקה וחסד -->
+	<div class="mb-8">
+		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
+			<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
+				style="background: linear-gradient(135deg,#facc15,#f59e0b);">6</span>
+			חברה, צדקה וחסד
+		</h2>
+		<p class="text-gray-400 text-sm mb-6 max-w-2xl">20% מהרווחים מוקדשים לפעולות חברתיות — כי קהילה אמיתית מחזירה לחברה</p>
+
+		<div class="grid md:grid-cols-2 gap-6 mb-6 items-center">
+
+			<!-- רשימה -->
+			<div class="flex flex-col gap-3">
+
+				<!-- 10% יוצאים לחירות -->
+				<div class="rounded-2xl p-4 flex gap-4 items-center"
+					style="background: linear-gradient(135deg,#064e3b,#1e293b); border: 1px solid rgba(16,185,129,0.45);">
+					<div class="w-14 h-14 rounded-xl flex items-center justify-center text-lg font-black flex-shrink-0"
+						style="background: rgba(16,185,129,0.2); color: #34d399;">10%</div>
+					<div class="flex-1">
+						<div class="flex items-center gap-2 mb-0.5">
+							<span>🕊️</span>
+							<span class="font-black text-white text-sm">יוצאים לחירות</span>
+							<span class="px-2 py-0.5 rounded-full text-[10px] font-black" style="background:rgba(16,185,129,0.25);color:#34d399;">עמותה</span>
+						</div>
+						<p class="text-gray-300 text-xs leading-relaxed">לפעילויות המקדמות חירות ושיפור החברה בישראל</p>
+					</div>
+				</div>
+
+				<!-- 9% קופת הצדקה -->
+				<div class="rounded-2xl p-4 flex gap-4 items-center"
+					style="background: linear-gradient(135deg,#1a1035,#312e81); border: 1px solid rgba(167,139,250,0.4);">
+					<div class="w-14 h-14 rounded-xl flex items-center justify-center text-lg font-black flex-shrink-0"
+						style="background: rgba(167,139,250,0.2); color: #a78bfa;">9%</div>
+					<div class="flex-1">
+						<div class="flex items-center gap-2 mb-0.5">
+							<span>❤️</span>
+							<span class="font-black text-white text-sm">קופת הצדקה הקהילתית</span>
+							<span class="px-2 py-0.5 rounded-full text-[10px] font-black" style="background:rgba(167,139,250,0.25);color:#a78bfa;">קהילה</span>
+						</div>
+						<p class="text-gray-300 text-xs leading-relaxed">לסיוע למשפחות ולנזקקים בשכונות הרשת</p>
+					</div>
+				</div>
+
+				<!-- 1% הגרלה -->
+				<div class="rounded-2xl p-4 flex gap-4 items-center"
+					style="background: linear-gradient(135deg,#78350f,#1e293b); border: 1px solid rgba(251,191,36,0.4);">
+					<div class="w-14 h-14 rounded-xl flex items-center justify-center text-lg font-black flex-shrink-0"
+						style="background: rgba(251,191,36,0.2); color: #fbbf24;">1%</div>
+					<div class="flex-1">
+						<div class="flex items-center gap-2 mb-0.5">
+							<span>🎲</span>
+							<span class="font-black text-white text-sm">הגרלת הקהילה</span>
+							<span class="px-2 py-0.5 rounded-full text-[10px] font-black" style="background:rgba(251,191,36,0.25);color:#fbbf24;">הגרלה</span>
+						</div>
+						<p class="text-gray-300 text-xs leading-relaxed">יחולק בהגרלה למשתמש ששיפר את פני הקהילה</p>
+					</div>
+				</div>
+			</div>
+
+			<!-- גרף -->
+			<div class="rounded-2xl p-6 flex flex-col items-center" style="background:#0f172a; border:1px solid rgba(255,255,255,0.08);">
+				<h3 class="font-black text-yellow-300 mb-4 text-sm">התפלגות 20% לצדקה וחסד</h3>
+				<div class="h-64 w-full"><canvas id="charityChart"></canvas></div>
+			</div>
+		</div>
+
+		<!-- סיכום -->
+		<div class="rounded-2xl p-5 flex items-center justify-between"
+			style="background: linear-gradient(135deg,#064e3b,#1a1035); border: 2px solid rgba(250,204,21,0.5);">
+			<div class="flex items-center gap-3">
+				<span class="text-2xl">🤲</span>
+				<div>
+					<div class="font-black text-white text-base">סה"כ לחברה, צדקה וחסד</div>
+					<div class="text-xs text-gray-400">10% יוצאים לחירות + 9% קופת צדקה + 1% הגרלה</div>
+				</div>
+			</div>
+			<div class="text-4xl font-black text-yellow-300">20%</div>
 		</div>
 	</div>
 
