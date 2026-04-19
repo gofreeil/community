@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import type { PageData } from './$types';
+	let { data }: { data: PageData } = $props();
 
 	onMount(async () => {
 		// @ts-ignore
@@ -78,13 +80,13 @@
 				🏆 שיטת התגמול של קהילה בשכונה
 			</span>
 			<h1 class="text-3xl md:text-5xl font-black leading-tight mb-4">
-				איך הקהילה מייצרת ערך — ומחזירה אותו לחברים
+				{data.hero_title}
 			</h1>
 			<p class="text-indigo-200 text-base md:text-lg max-w-2xl mx-auto">
-				מודל שקוף שבו כל שקל שנכנס מתחלק בין בעלים, צדקה ורכזים — וכולם מרוויחים יחד עם הקהילה.
+				{data.hero_subtitle}
 			</p>
 			<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-9">
-				{#each [{ num: '8', lbl: 'ערוצי הכנסה' }, { num: '35%', lbl: 'עלויות תפעול' }, { num: '65%', lbl: 'רווח נקי לחלוקה' }, { num: '3', lbl: 'נהנים בכל עסקה' }] as s}
+				{#each data.stats as s}
 					<div class="rounded-2xl p-5 backdrop-blur-sm" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);">
 						<div class="text-3xl font-black text-yellow-300">{s.num}</div>
 						<div class="text-xs text-indigo-200 mt-1.5 font-semibold">{s.lbl}</div>
@@ -103,16 +105,7 @@
 		</h2>
 		<p class="text-gray-400 text-sm mb-6 max-w-2xl">מקורות ההכנסה של הפלטפורמה — כולם מבוססים על ערך אמיתי לתושבים ולעסקים המקומיים.</p>
 		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-			{#each [
-				{ icon: '📣', bg: 'rgba(59,130,246,0.15)', color: '#60a5fa', title: 'פרסומות ממומנות', desc: 'עסקים מקומיים מפרסמים שירותים לתושבי השכונה במחיר הוגן.', tag: 'ערוץ ראשי' },
-				{ icon: '🤝', bg: 'rgba(16,185,129,0.15)', color: '#34d399', title: 'עמלת שירותים', desc: 'עמלה קטנה על השארת פרטים לבעלי מקצוע בשכונה.', tag: 'עמלה' },
-				{ icon: '🎫', bg: 'rgba(234,179,8,0.15)', color: '#facc15', title: 'כרטיסים לאירועים', desc: 'מכירת כרטיסים לאירועים שכונתיים — הרצאות, מופעים, סיורים.', tag: 'עמלה' },
-				{ icon: '🏠', bg: 'rgba(236,72,153,0.15)', color: '#f472b6', title: 'השכרת צימרים', desc: 'קומיסיון על השכרות קצרות טווח שמתאמים דרך הפלטפורמה.', tag: 'עמלה' },
-				{ icon: '👶', bg: 'rgba(139,92,246,0.15)', color: '#a78bfa', title: 'בייביסיטינג', desc: 'התאמת שמרטפים למשפחות — עמלת תיווך לכל שיבוץ.', tag: 'עמלה' },
-				{ icon: '🎓', bg: 'rgba(249,115,22,0.15)', color: '#fb923c', title: 'חוגים ושיעורים', desc: 'פלטפורמה לרישום לחוגים בשכונה — עמלה קטנה על כל רישום.', tag: 'עמלה' },
-				{ icon: '🚗', bg: 'rgba(14,165,233,0.15)', color: '#38bdf8', title: 'טרמפים משותפים', desc: 'תמורה סמלית על ארגון נסיעות משותפות — חוסך ומקרב.', tag: 'סמלי' },
-				{ icon: '⭐', bg: 'rgba(244,63,94,0.15)', color: '#fb7185', title: 'חבילות Premium', desc: 'מנוי פרימיום לעסקים: בולטות, דוחות, כלי ניהול מתקדמים.', tag: 'מנוי' },
-			] as ch}
+			{#each data.channels as ch}
 				<div class="rounded-2xl p-5 transition-all hover:-translate-y-0.5 hover:border-yellow-400/40"
 					style="background: linear-gradient(135deg,#111827,#1e293b); border: 1px solid rgba(255,255,255,0.08);">
 					<div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-3"
@@ -137,7 +130,7 @@
 		<div class="rounded-2xl p-8" style="background: linear-gradient(135deg,#1a1035,#0f172a); border: 1px solid rgba(234,179,8,0.25);">
 			<div class="grid md:grid-cols-2 gap-8 items-center">
 				<div class="flex flex-col gap-3">
-					{#each [{ name: 'תפעול טכני (שרתים, דומיין, API)', pct: '12%' }, { name: 'פיתוח ותחזוקה שוטפת', pct: '10%' }, { name: 'שיווק ותמיכה', pct: '8%' }, { name: 'משפטי, חשבונאות ומיסוי', pct: '5%' }] as row}
+					{#each data.costs as row}
 						<div class="flex justify-between items-center px-4 py-3 rounded-xl border-r-4 border-yellow-400"
 							style="background: rgba(255,255,255,0.04);">
 							<span class="font-semibold text-sm">{row.name}</span>
@@ -159,11 +152,7 @@
 		</h2>
 		<p class="text-gray-400 text-sm mb-6 max-w-2xl">מהרווח הנקי (65% מהברוטו) — כל שקל מתחלק בין שלושה גורמים:</p>
 		<div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
-			{#each [
-				{ emoji: '🏛️', pct: '50%', title: 'בעלי הפלטפורמה', desc: 'תמורה על ההשקעה, הסיכון וההובלה של המיזם לאורך זמן.', from: '#1e3a8a', to: '#3b82f6' },
-				{ emoji: '❤️', pct: '20%', title: 'צדקה ונזקקים', desc: 'חלק קבוע שיוצא לפעילות חברתית ולסיוע למשפחות בשכונה.', from: '#064e3b', to: '#10b981' },
-				{ emoji: '👥', pct: '30%', title: 'רכזי השכונות', desc: 'תגמול למי שמפעילים בפועל את הקהילה ומייצרים פעילות בשטח.', from: '#78350f', to: '#f59e0b' },
-			] as card}
+			{#each data.distribution as card}
 				<div class="rounded-2xl p-7 text-center relative overflow-hidden shadow-xl"
 					style="background: linear-gradient(135deg, {card.from}, {card.to});">
 					<div class="text-4xl mb-2">{card.emoji}</div>
@@ -185,12 +174,7 @@
 		<p class="text-gray-400 text-sm mb-6">מההכנסה הראשונית ועד לחלוקה הסופית:</p>
 		<div class="rounded-2xl p-8" style="background: #0f172a; border: 1px solid rgba(255,255,255,0.08);">
 			<div class="flex flex-wrap items-stretch justify-between gap-3">
-				{#each [
-					{ ico: '💳', t: 'הכנסה גולמית', s: '100%', border: 'rgba(124,58,237,0.3)' },
-					{ ico: '⚙️', t: 'עלויות תפעול', s: '35%', border: 'rgba(239,68,68,0.3)' },
-					{ ico: '💰', t: 'רווח נקי', s: '65%', border: 'rgba(250,204,21,0.4)' },
-					{ ico: '🤲', t: 'חלוקה', s: 'לשלושה גורמים', border: 'rgba(16,185,129,0.4)' },
-				] as node, i}
+				{#each data.flow_nodes as node, i}
 					{#if i > 0}
 						<div class="self-center text-yellow-400 font-black text-2xl">←</div>
 					{/if}
