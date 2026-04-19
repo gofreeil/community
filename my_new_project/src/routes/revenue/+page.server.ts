@@ -21,8 +21,9 @@ const DEFAULT_CHANNELS = [
 
 const DEFAULT_COSTS = [
     { name: 'תפעול טכני (שרתים, דומיין, API)', pct: '12%' },
-    { name: 'פיתוח ותחזוקה שוטפת',             pct: '10%' },
+    { name: 'פיתוח, תחזוקה שוטפת ואבטחת מידע', pct: '10%' },
     { name: 'משפטי, חשבונאות ומיסוי',           pct: '5%'  },
+    { name: 'שירות לקוחות ותמיכה למפרסמים',      pct: '8%'  },
 ];
 
 const DEFAULT_DISTRIBUTION = [
