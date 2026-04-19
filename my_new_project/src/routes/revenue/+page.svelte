@@ -13,17 +13,32 @@
 				document.head.appendChild(s);
 			});
 		}
+		if (!(window as any).ChartDataLabels) {
+			await new Promise<void>((resolve) => {
+				const s = document.createElement('script');
+				s.src = 'https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js';
+				s.onload = () => resolve();
+				document.head.appendChild(s);
+			});
+		}
+		(window as any).Chart.register((window as any).ChartDataLabels);
 		const Chart = (window as any).Chart;
 		Chart.defaults.font.family = 'Assistant, sans-serif';
 		Chart.defaults.color = '#cbd5e1';
 
+		const datalabelsOpts = {
+			color: '#fff',
+			font: { weight: 'bold' as const, size: 14 },
+			formatter: (value: number) => value + '%'
+		};
+
 		new Chart(document.getElementById('costsChart'), {
 			type: 'doughnut',
 			data: {
-				labels: ['הוצאות', 'כסף לחלוקה'],
-				datasets: [{ data: [35, 65], backgroundColor: ['#1e293b','#facc15'], borderWidth: 0 }]
+				labels: ['כסף לחלוקה', 'הוצאות'],
+				datasets: [{ data: [65, 35], backgroundColor: ['#facc15','#1e293b'], borderWidth: 0 }]
 			},
-			options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 12, font: { size: 12 } } } } }
+			options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 12, font: { size: 12 } } }, datalabels: datalabelsOpts } }
 		});
 
 		new Chart(document.getElementById('ownersChart'), {
@@ -32,7 +47,7 @@
 				labels: ['ישיר לארנק', 'קרן פרסום'],
 				datasets: [{ data: [40, 10], backgroundColor: ['#60a5fa','#a78bfa'], borderWidth: 2, borderColor: '#0f172a' }]
 			},
-			options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 10, font: { size: 11 }, boxWidth: 12 } } } }
+			options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 10, font: { size: 11 }, boxWidth: 12 } }, datalabels: datalabelsOpts } }
 		});
 
 		new Chart(document.getElementById('charityChart'), {
@@ -41,7 +56,7 @@
 				labels: ['יוצאים לחירות', 'קופת הצדקה', 'הגרלת הקהילה'],
 				datasets: [{ data: [10, 9, 1], backgroundColor: ['#34d399','#a78bfa','#fbbf24'], borderWidth: 2, borderColor: '#0f172a' }]
 			},
-			options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 10, font: { size: 11 }, boxWidth: 12 } } } }
+			options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 10, font: { size: 11 }, boxWidth: 12 } }, datalabels: datalabelsOpts } }
 		});
 
 		new Chart(document.getElementById('coordinatorChart'), {
@@ -50,7 +65,7 @@
 				labels: ['ישיר לארנק', 'תגמול קבוצתי', 'מועדון השקעות', 'רכישות בקהילה'],
 				datasets: [{ data: [10, 5, 5, 10], backgroundColor: ['#a78bfa','#60a5fa','#34d399','#fbbf24'], borderWidth: 2, borderColor: '#0f172a' }]
 			},
-			options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 10, font: { size: 11 }, boxWidth: 12 } } } }
+			options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 10, font: { size: 11 }, boxWidth: 12 } }, datalabels: datalabelsOpts } }
 		});
 	});
 </script>
