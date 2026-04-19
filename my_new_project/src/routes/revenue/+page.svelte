@@ -101,9 +101,9 @@
 		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 			<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
 				style="background: linear-gradient(135deg,#facc15,#f59e0b);">💰</span>
-			8 ערוצי ההכנסה
+			ערוצי ההכנסה
 		</h2>
-		<p class="text-gray-400 text-sm mb-6 max-w-2xl">מקורות ההכנסה של הפלטפורמה — כולם מבוססים על ערך אמיתי לתושבים ולעסקים המקומיים.</p>
+		<p class="text-gray-400 text-sm mb-6 max-w-2xl">מקורות ההכנסה של הפלטפורמה מגיעים מהפרסומים :</p>
 		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 			{#each data.channels as ch}
 				<div class="rounded-2xl p-5 transition-all hover:-translate-y-0.5 hover:border-yellow-400/40"
