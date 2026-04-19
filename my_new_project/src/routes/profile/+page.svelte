@@ -952,7 +952,7 @@
 				<div class="flex gap-3 mt-2 flex-wrap">
 					{#if data.items.length > 0}
 						<span
-							class="text-sm bg-blue-500/20 text-blue-400 border border-blue-500/30 px-3 py-1.5 rounded-full font-bold"
+							class="text-sm text-blue-400 font-bold"
 						>
 							{data.items.length}
 							{tFn("publications_count")}
