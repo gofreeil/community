@@ -4,9 +4,7 @@
 	let { data }: { data: PageData } = $props();
 
 	onMount(async () => {
-		// @ts-ignore
 		if (typeof window === 'undefined') return;
-		// טעינת Chart.js דינמית
 		if (!(window as any).Chart) {
 			await new Promise<void>((resolve) => {
 				const s = document.createElement('script');
@@ -26,31 +24,6 @@
 				datasets: [{ data: [35, 65], backgroundColor: ['#1e293b','#facc15'], borderWidth: 0 }]
 			},
 			options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 12, font: { size: 12 } } } } }
-		});
-
-		new Chart(document.getElementById('distChart'), {
-			type: 'pie',
-			data: {
-				labels: ['בעלי הפלטפורמה (50%)', 'צדקה (20%)', 'רכזי שכונות (30%)'],
-				datasets: [{ data: [50, 20, 30], backgroundColor: ['#3b82f6','#10b981','#f59e0b'], borderWidth: 2, borderColor: '#0f172a' }]
-			},
-			options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 12 } } } }
-		});
-
-		new Chart(document.getElementById('channelsChart'), {
-			type: 'bar',
-			data: {
-				labels: ['פרסומות', 'שירותים', 'אירועים', 'צימרים', 'בייביסיטר', 'חוגים', 'טרמפים', 'Premium'],
-				datasets: [{ label: 'חלק יחסי (%)', data: [28,18,12,10,9,9,4,10], backgroundColor: 'rgba(250,204,21,0.7)', borderColor: '#facc15', borderWidth: 1, borderRadius: 6 }]
-			},
-			options: {
-				responsive: true, maintainAspectRatio: false,
-				plugins: { legend: { display: false } },
-				scales: {
-					x: { ticks: { font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
-					y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } }
-				}
-			}
 		});
 	});
 </script>
@@ -170,23 +143,27 @@
 		</div>
 	</div>
 
-	<!-- 4. גרפים -->
-	<div class="mb-8">
+	<!-- 4. הכנסה לבעלים -->
+	<div class="mb-12">
 		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 			<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
 				style="background: linear-gradient(135deg,#facc15,#f59e0b);">4</span>
-			הדמיה גרפית
+			הכנסה לבעלים
 		</h2>
-		<p class="text-gray-400 text-sm mb-6">שני תרשימים שממחישים את המודל:</p>
-		<div class="grid md:grid-cols-2 gap-6">
-			<div class="rounded-2xl p-6" style="background: linear-gradient(135deg,#111827,#1e293b); border: 1px solid rgba(255,255,255,0.08);">
-				<h3 class="font-black text-yellow-300 mb-4">חלוקת הרווח הנקי</h3>
-				<div class="h-72"><canvas id="distChart"></canvas></div>
-			</div>
-			<div class="rounded-2xl p-6" style="background: linear-gradient(135deg,#111827,#1e293b); border: 1px solid rgba(255,255,255,0.08);">
-				<h3 class="font-black text-yellow-300 mb-4">הכנסה חזויה לפי ערוץ (דוגמה)</h3>
-				<div class="h-72"><canvas id="channelsChart"></canvas></div>
-			</div>
+		<div class="rounded-2xl p-8" style="background: linear-gradient(135deg,#1e3a8a,#1e293b); border: 1px solid rgba(59,130,246,0.3);">
+			<p class="text-gray-300 text-sm leading-relaxed">תוכן יתווסף בקרוב.</p>
+		</div>
+	</div>
+
+	<!-- 5. הכנסה לרכזי השטח פירוט -->
+	<div class="mb-8">
+		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
+			<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
+				style="background: linear-gradient(135deg,#facc15,#f59e0b);">5</span>
+			הכנסה לרכזי השטח פירוט
+		</h2>
+		<div class="rounded-2xl p-8" style="background: linear-gradient(135deg,#78350f,#1e293b); border: 1px solid rgba(245,158,11,0.3);">
+			<p class="text-gray-300 text-sm leading-relaxed">תוכן יתווסף בקרוב.</p>
 		</div>
 	</div>
 
