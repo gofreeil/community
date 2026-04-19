@@ -44,19 +44,43 @@
 		new Chart(document.getElementById('ownersChart'), {
 			type: 'doughnut',
 			data: {
-				labels: ['ישיר לארנק', 'קרן פרסום'],
-				datasets: [{ data: [40, 10], backgroundColor: ['#60a5fa','#a78bfa'], borderWidth: 2, borderColor: '#0f172a' }]
+				labels: ['ישיר לארנק', 'קרן פרסום', ''],
+				datasets: [{ data: [40, 10, 50], backgroundColor: ['#60a5fa','#a78bfa','rgba(15,23,42,0.6)'], borderWidth: 2, borderColor: '#0f172a' }]
 			},
-			options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 10, font: { size: 11 }, boxWidth: 12 } }, datalabels: datalabelsOpts } }
+			options: {
+				responsive: true, maintainAspectRatio: false,
+				plugins: {
+					legend: { position: 'bottom', labels: { padding: 10, font: { size: 11 }, boxWidth: 12,
+						filter: (item: any) => item.index < 2
+					}},
+					datalabels: {
+						color: '#fff',
+						font: { weight: 'bold' as const, size: 13 },
+						formatter: (value: number, ctx: any) => ctx.dataIndex < 2 ? value + '%' : '',
+					}
+				}
+			}
 		});
 
 		new Chart(document.getElementById('charityChart'), {
 			type: 'doughnut',
 			data: {
-				labels: ['יוצאים לחירות', 'קופת הצדקה', 'הגרלת הקהילה'],
-				datasets: [{ data: [10, 9, 1], backgroundColor: ['#34d399','#a78bfa','#fbbf24'], borderWidth: 2, borderColor: '#0f172a' }]
+				labels: ['יוצאים לחירות', 'קופת הצדקה', 'הגרלת הקהילה', ''],
+				datasets: [{ data: [10, 9, 1, 80], backgroundColor: ['#34d399','#a78bfa','#fbbf24','rgba(15,23,42,0.6)'], borderWidth: 2, borderColor: '#0f172a' }]
 			},
-			options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 10, font: { size: 11 }, boxWidth: 12 } }, datalabels: datalabelsOpts } }
+			options: {
+				responsive: true, maintainAspectRatio: false,
+				plugins: {
+					legend: { position: 'bottom', labels: { padding: 10, font: { size: 11 }, boxWidth: 12,
+						filter: (item: any) => item.index < 3
+					}},
+					datalabels: {
+						color: '#fff',
+						font: { weight: 'bold' as const, size: 13 },
+						formatter: (value: number, ctx: any) => ctx.dataIndex < 3 ? value + '%' : '',
+					}
+				}
+			}
 		});
 
 		new Chart(document.getElementById('coordinatorChart'), {
