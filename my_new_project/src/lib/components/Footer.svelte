@@ -60,7 +60,7 @@
                 aria-label="ניווט תחתון"
                 class="flex items-center gap-4 text-base md:text-lg text-gray-300 font-bold"
             >
-                <a href="/legal" class="hover:text-white transition-colors whitespace-nowrap">תנאי שימוש, פרטיות, הצהרת נגישות וכו'</a>
+                <a href="/legal" class="hover:text-white transition-colors whitespace-nowrap">תנאי שימוש, הצהרת נגישות וכו'</a>
                 <span class="text-gray-600 font-black" aria-hidden="true">|</span>
                 <a href="mailto:freedomhasbegun@gmail.com" class="hover:text-white transition-colors" aria-label="צור קשר – שלח אימייל">{tFn("contact_us")}</a>
                 <span class="text-gray-600 font-black" aria-hidden="true">|</span>
