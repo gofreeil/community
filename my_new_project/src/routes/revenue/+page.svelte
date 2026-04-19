@@ -98,58 +98,11 @@
 		</div>
 	</div>
 
-	<!-- 8 ערוצי הכנסה -->
+	<!-- 1. זרימת הכסף -->
 	<div class="mb-12">
 		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 			<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
-				style="background: linear-gradient(135deg,#facc15,#f59e0b);">💰</span>
-			ערוצי ההכנסה
-		</h2>
-		<p class="text-gray-400 text-sm mb-6 max-w-2xl">מקורות ההכנסה של הפלטפורמה מגיעים מפרסומים ומשיתופי פעולה</p>
-		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-			{#each data.channels as ch}
-				<div class="rounded-2xl p-5 transition-all hover:-translate-y-0.5 hover:border-yellow-400/40"
-					style="background: linear-gradient(135deg,#111827,#1e293b); border: 1px solid rgba(255,255,255,0.08);">
-					<div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-3"
-						style="background: {ch.bg}; color: {ch.color};">{ch.icon}</div>
-					<h3 class="font-black text-base mb-1.5">{ch.title}</h3>
-					<p class="text-gray-400 text-xs leading-relaxed">{ch.desc}</p>
-					<span class="inline-block mt-3 px-2.5 py-0.5 rounded-full text-[11px] font-bold"
-						style="background: rgba(250,204,21,0.12); color: #facc15;">{ch.tag}</span>
-				</div>
-			{/each}
-		</div>
-	</div>
-
-	<!-- עלויות -->
-	<div class="mb-12">
-		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
-			<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
-				style="background: linear-gradient(135deg,#facc15,#f59e0b);">⚙️</span>
-			העלויות / חברת הניהול 35%
-		</h2>
-		<p class="text-gray-400 text-sm mb-6 max-w-2xl">החברה מתוגמלת אך ורק מתוך הרווחים ולא במשכורת או בתשלום חודשי — להלן ההוצאות</p>
-		<div class="rounded-2xl p-8" style="background: linear-gradient(135deg,#1a1035,#0f172a); border: 1px solid rgba(234,179,8,0.25);">
-			<div class="grid md:grid-cols-2 gap-8 items-center">
-				<div class="flex flex-col gap-3">
-					{#each data.costs as row}
-						<div class="flex justify-between items-center px-4 py-3 rounded-xl border-r-4 border-yellow-400"
-							style="background: rgba(255,255,255,0.04);">
-							<span class="font-semibold text-sm">{row.name}</span>
-							<span class="font-black text-yellow-300 text-lg">{row.pct}</span>
-						</div>
-					{/each}
-				</div>
-				<div class="h-72"><canvas id="costsChart"></canvas></div>
-			</div>
-		</div>
-	</div>
-
-	<!-- זרימת כסף -->
-	<div class="mb-12">
-		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
-			<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
-				style="background: linear-gradient(135deg,#facc15,#f59e0b);">🔁</span>
+				style="background: linear-gradient(135deg,#facc15,#f59e0b);">1</span>
 			זרימת הכסף
 		</h2>
 		<p class="text-gray-400 text-sm mb-6">מההכנסה הראשונית ועד לחלוקה הסופית:</p>
@@ -170,11 +123,58 @@
 		</div>
 	</div>
 
-	<!-- גרפים -->
+	<!-- 2. ערוצי ההכנסה -->
+	<div class="mb-12">
+		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
+			<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
+				style="background: linear-gradient(135deg,#facc15,#f59e0b);">2</span>
+			ערוצי ההכנסה
+		</h2>
+		<p class="text-gray-400 text-sm mb-6 max-w-2xl">מקורות ההכנסה של הפלטפורמה מגיעים מפרסומים ומשיתופי פעולה</p>
+		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+			{#each data.channels as ch}
+				<div class="rounded-2xl p-5 transition-all hover:-translate-y-0.5 hover:border-yellow-400/40"
+					style="background: linear-gradient(135deg,#111827,#1e293b); border: 1px solid rgba(255,255,255,0.08);">
+					<div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-3"
+						style="background: {ch.bg}; color: {ch.color};">{ch.icon}</div>
+					<h3 class="font-black text-base mb-1.5">{ch.title}</h3>
+					<p class="text-gray-400 text-xs leading-relaxed">{ch.desc}</p>
+					<span class="inline-block mt-3 px-2.5 py-0.5 rounded-full text-[11px] font-bold"
+						style="background: rgba(250,204,21,0.12); color: #facc15;">{ch.tag}</span>
+				</div>
+			{/each}
+		</div>
+	</div>
+
+	<!-- 3. עלויות -->
+	<div class="mb-12">
+		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
+			<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
+				style="background: linear-gradient(135deg,#facc15,#f59e0b);">3</span>
+			העלויות / חברת הניהול 35%
+		</h2>
+		<p class="text-gray-400 text-sm mb-6 max-w-2xl">החברה מתוגמלת אך ורק מתוך הרווחים ולא במשכורת או בתשלום חודשי — להלן ההוצאות</p>
+		<div class="rounded-2xl p-8" style="background: linear-gradient(135deg,#1a1035,#0f172a); border: 1px solid rgba(234,179,8,0.25);">
+			<div class="grid md:grid-cols-2 gap-8 items-center">
+				<div class="flex flex-col gap-3">
+					{#each data.costs as row}
+						<div class="flex justify-between items-center px-4 py-3 rounded-xl border-r-4 border-yellow-400"
+							style="background: rgba(255,255,255,0.04);">
+							<span class="font-semibold text-sm">{row.name}</span>
+							<span class="font-black text-yellow-300 text-lg">{row.pct}</span>
+						</div>
+					{/each}
+				</div>
+				<div class="h-72"><canvas id="costsChart"></canvas></div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 4. גרפים -->
 	<div class="mb-8">
 		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 			<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
-				style="background: linear-gradient(135deg,#facc15,#f59e0b);">📊</span>
+				style="background: linear-gradient(135deg,#facc15,#f59e0b);">4</span>
 			הדמיה גרפית
 		</h2>
 		<p class="text-gray-400 text-sm mb-6">שני תרשימים שממחישים את המודל:</p>
