@@ -112,7 +112,7 @@
 			שיטת התגמול
 		</h2>
 		<p class="relative text-gray-400 text-sm mb-4">הכירו את שיטת התגמול של הקהילה — איך צוברים ומקבלים יתרה.</p>
-		<a href="/revenue.html"
+		<a href="/revenue"
 			class="relative inline-flex items-center justify-center gap-2 w-full px-5 py-3 rounded-xl font-black text-sm text-[#1a1035] transition-transform hover:scale-[1.02] shadow-lg"
 			style="background: linear-gradient(135deg, #facc15, #f59e0b);">
 			לצפייה בשיטת התגמול
