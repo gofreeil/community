@@ -45,7 +45,7 @@
 			type: 'doughnut',
 			data: {
 				labels: ['ישיר לארנק', 'קרן פרסום', ''],
-				datasets: [{ data: [40, 10, 50], backgroundColor: ['#60a5fa','#a78bfa','rgba(15,23,42,0.6)'], borderWidth: 2, borderColor: '#0f172a' }]
+				datasets: [{ data: [40, 10, 50], backgroundColor: ['#93c5fd','#3b82f6','rgba(15,23,42,0.6)'], borderWidth: 2, borderColor: '#0f172a' }]
 			},
 			options: {
 				rotation: 18,
@@ -67,7 +67,7 @@
 			type: 'doughnut',
 			data: {
 				labels: ['יוצאים לחירות', 'קופת הצדקה', 'הגרלת הקהילה', ''],
-				datasets: [{ data: [10, 9, 1, 80], backgroundColor: ['#34d399','#a78bfa','#fbbf24','rgba(15,23,42,0.6)'], borderWidth: 2, borderColor: '#0f172a' }]
+				datasets: [{ data: [10, 9, 1, 80], backgroundColor: ['#6ee7b7','#34d399','#10b981','rgba(15,23,42,0.6)'], borderWidth: 2, borderColor: '#0f172a' }]
 			},
 			options: {
 				rotation: 198,
@@ -89,7 +89,7 @@
 			type: 'doughnut',
 			data: {
 				labels: ['ישיר לארנק', 'תגמול קבוצתי', 'מועדון השקעות', 'רכישות בקהילה', ''],
-				datasets: [{ data: [10, 5, 5, 10, 70], backgroundColor: ['#a78bfa','#60a5fa','#34d399','#fbbf24','rgba(15,23,42,0.6)'], borderWidth: 2, borderColor: '#0f172a' }]
+				datasets: [{ data: [10, 5, 5, 10, 70], backgroundColor: ['#fbbf24','#f59e0b','#d97706','#b45309','rgba(15,23,42,0.6)'], borderWidth: 2, borderColor: '#0f172a' }]
 			},
 			options: {
 				rotation: -90,
@@ -126,6 +126,9 @@
 	<!-- HERO -->
 	<div class="relative rounded-3xl px-8 py-14 text-center mb-10 shadow-2xl overflow-hidden"
 		style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4c1d95 100%);">
+		<!-- מספר 1 — פינה עליונה ימנית -->
+		<span class="absolute top-4 right-4 w-11 h-11 rounded-full flex items-center justify-center text-lg font-black text-[#1a1035] z-20 shadow-lg"
+			style="background: linear-gradient(135deg,#facc15,#f59e0b);">1</span>
 		<div class="absolute inset-0 pointer-events-none"
 			style="background: radial-gradient(ellipse at 70% 30%, rgba(124,58,237,0.35) 0%, transparent 60%);"></div>
 		<div class="relative z-10">
@@ -155,9 +158,7 @@
 
 			<!-- 1. תקציר הכנסות והוצאות — בתוך ה-hero -->
 			<div class="mt-10 pt-8 border-t border-white/10">
-				<h2 class="text-xl font-black mb-1 flex items-center gap-3 justify-center">
-					<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
-						style="background: linear-gradient(135deg,#facc15,#f59e0b);">1</span>
+				<h2 class="text-xl font-black mb-1">
 					תקציר הכנסות והוצאות
 				</h2>
 				<p class="text-indigo-200 text-sm mb-6 text-center">מהרווח הנקי — כל שקל מתחלק בין שלושה גורמים:</p>
@@ -227,7 +228,7 @@
 	<div class="mb-12">
 		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 			<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
-				style="background: linear-gradient(135deg,#facc15,#f59e0b);">4</span>
+				style="background: linear-gradient(135deg,#fbbf24,#d97706);">4</span>
 			הכנסה לרכזי השטח — פירוט
 		</h2>
 		<p class="text-gray-400 text-sm mb-6 max-w-2xl">תגמול לרכזי השטח בשקלים חדשים — סה"כ 30% מהרווחים</p>
@@ -239,14 +240,14 @@
 			<div class="flex flex-col gap-3">
 				<!-- 10% ישיר -->
 				<div class="rounded-2xl p-4 flex gap-4 items-center"
-					style="background: linear-gradient(135deg,#1a1035,#312e81); border: 1px solid rgba(124,58,237,0.4);">
+					style="background: linear-gradient(135deg,#78350f,#1e293b); border: 1px solid rgba(245,158,11,0.45);">
 					<div class="w-14 h-14 rounded-xl flex items-center justify-center text-lg font-black flex-shrink-0"
-						style="background: rgba(124,58,237,0.25); color: #a78bfa;">10%</div>
+						style="background: rgba(245,158,11,0.25); color: #fbbf24;">10%</div>
 					<div class="flex-1">
 						<div class="flex items-center gap-2 mb-0.5">
 							<span>💰</span>
 							<span class="font-black text-white text-sm">ישיר לארנק</span>
-							<span class="px-2 py-0.5 rounded-full text-[10px] font-black" style="background:rgba(124,58,237,0.3);color:#a78bfa;">ישיר</span>
+							<span class="px-2 py-0.5 rounded-full text-[10px] font-black" style="background:rgba(245,158,11,0.3);color:#fbbf24;">ישיר</span>
 						</div>
 						<p class="text-gray-300 text-xs leading-relaxed">מכל הכנסה שמייצרת השכונה שלך</p>
 					</div>
@@ -254,14 +255,14 @@
 
 				<!-- 5% עקיף -->
 				<div class="rounded-2xl p-4 flex gap-4 items-center"
-					style="background: linear-gradient(135deg,#1e3a8a,#1e293b); border: 1px solid rgba(59,130,246,0.4);">
+					style="background: linear-gradient(135deg,#92400e,#1e293b); border: 1px solid rgba(217,119,6,0.4);">
 					<div class="w-14 h-14 rounded-xl flex items-center justify-center text-lg font-black flex-shrink-0"
-						style="background: rgba(59,130,246,0.2); color: #60a5fa;">5%</div>
+						style="background: rgba(217,119,6,0.2); color: #f59e0b;">5%</div>
 					<div class="flex-1">
 						<div class="flex items-center gap-2 mb-0.5">
 							<span>🤝</span>
 							<span class="font-black text-white text-sm">תגמול קבוצתי</span>
-							<span class="px-2 py-0.5 rounded-full text-[10px] font-black" style="background:rgba(59,130,246,0.25);color:#60a5fa;">עקיף</span>
+							<span class="px-2 py-0.5 rounded-full text-[10px] font-black" style="background:rgba(217,119,6,0.25);color:#f59e0b;">עקיף</span>
 						</div>
 						<p class="text-gray-300 text-xs leading-relaxed">מתחלק מקופת כלל השכונות לרכזי הרשת</p>
 					</div>
@@ -269,14 +270,14 @@
 
 				<!-- 5% השקעות -->
 				<div class="rounded-2xl p-4 flex gap-4 items-center"
-					style="background: linear-gradient(135deg,#064e3b,#1e293b); border: 1px solid rgba(16,185,129,0.4);">
+					style="background: linear-gradient(135deg,#78350f,#1e293b); border: 1px solid rgba(180,83,9,0.4);">
 					<div class="w-14 h-14 rounded-xl flex items-center justify-center text-lg font-black flex-shrink-0"
-						style="background: rgba(16,185,129,0.2); color: #34d399;">5%</div>
+						style="background: rgba(180,83,9,0.2); color: #d97706;">5%</div>
 					<div class="flex-1">
 						<div class="flex items-center gap-2 mb-0.5">
 							<span>📈</span>
 							<span class="font-black text-white text-sm">מועדון ההשקעות</span>
-							<span class="px-2 py-0.5 rounded-full text-[10px] font-black" style="background:rgba(16,185,129,0.25);color:#34d399;">זכות</span>
+							<span class="px-2 py-0.5 rounded-full text-[10px] font-black" style="background:rgba(180,83,9,0.25);color:#d97706;">זכות</span>
 						</div>
 						<p class="text-gray-300 text-xs leading-relaxed">זכות להשקיע במועדון — תשואה עתידית</p>
 					</div>
@@ -299,15 +300,15 @@
 			</div>
 
 			<!-- גרף עוגה -->
-			<div class="rounded-2xl p-6 flex flex-col items-center" style="background:#0f172a; border:1px solid rgba(255,255,255,0.08);">
-				<h3 class="font-black text-yellow-300 mb-4 text-sm">התפלגות 30% לרכז</h3>
+			<div class="rounded-2xl p-6 flex flex-col items-center" style="background:#0f172a; border:1px solid rgba(245,158,11,0.2);">
+				<h3 class="font-black text-amber-400 mb-4 text-sm">התפלגות 30% לרכז</h3>
 				<div class="h-64 w-full"><canvas id="coordinatorChart"></canvas></div>
 			</div>
 		</div>
 
 		<!-- סיכום -->
 		<div class="rounded-2xl p-5 flex items-center justify-between"
-			style="background: linear-gradient(135deg,#1a1035,#312e81); border: 2px solid rgba(250,204,21,0.5);">
+			style="background: linear-gradient(135deg,#78350f,#1a1035); border: 2px solid rgba(245,158,11,0.5);">
 			<div class="flex items-center gap-3">
 				<span class="text-2xl">🏆</span>
 				<div>
@@ -315,15 +316,15 @@
 					<div class="text-xs text-gray-400">10% ישיר + 5% קבוצתי + 5% השקעות + 10% קניות</div>
 				</div>
 			</div>
-			<div class="text-4xl font-black text-yellow-300">30%</div>
+			<div class="text-4xl font-black text-amber-300">30%</div>
 		</div>
 	</div>
 
 	<!-- 5. הכנסה לבעלים -->
 	<div class="mb-8">
 		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
-			<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
-				style="background: linear-gradient(135deg,#facc15,#f59e0b);">5</span>
+			<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-white"
+				style="background: linear-gradient(135deg,#3b82f6,#1d4ed8);">5</span>
 			הכנסה לבעלים
 		</h2>
 		<p class="text-gray-400 text-sm mb-6 max-w-2xl">תגמול בעלי הפלטפורמה — סה"כ 50% מהרווחים</p>
@@ -334,14 +335,14 @@
 			<div class="flex flex-col gap-3">
 				<!-- 40% ישיר -->
 				<div class="rounded-2xl p-4 flex gap-4 items-center"
-					style="background: linear-gradient(135deg,#1e3a8a,#1e293b); border: 1px solid rgba(59,130,246,0.4);">
+					style="background: linear-gradient(135deg,#1e3a8a,#1e293b); border: 1px solid rgba(59,130,246,0.45);">
 					<div class="w-14 h-14 rounded-xl flex items-center justify-center text-lg font-black flex-shrink-0"
-						style="background: rgba(59,130,246,0.2); color: #60a5fa;">40%</div>
+						style="background: rgba(59,130,246,0.2); color: #93c5fd;">40%</div>
 					<div class="flex-1">
 						<div class="flex items-center gap-2 mb-0.5">
 							<span>💰</span>
 							<span class="font-black text-white text-sm">ישיר לארנק</span>
-							<span class="px-2 py-0.5 rounded-full text-[10px] font-black" style="background:rgba(59,130,246,0.25);color:#60a5fa;">ישיר</span>
+							<span class="px-2 py-0.5 rounded-full text-[10px] font-black" style="background:rgba(59,130,246,0.25);color:#93c5fd;">ישיר</span>
 						</div>
 						<p class="text-gray-300 text-xs leading-relaxed">מההכנסות שמייצרות כל השכונות — נכנס ישירות לארנק הבעלים</p>
 					</div>
@@ -349,14 +350,14 @@
 
 				<!-- 10% פרסום -->
 				<div class="rounded-2xl p-4 flex gap-4 items-center"
-					style="background: linear-gradient(135deg,#1a1035,#312e81); border: 1px solid rgba(124,58,237,0.4);">
+					style="background: linear-gradient(135deg,#1d4ed8,#1e293b); border: 1px solid rgba(37,99,235,0.4);">
 					<div class="w-14 h-14 rounded-xl flex items-center justify-center text-lg font-black flex-shrink-0"
-						style="background: rgba(124,58,237,0.25); color: #a78bfa;">10%</div>
+						style="background: rgba(37,99,235,0.2); color: #60a5fa;">10%</div>
 					<div class="flex-1">
 						<div class="flex items-center gap-2 mb-0.5">
 							<span>📣</span>
 							<span class="font-black text-white text-sm">קרן פרסום</span>
-							<span class="px-2 py-0.5 rounded-full text-[10px] font-black" style="background:rgba(124,58,237,0.3);color:#a78bfa;">מינימום</span>
+							<span class="px-2 py-0.5 rounded-full text-[10px] font-black" style="background:rgba(37,99,235,0.25);color:#60a5fa;">מינימום</span>
 						</div>
 						<p class="text-gray-300 text-xs leading-relaxed">יופקד לפרסום הפלטפורמה — בכפוף להסכמת ולהצבעת הבעלים</p>
 					</div>
@@ -364,15 +365,15 @@
 			</div>
 
 			<!-- גרף -->
-			<div class="rounded-2xl p-6 flex flex-col items-center" style="background:#0f172a; border:1px solid rgba(255,255,255,0.08);">
-				<h3 class="font-black text-yellow-300 mb-4 text-sm">התפלגות 50% לבעלים</h3>
+			<div class="rounded-2xl p-6 flex flex-col items-center" style="background:#0f172a; border:1px solid rgba(59,130,246,0.2);">
+				<h3 class="font-black text-blue-400 mb-4 text-sm">התפלגות 50% לבעלים</h3>
 				<div class="h-64 w-full"><canvas id="ownersChart"></canvas></div>
 			</div>
 		</div>
 
 		<!-- סיכום -->
 		<div class="rounded-2xl p-5 flex items-center justify-between"
-			style="background: linear-gradient(135deg,#1e3a8a,#1a1035); border: 2px solid rgba(250,204,21,0.5);">
+			style="background: linear-gradient(135deg,#1e3a8a,#1a1035); border: 2px solid rgba(59,130,246,0.5);">
 			<div class="flex items-center gap-3">
 				<span class="text-2xl">🏛️</span>
 				<div>
@@ -380,15 +381,15 @@
 					<div class="text-xs text-gray-400">40% ישיר לארנק + 10% קרן פרסום</div>
 				</div>
 			</div>
-			<div class="text-4xl font-black text-yellow-300">50%</div>
+			<div class="text-4xl font-black text-blue-300">50%</div>
 		</div>
 	</div>
 
 	<!-- 6. חברה צדקה וחסד -->
 	<div class="mb-8">
 		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
-			<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
-				style="background: linear-gradient(135deg,#facc15,#f59e0b);">6</span>
+			<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-white"
+				style="background: linear-gradient(135deg,#10b981,#059669);">6</span>
 			חברה, צדקה וחסד
 		</h2>
 		<p class="text-gray-400 text-sm mb-6 max-w-2xl">20% מהרווחים מוקדשים לפעולות חברתיות — כי קהילה אמיתית מחזירה לחברה</p>
@@ -402,12 +403,12 @@
 				<div class="rounded-2xl p-4 flex gap-4 items-center"
 					style="background: linear-gradient(135deg,#064e3b,#1e293b); border: 1px solid rgba(16,185,129,0.45);">
 					<div class="w-14 h-14 rounded-xl flex items-center justify-center text-lg font-black flex-shrink-0"
-						style="background: rgba(16,185,129,0.2); color: #34d399;">10%</div>
+						style="background: rgba(16,185,129,0.2); color: #6ee7b7;">10%</div>
 					<div class="flex-1">
 						<div class="flex items-center gap-2 mb-0.5">
 							<span>🕊️</span>
 							<span class="font-black text-white text-sm">יוצאים לחירות</span>
-							<span class="px-2 py-0.5 rounded-full text-[10px] font-black" style="background:rgba(16,185,129,0.25);color:#34d399;">עמותה</span>
+							<span class="px-2 py-0.5 rounded-full text-[10px] font-black" style="background:rgba(16,185,129,0.25);color:#6ee7b7;">עמותה</span>
 						</div>
 						<p class="text-gray-300 text-xs leading-relaxed">לפעילויות המקדמות חירות ושיפור החברה בישראל</p>
 					</div>
@@ -415,14 +416,14 @@
 
 				<!-- 9% קופת הצדקה -->
 				<div class="rounded-2xl p-4 flex gap-4 items-center"
-					style="background: linear-gradient(135deg,#1a1035,#312e81); border: 1px solid rgba(167,139,250,0.4);">
+					style="background: linear-gradient(135deg,#065f46,#1e293b); border: 1px solid rgba(5,150,105,0.4);">
 					<div class="w-14 h-14 rounded-xl flex items-center justify-center text-lg font-black flex-shrink-0"
-						style="background: rgba(167,139,250,0.2); color: #a78bfa;">9%</div>
+						style="background: rgba(5,150,105,0.2); color: #34d399;">9%</div>
 					<div class="flex-1">
 						<div class="flex items-center gap-2 mb-0.5">
 							<span>❤️</span>
 							<span class="font-black text-white text-sm">קופת הצדקה הקהילתית</span>
-							<span class="px-2 py-0.5 rounded-full text-[10px] font-black" style="background:rgba(167,139,250,0.25);color:#a78bfa;">קהילה</span>
+							<span class="px-2 py-0.5 rounded-full text-[10px] font-black" style="background:rgba(5,150,105,0.25);color:#34d399;">קהילה</span>
 						</div>
 						<p class="text-gray-300 text-xs leading-relaxed">לסיוע למשפחות ולנזקקים בשכונות הרשת</p>
 					</div>
@@ -430,14 +431,14 @@
 
 				<!-- 1% הגרלה -->
 				<div class="rounded-2xl p-4 flex gap-4 items-center"
-					style="background: linear-gradient(135deg,#78350f,#1e293b); border: 1px solid rgba(251,191,36,0.4);">
+					style="background: linear-gradient(135deg,#064e3b,#1e293b); border: 1px solid rgba(16,185,129,0.3);">
 					<div class="w-14 h-14 rounded-xl flex items-center justify-center text-lg font-black flex-shrink-0"
-						style="background: rgba(251,191,36,0.2); color: #fbbf24;">1%</div>
+						style="background: rgba(16,185,129,0.15); color: #10b981;">1%</div>
 					<div class="flex-1">
 						<div class="flex items-center gap-2 mb-0.5">
 							<span>🎲</span>
 							<span class="font-black text-white text-sm">הגרלת הקהילה</span>
-							<span class="px-2 py-0.5 rounded-full text-[10px] font-black" style="background:rgba(251,191,36,0.25);color:#fbbf24;">הגרלה</span>
+							<span class="px-2 py-0.5 rounded-full text-[10px] font-black" style="background:rgba(16,185,129,0.2);color:#10b981;">הגרלה</span>
 						</div>
 						<p class="text-gray-300 text-xs leading-relaxed">יחולק בהגרלה למשתמש ששיפר את פני הקהילה</p>
 					</div>
@@ -445,15 +446,15 @@
 			</div>
 
 			<!-- גרף -->
-			<div class="rounded-2xl p-6 flex flex-col items-center" style="background:#0f172a; border:1px solid rgba(255,255,255,0.08);">
-				<h3 class="font-black text-yellow-300 mb-4 text-sm">התפלגות 20% לצדקה וחסד</h3>
+			<div class="rounded-2xl p-6 flex flex-col items-center" style="background:#0f172a; border:1px solid rgba(16,185,129,0.2);">
+				<h3 class="font-black text-emerald-400 mb-4 text-sm">התפלגות 20% לצדקה וחסד</h3>
 				<div class="h-64 w-full"><canvas id="charityChart"></canvas></div>
 			</div>
 		</div>
 
 		<!-- סיכום -->
 		<div class="rounded-2xl p-5 flex items-center justify-between"
-			style="background: linear-gradient(135deg,#064e3b,#1a1035); border: 2px solid rgba(250,204,21,0.5);">
+			style="background: linear-gradient(135deg,#064e3b,#1a1035); border: 2px solid rgba(16,185,129,0.5);">
 			<div class="flex items-center gap-3">
 				<span class="text-2xl">🤲</span>
 				<div>
@@ -461,7 +462,7 @@
 					<div class="text-xs text-gray-400">10% יוצאים לחירות + 9% קופת צדקה + 1% הגרלה</div>
 				</div>
 			</div>
-			<div class="text-4xl font-black text-yellow-300">20%</div>
+			<div class="text-4xl font-black text-emerald-300">20%</div>
 		</div>
 	</div>
 
