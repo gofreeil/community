@@ -124,9 +124,9 @@
 		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 			<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
 				style="background: linear-gradient(135deg,#facc15,#f59e0b);">⚙️</span>
-			מבנה עלויות — 35%
+			העלויות / חברת הניהול 35%
 		</h2>
-		<p class="text-gray-400 text-sm mb-6 max-w-2xl">35% מההכנסות מופנים לתפעול ואחזקה — כל השאר (65%) יוצא לחלוקה.</p>
+		<p class="text-gray-400 text-sm mb-6 max-w-2xl">החברה מתוגמלת אך ורק מתוך הרווחים ולא במשכורת או בתשלום חודשי — להלן ההוצאות</p>
 		<div class="rounded-2xl p-8" style="background: linear-gradient(135deg,#1a1035,#0f172a); border: 1px solid rgba(234,179,8,0.25);">
 			<div class="grid md:grid-cols-2 gap-8 items-center">
 				<div class="flex flex-col gap-3">
