@@ -85,11 +85,13 @@
 			<p class="text-indigo-200 text-base md:text-lg max-w-2xl mx-auto">
 				{data.hero_subtitle}
 			</p>
-			<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-9">
-				{#each data.stats as s}
-					<div class="rounded-2xl p-5 backdrop-blur-sm" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);">
-						<div class="text-3xl font-black text-yellow-300">{s.num}</div>
-						<div class="text-xs text-indigo-200 mt-1.5 font-semibold">{s.lbl}</div>
+			<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-9">
+				{#each data.distribution as card}
+					<div class="rounded-2xl p-6 text-center backdrop-blur-sm" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);">
+						<div class="text-3xl mb-1">{card.emoji}</div>
+						<div class="text-4xl font-black text-yellow-300">{card.pct}</div>
+						<div class="text-sm font-black text-white mt-1">{card.title}</div>
+						<div class="text-xs text-indigo-200 mt-2 leading-relaxed">{card.desc}</div>
 					</div>
 				{/each}
 			</div>
@@ -140,27 +142,6 @@
 				</div>
 				<div class="h-72"><canvas id="costsChart"></canvas></div>
 			</div>
-		</div>
-	</div>
-
-	<!-- חלוקת רווחים -->
-	<div class="mb-12">
-		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
-			<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
-				style="background: linear-gradient(135deg,#facc15,#f59e0b);">🤲</span>
-			חלוקת הרווחים
-		</h2>
-		<p class="text-gray-400 text-sm mb-6 max-w-2xl">מהרווח הנקי (65% מהברוטו) — כל שקל מתחלק בין שלושה גורמים:</p>
-		<div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
-			{#each data.distribution as card}
-				<div class="rounded-2xl p-7 text-center relative overflow-hidden shadow-xl"
-					style="background: linear-gradient(135deg, {card.from}, {card.to});">
-					<div class="text-4xl mb-2">{card.emoji}</div>
-					<div class="text-5xl font-black leading-none mb-2">{card.pct}</div>
-					<div class="text-lg font-bold mb-2">{card.title}</div>
-					<div class="text-sm opacity-90 leading-relaxed">{card.desc}</div>
-				</div>
-			{/each}
 		</div>
 	</div>
 
