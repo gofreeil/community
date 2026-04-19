@@ -3,9 +3,9 @@ import { strapiGet } from '$lib/server/strapiClient';
 
 // ערכי ברירת מחדל — משמשים כ-fallback אם אין רשומה ב-Strapi
 const DEFAULT_STATS = [
-    { num: '8',   lbl: 'ערוצי הכנסה' },
-    { num: '35%', lbl: 'עלויות תפעול' },
-    { num: '65%', lbl: 'רווח נקי לחלוקה' },
+    { num: '50%', lbl: 'בעלי הפלטפורמה' },
+    { num: '30%', lbl: 'רכזי השכונות' },
+    { num: '20%', lbl: 'צדקה ונזקקים' },
 ];
 
 const DEFAULT_CHANNELS = [
