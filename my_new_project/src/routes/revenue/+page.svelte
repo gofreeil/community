@@ -26,6 +26,15 @@
 			options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 12, font: { size: 12 } } } } }
 		});
 
+		new Chart(document.getElementById('ownersChart'), {
+			type: 'doughnut',
+			data: {
+				labels: ['ישיר לארנק', 'קרן פרסום'],
+				datasets: [{ data: [40, 10], backgroundColor: ['#60a5fa','#a78bfa'], borderWidth: 2, borderColor: '#0f172a' }]
+			},
+			options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 10, font: { size: 11 }, boxWidth: 12 } } } }
+		});
+
 		new Chart(document.getElementById('coordinatorChart'), {
 			type: 'doughnut',
 			data: {
@@ -254,8 +263,61 @@
 				style="background: linear-gradient(135deg,#facc15,#f59e0b);">5</span>
 			הכנסה לבעלים
 		</h2>
-		<div class="rounded-2xl p-8" style="background: linear-gradient(135deg,#1e3a8a,#1e293b); border: 1px solid rgba(59,130,246,0.3);">
-			<p class="text-gray-300 text-sm leading-relaxed">תוכן יתווסף בקרוב.</p>
+		<p class="text-gray-400 text-sm mb-6 max-w-2xl">תגמול בעלי הפלטפורמה — סה"כ 50% מהרווחים</p>
+
+		<div class="grid md:grid-cols-2 gap-6 mb-6 items-center">
+
+			<!-- רשימה אנכית -->
+			<div class="flex flex-col gap-3">
+				<!-- 40% ישיר -->
+				<div class="rounded-2xl p-4 flex gap-4 items-center"
+					style="background: linear-gradient(135deg,#1e3a8a,#1e293b); border: 1px solid rgba(59,130,246,0.4);">
+					<div class="w-14 h-14 rounded-xl flex items-center justify-center text-lg font-black flex-shrink-0"
+						style="background: rgba(59,130,246,0.2); color: #60a5fa;">40%</div>
+					<div class="flex-1">
+						<div class="flex items-center gap-2 mb-0.5">
+							<span>💰</span>
+							<span class="font-black text-white text-sm">ישיר לארנק</span>
+							<span class="px-2 py-0.5 rounded-full text-[10px] font-black" style="background:rgba(59,130,246,0.25);color:#60a5fa;">ישיר</span>
+						</div>
+						<p class="text-gray-300 text-xs leading-relaxed">מההכנסות שמייצרות כל השכונות — נכנס ישירות לארנק הבעלים</p>
+					</div>
+				</div>
+
+				<!-- 10% פרסום -->
+				<div class="rounded-2xl p-4 flex gap-4 items-center"
+					style="background: linear-gradient(135deg,#1a1035,#312e81); border: 1px solid rgba(124,58,237,0.4);">
+					<div class="w-14 h-14 rounded-xl flex items-center justify-center text-lg font-black flex-shrink-0"
+						style="background: rgba(124,58,237,0.25); color: #a78bfa;">10%</div>
+					<div class="flex-1">
+						<div class="flex items-center gap-2 mb-0.5">
+							<span>📣</span>
+							<span class="font-black text-white text-sm">קרן פרסום</span>
+							<span class="px-2 py-0.5 rounded-full text-[10px] font-black" style="background:rgba(124,58,237,0.3);color:#a78bfa;">מינימום</span>
+						</div>
+						<p class="text-gray-300 text-xs leading-relaxed">יופקד לפרסום הפלטפורמה — בכפוף להסכמת ולהצבעת הבעלים</p>
+					</div>
+				</div>
+			</div>
+
+			<!-- גרף -->
+			<div class="rounded-2xl p-6 flex flex-col items-center" style="background:#0f172a; border:1px solid rgba(255,255,255,0.08);">
+				<h3 class="font-black text-yellow-300 mb-4 text-sm">התפלגות 50% לבעלים</h3>
+				<div class="h-64 w-full"><canvas id="ownersChart"></canvas></div>
+			</div>
+		</div>
+
+		<!-- סיכום -->
+		<div class="rounded-2xl p-5 flex items-center justify-between"
+			style="background: linear-gradient(135deg,#1e3a8a,#1a1035); border: 2px solid rgba(250,204,21,0.5);">
+			<div class="flex items-center gap-3">
+				<span class="text-2xl">🏛️</span>
+				<div>
+					<div class="font-black text-white text-base">סה"כ תגמול לבעלי הפלטפורמה</div>
+					<div class="text-xs text-gray-400">40% ישיר לארנק + 10% קרן פרסום</div>
+				</div>
+			</div>
+			<div class="text-4xl font-black text-yellow-300">50%</div>
 		</div>
 	</div>
 
