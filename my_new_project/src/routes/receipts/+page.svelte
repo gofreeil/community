@@ -4,7 +4,7 @@
 </script>
 
 <svelte:head>
-	<title>ארנק חשבונות ותגמולים | קהילה בשכונה</title>
+	<title>ארנק ותגמולים | קהילה בשכונה</title>
 </svelte:head>
 
 <div class="min-h-screen bg-[#080f1e] text-white px-4 py-8 max-w-2xl mx-auto" dir="rtl">
@@ -19,7 +19,7 @@
 
 	<!-- כותרת דף -->
 	<div class="text-center mb-8">
-		<h1 class="text-3xl font-black text-white leading-tight">ארנק חשבונות ותגמולים</h1>
+		<h1 class="text-3xl font-black text-white leading-tight">ארנק ותגמולים</h1>
 		<p class="text-purple-400 text-sm mt-1">מעקב יתרה, הוצאות ורווחים</p>
 	</div>
 
