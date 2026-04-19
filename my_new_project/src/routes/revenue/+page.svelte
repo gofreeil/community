@@ -159,10 +159,85 @@
 		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 			<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
 				style="background: linear-gradient(135deg,#facc15,#f59e0b);">5</span>
-			הכנסה לרכזי השטח פירוט
+			הכנסה לרכזי השטח — פירוט
 		</h2>
-		<div class="rounded-2xl p-8" style="background: linear-gradient(135deg,#78350f,#1e293b); border: 1px solid rgba(245,158,11,0.3);">
-			<p class="text-gray-300 text-sm leading-relaxed">תוכן יתווסף בקרוב.</p>
+		<p class="text-gray-400 text-sm mb-6 max-w-2xl">תגמול לרכזי השטח בשקלים חדשים — סה"כ 30% מהרווחים</p>
+
+		<!-- כרטיסיות תגמול -->
+		<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+
+			<!-- 10% ישיר -->
+			<div class="rounded-2xl p-6 flex gap-4 items-start"
+				style="background: linear-gradient(135deg,#1a1035,#312e81); border: 1px solid rgba(124,58,237,0.4);">
+				<div class="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black flex-shrink-0"
+					style="background: rgba(124,58,237,0.25); color: #a78bfa;">10%</div>
+				<div>
+					<div class="flex items-center gap-2 mb-1">
+						<span class="text-lg">💰</span>
+						<span class="font-black text-white">ישיר לארנק</span>
+						<span class="px-2 py-0.5 rounded-full text-[10px] font-black" style="background:rgba(124,58,237,0.3);color:#a78bfa;">ישיר</span>
+					</div>
+					<p class="text-gray-300 text-xs leading-relaxed">מכל הכנסה שמייצרת השכונה שלך — נכנס ישירות לארנק האישי שלך</p>
+				</div>
+			</div>
+
+			<!-- 5% עקיף -->
+			<div class="rounded-2xl p-6 flex gap-4 items-start"
+				style="background: linear-gradient(135deg,#1e3a8a,#1e293b); border: 1px solid rgba(59,130,246,0.4);">
+				<div class="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black flex-shrink-0"
+					style="background: rgba(59,130,246,0.2); color: #60a5fa;">5%</div>
+				<div>
+					<div class="flex items-center gap-2 mb-1">
+						<span class="text-lg">🤝</span>
+						<span class="font-black text-white">תגמול קבוצתי</span>
+						<span class="px-2 py-0.5 rounded-full text-[10px] font-black" style="background:rgba(59,130,246,0.25);color:#60a5fa;">עקיף</span>
+					</div>
+					<p class="text-gray-300 text-xs leading-relaxed">מתחלק מהקופה המשותפת של כלל השכונות — מתוגמל לכל רכזי הרשת</p>
+				</div>
+			</div>
+
+			<!-- 5% השקעות -->
+			<div class="rounded-2xl p-6 flex gap-4 items-start"
+				style="background: linear-gradient(135deg,#064e3b,#1e293b); border: 1px solid rgba(16,185,129,0.4);">
+				<div class="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black flex-shrink-0"
+					style="background: rgba(16,185,129,0.2); color: #34d399;">5%</div>
+				<div>
+					<div class="flex items-center gap-2 mb-1">
+						<span class="text-lg">📈</span>
+						<span class="font-black text-white">מועדון ההשקעות</span>
+						<span class="px-2 py-0.5 rounded-full text-[10px] font-black" style="background:rgba(16,185,129,0.25);color:#34d399;">זכות</span>
+					</div>
+					<p class="text-gray-300 text-xs leading-relaxed">זכות להשקיע את הכסף במועדון ההשקעות — תשואה עתידית על הכספים</p>
+				</div>
+			</div>
+
+			<!-- 10% קניות -->
+			<div class="rounded-2xl p-6 flex gap-4 items-start"
+				style="background: linear-gradient(135deg,#78350f,#1e293b); border: 1px solid rgba(245,158,11,0.4);">
+				<div class="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black flex-shrink-0"
+					style="background: rgba(245,158,11,0.2); color: #fbbf24;">10%</div>
+				<div>
+					<div class="flex items-center gap-2 mb-1">
+						<span class="text-lg">🛍️</span>
+						<span class="font-black text-white">רכישות בקהילה</span>
+						<span class="px-2 py-0.5 rounded-full text-[10px] font-black" style="background:rgba(245,158,11,0.25);color:#fbbf24;">זכות</span>
+					</div>
+					<p class="text-gray-300 text-xs leading-relaxed">זכות לרכוש בחנויות ואצל בעלי המקצוע הכשירים ברשת</p>
+				</div>
+			</div>
+		</div>
+
+		<!-- סיכום -->
+		<div class="rounded-2xl p-5 flex items-center justify-between"
+			style="background: linear-gradient(135deg,#1a1035,#312e81); border: 2px solid rgba(250,204,21,0.5);">
+			<div class="flex items-center gap-3">
+				<span class="text-2xl">🏆</span>
+				<div>
+					<div class="font-black text-white text-base">סה"כ תגמול לרכז שכונה</div>
+					<div class="text-xs text-gray-400">10% ישיר + 5% קבוצתי + 5% השקעות + 10% קניות</div>
+				</div>
+			</div>
+			<div class="text-4xl font-black text-yellow-300">30%</div>
 		</div>
 	</div>
 
