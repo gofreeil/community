@@ -152,10 +152,10 @@
 				{/each}
 			</div>
 
-			<!-- 1. תקציר הכנסות והוצאות — בתוך ה-hero -->
+			<!-- 1. תקציר חלוקת הרווחים — בתוך ה-hero -->
 			<div class="mt-10 pt-8 border-t border-white/10">
 				<h2 class="text-xl font-black mb-1">
-					תקציר הכנסות והוצאות
+					תקציר חלוקת הרווחים
 				</h2>
 				<p class="text-indigo-200 text-sm mb-6 text-center">מהרווח הנקי — כל שקל מתחלק בין שלושה גורמים:</p>
 				<div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
