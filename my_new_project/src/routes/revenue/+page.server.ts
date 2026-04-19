@@ -50,7 +50,7 @@ export const load: PageServerLoad = async () => {
 
     return {
         hero_title:   (cfg.hero_title   as string) || 'איך הקהילה מייצרת ערך — ומחזירה אותו לחברים',
-        hero_subtitle:(cfg.hero_subtitle as string) || 'מודל כלכלי חברתי שקוף שבו כל שקל שנכנס מתחלק בין הקהילה, הבעלים, ורכזי השכונות - כולם נהנים ומרוויחים',
+        hero_subtitle:(cfg.hero_subtitle as string) || 'מודל כלכלי חברתי שקוף שבו כל הכנסה מתחלקת בין הקהילה, הבעלים, ורכזי השכונות - כולם נהנים ומרוויחים!',
         stats:        (cfg.stats        as typeof DEFAULT_STATS)        || DEFAULT_STATS,
         channels:     (cfg.channels     as typeof DEFAULT_CHANNELS)     || DEFAULT_CHANNELS,
         costs:        (cfg.costs        as typeof DEFAULT_COSTS)        || DEFAULT_COSTS,
