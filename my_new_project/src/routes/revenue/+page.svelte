@@ -58,41 +58,40 @@
 			<p class="text-indigo-200 text-base md:text-lg max-w-2xl mx-auto">
 				{data.hero_subtitle}
 			</p>
-			<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-9">
-				{#each data.distribution as card}
-					<div class="rounded-2xl p-6 text-center backdrop-blur-sm" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);">
-						<div class="text-3xl mb-1">{card.emoji}</div>
-						<div class="text-4xl font-black text-yellow-300">{card.pct}</div>
-						<div class="text-sm font-black text-white mt-1">{card.title}</div>
-						<div class="text-xs text-indigo-200 mt-2 leading-relaxed">{card.desc}</div>
+			<div class="flex flex-wrap items-stretch justify-between gap-3 mt-9">
+				{#each data.flow_nodes as node, i}
+					{#if i > 0}
+						<div class="self-center text-yellow-400 font-black text-2xl">←</div>
+					{/if}
+					<div class="flex-1 min-w-[120px] rounded-xl p-4 text-center backdrop-blur-sm"
+						style="background: rgba(255,255,255,0.06); border: 1px solid {node.border};">
+						<div class="text-3xl mb-1">{node.ico}</div>
+						<div class="font-bold text-sm mb-0.5">{node.t}</div>
+						<div class="text-xs text-indigo-200">{node.s}</div>
 					</div>
 				{/each}
 			</div>
 		</div>
 	</div>
 
-	<!-- 1. זרימת הכסף -->
+	<!-- 1. חלוקת הרווחים -->
 	<div class="mb-12">
 		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 			<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
 				style="background: linear-gradient(135deg,#facc15,#f59e0b);">1</span>
-			זרימת הכסף
+			חלוקת הרווחים
 		</h2>
-		<p class="text-gray-400 text-sm mb-6">מההכנסה הראשונית ועד לחלוקה הסופית:</p>
-		<div class="rounded-2xl p-8" style="background: #0f172a; border: 1px solid rgba(255,255,255,0.08);">
-			<div class="flex flex-wrap items-stretch justify-between gap-3">
-				{#each data.flow_nodes as node, i}
-					{#if i > 0}
-						<div class="self-center text-yellow-400 font-black text-2xl">←</div>
-					{/if}
-					<div class="flex-1 min-w-[150px] rounded-xl p-5 text-center"
-						style="background: linear-gradient(135deg,#1e293b,#111827); border: 1px solid {node.border};">
-						<div class="text-3xl mb-2">{node.ico}</div>
-						<div class="font-bold text-sm mb-1">{node.t}</div>
-						<div class="text-xs text-gray-400">{node.s}</div>
-					</div>
-				{/each}
-			</div>
+		<p class="text-gray-400 text-sm mb-6 max-w-2xl">מהרווח הנקי — כל שקל מתחלק בין שלושה גורמים:</p>
+		<div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+			{#each data.distribution as card}
+				<div class="rounded-2xl p-7 text-center relative overflow-hidden shadow-xl"
+					style="background: linear-gradient(135deg, {card.from}, {card.to});">
+					<div class="text-4xl mb-2">{card.emoji}</div>
+					<div class="text-5xl font-black leading-none mb-2">{card.pct}</div>
+					<div class="text-lg font-bold mb-2">{card.title}</div>
+					<div class="text-sm opacity-90 leading-relaxed">{card.desc}</div>
+				</div>
+			{/each}
 		</div>
 	</div>
 
