@@ -38,7 +38,7 @@
 				labels: ['כסף לחלוקה', 'הוצאות'],
 				datasets: [{ data: [65, 35], backgroundColor: ['#facc15','#1e293b'], borderWidth: 0 }]
 			},
-			options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 12, font: { size: 12 } } }, datalabels: datalabelsOpts } }
+			options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', reverse: true, labels: { padding: 12, font: { size: 12 } } }, datalabels: datalabelsOpts } }
 		});
 
 		new Chart(document.getElementById('ownersChart'), {
@@ -62,10 +62,22 @@
 		new Chart(document.getElementById('coordinatorChart'), {
 			type: 'doughnut',
 			data: {
-				labels: ['ישיר לארנק', 'תגמול קבוצתי', 'מועדון השקעות', 'רכישות בקהילה'],
-				datasets: [{ data: [10, 5, 5, 10], backgroundColor: ['#a78bfa','#60a5fa','#34d399','#fbbf24'], borderWidth: 2, borderColor: '#0f172a' }]
+				labels: ['ישיר לארנק', 'תגמול קבוצתי', 'מועדון השקעות', 'רכישות בקהילה', ''],
+				datasets: [{ data: [10, 5, 5, 10, 70], backgroundColor: ['#a78bfa','#60a5fa','#34d399','#fbbf24','rgba(15,23,42,0.6)'], borderWidth: 2, borderColor: '#0f172a' }]
 			},
-			options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 10, font: { size: 11 }, boxWidth: 12 } }, datalabels: datalabelsOpts } }
+			options: {
+				responsive: true, maintainAspectRatio: false,
+				plugins: {
+					legend: { position: 'bottom', labels: { padding: 10, font: { size: 11 }, boxWidth: 12,
+						filter: (item: any) => item.index < 4
+					}},
+					datalabels: {
+						color: '#fff',
+						font: { weight: 'bold' as const, size: 13 },
+						formatter: (value: number, ctx: any) => ctx.dataIndex < 4 ? value + '%' : '',
+					}
+				}
+			}
 		});
 	});
 </script>
