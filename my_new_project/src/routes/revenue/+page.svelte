@@ -149,27 +149,27 @@
 					</div>
 				{/each}
 			</div>
-		</div>
-	</div>
 
-	<!-- 1. חלוקת הרווחים -->
-	<div class="mb-12">
-		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
-			<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
-				style="background: linear-gradient(135deg,#facc15,#f59e0b);">1</span>
-			חלוקת הרווחים
-		</h2>
-		<p class="text-gray-400 text-sm mb-6 max-w-2xl">מהרווח הנקי — כל שקל מתחלק בין שלושה גורמים:</p>
-		<div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
-			{#each data.distribution as card}
-				<div class="rounded-2xl p-7 text-center relative overflow-hidden shadow-xl"
-					style="background: linear-gradient(135deg, {card.from}, {card.to});">
-					<div class="text-4xl mb-2">{card.emoji}</div>
-					<div class="text-5xl font-black leading-none mb-2">{card.pct}</div>
-					<div class="text-lg font-bold mb-2">{card.title}</div>
-					<div class="text-sm opacity-90 leading-relaxed">{card.desc}</div>
+			<!-- 1. תקציר הכנסות והוצאות — בתוך ה-hero -->
+			<div class="mt-10 pt-8 border-t border-white/10">
+				<h2 class="text-xl font-black mb-1 flex items-center gap-3 justify-center">
+					<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
+						style="background: linear-gradient(135deg,#facc15,#f59e0b);">1</span>
+					תקציר הכנסות והוצאות
+				</h2>
+				<p class="text-indigo-200 text-sm mb-6 text-center">מהרווח הנקי — כל שקל מתחלק בין שלושה גורמים:</p>
+				<div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+					{#each data.distribution as card}
+						<div class="rounded-2xl p-7 text-center relative overflow-hidden shadow-xl"
+							style="background: linear-gradient(135deg, {card.from}, {card.to});">
+							<div class="text-4xl mb-2">{card.emoji}</div>
+							<div class="text-5xl font-black leading-none mb-2">{card.pct}</div>
+							<div class="text-lg font-bold mb-2">{card.title}</div>
+							<div class="text-sm opacity-90 leading-relaxed">{card.desc}</div>
+						</div>
+					{/each}
 				</div>
-			{/each}
+			</div>
 		</div>
 	</div>
 
