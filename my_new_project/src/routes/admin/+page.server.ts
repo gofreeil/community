@@ -1,16 +1,20 @@
 import { redirect, fail, error } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { requireSuperAdmin, requireAdmin } from '$lib/server/auth';
-import { getAllUsers, banUser, unbanUser, setUserRole, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById } from '$lib/server/db';
+import { getAllUsers, banUser, unbanUser, setUserRole, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByEmail } from '$lib/server/db';
 
 export const load: PageServerLoad = async (event) => {
     const session = await event.locals.auth();
 
-    // בדיקת הרשאה — ישירות מ-DB (מונע תקלות של session מיושן)
+    // בדיקת הרשאה — ישירות מ-DB + fallback לפי אימייל (מיזוג OAuth+credentials)
     let isSuperAdmin = session?.user?.role === 'super_admin';
     if (!isSuperAdmin && session?.user?.id) {
         try {
-            const dbUser = await getUserById(session.user.id);
+            let dbUser = await getUserById(session.user.id);
+            // fallback לפי אימייל — כמו בדף הפרופיל
+            if (!dbUser && session.user.email) {
+                dbUser = await getUserByEmail(session.user.email);
+            }
             isSuperAdmin = dbUser?.role === 'super_admin';
         } catch { /* ignore */ }
     }
