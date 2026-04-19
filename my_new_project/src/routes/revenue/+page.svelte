@@ -22,8 +22,8 @@
 		new Chart(document.getElementById('costsChart'), {
 			type: 'doughnut',
 			data: {
-				labels: ['תפעול טכני', 'פיתוח', 'משפטי וחשבונאות', 'רווח נקי'],
-				datasets: [{ data: [12, 10, 5, 73], backgroundColor: ['#60a5fa','#a78bfa','#f472b6','#facc15'], borderWidth: 0 }]
+				labels: ['הוצאות', 'כסף לחלוקה'],
+				datasets: [{ data: [35, 65], backgroundColor: ['#1e293b','#facc15'], borderWidth: 0 }]
 			},
 			options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 12, font: { size: 12 } } } } }
 		});
