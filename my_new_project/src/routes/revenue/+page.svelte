@@ -160,13 +160,15 @@
 				<p class="text-indigo-200 text-sm mb-6 text-center">מהרווח הנקי — כל שקל מתחלק בין שלושה גורמים:</p>
 				<div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
 					{#each data.distribution as card}
-						<div class="rounded-2xl p-7 text-center relative overflow-hidden shadow-xl"
+						<a href={card.link}
+							class="rounded-2xl p-7 text-center relative overflow-hidden shadow-xl block hover:scale-105 hover:brightness-110 transition-all duration-200"
 							style="background: linear-gradient(135deg, {card.from}, {card.to});">
 							<div class="text-4xl mb-2">{card.emoji}</div>
 							<div class="text-5xl font-black leading-none mb-2">{card.pct}</div>
 							<div class="text-lg font-bold mb-2">{card.title}</div>
 							<div class="text-sm opacity-90 leading-relaxed">{card.desc}</div>
-						</div>
+							<div class="mt-3 text-xs font-black opacity-70">← לפירוט מלא</div>
+						</a>
 					{/each}
 				</div>
 			</div>
@@ -221,7 +223,7 @@
 	</div>
 
 	<!-- 4. הכנסה לרכזי השטח פירוט -->
-	<div class="mb-12">
+	<div id="section-4" class="mb-12">
 		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 			<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
 				style="background: linear-gradient(135deg,#fbbf24,#d97706);">4</span>
@@ -317,7 +319,7 @@
 	</div>
 
 	<!-- 5. הכנסה לבעלים -->
-	<div class="mb-8">
+	<div id="section-5" class="mb-8">
 		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 			<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-white"
 				style="background: linear-gradient(135deg,#3b82f6,#1d4ed8);">5</span>
@@ -382,7 +384,7 @@
 	</div>
 
 	<!-- 6. חברה צדקה וחסד -->
-	<div class="mb-8">
+	<div id="section-6" class="mb-8">
 		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 			<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-white"
 				style="background: linear-gradient(135deg,#10b981,#059669);">6</span>
