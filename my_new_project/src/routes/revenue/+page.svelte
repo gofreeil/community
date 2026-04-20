@@ -163,7 +163,7 @@
 				<img src="/images/community-neighborhood.png" alt="קהילה בשכונה" class="mx-auto mb-6 w-full md:w-[40rem] lg:w-[64rem] object-contain rounded-3xl" />
 				<h1 class="text-4xl md:text-5xl font-black leading-tight mb-4" style="color:#facc15;">קהילה בשכונה</h1>
 				<p class="text-indigo-100 text-base md:text-lg max-w-2xl mx-auto mb-10 font-bold">
-					הפלטפורמה הקהילתית הראשונה בישראל המחברת בין התושבים אל כל היתרונות, השירותים והמשאבים של השכונה בה הם מתגוררים - !
+					הפלטפורמה הקהילתית הראשונה בישראל המחברת בין התושבים אל כל היתרונות, השירותים והמשאבים של השכונה בה הם מתגוררים!
 				</p>
 				<div class="flex flex-col sm:flex-row items-stretch justify-center gap-0 mt-2">
 					{#each [
