@@ -328,16 +328,17 @@
                         <span class="relative z-10">{tFn("about")}</span>
                         <span class="absolute inset-0 translate-x-[-100%] hover:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none"></span>
                     </button>
-                    <!-- תמונת preview בהובר -->
-                    <div class="absolute left-1/2 -translate-x-1/2 bottom-[calc(100%+10px)] z-50
-                                opacity-0 scale-95 pointer-events-none
+                    <!-- תמונת preview בהובר — צומחת מתוך הכפתור -->
+                    <div class="absolute left-1/2 -translate-x-1/2 top-0 z-50
+                                opacity-0 scale-0 pointer-events-none
                                 group-hover:opacity-100 group-hover:scale-100
-                                transition-all duration-200 ease-out">
+                                transition-all duration-250 ease-out origin-top"
+                         style="transform-origin: top center;">
                         <img
                             src="/images/community-neighborhood.png"
                             alt="קהילה בשכונה"
-                            class="w-56 rounded-2xl object-cover"
-                            style="border: 2px solid rgba(0,0,0,0.7); box-shadow: 0 8px 32px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06);"
+                            class="w-96 rounded-2xl object-cover"
+                            style="border: 3px solid rgba(0,0,0,0.8); box-shadow: 0 16px 48px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.07);"
                         />
                     </div>
                 </div>
