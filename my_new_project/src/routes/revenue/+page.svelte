@@ -195,7 +195,7 @@
 			</p>
 
 			<!-- קו מפריד -->
-			<div class="mb-7 mx-auto" style="height:1px; width:66%; background:rgba(139,92,246,0.25);"></div>
+			<div class="mb-7 mr-0 ml-auto" style="height:1px; width:66%; background:rgba(139,92,246,0.25);"></div>
 
 			<!-- שירותי השכונה -->
 			<h2 class="text-xl font-black mb-5 text-white">כל שירותי השכונה במקום אחד</h2>
