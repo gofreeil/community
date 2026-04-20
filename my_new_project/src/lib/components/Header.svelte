@@ -100,6 +100,20 @@
         pingServer();
         const usersInterval = setInterval(pingServer, 30000);
 
+        // hover על כפתור אודות — הצגת תמונה
+        const preview = document.getElementById('about-preview') as HTMLElement | null;
+        const btnWrapper = preview?.parentElement;
+        if (preview && btnWrapper) {
+            btnWrapper.addEventListener('mouseenter', () => {
+                preview.style.opacity = '1';
+                preview.style.transform = 'translate(-50%,-50%) scale(1)';
+            });
+            btnWrapper.addEventListener('mouseleave', () => {
+                preview.style.opacity = '0';
+                preview.style.transform = 'translate(-50%,-50%) scale(0.05)';
+            });
+        }
+
         document.addEventListener("click", handleClickOutside);
         return () => {
             clearInterval(usersInterval);
@@ -317,28 +331,28 @@
             </div>
 <div class="flex items-center gap-2">
                 <!-- כפתור אודות עם תצוגה מקדימה -->
-                <div class="relative group">
+                <div class="relative group" style="isolation:isolate;">
                     <button
-                        class="relative overflow-hidden flex items-center rounded-lg px-4 py-2 font-bold text-white transition-all duration-300 hover:scale-105 hover:tracking-wide"
+                        class="relative flex items-center rounded-lg px-4 py-2 font-bold text-white transition-all duration-300 hover:scale-105 hover:tracking-wide"
                         style="background:linear-gradient(135deg,#4f46e5,#7c3aed); box-shadow:0 4px 15px rgba(124,58,237,0.4);"
                         onmouseenter={(e) => (e.currentTarget as HTMLElement).style.boxShadow='0 0 24px 6px rgba(167,139,250,0.7), 0 4px 15px rgba(124,58,237,0.5)'}
                         onmouseleave={(e) => (e.currentTarget as HTMLElement).style.boxShadow='0 4px 15px rgba(124,58,237,0.4)'}
                         onclick={() => goto("/revenue")}
                     >
-                        <span class="relative z-10">{tFn("about")}</span>
-                        <span class="absolute inset-0 translate-x-[-100%] hover:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none"></span>
+                        {tFn("about")}
                     </button>
                     <!-- תמונת preview בהובר — צומחת מתוך הכפתור -->
-                    <div class="absolute left-1/2 -translate-x-1/2 top-0 z-50
-                                opacity-0 scale-0 pointer-events-none
-                                group-hover:opacity-100 group-hover:scale-100
-                                transition-all duration-250 ease-out origin-top"
-                         style="transform-origin: top center;">
+                    <div class="pointer-events-none absolute z-[999]"
+                         style="top:50%; left:50%; transform-origin:top center;
+                                transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+                                opacity:0; transform:translate(-50%,-50%) scale(0.05);"
+                         id="about-preview">
                         <img
                             src="/images/community-neighborhood.png"
                             alt="קהילה בשכונה"
-                            class="w-96 rounded-2xl object-cover"
-                            style="border: 3px solid rgba(0,0,0,0.8); box-shadow: 0 16px 48px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.07);"
+                            style="width:520px; border-radius:18px;
+                                   border:3px solid rgba(10,10,20,0.85);
+                                   box-shadow:0 20px 60px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.06);"
                         />
                     </div>
                 </div>
