@@ -358,9 +358,10 @@
                     <img
                         src="/images/community-neighborhood.png"
                         alt="קהילה בשכונה"
-                        style="width:700px; border-radius:20px;
-                               border:4px solid rgba(5,5,15,0.9);
-                               box-shadow:0 24px 70px rgba(0,0,0,0.9);"
+                        style="width:580px; border-radius:24px;
+                               -webkit-mask-image: radial-gradient(ellipse 90% 90% at 50% 50%, black 55%, transparent 100%);
+                               mask-image: radial-gradient(ellipse 90% 90% at 50% 50%, black 55%, transparent 100%);
+                               filter: drop-shadow(0 0 40px rgba(0,0,0,0.95)) drop-shadow(0 0 80px rgba(0,0,0,0.7));"
                     />
                 </div>
                 <!-- Language Dropdown -->
