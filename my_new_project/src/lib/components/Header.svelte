@@ -201,7 +201,7 @@
                         class="flex items-center gap-2.5 flex-1 min-w-0"
                     >
                         <div class="relative">
-                            <div class="h-10 w-10 rounded-full overflow-hidden flex-shrink-0">
+                            <div class="h-12 w-12 rounded-full overflow-hidden flex-shrink-0">
                                 <img
                                     src="/images/community-logo1.png"
                                     alt=""
@@ -307,9 +307,9 @@
                 <div class="relative group">
                     <a
                         href="/"
-                        class="flex h-24 w-24 animate-pulse-slow items-center justify-center rounded-xl shadow-lg transition-transform hover:scale-105"
+                        class="flex h-28 w-28 animate-pulse-slow items-center justify-center rounded-xl shadow-lg transition-transform hover:scale-105"
                     >
-                        <div class="h-14 w-14 rounded-full overflow-hidden">
+                        <div class="h-16 w-16 rounded-full overflow-hidden">
                             <img
                                 src="/images/community-logo1.png"
                                 alt=""
