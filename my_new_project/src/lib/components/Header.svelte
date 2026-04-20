@@ -201,11 +201,13 @@
                         class="flex items-center gap-2.5 flex-1 min-w-0"
                     >
                         <div class="relative">
-                            <img
-                                src="/images/community-logo1.png"
-                                alt=""
-                                class="h-8 w-8 object-cover flex-shrink-0 rounded-full scale-[2]"
-                            />
+                            <div class="h-8 w-8 rounded-full overflow-hidden flex-shrink-0">
+                                <img
+                                    src="/images/community-logo1.png"
+                                    alt=""
+                                    class="w-full h-full object-cover scale-[1.6]"
+                                />
+                            </div>
                             <div
                                 class="hidden absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-slate-900 animate-pulse"
                             ></div>
@@ -307,11 +309,13 @@
                         href="/"
                         class="flex h-20 w-20 animate-pulse-slow items-center justify-center rounded-xl shadow-lg transition-transform hover:scale-105"
                     >
-                        <img
-                            src="/images/community-logo1.png"
-                            alt=""
-                            class="h-12 w-12 object-cover rounded-full scale-[2]"
-                        />
+                        <div class="h-12 w-12 rounded-full overflow-hidden">
+                            <img
+                                src="/images/community-logo1.png"
+                                alt=""
+                                class="w-full h-full object-cover scale-[1.6]"
+                            />
+                        </div>
                     </a>
                     <!-- Tooltip - Below Logo -->
                     <div
