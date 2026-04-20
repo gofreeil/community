@@ -128,14 +128,6 @@
 
 <div class="text-white" dir="rtl">
 
-	<!-- כפתור חזרה -->
-	<a href="/receipts" class="inline-flex items-center gap-2 text-gray-400 hover:text-white text-sm font-bold mb-6 transition-colors group">
-		<svg class="w-4 h-4 rotate-180 group-hover:-translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-			<polyline points="9 18 15 12 9 6"/>
-		</svg>
-		חזרה לארנק
-	</a>
-
 	<!-- TAB BAR -->
 	<div class="flex gap-2 mb-8 p-1.5 rounded-2xl sticky top-[68px] z-40 backdrop-blur-lg"
 		style="background: rgba(7,11,20,0.85); border: 1px solid rgba(255,255,255,0.1);">
@@ -228,7 +220,7 @@
 
 			<!-- תת-כותרת מודל כלכלי -->
 			<p class="text-lg md:text-xl font-bold text-purple-300 leading-relaxed mb-6">
-				המיזם פועל לפי מודל כלכלי-חברתי ייחודי שבו חצי מהרווחים חוזרים אל הקהילה: 30% לרכזי השכונות, 20% לצדקה ולחסד
+				המיזם פועל לפי מודל כלכלי-חברתי ייחודי שבו חצי מהרווחים חוזרים אל הקהילה:<br>30% לרכזי השכונות, 20% לצדקה ולחסד
 			</p>
 
 			<!-- מה הפלטפורמה מאפשרת -->
