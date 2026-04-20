@@ -224,24 +224,6 @@
 			</div>
 		</div>
 
-		<!-- למי זה מתאים -->
-		<div class="mb-10">
-			<h2 class="text-xl font-black mb-5 text-white">למי זה מתאים?</h2>
-			<div class="grid md:grid-cols-3 gap-4">
-				{#each [
-					['👤','תושבי השכונה','#3b82f6','#1e3a8a',['גישה לכל שירותי השכונה בחינם','חיבור לשכנים ולקהילה','עזרה וחסד בהישג יד']],
-					['🏪','בעלי עסקים','#f59e0b','#78350f',['פרסום איכותי לקהל ממוקד','חשיפה לתושבי השכונה','תשלום הוגן וקל לכל כיס']],
-					['🏘️','רכזי שכונות','#10b981','#064e3b',['הכנסה נאה מ-30% מהרווחים','ניהול פשוט דרך לוח ניהול','הכרה וסמכות בקהילה']]
-				] as [ico,title,color,dark,points]}
-					<div class="rounded-2xl p-5" style="background:linear-gradient(135deg,{dark},#1e293b); border:1px solid {color}40;">
-						<div class="flex items-center gap-2 mb-3"><span class="text-2xl">{ico}</span><h3 class="font-black" style="color:{color};">{title}</h3></div>
-						<ul class="space-y-1.5">
-							{#each points as pt}<li class="flex items-center gap-2 text-xs text-gray-200"><span style="color:{color};">✓</span>{pt}</li>{/each}
-						</ul>
-					</div>
-				{/each}
-			</div>
-		</div>
 
 		<!-- ערכים -->
 		<div class="mb-10">
