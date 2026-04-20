@@ -592,35 +592,6 @@
 		</div>
 	</div>
 
-	<!-- CTA תחתון -->
-	<div class="mt-16 mb-4 rounded-3xl px-8 py-12 text-center"
-		style="background: linear-gradient(135deg,#1e1b4b 0%,#312e81 50%,#1e3a5f 100%); border: 1px solid rgba(255,255,255,0.1);">
-		<h2 class="text-2xl md:text-3xl font-black mb-2">רוצה להיות חלק מההצלחה?</h2>
-		<p class="text-gray-300 text-sm md:text-base mb-10 max-w-xl mx-auto">הצטרף אלינו כמשקיע או כרכז שכונה — ותיהנה מפירות הקהילה</p>
-		<div class="flex flex-col sm:flex-row gap-5 justify-center items-center">
-
-			<!-- רכישת מניות — פותח את tab הבעלים -->
-			<button
-				onclick={() => setTab('owners')}
-				class="group flex items-center gap-3 px-8 py-4 rounded-2xl font-black text-lg transition-all duration-200 hover:scale-105 hover:brightness-110 shadow-xl"
-				style="background: linear-gradient(135deg,#1e3a8a,#3b82f6); border: 2px solid rgba(147,197,253,0.35);">
-				<span class="text-2xl">📈</span>
-				<span>רכישת מניות</span>
-			</button>
-
-			<!-- הצטרף לצוות רכזים -->
-			<button
-				class="group flex items-center gap-3 px-8 py-4 rounded-2xl font-black text-lg transition-all duration-200 hover:scale-105 hover:brightness-110 shadow-xl cursor-not-allowed"
-				style="background: linear-gradient(135deg,#78350f,#f59e0b); border: 2px solid rgba(251,191,36,0.35);"
-				disabled>
-				<span class="text-2xl">👥</span>
-				<span>הצטרף לצוות הרכזים</span>
-				<span class="text-xs font-bold opacity-60 border border-white/20 rounded-full px-2 py-0.5">בקרוב</span>
-			</button>
-
-		</div>
-	</div>
-
 	</div><!-- /rewards tab -->
 
 	<!-- OWNERS TAB -->
@@ -810,27 +781,6 @@
 			</div>
 		</div>
 
-		<!-- CTA בעלים -->
-		<div class="mt-10 mb-4 rounded-3xl px-8 py-12 text-center"
-			style="background: linear-gradient(135deg,#1e1b4b 0%,#1e3a8a 50%,#1e293b 100%); border: 1px solid rgba(147,197,253,0.2);">
-			<h2 class="text-2xl md:text-3xl font-black mb-2 text-blue-100">היו שותפים להצלחה!</h2>
-			<p class="text-blue-300 text-sm md:text-base mb-8 max-w-xl mx-auto">הצטרפו לקבוצת הבעלים — רכשו יחידות והיו חלק מהפלטפורמה</p>
-			<div class="flex flex-col sm:flex-row gap-5 justify-center items-center">
-				<button
-					class="flex items-center gap-3 px-8 py-4 rounded-2xl font-black text-lg transition-all duration-200 hover:scale-105 hover:brightness-110 shadow-xl cursor-not-allowed"
-					style="background: linear-gradient(135deg,#1e3a8a,#3b82f6); border: 2px solid rgba(147,197,253,0.35);"
-					disabled>
-					<span class="text-2xl">📈</span>
-					<span>לרכישת יחידות</span>
-					<span class="text-xs font-bold opacity-60 border border-white/20 rounded-full px-2 py-0.5">בקרוב</span>
-				</button>
-				<button onclick={() => setTab('rewards')}
-					class="flex items-center gap-3 px-6 py-4 rounded-2xl font-black text-base transition-all duration-200 hover:scale-105 shadow-lg"
-					style="background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); color:#cbd5e1;">
-					← חזרה לשיטת התגמול
-				</button>
-			</div>
-		</div>
 
 	</div><!-- /owners tab -->
 
@@ -949,29 +899,30 @@
 			</div>
 		</div>
 
-		<!-- CTA רכז -->
-		<div class="mt-10 mb-4 rounded-3xl px-8 py-12 text-center"
-			style="background:linear-gradient(135deg,#78350f 0%,#92400e 50%,#1e293b 100%); border:1px solid rgba(251,191,36,0.2);">
-			<h2 class="text-2xl md:text-3xl font-black mb-2 text-amber-100">מוכן להיות הרכז של השכונה שלך?</h2>
-			<p class="text-amber-200 text-sm md:text-base mb-8 max-w-xl mx-auto">פנה אלינו ונשמח לשבץ אותך לשכונה שלך</p>
-			<div class="flex flex-col sm:flex-row gap-5 justify-center items-center">
-				<button
-					class="flex items-center gap-3 px-8 py-4 rounded-2xl font-black text-lg transition-all duration-200 hover:scale-105 hover:brightness-110 shadow-xl cursor-not-allowed"
-					style="background:linear-gradient(135deg,#d97706,#fbbf24); border:2px solid rgba(251,191,36,0.5); color:#1a1035;"
-					disabled>
-					<span class="text-2xl">👥</span>
-					<span>הצטרף לצוות הרכזים</span>
-					<span class="text-xs font-bold opacity-60 border border-black/20 rounded-full px-2 py-0.5">בקרוב</span>
-				</button>
-				<button onclick={() => setTab('rewards')}
-					class="flex items-center gap-3 px-6 py-4 rounded-2xl font-black text-base transition-all hover:scale-105"
-					style="background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); color:#cbd5e1;">
-					← שיטת התגמול המלאה
-				</button>
-			</div>
-		</div>
-
 	</div><!-- /coordinator tab -->
+
+	<!-- CTA משותף — מופיע בכל הטאבים -->
+	<div class="mt-10 mb-2 rounded-2xl px-6 py-8 text-center"
+		style="background:linear-gradient(135deg,#1e1b4b 0%,#312e81 50%,#1e3a5f 100%); border:1px solid rgba(255,255,255,0.12); box-shadow:0 0 40px rgba(124,58,237,0.15);">
+		<h2 class="text-xl md:text-2xl font-black mb-1">רוצה להיות חלק מההצלחה?</h2>
+		<p class="text-gray-300 text-sm mb-6 max-w-lg mx-auto">הצטרף אלינו כמשקיע או כרכז שכונה — ותיהנה מפירות הקהילה</p>
+		<div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+			<button
+				onclick={() => setTab('owners')}
+				class="flex items-center gap-2 px-7 py-3 rounded-xl font-black text-base transition-all duration-200 hover:scale-105 hover:brightness-110 shadow-lg"
+				style="background:linear-gradient(135deg,#1e3a8a,#3b82f6); border:2px solid rgba(147,197,253,0.35);">
+				<span class="text-xl">📈</span>
+				<span>רכישת מניות</span>
+			</button>
+			<button
+				onclick={() => setTab('coordinator')}
+				class="flex items-center gap-2 px-7 py-3 rounded-xl font-black text-base transition-all duration-200 hover:scale-105 hover:brightness-110 shadow-lg"
+				style="background:linear-gradient(135deg,#78350f,#f59e0b); border:2px solid rgba(251,191,36,0.35);">
+				<span class="text-xl">👥</span>
+				<span>הצטרף לצוות הרכזים</span>
+			</button>
+		</div>
+	</div>
 
 </div>
 
