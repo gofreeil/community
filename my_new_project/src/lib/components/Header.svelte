@@ -100,17 +100,24 @@
         pingServer();
         const usersInterval = setInterval(pingServer, 30000);
 
-        // hover על כפתור אודות — הצגת תמונה
+        // hover על כפתור אודות — תמונה ב-fixed position
         const preview = document.getElementById('about-preview') as HTMLElement | null;
-        const btnWrapper = preview?.parentElement;
+        const btnWrapper = document.getElementById('about-btn-wrapper');
         if (preview && btnWrapper) {
             btnWrapper.addEventListener('mouseenter', () => {
+                const rect = btnWrapper.getBoundingClientRect();
+                const imgW = 700;
+                let left = rect.left + rect.width / 2 - imgW / 2;
+                if (left < 8) left = 8;
+                if (left + imgW > window.innerWidth - 8) left = window.innerWidth - imgW - 8;
+                preview.style.left = left + 'px';
+                preview.style.top = (rect.bottom + 10) + 'px';
                 preview.style.opacity = '1';
-                preview.style.transform = 'translate(-50%,-50%) scale(1)';
+                preview.style.transform = 'scale(1)';
             });
             btnWrapper.addEventListener('mouseleave', () => {
                 preview.style.opacity = '0';
-                preview.style.transform = 'translate(-50%,-50%) scale(0.05)';
+                preview.style.transform = 'scale(0.05)';
             });
         }
 
@@ -331,7 +338,7 @@
             </div>
 <div class="flex items-center gap-2">
                 <!-- כפתור אודות עם תצוגה מקדימה -->
-                <div class="relative group" style="isolation:isolate;">
+                <div class="relative" id="about-btn-wrapper">
                     <button
                         class="relative flex items-center rounded-lg px-4 py-2 font-bold text-white transition-all duration-300 hover:scale-105 hover:tracking-wide"
                         style="background:linear-gradient(135deg,#4f46e5,#7c3aed); box-shadow:0 4px 15px rgba(124,58,237,0.4);"
@@ -341,20 +348,20 @@
                     >
                         {tFn("about")}
                     </button>
-                    <!-- תמונת preview בהובר — צומחת מתוך הכפתור -->
-                    <div class="pointer-events-none absolute z-[999]"
-                         style="top:50%; left:50%; transform-origin:top center;
-                                transition: opacity 0.2s ease-out, transform 0.2s ease-out;
-                                opacity:0; transform:translate(-50%,-50%) scale(0.05);"
-                         id="about-preview">
-                        <img
-                            src="/images/community-neighborhood.png"
-                            alt="קהילה בשכונה"
-                            style="width:520px; border-radius:18px;
-                                   border:3px solid rgba(10,10,20,0.85);
-                                   box-shadow:0 20px 60px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.06);"
-                        />
-                    </div>
+                </div>
+                <!-- תמונת preview — position:fixed כדי לחמוק מ-overflow של ההדר -->
+                <div id="about-preview"
+                     style="position:fixed; z-index:9999; pointer-events:none;
+                            transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+                            opacity:0; transform:scale(0.05);
+                            transform-origin: top center;">
+                    <img
+                        src="/images/community-neighborhood.png"
+                        alt="קהילה בשכונה"
+                        style="width:700px; border-radius:20px;
+                               border:4px solid rgba(5,5,15,0.9);
+                               box-shadow:0 24px 70px rgba(0,0,0,0.9);"
+                    />
                 </div>
                 <!-- Language Dropdown -->
                 <div class="lang-dropdown-container relative">
