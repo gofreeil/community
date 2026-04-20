@@ -273,9 +273,6 @@
 	<!-- HERO -->
 	<div class="relative rounded-3xl px-8 py-14 text-center mb-10 shadow-2xl overflow-hidden"
 		style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4c1d95 100%);">
-		<!-- מספר 1 — פינה עליונה ימנית -->
-		<span class="absolute top-4 right-4 w-11 h-11 rounded-full flex items-center justify-center text-lg font-black text-[#1a1035] z-20 shadow-lg"
-			style="background: linear-gradient(135deg,#facc15,#f59e0b);">1</span>
 		<div class="absolute inset-0 pointer-events-none"
 			style="background: radial-gradient(ellipse at 70% 30%, rgba(124,58,237,0.35) 0%, transparent 60%);"></div>
 		<div class="relative z-10">
@@ -312,8 +309,8 @@
 	<!-- 2. ערוצי ההכנסה -->
 	<div class="mb-12">
 		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
-			<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
-				style="background: linear-gradient(135deg,#facc15,#f59e0b);">2</span>
+			<span class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black text-black flex-shrink-0"
+				style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity:0.85;">1</span>
 			ערוצי ההכנסה
 		</h2>
 		<p class="text-gray-400 text-sm mb-6 max-w-2xl">מקורות ההכנסה של הפלטפורמה מגיעים מפרסומים ומשיתופי פעולה</p>
@@ -335,8 +332,8 @@
 	<!-- 3. עלויות -->
 	<div class="mb-12">
 		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
-			<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
-				style="background: linear-gradient(135deg,#facc15,#f59e0b);">3</span>
+			<span class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black text-black flex-shrink-0"
+				style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity:0.85;">2</span>
 			העלויות / חברת הניהול 35%
 		</h2>
 		<p class="text-gray-400 text-sm mb-6 max-w-2xl">החברה מתוגמלת אך ורק מתוך הרווחים ולא במשכורת או בתשלום חודשי — להלן ההוצאות</p>
@@ -359,8 +356,8 @@
 	<!-- 4. הכנסה לרכזי השטח פירוט -->
 	<div id="section-4" class="mb-12 scroll-target">
 		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
-			<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
-				style="background: linear-gradient(135deg,#fbbf24,#d97706);">4</span>
+			<span class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black text-black flex-shrink-0"
+				style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity:0.85;">3</span>
 			הכנסה לרכזי השטח — פירוט
 		</h2>
 		<p class="text-gray-400 text-sm mb-6 max-w-2xl">תגמול לרכזי השטח בשקלים חדשים — סה"כ 30% מהרווחים</p>
@@ -455,8 +452,8 @@
 	<!-- 5. הכנסה לבעלים -->
 	<div id="section-5" class="mb-8 scroll-target">
 		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
-			<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-white"
-				style="background: linear-gradient(135deg,#3b82f6,#1d4ed8);">5</span>
+			<span class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black text-black flex-shrink-0"
+				style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity:0.85;">4</span>
 			הכנסה לבעלים
 		</h2>
 		<p class="text-gray-400 text-sm mb-6 max-w-2xl">תגמול בעלי הפלטפורמה — סה"כ 50% מהרווחים</p>
@@ -520,8 +517,8 @@
 	<!-- 6. חברה צדקה וחסד -->
 	<div id="section-6" class="mb-8 scroll-target">
 		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
-			<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-white"
-				style="background: linear-gradient(135deg,#10b981,#059669);">6</span>
+			<span class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black text-black flex-shrink-0"
+				style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity:0.85;">5</span>
 			חברה, צדקה וחסד
 		</h2>
 		<p class="text-gray-400 text-sm mb-6 max-w-2xl">20% מהרווחים מוקדשים לפעולות חברתיות — כי קהילה אמיתית מחזירה לחברה</p>
