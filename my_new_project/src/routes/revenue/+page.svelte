@@ -165,16 +165,20 @@
 				<p class="text-indigo-100 text-base md:text-lg max-w-2xl mx-auto mb-10 font-bold">
 					הפלטפורמה הקהילתית הראשונה בישראל המחברת בין התושבים אל כל השירותים, היתרונות והמשאבים של השכונה — במקום אחד!
 				</p>
-				<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+				<div class="flex flex-col sm:flex-row items-stretch justify-center gap-0 mt-2">
 					{#each [
 						['📱','#a78bfa','נגישות מלאה של כל צרכי התושב בכף ידו'],
 						['🤝','#34d399','קידום החברה לחברה סולידרית בעלת ערך גבוה של ואהבת לרעך כמוך'],
 						['💪','#60a5fa','הוזלת יוקר המחיה, שיפור הביטחון, חיזוק הכח של התושב מול הרשויות'],
 						['💰','#facc15','תרומת 50% מהרווחים של הפלטפורמה חזרה לקהילה']
-					] as [ico,clr,txt]}
-						<div class="rounded-xl p-4 text-center flex flex-col items-center gap-2" style="background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.1);">
+					] as [ico,clr,txt], i}
+						{#if i > 0}
+							<div class="hidden sm:block w-px self-stretch" style="background:rgba(255,255,255,0.18);"></div>
+							<div class="sm:hidden h-px w-full" style="background:rgba(255,255,255,0.18);"></div>
+						{/if}
+						<div class="flex-1 px-5 py-4 text-center flex flex-col items-center gap-2">
 							<div class="text-2xl">{ico}</div>
-							<p class="text-xs leading-relaxed font-semibold" style="color:{clr};">{txt}</p>
+							<p class="text-sm md:text-base lg:text-lg leading-relaxed font-semibold" style="color:{clr};">{txt}</p>
 						</div>
 					{/each}
 				</div>
