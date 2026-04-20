@@ -316,17 +316,31 @@
                 </a>
             </div>
 <div class="flex items-center gap-2">
-                <button
-                    class="relative overflow-hidden flex items-center rounded-lg px-4 py-2 font-bold text-white transition-all duration-300 hover:scale-105 hover:tracking-wide"
-                    style="background:linear-gradient(135deg,#4f46e5,#7c3aed); box-shadow:0 4px 15px rgba(124,58,237,0.4);"
-                    onmouseenter={(e) => (e.currentTarget as HTMLElement).style.boxShadow='0 0 24px 6px rgba(167,139,250,0.7), 0 4px 15px rgba(124,58,237,0.5)'}
-                    onmouseleave={(e) => (e.currentTarget as HTMLElement).style.boxShadow='0 4px 15px rgba(124,58,237,0.4)'}
-                    onclick={() => goto("/revenue")}
-                >
-                    <span class="relative z-10">{tFn("about")}</span>
-                    <!-- shimmer -->
-                    <span class="absolute inset-0 translate-x-[-100%] hover:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none"></span>
-                </button>
+                <!-- כפתור אודות עם תצוגה מקדימה -->
+                <div class="relative group">
+                    <button
+                        class="relative overflow-hidden flex items-center rounded-lg px-4 py-2 font-bold text-white transition-all duration-300 hover:scale-105 hover:tracking-wide"
+                        style="background:linear-gradient(135deg,#4f46e5,#7c3aed); box-shadow:0 4px 15px rgba(124,58,237,0.4);"
+                        onmouseenter={(e) => (e.currentTarget as HTMLElement).style.boxShadow='0 0 24px 6px rgba(167,139,250,0.7), 0 4px 15px rgba(124,58,237,0.5)'}
+                        onmouseleave={(e) => (e.currentTarget as HTMLElement).style.boxShadow='0 4px 15px rgba(124,58,237,0.4)'}
+                        onclick={() => goto("/revenue")}
+                    >
+                        <span class="relative z-10">{tFn("about")}</span>
+                        <span class="absolute inset-0 translate-x-[-100%] hover:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none"></span>
+                    </button>
+                    <!-- תמונת preview בהובר -->
+                    <div class="absolute left-1/2 -translate-x-1/2 bottom-[calc(100%+10px)] z-50
+                                opacity-0 scale-95 pointer-events-none
+                                group-hover:opacity-100 group-hover:scale-100
+                                transition-all duration-200 ease-out">
+                        <img
+                            src="/images/community-neighborhood.png"
+                            alt="קהילה בשכונה"
+                            class="w-56 rounded-2xl object-cover"
+                            style="border: 2px solid rgba(0,0,0,0.7); box-shadow: 0 8px 32px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06);"
+                        />
+                    </div>
+                </div>
                 <!-- Language Dropdown -->
                 <div class="lang-dropdown-container relative">
                     <button
