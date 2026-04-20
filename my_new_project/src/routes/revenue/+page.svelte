@@ -464,6 +464,36 @@
 		</div>
 	</div>
 
+	<!-- CTA תחתון -->
+	<div class="mt-16 mb-4 rounded-3xl px-8 py-12 text-center"
+		style="background: linear-gradient(135deg,#1e1b4b 0%,#312e81 50%,#1e3a5f 100%); border: 1px solid rgba(255,255,255,0.1);">
+		<h2 class="text-2xl md:text-3xl font-black mb-2">רוצה להיות חלק מההצלחה?</h2>
+		<p class="text-gray-300 text-sm md:text-base mb-10 max-w-xl mx-auto">הצטרף אלינו כמשקיע או כרכז שכונה — ותיהנה מפירות הקהילה</p>
+		<div class="flex flex-col sm:flex-row gap-5 justify-center items-center">
+
+			<!-- רכישת מניות -->
+			<button
+				class="group flex items-center gap-3 px-8 py-4 rounded-2xl font-black text-lg transition-all duration-200 hover:scale-105 hover:brightness-110 shadow-xl cursor-not-allowed"
+				style="background: linear-gradient(135deg,#1e3a8a,#3b82f6); border: 2px solid rgba(147,197,253,0.35);"
+				disabled>
+				<span class="text-2xl">📈</span>
+				<span>רכישת מניות</span>
+				<span class="text-xs font-bold opacity-60 border border-white/20 rounded-full px-2 py-0.5">בקרוב</span>
+			</button>
+
+			<!-- הצטרף לצוות רכזים -->
+			<button
+				class="group flex items-center gap-3 px-8 py-4 rounded-2xl font-black text-lg transition-all duration-200 hover:scale-105 hover:brightness-110 shadow-xl cursor-not-allowed"
+				style="background: linear-gradient(135deg,#78350f,#f59e0b); border: 2px solid rgba(251,191,36,0.35);"
+				disabled>
+				<span class="text-2xl">👥</span>
+				<span>הצטרף לצוות הרכזים</span>
+				<span class="text-xs font-bold opacity-60 border border-white/20 rounded-full px-2 py-0.5">בקרוב</span>
+			</button>
+
+		</div>
+	</div>
+
 </div>
 
 <style>
