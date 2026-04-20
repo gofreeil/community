@@ -314,15 +314,15 @@
 			ערוצי ההכנסה
 		</h2>
 		<p class="text-gray-400 text-sm mb-6 max-w-2xl">מקורות ההכנסה של הפלטפורמה מגיעים מפרסומים ומשיתופי פעולה</p>
-		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
 			{#each data.channels as ch}
-				<div class="rounded-2xl p-5 transition-all hover:-translate-y-0.5 hover:border-yellow-400/40"
-					style="background: linear-gradient(135deg,#111827,#1e293b); border: 1px solid rgba(255,255,255,0.08);">
-					<div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-3"
+				<div class="p-5 flex flex-col gap-1.5 transition-all hover:bg-white/5"
+					style="border-bottom:1px solid rgba(255,255,255,0.08); border-right:1px solid rgba(255,255,255,0.08);">
+					<div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-1"
 						style="background: {ch.bg}; color: {ch.color};">{ch.icon}</div>
-					<h3 class="font-black text-base mb-1.5">{ch.title}</h3>
+					<h3 class="font-black text-base">{ch.title}</h3>
 					<p class="text-gray-400 text-xs leading-relaxed">{ch.desc}</p>
-					<span class="inline-block mt-3 px-2.5 py-0.5 rounded-full text-[11px] font-bold"
+					<span class="inline-block mt-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold w-fit"
 						style="background: rgba(250,204,21,0.12); color: #facc15;">{ch.tag}</span>
 				</div>
 			{/each}
