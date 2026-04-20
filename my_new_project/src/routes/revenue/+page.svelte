@@ -280,19 +280,6 @@
 			<p class="text-indigo-200 text-base md:text-lg max-w-2xl mx-auto">
 				{data.hero_subtitle}
 			</p>
-			<div class="flex flex-wrap items-stretch justify-between gap-3 mt-9">
-				{#each data.flow_nodes as node, i}
-					{#if i > 0}
-						<div class="self-center text-yellow-400 font-black text-2xl">←</div>
-					{/if}
-					<div class="flex-1 min-w-[120px] rounded-xl p-4 text-center backdrop-blur-sm"
-						style="background: rgba(255,255,255,0.06); border: 1px solid {node.border};">
-						<div class="text-3xl mb-1">{node.ico}</div>
-						<div class="font-bold text-sm mb-0.5">{node.t}</div>
-						<div class="text-xs text-indigo-200">{node.s}</div>
-					</div>
-				{/each}
-			</div>
 
 			<!-- 1. תקציר חלוקת הרווחים — בתוך ה-hero -->
 			<div class="mt-10 pt-8 border-t border-white/10">
