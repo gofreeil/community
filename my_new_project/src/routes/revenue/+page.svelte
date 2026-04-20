@@ -190,7 +190,7 @@
 
 			<!-- מה זה? — שורה אחת ארוכה -->
 			<h2 class="text-2xl font-black mb-4 text-purple-300">אז מה זה בדיוק "קהילה בשכונה"?</h2>
-			<p class="text-sm text-gray-200 leading-relaxed mb-7">
+			<p class="text-base md:text-lg text-gray-200 leading-relaxed mb-7">
 				<span class="text-white font-black">קהילה בשכונה</span> היא פלטפורמה דיגיטלית המרכזת את כל מה שקורה בשכונה שלך — גמ"חים, עסקים מקומיים, מניינים, חוגים, אירועים, מסירות חינם ועוד — הכל במקום אחד נגיש ונוח. המיזם פועל לפי <span class="text-yellow-300 font-black">מודל כלכלי-חברתי ייחודי</span> שבו חצי מהרווחים חוזרים אל הקהילה: 30% לרכזי השכונות, 20% לצדקה ולחסד.
 			</p>
 
@@ -217,8 +217,8 @@
 					<div class="p-4 flex flex-col gap-1.5 transition-all hover:bg-white/5"
 						style="border-bottom:1px solid rgba(255,255,255,0.08); border-right:1px solid rgba(255,255,255,0.08);">
 						<span class="text-2xl">{ico}</span>
-						<div class="font-black text-xs text-indigo-200">{title}</div>
-						<p class="text-gray-400 text-[11px] leading-relaxed">{desc}</p>
+						<div class="font-black text-sm md:text-base text-indigo-200">{title}</div>
+						<p class="text-gray-400 text-xs md:text-sm leading-relaxed">{desc}</p>
 					</div>
 				{/each}
 			</div>
