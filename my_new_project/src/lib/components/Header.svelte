@@ -195,7 +195,7 @@
                     >
                         <div class="relative">
                             <img
-                                src="/images/קהילהלוגו1.png"
+                                src="/images/community-logo1.png"
                                 alt=""
                                 class="h-10 w-10 object-contain flex-shrink-0"
                             />
@@ -301,7 +301,7 @@
                         class="flex h-20 w-20 animate-pulse-slow items-center justify-center rounded-xl shadow-lg transition-transform hover:scale-105"
                     >
                         <img
-                            src="/images/קהילהלוגו1.png"
+                            src="/images/community-logo1.png"
                             alt=""
                             class="h-16 w-auto object-contain"
                         />
