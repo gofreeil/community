@@ -317,10 +317,15 @@
             </div>
 <div class="flex items-center gap-2">
                 <button
-                    class="relative group flex items-center rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2 font-medium text-white shadow-lg transition-all duration-200 hover:shadow-xl"
+                    class="relative overflow-hidden flex items-center rounded-lg px-4 py-2 font-bold text-white transition-all duration-300 hover:scale-105 hover:tracking-wide"
+                    style="background:linear-gradient(135deg,#4f46e5,#7c3aed); box-shadow:0 4px 15px rgba(124,58,237,0.4);"
+                    onmouseenter={(e) => (e.currentTarget as HTMLElement).style.boxShadow='0 0 24px 6px rgba(167,139,250,0.7), 0 4px 15px rgba(124,58,237,0.5)'}
+                    onmouseleave={(e) => (e.currentTarget as HTMLElement).style.boxShadow='0 4px 15px rgba(124,58,237,0.4)'}
                     onclick={() => goto("/about")}
                 >
-                    {tFn("about")}
+                    <span class="relative z-10">{tFn("about")}</span>
+                    <!-- shimmer -->
+                    <span class="absolute inset-0 translate-x-[-100%] hover:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none"></span>
                 </button>
                 <!-- Language Dropdown -->
                 <div class="lang-dropdown-container relative">
