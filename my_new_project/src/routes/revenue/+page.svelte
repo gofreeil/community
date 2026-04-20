@@ -3,8 +3,21 @@
 	import type { PageData } from './$types';
 	let { data }: { data: PageData } = $props();
 
+	type TabId = 'rewards' | 'owners';
+	let activeTab = $state<TabId>('rewards');
+
+	function setTab(id: TabId) {
+		activeTab = id;
+		if (typeof window !== 'undefined') {
+			history.replaceState(null, '', '#' + id);
+			window.scrollTo({ top: 0, behavior: 'smooth' });
+		}
+	}
+
 	onMount(async () => {
 		if (typeof window === 'undefined') return;
+		const hash = window.location.hash.replace('#', '') as TabId;
+		if (hash === 'owners') activeTab = 'owners';
 		if (!(window as any).Chart) {
 			await new Promise<void>((resolve) => {
 				const s = document.createElement('script');
@@ -122,6 +135,24 @@
 		</svg>
 		חזרה לארנק
 	</a>
+
+	<!-- TAB BAR -->
+	<div class="flex gap-2 mb-8 p-1.5 rounded-2xl sticky top-[68px] z-40 backdrop-blur-lg"
+		style="background: rgba(7,11,20,0.85); border: 1px solid rgba(255,255,255,0.1);">
+		{#each ([['rewards','💰','שיטת התגמול'],['owners','🏛️','היה מהבעלים']] as const) as [id, icon, label]}
+			<button
+				onclick={() => setTab(id as TabId)}
+				class="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-black text-sm transition-all duration-200"
+				style={activeTab === id
+					? 'background: linear-gradient(135deg,#2563eb,#7c3aed); color:#fff; box-shadow: 0 4px 15px rgba(37,99,235,0.4);'
+					: 'color:#94a3b8;'}>
+				{icon} {label}
+			</button>
+		{/each}
+	</div>
+
+	<!-- REWARDS TAB -->
+	<div class:hidden={activeTab !== 'rewards'}>
 
 	<!-- HERO -->
 	<div class="relative rounded-3xl px-8 py-14 text-center mb-10 shadow-2xl overflow-hidden"
@@ -471,14 +502,13 @@
 		<p class="text-gray-300 text-sm md:text-base mb-10 max-w-xl mx-auto">הצטרף אלינו כמשקיע או כרכז שכונה — ותיהנה מפירות הקהילה</p>
 		<div class="flex flex-col sm:flex-row gap-5 justify-center items-center">
 
-			<!-- רכישת מניות -->
+			<!-- רכישת מניות — פותח את tab הבעלים -->
 			<button
-				class="group flex items-center gap-3 px-8 py-4 rounded-2xl font-black text-lg transition-all duration-200 hover:scale-105 hover:brightness-110 shadow-xl cursor-not-allowed"
-				style="background: linear-gradient(135deg,#1e3a8a,#3b82f6); border: 2px solid rgba(147,197,253,0.35);"
-				disabled>
+				onclick={() => setTab('owners')}
+				class="group flex items-center gap-3 px-8 py-4 rounded-2xl font-black text-lg transition-all duration-200 hover:scale-105 hover:brightness-110 shadow-xl"
+				style="background: linear-gradient(135deg,#1e3a8a,#3b82f6); border: 2px solid rgba(147,197,253,0.35);">
 				<span class="text-2xl">📈</span>
 				<span>רכישת מניות</span>
-				<span class="text-xs font-bold opacity-60 border border-white/20 rounded-full px-2 py-0.5">בקרוב</span>
 			</button>
 
 			<!-- הצטרף לצוות רכזים -->
@@ -493,6 +523,219 @@
 
 		</div>
 	</div>
+
+	</div><!-- /rewards tab -->
+
+	<!-- OWNERS TAB -->
+	<div class:hidden={activeTab !== 'owners'}>
+
+		<!-- HERO בעלים -->
+		<div class="relative rounded-3xl px-8 py-14 text-center mb-10 shadow-2xl overflow-hidden"
+			style="background: linear-gradient(135deg,#1e1b4b 0%,#1e3a8a 50%,#1e293b 100%);">
+			<div class="absolute inset-0 pointer-events-none"
+				style="background: radial-gradient(ellipse at 30% 30%, rgba(59,130,246,0.3) 0%, transparent 60%);"></div>
+			<div class="relative z-10">
+				<h1 class="text-3xl md:text-5xl font-black leading-tight mb-4" style="color:#93c5fd;">
+					🏛️ היה מהבעלים של קהילה בשכונה
+				</h1>
+				<p class="text-blue-100 text-base md:text-lg max-w-2xl mx-auto mb-10">
+					הפלטפורמה פועלת לפי מודל ייחודי של כלכלה מבוזרת וחברתית המחזירה חצי מהרווחים שלה אל הקהילה!
+				</p>
+				<!-- סטטיסטיקות מהירות -->
+				<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+					{#each [['50%','חוזר לקהילה','#34d399'],['20,000','מניות סה״כ','#60a5fa'],['200₪','ליחידה','#facc15'],['2,000','מקס למשפחה','#f472b6']] as [val,lbl,clr]}
+						<div class="rounded-xl p-4 text-center" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);">
+							<div class="text-3xl font-black" style="color:{clr};">{val}</div>
+							<div class="text-xs text-blue-200 mt-1">{lbl}</div>
+						</div>
+					{/each}
+				</div>
+			</div>
+		</div>
+
+		<!-- 1. ביזור לעומת ריכוז -->
+		<div class="mb-10">
+			<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
+				<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
+					style="background: linear-gradient(135deg,#facc15,#f59e0b);">1</span>
+				ביזור לעומת ריכוז
+			</h2>
+			<p class="text-gray-400 text-sm mb-6 max-w-2xl">במקום שכל הרווחים יגיעו לבעל אחד — המודל שלנו מבזר את הבעלות והרווחים</p>
+			<div class="grid md:grid-cols-2 gap-5">
+				<!-- ריכוז -->
+				<div class="rounded-2xl p-6" style="background:linear-gradient(135deg,#450a0a,#1e293b); border:1px solid rgba(239,68,68,0.3);">
+					<div class="flex items-center gap-3 mb-4">
+						<span class="text-3xl">❌</span>
+						<h3 class="font-black text-red-400 text-lg">מודל ריכוזי (פייסבוק, טיקטוק...)</h3>
+					</div>
+					<ul class="space-y-2 text-sm text-gray-300">
+						<li class="flex gap-2"><span class="text-red-400">•</span> כל הרווחים לבעל הפלטפורמה בלבד</li>
+						<li class="flex gap-2"><span class="text-red-400">•</span> כח ריכוזי בידי קבוצה קטנה</li>
+						<li class="flex gap-2"><span class="text-red-400">•</span> אין ייצוג לקהילה בהחלטות</li>
+					</ul>
+				</div>
+				<!-- ביזור -->
+				<div class="rounded-2xl p-6" style="background:linear-gradient(135deg,#064e3b,#1e293b); border:1px solid rgba(16,185,129,0.3);">
+					<div class="flex items-center gap-3 mb-4">
+						<span class="text-3xl">✅</span>
+						<h3 class="font-black text-emerald-400 text-lg">המודל המבוזר שלנו</h3>
+					</div>
+					<ul class="space-y-2 text-sm text-gray-300">
+						<li class="flex gap-2"><span class="text-emerald-400">•</span> 50% מהרווחים חוזרים אל הקהילה</li>
+						<li class="flex gap-2"><span class="text-emerald-400">•</span> עד 20,000 מניות — עד 2,000 למשפחה</li>
+						<li class="flex gap-2"><span class="text-emerald-400">•</span> שאיפה: בעלי מניות בכל שכונה בארץ</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+
+		<!-- 2. החלטות משותפות -->
+		<div class="mb-10">
+			<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
+				<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
+					style="background: linear-gradient(135deg,#facc15,#f59e0b);">2</span>
+				החלטות משותפות
+			</h2>
+			<p class="text-gray-400 text-sm mb-6 max-w-2xl">הבעלים מחליטים יחד בהצבעה על כל ההחלטות המנהליות</p>
+			<div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+				{#each [['📣','אופן הפרסום'],['📜','תנאי השימוש'],['💲','מחירון'],['⚙️','ביצוע שדרוגים'],['🚫','מדיניות צנזורה'],['📋','החלטות מנהליות']] as [ico, lbl]}
+					<div class="rounded-xl p-4 flex items-center gap-3"
+						style="background:rgba(255,255,255,0.04); border:1px solid rgba(59,130,246,0.2);">
+						<span class="text-2xl">{ico}</span>
+						<span class="font-bold text-sm text-blue-100">{lbl}</span>
+					</div>
+				{/each}
+			</div>
+		</div>
+
+		<!-- 3. צורת המודל -->
+		<div class="mb-10">
+			<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
+				<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
+					style="background: linear-gradient(135deg,#facc15,#f59e0b);">3</span>
+				צורת המודל
+			</h2>
+			<div class="rounded-2xl p-7" style="background:linear-gradient(135deg,#1e1b4b,#1e3a8a); border:1px solid rgba(147,197,253,0.2);">
+				<div class="grid md:grid-cols-2 gap-6 text-sm text-blue-100 leading-relaxed">
+					<div>
+						<p class="mb-3">המודל לוקח את האלמנטים החיוביים הן מהשיטה <span class="text-yellow-300 font-black">הקפיטליסטית</span> (שוק חופשי) והן מהשיטה <span class="text-yellow-300 font-black">הקומוניסטית</span> (הגבלת רכישה) — כך שהפלטפורמה תהיה באמת שייכת לעם תמיד.</p>
+						<p>מבוסס על רעיון <span class="text-yellow-300 font-black">הנחלות בארץ ישראל</span> — שומר על חופש ועצמאות מחד, ולא מאפשר ריכוזיות בידיים מעטות מאידך.</p>
+					</div>
+					<div class="flex flex-col gap-3">
+						<div class="rounded-xl p-4 text-center" style="background:rgba(255,255,255,0.06);">
+							<div class="text-4xl mb-1">⚖️</div>
+							<div class="font-black text-white">נוסחה הוגנת ומאוזנת</div>
+							<div class="text-xs text-blue-300 mt-1">לבעלים, לרכזים ולמשתמשים</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- 4. יתרונות לכל הצדדים -->
+		<div class="mb-10">
+			<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
+				<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
+					style="background: linear-gradient(135deg,#facc15,#f59e0b);">4</span>
+				יתרונות לכל הצדדים
+			</h2>
+			<div class="grid sm:grid-cols-2 gap-4">
+				{#each [
+					['👤','א. למשתמשי הקצה','#3b82f6','rgba(59,130,246,0.15)','כל יתרונות השכונה תחת קורת גג אחת — לשימוש אישי ללא תשלום.'],
+					['🏪','ב. לבעלי עסקים','#f59e0b','rgba(245,158,11,0.15)','פרסום איכותי וממוקד תמורת תשלום הוגן וקל לכל כיס.'],
+					['❤️','ג. לצדקה ולחברה','#10b981','rgba(16,185,129,0.15)','קופת צדקה קבועה, עמותת יוצאים לחירות, הגרלה חודשית למסייע לקהילה.'],
+					['🏘️','ד. לרכזי השכונות','#f472b6','rgba(244,114,182,0.15)','חלק נכבד מהרווחים למפעילי האתר בכל שכונה ושכונה.']
+				] as [ico, title, color, bg, desc]}
+					<div class="rounded-2xl p-5 flex gap-4 items-start"
+						style="background:{bg}; border:1px solid {color}40;">
+						<span class="text-3xl mt-0.5">{ico}</span>
+						<div>
+							<div class="font-black text-base mb-1" style="color:{color};">{title}</div>
+							<p class="text-gray-300 text-sm leading-relaxed">{desc}</p>
+						</div>
+					</div>
+				{/each}
+			</div>
+		</div>
+
+		<!-- 5. עלות רכישה -->
+		<div class="mb-10">
+			<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
+				<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
+					style="background: linear-gradient(135deg,#facc15,#f59e0b);">5</span>
+				עלות רכישה
+			</h2>
+			<div class="grid md:grid-cols-2 gap-5">
+				<!-- מחיר -->
+				<div class="rounded-2xl p-8 text-center" style="background:linear-gradient(135deg,#1e3a8a,#1e1b4b); border:2px solid rgba(147,197,253,0.4);">
+					<div class="text-6xl font-black text-yellow-300 mb-2">200₪</div>
+					<div class="text-xl font-black text-white mb-1">ליחידה אחת</div>
+					<div class="text-gray-400 text-sm">ההוצאה הראשונה היא גם האחרונה — לאחר מכן הכל מתוך הרווחים</div>
+				</div>
+				<!-- פרטים -->
+				<div class="flex flex-col gap-3">
+					{#each [
+						['💬','קבוצת ווצאפ','בעלי היחידות מתנהלים ומצביעים יחד בקבוצה ייעודית'],
+						['©️','זכויות יוצרים','אם מדינות נוספות ירצו לפתוח את האפליקציה — ישלמו לבעלי הזכויות'],
+						['🔄','מכירה חופשית','ניתן למכור את היחידות למי שתרצו, בכפוף להגבלת 2,000 ליחידת משפחה'],
+						['🔒','הגבלת ריכוז','עד 2,000 יחידות למשפחה גרעינית אחת — לשמר כח ביזור']
+					] as [ico, title, desc]}
+						<div class="rounded-xl p-4 flex gap-3 items-start"
+							style="background:rgba(255,255,255,0.04); border:1px solid rgba(59,130,246,0.2);">
+							<span class="text-xl mt-0.5">{ico}</span>
+							<div>
+								<div class="font-black text-blue-200 text-sm">{title}</div>
+								<div class="text-gray-400 text-xs mt-0.5">{desc}</div>
+							</div>
+						</div>
+					{/each}
+				</div>
+			</div>
+		</div>
+
+		<!-- 6. הוצאות שותפות -->
+		<div class="mb-10">
+			<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
+				<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
+					style="background: linear-gradient(135deg,#facc15,#f59e0b);">6</span>
+				הוצאות שותפות
+			</h2>
+			<div class="rounded-2xl p-7 flex flex-col md:flex-row gap-6 items-center"
+				style="background:linear-gradient(135deg,#1a1035,#1e293b); border:1px solid rgba(250,204,21,0.25);">
+				<div class="text-center flex-shrink-0">
+					<div class="text-6xl font-black text-yellow-300">35%</div>
+					<div class="text-sm text-gray-400 mt-1">מההכנסות לתפעול</div>
+				</div>
+				<div class="text-sm text-gray-300 leading-relaxed">
+					<p class="mb-3">חברת ניהול מטפלת בשרתים, אבטחת מידע, שירות לקוחות ותפעול שוטף. <span class="text-yellow-300 font-bold">ללא משכורות קבועות</span> וללא הפתעות — רק 35% מההכנסות.</p>
+					<p>החברה היא חלק בלתי נפרד מהפלטפורמה — <span class="text-yellow-300 font-bold">ההוצאה הראשונה היא גם האחרונה.</span> לאחר מכן כל ההוצאות מתוך הרווחים בלבד.</p>
+				</div>
+			</div>
+		</div>
+
+		<!-- CTA בעלים -->
+		<div class="mt-10 mb-4 rounded-3xl px-8 py-12 text-center"
+			style="background: linear-gradient(135deg,#1e1b4b 0%,#1e3a8a 50%,#1e293b 100%); border: 1px solid rgba(147,197,253,0.2);">
+			<h2 class="text-2xl md:text-3xl font-black mb-2 text-blue-100">היו שותפים להצלחה!</h2>
+			<p class="text-blue-300 text-sm md:text-base mb-8 max-w-xl mx-auto">הצטרפו לקבוצת הבעלים — רכשו יחידות והיו חלק מהפלטפורמה</p>
+			<div class="flex flex-col sm:flex-row gap-5 justify-center items-center">
+				<button
+					class="flex items-center gap-3 px-8 py-4 rounded-2xl font-black text-lg transition-all duration-200 hover:scale-105 hover:brightness-110 shadow-xl cursor-not-allowed"
+					style="background: linear-gradient(135deg,#1e3a8a,#3b82f6); border: 2px solid rgba(147,197,253,0.35);"
+					disabled>
+					<span class="text-2xl">📈</span>
+					<span>לרכישת יחידות</span>
+					<span class="text-xs font-bold opacity-60 border border-white/20 rounded-full px-2 py-0.5">בקרוב</span>
+				</button>
+				<button onclick={() => setTab('rewards')}
+					class="flex items-center gap-3 px-6 py-4 rounded-2xl font-black text-base transition-all duration-200 hover:scale-105 shadow-lg"
+					style="background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); color:#cbd5e1;">
+					← חזרה לשיטת התגמול
+				</button>
+			</div>
+		</div>
+
+	</div><!-- /owners tab -->
 
 </div>
 
