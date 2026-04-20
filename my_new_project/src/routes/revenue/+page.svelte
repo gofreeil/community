@@ -167,18 +167,18 @@
 				</p>
 				<div class="flex flex-col sm:flex-row items-stretch justify-center gap-0 mt-2">
 					{#each [
-						['📱','#a78bfa','נגישות מלאה של כל צרכי התושב בכף ידו'],
-						['🤝','#34d399','קידום החברה לחברה סולידרית בעלת ערך גבוה של ואהבת לרעך כמוך'],
-						['💪','#60a5fa','הוזלת יוקר המחיה, שיפור הביטחון, חיזוק הכח של התושב מול הרשויות'],
-						['💰','#facc15','תרומת 50% מהרווחים של הפלטפורמה חזרה לקהילה']
-					] as [ico,clr,txt], i}
+						['📱','נגישות מלאה של כל צרכי התושב בכף ידו'],
+						['🤝','קידום החברה לחברה סולידרית בעלת ערך גבוה של ואהבת לרעך כמוך'],
+						['💪','הוזלת יוקר המחיה, שיפור הביטחון, חיזוק הכח של התושב מול הרשויות'],
+						['💰','תרומת 50% מהרווחים של הפלטפורמה חזרה לקהילה']
+					] as [ico,txt], i}
 						{#if i > 0}
 							<div class="hidden sm:block w-px self-stretch" style="background:rgba(255,255,255,0.18);"></div>
 							<div class="sm:hidden h-px w-full" style="background:rgba(255,255,255,0.18);"></div>
 						{/if}
 						<div class="flex-1 px-5 py-4 text-center flex flex-col items-center gap-2">
 							<div class="text-2xl">{ico}</div>
-							<p class="text-sm md:text-base lg:text-lg leading-relaxed font-semibold" style="color:{clr};">{txt}</p>
+							<p class="text-sm md:text-base lg:text-lg leading-relaxed font-semibold text-indigo-100">{txt}</p>
 						</div>
 					{/each}
 				</div>
