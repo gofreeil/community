@@ -163,7 +163,7 @@
 				<span class="inline-block text-5xl mb-4">🏘️</span>
 				<h1 class="text-4xl md:text-5xl font-black leading-tight mb-4" style="color:#facc15;">קהילה בשכונה</h1>
 				<p class="text-indigo-100 text-base md:text-lg max-w-2xl mx-auto mb-10 font-bold">
-					הפלטפורמה הקהילתית הראשונה בישראל שמחברת בין תושבי השכונה לכל השירותים, האנשים והמשאבים — במקום אחד, בחינם.
+					הפלטפורמה הקהילתית הראשונה בישראל המחברת בין התושבים אל כל השירותים, היתרונות והמשאבים של השכונה — במקום אחד!
 				</p>
 				<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
 					{#each [['🏘️','שכונות','בכל הארץ','#a78bfa'],['🤝','100%','שירות חינם לתושבים','#34d399'],['💰','50%','מהרווחים חוזרים לקהילה','#facc15'],['❤️','קהילה','מחוברת ותומכת','#f472b6']] as [ico,val,lbl,clr]}
