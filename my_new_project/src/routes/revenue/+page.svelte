@@ -222,11 +222,11 @@
 					</div>
 				{/each}
 			</div>
-		</div>
 
+			<!-- קו מפריד -->
+			<div class="my-7" style="height:1px; background:rgba(139,92,246,0.25);"></div>
 
-		<!-- מה הפלטפורמה מאפשרת -->
-		<div class="mb-10 rounded-3xl p-7" style="background:linear-gradient(135deg,#0f172a,#1e293b); border:1px solid rgba(139,92,246,0.2);">
+			<!-- מה הפלטפורמה מאפשרת -->
 			<ul class="space-y-4 mb-6">
 				{#each [
 					['הפלטפורמה מאפשרת לך להנות בחינם מכל השירותים','#a78bfa'],
