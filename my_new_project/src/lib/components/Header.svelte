@@ -204,7 +204,7 @@
                             <img
                                 src="/images/community-logo1.png"
                                 alt=""
-                                class="h-8 w-8 object-cover flex-shrink-0 rounded-full scale-[1.7]"
+                                class="h-8 w-8 object-cover flex-shrink-0 rounded-full scale-[2]"
                             />
                             <div
                                 class="hidden absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-slate-900 animate-pulse"
@@ -310,7 +310,7 @@
                         <img
                             src="/images/community-logo1.png"
                             alt=""
-                            class="h-12 w-12 object-cover rounded-full scale-[1.7]"
+                            class="h-12 w-12 object-cover rounded-full scale-[2]"
                         />
                     </a>
                     <!-- Tooltip - Below Logo -->
