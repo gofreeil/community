@@ -165,12 +165,16 @@
 				<p class="text-indigo-100 text-base md:text-lg max-w-2xl mx-auto mb-10 font-bold">
 					הפלטפורמה הקהילתית הראשונה בישראל המחברת בין התושבים אל כל השירותים, היתרונות והמשאבים של השכונה — במקום אחד!
 				</p>
-				<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-					{#each [['🏘️','שכונות','בכל הארץ','#a78bfa'],['🤝','100%','שירות חינם לתושבים','#34d399'],['💰','50%','מהרווחים חוזרים לקהילה','#facc15'],['❤️','קהילה','מחוברת ותומכת','#f472b6']] as [ico,val,lbl,clr]}
-						<div class="rounded-xl p-4 text-center" style="background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.1);">
-							<div class="text-xl mb-1">{ico}</div>
-							<div class="text-xl font-black" style="color:{clr};">{val}</div>
-							<div class="text-xs text-indigo-200 mt-1">{lbl}</div>
+				<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+					{#each [
+						['📱','#a78bfa','נגישות מלאה של כל צרכי התושב בכף ידו'],
+						['🤝','#34d399','קידום החברה לחברה סולידרית בעלת ערך גבוה של ואהבת לרעך כמוך'],
+						['💪','#60a5fa','הוזלת יוקר המחיה, שיפור הביטחון, חיזוק הכח של התושב מול הרשויות'],
+						['💰','#facc15','תרומת 50% מהרווחים של הפלטפורמה חזרה לקהילה']
+					] as [ico,clr,txt]}
+						<div class="rounded-xl p-4 text-center flex flex-col items-center gap-2" style="background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.1);">
+							<div class="text-2xl">{ico}</div>
+							<p class="text-xs leading-relaxed font-semibold" style="color:{clr};">{txt}</p>
 						</div>
 					{/each}
 				</div>
