@@ -223,7 +223,7 @@
 	</div>
 
 	<!-- 4. הכנסה לרכזי השטח פירוט -->
-	<div id="section-4" class="mb-12">
+	<div id="section-4" class="mb-12" style="scroll-margin-top: 100px;">
 		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 			<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
 				style="background: linear-gradient(135deg,#fbbf24,#d97706);">4</span>
@@ -319,7 +319,7 @@
 	</div>
 
 	<!-- 5. הכנסה לבעלים -->
-	<div id="section-5" class="mb-8">
+	<div id="section-5" class="mb-8" style="scroll-margin-top: 100px;">
 		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 			<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-white"
 				style="background: linear-gradient(135deg,#3b82f6,#1d4ed8);">5</span>
@@ -384,7 +384,7 @@
 	</div>
 
 	<!-- 6. חברה צדקה וחסד -->
-	<div id="section-6" class="mb-8">
+	<div id="section-6" class="mb-8" style="scroll-margin-top: 100px;">
 		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 			<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-white"
 				style="background: linear-gradient(135deg,#10b981,#059669);">6</span>
@@ -465,3 +465,20 @@
 	</div>
 
 </div>
+
+<style>
+	:global(#section-4:target h2),
+	:global(#section-5:target h2),
+	:global(#section-6:target h2) {
+		animation: flash-title 2s ease-out forwards;
+	}
+
+	@keyframes flash-title {
+		0%   { color: #fff; text-shadow: none; }
+		20%  { color: #facc15; text-shadow: 0 0 28px rgba(250,204,21,0.9), 0 0 60px rgba(250,204,21,0.4); }
+		40%  { color: #fff; text-shadow: none; }
+		60%  { color: #facc15; text-shadow: 0 0 20px rgba(250,204,21,0.7); }
+		80%  { color: #fff; text-shadow: none; }
+		100% { color: #fff; text-shadow: none; }
+	}
+</style>
