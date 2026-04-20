@@ -189,7 +189,7 @@
 		<div class="mb-10 rounded-3xl p-7" style="background:linear-gradient(135deg,#0f172a,#1e293b); border:1px solid rgba(139,92,246,0.2);">
 
 			<!-- מה זה? — שורה אחת ארוכה -->
-			<h2 class="text-2xl font-black mb-4 text-purple-300">אז מה זה בדיוק "קהילה בשכונה"?</h2>
+			<h2 class="text-2xl font-black mb-4 text-purple-300">קהילה בשכונה</h2>
 			<p class="text-base md:text-lg text-gray-200 leading-relaxed mb-7">
 				<span class="text-white font-black">קהילה בשכונה</span> היא פלטפורמה דיגיטלית המרכזת את כל מה שקורה בשכונה שלך — גמ"חים, עסקים מקומיים, מניינים, חוגים, אירועים, מסירות חינם ועוד — הכל במקום אחד נגיש ונוח.
 			</p>
@@ -940,12 +940,6 @@
 		}
 	}
 
-	:global(#section-4:target h2),
-	:global(#section-5:target h2),
-	:global(#section-6:target h2) {
-		animation: flash-title 4s ease-out forwards;
-	}
-
 	@keyframes flash-title {
 		0%   { color: #fff;    text-shadow: none; }
 		10%  { color: #facc15; text-shadow: 0 0 40px rgba(250,204,21,1), 0 0 80px rgba(250,204,21,0.6); }
@@ -955,5 +949,11 @@
 		70%  { color: #facc15; text-shadow: 0 0 30px rgba(250,204,21,0.85), 0 0 60px rgba(250,204,21,0.4); }
 		85%  { color: #fff;    text-shadow: none; }
 		100% { color: #fff;    text-shadow: none; }
+	}
+
+	:global(#section-4:target h2),
+	:global(#section-5:target h2),
+	:global(#section-6:target h2) {
+		animation: flash-title 4s ease-out forwards;
 	}
 </style>
