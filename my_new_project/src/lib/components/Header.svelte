@@ -318,7 +318,7 @@
 <div class="flex items-center gap-2">
                 <button
                     class="relative group flex items-center rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2 font-medium text-white shadow-lg transition-all duration-200 hover:shadow-xl"
-                    onclick={() => goto("/revenue")}
+                    onclick={() => goto("/about")}
                 >
                     {tFn("about")}
                 </button>
