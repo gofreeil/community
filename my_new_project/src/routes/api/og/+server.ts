@@ -25,7 +25,7 @@ export const GET: RequestHandler = async () => {
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%)',
+                    background: '#ffffff',
                     fontFamily: 'sans-serif',
                 },
                 children: [
@@ -33,19 +33,19 @@ export const GET: RequestHandler = async () => {
                         type: 'img',
                         props: {
                             src: logoBase64,
-                            width: 220,
-                            height: 220,
-                            style: { borderRadius: '50%', marginBottom: '32px', objectFit: 'cover' }
+                            width: 400,
+                            height: 400,
+                            style: { borderRadius: '50%', marginBottom: '24px', objectFit: 'cover' }
                         }
                     },
                     {
                         type: 'div',
                         props: {
                             style: {
-                                fontSize: '80px',
+                                fontSize: '64px',
                                 fontWeight: '900',
-                                color: '#facc15',
-                                marginBottom: '16px',
+                                color: '#312e81',
+                                marginBottom: '10px',
                                 textAlign: 'center',
                                 direction: 'rtl',
                             },
@@ -56,9 +56,9 @@ export const GET: RequestHandler = async () => {
                         type: 'div',
                         props: {
                             style: {
-                                fontSize: '36px',
+                                fontSize: '30px',
                                 fontWeight: '600',
-                                color: '#c7d2fe',
+                                color: '#6b7280',
                                 textAlign: 'center',
                                 direction: 'rtl',
                                 maxWidth: '900px',
