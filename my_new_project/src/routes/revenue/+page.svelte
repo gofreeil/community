@@ -225,6 +225,28 @@
 		</div>
 
 
+		<!-- מה הפלטפורמה מאפשרת -->
+		<div class="mb-10 rounded-3xl p-7" style="background:linear-gradient(135deg,#0f172a,#1e293b); border:1px solid rgba(139,92,246,0.2);">
+			<ul class="space-y-4 mb-6">
+				{#each [
+					['הפלטפורמה מאפשרת לך להנות בחינם מכל השירותים','#a78bfa'],
+					['מאפשרת למפרסמים להגיע בדיוק לקהל היעד הנחות להם','#60a5fa'],
+					['מאפשרת ואף מעודדת אותך להיות חלק מהבעלים שלה','#facc15'],
+					['מאפשרת ואף מעודדת אותך להיות רכז שכונה ולקבל חלק מהרווחים שהפלטפורמה מייצרת בכל חודש','#f59e0b'],
+					['מאפשרת צימצום עוני וסיוע לחלשים, כך שכאשר אתה משתמש בפלטפורמה אתה גם נהנה מהיתרונות שלה וגם מסייע כלכלית לחלשים !','#34d399']
+				] as [txt, clr]}
+					<li class="flex items-start gap-3 text-base md:text-lg text-gray-100 leading-relaxed">
+						<span class="mt-1 text-lg font-black flex-shrink-0" style="color:{clr};">✦</span>
+						<span>{txt}</span>
+					</li>
+				{/each}
+			</ul>
+			<div class="pt-5" style="border-top:1px solid rgba(255,255,255,0.1);">
+				<p class="text-indigo-200 text-base md:text-lg leading-relaxed mb-2">בתיקווה לחברה מתוקנת יותר וחופשיה יותר</p>
+				<p class="text-2xl md:text-3xl font-black" style="color:#facc15;">כוחנו באחדותו!</p>
+			</div>
+		</div>
+
 		<!-- ערכים -->
 		<div class="mb-10">
 			<h2 class="text-xl font-black mb-5 text-white">הערכים שמנחים אותנו</h2>
