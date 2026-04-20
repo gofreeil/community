@@ -205,7 +205,7 @@
                                 <img
                                     src="/images/community-logo1.png"
                                     alt=""
-                                    class="w-full h-full object-cover scale-[1.5]"
+                                    class="w-full h-full object-cover scale-[1.6]"
                                 />
                             </div>
                             <div
@@ -313,7 +313,7 @@
                             <img
                                 src="/images/community-logo1.png"
                                 alt=""
-                                class="w-full h-full object-cover scale-[1.5]"
+                                class="w-full h-full object-cover scale-[1.6]"
                             />
                         </div>
                     </a>
