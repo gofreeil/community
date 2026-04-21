@@ -301,7 +301,7 @@
 
         <!-- Desktop Header - Full Layout -->
         <div
-            class="hidden md:flex flex-col items-center pt-0 pb-[9px] md:flex-row md:items-center md:justify-between"
+            class="hidden md:flex flex-col items-center pt-0 pb-0.5 md:flex-row md:items-center md:justify-between"
         >
             <div class="flex items-center space-x-4">
                 <div class="relative group">
