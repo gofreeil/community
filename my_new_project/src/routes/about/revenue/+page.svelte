@@ -251,10 +251,7 @@
 
 		<!-- תת-כותרת מודל כלכלי -->
 		<p class="text-lg md:text-xl font-bold text-white leading-relaxed mt-6 mb-2">
-			המיזם פועל לפי מודל כלכלי-חברתי ייחודי שבו חצי מהרווחים חוזרים אל הקהילה:<br>30% לרכזי השכונות, 20% לצדקה ולחסד <button
-				onclick={() => setTab('rewards')}
-				class="inline items-baseline gap-1 font-bold text-yellow-300 hover:text-yellow-200 underline underline-offset-4 decoration-yellow-400/60 hover:decoration-yellow-300 transition-colors duration-200"
-			>לשיטת התגמול ←</button>
+			המיזם פועל לפי מודל כלכלי-חברתי ייחודי שבו חצי מהרווחים חוזרים אל הקהילה
 		</p>
 
 	</div><!-- /about tab -->
