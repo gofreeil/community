@@ -228,7 +228,8 @@
 					</li>
 				{/each}
 			</ul>
-			<div class="pt-5" style="border-top:1px solid rgba(255,255,255,0.1);">
+			<div class="pt-5">
+				<div style="width:50%; height:1px; background:rgba(255,255,255,0.1); margin-bottom:1.25rem;"></div>
 				<p class="text-indigo-200 text-base md:text-lg leading-relaxed mb-2">בתיקווה לחברה מתוקנת יותר וחופשיה יותר</p>
 				<p class="text-2xl md:text-3xl font-black" style="color:#facc15;">כוחנו באחדותו!</p>
 			</div>
