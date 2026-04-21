@@ -91,11 +91,12 @@ export const ads: Ad[] = [
     },
     {
         id: 8,
-        title: "נפגעת?",
-        description: "אנו נסייע לך!",
-        cta: "סיוע לנפגעי תקיפה מינית",
-        href: "https://www.melecshop.com/page/kids_FNL3",
-        image: "/images/support-victims.jpeg",
-        color: "from-fuchsia-600 to-pink-600"
+        title: "משאלי העם",
+        description: "הבע דעתך על הסוגיות האקטואליות",
+        cta: "הבע דעתך על הסוגיות האקטואליות",
+        hover: "הבע דעתך על הסוגיות האקטואליות",
+        href: "#",
+        image: "/images/referendum.png",
+        color: "from-purple-600 to-indigo-700"
     }
 ];
