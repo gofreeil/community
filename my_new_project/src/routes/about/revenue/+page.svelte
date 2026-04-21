@@ -238,12 +238,12 @@
 		<!-- ערכים -->
 		<div class="mb-10">
 			<h2 class="text-xl font-black mb-5 text-white">הערכים שמנחים אותנו</h2>
-			<div class="grid grid-cols-2 md:grid-cols-5">
+			<div class="grid grid-cols-5 gap-0">
 				{#each [['🎯','נגישות','כל צרכי התושב תחת קורת גג אחת'],['🤝','ערבות הדדית','הנגשת צרכי הפרט אל הקהילה בלחיצת כפתור'],['💰','מודל כלכלי חדש','50% מהרווחים חולקים חזרה אל הקהילה כהכרת הטוב למי שקידם אותה'],['💪','העצמה קהילתית','מאפשרים שיח נגיש, קבלת החלטות משותפות, מקדמים חברה שמחה וסולידרית'],['🦅','עצמאות','מפעילים מיזמים המקדמים אותנו לעצמאות חברתית ואף לשליטה על מוסדות המדינה']] as [ico,title,desc]}
-					<div class="p-5 flex flex-col gap-2" style="border-bottom:1px solid rgba(255,255,255,0.08); border-right:1px solid rgba(255,255,255,0.08);">
-						<div class="text-2xl">{ico}</div>
-						<div class="font-black text-white text-sm md:text-base">{title}</div>
-						<p class="text-gray-400 text-xs md:text-sm leading-relaxed">{desc}</p>
+					<div class="px-2 py-4 flex flex-col gap-1.5 text-center" style="border-bottom:1px solid rgba(255,255,255,0.08); border-right:1px solid rgba(255,255,255,0.08);">
+						<div class="text-xl">{ico}</div>
+						<div class="font-black text-white text-xs">{title}</div>
+						<p class="text-gray-400 text-[10px] leading-tight hidden md:block">{desc}</p>
 					</div>
 				{/each}
 			</div>
