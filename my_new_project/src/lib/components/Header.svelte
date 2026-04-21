@@ -348,7 +348,7 @@
                         style="background:linear-gradient(135deg,#4f46e5,#7c3aed); box-shadow:0 4px 15px rgba(124,58,237,0.4);"
                         onmouseenter={(e) => (e.currentTarget as HTMLElement).style.boxShadow='0 0 24px 6px rgba(167,139,250,0.7), 0 4px 15px rgba(124,58,237,0.5)'}
                         onmouseleave={(e) => (e.currentTarget as HTMLElement).style.boxShadow='0 4px 15px rgba(124,58,237,0.4)'}
-                        onclick={() => goto("/revenue")}
+                        onclick={() => goto("/about/revenue")}
                     >
                         {tFn("about")}
                     </button>

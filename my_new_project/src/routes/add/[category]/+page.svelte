@@ -143,7 +143,7 @@
                         itemId:        result.id,
                     }));
                 }
-                setTimeout(() => goto('/advertise'), 1500);
+                setTimeout(() => goto('/about/advertise'), 1500);
             } else {
                 setTimeout(() => goto('/'), 2500);
             }

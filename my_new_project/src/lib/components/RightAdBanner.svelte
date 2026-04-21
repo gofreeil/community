@@ -210,7 +210,7 @@
                     </div>
 
                     <a
-                        href="/advertise"
+                        href="/about/advertise"
                         class="mb-4 z-10 rounded-full {ad.buttonColor} px-5 py-2 text-sm font-bold text-white shadow-xl transition-transform hover:scale-105"
                     >
                         לפרטים

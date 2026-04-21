@@ -1771,7 +1771,7 @@
 							<span class="text-sm text-gray-300">
 								{tFn("terms_agree_prefix")}
 								<a
-									href="/legal"
+									href="/about/legal"
 									target="_blank"
 									class="text-purple-400 hover:underline"
 									>תנאי השימוש ומדיניות הפרטיות</a

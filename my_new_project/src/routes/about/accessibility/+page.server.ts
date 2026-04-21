@@ -1,5 +1,5 @@
 import { redirect } from '@sveltejs/kit';
 
 export function load() {
-	throw redirect(301, '/legal#accessibility');
+	throw redirect(301, '/about/legal#accessibility');
 }
