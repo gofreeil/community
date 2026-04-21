@@ -63,6 +63,16 @@ export const ads: Ad[] = [
         imageScale: 0.9,
     },
     {
+        id: 8,
+        title: "משאלי העם",
+        description: "הבע דעתך על הסוגיות האקטואליות",
+        cta: "הבע דעתך על הסוגיות האקטואליות",
+        hover: "הבע דעתך על הסוגיות האקטואליות",
+        href: "#",
+        image: "/images/referendum.png",
+        color: "from-purple-600 to-indigo-700"
+    },
+    {
         id: 3,
         title: "קבוצת רכישה",
         description: "הוזל את ההוצאות שלך",
@@ -88,15 +98,5 @@ export const ads: Ad[] = [
         href: "https://index-chi-sage.vercel.app/",
         image: "/images/professionals.png",
         color: "from-yellow-500 to-orange-500"
-    },
-    {
-        id: 8,
-        title: "משאלי העם",
-        description: "הבע דעתך על הסוגיות האקטואליות",
-        cta: "הבע דעתך על הסוגיות האקטואליות",
-        hover: "הבע דעתך על הסוגיות האקטואליות",
-        href: "#",
-        image: "/images/referendum.png",
-        color: "from-purple-600 to-indigo-700"
     }
 ];
