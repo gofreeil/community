@@ -215,14 +215,6 @@
 				{/each}
 			</div>
 
-			<!-- קו מפריד -->
-			<div class="my-7 mr-0 ml-auto" style="height:1px; width:66%; background:rgba(139,92,246,0.25);"></div>
-
-			<!-- תת-כותרת מודל כלכלי -->
-			<p class="text-lg md:text-xl font-bold text-purple-300 leading-relaxed mb-6">
-				המיזם פועל לפי מודל כלכלי-חברתי ייחודי שבו חצי מהרווחים חוזרים אל הקהילה:<br>30% לרכזי השכונות, 20% לצדקה ולחסד
-			</p>
-
 			<!-- מה הפלטפורמה מאפשרת -->
 			<ul class="space-y-4 mb-6">
 				{#each [
@@ -256,6 +248,11 @@
 				{/each}
 			</div>
 		</div>
+
+		<!-- תת-כותרת מודל כלכלי -->
+		<p class="text-lg md:text-xl font-bold text-white leading-relaxed mt-6 mb-2">
+			המיזם פועל לפי מודל כלכלי-חברתי ייחודי שבו חצי מהרווחים חוזרים אל הקהילה:<br>30% לרכזי השכונות, 20% לצדקה ולחסד
+		</p>
 
 	</div><!-- /about tab -->
 
