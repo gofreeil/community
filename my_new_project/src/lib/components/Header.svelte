@@ -205,7 +205,7 @@
                                 <img
                                     src="/images/community-logo1.png"
                                     alt=""
-                                    class="w-full h-full object-cover scale-[1.3]"
+                                    class="w-full h-full object-cover scale-[1.2]"
                                 />
                             </div>
                             <div
@@ -224,20 +224,29 @@
                         </div>
                     </a>
 
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-1.5">
+                        <!-- כפתור אודות - מובייל -->
+                        <button
+                            onclick={() => goto("/about/revenue")}
+                            class="flex items-center justify-center w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors"
+                            aria-label="אודות קהילה"
+                        >
+                            <span class="text-xs font-bold text-white">ℹ</span>
+                        </button>
+
                         <!-- כפתור דגל שפה - מובייל -->
                         <div class="relative lang-dropdown-container">
                             <button
                                 onclick={() => (showLangDropdown = !showLangDropdown)}
                                 onkeydown={handleLangKeydown}
-                                class="flex items-center justify-center w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors"
+                                class="flex items-center justify-center w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors"
                                 aria-label="בחר שפה"
                                 aria-haspopup="listbox"
                                 aria-expanded={showLangDropdown}
                             >
                                 <span
                                     class="fi fi-{languages.find((l) => l.code === $locale || $locale?.startsWith(l.code))?.flag || 'il'}"
-                                    style="font-size: 1.4rem;"
+                                    style="font-size: 1.2rem;"
                                     aria-hidden="true"
                                 ></span>
                             </button>
@@ -313,7 +322,7 @@
                             <img
                                 src="/images/community-logo1.png"
                                 alt=""
-                                class="w-full h-full object-cover scale-[1.3]"
+                                class="w-full h-full object-cover scale-[1.2]"
                             />
                         </div>
                     </a>
