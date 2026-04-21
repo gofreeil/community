@@ -206,8 +206,7 @@
 					['📅','אירועים','לוח אירועים שכונתי'],
 					['💼','דרושים','לוח דרושים מקומי']
 				] as [ico,title,desc]}
-					<div class="p-4 flex flex-col gap-1.5 transition-all hover:bg-white/5"
-						style="border-bottom:1px solid rgba(255,255,255,0.08); border-right:1px solid rgba(255,255,255,0.08);">
+					<div class="service-cell p-4 flex flex-col gap-1.5 transition-all hover:bg-white/5">
 						<span class="text-2xl">{ico}</span>
 						<div class="font-black text-sm md:text-base text-indigo-200">{title}</div>
 						<p class="text-gray-400 text-xs md:text-sm leading-relaxed">{desc}</p>
@@ -216,7 +215,7 @@
 			</div>
 
 			<!-- מה הפלטפורמה מאפשרת -->
-			<ul class="space-y-4 mb-6">
+			<ul class="space-y-4 mb-6 mt-8">
 				{#each [
 					['מאפשרת למפרסמים להגיע בדיוק לקהל היעד הנחוץ להם','#60a5fa'],
 					['מאפשרת ואף מעודדת אותך להיות חלק מהבעלים שלה','#facc15'],
@@ -947,5 +946,27 @@
 	:global(#section-5:target h2),
 	:global(#section-6:target h2) {
 		animation: flash-title 4s ease-out forwards;
+	}
+
+	.service-cell {
+		position: relative;
+	}
+	.service-cell::after {
+		content: '';
+		position: absolute;
+		bottom: 0;
+		left: 14%;
+		right: 14%;
+		height: 1px;
+		background: rgba(255,255,255,0.08);
+	}
+	.service-cell::before {
+		content: '';
+		position: absolute;
+		right: 0;
+		top: 14%;
+		bottom: 14%;
+		width: 1px;
+		background: rgba(255,255,255,0.08);
 	}
 </style>
