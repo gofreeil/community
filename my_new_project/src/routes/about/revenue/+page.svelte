@@ -129,7 +129,7 @@
 <div class="text-white" dir="rtl">
 
 	<!-- TAB BAR -->
-	<div class="flex gap-2 mb-8 p-1.5 rounded-2xl sticky top-[68px] z-40 backdrop-blur-lg"
+	<div class="flex gap-2 mb-8 p-1.5 rounded-2xl sticky top-[82px] md:top-[125px] z-40 backdrop-blur-lg"
 		style="background: rgba(7,11,20,0.85); border: 1px solid rgba(255,255,255,0.1);">
 		{#each ([['about','🏘️','אודותינו'],['rewards','💰','שיטת התגמול'],['owners','🏛️','היה מהבעלים'],['coordinator','👥','היה רכז']] as const) as [id, icon, label]}
 			<button
