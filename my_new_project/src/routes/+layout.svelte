@@ -11,8 +11,9 @@
 	import MobileAdsDrawer from "$lib/components/MobileAdsDrawer.svelte";
 	import MobileAdPopup from "$lib/components/MobileAdPopup.svelte";
 	import { signOut } from "@auth/sveltekit/client";
-	import { goto } from "$app/navigation";
+	import { goto, beforeNavigate } from "$app/navigation";
 	import { page } from "$app/state";
+	import { closeAdPopup } from "$lib/adPopupStore";
 
 	let { children, data } = $props();
 
@@ -33,6 +34,10 @@
 	function handleShowAuth() {
 		goto(`/login?redirect=${encodeURIComponent(page.url.pathname)}`);
 	}
+
+	beforeNavigate(() => {
+		closeAdPopup();
+	});
 </script>
 
 <svelte:head>

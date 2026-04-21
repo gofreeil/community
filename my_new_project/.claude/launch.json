@@ -15,6 +15,24 @@
       "port": 4173
     }
     ,{
+      "name": "civilian-cating",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "cd /d D:\\Users\\User\\Documents\\GitHub\\civilian-cating && npm run dev -- --port 5174"],
+      "port": 5174
+    }
+    ,{
+      "name": "national-gemach",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "cd /d D:\\Users\\User\\Documents\\GitHub\\national-gemach && npm run dev -- --port 5175"],
+      "port": 5175
+    }
+    ,{
+      "name": "referendum",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "cd /d D:\\Users\\User\\Documents\\GitHub\\referendum && npm run dev -- --port 5176"],
+      "port": 5176
+    }
+    ,{
       "name": "strapi-backend",
       "runtimeExecutable": "powershell",
       "runtimeArgs": ["-Command", "cd 'D:\\Users\\User\\Documents\\GitHub\\community\\community-backend' ; npm run develop"],
