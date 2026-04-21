@@ -157,20 +157,16 @@
 				<p class="text-indigo-100 text-base md:text-lg max-w-2xl mx-auto mb-10 font-bold">
 					הפלטפורמה הקהילתית הראשונה בישראל המחברת בין התושבים אל כל היתרונות, השירותים והמשאבים של השכונה בה הם מתגוררים!
 				</p>
-				<div class="flex flex-col sm:flex-row items-stretch justify-center gap-0 mt-2">
+				<div class="grid grid-cols-2 sm:grid-cols-4 gap-0 mt-2">
 					{#each [
 						['🤲','נגישות מלאה של כל צרכי התושב בכף היד'],
 						['🤝','קידום החברה לחברה סולידרית בעלת ערך גבוה של ואהבת לרעך כמוך'],
 						['💪','הוזלת יוקר המחיה, שיפור הביטחון, חיזוק הכח של התושב מול הרשויות'],
 						['💰','משתפת 50% מהרווחים של הפלטפורמה חזרה לקהילה']
 					] as [ico,txt], i}
-						{#if i > 0}
-							<div class="hidden sm:block w-px self-stretch" style="background:rgba(255,255,255,0.18);"></div>
-							<div class="sm:hidden h-px w-full" style="background:rgba(255,255,255,0.18);"></div>
-						{/if}
-						<div class="flex-1 px-5 py-4 text-center flex flex-col items-center gap-2">
-							<div class="text-2xl">{ico}</div>
-							<p class="text-sm md:text-base lg:text-lg leading-relaxed font-semibold text-indigo-100">{txt}</p>
+						<div class="px-3 py-3 text-center flex flex-col items-center gap-1.5" style="border: 0.5px solid rgba(255,255,255,0.12);">
+							<div class="text-xl">{ico}</div>
+							<p class="text-xs sm:text-sm leading-snug font-semibold text-indigo-100">{txt}</p>
 						</div>
 					{/each}
 				</div>
