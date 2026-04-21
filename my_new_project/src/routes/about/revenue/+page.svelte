@@ -238,12 +238,12 @@
 		<!-- ערכים -->
 		<div class="mb-10">
 			<h2 class="text-xl font-black mb-5 text-white">הערכים שמנחים אותנו</h2>
-			<div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+			<div class="grid grid-cols-2 md:grid-cols-5">
 				{#each [['🎯','נגישות','כל צרכי התושב תחת קורת גג אחת'],['🤝','ערבות הדדית','הנגשת צרכי הפרט אל הקהילה בלחיצת כפתור'],['💰','מודל כלכלי חדש','50% מהרווחים חולקים חזרה אל הקהילה כהכרת הטוב למי שקידם אותה'],['💪','העצמה קהילתית','מאפשרים שיח נגיש, קבלת החלטות משותפות, מקדמים חברה שמחה וסולידרית'],['🦅','עצמאות','מפעילים מיזמים המקדמים אותנו לעצמאות חברתית ואף לשליטה על מוסדות המדינה']] as [ico,title,desc]}
-					<div class="rounded-2xl p-4 text-center" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);">
-						<div class="text-3xl mb-2">{ico}</div>
-						<div class="font-black text-white text-sm mb-1">{title}</div>
-						<p class="text-gray-400 text-xs leading-relaxed">{desc}</p>
+					<div class="p-5 flex flex-col gap-2" style="border-bottom:1px solid rgba(255,255,255,0.08); border-right:1px solid rgba(255,255,255,0.08);">
+						<div class="text-2xl">{ico}</div>
+						<div class="font-black text-white text-sm md:text-base">{title}</div>
+						<p class="text-gray-400 text-xs md:text-sm leading-relaxed">{desc}</p>
 					</div>
 				{/each}
 			</div>
@@ -251,7 +251,10 @@
 
 		<!-- תת-כותרת מודל כלכלי -->
 		<p class="text-lg md:text-xl font-bold text-white leading-relaxed mt-6 mb-2">
-			המיזם פועל לפי מודל כלכלי-חברתי ייחודי שבו חצי מהרווחים חוזרים אל הקהילה
+			המיזם פועל לפי מודל כלכלי-חברתי ייחודי שבו חצי מהרווחים חוזרים אל הקהילה <button
+				onclick={() => setTab('rewards')}
+				class="inline items-baseline gap-1 font-bold text-yellow-300 hover:text-yellow-200 underline underline-offset-4 decoration-yellow-400/60 hover:decoration-yellow-300 transition-colors duration-200"
+			>לשיטת התגמול ←</button>
 		</p>
 
 	</div><!-- /about tab -->
