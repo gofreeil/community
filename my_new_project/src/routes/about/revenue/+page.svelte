@@ -251,10 +251,10 @@
 
 		<!-- תת-כותרת מודל כלכלי -->
 		<p class="text-lg md:text-xl font-bold text-white leading-relaxed mt-6 mb-2">
-			מיזם פועל לפי מודל כלכלי / חברתי ייחודי שבו חצי מהרווחים משותפים חזרה אל הקהילה! הכר את <button
+			מיזם פועל לפי מודל כלכלי / חברתי ייחודי שבו חצי מהרווחים משותפים חזרה אל הקהילה! <button
 				onclick={() => setTab('rewards')}
 				class="inline items-baseline gap-1 font-bold text-yellow-300 hover:text-yellow-200 underline underline-offset-4 decoration-yellow-400/60 hover:decoration-yellow-300 transition-colors duration-200"
-			>שיטת התגמול ←</button>
+			>הכר את שיטת התגמול ←</button>
 		</p>
 
 	</div><!-- /about tab -->
