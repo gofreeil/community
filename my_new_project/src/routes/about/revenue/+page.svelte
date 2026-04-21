@@ -191,7 +191,7 @@
 
 			<!-- שירותי השכונה -->
 			<h2 class="text-xl font-black mb-5 text-white">כל שירותי השכונה במקום אחד</h2>
-			<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
+			<div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-4">
 				{#each [
 					['🎁','גמ"חים','השאלת פריטים וציוד בחינם'],
 					['📦','מסירות חינם','רהיטים ובגדים ממשפחות לשכנים'],
