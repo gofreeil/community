@@ -354,7 +354,7 @@
 						</div>
 						<div class="flex items-center gap-2">
 							<div class="w-4 h-4 rounded-md" style="background: #facc15;"></div>
-							<span class="text-gray-300">רווחים לבעלים, לרכזים ולצדקה</span>
+							<span class="text-gray-300">הרווחים מתחלקים אוטומטית — לבעלים, לרכזים ולצדקה</span>
 						</div>
 					</div>
 				</div>
