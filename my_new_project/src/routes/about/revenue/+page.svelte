@@ -633,10 +633,14 @@
 					style="background: linear-gradient(135deg,#facc15,#f59e0b);">1</span>
 				ביזור לעומת ריכוז
 			</h2>
-			<p class="text-gray-400 text-sm mb-6 max-w-2xl">במקום שכל הרווחים יגיעו לבעל אחד — המודל שלנו מבזר את הבעלות והרווחים</p>
-			<div class="grid md:grid-cols-2 gap-5">
+			<p class="text-gray-300 text-sm mb-6 max-w-3xl leading-relaxed">
+				במקום שכל הרווחים והשליטה יוחזקו אצל בעלים אחד ריכוזי — המודל שלנו מבזר את הבעלות והרווחים, הפלטפורמה בנויה כדי לקדם את הקהילה, במקום הפרד ומשול יש לנו <span class="text-yellow-300 font-black">אחד וחזק!</span><br/>
+				וכדי שתישאר כזו <span class="text-yellow-300 font-black">אנו לא נאפשר לבעלי ההון לרכוש את הפלטפורמה!</span><br/>
+				כיצד — אנו לא מאפשרים לכל אחד לרכוש כמה מניות שהוא חפץ אלא <span class="text-blue-300 font-bold">כל בית אב רשאי לרכוש עד 2,000 מניות בלבד</span>
+			</p>
+			<div class="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-white/10 py-2">
 				<!-- ריכוז -->
-				<div class="rounded-2xl p-6" style="background:linear-gradient(135deg,#450a0a,#1e293b); border:1px solid rgba(239,68,68,0.3);">
+				<div class="pb-6 md:pb-0 md:pl-8">
 					<div class="flex items-center gap-3 mb-4">
 						<span class="text-3xl">❌</span>
 						<h3 class="font-black text-red-400 text-lg">מודל ריכוזי (פייסבוק, טיקטוק...)</h3>
@@ -648,7 +652,7 @@
 					</ul>
 				</div>
 				<!-- ביזור -->
-				<div class="rounded-2xl p-6" style="background:linear-gradient(135deg,#064e3b,#1e293b); border:1px solid rgba(16,185,129,0.3);">
+				<div class="pt-6 md:pt-0 md:pr-8">
 					<div class="flex items-center gap-3 mb-4">
 						<span class="text-3xl">✅</span>
 						<h3 class="font-black text-emerald-400 text-lg">המודל המבוזר שלנו</h3>
