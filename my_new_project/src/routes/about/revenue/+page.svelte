@@ -306,11 +306,11 @@
 			{#each data.channels as ch}
 				<div class="p-5 flex flex-col gap-1.5 transition-all hover:bg-white/5"
 					style="border-bottom:1px solid rgba(255,255,255,0.08); border-right:1px solid rgba(255,255,255,0.08);">
-					<div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-1"
+					<div class="w-14 h-14 rounded-xl flex items-center justify-center text-3xl mb-1"
 						style="background: {ch.bg}; color: {ch.color};">{ch.icon}</div>
-					<h3 class="font-black text-base">{ch.title}</h3>
-					<p class="text-gray-400 text-xs leading-relaxed">{ch.desc}</p>
-					<span class="inline-block mt-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold w-fit"
+					<h3 class="font-black text-lg">{ch.title}</h3>
+					<p class="text-gray-400 text-sm leading-relaxed">{ch.desc}</p>
+					<span class="inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-bold w-fit"
 						style="background: rgba(250,204,21,0.12); color: #facc15;">{ch.tag}</span>
 				</div>
 			{/each}
