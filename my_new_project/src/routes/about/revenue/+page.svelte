@@ -512,8 +512,8 @@
 			<div class="flex items-center gap-3">
 				<span class="text-2xl">🏛️</span>
 				<div>
-					<div class="font-black text-white text-base">סה"כ תגמול לבעלי הפלטפורמה</div>
-					<div class="text-xs text-gray-400">40% ישיר לארנק + 10% קרן פרסום</div>
+					<div class="font-black text-white text-lg md:text-xl">סה"כ תגמול לבעלי הפלטפורמה</div>
+					<div class="text-sm text-gray-400">40% ישיר לארנק + 10% קרן פרסום</div>
 				</div>
 			</div>
 			<div class="text-4xl font-black text-blue-300">50%</div>
@@ -582,8 +582,8 @@
 			<div class="flex items-center gap-3">
 				<span class="text-2xl">🤲</span>
 				<div>
-					<div class="font-black text-white text-base">סה"כ לחברה, צדקה וחסד</div>
-					<div class="text-xs text-gray-400">10% יוצאים לחירות + 9% קופת צדקה + 1% הגרלה</div>
+					<div class="font-black text-white text-lg md:text-xl">סה"כ לחברה, צדקה וחסד</div>
+					<div class="text-sm text-gray-400">10% יוצאים לחירות + 9% קופת צדקה + 1% הגרלה</div>
 				</div>
 			</div>
 			<div class="text-4xl font-black text-emerald-300">20%</div>
