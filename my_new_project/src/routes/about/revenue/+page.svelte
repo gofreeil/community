@@ -50,7 +50,7 @@
 			type: 'doughnut',
 			data: {
 				labels: ['ישיר לארנק', 'קרן פרסום', ''],
-				datasets: [{ data: [40, 10, 50], backgroundColor: ['#93c5fd','#3b82f6','rgba(15,23,42,0.6)'], borderWidth: 2, borderColor: '#0f172a' }]
+				datasets: [{ data: [40, 10, 50], backgroundColor: ['#93c5fd','#3b82f6','#1e3a5f'], borderWidth: 2, borderColor: '#0f172a' }]
 			},
 			options: {
 				rotation: 108,
@@ -72,7 +72,7 @@
 			type: 'doughnut',
 			data: {
 				labels: ['יוצאים לחירות', 'קופת הצדקה', 'הגרלת הקהילה', ''],
-				datasets: [{ data: [10, 9, 1, 80], backgroundColor: ['#6ee7b7','#34d399','#10b981','rgba(15,23,42,0.6)'], borderWidth: 2, borderColor: '#0f172a' }]
+				datasets: [{ data: [10, 9, 1, 80], backgroundColor: ['#6ee7b7','#34d399','#10b981','#0f3d2e'], borderWidth: 2, borderColor: '#0f172a' }]
 			},
 			options: {
 				rotation: 288,
@@ -94,7 +94,7 @@
 			type: 'doughnut',
 			data: {
 				labels: ['ישיר לארנק', 'תגמול קבוצתי', 'מועדון השקעות', 'רכישות בקהילה', ''],
-				datasets: [{ data: [10, 5, 5, 10, 70], backgroundColor: ['#fbbf24','#f59e0b','#d97706','#b45309','rgba(15,23,42,0.6)'], borderWidth: 2, borderColor: '#0f172a' }]
+				datasets: [{ data: [10, 5, 5, 10, 70], backgroundColor: ['#fbbf24','#f59e0b','#d97706','#b45309','#2a1f0a'], borderWidth: 2, borderColor: '#0f172a' }]
 			},
 			options: {
 				rotation: 0,
@@ -325,10 +325,10 @@
 							<span class="font-black text-yellow-300 text-lg">{row.pct}</span>
 						</div>
 					{/each}
-					<div class="flex justify-between items-center px-4 py-3 rounded-xl border-r-4 border-yellow-400 mt-1"
-						style="background: rgba(250,204,21,0.1);">
-						<span class="font-black text-white text-sm">סה"כ עלויות</span>
-						<span class="font-black text-yellow-300 text-xl">35%</span>
+					<div class="flex flex-col items-center justify-center gap-1 px-4 py-3 rounded-xl mt-1"
+						style="background: rgba(250,204,21,0.12); border: 1px dashed rgba(250,204,21,0.5);">
+						<span class="font-black text-yellow-300 text-3xl leading-none">35%</span>
+						<span class="font-bold text-gray-400 text-xs">סה"כ עלויות</span>
 					</div>
 				</div>
 				<!-- גרף עלויות HTML/CSS — פינות מעוגלות מושלמות בכל צדדים -->
