@@ -61,7 +61,7 @@
 				datasets: [{ data: [40, 10, 50], backgroundColor: ['#93c5fd','#3b82f6','rgba(15,23,42,0.6)'], borderWidth: 2, borderColor: '#0f172a' }]
 			},
 			options: {
-				rotation: 18,
+				rotation: 108,
 				responsive: true, maintainAspectRatio: false,
 				plugins: {
 					legend: { position: 'bottom', labels: { padding: 10, font: { size: 11 }, boxWidth: 12,
@@ -83,7 +83,7 @@
 				datasets: [{ data: [10, 9, 1, 80], backgroundColor: ['#6ee7b7','#34d399','#10b981','rgba(15,23,42,0.6)'], borderWidth: 2, borderColor: '#0f172a' }]
 			},
 			options: {
-				rotation: 198,
+				rotation: 288,
 				responsive: true, maintainAspectRatio: false,
 				plugins: {
 					legend: { position: 'bottom', labels: { padding: 10, font: { size: 11 }, boxWidth: 12,
@@ -105,7 +105,7 @@
 				datasets: [{ data: [10, 5, 5, 10, 70], backgroundColor: ['#fbbf24','#f59e0b','#d97706','#b45309','rgba(15,23,42,0.6)'], borderWidth: 2, borderColor: '#0f172a' }]
 			},
 			options: {
-				rotation: -90,
+				rotation: 0,
 				responsive: true, maintainAspectRatio: false,
 				plugins: {
 					legend: { position: 'bottom', labels: { padding: 10, font: { size: 11 }, boxWidth: 12,
