@@ -302,7 +302,7 @@
 			ערוצי ההכנסה
 		</h2>
 		<p class="text-gray-400 text-sm mb-6 max-w-2xl">מקורות ההכנסה של הפלטפורמה מגיעים מפרסומים ומשיתופי פעולה</p>
-		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
 			{#each data.channels as ch}
 				<div class="p-5 flex flex-col gap-1.5 transition-all hover:bg-white/5"
 					style="border-bottom:1px solid rgba(255,255,255,0.08); border-right:1px solid rgba(255,255,255,0.08);">
