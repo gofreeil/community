@@ -50,7 +50,7 @@
 			type: 'doughnut',
 			data: {
 				labels: ['ישיר לארנק', 'קרן פרסום', ''],
-				datasets: [{ data: [40, 10, 50], backgroundColor: ['#93c5fd','#3b82f6','#1e3a5f'], borderWidth: 2, borderColor: '#0f172a' }]
+				datasets: [{ data: [40, 10, 50], backgroundColor: ['#93c5fd','#3b82f6','#1c2030'], borderWidth: 2, borderColor: '#0f172a' }]
 			},
 			options: {
 				rotation: 108,
@@ -72,7 +72,7 @@
 			type: 'doughnut',
 			data: {
 				labels: ['יוצאים לחירות', 'קופת הצדקה', 'הגרלת הקהילה', ''],
-				datasets: [{ data: [10, 9, 1, 80], backgroundColor: ['#6ee7b7','#34d399','#10b981','#0f3d2e'], borderWidth: 2, borderColor: '#0f172a' }]
+				datasets: [{ data: [10, 9, 1, 80], backgroundColor: ['#6ee7b7','#34d399','#10b981','#1c2030'], borderWidth: 2, borderColor: '#0f172a' }]
 			},
 			options: {
 				rotation: 288,
@@ -94,7 +94,7 @@
 			type: 'doughnut',
 			data: {
 				labels: ['ישיר לארנק', 'תגמול קבוצתי', 'מועדון השקעות', 'רכישות בקהילה', ''],
-				datasets: [{ data: [10, 5, 5, 10, 70], backgroundColor: ['#fbbf24','#f59e0b','#d97706','#b45309','#2a1f0a'], borderWidth: 2, borderColor: '#0f172a' }]
+				datasets: [{ data: [10, 5, 5, 10, 70], backgroundColor: ['#fbbf24','#f59e0b','#d97706','#b45309','#1c2030'], borderWidth: 2, borderColor: '#0f172a' }]
 			},
 			options: {
 				rotation: 0,
