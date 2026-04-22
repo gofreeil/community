@@ -386,7 +386,6 @@
 						<div class="flex items-center gap-2 mb-0.5">
 							<span class="text-sm">💰</span>
 							<span class="font-black text-white text-xs">ישיר לארנק</span>
-							<span class="px-1.5 py-0.5 rounded-full text-[8px] font-black" style="background:rgba(245,158,11,0.3);color:#fbbf24;">ישיר</span>
 						</div>
 						<p class="text-gray-300 text-[10px] leading-tight">מכל הכנסה שמייצרת השכונה שלך</p>
 					</div>
