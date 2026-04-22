@@ -537,48 +537,39 @@
 			<div class="flex flex-col gap-3">
 
 				<!-- 10% יוצאים לחירות -->
-				<div class="rounded-2xl p-4 flex gap-4 items-center"
+				<div class="rounded-2xl p-3 flex gap-3 items-center"
 					style="background: linear-gradient(135deg,#064e3b,#1e293b); border: 1px solid rgba(16,185,129,0.45);">
-					<div class="w-14 h-14 rounded-xl flex items-center justify-center text-lg font-black flex-shrink-0"
+					<div class="w-12 h-12 rounded-xl flex items-center justify-center text-base font-black flex-shrink-0"
 						style="background: rgba(16,185,129,0.2); color: #6ee7b7;">10%</div>
 					<div class="flex-1">
-						<div class="flex items-center gap-2 mb-0.5">
-							<span>🕊️</span>
-							<span class="font-black text-white text-sm">יוצאים לחירות</span>
-							<span class="px-2 py-0.5 rounded-full text-[10px] font-black" style="background:rgba(16,185,129,0.25);color:#6ee7b7;">עמותה</span>
-						</div>
-						<p class="text-gray-300 text-xs leading-relaxed">לפעילויות המקדמות חירות ושיפור החברה בישראל</p>
+						<div class="font-black text-white text-xs md:text-base mb-0.5">יוצאים לחירות</div>
+						<p class="text-gray-300 text-[10px] md:text-sm leading-tight">לעמותת יוצאים לחירות</p>
 					</div>
+					<span class="text-2xl md:text-3xl leading-none flex-shrink-0">🕊️</span>
 				</div>
 
 				<!-- 9% קופת הצדקה -->
-				<div class="rounded-2xl p-4 flex gap-4 items-center"
+				<div class="rounded-2xl p-3 flex gap-3 items-center"
 					style="background: linear-gradient(135deg,#065f46,#1e293b); border: 1px solid rgba(5,150,105,0.4);">
-					<div class="w-14 h-14 rounded-xl flex items-center justify-center text-lg font-black flex-shrink-0"
+					<div class="w-12 h-12 rounded-xl flex items-center justify-center text-base font-black flex-shrink-0"
 						style="background: rgba(5,150,105,0.2); color: #34d399;">9%</div>
 					<div class="flex-1">
-						<div class="flex items-center gap-2 mb-0.5">
-							<span>❤️</span>
-							<span class="font-black text-white text-sm">קופת הצדקה הקהילתית</span>
-							<span class="px-2 py-0.5 rounded-full text-[10px] font-black" style="background:rgba(5,150,105,0.25);color:#34d399;">קהילה</span>
-						</div>
-						<p class="text-gray-300 text-xs leading-relaxed">לסיוע למשפחות ולנזקקים בשכונות הרשת</p>
+						<div class="font-black text-white text-xs md:text-base mb-0.5">קופת הצדקה הקהילתית</div>
+						<p class="text-gray-300 text-[10px] md:text-sm leading-tight">לסיוע למשפחות ולנזקקים בשכונות הרשת</p>
 					</div>
+					<span class="text-2xl md:text-3xl leading-none flex-shrink-0">❤️</span>
 				</div>
 
 				<!-- 1% הגרלה -->
-				<div class="rounded-2xl p-4 flex gap-4 items-center"
+				<div class="rounded-2xl p-3 flex gap-3 items-center"
 					style="background: linear-gradient(135deg,#064e3b,#1e293b); border: 1px solid rgba(16,185,129,0.3);">
-					<div class="w-14 h-14 rounded-xl flex items-center justify-center text-lg font-black flex-shrink-0"
+					<div class="w-12 h-12 rounded-xl flex items-center justify-center text-base font-black flex-shrink-0"
 						style="background: rgba(16,185,129,0.15); color: #10b981;">1%</div>
 					<div class="flex-1">
-						<div class="flex items-center gap-2 mb-0.5">
-							<span>🎲</span>
-							<span class="font-black text-white text-sm">הגרלת הקהילה</span>
-							<span class="px-2 py-0.5 rounded-full text-[10px] font-black" style="background:rgba(16,185,129,0.2);color:#10b981;">הגרלה</span>
-						</div>
-						<p class="text-gray-300 text-xs leading-relaxed">יחולק בהגרלה למשתמש ששיפר את פני הקהילה</p>
+						<div class="font-black text-white text-xs md:text-base mb-0.5">הגרלת הקהילה</div>
+						<p class="text-gray-300 text-[10px] md:text-sm leading-tight">יחולק בהגרלה למשתמש אחד בחודש ששיפר את חיי הקהילה</p>
 					</div>
+					<span class="text-2xl md:text-3xl leading-none flex-shrink-0">🎲</span>
 				</div>
 			</div>
 
