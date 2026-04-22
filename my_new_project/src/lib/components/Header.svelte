@@ -1,7 +1,7 @@
 <script lang="ts">
     import { t, locale } from 'svelte-i18n';
 	import { get } from 'svelte/store';
-    import { goto } from "$app/navigation";
+    import { goto, beforeNavigate } from "$app/navigation";
     import { onMount } from "svelte";
     import { page } from '$app/state';
 
@@ -182,6 +182,15 @@
 	let _loc = $state(get(locale));
 	$effect(() => locale.subscribe(l => (_loc = l)));
 	const tFn = (k: string) => { void _loc; return get(t)(k); };
+
+	// סגור תמונת preview של אודות בזמן ניווט
+	beforeNavigate(() => {
+		const preview = document.getElementById('about-preview') as HTMLElement | null;
+		if (preview) {
+			preview.style.opacity = '0';
+			preview.style.transform = 'scale(0.05)';
+		}
+	});
 
 </script>
 
