@@ -402,9 +402,9 @@
 					<div class="flex-1">
 						<div class="flex items-center gap-2 mb-0.5">
 							<span class="text-sm">💰</span>
-							<span class="font-black text-white text-xs">ישיר לארנק</span>
+							<span class="font-black text-white text-xs md:text-sm">ישיר לארנק</span>
 						</div>
-						<p class="text-gray-300 text-[10px] leading-tight">מכל הכנסה שמייצרת השכונה שלך</p>
+						<p class="text-gray-300 text-[10px] md:text-xs leading-tight">מכל הכנסה שמייצרת השכונה שלך</p>
 					</div>
 				</div>
 
@@ -416,10 +416,10 @@
 					<div class="flex-1">
 						<div class="flex items-center gap-2 mb-0.5">
 							<span class="text-sm">🤝</span>
-							<span class="font-black text-white text-xs">תגמול קבוצתי</span>
-							<span class="px-1.5 py-0.5 rounded-full text-[8px] font-black" style="background:rgba(217,119,6,0.25);color:#f59e0b;">עקיף</span>
+							<span class="font-black text-white text-xs md:text-sm">תגמול קבוצתי</span>
+							<span class="px-1.5 py-0.5 rounded-full text-[8px] md:text-[10px] font-black" style="background:rgba(217,119,6,0.25);color:#f59e0b;">עקיף</span>
 						</div>
-						<p class="text-gray-300 text-[10px] leading-tight">מתחלק מקופת כלל השכונות לרכזי הרשת</p>
+						<p class="text-gray-300 text-[10px] md:text-xs leading-tight">מתחלק מקופת כלל השכונות לרכזי הרשת</p>
 					</div>
 				</div>
 
@@ -431,10 +431,10 @@
 					<div class="flex-1">
 						<div class="flex items-center gap-2 mb-0.5">
 							<span class="text-sm">📈</span>
-							<span class="font-black text-white text-xs">מועדון ההשקעות</span>
-							<span class="px-1.5 py-0.5 rounded-full text-[8px] font-black" style="background:rgba(180,83,9,0.25);color:#d97706;">זכות</span>
+							<span class="font-black text-white text-xs md:text-sm">מועדון ההשקעות</span>
+							<span class="px-1.5 py-0.5 rounded-full text-[8px] md:text-[10px] font-black" style="background:rgba(180,83,9,0.25);color:#d97706;">זכות</span>
 						</div>
-						<p class="text-gray-300 text-[10px] leading-tight">זכות להשקיע במועדון — תשואה עתידית</p>
+						<p class="text-gray-300 text-[10px] md:text-xs leading-tight">זכות להשקיע במועדון — תשואה עתידית</p>
 					</div>
 				</div>
 
@@ -446,10 +446,10 @@
 					<div class="flex-1">
 						<div class="flex items-center gap-2 mb-0.5">
 							<span class="text-sm">🛍️</span>
-							<span class="font-black text-white text-xs">רכישות בקהילה</span>
-							<span class="px-1.5 py-0.5 rounded-full text-[8px] font-black" style="background:rgba(245,158,11,0.25);color:#fbbf24;">זכות</span>
+							<span class="font-black text-white text-xs md:text-sm">רכישות בקהילה</span>
+							<span class="px-1.5 py-0.5 rounded-full text-[8px] md:text-[10px] font-black" style="background:rgba(245,158,11,0.25);color:#fbbf24;">זכות</span>
 						</div>
-						<p class="text-gray-300 text-[10px] leading-tight">זכות לרכוש אצל בעלי המקצוע הכשירים</p>
+						<p class="text-gray-300 text-[10px] md:text-xs leading-tight">זכות לרכוש אצל בעלי המקצוע הכשירים</p>
 					</div>
 				</div>
 			</div>
@@ -467,8 +467,8 @@
 			<div class="flex items-center gap-3">
 				<span class="text-2xl">🏆</span>
 				<div>
-					<div class="font-black text-white text-base">סה"כ תגמול לרכז שכונה</div>
-					<div class="text-xs text-gray-400">10% ישיר + 5% קבוצתי + 5% השקעות + 10% קניות</div>
+					<div class="font-black text-white text-base md:text-lg">סה"כ תגמול לרכז שכונה</div>
+					<div class="text-xs md:text-sm text-gray-400">10% ישיר + 5% קבוצתי + 5% השקעות + 10% קניות</div>
 				</div>
 			</div>
 			<div class="text-4xl font-black text-amber-300">30%</div>
