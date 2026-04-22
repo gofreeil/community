@@ -46,9 +46,10 @@
 		};
 
 		const costsDatalabels = {
-			font: { weight: 'bold' as const, size: 16 },
+			font: { weight: 'bold' as const, size: 14 },
 			formatter: (value: number, ctx: any) => {
-				return value + '%';
+				const labels = ['כסף לחלוקה', 'הוצאות'];
+				return [value + '%', labels[ctx.datasetIndex]];
 			},
 			anchor: 'center' as const,
 			align: 'center' as const,
@@ -58,10 +59,10 @@
 		new Chart(document.getElementById('costsChart'), {
 			type: 'bar',
 			data: {
-				labels: ['הכנסה'],
+				labels: [''],
 				datasets: [
-					{ label: 'כסף לחלוקה', data: [65], backgroundColor: '#facc15', borderWidth: 0, borderRadius: 12, borderSkipped: false },
-					{ label: 'הוצאות', data: [35], backgroundColor: '#1e293b', borderWidth: 0, borderRadius: 12, borderSkipped: false }
+					{ label: 'כסף לחלוקה', data: [65], backgroundColor: '#facc15', borderWidth: 0, borderRadius: { topLeft: 12, bottomLeft: 12, topRight: 12, bottomRight: 12 }, borderSkipped: false },
+					{ label: 'הוצאות', data: [35], backgroundColor: '#1e293b', borderWidth: 0, borderRadius: { topLeft: 12, bottomLeft: 12, topRight: 12, bottomRight: 12 }, borderSkipped: false }
 				]
 			},
 			options: {
