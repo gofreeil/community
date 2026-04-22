@@ -373,7 +373,7 @@
 			הכנסה לרכזי השטח — פירוט
 		</h2>
 		<!-- רשימה + גרף -->
-		<div class="grid md:grid-cols-2 gap-4 mb-6 items-center">
+		<div class="grid grid-cols-2 gap-4 mb-6 items-center">
 
 			<!-- רשימה אנכית -->
 			<div class="flex flex-col gap-2">
