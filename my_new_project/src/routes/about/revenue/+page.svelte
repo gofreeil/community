@@ -40,14 +40,18 @@
 		Chart.defaults.color = '#cbd5e1';
 
 		const anim = { animateRotate: true, animateScale: true, duration: 1100, easing: 'easeOutQuart' as const };
+		const instances: Record<string, any> = {};
 
 		function observeChart(id: string, config: any) {
 			const canvas = document.getElementById(id);
 			if (!canvas) return;
 			const obs = new IntersectionObserver((entries) => {
-				if (entries[0].isIntersecting) {
-					obs.disconnect();
-					new Chart(canvas, config);
+				const entry = entries[0];
+				if (entry.isIntersecting) {
+					if (instances[id]) { instances[id].destroy(); }
+					instances[id] = new Chart(canvas, config);
+				} else {
+					if (instances[id]) { instances[id].destroy(); delete instances[id]; }
 				}
 			}, { threshold: 0.25 });
 			obs.observe(canvas);
