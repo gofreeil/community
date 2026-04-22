@@ -46,14 +46,14 @@
 		};
 
 		const costsDatalabels = {
-			font: { weight: 'bold' as const, size: 12 },
+			font: { weight: 'bold' as const, size: 11 },
 			formatter: (value: number, ctx: any) => {
 				const labels = ['כסף לחלוקה', 'הוצאות'];
 				return labels[ctx.datasetIndex] + ' ' + value + '%';
 			},
-			anchor: 'end' as const,
-			align: 'end' as const,
-			offset: 8,
+			anchor: 'center' as const,
+			align: 'center' as const,
+			clamp: true,
 			color: (ctx: any) => ctx.datasetIndex === 0 ? '#000' : '#fff'
 		};
 
@@ -857,20 +857,20 @@
 				פירוט התגמול
 			</h2>
 			<p class="text-gray-400 text-sm mb-6 max-w-2xl">30% מכלל רווחי השכונה שלך — מחולקים בצורה הוגנת</p>
-			<div class="flex flex-col gap-2">
+			<div class="flex flex-col gap-1.5">
 				{#each [
 					['💰','10% ישיר לארנק','מכל הכנסה שמייצרת השכונה שלך','#fbbf24','rgba(251,191,36,0.15)'],
 					['🤝','5% תגמול קבוצתי','מתחלק מקופת כלל השכונות לרכזי הרשת','#f59e0b','rgba(245,158,11,0.12)'],
 					['📈','5% מועדון ההשקעות','זכות להשקיע בפלטפורמה — תשואה עתידית','#d97706','rgba(217,119,6,0.12)'],
 					['🛍️','10% רכישות בקהילה','זכות לרכוש שירותים ומוצרים אצל בעלי מקצוע כשירים','#b45309','rgba(180,83,9,0.12)']
 				] as [ico,title,desc,color,bg]}
-					<div class="rounded-xl p-3 flex gap-3 items-center" style="background:{bg}; border:1px solid {color}40;">
-						<div class="w-12 h-12 rounded-lg flex items-center justify-center text-xl flex-shrink-0" style="background:{color}20;">{ico}</div>
+					<div class="rounded-lg p-2.5 flex gap-2.5 items-center" style="background:{bg}; border:1px solid {color}40;">
+						<div class="w-10 h-10 rounded-md flex items-center justify-center text-lg flex-shrink-0" style="background:{color}20;">{ico}</div>
 						<div class="flex-1">
-							<div class="font-black text-white text-sm">{title}</div>
-							<p class="text-gray-300 text-xs mt-0.5 leading-tight">{desc}</p>
+							<div class="font-bold text-white text-xs">{title}</div>
+							<p class="text-gray-400 text-[10px] leading-tight">{desc}</p>
 						</div>
-						<div class="text-lg font-black flex-shrink-0" style="color:{color};">{title.split('%')[0].replace(/\D/,'')}%</div>
+						<div class="text-base font-black flex-shrink-0" style="color:{color};">{title.split('%')[0].replace(/\D/,'')}%</div>
 					</div>
 				{/each}
 			</div>
