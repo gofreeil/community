@@ -317,18 +317,28 @@
 		<p class="text-gray-400 text-sm mb-6 max-w-2xl">החברה מתוגמלת אך ורק מתוך הרווחים ולא במשכורת או בתשלום חודשי — להלן ההוצאות</p>
 		<div class="rounded-2xl p-8" style="background: linear-gradient(135deg,#1a1035,#0f172a); border: 1px solid rgba(234,179,8,0.25);">
 			<div class="grid md:grid-cols-2 gap-8 items-center">
-				<div class="flex flex-col gap-3">
-					{#each data.costs as row}
-						<div class="flex justify-between items-center px-4 py-3 rounded-xl border-r-4 border-yellow-400"
-							style="background: rgba(255,255,255,0.04);">
-							<span class="font-semibold text-sm">{row.name}</span>
-							<span class="font-black text-yellow-300 text-lg">{row.pct}</span>
-						</div>
-					{/each}
-					<div class="flex flex-col items-center justify-center gap-1 px-4 py-3 rounded-xl mt-1"
-						style="background: rgba(250,204,21,0.12); border: 1px dashed rgba(250,204,21,0.5);">
-						<span class="font-black text-yellow-300 text-3xl leading-none">35%</span>
-						<span class="font-bold text-gray-400 text-xs">סה"כ עלויות</span>
+				<div class="flex items-stretch gap-2">
+					<!-- שורות עלויות -->
+					<div class="flex-1 flex flex-col gap-1.5">
+						{#each data.costs as row}
+							<div class="flex justify-between items-center px-3 py-2 rounded-lg border-r-4 border-yellow-400"
+								style="background: rgba(255,255,255,0.04);">
+								<span class="font-semibold text-xs">{row.name}</span>
+								<span class="font-black text-yellow-300 text-sm">{row.pct}</span>
+							</div>
+						{/each}
+					</div>
+					<!-- סוגריים מסולסלים -->
+					<div class="self-stretch w-5 flex-shrink-0">
+						<svg class="w-full h-full" viewBox="0 0 20 100" preserveAspectRatio="none">
+							<path d="M 5,2 C 15,2 15,2 15,12 L 15,44 C 15,48 20,50 20,50 C 20,50 15,52 15,56 L 15,88 C 15,98 15,98 5,98"
+								fill="none" stroke="#facc15" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+						</svg>
+					</div>
+					<!-- סיכום -->
+					<div class="self-stretch flex flex-col items-center justify-center gap-0.5 w-14 flex-shrink-0">
+						<span class="font-black text-yellow-300 text-2xl leading-none">35%</span>
+						<span class="font-bold text-gray-400 text-[10px] text-center leading-tight">סה"כ<br/>עלויות</span>
 					</div>
 				</div>
 				<!-- גרף עלויות HTML/CSS — פינות מעוגלות מושלמות בכל צדדים -->
