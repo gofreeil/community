@@ -320,7 +320,7 @@
 		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 			<span class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black text-black flex-shrink-0"
 				style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity:0.85;">2</span>
-			העלויות / חברת הניהול 35%
+			העלויות - חברת הניהול
 		</h2>
 		<p class="text-gray-400 text-sm mb-6 max-w-2xl">החברה מתוגמלת אך ורק מתוך הרווחים ולא במשכורת או בתשלום חודשי — להלן ההוצאות</p>
 		<div class="rounded-2xl p-8" style="background: linear-gradient(135deg,#1a1035,#0f172a); border: 1px solid rgba(234,179,8,0.25);">
