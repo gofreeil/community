@@ -62,8 +62,8 @@
 			data: {
 				labels: ['הכנסה'],
 				datasets: [
-					{ label: 'כסף לחלוקה', data: [65], backgroundColor: '#facc15', borderWidth: 0, borderRadius: 4 },
-					{ label: 'הוצאות', data: [35], backgroundColor: '#1e293b', borderWidth: 0, borderRadius: 4 }
+					{ label: 'כסף לחלוקה', data: [65], backgroundColor: '#facc15', borderWidth: 0, borderRadius: 12 },
+					{ label: 'הוצאות', data: [35], backgroundColor: '#1e293b', borderWidth: 0, borderRadius: 12 }
 				]
 			},
 			options: {
