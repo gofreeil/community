@@ -187,8 +187,11 @@
 	beforeNavigate(() => {
 		const preview = document.getElementById('about-preview') as HTMLElement | null;
 		if (preview) {
-			preview.style.opacity = '0';
-			preview.style.transform = 'scale(0.05)';
+			// עיכוב של שנייה אחת כדי שהתמונה תישאר עוד רגע
+			// שקיפות הולכת וגוברת ללא הקטנה
+			setTimeout(() => {
+				preview.style.opacity = '0';
+			}, 1000);
 		}
 	});
 
