@@ -45,13 +45,24 @@
 			formatter: (value: number) => value + '%'
 		};
 
+		const costsDatalabels = {
+			color: '#000',
+			font: { weight: 'bold' as const, size: 16 },
+			formatter: (value: number, ctx: any) => {
+				const labels = ['כסף לחלוקה', 'הוצאות'];
+				return labels[ctx.datasetIndex] + '\n' + value + '%';
+			},
+			anchor: 'center' as const,
+			align: 'center' as const
+		};
+
 		new Chart(document.getElementById('costsChart'), {
 			type: 'bar',
 			data: {
 				labels: ['הכנסה'],
 				datasets: [
-					{ label: 'כסף לחלוקה', data: [65], backgroundColor: '#facc15', borderWidth: 0 },
-					{ label: 'הוצאות', data: [35], backgroundColor: '#1e293b', borderWidth: 0 }
+					{ label: 'כסף לחלוקה', data: [65], backgroundColor: '#facc15', borderWidth: 0, borderRadius: 4 },
+					{ label: 'הוצאות', data: [35], backgroundColor: '#1e293b', borderWidth: 0, borderRadius: 4 }
 				]
 			},
 			options: {
@@ -60,7 +71,7 @@
 				scales: { x: { stacked: true, max: 100 }, y: { stacked: true } },
 				plugins: {
 					legend: { position: 'bottom', reverse: true, labels: { padding: 12, font: { size: 12 } } },
-					datalabels: datalabelsOpts
+					datalabels: costsDatalabels
 				}
 			}
 		});
@@ -288,16 +299,16 @@
 					תקציר חלוקת הרווחים
 				</h2>
 				<p class="text-indigo-200 text-sm mb-6 text-center">מהרווח הנקי — כל שקל מתחלק בין שלושה גורמים:</p>
-				<div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+				<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
 					{#each data.distribution as card}
 						<a href={card.link}
-							class="rounded-2xl p-7 text-center relative overflow-hidden shadow-xl block hover:scale-105 hover:brightness-110 transition-all duration-200"
+							class="rounded-2xl p-4 text-center relative overflow-hidden shadow-xl block hover:scale-105 hover:brightness-110 transition-all duration-200"
 							style="background: linear-gradient(135deg, {card.from}, {card.to});">
-							<div class="text-4xl mb-2">{card.emoji}</div>
-							<div class="text-5xl font-black leading-none mb-2">{card.pct}</div>
-							<div class="text-lg font-bold mb-2">{card.title}</div>
-							<div class="text-sm opacity-90 leading-relaxed">{card.desc}</div>
-							<div class="mt-3 text-xs font-black opacity-70">← לפירוט מלא</div>
+							<div class="text-5xl mb-1">{card.emoji}</div>
+							<div class="text-6xl font-black leading-none mb-1">{card.pct}</div>
+							<div class="text-xl font-bold mb-2">{card.title}</div>
+							<div class="text-base opacity-90 leading-relaxed">{card.desc}</div>
+							<div class="mt-2 text-sm font-black opacity-70">← לפירוט מלא</div>
 						</a>
 					{/each}
 				</div>
