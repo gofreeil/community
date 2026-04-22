@@ -46,14 +46,14 @@
 		};
 
 		const costsDatalabels = {
-			font: { weight: 'bold' as const, size: 13 },
+			font: { weight: 'bold' as const, size: 12 },
 			formatter: (value: number, ctx: any) => {
 				const labels = ['כסף לחלוקה', 'הוצאות'];
 				return labels[ctx.datasetIndex] + ' ' + value + '%';
 			},
-			anchor: 'center' as const,
-			align: 'center' as const,
-			padding: 4,
+			anchor: 'end' as const,
+			align: 'end' as const,
+			offset: 8,
 			color: (ctx: any) => ctx.datasetIndex === 0 ? '#000' : '#fff'
 		};
 
@@ -62,8 +62,8 @@
 			data: {
 				labels: ['הכנסה'],
 				datasets: [
-					{ label: 'כסף לחלוקה', data: [65], backgroundColor: '#facc15', borderWidth: 0, borderRadius: { topRight: 12, bottomRight: 12 } },
-					{ label: 'הוצאות', data: [35], backgroundColor: '#1e293b', borderWidth: 0, borderRadius: { topLeft: 12, bottomLeft: 12 } }
+					{ label: 'כסף לחלוקה', data: [65], backgroundColor: '#facc15', borderWidth: 0, borderRadius: 12, borderSkipped: false },
+					{ label: 'הוצאות', data: [35], backgroundColor: '#1e293b', borderWidth: 0, borderRadius: 12, borderSkipped: false }
 				]
 			},
 			options: {
