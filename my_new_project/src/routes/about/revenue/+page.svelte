@@ -477,11 +477,11 @@
 				style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity:0.85;">4</span>
 			הכנסה לבעלים
 		</h2>
+		<h3 class="font-black text-blue-400 text-sm text-center mb-3">התפלגות 50% לבעלים</h3>
 		<div class="grid grid-cols-2 gap-6 mb-6 items-center">
 
-			<!-- ימין: כותרת + כרטיסים -->
+			<!-- ימין: כרטיסים -->
 			<div class="flex flex-col gap-3">
-				<h3 class="font-black text-blue-400 text-sm">התפלגות 50% לבעלים</h3>
 				<!-- 40% ישיר -->
 				<div class="rounded-2xl p-3 flex gap-3 items-center"
 					style="background: linear-gradient(135deg,#1e3a8a,#1e293b); border: 1px solid rgba(59,130,246,0.45);">
