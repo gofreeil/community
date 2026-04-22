@@ -617,9 +617,9 @@
 						['🗳️','החלטות','משותפות','#f472b6']
 					] as [ico,val,lbl,clr]}
 						<div class="rounded-xl p-3 text-center" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);">
-							<div class="text-xl mb-1">{ico}</div>
-							<div class="text-sm font-black leading-tight" style="color:{clr};">{val}</div>
-							<div class="text-[10px] text-blue-200 mt-0.5 leading-tight">{lbl}</div>
+							<div class="text-2xl mb-1">{ico}</div>
+							<div class="text-base font-black leading-tight" style="color:{clr};">{val}</div>
+							<div class="text-xs text-blue-200 mt-0.5 leading-tight">{lbl}</div>
 						</div>
 					{/each}
 				</div>
