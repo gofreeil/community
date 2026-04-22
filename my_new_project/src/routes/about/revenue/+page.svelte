@@ -508,8 +508,6 @@
 				style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity:0.85;">5</span>
 			חברה, צדקה וחסד
 		</h2>
-		<p class="text-gray-400 text-sm mb-6 max-w-2xl">20% מהרווחים מוקדשים לפעולות חברתיות — כי קהילה אמיתית מחזירה לחברה</p>
-
 		<div class="grid md:grid-cols-2 gap-6 mb-6 items-center">
 
 			<!-- רשימה -->
