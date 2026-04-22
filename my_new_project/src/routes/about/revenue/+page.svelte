@@ -465,7 +465,7 @@
 				style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity:0.85;">4</span>
 			הכנסה לבעלים
 		</h2>
-		<div class="grid md:grid-cols-2 gap-6 mb-6 items-center">
+		<div class="grid grid-cols-2 gap-6 mb-6 items-center">
 
 			<!-- רשימה אנכית -->
 			<div class="flex flex-col gap-3">
