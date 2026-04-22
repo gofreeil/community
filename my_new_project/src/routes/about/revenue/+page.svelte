@@ -45,36 +45,6 @@
 			formatter: (value: number) => value + '%'
 		};
 
-		const costsDatalabels = {
-			font: { weight: 'bold' as const, size: 14 },
-			formatter: (value: number, ctx: any) => {
-				const labels = ['כסף לחלוקה', 'הוצאות'];
-				return [value + '%', labels[ctx.datasetIndex]];
-			},
-			anchor: 'center' as const,
-			align: 'center' as const,
-			color: (ctx: any) => ctx.datasetIndex === 0 ? '#000' : '#fff'
-		};
-
-		new Chart(document.getElementById('costsChart'), {
-			type: 'bar',
-			data: {
-				labels: [''],
-				datasets: [
-					{ label: 'כסף לחלוקה', data: [65], backgroundColor: '#facc15', borderWidth: 0, borderRadius: { topLeft: 12, bottomLeft: 12, topRight: 12, bottomRight: 12 }, borderSkipped: false },
-					{ label: 'הוצאות', data: [35], backgroundColor: '#1e293b', borderWidth: 0, borderRadius: { topLeft: 12, bottomLeft: 12, topRight: 12, bottomRight: 12 }, borderSkipped: false }
-				]
-			},
-			options: {
-				indexAxis: 'y',
-				responsive: true, maintainAspectRatio: false,
-				scales: { x: { stacked: true, max: 100 }, y: { stacked: true } },
-				plugins: {
-					legend: { position: 'bottom', reverse: true, labels: { padding: 12, font: { size: 12 } } },
-					datalabels: costsDatalabels
-				}
-			}
-		});
 
 		new Chart(document.getElementById('ownersChart'), {
 			type: 'doughnut',
@@ -361,7 +331,33 @@
 						<span class="font-black text-yellow-300 text-xl">35%</span>
 					</div>
 				</div>
-				<div class="h-72"><canvas id="costsChart"></canvas></div>
+				<!-- גרף עלויות HTML/CSS — פינות מעוגלות מושלמות בכל צדדים -->
+				<div class="flex flex-col gap-5 w-full justify-center py-2">
+					<!-- סרגל מוערם -->
+					<div class="rounded-2xl overflow-hidden flex w-full" style="height: 90px;" dir="ltr">
+						<!-- כסף לחלוקה 65% -->
+						<div class="flex flex-col items-center justify-center gap-0.5" style="width: 65%; background: #facc15;">
+							<span class="text-2xl font-black text-black leading-none">65%</span>
+							<span class="text-sm font-bold text-black opacity-80">כסף לחלוקה</span>
+						</div>
+						<!-- הוצאות 35% -->
+						<div class="flex flex-col items-center justify-center gap-0.5 text-white" style="width: 35%; background: #334155;">
+							<span class="text-2xl font-black leading-none">35%</span>
+							<span class="text-sm font-bold opacity-80">הוצאות</span>
+						</div>
+					</div>
+					<!-- מקרא -->
+					<div class="flex items-center justify-center gap-6 text-sm" dir="rtl">
+						<div class="flex items-center gap-2">
+							<div class="w-4 h-4 rounded-md" style="background: #facc15;"></div>
+							<span class="text-gray-300">כסף לחלוקה</span>
+						</div>
+						<div class="flex items-center gap-2">
+							<div class="w-4 h-4 rounded-md" style="background: #334155;"></div>
+							<span class="text-gray-300">הוצאות</span>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>
