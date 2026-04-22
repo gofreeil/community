@@ -481,12 +481,10 @@
 					<div class="w-12 h-12 rounded-xl flex items-center justify-center text-base font-black flex-shrink-0"
 						style="background: rgba(59,130,246,0.2); color: #93c5fd;">40%</div>
 					<div class="flex-1">
-						<div class="flex items-center gap-1.5 mb-0.5">
-							<span class="text-xl md:text-2xl leading-none">💰</span>
-							<span class="font-black text-white text-sm md:text-base">ישיר לארנק</span>
-						</div>
+						<div class="font-black text-white text-sm md:text-base mb-0.5">ישיר לארנק</div>
 						<p class="text-gray-300 text-xs md:text-sm leading-relaxed">מההכנסות שמייצרות כל השכונות — נכנס ישירות לארנק הבעלים</p>
 					</div>
+					<span class="text-2xl md:text-3xl leading-none flex-shrink-0">💰</span>
 				</div>
 				<!-- 10% פרסום -->
 				<div class="rounded-2xl p-3 flex gap-3 items-center"
@@ -494,12 +492,10 @@
 					<div class="w-12 h-12 rounded-xl flex items-center justify-center text-base font-black flex-shrink-0"
 						style="background: rgba(37,99,235,0.2); color: #60a5fa;">10%</div>
 					<div class="flex-1">
-						<div class="flex items-center gap-1.5 mb-0.5">
-							<span class="text-xl md:text-2xl leading-none">📣</span>
-							<span class="font-black text-white text-sm md:text-base">קרן פרסום</span>
-						</div>
+						<div class="font-black text-white text-sm md:text-base mb-0.5">קרן פרסום</div>
 						<p class="text-gray-300 text-xs md:text-sm leading-relaxed">יופקד לפרסום הפלטפורמה — בכפוף להסכמת ולהצבעת הבעלים</p>
 					</div>
+					<span class="text-2xl md:text-3xl leading-none flex-shrink-0">📣</span>
 				</div>
 			</div>
 
