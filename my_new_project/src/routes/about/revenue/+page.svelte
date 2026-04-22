@@ -301,7 +301,7 @@
 				style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity:0.85;">1</span>
 			ערוצי ההכנסה
 		</h2>
-		<p class="text-gray-400 text-sm mb-6 max-w-2xl">מקורות ההכנסה של הפלטפורמה מגיעים מפרסומים ומשיתופי פעולה</p>
+		<p class="text-gray-300 text-base md:text-lg mb-6 max-w-2xl">מקורות ההכנסה של הפלטפורמה מגיעים מפרסומים ומשיתופי פעולה:</p>
 		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
 			{#each data.channels as ch}
 				<div class="p-5 flex flex-col gap-1.5 transition-all hover:bg-white/5"
