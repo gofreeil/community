@@ -378,64 +378,64 @@
 		<div class="grid md:grid-cols-2 gap-6 mb-6 items-center">
 
 			<!-- רשימה אנכית -->
-			<div class="flex flex-col gap-3">
+			<div class="flex flex-col gap-1.5">
 				<!-- 10% ישיר -->
-				<div class="rounded-2xl p-4 flex gap-4 items-center"
+				<div class="rounded-lg p-2 flex gap-2.5 items-center"
 					style="background: linear-gradient(135deg,#78350f,#1e293b); border: 1px solid rgba(245,158,11,0.45);">
-					<div class="w-14 h-14 rounded-xl flex items-center justify-center text-lg font-black flex-shrink-0"
+					<div class="w-9 h-9 rounded-md flex items-center justify-center text-sm font-black flex-shrink-0"
 						style="background: rgba(245,158,11,0.25); color: #fbbf24;">10%</div>
 					<div class="flex-1">
-						<div class="flex items-center gap-2 mb-0.5">
-							<span>💰</span>
-							<span class="font-black text-white text-sm">ישיר לארנק</span>
-							<span class="px-2 py-0.5 rounded-full text-[10px] font-black" style="background:rgba(245,158,11,0.3);color:#fbbf24;">ישיר</span>
+						<div class="flex items-center gap-1.5 mb-0">
+							<span class="text-sm">💰</span>
+							<span class="font-black text-white text-xs">ישיר לארנק</span>
+							<span class="px-1.5 py-0.5 rounded-full text-[8px] font-black" style="background:rgba(245,158,11,0.3);color:#fbbf24;">ישיר</span>
 						</div>
-						<p class="text-gray-300 text-xs leading-relaxed">מכל הכנסה שמייצרת השכונה שלך</p>
+						<p class="text-gray-400 text-[10px] leading-tight">מכל הכנסה שמייצרת השכונה שלך</p>
 					</div>
 				</div>
 
 				<!-- 5% עקיף -->
-				<div class="rounded-2xl p-4 flex gap-4 items-center"
+				<div class="rounded-lg p-2 flex gap-2.5 items-center"
 					style="background: linear-gradient(135deg,#92400e,#1e293b); border: 1px solid rgba(217,119,6,0.4);">
-					<div class="w-14 h-14 rounded-xl flex items-center justify-center text-lg font-black flex-shrink-0"
+					<div class="w-9 h-9 rounded-md flex items-center justify-center text-sm font-black flex-shrink-0"
 						style="background: rgba(217,119,6,0.2); color: #f59e0b;">5%</div>
 					<div class="flex-1">
-						<div class="flex items-center gap-2 mb-0.5">
-							<span>🤝</span>
-							<span class="font-black text-white text-sm">תגמול קבוצתי</span>
-							<span class="px-2 py-0.5 rounded-full text-[10px] font-black" style="background:rgba(217,119,6,0.25);color:#f59e0b;">עקיף</span>
+						<div class="flex items-center gap-1.5 mb-0">
+							<span class="text-sm">🤝</span>
+							<span class="font-black text-white text-xs">תגמול קבוצתי</span>
+							<span class="px-1.5 py-0.5 rounded-full text-[8px] font-black" style="background:rgba(217,119,6,0.25);color:#f59e0b;">עקיף</span>
 						</div>
-						<p class="text-gray-300 text-xs leading-relaxed">מתחלק מקופת כלל השכונות לרכזי הרשת</p>
+						<p class="text-gray-400 text-[10px] leading-tight">מתחלק מקופת כלל השכונות לרכזי הרשת</p>
 					</div>
 				</div>
 
 				<!-- 5% השקעות -->
-				<div class="rounded-2xl p-4 flex gap-4 items-center"
+				<div class="rounded-lg p-2 flex gap-2.5 items-center"
 					style="background: linear-gradient(135deg,#78350f,#1e293b); border: 1px solid rgba(180,83,9,0.4);">
-					<div class="w-14 h-14 rounded-xl flex items-center justify-center text-lg font-black flex-shrink-0"
+					<div class="w-9 h-9 rounded-md flex items-center justify-center text-sm font-black flex-shrink-0"
 						style="background: rgba(180,83,9,0.2); color: #d97706;">5%</div>
 					<div class="flex-1">
-						<div class="flex items-center gap-2 mb-0.5">
-							<span>📈</span>
-							<span class="font-black text-white text-sm">מועדון ההשקעות</span>
-							<span class="px-2 py-0.5 rounded-full text-[10px] font-black" style="background:rgba(180,83,9,0.25);color:#d97706;">זכות</span>
+						<div class="flex items-center gap-1.5 mb-0">
+							<span class="text-sm">📈</span>
+							<span class="font-black text-white text-xs">מועדון ההשקעות</span>
+							<span class="px-1.5 py-0.5 rounded-full text-[8px] font-black" style="background:rgba(180,83,9,0.25);color:#d97706;">זכות</span>
 						</div>
-						<p class="text-gray-300 text-xs leading-relaxed">זכות להשקיע במועדון — תשואה עתידית</p>
+						<p class="text-gray-400 text-[10px] leading-tight">זכות להשקיע במועדון — תשואה עתידית</p>
 					</div>
 				</div>
 
 				<!-- 10% קניות -->
-				<div class="rounded-2xl p-4 flex gap-4 items-center"
+				<div class="rounded-lg p-2 flex gap-2.5 items-center"
 					style="background: linear-gradient(135deg,#78350f,#1e293b); border: 1px solid rgba(245,158,11,0.4);">
-					<div class="w-14 h-14 rounded-xl flex items-center justify-center text-lg font-black flex-shrink-0"
+					<div class="w-9 h-9 rounded-md flex items-center justify-center text-sm font-black flex-shrink-0"
 						style="background: rgba(245,158,11,0.2); color: #fbbf24;">10%</div>
 					<div class="flex-1">
-						<div class="flex items-center gap-2 mb-0.5">
-							<span>🛍️</span>
-							<span class="font-black text-white text-sm">רכישות בקהילה</span>
-							<span class="px-2 py-0.5 rounded-full text-[10px] font-black" style="background:rgba(245,158,11,0.25);color:#fbbf24;">זכות</span>
+						<div class="flex items-center gap-1.5 mb-0">
+							<span class="text-sm">🛍️</span>
+							<span class="font-black text-white text-xs">רכישות בקהילה</span>
+							<span class="px-1.5 py-0.5 rounded-full text-[8px] font-black" style="background:rgba(245,158,11,0.25);color:#fbbf24;">זכות</span>
 						</div>
-						<p class="text-gray-300 text-xs leading-relaxed">זכות לרכוש אצל בעלי המקצוע הכשירים</p>
+						<p class="text-gray-400 text-[10px] leading-tight">זכות לרכוש אצל בעלי המקצוע הכשירים</p>
 					</div>
 				</div>
 			</div>
