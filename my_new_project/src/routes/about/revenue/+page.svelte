@@ -310,8 +310,6 @@
 						style="background: {ch.bg}; color: {ch.color};">{ch.icon}</div>
 					<h3 class="font-black text-lg">{ch.title}</h3>
 					<p class="text-gray-400 text-sm leading-relaxed">{ch.desc}</p>
-					<span class="inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-bold w-fit"
-						style="background: rgba(250,204,21,0.12); color: #facc15;">{ch.tag}</span>
 				</div>
 			{/each}
 		</div>
