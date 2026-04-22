@@ -89,9 +89,7 @@
 				responsive: true, maintainAspectRatio: false,
 				animation: anim,
 				plugins: {
-					legend: { position: 'bottom', labels: { padding: 10, font: { size: 11 }, boxWidth: 12,
-						filter: (item: any) => item.index < 3
-					}},
+					legend: { display: false },
 					datalabels: {
 						color: '#fff',
 						font: { weight: 'bold' as const, size: 13 },
@@ -585,9 +583,9 @@
 			</div>
 
 			<!-- גרף -->
-			<div class="rounded-2xl p-6 flex flex-col items-center" style="background:#0f172a; border:1px solid rgba(16,185,129,0.2);">
-				<h3 class="font-black text-emerald-400 mb-4 text-sm">התפלגות 20% לצדקה וחסד</h3>
-				<div class="h-64 w-full"><canvas id="charityChart"></canvas></div>
+			<div class="rounded-2xl p-4 flex flex-col items-center relative" style="background:#0f172a; border:1px solid rgba(16,185,129,0.2);">
+				<h3 class="absolute top-3 right-3 font-black text-emerald-400 text-xs text-right leading-tight">התפלגות 20%<br/>לצדקה וחסד</h3>
+				<div class="h-48 w-full"><canvas id="charityChart"></canvas></div>
 			</div>
 		</div>
 
