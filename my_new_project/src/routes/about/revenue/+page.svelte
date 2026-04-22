@@ -506,8 +506,8 @@
 			</div>
 
 			<!-- שמאל: גרף עגול -->
-			<div class="rounded-2xl p-4 flex flex-col items-center" style="background:#0f172a; border:1px solid rgba(59,130,246,0.2);">
-				<h3 class="font-black text-blue-400 text-sm mb-2 w-full text-center">התפלגות 50% לבעלים</h3>
+			<div class="rounded-2xl p-4 flex flex-col items-center relative" style="background:#0f172a; border:1px solid rgba(59,130,246,0.2);">
+				<h3 class="absolute top-3 right-3 font-black text-blue-400 text-xs text-right leading-tight">התפלגות 50%<br/>לבעלים</h3>
 				<div class="h-48 w-full"><canvas id="ownersChart"></canvas></div>
 			</div>
 		</div>
