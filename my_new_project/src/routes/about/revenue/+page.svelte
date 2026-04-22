@@ -335,10 +335,10 @@
 				<div class="flex flex-col gap-5 w-full justify-center py-2">
 					<!-- סרגל מוערם -->
 					<div class="rounded-2xl overflow-hidden flex w-full" style="height: 90px;" dir="ltr">
-						<!-- כסף לחלוקה 65% -->
+						<!-- הכנסות 65% -->
 						<div class="flex flex-col items-center justify-center gap-0.5" style="width: 65%; background: #facc15;">
 							<span class="text-2xl font-black text-black leading-none">65%</span>
-							<span class="text-sm font-bold text-black opacity-80">כסף לחלוקה</span>
+							<span class="text-sm font-bold text-black opacity-80">הכנסות</span>
 						</div>
 						<!-- הוצאות 35% -->
 						<div class="flex flex-col items-center justify-center gap-0.5 text-white" style="width: 35%; background: #334155;">
@@ -349,12 +349,12 @@
 					<!-- מקרא -->
 					<div class="flex items-center justify-center gap-6 text-sm" dir="rtl">
 						<div class="flex items-center gap-2">
-							<div class="w-4 h-4 rounded-md" style="background: #facc15;"></div>
-							<span class="text-gray-300">כסף לחלוקה</span>
-						</div>
-						<div class="flex items-center gap-2">
 							<div class="w-4 h-4 rounded-md" style="background: #334155;"></div>
 							<span class="text-gray-300">הוצאות</span>
+						</div>
+						<div class="flex items-center gap-2">
+							<div class="w-4 h-4 rounded-md" style="background: #facc15;"></div>
+							<span class="text-gray-300">רווחים לבעלים, לרכזים ולצדקה</span>
 						</div>
 					</div>
 				</div>
