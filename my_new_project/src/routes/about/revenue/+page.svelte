@@ -477,40 +477,42 @@
 				style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity:0.85;">4</span>
 			הכנסה לבעלים
 		</h2>
-		<div class="grid grid-cols-3 gap-4 mb-6 items-center">
+		<div class="grid grid-cols-2 gap-6 mb-6 items-center">
 
-			<!-- 40% ישיר - כרטיס ימין -->
-			<div class="rounded-2xl p-3 flex gap-3 items-center"
-				style="background: linear-gradient(135deg,#1e3a8a,#1e293b); border: 1px solid rgba(59,130,246,0.45);">
-				<div class="w-12 h-12 rounded-xl flex items-center justify-center text-base font-black flex-shrink-0"
-					style="background: rgba(59,130,246,0.2); color: #93c5fd;">40%</div>
-				<div class="flex-1">
-					<div class="flex items-center gap-1.5 mb-0.5">
-						<span class="text-xl leading-none">💰</span>
-						<span class="font-black text-white text-sm">ישיר לארנק</span>
+			<!-- ימין: כותרת + כרטיסים -->
+			<div class="flex flex-col gap-3">
+				<h3 class="font-black text-blue-400 text-sm">התפלגות 50% לבעלים</h3>
+				<!-- 40% ישיר -->
+				<div class="rounded-2xl p-3 flex gap-3 items-center"
+					style="background: linear-gradient(135deg,#1e3a8a,#1e293b); border: 1px solid rgba(59,130,246,0.45);">
+					<div class="w-12 h-12 rounded-xl flex items-center justify-center text-base font-black flex-shrink-0"
+						style="background: rgba(59,130,246,0.2); color: #93c5fd;">40%</div>
+					<div class="flex-1">
+						<div class="flex items-center gap-1.5 mb-0.5">
+							<span class="text-xl leading-none">💰</span>
+							<span class="font-black text-white text-sm">ישיר לארנק</span>
+						</div>
+						<p class="text-gray-300 text-xs leading-relaxed">מההכנסות שמייצרות כל השכונות — נכנס ישירות לארנק הבעלים</p>
 					</div>
-					<p class="text-gray-300 text-xs leading-relaxed">מההכנסות שמייצרות כל השכונות — נכנס ישירות לארנק הבעלים</p>
+				</div>
+				<!-- 10% פרסום -->
+				<div class="rounded-2xl p-3 flex gap-3 items-center"
+					style="background: linear-gradient(135deg,#1d4ed8,#1e293b); border: 1px solid rgba(37,99,235,0.4);">
+					<div class="w-12 h-12 rounded-xl flex items-center justify-center text-base font-black flex-shrink-0"
+						style="background: rgba(37,99,235,0.2); color: #60a5fa;">10%</div>
+					<div class="flex-1">
+						<div class="flex items-center gap-1.5 mb-0.5">
+							<span class="text-xl leading-none">📣</span>
+							<span class="font-black text-white text-sm">קרן פרסום</span>
+						</div>
+						<p class="text-gray-300 text-xs leading-relaxed">יופקד לפרסום הפלטפורמה — בכפוף להסכמת ולהצבעת הבעלים</p>
+					</div>
 				</div>
 			</div>
 
-			<!-- גרף - מרכז -->
-			<div class="rounded-2xl p-4 flex flex-col" style="background:#0f172a; border:1px solid rgba(59,130,246,0.2);">
-				<h3 class="font-black text-blue-400 mb-2 text-sm text-right w-full">התפלגות 50% לבעלים</h3>
-				<div class="h-44 w-full"><canvas id="ownersChart"></canvas></div>
-			</div>
-
-			<!-- 10% פרסום - כרטיס שמאל -->
-			<div class="rounded-2xl p-3 flex gap-3 items-center"
-				style="background: linear-gradient(135deg,#1d4ed8,#1e293b); border: 1px solid rgba(37,99,235,0.4);">
-				<div class="w-12 h-12 rounded-xl flex items-center justify-center text-base font-black flex-shrink-0"
-					style="background: rgba(37,99,235,0.2); color: #60a5fa;">10%</div>
-				<div class="flex-1">
-					<div class="flex items-center gap-1.5 mb-0.5">
-						<span class="text-xl leading-none">📣</span>
-						<span class="font-black text-white text-sm">קרן פרסום</span>
-					</div>
-					<p class="text-gray-300 text-xs leading-relaxed">יופקד לפרסום הפלטפורמה — בכפוף להסכמת ולהצבעת הבעלים</p>
-				</div>
+			<!-- שמאל: גרף עגול -->
+			<div class="rounded-2xl p-4 flex flex-col items-center" style="background:#0f172a; border:1px solid rgba(59,130,246,0.2);">
+				<div class="h-48 w-full"><canvas id="ownersChart"></canvas></div>
 			</div>
 		</div>
 
