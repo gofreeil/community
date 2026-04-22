@@ -215,7 +215,11 @@
       "Bash(npx -y vercel whoami)",
       "Bash(npx -y vercel link --yes --project referendum)",
       "Bash(npx -y vercel deploy --prod --yes)",
-      "Bash(curl -s \"https://referendum-azure.vercel.app/\")"
+      "Bash(curl -s \"https://referendum-azure.vercel.app/\")",
+      "Bash(git restore *)",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "mcp__Claude_in_Chrome__navigate",
+      "mcp__Claude_in_Chrome__computer"
     ]
   }
 }

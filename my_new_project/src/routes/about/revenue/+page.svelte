@@ -46,12 +46,23 @@
 		};
 
 		new Chart(document.getElementById('costsChart'), {
-			type: 'doughnut',
+			type: 'bar',
 			data: {
-				labels: ['כסף לחלוקה', 'הוצאות'],
-				datasets: [{ data: [65, 35], backgroundColor: ['#facc15','#1e293b'], borderWidth: 0 }]
+				labels: ['הכנסה'],
+				datasets: [
+					{ label: 'כסף לחלוקה', data: [65], backgroundColor: '#facc15', borderWidth: 0 },
+					{ label: 'הוצאות', data: [35], backgroundColor: '#1e293b', borderWidth: 0 }
+				]
 			},
-			options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', reverse: true, labels: { padding: 12, font: { size: 12 } } }, datalabels: datalabelsOpts } }
+			options: {
+				indexAxis: 'y',
+				responsive: true, maintainAspectRatio: false,
+				scales: { x: { stacked: true, max: 100 }, y: { stacked: true } },
+				plugins: {
+					legend: { position: 'bottom', reverse: true, labels: { padding: 12, font: { size: 12 } } },
+					datalabels: datalabelsOpts
+				}
+			}
 		});
 
 		new Chart(document.getElementById('ownersChart'), {
@@ -906,7 +917,6 @@
 				onclick={() => setTab('coordinator')}
 				class="flex items-center gap-2 px-7 py-3 rounded-xl font-black text-base transition-all duration-200 hover:scale-105 hover:brightness-110 shadow-lg"
 				style="background:linear-gradient(135deg,#78350f,#f59e0b); border:2px solid rgba(251,191,36,0.35);">
-				<span class="text-xl">👥</span>
 				<span>הצטרף לצוות הרכזים</span>
 			</button>
 		</div>
