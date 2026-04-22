@@ -608,11 +608,18 @@
 					הפלטפורמה פועלת לפי מודל ייחודי של כלכלה מבוזרת וחברתית המחזירה חצי מהרווחים שלה אל הקהילה!
 				</p>
 				<!-- סטטיסטיקות מהירות -->
-				<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-					{#each [['50%','חוזר לקהילה','#34d399'],['20,000','מניות סה״כ','#60a5fa'],['200₪','ליחידה','#facc15'],['2,000','מקס למשפחה','#f472b6']] as [val,lbl,clr]}
-						<div class="rounded-xl p-4 text-center" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);">
-							<div class="text-3xl font-black" style="color:{clr};">{val}</div>
-							<div class="text-xs text-blue-200 mt-1">{lbl}</div>
+				<div class="grid grid-cols-2 md:grid-cols-5 gap-2">
+					{#each [
+						['♾️','אחזקה נצחית','כולל זכות ירושה לילדים','#a78bfa'],
+						['💰','50% מהרווחים','לבעלי הפלטפורמה','#34d399'],
+						['🌐','עד 20,000','מחזיקי בעלות שונים','#60a5fa'],
+						['📣','זכות ראשונית','והנחה קבועה בפרסום','#facc15'],
+						['🗳️','החלטות','משותפות','#f472b6']
+					] as [ico,val,lbl,clr]}
+						<div class="rounded-xl p-3 text-center" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);">
+							<div class="text-xl mb-1">{ico}</div>
+							<div class="text-sm font-black leading-tight" style="color:{clr};">{val}</div>
+							<div class="text-[10px] text-blue-200 mt-0.5 leading-tight">{lbl}</div>
 						</div>
 					{/each}
 				</div>
