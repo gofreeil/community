@@ -46,14 +46,15 @@
 		};
 
 		const costsDatalabels = {
-			color: '#000',
-			font: { weight: 'bold' as const, size: 16 },
+			font: { weight: 'bold' as const, size: 15 },
 			formatter: (value: number, ctx: any) => {
 				const labels = ['כסף לחלוקה', 'הוצאות'];
-				return labels[ctx.datasetIndex] + '\n' + value + '%';
+				return labels[ctx.datasetIndex] + ' ' + value + '%';
 			},
 			anchor: 'center' as const,
-			align: 'center' as const
+			align: 'center' as const,
+			clamp: true,
+			color: (ctx: any) => ctx.datasetIndex === 0 ? '#000' : '#fff'
 		};
 
 		new Chart(document.getElementById('costsChart'), {
@@ -919,14 +920,14 @@
 		<div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
 			<button
 				onclick={() => setTab('owners')}
-				class="flex items-center gap-2 px-7 py-3 rounded-xl font-black text-base transition-all duration-200 hover:scale-105 hover:brightness-110 shadow-lg"
+				class="flex items-center justify-center gap-2 px-7 py-3 rounded-xl font-black text-base transition-all duration-200 hover:scale-105 hover:brightness-110 shadow-lg w-64"
 				style="background:linear-gradient(135deg,#1e3a8a,#3b82f6); border:2px solid rgba(147,197,253,0.35);">
 				<span class="text-xl">📈</span>
 				<span>רכישת מניות</span>
 			</button>
 			<button
 				onclick={() => setTab('coordinator')}
-				class="flex items-center gap-2 px-7 py-3 rounded-xl font-black text-base transition-all duration-200 hover:scale-105 hover:brightness-110 shadow-lg"
+				class="flex items-center justify-center gap-2 px-7 py-3 rounded-xl font-black text-base transition-all duration-200 hover:scale-105 hover:brightness-110 shadow-lg w-64"
 				style="background:linear-gradient(135deg,#78350f,#f59e0b); border:2px solid rgba(251,191,36,0.35);">
 				<span>הצטרף לצוות הרכזים</span>
 			</button>
