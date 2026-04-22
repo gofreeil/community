@@ -473,7 +473,6 @@
 				style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity:0.85;">4</span>
 			הכנסה לבעלים
 		</h2>
-		<h3 class="font-black text-blue-400 text-sm text-center mb-3">התפלגות 50% לבעלים</h3>
 		<div class="grid grid-cols-2 gap-6 mb-6 items-center">
 
 			<!-- ימין: כרטיסים -->
@@ -508,6 +507,7 @@
 
 			<!-- שמאל: גרף עגול -->
 			<div class="rounded-2xl p-4 flex flex-col items-center" style="background:#0f172a; border:1px solid rgba(59,130,246,0.2);">
+				<h3 class="font-black text-blue-400 text-sm mb-2 w-full text-center">התפלגות 50% לבעלים</h3>
 				<div class="h-48 w-full"><canvas id="ownersChart"></canvas></div>
 			</div>
 		</div>
