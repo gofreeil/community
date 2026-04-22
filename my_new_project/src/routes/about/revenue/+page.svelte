@@ -857,20 +857,20 @@
 				פירוט התגמול
 			</h2>
 			<p class="text-gray-400 text-sm mb-6 max-w-2xl">30% מכלל רווחי השכונה שלך — מחולקים בצורה הוגנת</p>
-			<div class="flex flex-col gap-3">
+			<div class="flex flex-col gap-2">
 				{#each [
 					['💰','10% ישיר לארנק','מכל הכנסה שמייצרת השכונה שלך','#fbbf24','rgba(251,191,36,0.15)'],
 					['🤝','5% תגמול קבוצתי','מתחלק מקופת כלל השכונות לרכזי הרשת','#f59e0b','rgba(245,158,11,0.12)'],
 					['📈','5% מועדון ההשקעות','זכות להשקיע בפלטפורמה — תשואה עתידית','#d97706','rgba(217,119,6,0.12)'],
 					['🛍️','10% רכישות בקהילה','זכות לרכוש שירותים ומוצרים אצל בעלי מקצוע כשירים','#b45309','rgba(180,83,9,0.12)']
 				] as [ico,title,desc,color,bg]}
-					<div class="rounded-2xl p-4 flex gap-4 items-center" style="background:{bg}; border:1px solid {color}40;">
-						<div class="w-14 h-14 rounded-xl flex items-center justify-center text-2xl flex-shrink-0" style="background:{color}20;">{ico}</div>
+					<div class="rounded-xl p-3 flex gap-3 items-center" style="background:{bg}; border:1px solid {color}40;">
+						<div class="w-12 h-12 rounded-lg flex items-center justify-center text-xl flex-shrink-0" style="background:{color}20;">{ico}</div>
 						<div class="flex-1">
-							<div class="font-black text-white">{title}</div>
-							<p class="text-gray-300 text-xs mt-0.5">{desc}</p>
+							<div class="font-black text-white text-sm">{title}</div>
+							<p class="text-gray-300 text-xs mt-0.5 leading-tight">{desc}</p>
 						</div>
-						<div class="text-2xl font-black flex-shrink-0" style="color:{color};">{title.split('%')[0].replace(/\D/,'')}%</div>
+						<div class="text-lg font-black flex-shrink-0" style="color:{color};">{title.split('%')[0].replace(/\D/,'')}%</div>
 					</div>
 				{/each}
 			</div>
