@@ -333,6 +333,11 @@
 							<span class="font-black text-yellow-300 text-lg">{row.pct}</span>
 						</div>
 					{/each}
+					<div class="flex justify-between items-center px-4 py-3 rounded-xl border-r-4 border-yellow-400 mt-1"
+						style="background: rgba(250,204,21,0.1);">
+						<span class="font-black text-white text-sm">סה"כ עלויות</span>
+						<span class="font-black text-yellow-300 text-xl">35%</span>
+					</div>
 				</div>
 				<div class="h-72"><canvas id="costsChart"></canvas></div>
 			</div>
