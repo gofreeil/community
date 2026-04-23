@@ -642,8 +642,7 @@
 				ביזור לעומת ריכוז
 			</h2>
 			<p class="text-gray-300 text-lg mb-6 max-w-3xl leading-relaxed">
-				במקום שכל הרווחים והשליטה יוחזקו אצל בעלים אחד ריכוזי — המודל שלנו מבזר את הבעלות והרווחים, הפלטפורמה בנויה כדי לקדם את הקהילה, במקום הפרד ומשול יש לנו <span class="text-yellow-300 font-black">אחד וחזק!</span><br/>
-				וכדי שתישאר כזו <span class="text-yellow-300 font-black">אנו לא נאפשר לבעלי ההון לרכוש את הפלטפורמה!</span><br/>
+				במקום שכל הרווחים והשליטה יוחזקו אצל בעלים אחד ריכוזי — המודל שלנו מבזר את הבעלות והרווחים, הפלטפורמה בנויה כדי לקדם את הקהילה, במקום הפרד ומשול יש לנו <span class="text-yellow-300 font-black">אחד וחזק!</span> וכדי שתישאר כזו <span class="text-yellow-300 font-black">אנו לא נאפשר לבעלי ההון לרכוש את הפלטפורמה!</span><br/>
 				כיצד — אנו לא מאפשרים לכל אחד לרכוש כמה מניות שהוא חפץ אלא <span class="text-blue-300 font-bold">כל בית אב רשאי לרכוש עד 2,000 מניות בלבד</span>
 			</p>
 			<div class="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-white/10 py-2">
@@ -746,11 +745,11 @@
 						{#if i % 2 === 0}
 							<div class="absolute top-[10%] bottom-[10%] left-0 w-px bg-white/10 hidden sm:block"></div>
 						{/if}
-						<span class="text-3xl mt-0.5">{ico}</span>
-						<div>
+						<div class="flex-1">
 							<div class="font-black text-base mb-1" style="color:{color};">{title}</div>
 							<p class="text-gray-300 text-lg leading-relaxed">{desc}</p>
 						</div>
+						<span class="text-3xl mt-0.5 flex-shrink-0">{ico}</span>
 					</div>
 				{/each}
 			</div>
@@ -765,26 +764,26 @@
 			</h2>
 			<div class="grid md:grid-cols-2 gap-5">
 				<!-- מחיר -->
-				<div class="rounded-2xl p-8 text-center" style="background:linear-gradient(135deg,#1e3a8a,#1e1b4b); border:2px solid rgba(147,197,253,0.4);">
+				<div class="rounded-2xl p-8 text-center flex flex-col items-center justify-center h-full" style="background:linear-gradient(135deg,#1e3a8a,#1e1b4b); border:2px solid rgba(147,197,253,0.4);">
 					<div class="text-6xl font-black text-yellow-300 mb-2">200₪</div>
 					<div class="text-xl font-black text-white mb-1">ליחידה אחת</div>
 					<div class="text-gray-400 text-lg">ההוצאה הראשונה היא גם האחרונה — לאחר מכן הכל מתוך הרווחים</div>
 				</div>
 				<!-- פרטים -->
-				<div class="flex flex-col gap-3">
+				<div class="flex flex-col gap-2">
 					{#each [
 						['💬','קבוצת ווצאפ','בעלי היחידות מתנהלים ומצביעים יחד בקבוצה ייעודית'],
 						['©️','זכויות יוצרים','אם מדינות נוספות ירצו לפתוח את האפליקציה — ישלמו לבעלי הזכויות'],
-						['🔄','מכירה חופשית','ניתן למכור את היחידות למי שתרצו, בכפוף להגבלת 2,000 ליחידת משפחה'],
+						['🔄','מכירה חופשית','ניתן חופשי למכור או להעביר את המניות, בכפוף להגבלת 2,000 לבית אב'],
 						['🔒','הגבלת ריכוז','עד 2,000 יחידות למשפחה גרעינית אחת — לשמר כח ביזור']
 					] as [ico, title, desc]}
-						<div class="rounded-xl p-4 flex gap-3 items-start"
+						<div class="rounded-xl px-3 py-2 flex gap-2.5 items-center"
 							style="background:rgba(255,255,255,0.04); border:1px solid rgba(59,130,246,0.2);">
-							<span class="text-xl mt-0.5">{ico}</span>
-							<div>
-								<div class="font-black text-blue-200 text-lg">{title}</div>
-								<div class="text-gray-400 text-base mt-0.5">{desc}</div>
+							<div class="flex-1">
+								<div class="font-black text-blue-200 text-base leading-tight">{title}</div>
+								<div class="text-gray-400 text-sm leading-tight mt-0.5">{desc}</div>
 							</div>
+							<span class="text-lg flex-shrink-0">{ico}</span>
 						</div>
 					{/each}
 				</div>
