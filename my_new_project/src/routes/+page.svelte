@@ -5,7 +5,6 @@
     import NewsTicker from "$lib/components/NewsTicker.svelte";
     import LostAndFound from "$lib/components/LostAndFound.svelte";
     import FacebookComments from "$lib/components/FacebookComments.svelte";
-    import ReferendumBanner from "$lib/components/ReferendumBanner.svelte";
     import CoaliEmbed from "$lib/components/CoaliEmbed.svelte";
     import { triggerAdPopup } from "$lib/adPopupStore";
     import { ads } from "$lib/adsData";
@@ -226,7 +225,6 @@
                 <div>
                     <JerusalemMap bind:showNeighborhoodsMenu dbItems={data.dbItems} />
                 </div>
-                <ReferendumBanner />
                 <CoaliEmbed />
             </div>
 
@@ -397,7 +395,6 @@
                     <LostAndFound items={data.dbItems.filter(i => i.category === 'lost_and_found')} />
                 </div>
             </div>
-            <ReferendumBanner />
             <CoaliEmbed />
         </div>
     </section>
