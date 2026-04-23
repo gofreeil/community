@@ -146,7 +146,7 @@
         },
         {
             id: "attractions",
-            label: "אטרקציות",
+            label: "שירות ציבורי",
             icon: "🎡",
             items: [
                 { id: "attraction-park", label: "פארק שעשועים מקומי" },
