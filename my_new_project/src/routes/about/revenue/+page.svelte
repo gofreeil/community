@@ -905,7 +905,12 @@
 					['🚀','בלעדיות לטכנולוגיות','זכות ראשונים ובלעדיות להיות נקודת מכירה לטכנולוגיות מתקדמות באותה השכונה']
 				] as [ico,title,desc], i}
 					<div class="p-5 flex gap-4 items-start relative">
-						<div class="absolute bottom-0 right-[5%] left-[5%] h-px bg-amber-500/20"></div>
+						{#if i < 3}
+							<div class="absolute bottom-0 right-[5%] left-[5%] h-px bg-amber-500/20 sm:hidden"></div>
+						{/if}
+						{#if i < 2}
+							<div class="absolute bottom-0 right-[5%] left-[5%] h-px bg-amber-500/20 hidden sm:block"></div>
+						{/if}
 						{#if i % 2 === 0}
 							<div class="absolute top-[10%] bottom-[10%] left-0 w-px bg-amber-500/20 hidden sm:block"></div>
 						{/if}
@@ -934,27 +939,27 @@
 					['📈','5% מועדון ההשקעות','זכות להשקיע בפלטפורמה — תשואה עתידית','#d97706','rgba(217,119,6,0.12)'],
 					['🛍️','10% רכישות בקהילה','זכות לרכוש שירותים ומוצרים אצל בעלי מקצוע כשירים','#b45309','rgba(180,83,9,0.12)']
 				] as [ico,title,desc,color,bg]}
-					<div class="rounded-lg p-2.5 flex gap-2.5 items-center" style="background:{bg}; border:1px solid {color}40;">
-						<div class="w-10 h-10 rounded-md flex items-center justify-center text-lg flex-shrink-0" style="background:{color}20;">{ico}</div>
-						<div class="flex-1">
-							<div class="font-bold text-white text-xs">{title}</div>
-							<p class="text-gray-400 text-[10px] leading-tight">{desc}</p>
+					<div class="rounded-xl p-3 md:p-4 flex gap-3 items-center" style="background:{bg}; border:1px solid {color}40;">
+						<div class="w-12 h-12 md:w-14 md:h-14 rounded-lg flex items-center justify-center text-2xl md:text-3xl flex-shrink-0" style="background:{color}20;">{ico}</div>
+						<div class="flex-1 flex flex-col md:flex-row md:items-baseline md:gap-3">
+							<div class="font-black text-white text-base md:text-xl flex-shrink-0">{title}</div>
+							<p class="text-gray-300 text-sm md:text-base leading-snug">{desc}</p>
 						</div>
-						<div class="text-base font-black flex-shrink-0" style="color:{color};">{title.split('%')[0].replace(/\D/,'')}%</div>
+						<div class="text-xl md:text-3xl font-black flex-shrink-0" style="color:{color};">{title.split('%')[0].replace(/\D/,'')}%</div>
 					</div>
 				{/each}
 			</div>
 			<!-- סיכום -->
-			<div class="mt-4 rounded-2xl p-5 flex items-center justify-between"
+			<div class="mt-4 rounded-2xl p-6 flex items-center justify-between"
 				style="background:linear-gradient(135deg,#78350f,#1a1035); border:2px solid rgba(245,158,11,0.5);">
-				<div class="flex items-center gap-3">
-					<span class="text-2xl">🏆</span>
+				<div class="flex items-center gap-4">
+					<span class="text-3xl md:text-4xl">🏆</span>
 					<div>
-						<div class="font-black text-white">סה"כ תגמול לרכז שכונה</div>
-						<div class="text-xs text-gray-400">10% ישיר + 5% קבוצתי + 5% השקעות + 10% קניות</div>
+						<div class="font-black text-white text-lg md:text-2xl">סה"כ תגמול לרכז שכונה</div>
+						<div class="text-base md:text-lg text-gray-300">מההכנסות של שכונתו</div>
 					</div>
 				</div>
-				<div class="text-4xl font-black text-amber-300">30%</div>
+				<div class="text-4xl md:text-5xl font-black text-amber-300">30%</div>
 			</div>
 		</div>
 
