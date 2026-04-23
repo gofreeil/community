@@ -815,7 +815,7 @@
 			<div class="absolute inset-0 pointer-events-none"
 				style="background:radial-gradient(ellipse at 50% 30%,rgba(245,158,11,0.35) 0%,transparent 60%);"></div>
 			<div class="relative z-10">
-				<span class="inline-block text-5xl mb-4">🏘️</span>
+				<img src="/images/committee.png" alt="רכז שכונה" class="mx-auto mb-4 w-24 h-24 md:w-32 md:h-32 object-contain" />
 				<h1 class="text-3xl md:text-5xl font-black leading-tight mb-4" style="color:#fbbf24;">
 					היה רכז בשכונתך
 				</h1>
