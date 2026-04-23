@@ -48,7 +48,7 @@
     </div>
 
     <!-- Iframe container -->
-    <div class="relative w-full bg-[#0f172a]" style="height: 520px;">
+    <div class="relative w-full bg-[#0f172a] h-[380px] md:h-[420px]">
         {#if !iframeLoaded && !iframeFailed}
             <div class="absolute inset-0 flex flex-col items-center justify-center gap-3 text-gray-400">
                 <div class="w-10 h-10 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
