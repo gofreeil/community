@@ -770,12 +770,12 @@
 			</div>
 		</div>
 
-		<!-- 5. הוצאות שותפות -->
+		<!-- 5. הוצאות שוטפות -->
 		<div class="mb-10">
 			<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 				<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
 					style="background: linear-gradient(135deg,#facc15,#f59e0b);">5</span>
-				הוצאות שותפות
+				הוצאות שוטפות
 			</h2>
 			<div class="rounded-2xl p-7 flex flex-col md:flex-row gap-6 items-center"
 				style="background:linear-gradient(135deg,#1a1035,#1e293b); border:1px solid rgba(250,204,21,0.25);">
@@ -792,10 +792,10 @@
 
 		<!-- תת-כותרת היה רכז -->
 		<p class="text-lg md:text-xl font-bold text-white leading-relaxed mt-6 mb-2">
-			היה רכז שכונה פעיל וסייע לקדם את החברה ל<button
+			היה רכז שכונה פעיל וסייע לקדם את החברה <button
 				onclick={() => setTab('coordinator')}
 				class="inline items-baseline gap-1 font-bold text-yellow-300 hover:text-yellow-200 underline underline-offset-4 decoration-yellow-400/60 hover:decoration-yellow-300 transition-colors duration-200"
-			>חברה מתוקנת ←</button>
+			>לחברה מתוקנת ←</button>
 		</p>
 
 	</div><!-- /owners tab -->
