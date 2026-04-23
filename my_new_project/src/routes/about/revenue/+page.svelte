@@ -823,7 +823,7 @@
 			<div class="absolute inset-0 pointer-events-none"
 				style="background:radial-gradient(ellipse at 50% 30%,rgba(245,158,11,0.35) 0%,transparent 60%);"></div>
 			<div class="relative z-10">
-				<img src="/images/committee.png" alt="רכז שכונה" class="mx-auto mb-4 w-24 h-24 md:w-32 md:h-32 object-contain" />
+				<img src="/images/committee.png" alt="רכז שכונה" class="mx-auto mb-6 w-full max-w-md md:max-w-2xl lg:max-w-4xl object-contain rounded-3xl" style="box-shadow: 0 0 60px 15px rgba(251,191,36,0.35), 0 0 120px 30px rgba(245,158,11,0.2); border: 1px solid rgba(251,191,36,0.3);" />
 				<h1 class="text-3xl md:text-5xl font-black leading-tight mb-4" style="color:#fbbf24;">
 					היה רכז בשכונתך
 				</h1>
