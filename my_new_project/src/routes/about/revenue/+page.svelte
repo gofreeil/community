@@ -590,6 +590,14 @@
 		</div>
 	</div>
 
+	<!-- תת-כותרת היה מהבעלים -->
+	<p class="text-lg md:text-xl font-bold text-white leading-relaxed mt-6 mb-2">
+		היה חלק מבעלי פלטפורמת קהילה בשכונה! <button
+			onclick={() => setTab('owners')}
+			class="inline items-baseline gap-1 font-bold text-yellow-300 hover:text-yellow-200 underline underline-offset-4 decoration-yellow-400/60 hover:decoration-yellow-300 transition-colors duration-200"
+		>היה מהבעלים ←</button>
+	</p>
+
 	</div><!-- /rewards tab -->
 
 	<!-- OWNERS TAB -->
