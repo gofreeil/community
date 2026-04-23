@@ -32,9 +32,6 @@
                 <h3 class="text-base md:text-xl font-black text-white leading-tight">
                     הבע את דעתך במשאלי העם
                 </h3>
-                <p class="text-[10px] md:text-xs text-blue-100 font-medium">
-                    יוצאים לחירות · שדר חי מהאפליקציה
-                </p>
             </div>
         </div>
         <a
@@ -48,7 +45,7 @@
     </div>
 
     <!-- Iframe container -->
-    <div class="relative w-full bg-[#0f172a] h-[380px] md:h-[420px]">
+    <div class="relative w-full bg-[#0f172a] h-[290px] md:h-[509px]">
         {#if !iframeLoaded && !iframeFailed}
             <div class="absolute inset-0 flex flex-col items-center justify-center gap-3 text-gray-400">
                 <div class="w-10 h-10 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
