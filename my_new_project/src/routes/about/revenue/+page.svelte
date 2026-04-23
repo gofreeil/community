@@ -823,12 +823,14 @@
 						['🌟','','הזכות לקדם את החברה לטובה יותר','#d97706'],
 						['🚀','','זכות ראשונים ובלעדיות להפצת טכנולוגיה מתקדמת התומכת בחירות התושב','#b45309']
 					] as [ico,val,lbl,clr]}
-						<div class="rounded-xl p-5 text-center flex flex-col items-center gap-2" style="background:rgba(0,0,0,0.3); border:1px solid rgba(245,158,11,0.3);">
+						<div class="rounded-xl p-5 text-center flex flex-col items-center justify-between gap-2" style="background:rgba(0,0,0,0.3); border:1px solid rgba(245,158,11,0.3);">
 							<div class="text-4xl md:text-5xl leading-none">{ico}</div>
-							{#if val}
-								<div class="text-3xl md:text-4xl font-black leading-none" style="color:{clr};">{val}</div>
-							{/if}
-							<div class="text-sm md:text-base text-amber-200 leading-snug font-bold">{lbl}</div>
+							<div class="flex flex-col items-center gap-2">
+								{#if val}
+									<div class="text-3xl md:text-4xl font-black leading-none" style="color:{clr};">{val}</div>
+								{/if}
+								<div class="text-sm md:text-base text-amber-200 leading-snug font-bold">{lbl}</div>
+							</div>
 						</div>
 					{/each}
 				</div>
@@ -842,12 +844,11 @@
 					style="background:linear-gradient(135deg,#fbbf24,#d97706);">1</span>
 				תפקידי הרכז וחובותיו?
 			</h2>
-			<p class="text-gray-400 text-sm mb-6 max-w-2xl">חובת הרכזים:</p>
 
-			<div class="grid md:grid-cols-2 gap-4">
+			<div class="rounded-2xl p-5 mt-6 grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-amber-500/20"
+				style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.2);">
 				<!-- חובה מוסרית ערכית -->
-				<div class="rounded-2xl p-5"
-					style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.2);">
+				<div class="pb-5 md:pb-0 md:pl-5">
 					<div class="flex items-center gap-3 mb-4">
 						<span class="text-3xl">🕊️</span>
 						<div class="font-black text-amber-300 text-lg">חובה מוסרית ערכית</div>
@@ -866,11 +867,10 @@
 				</div>
 
 				<!-- חובה בפעילות בשטח -->
-				<div class="rounded-2xl p-5"
-					style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.2);">
+				<div class="pt-5 md:pt-0 md:pr-5">
 					<div class="flex items-center gap-3 mb-4">
 						<span class="text-3xl">🏘️</span>
-						<div class="font-black text-amber-300 text-lg">חובה בפעילות בשטח</div>
+						<div class="font-black text-amber-300 text-lg">חובת פעילות בשטח</div>
 					</div>
 					<ul class="space-y-3">
 						{#each [
@@ -896,17 +896,20 @@
 					style="background:linear-gradient(135deg,#fbbf24,#d97706);">2</span>
 				זכויות הרכזים
 			</h2>
-			<p class="text-gray-400 text-sm mb-6 max-w-2xl">מה מקבל הרכז תמורת פעילותו בשכונה</p>
-			<div class="grid sm:grid-cols-2 gap-4">
+			<p class="text-gray-400 text-base md:text-lg mb-6 max-w-2xl pr-12">מה מקבל הרכז תמורת פעילותו בשכונה</p>
+			<div class="grid sm:grid-cols-2">
 				{#each [
 					['💰','שותפות ברווחים','חולקים שותפות של 30% מכל הרווח שמייצרת השכונה (ראה שיטת התגמול)'],
 					['📅','ניהול לוח האירועים','הזכות לערוך ולנהל את לוח האירועים כולל גביית תשלום עבור המודעות'],
 					['🏷️','הנחה בפרסום','הנחה של 10% על פירסום באתר'],
 					['🚀','בלעדיות לטכנולוגיות','זכות ראשונים ובלעדיות להיות נקודת מכירה לטכנולוגיות מתקדמות באותה השכונה']
-				] as [ico,title,desc]}
-					<div class="rounded-2xl p-5 flex gap-4 items-start"
-						style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.2);">
-						<span class="text-3xl">{ico}</span>
+				] as [ico,title,desc], i}
+					<div class="p-5 flex gap-4 items-start relative">
+						<div class="absolute bottom-0 right-[5%] left-[5%] h-px bg-amber-500/20"></div>
+						{#if i % 2 === 0}
+							<div class="absolute top-[10%] bottom-[10%] left-0 w-px bg-amber-500/20 hidden sm:block"></div>
+						{/if}
+						<span class="text-3xl flex-shrink-0">{ico}</span>
 						<div>
 							<div class="font-black text-amber-300 mb-1 text-lg">{title}</div>
 							<p class="text-gray-300 text-base leading-relaxed">{desc}</p>
@@ -923,7 +926,7 @@
 					style="background:linear-gradient(135deg,#fbbf24,#d97706);">3</span>
 				פירוט התגמול
 			</h2>
-			<p class="text-gray-400 text-sm mb-6 max-w-2xl">30% מכלל רווחי השכונה שלך — מחולקים בצורה הוגנת</p>
+			<p class="text-gray-400 text-base md:text-lg mb-6 max-w-2xl pr-12">30% מכלל רווחי השכונה שלך — מחולקים בצורה הוגנת</p>
 			<div class="flex flex-col gap-1.5">
 				{#each [
 					['💰','10% ישיר לארנק','מכל הכנסה שמייצרת השכונה שלך','#fbbf24','rgba(251,191,36,0.15)'],
