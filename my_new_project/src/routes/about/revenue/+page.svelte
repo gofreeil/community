@@ -833,30 +833,57 @@
 			</div>
 		</div>
 
-		<!-- מה תפקיד הרכז? -->
+		<!-- תפקידי הרכז וחובותיו -->
 		<div class="mb-10">
 			<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 				<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
 					style="background:linear-gradient(135deg,#fbbf24,#d97706);">1</span>
-				מה תפקיד הרכז?
+				תפקידי הרכז וחובותיו?
 			</h2>
-			<p class="text-gray-400 text-sm mb-6 max-w-2xl">הרכז הוא הגורם האנושי המרכזי שמחיה את הקהילה הדיגיטלית בשטח</p>
-			<div class="grid sm:grid-cols-2 gap-4">
-				{#each [
-					['📣','ניהול תוכן','עדכון לוחות, פרסום אירועים, ניהול מסירות וגמ"חים'],
-					['🤝','גיוס עסקים','פנייה לבעלי עסקים מקומיים לפרסם בפלטפורמה'],
-					['👥','חיבור תושבים','עידוד שיתוף ופעילות בקהילה — ויצירת אווירה חמה'],
-					['📊','דיווח ושקיפות','עדכון שוטף על פעילות ורווחים לכל חברי הקהילה']
-				] as [ico,title,desc]}
-					<div class="rounded-2xl p-5 flex gap-4 items-start"
-						style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.2);">
-						<span class="text-3xl">{ico}</span>
-						<div>
-							<div class="font-black text-amber-300 mb-1">{title}</div>
-							<p class="text-gray-300 text-lg leading-relaxed">{desc}</p>
-						</div>
+			<p class="text-gray-400 text-sm mb-6 max-w-2xl">חובת הרכזים:</p>
+
+			<div class="grid md:grid-cols-2 gap-4">
+				<!-- חובה מוסרית ערכית -->
+				<div class="rounded-2xl p-5"
+					style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.2);">
+					<div class="flex items-center gap-3 mb-4">
+						<span class="text-3xl">🕊️</span>
+						<div class="font-black text-amber-300 text-lg">חובה מוסרית ערכית</div>
 					</div>
-				{/each}
+					<ul class="space-y-3">
+						{#each [
+							'רכז חייב להיות מסונכרן עם החזון שלנו ולחתום על אמנת יוצאים לחירות, העניין העיקרי באמנה הינו לקדם את החברה לסולדריות ולחירות!',
+							'להיות זמין לקידום חירות התושב באופן קבוצתי יחד עם שאר רכזי השכונות בארץ, אנו מקיימים שיחות משותפות והצבעות, שיחת זום פעם בחודש וכן מפגש פיזי פעם בשנה!'
+						] as item}
+							<li class="flex gap-2 text-gray-300 text-base leading-relaxed">
+								<span class="text-amber-400 mt-1 flex-shrink-0">✦</span>
+								<span>{item}</span>
+							</li>
+						{/each}
+					</ul>
+				</div>
+
+				<!-- חובה בפעילות בשטח -->
+				<div class="rounded-2xl p-5"
+					style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.2);">
+					<div class="flex items-center gap-3 mb-4">
+						<span class="text-3xl">🏘️</span>
+						<div class="font-black text-amber-300 text-lg">חובה בפעילות בשטח</div>
+					</div>
+					<ul class="space-y-3">
+						{#each [
+							'למלא את כל נתוני השכונה: גמחים, בית כנסת, מניינים וכו',
+							'לדאוג שכל המוסדות לשירותים ציבוריים בשכונה יופיעו במפה, כגון דואר בנקים וכו',
+							'לפרסם בכל האמצעים העומדים לרשותו כדי לדאוג שהחנויות, נותני השירות, החוגים הצמרים וכו\' יהיו נוכחים בפלטפורמה',
+							'להעלות משאלי עם להצבעה בשכונה שלו לפי ההסכמה הקבוצתית של רכזי השכונות'
+						] as item}
+							<li class="flex gap-2 text-gray-300 text-base leading-relaxed">
+								<span class="text-amber-400 mt-1 flex-shrink-0">✦</span>
+								<span>{item}</span>
+							</li>
+						{/each}
+					</ul>
+				</div>
 			</div>
 		</div>
 
