@@ -6,6 +6,7 @@
     import LostAndFound from "$lib/components/LostAndFound.svelte";
     import FacebookComments from "$lib/components/FacebookComments.svelte";
     import CoaliEmbed from "$lib/components/CoaliEmbed.svelte";
+    import ReferendumBanner from "$lib/components/ReferendumBanner.svelte";
     import { triggerAdPopup } from "$lib/adPopupStore";
     import { ads } from "$lib/adsData";
 
@@ -16,6 +17,12 @@
     let { data }: { data: PageData } = $props();
 
     let showNeighborhoodsMenu = $state(false);
+
+    // CoaliEmbed מוצג רק לקרית משה בירושלים; לכל השאר — ReferendumBanner (דוגמא)
+    const showCoali = $derived(
+        neighborhoodState.neighborhood === "קרית משה" &&
+        neighborhoodState.city === "ירושלים"
+    );
 
     onMount(() => {
         // אתחל עם נתוני פרופיל מהשרת (או localStorage כ-fallback)
@@ -225,7 +232,11 @@
                 <div>
                     <JerusalemMap bind:showNeighborhoodsMenu dbItems={data.dbItems} />
                 </div>
-                <CoaliEmbed />
+                {#if showCoali}
+                    <CoaliEmbed />
+                {:else}
+                    <ReferendumBanner />
+                {/if}
             </div>
 
             <!-- Right column (1/4): boards constrained to left column height -->
@@ -395,7 +406,11 @@
                     <LostAndFound items={data.dbItems.filter(i => i.category === 'lost_and_found')} />
                 </div>
             </div>
-            <CoaliEmbed />
+            {#if showCoali}
+                <CoaliEmbed />
+            {:else}
+                <ReferendumBanner />
+            {/if}
         </div>
     </section>
 
