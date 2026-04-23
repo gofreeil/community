@@ -823,7 +823,7 @@
 					הפעל את הקהילה בשכונה שלך, קבל הכרה ותגמול נדיב — ותיהנה מ-30% מכל רווחי השכונה שלך
 				</p>
 				<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-					{#each [['30%','מהרווחים לרכז','#fbbf24'],['10%','ישיר לארנק','#f59e0b'],['5%','תגמול קבוצתי','#d97706'],['15%','זכויות השקעה ורכישה','#b45309']] as [val,lbl,clr]}
+					{#each [['30%','מהרווחים הכלכליים','#fbbf24'],['✦','שליטה בניהול תוכן בשכונתך','#f59e0b'],['✦','הזכות לקדם את החברה לטובה יותר','#d97706'],['✦','זכות להיות מוקדם להפצת טכנולוגיה מתקדמת התומכת בחירות התושב','#b45309']] as [val,lbl,clr]}
 						<div class="rounded-xl p-4 text-center" style="background:rgba(0,0,0,0.3); border:1px solid rgba(245,158,11,0.3);">
 							<div class="text-2xl font-black" style="color:{clr};">{val}</div>
 							<div class="text-xs text-amber-200 mt-1">{lbl}</div>
