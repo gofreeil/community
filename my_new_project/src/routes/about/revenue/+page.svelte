@@ -617,9 +617,9 @@
 						['🗳️','החלטות','משותפות','#f472b6']
 					] as [ico,val,lbl,clr]}
 						<div class="rounded-xl p-3 text-center" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);">
-							<div class="text-2xl mb-1">{ico}</div>
-							<div class="text-base font-black leading-tight" style="color:{clr};">{val}</div>
-							<div class="text-xs text-blue-200 mt-0.5 leading-tight">{lbl}</div>
+							<div class="text-3xl mb-1">{ico}</div>
+							<div class="text-lg font-black leading-tight" style="color:{clr};">{val}</div>
+							<div class="text-sm text-blue-200 mt-0.5 leading-tight">{lbl}</div>
 						</div>
 					{/each}
 				</div>
@@ -633,7 +633,7 @@
 					style="background: linear-gradient(135deg,#facc15,#f59e0b);">1</span>
 				ביזור לעומת ריכוז
 			</h2>
-			<p class="text-gray-300 text-base mb-6 max-w-3xl leading-relaxed">
+			<p class="text-gray-300 text-lg mb-6 max-w-3xl leading-relaxed">
 				במקום שכל הרווחים והשליטה יוחזקו אצל בעלים אחד ריכוזי — המודל שלנו מבזר את הבעלות והרווחים, הפלטפורמה בנויה כדי לקדם את הקהילה, במקום הפרד ומשול יש לנו <span class="text-yellow-300 font-black">אחד וחזק!</span><br/>
 				וכדי שתישאר כזו <span class="text-yellow-300 font-black">אנו לא נאפשר לבעלי ההון לרכוש את הפלטפורמה!</span><br/>
 				כיצד — אנו לא מאפשרים לכל אחד לרכוש כמה מניות שהוא חפץ אלא <span class="text-blue-300 font-bold">כל בית אב רשאי לרכוש עד 2,000 מניות בלבד</span>
@@ -645,7 +645,7 @@
 						<span class="text-3xl">❌</span>
 						<h3 class="font-black text-red-400 text-lg">מודל ריכוזי (פייסבוק, טיקטוק...)</h3>
 					</div>
-					<ul class="space-y-2 text-base text-gray-300">
+					<ul class="space-y-2 text-lg text-gray-300">
 						<li class="flex gap-2"><span class="text-red-400">•</span> כל הרווחים לבעל הפלטפורמה בלבד</li>
 						<li class="flex gap-2"><span class="text-red-400">•</span> כח ריכוזי בידי קבוצה קטנה</li>
 						<li class="flex gap-2"><span class="text-red-400">•</span> אין ייצוג לקהילה בהחלטות</li>
@@ -657,7 +657,7 @@
 						<span class="text-3xl">✅</span>
 						<h3 class="font-black text-emerald-400 text-lg">המודל המבוזר שלנו</h3>
 					</div>
-					<ul class="space-y-2 text-base text-gray-300">
+					<ul class="space-y-2 text-lg text-gray-300">
 						<li class="flex gap-2"><span class="text-emerald-400">•</span> 50% מהרווחים חוזרים אל הקהילה</li>
 						<li class="flex gap-2"><span class="text-emerald-400">•</span> עד 20,000 מניות — עד 2,000 למשפחה</li>
 						<li class="flex gap-2"><span class="text-emerald-400">•</span> שאיפה: בעלי מניות בכל שכונה בארץ</li>
@@ -673,13 +673,18 @@
 					style="background: linear-gradient(135deg,#facc15,#f59e0b);">2</span>
 				החלטות משותפות
 			</h2>
-			<p class="text-gray-400 text-base mb-6 max-w-2xl">הבעלים מחליטים יחד בהצבעה על כל ההחלטות המנהליות</p>
-			<div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-				{#each [['📣','אופן הפרסום'],['📜','תנאי השימוש'],['💲','מחירון'],['⚙️','ביצוע שדרוגים'],['🚫','מדיניות צנזורה'],['📋','החלטות מנהליות']] as [ico, lbl]}
-					<div class="rounded-xl p-4 flex items-center gap-3"
-						style="background:rgba(255,255,255,0.04); border:1px solid rgba(59,130,246,0.2);">
+			<p class="text-gray-400 text-lg mb-6 max-w-2xl">הבעלים מחליטים יחד בהצבעה על כל ההחלטות המנהליות</p>
+			<div class="grid grid-cols-2 sm:grid-cols-3">
+				{#each [['📣','אופן הפרסום'],['📜','תנאי השימוש'],['💲','מחירון'],['⚙️','ביצוע שדרוגים'],['🚫','מדיניות צנזורה'],['📋','החלטות מנהליות']] as [ico, lbl], i}
+					<div class="py-5 px-5 flex items-center gap-3 relative">
+						{#if i < 3}
+							<div class="absolute bottom-0 right-[10%] left-[10%] h-px bg-white/10"></div>
+						{/if}
+						{#if i % 3 !== 2}
+							<div class="absolute top-[10%] bottom-[10%] left-0 w-px bg-white/10 hidden sm:block"></div>
+						{/if}
 						<span class="text-2xl">{ico}</span>
-						<span class="font-bold text-base text-blue-100">{lbl}</span>
+						<span class="font-bold text-lg text-blue-100">{lbl}</span>
 					</div>
 				{/each}
 			</div>
@@ -693,7 +698,7 @@
 				צורת המודל
 			</h2>
 			<div class="rounded-2xl p-7" style="background:linear-gradient(135deg,#1e1b4b,#1e3a8a); border:1px solid rgba(147,197,253,0.2);">
-				<div class="grid md:grid-cols-2 gap-6 text-base text-blue-100 leading-relaxed">
+				<div class="grid md:grid-cols-2 gap-6 text-lg text-blue-100 leading-relaxed">
 					<div>
 						<p class="mb-3">המודל לוקח את האלמנטים החיוביים הן מהשיטה <span class="text-yellow-300 font-black">הקפיטליסטית</span> (שוק חופשי) והן מהשיטה <span class="text-yellow-300 font-black">הקומוניסטית</span> (הגבלת רכישה) — כך שהפלטפורמה תהיה באמת שייכת לעם תמיד.</p>
 						<p>מבוסס על רעיון <span class="text-yellow-300 font-black">הנחלות בארץ ישראל</span> — שומר על חופש ועצמאות מחד, ולא מאפשר ריכוזיות בידיים מעטות מאידך.</p>
@@ -728,7 +733,7 @@
 						<span class="text-3xl mt-0.5">{ico}</span>
 						<div>
 							<div class="font-black text-base mb-1" style="color:{color};">{title}</div>
-							<p class="text-gray-300 text-base leading-relaxed">{desc}</p>
+							<p class="text-gray-300 text-lg leading-relaxed">{desc}</p>
 						</div>
 					</div>
 				{/each}
@@ -747,7 +752,7 @@
 				<div class="rounded-2xl p-8 text-center" style="background:linear-gradient(135deg,#1e3a8a,#1e1b4b); border:2px solid rgba(147,197,253,0.4);">
 					<div class="text-6xl font-black text-yellow-300 mb-2">200₪</div>
 					<div class="text-xl font-black text-white mb-1">ליחידה אחת</div>
-					<div class="text-gray-400 text-base">ההוצאה הראשונה היא גם האחרונה — לאחר מכן הכל מתוך הרווחים</div>
+					<div class="text-gray-400 text-lg">ההוצאה הראשונה היא גם האחרונה — לאחר מכן הכל מתוך הרווחים</div>
 				</div>
 				<!-- פרטים -->
 				<div class="flex flex-col gap-3">
@@ -761,8 +766,8 @@
 							style="background:rgba(255,255,255,0.04); border:1px solid rgba(59,130,246,0.2);">
 							<span class="text-xl mt-0.5">{ico}</span>
 							<div>
-								<div class="font-black text-blue-200 text-base">{title}</div>
-								<div class="text-gray-400 text-sm mt-0.5">{desc}</div>
+								<div class="font-black text-blue-200 text-lg">{title}</div>
+								<div class="text-gray-400 text-base mt-0.5">{desc}</div>
 							</div>
 						</div>
 					{/each}
@@ -781,9 +786,9 @@
 				style="background:linear-gradient(135deg,#1a1035,#1e293b); border:1px solid rgba(250,204,21,0.25);">
 				<div class="text-center flex-shrink-0">
 					<div class="text-6xl font-black text-yellow-300">35%</div>
-					<div class="text-base text-gray-400 mt-1">מההכנסות לתפעול</div>
+					<div class="text-lg text-gray-400 mt-1">מההכנסות לתפעול</div>
 				</div>
-				<div class="text-base text-gray-300 leading-relaxed">
+				<div class="text-lg text-gray-300 leading-relaxed">
 					<p class="mb-3">חברת ניהול מטפלת בשרתים, אבטחת מידע, שירות לקוחות ותפעול שוטף. <span class="text-yellow-300 font-bold">ללא משכורות קבועות</span> וללא הפתעות — רק 35% מההכנסות.</p>
 					<p>החברה היא חלק בלתי נפרד מהפלטפורמה — <span class="text-yellow-300 font-bold">ההוצאה הראשונה היא גם האחרונה.</span> לאחר מכן כל ההוצאות מתוך הרווחים בלבד.</p>
 				</div>
@@ -840,7 +845,7 @@
 						<span class="text-3xl">{ico}</span>
 						<div>
 							<div class="font-black text-amber-300 mb-1">{title}</div>
-							<p class="text-gray-300 text-base leading-relaxed">{desc}</p>
+							<p class="text-gray-300 text-lg leading-relaxed">{desc}</p>
 						</div>
 					</div>
 				{/each}
