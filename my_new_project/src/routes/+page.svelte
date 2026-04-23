@@ -6,6 +6,7 @@
     import LostAndFound from "$lib/components/LostAndFound.svelte";
     import FacebookComments from "$lib/components/FacebookComments.svelte";
     import ReferendumBanner from "$lib/components/ReferendumBanner.svelte";
+    import CoaliEmbed from "$lib/components/CoaliEmbed.svelte";
     import { triggerAdPopup } from "$lib/adPopupStore";
     import { ads } from "$lib/adsData";
 
@@ -226,6 +227,7 @@
                     <JerusalemMap bind:showNeighborhoodsMenu dbItems={data.dbItems} />
                 </div>
                 <ReferendumBanner />
+                <CoaliEmbed />
             </div>
 
             <!-- Right column (1/4): boards constrained to left column height -->
@@ -396,6 +398,7 @@
                 </div>
             </div>
             <ReferendumBanner />
+            <CoaliEmbed />
         </div>
     </section>
 
