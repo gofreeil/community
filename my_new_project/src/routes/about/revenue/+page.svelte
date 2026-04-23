@@ -823,10 +823,18 @@
 					הפעל את הקהילה בשכונה שלך, קבל הכרה ותגמול נדיב — ותיהנה מ-30% מכל רווחי השכונה שלך
 				</p>
 				<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-					{#each [['30%','מהרווחים הכלכליים','#fbbf24'],['✦','שליטה בניהול תוכן בשכונתך','#f59e0b'],['✦','הזכות לקדם את החברה לטובה יותר','#d97706'],['✦','זכות להיות מוקדם להפצת טכנולוגיה מתקדמת התומכת בחירות התושב','#b45309']] as [val,lbl,clr]}
-						<div class="rounded-xl p-4 text-center" style="background:rgba(0,0,0,0.3); border:1px solid rgba(245,158,11,0.3);">
-							<div class="text-2xl font-black" style="color:{clr};">{val}</div>
-							<div class="text-xs text-amber-200 mt-1">{lbl}</div>
+					{#each [
+						['💰','30%','מהרווחים הכלכליים','#fbbf24'],
+						['🎛️','','שליטה בניהול תוכן בשכונתך','#f59e0b'],
+						['🌟','','הזכות לקדם את החברה לטובה יותר','#d97706'],
+						['🚀','','זכות להיות מוקדם להפצת טכנולוגיה מתקדמת התומכת בחירות התושב','#b45309']
+					] as [ico,val,lbl,clr]}
+						<div class="rounded-xl p-5 text-center flex flex-col items-center gap-2" style="background:rgba(0,0,0,0.3); border:1px solid rgba(245,158,11,0.3);">
+							<div class="text-4xl md:text-5xl leading-none">{ico}</div>
+							{#if val}
+								<div class="text-3xl md:text-4xl font-black leading-none" style="color:{clr};">{val}</div>
+							{/if}
+							<div class="text-sm md:text-base text-amber-200 leading-snug font-bold">{lbl}</div>
 						</div>
 					{/each}
 				</div>
