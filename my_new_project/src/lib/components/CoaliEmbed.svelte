@@ -23,16 +23,16 @@
     });
 </script>
 
-<div class="relative rounded-2xl overflow-hidden bg-gradient-to-br from-indigo-900/40 via-purple-900/40 to-pink-900/40 border-2 border-indigo-500/40 shadow-2xl">
+<div class="relative rounded-2xl overflow-hidden bg-gradient-to-br from-purple-900/40 via-blue-900/40 to-cyan-900/40 border-2 border-blue-500/40 shadow-2xl">
     <!-- Header -->
-    <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-3 md:p-4 flex items-center justify-between">
+    <div class="bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-500 p-3 md:p-4 flex items-center justify-between">
         <div class="flex items-center gap-2 md:gap-3">
             <span class="text-2xl md:text-3xl">🗳️</span>
             <div>
                 <h3 class="text-base md:text-xl font-black text-white leading-tight">
-                    הצבעות קהילתיות — Coali
+                    הבע את דעתך במשאלי העם
                 </h3>
-                <p class="text-[10px] md:text-xs text-white/80 font-medium">
+                <p class="text-[10px] md:text-xs text-blue-100 font-medium">
                     יוצאים לחירות · שדר חי מהאפליקציה
                 </p>
             </div>
@@ -51,7 +51,7 @@
     <div class="relative w-full bg-[#0f172a]" style="height: 520px;">
         {#if !iframeLoaded && !iframeFailed}
             <div class="absolute inset-0 flex flex-col items-center justify-center gap-3 text-gray-400">
-                <div class="w-10 h-10 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin"></div>
+                <div class="w-10 h-10 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
                 <p class="text-sm font-medium">טוען את ההצבעות...</p>
             </div>
         {/if}
@@ -69,7 +69,7 @@
                     href={coaliUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="mt-2 inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold px-6 py-3 rounded-full transition-all shadow-lg hover:shadow-indigo-500/50"
+                    class="mt-2 inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-500 hover:from-purple-500 hover:via-blue-500 hover:to-cyan-400 text-white font-bold px-6 py-3 rounded-full transition-all shadow-lg hover:shadow-blue-500/50"
                 >
                     🗳️ פתח הצבעות →
                 </a>
@@ -78,7 +78,7 @@
 
         <iframe
             src={coaliUrl}
-            title="הצבעות קהילתיות - Coali"
+            title="הבע את דעתך במשאלי העם"
             class="w-full h-full border-0 {iframeLoaded ? 'opacity-100' : 'opacity-0'}"
             allow="clipboard-write; fullscreen"
             loading="lazy"
@@ -87,16 +87,13 @@
         ></iframe>
     </div>
 
-    <!-- Footer note -->
-    <div class="bg-black/40 px-3 md:px-4 py-2 flex items-center justify-between border-t border-white/10">
-        <p class="text-[10px] md:text-xs text-gray-400">
-            💡 בקרוב תשולב מערכת ההצבעות ישירות בתוך האתר
-        </p>
+    <!-- Footer note (mobile open link only) -->
+    <div class="md:hidden bg-black/40 px-3 py-2 flex items-center justify-end border-t border-white/10">
         <a
             href={coaliUrl}
             target="_blank"
             rel="noopener noreferrer"
-            class="md:hidden inline-flex items-center gap-1 text-indigo-300 hover:text-white text-xs font-bold"
+            class="inline-flex items-center gap-1 text-blue-300 hover:text-white text-xs font-bold"
         >
             פתח ↗
         </a>
