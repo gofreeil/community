@@ -729,15 +729,23 @@
 					style="background: linear-gradient(135deg,#facc15,#f59e0b);">4</span>
 				יתרונות לכל הצדדים
 			</h2>
-			<div class="grid sm:grid-cols-2 gap-4">
+			<div class="grid grid-cols-1 sm:grid-cols-2">
 				{#each [
-					['👤','א. למשתמשי הקצה','#3b82f6','rgba(59,130,246,0.15)','כל יתרונות השכונה תחת קורת גג אחת — לשימוש אישי ללא תשלום.'],
-					['🏪','ב. לבעלי עסקים','#f59e0b','rgba(245,158,11,0.15)','פרסום איכותי וממוקד תמורת תשלום הוגן וקל לכל כיס.'],
-					['❤️','ג. לצדקה ולחברה','#10b981','rgba(16,185,129,0.15)','קופת צדקה קבועה, עמותת יוצאים לחירות, הגרלה חודשית למסייע לקהילה.'],
-					['🏘️','ד. לרכזי השכונות','#f472b6','rgba(244,114,182,0.15)','חלק נכבד מהרווחים למפעילי האתר בכל שכונה ושכונה.']
-				] as [ico, title, color, bg, desc]}
-					<div class="rounded-2xl p-5 flex gap-4 items-start"
-						style="background:{bg}; border:1px solid {color}40;">
+					['👤','א. למשתמשי הקצה','#3b82f6','כל יתרונות השכונה תחת קורת גג אחת — לשימוש אישי ללא תשלום.'],
+					['🏪','ב. לבעלי עסקים','#f59e0b','פרסום איכותי וממוקד תמורת תשלום הוגן וקל לכל כיס.'],
+					['❤️','ג. לצדקה ולחברה','#10b981','קופת צדקה קבועה, עמותת יוצאים לחירות, הגרלה חודשית למסייע לקהילה.'],
+					['🏘️','ד. לרכזי השכונות','#f472b6','חלק נכבד מהרווחים למפעילי האתר בכל שכונה ושכונה.']
+				] as [ico, title, color, desc], i}
+					<div class="py-5 px-4 flex gap-4 items-start relative">
+						{#if i < 3}
+							<div class="absolute bottom-0 right-[5%] left-[5%] h-px bg-white/10 sm:hidden"></div>
+						{/if}
+						{#if i < 2}
+							<div class="absolute bottom-0 right-[5%] left-[5%] h-px bg-white/10 hidden sm:block"></div>
+						{/if}
+						{#if i % 2 === 0}
+							<div class="absolute top-[10%] bottom-[10%] left-0 w-px bg-white/10 hidden sm:block"></div>
+						{/if}
 						<span class="text-3xl mt-0.5">{ico}</span>
 						<div>
 							<div class="font-black text-base mb-1" style="color:{color};">{title}</div>
@@ -880,7 +888,7 @@
 					</div>
 					<ul class="space-y-3">
 						{#each [
-							'למלא את כל נתוני השכונה: גמחים, בית כנסת, מניינים וכו',
+							'למלא את כל נתוני השכונה החינמים: גמחים, בית כנסת, מניינים וכו',
 							'לדאוג שכל המוסדות לשירותים ציבוריים בשכונה יופיעו במפה, כגון דואר בנקים וכו',
 							'לפרסם בכל האמצעים העומדים לרשותו כדי לדאוג שהחנויות, נותני השירות, החוגים הצמרים וכו\' יהיו נוכחים בפלטפורמה',
 							'להעלות משאלי עם להצבעה בשכונה שלו לפי ההסכמה הקבוצתית של רכזי השכונות'
@@ -895,11 +903,38 @@
 			</div>
 		</div>
 
+		<!-- זכויות הרכזים -->
+		<div class="mb-10">
+			<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
+				<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
+					style="background:linear-gradient(135deg,#fbbf24,#d97706);">2</span>
+				זכויות הרכזים
+			</h2>
+			<p class="text-gray-400 text-sm mb-6 max-w-2xl">מה מקבל הרכז תמורת פעילותו בשכונה</p>
+			<div class="grid sm:grid-cols-2 gap-4">
+				{#each [
+					['💰','שותפות ברווחים','חולקים שותפות של 30% מכל הרווח שמייצרת השכונה (ראה שיטת התגמול)'],
+					['📅','ניהול לוח האירועים','הזכות לערוך ולנהל את לוח האירועים כולל גביית תשלום עבור המודעות'],
+					['🏷️','הנחה בפרסום','הנחה של 10% על פירסום באתר'],
+					['🚀','בלעדיות לטכנולוגיות','זכות ראשונים ובלעדיות להיות נקודת מכירה לטכנולוגיות מתקדמות באותה השכונה']
+				] as [ico,title,desc]}
+					<div class="rounded-2xl p-5 flex gap-4 items-start"
+						style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.2);">
+						<span class="text-3xl">{ico}</span>
+						<div>
+							<div class="font-black text-amber-300 mb-1 text-lg">{title}</div>
+							<p class="text-gray-300 text-base leading-relaxed">{desc}</p>
+						</div>
+					</div>
+				{/each}
+			</div>
+		</div>
+
 		<!-- התגמול המפורט -->
 		<div class="mb-10" id="coordinator-detail" style="scroll-margin-top:110px;">
 			<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 				<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
-					style="background:linear-gradient(135deg,#fbbf24,#d97706);">2</span>
+					style="background:linear-gradient(135deg,#fbbf24,#d97706);">3</span>
 				פירוט התגמול
 			</h2>
 			<p class="text-gray-400 text-sm mb-6 max-w-2xl">30% מכלל רווחי השכונה שלך — מחולקים בצורה הוגנת</p>
@@ -931,28 +966,6 @@
 					</div>
 				</div>
 				<div class="text-4xl font-black text-amber-300">30%</div>
-			</div>
-		</div>
-
-		<!-- דרישות -->
-		<div class="mb-10">
-			<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
-				<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
-					style="background:linear-gradient(135deg,#fbbf24,#d97706);">3</span>
-				מה נדרש ממך?
-			</h2>
-			<div class="grid sm:grid-cols-3 gap-4 mt-6">
-				{#each [
-					['🕐','זמינות','מספר שעות בשבוע לניהול ועדכון הפלטפורמה'],
-					['🏘️','היכרות עם השכונה','חיבור אמיתי לתושבים ולרוח המקום'],
-					['📱','שימוש בסיסי בטכנולוגיה','יכולת עדכון פשוטה — אין צורך בידע מקצועי']
-				] as [ico,title,desc]}
-					<div class="rounded-2xl p-5 text-center" style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.2);">
-						<div class="text-4xl mb-3">{ico}</div>
-						<div class="font-black text-amber-300 mb-2">{title}</div>
-						<p class="text-gray-400 text-sm">{desc}</p>
-					</div>
-				{/each}
 			</div>
 		</div>
 
