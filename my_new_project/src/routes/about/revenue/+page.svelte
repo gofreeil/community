@@ -697,37 +697,17 @@
 			</div>
 		</div>
 
-		<!-- 3. צורת המודל -->
+		<!-- 3. צורת המודל + יתרונות לכל הצדדים -->
 		<div class="mb-10">
 			<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 				<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
 					style="background: linear-gradient(135deg,#facc15,#f59e0b);">3</span>
 				צורת המודל
 			</h2>
-			<div class="rounded-2xl p-7" style="background:linear-gradient(135deg,#1e1b4b,#1e3a8a); border:1px solid rgba(147,197,253,0.2);">
-				<div class="grid md:grid-cols-2 gap-6 text-lg text-blue-100 leading-relaxed">
-					<div>
-						<p class="mb-3">המודל לוקח את האלמנטים החיוביים הן מהשיטה <span class="text-yellow-300 font-black">הקפיטליסטית</span> (שוק חופשי) והן מהשיטה <span class="text-yellow-300 font-black">הקומוניסטית</span> (הגבלת רכישה) — כך שהפלטפורמה תהיה באמת שייכת לעם תמיד.</p>
-						<p>מבוסס על רעיון <span class="text-yellow-300 font-black">הנחלות בארץ ישראל</span> — שומר על חופש ועצמאות מחד, ולא מאפשר ריכוזיות בידיים מעטות מאידך.</p>
-					</div>
-					<div class="flex flex-col gap-3">
-						<div class="rounded-xl p-4 text-center" style="background:rgba(255,255,255,0.06);">
-							<div class="text-4xl mb-1">⚖️</div>
-							<div class="font-black text-white">נוסחה הוגנת ומאוזנת</div>
-							<div class="text-sm text-blue-300 mt-1">לבעלים, לרכזים ולמשתמשים</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
+			<p class="text-xl md:text-2xl font-black text-blue-100 leading-relaxed mb-5">
+				המודל לוקח את האלמנטים החיוביים הן מהשיטה <span class="text-yellow-300 font-black">הקפיטליסטית</span> (שוק חופשי) והן מהשיטה <span class="text-yellow-300 font-black">הקומוניסטית</span> (הגבלת רכישה) — כך שהפלטפורמה תהיה באמת שייכת לעם תמיד. מבוסס על רעיון <span class="text-yellow-300 font-black">הנחלות בארץ ישראל</span> — שומר על חופש ועצמאות מחד, ולא מאפשר ריכוזיות בידיים מעטות מאידך.
+			</p>
 
-		<!-- 4. יתרונות לכל הצדדים -->
-		<div class="mb-10">
-			<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
-				<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
-					style="background: linear-gradient(135deg,#facc15,#f59e0b);">4</span>
-				יתרונות לכל הצדדים
-			</h2>
 			<div class="grid grid-cols-1 sm:grid-cols-2">
 				{#each [
 					['👤','א. למשתמשי הקצה','#3b82f6','כל יתרונות השכונה תחת קורת גג אחת — לשימוש אישי ללא תשלום.'],
@@ -755,11 +735,11 @@
 			</div>
 		</div>
 
-		<!-- 5. עלות רכישה -->
+		<!-- 4. עלות רכישה -->
 		<div class="mb-10">
 			<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 				<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
-					style="background: linear-gradient(135deg,#facc15,#f59e0b);">5</span>
+					style="background: linear-gradient(135deg,#facc15,#f59e0b);">4</span>
 				עלות רכישה
 			</h2>
 			<div class="grid md:grid-cols-2 gap-5">
@@ -790,11 +770,11 @@
 			</div>
 		</div>
 
-		<!-- 6. הוצאות שותפות -->
+		<!-- 5. הוצאות שותפות -->
 		<div class="mb-10">
 			<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 				<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
-					style="background: linear-gradient(135deg,#facc15,#f59e0b);">6</span>
+					style="background: linear-gradient(135deg,#facc15,#f59e0b);">5</span>
 				הוצאות שותפות
 			</h2>
 			<div class="rounded-2xl p-7 flex flex-col md:flex-row gap-6 items-center"
@@ -810,6 +790,13 @@
 			</div>
 		</div>
 
+		<!-- תת-כותרת היה רכז -->
+		<p class="text-lg md:text-xl font-bold text-white leading-relaxed mt-6 mb-2">
+			היה רכז שכונה פעיל וסייע לקדם את החברה ל<button
+				onclick={() => setTab('coordinator')}
+				class="inline items-baseline gap-1 font-bold text-yellow-300 hover:text-yellow-200 underline underline-offset-4 decoration-yellow-400/60 hover:decoration-yellow-300 transition-colors duration-200"
+			>חברה מתוקנת ←</button>
+		</p>
 
 	</div><!-- /owners tab -->
 
