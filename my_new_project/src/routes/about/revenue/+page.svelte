@@ -324,8 +324,7 @@
 				style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity:0.85;">2</span>
 			העלויות - חברת הניהול
 		</h2>
-		<p class="text-gray-400 text-sm mb-6 max-w-2xl">החברה מתוגמלת אך ורק מתוך הרווחים ולא במשכורת או בתשלום חודשי — להלן ההוצאות</p>
-		<div class="rounded-2xl p-8" style="background: linear-gradient(135deg,#1a1035,#0f172a); border: 1px solid rgba(234,179,8,0.25);">
+		<div class="rounded-2xl p-8 mt-6" style="background: linear-gradient(135deg,#1a1035,#0f172a); border: 1px solid rgba(234,179,8,0.25);">
 			<div class="grid md:grid-cols-2 gap-8 items-center">
 				<div class="flex items-stretch gap-2">
 					<!-- שורות עלויות -->
