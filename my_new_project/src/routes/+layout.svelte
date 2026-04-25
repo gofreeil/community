@@ -97,7 +97,8 @@
 
 	@media (max-width: 1024px) {
 		.layout-container {
-			padding: 1rem;
+			padding: 0;
+			gap: 0;
 			flex-direction: column;
 		}
 	}
