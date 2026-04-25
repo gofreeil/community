@@ -26,6 +26,11 @@
     --bg-deep: #070b14;
 }
 
+html {
+    overflow-x: hidden;
+    max-width: 100vw;
+}
+
 body {
     margin: 0;
     padding: 0;
@@ -35,6 +40,9 @@ body {
     direction: rtl;
     font-size: 16.5px;
     overflow-x: hidden;
+    max-width: 100vw;
+    width: 100%;
+    position: relative;
 }
 
 * {

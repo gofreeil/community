@@ -100,6 +100,12 @@
 			padding: 0;
 			gap: 0;
 			flex-direction: column;
+			max-width: 100vw;
+			overflow-x: hidden;
+		}
+		.main-content {
+			max-width: 100vw;
+			overflow-x: hidden;
 		}
 	}
 </style>
