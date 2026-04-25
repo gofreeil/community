@@ -842,32 +842,13 @@
 			<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 				<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
 					style="background:linear-gradient(135deg,#fbbf24,#d97706);">1</span>
-				תפקידי הרכז וחובותיו?
+				תפקידי הרכז וחובותיו!
 			</h2>
 
 			<div class="rounded-2xl p-5 mt-6 grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-amber-500/20"
 				style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.2);">
-				<!-- חובה מוסרית ערכית -->
-				<div class="pb-5 md:pb-0 md:pl-5">
-					<div class="flex items-center gap-3 mb-4">
-						<span class="text-3xl">🕊️</span>
-						<div class="font-black text-amber-300 text-lg">חובה מוסרית ערכית</div>
-					</div>
-					<ul class="space-y-3">
-						{#each [
-							'רכז חייב להיות מסונכרן עם החזון שלנו ולחתום על אמנת יוצאים לחירות, העניין העיקרי באמנה הינו לקדם את החברה לסולדריות ולחירות!',
-							'להיות זמין לקידום חירות התושב באופן קבוצתי יחד עם שאר רכזי השכונות בארץ, אנו מקיימים שיחות משותפות והצבעות, שיחת זום פעם בחודש וכן מפגש פיזי פעם בשנה!'
-						] as item}
-							<li class="flex gap-2 text-gray-300 text-base leading-relaxed">
-								<span class="text-amber-400 mt-1 flex-shrink-0">✦</span>
-								<span>{item}</span>
-							</li>
-						{/each}
-					</ul>
-				</div>
-
 				<!-- חובה בפעילות בשטח -->
-				<div class="pt-5 md:pt-0 md:pr-5">
+				<div class="pb-5 md:pb-0 md:pl-5">
 					<div class="flex items-center gap-3 mb-4">
 						<span class="text-3xl">🏘️</span>
 						<div class="font-black text-amber-300 text-lg">חובת פעילות בשטח</div>
@@ -878,6 +859,25 @@
 							'לדאוג שכל המוסדות לשירותים ציבוריים בשכונה יופיעו במפה, כגון דואר בנקים וכו',
 							'לפרסם בכל האמצעים העומדים לרשותו כדי לדאוג שהחנויות, נותני השירות, החוגים הצמרים וכו\' יהיו נוכחים בפלטפורמה',
 							'להעלות משאלי עם להצבעה בשכונה שלו לפי ההסכמה הקבוצתית של רכזי השכונות'
+						] as item}
+							<li class="flex gap-2 text-gray-300 text-base leading-relaxed">
+								<span class="text-amber-400 mt-1 flex-shrink-0">✦</span>
+								<span>{item}</span>
+							</li>
+						{/each}
+					</ul>
+				</div>
+
+				<!-- חובה מוסרית ערכית -->
+				<div class="pt-5 md:pt-0 md:pr-5">
+					<div class="flex items-center gap-3 mb-4">
+						<span class="text-3xl">🕊️</span>
+						<div class="font-black text-amber-300 text-lg">חובה מוסרית ערכית</div>
+					</div>
+					<ul class="space-y-3">
+						{#each [
+							'רכז חייב להיות מסונכרן עם החזון שלנו ולחתום על אמנת יוצאים לחירות, העניין העיקרי באמנה הינו לקדם את החברה לסולדריות ולחירות!',
+							'להיות זמין לקידום חירות התושב באופן קבוצתי יחד עם שאר רכזי השכונות בארץ, אנו מקיימים שיחות משותפות והצבעות, שיחת זום פעם בחודש וכן מפגש פיזי פעם בשנה!'
 						] as item}
 							<li class="flex gap-2 text-gray-300 text-base leading-relaxed">
 								<span class="text-amber-400 mt-1 flex-shrink-0">✦</span>
