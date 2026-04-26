@@ -963,8 +963,7 @@
 						</span>
 					{/if}
 					<span
-						class="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full
-						       bg-amber-500/15 text-amber-300 border border-amber-500/30"
+						class="text-sm text-amber-300 font-bold"
 						title="מניות פלטפורמה"
 					>
 						📈 {userShares} מניות
@@ -2508,7 +2507,7 @@
 			</h2>
 			<div class="flex items-center gap-2">
 				<span
-					class="text-sm bg-amber-500/20 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-full font-bold text-center leading-tight"
+					class="text-sm text-amber-300 font-bold text-center leading-tight"
 					title="מניות פלטפורמה"
 					>📈 {userShares}<br />מניות</span
 				>
