@@ -81,30 +81,49 @@
 </div>
 
 <style>
+	/* Asides: absolute (out of flow) — main מכתיב גובה הדף, אין רווח מעל ה-footer.
+	   layout-container הוא flex-col עם flex-grow → main ב-flex:1 ממלא דפים קצרים. */
 	.layout-container {
 		max-width: 1440px;
 		margin: 0 auto;
-		display: flex;
-		gap: 2rem;
+		position: relative;
 		padding: 2rem 2rem 0 2rem;
 		width: 100%;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
 	}
 
 	.main-content {
-		flex: 1;
+		width: 100%;
 		min-width: 0;
+		flex: 1; /* ממלא את המכולה אנכית גם בדפים קצרים */
 	}
 
-	@media (max-width: 1024px) {
+	/* lg+ : AdsSidebar (w-48 = 12rem) בצד שמאל */
+	@media (min-width: 1024px) {
+		.main-content {
+			margin-left: 14rem; /* aside (12) + gap (2) */
+		}
+	}
+
+	/* xl+ : RightAdBanner (w-36 = 9rem) בצד ימין */
+	@media (min-width: 1280px) {
+		.main-content {
+			margin-right: 11rem; /* aside (9) + gap (2) */
+		}
+	}
+
+	@media (max-width: 1023px) {
 		.layout-container {
 			padding: 0;
-			gap: 0;
-			flex-direction: column;
 			max-width: 100vw;
 			overflow-x: hidden;
 		}
 		.main-content {
 			max-width: 100vw;
+			margin-left: 0;
+			margin-right: 0;
 			overflow-x: hidden;
 		}
 	}
