@@ -483,6 +483,20 @@ export async function adminDeleteItem(documentId: string, adminId: string): Prom
     });
 }
 
+/** שליפת כל הסופר־אדמינים (לשליחת התראות מערכת) */
+export async function getAllSuperAdmins(): Promise<DbUser[]> {
+    try {
+        const arr = await findStrapiUpUsers({
+            'filters[app_role][$eq]': 'super_admin',
+            'pagination[limit]':      '50',
+        });
+        return (arr as StrapiUpUser[]).map(mapUpUser);
+    } catch (e) {
+        console.warn('[db] getAllSuperAdmins failed:', e);
+        return [];
+    }
+}
+
 /** מציאת רכז שכונה — אם אין, מחזיר סופר אדמין */
 export async function findAdminForNeighborhood(neighborhood: string): Promise<DbUser | undefined> {
     // קודם מחפש neighborhood_admin של השכונה הספציפית

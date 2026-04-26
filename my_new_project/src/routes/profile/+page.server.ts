@@ -1,6 +1,6 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { getUserById, getUserByEmail, updateUserProfile, getItemsByUserId, upsertUser, getMessagesByUserId, createItem } from '$lib/server/db';
+import { getUserById, getUserByEmail, updateUserProfile, getItemsByUserId, upsertUser, getMessagesByUserId, createItem, getAllSuperAdmins } from '$lib/server/db';
 import { citiesData } from '$lib/neighborhoodsData';
 import { categoryConfig } from '$lib/categoryFields';
 
@@ -187,23 +187,51 @@ export const actions: Actions = {
 
             // אם המשתמש ביקש להוסיף מיקום חדש — שלח בקשה לסופר אדמין
             if (customLocation) {
+                const requesterEmail = email || session.user.email || '';
+                const requesterName  = name  || session.user.id;
                 try {
                     await createItem({
                         category:    'location_request',
                         label:       `בקשה להוספת מיקום: ${customLocation}`,
-                        description: `המשתמש ${name || session.user.id} (${email || (session.user.email ?? '')}) ביקש להוסיף את המיקום הבא:\n\n"${customLocation}"`,
+                        description: `המשתמש ${requesterName} (${requesterEmail}) ביקש להוסיף את המיקום הבא:\n\n"${customLocation}"`,
                         icon:        '📍',
                         color:       'yellow',
                         user_id:     session.user.id,
                         extra_fields: {
                             requested_by_name:  name  || '',
-                            requested_by_email: email || session.user.email || '',
+                            requested_by_email: requesterEmail,
                             requested_by_id:    session.user.id,
                             requested_at:       new Date().toISOString(),
                         },
                     });
                 } catch (e) {
                     console.warn('[profile] location_request createItem failed:', e);
+                }
+
+                // שלח הודעה אישית לכל סופר־אדמין כדי שהבקשה תופיע מיד בתיבת ההודעות שלו
+                try {
+                    const admins = await getAllSuperAdmins();
+                    await Promise.all(admins.map(admin => createItem({
+                        category:    'message',
+                        label:       `📍 בקשת מיקום חדש: ${customLocation}`,
+                        description:
+                            `המשתמש ${requesterName} (${requesterEmail}) ביקש להוסיף מיקום שאינו מופיע ברשימה:\n\n` +
+                            `"${customLocation}"\n\n` +
+                            `יש לבחון אם להוסיף לרשימת הערים/השכונות.`,
+                        icon:        '📍',
+                        color:       'yellow',
+                        user_id:     admin.id,
+                        extra_fields: {
+                            type:               'location_request',
+                            requested_location: customLocation,
+                            requested_by_name:  name  || '',
+                            requested_by_email: requesterEmail,
+                            requested_by_id:    session.user.id,
+                            requested_at:       new Date().toISOString(),
+                        },
+                    })));
+                } catch (e) {
+                    console.warn('[profile] notify super_admins failed:', e);
                 }
             }
 
