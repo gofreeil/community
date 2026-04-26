@@ -19,22 +19,6 @@ export interface CategoryConfig {
 
 export const categoryConfig: Record<string, CategoryConfig> = {
 
-    gemachim: {
-        label: 'גמ"ח',
-        icon: '🎁',
-        color: 'purple',
-        priceRow: null,
-        fields: [
-            { key: 'label',       label: 'שם הגמ"ח',         type: 'text',     required: true,  placeholder: 'גמ"ח ספרי קודש' },
-            { key: 'lend_items',  label: 'מה מלווים?',        type: 'textarea', required: true,  placeholder: 'ספרים, בגדים, ציוד תינוקות...' },
-            { key: 'description', label: 'תיאור נוסף',         type: 'textarea', required: false, placeholder: 'פרטים נוספים על הגמ"ח' },
-            { key: 'hours',       label: 'שעות פעילות',        type: 'text',     required: false, placeholder: 'ראשון-חמישי 9:00-13:00' },
-            { key: 'address',     label: 'כתובת',              type: 'text',     required: false, placeholder: 'רחוב, מספר, שכונה' },
-            { key: 'contact',     label: 'שם איש קשר',         type: 'text',     required: true,  placeholder: 'שם מלא' },
-            { key: 'phone',       label: 'טלפון',              type: 'tel',      required: true,  placeholder: '05X-XXXXXXX' },
-        ],
-    },
-
     giveaway: {
         label: 'למסירה',
         icon: '📦',
