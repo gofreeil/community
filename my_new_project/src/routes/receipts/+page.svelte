@@ -103,8 +103,8 @@
 
 	<!-- קומת שיטת התגמול -->
 	<div class="mt-8 px-2">
-		<p class="text-gray-400 text-sm">
-			הכירו את <a href="/about/revenue" class="font-bold text-yellow-300 hover:text-yellow-200 underline underline-offset-4 decoration-yellow-400/50 hover:decoration-yellow-300 transition-colors">שיטת התגמול של הקהילה ←</a>
+		<p class="text-lg md:text-xl font-bold text-yellow-300">
+			<a href="/about/revenue" class="hover:text-yellow-200 underline underline-offset-4 decoration-yellow-400/60 hover:decoration-yellow-300 transition-colors">הכר את שיטת התגמול של הקהילה ←</a>
 		</p>
 	</div>
 
