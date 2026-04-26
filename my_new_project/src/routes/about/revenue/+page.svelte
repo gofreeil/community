@@ -279,16 +279,16 @@
 					תקציר חלוקת הרווחים
 				</h2>
 				<p class="text-indigo-200 text-sm mb-6 text-center">מהרווח הנקי — כל שקל מתחלק בין שלושה גורמים:</p>
-				<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+				<div class="grid grid-cols-3 gap-2 sm:gap-4">
 					{#each data.distribution as card}
 						<a href={card.link}
-							class="rounded-2xl p-4 text-center relative overflow-hidden shadow-xl block hover:scale-105 hover:brightness-110 transition-all duration-200"
+							class="rounded-2xl p-2 sm:p-4 text-center relative overflow-hidden shadow-xl block hover:scale-105 hover:brightness-110 transition-all duration-200"
 							style="background: linear-gradient(135deg, {card.from}, {card.to});">
-							<div class="text-5xl mb-1">{card.emoji}</div>
-							<div class="text-6xl font-black leading-none mb-1">{card.pct}</div>
-							<div class="text-xl font-bold mb-2">{card.title}</div>
-							<div class="text-base opacity-90 leading-relaxed">{card.desc}</div>
-							<div class="mt-2 text-sm font-black opacity-70">← לפירוט מלא</div>
+							<div class="text-3xl sm:text-5xl mb-1">{card.emoji}</div>
+							<div class="text-3xl sm:text-6xl font-black leading-none mb-1">{card.pct}</div>
+							<div class="text-sm sm:text-xl font-bold mb-1 sm:mb-2">{card.title}</div>
+							<div class="text-xs sm:text-base opacity-90 leading-relaxed">{card.desc}</div>
+							<div class="mt-2 text-[10px] sm:text-sm font-black opacity-70">← לפירוט מלא</div>
 						</a>
 					{/each}
 				</div>
@@ -304,14 +304,14 @@
 			ערוצי ההכנסה
 		</h2>
 		<p class="text-gray-300 text-base md:text-lg mb-6 max-w-2xl">מקורות ההכנסה של הפלטפורמה מגיעים מפרסומים ומשיתופי פעולה:</p>
-		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
+		<div class="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-5">
 			{#each data.channels as ch}
-				<div class="p-5 flex flex-col gap-1.5 transition-all hover:bg-white/5"
+				<div class="p-2 sm:p-5 flex flex-col gap-1.5 transition-all hover:bg-white/5"
 					style="border-bottom:1px solid rgba(255,255,255,0.08); border-right:1px solid rgba(255,255,255,0.08);">
-					<div class="w-14 h-14 rounded-xl flex items-center justify-center text-3xl mb-1"
+					<div class="w-10 h-10 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center text-xl sm:text-3xl mb-1"
 						style="background: {ch.bg}; color: {ch.color};">{ch.icon}</div>
-					<h3 class="font-black text-lg">{ch.title}</h3>
-					<p class="text-gray-400 text-sm leading-relaxed">{ch.desc}</p>
+					<h3 class="font-black text-sm sm:text-lg">{ch.title}</h3>
+					<p class="text-gray-400 text-[11px] sm:text-sm leading-relaxed">{ch.desc}</p>
 				</div>
 			{/each}
 		</div>
