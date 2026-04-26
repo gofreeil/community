@@ -468,6 +468,12 @@
 
     function handleCategoryClick(categoryId: string) {
         selectedCategory = categoryId;
+        // בתצוגת רשימה — פתח אוטומטית את הקטגוריה הנבחרת
+        if (categoryId !== "benefits") {
+            const next = new Set(expandedCategories);
+            next.add(categoryId);
+            expandedCategories = next;
+        }
     }
 
     // citiesAndNeighborhoods imported from $lib/neighborhoodsData
@@ -947,7 +953,7 @@
                 style="border-radius: 20px;"
             >
                 <div class="space-y-2 md:space-y-3">
-                    {#each categories.filter((cat) => cat.id !== "benefits") as category}
+                    {#each categories.filter((cat) => cat.id !== "benefits" && (selectedCategory === "benefits" || cat.id === selectedCategory)) as category}
                         {@const categoryDbItems = dbItems.filter(d =>
                             d.category === category.id &&
                             (d.neighborhood === neighborhoodState.neighborhood ||

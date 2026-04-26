@@ -28,6 +28,8 @@
 
     // ---- Form state ----
     let title       = $state('');
+    let headline    = $state('');
+    let summary     = $state('');
     let icon        = $state('🤝');
     let description = $state('');
     let address     = $state('');
@@ -152,6 +154,8 @@
             if (draft) {
                 const d = JSON.parse(draft);
                 if (d.title)        title        = d.title;
+                if (d.headline)     headline     = d.headline;
+                if (d.summary)      summary      = d.summary;
                 if (d.icon)         icon         = d.icon;
                 if (d.description)  description  = d.description;
                 if (d.address)      address      = d.address;
@@ -191,14 +195,14 @@
         if (!browser) return;
         try {
             localStorage.setItem(DRAFT_KEY, JSON.stringify({
-                title, icon, description, address, hours, contact, phone, gmachType, city, neighborhood,
+                title, headline, summary, icon, description, address, hours, contact, phone, gmachType, city, neighborhood,
                 logoBase64, images, tags,
             }));
         } catch {
             // אם חרגנו ממכסת localStorage (תמונות גדולות) — שמור בלי תמונות
             try {
                 localStorage.setItem(DRAFT_KEY, JSON.stringify({
-                    title, icon, description, address, hours, contact, phone, gmachType, city, neighborhood, tags,
+                    title, headline, summary, icon, description, address, hours, contact, phone, gmachType, city, neighborhood, tags,
                 }));
             } catch {}
         }
@@ -262,19 +266,13 @@
                 </div>
 
                 <div>
-                    <label for="gmach_type" class="text-white text-sm font-bold mb-1 block">סוג הגמ"ח</label>
-                    <select id="gmach_type" name="gmach_type" bind:value={gmachType} class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white">
-                        <option value="">-- בחר סוג --</option>
-                        {#each GMACH_TYPES as t}
-                            <option value={t.key}>{t.label}</option>
-                        {/each}
-                    </select>
+                    <label for="headline" class="text-white text-sm font-bold mb-1 block">כותרת</label>
+                    <input id="headline" name="headline" bind:value={headline} placeholder="כותרת קצרה ומושכת לגמ&quot;ח" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white" />
                 </div>
 
                 <div>
-                    <label for="icon" class="text-white text-sm font-bold mb-1 block">אייקון (אמוג'י)</label>
-                    <input id="icon" name="icon" bind:value={icon} maxlength="4" placeholder="🤝" class="w-20 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-center text-xl" />
-                    <p class="text-gray-500 text-xs mt-1">משמש כברירת מחדל אם לא הועלה לוגו</p>
+                    <label for="summary" class="text-white text-sm font-bold mb-1 block">תיאור</label>
+                    <textarea id="summary" name="summary" bind:value={summary} rows="3" placeholder="תיאור כללי של הגמ&quot;ח" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white" style="color-scheme: dark;"></textarea>
                 </div>
 
                 <!-- Logo upload -->
@@ -320,8 +318,24 @@
                 </div>
 
                 <div>
-                    <label for="description" class="text-white text-sm font-bold mb-2 block">מהות הגמ"ח *</label>
-                    <textarea id="description" name="description" bind:value={description} rows="3" placeholder="פרט/י את מהות הגמ&quot;ח — מה ניתן להשאיל / לקבל" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white"></textarea>
+                    <label for="gmach_type" class="text-white text-sm font-bold mb-1 block">סוג הגמ"ח</label>
+                    <select id="gmach_type" name="gmach_type" bind:value={gmachType} class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white" style="color-scheme: dark;">
+                        <option value="">-- בחר סוג --</option>
+                        {#each GMACH_TYPES as t}
+                            <option value={t.key}>{t.label}</option>
+                        {/each}
+                    </select>
+                </div>
+
+                <div>
+                    <label for="icon" class="text-white text-sm font-bold mb-1 block">אייקון (אמוג'י)</label>
+                    <input id="icon" name="icon" bind:value={icon} maxlength="4" placeholder="🤝" class="w-20 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-center text-xl" />
+                    <p class="text-gray-500 text-xs mt-1">משמש כברירת מחדל אם לא הועלה לוגו</p>
+                </div>
+
+                <div>
+                    <label for="description" class="text-white text-sm font-bold mb-2 block">פירוט הגמ"ח *</label>
+                    <textarea id="description" name="description" bind:value={description} rows="3" placeholder="רשום את הפרטים הנמצאים במלאי" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white" style="color-scheme: dark;"></textarea>
 
                     <!-- Tags input (chip windows) -->
                     <div class="mt-3">
@@ -357,7 +371,7 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label for="city" class="text-white text-sm font-bold mb-1 block">עיר *</label>
-                        <select id="city" name="city" bind:value={city} required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white">
+                        <select id="city" name="city" bind:value={city} required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white" style="color-scheme: dark;">
                             {#each Object.keys(citiesAndNeighborhoods) as c}
                                 <option value={c}>{c}</option>
                             {/each}
@@ -365,7 +379,7 @@
                     </div>
                     <div>
                         <label for="neighborhood" class="text-white text-sm font-bold mb-1 block">שכונה *</label>
-                        <select id="neighborhood" name="neighborhood" bind:value={neighborhood} required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white">
+                        <select id="neighborhood" name="neighborhood" bind:value={neighborhood} required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white" style="color-scheme: dark;">
                             {#each neighborhoodsForCity as n}
                                 <option value={n}>{n}</option>
                             {/each}
