@@ -92,6 +92,6 @@ export const actions: Actions = {
             return fail(500, { error: 'שגיאה בשמירת המודעה, נסה שוב' });
         }
 
-        throw redirect(303, '/gmachim?added=1');
+        throw redirect(303, '/?added=gmach');
     },
 };
