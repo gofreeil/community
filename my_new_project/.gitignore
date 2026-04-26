@@ -30,5 +30,8 @@ community.db-wal
 # Claude worktrees
 .claude/worktrees/
 
+# Claude runtime locks
+.claude/scheduled_tasks.lock
+
 # Windows null device
 nul

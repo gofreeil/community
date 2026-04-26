@@ -223,7 +223,19 @@
       "mcp__Claude_in_Chrome__read_page",
       "mcp__Claude_in_Chrome__read_console_messages",
       "mcp__Claude_in_Chrome__tabs_create_mcp",
-      "mcp__Claude_in_Chrome__find"
+      "mcp__Claude_in_Chrome__find",
+      "mcp__Claude_in_Chrome__switch_browser",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173/about/revenue)",
+      "Bash(curl -s http://localhost:5173/about/revenue -o /tmp/rev.html)",
+      "Bash(curl -s http://localhost:5173/about/revenue)",
+      "Bash(curl -s http://127.0.0.1:5173/about/revenue)",
+      "Bash(git checkout *)",
+      "WebFetch(domain:community-git-verify-preview-auth-yahavanter-8009s-projects.vercel.app)",
+      "Bash(git branch *)",
+      "Bash(git revert *)",
+      "Bash(git reset *)",
+      "Bash(curl -sS -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5173/)",
+      "Bash(curl -sS -o /dev/null -w \"%{http_code}\" http://localhost:5173/)"
     ]
   }
 }
