@@ -23,7 +23,7 @@
     });
 </script>
 
-<div class="relative rounded-2xl overflow-hidden bg-gradient-to-br from-purple-900/40 via-blue-900/40 to-cyan-900/40 border-2 border-blue-500/40 shadow-2xl">
+<div class="relative rounded-2xl overflow-hidden bg-gradient-to-br from-purple-900/40 via-blue-900/40 to-cyan-900/40 border-2 border-blue-500/40 shadow-2xl -mx-2 md:mx-0">
     <!-- Header -->
     <div class="bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-500 p-3 md:p-4 flex items-center justify-between">
         <div class="flex items-center gap-2 md:gap-3">
@@ -45,7 +45,7 @@
     </div>
 
     <!-- Iframe container -->
-    <div class="relative w-full bg-[#0f172a] h-[290px] md:h-[509px]">
+    <div class="relative w-full bg-[#0f172a] h-[210px] md:h-[420px]">
         {#if !iframeLoaded && !iframeFailed}
             <div class="absolute inset-0 flex flex-col items-center justify-center gap-3 text-gray-400">
                 <div class="w-10 h-10 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
