@@ -3,6 +3,7 @@ import Google from '@auth/sveltekit/providers/google';
 import Facebook from '@auth/sveltekit/providers/facebook';
 import Credentials from '@auth/sveltekit/providers/credentials';
 import { createHash } from 'crypto';
+import type { Handle } from '@sveltejs/kit';
 import { upsertUser, getUserByEmail, getUserById } from '$lib/server/db';
 import { strapiLogin, strapiRegister } from '$lib/server/strapiClient';
 
@@ -11,6 +12,21 @@ const AUTH_GOOGLE_ID      = process.env.AUTH_GOOGLE_ID      ?? '';
 const AUTH_GOOGLE_SECRET  = process.env.AUTH_GOOGLE_SECRET  ?? '';
 const AUTH_FACEBOOK_ID    = process.env.AUTH_FACEBOOK_ID    ?? '';
 const AUTH_FACEBOOK_SECRET= process.env.AUTH_FACEBOOK_SECRET?? '';
+
+// ============================================================
+// Defensive fallback — אם AUTH_SECRET חסר (preview deployment ללא env,
+// fork מ-contributor, dev מקומי בלי .env), לא לאתחל SvelteKitAuth כלל
+// כי assertConfig של @auth/core זורק 500 בכל בקשה ומפיל את ה-SSR.
+// במקום זה — handle no-op שמגדיר event.locals.auth כפונקציה ריקה,
+// וכך כל הדפים נטענים כמשתמש אנונימי.
+// ============================================================
+const noOpHandle: Handle = async ({ event, resolve }) => {
+    event.locals.auth = async () => null;
+    return resolve(event);
+};
+const noOpAction = async (): Promise<never> => {
+    throw new Error('Auth disabled: AUTH_SECRET not configured');
+};
 
 // ============================================================
 // קבלת JWT של Strapi עבור משתמשי OAuth
@@ -36,7 +52,12 @@ async function getOrCreateStrapiJwt(email: string | null | undefined, stableId: 
     }
 }
 
-export const { handle, signIn, signOut } = SvelteKitAuth({
+export const { handle, signIn, signOut } = !AUTH_SECRET
+    ? (() => {
+        console.warn('[auth] AUTH_SECRET missing — auth disabled (no-op fallback)');
+        return { handle: noOpHandle, signIn: noOpAction, signOut: noOpAction };
+    })()
+    : SvelteKitAuth({
     secret: AUTH_SECRET,
 
     session: {
