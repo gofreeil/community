@@ -1,3 +1,4 @@
+// verify: preview deployment auth fallback test
 import { SvelteKitAuth } from '@auth/sveltekit';
 import Google from '@auth/sveltekit/providers/google';
 import Facebook from '@auth/sveltekit/providers/facebook';
