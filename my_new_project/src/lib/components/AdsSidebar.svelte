@@ -4,7 +4,7 @@
 
 <aside
     aria-label="פרסומות ושותפים"
-    class="hidden lg:block w-48 absolute top-8 left-8 pb-8 text-center"
+    class="hidden lg:block w-48 flex-shrink-0 sticky top-4 h-fit pb-8 text-center"
 >
     <h4 class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-2 px-2">
         מתקדמים לחברה מתוקנת ועצמאית
