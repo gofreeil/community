@@ -10,7 +10,7 @@
         מתקדמים לחברה מתוקנת ועצמאית
     </h4>
     <div class="space-y-4">
-        {#each ads.slice(0, 6) as ad (ad.id)}
+        {#each ads as ad (ad.id)}
             <a
                 href={ad.href}
                 target="_blank"
