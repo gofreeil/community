@@ -31,6 +31,8 @@ export const actions: Actions = {
 
         const fd           = await event.request.formData();
         const title        = fd.get('title')?.toString().trim()        ?? '';
+        const headline     = fd.get('headline')?.toString().trim()     ?? '';
+        const summary      = fd.get('summary')?.toString().trim()      ?? '';
         const description  = fd.get('description')?.toString().trim()  ?? '';
         const address      = fd.get('address')?.toString().trim()      ?? '';
         const hours        = fd.get('hours')?.toString().trim()        ?? '';
@@ -64,7 +66,7 @@ export const actions: Actions = {
 
         try {
             await createItem({
-                category:     'gmach',
+                category:     'gemachim',
                 label:        title,
                 description,
                 contact,
@@ -77,6 +79,8 @@ export const actions: Actions = {
                 extra_fields: {
                     hours,
                     gmach_type: gmachType,
+                    ...(headline ? { headline } : {}),
+                    ...(summary  ? { summary }  : {}),
                     ...(logoBase64 ? { logo: logoBase64 } : {}),
                     ...(images.length > 0 ? { images } : {}),
                     ...(tags.length > 0 ? { tags } : {}),
