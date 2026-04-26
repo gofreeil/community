@@ -241,7 +241,7 @@
 
             <!-- Right column (1/4): boards constrained to left column height -->
             <div class="lg:w-1/4 relative">
-                <div class="absolute top-0 right-0 left-0 bottom-8 flex flex-col gap-2 overflow-hidden">
+                <div class="absolute top-0 right-0 left-0 bottom-0 flex flex-col gap-2 overflow-hidden">
                     <!-- 1. Events Board -->
                     <div class="flex-1 min-h-0 rounded-2xl bg-[#0f172a] border border-2 border-green-500/30 shadow-2xl flex flex-col overflow-hidden">
                     <div class="bg-gradient-to-r from-green-600 to-teal-600 p-3 flex items-center justify-between flex-shrink-0 relative">
