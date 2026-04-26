@@ -104,7 +104,7 @@
     <title>קהילה בשכונה</title>
 </svelte:head>
 
-<div class="pb-0 md:pb-20 pt-4 md:pt-8" onclick={() => calMenuOpen = null}>
+<div class="pb-0 md:pb-0 pt-4 md:pt-8" onclick={() => calMenuOpen = null}>
     <!-- Title Section - centered across full width -->
     <section class="max-w-7xl mx-auto px-4">
         <div class="text-center mb-8 relative neighborhoods-menu-container">
