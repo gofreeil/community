@@ -243,7 +243,7 @@
                             class="flex items-center justify-center w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors"
                             aria-label="אודות קהילה"
                         >
-                            <span class="text-xs font-bold text-white">ℹ</span>
+                            <span class="text-xl font-bold text-white leading-none">ℹ</span>
                         </button>
 
                         <!-- כפתור דגל שפה - מובייל -->
