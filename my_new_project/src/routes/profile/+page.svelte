@@ -146,6 +146,7 @@
 	let neighborhood = $state(_ud?.neighborhood ?? "");
 	let business = $state(_ud?.business ?? "");
 	let customLocation = $state("");
+	let locationInteracted = $state(false);
 	let family_status = $state(_ud?.family_status ?? "");
 	let gender = $state(_ud?.gender ?? "");
 	let whatsappMatches = $derived(findWhatsAppGroups(city, neighborhood));
@@ -364,6 +365,9 @@
 	// דרגה 1 = צופה (נרשם בלבד)
 	// דרגה 2 = משתמש (מילא עיר, שכונה, אימייל וטלפון)
 	let userLevel = $derived(city && neighborhood && email && phone ? 2 : 1);
+
+	// מספר מניות פלטפורמה — placeholder פרונט בלבד עד חיבור ל-backend
+	let userShares = $derived(10 + data.items.length * 5);
 
 	let isUserAdmin = $derived(
 		(data.user as any)?.role === "neighborhood_admin" ||
@@ -949,7 +953,7 @@
 					</p>
 				</div>
 				<div class="flex-1 min-h-[24px]"></div>
-				<div class="flex gap-3 mt-2 flex-wrap">
+				<div class="flex gap-3 mt-2 flex-wrap items-center">
 					{#if data.items.length > 0}
 						<span
 							class="text-sm text-blue-400 font-bold"
@@ -958,6 +962,13 @@
 							{tFn("publications_count")}
 						</span>
 					{/if}
+					<span
+						class="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full
+						       bg-amber-500/15 text-amber-300 border border-amber-500/30"
+						title="מניות פלטפורמה"
+					>
+						📈 {userShares} מניות
+					</span>
 				</div>
 				<div
 					class="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity"
@@ -1359,7 +1370,8 @@
 									id="p-city"
 									name="city"
 									bind:value={city}
-									onchange={() => (neighborhood = "")}
+									onchange={() => { neighborhood = ""; locationInteracted = true; }}
+									onfocus={() => (locationInteracted = true)}
 									required
 									class="w-full bg-[#070b14] border {!city
 										? 'border-red-500/50'
@@ -1393,6 +1405,8 @@
 									id="p-neighborhood"
 									name="neighborhood"
 									bind:value={neighborhood}
+									onfocus={() => (locationInteracted = true)}
+									onchange={() => (locationInteracted = true)}
 									disabled={!city}
 									required
 									class="w-full bg-[#070b14] border {!neighborhood
@@ -1418,17 +1432,28 @@
 						<!-- מיקום שאינו מופיע ברשימה — בתוך אותה מסגרת -->
 						{#if isEditing}
 							<div
-								class="col-span-2 border-t border-purple-500/15 pt-3 mt-1"
+								class="col-span-2 border-t border-purple-500/15 pt-3 mt-1 transition-all duration-500"
 							>
 								<label
 									for="p-custom-location"
-									class="block text-xs text-yellow-400 font-bold uppercase tracking-wider mb-1.5"
+									class="flex items-center gap-2 font-bold mb-1.5 transition-colors duration-500
+									       {locationInteracted ? 'text-sm text-yellow-300' : 'text-xs text-gray-400 uppercase tracking-wider'}"
 								>
-									📍 מיקום שאינו מופיע ברשימה?
+									{#if locationInteracted}
+										<span class="relative flex h-2.5 w-2.5">
+											<span
+												class="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"
+											></span>
+											<span
+												class="relative inline-flex rounded-full h-2.5 w-2.5 bg-yellow-400"
+											></span>
+										</span>
+									{/if}
+									📍 {locationInteracted ? 'לא מצאת את העיר או השכונה שלך ברשימה?' : 'מיקום שאינו מופיע ברשימה?'}
 								</label>
-								<p class="text-gray-500 text-xs mb-2">
-									כתוב כאן את העיר או השכונה שלך — הבקשה תישלח
-									למנהל האתר להוספה
+								<p class="text-gray-500 text-xs mb-2 leading-relaxed">
+									כתוב כאן את העיר והשכונה שלך — הבקשה תישלח
+									מיד למנהל האתר ותתווסף לרשימה.
 								</p>
 								<input
 									id="p-custom-location"
@@ -1436,9 +1461,10 @@
 									type="text"
 									bind:value={customLocation}
 									placeholder="לדוגמה: רמת השרון, שכונת הצפון..."
-									class="w-full bg-[#070b14] border border-yellow-500/20 focus:border-yellow-500/50
-							       rounded-xl px-4 py-3 text-white text-sm transition-colors outline-none
-							       placeholder:text-white/20"
+									class="w-full bg-[#070b14] border rounded-xl px-4 py-3 text-white text-sm
+							       transition-all duration-500 outline-none placeholder:text-white/20
+							       focus:border-yellow-500/70 focus:shadow-[0_0_18px_2px_rgba(250,204,21,0.25)]
+							       {locationInteracted ? 'border-yellow-500/40 custom-loc-glow' : 'border-white/10'}"
 								/>
 							</div>
 						{/if}
@@ -2482,6 +2508,11 @@
 			</h2>
 			<div class="flex items-center gap-2">
 				<span
+					class="text-sm bg-amber-500/20 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-full font-bold text-center leading-tight"
+					title="מניות פלטפורמה"
+					>📈 {userShares}<br />מניות</span
+				>
+				<span
 					class="text-sm bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1.5 rounded-full font-bold text-center leading-tight"
 					>{data.items.length} פריטים<br />שפרסמת</span
 				>
@@ -2772,3 +2803,17 @@
 		</div>
 	</div>
 {/if}
+
+<style>
+	@keyframes customLocGlow {
+		0%, 100% {
+			box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.0);
+		}
+		50% {
+			box-shadow: 0 0 14px 1px rgba(250, 204, 21, 0.22);
+		}
+	}
+	.custom-loc-glow:not(:focus) {
+		animation: customLocGlow 2.8s ease-in-out infinite;
+	}
+</style>
