@@ -102,24 +102,10 @@
 	{/if}
 
 	<!-- קומת שיטת התגמול -->
-	<div class="mt-8 rounded-3xl p-6 shadow-xl relative overflow-hidden"
-		style="background: linear-gradient(135deg, #1a1035 0%, #0f172a 60%); border: 1px solid rgba(234,179,8,0.25);">
-		<div class="absolute inset-0 opacity-10 pointer-events-none"
-			style="background: radial-gradient(ellipse at 30% 50%, #eab308 0%, transparent 60%);"></div>
-		<h2 class="relative text-lg font-black text-white mb-4 flex items-center gap-2">
-			<span class="w-7 h-7 rounded-full flex items-center justify-center text-sm"
-				style="background: linear-gradient(135deg, #eab308, #f59e0b);">🏆</span>
-			שיטת התגמול
-		</h2>
-		<p class="relative text-gray-400 text-sm mb-4">הכירו את שיטת התגמול של הקהילה — איך צוברים ומקבלים יתרה.</p>
-		<a href="/about/revenue"
-			class="relative inline-flex items-center justify-center gap-2 w-full px-5 py-3 rounded-xl font-black text-sm text-[#1a1035] transition-transform hover:scale-[1.02] shadow-lg"
-			style="background: linear-gradient(135deg, #facc15, #f59e0b);">
-			לצפייה בשיטת התגמול
-			<svg class="w-4 h-4 rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-				<polyline points="9 18 15 12 9 6"/>
-			</svg>
-		</a>
+	<div class="mt-8 px-2">
+		<p class="text-gray-400 text-sm">
+			הכירו את <a href="/about/revenue" class="font-bold text-yellow-300 hover:text-yellow-200 underline underline-offset-4 decoration-yellow-400/50 hover:decoration-yellow-300 transition-colors">שיטת התגמול של הקהילה ←</a>
+		</p>
 	</div>
 
 </div>
