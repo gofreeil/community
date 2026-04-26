@@ -1,15 +1,10 @@
-import { getItemsByCategory } from '$lib/server/db';
+import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async (event) => {
-    let session = null;
-    try { session = await event.locals.auth(); } catch {}
+// אין רשימת גמ"חים כפולה — מפנים לאתר הארצי שהוא מקור האמת לרשימה.
+// הטופס להוספת גמ"ח חדש ממשיך לעבוד מכאן: /gmachim/add
+const NATIONAL_URL = 'https://national-gemach.vercel.app';
 
-    try {
-        const items = await getItemsByCategory('gmach');
-        return { items, currentUserId: session?.user?.id ?? null };
-    } catch (e) {
-        console.warn('[gmachim] load failed:', e instanceof Error ? e.message : e);
-        return { items: [], currentUserId: null };
-    }
+export const load: PageServerLoad = async () => {
+    throw redirect(308, NATIONAL_URL);
 };
