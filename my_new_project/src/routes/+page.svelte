@@ -48,12 +48,50 @@
         description?: string;
     }
 
-    const mockEvents: (CalEvent & { bgColor: string; textColor: string; subColor: string })[] = [
-        { title: '🎤 ערב שירה קהילתי', location: 'בית הכנסת הגדול', date: '2026-03-15', startTime: '20:00', endTime: '21:30', bgColor: 'bg-green-600/20', textColor: 'text-green-400', subColor: 'text-green-300/70' },
-        { title: '👨‍👩‍👧 יום משפחה בפארק', location: 'פארק השעשועים', date: '2026-03-18', startTime: '10:00', endTime: '14:00', bgColor: 'bg-blue-600/20', textColor: 'text-blue-400', subColor: 'text-blue-300/70' },
-        { title: '📚 הרצאה: מיצוי זכויות', location: 'מרכז קהילתי — זום', date: '2026-03-22', startTime: '19:30', endTime: '21:00', bgColor: 'bg-purple-600/20', textColor: 'text-purple-400', subColor: 'text-purple-300/70' },
-        { title: '🌱 סדנת גינון עירוני', location: 'גינת השכונה', date: '2026-03-28', startTime: '09:00', endTime: '11:00', bgColor: 'bg-orange-600/20', textColor: 'text-orange-400', subColor: 'text-orange-300/70' },
-    ];
+    type EventCard = CalEvent & { bgColor: string; textColor: string; subColor: string };
+
+    // מיפוי צבע → קלאסים (Tailwind safelist-friendly)
+    const COLOR_MAP: Record<string, { bg: string; text: string; sub: string }> = {
+        green:  { bg: 'bg-green-600/20',  text: 'text-green-400',  sub: 'text-green-300/70'  },
+        blue:   { bg: 'bg-blue-600/20',   text: 'text-blue-400',   sub: 'text-blue-300/70'   },
+        purple: { bg: 'bg-purple-600/20', text: 'text-purple-400', sub: 'text-purple-300/70' },
+        orange: { bg: 'bg-orange-600/20', text: 'text-orange-400', sub: 'text-orange-300/70' },
+        pink:   { bg: 'bg-pink-600/20',   text: 'text-pink-400',   sub: 'text-pink-300/70'   },
+        red:    { bg: 'bg-red-600/20',    text: 'text-red-400',    sub: 'text-red-300/70'    },
+        yellow: { bg: 'bg-yellow-600/20', text: 'text-yellow-400', sub: 'text-yellow-300/70' },
+        teal:   { bg: 'bg-teal-600/20',   text: 'text-teal-400',   sub: 'text-teal-300/70'   },
+    };
+
+    function addOneHour(time: string): string {
+        const m = /^(\d{1,2}):(\d{2})/.exec(time);
+        if (!m) return time;
+        let h = parseInt(m[1], 10) + 1;
+        if (h >= 24) h = 23;
+        return `${String(h).padStart(2, '0')}:${m[2]}`;
+    }
+
+    // רק אירועים עתידיים, ממופים לפורמט ה־UI
+    const todayIso = new Date().toISOString().split('T')[0];
+    const events: EventCard[] = $derived(
+        (data.events ?? [])
+            .filter(ev => ev.date >= todayIso)
+            .slice(0, 4)
+            .map(ev => {
+                const c = COLOR_MAP[ev.color] ?? COLOR_MAP.blue;
+                const startTime = ev.time || '00:00';
+                const titleWithIcon = ev.title.match(/^\p{Emoji}/u) ? ev.title : `${ev.icon || '📅'} ${ev.title}`;
+                return {
+                    title:     titleWithIcon,
+                    location:  ev.location,
+                    date:      ev.date,
+                    startTime,
+                    endTime:   addOneHour(startTime),
+                    bgColor:   c.bg,
+                    textColor: c.text,
+                    subColor:  c.sub,
+                };
+            })
+    );
 
     let calMenuOpen = $state<number | null>(null);
 
@@ -250,12 +288,17 @@
                             <span class="text-base">🗓️</span>
                             לוח אירועים
                         </a>
-                        <button class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-3 py-1.5 rounded-full transition-colors border border-white/20 relative z-10">
+                        <a href="/events#add" class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-3 py-1.5 rounded-full transition-colors border border-white/20 relative z-10">
                             + הוסף
-                        </button>
+                        </a>
                     </div>
                     <div class="p-3 flex-1 overflow-hidden flex flex-col justify-evenly relative">
-                        {#each mockEvents as ev, i}
+                        {#if events.length === 0}
+                            <div class="flex-1 flex items-center justify-center text-center px-2">
+                                <p class="text-gray-400 text-xs">אין אירועים קרובים<br/><a href="/events#add" class="text-yellow-400 hover:text-white underline">הצע אירוע</a></p>
+                            </div>
+                        {/if}
+                        {#each events as ev, i}
                             {@const day = ev.date.split('-')[2]}
                             {@const months = ['', 'ינו', 'פבר', 'מרץ', 'אפר', 'מאי', 'יונ', 'יול', 'אוג', 'ספט', 'אוק', 'נוב', 'דצמ']}
                             {@const month = months[parseInt(ev.date.split('-')[1])]}
@@ -329,9 +372,9 @@
                             <span class="flex-shrink-0 text-base">🗓️</span>
                             <p class="text-white font-bold">לוח אירועים</p>
                         </a>
-                        <a href="/gmachim" class="flex items-center gap-2 bg-white/5 rounded-lg p-2.5 border border-white/8 hover:bg-white/10 transition-all">
+                        <a href="https://national-gemach.vercel.app" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 bg-white/5 rounded-lg p-2.5 border border-white/8 hover:bg-white/10 transition-all">
                             <span class="flex-shrink-0 text-base">🤝</span>
-                            <p class="text-white font-bold">לוח גמחים</p>
+                            <p class="text-white font-bold">לוח גמ"חים <span class="text-amber-300/70 text-[10px] font-normal">(אתר ארצי ↗)</span></p>
                         </a>
                         <a href="/jobs" class="flex items-center gap-2 bg-white/5 rounded-lg p-2.5 border border-white/8 hover:bg-white/10 transition-all">
                             <span class="flex-shrink-0 text-base">💼</span>
@@ -355,12 +398,17 @@
                             <span class="text-base">🗓️</span>
                             לוח אירועים
                         </a>
-                        <button class="inline-flex items-center self-center bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-2 py-1 rounded-full transition-colors border border-white/20 flex-shrink-0 relative z-10">
+                        <a href="/events#add" class="inline-flex items-center self-center bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-2 py-1 rounded-full transition-colors border border-white/20 flex-shrink-0 relative z-10">
                             + הוסף
-                        </button>
+                        </a>
                     </div>
                     <div class="p-1.5 overflow-hidden flex flex-col gap-1 relative flex-1 min-h-0">
-                        {#each mockEvents as ev, i}
+                        {#if events.length === 0}
+                            <div class="flex-1 flex items-center justify-center text-center px-1">
+                                <p class="text-gray-400 text-[10px]">אין אירועים<br/><a href="/events#add" class="text-yellow-400 underline">הצע אירוע</a></p>
+                            </div>
+                        {/if}
+                        {#each events as ev, i}
                             {@const day = ev.date.split('-')[2]}
                             {@const months = ['', 'ינו', 'פבר', 'מרץ', 'אפר', 'מאי', 'יונ', 'יול', 'אוג', 'ספט', 'אוק', 'נוב', 'דצמ']}
                             {@const month = months[parseInt(ev.date.split('-')[1])]}
@@ -524,8 +572,9 @@
             </div>
 
             <!-- כיתת כוננות -->
-            <div
-                class="group relative overflow-hidden rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-orange-500/30 transition-all duration-300 hover:-translate-y-2 flex flex-col"
+            <a
+                href="/emergency-team"
+                class="group relative overflow-hidden rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-orange-500/30 transition-all duration-300 hover:-translate-y-2 flex flex-col cursor-pointer"
             >
                 <!-- Background image -->
                 <div
@@ -555,16 +604,16 @@
                         <p
                             class="text-xs mb-3 text-yellow-100 transition-colors duration-300 group-hover:text-white group-hover:font-bold"
                         >
-                            <span class="font-bold">127</span> חברים פעילים
+                            <span class="font-bold">{data.emergencyTeamCount}</span> חברים פעילים
                         </p>
-                        <button
-                            class="bg-red-600/50 hover:bg-red-600/70 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all w-full group-hover:scale-105 group-hover:shadow-xl mt-auto"
+                        <div
+                            class="bg-red-600/50 group-hover:bg-red-600/70 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all w-full group-hover:scale-105 group-hover:shadow-xl mt-auto text-center"
                         >
                             הצטרף עכשיו
-                        </button>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <!-- Mobile: 3 cards in one row, equal width -->
@@ -622,7 +671,7 @@
                 </div>
 
                 <!-- כיתת כוננות - Mobile -->
-                <div class="relative overflow-hidden rounded-lg h-full">
+                <a href="/emergency-team" class="relative overflow-hidden rounded-lg h-full block cursor-pointer">
                     <!-- Background image -->
                     <div
                         class="absolute inset-0 bg-cover bg-center"
@@ -636,15 +685,15 @@
                         <div class="text-center text-white">
                             <span class="text-xl mb-1 block">🚨</span>
                             <h3 class="text-xs font-black leading-tight">כיתת כוננות</h3>
-                            <p class="text-[10px] text-yellow-100 mt-0.5">127 חברים</p>
+                            <p class="text-[10px] text-yellow-100 mt-0.5">{data.emergencyTeamCount} חברים</p>
                         </div>
-                        <button
-                            class="bg-red-600/50 text-white px-1 py-1 rounded text-[10px] font-bold w-full"
+                        <div
+                            class="bg-red-600/50 text-white px-1 py-1 rounded text-[10px] font-bold w-full text-center"
                         >
                             הצטרף
-                        </button>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
         </div>
     </section>

@@ -427,7 +427,7 @@
         {/if}
 
         <div class="text-center mt-6">
-            <a href="/gmachim" class="text-gray-500 hover:text-white transition-colors text-sm">← חזרה ללוח גמ"חים</a>
+            <a href="https://national-gemach.vercel.app" target="_blank" rel="noopener noreferrer" class="text-gray-500 hover:text-white transition-colors text-sm">← לכל הגמ"חים באתר הארצי ↗</a>
         </div>
     </div>
 </div>
