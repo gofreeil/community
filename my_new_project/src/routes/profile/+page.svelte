@@ -2516,15 +2516,7 @@
 				הנכסים שלי
 			</h2>
 			<div class="flex items-center gap-2">
-				<span
-					class="text-sm text-amber-300 font-bold text-center leading-tight"
-					title="מניות פלטפורמה"
-					>📈 {userShares}<br />מניות</span
-				>
-				<span
-					class="text-sm bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1.5 rounded-full font-bold text-center leading-tight"
-					>{data.items.length} פריטים<br />שפרסמת</span
-				>
+			</div>
 				<svg
 					class="w-4 h-4 text-yellow-400 transition-transform duration-300 flex-shrink-0 {showMyInfo
 						? 'rotate-180'
