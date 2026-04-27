@@ -793,10 +793,10 @@
 
 		<!-- תת-כותרת היה רכז -->
 		<p class="text-lg md:text-xl font-bold text-white leading-relaxed mt-6 mb-2">
-			היה רכז שכונה פעיל וסייע לקדם את החברה <button
+			הצטרף לצוות הרכזים שלנו וסייע לשפר את החברה לחברה מתוקנת - <button
 				onclick={() => setTab('coordinator')}
 				class="inline items-baseline gap-1 font-bold text-yellow-300 hover:text-yellow-200 underline underline-offset-4 decoration-yellow-400/60 hover:decoration-yellow-300 transition-colors duration-200"
-			>לחברה מתוקנת ←</button>
+			>היה רכז שכונה ←</button>
 		</p>
 
 	</div><!-- /owners tab -->
