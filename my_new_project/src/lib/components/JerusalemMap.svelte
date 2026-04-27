@@ -479,7 +479,7 @@
     // אתחול מחדש של Leaflet כל פעם ש-mapEl משתנה (כי {#if viewMode==="map"} מנתח/בונה את ה-DOM מחדש)
     $effect(() => {
         if (!leafletReady || !leafletL || !mapEl) return;
-        if ((mapEl as any)._leaflet_id) return; // כבר מאותחל
+        if (leafletMap && (mapEl as any)._leaflet_id) return; // כבר מאותחל ותקין
 
         const center = getCoordsFor(neighborhoodState.neighborhood, neighborhoodState.city);
         leafletMap = leafletL.map(mapEl, {
