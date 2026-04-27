@@ -179,6 +179,33 @@
     let showHelpMenu = $state(false);
     let showWaves = $state(false);
     let showSuccessMessage = $state(false);
+
+    // ----- מצב מסך מלא לדסקטופ -----
+    let isFullscreen = $state(false);
+
+    function openFullscreen() {
+        if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
+            isFullscreen = true;
+        }
+    }
+    function closeFullscreen() { isFullscreen = false; }
+
+    function handleMapDblClick() {
+        if (isFullscreen) closeFullscreen();
+        else openFullscreen();
+    }
+
+    function handleKeydown(e: KeyboardEvent) {
+        if (e.key === 'Escape' && isFullscreen) closeFullscreen();
+    }
+
+    // נעילת גלילת ה-body כש-fullscreen פעיל
+    $effect(() => {
+        if (typeof document === 'undefined') return;
+        const prev = document.body.style.overflow;
+        if (isFullscreen) document.body.style.overflow = 'hidden';
+        return () => { document.body.style.overflow = prev; };
+    });
     let successMessageText = $state("");
     let isMouseOver = $state(false);
     let handRaised = $state(false);
@@ -644,7 +671,34 @@
     }
 </script>
 
-<div class="flex flex-col gap-4">
+<svelte:window onkeydown={handleKeydown} />
+
+{#if isFullscreen}
+    <!-- שכבה כהה מאחורי המסך המלא -->
+    <button
+        type="button"
+        aria-label="סגור מסך מלא"
+        onclick={closeFullscreen}
+        class="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm cursor-default"
+    ></button>
+{/if}
+
+<div
+    class={isFullscreen
+        ? 'fixed inset-2 md:inset-4 z-50 flex flex-col gap-4 bg-[#070b14] rounded-2xl shadow-2xl shadow-purple-500/30 overflow-y-auto p-4'
+        : 'flex flex-col gap-4'}
+>
+    {#if isFullscreen}
+        <button
+            type="button"
+            onclick={closeFullscreen}
+            aria-label="סגור מסך מלא"
+            title="סגור (Esc)"
+            class="absolute top-3 left-3 z-[60] w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white text-xl font-bold flex items-center justify-center transition-all backdrop-blur-sm border border-white/20"
+        >
+            ✕
+        </button>
+    {/if}
     <div class="flex flex-col gap-4">
         <!-- כותרת שכונה - הוסרה לדף הראשי -->
 
@@ -745,8 +799,14 @@
         {#if viewMode === "map"}
             <!-- תצוגת מפה -->
             <div
-                class="w-full h-[350px] md:h-[450px] overflow-hidden relative"
+                class={isFullscreen
+                    ? 'w-full flex-1 min-h-[60vh] overflow-hidden relative'
+                    : 'w-full h-[350px] md:h-[450px] overflow-hidden relative'}
                 style="border-radius: 20px;"
+                ondblclick={handleMapDblClick}
+                role="button"
+                tabindex="-1"
+                aria-label="לחץ פעמיים לפתיחה במסך מלא"
             >
                 <!-- אנימציית גלים -->
                 {#if showWaves}
@@ -821,17 +881,17 @@
                     {/each}
                 </div>
 
-                <!-- המפה היא רקע ויזואלי. נעולה כדי שהמרקרים יישארו מסונכרנים אליה. -->
+                <!-- המפה: רקע ויזואלי במצב רגיל; אינטראקטיבית במסך מלא -->
                 <iframe
                     title="מפת {neighborhoodState.neighborhood}, {neighborhoodState.city}"
                     width="100%"
                     height="100%"
-                    style="border:0; pointer-events: none;"
+                    style={isFullscreen ? 'border:0' : 'border:0; pointer-events: none;'}
                     src={mapUrl}
                     allowfullscreen
                     loading="lazy"
                     referrerpolicy="no-referrer-when-downgrade"
-                    aria-hidden="true"
+                    aria-hidden={!isFullscreen}
                 >
                 </iframe>
 
