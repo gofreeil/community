@@ -998,7 +998,7 @@
                 {/if}
 
                 <!-- מפת Leaflet — מרקרים אמיתיים שזזים יחד עם המפה -->
-                <div bind:this={mapEl} class="w-full h-full" aria-label="מפת השכונה"></div>
+                <div bind:this={mapEl} class="w-full h-full relative z-0" aria-label="מפת השכונה"></div>
 
                 <!-- Badge לפריטים חדשים בשכונה -->
                 {#if neighborhoodDbItems.length > 0}
