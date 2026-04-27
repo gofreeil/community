@@ -188,6 +188,12 @@
         isFullscreen = true;
     }
     function closeFullscreen() { isFullscreen = false; }
+    function zoomIn() {
+        if (leafletMap) leafletMap.zoomIn();
+    }
+    function zoomOut() {
+        if (leafletMap) leafletMap.zoomOut();
+    }
 
     function handleMapDblClick() {
         if (isFullscreen) closeFullscreen();
@@ -845,6 +851,27 @@
         >
             ✕
         </button>
+        <!-- Zoom Buttons -->
+        <div class="absolute top-3 right-3 z-[60] flex flex-col gap-2">
+            <button
+                type="button"
+                onclick={zoomIn}
+                aria-label="הגדל"
+                title="הגדל (Zoom In)"
+                class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white text-lg font-bold flex items-center justify-center transition-all backdrop-blur-sm border border-white/20 hover:scale-110"
+            >
+                +
+            </button>
+            <button
+                type="button"
+                onclick={zoomOut}
+                aria-label="הקטן"
+                title="הקטן (Zoom Out)"
+                class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white text-lg font-bold flex items-center justify-center transition-all backdrop-blur-sm border border-white/20 hover:scale-110"
+            >
+                −
+            </button>
+        </div>
     {/if}
     <div class="flex flex-col gap-4">
         <!-- כותרת שכונה - הוסרה לדף הראשי -->
