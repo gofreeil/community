@@ -588,11 +588,13 @@
 
         // אנימציה של רשימה פעם אחת בלבד! מצוין כמשיכת תשומת לב
         listAnimationTimeout = setTimeout(() => {
-            // בצע רק אם המשתמש לא לחץ או שינה לפני כן
+            // בצע רק אם המשתמש לא לחץ או שינה לפני כן, והעכבר לא על המפה, והמפה לא במסך מלא
             if (
                 !hasShownListAnimation &&
                 !userInteracted &&
                 !showAddMenu &&
+                !isMouseOver &&
+                !isFullscreen &&
                 viewMode === "map"
             ) {
                 hasShownListAnimation = true;
