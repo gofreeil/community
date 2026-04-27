@@ -2603,7 +2603,6 @@
 			{/if}
 		{/if}
 	</div>
-</div>
 
 {#if showRingTooltip}
 	<div
