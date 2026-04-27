@@ -300,15 +300,17 @@
                         <div class="flex flex-col gap-2" onclick={(e) => e.stopPropagation()}>
                             {#if item.phone}
                                 <div class="flex gap-2">
-                                    <a href="tel:{item.phone}"
+                                    <button type="button"
+                                        onclick={() => window.location.href = `tel:${item.phone}`}
                                         class="flex-1 text-center py-2 rounded-xl bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white text-sm font-bold transition-all border border-blue-500/30">
                                         📞 {item.phone}
-                                    </a>
-                                    <a href={waLink(item.phone)} target="_blank" rel="noopener noreferrer"
+                                    </button>
+                                    <button type="button"
+                                        onclick={() => window.open(waLink(item.phone), '_blank')}
                                         aria-label="שלח הודעת וואטסאפ (נפתח בחלון חדש)"
                                         class="px-4 py-2 rounded-xl bg-green-600/20 hover:bg-green-600 text-green-300 hover:text-white text-sm font-bold transition-all border border-green-500/30">
                                         💬
-                                    </a>
+                                    </button>
                                 </div>
                             {/if}
 
