@@ -1592,6 +1592,7 @@
     :global(.jmap-pin-wrap) {
         background: transparent !important;
         border: 0 !important;
+        z-index: 20 !important;
     }
     :global(.jmap-pin) {
         text-align: center;

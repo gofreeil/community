@@ -245,7 +245,8 @@
       "PowerShell(Get-NetTCPConnection -State Listen | Where-Object { $_.LocalPort -in 80,443,3000,4173,5173,5174,5175,5176,8080 } | Select-Object LocalPort, OwningProcess | Format-Table -AutoSize)",
       "Bash(gh --version)",
       "Bash(curl -fsS -o /dev/null -w \"%{http_code}\" http://localhost:1337/api/items)",
-      "Bash(curl -s \"http://localhost:1337/api/items?filters%5Bcategory%5D%5B%24eq%5D=giveaway&pagination%5Blimit%5D=5\")"
+      "Bash(curl -s \"http://localhost:1337/api/items?filters%5Bcategory%5D%5B%24eq%5D=giveaway&pagination%5Blimit%5D=5\")",
+      "Bash(vercel ls *)"
     ]
   }
 }
