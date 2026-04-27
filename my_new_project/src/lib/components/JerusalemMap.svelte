@@ -696,7 +696,7 @@
 
 <div
     class={isFullscreen
-        ? 'fixed inset-2 md:inset-4 z-50 flex flex-col gap-4 bg-[#070b14] rounded-2xl shadow-2xl shadow-purple-500/30 overflow-y-auto p-4'
+        ? 'jmap-fullscreen fixed inset-2 md:inset-4 z-50 flex flex-col gap-2 bg-[#070b14] rounded-2xl shadow-2xl shadow-purple-500/30 overflow-hidden p-3'
         : 'flex flex-col gap-4'}
 >
     {#if isFullscreen}
@@ -751,8 +751,12 @@
     <div
         role="region"
         aria-label="Map and List View Container"
-        class="relative w-full border-8 md:border-4 border-purple-600 shadow-2xl bg-[#0f172a] mb-8 transition-all duration-700"
-        style="border-radius: 24px; transform-style: preserve-3d;"
+        class={isFullscreen
+            ? 'relative w-full border-4 border-purple-600 shadow-2xl bg-[#0f172a] flex flex-col jmap-mc-fullscreen'
+            : 'relative w-full border-8 md:border-4 border-purple-600 shadow-2xl bg-[#0f172a] mb-8 transition-all duration-700'}
+        style={isFullscreen
+            ? 'border-radius: 24px; transform-style: preserve-3d; height: calc(100vh - 220px); min-height: 50vh;'
+            : 'border-radius: 24px; transform-style: preserve-3d;'}
         class:flipping-container={isFlipping}
         onmouseenter={handleMouseEnter}
         onmouseleave={handleMouseLeave}
@@ -811,7 +815,7 @@
             <!-- תצוגת מפה -->
             <div
                 class={isFullscreen
-                    ? 'w-full flex-1 min-h-[60vh] overflow-hidden relative'
+                    ? 'w-full h-full overflow-hidden relative'
                     : 'w-full h-[350px] md:h-[450px] overflow-hidden relative'}
                 style="border-radius: 20px; touch-action: manipulation;"
                 ondblclick={handleMapDblClick}
@@ -1507,6 +1511,34 @@
 {/if}
 
 <style>
+    /* ----- מצב מסך מלא: כפתורי קטגוריה קומפקטיים + מפה ממלאת ----- */
+    :global(.jmap-fullscreen) .category-buttons-container {
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        gap: 0.375rem !important;
+        padding: 0.25rem 0.5rem !important;
+    }
+    :global(.jmap-fullscreen) .map-category-button {
+        flex: 0 0 auto !important;
+        min-width: auto !important;
+        padding: 0.3rem 0.7rem !important;
+        font-size: 0.75rem !important;
+        font-weight: 700 !important;
+    }
+    :global(.jmap-fullscreen) .map-category-button .icon {
+        font-size: 0.95rem !important;
+    }
+    /* מיכל המפה ממלא את כל הגובה הנותר במסך מלא */
+    :global(.jmap-mc-fullscreen) {
+        flex: 1 1 0% !important;
+        min-height: 0 !important;
+    }
+    :global(.jmap-mc-fullscreen) > [class*="overflow-hidden"][role="button"] {
+        flex: 1 1 0% !important;
+        height: auto !important;
+        min-height: 0 !important;
+    }
+
     @keyframes shimmer {
         0% {
             transform: translateX(-100%);
