@@ -30,6 +30,16 @@
             ],
         },
         {
+            id: "attractions",
+            label: "שירות ציבורי",
+            icon: "🎡",
+            items: [
+                { id: "attraction-park", label: "פארק שעשועים מקומי" },
+                { id: "attraction-museum", label: "מוזיאון המדע לילדים" },
+                { id: "attraction-zoo", label: "פינת חי קהילתית" },
+            ],
+        },
+        {
             id: "giveaway",
             label: "למסירה",
             icon: "📦",
@@ -139,16 +149,6 @@
             items: [
                 { id: "match-offer", label: "הצעה לשידוך איכותי" },
                 { id: "singles-meeting", label: "מפגש פנויים פנויות" },
-            ],
-        },
-        {
-            id: "attractions",
-            label: "שירות ציבורי",
-            icon: "🎡",
-            items: [
-                { id: "attraction-park", label: "פארק שעשועים מקומי" },
-                { id: "attraction-museum", label: "מוזיאון המדע לילדים" },
-                { id: "attraction-zoo", label: "פינת חי קהילתית" },
             ],
         },
         {
