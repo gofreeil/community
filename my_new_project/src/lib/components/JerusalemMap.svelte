@@ -194,15 +194,14 @@
         else openFullscreen();
     }
 
-    // זיהוי double-tap לנייד (כי dblclick לא תמיד נשלח במובייל)
+    // זיהוי double-tap לנייד וטאבלט (כי dblclick לא תמיד נשלח במובייל)
     let lastTapTs = 0;
     function handleMapTouchEnd(e: TouchEvent) {
         const now = Date.now();
-        if (now - lastTapTs < 350) {
-            e.preventDefault();
+        if (e.touches.length === 0 && now - lastTapTs < 350) {
             handleMapDblClick();
             lastTapTs = 0;
-        } else {
+        } else if (e.touches.length === 0) {
             lastTapTs = now;
         }
     }
