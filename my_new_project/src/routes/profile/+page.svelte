@@ -736,13 +736,23 @@
 						👑 ניהול
 					</a>
 				{/if}
-				<button
-					onclick={() => signOut({ callbackUrl: "/" })}
-					class="text-sm font-bold text-gray-400 hover:text-red-400 transition-colors cursor-pointer px-4 py-2 rounded-xl hover:bg-red-500/10 border border-white/10 hover:border-red-500/30"
-					title={tFn("logout_btn")}
-				>
-					{tFn("logout_btn")}
-				</button>
+				{#if data.user}
+					<button
+						onclick={() => signOut({ callbackUrl: "/" })}
+						class="text-sm font-bold text-gray-400 hover:text-red-400 transition-colors cursor-pointer px-4 py-2 rounded-xl hover:bg-red-500/10 border border-white/10 hover:border-red-500/30"
+						title={tFn("logout_btn")}
+					>
+						{tFn("logout_btn")}
+					</button>
+				{:else}
+					<a
+						href="/login?redirect=/profile"
+						class="text-sm font-bold text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 px-5 py-2.5 rounded-xl shadow-lg transition-all duration-200 hover:-translate-y-0.5 flex items-center gap-1.5"
+						title="כניסה לחשבון"
+					>
+						🔓 כניסה
+					</a>
+				{/if}
 			</div>
 		</div>
 		<!-- נייד: שם(ימין)|אווטר(מרכז)|ארנק קטן(שמאל) | דסקטופ: RTL אווטר|ארנק|שם -->

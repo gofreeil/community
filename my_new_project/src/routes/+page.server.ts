@@ -1,4 +1,4 @@
-import { getAllItems, getUserById } from '$lib/server/db';
+import { getAllItems, getUserById, getEvents } from '$lib/server/db';
 import { isAdmin } from '$lib/server/auth';
 import type { PageServerLoad } from './$types';
 
@@ -18,17 +18,35 @@ export const load: PageServerLoad = async (event) => {
         } catch {}
     }
 
-    try {
-        const dbItems = await getAllItems();
-        return {
-            dbItems,
-            userNeighborhood,
-            userCity,
-            isAdmin: isAdmin(session),
-            userRole: session?.user?.role ?? 'user',
-        };
-    } catch (e) {
-        console.warn('[home] getAllItems failed:', e instanceof Error ? e.message : e);
-        return { dbItems: [], userNeighborhood, userCity, isAdmin: false, userRole: 'user' as const };
+    const [dbItemsRes, eventsRes] = await Promise.allSettled([
+        getAllItems(),
+        getEvents(userNeighborhood ?? undefined),
+    ]);
+
+    const dbItems = dbItemsRes.status === 'fulfilled' ? dbItemsRes.value : [];
+    const events  = eventsRes.status === 'fulfilled'  ? eventsRes.value  : [];
+
+    if (dbItemsRes.status === 'rejected') {
+        console.warn('[home] getAllItems failed:', dbItemsRes.reason instanceof Error ? dbItemsRes.reason.message : dbItemsRes.reason);
     }
+    if (eventsRes.status === 'rejected') {
+        console.warn('[home] getEvents failed:', eventsRes.reason instanceof Error ? eventsRes.reason.message : eventsRes.reason);
+    }
+
+    // ספירות שכונתיות לכפתורים בדף הבית (מתוך dbItems שכבר נטענו)
+    const inMyNeighborhood = (i: { neighborhood: string }) =>
+        !userNeighborhood || i.neighborhood === userNeighborhood;
+    const emergencyTeamCount = dbItems.filter(i => i.category === 'emergency_team' && inMyNeighborhood(i)).length;
+    const vaadMembersCount   = dbItems.filter(i => i.category === 'vaad_member'   && inMyNeighborhood(i)).length;
+
+    return {
+        dbItems,
+        events,
+        userNeighborhood,
+        userCity,
+        emergencyTeamCount,
+        vaadMembersCount,
+        isAdmin: isAdmin(session),
+        userRole: session?.user?.role ?? 'user',
+    };
 };
