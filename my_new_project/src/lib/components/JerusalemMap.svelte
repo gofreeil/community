@@ -763,7 +763,10 @@
     >
         <!-- כפתור מעבר תצוגה - משולש מקופל בפינה -->
         <button
-            onclick={() => handleViewToggle(false)}
+            onclick={() => {
+                if (isFullscreen || isMouseOver) return;
+                handleViewToggle(false);
+            }}
             class="page-corner absolute top-0 left-0 z-30 transition-all duration-500 hover:scale-110"
             class:flipping={isFlipping}
             class:auto-switching={isAutoSwitching}
