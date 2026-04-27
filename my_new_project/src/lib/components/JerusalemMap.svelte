@@ -32,11 +32,7 @@
             id: "giveaway",
             label: "למסירה",
             icon: "📦",
-            items: [
-                { id: "giveaway-sofa", label: "ספה למסירה" },
-                { id: "giveaway-fridge", label: "מקרר במצב מצוין" },
-                { id: "giveaway-books", label: "ארגז ספרי קודש" },
-            ],
+            items: [],
         },
         {
             id: "business",

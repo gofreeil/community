@@ -1,20 +1,39 @@
 <script lang="ts">
     import type { ActionData, PageData } from './$types';
     import { categoryConfig } from '$lib/categoryFields';
+    import { citiesAndNeighborhoods } from '$lib/neighborhoodsData';
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
 
     const conditions = categoryConfig.giveaway.fields.find(f => f.key === 'condition')?.options ?? [];
+    const cities = Object.keys(citiesAndNeighborhoods).sort();
 
     let condition = $state<string>('');
     let label = $state('');
     let description = $state('');
+
+    // הערכים ההתחלתיים נטענים פעם אחת מ-data.defaults; המשתמש יכול לערוך
+    const { name: defName, phone: defPhone, neighborhood: defNeighborhood, city: defCity } = data.defaults;
+    let city         = $state(defCity);
+    let neighborhood = $state(defNeighborhood);
+    let contact      = $state(defName);
+    let phone        = $state(defPhone);
+
+    let neighborhoodOptions = $derived(citiesAndNeighborhoods[city] ?? []);
+
+    $effect(() => {
+        if (city && !neighborhoodOptions.includes(neighborhood)) {
+            neighborhood = '';
+        }
+    });
 
     let labelLen = $derived(label.length);
     let descLen  = $derived(description.length);
 
     const LABEL_MAX = 60;
     const DESC_MAX = 1500;
+
+    const hasDefaults = !!(defName || defPhone || defNeighborhood || defCity);
 </script>
 
 <svelte:head>
@@ -36,6 +55,12 @@
             </div>
         {:else}
             <form method="POST" class="rounded-2xl bg-[#0f172a] border border-white/10 p-6 space-y-5">
+
+                {#if hasDefaults}
+                    <div class="rounded-lg bg-emerald-900/20 border border-emerald-500/20 px-3 py-2 text-emerald-300 text-xs">
+                        💡 השדות שלמטה הוזנו מראש מהפרופיל שלך — אפשר לערוך אם צריך
+                    </div>
+                {/if}
 
                 <!-- Section 1: העיקר -->
                 <div class="space-y-4">
@@ -103,32 +128,89 @@
                     </div>
                 </div>
 
-                <!-- Section 2: איסוף ויצירת קשר -->
+                <!-- Section 2: מיקום -->
                 <div class="space-y-4 pt-3 border-t border-white/5">
                     <h2 class="text-orange-400 text-xs font-black uppercase tracking-wider flex items-center gap-2">
                         <span class="w-1.5 h-5 bg-orange-500 rounded-full"></span>
-                        איסוף ויצירת קשר
+                        מיקום (לאיתור הפריט במפה)
                     </h2>
 
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label for="city" class="text-white text-sm font-bold mb-1 block">עיר *</label>
+                            <select
+                                id="city"
+                                name="city"
+                                required
+                                bind:value={city}
+                                class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-orange-500/50 focus:outline-none transition-colors"
+                            >
+                                <option value="">בחר עיר</option>
+                                {#each cities as c}
+                                    <option value={c}>{c}</option>
+                                {/each}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="neighborhood" class="text-white text-sm font-bold mb-1 block">שכונה *</label>
+                            <select
+                                id="neighborhood"
+                                name="neighborhood"
+                                required
+                                bind:value={neighborhood}
+                                disabled={!city}
+                                class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-orange-500/50 focus:outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <option value="">{city ? 'בחר שכונה' : 'בחר עיר קודם'}</option>
+                                {#each neighborhoodOptions as n}
+                                    <option value={n}>{n}</option>
+                                {/each}
+                            </select>
+                        </div>
+                    </div>
+
                     <div>
-                        <label for="address" class="text-white text-sm font-bold mb-1 block">כתובת לאיסוף</label>
+                        <label for="address" class="text-white text-sm font-bold mb-1 block">כתובת לאיסוף (אופציונלי)</label>
                         <input
                             id="address"
                             name="address"
-                            placeholder="לדוגמה: ליד מכולת המרכז, קרית משה"
+                            placeholder="לדוגמה: ליד מכולת המרכז"
                             class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-orange-500/50 focus:outline-none transition-colors"
                         />
                         <p class="text-gray-500 text-xs mt-1">תיאור חופשי — לא חובה כתובת מדויקת</p>
                     </div>
+                </div>
+
+                <!-- Section 3: יצירת קשר -->
+                <div class="space-y-4 pt-3 border-t border-white/5">
+                    <h2 class="text-orange-400 text-xs font-black uppercase tracking-wider flex items-center gap-2">
+                        <span class="w-1.5 h-5 bg-orange-500 rounded-full"></span>
+                        יצירת קשר
+                    </h2>
 
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label for="contact" class="text-white text-sm font-bold mb-1 block">שם *</label>
-                            <input id="contact" name="contact" required placeholder="שמך" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-orange-500/50 focus:outline-none transition-colors" />
+                            <input
+                                id="contact"
+                                name="contact"
+                                required
+                                bind:value={contact}
+                                placeholder="שמך"
+                                class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-orange-500/50 focus:outline-none transition-colors"
+                            />
                         </div>
                         <div>
                             <label for="phone" class="text-white text-sm font-bold mb-1 block">טלפון *</label>
-                            <input id="phone" name="phone" type="tel" required placeholder="05X-XXXXXXX" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-orange-500/50 focus:outline-none transition-colors" />
+                            <input
+                                id="phone"
+                                name="phone"
+                                type="tel"
+                                required
+                                bind:value={phone}
+                                placeholder="05X-XXXXXXX"
+                                class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-orange-500/50 focus:outline-none transition-colors"
+                            />
                         </div>
                     </div>
                 </div>

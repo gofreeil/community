@@ -1,12 +1,36 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { createItem } from '$lib/server/db';
+import { createItem, getUserById } from '$lib/server/db';
 import { categoryConfig } from '$lib/categoryFields';
 
 export const load: PageServerLoad = async (event) => {
     let session = null;
     try { session = await event.locals.auth(); } catch {}
-    return { userId: session?.user?.id ?? null };
+
+    if (!session?.user?.id) {
+        return {
+            userId: null,
+            defaults: { name: '', phone: '', neighborhood: '', city: '' },
+        };
+    }
+
+    let defaults = { name: '', phone: '', neighborhood: '', city: '' };
+    try {
+        const jwt = event.cookies.get('strapi_jwt');
+        const user = await getUserById(session.user.id, jwt);
+        if (user) {
+            defaults = {
+                name:         user.name ?? user.nickname ?? '',
+                phone:        user.phone ?? '',
+                neighborhood: user.neighborhood ?? '',
+                city:         user.city ?? '',
+            };
+        }
+    } catch (e) {
+        console.warn('[giveaways/add] failed to load user defaults:', e instanceof Error ? e.message : e);
+    }
+
+    return { userId: session.user.id, defaults };
 };
 
 export const actions: Actions = {
@@ -15,14 +39,16 @@ export const actions: Actions = {
         try { session = await event.locals.auth(); } catch {}
         if (!session?.user?.id) throw redirect(302, '/login?redirect=/giveaways/add');
 
-        const fd          = await event.request.formData();
-        const label       = fd.get('label')?.toString().trim()       ?? '';
-        const condition   = fd.get('condition')?.toString().trim()   ?? '';
-        const description = fd.get('description')?.toString().trim() ?? '';
-        const address     = fd.get('address')?.toString().trim()     ?? '';
-        const contact     = fd.get('contact')?.toString().trim()     ?? '';
-        const phone       = fd.get('phone')?.toString().trim()       ?? '';
-        const tags        = fd.get('tags')?.toString().trim()        ?? '';
+        const fd           = await event.request.formData();
+        const label        = fd.get('label')?.toString().trim()        ?? '';
+        const condition    = fd.get('condition')?.toString().trim()    ?? '';
+        const description  = fd.get('description')?.toString().trim()  ?? '';
+        const address      = fd.get('address')?.toString().trim()      ?? '';
+        const contact      = fd.get('contact')?.toString().trim()      ?? '';
+        const phone        = fd.get('phone')?.toString().trim()        ?? '';
+        const tags         = fd.get('tags')?.toString().trim()         ?? '';
+        const neighborhood = fd.get('neighborhood')?.toString().trim() ?? '';
+        const city         = fd.get('city')?.toString().trim()         ?? '';
 
         const validConditions = categoryConfig.giveaway.fields.find(f => f.key === 'condition')?.options ?? [];
 
@@ -32,22 +58,26 @@ export const actions: Actions = {
         if (!description)                        return fail(400, { error: 'יש לכתוב תיאור' });
         if (!contact)                            return fail(400, { error: 'יש למלא שם ליצירת קשר' });
         if (!phone)                              return fail(400, { error: 'יש למלא טלפון ליצירת קשר' });
+        if (!city)                               return fail(400, { error: 'יש לבחור עיר' });
+        if (!neighborhood)                       return fail(400, { error: 'יש לבחור שכונה' });
 
         try {
             await createItem({
-                category:    'giveaway',
+                category:     'giveaway',
                 label,
                 description,
                 contact,
                 phone,
                 address,
-                icon:        categoryConfig.giveaway.icon,
-                color:       categoryConfig.giveaway.color,
+                neighborhood,
+                city,
+                icon:         categoryConfig.giveaway.icon,
+                color:        categoryConfig.giveaway.color,
                 extra_fields: {
                     condition,
                     tags: tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : [],
                 },
-                user_id:     session.user.id,
+                user_id:      session.user.id,
             });
         } catch (e) {
             console.error('[giveaways] createItem failed:', e);
