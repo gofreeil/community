@@ -26,6 +26,7 @@ export interface DbItem {
     status: string;
     user_id: string | null;
     created_at: string;
+    view_count: number;
 }
 
 export interface CreateItemData {
@@ -116,6 +117,7 @@ interface StrapiItem {
     extra_fields: Record<string, unknown> | null;
     status1: string | null;
     user_id: string | null;
+    view_count: number | null;
     createdAt: string;
 }
 
@@ -177,6 +179,7 @@ function mapStrapiItem(item: StrapiItem): DbItem {
         status:       item.status1      ?? 'active',
         user_id:      item.user_id      ?? null,
         created_at:   item.createdAt    ?? '',
+        view_count:   item.view_count   ?? 0,
     };
 }
 
@@ -311,6 +314,21 @@ export async function resolveItem(documentId: string, resolverPhone: string): Pr
             description: `[הוסר על ידי הפורסם — טלפון מחזיר: ${resolverPhone}]`,
         },
     });
+}
+
+export async function incrementItemViewCount(documentId: string): Promise<void> {
+    try {
+        const item = await getDbItemById(documentId);
+        if (item) {
+            await strapiPut(`/api/items/${documentId}`, {
+                data: {
+                    view_count: (item.view_count ?? 0) + 1,
+                },
+            });
+        }
+    } catch (e) {
+        console.warn('[db] incrementItemViewCount failed:', e);
+    }
 }
 
 export async function getResolvedCount(category: string): Promise<number> {

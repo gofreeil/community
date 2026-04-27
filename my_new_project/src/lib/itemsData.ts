@@ -11,6 +11,7 @@ export interface Item {
     icon: string;
     color: string;
     image?: string;
+    viewCount?: number;
 }
 
 export const items: Item[] = [

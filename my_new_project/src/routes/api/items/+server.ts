@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { createItem, getAllItems } from '$lib/server/db';
+import { createItem, getAllItems, incrementItemViewCount } from '$lib/server/db';
 import { categoryConfig, getCategoryIcon, getCategoryColor } from '$lib/categoryFields';
 import { Resend } from 'resend';
 import type { RequestHandler } from './$types';
@@ -96,4 +96,27 @@ export const POST: RequestHandler = async (event) => {
     }
 
     return json({ success: true, id: item.id });
+};
+
+// ---- PATCH: increment view count ----
+export const PATCH: RequestHandler = async (event) => {
+    let body: Record<string, unknown>;
+    try {
+        body = await event.request.json();
+    } catch {
+        return json({ success: false, message: 'נתונים לא תקינים' }, { status: 400 });
+    }
+
+    const { id } = body as { id: string };
+    if (!id) {
+        return json({ success: false, message: 'חסר מזהה הפריט' }, { status: 400 });
+    }
+
+    try {
+        await incrementItemViewCount(id);
+        return json({ success: true });
+    } catch (e) {
+        console.error('Failed to increment view count:', e);
+        return json({ success: false, message: 'שגיאה בעדכון ספירה' }, { status: 500 });
+    }
 };

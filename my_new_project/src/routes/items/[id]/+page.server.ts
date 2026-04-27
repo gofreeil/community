@@ -26,6 +26,7 @@ export const load: PageServerLoad = async ({ params }) => {
                 city:        dbItem.city,
                 extraFields,
                 isUserSubmitted: true,
+                viewCount:   dbItem.view_count,
             },
         };
     }
@@ -40,6 +41,7 @@ export const load: PageServerLoad = async ({ params }) => {
                 city:         undefined as string | undefined,
                 extraFields:  {} as Record<string, unknown>,
                 isUserSubmitted: false,
+                viewCount:    staticItem.viewCount ?? 0,
             },
         };
     }

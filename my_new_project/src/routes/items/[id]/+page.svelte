@@ -13,8 +13,19 @@
 
     let mounted = $state(false);
 
-    onMount(() => {
+    onMount(async () => {
         mounted = true;
+        if (item?.id) {
+            try {
+                await fetch('/api/items', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: item.id }),
+                });
+            } catch (e) {
+                console.warn('Failed to increment view count:', e);
+            }
+        }
     });
 
     function goBack() {
@@ -131,6 +142,25 @@
                                     ></span>
                                     מיקום ופרטי קשר
                                 </h2>
+                                <div
+                                    class="mb-4 bg-white/5 p-4 rounded-xl border border-white/5 flex items-center gap-4"
+                                >
+                                    <span class="text-2xl text-yellow-400"
+                                        >👁️</span
+                                    >
+                                    <div>
+                                        <p
+                                            class="text-xs text-gray-400 uppercase font-bold tracking-wider"
+                                        >
+                                            תצפיות
+                                        </p>
+                                        <p
+                                            class="text-white font-medium"
+                                        >
+                                            {item?.viewCount ?? 0} אנשים ראו את הפריט הזה
+                                        </p>
+                                    </div>
+                                </div>
                                 <div
                                     class="grid grid-cols-1 sm:grid-cols-2 gap-4"
                                 >

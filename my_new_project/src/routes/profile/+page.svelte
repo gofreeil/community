@@ -2582,7 +2582,7 @@
 											{item.description}
 										</p>
 									{/if}
-									<div class="flex items-center gap-3 mt-1.5">
+									<div class="flex items-center gap-3 mt-1.5 flex-wrap">
 										{#if item.neighborhood}
 											<span
 												class="text-purple-400/70 text-xs"
@@ -2594,6 +2594,13 @@
 												item.created_at,
 											).toLocaleDateString("he-IL")}
 										</span>
+										{#if item.view_count !== undefined}
+											<span
+												class="text-yellow-400/70 text-xs flex items-center gap-1"
+											>
+												👁️ {item.view_count} ביקורים
+											</span>
+										{/if}
 									</div>
 								</div>
 							</div>
