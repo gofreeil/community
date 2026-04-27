@@ -199,11 +199,13 @@
         </div>
     </div>
 
-    <a
-        href="/giveaways/add"
-        class="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 inline-flex items-center gap-2 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold px-6 py-3 rounded-full shadow-2xl shadow-orange-500/30 transition-all hover:scale-105"
-    >
-        <span class="text-lg">➕</span>
-        פרסם פריט
-    </a>
+    {#if filtered.length > 0}
+        <a
+            href="/giveaways/add"
+            class="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 inline-flex items-center gap-2 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold px-6 py-3 rounded-full shadow-2xl shadow-orange-500/30 transition-all hover:scale-105"
+        >
+            <span class="text-lg">➕</span>
+            פרסם פריט
+        </a>
+    {/if}
 </div>
