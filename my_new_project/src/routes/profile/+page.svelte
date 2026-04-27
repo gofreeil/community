@@ -2515,9 +2515,7 @@
 				>
 				הנכסים שלי
 			</h2>
-			<div class="flex items-center gap-2">
-			</div>
-				<svg
+			<svg
 					class="w-4 h-4 text-yellow-400 transition-transform duration-300 flex-shrink-0 {showMyInfo
 						? 'rotate-180'
 						: ''}"
