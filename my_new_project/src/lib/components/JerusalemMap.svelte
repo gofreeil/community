@@ -821,17 +821,31 @@
                     {/each}
                 </div>
 
+                <!-- המפה היא רקע ויזואלי. נעולה כדי שהמרקרים יישארו מסונכרנים אליה. -->
                 <iframe
                     title="מפת {neighborhoodState.neighborhood}, {neighborhoodState.city}"
                     width="100%"
                     height="100%"
-                    style="border:0"
+                    style="border:0; pointer-events: none;"
                     src={mapUrl}
                     allowfullscreen
                     loading="lazy"
                     referrerpolicy="no-referrer-when-downgrade"
+                    aria-hidden="true"
                 >
                 </iframe>
+
+                <!-- כפתור "פתח ב-Google Maps" — למשתמש שרוצה לחקור את המפה בעצמו -->
+                <a
+                    href="https://www.google.com/maps/search/?api=1&query={encodeURIComponent((neighborhoodState.neighborhood ?? '') + ', ' + (neighborhoodState.city ?? '') + ', ישראל')}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="פתח את המפה ב-Google Maps"
+                    title="פתח את המפה ב-Google Maps"
+                    class="absolute top-4 left-4 z-20 bg-white/90 backdrop-blur-sm text-gray-800 text-xs font-bold px-3 py-1.5 rounded-full shadow-lg border border-white hover:bg-white transition-all hover:scale-105"
+                >
+                    🗺️ פתח ב-Google Maps
+                </a>
 
                 <!-- Badge לפריטים חדשים בשכונה -->
                 {#if neighborhoodDbItems.length > 0}
