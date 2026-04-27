@@ -81,7 +81,7 @@
                             maxlength={LABEL_MAX}
                             bind:value={label}
                             placeholder="לדוגמה: ספה דו-מושבית במצב מצוין"
-                            class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-orange-500/50 focus:outline-none transition-colors"
+                            class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:border-orange-500/50 focus:outline-none transition-colors"
                         />
                     </div>
 
@@ -112,7 +112,7 @@
                             maxlength={DESC_MAX}
                             bind:value={description}
                             placeholder="תאר את הפריט: גודל, צבע, ניסיון שימוש, סיבת המסירה..."
-                            class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-orange-500/50 focus:outline-none transition-colors resize-none"
+                            class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:border-orange-500/50 focus:outline-none transition-colors resize-none"
                         ></textarea>
                     </div>
 
@@ -122,7 +122,7 @@
                             id="tags"
                             name="tags"
                             placeholder="ריהוט, סלון, אורן (מופרדות בפסיקים)"
-                            class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-orange-500/50 focus:outline-none transition-colors"
+                            class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:border-orange-500/50 focus:outline-none transition-colors"
                         />
                         <p class="text-gray-500 text-xs mt-1">תגיות עוזרות לאחרים למצוא את הפריט בחיפוש</p>
                     </div>
@@ -175,7 +175,7 @@
                             id="address"
                             name="address"
                             placeholder="לדוגמה: ליד מכולת המרכז"
-                            class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-orange-500/50 focus:outline-none transition-colors"
+                            class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:border-orange-500/50 focus:outline-none transition-colors"
                         />
                         <p class="text-gray-500 text-xs mt-1">תיאור חופשי — לא חובה כתובת מדויקת</p>
                     </div>
@@ -197,7 +197,7 @@
                                 required
                                 bind:value={contact}
                                 placeholder="שמך"
-                                class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-orange-500/50 focus:outline-none transition-colors"
+                                class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:border-orange-500/50 focus:outline-none transition-colors"
                             />
                         </div>
                         <div>
@@ -209,7 +209,7 @@
                                 required
                                 bind:value={phone}
                                 placeholder="05X-XXXXXXX"
-                                class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-orange-500/50 focus:outline-none transition-colors"
+                                class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:border-orange-500/50 focus:outline-none transition-colors"
                             />
                         </div>
                     </div>

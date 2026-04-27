@@ -40,38 +40,38 @@
 
                 <div>
                     <label for="title" class="text-white text-sm font-bold mb-1 block">כותרת *</label>
-                    <input id="title" name="title" required placeholder={job_type === 'offering' ? 'לדוגמה: דרוש/ה מזכיר/ה' : 'לדוגמה: מחפש/ת עבודה כסייע/ת'} class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white" />
+                    <input id="title" name="title" required placeholder={job_type === 'offering' ? 'לדוגמה: דרוש/ה מזכיר/ה' : 'לדוגמה: מחפש/ת עבודה כסייע/ת'} class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
                 </div>
 
                 <div>
                     <label for="description" class="text-white text-sm font-bold mb-1 block">תיאור</label>
-                    <textarea id="description" name="description" rows="4" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white"></textarea>
+                    <textarea id="description" name="description" rows="4" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500"></textarea>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label for="address" class="text-white text-sm font-bold mb-1 block">מיקום</label>
-                        <input id="address" name="address" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white" />
+                        <input id="address" name="address" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
                     </div>
                     <div>
                         <label for="hours" class="text-white text-sm font-bold mb-1 block">שעות</label>
-                        <input id="hours" name="hours" placeholder="לדוגמה: 9:00-17:00" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white" />
+                        <input id="hours" name="hours" placeholder="לדוגמה: 9:00-17:00" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
                     </div>
                 </div>
 
                 <div>
                     <label for="salary" class="text-white text-sm font-bold mb-1 block">שכר / תנאים</label>
-                    <input id="salary" name="salary" placeholder="לדוגמה: 50 ₪/שעה" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white" />
+                    <input id="salary" name="salary" placeholder="לדוגמה: 50 ₪/שעה" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label for="contact" class="text-white text-sm font-bold mb-1 block">שם איש קשר</label>
-                        <input id="contact" name="contact" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white" />
+                        <input id="contact" name="contact" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
                     </div>
                     <div>
                         <label for="phone" class="text-white text-sm font-bold mb-1 block">טלפון *</label>
-                        <input id="phone" name="phone" type="tel" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white" />
+                        <input id="phone" name="phone" type="tel" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
                     </div>
                 </div>
 

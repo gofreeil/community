@@ -43,11 +43,11 @@
             <form method="POST" action="?/create" class="space-y-3">
                 <div>
                     <label for="question" class="text-white text-sm font-bold mb-1 block">שאלת המשאל *</label>
-                    <input id="question" name="question" required placeholder="לדוגמה: האם להוסיף גן שעשועים בכיכר?" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white" />
+                    <input id="question" name="question" required placeholder="לדוגמה: האם להוסיף גן שעשועים בכיכר?" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
                 </div>
                 <div>
                     <label for="description" class="text-white text-sm font-bold mb-1 block">פירוט נוסף</label>
-                    <textarea id="description" name="description" rows="2" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white"></textarea>
+                    <textarea id="description" name="description" rows="2" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500"></textarea>
                 </div>
                 <div>
                     <label for="neighborhood" class="text-white text-sm font-bold mb-1 block">שכונה</label>
@@ -66,7 +66,7 @@
                                 name="option"
                                 placeholder={`אפשרות ${i + 1}`}
                                 required={i < 2}
-                                class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white"
+                                class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500"
                             />
                         {/each}
                     </div>

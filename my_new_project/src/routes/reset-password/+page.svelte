@@ -49,7 +49,7 @@
                                 required
                                 minlength="6"
                                 placeholder="לפחות 6 תווים"
-                                class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-purple-500 transition"
+                                class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition"
                             />
                             <button type="button" onclick={() => showPassword = !showPassword}
                                 class="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 text-sm">
@@ -65,7 +65,7 @@
                             name="passwordConfirm"
                             required
                             placeholder="חזור על הסיסמה"
-                            class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-purple-500 transition"
+                            class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition"
                         />
                     </div>
 

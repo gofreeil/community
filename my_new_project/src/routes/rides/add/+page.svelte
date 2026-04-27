@@ -42,42 +42,42 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label for="from" class="text-white text-sm font-bold mb-1 block">מאיפה</label>
-                        <input id="from" name="from" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white" />
+                        <input id="from" name="from" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
                     </div>
                     <div>
                         <label for="to" class="text-white text-sm font-bold mb-1 block">לאן</label>
-                        <input id="to" name="to" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white" />
+                        <input id="to" name="to" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
                     </div>
                 </div>
 
                 <div class="grid grid-cols-3 gap-3">
                     <div>
                         <label for="date" class="text-white text-sm font-bold mb-1 block">תאריך</label>
-                        <input id="date" name="date" type="date" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white" />
+                        <input id="date" name="date" type="date" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
                     </div>
                     <div>
                         <label for="time" class="text-white text-sm font-bold mb-1 block">שעה</label>
-                        <input id="time" name="time" type="time" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white" />
+                        <input id="time" name="time" type="time" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
                     </div>
                     <div>
                         <label for="seats" class="text-white text-sm font-bold mb-1 block">מקומות</label>
-                        <input id="seats" name="seats" type="number" min="1" max="10" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white" />
+                        <input id="seats" name="seats" type="number" min="1" max="10" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
                     </div>
                 </div>
 
                 <div>
                     <label for="description" class="text-white text-sm font-bold mb-1 block">פירוט נוסף</label>
-                    <textarea id="description" name="description" rows="3" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white"></textarea>
+                    <textarea id="description" name="description" rows="3" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500"></textarea>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label for="contact" class="text-white text-sm font-bold mb-1 block">שם ליצירת קשר</label>
-                        <input id="contact" name="contact" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white" />
+                        <input id="contact" name="contact" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
                     </div>
                     <div>
                         <label for="phone" class="text-white text-sm font-bold mb-1 block">טלפון *</label>
-                        <input id="phone" name="phone" type="tel" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white" />
+                        <input id="phone" name="phone" type="tel" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
                     </div>
                 </div>
 

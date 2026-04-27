@@ -262,17 +262,17 @@
             <form method="POST" onsubmit={handleSubmit} use:enhance class="rounded-2xl bg-[#0f172a] border border-white/10 p-6 space-y-4">
                 <div>
                     <label for="title" class="text-white text-sm font-bold mb-1 block">שם הגמ"ח *</label>
-                    <input id="title" name="title" bind:value={title} required placeholder='לדוגמה: גמ"ח כיסאות' class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white" />
+                    <input id="title" name="title" bind:value={title} required placeholder='לדוגמה: גמ"ח כיסאות' class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
                 </div>
 
                 <div>
                     <label for="headline" class="text-white text-sm font-bold mb-1 block">כותרת</label>
-                    <input id="headline" name="headline" bind:value={headline} placeholder="כותרת קצרה ומושכת לגמ&quot;ח" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white" />
+                    <input id="headline" name="headline" bind:value={headline} placeholder="כותרת קצרה ומושכת לגמ&quot;ח" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
                 </div>
 
                 <div>
                     <label for="summary" class="text-white text-sm font-bold mb-1 block">תיאור</label>
-                    <textarea id="summary" name="summary" bind:value={summary} rows="3" placeholder="תיאור כללי של הגמ&quot;ח" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white" style="color-scheme: dark;"></textarea>
+                    <textarea id="summary" name="summary" bind:value={summary} rows="3" placeholder="תיאור כללי של הגמ&quot;ח" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" style="color-scheme: dark;"></textarea>
                 </div>
 
                 <!-- Logo upload -->
@@ -329,13 +329,13 @@
 
                 <div>
                     <label for="icon" class="text-white text-sm font-bold mb-1 block">אייקון (אמוג'י)</label>
-                    <input id="icon" name="icon" bind:value={icon} maxlength="4" placeholder="🤝" class="w-20 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-center text-xl" />
+                    <input id="icon" name="icon" bind:value={icon} maxlength="4" placeholder="🤝" class="w-20 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500 text-center text-xl" />
                     <p class="text-gray-500 text-xs mt-1">משמש כברירת מחדל אם לא הועלה לוגו</p>
                 </div>
 
                 <div>
                     <label for="description" class="text-white text-sm font-bold mb-2 block">פירוט הגמ"ח *</label>
-                    <textarea id="description" name="description" bind:value={description} rows="3" placeholder="רשום את הפרטים הנמצאים במלאי" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white" style="color-scheme: dark;"></textarea>
+                    <textarea id="description" name="description" bind:value={description} rows="3" placeholder="רשום את הפרטים הנמצאים במלאי" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" style="color-scheme: dark;"></textarea>
 
                     <!-- Tags input (chip windows) -->
                     <div class="mt-3">
@@ -356,7 +356,7 @@
                                 onkeydown={handleTagKeyDown}
                                 onblur={addTag}
                                 placeholder={tags.length === 0 ? 'בגדי תינוקות' : 'הוסף תג נוסף...'}
-                                class="flex-1 min-w-[120px] bg-transparent outline-none text-white text-sm px-1 py-1 placeholder:text-gray-500"
+                                class="flex-1 min-w-[120px] bg-transparent outline-none text-white placeholder-gray-500 text-sm px-1 py-1"
                             />
                         </div>
                         <p class="text-gray-500 text-xs mt-1.5 leading-relaxed">
@@ -390,11 +390,11 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label for="address" class="text-white text-sm font-bold mb-1 block">כתובת מדויקת *</label>
-                        <input id="address" name="address" bind:value={address} required placeholder="רחוב ומספר" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white" />
+                        <input id="address" name="address" bind:value={address} required placeholder="רחוב ומספר" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
                     </div>
                     <div>
                         <label for="hours" class="text-white text-sm font-bold mb-1 block">שעות פעילות</label>
-                        <input id="hours" name="hours" bind:value={hours} placeholder="לדוגמה: 9:00-21:00" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white" />
+                        <input id="hours" name="hours" bind:value={hours} placeholder="לדוגמה: 9:00-21:00" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
                     </div>
                 </div>
 
