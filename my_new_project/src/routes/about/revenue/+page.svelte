@@ -621,7 +621,7 @@
 					{#each [
 						['♾️','אחזקה נצחית','כולל זכות ירושה לילדים','#a78bfa'],
 						['💰','50% מהרווחים','לבעלי הפלטפורמה','#34d399'],
-						['🌐','עד 20,000','מחזיקי בעלות שונים','#60a5fa'],
+						['🌐','עד 40,000','מחזיקי בעלות שונים','#60a5fa'],
 						['📣','זכות ראשונית','והנחה קבועה בפרסום','#facc15'],
 						['🗳️','החלטות','משותפות','#f472b6']
 					] as [ico,val,lbl,clr]}
@@ -667,7 +667,7 @@
 					</div>
 					<ul class="space-y-2 text-lg text-gray-300">
 						<li class="flex gap-2"><span class="text-emerald-400">•</span> 50% מהרווחים חוזרים אל הקהילה</li>
-						<li class="flex gap-2"><span class="text-emerald-400">•</span> עד 20,000 מניות — עד 2,000 למשפחה</li>
+						<li class="flex gap-2"><span class="text-emerald-400">•</span> עד 40,000 מניות — עד 2,000 למשפחה</li>
 						<li class="flex gap-2"><span class="text-emerald-400">•</span> שאיפה: בעלי מניות בכל שכונה בארץ</li>
 					</ul>
 				</div>
