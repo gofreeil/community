@@ -9,6 +9,7 @@
     import { items as itemsData } from "$lib/itemsData";
     import { citiesAndNeighborhoods } from "$lib/neighborhoodsData";
     import { neighborhoodState } from "$lib/neighborhoodState.svelte";
+    import { getCoordsFor, jitterCoord } from "$lib/neighborhoodCoords";
     import type { DbItem } from "$lib/server/db";
 
     const dispatch = createEventDispatcher();
@@ -360,16 +361,8 @@
             : neighborhoodMaps["קרית משה"])
     );
 
-    // ---- מרקרים דינמיים ממאגר הפריטים האמיתי ----
-    // hash דטרמיניסטי לפיזור מרקרים על המפה לפי id
-    function hashPos(id: string, salt: number): number {
-        let h = 0;
-        for (let i = 0; i < id.length; i++) h = ((h * 31) + id.charCodeAt(i) + salt) | 0;
-        return Math.abs(h);
-    }
-
-    // מרקרים אוטומטיים מתוך dbItems של השכונה הנוכחית (עד 14 מרקרים כדי לא לעמיס)
-    const MAX_MARKERS = 14;
+    // ---- מרקרים דינמיים נטועים במפה (lat/lng אמיתי) ----
+    const MAX_MARKERS = 30;
     let dynamicMarkers = $derived.by(() => {
         const inHood = dbItems.filter(d =>
             d.neighborhood === neighborhoodState.neighborhood ||
@@ -382,14 +375,13 @@
 
         return sorted.map(item => {
             const id = String(item.id);
-            // פיזור: 18-78% top, 12-82% left — נשארים בתוך גבולות המפה הנראים
-            const top  = 18 + (hashPos(id, 1) % 60);
-            const left = 12 + (hashPos(id, 2) % 70);
+            const center = getCoordsFor(item.neighborhood, item.city);
+            const [lat, lng] = jitterCoord(center, id);
             return {
                 id,
                 category: item.category,
-                top:      `${top}%`,
-                left:     `${left}%`,
+                lat,
+                lng,
                 icon:     item.icon  || '📌',
                 label:    item.label || 'פריט',
                 color:    item.color || 'purple',
@@ -401,6 +393,142 @@
         if (selectedCategory === "benefits") return true;
         return markerCategory === selectedCategory;
     }
+
+    // ---- Leaflet ----
+    let mapEl: HTMLDivElement | undefined = $state();
+    let leafletMap: any = null;
+    let leafletL: any = null;          // יבוא דינמי של leaflet ב-onMount
+    let mapMarkerLayer: any = null;     // L.LayerGroup לכל המרקרים
+
+    // טיילי OSM פתוחים בחינם
+    const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+    const TILE_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
+
+    // צבע hex לפי שם צבע (כדי לא להסתמך על Tailwind dynamic classes)
+    const colorHex: Record<string, string> = {
+        purple:   '#9333ea',
+        blue:     '#2563eb',
+        green:    '#16a34a',
+        red:      '#dc2626',
+        pink:     '#db2777',
+        orange:   '#ea580c',
+        yellow:   '#ca8a04',
+        indigo:   '#4f46e5',
+        emerald:  '#059669',
+        violet:   '#7c3aed',
+        amber:    '#d97706',
+        teal:     '#0d9488',
+        sky:      '#0284c7',
+        rose:     '#e11d48',
+    };
+
+    function buildIconHtml(icon: string, label: string, color: string): string {
+        const hex = colorHex[color] ?? '#9333ea';
+        const safeLabel = label.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return `
+            <div class="jmap-pin">
+                <div class="jmap-pin-icon">${icon}</div>
+                <div class="jmap-pin-label" style="background:${hex}">${safeLabel}</div>
+            </div>
+        `;
+    }
+
+    function rebuildMarkers() {
+        if (!leafletL || !leafletMap || !mapMarkerLayer) return;
+        mapMarkerLayer.clearLayers();
+        for (const m of dynamicMarkers) {
+            if (!isMarkerVisible(m.category)) continue;
+            const html = buildIconHtml(m.icon, m.label, m.color);
+            const divIcon = leafletL.divIcon({
+                className: 'jmap-pin-wrap',
+                html,
+                iconSize:   [120, 60],
+                iconAnchor: [60, 60],
+            });
+            const marker = leafletL.marker([m.lat, m.lng], { icon: divIcon, riseOnHover: true });
+            marker.on('click', () => {
+                if (window.innerWidth < 1024) {
+                    triggerAdPopup(`/items/${m.id}`);
+                } else {
+                    goto(`/items/${m.id}`);
+                }
+            });
+            mapMarkerLayer.addLayer(marker);
+        }
+    }
+
+    function recenterMap() {
+        if (!leafletMap) return;
+        const center = getCoordsFor(neighborhoodState.neighborhood, neighborhoodState.city);
+        leafletMap.setView(center, 14, { animate: true });
+    }
+
+    let leafletReady = $state(false);
+
+    onMount(async () => {
+        try {
+            const mod = await import('leaflet');
+            leafletL = (mod as any).default ?? mod;
+            await import('leaflet/dist/leaflet.css');
+            leafletReady = true;
+        } catch (e) {
+            console.error('[jmap] Leaflet load failed:', e instanceof Error ? e.message : e);
+        }
+    });
+
+    // אתחול מחדש של Leaflet כל פעם ש-mapEl משתנה (כי {#if viewMode==="map"} מנתח/בונה את ה-DOM מחדש)
+    $effect(() => {
+        if (!leafletReady || !leafletL || !mapEl) return;
+        if ((mapEl as any)._leaflet_id) return; // כבר מאותחל
+
+        const center = getCoordsFor(neighborhoodState.neighborhood, neighborhoodState.city);
+        leafletMap = leafletL.map(mapEl, {
+            zoomControl: true,
+            attributionControl: true,
+            scrollWheelZoom: true,
+        }).setView(center, 14);
+
+        leafletL.tileLayer(TILE_URL, {
+            attribution: TILE_ATTR,
+            maxZoom: 19,
+        }).addTo(leafletMap);
+
+        mapMarkerLayer = leafletL.layerGroup().addTo(leafletMap);
+        rebuildMarkers();
+
+        setTimeout(() => leafletMap?.invalidateSize?.(), 0);
+        setTimeout(() => leafletMap?.invalidateSize?.(), 250);
+
+        // ניקוי כשה-element מנותק
+        return () => {
+            try { leafletMap?.remove?.(); } catch {}
+            leafletMap = null;
+            mapMarkerLayer = null;
+        };
+    });
+
+    // ריאקטיב: כש-dynamicMarkers משתנה (פריטים חדשים, החלפת קטגוריה) — לבנות מחדש
+    $effect(() => {
+        // תלות מפורשת
+        void dynamicMarkers;
+        void selectedCategory;
+        rebuildMarkers();
+    });
+
+    // ריאקטיב: כשהמשתמש מחליף שכונה — למרכז את המפה מחדש
+    $effect(() => {
+        void neighborhoodState.neighborhood;
+        void neighborhoodState.city;
+        recenterMap();
+    });
+
+    // כש-fullscreen משתנה — Leaflet צריך לעדכן את גודל המיכל
+    $effect(() => {
+        void isFullscreen;
+        if (leafletMap) {
+            setTimeout(() => leafletMap.invalidateSize(), 100);
+        }
+    });
 
     function handleCategoryClick(categoryId: string) {
         selectedCategory = categoryId;
@@ -867,64 +995,8 @@
                     </div>
                 {/if}
 
-                <!-- סמנים על המפה — נגזרים אוטומטית מפריטים אמיתיים בשכונה -->
-                <div class="absolute inset-0 z-10 pointer-events-none">
-                    {#each dynamicMarkers as marker (marker.id)}
-                        {#if isMarkerVisible(marker.category)}
-                            <a
-                                href="/items/{marker.id}"
-                                class="absolute transition-all duration-500 pointer-events-auto group/marker"
-                                style="top: {marker.top}; left: {marker.left};"
-                                onclick={(e) => {
-                                    if (window.innerWidth < 1024) {
-                                        e.preventDefault();
-                                        triggerAdPopup(`/items/${marker.id}`);
-                                    }
-                                }}
-                            >
-                                <div
-                                    class="text-center animate-fadeIn transform transition-transform group-hover/marker:scale-110"
-                                >
-                                    <span
-                                        class="text-3xl drop-shadow-lg block group-hover/marker:bounce"
-                                        >{marker.icon}</span
-                                    >
-                                    <div
-                                        class="bg-{marker.color}-600 text-white text-xs px-2 py-1 rounded mt-1 whitespace-nowrap font-bold shadow-lg group-hover/marker:bg-{marker.color}-500 transition-colors max-w-[140px] truncate"
-                                    >
-                                        {marker.label}
-                                    </div>
-                                </div>
-                            </a>
-                        {/if}
-                    {/each}
-                </div>
-
-                <!-- המפה: רקע ויזואלי במצב רגיל; אינטראקטיבית במסך מלא -->
-                <iframe
-                    title="מפת {neighborhoodState.neighborhood}, {neighborhoodState.city}"
-                    width="100%"
-                    height="100%"
-                    style={isFullscreen ? 'border:0' : 'border:0; pointer-events: none;'}
-                    src={mapUrl}
-                    allowfullscreen
-                    loading="lazy"
-                    referrerpolicy="no-referrer-when-downgrade"
-                    aria-hidden={!isFullscreen}
-                >
-                </iframe>
-
-                <!-- כפתור "פתח ב-Google Maps" — למשתמש שרוצה לחקור את המפה בעצמו -->
-                <a
-                    href="https://www.google.com/maps/search/?api=1&query={encodeURIComponent((neighborhoodState.neighborhood ?? '') + ', ' + (neighborhoodState.city ?? '') + ', ישראל')}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="פתח את המפה ב-Google Maps"
-                    title="פתח את המפה ב-Google Maps"
-                    class="absolute top-4 left-4 z-20 bg-white/90 backdrop-blur-sm text-gray-800 text-xs font-bold px-3 py-1.5 rounded-full shadow-lg border border-white hover:bg-white transition-all hover:scale-105"
-                >
-                    🗺️ פתח ב-Google Maps
-                </a>
+                <!-- מפת Leaflet — מרקרים אמיתיים שזזים יחד עם המפה -->
+                <div bind:this={mapEl} class="w-full h-full" aria-label="מפת השכונה"></div>
 
                 <!-- Badge לפריטים חדשים בשכונה -->
                 {#if neighborhoodDbItems.length > 0}
@@ -1514,6 +1586,44 @@
 {/if}
 
 <style>
+    /* ----- מרקרי מפה (Leaflet) ----- */
+    :global(.jmap-pin-wrap) {
+        background: transparent !important;
+        border: 0 !important;
+    }
+    :global(.jmap-pin) {
+        text-align: center;
+        cursor: pointer;
+        transition: transform 0.15s ease;
+    }
+    :global(.jmap-pin:hover) {
+        transform: scale(1.1);
+    }
+    :global(.jmap-pin-icon) {
+        font-size: 1.875rem;
+        line-height: 1;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+    }
+    :global(.jmap-pin-label) {
+        display: inline-block;
+        margin-top: 2px;
+        padding: 2px 8px;
+        color: #fff;
+        font-size: 0.75rem;
+        font-weight: 700;
+        border-radius: 6px;
+        white-space: nowrap;
+        max-width: 140px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+    /* z-index לעטיפת ה-Leaflet במצב מסך מלא */
+    :global(.leaflet-container) {
+        font-family: inherit;
+        background: #1a2233;
+    }
+
     /* ----- מצב מסך מלא: כפתורי קטגוריה קומפקטיים + מפה ממלאת ----- */
     :global(.jmap-fullscreen) .category-buttons-container {
         flex-wrap: wrap !important;
