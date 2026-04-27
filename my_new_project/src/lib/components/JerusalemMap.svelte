@@ -322,144 +322,46 @@
             : neighborhoodMaps["קרית משה"])
     );
 
-    // מיפוי בין קטגוריות לסימונים במפה
-    const categoryMarkers: Record<string, string[]> = {
-        benefits: [
-            "gemach-books",
-            "babysitter-shira",
-            "minyan-shacharit",
-            "shop-makolet",
-            "giveaway-sofa",
-            "activity-soccer",
-        ],
-        gemachim: ["gemach-books"],
-        giveaway: ["giveaway-sofa"],
-        business: ["babysitter-shira"],
-        minyanim: ["minyan-shacharit"],
-        shops: ["shop-makolet"],
-        restaurants: ["pizza-local", "falafel-hot"],
-        rides: ["ride-jerusalem"],
-        for_kids: ["jamboree"],
-        attractions: ["attraction-park", "attraction-museum"],
-        education: ["activity-soccer"],
-        "safe-space": ["safe-1"],
-    };
+    // ---- מרקרים דינמיים ממאגר הפריטים האמיתי ----
+    // hash דטרמיניסטי לפיזור מרקרים על המפה לפי id
+    function hashPos(id: string, salt: number): number {
+        let h = 0;
+        for (let i = 0; i < id.length; i++) h = ((h * 31) + id.charCodeAt(i) + salt) | 0;
+        return Math.abs(h);
+    }
 
-    const mapMarkers = [
-        {
-            id: "gemach-books",
-            category: "gemachim",
-            top: "25%",
-            left: "30%",
-            icon: "🎁",
-            label: 'גמ"ח ספרים',
-            color: "purple",
-        },
-        {
-            id: "babysitter-shira",
-            category: "business",
-            top: "40%",
-            left: "60%",
-            icon: "👶",
-            label: "בייבי סיטר (שירה)",
-            color: "pink",
-        },
-        {
-            id: "minyan-shacharit",
-            category: "minyanim",
-            top: "60%",
-            left: "25%",
-            icon: "✡️",
-            label: "מניין שחרית",
-            color: "blue",
-        },
-        {
-            id: "shop-makolet",
-            category: "shops",
-            top: "35%",
-            left: "75%",
-            icon: "🏪",
-            label: "מכולת 24/7",
-            color: "green",
-        },
-        {
-            id: "giveaway-sofa",
-            category: "giveaway",
-            top: "70%",
-            left: "55%",
-            icon: "📦",
-            label: "ספה למסירה",
-            color: "orange",
-        },
-        {
-            id: "activity-soccer",
-            category: "education",
-            top: "50%",
-            left: "45%",
-            icon: "🎨",
-            label: "חוג כדורגל",
-            color: "red",
-        },
-        {
-            id: "pizza-local",
-            category: "restaurants",
-            top: "45%",
-            left: "20%",
-            icon: "🍕",
-            label: "פיצה השכונה",
-            color: "orange",
-        },
-        {
-            id: "ride-jerusalem",
-            category: "rides",
-            top: "80%",
-            left: "40%",
-            icon: "🚗",
-            label: "טרמפים",
-            color: "green",
-        },
-        {
-            id: "jamboree",
-            category: "for_kids",
-            top: "15%",
-            left: "65%",
-            icon: "🎈",
-            label: "ג'ימבורי",
-            color: "pink",
-        },
-        {
-            id: "attraction-park",
-            category: "attractions",
-            top: "10%",
-            left: "15%",
-            icon: "🎡",
-            label: "פארק שעשועים",
-            color: "indigo",
-        },
-        {
-            id: "attraction-museum",
-            category: "attractions",
-            top: "20%",
-            left: "85%",
-            icon: "🏛️",
-            label: "מוזיאון המדע",
-            color: "indigo",
-        },
-        {
-            id: "safe-1",
-            category: "safe-space",
-            top: "30%",
-            left: "50%",
-            icon: "🛡️",
-            label: "מרחב מוגן",
-            color: "yellow",
-        },
-    ];
+    // מרקרים אוטומטיים מתוך dbItems של השכונה הנוכחית (עד 14 מרקרים כדי לא לעמיס)
+    const MAX_MARKERS = 14;
+    let dynamicMarkers = $derived.by(() => {
+        const inHood = dbItems.filter(d =>
+            d.neighborhood === neighborhoodState.neighborhood ||
+            (d.neighborhood === '' && d.city === neighborhoodState.city)
+        );
+        // מיון: חדשים קודם
+        const sorted = [...inHood].sort((a, b) =>
+            (b.created_at || '').localeCompare(a.created_at || '')
+        ).slice(0, MAX_MARKERS);
 
-    function isMarkerVisible(markerId: string): boolean {
+        return sorted.map(item => {
+            const id = String(item.id);
+            // פיזור: 18-78% top, 12-82% left — נשארים בתוך גבולות המפה הנראים
+            const top  = 18 + (hashPos(id, 1) % 60);
+            const left = 12 + (hashPos(id, 2) % 70);
+            return {
+                id,
+                category: item.category,
+                top:      `${top}%`,
+                left:     `${left}%`,
+                icon:     item.icon  || '📌',
+                label:    item.label || 'פריט',
+                color:    item.color || 'purple',
+            };
+        });
+    });
+
+    function isMarkerVisible(markerCategory: string): boolean {
         if (selectedCategory === "benefits") return true;
-        const visibleMarkers = categoryMarkers[selectedCategory] || [];
-        return visibleMarkers.includes(markerId);
+        return markerCategory === selectedCategory;
     }
 
     function handleCategoryClick(categoryId: string) {
@@ -886,10 +788,10 @@
                     </div>
                 {/if}
 
-                <!-- סמנים על המפה -->
+                <!-- סמנים על המפה — נגזרים אוטומטית מפריטים אמיתיים בשכונה -->
                 <div class="absolute inset-0 z-10 pointer-events-none">
-                    {#each mapMarkers as marker}
-                        {#if isMarkerVisible(marker.id)}
+                    {#each dynamicMarkers as marker (marker.id)}
+                        {#if isMarkerVisible(marker.category)}
                             <a
                                 href="/items/{marker.id}"
                                 class="absolute transition-all duration-500 pointer-events-auto group/marker"
@@ -909,7 +811,7 @@
                                         >{marker.icon}</span
                                     >
                                     <div
-                                        class="bg-{marker.color}-600 text-white text-xs px-2 py-1 rounded mt-1 whitespace-nowrap font-bold shadow-lg group-hover/marker:bg-{marker.color}-500 transition-colors"
+                                        class="bg-{marker.color}-600 text-white text-xs px-2 py-1 rounded mt-1 whitespace-nowrap font-bold shadow-lg group-hover/marker:bg-{marker.color}-500 transition-colors max-w-[140px] truncate"
                                     >
                                         {marker.label}
                                     </div>
