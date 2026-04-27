@@ -184,15 +184,26 @@
     let isFullscreen = $state(false);
 
     function openFullscreen() {
-        if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
-            isFullscreen = true;
-        }
+        isFullscreen = true;
     }
     function closeFullscreen() { isFullscreen = false; }
 
     function handleMapDblClick() {
         if (isFullscreen) closeFullscreen();
         else openFullscreen();
+    }
+
+    // זיהוי double-tap לנייד (כי dblclick לא תמיד נשלח במובייל)
+    let lastTapTs = 0;
+    function handleMapTouchEnd(e: TouchEvent) {
+        const now = Date.now();
+        if (now - lastTapTs < 350) {
+            e.preventDefault();
+            handleMapDblClick();
+            lastTapTs = 0;
+        } else {
+            lastTapTs = now;
+        }
     }
 
     function handleKeydown(e: KeyboardEvent) {
@@ -802,8 +813,9 @@
                 class={isFullscreen
                     ? 'w-full flex-1 min-h-[60vh] overflow-hidden relative'
                     : 'w-full h-[350px] md:h-[450px] overflow-hidden relative'}
-                style="border-radius: 20px;"
+                style="border-radius: 20px; touch-action: manipulation;"
                 ondblclick={handleMapDblClick}
+                ontouchend={handleMapTouchEnd}
                 role="button"
                 tabindex="-1"
                 aria-label="לחץ פעמיים לפתיחה במסך מלא"
