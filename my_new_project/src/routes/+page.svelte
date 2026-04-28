@@ -251,25 +251,28 @@
                 >
                     <!-- Header עם חיפוש (קפוא בראש התפריט) -->
                     <div class="sticky top-0 z-10 -mx-3 md:-mx-4 -mt-3 md:-mt-4 px-3 md:px-4 pt-3 md:pt-4 pb-2 mb-3 bg-gray-900 border-b border-purple-500/20 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                        <h3 class="text-white text-base md:text-lg font-bold whitespace-nowrap">
+                        <h3 class="text-white text-base md:text-lg font-bold whitespace-nowrap text-center sm:text-right">
                             🏘️ בחר עיר ושכונה
                         </h3>
-                        <div class="relative flex-1">
-                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-purple-400 text-sm pointer-events-none">🔎</span>
-                            <input
-                                type="text"
-                                placeholder="חיפוש עיר..."
-                                bind:value={searchQuery}
-                                class="w-full bg-gray-800 border border-purple-500/40 text-white rounded-lg pr-9 pl-3 py-1.5 text-sm focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
-                            />
+                        <!-- חיפוש + סגור — תמיד באותה שורה -->
+                        <div class="flex flex-row items-center gap-2 flex-1">
+                            <div class="relative flex-1">
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-purple-400 text-sm pointer-events-none">🔎</span>
+                                <input
+                                    type="text"
+                                    placeholder="חיפוש עיר..."
+                                    bind:value={searchQuery}
+                                    class="w-full bg-gray-800 border border-purple-500/40 text-white rounded-lg pr-9 pl-3 py-1.5 text-sm focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
+                                />
+                            </div>
+                            <button
+                                onclick={closeMenu}
+                                class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold transition-colors whitespace-nowrap shrink-0"
+                                aria-label="סגור"
+                            >
+                                ✕ סגור
+                            </button>
                         </div>
-                        <button
-                            onclick={closeMenu}
-                            class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold transition-colors whitespace-nowrap"
-                            aria-label="סגור"
-                        >
-                            ✕ סגור
-                        </button>
                     </div>
 
                     {#if filteredCities.length === 0}
