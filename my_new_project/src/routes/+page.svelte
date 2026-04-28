@@ -48,6 +48,10 @@
         );
     });
 
+    // ספירת ערים ושכונות לתצוגה ב-placeholder
+    const totalCities = allCitiesMerged.length;
+    const totalNeighborhoods = allCitiesMerged.reduce((sum, [, n]) => sum + n.length, 0);
+
     onMount(() => {
         // אתחל עם נתוני פרופיל מהשרת (או localStorage כ-fallback)
         neighborhoodState.init(data.userNeighborhood, data.userCity);
@@ -260,7 +264,7 @@
                                 <span class="absolute right-3 top-1/2 -translate-y-1/2 text-purple-400 text-sm pointer-events-none">🔎</span>
                                 <input
                                     type="text"
-                                    placeholder="חיפוש עיר..."
+                                    placeholder={`חיפוש עיר... (${totalCities} ערים, ${totalNeighborhoods} שכונות)`}
                                     bind:value={searchQuery}
                                     class="w-full bg-gray-800 border border-purple-500/40 text-white rounded-lg pr-9 pl-3 py-1.5 text-sm focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
                                 />
