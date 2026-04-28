@@ -622,6 +622,46 @@
                     </div>
                 </div>
             </a>
+
+            <!-- הפוך לרכז שכונה -->
+            <a
+                href="/coordinator/apply"
+                class="group relative overflow-hidden rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-indigo-500/30 transition-all duration-300 hover:-translate-y-2 flex flex-col cursor-pointer md:col-span-3"
+            >
+                <!-- Background gradient -->
+                <div
+                    class="absolute inset-0 bg-gradient-to-br from-indigo-900 to-purple-900 transition-transform duration-300 group-hover:scale-110"
+                ></div>
+                <!-- Dark overlay -->
+                <div
+                    class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent transition-transform duration-300 group-hover:scale-110"
+                ></div>
+                <div
+                    class="relative z-10 p-6 transition-transform duration-300 group-hover:scale-105 flex flex-col flex-grow"
+                >
+                    <div class="text-center text-white flex flex-col flex-grow">
+                        <span
+                            class="text-4xl mb-2 block transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12"
+                            >👥</span
+                        >
+                        <h3
+                            class="text-xl font-black mb-2 transition-all duration-300 group-hover:text-yellow-200"
+                        >
+                            {$t('become_coordinator')}
+                        </h3>
+                        <p
+                            class="text-sm mb-4 text-indigo-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex-grow"
+                        >
+                            {$t('coordinator_description')}
+                        </p>
+                        <button
+                            class="bg-indigo-600/50 hover:bg-indigo-600/70 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all w-full group-hover:scale-105 group-hover:shadow-xl mt-auto"
+                        >
+                            {$t('become_coordinator')}
+                        </button>
+                    </div>
+                </div>
+            </a>
         </div>
 
         <!-- Mobile: 3 cards in one row, equal width -->
@@ -703,6 +743,30 @@
                     </div>
                 </a>
             </div>
+
+            <!-- הפוך לרכז שכונה - Mobile (full width below cards) -->
+            <a
+                href="/coordinator/apply"
+                class="block relative overflow-hidden rounded-lg mt-2 h-20 cursor-pointer"
+            >
+                <!-- Background gradient -->
+                <div
+                    class="absolute inset-0 bg-gradient-to-br from-indigo-800 to-purple-800"
+                ></div>
+                <!-- Dark overlay -->
+                <div
+                    class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"
+                ></div>
+                <div class="relative z-10 p-2 h-full flex flex-col justify-between">
+                    <div class="flex items-center gap-2 text-center text-white flex-1">
+                        <span class="text-lg">👥</span>
+                        <div class="text-left flex-1">
+                            <h3 class="text-xs font-black leading-tight">{$t('become_coordinator')}</h3>
+                            <p class="text-[10px] text-indigo-100 opacity-70">{$t('coordinator_subtitle')}</p>
+                        </div>
+                    </div>
+                </div>
+            </a>
         </div>
     </section>
 </div>

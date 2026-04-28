@@ -211,6 +211,21 @@ register('he', () => Promise.resolve({
     register_btn: "הירשם",
     already_registered: "כבר רשום?",
     login_here: "התחבר כאן",
+
+    // דף רכז שכונה
+    become_coordinator: "הפוך לרכז שכונה",
+    coordinator_title: "הרשמה כרכז שכונה",
+    coordinator_subtitle: "עזור לשכונה שלך לשגשג",
+    coordinator_description: "רכזי השכונה מנהלים אירועים, מאשרים פרסומות ותומכים בחברים",
+    coordinator_name: "שם מלא *",
+    coordinator_phone: "טלפון *",
+    coordinator_neighborhood: "אילו שכונות אתה רוצה לנהל? *",
+    coordinator_experience: "ספר לנו על הניסיון שלך בקהילה",
+    coordinator_motivation: "למה אתה רוצה להיות רכז?",
+    coordinator_submit: "שלח בקשה",
+    coordinator_submitting: "שולח...",
+    coordinator_success: "✅ בקשתך נשלחה בהצלחה! צוות הניהול יצור איתך קשר בקרוב.",
+    coordinator_error: "שגיאה בשליחת הבקשה. אנא נסה שוב.",
 }));
 
 register('en', () => Promise.resolve({
@@ -411,6 +426,21 @@ register('en', () => Promise.resolve({
     register_btn: "Register",
     already_registered: "Already registered?",
     login_here: "Login here",
+
+    // Coordinator page
+    become_coordinator: "Become a Neighborhood Coordinator",
+    coordinator_title: "Register as Neighborhood Coordinator",
+    coordinator_subtitle: "Help your neighborhood thrive",
+    coordinator_description: "Neighborhood coordinators manage events, approve posts and support community members",
+    coordinator_name: "Full Name *",
+    coordinator_phone: "Phone *",
+    coordinator_neighborhood: "Which neighborhoods do you want to manage? *",
+    coordinator_experience: "Tell us about your community experience",
+    coordinator_motivation: "Why do you want to be a coordinator?",
+    coordinator_submit: "Send Request",
+    coordinator_submitting: "Sending...",
+    coordinator_success: "✅ Your request has been sent successfully! The management team will contact you soon.",
+    coordinator_error: "Error sending request. Please try again.",
 }));
 
 register('ru', () => Promise.resolve({
@@ -611,6 +641,21 @@ register('ru', () => Promise.resolve({
     register_btn: "Зарегистрироваться",
     already_registered: "Уже зарегистрированы?",
     login_here: "Войдите здесь",
+
+    // Страница координатора
+    become_coordinator: "Стать координатором района",
+    coordinator_title: "Регистрация координатором района",
+    coordinator_subtitle: "Помогите вашему района развиваться",
+    coordinator_description: "Координаторы района управляют мероприятиями, одобряют посты и поддерживают членов сообщества",
+    coordinator_name: "Полное имя *",
+    coordinator_phone: "Телефон *",
+    coordinator_neighborhood: "Какие районы вы хотите администрировать? *",
+    coordinator_experience: "Расскажите о вашем опыте в сообществе",
+    coordinator_motivation: "Почему вы хотите стать координатором?",
+    coordinator_submit: "Отправить запрос",
+    coordinator_submitting: "Отправляю...",
+    coordinator_success: "✅ Ваш запрос успешно отправлен! Команда управления свяжется с вами в ближайшее время.",
+    coordinator_error: "Ошибка при отправке запроса. Пожалуйста, попробуйте снова.",
 }));
 
 init({

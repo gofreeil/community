@@ -252,7 +252,8 @@
       "Bash(curl -s http://localhost:5173)",
       "Bash(curl -I http://localhost:5173/@vite/client)",
       "mcp__Claude_in_Chrome__resize_window",
-      "Bash(grep -i \"\\\\.svelte$\\\\|\\\\.ts$\")"
+      "Bash(grep -i \"\\\\.svelte$\\\\|\\\\.ts$\")",
+      "Bash(cd \"D:\\\\\\\\Users\\\\\\\\User\\\\\\\\Documents\\\\\\\\GitHub\\\\\\\\community\\\\\\\\my_new_project\")"
     ]
   }
 }
