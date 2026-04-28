@@ -277,9 +277,9 @@
                             לא נמצאו ערים תואמות "{searchQuery}"
                         </div>
                     {:else}
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                        <div class="cities-masonry">
                             {#each filteredCities as [city, neighborhoods]}
-                                <div class="bg-gray-800/70 rounded-lg p-2 border border-purple-500/10">
+                                <div class="city-card bg-gray-800/70 rounded-lg p-2 border border-purple-500/10 mb-2">
                                     <h4 class="text-purple-400 font-bold mb-1.5 text-xs md:text-sm border-b border-purple-500/20 pb-1">
                                         {city}
                                     </h4>
@@ -776,5 +776,23 @@
         .space-y-12 > :not([hidden]) ~ :not([hidden]) {
             margin-top: 0 !important;
         }
+    }
+
+    /* Masonry layout לבחירת ערים — ערים קטנות מתחבאות תחת הגדולות */
+    .cities-masonry {
+        column-count: 2;
+        column-gap: 0.5rem;
+    }
+    @media (min-width: 768px) {
+        .cities-masonry {
+            column-count: 4;
+        }
+    }
+    .cities-masonry .city-card {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        -webkit-column-break-inside: avoid;
+        display: inline-block;
+        width: 100%;
     }
 </style>
