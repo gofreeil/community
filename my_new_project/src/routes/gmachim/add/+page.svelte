@@ -280,53 +280,6 @@
                 </div>
 
                 <div>
-                    <label for="summary" class="text-white text-sm font-bold mb-1 block">תיאור</label>
-                    <textarea id="summary" name="summary" bind:value={summary} rows="3" placeholder="תיאור כללי של הגמ&quot;ח" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" style="color-scheme: dark;"></textarea>
-                </div>
-
-                <!-- Logo upload -->
-                <div>
-                    <p class="text-white text-sm font-bold mb-1">לוגו (אופציונלי)</p>
-                    {#if logoBase64}
-                        <div class="relative inline-block">
-                            <img src={logoBase64} alt="לוגו" class="w-24 h-24 rounded-xl object-cover border border-white/15 bg-black/30" />
-                            <button type="button" onclick={removeLogo} aria-label="הסר לוגו"
-                                class="absolute -top-2 -left-2 w-7 h-7 rounded-full bg-black/70 hover:bg-red-600 text-white text-sm flex items-center justify-center transition-colors">✕</button>
-                        </div>
-                    {:else}
-                        <label class="flex flex-col items-center justify-center gap-1 w-32 h-32 rounded-xl border-2 border-dashed border-white/15 hover:border-amber-500/50 bg-white/3 hover:bg-amber-900/10 cursor-pointer transition-all">
-                            <span class="text-2xl">🎨</span>
-                            <span class="text-gray-400 text-xs font-bold">העלה לוגו</span>
-                            <span class="text-gray-600 text-[10px]">תמונה ריבועית מומלצת</span>
-                            <input type="file" accept="image/*" class="hidden" onchange={handleLogoChange} />
-                        </label>
-                    {/if}
-                    <input type="hidden" name="logo_base64" value={logoBase64} />
-                </div>
-
-                <!-- Multi image upload -->
-                <div>
-                    <p class="text-white text-sm font-bold mb-1">תמונות (עד {MAX_IMAGES}, אופציונלי)</p>
-                    <div class="grid grid-cols-3 gap-2">
-                        {#each images as img, i}
-                            <div class="relative aspect-square rounded-lg overflow-hidden border border-white/10">
-                                <img src={img} alt="תמונה {i + 1}" class="w-full h-full object-cover bg-black/30" />
-                                <button type="button" onclick={() => removeImage(i)} aria-label="הסר תמונה"
-                                    class="absolute top-1 left-1 w-6 h-6 rounded-full bg-black/70 hover:bg-red-600 text-white text-xs flex items-center justify-center transition-colors">✕</button>
-                            </div>
-                        {/each}
-                        {#if images.length < MAX_IMAGES}
-                            <label class="aspect-square flex flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-white/15 hover:border-amber-500/50 bg-white/3 hover:bg-amber-900/10 cursor-pointer transition-all">
-                                <span class="text-2xl">📷</span>
-                                <span class="text-gray-400 text-xs font-bold">הוסף</span>
-                                <input type="file" accept="image/*" multiple class="hidden" onchange={handleImagesChange} />
-                            </label>
-                        {/if}
-                    </div>
-                    <input type="hidden" name="images_json" value={JSON.stringify(images)} />
-                </div>
-
-                <div>
                     <label for="gmach_type" class="text-white text-sm font-bold mb-1 block">סוג הגמ"ח (סוג האייקון)</label>
                     <select id="gmach_type" name="gmach_type" bind:value={gmachType} class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white" style="color-scheme: dark;">
                         <option value="" style="color: #000;">-- בחר סוג --</option>
@@ -334,6 +287,11 @@
                             <option value={t.key} style="color: #000;">{t.label}</option>
                         {/each}
                     </select>
+                </div>
+
+                <div>
+                    <label for="summary" class="text-white text-sm font-bold mb-1 block">תיאור</label>
+                    <textarea id="summary" name="summary" bind:value={summary} rows="3" placeholder="תיאור כללי של הגמ&quot;ח" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" style="color-scheme: dark;"></textarea>
                 </div>
 
                 <div>
@@ -436,6 +394,48 @@
                         <label for="phone" class="text-white text-sm font-bold mb-1 block">טלפון *</label>
                         <input id="phone" name="phone" bind:value={phone} type="tel" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white" />
                     </div>
+                </div>
+
+                <!-- Logo upload -->
+                <div>
+                    <p class="text-white text-sm font-bold mb-1">לוגו (אופציונלי)</p>
+                    {#if logoBase64}
+                        <div class="relative inline-block">
+                            <img src={logoBase64} alt="לוגו" class="w-24 h-24 rounded-xl object-cover border border-white/15 bg-black/30" />
+                            <button type="button" onclick={removeLogo} aria-label="הסר לוגו"
+                                class="absolute -top-2 -left-2 w-7 h-7 rounded-full bg-black/70 hover:bg-red-600 text-white text-sm flex items-center justify-center transition-colors">✕</button>
+                        </div>
+                    {:else}
+                        <label class="flex flex-col items-center justify-center gap-1 w-32 h-32 rounded-xl border-2 border-dashed border-white/15 hover:border-amber-500/50 bg-white/3 hover:bg-amber-900/10 cursor-pointer transition-all">
+                            <span class="text-2xl">🎨</span>
+                            <span class="text-gray-400 text-xs font-bold">העלה לוגו</span>
+                            <span class="text-gray-600 text-[10px]">תמונה ריבועית מומלצת</span>
+                            <input type="file" accept="image/*" class="hidden" onchange={handleLogoChange} />
+                        </label>
+                    {/if}
+                    <input type="hidden" name="logo_base64" value={logoBase64} />
+                </div>
+
+                <!-- Multi image upload -->
+                <div>
+                    <p class="text-white text-sm font-bold mb-1">תמונות (עד {MAX_IMAGES}, אופציונלי)</p>
+                    <div class="grid grid-cols-3 gap-2">
+                        {#each images as img, i}
+                            <div class="relative aspect-square rounded-lg overflow-hidden border border-white/10">
+                                <img src={img} alt="תמונה {i + 1}" class="w-full h-full object-cover bg-black/30" />
+                                <button type="button" onclick={() => removeImage(i)} aria-label="הסר תמונה"
+                                    class="absolute top-1 left-1 w-6 h-6 rounded-full bg-black/70 hover:bg-red-600 text-white text-xs flex items-center justify-center transition-colors">✕</button>
+                            </div>
+                        {/each}
+                        {#if images.length < MAX_IMAGES}
+                            <label class="aspect-square flex flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-white/15 hover:border-amber-500/50 bg-white/3 hover:bg-amber-900/10 cursor-pointer transition-all">
+                                <span class="text-2xl">📷</span>
+                                <span class="text-gray-400 text-xs font-bold">הוסף</span>
+                                <input type="file" accept="image/*" multiple class="hidden" onchange={handleImagesChange} />
+                            </label>
+                        {/if}
+                    </div>
+                    <input type="hidden" name="images_json" value={JSON.stringify(images)} />
                 </div>
 
                 {#if clientError}
