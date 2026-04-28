@@ -783,12 +783,13 @@
 
     /* Masonry layout לבחירת ערים — ערים קטנות מתחבאות תחת הגדולות */
     .cities-masonry {
-        column-count: 2;
-        column-gap: 0.5rem;
+        column-count: 3;
+        column-gap: 0.4rem;
     }
     @media (min-width: 768px) {
         .cities-masonry {
             column-count: 5;
+            column-gap: 0.5rem;
         }
     }
     .cities-masonry .city-card {
