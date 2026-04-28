@@ -17,12 +17,22 @@
     let { data }: { data: PageData } = $props();
 
     let showNeighborhoodsMenu = $state(false);
+    let searchQuery = $state('');
 
     // CoaliEmbed מוצג רק לקרית משה בירושלים; לכל השאר — ReferendumBanner (דוגמא)
     const showCoali = $derived(
         neighborhoodState.neighborhood === "קרית משה" &&
         neighborhoodState.city === "ירושלים"
     );
+
+    // חיפוש ערים לפי query
+    const filteredCities = $derived.by(() => {
+        const q = searchQuery.trim().toLowerCase();
+        if (!q) return Object.entries(citiesAndNeighborhoods);
+        return Object.entries(citiesAndNeighborhoods).filter(([city]) =>
+            city.toLowerCase().includes(q)
+        );
+    });
 
     onMount(() => {
         // אתחל עם נתוני פרופיל מהשרת (או localStorage כ-fallback)
@@ -36,6 +46,12 @@
     function selectNeighborhood(neighborhood: string, city: string) {
         neighborhoodState.select(neighborhood, city);
         showNeighborhoodsMenu = false;
+        searchQuery = '';
+    }
+
+    function closeMenu() {
+        showNeighborhoodsMenu = false;
+        searchQuery = '';
     }
 
     // --- Calendar sync (ICS + Google Calendar) ---
@@ -212,7 +228,7 @@
                 <div
                     class="fixed inset-0 bg-black/50 z-[9998]"
                     role="presentation"
-                    onclick={() => (showNeighborhoodsMenu = false)}
+                    onclick={closeMenu}
                 ></div>
 
                 <!-- Menu -->
@@ -224,8 +240,19 @@
                     >
                         בחר עיר ושכונה
                     </h3>
+
+                    <!-- Search Bar -->
+                    <div class="mb-4">
+                        <input
+                            type="text"
+                            placeholder="חיפוש עיר..."
+                            bind:value={searchQuery}
+                            class="w-full bg-gray-800 border border-purple-500/30 text-white rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
+                        />
+                    </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
-                        {#each Object.entries(citiesAndNeighborhoods) as [city, neighborhoods]}
+                        {#each filteredCities as [city, neighborhoods]}
                             <div class="bg-gray-800 rounded-lg p-3">
                                 <h4
                                     class="text-purple-400 font-bold mb-2 text-sm md:text-base"
@@ -246,7 +273,7 @@
                         {/each}
                     </div>
                     <button
-                        onclick={() => (showNeighborhoodsMenu = false)}
+                        onclick={closeMenu}
                         class="mt-4 w-full bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg font-bold text-sm transition-colors"
                     >
                         סגור
