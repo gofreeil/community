@@ -261,7 +261,8 @@
       "Bash(pdftotext 'D:\\\\Users\\\\User\\\\Downloads\\\\שכונות ויישובים בארץ.pdf' -)",
       "Bash(pdfimages -list 'D:\\\\Users\\\\User\\\\Downloads\\\\שכונות ויישובים בארץ.pdf')",
       "Bash(pdftotext 'D:\\\\Users\\\\User\\\\Downloads\\\\שכונות ויישובים בארץ.pdf' /tmp/cities.txt)",
-      "Bash(head -30 \"D:\\\\\\\\Users\\\\\\\\User\\\\\\\\Documents\\\\\\\\GitHub\\\\\\\\community\\\\\\\\my_new_project\\\\\\\\src\\\\\\\\routes\\\\\\\\community-fund\\\\\\\\+page.svelte\")"
+      "Bash(head -30 \"D:\\\\\\\\Users\\\\\\\\User\\\\\\\\Documents\\\\\\\\GitHub\\\\\\\\community\\\\\\\\my_new_project\\\\\\\\src\\\\\\\\routes\\\\\\\\community-fund\\\\\\\\+page.svelte\")",
+      "mcp__Claude_in_Chrome__get_page_text"
     ]
   }
 }

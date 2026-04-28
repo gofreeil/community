@@ -1,6 +1,6 @@
 <script lang="ts">
     import { _ } from 'svelte-i18n';
-    import citiesData from '$lib/citiesData';
+    import { citiesData } from '$lib/neighborhoodsData';
 
     interface PageData {
         user: { name: string; phone: string } | null;
@@ -17,17 +17,9 @@
     let error = $state<string | null>(null);
     let success = $state(false);
 
-    const allNeighborhoods = citiesData.flatMap(({ city, neighborhoods }) =>
-        neighborhoods.map((n) => ({ name: n, city }))
+    const allNeighborhoods = citiesData.flatMap(({ city, neighborhoods: cityNeighborhoods }) =>
+        cityNeighborhoods.map((n) => ({ name: n, city }))
     );
-
-    function toggleNeighborhood(neighborhoodName: string) {
-        if (neighborhoods.includes(neighborhoodName)) {
-            neighborhoods = neighborhoods.filter((n) => n !== neighborhoodName);
-        } else {
-            neighborhoods = [...neighborhoods, neighborhoodName];
-        }
-    }
 
     async function handleSubmit(e: Event) {
         e.preventDefault();
@@ -110,12 +102,19 @@
                         >{$_('coordinator_neighborhood')}</label
                     >
                     <div class="grid grid-cols-2 gap-3 max-h-64 overflow-y-auto">
-                        {#each allNeighborhoods as { name: neighborhoodName, city } (neighborhoodName)}
+                        {#each allNeighborhoods as { name: neighborhoodName, city }, i (i)}
                             <label class="flex items-center gap-2 cursor-pointer">
                                 <input
                                     type="checkbox"
-                                    checked={neighborhoods.includes(neighborhoodName)}
-                                    onchange={() => toggleNeighborhood(neighborhoodName)}
+                                    checked={neighborhoods.includes(`${neighborhoodName} (${city})`)}
+                                    onchange={() => {
+                                        const fullName = `${neighborhoodName} (${city})`;
+                                        if (neighborhoods.includes(fullName)) {
+                                            neighborhoods = neighborhoods.filter((n) => n !== fullName);
+                                        } else {
+                                            neighborhoods = [...neighborhoods, fullName];
+                                        }
+                                    }}
                                     class="w-4 h-4"
                                 />
                                 <span class="text-sm">
