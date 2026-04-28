@@ -17,7 +17,7 @@
     let error = $state<string | null>(null);
     let success = $state(false);
 
-    const allNeighborhoods = citiesData.flatMap(({ city, neighborhoods: cityNeighborhoods }) =>
+    const allNeighborhoods = (citiesData ?? []).flatMap(({ city, neighborhoods: cityNeighborhoods }) =>
         cityNeighborhoods.map((n) => ({ name: n, city }))
     );
 

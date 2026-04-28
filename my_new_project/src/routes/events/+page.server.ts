@@ -20,8 +20,16 @@ export const load: PageServerLoad = async (event) => {
     const isAdmin       = user?.role === 'neighborhood_admin' || user?.role === 'super_admin';
 
     const [events, pendingEvents] = await Promise.all([
-        getEvents(neighborhood || undefined),
-        (isCoordinator || isAdmin) ? getPendingEvents(neighborhood) : Promise.resolve([]),
+        getEvents(neighborhood || undefined).catch((e) => {
+            console.error('[events] getEvents failed:', e instanceof Error ? e.message : e);
+            return [];
+        }),
+        (isCoordinator || isAdmin)
+            ? getPendingEvents(neighborhood).catch((e) => {
+                console.error('[events] getPendingEvents failed:', e instanceof Error ? e.message : e);
+                return [];
+            })
+            : Promise.resolve([]),
     ]);
 
     return { user, events, pendingEvents, isCoordinator, isAdmin };
