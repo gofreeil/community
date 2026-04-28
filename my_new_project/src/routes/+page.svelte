@@ -785,7 +785,7 @@
     }
     @media (min-width: 768px) {
         .cities-masonry {
-            column-count: 4;
+            column-count: 5;
         }
     }
     .cities-masonry .city-card {
