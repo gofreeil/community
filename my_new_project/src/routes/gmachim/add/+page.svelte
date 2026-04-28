@@ -32,7 +32,11 @@
     let summary     = $state('');
     let icon        = $state('🤝');
     let description = $state('');
-    let address     = $state('');
+    let street      = $state('');
+    let buildingNum = $state('');
+    let floor       = $state('');
+    let apartment   = $state('');
+    let arrivalNotes = $state('');
     let hours       = $state('');
     let contact     = $state('');
     let phone       = $state('');
@@ -158,7 +162,11 @@
                 if (d.summary)      summary      = d.summary;
                 if (d.icon)         icon         = d.icon;
                 if (d.description)  description  = d.description;
-                if (d.address)      address      = d.address;
+                if (d.street)       street       = d.street;
+                if (d.buildingNum)  buildingNum  = d.buildingNum;
+                if (d.floor)        floor        = d.floor;
+                if (d.apartment)    apartment    = d.apartment;
+                if (d.arrivalNotes) arrivalNotes = d.arrivalNotes;
                 if (d.hours)        hours        = d.hours;
                 if (d.contact)      contact      = d.contact;
                 if (d.phone)        phone        = d.phone;
@@ -185,7 +193,8 @@
     function validate(): string | null {
         if (!title.trim())        return 'יש למלא שם הגמ"ח';
         if (!phone.trim())        return 'יש למלא טלפון ליצירת קשר';
-        if (!address.trim())      return 'יש למלא כתובת מדויקת';
+        if (!street.trim())       return 'יש למלא רחוב';
+        if (!buildingNum.trim())  return 'יש למלא מספר בניין';
         if (!city.trim())         return 'יש לבחור עיר';
         if (!neighborhood.trim()) return 'יש לבחור שכונה';
         return null;
@@ -195,14 +204,14 @@
         if (!browser) return;
         try {
             localStorage.setItem(DRAFT_KEY, JSON.stringify({
-                title, headline, summary, icon, description, address, hours, contact, phone, gmachType, city, neighborhood,
+                title, headline, summary, icon, description, street, buildingNum, floor, apartment, arrivalNotes, hours, contact, phone, gmachType, city, neighborhood,
                 logoBase64, images, tags,
             }));
         } catch {
             // אם חרגנו ממכסת localStorage (תמונות גדולות) — שמור בלי תמונות
             try {
                 localStorage.setItem(DRAFT_KEY, JSON.stringify({
-                    title, headline, summary, icon, description, address, hours, contact, phone, gmachType, city, neighborhood, tags,
+                    title, headline, summary, icon, description, street, buildingNum, floor, apartment, arrivalNotes, hours, contact, phone, gmachType, city, neighborhood, tags,
                 }));
             } catch {}
         }
@@ -318,7 +327,7 @@
                 </div>
 
                 <div>
-                    <label for="gmach_type" class="text-white text-sm font-bold mb-1 block">סוג הגמ"ח</label>
+                    <label for="gmach_type" class="text-white text-sm font-bold mb-1 block">סוג הגמ"ח (סוג האייקון)</label>
                     <select id="gmach_type" name="gmach_type" bind:value={gmachType} class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white" style="color-scheme: dark;">
                         <option value="">-- בחר סוג --</option>
                         {#each GMACH_TYPES as t}
@@ -389,13 +398,33 @@
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label for="address" class="text-white text-sm font-bold mb-1 block">כתובת מדויקת *</label>
-                        <input id="address" name="address" bind:value={address} required placeholder="רחוב ומספר" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
+                        <label for="street" class="text-white text-sm font-bold mb-1 block">רחוב *</label>
+                        <input id="street" name="street" bind:value={street} required placeholder="שם הרחוב" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
+                    </div>
+                    <div>
+                        <label for="buildingNum" class="text-white text-sm font-bold mb-1 block">מספר בניין *</label>
+                        <input id="buildingNum" name="buildingNum" bind:value={buildingNum} required placeholder="מספר" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label for="floor" class="text-white text-sm font-bold mb-1 block">קומה</label>
+                        <input id="floor" name="floor" bind:value={floor} placeholder="לדוגמה: 3" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
+                    </div>
+                    <div>
+                        <label for="apartment" class="text-white text-sm font-bold mb-1 block">מספר דירה</label>
+                        <input id="apartment" name="apartment" bind:value={apartment} placeholder="לדוגמה: 5" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
                     </div>
                     <div>
                         <label for="hours" class="text-white text-sm font-bold mb-1 block">שעות פעילות</label>
-                        <input id="hours" name="hours" bind:value={hours} placeholder="לדוגמה: 9:00-21:00" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
+                        <input id="hours" name="hours" bind:value={hours} placeholder="9:00-21:00" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
                     </div>
+                </div>
+
+                <div>
+                    <label for="arrivalNotes" class="text-white text-sm font-bold mb-1 block">הערות הגעה</label>
+                    <textarea id="arrivalNotes" name="arrivalNotes" bind:value={arrivalNotes} rows="2" placeholder="לדוגמה: כנסו דרך הכניסה הצדדית" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" style="color-scheme: dark;"></textarea>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">

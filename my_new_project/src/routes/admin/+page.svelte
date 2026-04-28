@@ -329,7 +329,7 @@
 					name="neighborhoods"
 					bind:value={coordNeighborhoods}
 					rows="4"
-					placeholder={"קרית משה\nרמות\nגילה"}
+					placeholder={"קרית משה\nרמות\nגילה\nחשמונאים"}
 					class="w-full bg-[#1e293b] border border-white/10 rounded-xl px-4 py-2.5 text-white
 					       placeholder-gray-500 focus:outline-none focus:border-amber-500 transition-colors resize-none mb-4"
 				></textarea>

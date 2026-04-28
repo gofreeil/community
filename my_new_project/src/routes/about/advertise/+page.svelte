@@ -230,6 +230,7 @@
         'כרמל צרפתי':  '/images/neighborhoods/french-carmel.jpg',
         'נווה שאנן':   '/images/neighborhoods/neve-shaanan.jpg',
         'בת גלים':     '/images/neighborhoods/bat-galim.jpg',
+        'חשמונאים':    '/images/kiryat-moshe-vaad.jfif',
     };
 
     // City images — keyed by city name

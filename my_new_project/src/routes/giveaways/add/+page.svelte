@@ -169,15 +169,59 @@
                         </div>
                     </div>
 
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label for="street" class="text-white text-sm font-bold mb-1 block">רחוב (אופציונלי)</label>
+                            <input
+                                id="street"
+                                name="street"
+                                placeholder="שם הרחוב"
+                                class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:border-orange-500/50 focus:outline-none transition-colors"
+                            />
+                        </div>
+                        <div>
+                            <label for="buildingNum" class="text-white text-sm font-bold mb-1 block">מספר בניין (אופציונלי)</label>
+                            <input
+                                id="buildingNum"
+                                name="buildingNum"
+                                placeholder="מספר"
+                                class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:border-orange-500/50 focus:outline-none transition-colors"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label for="floor" class="text-white text-sm font-bold mb-1 block">קומה</label>
+                            <input
+                                id="floor"
+                                name="floor"
+                                placeholder="לדוגמה: 3"
+                                class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:border-orange-500/50 focus:outline-none transition-colors"
+                            />
+                        </div>
+                        <div>
+                            <label for="apartment" class="text-white text-sm font-bold mb-1 block">מספר דירה</label>
+                            <input
+                                id="apartment"
+                                name="apartment"
+                                placeholder="לדוגמה: 5"
+                                class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:border-orange-500/50 focus:outline-none transition-colors"
+                            />
+                        </div>
+                        <div />
+                    </div>
+
                     <div>
-                        <label for="address" class="text-white text-sm font-bold mb-1 block">כתובת לאיסוף (אופציונלי)</label>
-                        <input
-                            id="address"
-                            name="address"
-                            placeholder="לדוגמה: ליד מכולת המרכז"
-                            class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:border-orange-500/50 focus:outline-none transition-colors"
-                        />
-                        <p class="text-gray-500 text-xs mt-1">תיאור חופשי — לא חובה כתובת מדויקת</p>
+                        <label for="arrivalNotes" class="text-white text-sm font-bold mb-1 block">הערות הגעה</label>
+                        <textarea
+                            id="arrivalNotes"
+                            name="arrivalNotes"
+                            rows="2"
+                            placeholder="לדוגמה: כנסו דרך הכניסה הצדדית"
+                            class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:border-orange-500/50 focus:outline-none transition-colors resize-none"
+                            style="color-scheme: dark;"
+                        ></textarea>
                     </div>
                 </div>
 

@@ -250,7 +250,9 @@
       "Bash(find D:\\\\\\\\Users\\\\\\\\User\\\\\\\\Documents\\\\\\\\GitHub\\\\\\\\community\\\\\\\\my_new_project\\\\\\\\src\\\\\\\\lib\\\\\\\\server -name \"db*\" -type f)",
       "mcp__Claude_in_Chrome__read_network_requests",
       "Bash(curl -s http://localhost:5173)",
-      "Bash(curl -I http://localhost:5173/@vite/client)"
+      "Bash(curl -I http://localhost:5173/@vite/client)",
+      "mcp__Claude_in_Chrome__resize_window",
+      "Bash(grep -i \"\\\\.svelte$\\\\|\\\\.ts$\")"
     ]
   }
 }

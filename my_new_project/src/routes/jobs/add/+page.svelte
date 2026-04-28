@@ -50,13 +50,33 @@
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label for="address" class="text-white text-sm font-bold mb-1 block">מיקום</label>
-                        <input id="address" name="address" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
+                        <label for="street" class="text-white text-sm font-bold mb-1 block">רחוב</label>
+                        <input id="street" name="street" placeholder="שם הרחוב" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
+                    </div>
+                    <div>
+                        <label for="buildingNum" class="text-white text-sm font-bold mb-1 block">מספר בניין</label>
+                        <input id="buildingNum" name="buildingNum" placeholder="מספר" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label for="floor" class="text-white text-sm font-bold mb-1 block">קומה</label>
+                        <input id="floor" name="floor" placeholder="לדוגמה: 3" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
+                    </div>
+                    <div>
+                        <label for="apartment" class="text-white text-sm font-bold mb-1 block">מספר דירה</label>
+                        <input id="apartment" name="apartment" placeholder="לדוגמה: 5" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
                     </div>
                     <div>
                         <label for="hours" class="text-white text-sm font-bold mb-1 block">שעות</label>
-                        <input id="hours" name="hours" placeholder="לדוגמה: 9:00-17:00" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
+                        <input id="hours" name="hours" placeholder="9:00-17:00" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
                     </div>
+                </div>
+
+                <div>
+                    <label for="arrivalNotes" class="text-white text-sm font-bold mb-1 block">הערות הגעה</label>
+                    <textarea id="arrivalNotes" name="arrivalNotes" rows="2" placeholder="לדוגמה: כנסו דרך הכניסה הצדדית" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" style="color-scheme: dark;"></textarea>
                 </div>
 
                 <div>
