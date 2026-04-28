@@ -513,7 +513,18 @@
         setTimeout(() => leafletMap?.invalidateSize?.(), 0);
         setTimeout(() => leafletMap?.invalidateSize?.(), 250);
 
-        // טיפול בwheel scroll — השבת scroll/drag zoom כשבminZoom
+        // טיפול בwheel scroll — עצור לחלוטין כשבminZoom
+        const preventWheelZoom = (e: WheelEvent) => {
+            const currentZoom = leafletMap.getZoom();
+            const minZoom = 8;
+
+            // אם בminZoom — עצור את כל wheel events
+            if (currentZoom === minZoom) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        };
+
         const handleZoomChange = () => {
             const currentZoom = leafletMap.getZoom();
             const minZoom = 8;
@@ -524,12 +535,16 @@
                 leafletMap.dragging.disable();
                 leafletMap.touchZoom.disable();
                 leafletMap.doubleClickZoom.disable();
+                // גם הוסף wheel listener בcapture phase
+                if (mapEl) mapEl.addEventListener('wheel', preventWheelZoom, { capture: true, passive: false });
             } else {
                 // לא בminZoom — הפעל כל דרך zoom
                 leafletMap.scrollWheelZoom.enable();
                 leafletMap.dragging.enable();
                 leafletMap.touchZoom.enable();
                 leafletMap.doubleClickZoom.enable();
+                // הסר wheel listener
+                if (mapEl) mapEl.removeEventListener('wheel', preventWheelZoom, { capture: true } as any);
             }
         };
 
