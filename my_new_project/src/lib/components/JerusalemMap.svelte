@@ -513,42 +513,32 @@
         setTimeout(() => leafletMap?.invalidateSize?.(), 0);
         setTimeout(() => leafletMap?.invalidateSize?.(), 250);
 
-        // טיפול בwheel scroll — בminZoom, המפה תהיה כמו תמונה (לא אינטראקטיבית)
-        const handleZoomChange = () => {
+        // טיפול בwheel — עצור wheel events בcapture phase קודם לLeaflet
+        const wheelHandler = (e: WheelEvent) => {
             const currentZoom = leafletMap.getZoom();
             const minZoom = 8;
 
+            // אם בminZoom — עצור wheel לחלוטין
             if (currentZoom === minZoom) {
-                // בminZoom — השבת כל דרך zoom ותעשה המפה כמו "הגנת זכוכית"
-                leafletMap.scrollWheelZoom.disable();
-                leafletMap.dragging.disable();
-                leafletMap.touchZoom.disable();
-                leafletMap.doubleClickZoom.disable();
-                leafletMap.boxZoom.disable();
-                // עצור כל mouse interactions על המפה
-                if (mapEl) {
-                    mapEl.style.pointerEvents = 'none';
-                }
-            } else {
-                // לא בminZoom — הפעל כל דרך zoom והפוך את המפה לאינטראקטיבית
-                leafletMap.scrollWheelZoom.enable();
-                leafletMap.dragging.enable();
-                leafletMap.touchZoom.enable();
-                leafletMap.doubleClickZoom.enable();
-                leafletMap.boxZoom.enable();
-                if (mapEl) {
-                    mapEl.style.pointerEvents = 'auto';
-                }
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                return false;
             }
         };
 
-        // בדוק את הzoom level בכל שינוי
-        leafletMap.on('zoomend', handleZoomChange);
-        handleZoomChange(); // בדוק בתחילה
+        // הוסף listener בcapture phase לפני שLeaflet מקבל אותו
+        if (mapEl) {
+            mapEl.addEventListener('wheel', wheelHandler, {
+                capture: true,
+                passive: false
+            });
+        }
 
         // ניקוי כשה-element מנותק
         return () => {
-            leafletMap.off('zoomend', handleZoomChange);
+            if (mapEl) {
+                mapEl.removeEventListener('wheel', wheelHandler, { capture: true } as any);
+            }
             try { leafletMap?.remove?.(); } catch {}
             leafletMap = null;
             mapMarkerLayer = null;
