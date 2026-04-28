@@ -7,6 +7,8 @@
 	let totalDonated     = $state(0);
 	let totalDistributed = $state(0);
 
+	let textareaEl: HTMLTextAreaElement | undefined = $state();
+
 	onMount(async () => {
 		try {
 			const res = await fetch('/api/community-fund');
@@ -18,6 +20,32 @@
 		} catch {
 			// אם ה-API לא זמין — נשאר 0
 		}
+
+		// טיפול בwheel scroll — קדימות לעמוד אלא אם כן יש overflow בתוכן
+		const handleWheelEvent = (e: WheelEvent) => {
+			if (!textareaEl) return;
+			const hasScroll = textareaEl.scrollHeight > textareaEl.clientHeight;
+			const isAtTop = textareaEl.scrollTop === 0 && e.deltaY < 0;
+			const isAtBottom = textareaEl.scrollTop + textareaEl.clientHeight >= textareaEl.scrollHeight && e.deltaY > 0;
+
+			// אם אין scroll כלל, או שנמצאים בקצה של ה-textarea — תן לעמוד גלול
+			if (!hasScroll || isAtTop || isAtBottom) {
+				return;
+			}
+
+			// אחרת, עצור את עמוד scroll וגלול בתוך textarea
+			e.preventDefault();
+		};
+
+		if (textareaEl) {
+			textareaEl.addEventListener('wheel', handleWheelEvent, { passive: false });
+		}
+
+		return () => {
+			if (textareaEl) {
+				textareaEl.removeEventListener('wheel', handleWheelEvent);
+			}
+		};
 	});
 
 	function handleSubmit() {
@@ -147,6 +175,7 @@
 					</label>
 					<textarea
 						id="wish-input"
+						bind:this={textareaEl}
 						bind:value={wishText}
 						placeholder="כתוב כאן את המשאלה שלך..."
 						rows="6"

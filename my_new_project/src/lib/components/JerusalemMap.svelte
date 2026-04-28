@@ -513,8 +513,27 @@
         setTimeout(() => leafletMap?.invalidateSize?.(), 0);
         setTimeout(() => leafletMap?.invalidateSize?.(), 250);
 
+        // טיפול בwheel scroll — קדימות למפה על עמוד
+        const handleWheelEvent = (e: WheelEvent) => {
+            const currentZoom = leafletMap.getZoom();
+            const minZoom = 8;
+            // אם בminZoom וגלילה מטה (away from map) — תן לעמוד גלול
+            if (currentZoom === minZoom && e.deltaY > 0) {
+                return;
+            }
+            // אחרת: עצור את page scroll וגלול המפה
+            e.preventDefault();
+        };
+
+        if (mapEl) {
+            mapEl.addEventListener('wheel', handleWheelEvent, { passive: false });
+        }
+
         // ניקוי כשה-element מנותק
         return () => {
+            if (mapEl) {
+                mapEl.removeEventListener('wheel', handleWheelEvent);
+            }
             try { leafletMap?.remove?.(); } catch {}
             leafletMap = null;
             mapMarkerLayer = null;
