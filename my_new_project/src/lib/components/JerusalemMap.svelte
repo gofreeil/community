@@ -498,7 +498,7 @@
             scrollWheelZoom: true,
             maxBounds: israelBounds,
             maxBoundsViscosity: 1.0,
-            minZoom: 6,  // הגבלת zoom out לרמה 6 (בערך פי 3 קטן מהמפה המלאה)
+            minZoom: 8,  // הגבלת zoom out לרמה 8 (עם zoom out יותר מוגבל)
             maxZoom: 19
         }).setView(center, 14);
 
