@@ -248,7 +248,9 @@
       "Bash(curl -s \"http://localhost:1337/api/items?filters%5Bcategory%5D%5B%24eq%5D=giveaway&pagination%5Blimit%5D=5\")",
       "Bash(vercel ls *)",
       "Bash(find D:\\\\\\\\Users\\\\\\\\User\\\\\\\\Documents\\\\\\\\GitHub\\\\\\\\community\\\\\\\\my_new_project\\\\\\\\src\\\\\\\\lib\\\\\\\\server -name \"db*\" -type f)",
-      "mcp__Claude_in_Chrome__read_network_requests"
+      "mcp__Claude_in_Chrome__read_network_requests",
+      "Bash(curl -s http://localhost:5173)",
+      "Bash(curl -I http://localhost:5173/@vite/client)"
     ]
   }
 }

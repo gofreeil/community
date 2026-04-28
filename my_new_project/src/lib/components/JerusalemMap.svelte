@@ -489,8 +489,8 @@
         const center = getCoordsFor(neighborhoodState.neighborhood, neighborhoodState.city);
         // גבולות מדינת ישראל: דרום-מערב (אילת) עד צפון-מזרח (רמת הגולן)
         const israelBounds = leafletL.latLngBounds(
-            [29.4, 34.1],  // דרום-מערב (קצת יותר רחוק)
-            [33.5, 36.0]   // צפון-מזרח (קצת יותר רחוק)
+            [29.5, 34.2],  // דרום-מערב (קרוב יותר לגבול)
+            [33.3, 35.8]   // צפון-מזרח (קרוב יותר לגבול)
         );
         leafletMap = leafletL.map(mapEl, {
             zoomControl: true,
@@ -1428,7 +1428,7 @@
                     onclick={zoomIn}
                     aria-label="הגדל"
                     title="הגדל (Zoom In)"
-                    class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white text-lg font-bold flex items-center justify-center transition-all backdrop-blur-sm border border-white/20 hover:scale-110"
+                    class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white text-lg font-bold flex items-center justify-center transition-all shadow-lg border border-purple-400 hover:scale-110"
                 >
                     +
                 </button>
@@ -1437,7 +1437,7 @@
                     onclick={zoomOut}
                     aria-label="הקטן"
                     title="הקטן (Zoom Out)"
-                    class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white text-lg font-bold flex items-center justify-center transition-all backdrop-blur-sm border border-white/20 hover:scale-110"
+                    class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white text-lg font-bold flex items-center justify-center transition-all shadow-lg border border-purple-400 hover:scale-110"
                 >
                     −
                 </button>
