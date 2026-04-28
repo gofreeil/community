@@ -909,7 +909,6 @@
         <button
             onclick={() => {
                 if (isFullscreen) return;
-                if (typeof window !== 'undefined' && window.innerWidth >= 1024 && isMouseOver) return;
                 handleViewToggle(false);
             }}
             class="page-corner absolute top-0 left-0 z-30 transition-all duration-500 hover:scale-110"
