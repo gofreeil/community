@@ -249,8 +249,8 @@
                 <div
                     class="fixed md:absolute top-20 md:top-full left-1/2 transform -translate-x-1/2 mt-0 md:mt-4 bg-gray-900 rounded-xl shadow-2xl p-3 md:p-4 z-[9999] max-w-5xl w-[95vw] md:w-full max-h-[80vh] overflow-y-auto"
                 >
-                    <!-- Header עם חיפוש -->
-                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-3">
+                    <!-- Header עם חיפוש (קפוא בראש התפריט) -->
+                    <div class="sticky top-0 z-10 -mx-3 md:-mx-4 -mt-3 md:-mt-4 px-3 md:px-4 pt-3 md:pt-4 pb-2 mb-3 bg-gray-900 border-b border-purple-500/20 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                         <h3 class="text-white text-base md:text-lg font-bold whitespace-nowrap">
                             🏘️ בחר עיר ושכונה
                         </h3>
