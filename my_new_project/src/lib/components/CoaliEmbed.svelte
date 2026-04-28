@@ -4,6 +4,16 @@
     let iframeFailed = $state(false);
     let loadTimeout: ReturnType<typeof setTimeout>;
 
+    // ----- "הגנת זכוכית" — ההצבעות לא אינטראקטיביות עד שלוחצים עליהן -----
+    let isInteractive = $state(false);
+
+    function activate() {
+        isInteractive = true;
+    }
+    function deactivate() {
+        isInteractive = false;
+    }
+
     function handleLoad() {
         iframeLoaded = true;
         clearTimeout(loadTimeout);
@@ -45,7 +55,11 @@
     </div>
 
     <!-- Iframe container -->
-    <div class="relative w-full bg-[#0f172a] h-[210px] md:h-[400px]">
+    <div
+        class="relative w-full bg-[#0f172a] h-[210px] md:h-[400px]"
+        onmouseleave={deactivate}
+        role="region"
+    >
         {#if !iframeLoaded && !iframeFailed}
             <div class="absolute inset-0 flex flex-col items-center justify-center gap-3 text-gray-400">
                 <div class="w-10 h-10 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
@@ -82,6 +96,20 @@
             onload={handleLoad}
             onerror={handleError}
         ></iframe>
+
+        <!-- "הגנת זכוכית" — שכבת overlay שקופה כשההצבעות לא אינטראקטיביות -->
+        {#if !isInteractive && iframeLoaded}
+            <button
+                type="button"
+                onclick={activate}
+                class="absolute inset-0 z-10 w-full h-full bg-transparent cursor-pointer flex items-center justify-center group"
+                aria-label="לחץ להפעלת ההצבעות"
+            >
+                <div class="bg-black/50 backdrop-blur-sm text-white px-6 py-3 rounded-xl border border-white/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                    <span class="text-sm font-bold">🗳️ לחץ להפעלת ההצבעות</span>
+                </div>
+            </button>
+        {/if}
     </div>
 
     <!-- Footer note (mobile open link only) -->
