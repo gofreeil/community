@@ -513,17 +513,23 @@
         setTimeout(() => leafletMap?.invalidateSize?.(), 0);
         setTimeout(() => leafletMap?.invalidateSize?.(), 250);
 
-        // טיפול בwheel scroll — השבת scrollWheelZoom כשבminZoom
+        // טיפול בwheel scroll — השבת scroll/drag zoom כשבminZoom
         const handleZoomChange = () => {
             const currentZoom = leafletMap.getZoom();
             const minZoom = 8;
 
             if (currentZoom === minZoom) {
-                // בminZoom — השבת zoom בwheel
+                // בminZoom — השבת כל דרך zoom
                 leafletMap.scrollWheelZoom.disable();
+                leafletMap.dragging.disable();
+                leafletMap.touchZoom.disable();
+                leafletMap.doubleClickZoom.disable();
             } else {
-                // לא בminZoom — הפעל zoom בwheel
+                // לא בminZoom — הפעל כל דרך zoom
                 leafletMap.scrollWheelZoom.enable();
+                leafletMap.dragging.enable();
+                leafletMap.touchZoom.enable();
+                leafletMap.doubleClickZoom.enable();
             }
         };
 
