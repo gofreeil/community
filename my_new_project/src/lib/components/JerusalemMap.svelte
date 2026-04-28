@@ -513,32 +513,23 @@
         setTimeout(() => leafletMap?.invalidateSize?.(), 0);
         setTimeout(() => leafletMap?.invalidateSize?.(), 250);
 
-        // טיפול בwheel scroll — קדימות לעמוד כשבminZoom
-        const handleWheelEvent = (e: WheelEvent) => {
+        // טיפול בwheel scroll בעזרת Leaflet's event system
+        const handleWheel = (e: any) => {
             const currentZoom = leafletMap.getZoom();
             const minZoom = 8;
 
-            // אם בminZoom וגולל מטה (away from map) — עצור את Leaflet מטיפול בזה
-            if (currentZoom === minZoom && e.deltaY > 0) {
-                e.stopImmediatePropagation();
-                // אל תעשה preventDefault - תן לעמוד להתגלול
-                return;
+            // אם בminZoom וגולל מטה — השבת scrollWheelZoom זמנית
+            if (currentZoom === minZoom && e.originalEvent?.deltaY > 0) {
+                leafletMap.scrollWheelZoom.disable();
+                setTimeout(() => leafletMap.scrollWheelZoom.enable(), 100);
             }
-            // אחרת: עצור את page scroll וגלול המפה
-            e.preventDefault();
-            e.stopImmediatePropagation();
         };
 
-        if (mapEl) {
-            // תפוס בcapture phase קודם לLeaflet
-            mapEl.addEventListener('wheel', handleWheelEvent, { capture: true, passive: false });
-        }
+        leafletMap.on('wheel', handleWheel);
 
         // ניקוי כשה-element מנותק
         return () => {
-            if (mapEl) {
-                mapEl.removeEventListener('wheel', handleWheelEvent);
-            }
+            leafletMap.off('wheel', handleWheel);
             try { leafletMap?.remove?.(); } catch {}
             leafletMap = null;
             mapMarkerLayer = null;
