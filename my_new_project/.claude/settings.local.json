@@ -253,7 +253,11 @@
       "Bash(curl -I http://localhost:5173/@vite/client)",
       "mcp__Claude_in_Chrome__resize_window",
       "Bash(grep -i \"\\\\.svelte$\\\\|\\\\.ts$\")",
-      "Bash(cd \"D:\\\\\\\\Users\\\\\\\\User\\\\\\\\Documents\\\\\\\\GitHub\\\\\\\\community\\\\\\\\my_new_project\")"
+      "Bash(cd \"D:\\\\\\\\Users\\\\\\\\User\\\\\\\\Documents\\\\\\\\GitHub\\\\\\\\community\\\\\\\\my_new_project\")",
+      "Bash(pandoc 'D:\\\\Users\\\\User\\\\Downloads\\\\שכונות ויישובים בארץ.docx' -t plain)",
+      "Bash(python \"C:\\\\Users\\\\User\\\\AppData\\\\Roaming\\\\Claude\\\\local-agent-mode-sessions\\\\skills-plugin\\\\fcfbeeb2-7619-48cd-9da9-3cba6d844903\\\\99330d3c-6214-4aea-a301-9373e92e5996\\\\skills\\\\docx\\\\scripts\\\\office\\\\unpack.py\" 'D:\\\\Users\\\\User\\\\Downloads\\\\שכונות ויישובים בארץ.docx' unpacked_doc)",
+      "Bash(unzip -q 'D:\\\\Users\\\\User\\\\Downloads\\\\שכונות ויישובים בארץ.docx' -d docx_unpack)",
+      "Bash(iconv -f utf-8 -t utf-8)"
     ]
   }
 }

@@ -20,7 +20,9 @@
 		} catch {
 			// אם ה-API לא זמין — נשאר 0
 		}
+	});
 
+	onMount(() => {
 		// טיפול בwheel scroll — קדימות לעמוד אלא אם כן יש overflow בתוכן
 		const handleWheelEvent = (e: WheelEvent) => {
 			if (!textareaEl) return;
