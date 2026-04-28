@@ -185,6 +185,16 @@
     // ----- מצב מסך מלא לדסקטופ -----
     let isFullscreen = $state(false);
 
+    // ----- "הגנת זכוכית" — המפה לא אינטראקטיבית עד שלוחצים עליה -----
+    let isMapInteractive = $state(false);
+
+    function activateMap() {
+        isMapInteractive = true;
+    }
+    function deactivateMap() {
+        if (!isFullscreen) isMapInteractive = false;
+    }
+
     function openFullscreen() {
         isFullscreen = true;
     }
@@ -223,6 +233,11 @@
         const prev = document.body.style.overflow;
         if (isFullscreen) document.body.style.overflow = 'hidden';
         return () => { document.body.style.overflow = prev; };
+    });
+
+    // במסך מלא — המפה תמיד אינטראקטיבית
+    $effect(() => {
+        if (isFullscreen) isMapInteractive = true;
     });
     let successMessageText = $state("");
     let isMouseOver = $state(false);
@@ -513,32 +528,8 @@
         setTimeout(() => leafletMap?.invalidateSize?.(), 0);
         setTimeout(() => leafletMap?.invalidateSize?.(), 250);
 
-        // טיפול בwheel — עצור wheel events בcapture phase קודם לLeaflet
-        const wheelHandler = (e: WheelEvent) => {
-            const currentZoom = leafletMap.getZoom();
-            const minZoom = 8;
-
-            // אם בminZoom — עצור wheel לחלוטין
-            if (currentZoom === minZoom) {
-                e.preventDefault();
-                e.stopImmediatePropagation();
-                return false;
-            }
-        };
-
-        // הוסף listener בcapture phase לפני שLeaflet מקבל אותו
-        if (mapEl) {
-            mapEl.addEventListener('wheel', wheelHandler, {
-                capture: true,
-                passive: false
-            });
-        }
-
         // ניקוי כשה-element מנותק
         return () => {
-            if (mapEl) {
-                mapEl.removeEventListener('wheel', wheelHandler, { capture: true } as any);
-            }
             try { leafletMap?.remove?.(); } catch {}
             leafletMap = null;
             mapMarkerLayer = null;
@@ -1036,7 +1027,26 @@
                 {/if}
 
                 <!-- מפת Leaflet — מרקרים אמיתיים שזזים יחד עם המפה -->
-                <div bind:this={mapEl} class="w-full h-full relative z-0" aria-label="מפת השכונה"></div>
+                <div
+                    bind:this={mapEl}
+                    onmouseleave={deactivateMap}
+                    class="w-full h-full relative z-0"
+                    aria-label="מפת השכונה"
+                ></div>
+
+                <!-- "הגנת זכוכית" — שכבת overlay מעל המפה כשהיא לא אינטראקטיבית -->
+                {#if !isMapInteractive}
+                    <button
+                        type="button"
+                        onclick={activateMap}
+                        class="absolute inset-0 z-10 w-full h-full bg-transparent cursor-pointer flex items-center justify-center group"
+                        aria-label="לחץ להפעלת המפה"
+                    >
+                        <div class="bg-black/50 backdrop-blur-sm text-white px-6 py-3 rounded-xl border border-white/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                            <span class="text-sm font-bold">🖱️ לחץ להפעלת המפה</span>
+                        </div>
+                    </button>
+                {/if}
 
                 <!-- Badge לפריטים חדשים בשכונה -->
                 {#if neighborhoodDbItems.length > 0}
