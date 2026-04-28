@@ -11,6 +11,7 @@
     import { neighborhoodState } from "$lib/neighborhoodState.svelte";
     import { getCoordsFor, jitterCoord } from "$lib/neighborhoodCoords";
     import type { DbItem } from "$lib/server/db";
+    import 'leaflet/dist/leaflet.css';
 
     const dispatch = createEventDispatcher();
 
@@ -474,7 +475,6 @@
         try {
             const mod = await import('leaflet');
             leafletL = (mod as any).default ?? mod;
-            await import('leaflet/dist/leaflet.css');
             leafletReady = true;
         } catch (e) {
             console.error('[jmap] Leaflet load failed:', e instanceof Error ? e.message : e);
