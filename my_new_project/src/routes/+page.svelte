@@ -10,7 +10,7 @@
     import { triggerAdPopup } from "$lib/adPopupStore";
     import { ads } from "$lib/adsData";
 
-    import { citiesAndNeighborhoods } from "$lib/neighborhoodsData";
+    import { citiesAndNeighborhoods, citiesData } from "$lib/neighborhoodsData";
     import { neighborhoodState } from "$lib/neighborhoodState.svelte";
     import type { PageData } from './$types';
 
@@ -25,11 +25,25 @@
         neighborhoodState.city === "ירושלים"
     );
 
+    // איחוד כל הערים — אם עיר מופיעה פעמיים בנתונים, נאחד את השכונות שלה (ללא כפילויות)
+    const allCitiesMerged = (() => {
+        const map = new Map<string, string[]>();
+        for (const entry of citiesData) {
+            const existing = map.get(entry.city) ?? [];
+            const combined = [...existing, ...entry.neighborhoods];
+            // הסר כפילויות תוך שמירה על סדר
+            const unique = Array.from(new Set(combined));
+            map.set(entry.city, unique);
+        }
+        // מיון אלפביתי בעברית
+        return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b, 'he'));
+    })();
+
     // חיפוש ערים לפי query
     const filteredCities = $derived.by(() => {
         const q = searchQuery.trim().toLowerCase();
-        if (!q) return Object.entries(citiesAndNeighborhoods);
-        return Object.entries(citiesAndNeighborhoods).filter(([city]) =>
+        if (!q) return allCitiesMerged;
+        return allCitiesMerged.filter(([city]) =>
             city.toLowerCase().includes(q)
         );
     });
@@ -233,51 +247,56 @@
 
                 <!-- Menu -->
                 <div
-                    class="fixed md:absolute top-20 md:top-full left-1/2 transform -translate-x-1/2 mt-0 md:mt-4 bg-gray-900 rounded-xl shadow-2xl p-4 md:p-6 z-[9999] max-w-4xl w-[95vw] md:w-full max-h-[80vh] overflow-y-auto"
+                    class="fixed md:absolute top-20 md:top-full left-1/2 transform -translate-x-1/2 mt-0 md:mt-4 bg-gray-900 rounded-xl shadow-2xl p-3 md:p-4 z-[9999] max-w-5xl w-[95vw] md:w-full max-h-[80vh] overflow-y-auto"
                 >
-                    <h3
-                        class="text-white text-lg md:text-xl font-bold mb-3 md:mb-4 text-center"
-                    >
-                        בחר עיר ושכונה
-                    </h3>
-
-                    <!-- Search Bar -->
-                    <div class="mb-4">
-                        <input
-                            type="text"
-                            placeholder="חיפוש עיר..."
-                            bind:value={searchQuery}
-                            class="w-full bg-gray-800 border border-purple-500/30 text-white rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
-                        />
+                    <!-- Header עם חיפוש -->
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-3">
+                        <h3 class="text-white text-base md:text-lg font-bold whitespace-nowrap">
+                            🏘️ בחר עיר ושכונה
+                        </h3>
+                        <div class="relative flex-1">
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-purple-400 text-sm pointer-events-none">🔎</span>
+                            <input
+                                type="text"
+                                placeholder="חיפוש עיר..."
+                                bind:value={searchQuery}
+                                class="w-full bg-gray-800 border border-purple-500/40 text-white rounded-lg pr-9 pl-3 py-1.5 text-sm focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
+                            />
+                        </div>
+                        <button
+                            onclick={closeMenu}
+                            class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold transition-colors whitespace-nowrap"
+                            aria-label="סגור"
+                        >
+                            ✕ סגור
+                        </button>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
-                        {#each filteredCities as [city, neighborhoods]}
-                            <div class="bg-gray-800 rounded-lg p-3">
-                                <h4
-                                    class="text-purple-400 font-bold mb-2 text-sm md:text-base"
-                                >
-                                    {city}
-                                </h4>
-                                <div class="space-y-1">
-                                    {#each neighborhoods as neighborhood}
-                                        <button
-                                            onclick={() => selectNeighborhood(neighborhood, city)}
-                                            class="block w-full text-right text-white text-xs md:text-sm hover:bg-purple-600 px-2 py-1 rounded transition-colors"
-                                        >
-                                            {neighborhood}
-                                        </button>
-                                    {/each}
+                    {#if filteredCities.length === 0}
+                        <div class="text-center text-gray-400 py-6 text-sm">
+                            לא נמצאו ערים תואמות "{searchQuery}"
+                        </div>
+                    {:else}
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                            {#each filteredCities as [city, neighborhoods]}
+                                <div class="bg-gray-800/70 rounded-lg p-2 border border-purple-500/10">
+                                    <h4 class="text-purple-400 font-bold mb-1.5 text-xs md:text-sm border-b border-purple-500/20 pb-1">
+                                        {city}
+                                    </h4>
+                                    <div class="flex flex-wrap gap-1">
+                                        {#each neighborhoods as neighborhood}
+                                            <button
+                                                onclick={() => selectNeighborhood(neighborhood, city)}
+                                                class="text-white text-[11px] md:text-xs bg-gray-700/50 hover:bg-purple-600 px-2 py-0.5 rounded transition-colors"
+                                            >
+                                                {neighborhood}
+                                            </button>
+                                        {/each}
+                                    </div>
                                 </div>
-                            </div>
-                        {/each}
-                    </div>
-                    <button
-                        onclick={closeMenu}
-                        class="mt-4 w-full bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg font-bold text-sm transition-colors"
-                    >
-                        סגור
-                    </button>
+                            {/each}
+                        </div>
+                    {/if}
                 </div>
             {/if}
         </div>
