@@ -313,11 +313,12 @@
         });
     });
 
-    // פריטים מהשכונה הנוכחית — ריאקטיבי לשינויי neighborhoodState
+    // פריטים מהשכונה הנוכחית — ריאקטיבי לשינויי neighborhoodState ול-selectedCategory
     let neighborhoodDbItems = $derived(
         dbItems.filter(d =>
-            d.neighborhood === neighborhoodState.neighborhood ||
-            (d.neighborhood === '' && d.city === neighborhoodState.city)
+            (d.neighborhood === neighborhoodState.neighborhood ||
+                (d.neighborhood === '' && d.city === neighborhoodState.city)) &&
+            (selectedCategory === "benefits" || d.category === selectedCategory)
         )
     );
     let hasShownListAnimation = $state(false); // עקוב אם כבר הראינו את האנימציה
