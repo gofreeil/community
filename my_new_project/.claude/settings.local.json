@@ -257,7 +257,10 @@
       "Bash(pandoc 'D:\\\\Users\\\\User\\\\Downloads\\\\שכונות ויישובים בארץ.docx' -t plain)",
       "Bash(python \"C:\\\\Users\\\\User\\\\AppData\\\\Roaming\\\\Claude\\\\local-agent-mode-sessions\\\\skills-plugin\\\\fcfbeeb2-7619-48cd-9da9-3cba6d844903\\\\99330d3c-6214-4aea-a301-9373e92e5996\\\\skills\\\\docx\\\\scripts\\\\office\\\\unpack.py\" 'D:\\\\Users\\\\User\\\\Downloads\\\\שכונות ויישובים בארץ.docx' unpacked_doc)",
       "Bash(unzip -q 'D:\\\\Users\\\\User\\\\Downloads\\\\שכונות ויישובים בארץ.docx' -d docx_unpack)",
-      "Bash(iconv -f utf-8 -t utf-8)"
+      "Bash(iconv -f utf-8 -t utf-8)",
+      "Bash(pdftotext 'D:\\\\Users\\\\User\\\\Downloads\\\\שכונות ויישובים בארץ.pdf' -)",
+      "Bash(pdfimages -list 'D:\\\\Users\\\\User\\\\Downloads\\\\שכונות ויישובים בארץ.pdf')",
+      "Bash(pdftotext 'D:\\\\Users\\\\User\\\\Downloads\\\\שכונות ויישובים בארץ.pdf' /tmp/cities.txt)"
     ]
   }
 }

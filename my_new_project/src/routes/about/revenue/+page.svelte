@@ -979,12 +979,12 @@
 				<span class="text-xl">📈</span>
 				<span>רכישת מניות</span>
 			</button>
-			<a
-				href="/coordinator/apply"
+			<button
+				onclick={() => window.location.href = '/coordinator/apply'}
 				class="flex items-center justify-center gap-2 px-7 py-3 rounded-xl font-black text-base transition-all duration-200 hover:scale-105 hover:brightness-110 shadow-lg w-64"
-				style="background:linear-gradient(135deg,#78350f,#f59e0b); border:2px solid rgba(251,191,36,0.35);">
+				style="background:linear-gradient(135deg,#78350f,#f59e0b); border:2px solid rgba(251,191,36,0.35); cursor: pointer;">
 				<span>הצטרף לצוות הרכזים</span>
-			</a>
+			</button>
 		</div>
 	</div>
 
