@@ -329,9 +329,9 @@
                 <div>
                     <label for="gmach_type" class="text-white text-sm font-bold mb-1 block">סוג הגמ"ח (סוג האייקון)</label>
                     <select id="gmach_type" name="gmach_type" bind:value={gmachType} class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white" style="color-scheme: dark;">
-                        <option value="">-- בחר סוג --</option>
+                        <option value="" style="color: #000;">-- בחר סוג --</option>
                         {#each GMACH_TYPES as t}
-                            <option value={t.key}>{t.label}</option>
+                            <option value={t.key} style="color: #000;">{t.label}</option>
                         {/each}
                     </select>
                 </div>
