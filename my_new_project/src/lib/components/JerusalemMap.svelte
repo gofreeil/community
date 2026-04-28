@@ -489,15 +489,17 @@
         const center = getCoordsFor(neighborhoodState.neighborhood, neighborhoodState.city);
         // גבולות מדינת ישראל: דרום-מערב (אילת) עד צפון-מזרח (רמת הגולן)
         const israelBounds = leafletL.latLngBounds(
-            [29.5, 34.2],  // דרום-מערב
-            [33.4, 35.9]   // צפון-מזרח
+            [29.4, 34.1],  // דרום-מערב (קצת יותר רחוק)
+            [33.5, 36.0]   // צפון-מזרח (קצת יותר רחוק)
         );
         leafletMap = leafletL.map(mapEl, {
             zoomControl: true,
             attributionControl: true,
             scrollWheelZoom: true,
             maxBounds: israelBounds,
-            maxBoundsViscosity: 1.0
+            maxBoundsViscosity: 1.0,
+            minZoom: 6,  // הגבלת zoom out לרמה 6 (בערך פי 3 קטן מהמפה המלאה)
+            maxZoom: 19
         }).setView(center, 14);
 
         leafletL.tileLayer(TILE_URL, {
