@@ -223,7 +223,7 @@
                 height="882"
                 fetchpriority="high"
                 decoding="async"
-                class="w-full max-w-[32rem] md:max-w-[40rem] mx-auto block aspect-[1330/882]"
+                class="w-full max-w-[32rem] md:max-w-[40rem] mx-auto block aspect-[1330/882] bg-gradient-to-br from-orange-900/20 to-amber-900/10 rounded-2xl"
             />
         </div>
     </div>
@@ -249,7 +249,7 @@
                         src={cat.image}
                         alt={cat.label}
                         loading="lazy"
-                        class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        class="absolute inset-0 w-full h-full object-cover scale-110 transition-transform duration-500 group-hover:scale-[1.18]"
                     />
                     <!-- Dark gradient overlay for readability -->
                     <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/10 {active ? 'from-orange-900/80 via-orange-900/30' : ''}"></div>
