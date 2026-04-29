@@ -216,22 +216,7 @@
                     למסירה
                 </h1>
             </div>
-            <img src="/images/delivery.png" alt="" class="w-full max-w-[32rem] md:max-w-[40rem] mx-auto block mb-3" />
-
-            <!-- Stats banner -->
-            <div class="flex items-center justify-center gap-2 md:gap-4 text-xs md:text-sm">
-                <div class="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-full px-3 py-1.5 backdrop-blur-sm">
-                    <span class="text-base">📦</span>
-                    <span class="text-white font-bold">{data.items.length}</span>
-                    <span class="text-gray-400">פריטים</span>
-                </div>
-                {#if data.currentUserId}
-                    <a href="/giveaways/my" class="flex items-center gap-1.5 bg-orange-500/10 border border-orange-500/30 hover:bg-orange-500/20 rounded-full px-3 py-1.5 backdrop-blur-sm transition-colors">
-                        <span class="text-base">👤</span>
-                        <span class="text-orange-300 font-bold">הפריטים שלי</span>
-                    </a>
-                {/if}
-            </div>
+            <img src="/images/delivery.png" alt="" class="w-full max-w-[32rem] md:max-w-[40rem] mx-auto block" />
         </div>
     </div>
 
@@ -298,7 +283,7 @@
                         bind:value={search}
                         placeholder="מה מחפשים? ספה, מקרר, ספרים..."
                         aria-label="חיפוש פריטים"
-                        class="w-full bg-white/5 border-2 border-white/10 rounded-xl pe-12 ps-4 py-3 text-white placeholder:text-gray-500 focus:border-orange-500 focus:bg-white/10 focus:outline-none transition-all text-base"
+                        class="w-full bg-white/5 border-2 border-white/10 rounded-xl pe-12 {search ? 'ps-12' : 'ps-24'} py-3 text-white placeholder:text-gray-500 focus:border-orange-500 focus:bg-white/10 focus:outline-none transition-all text-base"
                     />
                     {#if search}
                         <button
@@ -307,15 +292,32 @@
                             aria-label="נקה חיפוש"
                             class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-xl bg-white/10 hover:bg-white/20 w-7 h-7 rounded-full flex items-center justify-center transition-colors"
                         >×</button>
+                    {:else}
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-[11px] md:text-xs text-gray-300 bg-white/10 border border-white/10 rounded-full px-2 py-1 pointer-events-none whitespace-nowrap">
+                            <span class="text-base leading-none">📦</span>
+                            <span class="text-white font-bold">{data.items.length}</span>
+                            <span class="text-gray-400">פריטים</span>
+                        </span>
                     {/if}
                 </div>
                 <a
                     href="/giveaways/add"
-                    class="hidden md:inline-flex items-center gap-2 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold px-5 py-3 rounded-xl shadow-lg shadow-orange-500/30 transition-all hover:scale-105 whitespace-nowrap"
+                    class="inline-flex items-center gap-1.5 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold px-3 md:px-5 py-3 rounded-xl shadow-lg shadow-orange-500/30 transition-all hover:scale-105 whitespace-nowrap"
+                    aria-label="פרסם פריט"
                 >
                     <span class="text-lg">➕</span>
-                    פרסם פריט
+                    <span class="hidden sm:inline">פרסם פריט</span>
                 </a>
+                {#if data.currentUserId}
+                    <a
+                        href="/giveaways/my"
+                        class="inline-flex items-center gap-1.5 bg-orange-500/10 border border-orange-500/30 hover:bg-orange-500/20 text-orange-300 font-bold px-3 md:px-4 py-3 rounded-xl transition-colors whitespace-nowrap"
+                        aria-label="הפריטים שלי"
+                    >
+                        <span class="text-lg">👤</span>
+                        <span class="hidden sm:inline">הפריטים שלי</span>
+                    </a>
+                {/if}
             </div>
 
             <!-- Filter Chips Row -->
@@ -658,15 +660,6 @@
                 {/each}
             </div>
         {/if}
-
-        <!-- Floating Add Button (mobile) -->
-        <a
-            href="/giveaways/add"
-            class="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-40 inline-flex items-center gap-2 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold px-6 py-3 rounded-full shadow-2xl shadow-orange-500/50 transition-all hover:scale-105 border-2 border-white/20"
-        >
-            <span class="text-lg">➕</span>
-            פרסם פריט
-        </a>
 
         <div class="text-center mt-10 mb-4">
             <a href="/" class="text-gray-500 hover:text-white transition-colors text-sm">← חזרה לדף הראשי</a>
