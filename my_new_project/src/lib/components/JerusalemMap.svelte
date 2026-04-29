@@ -1087,10 +1087,18 @@
                                     <div
                                         class="flex items-center gap-2 md:gap-3"
                                     >
-                                        <span
-                                            class="text-2xl md:text-xl md:text-3xl"
-                                            >{category.icon}</span
-                                        >
+                                        {#if category.id === 'giveaway'}
+                                            <img
+                                                src="/images/delivery.png"
+                                                alt=""
+                                                class="w-7 h-7 md:w-8 md:h-8 object-contain"
+                                            />
+                                        {:else}
+                                            <span
+                                                class="text-2xl md:text-xl md:text-3xl"
+                                                >{category.icon}</span
+                                            >
+                                        {/if}
                                         <span
                                             class="text-white font-bold text-base md:text-sm md:text-lg"
                                             >{category.label}</span
