@@ -216,7 +216,15 @@
                     למסירה
                 </h1>
             </div>
-            <img src="/images/delivery.png" alt="" class="w-full max-w-[32rem] md:max-w-[40rem] mx-auto block" />
+            <img
+                src="/images/delivery.png"
+                alt=""
+                width="1330"
+                height="882"
+                fetchpriority="high"
+                decoding="async"
+                class="w-full max-w-[32rem] md:max-w-[40rem] mx-auto block aspect-[1330/882] bg-gradient-to-br from-orange-900/20 to-amber-900/10 rounded-2xl"
+            />
         </div>
     </div>
 
@@ -227,20 +235,14 @@
                 <span class="text-orange-400">▾</span>
                 קטגוריות
             </h2>
-            {#if categoryFilter !== 'all'}
-                <button
-                    onclick={() => categoryFilter = 'all'}
-                    class="text-xs text-orange-400 hover:text-orange-300 font-bold transition-colors"
-                >× הצג הכל</button>
-            {/if}
         </div>
-        <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-6 gap-2 md:gap-3">
+        <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-5 gap-2 md:gap-4">
             {#each giveawayCategories as cat}
                 {@const count = categoryCounts[cat.key] ?? 0}
                 {@const active = categoryFilter === cat.key}
                 <button
                     onclick={() => categoryFilter = cat.key}
-                    class="relative group rounded-2xl overflow-hidden border-2 transition-all hover:scale-[1.03] hover:-translate-y-0.5 aspect-[4/3] {active ? 'border-orange-400 shadow-xl shadow-orange-500/40 ring-2 ring-orange-400/50' : 'border-white/10 hover:border-orange-500/60 shadow-lg'}"
+                    class="relative group rounded-2xl overflow-hidden border-2 transition-all hover:scale-[1.03] hover:-translate-y-0.5 aspect-square {active ? 'border-orange-400 shadow-xl shadow-orange-500/40 ring-2 ring-orange-400/50' : 'border-white/10 hover:border-orange-500/60 shadow-lg'}"
                     title={cat.label}
                 >
                     <img
