@@ -25,6 +25,19 @@
         return `https://wa.me/${digits}`;
     }
 
+    function shareToWhatsApp(item: { id: string | number; label: string; address?: string; description?: string }) {
+        const origin = typeof window !== 'undefined' ? window.location.origin : '';
+        const url = `${origin}/items/${item.id}`;
+        const lines = [
+            `🎁 למסירה: ${item.label}`,
+            item.address ? `📍 ${item.address}` : '',
+            item.description ? `\n${item.description}` : '',
+            `\n🔗 ${url}`,
+        ].filter(Boolean);
+        const text = lines.join('\n');
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
+    }
+
     function timeAgo(iso: string): string {
         if (!iso) return '';
         const diff = (Date.now() - new Date(iso).getTime()) / 1000;
@@ -171,8 +184,8 @@
                                     <span>{timeAgo(item.created_at)}</span>
                                 </p>
                             {/if}
-                            {#if item.phone}
-                                <div class="mt-auto flex gap-1.5 pt-2">
+                            <div class="mt-auto flex gap-1.5 pt-2">
+                                {#if item.phone}
                                     <a
                                         href={waLink(item.phone)}
                                         target="_blank"
@@ -185,8 +198,17 @@
                                         aria-label="התקשרות"
                                         class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white py-1.5 px-3 rounded-lg transition-colors text-xs"
                                     >📞</a>
-                                </div>
-                            {/if}
+                                {/if}
+                                <button
+                                    type="button"
+                                    onclick={() => shareToWhatsApp(item)}
+                                    aria-label="שתף בוואטסאפ"
+                                    title="שתף בוואטסאפ"
+                                    class="{item.phone ? '' : 'flex-1 gap-1 '}flex items-center justify-center bg-emerald-700/40 hover:bg-emerald-600/70 text-emerald-200 hover:text-white border border-emerald-500/30 py-1.5 px-3 rounded-lg transition-colors text-xs"
+                                >
+                                    <span aria-hidden="true">📤</span>{#if !item.phone}<span>שתף</span>{/if}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 {/each}
