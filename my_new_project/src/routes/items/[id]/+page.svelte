@@ -160,7 +160,7 @@
                                 class="shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden border-2 transition-all {i === galleryIndex ? 'border-orange-400 shadow-lg shadow-orange-500/30 scale-105' : 'border-white/10 hover:border-white/30 opacity-70 hover:opacity-100'}"
                                 aria-label={`תמונה ${i + 1}`}
                             >
-                                <img src={src} alt="" class="w-full h-full object-cover" />
+                                <img src={src} alt="" loading="lazy" decoding="async" class="w-full h-full object-cover" />
                             </button>
                         {/each}
                     </div>
