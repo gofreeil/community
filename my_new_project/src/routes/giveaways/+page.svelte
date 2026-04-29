@@ -77,7 +77,7 @@
 <div class="min-h-screen bg-[#070b14] pt-6 pb-28 px-4" dir="rtl">
     <div class="max-w-5xl mx-auto">
         <div class="text-center mb-6">
-            <img src="/images/delivery.png" alt="" class="w-40 h-40 md:w-56 md:h-56 mb-4 mx-auto object-contain" />
+            <img src="/images/delivery.png" alt="" class="w-40 h-40 md:w-[28rem] md:h-[28rem] mb-4 mx-auto object-contain" />
             <h1 class="text-3xl font-black text-white mb-2">למסירה</h1>
             <p class="text-gray-400">פריטים שעוברים מיד ליד — חינם, בקהילה</p>
         </div>
