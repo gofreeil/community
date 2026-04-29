@@ -369,6 +369,14 @@
 	// מספר מניות פלטפורמה — placeholder פרונט בלבד עד חיבור ל-backend
 	let userShares = $derived(10 + data.items.length * 5);
 
+	// טיוטות במסירה — מודעות שהמשתמש התחיל אך טרם הוסיף תמונה
+	let giveawayDrafts = $derived(
+		data.items.filter(
+			(i: import("$lib/server/db").DbItem) =>
+				i.category === "giveaway" && i.status === "draft",
+		),
+	);
+
 	let isUserAdmin = $derived(
 		(data.user as any)?.role === "neighborhood_admin" ||
 			(data.user as any)?.role === "super_admin",
@@ -2531,6 +2539,28 @@
 		</div>
 
 		{#if showMyInfo}
+			{#if giveawayDrafts.length > 0}
+				<a
+					href="/giveaways/my?tab=drafts"
+					class="flex items-center gap-3 mb-4 rounded-2xl bg-gradient-to-r from-yellow-900/30 to-amber-900/20 border border-yellow-500/30 hover:border-yellow-400/60 px-4 py-3 transition-all group"
+				>
+					<span class="text-3xl flex-shrink-0">📝</span>
+					<div class="flex-1 min-w-0">
+						<p class="text-yellow-200 font-bold text-sm">
+							{giveawayDrafts.length === 1
+								? "טיוטה אחת ממתינה לתמונה"
+								: `${giveawayDrafts.length} טיוטות ממתינות לתמונה`}
+						</p>
+						<p class="text-yellow-300/70 text-xs mt-0.5">
+							השלם את הפרסום על ידי הוספת תמונה למוצר למסירה
+						</p>
+					</div>
+					<span
+						class="text-yellow-300 text-lg flex-shrink-0 group-hover:translate-x-[-3px] transition-transform"
+						aria-hidden="true">←</span
+					>
+				</a>
+			{/if}
 			{#if data.items.length === 0}
 				<div class="text-center py-12">
 					<span class="text-6xl block mb-4">📭</span>

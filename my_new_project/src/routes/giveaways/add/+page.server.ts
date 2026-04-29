@@ -69,6 +69,8 @@ export const actions: Actions = {
         if (!city)                               return fail(400, { error: 'יש לבחור עיר' });
         if (!neighborhood)                       return fail(400, { error: 'יש לבחור שכונה' });
 
+        const isDraft = images.length === 0;
+
         try {
             await createItem({
                 category:     'giveaway',
@@ -89,12 +91,14 @@ export const actions: Actions = {
                     ...(price > 0 ? { price } : {}),
                 },
                 user_id:      session.user.id,
+                status:       isDraft ? 'draft' : 'active',
             });
         } catch (e) {
             console.error('[giveaways] createItem failed:', e);
             return fail(500, { error: 'שגיאה בשמירת הפריט, נסה שוב' });
         }
 
+        if (isDraft) throw redirect(303, '/giveaways/my?draft=saved');
         throw redirect(303, '/giveaways');
     },
 };

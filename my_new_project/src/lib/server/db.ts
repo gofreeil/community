@@ -43,6 +43,7 @@ export interface CreateItemData {
     city?: string;
     extra_fields?: Record<string, unknown>;
     user_id?: string;
+    status?: string;
 }
 
 export interface DbUser {
@@ -246,7 +247,7 @@ export async function createItem(data: CreateItemData): Promise<DbItem> {
             neighborhood: data.neighborhood ?? '',
             city:         data.city         ?? '',
             extra_fields: data.extra_fields ?? {},
-            status1:      'active',
+            status1:      data.status ?? 'active',
             user_id:      data.user_id ?? null,
             publishedAt:  new Date().toISOString(),
         },
@@ -329,6 +330,32 @@ export async function incrementItemViewCount(documentId: string): Promise<void> 
     } catch (e) {
         console.warn('[db] incrementItemViewCount failed:', e);
     }
+}
+
+export interface UpdateItemData {
+    label?: string;
+    description?: string;
+    contact?: string;
+    phone?: string;
+    address?: string;
+    neighborhood?: string;
+    city?: string;
+    extra_fields?: Record<string, unknown>;
+    status?: string;
+}
+
+export async function updateItem(documentId: string, data: UpdateItemData): Promise<void> {
+    const payload: Record<string, unknown> = {};
+    if (data.label        !== undefined) payload.label        = data.label;
+    if (data.description  !== undefined) payload.description  = data.description;
+    if (data.contact      !== undefined) payload.contact      = data.contact;
+    if (data.phone       !== undefined) payload.phone        = data.phone;
+    if (data.address      !== undefined) payload.address      = data.address;
+    if (data.neighborhood !== undefined) payload.neighborhood = data.neighborhood;
+    if (data.city         !== undefined) payload.city         = data.city;
+    if (data.extra_fields !== undefined) payload.extra_fields = data.extra_fields;
+    if (data.status       !== undefined) payload.status1      = data.status;
+    await strapiPut(`/api/items/${documentId}`, { data: payload });
 }
 
 export async function getResolvedCount(category: string): Promise<number> {
