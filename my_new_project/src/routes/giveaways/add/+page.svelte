@@ -14,6 +14,42 @@
     let condition = $state<string>('');
     let label = $state('');
     let description = $state('');
+    let imageBase64 = $state('');
+    let imagePreview = $state('');
+
+    function handleImageChange(e: Event) {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (!file) return;
+        const MAX = 1000;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const src = ev.target?.result as string;
+            const img = new Image();
+            img.onload = () => {
+                let w = img.naturalWidth;
+                let h = img.naturalHeight;
+                if (w > MAX || h > MAX) {
+                    const ratio = Math.min(MAX / w, MAX / h);
+                    w = Math.round(w * ratio);
+                    h = Math.round(h * ratio);
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width  = w;
+                canvas.height = h;
+                canvas.getContext('2d')!.drawImage(img, 0, 0, w, h);
+                const b64 = canvas.toDataURL('image/jpeg', 0.82);
+                imageBase64  = b64;
+                imagePreview = b64;
+            };
+            img.src = src;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function removeImage() {
+        imageBase64  = '';
+        imagePreview = '';
+    }
 
     // הערכים ההתחלתיים נטענים פעם אחת מ-data.defaults; המשתמש יכול לערוך
     const { name: defName, phone: defPhone, neighborhood: defNeighborhood, city: defCity } = data.defaults;
@@ -65,6 +101,35 @@
                         <span class="w-1.5 h-5 bg-orange-500 rounded-full"></span>
                         פרטי הפריט
                     </h2>
+
+                    <!-- Image upload -->
+                    <div>
+                        <span class="text-white text-sm font-bold mb-2 block">תמונה (מומלץ)</span>
+                        {#if imagePreview}
+                            <div class="relative rounded-xl overflow-hidden border border-white/10">
+                                <img src={imagePreview} alt="" class="w-full h-48 object-cover" />
+                                <button
+                                    type="button"
+                                    onclick={removeImage}
+                                    class="absolute top-2 left-2 bg-black/60 hover:bg-black/80 text-white w-8 h-8 rounded-full flex items-center justify-center text-lg font-bold transition-colors backdrop-blur-sm"
+                                    aria-label="הסר תמונה"
+                                >×</button>
+                            </div>
+                        {:else}
+                            <label class="flex flex-col items-center justify-center gap-2 w-full h-32 rounded-xl border-2 border-dashed border-white/15 hover:border-orange-500/50 bg-white/3 hover:bg-orange-900/10 cursor-pointer transition-all">
+                                <span class="text-3xl">📷</span>
+                                <span class="text-gray-400 text-sm font-bold">לחץ להעלאת תמונה</span>
+                                <span class="text-gray-600 text-xs">JPG, PNG עד 5MB · יוצג בכרטיס</span>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    class="hidden"
+                                    onchange={handleImageChange}
+                                />
+                            </label>
+                        {/if}
+                        <input type="hidden" name="image_base64" value={imageBase64} />
+                    </div>
 
                     <div>
                         <label for="label" class="text-white text-sm font-bold mb-1 flex justify-between">

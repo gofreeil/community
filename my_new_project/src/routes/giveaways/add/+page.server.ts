@@ -50,6 +50,7 @@ export const actions: Actions = {
         const tags         = fd.get('tags')?.toString().trim()         ?? '';
         const neighborhood = fd.get('neighborhood')?.toString().trim() ?? '';
         const city         = fd.get('city')?.toString().trim()         ?? '';
+        const image_base64 = fd.get('image_base64')?.toString()        ?? '';
 
         const validConditions = categoryConfig.giveaway.fields.find(f => f.key === 'condition')?.options ?? [];
 
@@ -78,6 +79,7 @@ export const actions: Actions = {
                     condition,
                     category: category || undefined,
                     tags: tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+                    ...(image_base64 ? { image: image_base64 } : {}),
                 },
                 user_id:      session.user.id,
             });

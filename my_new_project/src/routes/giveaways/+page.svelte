@@ -65,6 +65,13 @@
         });
     }
 
+    function itemImage(item: { label: string; description: string; extra_fields: string }): string {
+        const own = getField(item.extra_fields, 'image');
+        if (own) return own;
+        const cat = categoryByKey(itemCategory(item));
+        return cat?.image ?? '';
+    }
+
     function waLink(phone: string): string {
         const digits = phone.replace(/\D/g, '').replace(/^0/, '972');
         return `https://wa.me/${digits}`;
@@ -227,19 +234,37 @@
                 >× הצג הכל</button>
             {/if}
         </div>
-        <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-2">
+        <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-6 gap-2 md:gap-3">
             {#each giveawayCategories as cat}
                 {@const count = categoryCounts[cat.key] ?? 0}
                 {@const active = categoryFilter === cat.key}
                 <button
                     onclick={() => categoryFilter = cat.key}
-                    class="relative group flex flex-col items-center justify-center gap-1 p-2 rounded-xl border transition-all hover:scale-105 hover:-translate-y-0.5 {active ? 'bg-gradient-to-br from-orange-500/30 to-amber-500/20 border-orange-400 shadow-lg shadow-orange-500/30' : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-orange-500/40'}"
+                    class="relative group rounded-2xl overflow-hidden border-2 transition-all hover:scale-[1.03] hover:-translate-y-0.5 aspect-[4/3] {active ? 'border-orange-400 shadow-xl shadow-orange-500/40 ring-2 ring-orange-400/50' : 'border-white/10 hover:border-orange-500/60 shadow-lg'}"
                     title={cat.label}
                 >
-                    <span class="text-2xl md:text-3xl transition-transform group-hover:scale-110">{cat.icon}</span>
-                    <span class="text-[10px] md:text-xs font-bold text-center leading-tight {active ? 'text-orange-200' : 'text-gray-300'}">{cat.label}</span>
-                    {#if count > 0 && cat.key !== 'all'}
-                        <span class="absolute -top-1 -end-1 bg-orange-500 text-white text-[9px] font-black rounded-full w-5 h-5 flex items-center justify-center shadow-md">{count}</span>
+                    <img
+                        src={cat.image}
+                        alt={cat.label}
+                        loading="lazy"
+                        class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                    <!-- Dark gradient overlay for readability -->
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/10 {active ? 'from-orange-900/80 via-orange-900/30' : ''}"></div>
+
+                    <!-- Label + icon -->
+                    <div class="absolute inset-x-0 bottom-0 p-2 md:p-2.5 flex items-end justify-between gap-1">
+                        <div class="text-right min-w-0">
+                            <div class="text-[11px] md:text-sm font-black text-white leading-tight truncate">{cat.label}</div>
+                            {#if count > 0 && cat.key !== 'all'}
+                                <div class="text-[9px] md:text-[10px] text-orange-200 font-bold">{count} פריטים</div>
+                            {/if}
+                        </div>
+                        <span class="text-lg md:text-xl drop-shadow-lg shrink-0">{cat.icon}</span>
+                    </div>
+
+                    {#if active}
+                        <div class="absolute top-2 end-2 bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg text-xs font-black">✓</div>
                     {/if}
                 </button>
             {/each}
@@ -396,9 +421,15 @@
                     {@const condition = getField(item.extra_fields, 'condition')}
                     {@const isMine    = data.currentUserId && item.user_id === data.currentUserId}
                     {@const isFav     = favorites.has(String(item.id))}
+                    {@const img       = itemImage(item)}
                     <div class="group rounded-2xl bg-gradient-to-br from-[#0f172a] to-[#0c1322] border border-white/10 overflow-hidden shadow-lg hover:shadow-2xl hover:border-orange-500/40 transition-all flex flex-row">
-                        <a href="/items/{item.id}" class="block w-32 md:w-44 shrink-0 aspect-square bg-gradient-to-br from-orange-900/40 to-amber-900/30 flex items-center justify-center relative">
-                            <span class="text-5xl md:text-6xl" aria-hidden="true">{item.icon || '📦'}</span>
+                        <a href="/items/{item.id}" class="block w-32 md:w-44 shrink-0 aspect-square relative overflow-hidden bg-[#0a0f1a]">
+                            <img
+                                src={img}
+                                alt={item.label}
+                                loading="lazy"
+                                class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                            />
                             <span class="absolute bottom-2 start-2 px-2 py-0.5 rounded-md text-[10px] font-black bg-emerald-500 text-white shadow-lg">חינם</span>
                             {#if isMine}
                                 <span class="absolute top-2 start-2 px-2 py-0.5 rounded-md text-[10px] font-bold bg-orange-600 text-white shadow">שלי</span>
@@ -467,14 +498,17 @@
                     {@const isMine    = data.currentUserId && item.user_id === data.currentUserId}
                     {@const isFav     = favorites.has(String(item.id))}
                     {@const cat       = categoryByKey(itemCategory(item))}
+                    {@const img       = itemImage(item)}
                     <div class="group rounded-2xl bg-gradient-to-br from-[#0f172a] to-[#0c1322] border border-white/10 overflow-hidden shadow-lg hover:shadow-2xl hover:shadow-orange-500/20 hover:border-orange-500/40 transition-all hover:-translate-y-1 flex flex-col">
-                        <a href="/items/{item.id}" class="block aspect-square bg-gradient-to-br from-orange-900/40 via-amber-900/30 to-orange-900/40 flex items-center justify-center relative overflow-hidden">
-                            <!-- Decorative pattern -->
-                            <div class="absolute inset-0 opacity-30">
-                                <div class="absolute top-0 right-0 w-32 h-32 bg-orange-500/20 rounded-full blur-2xl"></div>
-                                <div class="absolute bottom-0 left-0 w-32 h-32 bg-amber-500/20 rounded-full blur-2xl"></div>
-                            </div>
-                            <span class="text-7xl md:text-8xl relative z-10 group-hover:scale-110 transition-transform duration-300" aria-hidden="true">{item.icon || '📦'}</span>
+                        <a href="/items/{item.id}" class="block aspect-square relative overflow-hidden bg-[#0a0f1a]">
+                            <img
+                                src={img}
+                                alt={item.label}
+                                loading="lazy"
+                                class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                            />
+                            <!-- Subtle dark gradient at bottom for badge readability -->
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
 
                             <!-- FREE price tag (Yad2-style) -->
                             <div class="absolute bottom-2 start-2 z-10">
