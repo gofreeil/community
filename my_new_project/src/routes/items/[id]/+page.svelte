@@ -12,6 +12,13 @@
     const item = $derived(data.item);
 
     let mounted = $state(false);
+    let galleryIndex = $state(0);
+
+    const galleryImages = $derived<string[]>(
+        Array.isArray((item as { images?: string[] } | null)?.images)
+            ? ((item as { images?: string[] }).images ?? [])
+            : (item?.image ? [item.image] : [])
+    );
 
     onMount(async () => {
         mounted = true;
@@ -30,6 +37,15 @@
 
     function goBack() {
         history.back();
+    }
+
+    function nextImage() {
+        if (galleryImages.length === 0) return;
+        galleryIndex = (galleryIndex + 1) % galleryImages.length;
+    }
+    function prevImage() {
+        if (galleryImages.length === 0) return;
+        galleryIndex = (galleryIndex - 1 + galleryImages.length) % galleryImages.length;
     }
 </script>
 
@@ -78,39 +94,77 @@
                 class="bg-[#0f172a] rounded-3xl overflow-hidden shadow-2xl border border-white/10"
                 in:fly={{ y: 50, duration: 800, delay: 200 }}
             >
-                <!-- Header / Image -->
-                <div class="relative h-[300px] md:h-[450px]">
-                    {#if item.image}
-                        <img
-                            src={item.image}
-                            alt={item.label}
-                            class="w-full h-full object-cover"
-                        />
+                <!-- Header / Image gallery -->
+                <div class="relative h-[300px] md:h-[450px] bg-[#0a0f1a]">
+                    {#if galleryImages.length > 0}
+                        {#key galleryIndex}
+                            <img
+                                src={galleryImages[galleryIndex]}
+                                alt={item.label}
+                                class="w-full h-full object-cover"
+                                in:fade={{ duration: 200 }}
+                            />
+                        {/key}
+                        {#if galleryImages.length > 1}
+                            <!-- Prev/Next -->
+                            <button
+                                type="button"
+                                onclick={prevImage}
+                                aria-label="הקודם"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/60 hover:bg-black/80 text-white text-xl font-black flex items-center justify-center backdrop-blur-sm transition-colors"
+                            >→</button>
+                            <button
+                                type="button"
+                                onclick={nextImage}
+                                aria-label="הבא"
+                                class="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/60 hover:bg-black/80 text-white text-xl font-black flex items-center justify-center backdrop-blur-sm transition-colors"
+                            >←</button>
+                            <!-- Counter -->
+                            <span class="absolute top-3 end-3 z-20 px-3 py-1 rounded-full bg-black/60 backdrop-blur-sm text-white text-xs font-bold">
+                                📷 {galleryIndex + 1} / {galleryImages.length}
+                            </span>
+                            <!-- Dots -->
+                            <div class="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex gap-1.5">
+                                {#each galleryImages as _, i}
+                                    <button
+                                        type="button"
+                                        onclick={() => galleryIndex = i}
+                                        aria-label={`תמונה ${i + 1}`}
+                                        class="w-2 h-2 rounded-full transition-all {i === galleryIndex ? 'bg-white w-6' : 'bg-white/50 hover:bg-white/80'}"
+                                    ></button>
+                                {/each}
+                            </div>
+                        {/if}
                     {:else}
-                        <div
-                            class="w-full h-full bg-gradient-to-br from-purple-900 to-blue-900 flex items-center justify-center"
-                        >
+                        <div class="w-full h-full bg-gradient-to-br from-purple-900 to-blue-900 flex items-center justify-center">
                             <span class="text-[120px]">{item.icon}</span>
                         </div>
                     {/if}
-                    <div
-                        class="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-transparent to-transparent"
-                    ></div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-transparent to-transparent pointer-events-none"></div>
 
-                    <div class="absolute bottom-8 right-8 text-white">
+                    <div class="absolute bottom-8 right-8 text-white pointer-events-none">
                         <div class="flex items-center gap-4 mb-4">
-                            <span
-                                class="text-4xl p-3 bg-white/10 backdrop-blur-md rounded-2xl shadow-xl"
-                                >{item.icon}</span
-                            >
-                            <h2
-                                class="text-4xl md:text-6xl font-black tracking-tight drop-shadow-2xl"
-                            >
-                                {item.label}
-                            </h2>
+                            <span class="text-4xl p-3 bg-white/10 backdrop-blur-md rounded-2xl shadow-xl">{item.icon}</span>
+                            <h2 class="text-4xl md:text-6xl font-black tracking-tight drop-shadow-2xl">{item.label}</h2>
                         </div>
                     </div>
                 </div>
+
+                <!-- Thumbnail strip -->
+                {#if galleryImages.length > 1}
+                    <div class="flex gap-2 px-6 pt-4 overflow-x-auto hide-scrollbar">
+                        {#each galleryImages as src, i}
+                            <button
+                                type="button"
+                                onclick={() => galleryIndex = i}
+                                class="shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden border-2 transition-all {i === galleryIndex ? 'border-orange-400 shadow-lg shadow-orange-500/30 scale-105' : 'border-white/10 hover:border-white/30 opacity-70 hover:opacity-100'}"
+                                aria-label={`תמונה ${i + 1}`}
+                            >
+                                <img src={src} alt="" class="w-full h-full object-cover" />
+                            </button>
+                        {/each}
+                    </div>
+                {/if}
 
                 <!-- Content -->
                 <div class="p-8 md:p-12">
@@ -311,5 +365,12 @@
 <style>
     :global(body) {
         background-color: #070b14;
+    }
+    .hide-scrollbar {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
     }
 </style>

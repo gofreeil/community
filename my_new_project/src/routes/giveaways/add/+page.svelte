@@ -14,41 +14,57 @@
     let condition = $state<string>('');
     let label = $state('');
     let description = $state('');
-    let imageBase64 = $state('');
-    let imagePreview = $state('');
+    let images = $state<string[]>([]);
+    const MAX_IMAGES = 5;
 
-    function handleImageChange(e: Event) {
-        const file = (e.target as HTMLInputElement).files?.[0];
-        if (!file) return;
-        const MAX = 1000;
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            const src = ev.target?.result as string;
-            const img = new Image();
-            img.onload = () => {
-                let w = img.naturalWidth;
-                let h = img.naturalHeight;
-                if (w > MAX || h > MAX) {
-                    const ratio = Math.min(MAX / w, MAX / h);
-                    w = Math.round(w * ratio);
-                    h = Math.round(h * ratio);
-                }
-                const canvas = document.createElement('canvas');
-                canvas.width  = w;
-                canvas.height = h;
-                canvas.getContext('2d')!.drawImage(img, 0, 0, w, h);
-                const b64 = canvas.toDataURL('image/jpeg', 0.82);
-                imageBase64  = b64;
-                imagePreview = b64;
+    function compressImage(file: File): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const MAX = 1000;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const src = ev.target?.result as string;
+                const img = new Image();
+                img.onload = () => {
+                    let w = img.naturalWidth;
+                    let h = img.naturalHeight;
+                    if (w > MAX || h > MAX) {
+                        const ratio = Math.min(MAX / w, MAX / h);
+                        w = Math.round(w * ratio);
+                        h = Math.round(h * ratio);
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width  = w;
+                    canvas.height = h;
+                    canvas.getContext('2d')!.drawImage(img, 0, 0, w, h);
+                    resolve(canvas.toDataURL('image/jpeg', 0.82));
+                };
+                img.onerror = reject;
+                img.src = src;
             };
-            img.src = src;
-        };
-        reader.readAsDataURL(file);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
     }
 
-    function removeImage() {
-        imageBase64  = '';
-        imagePreview = '';
+    async function handleImagesChange(e: Event) {
+        const files = Array.from((e.target as HTMLInputElement).files ?? []);
+        const slots = MAX_IMAGES - images.length;
+        const toAdd = files.slice(0, slots);
+        const compressed = await Promise.all(toAdd.map(compressImage));
+        images = [...images, ...compressed];
+        (e.target as HTMLInputElement).value = '';
+    }
+
+    function removeImage(index: number) {
+        images = images.filter((_, i) => i !== index);
+    }
+
+    function moveImage(from: number, to: number) {
+        if (to < 0 || to >= images.length) return;
+        const next = [...images];
+        const [item] = next.splice(from, 1);
+        next.splice(to, 0, item);
+        images = next;
     }
 
     // הערכים ההתחלתיים נטענים פעם אחת מ-data.defaults; המשתמש יכול לערוך
@@ -102,33 +118,63 @@
                         פרטי הפריט
                     </h2>
 
-                    <!-- Image upload -->
+                    <!-- Multi-image upload -->
                     <div>
-                        <span class="text-white text-sm font-bold mb-2 block">תמונה (מומלץ)</span>
-                        {#if imagePreview}
-                            <div class="relative rounded-xl overflow-hidden border border-white/10">
-                                <img src={imagePreview} alt="" class="w-full h-48 object-cover" />
-                                <button
-                                    type="button"
-                                    onclick={removeImage}
-                                    class="absolute top-2 left-2 bg-black/60 hover:bg-black/80 text-white w-8 h-8 rounded-full flex items-center justify-center text-lg font-bold transition-colors backdrop-blur-sm"
-                                    aria-label="הסר תמונה"
-                                >×</button>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-white text-sm font-bold">תמונות (עד {MAX_IMAGES})</span>
+                            <span class="text-gray-500 text-xs">{images.length}/{MAX_IMAGES}</span>
+                        </div>
+                        {#if images.length > 0}
+                            <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 mb-2">
+                                {#each images as src, i (i)}
+                                    <div class="relative aspect-square rounded-xl overflow-hidden border border-white/10 group">
+                                        <img src={src} alt="" class="w-full h-full object-cover" />
+                                        {#if i === 0}
+                                            <span class="absolute bottom-1 start-1 px-1.5 py-0.5 rounded bg-orange-500 text-white text-[9px] font-black shadow">ראשית</span>
+                                        {/if}
+                                        <button
+                                            type="button"
+                                            onclick={() => removeImage(i)}
+                                            class="absolute top-1 left-1 bg-black/70 hover:bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold transition-colors"
+                                            aria-label="הסר תמונה"
+                                        >×</button>
+                                        <div class="absolute top-1 end-1 flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            {#if i > 0}
+                                                <button
+                                                    type="button"
+                                                    onclick={() => moveImage(i, i - 1)}
+                                                    class="bg-black/70 hover:bg-orange-600 text-white w-6 h-5 rounded text-[10px] font-bold transition-colors"
+                                                    aria-label="הזז ימינה"
+                                                >→</button>
+                                            {/if}
+                                            {#if i < images.length - 1}
+                                                <button
+                                                    type="button"
+                                                    onclick={() => moveImage(i, i + 1)}
+                                                    class="bg-black/70 hover:bg-orange-600 text-white w-6 h-5 rounded text-[10px] font-bold transition-colors"
+                                                    aria-label="הזז שמאלה"
+                                                >←</button>
+                                            {/if}
+                                        </div>
+                                    </div>
+                                {/each}
+                                {#if images.length < MAX_IMAGES}
+                                    <label class="flex flex-col items-center justify-center gap-1 aspect-square rounded-xl border-2 border-dashed border-white/15 hover:border-orange-500/50 bg-white/3 hover:bg-orange-900/10 cursor-pointer transition-all">
+                                        <span class="text-2xl">＋</span>
+                                        <span class="text-gray-500 text-[10px]">עוד</span>
+                                        <input type="file" accept="image/*" multiple class="hidden" onchange={handleImagesChange} />
+                                    </label>
+                                {/if}
                             </div>
                         {:else}
                             <label class="flex flex-col items-center justify-center gap-2 w-full h-32 rounded-xl border-2 border-dashed border-white/15 hover:border-orange-500/50 bg-white/3 hover:bg-orange-900/10 cursor-pointer transition-all">
                                 <span class="text-3xl">📷</span>
-                                <span class="text-gray-400 text-sm font-bold">לחץ להעלאת תמונה</span>
-                                <span class="text-gray-600 text-xs">JPG, PNG עד 5MB · יוצג בכרטיס</span>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    class="hidden"
-                                    onchange={handleImageChange}
-                                />
+                                <span class="text-gray-400 text-sm font-bold">לחץ להעלאת תמונות</span>
+                                <span class="text-gray-600 text-xs">ניתן לבחור מספר תמונות · JPG, PNG · עד {MAX_IMAGES}</span>
+                                <input type="file" accept="image/*" multiple class="hidden" onchange={handleImagesChange} />
                             </label>
                         {/if}
-                        <input type="hidden" name="image_base64" value={imageBase64} />
+                        <input type="hidden" name="images_json" value={JSON.stringify(images)} />
                     </div>
 
                     <div>

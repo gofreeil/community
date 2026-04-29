@@ -10,6 +10,9 @@ export const load: PageServerLoad = async ({ params }) => {
         const extraFields = (() => {
             try { return JSON.parse(dbItem.extra_fields ?? '{}'); } catch { return {}; }
         })();
+        const galleryImages: string[] = Array.isArray(extraFields?.images)
+            ? (extraFields.images as unknown[]).filter((s): s is string => typeof s === 'string')
+            : (typeof extraFields?.image === 'string' ? [extraFields.image] : []);
         return {
             item: {
                 id:          dbItem.id,
@@ -21,7 +24,8 @@ export const load: PageServerLoad = async ({ params }) => {
                 address:     dbItem.address,
                 icon:        dbItem.icon,
                 color:       dbItem.color,
-                image:       undefined as string | undefined,
+                image:       galleryImages[0],
+                images:      galleryImages,
                 neighborhood: dbItem.neighborhood,
                 city:        dbItem.city,
                 extraFields,
@@ -37,6 +41,7 @@ export const load: PageServerLoad = async ({ params }) => {
         return {
             item: {
                 ...staticItem,
+                images:       staticItem.image ? [staticItem.image] : [],
                 neighborhood: undefined as string | undefined,
                 city:         undefined as string | undefined,
                 extraFields:  {} as Record<string, unknown>,

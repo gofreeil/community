@@ -65,7 +65,17 @@
         });
     }
 
+    function itemImages(item: { extra_fields: string }): string[] {
+        try {
+            const arr = JSON.parse(item.extra_fields)?.images;
+            if (Array.isArray(arr)) return arr.filter(s => typeof s === 'string');
+        } catch {}
+        return [];
+    }
+
     function itemImage(item: { label: string; description: string; extra_fields: string }): string {
+        const list = itemImages(item);
+        if (list.length > 0) return list[0];
         const own = getField(item.extra_fields, 'image');
         if (own) return own;
         const cat = categoryByKey(itemCategory(item));
@@ -494,6 +504,7 @@
                     {@const isFav     = favorites.has(String(item.id))}
                     {@const cat       = categoryByKey(itemCategory(item))}
                     {@const img       = itemImage(item)}
+                    {@const photoCount = itemImages(item).length}
                     <div class="group rounded-2xl bg-gradient-to-br from-[#0f172a] to-[#0c1322] border border-white/10 overflow-hidden shadow-lg hover:shadow-2xl hover:shadow-orange-500/20 hover:border-orange-500/40 transition-all hover:-translate-y-1 flex flex-col">
                         <a href="/items/{item.id}" class="block aspect-square relative overflow-hidden bg-[#0a0f1a]">
                             <img
@@ -504,6 +515,17 @@
                             />
                             <!-- Subtle dark gradient at bottom for badge readability -->
                             <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+
+                            {#if photoCount > 1}
+                                <span class="absolute bottom-2 end-2 z-10 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold">
+                                    <span>📷</span>{photoCount}
+                                </span>
+                            {/if}
+                            {#if (item.view_count ?? 0) > 0}
+                                <span class="absolute bottom-2 z-10 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold {photoCount > 1 ? 'end-12' : 'end-2'}">
+                                    <span>👁</span>{item.view_count}
+                                </span>
+                            {/if}
 
                             <!-- FREE price tag (Yad2-style) -->
                             <div class="absolute bottom-2 start-2 z-10">

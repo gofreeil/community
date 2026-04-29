@@ -50,7 +50,9 @@ export const actions: Actions = {
         const tags         = fd.get('tags')?.toString().trim()         ?? '';
         const neighborhood = fd.get('neighborhood')?.toString().trim() ?? '';
         const city         = fd.get('city')?.toString().trim()         ?? '';
-        const image_base64 = fd.get('image_base64')?.toString()        ?? '';
+        const images_json  = fd.get('images_json')?.toString()         ?? '';
+        let images: string[] = [];
+        try { const parsed = JSON.parse(images_json); if (Array.isArray(parsed)) images = parsed.filter(s => typeof s === 'string'); } catch {}
 
         const validConditions = categoryConfig.giveaway.fields.find(f => f.key === 'condition')?.options ?? [];
 
@@ -79,7 +81,7 @@ export const actions: Actions = {
                     condition,
                     category: category || undefined,
                     tags: tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : [],
-                    ...(image_base64 ? { image: image_base64 } : {}),
+                    ...(images.length > 0 ? { image: images[0], images } : {}),
                 },
                 user_id:      session.user.id,
             });
