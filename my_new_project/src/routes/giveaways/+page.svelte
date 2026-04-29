@@ -216,15 +216,33 @@
                     למסירה
                 </h1>
             </div>
-            <img
-                src="/images/delivery.png"
-                alt=""
-                width="1330"
-                height="882"
-                fetchpriority="high"
-                decoding="async"
-                class="w-full max-w-[32rem] md:max-w-[40rem] mx-auto block aspect-[1330/882] bg-gradient-to-br from-orange-900/20 to-amber-900/10 rounded-2xl"
-            />
+            <div class="flex flex-col md:flex-row items-center justify-center gap-3 md:gap-6">
+                {#if data.currentUserId}
+                    <a
+                        href="/giveaways/my"
+                        class="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/30 hover:bg-orange-500/20 text-orange-300 font-bold px-4 py-3 rounded-xl transition-colors whitespace-nowrap shadow-lg"
+                    >
+                        <span class="text-lg">👤</span>
+                        <span>הפריטים שלי</span>
+                    </a>
+                {/if}
+                <img
+                    src="/images/delivery.png"
+                    alt=""
+                    width="1330"
+                    height="882"
+                    fetchpriority="high"
+                    decoding="async"
+                    class="w-full max-w-[32rem] md:max-w-[40rem] block aspect-[1330/882] bg-gradient-to-br from-orange-900/20 to-amber-900/10 rounded-2xl"
+                />
+                <a
+                    href="/giveaways/add"
+                    class="inline-flex items-center gap-2 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold px-4 py-3 rounded-xl shadow-lg shadow-orange-500/30 transition-all hover:scale-105 whitespace-nowrap"
+                >
+                    <span class="text-lg">➕</span>
+                    <span>פרסם פריט</span>
+                </a>
+            </div>
         </div>
     </div>
 
@@ -301,24 +319,6 @@
                         </span>
                     {/if}
                 </div>
-                <a
-                    href="/giveaways/add"
-                    class="inline-flex items-center gap-1.5 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold px-3 md:px-5 py-3 rounded-xl shadow-lg shadow-orange-500/30 transition-all hover:scale-105 whitespace-nowrap"
-                    aria-label="פרסם פריט"
-                >
-                    <span class="text-lg">➕</span>
-                    <span class="hidden sm:inline">פרסם פריט</span>
-                </a>
-                {#if data.currentUserId}
-                    <a
-                        href="/giveaways/my"
-                        class="inline-flex items-center gap-1.5 bg-orange-500/10 border border-orange-500/30 hover:bg-orange-500/20 text-orange-300 font-bold px-3 md:px-4 py-3 rounded-xl transition-colors whitespace-nowrap"
-                        aria-label="הפריטים שלי"
-                    >
-                        <span class="text-lg">👤</span>
-                        <span class="hidden sm:inline">הפריטים שלי</span>
-                    </a>
-                {/if}
             </div>
 
             <!-- Filter Chips Row -->
