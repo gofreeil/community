@@ -4,7 +4,7 @@
 
     let { data }: { data: PageData } = $props();
 
-    type ConditionFilter = 'all' | 'מצוין' | 'טוב' | 'בינוני' | 'לתיקון';
+    type ConditionFilter = 'all' | 'כחדש' | 'משומש' | 'דורש תיקון קל';
     type SortOption = 'newest' | 'oldest' | 'popular';
 
     let categoryFilter = $state<string>('all');
@@ -102,11 +102,10 @@
 
     function conditionBadgeClass(c: string): string {
         switch (c) {
-            case 'מצוין':  return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40';
-            case 'טוב':    return 'bg-sky-500/20 text-sky-300 border-sky-500/40';
-            case 'בינוני': return 'bg-amber-500/20 text-amber-300 border-amber-500/40';
-            case 'לתיקון': return 'bg-rose-500/20 text-rose-300 border-rose-500/40';
-            default:       return 'bg-white/10 text-gray-300 border-white/10';
+            case 'כחדש':           return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40';
+            case 'משומש':          return 'bg-sky-500/20 text-sky-300 border-sky-500/40';
+            case 'דורש תיקון קל':  return 'bg-amber-500/20 text-amber-300 border-amber-500/40';
+            default:               return 'bg-white/10 text-gray-300 border-white/10';
         }
     }
 
@@ -156,11 +155,10 @@
     });
 
     const conditions: { key: ConditionFilter; label: string; icon: string }[] = [
-        { key: 'all',     label: 'הכל',    icon: '🌍' },
-        { key: 'מצוין',  label: 'מצוין',  icon: '✨' },
-        { key: 'טוב',    label: 'טוב',    icon: '👍' },
-        { key: 'בינוני', label: 'בינוני', icon: '🆗' },
-        { key: 'לתיקון', label: 'לתיקון', icon: '🔧' },
+        { key: 'all',            label: 'הכל',           icon: '🌍' },
+        { key: 'כחדש',           label: 'כחדש',          icon: '✨' },
+        { key: 'משומש',          label: 'משומש',         icon: '👍' },
+        { key: 'דורש תיקון קל',  label: 'דורש תיקון קל', icon: '🔧' },
     ];
 
     const sortOptions: { key: SortOption; label: string; icon: string }[] = [
@@ -194,10 +192,7 @@
                     למסירה
                 </h1>
             </div>
-            <img src="/images/delivery.png" alt="" class="w-full max-w-[32rem] md:max-w-[40rem] mx-auto block mb-2" />
-            <p class="text-center text-amber-200/80 text-sm md:text-lg font-medium mb-3">
-                מוצרים שכונתיים חינם — קח, תן, וחזק את הקהילה
-            </p>
+            <img src="/images/delivery.png" alt="" class="w-full max-w-[32rem] md:max-w-[40rem] mx-auto block mb-3" />
 
             <!-- Stats banner -->
             <div class="flex items-center justify-center gap-2 md:gap-4 text-xs md:text-sm">

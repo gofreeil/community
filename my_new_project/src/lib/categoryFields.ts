@@ -26,7 +26,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
         priceRow: null,
         fields: [
             { key: 'label',       label: 'שם הפריט',          type: 'text',     required: true,  placeholder: 'ספה דו-מושבית' },
-            { key: 'condition',   label: 'מצב הפריט',          type: 'select',   required: true,  options: ['מצוין', 'טוב', 'בינוני', 'לתיקון'] },
+            { key: 'condition',   label: 'מצב הפריט',          type: 'select',   required: true,  options: ['כחדש', 'משומש', 'דורש תיקון קל'] },
             { key: 'description', label: 'תיאור',              type: 'textarea', required: true,  placeholder: 'תאר את הפריט בפירוט' },
             { key: 'address',     label: 'כתובת לאיסוף',       type: 'text',     required: false, placeholder: 'כתובת לאיסוף הפריט' },
             { key: 'contact',     label: 'שם',                 type: 'text',     required: true,  placeholder: 'שמך' },
