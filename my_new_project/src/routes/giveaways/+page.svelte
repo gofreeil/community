@@ -211,10 +211,6 @@
                     <span class="text-white font-bold">{data.items.length}</span>
                     <span class="text-gray-400">פריטים</span>
                 </div>
-                <div class="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/30 rounded-full px-3 py-1.5 backdrop-blur-sm">
-                    <span class="text-base">💚</span>
-                    <span class="text-emerald-300 font-bold">100% חינם</span>
-                </div>
                 {#if data.currentUserId}
                     <a href="/giveaways/my" class="flex items-center gap-1.5 bg-orange-500/10 border border-orange-500/30 hover:bg-orange-500/20 rounded-full px-3 py-1.5 backdrop-blur-sm transition-colors">
                         <span class="text-base">👤</span>
