@@ -2,12 +2,15 @@
     import type { ActionData, PageData } from './$types';
     import { categoryConfig } from '$lib/categoryFields';
     import { citiesAndNeighborhoods } from '$lib/neighborhoodsData';
+    import { giveawayCategories } from '$lib/giveawayCategories';
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
 
     const conditions = categoryConfig.giveaway.fields.find(f => f.key === 'condition')?.options ?? [];
     const cities = Object.keys(citiesAndNeighborhoods).sort();
+    const itemCategories = giveawayCategories.filter(c => c.key !== 'all');
 
+    let category = $state<string>('');
     let condition = $state<string>('');
     let label = $state('');
     let description = $state('');
@@ -77,6 +80,23 @@
                             placeholder="לדוגמה: ספה דו-מושבית במצב מצוין"
                             class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:border-orange-500/50 focus:outline-none transition-colors"
                         />
+                    </div>
+
+                    <div>
+                        <span class="text-white text-sm font-bold mb-2 block">קטגוריה *</span>
+                        <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+                            {#each itemCategories as c}
+                                <button
+                                    type="button"
+                                    onclick={() => category = c.key}
+                                    class="flex flex-col items-center gap-1 px-2 py-2 rounded-xl text-xs font-bold transition-all border {category === c.key ? 'bg-gradient-to-br from-orange-500/30 to-amber-500/20 border-orange-400 text-orange-200 shadow-lg' : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10 hover:border-white/20'}"
+                                >
+                                    <span class="text-2xl">{c.icon}</span>
+                                    <span class="text-[10px] leading-tight text-center">{c.label}</span>
+                                </button>
+                            {/each}
+                        </div>
+                        <input type="hidden" name="category" value={category} />
                     </div>
 
                     <div>

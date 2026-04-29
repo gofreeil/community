@@ -41,6 +41,7 @@ export const actions: Actions = {
 
         const fd           = await event.request.formData();
         const label        = fd.get('label')?.toString().trim()        ?? '';
+        const category     = fd.get('category')?.toString().trim()     ?? '';
         const condition    = fd.get('condition')?.toString().trim()    ?? '';
         const description  = fd.get('description')?.toString().trim()  ?? '';
         const address      = fd.get('address')?.toString().trim()      ?? '';
@@ -75,6 +76,7 @@ export const actions: Actions = {
                 color:        categoryConfig.giveaway.color,
                 extra_fields: {
                     condition,
+                    category: category || undefined,
                     tags: tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : [],
                 },
                 user_id:      session.user.id,

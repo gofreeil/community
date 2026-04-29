@@ -1,11 +1,13 @@
 <script lang="ts">
     import type { PageData } from './$types';
+    import { giveawayCategories, detectCategory, categoryByKey } from '$lib/giveawayCategories';
 
     let { data }: { data: PageData } = $props();
 
     type ConditionFilter = 'all' | 'מצוין' | 'טוב' | 'בינוני' | 'לתיקון';
     type SortOption = 'newest' | 'oldest' | 'popular';
 
+    let categoryFilter = $state<string>('all');
     let conditionFilter = $state<ConditionFilter>('all');
     let sortBy = $state<SortOption>('newest');
     let viewMode = $state<'grid' | 'list'>('grid');
@@ -45,6 +47,22 @@
     function getField(extraFields: string, key: string): string {
         try { return JSON.parse(extraFields)?.[key] ?? ''; }
         catch { return ''; }
+    }
+
+    function getTags(extraFields: string): string[] {
+        try {
+            const t = JSON.parse(extraFields)?.tags;
+            return Array.isArray(t) ? t : [];
+        } catch { return []; }
+    }
+
+    function itemCategory(item: { label: string; description: string; extra_fields: string }): string {
+        return detectCategory({
+            label:       item.label,
+            description: item.description,
+            tags:        getTags(item.extra_fields),
+            explicit:    getField(item.extra_fields, 'category'),
+        });
     }
 
     function waLink(phone: string): string {
@@ -87,6 +105,9 @@
 
     let filtered = $derived.by(() => {
         let list = [...data.items];
+        if (categoryFilter !== 'all') {
+            list = list.filter(i => itemCategory(i) === categoryFilter);
+        }
         if (conditionFilter !== 'all') {
             list = list.filter(i => getField(i.extra_fields, 'condition') === conditionFilter);
         }
@@ -113,6 +134,16 @@
         for (const i of data.items) {
             const c = getField(i.extra_fields, 'condition');
             if (c) counts[c] = (counts[c] || 0) + 1;
+        }
+        return counts;
+    });
+
+    // Counts per category for filter chip badges
+    let categoryCounts = $derived.by(() => {
+        const counts: Record<string, number> = { all: data.items.length };
+        for (const i of data.items) {
+            const c = itemCategory(i);
+            counts[c] = (counts[c] || 0) + 1;
         }
         return counts;
     });
@@ -182,8 +213,41 @@
         </div>
     </div>
 
+    <!-- Categories Tiles (Yad2-style) -->
+    <div class="max-w-7xl mx-auto px-4 pt-5">
+        <div class="flex items-center justify-between mb-3 px-1">
+            <h2 class="text-white font-black text-base md:text-lg flex items-center gap-2">
+                <span class="text-orange-400">▾</span>
+                קטגוריות
+            </h2>
+            {#if categoryFilter !== 'all'}
+                <button
+                    onclick={() => categoryFilter = 'all'}
+                    class="text-xs text-orange-400 hover:text-orange-300 font-bold transition-colors"
+                >× הצג הכל</button>
+            {/if}
+        </div>
+        <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-2">
+            {#each giveawayCategories as cat}
+                {@const count = categoryCounts[cat.key] ?? 0}
+                {@const active = categoryFilter === cat.key}
+                <button
+                    onclick={() => categoryFilter = cat.key}
+                    class="relative group flex flex-col items-center justify-center gap-1 p-2 rounded-xl border transition-all hover:scale-105 hover:-translate-y-0.5 {active ? 'bg-gradient-to-br from-orange-500/30 to-amber-500/20 border-orange-400 shadow-lg shadow-orange-500/30' : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-orange-500/40'}"
+                    title={cat.label}
+                >
+                    <span class="text-2xl md:text-3xl transition-transform group-hover:scale-110">{cat.icon}</span>
+                    <span class="text-[10px] md:text-xs font-bold text-center leading-tight {active ? 'text-orange-200' : 'text-gray-300'}">{cat.label}</span>
+                    {#if count > 0 && cat.key !== 'all'}
+                        <span class="absolute -top-1 -end-1 bg-orange-500 text-white text-[9px] font-black rounded-full w-5 h-5 flex items-center justify-center shadow-md">{count}</span>
+                    {/if}
+                </button>
+            {/each}
+        </div>
+    </div>
+
     <!-- Sticky Search & Filter Bar -->
-    <div class="sticky top-0 z-30 bg-[#070b14]/95 backdrop-blur-md border-b border-white/10 shadow-lg">
+    <div class="sticky top-0 z-30 bg-[#070b14]/95 backdrop-blur-md border-b border-white/10 shadow-lg mt-4">
         <div class="max-w-7xl mx-auto px-4 py-3">
             <!-- Search Row -->
             <div class="flex items-center gap-2 mb-3">
@@ -283,17 +347,23 @@
     <!-- Results -->
     <div class="max-w-7xl mx-auto px-4 pt-4">
         <!-- Results count -->
-        <div class="flex items-center justify-between mb-4 px-1">
+        <div class="flex items-center justify-between mb-4 px-1 gap-2 flex-wrap">
             <p class="text-gray-400 text-xs md:text-sm">
                 <span class="text-white font-bold">{filtered.length}</span>
                 {filtered.length === data.items.length ? 'פריטים זמינים' : `מתוך ${data.items.length} פריטים`}
+                {#if categoryFilter !== 'all'}
+                    {@const cat = categoryByKey(categoryFilter)}
+                    {#if cat}
+                        <span class="text-orange-400/80"> · {cat.icon} {cat.label}</span>
+                    {/if}
+                {/if}
                 {#if debouncedSearch}
                     <span class="text-gray-500"> · חיפוש: "{debouncedSearch}"</span>
                 {/if}
             </p>
-            {#if conditionFilter !== 'all' || debouncedSearch}
+            {#if categoryFilter !== 'all' || conditionFilter !== 'all' || debouncedSearch}
                 <button
-                    onclick={() => { conditionFilter = 'all'; search = ''; debouncedSearch = ''; }}
+                    onclick={() => { categoryFilter = 'all'; conditionFilter = 'all'; search = ''; debouncedSearch = ''; }}
                     class="text-xs text-orange-400 hover:text-orange-300 font-bold transition-colors"
                 >
                     × נקה סינון
@@ -396,6 +466,7 @@
                     {@const condition = getField(item.extra_fields, 'condition')}
                     {@const isMine    = data.currentUserId && item.user_id === data.currentUserId}
                     {@const isFav     = favorites.has(String(item.id))}
+                    {@const cat       = categoryByKey(itemCategory(item))}
                     <div class="group rounded-2xl bg-gradient-to-br from-[#0f172a] to-[#0c1322] border border-white/10 overflow-hidden shadow-lg hover:shadow-2xl hover:shadow-orange-500/20 hover:border-orange-500/40 transition-all hover:-translate-y-1 flex flex-col">
                         <a href="/items/{item.id}" class="block aspect-square bg-gradient-to-br from-orange-900/40 via-amber-900/30 to-orange-900/40 flex items-center justify-center relative overflow-hidden">
                             <!-- Decorative pattern -->
@@ -437,6 +508,17 @@
                             <a href="/items/{item.id}" class="block">
                                 <h3 class="text-white font-bold text-sm md:text-base mb-1 line-clamp-2 hover:text-orange-300 transition-colors leading-tight min-h-[2.5em]">{item.label}</h3>
                             </a>
+
+                            {#if cat && cat.key !== 'other' && cat.key !== 'all'}
+                                <button
+                                    type="button"
+                                    onclick={(e) => { e.preventDefault(); e.stopPropagation(); categoryFilter = cat.key; }}
+                                    class="self-start inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] md:text-xs font-bold bg-white/5 border border-white/10 text-orange-300 hover:bg-orange-500/20 hover:border-orange-500/40 transition-colors mb-1.5"
+                                >
+                                    <span>{cat.icon}</span>
+                                    <span>{cat.label}</span>
+                                </button>
+                            {/if}
 
                             <div class="flex flex-col gap-0.5 mb-2">
                                 {#if item.address}
