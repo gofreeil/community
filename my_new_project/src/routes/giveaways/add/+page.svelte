@@ -15,6 +15,8 @@
     let label = $state('');
     let description = $state('');
     let images = $state<string[]>([]);
+    let priceMode = $state<'free' | 'symbolic'>('free');
+    let price = $state<string>('');
     const MAX_IMAGES = 5;
 
     function compressImage(file: File): Promise<string> {
@@ -222,6 +224,45 @@
                             {/each}
                         </div>
                         <input type="hidden" name="condition" value={condition} />
+                    </div>
+
+                    <!-- Price (free or symbolic amount) -->
+                    <div>
+                        <span class="text-white text-sm font-bold mb-2 block">תמורה</span>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button
+                                type="button"
+                                onclick={() => { priceMode = 'free'; price = ''; }}
+                                class="flex items-center justify-center gap-2 px-3 py-3 rounded-xl text-sm font-bold transition-all border {priceMode === 'free' ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white border-emerald-400 shadow-lg' : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10'}"
+                            >
+                                <span class="text-lg">💚</span>
+                                חינם
+                            </button>
+                            <button
+                                type="button"
+                                onclick={() => priceMode = 'symbolic'}
+                                class="flex items-center justify-center gap-2 px-3 py-3 rounded-xl text-sm font-bold transition-all border {priceMode === 'symbolic' ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-amber-400 shadow-lg' : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10'}"
+                            >
+                                <span class="text-lg">🪙</span>
+                                סכום סמלי
+                            </button>
+                        </div>
+                        {#if priceMode === 'symbolic'}
+                            <div class="mt-2 relative">
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-amber-400 text-base font-bold pointer-events-none">₪</span>
+                                <input
+                                    type="number"
+                                    name="price"
+                                    min="1"
+                                    max="500"
+                                    step="1"
+                                    bind:value={price}
+                                    placeholder="לדוגמה: 20"
+                                    class="w-full bg-white/5 border border-amber-500/30 rounded-lg pe-9 ps-3 py-2 text-white placeholder-gray-500 focus:border-amber-500 focus:outline-none transition-colors"
+                                />
+                                <p class="text-gray-500 text-xs mt-1">סכום סמלי כדי שהפריט ילך למי שבאמת צריך — מומלץ עד 50 ₪</p>
+                            </div>
+                        {/if}
                     </div>
 
                     <div>

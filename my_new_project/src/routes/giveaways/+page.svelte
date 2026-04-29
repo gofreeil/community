@@ -9,6 +9,7 @@
 
     let categoryFilter = $state<string>('all');
     let conditionFilter = $state<ConditionFilter>('all');
+    let priceFilter = $state<'all' | 'free' | 'symbolic'>('all');
     let sortBy = $state<SortOption>('newest');
     let viewMode = $state<'grid' | 'list'>('grid');
     let search = $state('');
@@ -73,6 +74,14 @@
         return [];
     }
 
+    function itemPrice(item: { extra_fields: string }): number {
+        try {
+            const p = JSON.parse(item.extra_fields)?.price;
+            const n = typeof p === 'number' ? p : parseInt(String(p ?? '0'), 10);
+            return Number.isFinite(n) && n > 0 ? n : 0;
+        } catch { return 0; }
+    }
+
     function itemImage(item: { label: string; description: string; extra_fields: string }): string {
         const list = itemImages(item);
         if (list.length > 0) return list[0];
@@ -126,6 +135,11 @@
         }
         if (conditionFilter !== 'all') {
             list = list.filter(i => getField(i.extra_fields, 'condition') === conditionFilter);
+        }
+        if (priceFilter === 'free') {
+            list = list.filter(i => itemPrice(i) === 0);
+        } else if (priceFilter === 'symbolic') {
+            list = list.filter(i => itemPrice(i) > 0);
         }
         if (debouncedSearch) {
             list = list.filter(i =>
@@ -307,6 +321,26 @@
             <!-- Filter Chips Row -->
             <div class="flex items-center gap-2">
                 <div class="flex gap-1.5 overflow-x-auto pb-1 flex-1 hide-scrollbar">
+                    <!-- Price filter chips -->
+                    <button
+                        onclick={() => priceFilter = 'all'}
+                        class="px-3 py-1.5 rounded-full text-xs md:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1.5 border {priceFilter === 'all' ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg shadow-orange-500/40 border-transparent' : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10 hover:border-white/20'}"
+                    >
+                        <span>💰</span><span>הכל</span>
+                    </button>
+                    <button
+                        onclick={() => priceFilter = 'free'}
+                        class="px-3 py-1.5 rounded-full text-xs md:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1.5 border {priceFilter === 'free' ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg shadow-emerald-500/40 border-transparent' : 'bg-white/5 text-emerald-300 border-emerald-500/20 hover:bg-emerald-500/10 hover:border-emerald-500/40'}"
+                    >
+                        <span>💚</span><span>חינם</span>
+                    </button>
+                    <button
+                        onclick={() => priceFilter = 'symbolic'}
+                        class="px-3 py-1.5 rounded-full text-xs md:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1.5 border {priceFilter === 'symbolic' ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-lg shadow-amber-500/40 border-transparent' : 'bg-white/5 text-amber-300 border-amber-500/20 hover:bg-amber-500/10 hover:border-amber-500/40'}"
+                    >
+                        <span>🪙</span><span>סמלי</span>
+                    </button>
+                    <span class="border-r border-white/10 mx-1"></span>
                     {#each conditions as c}
                         {@const count = conditionCounts[c.key] ?? 0}
                         <button
@@ -387,9 +421,9 @@
                     <span class="text-gray-500"> · חיפוש: "{debouncedSearch}"</span>
                 {/if}
             </p>
-            {#if categoryFilter !== 'all' || conditionFilter !== 'all' || debouncedSearch}
+            {#if categoryFilter !== 'all' || conditionFilter !== 'all' || priceFilter !== 'all' || debouncedSearch}
                 <button
-                    onclick={() => { categoryFilter = 'all'; conditionFilter = 'all'; search = ''; debouncedSearch = ''; }}
+                    onclick={() => { categoryFilter = 'all'; conditionFilter = 'all'; priceFilter = 'all'; search = ''; debouncedSearch = ''; }}
                     class="text-xs text-orange-400 hover:text-orange-300 font-bold transition-colors"
                 >
                     × נקה סינון
@@ -423,6 +457,7 @@
                     {@const isMine    = data.currentUserId && item.user_id === data.currentUserId}
                     {@const isFav     = favorites.has(String(item.id))}
                     {@const img       = itemImage(item)}
+                    {@const price     = itemPrice(item)}
                     <div class="group rounded-2xl bg-gradient-to-br from-[#0f172a] to-[#0c1322] border border-white/10 overflow-hidden shadow-lg hover:shadow-2xl hover:border-orange-500/40 transition-all flex flex-row">
                         <a href="/items/{item.id}" class="block w-32 md:w-44 shrink-0 aspect-square relative overflow-hidden bg-[#0a0f1a]">
                             <img
@@ -431,7 +466,11 @@
                                 loading="lazy"
                                 class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                             />
-                            <span class="absolute bottom-2 start-2 px-2 py-0.5 rounded-md text-[10px] font-black bg-emerald-500 text-white shadow-lg">חינם</span>
+                            {#if price > 0}
+                                <span class="absolute bottom-2 start-2 px-2 py-0.5 rounded-md text-[11px] font-black bg-amber-500 text-white shadow-lg">₪{price}</span>
+                            {:else}
+                                <span class="absolute bottom-2 start-2 px-2 py-0.5 rounded-md text-[10px] font-black bg-emerald-500 text-white shadow-lg">חינם</span>
+                            {/if}
                             {#if isMine}
                                 <span class="absolute top-2 start-2 px-2 py-0.5 rounded-md text-[10px] font-bold bg-orange-600 text-white shadow">שלי</span>
                             {/if}
@@ -523,12 +562,19 @@
                                 </span>
                             {/if}
 
-                            <!-- FREE price tag (Yad2-style) -->
+                            <!-- Price tag (Yad2-style) -->
                             <div class="absolute bottom-2 start-2 z-10">
-                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-black bg-emerald-500 text-white shadow-lg shadow-emerald-500/40">
-                                    <span class="text-sm">💚</span>
-                                    חינם
-                                </span>
+                                {#if itemPrice(item) > 0}
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-black bg-amber-500 text-white shadow-lg shadow-amber-500/40">
+                                        <span class="text-sm">🪙</span>
+                                        ₪{itemPrice(item)}
+                                    </span>
+                                {:else}
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-black bg-emerald-500 text-white shadow-lg shadow-emerald-500/40">
+                                        <span class="text-sm">💚</span>
+                                        חינם
+                                    </span>
+                                {/if}
                             </div>
 
                             <!-- Heart favorite -->

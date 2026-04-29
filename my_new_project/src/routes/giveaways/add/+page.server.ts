@@ -54,6 +54,10 @@ export const actions: Actions = {
         let images: string[] = [];
         try { const parsed = JSON.parse(images_json); if (Array.isArray(parsed)) images = parsed.filter(s => typeof s === 'string'); } catch {}
 
+        const priceRaw = fd.get('price')?.toString().trim() ?? '';
+        const priceNum = priceRaw ? parseInt(priceRaw, 10) : 0;
+        const price    = Number.isFinite(priceNum) && priceNum > 0 ? Math.min(priceNum, 500) : 0;
+
         const validConditions = categoryConfig.giveaway.fields.find(f => f.key === 'condition')?.options ?? [];
 
         if (!label)                              return fail(400, { error: 'יש למלא שם פריט' });
@@ -82,6 +86,7 @@ export const actions: Actions = {
                     category: category || undefined,
                     tags: tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : [],
                     ...(images.length > 0 ? { image: images[0], images } : {}),
+                    ...(price > 0 ? { price } : {}),
                 },
                 user_id:      session.user.id,
             });
