@@ -90,8 +90,8 @@
 <div class="min-h-screen bg-[#070b14] pt-2 pb-28 px-4" dir="rtl">
     <div class="max-w-5xl mx-auto">
         <div class="text-center mb-3">
-            <h1 class="text-3xl font-black text-white mb-1">למסירה</h1>
-            <img src="/images/delivery.png" alt="" class="w-56 h-56 md:w-[40rem] md:h-[40rem] mx-auto object-contain block" />
+            <h1 class="text-5xl md:text-6xl font-black text-white mb-1">למסירה</h1>
+            <img src="/images/delivery.png" alt="" class="w-full max-w-[40rem] mx-auto block" />
         </div>
 
         <div class="mb-5 sticky top-0 z-20 bg-[#070b14]/95 backdrop-blur-sm py-3 -mx-4 px-4 border-b border-white/5">
