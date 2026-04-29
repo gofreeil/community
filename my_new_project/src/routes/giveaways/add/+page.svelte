@@ -56,12 +56,6 @@
         {:else}
             <form method="POST" class="rounded-2xl bg-[#0f172a] border border-white/10 p-6 space-y-5">
 
-                {#if hasDefaults}
-                    <div class="rounded-lg bg-emerald-900/20 border border-emerald-500/20 px-3 py-2 text-emerald-300 text-xs">
-                        💡 השדות שלמטה הוזנו מראש מהפרופיל שלך — אפשר לערוך אם צריך
-                    </div>
-                {/if}
-
                 <!-- Section 1: העיקר -->
                 <div class="space-y-4">
                     <h2 class="text-orange-400 text-xs font-black uppercase tracking-wider flex items-center gap-2">
@@ -134,6 +128,12 @@
                         <span class="w-1.5 h-5 bg-orange-500 rounded-full"></span>
                         מיקום (לאיתור הפריט במפה)
                     </h2>
+
+                    {#if hasDefaults}
+                        <div class="rounded-lg bg-emerald-900/20 border border-emerald-500/20 px-3 py-2 text-emerald-300 text-xs">
+                            💡 השדות שלמטה הוזנו מראש מהפרופיל שלך — אפשר לערוך אם צריך
+                        </div>
+                    {/if}
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
@@ -267,7 +267,7 @@
                     type="submit"
                     class="w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-black py-3.5 rounded-xl shadow-lg shadow-orange-500/20 transition-all hover:scale-[1.01]"
                 >
-                    📦 פרסם פריט — זה לוקח 5 שניות
+                    📦 פרסם פריט
                 </button>
 
                 <p class="text-gray-500 text-xs text-center">

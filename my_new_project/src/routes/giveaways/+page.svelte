@@ -156,6 +156,7 @@
                     למסירה
                 </h1>
             </div>
+            <img src="/images/delivery.png" alt="" class="w-full max-w-[32rem] md:max-w-[40rem] mx-auto block mb-2" />
             <p class="text-center text-amber-200/80 text-sm md:text-lg font-medium mb-3">
                 מוצרים שכונתיים חינם — קח, תן, וחזק את הקהילה
             </p>
