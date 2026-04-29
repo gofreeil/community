@@ -216,16 +216,18 @@
                     למסירה
                 </h1>
             </div>
-            <div class="flex flex-col md:flex-row items-center justify-center gap-3 md:gap-6">
-                {#if data.currentUserId}
+            <div class="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] items-center gap-3 md:gap-4">
+                <!-- Right side (RTL first DOM child): פרסם פריט -->
+                <div class="flex justify-center">
                     <a
-                        href="/giveaways/my"
-                        class="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/30 hover:bg-orange-500/20 text-orange-300 font-bold px-4 py-3 rounded-xl transition-colors whitespace-nowrap shadow-lg"
+                        href="/giveaways/add"
+                        class="flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold px-6 py-5 rounded-xl shadow-lg shadow-orange-500/30 transition-all hover:scale-105 whitespace-nowrap min-w-[7rem]"
                     >
-                        <span class="text-lg">👤</span>
-                        <span>הפריטים שלי</span>
+                        <span class="text-3xl leading-none">➕</span>
+                        <span>פרסם פריט</span>
                     </a>
-                {/if}
+                </div>
+                <!-- Center: banner image -->
                 <img
                     src="/images/delivery.png"
                     alt=""
@@ -233,15 +235,20 @@
                     height="882"
                     fetchpriority="high"
                     decoding="async"
-                    class="w-full max-w-[32rem] md:max-w-[40rem] block aspect-[1330/882] bg-gradient-to-br from-orange-900/20 to-amber-900/10 rounded-2xl"
+                    class="w-full max-w-[32rem] md:max-w-[40rem] block aspect-[1330/882] bg-gradient-to-br from-orange-900/20 to-amber-900/10 rounded-2xl mx-auto"
                 />
-                <a
-                    href="/giveaways/add"
-                    class="inline-flex items-center gap-2 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold px-4 py-3 rounded-xl shadow-lg shadow-orange-500/30 transition-all hover:scale-105 whitespace-nowrap"
-                >
-                    <span class="text-lg">➕</span>
-                    <span>פרסם פריט</span>
-                </a>
+                <!-- Left side (RTL last DOM child): הפריטים שלי -->
+                {#if data.currentUserId}
+                    <div class="flex justify-center">
+                        <a
+                            href="/giveaways/my"
+                            class="flex flex-col items-center justify-center gap-2 bg-orange-500/10 border border-orange-500/30 hover:bg-orange-500/20 text-orange-300 font-bold px-6 py-5 rounded-xl transition-colors whitespace-nowrap shadow-lg min-w-[7rem]"
+                        >
+                            <span class="text-3xl leading-none">👤</span>
+                            <span>הפריטים שלי</span>
+                        </a>
+                    </div>
+                {/if}
             </div>
         </div>
     </div>
