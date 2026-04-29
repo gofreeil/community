@@ -27,7 +27,7 @@ export const giveawayCategories: GiveawayCategory[] = [
     { key: 'baby',          label: 'תינוקות וילדים', icon: '👶', color: 'pink',    keywords: ['תינוק', 'עגלה', 'מיטת תינוק', 'בייבי', 'לול', 'סלקל', 'בגד תינוק', 'מנשא'],
       image: LOCAL('baby.jpg') },
     { key: 'kids',          label: 'משחקים וצעצועים', icon: '🧸', color: 'fuchsia', keywords: ['משחק', 'צעצוע', 'בובה', 'לגו', 'פאזל', 'משחקי קופסה'],
-      image: LOCAL('kids.jpg') },
+      image: LOCAL('kids.png') },
     { key: 'clothing',      label: 'ביגוד והנעלה',    icon: '👕', color: 'rose',    keywords: ['חולצה', 'מכנס', 'שמלה', 'מעיל', 'נעל', 'ביגוד', 'מכנסיים', 'גופייה', 'סוודר', 'כובע', 'תיק'],
       image: LOCAL('clothing.jpg') },
     { key: 'judaica_books', label: 'יודיקא וספרים',  icon: '📜', color: 'indigo',
