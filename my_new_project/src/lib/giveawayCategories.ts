@@ -37,7 +37,7 @@ export const giveawayCategories: GiveawayCategory[] = [
       image: LOCAL('kitchen.jpg') },
     { key: 'tools',         label: 'כלי עבודה',      icon: '🔧', color: 'orange',  keywords: ['כלי עבודה', 'מקדחה', 'פטיש', 'מברגה', 'מסור', 'כלים'],
       image: LOCAL('tools.jpg') },
-    { key: 'garden',        label: 'גינון',          icon: '🌱', color: 'green',
+    { key: 'garden',        label: 'לגינה',          icon: '🌱', color: 'green',
       keywords: ['עציץ', 'עציצים', 'צמח', 'צמחים', 'פרח', 'פרחים', 'גינה', 'מרפסת', 'מריצה', 'אדנית', 'מזלף', 'שתיל', 'חצר', 'דשא', 'גינון'],
       image: LOCAL('garden.jpg') },
     { key: 'sports',        label: 'ספורט ופנאי',    icon: '⚽', color: 'teal',    keywords: ['ספורט', 'אופניים', 'אופנוע', 'כדור', 'משקולות', 'יוגה', 'ריצה', 'אימון', 'גלגיליות'],

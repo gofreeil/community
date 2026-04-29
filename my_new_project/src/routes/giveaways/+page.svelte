@@ -223,7 +223,7 @@
                 height="882"
                 fetchpriority="high"
                 decoding="async"
-                class="w-full max-w-[32rem] md:max-w-[40rem] mx-auto block aspect-[1330/882] bg-gradient-to-br from-orange-900/20 to-amber-900/10 rounded-2xl"
+                class="w-full max-w-[32rem] md:max-w-[40rem] mx-auto block aspect-[1330/882]"
             />
         </div>
     </div>
@@ -254,15 +254,14 @@
                     <!-- Dark gradient overlay for readability -->
                     <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/10 {active ? 'from-orange-900/80 via-orange-900/30' : ''}"></div>
 
-                    <!-- Label + icon -->
-                    <div class="absolute inset-x-0 bottom-0 p-2 md:p-2.5 flex items-end justify-between gap-1">
+                    <!-- Label -->
+                    <div class="absolute inset-x-0 bottom-0 p-2 md:p-2.5">
                         <div class="text-right min-w-0">
                             <div class="text-[11px] md:text-sm font-black text-white leading-tight truncate">{cat.label}</div>
                             {#if count > 0 && cat.key !== 'all'}
                                 <div class="text-[9px] md:text-[10px] text-orange-200 font-bold">{count} פריטים</div>
                             {/if}
                         </div>
-                        <span class="text-lg md:text-xl drop-shadow-lg shrink-0">{cat.icon}</span>
                     </div>
 
                     {#if active}
