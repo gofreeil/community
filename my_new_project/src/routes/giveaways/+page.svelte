@@ -278,12 +278,12 @@
                         decoding="async"
                         class="absolute inset-0 w-full h-full object-cover object-top block"
                     />
-                    <!-- Subtle darkening overlay -->
-                    <div class="absolute inset-0 bg-black/30 pointer-events-none"></div>
+                    <!-- Gradient darkening overlay — בהיר למעלה, ממוצע באמצע, כהה למטה -->
+                    <div class="absolute inset-0 bg-gradient-to-b from-black/5 via-black/30 to-black/60 pointer-events-none"></div>
                 </div>
                 <a
                     href="/giveaways/add"
-                    class="absolute -start-2 md:-start-14 top-[40%] -translate-y-1/2 z-10 flex flex-col items-center justify-center gap-1 md:gap-2 bg-gradient-to-br from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold px-2.5 py-2 md:px-5 md:py-4 rounded-xl shadow-lg shadow-orange-500/50 ring-1 ring-orange-300/40 transition-all hover:scale-105 whitespace-nowrap text-xs md:text-base"
+                    class="absolute -start-2 md:-start-14 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center justify-center gap-1 md:gap-2 bg-gradient-to-br from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold px-2.5 py-2 md:px-5 md:py-4 rounded-xl shadow-lg shadow-orange-500/50 ring-1 ring-orange-300/40 transition-all hover:scale-105 whitespace-nowrap text-xs md:text-base"
                 >
                     <span class="text-base md:text-2xl leading-none">➕</span>
                     <span>פרסם פריט</span>
@@ -291,7 +291,7 @@
                 {#if data.currentUserId}
                     <a
                         href="/giveaways/my"
-                        class="absolute -end-2 md:-end-14 top-[40%] -translate-y-1/2 z-10 flex flex-col items-center justify-center gap-1 md:gap-2 bg-black/55 backdrop-blur-md border border-orange-400/50 hover:bg-orange-500/40 text-orange-200 hover:text-white font-bold px-2.5 py-2 md:px-5 md:py-4 rounded-xl transition-all hover:scale-105 whitespace-nowrap shadow-lg text-xs md:text-base"
+                        class="absolute -end-2 md:-end-14 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center justify-center gap-1 md:gap-2 bg-black/55 backdrop-blur-md border border-orange-400/50 hover:bg-orange-500/40 text-orange-200 hover:text-white font-bold px-2.5 py-2 md:px-5 md:py-4 rounded-xl transition-all hover:scale-105 whitespace-nowrap shadow-lg text-xs md:text-base"
                     >
                         <span class="text-base md:text-2xl leading-none">👤</span>
                         <span>הפריטים שלי</span>
