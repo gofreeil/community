@@ -1,10 +1,47 @@
 <script lang="ts">
     import type { PageData } from './$types';
+    import { toggleLike, isLiked } from '$lib/likedItems';
 
     let { data }: { data: PageData } = $props();
 
     type Gender = 'all' | 'male' | 'female';
     let filter = $state<Gender>('all');
+    let favorites = $state<Set<string>>(new Set());
+
+    $effect(() => {
+        if (typeof window === 'undefined') return;
+        // אתחול ראשוני: סנכרון מצב הלבבות עם liked_items_v1
+        const next = new Set<string>();
+        try {
+            const raw = localStorage.getItem('liked_items_v1');
+            if (raw) {
+                const arr = JSON.parse(raw);
+                if (Array.isArray(arr)) {
+                    for (const x of arr) {
+                        if (x?.type === 'single' && x?.id) next.add(String(x.id));
+                    }
+                }
+            }
+        } catch {}
+        favorites = next;
+    });
+
+    function toggleFavorite(person: { id: string; label: string; gender: 'male' | 'female'; age: string; city: string; description: string }, e: MouseEvent) {
+        e.preventDefault();
+        e.stopPropagation();
+        const id = String(person.id);
+        const nowLiked = toggleLike({
+            type: 'single',
+            id,
+            label: person.label,
+            url: '/singles',
+            summary: `${person.gender === 'male' ? '👨' : '👩'} ${person.age} · ${person.city}`,
+        });
+        const next = new Set(favorites);
+        if (nowLiked) next.add(id);
+        else next.delete(id);
+        favorites = next;
+    }
 
     function getGender(extraFields: string): 'male' | 'female' {
         try {
@@ -113,19 +150,27 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             {#each filteredMock as person}
                 {@const isMale = person.gender === 'male'}
+                {@const isFav = favorites.has(person.id)}
                 <div class="rounded-2xl bg-[#0f172a] border {isMale ? 'border-blue-500/30' : 'border-pink-500/30'} overflow-hidden shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1">
                     <!-- Card header -->
-                    <div class="bg-gradient-to-r {isMale ? 'from-blue-600 to-cyan-600' : 'from-pink-600 to-rose-500'} p-4 flex items-center gap-3">
+                    <div class="bg-gradient-to-r {isMale ? 'from-blue-600 to-cyan-600' : 'from-pink-600 to-rose-500'} p-4 flex items-center gap-3 relative">
                         <div class="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-2xl flex-shrink-0">
                             {isMale ? '👨' : '👩'}
                         </div>
-                        <div>
+                        <div class="flex-1 min-w-0">
                             <h3 class="text-white font-black text-lg">{person.label}</h3>
                             <div class="flex items-center gap-3 text-white/80 text-sm">
                                 <span>🎂 {person.age}</span>
                                 <span>📍 {person.city}</span>
                             </div>
                         </div>
+                        <button
+                            type="button"
+                            onclick={(e) => toggleFavorite(person, e)}
+                            aria-label={isFav ? 'הסר מהאהובים' : 'הוסף לאהובים'}
+                            title={isFav ? 'הסר מהאהובים' : 'אהבתי'}
+                            class="shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-black/30 hover:bg-black/50 backdrop-blur-sm text-xl transition-all {isFav ? 'text-rose-300 scale-110' : 'text-white/80 hover:text-rose-200'}"
+                        >{isFav ? '❤️' : '🤍'}</button>
                     </div>
 
                     <!-- Card body -->
