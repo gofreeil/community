@@ -212,13 +212,14 @@
         <div class="relative max-w-7xl mx-auto px-4 pt-6 pb-4 md:pt-10 md:pb-6">
             <a
                 href="/"
-                aria-label="חזרה לדף הבית"
-                title="חזרה לדף הבית"
+                onclick={(e) => { if (typeof history !== 'undefined' && history.length > 1) { e.preventDefault(); history.back(); } }}
+                aria-label="חזור אחורה"
+                title="חזור אחורה"
                 class="absolute top-3 start-3 md:top-5 md:start-5 z-10 inline-flex items-center gap-1.5 bg-white/5 hover:bg-orange-500/20 border border-white/10 hover:border-orange-500/40 text-gray-300 hover:text-white px-3 py-1.5 rounded-full text-xs md:text-sm font-bold backdrop-blur-sm transition-all"
             >
                 <span aria-hidden="true">🏠</span>
-                <span class="hidden sm:inline">דף הבית</span>
-                <span aria-hidden="true">←</span>
+                <span class="hidden sm:inline">חזור אחורה</span>
+                <span aria-hidden="true">→</span>
             </a>
             <div class="flex items-center justify-center gap-3 md:gap-4 mb-2">
                 <span class="text-4xl md:text-5xl">🎁</span>
@@ -265,42 +266,41 @@
 
     <!-- Categories Tiles (Yad2-style) -->
     <div class="max-w-7xl mx-auto px-4 pt-5">
-        <!-- Featured "all" category as wide banner — heading on the right, button centered -->
+        <!-- Featured "all" category as wide banner — heading on the right, button centered, count on the left -->
         {#each giveawayCategories.filter(c => c.key === 'all') as cat}
             {@const count = categoryCounts[cat.key] ?? 0}
             {@const active = categoryFilter === cat.key}
-            <div class="relative flex items-center justify-center mb-3 px-1">
-                <h2 class="absolute right-1 text-white font-black text-base md:text-lg flex items-center gap-2">
+            <div class="flex items-center justify-center gap-3 mb-3">
+                <h2 class="text-white font-black text-base md:text-lg flex items-center gap-2 whitespace-nowrap">
                     <span class="text-orange-400">▾</span>
                     קטגוריות
                 </h2>
-            <button
-                onclick={() => categoryFilter = cat.key}
-                class="relative group rounded-2xl overflow-hidden border-2 transition-all hover:scale-[1.01] hover:-translate-y-0.5 block w-1/2 sm:w-1/3 md:w-1/4 h-16 md:h-20 {active ? 'border-orange-400 shadow-xl shadow-orange-500/40 ring-2 ring-orange-400/50' : 'border-white/10 hover:border-orange-500/60 shadow-lg'}"
-                title={cat.label}
-            >
-                <img
-                    src={cat.image}
-                    alt={cat.label}
-                    loading="lazy"
-                    class="absolute inset-0 w-full h-full object-cover object-[center_30%] scale-110 transition-transform duration-500 group-hover:scale-[1.15]"
-                />
-                <!-- Dark gradient overlay for readability -->
-                <div class="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-black/20 {active ? 'from-orange-900/80 via-orange-900/40' : ''}"></div>
+                <button
+                    onclick={() => categoryFilter = cat.key}
+                    class="relative group rounded-2xl overflow-hidden border-2 transition-all hover:scale-[1.01] hover:-translate-y-0.5 block w-1/2 sm:w-1/3 md:w-1/4 h-16 md:h-20 {active ? 'border-orange-400 shadow-xl shadow-orange-500/40 ring-2 ring-orange-400/50' : 'border-white/10 hover:border-orange-500/60 shadow-lg'}"
+                    title={cat.label}
+                >
+                    <img
+                        src={cat.image}
+                        alt={cat.label}
+                        loading="lazy"
+                        class="absolute inset-0 w-full h-full object-cover object-[center_30%] scale-110 transition-transform duration-500 group-hover:scale-[1.15]"
+                    />
+                    <!-- Bottom-weighted dark gradient — מדגיש את הכיתוב בתחתית -->
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent {active ? 'from-orange-900/85 via-orange-900/30' : ''}"></div>
 
-                <!-- Horizontal layout: icon + label + count -->
-                <div class="absolute inset-0 flex items-center justify-center gap-3 md:gap-4 px-4">
-                    <span class="text-2xl md:text-3xl">{cat.icon}</span>
-                    <span class="text-base md:text-xl font-black text-white">{cat.label}</span>
-                    {#if count > 0}
-                        <span class="text-xs md:text-sm font-bold text-orange-200">· {count} פריטים</span>
+                    <!-- Label aligned to bottom of image -->
+                    <div class="absolute inset-x-0 bottom-0 flex items-end justify-center px-4 pb-1.5">
+                        <span class="text-base md:text-xl font-black text-white drop-shadow-lg leading-none">{cat.label}</span>
+                    </div>
+
+                    {#if active}
+                        <div class="absolute top-2 end-2 bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg text-xs font-black">✓</div>
                     {/if}
-                </div>
-
-                {#if active}
-                    <div class="absolute top-2 end-2 bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg text-xs font-black">✓</div>
+                </button>
+                {#if count > 0}
+                    <span class="text-sm md:text-base font-bold text-orange-200 whitespace-nowrap">{count} פריטים</span>
                 {/if}
-            </button>
             </div>
         {/each}
 
