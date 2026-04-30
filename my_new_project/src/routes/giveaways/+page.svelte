@@ -294,9 +294,6 @@
                         <span class="text-base md:text-xl font-black text-white drop-shadow-lg leading-none">{cat.label}</span>
                     </div>
 
-                    {#if active}
-                        <div class="absolute top-2 end-2 bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg text-xs font-black">✓</div>
-                    {/if}
                 </button>
                 {#if count > 0}
                     <span class="text-sm md:text-base font-bold text-orange-200 whitespace-nowrap">{count} פריטים</span>
@@ -330,19 +327,14 @@
                     <!-- Dark gradient overlay for readability -->
                     <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/0 {active ? 'from-orange-900/80 via-orange-900/30' : ''}"></div>
 
-                    <!-- Label -->
-                    <div class="absolute inset-x-0 bottom-0 p-1.5 md:p-2">
-                        <div class="text-right min-w-0">
-                            <div class="text-[10px] md:text-xs font-black text-white leading-tight truncate">{cat.label}</div>
-                            {#if count > 0}
-                                <div class="text-[9px] md:text-[10px] text-orange-200 font-bold">{count}</div>
-                            {/if}
-                        </div>
+                    <!-- Label + count (count to the LEFT of the label in RTL) -->
+                    <div class="absolute inset-x-0 bottom-0 p-1.5 md:p-2 flex items-baseline justify-start gap-1.5 min-w-0">
+                        <span class="text-[10px] md:text-xs font-black text-white leading-tight truncate">{cat.label}</span>
+                        {#if count > 0}
+                            <span class="text-[9px] md:text-[10px] text-orange-200 font-bold whitespace-nowrap">{count}</span>
+                        {/if}
                     </div>
 
-                    {#if active}
-                        <div class="absolute top-1.5 end-1.5 bg-orange-500 text-white rounded-full w-5 h-5 flex items-center justify-center shadow-lg text-[10px] font-black">✓</div>
-                    {/if}
                 </button>
             {/each}
         </div>
