@@ -3,6 +3,7 @@
     import type { PageData } from './$types';
     import { giveawayCategories, detectCategory, categoryByKey } from '$lib/giveawayCategories';
     import { neighborhoodState } from '$lib/neighborhoodState.svelte';
+    import { toggleLike } from '$lib/likedItems';
 
     let { data }: { data: PageData } = $props();
 
@@ -37,9 +38,10 @@
         } catch {}
     });
 
-    function toggleFavorite(id: string, e: MouseEvent) {
+    function toggleFavorite(item: { id: string | number; label: string; address: string; description: string; extra_fields: string }, e: MouseEvent) {
         e.preventDefault();
         e.stopPropagation();
+        const id = String(item.id);
         const next = new Set(favorites);
         if (next.has(id)) next.delete(id);
         else next.add(id);
@@ -47,6 +49,15 @@
         try {
             localStorage.setItem('giveaway_favorites', JSON.stringify([...next]));
         } catch {}
+        // שמירת תצלום מלא לדף הפרופיל
+        toggleLike({
+            type: 'giveaway',
+            id,
+            label: item.label,
+            image: itemImage(item),
+            url: `/items/${id}`,
+            summary: item.address || item.description?.slice(0, 80) || '',
+        });
     }
 
     function getField(extraFields: string, key: string): string {
@@ -158,6 +169,28 @@
         }
         return list;
     });
+
+    // Pagination — only applies to the flat (non-search) view, so the grouped tiers stay intact.
+    const PAGE_SIZE = 12;
+    let currentPage = $state(1);
+
+    // Reset to page 1 whenever the active filter set changes.
+    $effect(() => {
+        categoryFilter; priceFilter; sortBy; debouncedSearch;
+        currentPage = 1;
+    });
+
+    let totalPages = $derived(Math.max(1, Math.ceil(filtered.length / PAGE_SIZE)));
+    let pagedItems = $derived(filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE));
+
+    function goToPage(p: number) {
+        const next = Math.min(Math.max(1, p), totalPages);
+        if (next === currentPage) return;
+        currentPage = next;
+        if (typeof window !== 'undefined') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
 
     // Counts per category for filter chip badges
     let categoryCounts = $derived.by(() => {
@@ -517,7 +550,7 @@
                                     <h3 class="text-white font-bold text-base md:text-lg line-clamp-1 hover:text-orange-300 transition-colors">{item.label}</h3>
                                 </a>
                                 <button
-                                    onclick={(e) => toggleFavorite(String(item.id), e)}
+                                    onclick={(e) => toggleFavorite(item, e)}
                                     aria-label={isFav ? 'הסר ממועדפים' : 'הוסף למועדפים'}
                                     class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/15 text-lg transition-all {isFav ? 'text-rose-400' : 'text-gray-500 hover:text-rose-300'}"
                                 >{isFav ? '❤️' : '🤍'}</button>
@@ -567,7 +600,7 @@
 
                             <!-- Heart favorite -->
                             <button
-                                onclick={(e) => toggleFavorite(String(item.id), e)}
+                                onclick={(e) => toggleFavorite(item, e)}
                                 aria-label={isFav ? 'הסר ממועדפים' : 'הוסף למועדפים'}
                                 class="absolute top-2 end-2 z-10 w-8 h-8 rounded-full flex items-center justify-center bg-black/40 backdrop-blur-sm hover:bg-black/60 text-base transition-all {isFav ? 'text-rose-400 scale-110' : 'text-white/80 hover:text-rose-300'}"
                             >{isFav ? '❤️' : '🤍'}</button>
@@ -630,14 +663,50 @@
                 </section>
             {/if}
         {:else if viewMode === 'list'}
-            {@render listView(filtered)}
+            {@render listView(pagedItems)}
         {:else}
-            {@render gridView(filtered)}
+            {@render gridView(pagedItems)}
         {/if}
 
+        {/if}
+
+        <!-- Pagination — shows only on the flat (non-search) view when there's more than one page -->
+        {#if !searching && totalPages > 1}
+            <nav aria-label="ניווט בין דפים" class="mt-8 flex flex-col items-center gap-3">
+                <p class="text-gray-300 text-sm md:text-base">
+                    עמוד <span class="text-orange-300 font-black">{currentPage}</span>
+                    מתוך <span class="text-white font-black">{totalPages}</span>
+                </p>
+                <div class="flex items-center gap-2 flex-wrap justify-center">
+                    <button
+                        onclick={() => goToPage(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        class="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white text-sm font-bold hover:bg-orange-500/20 hover:border-orange-500/40 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                        aria-label="הדף הקודם"
+                    >→ הקודם</button>
+
+                    {#each Array.from({ length: totalPages }, (_, i) => i + 1) as p}
+                        <button
+                            onclick={() => goToPage(p)}
+                            aria-current={p === currentPage ? 'page' : undefined}
+                            class="min-w-[2rem] px-2.5 py-1.5 rounded-full text-sm font-black transition-all border {p === currentPage ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white border-transparent shadow-lg shadow-orange-500/40' : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10 hover:border-orange-500/40'}"
+                        >{p}</button>
+                    {/each}
+
+                    <button
+                        onclick={() => goToPage(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        class="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white text-sm font-bold hover:bg-orange-500/20 hover:border-orange-500/40 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                        aria-label="הדף הבא"
+                    >הבא ←</button>
+                </div>
+            </nav>
         {/if}
 
         <div class="text-center mt-10 mb-4">
+            {#if !searching && totalPages > 1}
+                <p class="text-gray-500 text-xs mb-2">עמוד {currentPage} מתוך {totalPages}</p>
+            {/if}
             <a href="/" class="text-gray-500 hover:text-white transition-colors text-sm">← חזרה לדף הראשי</a>
         </div>
     </div>
