@@ -206,18 +206,8 @@
                 </h1>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] items-center gap-3 md:gap-4">
-                <!-- Right side (RTL first DOM child): פרסם פריט -->
-                <div class="flex justify-center">
-                    <a
-                        href="/giveaways/add"
-                        class="flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold px-6 py-5 rounded-xl shadow-lg shadow-orange-500/30 transition-all hover:scale-105 whitespace-nowrap min-w-[7rem]"
-                    >
-                        <span class="text-3xl leading-none">➕</span>
-                        <span>פרסם פריט</span>
-                    </a>
-                </div>
-                <!-- Center: banner image — wrapped in a div so the slot reserves space BEFORE the image loads (img inside a CSS-grid auto column collapses to 0 before it has src content) -->
-                <div class="w-[32rem] md:w-[40rem] max-w-full aspect-[1330/882] mx-auto rounded-2xl overflow-hidden bg-gradient-to-br from-orange-900/20 to-amber-900/10">
+                <!-- Banner image — wrapped in a div so the slot reserves space BEFORE the image loads (img inside a CSS-grid auto column collapses to 0 before it has src content). Mobile: top. Desktop: middle column. -->
+                <div class="md:order-2 w-[32rem] md:w-[40rem] max-w-full aspect-[1330/882] mx-auto rounded-2xl overflow-hidden bg-gradient-to-br from-orange-900/20 to-amber-900/10">
                     <img
                         src="/images/delivery.png"
                         alt=""
@@ -228,18 +218,25 @@
                         class="w-full h-full object-cover block"
                     />
                 </div>
-                <!-- Left side (RTL last DOM child): הפריטים שלי -->
-                {#if data.currentUserId}
-                    <div class="flex justify-center">
+                <!-- Buttons: mobile = single flex row (50/50). Desktop = `display: contents` so each link becomes its own grid item, ordered into the side columns. -->
+                <div class="flex gap-2 md:contents">
+                    <a
+                        href="/giveaways/add"
+                        class="flex-1 md:flex-none md:order-1 md:mx-auto flex flex-row md:flex-col items-center justify-center gap-1.5 md:gap-2 bg-gradient-to-br from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold px-3 py-2.5 md:px-6 md:py-5 rounded-xl shadow-lg shadow-orange-500/30 transition-all hover:scale-105 whitespace-nowrap md:min-w-[7rem] text-sm md:text-base"
+                    >
+                        <span class="text-lg md:text-3xl leading-none">➕</span>
+                        <span>פרסם פריט</span>
+                    </a>
+                    {#if data.currentUserId}
                         <a
                             href="/giveaways/my"
-                            class="flex flex-col items-center justify-center gap-2 bg-orange-500/10 border border-orange-500/30 hover:bg-orange-500/20 text-orange-300 font-bold px-6 py-5 rounded-xl transition-colors whitespace-nowrap shadow-lg min-w-[7rem]"
+                            class="flex-1 md:flex-none md:order-3 md:mx-auto flex flex-row md:flex-col items-center justify-center gap-1.5 md:gap-2 bg-orange-500/10 border border-orange-500/30 hover:bg-orange-500/20 text-orange-300 font-bold px-3 py-2.5 md:px-6 md:py-5 rounded-xl transition-colors whitespace-nowrap shadow-lg md:min-w-[7rem] text-sm md:text-base"
                         >
-                            <span class="text-3xl leading-none">👤</span>
+                            <span class="text-lg md:text-3xl leading-none">👤</span>
                             <span>הפריטים שלי</span>
                         </a>
-                    </div>
-                {/if}
+                    {/if}
+                </div>
             </div>
         </div>
     </div>
@@ -257,7 +254,7 @@
                 </h2>
                 <button
                     onclick={() => categoryFilter = cat.key}
-                    class="relative group rounded-2xl overflow-hidden border-2 transition-all hover:scale-[1.01] hover:-translate-y-0.5 block w-1/2 sm:w-1/3 md:w-1/4 h-16 md:h-20 {active ? 'border-orange-400 shadow-xl shadow-orange-500/40 ring-2 ring-orange-400/50' : 'border-white/10 hover:border-orange-500/60 shadow-lg'}"
+                    class="relative group rounded-2xl overflow-hidden border-2 transition-all hover:scale-[1.01] hover:-translate-y-0.5 block w-2/5 sm:w-1/3 md:w-1/4 h-12 md:h-20 {active ? 'border-orange-400 shadow-xl shadow-orange-500/40 ring-2 ring-orange-400/50' : 'border-white/10 hover:border-orange-500/60 shadow-lg'}"
                     title={cat.label}
                 >
                     <img
@@ -270,8 +267,8 @@
                     <div class="absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-transparent {active ? 'from-orange-900/65 via-orange-900/20' : ''}"></div>
 
                     <!-- Label aligned to bottom of image -->
-                    <div class="absolute inset-x-0 bottom-0 flex items-end justify-center px-4 pb-1.5">
-                        <span class="text-sm md:text-lg font-black text-white drop-shadow-lg leading-none">{cat.label}</span>
+                    <div class="absolute inset-x-0 bottom-0 flex items-end justify-center px-3 pb-1 md:pb-1.5">
+                        <span class="text-xs md:text-lg font-black text-white drop-shadow-lg leading-none">{cat.label}</span>
                     </div>
 
                 </button>
@@ -359,19 +356,19 @@
                         onclick={() => priceFilter = 'all'}
                         class="px-3 py-1.5 rounded-full text-xs md:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1.5 border {priceFilter === 'all' ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg shadow-orange-500/40 border-transparent' : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10 hover:border-white/20'}"
                     >
-                        <span>💰</span><span>הכל</span>
+                        <span class="hidden md:inline">💰</span><span>הכל</span>
                     </button>
                     <button
                         onclick={() => priceFilter = 'free'}
                         class="px-3 py-1.5 rounded-full text-xs md:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1.5 border {priceFilter === 'free' ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg shadow-emerald-500/40 border-transparent' : 'bg-white/5 text-emerald-300 border-emerald-500/20 hover:bg-emerald-500/10 hover:border-emerald-500/40'}"
                     >
-                        <span>💚</span><span>חינם</span>
+                        <span class="hidden md:inline">💚</span><span>חינם</span>
                     </button>
                     <button
                         onclick={() => priceFilter = 'symbolic'}
                         class="px-3 py-1.5 rounded-full text-xs md:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1.5 border {priceFilter === 'symbolic' ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-lg shadow-amber-500/40 border-transparent' : 'bg-white/5 text-amber-300 border-amber-500/20 hover:bg-amber-500/10 hover:border-amber-500/40'}"
                     >
-                        <span>🪙</span><span>סמלי</span>
+                        <span class="hidden md:inline">🪙</span><span>סמלי</span>
                     </button>
                 </div>
 
