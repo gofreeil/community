@@ -1,6 +1,8 @@
 export interface GiveawayCategory {
     key: string;
     label: string;
+    /** תווית מקוצרת לתצוגת מובייל. אם לא מוגדר — נשתמש ב-label. */
+    mobileLabel?: string;
     icon: string;
     color: string;
     keywords: string[];
@@ -24,11 +26,11 @@ export const giveawayCategories: GiveawayCategory[] = [
       image: LOCAL('furniture.jpg') },
     { key: 'electronics',   label: 'מוצרי חשמל',     icon: '⚡', color: 'sky',     keywords: ['מקרר', 'תנור', 'מיקרוגל', 'מכונת', 'טלוויזיה', 'מחשב', 'מסך', 'טלפון', 'חשמל', 'שואב', 'קומקום', 'מאוורר', 'מיזוג'],
       image: LOCAL('electronics.jpg') },
-    { key: 'gadgets',       label: 'מכשירי אלקטרוניקה', icon: '📱', color: 'cyan',  keywords: ['סמארטפון', 'אייפון', 'אנדרואיד', 'טאבלט', 'אייפד', 'לפטופ', 'מחשב נייד', 'אוזניות', 'רמקול', 'בלוטות', 'שעון חכם', 'סמארטווץ\'', 'מצלמה', 'דרון', 'קונסולה', 'פלייסטיישן', 'אקסבוקס', 'נינטנדו', 'גיימינג', 'ראוטר', 'מטען', 'כבל', 'פאוורבנק', 'אלקטרוניקה'],
+    { key: 'gadgets',       label: 'מכשירי אלקטרוניקה', mobileLabel: 'אלקטרוניקה', icon: '📱', color: 'cyan',  keywords: ['סמארטפון', 'אייפון', 'אנדרואיד', 'טאבלט', 'אייפד', 'לפטופ', 'מחשב נייד', 'אוזניות', 'רמקול', 'בלוטות', 'שעון חכם', 'סמארטווץ\'', 'מצלמה', 'דרון', 'קונסולה', 'פלייסטיישן', 'אקסבוקס', 'נינטנדו', 'גיימינג', 'ראוטר', 'מטען', 'כבל', 'פאוורבנק', 'אלקטרוניקה'],
       image: LOCAL('gadgets.png') },
-    { key: 'baby',          label: 'תינוקות וילדים', icon: '👶', color: 'pink',    keywords: ['תינוק', 'עגלה', 'מיטת תינוק', 'בייבי', 'לול', 'סלקל', 'בגד תינוק', 'מנשא'],
+    { key: 'baby',          label: 'תינוקות וילדים', mobileLabel: 'ילדים', icon: '👶', color: 'pink',    keywords: ['תינוק', 'עגלה', 'מיטת תינוק', 'בייבי', 'לול', 'סלקל', 'בגד תינוק', 'מנשא'],
       image: LOCAL('baby.jpg') },
-    { key: 'kids',          label: 'משחקים וצעצועים', icon: '🧸', color: 'fuchsia', keywords: ['משחק', 'צעצוע', 'בובה', 'לגו', 'פאזל', 'משחקי קופסה'],
+    { key: 'kids',          label: 'משחקים וצעצועים', mobileLabel: 'צעצועים', icon: '🧸', color: 'fuchsia', keywords: ['משחק', 'צעצוע', 'בובה', 'לגו', 'פאזל', 'משחקי קופסה'],
       image: LOCAL('kids.png') },
     { key: 'clothing',      label: 'ביגוד והנעלה',    icon: '👕', color: 'rose',    keywords: ['חולצה', 'מכנס', 'שמלה', 'מעיל', 'נעל', 'ביגוד', 'מכנסיים', 'גופייה', 'סוודר', 'כובע', 'תיק'],
       image: LOCAL('clothing.jpg') },

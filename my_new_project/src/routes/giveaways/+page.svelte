@@ -306,7 +306,10 @@
 
                     <!-- Label + count (count to the LEFT of the label in RTL) -->
                     <div class="absolute inset-x-0 bottom-0 p-1.5 md:p-2 flex items-baseline justify-start gap-1.5 min-w-0">
-                        <span class="text-[10px] md:text-xs font-black text-white leading-tight truncate">{cat.label}</span>
+                        <span class="text-[10px] md:text-xs font-black text-white leading-tight truncate">
+                            <span class="md:hidden">{cat.mobileLabel ?? cat.label}</span>
+                            <span class="hidden md:inline">{cat.label}</span>
+                        </span>
                         {#if count > 0}
                             <span class="text-[9px] md:text-[10px] text-orange-200 font-bold whitespace-nowrap">{count}</span>
                         {/if}
