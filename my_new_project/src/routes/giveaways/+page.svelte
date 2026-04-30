@@ -245,13 +245,14 @@
 <div class="min-h-screen bg-[#070b14] pb-28" dir="rtl">
 
     <!-- Hero + Categories share an extended orange tint that fades into the search bar -->
-    <div class="relative bg-gradient-to-b from-orange-900/30 via-amber-900/20 to-transparent">
-    <!-- Hero Section -->
-    <div class="relative overflow-hidden">
-        <div class="absolute inset-0 opacity-20">
+    <div class="relative overflow-hidden bg-gradient-to-b from-orange-900/30 via-amber-900/20 to-transparent">
+        <!-- Soft orange/amber blur halos span the whole tinted area for a seamless backdrop -->
+        <div class="absolute inset-0 opacity-20 pointer-events-none">
             <div class="absolute top-10 right-10 w-64 h-64 bg-orange-500 rounded-full blur-3xl"></div>
             <div class="absolute bottom-10 left-10 w-72 h-72 bg-amber-500 rounded-full blur-3xl"></div>
         </div>
+    <!-- Hero Section -->
+    <div class="relative">
         <div class="relative max-w-7xl mx-auto px-4 pt-2 pb-1 md:pt-4 md:pb-2">
             <a
                 href="/"
@@ -264,7 +265,7 @@
                 <span class="hidden sm:inline">חזור אחורה</span>
                 <span aria-hidden="true">→</span>
             </a>
-            <h1 class="sr-only">למסירה</h1>
+            <h1 class="absolute top-0 start-0 -z-10 text-base font-bold text-transparent pointer-events-none select-none" aria-hidden="true">למסירה</h1>
             <!-- Banner image (cropped to top half) with overlaid action buttons -->
             <div class="relative w-[32rem] md:w-[40rem] max-w-full mx-auto">
                 <div class="relative aspect-[1330/441] rounded-2xl overflow-hidden bg-gradient-to-br from-orange-900/20 to-amber-900/10">
