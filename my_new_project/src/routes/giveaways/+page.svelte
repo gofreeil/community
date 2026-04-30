@@ -353,14 +353,13 @@
             <div class="flex items-center gap-1.5 md:gap-2">
                 <!-- Search input (flex-1, shrinks) -->
                 <div class="relative flex-1 min-w-0">
-                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">🔎</span>
                     <input
                         type="search"
                         bind:value={search}
                         placeholder="מה מחפשים?"
                         aria-label="חיפוש פריטים"
                         dir="rtl"
-                        class="w-full bg-white/5 border-2 border-white/10 rounded-full ps-9 {search ? 'pe-9' : 'pe-3'} py-2 text-white placeholder:text-gray-500 focus:border-orange-500 focus:bg-white/10 focus:outline-none transition-all text-sm md:text-base text-right"
+                        class="w-full bg-white/5 border-2 border-white/10 rounded-full {search ? 'pe-9' : 'pe-3'} ps-3 py-2 text-white placeholder:text-gray-500 focus:border-orange-500 focus:bg-white/10 focus:outline-none transition-all text-sm md:text-base text-right"
                     />
                     {#if search}
                         <button
