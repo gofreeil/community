@@ -100,9 +100,8 @@
 <div class="min-h-screen bg-[#070b14] pt-6 pb-20 px-4" dir="rtl">
     <div class="max-w-2xl mx-auto">
         <div class="text-center mb-6">
-            <span class="text-5xl mb-3 block">📦</span>
             <h1 class="text-3xl font-black text-white mb-2">פרסום פריט למסירה</h1>
-            <p class="text-gray-400">שיתוף פריט בקהילה לוקח פחות מדקה — חינם ובלי עמלות</p>
+            <p class="text-gray-400">שתף עם הקהילה את החפצים שאינך נחוץ להם ועזור לצמצם את הפערים בחברה</p>
         </div>
 
         {#if !data.userId}
@@ -119,65 +118,6 @@
                         <span class="w-1.5 h-5 bg-orange-500 rounded-full"></span>
                         פרטי הפריט
                     </h2>
-
-                    <!-- Multi-image upload -->
-                    <div>
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-white text-sm font-bold">תמונות (עד {MAX_IMAGES})</span>
-                            <span class="text-gray-500 text-xs">{images.length}/{MAX_IMAGES}</span>
-                        </div>
-                        {#if images.length > 0}
-                            <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 mb-2">
-                                {#each images as src, i (i)}
-                                    <div class="relative aspect-square rounded-xl overflow-hidden border border-white/10 group">
-                                        <img src={src} alt="" class="w-full h-full object-cover" />
-                                        {#if i === 0}
-                                            <span class="absolute bottom-1 start-1 px-1.5 py-0.5 rounded bg-orange-500 text-white text-[9px] font-black shadow">ראשית</span>
-                                        {/if}
-                                        <button
-                                            type="button"
-                                            onclick={() => removeImage(i)}
-                                            class="absolute top-1 left-1 bg-black/70 hover:bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold transition-colors"
-                                            aria-label="הסר תמונה"
-                                        >×</button>
-                                        <div class="absolute top-1 end-1 flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            {#if i > 0}
-                                                <button
-                                                    type="button"
-                                                    onclick={() => moveImage(i, i - 1)}
-                                                    class="bg-black/70 hover:bg-orange-600 text-white w-6 h-5 rounded text-[10px] font-bold transition-colors"
-                                                    aria-label="הזז ימינה"
-                                                >→</button>
-                                            {/if}
-                                            {#if i < images.length - 1}
-                                                <button
-                                                    type="button"
-                                                    onclick={() => moveImage(i, i + 1)}
-                                                    class="bg-black/70 hover:bg-orange-600 text-white w-6 h-5 rounded text-[10px] font-bold transition-colors"
-                                                    aria-label="הזז שמאלה"
-                                                >←</button>
-                                            {/if}
-                                        </div>
-                                    </div>
-                                {/each}
-                                {#if images.length < MAX_IMAGES}
-                                    <label class="flex flex-col items-center justify-center gap-1 aspect-square rounded-xl border-2 border-dashed border-white/15 hover:border-orange-500/50 bg-white/3 hover:bg-orange-900/10 cursor-pointer transition-all">
-                                        <span class="text-2xl">＋</span>
-                                        <span class="text-gray-500 text-[10px]">עוד</span>
-                                        <input type="file" accept="image/*" multiple class="hidden" onchange={handleImagesChange} />
-                                    </label>
-                                {/if}
-                            </div>
-                        {:else}
-                            <label class="flex flex-col items-center justify-center gap-2 w-full h-32 rounded-xl border-2 border-dashed border-white/15 hover:border-orange-500/50 bg-white/3 hover:bg-orange-900/10 cursor-pointer transition-all">
-                                <span class="text-3xl">📷</span>
-                                <span class="text-gray-400 text-sm font-bold">לחץ להעלאת תמונות</span>
-                                <span class="text-gray-600 text-xs">ניתן לבחור מספר תמונות · JPG, PNG · עד {MAX_IMAGES}</span>
-                                <input type="file" accept="image/*" multiple class="hidden" onchange={handleImagesChange} />
-                            </label>
-                        {/if}
-                        <input type="hidden" name="images_json" value={JSON.stringify(images)} />
-                    </div>
 
                     <div>
                         <label for="label" class="text-white text-sm font-bold mb-1 flex justify-between">
@@ -260,7 +200,7 @@
                                     placeholder="לדוגמה: 20"
                                     class="w-full bg-white/5 border border-amber-500/30 rounded-lg pe-9 ps-3 py-2 text-white placeholder-gray-500 focus:border-amber-500 focus:outline-none transition-colors"
                                 />
-                                <p class="text-gray-500 text-xs mt-1">סכום סמלי כדי שהפריט ילך למי שבאמת צריך — מומלץ עד 50 ₪</p>
+                                <p class="text-gray-500 text-xs mt-1">סכום סמלי כדי שהפריט ילך למי שבאמת צריך</p>
                             </div>
                         {/if}
                     </div>
@@ -280,6 +220,65 @@
                             placeholder="תאר את הפריט: גודל, צבע, ניסיון שימוש, סיבת המסירה..."
                             class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:border-orange-500/50 focus:outline-none transition-colors resize-none"
                         ></textarea>
+                    </div>
+
+                    <!-- Multi-image upload -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-white text-sm font-bold">תמונות (עד {MAX_IMAGES})</span>
+                            <span class="text-gray-500 text-xs">{images.length}/{MAX_IMAGES}</span>
+                        </div>
+                        {#if images.length > 0}
+                            <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 mb-2">
+                                {#each images as src, i (i)}
+                                    <div class="relative aspect-square rounded-xl overflow-hidden border border-white/10 group">
+                                        <img src={src} alt="" class="w-full h-full object-cover" />
+                                        {#if i === 0}
+                                            <span class="absolute bottom-1 start-1 px-1.5 py-0.5 rounded bg-orange-500 text-white text-[9px] font-black shadow">ראשית</span>
+                                        {/if}
+                                        <button
+                                            type="button"
+                                            onclick={() => removeImage(i)}
+                                            class="absolute top-1 left-1 bg-black/70 hover:bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold transition-colors"
+                                            aria-label="הסר תמונה"
+                                        >×</button>
+                                        <div class="absolute top-1 end-1 flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            {#if i > 0}
+                                                <button
+                                                    type="button"
+                                                    onclick={() => moveImage(i, i - 1)}
+                                                    class="bg-black/70 hover:bg-orange-600 text-white w-6 h-5 rounded text-[10px] font-bold transition-colors"
+                                                    aria-label="הזז ימינה"
+                                                >→</button>
+                                            {/if}
+                                            {#if i < images.length - 1}
+                                                <button
+                                                    type="button"
+                                                    onclick={() => moveImage(i, i + 1)}
+                                                    class="bg-black/70 hover:bg-orange-600 text-white w-6 h-5 rounded text-[10px] font-bold transition-colors"
+                                                    aria-label="הזז שמאלה"
+                                                >←</button>
+                                            {/if}
+                                        </div>
+                                    </div>
+                                {/each}
+                                {#if images.length < MAX_IMAGES}
+                                    <label class="flex flex-col items-center justify-center gap-1 aspect-square rounded-xl border-2 border-dashed border-white/15 hover:border-orange-500/50 bg-white/3 hover:bg-orange-900/10 cursor-pointer transition-all">
+                                        <span class="text-2xl">＋</span>
+                                        <span class="text-gray-500 text-[10px]">עוד</span>
+                                        <input type="file" accept="image/*" multiple class="hidden" onchange={handleImagesChange} />
+                                    </label>
+                                {/if}
+                            </div>
+                        {:else}
+                            <label class="flex flex-col items-center justify-center gap-2 w-full h-32 rounded-xl border-2 border-dashed border-white/15 hover:border-orange-500/50 bg-white/3 hover:bg-orange-900/10 cursor-pointer transition-all">
+                                <span class="text-3xl">📷</span>
+                                <span class="text-gray-400 text-sm font-bold">לחץ להעלאת תמונות</span>
+                                <span class="text-gray-600 text-xs">ניתן לבחור מספר תמונות · JPG, PNG · עד {MAX_IMAGES}</span>
+                                <input type="file" accept="image/*" multiple class="hidden" onchange={handleImagesChange} />
+                            </label>
+                        {/if}
+                        <input type="hidden" name="images_json" value={JSON.stringify(images)} />
                     </div>
 
                     <div>
