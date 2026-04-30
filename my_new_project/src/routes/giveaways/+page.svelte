@@ -283,7 +283,7 @@
                 </div>
                 <a
                     href="/giveaways/add"
-                    class="absolute -start-2 md:-start-14 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center justify-center gap-1 md:gap-2 bg-gradient-to-br from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold px-2.5 py-2 md:px-5 md:py-4 rounded-xl shadow-lg shadow-orange-500/50 ring-1 ring-orange-300/40 transition-all hover:scale-105 whitespace-nowrap text-xs md:text-base"
+                    class="absolute -start-2 md:-start-14 top-[calc(50%+10px)] md:top-1/2 -translate-y-1/2 z-10 flex flex-col items-center justify-center gap-1 md:gap-2 bg-gradient-to-br from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold px-2.5 py-2 md:px-5 md:py-4 rounded-xl shadow-lg shadow-orange-500/50 ring-1 ring-orange-300/40 transition-all hover:scale-105 whitespace-nowrap text-xs md:text-base"
                 >
                     <span class="text-base md:text-2xl leading-none">➕</span>
                     <span>פרסם פריט</span>
@@ -291,7 +291,7 @@
                 {#if data.currentUserId}
                     <a
                         href="/giveaways/my"
-                        class="absolute -end-2 md:-end-14 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center justify-center gap-1 md:gap-2 bg-black/55 backdrop-blur-md border border-orange-400/50 hover:bg-orange-500/40 text-orange-200 hover:text-white font-bold px-2.5 py-2 md:px-5 md:py-4 rounded-xl transition-all hover:scale-105 whitespace-nowrap shadow-lg text-xs md:text-base"
+                        class="absolute -end-2 md:-end-14 top-[calc(50%+10px)] md:top-1/2 -translate-y-1/2 z-10 flex flex-col items-center justify-center gap-1 md:gap-2 bg-black/55 backdrop-blur-md border border-orange-400/50 hover:bg-orange-500/40 text-orange-200 hover:text-white font-bold px-2.5 py-2 md:px-5 md:py-4 rounded-xl transition-all hover:scale-105 whitespace-nowrap shadow-lg text-xs md:text-base"
                     >
                         <span class="text-base md:text-2xl leading-none">👤</span>
                         <span>הפריטים שלי</span>
@@ -405,25 +405,30 @@
                     {/if}
                 </div>
 
-                <!-- Price filter chips -->
-                <button
-                    onclick={() => priceFilter = 'all'}
-                    class="shrink-0 px-2.5 md:px-3 py-1.5 rounded-full text-[11px] md:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1 border {priceFilter === 'all' ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg shadow-orange-500/40 border-transparent' : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10 hover:border-white/20'}"
-                >
-                    <span class="hidden md:inline">💰</span><span>הכל</span>
-                </button>
-                <button
-                    onclick={() => priceFilter = 'free'}
-                    class="shrink-0 px-2.5 md:px-3 py-1.5 rounded-full text-[11px] md:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1 border {priceFilter === 'free' ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg shadow-emerald-500/40 border-transparent' : 'bg-white/5 text-emerald-300 border-emerald-500/20 hover:bg-emerald-500/10 hover:border-emerald-500/40'}"
-                >
-                    <span class="hidden md:inline">💚</span><span>חינם</span>
-                </button>
-                <button
-                    onclick={() => priceFilter = 'symbolic'}
-                    class="shrink-0 px-2.5 md:px-3 py-1.5 rounded-full text-[11px] md:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1 border {priceFilter === 'symbolic' ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-lg shadow-amber-500/40 border-transparent' : 'bg-white/5 text-amber-300 border-amber-500/20 hover:bg-amber-500/10 hover:border-amber-500/40'}"
-                >
-                    <span class="hidden md:inline">🪙</span><span>סמלי</span>
-                </button>
+                <!-- Price filter — segmented control (קבוצה מקושרת) -->
+                <div role="group" aria-label="סינון לפי מחיר" class="shrink-0 inline-flex items-center bg-white/5 border border-white/10 rounded-full p-0.5 gap-0.5">
+                    <button
+                        onclick={() => priceFilter = 'all'}
+                        aria-pressed={priceFilter === 'all'}
+                        class="px-2.5 md:px-3 py-1 rounded-full text-[11px] md:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1 {priceFilter === 'all' ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md shadow-orange-500/30' : 'text-gray-300 hover:bg-white/10'}"
+                    >
+                        <span class="hidden md:inline">💰</span><span>הכל</span>
+                    </button>
+                    <button
+                        onclick={() => priceFilter = 'free'}
+                        aria-pressed={priceFilter === 'free'}
+                        class="px-2.5 md:px-3 py-1 rounded-full text-[11px] md:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1 {priceFilter === 'free' ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-md shadow-emerald-500/30' : 'text-emerald-300 hover:bg-white/10'}"
+                    >
+                        <span class="hidden md:inline">💚</span><span>חינם</span>
+                    </button>
+                    <button
+                        onclick={() => priceFilter = 'symbolic'}
+                        aria-pressed={priceFilter === 'symbolic'}
+                        class="px-2.5 md:px-3 py-1 rounded-full text-[11px] md:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1 {priceFilter === 'symbolic' ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-md shadow-amber-500/30' : 'text-amber-300 hover:bg-white/10'}"
+                    >
+                        <span class="hidden md:inline">🪙</span><span>סמלי</span>
+                    </button>
+                </div>
 
                 <!-- Sort + view toggle -->
                 <div class="flex items-center gap-1 shrink-0">
