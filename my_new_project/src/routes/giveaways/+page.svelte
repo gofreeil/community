@@ -277,14 +277,14 @@
             {@const active = categoryFilter === cat.key}
             <button
                 onclick={() => categoryFilter = cat.key}
-                class="relative group rounded-2xl overflow-hidden border-2 transition-all hover:scale-[1.01] hover:-translate-y-0.5 w-1/2 sm:w-1/3 md:w-1/4 h-16 md:h-20 mb-3 {active ? 'border-orange-400 shadow-xl shadow-orange-500/40 ring-2 ring-orange-400/50' : 'border-white/10 hover:border-orange-500/60 shadow-lg'}"
+                class="relative group rounded-2xl overflow-hidden border-2 transition-all hover:scale-[1.01] hover:-translate-y-0.5 mx-auto block w-1/2 sm:w-1/3 md:w-1/4 h-16 md:h-20 mb-3 {active ? 'border-orange-400 shadow-xl shadow-orange-500/40 ring-2 ring-orange-400/50' : 'border-white/10 hover:border-orange-500/60 shadow-lg'}"
                 title={cat.label}
             >
                 <img
                     src={cat.image}
                     alt={cat.label}
                     loading="lazy"
-                    class="absolute inset-0 w-full h-full object-cover object-top scale-110 transition-transform duration-500 group-hover:scale-[1.15]"
+                    class="absolute inset-0 w-full h-full object-cover object-[center_30%] scale-110 transition-transform duration-500 group-hover:scale-[1.15]"
                 />
                 <!-- Dark gradient overlay for readability -->
                 <div class="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-black/20 {active ? 'from-orange-900/80 via-orange-900/40' : ''}"></div>
