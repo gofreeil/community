@@ -55,7 +55,7 @@ const DEMO_SPECS: DemoItemSpec[] = [
         category: 'electronics',
         price: 120,
         images: [
-            'https://images.unsplash.com/photo-1584568694244-14fbdf83bd02?w=900&q=80&auto=format&fit=crop',
+            '/images/categories/electronics.jpg',
         ],
         tags: ['מקרר', 'מטבח', 'חשמל'],
         daysAgo: 3,
@@ -73,8 +73,7 @@ const DEMO_SPECS: DemoItemSpec[] = [
         category: 'baby',
         price: 250,
         images: [
-            'https://images.unsplash.com/photo-1591147673735-aac4ad06bbf6?w=900&q=80&auto=format&fit=crop',
-            'https://images.unsplash.com/photo-1515488764276-beab7607c1e6?w=900&q=80&auto=format&fit=crop',
+            '/images/categories/baby.jpg',
         ],
         tags: ['עגלה', 'תינוק', 'טיולון'],
         daysAgo: 5,
