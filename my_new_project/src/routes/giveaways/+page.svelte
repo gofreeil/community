@@ -272,7 +272,7 @@
         {#each giveawayCategories.filter(c => c.key === 'all') as cat}
             {@const count = categoryCounts[cat.key] ?? 0}
             {@const active = categoryFilter === cat.key}
-            <div class="flex items-center justify-center gap-3 mb-3">
+            <div class="flex items-center justify-center gap-3 mb-5">
                 <h2 class="text-white font-black text-base md:text-lg flex items-center gap-2 whitespace-nowrap">
                     <span class="text-orange-400">▾</span>
                     קטגוריות
@@ -289,7 +289,7 @@
                         class="absolute inset-0 w-full h-full object-cover object-[center_30%] scale-110 transition-transform duration-500 group-hover:scale-[1.15]"
                     />
                     <!-- Bottom-weighted dark gradient — מדגיש את הכיתוב בתחתית -->
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent {active ? 'from-orange-900/85 via-orange-900/30' : ''}"></div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-transparent {active ? 'from-orange-900/65 via-orange-900/20' : ''}"></div>
 
                     <!-- Label aligned to bottom of image -->
                     <div class="absolute inset-x-0 bottom-0 flex items-end justify-center px-4 pb-1.5">
