@@ -523,46 +523,23 @@
         {#snippet listView(items: typeof filtered)}
             <div class="flex flex-col gap-3">
                 {#each items as item (item.id)}
-                    {@const isMine = data.currentUserId && item.user_id === data.currentUserId}
-                    {@const isFav  = favorites.has(String(item.id))}
-                    {@const img    = itemImage(item)}
-                    {@const price  = itemPrice(item)}
-                    <div class="group rounded-2xl bg-gradient-to-br from-[#0f172a] to-[#0c1322] border border-white/10 overflow-hidden shadow-lg hover:shadow-2xl hover:border-orange-500/40 transition-all flex flex-row">
-                        <a href="/items/{item.id}" class="block w-32 md:w-44 shrink-0 aspect-square relative overflow-hidden bg-[#0a0f1a]">
+                    {@const img = itemImage(item)}
+                    <a
+                        href="/items/{item.id}"
+                        class="group rounded-2xl bg-gradient-to-br from-[#0f172a] to-[#0c1322] border border-white/10 overflow-hidden shadow-lg hover:shadow-2xl hover:border-orange-500/40 transition-all flex flex-row"
+                    >
+                        <div class="w-32 md:w-44 shrink-0 aspect-square relative overflow-hidden bg-[#0a0f1a]">
                             <img
                                 src={img}
                                 alt={item.label}
                                 loading="lazy"
                                 class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                             />
-                            {#if price > 0}
-                                <span class="absolute bottom-2 start-2 px-2 py-0.5 rounded-md text-[11px] font-black bg-amber-500 text-white shadow-lg">₪{price}</span>
-                            {:else}
-                                <span class="absolute bottom-2 start-2 px-2 py-0.5 rounded-md text-[10px] font-black bg-emerald-500 text-white shadow-lg">חינם</span>
-                            {/if}
-                            {#if isMine}
-                                <span class="absolute top-2 start-2 px-2 py-0.5 rounded-md text-[10px] font-bold bg-orange-600 text-white shadow">שלי</span>
-                            {/if}
-                        </a>
-                        <div class="flex-1 p-3 md:p-4 flex flex-col min-w-0">
-                            <div class="flex items-start justify-between gap-2 mb-1">
-                                <a href="/items/{item.id}" class="block min-w-0 flex-1">
-                                    <h3 class="text-white font-bold text-base md:text-lg line-clamp-1 hover:text-orange-300 transition-colors">{item.label}</h3>
-                                </a>
-                                <button
-                                    onclick={(e) => toggleFavorite(item, e)}
-                                    aria-label={isFav ? 'הסר ממועדפים' : 'הוסף למועדפים'}
-                                    class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/15 text-lg transition-all {isFav ? 'text-rose-400' : 'text-gray-500 hover:text-rose-300'}"
-                                >{isFav ? '❤️' : '🤍'}</button>
-                            </div>
-                            {#if item.address}
-                                <a href="/items/{item.id}" class="block text-gray-400 text-xs md:text-sm flex items-center gap-1 truncate mt-auto">
-                                    <span class="text-orange-400/70 shrink-0">📍</span>
-                                    <span class="truncate">{item.address}</span>
-                                </a>
-                            {/if}
                         </div>
-                    </div>
+                        <div class="flex-1 p-3 md:p-4 flex items-center min-w-0">
+                            <h3 class="text-white font-bold text-base md:text-lg line-clamp-2 group-hover:text-orange-300 transition-colors">{item.label}</h3>
+                        </div>
+                    </a>
                 {/each}
             </div>
         {/snippet}
@@ -570,56 +547,23 @@
         {#snippet gridView(items: typeof filtered)}
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
                 {#each items as item (item.id)}
-                    {@const isMine = data.currentUserId && item.user_id === data.currentUserId}
-                    {@const isFav  = favorites.has(String(item.id))}
-                    {@const img    = itemImage(item)}
-                    <div class="group rounded-2xl bg-gradient-to-br from-[#0f172a] to-[#0c1322] border border-white/10 overflow-hidden shadow-lg hover:shadow-2xl hover:shadow-orange-500/20 hover:border-orange-500/40 transition-all hover:-translate-y-1 flex flex-col">
-                        <a href="/items/{item.id}" class="block aspect-square relative overflow-hidden bg-[#0a0f1a]">
+                    {@const img = itemImage(item)}
+                    <a
+                        href="/items/{item.id}"
+                        class="group rounded-2xl bg-gradient-to-br from-[#0f172a] to-[#0c1322] border border-white/10 overflow-hidden shadow-lg hover:shadow-2xl hover:shadow-orange-500/20 hover:border-orange-500/40 transition-all hover:-translate-y-1 flex flex-col"
+                    >
+                        <div class="aspect-square relative overflow-hidden bg-[#0a0f1a]">
                             <img
                                 src={img}
                                 alt={item.label}
                                 loading="lazy"
                                 class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                             />
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
-
-                            <!-- Price tag -->
-                            <div class="absolute bottom-2 start-2 z-10">
-                                {#if itemPrice(item) > 0}
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-black bg-amber-500 text-white shadow-lg shadow-amber-500/40">
-                                        <span class="text-sm">🪙</span>
-                                        ₪{itemPrice(item)}
-                                    </span>
-                                {:else}
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-black bg-emerald-500 text-white shadow-lg shadow-emerald-500/40">
-                                        <span class="text-sm">💚</span>
-                                        חינם
-                                    </span>
-                                {/if}
-                            </div>
-
-                            <!-- Heart favorite -->
-                            <button
-                                onclick={(e) => toggleFavorite(item, e)}
-                                aria-label={isFav ? 'הסר ממועדפים' : 'הוסף למועדפים'}
-                                class="absolute top-2 end-2 z-10 w-8 h-8 rounded-full flex items-center justify-center bg-black/40 backdrop-blur-sm hover:bg-black/60 text-base transition-all {isFav ? 'text-rose-400 scale-110' : 'text-white/80 hover:text-rose-300'}"
-                            >{isFav ? '❤️' : '🤍'}</button>
-
-                            {#if isMine}
-                                <span class="absolute top-2 start-2 z-10 px-2 py-0.5 rounded-md text-[10px] font-bold bg-orange-600 text-white shadow">שלי</span>
-                            {/if}
-                        </a>
-
-                        <a href="/items/{item.id}" class="block p-2.5 md:p-3 flex-1 flex flex-col">
-                            <h3 class="text-white font-bold text-sm md:text-base mb-1 line-clamp-2 hover:text-orange-300 transition-colors leading-tight">{item.label}</h3>
-                            {#if item.address}
-                                <p class="text-gray-400 text-[11px] md:text-xs flex items-center gap-1 truncate mt-auto">
-                                    <span class="text-orange-400/70 shrink-0">📍</span>
-                                    <span class="truncate">{item.address}</span>
-                                </p>
-                            {/if}
-                        </a>
-                    </div>
+                        </div>
+                        <div class="p-2.5 md:p-3">
+                            <h3 class="text-white font-bold text-sm md:text-base line-clamp-2 group-hover:text-orange-300 transition-colors leading-tight">{item.label}</h3>
+                        </div>
+                    </a>
                 {/each}
             </div>
         {/snippet}
