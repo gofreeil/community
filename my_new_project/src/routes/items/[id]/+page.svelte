@@ -69,6 +69,46 @@
             ? ((item as { extraFields: { condition: string } }).extraFields.condition)
             : ''
     );
+
+    let copied = $state(false);
+
+    function shareUrl(): string {
+        return typeof window !== 'undefined' ? window.location.href : '';
+    }
+    function shareText(): string {
+        return item ? `${item.label} | קהילה בשכונה` : 'קהילה בשכונה';
+    }
+    function shareWhatsApp() {
+        const url = shareUrl();
+        const text = shareText();
+        window.open(`https://wa.me/?text=${encodeURIComponent(text + '\n' + url)}`, '_blank', 'noopener,noreferrer');
+    }
+    function shareFacebook() {
+        const url = shareUrl();
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank', 'noopener,noreferrer');
+    }
+    function shareTelegram() {
+        const url = shareUrl();
+        const text = shareText();
+        window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
+    }
+    async function copyLink() {
+        const url = shareUrl();
+        try {
+            await navigator.clipboard.writeText(url);
+            copied = true;
+            setTimeout(() => (copied = false), 2000);
+        } catch {
+            const ta = document.createElement('textarea');
+            ta.value = url;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand('copy'); copied = true; setTimeout(() => (copied = false), 2000); } catch {}
+            document.body.removeChild(ta);
+        }
+    }
 </script>
 
 <svelte:head>
@@ -361,19 +401,58 @@
                                 <h4 class="text-white font-bold mb-4">
                                     שתף עם חברים
                                 </h4>
-                                <div class="flex gap-4">
+                                <div class="flex gap-4 flex-wrap">
                                     <button
+                                        type="button"
+                                        onclick={shareWhatsApp}
                                         aria-label="שתף בוואטסאפ"
-                                        class="bg-green-600/20 hover:bg-green-600/40 p-3 rounded-xl transition-all"
-                                    ><span aria-hidden="true">🟢</span></button>
+                                        title="שתף בוואטסאפ"
+                                        class="bg-green-600/20 hover:bg-green-600/40 p-3 rounded-xl transition-all flex items-center justify-center"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#25D366" aria-hidden="true" class="w-6 h-6">
+                                            <path d="M19.05 4.91A10 10 0 0 0 12 2a10 10 0 0 0-8.6 15.04L2 22l5.13-1.34A10 10 0 0 0 12 22a10 10 0 0 0 7.05-17.09zM12 20.27a8.27 8.27 0 0 1-4.22-1.16l-.3-.18-3.05.8.81-2.97-.2-.31A8.27 8.27 0 1 1 20.27 12 8.27 8.27 0 0 1 12 20.27zm4.55-6.2c-.25-.13-1.47-.73-1.7-.81-.23-.08-.4-.13-.56.13-.17.25-.64.81-.79.98-.15.17-.29.19-.54.06-.25-.13-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.15-.25-.02-.39.11-.51.11-.11.25-.29.38-.44.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.36-.77-1.86-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31s-.88.86-.88 2.1.9 2.43 1.03 2.6c.13.17 1.78 2.71 4.3 3.8.6.26 1.07.41 1.43.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.11-.23-.17-.48-.3z"/>
+                                        </svg>
+                                    </button>
                                     <button
+                                        type="button"
+                                        onclick={shareFacebook}
                                         aria-label="שתף בפייסבוק"
-                                        class="bg-blue-600/20 hover:bg-blue-600/40 p-3 rounded-xl transition-all"
-                                    ><span aria-hidden="true">🔵</span></button>
+                                        title="שתף בפייסבוק"
+                                        class="bg-blue-600/20 hover:bg-blue-600/40 p-3 rounded-xl transition-all flex items-center justify-center"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#1877F2" aria-hidden="true" class="w-6 h-6">
+                                            <path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.78-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.45 2.89h-2.34v6.99A10 10 0 0 0 22 12z"/>
+                                        </svg>
+                                    </button>
                                     <button
+                                        type="button"
+                                        onclick={shareTelegram}
+                                        aria-label="שתף בטלגרם"
+                                        title="שתף בטלגרם"
+                                        class="bg-sky-500/20 hover:bg-sky-500/40 p-3 rounded-xl transition-all flex items-center justify-center"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#229ED9" aria-hidden="true" class="w-6 h-6">
+                                            <path d="M9.78 15.27 9.6 18.9c.27 0 .39-.12.53-.26l1.27-1.22 2.64 1.93c.48.27.83.13.96-.45l1.74-8.16c.17-.74-.27-1.04-.74-.86L5.5 13.93c-.72.28-.71.69-.12.87l2.94.92 6.83-4.3c.32-.21.61-.09.37.13l-5.74 5.72z"/>
+                                        </svg>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onclick={copyLink}
                                         aria-label="העתק קישור"
-                                        class="bg-white/10 hover:bg-white/20 p-3 rounded-xl transition-all"
-                                    ><span aria-hidden="true">📋</span></button>
+                                        title={copied ? 'הקישור הועתק' : 'העתק קישור'}
+                                        class="bg-white/10 hover:bg-white/20 p-3 rounded-xl transition-all flex items-center justify-center text-white"
+                                    >
+                                        {#if copied}
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="w-6 h-6 text-emerald-400">
+                                                <polyline points="20 6 9 17 4 12"/>
+                                            </svg>
+                                        {:else}
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="w-6 h-6">
+                                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                            </svg>
+                                        {/if}
+                                    </button>
                                 </div>
                             </div>
                         </div>
