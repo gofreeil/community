@@ -271,8 +271,41 @@
                 קטגוריות
             </h2>
         </div>
-        <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-5 gap-2 md:gap-4">
-            {#each giveawayCategories as cat}
+        <!-- Featured "all" category as wide banner above the grid -->
+        {#each giveawayCategories.filter(c => c.key === 'all') as cat}
+            {@const count = categoryCounts[cat.key] ?? 0}
+            {@const active = categoryFilter === cat.key}
+            <button
+                onclick={() => categoryFilter = cat.key}
+                class="relative group rounded-2xl overflow-hidden border-2 transition-all hover:scale-[1.01] hover:-translate-y-0.5 w-full h-16 md:h-20 mb-3 {active ? 'border-orange-400 shadow-xl shadow-orange-500/40 ring-2 ring-orange-400/50' : 'border-white/10 hover:border-orange-500/60 shadow-lg'}"
+                title={cat.label}
+            >
+                <img
+                    src={cat.image}
+                    alt={cat.label}
+                    loading="lazy"
+                    class="absolute inset-0 w-full h-full object-cover object-center scale-110 transition-transform duration-500 group-hover:scale-[1.15]"
+                />
+                <!-- Dark gradient overlay for readability -->
+                <div class="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-black/20 {active ? 'from-orange-900/80 via-orange-900/40' : ''}"></div>
+
+                <!-- Horizontal layout: icon + label + count -->
+                <div class="absolute inset-0 flex items-center justify-center gap-3 md:gap-4 px-4">
+                    <span class="text-2xl md:text-3xl">{cat.icon}</span>
+                    <span class="text-base md:text-xl font-black text-white">{cat.label}</span>
+                    {#if count > 0}
+                        <span class="text-xs md:text-sm font-bold text-orange-200">· {count} פריטים</span>
+                    {/if}
+                </div>
+
+                {#if active}
+                    <div class="absolute top-2 end-2 bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg text-xs font-black">✓</div>
+                {/if}
+            </button>
+        {/each}
+
+        <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-6 lg:grid-cols-6 gap-2 md:gap-3">
+            {#each giveawayCategories.filter(c => c.key !== 'all') as cat}
                 {@const count = categoryCounts[cat.key] ?? 0}
                 {@const active = categoryFilter === cat.key}
                 {@const borderZoom: Record<string, string> = {
@@ -298,17 +331,17 @@
                     <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/0 {active ? 'from-orange-900/80 via-orange-900/30' : ''}"></div>
 
                     <!-- Label -->
-                    <div class="absolute inset-x-0 bottom-0 p-2 md:p-2.5">
+                    <div class="absolute inset-x-0 bottom-0 p-1.5 md:p-2">
                         <div class="text-right min-w-0">
-                            <div class="text-[11px] md:text-sm font-black text-white leading-tight truncate">{cat.label}</div>
-                            {#if count > 0 && cat.key !== 'all'}
-                                <div class="text-[9px] md:text-[10px] text-orange-200 font-bold">{count} פריטים</div>
+                            <div class="text-[10px] md:text-xs font-black text-white leading-tight truncate">{cat.label}</div>
+                            {#if count > 0}
+                                <div class="text-[9px] md:text-[10px] text-orange-200 font-bold">{count}</div>
                             {/if}
                         </div>
                     </div>
 
                     {#if active}
-                        <div class="absolute top-2 end-2 bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg text-xs font-black">✓</div>
+                        <div class="absolute top-1.5 end-1.5 bg-orange-500 text-white rounded-full w-5 h-5 flex items-center justify-center shadow-lg text-[10px] font-black">✓</div>
                     {/if}
                 </button>
             {/each}
