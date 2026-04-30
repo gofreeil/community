@@ -265,19 +265,18 @@
 
     <!-- Categories Tiles (Yad2-style) -->
     <div class="max-w-7xl mx-auto px-4 pt-5">
-        <div class="flex items-center justify-between mb-3 px-1">
-            <h2 class="text-white font-black text-base md:text-lg flex items-center gap-2">
-                <span class="text-orange-400">▾</span>
-                קטגוריות
-            </h2>
-        </div>
-        <!-- Featured "all" category as wide banner above the grid -->
+        <!-- Featured "all" category as wide banner — heading on the right, button centered -->
         {#each giveawayCategories.filter(c => c.key === 'all') as cat}
             {@const count = categoryCounts[cat.key] ?? 0}
             {@const active = categoryFilter === cat.key}
+            <div class="relative flex items-center justify-center mb-3 px-1">
+                <h2 class="absolute right-1 text-white font-black text-base md:text-lg flex items-center gap-2">
+                    <span class="text-orange-400">▾</span>
+                    קטגוריות
+                </h2>
             <button
                 onclick={() => categoryFilter = cat.key}
-                class="relative group rounded-2xl overflow-hidden border-2 transition-all hover:scale-[1.01] hover:-translate-y-0.5 mx-auto block w-1/2 sm:w-1/3 md:w-1/4 h-16 md:h-20 mb-3 {active ? 'border-orange-400 shadow-xl shadow-orange-500/40 ring-2 ring-orange-400/50' : 'border-white/10 hover:border-orange-500/60 shadow-lg'}"
+                class="relative group rounded-2xl overflow-hidden border-2 transition-all hover:scale-[1.01] hover:-translate-y-0.5 block w-1/2 sm:w-1/3 md:w-1/4 h-16 md:h-20 {active ? 'border-orange-400 shadow-xl shadow-orange-500/40 ring-2 ring-orange-400/50' : 'border-white/10 hover:border-orange-500/60 shadow-lg'}"
                 title={cat.label}
             >
                 <img
@@ -302,6 +301,7 @@
                     <div class="absolute top-2 end-2 bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg text-xs font-black">✓</div>
                 {/if}
             </button>
+            </div>
         {/each}
 
         <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-6 lg:grid-cols-6 gap-2 md:gap-3">
