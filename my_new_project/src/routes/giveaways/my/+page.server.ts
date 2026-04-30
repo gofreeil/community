@@ -1,19 +1,22 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { getItemsByUserId, resolveItem } from '$lib/server/db';
+import { buildDemoUserItems } from '$lib/demoUserItems';
 
 export const load: PageServerLoad = async (event) => {
     let session = null;
     try { session = await event.locals.auth(); } catch {}
     if (!session?.user?.id) throw redirect(302, '/login?redirect=/giveaways/my');
 
+    const demoItems = buildDemoUserItems(session.user.id);
+
     try {
         const all = await getItemsByUserId(session.user.id);
         const items = all.filter(i => i.category === 'giveaway');
-        return { items, currentUserId: session.user.id };
+        return { items: [...demoItems, ...items], currentUserId: session.user.id };
     } catch (e) {
         console.warn('[giveaways/my] load failed:', e instanceof Error ? e.message : e);
-        return { items: [], currentUserId: session.user.id };
+        return { items: demoItems, currentUserId: session.user.id };
     }
 };
 
