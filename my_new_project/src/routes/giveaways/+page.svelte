@@ -210,6 +210,16 @@
             <div class="absolute bottom-10 left-10 w-72 h-72 bg-amber-500 rounded-full blur-3xl"></div>
         </div>
         <div class="relative max-w-7xl mx-auto px-4 pt-6 pb-4 md:pt-10 md:pb-6">
+            <a
+                href="/"
+                aria-label="חזרה לדף הבית"
+                title="חזרה לדף הבית"
+                class="absolute top-3 start-3 md:top-5 md:start-5 z-10 inline-flex items-center gap-1.5 bg-white/5 hover:bg-orange-500/20 border border-white/10 hover:border-orange-500/40 text-gray-300 hover:text-white px-3 py-1.5 rounded-full text-xs md:text-sm font-bold backdrop-blur-sm transition-all"
+            >
+                <span aria-hidden="true">🏠</span>
+                <span class="hidden sm:inline">דף הבית</span>
+                <span aria-hidden="true">←</span>
+            </a>
             <div class="flex items-center justify-center gap-3 md:gap-4 mb-2">
                 <span class="text-4xl md:text-5xl">🎁</span>
                 <h1 class="text-4xl md:text-6xl font-black bg-gradient-to-l from-orange-400 via-amber-300 to-yellow-200 bg-clip-text text-transparent">
