@@ -277,14 +277,14 @@
             {@const active = categoryFilter === cat.key}
             <button
                 onclick={() => categoryFilter = cat.key}
-                class="relative group rounded-2xl overflow-hidden border-2 transition-all hover:scale-[1.01] hover:-translate-y-0.5 w-full h-16 md:h-20 mb-3 {active ? 'border-orange-400 shadow-xl shadow-orange-500/40 ring-2 ring-orange-400/50' : 'border-white/10 hover:border-orange-500/60 shadow-lg'}"
+                class="relative group rounded-2xl overflow-hidden border-2 transition-all hover:scale-[1.01] hover:-translate-y-0.5 w-1/2 sm:w-1/3 md:w-1/4 h-16 md:h-20 mb-3 {active ? 'border-orange-400 shadow-xl shadow-orange-500/40 ring-2 ring-orange-400/50' : 'border-white/10 hover:border-orange-500/60 shadow-lg'}"
                 title={cat.label}
             >
                 <img
                     src={cat.image}
                     alt={cat.label}
                     loading="lazy"
-                    class="absolute inset-0 w-full h-full object-cover object-center scale-110 transition-transform duration-500 group-hover:scale-[1.15]"
+                    class="absolute inset-0 w-full h-full object-cover object-top scale-110 transition-transform duration-500 group-hover:scale-[1.15]"
                 />
                 <!-- Dark gradient overlay for readability -->
                 <div class="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-black/20 {active ? 'from-orange-900/80 via-orange-900/40' : ''}"></div>
@@ -308,14 +308,14 @@
             {#each giveawayCategories.filter(c => c.key !== 'all') as cat}
                 {@const count = categoryCounts[cat.key] ?? 0}
                 {@const active = categoryFilter === cat.key}
-                {@const borderZoom: Record<string, string> = {
-                    electronics:   'scale-[1.05]',
-                    tools:         'scale-[1.04]',
-                    kitchen:       'scale-[1.05]',
-                    judaica_books: 'scale-[1.05]',
-                    garden:        'scale-[1.04]',
+                {@const borderTune: Record<string, { zoom: string; pos: string }> = {
+                    electronics:   { zoom: 'scale-[1.14]', pos: 'object-center' },
+                    tools:         { zoom: 'scale-[1.10]', pos: 'object-center' },
+                    kitchen:       { zoom: 'scale-[1.12]', pos: 'object-[50%_60%]' },
+                    judaica_books: { zoom: 'scale-[1.10]', pos: 'object-[50%_35%]' },
+                    garden:        { zoom: 'scale-[1.10]', pos: 'object-center' },
                 }}
-                {@const zoomClass = borderZoom[cat.key] ?? 'scale-110'}
+                {@const tune = borderTune[cat.key] ?? { zoom: 'scale-110', pos: 'object-center' }}
                 <button
                     onclick={() => categoryFilter = cat.key}
                     class="relative group rounded-2xl overflow-hidden border-2 transition-all hover:scale-[1.03] hover:-translate-y-0.5 aspect-square {active ? 'border-orange-400 shadow-xl shadow-orange-500/40 ring-2 ring-orange-400/50' : 'border-white/10 hover:border-orange-500/60 shadow-lg'}"
@@ -325,7 +325,7 @@
                         src={cat.image}
                         alt={cat.label}
                         loading="lazy"
-                        class="absolute inset-0 w-full h-full object-cover object-center {zoomClass} transition-transform duration-500 group-hover:scale-[1.18]"
+                        class="absolute inset-0 w-full h-full object-cover {tune.pos} {tune.zoom} transition-transform duration-500 group-hover:scale-[1.18]"
                     />
                     <!-- Dark gradient overlay for readability -->
                     <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/0 {active ? 'from-orange-900/80 via-orange-900/30' : ''}"></div>
