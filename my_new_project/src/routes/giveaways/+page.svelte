@@ -275,6 +275,8 @@
             {#each giveawayCategories as cat}
                 {@const count = categoryCounts[cat.key] ?? 0}
                 {@const active = categoryFilter === cat.key}
+                {@const zoomedKeys = ['electronics', 'tools', 'kitchen', 'judaica_books', 'garden']}
+                {@const isZoomed = zoomedKeys.includes(cat.key)}
                 <button
                     onclick={() => categoryFilter = cat.key}
                     class="relative group rounded-2xl overflow-hidden border-2 transition-all hover:scale-[1.03] hover:-translate-y-0.5 aspect-square {active ? 'border-orange-400 shadow-xl shadow-orange-500/40 ring-2 ring-orange-400/50' : 'border-white/10 hover:border-orange-500/60 shadow-lg'}"
@@ -284,10 +286,10 @@
                         src={cat.image}
                         alt={cat.label}
                         loading="lazy"
-                        class="absolute inset-0 w-full h-full object-cover scale-110 transition-transform duration-500 group-hover:scale-[1.18]"
+                        class="absolute inset-0 w-full h-full object-cover object-center {isZoomed ? 'scale-[1.22] group-hover:scale-[1.28]' : 'scale-110 group-hover:scale-[1.18]'} transition-transform duration-500"
                     />
                     <!-- Dark gradient overlay for readability -->
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/10 {active ? 'from-orange-900/80 via-orange-900/30' : ''}"></div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/0 {active ? 'from-orange-900/80 via-orange-900/30' : ''}"></div>
 
                     <!-- Label -->
                     <div class="absolute inset-x-0 bottom-0 p-2 md:p-2.5">
