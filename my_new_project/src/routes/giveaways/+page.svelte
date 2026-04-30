@@ -205,9 +205,9 @@
                     למסירה
                 </h1>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] items-center gap-3 md:gap-4">
-                <!-- Banner image — wrapped in a div so the slot reserves space BEFORE the image loads (img inside a CSS-grid auto column collapses to 0 before it has src content). Mobile: top. Desktop: middle column. -->
-                <div class="md:order-2 w-[32rem] md:w-[40rem] max-w-full aspect-[1330/882] mx-auto rounded-2xl overflow-hidden bg-gradient-to-br from-orange-900/20 to-amber-900/10">
+            <!-- Banner image with overlaid action buttons (start = right in RTL = פרסם פריט; end = left in RTL = הפריטים שלי) -->
+            <div class="relative w-[32rem] md:w-[40rem] max-w-full mx-auto">
+                <div class="aspect-[1330/882] rounded-2xl overflow-hidden bg-gradient-to-br from-orange-900/20 to-amber-900/10">
                     <img
                         src="/images/delivery.png"
                         alt=""
@@ -218,25 +218,22 @@
                         class="w-full h-full object-cover block"
                     />
                 </div>
-                <!-- Buttons: mobile = single flex row (50/50). Desktop = `display: contents` so each link becomes its own grid item, ordered into the side columns. -->
-                <div class="flex gap-2 md:contents">
+                <a
+                    href="/giveaways/add"
+                    class="absolute start-2 md:start-5 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center justify-center gap-1 md:gap-2 bg-gradient-to-br from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold px-2.5 py-2 md:px-5 md:py-4 rounded-xl shadow-lg shadow-orange-500/50 ring-1 ring-orange-300/40 transition-all hover:scale-105 whitespace-nowrap text-xs md:text-base"
+                >
+                    <span class="text-base md:text-2xl leading-none">➕</span>
+                    <span>פרסם פריט</span>
+                </a>
+                {#if data.currentUserId}
                     <a
-                        href="/giveaways/add"
-                        class="flex-1 md:flex-none md:order-1 md:mx-auto flex flex-row md:flex-col items-center justify-center gap-1.5 md:gap-2 bg-gradient-to-br from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold px-3 py-2.5 md:px-6 md:py-5 rounded-xl shadow-lg shadow-orange-500/30 transition-all hover:scale-105 whitespace-nowrap md:min-w-[7rem] text-sm md:text-base"
+                        href="/giveaways/my"
+                        class="absolute end-2 md:end-5 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center justify-center gap-1 md:gap-2 bg-black/55 backdrop-blur-md border border-orange-400/50 hover:bg-orange-500/40 text-orange-200 hover:text-white font-bold px-2.5 py-2 md:px-5 md:py-4 rounded-xl transition-all hover:scale-105 whitespace-nowrap shadow-lg text-xs md:text-base"
                     >
-                        <span class="text-lg md:text-3xl leading-none">➕</span>
-                        <span>פרסם פריט</span>
+                        <span class="text-base md:text-2xl leading-none">👤</span>
+                        <span>הפריטים שלי</span>
                     </a>
-                    {#if data.currentUserId}
-                        <a
-                            href="/giveaways/my"
-                            class="flex-1 md:flex-none md:order-3 md:mx-auto flex flex-row md:flex-col items-center justify-center gap-1.5 md:gap-2 bg-orange-500/10 border border-orange-500/30 hover:bg-orange-500/20 text-orange-300 font-bold px-3 py-2.5 md:px-6 md:py-5 rounded-xl transition-colors whitespace-nowrap shadow-lg md:min-w-[7rem] text-sm md:text-base"
-                        >
-                            <span class="text-lg md:text-3xl leading-none">👤</span>
-                            <span>הפריטים שלי</span>
-                        </a>
-                    {/if}
-                </div>
+                {/if}
             </div>
         </div>
     </div>
@@ -332,7 +329,8 @@
                         bind:value={search}
                         placeholder="מה מחפשים? ספה, מקרר, ספרים..."
                         aria-label="חיפוש פריטים"
-                        class="w-full bg-white/5 border-2 border-white/10 rounded-xl pe-12 {search ? 'ps-12' : 'ps-24'} py-3 text-white placeholder:text-gray-500 focus:border-orange-500 focus:bg-white/10 focus:outline-none transition-all text-base"
+                        dir="rtl"
+                        class="w-full bg-white/5 border-2 border-white/10 rounded-xl ps-12 {search ? 'pe-12' : 'pe-28'} py-3 text-white placeholder:text-gray-500 focus:border-orange-500 focus:bg-white/10 focus:outline-none transition-all text-base text-right"
                     />
                     {#if search}
                         <button
