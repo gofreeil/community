@@ -217,7 +217,7 @@
             <div class="absolute top-10 right-10 w-64 h-64 bg-orange-500 rounded-full blur-3xl"></div>
             <div class="absolute bottom-10 left-10 w-72 h-72 bg-amber-500 rounded-full blur-3xl"></div>
         </div>
-        <div class="relative max-w-7xl mx-auto px-4 pt-6 pb-4 md:pt-10 md:pb-6">
+        <div class="relative max-w-7xl mx-auto px-4 pt-2 pb-4 md:pt-4 md:pb-6">
             <a
                 href="/"
                 onclick={(e) => { if (typeof history !== 'undefined' && history.length > 1) { e.preventDefault(); history.back(); } }}
@@ -230,14 +230,13 @@
                 <span aria-hidden="true">→</span>
             </a>
             <div class="flex items-center justify-center gap-3 md:gap-4 mb-2">
-                <span class="text-4xl md:text-5xl">🎁</span>
                 <h1 class="text-4xl md:text-6xl font-black bg-gradient-to-l from-orange-400 via-amber-300 to-yellow-200 bg-clip-text text-transparent">
                     למסירה
                 </h1>
             </div>
-            <!-- Banner image with overlaid action buttons (start = right in RTL = פרסם פריט; end = left in RTL = הפריטים שלי) -->
+            <!-- Banner image (cropped to top half) with overlaid action buttons -->
             <div class="relative w-[32rem] md:w-[40rem] max-w-full mx-auto">
-                <div class="aspect-[1330/882] rounded-2xl overflow-hidden bg-gradient-to-br from-orange-900/20 to-amber-900/10">
+                <div class="relative aspect-[1330/441] rounded-2xl overflow-hidden bg-gradient-to-br from-orange-900/20 to-amber-900/10">
                     <img
                         src="/images/delivery.png"
                         alt=""
@@ -245,8 +244,10 @@
                         height="882"
                         fetchpriority="high"
                         decoding="async"
-                        class="w-full h-full object-cover block"
+                        class="absolute inset-0 w-full h-full object-cover object-top block"
                     />
+                    <!-- Subtle darkening overlay -->
+                    <div class="absolute inset-0 bg-black/30 pointer-events-none"></div>
                 </div>
                 <a
                     href="/giveaways/add"
