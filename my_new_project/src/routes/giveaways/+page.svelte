@@ -244,8 +244,10 @@
 
 <div class="min-h-screen bg-[#070b14] pb-28" dir="rtl">
 
+    <!-- Hero + Categories share an extended orange tint that fades into the search bar -->
+    <div class="relative bg-gradient-to-b from-orange-900/30 via-amber-900/20 to-transparent">
     <!-- Hero Section -->
-    <div class="relative overflow-hidden bg-gradient-to-b from-orange-900/30 via-amber-900/20 to-transparent">
+    <div class="relative overflow-hidden">
         <div class="absolute inset-0 opacity-20">
             <div class="absolute top-10 right-10 w-64 h-64 bg-orange-500 rounded-full blur-3xl"></div>
             <div class="absolute bottom-10 left-10 w-72 h-72 bg-amber-500 rounded-full blur-3xl"></div>
@@ -262,11 +264,7 @@
                 <span class="hidden sm:inline">חזור אחורה</span>
                 <span aria-hidden="true">→</span>
             </a>
-            <div class="flex items-center justify-center gap-3 md:gap-4 mb-2">
-                <h1 class="text-4xl md:text-6xl font-black bg-gradient-to-l from-orange-400 via-amber-300 to-yellow-200 bg-clip-text text-transparent">
-                    למסירה
-                </h1>
-            </div>
+            <h1 class="sr-only">למסירה</h1>
             <!-- Banner image (cropped to top half) with overlaid action buttons -->
             <div class="relative w-[32rem] md:w-[40rem] max-w-full mx-auto">
                 <div class="relative aspect-[1330/441] rounded-2xl overflow-hidden bg-gradient-to-br from-orange-900/20 to-amber-900/10">
@@ -284,7 +282,7 @@
                 </div>
                 <a
                     href="/giveaways/add"
-                    class="absolute -start-10 md:-start-14 top-[40%] -translate-y-1/2 z-10 flex flex-col items-center justify-center gap-1 md:gap-2 bg-gradient-to-br from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold px-2.5 py-2 md:px-5 md:py-4 rounded-xl shadow-lg shadow-orange-500/50 ring-1 ring-orange-300/40 transition-all hover:scale-105 whitespace-nowrap text-xs md:text-base"
+                    class="absolute -start-2 md:-start-14 top-[40%] -translate-y-1/2 z-10 flex flex-col items-center justify-center gap-1 md:gap-2 bg-gradient-to-br from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold px-2.5 py-2 md:px-5 md:py-4 rounded-xl shadow-lg shadow-orange-500/50 ring-1 ring-orange-300/40 transition-all hover:scale-105 whitespace-nowrap text-xs md:text-base"
                 >
                     <span class="text-base md:text-2xl leading-none">➕</span>
                     <span>פרסם פריט</span>
@@ -292,7 +290,7 @@
                 {#if data.currentUserId}
                     <a
                         href="/giveaways/my"
-                        class="absolute -end-10 md:-end-14 top-[40%] -translate-y-1/2 z-10 flex flex-col items-center justify-center gap-1 md:gap-2 bg-black/55 backdrop-blur-md border border-orange-400/50 hover:bg-orange-500/40 text-orange-200 hover:text-white font-bold px-2.5 py-2 md:px-5 md:py-4 rounded-xl transition-all hover:scale-105 whitespace-nowrap shadow-lg text-xs md:text-base"
+                        class="absolute -end-2 md:-end-14 top-[40%] -translate-y-1/2 z-10 flex flex-col items-center justify-center gap-1 md:gap-2 bg-black/55 backdrop-blur-md border border-orange-400/50 hover:bg-orange-500/40 text-orange-200 hover:text-white font-bold px-2.5 py-2 md:px-5 md:py-4 rounded-xl transition-all hover:scale-105 whitespace-nowrap shadow-lg text-xs md:text-base"
                     >
                         <span class="text-base md:text-2xl leading-none">👤</span>
                         <span>הפריטים שלי</span>
@@ -303,12 +301,12 @@
     </div>
 
     <!-- Categories Tiles (Yad2-style) -->
-    <div class="max-w-7xl mx-auto px-4 pt-2">
+    <div class="relative max-w-7xl mx-auto px-4 pt-2">
         <!-- Featured "all" category as wide banner — heading on the right, button centered, count on the left -->
         {#each giveawayCategories.filter(c => c.key === 'all') as cat}
             {@const count = categoryCounts[cat.key] ?? 0}
             {@const active = categoryFilter === cat.key}
-            <div class="flex items-center justify-center gap-3 mb-5">
+            <div class="relative z-20 -mt-5 md:-mt-7 flex items-center justify-center gap-3 mb-5">
                 <h2 class="text-white font-black text-base md:text-lg flex items-center gap-2 whitespace-nowrap">
                     <span class="text-orange-400">▾</span>
                     קטגוריות
@@ -379,6 +377,7 @@
                 </button>
             {/each}
         </div>
+    </div>
     </div>
 
     <!-- Sticky Search & Filter Bar — single combined row -->
