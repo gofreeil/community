@@ -47,26 +47,50 @@
         if (galleryImages.length === 0) return;
         galleryIndex = (galleryIndex - 1 + galleryImages.length) % galleryImages.length;
     }
+
+    function conditionBadgeClass(c: string): string {
+        switch (c) {
+            case 'כחדש':           return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40';
+            case 'משומש':          return 'bg-sky-500/20 text-sky-300 border-sky-500/40';
+            case 'דורש תיקון קל':  return 'bg-amber-500/20 text-amber-300 border-amber-500/40';
+            default:               return 'bg-white/10 text-gray-300 border-white/10';
+        }
+    }
+    function conditionIcon(c: string): string {
+        switch (c) {
+            case 'כחדש':           return '✨';
+            case 'משומש':          return '👍';
+            case 'דורש תיקון קל':  return '🔧';
+            default:               return '📦';
+        }
+    }
+    const itemCondition = $derived<string>(
+        typeof (item as { extraFields?: { condition?: unknown } } | null)?.extraFields?.condition === 'string'
+            ? ((item as { extraFields: { condition: string } }).extraFields.condition)
+            : ''
+    );
 </script>
 
 <svelte:head>
     <title>{item ? item.label : tFn("item_not_found")} | קהילה בשכונה</title>
 </svelte:head>
 
-<!-- Extra fields display for user-submitted items -->
+<!-- Hidden keys (rendered in dedicated sections, complex types, or internal-only) -->
 {#snippet extraFieldsBlock()}
-    {#if item?.isUserSubmitted && item.extraFields && Object.keys(item.extraFields).length > 0}
+    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'price'])}
+    {@const visibleEntries = item?.isUserSubmitted && item.extraFields
+        ? Object.entries(item.extraFields).filter(([k, v]) => !HIDDEN_KEYS.has(k) && v != null && v !== '')
+        : []}
+    {#if visibleEntries.length > 0}
         <section>
             <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
                 <span class="w-1.5 h-8 bg-green-500 rounded-full"></span>{tFn("more_details")}</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {#each Object.entries(item.extraFields) as [key, value]}
-                    {#if value}
-                        <div class="bg-white/5 p-4 rounded-xl border border-white/5">
-                            <p class="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">{key}</p>
-                            <p class="text-white font-medium">{value}</p>
-                        </div>
-                    {/if}
+                {#each visibleEntries as [key, value]}
+                    <div class="bg-white/5 p-4 rounded-xl border border-white/5">
+                        <p class="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">{key}</p>
+                        <p class="text-white font-medium">{value}</p>
+                    </div>
                 {/each}
             </div>
         </section>
@@ -186,6 +210,21 @@
                                     {item.description}
                                 </p>
                             </section>
+
+                            {#if itemCondition}
+                                <section>
+                                    <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                                        <span class="w-1.5 h-8 bg-orange-500 rounded-full"></span>
+                                        מצב הפריט
+                                    </h2>
+                                    <div class="bg-white/5 p-4 rounded-xl border border-white/5 flex items-center gap-3">
+                                        <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-base font-bold border {conditionBadgeClass(itemCondition)}">
+                                            <span aria-hidden="true">{conditionIcon(itemCondition)}</span>
+                                            <span>{itemCondition}</span>
+                                        </span>
+                                    </div>
+                                </section>
+                            {/if}
 
                             <section>
                                 <h2

@@ -172,6 +172,11 @@ const DEMO_SPECS: DemoItemSpec[] = [
     },
 ];
 
+/** מחזיר פריט דמו ספציפי לפי id (לתצוגת פריט בודד), או null אם לא קיים. */
+export function getDemoItemById(id: string, userId: string = 'demo-user'): DbItem | null {
+    return buildDemoUserItems(userId).find(i => i.id === id) ?? null;
+}
+
 /** בונה DbItem-ים מתוך המפרט הסטטי, עם user_id רצוי וזמני יצירה יחסיים. */
 export function buildDemoUserItems(userId: string): DbItem[] {
     const now = Date.now();

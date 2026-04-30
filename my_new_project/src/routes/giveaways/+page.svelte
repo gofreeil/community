@@ -4,11 +4,9 @@
 
     let { data }: { data: PageData } = $props();
 
-    type ConditionFilter = 'all' | 'כחדש' | 'משומש' | 'דורש תיקון קל';
     type SortOption = 'newest' | 'oldest' | 'popular';
 
     let categoryFilter = $state<string>('all');
-    let conditionFilter = $state<ConditionFilter>('all');
     let priceFilter = $state<'all' | 'free' | 'symbolic'>('all');
     let sortBy = $state<SortOption>('newest');
     let viewMode = $state<'grid' | 'list'>('grid');
@@ -133,9 +131,6 @@
         if (categoryFilter !== 'all') {
             list = list.filter(i => itemCategory(i) === categoryFilter);
         }
-        if (conditionFilter !== 'all') {
-            list = list.filter(i => getField(i.extra_fields, 'condition') === conditionFilter);
-        }
         if (priceFilter === 'free') {
             list = list.filter(i => itemPrice(i) === 0);
         } else if (priceFilter === 'symbolic') {
@@ -158,16 +153,6 @@
         return list;
     });
 
-    // Counts per condition for filter chip badges
-    let conditionCounts = $derived.by(() => {
-        const counts: Record<string, number> = { all: data.items.length };
-        for (const i of data.items) {
-            const c = getField(i.extra_fields, 'condition');
-            if (c) counts[c] = (counts[c] || 0) + 1;
-        }
-        return counts;
-    });
-
     // Counts per category for filter chip badges
     let categoryCounts = $derived.by(() => {
         const counts: Record<string, number> = { all: data.items.length };
@@ -177,13 +162,6 @@
         }
         return counts;
     });
-
-    const conditions: { key: ConditionFilter; label: string; icon: string }[] = [
-        { key: 'all',            label: 'הכל',           icon: '🌍' },
-        { key: 'כחדש',           label: 'כחדש',          icon: '✨' },
-        { key: 'משומש',          label: 'משומש',         icon: '👍' },
-        { key: 'דורש תיקון קל',  label: 'דורש תיקון קל', icon: '🔧' },
-    ];
 
     const sortOptions: { key: SortOption; label: string; icon: string }[] = [
         { key: 'newest',  label: 'החדשים ביותר', icon: '🆕' },
@@ -395,20 +373,6 @@
                     >
                         <span>🪙</span><span>סמלי</span>
                     </button>
-                    <span class="border-r border-white/10 mx-1"></span>
-                    {#each conditions as c}
-                        {@const count = conditionCounts[c.key] ?? 0}
-                        <button
-                            onclick={() => conditionFilter = c.key}
-                            class="px-3 py-1.5 rounded-full text-xs md:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1.5 border {conditionFilter === c.key ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg shadow-orange-500/40 border-transparent' : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10 hover:border-white/20'}"
-                        >
-                            <span>{c.icon}</span>
-                            <span>{c.label}</span>
-                            {#if count > 0 && c.key !== 'all'}
-                                <span class="text-[10px] opacity-80 bg-black/20 rounded-full px-1.5 py-0.5">{count}</span>
-                            {/if}
-                        </button>
-                    {/each}
                 </div>
 
                 <!-- Sort + view toggle -->
@@ -476,9 +440,9 @@
                     <span class="text-gray-500"> · חיפוש: "{debouncedSearch}"</span>
                 {/if}
             </p>
-            {#if categoryFilter !== 'all' || conditionFilter !== 'all' || priceFilter !== 'all' || debouncedSearch}
+            {#if categoryFilter !== 'all' || priceFilter !== 'all' || debouncedSearch}
                 <button
-                    onclick={() => { categoryFilter = 'all'; conditionFilter = 'all'; priceFilter = 'all'; search = ''; debouncedSearch = ''; }}
+                    onclick={() => { categoryFilter = 'all'; priceFilter = 'all'; search = ''; debouncedSearch = ''; }}
                     class="text-xs text-orange-400 hover:text-orange-300 font-bold transition-colors"
                 >
                     × נקה סינון

@@ -1,10 +1,16 @@
 import { getDbItemById } from '$lib/server/db';
 import { getItemById as getStaticItemById } from '$lib/itemsData';
+import { getDemoItemById } from '$lib/demoUserItems';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ params }) => {
-    // נסה קודם ב-DB (פריטים שהמשתמשים הוסיפו)
-    const dbItem = await getDbItemById(params.id);
+export const load: PageServerLoad = async (event) => {
+    const { params } = event;
+    let session = null;
+    try { session = await event.locals.auth(); } catch {}
+    const demoOwnerId = session?.user?.id ?? 'demo-user';
+
+    // נסה קודם ב-DB (פריטים שהמשתמשים הוסיפו), ואחר-כך פריטי דמו
+    const dbItem = (await getDbItemById(params.id)) ?? getDemoItemById(params.id, demoOwnerId);
     if (dbItem) {
         // המר לפורמט תואם עם ממשק Item הקיים
         const extraFields = (() => {
