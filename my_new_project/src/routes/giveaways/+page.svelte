@@ -412,21 +412,21 @@
                         aria-pressed={priceFilter === 'all'}
                         class="px-2.5 md:px-3 py-1 rounded-full text-[11px] md:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1 {priceFilter === 'all' ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md shadow-orange-500/30' : 'text-gray-300 hover:bg-white/10'}"
                     >
-                        <span class="hidden md:inline">💰</span><span>הכל</span>
+                        <span>הכל</span>
                     </button>
                     <button
                         onclick={() => priceFilter = 'free'}
                         aria-pressed={priceFilter === 'free'}
                         class="px-2.5 md:px-3 py-1 rounded-full text-[11px] md:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1 {priceFilter === 'free' ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-md shadow-emerald-500/30' : 'text-emerald-300 hover:bg-white/10'}"
                     >
-                        <span class="hidden md:inline">💚</span><span>חינם</span>
+                        <span>חינם</span>
                     </button>
                     <button
                         onclick={() => priceFilter = 'symbolic'}
                         aria-pressed={priceFilter === 'symbolic'}
                         class="px-2.5 md:px-3 py-1 rounded-full text-[11px] md:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1 {priceFilter === 'symbolic' ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-md shadow-amber-500/30' : 'text-amber-300 hover:bg-white/10'}"
                     >
-                        <span class="hidden md:inline">🪙</span><span>סמלי</span>
+                        <span>סמלי</span>
                     </button>
                 </div>
 
