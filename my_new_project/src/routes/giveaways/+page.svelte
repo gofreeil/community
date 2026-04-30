@@ -1,8 +1,14 @@
 <script lang="ts">
+    import { onMount } from 'svelte';
     import type { PageData } from './$types';
     import { giveawayCategories, detectCategory, categoryByKey } from '$lib/giveawayCategories';
+    import { neighborhoodState } from '$lib/neighborhoodState.svelte';
 
     let { data }: { data: PageData } = $props();
+
+    onMount(() => {
+        neighborhoodState.init(data.userNeighborhood, data.userCity);
+    });
 
     type SortOption = 'newest' | 'oldest' | 'popular';
 
@@ -170,6 +176,30 @@
     ];
 
     let currentSortLabel = $derived(sortOptions.find(o => o.key === sortBy)?.label ?? '');
+
+    // Location-aware grouping — only when the user is searching for a specific product.
+    // Tier 1 = my neighborhood; Tier 2 = my city (excluding my neighborhood); Tier 3 = rest of country (newest→oldest).
+    let searching = $derived(debouncedSearch.length > 0);
+
+    let groupNeighborhood = $derived.by(() => {
+        if (!searching) return [] as typeof filtered;
+        return filtered.filter(i => i.neighborhood === neighborhoodState.neighborhood);
+    });
+
+    let groupCity = $derived.by(() => {
+        if (!searching) return [] as typeof filtered;
+        return filtered.filter(i =>
+            i.city === neighborhoodState.city &&
+            i.neighborhood !== neighborhoodState.neighborhood
+        );
+    });
+
+    let groupRest = $derived.by(() => {
+        if (!searching) return [] as typeof filtered;
+        const list = filtered.filter(i => i.city !== neighborhoodState.city);
+        // The user explicitly asked: "rest of the country — newest down to oldest", regardless of the active sort.
+        return [...list].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    });
 </script>
 
 <svelte:head>
@@ -340,7 +370,7 @@
                             class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-xl bg-white/10 hover:bg-white/20 w-7 h-7 rounded-full flex items-center justify-center transition-colors"
                         >×</button>
                     {:else}
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-[11px] md:text-xs text-gray-300 bg-white/10 border border-white/10 rounded-full px-2 py-1 pointer-events-none whitespace-nowrap">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-[11px] md:text-xs text-gray-300 pointer-events-none whitespace-nowrap">
                             <span class="text-base leading-none">📦</span>
                             <span class="text-white font-bold">{data.items.length}</span>
                             <span class="text-gray-400">פריטים</span>
@@ -466,10 +496,11 @@
                 </a>
             </div>
 
-        {:else if viewMode === 'list'}
-            <!-- List view (desktop) -->
+        {:else}
+
+        {#snippet listView(items: typeof filtered)}
             <div class="flex flex-col gap-3">
-                {#each filtered as item (item.id)}
+                {#each items as item (item.id)}
                     {@const condition = getField(item.extra_fields, 'condition')}
                     {@const isMine    = data.currentUserId && item.user_id === data.currentUserId}
                     {@const isFav     = favorites.has(String(item.id))}
@@ -546,11 +577,11 @@
                     </div>
                 {/each}
             </div>
+        {/snippet}
 
-        {:else}
-            <!-- Grid view -->
+        {#snippet gridView(items: typeof filtered)}
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
-                {#each filtered as item (item.id)}
+                {#each items as item (item.id)}
                     {@const condition = getField(item.extra_fields, 'condition')}
                     {@const isMine    = data.currentUserId && item.user_id === data.currentUserId}
                     {@const isFav     = favorites.has(String(item.id))}
@@ -674,6 +705,52 @@
                     </div>
                 {/each}
             </div>
+        {/snippet}
+
+        {#snippet sectionHeader(icon: string, title: string, count: number, accent: string)}
+            <div class="flex items-center gap-2 mb-3 mt-2">
+                <span class="text-xl">{icon}</span>
+                <h3 class="text-white font-black text-base md:text-lg">{title}</h3>
+                <span class="text-xs font-bold px-2 py-0.5 rounded-full {accent}">{count}</span>
+            </div>
+        {/snippet}
+
+        {#if searching}
+            <!-- Tier 1: my neighborhood -->
+            {#if groupNeighborhood.length > 0}
+                <section class="mb-4">
+                    {@render sectionHeader('🏘️', `השכונה שלי — ${neighborhoodState.neighborhood}`, groupNeighborhood.length, 'bg-orange-500/20 text-orange-300 border border-orange-500/40')}
+                    {#if viewMode === 'list'}{@render listView(groupNeighborhood)}{:else}{@render gridView(groupNeighborhood)}{/if}
+                </section>
+                {#if groupCity.length > 0 || groupRest.length > 0}
+                    <hr class="border-0 border-t-2 border-dashed border-orange-500/30 my-6" />
+                {/if}
+            {/if}
+
+            <!-- Tier 2: my city (excluding neighborhood) -->
+            {#if groupCity.length > 0}
+                <section class="mb-4">
+                    {@render sectionHeader('🏙️', `בעיר שלי — ${neighborhoodState.city}`, groupCity.length, 'bg-blue-500/20 text-blue-300 border border-blue-500/40')}
+                    {#if viewMode === 'list'}{@render listView(groupCity)}{:else}{@render gridView(groupCity)}{/if}
+                </section>
+                {#if groupRest.length > 0}
+                    <hr class="border-0 border-t-2 border-dashed border-blue-500/30 my-6" />
+                {/if}
+            {/if}
+
+            <!-- Tier 3: rest of country (newest → oldest) -->
+            {#if groupRest.length > 0}
+                <section class="mb-4">
+                    {@render sectionHeader('🇮🇱', 'מכל הארץ — מהחדש לישן', groupRest.length, 'bg-white/10 text-gray-300 border border-white/20')}
+                    {#if viewMode === 'list'}{@render listView(groupRest)}{:else}{@render gridView(groupRest)}{/if}
+                </section>
+            {/if}
+        {:else if viewMode === 'list'}
+            {@render listView(filtered)}
+        {:else}
+            {@render gridView(filtered)}
+        {/if}
+
         {/if}
 
         <div class="text-center mt-10 mb-4">
