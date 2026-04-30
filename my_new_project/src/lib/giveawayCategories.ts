@@ -45,7 +45,7 @@ export const giveawayCategories: GiveawayCategory[] = [
     { key: 'sports',        label: 'ספורט ופנאי',    icon: '⚽', color: 'teal',    keywords: ['ספורט', 'אופניים', 'אופנוע', 'כדור', 'משקולות', 'יוגה', 'ריצה', 'אימון', 'גלגיליות'],
       image: LOCAL('sports.jpg') },
     { key: 'other',         label: 'אחר',            icon: '📦', color: 'gray',    keywords: [],
-      image: UNSPLASH('photo-1607082348824-0a96f2a4b9da') },
+      image: LOCAL('other.png') },
 ];
 
 /** מנרמל מפתח קטגוריה — תומך גם בנתונים ישנים שנשמרו לפני המיזוג. */

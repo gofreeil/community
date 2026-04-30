@@ -238,16 +238,18 @@
                         <span>פרסם פריט</span>
                     </a>
                 </div>
-                <!-- Center: banner image -->
-                <img
-                    src="/images/delivery.png"
-                    alt=""
-                    width="1330"
-                    height="882"
-                    fetchpriority="high"
-                    decoding="async"
-                    class="w-full max-w-[32rem] md:max-w-[40rem] block aspect-[1330/882] bg-gradient-to-br from-orange-900/20 to-amber-900/10 rounded-2xl mx-auto"
-                />
+                <!-- Center: banner image — wrapped in a div so the slot reserves space BEFORE the image loads (img inside a CSS-grid auto column collapses to 0 before it has src content) -->
+                <div class="w-[32rem] md:w-[40rem] max-w-full aspect-[1330/882] mx-auto rounded-2xl overflow-hidden bg-gradient-to-br from-orange-900/20 to-amber-900/10">
+                    <img
+                        src="/images/delivery.png"
+                        alt=""
+                        width="1330"
+                        height="882"
+                        fetchpriority="high"
+                        decoding="async"
+                        class="w-full h-full object-cover block"
+                    />
+                </div>
                 <!-- Left side (RTL last DOM child): הפריטים שלי -->
                 {#if data.currentUserId}
                     <div class="flex justify-center">
@@ -291,7 +293,7 @@
 
                     <!-- Label aligned to bottom of image -->
                     <div class="absolute inset-x-0 bottom-0 flex items-end justify-center px-4 pb-1.5">
-                        <span class="text-base md:text-xl font-black text-white drop-shadow-lg leading-none">{cat.label}</span>
+                        <span class="text-sm md:text-lg font-black text-white drop-shadow-lg leading-none">{cat.label}</span>
                     </div>
 
                 </button>
