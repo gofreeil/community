@@ -309,11 +309,11 @@
                 {@const count = categoryCounts[cat.key] ?? 0}
                 {@const active = categoryFilter === cat.key}
                 {@const borderTune: Record<string, { zoom: string; pos: string }> = {
-                    electronics:   { zoom: 'scale-[1.14]', pos: 'object-center' },
-                    tools:         { zoom: 'scale-[1.10]', pos: 'object-center' },
-                    kitchen:       { zoom: 'scale-[1.12]', pos: 'object-[50%_60%]' },
-                    judaica_books: { zoom: 'scale-[1.10]', pos: 'object-[50%_35%]' },
-                    garden:        { zoom: 'scale-[1.10]', pos: 'object-center' },
+                    electronics:   { zoom: 'scale-[1.22]', pos: 'object-center' },
+                    tools:         { zoom: 'scale-[1.18]', pos: 'object-center' },
+                    kitchen:       { zoom: 'scale-[1.20]', pos: 'object-[50%_55%]' },
+                    judaica_books: { zoom: 'scale-[1.18]', pos: 'object-[50%_40%]' },
+                    garden:        { zoom: 'scale-[1.16]', pos: 'object-center' },
                 }}
                 {@const tune = borderTune[cat.key] ?? { zoom: 'scale-110', pos: 'object-center' }}
                 <button
