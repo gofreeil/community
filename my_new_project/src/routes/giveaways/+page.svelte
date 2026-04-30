@@ -347,73 +347,62 @@
         </div>
     </div>
 
-    <!-- Sticky Search & Filter Bar -->
+    <!-- Sticky Search & Filter Bar — single combined row -->
     <div class="sticky top-0 z-30 bg-[#070b14]/95 backdrop-blur-md border-b border-white/10 shadow-lg mt-4">
         <div class="max-w-7xl mx-auto px-4 py-3">
-            <!-- Search Row -->
-            <div class="flex items-center gap-2 mb-3">
-                <div class="relative flex-1">
-                    <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg pointer-events-none">🔎</span>
+            <div class="flex items-center gap-1.5 md:gap-2">
+                <!-- Search input (flex-1, shrinks) -->
+                <div class="relative flex-1 min-w-0">
+                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">🔎</span>
                     <input
                         type="search"
                         bind:value={search}
-                        placeholder="מה מחפשים? ספה, מקרר, ספרים..."
+                        placeholder="מה מחפשים?"
                         aria-label="חיפוש פריטים"
                         dir="rtl"
-                        class="w-full bg-white/5 border-2 border-white/10 rounded-xl ps-12 {search ? 'pe-12' : 'pe-28'} py-3 text-white placeholder:text-gray-500 focus:border-orange-500 focus:bg-white/10 focus:outline-none transition-all text-base text-right"
+                        class="w-full bg-white/5 border-2 border-white/10 rounded-full ps-9 {search ? 'pe-9' : 'pe-3'} py-2 text-white placeholder:text-gray-500 focus:border-orange-500 focus:bg-white/10 focus:outline-none transition-all text-sm md:text-base text-right"
                     />
                     {#if search}
                         <button
                             type="button"
                             onclick={() => { search = ''; debouncedSearch = ''; }}
                             aria-label="נקה חיפוש"
-                            class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-xl bg-white/10 hover:bg-white/20 w-7 h-7 rounded-full flex items-center justify-center transition-colors"
+                            class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-lg bg-white/10 hover:bg-white/20 w-6 h-6 rounded-full flex items-center justify-center transition-colors"
                         >×</button>
-                    {:else}
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-[11px] md:text-xs text-gray-300 pointer-events-none whitespace-nowrap">
-                            <span class="text-base leading-none">📦</span>
-                            <span class="text-white font-bold">{data.items.length}</span>
-                            <span class="text-gray-400">פריטים</span>
-                        </span>
                     {/if}
                 </div>
-            </div>
 
-            <!-- Filter Chips Row -->
-            <div class="flex items-center gap-2">
-                <div class="flex gap-1.5 overflow-x-auto pb-1 flex-1 hide-scrollbar">
-                    <!-- Price filter chips -->
-                    <button
-                        onclick={() => priceFilter = 'all'}
-                        class="px-3 py-1.5 rounded-full text-xs md:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1.5 border {priceFilter === 'all' ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg shadow-orange-500/40 border-transparent' : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10 hover:border-white/20'}"
-                    >
-                        <span class="hidden md:inline">💰</span><span>הכל</span>
-                    </button>
-                    <button
-                        onclick={() => priceFilter = 'free'}
-                        class="px-3 py-1.5 rounded-full text-xs md:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1.5 border {priceFilter === 'free' ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg shadow-emerald-500/40 border-transparent' : 'bg-white/5 text-emerald-300 border-emerald-500/20 hover:bg-emerald-500/10 hover:border-emerald-500/40'}"
-                    >
-                        <span class="hidden md:inline">💚</span><span>חינם</span>
-                    </button>
-                    <button
-                        onclick={() => priceFilter = 'symbolic'}
-                        class="px-3 py-1.5 rounded-full text-xs md:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1.5 border {priceFilter === 'symbolic' ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-lg shadow-amber-500/40 border-transparent' : 'bg-white/5 text-amber-300 border-amber-500/20 hover:bg-amber-500/10 hover:border-amber-500/40'}"
-                    >
-                        <span class="hidden md:inline">🪙</span><span>סמלי</span>
-                    </button>
-                </div>
+                <!-- Price filter chips -->
+                <button
+                    onclick={() => priceFilter = 'all'}
+                    class="shrink-0 px-2.5 md:px-3 py-1.5 rounded-full text-[11px] md:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1 border {priceFilter === 'all' ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg shadow-orange-500/40 border-transparent' : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10 hover:border-white/20'}"
+                >
+                    <span class="hidden md:inline">💰</span><span>הכל</span>
+                </button>
+                <button
+                    onclick={() => priceFilter = 'free'}
+                    class="shrink-0 px-2.5 md:px-3 py-1.5 rounded-full text-[11px] md:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1 border {priceFilter === 'free' ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg shadow-emerald-500/40 border-transparent' : 'bg-white/5 text-emerald-300 border-emerald-500/20 hover:bg-emerald-500/10 hover:border-emerald-500/40'}"
+                >
+                    <span class="hidden md:inline">💚</span><span>חינם</span>
+                </button>
+                <button
+                    onclick={() => priceFilter = 'symbolic'}
+                    class="shrink-0 px-2.5 md:px-3 py-1.5 rounded-full text-[11px] md:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1 border {priceFilter === 'symbolic' ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-lg shadow-amber-500/40 border-transparent' : 'bg-white/5 text-amber-300 border-amber-500/20 hover:bg-amber-500/10 hover:border-amber-500/40'}"
+                >
+                    <span class="hidden md:inline">🪙</span><span>סמלי</span>
+                </button>
 
                 <!-- Sort + view toggle -->
-                <div class="flex items-center gap-1.5 shrink-0">
+                <div class="flex items-center gap-1 shrink-0">
                     <!-- Sort dropdown -->
                     <div class="relative" role="presentation" onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.stopPropagation()}>
                         <button
                             onclick={() => showSortMenu = !showSortMenu}
-                            class="flex items-center gap-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white px-3 py-1.5 rounded-full text-xs md:text-sm font-bold transition-colors"
+                            class="flex items-center gap-1 bg-white/5 hover:bg-white/10 border border-white/10 text-white px-2.5 md:px-3 py-1.5 rounded-full text-[11px] md:text-sm font-bold transition-colors"
                             aria-label="מיון"
                         >
                             <span>↕️</span>
-                            <span class="hidden sm:inline">{currentSortLabel}</span>
+                            <span class="hidden lg:inline">{currentSortLabel}</span>
                         </button>
                         {#if showSortMenu}
                             <div class="absolute left-0 top-full mt-1 z-50 bg-[#0f172a] border border-white/15 rounded-xl shadow-2xl py-1 min-w-[180px] overflow-hidden">
@@ -501,11 +490,10 @@
         {#snippet listView(items: typeof filtered)}
             <div class="flex flex-col gap-3">
                 {#each items as item (item.id)}
-                    {@const condition = getField(item.extra_fields, 'condition')}
-                    {@const isMine    = data.currentUserId && item.user_id === data.currentUserId}
-                    {@const isFav     = favorites.has(String(item.id))}
-                    {@const img       = itemImage(item)}
-                    {@const price     = itemPrice(item)}
+                    {@const isMine = data.currentUserId && item.user_id === data.currentUserId}
+                    {@const isFav  = favorites.has(String(item.id))}
+                    {@const img    = itemImage(item)}
+                    {@const price  = itemPrice(item)}
                     <div class="group rounded-2xl bg-gradient-to-br from-[#0f172a] to-[#0c1322] border border-white/10 overflow-hidden shadow-lg hover:shadow-2xl hover:border-orange-500/40 transition-all flex flex-row">
                         <a href="/items/{item.id}" class="block w-32 md:w-44 shrink-0 aspect-square relative overflow-hidden bg-[#0a0f1a]">
                             <img
@@ -534,45 +522,12 @@
                                     class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/15 text-lg transition-all {isFav ? 'text-rose-400' : 'text-gray-500 hover:text-rose-300'}"
                                 >{isFav ? '❤️' : '🤍'}</button>
                             </div>
-                            {#if item.description}
-                                <p class="text-gray-400 text-xs md:text-sm line-clamp-1 mb-2">{item.description}</p>
+                            {#if item.address}
+                                <a href="/items/{item.id}" class="block text-gray-400 text-xs md:text-sm flex items-center gap-1 truncate mt-auto">
+                                    <span class="text-orange-400/70 shrink-0">📍</span>
+                                    <span class="truncate">{item.address}</span>
+                                </a>
                             {/if}
-                            <div class="flex items-center flex-wrap gap-x-3 gap-y-1 text-xs text-gray-400 mb-2">
-                                {#if item.address}
-                                    <span class="flex items-center gap-1"><span>📍</span>{item.address}</span>
-                                {/if}
-                                {#if item.created_at}
-                                    <span class="flex items-center gap-1"><span>🕐</span>{timeAgo(item.created_at)}</span>
-                                {/if}
-                                {#if condition}
-                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border {conditionBadgeClass(condition)}">
-                                        {condition}
-                                    </span>
-                                {/if}
-                            </div>
-                            <div class="mt-auto flex gap-2">
-                                {#if item.phone}
-                                    <a
-                                        href={waLink(item.phone)}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        aria-label="פנייה בוואטסאפ"
-                                        class="flex-1 flex items-center justify-center gap-1.5 bg-green-600 hover:bg-green-500 text-white font-bold py-2 rounded-lg transition-colors text-sm"
-                                    >💬 וואטסאפ</a>
-                                    <a
-                                        href="tel:{item.phone}"
-                                        aria-label="התקשרות"
-                                        class="flex items-center justify-center gap-1 bg-white/10 hover:bg-white/20 text-white py-2 px-4 rounded-lg transition-colors text-sm"
-                                    >📞 התקשר</a>
-                                {/if}
-                                <button
-                                    type="button"
-                                    onclick={() => shareToWhatsApp(item)}
-                                    aria-label="שתף בוואטסאפ"
-                                    title="שתף בוואטסאפ"
-                                    class="flex items-center justify-center bg-emerald-700/40 hover:bg-emerald-600/70 text-emerald-200 hover:text-white border border-emerald-500/30 py-2 px-3 rounded-lg transition-colors text-sm"
-                                >📤</button>
-                            </div>
                         </div>
                     </div>
                 {/each}
@@ -582,12 +537,9 @@
         {#snippet gridView(items: typeof filtered)}
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
                 {#each items as item (item.id)}
-                    {@const condition = getField(item.extra_fields, 'condition')}
-                    {@const isMine    = data.currentUserId && item.user_id === data.currentUserId}
-                    {@const isFav     = favorites.has(String(item.id))}
-                    {@const cat       = categoryByKey(itemCategory(item))}
-                    {@const img       = itemImage(item)}
-                    {@const photoCount = itemImages(item).length}
+                    {@const isMine = data.currentUserId && item.user_id === data.currentUserId}
+                    {@const isFav  = favorites.has(String(item.id))}
+                    {@const img    = itemImage(item)}
                     <div class="group rounded-2xl bg-gradient-to-br from-[#0f172a] to-[#0c1322] border border-white/10 overflow-hidden shadow-lg hover:shadow-2xl hover:shadow-orange-500/20 hover:border-orange-500/40 transition-all hover:-translate-y-1 flex flex-col">
                         <a href="/items/{item.id}" class="block aspect-square relative overflow-hidden bg-[#0a0f1a]">
                             <img
@@ -596,21 +548,9 @@
                                 loading="lazy"
                                 class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                             />
-                            <!-- Subtle dark gradient at bottom for badge readability -->
                             <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
 
-                            {#if photoCount > 1}
-                                <span class="absolute bottom-2 end-2 z-10 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold">
-                                    <span>📷</span>{photoCount}
-                                </span>
-                            {/if}
-                            {#if (item.view_count ?? 0) > 0}
-                                <span class="absolute bottom-2 z-10 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold {photoCount > 1 ? 'end-12' : 'end-2'}">
-                                    <span>👁</span>{item.view_count}
-                                </span>
-                            {/if}
-
-                            <!-- Price tag (Yad2-style) -->
+                            <!-- Price tag -->
                             <div class="absolute bottom-2 start-2 z-10">
                                 {#if itemPrice(item) > 0}
                                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-black bg-amber-500 text-white shadow-lg shadow-amber-500/40">
@@ -632,76 +572,20 @@
                                 class="absolute top-2 end-2 z-10 w-8 h-8 rounded-full flex items-center justify-center bg-black/40 backdrop-blur-sm hover:bg-black/60 text-base transition-all {isFav ? 'text-rose-400 scale-110' : 'text-white/80 hover:text-rose-300'}"
                             >{isFav ? '❤️' : '🤍'}</button>
 
-                            <!-- Condition badge -->
-                            {#if condition}
-                                <span class="absolute top-2 start-2 z-10 px-2 py-0.5 rounded-md text-[10px] font-bold border backdrop-blur-sm {conditionBadgeClass(condition)}">
-                                    {condition}
-                                </span>
-                            {/if}
-
-                            <!-- "Mine" badge -->
                             {#if isMine}
-                                <span class="absolute top-10 start-2 z-10 px-2 py-0.5 rounded-md text-[10px] font-bold bg-orange-600 text-white shadow">שלי</span>
+                                <span class="absolute top-2 start-2 z-10 px-2 py-0.5 rounded-md text-[10px] font-bold bg-orange-600 text-white shadow">שלי</span>
                             {/if}
                         </a>
 
-                        <div class="p-2.5 md:p-3 flex-1 flex flex-col">
-                            <a href="/items/{item.id}" class="block">
-                                <h3 class="text-white font-bold text-sm md:text-base mb-1 line-clamp-2 hover:text-orange-300 transition-colors leading-tight min-h-[2.5em]">{item.label}</h3>
-                            </a>
-
-                            {#if cat && cat.key !== 'other' && cat.key !== 'all'}
-                                <button
-                                    type="button"
-                                    onclick={(e) => { e.preventDefault(); e.stopPropagation(); categoryFilter = cat.key; }}
-                                    class="self-start inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] md:text-xs font-bold bg-white/5 border border-white/10 text-orange-300 hover:bg-orange-500/20 hover:border-orange-500/40 transition-colors mb-1.5"
-                                >
-                                    <span>{cat.icon}</span>
-                                    <span>{cat.label}</span>
-                                </button>
+                        <a href="/items/{item.id}" class="block p-2.5 md:p-3 flex-1 flex flex-col">
+                            <h3 class="text-white font-bold text-sm md:text-base mb-1 line-clamp-2 hover:text-orange-300 transition-colors leading-tight">{item.label}</h3>
+                            {#if item.address}
+                                <p class="text-gray-400 text-[11px] md:text-xs flex items-center gap-1 truncate mt-auto">
+                                    <span class="text-orange-400/70 shrink-0">📍</span>
+                                    <span class="truncate">{item.address}</span>
+                                </p>
                             {/if}
-
-                            <div class="flex flex-col gap-0.5 mb-2">
-                                {#if item.address}
-                                    <p class="text-gray-400 text-[11px] md:text-xs flex items-center gap-1 truncate">
-                                        <span class="text-orange-400/70 shrink-0">📍</span>
-                                        <span class="truncate">{item.address}</span>
-                                    </p>
-                                {/if}
-                                {#if item.created_at}
-                                    <p class="text-gray-500 text-[11px] md:text-xs flex items-center gap-1">
-                                        <span class="shrink-0">🕐</span>
-                                        <span>{timeAgo(item.created_at)}</span>
-                                    </p>
-                                {/if}
-                            </div>
-
-                            <div class="mt-auto flex gap-1 pt-1 border-t border-white/5">
-                                {#if item.phone}
-                                    <a
-                                        href={waLink(item.phone)}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        aria-label="פנייה בוואטסאפ"
-                                        class="flex-1 flex items-center justify-center gap-1 bg-green-600 hover:bg-green-500 text-white font-bold py-1.5 rounded-lg transition-colors text-[11px] md:text-xs"
-                                    >💬 פנייה</a>
-                                    <a
-                                        href="tel:{item.phone}"
-                                        aria-label="התקשרות"
-                                        class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white py-1.5 px-2.5 rounded-lg transition-colors text-[11px] md:text-xs"
-                                    >📞</a>
-                                {/if}
-                                <button
-                                    type="button"
-                                    onclick={() => shareToWhatsApp(item)}
-                                    aria-label="שתף בוואטסאפ"
-                                    title="שתף בוואטסאפ"
-                                    class="{item.phone ? '' : 'flex-1 gap-1 '}flex items-center justify-center bg-emerald-700/40 hover:bg-emerald-600/70 text-emerald-200 hover:text-white border border-emerald-500/30 py-1.5 px-2.5 rounded-lg transition-colors text-[11px] md:text-xs"
-                                >
-                                    <span aria-hidden="true">📤</span>{#if !item.phone}<span>שתף</span>{/if}
-                                </button>
-                            </div>
-                        </div>
+                        </a>
                     </div>
                 {/each}
             </div>
