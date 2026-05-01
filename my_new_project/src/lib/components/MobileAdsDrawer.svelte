@@ -157,11 +157,6 @@
 		ontouchstart={onDrawerTouchStart}
 		ontouchend={onDrawerTouchEnd}
 	>
-		<!-- כותרת Drawer -->
-		<div class="drawer-header">
-			<button class="close-btn" onclick={() => open = false} aria-label="סגור">✕</button>
-		</div>
-
 		<!-- כפתור התחברות / אזור אישי -->
 		<div class="section-title">האזור האישי</div>
 		<div class="auth-section">
@@ -344,16 +339,6 @@
 		transform: translateX(0);
 	}
 
-	/* ---- כותרת ---- */
-	.drawer-header {
-		display: flex;
-		align-items: center;
-		justify-content: flex-end;
-		position: relative;
-		padding: 0.5rem 1rem;
-		flex-shrink: 0;
-	}
-
 	/* ---- כותרת סקציה ---- */
 	.section-title {
 		font-size: 1.25rem;
@@ -369,6 +354,10 @@
 		border-top: 2px solid rgba(56, 189, 248, 0.25);
 		text-shadow: none;
 		position: relative;
+	}
+
+	.section-title:first-of-type {
+		border-top: none;
 	}
 
 	.section-title::after {
@@ -391,23 +380,6 @@
 	.title-gold {
 		color: #fbbf24;
 	}
-
-	.close-btn {
-		background: rgba(255,255,255,0.08);
-		border: 1px solid rgba(255,255,255,0.12);
-		color: #9ca3af;
-		width: 30px;
-		height: 30px;
-		border-radius: 50%;
-		font-size: 0.8rem;
-		cursor: pointer;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		transition: background 0.2s;
-	}
-
-	.close-btn:hover { background: rgba(255,255,255,0.15); }
 
 	/* ---- כפתור auth ---- */
 	.auth-section {
