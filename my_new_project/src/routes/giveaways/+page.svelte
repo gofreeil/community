@@ -310,7 +310,7 @@
             <div class="relative z-20 -mt-5 md:-mt-7 flex items-center justify-center gap-3 mb-5">
                 <h2 class="text-white font-black text-base md:text-lg flex items-center gap-2 whitespace-nowrap">
                     <span class="text-orange-400">▾</span>
-                    קטגוריות
+                    בחר קטגוריות
                 </h2>
                 <button
                     onclick={() => categoryFilter = cat.key}
@@ -332,9 +332,6 @@
                     </div>
 
                 </button>
-                {#if count > 0}
-                    <span class="text-sm md:text-base font-bold text-orange-200 whitespace-nowrap">{count} פריטים</span>
-                {/if}
             </div>
         {/each}
 
@@ -393,7 +390,7 @@
                         placeholder="מה מחפשים?"
                         aria-label="חיפוש פריטים"
                         dir="rtl"
-                        class="w-full bg-white/5 border-2 border-white/10 rounded-full {search ? 'pe-9' : 'pe-3'} ps-3 py-2 text-white placeholder:text-gray-500 focus:border-orange-500 focus:bg-white/10 focus:outline-none transition-all text-sm md:text-base text-right"
+                        class="w-full bg-white/5 border-2 border-white/10 rounded-full pe-20 ps-3 py-2 text-white placeholder:text-gray-500 focus:border-orange-500 focus:bg-white/10 focus:outline-none transition-all text-sm md:text-base text-right"
                     />
                     {#if search}
                         <button
@@ -402,6 +399,8 @@
                             aria-label="נקה חיפוש"
                             class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-lg bg-white/10 hover:bg-white/20 w-6 h-6 rounded-full flex items-center justify-center transition-colors"
                         >×</button>
+                    {:else}
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[11px] md:text-xs font-bold text-orange-200 whitespace-nowrap pointer-events-none">{filtered.length} פריטים</span>
                     {/if}
                 </div>
 
