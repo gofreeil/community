@@ -307,8 +307,8 @@
         {#each giveawayCategories.filter(c => c.key === 'all') as cat}
             {@const count = categoryCounts[cat.key] ?? 0}
             {@const active = categoryFilter === cat.key}
-            <div class="relative z-20 -mt-5 md:-mt-7 flex items-center justify-center gap-3 mb-5">
-                <h2 class="text-white font-black text-base md:text-lg flex items-center gap-2 whitespace-nowrap">
+            <div class="relative z-20 -mt-5 md:-mt-7 flex items-center justify-center mb-5">
+                <h2 class="absolute right-4 md:right-8 text-white font-black text-base md:text-lg flex items-center gap-2 whitespace-nowrap">
                     <span class="text-orange-400">▾</span>
                     בחר קטגוריות
                 </h2>
@@ -420,6 +420,7 @@
                     >
                         <span>חינם</span>
                     </button>
+                    <span aria-hidden="true" class="text-gray-500 text-[11px] md:text-sm font-bold select-none">/</span>
                     <button
                         onclick={() => priceFilter = 'symbolic'}
                         aria-pressed={priceFilter === 'symbolic'}
