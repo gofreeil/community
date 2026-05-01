@@ -1059,6 +1059,20 @@
                         🆕 {neighborhoodDbItems.length} פריטים ב{neighborhoodState.neighborhood} — לחץ לצפייה
                     </button>
                 {/if}
+
+                <!-- קיצור דרך ללוח הארצי — מופיע כשנבחרת קטגוריית "למסירה" -->
+                {#if selectedCategory === 'giveaway'}
+                    <button
+                        type="button"
+                        onclick={(e) => { e.stopPropagation(); goto('/giveaways'); }}
+                        class="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white text-xs md:text-sm font-black px-4 py-2 rounded-full shadow-2xl border border-white/30 backdrop-blur-sm transition-all hover:scale-105 flex items-center gap-2 whitespace-nowrap"
+                        title="עבור ללוח הארצי של פריטים למסירה"
+                    >
+                        <img src="/images/delivery.png" alt="" class="w-5 h-5 object-contain" />
+                        <span>ללוח הארצי של פריטים למסירה</span>
+                        <span class="text-base">←</span>
+                    </button>
+                {/if}
             </div>
         {:else if viewMode === "list"}
             <!-- תצוגת רשימה -->
