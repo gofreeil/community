@@ -308,7 +308,7 @@
             {@const count = categoryCounts[cat.key] ?? 0}
             {@const active = categoryFilter === cat.key}
             <div class="relative z-20 -mt-5 md:-mt-7 flex items-center justify-center mb-5">
-                <h2 class="absolute right-4 md:right-8 text-white font-black text-base md:text-lg flex items-center gap-2 whitespace-nowrap">
+                <h2 class="absolute right-24 md:right-40 text-white font-black text-base md:text-lg flex items-center gap-2 whitespace-nowrap">
                     <span class="text-orange-400">▾</span>
                     בחר קטגוריות
                 </h2>
