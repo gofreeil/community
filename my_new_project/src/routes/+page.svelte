@@ -106,7 +106,21 @@
 
     // רק אירועים עתידיים, ממופים לפורמט ה־UI
     const todayIso = new Date().toISOString().split('T')[0];
-    const events: EventCard[] = $derived(
+
+    // אירועי דוגמה (mock) — מוצגים כל עוד אין אירוע אמיתי בשכונה
+    function isoPlusDays(days: number): string {
+        const d = new Date();
+        d.setDate(d.getDate() + days);
+        return d.toISOString().split('T')[0];
+    }
+    const mockEvents: EventCard[] = [
+        { title: '🎤 הרצאה בנושא חינוך ילדים',     location: 'בית הכנסת המרכזי', date: isoPlusDays(2),  startTime: '20:00', endTime: '21:00', bgColor: COLOR_MAP.green.bg,  textColor: COLOR_MAP.green.text,  subColor: COLOR_MAP.green.sub  },
+        { title: '🏃 מרוץ קהילתי — 5 ק"מ',          location: 'גן הציבורי',         date: isoPlusDays(5),  startTime: '07:30', endTime: '08:30', bgColor: COLOR_MAP.blue.bg,   textColor: COLOR_MAP.blue.text,   subColor: COLOR_MAP.blue.sub   },
+        { title: '🎉 ערב הוקרה למתנדבי השכונה',     location: 'מתנ"ס שכונתי',       date: isoPlusDays(8),  startTime: '19:30', endTime: '20:30', bgColor: COLOR_MAP.purple.bg, textColor: COLOR_MAP.purple.text, subColor: COLOR_MAP.purple.sub },
+        { title: '🌱 יום ניקיון ושיפור פני השכונה', location: 'כיכר השכונה',         date: isoPlusDays(14), startTime: '09:00', endTime: '10:00', bgColor: COLOR_MAP.orange.bg, textColor: COLOR_MAP.orange.text, subColor: COLOR_MAP.orange.sub },
+    ];
+
+    const realEvents: EventCard[] = $derived(
         (data.events ?? [])
             .filter(ev => ev.date >= todayIso)
             .slice(0, 4)
@@ -126,6 +140,8 @@
                 };
             })
     );
+
+    const events: EventCard[] = $derived(realEvents.length > 0 ? realEvents : mockEvents);
 
     let calMenuOpen = $state<number | null>(null);
 

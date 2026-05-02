@@ -27,9 +27,25 @@
         return days;
     });
 
+    // אירועי דוגמה — מוצגים כל עוד אין אירוע אמיתי (ללוגיקה זהה ללוח האבדות)
+    function isoPlusDays(days: number): string {
+        const d = new Date();
+        d.setDate(d.getDate() + days);
+        return d.toISOString().split('T')[0];
+    }
+    const mockEvents: any[] = [
+        { id: 'mev1', title: 'הרצאה בנושא חינוך ילדים',     date: isoPlusDays(2),  time: '20:00', location: 'בית הכנסת המרכזי', icon: '🎤', color: 'green',  description: 'הרצאה מרתקת לגיל הרך עם פאנל הורים',                              price: 0,  status: 'approved' },
+        { id: 'mev2', title: 'מרוץ קהילתי — 5 ק"מ',          date: isoPlusDays(5),  time: '07:30', location: 'גן הציבורי',         icon: '🏃', color: 'blue',   description: 'מרוץ פתוח לכל הגילאים, כיבוד קל בסיום',                            price: 0,  status: 'approved' },
+        { id: 'mev3', title: 'ערב הוקרה למתנדבי השכונה',     date: isoPlusDays(8),  time: '19:30', location: 'מתנ"ס שכונתי',       icon: '🎉', color: 'purple', description: 'מופע מוזיקלי, סיפורי השראה ותעודות הוקרה',                          price: 25, status: 'approved' },
+        { id: 'mev4', title: 'יום ניקיון ושיפור פני השכונה', date: isoPlusDays(14), time: '09:00', location: 'כיכר השכונה',         icon: '🌱', color: 'orange', description: 'יוצאים לשטח לניקיון, צביעה ושתילת פרחים. כיבוד לכל המשתתפים',         price: 0,  status: 'approved' },
+    ];
+
+    let isMockEvents = $derived((data.events as any[]).length === 0);
+    let displayEvents = $derived<any[]>(isMockEvents ? mockEvents : (data.events as any[]));
+
     function getEventsForDay(day: number) {
         const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        return data.events.filter((e: any) => e.date === dateStr);
+        return displayEvents.filter((e: any) => e.date === dateStr);
     }
 
     function isToday(day: number) {
@@ -48,7 +64,7 @@
     let selectedEvent = $state<any | null>(null);
 
     let upcomingEvents = $derived(
-        [...data.events]
+        [...displayEvents]
             .filter((e: any) => new Date(e.date) >= new Date(today.toDateString()))
             .sort((a: any, b: any) => a.date.localeCompare(b.date))
     );
