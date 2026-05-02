@@ -278,8 +278,8 @@
                         decoding="async"
                         class="absolute inset-0 w-full h-full object-cover object-top block"
                     />
-                    <!-- Gradient darkening overlay — בהיר למעלה, ממוצע באמצע, כהה למטה -->
-                    <div class="absolute inset-0 bg-gradient-to-b from-black/5 via-black/30 to-black/60 pointer-events-none"></div>
+                    <!-- Gradient darkening overlay — בהיר למעלה, עדין באמצע, מתון למטה -->
+                    <div class="absolute inset-0 bg-gradient-to-b from-black/0 via-black/10 to-black/35 pointer-events-none"></div>
                 </div>
                 <a
                     href="/giveaways/add"
@@ -291,7 +291,7 @@
                 {#if data.currentUserId}
                     <a
                         href="/giveaways/my"
-                        class="absolute -end-2 md:-end-14 top-[calc(50%+10px)] md:top-1/2 -translate-y-1/2 z-10 flex flex-col items-center justify-center gap-1 md:gap-2 bg-black/55 backdrop-blur-md border border-orange-400/50 hover:bg-orange-500/40 text-orange-200 hover:text-white font-bold px-2.5 py-2 md:px-5 md:py-4 rounded-xl transition-all hover:scale-105 whitespace-nowrap shadow-lg text-xs md:text-base"
+                        class="absolute -end-2 md:-end-14 top-[calc(50%+10px)] md:top-1/2 -translate-y-1/2 z-10 flex flex-col items-center justify-center gap-1 md:gap-2 bg-gradient-to-br from-orange-500/55 to-amber-600/55 backdrop-blur-md border border-orange-300/70 hover:from-orange-500/75 hover:to-amber-600/75 text-orange-50 hover:text-white font-bold px-2.5 py-2 md:px-5 md:py-4 rounded-xl transition-all hover:scale-105 whitespace-nowrap shadow-lg shadow-orange-500/30 text-xs md:text-base"
                     >
                         <span class="text-base md:text-2xl leading-none">👤</span>
                         <span>הפריטים שלי</span>
