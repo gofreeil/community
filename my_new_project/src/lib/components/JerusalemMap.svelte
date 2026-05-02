@@ -321,6 +321,16 @@
             (selectedCategory === "benefits" || d.category === selectedCategory)
         )
     );
+
+    // מיפוי קטגוריה → URL של הלוח הארצי שלה (אם קיים)
+    const nationalBoardUrls: Record<string, string> = {
+        gemachim:    'https://national-gemach.vercel.app/',
+        singles:     '/national/singles',
+        security:    '/national/security',
+        attractions: '/national/attractions',
+        jobs:        '/national/jobs',
+    };
+    let nationalBoardUrl = $derived(nationalBoardUrls[selectedCategory] || '');
     let hasShownListAnimation = $state(false); // עקוב אם כבר הראינו את האנימציה
     let communityHelpCount = $state(135);
     const currentYear = new Date().getFullYear();
@@ -1049,7 +1059,7 @@
                     </button>
                 {/if}
 
-                <!-- Badge לפריטים חדשים בשכונה -->
+                <!-- Badge לפריטים חדשים בשכונה + קישור ללוח הארצי -->
                 {#if selectedCategory === 'giveaway'}
                     <!-- כשנבחרת "למסירה" — אותו כפתור מוביל ללוח הארצי -->
                     <button
@@ -1062,14 +1072,30 @@
                         <span>{neighborhoodDbItems.length} למסירה ב{neighborhoodState.neighborhood} — ללוח הארצי</span>
                         <span class="text-sm">←</span>
                     </button>
-                {:else if neighborhoodDbItems.length > 0}
-                    <button
-                        onclick={() => handleViewToggle(false)}
-                        class="absolute bottom-4 left-4 z-20 bg-green-600/90 backdrop-blur-sm text-white text-xs font-black px-3 py-1.5 rounded-full shadow-lg border border-green-400/50 hover:bg-green-500/90 transition-all hover:scale-105"
-                        title="עבור לרשימה לצפייה בפריטים החדשים"
-                    >
-                        🆕 {neighborhoodDbItems.length} פריטים ב{neighborhoodState.neighborhood} — לחץ לצפייה
-                    </button>
+                {:else if neighborhoodDbItems.length > 0 || nationalBoardUrl}
+                    <div class="absolute bottom-4 left-4 z-20 flex flex-wrap items-center gap-2">
+                        {#if neighborhoodDbItems.length > 0}
+                            <button
+                                onclick={() => handleViewToggle(false)}
+                                class="bg-green-600/90 backdrop-blur-sm text-white text-xs font-black px-3 py-1.5 rounded-full shadow-lg border border-green-400/50 hover:bg-green-500/90 transition-all hover:scale-105"
+                                title="עבור לרשימה לצפייה בפריטים החדשים"
+                            >
+                                🆕 {neighborhoodDbItems.length} פריטים ב{neighborhoodState.neighborhood} — לחץ לצפייה
+                            </button>
+                        {/if}
+                        {#if nationalBoardUrl}
+                            <a
+                                href={nationalBoardUrl}
+                                target={nationalBoardUrl.startsWith('http') ? '_blank' : '_self'}
+                                rel={nationalBoardUrl.startsWith('http') ? 'noopener noreferrer' : undefined}
+                                onclick={(e) => e.stopPropagation()}
+                                class="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white text-xs font-black px-3 py-1.5 rounded-full shadow-lg border border-purple-400/50 transition-all hover:scale-105 whitespace-nowrap"
+                                title="עבור ללוח הארצי"
+                            >
+                                ← ללוח הארצי
+                            </a>
+                        {/if}
+                    </div>
                 {/if}
             </div>
         {:else if viewMode === "list"}
