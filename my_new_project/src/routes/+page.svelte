@@ -409,33 +409,33 @@
                         <span class="text-[10px] text-amber-200/70 font-bold">LIVE</span>
                     </div>
                     <div class="p-2 flex-1 overflow-hidden flex flex-col justify-evenly text-xs">
-                        <a href="/singles" class="flex items-center gap-2 bg-white/5 rounded-lg p-2.5 border border-white/8 hover:bg-white/10 transition-all">
-                            <span class="flex-shrink-0 text-base">💑</span>
-                            <p class="text-white font-bold">לוח פנויים פנויות</p>
-                        </a>
-                        <a href="/lost-and-found" class="flex items-center gap-2 bg-white/5 rounded-lg p-2.5 border border-white/8 hover:bg-white/10 transition-all">
-                            <span class="flex-shrink-0 text-base">🔍</span>
-                            <p class="text-white font-bold">לוח אבדות ומציאות</p>
-                        </a>
-                        <a href="/rides" class="flex items-center gap-2 bg-white/5 rounded-lg p-2.5 border border-white/8 hover:bg-white/10 transition-all">
-                            <span class="flex-shrink-0 text-base">🚗</span>
-                            <p class="text-white font-bold">לוח טרמפים</p>
-                        </a>
-                        <a href="/events" class="flex items-center gap-2 bg-white/5 rounded-lg p-2.5 border border-white/8 hover:bg-white/10 transition-all">
-                            <span class="flex-shrink-0 text-base">🗓️</span>
-                            <p class="text-white font-bold">לוח אירועים</p>
+                        <a href="/giveaways" class="flex items-center gap-2 bg-white/5 rounded-lg p-2.5 border border-white/8 hover:bg-white/10 transition-all">
+                            <span class="flex-shrink-0 text-base">📦</span>
+                            <p class="text-white font-bold">לוח למסירה</p>
                         </a>
                         <a href="https://national-gemach.vercel.app" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 bg-white/5 rounded-lg p-2.5 border border-white/8 hover:bg-white/10 transition-all">
                             <span class="flex-shrink-0 text-base">🤝</span>
                             <p class="text-white font-bold">לוח גמ"חים <span class="text-amber-300/70 text-[10px] font-normal">(אתר ארצי ↗)</span></p>
                         </a>
+                        <a href="/lost-and-found" class="flex items-center gap-2 bg-white/5 rounded-lg p-2.5 border border-white/8 hover:bg-white/10 transition-all">
+                            <span class="flex-shrink-0 text-base">🔍</span>
+                            <p class="text-white font-bold">לוח אבדות ומציאות</p>
+                        </a>
+                        <a href="/singles" class="flex items-center gap-2 bg-white/5 rounded-lg p-2.5 border border-white/8 hover:bg-white/10 transition-all">
+                            <span class="flex-shrink-0 text-base">💑</span>
+                            <p class="text-white font-bold">לוח פנויים פנויות</p>
+                        </a>
+                        <a href="/events" class="flex items-center gap-2 bg-white/5 rounded-lg p-2.5 border border-white/8 hover:bg-white/10 transition-all">
+                            <span class="flex-shrink-0 text-base">🗓️</span>
+                            <p class="text-white font-bold">לוח אירועים</p>
+                        </a>
                         <a href="/jobs" class="flex items-center gap-2 bg-white/5 rounded-lg p-2.5 border border-white/8 hover:bg-white/10 transition-all">
                             <span class="flex-shrink-0 text-base">💼</span>
                             <p class="text-white font-bold">לוח דורשים לעבודה</p>
                         </a>
-                        <a href="/giveaways" class="flex items-center gap-2 bg-white/5 rounded-lg p-2.5 border border-white/8 hover:bg-white/10 transition-all">
-                            <span class="flex-shrink-0 text-base">📦</span>
-                            <p class="text-white font-bold">לוח למסירה</p>
+                        <a href="/rides" class="flex items-center gap-2 bg-white/5 rounded-lg p-2.5 border border-white/8 hover:bg-white/10 transition-all">
+                            <span class="flex-shrink-0 text-base">🚗</span>
+                            <p class="text-white font-bold">לוח טרמפים</p>
                         </a>
                         <a href="https://index-chi-sage.vercel.app/" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 bg-white/5 rounded-lg p-2.5 border border-white/8 hover:bg-white/10 transition-all">
                             <span class="flex-shrink-0 text-base">👨‍💼</span>
