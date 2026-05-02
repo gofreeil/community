@@ -256,7 +256,7 @@
 		</div>
 
 		<!-- כותרת הטבות -->
-		<div class="section-title">הטבות ארציות <span class="title-gold">יוצאים לחירות</span></div>
+		<div class="section-title section-title-benefits">הטבות ארציות <span class="title-gold">יוצאים לחירות</span></div>
 
 		<!-- רשימת פרסומות -->
 		<div class="ads-list">
@@ -372,6 +372,13 @@
 	.section-title-first {
 		padding-top: 0.5rem;
 		padding-bottom: 0.4rem;
+	}
+
+	.section-title-benefits {
+		white-space: nowrap;
+		font-size: 1.1rem;
+		padding-left: 0.5rem;
+		padding-right: 0.5rem;
 	}
 
 	.close-btn {
