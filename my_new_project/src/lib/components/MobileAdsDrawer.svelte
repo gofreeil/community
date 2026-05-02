@@ -158,7 +158,15 @@
 		ontouchend={onDrawerTouchEnd}
 	>
 		<!-- כפתור התחברות / אזור אישי -->
-		<div class="section-title">האזור האישי</div>
+		<div class="section-title section-title-first">
+			האזור האישי
+			<button
+				type="button"
+				class="close-btn"
+				onclick={() => open = false}
+				aria-label="סגור"
+			>×</button>
+		</div>
 		<div class="auth-section">
 			{#if currentUser && layoutUser}
 			<!-- מיני-כרטיס פרופיל -->
@@ -356,8 +364,44 @@
 		position: relative;
 	}
 
-	.section-title:first-of-type {
+	.section-title:first-of-type,
+	.section-title-first {
 		border-top: none;
+	}
+
+	.section-title-first {
+		padding-top: 0.5rem;
+		padding-bottom: 0.4rem;
+	}
+
+	.close-btn {
+		position: absolute;
+		top: 50%;
+		left: 0.6rem;
+		transform: translateY(-50%);
+		width: 28px;
+		height: 28px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		background: rgba(99, 102, 241, 0.15);
+		border: 1px solid rgba(99, 102, 241, 0.35);
+		border-radius: 50%;
+		color: #e0e7ff;
+		font-size: 1.05rem;
+		font-weight: 700;
+		line-height: 1;
+		cursor: pointer;
+		padding: 0;
+		-webkit-text-fill-color: #e0e7ff;
+		background-clip: border-box;
+		-webkit-background-clip: border-box;
+		transition: background 0.2s, border-color 0.2s;
+	}
+
+	.close-btn:hover {
+		background: rgba(99, 102, 241, 0.3);
+		border-color: rgba(99, 102, 241, 0.6);
 	}
 
 	.section-title::after {
@@ -383,9 +427,8 @@
 
 	/* ---- כפתור auth ---- */
 	.auth-section {
-		padding: 0.75rem;
-		padding-bottom: 1rem;
-		margin-bottom: 0.5rem;
+		padding: 0.5rem 0.75rem 0.65rem;
+		margin-bottom: 0.25rem;
 		border-bottom: 1px solid rgba(99,102,241,0.15);
 		flex-shrink: 0;
 	}
