@@ -137,7 +137,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
     },
 
     restaurants: {
-        label: 'חנות מזון',
+        label: 'מזון ומסעדות',
         icon: '🍱',
         color: 'orange',
         priceRow: 2,

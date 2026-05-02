@@ -106,7 +106,7 @@
         },
         {
             id: "restaurants",
-            label: "חנות מזון",
+            label: "מזון ומסעדות",
             icon: "🍱",
             items: [
                 { id: "pizza-local", label: "פיצה השכונה" },
