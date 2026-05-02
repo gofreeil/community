@@ -4,6 +4,8 @@
 		id: string; label: string; description: string; icon: string;
 		city: string; neighborhood: string; phone: string; contact: string;
 		category: string; created_at: string; status: string;
+		extra_fields?: string;        // JSON string
+		view_count?: number;
 	}
 
 	let { data } = $props();
@@ -11,6 +13,28 @@
 	// חיפוש וסינון
 	let searchQuery   = $state('');
 	let selectedCity  = $state('');
+	let foodTypeFilter = $state<'all' | 'fast' | 'restaurant'>('all'); // לקטגוריית restaurants
+	let topTenOnly    = $state(false);
+
+	// מילות-מפתח לזיהוי "מזון מהיר"
+	const fastFoodKeywords = [
+		'פיצה','פלאפל','שווארמה','המבורגר','בורגר','טוסט','סושי','שניצל','חומוס','פסטה',
+		'נקניקיה','כריך','סנדוויץ','קרפ','מאפה','בורקס','דונאט','דונאטס','בייגל','טאקו',
+		'fast','pizza','burger','sushi','falafel','shawarma','sandwich'
+	];
+	function isFastFood(item: Item): boolean {
+		try {
+			const ef = item.extra_fields ? JSON.parse(item.extra_fields) : {};
+			const haystack = [
+				ef.food_type ?? '',
+				item.label ?? '',
+				item.description ?? '',
+			].join(' ').toLowerCase();
+			return fastFoodKeywords.some((k) => haystack.includes(k.toLowerCase()));
+		} catch {
+			return false;
+		}
+	}
 
 	// ערים ייחודיות מתוך הפריטים
 	let availableCities = $derived(
@@ -18,8 +42,8 @@
 	);
 
 	// פריטים מסוננים
-	let filteredItems = $derived(
-		(data.items as Item[]).filter((item) => {
+	let filteredItems = $derived.by(() => {
+		const items = (data.items as Item[]).filter((item) => {
 			const matchSearch =
 				!searchQuery ||
 				item.label.includes(searchQuery) ||
@@ -27,9 +51,25 @@
 				(item.neighborhood ?? '').includes(searchQuery) ||
 				(item.city ?? '').includes(searchQuery);
 			const matchCity = !selectedCity || item.city === selectedCity;
-			return matchSearch && matchCity;
-		})
-	);
+
+			// סינון מזון מהיר/מסעדה — רלוונטי רק לקטגוריית restaurants
+			let matchFoodType = true;
+			if (data.categoryId === 'restaurants' && foodTypeFilter !== 'all') {
+				const fast = isFastFood(item);
+				matchFoodType = foodTypeFilter === 'fast' ? fast : !fast;
+			}
+
+			return matchSearch && matchCity && matchFoodType;
+		});
+
+		// טופ 10 — מיון לפי view_count יורד וחיתוך ל-10 ראשונים
+		if (topTenOnly) {
+			return [...items]
+				.sort((a, b) => (b.view_count ?? 0) - (a.view_count ?? 0))
+				.slice(0, 10);
+		}
+		return items;
+	});
 
 	// צבע לפי קטגוריה
 	const colorMap: Record<string, string> = {
@@ -37,18 +77,21 @@
 		security:    'from-green-600 to-teal-700',
 		attractions: 'from-indigo-600 to-purple-700',
 		jobs:        'from-blue-600 to-cyan-700',
+		restaurants: 'from-orange-600 to-amber-700',
 	};
 	const cardBorderMap: Record<string, string> = {
 		singles:     'border-red-500/30 hover:border-red-500/60',
 		security:    'border-green-500/30 hover:border-green-500/60',
 		attractions: 'border-indigo-500/30 hover:border-indigo-500/60',
 		jobs:        'border-blue-500/30 hover:border-blue-500/60',
+		restaurants: 'border-orange-500/30 hover:border-orange-500/60',
 	};
 	const badgeMap: Record<string, string> = {
 		singles:     'bg-red-500/20 text-red-300 border-red-500/30',
 		security:    'bg-green-500/20 text-green-300 border-green-500/30',
 		attractions: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
 		jobs:        'bg-blue-500/20 text-blue-300 border-blue-500/30',
+		restaurants: 'bg-orange-500/20 text-orange-300 border-orange-500/30',
 	};
 
 	let gradient   = $derived(colorMap[data.categoryId]   ?? 'from-purple-600 to-blue-700');
@@ -106,13 +149,52 @@
 				class="bg-[#0f172a] border border-white/10 focus:border-purple-500/50 rounded-2xl
 				       px-5 py-3 text-white text-sm outline-none appearance-none transition-colors min-w-[160px]"
 			>
-				<option value="">📍 כל הערים</option>
+				<option value="" style="background:#fff;color:#0f172a;">📍 כל הערים</option>
 				{#each availableCities as c}
-					<option value={c}>{c}</option>
+					<option value={c} style="background:#fff;color:#0f172a;">{c}</option>
 				{/each}
 			</select>
 		{/if}
 	</div>
+
+	<!-- ===== סינונים ייחודיים למסעדות ===== -->
+	{#if data.categoryId === 'restaurants'}
+		<div class="flex flex-wrap items-center gap-2 mb-6 px-4 md:px-0">
+			<!-- סוג מזון -->
+			<div class="inline-flex bg-[#0f172a] border border-white/10 rounded-2xl p-1">
+				<button
+					type="button"
+					onclick={() => (foodTypeFilter = 'all')}
+					class="px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer
+					       {foodTypeFilter === 'all' ? 'bg-gradient-to-r from-orange-600 to-amber-700 text-white shadow' : 'text-gray-400 hover:text-white'}"
+				>🍽️ הכל</button>
+				<button
+					type="button"
+					onclick={() => (foodTypeFilter = 'fast')}
+					class="px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer
+					       {foodTypeFilter === 'fast' ? 'bg-gradient-to-r from-orange-600 to-amber-700 text-white shadow' : 'text-gray-400 hover:text-white'}"
+				>🍔 מזון מהיר</button>
+				<button
+					type="button"
+					onclick={() => (foodTypeFilter = 'restaurant')}
+					class="px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer
+					       {foodTypeFilter === 'restaurant' ? 'bg-gradient-to-r from-orange-600 to-amber-700 text-white shadow' : 'text-gray-400 hover:text-white'}"
+				>🍷 מסעדה</button>
+			</div>
+
+			<!-- טופ 10 -->
+			<button
+				type="button"
+				onclick={() => (topTenOnly = !topTenOnly)}
+				class="px-4 py-2 rounded-2xl text-xs font-bold border transition-all cursor-pointer
+				       {topTenOnly
+				         ? 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-yellow-400 shadow-lg'
+				         : 'bg-[#0f172a] border-white/10 text-gray-300 hover:text-white hover:border-yellow-400/40'}"
+			>
+				⭐ טופ 10 הפופולריות
+			</button>
+		</div>
+	{/if}
 
 	<!-- ===== תוצאות ===== -->
 	{#if filteredItems.length === 0}
@@ -130,9 +212,9 @@
 				</a>
 			{:else}
 				<div class="text-5xl mb-4">🔎</div>
-				<p class="text-gray-400">לא נמצאו תוצאות לחיפוש "{searchQuery}"</p>
+				<p class="text-gray-400">לא נמצאו תוצאות{searchQuery ? ` לחיפוש "${searchQuery}"` : ''}</p>
 				<button
-					onclick={() => { searchQuery = ''; selectedCity = ''; }}
+					onclick={() => { searchQuery = ''; selectedCity = ''; foodTypeFilter = 'all'; topTenOnly = false; }}
 					class="mt-4 text-purple-400 hover:text-purple-300 text-sm underline cursor-pointer"
 				>
 					נקה סינון
@@ -143,9 +225,12 @@
 		<!-- כמות תוצאות -->
 		<p class="text-gray-500 text-sm mb-4 px-4 md:px-0">
 			מציג <span class="text-white font-bold">{filteredItems.length}</span> מודעות
-			{#if searchQuery || selectedCity}
+			{#if topTenOnly}
+				<span class="mr-2 text-yellow-400 font-bold">⭐ טופ 10</span>
+			{/if}
+			{#if searchQuery || selectedCity || foodTypeFilter !== 'all' || topTenOnly}
 				<button
-					onclick={() => { searchQuery = ''; selectedCity = ''; }}
+					onclick={() => { searchQuery = ''; selectedCity = ''; foodTypeFilter = 'all'; topTenOnly = false; }}
 					class="mr-2 text-purple-400 hover:text-purple-300 underline cursor-pointer"
 				>
 					נקה סינון
@@ -155,12 +240,17 @@
 
 		<!-- גריד מודעות -->
 		<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 px-4 md:px-0">
-			{#each filteredItems as item}
+			{#each filteredItems as item, idx}
 				<a
 					href="/items/{item.id}"
 					class="block bg-[#0f172a] rounded-2xl border {cardBorder} p-5 transition-all
-					       hover:-translate-y-0.5 hover:shadow-lg hover:shadow-purple-900/20 group"
+					       hover:-translate-y-0.5 hover:shadow-lg hover:shadow-purple-900/20 group relative"
 				>
+					{#if topTenOnly && idx < 10}
+						<div class="absolute -top-2 -right-2 bg-gradient-to-br from-yellow-400 to-orange-500 text-white text-xs font-black w-8 h-8 rounded-full flex items-center justify-center shadow-lg border-2 border-[#0f172a]">
+							#{idx + 1}
+						</div>
+					{/if}
 					<div class="flex items-start gap-3">
 						<span class="text-3xl flex-shrink-0 mt-0.5">{item.icon}</span>
 						<div class="min-w-0 flex-1">
@@ -171,7 +261,11 @@
 									{item.label}
 								</h3>
 								<span class="flex-shrink-0 text-[10px] px-2 py-0.5 rounded-full border font-bold {badge}">
-									{data.config.icon}
+									{#if data.categoryId === 'restaurants'}
+										{isFastFood(item) ? '🍔 מהיר' : '🍷 מסעדה'}
+									{:else}
+										{data.config.icon}
+									{/if}
 								</span>
 							</div>
 

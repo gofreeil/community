@@ -10,6 +10,7 @@ const nationalCategories: Record<string, { slug: string; title: string }> = {
     security:    { slug: 'security',    title: 'צימרים ונופש' },
     attractions: { slug: 'attractions', title: 'אטרקציות' },
     jobs:        { slug: 'jobs',        title: 'דרושים עובדים' },
+    restaurants: { slug: 'restaurants', title: 'מזון מהיר ומסעדות' },
 };
 
 export const load: PageServerLoad = async ({ params }) => {

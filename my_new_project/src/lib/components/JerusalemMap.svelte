@@ -329,6 +329,7 @@
         security:    '/national/security',
         attractions: '/national/attractions',
         jobs:        '/national/jobs',
+        restaurants: '/national/restaurants',
     };
     let nationalBoardUrl = $derived(nationalBoardUrls[selectedCategory] || '');
     let hasShownListAnimation = $state(false); // עקוב אם כבר הראינו את האנימציה
