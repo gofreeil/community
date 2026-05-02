@@ -2509,152 +2509,6 @@
 		{/if}
 	</div>
 
-	<!-- ===== מקטע: האהבתי (קיצורי דרך לפריטים שאהבתי) ===== -->
-	<div
-		class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-4 md:p-6 shadow-xl mb-2 overflow-hidden
-	            before:absolute before:inset-x-0 before:top-0 before:h-24 before:rounded-t-3xl
-	            before:bg-gradient-to-b before:from-white/8 before:to-transparent
-	            before:transition-all before:duration-300 before:pointer-events-none
-	            hover:before:from-white/18 {mobileTab !== 'items'
-			? 'hidden md:block'
-			: ''}"
-	>
-		<div
-			class="relative flex items-center justify-between cursor-pointer select-none -mx-4 px-4 -mt-4 pt-3 md:-mx-6 md:px-6 md:-mt-6 md:pt-4 min-h-14 {showLikes
-				? 'pb-4 mb-4'
-				: 'pb-4'}"
-			onclick={() => (showLikes = !showLikes)}
-			role="button"
-			tabindex={0}
-			onkeydown={(e) => {
-				if (e.key === "Enter" || e.key === " ")
-					showLikes = !showLikes;
-			}}
-		>
-			<h2 class="text-xl font-black text-white flex items-center gap-2">
-				<span class="text-2xl" aria-hidden="true">❤️</span>
-				האהבתי
-				{#if likedItems.length > 0}
-					<span
-						class="text-xs bg-rose-500/20 text-rose-300 border border-rose-500/30 px-2.5 py-0.5 rounded-full font-bold"
-						>{likedItems.length}</span
-					>
-				{/if}
-			</h2>
-			<svg
-				class="w-4 h-4 text-yellow-400 transition-transform duration-300 flex-shrink-0 {showLikes
-					? 'rotate-180'
-					: ''}"
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="2.5"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-				><polyline points="6 9 12 15 18 9" /></svg
-			>
-		</div>
-
-		{#if showLikes}
-			{#if likedItems.length === 0}
-				<div class="text-center py-8">
-					<span class="text-5xl block mb-3">💔</span>
-					<p class="text-gray-400 text-sm mb-4">
-						עדיין לא סימנת פריטים או אישיות שאהבת
-					</p>
-					<p class="text-gray-500 text-xs leading-relaxed">
-						לחצי/לחץ על ❤️ בדף
-						<a href="/giveaways" class="text-orange-400 hover:text-orange-300 font-bold">למסירה</a>
-						או בדף
-						<a href="/singles" class="text-pink-400 hover:text-pink-300 font-bold">פנויים ופנויות</a>
-						כדי להוסיף לכאן קיצור דרך מהיר.
-					</p>
-				</div>
-			{:else}
-				<div class="flex flex-col gap-4">
-					{#if likedGiveaways.length > 0}
-						<div>
-							<h3 class="text-white font-bold text-sm mb-2 flex items-center gap-2">
-								<span class="text-orange-400">🎁</span>
-								פריטים למסירה ({likedGiveaways.length})
-							</h3>
-							<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-								{#each likedGiveaways as it (it.id)}
-									<div class="group relative flex items-center gap-3 bg-white/5 hover:bg-white/8 border border-white/10 hover:border-orange-500/40 rounded-2xl p-3 transition-all">
-										<a
-											href={it.url}
-											class="flex items-center gap-3 flex-1 min-w-0"
-										>
-											{#if it.image}
-												<img
-													src={it.image}
-													alt=""
-													loading="lazy"
-													class="w-14 h-14 rounded-xl object-cover flex-shrink-0 bg-[#0a0f1a]"
-												/>
-											{:else}
-												<div class="w-14 h-14 rounded-xl bg-orange-500/20 flex items-center justify-center text-2xl flex-shrink-0">🎁</div>
-											{/if}
-											<div class="min-w-0 flex-1">
-												<p class="text-white text-sm font-bold truncate group-hover:text-orange-300 transition-colors">{it.label}</p>
-												{#if it.summary}
-													<p class="text-gray-400 text-xs truncate mt-0.5">📍 {it.summary}</p>
-												{/if}
-											</div>
-										</a>
-										<button
-											type="button"
-											onclick={() => unlike(it)}
-											aria-label="הסר מהאהובים"
-											title="הסר מהאהובים"
-											class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-rose-500/10 hover:bg-rose-500/25 text-rose-300 hover:text-rose-200 text-base transition-colors"
-										>❤️</button>
-									</div>
-								{/each}
-							</div>
-						</div>
-					{/if}
-
-					{#if likedSingles.length > 0}
-						<div>
-							<h3 class="text-white font-bold text-sm mb-2 flex items-center gap-2">
-								<span class="text-pink-400">💑</span>
-								פנויים ופנויות ({likedSingles.length})
-							</h3>
-							<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-								{#each likedSingles as it (it.id)}
-									<div class="group relative flex items-center gap-3 bg-white/5 hover:bg-white/8 border border-white/10 hover:border-pink-500/40 rounded-2xl p-3 transition-all">
-										<a
-											href={it.url}
-											class="flex items-center gap-3 flex-1 min-w-0"
-										>
-											<div class="w-14 h-14 rounded-full bg-pink-500/20 flex items-center justify-center text-2xl flex-shrink-0">
-												{it.summary?.startsWith("👨") ? "👨" : "👩"}
-											</div>
-											<div class="min-w-0 flex-1">
-												<p class="text-white text-sm font-bold truncate group-hover:text-pink-300 transition-colors">{it.label}</p>
-												{#if it.summary}
-													<p class="text-gray-400 text-xs truncate mt-0.5">{it.summary}</p>
-												{/if}
-											</div>
-										</a>
-										<button
-											type="button"
-											onclick={() => unlike(it)}
-											aria-label="הסר מהאהובים"
-											title="הסר מהאהובים"
-											class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-rose-500/10 hover:bg-rose-500/25 text-rose-300 hover:text-rose-200 text-base transition-colors"
-										>❤️</button>
-									</div>
-								{/each}
-							</div>
-						</div>
-					{/if}
-				</div>
-			{/if}
-		{/if}
-	</div>
-
 	<!-- ===== קומה 6: המידע שלי ===== -->
 	<div
 		class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-4 md:p-6 shadow-xl overflow-hidden
@@ -2709,105 +2563,226 @@
 		</div>
 
 		{#if showMyInfo}
-			{#if giveawayDrafts.length > 0}
-				<a
-					href="/giveaways/my?tab=drafts"
-					class="flex items-center gap-3 mb-4 rounded-2xl bg-gradient-to-r from-yellow-900/30 to-amber-900/20 border border-yellow-500/30 hover:border-yellow-400/60 px-4 py-3 transition-all group"
-				>
-					<span class="text-3xl flex-shrink-0">📝</span>
-					<div class="flex-1 min-w-0">
-						<p class="text-yellow-200 font-bold text-sm">
-							{giveawayDrafts.length === 1
-								? "טיוטה אחת ממתינה לתמונה"
-								: `${giveawayDrafts.length} טיוטות ממתינות לתמונה`}
-						</p>
-						<p class="text-yellow-300/70 text-xs mt-0.5">
-							השלם את הפרסום על ידי הוספת תמונה למוצר למסירה
-						</p>
-					</div>
-					<span
-						class="text-yellow-300 text-lg flex-shrink-0 group-hover:translate-x-[-3px] transition-transform"
-						aria-hidden="true">←</span
-					>
-				</a>
-			{/if}
-			{#if data.items.length === 0}
-				<div class="text-center py-12">
-					<span class="text-6xl block mb-4">📭</span>
-					<p class="text-gray-400 mb-6 text-sm">{tFn("no_items")}</p>
-					<a
-						href="/"
-						class="inline-block bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500
-					       text-white font-bold px-6 py-3 rounded-xl shadow-lg transition-all hover:-translate-y-0.5"
-					>
-						{tFn("publish_first")}
-					</a>
-				</div>
-			{:else}
-				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-					{#each data.items as item}
+			<div class="flex flex-col gap-4">
+				<!-- ===== סאב-מקטע: פרסומיי ===== -->
+				<div class="bg-[#0a1224]/60 rounded-2xl border border-white/10 p-3 md:p-4">
+					<h3 class="text-white font-bold text-sm mb-3 flex items-center gap-2">
+						<span class="text-purple-400 text-lg">📋</span>
+						פרסומיי
+						{#if data.items.length > 0}
+							<span class="text-xs bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2.5 py-0.5 rounded-full font-bold">{data.items.length}</span>
+						{/if}
+					</h3>
+
+					{#if giveawayDrafts.length > 0}
 						<a
-							href="/items/{item.id}"
-							class="bg-white/5 rounded-2xl border border-white/10 p-4
-						       hover:border-purple-500/30 hover:bg-white/8 transition-all group block"
+							href="/giveaways/my?tab=drafts"
+							class="flex items-center gap-3 mb-4 rounded-2xl bg-gradient-to-r from-yellow-900/30 to-amber-900/20 border border-yellow-500/30 hover:border-yellow-400/60 px-4 py-3 transition-all group"
 						>
-							<div class="flex items-start gap-3">
-								<span class="text-3xl flex-shrink-0 mt-0.5"
-									>{item.icon ?? "📋"}</span
+							<span class="text-3xl flex-shrink-0">📝</span>
+							<div class="flex-1 min-w-0">
+								<p class="text-yellow-200 font-bold text-sm">
+									{giveawayDrafts.length === 1
+										? "טיוטה אחת ממתינה לתמונה"
+										: `${giveawayDrafts.length} טיוטות ממתינות לתמונה`}
+								</p>
+								<p class="text-yellow-300/70 text-xs mt-0.5">
+									השלם את הפרסום על ידי הוספת תמונה למוצר למסירה
+								</p>
+							</div>
+							<span
+								class="text-yellow-300 text-lg flex-shrink-0 group-hover:translate-x-[-3px] transition-transform"
+								aria-hidden="true">←</span
+							>
+						</a>
+					{/if}
+					{#if data.items.length === 0}
+						<div class="text-center py-8">
+							<span class="text-5xl block mb-3">📭</span>
+							<p class="text-gray-400 mb-4 text-sm">{tFn("no_items")}</p>
+							<a
+								href="/"
+								class="inline-block bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500
+							       text-white font-bold px-6 py-3 rounded-xl shadow-lg transition-all hover:-translate-y-0.5"
+							>
+								{tFn("publish_first")}
+							</a>
+						</div>
+					{:else}
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+							{#each data.items as item}
+								<a
+									href="/items/{item.id}"
+									class="bg-white/5 rounded-2xl border border-white/10 p-4
+								       hover:border-purple-500/30 hover:bg-white/8 transition-all group block"
 								>
-								<div class="min-w-0 flex-1">
-									<div
-										class="flex items-center gap-2 flex-wrap mb-1"
-									>
-										<h3
-											class="text-white font-bold text-sm truncate group-hover:text-purple-300 transition-colors"
+									<div class="flex items-start gap-3">
+										<span class="text-3xl flex-shrink-0 mt-0.5"
+											>{item.icon ?? "📋"}</span
 										>
-											{item.label}
-										</h3>
-										<span
-											class="text-xs px-2 py-0.5 rounded-full font-bold flex-shrink-0
-									  {item.status === 'active'
-												? 'bg-green-500/20 text-green-400 border border-green-500/30'
-												: 'bg-gray-500/20 text-gray-400 border border-gray-500/30'}"
-										>
-											{item.status === "active"
-												? tFn("status_active")
-												: item.status}
-										</span>
+										<div class="min-w-0 flex-1">
+											<div
+												class="flex items-center gap-2 flex-wrap mb-1"
+											>
+												<h3
+													class="text-white font-bold text-sm truncate group-hover:text-purple-300 transition-colors"
+												>
+													{item.label}
+												</h3>
+												<span
+													class="text-xs px-2 py-0.5 rounded-full font-bold flex-shrink-0
+											  {item.status === 'active'
+														? 'bg-green-500/20 text-green-400 border border-green-500/30'
+														: 'bg-gray-500/20 text-gray-400 border border-gray-500/30'}"
+												>
+													{item.status === "active"
+														? tFn("status_active")
+														: item.status}
+												</span>
+											</div>
+											{#if item.description}
+												<p
+													class="text-gray-400 text-xs line-clamp-2"
+												>
+													{item.description}
+												</p>
+											{/if}
+											<div class="flex items-center gap-3 mt-1.5 flex-wrap">
+												{#if item.neighborhood}
+													<span
+														class="text-purple-400/70 text-xs"
+														>📍 {item.neighborhood}</span
+													>
+												{/if}
+												<span class="text-gray-600 text-xs">
+													{new Date(
+														item.created_at,
+													).toLocaleDateString("he-IL")}
+												</span>
+												{#if item.view_count !== undefined}
+													<span
+														class="text-yellow-400/70 text-xs flex items-center gap-1"
+													>
+														👁️ {item.view_count} ביקורים
+													</span>
+												{/if}
+											</div>
+										</div>
 									</div>
-									{#if item.description}
-										<p
-											class="text-gray-400 text-xs line-clamp-2"
-										>
-											{item.description}
-										</p>
-									{/if}
-									<div class="flex items-center gap-3 mt-1.5 flex-wrap">
-										{#if item.neighborhood}
-											<span
-												class="text-purple-400/70 text-xs"
-												>📍 {item.neighborhood}</span
-											>
-										{/if}
-										<span class="text-gray-600 text-xs">
-											{new Date(
-												item.created_at,
-											).toLocaleDateString("he-IL")}
-										</span>
-										{#if item.view_count !== undefined}
-											<span
-												class="text-yellow-400/70 text-xs flex items-center gap-1"
-											>
-												👁️ {item.view_count} ביקורים
-											</span>
-										{/if}
+								</a>
+							{/each}
+						</div>
+					{/if}
+				</div>
+
+				<!-- ===== סאב-מקטע: האהבתי (קיצורי דרך לפריטים שאהבתי) ===== -->
+				<div class="bg-[#0a1224]/60 rounded-2xl border border-white/10 p-3 md:p-4">
+					<h3 class="text-white font-bold text-sm mb-3 flex items-center gap-2">
+						<span class="text-lg" aria-hidden="true">❤️</span>
+						האהבתי
+						{#if likedItems.length > 0}
+							<span class="text-xs bg-rose-500/20 text-rose-300 border border-rose-500/30 px-2.5 py-0.5 rounded-full font-bold">{likedItems.length}</span>
+						{/if}
+					</h3>
+
+					{#if likedItems.length === 0}
+						<div class="text-center py-6">
+							<span class="text-4xl block mb-2">💔</span>
+							<p class="text-gray-400 text-sm mb-3">
+								עדיין לא סימנת פריטים או אישיות שאהבת
+							</p>
+							<p class="text-gray-500 text-xs leading-relaxed">
+								לחצי/לחץ על ❤️ בדף
+								<a href="/giveaways" class="text-orange-400 hover:text-orange-300 font-bold">למסירה</a>
+								או בדף
+								<a href="/singles" class="text-pink-400 hover:text-pink-300 font-bold">פנויים ופנויות</a>
+								כדי להוסיף לכאן קיצור דרך מהיר.
+							</p>
+						</div>
+					{:else}
+						<div class="flex flex-col gap-4">
+							{#if likedGiveaways.length > 0}
+								<div>
+									<h4 class="text-white font-bold text-xs mb-2 flex items-center gap-2">
+										<span class="text-orange-400">🎁</span>
+										פריטים למסירה ({likedGiveaways.length})
+									</h4>
+									<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+										{#each likedGiveaways as it (it.id)}
+											<div class="group relative flex items-center gap-3 bg-white/5 hover:bg-white/8 border border-white/10 hover:border-orange-500/40 rounded-2xl p-3 transition-all">
+												<a
+													href={it.url}
+													class="flex items-center gap-3 flex-1 min-w-0"
+												>
+													{#if it.image}
+														<img
+															src={it.image}
+															alt=""
+															loading="lazy"
+															class="w-14 h-14 rounded-xl object-cover flex-shrink-0 bg-[#0a0f1a]"
+														/>
+													{:else}
+														<div class="w-14 h-14 rounded-xl bg-orange-500/20 flex items-center justify-center text-2xl flex-shrink-0">🎁</div>
+													{/if}
+													<div class="min-w-0 flex-1">
+														<p class="text-white text-sm font-bold truncate group-hover:text-orange-300 transition-colors">{it.label}</p>
+														{#if it.summary}
+															<p class="text-gray-400 text-xs truncate mt-0.5">📍 {it.summary}</p>
+														{/if}
+													</div>
+												</a>
+												<button
+													type="button"
+													onclick={() => unlike(it)}
+													aria-label="הסר מהאהובים"
+													title="הסר מהאהובים"
+													class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-rose-500/10 hover:bg-rose-500/25 text-rose-300 hover:text-rose-200 text-base transition-colors"
+												>❤️</button>
+											</div>
+										{/each}
 									</div>
 								</div>
-							</div>
-						</a>
-					{/each}
+							{/if}
+
+							{#if likedSingles.length > 0}
+								<div>
+									<h4 class="text-white font-bold text-xs mb-2 flex items-center gap-2">
+										<span class="text-pink-400">💑</span>
+										פנויים ופנויות ({likedSingles.length})
+									</h4>
+									<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+										{#each likedSingles as it (it.id)}
+											<div class="group relative flex items-center gap-3 bg-white/5 hover:bg-white/8 border border-white/10 hover:border-pink-500/40 rounded-2xl p-3 transition-all">
+												<a
+													href={it.url}
+													class="flex items-center gap-3 flex-1 min-w-0"
+												>
+													<div class="w-14 h-14 rounded-full bg-pink-500/20 flex items-center justify-center text-2xl flex-shrink-0">
+														{it.summary?.startsWith("👨") ? "👨" : "👩"}
+													</div>
+													<div class="min-w-0 flex-1">
+														<p class="text-white text-sm font-bold truncate group-hover:text-pink-300 transition-colors">{it.label}</p>
+														{#if it.summary}
+															<p class="text-gray-400 text-xs truncate mt-0.5">{it.summary}</p>
+														{/if}
+													</div>
+												</a>
+												<button
+													type="button"
+													onclick={() => unlike(it)}
+													aria-label="הסר מהאהובים"
+													title="הסר מהאהובים"
+													class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-rose-500/10 hover:bg-rose-500/25 text-rose-300 hover:text-rose-200 text-base transition-colors"
+												>❤️</button>
+											</div>
+										{/each}
+									</div>
+								</div>
+							{/if}
+						</div>
+					{/if}
 				</div>
-			{/if}
+			</div>
 		{/if}
 	</div>
 
