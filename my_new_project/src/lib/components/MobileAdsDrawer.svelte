@@ -255,11 +255,11 @@
 			{/if}
 		</div>
 
-		<!-- כותרת הטבות -->
-		<div class="section-title section-title-benefits">הטבות ארציות <span class="title-gold">יוצאים לחירות</span></div>
-
 		<!-- רשימת פרסומות -->
 		<div class="ads-list">
+			<!-- כותרת הטבות (גוללת עם הרשימה, לא מוקפאת) -->
+			<div class="section-title section-title-benefits">הטבות ארציות <span class="title-gold">יוצאים לחירות</span></div>
+
 			{#each ads as ad (ad.id)}
 			<a
 				href={ad.href}
@@ -374,11 +374,9 @@
 		padding-bottom: 0.4rem;
 	}
 
-	.section-title-benefits {
-		white-space: nowrap;
-		font-size: 1.1rem;
-		padding-left: 0.5rem;
-		padding-right: 0.5rem;
+	.section-title.section-title-benefits {
+		border-top: 2px solid rgba(56, 189, 248, 0.25);
+		margin: 0 -0.75rem 0.5rem;
 	}
 
 	.close-btn {
