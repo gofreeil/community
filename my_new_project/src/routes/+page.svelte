@@ -396,7 +396,7 @@
 
                 <!-- 2. Lost and Found -->
                 <div class="flex-1 min-h-0 overflow-hidden">
-                    <LostAndFound items={data.dbItems.filter(i => i.category === 'lost_and_found')} />
+                    <LostAndFound items={data.dbItems.filter(i => i.category === 'lost_and_found' && i.neighborhood === neighborhoodState.neighborhood)} />
                 </div>
 
                 <!-- 3. Community Feed -->
@@ -512,7 +512,7 @@
                 </div>
                 <!-- Right: Lost and Found -->
                 <div class="h-full">
-                    <LostAndFound items={data.dbItems.filter(i => i.category === 'lost_and_found')} />
+                    <LostAndFound items={data.dbItems.filter(i => i.category === 'lost_and_found' && i.neighborhood === neighborhoodState.neighborhood)} />
                 </div>
             </div>
             {#if showCoali}
