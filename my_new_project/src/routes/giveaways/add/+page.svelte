@@ -444,6 +444,10 @@
                 <p class="text-gray-500 text-xs text-center">
                     בלחיצה על "פרסם" אתה מאשר שהפריט אכן עומד למסירה ושתעדכן כשיילקח
                 </p>
+
+                <p class="text-gray-400 text-sm text-center pt-2 border-t border-white/5">
+                    ⏳ הפריט ייעלם אוטומטית מהאתר לאחר 3 חודשים
+                </p>
             </form>
         {/if}
 

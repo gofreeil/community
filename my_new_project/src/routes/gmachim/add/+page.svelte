@@ -280,7 +280,7 @@
                 </div>
 
                 <div>
-                    <label for="gmach_type" class="text-white text-sm font-bold mb-1 block">סוג הגמ"ח (סוג האייקון)</label>
+                    <label for="gmach_type" class="text-white text-sm font-bold mb-1 block">קטגוריה</label>
                     <select id="gmach_type" name="gmach_type" bind:value={gmachType} class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white" style="color-scheme: dark;">
                         <option value="" style="color: #000;">-- בחר סוג --</option>
                         {#each GMACH_TYPES as t}
@@ -292,12 +292,6 @@
                 <div>
                     <label for="summary" class="text-white text-sm font-bold mb-1 block">תיאור</label>
                     <textarea id="summary" name="summary" bind:value={summary} rows="3" placeholder="תיאור כללי של הגמ&quot;ח" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" style="color-scheme: dark;"></textarea>
-                </div>
-
-                <div>
-                    <label for="icon" class="text-white text-sm font-bold mb-1 block">אייקון (אמוג'י)</label>
-                    <input id="icon" name="icon" bind:value={icon} maxlength="4" placeholder="🤝" class="w-20 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500 text-center text-xl" />
-                    <p class="text-gray-500 text-xs mt-1">משמש כברירת מחדל אם לא הועלה לוגו</p>
                 </div>
 
                 <div>
@@ -396,24 +390,32 @@
                     </div>
                 </div>
 
-                <!-- Logo upload -->
-                <div>
-                    <p class="text-white text-sm font-bold mb-1">לוגו (אופציונלי)</p>
-                    {#if logoBase64}
-                        <div class="relative inline-block">
-                            <img src={logoBase64} alt="לוגו" class="w-24 h-24 rounded-xl object-cover border border-white/15 bg-black/30" />
-                            <button type="button" onclick={removeLogo} aria-label="הסר לוגו"
-                                class="absolute -top-2 -left-2 w-7 h-7 rounded-full bg-black/70 hover:bg-red-600 text-white text-sm flex items-center justify-center transition-colors">✕</button>
-                        </div>
-                    {:else}
-                        <label class="flex flex-col items-center justify-center gap-1 w-32 h-32 rounded-xl border-2 border-dashed border-white/15 hover:border-amber-500/50 bg-white/3 hover:bg-amber-900/10 cursor-pointer transition-all">
-                            <span class="text-2xl">🎨</span>
-                            <span class="text-gray-400 text-xs font-bold">העלה לוגו</span>
-                            <span class="text-gray-600 text-[10px]">תמונה ריבועית מומלצת</span>
-                            <input type="file" accept="image/*" class="hidden" onchange={handleLogoChange} />
-                        </label>
-                    {/if}
-                    <input type="hidden" name="logo_base64" value={logoBase64} />
+                <!-- Logo upload + Icon -->
+                <div class="flex gap-4 items-start flex-wrap">
+                    <div>
+                        <p class="text-white text-sm font-bold mb-1">לוגו (אופציונלי)</p>
+                        {#if logoBase64}
+                            <div class="relative inline-block">
+                                <img src={logoBase64} alt="לוגו" class="w-24 h-24 rounded-xl object-cover border border-white/15 bg-black/30" />
+                                <button type="button" onclick={removeLogo} aria-label="הסר לוגו"
+                                    class="absolute -top-2 -left-2 w-7 h-7 rounded-full bg-black/70 hover:bg-red-600 text-white text-sm flex items-center justify-center transition-colors">✕</button>
+                            </div>
+                        {:else}
+                            <label class="flex flex-col items-center justify-center gap-1 w-32 h-32 rounded-xl border-2 border-dashed border-white/15 hover:border-amber-500/50 bg-white/3 hover:bg-amber-900/10 cursor-pointer transition-all">
+                                <span class="text-2xl">🎨</span>
+                                <span class="text-gray-400 text-xs font-bold">העלה לוגו</span>
+                                <span class="text-gray-600 text-[10px]">תמונה ריבועית מומלצת</span>
+                                <input type="file" accept="image/*" class="hidden" onchange={handleLogoChange} />
+                            </label>
+                        {/if}
+                        <input type="hidden" name="logo_base64" value={logoBase64} />
+                    </div>
+
+                    <div class="w-32">
+                        <label for="icon" class="text-white text-sm font-bold mb-1 block">אייקון (אמוג'י)</label>
+                        <input id="icon" name="icon" bind:value={icon} maxlength="4" placeholder="🤝" class="w-20 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500 text-center text-xl" />
+                        <p class="text-gray-500 text-xs mt-1 leading-tight">משמש כברירת מחדל אם לא הועלה לוגו</p>
+                    </div>
                 </div>
 
                 <!-- Multi image upload -->
@@ -449,8 +451,8 @@
                     {data.userId ? 'פרסם גמ"ח' : 'המשך להרשמה ופרסום'}
                 </button>
 
-                <p class="text-gray-500 text-xs text-center pt-2 border-t border-white/5">
-                    🌐 הגמ"ח יופיע באתר הקהילה <strong class="text-gray-400">וגם</strong> באתר הגמ"ח הארצי
+                <p class="text-gray-400 text-sm text-center pt-2 border-t border-white/5">
+                    🌐 הגמ"ח יופיע באתר הקהילה וגם <a href="https://national-gemach.vercel.app/" target="_blank" rel="noopener noreferrer" class="text-amber-400 hover:text-amber-300 underline">באתר הגמ"ח הארצי</a>
                 </p>
             </form>
         {/if}
