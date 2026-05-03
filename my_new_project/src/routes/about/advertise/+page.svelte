@@ -1165,12 +1165,12 @@
     }
     @keyframes gentleHover {
         0%, 100% { transform: translateY(0) scale(1); }
-        50%      { transform: translateY(-10px) scale(1.1); }
+        50%      { transform: translateY(-5px) scale(1.03); }
     }
     /* Use a class so Svelte keeps the keyframe (inline-style refs may be tree-shaken) */
     :global(.tutorial-finger) {
         display: inline-block;
-        animation: gentleHover 1.6s ease-in-out infinite !important;
+        animation: gentleHover 2.6s ease-in-out infinite !important;
         will-change: transform;
     }
     @keyframes dealPulse {
