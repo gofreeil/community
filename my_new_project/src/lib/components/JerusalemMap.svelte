@@ -438,12 +438,22 @@
             });
         }
 
-        // אין פריטים אמיתיים בשכונה — דוגמאות לכל קטגוריה
+        // אין פריטים אמיתיים בשכונה — מפזרים דוגמאות במעגל סביב מרכז השכונה
         const center = getCoordsFor(neighborhoodState.neighborhood, neighborhoodState.city);
         const nbId = `${neighborhoodState.city}_${neighborhoodState.neighborhood}`;
-        return MOCK_ITEMS.map(m => {
+        // hash של שם השכונה — קובע את זווית ההתחלה של המעגל (כדי שלא כל השכונות יציגו אותה תבנית)
+        let nbHash = 0;
+        for (let i = 0; i < nbId.length; i++) nbHash = ((nbHash * 31) + nbId.charCodeAt(i)) | 0;
+        const startAngle = (Math.abs(nbHash) % 360) * Math.PI / 180;
+        // רדיוסים מתחלפים — חיצוני/פנימי — נראה טבעי יותר ממעגל מושלם
+        const RADII = [0.0042, 0.0028, 0.0050, 0.0035, 0.0046, 0.0030, 0.0040]; // ~300-550 מטר
+        const N = MOCK_ITEMS.length;
+        return MOCK_ITEMS.map((m, i) => {
             const id = `mock-${nbId}-${m.suffix}`;
-            const [lat, lng] = jitterCoord(center, id);
+            const angle  = startAngle + (i / N) * 2 * Math.PI;
+            const radius = RADII[i % RADII.length];
+            const lat = center[0] + radius * Math.cos(angle);
+            const lng = center[1] + radius * Math.sin(angle);
             return {
                 id,
                 category: m.category,
