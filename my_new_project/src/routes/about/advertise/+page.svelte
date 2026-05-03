@@ -464,27 +464,29 @@
         <div bind:this={pickerPanel}
              class="mb-8 rounded-2xl border border-amber-500/30 bg-gray-950/95 backdrop-blur p-5 shadow-2xl"
              style="animation: slideDown 0.2s ease-out;">
-            <!-- National option — compact, toggleable, with deal badge -->
-            <button
-                type="button"
-                onclick={setNational}
-                title={isNational ? 'לחץ לביטול' : 'בחר ארצי'}
-                class="w-full mb-3 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition-all font-bold text-[11px]
-                    {isNational
-                        ? 'border-purple-500 bg-purple-500/20 text-white'
-                        : 'border-white/10 bg-white/3 text-gray-400 hover:border-purple-400/40 hover:text-gray-200'}"
-            >
-                <span class="text-sm">🌍</span>
-                <span>ארצי — כל הארץ</span>
-                <span class="text-[10px] font-normal text-gray-500">({fmt(totalNeighborhoodsCount)})</span>
-                {#if isNational}
-                    <span class="text-purple-300 text-[10px] font-bold">✓ ביטול ✕</span>
-                {/if}
-                <span class="mr-auto inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-amber-500/25 border border-amber-500/50 text-amber-300 text-[10px] font-black"
+            <!-- National option — compact chip with deal badge, sized like popular-city chips -->
+            <div class="mb-3 flex flex-wrap items-center gap-2">
+                <button
+                    type="button"
+                    onclick={setNational}
+                    title={isNational ? 'לחץ לביטול' : 'בחר ארצי'}
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-all font-bold text-sm
+                        {isNational
+                            ? 'border-purple-500 bg-purple-500/20 text-white'
+                            : 'border-white/10 bg-white/5 text-gray-300 hover:border-purple-400/40 hover:text-white'}"
+                >
+                    <span>🌍</span>
+                    <span>ארצי — כל הארץ</span>
+                    <span class="text-[11px] font-normal text-gray-500">({fmt(totalNeighborhoodsCount)})</span>
+                    {#if isNational}
+                        <span class="text-purple-300 text-[11px] font-bold">✓ ביטול ✕</span>
+                    {/if}
+                </button>
+                <span class="inline-flex items-center gap-0.5 px-2 py-1 rounded-full bg-amber-500/25 border border-amber-500/50 text-amber-300 text-xs font-black"
                       style="animation: dealPulse 2s ease-in-out infinite;">
                     🎉 מבצע! 3,000 ₪
                 </span>
-            </button>
+            </div>
 
             <!-- Selected chips summary -->
             {#if !isNational && selectedCities.size > 0}
