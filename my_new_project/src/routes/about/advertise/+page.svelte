@@ -785,8 +785,8 @@
                         </td>
 
                         <td class="px-4 py-4 text-center">
-                            <span class="font-black {plan === 'half' ? 'text-amber-300' : 'text-amber-400'}">₪{fmt(row.half)}</span>
-                            <span class="text-gray-500 text-sm block">סה"כ ₪{fmt(row.total)}</span>
+                            <span class="font-bold text-white text-sm">₪{fmt(row.half)}</span>
+                            <span class="block font-black text-base {plan === 'half' ? 'text-amber-300' : 'text-amber-400'}">סה"כ ₪{fmt(row.total)}</span>
                         </td>
 
                         <td class="px-4 py-4 text-center">
