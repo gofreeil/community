@@ -5,7 +5,12 @@
     let { data }: { data: PageData } = $props();
 
     type Gender = 'all' | 'male' | 'female';
-    let filter = $state<Gender>('all');
+    // אם המשתמש מחובר ויש לו מגדר — נועלים את הסינון על המגדר הנגדי
+    const lockedFilter: Gender | null =
+        data.currentUserGender === 'male' ? 'female'
+        : data.currentUserGender === 'female' ? 'male'
+        : null;
+    let filter = $state<Gender>(lockedFilter ?? 'all');
     let favorites = $state<Set<string>>(new Set());
 
     $effect(() => {
@@ -109,26 +114,36 @@
         </div>
 
         <!-- Filter tabs -->
-        <div class="flex justify-center gap-2 mb-6">
-            <button
-                onclick={() => filter = 'all'}
-                class="px-5 py-2 rounded-full text-sm font-bold transition-all {filter === 'all' ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg' : 'bg-white/10 text-gray-400 hover:bg-white/15'}"
-            >
-                🌍 הכל
-            </button>
-            <button
-                onclick={() => filter = 'male'}
-                class="px-5 py-2 rounded-full text-sm font-bold transition-all {filter === 'male' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg' : 'bg-white/10 text-gray-400 hover:bg-white/15'}"
-            >
-                👨 פנויים
-            </button>
-            <button
-                onclick={() => filter = 'female'}
-                class="px-5 py-2 rounded-full text-sm font-bold transition-all {filter === 'female' ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg' : 'bg-white/10 text-gray-400 hover:bg-white/15'}"
-            >
-                👩 פנויות
-            </button>
-        </div>
+        {#if lockedFilter}
+            <!-- מגדר נעול לפי הפרופיל — מציגים תווית ולא טאבים -->
+            <div class="flex justify-center mb-6">
+                <div class="inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold bg-gradient-to-r {lockedFilter === 'male' ? 'from-blue-500 to-cyan-500' : 'from-pink-500 to-rose-500'} text-white shadow-lg">
+                    <span>{lockedFilter === 'male' ? '👨 פנויים' : '👩 פנויות'}</span>
+                    <span class="text-white/80 text-xs">· מותאם לפרופיל שלך</span>
+                </div>
+            </div>
+        {:else}
+            <div class="flex justify-center gap-2 mb-6">
+                <button
+                    onclick={() => filter = 'all'}
+                    class="px-5 py-2 rounded-full text-sm font-bold transition-all {filter === 'all' ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg' : 'bg-white/10 text-gray-400 hover:bg-white/15'}"
+                >
+                    🌍 הכל
+                </button>
+                <button
+                    onclick={() => filter = 'male'}
+                    class="px-5 py-2 rounded-full text-sm font-bold transition-all {filter === 'male' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg' : 'bg-white/10 text-gray-400 hover:bg-white/15'}"
+                >
+                    👨 פנויים
+                </button>
+                <button
+                    onclick={() => filter = 'female'}
+                    class="px-5 py-2 rounded-full text-sm font-bold transition-all {filter === 'female' ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg' : 'bg-white/10 text-gray-400 hover:bg-white/15'}"
+                >
+                    👩 פנויות
+                </button>
+            </div>
+        {/if}
 
         <!-- Add button -->
         <div class="flex justify-center mb-6">
