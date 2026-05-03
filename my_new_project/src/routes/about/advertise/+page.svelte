@@ -692,16 +692,16 @@
                         <button
                             type="button"
                             onclick={() => setPlan(row.num, 'half')}
-                            class="relative z-10 rounded-full px-3 text-xs font-black transition-all duration-200 whitespace-nowrap leading-none flex items-center"
+                            class="toggle-segment relative z-10 rounded-full px-3 text-xs font-black transition-all duration-200 whitespace-nowrap leading-none flex items-center"
                             style="background: {plan === 'half' ? '#f59e0b' : 'transparent'}; color: {plan === 'half' ? '#000' : plan ? '#9ca3af' : '#e5e7eb'};"
                         >½שנה</button>
                         {#if !plan}
-                            <div class="self-center w-1 h-1 rounded-full bg-white/40 mx-0.5 flex-shrink-0"></div>
+                            <span class="self-center text-white/50 text-xs font-black mx-0.5 flex-shrink-0 leading-none">/</span>
                         {/if}
                         <button
                             type="button"
                             onclick={() => setPlan(row.num, 'single')}
-                            class="relative z-10 rounded-full px-3 text-xs font-black transition-all duration-200 whitespace-nowrap leading-none flex items-center"
+                            class="toggle-segment relative z-10 rounded-full px-3 text-xs font-black transition-all duration-200 whitespace-nowrap leading-none flex items-center"
                             style="background: {plan === 'single' ? '#3b82f6' : 'transparent'}; color: {plan === 'single' ? '#fff' : plan ? '#9ca3af' : '#e5e7eb'};"
                         >חודש</button>
                     </div>
@@ -813,20 +813,20 @@
                                     <button
                                         type="button"
                                         onclick={() => setPlan(row.num, 'half')}
-                                        class="relative z-10 rounded-full px-3 text-xs font-black transition-all duration-200 whitespace-nowrap leading-none flex items-center"
+                                        class="toggle-segment relative z-10 rounded-full px-3 text-xs font-black transition-all duration-200 whitespace-nowrap leading-none flex items-center"
                                         style="background: {plan === 'half' ? '#f59e0b' : 'transparent'}; color: {plan === 'half' ? '#000' : plan ? '#9ca3af' : '#e5e7eb'};"
                                         title="חצי שנה"
                                     >½שנה</button>
 
                                     {#if !plan}
-                                        <div class="self-center w-1 h-1 rounded-full bg-white/40 mx-0.5 flex-shrink-0"></div>
+                                        <span class="self-center text-white/50 text-xs font-black mx-0.5 flex-shrink-0 leading-none">/</span>
                                     {/if}
 
                                     <!-- Single-month segment (left in RTL = second child) -->
                                     <button
                                         type="button"
                                         onclick={() => setPlan(row.num, 'single')}
-                                        class="relative z-10 rounded-full px-3 text-xs font-black transition-all duration-200 whitespace-nowrap leading-none flex items-center"
+                                        class="toggle-segment relative z-10 rounded-full px-3 text-xs font-black transition-all duration-200 whitespace-nowrap leading-none flex items-center"
                                         style="background: {plan === 'single' ? '#3b82f6' : 'transparent'}; color: {plan === 'single' ? '#fff' : plan ? '#9ca3af' : '#e5e7eb'};"
                                         title="חודש בודד"
                                     >חודש</button>
@@ -1179,6 +1179,17 @@
         display: inline-block;
         animation: gentleHover 2.6s ease-in-out infinite !important;
         will-change: transform;
+    }
+    /* Toggle button hover feedback */
+    :global(.toggle-segment) {
+        cursor: pointer;
+    }
+    :global(.toggle-segment:hover) {
+        transform: scale(1.08);
+        box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.45);
+    }
+    :global(.toggle-segment:active) {
+        transform: scale(0.95);
     }
     @keyframes dealPulse {
         0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
