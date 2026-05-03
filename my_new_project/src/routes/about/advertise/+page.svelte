@@ -1033,8 +1033,8 @@
         <!-- Empty state -->
         <div class="mb-12 rounded-2xl border-2 border-dashed border-white/10 bg-white/2 p-5 text-center">
             <p class="text-gray-500 text-sm">
-                🧮 הזז מתג בטבלה כדי לפתוח את
-                <span class="text-white font-bold">מחשבון הפרסום</span>
+                🧮 בחר את סוג הפרסום ותקופתו כדי לראות את
+                <span class="text-white font-bold">סיכום המחיר!</span>
             </p>
         </div>
     {/if}
