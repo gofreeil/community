@@ -45,6 +45,7 @@
     let citySearchQuery = $state('');
     let showAllCities = $state(false);
     let citySearchInput: HTMLInputElement | null = $state(null);
+    let pickerPanel: HTMLDivElement | null = $state(null);
 
     // Popular cities — quick-pick chips for the most common selections
     const popularCities = ['ירושלים', 'תל אביב יפו', 'חיפה', 'באר שבע', 'נתניה', 'ראשון לציון'];
@@ -96,6 +97,19 @@
         if (showPicker && citySearchInput) {
             queueMicrotask(() => citySearchInput?.focus());
         }
+    });
+
+    // Smooth-scroll the picker panel into view when results appear or grid is shown
+    $effect(() => {
+        // Track these so the effect re-runs when they change
+        const _resultCount = filteredCities.length;
+        const _showAll = showAllCities;
+        if (!showPicker || !pickerPanel) return;
+        if (_resultCount === 0 && !_showAll) return;
+        // Wait for layout to settle, then scroll the panel's bottom into view
+        queueMicrotask(() => {
+            pickerPanel?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        });
     });
 
     // Pre-selected item info coming from /add/[category] flow
@@ -411,8 +425,8 @@
               style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">1</span>
         תחילה בחר עיר / שכונה
         {#if tutorialStep === 'pick-city' && !showPicker}
-            <span class="inline-block pointer-events-none select-none text-2xl md:text-3xl drop-shadow-[0_0_6px_rgba(245,158,11,0.5)]"
-                  style="animation: softFloat 1.6s ease-in-out infinite;"
+            <span class="inline-block pointer-events-none select-none text-base md:text-lg drop-shadow-[0_0_5px_rgba(245,158,11,0.45)]"
+                  style="animation: gentleHover 2.2s ease-in-out infinite;"
                   aria-hidden="true">👇</span>
         {/if}
     </p>
@@ -448,7 +462,8 @@
 
     <!-- City Picker Panel -->
     {#if showPicker}
-        <div class="mb-8 rounded-2xl border border-amber-500/30 bg-gray-950/95 backdrop-blur p-5 shadow-2xl"
+        <div bind:this={pickerPanel}
+             class="mb-8 rounded-2xl border border-amber-500/30 bg-gray-950/95 backdrop-blur p-5 shadow-2xl"
              style="animation: slideDown 0.2s ease-out;">
             <h3 class="text-white font-black text-base flex items-center gap-2 mb-4">
                 📍 בחר ערים לפרסום
@@ -1156,6 +1171,10 @@
     @keyframes softFloat {
         0%, 100% { transform: translateY(0); }
         50%      { transform: translateY(-4px); }
+    }
+    @keyframes gentleHover {
+        0%, 100% { transform: translateY(0); }
+        50%      { transform: translateY(-3px); }
     }
     @keyframes dealPulse {
         0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
