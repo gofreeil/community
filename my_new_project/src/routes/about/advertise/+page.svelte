@@ -396,20 +396,17 @@
     <h2 class="text-xl md:text-2xl font-black text-white mb-6 text-center">מחירון</h2>
 
     <!-- Neighborhood picker trigger -->
-    <p class="text-gray-300 text-base font-bold text-center mb-3 flex items-center justify-center gap-2">
+    <p class="text-gray-300 text-base font-bold text-center mb-3 flex items-center justify-center gap-2 relative">
         <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
               style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">1</span>
         תחילה בחר עיר / שכונה
+        {#if tutorialStep === 'pick-city' && !showPicker}
+            <span class="inline-block pointer-events-none select-none text-2xl md:text-3xl drop-shadow-[0_0_6px_rgba(245,158,11,0.5)]"
+                  style="animation: softFloat 1.6s ease-in-out infinite;"
+                  aria-hidden="true">👇</span>
+        {/if}
     </p>
     <div class="relative">
-    <!-- Tutorial: tap pointer on the picker trigger -->
-    {#if tutorialStep === 'pick-city' && !showPicker}
-        <div class="absolute -left-3 md:-left-6 top-1/2 -translate-y-1/2 pointer-events-none z-30 select-none"
-             style="animation: tapBounce 1.2s ease-in-out infinite;"
-             aria-hidden="true">
-            <span class="text-4xl md:text-5xl drop-shadow-[0_0_8px_rgba(245,158,11,0.6)]">👈</span>
-        </div>
-    {/if}
     <button
         type="button"
         onclick={() => showPicker = !showPicker}
@@ -1146,9 +1143,12 @@
         to { transform: rotate(360deg); }
     }
     @keyframes tapBounce {
-        0%, 100% { transform: translateY(0) scale(1); }
-        30%      { transform: translateY(6px) scale(0.92); }
-        60%      { transform: translateY(-4px) scale(1.05); }
+        0%, 100% { transform: translateY(0); }
+        50%      { transform: translateY(-3px); }
+    }
+    @keyframes softFloat {
+        0%, 100% { transform: translateY(0); }
+        50%      { transform: translateY(-4px); }
     }
     @keyframes checkPop {
         0%   { opacity: 0; transform: scale(0.4); }
