@@ -40,15 +40,26 @@
         },
     ];
 
-    // ---- City selection (price × number of active neighborhoods in city) ----
+    // ---- City / neighborhood selection ----
+    // selectedCities = entire city (price = number of neighborhoods in city)
+    // selectedNeighborhoods = single neighborhood, formatted "{city}|{neighborhood}" (price = 1 unit)
     const defaultCity = citiesData.find(c => c.neighborhoods.includes(DEFAULT_NEIGHBORHOOD))?.city ?? citiesData[0].city;
     let selectedCities = $state<Set<string>>(new Set([defaultCity]));
+    let selectedNeighborhoods = $state<Set<string>>(new Set());
     let isNational = $state(false);
     let showPicker = $state(false);
     let citySearchQuery = $state('');
     let showAllCities = $state(false);
     let citySearchInput: HTMLInputElement | null = $state(null);
     let pickerPanel: HTMLDivElement | null = $state(null);
+
+    type SearchResult =
+        | { kind: 'city'; city: string }
+        | { kind: 'neighborhood'; city: string; neighborhood: string };
+
+    function nbKey(city: string, neighborhood: string): string {
+        return `${city}|${neighborhood}`;
+    }
 
     // Popular cities — quick-pick chips for the most common selections
     const popularCities = ['ירושלים', 'תל אביב יפו', 'חיפה', 'באר שבע', 'נתניה', 'ראשון לציון'];
@@ -77,22 +88,33 @@
         if (tutorialStep === 'pick-row' || tutorialStep === 'pick-plan') tutorialStep = 'done';
     }
 
-    let filteredCities = $derived.by(() => {
+    let filteredResults = $derived.by(() => {
         const q = citySearchQuery.trim();
-        if (!q) return [];
-        // Rank: 1) starts with query, 2) word boundary match, 3) contains
-        const matches = citiesData.filter(c => c.city.includes(q));
-        return matches
-            .map(c => {
-                const name = c.city;
+        if (!q) return [] as SearchResult[];
+        type Scored = { result: SearchResult; score: number };
+        const all: Scored[] = [];
+        for (const c of citiesData) {
+            // City match
+            if (c.city.includes(q)) {
                 let score = 2;
-                if (name.startsWith(q))               score = 0;
-                else if (name.includes(' ' + q))      score = 1;
-                return { c, score };
-            })
-            .sort((a, b) => a.score - b.score)
-            .map(x => x.c)
-            .slice(0, 30);
+                if (c.city === q)                     score = 0;
+                else if (c.city.startsWith(q))        score = 1;
+                else if (c.city.includes(' ' + q))    score = 1;
+                all.push({ result: { kind: 'city', city: c.city }, score });
+            }
+            // Neighborhood matches (within each city)
+            for (const nb of c.neighborhoods) {
+                if (nb === 'מרכז') continue; // skip generic placeholder
+                if (nb.includes(q)) {
+                    let score = 4;
+                    if (nb === q)                     score = 0; // exact neighborhood = top result
+                    else if (nb.startsWith(q))        score = 3;
+                    else if (nb.includes(' ' + q))    score = 3;
+                    all.push({ result: { kind: 'neighborhood', city: c.city, neighborhood: nb }, score });
+                }
+            }
+        }
+        return all.sort((a, b) => a.score - b.score).map(x => x.result).slice(0, 30);
     });
 
     // Auto-focus search input whenever the picker opens
@@ -105,7 +127,7 @@
     // Smooth-scroll the picker panel into view when results appear or grid is shown
     $effect(() => {
         // Track these so the effect re-runs when they change
-        const _resultCount = filteredCities.length;
+        const _resultCount = filteredResults.length;
         const _showAll = showAllCities;
         if (!showPicker || !pickerPanel) return;
         if (_resultCount === 0 && !_showAll) return;
@@ -157,6 +179,7 @@
         }
         isNational = true;
         selectedCities = new Set();
+        selectedNeighborhoods = new Set();
     }
 
     // Format numbers with thousands separator for readability
@@ -167,9 +190,13 @@
     function toggleCity(cityName: string) {
         const next = new Set(selectedCities);
         if (next.has(cityName)) {
-            if (next.size > 1) next.delete(cityName); // keep at least one
+            if (next.size + selectedNeighborhoods.size > 1) next.delete(cityName); // keep at least one
         } else {
             next.add(cityName);
+            // Selecting whole city subsumes any individual neighborhoods picked from it
+            const nbNext = new Set(selectedNeighborhoods);
+            for (const k of nbNext) if (k.split('|')[0] === cityName) nbNext.delete(k);
+            selectedNeighborhoods = nbNext;
         }
         selectedCities = next;
         isNational = false;
@@ -181,35 +208,81 @@
         selectedCities = next;
     }
 
+    function removeNeighborhood(key: string) {
+        const next = new Set(selectedNeighborhoods);
+        next.delete(key);
+        selectedNeighborhoods = next;
+    }
+
     function addCityFromSearch(cityName: string) {
         const next = new Set(selectedCities);
         next.add(cityName);
         selectedCities = next;
+        // Selecting whole city subsumes any individual neighborhoods picked from it
+        const nbNext = new Set(selectedNeighborhoods);
+        for (const k of nbNext) if (k.split('|')[0] === cityName) nbNext.delete(k);
+        selectedNeighborhoods = nbNext;
         isNational = false;
         citySearchQuery = '';
-        showPicker = false; // auto-close after selection — user can reopen to add more
+        showPicker = false;
         advanceFromCity();
     }
 
+    function addNeighborhoodFromSearch(city: string, neighborhood: string) {
+        // If parent city is selected, narrow scope: drop the city and keep just this neighborhood.
+        if (selectedCities.has(city)) {
+            const nextCities = new Set(selectedCities);
+            nextCities.delete(city);
+            selectedCities = nextCities;
+        }
+        const next = new Set(selectedNeighborhoods);
+        next.add(nbKey(city, neighborhood));
+        selectedNeighborhoods = next;
+        isNational = false;
+        citySearchQuery = '';
+        showPicker = false;
+        advanceFromCity();
+    }
+
+    function addResultFromSearch(r: SearchResult) {
+        if (r.kind === 'city') addCityFromSearch(r.city);
+        else                   addNeighborhoodFromSearch(r.city, r.neighborhood);
+    }
+
+    function isResultSelected(r: SearchResult): boolean {
+        if (isNational) return false;
+        if (r.kind === 'city')          return selectedCities.has(r.city);
+        return selectedNeighborhoods.has(nbKey(r.city, r.neighborhood));
+    }
+
+    function isResultCoveredByCity(r: SearchResult): boolean {
+        if (isNational || r.kind !== 'neighborhood') return false;
+        return selectedCities.has(r.city);
+    }
+
     function onSearchKeydown(e: KeyboardEvent) {
-        if (e.key === 'Enter' && filteredCities.length > 0) {
+        if (e.key === 'Enter' && filteredResults.length > 0) {
             e.preventDefault();
-            const first = filteredCities.find(c => !selectedCities.has(c.city));
-            if (first) addCityFromSearch(first.city);
+            const first = filteredResults.find(r => !isResultSelected(r));
+            if (first) addResultFromSearch(first);
         } else if (e.key === 'Escape') {
             citySearchQuery = '';
         }
     }
 
-    let neighborhoodLabel = $derived(
-        isNational
-            ? "ארצי — כל הארץ"
-            : selectedCities.size === 0
-                ? "בחר עיר / שכונה"
-                : selectedCities.size === 1
-                    ? [...selectedCities][0]
-                    : `${[...selectedCities][0]} +${selectedCities.size - 1}`
-    );
+    let neighborhoodLabel = $derived.by(() => {
+        if (isNational) return "ארצי — כל הארץ";
+        const totalSelected = selectedCities.size + selectedNeighborhoods.size;
+        if (totalSelected === 0) return "בחר עיר / שכונה";
+        const firstLabel = selectedCities.size > 0
+            ? [...selectedCities][0]
+            : (() => {
+                const k = [...selectedNeighborhoods][0];
+                const [city, nb] = k.split('|');
+                return `${nb} (${city})`;
+            })();
+        return totalSelected === 1 ? firstLabel : `${firstLabel} +${totalSelected - 1}`;
+    });
 
     // ---- Toast ----
     let toastVisible = $state(false);
@@ -301,15 +374,21 @@
             .map(r => ({ ...r, plan: planMap.get(r.num)! }))
     );
 
-    // Price multiplier = total neighborhoods in selected cities
+    // Price multiplier = total neighborhoods in selected cities + individual neighborhoods
     const totalNeighborhoodsCount = citiesData.reduce((s, c) => s + c.neighborhoods.length, 0);
-    let neighborhoodCount = $derived(
-        isNational
-            ? totalNeighborhoodsCount
-            : Math.max(1, citiesData
-                .filter(c => selectedCities.has(c.city))
-                .reduce((s, c) => s + c.neighborhoods.length, 0))
-    );
+    let neighborhoodCount = $derived.by(() => {
+        if (isNational) return totalNeighborhoodsCount;
+        const cityNbCount = citiesData
+            .filter(c => selectedCities.has(c.city))
+            .reduce((s, c) => s + c.neighborhoods.length, 0);
+        // Skip individual neighborhoods whose entire city is also selected (avoid double-count)
+        let nbCount = 0;
+        for (const key of selectedNeighborhoods) {
+            const [city] = key.split('|');
+            if (!selectedCities.has(city)) nbCount++;
+        }
+        return Math.max(1, cityNbCount + nbCount);
+    });
 
     // Base price per neighborhood (before multiplying)
     let basePayment  = $derived(selectedItems.reduce((s, r) => s + (r.plan === 'half' ? r.total  : r.single), 0));
@@ -351,11 +430,17 @@
         'חיפה':          '/images/neighborhoods/french-carmel.jpg',
     };
 
-    let neighborhoodImage = $derived(
-        !isNational && selectedCities.size === 1
-            ? (cityImages[[...selectedCities][0]] ?? null)
-            : null
-    );
+    let neighborhoodImage = $derived.by(() => {
+        if (isNational) return null;
+        const totalSelected = selectedCities.size + selectedNeighborhoods.size;
+        if (totalSelected !== 1) return null;
+        if (selectedCities.size === 1) {
+            return cityImages[[...selectedCities][0]] ?? null;
+        }
+        const k = [...selectedNeighborhoods][0];
+        const [city, nb] = k.split('|');
+        return neighborhoodImages[nb] ?? cityImages[city] ?? null;
+    });
 
     // Build mailto body
     let mailtoBody = $derived(
@@ -461,7 +546,7 @@
             <div class="text-xl md:text-2xl font-black text-amber-400 mb-1 leading-tight drop-shadow-lg" title={neighborhoodLabel}>
                 {neighborhoodLabel}
             </div>
-            {#if isNational || selectedCities.size > 0}
+            {#if isNational || selectedCities.size > 0 || selectedNeighborhoods.size > 0}
                 <div class="text-xs md:text-sm font-bold mb-1 {neighborhoodImage ? 'text-amber-200' : 'text-amber-400/90'}">
                     סה"כ {fmt(neighborhoodCount)} שכונות
                 </div>
@@ -504,7 +589,7 @@
             </div>
 
             <!-- Selected chips summary -->
-            {#if !isNational && selectedCities.size > 0}
+            {#if !isNational && (selectedCities.size > 0 || selectedNeighborhoods.size > 0)}
                 <div class="mb-3 flex flex-wrap gap-2">
                     {#each [...selectedCities] as cityName}
                         <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-300 text-sm font-bold">
@@ -514,6 +599,19 @@
                                 onclick={() => removeCity(cityName)}
                                 class="w-5 h-5 rounded-full bg-amber-500/25 hover:bg-red-500/60 text-amber-300 hover:text-white transition-colors leading-none flex items-center justify-center text-xs font-black"
                                 aria-label="הסר {cityName}"
+                            >×</button>
+                        </span>
+                    {/each}
+                    {#each [...selectedNeighborhoods] as key}
+                        {@const [city, nb] = key.split('|')}
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-purple-500/15 border border-purple-500/40 text-purple-200 text-sm font-bold">
+                            {nb}
+                            <span class="text-[10px] font-normal text-purple-300/70">({city})</span>
+                            <button
+                                type="button"
+                                onclick={() => removeNeighborhood(key)}
+                                class="w-5 h-5 rounded-full bg-purple-500/25 hover:bg-red-500/60 text-purple-200 hover:text-white transition-colors leading-none flex items-center justify-center text-xs font-black"
+                                aria-label="הסר {nb}"
                             >×</button>
                         </span>
                     {/each}
@@ -529,7 +627,7 @@
                         type="text"
                         bind:value={citySearchQuery}
                         onkeydown={onSearchKeydown}
-                        placeholder={selectedCities.size > 0 && !isNational ? 'הוסף עיר נוספת...' : 'חפש עיר / יישוב...'}
+                        placeholder={(selectedCities.size > 0 || selectedNeighborhoods.size > 0) && !isNational ? 'הוסף עיר / שכונה...' : 'חפש עיר או שכונה...'}
                         class="w-full pr-10 pl-9 py-3 rounded-xl bg-white/5 border-2 border-white/10 focus:border-amber-500/60 focus:bg-white/8 outline-none text-white text-sm font-medium placeholder:text-gray-500 transition-all"
                     />
                     {#if citySearchQuery}
@@ -556,37 +654,57 @@
 
             <!-- Search results (live) -->
             {#if citySearchQuery.trim()}
-                {#if filteredCities.length === 0}
+                {#if filteredResults.length === 0}
                     <p class="text-gray-500 text-sm text-center py-4">לא נמצאו תוצאות עבור "{citySearchQuery}"</p>
                 {:else}
                     <div class="max-h-64 overflow-y-auto rounded-xl border border-white/10 bg-black/20 mb-3">
-                        {#each filteredCities as cityEntry, idx}
-                            {@const selected = !isNational && selectedCities.has(cityEntry.city)}
+                        {#each filteredResults as result, idx}
+                            {@const selected = isResultSelected(result)}
+                            {@const coveredByCity = isResultCoveredByCity(result)}
+                            {@const isCity = result.kind === 'city'}
+                            {@const cityNbCount = isCity ? (citiesData.find(c => c.city === result.city)?.neighborhoods.length ?? 0) : 0}
                             <button
                                 type="button"
-                                onclick={() => addCityFromSearch(cityEntry.city)}
+                                onclick={() => addResultFromSearch(result)}
                                 disabled={selected}
                                 class="w-full flex items-center justify-between px-4 py-2.5 text-right border-b border-white/5 last:border-b-0 transition-colors
                                     {selected
                                         ? 'bg-amber-500/10 text-amber-300/60 cursor-default'
                                         : idx === 0
-                                            ? 'text-gray-100 bg-amber-500/5 hover:bg-amber-500/15 hover:text-white'
-                                            : 'text-gray-200 hover:bg-amber-500/10 hover:text-white'}"
+                                            ? (isCity ? 'text-gray-100 bg-amber-500/5 hover:bg-amber-500/15 hover:text-white'
+                                                       : 'text-gray-100 bg-purple-500/5 hover:bg-purple-500/15 hover:text-white')
+                                            : (isCity ? 'text-gray-200 hover:bg-amber-500/10 hover:text-white'
+                                                       : 'text-gray-200 hover:bg-purple-500/10 hover:text-white')}"
                             >
                                 <span class="font-bold text-sm flex items-center gap-2">
-                                    {cityEntry.city}
+                                    {#if isCity}
+                                        <span>🏙️</span>
+                                        {result.city}
+                                    {:else}
+                                        <span>📍</span>
+                                        {result.neighborhood}
+                                        <span class="text-[10px] font-normal text-gray-400">ב{result.city}</span>
+                                    {/if}
                                     {#if !selected && idx === 0}
                                         <span class="text-[10px] text-amber-400/70 font-normal">↵ לבחירה מהירה</span>
                                     {/if}
                                 </span>
-                                <span class="text-xs {selected ? 'text-amber-400/70' : 'text-gray-500'}">
-                                    {selected ? 'נבחר ✓' : `${cityEntry.neighborhoods.length} שכונות`}
+                                <span class="text-xs {selected ? 'text-amber-400/70' : coveredByCity ? 'text-purple-300' : 'text-gray-500'}">
+                                    {#if selected}
+                                        נבחר ✓
+                                    {:else if coveredByCity}
+                                        🔄 צמצם רק לשכונה זו
+                                    {:else if isCity}
+                                        {cityNbCount} שכונות
+                                    {:else}
+                                        שכונה בודדת
+                                    {/if}
                                 </span>
                             </button>
                         {/each}
                     </div>
                 {/if}
-            {:else if !isNational && selectedCities.size === 0}
+            {:else if !isNational && selectedCities.size === 0 && selectedNeighborhoods.size === 0}
                 <!-- Popular cities quick-pick — only when nothing is selected and no search active -->
                 <div class="mb-3">
                     <p class="text-xs text-gray-500 mb-2 font-bold">⚡ ערים פופולריות:</p>
@@ -639,8 +757,8 @@
                     ✓ אישור
                     {#if isNational}
                         <span class="text-[11px] font-bold opacity-80">· ארצי ({fmt(totalNeighborhoodsCount)})</span>
-                    {:else if selectedCities.size > 0}
-                        <span class="text-[11px] font-bold opacity-80">· {selectedCities.size === 1 ? `${[...selectedCities][0]}` : `${selectedCities.size} ערים`} ({fmt(neighborhoodCount)})</span>
+                    {:else if selectedCities.size > 0 || selectedNeighborhoods.size > 0}
+                        <span class="text-[11px] font-bold opacity-80">· {neighborhoodLabel} ({fmt(neighborhoodCount)})</span>
                     {/if}
                 </button>
             </div>
