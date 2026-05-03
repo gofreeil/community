@@ -14,6 +14,7 @@
             border: "border-blue-500/40",
             bg: "bg-blue-900/10",
             features: ["חשיפה גבוהה בכל עמוד", "קהל מקומי ממוקד", "לינק לאתר שלך"],
+            image: "/images/Advertisement page/Desktop-advertisement.png",
         },
         {
             name: "כרטיס תוכן",
@@ -24,6 +25,7 @@
             border: "border-purple-500/40",
             bg: "bg-purple-900/10",
             features: ["הופעה על המפה וברשימת התצוגה"],
+            image: null,
         },
         {
             name: "פרסומת נייד",
@@ -34,6 +36,7 @@
             border: "border-green-500/40",
             bg: "bg-green-900/10",
             features: ["נראות מקסימלית בנייד", "מופיע לכל מבקר", "קישור ישיר לעסק"],
+            image: null,
         },
     ];
 
@@ -397,21 +400,28 @@
 
     <!-- Packages -->
     <h2 class="text-xl md:text-2xl font-black text-white mb-4 text-center">אפשרויות הפרסום</h2>
-    <div class="grid grid-cols-3 gap-2 mb-12">
+    <div class="grid grid-cols-3 gap-2 md:gap-4 mb-12">
         {#each packages as pkg}
-            <div class="rounded-xl border {pkg.border} {pkg.bg} p-2.5 flex flex-col">
-                <div class="text-xl mb-1.5">{pkg.icon}</div>
-                <h3 class="text-xs font-black text-white mb-0.5 leading-tight">{pkg.name}</h3>
-                <p class="text-[10px] text-gray-400 mb-1.5 leading-tight">{pkg.location}</p>
-                <div class="text-[10px] bg-white/10 rounded px-1.5 py-0.5 text-gray-300 mb-2 inline-block w-fit">{pkg.size}</div>
-                <ul class="space-y-1 mt-auto">
-                    {#each pkg.features as feature}
-                        <li class="text-[10px] text-gray-300 flex items-start gap-1 leading-tight">
-                            <span class="text-green-400 flex-shrink-0">✓</span>
-                            {feature}
-                        </li>
-                    {/each}
-                </ul>
+            <div class="rounded-xl border {pkg.border} {pkg.bg} p-2.5 md:p-5 flex flex-col md:flex-row-reverse md:items-stretch md:gap-5">
+                <div class="md:flex-1 md:flex md:flex-col">
+                    <div class="text-xl md:text-3xl mb-1.5 md:mb-2">{pkg.icon}</div>
+                    <h3 class="text-xs md:text-lg font-black text-white mb-0.5 md:mb-1 leading-tight">{pkg.name}</h3>
+                    <p class="text-[10px] md:text-sm text-gray-400 mb-1.5 md:mb-2 leading-tight">{pkg.location}</p>
+                    <div class="text-[10px] md:text-xs bg-white/10 rounded px-1.5 md:px-2 py-0.5 md:py-1 text-gray-300 mb-2 md:mb-3 inline-block w-fit">{pkg.size}</div>
+                    <ul class="space-y-1 md:space-y-1.5 mt-auto">
+                        {#each pkg.features as feature}
+                            <li class="text-[10px] md:text-sm text-gray-300 flex items-start gap-1 md:gap-1.5 leading-tight">
+                                <span class="text-green-400 flex-shrink-0">✓</span>
+                                {feature}
+                            </li>
+                        {/each}
+                    </ul>
+                </div>
+                {#if pkg.image}
+                    <div class="hidden md:flex md:flex-1 md:items-center md:justify-center md:rounded-lg md:overflow-hidden md:bg-black/20">
+                        <img src={pkg.image} alt={pkg.name} class="w-full h-full object-contain" loading="lazy" />
+                    </div>
+                {/if}
             </div>
         {/each}
     </div>
