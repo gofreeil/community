@@ -133,8 +133,18 @@
     });
 
     function setNational() {
+        if (isNational) {
+            // Toggle off — return to "בחר עיר / שכונה" state
+            isNational = false;
+            return;
+        }
         isNational = true;
         selectedCities = new Set();
+    }
+
+    // Format numbers with thousands separator for readability
+    function fmt(n: number): string {
+        return n.toLocaleString('en-US');
     }
 
     function toggleCity(cityName: string) {
@@ -335,7 +345,7 @@
         `ערים: ${neighborhoodLabel} (×${neighborhoodCount} שכונות)%0A` +
         selectedItems.map(r =>
             `${r.type} — ${r.plan === 'half' ? `חצי שנה ₪${r.total * neighborhoodCount}` : `חודש בודד ₪${r.single * neighborhoodCount}`}`
-        ).join('%0A') + `%0A%0Aסה״כ: ₪${totalPayment}`
+        ).join('%0A') + `%0A%0Aסה״כ: ₪${fmt(totalPayment)}`
     );
 </script>
 
@@ -444,21 +454,24 @@
                 📍 בחר ערים לפרסום
             </h3>
 
-            <!-- National option -->
+            <!-- National option — compact, toggleable -->
             <button
                 type="button"
                 onclick={setNational}
-                class="w-full mb-4 flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all font-bold text-sm
+                title={isNational ? 'לחץ לביטול' : 'בחר ארצי'}
+                class="w-full mb-3 flex items-center gap-2 px-3 py-2 rounded-lg border transition-all font-bold text-xs
                     {isNational
                         ? 'border-purple-500 bg-purple-500/20 text-white'
                         : 'border-white/10 bg-white/3 text-gray-400 hover:border-purple-400/40 hover:text-gray-200'}"
             >
-                <span class="text-lg">🌍</span>
-                <div class="flex flex-col items-start">
-                    <span>ארצי — כל הארץ</span>
-                    <span class="text-xs font-normal text-gray-500">{totalNeighborhoodsCount} שכונות פעילות</span>
-                </div>
-                {#if isNational}<span class="mr-auto text-purple-400">✓</span>{/if}
+                <span class="text-base">🌍</span>
+                <span>ארצי — כל הארץ</span>
+                <span class="text-[10px] font-normal text-gray-500">({fmt(totalNeighborhoodsCount)} שכונות)</span>
+                {#if isNational}
+                    <span class="mr-auto inline-flex items-center gap-1 text-purple-300 text-[11px] font-bold">
+                        ✓ נבחר · ביטול ✕
+                    </span>
+                {/if}
             </button>
 
             <!-- Selected chips summary -->
@@ -602,9 +615,9 @@
                 >
                     ✓ אישור
                     {#if isNational}
-                        <span class="text-xs font-bold opacity-80">· ארצי ({totalNeighborhoodsCount} שכונות)</span>
+                        <span class="text-xs font-bold opacity-80">· ארצי ({fmt(totalNeighborhoodsCount)} שכונות)</span>
                     {:else if selectedCities.size > 0}
-                        <span class="text-xs font-bold opacity-80">· {selectedCities.size === 1 ? `${[...selectedCities][0]}` : `${selectedCities.size} ערים`} ({neighborhoodCount} שכונות)</span>
+                        <span class="text-xs font-bold opacity-80">· {selectedCities.size === 1 ? `${[...selectedCities][0]}` : `${selectedCities.size} ערים`} ({fmt(neighborhoodCount)} שכונות)</span>
                     {/if}
                 </button>
             </div>
@@ -643,18 +656,15 @@
                  : plan === 'single' ? 'border-blue-500/50 bg-blue-500/10'
                  : highlighted     ? 'border-amber-400 bg-amber-500/15 shadow-lg shadow-amber-500/20 scale-[1.01]'
                  :                    'border-white/10 bg-white/3 hover:border-white/25'}">
-                <!-- Tutorial pointer: pick-row → first row, pick-plan → highlighted row's toggle -->
-                {#if (tutorialStep === 'pick-row' && rowIdx === 0) || (tutorialStep === 'pick-plan' && highlightedRow === row.num)}
-                    <div class="absolute {tutorialStep === 'pick-plan' ? '-left-1 top-1' : '-right-2 top-2'} pointer-events-none z-30 select-none"
-                         style="animation: tapBounce 1.2s ease-in-out infinite;"
-                         aria-hidden="true">
-                        <span class="text-4xl drop-shadow-[0_0_8px_rgba(245,158,11,0.6)]">{tutorialStep === 'pick-plan' ? '👈' : '👇'}</span>
-                    </div>
-                {/if}
                 <!-- Row: name + toggle -->
                 <div class="flex items-center justify-between gap-3 mb-2">
                     <div class="flex items-center gap-2 min-w-0">
                         <span class="text-xs font-black text-gray-400 flex-shrink-0">#{row.num}</span>
+                        {#if tutorialStep === 'pick-row' && rowIdx === 0}
+                            <span class="text-2xl flex-shrink-0 drop-shadow-[0_0_6px_rgba(245,158,11,0.6)]"
+                                  style="animation: softFloat 1.6s ease-in-out infinite;"
+                                  aria-hidden="true">👈</span>
+                        {/if}
                         <span class="font-black text-white text-base truncate">{row.type}</span>
                     </div>
                     <!-- Toggle -->
@@ -685,12 +695,12 @@
                 <div class="flex gap-4 text-sm mt-1">
                     <div class="flex items-baseline gap-1">
                         <span class="text-gray-300 text-sm font-semibold">חצי שנה —</span>
-                        <span class="font-black text-amber-400 text-sm">₪{row.half}</span>
+                        <span class="font-black text-amber-400 text-sm">₪{fmt(row.half)}</span>
                         <span class="text-gray-300 text-sm font-semibold">/חודש</span>
                     </div>
                     <div class="flex items-baseline gap-1">
                         <span class="text-gray-300 text-sm font-semibold">חודש בודד —</span>
-                        <span class="font-black text-white text-sm">₪{row.single}</span>
+                        <span class="font-black text-white text-sm">₪{fmt(row.single)}</span>
                     </div>
                 </div>
                 <!-- Details -->
@@ -701,14 +711,6 @@
 
     <!-- Desktop table (hidden on mobile) -->
     <div class="hidden md:block mb-6 overflow-x-auto rounded-2xl border border-white/10 relative">
-        <!-- Tutorial: step 2 finger on first row (pick a row), step 3 finger on toggle of highlighted row -->
-        {#if tutorialStep === 'pick-row'}
-            <div class="absolute right-4 top-24 pointer-events-none z-30 select-none"
-                 style="animation: tapBounce 1.2s ease-in-out infinite;"
-                 aria-hidden="true">
-                <span class="text-5xl drop-shadow-[0_0_10px_rgba(245,158,11,0.7)]">👇</span>
-            </div>
-        {/if}
         <table class="w-full text-base text-right">
             <thead>
                 <tr class="bg-amber-500/20 border-b border-amber-500/30">
@@ -753,6 +755,11 @@
 
                         <td class="px-4 py-4 font-bold relative group/typecell
                             {plan === 'half' ? 'text-amber-300' : plan === 'single' ? 'text-blue-300' : 'text-white'}">
+                            {#if tutorialStep === 'pick-row' && i === 0}
+                                <span class="inline-block align-middle text-2xl mr-1 drop-shadow-[0_0_6px_rgba(245,158,11,0.6)]"
+                                      style="animation: softFloat 1.6s ease-in-out infinite;"
+                                      aria-hidden="true">👈</span>
+                            {/if}
                             {row.type}
                             {#if row.num === 1}
                                 <!-- Tooltip: "פרסומת ארוכה" = הפרסומות שבצד ימין -->
@@ -768,12 +775,12 @@
                         </td>
 
                         <td class="px-4 py-4 text-center">
-                            <span class="font-black {plan === 'half' ? 'text-amber-300' : 'text-amber-400'}">₪{row.half}</span>
-                            <span class="text-gray-500 text-sm block">סה"כ ₪{row.total}</span>
+                            <span class="font-black {plan === 'half' ? 'text-amber-300' : 'text-amber-400'}">₪{fmt(row.half)}</span>
+                            <span class="text-gray-500 text-sm block">סה"כ ₪{fmt(row.total)}</span>
                         </td>
 
                         <td class="px-4 py-4 text-center">
-                            <span class="font-bold {plan === 'single' ? 'text-blue-300' : 'text-gray-300'}">₪{row.single}</span>
+                            <span class="font-bold {plan === 'single' ? 'text-blue-300' : 'text-gray-300'}">₪{fmt(row.single)}</span>
                         </td>
 
                         <td class="px-4 py-4 text-gray-300 text-sm">{row.reach}</td>
@@ -840,7 +847,7 @@
                 </span>
                 {#if neighborhoodCount > 1}
                     <span class="bg-amber-500/20 border border-amber-500/40 text-amber-400 text-xs font-black px-2 py-0.5 rounded-full">
-                        × {neighborhoodCount} שכונות
+                        × {fmt(neighborhoodCount)} שכונות
                     </span>
                 {/if}
             </div>
@@ -882,11 +889,11 @@
                                 <!-- Price -->
                                 <div class="flex flex-col items-end gap-0.5">
                                     <span class="font-black text-sm {item.plan === 'half' ? 'text-amber-400' : 'text-blue-400'}">
-                                        ₪{item.plan === 'half' ? item.total * neighborhoodCount : item.single * neighborhoodCount}
+                                        ₪{fmt(item.plan === 'half' ? item.total * neighborhoodCount : item.single * neighborhoodCount)}
                                     </span>
                                     {#if neighborhoodCount > 1}
                                         <span class="text-gray-600 text-[10px] whitespace-nowrap">
-                                            ₪{item.plan === 'half' ? item.total : item.single} × {neighborhoodCount}
+                                            ₪{fmt(item.plan === 'half' ? item.total : item.single)} × {fmt(neighborhoodCount)}
                                         </span>
                                     {:else}
                                         <span class="text-gray-600 text-xs">
@@ -904,14 +911,14 @@
             <div class="rounded-2xl border-2 border-white/20 bg-white/5 p-6 text-center mb-6">
                 <p class="text-gray-400 text-sm mb-2 font-bold">סה"כ לתשלום</p>
                 {#if neighborhoodCount > 1}
-                    <p class="text-gray-500 text-xs mb-1">₪{basePayment} × {neighborhoodCount} שכונות</p>
+                    <p class="text-gray-500 text-xs mb-1">₪{fmt(basePayment)} × {fmt(neighborhoodCount)} שכונות</p>
                 {/if}
-                <p class="text-5xl md:text-6xl font-black text-white mb-2">₪{totalPayment}</p>
+                <p class="text-5xl md:text-6xl font-black text-white mb-2">₪{fmt(totalPayment)}</p>
                 <p class="text-gray-500 text-sm">
                     {#if halfItems.length > 0 && singleItems.length > 0}
                         כולל {halfItems.length} חבילות חצי שנה + {singleItems.length} חודשים בודדים
                     {:else if halfItems.length > 0}
-                        חבילת חצי שנה • שווה ₪{totalMonthly} לחודש
+                        חבילת חצי שנה • שווה ₪{fmt(totalMonthly)} לחודש
                     {:else}
                         {singleItems.length} פרסומות לחודש אחד
                     {/if}
@@ -923,13 +930,13 @@
                 <div class="grid grid-cols-2 gap-3 mb-6">
                     <div class="rounded-xl bg-amber-500/10 border border-amber-500/20 p-3 text-center">
                         <p class="text-[10px] text-amber-400/70 font-bold uppercase mb-1">חצי שנה</p>
-                        <p class="text-xl font-black text-amber-400">₪{halfItems.reduce((s,r) => s + r.total, 0) * neighborhoodCount}</p>
-                        <p class="text-[10px] text-gray-500">{halfItems.length} פרסומות × 6 חודשים{neighborhoodCount > 1 ? ` × ${neighborhoodCount}` : ''}</p>
+                        <p class="text-xl font-black text-amber-400">₪{fmt(halfItems.reduce((s,r) => s + r.total, 0) * neighborhoodCount)}</p>
+                        <p class="text-[10px] text-gray-500">{halfItems.length} פרסומות × 6 חודשים{neighborhoodCount > 1 ? ` × ${fmt(neighborhoodCount)}` : ''}</p>
                     </div>
                     <div class="rounded-xl bg-blue-500/10 border border-blue-500/20 p-3 text-center">
                         <p class="text-[10px] text-blue-400/70 font-bold uppercase mb-1">חודש בודד</p>
-                        <p class="text-xl font-black text-blue-400">₪{singleItems.reduce((s,r) => s + r.single, 0) * neighborhoodCount}</p>
-                        <p class="text-[10px] text-gray-500">{singleItems.length} פרסומות × חודש{neighborhoodCount > 1 ? ` × ${neighborhoodCount}` : ''}</p>
+                        <p class="text-xl font-black text-blue-400">₪{fmt(singleItems.reduce((s,r) => s + r.single, 0) * neighborhoodCount)}</p>
+                        <p class="text-[10px] text-gray-500">{singleItems.length} פרסומות × חודש{neighborhoodCount > 1 ? ` × ${fmt(neighborhoodCount)}` : ''}</p>
                     </div>
                 </div>
             {/if}
@@ -983,7 +990,7 @@
                                       style="animation: spin 0.7s linear infinite;"></span>
                                 שולח…
                             {:else}
-                                ✉️ שלח אישור — ₪{totalPayment}
+                                ✉️ שלח אישור — ₪{fmt(totalPayment)}
                             {/if}
                         </button>
                     </div>
@@ -996,7 +1003,7 @@
             <!-- CTA buttons -->
             <div class="flex flex-col sm:flex-row gap-3 justify-center">
                 <a
-                    href="https://wa.me/972500000000?text=שלום, אני מעוניין לפרסם: {selectedItems.map(r => r.type).join(', ')}. סה״כ ₪{totalPayment}."
+                    href="https://wa.me/972500000000?text=שלום, אני מעוניין לפרסם: {selectedItems.map(r => r.type).join(', ')}. סה״כ ₪{fmt(totalPayment)}."
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="שלח הזמנת פרסום בוואטסאפ (נפתח בחלון חדש)"
