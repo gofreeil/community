@@ -465,10 +465,6 @@
         <div bind:this={pickerPanel}
              class="mb-8 rounded-2xl border border-amber-500/30 bg-gray-950/95 backdrop-blur p-5 shadow-2xl"
              style="animation: slideDown 0.2s ease-out;">
-            <h3 class="text-white font-black text-base flex items-center gap-2 mb-4">
-                📍 בחר ערים לפרסום
-            </h3>
-
             <!-- National option — compact, toggleable, with deal badge -->
             <button
                 type="button"
