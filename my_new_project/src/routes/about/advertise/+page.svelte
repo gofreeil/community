@@ -451,6 +451,11 @@
             <div class="text-xl md:text-2xl font-black text-amber-400 mb-1 leading-tight drop-shadow-lg" title={neighborhoodLabel}>
                 {neighborhoodLabel}
             </div>
+            {#if isNational || selectedCities.size > 0}
+                <div class="text-xs md:text-sm font-bold mb-1 {neighborhoodImage ? 'text-amber-200' : 'text-amber-400/90'}">
+                    סה"כ {fmt(neighborhoodCount)} שכונות
+                </div>
+            {/if}
             <div class="text-xs md:text-sm flex items-center justify-center
                 {neighborhoodImage ? 'text-gray-200' : 'text-gray-400'}">
                 <span>העיר המסומנת, לחץ לשינוי!</span>
