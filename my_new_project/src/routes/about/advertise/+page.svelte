@@ -611,18 +611,23 @@
         </div>
     {/if}
 
-    <!-- Pricing Table -->
-    <p class="text-gray-200 text-base font-bold text-center mb-3 leading-relaxed flex items-center justify-center gap-2">
-        <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
-              style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">2</span>
-        בחר את סוג הפרסום
-    </p>
-    <p class="text-gray-200 text-base font-bold text-center mb-6 leading-relaxed flex items-center justify-center gap-2 transition-opacity
-              {highlightedRow ? 'opacity-100' : 'opacity-50'}">
-        <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
-              style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">3</span>
-        בחר את פרק הזמן הרצוי לך — הסיכום יופיע במחשבון ↓
-    </p>
+    <!-- Pricing Table — step 2 (right in RTL) + step 3 (left in RTL) -->
+    <div class="flex flex-row justify-between items-center gap-3 mb-6 px-1">
+        <!-- Step 2 — right in RTL (first child) -->
+        <p class="text-gray-200 text-sm md:text-base font-bold leading-snug flex items-center gap-2 rounded-xl px-2 py-1 transition-all
+                  {tutorialStep === 'pick-row' ? 'attention-active' : 'opacity-90'}">
+            <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+                  style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">2</span>
+            בחר את סוג הפרסום
+        </p>
+        <!-- Step 3 — left in RTL (last child) -->
+        <p class="text-gray-200 text-sm md:text-base font-bold leading-snug flex items-center gap-2 rounded-xl px-2 py-1 transition-all
+                  {tutorialStep === 'pick-plan' ? 'attention-active' : tutorialStep === 'pick-row' ? 'opacity-50' : 'opacity-90'}">
+            <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+                  style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">3</span>
+            בחר את פרק הזמן ↓
+        </p>
+    </div>
 
     <!-- Mobile cards (visible only on small screens) -->
     <div class="md:hidden space-y-3 mb-6">
@@ -1149,6 +1154,22 @@
     @keyframes softFloat {
         0%, 100% { transform: translateY(0); }
         50%      { transform: translateY(-4px); }
+    }
+    @keyframes attentionPulse {
+        0%, 100% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+            background: rgba(245, 158, 11, 0.08);
+        }
+        50% {
+            transform: scale(1.04);
+            box-shadow: 0 0 14px 2px rgba(245, 158, 11, 0.45);
+            background: rgba(245, 158, 11, 0.18);
+        }
+    }
+    :global(.attention-active) {
+        animation: attentionPulse 1.8s ease-in-out infinite;
+        opacity: 1 !important;
     }
     @keyframes checkPop {
         0%   { opacity: 0; transform: scale(0.4); }
