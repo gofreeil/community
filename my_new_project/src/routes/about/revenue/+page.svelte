@@ -876,15 +876,18 @@
 						<div class="font-black text-amber-300 text-lg">חובה מוסרית ערכית</div>
 					</div>
 					<ul class="space-y-3">
-						{#each [
-							'אנשי רכזי השכונות, הינם מהטובים והמובחרים של עדת ישראל, ככאלו ניסחנו יחד אמנה מוסרית, כדי לשמר על איכות האנשים לתמיד, יש לחתום על אמנה זו כדי להיות חלק מאיתנו!',
-							'רכזי השכונות פועלים יחד למטרות קידום חירות התושב בישראל באופן קבוצתי על ידי עמותת יוצאים לחירות, לצורך כך אנו מנהלים שיח תקשורתי, הצבעות שיחות ומפגשים, רכז שכונה צריך להיות זמין לפחות לשיחת זום פעם בחודש ומפגש פיזי פעם בשנה!'
-						] as item}
-							<li class="flex gap-2 text-gray-300 text-base leading-relaxed">
-								<span class="text-amber-400 mt-1 flex-shrink-0">✦</span>
-								<span>{item}</span>
-							</li>
-						{/each}
+						<li class="flex gap-2 text-gray-300 text-base leading-relaxed">
+							<span class="text-amber-400 mt-1 flex-shrink-0">✦</span>
+							<span>
+								אנשי רכזי השכונות, הינם מהטובים והמובחרים של עדת ישראל, ככאלו ניסחנו יחד את
+								<a href="/about/charter" class="font-black text-yellow-300 hover:text-yellow-200 underline underline-offset-4 decoration-yellow-400/60 hover:decoration-yellow-300 transition-colors">אמנת יוצאים לחירות</a>,
+								כדי לשמר על איכות האנשים לתמיד, יש לחתום על אמנה זו כדי להיות חלק מאיתנו!
+							</span>
+						</li>
+						<li class="flex gap-2 text-gray-300 text-base leading-relaxed">
+							<span class="text-amber-400 mt-1 flex-shrink-0">✦</span>
+							<span>רכזי השכונות פועלים יחד למטרות קידום חירות התושב בישראל באופן קבוצתי על ידי עמותת יוצאים לחירות, לצורך כך אנו מנהלים שיח תקשורתי, הצבעות שיחות ומפגשים, רכז שכונה צריך להיות זמין לפחות לשיחת זום פעם בחודש ומפגש פיזי פעם בשנה!</span>
+						</li>
 					</ul>
 				</div>
 			</div>

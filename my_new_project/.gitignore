@@ -38,3 +38,4 @@ nul
 
 # Source images for categories — kept locally as backup, not in git
 static/images/categories-source/
+data/
