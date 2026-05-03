@@ -23,7 +23,7 @@
             color: "from-purple-600 to-pink-600",
             border: "border-purple-500/40",
             bg: "bg-purple-900/10",
-            features: ["תמונה + כותרת + תיאור", "hover עם מידע נוסף", "לינק לאתר שלך"],
+            features: ["הופעה על המפה וברשימת התצוגה"],
         },
         {
             name: "פרסומת נייד",
@@ -42,6 +42,14 @@
     let selectedCities = $state<Set<string>>(new Set([defaultCity]));
     let isNational = $state(false);
     let showPicker = $state(false);
+    let citySearchQuery = $state('');
+    let showAllCities = $state(false);
+
+    let filteredCities = $derived.by(() => {
+        const q = citySearchQuery.trim();
+        if (!q) return [];
+        return citiesData.filter(c => c.city.includes(q)).slice(0, 30);
+    });
 
     // Pre-selected item info coming from /add/[category] flow
     let pendingItemLabel    = $state('');
@@ -91,6 +99,21 @@
         }
         selectedCities = next;
         isNational = false;
+    }
+
+    function removeCity(cityName: string) {
+        if (selectedCities.size <= 1) return; // keep at least one
+        const next = new Set(selectedCities);
+        next.delete(cityName);
+        selectedCities = next;
+    }
+
+    function addCityFromSearch(cityName: string) {
+        const next = new Set(selectedCities);
+        next.add(cityName);
+        selectedCities = next;
+        isNational = false;
+        citySearchQuery = '';
     }
 
     let neighborhoodLabel = $derived(
@@ -352,7 +375,7 @@
                 </h3>
                 <button
                     type="button"
-                    onclick={() => showPicker = false}
+                    onclick={() => { showPicker = false; citySearchQuery = ''; }}
                     class="text-gray-500 hover:text-white transition-colors text-sm font-bold px-3 py-1 rounded-lg bg-white/5 hover:bg-white/10"
                 >אישור ✓</button>
             </div>
@@ -374,36 +397,112 @@
                 {#if isNational}<span class="mr-auto text-purple-400">✓</span>{/if}
             </button>
 
-            <!-- City buttons -->
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {#each citiesData as cityEntry}
-                    {@const selected = !isNational && selectedCities.has(cityEntry.city)}
+            <!-- Selected chips summary -->
+            {#if !isNational && selectedCities.size > 0}
+                <div class="mb-3 flex flex-wrap gap-2">
+                    {#each [...selectedCities] as cityName}
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-300 text-sm font-bold">
+                            {cityName}
+                            {#if selectedCities.size > 1}
+                                <button
+                                    type="button"
+                                    onclick={() => removeCity(cityName)}
+                                    class="text-amber-400/70 hover:text-amber-300 transition-colors leading-none"
+                                    aria-label="הסר {cityName}"
+                                >×</button>
+                            {/if}
+                        </span>
+                    {/each}
+                </div>
+            {/if}
+
+            <!-- Search input -->
+            <div class="relative mb-3">
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none">🔍</span>
+                <input
+                    type="text"
+                    bind:value={citySearchQuery}
+                    placeholder="חפש עיר / יישוב..."
+                    class="w-full pr-10 pl-4 py-3 rounded-xl bg-white/5 border-2 border-white/10 focus:border-amber-500/60 focus:bg-white/8 outline-none text-white text-sm font-medium placeholder:text-gray-500 transition-all"
+                />
+                {#if citySearchQuery}
                     <button
                         type="button"
-                        onclick={() => toggleCity(cityEntry.city)}
-                        class="flex flex-col items-start px-4 py-3 rounded-xl border-2 transition-all text-right
-                            {selected
-                                ? 'border-amber-500 bg-amber-500/15 text-white'
-                                : 'border-white/10 bg-white/3 text-gray-400 hover:border-amber-400/40 hover:text-gray-200'}"
-                    >
-                        <div class="flex items-center justify-between w-full">
-                            <span class="font-black text-base">{cityEntry.city}</span>
-                            {#if selected}<span class="text-amber-400 text-base">✓</span>{/if}
-                        </div>
-                        <span class="text-sm mt-0.5 {selected ? 'text-amber-400/80' : 'text-gray-400'}">
-                            {cityEntry.neighborhoods.length} שכונות
-                        </span>
-                    </button>
-                {/each}
+                        onclick={() => citySearchQuery = ''}
+                        class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white text-base leading-none"
+                        aria-label="נקה חיפוש"
+                    >×</button>
+                {/if}
             </div>
+
+            <!-- Search results (live) -->
+            {#if citySearchQuery.trim()}
+                {#if filteredCities.length === 0}
+                    <p class="text-gray-500 text-sm text-center py-4">לא נמצאו תוצאות עבור "{citySearchQuery}"</p>
+                {:else}
+                    <div class="max-h-64 overflow-y-auto rounded-xl border border-white/10 bg-black/20 mb-3">
+                        {#each filteredCities as cityEntry}
+                            {@const selected = !isNational && selectedCities.has(cityEntry.city)}
+                            <button
+                                type="button"
+                                onclick={() => addCityFromSearch(cityEntry.city)}
+                                disabled={selected}
+                                class="w-full flex items-center justify-between px-4 py-2.5 text-right border-b border-white/5 last:border-b-0 transition-colors
+                                    {selected
+                                        ? 'bg-amber-500/10 text-amber-300/60 cursor-default'
+                                        : 'text-gray-200 hover:bg-amber-500/10 hover:text-white'}"
+                            >
+                                <span class="font-bold text-sm">{cityEntry.city}</span>
+                                <span class="text-xs {selected ? 'text-amber-400/70' : 'text-gray-500'}">
+                                    {selected ? 'נבחר ✓' : `${cityEntry.neighborhoods.length} שכונות`}
+                                </span>
+                            </button>
+                        {/each}
+                    </div>
+                {/if}
+            {/if}
+
+            <!-- Toggle: show all cities grid as fallback -->
+            <button
+                type="button"
+                onclick={() => showAllCities = !showAllCities}
+                class="w-full text-xs text-gray-400 hover:text-amber-400 transition-colors py-2"
+            >
+                {showAllCities ? '▲ הסתר את רשימת כל הערים' : `▼ או דפדף בכל הערים (${citiesData.length})`}
+            </button>
+
+            {#if showAllCities}
+                <div class="mt-2 grid grid-cols-2 md:grid-cols-3 gap-3 max-h-96 overflow-y-auto pr-1">
+                    {#each citiesData as cityEntry}
+                        {@const selected = !isNational && selectedCities.has(cityEntry.city)}
+                        <button
+                            type="button"
+                            onclick={() => toggleCity(cityEntry.city)}
+                            class="flex flex-col items-start px-4 py-3 rounded-xl border-2 transition-all text-right
+                                {selected
+                                    ? 'border-amber-500 bg-amber-500/15 text-white'
+                                    : 'border-white/10 bg-white/3 text-gray-400 hover:border-amber-400/40 hover:text-gray-200'}"
+                        >
+                            <div class="flex items-center justify-between w-full">
+                                <span class="font-black text-base">{cityEntry.city}</span>
+                                {#if selected}<span class="text-amber-400 text-base">✓</span>{/if}
+                            </div>
+                            <span class="text-sm mt-0.5 {selected ? 'text-amber-400/80' : 'text-gray-400'}">
+                                {cityEntry.neighborhoods.length} שכונות
+                            </span>
+                        </button>
+                    {/each}
+                </div>
+            {/if}
 
             <p class="text-gray-600 text-xs mt-4 text-center">המחיר מחושב לפי מספר השכונות הפעילות בכל עיר · ניתן לבחור מספר ערים</p>
         </div>
     {/if}
 
     <!-- Pricing Table -->
-    <p class="text-gray-200 text-base font-bold text-center mb-6">
-        הזז את המתג לבחירת תוכנית — המחשבון יחשב אוטומטית ↓
+    <p class="text-gray-200 text-base font-bold text-center mb-6 leading-relaxed">
+        סמן בכפתור על ידי הזזת המתג את אורך הזמן הרצוי לך,<br/>
+        הסיכום יופיע לך מיד במחשבון ↓
     </p>
 
     <!-- Mobile cards (visible only on small screens) -->
