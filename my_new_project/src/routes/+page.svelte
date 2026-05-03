@@ -39,13 +39,22 @@
         return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b, 'he'));
     })();
 
-    // חיפוש ערים לפי query
+    // חיפוש ערים ושכונות לפי query
+    // אם ה-query תואם שם עיר — מציגים את כל השכונות שלה.
+    // אם ה-query תואם שמות שכונות בתוך עיר (אבל לא את העיר עצמה) — מציגים רק את השכונות התואמות.
     const filteredCities = $derived.by(() => {
         const q = searchQuery.trim().toLowerCase();
         if (!q) return allCitiesMerged;
-        return allCitiesMerged.filter(([city]) =>
-            city.toLowerCase().includes(q)
-        );
+        const out: [string, string[]][] = [];
+        for (const [city, ns] of allCitiesMerged) {
+            if (city.toLowerCase().includes(q)) {
+                out.push([city, ns]);
+            } else {
+                const matching = ns.filter(n => n.toLowerCase().includes(q));
+                if (matching.length > 0) out.push([city, matching]);
+            }
+        }
+        return out;
     });
 
     // ספירת ערים ושכונות לתצוגה ב-placeholder
@@ -280,7 +289,7 @@
                                 <span class="absolute right-3 top-1/2 -translate-y-1/2 text-purple-400 text-sm pointer-events-none">🔎</span>
                                 <input
                                     type="text"
-                                    placeholder={`חיפוש עיר... (${totalCities} ערים, ${totalNeighborhoods} שכונות)`}
+                                    placeholder={`חיפוש עיר או שכונה... (${totalCities} ערים, ${totalNeighborhoods} שכונות)`}
                                     bind:value={searchQuery}
                                     class="w-full bg-gray-800 border border-purple-500/40 text-white rounded-lg pr-9 pl-3 py-1.5 text-sm focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
                                 />
@@ -297,7 +306,7 @@
 
                     {#if filteredCities.length === 0}
                         <div class="text-center text-gray-400 py-6 text-sm">
-                            לא נמצאו ערים תואמות "{searchQuery}"
+                            לא נמצאו ערים או שכונות תואמות "{searchQuery}"
                         </div>
                     {:else}
                         <div class="cities-masonry">
