@@ -610,15 +610,15 @@
                 </div>
             {/if}
 
-            <!-- Explanation + Confirm — side by side in one row -->
-            <div class="flex items-center gap-3 mt-4">
-                <p class="text-gray-300 text-sm md:text-base flex-1 font-medium leading-snug text-right">
+            <!-- Explanation + Confirm (centered button) -->
+            <div class="mt-4 flex flex-col items-center gap-3">
+                <p class="text-gray-300 text-sm md:text-base font-medium leading-snug text-center">
                     המחיר מחושב לפי מספר השכונות הפעילות בכל עיר.
                 </p>
                 <button
                     type="button"
                     onclick={() => { showPicker = false; citySearchQuery = ''; showAllCities = false; advanceFromCity(); }}
-                    class="flex-shrink-0 px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-black font-black text-sm shadow-lg shadow-amber-500/30 hover:scale-[1.02] transition-all flex items-center gap-2"
+                    class="px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-black font-black text-sm shadow-lg shadow-amber-500/30 hover:scale-[1.02] transition-all flex items-center gap-2"
                 >
                     ✓ אישור
                     {#if isNational}
