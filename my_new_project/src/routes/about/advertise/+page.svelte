@@ -440,7 +440,7 @@
             </div>
             <div class="text-xs md:text-sm flex items-center justify-center
                 {neighborhoodImage ? 'text-gray-200' : 'text-gray-400'}">
-                <span>העיר המסומנת</span>
+                <span>העיר המסומנת, לחץ לשינוי!</span>
             </div>
         </div>
     </button>
@@ -454,24 +454,26 @@
                 📍 בחר ערים לפרסום
             </h3>
 
-            <!-- National option — compact, toggleable -->
+            <!-- National option — compact, toggleable, with deal badge -->
             <button
                 type="button"
                 onclick={setNational}
                 title={isNational ? 'לחץ לביטול' : 'בחר ארצי'}
-                class="w-full mb-3 flex items-center gap-2 px-3 py-2 rounded-lg border transition-all font-bold text-xs
+                class="w-full mb-3 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition-all font-bold text-[11px]
                     {isNational
                         ? 'border-purple-500 bg-purple-500/20 text-white'
                         : 'border-white/10 bg-white/3 text-gray-400 hover:border-purple-400/40 hover:text-gray-200'}"
             >
-                <span class="text-base">🌍</span>
+                <span class="text-sm">🌍</span>
                 <span>ארצי — כל הארץ</span>
-                <span class="text-[10px] font-normal text-gray-500">({fmt(totalNeighborhoodsCount)} שכונות)</span>
+                <span class="text-[10px] font-normal text-gray-500">({fmt(totalNeighborhoodsCount)})</span>
                 {#if isNational}
-                    <span class="mr-auto inline-flex items-center gap-1 text-purple-300 text-[11px] font-bold">
-                        ✓ נבחר · ביטול ✕
-                    </span>
+                    <span class="text-purple-300 text-[10px] font-bold">✓ ביטול ✕</span>
                 {/if}
+                <span class="mr-auto inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-amber-500/25 border border-amber-500/50 text-amber-300 text-[10px] font-black"
+                      style="animation: dealPulse 2s ease-in-out infinite;">
+                    🎉 מבצע! 3,000 ₪
+                </span>
             </button>
 
             <!-- Selected chips summary -->
@@ -597,17 +599,10 @@
                 </div>
             {/if}
 
-            <p class="text-gray-600 text-xs mt-4 text-center">המחיר מחושב לפי מספר השכונות הפעילות בכל עיר · ניתן לבחור מספר ערים</p>
+            <p class="text-gray-300 text-sm mt-4 text-center font-medium">המחיר מחושב לפי מספר השכונות הפעילות בכל עיר.</p>
 
             <!-- Confirm button — prominent, at the bottom -->
             <div class="relative mt-5">
-                {#if tutorialStep === 'pick-city'}
-                    <div class="absolute -left-2 md:-left-6 top-1/2 -translate-y-1/2 pointer-events-none z-30 select-none"
-                         style="animation: tapBounce 1.2s ease-in-out infinite;"
-                         aria-hidden="true">
-                        <span class="text-4xl md:text-5xl drop-shadow-[0_0_8px_rgba(245,158,11,0.6)]">👈</span>
-                    </div>
-                {/if}
                 <button
                     type="button"
                     onclick={() => { showPicker = false; citySearchQuery = ''; showAllCities = false; advanceFromCity(); }}
@@ -1161,6 +1156,10 @@
     @keyframes softFloat {
         0%, 100% { transform: translateY(0); }
         50%      { transform: translateY(-4px); }
+    }
+    @keyframes dealPulse {
+        0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        50%      { transform: scale(1.05); box-shadow: 0 0 8px 1px rgba(245, 158, 11, 0.4); }
     }
     @keyframes attentionPulse {
         0%, 100% {
