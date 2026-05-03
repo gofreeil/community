@@ -425,8 +425,7 @@
               style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">1</span>
         תחילה בחר עיר / שכונה
         {#if tutorialStep === 'pick-city' && !showPicker}
-            <span class="inline-block pointer-events-none select-none text-base md:text-lg drop-shadow-[0_0_5px_rgba(245,158,11,0.45)]"
-                  style="animation: gentleHover 2.2s ease-in-out infinite;"
+            <span class="tutorial-finger pointer-events-none select-none text-base md:text-lg drop-shadow-[0_0_5px_rgba(245,158,11,0.45)]"
                   aria-hidden="true">👇</span>
         {/if}
     </p>
@@ -639,8 +638,7 @@
                   style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">2</span>
             בחר את סוג הפרסום
             {#if tutorialStep === 'pick-row'}
-                <span class="inline-block pointer-events-none select-none text-base md:text-lg drop-shadow-[0_0_5px_rgba(245,158,11,0.45)]"
-                      style="animation: gentleHover 2.2s ease-in-out infinite;"
+                <span class="tutorial-finger pointer-events-none select-none text-base md:text-lg drop-shadow-[0_0_5px_rgba(245,158,11,0.45)]"
                       aria-hidden="true">👇</span>
             {/if}
         </p>
@@ -651,8 +649,7 @@
                   style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">3</span>
             בחר את פרק הזמן
             {#if tutorialStep === 'pick-plan'}
-                <span class="inline-block pointer-events-none select-none text-base md:text-lg drop-shadow-[0_0_5px_rgba(245,158,11,0.45)]"
-                      style="animation: gentleHover 2.2s ease-in-out infinite;"
+                <span class="tutorial-finger pointer-events-none select-none text-base md:text-lg drop-shadow-[0_0_5px_rgba(245,158,11,0.45)]"
                       aria-hidden="true">👇</span>
             {/if}
         </p>
@@ -1167,8 +1164,14 @@
         50%      { transform: translateY(-4px); }
     }
     @keyframes gentleHover {
-        0%, 100% { transform: translateY(0); }
-        50%      { transform: translateY(-8px); }
+        0%, 100% { transform: translateY(0) scale(1); }
+        50%      { transform: translateY(-10px) scale(1.1); }
+    }
+    /* Use a class so Svelte keeps the keyframe (inline-style refs may be tree-shaken) */
+    :global(.tutorial-finger) {
+        display: inline-block;
+        animation: gentleHover 1.6s ease-in-out infinite !important;
+        will-change: transform;
     }
     @keyframes dealPulse {
         0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
