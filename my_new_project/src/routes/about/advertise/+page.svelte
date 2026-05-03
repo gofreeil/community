@@ -404,7 +404,6 @@
         {#each packages as pkg}
             <div class="rounded-xl border {pkg.border} {pkg.bg} p-2.5 md:p-5 flex flex-col md:flex-row-reverse md:items-stretch md:gap-5">
                 <div class="md:flex-1 md:flex md:flex-col">
-                    <div class="text-xl md:text-3xl mb-1.5 md:mb-2">{pkg.icon}</div>
                     <h3 class="text-xs md:text-lg font-black text-white mb-0.5 md:mb-1 leading-tight">{pkg.name}</h3>
                     <p class="text-[10px] md:text-sm text-gray-400 mb-1.5 md:mb-2 leading-tight">{pkg.location}</p>
                     <div class="text-[10px] md:text-xs bg-white/10 rounded px-1.5 md:px-2 py-0.5 md:py-1 text-gray-300 mb-2 md:mb-3 inline-block w-fit">{pkg.size}</div>
