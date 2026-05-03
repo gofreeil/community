@@ -612,7 +612,7 @@
 
             <!-- Explanation + Confirm — side by side in one row -->
             <div class="flex items-center gap-3 mt-4">
-                <p class="text-gray-300 text-xs flex-1 font-medium leading-snug text-right">
+                <p class="text-gray-300 text-sm md:text-base flex-1 font-medium leading-snug text-right">
                     המחיר מחושב לפי מספר השכונות הפעילות בכל עיר.
                 </p>
                 <button
@@ -1038,6 +1038,8 @@
     <!-- Secure Payment -->
     <div class="mt-8 rounded-2xl bg-white/3 border border-white/10 p-6 md:p-8" dir="rtl">
         <h2 class="text-xl md:text-2xl font-black text-white mb-2 text-center flex items-center justify-center gap-2">
+            <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+                  style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">4</span>
             🔒 תשלום מאובטח
         </h2>
         <p class="text-gray-400 text-sm text-center mb-6">
@@ -1166,7 +1168,7 @@
     }
     @keyframes gentleHover {
         0%, 100% { transform: translateY(0); }
-        50%      { transform: translateY(-3px); }
+        50%      { transform: translateY(-8px); }
     }
     @keyframes dealPulse {
         0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
