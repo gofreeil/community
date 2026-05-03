@@ -418,8 +418,8 @@
                     </ul>
                 </div>
                 {#if pkg.image}
-                    <div class="hidden md:flex md:flex-1 md:items-center md:justify-center md:rounded-lg md:overflow-hidden md:bg-black/20">
-                        <img src={pkg.image} alt={pkg.name} class="w-full h-full object-contain" loading="lazy" />
+                    <div class="hidden md:block md:flex-1 md:rounded-lg md:overflow-hidden">
+                        <img src={pkg.image} alt={pkg.name} class="w-full h-full object-cover object-right-top" loading="lazy" />
                     </div>
                 {/if}
             </div>
