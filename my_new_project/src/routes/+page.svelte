@@ -18,6 +18,15 @@
 
     let showNeighborhoodsMenu = $state(false);
     let searchQuery = $state('');
+    // איזו עיר מציגה כעת רמז "לחץ על השכונה" (אחרי שהמשתמש לחץ על שם העיר עצמו)
+    let hintCity = $state<string | null>(null);
+    let hintTimer: ReturnType<typeof setTimeout> | null = null;
+
+    function showCityHint(city: string) {
+        hintCity = city;
+        if (hintTimer) clearTimeout(hintTimer);
+        hintTimer = setTimeout(() => { hintCity = null; }, 4000);
+    }
 
     // CoaliEmbed מוצג רק לקרית משה בירושלים; לכל השאר — ReferendumBanner (דוגמא)
     const showCoali = $derived(
@@ -74,11 +83,15 @@
         neighborhoodState.select(neighborhood, city);
         showNeighborhoodsMenu = false;
         searchQuery = '';
+        hintCity = null;
+        if (hintTimer) clearTimeout(hintTimer);
     }
 
     function closeMenu() {
         showNeighborhoodsMenu = false;
         searchQuery = '';
+        hintCity = null;
+        if (hintTimer) clearTimeout(hintTimer);
     }
 
     // --- Calendar sync (ICS + Google Calendar) ---
@@ -311,15 +324,29 @@
                     {:else}
                         <div class="cities-masonry">
                             {#each filteredCities as [city, neighborhoods]}
-                                <div class="city-card bg-gray-800/70 rounded-lg p-2 border border-purple-500/10 mb-2">
-                                    <h4 class="text-purple-400 font-bold mb-1.5 text-xs md:text-sm border-b border-purple-500/20 pb-1">
+                                <div class="city-card bg-gray-800/70 rounded-lg p-2 border mb-2 transition-colors
+                                    {hintCity === city ? 'border-amber-500/60 ring-1 ring-amber-500/40' : 'border-purple-500/10'}">
+                                    <button
+                                        type="button"
+                                        onclick={() => showCityHint(city)}
+                                        class="w-full text-purple-400 hover:text-purple-300 font-bold mb-1.5 text-xs md:text-sm border-b border-purple-500/20 pb-1 text-right cursor-help"
+                                        aria-label="לחץ על השכונה הרצויה בתוך {city}"
+                                    >
                                         {city}
-                                    </h4>
+                                    </button>
+                                    {#if hintCity === city}
+                                        <div class="mb-1.5 px-2 py-1 rounded bg-amber-500/15 border border-amber-500/40 text-amber-300 text-[11px] md:text-xs font-bold flex items-center gap-1.5"
+                                             style="animation: hintFadeIn 0.25s ease-out;">
+                                            <span>👇</span>
+                                            <span>לחץ בתוך העיר הזו על השכונה הרצויה לך</span>
+                                        </div>
+                                    {/if}
                                     <div class="flex flex-wrap gap-1">
                                         {#each neighborhoods as neighborhood}
                                             <button
                                                 onclick={() => selectNeighborhood(neighborhood, city)}
-                                                class="text-white text-[11px] md:text-xs bg-gray-700/50 hover:bg-purple-600 px-2 py-0.5 rounded transition-colors"
+                                                class="neighborhood-link text-white text-[11px] md:text-xs bg-gray-700/50 hover:bg-purple-600 px-2 py-0.5 rounded transition-all
+                                                    {hintCity === city ? 'ring-1 ring-amber-400/50 bg-purple-700/40' : ''}"
                                             >
                                                 {neighborhood}
                                             </button>
@@ -827,5 +854,35 @@
         -webkit-column-break-inside: avoid;
         display: inline-block;
         width: 100%;
+    }
+
+    /* כפתורי שכונות — קישור פעיל ברור: hover מגדיל, מבליט וצובע */
+    .neighborhood-link {
+        cursor: pointer;
+        position: relative;
+    }
+    .neighborhood-link:hover {
+        transform: scale(1.08);
+        background: linear-gradient(135deg, #9333ea, #c026d3);
+        box-shadow: 0 4px 12px -2px rgba(168, 85, 247, 0.55);
+        text-decoration: underline;
+        text-decoration-color: rgba(255, 255, 255, 0.7);
+        text-underline-offset: 2px;
+    }
+    .neighborhood-link:active {
+        transform: scale(0.95);
+    }
+    /* פעימה עדינה לציון שאלו קישורים פעילים — נפעלת רק כש-card מסומן ברמז */
+    .city-card.\[ring-amber-500\/40\] .neighborhood-link,
+    .city-card[class*="ring-amber"] .neighborhood-link {
+        animation: nbPulse 1.6s ease-in-out infinite;
+    }
+    @keyframes nbPulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
+        50%      { box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.35); }
+    }
+    @keyframes hintFadeIn {
+        from { opacity: 0; transform: translateY(-4px); }
+        to   { opacity: 1; transform: translateY(0); }
     }
 </style>
