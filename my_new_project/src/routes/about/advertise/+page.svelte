@@ -125,7 +125,6 @@
     }
 
     function removeCity(cityName: string) {
-        if (selectedCities.size <= 1) return; // keep at least one
         const next = new Set(selectedCities);
         next.delete(cityName);
         selectedCities = next;
@@ -153,9 +152,11 @@
     let neighborhoodLabel = $derived(
         isNational
             ? "ארצי — כל הארץ"
-            : selectedCities.size === 1
-                ? [...selectedCities][0]
-                : `${[...selectedCities][0]} +${selectedCities.size - 1}`
+            : selectedCities.size === 0
+                ? "בחר עיר / שכונה"
+                : selectedCities.size === 1
+                    ? [...selectedCities][0]
+                    : `${[...selectedCities][0]} +${selectedCities.size - 1}`
     );
 
     // ---- Toast ----
@@ -344,7 +345,7 @@
     </div>
 
     <!-- Packages -->
-    <h2 class="text-xl md:text-2xl font-black text-white mb-4 text-center">אפשרויות פרסום</h2>
+    <h2 class="text-xl md:text-2xl font-black text-white mb-4 text-center">אפשרויות הפרסום</h2>
     <div class="grid grid-cols-3 gap-2 mb-12">
         {#each packages as pkg}
             <div class="rounded-xl border {pkg.border} {pkg.bg} p-2.5 flex flex-col">
@@ -369,7 +370,8 @@
 
     <!-- Neighborhood picker trigger -->
     <p class="text-gray-300 text-base font-bold text-center mb-3 flex items-center justify-center gap-2">
-        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-500 text-black font-black text-sm shadow-lg shadow-amber-500/30">1</span>
+        <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+              style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">1</span>
         תחילה בחר עיר / שכונה
     </p>
     <button
@@ -393,10 +395,9 @@
             <div class="text-xl md:text-2xl font-black text-amber-400 mb-1 leading-tight drop-shadow-lg" title={neighborhoodLabel}>
                 {neighborhoodLabel}
             </div>
-            <div class="text-xs md:text-sm flex items-center justify-center gap-1
+            <div class="text-xs md:text-sm flex items-center justify-center
                 {neighborhoodImage ? 'text-gray-200' : 'text-gray-400'}">
-                <span>קהל מקומי</span>
-                <span class="text-amber-500/70">✏️</span>
+                <span>העיר המסומנת</span>
             </div>
         </div>
     </button>
@@ -432,14 +433,12 @@
                     {#each [...selectedCities] as cityName}
                         <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-300 text-sm font-bold">
                             {cityName}
-                            {#if selectedCities.size > 1}
-                                <button
-                                    type="button"
-                                    onclick={() => removeCity(cityName)}
-                                    class="text-amber-400/70 hover:text-amber-300 transition-colors leading-none"
-                                    aria-label="הסר {cityName}"
-                                >×</button>
-                            {/if}
+                            <button
+                                type="button"
+                                onclick={() => removeCity(cityName)}
+                                class="w-5 h-5 rounded-full bg-amber-500/25 hover:bg-red-500/60 text-amber-300 hover:text-white transition-colors leading-none flex items-center justify-center text-xs font-black"
+                                aria-label="הסר {cityName}"
+                            >×</button>
                         </span>
                     {/each}
                 </div>
@@ -571,7 +570,8 @@
 
     <!-- Pricing Table -->
     <p class="text-gray-200 text-base font-bold text-center mb-6 leading-relaxed flex items-start justify-center gap-2">
-        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-500 text-black font-black text-sm shadow-lg shadow-amber-500/30 flex-shrink-0 mt-0.5">2</span>
+        <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0 mt-0.5"
+              style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">2</span>
         <span>
             סמן בכפתור על ידי הזזת המתג את אורך הזמן הרצוי לך,<br/>
             הסיכום יופיע לך מיד במחשבון ↓
@@ -871,7 +871,8 @@
                 <div class="rounded-2xl border border-white/15 bg-white/3 p-5 mb-4"
                      style="animation: slideDown 0.25s ease-out;">
                     <p class="text-gray-300 text-sm font-bold mb-3 text-center flex items-center justify-center gap-2">
-                        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-500 text-black font-black text-sm shadow-lg shadow-amber-500/30">3</span>
+                        <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+                              style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">3</span>
                         📧 קבל אישור הזמנה למייל
                     </p>
                     <div class="flex flex-col sm:flex-row gap-2">
