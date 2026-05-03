@@ -187,7 +187,6 @@
         { num: 4, type: "צימר / סאבלט",  half: 45,  total: 270, single: 60, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
         { num: 5, type: "דרושים לעבודה", half: 15,  total: 90,  single: 25, reach: "לכל שכונה רצויה",   details: "מופיע רק ברשימה" },
         { num: 6, type: "פנויים פנויות", half: 20,  total: 120, single: 30, reach: "כולל רשימה ארצית",  details: "מופיע רק ברשימה" },
-        { num: 7, type: "פרסומת קבועה",  half: 60,  total: 360, single: 85, reach: "ארצי בלבד",         details: "קבוע" },
         { num: 8, type: "בייבי סיטר",    half: 8,   total: 48,  single: 20, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
         { num: 9, type: "אולמות",         half: 45,  total: 270, single: 60, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
     ];
@@ -335,7 +334,10 @@
     <h2 class="text-xl md:text-2xl font-black text-white mb-6 text-center">מחירון</h2>
 
     <!-- Neighborhood picker trigger -->
-    <p class="text-gray-300 text-base font-bold text-center mb-3">תחילה בחר עיר / שכונה</p>
+    <p class="text-gray-300 text-base font-bold text-center mb-3 flex items-center justify-center gap-2">
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-500 text-black font-black text-sm shadow-lg shadow-amber-500/30">1</span>
+        תחילה בחר עיר / שכונה
+    </p>
     <button
         type="button"
         onclick={() => showPicker = !showPicker}
@@ -500,9 +502,12 @@
     {/if}
 
     <!-- Pricing Table -->
-    <p class="text-gray-200 text-base font-bold text-center mb-6 leading-relaxed">
-        סמן בכפתור על ידי הזזת המתג את אורך הזמן הרצוי לך,<br/>
-        הסיכום יופיע לך מיד במחשבון ↓
+    <p class="text-gray-200 text-base font-bold text-center mb-6 leading-relaxed flex items-start justify-center gap-2">
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-500 text-black font-black text-sm shadow-lg shadow-amber-500/30 flex-shrink-0 mt-0.5">2</span>
+        <span>
+            סמן בכפתור על ידי הזזת המתג את אורך הזמן הרצוי לך,<br/>
+            הסיכום יופיע לך מיד במחשבון ↓
+        </span>
     </p>
 
     <!-- Mobile cards (visible only on small screens) -->
@@ -797,7 +802,8 @@
                 <!-- Email input -->
                 <div class="rounded-2xl border border-white/15 bg-white/3 p-5 mb-4"
                      style="animation: slideDown 0.25s ease-out;">
-                    <p class="text-gray-300 text-sm font-bold mb-3 text-center">
+                    <p class="text-gray-300 text-sm font-bold mb-3 text-center flex items-center justify-center gap-2">
+                        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-500 text-black font-black text-sm shadow-lg shadow-amber-500/30">3</span>
                         📧 קבל אישור הזמנה למייל
                     </p>
                     <div class="flex flex-col sm:flex-row gap-2">
