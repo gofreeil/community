@@ -44,11 +44,34 @@
     let showPicker = $state(false);
     let citySearchQuery = $state('');
     let showAllCities = $state(false);
+    let citySearchInput: HTMLInputElement | null = $state(null);
+
+    // Popular cities — quick-pick chips for the most common selections
+    const popularCities = ['ירושלים', 'תל אביב יפו', 'חיפה', 'באר שבע', 'נתניה', 'ראשון לציון'];
 
     let filteredCities = $derived.by(() => {
         const q = citySearchQuery.trim();
         if (!q) return [];
-        return citiesData.filter(c => c.city.includes(q)).slice(0, 30);
+        // Rank: 1) starts with query, 2) word boundary match, 3) contains
+        const matches = citiesData.filter(c => c.city.includes(q));
+        return matches
+            .map(c => {
+                const name = c.city;
+                let score = 2;
+                if (name.startsWith(q))               score = 0;
+                else if (name.includes(' ' + q))      score = 1;
+                return { c, score };
+            })
+            .sort((a, b) => a.score - b.score)
+            .map(x => x.c)
+            .slice(0, 30);
+    });
+
+    // Auto-focus search input whenever the picker opens
+    $effect(() => {
+        if (showPicker && citySearchInput) {
+            queueMicrotask(() => citySearchInput?.focus());
+        }
     });
 
     // Pre-selected item info coming from /add/[category] flow
@@ -114,6 +137,17 @@
         selectedCities = next;
         isNational = false;
         citySearchQuery = '';
+        showPicker = false; // auto-close after selection — user can reopen to add more
+    }
+
+    function onSearchKeydown(e: KeyboardEvent) {
+        if (e.key === 'Enter' && filteredCities.length > 0) {
+            e.preventDefault();
+            const first = filteredCities.find(c => !selectedCities.has(c.city));
+            if (first) addCityFromSearch(first.city);
+        } else if (e.key === 'Escape') {
+            citySearchQuery = '';
+        }
     }
 
     let neighborhoodLabel = $derived(
@@ -371,16 +405,9 @@
     {#if showPicker}
         <div class="mb-8 rounded-2xl border border-amber-500/30 bg-gray-950/95 backdrop-blur p-5 shadow-2xl"
              style="animation: slideDown 0.2s ease-out;">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-white font-black text-base flex items-center gap-2">
-                    📍 בחר ערים לפרסום
-                </h3>
-                <button
-                    type="button"
-                    onclick={() => { showPicker = false; citySearchQuery = ''; }}
-                    class="text-gray-500 hover:text-white transition-colors text-sm font-bold px-3 py-1 rounded-lg bg-white/5 hover:bg-white/10"
-                >אישור ✓</button>
-            </div>
+            <h3 class="text-white font-black text-base flex items-center gap-2 mb-4">
+                📍 בחר ערים לפרסום
+            </h3>
 
             <!-- National option -->
             <button
@@ -418,23 +445,38 @@
                 </div>
             {/if}
 
-            <!-- Search input -->
-            <div class="relative mb-3">
-                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none">🔍</span>
-                <input
-                    type="text"
-                    bind:value={citySearchQuery}
-                    placeholder="חפש עיר / יישוב..."
-                    class="w-full pr-10 pl-4 py-3 rounded-xl bg-white/5 border-2 border-white/10 focus:border-amber-500/60 focus:bg-white/8 outline-none text-white text-sm font-medium placeholder:text-gray-500 transition-all"
-                />
-                {#if citySearchQuery}
-                    <button
-                        type="button"
-                        onclick={() => citySearchQuery = ''}
-                        class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white text-base leading-none"
-                        aria-label="נקה חיפוש"
-                    >×</button>
-                {/if}
+            <!-- Search row: input + "כל הערים" toggle on the side -->
+            <div class="flex gap-2 mb-3">
+                <div class="relative flex-1">
+                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none">🔍</span>
+                    <input
+                        bind:this={citySearchInput}
+                        type="text"
+                        bind:value={citySearchQuery}
+                        onkeydown={onSearchKeydown}
+                        placeholder={selectedCities.size > 0 && !isNational ? 'הוסף עיר נוספת...' : 'חפש עיר / יישוב...'}
+                        class="w-full pr-10 pl-9 py-3 rounded-xl bg-white/5 border-2 border-white/10 focus:border-amber-500/60 focus:bg-white/8 outline-none text-white text-sm font-medium placeholder:text-gray-500 transition-all"
+                    />
+                    {#if citySearchQuery}
+                        <button
+                            type="button"
+                            onclick={() => citySearchQuery = ''}
+                            class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white text-base leading-none"
+                            aria-label="נקה חיפוש"
+                        >×</button>
+                    {/if}
+                </div>
+                <button
+                    type="button"
+                    onclick={() => showAllCities = !showAllCities}
+                    title={showAllCities ? 'הסתר רשימה מלאה' : 'דפדף בכל הערים'}
+                    class="flex-shrink-0 px-3 rounded-xl border-2 transition-all text-xs font-bold whitespace-nowrap
+                        {showAllCities
+                            ? 'border-amber-500/60 bg-amber-500/15 text-amber-300'
+                            : 'border-white/10 bg-white/3 text-gray-300 hover:border-amber-400/40 hover:text-amber-300'}"
+                >
+                    🏙️ כל הערים
+                </button>
             </div>
 
             <!-- Search results (live) -->
@@ -443,7 +485,7 @@
                     <p class="text-gray-500 text-sm text-center py-4">לא נמצאו תוצאות עבור "{citySearchQuery}"</p>
                 {:else}
                     <div class="max-h-64 overflow-y-auto rounded-xl border border-white/10 bg-black/20 mb-3">
-                        {#each filteredCities as cityEntry}
+                        {#each filteredCities as cityEntry, idx}
                             {@const selected = !isNational && selectedCities.has(cityEntry.city)}
                             <button
                                 type="button"
@@ -452,9 +494,16 @@
                                 class="w-full flex items-center justify-between px-4 py-2.5 text-right border-b border-white/5 last:border-b-0 transition-colors
                                     {selected
                                         ? 'bg-amber-500/10 text-amber-300/60 cursor-default'
-                                        : 'text-gray-200 hover:bg-amber-500/10 hover:text-white'}"
+                                        : idx === 0
+                                            ? 'text-gray-100 bg-amber-500/5 hover:bg-amber-500/15 hover:text-white'
+                                            : 'text-gray-200 hover:bg-amber-500/10 hover:text-white'}"
                             >
-                                <span class="font-bold text-sm">{cityEntry.city}</span>
+                                <span class="font-bold text-sm flex items-center gap-2">
+                                    {cityEntry.city}
+                                    {#if !selected && idx === 0}
+                                        <span class="text-[10px] text-amber-400/70 font-normal">↵ לבחירה מהירה</span>
+                                    {/if}
+                                </span>
                                 <span class="text-xs {selected ? 'text-amber-400/70' : 'text-gray-500'}">
                                     {selected ? 'נבחר ✓' : `${cityEntry.neighborhoods.length} שכונות`}
                                 </span>
@@ -462,16 +511,21 @@
                         {/each}
                     </div>
                 {/if}
+            {:else if !isNational && selectedCities.size === 0}
+                <!-- Popular cities quick-pick — only when nothing is selected and no search active -->
+                <div class="mb-3">
+                    <p class="text-xs text-gray-500 mb-2 font-bold">⚡ ערים פופולריות:</p>
+                    <div class="flex flex-wrap gap-2">
+                        {#each popularCities as city}
+                            <button
+                                type="button"
+                                onclick={() => addCityFromSearch(city)}
+                                class="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-gray-300 text-xs font-bold hover:bg-amber-500/15 hover:border-amber-500/40 hover:text-amber-300 transition-all"
+                            >{city}</button>
+                        {/each}
+                    </div>
+                </div>
             {/if}
-
-            <!-- Toggle: show all cities grid as fallback -->
-            <button
-                type="button"
-                onclick={() => showAllCities = !showAllCities}
-                class="w-full text-xs text-gray-400 hover:text-amber-400 transition-colors py-2"
-            >
-                {showAllCities ? '▲ הסתר את רשימת כל הערים' : `▼ או דפדף בכל הערים (${citiesData.length})`}
-            </button>
 
             {#if showAllCities}
                 <div class="mt-2 grid grid-cols-2 md:grid-cols-3 gap-3 max-h-96 overflow-y-auto pr-1">
@@ -498,6 +552,20 @@
             {/if}
 
             <p class="text-gray-600 text-xs mt-4 text-center">המחיר מחושב לפי מספר השכונות הפעילות בכל עיר · ניתן לבחור מספר ערים</p>
+
+            <!-- Confirm button — prominent, at the bottom -->
+            <button
+                type="button"
+                onclick={() => { showPicker = false; citySearchQuery = ''; showAllCities = false; }}
+                class="w-full mt-5 py-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-black font-black text-base shadow-lg shadow-amber-500/30 hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
+            >
+                ✓ אישור
+                {#if isNational}
+                    <span class="text-xs font-bold opacity-80">· ארצי ({totalNeighborhoodsCount} שכונות)</span>
+                {:else if selectedCities.size > 0}
+                    <span class="text-xs font-bold opacity-80">· {selectedCities.size === 1 ? `${[...selectedCities][0]}` : `${selectedCities.size} ערים`} ({neighborhoodCount} שכונות)</span>
+                {/if}
+            </button>
         </div>
     {/if}
 
