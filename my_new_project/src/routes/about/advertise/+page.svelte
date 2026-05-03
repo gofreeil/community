@@ -614,20 +614,21 @@
                 </div>
             {/if}
 
-            <p class="text-gray-300 text-sm mt-4 text-center font-medium">המחיר מחושב לפי מספר השכונות הפעילות בכל עיר.</p>
-
-            <!-- Confirm button — prominent, at the bottom -->
-            <div class="relative mt-5">
+            <!-- Explanation + Confirm — side by side in one row -->
+            <div class="flex items-center gap-3 mt-4">
+                <p class="text-gray-300 text-xs flex-1 font-medium leading-snug text-right">
+                    המחיר מחושב לפי מספר השכונות הפעילות בכל עיר.
+                </p>
                 <button
                     type="button"
                     onclick={() => { showPicker = false; citySearchQuery = ''; showAllCities = false; advanceFromCity(); }}
-                    class="w-full py-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-black font-black text-base shadow-lg shadow-amber-500/30 hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
+                    class="flex-shrink-0 px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-black font-black text-sm shadow-lg shadow-amber-500/30 hover:scale-[1.02] transition-all flex items-center gap-2"
                 >
                     ✓ אישור
                     {#if isNational}
-                        <span class="text-xs font-bold opacity-80">· ארצי ({fmt(totalNeighborhoodsCount)} שכונות)</span>
+                        <span class="text-[11px] font-bold opacity-80">· ארצי ({fmt(totalNeighborhoodsCount)})</span>
                     {:else if selectedCities.size > 0}
-                        <span class="text-xs font-bold opacity-80">· {selectedCities.size === 1 ? `${[...selectedCities][0]}` : `${selectedCities.size} ערים`} ({fmt(neighborhoodCount)} שכונות)</span>
+                        <span class="text-[11px] font-bold opacity-80">· {selectedCities.size === 1 ? `${[...selectedCities][0]}` : `${selectedCities.size} ערים`} ({fmt(neighborhoodCount)})</span>
                     {/if}
                 </button>
             </div>
