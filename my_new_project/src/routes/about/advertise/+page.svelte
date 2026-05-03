@@ -49,6 +49,30 @@
     // Popular cities — quick-pick chips for the most common selections
     const popularCities = ['ירושלים', 'תל אביב יפו', 'חיפה', 'באר שבע', 'נתניה', 'ראשון לציון'];
 
+    // ---- Guided tutorial pointer ----
+    type TutorialStep = 'pick-city' | 'pick-row' | 'pick-plan' | 'done';
+    let tutorialStep = $state<TutorialStep>('pick-city');
+    let showCheckmark = $state(false);
+    let highlightedRow = $state<number | null>(null);
+
+    function advanceFromCity() {
+        if (tutorialStep !== 'pick-city') return;
+        showCheckmark = true;
+        setTimeout(() => {
+            showCheckmark = false;
+            tutorialStep = 'pick-row';
+        }, 900);
+    }
+
+    function highlightRow(num: number) {
+        highlightedRow = num;
+        if (tutorialStep === 'pick-row') tutorialStep = 'pick-plan';
+    }
+
+    function advanceFromPlan() {
+        if (tutorialStep === 'pick-row' || tutorialStep === 'pick-plan') tutorialStep = 'done';
+    }
+
     let filteredCities = $derived.by(() => {
         const q = citySearchQuery.trim();
         if (!q) return [];
@@ -137,6 +161,7 @@
         isNational = false;
         citySearchQuery = '';
         showPicker = false; // auto-close after selection — user can reopen to add more
+        advanceFromCity();
     }
 
     function onSearchKeydown(e: KeyboardEvent) {
@@ -236,7 +261,9 @@
             next.delete(num);           // clicking active side = turn off
         } else {
             next.set(num, plan);
+            highlightedRow = num;       // ensure visual marker stays on this row
             showToast();                // remind user which neighborhood they're advertising in
+            advanceFromPlan();
         }
         planMap = next;
     }
@@ -374,6 +401,15 @@
               style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">1</span>
         תחילה בחר עיר / שכונה
     </p>
+    <div class="relative">
+    <!-- Tutorial: tap pointer on the picker trigger -->
+    {#if tutorialStep === 'pick-city' && !showPicker}
+        <div class="absolute -left-3 md:-left-6 top-1/2 -translate-y-1/2 pointer-events-none z-30 select-none"
+             style="animation: tapBounce 1.2s ease-in-out infinite;"
+             aria-hidden="true">
+            <span class="text-4xl md:text-5xl drop-shadow-[0_0_8px_rgba(245,158,11,0.6)]">👈</span>
+        </div>
+    {/if}
     <button
         type="button"
         onclick={() => showPicker = !showPicker}
@@ -401,6 +437,7 @@
             </div>
         </div>
     </button>
+    </div>
 
     <!-- City Picker Panel -->
     {#if showPicker}
@@ -553,39 +590,65 @@
             <p class="text-gray-600 text-xs mt-4 text-center">המחיר מחושב לפי מספר השכונות הפעילות בכל עיר · ניתן לבחור מספר ערים</p>
 
             <!-- Confirm button — prominent, at the bottom -->
-            <button
-                type="button"
-                onclick={() => { showPicker = false; citySearchQuery = ''; showAllCities = false; }}
-                class="w-full mt-5 py-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-black font-black text-base shadow-lg shadow-amber-500/30 hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
-            >
-                ✓ אישור
-                {#if isNational}
-                    <span class="text-xs font-bold opacity-80">· ארצי ({totalNeighborhoodsCount} שכונות)</span>
-                {:else if selectedCities.size > 0}
-                    <span class="text-xs font-bold opacity-80">· {selectedCities.size === 1 ? `${[...selectedCities][0]}` : `${selectedCities.size} ערים`} ({neighborhoodCount} שכונות)</span>
+            <div class="relative mt-5">
+                {#if tutorialStep === 'pick-city'}
+                    <div class="absolute -left-2 md:-left-6 top-1/2 -translate-y-1/2 pointer-events-none z-30 select-none"
+                         style="animation: tapBounce 1.2s ease-in-out infinite;"
+                         aria-hidden="true">
+                        <span class="text-4xl md:text-5xl drop-shadow-[0_0_8px_rgba(245,158,11,0.6)]">👈</span>
+                    </div>
                 {/if}
-            </button>
+                <button
+                    type="button"
+                    onclick={() => { showPicker = false; citySearchQuery = ''; showAllCities = false; advanceFromCity(); }}
+                    class="w-full py-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-black font-black text-base shadow-lg shadow-amber-500/30 hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
+                >
+                    ✓ אישור
+                    {#if isNational}
+                        <span class="text-xs font-bold opacity-80">· ארצי ({totalNeighborhoodsCount} שכונות)</span>
+                    {:else if selectedCities.size > 0}
+                        <span class="text-xs font-bold opacity-80">· {selectedCities.size === 1 ? `${[...selectedCities][0]}` : `${selectedCities.size} ערים`} ({neighborhoodCount} שכונות)</span>
+                    {/if}
+                </button>
+            </div>
         </div>
     {/if}
 
     <!-- Pricing Table -->
-    <p class="text-gray-200 text-base font-bold text-center mb-6 leading-relaxed flex items-start justify-center gap-2">
-        <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0 mt-0.5"
+    <p class="text-gray-200 text-base font-bold text-center mb-3 leading-relaxed flex items-center justify-center gap-2">
+        <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
               style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">2</span>
-        <span>
-            סמן בכפתור על ידי הזזת המתג את אורך הזמן הרצוי לך,<br/>
-            הסיכום יופיע לך מיד במחשבון ↓
-        </span>
+        בחר את סוג הפרסום
+    </p>
+    <p class="text-gray-200 text-base font-bold text-center mb-6 leading-relaxed flex items-center justify-center gap-2 transition-opacity
+              {highlightedRow ? 'opacity-100' : 'opacity-50'}">
+        <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+              style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">3</span>
+        בחר את פרק הזמן הרצוי לך — הסיכום יופיע במחשבון ↓
     </p>
 
     <!-- Mobile cards (visible only on small screens) -->
     <div class="md:hidden space-y-3 mb-6">
-        {#each rows as row}
+        {#each rows as row, rowIdx}
             {@const plan = planMap.get(row.num)}
-            <div class="rounded-2xl border transition-colors px-4 py-3
+            {@const highlighted = !plan && highlightedRow === row.num}
+            <div role="button"
+                 tabindex="0"
+                 onclick={() => highlightRow(row.num)}
+                 onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); highlightRow(row.num); } }}
+                 class="rounded-2xl border transition-all px-4 py-3 relative cursor-pointer
                 {plan === 'half'   ? 'border-amber-500/50 bg-amber-500/10'
                  : plan === 'single' ? 'border-blue-500/50 bg-blue-500/10'
-                 :                    'border-white/10 bg-white/3'}">
+                 : highlighted     ? 'border-amber-400 bg-amber-500/15 shadow-lg shadow-amber-500/20 scale-[1.01]'
+                 :                    'border-white/10 bg-white/3 hover:border-white/25'}">
+                <!-- Tutorial pointer: pick-row → first row, pick-plan → highlighted row's toggle -->
+                {#if (tutorialStep === 'pick-row' && rowIdx === 0) || (tutorialStep === 'pick-plan' && highlightedRow === row.num)}
+                    <div class="absolute {tutorialStep === 'pick-plan' ? '-left-1 top-1' : '-right-2 top-2'} pointer-events-none z-30 select-none"
+                         style="animation: tapBounce 1.2s ease-in-out infinite;"
+                         aria-hidden="true">
+                        <span class="text-4xl drop-shadow-[0_0_8px_rgba(245,158,11,0.6)]">{tutorialStep === 'pick-plan' ? '👈' : '👇'}</span>
+                    </div>
+                {/if}
                 <!-- Row: name + toggle -->
                 <div class="flex items-center justify-between gap-3 mb-2">
                     <div class="flex items-center gap-2 min-w-0">
@@ -635,7 +698,15 @@
     </div>
 
     <!-- Desktop table (hidden on mobile) -->
-    <div class="hidden md:block mb-6 overflow-x-auto rounded-2xl border border-white/10">
+    <div class="hidden md:block mb-6 overflow-x-auto rounded-2xl border border-white/10 relative">
+        <!-- Tutorial: step 2 finger on first row (pick a row), step 3 finger on toggle of highlighted row -->
+        {#if tutorialStep === 'pick-row'}
+            <div class="absolute right-4 top-24 pointer-events-none z-30 select-none"
+                 style="animation: tapBounce 1.2s ease-in-out infinite;"
+                 aria-hidden="true">
+                <span class="text-5xl drop-shadow-[0_0_10px_rgba(245,158,11,0.7)]">👇</span>
+            </div>
+        {/if}
         <table class="w-full text-base text-right">
             <thead>
                 <tr class="bg-amber-500/20 border-b border-amber-500/30">
@@ -666,14 +737,17 @@
             <tbody>
                 {#each rows as row, i}
                     {@const plan = planMap.get(row.num)}
-                    <tr class="border-b border-white/5 transition-colors
+                    {@const highlighted = !plan && highlightedRow === row.num}
+                    <tr onclick={() => highlightRow(row.num)}
+                        class="border-b border-white/5 transition-all cursor-pointer relative
                         {plan === 'half'   ? 'bg-amber-500/10'
                          : plan === 'single' ? 'bg-blue-500/10'
-                         : i % 2 === 0      ? 'bg-white/3'
-                         :                    'bg-white/5'}">
+                         : highlighted     ? 'bg-amber-500/15 outline outline-2 outline-amber-400 outline-offset-[-2px]'
+                         : i % 2 === 0      ? 'bg-white/3 hover:bg-white/5'
+                         :                    'bg-white/5 hover:bg-white/8'}">
 
                         <td class="px-4 py-4 text-center font-bold
-                            {plan ? 'text-amber-400' : 'text-gray-400'}">{row.num}</td>
+                            {plan ? 'text-amber-400' : highlighted ? 'text-amber-300' : 'text-gray-400'}">{row.num}</td>
 
                         <td class="px-4 py-4 font-bold relative group/typecell
                             {plan === 'half' ? 'text-amber-300' : plan === 'single' ? 'text-blue-300' : 'text-white'}">
@@ -704,8 +778,13 @@
                         <td class="px-4 py-4 text-gray-400 text-sm">{row.details}</td>
 
                         <!-- 3-state toggle — last column = left side in RTL -->
-                        <td class="px-3 py-3 text-center border-r border-white/10"
+                        <td class="px-3 py-3 text-center border-r border-white/10 relative"
                             style="background: {plan === 'half' ? 'rgba(245,158,11,0.12)' : plan === 'single' ? 'rgba(59,130,246,0.12)' : 'rgba(255,255,255,0.06)'}">
+                            {#if tutorialStep === 'pick-plan' && highlightedRow === row.num}
+                                <span class="absolute -left-8 top-1/2 -translate-y-1/2 pointer-events-none z-30 select-none text-4xl drop-shadow-[0_0_10px_rgba(245,158,11,0.8)]"
+                                      style="animation: tapBounce 1.2s ease-in-out infinite;"
+                                      aria-hidden="true">👈</span>
+                            {/if}
                             <div class="flex justify-center" role="presentation" onclick={(e) => e.stopPropagation()}>
                                 <div
                                     class="relative inline-flex h-9 rounded-full transition-all duration-300"
@@ -872,7 +951,7 @@
                      style="animation: slideDown 0.25s ease-out;">
                     <p class="text-gray-300 text-sm font-bold mb-3 text-center flex items-center justify-center gap-2">
                         <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
-                              style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">3</span>
+                              style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">4</span>
                         📧 קבל אישור הזמנה למייל
                     </p>
                     <div class="flex flex-col sm:flex-row gap-2">
@@ -1013,6 +1092,17 @@
     </div>
 </div>
 
+<!-- Tutorial checkmark splash -->
+{#if showCheckmark}
+    <div class="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none"
+         aria-hidden="true">
+        <div class="w-32 h-32 rounded-full bg-green-500/30 border-4 border-green-400 flex items-center justify-center backdrop-blur"
+             style="animation: checkPop 0.9s ease-out;">
+            <span class="text-7xl">✓</span>
+        </div>
+    </div>
+{/if}
+
 <!-- Toast: neighborhood reminder -->
 {#if toastVisible}
     <div
@@ -1054,5 +1144,16 @@
     }
     @keyframes spin {
         to { transform: rotate(360deg); }
+    }
+    @keyframes tapBounce {
+        0%, 100% { transform: translateY(0) scale(1); }
+        30%      { transform: translateY(6px) scale(0.92); }
+        60%      { transform: translateY(-4px) scale(1.05); }
+    }
+    @keyframes checkPop {
+        0%   { opacity: 0; transform: scale(0.4); }
+        45%  { opacity: 1; transform: scale(1.15); }
+        70%  { transform: scale(0.95); }
+        100% { opacity: 0; transform: scale(1); }
     }
 </style>
