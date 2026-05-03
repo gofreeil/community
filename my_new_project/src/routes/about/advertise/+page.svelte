@@ -14,7 +14,7 @@
             border: "border-blue-500/40",
             bg: "bg-blue-900/10",
             features: ["חשיפה גבוהה בכל עמוד", "קהל מקומי ממוקד", "לינק לאתר שלך"],
-            image: "/images/Advertisement page/Desktop-advertisement.png",
+            image: "/images/advertisement-page/Desktop-advertisement.png",
         },
         {
             name: "כרטיס תוכן",
