@@ -396,28 +396,63 @@
 
     // ---- מרקרים דינמיים נטועים במפה (lat/lng אמיתי) ----
     const MAX_MARKERS = 30;
+
+    // דוגמאות mock — מוצגות בכל שכונה כל עוד אין באותה שכונה ולו פריט אמיתי אחד.
+    // לחיצה על מרקר דמו מובילה אל /add/{category} כדי לעודד הוספת פריט אמיתי.
+    const MOCK_ITEMS: { suffix: string; category: string; icon: string; label: string; color: string }[] = [
+        { suffix: 'gemach-books', category: 'gemachim',    icon: '📚', label: 'גמ״ח ספרים (דוגמה)',     color: 'rose' },
+        { suffix: 'gemach-tools', category: 'gemachim',    icon: '🔨', label: 'גמ״ח כלי עבודה (דוגמה)', color: 'amber' },
+        { suffix: 'babysitter',   category: 'business',    icon: '👶', label: 'בייבי סיטר (דוגמה)',     color: 'pink' },
+        { suffix: 'minyan',       category: 'minyanim',    icon: '✡️', label: 'מניין שחרית (דוגמה)',    color: 'blue' },
+        { suffix: 'art-class',    category: 'education',   icon: '🎨', label: 'חוג ציור (דוגמה)',       color: 'purple' },
+        { suffix: 'giveaway',     category: 'giveaway',    icon: '🛋️', label: 'מסירת ספה (דוגמה)',      color: 'teal' },
+        { suffix: 'attraction',   category: 'attractions', icon: '🎡', label: 'גן שעשועים (דוגמה)',     color: 'green' },
+    ];
+
     let dynamicMarkers = $derived.by(() => {
         const inHood = dbItems.filter(d =>
             d.neighborhood === neighborhoodState.neighborhood ||
             (d.neighborhood === '' && d.city === neighborhoodState.city)
         );
-        // מיון: חדשים קודם
-        const sorted = [...inHood].sort((a, b) =>
-            (b.created_at || '').localeCompare(a.created_at || '')
-        ).slice(0, MAX_MARKERS);
 
-        return sorted.map(item => {
-            const id = String(item.id);
-            const center = getCoordsFor(item.neighborhood, item.city);
+        // יש פריט אמיתי אחד לפחות — מציגים רק את האמיתיים, בלי דמו
+        if (inHood.length > 0) {
+            const sorted = [...inHood].sort((a, b) =>
+                (b.created_at || '').localeCompare(a.created_at || '')
+            ).slice(0, MAX_MARKERS);
+
+            return sorted.map(item => {
+                const id = String(item.id);
+                const center = getCoordsFor(item.neighborhood, item.city);
+                const [lat, lng] = jitterCoord(center, id);
+                return {
+                    id,
+                    category: item.category,
+                    lat,
+                    lng,
+                    icon:     item.icon  || '📌',
+                    label:    item.label || 'פריט',
+                    color:    item.color || 'purple',
+                    isMock:   false,
+                };
+            });
+        }
+
+        // אין פריטים אמיתיים בשכונה — דוגמאות לכל קטגוריה
+        const center = getCoordsFor(neighborhoodState.neighborhood, neighborhoodState.city);
+        const nbId = `${neighborhoodState.city}_${neighborhoodState.neighborhood}`;
+        return MOCK_ITEMS.map(m => {
+            const id = `mock-${nbId}-${m.suffix}`;
             const [lat, lng] = jitterCoord(center, id);
             return {
                 id,
-                category: item.category,
+                category: m.category,
                 lat,
                 lng,
-                icon:     item.icon  || '📌',
-                label:    item.label || 'פריט',
-                color:    item.color || 'purple',
+                icon:   m.icon,
+                label:  m.label,
+                color:  m.color,
+                isMock: true,
             };
         });
     });
@@ -455,11 +490,12 @@
         rose:     '#e11d48',
     };
 
-    function buildIconHtml(icon: string, label: string, color: string): string {
+    function buildIconHtml(icon: string, label: string, color: string, isMock = false): string {
         const hex = colorHex[color] ?? '#9333ea';
         const safeLabel = label.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const mockClass = isMock ? ' jmap-pin--mock' : '';
         return `
-            <div class="jmap-pin">
+            <div class="jmap-pin${mockClass}">
                 <div class="jmap-pin-icon">${icon}</div>
                 <div class="jmap-pin-label" style="background:${hex}">${safeLabel}</div>
             </div>
@@ -471,7 +507,7 @@
         mapMarkerLayer.clearLayers();
         for (const m of dynamicMarkers) {
             if (!isMarkerVisible(m.category)) continue;
-            const html = buildIconHtml(m.icon, m.label, m.color);
+            const html = buildIconHtml(m.icon, m.label, m.color, m.isMock);
             const divIcon = leafletL.divIcon({
                 className: 'jmap-pin-wrap',
                 html,
@@ -480,6 +516,11 @@
             });
             const marker = leafletL.marker([m.lat, m.lng], { icon: divIcon, riseOnHover: true });
             marker.on('click', () => {
+                // לחיצה על דמו = הזמנה להוסיף פריט אמיתי בקטגוריה הזו
+                if (m.isMock) {
+                    goto(`/add/${m.category}`);
+                    return;
+                }
                 if (window.innerWidth < 1024) {
                     triggerAdPopup(`/items/${m.id}`);
                 } else {
@@ -1752,6 +1793,21 @@
         overflow: hidden;
         text-overflow: ellipsis;
         box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+    /* מרקרי דוגמה — שקופים-למחצה עם מסגרת מקווקווית כדי להבדיל ממשהו אמיתי */
+    :global(.jmap-pin--mock) {
+        opacity: 0.78;
+    }
+    :global(.jmap-pin--mock .jmap-pin-icon) {
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4)) grayscale(0.15);
+    }
+    :global(.jmap-pin--mock .jmap-pin-label) {
+        outline: 1.5px dashed rgba(255,255,255,0.7);
+        outline-offset: 1px;
+        background-image: linear-gradient(rgba(255,255,255,0.12), rgba(0,0,0,0.0));
+    }
+    :global(.jmap-pin--mock:hover) {
+        opacity: 1;
     }
     /* z-index לעטיפת ה-Leaflet במצב מסך מלא */
     :global(.leaflet-container) {
