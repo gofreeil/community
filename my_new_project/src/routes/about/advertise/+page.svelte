@@ -638,18 +638,27 @@
     <!-- Pricing Table — step 2 (right in RTL) + step 3 (left in RTL) -->
     <div class="flex flex-row justify-between items-center gap-3 mb-6 px-1">
         <!-- Step 2 — right in RTL (first child) -->
-        <p class="text-gray-200 text-sm md:text-base font-bold leading-snug flex items-center gap-2 rounded-xl px-2 py-1 transition-all
-                  {tutorialStep === 'pick-row' ? 'attention-active' : 'opacity-90'}">
+        <p class="text-gray-200 text-sm md:text-base font-bold leading-snug flex items-center gap-2 rounded-xl px-2 py-1 opacity-90">
             <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
                   style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">2</span>
             בחר את סוג הפרסום
+            {#if tutorialStep === 'pick-row'}
+                <span class="inline-block pointer-events-none select-none text-base md:text-lg drop-shadow-[0_0_5px_rgba(245,158,11,0.45)]"
+                      style="animation: gentleHover 2.2s ease-in-out infinite;"
+                      aria-hidden="true">👇</span>
+            {/if}
         </p>
         <!-- Step 3 — left in RTL (last child) -->
-        <p class="text-gray-200 text-sm md:text-base font-bold leading-snug flex items-center gap-2 rounded-xl px-2 py-1 transition-all
-                  {tutorialStep === 'pick-plan' ? 'attention-active' : tutorialStep === 'pick-row' ? 'opacity-50' : 'opacity-90'}">
+        <p class="text-gray-200 text-sm md:text-base font-bold leading-snug flex items-center gap-2 rounded-xl px-2 py-1 transition-opacity
+                  {tutorialStep === 'pick-row' ? 'opacity-50' : 'opacity-90'}">
             <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
                   style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">3</span>
-            בחר את פרק הזמן ↓
+            בחר את פרק הזמן
+            {#if tutorialStep === 'pick-plan'}
+                <span class="inline-block pointer-events-none select-none text-base md:text-lg drop-shadow-[0_0_5px_rgba(245,158,11,0.45)]"
+                      style="animation: gentleHover 2.2s ease-in-out infinite;"
+                      aria-hidden="true">👇</span>
+            {/if}
         </p>
     </div>
 
@@ -671,11 +680,6 @@
                 <div class="flex items-center justify-between gap-3 mb-2">
                     <div class="flex items-center gap-2 min-w-0">
                         <span class="text-xs font-black text-gray-400 flex-shrink-0">#{row.num}</span>
-                        {#if tutorialStep === 'pick-row' && rowIdx === 0}
-                            <span class="text-2xl flex-shrink-0 drop-shadow-[0_0_6px_rgba(245,158,11,0.6)]"
-                                  style="animation: softFloat 1.6s ease-in-out infinite;"
-                                  aria-hidden="true">👈</span>
-                        {/if}
                         <span class="font-black text-white text-base truncate">{row.type}</span>
                     </div>
                     <!-- Toggle -->
@@ -766,11 +770,6 @@
 
                         <td class="px-4 py-4 font-bold relative group/typecell
                             {plan === 'half' ? 'text-amber-300' : plan === 'single' ? 'text-blue-300' : 'text-white'}">
-                            {#if tutorialStep === 'pick-row' && i === 0}
-                                <span class="inline-block align-middle text-2xl mr-1 drop-shadow-[0_0_6px_rgba(245,158,11,0.6)]"
-                                      style="animation: softFloat 1.6s ease-in-out infinite;"
-                                      aria-hidden="true">👈</span>
-                            {/if}
                             {row.type}
                             {#if row.num === 1}
                                 <!-- Tooltip: "פרסומת ארוכה" = הפרסומות שבצד ימין -->
@@ -798,13 +797,9 @@
                         <td class="px-4 py-4 text-gray-400 text-sm">{row.details}</td>
 
                         <!-- 3-state toggle — last column = left side in RTL -->
-                        <td class="px-3 py-3 text-center border-r border-white/10 relative"
+                        <td class="px-3 py-3 text-center border-r border-white/10"
                             style="background: {plan === 'half' ? 'rgba(245,158,11,0.12)' : plan === 'single' ? 'rgba(59,130,246,0.12)' : 'rgba(255,255,255,0.06)'}">
-                            {#if tutorialStep === 'pick-plan' && highlightedRow === row.num}
-                                <span class="absolute -left-8 top-1/2 -translate-y-1/2 pointer-events-none z-30 select-none text-4xl drop-shadow-[0_0_10px_rgba(245,158,11,0.8)]"
-                                      style="animation: tapBounce 1.2s ease-in-out infinite;"
-                                      aria-hidden="true">👈</span>
-                            {/if}
+
                             <div class="flex justify-center" role="presentation" onclick={(e) => e.stopPropagation()}>
                                 <div
                                     class="relative inline-flex h-9 rounded-full transition-all duration-300"
@@ -1180,22 +1175,6 @@
     @keyframes dealPulse {
         0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
         50%      { transform: scale(1.05); box-shadow: 0 0 8px 1px rgba(245, 158, 11, 0.4); }
-    }
-    @keyframes attentionPulse {
-        0%, 100% {
-            transform: scale(1);
-            box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
-            background: rgba(245, 158, 11, 0.08);
-        }
-        50% {
-            transform: scale(1.04);
-            box-shadow: 0 0 14px 2px rgba(245, 158, 11, 0.45);
-            background: rgba(245, 158, 11, 0.18);
-        }
-    }
-    :global(.attention-active) {
-        animation: attentionPulse 1.8s ease-in-out infinite;
-        opacity: 1 !important;
     }
     @keyframes checkPop {
         0%   { opacity: 0; transform: scale(0.4); }
