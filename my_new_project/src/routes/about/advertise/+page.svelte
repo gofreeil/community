@@ -9,7 +9,6 @@
             name: "באנר צד",
             icon: "📌",
             location: "מופיע בגירסת הדסקטופ",
-            size: "144×560px",
             color: "from-blue-600 to-cyan-600",
             border: "border-blue-500/40",
             bg: "bg-blue-900/10",
@@ -20,7 +19,6 @@
             name: "כרטיס תוכן",
             icon: "🖼️",
             location: "בתוכן עמוד הבית",
-            size: "192×auto",
             color: "from-purple-600 to-pink-600",
             border: "border-purple-500/40",
             bg: "bg-purple-900/10",
@@ -31,7 +29,6 @@
             name: "פרסומת נייד",
             icon: "📱",
             location: "באנר במסך מלא",
-            size: "מסך מלא",
             color: "from-green-600 to-emerald-600",
             border: "border-green-500/40",
             bg: "bg-green-900/10",
@@ -415,9 +412,6 @@
                             </li>
                         {/each}
                     </ul>
-                    <div class="mt-auto pt-3 md:pt-5">
-                        <div class="text-[10px] md:text-xs bg-white/10 rounded px-1.5 md:px-2 py-0.5 md:py-1 text-gray-300 inline-block w-fit">{pkg.size}</div>
-                    </div>
                 </div>
                 {#if pkg.image}
                     <div class="hidden md:block md:flex-1 md:rounded-lg md:overflow-hidden">
