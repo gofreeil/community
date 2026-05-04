@@ -68,8 +68,8 @@
         if (tutorialStep === 'pick-city') tutorialStep = 'pick-row';
         setTimeout(() => {
             showCheckmark = false;
-            // Very slow scroll to the publication-type table (~4.5s easeInOutCubic)
-            slowScrollTo(pricingHeadingEl, 4500);
+            // Slow scroll to the publication-type table (~3s easeInOutCubic)
+            slowScrollTo(pricingHeadingEl, 3000);
         }, 900);
     }
 
@@ -162,6 +162,8 @@
         }
         isNational = true;
         selectedCities = new Set();
+        // National scope is for "פרסומת ארוכה" (row 1) — highlight it immediately
+        highlightRow(1);
     }
 
     // Format numbers with thousands separator for readability
@@ -304,12 +306,12 @@
         confirmingRow = num;
         setTimeout(() => {
             confirmingRow = null;
-            slowScrollTo(calculatorEl, 4500);
+            slowScrollTo(calculatorEl, 3000);
             // When the scroll lands on the calculator, briefly flash the total amount
             setTimeout(() => {
                 flashTotal = true;
                 setTimeout(() => { flashTotal = false; }, 1500);
-            }, 4500);
+            }, 3000);
         }, 700);
     }
 
@@ -1092,7 +1094,7 @@
                                       style="animation: spin 0.7s linear infinite;"></span>
                                 שולח…
                             {:else}
-                                ✉️ שלח אישור — ₪{fmt(totalPayment)}
+                                ✉️ שלח תיעוד — ₪{fmt(totalPayment)}
                             {/if}
                         </button>
                     </div>
