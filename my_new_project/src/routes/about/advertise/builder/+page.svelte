@@ -1013,21 +1013,26 @@
         {#if previewMode === "desktop"}
             <div class="preview-frame desktop">
                 <div class="site-shot-frame" dir="rtl">
-                    <!-- Real site screenshot as background -->
-                    <img src="/images/advertisement-page/יוצאיםלחירות.png"
-                         alt="האתר"
-                         class="site-shot" />
+                    <!-- Inner element holds the screenshot at its natural aspect.
+                         The frame above clips overflow so the LEFT ad strip and the
+                         BOTTOM map area are hidden — leaving only the central content
+                         where the user's ad sits. -->
+                    <div class="site-shot-inner">
+                        <!-- Real site screenshot as background -->
+                        <img src="/images/advertisement-page/יוצאיםלחירות.png"
+                             alt="האתר"
+                             class="site-shot" />
 
-                    <!-- User's ad — overlaid on the FIRST right ad slot of the screenshot -->
-                    <div
-                        role="button"
-                        tabindex="0"
-                        class="site-shot-overlay desktop-ad pro-ad"
-                        onmouseenter={() => hoverPreview = true}
-                        onmouseleave={() => hoverPreview = false}
-                        onfocus={() => hoverPreview = true}
-                        onblur={() => hoverPreview = false}
-                    >
+                        <!-- User's ad — overlaid on the FIRST right ad slot of the screenshot -->
+                        <div
+                            role="button"
+                            tabindex="0"
+                            class="site-shot-overlay desktop-ad pro-ad"
+                            onmouseenter={() => hoverPreview = true}
+                            onmouseleave={() => hoverPreview = false}
+                            onfocus={() => hoverPreview = true}
+                            onblur={() => hoverPreview = false}
+                        >
                         <div class="ad-img-wrap pro-img-wrap site-shot-overlay-img">
                             {#if mainImage}
                                 <img src={mainImage} alt={title}
@@ -1062,8 +1067,9 @@
                             <p>{cta}</p>
                         </div>
                     </div>
+                    </div><!-- /.site-shot-inner -->
 
-                    <!-- "Your ad here" pointer arrow -->
+                    <!-- "Your ad here" pointer arrow — positioned on the cropper, not inner -->
                     <div class="site-shot-pointer">
                         ← הפרסומת שלך כאן
                     </div>
@@ -1698,41 +1704,61 @@
     }
 
     /* ============== DESKTOP PREVIEW — real site screenshot with overlay ============== */
+    /* The frame is a cropper: it has aspect-ratio matching the VISIBLE region (after we
+       hide the left ad strip and bottom map area). overflow:hidden clips the rest. */
     :global(.site-shot-frame) {
         position: relative;
-        width: 100%; max-width: 820px;
-        border-radius: 0.85rem; overflow: hidden;
+        width: 100%; max-width: 920px;
+        aspect-ratio: 1357 / 612;          /* visible portion: 92% × 70% of original 1475×875 */
+        overflow: hidden;
+        border-radius: 0.85rem;
         border: 1px solid rgba(255,255,255,0.08);
         box-shadow: 0 8px 30px rgba(0,0,0,0.4);
         background: #0f172a;
     }
-    :global(.site-shot) {
-        display: block; width: 100%; height: auto;
-    }
-    /* Overlay positioned on the FIRST right ad slot of the screenshot.
-       The screenshot has the right ads column at ~93%-99% from left, top first slot at ~17% */
-    :global(.site-shot-overlay) {
+    /* Inner holds the screenshot at its NATURAL aspect (1475:875). It is anchored to
+       the cropper's TOP-RIGHT corner and made wider than the cropper, so its left
+       portion is clipped. Its bottom also extends beyond the cropper, hiding the map. */
+    :global(.site-shot-inner) {
         position: absolute;
-        top: 17%;
-        right: 1.2%;
-        width: 6.2%;
+        top: 0;
+        right: 0;
+        width: calc(100% * 1475 / 1357);   /* ≈ 108.7% — restores full image width */
+        aspect-ratio: 1475 / 875;           /* explicit height for child % positioning */
+    }
+    :global(.site-shot) {
+        display: block; width: 100%; height: 100%;
+    }
+    /* Overlay positioned on the FIRST right ad slot. Percentages are relative to
+       .site-shot-inner (which mirrors the original image proportions). The chained
+       .desktop-ad selector here defeats the .desktop-ad block-display rule below. */
+    :global(.site-shot-overlay.desktop-ad) {
+        position: absolute;
+        top: 9%;
+        right: 1.5%;
+        width: 5%;
+        height: 60%;
         z-index: 5;
         cursor: pointer;
         border-radius: 4px;
         overflow: hidden;
         box-shadow: 0 0 0 2px rgba(255,255,255,0.6), 0 0 20px rgba(245,158,11,0.6);
         animation: overlayPulse 2.5s ease-in-out infinite;
+        display: flex;
+        flex-direction: column;
     }
     @keyframes overlayPulse {
         0%, 100% { box-shadow: 0 0 0 2px rgba(255,255,255,0.6), 0 0 20px rgba(245,158,11,0.6); }
         50%      { box-shadow: 0 0 0 3px rgba(255,255,255,0.85), 0 0 28px rgba(245,158,11,0.95); }
     }
     :global(.site-shot-overlay-img) {
+        flex: 1 1 0;          /* fills remaining vertical space in the flex column */
         width: 100%;
-        aspect-ratio: 144 / 450; /* matches real RightAdBanner slot */
         height: auto;
+        aspect-ratio: auto;   /* override pro-img-wrap default */
+        min-height: 0;
     }
-    :global(.site-shot-overlay .ad-cta) { padding: 0.25rem; }
+    :global(.site-shot-overlay .ad-cta) { flex: 0 0 auto; padding: 0.25rem; }
     :global(.site-shot-overlay .ad-cta p) { font-size: 0.45rem; line-height: 1.1; }
     :global(.site-shot-overlay .pro-title) { font-size: 0.5rem; line-height: 1.05; margin-bottom: 0.1rem; }
     :global(.site-shot-overlay .pro-sub)   { font-size: 0.38rem; line-height: 1.15; }
