@@ -1802,8 +1802,8 @@
        hide the left ad strip and bottom map area). overflow:hidden clips the rest. */
     :global(.site-shot-frame) {
         position: relative;
-        width: 100%; max-width: 920px;
-        aspect-ratio: 1357 / 612;          /* visible portion: 92% × 70% of original 1475×875 */
+        width: 100%; max-width: 1200px;
+        aspect-ratio: 1298 / 720;          /* visible portion: 88% × 82% of original 1475×875 — keeps the full right-ad slot inside the visible area */
         overflow: hidden;
         border-radius: 0.85rem;
         border: 1px solid rgba(255,255,255,0.08);
@@ -1817,7 +1817,7 @@
         position: absolute;
         top: 0;
         right: 0;
-        width: calc(100% * 1475 / 1357);   /* ≈ 108.7% — restores full image width */
+        width: calc(100% * 1475 / 1298);   /* ≈ 113.6% — restores full image width after 12% left crop */
         aspect-ratio: 1475 / 875;           /* explicit height for child % positioning */
     }
     :global(.site-shot) {
@@ -1830,8 +1830,8 @@
         position: absolute;
         top: 9%;
         right: 1.5%;
-        width: 5%;
-        height: 60%;
+        width: 5.5%;
+        height: 72%;
         z-index: 5;
         cursor: pointer;
         border-radius: 4px;
@@ -2177,13 +2177,21 @@
     :global(.crop-btn-confirm:hover) { transform: translateY(-1px); }
 
     /* ============== COLOR RAIL — vertical round palette next to preview ============== */
+    /* In RTL flex-row, justify-content:flex-end packs items toward the LEFT visually.
+       Combined with flex:1 on the desktop preview, the rail sits flush against the left
+       edge and the screenshot expands to fill the rest of the row. */
     :global(.preview-with-rail) {
         display: flex;
         flex-direction: row;
         align-items: center;
-        justify-content: center;
-        gap: 0.85rem;
+        justify-content: flex-end;
+        gap: 0.55rem;
         flex-wrap: wrap;
+    }
+    /* Desktop preview grows to fill the remaining row width — rail stays compact on left */
+    :global(.preview-frame.desktop) {
+        flex: 1 1 auto;
+        min-width: 0;
     }
     /* Two-column color picker — small gap between dots, no overlap */
     :global(.color-rail) {
