@@ -65,24 +65,31 @@
     let pricingHeadingEl: HTMLHeadingElement | null = $state(null);
     let flashTotal = $state(false);
 
-    // Step badges briefly pulse when their tutorial step becomes active
-    let step1Light = $state(false);
-    let step2Light = $state(false);
-    let step3Light = $state(false);
-    let step4Light = $state(false);
+    // Step indicator: number flashes briefly once, then the title lights up.
+    let step1NumLight = $state(false);  let step1TitleLight = $state(false);
+    let step2NumLight = $state(false);  let step2TitleLight = $state(false);
+    let step3NumLight = $state(false);  let step3TitleLight = $state(false);
+    let step4NumLight = $state(false);  let step4TitleLight = $state(false);
 
     $effect(() => {
         const step = tutorialStep;
-        let timer: number | null = null;
-        const flash = (setter: (v: boolean) => void) => {
-            setter(true);
-            timer = window.setTimeout(() => setter(false), 2200);
+        const NUM_MS   = 700;   // number flash duration (single, brief)
+        const TITLE_MS = 1500;  // title glow duration (after number)
+        const timers: number[] = [];
+        const flash = (
+            numSetter:   (v: boolean) => void,
+            titleSetter: (v: boolean) => void,
+        ) => {
+            numSetter(true);
+            timers.push(window.setTimeout(() => numSetter(false), NUM_MS));
+            timers.push(window.setTimeout(() => titleSetter(true),  NUM_MS));
+            timers.push(window.setTimeout(() => titleSetter(false), NUM_MS + TITLE_MS));
         };
-        if      (step === 'pick-city') flash(v => step1Light = v);
-        else if (step === 'pick-row')  flash(v => step2Light = v);
-        else if (step === 'pick-plan') flash(v => step3Light = v);
-        else if (step === 'done')      flash(v => step4Light = v);
-        return () => { if (timer !== null) clearTimeout(timer); };
+        if      (step === 'pick-city') flash(v => step1NumLight = v, v => step1TitleLight = v);
+        else if (step === 'pick-row')  flash(v => step2NumLight = v, v => step2TitleLight = v);
+        else if (step === 'pick-plan') flash(v => step3NumLight = v, v => step3TitleLight = v);
+        else if (step === 'done')      flash(v => step4NumLight = v, v => step4TitleLight = v);
+        return () => { for (const t of timers) clearTimeout(t); };
     });
 
     function advanceFromCity() {
@@ -518,9 +525,10 @@
     <h2 bind:this={pricingHeadingEl} class="text-xl md:text-4xl font-black text-white mb-6 md:mb-8 text-center scroll-mt-4">מחירון</h2>
 
     <!-- Neighborhood picker trigger -->
-    <p class="text-gray-300 text-base font-bold text-center mb-3 flex items-center justify-center gap-2 relative">
+    <p class="text-gray-300 text-base font-bold text-center mb-3 flex items-center justify-center gap-2 relative"
+       class:step-title-light={step1TitleLight}>
         <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
-              class:step-active-light={step1Light}
+              class:step-num-light={step1NumLight}
               style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">1</span>
         תחילה בחר עיר / שכונה
         {#if tutorialStep === 'pick-city' && !showPicker}
@@ -739,9 +747,10 @@
     <!-- Pricing Table — step 2 (right in RTL) + step 3 (left in RTL) -->
     <div class="flex flex-row justify-between items-center gap-3 mb-6 px-1">
         <!-- Step 2 — right in RTL (first child) -->
-        <p class="text-gray-200 text-sm md:text-base font-bold leading-snug flex items-center gap-2 rounded-xl px-2 py-1 opacity-90">
+        <p class="text-gray-200 text-sm md:text-base font-bold leading-snug flex items-center gap-2 rounded-xl px-2 py-1 opacity-90"
+           class:step-title-light={step2TitleLight}>
             <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
-                  class:step-active-light={step2Light}
+                  class:step-num-light={step2NumLight}
                   style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">2</span>
             בחר את סוג הפרסום
             {#if tutorialStep === 'pick-row'}
@@ -751,9 +760,10 @@
         </p>
         <!-- Step 3 — left in RTL (last child) -->
         <p class="text-gray-200 text-sm md:text-base font-bold leading-snug flex items-center gap-2 rounded-xl px-2 py-1 transition-opacity
-                  {tutorialStep === 'pick-row' ? 'opacity-50' : 'opacity-90'}">
+                  {tutorialStep === 'pick-row' ? 'opacity-50' : 'opacity-90'}"
+           class:step-title-light={step3TitleLight}>
             <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
-                  class:step-active-light={step3Light}
+                  class:step-num-light={step3NumLight}
                   style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">3</span>
             בחר את פרק הזמן
             {#if tutorialStep === 'pick-plan'}
@@ -1043,9 +1053,9 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 items-stretch">
 
             <!-- Total -->
-            <div class="rounded-2xl border-2 border-white/20 bg-white/5 px-6 py-4 text-center">
+            <div class="rounded-2xl border-2 border-white/20 bg-white/5 px-6 py-4 text-center flex flex-col justify-center gap-3">
                 <!-- Per-item math breakdown — rate × neighborhoods × months -->
-                <div class="space-y-1.5 mb-3">
+                <div class="space-y-1.5">
                     {#each selectedItems as item}
                         <p class="text-gray-100 text-base md:text-lg font-bold leading-snug">
                             <span class="{item.plan === 'half' ? 'text-amber-300' : 'text-blue-300'}">{item.type}:</span>
@@ -1097,14 +1107,15 @@
                 <!-- Email + WhatsApp input -->
                 <div class="rounded-2xl border border-white/15 bg-white/3 p-5 flex flex-col justify-center"
                      style="animation: slideDown 0.25s ease-out;">
-                    <p class="text-gray-300 text-sm font-bold mb-3 text-center flex items-center justify-center gap-2">
+                    <p class="text-gray-300 text-sm font-bold mb-3 text-center flex items-center justify-center gap-2"
+                       class:step-title-light={step4TitleLight}>
                         <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
-                              class:step-active-light={step4Light}
+                              class:step-num-light={step4NumLight}
                               style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">4</span>
                         📧 קבל אישור הזמנה — מייל / וואטסאפ
                     </p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        <!-- Right column (RTL): phone + WhatsApp -->
+                    <div class="flex flex-col gap-2">
+                        <!-- Row 1: phone + WhatsApp -->
                         <div class="flex flex-col sm:flex-row gap-2">
                             <input
                                 type="tel"
@@ -1128,7 +1139,7 @@
                                 💬 שלח בוואטסאפ
                             </a>
                         </div>
-                        <!-- Left column (RTL): email + send-email -->
+                        <!-- Row 2: email + send-email -->
                         <div class="flex flex-col sm:flex-row gap-2">
                             <input
                                 type="email"
@@ -1210,9 +1221,10 @@
 
     <!-- Secure Payment -->
     <div class="mt-8 rounded-2xl bg-white/3 border border-white/10 p-6 md:p-8" dir="rtl">
-        <h2 class="text-xl md:text-2xl font-black text-white mb-2 text-center flex items-center justify-center gap-2">
+        <h2 class="text-xl md:text-2xl font-black text-white mb-2 text-center flex items-center justify-center gap-2"
+            class:step-title-light={step4TitleLight}>
             <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
-                  class:step-active-light={step4Light}
+                  class:step-num-light={step4NumLight}
                   style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">4</span>
             🔒 תשלום מאובטח
         </h2>
@@ -1374,13 +1386,22 @@
         100% { opacity: 0; transform: scale(1); }
     }
 
-    /* Step indicator pulse — highlights the active step's number badge for ~2.2s */
-    @keyframes stepActiveLightAnim {
+    /* Step indicator — single brief flash on the number badge (~0.7s) */
+    @keyframes stepNumFlashAnim {
         0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); transform: scale(1); filter: brightness(1); }
-        50%      { box-shadow: 0 0 18px 6px rgba(251, 191, 36, 0.85); transform: scale(1.2); filter: brightness(1.4); }
+        50%      { box-shadow: 0 0 18px 6px rgba(251, 191, 36, 0.95); transform: scale(1.25); filter: brightness(1.55); }
     }
-    :global(.step-active-light) {
-        animation: stepActiveLightAnim 1.1s ease-in-out 2;
+    :global(.step-num-light) {
+        animation: stepNumFlashAnim 0.7s ease-in-out 1;
+    }
+
+    /* Step indicator — title glow that lights up AFTER the number flash (~1.5s) */
+    @keyframes stepTitleGlowAnim {
+        0%, 100% { color: rgb(229 231 235); text-shadow: 0 0 0 rgba(251, 191, 36, 0); }
+        50%      { color: #fbbf24;            text-shadow: 0 0 14px rgba(251, 191, 36, 0.9), 0 0 28px rgba(251, 191, 36, 0.5); }
+    }
+    :global(.step-title-light) {
+        animation: stepTitleGlowAnim 1.5s ease-in-out 1;
     }
 
     /* Subtle flash on the total amount when the slow scroll lands on the calculator */
