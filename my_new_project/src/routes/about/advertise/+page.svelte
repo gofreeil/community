@@ -25,7 +25,7 @@
             border: "border-purple-500/40",
             bg: "bg-purple-900/10",
             features: ["הופעה על המפה וברשימת התצוגה"],
-            image: null,
+            image: "/images/advertisement-page/neighborhood-map.png",
         },
         {
             name: "פרסומת נייד",
