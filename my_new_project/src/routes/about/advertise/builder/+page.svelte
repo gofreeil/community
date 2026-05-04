@@ -45,9 +45,90 @@
     // ===== Form state =====
     type ProductRow = { id: number; name: string; price: string; image: string; description: string };
 
-    let logo            = $state<string>("");                  // base64 data url
+    let logo            = $state<string>("");                  // base64 data url — what is rendered (cropped circle or original)
+    let logoOriginal    = $state<string>("");                  // base64 data url — raw upload kept as cropping source
     let logoShape       = $state<"square" | "circle">("square");
+    let hasCircleCrop   = $state<boolean>(false);              // true once user confirmed a circular crop
     let logoPosition    = $state<"right" | "left">("right");
+
+    // ===== Logo circular crop modal =====
+    const CROP_STAGE = 320;
+    let cropOpen     = $state(false);
+    let cropZoom     = $state(1);
+    let cropOffsetX  = $state(0);
+    let cropOffsetY  = $state(0);
+    let cropDragging = false;
+    let cropDragStartX = 0, cropDragStartY = 0;
+    let cropBaseOffsetX = 0, cropBaseOffsetY = 0;
+
+    function openCropper() {
+        if (!logoOriginal) return;
+        if (!hasCircleCrop) { cropZoom = 1; cropOffsetX = 0; cropOffsetY = 0; }
+        cropOpen = true;
+    }
+    function cancelCrop() {
+        cropOpen = false;
+        if (!hasCircleCrop) {
+            logoShape = "square";
+            if (logoOriginal) logo = logoOriginal;
+        }
+    }
+    async function confirmCrop() {
+        if (!logoOriginal) { cropOpen = false; return; }
+        const img = new Image();
+        img.src = logoOriginal;
+        await new Promise<void>((resolve, reject) => { img.onload = () => resolve(); img.onerror = () => reject(); });
+
+        const stage = CROP_STAGE;
+        const aspectImg = img.width / img.height;
+        let drawW: number, drawH: number;
+        if (aspectImg > 1) { drawW = stage; drawH = stage / aspectImg; }
+        else               { drawH = stage; drawW = stage * aspectImg; }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = stage; canvas.height = stage;
+        const ctx = canvas.getContext("2d")!;
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(stage / 2, stage / 2, stage / 2, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.translate(stage / 2 + cropOffsetX, stage / 2 + cropOffsetY);
+        ctx.scale(cropZoom, cropZoom);
+        ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
+        ctx.restore();
+
+        logo = canvas.toDataURL("image/png");
+        hasCircleCrop = true;
+        cropOpen = false;
+    }
+    function chooseSquare() {
+        logoShape = "square";
+        if (logoOriginal) logo = logoOriginal;
+    }
+    function chooseCircle() {
+        logoShape = "circle";
+        if (logoOriginal) openCropper();
+    }
+    function cropPointerDown(e: PointerEvent) {
+        cropDragging = true;
+        cropDragStartX = e.clientX; cropDragStartY = e.clientY;
+        cropBaseOffsetX = cropOffsetX; cropBaseOffsetY = cropOffsetY;
+        (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    }
+    function cropPointerMove(e: PointerEvent) {
+        if (!cropDragging) return;
+        cropOffsetX = cropBaseOffsetX + (e.clientX - cropDragStartX);
+        cropOffsetY = cropBaseOffsetY + (e.clientY - cropDragStartY);
+    }
+    function cropPointerUp(e: PointerEvent) {
+        cropDragging = false;
+        try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
+    }
+    function cropWheel(e: WheelEvent) {
+        e.preventDefault();
+        const delta = -e.deltaY * 0.0015;
+        cropZoom = Math.max(0.3, Math.min(4, cropZoom + delta));
+    }
     let mainImage       = $state<string>("");                  // base64 data url
     let title           = $state<string>("");
     let subtitle        = $state<string>("");
@@ -181,7 +262,10 @@
             mainImage = url;
             if (activeStep === "image") advance("logo");
         } else if (target === "logo") {
+            logoOriginal = url;
             logo = url;
+            hasCircleCrop = false;
+            if (logoShape === "circle") openCropper();
             if (activeStep === "logo") advance("title");
         } else {
             const idx = products.findIndex(p => p.id === target.id);
@@ -199,7 +283,7 @@
 
     function clearImage(target: "main" | "logo") {
         if (target === "main") mainImage = "";
-        else logo = "";
+        else { logo = ""; logoOriginal = ""; hasCircleCrop = false; }
     }
 
     async function handleProductImage(e: Event, id: number) {
@@ -333,7 +417,9 @@
             if (raw) {
                 const d = JSON.parse(raw);
                 logo            = d.logo ?? "";
+                logoOriginal    = d.logoOriginal ?? d.logo ?? "";
                 logoShape       = d.logoShape ?? "square";
+                hasCircleCrop   = Boolean(d.hasCircleCrop);
                 logoPosition    = d.logoPosition ?? "right";
                 mainImage       = d.mainImage ?? "";
                 title           = d.title ?? "";
@@ -367,7 +453,7 @@
     $effect(() => {
         if (!browser) return;
         const snapshot = {
-            logo, logoShape, logoPosition, mainImage, title, subtitle, hoverText, essenceText, cta, gradient,
+            logo, logoOriginal, hasCircleCrop, logoShape, logoPosition, mainImage, title, subtitle, hoverText, essenceText, cta, gradient,
             landingHeadline, landingPitch, uniqueness, phone, whatsapp, website,
             email, address, hours, products,
         };
@@ -473,7 +559,7 @@
                             נותרו לך <strong class="text-amber-200 text-base">{fmtCountdown(freeMsRemaining)}</strong>
                             (שעות:דקות) לעריכה ללא תשלום נוסף.
                             כדאי <strong class="text-amber-200">לסיים את העריכה היום</strong> —
-                            אחרי חצות, זמן העריכה החינמי מסתיים והפרסומת תרוץ עד {fmtDateShort(new Date(paidAt.getTime() + 30*24*60*60*1000))}.
+                            אחרי חצות, זמן העריכה החינמי מסתיים והפרסומת תרוץ עד כולל {fmtDateShort(new Date(paidAt.getTime() + 30*24*60*60*1000))}.
                         </p>
                     </div>
                 </div>
@@ -580,7 +666,7 @@
         </div>
         <p class="step-help">העלה לוגו — עדיף עם רקע שקוף (PNG). יוצב <strong class="text-amber-300">קטן בפינה</strong> של הפרסומת. אם אין לוגו — דלג.</p>
 
-        <div class="flex items-start gap-4 flex-wrap">
+        <div class="flex items-center gap-3 flex-wrap">
             <label class="upload-zone-sm"
                    class:has-image={!!logo}
                    class:dragging={isDraggingLogo}
@@ -600,33 +686,39 @@
             </label>
 
             {#if logo}
-                <!-- Logo shape + position controls -->
-                <div class="flex flex-col gap-3 self-center min-w-[180px]">
+                <!-- Logo shape + position controls — placed side-by-side -->
+                <div class="flex flex-row flex-wrap gap-2 self-center">
                     <div>
-                        <p class="text-xs font-bold text-gray-400 mb-1.5">צורת חיתוך:</p>
+                        <p class="text-xs font-bold text-gray-400 mb-1">צורת חיתוך:</p>
                         <div class="inline-flex rounded-lg border border-white/10 bg-black/20 p-1">
-                            <button type="button" onclick={() => logoShape = "square"}
-                                class="px-3 py-1.5 rounded-md text-xs font-bold transition-colors
+                            <button type="button" onclick={chooseSquare}
+                                class="px-2.5 py-1 rounded-md text-xs font-bold transition-colors
                                        {logoShape === 'square' ? 'bg-amber-500 text-black' : 'text-gray-300 hover:text-white'}">
                                 ⬛ מרובע
                             </button>
-                            <button type="button" onclick={() => logoShape = "circle"}
-                                class="px-3 py-1.5 rounded-md text-xs font-bold transition-colors
+                            <button type="button" onclick={chooseCircle}
+                                class="px-2.5 py-1 rounded-md text-xs font-bold transition-colors
                                        {logoShape === 'circle' ? 'bg-amber-500 text-black' : 'text-gray-300 hover:text-white'}">
                                 ⚫ עגול
                             </button>
                         </div>
+                        {#if logoShape === 'circle' && hasCircleCrop}
+                            <button type="button" onclick={openCropper}
+                                class="mt-1 text-[10px] text-amber-300 hover:text-amber-200 underline">
+                                ✂️ ערוך חיתוך
+                            </button>
+                        {/if}
                     </div>
                     <div>
-                        <p class="text-xs font-bold text-gray-400 mb-1.5">פינה:</p>
+                        <p class="text-xs font-bold text-gray-400 mb-1">יוצג בפינה:</p>
                         <div class="inline-flex rounded-lg border border-white/10 bg-black/20 p-1">
                             <button type="button" onclick={() => logoPosition = "right"}
-                                class="px-3 py-1.5 rounded-md text-xs font-bold transition-colors
+                                class="px-2.5 py-1 rounded-md text-xs font-bold transition-colors
                                        {logoPosition === 'right' ? 'bg-amber-500 text-black' : 'text-gray-300 hover:text-white'}">
                                 ⬆️ ימין
                             </button>
                             <button type="button" onclick={() => logoPosition = "left"}
-                                class="px-3 py-1.5 rounded-md text-xs font-bold transition-colors
+                                class="px-2.5 py-1 rounded-md text-xs font-bold transition-colors
                                        {logoPosition === 'left' ? 'bg-amber-500 text-black' : 'text-gray-300 hover:text-white'}">
                                 ⬆️ שמאל
                             </button>
@@ -643,6 +735,38 @@
                 {logo ? "סיימתי, עבור לשלב הבא ←" : "דלג שלב זה →"}
             </button>
         </div>
+
+        <!-- ===== Circular crop modal ===== -->
+        {#if cropOpen}
+            <div class="crop-modal-bg" role="dialog" aria-modal="true" aria-label="חיתוך לוגו לעיגול">
+                <div class="crop-modal">
+                    <div class="crop-modal-head">
+                        <h3>חיתוך הלוגו לעיגול</h3>
+                        <button type="button" class="crop-modal-x" onclick={cancelCrop} aria-label="סגור">✕</button>
+                    </div>
+                    <p class="crop-help">גרור את התמונה לכל כיוון, וזום פנימה/החוצה. החלק שבתוך העיגול הוא מה שיוצג.</p>
+                    <div class="crop-stage"
+                         onpointerdown={cropPointerDown}
+                         onpointermove={cropPointerMove}
+                         onpointerup={cropPointerUp}
+                         onpointercancel={cropPointerUp}
+                         onwheel={cropWheel}>
+                        <img src={logoOriginal} alt="לוגו" class="crop-img" draggable="false"
+                             style:transform="translate({cropOffsetX}px, {cropOffsetY}px) scale({cropZoom})" />
+                        <div class="crop-circle-mask"></div>
+                    </div>
+                    <div class="crop-controls">
+                        <span class="crop-zoom-label">🔍 זום</span>
+                        <input type="range" min="0.3" max="4" step="0.01" bind:value={cropZoom} class="crop-zoom-slider" aria-label="רמת זום" />
+                        <span class="crop-zoom-val">{Math.round(cropZoom * 100)}%</span>
+                    </div>
+                    <div class="crop-actions">
+                        <button type="button" class="crop-btn-cancel" onclick={cancelCrop}>ביטול</button>
+                        <button type="button" class="crop-btn-confirm" onclick={confirmCrop}>✓ אשר חיתוך</button>
+                    </div>
+                </div>
+            </div>
+        {/if}
     </section>
 
     <!-- =================== STEP 3: TITLE =================== -->
@@ -1718,6 +1842,98 @@
     }
     :global(.ad-cta) { padding: 0.65rem; text-align: center; }
     :global(.ad-cta p) { color: white; font-weight: 700; font-size: 0.72rem; line-height: 1.3; margin: 0; }
+
+    /* ============== LOGO CIRCULAR CROP MODAL ============== */
+    :global(.crop-modal-bg) {
+        position: fixed; inset: 0; z-index: 999;
+        background: rgba(0,0,0,0.75);
+        display: flex; align-items: center; justify-content: center;
+        padding: 1rem;
+        backdrop-filter: blur(4px);
+    }
+    :global(.crop-modal) {
+        background: #0f172a;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 1rem;
+        padding: 1.1rem;
+        max-width: 95vw;
+        width: 380px;
+        box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+        direction: rtl;
+    }
+    :global(.crop-modal-head) {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 0.4rem;
+    }
+    :global(.crop-modal-head h3) {
+        color: white; font-weight: 800; font-size: 1.05rem; margin: 0;
+    }
+    :global(.crop-modal-x) {
+        background: transparent; border: none; color: rgba(255,255,255,0.7);
+        font-size: 1.1rem; cursor: pointer; padding: 0.25rem 0.5rem;
+        line-height: 1;
+    }
+    :global(.crop-modal-x:hover) { color: white; }
+    :global(.crop-help) {
+        color: rgba(255,255,255,0.7); font-size: 0.78rem; line-height: 1.4;
+        margin: 0 0 0.7rem 0;
+    }
+    :global(.crop-stage) {
+        position: relative;
+        width: 100%; aspect-ratio: 1 / 1;
+        background: #111;
+        border-radius: 0.6rem;
+        overflow: hidden;
+        cursor: grab;
+        touch-action: none;
+        user-select: none;
+    }
+    :global(.crop-stage:active) { cursor: grabbing; }
+    :global(.crop-img) {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        object-fit: contain;
+        pointer-events: none;
+        user-select: none;
+        -webkit-user-drag: none;
+        transform-origin: center;
+        will-change: transform;
+    }
+    :global(.crop-circle-mask) {
+        position: absolute; inset: 0;
+        border-radius: 50%;
+        box-shadow: 0 0 0 9999px rgba(0,0,0,0.55);
+        pointer-events: none;
+        border: 2px dashed rgba(255,255,255,0.55);
+    }
+    :global(.crop-controls) {
+        display: flex; align-items: center; gap: 0.65rem;
+        margin: 0.85rem 0 0.6rem 0;
+    }
+    :global(.crop-zoom-label) { color: rgba(255,255,255,0.85); font-size: 0.85rem; flex-shrink: 0; }
+    :global(.crop-zoom-slider) { flex: 1; accent-color: #f59e0b; }
+    :global(.crop-zoom-val) { color: rgba(255,255,255,0.7); font-size: 0.78rem; min-width: 3rem; text-align: left; }
+    :global(.crop-actions) {
+        display: flex; gap: 0.5rem; justify-content: flex-end;
+    }
+    :global(.crop-btn-cancel) {
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.12);
+        color: rgba(255,255,255,0.85);
+        padding: 0.55rem 1rem; border-radius: 0.65rem;
+        font-weight: 700; font-size: 0.85rem; cursor: pointer;
+        transition: background 150ms;
+    }
+    :global(.crop-btn-cancel:hover) { background: rgba(255,255,255,0.12); }
+    :global(.crop-btn-confirm) {
+        background: linear-gradient(to right, #f59e0b, #ea580c);
+        border: none; color: black;
+        padding: 0.55rem 1.25rem; border-radius: 0.65rem;
+        font-weight: 800; font-size: 0.9rem; cursor: pointer;
+        transition: transform 150ms;
+    }
+    :global(.crop-btn-confirm:hover) { transform: translateY(-1px); }
 
     /* ============== COLOR RAIL — vertical round palette next to preview ============== */
     :global(.preview-with-rail) {
