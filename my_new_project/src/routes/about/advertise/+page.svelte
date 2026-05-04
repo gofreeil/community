@@ -36,7 +36,7 @@
             border: "border-green-500/40",
             bg: "bg-green-900/10",
             features: ["נראות מקסימלית בנייד", "מופיע לכל מבקר", "קישור ישיר לעסק"],
-            image: null,
+            image: "/images/advertisement-page/mobile.png",
         },
     ];
 
