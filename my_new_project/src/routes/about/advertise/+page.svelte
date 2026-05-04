@@ -35,7 +35,7 @@
             color: "from-green-600 to-emerald-600",
             border: "border-green-500/40",
             bg: "bg-green-900/10",
-            features: ["נראות מקסימלית בנייד", "מופיע לכל מבקר", "קישור ישיר לעסק"],
+            features: ["פרסומת ל4 שניות כאשר הגולש לוחץ על היתרונות באתר", "כולל דף נחיתה", "קישור ישיר לאתר המפרסם"],
             image: "/images/advertisement-page/mobile.png",
             imageScale: 1.25,
         },
