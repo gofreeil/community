@@ -139,6 +139,8 @@
     let landingHeadline = $state<string>("");
     let landingPitch    = $state<string>("");
     let landingExtended = $state<string>("");
+    let landingImage    = $state<string>("");                   // separate hero image for landing page
+    let landingAdvantages = $state<[string, string, string]>(["", "", ""]); // 3 product/service advantages
     let uniqueness      = $state<string>("");
     let phone           = $state<string>(data?.layoutUser?.phone ?? "");
     let whatsapp        = $state<string>(data?.layoutUser?.phone ?? "");
@@ -236,6 +238,7 @@
     // ===== Drag-and-drop state (visual highlight per zone) =====
     let isDraggingMain = $state(false);
     let isDraggingLogo = $state(false);
+    let isDraggingLandingImage = $state(false);
     let draggingProductId = $state<number | null>(null);
 
     // ===== Image upload helpers =====
@@ -327,6 +330,8 @@
             hasCircleCrop = false;
             if (logoShape === "circle") openCropper();
             if (activeStep === "logo") advance("title");
+        } else if (target === "landingImage") {
+            landingImage = url;
         } else {
             const idx = products.findIndex(p => p.id === target.id);
             if (idx >= 0) {
@@ -336,13 +341,14 @@
         }
     }
 
-    async function handleImage(e: Event, target: "main" | "logo") {
+    async function handleImage(e: Event, target: "main" | "logo" | "landingImage") {
         const f = (e.target as HTMLInputElement).files?.[0];
         await processImageFile(f, target);
     }
 
-    function clearImage(target: "main" | "logo") {
+    function clearImage(target: "main" | "logo" | "landingImage") {
         if (target === "main") mainImage = "";
+        else if (target === "landingImage") landingImage = "";
         else { logo = ""; logoOriginal = ""; hasCircleCrop = false; }
     }
 
@@ -363,7 +369,7 @@
         e.stopPropagation();
         setActive(false);
     }
-    async function handleDrop(e: DragEvent, target: "main" | "logo" | { kind: "product"; id: number }, setActive: (v: boolean) => void) {
+    async function handleDrop(e: DragEvent, target: "main" | "logo" | "landingImage" | { kind: "product"; id: number }, setActive: (v: boolean) => void) {
         e.preventDefault();
         e.stopPropagation();
         setActive(false);
@@ -491,6 +497,14 @@
                 landingHeadline = d.landingHeadline ?? "";
                 landingPitch    = d.landingPitch ?? "";
                 landingExtended = d.landingExtended ?? "";
+                landingImage    = d.landingImage ?? "";
+                if (Array.isArray(d.landingAdvantages)) {
+                    landingAdvantages = [
+                        d.landingAdvantages[0] ?? "",
+                        d.landingAdvantages[1] ?? "",
+                        d.landingAdvantages[2] ?? "",
+                    ];
+                }
                 uniqueness      = d.uniqueness ?? "";
                 phone           = d.phone ?? phone;
                 whatsapp        = d.whatsapp ?? whatsapp;
@@ -515,7 +529,7 @@
         if (!browser) return;
         const snapshot = {
             logo, logoOriginal, hasCircleCrop, logoShape, logoPosition, mainImage, title, subtitle, hoverText, essenceText, cta, gradient,
-            landingHeadline, landingPitch, landingExtended, uniqueness, phone, whatsapp, website,
+            landingHeadline, landingPitch, landingExtended, landingImage, landingAdvantages, uniqueness, phone, whatsapp, website,
             email, address, hours, products,
         };
         try { localStorage.setItem(LS_KEY, JSON.stringify(snapshot)); } catch {}
@@ -538,7 +552,7 @@
             const payload = {
                 title, subtitle, hoverText, cta, gradient,
                 logo, mainImage,
-                landing: { headline: landingHeadline, pitch: landingPitch, extended: landingExtended, uniqueness, phone, whatsapp, website, email, address, hours, products },
+                landing: { headline: landingHeadline, pitch: landingPitch, extended: landingExtended, image: landingImage, advantages: landingAdvantages, uniqueness, phone, whatsapp, website, email, address, hours, products },
                 submittedAt: new Date().toISOString(),
             };
             const queue = JSON.parse(localStorage.getItem("ad_submissions_queue") ?? "[]");
@@ -1085,12 +1099,14 @@
             <div class="preview-frame landing">
                 <div class="landing-mock">
                     <header class="landing-hero bg-gradient-to-br {gradient}">
-                        {#if mainImage}
-                            <img src={mainImage} alt={title} class="landing-hero-bg" />
+                        {#if landingImage || mainImage}
+                            <img src={landingImage || mainImage} alt={title} class="landing-hero-bg" />
                         {/if}
                         <div class="landing-hero-overlay"></div>
+                        {#if logo}
+                            <img src={logo} alt="לוגו" class="landing-logo {logoShape === 'circle' ? 'landing-logo-circle' : ''}" />
+                        {/if}
                         <div class="landing-hero-content">
-                            {#if logo}<img src={logo} alt="לוגו" class="landing-logo" />{/if}
                             <h1>{landingHeadline || title || "כותרת מרכזית"}</h1>
                             <p>{landingPitch || subtitle || "תיאור קצר ומושך"}</p>
                             {#if phone}
@@ -1102,6 +1118,22 @@
                             {/if}
                         </div>
                     </header>
+
+                    {#if landingAdvantages.some(a => a.trim())}
+                        <section class="landing-section landing-advantages">
+                            <h2>3 סיבות לבחור בנו</h2>
+                            <ul class="advantages-list">
+                                {#each landingAdvantages as adv, i}
+                                    {#if adv.trim()}
+                                        <li class="advantage-item">
+                                            <span class="advantage-check bg-gradient-to-br {gradient}" aria-hidden="true">✓</span>
+                                            <span class="advantage-text">{adv}</span>
+                                        </li>
+                                    {/if}
+                                {/each}
+                            </ul>
+                        </section>
+                    {/if}
 
                     {#if landingExtended}
                         <section class="landing-section">
@@ -1281,6 +1313,49 @@
                 <textarea bind:value={landingExtended} rows="8"
                           placeholder="לדוגמה: אנחנו פועלים בשכונה כבר 12 שנה ומלווים מאות משפחות בכל גיל. הסטנדרטים שלנו...&#10;&#10;מה שמייחד אותנו: ..."
                           class="text-input"></textarea>
+            </div>
+
+            <div class="md:col-span-2">
+                <label class="field-label">🖼️ תמונה לדף הנחיתה (אופציונלי — אחרת נשתמש בתמונת הפרסומת)</label>
+                <p class="text-xs text-gray-400 mb-2 leading-relaxed">
+                    אפשר להעלות תמונה אחרת ספציפית לדף הנחיתה — בדרך כלל תמונה רחבה ואיכותית יותר מזו שבפרסומת הקטנה.
+                </p>
+                <label class="upload-zone-sm"
+                       class:has-image={!!landingImage}
+                       class:dragging={isDraggingLandingImage}
+                       ondragover={(e) => dragOver(e, v => isDraggingLandingImage = v)}
+                       ondragleave={(e) => dragLeave(e, v => isDraggingLandingImage = v)}
+                       ondrop={(e) => handleDrop(e, "landingImage", v => isDraggingLandingImage = v)}>
+                    {#if landingImage}
+                        <img src={landingImage} alt="תמונה לדף נחיתה" />
+                        <button type="button" class="remove-x" onclick={(e) => { e.preventDefault(); clearImage("landingImage"); }} aria-label="הסר תמונה">✕</button>
+                    {:else}
+                        <div class="text-center">
+                            <div class="text-2xl mb-1">{isDraggingLandingImage ? "✨" : "🖼️"}</div>
+                            <p class="text-xs font-bold text-gray-300">{isDraggingLandingImage ? "שחרר" : "העלה תמונה"}</p>
+                        </div>
+                    {/if}
+                    <input type="file" accept="image/*" onchange={(e) => handleImage(e, "landingImage")} class="hidden" />
+                </label>
+            </div>
+
+            <div class="md:col-span-2">
+                <label class="field-label">✓ שלושה יתרונות של המוצר/השירות שלך (אופציונלי)</label>
+                <p class="text-xs text-gray-400 mb-2 leading-relaxed">
+                    כתוב <strong class="text-amber-300">שלושה יתרונות קצרים וברורים</strong> שגורמים לבחור בך — כל יתרון בשורה משלו.
+                    הם יוצגו בדף הנחיתה כרשימה מעוצבת עם סימני וי (✓) על רקע צבע הפרסומת.
+                </p>
+                <div class="space-y-2">
+                    <input type="text" bind:value={landingAdvantages[0]} maxlength="80"
+                           placeholder="יתרון 1 — לדוגמה: איכות חומרי גלם פרימיום בלעדית"
+                           class="text-input" />
+                    <input type="text" bind:value={landingAdvantages[1]} maxlength="80"
+                           placeholder="יתרון 2 — לדוגמה: שירות אישי 7 ימים בשבוע"
+                           class="text-input" />
+                    <input type="text" bind:value={landingAdvantages[2]} maxlength="80"
+                           placeholder="יתרון 3 — לדוגמה: אחריות מלאה לשנה"
+                           class="text-input" />
+                </div>
             </div>
         </div>
 
@@ -2215,24 +2290,74 @@
         box-shadow: 0 8px 30px rgba(0,0,0,0.4);
     }
     :global(.landing-hero) {
-        position: relative; padding: 2.5rem 1.5rem; text-align: center; min-height: 220px;
+        position: relative; padding: 1.6rem 1.4rem; text-align: center; min-height: 160px;
         display: flex; flex-direction: column; align-items: center; justify-content: center;
         overflow: hidden;
     }
+    /* Image is smaller now — covers hero but with reduced opacity so text reads clearly */
     :global(.landing-hero-bg) {
         position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
-        opacity: 0.35;
+        opacity: 0.28;
     }
     :global(.landing-hero-overlay) {
-        position: absolute; inset: 0; background: linear-gradient(135deg, rgba(0,0,0,0.5), rgba(0,0,0,0.2));
+        position: absolute; inset: 0; background: linear-gradient(135deg, rgba(0,0,0,0.55), rgba(0,0,0,0.25));
     }
     :global(.landing-hero-content) { position: relative; z-index: 2; max-width: 480px; }
+    /* Logo moved to TOP-RIGHT corner of hero (small) so it doesn't cover the image */
     :global(.landing-logo) {
-        width: 60px; height: 60px; border-radius: 0.85rem; background: white;
-        padding: 6px; object-fit: contain; margin: 0 auto 0.85rem;
+        position: absolute;
+        top: 0.7rem;
+        right: 0.7rem;
+        width: 42px; height: 42px;
+        border-radius: 0.55rem;
+        background: white;
+        padding: 4px;
+        object-fit: contain;
+        z-index: 3;
+        margin: 0;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.35);
     }
-    :global(.landing-hero h1) { color: white; font-size: 1.85rem; font-weight: 900; margin: 0 0 0.5rem; }
-    :global(.landing-hero p)  { color: rgba(255,255,255,0.92); font-size: 1rem; margin: 0 0 1.25rem; line-height: 1.45; }
+    :global(.landing-logo.landing-logo-circle) { border-radius: 9999px; }
+    :global(.landing-hero h1) { color: white; font-size: 1.55rem; font-weight: 900; margin: 0 0 0.4rem; }
+    :global(.landing-hero p)  { color: rgba(255,255,255,0.92); font-size: 0.95rem; margin: 0 0 1rem; line-height: 1.45; }
+
+    /* ===== Advantages list — artistic 3-row card with V checkmarks ===== */
+    :global(.advantages-list) {
+        list-style: none; padding: 0; margin: 0;
+        display: grid; gap: 0.65rem;
+        max-width: 540px; margin-inline: auto;
+    }
+    :global(.advantage-item) {
+        display: flex; align-items: center; gap: 0.85rem;
+        padding: 0.7rem 0.95rem;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 0.85rem;
+        transition: transform 200ms ease, border-color 200ms ease, background 200ms ease;
+        text-align: right;
+    }
+    :global(.advantage-item:hover) {
+        transform: translateX(-3px);
+        border-color: rgba(255,255,255,0.2);
+        background: rgba(255,255,255,0.07);
+    }
+    :global(.advantage-check) {
+        flex-shrink: 0;
+        width: 32px; height: 32px;
+        border-radius: 9999px;
+        display: flex; align-items: center; justify-content: center;
+        color: white;
+        font-weight: 900;
+        font-size: 1rem;
+        line-height: 1;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+    }
+    :global(.advantage-text) {
+        color: rgb(229,231,235);
+        font-size: 0.92rem;
+        line-height: 1.4;
+        font-weight: 600;
+    }
     :global(.landing-cta) {
         display: inline-block; padding: 0.75rem 1.5rem; border-radius: 9999px;
         background: white; color: black; font-weight: 800; font-size: 1rem;
