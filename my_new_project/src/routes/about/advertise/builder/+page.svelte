@@ -138,6 +138,7 @@
     let gradient        = $state<string>("from-amber-500 to-orange-600");
     let landingHeadline = $state<string>("");
     let landingPitch    = $state<string>("");
+    let landingExtended = $state<string>("");
     let uniqueness      = $state<string>("");
     let phone           = $state<string>(data?.layoutUser?.phone ?? "");
     let whatsapp        = $state<string>(data?.layoutUser?.phone ?? "");
@@ -489,6 +490,7 @@
                 gradient        = d.gradient ?? gradient;
                 landingHeadline = d.landingHeadline ?? "";
                 landingPitch    = d.landingPitch ?? "";
+                landingExtended = d.landingExtended ?? "";
                 uniqueness      = d.uniqueness ?? "";
                 phone           = d.phone ?? phone;
                 whatsapp        = d.whatsapp ?? whatsapp;
@@ -513,7 +515,7 @@
         if (!browser) return;
         const snapshot = {
             logo, logoOriginal, hasCircleCrop, logoShape, logoPosition, mainImage, title, subtitle, hoverText, essenceText, cta, gradient,
-            landingHeadline, landingPitch, uniqueness, phone, whatsapp, website,
+            landingHeadline, landingPitch, landingExtended, uniqueness, phone, whatsapp, website,
             email, address, hours, products,
         };
         try { localStorage.setItem(LS_KEY, JSON.stringify(snapshot)); } catch {}
@@ -536,7 +538,7 @@
             const payload = {
                 title, subtitle, hoverText, cta, gradient,
                 logo, mainImage,
-                landing: { headline: landingHeadline, pitch: landingPitch, uniqueness, phone, whatsapp, website, email, address, hours, products },
+                landing: { headline: landingHeadline, pitch: landingPitch, extended: landingExtended, uniqueness, phone, whatsapp, website, email, address, hours, products },
                 submittedAt: new Date().toISOString(),
             };
             const queue = JSON.parse(localStorage.getItem("ad_submissions_queue") ?? "[]");
@@ -1101,6 +1103,13 @@
                         </div>
                     </header>
 
+                    {#if landingExtended}
+                        <section class="landing-section">
+                            <h2>הסיפור שלנו</h2>
+                            <p style="white-space: pre-line">{landingExtended}</p>
+                        </section>
+                    {/if}
+
                     {#if uniqueness}
                         <section class="landing-section">
                             <h2>למה דווקא אנחנו</h2>
@@ -1262,6 +1271,16 @@
             <div class="md:col-span-2">
                 <label class="field-label">פסקת פתיחה לדף הנחיתה (אופציונלי)</label>
                 <textarea bind:value={landingPitch} rows="3" placeholder="תיאור קצר על מה שאתם מציעים, למי זה מתאים, ומה הופך אתכם למיוחדים." class="text-input"></textarea>
+            </div>
+            <div class="md:col-span-2">
+                <label class="field-label">תוכן מורחב לדף הנחיתה (אופציונלי)</label>
+                <p class="text-xs text-gray-400 mb-1.5 leading-relaxed">
+                    מקום להרחיב — סיפור העסק/השירות, פירוט מה אתם מציעים ולמי, ערכים, ניסיון, ומה מבדיל אתכם.
+                    אפשר לכתוב כמה פסקאות (ירידות שורה יישמרו). הטקסט יוצג כסעיף נפרד בדף הנחיתה, מתחת לכותרת הראשית.
+                </p>
+                <textarea bind:value={landingExtended} rows="8"
+                          placeholder="לדוגמה: אנחנו פועלים בשכונה כבר 12 שנה ומלווים מאות משפחות בכל גיל. הסטנדרטים שלנו...&#10;&#10;מה שמייחד אותנו: ..."
+                          class="text-input"></textarea>
             </div>
         </div>
 
