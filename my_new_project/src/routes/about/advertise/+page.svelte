@@ -4,6 +4,9 @@
     import { citiesData, LS_KEY, DEFAULT_NEIGHBORHOOD } from "$lib/neighborhoodsData";
     import { coinAnim } from "$lib/coinAnimationState.svelte";
 
+    // Page data — layoutUser provides the logged-in user's profile (email, phone)
+    let { data } = $props<{ data: { layoutUser?: { email?: string | null; phone?: string | null } | null } }>();
+
     const packages = [
         {
             name: "באנר צד",
@@ -61,6 +64,26 @@
     let calculatorEl: HTMLDivElement | null = $state(null);
     let pricingHeadingEl: HTMLHeadingElement | null = $state(null);
     let flashTotal = $state(false);
+
+    // Step badges briefly pulse when their tutorial step becomes active
+    let step1Light = $state(false);
+    let step2Light = $state(false);
+    let step3Light = $state(false);
+    let step4Light = $state(false);
+
+    $effect(() => {
+        const step = tutorialStep;
+        let timer: number | null = null;
+        const flash = (setter: (v: boolean) => void) => {
+            setter(true);
+            timer = window.setTimeout(() => setter(false), 2200);
+        };
+        if      (step === 'pick-city') flash(v => step1Light = v);
+        else if (step === 'pick-row')  flash(v => step2Light = v);
+        else if (step === 'pick-plan') flash(v => step3Light = v);
+        else if (step === 'done')      flash(v => step4Light = v);
+        return () => { if (timer !== null) clearTimeout(timer); };
+    });
 
     function advanceFromCity() {
         // Green checkmark + slow scroll fire on every city confirmation, not just the first.
@@ -228,8 +251,10 @@
         toastTimer = setTimeout(() => { toastVisible = false; }, 5000);
     }
 
-    // ---- Email confirmation ----
-    let userEmail      = $state('');
+    // ---- Email + WhatsApp confirmation ----
+    // Defaults pre-filled from the user's profile (data.layoutUser) if logged in
+    let userEmail      = $state(data?.layoutUser?.email ?? '');
+    let userPhone      = $state(data?.layoutUser?.phone ?? '');
     let emailSending   = $state(false);
     let emailSent      = $state(false);
     let emailError     = $state('');
@@ -422,6 +447,13 @@
             `${r.type}${r.perNeighborhood ? ` (×${neighborhoodCount} שכונות)` : ''} — ${r.plan === 'half' ? `חצי שנה ₪${r.eTotal * r.multiplier}` : `חודש בודד ₪${r.eTotal * r.multiplier}`}`
         ).join('%0A') + `%0A%0Aסה״כ: ₪${fmt(totalPayment)}`
     );
+
+    // wa.me URL — includes the user's phone in the message body if entered
+    let whatsappHref = $derived.by(() => {
+        const types    = selectedItems.map(r => r.type).join(', ');
+        const phoneLine = userPhone.trim() ? `%0Aהטלפון שלי: ${userPhone.trim()}` : '';
+        return `https://wa.me/972500000000?text=שלום, אני מעוניין לפרסם: ${types}. סה״כ ₪${fmt(totalPayment)}.${phoneLine}`;
+    });
 </script>
 
 <svelte:head>
@@ -488,6 +520,7 @@
     <!-- Neighborhood picker trigger -->
     <p class="text-gray-300 text-base font-bold text-center mb-3 flex items-center justify-center gap-2 relative">
         <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+              class:step-active-light={step1Light}
               style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">1</span>
         תחילה בחר עיר / שכונה
         {#if tutorialStep === 'pick-city' && !showPicker}
@@ -708,6 +741,7 @@
         <!-- Step 2 — right in RTL (first child) -->
         <p class="text-gray-200 text-sm md:text-base font-bold leading-snug flex items-center gap-2 rounded-xl px-2 py-1 opacity-90">
             <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+                  class:step-active-light={step2Light}
                   style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">2</span>
             בחר את סוג הפרסום
             {#if tutorialStep === 'pick-row'}
@@ -719,6 +753,7 @@
         <p class="text-gray-200 text-sm md:text-base font-bold leading-snug flex items-center gap-2 rounded-xl px-2 py-1 transition-opacity
                   {tutorialStep === 'pick-row' ? 'opacity-50' : 'opacity-90'}">
             <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+                  class:step-active-light={step3Light}
                   style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">3</span>
             בחר את פרק הזמן
             {#if tutorialStep === 'pick-plan'}
@@ -1059,44 +1094,72 @@
                     <p class="text-gray-500 text-xs mt-2">ניצור איתך קשר בהקדם לתיאום הסופי</p>
                 </div>
             {:else}
-                <!-- Email input -->
+                <!-- Email + WhatsApp input -->
                 <div class="rounded-2xl border border-white/15 bg-white/3 p-5 flex flex-col justify-center"
                      style="animation: slideDown 0.25s ease-out;">
                     <p class="text-gray-300 text-sm font-bold mb-3 text-center flex items-center justify-center gap-2">
                         <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+                              class:step-active-light={step4Light}
                               style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">4</span>
-                        📧 קבל אישור הזמנה למייל
+                        📧 קבל אישור הזמנה — מייל / וואטסאפ
                     </p>
-                    <div class="flex flex-col sm:flex-row gap-2">
-                        <input
-                            type="email"
-                            bind:value={userEmail}
-                            placeholder="your@email.com"
-                            dir="ltr"
-                            class="flex-1 rounded-xl border border-white/15 bg-white/5 px-4 py-3
-                                   text-white placeholder:text-gray-600 text-sm
-                                   focus:outline-none focus:border-amber-500/60 focus:bg-amber-900/10
-                                   transition-all"
-                            onkeydown={(e) => { if (e.key === 'Enter') sendOrderEmail(); }}
-                        />
-                        <button
-                            type="button"
-                            onclick={sendOrderEmail}
-                            disabled={emailSending}
-                            class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3
-                                   font-black text-sm transition-all shadow-lg
-                                   {emailSending
-                                       ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                                       : 'bg-amber-500 hover:bg-amber-400 text-black hover:scale-105 shadow-amber-500/20'}"
-                        >
-                            {#if emailSending}
-                                <span class="inline-block w-4 h-4 border-2 border-gray-500 border-t-amber-400 rounded-full"
-                                      style="animation: spin 0.7s linear infinite;"></span>
-                                שולח…
-                            {:else}
-                                ✉️ שלח תיעוד — ₪{fmt(totalPayment)}
-                            {/if}
-                        </button>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <!-- Right column (RTL): phone + WhatsApp -->
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <input
+                                type="tel"
+                                bind:value={userPhone}
+                                placeholder="050-1234567"
+                                dir="ltr"
+                                class="flex-1 rounded-xl border border-white/15 bg-white/5 px-4 py-3
+                                       text-white placeholder:text-gray-600 text-sm
+                                       focus:outline-none focus:border-green-500/60 focus:bg-green-900/10
+                                       transition-all"
+                            />
+                            <a
+                                href={whatsappHref}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label="שלח הזמנת פרסום בוואטסאפ (נפתח בחלון חדש)"
+                                class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3
+                                       font-black text-sm transition-all shadow-lg
+                                       bg-green-600 hover:bg-green-500 text-white hover:scale-105 shadow-green-500/20"
+                            >
+                                💬 שלח בוואטסאפ
+                            </a>
+                        </div>
+                        <!-- Left column (RTL): email + send-email -->
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <input
+                                type="email"
+                                bind:value={userEmail}
+                                placeholder="your@email.com"
+                                dir="ltr"
+                                class="flex-1 rounded-xl border border-white/15 bg-white/5 px-4 py-3
+                                       text-white placeholder:text-gray-600 text-sm
+                                       focus:outline-none focus:border-amber-500/60 focus:bg-amber-900/10
+                                       transition-all"
+                                onkeydown={(e) => { if (e.key === 'Enter') sendOrderEmail(); }}
+                            />
+                            <button
+                                type="button"
+                                onclick={sendOrderEmail}
+                                disabled={emailSending}
+                                class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3
+                                       font-black text-sm transition-all shadow-lg
+                                       {emailSending
+                                           ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                                           : 'bg-amber-500 hover:bg-amber-400 text-black hover:scale-105 shadow-amber-500/20'}"
+                            >
+                                {#if emailSending}
+                                    <span class="inline-block w-4 h-4 border-2 border-gray-500 border-t-amber-400 rounded-full"
+                                          style="animation: spin 0.7s linear infinite;"></span>
+                                    שולח…
+                                {:else}
+                                    ✉️ שלח תיעוד — ₪{fmt(totalPayment)}
+                                {/if}
+                            </button>
+                        </div>
                     </div>
                     {#if emailError}
                         <p class="text-red-400 text-xs mt-2 text-center font-bold">{emailError}</p>
@@ -1123,26 +1186,15 @@
                 </div>
             {/if}
 
-            <!-- CTA buttons -->
-            <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                <a
-                    href="https://wa.me/972500000000?text=שלום, אני מעוניין לפרסם: {selectedItems.map(r => r.type).join(', ')}. סה״כ ₪{fmt(totalPayment)}."
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="שלח הזמנת פרסום בוואטסאפ (נפתח בחלון חדש)"
-                    class="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-black px-6 py-3 rounded-xl text-sm transition-all hover:scale-105 shadow-lg shadow-green-500/20"
-                >
-                    💬 שלח בוואטסאפ
-                </a>
-            </div>
-
-            <!-- Clear -->
+            <!-- Reset selection -->
             <div class="text-center mt-4">
                 <button
                     type="button"
                     onclick={() => planMap = new Map()}
-                    class="text-xs text-gray-600 hover:text-gray-400 transition-colors underline underline-offset-2"
-                >נקה בחירה</button>
+                    class="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-amber-400 transition-colors font-bold border border-white/10 hover:border-amber-500/40 rounded-full px-4 py-2"
+                >
+                    🔄 התחל מחדש — נקה את כל הפרסומות שנבחרו
+                </button>
             </div>
         </div>
 
@@ -1160,6 +1212,7 @@
     <div class="mt-8 rounded-2xl bg-white/3 border border-white/10 p-6 md:p-8" dir="rtl">
         <h2 class="text-xl md:text-2xl font-black text-white mb-2 text-center flex items-center justify-center gap-2">
             <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+                  class:step-active-light={step4Light}
                   style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">4</span>
             🔒 תשלום מאובטח
         </h2>
@@ -1319,6 +1372,15 @@
         45%  { opacity: 1; transform: scale(1.15); }
         70%  { transform: scale(0.95); }
         100% { opacity: 0; transform: scale(1); }
+    }
+
+    /* Step indicator pulse — highlights the active step's number badge for ~2.2s */
+    @keyframes stepActiveLightAnim {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); transform: scale(1); filter: brightness(1); }
+        50%      { box-shadow: 0 0 18px 6px rgba(251, 191, 36, 0.85); transform: scale(1.2); filter: brightness(1.4); }
+    }
+    :global(.step-active-light) {
+        animation: stepActiveLightAnim 1.1s ease-in-out 2;
     }
 
     /* Subtle flash on the total amount when the slow scroll lands on the calculator */
