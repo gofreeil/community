@@ -317,7 +317,10 @@
     function slowScrollTo(el: HTMLElement | null, duration: number) {
         if (!el) return;
         const startY = window.scrollY;
-        const targetY = el.getBoundingClientRect().top + window.scrollY - 16;
+        // Account for the sticky Header (~118px) so the target's heading isn't hidden behind it
+        const stickyHeader = document.querySelector<HTMLElement>('header');
+        const headerOffset = stickyHeader ? stickyHeader.offsetHeight + 16 : 16;
+        const targetY = el.getBoundingClientRect().top + window.scrollY - headerOffset;
         const distance = targetY - startY;
         if (Math.abs(distance) < 4) return;
         const startTime = performance.now();
@@ -999,8 +1002,11 @@
                 </ul>
             </div>
 
+            <!-- Total + Email — side-by-side on desktop, stacked on mobile -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 items-stretch">
+
             <!-- Total -->
-            <div class="rounded-2xl border-2 border-white/20 bg-white/5 px-6 py-4 text-center mb-6">
+            <div class="rounded-2xl border-2 border-white/20 bg-white/5 px-6 py-4 text-center">
                 <!-- Per-item math breakdown — rate × neighborhoods × months -->
                 <div class="space-y-1.5 mb-3">
                     {#each selectedItems as item}
@@ -1037,26 +1043,10 @@
                 </div>
             </div>
 
-            <!-- Breakdown cards (only if both plan types selected) -->
-            {#if halfItems.length > 0 && singleItems.length > 0}
-                <div class="grid grid-cols-2 gap-3 mb-6">
-                    <div class="rounded-xl bg-amber-500/10 border border-amber-500/20 p-3 text-center">
-                        <p class="text-[10px] text-amber-400/70 font-bold uppercase mb-1">חצי שנה</p>
-                        <p class="text-xl font-black text-amber-400">₪{fmt(halfItems.reduce((s,r) => s + r.eTotal * r.multiplier, 0))}</p>
-                        <p class="text-[10px] text-gray-500">{halfItems.length} פרסומות · 6 חודשים</p>
-                    </div>
-                    <div class="rounded-xl bg-blue-500/10 border border-blue-500/20 p-3 text-center">
-                        <p class="text-[10px] text-blue-400/70 font-bold uppercase mb-1">חודש בודד</p>
-                        <p class="text-xl font-black text-blue-400">₪{fmt(singleItems.reduce((s,r) => s + r.eTotal * r.multiplier, 0))}</p>
-                        <p class="text-[10px] text-gray-500">{singleItems.length} פרסומות · חודש בודד</p>
-                    </div>
-                </div>
-            {/if}
-
             <!-- ===== Email confirmation section ===== -->
             {#if emailSent}
                 <!-- Success state -->
-                <div class="rounded-2xl border-2 border-green-500/40 bg-green-900/20 p-5 text-center mb-4"
+                <div class="rounded-2xl border-2 border-green-500/40 bg-green-900/20 p-5 text-center"
                      style="animation: slideDown 0.3s ease-out;">
                     <div class="text-3xl mb-2">✅</div>
                     <p class="text-green-300 font-black text-base mb-1">המייל נשלח בהצלחה!</p>
@@ -1068,7 +1058,7 @@
                 </div>
             {:else}
                 <!-- Email input -->
-                <div class="rounded-2xl border border-white/15 bg-white/3 p-5 mb-4"
+                <div class="rounded-2xl border border-white/15 bg-white/3 p-5 flex flex-col justify-center"
                      style="animation: slideDown 0.25s ease-out;">
                     <p class="text-gray-300 text-sm font-bold mb-3 text-center flex items-center justify-center gap-2">
                         <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
@@ -1109,6 +1099,25 @@
                     {#if emailError}
                         <p class="text-red-400 text-xs mt-2 text-center font-bold">{emailError}</p>
                     {/if}
+                </div>
+            {/if}
+
+            </div>
+            <!-- /Total + Email grid -->
+
+            <!-- Breakdown cards (only if both plan types selected) -->
+            {#if halfItems.length > 0 && singleItems.length > 0}
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <div class="rounded-xl bg-amber-500/10 border border-amber-500/20 p-3 text-center">
+                        <p class="text-[10px] text-amber-400/70 font-bold uppercase mb-1">חצי שנה</p>
+                        <p class="text-xl font-black text-amber-400">₪{fmt(halfItems.reduce((s,r) => s + r.eTotal * r.multiplier, 0))}</p>
+                        <p class="text-[10px] text-gray-500">{halfItems.length} פרסומות · 6 חודשים</p>
+                    </div>
+                    <div class="rounded-xl bg-blue-500/10 border border-blue-500/20 p-3 text-center">
+                        <p class="text-[10px] text-blue-400/70 font-bold uppercase mb-1">חודש בודד</p>
+                        <p class="text-xl font-black text-blue-400">₪{fmt(singleItems.reduce((s,r) => s + r.eTotal * r.multiplier, 0))}</p>
+                        <p class="text-[10px] text-gray-500">{singleItems.length} פרסומות · חודש בודד</p>
+                    </div>
                 </div>
             {/if}
 
