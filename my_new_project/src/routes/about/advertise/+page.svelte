@@ -414,7 +414,9 @@
                             </li>
                         {/each}
                     </ul>
-                    <div class="text-[10px] md:text-xs bg-white/10 rounded px-1.5 md:px-2 py-0.5 md:py-1 text-gray-300 mt-auto inline-block w-fit" style="margin-top: auto;">{pkg.size}</div>
+                    <div class="mt-auto pt-3 md:pt-5">
+                        <div class="text-[10px] md:text-xs bg-white/10 rounded px-1.5 md:px-2 py-0.5 md:py-1 text-gray-300 inline-block w-fit">{pkg.size}</div>
+                    </div>
                 </div>
                 {#if pkg.image}
                     <div class="hidden md:block md:flex-1 md:rounded-lg md:overflow-hidden">
