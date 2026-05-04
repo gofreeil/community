@@ -90,6 +90,22 @@
 	function isRecVisible(id: string) {
 		return !dismissedRecs.has(id) && !snoozedRecs.has(id);
 	}
+	// === Ad-builder draft (resume from /about/advertise/builder) ===
+	type AdDraft = { title?: string; subtitle?: string; mainImage?: string; logo?: string; phone?: string; products?: unknown[]; address?: string };
+	let adDraft = $state<AdDraft | null>(null);
+	let adDraftProgress = $derived.by(() => {
+		if (!adDraft) return 0;
+		const fields = [adDraft.mainImage, adDraft.title, adDraft.subtitle, adDraft.logo, adDraft.phone, adDraft.address];
+		const filled = fields.filter(Boolean).length;
+		return Math.round((filled / fields.length) * 100);
+	});
+
+	function dismissAdDraft() {
+		if (!confirm("למחוק את טיוטת הפרסומת?")) return;
+		try { localStorage.removeItem("ad_builder_draft_v1"); } catch {}
+		adDraft = null;
+	}
+
 	let messages = $state(
 		(data.messages ?? []).length > 0
 			? (data.messages ?? []).map(
@@ -117,7 +133,20 @@
 					},
 				],
 	);
-	let unreadCount = $derived(messages.filter((m) => !m.read).length);
+	// הודעה אישית עבור טיוטת פרסומת — מופיעה למעלה אם יש טיוטה
+	let displayedMessages = $derived.by(() => {
+		const base = messages;
+		if (!adDraft) return base;
+		const draftMsg = {
+			from: "🎨 בילדר הפרסומות",
+			text: `יש לך פרסום בטיוטא — סיים את עריכתו! "${adDraft.title || "ללא כותרת"}" (${adDraftProgress}% הושלמו).`,
+			time: "עכשיו",
+			read: false,
+			isDraft: true,
+		};
+		return [draftMsg, ...base];
+	});
+	let unreadCount = $derived(displayedMessages.filter((m) => !m.read).length);
 	let secTipShow = $state(false);
 	let showStatusMenu = $state(false);
 
@@ -300,22 +329,11 @@
 	let cropNatW = $state(0);
 	let cropNatH = $state(0);
 
-	// === Ad-builder draft (resume from /about/advertise/builder) ===
-	type AdDraft = { title?: string; subtitle?: string; mainImage?: string; logo?: string; phone?: string; products?: unknown[]; address?: string };
-	let adDraft = $state<AdDraft | null>(null);
-	let adDraftProgress = $derived.by(() => {
-		if (!adDraft) return 0;
-		const fields = [adDraft.mainImage, adDraft.title, adDraft.subtitle, adDraft.logo, adDraft.phone, adDraft.address];
-		const filled = fields.filter(Boolean).length;
-		return Math.round((filled / fields.length) * 100);
-	});
-
-	// נקה טיוטה ישנה — הנתונים מגיעים מהשרת בלבד
+	// נקה טיוטת פרופיל ישנה + טען טיוטת בילדר פרסומת
 	onMount(() => {
 		try {
 			localStorage.removeItem(DRAFT_KEY);
 		} catch {}
-		// טען טיוטת בילדר פרסומת אם יש כזו — נציג כרטיס "המשך לערוך"
 		try {
 			const raw = localStorage.getItem("ad_builder_draft_v1");
 			if (raw) {
@@ -326,12 +344,6 @@
 			}
 		} catch {}
 	});
-
-	function dismissAdDraft() {
-		if (!confirm("למחוק את טיוטת הפרסומת?")) return;
-		try { localStorage.removeItem("ad_builder_draft_v1"); } catch {}
-		adDraft = null;
-	}
 
 	// שמור טיוטה ב-localStorage בכל שינוי
 	$effect(() => {
@@ -2298,16 +2310,19 @@
 				class="flex flex-col gap-3"
 				onclick={(e) => e.stopPropagation()}
 			>
-				{#each messages as msg}
+				{#each displayedMessages as msg}
+					{@const isDraft = (msg as { isDraft?: boolean }).isDraft}
 					<div
-						class="flex items-start gap-3 bg-white/5 rounded-2xl border {msg.read
-							? 'border-white/5'
-							: 'border-orange-500/20'} px-4 py-3 transition-all hover:border-white/15"
+						class="flex items-start gap-3 rounded-2xl border px-4 py-3 transition-all
+							{isDraft
+								? 'bg-gradient-to-br from-purple-900/30 to-indigo-900/20 border-purple-500/50 hover:border-purple-400/70'
+								: msg.read
+									? 'bg-white/5 border-white/5 hover:border-white/15'
+									: 'bg-white/5 border-orange-500/20 hover:border-white/15'}"
 					>
 						<div
-							class="w-2 h-2 rounded-full {msg.read
-								? 'bg-white/10'
-								: 'bg-orange-500'} mt-1.5 flex-shrink-0"
+							class="w-2 h-2 rounded-full mt-1.5 flex-shrink-0
+								{isDraft ? 'bg-purple-400 animate-pulse' : msg.read ? 'bg-white/10' : 'bg-orange-500'}"
 						></div>
 						<div class="min-w-0 flex-1">
 							<div
@@ -2321,7 +2336,13 @@
 									>{msg.time}</span
 								>
 							</div>
-							<p class="text-gray-300 text-xs">{msg.text}</p>
+							<p class="text-gray-300 text-xs leading-relaxed">{msg.text}</p>
+							{#if isDraft}
+								<a href="/about/advertise/builder"
+								   class="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-black text-xs transition-colors">
+									🚀 סיים את העריכה
+								</a>
+							{/if}
 						</div>
 					</div>
 				{/each}
