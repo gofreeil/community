@@ -12,6 +12,11 @@
     const LS_KEY = "ad_builder_draft_v1";
     const PAID_KEY = "ad_paid";
 
+    // ===== Access gate state =====
+    let accessGranted = $state(false);
+    let accessChecked = $state(false);
+    let usedOneTimePass = $state(false);
+
     // ===== Form state =====
     type ProductRow = { id: number; name: string; price: string; image: string; description: string };
 
@@ -191,11 +196,36 @@
     let previewMode = $state<"mobile" | "desktop" | "landing">("mobile");
     let hoverPreview = $state(false);
 
+    // ===== Access gate =====
+    // Allow entry only when one of these is true:
+    //   1. localStorage[PAID_KEY] is set (real flow — set by payment confirmation)
+    //   2. URL contains ?test=1 (one-time test pass — burns immediately)
+    function checkAccess() {
+        if (!browser) return;
+        const params = new URLSearchParams(window.location.search);
+        const oneTime = params.get("test") === "1";
+        const paid = localStorage.getItem(PAID_KEY) === "1";
+
+        if (paid) {
+            accessGranted = true;
+        } else if (oneTime) {
+            accessGranted = true;
+            usedOneTimePass = true;
+            // Burn the one-time pass: strip ?test from the URL so a refresh blocks again.
+            const url = new URL(window.location.href);
+            url.searchParams.delete("test");
+            window.history.replaceState({}, "", url.toString());
+        } else {
+            accessGranted = false;
+        }
+        accessChecked = true;
+    }
+
     // ===== Persistence (autosave) =====
     onMount(() => {
         if (!browser) return;
-        // (Soft) gate: in production this page should be guarded. For now, if the user
-        // hits the URL directly we just allow it but show a small notice.
+        checkAccess();
+        if (!accessGranted) return;
         try {
             const raw = localStorage.getItem(LS_KEY);
             if (raw) {
@@ -274,6 +304,50 @@
     <title>בניית הפרסומת שלי | קהילה בשכונה</title>
 </svelte:head>
 
+{#if accessChecked && !accessGranted}
+    <!-- ===== GATE — payment required ===== -->
+    <div class="max-w-xl mx-auto px-4 py-12 md:py-20 text-center" dir="rtl">
+        <div class="text-6xl mb-4">🔒</div>
+        <h1 class="text-2xl md:text-4xl font-black text-amber-400 mb-3">
+            דף בניית הפרסומת — נעול
+        </h1>
+        <p class="text-gray-300 text-base md:text-lg mb-6 leading-relaxed">
+            הדף הזה זמין רק למפרסמים שהשלימו תשלום.
+            <br />ראיתם את העלות בדף הפרסום ושילמתם דרך הסליקה? אנחנו בודקים ומאשרים גישה.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-3 justify-center mb-8">
+            <a href="/about/advertise"
+               class="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black transition-colors">
+                💳 לדף התשלום
+            </a>
+            <a href="https://wa.me/972508750632?text=שלום, שילמתי על פרסום ואני רוצה לבנות את הפרסומת באתר"
+               target="_blank" rel="noopener noreferrer"
+               class="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-green-600 hover:bg-green-500 text-white font-black transition-colors">
+                💬 שילמתי כבר — צרו קשר
+            </a>
+        </div>
+
+        <!-- One-time test access hint -->
+        <details class="text-xs text-gray-500">
+            <summary class="cursor-pointer hover:text-gray-300 transition-colors">🧪 בדיקה חד-פעמית (למפתחים בלבד)</summary>
+            <div class="mt-3 rounded-xl border border-white/10 bg-white/3 p-4 text-right text-gray-400 leading-relaxed">
+                <p class="mb-2">לכניסה <strong class="text-amber-300">חד-פעמית</strong> ללא תשלום — הוסף לקישור:</p>
+                <code class="inline-block bg-black/40 border border-amber-500/30 rounded px-2 py-1 text-amber-300 font-bold mb-3" dir="ltr">?test=1</code>
+                <p class="mb-3">דוגמה:</p>
+                <code class="block bg-black/40 border border-white/10 rounded px-3 py-2 text-amber-200 break-all" dir="ltr">/about/advertise/builder?test=1</code>
+                <p class="mt-3">⚠️ הפרמטר נמחק מיד ברגע הכניסה — רענון העמוד יחזיר אותך לכאן.</p>
+                <button type="button"
+                        onclick={() => location.href = '/about/advertise/builder?test=1'}
+                        class="mt-3 w-full py-2 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-200 font-bold text-xs transition-colors">
+                    🚪 כניסה חד-פעמית עכשיו
+                </button>
+            </div>
+        </details>
+    </div>
+{:else if !accessChecked}
+    <!-- Brief loading state to avoid flicker -->
+    <div class="min-h-[40vh]" aria-hidden="true"></div>
+{:else}
 <div class="ad-builder max-w-5xl mx-auto px-4 py-8 md:py-12" dir="rtl">
 
     <!-- Header / hero -->
@@ -923,6 +997,17 @@
     {/if}
 
 </div>
+{/if}
+
+<!-- One-time pass banner -->
+{#if usedOneTimePass}
+    <div class="fixed top-4 left-1/2 -translate-x-1/2 z-[200] rounded-xl border border-amber-500/50 bg-gray-900/95 px-4 py-2 shadow-2xl backdrop-blur" dir="rtl">
+        <p class="text-amber-300 text-xs font-bold flex items-center gap-2">
+            <span>🧪</span>
+            <span>גישה חד-פעמית פעילה — רענון יחסום מחדש</span>
+        </p>
+    </div>
+{/if}
 
 <style>
     /* ============== Page-level layout ============== */
