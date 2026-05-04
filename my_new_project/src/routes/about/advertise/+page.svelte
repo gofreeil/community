@@ -60,15 +60,16 @@
     let confirmingRow = $state<number | null>(null);
     let calculatorEl: HTMLDivElement | null = $state(null);
     let pricingHeadingEl: HTMLHeadingElement | null = $state(null);
+    let flashTotal = $state(false);
 
     function advanceFromCity() {
-        if (tutorialStep !== 'pick-city') return;
+        // Green checkmark + slow scroll fire on every city confirmation, not just the first.
         showCheckmark = true;
+        if (tutorialStep === 'pick-city') tutorialStep = 'pick-row';
         setTimeout(() => {
             showCheckmark = false;
-            tutorialStep = 'pick-row';
-            // Slow scroll to the publication-type table
-            slowScrollTo(pricingHeadingEl, 2200);
+            // Very slow scroll to the publication-type table (~4.5s easeInOutCubic)
+            slowScrollTo(pricingHeadingEl, 4500);
         }, 900);
     }
 
@@ -303,7 +304,12 @@
         confirmingRow = num;
         setTimeout(() => {
             confirmingRow = null;
-            slowScrollTo(calculatorEl, 2200);
+            slowScrollTo(calculatorEl, 4500);
+            // When the scroll lands on the calculator, briefly flash the total amount
+            setTimeout(() => {
+                flashTotal = true;
+                setTimeout(() => { flashTotal = false; }, 1500);
+            }, 4500);
         }, 700);
     }
 
@@ -922,7 +928,7 @@
             <!-- Title -->
             <div class="flex flex-wrap items-center justify-center gap-2 mb-6">
                 <span class="text-3xl">🧮</span>
-                <h2 class="text-xl md:text-2xl font-black text-white">מחשבון פרסום</h2>
+                <h2 class="text-xl md:text-2xl font-black text-white">מחשבון וסיכום</h2>
                 <span class="bg-white/10 border border-white/20 text-gray-300 text-xs font-black px-2 py-0.5 rounded-full">
                     {planMap.size} נבחרו
                 </span>
@@ -972,13 +978,10 @@
                                         : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'}">
                                     {item.plan === 'half' ? '½ שנה' : 'חודש'}
                                 </span>
-                                <!-- Price -->
-                                <div class="flex flex-col items-end gap-0.5">
-                                    <span class="font-black text-sm {item.plan === 'half' ? 'text-amber-400' : 'text-blue-400'}">
-                                        ₪{fmt(item.eTotal * item.multiplier)}
-                                    </span>
+                                <!-- Price (one line — duration sits beside the amount, not stacked) -->
+                                <div class="flex items-center gap-2 whitespace-nowrap">
                                     {#if item.perNeighborhood && neighborhoodCount > 1}
-                                        <span class="text-gray-600 text-[10px] whitespace-nowrap">
+                                        <span class="text-gray-600 text-[10px]">
                                             ₪{fmt(item.eTotal)} × {fmt(neighborhoodCount)}
                                         </span>
                                     {:else}
@@ -986,6 +989,9 @@
                                             {item.plan === 'half' ? 'ל-6 חודשים' : 'לחודש'}
                                         </span>
                                     {/if}
+                                    <span class="font-black text-sm {item.plan === 'half' ? 'text-amber-400' : 'text-blue-400'}">
+                                        ₪{fmt(item.eTotal * item.multiplier)}
+                                    </span>
                                 </div>
                             </div>
                         </li>
@@ -994,10 +1000,9 @@
             </div>
 
             <!-- Total -->
-            <div class="rounded-2xl border-2 border-white/20 bg-white/5 p-6 text-center mb-6">
-                <p class="text-gray-300 text-base md:text-lg mb-3 font-bold">סה"כ לתשלום</p>
+            <div class="rounded-2xl border-2 border-white/20 bg-white/5 px-6 py-4 text-center mb-6">
                 <!-- Per-item math breakdown — rate × neighborhoods × months -->
-                <div class="space-y-1.5 mb-4">
+                <div class="space-y-1.5 mb-3">
                     {#each selectedItems as item}
                         <p class="text-gray-100 text-base md:text-lg font-bold leading-snug">
                             <span class="{item.plan === 'half' ? 'text-amber-300' : 'text-blue-300'}">{item.type}:</span>
@@ -1025,16 +1030,11 @@
                         </p>
                     {/each}
                 </div>
-                <p class="text-5xl md:text-6xl font-black text-white mb-2">₪{fmt(totalPayment)}</p>
-                <p class="text-gray-500 text-sm">
-                    {#if halfItems.length > 0 && singleItems.length > 0}
-                        כולל {halfItems.length} חבילות חצי שנה + {singleItems.length} חודשים בודדים
-                    {:else if halfItems.length > 0}
-                        חבילת חצי שנה • שווה ₪{fmt(totalMonthly)} לחודש
-                    {:else}
-                        {singleItems.length} פרסומות לחודש אחד
-                    {/if}
-                </p>
+                <div class="flex items-center justify-center flex-wrap gap-x-3 gap-y-1">
+                    <p class="text-5xl md:text-6xl font-black text-white inline-block"
+                       class:total-flash={flashTotal}>₪{fmt(totalPayment)}</p>
+                    <span class="text-gray-400 text-xs md:text-sm font-bold">ניתן לפרוס לתשלומים</span>
+                </div>
             </div>
 
             <!-- Breakdown cards (only if both plan types selected) -->
@@ -1305,6 +1305,23 @@
         45%  { opacity: 1; transform: scale(1.15); }
         70%  { transform: scale(0.95); }
         100% { opacity: 0; transform: scale(1); }
+    }
+
+    /* Subtle flash on the total amount when the slow scroll lands on the calculator */
+    @keyframes totalFlashAnim {
+        0%, 100% {
+            transform: scale(1);
+            color: #ffffff;
+            text-shadow: 0 0 0 rgba(251, 191, 36, 0);
+        }
+        50% {
+            transform: scale(1.06);
+            color: #fbbf24;
+            text-shadow: 0 0 24px rgba(251, 191, 36, 0.65), 0 0 48px rgba(251, 191, 36, 0.35);
+        }
+    }
+    :global(.total-flash) {
+        animation: totalFlashAnim 0.75s ease-in-out 2;
     }
 
     /* Step 2 partial highlight — outlines all cells in the row except the toggle column (last td) */
