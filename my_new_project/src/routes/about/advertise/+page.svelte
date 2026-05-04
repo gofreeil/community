@@ -546,7 +546,7 @@
                 >
                     <span class="text-xl md:text-2xl">🌍</span>
                     <span>ארצי — כל הארץ</span>
-                    <span class="text-sm md:text-base font-normal text-gray-400">({fmt(totalNeighborhoodsCount)} שכונות של כל השכונות בארץ)</span>
+                    <span class="text-sm md:text-base font-normal text-gray-400">({fmt(totalNeighborhoodsCount)} — כל השכונות בארץ)</span>
                     <span class="inline-flex items-center gap-1 text-amber-300 text-sm md:text-base font-black"
                           style="animation: dealPulse 2s ease-in-out infinite;">
                         🎉 מבצע! 5,000 ₪ לחודש
