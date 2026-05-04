@@ -274,7 +274,7 @@
     const rows = [
         { num: 1, type: "פרסומת ארוכה",  half: 5,   total: 30,  single: 25, reach: "לכל שכונה רצויה",   details: "מופיע ל-6 שניות ונעלם 12 שניות" },
         { num: 2, type: "עסק",            half: 25,  total: 150, single: 35, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
-        { num: 3, type: "חוג",            half: 5,   total: 30,  single: 25, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
+        { num: 3, type: "חוג",            half: 10,  total: 60,  single: 25, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
         { num: 4, type: "צימר / סאבלט",  half: 45,  total: 270, single: 60, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
         { num: 5, type: "דרושים לעבודה", half: 5,   total: 30,  single: 25, reach: "לכל שכונה רצויה",   details: "מופיע רק ברשימה" },
         { num: 6, type: "פנויים פנויות", half: 20,  total: 120, single: 30, reach: "כולל רשימה ארצית",  details: "מופיע רק ברשימה" },
