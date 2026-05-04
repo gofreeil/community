@@ -19,7 +19,7 @@
         {
             name: "כרטיס תוכן",
             icon: "🖼️",
-            location: "עמוד הבית - סרגל שמאל",
+            location: "בתוכן עמוד הבית",
             size: "192×auto",
             color: "from-purple-600 to-pink-600",
             border: "border-purple-500/40",
