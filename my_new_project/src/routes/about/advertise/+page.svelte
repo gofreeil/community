@@ -30,7 +30,7 @@
         {
             name: "פרסומת נייד",
             icon: "📱",
-            location: "בנר תחתון בנייד",
+            location: "באנר במסך מלא",
             size: "מסך מלא",
             color: "from-green-600 to-emerald-600",
             border: "border-green-500/40",
