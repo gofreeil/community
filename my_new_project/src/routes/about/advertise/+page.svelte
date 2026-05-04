@@ -343,6 +343,9 @@
         !isNational && selectedCities.size === 1 && selectedCities.has('ירושלים')
     );
 
+    // "פנויים פנויות" (num=6) is a flat national listing — price is NOT multiplied by neighborhood count
+    const FLAT_NATIONAL_NUMS = new Set([6]);
+
     let selectedItems = $derived(
         rows
             .filter(r => planMap.has(r.num))
@@ -351,17 +354,15 @@
                 const monthsCount = plan === 'half' ? 6 : 1;
                 const eMonthly = isJerusalemOnly ? JERUSALEM_FLAT : (plan === 'half' ? r.half  : r.single);
                 const eTotal   = isJerusalemOnly ? JERUSALEM_FLAT : (plan === 'half' ? r.total : r.single);
-                return { ...r, plan, monthsCount, eMonthly, eTotal };
+                const flatNational = FLAT_NATIONAL_NUMS.has(r.num);
+                const multiplier = flatNational ? 1 : neighborhoodCount;
+                return { ...r, plan, monthsCount, eMonthly, eTotal, flatNational, multiplier };
             })
     );
 
-    // Base price per neighborhood (before multiplying)
-    let basePayment  = $derived(selectedItems.reduce((s, r) => s + r.eTotal,   0));
-    let baseMonthly  = $derived(selectedItems.reduce((s, r) => s + r.eMonthly, 0));
-
-    // Actual totals after × neighborhoods
-    let totalPayment = $derived(basePayment  * neighborhoodCount);
-    let totalMonthly = $derived(baseMonthly  * neighborhoodCount);
+    // Totals: per-item price × per-item multiplier (flat-national rows use 1)
+    let totalPayment = $derived(selectedItems.reduce((s, r) => s + r.eTotal   * r.multiplier, 0));
+    let totalMonthly = $derived(selectedItems.reduce((s, r) => s + r.eMonthly * r.multiplier, 0));
 
     let halfItems        = $derived(selectedItems.filter(r => r.plan === 'half'));
     let singleItems      = $derived(selectedItems.filter(r => r.plan === 'single'));
@@ -405,7 +406,7 @@
     let mailtoBody = $derived(
         `ערים: ${neighborhoodLabel} (×${neighborhoodCount} שכונות)%0A` +
         selectedItems.map(r =>
-            `${r.type} — ${r.plan === 'half' ? `חצי שנה ₪${r.eTotal * neighborhoodCount}` : `חודש בודד ₪${r.eTotal * neighborhoodCount}`}`
+            `${r.type}${r.flatNational ? ' (ארצי)' : ''} — ${r.plan === 'half' ? `חצי שנה ₪${r.eTotal * r.multiplier}` : `חודש בודד ₪${r.eTotal * r.multiplier}`}`
         ).join('%0A') + `%0A%0Aסה״כ: ₪${fmt(totalPayment)}`
     );
 </script>
@@ -972,9 +973,13 @@
                                 <!-- Price -->
                                 <div class="flex flex-col items-end gap-0.5">
                                     <span class="font-black text-sm {item.plan === 'half' ? 'text-amber-400' : 'text-blue-400'}">
-                                        ₪{fmt(item.eTotal * neighborhoodCount)}
+                                        ₪{fmt(item.eTotal * item.multiplier)}
                                     </span>
-                                    {#if neighborhoodCount > 1}
+                                    {#if item.flatNational}
+                                        <span class="text-gray-600 text-[10px] whitespace-nowrap">
+                                            ארצי • {item.plan === 'half' ? 'ל-6 חודשים' : 'לחודש'}
+                                        </span>
+                                    {:else if neighborhoodCount > 1}
                                         <span class="text-gray-600 text-[10px] whitespace-nowrap">
                                             ₪{fmt(item.eTotal)} × {fmt(neighborhoodCount)}
                                         </span>
@@ -999,17 +1004,27 @@
                         <p class="text-gray-100 text-base md:text-lg font-bold leading-snug">
                             <span class="{item.plan === 'half' ? 'text-amber-300' : 'text-blue-300'}">{item.type}:</span>
                             <span class="text-white">₪{fmt(item.eMonthly)}</span>
-                            <span class="text-gray-300 font-medium">לשכונה</span>
-                            <span class="text-gray-400 mx-0.5">×</span>
-                            <span class="text-white">{fmt(neighborhoodCount)}</span>
-                            <span class="text-gray-300 font-medium">{neighborhoodCount === 1 ? 'שכונה' : 'שכונות'}</span>
-                            {#if !isJerusalemOnly}
+                            {#if item.flatNational}
+                                <span class="text-gray-300 font-medium">לחודש</span>
+                                <span class="text-gray-400 text-xs mx-1">(ארצי)</span>
+                                {#if !isJerusalemOnly && item.monthsCount > 1}
+                                    <span class="text-gray-400 mx-0.5">×</span>
+                                    <span class="text-white">{item.monthsCount}</span>
+                                    <span class="text-gray-300 font-medium">{item.monthsCount === 1 ? 'חודש' : 'חודשים'}</span>
+                                {/if}
+                            {:else}
+                                <span class="text-gray-300 font-medium">לשכונה</span>
                                 <span class="text-gray-400 mx-0.5">×</span>
-                                <span class="text-white">{item.monthsCount}</span>
-                                <span class="text-gray-300 font-medium">{item.monthsCount === 1 ? 'חודש' : 'חודשים'}</span>
+                                <span class="text-white">{fmt(neighborhoodCount)}</span>
+                                <span class="text-gray-300 font-medium">{neighborhoodCount === 1 ? 'שכונה' : 'שכונות'}</span>
+                                {#if !isJerusalemOnly}
+                                    <span class="text-gray-400 mx-0.5">×</span>
+                                    <span class="text-white">{item.monthsCount}</span>
+                                    <span class="text-gray-300 font-medium">{item.monthsCount === 1 ? 'חודש' : 'חודשים'}</span>
+                                {/if}
                             {/if}
                             <span class="text-gray-400 mx-1">=</span>
-                            <span class="{item.plan === 'half' ? 'text-amber-300' : 'text-blue-300'} font-black">₪{fmt(item.eTotal * neighborhoodCount)}</span>
+                            <span class="{item.plan === 'half' ? 'text-amber-300' : 'text-blue-300'} font-black">₪{fmt(item.eTotal * item.multiplier)}</span>
                         </p>
                     {/each}
                 </div>
@@ -1030,12 +1045,12 @@
                 <div class="grid grid-cols-2 gap-3 mb-6">
                     <div class="rounded-xl bg-amber-500/10 border border-amber-500/20 p-3 text-center">
                         <p class="text-[10px] text-amber-400/70 font-bold uppercase mb-1">חצי שנה</p>
-                        <p class="text-xl font-black text-amber-400">₪{fmt(halfItems.reduce((s,r) => s + r.eTotal, 0) * neighborhoodCount)}</p>
+                        <p class="text-xl font-black text-amber-400">₪{fmt(halfItems.reduce((s,r) => s + r.eTotal * r.multiplier, 0))}</p>
                         <p class="text-[10px] text-gray-500">{halfItems.length} פרסומות × 6 חודשים{neighborhoodCount > 1 ? ` × ${fmt(neighborhoodCount)}` : ''}</p>
                     </div>
                     <div class="rounded-xl bg-blue-500/10 border border-blue-500/20 p-3 text-center">
                         <p class="text-[10px] text-blue-400/70 font-bold uppercase mb-1">חודש בודד</p>
-                        <p class="text-xl font-black text-blue-400">₪{fmt(singleItems.reduce((s,r) => s + r.eTotal, 0) * neighborhoodCount)}</p>
+                        <p class="text-xl font-black text-blue-400">₪{fmt(singleItems.reduce((s,r) => s + r.eTotal * r.multiplier, 0))}</p>
                         <p class="text-[10px] text-gray-500">{singleItems.length} פרסומות × חודש{neighborhoodCount > 1 ? ` × ${fmt(neighborhoodCount)}` : ''}</p>
                     </div>
                 </div>
