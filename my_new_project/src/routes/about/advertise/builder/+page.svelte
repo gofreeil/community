@@ -28,6 +28,7 @@
     let title           = $state<string>("");
     let subtitle        = $state<string>("");
     let hoverText       = $state<string>("");
+    let essenceText     = $state<string>("");                  // brief info about product/business
     let cta             = $state<string>("לפרטים נוספים");
     let gradient        = $state<string>("from-amber-500 to-orange-600");
     let landingHeadline = $state<string>("");
@@ -274,6 +275,7 @@
                 title           = d.title ?? "";
                 subtitle        = d.subtitle ?? "";
                 hoverText       = d.hoverText ?? "";
+                essenceText     = d.essenceText ?? "";
                 cta             = d.cta ?? "לפרטים נוספים";
                 gradient        = d.gradient ?? gradient;
                 landingHeadline = d.landingHeadline ?? "";
@@ -299,7 +301,7 @@
     $effect(() => {
         if (!browser) return;
         const snapshot = {
-            logo, mainImage, title, subtitle, hoverText, cta, gradient,
+            logo, mainImage, title, subtitle, hoverText, essenceText, cta, gradient,
             landingHeadline, landingPitch, uniqueness, phone, whatsapp, website,
             email, address, hours, products,
         };
@@ -501,13 +503,16 @@
                onblur={() => title.trim() && commitField("title")}
                placeholder="לדוגמה: גמ״ח כלי עבודה — קרית משה"
                class="text-input" />
-        <div class="flex items-center justify-between text-xs text-gray-500 mt-1">
-            <span>{title.length}/35</span>
+        <div class="flex items-center justify-between gap-2 text-xs text-gray-500 mt-2">
             {#if title}
-                <button type="button" onclick={() => commitField("title")} class="text-amber-400 hover:text-amber-300 font-bold">
+                <button type="button" onclick={() => commitField("title")}
+                    class="px-3 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 hover:text-amber-200 font-bold transition-colors">
                     המשך לכותרת משנה ←
                 </button>
+            {:else}
+                <span></span>
             {/if}
+            <span>{title.length}/35</span>
         </div>
     </section>
 
@@ -527,13 +532,16 @@
                onblur={() => subtitle.trim() && commitField("subtitle")}
                placeholder="לדוגמה: כל כלי עבודה שצריך — בלי תשלום, בלי בירוקרטיה"
                class="text-input" />
-        <div class="flex items-center justify-between text-xs text-gray-500 mt-1">
-            <span>{subtitle.length}/70</span>
+        <div class="flex items-center justify-between gap-2 text-xs text-gray-500 mt-2">
             {#if subtitle}
-                <button type="button" onclick={() => commitField("subtitle")} class="text-amber-400 hover:text-amber-300 font-bold">
+                <button type="button" onclick={() => commitField("subtitle")}
+                    class="px-3 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 hover:text-amber-200 font-bold transition-colors">
                     המשך ←
                 </button>
+            {:else}
+                <span></span>
             {/if}
+            <span>{subtitle.length}/70</span>
         </div>
     </section>
 
@@ -661,6 +669,9 @@
                                     <div class="hover-overlay" style:opacity={hoverPreview ? 1 : 0}>
                                         <h3 class="hover-title">{title || "כותרת"}</h3>
                                         <p class="hover-text">{hoverText || "כאן יופיע הטקסט בריחוף"}</p>
+                                        {#if essenceText}
+                                            <div class="hover-essence">{essenceText}</div>
+                                        {/if}
                                     </div>
 
                                     {#if logo}
@@ -810,13 +821,34 @@
                   onblur={() => hoverText.trim() && commitField("hover")}
                   placeholder="לדוגמה: כלי עבודה לכל בית — להשאלה חינם 🛠️"
                   class="text-input"></textarea>
-        <div class="flex items-center justify-between text-xs text-gray-500 mt-1">
-            <span>{hoverText.length}/90</span>
+        <div class="flex items-center justify-between gap-2 text-xs text-gray-500 mt-2">
             {#if hoverText}
-                <button type="button" onclick={() => commitField("hover")} class="text-amber-400 hover:text-amber-300 font-bold">
+                <button type="button" onclick={() => commitField("hover")}
+                    class="px-3 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 hover:text-amber-200 font-bold transition-colors">
                     המשך לדף הנחיתה ←
                 </button>
+            {:else}
+                <span></span>
             {/if}
+            <span>{hoverText.length}/90</span>
+        </div>
+
+        <!-- Essence info — secondary, longer description shown alongside hover line -->
+        <div class="mt-5 rounded-2xl border border-white/10 bg-white/3 p-4 md:p-5">
+            <div class="flex items-center gap-2 mb-2">
+                <span class="text-lg">📋</span>
+                <p class="font-bold text-amber-400 text-base md:text-lg">מידע קצר על מהות העסק / המוצר</p>
+            </div>
+            <p class="text-xs md:text-sm text-gray-400 leading-relaxed mb-3">
+                הסבר תמציתי שיופיע ליד הטקסט המסקרן בריחוף. <strong class="text-amber-300">2-3 שורות</strong> שעוזרות לגולש להבין במה מדובר —
+                מה אתה מציע, למי זה מתאים, מה הוויי-פאי שלך.
+            </p>
+            <textarea bind:value={essenceText} maxlength="220" rows="3"
+                      placeholder={`לדוגמה:\nפיצרייה משפחתית בקרית משה — בצק נח 24 שעות, רוטב עגבניות בית, גבינה בולגרית.\nמשלוחים עד הבית, פתוח ימים א'-ה' 11:00-22:00.`}
+                      class="text-input"></textarea>
+            <div class="flex items-center justify-end text-xs text-gray-500 mt-1">
+                <span>{essenceText.length}/220</span>
+            </div>
         </div>
 
         <!-- Color palette -->
@@ -1444,7 +1476,13 @@
         pointer-events: none;
     }
     :global(.hover-title) { color: white; font-weight: 700; font-size: 0.95rem; margin: 0 0 0.4rem; }
-    :global(.hover-text)  { color: rgb(229,231,235); font-size: 0.7rem; line-height: 1.4; margin: 0; }
+    :global(.hover-text)  { color: rgb(229,231,235); font-size: 0.7rem; line-height: 1.4; margin: 0 0 0.4rem; font-weight: 700; }
+    :global(.hover-essence) {
+        color: rgba(255,255,255,0.85); font-size: 0.62rem; line-height: 1.45;
+        margin-top: 0.4rem; padding-top: 0.4rem;
+        border-top: 1px solid rgba(255,255,255,0.18);
+        white-space: pre-line;
+    }
     :global(.ad-cta) { padding: 0.65rem; text-align: center; }
     :global(.ad-cta p) { color: white; font-weight: 700; font-size: 0.72rem; line-height: 1.3; margin: 0; }
 
