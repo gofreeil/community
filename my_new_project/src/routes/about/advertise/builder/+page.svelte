@@ -24,6 +24,8 @@
     type ProductRow = { id: number; name: string; price: string; image: string; description: string };
 
     let logo            = $state<string>("");                  // base64 data url
+    let logoShape       = $state<"square" | "circle">("square");
+    let logoPosition    = $state<"right" | "left">("right");
     let mainImage       = $state<string>("");                  // base64 data url
     let title           = $state<string>("");
     let subtitle        = $state<string>("");
@@ -272,6 +274,8 @@
             if (raw) {
                 const d = JSON.parse(raw);
                 logo            = d.logo ?? "";
+                logoShape       = d.logoShape ?? "square";
+                logoPosition    = d.logoPosition ?? "right";
                 mainImage       = d.mainImage ?? "";
                 title           = d.title ?? "";
                 subtitle        = d.subtitle ?? "";
@@ -302,7 +306,7 @@
     $effect(() => {
         if (!browser) return;
         const snapshot = {
-            logo, mainImage, title, subtitle, hoverText, essenceText, cta, gradient,
+            logo, logoShape, logoPosition, mainImage, title, subtitle, hoverText, essenceText, cta, gradient,
             landingHeadline, landingPitch, uniqueness, phone, whatsapp, website,
             email, address, hours, products,
         };
@@ -478,7 +482,7 @@
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
         </div>
-        <p class="step-help">העלה לוגו — עדיף עם רקע שקוף (PNG). יוצב בפינת הפרסומת. אם אין לוגו — דלג.</p>
+        <p class="step-help">העלה לוגו — עדיף עם רקע שקוף (PNG). יוצב <strong class="text-amber-300">קטן בפינה</strong> של הפרסומת. אם אין לוגו — דלג.</p>
 
         <div class="flex items-start gap-4 flex-wrap">
             <label class="upload-zone-sm"
@@ -498,6 +502,42 @@
                 {/if}
                 <input type="file" accept="image/*" onchange={(e) => handleImage(e, "logo")} class="hidden" />
             </label>
+
+            {#if logo}
+                <!-- Logo shape + position controls -->
+                <div class="flex flex-col gap-3 self-center min-w-[180px]">
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 mb-1.5">צורת חיתוך:</p>
+                        <div class="inline-flex rounded-lg border border-white/10 bg-black/20 p-1">
+                            <button type="button" onclick={() => logoShape = "square"}
+                                class="px-3 py-1.5 rounded-md text-xs font-bold transition-colors
+                                       {logoShape === 'square' ? 'bg-amber-500 text-black' : 'text-gray-300 hover:text-white'}">
+                                ⬛ מרובע
+                            </button>
+                            <button type="button" onclick={() => logoShape = "circle"}
+                                class="px-3 py-1.5 rounded-md text-xs font-bold transition-colors
+                                       {logoShape === 'circle' ? 'bg-amber-500 text-black' : 'text-gray-300 hover:text-white'}">
+                                ⚫ עגול
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 mb-1.5">פינה:</p>
+                        <div class="inline-flex rounded-lg border border-white/10 bg-black/20 p-1">
+                            <button type="button" onclick={() => logoPosition = "right"}
+                                class="px-3 py-1.5 rounded-md text-xs font-bold transition-colors
+                                       {logoPosition === 'right' ? 'bg-amber-500 text-black' : 'text-gray-300 hover:text-white'}">
+                                ⬆️ ימין
+                            </button>
+                            <button type="button" onclick={() => logoPosition = "left"}
+                                class="px-3 py-1.5 rounded-md text-xs font-bold transition-colors
+                                       {logoPosition === 'left' ? 'bg-amber-500 text-black' : 'text-gray-300 hover:text-white'}">
+                                ⬆️ שמאל
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            {/if}
 
             <button type="button" onclick={() => advance("title")}
                     class="px-4 py-2 rounded-xl text-sm font-bold transition-colors self-center
@@ -567,25 +607,26 @@
         </div>
     </section>
 
-    <!-- =================== STEP 5: ESSENCE INFO =================== -->
+    <!-- =================== STEP 5: CALL TO ACTION =================== -->
     <section bind:this={stepRefs.essence} class="step-card">
         <div class="step-head" class:step-title-light={litFlags.essence.title}>
             <span class="step-num" class:step-num-light={litFlags.essence.num}>5</span>
-            <h2>📋 מידע קצר על מהות העסק / המוצר</h2>
+            <h2>📣 קריאה לפעולה — מה תגרום לגולש ללחוץ?</h2>
             {#if activeStep === "essence" && !essenceText}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
         </div>
         <p class="step-help">
-            הסבר תמציתי שיופיע ליד הטקסט המסקרן בריחוף.
-            <strong class="text-amber-300">2-3 שורות</strong> שעוזרות לגולש להבין במה מדובר —
-            מה אתה מציע, למי זה מתאים, מה הוויי-פאי שלך.
+            <strong class="text-amber-300">משפט אחד קצר ופעיל</strong> שמזמין את הגולש ללחוץ —
+            לא פרטים טכניים ולא רשימת תכונות, אלא הזמנה לחוות / לגלות / להצטרף.
+            <br/>
+            <span class="text-gray-500">דוגמאות: "הקלק כדי להכיר את השמפו החדש!" · "גלה את הטעם של פיצה איטלקית אמיתית" · "קליק אחד והגנת טרמפיסטים בכף היד שלך"</span>
         </p>
 
-        <textarea bind:value={essenceText} maxlength="220" rows="4"
+        <textarea bind:value={essenceText} maxlength="120" rows="2"
                   onfocus={() => activeStep === "essence" || (activeStep = "essence")}
                   onblur={() => essenceText.trim() && commitField("essence")}
-                  placeholder={`לדוגמה:\nפיצרייה משפחתית בקרית משה — בצק נח 24 שעות, רוטב עגבניות בית, גבינה בולגרית.\nמשלוחים עד הבית, פתוח ימים א'-ה' 11:00-22:00.`}
+                  placeholder="לדוגמה: הקלק כדי להכיר את השמפו החדש!"
                   class="text-input"></textarea>
 
         <div class="flex items-center justify-between gap-2 text-xs text-gray-500 mt-2">
@@ -597,7 +638,7 @@
             {:else}
                 <span></span>
             {/if}
-            <span>{essenceText.length}/220</span>
+            <span>{essenceText.length}/120</span>
         </div>
     </section>
 
@@ -605,7 +646,7 @@
     <section bind:this={stepRefs.preview} class="step-card">
         <div class="step-head" class:step-title-light={litFlags.preview.title}>
             <span class="step-num" class:step-num-light={litFlags.preview.num}>6</span>
-            <h2>תצוגה מקדימה — איך זה ייראה לתושבים?</h2>
+            <h2>תצוגה מקדימה — איך זה יראה לגולשים?</h2>
             {#if activeStep === "preview"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
@@ -648,7 +689,8 @@
                                     <p class="pro-sub">{subtitle || "כותרת משנה / סלוגן"}</p>
                                 </div>
                                 {#if logo}
-                                    <img src={logo} alt="לוגו" class="popup-logo" />
+                                    <img src={logo} alt="לוגו"
+                                         class="popup-logo {logoShape === 'circle' ? 'popup-logo-circle' : ''} {logoPosition === 'left' ? 'popup-logo-left' : 'popup-logo-right'}" />
                                 {/if}
                                 <div class="close-countdown">5</div>
                             </div>
@@ -664,127 +706,66 @@
             </div>
         {/if}
 
-        <!-- ===== DESKTOP PREVIEW — looks like the actual site (header + map + content + RIGHT-side ad) ===== -->
+        <!-- ===== DESKTOP PREVIEW — real site screenshot with user's ad overlaid on right slot ===== -->
         {#if previewMode === "desktop"}
             <div class="preview-frame desktop">
-                <div class="desktop-mock" dir="rtl">
-                    <!-- Site header (mimics real Header.svelte) -->
-                    <div class="mock-header">
-                        <div class="mock-header-inner">
-                            <div class="mock-logo">
-                                <span class="mock-logo-circle">🏘️</span>
-                                <div>
-                                    <div class="mock-site-name">קהילה בשכונה</div>
-                                    <div class="mock-site-sub">כל יתרונות השכונה תחת קורת גג אחת</div>
-                                </div>
+                <div class="site-shot-frame" dir="rtl">
+                    <!-- Real site screenshot as background -->
+                    <img src="/images/advertisement-page/יוצאיםלחירות.png"
+                         alt="האתר"
+                         class="site-shot" />
+
+                    <!-- User's ad — overlaid on the FIRST right ad slot of the screenshot -->
+                    <div
+                        role="button"
+                        tabindex="0"
+                        class="site-shot-overlay desktop-ad pro-ad"
+                        onmouseenter={() => hoverPreview = true}
+                        onmouseleave={() => hoverPreview = false}
+                        onfocus={() => hoverPreview = true}
+                        onblur={() => hoverPreview = false}
+                    >
+                        <div class="ad-img-wrap pro-img-wrap site-shot-overlay-img">
+                            {#if mainImage}
+                                <img src={mainImage} alt={title}
+                                     class="ad-img"
+                                     style:opacity={hoverPreview ? 0 : 1} />
+                            {:else}
+                                <div class="img-placeholder">תמונה</div>
+                            {/if}
+
+                            <div class="pro-diag bg-gradient-to-br {gradient}"
+                                 style:opacity={hoverPreview ? 0 : 1}></div>
+
+                            <div class="pro-title-wrap" style:opacity={hoverPreview ? 0 : 1}>
+                                <h3 class="pro-title">{title || "כותרת ראשית"}</h3>
+                                <p class="pro-sub">{subtitle || "סלוגן / כותרת משנה"}</p>
                             </div>
-                            <div class="mock-nav">
-                                <span>אודות</span>
-                                <span class="mock-lang">🌐 עברית</span>
-                                <span class="mock-user">👤</span>
+
+                            <div class="hover-overlay" style:opacity={hoverPreview ? 1 : 0}>
+                                <h3 class="hover-title">{title || "כותרת"}</h3>
+                                <p class="hover-text">{hoverText || "כאן יופיע הטקסט בריחוף"}</p>
+                                {#if essenceText}
+                                    <div class="hover-essence">{essenceText}</div>
+                                {/if}
                             </div>
+
+                            {#if logo}
+                                <img src={logo} alt="לוגו"
+                                     class="ad-logo {logoShape === 'circle' ? 'ad-logo-circle' : ''} {logoPosition === 'left' ? 'ad-logo-left' : 'ad-logo-right'}" />
+                            {/if}
                         </div>
-                        <!-- News ticker line -->
-                        <div class="mock-ticker">📰 חדשות השכונה • אירועים השבוע • מבצעים חדשים…</div>
+                        <div class="ad-cta bg-gradient-to-r {gradient}">
+                            <p>{cta}</p>
+                        </div>
                     </div>
 
-                    <!-- Body: 3-col layout (right ad | content | left helper sidebar) -->
-                    <div class="mock-body">
-                        <!-- RIGHT-SIDE AD (this is where the user's ad lives — TOP slot, prime position) -->
-                        <aside class="mock-right-ad">
-                            <h4 class="mock-ad-label">תוכן שיווקי</h4>
-
-                            <div
-                                role="button"
-                                tabindex="0"
-                                class="desktop-ad pro-ad group"
-                                onmouseenter={() => hoverPreview = true}
-                                onmouseleave={() => hoverPreview = false}
-                                onfocus={() => hoverPreview = true}
-                                onblur={() => hoverPreview = false}
-                            >
-                                <div class="ad-img-wrap pro-img-wrap" style:height="220px">
-                                    {#if mainImage}
-                                        <img src={mainImage} alt={title}
-                                             class="ad-img"
-                                             style:opacity={hoverPreview ? 0 : 1} />
-                                    {:else}
-                                        <div class="img-placeholder">תמונה</div>
-                                    {/if}
-
-                                    <!-- Diagonal color band -->
-                                    <div class="pro-diag bg-gradient-to-br {gradient}"
-                                         style:opacity={hoverPreview ? 0 : 1}></div>
-
-                                    <!-- Title overlay (sits on the diagonal) -->
-                                    <div class="pro-title-wrap" style:opacity={hoverPreview ? 0 : 1}>
-                                        <h3 class="pro-title">{title || "כותרת ראשית"}</h3>
-                                        <p class="pro-sub">{subtitle || "סלוגן / כותרת משנה"}</p>
-                                    </div>
-
-                                    <!-- Hover overlay (replaces image on hover) -->
-                                    <div class="hover-overlay" style:opacity={hoverPreview ? 1 : 0}>
-                                        <h3 class="hover-title">{title || "כותרת"}</h3>
-                                        <p class="hover-text">{hoverText || "כאן יופיע הטקסט בריחוף"}</p>
-                                        {#if essenceText}
-                                            <div class="hover-essence">{essenceText}</div>
-                                        {/if}
-                                    </div>
-
-                                    {#if logo}
-                                        <img src={logo} alt="לוגו" class="ad-logo" />
-                                    {/if}
-                                </div>
-                                <div class="ad-cta bg-gradient-to-r {gradient}">
-                                    <p>{cta}</p>
-                                </div>
-                            </div>
-                            <!-- Pointer arrow showing "this is your ad" -->
-                            <div class="mock-here-pointer">
-                                <span>הפרסומת שלך כאן</span>
-                                <span class="arrow">←</span>
-                            </div>
-
-                            <!-- Permanent fixture ad: יוצאים לחירות (below user's ad) -->
-                            <div class="mock-fixed-ad">
-                                <img src="/images/advertisement-page/יוצאיםלחירות.png"
-                                     alt="יוצאים לחירות"
-                                     loading="lazy" />
-                            </div>
-                        </aside>
-
-                        <!-- MAIN CONTENT (mock map + categories) -->
-                        <main class="mock-main">
-                            <div class="mock-h1">יתרונות שכונת קרית משה</div>
-                            <!-- Mock map -->
-                            <div class="mock-map">
-                                <div class="mock-map-grid"></div>
-                                <div class="mock-pin" style="top:30%; right:25%;">📍</div>
-                                <div class="mock-pin" style="top:60%; right:60%;">📍</div>
-                                <div class="mock-pin" style="top:45%; right:75%;">📍</div>
-                                <div class="mock-map-label">🗺️ מפת השכונה</div>
-                            </div>
-                            <!-- Mock category chips -->
-                            <div class="mock-cats">
-                                {#each ["גמ״ח","יהדות","חוגים","טרמפים","חנויות","שבת"] as cat}
-                                    <span class="mock-cat-chip">{cat}</span>
-                                {/each}
-                            </div>
-                        </main>
-
-                        <!-- LEFT SIDEBAR (other ads / partners — like real AdsSidebar) -->
-                        <aside class="mock-left-ads">
-                            <h4 class="mock-ad-label">שותפים</h4>
-                            {#each ["from-blue-600 to-cyan-600","from-purple-600 to-pink-600","from-green-600 to-emerald-600"] as col}
-                                <div class="mock-other-ad">
-                                    <div class="mock-other-img"></div>
-                                    <div class="mock-other-cta bg-gradient-to-r {col}">פרסומת אחרת</div>
-                                </div>
-                            {/each}
-                        </aside>
+                    <!-- "Your ad here" pointer arrow -->
+                    <div class="site-shot-pointer">
+                        ← הפרסומת שלך כאן
                     </div>
                 </div>
-                <p class="preview-caption">📌 העבר עכבר על הפרסומת (בצד ימין) כדי לראות את הטקסט בריחוף — כפי שהגולש יראה.</p>
+                <p class="preview-caption">📌 כך הפרסומת שלך תיראה באתר האמיתי — בצד ימין מתחת להדר. העבר עכבר עליה לראות את הטקסט בריחוף.</p>
             </div>
         {/if}
 
@@ -1325,17 +1306,23 @@
         border-radius: 1rem; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.5);
     }
     :global(.popup-img) { position: relative; height: 130px; }
-    :global(.popup-img img) { width: 100%; height: 100%; object-fit: cover; }
+    :global(.popup-img > img:not(.popup-logo)) { width: 100%; height: 100%; object-fit: cover; }
     :global(.popup-img-fade) {
         position: absolute; inset: 0;
         background: linear-gradient(to top, rgba(15,23,42,0.95), transparent 50%);
         pointer-events: none;
     }
     :global(.popup-logo) {
-        position: absolute !important; top: 8px; right: 8px;
-        width: 40px; height: 40px; border-radius: 8px; background: white; padding: 4px;
+        position: absolute !important; top: 8px;
+        width: 40px !important; height: 40px !important;
+        border-radius: 8px; background: white; padding: 4px;
         object-fit: contain !important;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+        z-index: 5;
     }
+    :global(.popup-logo-right) { right: 8px; left: auto; }
+    :global(.popup-logo-left)  { left: 8px;  right: auto; }
+    :global(.popup-logo-circle) { border-radius: 50% !important; }
     :global(.close-countdown) {
         position: absolute; top: 8px; left: 8px; width: 28px; height: 28px;
         border-radius: 9999px; background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.25);
@@ -1353,7 +1340,73 @@
         border: none;
     }
 
-    /* ============== DESKTOP PREVIEW (mimics real site) ============== */
+    /* ============== DESKTOP PREVIEW — real site screenshot with overlay ============== */
+    :global(.site-shot-frame) {
+        position: relative;
+        width: 100%; max-width: 820px;
+        border-radius: 0.85rem; overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.08);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+        background: #0f172a;
+    }
+    :global(.site-shot) {
+        display: block; width: 100%; height: auto;
+    }
+    /* Overlay positioned on the FIRST right ad slot of the screenshot.
+       The screenshot has the right ads column at ~93%-99% from left, top first slot at ~17% */
+    :global(.site-shot-overlay) {
+        position: absolute;
+        top: 17%;
+        right: 1.2%;
+        width: 6.2%;
+        z-index: 5;
+        cursor: pointer;
+        border-radius: 4px;
+        overflow: hidden;
+        box-shadow: 0 0 0 2px rgba(255,255,255,0.6), 0 0 20px rgba(245,158,11,0.6);
+        animation: overlayPulse 2.5s ease-in-out infinite;
+    }
+    @keyframes overlayPulse {
+        0%, 100% { box-shadow: 0 0 0 2px rgba(255,255,255,0.6), 0 0 20px rgba(245,158,11,0.6); }
+        50%      { box-shadow: 0 0 0 3px rgba(255,255,255,0.85), 0 0 28px rgba(245,158,11,0.95); }
+    }
+    :global(.site-shot-overlay-img) {
+        width: 100%;
+        aspect-ratio: 144 / 450; /* matches real RightAdBanner slot */
+        height: auto;
+    }
+    :global(.site-shot-overlay .ad-cta) { padding: 0.25rem; }
+    :global(.site-shot-overlay .ad-cta p) { font-size: 0.45rem; line-height: 1.1; }
+    :global(.site-shot-overlay .pro-title) { font-size: 0.5rem; line-height: 1.05; margin-bottom: 0.1rem; }
+    :global(.site-shot-overlay .pro-sub)   { font-size: 0.38rem; line-height: 1.15; }
+    :global(.site-shot-overlay .pro-title-wrap) { padding: 0.3rem 0.35rem 0.2rem; }
+    :global(.site-shot-overlay .ad-logo) {
+        width: 14px !important; height: 14px !important; padding: 1px;
+        top: 2px;
+    }
+    :global(.site-shot-overlay .ad-logo-right) { right: 2px; }
+    :global(.site-shot-overlay .ad-logo-left)  { left: 2px; }
+    :global(.site-shot-overlay .hover-title) { font-size: 0.5rem; margin-bottom: 0.15rem; }
+    :global(.site-shot-overlay .hover-text)  { font-size: 0.38rem; line-height: 1.2; }
+    :global(.site-shot-overlay .hover-essence) { font-size: 0.32rem; padding-top: 0.15rem; margin-top: 0.15rem; }
+    :global(.site-shot-overlay .hover-overlay) { padding: 0.25rem; }
+
+    :global(.site-shot-pointer) {
+        position: absolute;
+        top: 30%;
+        right: 9%;
+        z-index: 6;
+        background: linear-gradient(90deg, rgba(245,158,11,0.95), rgba(217,119,6,0.95));
+        color: #000;
+        font-size: 0.7rem; font-weight: 900;
+        padding: 0.35rem 0.7rem;
+        border-radius: 0.4rem;
+        white-space: nowrap;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+        animation: pointerNudge 1.4s ease-in-out infinite;
+    }
+
+    /* Old desktop-mock kept for any leftover refs (will be unused now) */
     :global(.desktop-mock) {
         width: 100%; max-width: 820px;
         background: #0f172a;
@@ -1412,9 +1465,9 @@
         display: flex; gap: 0.75rem; padding: 0.85rem;
     }
 
-    /* Right ad column */
+    /* Right ad column — matches real RightAdBanner (w-36 = 144px, slots 490px tall) */
     :global(.mock-right-ad) {
-        width: 165px; flex-shrink: 0; position: relative;
+        width: 144px; flex-shrink: 0; position: relative;
     }
     :global(.mock-fixed-ad) {
         margin-top: 0.6rem;
@@ -1527,11 +1580,15 @@
         transition: opacity 1500ms ease;
     }
     :global(.ad-logo) {
-        position: absolute; top: 6px; right: 6px;
-        width: 32px; height: 32px; border-radius: 6px;
+        position: absolute; top: 6px;
+        width: 36px; height: 36px; border-radius: 6px;
         background: white; padding: 3px; object-fit: contain;
         z-index: 5;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.35);
     }
+    :global(.ad-logo-right) { right: 6px; left: auto; }
+    :global(.ad-logo-left)  { left: 6px;  right: auto; }
+    :global(.ad-logo-circle) { border-radius: 50%; }
     :global(.hover-overlay) {
         position: absolute; inset: 0;
         background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
