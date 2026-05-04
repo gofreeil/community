@@ -242,12 +242,24 @@
 
     // ===== Color palette =====
     const palettes = [
-        { id: "amber",  label: "כתום-זהב",  cls: "from-amber-500 to-orange-600" },
-        { id: "blue",   label: "כחול",      cls: "from-blue-600 to-cyan-600" },
-        { id: "purple", label: "סגול-ורוד", cls: "from-purple-600 to-pink-600" },
-        { id: "green",  label: "ירוק",      cls: "from-green-600 to-emerald-600" },
-        { id: "red",    label: "אדום-ורוד", cls: "from-red-600 to-pink-600" },
-        { id: "indigo", label: "אינדיגו",   cls: "from-indigo-600 to-blue-600" },
+        { id: "amber",    label: "כתום-זהב",    cls: "from-amber-500 to-orange-600" },
+        { id: "orange",   label: "כתום בוהק",   cls: "from-orange-500 to-red-500" },
+        { id: "yellow",   label: "צהוב-זהב",    cls: "from-yellow-400 to-amber-500" },
+        { id: "red",      label: "אדום-ורוד",   cls: "from-red-600 to-pink-600" },
+        { id: "rose",     label: "ורוד עז",     cls: "from-rose-500 to-fuchsia-600" },
+        { id: "crimson",  label: "בורדו",       cls: "from-rose-700 to-red-900" },
+        { id: "fuchsia",  label: "פוקסיה",      cls: "from-fuchsia-500 to-purple-600" },
+        { id: "purple",   label: "סגול-ורוד",   cls: "from-purple-600 to-pink-600" },
+        { id: "violet",   label: "סגול עמוק",   cls: "from-violet-600 to-indigo-700" },
+        { id: "indigo",   label: "אינדיגו",     cls: "from-indigo-600 to-blue-600" },
+        { id: "blue",     label: "כחול",        cls: "from-blue-600 to-cyan-600" },
+        { id: "sky",      label: "תכלת",        cls: "from-sky-400 to-blue-500" },
+        { id: "teal",     label: "טורקיז",      cls: "from-teal-500 to-cyan-600" },
+        { id: "emerald",  label: "אזמרגד",      cls: "from-emerald-500 to-teal-700" },
+        { id: "green",    label: "ירוק",        cls: "from-green-600 to-emerald-600" },
+        { id: "lime",     label: "ליים",        cls: "from-lime-400 to-green-500" },
+        { id: "slate",    label: "אפור-כסף",    cls: "from-slate-500 to-gray-700" },
+        { id: "dark",     label: "שחור-פלדה",   cls: "from-gray-800 to-slate-900" },
     ];
 
     // ===== Mobile/Desktop preview toggle =====
@@ -752,6 +764,7 @@
             {/each}
         </div>
 
+        <div class="preview-with-rail">
         <!-- ===== MOBILE PREVIEW — full-screen popup style ===== -->
         {#if previewMode === "mobile"}
             <div class="preview-frame mobile">
@@ -920,6 +933,21 @@
                 <p class="preview-caption">כך ייראה דף הנחיתה המלא — אליו הגולש יגיע בלחיצה על הפרסומת.</p>
             </div>
         {/if}
+
+            <!-- Color rail — vertical round dots on the visual left (RTL flex-row) -->
+            <div class="color-rail" aria-label="בחירת צבע פרסומת">
+                {#each palettes as p}
+                    <button type="button"
+                            onclick={() => (gradient = p.cls)}
+                            class="color-dot bg-gradient-to-br {p.cls}"
+                            class:selected={gradient === p.cls}
+                            title={p.label}
+                            aria-label={p.label}
+                            aria-pressed={gradient === p.cls}>
+                    </button>
+                {/each}
+            </div>
+        </div>
 
         <div class="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
             <button type="button" onclick={() => advance("hover")}
@@ -1691,13 +1719,58 @@
     :global(.ad-cta) { padding: 0.65rem; text-align: center; }
     :global(.ad-cta p) { color: white; font-weight: 700; font-size: 0.72rem; line-height: 1.3; margin: 0; }
 
+    /* ============== COLOR RAIL — vertical round palette next to preview ============== */
+    :global(.preview-with-rail) {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 0.85rem;
+        flex-wrap: wrap;
+    }
+    :global(.color-rail) {
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
+        padding: 0.55rem;
+        background: rgba(0,0,0,0.35);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 1rem;
+        align-self: center;
+    }
+    :global(.color-dot) {
+        width: 34px; height: 34px;
+        border-radius: 9999px;
+        border: 2px solid rgba(255,255,255,0.18);
+        cursor: pointer;
+        transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+        padding: 0;
+    }
+    :global(.color-dot:hover) {
+        transform: scale(1.1);
+        border-color: rgba(255,255,255,0.55);
+    }
+    :global(.color-dot.selected) {
+        transform: scale(1.18);
+        border-color: white;
+        box-shadow: 0 0 0 3px rgba(255,255,255,0.18), 0 4px 14px rgba(0,0,0,0.45);
+    }
+    /* On narrow screens — flip rail horizontal so it doesn't crowd the demo */
+    @media (max-width: 640px) {
+        :global(.color-rail) {
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+    }
+
     /* ============== PRO AD STYLE — diagonal banner with overlaid title ============== */
     :global(.pro-img-wrap) { position: relative; overflow: hidden; }
 
     /* Diagonal color band — covers the bottom portion of the image at an angle */
     :global(.pro-diag) {
         position: absolute; inset: 0;
-        clip-path: polygon(0 55%, 100% 30%, 100% 100%, 0 100%);
+        clip-path: polygon(0 75%, 100% 55%, 100% 100%, 0 100%);
         opacity: 0.96;
         transition: opacity 1500ms ease;
         pointer-events: none;
@@ -1714,20 +1787,20 @@
         content: "";
         position: absolute; inset: 0;
         background: linear-gradient(to bottom right, transparent 49.5%, rgba(255,255,255,0.6) 49.7%, rgba(255,255,255,0.6) 50%, transparent 50.2%);
-        clip-path: polygon(0 53%, 100% 28%, 100% 33%, 0 58%);
+        clip-path: polygon(0 73%, 100% 53%, 100% 58%, 0 78%);
         pointer-events: none; z-index: 3;
         opacity: 0.5;
     }
 
     :global(.pro-title-wrap) {
         position: absolute; left: 0; right: 0; bottom: 0;
-        padding: 0.85rem 0.85rem 0.6rem;
+        padding: 0.55rem 0.7rem 0.45rem;
         z-index: 4;
         text-align: right;
         transition: opacity 1500ms ease;
     }
     :global(.pro-title-wrap.mobile) {
-        padding: 1rem 1rem 0.75rem;
+        padding: 0.65rem 0.85rem 0.55rem;
     }
     :global(.pro-title) {
         color: white; font-weight: 900;
