@@ -668,8 +668,11 @@
                 </div>
             {/if}
 
-            <!-- Explanation + Confirm (button + sentence side by side) -->
+            <!-- Explanation + Confirm (sentence on the right in RTL, button on the left) -->
             <div class="mt-4 flex flex-wrap items-center justify-center gap-3">
+                <p class="text-gray-300 text-sm md:text-base font-medium leading-snug">
+                    המחיר מחושב לפי מספר השכונות<br/>הפעילות בכל עיר.
+                </p>
                 <button
                     type="button"
                     onclick={() => { showPicker = false; citySearchQuery = ''; showAllCities = false; advanceFromCity(); }}
@@ -682,9 +685,6 @@
                         <span class="text-[11px] font-bold opacity-80">· {selectedCities.size === 1 ? `${[...selectedCities][0]}` : `${selectedCities.size} ערים`} ({fmt(neighborhoodCount)})</span>
                     {/if}
                 </button>
-                <p class="text-gray-300 text-sm md:text-base font-medium leading-snug">
-                    המחיר מחושב לפי מספר השכונות הפעילות בכל עיר.
-                </p>
             </div>
         </div>
     {/if}
