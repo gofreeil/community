@@ -761,6 +761,13 @@
 			<div class="flex items-center gap-2">
 				{#if isSuperAdmin}
 					<a
+						href="/about/advertise/builder"
+						class="text-sm font-bold text-purple-300 hover:text-purple-200 transition-colors cursor-pointer px-4 py-2 rounded-xl hover:bg-purple-500/10 border border-purple-500/30 hover:border-purple-400/50 flex items-center gap-1.5"
+						title="בילדר פרסומות (סופר-אדמין)"
+					>
+						🎨 בילדר פרסומות
+					</a>
+					<a
 						href="/admin"
 						class="text-sm font-bold text-amber-400 hover:text-amber-300 transition-colors cursor-pointer px-4 py-2 rounded-xl hover:bg-amber-500/10 border border-amber-500/30 hover:border-amber-400/50 flex items-center gap-1.5"
 						title="לוח ניהול"

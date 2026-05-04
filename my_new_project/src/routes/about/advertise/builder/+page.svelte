@@ -3,9 +3,12 @@
     import { browser } from "$app/environment";
     import { goto } from "$app/navigation";
 
-    // ===== Page payload (logged-in user prefill) =====
+    // ===== Page payload (logged-in user prefill + admin status) =====
     let { data } = $props<{
-        data: { layoutUser?: { email?: string | null; phone?: string | null; nickname?: string | null } | null };
+        data: {
+            layoutUser?: { email?: string | null; phone?: string | null; nickname?: string | null } | null;
+            isSuperAdmin?: boolean;
+        };
     }>();
 
     // ===== Persistence =====
@@ -15,7 +18,7 @@
     // ===== Access gate state =====
     let accessGranted = $state(false);
     let accessChecked = $state(false);
-    let usedOneTimePass = $state(false);
+    let isSuperAdmin = $derived(Boolean(data?.isSuperAdmin));
 
     // ===== Form state =====
     type ProductRow = { id: number; name: string; price: string; image: string; description: string };
@@ -226,24 +229,15 @@
     let hoverPreview = $state(false);
 
     // ===== Access gate =====
-    // Allow entry only when one of these is true:
-    //   1. localStorage[PAID_KEY] is set (real flow — set by payment confirmation)
-    //   2. URL contains ?test=1 (one-time test pass — burns immediately)
+    // Allow entry when one of:
+    //   1. Server marked the user as super_admin → unlimited testing access
+    //   2. localStorage[PAID_KEY] is set (real flow — set by payment confirmation)
     function checkAccess() {
         if (!browser) return;
-        const params = new URLSearchParams(window.location.search);
-        const oneTime = params.get("test") === "1";
         const paid = localStorage.getItem(PAID_KEY) === "1";
 
-        if (paid) {
+        if (isSuperAdmin || paid) {
             accessGranted = true;
-        } else if (oneTime) {
-            accessGranted = true;
-            usedOneTimePass = true;
-            // Burn the one-time pass: strip ?test from the URL so a refresh blocks again.
-            const url = new URL(window.location.href);
-            url.searchParams.delete("test");
-            window.history.replaceState({}, "", url.toString());
         } else {
             accessGranted = false;
         }
@@ -377,22 +371,9 @@
             </a>
         </div>
 
-        <!-- One-time test access hint -->
-        <details class="text-xs text-gray-500">
-            <summary class="cursor-pointer hover:text-gray-300 transition-colors">🧪 בדיקה חד-פעמית (למפתחים בלבד)</summary>
-            <div class="mt-3 rounded-xl border border-white/10 bg-white/3 p-4 text-right text-gray-400 leading-relaxed">
-                <p class="mb-2">לכניסה <strong class="text-amber-300">חד-פעמית</strong> ללא תשלום — הוסף לקישור:</p>
-                <code class="inline-block bg-black/40 border border-amber-500/30 rounded px-2 py-1 text-amber-300 font-bold mb-3" dir="ltr">?test=1</code>
-                <p class="mb-3">דוגמה:</p>
-                <code class="block bg-black/40 border border-white/10 rounded px-3 py-2 text-amber-200 break-all" dir="ltr">/about/advertise/builder?test=1</code>
-                <p class="mt-3">⚠️ הפרמטר נמחק מיד ברגע הכניסה — רענון העמוד יחזיר אותך לכאן.</p>
-                <button type="button"
-                        onclick={() => location.href = '/about/advertise/builder?test=1'}
-                        class="mt-3 w-full py-2 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-200 font-bold text-xs transition-colors">
-                    🚪 כניסה חד-פעמית עכשיו
-                </button>
-            </div>
-        </details>
+        <p class="text-xs text-gray-500 mt-6">
+            🛡️ למפתחים: הדף פתוח ללא הגבלה רק למחוברים בתפקיד <code class="text-amber-300">super_admin</code>.
+        </p>
     </div>
 {:else if !accessChecked}
     <!-- Brief loading state to avoid flicker -->
@@ -1068,12 +1049,12 @@
 </div>
 {/if}
 
-<!-- One-time pass banner -->
-{#if usedOneTimePass}
-    <div class="fixed top-4 left-1/2 -translate-x-1/2 z-[200] rounded-xl border border-amber-500/50 bg-gray-900/95 px-4 py-2 shadow-2xl backdrop-blur" dir="rtl">
-        <p class="text-amber-300 text-xs font-bold flex items-center gap-2">
-            <span>🧪</span>
-            <span>גישה חד-פעמית פעילה — רענון יחסום מחדש</span>
+<!-- Super-admin badge: shows whenever the page granted access via super_admin role -->
+{#if accessGranted && isSuperAdmin}
+    <div class="fixed top-4 left-1/2 -translate-x-1/2 z-[200] rounded-xl border border-purple-500/50 bg-gray-900/95 px-4 py-2 shadow-2xl backdrop-blur" dir="rtl">
+        <p class="text-purple-300 text-xs font-bold flex items-center gap-2">
+            <span>🛡️</span>
+            <span>מצב סופר-אדמין — גישה ללא הגבלה לבדיקות</span>
         </p>
     </div>
 {/if}
