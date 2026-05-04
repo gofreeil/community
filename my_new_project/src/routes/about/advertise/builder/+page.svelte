@@ -410,6 +410,18 @@
         <p class="step-help">תמונה איכותית — מוצר, חזית העסק, אווירת השירות. תופיע גם בנייד וגם בדסקטופ. עד 5MB.</p>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Tips first → on RIGHT in RTL grid -->
+            <div class="bg-white/3 rounded-2xl border border-white/10 p-4 md:p-6 text-gray-300">
+                <p class="font-bold text-amber-400 mb-3 text-base md:text-xl">💡 טיפים לתמונה מנצחת</p>
+                <ul class="space-y-2 md:space-y-3 text-[13px] md:text-lg leading-relaxed">
+                    <li>✨ צילום ברור עם תאורה טובה</li>
+                    <li>🎯 פוקוס על המוצר/שירות — לא רקע מבולגן</li>
+                    <li>📐 יחס מומלץ: 4:3 או 16:9 (אופקי)</li>
+                    <li>🚫 בלי טקסט מודבק על התמונה — נכתוב טקסט בנפרד</li>
+                </ul>
+            </div>
+
+            <!-- Upload zone second → on LEFT in RTL grid -->
             <label class="upload-zone"
                    class:has-image={!!mainImage}
                    class:dragging={isDraggingMain}
@@ -430,16 +442,6 @@
                 {/if}
                 <input type="file" accept="image/*" onchange={(e) => handleImage(e, "main")} class="hidden" />
             </label>
-
-            <div class="bg-white/3 rounded-2xl border border-white/10 p-4 text-sm text-gray-300 space-y-2">
-                <p class="font-bold text-amber-400 mb-2">💡 טיפים לתמונה מנצחת</p>
-                <ul class="space-y-1.5 text-[13px] leading-relaxed">
-                    <li>✨ צילום ברור עם תאורה טובה</li>
-                    <li>🎯 פוקוס על המוצר/שירות — לא רקע מבולגן</li>
-                    <li>📐 יחס מומלץ: 4:3 או 16:9 (אופקי)</li>
-                    <li>🚫 בלי טקסט מודבק על התמונה — נכתוב טקסט בנפרד</li>
-                </ul>
-            </div>
         </div>
     </section>
 
