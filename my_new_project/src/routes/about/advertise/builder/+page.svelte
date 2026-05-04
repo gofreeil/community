@@ -476,8 +476,11 @@
             </label>
 
             <button type="button" onclick={() => advance("title")}
-                    class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:border-amber-500/40 text-gray-300 hover:text-amber-300 text-sm font-bold transition-colors self-center">
-                דלג שלב זה →
+                    class="px-4 py-2 rounded-xl text-sm font-bold transition-colors self-center
+                           {logo
+                               ? 'bg-amber-500 hover:bg-amber-400 text-black border border-amber-400'
+                               : 'bg-white/5 border border-white/10 hover:border-amber-500/40 text-gray-300 hover:text-amber-300'}">
+                {logo ? "סיימתי, עבור לשלב הבא ←" : "דלג שלב זה →"}
             </button>
         </div>
     </section>
