@@ -57,6 +57,8 @@
     let tutorialStep = $state<TutorialStep>('pick-city');
     let showCheckmark = $state(false);
     let highlightedRow = $state<number | null>(null);
+    let confirmingRow = $state<number | null>(null);
+    let calculatorEl: HTMLDivElement | null = $state(null);
 
     function advanceFromCity() {
         if (tutorialStep !== 'pick-city') return;
@@ -285,13 +287,21 @@
         const next = new Map(planMap);
         if (next.get(num) === plan) {
             next.delete(num);           // clicking active side = turn off
-        } else {
-            next.set(num, plan);
-            highlightedRow = num;       // ensure visual marker stays on this row
-            showToast();                // remind user which neighborhood they're advertising in
-            advanceFromPlan();
+            planMap = next;
+            return;
         }
+        next.set(num, plan);
+        highlightedRow = num;           // ensure visual marker stays on this row
+        showToast();                    // remind user which neighborhood they're advertising in
+        advanceFromPlan();
         planMap = next;
+
+        // Step 3 confirmation: checkmark animation, then full row outline + smooth scroll to calculator
+        confirmingRow = num;
+        setTimeout(() => {
+            confirmingRow = null;
+            calculatorEl?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 700);
     }
 
     let selectedItems  = $derived(
@@ -496,7 +506,7 @@
                 </button>
                 <span class="inline-flex items-center gap-0.5 px-2 py-1 rounded-full bg-amber-500/25 border border-amber-500/50 text-amber-300 text-xs font-black"
                       style="animation: dealPulse 2s ease-in-out infinite;">
-                    🎉 מבצע! 3,000 ₪
+                    🎉 מבצע! 15,000 ₪ לחודש
                 </span>
             </div>
 
@@ -682,7 +692,16 @@
                 {plan === 'half'   ? 'border-amber-500/50 bg-amber-500/10'
                  : plan === 'single' ? 'border-blue-500/50 bg-blue-500/10'
                  : highlighted     ? 'border-amber-400 bg-amber-500/15 shadow-lg shadow-amber-500/20 scale-[1.01]'
-                 :                    'border-white/10 bg-white/3 hover:border-white/25'}">
+                 :                    'border-white/10 bg-white/3 hover:border-white/25'}
+                {plan && confirmingRow !== row.num ? 'ring-2 ring-amber-400 ring-offset-0' : ''}">
+                {#if confirmingRow === row.num}
+                    <span class="confirm-check-pop pointer-events-none absolute inset-0 z-30 flex items-center justify-center"
+                          aria-hidden="true">
+                        <span class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-amber-400 text-black font-black text-3xl shadow-[0_0_30px_rgba(245,158,11,0.9)]">
+                            ✓
+                        </span>
+                    </span>
+                {/if}
                 <!-- Row: name + toggle -->
                 <div class="flex items-center justify-between gap-3 mb-2">
                     <div class="flex items-center gap-2 min-w-0">
@@ -768,9 +787,10 @@
                         class="border-b border-white/5 transition-all cursor-pointer relative
                         {plan === 'half'   ? 'bg-amber-500/10'
                          : plan === 'single' ? 'bg-blue-500/10'
-                         : highlighted     ? 'bg-amber-500/15 outline outline-2 outline-amber-400 outline-offset-[-2px]'
+                         : highlighted     ? 'bg-amber-500/15 partial-highlight'
                          : i % 2 === 0      ? 'bg-white/3 hover:bg-white/5'
-                         :                    'bg-white/5 hover:bg-white/8'}">
+                         :                    'bg-white/5 hover:bg-white/8'}
+                        {plan && confirmingRow !== row.num ? 'outline outline-2 outline-amber-400 outline-offset-[-2px]' : ''}">
 
                         <td class="px-4 py-4 text-center font-bold
                             {plan ? 'text-amber-400' : highlighted ? 'text-amber-300' : 'text-gray-400'}">{row.num}</td>
@@ -804,8 +824,17 @@
                         <td class="px-4 py-4 text-gray-400 text-sm">{row.details}</td>
 
                         <!-- 3-state toggle — last column = left side in RTL -->
-                        <td class="px-3 py-3 text-center border-r border-white/10"
+                        <td class="px-3 py-3 text-center border-r border-white/10 relative"
                             style="background: {plan === 'half' ? 'rgba(245,158,11,0.12)' : plan === 'single' ? 'rgba(59,130,246,0.12)' : 'rgba(255,255,255,0.06)'}">
+
+                            {#if confirmingRow === row.num}
+                                <span class="confirm-check-pop pointer-events-none absolute inset-0 z-30 flex items-center justify-center"
+                                      aria-hidden="true">
+                                    <span class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-400 text-black font-black text-2xl shadow-[0_0_24px_rgba(245,158,11,0.9)]">
+                                        ✓
+                                    </span>
+                                </span>
+                            {/if}
 
                             <div class="flex justify-center" role="presentation" onclick={(e) => e.stopPropagation()}>
                                 <div
@@ -848,7 +877,8 @@
 
     <!-- ===== Calculator Banner ===== -->
     {#if hasSelection}
-        <div class="mb-12 rounded-2xl border-2 border-white/20 bg-gradient-to-br from-gray-900 to-gray-950 p-6 md:p-8 shadow-2xl"
+        <div bind:this={calculatorEl}
+             class="mb-12 rounded-2xl border-2 border-white/20 bg-gradient-to-br from-gray-900 to-gray-950 p-6 md:p-8 shadow-2xl scroll-mt-4"
              style="animation: slideDown 0.3s ease-out;">
 
             <!-- Title -->
@@ -1207,5 +1237,31 @@
         45%  { opacity: 1; transform: scale(1.15); }
         70%  { transform: scale(0.95); }
         100% { opacity: 0; transform: scale(1); }
+    }
+
+    /* Step 2 partial highlight — outlines all cells in the row except the toggle column (last td) */
+    :global(tr.partial-highlight > td) {
+        box-shadow: inset 0 2px 0 #fbbf24, inset 0 -2px 0 #fbbf24;
+    }
+    :global(tr.partial-highlight > td:first-child) {
+        box-shadow: inset 0 2px 0 #fbbf24, inset 0 -2px 0 #fbbf24, inset -2px 0 0 #fbbf24;
+    }
+    :global(tr.partial-highlight > td:nth-last-child(2)) {
+        box-shadow: inset 0 2px 0 #fbbf24, inset 0 -2px 0 #fbbf24, inset 2px 0 0 #fbbf24;
+    }
+    :global(tr.partial-highlight > td:last-child) {
+        box-shadow: none;
+    }
+
+    /* Step 3 checkmark pop — plays once when a plan is selected, then fades */
+    @keyframes confirmCheckPop {
+        0%   { opacity: 0; transform: scale(0); }
+        35%  { opacity: 1; transform: scale(1.35); }
+        60%  { opacity: 1; transform: scale(1); }
+        85%  { opacity: 1; transform: scale(1); }
+        100% { opacity: 0; transform: scale(1.05); }
+    }
+    :global(.confirm-check-pop > span) {
+        animation: confirmCheckPop 0.7s ease-out forwards;
     }
 </style>
