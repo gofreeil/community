@@ -45,13 +45,13 @@
 
     // ===== Tutorial state (lit-number + glowing title + finger pointer) =====
     type Step =
-        | "image" | "logo" | "title" | "subtitle" | "hover"
-        | "preview" | "landing-link" | "products" | "uniqueness"
+        | "image" | "logo" | "title" | "subtitle" | "essence"
+        | "preview" | "hover" | "landing-link" | "products" | "uniqueness"
         | "address" | "submit" | "done";
 
     const stepOrder: Step[] = [
-        "image", "logo", "title", "subtitle", "preview",
-        "hover", "landing-link", "products", "uniqueness",
+        "image", "logo", "title", "subtitle", "essence",
+        "preview", "hover", "landing-link", "products", "uniqueness",
         "address", "submit", "done"
     ];
 
@@ -63,8 +63,9 @@
         logo:         { num: false, title: false },
         title:        { num: false, title: false },
         subtitle:     { num: false, title: false },
-        hover:        { num: false, title: false },
+        essence:      { num: false, title: false },
         preview:      { num: false, title: false },
+        hover:        { num: false, title: false },
         "landing-link":{ num: false, title: false },
         products:     { num: false, title: false },
         uniqueness:   { num: false, title: false },
@@ -92,8 +93,8 @@
     });
 
     let stepRefs: Record<Step, HTMLElement | null> = $state({
-        image: null, logo: null, title: null, subtitle: null, hover: null,
-        preview: null, "landing-link": null, products: null, uniqueness: null,
+        image: null, logo: null, title: null, subtitle: null, essence: null,
+        preview: null, hover: null, "landing-link": null, products: null, uniqueness: null,
         address: null, submit: null, done: null,
     });
 
@@ -566,10 +567,44 @@
         </div>
     </section>
 
-    <!-- =================== STEP 5: PREVIEW =================== -->
+    <!-- =================== STEP 5: ESSENCE INFO =================== -->
+    <section bind:this={stepRefs.essence} class="step-card">
+        <div class="step-head" class:step-title-light={litFlags.essence.title}>
+            <span class="step-num" class:step-num-light={litFlags.essence.num}>5</span>
+            <h2>📋 מידע קצר על מהות העסק / המוצר</h2>
+            {#if activeStep === "essence" && !essenceText}
+                <span class="tutorial-finger" aria-hidden="true">👇</span>
+            {/if}
+        </div>
+        <p class="step-help">
+            הסבר תמציתי שיופיע ליד הטקסט המסקרן בריחוף.
+            <strong class="text-amber-300">2-3 שורות</strong> שעוזרות לגולש להבין במה מדובר —
+            מה אתה מציע, למי זה מתאים, מה הוויי-פאי שלך.
+        </p>
+
+        <textarea bind:value={essenceText} maxlength="220" rows="4"
+                  onfocus={() => activeStep === "essence" || (activeStep = "essence")}
+                  onblur={() => essenceText.trim() && commitField("essence")}
+                  placeholder={`לדוגמה:\nפיצרייה משפחתית בקרית משה — בצק נח 24 שעות, רוטב עגבניות בית, גבינה בולגרית.\nמשלוחים עד הבית, פתוח ימים א'-ה' 11:00-22:00.`}
+                  class="text-input"></textarea>
+
+        <div class="flex items-center justify-between gap-2 text-xs text-gray-500 mt-2">
+            {#if essenceText}
+                <button type="button" onclick={() => commitField("essence")}
+                    class="px-3 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 hover:text-amber-200 font-bold transition-colors">
+                    המשך לתצוגה מקדימה ←
+                </button>
+            {:else}
+                <span></span>
+            {/if}
+            <span>{essenceText.length}/220</span>
+        </div>
+    </section>
+
+    <!-- =================== STEP 6: PREVIEW =================== -->
     <section bind:this={stepRefs.preview} class="step-card">
         <div class="step-head" class:step-title-light={litFlags.preview.title}>
-            <span class="step-num" class:step-num-light={litFlags.preview.num}>5</span>
+            <span class="step-num" class:step-num-light={litFlags.preview.num}>6</span>
             <h2>תצוגה מקדימה — איך זה ייראה לתושבים?</h2>
             {#if activeStep === "preview"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
@@ -836,10 +871,10 @@
         </div>
     </section>
 
-    <!-- =================== STEP 6: HOVER TEXT =================== -->
+    <!-- =================== STEP 7: HOVER TEXT =================== -->
     <section bind:this={stepRefs.hover} class="step-card">
         <div class="step-head" class:step-title-light={litFlags.hover.title}>
-            <span class="step-num" class:step-num-light={litFlags.hover.num}>6</span>
+            <span class="step-num" class:step-num-light={litFlags.hover.num}>7</span>
             <h2>טקסט בריחוף — מה רואים כשהעכבר על הפרסומת</h2>
             {#if activeStep === "hover" && !hoverText}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
@@ -869,24 +904,6 @@
             <span>{hoverText.length}/90</span>
         </div>
 
-        <!-- Essence info — secondary, longer description shown alongside hover line -->
-        <div class="mt-5 rounded-2xl border border-white/10 bg-white/3 p-4 md:p-5">
-            <div class="flex items-center gap-2 mb-2">
-                <span class="text-lg">📋</span>
-                <p class="font-bold text-amber-400 text-base md:text-lg">מידע קצר על מהות העסק / המוצר</p>
-            </div>
-            <p class="text-xs md:text-sm text-gray-400 leading-relaxed mb-3">
-                הסבר תמציתי שיופיע ליד הטקסט המסקרן בריחוף. <strong class="text-amber-300">2-3 שורות</strong> שעוזרות לגולש להבין במה מדובר —
-                מה אתה מציע, למי זה מתאים, מה הוויי-פאי שלך.
-            </p>
-            <textarea bind:value={essenceText} maxlength="220" rows="3"
-                      placeholder={`לדוגמה:\nפיצרייה משפחתית בקרית משה — בצק נח 24 שעות, רוטב עגבניות בית, גבינה בולגרית.\nמשלוחים עד הבית, פתוח ימים א'-ה' 11:00-22:00.`}
-                      class="text-input"></textarea>
-            <div class="flex items-center justify-end text-xs text-gray-500 mt-1">
-                <span>{essenceText.length}/220</span>
-            </div>
-        </div>
-
         <!-- Color palette -->
         <div class="mt-6">
             <p class="text-sm font-bold text-gray-300 mb-2">צבע הפרסומת:</p>
@@ -903,10 +920,10 @@
         </div>
     </section>
 
-    <!-- =================== STEP 7: LANDING LINK / CONTACT =================== -->
+    <!-- =================== STEP 8: LANDING LINK / CONTACT =================== -->
     <section bind:this={stepRefs["landing-link"]} class="step-card">
         <div class="step-head" class:step-title-light={litFlags["landing-link"].title}>
-            <span class="step-num" class:step-num-light={litFlags["landing-link"].num}>7</span>
+            <span class="step-num" class:step-num-light={litFlags["landing-link"].num}>8</span>
             <h2>דף נחיתה — לאן המשתמש יגיע?</h2>
             {#if activeStep === "landing-link"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
@@ -951,10 +968,10 @@
         </div>
     </section>
 
-    <!-- =================== STEP 8: PRODUCTS =================== -->
+    <!-- =================== STEP 9: PRODUCTS =================== -->
     <section bind:this={stepRefs.products} class="step-card">
         <div class="step-head" class:step-title-light={litFlags.products.title}>
-            <span class="step-num" class:step-num-light={litFlags.products.num}>8</span>
+            <span class="step-num" class:step-num-light={litFlags.products.num}>9</span>
             <h2>תמונות מוצרים / שירותים + מחירים</h2>
             {#if activeStep === "products"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
@@ -1003,10 +1020,10 @@
         </div>
     </section>
 
-    <!-- =================== STEP 9: UNIQUENESS =================== -->
+    <!-- =================== STEP 10: UNIQUENESS =================== -->
     <section bind:this={stepRefs.uniqueness} class="step-card">
         <div class="step-head" class:step-title-light={litFlags.uniqueness.title}>
-            <span class="step-num" class:step-num-light={litFlags.uniqueness.num}>9</span>
+            <span class="step-num" class:step-num-light={litFlags.uniqueness.num}>10</span>
             <h2>מה מייחד אותך?</h2>
             {#if activeStep === "uniqueness"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
@@ -1032,10 +1049,10 @@
         </div>
     </section>
 
-    <!-- =================== STEP 10: ADDRESS =================== -->
+    <!-- =================== STEP 11: ADDRESS =================== -->
     <section bind:this={stepRefs.address} class="step-card">
         <div class="step-head" class:step-title-light={litFlags.address.title}>
-            <span class="step-num" class:step-num-light={litFlags.address.num}>10</span>
+            <span class="step-num" class:step-num-light={litFlags.address.num}>11</span>
             <h2>כתובת ושעות פעילות</h2>
             {#if activeStep === "address"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
@@ -1066,10 +1083,10 @@
         </div>
     </section>
 
-    <!-- =================== STEP 11: SUBMIT =================== -->
+    <!-- =================== STEP 12: SUBMIT =================== -->
     <section bind:this={stepRefs.submit} class="step-card">
         <div class="step-head" class:step-title-light={litFlags.submit.title}>
-            <span class="step-num" class:step-num-light={litFlags.submit.num}>11</span>
+            <span class="step-num" class:step-num-light={litFlags.submit.num}>12</span>
             <h2>בדיקה אחרונה ושליחה</h2>
             {#if activeStep === "submit"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
@@ -1098,7 +1115,7 @@
         </button>
     </section>
 
-    <!-- =================== STEP 12: DONE =================== -->
+    <!-- =================== STEP 13: DONE =================== -->
     {#if submitted}
         <section bind:this={stepRefs.done} class="step-card success-card">
             <div class="text-center py-6">
