@@ -539,20 +539,20 @@
                     type="button"
                     onclick={setNational}
                     title={isNational ? 'לחץ לביטול' : 'בחר ארצי'}
-                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-all font-bold text-sm
+                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border transition-all font-bold text-base md:text-lg
                         {isNational
                             ? 'border-purple-500 bg-purple-500/20 text-white'
                             : 'border-white/10 bg-white/5 text-gray-300 hover:border-purple-400/40 hover:text-white'}"
                 >
-                    <span>🌍</span>
+                    <span class="text-xl md:text-2xl">🌍</span>
                     <span>ארצי — כל הארץ</span>
-                    <span class="text-[11px] font-normal text-gray-500">({fmt(totalNeighborhoodsCount)} שכונות)</span>
-                    <span class="inline-flex items-center gap-0.5 text-amber-300 text-xs font-black"
+                    <span class="text-sm md:text-base font-normal text-gray-400">({fmt(totalNeighborhoodsCount)} שכונות של כל השכונות בארץ)</span>
+                    <span class="inline-flex items-center gap-1 text-amber-300 text-sm md:text-base font-black"
                           style="animation: dealPulse 2s ease-in-out infinite;">
                         🎉 מבצע! 5,000 ₪ לחודש
                     </span>
                     {#if isNational}
-                        <span class="text-purple-300 text-[11px] font-bold">✓ ביטול ✕</span>
+                        <span class="text-purple-300 text-sm font-bold">✓ ביטול ✕</span>
                     {/if}
                 </button>
 
