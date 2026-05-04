@@ -1064,7 +1064,7 @@
                         שלחנו אישור הזמנה לכתובת
                         <span class="text-green-400 font-bold">{userEmail}</span>
                     </p>
-                    <p class="text-gray-500 text-xs mt-2">ניצור איתך קשר תוך 24 שעות לתיאום הסופי</p>
+                    <p class="text-gray-500 text-xs mt-2">ניצור איתך קשר בהקדם לתיאום הסופי</p>
                 </div>
             {:else}
                 <!-- Email input -->
@@ -1178,7 +1178,10 @@
                     🔗 לדף התשלום — Grow
                 </a>
             </div>
-            <p class="text-gray-600 text-xs mt-4">* לאחר השלמת הרכישה נצור איתכם קשר לתיאום פרסום תוך 24 שעות</p>
+            <p class="mt-4 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-amber-200 text-sm md:text-base font-bold text-center leading-snug flex items-center justify-center gap-2">
+                <span class="text-lg">📞</span>
+                <span>לאחר השלמת הרכישה ניצור איתכם קשר לתיאום הפרסום <span class="text-amber-100 font-black">בהקדם</span></span>
+            </p>
         </div>
 
         <div class="flex flex-wrap justify-center gap-4 mt-5">
