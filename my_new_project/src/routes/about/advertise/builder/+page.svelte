@@ -2065,16 +2065,14 @@
         gap: 0.85rem;
         flex-wrap: wrap;
     }
-    /* Compact overlapping cluster — 3 cols × 6 rows. The grid cell is smaller than the
-       dot, so dots overlap their neighbors (~13px vertical overlap, ~43% of dot height).
-       Selected/hovered dots pop forward via z-index + scale. */
+    /* Two-column color picker — small gap between dots, no overlap */
     :global(.color-rail) {
         display: grid;
-        grid-template-columns: repeat(3, 22px);
-        grid-auto-rows: 17px;
-        column-gap: 8px;
-        row-gap: 0;
-        padding: 0.55rem 0.65rem 1rem 0.55rem;
+        grid-template-columns: repeat(2, 28px);
+        grid-auto-rows: 28px;
+        column-gap: 5px;
+        row-gap: 5px;
+        padding: 0.55rem;
         background: rgba(0,0,0,0.35);
         border: 1px solid rgba(255,255,255,0.08);
         border-radius: 0.85rem;
@@ -2083,35 +2081,28 @@
         position: relative;
     }
     :global(.color-dot) {
-        width: 30px; height: 30px;
+        width: 28px; height: 28px;
         border-radius: 9999px;
         border: 2px solid rgba(255,255,255,0.16);
         cursor: pointer;
         position: relative;
-        z-index: 1;
         padding: 0;
-        transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, z-index 0s;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.35);
+        transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
     }
     :global(.color-dot:hover) {
-        transform: scale(1.22);
-        z-index: 50;
+        transform: scale(1.18);
         border-color: rgba(255,255,255,0.7);
     }
     :global(.color-dot.selected) {
-        transform: scale(1.32);
-        z-index: 100;
+        transform: scale(1.25);
         border-color: white;
-        box-shadow: 0 0 0 3px rgba(255,255,255,0.22), 0 6px 16px rgba(0,0,0,0.55);
+        box-shadow: 0 0 0 3px rgba(255,255,255,0.22), 0 4px 12px rgba(0,0,0,0.45);
     }
-    /* On narrow screens — flatten cluster into a 2-row horizontal strip */
+    /* On narrow screens — flatten into a 9×2 horizontal strip */
     @media (max-width: 640px) {
         :global(.color-rail) {
-            grid-template-columns: repeat(9, 17px);
-            grid-auto-rows: 22px;
-            column-gap: 0;
-            row-gap: 8px;
-            padding: 0.55rem 1rem 0.55rem 0.65rem;
+            grid-template-columns: repeat(9, 28px);
+            grid-auto-rows: 28px;
         }
     }
 
