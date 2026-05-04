@@ -1804,19 +1804,18 @@
         text-overflow: ellipsis;
         box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     }
-    /* מרקרי דוגמה — שקופים-למחצה עם מסגרת מקווקווית כדי להבדיל ממשהו אמיתי */
-    :global(.jmap-pin--mock) {
-        opacity: 0.78;
-    }
+    /* מרקרי דוגמה — האייקון נשאר ברור, רק התווית הטקסטואלית מקבלת שקיפות + מסגרת מקווקווית */
     :global(.jmap-pin--mock .jmap-pin-icon) {
-        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4)) grayscale(0.15);
+        opacity: 1;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
     }
     :global(.jmap-pin--mock .jmap-pin-label) {
+        opacity: 0.78;
         outline: 1.5px dashed rgba(255,255,255,0.7);
         outline-offset: 1px;
         background-image: linear-gradient(rgba(255,255,255,0.12), rgba(0,0,0,0.0));
     }
-    :global(.jmap-pin--mock:hover) {
+    :global(.jmap-pin--mock:hover .jmap-pin-label) {
         opacity: 1;
     }
     /* z-index לעטיפת ה-Leaflet במצב מסך מלא */
