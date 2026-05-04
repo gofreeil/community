@@ -325,9 +325,10 @@
             .filter(r => planMap.has(r.num))
             .map(r => {
                 const plan = planMap.get(r.num)!;
+                const monthsCount = plan === 'half' ? 6 : 1;
                 const eMonthly = isJerusalemOnly ? JERUSALEM_FLAT : (plan === 'half' ? r.half  : r.single);
                 const eTotal   = isJerusalemOnly ? JERUSALEM_FLAT : (plan === 'half' ? r.total : r.single);
-                return { ...r, plan, eMonthly, eTotal };
+                return { ...r, plan, monthsCount, eMonthly, eTotal };
             })
     );
 
@@ -968,10 +969,27 @@
 
             <!-- Total -->
             <div class="rounded-2xl border-2 border-white/20 bg-white/5 p-6 text-center mb-6">
-                <p class="text-gray-400 text-sm mb-2 font-bold">סה"כ לתשלום</p>
-                {#if neighborhoodCount > 1}
-                    <p class="text-gray-500 text-xs mb-1">₪{fmt(basePayment)} × {fmt(neighborhoodCount)} שכונות</p>
-                {/if}
+                <p class="text-gray-300 text-base md:text-lg mb-3 font-bold">סה"כ לתשלום</p>
+                <!-- Per-item math breakdown — rate × neighborhoods × months -->
+                <div class="space-y-1.5 mb-4">
+                    {#each selectedItems as item}
+                        <p class="text-gray-100 text-base md:text-lg font-bold leading-snug">
+                            <span class="{item.plan === 'half' ? 'text-amber-300' : 'text-blue-300'}">{item.type}:</span>
+                            <span class="text-white">₪{fmt(item.eMonthly)}</span>
+                            <span class="text-gray-300 font-medium">לשכונה</span>
+                            <span class="text-gray-400 mx-0.5">×</span>
+                            <span class="text-white">{fmt(neighborhoodCount)}</span>
+                            <span class="text-gray-300 font-medium">{neighborhoodCount === 1 ? 'שכונה' : 'שכונות'}</span>
+                            {#if !isJerusalemOnly}
+                                <span class="text-gray-400 mx-0.5">×</span>
+                                <span class="text-white">{item.monthsCount}</span>
+                                <span class="text-gray-300 font-medium">{item.monthsCount === 1 ? 'חודש' : 'חודשים'}</span>
+                            {/if}
+                            <span class="text-gray-400 mx-1">=</span>
+                            <span class="{item.plan === 'half' ? 'text-amber-300' : 'text-blue-300'} font-black">₪{fmt(item.eTotal * neighborhoodCount)}</span>
+                        </p>
+                    {/each}
+                </div>
                 <p class="text-5xl md:text-6xl font-black text-white mb-2">₪{fmt(totalPayment)}</p>
                 <p class="text-gray-500 text-sm">
                     {#if halfItems.length > 0 && singleItems.length > 0}
