@@ -122,6 +122,11 @@
         return stepOrder[Math.min(i + 1, stepOrder.length - 1)];
     }
 
+    // ===== Drag-and-drop state (visual highlight per zone) =====
+    let isDraggingMain = $state(false);
+    let isDraggingLogo = $state(false);
+    let draggingProductId = $state<number | null>(null);
+
     // ===== Image upload helpers =====
     async function fileToDataUrl(file: File): Promise<string> {
         return new Promise((res, rej) => {
@@ -132,21 +137,35 @@
         });
     }
 
-    async function handleImage(e: Event, target: "main" | "logo") {
-        const f = (e.target as HTMLInputElement).files?.[0];
-        if (!f) return;
-        if (f.size > 5 * 1024 * 1024) {
+    async function processImageFile(file: File | null | undefined, target: "main" | "logo" | { kind: "product"; id: number }) {
+        if (!file) return;
+        if (!file.type.startsWith("image/")) {
+            alert("נא להעלות קובץ תמונה (JPG, PNG, WebP...)");
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
             alert("התמונה גדולה מדי — עד 5MB");
             return;
         }
-        const url = await fileToDataUrl(f);
+        const url = await fileToDataUrl(file);
         if (target === "main") {
             mainImage = url;
             if (activeStep === "image") advance("logo");
-        } else {
+        } else if (target === "logo") {
             logo = url;
             if (activeStep === "logo") advance("title");
+        } else {
+            const idx = products.findIndex(p => p.id === target.id);
+            if (idx >= 0) {
+                products[idx] = { ...products[idx], image: url };
+                products = [...products];
+            }
         }
+    }
+
+    async function handleImage(e: Event, target: "main" | "logo") {
+        const f = (e.target as HTMLInputElement).files?.[0];
+        await processImageFile(f, target);
     }
 
     function clearImage(target: "main" | "logo") {
@@ -156,17 +175,27 @@
 
     async function handleProductImage(e: Event, id: number) {
         const f = (e.target as HTMLInputElement).files?.[0];
-        if (!f) return;
-        if (f.size > 5 * 1024 * 1024) {
-            alert("התמונה גדולה מדי — עד 5MB");
-            return;
-        }
-        const url = await fileToDataUrl(f);
-        const idx = products.findIndex(p => p.id === id);
-        if (idx >= 0) {
-            products[idx] = { ...products[idx], image: url };
-            products = [...products];
-        }
+        await processImageFile(f, { kind: "product", id });
+    }
+
+    // ===== Drag-and-drop handlers =====
+    function dragOver(e: DragEvent, setActive: (v: boolean) => void) {
+        if (!e.dataTransfer?.types.includes("Files")) return;
+        e.preventDefault();
+        e.stopPropagation();
+        setActive(true);
+    }
+    function dragLeave(e: DragEvent, setActive: (v: boolean) => void) {
+        e.preventDefault();
+        e.stopPropagation();
+        setActive(false);
+    }
+    async function handleDrop(e: DragEvent, target: "main" | "logo" | { kind: "product"; id: number }, setActive: (v: boolean) => void) {
+        e.preventDefault();
+        e.stopPropagation();
+        setActive(false);
+        const f = e.dataTransfer?.files?.[0];
+        await processImageFile(f, target);
     }
 
     function addProduct() {
@@ -225,7 +254,23 @@
     onMount(() => {
         if (!browser) return;
         checkAccess();
-        if (!accessGranted) return;
+
+        // Prevent the browser from opening a dropped image in a new tab
+        // when the user releases outside an upload zone.
+        const blockOutsideDrop = (e: DragEvent) => {
+            if (e.dataTransfer?.types.includes("Files")) {
+                e.preventDefault();
+            }
+        };
+        window.addEventListener("dragover", blockOutsideDrop);
+        window.addEventListener("drop", blockOutsideDrop);
+
+        if (!accessGranted) {
+            return () => {
+                window.removeEventListener("dragover", blockOutsideDrop);
+                window.removeEventListener("drop", blockOutsideDrop);
+            };
+        }
         try {
             const raw = localStorage.getItem(LS_KEY);
             if (raw) {
@@ -250,6 +295,11 @@
                 nextProductId   = (products.reduce((m, p) => Math.max(m, p.id), 0) || 0) + 1;
             }
         } catch {}
+
+        return () => {
+            window.removeEventListener("dragover", blockOutsideDrop);
+            window.removeEventListener("drop", blockOutsideDrop);
+        };
     });
 
     $effect(() => {
@@ -379,14 +429,21 @@
         <p class="step-help">תמונה איכותית — מוצר, חזית העסק, אווירת השירות. תופיע גם בנייד וגם בדסקטופ. עד 5MB.</p>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label class="upload-zone" class:has-image={!!mainImage}>
+            <label class="upload-zone"
+                   class:has-image={!!mainImage}
+                   class:dragging={isDraggingMain}
+                   ondragover={(e) => dragOver(e, v => isDraggingMain = v)}
+                   ondragleave={(e) => dragLeave(e, v => isDraggingMain = v)}
+                   ondrop={(e) => handleDrop(e, "main", v => isDraggingMain = v)}>
                 {#if mainImage}
                     <img src={mainImage} alt="תמונה ראשית" />
                     <button type="button" class="remove-x" onclick={(e) => { e.preventDefault(); clearImage("main"); }} aria-label="הסר תמונה">✕</button>
                 {:else}
                     <div class="upload-empty">
                         <div class="text-4xl mb-2">📸</div>
-                        <p class="font-bold text-base text-white">לחץ או גרור תמונה לכאן</p>
+                        <p class="font-bold text-base text-white">
+                            {isDraggingMain ? "✨ שחרר כאן" : "לחץ או גרור תמונה לכאן"}
+                        </p>
                         <p class="text-xs text-gray-400 mt-1">JPG, PNG, WebP — עד 5MB</p>
                     </div>
                 {/if}
@@ -417,14 +474,19 @@
         <p class="step-help">העלה לוגו — עדיף עם רקע שקוף (PNG). יוצב בפינת הפרסומת. אם אין לוגו — דלג.</p>
 
         <div class="flex items-start gap-4 flex-wrap">
-            <label class="upload-zone-sm" class:has-image={!!logo}>
+            <label class="upload-zone-sm"
+                   class:has-image={!!logo}
+                   class:dragging={isDraggingLogo}
+                   ondragover={(e) => dragOver(e, v => isDraggingLogo = v)}
+                   ondragleave={(e) => dragLeave(e, v => isDraggingLogo = v)}
+                   ondrop={(e) => handleDrop(e, "logo", v => isDraggingLogo = v)}>
                 {#if logo}
                     <img src={logo} alt="לוגו" />
                     <button type="button" class="remove-x" onclick={(e) => { e.preventDefault(); clearImage("logo"); }} aria-label="הסר לוגו">✕</button>
                 {:else}
                     <div class="text-center">
-                        <div class="text-2xl mb-1">🏷️</div>
-                        <p class="text-xs font-bold text-gray-300">העלה לוגו</p>
+                        <div class="text-2xl mb-1">{isDraggingLogo ? "✨" : "🏷️"}</div>
+                        <p class="text-xs font-bold text-gray-300">{isDraggingLogo ? "שחרר" : "העלה לוגו"}</p>
                     </div>
                 {/if}
                 <input type="file" accept="image/*" onchange={(e) => handleImage(e, "logo")} class="hidden" />
@@ -849,11 +911,18 @@
         <div class="space-y-3">
             {#each products as p, idx (p.id)}
                 <div class="product-row">
-                    <label class="upload-zone-sm" class:has-image={!!p.image}>
+                    <label class="upload-zone-sm"
+                           class:has-image={!!p.image}
+                           class:dragging={draggingProductId === p.id}
+                           ondragover={(e) => dragOver(e, v => draggingProductId = v ? p.id : null)}
+                           ondragleave={(e) => dragLeave(e, v => draggingProductId = v ? p.id : null)}
+                           ondrop={(e) => handleDrop(e, { kind: "product", id: p.id }, v => draggingProductId = v ? p.id : null)}>
                         {#if p.image}
                             <img src={p.image} alt={p.name} />
                         {:else}
-                            <div class="text-center text-xs text-gray-400">📷<br/>תמונה</div>
+                            <div class="text-center text-xs text-gray-400">
+                                {#if draggingProductId === p.id}✨<br/>שחרר{:else}📷<br/>תמונה{/if}
+                            </div>
                         {/if}
                         <input type="file" accept="image/*" onchange={(e) => handleProductImage(e, p.id)} class="hidden" />
                     </label>
@@ -1084,6 +1153,12 @@
     :global(.upload-zone.has-image) { border-style: solid; padding: 0; }
     :global(.upload-zone img) { width: 100%; height: 100%; min-height: 200px; max-height: 280px; object-fit: cover; }
     :global(.upload-empty) { text-align: center; padding: 1rem; }
+    :global(.upload-zone.dragging) {
+        border-color: rgb(34, 197, 94);
+        background: rgba(34, 197, 94, 0.1);
+        box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.18), 0 0 30px rgba(34, 197, 94, 0.25);
+        transform: scale(1.01);
+    }
 
     :global(.upload-zone-sm) {
         position: relative; display: flex; align-items: center; justify-content: center;
@@ -1093,6 +1168,12 @@
     }
     :global(.upload-zone-sm.has-image) { border-style: solid; padding: 0; }
     :global(.upload-zone-sm img) { width: 100%; height: 100%; object-fit: cover; }
+    :global(.upload-zone-sm.dragging) {
+        border-color: rgb(34, 197, 94);
+        background: rgba(34, 197, 94, 0.12);
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.25);
+        transform: scale(1.04);
+    }
 
     :global(.remove-x) {
         position: absolute; top: 0.4rem; left: 0.4rem; z-index: 5;
