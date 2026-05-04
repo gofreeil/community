@@ -27,7 +27,10 @@
 }
 
 html {
-    overflow-x: hidden;
+    /* clip ולא hidden — overflow:hidden על html יוצר scroll container ושובר position:sticky.
+       clip חותך תוכן שחורג בלי ליצור scroll container, ולכן ההדר ה-sticky חוזר לעבוד.
+       תמיכה: Chrome 90+, Firefox 81+, Safari 16+ (~99% ב-2026). */
+    overflow-x: clip;
     max-width: 100vw;
 }
 
@@ -39,10 +42,11 @@ body {
     color: #f8fafc;
     direction: rtl;
     font-size: 16.5px;
-    overflow-x: hidden;
+    /* clip במקום hidden — כדי שלא ניצור scroll container על body ולא נשבור sticky.
+       overflow:hidden + position:relative על body גרם ל-html להיות הסקרול הראשי
+       אך ה-sticky יחושב יחסית ל-body שאינו גולל → ההדר היה זז עם הדף. */
+    overflow-x: clip;
     max-width: 100vw;
-    width: 100%;
-    position: relative;
 }
 
 * {
