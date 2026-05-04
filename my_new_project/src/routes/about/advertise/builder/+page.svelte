@@ -393,10 +393,31 @@
             עברנו את שלב התשלום. עכשיו, יחד, נבנה פרסומת שתבלוט לתושבי השכונה.
             <br/>פשוט מלא שלב אחרי שלב — בכל רגע תראה תצוגה מקדימה חיה.
         </p>
-        <div class="mt-4 flex items-center justify-center gap-3 text-xs text-gray-400">
-            <span class="inline-flex items-center gap-1.5"><span class="text-green-400">✓</span> נשמר אוטומטית</span>
-            <span>•</span>
-            <button type="button" onclick={resetDraft} class="text-amber-400 hover:text-amber-300 underline underline-offset-2">איפוס טיוטה</button>
+
+        <!-- Autosave callout — explicit resume-from-profile message -->
+        <div class="mt-5 mx-auto max-w-2xl rounded-2xl border border-green-500/40 bg-green-500/8 px-4 py-3 md:px-5 md:py-4 text-right">
+            <div class="flex items-start gap-3">
+                <span class="text-2xl flex-shrink-0">💾</span>
+                <div class="flex-1 min-w-0">
+                    <p class="font-black text-green-300 text-sm md:text-base mb-1">
+                        הטיוטה שלך נשמרת אוטומטית
+                    </p>
+                    <p class="text-gray-300 text-xs md:text-sm leading-relaxed">
+                        אם תיסגר הכרטיסייה או יקרה משהו — אל דאגה. כל מה שמילאת ישמר בדפדפן ובחשבון שלך.
+                        <br/>
+                        תמיד תוכל לחזור ולהמשיך מהמקום שעצרת — מתוך
+                        <a href="/profile" class="text-amber-400 hover:text-amber-300 font-bold underline underline-offset-2">
+                            הפרופיל האישי שלך
+                        </a>.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-3 flex items-center justify-center gap-3 text-xs text-gray-500">
+            <button type="button" onclick={resetDraft} class="text-amber-400 hover:text-amber-300 underline underline-offset-2">
+                איפוס טיוטה והתחלה מחדש
+            </button>
         </div>
     </div>
 
@@ -634,9 +655,10 @@
 
                     <!-- Body: 3-col layout (right ad | content | left helper sidebar) -->
                     <div class="mock-body">
-                        <!-- RIGHT-SIDE AD (this is where the user's ad lives) -->
+                        <!-- RIGHT-SIDE AD (this is where the user's ad lives — TOP slot, prime position) -->
                         <aside class="mock-right-ad">
                             <h4 class="mock-ad-label">תוכן שיווקי</h4>
+
                             <div
                                 role="button"
                                 tabindex="0"
@@ -686,6 +708,13 @@
                             <div class="mock-here-pointer">
                                 <span>הפרסומת שלך כאן</span>
                                 <span class="arrow">←</span>
+                            </div>
+
+                            <!-- Permanent fixture ad: יוצאים לחירות (below user's ad) -->
+                            <div class="mock-fixed-ad">
+                                <img src="/images/advertisement-page/יוצאיםלחירות.png"
+                                     alt="יוצאים לחירות"
+                                     loading="lazy" />
                             </div>
                         </aside>
 
@@ -792,11 +821,18 @@
             </div>
         {/if}
 
-        <div class="mt-6 text-center">
+        <div class="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
             <button type="button" onclick={() => advance("hover")}
                 class="px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black transition-colors">
                 נראה מעולה — המשך לטקסט בריחוף →
             </button>
+            <a href="https://wa.me/972508750632?text=שלום, אני בונה פרסומת באתר ויש לי בעיה — אני צריך עזרה בעיצוב 🎨"
+               target="_blank" rel="noopener noreferrer"
+               aria-label="פנייה לעזרה בעיצוב בוואטסאפ"
+               class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-400/50 text-gray-200 hover:text-amber-300 font-bold transition-colors">
+                <span>🆘</span>
+                <span>יש לי בעיה ואני צריך עזרה בעיצוב</span>
+            </a>
         </div>
     </section>
 
@@ -1362,6 +1398,17 @@
     /* Right ad column */
     :global(.mock-right-ad) {
         width: 165px; flex-shrink: 0; position: relative;
+    }
+    :global(.mock-fixed-ad) {
+        margin-top: 0.6rem;
+        border-radius: 0.6rem;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.07);
+        background: #0a1020;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+    }
+    :global(.mock-fixed-ad img) {
+        width: 100%; height: auto; display: block;
     }
     :global(.mock-ad-label) {
         font-size: 0.6rem; font-weight: 700; color: #fbbf24;
