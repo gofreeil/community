@@ -70,25 +70,36 @@
     let step2NumLight = $state(false);  let step2TitleLight = $state(false);
     let step3NumLight = $state(false);  let step3TitleLight = $state(false);
     let step4NumLight = $state(false);  let step4TitleLight = $state(false);
+    let step5NumLight = $state(false);  let step5TitleLight = $state(false);
+
+    const NUM_MS   = 700;   // number flash duration (single, brief)
+    const TITLE_MS = 1500;  // title glow duration (after number)
+    const flashStep = (
+        timers:      number[],
+        numSetter:   (v: boolean) => void,
+        titleSetter: (v: boolean) => void,
+    ) => {
+        numSetter(true);
+        timers.push(window.setTimeout(() => numSetter(false), NUM_MS));
+        timers.push(window.setTimeout(() => titleSetter(true),  NUM_MS));
+        timers.push(window.setTimeout(() => titleSetter(false), NUM_MS + TITLE_MS));
+    };
 
     $effect(() => {
         const step = tutorialStep;
-        const NUM_MS   = 700;   // number flash duration (single, brief)
-        const TITLE_MS = 1500;  // title glow duration (after number)
         const timers: number[] = [];
-        const flash = (
-            numSetter:   (v: boolean) => void,
-            titleSetter: (v: boolean) => void,
-        ) => {
-            numSetter(true);
-            timers.push(window.setTimeout(() => numSetter(false), NUM_MS));
-            timers.push(window.setTimeout(() => titleSetter(true),  NUM_MS));
-            timers.push(window.setTimeout(() => titleSetter(false), NUM_MS + TITLE_MS));
-        };
-        if      (step === 'pick-city') flash(v => step1NumLight = v, v => step1TitleLight = v);
-        else if (step === 'pick-row')  flash(v => step2NumLight = v, v => step2TitleLight = v);
-        else if (step === 'pick-plan') flash(v => step3NumLight = v, v => step3TitleLight = v);
-        else if (step === 'done')      flash(v => step4NumLight = v, v => step4TitleLight = v);
+        if      (step === 'pick-city') flashStep(timers, v => step1NumLight = v, v => step1TitleLight = v);
+        else if (step === 'pick-row')  flashStep(timers, v => step2NumLight = v, v => step2TitleLight = v);
+        else if (step === 'pick-plan') flashStep(timers, v => step3NumLight = v, v => step3TitleLight = v);
+        else if (step === 'done')      flashStep(timers, v => step4NumLight = v, v => step4TitleLight = v);
+        return () => { for (const t of timers) clearTimeout(t); };
+    });
+
+    // Step 5 (payment) lights up after the user sends the email confirmation
+    $effect(() => {
+        if (!emailSent) return;
+        const timers: number[] = [];
+        flashStep(timers, v => step5NumLight = v, v => step5TitleLight = v);
         return () => { for (const t of timers) clearTimeout(t); };
     });
 
@@ -1049,11 +1060,12 @@
                 </ul>
             </div>
 
-            <!-- Total + Email — side-by-side on desktop, stacked on mobile -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 items-stretch">
+            <!-- Total + Email — single merged box with a divider line between them -->
+            <div class="rounded-2xl border-2 border-white/20 bg-white/5 mb-6 overflow-hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 items-stretch">
 
-            <!-- Total -->
-            <div class="rounded-2xl border-2 border-white/20 bg-white/5 px-6 py-4 text-center flex flex-col justify-center gap-3">
+            <!-- Total — right side in RTL (DOM-first), with right-aligned content -->
+            <div class="px-6 py-5 text-right flex flex-col justify-center gap-3 border-b md:border-b-0 md:border-l border-white/15">
                 <!-- Per-item math breakdown — rate × neighborhoods × months -->
                 <div class="space-y-1.5">
                     {#each selectedItems as item}
@@ -1083,7 +1095,7 @@
                         </p>
                     {/each}
                 </div>
-                <div class="flex items-center justify-center flex-wrap gap-x-3 gap-y-1">
+                <div class="flex items-center justify-start flex-wrap gap-x-3 gap-y-1">
                     <p class="text-5xl md:text-6xl font-black text-white inline-block"
                        class:total-flash={flashTotal}>₪{fmt(totalPayment)}</p>
                     <span class="text-gray-400 text-xs md:text-sm font-bold">ניתן לפרוס לתשלומים</span>
@@ -1092,8 +1104,8 @@
 
             <!-- ===== Email confirmation section ===== -->
             {#if emailSent}
-                <!-- Success state -->
-                <div class="rounded-2xl border-2 border-green-500/40 bg-green-900/20 p-5 text-center"
+                <!-- Success state — inside the merged box, accent green tint as background -->
+                <div class="bg-green-900/15 p-5 text-center"
                      style="animation: slideDown 0.3s ease-out;">
                     <div class="text-3xl mb-2">✅</div>
                     <p class="text-green-300 font-black text-base mb-1">המייל נשלח בהצלחה!</p>
@@ -1104,8 +1116,8 @@
                     <p class="text-gray-500 text-xs mt-2">ניצור איתך קשר בהקדם לתיאום הסופי</p>
                 </div>
             {:else}
-                <!-- Email + WhatsApp input -->
-                <div class="rounded-2xl border border-white/15 bg-white/3 p-5 flex flex-col justify-center"
+                <!-- Email + WhatsApp input — now inside the merged box, no border/rounded of its own -->
+                <div class="p-5 flex flex-col justify-center"
                      style="animation: slideDown 0.25s ease-out;">
                     <p class="text-gray-300 text-sm font-bold mb-3 text-center flex items-center justify-center gap-2"
                        class:step-title-light={step4TitleLight}>
@@ -1115,14 +1127,14 @@
                         📧 קבל אישור הזמנה — מייל / וואטסאפ
                     </p>
                     <div class="flex flex-col gap-2">
-                        <!-- Row 1: phone + WhatsApp -->
-                        <div class="flex flex-col sm:flex-row gap-2">
+                        <!-- Row 1: phone + WhatsApp — equal columns (50/50) so all inputs/buttons align -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             <input
                                 type="tel"
                                 bind:value={userPhone}
                                 placeholder="050-1234567"
                                 dir="ltr"
-                                class="flex-1 rounded-xl border border-white/15 bg-white/5 px-4 py-3
+                                class="rounded-xl border border-white/15 bg-white/5 px-4 py-3
                                        text-white placeholder:text-gray-600 text-sm
                                        focus:outline-none focus:border-green-500/60 focus:bg-green-900/10
                                        transition-all"
@@ -1139,14 +1151,14 @@
                                 💬 שלח בוואטסאפ
                             </a>
                         </div>
-                        <!-- Row 2: email + send-email -->
-                        <div class="flex flex-col sm:flex-row gap-2">
+                        <!-- Row 2: email + send-email — same equal columns -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             <input
                                 type="email"
                                 bind:value={userEmail}
                                 placeholder="your@email.com"
                                 dir="ltr"
-                                class="flex-1 rounded-xl border border-white/15 bg-white/5 px-4 py-3
+                                class="rounded-xl border border-white/15 bg-white/5 px-4 py-3
                                        text-white placeholder:text-gray-600 text-sm
                                        focus:outline-none focus:border-amber-500/60 focus:bg-amber-900/10
                                        transition-all"
@@ -1179,7 +1191,8 @@
             {/if}
 
             </div>
-            <!-- /Total + Email grid -->
+            </div>
+            <!-- /Total + Email merged box -->
 
             <!-- Breakdown cards (only if both plan types selected) -->
             {#if halfItems.length > 0 && singleItems.length > 0}
@@ -1197,16 +1210,6 @@
                 </div>
             {/if}
 
-            <!-- Reset selection -->
-            <div class="text-center mt-4">
-                <button
-                    type="button"
-                    onclick={() => planMap = new Map()}
-                    class="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-amber-400 transition-colors font-bold border border-white/10 hover:border-amber-500/40 rounded-full px-4 py-2"
-                >
-                    🔄 התחל מחדש — נקה את כל הפרסומות שנבחרו
-                </button>
-            </div>
         </div>
 
     {:else}
@@ -1222,10 +1225,10 @@
     <!-- Secure Payment -->
     <div class="mt-8 rounded-2xl bg-white/3 border border-white/10 p-6 md:p-8" dir="rtl">
         <h2 class="text-xl md:text-2xl font-black text-white mb-2 text-center flex items-center justify-center gap-2"
-            class:step-title-light={step4TitleLight}>
+            class:step-title-light={step5TitleLight}>
             <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
-                  class:step-num-light={step4NumLight}
-                  style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">4</span>
+                  class:step-num-light={step5NumLight}
+                  style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">5</span>
             🔒 תשלום מאובטח
         </h2>
         <p class="text-gray-400 text-sm text-center mb-6">
