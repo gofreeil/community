@@ -300,12 +300,38 @@
 	let cropNatW = $state(0);
 	let cropNatH = $state(0);
 
+	// === Ad-builder draft (resume from /about/advertise/builder) ===
+	type AdDraft = { title?: string; subtitle?: string; mainImage?: string; logo?: string; phone?: string; products?: unknown[]; address?: string };
+	let adDraft = $state<AdDraft | null>(null);
+	let adDraftProgress = $derived.by(() => {
+		if (!adDraft) return 0;
+		const fields = [adDraft.mainImage, adDraft.title, adDraft.subtitle, adDraft.logo, adDraft.phone, adDraft.address];
+		const filled = fields.filter(Boolean).length;
+		return Math.round((filled / fields.length) * 100);
+	});
+
 	// נקה טיוטה ישנה — הנתונים מגיעים מהשרת בלבד
 	onMount(() => {
 		try {
 			localStorage.removeItem(DRAFT_KEY);
 		} catch {}
+		// טען טיוטת בילדר פרסומת אם יש כזו — נציג כרטיס "המשך לערוך"
+		try {
+			const raw = localStorage.getItem("ad_builder_draft_v1");
+			if (raw) {
+				const d = JSON.parse(raw);
+				if (d && (d.title || d.mainImage || d.subtitle)) {
+					adDraft = d;
+				}
+			}
+		} catch {}
 	});
+
+	function dismissAdDraft() {
+		if (!confirm("למחוק את טיוטת הפרסומת?")) return;
+		try { localStorage.removeItem("ad_builder_draft_v1"); } catch {}
+		adDraft = null;
+	}
 
 	// שמור טיוטה ב-localStorage בכל שינוי
 	$effect(() => {
@@ -794,6 +820,39 @@
 				{/if}
 			</div>
 		</div>
+
+		<!-- ===== Ad-builder draft resume card ===== -->
+		{#if adDraft}
+			<div class="mt-4 mb-3 rounded-2xl border-2 border-purple-500/40 bg-gradient-to-br from-purple-900/30 to-indigo-900/20 p-4 md:p-5">
+				<div class="flex items-start gap-3 md:gap-4">
+					{#if adDraft.mainImage}
+						<img src={adDraft.mainImage} alt="טיוטת הפרסומת" class="w-16 h-16 md:w-20 md:h-20 rounded-xl object-cover flex-shrink-0 border border-white/10" />
+					{:else}
+						<div class="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center flex-shrink-0 text-3xl">🎨</div>
+					{/if}
+					<div class="flex-1 min-w-0">
+						<div class="flex items-center gap-2 mb-1 flex-wrap">
+							<span class="text-purple-300 font-black text-base md:text-lg">📝 פרסומת בעריכה</span>
+							<span class="text-[10px] md:text-xs px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 font-bold">{adDraftProgress}% הושלמו</span>
+						</div>
+						<p class="text-white font-bold text-sm md:text-base leading-tight mb-2 truncate">
+							{adDraft.title || "ללא כותרת"}{adDraft.subtitle ? " — " + adDraft.subtitle : ""}
+						</p>
+						<div class="flex items-center gap-2 flex-wrap">
+							<a href="/about/advertise/builder"
+							   class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black text-sm transition-colors">
+								🚀 המשך לערוך
+							</a>
+							<button type="button" onclick={dismissAdDraft}
+							   class="text-xs text-gray-400 hover:text-red-400 underline underline-offset-2 font-bold">
+								מחק טיוטה
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		{/if}
+
 		<!-- נייד: שם(ימין)|אווטר(מרכז)|ארנק קטן(שמאל) | דסקטופ: RTL אווטר|ארנק|שם -->
 		<div
 			class="flex flex-wrap md:flex-nowrap items-stretch gap-3 md:gap-6 w-full"

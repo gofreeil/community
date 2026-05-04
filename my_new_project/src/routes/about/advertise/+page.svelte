@@ -1274,6 +1274,19 @@
                 <span class="text-lg">📞</span>
                 <span>לאחר השלמת הרכישה ניצור איתכם קשר לתיאום הפרסום <span class="text-amber-100 font-black">בהקדם</span></span>
             </p>
+
+            <!-- After-payment guidance: where to find the builder + draft autosave -->
+            <div class="mt-3 rounded-xl border border-green-500/40 bg-green-500/10 px-4 py-3 text-right">
+                <p class="text-green-300 font-black text-sm md:text-base mb-1.5 flex items-center gap-2">
+                    <span class="text-lg">💾</span>
+                    <span>אחרי התשלום — איך ממשיכים?</span>
+                </p>
+                <ul class="text-gray-200 text-xs md:text-sm leading-relaxed space-y-1 pr-6 list-disc list-outside">
+                    <li>תועברו אוטומטית ל<a href="/about/advertise/builder" class="text-amber-300 hover:text-amber-200 font-bold underline">בילדר הפרסומת</a> — שלב אחר שלב, עם תצוגה מקדימה חיה.</li>
+                    <li>הטיוטה <strong class="text-green-300">נשמרת אוטומטית בכל רגע</strong> — אם הדף נסגר, הכל יישמר.</li>
+                    <li>תוכלו לחזור ולערוך בכל עת מ<a href="/profile" class="text-amber-300 hover:text-amber-200 font-bold underline">הפרופיל האישי שלכם</a> (כרטיס "📝 פרסומת בעריכה").</li>
+                </ul>
+            </div>
         </div>
 
         <div class="flex flex-wrap justify-center gap-4 mt-5">
