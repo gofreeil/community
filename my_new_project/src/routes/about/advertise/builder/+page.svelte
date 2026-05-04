@@ -14,11 +14,33 @@
     // ===== Persistence =====
     const LS_KEY = "ad_builder_draft_v1";
     const PAID_KEY = "ad_paid";
+    const PAID_AT_KEY = "ad_paid_at";   // ISO timestamp of payment — used to compute free-edit window
 
     // ===== Access gate state =====
     let accessGranted = $state(false);
     let accessChecked = $state(false);
     let isSuperAdmin = $derived(Boolean(data?.isSuperAdmin));
+
+    // ===== Free-edit window state =====
+    let paidAt = $state<Date | null>(null);
+    let now = $state(new Date());
+    let freeEditUntil = $derived.by(() => {
+        if (!paidAt) return null;
+        const d = new Date(paidAt);
+        d.setHours(23, 59, 59, 999);
+        return d;
+    });
+    let freeMsRemaining = $derived(freeEditUntil ? Math.max(0, freeEditUntil.getTime() - now.getTime()) : 0);
+    let freeEditExpired = $derived(Boolean(freeEditUntil) && freeMsRemaining === 0);
+    function fmtCountdown(ms: number) {
+        const totalMin = Math.floor(ms / 60000);
+        const h = Math.floor(totalMin / 60);
+        const m = totalMin % 60;
+        return `${h.toString().padStart(2,"0")}:${m.toString().padStart(2,"0")}`;
+    }
+    function fmtDateShort(d: Date) {
+        return d.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit' });
+    }
 
     // ===== Form state =====
     type ProductRow = { id: number; name: string; price: string; image: string; description: string };
@@ -263,10 +285,35 @@
         window.addEventListener("dragover", blockOutsideDrop);
         window.addEventListener("drop", blockOutsideDrop);
 
+        // Load paid-at timestamp; if missing but access is granted, set it now.
+        let storedPaidAt = localStorage.getItem(PAID_AT_KEY);
+        if (!storedPaidAt && accessGranted) {
+            storedPaidAt = new Date().toISOString();
+            try { localStorage.setItem(PAID_AT_KEY, storedPaidAt); } catch {}
+        }
+        if (storedPaidAt) {
+            const d = new Date(storedPaidAt);
+            if (!isNaN(d.getTime())) paidAt = d;
+        }
+
+        // Tick every minute to update the free-edit countdown.
+        const tickId = window.setInterval(() => { now = new Date(); }, 60_000);
+
+        // beforeunload — warn the user that their free editing day is running out
+        const beforeUnload = (e: BeforeUnloadEvent) => {
+            if (!submitted && !freeEditExpired) {
+                e.preventDefault();
+                e.returnValue = "";
+            }
+        };
+        window.addEventListener("beforeunload", beforeUnload);
+
         if (!accessGranted) {
             return () => {
                 window.removeEventListener("dragover", blockOutsideDrop);
                 window.removeEventListener("drop", blockOutsideDrop);
+                window.removeEventListener("beforeunload", beforeUnload);
+                window.clearInterval(tickId);
             };
         }
         try {
@@ -300,6 +347,8 @@
         return () => {
             window.removeEventListener("dragover", blockOutsideDrop);
             window.removeEventListener("drop", blockOutsideDrop);
+            window.removeEventListener("beforeunload", beforeUnload);
+            window.clearInterval(tickId);
         };
     });
 
@@ -399,8 +448,43 @@
             <br/>פשוט מלא שלב אחרי שלב — בכל רגע תראה תצוגה מקדימה חיה.
         </p>
 
+        <!-- Free-edit countdown banner — only when paidAt is known and not expired yet -->
+        {#if paidAt && !freeEditExpired && freeEditUntil}
+            <div class="mt-5 mx-auto max-w-2xl rounded-2xl border-2 border-amber-500/50 bg-gradient-to-br from-amber-900/25 to-orange-900/15 px-4 py-3 md:px-5 md:py-4 text-right">
+                <div class="flex items-start gap-3">
+                    <span class="text-3xl flex-shrink-0">⏰</span>
+                    <div class="flex-1 min-w-0">
+                        <p class="font-black text-amber-300 text-sm md:text-base mb-1">
+                            יום העריכה החינמי שלך — נגמר ב-23:59 הערב!
+                        </p>
+                        <p class="text-gray-200 text-xs md:text-sm leading-relaxed mb-2">
+                            נותרו לך <strong class="text-amber-200 text-base">{fmtCountdown(freeMsRemaining)}</strong>
+                            (שעות:דקות) לעריכה ללא תשלום נוסף.
+                            כדאי <strong class="text-amber-200">לסיים את העריכה היום</strong> —
+                            אחרי חצות, זמן העריכה החינמי מסתיים והפרסומת תרוץ עד {fmtDateShort(new Date(paidAt.getTime() + 30*24*60*60*1000))}.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        {:else if paidAt && freeEditExpired}
+            <div class="mt-5 mx-auto max-w-2xl rounded-2xl border border-red-500/40 bg-red-500/10 px-4 py-3 md:px-5 md:py-4 text-right">
+                <div class="flex items-start gap-3">
+                    <span class="text-2xl flex-shrink-0">⌛</span>
+                    <div class="flex-1 min-w-0">
+                        <p class="font-black text-red-300 text-sm md:text-base mb-1">
+                            יום העריכה החינמי הסתיים
+                        </p>
+                        <p class="text-gray-200 text-xs md:text-sm leading-relaxed">
+                            הטיוטה עדיין שמורה — אך מעבר לחצות של יום התשלום, הזמן שעובר ללא ניצול הוא בזבוז.
+                            השלם את העריכה בהקדם!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        {/if}
+
         <!-- Autosave callout — explicit resume-from-profile message -->
-        <div class="mt-5 mx-auto max-w-2xl rounded-2xl border border-green-500/40 bg-green-500/8 px-4 py-3 md:px-5 md:py-4 text-right">
+        <div class="mt-3 mx-auto max-w-2xl rounded-2xl border border-green-500/40 bg-green-500/8 px-4 py-3 md:px-5 md:py-4 text-right">
             <div class="flex items-start gap-3">
                 <span class="text-2xl flex-shrink-0">💾</span>
                 <div class="flex-1 min-w-0">

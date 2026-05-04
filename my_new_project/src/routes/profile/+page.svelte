@@ -133,13 +133,34 @@
 					},
 				],
 	);
-	// הודעה אישית עבור טיוטת פרסומת — מופיעה למעלה אם יש טיוטה
+	// הודעה אישית עבור טיוטת פרסומת — מופיעה למעלה אם יש טיוטה.
+	// כוללת תזכורת על חלון העריכה החינמי (היום עד 23:59) או שהוא פג.
+	let freeEditInfo = $derived.by(() => {
+		try {
+			const raw = typeof localStorage !== "undefined" ? localStorage.getItem("ad_paid_at") : null;
+			if (!raw) return null;
+			const paidAt = new Date(raw);
+			if (isNaN(paidAt.getTime())) return null;
+			const endOfPaidDay = new Date(paidAt);
+			endOfPaidDay.setHours(23, 59, 59, 999);
+			const expired = Date.now() > endOfPaidDay.getTime();
+			const dateStr = endOfPaidDay.toLocaleDateString("he-IL", { day: "2-digit", month: "2-digit" });
+			return { expired, dateStr };
+		} catch { return null; }
+	});
+
 	let displayedMessages = $derived.by(() => {
 		const base = messages;
 		if (!adDraft) return base;
+		let extraTxt = "";
+		if (freeEditInfo) {
+			extraTxt = freeEditInfo.expired
+				? ` ⌛ זמן העריכה החינמי שלך נגמר ב-${freeEditInfo.dateStr} ב-23:59. כל זמן שעובר ללא ניצול — מבוזבז.`
+				: ` ⏰ נותר לך זמן עריכה חינם עד ${freeEditInfo.dateStr} ב-23:59 — עדיף לסיים היום!`;
+		}
 		const draftMsg = {
 			from: "🎨 בילדר הפרסומות",
-			text: `יש לך פרסום בטיוטא — סיים את עריכתו! "${adDraft.title || "ללא כותרת"}" (${adDraftProgress}% הושלמו).`,
+			text: `יש לך פרסום בטיוטא — סיים את עריכתו! "${adDraft.title || "ללא כותרת"}" (${adDraftProgress}% הושלמו).${extraTxt}`,
 			time: "עכשיו",
 			read: false,
 			isDraft: true,

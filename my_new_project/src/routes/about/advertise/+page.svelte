@@ -277,6 +277,47 @@
     let emailSent      = $state(false);
     let emailError     = $state('');
 
+    // ---- Free editing day + ad-period expiration ----
+    // The user gets the day of payment as a FREE editing day (until 23:59).
+    // Their ad runs for one calendar month — same date next month inclusive.
+    let confirmedPeriod = $state(false);
+    let today           = new Date();
+    function addOneMonthSameDate(d: Date) {
+        const r = new Date(d);
+        r.setMonth(r.getMonth() + 1);
+        // If the original day doesn't exist in the next month (e.g. 31 → 30/28), JS rolls over.
+        // We accept the rollover behavior — last day of the next month is fine.
+        return r;
+    }
+    function endOfToday(d: Date) {
+        const r = new Date(d);
+        r.setHours(23, 59, 59, 999);
+        return r;
+    }
+    let expirationDate = $derived(addOneMonthSameDate(today));
+    let editFreeUntil  = $derived(endOfToday(today));
+    function fmtDate(d: Date) {
+        return d.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+    function fmtMonthName(d: Date) {
+        return d.toLocaleDateString('he-IL', { month: 'long', year: 'numeric' });
+    }
+    // Build a calendar-month grid (Sunday-first) for a given date — returns rows of Date objects.
+    function buildCalendar(anchor: Date) {
+        const firstOfMonth = new Date(anchor.getFullYear(), anchor.getMonth(), 1);
+        const startDow = firstOfMonth.getDay(); // 0=Sun..6=Sat
+        const start = new Date(firstOfMonth); start.setDate(1 - startDow);
+        const cells: Date[] = [];
+        for (let i = 0; i < 42; i++) {
+            const c = new Date(start); c.setDate(start.getDate() + i);
+            cells.push(c);
+        }
+        return cells;
+    }
+    function sameDay(a: Date, b: Date) {
+        return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+    }
+
     async function sendOrderEmail() {
         if (!userEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userEmail)) {
             emailError = 'נא להזין כתובת אימייל תקינה';
@@ -1222,15 +1263,95 @@
         </div>
     {/if}
 
-    <!-- Secure Payment -->
-    <div class="mt-8 rounded-2xl bg-white/3 border border-white/10 p-6 md:p-8" dir="rtl">
+    <!-- ===== STEP 5: Period confirmation (FREE editing day + expiration) ===== -->
+    {#if hasSelection}
+    <div class="mt-8 rounded-2xl bg-gradient-to-br from-purple-900/20 to-indigo-900/15 border-2 border-purple-500/40 p-5 md:p-7" dir="rtl">
+        <h2 class="text-xl md:text-2xl font-black text-white mb-3 text-center flex items-center justify-center gap-2">
+            <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+                  style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.85">5</span>
+            📅 תקופת הפרסום ותאריך התפוגה
+        </h2>
+
+        <!-- Explainer -->
+        <div class="rounded-xl bg-white/3 border border-white/10 p-4 md:p-5 mb-5">
+            <p class="text-amber-300 font-black text-sm md:text-base mb-2 flex items-center gap-2">
+                <span class="text-xl">🎁</span>
+                <span>יום העריכה — חינם על חשבון המערכת</span>
+            </p>
+            <ul class="text-gray-200 text-xs md:text-sm leading-relaxed space-y-1.5 pr-6 list-disc list-outside">
+                <li>היום, <strong class="text-amber-200">{fmtDate(today)}</strong>, הוא יום העריכה החינמית — לא נספר בתקופת הפרסום.</li>
+                <li>הפרסומת תרוץ <strong class="text-amber-200">חודש מלא</strong> — עד <strong class="text-amber-200">{fmtDate(expirationDate)} כולל</strong>.</li>
+                <li>תקופת העריכה החינמית נגמרת היום ב<strong class="text-amber-200">23:59</strong>. כדאי לסיים את העריכה לפני זה!</li>
+            </ul>
+        </div>
+
+        <!-- Two-month calendar with markers -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+            {#each [today, expirationDate] as anchor}
+                {@const cells = buildCalendar(anchor)}
+                <div class="rounded-xl bg-black/30 border border-white/10 p-3">
+                    <p class="text-center text-amber-300 font-black text-sm mb-2">{fmtMonthName(anchor)}</p>
+                    <div class="grid grid-cols-7 gap-0.5 text-[10px] text-gray-500 mb-1 text-center font-bold">
+                        {#each ["א","ב","ג","ד","ה","ו","ש"] as dow}
+                            <div>{dow}</div>
+                        {/each}
+                    </div>
+                    <div class="grid grid-cols-7 gap-0.5">
+                        {#each cells as cell}
+                            {@const inMonth = cell.getMonth() === anchor.getMonth()}
+                            {@const isToday = sameDay(cell, today)}
+                            {@const isExpiry = sameDay(cell, expirationDate)}
+                            <div class="aspect-square flex items-center justify-center text-xs font-bold rounded
+                                {!inMonth ? 'text-gray-700' : 'text-gray-300'}
+                                {isToday ? 'bg-amber-500 text-black ring-2 ring-amber-300' : ''}
+                                {isExpiry && !isToday ? 'bg-red-500 text-white ring-2 ring-red-300' : ''}">
+                                {cell.getDate()}
+                            </div>
+                        {/each}
+                    </div>
+                </div>
+            {/each}
+        </div>
+
+        <!-- Calendar legend -->
+        <div class="flex flex-wrap items-center justify-center gap-4 text-xs text-gray-400 mb-5">
+            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-amber-500"></span> היום — יום עריכה חינם</span>
+            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-red-500"></span> תאריך תפוגת הפרסומת</span>
+        </div>
+
+        <!-- Confirmation checkbox -->
+        <label class="flex items-start gap-3 cursor-pointer rounded-xl bg-white/5 hover:bg-white/8 border border-white/10 hover:border-amber-500/40 p-4 transition-colors">
+            <input type="checkbox" bind:checked={confirmedPeriod}
+                   class="mt-0.5 w-5 h-5 rounded border-2 border-amber-500/50 accent-amber-500 cursor-pointer flex-shrink-0" />
+            <div class="flex-1">
+                <p class="text-white font-bold text-sm md:text-base mb-1">
+                    הבנתי את אורך התקופה ואת תאריך התפוגה
+                </p>
+                <p class="text-gray-400 text-xs md:text-sm leading-relaxed">
+                    היום ({fmtDate(today)}) — יום עריכה חינם.
+                    הפרסומת שלי תפעל עד <span class="text-amber-300 font-bold">{fmtDate(expirationDate)} כולל</span>.
+                </p>
+            </div>
+        </label>
+    </div>
+    {/if}
+
+    <!-- ===== STEP 6: Secure Payment ===== -->
+    <div class="mt-8 rounded-2xl bg-white/3 border border-white/10 p-6 md:p-8" dir="rtl"
+         class:opacity-50={hasSelection && !confirmedPeriod}
+         class:pointer-events-none={hasSelection && !confirmedPeriod}>
         <h2 class="text-xl md:text-2xl font-black text-white mb-2 text-center flex items-center justify-center gap-2"
             class:step-title-light={step5TitleLight}>
             <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
                   class:step-num-light={step5NumLight}
-                  style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">5</span>
+                  style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">6</span>
             🔒 תשלום מאובטח
         </h2>
+        {#if hasSelection && !confirmedPeriod}
+            <p class="text-amber-300 text-sm font-bold text-center mb-3 -mt-1">
+                ⬆️ סמן/י תחילה את התיבה למעלה (שלב 5) כדי לפתוח את התשלום
+            </p>
+        {/if}
         <p class="text-gray-400 text-sm text-center mb-6">
             התשלום מתבצע בצורה מאובטחת דרך חברת הסליקה — פרטי האשראי שלך לא מגיעים אלינו
         </p>
