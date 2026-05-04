@@ -1265,6 +1265,10 @@
                    class="inline-flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-500 text-white font-black px-6 py-3 rounded-xl text-sm transition-all hover:scale-105">
                     🔗 לדף התשלום — Grow
                 </a>
+                <a href="/about/advertise/builder"
+                   class="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-black px-6 py-3 rounded-xl text-sm transition-all hover:scale-105">
+                    🎨 כבר שילמתי — לבנות את הפרסומת
+                </a>
             </div>
             <p class="mt-4 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-amber-200 text-sm md:text-base font-bold text-center leading-snug flex items-center justify-center gap-2">
                 <span class="text-lg">📞</span>
