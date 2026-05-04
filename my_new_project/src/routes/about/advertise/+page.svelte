@@ -1242,14 +1242,23 @@
             <div class="text-3xl mb-3">💳</div>
             <h3 class="text-white font-black mb-1">סליקה מאובטחת</h3>
             <p class="text-gray-400 text-sm mb-4">מחוברים לחברת סליקה מורשית — עסקה מאובטחת ב-SSL</p>
+
+            <!-- Temporary notice — payment processor not yet connected -->
+            <p class="mb-4 rounded-xl border border-orange-500/40 bg-orange-500/10 px-4 py-3 text-orange-200 text-sm md:text-base font-bold text-center leading-snug flex flex-col sm:flex-row items-center justify-center gap-2">
+                <span class="text-lg">🚧</span>
+                <span>הסליקה באתר עדיין לא מחוברת — לסיום ההזמנה ולתשלום, צור קשר בוואטסאפ:
+                    <a href="https://wa.me/972508750632?text=שלום, אני מעוניין/ת להשלים תשלום על פרסום (סה״כ ₪{fmt(totalPayment)})."
+                       target="_blank" rel="noopener noreferrer"
+                       class="text-white font-black underline underline-offset-2 hover:text-orange-100 whitespace-nowrap">
+                        050-875-0632 💬
+                    </a>
+                </span>
+            </p>
+
             <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                <a href="https://meshulam.co.il" target="_blank" rel="noopener noreferrer"
-                   aria-label="לדף התשלום – משולם (נפתח בחלון חדש)"
-                   class="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-black px-6 py-3 rounded-xl text-sm transition-all hover:scale-105">
-                    🔗 לדף התשלום — משולם
-                </a>
-                <a href="https://grow.co.il" target="_blank" rel="noopener noreferrer"
-                   aria-label="לדף התשלום – Grow (נפתח בחלון חדש)"
+                <a href="https://wa.me/972508750632?text=שלום, אני מעוניין/ת להשלים תשלום על פרסום באתר. סה״כ: ₪{fmt(totalPayment)}. {selectedItems.length > 0 ? `פריטים: ${selectedItems.map(r => r.type).join(', ')}.` : ''}"
+                   target="_blank" rel="noopener noreferrer"
+                   aria-label="לתשלום זמני — צור קשר בוואטסאפ (נפתח בחלון חדש)"
                    class="inline-flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-500 text-white font-black px-6 py-3 rounded-xl text-sm transition-all hover:scale-105">
                     🔗 לדף התשלום — Grow
                 </a>
