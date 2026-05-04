@@ -400,13 +400,13 @@
     // דוגמאות mock — מוצגות בכל שכונה כל עוד אין באותה שכונה ולו פריט אמיתי אחד.
     // לחיצה על מרקר דמו מובילה אל /add/{category} כדי לעודד הוספת פריט אמיתי.
     const MOCK_ITEMS: { suffix: string; category: string; icon: string; label: string; color: string }[] = [
-        { suffix: 'gemach-books', category: 'gemachim',    icon: '📚', label: 'גמ״ח ספרים (דוגמה)',     color: 'rose' },
-        { suffix: 'gemach-tools', category: 'gemachim',    icon: '🔨', label: 'גמ״ח כלי עבודה (דוגמה)', color: 'amber' },
-        { suffix: 'babysitter',   category: 'business',    icon: '👶', label: 'בייבי סיטר (דוגמה)',     color: 'pink' },
-        { suffix: 'minyan',       category: 'minyanim',    icon: '✡️', label: 'מניין שחרית (דוגמה)',    color: 'blue' },
-        { suffix: 'art-class',    category: 'education',   icon: '🎨', label: 'חוג ציור (דוגמה)',       color: 'purple' },
-        { suffix: 'giveaway',     category: 'giveaway',    icon: '🛋️', label: 'מסירת ספה (דוגמה)',      color: 'teal' },
-        { suffix: 'attraction',   category: 'attractions', icon: '🎡', label: 'גן שעשועים (דוגמה)',     color: 'green' },
+        { suffix: 'gemach-books', category: 'gemachim',    icon: '📚', label: 'גמ״ח ספרים',     color: 'rose' },
+        { suffix: 'gemach-tools', category: 'gemachim',    icon: '🔨', label: 'גמ״ח כלי עבודה', color: 'amber' },
+        { suffix: 'babysitter',   category: 'business',    icon: '👶', label: 'בייבי סיטר',     color: 'pink' },
+        { suffix: 'minyan',       category: 'minyanim',    icon: '✡️', label: 'מניין שחרית',    color: 'blue' },
+        { suffix: 'art-class',    category: 'education',   icon: '🎨', label: 'חוג ציור',       color: 'purple' },
+        { suffix: 'giveaway',     category: 'giveaway',    icon: '🛋️', label: 'מסירת ספה',      color: 'teal' },
+        { suffix: 'attraction',   category: 'attractions', icon: '🎡', label: 'גן שעשועים',     color: 'green' },
     ];
 
     let dynamicMarkers = $derived.by(() => {
@@ -446,7 +446,7 @@
         for (let i = 0; i < nbId.length; i++) nbHash = ((nbHash * 31) + nbId.charCodeAt(i)) | 0;
         const startAngle = (Math.abs(nbHash) % 360) * Math.PI / 180;
         // רדיוסים מתחלפים — חיצוני/פנימי — נראה טבעי יותר ממעגל מושלם
-        const RADII = [0.0042, 0.0028, 0.0050, 0.0035, 0.0046, 0.0030, 0.0040]; // ~300-550 מטר
+        const RADII = [0.0085, 0.0055, 0.0095, 0.0070, 0.0090, 0.0060, 0.0080]; // ~600-1050 מטר
         const N = MOCK_ITEMS.length;
         return MOCK_ITEMS.map((m, i) => {
             const id = `mock-${nbId}-${m.suffix}`;
