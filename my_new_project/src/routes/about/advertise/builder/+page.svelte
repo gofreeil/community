@@ -247,17 +247,76 @@
         });
     }
 
+    // ===== Auto-compress image to fit under maxBytes =====
+    // Iteratively reduces JPEG quality, then dimensions, until size fits.
+    function approxDataUrlBytes(dataUrl: string): number {
+        const i = dataUrl.indexOf(",");
+        const b64 = i >= 0 ? dataUrl.slice(i + 1) : dataUrl;
+        return Math.ceil(b64.length * 3 / 4);
+    }
+    async function compressImageToFit(file: File, maxBytes: number): Promise<{ dataUrl: string; wasCompressed: boolean; originalMB: number; finalMB: number }> {
+        const originalMB = file.size / (1024 * 1024);
+        if (file.size <= maxBytes) {
+            const dataUrl = await fileToDataUrl(file);
+            return { dataUrl, wasCompressed: false, originalMB, finalMB: originalMB };
+        }
+        const srcUrl = await fileToDataUrl(file);
+        const img = new Image();
+        img.src = srcUrl;
+        await new Promise<void>((resolve, reject) => { img.onload = () => resolve(); img.onerror = () => reject(new Error("image load failed")); });
+
+        let w = img.naturalWidth, h = img.naturalHeight;
+        const MAX_EDGE = 2400;
+        const longest = Math.max(w, h);
+        if (longest > MAX_EDGE) {
+            const scale = MAX_EDGE / longest;
+            w = Math.round(w * scale);
+            h = Math.round(h * scale);
+        }
+        let quality = 0.85;
+        let dataUrl = "";
+        for (let attempt = 0; attempt < 10; attempt++) {
+            const canvas = document.createElement("canvas");
+            canvas.width = w; canvas.height = h;
+            canvas.getContext("2d")!.drawImage(img, 0, 0, w, h);
+            dataUrl = canvas.toDataURL("image/jpeg", quality);
+            if (approxDataUrlBytes(dataUrl) <= maxBytes) break;
+            if (quality > 0.5) {
+                quality -= 0.1;
+            } else {
+                w = Math.round(w * 0.85);
+                h = Math.round(h * 0.85);
+                quality = 0.7;
+            }
+        }
+        return { dataUrl, wasCompressed: true, originalMB, finalMB: approxDataUrlBytes(dataUrl) / (1024 * 1024) };
+    }
+
+    // ===== Compress notice (toast) =====
+    let compressNotice = $state<{ visible: boolean; originalMB: number; finalMB: number }>({ visible: false, originalMB: 0, finalMB: 0 });
+    let compressNoticeTimer: number | null = null;
+    function showCompressNotice(originalMB: number, finalMB: number) {
+        if (compressNoticeTimer) { clearTimeout(compressNoticeTimer); compressNoticeTimer = null; }
+        compressNotice = { visible: true, originalMB, finalMB };
+        compressNoticeTimer = window.setTimeout(() => {
+            compressNotice = { ...compressNotice, visible: false };
+            compressNoticeTimer = null;
+        }, 9000);
+    }
+    function dismissCompressNotice() {
+        if (compressNoticeTimer) { clearTimeout(compressNoticeTimer); compressNoticeTimer = null; }
+        compressNotice = { ...compressNotice, visible: false };
+    }
+
     async function processImageFile(file: File | null | undefined, target: "main" | "logo" | { kind: "product"; id: number }) {
         if (!file) return;
         if (!file.type.startsWith("image/")) {
-            alert("נא להעלות קובץ תמונה (JPG, PNG, WebP...)");
+            alert("נא להעלות קובץ תמונה");
             return;
         }
-        if (file.size > 5 * 1024 * 1024) {
-            alert("התמונה גדולה מדי — עד 5MB");
-            return;
-        }
-        const url = await fileToDataUrl(file);
+        const MAX_BYTES = 5 * 1024 * 1024;
+        const { dataUrl: url, wasCompressed, originalMB, finalMB } = await compressImageToFit(file, MAX_BYTES);
+        if (wasCompressed) showCompressNotice(originalMB, finalMB);
         if (target === "main") {
             mainImage = url;
             if (activeStep === "image") advance("logo");
@@ -535,6 +594,29 @@
 {:else}
 <div class="ad-builder max-w-5xl mx-auto px-4 py-8 md:py-12" dir="rtl">
 
+    <!-- Floating toast: image was auto-compressed -->
+    {#if compressNotice.visible}
+        <div class="compress-toast" role="status" aria-live="polite">
+            <button type="button" class="compress-toast-close" onclick={dismissCompressNotice} aria-label="סגור הודעה">✕</button>
+            <div class="flex items-start gap-3">
+                <span class="text-3xl flex-shrink-0">🪄</span>
+                <div class="flex-1 min-w-0 text-right">
+                    <p class="font-black text-amber-200 text-sm md:text-base mb-1">
+                        התאמנו את התמונה אוטומטית
+                    </p>
+                    <p class="text-gray-100 text-xs md:text-sm leading-relaxed">
+                        התמונה בפרסומת מוגבלת ל-<strong class="text-amber-200">5 מגה</strong>.
+                        העלית תמונה במשקל <strong class="text-amber-200">{compressNotice.originalMB.toFixed(1)} מגה</strong> —
+                        כדי שהפרסומת תיטען מהר אצל הגולשים, הקטנו את האיכות שלה אוטומטית
+                        ל-<strong class="text-amber-200">{compressNotice.finalMB.toFixed(1)} מגה</strong>.
+                        <br/>
+                        התמונה נשמרה ככה — אין צורך לעשות כלום.
+                    </p>
+                </div>
+            </div>
+        </div>
+    {/if}
+
     <!-- Header / hero -->
     <div class="text-center mb-8 md:mb-12">
         <div class="text-5xl mb-3">🎨</div>
@@ -617,7 +699,7 @@
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
         </div>
-        <p class="step-help">תמונה איכותית — מוצר, חזית העסק, אווירת השירות. תופיע גם בנייד וגם בדסקטופ. עד 5MB.</p>
+        <p class="step-help">תמונה איכותית — מוצר, חזית העסק, אווירת השירות. תופיע גם בנייד וגם בדסקטופ. עד 5 מגה — אם תעלו תמונה גדולה יותר נקטין אותה אוטומטית.</p>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!-- Tips first → on RIGHT in RTL grid -->
@@ -647,7 +729,7 @@
                         <p class="font-bold text-base text-white">
                             {isDraggingMain ? "✨ שחרר כאן" : "לחץ או גרור תמונה לכאן"}
                         </p>
-                        <p class="text-xs text-gray-400 mt-1">JPG, PNG, WebP — עד 5MB</p>
+                        <p class="text-xs text-gray-400 mt-1">כל סוגי התמונה — עד 5 מגה (גדול יותר → נקטין אוטומטית)</p>
                     </div>
                 {/if}
                 <input type="file" accept="image/*" onchange={(e) => handleImage(e, "main")} class="hidden" />
@@ -1370,6 +1452,45 @@
     /* ============== Page-level layout ============== */
     .ad-builder :global(*) { box-sizing: border-box; }
 
+    /* ============== Compress notice toast ============== */
+    :global(.compress-toast) {
+        position: fixed;
+        top: 5rem;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 60;
+        width: calc(100% - 1.5rem);
+        max-width: 32rem;
+        padding: 0.875rem 2.5rem 0.875rem 1rem;
+        border-radius: 1rem;
+        border: 1px solid rgba(251, 191, 36, 0.55);
+        background: linear-gradient(135deg, rgba(120, 53, 15, 0.92), rgba(146, 64, 14, 0.88));
+        box-shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(251, 191, 36, 0.15) inset;
+        backdrop-filter: blur(8px);
+        animation: compressToastIn 280ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    :global(.compress-toast-close) {
+        position: absolute;
+        top: 0.4rem;
+        left: 0.5rem;
+        width: 1.6rem;
+        height: 1.6rem;
+        border-radius: 9999px;
+        background: rgba(0, 0, 0, 0.35);
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 0.75rem;
+        line-height: 1;
+        display: flex; align-items: center; justify-content: center;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+    :global(.compress-toast-close:hover) { background: rgba(220, 38, 38, 0.85); }
+    @keyframes compressToastIn {
+        from { opacity: 0; transform: translate(-50%, -8px); }
+        to   { opacity: 1; transform: translate(-50%, 0); }
+    }
+
     /* ============== Step Card ============== */
     :global(.step-card) {
         background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
@@ -1944,39 +2065,53 @@
         gap: 0.85rem;
         flex-wrap: wrap;
     }
+    /* Compact overlapping cluster — 3 cols × 6 rows. The grid cell is smaller than the
+       dot, so dots overlap their neighbors (~13px vertical overlap, ~43% of dot height).
+       Selected/hovered dots pop forward via z-index + scale. */
     :global(.color-rail) {
-        display: flex;
-        flex-direction: column;
-        gap: 0.55rem;
-        padding: 0.55rem;
+        display: grid;
+        grid-template-columns: repeat(3, 22px);
+        grid-auto-rows: 17px;
+        column-gap: 8px;
+        row-gap: 0;
+        padding: 0.55rem 0.65rem 1rem 0.55rem;
         background: rgba(0,0,0,0.35);
         border: 1px solid rgba(255,255,255,0.08);
-        border-radius: 1rem;
+        border-radius: 0.85rem;
         align-self: center;
+        width: max-content;
+        position: relative;
     }
     :global(.color-dot) {
-        width: 34px; height: 34px;
+        width: 30px; height: 30px;
         border-radius: 9999px;
-        border: 2px solid rgba(255,255,255,0.18);
+        border: 2px solid rgba(255,255,255,0.16);
         cursor: pointer;
-        transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+        position: relative;
+        z-index: 1;
         padding: 0;
+        transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, z-index 0s;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.35);
     }
     :global(.color-dot:hover) {
-        transform: scale(1.1);
-        border-color: rgba(255,255,255,0.55);
+        transform: scale(1.22);
+        z-index: 50;
+        border-color: rgba(255,255,255,0.7);
     }
     :global(.color-dot.selected) {
-        transform: scale(1.18);
+        transform: scale(1.32);
+        z-index: 100;
         border-color: white;
-        box-shadow: 0 0 0 3px rgba(255,255,255,0.18), 0 4px 14px rgba(0,0,0,0.45);
+        box-shadow: 0 0 0 3px rgba(255,255,255,0.22), 0 6px 16px rgba(0,0,0,0.55);
     }
-    /* On narrow screens — flip rail horizontal so it doesn't crowd the demo */
+    /* On narrow screens — flatten cluster into a 2-row horizontal strip */
     @media (max-width: 640px) {
         :global(.color-rail) {
-            flex-direction: row;
-            flex-wrap: wrap;
-            justify-content: center;
+            grid-template-columns: repeat(9, 17px);
+            grid-auto-rows: 22px;
+            column-gap: 0;
+            row-gap: 8px;
+            padding: 0.55rem 1rem 0.55rem 0.65rem;
         }
     }
 
