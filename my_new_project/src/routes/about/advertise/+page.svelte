@@ -8,7 +8,7 @@
         {
             name: "באנר צד",
             icon: "📌",
-            location: "טור פירסומי בצד ימין בגירסת הדסקטופ",
+            location: "מופיע בגירסת הדסקטופ",
             size: "144×560px",
             color: "from-blue-600 to-cyan-600",
             border: "border-blue-500/40",
