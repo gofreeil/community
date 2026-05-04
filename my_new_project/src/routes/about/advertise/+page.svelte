@@ -1162,21 +1162,20 @@
     </div>
 
     <!-- Contact CTA -->
-    <div class="mt-8 rounded-2xl bg-gradient-to-br from-amber-900/30 to-yellow-900/20 border-2 border-amber-500/40 p-6 md:p-10 text-center">
-        <h2 class="text-2xl md:text-3xl font-black text-amber-400 mb-3">ליצירת קשר</h2>
-        <p class="text-gray-300 mb-6 text-base md:text-lg">ליצירת קשר אנושי</p>
-        <div class="flex flex-col sm:flex-row gap-3 justify-center">
+    <div class="mt-6 rounded-2xl bg-gradient-to-br from-amber-900/30 to-yellow-900/20 border-2 border-amber-500/40 p-4 md:p-6 text-center">
+        <h2 class="text-lg md:text-xl font-black text-amber-400 mb-3">ליצירת קשר אנושי</h2>
+        <div class="flex flex-col sm:flex-row gap-2 justify-center">
             <a href="mailto:ads@shchuna.co.il"
-               class="inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-black font-black px-6 py-3 rounded-xl text-base transition-all hover:scale-105 shadow-lg shadow-amber-500/30">
+               class="inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-black font-black px-5 py-2.5 rounded-xl text-sm transition-all hover:scale-105 shadow-lg shadow-amber-500/30">
                 ✉️ שלח מייל
             </a>
             <a href="https://wa.me/972500000000" target="_blank" rel="noopener noreferrer"
                aria-label="צור קשר בוואטסאפ (נפתח בחלון חדש)"
-               class="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-black px-6 py-3 rounded-xl text-base transition-all hover:scale-105 shadow-lg shadow-green-500/30">
+               class="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-black px-5 py-2.5 rounded-xl text-sm transition-all hover:scale-105 shadow-lg shadow-green-500/30">
                 💬 וואטסאפ
             </a>
         </div>
-        <p class="text-gray-500 text-sm mt-4">ads@shchuna.co.il</p>
+        <p class="text-gray-500 text-xs mt-3">ads@shchuna.co.il</p>
     </div>
 </div>
 
