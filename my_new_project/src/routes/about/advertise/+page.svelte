@@ -538,7 +538,7 @@
                     <span>🌍</span>
                     <span>ארצי — כל הארץ</span>
                     <span class="text-[11px] font-normal text-gray-500">({fmt(totalNeighborhoodsCount)} שכונות)</span>
-                    <span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-amber-500/25 border border-amber-500/50 text-amber-300 text-xs font-black"
+                    <span class="inline-flex items-center gap-0.5 text-amber-300 text-xs font-black"
                           style="animation: dealPulse 2s ease-in-out infinite;">
                         🎉 מבצע! 5,000 ₪ לחודש
                     </span>
@@ -574,7 +574,7 @@
                         type="text"
                         bind:value={citySearchQuery}
                         onkeydown={onSearchKeydown}
-                        placeholder={selectedCities.size > 0 && !isNational ? 'הוסף עיר נוספת...' : 'חפש עיר / יישוב...'}
+                        placeholder="שנה או הוסף עיר"
                         class="w-full pr-10 pl-9 py-3 rounded-xl bg-white/5 border-2 border-white/10 focus:border-amber-500/60 focus:bg-white/8 outline-none text-white text-sm font-medium placeholder:text-gray-500 transition-all"
                     />
                     {#if citySearchQuery}
@@ -671,15 +671,15 @@
                 </div>
             {/if}
 
-            <!-- Explanation + Confirm (sentence on the right in RTL, button on the left) -->
-            <div class="mt-4 flex flex-wrap items-center justify-center gap-3">
-                <p class="text-gray-300 text-sm md:text-base font-medium leading-snug">
+            <!-- Explanation + Confirm — 3-col grid: text right, button centered, left empty (RTL) -->
+            <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 items-center gap-3">
+                <p class="text-gray-300 text-sm md:text-base font-medium leading-snug text-center sm:text-right">
                     המחיר מחושב לפי מספר השכונות<br/>הפעילות בכל עיר.
                 </p>
                 <button
                     type="button"
                     onclick={() => { showPicker = false; citySearchQuery = ''; showAllCities = false; advanceFromCity(); }}
-                    class="px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-black font-black text-sm shadow-lg shadow-amber-500/30 hover:scale-[1.02] transition-all flex items-center gap-2"
+                    class="justify-self-center px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-black font-black text-sm shadow-lg shadow-amber-500/30 hover:scale-[1.02] transition-all flex items-center gap-2"
                 >
                     ✓ אישור
                     {#if isNational}
