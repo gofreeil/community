@@ -403,11 +403,10 @@
     <div class="grid grid-cols-3 gap-2 md:gap-4 mb-12">
         {#each packages as pkg}
             <div class="rounded-xl border {pkg.border} {pkg.bg} p-2.5 md:p-5 flex flex-col md:flex-row-reverse md:items-stretch md:gap-5">
-                <div class="md:flex-1 md:flex md:flex-col">
+                <div class="md:flex-1 flex flex-col">
                     <h3 class="text-xs md:text-lg font-black text-white mb-0.5 md:mb-1 leading-tight">{pkg.name}</h3>
                     <p class="text-[10px] md:text-sm text-gray-400 mb-1.5 md:mb-2 leading-tight">{pkg.location}</p>
-                    <div class="text-[10px] md:text-xs bg-white/10 rounded px-1.5 md:px-2 py-0.5 md:py-1 text-gray-300 mb-2 md:mb-3 inline-block w-fit">{pkg.size}</div>
-                    <ul class="space-y-1 md:space-y-1.5 mt-auto">
+                    <ul class="space-y-1 md:space-y-1.5">
                         {#each pkg.features as feature}
                             <li class="text-[10px] md:text-sm text-gray-300 flex items-start gap-1 md:gap-1.5 leading-tight">
                                 <span class="text-green-400 flex-shrink-0">✓</span>
@@ -415,6 +414,7 @@
                             </li>
                         {/each}
                     </ul>
+                    <div class="text-[10px] md:text-xs bg-white/10 rounded px-1.5 md:px-2 py-0.5 md:py-1 text-gray-300 mt-auto inline-block w-fit" style="margin-top: auto;">{pkg.size}</div>
                 </div>
                 {#if pkg.image}
                     <div class="hidden md:block md:flex-1 md:rounded-lg md:overflow-hidden">
