@@ -37,6 +37,7 @@
             bg: "bg-green-900/10",
             features: ["נראות מקסימלית בנייד", "מופיע לכל מבקר", "קישור ישיר לעסק"],
             image: "/images/advertisement-page/mobile.png",
+            imageScale: 1.25,
         },
     ];
 
@@ -420,7 +421,7 @@
                 </div>
                 {#if pkg.image}
                     <div class="hidden md:block md:flex-1 md:rounded-lg md:overflow-hidden">
-                        <img src={pkg.image} alt={pkg.name} class="w-full h-full object-cover object-right-top" loading="lazy" />
+                        <img src={pkg.image} alt={pkg.name} class="w-full h-full object-cover object-right-top" style={pkg.imageScale ? `transform: scale(${pkg.imageScale}); transform-origin: top right;` : ''} loading="lazy" />
                     </div>
                 {/if}
             </div>
