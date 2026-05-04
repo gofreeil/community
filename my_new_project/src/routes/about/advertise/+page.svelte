@@ -521,7 +521,7 @@
         <div bind:this={pickerPanel}
              class="mb-8 rounded-2xl border border-amber-500/30 bg-gray-950/95 backdrop-blur p-5 shadow-2xl"
              style="animation: slideDown 0.2s ease-out;">
-            <!-- National option — compact chip with deal badge, sized like popular-city chips -->
+            <!-- National option + selected city chips on the same row -->
             <div class="mb-3 flex flex-wrap items-center gap-2">
                 <button
                     type="button"
@@ -534,7 +534,7 @@
                 >
                     <span>🌍</span>
                     <span>ארצי — כל הארץ</span>
-                    <span class="text-[11px] font-normal text-gray-500">({fmt(totalNeighborhoodsCount)})</span>
+                    <span class="text-[11px] font-normal text-gray-500">({fmt(totalNeighborhoodsCount)} שכונות)</span>
                     <span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-amber-500/25 border border-amber-500/50 text-amber-300 text-xs font-black"
                           style="animation: dealPulse 2s ease-in-out infinite;">
                         🎉 מבצע! 5,000 ₪ לחודש
@@ -543,14 +543,14 @@
                         <span class="text-purple-300 text-[11px] font-bold">✓ ביטול ✕</span>
                     {/if}
                 </button>
-            </div>
 
-            <!-- Selected chips summary -->
-            {#if !isNational && selectedCities.size > 0}
-                <div class="mb-3 flex flex-wrap gap-2">
+                <!-- Selected city chips — inline next to the national button -->
+                {#if !isNational && selectedCities.size > 0}
                     {#each [...selectedCities] as cityName}
+                        {@const chipCount = citiesData.find(c => c.city === cityName)?.neighborhoods.length ?? 0}
                         <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-300 text-sm font-bold">
                             {cityName}
+                            <span class="text-[11px] font-normal text-amber-300/80">({fmt(chipCount)} שכונות)</span>
                             <button
                                 type="button"
                                 onclick={() => removeCity(cityName)}
@@ -559,8 +559,8 @@
                             >×</button>
                         </span>
                     {/each}
-                </div>
-            {/if}
+                {/if}
+            </div>
 
             <!-- Search row: input + "כל הערים" toggle on the side -->
             <div class="flex gap-2 mb-3">
