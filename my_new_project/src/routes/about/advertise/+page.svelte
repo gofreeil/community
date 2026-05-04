@@ -403,8 +403,8 @@
         {#each packages as pkg}
             <div class="rounded-xl border {pkg.border} {pkg.bg} p-2.5 md:p-5 flex flex-col md:flex-row-reverse md:items-stretch md:gap-5">
                 <div class="md:flex-1 flex flex-col">
-                    <h3 class="text-xs md:text-lg font-black text-white mb-0.5 md:mb-1 leading-tight">{pkg.name}</h3>
-                    <p class="text-[10px] md:text-sm text-gray-400 mb-1.5 md:mb-2 leading-tight">{pkg.location}</p>
+                    <h3 class="text-xs md:text-lg font-black text-white mb-2 md:mb-3 leading-tight">{pkg.name}</h3>
+                    <p class="text-[10px] md:text-sm text-gray-400 mb-3 md:mb-5 leading-tight">{pkg.location}</p>
                     <ul class="space-y-1 md:space-y-1.5">
                         {#each pkg.features as feature}
                             <li class="text-[10px] md:text-sm text-gray-300 flex items-start gap-1 md:gap-1.5 leading-tight">
