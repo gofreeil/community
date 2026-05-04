@@ -59,6 +59,7 @@
     let highlightedRow = $state<number | null>(null);
     let confirmingRow = $state<number | null>(null);
     let calculatorEl: HTMLDivElement | null = $state(null);
+    let pricingHeadingEl: HTMLHeadingElement | null = $state(null);
 
     function advanceFromCity() {
         if (tutorialStep !== 'pick-city') return;
@@ -66,6 +67,8 @@
         setTimeout(() => {
             showCheckmark = false;
             tutorialStep = 'pick-row';
+            // Slow scroll to the publication-type table
+            slowScrollTo(pricingHeadingEl, 2200);
         }, 900);
     }
 
@@ -269,11 +272,11 @@
     }
 
     const rows = [
-        { num: 1, type: "פרסומת ארוכה",  half: 15,  total: 90,  single: 25, reach: "לכל שכונה רצויה",   details: "מופיע ל-6 שניות ונעלם 12 שניות" },
+        { num: 1, type: "פרסומת ארוכה",  half: 5,   total: 30,  single: 25, reach: "לכל שכונה רצויה",   details: "מופיע ל-6 שניות ונעלם 12 שניות" },
         { num: 2, type: "עסק",            half: 25,  total: 150, single: 35, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
-        { num: 3, type: "חוג",            half: 15,  total: 90,  single: 25, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
+        { num: 3, type: "חוג",            half: 5,   total: 30,  single: 25, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
         { num: 4, type: "צימר / סאבלט",  half: 45,  total: 270, single: 60, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
-        { num: 5, type: "דרושים לעבודה", half: 15,  total: 90,  single: 25, reach: "לכל שכונה רצויה",   details: "מופיע רק ברשימה" },
+        { num: 5, type: "דרושים לעבודה", half: 5,   total: 30,  single: 25, reach: "לכל שכונה רצויה",   details: "מופיע רק ברשימה" },
         { num: 6, type: "פנויים פנויות", half: 20,  total: 120, single: 30, reach: "כולל רשימה ארצית",  details: "מופיע רק ברשימה" },
         { num: 8, type: "בייבי סיטר",    half: 8,   total: 48,  single: 20, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
         { num: 9, type: "אולמות",         half: 45,  total: 270, single: 60, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
@@ -296,12 +299,32 @@
         advanceFromPlan();
         planMap = next;
 
-        // Step 3 confirmation: checkmark animation, then full row outline + smooth scroll to calculator
+        // Step 3 confirmation: checkmark animation, then full row outline + slow scroll to calculator
         confirmingRow = num;
         setTimeout(() => {
             confirmingRow = null;
-            calculatorEl?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            slowScrollTo(calculatorEl, 2200);
         }, 700);
+    }
+
+    // Custom slow scroll — browser's `behavior: 'smooth'` is ~500ms, too quick for this flow
+    function slowScrollTo(el: HTMLElement | null, duration: number) {
+        if (!el) return;
+        const startY = window.scrollY;
+        const targetY = el.getBoundingClientRect().top + window.scrollY - 16;
+        const distance = targetY - startY;
+        if (Math.abs(distance) < 4) return;
+        const startTime = performance.now();
+        // easeInOutCubic — gentle accelerate/decelerate
+        const ease = (t: number) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+        function step(now: number) {
+            const elapsed = now - startTime;
+            const t = Math.min(1, elapsed / duration);
+            window.scrollTo(0, startY + distance * ease(t));
+            if (t < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
     }
 
     // Price multiplier = total neighborhoods in selected cities
@@ -446,7 +469,7 @@
     </div>
 
     <!-- Pricing Table heading -->
-    <h2 class="text-xl md:text-2xl font-black text-white mb-6 text-center">מחירון</h2>
+    <h2 bind:this={pricingHeadingEl} class="text-xl md:text-4xl font-black text-white mb-6 md:mb-8 text-center scroll-mt-4">מחירון</h2>
 
     <!-- Neighborhood picker trigger -->
     <p class="text-gray-300 text-base font-bold text-center mb-3 flex items-center justify-center gap-2 relative">
@@ -512,14 +535,14 @@
                     <span>🌍</span>
                     <span>ארצי — כל הארץ</span>
                     <span class="text-[11px] font-normal text-gray-500">({fmt(totalNeighborhoodsCount)})</span>
+                    <span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-amber-500/25 border border-amber-500/50 text-amber-300 text-xs font-black"
+                          style="animation: dealPulse 2s ease-in-out infinite;">
+                        🎉 מבצע! 5,000 ₪ לחודש
+                    </span>
                     {#if isNational}
                         <span class="text-purple-300 text-[11px] font-bold">✓ ביטול ✕</span>
                     {/if}
                 </button>
-                <span class="inline-flex items-center gap-0.5 px-2 py-1 rounded-full bg-amber-500/25 border border-amber-500/50 text-amber-300 text-xs font-black"
-                      style="animation: dealPulse 2s ease-in-out infinite;">
-                    🎉 מבצע! 15,000 ₪ לחודש
-                </span>
             </div>
 
             <!-- Selected chips summary -->
@@ -645,11 +668,8 @@
                 </div>
             {/if}
 
-            <!-- Explanation + Confirm (centered button) -->
-            <div class="mt-4 flex flex-col items-center gap-3">
-                <p class="text-gray-300 text-sm md:text-base font-medium leading-snug text-center">
-                    המחיר מחושב לפי מספר השכונות הפעילות בכל עיר.
-                </p>
+            <!-- Explanation + Confirm (button + sentence side by side) -->
+            <div class="mt-4 flex flex-wrap items-center justify-center gap-3">
                 <button
                     type="button"
                     onclick={() => { showPicker = false; citySearchQuery = ''; showAllCities = false; advanceFromCity(); }}
@@ -662,6 +682,9 @@
                         <span class="text-[11px] font-bold opacity-80">· {selectedCities.size === 1 ? `${[...selectedCities][0]}` : `${selectedCities.size} ערים`} ({fmt(neighborhoodCount)})</span>
                     {/if}
                 </button>
+                <p class="text-gray-300 text-sm md:text-base font-medium leading-snug">
+                    המחיר מחושב לפי מספר השכונות הפעילות בכל עיר.
+                </p>
             </div>
         </div>
     {/if}
