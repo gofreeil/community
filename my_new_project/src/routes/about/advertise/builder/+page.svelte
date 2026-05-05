@@ -130,6 +130,8 @@
         cropZoom = Math.max(0.3, Math.min(4, cropZoom + delta));
     }
     let mainImage       = $state<string>("");                  // base64 data url
+    let mainImageObjectX = $state<number>(50);                  // object-position X (0-100) for cropping
+    let mainImageObjectY = $state<number>(50);                  // object-position Y (0-100) for cropping
     let title           = $state<string>("");
     let titleColor      = $state<string>("#ffffff");
     let subtitle        = $state<string>("");
@@ -324,6 +326,8 @@
         if (wasCompressed) showCompressNotice(originalMB, finalMB);
         if (target === "main") {
             mainImage = url;
+            mainImageObjectX = 50;       // reset position on new upload
+            mainImageObjectY = 50;
             if (activeStep === "image") advance("logo");
         } else if (target === "logo") {
             logoOriginal = url;
@@ -348,9 +352,16 @@
     }
 
     function clearImage(target: "main" | "logo" | "landingImage") {
-        if (target === "main") mainImage = "";
+        if (target === "main") { mainImage = ""; mainImageObjectX = 50; mainImageObjectY = 50; }
         else if (target === "landingImage") landingImage = "";
         else { logo = ""; logoOriginal = ""; hasCircleCrop = false; }
+    }
+    function nudgeMainImage(dir: "up" | "down" | "left" | "right") {
+        const STEP = 8;
+        if (dir === "up")    mainImageObjectY = Math.max(0, mainImageObjectY - STEP);
+        if (dir === "down")  mainImageObjectY = Math.min(100, mainImageObjectY + STEP);
+        if (dir === "left")  mainImageObjectX = Math.max(0, mainImageObjectX - STEP);
+        if (dir === "right") mainImageObjectX = Math.min(100, mainImageObjectX + STEP);
     }
 
     async function handleProductImage(e: Event, id: number) {
@@ -493,6 +504,8 @@
                 hasCircleCrop   = Boolean(d.hasCircleCrop);
                 logoPosition    = d.logoPosition ?? "right";
                 mainImage       = d.mainImage ?? "";
+                mainImageObjectX = typeof d.mainImageObjectX === 'number' ? d.mainImageObjectX : 50;
+                mainImageObjectY = typeof d.mainImageObjectY === 'number' ? d.mainImageObjectY : 50;
                 title           = d.title ?? "";
                 subtitle        = d.subtitle ?? "";
                 hoverText       = d.hoverText ?? "";
@@ -533,7 +546,7 @@
     $effect(() => {
         if (!browser) return;
         const snapshot = {
-            logo, logoOriginal, hasCircleCrop, logoShape, logoPosition, mainImage, title, subtitle, hoverText, essenceText, cta, gradient,
+            logo, logoOriginal, hasCircleCrop, logoShape, logoPosition, mainImage, mainImageObjectX, mainImageObjectY, title, subtitle, hoverText, essenceText, cta, gradient,
             landingHeadline, landingPitch, landingExtended, landingImage, landingAdvantages, uniqueness, phone, whatsapp, website,
             email, address, hours, products,
         };
@@ -822,8 +835,16 @@
                    ondragleave={(e) => dragLeave(e, v => isDraggingMain = v)}
                    ondrop={(e) => handleDrop(e, "main", v => isDraggingMain = v)}>
                 {#if mainImage}
-                    <img src={mainImage} alt="תמונה ראשית" />
+                    <img src={mainImage} alt="תמונה ראשית"
+                         style:object-fit="cover"
+                         style:object-position="{mainImageObjectX}% {mainImageObjectY}%" />
                     <button type="button" class="remove-x" onclick={(e) => { e.preventDefault(); clearImage("main"); }} aria-label="הסר תמונה">✕</button>
+                    <!-- Directional crop nudges — let user position the image inside the demo frame -->
+                    <button type="button" class="crop-arrow crop-arrow-up"    onclick={(e) => { e.preventDefault(); nudgeMainImage("up"); }}    aria-label="הזז למעלה">▲</button>
+                    <button type="button" class="crop-arrow crop-arrow-down"  onclick={(e) => { e.preventDefault(); nudgeMainImage("down"); }}  aria-label="הזז למטה">▼</button>
+                    <button type="button" class="crop-arrow crop-arrow-left"  onclick={(e) => { e.preventDefault(); nudgeMainImage("left"); }}  aria-label="הזז שמאלה">◀</button>
+                    <button type="button" class="crop-arrow crop-arrow-right" onclick={(e) => { e.preventDefault(); nudgeMainImage("right"); }} aria-label="הזז ימינה">▶</button>
+                    <button type="button" class="crop-reset" onclick={(e) => { e.preventDefault(); mainImageObjectX = 50; mainImageObjectY = 50; }} aria-label="אפס מיקום">⊙</button>
                 {:else}
                     <div class="upload-empty">
                         <div class="text-4xl mb-2">📸</div>
@@ -836,6 +857,9 @@
                 <input type="file" accept="image/*" onchange={(e) => handleImage(e, "main")} class="hidden" />
             </label>
         </div>
+        {#if mainImage}
+            <p class="crop-hint">השתמש בחיצים השקופים שעל התמונה כדי להזיז את התוכן בתוך מסגרת הדמו (חצים ←↑↓→). לאיפוס לחץ ⊙.</p>
+        {/if}
     </section>
 
     <!-- =================== STEP 2: LOGO =================== -->
@@ -1718,7 +1742,8 @@
             <div class="live-demo-frame pro-ad" dir="rtl">
                 <div class="ad-img-wrap pro-img-wrap live-demo-img-wrap">
                     {#if mainImage}
-                        <img src={mainImage} alt={title} class="ad-img" />
+                        <img src={mainImage} alt={title} class="ad-img"
+                             style:object-position="{mainImageObjectX}% {mainImageObjectY}%" />
                     {:else}
                         <div class="placeholder-dashed placeholder-img">
                             <div class="placeholder-icon">📸</div>
@@ -1891,6 +1916,25 @@
         padding: 1.25rem 1.25rem 1.5rem;
         margin-bottom: 1.25rem;
         scroll-margin-top: 8rem;
+        position: relative;
+    }
+    /* Dashed "demo placeholder" frame on the visual LEFT of every step card.
+       The sticky live-demo on the page's left visually overlaps the topmost one,
+       making it feel as though the demo "jumped" to the active step. */
+    :global(.builder-steps .step-card)::before {
+        content: '';
+        position: absolute;
+        top: 0.5rem;
+        bottom: 0.5rem;
+        left: -158px;
+        width: 140px;
+        border: 2px dashed rgba(251,191,36,0.22);
+        border-radius: 0.85rem;
+        background: rgba(251,191,36,0.025);
+        pointer-events: none;
+    }
+    @media (max-width: 768px) {
+        :global(.builder-steps .step-card)::before { display: none; }
     }
     @media (min-width: 768px) {
         :global(.step-card) { padding: 1.75rem; margin-bottom: 1.75rem; }
@@ -2098,7 +2142,7 @@
     }
     :global(.builder-steps) { flex: 1 1 auto; min-width: 0; }
     :global(.builder-demo) {
-        flex: 0 0 200px;
+        flex: 0 0 140px;
         position: sticky;
         top: 5rem;
         align-self: flex-start;
@@ -2144,6 +2188,58 @@
     :global(.live-demo-img-wrap) {
         width: 100%;
         aspect-ratio: 144 / 450;   /* authentic RightAdBanner image proportion */
+    }
+
+    /* ============== Image crop arrows (Step 1 main image) ============== */
+    :global(.crop-arrow) {
+        position: absolute;
+        background: rgba(0,0,0,0.5);
+        border: 1px solid rgba(255,255,255,0.5);
+        color: white;
+        width: 32px; height: 32px;
+        border-radius: 50%;
+        font-size: 0.75rem;
+        line-height: 1;
+        cursor: pointer;
+        z-index: 4;
+        backdrop-filter: blur(4px);
+        transition: background 150ms, transform 150ms;
+        display: flex; align-items: center; justify-content: center;
+        padding: 0;
+    }
+    :global(.crop-arrow:hover) {
+        background: rgba(245,158,11,0.85);
+        color: black;
+        transform: scale(1.12);
+    }
+    :global(.crop-arrow-up)    { top: 8px; left: 50%; transform: translateX(-50%); }
+    :global(.crop-arrow-down)  { bottom: 8px; left: 50%; transform: translateX(-50%); }
+    :global(.crop-arrow-left)  { left: 8px; top: 50%; transform: translateY(-50%); }
+    :global(.crop-arrow-right) { right: 8px; top: 50%; transform: translateY(-50%); }
+    :global(.crop-arrow-up:hover)    { transform: translateX(-50%) scale(1.12); }
+    :global(.crop-arrow-down:hover)  { transform: translateX(-50%) scale(1.12); }
+    :global(.crop-arrow-left:hover)  { transform: translateY(-50%) scale(1.12); }
+    :global(.crop-arrow-right:hover) { transform: translateY(-50%) scale(1.12); }
+    :global(.crop-reset) {
+        position: absolute;
+        top: 8px; right: 50px;
+        background: rgba(0,0,0,0.5);
+        border: 1px solid rgba(255,255,255,0.5);
+        color: white;
+        width: 28px; height: 28px;
+        border-radius: 50%;
+        font-size: 0.85rem; line-height: 1;
+        cursor: pointer;
+        z-index: 4;
+        display: flex; align-items: center; justify-content: center;
+        padding: 0;
+    }
+    :global(.crop-reset:hover) { background: rgba(245,158,11,0.85); color: black; }
+    :global(.crop-hint) {
+        font-size: 0.75rem;
+        color: rgb(156,163,175);
+        margin-top: 0.6rem;
+        text-align: center;
     }
 
     /* Dashed placeholder boxes for unfilled fields */
