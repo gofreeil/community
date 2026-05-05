@@ -162,8 +162,8 @@
         | "address" | "submit" | "done";
 
     const stepOrder: Step[] = [
-        "image", "logo", "title", "subtitle", "hover",
-        "gradient", "preview", "landing-link", "products", "uniqueness",
+        "image", "logo", "title", "gradient", "subtitle", "hover",
+        "preview", "landing-link", "products", "uniqueness",
         "address", "submit", "done"
     ];
 
@@ -1114,73 +1114,10 @@
         {/if}
     </section>
 
-    <!-- =================== STEP 4: SUBTITLE =================== -->
-    <section bind:this={stepRefs.subtitle} class="step-card">
-        <div class="step-head" class:step-title-light={litFlags.subtitle.title}>
-            <span class="step-num" class:step-num-light={litFlags.subtitle.num}>4</span>
-            <h2>כותרת משנה / סלוגן</h2>
-            {#if activeStep === "subtitle" && !subtitle}
-                <span class="tutorial-finger" aria-hidden="true">👇</span>
-            {/if}
-        </div>
-        <p class="step-help">משפט אחד שמסביר מה אתה מציע ולמה זה שווה לתושבים. עד 70 תווים.</p>
-
-        <input type="text" bind:value={subtitle} maxlength="70"
-               onfocus={() => activeStep === "subtitle" || (activeStep = "subtitle")}
-               onblur={() => subtitle.trim() && commitField("subtitle")}
-               placeholder="לדוגמה: כל כלי עבודה שצריך — בלי תשלום, בלי בירוקרטיה"
-               class="text-input" />
-        <div class="flex items-center justify-between gap-2 text-xs text-gray-500 mt-2">
-            {#if subtitle}
-                <button type="button" onclick={() => commitField("subtitle")}
-                    class="px-3 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 hover:text-amber-200 font-bold transition-colors">
-                    שלב הבא ←
-                </button>
-            {:else}
-                <span></span>
-            {/if}
-            <span>{subtitle.length}/70</span>
-        </div>
-    </section>
-
-    <!-- =================== STEP 5: HOVER TEXT =================== -->
-    <section bind:this={stepRefs.hover} class="step-card">
-        <div class="step-head" class:step-title-light={litFlags.hover.title}>
-            <span class="step-num" class:step-num-light={litFlags.hover.num}>5</span>
-            <h2>טקסט בריחוף — מה רואים כשהעכבר על הפרסומת</h2>
-            {#if activeStep === "hover" && !hoverText}
-                <span class="tutorial-finger" aria-hidden="true">👇</span>
-            {/if}
-        </div>
-        <p class="step-help">
-            כשמשתמש בדסקטופ מצביע עם העכבר על הפרסומת — הטקסט הזה יופיע במקום התמונה.
-            <br/>
-            <strong class="text-amber-300">כתוב משפט קצר שמסקרן</strong> את הגולש —
-            אבל ברור מספיק כדי שיבין מיד באיזה מוצר או שירות מדובר.
-        </p>
-
-        <textarea bind:value={hoverText} maxlength="90" rows="2"
-                  onfocus={() => activeStep === "hover" || (activeStep = "hover")}
-                  onblur={() => hoverText.trim() && commitField("hover")}
-                  placeholder="לדוגמה: כלי עבודה לכל בית — להשאלה חינם 🛠️"
-                  class="text-input"></textarea>
-        <div class="flex items-center justify-between gap-2 text-xs text-gray-500 mt-2">
-            {#if hoverText}
-                <button type="button" onclick={() => commitField("hover")}
-                    class="px-3 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 hover:text-amber-200 font-bold transition-colors">
-                    שלב הבא ←
-                </button>
-            {:else}
-                <span></span>
-            {/if}
-            <span>{hoverText.length}/90</span>
-        </div>
-    </section>
-
-    <!-- =================== STEP 6: GRADIENT (color + band height) =================== -->
+    <!-- =================== STEP 4: GRADIENT (color + band height) =================== -->
     <section bind:this={stepRefs.gradient} class="step-card">
         <div class="step-head" class:step-title-light={litFlags.gradient.title}>
-            <span class="step-num" class:step-num-light={litFlags.gradient.num}>6</span>
+            <span class="step-num" class:step-num-light={litFlags.gradient.num}>4</span>
             <h2>🎨 צבע ועיצוב הרצועה — הרקע הצבעוני של הפרסומת</h2>
             {#if activeStep === "gradient"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
@@ -1219,10 +1156,73 @@
         </div>
 
         <div class="mt-5 flex justify-center">
-            <button type="button" onclick={() => advance("preview")}
+            <button type="button" onclick={() => advance("subtitle")}
                 class="px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black text-base transition-colors shadow-lg">
-                סיימתי — המשך לתצוגה מקדימה ←
+                סיימתי — המשך לשלב הבא ←
             </button>
+        </div>
+    </section>
+
+    <!-- =================== STEP 5: SUBTITLE =================== -->
+    <section bind:this={stepRefs.subtitle} class="step-card">
+        <div class="step-head" class:step-title-light={litFlags.subtitle.title}>
+            <span class="step-num" class:step-num-light={litFlags.subtitle.num}>5</span>
+            <h2>כותרת משנה / סלוגן</h2>
+            {#if activeStep === "subtitle" && !subtitle}
+                <span class="tutorial-finger" aria-hidden="true">👇</span>
+            {/if}
+        </div>
+        <p class="step-help">משפט אחד שמסביר מה אתה מציע ולמה זה שווה לתושבים. עד 70 תווים.</p>
+
+        <input type="text" bind:value={subtitle} maxlength="70"
+               onfocus={() => activeStep === "subtitle" || (activeStep = "subtitle")}
+               onblur={() => subtitle.trim() && commitField("subtitle")}
+               placeholder="לדוגמה: כל כלי עבודה שצריך — בלי תשלום, בלי בירוקרטיה"
+               class="text-input" />
+        <div class="flex items-center justify-between gap-2 text-xs text-gray-500 mt-2">
+            {#if subtitle}
+                <button type="button" onclick={() => commitField("subtitle")}
+                    class="px-3 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 hover:text-amber-200 font-bold transition-colors">
+                    שלב הבא ←
+                </button>
+            {:else}
+                <span></span>
+            {/if}
+            <span>{subtitle.length}/70</span>
+        </div>
+    </section>
+
+    <!-- =================== STEP 6: HOVER TEXT =================== -->
+    <section bind:this={stepRefs.hover} class="step-card">
+        <div class="step-head" class:step-title-light={litFlags.hover.title}>
+            <span class="step-num" class:step-num-light={litFlags.hover.num}>6</span>
+            <h2>טקסט בריחוף — מה רואים כשהעכבר על הפרסומת</h2>
+            {#if activeStep === "hover" && !hoverText}
+                <span class="tutorial-finger" aria-hidden="true">👇</span>
+            {/if}
+        </div>
+        <p class="step-help">
+            כשמשתמש בדסקטופ מצביע עם העכבר על הפרסומת — הטקסט הזה יופיע במקום התמונה.
+            <br/>
+            <strong class="text-amber-300">כתוב משפט קצר שמסקרן</strong> את הגולש —
+            אבל ברור מספיק כדי שיבין מיד באיזה מוצר או שירות מדובר.
+        </p>
+
+        <textarea bind:value={hoverText} maxlength="90" rows="2"
+                  onfocus={() => activeStep === "hover" || (activeStep = "hover")}
+                  onblur={() => hoverText.trim() && commitField("hover")}
+                  placeholder="לדוגמה: כלי עבודה לכל בית — להשאלה חינם 🛠️"
+                  class="text-input"></textarea>
+        <div class="flex items-center justify-between gap-2 text-xs text-gray-500 mt-2">
+            {#if hoverText}
+                <button type="button" onclick={() => commitField("hover")}
+                    class="px-3 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 hover:text-amber-200 font-bold transition-colors">
+                    שלב הבא ←
+                </button>
+            {:else}
+                <span></span>
+            {/if}
+            <span>{hoverText.length}/90</span>
         </div>
     </section>
 
@@ -1340,74 +1340,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- ===== OPTION C — screenshot with DARK MASK over the original ad slot ===== -->
-                <div class="preview-option">
-                    <p class="preview-option-label">🅒 אופציה ג — צילום עם מסכה על הסלוט הימני</p>
-                <div class="site-shot-frame" dir="rtl">
-                    <!-- Inner element holds the screenshot at its natural aspect.
-                         The frame above clips overflow so the LEFT ad strip and the
-                         BOTTOM map area are hidden — leaving only the central content
-                         where the user's ad sits. -->
-                    <div class="site-shot-inner">
-                        <!-- Real site screenshot as background -->
-                        <img src="/images/advertisement-page/יוצאיםלחירות.png"
-                             alt="האתר"
-                             class="site-shot" />
-
-                        <!-- DARK MASK over the original right ad slot — hides whatever ad
-                             was there in the screenshot. The user's demo sits on this mask. -->
-                        <div class="slot-mask"></div>
-
-                        <!-- User's ad — overlaid on the FIRST right ad slot of the screenshot -->
-                        <div
-                            role="button"
-                            tabindex="0"
-                            class="site-shot-overlay desktop-ad pro-ad"
-                            onmouseenter={() => hoverPreview = true}
-                            onmouseleave={() => hoverPreview = false}
-                            onfocus={() => hoverPreview = true}
-                            onblur={() => hoverPreview = false}
-                        >
-                        <div class="ad-img-wrap pro-img-wrap site-shot-overlay-img">
-                            {#if mainImage}
-                                <img src={mainImage} alt={title}
-                                     class="ad-img"
-                                     style:opacity={hoverPreview ? 0 : 1} />
-                            {:else}
-                                <div class="img-placeholder">תמונה</div>
-                            {/if}
-
-                            <div class="pro-diag bg-gradient-to-br {gradient}"
-                                 style:opacity={hoverPreview ? 0 : 1}></div>
-
-                            <div class="pro-title-top" style:opacity={hoverPreview ? 0 : 1} style:transform="translateY({titleOffsetY}px)">
-                                <h3 class="pro-title" style:color={titleColor}>{title || "כותרת ראשית"}</h3>
-                            </div>
-                            <div class="pro-title-wrap" style:opacity={hoverPreview ? 0 : 1}>
-                                <p class="pro-sub">{subtitle || "סלוגן / כותרת משנה"}</p>
-                                <span class="pro-demo-cta">הקלק לפרטים והזמנות</span>
-                            </div>
-
-                            <div class="hover-overlay" style:opacity={hoverPreview ? 1 : 0}>
-                                <h3 class="hover-title">{title || "כותרת"}</h3>
-                                <p class="hover-text">{hoverText || "כאן יופיע הטקסט בריחוף"}</p>
-                            </div>
-
-                            {#if logo}
-                                <img src={logo} alt="לוגו"
-                                     class="ad-logo {logoShape === 'circle' ? 'ad-logo-circle' : ''} {logoPosition === 'left' ? 'ad-logo-left' : 'ad-logo-right'}" />
-                            {/if}
-                        </div>
-                    </div>
-                    </div><!-- /.site-shot-inner -->
-
-                    <!-- "Your ad here" pointer arrow — positioned on the cropper, not inner -->
-                    <div class="site-shot-pointer">
-                        הפרסומת שלך כאן →
-                    </div>
-                </div>
-                </div><!-- /.preview-option (option C) -->
 
                 <p class="preview-caption">השווה בין שתי האופציות ותגיד לי איזה להשאיר.</p>
             </div>
@@ -2929,7 +2861,7 @@
         pointer-events: none;
     }
     :global(.pro-title-top.mobile) {
-        padding: 0.7rem 0.9rem 1.15rem;
+        padding: 0.2rem 0.9rem 1.15rem;
     }
     :global(.pro-title) {
         color: white; font-weight: 900;
