@@ -644,7 +644,7 @@
             בונים את הפרסומת שלי
         </h1>
         <p class="text-gray-300 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
-            עברנו את שלב התשלום. עכשיו, יחד, נבנה פרסומת שתבלוט לתושבי השכונה.
+            עברנו את שלב התשלום. עכשיו, יחד, ב-5 דקות נבנה פרסומת שתבלוט לתושבי השכונה.
             <br/>פשוט מלא שלב אחרי שלב — בכל רגע תראה תצוגה מקדימה חיה.
         </p>
 
@@ -834,7 +834,7 @@
                            {logo
                                ? 'bg-amber-500 hover:bg-amber-400 text-black border border-amber-400'
                                : 'bg-white/5 border border-white/10 hover:border-amber-500/40 text-gray-300 hover:text-amber-300'}">
-                {logo ? "סיימתי, עבור לשלב הבא ←" : "דלג שלב זה →"}
+                {logo ? "שלב הבא ←" : "דלג שלב זה →"}
             </button>
         </div>
 
@@ -891,7 +891,7 @@
             {#if title}
                 <button type="button" onclick={() => commitField("title")}
                     class="px-3 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 hover:text-amber-200 font-bold transition-colors">
-                    המשך לכותרת משנה ←
+                    שלב הבא ←
                 </button>
             {:else}
                 <span></span>
@@ -920,7 +920,7 @@
             {#if subtitle}
                 <button type="button" onclick={() => commitField("subtitle")}
                     class="px-3 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 hover:text-amber-200 font-bold transition-colors">
-                    המשך ←
+                    שלב הבא ←
                 </button>
             {:else}
                 <span></span>
@@ -955,7 +955,7 @@
             {#if essenceText}
                 <button type="button" onclick={() => commitField("essence")}
                     class="px-3 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 hover:text-amber-200 font-bold transition-colors">
-                    המשך לתצוגה מקדימה ←
+                    שלב הבא ←
                 </button>
             {:else}
                 <span></span>
@@ -1209,7 +1209,7 @@
         <div class="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
             <button type="button" onclick={() => advance("hover")}
                 class="px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black transition-colors">
-                נראה מעולה — המשך לטקסט בריחוף →
+                שלב הבא →
             </button>
             <a href="https://wa.me/972508750632?text=שלום, אני בונה פרסומת באתר ויש לי בעיה — אני צריך עזרה בעיצוב 🎨"
                target="_blank" rel="noopener noreferrer"
@@ -1246,7 +1246,7 @@
             {#if hoverText}
                 <button type="button" onclick={() => commitField("hover")}
                     class="px-3 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 hover:text-amber-200 font-bold transition-colors">
-                    המשך לדף הנחיתה ←
+                    שלב הבא ←
                 </button>
             {:else}
                 <span></span>
@@ -1366,7 +1366,7 @@
         <div class="mt-4 text-center">
             <button type="button" onclick={() => advance("products")}
                 class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold transition-colors">
-                המשך לתמונות מוצרים ←
+                שלב הבא ←
             </button>
         </div>
     </section>
@@ -1418,7 +1418,7 @@
         <div class="mt-4 text-center">
             <button type="button" onclick={() => advance("uniqueness")}
                 class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold transition-colors">
-                המשך — מה מייחד אותך ←
+                שלב הבא ←
             </button>
         </div>
     </section>
@@ -1447,7 +1447,7 @@
         <div class="mt-4 text-center">
             <button type="button" onclick={() => advance("address")}
                 class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold transition-colors">
-                המשך לכתובת ופרטי קשר ←
+                שלב הבא ←
             </button>
         </div>
     </section>
