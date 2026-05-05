@@ -328,7 +328,8 @@
             mainImage = url;
             mainImageObjectX = 50;       // reset position on new upload
             mainImageObjectY = 50;
-            if (activeStep === "image") advance("logo");
+            // Don't auto-advance — let the user crop/position the image with the arrows
+            // and click the explicit "next step" button when ready.
         } else if (target === "logo") {
             logoOriginal = url;
             logo = url;
@@ -859,6 +860,12 @@
         </div>
         {#if mainImage}
             <p class="crop-hint">השתמש בחיצים השקופים שעל התמונה כדי להזיז את התוכן בתוך מסגרת הדמו (חצים ←↑↓→). לאיפוס לחץ ⊙.</p>
+            <div class="mt-4 flex justify-center">
+                <button type="button" onclick={() => advance("logo")}
+                    class="px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black text-base transition-colors shadow-lg">
+                    סיימתי למרכז — המשך לשלב הבא ←
+                </button>
+            </div>
         {/if}
     </section>
 
