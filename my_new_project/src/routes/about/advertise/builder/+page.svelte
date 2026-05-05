@@ -1873,16 +1873,13 @@
     }
     /* Overlay positioned on the FIRST right ad slot. Width drives the overlay; the height
        is derived naturally from the children (image-wrap with the real RightAdBanner
-       aspect-ratio + the small CTA below it). The slot in the screenshot is taller and
-       narrower than 144:450, so we use explicit width + height (rather than rely on the
-       natural ad aspect) so the demo matches the slot's shape. The image inside scales
-       with object-fit:cover. */
+       aspect-ratio + the small CTA below it). This preserves authentic ad proportions —
+       width and height stay locked together, never independently sized. */
     :global(.site-shot-overlay.desktop-ad) {
         position: absolute;
-        top: 13%;
+        top: 20%;
         right: 3.5%;
-        width: 6.5%;
-        height: 68%;
+        width: 9.7%;
         z-index: 5;
         cursor: pointer;
         border-radius: 4px;
