@@ -264,6 +264,28 @@
     function advance(to: Step) {
         activeStep = to;
         queueMicrotask(() => slowScrollTo(stepRefs[to]));
+        // Update demo position to align with the new active step (animation via CSS transition)
+        if (browser) {
+            const tickAndUpdate = () => {
+                document.body.dataset.demoStage = `to=${to}`;
+                const stepEl = stepRefs[to];
+                if (!stepEl) {
+                    document.body.dataset.demoStage = `no-stepEl:${to}`;
+                    return;
+                }
+                const colsEl = stepEl.closest('.builder-cols') as HTMLElement | null;
+                if (!colsEl) {
+                    document.body.dataset.demoStage = `no-colsEl`;
+                    return;
+                }
+                const stepRect = stepEl.getBoundingClientRect();
+                const colsRect = colsEl.getBoundingClientRect();
+                const newTop = stepRect.top - colsRect.top;
+                demoTop = newTop;
+                document.body.dataset.demoStage = `ok:${to}=${newTop}`;
+            };
+            requestAnimationFrame(() => requestAnimationFrame(tickAndUpdate));
+        }
     }
 
     function nextOf(s: Step): Step {
@@ -1557,7 +1579,7 @@
     <!-- =================== STEP 8: LANDING LINK / CONTACT =================== -->
     <section bind:this={stepRefs["landing-link"]} class="step-card">
         <div class="step-head" class:step-title-light={litFlags["landing-link"].title}>
-            <span class="step-num" class:step-num-light={litFlags["landing-link"].num}>8</span>
+            <span class="step-num" class:step-num-light={litFlags["landing-link"].num}>9</span>
             <h2>דף נחיתה — לאן המשתמש יגיע?</h2>
             {#if activeStep === "landing-link"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
@@ -1658,7 +1680,7 @@
     <!-- =================== STEP 9: PRODUCTS =================== -->
     <section bind:this={stepRefs.products} class="step-card">
         <div class="step-head" class:step-title-light={litFlags.products.title}>
-            <span class="step-num" class:step-num-light={litFlags.products.num}>9</span>
+            <span class="step-num" class:step-num-light={litFlags.products.num}>10</span>
             <h2>תמונות מוצרים / שירותים + מחירים</h2>
             {#if activeStep === "products"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
@@ -1710,7 +1732,7 @@
     <!-- =================== STEP 10: UNIQUENESS =================== -->
     <section bind:this={stepRefs.uniqueness} class="step-card">
         <div class="step-head" class:step-title-light={litFlags.uniqueness.title}>
-            <span class="step-num" class:step-num-light={litFlags.uniqueness.num}>10</span>
+            <span class="step-num" class:step-num-light={litFlags.uniqueness.num}>11</span>
             <h2>מה מייחד אותך?</h2>
             {#if activeStep === "uniqueness"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
@@ -1739,7 +1761,7 @@
     <!-- =================== STEP 11: ADDRESS =================== -->
     <section bind:this={stepRefs.address} class="step-card">
         <div class="step-head" class:step-title-light={litFlags.address.title}>
-            <span class="step-num" class:step-num-light={litFlags.address.num}>11</span>
+            <span class="step-num" class:step-num-light={litFlags.address.num}>12</span>
             <h2>כתובת ושעות פעילות</h2>
             {#if activeStep === "address"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
@@ -1773,7 +1795,7 @@
     <!-- =================== STEP 12: SUBMIT =================== -->
     <section bind:this={stepRefs.submit} class="step-card">
         <div class="step-head" class:step-title-light={litFlags.submit.title}>
-            <span class="step-num" class:step-num-light={litFlags.submit.num}>12</span>
+            <span class="step-num" class:step-num-light={litFlags.submit.num}>13</span>
             <h2>בדיקה אחרונה ושליחה</h2>
             {#if activeStep === "submit"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
