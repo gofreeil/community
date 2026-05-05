@@ -787,6 +787,10 @@
         </div>
     </div>
 
+    <!-- ========== Two-column wrapper: steps on right (RTL start), live demo on left (RTL end) ========== -->
+    <div class="builder-cols">
+    <div class="builder-steps">
+
     <!-- =================== STEP 1: MAIN IMAGE =================== -->
     <section bind:this={stepRefs.image} class="step-card" onclick={() => activeStep === "image" || (activeStep = "image")}>
         <div class="step-head" class:step-title-light={litFlags.image.title}>
@@ -1705,6 +1709,55 @@
         </section>
     {/if}
 
+    </div><!-- /.builder-steps -->
+
+    <!-- ========== LIVE DEMO SIDEBAR — sticky on the LEFT (RTL flex-end) ========== -->
+    <aside class="builder-demo" aria-label="תצוגה חיה של הפרסומת">
+        <div class="live-demo-card">
+            <p class="live-demo-label">📍 הדמו שלך — מתעדכן בזמן אמת</p>
+            <div class="live-demo-frame pro-ad" dir="rtl">
+                <div class="ad-img-wrap pro-img-wrap live-demo-img-wrap">
+                    {#if mainImage}
+                        <img src={mainImage} alt={title} class="ad-img" />
+                    {:else}
+                        <div class="placeholder-dashed placeholder-img">
+                            <div class="placeholder-icon">📸</div>
+                            <p>תמונה ראשית</p>
+                            <p class="placeholder-hint">שלב 1</p>
+                        </div>
+                    {/if}
+                    <div class="pro-diag bg-gradient-to-br {gradient}"></div>
+                    <div class="pro-title-top">
+                        {#if title}
+                            <h3 class="pro-title" style:color={titleColor}>{title}</h3>
+                        {:else}
+                            <div class="placeholder-dashed placeholder-line">כותרת — שלב 3</div>
+                        {/if}
+                    </div>
+                    <div class="pro-title-wrap">
+                        {#if subtitle}
+                            <p class="pro-sub">{subtitle}</p>
+                        {:else}
+                            <div class="placeholder-dashed placeholder-line small">סלוגן — שלב 4</div>
+                        {/if}
+                    </div>
+                    {#if logo}
+                        <img src={logo} alt="לוגו"
+                             class="ad-logo {logoShape === 'circle' ? 'ad-logo-circle' : ''} {logoPosition === 'left' ? 'ad-logo-left' : 'ad-logo-right'}" />
+                    {:else}
+                        <div class="placeholder-dashed placeholder-logo {logoPosition === 'left' ? 'logo-pos-left' : 'logo-pos-right'}">לוגו<br/>שלב 2</div>
+                    {/if}
+                </div>
+                <div class="ad-cta bg-gradient-to-r {gradient}">
+                    <p>{cta}</p>
+                </div>
+            </div>
+            <p class="live-demo-foot">ככל שתשלים שלבים — הדמו יתמלא</p>
+        </div>
+    </aside>
+
+    </div><!-- /.builder-cols -->
+
 </div>
 {/if}
 
@@ -2035,6 +2088,99 @@
         color: white; font-weight: 700; font-size: 0.78rem; text-align: center;
         border: none;
     }
+
+    /* ============== TWO-COLUMN BUILDER LAYOUT — steps + sticky live demo ============== */
+    :global(.builder-cols) {
+        display: flex;
+        flex-direction: row;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    :global(.builder-steps) { flex: 1 1 auto; min-width: 0; }
+    :global(.builder-demo) {
+        flex: 0 0 200px;
+        position: sticky;
+        top: 5rem;
+        align-self: flex-start;
+    }
+    @media (max-width: 768px) {
+        :global(.builder-cols) { flex-direction: column; }
+        :global(.builder-demo) {
+            position: static;
+            flex: 0 0 auto;
+            width: 100%;
+            max-width: 240px;
+            margin: 0 auto;
+        }
+    }
+
+    /* Live demo card */
+    :global(.live-demo-card) {
+        background: rgba(0,0,0,0.35);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 0.85rem;
+        padding: 0.7rem;
+    }
+    :global(.live-demo-label) {
+        color: #fbbf24;
+        font-size: 0.78rem;
+        font-weight: 800;
+        text-align: center;
+        margin: 0 0 0.5rem;
+    }
+    :global(.live-demo-foot) {
+        color: rgba(255,255,255,0.5);
+        font-size: 0.65rem;
+        text-align: center;
+        margin: 0.5rem 0 0;
+    }
+    :global(.live-demo-frame) {
+        width: 100%;
+        border-radius: 0.55rem;
+        overflow: hidden;
+        background: #0f172a;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    }
+    :global(.live-demo-img-wrap) {
+        width: 100%;
+        aspect-ratio: 144 / 450;   /* authentic RightAdBanner image proportion */
+    }
+
+    /* Dashed placeholder boxes for unfilled fields */
+    :global(.placeholder-dashed) {
+        border: 2px dashed rgba(255,255,255,0.35);
+        background: rgba(255,255,255,0.04);
+        color: rgba(255,255,255,0.55);
+        font-weight: 700;
+        text-align: center;
+        border-radius: 0.4rem;
+    }
+    :global(.placeholder-img) {
+        position: absolute; inset: 6px;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 0.3rem;
+        font-size: 0.55rem;
+    }
+    :global(.placeholder-img .placeholder-icon) { font-size: 1.5rem; }
+    :global(.placeholder-img .placeholder-hint) { color: rgba(251,191,36,0.7); font-size: 0.5rem; }
+    :global(.placeholder-line) {
+        font-size: 0.5rem;
+        padding: 0.25rem 0.4rem;
+        line-height: 1;
+    }
+    :global(.placeholder-line.small) { font-size: 0.45rem; }
+    :global(.placeholder-logo) {
+        position: absolute;
+        top: 6px;
+        width: 28px; height: 28px;
+        border-radius: 0.3rem;
+        font-size: 0.45rem;
+        line-height: 1.05;
+        display: flex; align-items: center; justify-content: center;
+        z-index: 5;
+    }
+    :global(.placeholder-logo.logo-pos-right) { right: 6px; }
+    :global(.placeholder-logo.logo-pos-left)  { left: 6px; }
 
     /* ============== DESKTOP PREVIEW — TWO COMPETING OPTIONS ============== */
     :global(.preview-option) {
