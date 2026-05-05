@@ -576,6 +576,82 @@
         try { localStorage.removeItem(LS_KEY); } catch {}
         location.reload();
     }
+
+    // ===== Design-help modal — sends to admin via WhatsApp + personal area =====
+    const ADMIN_WA_NUMBER = "972508750632";
+    let helpOpen        = $state<boolean>(false);
+    let helpProblem     = $state<string>("");
+    let helpContact     = $state<string>("");
+    let helpSubmitting  = $state<boolean>(false);
+    let helpError       = $state<string>("");
+
+    function openHelp() {
+        helpProblem = "";
+        helpContact = data?.layoutUser?.email ?? data?.layoutUser?.nickname ?? "";
+        helpError = "";
+        helpOpen = true;
+        // focus the textarea after the modal renders
+        queueMicrotask(() => {
+            setTimeout(() => document.getElementById("help-problem-input")?.focus(), 30);
+        });
+    }
+    function closeHelp() {
+        if (helpSubmitting) return;
+        helpOpen = false;
+    }
+    function buildDraftSummary(): string {
+        const parts: string[] = [];
+        if (title)      parts.push(`כותרת: "${title}"`);
+        if (subtitle)   parts.push(`כותרת משנה: "${subtitle}"`);
+        if (mainImage)  parts.push("תמונה ראשית: ✔");
+        if (logo)       parts.push("לוגו: ✔");
+        if (hoverText)  parts.push(`טקסט בריחוף: "${hoverText.slice(0, 60)}${hoverText.length > 60 ? "…" : ""}"`);
+        if (gradient)   parts.push(`גרדיאנט: ${gradient}`);
+        if (titleColor && titleColor !== "#ffffff") parts.push(`צבע כותרת: ${titleColor}`);
+        return parts.join(" · ");
+    }
+    async function submitHelp() {
+        const problem = helpProblem.trim();
+        const contact = helpContact.trim();
+        if (problem.length < 5) {
+            helpError = "אנא תאר את הבעיה (לפחות 5 תווים)";
+            return;
+        }
+        const isLoggedIn = Boolean(data?.layoutUser?.email || data?.layoutUser?.nickname);
+        if (!isLoggedIn && !contact) {
+            helpError = "אנא ציין אימייל או כינוי כדי שנדע למצוא אותך";
+            return;
+        }
+        helpError = "";
+        helpSubmitting = true;
+        const draftSummary = buildDraftSummary();
+        let identityForWa = contact || data?.layoutUser?.email || data?.layoutUser?.nickname || "";
+        try {
+            const res = await fetch("/api/ads/design-help", {
+                method:  "POST",
+                headers: { "Content-Type": "application/json" },
+                body:    JSON.stringify({ problem, contact, draftSummary }),
+            });
+            const out = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                helpError = out?.error || "שגיאה בשליחה — נסה שוב";
+                helpSubmitting = false;
+                return;
+            }
+            if (out?.identityLine) identityForWa = out.identityLine;
+        } catch {
+            // Network failed — still let the user reach WhatsApp.
+        }
+        const waText =
+            `שלום, אני בונה פרסומת באתר וצריך עזרה בעיצוב 🎨\n\n` +
+            `🧑 ${identityForWa || "(אנונימי)"}\n\n` +
+            `הבעיה:\n"${problem}"` +
+            (draftSummary ? `\n\nמצב הטיוטה: ${draftSummary}` : "");
+        const waUrl = `https://wa.me/${ADMIN_WA_NUMBER}?text=${encodeURIComponent(waText)}`;
+        window.open(waUrl, "_blank", "noopener,noreferrer");
+        helpSubmitting = false;
+        helpOpen = false;
+    }
 </script>
 
 <svelte:head>
@@ -1064,9 +1140,59 @@
             </div>
         {/if}
 
-        <!-- ===== DESKTOP PREVIEW — real site screenshot with user's ad overlaid on right slot ===== -->
+        <!-- ===== DESKTOP PREVIEW — TWO COMPETING OPTIONS for the user to pick ===== -->
         {#if previewMode === "desktop"}
             <div class="preview-frame desktop">
+
+                <!-- ===== OPTION B — clean standalone card (no site context) ===== -->
+                <div class="preview-option">
+                    <p class="preview-option-label">🅑 אופציה ב — כרטיס נקי (ללא הקשר אתר)</p>
+                    <div class="clean-card-wrap">
+                        <div
+                            role="button"
+                            tabindex="0"
+                            class="clean-card desktop-ad pro-ad"
+                            onmouseenter={() => hoverPreview = true}
+                            onmouseleave={() => hoverPreview = false}
+                            onfocus={() => hoverPreview = true}
+                            onblur={() => hoverPreview = false}
+                        >
+                            <div class="ad-img-wrap pro-img-wrap clean-card-img">
+                                {#if mainImage}
+                                    <img src={mainImage} alt={title} class="ad-img" style:opacity={hoverPreview ? 0 : 1} />
+                                {:else}
+                                    <div class="img-placeholder">תמונה</div>
+                                {/if}
+                                <div class="pro-diag bg-gradient-to-br {gradient}" style:opacity={hoverPreview ? 0 : 1}></div>
+                                <div class="pro-title-top" style:opacity={hoverPreview ? 0 : 1}>
+                                    <h3 class="pro-title" style:color={titleColor}>{title || "כותרת ראשית"}</h3>
+                                </div>
+                                <div class="pro-title-wrap" style:opacity={hoverPreview ? 0 : 1}>
+                                    <p class="pro-sub">{subtitle || "סלוגן / כותרת משנה"}</p>
+                                    <span class="pro-demo-cta">הקלק לפרטים והזמנות</span>
+                                </div>
+                                <div class="hover-overlay" style:opacity={hoverPreview ? 1 : 0}>
+                                    <h3 class="hover-title">{title || "כותרת"}</h3>
+                                    <p class="hover-text">{hoverText || "כאן יופיע הטקסט בריחוף"}</p>
+                                    {#if essenceText}
+                                        <div class="hover-essence">{essenceText}</div>
+                                    {/if}
+                                </div>
+                                {#if logo}
+                                    <img src={logo} alt="לוגו"
+                                         class="ad-logo {logoShape === 'circle' ? 'ad-logo-circle' : ''} {logoPosition === 'left' ? 'ad-logo-left' : 'ad-logo-right'}" />
+                                {/if}
+                            </div>
+                            <div class="ad-cta bg-gradient-to-r {gradient}">
+                                <p>{cta}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== OPTION C — screenshot with DARK MASK over the original ad slot ===== -->
+                <div class="preview-option">
+                    <p class="preview-option-label">🅒 אופציה ג — צילום עם מסכה על הסלוט הימני</p>
                 <div class="site-shot-frame" dir="rtl">
                     <!-- Inner element holds the screenshot at its natural aspect.
                          The frame above clips overflow so the LEFT ad strip and the
@@ -1077,6 +1203,10 @@
                         <img src="/images/advertisement-page/יוצאיםלחירות.png"
                              alt="האתר"
                              class="site-shot" />
+
+                        <!-- DARK MASK over the original right ad slot — hides whatever ad
+                             was there in the screenshot. The user's demo sits on this mask. -->
+                        <div class="slot-mask"></div>
 
                         <!-- User's ad — overlaid on the FIRST right ad slot of the screenshot -->
                         <div
@@ -1129,7 +1259,9 @@
                         הפרסומת שלך כאן →
                     </div>
                 </div>
-                <p class="preview-caption">📌 כך הפרסומת שלך תיראה באתר האמיתי — בצד ימין מתחת להדר. העבר עכבר עליה לראות את הטקסט בריחוף.</p>
+                </div><!-- /.preview-option (option C) -->
+
+                <p class="preview-caption">השווה בין שתי האופציות ותגיד לי איזה להשאיר.</p>
             </div>
         {/if}
 
@@ -1246,13 +1378,12 @@
                 class="px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black transition-colors">
                 שלב הבא →
             </button>
-            <a href="https://wa.me/972508750632?text=שלום, אני בונה פרסומת באתר ויש לי בעיה — אני צריך עזרה בעיצוב 🎨"
-               target="_blank" rel="noopener noreferrer"
-               aria-label="פנייה לעזרה בעיצוב בוואטסאפ"
-               class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-400/50 text-gray-200 hover:text-amber-300 font-bold transition-colors">
+            <button type="button" onclick={openHelp}
+                    aria-label="פנייה לעזרה בעיצוב"
+                    class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-400/50 text-gray-200 hover:text-amber-300 font-bold transition-colors">
                 <span>🆘</span>
                 <span>יש לי בעיה ואני צריך עזרה בעיצוב</span>
-            </a>
+            </button>
         </div>
     </section>
 
@@ -1587,6 +1718,75 @@
     </div>
 {/if}
 
+<!-- =================== DESIGN-HELP MODAL =================== -->
+{#if helpOpen}
+    <div class="help-backdrop" role="dialog" aria-modal="true" aria-labelledby="help-modal-title"
+         onclick={(e) => { if (e.target === e.currentTarget) closeHelp(); }}
+         onkeydown={(e) => { if (e.key === "Escape") closeHelp(); }}
+         tabindex="-1">
+        <div class="help-modal" dir="rtl">
+            <div class="help-modal-head">
+                <span class="help-modal-icon" aria-hidden="true">🆘</span>
+                <h2 id="help-modal-title">פנייה לעזרה בעיצוב</h2>
+                <button type="button" class="help-close" onclick={closeHelp} aria-label="סגור">×</button>
+            </div>
+
+            <p class="help-intro">
+                ספר לנו במשפט-שניים מה התקיעה שלך — נחזור אליך בוואטסאפ עם פתרון, ובמקביל תיפתח אצלנו פנייה אישית כדי לא לאבד אותך.
+            </p>
+
+            <label class="help-field">
+                <span class="help-label">מה הבעיה? <span class="help-required">*</span></span>
+                <textarea id="help-problem-input"
+                          bind:value={helpProblem}
+                          maxlength="2000"
+                          rows="5"
+                          placeholder="לדוגמה: התמונה לא נכנסת יפה למסגרת · לא מצליח לבחור צבע שמתאים לרקע · הכותרת לא נראית טוב במובייל"
+                          class="help-textarea"
+                          disabled={helpSubmitting}></textarea>
+                <span class="help-counter">{helpProblem.length}/2000</span>
+            </label>
+
+            {#if !data?.layoutUser?.email && !data?.layoutUser?.nickname}
+                <label class="help-field">
+                    <span class="help-label">איך נדע מי אתה? <span class="help-required">*</span></span>
+                    <input type="text"
+                           bind:value={helpContact}
+                           maxlength="200"
+                           placeholder="אימייל או כינוי שאיתו נמצא אותך במערכת"
+                           class="help-input"
+                           disabled={helpSubmitting} />
+                </label>
+            {:else}
+                <p class="help-identity">
+                    <span class="help-identity-icon" aria-hidden="true">🧑</span>
+                    מזוהה כ: <strong>{data?.layoutUser?.nickname || data?.layoutUser?.email}</strong>
+                    <span class="help-identity-note">— כך נמצא אותך במערכת</span>
+                </p>
+            {/if}
+
+            {#if helpError}
+                <div class="help-error" role="alert">{helpError}</div>
+            {/if}
+
+            <div class="help-actions">
+                <button type="button" class="help-btn-secondary" onclick={closeHelp} disabled={helpSubmitting}>
+                    ביטול
+                </button>
+                <button type="button" class="help-btn-primary" onclick={submitHelp} disabled={helpSubmitting}>
+                    {#if helpSubmitting}
+                        <span class="help-spinner" aria-hidden="true"></span>
+                        שולח…
+                    {:else}
+                        <span aria-hidden="true">💬</span>
+                        שלח ופתח וואטסאפ
+                    {/if}
+                </button>
+            </div>
+        </div>
+    </div>
+{/if}
+
 <style>
     /* ============== Page-level layout ============== */
     .ad-builder :global(*) { box-sizing: border-box; }
@@ -1834,6 +2034,55 @@
         display: block; width: 100%; padding: 0.55rem; border-radius: 0.6rem;
         color: white; font-weight: 700; font-size: 0.78rem; text-align: center;
         border: none;
+    }
+
+    /* ============== DESKTOP PREVIEW — TWO COMPETING OPTIONS ============== */
+    :global(.preview-option) {
+        margin-bottom: 1.5rem;
+        width: 100%;
+    }
+    :global(.preview-option-label) {
+        font-weight: 800; color: #fbbf24;
+        font-size: 0.95rem; margin-bottom: 0.65rem;
+        text-align: center;
+    }
+
+    /* Option B — clean card with the user's ad at natural ad proportions, no site context */
+    :global(.clean-card-wrap) {
+        display: flex; justify-content: center;
+    }
+    :global(.clean-card) {
+        width: 140px;
+        border-radius: 0.6rem;
+        overflow: hidden;
+        background: #0f172a;
+        box-shadow: 0 0 0 2px rgba(255,255,255,0.6), 0 8px 30px rgba(245,158,11,0.4);
+        animation: overlayPulse 2.5s ease-in-out infinite;
+        cursor: pointer;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+    }
+    :global(.clean-card-img) {
+        width: 100%;
+        aspect-ratio: 144 / 450;   /* authentic RightAdBanner image proportion */
+        position: relative;
+    }
+
+    /* Option C — DARK MASK that hides the original right ad column in the screenshot.
+       Positioned to cover the entire right ad area generously, so the user's demo on top
+       of it doesn't visually compete with whatever ad was originally rendered there. */
+    :global(.slot-mask) {
+        position: absolute;
+        top: 5%;
+        right: 0;
+        width: 8.5%;
+        height: 78%;
+        background: linear-gradient(180deg, #0a1020, #0f172a);
+        border-radius: 4px;
+        z-index: 4;
+        pointer-events: none;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
     }
 
     /* ============== DESKTOP PREVIEW — real site screenshot with overlay ============== */
@@ -2536,5 +2785,161 @@
     :global(.checklist li.done) {
         color: rgb(229,231,235);
         background: rgba(16,185,129,0.08); border-color: rgba(16,185,129,0.25);
+    }
+
+    /* ============== DESIGN-HELP MODAL ============== */
+    :global(.help-backdrop) {
+        position: fixed; inset: 0;
+        background: rgba(2, 6, 23, 0.78);
+        backdrop-filter: blur(6px);
+        z-index: 300;
+        display: flex; align-items: center; justify-content: center;
+        padding: 1rem;
+        animation: helpFadeIn 160ms ease-out;
+    }
+    @keyframes helpFadeIn {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+    }
+    :global(.help-modal) {
+        width: 100%; max-width: 540px;
+        background: linear-gradient(180deg, #111827 0%, #0b1220 100%);
+        border: 1px solid rgba(245, 158, 11, 0.35);
+        border-radius: 1rem;
+        padding: 1.4rem;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.65), 0 0 40px rgba(245,158,11,0.12);
+        color: rgb(229, 231, 235);
+        animation: helpSlideUp 200ms ease-out;
+    }
+    @keyframes helpSlideUp {
+        from { transform: translateY(14px); opacity: 0; }
+        to   { transform: translateY(0); opacity: 1; }
+    }
+    :global(.help-modal-head) {
+        display: flex; align-items: center; gap: 0.6rem;
+        padding-bottom: 0.85rem;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+        margin-bottom: 0.95rem;
+    }
+    :global(.help-modal-icon) { font-size: 1.5rem; }
+    :global(.help-modal-head h2) {
+        margin: 0; font-size: 1.15rem; font-weight: 900;
+        color: rgb(252, 211, 77); flex: 1;
+    }
+    :global(.help-close) {
+        background: transparent; border: 0; color: rgb(156,163,175);
+        font-size: 1.7rem; line-height: 1; cursor: pointer; padding: 0 0.3rem;
+        transition: color 120ms ease;
+    }
+    :global(.help-close:hover) { color: white; }
+
+    :global(.help-intro) {
+        font-size: 0.92rem; line-height: 1.55; color: rgb(203, 213, 225);
+        margin: 0 0 1rem;
+    }
+
+    :global(.help-field) { display: block; margin-bottom: 0.85rem; position: relative; }
+    :global(.help-label) {
+        display: block; font-size: 0.85rem; font-weight: 700;
+        color: rgb(229, 231, 235); margin-bottom: 0.35rem;
+    }
+    :global(.help-required) { color: rgb(248, 113, 113); }
+
+    :global(.help-textarea), :global(.help-input) {
+        width: 100%;
+        background: rgba(15, 23, 42, 0.85);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 0.6rem;
+        padding: 0.7rem 0.85rem;
+        color: white; font-size: 0.95rem; line-height: 1.45;
+        font-family: inherit;
+        resize: vertical;
+        transition: border-color 120ms ease, box-shadow 120ms ease;
+    }
+    :global(.help-textarea) { min-height: 120px; }
+    :global(.help-textarea:focus), :global(.help-input:focus) {
+        outline: none;
+        border-color: rgba(245, 158, 11, 0.6);
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.18);
+    }
+    :global(.help-counter) {
+        position: absolute; bottom: 0.45rem; left: 0.7rem;
+        font-size: 0.7rem; color: rgb(107, 114, 128);
+        pointer-events: none;
+    }
+
+    :global(.help-identity) {
+        font-size: 0.88rem; color: rgb(203, 213, 225);
+        background: rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        border-radius: 0.55rem;
+        padding: 0.55rem 0.75rem;
+        margin: 0 0 0.85rem;
+        display: flex; align-items: center; flex-wrap: wrap; gap: 0.35rem;
+    }
+    :global(.help-identity strong) { color: rgb(110, 231, 183); }
+    :global(.help-identity-note) {
+        color: rgb(148, 163, 184); font-size: 0.8rem; font-weight: 400;
+    }
+
+    :global(.help-error) {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.4);
+        color: rgb(252, 165, 165);
+        border-radius: 0.55rem;
+        padding: 0.55rem 0.75rem;
+        font-size: 0.85rem;
+        margin-bottom: 0.85rem;
+    }
+
+    :global(.help-actions) {
+        display: flex; gap: 0.6rem; justify-content: flex-end;
+        margin-top: 0.4rem;
+    }
+    :global(.help-btn-secondary), :global(.help-btn-primary) {
+        padding: 0.7rem 1.1rem;
+        border-radius: 0.7rem;
+        font-weight: 800;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: transform 100ms ease, box-shadow 120ms ease, background 120ms ease;
+        display: inline-flex; align-items: center; gap: 0.45rem;
+        border: 0;
+    }
+    :global(.help-btn-secondary) {
+        background: rgba(255,255,255,0.07);
+        color: rgb(203, 213, 225);
+        border: 1px solid rgba(255,255,255,0.12);
+    }
+    :global(.help-btn-secondary:hover:not(:disabled)) {
+        background: rgba(255,255,255,0.12);
+    }
+    :global(.help-btn-primary) {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: #0b1020;
+        box-shadow: 0 8px 22px rgba(245, 158, 11, 0.35);
+    }
+    :global(.help-btn-primary:hover:not(:disabled)) {
+        transform: translateY(-1px);
+        box-shadow: 0 12px 26px rgba(245, 158, 11, 0.5);
+    }
+    :global(.help-btn-primary:disabled), :global(.help-btn-secondary:disabled) {
+        opacity: 0.55; cursor: not-allowed; transform: none;
+    }
+    :global(.help-spinner) {
+        width: 14px; height: 14px;
+        border: 2px solid rgba(11, 16, 32, 0.3);
+        border-top-color: rgb(11, 16, 32);
+        border-radius: 50%;
+        animation: helpSpin 700ms linear infinite;
+    }
+    @keyframes helpSpin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 480px) {
+        :global(.help-modal) { padding: 1.1rem; border-radius: 0.8rem; }
+        :global(.help-actions) { flex-direction: column-reverse; }
+        :global(.help-btn-primary), :global(.help-btn-secondary) {
+            width: 100%; justify-content: center;
+        }
     }
 </style>
