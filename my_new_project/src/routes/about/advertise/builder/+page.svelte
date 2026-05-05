@@ -134,6 +134,7 @@
     let mainImageObjectY = $state<number>(50);                  // object-position Y (0-100) for cropping
     let title           = $state<string>("");
     let titleColor      = $state<string>("#ffffff");
+    let titleOffsetY    = $state<number>(0);                    // vertical offset for title on banner (-20..+60 px)
     let subtitle        = $state<string>("");
     let hoverText       = $state<string>("");
     let cta             = $state<string>("לפרטים נוספים");
@@ -561,6 +562,7 @@
                 mainImageObjectX = typeof d.mainImageObjectX === 'number' ? d.mainImageObjectX : 50;
                 mainImageObjectY = typeof d.mainImageObjectY === 'number' ? d.mainImageObjectY : 50;
                 title           = d.title ?? "";
+                titleOffsetY    = typeof d.titleOffsetY === 'number' ? d.titleOffsetY : 0;
                 subtitle        = d.subtitle ?? "";
                 hoverText       = d.hoverText ?? "";
                 cta             = d.cta ?? "לפרטים נוספים";
@@ -600,7 +602,7 @@
     $effect(() => {
         if (!browser) return;
         const snapshot = {
-            logo, logoOriginal, hasCircleCrop, logoShape, logoPosition, mainImage, mainImageObjectX, mainImageObjectY, title, subtitle, hoverText, cta, gradient, diagHeight,
+            logo, logoOriginal, hasCircleCrop, logoShape, logoPosition, mainImage, mainImageObjectX, mainImageObjectY, title, titleOffsetY, subtitle, hoverText, cta, gradient, diagHeight,
             landingHeadline, landingPitch, landingExtended, landingImage, landingAdvantages, uniqueness, phone, whatsapp, website,
             email, address, hours, products,
         };
@@ -1088,6 +1090,21 @@
             {/if}
             <span>{title.length}/35</span>
         </div>
+
+        <!-- Title vertical offset slider — move title up/down on the banner -->
+        <div class="mt-4">
+            <div class="flex items-center justify-between mb-1.5">
+                <p class="text-sm font-bold text-gray-300">מיקום הכותרת על הבאנר: <span class="text-amber-300">{titleOffsetY > 0 ? `+${titleOffsetY}` : titleOffsetY}px</span></p>
+                <button type="button" onclick={() => (titleOffsetY = 0)}
+                        class="text-[11px] text-gray-400 hover:text-amber-300 underline">איפוס</button>
+            </div>
+            <input type="range" min="-20" max="60" step="1" bind:value={titleOffsetY}
+                   class="w-full accent-amber-500" aria-label="מיקום אנכי של הכותרת" />
+            <div class="flex justify-between text-[11px] text-gray-500 mt-1">
+                <span>למעלה ↑</span>
+                <span>למטה ↓</span>
+            </div>
+        </div>
     </section>
 
     <!-- =================== STEP 4: SUBTITLE =================== -->
@@ -1233,7 +1250,7 @@
                                 <!-- Diagonal color band -->
                                 <div class="pro-diag bg-gradient-to-br {gradient}"></div>
                                 <!-- Title centered at the top -->
-                                <div class="pro-title-top mobile">
+                                <div class="pro-title-top mobile" style:transform="translateY({titleOffsetY}px)">
                                     <h3 class="pro-title" style:color={titleColor}>{title || "כותרת ראשית"}</h3>
                                 </div>
                                 <!-- Subtitle stays on the diagonal at the bottom -->
@@ -1282,7 +1299,7 @@
                                     <div class="img-placeholder">תמונה</div>
                                 {/if}
                                 <div class="pro-diag bg-gradient-to-br {gradient}" style:opacity={hoverPreview ? 0 : 1}></div>
-                                <div class="pro-title-top" style:opacity={hoverPreview ? 0 : 1}>
+                                <div class="pro-title-top" style:opacity={hoverPreview ? 0 : 1} style:transform="translateY({titleOffsetY}px)">
                                     <h3 class="pro-title" style:color={titleColor}>{title || "כותרת ראשית"}</h3>
                                 </div>
                                 <div class="pro-title-wrap" style:opacity={hoverPreview ? 0 : 1}>
@@ -1345,7 +1362,7 @@
                             <div class="pro-diag bg-gradient-to-br {gradient}"
                                  style:opacity={hoverPreview ? 0 : 1}></div>
 
-                            <div class="pro-title-top" style:opacity={hoverPreview ? 0 : 1}>
+                            <div class="pro-title-top" style:opacity={hoverPreview ? 0 : 1} style:transform="translateY({titleOffsetY}px)">
                                 <h3 class="pro-title" style:color={titleColor}>{title || "כותרת ראשית"}</h3>
                             </div>
                             <div class="pro-title-wrap" style:opacity={hoverPreview ? 0 : 1}>
@@ -1758,7 +1775,7 @@
                         </div>
                     {/if}
                     <div class="pro-diag bg-gradient-to-br {gradient}"></div>
-                    <div class="pro-title-top">
+                    <div class="pro-title-top" style:transform="translateY({titleOffsetY}px)">
                         {#if title}
                             <h3 class="pro-title" style:color={titleColor}>{title}</h3>
                         {:else}
