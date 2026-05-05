@@ -1141,10 +1141,59 @@
         </div>
     </section>
 
-    <!-- =================== STEP 6: PREVIEW =================== -->
+    <!-- =================== STEP 6: GRADIENT (color + band height) =================== -->
+    <section bind:this={stepRefs.gradient} class="step-card">
+        <div class="step-head" class:step-title-light={litFlags.gradient.title}>
+            <span class="step-num" class:step-num-light={litFlags.gradient.num}>6</span>
+            <h2>🎨 צבע ועיצוב הרצועה — הרקע הצבעוני של הפרסומת</h2>
+            {#if activeStep === "gradient"}
+                <span class="tutorial-finger" aria-hidden="true">👇</span>
+            {/if}
+        </div>
+        <p class="step-help">בחר את צבע הרצועה האלכסונית שמופיעה על התמונה. הצבע יחול גם על כפתור ה-CTA ועל דף הנחיתה. כוונן את גובה הרצועה כך שיתאים לכמות הטקסט שלך.</p>
+
+        <!-- Color palette — 22 gradients in a 2-column grid -->
+        <div class="mt-3">
+            <p class="text-sm font-bold text-gray-300 mb-2">צבע הרצועה:</p>
+            <div class="color-rail" aria-label="בחירת צבע פרסומת" style="margin-inline:auto">
+                {#each palettes as p}
+                    <button type="button"
+                            onclick={() => (gradient = p.cls)}
+                            class="color-dot bg-gradient-to-br {p.cls}"
+                            class:selected={gradient === p.cls}
+                            title={p.label}
+                            aria-label={p.label}
+                            aria-pressed={gradient === p.cls}>
+                    </button>
+                {/each}
+            </div>
+        </div>
+
+        <!-- Diagonal band height slider -->
+        <div class="mt-5">
+            <div class="flex items-center justify-between mb-1.5">
+                <p class="text-sm font-bold text-gray-300">גובה הרצועה הצבעונית: <span class="text-amber-300">{diagHeight}%</span> מגובה התמונה</p>
+            </div>
+            <input type="range" min="5" max="50" step="1" bind:value={diagHeight}
+                   class="w-full accent-amber-500" aria-label="גובה הרצועה הצבעונית" />
+            <div class="flex justify-between text-[11px] text-gray-500 mt-1">
+                <span>נמוכה (יותר תמונה גלויה)</span>
+                <span>גבוהה (יותר רקע צבעוני)</span>
+            </div>
+        </div>
+
+        <div class="mt-5 flex justify-center">
+            <button type="button" onclick={() => advance("preview")}
+                class="px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black text-base transition-colors shadow-lg">
+                סיימתי — המשך לתצוגה מקדימה ←
+            </button>
+        </div>
+    </section>
+
+    <!-- =================== STEP 7: PREVIEW =================== -->
     <section bind:this={stepRefs.preview} class="step-card">
         <div class="step-head" class:step-title-light={litFlags.preview.title}>
-            <span class="step-num" class:step-num-light={litFlags.preview.num}>6</span>
+            <span class="step-num" class:step-num-light={litFlags.preview.num}>7</span>
             <h2>תצוגה מקדימה — איך זה יראה לגולשים?</h2>
             {#if activeStep === "preview"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
@@ -1459,7 +1508,7 @@
     <!-- =================== STEP 7: HOVER TEXT =================== -->
     <section bind:this={stepRefs.hover} class="step-card">
         <div class="step-head" class:step-title-light={litFlags.hover.title}>
-            <span class="step-num" class:step-num-light={litFlags.hover.num}>7</span>
+            <span class="step-num" class:step-num-light={litFlags.hover.num}>8</span>
             <h2>טקסט בריחוף — מה רואים כשהעכבר על הפרסומת</h2>
             {#if activeStep === "hover" && !hoverText}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
@@ -2264,19 +2313,22 @@
     :global(.crop-arrow-right:hover) { transform: translateY(-50%) scale(1.12); }
     :global(.crop-reset) {
         position: absolute;
-        top: 8px; right: 50px;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
         background: rgba(0,0,0,0.5);
         border: 1px solid rgba(255,255,255,0.5);
         color: white;
-        width: 28px; height: 28px;
+        width: 32px; height: 32px;
         border-radius: 50%;
-        font-size: 0.85rem; line-height: 1;
+        font-size: 0.9rem; line-height: 1;
         cursor: pointer;
         z-index: 4;
+        backdrop-filter: blur(4px);
         display: flex; align-items: center; justify-content: center;
         padding: 0;
+        transition: background 150ms, transform 150ms;
     }
-    :global(.crop-reset:hover) { background: rgba(245,158,11,0.85); color: black; }
+    :global(.crop-reset:hover) { background: rgba(245,158,11,0.85); color: black; transform: translate(-50%, -50%) scale(1.12); }
     :global(.crop-hint) {
         font-size: 0.75rem;
         color: rgb(156,163,175);
