@@ -1091,7 +1091,7 @@
 
                     <!-- "Your ad here" pointer arrow — positioned on the cropper, not inner -->
                     <div class="site-shot-pointer">
-                        ← הפרסומת שלך כאן
+                        הפרסומת שלך כאן →
                     </div>
                 </div>
                 <p class="preview-caption">📌 כך הפרסומת שלך תיראה באתר האמיתי — בצד ימין מתחת להדר. העבר עכבר עליה לראות את הטקסט בריחוף.</p>
@@ -1824,6 +1824,15 @@
         width: calc(100% * 1475 / 1298);   /* ≈ 113.6% — restores full image width after 12% left crop */
         aspect-ratio: 1475 / 875;           /* explicit height for child % positioning */
     }
+    /* Slight darkening over the screenshot so the user's bright demo stands out */
+    :global(.site-shot-inner::after) {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,0.18);
+        pointer-events: none;
+        z-index: 1;
+    }
     :global(.site-shot) {
         display: block; width: 100%; height: 100%;
     }
@@ -1833,8 +1842,8 @@
        width and height stay locked together, never independently sized. */
     :global(.site-shot-overlay.desktop-ad) {
         position: absolute;
-        top: 23%;
-        right: 4.5%;
+        top: 21%;
+        right: 3.5%;
         width: 9%;
         z-index: 5;
         cursor: pointer;
