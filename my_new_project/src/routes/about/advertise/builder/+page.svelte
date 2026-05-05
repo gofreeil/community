@@ -410,6 +410,10 @@
         { id: "lime",     label: "ליים",        cls: "from-lime-400 to-green-500" },
         { id: "slate",    label: "אפור-כסף",    cls: "from-slate-500 to-gray-700" },
         { id: "dark",     label: "שחור-פלדה",   cls: "from-gray-800 to-slate-900" },
+        { id: "peach",    label: "אפרסק",       cls: "from-orange-300 to-pink-400" },
+        { id: "mint",     label: "מנטה",        cls: "from-emerald-300 to-teal-400" },
+        { id: "gold",     label: "זהב",         cls: "from-yellow-500 to-amber-700" },
+        { id: "midnight", label: "חצות",        cls: "from-slate-700 to-blue-900" },
     ];
 
     // ===== Mobile/Desktop preview toggle =====
@@ -1823,36 +1827,32 @@
     :global(.site-shot) {
         display: block; width: 100%; height: 100%;
     }
-    /* Overlay positioned on the FIRST right ad slot. Percentages are relative to
-       .site-shot-inner (which mirrors the original image proportions). The chained
-       .desktop-ad selector here defeats the .desktop-ad block-display rule below. */
+    /* Overlay positioned on the FIRST right ad slot. Width drives the overlay; the height
+       is derived naturally from the children (image-wrap with the real RightAdBanner
+       aspect-ratio + the small CTA below it). This preserves authentic ad proportions —
+       width and height stay locked together, never independently sized. */
     :global(.site-shot-overlay.desktop-ad) {
         position: absolute;
-        top: 9%;
-        right: 1.5%;
-        width: 5.5%;
-        height: 72%;
+        top: 11%;
+        right: 2.4%;
+        width: 5%;
         z-index: 5;
         cursor: pointer;
         border-radius: 4px;
         overflow: hidden;
         box-shadow: 0 0 0 2px rgba(255,255,255,0.6), 0 0 20px rgba(245,158,11,0.6);
         animation: overlayPulse 2.5s ease-in-out infinite;
-        display: flex;
-        flex-direction: column;
     }
     @keyframes overlayPulse {
         0%, 100% { box-shadow: 0 0 0 2px rgba(255,255,255,0.6), 0 0 20px rgba(245,158,11,0.6); }
         50%      { box-shadow: 0 0 0 3px rgba(255,255,255,0.85), 0 0 28px rgba(245,158,11,0.95); }
     }
     :global(.site-shot-overlay-img) {
-        flex: 1 1 0;          /* fills remaining vertical space in the flex column */
         width: 100%;
+        aspect-ratio: 144 / 450;   /* matches real RightAdBanner image slot */
         height: auto;
-        aspect-ratio: auto;   /* override pro-img-wrap default */
-        min-height: 0;
     }
-    :global(.site-shot-overlay .ad-cta) { flex: 0 0 auto; padding: 0.25rem; }
+    :global(.site-shot-overlay .ad-cta) { padding: 0.25rem; }
     :global(.site-shot-overlay .ad-cta p) { font-size: 0.45rem; line-height: 1.1; }
     :global(.site-shot-overlay .pro-title) { font-size: 0.5rem; line-height: 1.05; margin-bottom: 0.1rem; }
     :global(.site-shot-overlay .pro-sub)   { font-size: 0.38rem; line-height: 1.15; }
