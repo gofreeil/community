@@ -168,6 +168,7 @@
     ];
 
     let activeStep = $state<Step>("image");
+    let suppressFinger = $state(false);
 
     // step -> {numLight, titleLight} flags (one entry per step)
     const litFlags: Record<Step, { num: boolean; title: boolean }> = $state({
@@ -262,6 +263,7 @@
     }
 
     function advance(to: Step) {
+        suppressFinger = true;
         activeStep = to;
         queueMicrotask(() => slowScrollTo(stepRefs[to]));
         // Update demo position to align with the new active step (animation via CSS transition)
@@ -866,7 +868,7 @@
         <div class="step-head" class:step-title-light={litFlags.image.title}>
             <span class="step-num" class:step-num-light={litFlags.image.num}>1</span>
             <h2>העלה תמונה ראשית לפרסומת</h2>
-            {#if activeStep === "image" && !mainImage}
+            {#if activeStep === "image" && !mainImage && !suppressFinger}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
         </div>
@@ -930,7 +932,7 @@
         <div class="step-head" class:step-title-light={litFlags.logo.title}>
             <span class="step-num" class:step-num-light={litFlags.logo.num}>2</span>
             <h2>לוגו (אופציונלי)</h2>
-            {#if activeStep === "logo" && !logo}
+            {#if activeStep === "logo" && !logo && !suppressFinger}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
         </div>
@@ -1044,7 +1046,7 @@
         <div class="step-head" class:step-title-light={litFlags.title.title}>
             <span class="step-num" class:step-num-light={litFlags.title.num}>3</span>
             <h2>כותרת ראשית</h2>
-            {#if activeStep === "title" && !title}
+            {#if activeStep === "title" && !title && !suppressFinger}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
 
@@ -1104,7 +1106,7 @@
         <div class="step-head" class:step-title-light={litFlags.subtitle.title}>
             <span class="step-num" class:step-num-light={litFlags.subtitle.num}>4</span>
             <h2>כותרת משנה / סלוגן</h2>
-            {#if activeStep === "subtitle" && !subtitle}
+            {#if activeStep === "subtitle" && !subtitle && !suppressFinger}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
         </div>
@@ -1133,7 +1135,7 @@
         <div class="step-head" class:step-title-light={litFlags.essence.title}>
             <span class="step-num" class:step-num-light={litFlags.essence.num}>5</span>
             <h2>📣 קריאה לפעולה — מה תגרום לגולש ללחוץ?</h2>
-            {#if activeStep === "essence" && !essenceText}
+            {#if activeStep === "essence" && !essenceText && !suppressFinger}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
         </div>
@@ -1168,7 +1170,7 @@
         <div class="step-head" class:step-title-light={litFlags.gradient.title}>
             <span class="step-num" class:step-num-light={litFlags.gradient.num}>6</span>
             <h2>🎨 צבע ועיצוב הרצועה — הרקע הצבעוני של הפרסומת</h2>
-            {#if activeStep === "gradient"}
+            {#if activeStep === "gradient" && !suppressFinger}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
         </div>
@@ -1217,7 +1219,7 @@
         <div class="step-head" class:step-title-light={litFlags.preview.title}>
             <span class="step-num" class:step-num-light={litFlags.preview.num}>7</span>
             <h2>תצוגה מקדימה — איך זה יראה לגולשים?</h2>
-            {#if activeStep === "preview"}
+            {#if activeStep === "preview" && !suppressFinger}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
         </div>
@@ -1497,20 +1499,6 @@
                 <p class="preview-caption">כך ייראה דף הנחיתה המלא — אליו הגולש יגיע בלחיצה על הפרסומת.</p>
             </div>
         {/if}
-
-            <!-- Color rail — vertical round dots on the visual left (RTL flex-row) -->
-            <div class="color-rail" aria-label="בחירת צבע פרסומת">
-                {#each palettes as p}
-                    <button type="button"
-                            onclick={() => (gradient = p.cls)}
-                            class="color-dot bg-gradient-to-br {p.cls}"
-                            class:selected={gradient === p.cls}
-                            title={p.label}
-                            aria-label={p.label}
-                            aria-pressed={gradient === p.cls}>
-                    </button>
-                {/each}
-            </div>
         </div>
 
         <div class="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -1532,7 +1520,7 @@
         <div class="step-head" class:step-title-light={litFlags.hover.title}>
             <span class="step-num" class:step-num-light={litFlags.hover.num}>8</span>
             <h2>טקסט בריחוף — מה רואים כשהעכבר על הפרסומת</h2>
-            {#if activeStep === "hover" && !hoverText}
+            {#if activeStep === "hover" && !hoverText && !suppressFinger}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
         </div>
@@ -1581,7 +1569,7 @@
         <div class="step-head" class:step-title-light={litFlags["landing-link"].title}>
             <span class="step-num" class:step-num-light={litFlags["landing-link"].num}>9</span>
             <h2>דף נחיתה — לאן המשתמש יגיע?</h2>
-            {#if activeStep === "landing-link"}
+            {#if activeStep === "landing-link" && !suppressFinger}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
         </div>
@@ -1682,7 +1670,7 @@
         <div class="step-head" class:step-title-light={litFlags.products.title}>
             <span class="step-num" class:step-num-light={litFlags.products.num}>10</span>
             <h2>תמונות מוצרים / שירותים + מחירים</h2>
-            {#if activeStep === "products"}
+            {#if activeStep === "products" && !suppressFinger}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
         </div>
@@ -1734,7 +1722,7 @@
         <div class="step-head" class:step-title-light={litFlags.uniqueness.title}>
             <span class="step-num" class:step-num-light={litFlags.uniqueness.num}>11</span>
             <h2>מה מייחד אותך?</h2>
-            {#if activeStep === "uniqueness"}
+            {#if activeStep === "uniqueness" && !suppressFinger}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
         </div>
@@ -1763,7 +1751,7 @@
         <div class="step-head" class:step-title-light={litFlags.address.title}>
             <span class="step-num" class:step-num-light={litFlags.address.num}>12</span>
             <h2>כתובת ושעות פעילות</h2>
-            {#if activeStep === "address"}
+            {#if activeStep === "address" && !suppressFinger}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
         </div>
@@ -1797,7 +1785,7 @@
         <div class="step-head" class:step-title-light={litFlags.submit.title}>
             <span class="step-num" class:step-num-light={litFlags.submit.num}>13</span>
             <h2>בדיקה אחרונה ושליחה</h2>
-            {#if activeStep === "submit"}
+            {#if activeStep === "submit" && !suppressFinger}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
         </div>
@@ -2166,7 +2154,6 @@
         display: inline-block;
         animation: gentleHover 2.6s ease-in-out infinite;
         font-size: 1.25rem;
-        margin-right: auto;
         will-change: transform;
         filter: drop-shadow(0 0 5px rgba(245,158,11,0.45));
     }
@@ -2860,10 +2847,10 @@
         flex: 1 1 auto;
         min-width: 0;
     }
-    /* Two-column color picker — small gap between dots, no overlap */
+    /* Horizontal color picker — wide strip, two short rows */
     :global(.color-rail) {
         display: grid;
-        grid-template-columns: repeat(2, 28px);
+        grid-template-columns: repeat(11, 28px);
         grid-auto-rows: 28px;
         column-gap: 5px;
         row-gap: 5px;
