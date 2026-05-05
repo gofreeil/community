@@ -1870,9 +1870,9 @@
        width and height stay locked together, never independently sized. */
     :global(.site-shot-overlay.desktop-ad) {
         position: absolute;
-        top: 18%;
+        top: 20%;
         right: 3.5%;
-        width: 11%;
+        width: 10%;
         z-index: 5;
         cursor: pointer;
         border-radius: 4px;
