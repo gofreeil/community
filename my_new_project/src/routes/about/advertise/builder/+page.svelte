@@ -1872,7 +1872,7 @@
         position: absolute;
         top: 20%;
         right: 3.5%;
-        width: 10%;
+        width: 9.7%;
         z-index: 5;
         cursor: pointer;
         border-radius: 4px;
