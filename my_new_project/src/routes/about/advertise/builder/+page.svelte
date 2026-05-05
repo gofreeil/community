@@ -131,6 +131,7 @@
     }
     let mainImage       = $state<string>("");                  // base64 data url
     let title           = $state<string>("");
+    let titleColor      = $state<string>("#ffffff");
     let subtitle        = $state<string>("");
     let hoverText       = $state<string>("");
     let essenceText     = $state<string>("");                  // brief info about product/business
@@ -898,6 +899,39 @@
             {/if}
             <span>{title.length}/35</span>
         </div>
+
+        <!-- Title color picker -->
+        <div class="mt-4">
+            <p class="text-sm font-bold text-gray-300 mb-2">צבע הכותרת:</p>
+            <div class="flex flex-wrap items-center gap-2">
+                {#each [
+                    { c: "#ffffff", label: "לבן" },
+                    { c: "#fbbf24", label: "זהב" },
+                    { c: "#fde047", label: "צהוב" },
+                    { c: "#fb923c", label: "כתום" },
+                    { c: "#f87171", label: "אדום" },
+                    { c: "#f9a8d4", label: "ורוד" },
+                    { c: "#c4b5fd", label: "סגול" },
+                    { c: "#67e8f9", label: "תכלת" },
+                    { c: "#86efac", label: "ירוק" },
+                    { c: "#0f172a", label: "שחור" }
+                ] as p}
+                    <button type="button"
+                            onclick={() => (titleColor = p.c)}
+                            class="title-color-dot"
+                            class:selected={titleColor === p.c}
+                            style:background={p.c}
+                            title={p.label}
+                            aria-label={p.label}
+                            aria-pressed={titleColor === p.c}>
+                    </button>
+                {/each}
+                <label class="title-color-custom" title="בחר צבע מותאם">
+                    <input type="color" bind:value={titleColor} aria-label="בחירת צבע מותאם" />
+                    <span>🎨</span>
+                </label>
+            </div>
+        </div>
     </section>
 
     <!-- =================== STEP 4: SUBTITLE =================== -->
@@ -1008,7 +1042,7 @@
                                 <div class="pro-diag bg-gradient-to-br {gradient}"></div>
                                 <!-- Title sits on the diagonal -->
                                 <div class="pro-title-wrap mobile">
-                                    <h3 class="pro-title">{title || "כותרת ראשית"}</h3>
+                                    <h3 class="pro-title" style:color={titleColor}>{title || "כותרת ראשית"}</h3>
                                     <p class="pro-sub">{subtitle || "כותרת משנה / סלוגן"}</p>
                                 </div>
                                 {#if logo}
@@ -1066,7 +1100,7 @@
                                  style:opacity={hoverPreview ? 0 : 1}></div>
 
                             <div class="pro-title-wrap" style:opacity={hoverPreview ? 0 : 1}>
-                                <h3 class="pro-title">{title || "כותרת ראשית"}</h3>
+                                <h3 class="pro-title" style:color={titleColor}>{title || "כותרת ראשית"}</h3>
                                 <p class="pro-sub">{subtitle || "סלוגן / כותרת משנה"}</p>
                             </div>
 
@@ -1839,9 +1873,9 @@
        width and height stay locked together, never independently sized. */
     :global(.site-shot-overlay.desktop-ad) {
         position: absolute;
-        top: 21%;
+        top: 18%;
         right: 3.5%;
-        width: 9%;
+        width: 11%;
         z-index: 5;
         cursor: pointer;
         border-radius: 4px;
@@ -2265,6 +2299,31 @@
         clip-path: polygon(0 86%, 100% 76%, 100% 80%, 0 90%);
         pointer-events: none; z-index: 3;
         opacity: 0.5;
+    }
+
+    /* Title color picker dots */
+    .title-color-dot {
+        width: 1.85rem; height: 1.85rem; border-radius: 9999px;
+        border: 2px solid rgba(255,255,255,0.25);
+        cursor: pointer; transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+        padding: 0;
+    }
+    .title-color-dot:hover { transform: scale(1.08); border-color: rgba(255,255,255,0.55); }
+    .title-color-dot.selected {
+        border-color: #fbbf24;
+        box-shadow: 0 0 0 2px rgba(251,191,36,0.35);
+        transform: scale(1.12);
+    }
+    .title-color-custom {
+        position: relative; display: inline-flex; align-items: center; justify-content: center;
+        width: 1.85rem; height: 1.85rem; border-radius: 9999px;
+        background: linear-gradient(135deg, #f87171, #fbbf24, #34d399, #60a5fa, #c4b5fd);
+        border: 2px solid rgba(255,255,255,0.35);
+        cursor: pointer; font-size: 0.85rem;
+    }
+    .title-color-custom input[type="color"] {
+        position: absolute; inset: 0; width: 100%; height: 100%;
+        opacity: 0; cursor: pointer; border: 0; padding: 0;
     }
 
     :global(.pro-title-wrap) {
