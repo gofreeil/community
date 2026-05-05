@@ -929,6 +929,9 @@
         <div class="step-head" class:step-title-light={litFlags.logo.title}>
             <span class="step-num" class:step-num-light={litFlags.logo.num}>2</span>
             <h2>לוגו (אופציונלי)</h2>
+            {#if activeStep === "logo" && !logo}
+                <span class="tutorial-finger" aria-hidden="true">👇</span>
+            {/if}
         </div>
         <p class="step-help">העלה לוגו — עדיף עם רקע שקוף (PNG). יוצב <strong class="text-amber-300">קטן בפינה</strong> של הפרסומת. אם אין לוגו — דלג.</p>
 
@@ -1040,6 +1043,9 @@
         <div class="step-head" class:step-title-light={litFlags.title.title}>
             <span class="step-num" class:step-num-light={litFlags.title.num}>3</span>
             <h2>כותרת ראשית</h2>
+            {#if activeStep === "title" && !title}
+                <span class="tutorial-finger" aria-hidden="true">👇</span>
+            {/if}
 
             <!-- Title color picker — inline to the left of the heading -->
             <div class="title-color-rail" aria-label="צבע הכותרת">
@@ -1079,15 +1085,7 @@
                onblur={() => title.trim() && commitField("title")}
                placeholder="לדוגמה: גמ״ח כלי עבודה — קרית משה"
                class="text-input" />
-        <div class="flex items-center justify-between gap-2 text-xs text-gray-500 mt-2">
-            {#if title}
-                <button type="button" onclick={() => commitField("title")}
-                    class="px-3 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 hover:text-amber-200 font-bold transition-colors">
-                    שלב הבא ←
-                </button>
-            {:else}
-                <span></span>
-            {/if}
+        <div class="flex items-center justify-end gap-2 text-xs text-gray-500 mt-2">
             <span>{title.length}/35</span>
         </div>
 
@@ -1105,6 +1103,15 @@
                 <span>למטה ↓</span>
             </div>
         </div>
+
+        {#if title}
+            <div class="mt-4 flex justify-start">
+                <button type="button" onclick={() => commitField("title")}
+                    class="px-3 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 hover:text-amber-200 font-bold transition-colors">
+                    שלב הבא ←
+                </button>
+            </div>
+        {/if}
     </section>
 
     <!-- =================== STEP 4: SUBTITLE =================== -->
@@ -1112,6 +1119,9 @@
         <div class="step-head" class:step-title-light={litFlags.subtitle.title}>
             <span class="step-num" class:step-num-light={litFlags.subtitle.num}>4</span>
             <h2>כותרת משנה / סלוגן</h2>
+            {#if activeStep === "subtitle" && !subtitle}
+                <span class="tutorial-finger" aria-hidden="true">👇</span>
+            {/if}
         </div>
         <p class="step-help">משפט אחד שמסביר מה אתה מציע ולמה זה שווה לתושבים. עד 70 תווים.</p>
 
@@ -1138,6 +1148,9 @@
         <div class="step-head" class:step-title-light={litFlags.hover.title}>
             <span class="step-num" class:step-num-light={litFlags.hover.num}>5</span>
             <h2>טקסט בריחוף — מה רואים כשהעכבר על הפרסומת</h2>
+            {#if activeStep === "hover" && !hoverText}
+                <span class="tutorial-finger" aria-hidden="true">👇</span>
+            {/if}
         </div>
         <p class="step-help">
             כשמשתמש בדסקטופ מצביע עם העכבר על הפרסומת — הטקסט הזה יופיע במקום התמונה.
@@ -1169,6 +1182,9 @@
         <div class="step-head" class:step-title-light={litFlags.gradient.title}>
             <span class="step-num" class:step-num-light={litFlags.gradient.num}>6</span>
             <h2>🎨 צבע ועיצוב הרצועה — הרקע הצבעוני של הפרסומת</h2>
+            {#if activeStep === "gradient"}
+                <span class="tutorial-finger" aria-hidden="true">👇</span>
+            {/if}
         </div>
         <p class="step-help">בחר את צבע הרצועה האלכסונית שמופיעה על התמונה. הצבע יחול גם על כפתור ה-CTA ועל דף הנחיתה. כוונן את גובה הרצועה כך שיתאים לכמות הטקסט שלך.</p>
 
@@ -1215,6 +1231,9 @@
         <div class="step-head" class:step-title-light={litFlags.preview.title}>
             <span class="step-num" class:step-num-light={litFlags.preview.num}>7</span>
             <h2>תצוגה מקדימה — איך זה יראה לגולשים?</h2>
+            {#if activeStep === "preview"}
+                <span class="tutorial-finger" aria-hidden="true">👇</span>
+            {/if}
         </div>
         <p class="step-help">החלף בין מצבי תצוגה. תוכל לחזור לשלבים הקודמים ולשנות בכל רגע.</p>
 
@@ -1507,6 +1526,9 @@
         <div class="step-head" class:step-title-light={litFlags["landing-link"].title}>
             <span class="step-num" class:step-num-light={litFlags["landing-link"].num}>8</span>
             <h2>דף נחיתה — לאן המשתמש יגיע?</h2>
+            {#if activeStep === "landing-link"}
+                <span class="tutorial-finger" aria-hidden="true">👇</span>
+            {/if}
         </div>
         <p class="step-help">בחר אופציה אחת או יותר — אם יש לך אתר, נשלח את הגולש אליו. אם לא — נשתמש בדף הנחיתה הפנימי שלנו.</p>
 
@@ -1605,6 +1627,9 @@
         <div class="step-head" class:step-title-light={litFlags.products.title}>
             <span class="step-num" class:step-num-light={litFlags.products.num}>9</span>
             <h2>תמונות מוצרים / שירותים + מחירים</h2>
+            {#if activeStep === "products"}
+                <span class="tutorial-finger" aria-hidden="true">👇</span>
+            {/if}
         </div>
         <p class="step-help">הוסף 3-6 מוצרים או שירותים. תמונה איכותית ומחיר ברור הם הדבר הכי משכנע.</p>
 
@@ -1654,6 +1679,9 @@
         <div class="step-head" class:step-title-light={litFlags.uniqueness.title}>
             <span class="step-num" class:step-num-light={litFlags.uniqueness.num}>10</span>
             <h2>מה מייחד אותך?</h2>
+            {#if activeStep === "uniqueness"}
+                <span class="tutorial-finger" aria-hidden="true">👇</span>
+            {/if}
         </div>
         <p class="step-help">
             🌟 <strong class="text-amber-300">זה החלק הכי חשוב!</strong>
@@ -1680,6 +1708,9 @@
         <div class="step-head" class:step-title-light={litFlags.address.title}>
             <span class="step-num" class:step-num-light={litFlags.address.num}>11</span>
             <h2>כתובת ושעות פעילות</h2>
+            {#if activeStep === "address"}
+                <span class="tutorial-finger" aria-hidden="true">👇</span>
+            {/if}
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1711,6 +1742,9 @@
         <div class="step-head" class:step-title-light={litFlags.submit.title}>
             <span class="step-num" class:step-num-light={litFlags.submit.num}>12</span>
             <h2>בדיקה אחרונה ושליחה</h2>
+            {#if activeStep === "submit"}
+                <span class="tutorial-finger" aria-hidden="true">👇</span>
+            {/if}
         </div>
 
         <ul class="checklist">
