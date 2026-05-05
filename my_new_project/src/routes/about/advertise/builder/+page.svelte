@@ -136,7 +136,6 @@
     let titleColor      = $state<string>("#ffffff");
     let subtitle        = $state<string>("");
     let hoverText       = $state<string>("");
-    let essenceText     = $state<string>("");                  // brief info about product/business
     let cta             = $state<string>("לפרטים נוספים");
     let gradient        = $state<string>("from-amber-500 to-orange-600");
     let diagHeight      = $state<number>(12);   // % of image — height of the diagonal color band (range 5..50)
@@ -157,13 +156,13 @@
 
     // ===== Tutorial state (lit-number + glowing title + finger pointer) =====
     type Step =
-        | "image" | "logo" | "title" | "subtitle" | "essence"
-        | "gradient" | "preview" | "hover" | "landing-link" | "products" | "uniqueness"
+        | "image" | "logo" | "title" | "subtitle" | "hover"
+        | "gradient" | "preview" | "landing-link" | "products" | "uniqueness"
         | "address" | "submit" | "done";
 
     const stepOrder: Step[] = [
-        "image", "logo", "title", "subtitle", "essence",
-        "gradient", "preview", "hover", "landing-link", "products", "uniqueness",
+        "image", "logo", "title", "subtitle", "hover",
+        "gradient", "preview", "landing-link", "products", "uniqueness",
         "address", "submit", "done"
     ];
 
@@ -176,10 +175,9 @@
         logo:         { num: false, title: false },
         title:        { num: false, title: false },
         subtitle:     { num: false, title: false },
-        essence:      { num: false, title: false },
+        hover:        { num: false, title: false },
         gradient:     { num: false, title: false },
         preview:      { num: false, title: false },
-        hover:        { num: false, title: false },
         "landing-link":{ num: false, title: false },
         products:     { num: false, title: false },
         uniqueness:   { num: false, title: false },
@@ -207,8 +205,8 @@
     });
 
     let stepRefs: Record<Step, HTMLElement | null> = $state({
-        image: null, logo: null, title: null, subtitle: null, essence: null,
-        gradient: null, preview: null, hover: null, "landing-link": null, products: null, uniqueness: null,
+        image: null, logo: null, title: null, subtitle: null, hover: null,
+        gradient: null, preview: null, "landing-link": null, products: null, uniqueness: null,
         address: null, submit: null, done: null,
     });
 
@@ -567,7 +565,6 @@
                 title           = d.title ?? "";
                 subtitle        = d.subtitle ?? "";
                 hoverText       = d.hoverText ?? "";
-                essenceText     = d.essenceText ?? "";
                 cta             = d.cta ?? "לפרטים נוספים";
                 gradient        = d.gradient ?? gradient;
                 diagHeight      = typeof d.diagHeight === 'number' ? d.diagHeight : 25;
@@ -605,7 +602,7 @@
     $effect(() => {
         if (!browser) return;
         const snapshot = {
-            logo, logoOriginal, hasCircleCrop, logoShape, logoPosition, mainImage, mainImageObjectX, mainImageObjectY, title, subtitle, hoverText, essenceText, cta, gradient, diagHeight,
+            logo, logoOriginal, hasCircleCrop, logoShape, logoPosition, mainImage, mainImageObjectX, mainImageObjectY, title, subtitle, hoverText, cta, gradient, diagHeight,
             landingHeadline, landingPitch, landingExtended, landingImage, landingAdvantages, uniqueness, phone, whatsapp, website,
             email, address, hours, products,
         };
@@ -1130,38 +1127,37 @@
         </div>
     </section>
 
-    <!-- =================== STEP 5: CALL TO ACTION =================== -->
-    <section bind:this={stepRefs.essence} class="step-card">
-        <div class="step-head" class:step-title-light={litFlags.essence.title}>
-            <span class="step-num" class:step-num-light={litFlags.essence.num}>5</span>
-            <h2>📣 קריאה לפעולה — מה תגרום לגולש ללחוץ?</h2>
-            {#if activeStep === "essence" && !essenceText && !suppressFinger}
+    <!-- =================== STEP 5: HOVER TEXT =================== -->
+    <section bind:this={stepRefs.hover} class="step-card">
+        <div class="step-head" class:step-title-light={litFlags.hover.title}>
+            <span class="step-num" class:step-num-light={litFlags.hover.num}>5</span>
+            <h2>טקסט בריחוף — מה רואים כשהעכבר על הפרסומת</h2>
+            {#if activeStep === "hover" && !hoverText && !suppressFinger}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
         </div>
         <p class="step-help">
-            <strong class="text-amber-300">משפט אחד קצר ופעיל</strong> שמזמין את הגולש ללחוץ —
-            לא פרטים טכניים ולא רשימת תכונות, אלא הזמנה לחוות / לגלות / להצטרף.
+            כשמשתמש בדסקטופ מצביע עם העכבר על הפרסומת — הטקסט הזה יופיע במקום התמונה.
             <br/>
-            <span class="text-gray-500">דוגמאות: "הקלק כדי להכיר את השמפו החדש!" · "גלה את הטעם של פיצה איטלקית אמיתית" · "קליק אחד והגנת טרמפיסטים בכף היד שלך"</span>
+            <strong class="text-amber-300">כתוב משפט קצר שמסקרן</strong> את הגולש —
+            אבל ברור מספיק כדי שיבין מיד באיזה מוצר או שירות מדובר.
         </p>
 
-        <textarea bind:value={essenceText} maxlength="120" rows="2"
-                  onfocus={() => activeStep === "essence" || (activeStep = "essence")}
-                  onblur={() => essenceText.trim() && commitField("essence")}
-                  placeholder="לדוגמה: הקלק כדי להכיר את השמפו החדש!"
+        <textarea bind:value={hoverText} maxlength="90" rows="2"
+                  onfocus={() => activeStep === "hover" || (activeStep = "hover")}
+                  onblur={() => hoverText.trim() && commitField("hover")}
+                  placeholder="לדוגמה: כלי עבודה לכל בית — להשאלה חינם 🛠️"
                   class="text-input"></textarea>
-
         <div class="flex items-center justify-between gap-2 text-xs text-gray-500 mt-2">
-            {#if essenceText}
-                <button type="button" onclick={() => commitField("essence")}
+            {#if hoverText}
+                <button type="button" onclick={() => commitField("hover")}
                     class="px-3 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 hover:text-amber-200 font-bold transition-colors">
                     שלב הבא ←
                 </button>
             {:else}
                 <span></span>
             {/if}
-            <span>{essenceText.length}/120</span>
+            <span>{hoverText.length}/90</span>
         </div>
     </section>
 
@@ -1316,9 +1312,6 @@
                                 <div class="hover-overlay" style:opacity={hoverPreview ? 1 : 0}>
                                     <h3 class="hover-title">{title || "כותרת"}</h3>
                                     <p class="hover-text">{hoverText || "כאן יופיע הטקסט בריחוף"}</p>
-                                    {#if essenceText}
-                                        <div class="hover-essence">{essenceText}</div>
-                                    {/if}
                                 </div>
                                 {#if logo}
                                     <img src={logo} alt="לוגו"
@@ -1383,9 +1376,6 @@
                             <div class="hover-overlay" style:opacity={hoverPreview ? 1 : 0}>
                                 <h3 class="hover-title">{title || "כותרת"}</h3>
                                 <p class="hover-text">{hoverText || "כאן יופיע הטקסט בריחוף"}</p>
-                                {#if essenceText}
-                                    <div class="hover-essence">{essenceText}</div>
-                                {/if}
                             </div>
 
                             {#if logo}
@@ -1515,59 +1505,10 @@
         </div>
     </section>
 
-    <!-- =================== STEP 7: HOVER TEXT =================== -->
-    <section bind:this={stepRefs.hover} class="step-card">
-        <div class="step-head" class:step-title-light={litFlags.hover.title}>
-            <span class="step-num" class:step-num-light={litFlags.hover.num}>8</span>
-            <h2>טקסט בריחוף — מה רואים כשהעכבר על הפרסומת</h2>
-            {#if activeStep === "hover" && !hoverText && !suppressFinger}
-                <span class="tutorial-finger" aria-hidden="true">👇</span>
-            {/if}
-        </div>
-        <p class="step-help">
-            כשמשתמש בדסקטופ מצביע עם העכבר על הפרסומת — הטקסט הזה יופיע במקום התמונה.
-            <br/>
-            <strong class="text-amber-300">כתוב משפט קצר שמסקרן</strong> את הגולש —
-            אבל ברור מספיק כדי שיבין מיד באיזה מוצר או שירות מדובר.
-        </p>
-
-        <textarea bind:value={hoverText} maxlength="90" rows="2"
-                  onfocus={() => activeStep === "hover" || (activeStep = "hover")}
-                  onblur={() => hoverText.trim() && commitField("hover")}
-                  placeholder="לדוגמה: כלי עבודה לכל בית — להשאלה חינם 🛠️"
-                  class="text-input"></textarea>
-        <div class="flex items-center justify-between gap-2 text-xs text-gray-500 mt-2">
-            {#if hoverText}
-                <button type="button" onclick={() => commitField("hover")}
-                    class="px-3 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 hover:text-amber-200 font-bold transition-colors">
-                    שלב הבא ←
-                </button>
-            {:else}
-                <span></span>
-            {/if}
-            <span>{hoverText.length}/90</span>
-        </div>
-
-        <!-- Color palette -->
-        <div class="mt-6">
-            <p class="text-sm font-bold text-gray-300 mb-2">צבע הפרסומת:</p>
-            <div class="flex flex-wrap gap-2">
-                {#each palettes as p}
-                    <button type="button" onclick={() => (gradient = p.cls)}
-                        class="px-3 py-2 rounded-xl text-xs font-bold text-white transition-all
-                               bg-gradient-to-r {p.cls}
-                               {gradient === p.cls ? 'ring-2 ring-white scale-105' : 'opacity-70 hover:opacity-100'}">
-                        {p.label}
-                    </button>
-                {/each}
-            </div>
-        </div>
-    </section>
-
     <!-- =================== STEP 8: LANDING LINK / CONTACT =================== -->
     <section bind:this={stepRefs["landing-link"]} class="step-card">
         <div class="step-head" class:step-title-light={litFlags["landing-link"].title}>
-            <span class="step-num" class:step-num-light={litFlags["landing-link"].num}>9</span>
+            <span class="step-num" class:step-num-light={litFlags["landing-link"].num}>8</span>
             <h2>דף נחיתה — לאן המשתמש יגיע?</h2>
             {#if activeStep === "landing-link" && !suppressFinger}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
@@ -1668,7 +1609,7 @@
     <!-- =================== STEP 9: PRODUCTS =================== -->
     <section bind:this={stepRefs.products} class="step-card">
         <div class="step-head" class:step-title-light={litFlags.products.title}>
-            <span class="step-num" class:step-num-light={litFlags.products.num}>10</span>
+            <span class="step-num" class:step-num-light={litFlags.products.num}>9</span>
             <h2>תמונות מוצרים / שירותים + מחירים</h2>
             {#if activeStep === "products" && !suppressFinger}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
@@ -1720,7 +1661,7 @@
     <!-- =================== STEP 10: UNIQUENESS =================== -->
     <section bind:this={stepRefs.uniqueness} class="step-card">
         <div class="step-head" class:step-title-light={litFlags.uniqueness.title}>
-            <span class="step-num" class:step-num-light={litFlags.uniqueness.num}>11</span>
+            <span class="step-num" class:step-num-light={litFlags.uniqueness.num}>10</span>
             <h2>מה מייחד אותך?</h2>
             {#if activeStep === "uniqueness" && !suppressFinger}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
@@ -1749,7 +1690,7 @@
     <!-- =================== STEP 11: ADDRESS =================== -->
     <section bind:this={stepRefs.address} class="step-card">
         <div class="step-head" class:step-title-light={litFlags.address.title}>
-            <span class="step-num" class:step-num-light={litFlags.address.num}>12</span>
+            <span class="step-num" class:step-num-light={litFlags.address.num}>11</span>
             <h2>כתובת ושעות פעילות</h2>
             {#if activeStep === "address" && !suppressFinger}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
@@ -1783,7 +1724,7 @@
     <!-- =================== STEP 12: SUBMIT =================== -->
     <section bind:this={stepRefs.submit} class="step-card">
         <div class="step-head" class:step-title-light={litFlags.submit.title}>
-            <span class="step-num" class:step-num-light={litFlags.submit.num}>13</span>
+            <span class="step-num" class:step-num-light={litFlags.submit.num}>12</span>
             <h2>בדיקה אחרונה ושליחה</h2>
             {#if activeStep === "submit" && !suppressFinger}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
@@ -2518,7 +2459,6 @@
     :global(.site-shot-overlay .ad-logo-left)  { left: 2px; }
     :global(.site-shot-overlay .hover-title) { font-size: 0.5rem; margin-bottom: 0.15rem; }
     :global(.site-shot-overlay .hover-text)  { font-size: 0.38rem; line-height: 1.2; }
-    :global(.site-shot-overlay .hover-essence) { font-size: 0.32rem; padding-top: 0.15rem; margin-top: 0.15rem; }
     :global(.site-shot-overlay .hover-overlay) { padding: 0.25rem; }
 
     :global(.site-shot-pointer) {
@@ -2729,12 +2669,6 @@
     }
     :global(.hover-title) { color: white; font-weight: 700; font-size: 0.95rem; margin: 0 0 0.4rem; }
     :global(.hover-text)  { color: rgb(229,231,235); font-size: 0.7rem; line-height: 1.4; margin: 0 0 0.4rem; font-weight: 700; }
-    :global(.hover-essence) {
-        color: rgba(255,255,255,0.85); font-size: 0.62rem; line-height: 1.45;
-        margin-top: 0.4rem; padding-top: 0.4rem;
-        border-top: 1px solid rgba(255,255,255,0.18);
-        white-space: pre-line;
-    }
     :global(.ad-cta) { padding: 0.65rem; text-align: center; }
     :global(.ad-cta p) { color: white; font-weight: 700; font-size: 0.72rem; line-height: 1.3; margin: 0; }
 
