@@ -883,6 +883,7 @@
 
             <!-- Title color picker — inline to the left of the heading -->
             <div class="title-color-rail" aria-label="צבע הכותרת">
+                <span class="title-color-label">בחר צבע כותרת</span>
                 {#each [
                     { c: "#ffffff", label: "לבן" },
                     { c: "#fbbf24", label: "זהב" },
@@ -1037,9 +1038,12 @@
                                 {/if}
                                 <!-- Diagonal color band -->
                                 <div class="pro-diag bg-gradient-to-br {gradient}"></div>
-                                <!-- Title sits on the diagonal -->
-                                <div class="pro-title-wrap mobile">
+                                <!-- Title centered at the top -->
+                                <div class="pro-title-top mobile">
                                     <h3 class="pro-title" style:color={titleColor}>{title || "כותרת ראשית"}</h3>
+                                </div>
+                                <!-- Subtitle stays on the diagonal at the bottom -->
+                                <div class="pro-title-wrap mobile">
                                     <p class="pro-sub">{subtitle || "כותרת משנה / סלוגן"}</p>
                                 </div>
                                 {#if logo}
@@ -1096,8 +1100,10 @@
                             <div class="pro-diag bg-gradient-to-br {gradient}"
                                  style:opacity={hoverPreview ? 0 : 1}></div>
 
-                            <div class="pro-title-wrap" style:opacity={hoverPreview ? 0 : 1}>
+                            <div class="pro-title-top" style:opacity={hoverPreview ? 0 : 1}>
                                 <h3 class="pro-title" style:color={titleColor}>{title || "כותרת ראשית"}</h3>
+                            </div>
+                            <div class="pro-title-wrap" style:opacity={hoverPreview ? 0 : 1}>
                                 <p class="pro-sub">{subtitle || "סלוגן / כותרת משנה"}</p>
                             </div>
 
@@ -1866,13 +1872,16 @@
     }
     /* Overlay positioned on the FIRST right ad slot. Width drives the overlay; the height
        is derived naturally from the children (image-wrap with the real RightAdBanner
-       aspect-ratio + the small CTA below it). This preserves authentic ad proportions —
-       width and height stay locked together, never independently sized. */
+       aspect-ratio + the small CTA below it). The slot in the screenshot is taller and
+       narrower than 144:450, so we use explicit width + height (rather than rely on the
+       natural ad aspect) so the demo matches the slot's shape. The image inside scales
+       with object-fit:cover. */
     :global(.site-shot-overlay.desktop-ad) {
         position: absolute;
-        top: 20%;
+        top: 13%;
         right: 3.5%;
-        width: 9.7%;
+        width: 6.5%;
+        height: 68%;
         z-index: 5;
         cursor: pointer;
         border-radius: 4px;
@@ -1892,6 +1901,8 @@
     :global(.site-shot-overlay .pro-title) { font-size: 0.72rem; line-height: 1.05; margin-bottom: 0.12rem; }
     :global(.site-shot-overlay .pro-sub)   { font-size: 0.55rem; line-height: 1.15; }
     :global(.site-shot-overlay .pro-title-wrap) { padding: 0.32rem 0.4rem 0.28rem; }
+    :global(.site-shot-overlay .pro-title-top) { padding: 0.3rem 0.4rem 0.55rem; }
+    :global(.site-shot-overlay .pro-title-top .pro-title) { font-size: 0.72rem; line-height: 1.05; }
     :global(.site-shot-overlay .ad-logo) {
         width: 14px !important; height: 14px !important; padding: 1px;
         top: 2px;
@@ -2304,6 +2315,12 @@
         display: inline-flex; align-items: center; gap: 0.3rem;
         flex-wrap: wrap; justify-content: flex-end;
     }
+    .title-color-label {
+        font-size: 0.78rem;
+        color: rgba(203, 213, 225, 0.85);
+        margin-inline-end: 0.35rem;
+        white-space: nowrap;
+    }
     .title-color-dot {
         width: 1.25rem; height: 1.25rem; border-radius: 9999px;
         border: 1.5px solid rgba(255,255,255,0.25);
@@ -2338,6 +2355,19 @@
     :global(.pro-title-wrap.mobile) {
         padding: 0.65rem 0.85rem 0.55rem;
     }
+    /* Title — centered at the TOP of the ad, on a soft dark fade for readability */
+    :global(.pro-title-top) {
+        position: absolute; left: 0; right: 0; top: 0;
+        padding: 0.55rem 0.7rem 0.85rem;
+        z-index: 4;
+        text-align: center;
+        background: linear-gradient(180deg, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.45) 55%, rgba(0,0,0,0) 100%);
+        transition: opacity 1500ms ease;
+        pointer-events: none;
+    }
+    :global(.pro-title-top.mobile) {
+        padding: 0.7rem 0.9rem 1.15rem;
+    }
     :global(.pro-title) {
         color: white; font-weight: 900;
         font-size: 1.15rem; line-height: 1.15;
@@ -2345,8 +2375,17 @@
         text-shadow: 0 2px 8px rgba(0,0,0,0.7), 0 1px 2px rgba(0,0,0,0.9);
         letter-spacing: -0.02em;
     }
+    :global(.pro-title-top .pro-title) {
+        margin: 0;
+        text-align: center;
+        letter-spacing: 0.005em;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.85), 0 1px 2px rgba(0,0,0,0.95);
+    }
     :global(.pro-title-wrap.mobile .pro-title) {
         font-size: 1.4rem;
+    }
+    :global(.pro-title-top.mobile .pro-title) {
+        font-size: 1.55rem;
     }
     :global(.pro-sub) {
         color: rgba(255,255,255,0.95); font-weight: 600;
