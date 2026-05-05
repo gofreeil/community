@@ -1083,9 +1083,6 @@
                                      class="ad-logo {logoShape === 'circle' ? 'ad-logo-circle' : ''} {logoPosition === 'left' ? 'ad-logo-left' : 'ad-logo-right'}" />
                             {/if}
                         </div>
-                        <div class="ad-cta bg-gradient-to-r {gradient}">
-                            <p>{cta}</p>
-                        </div>
                     </div>
                     </div><!-- /.site-shot-inner -->
 
@@ -1861,11 +1858,9 @@
         aspect-ratio: 144 / 450;   /* matches real RightAdBanner image slot */
         height: auto;
     }
-    :global(.site-shot-overlay .ad-cta) { padding: 0.25rem; }
-    :global(.site-shot-overlay .ad-cta p) { font-size: 0.45rem; line-height: 1.1; }
-    :global(.site-shot-overlay .pro-title) { font-size: 0.5rem; line-height: 1.05; margin-bottom: 0.1rem; }
-    :global(.site-shot-overlay .pro-sub)   { font-size: 0.38rem; line-height: 1.15; }
-    :global(.site-shot-overlay .pro-title-wrap) { padding: 0.3rem 0.35rem 0.2rem; }
+    :global(.site-shot-overlay .pro-title) { font-size: 0.72rem; line-height: 1.05; margin-bottom: 0.12rem; }
+    :global(.site-shot-overlay .pro-sub)   { font-size: 0.55rem; line-height: 1.15; }
+    :global(.site-shot-overlay .pro-title-wrap) { padding: 0.32rem 0.4rem 0.28rem; }
     :global(.site-shot-overlay .ad-logo) {
         width: 14px !important; height: 14px !important; padding: 1px;
         top: 2px;
@@ -2250,7 +2245,7 @@
     /* Diagonal color band — covers the bottom portion of the image at an angle */
     :global(.pro-diag) {
         position: absolute; inset: 0;
-        clip-path: polygon(0 75%, 100% 55%, 100% 100%, 0 100%);
+        clip-path: polygon(0 88%, 100% 78%, 100% 100%, 0 100%);
         opacity: 0.96;
         transition: opacity 1500ms ease;
         pointer-events: none;
@@ -2267,7 +2262,7 @@
         content: "";
         position: absolute; inset: 0;
         background: linear-gradient(to bottom right, transparent 49.5%, rgba(255,255,255,0.6) 49.7%, rgba(255,255,255,0.6) 50%, transparent 50.2%);
-        clip-path: polygon(0 73%, 100% 53%, 100% 58%, 0 78%);
+        clip-path: polygon(0 86%, 100% 76%, 100% 80%, 0 90%);
         pointer-events: none; z-index: 3;
         opacity: 0.5;
     }
@@ -2284,21 +2279,21 @@
     }
     :global(.pro-title) {
         color: white; font-weight: 900;
-        font-size: 0.95rem; line-height: 1.15;
+        font-size: 1.15rem; line-height: 1.15;
         margin: 0 0 0.2rem;
         text-shadow: 0 2px 8px rgba(0,0,0,0.7), 0 1px 2px rgba(0,0,0,0.9);
         letter-spacing: -0.02em;
     }
     :global(.pro-title-wrap.mobile .pro-title) {
-        font-size: 1.15rem;
+        font-size: 1.4rem;
     }
     :global(.pro-sub) {
         color: rgba(255,255,255,0.95); font-weight: 600;
-        font-size: 0.7rem; line-height: 1.3; margin: 0;
+        font-size: 0.88rem; line-height: 1.3; margin: 0;
         text-shadow: 0 1px 4px rgba(0,0,0,0.6);
     }
     :global(.pro-title-wrap.mobile .pro-sub) {
-        font-size: 0.82rem;
+        font-size: 1rem;
     }
 
     /* ============== LANDING MOCK ============== */
