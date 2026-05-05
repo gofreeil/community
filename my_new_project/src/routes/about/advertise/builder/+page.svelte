@@ -1105,6 +1105,7 @@
                             </div>
                             <div class="pro-title-wrap" style:opacity={hoverPreview ? 0 : 1}>
                                 <p class="pro-sub">{subtitle || "סלוגן / כותרת משנה"}</p>
+                                <span class="pro-demo-cta">הקלק לפרטים והזמנות</span>
                             </div>
 
                             <div class="hover-overlay" style:opacity={hoverPreview ? 1 : 0}>
@@ -1898,11 +1899,26 @@
         aspect-ratio: 144 / 450;   /* matches real RightAdBanner image slot */
         height: auto;
     }
-    :global(.site-shot-overlay .pro-title) { font-size: 0.72rem; line-height: 1.05; margin-bottom: 0.12rem; }
-    :global(.site-shot-overlay .pro-sub)   { font-size: 0.55rem; line-height: 1.15; }
-    :global(.site-shot-overlay .pro-title-wrap) { padding: 0.32rem 0.4rem 0.28rem; }
-    :global(.site-shot-overlay .pro-title-top) { padding: 0.3rem 0.4rem 0.55rem; }
-    :global(.site-shot-overlay .pro-title-top .pro-title) { font-size: 0.72rem; line-height: 1.05; }
+    :global(.site-shot-overlay .pro-title) { font-size: 0.88rem; line-height: 1.05; margin-bottom: 0.15rem; }
+    :global(.site-shot-overlay .pro-sub)   { font-size: 0.7rem; line-height: 1.15; }
+    :global(.site-shot-overlay .pro-title-wrap) { padding: 0.35rem 0.4rem 0.32rem; }
+    :global(.site-shot-overlay .pro-title-top) { padding: 0.32rem 0.4rem 0.6rem; }
+    :global(.site-shot-overlay .pro-title-top .pro-title) { font-size: 0.88rem; line-height: 1.05; }
+    :global(.site-shot-overlay .pro-demo-cta) {
+        display: block;
+        margin-top: 0.3rem;
+        padding: 0.18rem 0.2rem;
+        background: linear-gradient(90deg, rgba(245,158,11,0.95), rgba(217,119,6,0.95));
+        color: #0b0f1c;
+        font-weight: 900;
+        font-size: 0.5rem;
+        line-height: 1.1;
+        border-radius: 0.3rem;
+        text-align: center;
+        white-space: normal;
+        word-break: keep-all;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.35);
+    }
     :global(.site-shot-overlay .ad-logo) {
         width: 14px !important; height: 14px !important; padding: 1px;
         top: 2px;
