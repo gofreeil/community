@@ -1835,7 +1835,7 @@
         position: absolute;
         top: 27%;
         right: 6%;
-        width: 5%;
+        width: 9%;
         z-index: 5;
         cursor: pointer;
         border-radius: 4px;
@@ -1870,16 +1870,17 @@
 
     :global(.site-shot-pointer) {
         position: absolute;
-        top: 30%;
-        right: 9%;
+        top: 50%;
+        right: 50%;
+        transform: translate(50%, -50%);
         z-index: 6;
         background: linear-gradient(90deg, rgba(245,158,11,0.95), rgba(217,119,6,0.95));
         color: #000;
-        font-size: 0.7rem; font-weight: 900;
-        padding: 0.35rem 0.7rem;
-        border-radius: 0.4rem;
+        font-size: 1.05rem; font-weight: 900;
+        padding: 0.65rem 1.1rem;
+        border-radius: 0.65rem;
         white-space: nowrap;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.5);
         animation: pointerNudge 1.4s ease-in-out infinite;
     }
 
@@ -1974,8 +1975,8 @@
         animation: pointerNudge 1.4s ease-in-out infinite;
     }
     @keyframes pointerNudge {
-        0%, 100% { transform: translateX(0); }
-        50%      { transform: translateX(4px); }
+        0%, 100% { transform: translate(50%, -50%) scale(1); }
+        50%      { transform: translate(50%, -50%) scale(1.06); }
     }
 
     /* Main content column */
