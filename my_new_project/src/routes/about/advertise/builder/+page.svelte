@@ -139,6 +139,7 @@
     let essenceText     = $state<string>("");                  // brief info about product/business
     let cta             = $state<string>("לפרטים נוספים");
     let gradient        = $state<string>("from-amber-500 to-orange-600");
+    let diagHeight      = $state<number>(12);   // % of image — height of the diagonal color band (range 5..50)
     let landingHeadline = $state<string>("");
     let landingPitch    = $state<string>("");
     let landingExtended = $state<string>("");
@@ -157,12 +158,12 @@
     // ===== Tutorial state (lit-number + glowing title + finger pointer) =====
     type Step =
         | "image" | "logo" | "title" | "subtitle" | "essence"
-        | "preview" | "hover" | "landing-link" | "products" | "uniqueness"
+        | "gradient" | "preview" | "hover" | "landing-link" | "products" | "uniqueness"
         | "address" | "submit" | "done";
 
     const stepOrder: Step[] = [
         "image", "logo", "title", "subtitle", "essence",
-        "preview", "hover", "landing-link", "products", "uniqueness",
+        "gradient", "preview", "hover", "landing-link", "products", "uniqueness",
         "address", "submit", "done"
     ];
 
@@ -175,6 +176,7 @@
         title:        { num: false, title: false },
         subtitle:     { num: false, title: false },
         essence:      { num: false, title: false },
+        gradient:     { num: false, title: false },
         preview:      { num: false, title: false },
         hover:        { num: false, title: false },
         "landing-link":{ num: false, title: false },
@@ -205,8 +207,39 @@
 
     let stepRefs: Record<Step, HTMLElement | null> = $state({
         image: null, logo: null, title: null, subtitle: null, essence: null,
-        preview: null, hover: null, "landing-link": null, products: null, uniqueness: null,
+        gradient: null, preview: null, hover: null, "landing-link": null, products: null, uniqueness: null,
         address: null, submit: null, done: null,
+    });
+
+    // Demo positioning — the demo "jumps" to align with the active step's vertical position
+    let demoTop = $state(0);
+    function updateDemoPosition() {
+        if (!browser) return;
+        const stepEl = stepRefs[activeStep];
+        if (!stepEl) return;
+        const colsEl = stepEl.closest('.builder-cols') as HTMLElement | null;
+        if (!colsEl) return;
+        const stepRect = stepEl.getBoundingClientRect();
+        const colsRect = colsEl.getBoundingClientRect();
+        demoTop = stepRect.top - colsRect.top;
+    }
+    $effect(() => {
+        // Track activeStep + window resize
+        const _step = activeStep;
+        if (!browser) return;
+        requestAnimationFrame(updateDemoPosition);
+        const onResize = () => requestAnimationFrame(updateDemoPosition);
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    });
+
+    // Apply diagHeight as CSS variables on root → all .pro-diag clip-paths update reactively
+    $effect(() => {
+        if (!browser) return;
+        const topLeft = Math.max(0, Math.min(100, 100 - diagHeight));
+        const topRight = Math.max(0, topLeft - 10);  // 10pp slope
+        document.documentElement.style.setProperty('--diag-top-left', `${topLeft}%`);
+        document.documentElement.style.setProperty('--diag-top-right', `${topRight}%`);
     });
 
     function slowScrollTo(el: HTMLElement | null, duration = 1400) {
@@ -513,6 +546,7 @@
                 essenceText     = d.essenceText ?? "";
                 cta             = d.cta ?? "לפרטים נוספים";
                 gradient        = d.gradient ?? gradient;
+                diagHeight      = typeof d.diagHeight === 'number' ? d.diagHeight : 25;
                 landingHeadline = d.landingHeadline ?? "";
                 landingPitch    = d.landingPitch ?? "";
                 landingExtended = d.landingExtended ?? "";
@@ -547,7 +581,7 @@
     $effect(() => {
         if (!browser) return;
         const snapshot = {
-            logo, logoOriginal, hasCircleCrop, logoShape, logoPosition, mainImage, mainImageObjectX, mainImageObjectY, title, subtitle, hoverText, essenceText, cta, gradient,
+            logo, logoOriginal, hasCircleCrop, logoShape, logoPosition, mainImage, mainImageObjectX, mainImageObjectY, title, subtitle, hoverText, essenceText, cta, gradient, diagHeight,
             landingHeadline, landingPitch, landingExtended, landingImage, landingAdvantages, uniqueness, phone, whatsapp, website,
             email, address, hours, products,
         };
@@ -1742,8 +1776,8 @@
 
     </div><!-- /.builder-steps -->
 
-    <!-- ========== LIVE DEMO SIDEBAR — sticky on the LEFT (RTL flex-end) ========== -->
-    <aside class="builder-demo" aria-label="תצוגה חיה של הפרסומת">
+    <!-- ========== LIVE DEMO SIDEBAR — jumps to align with the active step ========== -->
+    <aside class="builder-demo" aria-label="תצוגה חיה של הפרסומת" style:top="{demoTop}px">
         <div class="live-demo-card">
             <p class="live-demo-label">📍 הדמו שלך — מתעדכן בזמן אמת</p>
             <div class="live-demo-frame pro-ad" dir="rtl">
@@ -1926,14 +1960,14 @@
         position: relative;
     }
     /* Dashed "demo placeholder" frame on the visual LEFT of every step card.
-       The sticky live-demo on the page's left visually overlaps the topmost one,
-       making it feel as though the demo "jumped" to the active step. */
+       The absolutely-positioned live-demo lands inside the active step's frame
+       (and animates between frames), making it feel as though the demo "jumped". */
     :global(.builder-steps .step-card)::before {
         content: '';
         position: absolute;
         top: 0.5rem;
         bottom: 0.5rem;
-        left: -158px;
+        left: -156px;
         width: 140px;
         border: 2px dashed rgba(251,191,36,0.22);
         border-radius: 0.85rem;
@@ -2140,28 +2174,29 @@
         border: none;
     }
 
-    /* ============== TWO-COLUMN BUILDER LAYOUT — steps + sticky live demo ============== */
+    /* ============== TWO-COLUMN BUILDER LAYOUT — steps + jumping live demo ============== */
+    /* The demo is absolutely positioned — its top is computed dynamically to align with
+       the active step. As activeStep changes, the demo "jumps" smoothly via CSS transition
+       and stays parked at that step (no sticky scrolling that competes with the page header). */
     :global(.builder-cols) {
-        display: flex;
-        flex-direction: row;
-        gap: 1rem;
-        align-items: flex-start;
+        position: relative;
+        padding-left: 156px;       /* reserve 140px demo + 16px gap on the visual LEFT */
     }
-    :global(.builder-steps) { flex: 1 1 auto; min-width: 0; }
+    :global(.builder-steps) { width: 100%; }
     :global(.builder-demo) {
-        flex: 0 0 140px;
-        position: sticky;
-        top: 5rem;
-        align-self: flex-start;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 140px;
+        transition: top 700ms cubic-bezier(0.4, 0, 0.2, 1);
     }
     @media (max-width: 768px) {
-        :global(.builder-cols) { flex-direction: column; }
+        :global(.builder-cols) { padding-left: 0; }
         :global(.builder-demo) {
             position: static;
-            flex: 0 0 auto;
             width: 100%;
             max-width: 240px;
-            margin: 0 auto;
+            margin: 0 auto 1rem;
         }
     }
 
@@ -2798,9 +2833,15 @@
     /* Diagonal color band — covers the bottom portion of the image at an angle */
     :global(.pro-diag) {
         position: absolute; inset: 0;
-        clip-path: polygon(0 88%, 100% 78%, 100% 100%, 0 100%);
+        /* clip-path uses CSS variables so the user can adjust the band height in step 6.
+           top-left and top-right are y% from the top — smaller numbers = taller band. */
+        clip-path: polygon(
+            0 var(--diag-top-left, 88%),
+            100% var(--diag-top-right, 78%),
+            100% 100%, 0 100%
+        );
         opacity: 0.96;
-        transition: opacity 1500ms ease;
+        transition: opacity 1500ms ease, clip-path 280ms ease;
         pointer-events: none;
     }
     /* Subtle white-shine streak across the diagonal */
