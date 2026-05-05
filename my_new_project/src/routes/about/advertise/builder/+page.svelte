@@ -880,30 +880,9 @@
             {#if activeStep === "title" && !title}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
-        </div>
-        <p class="step-help">שם העסק או המוצר — קצר וברור. עד 35 תווים.</p>
 
-        <input type="text" bind:value={title} maxlength="35"
-               onfocus={() => activeStep === "title" || (activeStep = "title")}
-               onblur={() => title.trim() && commitField("title")}
-               placeholder="לדוגמה: גמ״ח כלי עבודה — קרית משה"
-               class="text-input" />
-        <div class="flex items-center justify-between gap-2 text-xs text-gray-500 mt-2">
-            {#if title}
-                <button type="button" onclick={() => commitField("title")}
-                    class="px-3 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 hover:text-amber-200 font-bold transition-colors">
-                    שלב הבא ←
-                </button>
-            {:else}
-                <span></span>
-            {/if}
-            <span>{title.length}/35</span>
-        </div>
-
-        <!-- Title color picker -->
-        <div class="mt-4">
-            <p class="text-sm font-bold text-gray-300 mb-2">צבע הכותרת:</p>
-            <div class="flex flex-wrap items-center gap-2">
+            <!-- Title color picker — inline to the left of the heading -->
+            <div class="title-color-rail" aria-label="צבע הכותרת">
                 {#each [
                     { c: "#ffffff", label: "לבן" },
                     { c: "#fbbf24", label: "זהב" },
@@ -931,6 +910,24 @@
                     <span>🎨</span>
                 </label>
             </div>
+        </div>
+        <p class="step-help">שם העסק או המוצר — קצר וברור. עד 35 תווים.</p>
+
+        <input type="text" bind:value={title} maxlength="35"
+               onfocus={() => activeStep === "title" || (activeStep = "title")}
+               onblur={() => title.trim() && commitField("title")}
+               placeholder="לדוגמה: גמ״ח כלי עבודה — קרית משה"
+               class="text-input" />
+        <div class="flex items-center justify-between gap-2 text-xs text-gray-500 mt-2">
+            {#if title}
+                <button type="button" onclick={() => commitField("title")}
+                    class="px-3 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 hover:text-amber-200 font-bold transition-colors">
+                    שלב הבא ←
+                </button>
+            {:else}
+                <span></span>
+            {/if}
+            <span>{title.length}/35</span>
         </div>
     </section>
 
@@ -2301,25 +2298,30 @@
         opacity: 0.5;
     }
 
-    /* Title color picker dots */
+    /* Title color picker — sits inline on the left side of the step heading */
+    .title-color-rail {
+        margin-inline-start: auto;
+        display: inline-flex; align-items: center; gap: 0.3rem;
+        flex-wrap: wrap; justify-content: flex-end;
+    }
     .title-color-dot {
-        width: 1.85rem; height: 1.85rem; border-radius: 9999px;
-        border: 2px solid rgba(255,255,255,0.25);
+        width: 1.25rem; height: 1.25rem; border-radius: 9999px;
+        border: 1.5px solid rgba(255,255,255,0.25);
         cursor: pointer; transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
         padding: 0;
     }
-    .title-color-dot:hover { transform: scale(1.08); border-color: rgba(255,255,255,0.55); }
+    .title-color-dot:hover { transform: scale(1.12); border-color: rgba(255,255,255,0.6); }
     .title-color-dot.selected {
         border-color: #fbbf24;
-        box-shadow: 0 0 0 2px rgba(251,191,36,0.35);
-        transform: scale(1.12);
+        box-shadow: 0 0 0 1.5px rgba(251,191,36,0.45);
+        transform: scale(1.15);
     }
     .title-color-custom {
         position: relative; display: inline-flex; align-items: center; justify-content: center;
-        width: 1.85rem; height: 1.85rem; border-radius: 9999px;
+        width: 1.25rem; height: 1.25rem; border-radius: 9999px;
         background: linear-gradient(135deg, #f87171, #fbbf24, #34d399, #60a5fa, #c4b5fd);
-        border: 2px solid rgba(255,255,255,0.35);
-        cursor: pointer; font-size: 0.85rem;
+        border: 1.5px solid rgba(255,255,255,0.35);
+        cursor: pointer; font-size: 0.65rem;
     }
     .title-color-custom input[type="color"] {
         position: absolute; inset: 0; width: 100%; height: 100%;
