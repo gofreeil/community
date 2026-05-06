@@ -1457,7 +1457,7 @@
             <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("preview"))}>
                 ↻ שלב קודם
             </button>
-            <button type="button" class="step-nav-btn" onclick={() => advance("hover")}>
+            <button type="button" class="step-nav-btn" onclick={() => advance("landing-link")}>
                 שלב הבא →
             </button>
         </div>
