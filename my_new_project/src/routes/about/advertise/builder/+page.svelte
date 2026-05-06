@@ -2540,6 +2540,11 @@
         flex: 1 1 auto;
         min-width: 0;
     }
+    /* Mobile preview also fills the row — its inner align-items:center centers the phone horizontally */
+    :global(.preview-frame.mobile) {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
     /* Horizontal color picker — wide strip, two short rows */
     :global(.color-rail) {
         display: grid;
