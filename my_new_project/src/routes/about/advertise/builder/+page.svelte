@@ -1310,8 +1310,15 @@
                     <div class="phone-notch"></div>
                     <div class="phone-content">
                         <div class="mobile-popup">
-                            <!-- Title above the image (mobile has no positioning customization, unlike desktop) -->
-                            <h3 class="popup-title-above" style:color={titleColor}>{title || "כותרת ראשית"}</h3>
+                            <!-- Mobile: logo + title row sits ABOVE the image, regardless of logoPosition.
+                                 Image area below is reserved entirely for the photo + diagonal band + subtitle. -->
+                            <div class="popup-title-row">
+                                {#if logo}
+                                    <img src={logo} alt="לוגו"
+                                         class="popup-logo-above {logoShape === 'circle' ? 'popup-logo-above-circle' : ''}" />
+                                {/if}
+                                <h3 class="popup-title-above" style:color={titleColor}>{title || "כותרת ראשית"}</h3>
+                            </div>
                             <div class="popup-img pro-img-wrap">
                                 {#if mainImage}
                                     <img src={mainImage} alt={title} />
@@ -1324,10 +1331,6 @@
                                 <div class="pro-title-wrap mobile">
                                     <p class="pro-sub">{subtitle || "כותרת משנה / סלוגן"}</p>
                                 </div>
-                                {#if logo}
-                                    <img src={logo} alt="לוגו"
-                                         class="popup-logo {logoShape === 'circle' ? 'popup-logo-circle' : ''} {logoPosition === 'left' ? 'popup-logo-left' : logoPosition === 'cta' ? 'popup-logo-cta' : 'popup-logo-right'}" />
-                                {/if}
                                 <div class="close-countdown">5</div>
                             </div>
                             <div class="popup-body">
@@ -1851,6 +1854,32 @@
         background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
         border-bottom: 2px solid rgba(255,255,255,0.08);
     }
+    /* Mobile only: logo + title in a row above the image. The row itself owns the dark
+       gradient bg + bottom border so the title h3 inside is reset to transparent. */
+    :global(.popup-title-row) {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.85rem 0.9rem;
+        background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+        border-bottom: 2px solid rgba(255,255,255,0.08);
+    }
+    :global(.popup-title-row .popup-title-above) {
+        flex: 1;
+        background: transparent;
+        border-bottom: none;
+        padding: 0;
+    }
+    :global(.popup-logo-above) {
+        width: 44px; height: 44px;
+        border-radius: 8px;
+        background: white;
+        padding: 4px;
+        object-fit: contain;
+        flex-shrink: 0;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+    }
+    :global(.popup-logo-above-circle) { border-radius: 50%; }
     :global(.popup-img) { position: relative; height: 130px; }
     :global(.popup-img > img:not(.popup-logo)) { width: 100%; height: 100%; object-fit: cover; }
     :global(.popup-img-fade) {
@@ -2615,13 +2644,28 @@
 
     :global(.pro-title-wrap) {
         position: absolute; left: 0; right: 0; bottom: 0;
-        padding: 0.55rem 0.7rem 0.45rem;
+        padding: 0.55rem 0.7rem 1.1rem;
         z-index: 4;
         text-align: right;
         transition: opacity 1500ms ease;
     }
     :global(.pro-title-wrap.mobile) {
-        padding: 0.65rem 0.85rem 0.55rem;
+        padding: 0.65rem 0.85rem 1.25rem;
+    }
+    /* Decorative diagonal-following first-line: float on the visual-left with a triangular
+       shape-outside, so the FIRST line wraps shorter (matching the diagonal band's tip),
+       and subsequent lines flow at full width. Invisible — pure layout. */
+    :global(.pro-sub::before) {
+        content: '';
+        float: left;
+        width: 28%;
+        height: 1.35em;
+        shape-outside: polygon(0 0, 100% 0, 0 100%);
+        -webkit-shape-outside: polygon(0 0, 100% 0, 0 100%);
+    }
+    :global(.pro-title-wrap.mobile .pro-sub::before) {
+        width: 32%;
+        height: 1.4em;
     }
     /* Title — centered at the TOP of the ad, on a soft dark fade for readability */
     :global(.pro-title-top) {
