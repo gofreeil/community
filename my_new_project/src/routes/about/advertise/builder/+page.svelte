@@ -666,6 +666,26 @@
         location.reload();
     }
 
+    // ===== Step 7 → Landing page transition =====
+    // After the user finishes step 7 (preview), we move them to a separate page
+    // dedicated to designing the landing page, AND drop a message into their
+    // personal area so they can return any time via the messages tab.
+    let movingToLanding = $state(false);
+    async function goToLandingEditor() {
+        if (movingToLanding) return;
+        movingToLanding = true;
+        // Fire-and-forget: notify the personal area. We don't block navigation
+        // on success — even if the message fails to deliver, the user proceeds.
+        try {
+            await fetch("/api/ads/landing-ready", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: "{}",
+            });
+        } catch { /* network — ignore */ }
+        await goto("/about/advertise/builder/landing");
+    }
+
     // ===== Design-help modal — sends to admin via WhatsApp + personal area =====
     const ADMIN_WA_NUMBER = "972508750632";
     let helpOpen        = $state<boolean>(false);
@@ -1388,8 +1408,13 @@
             <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("preview"))}>
                 ↻ שלב קודם
             </button>
-            <button type="button" class="step-nav-btn" onclick={() => advance("landing-link")}>
-                שלב הבא →
+            <button type="button" class="step-nav-btn" onclick={goToLandingEditor} disabled={movingToLanding}>
+                {#if movingToLanding}
+                    <span aria-hidden="true">⏳</span>
+                    מעביר לעורך דף הנחיתה…
+                {:else}
+                    שלב הבא — עריכת דף הנחיתה →
+                {/if}
             </button>
         </div>
         <div class="mt-3 flex justify-center">
