@@ -1410,13 +1410,19 @@
             </button>
         </div>
         <div class="mt-3 flex justify-center">
-            <button type="button" onclick={openHelp}
-                    aria-label="פנייה לעזרה בעיצוב"
-                    class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-400/50 text-gray-200 hover:text-amber-300 font-bold transition-colors">
-                <span aria-hidden="true">😩</span>
-                <span>יש לי בעיה ואני צריך עזרה בעיצוב</span>
-                <span aria-hidden="true">🆘</span>
-            </button>
+            <div class="relative group">
+                <button type="button" onclick={openHelp}
+                        aria-label="פנייה לתמיכה — עיצוב על ידי גרפיקאי כרוך בתשלום"
+                        class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-400/50 text-gray-200 hover:text-amber-300 font-bold transition-colors">
+                    <span aria-hidden="true">😩</span>
+                    <span>דורש עזרה — פנה לתמיכה</span>
+                    <span aria-hidden="true">🆘</span>
+                </button>
+                <span role="tooltip"
+                      class="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg border border-white/10 bg-gray-900/95 px-3 py-2 text-sm font-bold text-amber-200 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                    עיצוב על ידי גרפיקאי כרוך בתשלום
+                </span>
+            </div>
         </div>
     </section>
 
