@@ -543,7 +543,6 @@
 
                     {#if landingAdvantages.some(a => a.trim())}
                         <section class="landing-section landing-advantages">
-                            <h2>3 סיבות לבחור בנו</h2>
                             <ul class="advantages-list">
                                 {#each landingAdvantages as adv, i}
                                     {#if adv.trim()}
