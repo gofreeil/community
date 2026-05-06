@@ -1260,6 +1260,8 @@
                     <div class="phone-notch"></div>
                     <div class="phone-content">
                         <div class="mobile-popup">
+                            <!-- Title above the image (mobile has no positioning customization, unlike desktop) -->
+                            <h3 class="popup-title-above" style:color={titleColor}>{title || "כותרת ראשית"}</h3>
                             <div class="popup-img pro-img-wrap">
                                 {#if mainImage}
                                     <img src={mainImage} alt={title} />
@@ -1268,10 +1270,6 @@
                                 {/if}
                                 <!-- Diagonal color band -->
                                 <div class="pro-diag bg-gradient-to-br {gradient}"></div>
-                                <!-- Title centered at the top -->
-                                <div class="pro-title-top mobile" style:transform="translateY({titleOffsetY}px)">
-                                    <h3 class="pro-title" style:color={titleColor}>{title || "כותרת ראשית"}</h3>
-                                </div>
                                 <!-- Subtitle stays on the diagonal at the bottom -->
                                 <div class="pro-title-wrap mobile">
                                     <p class="pro-sub">{subtitle || "כותרת משנה / סלוגן"}</p>
@@ -2084,6 +2082,17 @@
     :global(.mobile-popup) {
         width: 100%; max-width: 240px; background: #0f172a;
         border-radius: 1rem; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+    }
+    /* Mobile title — sits ABOVE the image, not overlaid (mobile has no positioning slider unlike desktop) */
+    :global(.popup-title-above) {
+        margin: 0;
+        padding: 0.7rem 0.85rem 0.55rem;
+        text-align: center;
+        font-weight: 900;
+        font-size: 1.3rem;
+        line-height: 1.18;
+        letter-spacing: -0.01em;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.45);
     }
     :global(.popup-img) { position: relative; height: 130px; }
     :global(.popup-img > img:not(.popup-logo)) { width: 100%; height: 100%; object-fit: cover; }
