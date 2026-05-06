@@ -1868,9 +1868,9 @@
         line-height: 1.5;
         font-weight: 600;
         padding: 0.7rem 0.8rem;
-        border-radius: 0.7rem;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 0;
+        background: transparent;
+        border: none;
     }
     /* Side controls — narrow box on the visual right in RTL (mode toggle + help text).
        Sits opposite the left-side caption for visual symmetry next to the centered preview. */
@@ -1884,9 +1884,9 @@
         flex-direction: column;
         gap: 0.7rem;
         padding: 0.7rem 0.8rem;
-        border-radius: 0.7rem;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 0;
+        background: transparent;
+        border: none;
         z-index: 1;
     }
     :global(.preview-side-controls-help) {
