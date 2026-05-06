@@ -870,7 +870,7 @@
         <div class="step-head" class:step-title-light={litFlags.image.title}>
             <span class="step-num" class:step-num-light={litFlags.image.num}>1</span>
             <h2>העלה תמונה ראשית לפרסומת</h2>
-            {#if activeStep === "image" && !mainImage}
+            {#if activeStep === "image"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
         </div>
@@ -934,7 +934,7 @@
         <div class="step-head" class:step-title-light={litFlags.logo.title}>
             <span class="step-num" class:step-num-light={litFlags.logo.num}>2</span>
             <h2>לוגו (אופציונלי)</h2>
-            {#if activeStep === "logo" && !logo}
+            {#if activeStep === "logo"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
             <button type="button" class="step-back" onclick={() => advance(prevOf("logo"))}
@@ -1052,7 +1052,7 @@
         <div class="step-head" class:step-title-light={litFlags.title.title}>
             <span class="step-num" class:step-num-light={litFlags.title.num}>3</span>
             <h2>כותרת ראשית</h2>
-            {#if activeStep === "title" && !title}
+            {#if activeStep === "title"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
             <button type="button" class="step-back" onclick={() => advance(prevOf("title"))}
@@ -1185,7 +1185,7 @@
         <div class="step-head" class:step-title-light={litFlags.subtitle.title}>
             <span class="step-num" class:step-num-light={litFlags.subtitle.num}>5</span>
             <h2>כותרת משנה / סלוגן</h2>
-            {#if activeStep === "subtitle" && !subtitle}
+            {#if activeStep === "subtitle"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
             <button type="button" class="step-back" onclick={() => advance(prevOf("subtitle"))}
@@ -1218,7 +1218,7 @@
         <div class="step-head" class:step-title-light={litFlags.hover.title}>
             <span class="step-num" class:step-num-light={litFlags.hover.num}>6</span>
             <h2>טקסט בריחוף — מה רואים כשהעכבר על הפרסומת</h2>
-            {#if activeStep === "hover" && !hoverText}
+            {#if activeStep === "hover"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
             <button type="button" class="step-back" onclick={() => advance(prevOf("hover"))}
