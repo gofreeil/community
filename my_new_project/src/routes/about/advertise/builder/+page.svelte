@@ -1170,7 +1170,7 @@
                 ↻ שלב קודם
             </button>
             <button type="button" class="step-nav-btn" onclick={() => advance("subtitle")}>
-                סיימתי — המשך לשלב הבא ←
+                המשך לשלב הבא ←
             </button>
         </div>
     </section>
@@ -1206,7 +1206,11 @@
     </section>
 
     <!-- =================== STEP 6: HOVER TEXT =================== -->
-    <section bind:this={stepRefs.hover} class="step-card" onclick={() => activeStep === "hover" || (activeStep = "hover")}>
+    <section bind:this={stepRefs.hover} class="step-card"
+             onclick={(e) => {
+                 if ((e.target as HTMLElement).closest('button, a, input, textarea')) return;
+                 if (activeStep !== "hover") activeStep = "hover";
+             }}>
         <div class="step-head" class:step-title-light={litFlags.hover.title}>
             <span class="step-num" class:step-num-light={litFlags.hover.num}>6</span>
             <h2>טקסט בריחוף — מה רואים כשהעכבר על הפרסומת</h2>
