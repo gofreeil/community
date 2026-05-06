@@ -1286,22 +1286,6 @@
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
         </div>
-        <p class="step-help">החלף בין מצבי תצוגה. תוכל לחזור לשלבים הקודמים ולשנות בכל רגע.</p>
-
-        <!-- Mode toggle -->
-        <div class="inline-flex rounded-xl border border-white/10 bg-black/30 p-1 mb-5">
-            {#each [
-                { id: "mobile",  label: "📱 נייד" },
-                { id: "desktop", label: "🖥️ דסקטופ" }
-            ] as opt}
-                <button type="button" onclick={() => previewMode = opt.id as any}
-                    class="px-4 py-2 rounded-lg text-sm font-bold transition-all
-                           {previewMode === opt.id ? 'bg-amber-500 text-black' : 'text-gray-300 hover:text-white'}">
-                    {opt.label}
-                </button>
-            {/each}
-        </div>
-
         <div class="preview-with-rail">
         <!-- ===== MOBILE PREVIEW — full-screen popup style ===== -->
         {#if previewMode === "mobile"}
