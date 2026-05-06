@@ -1483,7 +1483,6 @@
                     <p>{cta}</p>
                 </div>
             </div>
-            <p class="live-demo-foot">ככל שתשלים שלבים — הדמו יתמלא</p>
         </div>
     </aside>
 
