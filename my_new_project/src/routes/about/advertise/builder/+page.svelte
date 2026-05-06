@@ -1892,10 +1892,10 @@
     :global(.preview-side-controls-help) {
         margin: 0;
         color: #f1f5f9;
-        font-size: 0.8rem;
-        line-height: 1.45;
+        font-size: 0.95rem;
+        line-height: 1.5;
         text-align: right;
-        font-weight: 500;
+        font-weight: 600;
     }
     :global(.preview-side-toggle) {
         display: inline-flex;
