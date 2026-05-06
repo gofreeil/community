@@ -389,7 +389,8 @@
             logo = url;
             hasCircleCrop = false;
             if (logoShape === "circle") openCropper();
-            if (activeStep === "logo") advance("title");
+            // Don't auto-advance — let the user pick shape (square/circle) and position
+            // (corner/band-corner) and click "next step" themselves.
         } else if (target === "landingImage") {
             landingImage = url;
         } else {
