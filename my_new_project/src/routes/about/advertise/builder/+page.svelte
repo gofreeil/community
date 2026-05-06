@@ -1033,7 +1033,7 @@
                             <button type="button" onclick={() => { logoPosition = "cta"; logoPositionExplicit = true; }}
                                 class="px-2.5 py-1 rounded-md text-xs font-bold transition-colors
                                        {logoPosition === 'cta' ? 'bg-amber-500 text-black' : 'text-gray-300 hover:text-white'}">
-                                ⬇️ ליד הכפתור
+                                ⬇️ פינת הצבע
                             </button>
                         </div>
                     </div>
@@ -1329,18 +1329,15 @@
                                 <div class="pro-title-wrap mobile">
                                     <p class="pro-sub">{subtitle || "כותרת משנה / סלוגן"}</p>
                                 </div>
-                                {#if logo && logoPosition !== "cta"}
+                                {#if logo}
                                     <img src={logo} alt="לוגו"
-                                         class="popup-logo {logoShape === 'circle' ? 'popup-logo-circle' : ''} {logoPosition === 'left' ? 'popup-logo-left' : 'popup-logo-right'}" />
+                                         class="popup-logo {logoShape === 'circle' ? 'popup-logo-circle' : ''} {logoPosition === 'left' ? 'popup-logo-left' : logoPosition === 'cta' ? 'popup-logo-cta' : 'popup-logo-right'}" />
                                 {/if}
                                 <div class="close-countdown">5</div>
                             </div>
                             <div class="popup-body">
-                                <button type="button" class="popup-cta bg-gradient-to-r {gradient}" class:popup-cta-with-logo={logo && logoPosition === 'cta'}>
-                                    {#if logo && logoPosition === "cta"}
-                                        <img src={logo} alt="לוגו" class="popup-cta-logo {logoShape === 'circle' ? 'popup-cta-logo-circle' : ''}" />
-                                    {/if}
-                                    <span>← {cta}</span>
+                                <button type="button" class="popup-cta bg-gradient-to-r {gradient}">
+                                    ← {cta}
                                 </button>
                             </div>
                         </div>

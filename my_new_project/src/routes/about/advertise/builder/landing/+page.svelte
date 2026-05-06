@@ -19,7 +19,9 @@
     let accessChecked = $state(false);
     let isSuperAdmin = $derived(Boolean(data?.isSuperAdmin));
 
-    // ===== Form state — landing editor fields =====
+    type ProductRow = { id: number; name: string; price: string; image: string; description: string };
+
+    // ===== All landing-page fields (editable) =====
     let landingHeadline   = $state<string>("");
     let landingPitch      = $state<string>("");
     let landingExtended   = $state<string>("");
@@ -29,22 +31,25 @@
     let whatsapp          = $state<string>(data?.layoutUser?.phone ?? "");
     let website           = $state<string>("");
     let email             = $state<string>(data?.layoutUser?.email ?? "");
+    let products          = $state<ProductRow[]>([]);
+    let uniqueness        = $state<string>("");
+    let address           = $state<string>("");
+    let hours             = $state<string>("");
+    let nextProductId     = 1;
 
     // ===== Read-only fields used in the preview (filled in earlier steps) =====
     let title       = $state<string>("");
     let subtitle    = $state<string>("");
+    let hoverText   = $state<string>("");
+    let cta         = $state<string>("הקלק לפרטים והזמנות");
     let mainImage   = $state<string>("");
     let logo        = $state<string>("");
     let logoShape   = $state<"square" | "circle">("square");
     let gradient    = $state<string>("from-amber-500 to-orange-600");
-    let address     = $state<string>("");
-    let hours       = $state<string>("");
-    let uniqueness  = $state<string>("");
-    type ProductRow = { id: number; name: string; price: string; image: string; description: string };
-    let products    = $state<ProductRow[]>([]);
 
     // ===== Drag state =====
     let isDraggingLandingImage = $state(false);
+    let draggingProductId = $state<number | null>(null);
 
     // ===== Image helpers =====
     async function fileToDataUrl(file: File): Promise<string> {
@@ -112,33 +117,68 @@
         compressNotice = { ...compressNotice, visible: false };
     }
 
-    async function processLandingImage(file: File | null | undefined) {
+    async function processImageFile(file: File | null | undefined, target: "landing" | { kind: "product"; id: number }) {
         if (!file) return;
         if (!file.type.startsWith("image/")) { alert("נא להעלות קובץ תמונה"); return; }
         const MAX_BYTES = 5 * 1024 * 1024;
         const { dataUrl, wasCompressed, originalMB, finalMB } = await compressImageToFit(file, MAX_BYTES);
         if (wasCompressed) showCompressNotice(originalMB, finalMB);
-        landingImage = dataUrl;
+        if (target === "landing") {
+            landingImage = dataUrl;
+        } else {
+            const idx = products.findIndex(p => p.id === target.id);
+            if (idx >= 0) {
+                products[idx] = { ...products[idx], image: dataUrl };
+                products = [...products];
+            }
+        }
     }
-    async function handleImage(e: Event) {
+    async function handleLandingImage(e: Event) {
         const f = (e.target as HTMLInputElement).files?.[0];
-        await processLandingImage(f);
+        await processImageFile(f, "landing");
+    }
+    async function handleProductImage(e: Event, id: number) {
+        const f = (e.target as HTMLInputElement).files?.[0];
+        await processImageFile(f, { kind: "product", id });
     }
     function clearLandingImage() { landingImage = ""; }
-    function dragOver(e: DragEvent) {
+
+    function dragOverLanding(e: DragEvent) {
         if (!e.dataTransfer?.types.includes("Files")) return;
         e.preventDefault(); e.stopPropagation();
         isDraggingLandingImage = true;
     }
-    function dragLeave(e: DragEvent) {
+    function dragLeaveLanding(e: DragEvent) {
         e.preventDefault(); e.stopPropagation();
         isDraggingLandingImage = false;
     }
-    async function handleDrop(e: DragEvent) {
+    async function dropLanding(e: DragEvent) {
         e.preventDefault(); e.stopPropagation();
         isDraggingLandingImage = false;
         const f = e.dataTransfer?.files?.[0];
-        await processLandingImage(f);
+        await processImageFile(f, "landing");
+    }
+    function dragOverProduct(e: DragEvent, id: number) {
+        if (!e.dataTransfer?.types.includes("Files")) return;
+        e.preventDefault(); e.stopPropagation();
+        draggingProductId = id;
+    }
+    function dragLeaveProduct(e: DragEvent) {
+        e.preventDefault(); e.stopPropagation();
+        draggingProductId = null;
+    }
+    async function dropProduct(e: DragEvent, id: number) {
+        e.preventDefault(); e.stopPropagation();
+        draggingProductId = null;
+        const f = e.dataTransfer?.files?.[0];
+        await processImageFile(f, { kind: "product", id });
+    }
+
+    function addProduct() {
+        products = [...products, { id: nextProductId++, name: "", price: "", image: "", description: "" }];
+    }
+    function removeProduct(id: number) {
+        products = products.filter(p => p.id !== id);
     }
 
     // ===== Load draft from localStorage on mount =====
@@ -153,7 +193,6 @@
         if (!browser) return;
         checkAccess();
 
-        // Block dropped files outside upload zones
         const blockOutsideDrop = (e: DragEvent) => {
             if (e.dataTransfer?.types.includes("Files")) e.preventDefault();
         };
@@ -171,10 +210,10 @@
             const raw = localStorage.getItem(LS_KEY);
             if (raw) {
                 const d = JSON.parse(raw);
-                landingHeadline   = d.landingHeadline ?? "";
-                landingPitch      = d.landingPitch ?? "";
-                landingExtended   = d.landingExtended ?? "";
-                landingImage      = d.landingImage ?? "";
+                landingHeadline = d.landingHeadline ?? "";
+                landingPitch    = d.landingPitch    ?? "";
+                landingExtended = d.landingExtended ?? "";
+                landingImage    = d.landingImage    ?? "";
                 if (Array.isArray(d.landingAdvantages)) {
                     landingAdvantages = [
                         d.landingAdvantages[0] ?? "",
@@ -182,20 +221,24 @@
                         d.landingAdvantages[2] ?? "",
                     ];
                 }
-                phone     = d.phone ?? phone;
+                phone     = d.phone    ?? phone;
                 whatsapp  = d.whatsapp ?? whatsapp;
-                website   = d.website ?? "";
-                email     = d.email ?? email;
-                title     = d.title ?? "";
-                subtitle  = d.subtitle ?? "";
-                mainImage = d.mainImage ?? "";
-                logo      = d.logo ?? "";
-                logoShape = d.logoShape ?? "square";
-                gradient  = d.gradient ?? gradient;
-                address   = d.address ?? "";
-                hours     = d.hours ?? "";
-                uniqueness = d.uniqueness ?? "";
+                website   = d.website  ?? "";
+                email     = d.email    ?? email;
                 products  = Array.isArray(d.products) ? d.products : [];
+                nextProductId = (products.reduce((m, p) => Math.max(m, p.id), 0) || 0) + 1;
+                uniqueness = d.uniqueness ?? "";
+                address    = d.address    ?? "";
+                hours      = d.hours      ?? "";
+
+                title     = d.title     ?? "";
+                subtitle  = d.subtitle  ?? "";
+                hoverText = d.hoverText ?? "";
+                cta       = d.cta       ?? cta;
+                mainImage = d.mainImage ?? "";
+                logo      = d.logo      ?? "";
+                logoShape = d.logoShape ?? "square";
+                gradient  = d.gradient  ?? gradient;
             }
         } catch {}
 
@@ -205,10 +248,9 @@
         };
     });
 
-    // ===== Persist landing fields back to the same draft =====
+    // ===== Persist all editable fields back to the same draft =====
     $effect(() => {
         if (!browser) return;
-        // Read current snapshot, merge our fields, write back
         try {
             const raw = localStorage.getItem(LS_KEY);
             const cur = raw ? JSON.parse(raw) : {};
@@ -216,10 +258,38 @@
                 ...cur,
                 landingHeadline, landingPitch, landingExtended, landingImage, landingAdvantages,
                 phone, whatsapp, website, email,
+                products, uniqueness, address, hours,
             };
             localStorage.setItem(LS_KEY, JSON.stringify(merged));
         } catch {}
     });
+
+    // ===== Validation + submit =====
+    let canSubmit = $derived(
+        Boolean(mainImage && title && subtitle && hoverText && (phone || website) && (landingHeadline || landingPitch))
+    );
+    let submitting = $state(false);
+    let submitted  = $state(false);
+
+    async function submitAd() {
+        if (!canSubmit || submitting) return;
+        submitting = true;
+        try {
+            const payload = {
+                title, subtitle, hoverText, cta, gradient,
+                logo, mainImage,
+                landing: { headline: landingHeadline, pitch: landingPitch, extended: landingExtended, image: landingImage, advantages: landingAdvantages, uniqueness, phone, whatsapp, website, email, address, hours, products },
+                submittedAt: new Date().toISOString(),
+            };
+            const queue = JSON.parse(localStorage.getItem("ad_submissions_queue") ?? "[]");
+            queue.push(payload);
+            localStorage.setItem("ad_submissions_queue", JSON.stringify(queue));
+            await new Promise(r => setTimeout(r, 700));
+            submitted = true;
+        } finally {
+            submitting = false;
+        }
+    }
 
     function goBack() { goto("/about/advertise/builder"); }
 </script>
@@ -253,19 +323,27 @@
         <!-- ===== Page header ===== -->
         <header class="text-center mb-8">
             <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 mb-4">
-                <span class="text-amber-300 text-xs font-bold tracking-wider">שלב 8 — דף הנחיתה</span>
+                <span class="text-amber-300 text-xs font-bold tracking-wider">שלב הבא — עריכת דף הנחיתה</span>
             </div>
             <h1 class="text-3xl md:text-4xl font-black text-white mb-3">עכשיו בואו נעצב את דף הנחיתה</h1>
             <p class="text-gray-300 text-sm md:text-base max-w-2xl mx-auto leading-relaxed">
-                לאן הגולש מגיע אחרי הקלקה על הפרסומת? כאן תעצב את הדף הפנימי שיציג לו את העסק/השירות שלך
-                במלואו — כותרת, תיאור, יתרונות, ותמונה גדולה.
+                הפרסומת שלך נשמרה כטיוטה. כאן תעצב את הדף הפנימי שיוצג לגולש כשהוא לוחץ על הפרסומת —
+                כותרת, תיאור, יתרונות, תמונה, מוצרים, פרטי קשר, ושעות פעילות.
             </p>
+            <div class="mt-4">
+                <button type="button" onclick={goBack}
+                        class="text-xs text-gray-400 hover:text-amber-300 transition-colors">
+                    ↻ חזרה לעריכת הפרסומת
+                </button>
+            </div>
         </header>
 
-        <!-- ===== Step card — landing editor ===== -->
+        {#if !submitted}
+
+        <!-- =================== STEP 1: LANDING LINK / CONTACT =================== -->
         <section class="step-card">
             <div class="step-head">
-                <span class="step-num">8</span>
+                <span class="step-num">1</span>
                 <h2>דף נחיתה — לאן המשתמש יגיע?</h2>
             </div>
             <p class="step-help">בחר אופציה אחת או יותר — אם יש לך אתר, נשלח את הגולש אליו. אם לא — נשתמש בדף הנחיתה הפנימי שלנו.</p>
@@ -315,9 +393,9 @@
                     <label class="upload-zone-sm"
                            class:has-image={!!landingImage}
                            class:dragging={isDraggingLandingImage}
-                           ondragover={dragOver}
-                           ondragleave={dragLeave}
-                           ondrop={handleDrop}>
+                           ondragover={dragOverLanding}
+                           ondragleave={dragLeaveLanding}
+                           ondrop={dropLanding}>
                         {#if landingImage}
                             <img src={landingImage} alt="תמונה לדף נחיתה" />
                             <button type="button" class="remove-x" onclick={(e) => { e.preventDefault(); clearLandingImage(); }} aria-label="הסר תמונה">✕</button>
@@ -327,7 +405,7 @@
                                 <p class="text-xs font-bold text-gray-300">{isDraggingLandingImage ? "שחרר" : "העלה תמונה"}</p>
                             </div>
                         {/if}
-                        <input type="file" accept="image/*" onchange={handleImage} class="hidden" />
+                        <input type="file" accept="image/*" onchange={handleLandingImage} class="hidden" />
                     </label>
                 </div>
 
@@ -339,138 +417,258 @@
                     </p>
                     <div class="space-y-2">
                         <input type="text" bind:value={landingAdvantages[0]} maxlength="80"
-                               placeholder="יתרון 1 — לדוגמה: איכות חומרי גלם פרימיום בלעדית"
-                               class="text-input" />
+                               placeholder="יתרון 1 — לדוגמה: איכות חומרי גלם פרימיום בלעדית" class="text-input" />
                         <input type="text" bind:value={landingAdvantages[1]} maxlength="80"
-                               placeholder="יתרון 2 — לדוגמה: שירות אישי 7 ימים בשבוע"
-                               class="text-input" />
+                               placeholder="יתרון 2 — לדוגמה: שירות אישי 7 ימים בשבוע" class="text-input" />
                         <input type="text" bind:value={landingAdvantages[2]} maxlength="80"
-                               placeholder="יתרון 3 — לדוגמה: אחריות מלאה לשנה"
-                               class="text-input" />
+                               placeholder="יתרון 3 — לדוגמה: אחריות מלאה לשנה" class="text-input" />
                     </div>
                 </div>
-            </div>
-
-            <!-- ===== Live preview ===== -->
-            <div class="mt-8 pt-6 border-t border-white/10">
-                <div class="flex items-center gap-2 mb-4">
-                    <span class="text-2xl">👁️</span>
-                    <h3 class="text-lg font-bold text-amber-300">תצוגה מקדימה של דף הנחיתה</h3>
-                </div>
-                <p class="step-help">כך ייראה דף הנחיתה שעיצבת — אליו הגולש יגיע בלחיצה על הפרסומת.</p>
-                <div class="preview-frame landing">
-                    <div class="landing-mock">
-                        <header class="landing-hero bg-gradient-to-br {gradient}">
-                            {#if landingImage || mainImage}
-                                <img src={landingImage || mainImage} alt={title} class="landing-hero-bg" />
-                            {/if}
-                            <div class="landing-hero-overlay"></div>
-                            {#if logo}
-                                <img src={logo} alt="לוגו" class="landing-logo {logoShape === 'circle' ? 'landing-logo-circle' : ''}" />
-                            {/if}
-                            <div class="landing-hero-content">
-                                <h1>{landingHeadline || title || "כותרת מרכזית"}</h1>
-                                <p>{landingPitch || subtitle || "תיאור קצר ומושך"}</p>
-                                {#if phone}
-                                    <a href="tel:{phone}" class="landing-cta">📞 {phone}</a>
-                                {:else if website}
-                                    <a href={website} class="landing-cta">🌐 לאתר המלא</a>
-                                {:else}
-                                    <span class="landing-cta opacity-60">השלם פרטי קשר →</span>
-                                {/if}
-                            </div>
-                        </header>
-
-                        {#if landingAdvantages.some(a => a.trim())}
-                            <section class="landing-section landing-advantages">
-                                <h2>3 סיבות לבחור בנו</h2>
-                                <ul class="advantages-list">
-                                    {#each landingAdvantages as adv, i}
-                                        {#if adv.trim()}
-                                            <li class="advantage-item">
-                                                <span class="advantage-check bg-gradient-to-br {gradient}" aria-hidden="true">✓</span>
-                                                <span class="advantage-text">{adv}</span>
-                                            </li>
-                                        {/if}
-                                    {/each}
-                                </ul>
-                            </section>
-                        {/if}
-
-                        {#if landingExtended}
-                            <section class="landing-section">
-                                <h2>הסיפור שלנו</h2>
-                                <p style="white-space: pre-line">{landingExtended}</p>
-                            </section>
-                        {/if}
-
-                        {#if uniqueness}
-                            <section class="landing-section">
-                                <h2>למה דווקא אנחנו</h2>
-                                <p style="white-space: pre-line">{uniqueness}</p>
-                            </section>
-                        {/if}
-
-                        {#if products.length > 0}
-                            <section class="landing-section">
-                                <h2>המוצרים / השירותים שלנו</h2>
-                                <div class="products-grid">
-                                    {#each products as p}
-                                        <div class="product-card">
-                                            {#if p.image}
-                                                <img src={p.image} alt={p.name} />
-                                            {:else}
-                                                <div class="img-placeholder small">תמונה</div>
-                                            {/if}
-                                            <div class="product-info">
-                                                <p class="product-name">{p.name || "שם מוצר"}</p>
-                                                {#if p.description}<p class="product-desc">{p.description}</p>{/if}
-                                                {#if p.price}<p class="product-price">₪{p.price}</p>{/if}
-                                            </div>
-                                        </div>
-                                    {/each}
-                                </div>
-                            </section>
-                        {/if}
-
-                        <section class="landing-section landing-contact">
-                            <h2>צור קשר</h2>
-                            <ul>
-                                {#if phone}<li>📞 <a href="tel:{phone}">{phone}</a></li>{/if}
-                                {#if whatsapp}<li>💬 <a href="https://wa.me/{whatsapp.replace(/\D/g,'')}">וואטסאפ {whatsapp}</a></li>{/if}
-                                {#if email}<li>✉️ <a href="mailto:{email}">{email}</a></li>{/if}
-                                {#if website}<li>🌐 <a href={website} target="_blank" rel="noopener">{website}</a></li>{/if}
-                                {#if address}<li>📍 {address}</li>{/if}
-                                {#if hours}<li>🕒 {hours}</li>{/if}
-                            </ul>
-                        </section>
-                    </div>
-                </div>
-            </div>
-
-            <div class="step-nav-row">
-                <button type="button" class="step-nav-btn step-nav-btn-secondary" onclick={goBack}>
-                    ↻ חזרה לבונה
-                </button>
             </div>
         </section>
+
+        <!-- =================== STEP 2: PRODUCTS =================== -->
+        <section class="step-card">
+            <div class="step-head">
+                <span class="step-num">2</span>
+                <h2>תמונות מוצרים / שירותים + מחירים</h2>
+            </div>
+            <p class="step-help">הוסף 3-6 מוצרים או שירותים. תמונה איכותית ומחיר ברור הם הדבר הכי משכנע.</p>
+
+            <div class="space-y-3">
+                {#each products as p, idx (p.id)}
+                    <div class="product-row">
+                        <label class="upload-zone-sm"
+                               class:has-image={!!p.image}
+                               class:dragging={draggingProductId === p.id}
+                               ondragover={(e) => dragOverProduct(e, p.id)}
+                               ondragleave={dragLeaveProduct}
+                               ondrop={(e) => dropProduct(e, p.id)}>
+                            {#if p.image}
+                                <img src={p.image} alt={p.name} />
+                            {:else}
+                                <div class="text-center text-xs text-gray-400">
+                                    {#if draggingProductId === p.id}✨<br/>שחרר{:else}📷<br/>תמונה{/if}
+                                </div>
+                            {/if}
+                            <input type="file" accept="image/*" onchange={(e) => handleProductImage(e, p.id)} class="hidden" />
+                        </label>
+                        <div class="grow grid grid-cols-1 md:grid-cols-3 gap-2">
+                            <input type="text" bind:value={products[idx].name} placeholder="שם המוצר/שירות" class="text-input small" />
+                            <input type="text" bind:value={products[idx].price} placeholder="מחיר (₪)" class="text-input small" />
+                            <input type="text" bind:value={products[idx].description} placeholder="תיאור קצר (אופציונלי)" class="text-input small" />
+                        </div>
+                        <button type="button" onclick={() => removeProduct(p.id)} class="remove-btn" aria-label="הסר">✕</button>
+                    </div>
+                {/each}
+            </div>
+
+            <button type="button" onclick={addProduct}
+                class="mt-3 w-full py-3 rounded-xl border-2 border-dashed border-amber-500/40 bg-amber-500/5 text-amber-300 hover:bg-amber-500/10 hover:border-amber-500/70 font-bold text-sm transition-colors">
+                + הוסף מוצר
+            </button>
+        </section>
+
+        <!-- =================== STEP 3: UNIQUENESS =================== -->
+        <section class="step-card">
+            <div class="step-head">
+                <span class="step-num">3</span>
+                <h2>מה מייחד אותך?</h2>
+            </div>
+            <p class="step-help">
+                🌟 <strong class="text-amber-300">זה החלק הכי חשוב!</strong>
+                תושבי השכונה רוצים לדעת — למה דווקא אצלך? נסיון, איכות, מחיר, יחס אישי, ערך מוסף.
+                כתוב 2-3 משפטים שמסבירים את הייחוד שלך.
+            </p>
+
+            <textarea bind:value={uniqueness} rows="5" maxlength="500"
+                      placeholder={`לדוגמה:\n• 15 שנות נסיון בשכונה — אנחנו חלק מהקהילה\n• כל המוצרים בייצור בית, ללא חומרים משמרים\n• אחריות מלאה ושירות אישי 24/7`}
+                      class="text-input"></textarea>
+            <div class="text-xs text-gray-500 mt-1 text-left">{uniqueness.length}/500</div>
+        </section>
+
+        <!-- =================== STEP 4: ADDRESS =================== -->
+        <section class="step-card">
+            <div class="step-head">
+                <span class="step-num">4</span>
+                <h2>כתובת ושעות פעילות</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-2">
+                    <label class="field-label">📍 כתובת מלאה (רחוב, מספר, עיר)</label>
+                    <input type="text" bind:value={address}
+                           placeholder="לדוגמה: בן ציון 12, קרית משה, ירושלים" class="text-input" />
+                </div>
+                <div class="md:col-span-2">
+                    <label class="field-label">🕒 שעות פעילות (אופציונלי)</label>
+                    <input type="text" bind:value={hours}
+                           placeholder="לדוגמה: א-ה 9:00-19:00, ו 9:00-13:00" class="text-input" />
+                </div>
+            </div>
+        </section>
+
+        <!-- =================== LIVE PREVIEW =================== -->
+        <section class="step-card">
+            <div class="step-head">
+                <span class="step-num">👁️</span>
+                <h2>תצוגה מקדימה של דף הנחיתה</h2>
+            </div>
+            <p class="step-help">כך ייראה דף הנחיתה שעיצבת — אליו הגולש יגיע בלחיצה על הפרסומת.</p>
+
+            <div class="preview-frame landing">
+                <div class="landing-mock">
+                    <header class="landing-hero bg-gradient-to-br {gradient}">
+                        {#if landingImage || mainImage}
+                            <img src={landingImage || mainImage} alt={title} class="landing-hero-bg" />
+                        {/if}
+                        <div class="landing-hero-overlay"></div>
+                        {#if logo}
+                            <img src={logo} alt="לוגו" class="landing-logo {logoShape === 'circle' ? 'landing-logo-circle' : ''}" />
+                        {/if}
+                        <div class="landing-hero-content">
+                            <h1>{landingHeadline || title || "כותרת מרכזית"}</h1>
+                            <p>{landingPitch || subtitle || "תיאור קצר ומושך"}</p>
+                            {#if phone}
+                                <a href="tel:{phone}" class="landing-cta">📞 {phone}</a>
+                            {:else if website}
+                                <a href={website} class="landing-cta">🌐 לאתר המלא</a>
+                            {:else}
+                                <span class="landing-cta opacity-60">השלם פרטי קשר →</span>
+                            {/if}
+                        </div>
+                    </header>
+
+                    {#if landingAdvantages.some(a => a.trim())}
+                        <section class="landing-section landing-advantages">
+                            <h2>3 סיבות לבחור בנו</h2>
+                            <ul class="advantages-list">
+                                {#each landingAdvantages as adv, i}
+                                    {#if adv.trim()}
+                                        <li class="advantage-item">
+                                            <span class="advantage-check bg-gradient-to-br {gradient}" aria-hidden="true">✓</span>
+                                            <span class="advantage-text">{adv}</span>
+                                        </li>
+                                    {/if}
+                                {/each}
+                            </ul>
+                        </section>
+                    {/if}
+
+                    {#if landingExtended}
+                        <section class="landing-section">
+                            <h2>הסיפור שלנו</h2>
+                            <p style="white-space: pre-line">{landingExtended}</p>
+                        </section>
+                    {/if}
+
+                    {#if uniqueness}
+                        <section class="landing-section">
+                            <h2>למה דווקא אנחנו</h2>
+                            <p style="white-space: pre-line">{uniqueness}</p>
+                        </section>
+                    {/if}
+
+                    {#if products.length > 0}
+                        <section class="landing-section">
+                            <h2>המוצרים / השירותים שלנו</h2>
+                            <div class="products-grid">
+                                {#each products as p}
+                                    <div class="product-card">
+                                        {#if p.image}
+                                            <img src={p.image} alt={p.name} />
+                                        {:else}
+                                            <div class="img-placeholder small">תמונה</div>
+                                        {/if}
+                                        <div class="product-info">
+                                            <p class="product-name">{p.name || "שם מוצר"}</p>
+                                            {#if p.description}<p class="product-desc">{p.description}</p>{/if}
+                                            {#if p.price}<p class="product-price">₪{p.price}</p>{/if}
+                                        </div>
+                                    </div>
+                                {/each}
+                            </div>
+                        </section>
+                    {/if}
+
+                    <section class="landing-section landing-contact">
+                        <h2>צור קשר</h2>
+                        <ul>
+                            {#if phone}<li>📞 <a href="tel:{phone}">{phone}</a></li>{/if}
+                            {#if whatsapp}<li>💬 <a href="https://wa.me/{whatsapp.replace(/\D/g,'')}">וואטסאפ {whatsapp}</a></li>{/if}
+                            {#if email}<li>✉️ <a href="mailto:{email}">{email}</a></li>{/if}
+                            {#if website}<li>🌐 <a href={website} target="_blank" rel="noopener">{website}</a></li>{/if}
+                            {#if address}<li>📍 {address}</li>{/if}
+                            {#if hours}<li>🕒 {hours}</li>{/if}
+                        </ul>
+                    </section>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================== SUBMIT =================== -->
+        <section class="step-card">
+            <div class="step-head">
+                <span class="step-num">✓</span>
+                <h2>בדיקה אחרונה ושליחה</h2>
+            </div>
+
+            <ul class="checklist">
+                <li class:done={!!mainImage}><span>{mainImage ? "✅" : "⬜"}</span> תמונה ראשית</li>
+                <li class:done={!!title}><span>{title ? "✅" : "⬜"}</span> כותרת ראשית</li>
+                <li class:done={!!subtitle}><span>{subtitle ? "✅" : "⬜"}</span> כותרת משנה</li>
+                <li class:done={!!hoverText}><span>{hoverText ? "✅" : "⬜"}</span> טקסט בריחוף</li>
+                <li class:done={!!(phone || website)}><span>{(phone || website) ? "✅" : "⬜"}</span> ערוץ פנייה (טלפון/אתר)</li>
+                <li class:done={products.length > 0}><span>{products.length > 0 ? "✅" : "⬜"}</span> תמונות מוצרים ({products.length})</li>
+                <li class:done={!!uniqueness}><span>{uniqueness ? "✅" : "⬜"}</span> מה מייחד אותך</li>
+                <li class:done={!!address}><span>{address ? "✅" : "⬜"}</span> כתובת</li>
+            </ul>
+
+            {#if !canSubmit}
+                <p class="text-amber-300 text-sm mt-3 font-bold">⚠️ נא למלא לפחות: תמונה, כותרת, כותרת משנה, טקסט ריחוף, ערוץ פנייה, וכותרת/פסקה לדף הנחיתה.</p>
+            {/if}
+
+            <button type="button" onclick={submitAd} disabled={!canSubmit || submitting}
+                class="mt-5 w-full py-4 rounded-2xl bg-gradient-to-r from-green-600 to-emerald-600 text-white font-black text-lg shadow-xl shadow-green-500/30 transition-all
+                       {canSubmit && !submitting ? 'hover:scale-[1.02] active:scale-95' : 'opacity-50 cursor-not-allowed'}">
+                {#if submitting}שולח…{:else}🚀 שלח לאישור ופרסום{/if}
+            </button>
+        </section>
+
+        {:else}
+            <!-- =================== DONE =================== -->
+            <section class="step-card success-card">
+                <div class="text-center py-6">
+                    <div class="text-6xl mb-3">🎉</div>
+                    <h2 class="text-2xl md:text-3xl font-black text-green-300 mb-2">הפרסומת נשלחה לאישור!</h2>
+                    <p class="text-gray-300 max-w-lg mx-auto">
+                        נבחן את הפרסומת ונאשר אותה תוך 24 שעות. תקבל אימייל ברגע שהיא מתפרסמת בפועל בשכונה שלך.
+                    </p>
+                    <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
+                        <a href="/" class="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold transition-colors">
+                            חזרה לעמוד הבית
+                        </a>
+                        <a href="/profile" class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold transition-colors">
+                            לפרופיל שלי
+                        </a>
+                    </div>
+                </div>
+            </section>
+        {/if}
+
     {/if}
 </div>
 
 <style>
-    /* All styles are :global — this page is rendered standalone, separate from /builder. */
-
     .ad-builder :global(*) { box-sizing: border-box; }
 
     /* ============== Compress notice toast ============== */
     :global(.compress-toast) {
         position: fixed;
-        top: 5rem;
-        left: 50%;
+        top: 5rem; left: 50%;
         transform: translateX(-50%);
         z-index: 60;
-        width: calc(100% - 1.5rem);
-        max-width: 32rem;
+        width: calc(100% - 1.5rem); max-width: 32rem;
         padding: 0.875rem 2.5rem 0.875rem 1rem;
         border-radius: 1rem;
         border: 1px solid rgba(251, 191, 36, 0.55);
@@ -485,8 +683,7 @@
         border-radius: 9999px;
         background: rgba(0, 0, 0, 0.35);
         color: rgba(255, 255, 255, 0.9);
-        font-size: 0.75rem;
-        line-height: 1;
+        font-size: 0.75rem; line-height: 1;
         display: flex; align-items: center; justify-content: center;
         border: 1px solid rgba(255, 255, 255, 0.18);
         cursor: pointer;
@@ -505,6 +702,10 @@
     }
     @media (min-width: 768px) {
         :global(.step-card) { padding: 1.75rem; margin-bottom: 1.75rem; }
+    }
+    :global(.success-card) {
+        background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(16,185,129,0.04));
+        border-color: rgba(16,185,129,0.4);
     }
 
     :global(.step-head) {
@@ -536,6 +737,7 @@
         transition: border-color 0.15s, background 0.15s;
         font-family: inherit;
     }
+    :global(.text-input.small) { padding: 0.55rem 0.75rem; font-size: 0.85rem; }
     :global(.text-input::placeholder) { color: rgb(107, 114, 128); }
     :global(.text-input:focus) {
         border-color: rgba(245, 158, 11, 0.6);
@@ -569,38 +771,25 @@
     }
     :global(.remove-x:hover) { background: rgba(220,38,38,0.85); }
 
-    /* ============== Bottom nav button ============== */
-    :global(.step-nav-row) {
-        margin-top: 1.5rem;
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: center;
-        gap: 0.75rem;
+    /* ============== Product row ============== */
+    :global(.product-row) {
+        display: flex; align-items: stretch; gap: 0.75rem;
+        background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 0.85rem; padding: 0.75rem;
     }
-    :global(.step-nav-btn) {
-        display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
-        padding: 0.7rem 1.5rem;
-        border-radius: 0.85rem;
-        background: rgb(245, 158, 11);
-        color: #000;
-        font-size: 0.95rem; font-weight: 800; line-height: 1.1;
-        border: 1px solid rgba(245, 158, 11, 0.85);
-        cursor: pointer;
-        transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
-        white-space: nowrap;
-        font-family: inherit;
-        box-shadow: 0 4px 14px -4px rgba(245, 158, 11, 0.5);
+    @media (max-width: 768px) {
+        :global(.product-row) { flex-direction: column; }
     }
-    :global(.step-nav-btn:hover) { background: rgb(252, 191, 36); }
-    :global(.step-nav-btn:active) { transform: scale(0.97); }
-    :global(.step-nav-btn-secondary) {
-        background: rgba(255,255,255,0.06);
-        color: rgb(229,231,235);
-        border-color: rgba(255,255,255,0.18);
-        box-shadow: none;
+    :global(.product-row .grow) { flex: 1; }
+    :global(.product-row .upload-zone-sm) {
+        width: 100px; height: 100px; min-height: 100px; flex-shrink: 0;
     }
-    :global(.step-nav-btn-secondary:hover) { background: rgba(255,255,255,0.12); }
+    :global(.remove-btn) {
+        width: 2rem; height: 2rem; border-radius: 9999px; background: rgba(255,255,255,0.05);
+        color: rgb(156, 163, 175); border: 1px solid rgba(255,255,255,0.08);
+        cursor: pointer; align-self: center; flex-shrink: 0;
+    }
+    :global(.remove-btn:hover) { background: rgba(220,38,38,0.6); color: white; }
 
     /* ============== Preview frame ============== */
     :global(.preview-frame) { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; }
@@ -640,7 +829,6 @@
     :global(.landing-hero h1) { color: white; font-size: 1.55rem; font-weight: 900; margin: 0 0 0.4rem; }
     :global(.landing-hero p)  { color: rgba(255,255,255,0.92); font-size: 0.95rem; margin: 0 0 1rem; line-height: 1.45; }
 
-    /* ===== Advantages list ===== */
     :global(.advantages-list) {
         list-style: none; padding: 0; margin: 0;
         display: grid; gap: 0.65rem;
@@ -711,4 +899,23 @@
         background: rgba(255,255,255,0.03); color: rgb(107, 114, 128); font-size: 0.85rem; font-weight: 700;
     }
     :global(.img-placeholder.small) { font-size: 0.7rem; }
+
+    /* ============== Checklist ============== */
+    :global(.checklist) {
+        list-style: none; padding: 0; margin: 0;
+        display: grid; grid-template-columns: 1fr; gap: 0.5rem;
+    }
+    @media (min-width: 640px) {
+        :global(.checklist) { grid-template-columns: 1fr 1fr; }
+    }
+    :global(.checklist li) {
+        background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 0.6rem; padding: 0.55rem 0.85rem;
+        color: rgb(156,163,175); font-size: 0.875rem;
+        display: flex; align-items: center; gap: 0.5rem;
+    }
+    :global(.checklist li.done) {
+        color: rgb(229,231,235);
+        background: rgba(16,185,129,0.08); border-color: rgba(16,185,129,0.25);
+    }
 </style>
