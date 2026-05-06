@@ -1405,7 +1405,7 @@
                     <span aria-hidden="true">⏳</span>
                     מעביר לעורך דף הנחיתה…
                 {:else}
-                    שלב הבא — עריכת דף הנחיתה →
+                    נראה מעולה <span aria-hidden="true">👍</span> לשלב הבא
                 {/if}
             </button>
         </div>
@@ -1413,8 +1413,9 @@
             <button type="button" onclick={openHelp}
                     aria-label="פנייה לעזרה בעיצוב"
                     class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-400/50 text-gray-200 hover:text-amber-300 font-bold transition-colors">
-                <span>🆘</span>
+                <span aria-hidden="true">😩</span>
                 <span>יש לי בעיה ואני צריך עזרה בעיצוב</span>
+                <span aria-hidden="true">🆘</span>
             </button>
         </div>
     </section>
