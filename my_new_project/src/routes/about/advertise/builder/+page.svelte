@@ -137,7 +137,7 @@
     let titleOffsetY    = $state<number>(0);                    // vertical offset for title on banner (-20..+60 px)
     let subtitle        = $state<string>("");
     let hoverText       = $state<string>("");
-    let cta             = $state<string>("לפרטים נוספים");
+    let cta             = $state<string>("הקלק לפרטים והזמנות");
     let gradient        = $state<string>("from-amber-500 to-orange-600");
     let diagHeight      = $state<number>(12);   // % of image — height of the diagonal color band (range 5..50)
     let landingHeadline = $state<string>("");
@@ -572,7 +572,7 @@
                 titleOffsetY    = typeof d.titleOffsetY === 'number' ? d.titleOffsetY : 0;
                 subtitle        = d.subtitle ?? "";
                 hoverText       = d.hoverText ?? "";
-                cta             = d.cta ?? "לפרטים נוספים";
+                cta             = (d.cta && d.cta !== "לפרטים נוספים") ? d.cta : "הקלק לפרטים והזמנות";
                 gradient        = d.gradient ?? gradient;
                 diagHeight      = typeof d.diagHeight === 'number' ? d.diagHeight : 25;
                 landingHeadline = d.landingHeadline ?? "";
@@ -1356,7 +1356,6 @@
                     </div>
                 </div>
 
-                <p class="preview-caption">השווה בין שתי האופציות ותגיד לי איזה להשאיר.</p>
             </div>
         {/if}
 
