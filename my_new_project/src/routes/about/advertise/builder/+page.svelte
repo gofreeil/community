@@ -1286,12 +1286,29 @@
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
         </div>
+        {#snippet previewSideControls()}
+            <div class="preview-side-controls">
+                <p class="preview-side-controls-help">החלף בין מצבי תצוגה. תוכל לחזור לשלבים הקודמים ולשנות בכל רגע.</p>
+                <div class="preview-side-toggle">
+                    {#each [
+                        { id: "mobile",  label: "📱 נייד" },
+                        { id: "desktop", label: "🖥️ דסקטופ" }
+                    ] as opt}
+                        <button type="button" onclick={() => previewMode = opt.id as any}
+                            class="preview-side-toggle-btn {previewMode === opt.id ? 'is-active' : ''}">
+                            {opt.label}
+                        </button>
+                    {/each}
+                </div>
+            </div>
+        {/snippet}
+
         <div class="preview-with-rail">
         <!-- ===== MOBILE PREVIEW — full-screen popup style ===== -->
         {#if previewMode === "mobile"}
             <div class="preview-frame mobile">
                 <div class="preview-with-side-caption">
-                    <div class="preview-side-caption-spacer" aria-hidden="true"></div>
+                    {@render previewSideControls()}
                     <div class="phone-screen">
                         <div class="phone-notch"></div>
                         <div class="phone-content">
@@ -1339,7 +1356,7 @@
                 <!-- ===== OPTION B — clean standalone card (no site context) ===== -->
                 <div class="preview-option">
                     <div class="preview-with-side-caption">
-                        <div class="preview-side-caption-spacer" aria-hidden="true"></div>
+                        {@render previewSideControls()}
                     <div class="clean-card-wrap">
                         <div
                             role="button"
@@ -1855,6 +1872,61 @@
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid rgba(255, 255, 255, 0.14);
     }
+    /* Side controls — narrow box on the visual right in RTL (mode toggle + help text).
+       Sits opposite the left-side caption for visual symmetry next to the centered preview. */
+    :global(.preview-side-controls) {
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        max-width: 150px;
+        display: flex;
+        flex-direction: column;
+        gap: 0.7rem;
+        padding: 0.7rem 0.8rem;
+        border-radius: 0.7rem;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        z-index: 1;
+    }
+    :global(.preview-side-controls-help) {
+        margin: 0;
+        color: #f1f5f9;
+        font-size: 0.8rem;
+        line-height: 1.45;
+        text-align: right;
+        font-weight: 500;
+    }
+    :global(.preview-side-toggle) {
+        display: inline-flex;
+        border-radius: 0.55rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(0, 0, 0, 0.3);
+        padding: 0.2rem;
+        align-self: stretch;
+        justify-content: center;
+    }
+    :global(.preview-side-toggle-btn) {
+        flex: 1;
+        padding: 0.4rem 0.4rem;
+        border-radius: 0.4rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: rgb(209, 213, 219);
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
+        white-space: nowrap;
+        transition: background 0.15s, color 0.15s;
+    }
+    :global(.preview-side-toggle-btn.is-active) {
+        background: rgb(245, 158, 11);
+        color: #000;
+    }
+    :global(.preview-side-toggle-btn:not(.is-active):hover) {
+        color: #fff;
+    }
     @media (max-width: 700px) {
         /* On narrow screens absolute positioning would overlap the phone — switch to flow. */
         :global(.preview-with-side-caption) { flex-direction: column; row-gap: 0.75rem; }
@@ -1862,6 +1934,13 @@
             position: static; transform: none;
             max-width: none; text-align: center;
         }
+        :global(.preview-side-controls) {
+            position: static;
+            transform: none;
+            max-width: none;
+            order: -1;
+        }
+        :global(.preview-side-controls-help) { text-align: center; }
     }
 
     :global(.phone-screen) {
