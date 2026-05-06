@@ -1300,7 +1300,6 @@
 
                 <!-- ===== OPTION B — clean standalone card (no site context) ===== -->
                 <div class="preview-option">
-                    <p class="preview-option-label">🅑 אופציה ב — כרטיס נקי (ללא הקשר אתר)</p>
                     <div class="clean-card-wrap">
                         <div
                             role="button"
