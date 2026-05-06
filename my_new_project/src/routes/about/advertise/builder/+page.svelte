@@ -968,23 +968,31 @@
         <p class="step-help">העלה לוגו — עדיף עם רקע שקוף (PNG). יוצב <strong class="text-amber-300">קטן בפינה</strong> של הפרסומת. אם אין לוגו — דלג.</p>
 
         <div class="flex items-center gap-3 flex-wrap">
-            <label class="upload-zone-sm"
-                   class:has-image={!!logo}
-                   class:dragging={isDraggingLogo}
-                   ondragover={(e) => dragOver(e, v => isDraggingLogo = v)}
-                   ondragleave={(e) => dragLeave(e, v => isDraggingLogo = v)}
-                   ondrop={(e) => handleDrop(e, "logo", v => isDraggingLogo = v)}>
-                {#if logo}
-                    <img src={logo} alt="לוגו" />
-                    <button type="button" class="remove-x" onclick={(e) => { e.preventDefault(); clearImage("logo"); }} aria-label="הסר לוגו">✕</button>
-                {:else}
-                    <div class="text-center">
-                        <div class="text-2xl mb-1">{isDraggingLogo ? "✨" : "🏷️"}</div>
-                        <p class="text-xs font-bold text-gray-300">{isDraggingLogo ? "שחרר" : "העלה לוגו"}</p>
-                    </div>
+            <div class="flex flex-col items-center gap-1">
+                <label class="upload-zone-sm"
+                       class:has-image={!!logo}
+                       class:dragging={isDraggingLogo}
+                       ondragover={(e) => dragOver(e, v => isDraggingLogo = v)}
+                       ondragleave={(e) => dragLeave(e, v => isDraggingLogo = v)}
+                       ondrop={(e) => handleDrop(e, "logo", v => isDraggingLogo = v)}>
+                    {#if logo}
+                        <img src={logo} alt="לוגו" />
+                        <button type="button" class="remove-x" onclick={(e) => { e.preventDefault(); clearImage("logo"); }} aria-label="הסר לוגו">✕</button>
+                    {:else}
+                        <div class="text-center">
+                            <div class="text-2xl mb-1">{isDraggingLogo ? "✨" : "🏷️"}</div>
+                            <p class="text-xs font-bold text-gray-300">{isDraggingLogo ? "שחרר" : "העלה לוגו"}</p>
+                        </div>
+                    {/if}
+                    <input type="file" accept="image/*" onchange={(e) => handleImage(e, "logo")} class="hidden" />
+                </label>
+                {#if logo && logoShape === 'circle' && hasCircleCrop}
+                    <button type="button" onclick={openCropper}
+                        class="text-[10px] text-amber-300 hover:text-amber-200 underline">
+                        ✂️ ערוך חיתוך
+                    </button>
                 {/if}
-                <input type="file" accept="image/*" onchange={(e) => handleImage(e, "logo")} class="hidden" />
-            </label>
+            </div>
 
             {#if logo}
                 <!-- Logo shape + position controls — placed side-by-side -->
@@ -1003,12 +1011,6 @@
                                 ⚫ עגול
                             </button>
                         </div>
-                        {#if logoShape === 'circle' && hasCircleCrop}
-                            <button type="button" onclick={openCropper}
-                                class="mt-1 text-[10px] text-amber-300 hover:text-amber-200 underline">
-                                ✂️ ערוך חיתוך
-                            </button>
-                        {/if}
                     </div>
                     <div>
                         <p class="text-xs font-bold text-gray-400 mb-1">מיקום הלוגו:</p>
@@ -1026,7 +1028,7 @@
                             <button type="button" onclick={() => { logoPosition = "cta"; logoPositionExplicit = true; }}
                                 class="px-2.5 py-1 rounded-md text-xs font-bold transition-colors
                                        {logoPosition === 'cta' ? 'bg-amber-500 text-black' : 'text-gray-300 hover:text-white'}">
-                                ⬇️ פינת הצבע
+                                ⬇️ למטה
                             </button>
                         </div>
                     </div>
