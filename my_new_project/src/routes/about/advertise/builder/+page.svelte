@@ -49,7 +49,10 @@
     let logoOriginal    = $state<string>("");                  // base64 data url — raw upload kept as cropping source
     let logoShape       = $state<"square" | "circle">("square");
     let hasCircleCrop   = $state<boolean>(false);              // true once user confirmed a circular crop
-    let logoPosition    = $state<"right" | "left">("right");
+    let logoPosition    = $state<"right" | "left" | "cta">("right");
+    // Becomes true the first time the user picks a position manually.
+    // While false, position auto-switches to "cta" when the title is long, "right" otherwise.
+    let logoPositionExplicit = $state<boolean>(false);
 
     // ===== Logo circular crop modal =====
     const CROP_STAGE = 320;
@@ -489,7 +492,7 @@
     ];
 
     // ===== Mobile/Desktop preview toggle =====
-    let previewMode = $state<"mobile" | "desktop" | "landing">("mobile");
+    let previewMode = $state<"mobile" | "desktop">("mobile");
     let hoverPreview = $state(false);
     // בשלב 6 (טקסט בריחוף) — מציגים אוטומטית את הצד האחורי (מצב hover) של הפרסומת
     const showHover = $derived(hoverPreview || activeStep === "hover");
@@ -565,6 +568,7 @@
                 logoShape       = d.logoShape ?? "square";
                 hasCircleCrop   = Boolean(d.hasCircleCrop);
                 logoPosition    = d.logoPosition ?? "right";
+                logoPositionExplicit = Boolean(d.logoPositionExplicit);
                 mainImage       = d.mainImage ?? "";
                 mainImageObjectX = typeof d.mainImageObjectX === 'number' ? d.mainImageObjectX : 50;
                 mainImageObjectY = typeof d.mainImageObjectY === 'number' ? d.mainImageObjectY : 50;
@@ -606,10 +610,19 @@
         };
     });
 
+    // Auto-default for logo position: when title is long (>20 chars) there's no room
+    // for a corner logo next to the title, so park it next to the CTA. Stops as soon
+    // as the user picks a position manually.
+    $effect(() => {
+        if (!logo || logoPositionExplicit) return;
+        const next: "right" | "cta" = title.trim().length > 20 ? "cta" : "right";
+        if (logoPosition !== next) logoPosition = next;
+    });
+
     $effect(() => {
         if (!browser) return;
         const snapshot = {
-            logo, logoOriginal, hasCircleCrop, logoShape, logoPosition, mainImage, mainImageObjectX, mainImageObjectY, title, titleOffsetY, subtitle, hoverText, cta, gradient, diagHeight,
+            logo, logoOriginal, hasCircleCrop, logoShape, logoPosition, logoPositionExplicit, mainImage, mainImageObjectX, mainImageObjectY, title, titleOffsetY, subtitle, hoverText, cta, gradient, diagHeight,
             landingHeadline, landingPitch, landingExtended, landingImage, landingAdvantages, uniqueness, phone, whatsapp, website,
             email, address, hours, products,
         };
@@ -985,17 +998,22 @@
                         {/if}
                     </div>
                     <div>
-                        <p class="text-xs font-bold text-gray-400 mb-1">יוצג בפינה:</p>
+                        <p class="text-xs font-bold text-gray-400 mb-1">מיקום הלוגו:</p>
                         <div class="inline-flex rounded-lg border border-white/10 bg-black/20 p-1">
-                            <button type="button" onclick={() => logoPosition = "right"}
+                            <button type="button" onclick={() => { logoPosition = "right"; logoPositionExplicit = true; }}
                                 class="px-2.5 py-1 rounded-md text-xs font-bold transition-colors
                                        {logoPosition === 'right' ? 'bg-amber-500 text-black' : 'text-gray-300 hover:text-white'}">
                                 ⬆️ ימין
                             </button>
-                            <button type="button" onclick={() => logoPosition = "left"}
+                            <button type="button" onclick={() => { logoPosition = "left"; logoPositionExplicit = true; }}
                                 class="px-2.5 py-1 rounded-md text-xs font-bold transition-colors
                                        {logoPosition === 'left' ? 'bg-amber-500 text-black' : 'text-gray-300 hover:text-white'}">
                                 ⬆️ שמאל
+                            </button>
+                            <button type="button" onclick={() => { logoPosition = "cta"; logoPositionExplicit = true; }}
+                                class="px-2.5 py-1 rounded-md text-xs font-bold transition-colors
+                                       {logoPosition === 'cta' ? 'bg-amber-500 text-black' : 'text-gray-300 hover:text-white'}">
+                                ⬇️ ליד הכפתור
                             </button>
                         </div>
                     </div>
@@ -1259,8 +1277,7 @@
         <div class="inline-flex rounded-xl border border-white/10 bg-black/30 p-1 mb-5">
             {#each [
                 { id: "mobile",  label: "📱 נייד" },
-                { id: "desktop", label: "🖥️ דסקטופ" },
-                { id: "landing", label: "🌐 דף נחיתה" }
+                { id: "desktop", label: "🖥️ דסקטופ" }
             ] as opt}
                 <button type="button" onclick={() => previewMode = opt.id as any}
                     class="px-4 py-2 rounded-lg text-sm font-bold transition-all
@@ -1292,15 +1309,18 @@
                                 <div class="pro-title-wrap mobile">
                                     <p class="pro-sub">{subtitle || "כותרת משנה / סלוגן"}</p>
                                 </div>
-                                {#if logo}
+                                {#if logo && logoPosition !== "cta"}
                                     <img src={logo} alt="לוגו"
                                          class="popup-logo {logoShape === 'circle' ? 'popup-logo-circle' : ''} {logoPosition === 'left' ? 'popup-logo-left' : 'popup-logo-right'}" />
                                 {/if}
                                 <div class="close-countdown">5</div>
                             </div>
                             <div class="popup-body">
-                                <button type="button" class="popup-cta bg-gradient-to-r {gradient}">
-                                    ← {cta}
+                                <button type="button" class="popup-cta bg-gradient-to-r {gradient}" class:popup-cta-with-logo={logo && logoPosition === 'cta'}>
+                                    {#if logo && logoPosition === "cta"}
+                                        <img src={logo} alt="לוגו" class="popup-cta-logo {logoShape === 'circle' ? 'popup-cta-logo-circle' : ''}" />
+                                    {/if}
+                                    <span>← {cta}</span>
                                 </button>
                             </div>
                         </div>
@@ -1344,12 +1364,15 @@
                                     <h3 class="hover-title">{title || "כותרת"}</h3>
                                     <p class="hover-text">{hoverText || "כאן יופיע הטקסט בריחוף"}</p>
                                 </div>
-                                {#if logo}
+                                {#if logo && logoPosition !== "cta"}
                                     <img src={logo} alt="לוגו"
                                          class="ad-logo {logoShape === 'circle' ? 'ad-logo-circle' : ''} {logoPosition === 'left' ? 'ad-logo-left' : 'ad-logo-right'}" />
                                 {/if}
                             </div>
-                            <div class="ad-cta bg-gradient-to-r {gradient}">
+                            <div class="ad-cta bg-gradient-to-r {gradient}" class:ad-cta-with-logo={logo && logoPosition === 'cta'}>
+                                {#if logo && logoPosition === "cta"}
+                                    <img src={logo} alt="לוגו" class="ad-cta-logo {logoShape === 'circle' ? 'ad-cta-logo-circle' : ''}" />
+                                {/if}
                                 <p>{cta}</p>
                             </div>
                         </div>
@@ -1359,98 +1382,6 @@
             </div>
         {/if}
 
-        <!-- ===== LANDING PAGE PREVIEW — full mini-site ===== -->
-        {#if previewMode === "landing"}
-            <div class="preview-frame landing">
-                <div class="landing-mock">
-                    <header class="landing-hero bg-gradient-to-br {gradient}">
-                        {#if landingImage || mainImage}
-                            <img src={landingImage || mainImage} alt={title} class="landing-hero-bg" />
-                        {/if}
-                        <div class="landing-hero-overlay"></div>
-                        {#if logo}
-                            <img src={logo} alt="לוגו" class="landing-logo {logoShape === 'circle' ? 'landing-logo-circle' : ''}" />
-                        {/if}
-                        <div class="landing-hero-content">
-                            <h1>{landingHeadline || title || "כותרת מרכזית"}</h1>
-                            <p>{landingPitch || subtitle || "תיאור קצר ומושך"}</p>
-                            {#if phone}
-                                <a href="tel:{phone}" class="landing-cta">📞 {phone}</a>
-                            {:else if website}
-                                <a href={website} class="landing-cta">🌐 לאתר המלא</a>
-                            {:else}
-                                <span class="landing-cta opacity-60">השלם פרטי קשר →</span>
-                            {/if}
-                        </div>
-                    </header>
-
-                    {#if landingAdvantages.some(a => a.trim())}
-                        <section class="landing-section landing-advantages">
-                            <h2>3 סיבות לבחור בנו</h2>
-                            <ul class="advantages-list">
-                                {#each landingAdvantages as adv, i}
-                                    {#if adv.trim()}
-                                        <li class="advantage-item">
-                                            <span class="advantage-check bg-gradient-to-br {gradient}" aria-hidden="true">✓</span>
-                                            <span class="advantage-text">{adv}</span>
-                                        </li>
-                                    {/if}
-                                {/each}
-                            </ul>
-                        </section>
-                    {/if}
-
-                    {#if landingExtended}
-                        <section class="landing-section">
-                            <h2>הסיפור שלנו</h2>
-                            <p style="white-space: pre-line">{landingExtended}</p>
-                        </section>
-                    {/if}
-
-                    {#if uniqueness}
-                        <section class="landing-section">
-                            <h2>למה דווקא אנחנו</h2>
-                            <p style="white-space: pre-line">{uniqueness}</p>
-                        </section>
-                    {/if}
-
-                    {#if products.length > 0}
-                        <section class="landing-section">
-                            <h2>המוצרים / השירותים שלנו</h2>
-                            <div class="products-grid">
-                                {#each products as p}
-                                    <div class="product-card">
-                                        {#if p.image}
-                                            <img src={p.image} alt={p.name} />
-                                        {:else}
-                                            <div class="img-placeholder small">תמונה</div>
-                                        {/if}
-                                        <div class="product-info">
-                                            <p class="product-name">{p.name || "שם מוצר"}</p>
-                                            {#if p.description}<p class="product-desc">{p.description}</p>{/if}
-                                            {#if p.price}<p class="product-price">₪{p.price}</p>{/if}
-                                        </div>
-                                    </div>
-                                {/each}
-                            </div>
-                        </section>
-                    {/if}
-
-                    <section class="landing-section landing-contact">
-                        <h2>צור קשר</h2>
-                        <ul>
-                            {#if phone}<li>📞 <a href="tel:{phone}">{phone}</a></li>{/if}
-                            {#if whatsapp}<li>💬 <a href="https://wa.me/{whatsapp.replace(/\D/g,'')}">וואטסאפ {whatsapp}</a></li>{/if}
-                            {#if email}<li>✉️ <a href="mailto:{email}">{email}</a></li>{/if}
-                            {#if website}<li>🌐 <a href={website} target="_blank" rel="noopener">{website}</a></li>{/if}
-                            {#if address}<li>📍 {address}</li>{/if}
-                            {#if hours}<li>🕒 {hours}</li>{/if}
-                        </ul>
-                    </section>
-                </div>
-                <p class="preview-caption">כך ייראה דף הנחיתה המלא — אליו הגולש יגיע בלחיצה על הפרסומת.</p>
-            </div>
-        {/if}
         </div>
 
         <div class="step-nav-row">
@@ -1560,6 +1491,103 @@
                     <input type="text" bind:value={landingAdvantages[2]} maxlength="80"
                            placeholder="יתרון 3 — לדוגמה: אחריות מלאה לשנה"
                            class="text-input" />
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== LANDING PAGE PREVIEW — full mini-site (shown after the user designs it) ===== -->
+        <div class="mt-8 pt-6 border-t border-white/10">
+            <div class="flex items-center gap-2 mb-4">
+                <span class="text-2xl">👁️</span>
+                <h3 class="text-lg font-bold text-amber-300">תצוגה מקדימה של דף הנחיתה</h3>
+            </div>
+            <p class="step-help">כך ייראה דף הנחיתה שעיצבת — אליו הגולש יגיע בלחיצה על הפרסומת.</p>
+            <div class="preview-frame landing">
+                <div class="landing-mock">
+                    <header class="landing-hero bg-gradient-to-br {gradient}">
+                        {#if landingImage || mainImage}
+                            <img src={landingImage || mainImage} alt={title} class="landing-hero-bg" />
+                        {/if}
+                        <div class="landing-hero-overlay"></div>
+                        {#if logo}
+                            <img src={logo} alt="לוגו" class="landing-logo {logoShape === 'circle' ? 'landing-logo-circle' : ''}" />
+                        {/if}
+                        <div class="landing-hero-content">
+                            <h1>{landingHeadline || title || "כותרת מרכזית"}</h1>
+                            <p>{landingPitch || subtitle || "תיאור קצר ומושך"}</p>
+                            {#if phone}
+                                <a href="tel:{phone}" class="landing-cta">📞 {phone}</a>
+                            {:else if website}
+                                <a href={website} class="landing-cta">🌐 לאתר המלא</a>
+                            {:else}
+                                <span class="landing-cta opacity-60">השלם פרטי קשר →</span>
+                            {/if}
+                        </div>
+                    </header>
+
+                    {#if landingAdvantages.some(a => a.trim())}
+                        <section class="landing-section landing-advantages">
+                            <h2>3 סיבות לבחור בנו</h2>
+                            <ul class="advantages-list">
+                                {#each landingAdvantages as adv, i}
+                                    {#if adv.trim()}
+                                        <li class="advantage-item">
+                                            <span class="advantage-check bg-gradient-to-br {gradient}" aria-hidden="true">✓</span>
+                                            <span class="advantage-text">{adv}</span>
+                                        </li>
+                                    {/if}
+                                {/each}
+                            </ul>
+                        </section>
+                    {/if}
+
+                    {#if landingExtended}
+                        <section class="landing-section">
+                            <h2>הסיפור שלנו</h2>
+                            <p style="white-space: pre-line">{landingExtended}</p>
+                        </section>
+                    {/if}
+
+                    {#if uniqueness}
+                        <section class="landing-section">
+                            <h2>למה דווקא אנחנו</h2>
+                            <p style="white-space: pre-line">{uniqueness}</p>
+                        </section>
+                    {/if}
+
+                    {#if products.length > 0}
+                        <section class="landing-section">
+                            <h2>המוצרים / השירותים שלנו</h2>
+                            <div class="products-grid">
+                                {#each products as p}
+                                    <div class="product-card">
+                                        {#if p.image}
+                                            <img src={p.image} alt={p.name} />
+                                        {:else}
+                                            <div class="img-placeholder small">תמונה</div>
+                                        {/if}
+                                        <div class="product-info">
+                                            <p class="product-name">{p.name || "שם מוצר"}</p>
+                                            {#if p.description}<p class="product-desc">{p.description}</p>{/if}
+                                            {#if p.price}<p class="product-price">₪{p.price}</p>{/if}
+                                        </div>
+                                    </div>
+                                {/each}
+                            </div>
+                        </section>
+                    {/if}
+
+                    <section class="landing-section landing-contact">
+                        <h2>צור קשר</h2>
+                        <ul>
+                            {#if phone}<li>📞 <a href="tel:{phone}">{phone}</a></li>{/if}
+                            {#if whatsapp}<li>💬 <a href="https://wa.me/{whatsapp.replace(/\D/g,'')}">וואטסאפ {whatsapp}</a></li>{/if}
+                            {#if email}<li>✉️ <a href="mailto:{email}">{email}</a></li>{/if}
+                            {#if website}<li>🌐 <a href={website} target="_blank" rel="noopener">{website}</a></li>{/if}
+                            {#if address}<li>📍 {address}</li>{/if}
+                            {#if hours}<li>🕒 {hours}</li>{/if}
+                        </ul>
+                    </section>
                 </div>
             </div>
         </div>
@@ -1788,11 +1816,11 @@
                             <div class="placeholder-dashed placeholder-line small">סלוגן — שלב 4</div>
                         {/if}
                     </div>
-                    {#if logo}
+                    {#if logo && logoPosition !== "cta"}
                         <img src={logo} alt="לוגו"
                              class="ad-logo {logoShape === 'circle' ? 'ad-logo-circle' : ''} {logoPosition === 'left' ? 'ad-logo-left' : 'ad-logo-right'}"
                              style:opacity={activeStep === "hover" ? 0 : 1} />
-                    {:else}
+                    {:else if !logo && logoPosition !== "cta"}
                         <div class="placeholder-dashed placeholder-logo {logoPosition === 'left' ? 'logo-pos-left' : 'logo-pos-right'}" style:opacity={activeStep === "hover" ? 0 : 1}>לוגו<br/>שלב 2</div>
                     {/if}
                     <div class="hover-overlay" style:opacity={activeStep === "hover" ? 1 : 0}>
@@ -1800,7 +1828,12 @@
                         <p class="hover-text">{hoverText || "כאן יופיע הטקסט בריחוף"}</p>
                     </div>
                 </div>
-                <div class="ad-cta bg-gradient-to-r {gradient}">
+                <div class="ad-cta bg-gradient-to-r {gradient}" class:ad-cta-with-logo={logoPosition === 'cta'}>
+                    {#if logo && logoPosition === "cta"}
+                        <img src={logo} alt="לוגו" class="ad-cta-logo {logoShape === 'circle' ? 'ad-cta-logo-circle' : ''}" />
+                    {:else if !logo && logoPosition === "cta"}
+                        <span class="placeholder-dashed placeholder-cta-logo">לוגו</span>
+                    {/if}
                     <p>{cta}</p>
                 </div>
             </div>
@@ -2222,6 +2255,20 @@
         color: white; font-weight: 700; font-size: 0.78rem; text-align: center;
         border: none;
     }
+    /* Logo positioned next to the CTA text in the mobile popup */
+    :global(.popup-cta-with-logo) {
+        display: flex; align-items: center; justify-content: center;
+        gap: 0.5rem;
+    }
+    :global(.popup-cta-logo) {
+        width: 28px; height: 28px;
+        border-radius: 6px;
+        background: white; padding: 3px;
+        object-fit: contain;
+        flex-shrink: 0;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.35);
+    }
+    :global(.popup-cta-logo-circle) { border-radius: 50% !important; }
 
     /* ============== TWO-COLUMN BUILDER LAYOUT — steps + jumping live demo ============== */
     /* The demo is absolutely positioned — its top is computed dynamically to align with
@@ -2710,6 +2757,28 @@
     :global(.ad-logo-right) { right: 6px; left: auto; }
     :global(.ad-logo-left)  { left: 6px;  right: auto; }
     :global(.ad-logo-circle) { border-radius: 50%; }
+    /* Logo positioned next to the CTA text — sits inside .ad-cta as a flex item */
+    :global(.ad-cta-with-logo) {
+        display: flex; align-items: center; justify-content: center;
+        gap: 0.4rem;
+    }
+    :global(.ad-cta-with-logo p) { margin: 0; }
+    :global(.ad-cta-logo) {
+        width: 22px; height: 22px;
+        border-radius: 4px;
+        background: white; padding: 2px;
+        object-fit: contain;
+        flex-shrink: 0;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.35);
+    }
+    :global(.ad-cta-logo-circle) { border-radius: 50%; }
+    :global(.placeholder-cta-logo) {
+        flex-shrink: 0;
+        font-size: 0.5rem;
+        padding: 0.15rem 0.3rem;
+        line-height: 1;
+        border-radius: 0.25rem;
+    }
     :global(.hover-overlay) {
         position: absolute; inset: 0;
         background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
