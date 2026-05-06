@@ -1839,44 +1839,42 @@
     :global(.preview-caption) {
         color: rgb(156,163,175); font-size: 0.8rem; text-align: center; max-width: 28rem;
     }
-    /* 3-column grid: spacer | preview | caption.
-       In RTL the first column is on the right (start), the third on the left (end).
-       Phone/card stays exactly centered because spacer + caption columns are equal (1fr each). */
+    /* Phone/card sits centered (justify-content: center).
+       Caption is absolutely positioned at the visual left so it doesn't compete with
+       the centering math, and can use its natural max-width without grid-column limits. */
     :global(.preview-with-side-caption) {
-        display: grid;
-        grid-template-columns: 1fr auto 1fr;
+        position: relative;
+        display: flex;
         align-items: center;
-        column-gap: 1.25rem;
+        justify-content: center;
         width: 100%;
     }
-    :global(.preview-side-caption-spacer) {
-        /* invisible — its only job is to claim the right-side 1fr column so the preview centers */
-    }
-    /* Side caption — narrow, vertical-leaning, on the visual left in RTL */
+    :global(.preview-side-caption-spacer) { display: none; }
+    /* Side caption — narrow box on the visual left in RTL.
+       Width capped to fit the available space next to the centered preview (~137px gap).
+       Color is near-white and font sits at 0.95rem so it stays readable in the narrow box. */
     :global(.preview-caption-side) {
-        max-width: 140px;
-        justify-self: end;        /* hug the far edge of the left column */
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        max-width: 130px;
         text-align: right;
-        color: rgba(203, 213, 225, 0.7);
-        font-size: 0.85rem;
-        line-height: 1.45;
-        font-weight: 500;
-        padding: 0.6rem 0.7rem;
-        border-radius: 0.6rem;
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.06);
+        color: #f1f5f9;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        font-weight: 600;
+        padding: 0.7rem 0.8rem;
+        border-radius: 0.7rem;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.14);
     }
     @media (max-width: 700px) {
-        /* On narrow screens the 3-column grid would crush the preview — collapse to a column. */
-        :global(.preview-with-side-caption) {
-            grid-template-columns: 1fr;
-            row-gap: 0.75rem;
-        }
-        :global(.preview-side-caption-spacer) { display: none; }
+        /* On narrow screens absolute positioning would overlap the phone — switch to flow. */
+        :global(.preview-with-side-caption) { flex-direction: column; row-gap: 0.75rem; }
         :global(.preview-caption-side) {
-            max-width: none;
-            justify-self: center;
-            text-align: center;
+            position: static; transform: none;
+            max-width: none; text-align: center;
         }
     }
 
