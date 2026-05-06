@@ -838,17 +838,15 @@
     }
     :global(.advantage-item) {
         display: flex; align-items: center; gap: 0.85rem;
-        padding: 0.7rem 0.95rem;
-        background: rgba(255,255,255,0.04);
-        border: 1px solid rgba(255,255,255,0.08);
-        border-radius: 0.85rem;
-        transition: transform 200ms ease, border-color 200ms ease, background 200ms ease;
+        padding: 0.4rem 0.2rem;
+        background: transparent;
+        border: 0;
+        border-radius: 0;
+        transition: transform 200ms ease;
         text-align: right;
     }
     :global(.advantage-item:hover) {
         transform: translateX(-3px);
-        border-color: rgba(255,255,255,0.2);
-        background: rgba(255,255,255,0.07);
     }
     :global(.advantage-check) {
         flex-shrink: 0;
