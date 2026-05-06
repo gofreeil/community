@@ -292,6 +292,11 @@
         return stepOrder[Math.min(i + 1, stepOrder.length - 1)];
     }
 
+    function prevOf(s: Step): Step {
+        const i = stepOrder.indexOf(s);
+        return stepOrder[Math.max(i - 1, 0)];
+    }
+
     // ===== Drag-and-drop state (visual highlight per zone) =====
     let isDraggingMain = $state(false);
     let isDraggingLogo = $state(false);
@@ -932,6 +937,10 @@
             {#if activeStep === "logo" && !logo}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
+            <button type="button" class="step-back" onclick={() => advance(prevOf("logo"))}
+                    aria-label="חזור לשלב הקודם" title="חזור לשלב הקודם">
+                ↻ שלב קודם
+            </button>
         </div>
         <p class="step-help">העלה לוגו — עדיף עם רקע שקוף (PNG). יוצב <strong class="text-amber-300">קטן בפינה</strong> של הפרסומת. אם אין לוגו — דלג.</p>
 
@@ -1046,6 +1055,10 @@
             {#if activeStep === "title" && !title}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
+            <button type="button" class="step-back" onclick={() => advance(prevOf("title"))}
+                    aria-label="חזור לשלב הקודם" title="חזור לשלב הקודם">
+                ↻ שלב קודם
+            </button>
 
             <!-- Title color picker — inline to the left of the heading -->
             <div class="title-color-rail" aria-label="צבע הכותרת">
@@ -1122,6 +1135,10 @@
             {#if activeStep === "gradient"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
+            <button type="button" class="step-back" onclick={() => advance(prevOf("gradient"))}
+                    aria-label="חזור לשלב הקודם" title="חזור לשלב הקודם">
+                ↻ שלב קודם
+            </button>
         </div>
         <p class="step-help">בחר את צבע הרצועה האלכסונית שמופיעה על התמונה. הצבע יחול גם על כפתור ה-CTA ועל דף הנחיתה. כוונן את גובה הרצועה כך שיתאים לכמות הטקסט שלך.</p>
 
@@ -1171,6 +1188,10 @@
             {#if activeStep === "subtitle" && !subtitle}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
+            <button type="button" class="step-back" onclick={() => advance(prevOf("subtitle"))}
+                    aria-label="חזור לשלב הקודם" title="חזור לשלב הקודם">
+                ↻ שלב קודם
+            </button>
         </div>
         <p class="step-help">משפט אחד שמסביר מה אתה מציע ולמה זה שווה לתושבים. עד 70 תווים.</p>
 
@@ -1200,6 +1221,10 @@
             {#if activeStep === "hover" && !hoverText}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
+            <button type="button" class="step-back" onclick={() => advance(prevOf("hover"))}
+                    aria-label="חזור לשלב הקודם" title="חזור לשלב הקודם">
+                ↻ שלב קודם
+            </button>
         </div>
         <p class="step-help">
             כשמשתמש בדסקטופ מצביע עם העכבר על הפרסומת — הטקסט הזה יופיע במקום התמונה.
@@ -1234,6 +1259,10 @@
             {#if activeStep === "preview"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
+            <button type="button" class="step-back" onclick={() => advance(prevOf("preview"))}
+                    aria-label="חזור לשלב הקודם" title="חזור לשלב הקודם">
+                ↻ שלב קודם
+            </button>
         </div>
         <p class="step-help">החלף בין מצבי תצוגה. תוכל לחזור לשלבים הקודמים ולשנות בכל רגע.</p>
 
@@ -1458,6 +1487,10 @@
             {#if activeStep === "landing-link"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
+            <button type="button" class="step-back" onclick={() => advance(prevOf("landing-link"))}
+                    aria-label="חזור לשלב הקודם" title="חזור לשלב הקודם">
+                ↻ שלב קודם
+            </button>
         </div>
         <p class="step-help">בחר אופציה אחת או יותר — אם יש לך אתר, נשלח את הגולש אליו. אם לא — נשתמש בדף הנחיתה הפנימי שלנו.</p>
 
@@ -1559,6 +1592,10 @@
             {#if activeStep === "products"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
+            <button type="button" class="step-back" onclick={() => advance(prevOf("products"))}
+                    aria-label="חזור לשלב הקודם" title="חזור לשלב הקודם">
+                ↻ שלב קודם
+            </button>
         </div>
         <p class="step-help">הוסף 3-6 מוצרים או שירותים. תמונה איכותית ומחיר ברור הם הדבר הכי משכנע.</p>
 
@@ -1611,6 +1648,10 @@
             {#if activeStep === "uniqueness"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
+            <button type="button" class="step-back" onclick={() => advance(prevOf("uniqueness"))}
+                    aria-label="חזור לשלב הקודם" title="חזור לשלב הקודם">
+                ↻ שלב קודם
+            </button>
         </div>
         <p class="step-help">
             🌟 <strong class="text-amber-300">זה החלק הכי חשוב!</strong>
@@ -1640,6 +1681,10 @@
             {#if activeStep === "address"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
+            <button type="button" class="step-back" onclick={() => advance(prevOf("address"))}
+                    aria-label="חזור לשלב הקודם" title="חזור לשלב הקודם">
+                ↻ שלב קודם
+            </button>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1674,6 +1719,10 @@
             {#if activeStep === "submit"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
+            <button type="button" class="step-back" onclick={() => advance(prevOf("submit"))}
+                    aria-label="חזור לשלב הקודם" title="חזור לשלב הקודם">
+                ↻ שלב קודם
+            </button>
         </div>
 
         <ul class="checklist">
@@ -1953,6 +2002,28 @@
         color: rgb(156, 163, 175); font-size: 0.875rem; line-height: 1.55; margin: 0 0 1rem;
     }
 
+    /* "Back one step" button — sits on the visual end of step-head */
+    :global(.step-back) {
+        margin-inline-start: auto;
+        display: inline-flex; align-items: center; gap: 0.3rem;
+        padding: 0.35rem 0.7rem;
+        border-radius: 0.6rem;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: rgb(209, 213, 219);
+        font-size: 0.78rem; font-weight: 700; line-height: 1;
+        cursor: pointer;
+        transition: background 0.15s, border-color 0.15s, color 0.15s;
+        white-space: nowrap;
+        font-family: inherit;
+    }
+    :global(.step-back:hover) {
+        background: rgba(245, 158, 11, 0.12);
+        border-color: rgba(245, 158, 11, 0.45);
+        color: rgb(252, 211, 77);
+    }
+    :global(.step-back:active) { transform: scale(0.97); }
+
     /* ============== Inputs ============== */
     :global(.text-input) {
         width: 100%; padding: 0.75rem 1rem; border-radius: 0.75rem;
@@ -2086,13 +2157,13 @@
     /* Mobile title — sits ABOVE the image, not overlaid (mobile has no positioning slider unlike desktop) */
     :global(.popup-title-above) {
         margin: 0;
-        padding: 0.7rem 0.85rem 0.55rem;
+        padding: 1rem 0.9rem 0.85rem;
         text-align: center;
         font-weight: 900;
-        font-size: 1.3rem;
-        line-height: 1.18;
-        letter-spacing: -0.01em;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.45);
+        font-size: 1.55rem;
+        line-height: 1.15;
+        letter-spacing: 0.005em;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.6);
     }
     :global(.popup-img) { position: relative; height: 130px; }
     :global(.popup-img > img:not(.popup-logo)) { width: 100%; height: 100%; object-fit: cover; }
