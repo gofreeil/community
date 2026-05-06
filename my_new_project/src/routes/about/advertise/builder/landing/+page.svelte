@@ -433,7 +433,7 @@
                 <span class="step-num">2</span>
                 <h2>תמונות מוצרים / שירותים + מחירים</h2>
             </div>
-            <p class="step-help">הוסף 3-6 מוצרים או שירותים. תמונה איכותית ומחיר ברור הם הדבר הכי משכנע.</p>
+            <p class="step-help">הוסף עד 3 מוצרים או שירותים. תמונה איכותית ומחיר ברור הם הדבר הכי משכנע.</p>
 
             <div class="space-y-3">
                 {#each products as p, idx (p.id)}
@@ -463,10 +463,12 @@
                 {/each}
             </div>
 
-            <button type="button" onclick={addProduct}
-                class="mt-3 w-full py-3 rounded-xl border-2 border-dashed border-amber-500/40 bg-amber-500/5 text-amber-300 hover:bg-amber-500/10 hover:border-amber-500/70 font-bold text-sm transition-colors">
-                + הוסף מוצר
-            </button>
+            {#if products.length < 3}
+                <button type="button" onclick={addProduct}
+                    class="mt-3 w-full py-3 rounded-xl border-2 border-dashed border-amber-500/40 bg-amber-500/5 text-amber-300 hover:bg-amber-500/10 hover:border-amber-500/70 font-bold text-sm transition-colors">
+                    + הוסף מוצר
+                </button>
+            {/if}
         </section>
 
         <!-- =================== STEP 3: UNIQUENESS =================== -->
