@@ -2716,6 +2716,7 @@
         display: flex; flex-direction: column; align-items: center; justify-content: center;
         padding: 0.75rem; text-align: center; transition: opacity 1500ms ease;
         pointer-events: none;
+        z-index: 4; /* must sit above the decorative diagonal line on .pro-img-wrap::before (z-index:3) */
     }
     :global(.hover-title) { color: white; font-weight: 700; font-size: 0.95rem; margin: 0 0 0.4rem; }
     :global(.hover-text)  { color: rgb(229,231,235); font-size: 0.7rem; line-height: 1.4; margin: 0 0 0.4rem; font-weight: 700; }
