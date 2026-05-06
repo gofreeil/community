@@ -2154,16 +2154,18 @@
         width: 100%; max-width: 240px; background: #0f172a;
         border-radius: 1rem; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.5);
     }
-    /* Mobile title — sits ABOVE the image, not overlaid (mobile has no positioning slider unlike desktop) */
+    /* Mobile title — sits ABOVE the image in a clearly separate header band */
     :global(.popup-title-above) {
         margin: 0;
-        padding: 1rem 0.9rem 0.85rem;
+        padding: 1.1rem 0.9rem 1rem;
         text-align: center;
         font-weight: 900;
         font-size: 1.55rem;
         line-height: 1.15;
         letter-spacing: 0.005em;
         text-shadow: 0 2px 10px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.6);
+        background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+        border-bottom: 2px solid rgba(255,255,255,0.08);
     }
     :global(.popup-img) { position: relative; height: 130px; }
     :global(.popup-img > img:not(.popup-logo)) { width: 100%; height: 100%; object-fit: cover; }
