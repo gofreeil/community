@@ -1378,7 +1378,6 @@
                                 </div>
                                 <div class="pro-title-wrap" style:opacity={showHover ? 0 : 1}>
                                     <p class="pro-sub">{subtitle || "סלוגן / כותרת משנה"}</p>
-                                    <span class="pro-demo-cta">הקלק לפרטים והזמנות</span>
                                 </div>
                                 <div class="hover-overlay" style:opacity={showHover ? 1 : 0}>
                                     <h3 class="hover-title">{title || "כותרת"}</h3>
@@ -2144,12 +2143,16 @@
         border-radius: 0.6rem;
         overflow: hidden;
         background: #0f172a;
-        box-shadow: 0 0 0 2px rgba(255,255,255,0.6), 0 8px 30px rgba(245,158,11,0.4);
-        animation: overlayPulse 2.5s ease-in-out infinite;
+        box-shadow: 0 0 0 2px rgba(255,255,255,0.6), 0 0 6px rgba(245,158,11,0.35);
+        animation: cleanCardPulse 2.5s ease-in-out infinite;
         cursor: pointer;
         position: relative;
         display: flex;
         flex-direction: column;
+    }
+    @keyframes cleanCardPulse {
+        0%, 100% { box-shadow: 0 0 0 2px rgba(255,255,255,0.6), 0 0 6px rgba(245,158,11,0.35); }
+        50%      { box-shadow: 0 0 0 2px rgba(255,255,255,0.85), 0 0 10px rgba(245,158,11,0.6); }
     }
     :global(.clean-card-img) {
         width: 100%;
