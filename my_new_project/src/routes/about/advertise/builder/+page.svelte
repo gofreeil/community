@@ -922,9 +922,8 @@
         </div>
         {#if mainImage}
             <p class="crop-hint">השתמש בחיצים השקופים שעל התמונה כדי להזיז את התוכן בתוך מסגרת הדמו (חצים ←↑↓→). לאיפוס לחץ ⊙.</p>
-            <div class="mt-4 flex justify-center">
-                <button type="button" onclick={() => advance("logo")}
-                    class="px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black text-base transition-colors shadow-lg">
+            <div class="step-nav-row">
+                <button type="button" class="step-nav-btn" onclick={() => advance("logo")}>
                     סיימתי למרכז — המשך לשלב הבא ←
                 </button>
             </div>
@@ -939,10 +938,6 @@
             {#if activeStep === "logo"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
-            <button type="button" class="step-back" onclick={() => advance(prevOf("logo"))}
-                    aria-label="חזור לשלב הקודם" title="חזור לשלב הקודם">
-                ↻ שלב קודם
-            </button>
         </div>
         <p class="step-help">העלה לוגו — עדיף עם רקע שקוף (PNG). יוצב <strong class="text-amber-300">קטן בפינה</strong> של הפרסומת. אם אין לוגו — דלג.</p>
 
@@ -1007,11 +1002,13 @@
                 </div>
             {/if}
 
-            <button type="button" onclick={() => advance("title")}
-                    class="px-4 py-2 rounded-xl text-sm font-bold transition-colors self-center
-                           {logo
-                               ? 'bg-amber-500 hover:bg-amber-400 text-black border border-amber-400'
-                               : 'bg-white/5 border border-white/10 hover:border-amber-500/40 text-gray-300 hover:text-amber-300'}">
+        </div>
+
+        <div class="step-nav-row">
+            <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("logo"))}>
+                ↻ שלב קודם
+            </button>
+            <button type="button" class="step-nav-btn" onclick={() => advance("title")}>
                 {logo ? "שלב הבא ←" : "דלג שלב זה →"}
             </button>
         </div>
@@ -1057,10 +1054,6 @@
             {#if activeStep === "title"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
-            <button type="button" class="step-back" onclick={() => advance(prevOf("title"))}
-                    aria-label="חזור לשלב הקודם" title="חזור לשלב הקודם">
-                ↻ שלב קודם
-            </button>
 
             <!-- Title color picker — inline to the left of the heading -->
             <div class="title-color-rail" aria-label="צבע הכותרת">
@@ -1119,14 +1112,16 @@
             </div>
         </div>
 
-        {#if title}
-            <div class="mt-4 flex justify-start">
-                <button type="button" onclick={() => commitField("title")}
-                    class="px-3 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 hover:text-amber-200 font-bold transition-colors">
+        <div class="step-nav-row">
+            <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("title"))}>
+                ↻ שלב קודם
+            </button>
+            {#if title}
+                <button type="button" class="step-nav-btn" onclick={() => commitField("title")}>
                     שלב הבא ←
                 </button>
-            </div>
-        {/if}
+            {/if}
+        </div>
     </section>
 
     <!-- =================== STEP 4: GRADIENT (color + band height) =================== -->
@@ -1137,10 +1132,6 @@
             {#if activeStep === "gradient"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
-            <button type="button" class="step-back" onclick={() => advance(prevOf("gradient"))}
-                    aria-label="חזור לשלב הקודם" title="חזור לשלב הקודם">
-                ↻ שלב קודם
-            </button>
         </div>
         <p class="step-help">בחר את צבע הרצועה האלכסונית שמופיעה על התמונה. הצבע יחול גם על כפתור ה-CTA ועל דף הנחיתה. כוונן את גובה הרצועה כך שיתאים לכמות הטקסט שלך.</p>
 
@@ -1174,9 +1165,11 @@
             </div>
         </div>
 
-        <div class="mt-5 flex justify-center">
-            <button type="button" onclick={() => advance("subtitle")}
-                class="px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black text-base transition-colors shadow-lg">
+        <div class="step-nav-row">
+            <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("gradient"))}>
+                ↻ שלב קודם
+            </button>
+            <button type="button" class="step-nav-btn" onclick={() => advance("subtitle")}>
                 סיימתי — המשך לשלב הבא ←
             </button>
         </div>
@@ -1190,10 +1183,6 @@
             {#if activeStep === "subtitle"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
-            <button type="button" class="step-back" onclick={() => advance(prevOf("subtitle"))}
-                    aria-label="חזור לשלב הקודם" title="חזור לשלב הקודם">
-                ↻ שלב קודם
-            </button>
         </div>
         <p class="step-help">משפט אחד שמסביר מה אתה מציע ולמה זה שווה לתושבים. עד 70 תווים.</p>
 
@@ -1202,16 +1191,17 @@
                onblur={() => subtitle.trim() && commitField("subtitle")}
                placeholder="לדוגמה: כל כלי עבודה שצריך — בלי תשלום, בלי בירוקרטיה"
                class="text-input" />
-        <div class="flex items-center justify-between gap-2 text-xs text-gray-500 mt-2">
+        <div class="text-xs text-gray-500 mt-2 text-end">{subtitle.length}/70</div>
+
+        <div class="step-nav-row">
+            <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("subtitle"))}>
+                ↻ שלב קודם
+            </button>
             {#if subtitle}
-                <button type="button" onclick={() => commitField("subtitle")}
-                    class="px-3 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 hover:text-amber-200 font-bold transition-colors">
+                <button type="button" class="step-nav-btn" onclick={() => commitField("subtitle")}>
                     שלב הבא ←
                 </button>
-            {:else}
-                <span></span>
             {/if}
-            <span>{subtitle.length}/70</span>
         </div>
     </section>
 
@@ -1223,10 +1213,6 @@
             {#if activeStep === "hover"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
-            <button type="button" class="step-back" onclick={() => advance(prevOf("hover"))}
-                    aria-label="חזור לשלב הקודם" title="חזור לשלב הקודם">
-                ↻ שלב קודם
-            </button>
         </div>
         <p class="step-help">
             כשמשתמש בדסקטופ מצביע עם העכבר על הפרסומת — הטקסט הזה יופיע במקום התמונה.
@@ -1240,16 +1226,17 @@
                   onblur={() => hoverText.trim() && commitField("hover")}
                   placeholder="לדוגמה: כלי עבודה לכל בית — להשאלה חינם 🛠️"
                   class="text-input"></textarea>
-        <div class="flex items-center justify-between gap-2 text-xs text-gray-500 mt-2">
+        <div class="text-xs text-gray-500 mt-2 text-end">{hoverText.length}/90</div>
+
+        <div class="step-nav-row">
+            <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("hover"))}>
+                ↻ שלב קודם
+            </button>
             {#if hoverText}
-                <button type="button" onclick={() => commitField("hover")}
-                    class="px-3 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 hover:text-amber-200 font-bold transition-colors">
+                <button type="button" class="step-nav-btn" onclick={() => commitField("hover")}>
                     שלב הבא ←
                 </button>
-            {:else}
-                <span></span>
             {/if}
-            <span>{hoverText.length}/90</span>
         </div>
     </section>
 
@@ -1261,10 +1248,6 @@
             {#if activeStep === "preview"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
-            <button type="button" class="step-back" onclick={() => advance(prevOf("preview"))}
-                    aria-label="חזור לשלב הקודם" title="חזור לשלב הקודם">
-                ↻ שלב קודם
-            </button>
         </div>
         <p class="step-help">החלף בין מצבי תצוגה. תוכל לחזור לשלבים הקודמים ולשנות בכל רגע.</p>
 
@@ -1467,11 +1450,15 @@
         {/if}
         </div>
 
-        <div class="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <button type="button" onclick={() => advance("hover")}
-                class="px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black transition-colors">
+        <div class="step-nav-row">
+            <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("preview"))}>
+                ↻ שלב קודם
+            </button>
+            <button type="button" class="step-nav-btn" onclick={() => advance("hover")}>
                 שלב הבא →
             </button>
+        </div>
+        <div class="mt-3 flex justify-center">
             <button type="button" onclick={openHelp}
                     aria-label="פנייה לעזרה בעיצוב"
                     class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-400/50 text-gray-200 hover:text-amber-300 font-bold transition-colors">
@@ -1489,10 +1476,6 @@
             {#if activeStep === "landing-link"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
-            <button type="button" class="step-back" onclick={() => advance(prevOf("landing-link"))}
-                    aria-label="חזור לשלב הקודם" title="חזור לשלב הקודם">
-                ↻ שלב קודם
-            </button>
         </div>
         <p class="step-help">בחר אופציה אחת או יותר — אם יש לך אתר, נשלח את הגולש אליו. אם לא — נשתמש בדף הנחיתה הפנימי שלנו.</p>
 
@@ -1578,9 +1561,11 @@
             </div>
         </div>
 
-        <div class="mt-4 text-center">
-            <button type="button" onclick={() => advance("products")}
-                class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold transition-colors">
+        <div class="step-nav-row">
+            <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("landing-link"))}>
+                ↻ שלב קודם
+            </button>
+            <button type="button" class="step-nav-btn" onclick={() => advance("products")}>
                 שלב הבא ←
             </button>
         </div>
@@ -1594,10 +1579,6 @@
             {#if activeStep === "products"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
-            <button type="button" class="step-back" onclick={() => advance(prevOf("products"))}
-                    aria-label="חזור לשלב הקודם" title="חזור לשלב הקודם">
-                ↻ שלב קודם
-            </button>
         </div>
         <p class="step-help">הוסף 3-6 מוצרים או שירותים. תמונה איכותית ומחיר ברור הם הדבר הכי משכנע.</p>
 
@@ -1634,9 +1615,11 @@
             + הוסף מוצר
         </button>
 
-        <div class="mt-4 text-center">
-            <button type="button" onclick={() => advance("uniqueness")}
-                class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold transition-colors">
+        <div class="step-nav-row">
+            <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("products"))}>
+                ↻ שלב קודם
+            </button>
+            <button type="button" class="step-nav-btn" onclick={() => advance("uniqueness")}>
                 שלב הבא ←
             </button>
         </div>
@@ -1650,10 +1633,6 @@
             {#if activeStep === "uniqueness"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
-            <button type="button" class="step-back" onclick={() => advance(prevOf("uniqueness"))}
-                    aria-label="חזור לשלב הקודם" title="חזור לשלב הקודם">
-                ↻ שלב קודם
-            </button>
         </div>
         <p class="step-help">
             🌟 <strong class="text-amber-300">זה החלק הכי חשוב!</strong>
@@ -1667,9 +1646,11 @@
                   class="text-input"></textarea>
         <div class="text-xs text-gray-500 mt-1 text-left">{uniqueness.length}/500</div>
 
-        <div class="mt-4 text-center">
-            <button type="button" onclick={() => advance("address")}
-                class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold transition-colors">
+        <div class="step-nav-row">
+            <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("uniqueness"))}>
+                ↻ שלב קודם
+            </button>
+            <button type="button" class="step-nav-btn" onclick={() => advance("address")}>
                 שלב הבא ←
             </button>
         </div>
@@ -1683,10 +1664,6 @@
             {#if activeStep === "address"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
-            <button type="button" class="step-back" onclick={() => advance(prevOf("address"))}
-                    aria-label="חזור לשלב הקודם" title="חזור לשלב הקודם">
-                ↻ שלב קודם
-            </button>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1705,9 +1682,11 @@
             </div>
         </div>
 
-        <div class="mt-4 text-center">
-            <button type="button" onclick={() => advance("submit")}
-                class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold transition-colors">
+        <div class="step-nav-row">
+            <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("address"))}>
+                ↻ שלב קודם
+            </button>
+            <button type="button" class="step-nav-btn" onclick={() => advance("submit")}>
                 סיימתי — שלח לאישור ←
             </button>
         </div>
@@ -1721,10 +1700,6 @@
             {#if activeStep === "submit"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
-            <button type="button" class="step-back" onclick={() => advance(prevOf("submit"))}
-                    aria-label="חזור לשלב הקודם" title="חזור לשלב הקודם">
-                ↻ שלב קודם
-            </button>
         </div>
 
         <ul class="checklist">
@@ -1747,6 +1722,12 @@
                    {canSubmit && !submitting ? 'hover:scale-[1.02] active:scale-95' : 'opacity-50 cursor-not-allowed'}">
             {#if submitting}שולח…{:else}🚀 שלח לאישור ופרסום{/if}
         </button>
+
+        <div class="step-nav-row">
+            <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("submit"))}>
+                ↻ שלב קודם
+            </button>
+        </div>
     </section>
 
     <!-- =================== STEP 13: DONE =================== -->
@@ -2031,6 +2012,35 @@
         color: rgb(252, 211, 77);
     }
     :global(.step-back:active) { transform: scale(0.97); }
+
+    /* ============== Unified step nav (prev + next at the bottom of every step) ============== */
+    :global(.step-nav-row) {
+        margin-top: 1.5rem;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+    }
+    :global(.step-nav-btn) {
+        display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+        padding: 0.7rem 1.5rem;
+        border-radius: 0.85rem;
+        background: rgb(245, 158, 11);
+        color: #000;
+        font-size: 0.95rem; font-weight: 800; line-height: 1.1;
+        border: 1px solid rgba(245, 158, 11, 0.85);
+        cursor: pointer;
+        transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+        white-space: nowrap;
+        font-family: inherit;
+        box-shadow: 0 4px 14px -4px rgba(245, 158, 11, 0.5);
+    }
+    :global(.step-nav-btn:hover) {
+        background: rgb(252, 191, 36);
+        box-shadow: 0 6px 18px -4px rgba(245, 158, 11, 0.6);
+    }
+    :global(.step-nav-btn:active) { transform: scale(0.97); }
 
     /* ============== Inputs ============== */
     :global(.text-input) {
