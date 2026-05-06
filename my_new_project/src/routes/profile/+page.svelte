@@ -973,19 +973,21 @@
 					</svg>
 
 					<!-- עיגול הודעות — שמאל מטה -->
-					<button
-						onclick={(e) => {
-							e.stopPropagation();
-							scrollToMessages();
-						}}
-						class="absolute -bottom-1 -left-1 px-2 h-[22px]
-					       bg-orange-500 border-2 border-[#0f172a] rounded-full
-					       flex items-center justify-center cursor-pointer
-					       text-white text-[11px] font-black leading-none shadow-lg
-					       hover:bg-orange-400 transition-colors whitespace-nowrap"
-					>
-						{unreadCount} הודעות
-					</button>
+					{#if unreadCount > 0}
+						<button
+							onclick={(e) => {
+								e.stopPropagation();
+								scrollToMessages();
+							}}
+							class="absolute -bottom-1 -left-1 px-2 h-[22px]
+						       bg-orange-500 border-2 border-[#0f172a] rounded-full
+						       flex items-center justify-center cursor-pointer
+						       text-white text-[11px] font-black leading-none shadow-lg
+						       hover:bg-orange-400 transition-colors whitespace-nowrap"
+						>
+							{unreadCount} הודעות
+						</button>
+					{/if}
 				</div>
 
 				<!-- תווית סטטוס מתחת לתמונה -->
@@ -2317,10 +2319,12 @@
 				הודעות אישיות
 			</h2>
 			<div class="flex items-center gap-2">
-				<span
-					class="text-sm bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1.5 rounded-full font-bold"
-					>{unreadCount} הודעות שלא נקראו</span
-				>
+				{#if unreadCount > 0}
+					<span
+						class="text-sm bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1.5 rounded-full font-bold"
+						>{unreadCount} הודעות שלא נקראו</span
+					>
+				{/if}
 				<svg
 					class="w-4 h-4 text-yellow-400 transition-transform duration-300 flex-shrink-0 {showMessages
 						? 'rotate-180'
