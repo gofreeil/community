@@ -1390,16 +1390,6 @@
             <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("preview"))}>
                 ↻ שלב קודם
             </button>
-            <button type="button" class="step-nav-btn" onclick={goToLandingEditor} disabled={movingToLanding}>
-                {#if movingToLanding}
-                    <span aria-hidden="true">⏳</span>
-                    מעביר לעורך דף הנחיתה…
-                {:else}
-                    נראה מעולה <span aria-hidden="true">👍</span> לשלב הבא
-                {/if}
-            </button>
-        </div>
-        <div class="mt-3 flex justify-center">
             <div class="relative group">
                 <button type="button" onclick={openHelp}
                         aria-label="פנייה לתמיכה — עיצוב על ידי גרפיקאי כרוך בתשלום"
@@ -1411,6 +1401,20 @@
                 <span role="tooltip"
                       class="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg border border-white/10 bg-gray-900/95 px-3 py-2 text-sm font-bold text-amber-200 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
                     עיצוב על ידי גרפיקאי כרוך בתשלום
+                </span>
+            </div>
+            <div class="relative group">
+                <button type="button" class="step-nav-btn" onclick={goToLandingEditor} disabled={movingToLanding}>
+                    {#if movingToLanding}
+                        <span aria-hidden="true">⏳</span>
+                        מעביר לעורך דף הנחיתה…
+                    {:else}
+                        נראה מעולה <span aria-hidden="true">👍</span> לשלב הבא <span aria-hidden="true">←</span>
+                    {/if}
+                </button>
+                <span role="tooltip"
+                      class="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg border border-white/10 bg-gray-900/95 px-3 py-2 text-sm font-bold text-amber-200 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                    עכשיו נערוך את דף הנחיתה
                 </span>
             </div>
         </div>
