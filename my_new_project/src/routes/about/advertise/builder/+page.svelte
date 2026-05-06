@@ -2897,15 +2897,6 @@
         background: linear-gradient(125deg, transparent 30%, rgba(255,255,255,0.18) 45%, transparent 60%);
         pointer-events: none;
     }
-    /* Decorative thin white line right where the diagonal cuts (extra polish) */
-    :global(.pro-img-wrap::before) {
-        content: "";
-        position: absolute; inset: 0;
-        background: linear-gradient(to bottom right, transparent 49.5%, rgba(255,255,255,0.6) 49.7%, rgba(255,255,255,0.6) 50%, transparent 50.2%);
-        clip-path: polygon(0 86%, 100% 76%, 100% 80%, 0 90%);
-        pointer-events: none; z-index: 3;
-        opacity: 0.5;
-    }
 
     /* Title color picker — sits inline on the left side of the step heading */
     .title-color-rail {
