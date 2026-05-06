@@ -1306,9 +1306,11 @@
         <!-- ===== MOBILE PREVIEW — full-screen popup style ===== -->
         {#if previewMode === "mobile"}
             <div class="preview-frame mobile">
-                <div class="phone-screen">
-                    <div class="phone-notch"></div>
-                    <div class="phone-content">
+                <div class="preview-with-side-caption">
+                    <div class="preview-side-caption-spacer" aria-hidden="true"></div>
+                    <div class="phone-screen">
+                        <div class="phone-notch"></div>
+                        <div class="phone-content">
                         <div class="mobile-popup">
                             <!-- Mobile: logo + title row sits ABOVE the image, regardless of logoPosition.
                                  Image area below is reserved entirely for the photo + diagonal band + subtitle. -->
@@ -1340,8 +1342,9 @@
                             </div>
                         </div>
                     </div>
+                    </div>
+                    <p class="preview-caption preview-caption-side">כך הפרסומת תיפתח בנייד למשך 5 שניות כשמשתמש לוחץ על אחד היתרונות באתר.</p>
                 </div>
-                <p class="preview-caption">כך הפרסומת תיפתח בנייד למשך 5 שניות כשמשתמש לוחץ על אחד היתרונות באתר.</p>
             </div>
         {/if}
 
@@ -1351,6 +1354,8 @@
 
                 <!-- ===== OPTION B — clean standalone card (no site context) ===== -->
                 <div class="preview-option">
+                    <div class="preview-with-side-caption">
+                        <div class="preview-side-caption-spacer" aria-hidden="true"></div>
                     <div class="clean-card-wrap">
                         <div
                             role="button"
@@ -1388,6 +1393,8 @@
                                 <p>{cta}</p>
                             </div>
                         </div>
+                    </div>
+                        <p class="preview-caption preview-caption-side">כך הפרסומת תוצג לגולשים במחשב — מוצגת קבוע בסרגל הצד של האתר.</p>
                     </div>
                 </div>
 
@@ -1831,6 +1838,46 @@
     :global(.preview-frame) { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; }
     :global(.preview-caption) {
         color: rgb(156,163,175); font-size: 0.8rem; text-align: center; max-width: 28rem;
+    }
+    /* 3-column grid: spacer | preview | caption.
+       In RTL the first column is on the right (start), the third on the left (end).
+       Phone/card stays exactly centered because spacer + caption columns are equal (1fr each). */
+    :global(.preview-with-side-caption) {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        column-gap: 1.25rem;
+        width: 100%;
+    }
+    :global(.preview-side-caption-spacer) {
+        /* invisible — its only job is to claim the right-side 1fr column so the preview centers */
+    }
+    /* Side caption — narrow, vertical-leaning, on the visual left in RTL */
+    :global(.preview-caption-side) {
+        max-width: 140px;
+        justify-self: end;        /* hug the far edge of the left column */
+        text-align: right;
+        color: rgba(203, 213, 225, 0.7);
+        font-size: 0.85rem;
+        line-height: 1.45;
+        font-weight: 500;
+        padding: 0.6rem 0.7rem;
+        border-radius: 0.6rem;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    @media (max-width: 700px) {
+        /* On narrow screens the 3-column grid would crush the preview — collapse to a column. */
+        :global(.preview-with-side-caption) {
+            grid-template-columns: 1fr;
+            row-gap: 0.75rem;
+        }
+        :global(.preview-side-caption-spacer) { display: none; }
+        :global(.preview-caption-side) {
+            max-width: none;
+            justify-self: center;
+            text-align: center;
+        }
     }
 
     :global(.phone-screen) {
