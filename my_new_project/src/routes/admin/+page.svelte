@@ -85,12 +85,20 @@
 				</h1>
 				<p class="text-gray-400 mt-1">ניהול משתמשים, תוכן והרשאות</p>
 			</div>
-			<button
-				onclick={() => goto('/')}
-				class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
-			>
-				חזרה לאתר
-			</button>
+			<div class="flex gap-2">
+				<button
+					onclick={() => goto('/admin/ads-review')}
+					class="px-4 py-2 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-200 hover:bg-amber-500/25 transition-all cursor-pointer font-bold"
+				>
+					📢 אישור פרסומות
+				</button>
+				<button
+					onclick={() => goto('/')}
+					class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+				>
+					חזרה לאתר
+				</button>
+			</div>
 		</div>
 
 		<!-- הודעת הצלחה/שגיאה -->

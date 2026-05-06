@@ -271,21 +271,29 @@
     let submitting = $state(false);
     let submitted  = $state(false);
 
+    let submitError = $state<string>("");
     async function submitAd() {
         if (!canSubmit || submitting) return;
         submitting = true;
+        submitError = "";
         try {
             const payload = {
                 title, subtitle, hoverText, cta, gradient,
                 logo, mainImage,
                 landing: { headline: landingHeadline, pitch: landingPitch, extended: landingExtended, image: landingImage, advantages: landingAdvantages, uniqueness, phone, whatsapp, website, email, address, hours, products },
-                submittedAt: new Date().toISOString(),
             };
-            const queue = JSON.parse(localStorage.getItem("ad_submissions_queue") ?? "[]");
-            queue.push(payload);
-            localStorage.setItem("ad_submissions_queue", JSON.stringify(queue));
-            await new Promise(r => setTimeout(r, 700));
+            const res = await fetch("/api/ads/submit", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+            if (!res.ok) {
+                const txt = await res.text().catch(() => "");
+                throw new Error(txt || `שגיאה ${res.status}`);
+            }
             submitted = true;
+        } catch (e) {
+            submitError = e instanceof Error ? e.message : String(e);
         } finally {
             submitting = false;
         }
@@ -627,6 +635,9 @@
 
             {#if !canSubmit}
                 <p class="text-amber-300 text-sm mt-3 font-bold">⚠️ נא למלא לפחות: תמונה, כותרת, כותרת משנה, טקסט ריחוף, ערוץ פנייה, וכותרת/פסקה לדף הנחיתה.</p>
+            {/if}
+            {#if submitError}
+                <p class="text-red-300 text-sm mt-3 font-bold">❌ שגיאה בשליחה: {submitError}</p>
             {/if}
 
             <button type="button" onclick={submitAd} disabled={!canSubmit || submitting}

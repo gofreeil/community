@@ -1,5 +1,45 @@
 <script lang="ts">
-    import { ads } from '$lib/adsData';
+    import { ads, type Ad } from '$lib/adsData';
+
+    type ApprovedAd = {
+        id: string;
+        title: string;
+        subtitle: string;
+        cta: string;
+        hover: string;
+        gradient: string;
+        mainImage: string;
+    };
+
+    let { approvedAds = [] }: { approvedAds?: ApprovedAd[] } = $props();
+
+    // Build merged list. Approved (user-submitted) ads come first, then static partner ads.
+    let merged = $derived([
+        ...approvedAds.map(a => ({
+            id: a.id,
+            title: a.title,
+            description: a.subtitle,
+            cta: a.cta || a.title,
+            hover: a.hover || undefined,
+            href: `/ads/${a.id}`,
+            target: '_self' as const,
+            image: a.mainImage,
+            color: a.gradient,
+            imageHeight: undefined as string | undefined,
+        })),
+        ...ads.map(a => ({
+            id: String(a.id),
+            title: a.title,
+            description: a.description,
+            cta: a.cta,
+            hover: a.hover,
+            href: a.href,
+            target: '_blank' as const,
+            image: a.image,
+            color: a.color,
+            imageHeight: a.imageHeight,
+        })),
+    ]);
 </script>
 
 <aside
@@ -10,16 +50,15 @@
         מתקדמים לחברה מתוקנת ועצמאית
     </h4>
     <div class="space-y-4">
-        {#each ads as ad (ad.id)}
+        {#each merged as ad (ad.id)}
             <a
                 href={ad.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="{ad.title} – {ad.description} (נפתח בחלון חדש)"
+                target={ad.target}
+                rel={ad.target === '_blank' ? 'noopener noreferrer' : undefined}
+                aria-label="{ad.title} – {ad.description}{ad.target === '_blank' ? ' (נפתח בחלון חדש)' : ''}"
                 class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105 group relative"
             >
                 <div class="relative overflow-hidden" style="height: {ad.imageHeight ?? '160px'}">
-                    <!-- wrapper לזום — לא absolute כדי לא לשבור overflow:hidden -->
                     <div class="absolute inset-0 overflow-hidden">
                         <img
                             src={ad.image}
@@ -27,7 +66,6 @@
                             class="w-full h-full object-cover transition-opacity duration-[1500ms] group-hover:opacity-0"
                         />
                     </div>
-                    <!-- Hover overlay -->
                     <div
                         class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-[1500ms] flex items-center justify-center bg-black/60 backdrop-blur-sm"
                     >
