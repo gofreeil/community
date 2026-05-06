@@ -816,6 +816,16 @@
 						>{tFn("section_personal_area")}</span
 					>
 				</h2>
+				{#if unreadCount > 0}
+					<button
+						type="button"
+						onclick={(e) => { e.stopPropagation(); scrollToMessages(); }}
+						class="inline-flex items-center gap-1 px-2 h-[22px] rounded-full bg-orange-500 hover:bg-orange-400 text-white text-[11px] font-black leading-none shadow-lg transition-colors whitespace-nowrap border-2 border-[#0f172a] animate-pulse"
+						title="יש לך הודעות חדשות"
+					>
+						💬 {unreadCount}
+					</button>
+				{/if}
 			</div>
 			<div class="flex items-center gap-2">
 				{#if isSuperAdmin}
@@ -2681,6 +2691,37 @@
 							<span class="text-xs bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2.5 py-0.5 rounded-full font-bold">{data.items.length}</span>
 						{/if}
 					</h3>
+
+					{#if adDraft}
+						<div class="mb-3 rounded-2xl border-2 border-purple-500/40 bg-gradient-to-br from-purple-900/30 to-indigo-900/20 p-3 md:p-4">
+							<div class="flex items-start gap-3">
+								{#if adDraft.mainImage}
+									<img src={adDraft.mainImage} alt="טיוטת הפרסומת" class="w-14 h-14 md:w-16 md:h-16 rounded-xl object-cover flex-shrink-0 border border-white/10" />
+								{:else}
+									<div class="w-14 h-14 md:w-16 md:h-16 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center flex-shrink-0 text-2xl">🎨</div>
+								{/if}
+								<div class="flex-1 min-w-0">
+									<div class="flex items-center gap-2 mb-1 flex-wrap">
+										<span class="text-purple-300 font-black text-sm md:text-base">📝 פרסומת בעריכה</span>
+										<span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 font-bold">{adDraftProgress}% הושלמו</span>
+									</div>
+									<p class="text-white font-bold text-xs md:text-sm leading-tight mb-2 truncate">
+										{adDraft.title || "ללא כותרת"}{adDraft.subtitle ? " — " + adDraft.subtitle : ""}
+									</p>
+									<div class="flex items-center gap-2 flex-wrap">
+										<a href="/about/advertise/builder"
+										   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-black text-xs transition-colors">
+											🚀 המשך לערוך
+										</a>
+										<button type="button" onclick={dismissAdDraft}
+										   class="text-[11px] text-gray-400 hover:text-red-400 underline underline-offset-2 font-bold">
+											מחק טיוטה
+										</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					{/if}
 
 					{#if giveawayDrafts.length > 0}
 						<a
