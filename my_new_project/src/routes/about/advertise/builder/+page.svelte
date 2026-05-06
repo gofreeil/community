@@ -870,7 +870,7 @@
         <div class="step-head" class:step-title-light={litFlags.image.title}>
             <span class="step-num" class:step-num-light={litFlags.image.num}>1</span>
             <h2>העלה תמונה ראשית לפרסומת</h2>
-            {#if activeStep === "image" && !mainImage}
+            {#if !mainImage}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
         </div>
@@ -934,7 +934,7 @@
         <div class="step-head" class:step-title-light={litFlags.logo.title}>
             <span class="step-num" class:step-num-light={litFlags.logo.num}>2</span>
             <h2>לוגו (אופציונלי)</h2>
-            {#if activeStep === "logo" && !logo}
+            {#if !logo}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
             <button type="button" class="step-back" onclick={() => advance(prevOf("logo"))}
@@ -1052,7 +1052,7 @@
         <div class="step-head" class:step-title-light={litFlags.title.title}>
             <span class="step-num" class:step-num-light={litFlags.title.num}>3</span>
             <h2>כותרת ראשית</h2>
-            {#if activeStep === "title" && !title}
+            {#if !title}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
             <button type="button" class="step-back" onclick={() => advance(prevOf("title"))}
@@ -1132,9 +1132,7 @@
         <div class="step-head" class:step-title-light={litFlags.gradient.title}>
             <span class="step-num" class:step-num-light={litFlags.gradient.num}>4</span>
             <h2>🎨 צבע ועיצוב הרצועה — הרקע הצבעוני של הפרסומת</h2>
-            {#if activeStep === "gradient"}
-                <span class="tutorial-finger" aria-hidden="true">👇</span>
-            {/if}
+            <span class="tutorial-finger" aria-hidden="true">👇</span>
             <button type="button" class="step-back" onclick={() => advance(prevOf("gradient"))}
                     aria-label="חזור לשלב הקודם" title="חזור לשלב הקודם">
                 ↻ שלב קודם
@@ -1185,7 +1183,7 @@
         <div class="step-head" class:step-title-light={litFlags.subtitle.title}>
             <span class="step-num" class:step-num-light={litFlags.subtitle.num}>5</span>
             <h2>כותרת משנה / סלוגן</h2>
-            {#if activeStep === "subtitle" && !subtitle}
+            {#if !subtitle}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
             <button type="button" class="step-back" onclick={() => advance(prevOf("subtitle"))}
@@ -1218,7 +1216,7 @@
         <div class="step-head" class:step-title-light={litFlags.hover.title}>
             <span class="step-num" class:step-num-light={litFlags.hover.num}>6</span>
             <h2>טקסט בריחוף — מה רואים כשהעכבר על הפרסומת</h2>
-            {#if activeStep === "hover" && !hoverText}
+            {#if !hoverText}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
             <button type="button" class="step-back" onclick={() => advance(prevOf("hover"))}
@@ -1256,9 +1254,7 @@
         <div class="step-head" class:step-title-light={litFlags.preview.title}>
             <span class="step-num" class:step-num-light={litFlags.preview.num}>7</span>
             <h2>תצוגה מקדימה — איך זה יראה לגולשים?</h2>
-            {#if activeStep === "preview"}
-                <span class="tutorial-finger" aria-hidden="true">👇</span>
-            {/if}
+            <span class="tutorial-finger" aria-hidden="true">👇</span>
             <button type="button" class="step-back" onclick={() => advance(prevOf("preview"))}
                     aria-label="חזור לשלב הקודם" title="חזור לשלב הקודם">
                 ↻ שלב קודם
@@ -1484,9 +1480,7 @@
         <div class="step-head" class:step-title-light={litFlags["landing-link"].title}>
             <span class="step-num" class:step-num-light={litFlags["landing-link"].num}>8</span>
             <h2>דף נחיתה — לאן המשתמש יגיע?</h2>
-            {#if activeStep === "landing-link"}
-                <span class="tutorial-finger" aria-hidden="true">👇</span>
-            {/if}
+            <span class="tutorial-finger" aria-hidden="true">👇</span>
             <button type="button" class="step-back" onclick={() => advance(prevOf("landing-link"))}
                     aria-label="חזור לשלב הקודם" title="חזור לשלב הקודם">
                 ↻ שלב קודם
@@ -1589,9 +1583,7 @@
         <div class="step-head" class:step-title-light={litFlags.products.title}>
             <span class="step-num" class:step-num-light={litFlags.products.num}>9</span>
             <h2>תמונות מוצרים / שירותים + מחירים</h2>
-            {#if activeStep === "products"}
-                <span class="tutorial-finger" aria-hidden="true">👇</span>
-            {/if}
+            <span class="tutorial-finger" aria-hidden="true">👇</span>
             <button type="button" class="step-back" onclick={() => advance(prevOf("products"))}
                     aria-label="חזור לשלב הקודם" title="חזור לשלב הקודם">
                 ↻ שלב קודם
@@ -1645,9 +1637,7 @@
         <div class="step-head" class:step-title-light={litFlags.uniqueness.title}>
             <span class="step-num" class:step-num-light={litFlags.uniqueness.num}>10</span>
             <h2>מה מייחד אותך?</h2>
-            {#if activeStep === "uniqueness"}
-                <span class="tutorial-finger" aria-hidden="true">👇</span>
-            {/if}
+            <span class="tutorial-finger" aria-hidden="true">👇</span>
             <button type="button" class="step-back" onclick={() => advance(prevOf("uniqueness"))}
                     aria-label="חזור לשלב הקודם" title="חזור לשלב הקודם">
                 ↻ שלב קודם
@@ -1678,9 +1668,7 @@
         <div class="step-head" class:step-title-light={litFlags.address.title}>
             <span class="step-num" class:step-num-light={litFlags.address.num}>11</span>
             <h2>כתובת ושעות פעילות</h2>
-            {#if activeStep === "address"}
-                <span class="tutorial-finger" aria-hidden="true">👇</span>
-            {/if}
+            <span class="tutorial-finger" aria-hidden="true">👇</span>
             <button type="button" class="step-back" onclick={() => advance(prevOf("address"))}
                     aria-label="חזור לשלב הקודם" title="חזור לשלב הקודם">
                 ↻ שלב קודם
@@ -1716,9 +1704,7 @@
         <div class="step-head" class:step-title-light={litFlags.submit.title}>
             <span class="step-num" class:step-num-light={litFlags.submit.num}>12</span>
             <h2>בדיקה אחרונה ושליחה</h2>
-            {#if activeStep === "submit"}
-                <span class="tutorial-finger" aria-hidden="true">👇</span>
-            {/if}
+            <span class="tutorial-finger" aria-hidden="true">👇</span>
             <button type="button" class="step-back" onclick={() => advance(prevOf("submit"))}
                     aria-label="חזור לשלב הקודם" title="חזור לשלב הקודם">
                 ↻ שלב קודם
