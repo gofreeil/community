@@ -1381,15 +1381,12 @@
                                     <h3 class="hover-title">{title || "כותרת"}</h3>
                                     <p class="hover-text">{hoverText || "כאן יופיע הטקסט בריחוף"}</p>
                                 </div>
-                                {#if logo && logoPosition !== "cta"}
+                                {#if logo}
                                     <img src={logo} alt="לוגו"
-                                         class="ad-logo {logoShape === 'circle' ? 'ad-logo-circle' : ''} {logoPosition === 'left' ? 'ad-logo-left' : 'ad-logo-right'}" />
+                                         class="ad-logo {logoShape === 'circle' ? 'ad-logo-circle' : ''} {logoPosition === 'left' ? 'ad-logo-left' : logoPosition === 'cta' ? 'ad-logo-cta' : 'ad-logo-right'}" />
                                 {/if}
                             </div>
-                            <div class="ad-cta bg-gradient-to-r {gradient}" class:ad-cta-with-logo={logo && logoPosition === 'cta'}>
-                                {#if logo && logoPosition === "cta"}
-                                    <img src={logo} alt="לוגו" class="ad-cta-logo {logoShape === 'circle' ? 'ad-cta-logo-circle' : ''}" />
-                                {/if}
+                            <div class="ad-cta bg-gradient-to-r {gradient}">
                                 <p>{cta}</p>
                             </div>
                         </div>
@@ -1838,24 +1835,19 @@
                             <div class="placeholder-dashed placeholder-line small">סלוגן — שלב 4</div>
                         {/if}
                     </div>
-                    {#if logo && logoPosition !== "cta"}
+                    {#if logo}
                         <img src={logo} alt="לוגו"
-                             class="ad-logo {logoShape === 'circle' ? 'ad-logo-circle' : ''} {logoPosition === 'left' ? 'ad-logo-left' : 'ad-logo-right'}"
+                             class="ad-logo {logoShape === 'circle' ? 'ad-logo-circle' : ''} {logoPosition === 'left' ? 'ad-logo-left' : logoPosition === 'cta' ? 'ad-logo-cta' : 'ad-logo-right'}"
                              style:opacity={activeStep === "hover" ? 0 : 1} />
-                    {:else if !logo && logoPosition !== "cta"}
-                        <div class="placeholder-dashed placeholder-logo {logoPosition === 'left' ? 'logo-pos-left' : 'logo-pos-right'}" style:opacity={activeStep === "hover" ? 0 : 1}>לוגו<br/>שלב 2</div>
+                    {:else}
+                        <div class="placeholder-dashed placeholder-logo {logoPosition === 'left' ? 'logo-pos-left' : logoPosition === 'cta' ? 'logo-pos-cta' : 'logo-pos-right'}" style:opacity={activeStep === "hover" ? 0 : 1}>לוגו<br/>שלב 2</div>
                     {/if}
                     <div class="hover-overlay" style:opacity={activeStep === "hover" ? 1 : 0}>
                         <h3 class="hover-title">{title || "כותרת"}</h3>
                         <p class="hover-text">{hoverText || "כאן יופיע הטקסט בריחוף"}</p>
                     </div>
                 </div>
-                <div class="ad-cta bg-gradient-to-r {gradient}" class:ad-cta-with-logo={logoPosition === 'cta'}>
-                    {#if logo && logoPosition === "cta"}
-                        <img src={logo} alt="לוגו" class="ad-cta-logo {logoShape === 'circle' ? 'ad-cta-logo-circle' : ''}" />
-                    {:else if !logo && logoPosition === "cta"}
-                        <span class="placeholder-dashed placeholder-cta-logo">לוגו</span>
-                    {/if}
+                <div class="ad-cta bg-gradient-to-r {gradient}">
                     <p>{cta}</p>
                 </div>
             </div>
@@ -2277,20 +2269,13 @@
         color: white; font-weight: 700; font-size: 0.78rem; text-align: center;
         border: none;
     }
-    /* Logo positioned next to the CTA text in the mobile popup */
-    :global(.popup-cta-with-logo) {
-        display: flex; align-items: center; justify-content: center;
-        gap: 0.5rem;
+    /* Logo straddling the right corner of the diagonal band (mobile popup). 20px = half of 40px logo. */
+    :global(.popup-logo-cta) {
+        top: auto !important;
+        bottom: calc(100% - var(--diag-top-right, 78%) - 20px) !important;
+        right: 8px !important;
+        left: auto !important;
     }
-    :global(.popup-cta-logo) {
-        width: 28px; height: 28px;
-        border-radius: 6px;
-        background: white; padding: 3px;
-        object-fit: contain;
-        flex-shrink: 0;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.35);
-    }
-    :global(.popup-cta-logo-circle) { border-radius: 50% !important; }
 
     /* ============== TWO-COLUMN BUILDER LAYOUT — steps + jumping live demo ============== */
     /* The demo is absolutely positioned — its top is computed dynamically to align with
@@ -2440,6 +2425,7 @@
     }
     :global(.placeholder-logo.logo-pos-right) { right: 6px; }
     :global(.placeholder-logo.logo-pos-left)  { left: 6px; }
+    :global(.placeholder-logo.logo-pos-cta)   { top: auto; bottom: calc(100% - var(--diag-top-right, 78%) - 14px); right: 6px; }
 
     /* ============== DESKTOP PREVIEW — TWO COMPETING OPTIONS ============== */
     :global(.preview-option) {
@@ -2779,27 +2765,13 @@
     :global(.ad-logo-right) { right: 6px; left: auto; }
     :global(.ad-logo-left)  { left: 6px;  right: auto; }
     :global(.ad-logo-circle) { border-radius: 50%; }
-    /* Logo positioned next to the CTA text — sits inside .ad-cta as a flex item */
-    :global(.ad-cta-with-logo) {
-        display: flex; align-items: center; justify-content: center;
-        gap: 0.4rem;
-    }
-    :global(.ad-cta-with-logo p) { margin: 0; }
-    :global(.ad-cta-logo) {
-        width: 22px; height: 22px;
-        border-radius: 4px;
-        background: white; padding: 2px;
-        object-fit: contain;
-        flex-shrink: 0;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.35);
-    }
-    :global(.ad-cta-logo-circle) { border-radius: 50%; }
-    :global(.placeholder-cta-logo) {
-        flex-shrink: 0;
-        font-size: 0.5rem;
-        padding: 0.15rem 0.3rem;
-        line-height: 1;
-        border-radius: 0.25rem;
+    /* Logo straddling the right corner of the diagonal colored band.
+       Center sits at --diag-top-right (the band's right starting Y). 18px = half of 36px logo. */
+    :global(.ad-logo-cta) {
+        top: auto;
+        bottom: calc(100% - var(--diag-top-right, 78%) - 18px);
+        right: 6px;
+        left: auto;
     }
     :global(.hover-overlay) {
         position: absolute; inset: 0;
