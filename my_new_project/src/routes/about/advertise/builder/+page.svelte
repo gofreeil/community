@@ -491,6 +491,8 @@
     // ===== Mobile/Desktop preview toggle =====
     let previewMode = $state<"mobile" | "desktop" | "landing">("mobile");
     let hoverPreview = $state(false);
+    // בשלב 6 (טקסט בריחוף) — מציגים אוטומטית את הצד האחורי (מצב hover) של הפרסומת
+    const showHover = $derived(hoverPreview || activeStep === "hover");
 
     // ===== Access gate =====
     // Allow entry when one of:
@@ -1214,7 +1216,7 @@
     </section>
 
     <!-- =================== STEP 6: HOVER TEXT =================== -->
-    <section bind:this={stepRefs.hover} class="step-card">
+    <section bind:this={stepRefs.hover} class="step-card" onclick={() => activeStep === "hover" || (activeStep = "hover")}>
         <div class="step-head" class:step-title-light={litFlags.hover.title}>
             <span class="step-num" class:step-num-light={litFlags.hover.num}>6</span>
             <h2>טקסט בריחוף — מה רואים כשהעכבר על הפרסומת</h2>
@@ -1339,19 +1341,19 @@
                         >
                             <div class="ad-img-wrap pro-img-wrap clean-card-img">
                                 {#if mainImage}
-                                    <img src={mainImage} alt={title} class="ad-img" style:opacity={hoverPreview ? 0 : 1} />
+                                    <img src={mainImage} alt={title} class="ad-img" style:opacity={showHover ? 0 : 1} />
                                 {:else}
                                     <div class="img-placeholder">תמונה</div>
                                 {/if}
-                                <div class="pro-diag bg-gradient-to-br {gradient}" style:opacity={hoverPreview ? 0 : 1}></div>
-                                <div class="pro-title-top" style:opacity={hoverPreview ? 0 : 1} style:transform="translateY({titleOffsetY}px)">
+                                <div class="pro-diag bg-gradient-to-br {gradient}" style:opacity={showHover ? 0 : 1}></div>
+                                <div class="pro-title-top" style:opacity={showHover ? 0 : 1} style:transform="translateY({titleOffsetY}px)">
                                     <h3 class="pro-title" style:color={titleColor}>{title || "כותרת ראשית"}</h3>
                                 </div>
-                                <div class="pro-title-wrap" style:opacity={hoverPreview ? 0 : 1}>
+                                <div class="pro-title-wrap" style:opacity={showHover ? 0 : 1}>
                                     <p class="pro-sub">{subtitle || "סלוגן / כותרת משנה"}</p>
                                     <span class="pro-demo-cta">הקלק לפרטים והזמנות</span>
                                 </div>
-                                <div class="hover-overlay" style:opacity={hoverPreview ? 1 : 0}>
+                                <div class="hover-overlay" style:opacity={showHover ? 1 : 0}>
                                     <h3 class="hover-title">{title || "כותרת"}</h3>
                                     <p class="hover-text">{hoverText || "כאן יופיע הטקסט בריחוף"}</p>
                                 </div>
@@ -1778,23 +1780,24 @@
                 <div class="ad-img-wrap pro-img-wrap live-demo-img-wrap">
                     {#if mainImage}
                         <img src={mainImage} alt={title} class="ad-img"
-                             style:object-position="{mainImageObjectX}% {mainImageObjectY}%" />
+                             style:object-position="{mainImageObjectX}% {mainImageObjectY}%"
+                             style:opacity={activeStep === "hover" ? 0 : 1} />
                     {:else}
-                        <div class="placeholder-dashed placeholder-img">
+                        <div class="placeholder-dashed placeholder-img" style:opacity={activeStep === "hover" ? 0 : 1}>
                             <div class="placeholder-icon">📸</div>
                             <p>תמונה ראשית</p>
                             <p class="placeholder-hint">שלב 1</p>
                         </div>
                     {/if}
-                    <div class="pro-diag bg-gradient-to-br {gradient}"></div>
-                    <div class="pro-title-top" style:transform="translateY({titleOffsetY}px)">
+                    <div class="pro-diag bg-gradient-to-br {gradient}" style:opacity={activeStep === "hover" ? 0 : 1}></div>
+                    <div class="pro-title-top" style:transform="translateY({titleOffsetY}px)" style:opacity={activeStep === "hover" ? 0 : 1}>
                         {#if title}
                             <h3 class="pro-title" style:color={titleColor}>{title}</h3>
                         {:else}
                             <div class="placeholder-dashed placeholder-line">כותרת — שלב 3</div>
                         {/if}
                     </div>
-                    <div class="pro-title-wrap">
+                    <div class="pro-title-wrap" style:opacity={activeStep === "hover" ? 0 : 1}>
                         {#if subtitle}
                             <p class="pro-sub">{subtitle}</p>
                         {:else}
@@ -1803,10 +1806,15 @@
                     </div>
                     {#if logo}
                         <img src={logo} alt="לוגו"
-                             class="ad-logo {logoShape === 'circle' ? 'ad-logo-circle' : ''} {logoPosition === 'left' ? 'ad-logo-left' : 'ad-logo-right'}" />
+                             class="ad-logo {logoShape === 'circle' ? 'ad-logo-circle' : ''} {logoPosition === 'left' ? 'ad-logo-left' : 'ad-logo-right'}"
+                             style:opacity={activeStep === "hover" ? 0 : 1} />
                     {:else}
-                        <div class="placeholder-dashed placeholder-logo {logoPosition === 'left' ? 'logo-pos-left' : 'logo-pos-right'}">לוגו<br/>שלב 2</div>
+                        <div class="placeholder-dashed placeholder-logo {logoPosition === 'left' ? 'logo-pos-left' : 'logo-pos-right'}" style:opacity={activeStep === "hover" ? 0 : 1}>לוגו<br/>שלב 2</div>
                     {/if}
+                    <div class="hover-overlay" style:opacity={activeStep === "hover" ? 1 : 0}>
+                        <h3 class="hover-title">{title || "כותרת"}</h3>
+                        <p class="hover-text">{hoverText || "כאן יופיע הטקסט בריחוף"}</p>
+                    </div>
                 </div>
                 <div class="ad-cta bg-gradient-to-r {gradient}">
                     <p>{cta}</p>
