@@ -228,6 +228,9 @@
 	let displayedMessages = $derived.by(() => {
 		const base = visibleMessages;
 		if (!adDraft) return base;
+		// אם המשתמש סיים את העריכה (100%) — לא צריך להציג nag "סיים את עריכתו".
+		// הוא יראה את כרטיס "פרסומת בעריכה" למטה אם ירצה להמשיך לפרסום.
+		if (adDraftProgress >= 100) return base;
 		let extraTxt = "";
 		if (freeEditInfo) {
 			extraTxt = freeEditInfo.expired
@@ -877,6 +880,35 @@
 			</button>
 		{/each}
 	</div>
+
+	<!-- באנר outage — מוצג כש-Strapi לא זמין -->
+	{#if data.user && data.strapiAvailable === false}
+		<div
+			class="mb-3 rounded-2xl border-2 border-amber-500/40 bg-gradient-to-r from-amber-500/15 to-orange-500/10 px-4 py-3 flex items-start gap-3 shadow-lg"
+			role="alert"
+		>
+			<span class="text-2xl flex-shrink-0">⚠️</span>
+			<div class="flex-1 min-w-0">
+				<p class="text-amber-200 font-black text-sm md:text-base mb-0.5">
+					בעיה זמנית בטעינת הפרופיל
+				</p>
+				<p class="text-amber-100/80 text-xs md:text-sm">
+					המידע שלך מאובטח ולא נמחק.
+					{#if data.userFromStaleCache}
+						אנחנו מציגים נתונים מהזיכרון האחרון —
+					{/if}
+					נסה לרענן את הדף בעוד דקה.
+				</p>
+			</div>
+			<button
+				type="button"
+				onclick={() => location.reload()}
+				class="flex-shrink-0 px-3 py-1.5 rounded-lg bg-amber-500/20 text-amber-200 text-xs font-black border border-amber-500/40 hover:bg-amber-500/30 transition-colors"
+			>
+				🔄 רענן
+			</button>
+		</div>
+	{/if}
 
 	<!-- ===== קומה 1: האזור האישי ===== -->
 	<div
