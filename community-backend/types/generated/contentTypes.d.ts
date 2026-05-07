@@ -890,6 +890,59 @@ export interface ApiRevenueConfigRevenueConfig extends Struct.SingleTypeSchema {
   };
 }
 
+export interface ApiSubmittedAdSubmittedAd extends Struct.CollectionTypeSchema {
+  collectionName: 'submitted_ads';
+  info: {
+    description: '\u05E4\u05E8\u05E1\u05D5\u05DE\u05D5\u05EA \u05E9\u05DE\u05E9\u05EA\u05DE\u05E9\u05D9\u05DD \u05E9\u05DC\u05D7\u05D5 \u05DC\u05D0\u05D9\u05E9\u05D5\u05E8 \u2014 pending / approved / rejected';
+    displayName: 'Submitted Ad';
+    pluralName: 'submitted-ads';
+    singularName: 'submitted-ad';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    ad_status: Schema.Attribute.Enumeration<
+      ['pending', 'approved', 'rejected']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'pending'>;
+    company_name: Schema.Attribute.String;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    cta: Schema.Attribute.String;
+    decided_at: Schema.Attribute.DateTime;
+    decided_by: Schema.Attribute.String;
+    duration_days: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<30>;
+    expires_at: Schema.Attribute.DateTime;
+    gradient: Schema.Attribute.String;
+    hover_text: Schema.Attribute.Text;
+    landing: Schema.Attribute.JSON;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::submitted-ad.submitted-ad'
+    > &
+      Schema.Attribute.Private;
+    logo: Schema.Attribute.Text;
+    main_image: Schema.Attribute.Text;
+    payment_amount: Schema.Attribute.Decimal;
+    publishedAt: Schema.Attribute.DateTime;
+    rejection_reason: Schema.Attribute.Text;
+    reminders_sent: Schema.Attribute.JSON;
+    submitted_at: Schema.Attribute.DateTime;
+    submitted_by_email: Schema.Attribute.String;
+    submitted_by_id: Schema.Attribute.String;
+    submitted_by_name: Schema.Attribute.String;
+    subtitle: Schema.Attribute.Text;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface PluginContentReleasesRelease
   extends Struct.CollectionTypeSchema {
   collectionName: 'strapi_releases';
@@ -1430,6 +1483,7 @@ declare module '@strapi/strapi' {
       'api::profile.profile': ApiProfileProfile;
       'api::push-subscription.push-subscription': ApiPushSubscriptionPushSubscription;
       'api::revenue-config.revenue-config': ApiRevenueConfigRevenueConfig;
+      'api::submitted-ad.submitted-ad': ApiSubmittedAdSubmittedAd;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;

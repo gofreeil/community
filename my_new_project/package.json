@@ -4,7 +4,9 @@
 	"version": "0.0.1",
 	"type": "module",
 	"scripts": {
-		"dev": "vite dev",
+		"dev": "concurrently -n frontend,backend -c cyan,magenta --kill-others-on-fail \"vite dev\" \"npm --prefix ../community-backend run develop\"",
+		"dev:frontend": "vite dev",
+		"dev:backend": "npm --prefix ../community-backend run develop",
 		"build": "vite build",
 		"preview": "vite preview",
 		"start": "node build/index.js",
@@ -21,6 +23,7 @@
 		"@types/bcryptjs": "^2.4.6",
 		"@types/web-push": "^3.6.4",
 		"autoprefixer": "^10.4.24",
+		"concurrently": "^9.2.1",
 		"flag-icons": "^7.5.0",
 		"postcss": "^8.5.6",
 		"svelte": "^5.49.2",
