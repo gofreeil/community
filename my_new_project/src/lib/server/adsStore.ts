@@ -5,10 +5,15 @@
 // ============================================================
 
 import { strapiGet, strapiPost, strapiPut, strapiDelete, StrapiContentTypeError } from './strapiClient.js';
+import { createItem } from './db.js';
 
 const ENDPOINT = '/api/submitted-ads';
 
+const DEFAULT_DURATION_DAYS = 30;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
 export type AdStatus = 'pending' | 'approved' | 'rejected';
+export type ReminderStage = '30d' | '7d' | '1d';
 
 export interface SubmittedAd {
     id: string;
@@ -18,6 +23,13 @@ export interface SubmittedAd {
     decidedAt?: string;
     decidedBy?: string;
     rejectionReason?: string;
+
+    // תזמון, תשלום, תזכורות
+    expiresAt?: string;
+    durationDays?: number;
+    companyName?: string;
+    paymentAmount?: number;
+    remindersSent?: ReminderStage[];
 
     // Card fields
     title: string;
@@ -65,6 +77,11 @@ interface StrapiAdAttrs {
     decided_at: string | null;
     decided_by: string | null;
     rejection_reason: string | null;
+    expires_at: string | null;
+    duration_days: number | null;
+    company_name: string | null;
+    payment_amount: number | string | null;
+    reminders_sent: ReminderStage[] | null;
 }
 
 interface StrapiAd extends StrapiAdAttrs {
@@ -98,6 +115,11 @@ function fromStrapi(s: StrapiAd): SubmittedAd {
         decidedAt: s.decided_at ?? undefined,
         decidedBy: s.decided_by ?? undefined,
         rejectionReason: s.rejection_reason ?? undefined,
+        expiresAt: s.expires_at ?? undefined,
+        durationDays: s.duration_days ?? undefined,
+        companyName: s.company_name ?? undefined,
+        paymentAmount: s.payment_amount != null ? Number(s.payment_amount) : undefined,
+        remindersSent: Array.isArray(s.reminders_sent) ? s.reminders_sent : [],
         title: s.title ?? '',
         subtitle: s.subtitle ?? '',
         hoverText: s.hover_text ?? '',
@@ -184,15 +206,21 @@ export async function submitAd(payload: Omit<SubmittedAd, 'id' | 'status' | 'sub
     return fromStrapi(res.data);
 }
 
-export async function approveAd(id: string, decidedBy: string): Promise<SubmittedAd | null> {
+export async function approveAd(id: string, decidedBy: string, durationDays?: number): Promise<SubmittedAd | null> {
     const existing = await findByDocumentId(id);
     if (!existing) return null;
+    const days = durationDays ?? existing.duration_days ?? DEFAULT_DURATION_DAYS;
+    const now = new Date();
+    const expires = new Date(now.getTime() + days * DAY_MS);
     const res = await strapiPut<{ data: StrapiAd }>(`${ENDPOINT}/${id}`, {
         data: {
-            ad_status:   'approved',
-            decided_at:  new Date().toISOString(),
-            decided_by:  decidedBy,
+            ad_status:        'approved',
+            decided_at:       now.toISOString(),
+            decided_by:       decidedBy,
             rejection_reason: null,
+            duration_days:    days,
+            expires_at:       expires.toISOString(),
+            reminders_sent:   [],
         },
     });
     return fromStrapi(res.data);
@@ -302,4 +330,201 @@ export async function getAdsStats(): Promise<AdsStats> {
 export async function countPending(): Promise<number> {
     const list = await listByStatus('pending');
     return list.length;
+}
+
+// ============================================================
+// תזמון + תזכורות פגות תוקף
+// ============================================================
+
+export interface AdSchedule {
+    id: string;
+    title: string;
+    advertiserName: string;
+    advertiserEmail: string;
+    publishedAt: string;
+    expiresAt: string;
+    durationDays: number;
+    daysLeft: number;
+    state: 'expired' | 'ending' | 'active';   // ending = ≤7 ימים
+    paymentAmount: number;
+}
+
+export function computeSchedule(ad: SubmittedAd): AdSchedule | null {
+    if (ad.status !== 'approved' || !ad.decidedAt) return null;
+    const days = ad.durationDays ?? DEFAULT_DURATION_DAYS;
+    const publishedAt = ad.decidedAt;
+    const expiresAt = ad.expiresAt ?? new Date(new Date(publishedAt).getTime() + days * DAY_MS).toISOString();
+    const daysLeft = Math.ceil((new Date(expiresAt).getTime() - Date.now()) / DAY_MS);
+    const state: AdSchedule['state'] = daysLeft < 0 ? 'expired' : daysLeft <= 7 ? 'ending' : 'active';
+    return {
+        id: ad.id,
+        title: ad.title,
+        advertiserName: ad.submittedBy?.name ?? ad.companyName ?? '—',
+        advertiserEmail: ad.submittedBy?.email ?? '',
+        publishedAt,
+        expiresAt,
+        durationDays: days,
+        daysLeft,
+        state,
+        paymentAmount: ad.paymentAmount ?? 0,
+    };
+}
+
+export async function listSchedules(): Promise<AdSchedule[]> {
+    const approved = await listByStatus('approved');
+    return approved.map(computeSchedule).filter((s): s is AdSchedule => s !== null);
+}
+
+// ----- תזכורות אוטומטיות לאזור האישי של המפרסמים -----
+
+interface ReminderRule {
+    stage: ReminderStage;
+    label: string;
+    minDays: number;   // כולל
+    maxDays: number;   // כולל
+}
+
+const REMINDER_RULES: ReminderRule[] = [
+    { stage: '30d', label: '30 ימים',  minDays: 25, maxDays: 30 },
+    { stage: '7d',  label: 'שבוע',     minDays: 5,  maxDays: 7 },
+    { stage: '1d',  label: 'יום אחרון', minDays: 0,  maxDays: 1 },
+];
+
+function nextReminderForAd(ad: SubmittedAd): ReminderRule | null {
+    const sched = computeSchedule(ad);
+    if (!sched || sched.state === 'expired') return null;
+    const sent = new Set(ad.remindersSent ?? []);
+    for (const rule of REMINDER_RULES) {
+        if (sent.has(rule.stage)) continue;
+        if (sched.daysLeft >= rule.minDays && sched.daysLeft <= rule.maxDays) {
+            return rule;
+        }
+    }
+    return null;
+}
+
+async function sendReminderMessage(ad: SubmittedAd, rule: ReminderRule): Promise<void> {
+    const userId = ad.submittedBy?.id;
+    if (!userId) return;
+    const sched = computeSchedule(ad);
+    if (!sched) return;
+    const expiryDate = new Date(sched.expiresAt).toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const label =
+        rule.stage === '30d' ? `הפרסומת שלך "${ad.title}" תפוג בעוד ${rule.label}` :
+        rule.stage === '7d'  ? `נותר ${rule.label} עד שהפרסומת שלך "${ad.title}" תפוג`  :
+                                `היום היום האחרון של הפרסומת שלך "${ad.title}"`;
+    const description = rule.stage === '1d'
+        ? `הפרסומת תוסר מהאתר בסוף היום (${expiryDate}).\n\nרוצה להאריך? הכנס לאזור האישי שלך וצור איתנו קשר.`
+        : `הפרסומת תפוג בתאריך ${expiryDate}.\n\nכדי להאריך את הפרסום או לעדכן את התוכן — היכנס לאזור האישי שלך.`;
+    try {
+        await createItem({
+            category:    'message',
+            label,
+            description,
+            icon:        rule.stage === '1d' ? '⏰' : '📅',
+            color:       rule.stage === '1d' ? 'red' : rule.stage === '7d' ? 'amber' : 'blue',
+            user_id:     userId,
+            extra_fields: {
+                type:        'ad_expiry_reminder',
+                stage:       rule.stage,
+                ad_id:       ad.id,
+                ad_title:    ad.title,
+                expires_at:  sched.expiresAt,
+                sent_at:     new Date().toISOString(),
+            },
+        });
+    } catch (e) {
+        console.warn('[adsStore] sendReminderMessage failed:', e);
+    }
+}
+
+async function markReminderSent(ad: SubmittedAd, stage: ReminderStage): Promise<void> {
+    const next = Array.from(new Set([...(ad.remindersSent ?? []), stage]));
+    try {
+        await strapiPut(`${ENDPOINT}/${ad.id}`, { data: { reminders_sent: next } });
+    } catch (e) {
+        console.warn('[adsStore] markReminderSent failed:', e);
+    }
+}
+
+// אידימפוטנטי: רץ ככל שצריך, שולח תזכורת רק אחת לכל שלב.
+// קוראים לזה בכל טעינה של דף ה-admin (lazy cron).
+export async function processExpiryReminders(): Promise<{ sent: number; checked: number }> {
+    let approved: SubmittedAd[];
+    try {
+        approved = await listByStatus('approved');
+    } catch {
+        return { sent: 0, checked: 0 };
+    }
+    let sent = 0;
+    for (const ad of approved) {
+        const rule = nextReminderForAd(ad);
+        if (!rule) continue;
+        await sendReminderMessage(ad, rule);
+        await markReminderSent(ad, rule.stage);
+        sent++;
+    }
+    return { sent, checked: approved.length };
+}
+
+// ============================================================
+// סיכומי מפרסמים — קיבוץ לפי email/id
+// ============================================================
+
+export interface AdvertiserSummary {
+    key: string;             // email או id (לא שני אנשים שונים)
+    name: string;
+    email: string;
+    phone: string;
+    address: string;
+    companyName: string;
+    totalPaid: number;
+    adsCount: number;
+    activeCount: number;
+    firstSubmittedAt: string;
+    lastSubmittedAt: string;
+    isReturning: boolean;    // יותר מפרסומת אחת
+}
+
+export async function listAdvertisers(): Promise<AdvertiserSummary[]> {
+    const [pending, approved, rejectedAll] = await Promise.all([
+        listByStatus('pending'),
+        listByStatus('approved'),
+        listByStatus('rejected'),
+    ]);
+    const all = [...pending, ...approved, ...rejectedAll];
+    const map = new Map<string, AdvertiserSummary>();
+    for (const ad of all) {
+        const key = ad.submittedBy?.email || ad.submittedBy?.id || ad.id;
+        const existing = map.get(key);
+        const isActiveNow = ad.status === 'approved' && (computeSchedule(ad)?.state !== 'expired');
+        if (!existing) {
+            map.set(key, {
+                key,
+                name: ad.submittedBy?.name ?? '',
+                email: ad.submittedBy?.email ?? '',
+                phone: ad.landing?.phone ?? '',
+                address: ad.landing?.address ?? '',
+                companyName: ad.companyName || ad.title || '',
+                totalPaid: ad.paymentAmount ?? 0,
+                adsCount: 1,
+                activeCount: isActiveNow ? 1 : 0,
+                firstSubmittedAt: ad.submittedAt,
+                lastSubmittedAt: ad.submittedAt,
+                isReturning: false,
+            });
+        } else {
+            existing.adsCount++;
+            existing.activeCount += isActiveNow ? 1 : 0;
+            existing.totalPaid += ad.paymentAmount ?? 0;
+            if (!existing.name && ad.submittedBy?.name) existing.name = ad.submittedBy.name;
+            if (!existing.phone && ad.landing?.phone)   existing.phone = ad.landing.phone;
+            if (!existing.address && ad.landing?.address) existing.address = ad.landing.address;
+            if (!existing.companyName && (ad.companyName || ad.title)) existing.companyName = ad.companyName || ad.title;
+            if (new Date(ad.submittedAt) < new Date(existing.firstSubmittedAt)) existing.firstSubmittedAt = ad.submittedAt;
+            if (new Date(ad.submittedAt) > new Date(existing.lastSubmittedAt)) existing.lastSubmittedAt = ad.submittedAt;
+            existing.isReturning = existing.adsCount > 1;
+        }
+    }
+    return Array.from(map.values()).sort((a, b) => b.totalPaid - a.totalPaid);
 }

@@ -391,4 +391,141 @@
             {/each}
         </div>
     {/if}
+
+    <!-- ============================================================ -->
+    <!-- תזמון פרסומות פעילות + תאריכי פקיעה                          -->
+    <!-- ============================================================ -->
+    <section class="mt-10">
+        <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">📅</span>
+                <h2 class="text-lg font-black text-white">תזמון פרסומות</h2>
+                <span class="text-xs font-bold bg-white/10 text-gray-300 border border-white/20 px-2 py-0.5 rounded-full">{data.schedules.length}</span>
+            </div>
+            <div class="flex items-center gap-2 text-[10px] md:text-xs">
+                <span class="inline-flex items-center gap-1 text-emerald-300"><span class="w-2 h-2 rounded-full bg-emerald-400"></span>פעילה</span>
+                <span class="inline-flex items-center gap-1 text-amber-300"><span class="w-2 h-2 rounded-full bg-amber-400"></span>≤ 7 ימים</span>
+                <span class="inline-flex items-center gap-1 text-red-300"><span class="w-2 h-2 rounded-full bg-red-400"></span>פגה</span>
+            </div>
+        </div>
+
+        {#if data.schedules.length === 0}
+            <div class="text-center py-8 text-gray-500 text-sm italic border border-dashed border-white/10 rounded-2xl">
+                אין כרגע פרסומות פעילות באתר
+            </div>
+        {:else}
+            <div class="overflow-x-auto rounded-2xl border border-white/10 bg-white/5">
+                <table class="w-full text-sm" dir="rtl">
+                    <thead class="bg-white/5">
+                        <tr class="text-[11px] md:text-xs text-gray-400 uppercase tracking-wide">
+                            <th class="text-right font-bold px-3 py-2.5">פרסומת</th>
+                            <th class="text-right font-bold px-3 py-2.5 hidden md:table-cell">מפרסם</th>
+                            <th class="text-right font-bold px-3 py-2.5">פורסם</th>
+                            <th class="text-right font-bold px-3 py-2.5">פג בתאריך</th>
+                            <th class="text-right font-bold px-3 py-2.5">משך</th>
+                            <th class="text-right font-bold px-3 py-2.5">ימים שנותרו</th>
+                            <th class="text-right font-bold px-3 py-2.5">סטטוס</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {#each data.schedules as s (s.id)}
+                            {@const stateColor = s.state === 'expired' ? 'bg-red-500/15 text-red-300 border-red-500/40'
+                                : s.state === 'ending' ? 'bg-amber-500/15 text-amber-300 border-amber-500/40'
+                                : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40'}
+                            {@const stateLabel = s.state === 'expired' ? 'פגה' : s.state === 'ending' ? 'פגה בקרוב' : 'פעילה'}
+                            {@const daysColor = s.daysLeft < 0 ? 'text-red-300'
+                                : s.daysLeft <= 7 ? 'text-amber-300'
+                                : 'text-emerald-300'}
+                            {@const progress = Math.min(100, Math.max(0, ((s.durationDays - Math.max(0, s.daysLeft)) / s.durationDays) * 100))}
+                            <tr class="border-t border-white/10 hover:bg-white/5">
+                                <td class="px-3 py-2 font-bold text-white truncate max-w-[180px]">{s.title}</td>
+                                <td class="px-3 py-2 text-gray-300 hidden md:table-cell">
+                                    <div class="truncate max-w-[160px]">{s.advertiserName || '—'}</div>
+                                    <div class="text-[10px] text-gray-500 truncate max-w-[160px]">{s.advertiserEmail}</div>
+                                </td>
+                                <td class="px-3 py-2 text-gray-300 whitespace-nowrap">{fmtDate(s.publishedAt)}</td>
+                                <td class="px-3 py-2 text-gray-300 whitespace-nowrap">{fmtDate(s.expiresAt)}</td>
+                                <td class="px-3 py-2 text-gray-300">{s.durationDays} ימים</td>
+                                <td class="px-3 py-2 font-black {daysColor} whitespace-nowrap">
+                                    {s.daysLeft < 0 ? `${-s.daysLeft}- ימים` : `${s.daysLeft} ימים`}
+                                    <div class="mt-1 h-1.5 w-24 rounded-full bg-white/10 overflow-hidden">
+                                        <div class="h-full {s.state === 'expired' ? 'bg-red-400' : s.state === 'ending' ? 'bg-amber-400' : 'bg-emerald-400'}"
+                                             style="width: {progress}%"></div>
+                                    </div>
+                                </td>
+                                <td class="px-3 py-2">
+                                    <span class="text-[11px] font-black border px-2 py-0.5 rounded-full whitespace-nowrap {stateColor}">{stateLabel}</span>
+                                </td>
+                            </tr>
+                        {/each}
+                    </tbody>
+                </table>
+            </div>
+        {/if}
+
+        {#if data.reminderRun?.sent > 0}
+            <p class="mt-2 text-[11px] text-emerald-300/80 italic">
+                ✉️ נשלחו {data.reminderRun.sent} תזכורות אוטומטיות למפרסמים בטעינה זו.
+            </p>
+        {/if}
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- מפרסמים — קיבוץ לפי אימייל                                  -->
+    <!-- ============================================================ -->
+    <section class="mt-10 mb-12">
+        <div class="flex items-center gap-2 mb-3">
+            <span class="text-2xl">👤</span>
+            <h2 class="text-lg font-black text-white">מפרסמים</h2>
+            <span class="text-xs font-bold bg-white/10 text-gray-300 border border-white/20 px-2 py-0.5 rounded-full">{data.advertisers.length}</span>
+        </div>
+
+        {#if data.advertisers.length === 0}
+            <div class="text-center py-8 text-gray-500 text-sm italic border border-dashed border-white/10 rounded-2xl">
+                עוד אין מפרסמים במערכת
+            </div>
+        {:else}
+            <div class="overflow-x-auto rounded-2xl border border-white/10 bg-white/5">
+                <table class="w-full text-sm" dir="rtl">
+                    <thead class="bg-white/5">
+                        <tr class="text-[11px] md:text-xs text-gray-400 uppercase tracking-wide">
+                            <th class="text-right font-bold px-3 py-2.5">שם</th>
+                            <th class="text-right font-bold px-3 py-2.5 hidden md:table-cell">חברה</th>
+                            <th class="text-right font-bold px-3 py-2.5 hidden md:table-cell">עיר/כתובת</th>
+                            <th class="text-right font-bold px-3 py-2.5 hidden lg:table-cell">טלפון</th>
+                            <th class="text-right font-bold px-3 py-2.5">סך תשלום</th>
+                            <th class="text-right font-bold px-3 py-2.5">פרסומות</th>
+                            <th class="text-right font-bold px-3 py-2.5">פעילות</th>
+                            <th class="text-right font-bold px-3 py-2.5 hidden md:table-cell">סוג</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {#each data.advertisers as a (a.key)}
+                            <tr class="border-t border-white/10 hover:bg-white/5">
+                                <td class="px-3 py-2 font-bold text-white">
+                                    <div class="truncate max-w-[160px]">{a.name || '—'}</div>
+                                    <div class="text-[10px] text-gray-500 truncate max-w-[160px]">{a.email}</div>
+                                </td>
+                                <td class="px-3 py-2 text-gray-300 hidden md:table-cell truncate max-w-[160px]">{a.companyName || '—'}</td>
+                                <td class="px-3 py-2 text-gray-300 hidden md:table-cell truncate max-w-[160px]">{a.address || '—'}</td>
+                                <td class="px-3 py-2 text-gray-300 hidden lg:table-cell whitespace-nowrap">{a.phone || '—'}</td>
+                                <td class="px-3 py-2 font-black text-emerald-300 whitespace-nowrap">
+                                    {a.totalPaid > 0 ? `₪${a.totalPaid.toLocaleString('he-IL')}` : '—'}
+                                </td>
+                                <td class="px-3 py-2 text-gray-300">{a.adsCount}</td>
+                                <td class="px-3 py-2 {a.activeCount > 0 ? 'text-emerald-300 font-black' : 'text-gray-500'}">{a.activeCount}</td>
+                                <td class="px-3 py-2 hidden md:table-cell">
+                                    {#if a.isReturning}
+                                        <span class="text-[11px] font-black bg-purple-500/15 text-purple-300 border border-purple-500/40 px-2 py-0.5 rounded-full whitespace-nowrap">🔁 חוזר</span>
+                                    {:else}
+                                        <span class="text-[11px] font-black bg-blue-500/15 text-blue-300 border border-blue-500/40 px-2 py-0.5 rounded-full whitespace-nowrap">חדש</span>
+                                    {/if}
+                                </td>
+                            </tr>
+                        {/each}
+                    </tbody>
+                </table>
+            </div>
+        {/if}
+    </section>
 </div>

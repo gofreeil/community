@@ -11,6 +11,9 @@ import {
     removeAd,
     updateAdFields,
     getAdsStats,
+    listSchedules,
+    listAdvertisers,
+    processExpiryReminders,
 } from '$lib/server/adsStore';
 
 async function ensureSuperAdmin(event: any) {
@@ -29,8 +32,17 @@ async function ensureSuperAdmin(event: any) {
 
 export const load: PageServerLoad = async (event) => {
     await ensureSuperAdmin(event);
-    const [pending, approved, stats] = await Promise.all([listPending(), listApproved(), getAdsStats()]);
-    return { pending, approved, stats };
+    // Lazy cron: בכל טעינה של הדף — בודק אם יש פרסומות שצריך לשלוח עליהן תזכורת.
+    // אידימפוטנטי, שולח רק פעם אחת לכל שלב (30/7/1 ימים לפני פקיעה).
+    const reminderRun = await processExpiryReminders().catch(() => ({ sent: 0, checked: 0 }));
+    const [pending, approved, stats, schedules, advertisers] = await Promise.all([
+        listPending(),
+        listApproved(),
+        getAdsStats(),
+        listSchedules(),
+        listAdvertisers(),
+    ]);
+    return { pending, approved, stats, schedules, advertisers, reminderRun };
 };
 
 function parseIds(formData: FormData): string[] {

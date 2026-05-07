@@ -63,6 +63,22 @@
     },
     "rejection_reason": {
       "type": "text"
+    },
+    "expires_at": {
+      "type": "datetime"
+    },
+    "duration_days": {
+      "type": "integer",
+      "default": 30
+    },
+    "company_name": {
+      "type": "string"
+    },
+    "payment_amount": {
+      "type": "decimal"
+    },
+    "reminders_sent": {
+      "type": "json"
     }
   }
 }
