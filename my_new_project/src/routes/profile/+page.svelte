@@ -110,6 +110,7 @@
 		(data.messages ?? []).length > 0
 			? (data.messages ?? []).map(
 					(m: import("$lib/server/db").DbItem) => ({
+						id: `db-${m.id}`,
 						from: m.label ?? "מערכת",
 						text: m.description ?? "",
 						time: new Date(m.created_at).toLocaleDateString(
@@ -120,12 +121,14 @@
 				)
 			: [
 					{
+						id: "mock-welcome",
 						from: "מערכת",
 						text: "ברוך הבא לקהילה! השלם את הפרופיל שלך.",
 						time: "לפני 2 ימים",
 						read: false,
 					},
 					{
+						id: "mock-approved",
 						from: "מנהל",
 						text: "הצטרפות שלך אושרה. כעת תוכל לפרסם תוכן.",
 						time: "לפני 5 ימים",
@@ -133,6 +136,68 @@
 					},
 				],
 	);
+
+	// === ניהול מצב הודעות (מחיקה / ארכיון / תזכורת) — נשמר ב-localStorage ===
+	const MSG_DELETED_KEY = "msgs_deleted_v1";
+	const MSG_ARCHIVED_KEY = "msgs_archived_v1";
+	const MSG_SNOOZED_KEY = "msgs_snoozed_v1";
+	const SNOOZE_MS = 2 * 24 * 60 * 60 * 1000; // יומיים
+
+	function loadIdSet(key: string): Set<string> {
+		if (typeof localStorage === "undefined") return new Set();
+		try {
+			return new Set(JSON.parse(localStorage.getItem(key) ?? "[]"));
+		} catch {
+			return new Set();
+		}
+	}
+	function loadIdMap(key: string): Record<string, number> {
+		if (typeof localStorage === "undefined") return {};
+		try {
+			return JSON.parse(localStorage.getItem(key) ?? "{}") ?? {};
+		} catch {
+			return {};
+		}
+	}
+	function saveJSON(key: string, value: unknown) {
+		if (typeof localStorage === "undefined") return;
+		localStorage.setItem(key, JSON.stringify(value));
+	}
+
+	let deletedMsgs = $state<Set<string>>(loadIdSet(MSG_DELETED_KEY));
+	let archivedMsgs = $state<Set<string>>(loadIdSet(MSG_ARCHIVED_KEY));
+	let snoozedMsgs = $state<Record<string, number>>(loadIdMap(MSG_SNOOZED_KEY));
+	let nowTs = $state(Date.now());
+	let showArchive = $state(false);
+
+	$effect(() => {
+		if (typeof window === "undefined") return;
+		const i = setInterval(() => (nowTs = Date.now()), 60_000);
+		return () => clearInterval(i);
+	});
+
+	function deleteMsg(id: string) {
+		deletedMsgs = new Set([...deletedMsgs, id]);
+		saveJSON(MSG_DELETED_KEY, [...deletedMsgs]);
+	}
+	function archiveMsg(id: string) {
+		archivedMsgs = new Set([...archivedMsgs, id]);
+		saveJSON(MSG_ARCHIVED_KEY, [...archivedMsgs]);
+	}
+	function unarchiveMsg(id: string) {
+		const next = new Set(archivedMsgs);
+		next.delete(id);
+		archivedMsgs = next;
+		saveJSON(MSG_ARCHIVED_KEY, [...archivedMsgs]);
+	}
+	function snoozeMsg(id: string) {
+		snoozedMsgs = { ...snoozedMsgs, [id]: Date.now() + SNOOZE_MS };
+		saveJSON(MSG_SNOOZED_KEY, snoozedMsgs);
+	}
+	function markRead(id: string) {
+		// "אם הוא קרא — מחוק את ההתראות מהפרופיל שלו"
+		deleteMsg(id);
+	}
 	// הודעה אישית עבור טיוטת פרסומת — מופיעה למעלה אם יש טיוטה.
 	// כוללת תזכורת על חלון העריכה החינמי (היום עד 23:59) או שהוא פג.
 	let freeEditInfo = $derived.by(() => {
@@ -149,8 +214,19 @@
 		} catch { return null; }
 	});
 
+	let visibleMessages = $derived.by(() => {
+		void nowTs;
+		return messages.filter((m) => {
+			if (deletedMsgs.has(m.id)) return false;
+			if (archivedMsgs.has(m.id)) return false;
+			const sn = snoozedMsgs[m.id];
+			if (sn && sn > nowTs) return false;
+			return true;
+		});
+	});
+	let archivedList = $derived(messages.filter((m) => archivedMsgs.has(m.id)));
 	let displayedMessages = $derived.by(() => {
-		const base = messages;
+		const base = visibleMessages;
 		if (!adDraft) return base;
 		let extraTxt = "";
 		if (freeEditInfo) {
@@ -159,6 +235,7 @@
 				: ` ⏰ נותר לך זמן עריכה חינם עד ${freeEditInfo.dateStr} ב-23:59 — עדיף לסיים היום!`;
 		}
 		const draftMsg = {
+			id: "draft",
 			from: "🎨 בילדר הפרסומות",
 			text: `יש לך פרסום בטיוטא — סיים את עריכתו! "${adDraft.title || "ללא כותרת"}" (${adDraftProgress}% הושלמו).${extraTxt}`,
 			time: "עכשיו",
@@ -2390,10 +2467,94 @@
 								   class="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-black text-xs transition-colors">
 									🚀 סיים את העריכה
 								</a>
+							{:else}
+								<div class="flex items-center gap-1.5 justify-end mt-2 pt-2 border-t border-white/8 flex-wrap">
+									<button
+										type="button"
+										onclick={() => markRead(msg.id)}
+										class="text-[11px] text-gray-400 hover:text-green-400 transition-colors px-2 py-1 rounded-lg hover:bg-green-500/10"
+										title="סמן כנקראה — תוסר מהפרופיל"
+									>
+										👁️ סמן כנקראה
+									</button>
+									<button
+										type="button"
+										onclick={() => snoozeMsg(msg.id)}
+										class="text-[11px] text-gray-400 hover:text-yellow-300 transition-colors px-2 py-1 rounded-lg hover:bg-yellow-500/10"
+										title="תוצג שוב בעוד יומיים"
+									>
+										🔔 הזכר לי בהמשך
+									</button>
+									<button
+										type="button"
+										onclick={() => archiveMsg(msg.id)}
+										class="text-[11px] text-gray-400 hover:text-blue-400 transition-colors px-2 py-1 rounded-lg hover:bg-blue-500/10"
+										title="העבר לארכיון"
+									>
+										📦 לארכיון
+									</button>
+									<button
+										type="button"
+										onclick={() => deleteMsg(msg.id)}
+										class="text-[11px] text-gray-400 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10"
+										title="מחק לצמיתות"
+									>
+										🗑 מחק
+									</button>
+								</div>
 							{/if}
 						</div>
 					</div>
 				{/each}
+
+				<!-- כפתור הצגת הארכיון -->
+				{#if archivedList.length > 0}
+					<button
+						type="button"
+						onclick={() => (showArchive = !showArchive)}
+						class="self-start text-xs font-bold text-blue-300 hover:text-blue-200 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 mt-1"
+					>
+						📦 ארכיון ההודעות
+						<span class="bg-blue-500/30 text-white rounded-full px-2 py-0.5 text-[10px]">{archivedList.length}</span>
+						<svg class="w-3 h-3 transition-transform {showArchive ? 'rotate-180' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
+					</button>
+
+					{#if showArchive}
+						<div class="flex flex-col gap-2 mt-1">
+							<p class="text-[11px] text-gray-500 px-1">הודעות שהעברת לארכיון</p>
+							{#each archivedList as msg}
+								<div class="flex items-start gap-3 rounded-2xl border border-white/5 bg-white/[0.02] px-4 py-3">
+									<div class="w-2 h-2 rounded-full mt-1.5 flex-shrink-0 bg-blue-400/60"></div>
+									<div class="min-w-0 flex-1">
+										<div class="flex items-center justify-between gap-2 mb-0.5">
+											<span class="text-gray-300 text-xs font-black">{msg.from}</span>
+											<span class="text-gray-600 text-[10px] flex-shrink-0">{msg.time}</span>
+										</div>
+										<p class="text-gray-400 text-xs leading-relaxed">{msg.text}</p>
+										<div class="flex items-center gap-1.5 justify-end mt-2 pt-2 border-t border-white/8 flex-wrap">
+											<button
+												type="button"
+												onclick={() => unarchiveMsg(msg.id)}
+												class="text-[11px] text-gray-400 hover:text-green-400 transition-colors px-2 py-1 rounded-lg hover:bg-green-500/10"
+												title="החזר להודעות הפעילות"
+											>
+												↩️ שחזר
+											</button>
+											<button
+												type="button"
+												onclick={() => { unarchiveMsg(msg.id); deleteMsg(msg.id); }}
+												class="text-[11px] text-gray-400 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10"
+												title="מחק לצמיתות"
+											>
+												🗑 מחק
+											</button>
+										</div>
+									</div>
+								</div>
+							{/each}
+						</div>
+					{/if}
+				{/if}
 
 				<!-- קריאות שכונה שפרסמתי -->
 				{#if (data.communityRequests ?? []).length > 0}
