@@ -50,6 +50,19 @@
 		return list;
 	});
 
+	// רכזי שכונות — כל משתמש עם coordinator_of שאינו ריק.
+	// יוצגו בקבוצה ייחודית בראש הטאב כדי שיהיה קל לסופר־אדמין לראות מי מנהל תוכן באיזו שכונה.
+	const coordinatorUsers = $derived(() => {
+		const list = (data.users ?? []).filter(u => Array.isArray((u as any).coordinator_of) && (u as any).coordinator_of.length > 0);
+		if (!searchQuery) return list;
+		const q = searchQuery.toLowerCase();
+		return list.filter(u =>
+			(u.name?.toLowerCase().includes(q)) ||
+			(u.email?.toLowerCase().includes(q)) ||
+			((u as any).coordinator_of as string[]).some(n => n.toLowerCase().includes(q))
+		);
+	});
+
 	// סינון פריטים
 	const filteredItems = $derived(() => {
 		if (!searchQuery) return data.items ?? [];
@@ -163,6 +176,94 @@
 
 		<!-- טאב משתמשים -->
 		{#if activeTab === 'users'}
+			<!-- סקציית רכזי שכונות — מנהלי תוכן בשכונה שלהם -->
+			<section class="mb-6">
+				<div class="flex items-center justify-between mb-3">
+					<div class="flex items-center gap-2">
+						<span class="text-2xl">🏘️</span>
+						<h2 class="text-lg font-black text-amber-300">רכזי שכונות</h2>
+						<span class="text-xs font-bold bg-amber-500/15 text-amber-200 border border-amber-500/30 px-2 py-0.5 rounded-full">
+							{coordinatorUsers().length}
+						</span>
+					</div>
+					<p class="text-xs text-gray-500 hidden md:block">משתמשים שאושרו לנהל תוכן בשכונה שלהם</p>
+				</div>
+
+				{#if coordinatorUsers().length === 0}
+					<div class="rounded-2xl border border-dashed border-amber-500/20 bg-amber-500/5 px-4 py-6 text-center">
+						<p class="text-sm text-amber-200/80 font-bold mb-1">{searchQuery ? 'לא נמצאו רכזים תואמים' : 'עוד לא מונו רכזים'}</p>
+						<p class="text-xs text-gray-500">השתמש בכפתור 🏘️ רכז ליד כל משתמש כדי למנות אותו לרכז שכונה</p>
+					</div>
+				{:else}
+					<div class="grid gap-2 md:gap-3">
+						{#each coordinatorUsers() as user (user.id)}
+							{@const coordList = ((user as any).coordinator_of as string[]) ?? []}
+							<div class="bg-amber-500/5 rounded-2xl border border-amber-500/30 p-3 md:p-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 transition-all hover:border-amber-500/50">
+								<!-- אווטר + שם -->
+								<div class="flex items-center gap-3 flex-1 min-w-0">
+									{#if user.avatar_url}
+										<img src={user.avatar_url} alt="" class="w-10 h-10 rounded-full object-cover flex-shrink-0 ring-2 ring-amber-400/40" />
+									{:else}
+										<div class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center flex-shrink-0 text-sm font-bold ring-2 ring-amber-400/40">
+											{(user.name ?? '?')[0]}
+										</div>
+									{/if}
+									<div class="min-w-0">
+										<div class="font-bold truncate flex items-center gap-2 text-white">
+											{user.name ?? 'ללא שם'}
+											{#if user.banned}
+												<span class="text-xs bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded-full">חסום</span>
+											{/if}
+										</div>
+										<div class="text-sm text-gray-400 truncate">{user.email ?? '—'}</div>
+									</div>
+								</div>
+
+								<!-- שכונות שהוא רכז עליהן -->
+								<div class="flex flex-wrap gap-1 max-w-full sm:max-w-[260px]">
+									{#each coordList as n}
+										<span class="text-xs font-bold bg-amber-500/20 text-amber-200 border border-amber-500/40 px-2 py-0.5 rounded-full whitespace-nowrap">
+											{n}
+										</span>
+									{/each}
+								</div>
+
+								<!-- פעולות -->
+								<div class="flex gap-2 flex-shrink-0 flex-wrap">
+									<button
+										onclick={() => openCoordModal({ id: user.id, name: user.name, coordinator_of: coordList })}
+										class="px-3 py-1.5 text-xs rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/40 hover:bg-amber-500/25 transition-all cursor-pointer font-bold"
+										title="ערוך שכונות שהוא רכז עליהן"
+									>
+										✏️ ערוך שכונות
+									</button>
+									<form method="POST" action="?/setCoordinator" use:enhance>
+										<input type="hidden" name="userId" value={user.id} />
+										<input type="hidden" name="neighborhoods" value="" />
+										<button
+											type="submit"
+											class="px-3 py-1.5 text-xs rounded-lg bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all cursor-pointer"
+											onclick={(e) => { if (!confirm(`להסיר את הרכזות מ-${user.name ?? user.id}?`)) e.preventDefault(); }}
+										>
+											🗑 הסר רכזות
+										</button>
+									</form>
+								</div>
+							</div>
+						{/each}
+					</div>
+				{/if}
+			</section>
+
+			<!-- כותרת לרשימה הראשית -->
+			<div class="flex items-center gap-2 mb-3 mt-2">
+				<span class="text-xl">👥</span>
+				<h2 class="text-lg font-black text-white">כל המשתמשים</h2>
+				<span class="text-xs font-bold bg-white/10 text-gray-300 border border-white/20 px-2 py-0.5 rounded-full">
+					{filteredUsers().length}
+				</span>
+			</div>
+
 			<div class="space-y-3">
 				{#each filteredUsers() as user (user.id)}
 					{@const badge = roleBadge(user.role)}
