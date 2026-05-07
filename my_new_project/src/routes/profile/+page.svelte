@@ -226,11 +226,17 @@
 	});
 	let archivedList = $derived(messages.filter((m) => archivedMsgs.has(m.id)));
 	let displayedMessages = $derived.by(() => {
+		void nowTs;
 		const base = visibleMessages;
 		if (!adDraft) return base;
 		// אם המשתמש סיים את העריכה (100%) — לא צריך להציג nag "סיים את עריכתו".
 		// הוא יראה את כרטיס "פרסומת בעריכה" למטה אם ירצה להמשיך לפרסום.
 		if (adDraftProgress >= 100) return base;
+		// מכבד את אותן פעולות (מחיקה/ארכיון/הזכר) כמו הודעות רגילות
+		if (deletedMsgs.has("draft")) return base;
+		if (archivedMsgs.has("draft")) return base;
+		const sn = snoozedMsgs["draft"];
+		if (sn && sn > nowTs) return base;
 		let extraTxt = "";
 		if (freeEditInfo) {
 			extraTxt = freeEditInfo.expired
@@ -2495,10 +2501,38 @@
 							</div>
 							<p class="text-gray-300 text-xs leading-relaxed">{msg.text}</p>
 							{#if isDraft}
-								<a href="/about/advertise/builder"
-								   class="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-black text-xs transition-colors">
-									🚀 סיים את העריכה
-								</a>
+								<div class="flex items-center gap-1.5 justify-between mt-2 flex-wrap">
+									<a href="/about/advertise/builder"
+									   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-black text-xs transition-colors">
+										🚀 סיים את העריכה
+									</a>
+									<div class="flex items-center gap-1.5 flex-wrap">
+										<button
+											type="button"
+											onclick={() => snoozeMsg(msg.id)}
+											class="text-[11px] text-gray-400 hover:text-yellow-300 transition-colors px-2 py-1 rounded-lg hover:bg-yellow-500/10"
+											title="תוצג שוב בעוד יומיים"
+										>
+											🔔 הזכר לי בהמשך
+										</button>
+										<button
+											type="button"
+											onclick={() => archiveMsg(msg.id)}
+											class="text-[11px] text-gray-400 hover:text-blue-400 transition-colors px-2 py-1 rounded-lg hover:bg-blue-500/10"
+											title="העבר לארכיון"
+										>
+											📦 לארכיון
+										</button>
+										<button
+											type="button"
+											onclick={() => deleteMsg(msg.id)}
+											class="text-[11px] text-gray-400 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10"
+											title="הסר את ההודעה (הטיוטא תישאר)"
+										>
+											🗑 מחק
+										</button>
+									</div>
+								</div>
 							{:else}
 								<div class="flex items-center gap-1.5 justify-end mt-2 pt-2 border-t border-white/8 flex-wrap">
 									<button

@@ -1,6 +1,7 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { getUserById, getUserByEmail, updateUserProfile, getItemsByUserId, upsertUser, getMessagesByUserId, createItem, getAllSuperAdmins, getAllUsers } from '$lib/server/db';
+import { getCachedUserById, invalidateCachedUser } from '$lib/server/userCache';
 import { citiesData } from '$lib/neighborhoodsData';
 import { categoryConfig } from '$lib/categoryFields';
 import { countPending } from '$lib/server/adsStore';
@@ -28,6 +29,8 @@ export const load: PageServerLoad = async (event) => {
             oauth_image: null,
             pendingAdsCount: 0,
             coordinatorsCount: 0,
+            strapiAvailable: true,
+            userFromStaleCache: false,
         };
     }
 
@@ -47,11 +50,17 @@ export const load: PageServerLoad = async (event) => {
 
     let user: Awaited<ReturnType<typeof getUserById>>;
     let items: Awaited<ReturnType<typeof getItemsByUserId>> = [];
+    let strapiAvailable = true;
+    let userFromStaleCache = false;
     try {
         const jwt = event.cookies.get('strapi_jwt');
-        user  = await getUserById(session.user.id, jwt);
+        const cached = await getCachedUserById(session.user.id, jwt);
+        user = cached.user ?? undefined;
+        strapiAvailable = cached.strapiAvailable;
+        userFromStaleCache = cached.stale;
     } catch (e) {
-        console.warn('[profile] getUserById failed:', e);
+        console.warn('[profile] getCachedUserById failed:', e);
+        strapiAvailable = false;
     }
     try {
         items = await getItemsByUserId(session.user.id);
@@ -146,6 +155,8 @@ export const load: PageServerLoad = async (event) => {
         oauth_image: session.user?.image ?? null,
         pendingAdsCount,
         coordinatorsCount,
+        strapiAvailable,
+        userFromStaleCache,
     };
 };
 
@@ -254,6 +265,7 @@ export const actions: Actions = {
                 }
             }
 
+            invalidateCachedUser(session.user.id);
             return { success: true };
         } catch {
             return fail(500, { error: 'שגיאה בעדכון הפרופיל' });
@@ -270,6 +282,7 @@ export const actions: Actions = {
 
         try {
             await updateUserProfile(session.user.id, { status });
+            invalidateCachedUser(session.user.id);
             return { success: true };
         } catch {
             return fail(500, { error: 'שגיאה בעדכון סטטוס' });
