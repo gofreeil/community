@@ -820,13 +820,6 @@
 			<div class="flex items-center gap-2">
 				{#if isSuperAdmin}
 					<a
-						href="/about/advertise/builder"
-						class="text-sm font-bold text-purple-300 hover:text-purple-200 transition-colors cursor-pointer px-4 py-2 rounded-xl hover:bg-purple-500/10 border border-purple-500/30 hover:border-purple-400/50 flex items-center gap-1.5"
-						title="בילדר פרסומות (סופר-אדמין)"
-					>
-						🎨 בילדר פרסומות
-					</a>
-					<a
 						href="/admin/ads-review"
 						class="relative text-sm font-bold text-emerald-300 hover:text-emerald-200 transition-colors cursor-pointer px-4 py-2 rounded-xl hover:bg-emerald-500/10 border border-emerald-500/30 hover:border-emerald-400/50 flex items-center gap-1.5"
 						title="אישור פרסומות שהוגשו"
@@ -2658,13 +2651,24 @@
 			<div class="flex flex-col gap-4">
 				<!-- ===== סאב-מקטע: פרסומיי ===== -->
 				<div class="bg-[#0a1224]/60 rounded-2xl border border-white/10 p-3 md:p-4">
-					<h3 class="text-white font-bold text-sm mb-3 flex items-center gap-2">
-						<span class="text-purple-400 text-lg">📋</span>
-						פרסומיי
-						{#if data.items.length > 0}
-							<span class="text-xs bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2.5 py-0.5 rounded-full font-bold">{data.items.length}</span>
+					<div class="flex items-center justify-between gap-2 mb-3 flex-wrap">
+						<h3 class="text-white font-bold text-sm flex items-center gap-2">
+							<span class="text-purple-400 text-lg">📋</span>
+							פרסומיי
+							{#if data.items.length > 0}
+								<span class="text-xs bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2.5 py-0.5 rounded-full font-bold">{data.items.length}</span>
+							{/if}
+						</h3>
+						{#if isSuperAdmin}
+							<a
+								href="/about/advertise/builder"
+								class="text-xs font-bold text-purple-300 hover:text-purple-200 transition-colors cursor-pointer px-3 py-1.5 rounded-lg hover:bg-purple-500/10 border border-purple-500/30 hover:border-purple-400/50 flex items-center gap-1.5"
+								title="בילדר פרסומות (סופר-אדמין)"
+							>
+								🎨 בילדר פרסומות
+							</a>
 						{/if}
-					</h3>
+					</div>
 
 					{#if adDraft}
 						<div class="mb-3 rounded-2xl border-2 border-purple-500/40 bg-gradient-to-br from-purple-900/30 to-indigo-900/20 p-3 md:p-4">
