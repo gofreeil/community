@@ -254,6 +254,13 @@
 		return [draftMsg, ...base];
 	});
 	let unreadCount = $derived(displayedMessages.filter((m) => !m.read).length);
+	let _msgsAutoOpened = false;
+	$effect(() => {
+		if (!_msgsAutoOpened && unreadCount > 0) {
+			showMessages = true;
+			_msgsAutoOpened = true;
+		}
+	});
 	let secTipShow = $state(false);
 	let showStatusMenu = $state(false);
 
@@ -1269,7 +1276,1089 @@
 		</div>
 	{/if}
 
-	<!-- ===== קומה 2: פרטי פרופיל ===== -->
+	<!-- ===== קומה 2: הודעות אישיות ===== -->
+	<div
+		id="sec-messages"
+		class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-4 md:p-6 shadow-xl mb-2 overflow-hidden
+	            before:absolute before:inset-x-0 before:top-0 before:h-24 before:rounded-t-3xl
+	            before:bg-gradient-to-b before:from-white/8 before:to-transparent
+	            before:transition-all before:duration-300 before:pointer-events-none
+	            hover:before:from-white/18 {!showMessages
+			? 'cursor-pointer'
+			: ''} {mobileTab !== 'messages' ? 'hidden md:block' : ''}"
+		onclick={() => {
+			if (!showMessages) showMessages = true;
+		}}
+	>
+		<div
+			class="relative flex items-center justify-between cursor-pointer select-none -mx-4 px-4 -mt-4 pt-3 md:-mx-6 md:px-6 md:-mt-6 md:pt-4 min-h-14 {showMessages
+				? 'pb-4 mb-4'
+				: 'pb-4'}"
+			onclick={(e) => {
+				e.stopPropagation();
+				showMessages = !showMessages;
+			}}
+			role="button"
+			tabindex={0}
+			onmouseenter={() => {
+				secTipShow = true;
+				secTipIsOpen = showMessages;
+			}}
+			onmouseleave={() => (secTipShow = false)}
+			onmousemove={(e) => handleSecMouseMove(e, showMessages)}
+			onkeydown={(e) => {
+				if (e.key === "Enter" || e.key === " ") {
+					if (showMessages) {
+						showMessages = false;
+					} else {
+						showMessages = true;
+					}
+				}
+			}}
+		>
+			<h2 class="text-xl font-black text-white flex items-center gap-2">
+				<span
+					class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+					style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75"
+					>2</span
+				>
+				הודעות אישיות
+			</h2>
+			<div class="flex items-center gap-2">
+				{#if unreadCount > 0}
+					<span
+						class="text-sm bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1.5 rounded-full font-bold"
+						>{unreadCount} הודעות שלא נקראו</span
+					>
+				{/if}
+				<svg
+					class="w-4 h-4 text-yellow-400 transition-transform duration-300 flex-shrink-0 {showMessages
+						? 'rotate-180'
+						: ''}"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2.5"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					><polyline points="6 9 12 15 18 9" /></svg
+				>
+			</div>
+		</div>
+
+		{#if showMessages}
+			<div
+				class="flex flex-col gap-3"
+				onclick={(e) => e.stopPropagation()}
+			>
+				{#each displayedMessages as msg}
+					{@const isDraft = (msg as { isDraft?: boolean }).isDraft}
+					<div
+						class="flex items-start gap-3 rounded-2xl border px-4 py-3 transition-all
+							{isDraft
+								? 'bg-gradient-to-br from-purple-900/30 to-indigo-900/20 border-purple-500/50 hover:border-purple-400/70'
+								: msg.read
+									? 'bg-white/5 border-white/5 hover:border-white/15'
+									: 'bg-white/5 border-orange-500/20 hover:border-white/15'}"
+					>
+						<div
+							class="w-2 h-2 rounded-full mt-1.5 flex-shrink-0
+								{isDraft ? 'bg-purple-400 animate-pulse' : msg.read ? 'bg-white/10' : 'bg-orange-500'}"
+						></div>
+						<div class="min-w-0 flex-1">
+							<div
+								class="flex items-center justify-between gap-2 mb-0.5"
+							>
+								<span class="text-white text-xs font-black"
+									>{msg.from}</span
+								>
+								<span
+									class="text-gray-600 text-[10px] flex-shrink-0"
+									>{msg.time}</span
+								>
+							</div>
+							<p class="text-gray-300 text-xs leading-relaxed">{msg.text}</p>
+							{#if isDraft}
+								<div class="flex items-center gap-1.5 justify-between mt-2 flex-wrap">
+									<a href="/about/advertise/builder"
+									   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-black text-xs transition-colors">
+										🚀 סיים את העריכה
+									</a>
+									<div class="flex items-center gap-1.5 flex-wrap">
+										<button
+											type="button"
+											onclick={() => snoozeMsg(msg.id)}
+											class="text-[11px] text-gray-400 hover:text-yellow-300 transition-colors px-2 py-1 rounded-lg hover:bg-yellow-500/10"
+											title="תוצג שוב בעוד יומיים"
+										>
+											🔔 הזכר לי בהמשך
+										</button>
+										<button
+											type="button"
+											onclick={() => archiveMsg(msg.id)}
+											class="text-[11px] text-gray-400 hover:text-blue-400 transition-colors px-2 py-1 rounded-lg hover:bg-blue-500/10"
+											title="העבר לארכיון"
+										>
+											📦 לארכיון
+										</button>
+										<button
+											type="button"
+											onclick={() => deleteMsg(msg.id)}
+											class="text-[11px] text-gray-400 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10"
+											title="הסר את ההודעה (הטיוטא תישאר)"
+										>
+											🗑 מחק
+										</button>
+									</div>
+								</div>
+							{:else}
+								<div class="flex items-center gap-1.5 justify-end mt-2 pt-2 border-t border-white/8 flex-wrap">
+									<button
+										type="button"
+										onclick={() => markRead(msg.id)}
+										class="text-[11px] text-gray-400 hover:text-green-400 transition-colors px-2 py-1 rounded-lg hover:bg-green-500/10"
+										title="סמן כנקראה — תוסר מהפרופיל"
+									>
+										👁️ סמן כנקראה
+									</button>
+									<button
+										type="button"
+										onclick={() => snoozeMsg(msg.id)}
+										class="text-[11px] text-gray-400 hover:text-yellow-300 transition-colors px-2 py-1 rounded-lg hover:bg-yellow-500/10"
+										title="תוצג שוב בעוד יומיים"
+									>
+										🔔 הזכר לי בהמשך
+									</button>
+									<button
+										type="button"
+										onclick={() => archiveMsg(msg.id)}
+										class="text-[11px] text-gray-400 hover:text-blue-400 transition-colors px-2 py-1 rounded-lg hover:bg-blue-500/10"
+										title="העבר לארכיון"
+									>
+										📦 לארכיון
+									</button>
+									<button
+										type="button"
+										onclick={() => deleteMsg(msg.id)}
+										class="text-[11px] text-gray-400 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10"
+										title="מחק לצמיתות"
+									>
+										🗑 מחק
+									</button>
+								</div>
+							{/if}
+						</div>
+					</div>
+				{/each}
+
+				<!-- כפתור הצגת הארכיון -->
+				{#if archivedList.length > 0}
+					<button
+						type="button"
+						onclick={() => (showArchive = !showArchive)}
+						class="self-start text-xs font-bold text-blue-300 hover:text-blue-200 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 mt-1"
+					>
+						📦 ארכיון ההודעות
+						<span class="bg-blue-500/30 text-white rounded-full px-2 py-0.5 text-[10px]">{archivedList.length}</span>
+						<svg class="w-3 h-3 transition-transform {showArchive ? 'rotate-180' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
+					</button>
+
+					{#if showArchive}
+						<div class="flex flex-col gap-2 mt-1">
+							<p class="text-[11px] text-gray-500 px-1">הודעות שהעברת לארכיון</p>
+							{#each archivedList as msg}
+								<div class="flex items-start gap-3 rounded-2xl border border-white/5 bg-white/[0.02] px-4 py-3">
+									<div class="w-2 h-2 rounded-full mt-1.5 flex-shrink-0 bg-blue-400/60"></div>
+									<div class="min-w-0 flex-1">
+										<div class="flex items-center justify-between gap-2 mb-0.5">
+											<span class="text-gray-300 text-xs font-black">{msg.from}</span>
+											<span class="text-gray-600 text-[10px] flex-shrink-0">{msg.time}</span>
+										</div>
+										<p class="text-gray-400 text-xs leading-relaxed">{msg.text}</p>
+										<div class="flex items-center gap-1.5 justify-end mt-2 pt-2 border-t border-white/8 flex-wrap">
+											<button
+												type="button"
+												onclick={() => unarchiveMsg(msg.id)}
+												class="text-[11px] text-gray-400 hover:text-green-400 transition-colors px-2 py-1 rounded-lg hover:bg-green-500/10"
+												title="החזר להודעות הפעילות"
+											>
+												↩️ שחזר
+											</button>
+											<button
+												type="button"
+												onclick={() => { unarchiveMsg(msg.id); deleteMsg(msg.id); }}
+												class="text-[11px] text-gray-400 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10"
+												title="מחק לצמיתות"
+											>
+												🗑 מחק
+											</button>
+										</div>
+									</div>
+								</div>
+							{/each}
+						</div>
+					{/if}
+				{/if}
+
+				<!-- קריאות שכונה שפרסמתי -->
+				{#if (data.communityRequests ?? []).length > 0}
+					<div class="mt-2 mb-1">
+						<p class="text-xs font-black text-orange-400 mb-2 px-1">קריאות שכונה שפרסמתי</p>
+						<div class="flex flex-col gap-2">
+							{#each data.communityRequests as req}
+								<div class="flex items-start gap-3 bg-orange-500/5 rounded-2xl border border-orange-500/20 px-4 py-3">
+									<span class="text-xl flex-shrink-0">{req.icon ?? '🆘'}</span>
+									<div class="min-w-0 flex-1">
+										<div class="flex items-center justify-between gap-2 mb-0.5">
+											<span class="text-white text-xs font-black">{req.label}</span>
+											<span class="text-gray-600 text-[10px] flex-shrink-0">{new Date(req.created_at).toLocaleDateString('he-IL')}</span>
+										</div>
+										{#if req.description}
+											<p class="text-gray-400 text-xs line-clamp-2">{req.description}</p>
+										{/if}
+										<span class="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full font-bold
+											{req.status === 'active' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-gray-500/20 text-gray-400 border border-gray-500/30'}">
+											{req.status === 'active' ? 'פעיל' : req.status}
+										</span>
+									</div>
+								</div>
+							{/each}
+						</div>
+					</div>
+				{/if}
+
+				<!-- המלצות מותאמות אישית -->
+				{#if business || family_status === "single_m" || family_status === "single_f" || whatsappMatches.length > 0}
+					{@const allRecs = [
+						...(business
+							? [
+									{
+										id: "biz",
+										emoji: "🏪",
+										title: "מועדון בעלי העסקים הכשרים",
+										sub: "הצטרף לרשת בעלי העסקים הכשרים בישראל",
+										href: "https://index-chi-sage.vercel.app/",
+										external: true,
+										color: "amber",
+									},
+								]
+							: []),
+						...(family_status === "single_m" ||
+						family_status === "single_f"
+							? [
+									{
+										id: "singles",
+										emoji: "💑",
+										title: "רשימת הפנויים והפנויות הארצית",
+										sub: "הצטרף לרשימה ומצא את השידוך המתאים",
+										href: "/national/singles",
+										external: false,
+										color: "pink",
+									},
+								]
+							: []),
+						...whatsappMatches.map((g) => ({
+							id: "wa_" + g.label,
+							emoji: "💬",
+							title: g.label,
+							sub: "הצטרף לקבוצת הווטסאפ של השכונה שלך",
+							href: g.url,
+							external: true,
+							color: "green",
+						})),
+					]}
+					{@const visibleRecs = allRecs.filter((r) =>
+						isRecVisible(r.id),
+					)}
+					{#if visibleRecs.length > 0}
+						<div class="mt-2 flex flex-col gap-3">
+							<p
+								class="text-xs text-gray-400 uppercase tracking-widest font-bold"
+							>
+								המלצות עבורך
+							</p>
+							{#each visibleRecs as rec}
+								<div
+									class="rounded-2xl border px-4 pt-4 pb-3
+					{rec.color === 'amber'
+										? 'bg-amber-500/10 border-amber-500/30'
+										: rec.color === 'pink'
+											? 'bg-pink-500/10  border-pink-500/30'
+											: 'bg-green-500/10 border-green-500/30'}"
+								>
+									<!-- תוכן -->
+									<div class="flex items-center gap-3 mb-3">
+										<span class="text-3xl flex-shrink-0"
+											>{rec.emoji}</span
+										>
+										<div class="flex-1 text-right">
+											<p
+												class="text-white font-bold text-sm"
+											>
+												{rec.title}
+											</p>
+											<p
+												class="text-xs mt-0.5
+								{rec.color === 'amber'
+													? 'text-amber-300/80'
+													: rec.color === 'pink'
+														? 'text-pink-300/80'
+														: 'text-green-300/80'}"
+											>
+												{rec.sub} ←
+											</p>
+										</div>
+									</div>
+									<!-- כפתורי פעולה -->
+									<div
+										class="flex items-center gap-2 justify-end border-t border-white/8 pt-2.5"
+									>
+										<button
+											type="button"
+											onclick={() => dismissRec(rec.id)}
+											class="text-[11px] text-gray-500 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10"
+										>
+											🗑 מחק
+										</button>
+										<button
+											type="button"
+											onclick={() => snoozeRec(rec.id)}
+											class="text-[11px] text-gray-500 hover:text-yellow-300 transition-colors px-2 py-1 rounded-lg hover:bg-yellow-500/10"
+										>
+											🔔 הזכר לי מאוחר יותר
+										</button>
+										<a
+											href={rec.href}
+											target={rec.external
+												? "_blank"
+												: "_self"}
+											rel={rec.external
+												? "noopener noreferrer"
+												: ""}
+											class="text-[11px] font-bold text-white px-3 py-1 rounded-lg
+							{rec.color === 'amber'
+												? 'bg-amber-500/25 hover:bg-amber-500/40'
+												: rec.color === 'pink'
+													? 'bg-pink-500/25  hover:bg-pink-500/40'
+													: 'bg-green-500/25 hover:bg-green-500/40'} transition-colors"
+										>
+											עבור אל ←
+										</a>
+									</div>
+								</div>
+							{/each}
+						</div>
+					{/if}
+				{/if}
+			</div>
+		{/if}
+	</div>
+
+	<!-- ===== קומה 3: המידע שלי ===== -->
+	<div
+		class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-4 md:p-6 shadow-xl overflow-hidden
+	            before:absolute before:inset-x-0 before:top-0 before:h-24 before:rounded-t-3xl
+	            before:bg-gradient-to-b before:from-white/8 before:to-transparent
+	            before:transition-all before:duration-300 before:pointer-events-none
+	            hover:before:from-white/18 {mobileTab !== 'items'
+			? 'hidden md:block'
+			: ''}"
+	>
+		<div
+			class="relative flex items-center justify-between cursor-pointer select-none -mx-4 px-4 -mt-4 pt-3 md:-mx-6 md:px-6 md:-mt-6 md:pt-4 min-h-14 {showMyInfo
+				? 'pb-4 mb-4'
+				: 'pb-4'}"
+			onclick={() => {
+				showMyInfo = !showMyInfo;
+			}}
+			onmouseenter={() => {
+				secTipShow = true;
+				secTipIsOpen = showMyInfo;
+			}}
+			onmouseleave={() => (secTipShow = false)}
+			onmousemove={(e) => handleSecMouseMove(e, showMyInfo)}
+			role="button"
+			tabindex={0}
+			onkeydown={(e) => {
+				if (e.key === "Enter" || e.key === " ")
+					showMyInfo = !showMyInfo;
+			}}
+		>
+			<h2 class="text-xl font-black text-white flex items-center gap-2">
+				<span
+					class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+					style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75"
+					>3</span
+				>
+				הנכסים שלי
+			</h2>
+			<svg
+					class="w-4 h-4 text-yellow-400 transition-transform duration-300 flex-shrink-0 {showMyInfo
+						? 'rotate-180'
+						: ''}"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2.5"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					><polyline points="6 9 12 15 18 9" /></svg
+				>
+			</div>
+		</div>
+
+		{#if showMyInfo}
+			<div class="flex flex-col gap-4">
+				<!-- ===== סאב-מקטע: ניהול האתר (סופר־אדמין בלבד) ===== -->
+				{#if isSuperAdmin}
+					<div class="bg-gradient-to-br from-amber-500/10 to-emerald-500/10 rounded-2xl border border-amber-500/30 p-3 md:p-4">
+						<div class="flex items-center justify-between gap-2 mb-3 flex-wrap">
+							<h3 class="text-white font-bold text-sm flex items-center gap-2">
+								<span class="text-amber-400 text-lg">👑</span>
+								ניהול האתר
+								<span class="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full font-bold">סופר־אדמין</span>
+							</h3>
+						</div>
+						<div class="flex flex-wrap gap-2">
+							<a
+								href="/admin/ads-review"
+								class="relative flex-1 min-w-[160px] text-xs md:text-sm font-bold text-emerald-300 hover:text-emerald-200 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-emerald-500/10 border border-emerald-500/30 hover:border-emerald-400/50 flex items-center justify-center gap-1.5"
+								title="אישור פרסומות, תזמון, מפרסמים, תזכורות"
+							>
+								📢 ניהול פרסומות
+								{#if (data.pendingAdsCount ?? 0) > 0}
+									<span class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-amber-500 text-black text-[11px] font-black shadow-lg animate-pulse">
+										{data.pendingAdsCount}
+									</span>
+								{/if}
+							</a>
+							<a
+								href="/admin?tab=users#coordinators"
+								class="relative flex-1 min-w-[160px] text-xs md:text-sm font-bold text-amber-300 hover:text-amber-200 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-amber-500/10 border border-amber-500/30 hover:border-amber-400/50 flex items-center justify-center gap-1.5"
+								title="ניהול רכזי שכונות שמאשרים תוכן"
+							>
+								🏘️ ניהול רכזים
+								{#if (data.coordinatorsCount ?? 0) > 0}
+									<span class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-amber-500/30 text-amber-100 border border-amber-400/40 text-[11px] font-black">
+										{data.coordinatorsCount}
+									</span>
+								{/if}
+							</a>
+							<a
+								href="/admin"
+								class="flex-1 min-w-[160px] text-xs md:text-sm font-bold text-amber-400 hover:text-amber-300 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-amber-500/10 border border-amber-500/30 hover:border-amber-400/50 flex items-center justify-center gap-1.5"
+								title="לוח ניהול ראשי"
+							>
+								👑 לוח ניהול ראשי
+							</a>
+						</div>
+					</div>
+				{/if}
+
+				<!-- ===== סאב-מקטע: פרסומיי ===== -->
+				<div class="bg-[#0a1224]/60 rounded-2xl border border-white/10 p-3 md:p-4">
+					<div class="flex items-center justify-between gap-2 mb-3 flex-wrap">
+						<h3 class="text-white font-bold text-sm flex items-center gap-2">
+							<span class="text-purple-400 text-lg">📋</span>
+							פרסומיי
+							{#if data.items.length > 0}
+								<span class="text-xs bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2.5 py-0.5 rounded-full font-bold">{data.items.length}</span>
+							{/if}
+						</h3>
+						{#if isSuperAdmin}
+							<a
+								href="/about/advertise/builder"
+								class="text-xs font-bold text-purple-300 hover:text-purple-200 transition-colors cursor-pointer px-3 py-1.5 rounded-lg hover:bg-purple-500/10 border border-purple-500/30 hover:border-purple-400/50 flex items-center gap-1.5"
+								title="בילדר פרסומות (סופר-אדמין)"
+							>
+								🎨 בילדר פרסומות
+							</a>
+						{/if}
+					</div>
+
+					{#if adDraft}
+						<div class="mb-3 rounded-2xl border-2 border-purple-500/40 bg-gradient-to-br from-purple-900/30 to-indigo-900/20 p-3 md:p-4">
+							<div class="flex items-start gap-3">
+								{#if adDraft.mainImage}
+									<img src={adDraft.mainImage} alt="טיוטת הפרסומת" class="w-14 h-14 md:w-16 md:h-16 rounded-xl object-cover flex-shrink-0 border border-white/10" />
+								{:else}
+									<div class="w-14 h-14 md:w-16 md:h-16 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center flex-shrink-0 text-2xl">🎨</div>
+								{/if}
+								<div class="flex-1 min-w-0">
+									<div class="flex items-center gap-2 mb-1 flex-wrap">
+										<span class="text-purple-300 font-black text-sm md:text-base">📝 פרסומת בעריכה</span>
+										<span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 font-bold">{adDraftProgress}% הושלמו</span>
+									</div>
+									<p class="text-white font-bold text-xs md:text-sm leading-tight mb-2 truncate">
+										{adDraft.title || "ללא כותרת"}{adDraft.subtitle ? " — " + adDraft.subtitle : ""}
+									</p>
+									<div class="flex items-center gap-2 flex-wrap">
+										<a href="/about/advertise/builder"
+										   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-black text-xs transition-colors">
+											🚀 המשך לערוך
+										</a>
+										<button type="button" onclick={dismissAdDraft}
+										   class="text-[11px] text-gray-400 hover:text-red-400 underline underline-offset-2 font-bold">
+											מחק טיוטה
+										</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					{/if}
+
+					{#if giveawayDrafts.length > 0}
+						<a
+							href="/giveaways/my?tab=drafts"
+							class="flex items-center gap-3 mb-4 rounded-2xl bg-gradient-to-r from-yellow-900/30 to-amber-900/20 border border-yellow-500/30 hover:border-yellow-400/60 px-4 py-3 transition-all group"
+						>
+							<span class="text-3xl flex-shrink-0">📝</span>
+							<div class="flex-1 min-w-0">
+								<p class="text-yellow-200 font-bold text-sm">
+									{giveawayDrafts.length === 1
+										? "טיוטה אחת ממתינה לתמונה"
+										: `${giveawayDrafts.length} טיוטות ממתינות לתמונה`}
+								</p>
+								<p class="text-yellow-300/70 text-xs mt-0.5">
+									השלם את הפרסום על ידי הוספת תמונה למוצר למסירה
+								</p>
+							</div>
+							<span
+								class="text-yellow-300 text-lg flex-shrink-0 group-hover:translate-x-[-3px] transition-transform"
+								aria-hidden="true">←</span
+							>
+						</a>
+					{/if}
+					{#if data.items.length === 0}
+						<div class="text-center py-8">
+							<span class="text-5xl block mb-3">📭</span>
+							<p class="text-gray-400 mb-4 text-sm">{tFn("no_items")}</p>
+							<a
+								href="/"
+								class="inline-block bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500
+							       text-white font-bold px-6 py-3 rounded-xl shadow-lg transition-all hover:-translate-y-0.5"
+							>
+								{tFn("publish_first")}
+							</a>
+						</div>
+					{:else}
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+							{#each data.items as item}
+								<a
+									href="/items/{item.id}"
+									class="bg-white/5 rounded-2xl border border-white/10 p-4
+								       hover:border-purple-500/30 hover:bg-white/8 transition-all group block"
+								>
+									<div class="flex items-start gap-3">
+										<span class="text-3xl flex-shrink-0 mt-0.5"
+											>{item.icon ?? "📋"}</span
+										>
+										<div class="min-w-0 flex-1">
+											<div
+												class="flex items-center gap-2 flex-wrap mb-1"
+											>
+												<h3
+													class="text-white font-bold text-sm truncate group-hover:text-purple-300 transition-colors"
+												>
+													{item.label}
+												</h3>
+												<span
+													class="text-xs px-2 py-0.5 rounded-full font-bold flex-shrink-0
+											  {item.status === 'active'
+														? 'bg-green-500/20 text-green-400 border border-green-500/30'
+														: 'bg-gray-500/20 text-gray-400 border border-gray-500/30'}"
+												>
+													{item.status === "active"
+														? tFn("status_active")
+														: item.status}
+												</span>
+											</div>
+											{#if item.description}
+												<p
+													class="text-gray-400 text-xs line-clamp-2"
+												>
+													{item.description}
+												</p>
+											{/if}
+											<div class="flex items-center gap-3 mt-1.5 flex-wrap">
+												{#if item.neighborhood}
+													<span
+														class="text-purple-400/70 text-xs"
+														>📍 {item.neighborhood}</span
+													>
+												{/if}
+												<span class="text-gray-600 text-xs">
+													{new Date(
+														item.created_at,
+													).toLocaleDateString("he-IL")}
+												</span>
+												{#if item.view_count !== undefined}
+													<span
+														class="text-yellow-400/70 text-xs flex items-center gap-1"
+													>
+														👁️ {item.view_count} ביקורים
+													</span>
+												{/if}
+											</div>
+										</div>
+									</div>
+								</a>
+							{/each}
+						</div>
+					{/if}
+				</div>
+
+				<!-- ===== סאב-מקטע: האהבתי (קיצורי דרך לפריטים שאהבתי) ===== -->
+				<div class="bg-[#0a1224]/60 rounded-2xl border border-white/10 p-3 md:p-4">
+					<h3 class="text-white font-bold text-sm mb-3 flex items-center gap-2">
+						<span class="text-lg" aria-hidden="true">❤️</span>
+						האהבתי
+						{#if likedItems.length > 0}
+							<span class="text-xs bg-rose-500/20 text-rose-300 border border-rose-500/30 px-2.5 py-0.5 rounded-full font-bold">{likedItems.length}</span>
+						{/if}
+					</h3>
+
+					{#if likedItems.length === 0}
+						<div class="text-center py-6">
+							<span class="text-4xl block mb-2">💔</span>
+							<p class="text-gray-400 text-sm mb-3">
+								עדיין לא סימנת פריטים או אישיות שאהבת
+							</p>
+							<p class="text-gray-500 text-xs leading-relaxed">
+								לחצי/לחץ על ❤️ בדף
+								<a href="/giveaways" class="text-orange-400 hover:text-orange-300 font-bold">למסירה</a>
+								או בדף
+								<a href="/singles" class="text-pink-400 hover:text-pink-300 font-bold">פנויים ופנויות</a>
+								כדי להוסיף לכאן קיצור דרך מהיר.
+							</p>
+						</div>
+					{:else}
+						<div class="flex flex-col gap-4">
+							{#if likedGiveaways.length > 0}
+								<div>
+									<h4 class="text-white font-bold text-xs mb-2 flex items-center gap-2">
+										<span class="text-orange-400">🎁</span>
+										פריטים למסירה ({likedGiveaways.length})
+									</h4>
+									<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+										{#each likedGiveaways as it (it.id)}
+											<div class="group relative flex items-center gap-3 bg-white/5 hover:bg-white/8 border border-white/10 hover:border-orange-500/40 rounded-2xl p-3 transition-all">
+												<a
+													href={it.url}
+													class="flex items-center gap-3 flex-1 min-w-0"
+												>
+													{#if it.image}
+														<img
+															src={it.image}
+															alt=""
+															loading="lazy"
+															class="w-14 h-14 rounded-xl object-cover flex-shrink-0 bg-[#0a0f1a]"
+														/>
+													{:else}
+														<div class="w-14 h-14 rounded-xl bg-orange-500/20 flex items-center justify-center text-2xl flex-shrink-0">🎁</div>
+													{/if}
+													<div class="min-w-0 flex-1">
+														<p class="text-white text-sm font-bold truncate group-hover:text-orange-300 transition-colors">{it.label}</p>
+														{#if it.summary}
+															<p class="text-gray-400 text-xs truncate mt-0.5">📍 {it.summary}</p>
+														{/if}
+													</div>
+												</a>
+												<button
+													type="button"
+													onclick={() => unlike(it)}
+													aria-label="הסר מהאהובים"
+													title="הסר מהאהובים"
+													class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-rose-500/10 hover:bg-rose-500/25 text-rose-300 hover:text-rose-200 text-base transition-colors"
+												>❤️</button>
+											</div>
+										{/each}
+									</div>
+								</div>
+							{/if}
+
+							{#if likedSingles.length > 0}
+								<div>
+									<h4 class="text-white font-bold text-xs mb-2 flex items-center gap-2">
+										<span class="text-pink-400">💑</span>
+										פנויים ופנויות ({likedSingles.length})
+									</h4>
+									<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+										{#each likedSingles as it (it.id)}
+											<div class="group relative flex items-center gap-3 bg-white/5 hover:bg-white/8 border border-white/10 hover:border-pink-500/40 rounded-2xl p-3 transition-all">
+												<a
+													href={it.url}
+													class="flex items-center gap-3 flex-1 min-w-0"
+												>
+													<div class="w-14 h-14 rounded-full bg-pink-500/20 flex items-center justify-center text-2xl flex-shrink-0">
+														{it.summary?.startsWith("👨") ? "👨" : "👩"}
+													</div>
+													<div class="min-w-0 flex-1">
+														<p class="text-white text-sm font-bold truncate group-hover:text-pink-300 transition-colors">{it.label}</p>
+														{#if it.summary}
+															<p class="text-gray-400 text-xs truncate mt-0.5">{it.summary}</p>
+														{/if}
+													</div>
+												</a>
+												<button
+													type="button"
+													onclick={() => unlike(it)}
+													aria-label="הסר מהאהובים"
+													title="הסר מהאהובים"
+													class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-rose-500/10 hover:bg-rose-500/25 text-rose-300 hover:text-rose-200 text-base transition-colors"
+												>❤️</button>
+											</div>
+										{/each}
+									</div>
+								</div>
+							{/if}
+						</div>
+					{/if}
+				</div>
+			</div>
+		{/if}
+	</div>
+
+	<!-- ===== קומה 4: דרגה והרשאות ===== -->
+	<div
+		id="sec-levels"
+		class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-4 md:p-6 shadow-xl mb-2 overflow-hidden
+	            before:absolute before:inset-x-0 before:top-0 before:h-24 before:rounded-t-3xl
+	            before:bg-gradient-to-b before:from-white/8 before:to-transparent
+	            before:transition-all before:duration-300 before:pointer-events-none
+	            hover:before:from-white/18 group/sec3 {mobileTab !== 'levels'
+			? 'hidden md:block'
+			: ''}"
+	>
+		<div
+			class="relative flex items-center justify-between cursor-pointer select-none transition-all
+			       -mx-4 px-4 -mt-4 pt-3 md:-mx-6 md:px-6 md:-mt-6 md:pt-4 pb-4 min-h-14
+			       {showLevels ? 'mb-5' : ''}"
+			onclick={() => {
+				showLevels = !showLevels;
+			}}
+			onmouseenter={() => {
+				secTipShow = true;
+				secTipIsOpen = showLevels;
+			}}
+			onmouseleave={() => (secTipShow = false)}
+			onmousemove={(e) => handleSecMouseMove(e, showLevels)}
+			role="button"
+			tabindex={0}
+			onkeydown={(e) => {
+				if (e.key === "Enter" || e.key === " ")
+					showLevels = !showLevels;
+			}}
+		>
+			<h2
+				class="relative text-xl font-black text-white flex items-center gap-2"
+			>
+				<span
+					class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+					style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75"
+					>4</span
+				>
+				דרגה והרשאות
+			</h2>
+			<!-- סיכום דרגה נוכחית -->
+			<div class="flex items-center gap-2">
+				{#if isSuperAdmin}
+					<span
+						class="text-sm bg-red-500/20 text-red-300 border border-red-500/30 px-3 py-1.5 rounded-full font-bold"
+						>דרגה נוכחית — מנהל ראשי 👑</span
+					>
+				{:else if (data.user as any)?.role === "neighborhood_admin"}
+					<span
+						class="text-sm bg-amber-500/20 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-full font-bold"
+						>דרגה נוכחית — אדמין שכונתי 🛡️</span
+					>
+				{:else if ((data.user as any)?.coordinator_of?.length ?? 0) > 0}
+					<span
+						class="text-sm bg-blue-500/20 text-blue-300 border border-blue-500/30 px-3 py-1.5 rounded-full font-bold"
+						>דרגה נוכחית — רכז שכונה 🏘️</span
+					>
+				{:else if userLevel >= 2}
+					<span
+						class="text-sm bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1.5 rounded-full font-bold"
+						>דרגה נוכחית — משתמש</span
+					>
+				{:else}
+					<span
+						class="text-sm bg-gray-500/20 text-gray-300 border border-gray-500/30 px-3 py-1.5 rounded-full font-bold"
+						>דרגה נוכחית — צופה</span
+					>
+				{/if}
+				<svg
+					class="w-4 h-4 text-yellow-400 transition-transform duration-300 flex-shrink-0 {showLevels
+						? 'rotate-180'
+						: ''}"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2.5"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					><polyline points="6 9 12 15 18 9" /></svg
+				>
+			</div>
+		</div>
+
+		{#if showLevels}
+			<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+				<!-- דרגה 1: צופה -->
+				<div
+					class="relative rounded-2xl border-2 p-5 flex flex-col gap-3 transition-all
+			            {userLevel >= 1
+						? 'border-emerald-500 bg-emerald-500/10 shadow-lg shadow-emerald-500/10'
+						: 'border-white/10 bg-white/3 opacity-60'}"
+				>
+					{#if userLevel >= 1}
+						<div
+							class="absolute -top-4 -right-4 w-9 h-9 rounded-full bg-emerald-500 border-[3px] border-[#0f172a] flex items-center justify-center shadow-lg shadow-emerald-500/50 z-10"
+						>
+							<span
+								class="text-white font-black text-lg leading-none"
+								>✓</span
+							>
+						</div>
+					{/if}
+					<div class="flex items-center gap-2">
+						<span
+							class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0
+					             {userLevel >= 1
+								? 'bg-emerald-500 text-white'
+								: 'bg-white/10 text-gray-400'}">1</span
+						>
+						<span class="font-black text-white text-base">צופה</span
+						>
+						{#if userLevel === 1}
+							<span
+								class="mr-auto text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold"
+								>הדרגה שלך</span
+							>
+						{/if}
+					</div>
+					<div class="flex flex-col gap-1.5">
+						<div class="flex items-center gap-1.5">
+							<span class="text-emerald-400 text-sm">✓</span>
+							<span class="text-gray-300 text-xs font-bold"
+								>כניסה וצפיה באתר</span
+							>
+						</div>
+						<div class="flex items-center gap-1.5">
+							<span class="text-red-400 text-sm">✕</span>
+							<span class="text-gray-200 text-xs"
+								>משתתף במשאלי עם שכונתיים</span
+							>
+						</div>
+						<div class="flex items-center gap-1.5">
+							<span class="text-red-400 text-sm">✕</span>
+							<span class="text-gray-200 text-xs">העלאת תוכן</span
+							>
+						</div>
+						<div class="flex items-center gap-1.5">
+							<span class="text-red-400 text-sm">✕</span>
+							<span class="text-gray-200 text-xs">ניהול תוכן</span
+							>
+						</div>
+					</div>
+				</div>
+
+				<!-- דרגה 2: משתמש -->
+				<div
+					class="relative rounded-2xl border-2 p-5 flex flex-col gap-3 transition-all
+			            {userLevel >= 2
+						? 'border-purple-500 bg-purple-500/10 shadow-lg shadow-purple-500/10'
+						: 'border-white/10 bg-white/3 opacity-60'}"
+				>
+					{#if userLevel >= 2}
+						<div
+							class="absolute -top-4 -right-4 w-9 h-9 rounded-full bg-purple-500 border-[3px] border-[#0f172a] flex items-center justify-center shadow-lg shadow-purple-500/50 z-10"
+						>
+							<span
+								class="text-white font-black text-lg leading-none"
+								>✓</span
+							>
+						</div>
+					{/if}
+					<div class="flex items-center gap-2">
+						<span
+							class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0
+					             {userLevel >= 2
+								? 'bg-purple-500 text-white'
+								: 'bg-white/10 text-gray-400'}">2</span
+						>
+						<span class="font-black text-white text-base"
+							>משתמש</span
+						>
+						{#if userLevel === 2}
+							<span
+								class="mr-auto text-[10px] bg-purple-500/20 text-purple-400 border border-purple-500/30 px-2 py-0.5 rounded-full font-bold"
+								>הדרגה שלך</span
+							>
+						{/if}
+					</div>
+					<div class="flex flex-col gap-1.5">
+						<div class="flex items-center gap-1.5">
+							<span class="text-purple-400 text-sm">✓</span>
+							<span class="text-gray-300 text-xs font-bold"
+								>כניסה וצפיה באתר</span
+							>
+						</div>
+						<div class="flex items-center gap-1.5">
+							<span class="text-purple-400 text-sm">✓</span>
+							<span class="text-gray-300 text-xs font-bold"
+								>העלאת תוכן</span
+							>
+						</div>
+						<div class="flex items-center gap-1.5">
+							<span class="text-purple-400 text-sm">✓</span>
+							<span class="text-gray-300 text-xs font-bold"
+								>משתתף במשאלי עם שכונתיים</span
+							>
+						</div>
+						<div class="flex items-center gap-1.5">
+							<span class="text-red-400 text-sm">✕</span>
+							<span class="text-gray-200 text-xs">ניהול תוכן</span
+							>
+						</div>
+					</div>
+					{#if userLevel < 2}
+						<p class="text-yellow-500/70 text-[11px]">
+							נדרש: מילוי כל שדות הפרופיל
+						</p>
+					{/if}
+				</div>
+
+				<!-- דרגה 3: רכז שכונה (לא כולל סופר־אדמין) -->
+				<a
+					href={isCoordOrNbhAdmin ? "/admin" : undefined}
+					class="relative rounded-2xl border-2 p-5 flex flex-col gap-3 transition-all no-underline
+		       {isCoordOrNbhAdmin
+							? 'border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/10 hover:bg-blue-500/20 cursor-pointer'
+							: 'border-white/10 bg-white/3 opacity-60 pointer-events-none'}"
+					title={isCoordOrNbhAdmin ? "ניהול תוכן בשכונה שלך" : ""}
+				>
+					{#if isCoordOrNbhAdmin}
+						<div
+							class="absolute -top-4 -right-4 w-9 h-9 rounded-full bg-blue-500 border-[3px] border-[#0f172a] flex items-center justify-center shadow-lg shadow-blue-500/50 z-10"
+						>
+							<span
+								class="text-white font-black text-lg leading-none"
+								>✓</span
+							>
+						</div>
+					{/if}
+					<div class="flex items-center gap-2">
+						<span
+							class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0
+			             {isCoordOrNbhAdmin
+									? 'bg-blue-500 text-white'
+									: 'bg-white/10 text-gray-400'}">3</span
+						>
+						<span class="font-black text-white text-base"
+							>רכז שכונה 🏘️</span
+						>
+						{#if isCoordOrNbhAdmin}
+							<span
+								class="mr-auto text-[10px] bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded-full font-bold"
+								>הדרגה שלך</span
+							>
+						{/if}
+					</div>
+					<div class="flex flex-col gap-1.5">
+						<div class="flex items-center gap-1.5">
+							<span class="text-blue-400 text-sm">✓</span>
+							<span class="text-gray-300 text-xs font-bold"
+								>כניסה וצפיה באתר</span
+							>
+						</div>
+						<div class="flex items-center gap-1.5">
+							<span class="text-blue-400 text-sm">✓</span>
+							<span class="text-gray-300 text-xs font-bold"
+								>העלאת תוכן</span
+							>
+						</div>
+						<div class="flex items-center gap-1.5">
+							<span class="text-blue-400 text-sm">✓</span>
+							<span class="text-gray-300 text-xs font-bold"
+								>משתתף במשאלי עם שכונתיים</span
+							>
+						</div>
+						<div class="flex items-center gap-1.5">
+							<span class="text-blue-400 text-sm">✓</span>
+							<span class="text-gray-300 text-xs font-bold"
+								>ניהול תוכן בשכונה שלו</span
+							>
+						</div>
+					</div>
+				</a>
+
+				<!-- דרגה 4: מנהל ראשי (סופר־אדמין) -->
+				<a
+					href={isSuperAdmin ? "/admin" : undefined}
+					class="relative rounded-2xl border-2 p-5 flex flex-col gap-3 transition-all no-underline
+		       {isSuperAdmin
+							? 'border-red-500 bg-gradient-to-br from-red-500/15 to-amber-500/10 shadow-lg shadow-red-500/20 hover:from-red-500/25 hover:to-amber-500/20 cursor-pointer'
+							: 'border-white/10 bg-white/3 opacity-60 pointer-events-none'}"
+					title={isSuperAdmin ? "פאנל ניהול ראשי" : "דרגה זו בלעדית למנהל הראשי של האתר"}
+				>
+					{#if isSuperAdmin}
+						<div
+							class="absolute -top-4 -right-4 w-9 h-9 rounded-full bg-red-500 border-[3px] border-[#0f172a] flex items-center justify-center shadow-lg shadow-red-500/50 z-10"
+						>
+							<span class="text-white font-black text-lg leading-none">✓</span>
+						</div>
+					{/if}
+					<div class="flex items-center gap-2 flex-wrap">
+						<span
+							class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0
+			             {isSuperAdmin
+									? 'bg-red-500 text-white'
+									: 'bg-white/10 text-gray-400'}">4</span
+						>
+						<span class="font-black text-white text-base"
+							>מנהל ראשי 👑</span
+						>
+						{#if isSuperAdmin}
+							<span
+								class="mr-auto text-[10px] bg-red-500/20 text-red-300 border border-red-500/40 px-2 py-0.5 rounded-full font-bold whitespace-nowrap"
+								>הדרגה שלך</span
+							>
+						{/if}
+					</div>
+					<div class="flex flex-col gap-1.5">
+						<div class="flex items-center gap-1.5">
+							<span class="text-red-400 text-sm">✓</span>
+							<span class="text-gray-300 text-xs font-bold"
+								>כל הרשאות הרכזים</span
+							>
+						</div>
+						<div class="flex items-center gap-1.5">
+							<span class="text-red-400 text-sm">✓</span>
+							<span class="text-gray-300 text-xs font-bold"
+								>אישור פרסומות + מינוי רכזים</span
+							>
+						</div>
+						<div class="flex items-center gap-1.5">
+							<span class="text-red-400 text-sm">✓</span>
+							<span class="text-gray-300 text-xs font-bold"
+								>ניהול משתמשים והרשאות</span
+							>
+						</div>
+						<div class="flex items-center gap-1.5">
+							<span class="text-red-400 text-sm">✓</span>
+							<span class="text-gray-300 text-xs font-bold"
+								>ניהול תוכן בכל האתר</span
+							>
+						</div>
+					</div>
+				</a>
+			</div>
+		{/if}
+	</div>
+
+	<!-- ===== קומה 5: פרטי פרופיל ===== -->
 	<div
 		id="sec-edit-profile"
 		class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-4 md:p-6 mb-2 shadow-xl overflow-hidden
@@ -1315,7 +2404,7 @@
 				<span
 					class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
 					style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75"
-					>2</span
+					>5</span
 				>
 				{tFn("section_profile_details")}
 			</h2>
@@ -2105,723 +3194,7 @@
 		{/if}
 	</div>
 
-	<!-- ===== קומה 3: דרגה והרשאות ===== -->
-	<div
-		id="sec-levels"
-		class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-4 md:p-6 shadow-xl mb-2 overflow-hidden
-	            before:absolute before:inset-x-0 before:top-0 before:h-24 before:rounded-t-3xl
-	            before:bg-gradient-to-b before:from-white/8 before:to-transparent
-	            before:transition-all before:duration-300 before:pointer-events-none
-	            hover:before:from-white/18 group/sec3 {mobileTab !== 'levels'
-			? 'hidden md:block'
-			: ''}"
-	>
-		<div
-			class="relative flex items-center justify-between cursor-pointer select-none transition-all
-			       -mx-4 px-4 -mt-4 pt-3 md:-mx-6 md:px-6 md:-mt-6 md:pt-4 pb-4 min-h-14
-			       {showLevels ? 'mb-5' : ''}"
-			onclick={() => {
-				showLevels = !showLevels;
-			}}
-			onmouseenter={() => {
-				secTipShow = true;
-				secTipIsOpen = showLevels;
-			}}
-			onmouseleave={() => (secTipShow = false)}
-			onmousemove={(e) => handleSecMouseMove(e, showLevels)}
-			role="button"
-			tabindex={0}
-			onkeydown={(e) => {
-				if (e.key === "Enter" || e.key === " ")
-					showLevels = !showLevels;
-			}}
-		>
-			<h2
-				class="relative text-xl font-black text-white flex items-center gap-2"
-			>
-				<span
-					class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
-					style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75"
-					>3</span
-				>
-				דרגה והרשאות
-			</h2>
-			<!-- סיכום דרגה נוכחית -->
-			<div class="flex items-center gap-2">
-				{#if isSuperAdmin}
-					<span
-						class="text-sm bg-red-500/20 text-red-300 border border-red-500/30 px-3 py-1.5 rounded-full font-bold"
-						>דרגה נוכחית — מנהל ראשי 👑</span
-					>
-				{:else if (data.user as any)?.role === "neighborhood_admin"}
-					<span
-						class="text-sm bg-amber-500/20 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-full font-bold"
-						>דרגה נוכחית — אדמין שכונתי 🛡️</span
-					>
-				{:else if ((data.user as any)?.coordinator_of?.length ?? 0) > 0}
-					<span
-						class="text-sm bg-blue-500/20 text-blue-300 border border-blue-500/30 px-3 py-1.5 rounded-full font-bold"
-						>דרגה נוכחית — רכז שכונה 🏘️</span
-					>
-				{:else if userLevel >= 2}
-					<span
-						class="text-sm bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1.5 rounded-full font-bold"
-						>דרגה נוכחית — משתמש</span
-					>
-				{:else}
-					<span
-						class="text-sm bg-gray-500/20 text-gray-300 border border-gray-500/30 px-3 py-1.5 rounded-full font-bold"
-						>דרגה נוכחית — צופה</span
-					>
-				{/if}
-				<svg
-					class="w-4 h-4 text-yellow-400 transition-transform duration-300 flex-shrink-0 {showLevels
-						? 'rotate-180'
-						: ''}"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2.5"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					><polyline points="6 9 12 15 18 9" /></svg
-				>
-			</div>
-		</div>
-
-		{#if showLevels}
-			<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-				<!-- דרגה 1: צופה -->
-				<div
-					class="relative rounded-2xl border-2 p-5 flex flex-col gap-3 transition-all
-			            {userLevel >= 1
-						? 'border-emerald-500 bg-emerald-500/10 shadow-lg shadow-emerald-500/10'
-						: 'border-white/10 bg-white/3 opacity-60'}"
-				>
-					{#if userLevel >= 1}
-						<div
-							class="absolute -top-4 -right-4 w-9 h-9 rounded-full bg-emerald-500 border-[3px] border-[#0f172a] flex items-center justify-center shadow-lg shadow-emerald-500/50 z-10"
-						>
-							<span
-								class="text-white font-black text-lg leading-none"
-								>✓</span
-							>
-						</div>
-					{/if}
-					<div class="flex items-center gap-2">
-						<span
-							class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0
-					             {userLevel >= 1
-								? 'bg-emerald-500 text-white'
-								: 'bg-white/10 text-gray-400'}">1</span
-						>
-						<span class="font-black text-white text-base">צופה</span
-						>
-						{#if userLevel === 1}
-							<span
-								class="mr-auto text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold"
-								>הדרגה שלך</span
-							>
-						{/if}
-					</div>
-					<div class="flex flex-col gap-1.5">
-						<div class="flex items-center gap-1.5">
-							<span class="text-emerald-400 text-sm">✓</span>
-							<span class="text-gray-300 text-xs font-bold"
-								>כניסה וצפיה באתר</span
-							>
-						</div>
-						<div class="flex items-center gap-1.5">
-							<span class="text-red-400 text-sm">✕</span>
-							<span class="text-gray-200 text-xs"
-								>משתתף במשאלי עם שכונתיים</span
-							>
-						</div>
-						<div class="flex items-center gap-1.5">
-							<span class="text-red-400 text-sm">✕</span>
-							<span class="text-gray-200 text-xs">העלאת תוכן</span
-							>
-						</div>
-						<div class="flex items-center gap-1.5">
-							<span class="text-red-400 text-sm">✕</span>
-							<span class="text-gray-200 text-xs">ניהול תוכן</span
-							>
-						</div>
-					</div>
-				</div>
-
-				<!-- דרגה 2: משתמש -->
-				<div
-					class="relative rounded-2xl border-2 p-5 flex flex-col gap-3 transition-all
-			            {userLevel >= 2
-						? 'border-purple-500 bg-purple-500/10 shadow-lg shadow-purple-500/10'
-						: 'border-white/10 bg-white/3 opacity-60'}"
-				>
-					{#if userLevel >= 2}
-						<div
-							class="absolute -top-4 -right-4 w-9 h-9 rounded-full bg-purple-500 border-[3px] border-[#0f172a] flex items-center justify-center shadow-lg shadow-purple-500/50 z-10"
-						>
-							<span
-								class="text-white font-black text-lg leading-none"
-								>✓</span
-							>
-						</div>
-					{/if}
-					<div class="flex items-center gap-2">
-						<span
-							class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0
-					             {userLevel >= 2
-								? 'bg-purple-500 text-white'
-								: 'bg-white/10 text-gray-400'}">2</span
-						>
-						<span class="font-black text-white text-base"
-							>משתמש</span
-						>
-						{#if userLevel === 2}
-							<span
-								class="mr-auto text-[10px] bg-purple-500/20 text-purple-400 border border-purple-500/30 px-2 py-0.5 rounded-full font-bold"
-								>הדרגה שלך</span
-							>
-						{/if}
-					</div>
-					<div class="flex flex-col gap-1.5">
-						<div class="flex items-center gap-1.5">
-							<span class="text-purple-400 text-sm">✓</span>
-							<span class="text-gray-300 text-xs font-bold"
-								>כניסה וצפיה באתר</span
-							>
-						</div>
-						<div class="flex items-center gap-1.5">
-							<span class="text-purple-400 text-sm">✓</span>
-							<span class="text-gray-300 text-xs font-bold"
-								>העלאת תוכן</span
-							>
-						</div>
-						<div class="flex items-center gap-1.5">
-							<span class="text-purple-400 text-sm">✓</span>
-							<span class="text-gray-300 text-xs font-bold"
-								>משתתף במשאלי עם שכונתיים</span
-							>
-						</div>
-						<div class="flex items-center gap-1.5">
-							<span class="text-red-400 text-sm">✕</span>
-							<span class="text-gray-200 text-xs">ניהול תוכן</span
-							>
-						</div>
-					</div>
-					{#if userLevel < 2}
-						<p class="text-yellow-500/70 text-[11px]">
-							נדרש: מילוי כל שדות הפרופיל
-						</p>
-					{/if}
-				</div>
-
-				<!-- דרגה 3: רכז שכונה (לא כולל סופר־אדמין) -->
-				<a
-					href={isCoordOrNbhAdmin ? "/admin" : undefined}
-					class="relative rounded-2xl border-2 p-5 flex flex-col gap-3 transition-all no-underline
-		       {isCoordOrNbhAdmin
-							? 'border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/10 hover:bg-blue-500/20 cursor-pointer'
-							: 'border-white/10 bg-white/3 opacity-60 pointer-events-none'}"
-					title={isCoordOrNbhAdmin ? "ניהול תוכן בשכונה שלך" : ""}
-				>
-					{#if isCoordOrNbhAdmin}
-						<div
-							class="absolute -top-4 -right-4 w-9 h-9 rounded-full bg-blue-500 border-[3px] border-[#0f172a] flex items-center justify-center shadow-lg shadow-blue-500/50 z-10"
-						>
-							<span
-								class="text-white font-black text-lg leading-none"
-								>✓</span
-							>
-						</div>
-					{/if}
-					<div class="flex items-center gap-2">
-						<span
-							class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0
-			             {isCoordOrNbhAdmin
-									? 'bg-blue-500 text-white'
-									: 'bg-white/10 text-gray-400'}">3</span
-						>
-						<span class="font-black text-white text-base"
-							>רכז שכונה 🏘️</span
-						>
-						{#if isCoordOrNbhAdmin}
-							<span
-								class="mr-auto text-[10px] bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded-full font-bold"
-								>הדרגה שלך</span
-							>
-						{/if}
-					</div>
-					<div class="flex flex-col gap-1.5">
-						<div class="flex items-center gap-1.5">
-							<span class="text-blue-400 text-sm">✓</span>
-							<span class="text-gray-300 text-xs font-bold"
-								>כניסה וצפיה באתר</span
-							>
-						</div>
-						<div class="flex items-center gap-1.5">
-							<span class="text-blue-400 text-sm">✓</span>
-							<span class="text-gray-300 text-xs font-bold"
-								>העלאת תוכן</span
-							>
-						</div>
-						<div class="flex items-center gap-1.5">
-							<span class="text-blue-400 text-sm">✓</span>
-							<span class="text-gray-300 text-xs font-bold"
-								>משתתף במשאלי עם שכונתיים</span
-							>
-						</div>
-						<div class="flex items-center gap-1.5">
-							<span class="text-blue-400 text-sm">✓</span>
-							<span class="text-gray-300 text-xs font-bold"
-								>ניהול תוכן בשכונה שלו</span
-							>
-						</div>
-					</div>
-				</a>
-
-				<!-- דרגה 4: מנהל ראשי (סופר־אדמין) -->
-				<a
-					href={isSuperAdmin ? "/admin" : undefined}
-					class="relative rounded-2xl border-2 p-5 flex flex-col gap-3 transition-all no-underline
-		       {isSuperAdmin
-							? 'border-red-500 bg-gradient-to-br from-red-500/15 to-amber-500/10 shadow-lg shadow-red-500/20 hover:from-red-500/25 hover:to-amber-500/20 cursor-pointer'
-							: 'border-white/10 bg-white/3 opacity-60 pointer-events-none'}"
-					title={isSuperAdmin ? "פאנל ניהול ראשי" : "דרגה זו בלעדית למנהל הראשי של האתר"}
-				>
-					{#if isSuperAdmin}
-						<div
-							class="absolute -top-4 -right-4 w-9 h-9 rounded-full bg-red-500 border-[3px] border-[#0f172a] flex items-center justify-center shadow-lg shadow-red-500/50 z-10"
-						>
-							<span class="text-white font-black text-lg leading-none">✓</span>
-						</div>
-					{/if}
-					<div class="flex items-center gap-2 flex-wrap">
-						<span
-							class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0
-			             {isSuperAdmin
-									? 'bg-red-500 text-white'
-									: 'bg-white/10 text-gray-400'}">4</span
-						>
-						<span class="font-black text-white text-base"
-							>מנהל ראשי 👑</span
-						>
-						{#if isSuperAdmin}
-							<span
-								class="mr-auto text-[10px] bg-red-500/20 text-red-300 border border-red-500/40 px-2 py-0.5 rounded-full font-bold whitespace-nowrap"
-								>הדרגה שלך</span
-							>
-						{/if}
-					</div>
-					<div class="flex flex-col gap-1.5">
-						<div class="flex items-center gap-1.5">
-							<span class="text-red-400 text-sm">✓</span>
-							<span class="text-gray-300 text-xs font-bold"
-								>כל הרשאות הרכזים</span
-							>
-						</div>
-						<div class="flex items-center gap-1.5">
-							<span class="text-red-400 text-sm">✓</span>
-							<span class="text-gray-300 text-xs font-bold"
-								>אישור פרסומות + מינוי רכזים</span
-							>
-						</div>
-						<div class="flex items-center gap-1.5">
-							<span class="text-red-400 text-sm">✓</span>
-							<span class="text-gray-300 text-xs font-bold"
-								>ניהול משתמשים והרשאות</span
-							>
-						</div>
-						<div class="flex items-center gap-1.5">
-							<span class="text-red-400 text-sm">✓</span>
-							<span class="text-gray-300 text-xs font-bold"
-								>ניהול תוכן בכל האתר</span
-							>
-						</div>
-					</div>
-				</a>
-			</div>
-		{/if}
-	</div>
-
-	<!-- ===== קומה 4: הודעות אישיות ===== -->
-	<div
-		id="sec-messages"
-		class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-4 md:p-6 shadow-xl mb-2 overflow-hidden
-	            before:absolute before:inset-x-0 before:top-0 before:h-24 before:rounded-t-3xl
-	            before:bg-gradient-to-b before:from-white/8 before:to-transparent
-	            before:transition-all before:duration-300 before:pointer-events-none
-	            hover:before:from-white/18 {!showMessages
-			? 'cursor-pointer'
-			: ''} {mobileTab !== 'messages' ? 'hidden md:block' : ''}"
-		onclick={() => {
-			if (!showMessages) showMessages = true;
-		}}
-	>
-		<div
-			class="relative flex items-center justify-between cursor-pointer select-none -mx-4 px-4 -mt-4 pt-3 md:-mx-6 md:px-6 md:-mt-6 md:pt-4 min-h-14 {showMessages
-				? 'pb-4 mb-4'
-				: 'pb-4'}"
-			onclick={(e) => {
-				e.stopPropagation();
-				showMessages = !showMessages;
-			}}
-			role="button"
-			tabindex={0}
-			onmouseenter={() => {
-				secTipShow = true;
-				secTipIsOpen = showMessages;
-			}}
-			onmouseleave={() => (secTipShow = false)}
-			onmousemove={(e) => handleSecMouseMove(e, showMessages)}
-			onkeydown={(e) => {
-				if (e.key === "Enter" || e.key === " ") {
-					if (showMessages) {
-						showMessages = false;
-					} else {
-						showMessages = true;
-					}
-				}
-			}}
-		>
-			<h2 class="text-xl font-black text-white flex items-center gap-2">
-				<span
-					class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
-					style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75"
-					>4</span
-				>
-				הודעות אישיות
-			</h2>
-			<div class="flex items-center gap-2">
-				{#if unreadCount > 0}
-					<span
-						class="text-sm bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1.5 rounded-full font-bold"
-						>{unreadCount} הודעות שלא נקראו</span
-					>
-				{/if}
-				<svg
-					class="w-4 h-4 text-yellow-400 transition-transform duration-300 flex-shrink-0 {showMessages
-						? 'rotate-180'
-						: ''}"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2.5"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					><polyline points="6 9 12 15 18 9" /></svg
-				>
-			</div>
-		</div>
-
-		{#if showMessages}
-			<div
-				class="flex flex-col gap-3"
-				onclick={(e) => e.stopPropagation()}
-			>
-				{#each displayedMessages as msg}
-					{@const isDraft = (msg as { isDraft?: boolean }).isDraft}
-					<div
-						class="flex items-start gap-3 rounded-2xl border px-4 py-3 transition-all
-							{isDraft
-								? 'bg-gradient-to-br from-purple-900/30 to-indigo-900/20 border-purple-500/50 hover:border-purple-400/70'
-								: msg.read
-									? 'bg-white/5 border-white/5 hover:border-white/15'
-									: 'bg-white/5 border-orange-500/20 hover:border-white/15'}"
-					>
-						<div
-							class="w-2 h-2 rounded-full mt-1.5 flex-shrink-0
-								{isDraft ? 'bg-purple-400 animate-pulse' : msg.read ? 'bg-white/10' : 'bg-orange-500'}"
-						></div>
-						<div class="min-w-0 flex-1">
-							<div
-								class="flex items-center justify-between gap-2 mb-0.5"
-							>
-								<span class="text-white text-xs font-black"
-									>{msg.from}</span
-								>
-								<span
-									class="text-gray-600 text-[10px] flex-shrink-0"
-									>{msg.time}</span
-								>
-							</div>
-							<p class="text-gray-300 text-xs leading-relaxed">{msg.text}</p>
-							{#if isDraft}
-								<div class="flex items-center gap-1.5 justify-between mt-2 flex-wrap">
-									<a href="/about/advertise/builder"
-									   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-black text-xs transition-colors">
-										🚀 סיים את העריכה
-									</a>
-									<div class="flex items-center gap-1.5 flex-wrap">
-										<button
-											type="button"
-											onclick={() => snoozeMsg(msg.id)}
-											class="text-[11px] text-gray-400 hover:text-yellow-300 transition-colors px-2 py-1 rounded-lg hover:bg-yellow-500/10"
-											title="תוצג שוב בעוד יומיים"
-										>
-											🔔 הזכר לי בהמשך
-										</button>
-										<button
-											type="button"
-											onclick={() => archiveMsg(msg.id)}
-											class="text-[11px] text-gray-400 hover:text-blue-400 transition-colors px-2 py-1 rounded-lg hover:bg-blue-500/10"
-											title="העבר לארכיון"
-										>
-											📦 לארכיון
-										</button>
-										<button
-											type="button"
-											onclick={() => deleteMsg(msg.id)}
-											class="text-[11px] text-gray-400 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10"
-											title="הסר את ההודעה (הטיוטא תישאר)"
-										>
-											🗑 מחק
-										</button>
-									</div>
-								</div>
-							{:else}
-								<div class="flex items-center gap-1.5 justify-end mt-2 pt-2 border-t border-white/8 flex-wrap">
-									<button
-										type="button"
-										onclick={() => markRead(msg.id)}
-										class="text-[11px] text-gray-400 hover:text-green-400 transition-colors px-2 py-1 rounded-lg hover:bg-green-500/10"
-										title="סמן כנקראה — תוסר מהפרופיל"
-									>
-										👁️ סמן כנקראה
-									</button>
-									<button
-										type="button"
-										onclick={() => snoozeMsg(msg.id)}
-										class="text-[11px] text-gray-400 hover:text-yellow-300 transition-colors px-2 py-1 rounded-lg hover:bg-yellow-500/10"
-										title="תוצג שוב בעוד יומיים"
-									>
-										🔔 הזכר לי בהמשך
-									</button>
-									<button
-										type="button"
-										onclick={() => archiveMsg(msg.id)}
-										class="text-[11px] text-gray-400 hover:text-blue-400 transition-colors px-2 py-1 rounded-lg hover:bg-blue-500/10"
-										title="העבר לארכיון"
-									>
-										📦 לארכיון
-									</button>
-									<button
-										type="button"
-										onclick={() => deleteMsg(msg.id)}
-										class="text-[11px] text-gray-400 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10"
-										title="מחק לצמיתות"
-									>
-										🗑 מחק
-									</button>
-								</div>
-							{/if}
-						</div>
-					</div>
-				{/each}
-
-				<!-- כפתור הצגת הארכיון -->
-				{#if archivedList.length > 0}
-					<button
-						type="button"
-						onclick={() => (showArchive = !showArchive)}
-						class="self-start text-xs font-bold text-blue-300 hover:text-blue-200 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 mt-1"
-					>
-						📦 ארכיון ההודעות
-						<span class="bg-blue-500/30 text-white rounded-full px-2 py-0.5 text-[10px]">{archivedList.length}</span>
-						<svg class="w-3 h-3 transition-transform {showArchive ? 'rotate-180' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
-					</button>
-
-					{#if showArchive}
-						<div class="flex flex-col gap-2 mt-1">
-							<p class="text-[11px] text-gray-500 px-1">הודעות שהעברת לארכיון</p>
-							{#each archivedList as msg}
-								<div class="flex items-start gap-3 rounded-2xl border border-white/5 bg-white/[0.02] px-4 py-3">
-									<div class="w-2 h-2 rounded-full mt-1.5 flex-shrink-0 bg-blue-400/60"></div>
-									<div class="min-w-0 flex-1">
-										<div class="flex items-center justify-between gap-2 mb-0.5">
-											<span class="text-gray-300 text-xs font-black">{msg.from}</span>
-											<span class="text-gray-600 text-[10px] flex-shrink-0">{msg.time}</span>
-										</div>
-										<p class="text-gray-400 text-xs leading-relaxed">{msg.text}</p>
-										<div class="flex items-center gap-1.5 justify-end mt-2 pt-2 border-t border-white/8 flex-wrap">
-											<button
-												type="button"
-												onclick={() => unarchiveMsg(msg.id)}
-												class="text-[11px] text-gray-400 hover:text-green-400 transition-colors px-2 py-1 rounded-lg hover:bg-green-500/10"
-												title="החזר להודעות הפעילות"
-											>
-												↩️ שחזר
-											</button>
-											<button
-												type="button"
-												onclick={() => { unarchiveMsg(msg.id); deleteMsg(msg.id); }}
-												class="text-[11px] text-gray-400 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10"
-												title="מחק לצמיתות"
-											>
-												🗑 מחק
-											</button>
-										</div>
-									</div>
-								</div>
-							{/each}
-						</div>
-					{/if}
-				{/if}
-
-				<!-- קריאות שכונה שפרסמתי -->
-				{#if (data.communityRequests ?? []).length > 0}
-					<div class="mt-2 mb-1">
-						<p class="text-xs font-black text-orange-400 mb-2 px-1">קריאות שכונה שפרסמתי</p>
-						<div class="flex flex-col gap-2">
-							{#each data.communityRequests as req}
-								<div class="flex items-start gap-3 bg-orange-500/5 rounded-2xl border border-orange-500/20 px-4 py-3">
-									<span class="text-xl flex-shrink-0">{req.icon ?? '🆘'}</span>
-									<div class="min-w-0 flex-1">
-										<div class="flex items-center justify-between gap-2 mb-0.5">
-											<span class="text-white text-xs font-black">{req.label}</span>
-											<span class="text-gray-600 text-[10px] flex-shrink-0">{new Date(req.created_at).toLocaleDateString('he-IL')}</span>
-										</div>
-										{#if req.description}
-											<p class="text-gray-400 text-xs line-clamp-2">{req.description}</p>
-										{/if}
-										<span class="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full font-bold
-											{req.status === 'active' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-gray-500/20 text-gray-400 border border-gray-500/30'}">
-											{req.status === 'active' ? 'פעיל' : req.status}
-										</span>
-									</div>
-								</div>
-							{/each}
-						</div>
-					</div>
-				{/if}
-
-				<!-- המלצות מותאמות אישית -->
-				{#if business || family_status === "single_m" || family_status === "single_f" || whatsappMatches.length > 0}
-					{@const allRecs = [
-						...(business
-							? [
-									{
-										id: "biz",
-										emoji: "🏪",
-										title: "מועדון בעלי העסקים הכשרים",
-										sub: "הצטרף לרשת בעלי העסקים הכשרים בישראל",
-										href: "https://index-chi-sage.vercel.app/",
-										external: true,
-										color: "amber",
-									},
-								]
-							: []),
-						...(family_status === "single_m" ||
-						family_status === "single_f"
-							? [
-									{
-										id: "singles",
-										emoji: "💑",
-										title: "רשימת הפנויים והפנויות הארצית",
-										sub: "הצטרף לרשימה ומצא את השידוך המתאים",
-										href: "/national/singles",
-										external: false,
-										color: "pink",
-									},
-								]
-							: []),
-						...whatsappMatches.map((g) => ({
-							id: "wa_" + g.label,
-							emoji: "💬",
-							title: g.label,
-							sub: "הצטרף לקבוצת הווטסאפ של השכונה שלך",
-							href: g.url,
-							external: true,
-							color: "green",
-						})),
-					]}
-					{@const visibleRecs = allRecs.filter((r) =>
-						isRecVisible(r.id),
-					)}
-					{#if visibleRecs.length > 0}
-						<div class="mt-2 flex flex-col gap-3">
-							<p
-								class="text-xs text-gray-400 uppercase tracking-widest font-bold"
-							>
-								המלצות עבורך
-							</p>
-							{#each visibleRecs as rec}
-								<div
-									class="rounded-2xl border px-4 pt-4 pb-3
-					{rec.color === 'amber'
-										? 'bg-amber-500/10 border-amber-500/30'
-										: rec.color === 'pink'
-											? 'bg-pink-500/10  border-pink-500/30'
-											: 'bg-green-500/10 border-green-500/30'}"
-								>
-									<!-- תוכן -->
-									<div class="flex items-center gap-3 mb-3">
-										<span class="text-3xl flex-shrink-0"
-											>{rec.emoji}</span
-										>
-										<div class="flex-1 text-right">
-											<p
-												class="text-white font-bold text-sm"
-											>
-												{rec.title}
-											</p>
-											<p
-												class="text-xs mt-0.5
-								{rec.color === 'amber'
-													? 'text-amber-300/80'
-													: rec.color === 'pink'
-														? 'text-pink-300/80'
-														: 'text-green-300/80'}"
-											>
-												{rec.sub} ←
-											</p>
-										</div>
-									</div>
-									<!-- כפתורי פעולה -->
-									<div
-										class="flex items-center gap-2 justify-end border-t border-white/8 pt-2.5"
-									>
-										<button
-											type="button"
-											onclick={() => dismissRec(rec.id)}
-											class="text-[11px] text-gray-500 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10"
-										>
-											🗑 מחק
-										</button>
-										<button
-											type="button"
-											onclick={() => snoozeRec(rec.id)}
-											class="text-[11px] text-gray-500 hover:text-yellow-300 transition-colors px-2 py-1 rounded-lg hover:bg-yellow-500/10"
-										>
-											🔔 הזכר לי מאוחר יותר
-										</button>
-										<a
-											href={rec.href}
-											target={rec.external
-												? "_blank"
-												: "_self"}
-											rel={rec.external
-												? "noopener noreferrer"
-												: ""}
-											class="text-[11px] font-bold text-white px-3 py-1 rounded-lg
-							{rec.color === 'amber'
-												? 'bg-amber-500/25 hover:bg-amber-500/40'
-												: rec.color === 'pink'
-													? 'bg-pink-500/25  hover:bg-pink-500/40'
-													: 'bg-green-500/25 hover:bg-green-500/40'} transition-colors"
-										>
-											עבור אל ←
-										</a>
-									</div>
-								</div>
-							{/each}
-						</div>
-					{/if}
-				{/if}
-			</div>
-		{/if}
-	</div>
-	<!-- ===== קומה 5: כתוב למערכת ===== -->
+	<!-- ===== קומה 6: כתוב למערכת ===== -->
 	<div
 		class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-4 md:p-6 shadow-xl mb-2 overflow-hidden
 	            before:absolute before:inset-x-0 before:top-0 before:h-24 before:rounded-t-3xl
@@ -2855,7 +3228,7 @@
 				<span
 					class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
 					style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75"
-					>5</span
+					>6</span
 				>
 				כתוב למערכת
 			</h2>
@@ -2914,371 +3287,6 @@
 					</button>
 				</form>
 			{/if}
-		{/if}
-	</div>
-
-	<!-- ===== קומה 6: המידע שלי ===== -->
-	<div
-		class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-4 md:p-6 shadow-xl overflow-hidden
-	            before:absolute before:inset-x-0 before:top-0 before:h-24 before:rounded-t-3xl
-	            before:bg-gradient-to-b before:from-white/8 before:to-transparent
-	            before:transition-all before:duration-300 before:pointer-events-none
-	            hover:before:from-white/18 {mobileTab !== 'items'
-			? 'hidden md:block'
-			: ''}"
-	>
-		<div
-			class="relative flex items-center justify-between cursor-pointer select-none -mx-4 px-4 -mt-4 pt-3 md:-mx-6 md:px-6 md:-mt-6 md:pt-4 min-h-14 {showMyInfo
-				? 'pb-4 mb-4'
-				: 'pb-4'}"
-			onclick={() => {
-				showMyInfo = !showMyInfo;
-			}}
-			onmouseenter={() => {
-				secTipShow = true;
-				secTipIsOpen = showMyInfo;
-			}}
-			onmouseleave={() => (secTipShow = false)}
-			onmousemove={(e) => handleSecMouseMove(e, showMyInfo)}
-			role="button"
-			tabindex={0}
-			onkeydown={(e) => {
-				if (e.key === "Enter" || e.key === " ")
-					showMyInfo = !showMyInfo;
-			}}
-		>
-			<h2 class="text-xl font-black text-white flex items-center gap-2">
-				<span
-					class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
-					style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75"
-					>6</span
-				>
-				הנכסים שלי
-			</h2>
-			<svg
-					class="w-4 h-4 text-yellow-400 transition-transform duration-300 flex-shrink-0 {showMyInfo
-						? 'rotate-180'
-						: ''}"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2.5"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					><polyline points="6 9 12 15 18 9" /></svg
-				>
-			</div>
-		</div>
-
-		{#if showMyInfo}
-			<div class="flex flex-col gap-4">
-				<!-- ===== סאב-מקטע: ניהול האתר (סופר־אדמין בלבד) ===== -->
-				{#if isSuperAdmin}
-					<div class="bg-gradient-to-br from-amber-500/10 to-emerald-500/10 rounded-2xl border border-amber-500/30 p-3 md:p-4">
-						<div class="flex items-center justify-between gap-2 mb-3 flex-wrap">
-							<h3 class="text-white font-bold text-sm flex items-center gap-2">
-								<span class="text-amber-400 text-lg">👑</span>
-								ניהול האתר
-								<span class="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full font-bold">סופר־אדמין</span>
-							</h3>
-						</div>
-						<div class="flex flex-wrap gap-2">
-							<a
-								href="/admin/ads-review"
-								class="relative flex-1 min-w-[160px] text-xs md:text-sm font-bold text-emerald-300 hover:text-emerald-200 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-emerald-500/10 border border-emerald-500/30 hover:border-emerald-400/50 flex items-center justify-center gap-1.5"
-								title="אישור פרסומות, תזמון, מפרסמים, תזכורות"
-							>
-								📢 ניהול פרסומות
-								{#if (data.pendingAdsCount ?? 0) > 0}
-									<span class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-amber-500 text-black text-[11px] font-black shadow-lg animate-pulse">
-										{data.pendingAdsCount}
-									</span>
-								{/if}
-							</a>
-							<a
-								href="/admin?tab=users#coordinators"
-								class="relative flex-1 min-w-[160px] text-xs md:text-sm font-bold text-amber-300 hover:text-amber-200 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-amber-500/10 border border-amber-500/30 hover:border-amber-400/50 flex items-center justify-center gap-1.5"
-								title="ניהול רכזי שכונות שמאשרים תוכן"
-							>
-								🏘️ ניהול רכזים
-								{#if (data.coordinatorsCount ?? 0) > 0}
-									<span class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-amber-500/30 text-amber-100 border border-amber-400/40 text-[11px] font-black">
-										{data.coordinatorsCount}
-									</span>
-								{/if}
-							</a>
-							<a
-								href="/admin"
-								class="flex-1 min-w-[160px] text-xs md:text-sm font-bold text-amber-400 hover:text-amber-300 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-amber-500/10 border border-amber-500/30 hover:border-amber-400/50 flex items-center justify-center gap-1.5"
-								title="לוח ניהול ראשי"
-							>
-								👑 לוח ניהול ראשי
-							</a>
-						</div>
-					</div>
-				{/if}
-
-				<!-- ===== סאב-מקטע: פרסומיי ===== -->
-				<div class="bg-[#0a1224]/60 rounded-2xl border border-white/10 p-3 md:p-4">
-					<div class="flex items-center justify-between gap-2 mb-3 flex-wrap">
-						<h3 class="text-white font-bold text-sm flex items-center gap-2">
-							<span class="text-purple-400 text-lg">📋</span>
-							פרסומיי
-							{#if data.items.length > 0}
-								<span class="text-xs bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2.5 py-0.5 rounded-full font-bold">{data.items.length}</span>
-							{/if}
-						</h3>
-						{#if isSuperAdmin}
-							<a
-								href="/about/advertise/builder"
-								class="text-xs font-bold text-purple-300 hover:text-purple-200 transition-colors cursor-pointer px-3 py-1.5 rounded-lg hover:bg-purple-500/10 border border-purple-500/30 hover:border-purple-400/50 flex items-center gap-1.5"
-								title="בילדר פרסומות (סופר-אדמין)"
-							>
-								🎨 בילדר פרסומות
-							</a>
-						{/if}
-					</div>
-
-					{#if adDraft}
-						<div class="mb-3 rounded-2xl border-2 border-purple-500/40 bg-gradient-to-br from-purple-900/30 to-indigo-900/20 p-3 md:p-4">
-							<div class="flex items-start gap-3">
-								{#if adDraft.mainImage}
-									<img src={adDraft.mainImage} alt="טיוטת הפרסומת" class="w-14 h-14 md:w-16 md:h-16 rounded-xl object-cover flex-shrink-0 border border-white/10" />
-								{:else}
-									<div class="w-14 h-14 md:w-16 md:h-16 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center flex-shrink-0 text-2xl">🎨</div>
-								{/if}
-								<div class="flex-1 min-w-0">
-									<div class="flex items-center gap-2 mb-1 flex-wrap">
-										<span class="text-purple-300 font-black text-sm md:text-base">📝 פרסומת בעריכה</span>
-										<span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 font-bold">{adDraftProgress}% הושלמו</span>
-									</div>
-									<p class="text-white font-bold text-xs md:text-sm leading-tight mb-2 truncate">
-										{adDraft.title || "ללא כותרת"}{adDraft.subtitle ? " — " + adDraft.subtitle : ""}
-									</p>
-									<div class="flex items-center gap-2 flex-wrap">
-										<a href="/about/advertise/builder"
-										   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-black text-xs transition-colors">
-											🚀 המשך לערוך
-										</a>
-										<button type="button" onclick={dismissAdDraft}
-										   class="text-[11px] text-gray-400 hover:text-red-400 underline underline-offset-2 font-bold">
-											מחק טיוטה
-										</button>
-									</div>
-								</div>
-							</div>
-						</div>
-					{/if}
-
-					{#if giveawayDrafts.length > 0}
-						<a
-							href="/giveaways/my?tab=drafts"
-							class="flex items-center gap-3 mb-4 rounded-2xl bg-gradient-to-r from-yellow-900/30 to-amber-900/20 border border-yellow-500/30 hover:border-yellow-400/60 px-4 py-3 transition-all group"
-						>
-							<span class="text-3xl flex-shrink-0">📝</span>
-							<div class="flex-1 min-w-0">
-								<p class="text-yellow-200 font-bold text-sm">
-									{giveawayDrafts.length === 1
-										? "טיוטה אחת ממתינה לתמונה"
-										: `${giveawayDrafts.length} טיוטות ממתינות לתמונה`}
-								</p>
-								<p class="text-yellow-300/70 text-xs mt-0.5">
-									השלם את הפרסום על ידי הוספת תמונה למוצר למסירה
-								</p>
-							</div>
-							<span
-								class="text-yellow-300 text-lg flex-shrink-0 group-hover:translate-x-[-3px] transition-transform"
-								aria-hidden="true">←</span
-							>
-						</a>
-					{/if}
-					{#if data.items.length === 0}
-						<div class="text-center py-8">
-							<span class="text-5xl block mb-3">📭</span>
-							<p class="text-gray-400 mb-4 text-sm">{tFn("no_items")}</p>
-							<a
-								href="/"
-								class="inline-block bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500
-							       text-white font-bold px-6 py-3 rounded-xl shadow-lg transition-all hover:-translate-y-0.5"
-							>
-								{tFn("publish_first")}
-							</a>
-						</div>
-					{:else}
-						<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-							{#each data.items as item}
-								<a
-									href="/items/{item.id}"
-									class="bg-white/5 rounded-2xl border border-white/10 p-4
-								       hover:border-purple-500/30 hover:bg-white/8 transition-all group block"
-								>
-									<div class="flex items-start gap-3">
-										<span class="text-3xl flex-shrink-0 mt-0.5"
-											>{item.icon ?? "📋"}</span
-										>
-										<div class="min-w-0 flex-1">
-											<div
-												class="flex items-center gap-2 flex-wrap mb-1"
-											>
-												<h3
-													class="text-white font-bold text-sm truncate group-hover:text-purple-300 transition-colors"
-												>
-													{item.label}
-												</h3>
-												<span
-													class="text-xs px-2 py-0.5 rounded-full font-bold flex-shrink-0
-											  {item.status === 'active'
-														? 'bg-green-500/20 text-green-400 border border-green-500/30'
-														: 'bg-gray-500/20 text-gray-400 border border-gray-500/30'}"
-												>
-													{item.status === "active"
-														? tFn("status_active")
-														: item.status}
-												</span>
-											</div>
-											{#if item.description}
-												<p
-													class="text-gray-400 text-xs line-clamp-2"
-												>
-													{item.description}
-												</p>
-											{/if}
-											<div class="flex items-center gap-3 mt-1.5 flex-wrap">
-												{#if item.neighborhood}
-													<span
-														class="text-purple-400/70 text-xs"
-														>📍 {item.neighborhood}</span
-													>
-												{/if}
-												<span class="text-gray-600 text-xs">
-													{new Date(
-														item.created_at,
-													).toLocaleDateString("he-IL")}
-												</span>
-												{#if item.view_count !== undefined}
-													<span
-														class="text-yellow-400/70 text-xs flex items-center gap-1"
-													>
-														👁️ {item.view_count} ביקורים
-													</span>
-												{/if}
-											</div>
-										</div>
-									</div>
-								</a>
-							{/each}
-						</div>
-					{/if}
-				</div>
-
-				<!-- ===== סאב-מקטע: האהבתי (קיצורי דרך לפריטים שאהבתי) ===== -->
-				<div class="bg-[#0a1224]/60 rounded-2xl border border-white/10 p-3 md:p-4">
-					<h3 class="text-white font-bold text-sm mb-3 flex items-center gap-2">
-						<span class="text-lg" aria-hidden="true">❤️</span>
-						האהבתי
-						{#if likedItems.length > 0}
-							<span class="text-xs bg-rose-500/20 text-rose-300 border border-rose-500/30 px-2.5 py-0.5 rounded-full font-bold">{likedItems.length}</span>
-						{/if}
-					</h3>
-
-					{#if likedItems.length === 0}
-						<div class="text-center py-6">
-							<span class="text-4xl block mb-2">💔</span>
-							<p class="text-gray-400 text-sm mb-3">
-								עדיין לא סימנת פריטים או אישיות שאהבת
-							</p>
-							<p class="text-gray-500 text-xs leading-relaxed">
-								לחצי/לחץ על ❤️ בדף
-								<a href="/giveaways" class="text-orange-400 hover:text-orange-300 font-bold">למסירה</a>
-								או בדף
-								<a href="/singles" class="text-pink-400 hover:text-pink-300 font-bold">פנויים ופנויות</a>
-								כדי להוסיף לכאן קיצור דרך מהיר.
-							</p>
-						</div>
-					{:else}
-						<div class="flex flex-col gap-4">
-							{#if likedGiveaways.length > 0}
-								<div>
-									<h4 class="text-white font-bold text-xs mb-2 flex items-center gap-2">
-										<span class="text-orange-400">🎁</span>
-										פריטים למסירה ({likedGiveaways.length})
-									</h4>
-									<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-										{#each likedGiveaways as it (it.id)}
-											<div class="group relative flex items-center gap-3 bg-white/5 hover:bg-white/8 border border-white/10 hover:border-orange-500/40 rounded-2xl p-3 transition-all">
-												<a
-													href={it.url}
-													class="flex items-center gap-3 flex-1 min-w-0"
-												>
-													{#if it.image}
-														<img
-															src={it.image}
-															alt=""
-															loading="lazy"
-															class="w-14 h-14 rounded-xl object-cover flex-shrink-0 bg-[#0a0f1a]"
-														/>
-													{:else}
-														<div class="w-14 h-14 rounded-xl bg-orange-500/20 flex items-center justify-center text-2xl flex-shrink-0">🎁</div>
-													{/if}
-													<div class="min-w-0 flex-1">
-														<p class="text-white text-sm font-bold truncate group-hover:text-orange-300 transition-colors">{it.label}</p>
-														{#if it.summary}
-															<p class="text-gray-400 text-xs truncate mt-0.5">📍 {it.summary}</p>
-														{/if}
-													</div>
-												</a>
-												<button
-													type="button"
-													onclick={() => unlike(it)}
-													aria-label="הסר מהאהובים"
-													title="הסר מהאהובים"
-													class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-rose-500/10 hover:bg-rose-500/25 text-rose-300 hover:text-rose-200 text-base transition-colors"
-												>❤️</button>
-											</div>
-										{/each}
-									</div>
-								</div>
-							{/if}
-
-							{#if likedSingles.length > 0}
-								<div>
-									<h4 class="text-white font-bold text-xs mb-2 flex items-center gap-2">
-										<span class="text-pink-400">💑</span>
-										פנויים ופנויות ({likedSingles.length})
-									</h4>
-									<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-										{#each likedSingles as it (it.id)}
-											<div class="group relative flex items-center gap-3 bg-white/5 hover:bg-white/8 border border-white/10 hover:border-pink-500/40 rounded-2xl p-3 transition-all">
-												<a
-													href={it.url}
-													class="flex items-center gap-3 flex-1 min-w-0"
-												>
-													<div class="w-14 h-14 rounded-full bg-pink-500/20 flex items-center justify-center text-2xl flex-shrink-0">
-														{it.summary?.startsWith("👨") ? "👨" : "👩"}
-													</div>
-													<div class="min-w-0 flex-1">
-														<p class="text-white text-sm font-bold truncate group-hover:text-pink-300 transition-colors">{it.label}</p>
-														{#if it.summary}
-															<p class="text-gray-400 text-xs truncate mt-0.5">{it.summary}</p>
-														{/if}
-													</div>
-												</a>
-												<button
-													type="button"
-													onclick={() => unlike(it)}
-													aria-label="הסר מהאהובים"
-													title="הסר מהאהובים"
-													class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-rose-500/10 hover:bg-rose-500/25 text-rose-300 hover:text-rose-200 text-base transition-colors"
-												>❤️</button>
-											</div>
-										{/each}
-									</div>
-								</div>
-							{/if}
-						</div>
-					{/if}
-				</div>
-			</div>
 		{/if}
 	</div>
 
