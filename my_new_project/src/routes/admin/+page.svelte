@@ -177,7 +177,7 @@
 		<!-- טאב משתמשים -->
 		{#if activeTab === 'users'}
 			<!-- סקציית רכזי שכונות — מנהלי תוכן בשכונה שלהם -->
-			<section class="mb-6">
+			<section id="coordinators" class="mb-6 scroll-mt-4">
 				<div class="flex items-center justify-between mb-3">
 					<div class="flex items-center gap-2">
 						<span class="text-2xl">🏘️</span>

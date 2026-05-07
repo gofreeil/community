@@ -1,6 +1,6 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { getUserById, getUserByEmail, updateUserProfile, getItemsByUserId, upsertUser, getMessagesByUserId, createItem, getAllSuperAdmins } from '$lib/server/db';
+import { getUserById, getUserByEmail, updateUserProfile, getItemsByUserId, upsertUser, getMessagesByUserId, createItem, getAllSuperAdmins, getAllUsers } from '$lib/server/db';
 import { citiesData } from '$lib/neighborhoodsData';
 import { categoryConfig } from '$lib/categoryFields';
 import { countPending } from '$lib/server/adsStore';
@@ -27,6 +27,7 @@ export const load: PageServerLoad = async (event) => {
             citiesData,
             oauth_image: null,
             pendingAdsCount: 0,
+            coordinatorsCount: 0,
         };
     }
 
@@ -124,8 +125,13 @@ export const load: PageServerLoad = async (event) => {
 
     // ספירת פרסומות ממתינות לאישור — לבאדג' של סופר־אדמין בכותרת לוח הבקרה
     let pendingAdsCount = 0;
+    let coordinatorsCount = 0;
     if (resolvedUser?.role === 'super_admin') {
         try { pendingAdsCount = await countPending(); } catch { /* שקט */ }
+        try {
+            const allUsers = await getAllUsers();
+            coordinatorsCount = allUsers.filter(u => Array.isArray(u.coordinator_of) && u.coordinator_of.length > 0).length;
+        } catch { /* שקט */ }
     }
 
     return {
@@ -136,6 +142,7 @@ export const load: PageServerLoad = async (event) => {
         citiesData,
         oauth_image: session.user?.image ?? null,
         pendingAdsCount,
+        coordinatorsCount,
     };
 };
 
