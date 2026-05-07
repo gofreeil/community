@@ -467,6 +467,12 @@
 
 	let isSuperAdmin = $derived((data.user as any)?.role === "super_admin");
 
+	// דרגה 3 — רכז שכונה: מי שיש לו coordinator_of או role=neighborhood_admin (לא super_admin)
+	let isCoordOrNbhAdmin = $derived(
+		((data.user as any)?.coordinator_of?.length ?? 0) > 0 ||
+		(data.user as any)?.role === "neighborhood_admin",
+	);
+
 	// טיפ למעגל — המפתח של השדה הבא שלא מולא
 	const ringTipKeys = [
 		"tip_name",
@@ -1981,10 +1987,20 @@
 			</h2>
 			<!-- סיכום דרגה נוכחית -->
 			<div class="flex items-center gap-2">
-				{#if isUserAdmin}
+				{#if isSuperAdmin}
 					<span
-						class="text-sm bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1.5 rounded-full font-bold"
-						>דרגה נוכחית — רכז שכונה</span
+						class="text-sm bg-red-500/20 text-red-300 border border-red-500/30 px-3 py-1.5 rounded-full font-bold"
+						>דרגה נוכחית — מנהל ראשי 👑</span
+					>
+				{:else if (data.user as any)?.role === "neighborhood_admin"}
+					<span
+						class="text-sm bg-amber-500/20 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-full font-bold"
+						>דרגה נוכחית — אדמין שכונתי 🛡️</span
+					>
+				{:else if ((data.user as any)?.coordinator_of?.length ?? 0) > 0}
+					<span
+						class="text-sm bg-blue-500/20 text-blue-300 border border-blue-500/30 px-3 py-1.5 rounded-full font-bold"
+						>דרגה נוכחית — רכז שכונה 🏘️</span
 					>
 				{:else if userLevel >= 2}
 					<span
@@ -1993,7 +2009,7 @@
 					>
 				{:else}
 					<span
-						class="text-sm bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1.5 rounded-full font-bold"
+						class="text-sm bg-gray-500/20 text-gray-300 border border-gray-500/30 px-3 py-1.5 rounded-full font-bold"
 						>דרגה נוכחית — צופה</span
 					>
 				{/if}
@@ -2013,7 +2029,7 @@
 		</div>
 
 		{#if showLevels}
-			<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+			<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
 				<!-- דרגה 1: צופה -->
 				<div
 					class="relative rounded-2xl border-2 p-5 flex flex-col gap-3 transition-all
@@ -2139,16 +2155,16 @@
 					{/if}
 				</div>
 
-				<!-- דרגה 3: רכז שכונה -->
+				<!-- דרגה 3: רכז שכונה (לא כולל סופר־אדמין) -->
 				<a
-					href={isUserAdmin ? "/admin" : undefined}
+					href={isCoordOrNbhAdmin ? "/admin" : undefined}
 					class="relative rounded-2xl border-2 p-5 flex flex-col gap-3 transition-all no-underline
-		       {isUserAdmin
-						? 'border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/10 hover:bg-blue-500/20 cursor-pointer'
-						: 'border-white/10 bg-white/3 opacity-60 pointer-events-none'}"
-					title={isUserAdmin ? "ערוך את הפרטים בשכונה שלך" : ""}
+		       {isCoordOrNbhAdmin
+							? 'border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/10 hover:bg-blue-500/20 cursor-pointer'
+							: 'border-white/10 bg-white/3 opacity-60 pointer-events-none'}"
+					title={isCoordOrNbhAdmin ? "ניהול תוכן בשכונה שלך" : ""}
 				>
-					{#if isUserAdmin}
+					{#if isCoordOrNbhAdmin}
 						<div
 							class="absolute -top-4 -right-4 w-9 h-9 rounded-full bg-blue-500 border-[3px] border-[#0f172a] flex items-center justify-center shadow-lg shadow-blue-500/50 z-10"
 						>
@@ -2161,26 +2177,18 @@
 					<div class="flex items-center gap-2">
 						<span
 							class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0
-			             {isUserAdmin
-								? 'bg-blue-500 text-white'
-								: 'bg-white/10 text-gray-400'}">3</span
+			             {isCoordOrNbhAdmin
+									? 'bg-blue-500 text-white'
+									: 'bg-white/10 text-gray-400'}">3</span
 						>
 						<span class="font-black text-white text-base"
-							>רכז שכונה</span
+							>רכז שכונה 🏘️</span
 						>
-						{#if isUserAdmin}
+						{#if isCoordOrNbhAdmin}
 							<span
 								class="mr-auto text-[10px] bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded-full font-bold"
 								>הדרגה שלך</span
 							>
-						{/if}
-						{#if isSuperAdmin}
-							<a
-								href="/admin"
-								class="mt-2 bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1.5 rounded-full font-bold text-center no-underline hover:bg-red-500/30 transition-colors"
-							>
-								פאנל ניהול ראשי 👑
-							</a>
 						{/if}
 					</div>
 					<div class="flex flex-col gap-1.5">
@@ -2205,7 +2213,68 @@
 						<div class="flex items-center gap-1.5">
 							<span class="text-blue-400 text-sm">✓</span>
 							<span class="text-gray-300 text-xs font-bold"
-								>ניהול תוכן</span
+								>ניהול תוכן בשכונה שלו</span
+							>
+						</div>
+					</div>
+				</a>
+
+				<!-- דרגה 4: מנהל ראשי (סופר־אדמין) -->
+				<a
+					href={isSuperAdmin ? "/admin" : undefined}
+					class="relative rounded-2xl border-2 p-5 flex flex-col gap-3 transition-all no-underline
+		       {isSuperAdmin
+							? 'border-red-500 bg-gradient-to-br from-red-500/15 to-amber-500/10 shadow-lg shadow-red-500/20 hover:from-red-500/25 hover:to-amber-500/20 cursor-pointer'
+							: 'border-white/10 bg-white/3 opacity-60 pointer-events-none'}"
+					title={isSuperAdmin ? "פאנל ניהול ראשי" : "דרגה זו בלעדית למנהל הראשי של האתר"}
+				>
+					{#if isSuperAdmin}
+						<div
+							class="absolute -top-4 -right-4 w-9 h-9 rounded-full bg-red-500 border-[3px] border-[#0f172a] flex items-center justify-center shadow-lg shadow-red-500/50 z-10"
+						>
+							<span class="text-white font-black text-lg leading-none">✓</span>
+						</div>
+					{/if}
+					<div class="flex items-center gap-2 flex-wrap">
+						<span
+							class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0
+			             {isSuperAdmin
+									? 'bg-red-500 text-white'
+									: 'bg-white/10 text-gray-400'}">4</span
+						>
+						<span class="font-black text-white text-base"
+							>מנהל ראשי 👑</span
+						>
+						{#if isSuperAdmin}
+							<span
+								class="mr-auto text-[10px] bg-red-500/20 text-red-300 border border-red-500/40 px-2 py-0.5 rounded-full font-bold whitespace-nowrap"
+								>הדרגה שלך</span
+							>
+						{/if}
+					</div>
+					<div class="flex flex-col gap-1.5">
+						<div class="flex items-center gap-1.5">
+							<span class="text-red-400 text-sm">✓</span>
+							<span class="text-gray-300 text-xs font-bold"
+								>כל הרשאות הרכזים</span
+							>
+						</div>
+						<div class="flex items-center gap-1.5">
+							<span class="text-red-400 text-sm">✓</span>
+							<span class="text-gray-300 text-xs font-bold"
+								>אישור פרסומות + מינוי רכזים</span
+							>
+						</div>
+						<div class="flex items-center gap-1.5">
+							<span class="text-red-400 text-sm">✓</span>
+							<span class="text-gray-300 text-xs font-bold"
+								>ניהול משתמשים והרשאות</span
+							>
+						</div>
+						<div class="flex items-center gap-1.5">
+							<span class="text-red-400 text-sm">✓</span>
+							<span class="text-gray-300 text-xs font-bold"
+								>ניהול תוכן בכל האתר</span
 							>
 						</div>
 					</div>
