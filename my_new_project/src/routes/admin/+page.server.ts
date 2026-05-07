@@ -2,6 +2,7 @@ import { redirect, fail, error } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { requireSuperAdmin, requireAdmin } from '$lib/server/auth';
 import { getAllUsers, banUser, unbanUser, setUserRole, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByEmail } from '$lib/server/db';
+import { countPending } from '$lib/server/adsStore';
 
 export const load: PageServerLoad = async (event) => {
     const session = await event.locals.auth();
@@ -37,10 +38,14 @@ export const load: PageServerLoad = async (event) => {
         console.warn('[admin] getAllItems failed:', e);
     }
 
+    let pendingAdsCount = 0;
+    try { pendingAdsCount = await countPending(); } catch { /* שקט */ }
+
     return {
         users,
         items,
         currentUserId: session?.user?.id ?? '',
+        pendingAdsCount,
     };
 };
 

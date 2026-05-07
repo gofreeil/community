@@ -3,6 +3,7 @@ import type { Actions, PageServerLoad } from './$types';
 import { getUserById, getUserByEmail, updateUserProfile, getItemsByUserId, upsertUser, getMessagesByUserId, createItem, getAllSuperAdmins } from '$lib/server/db';
 import { citiesData } from '$lib/neighborhoodsData';
 import { categoryConfig } from '$lib/categoryFields';
+import { countPending } from '$lib/server/adsStore';
 
 // קטגוריות פרסום אמיתיות (גמ"ח, למסירה, חוגים וכו') — לא קריאות שכונה
 const PUBLICATION_CATEGORIES = new Set(Object.keys(categoryConfig));
@@ -25,6 +26,7 @@ export const load: PageServerLoad = async (event) => {
             messages:   [],
             citiesData,
             oauth_image: null,
+            pendingAdsCount: 0,
         };
     }
 
@@ -120,6 +122,12 @@ export const load: PageServerLoad = async (event) => {
     // קריאות קהילתיות — יוצגו בהודעות
     const communityRequests = (items ?? []).filter(i => COMMUNITY_CALL_CATEGORIES.has(i.category));
 
+    // ספירת פרסומות ממתינות לאישור — לבאדג' של סופר־אדמין בכותרת לוח הבקרה
+    let pendingAdsCount = 0;
+    if (resolvedUser?.role === 'super_admin') {
+        try { pendingAdsCount = await countPending(); } catch { /* שקט */ }
+    }
+
     return {
         user: resolvedUser,
         items: publicationItems,
@@ -127,6 +135,7 @@ export const load: PageServerLoad = async (event) => {
         messages,
         citiesData,
         oauth_image: session.user?.image ?? null,
+        pendingAdsCount,
     };
 };
 

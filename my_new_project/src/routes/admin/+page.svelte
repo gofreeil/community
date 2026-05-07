@@ -88,9 +88,14 @@
 			<div class="flex gap-2">
 				<button
 					onclick={() => goto('/admin/ads-review')}
-					class="px-4 py-2 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-200 hover:bg-amber-500/25 transition-all cursor-pointer font-bold"
+					class="relative px-4 py-2 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-200 hover:bg-amber-500/25 transition-all cursor-pointer font-bold flex items-center gap-1.5"
 				>
 					📢 אישור פרסומות
+					{#if (data.pendingAdsCount ?? 0) > 0}
+						<span class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-amber-500 text-black text-[11px] font-black shadow-lg animate-pulse">
+							{data.pendingAdsCount}
+						</span>
+					{/if}
 				</button>
 				<button
 					onclick={() => goto('/')}
