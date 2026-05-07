@@ -107,7 +107,10 @@ export const load: PageServerLoad = async (event) => {
             phone: '', nickname: '', city: '', neighborhood: '',
             business: '', gender: '', family_status: '', birth_date: '',
             notifications: 1, provider: null, password_hash: null, created_at: '',
-            role: 'user' as const, banned: false,
+            // משמר את התפקיד מהסשן כשה-DB לא זמין — אחרת סופר־אדמין יוצג כ"צופה"
+            role: ((session.user as { role?: string })?.role ?? 'user') as 'user' | 'neighborhood_admin' | 'super_admin',
+            banned: false,
+            coordinator_of: ((session.user as { coordinator_of?: string[] })?.coordinator_of) ?? [],
             security_question: '', security_answer: '', status: 'active',
           };
 
