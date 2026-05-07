@@ -124,6 +124,12 @@
         </div>
     </header>
 
+    {#if data.backendUnavailable}
+        <div class="mb-4 rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+            ⚠️ הבאקאנד (Strapi) לא זמין כרגע — הרשימות והסטטיסטיקות עשויות להיות חלקיות. נסה לרענן בעוד רגע.
+        </div>
+    {/if}
+
     <!-- סטטיסטיקות -->
     <section class="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-3 mb-5">
         <div class="rounded-xl border border-amber-500/30 bg-amber-500/5 px-3 py-2.5 text-center">

@@ -35,14 +35,31 @@ export const load: PageServerLoad = async (event) => {
     // Lazy cron: בכל טעינה של הדף — בודק אם יש פרסומות שצריך לשלוח עליהן תזכורת.
     // אידימפוטנטי, שולח רק פעם אחת לכל שלב (30/7/1 ימים לפני פקיעה).
     const reminderRun = await processExpiryReminders().catch(() => ({ sent: 0, checked: 0 }));
-    const [pending, approved, stats, schedules, advertisers] = await Promise.all([
+    const [pendingRes, approvedRes, statsRes, schedulesRes, advertisersRes] = await Promise.allSettled([
         listPending(),
         listApproved(),
         getAdsStats(),
         listSchedules(),
         listAdvertisers(),
     ]);
-    return { pending, approved, stats, schedules, advertisers, reminderRun };
+
+    const emptyStats = { pending: 0, rejected: 0, approved: 0, approvedThisWeek: 0, submittedThisWeek: 0, total: 0 };
+    const pending     = pendingRes.status     === 'fulfilled' ? pendingRes.value     : [];
+    const approved    = approvedRes.status    === 'fulfilled' ? approvedRes.value    : [];
+    const stats       = statsRes.status       === 'fulfilled' ? statsRes.value       : emptyStats;
+    const schedules   = schedulesRes.status   === 'fulfilled' ? schedulesRes.value   : [];
+    const advertisers = advertisersRes.status === 'fulfilled' ? advertisersRes.value : [];
+
+    const failures = [pendingRes, approvedRes, statsRes, schedulesRes, advertisersRes]
+        .filter(r => r.status === 'rejected') as PromiseRejectedResult[];
+    if (failures.length > 0) {
+        for (const f of failures) {
+            console.warn('[admin/ads-review] load failed:', f.reason instanceof Error ? f.reason.message : f.reason);
+        }
+    }
+    const backendUnavailable = failures.length > 0;
+
+    return { pending, approved, stats, schedules, advertisers, reminderRun, backendUnavailable };
 };
 
 function parseIds(formData: FormData): string[] {
