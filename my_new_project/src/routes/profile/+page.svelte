@@ -816,16 +816,6 @@
 						>{tFn("section_personal_area")}</span
 					>
 				</h2>
-				{#if unreadCount > 0}
-					<button
-						type="button"
-						onclick={(e) => { e.stopPropagation(); scrollToMessages(); }}
-						class="inline-flex items-center gap-1 px-2 h-[22px] rounded-full bg-orange-500 hover:bg-orange-400 text-white text-[11px] font-black leading-none shadow-lg transition-colors whitespace-nowrap border-2 border-[#0f172a] animate-pulse"
-						title="יש לך הודעות חדשות"
-					>
-						💬 {unreadCount}
-					</button>
-				{/if}
 			</div>
 			<div class="flex items-center gap-2">
 				{#if isSuperAdmin}
