@@ -1,14 +1,12 @@
 // ============================================================
 // adsStore.ts — מאגר פרסומות שנשלחו לאישור / אושרו
-// אחסון פשוט מבוסס JSON על דיסק (MVP — לפני מעבר ל-Strapi)
+// אחסון מבוסס Strapi (Content Type: submitted-ad)
+// API ציבורי זהה לגרסה הקודמת (JSON-on-disk) כדי שלא ישבר קוד קורא.
 // ============================================================
 
-import fs from 'fs/promises';
-import path from 'path';
+import { strapiGet, strapiPost, strapiPut, strapiDelete, StrapiContentTypeError } from './strapiClient.js';
 
-const DATA_DIR = path.resolve(process.cwd(), 'data');
-const PENDING_FILE = path.join(DATA_DIR, 'pending-ads.json');
-const APPROVED_FILE = path.join(DATA_DIR, 'approved-ads.json');
+const ENDPOINT = '/api/submitted-ads';
 
 export type AdStatus = 'pending' | 'approved' | 'rejected';
 
@@ -48,171 +46,228 @@ export interface SubmittedAd {
     };
 }
 
-async function ensureFile(file: string) {
-    await fs.mkdir(DATA_DIR, { recursive: true });
+// ----- מיפוי בין סכמת Strapi לטיפוס שלנו -----
+
+interface StrapiAdAttrs {
+    ad_status: AdStatus;
+    title: string;
+    subtitle: string | null;
+    hover_text: string | null;
+    cta: string | null;
+    gradient: string | null;
+    logo: string | null;
+    main_image: string | null;
+    landing: SubmittedAd['landing'] | null;
+    submitted_by_id: string | null;
+    submitted_by_email: string | null;
+    submitted_by_name: string | null;
+    submitted_at: string | null;
+    decided_at: string | null;
+    decided_by: string | null;
+    rejection_reason: string | null;
+}
+
+interface StrapiAd extends StrapiAdAttrs {
+    id: number;
+    documentId: string;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+function emptyLanding(): SubmittedAd['landing'] {
+    return {
+        headline: '', pitch: '', extended: '', image: '',
+        advantages: ['', '', ''],
+        uniqueness: '', phone: '', whatsapp: '', website: '', email: '',
+        address: '', hours: '', products: [],
+    };
+}
+
+function fromStrapi(s: StrapiAd): SubmittedAd {
+    return {
+        id: s.documentId,
+        status: s.ad_status,
+        submittedBy: (s.submitted_by_id || s.submitted_by_email || s.submitted_by_name)
+            ? {
+                id: s.submitted_by_id ?? undefined,
+                email: s.submitted_by_email ?? undefined,
+                name: s.submitted_by_name ?? undefined,
+              }
+            : undefined,
+        submittedAt: s.submitted_at ?? s.createdAt ?? new Date().toISOString(),
+        decidedAt: s.decided_at ?? undefined,
+        decidedBy: s.decided_by ?? undefined,
+        rejectionReason: s.rejection_reason ?? undefined,
+        title: s.title ?? '',
+        subtitle: s.subtitle ?? '',
+        hoverText: s.hover_text ?? '',
+        cta: s.cta ?? '',
+        gradient: s.gradient ?? '',
+        logo: s.logo ?? '',
+        mainImage: s.main_image ?? '',
+        landing: s.landing ?? emptyLanding(),
+    };
+}
+
+async function listByStatus(status: AdStatus): Promise<SubmittedAd[]> {
     try {
-        await fs.access(file);
-    } catch {
-        await fs.writeFile(file, '[]', 'utf-8');
+        const res = await strapiGet<{ data: StrapiAd[] }>(ENDPOINT, {
+            'filters[ad_status][$eq]': status,
+            'sort':                    'submitted_at:desc',
+            'pagination[limit]':       '1000',
+        });
+        return (res.data ?? []).map(fromStrapi);
+    } catch (e) {
+        if (e instanceof StrapiContentTypeError) {
+            console.warn('[adsStore] submitted-ad content type לא רשום ב-Strapi — מחזיר []');
+            return [];
+        }
+        throw e;
     }
 }
 
-async function readList(file: string): Promise<SubmittedAd[]> {
-    await ensureFile(file);
+async function findByDocumentId(id: string): Promise<StrapiAd | null> {
     try {
-        const raw = await fs.readFile(file, 'utf-8');
-        const data = JSON.parse(raw);
-        return Array.isArray(data) ? data : [];
-    } catch {
-        return [];
+        const res = await strapiGet<{ data: StrapiAd | null }>(`${ENDPOINT}/${id}`);
+        return res.data ?? null;
+    } catch (e) {
+        if (e instanceof StrapiContentTypeError) return null;
+        // 404 — לא קיים
+        const msg = e instanceof Error ? e.message : String(e);
+        if (msg.includes('404')) return null;
+        throw e;
     }
 }
 
-async function writeList(file: string, list: SubmittedAd[]): Promise<void> {
-    await ensureFile(file);
-    await fs.writeFile(file, JSON.stringify(list, null, 2), 'utf-8');
-}
-
-function genId(): string {
-    return 'ad_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
-}
+// ============================================================
+// API ציבורי
+// ============================================================
 
 export async function listPending(): Promise<SubmittedAd[]> {
-    return readList(PENDING_FILE);
+    // "pending" ו-"rejected" שמורים יחד כדי לשמר את התנהגות הגרסה הקודמת
+    // (שם listPending החזיר גם נדחות, וה-UI מסנן לפי status)
+    const [pending, rejected] = await Promise.all([
+        listByStatus('pending'),
+        listByStatus('rejected'),
+    ]);
+    return [...pending, ...rejected];
 }
 
 export async function listApproved(): Promise<SubmittedAd[]> {
-    return readList(APPROVED_FILE);
+    return listByStatus('approved');
 }
 
 export async function getAd(id: string): Promise<SubmittedAd | null> {
-    const [pending, approved] = await Promise.all([listPending(), listApproved()]);
-    return [...pending, ...approved].find(a => a.id === id) ?? null;
+    const s = await findByDocumentId(id);
+    return s ? fromStrapi(s) : null;
 }
 
 export async function submitAd(payload: Omit<SubmittedAd, 'id' | 'status' | 'submittedAt'>): Promise<SubmittedAd> {
-    const pending = await listPending();
-    const ad: SubmittedAd = {
-        ...payload,
-        id: genId(),
-        status: 'pending',
-        submittedAt: new Date().toISOString(),
-    };
-    pending.push(ad);
-    await writeList(PENDING_FILE, pending);
-    return ad;
+    const now = new Date().toISOString();
+    const res = await strapiPost<{ data: StrapiAd }>(ENDPOINT, {
+        data: {
+            ad_status:           'pending',
+            title:               payload.title,
+            subtitle:            payload.subtitle,
+            hover_text:          payload.hoverText,
+            cta:                 payload.cta,
+            gradient:            payload.gradient,
+            logo:                payload.logo,
+            main_image:          payload.mainImage,
+            landing:             payload.landing,
+            submitted_by_id:     payload.submittedBy?.id ?? null,
+            submitted_by_email:  payload.submittedBy?.email ?? null,
+            submitted_by_name:   payload.submittedBy?.name ?? null,
+            submitted_at:        now,
+        },
+    });
+    return fromStrapi(res.data);
 }
 
 export async function approveAd(id: string, decidedBy: string): Promise<SubmittedAd | null> {
-    const pending = await listPending();
-    const idx = pending.findIndex(a => a.id === id);
-    if (idx === -1) return null;
-    const [ad] = pending.splice(idx, 1);
-    const approvedAd: SubmittedAd = {
-        ...ad,
-        status: 'approved',
-        decidedAt: new Date().toISOString(),
-        decidedBy,
-    };
-    const approved = await listApproved();
-    approved.push(approvedAd);
-    await Promise.all([writeList(PENDING_FILE, pending), writeList(APPROVED_FILE, approved)]);
-    return approvedAd;
+    const existing = await findByDocumentId(id);
+    if (!existing) return null;
+    const res = await strapiPut<{ data: StrapiAd }>(`${ENDPOINT}/${id}`, {
+        data: {
+            ad_status:   'approved',
+            decided_at:  new Date().toISOString(),
+            decided_by:  decidedBy,
+            rejection_reason: null,
+        },
+    });
+    return fromStrapi(res.data);
 }
 
 export async function rejectAd(id: string, decidedBy: string, reason?: string): Promise<SubmittedAd | null> {
-    const pending = await listPending();
-    const idx = pending.findIndex(a => a.id === id);
-    if (idx === -1) return null;
-    pending[idx] = {
-        ...pending[idx],
-        status: 'rejected',
-        decidedAt: new Date().toISOString(),
-        decidedBy,
-        rejectionReason: reason,
-    };
-    // משאיר בקובץ pending עם status='rejected' כדי שהמשתמש יראה מה קרה.
-    // אם תרצה — אפשר להעביר לקובץ נפרד rejected-ads.json.
-    await writeList(PENDING_FILE, pending);
-    return pending[idx];
+    const existing = await findByDocumentId(id);
+    if (!existing) return null;
+    const res = await strapiPut<{ data: StrapiAd }>(`${ENDPOINT}/${id}`, {
+        data: {
+            ad_status:        'rejected',
+            decided_at:       new Date().toISOString(),
+            decided_by:       decidedBy,
+            rejection_reason: reason ?? null,
+        },
+    });
+    return fromStrapi(res.data);
 }
 
-// ----- ניהול נוסף לסופר־אדמין -----
-
-// מחזיר פרסומת שנדחתה לסטטוס pending (ביטול דחייה)
 export async function unrejectAd(id: string): Promise<SubmittedAd | null> {
-    const pending = await listPending();
-    const idx = pending.findIndex(a => a.id === id);
-    if (idx === -1) return null;
-    pending[idx] = {
-        ...pending[idx],
-        status: 'pending',
-        decidedAt: undefined,
-        decidedBy: undefined,
-        rejectionReason: undefined,
-    };
-    await writeList(PENDING_FILE, pending);
-    return pending[idx];
+    const existing = await findByDocumentId(id);
+    if (!existing) return null;
+    const res = await strapiPut<{ data: StrapiAd }>(`${ENDPOINT}/${id}`, {
+        data: {
+            ad_status:        'pending',
+            decided_at:       null,
+            decided_by:       null,
+            rejection_reason: null,
+        },
+    });
+    return fromStrapi(res.data);
 }
 
-// מחזיר פרסומת שאושרה לסטטוס pending (ביטול פרסום)
 export async function unapproveAd(id: string): Promise<SubmittedAd | null> {
-    const approved = await listApproved();
-    const idx = approved.findIndex(a => a.id === id);
-    if (idx === -1) return null;
-    const [ad] = approved.splice(idx, 1);
-    const reverted: SubmittedAd = {
-        ...ad,
-        status: 'pending',
-        decidedAt: undefined,
-        decidedBy: undefined,
-        rejectionReason: undefined,
-    };
-    const pending = await listPending();
-    pending.push(reverted);
-    await Promise.all([writeList(APPROVED_FILE, approved), writeList(PENDING_FILE, pending)]);
-    return reverted;
+    const existing = await findByDocumentId(id);
+    if (!existing) return null;
+    const res = await strapiPut<{ data: StrapiAd }>(`${ENDPOINT}/${id}`, {
+        data: {
+            ad_status:        'pending',
+            decided_at:       null,
+            decided_by:       null,
+            rejection_reason: null,
+        },
+    });
+    return fromStrapi(res.data);
 }
 
-// מסיר פרסומת לחלוטין מכל המאגרים
 export async function removeAd(id: string): Promise<boolean> {
-    const [pending, approved] = await Promise.all([listPending(), listApproved()]);
-    const pIdx = pending.findIndex(a => a.id === id);
-    const aIdx = approved.findIndex(a => a.id === id);
-    if (pIdx === -1 && aIdx === -1) return false;
-    if (pIdx !== -1) pending.splice(pIdx, 1);
-    if (aIdx !== -1) approved.splice(aIdx, 1);
-    await Promise.all([writeList(PENDING_FILE, pending), writeList(APPROVED_FILE, approved)]);
-    return true;
+    const existing = await findByDocumentId(id);
+    if (!existing) return false;
+    try {
+        await strapiDelete(`${ENDPOINT}/${id}`);
+        return true;
+    } catch {
+        return false;
+    }
 }
 
 type EditableFields = Partial<Pick<SubmittedAd, 'title' | 'subtitle' | 'cta' | 'hoverText'>>;
 
-// עריכה מהירה של שדות בסיסיים בכרטיס (מאפשרת לסופר־אדמין לתקן טעויות לפני אישור)
 export async function updateAdFields(id: string, fields: EditableFields): Promise<SubmittedAd | null> {
-    const clean: EditableFields = {};
-    if (typeof fields.title === 'string')     clean.title     = fields.title;
-    if (typeof fields.subtitle === 'string')  clean.subtitle  = fields.subtitle;
-    if (typeof fields.cta === 'string')       clean.cta       = fields.cta;
-    if (typeof fields.hoverText === 'string') clean.hoverText = fields.hoverText;
-    if (Object.keys(clean).length === 0) return null;
+    const data: Record<string, string> = {};
+    if (typeof fields.title === 'string')     data.title      = fields.title;
+    if (typeof fields.subtitle === 'string')  data.subtitle   = fields.subtitle;
+    if (typeof fields.cta === 'string')       data.cta        = fields.cta;
+    if (typeof fields.hoverText === 'string') data.hover_text = fields.hoverText;
+    if (Object.keys(data).length === 0) return null;
 
-    const pending = await listPending();
-    const pIdx = pending.findIndex(a => a.id === id);
-    if (pIdx !== -1) {
-        pending[pIdx] = { ...pending[pIdx], ...clean };
-        await writeList(PENDING_FILE, pending);
-        return pending[pIdx];
-    }
-    const approved = await listApproved();
-    const aIdx = approved.findIndex(a => a.id === id);
-    if (aIdx !== -1) {
-        approved[aIdx] = { ...approved[aIdx], ...clean };
-        await writeList(APPROVED_FILE, approved);
-        return approved[aIdx];
-    }
-    return null;
+    const existing = await findByDocumentId(id);
+    if (!existing) return null;
+    const res = await strapiPut<{ data: StrapiAd }>(`${ENDPOINT}/${id}`, { data });
+    return fromStrapi(res.data);
 }
+
+// ----- סטטיסטיקות -----
 
 export interface AdsStats {
     pending: number;
@@ -224,24 +279,27 @@ export interface AdsStats {
 }
 
 export async function getAdsStats(): Promise<AdsStats> {
-    const [pending, approved] = await Promise.all([listPending(), listApproved()]);
+    const [pending, rejected, approved] = await Promise.all([
+        listByStatus('pending'),
+        listByStatus('rejected'),
+        listByStatus('approved'),
+    ]);
     const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-    const submittedThisWeek = [...pending, ...approved]
+    const submittedThisWeek = [...pending, ...rejected, ...approved]
         .filter(a => new Date(a.submittedAt).getTime() >= weekAgo).length;
     const approvedThisWeek = approved
         .filter(a => a.decidedAt && new Date(a.decidedAt).getTime() >= weekAgo).length;
     return {
-        pending: pending.filter(a => a.status === 'pending').length,
-        rejected: pending.filter(a => a.status === 'rejected').length,
+        pending: pending.length,
+        rejected: rejected.length,
         approved: approved.length,
         approvedThisWeek,
         submittedThisWeek,
-        total: pending.length + approved.length,
+        total: pending.length + rejected.length + approved.length,
     };
 }
 
-// ספירת ממתינות בלבד — לבאדג' מהיר בפרופיל
 export async function countPending(): Promise<number> {
-    const pending = await listPending();
-    return pending.filter(a => a.status === 'pending').length;
+    const list = await listByStatus('pending');
+    return list.length;
 }
