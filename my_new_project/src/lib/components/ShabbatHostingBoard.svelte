@@ -64,8 +64,16 @@
         return `https://wa.me/${digits}`;
     }
 
+    const GUEST_EXPIRY_DAYS = 4;
+
+    function isExpired(created_at: string): boolean {
+        const created = new Date(created_at).getTime();
+        const now = Date.now();
+        return (now - created) > GUEST_EXPIRY_DAYS * 24 * 60 * 60 * 1000;
+    }
+
     let filteredHosts = $derived(items.filter(item => isHost(item)));
-    let filteredGuests = $derived(items.filter(item => !isHost(item)));
+    let filteredGuests = $derived(items.filter(item => !isHost(item) && !isExpired(item.created_at)));
 
     const hasReal = $derived(items.length > 0);
 
@@ -100,20 +108,20 @@
         </div>
 
         <!-- Add buttons -->
-        <div class="flex flex-wrap justify-center gap-3 mb-6">
+        <div class="grid grid-cols-2 gap-3 mb-6">
             <a
                 href="/add/realestate"
-                class="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold px-5 py-3 rounded-full shadow-lg hover:shadow-amber-500/25 transition-all hover:scale-105"
+                class="flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold px-5 py-3 rounded-full shadow-lg hover:shadow-cyan-500/25 transition-all hover:scale-105"
             >
-                <span class="text-lg">🏠</span>
-                אני מציע לארח
+                <span class="text-lg font-black">+</span>
+                אני מחפש להתארח
             </a>
             <a
                 href="/add/realestate"
-                class="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold px-5 py-3 rounded-full shadow-lg hover:shadow-cyan-500/25 transition-all hover:scale-105"
+                class="flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold px-5 py-3 rounded-full shadow-lg hover:shadow-amber-500/25 transition-all hover:scale-105"
             >
-                <span class="text-lg">🎒</span>
-                אני מחפש להתארח
+                <span class="text-lg font-black">+</span>
+                אני מציע לארח
             </a>
         </div>
 
@@ -122,7 +130,7 @@
 
             <!-- טור ימין: מחפשים להתארח -->
             <div>
-                <h2 class="text-center text-sm font-bold text-cyan-400 mb-3 tracking-wide">🎒 מחפשים להתארח</h2>
+                <h2 class="text-center text-sm font-bold text-cyan-400 mb-3 tracking-wide">מחפשים להתארח</h2>
                 <div class="flex flex-col gap-3">
                     {#if hasReal}
                         {#each filteredGuests as item}
@@ -183,7 +191,7 @@
 
             <!-- טור שמאל: מציעים לארח -->
             <div>
-                <h2 class="text-center text-sm font-bold text-amber-400 mb-3 tracking-wide">🏠 מציעים לארח</h2>
+                <h2 class="text-center text-sm font-bold text-amber-400 mb-3 tracking-wide">מציעים לארח</h2>
                 <div class="flex flex-col gap-3">
                     {#if hasReal}
                         {#each filteredHosts as item}
