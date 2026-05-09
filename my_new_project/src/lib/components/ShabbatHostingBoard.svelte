@@ -118,7 +118,7 @@
     <div class="max-w-4xl mx-auto">
         <!-- Header -->
         <div class="text-center mb-6">
-            <span class="text-5xl mb-3 block">🕯️</span>
+            <span class="text-5xl mb-3 block">🕯️🕯️</span>
             <h1 class="text-3xl font-black text-white mb-2">
                 {city ? `אירוח לשבת ב${city}` : 'לוח אירוח לשבת'}
             </h1>
@@ -206,7 +206,7 @@
         <!-- Counter -->
         <div class="text-center mb-6">
             <p class="text-gray-500 text-sm">
-                🕯️ {hasReal ? filtered.length : filteredMockForDisplay.length} מודעות
+                🕯️🕯️ {hasReal ? filtered.length : filteredMockForDisplay.length} מודעות
                 {hasReal ? '' : '(דוגמאות)'}
             </p>
         </div>
@@ -275,7 +275,7 @@
 
             {#if filtered.length === 0}
                 <div class="text-center py-16">
-                    <span class="text-5xl mb-4 block">🕯️</span>
+                    <span class="text-5xl mb-4 block">🕯️🕯️</span>
                     <p class="text-gray-400 text-lg">אין מודעות שתואמות את הסינון</p>
                     <p class="text-gray-500 text-sm mt-2">נסה לאפס את הסינון או לפרסם מודעה משלך</p>
                 </div>
@@ -321,7 +321,7 @@
 
             {#if filteredMockForDisplay.length === 0}
                 <div class="text-center py-16">
-                    <span class="text-5xl mb-4 block">🕯️</span>
+                    <span class="text-5xl mb-4 block">🕯️🕯️</span>
                     <p class="text-gray-400 text-lg">עדיין אין מודעות{city ? ` ב${city}` : ''}</p>
                     <p class="text-gray-500 text-sm mt-2">היה הראשון לפרסם!</p>
                 </div>
