@@ -94,8 +94,11 @@ export const categoryConfig: Record<string, CategoryConfig> = {
         fields: [
             { key: 'offer_type',  label: 'אני',                  type: 'select',   required: true,  options: ['מציע לארח', 'מחפש להתארח'] },
             { key: 'label',       label: 'כותרת',                 type: 'text',     required: true,  placeholder: 'מציע לארח משפחה לשבת' },
+            { key: 'meal',        label: 'סעודה',                 type: 'select',   required: false, options: ['ליל שבת', 'יום שבת (סעודת בוקר)', 'סעודה שלישית', 'כל הסעודות'] },
+            { key: 'food_style',  label: 'סגנון אוכל',            type: 'select',   required: false, options: ['ספרדי', 'אשכנזי', 'תימני', 'מעורב', 'אחר'] },
             { key: 'capacity',    label: 'כמה אנשים',             type: 'number',   required: false, placeholder: '4' },
-            { key: 'preferences', label: 'העדפות',                type: 'textarea', required: false, placeholder: 'רמת דתיות, ללא אלרגיות...' },
+            { key: 'guest_type',  label: 'מתאים ל',               type: 'select',   required: false, options: ['משפחה', 'זוג', 'יחיד/ה', 'קבוצה', 'הכל מתאים'] },
+            { key: 'preferences', label: 'העדפות / הערות',         type: 'textarea', required: false, placeholder: 'רמת דתיות, ללא אלרגיות, לינה...' },
             { key: 'address',     label: 'שכונה / אזור',          type: 'text',     required: true,  placeholder: 'קרית משה, ירושלים' },
             { key: 'contact',     label: 'שמך',                   type: 'text',     required: true,  placeholder: 'שם משפחה' },
             { key: 'phone',       label: 'טלפון / וואטסאפ',       type: 'tel',      required: true,  placeholder: '05X-XXXXXXX' },
