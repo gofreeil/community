@@ -25,10 +25,6 @@
 
     let { items, city }: Props = $props();
 
-    type OfferFilter = 'all' | 'host' | 'guest';
-
-    let offerFilter = $state<OfferFilter>('all');
-
     function parseExtra(raw: string): Record<string, unknown> {
         try {
             return raw ? JSON.parse(raw) : {};
@@ -68,41 +64,24 @@
         return `https://wa.me/${digits}`;
     }
 
-    let filtered = $derived(
-        items.filter(item => {
-            if (offerFilter === 'host' && !isHost(item)) return false;
-            if (offerFilter === 'guest' && isHost(item)) return false;
-            return true;
-        })
-    );
+    let filteredHosts = $derived(items.filter(item => isHost(item)));
+    let filteredGuests = $derived(items.filter(item => !isHost(item)));
 
     const hasReal = $derived(items.length > 0);
 
     const mockHosts = [
-        { id: 'm1', label: 'משפחת כהן', city: 'ירושלים', neighborhood: 'קרית משה', meal: 'ליל שבת', food: 'ספרדי', capacity: '6', guest_type: 'משפחה', notes: 'מארחים בשמחה משפחה עם ילדים. אווירה חמה ושירי שבת.', contact: 'יוסי', phone: '050-1111111' },
-        { id: 'm2', label: 'משפחת לוי', city: 'בני ברק', neighborhood: 'רמת אהרן', meal: 'כל הסעודות', food: 'אשכנזי', capacity: '4', guest_type: 'זוג', notes: 'מארחים זוגות צעירים, אפשר לינה.', contact: 'חיים', phone: '050-2222222' },
-        { id: 'm3', label: 'משפחת אדרי', city: 'אשדוד', neighborhood: 'רובע ז', meal: 'ליל שבת', food: 'תימני', capacity: '8', guest_type: 'הכל מתאים', notes: 'אווירה תימנית מסורתית, חמין משובח.', contact: 'יהודה', phone: '050-3333333' },
+        { id: 'm1', label: 'משפחת כהן', city: 'ירושלים', neighborhood: 'קרית משה', meal: 'ליל שבת', capacity: '6', guest_type: 'משפחה', notes: 'מארחים בשמחה משפחה עם ילדים. אווירה חמה ושירי שבת.', contact: 'יוסי', phone: '050-1111111', isHost: true },
+        { id: 'm2', label: 'משפחת לוי', city: 'בני ברק', neighborhood: 'רמת אהרן', meal: 'כל הסעודות', capacity: '4', guest_type: 'זוג', notes: 'מארחים זוגות צעירים, אפשר לינה.', contact: 'חיים', phone: '050-2222222', isHost: true },
+        { id: 'm3', label: 'משפחת אדרי', city: 'אשדוד', neighborhood: 'רובע ז', meal: 'ליל שבת', capacity: '8', guest_type: 'הכל מתאים', notes: 'אווירה תימנית מסורתית, חמין משובח.', contact: 'יהודה', phone: '050-3333333', isHost: true },
     ];
 
     const mockGuests = [
-        { id: 'g1', label: 'בחור ישיבה', city: 'ירושלים', neighborhood: '', meal: 'ליל שבת', food: '', capacity: '', guest_type: 'יחיד/ה', notes: 'בחור ישיבה רווק, מחפש משפחה לאירוח לשבת פרשת בלק.', contact: 'אהרן', phone: '052-1111111' },
-        { id: 'g2', label: 'רווקה', city: 'תל אביב', neighborhood: '', meal: 'כל הסעודות', food: '', capacity: '', guest_type: 'יחיד/ה', notes: 'מחפשת אווירה חמה לשבת חתן.', contact: 'שירה', phone: '052-2222222' },
+        { id: 'g1', label: 'בחור ישיבה', city: 'ירושלים', neighborhood: '', meal: 'ליל שבת', capacity: '', guest_type: 'יחיד/ה', notes: 'בחור ישיבה רווק, מחפש משפחה לאירוח לשבת פרשת בלק.', contact: 'אהרן', phone: '052-1111111', isHost: false },
+        { id: 'g2', label: 'רווקה', city: 'תל אביב', neighborhood: '', meal: 'כל הסעודות', capacity: '', guest_type: 'יחיד/ה', notes: 'מחפשת אווירה חמה לשבת חתן.', contact: 'שירה', phone: '052-2222222', isHost: false },
     ];
 
-    let filteredMock = $derived.by(() => {
-        const allMock = [
-            ...mockHosts.map(m => ({ ...m, isHost: true })),
-            ...mockGuests.map(m => ({ ...m, isHost: false })),
-        ];
-        return allMock.filter(m => {
-            if (city && m.city !== city) return false;
-            if (offerFilter === 'host' && !m.isHost) return false;
-            if (offerFilter === 'guest' && m.isHost) return false;
-            return true;
-        });
-    });
-
-    let filteredMockForDisplay = $derived(hasReal ? [] : filteredMock);
+    let mockHostsFiltered = $derived(mockHosts.filter(m => !city || m.city === city));
+    let mockGuestsFiltered = $derived(mockGuests.filter(m => !city || m.city === city));
 </script>
 
 <div class="min-h-screen bg-[#070b14] pt-6 pb-20 px-4" dir="rtl">
@@ -118,28 +97,6 @@
                     ? 'מארחים ומתארחים בעיר שלך'
                     : 'לוח ארצי — מציעים לארח ומחפשים להתארח לשבת'}
             </p>
-        </div>
-
-        <!-- Offer filter tabs -->
-        <div class="flex flex-wrap justify-center gap-2 mb-3">
-            <button
-                onclick={() => offerFilter = 'all'}
-                class="px-5 py-2 rounded-full text-sm font-bold transition-all {offerFilter === 'all' ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg' : 'bg-white/10 text-gray-400 hover:bg-white/15'}"
-            >
-                🌍 הכל
-            </button>
-            <button
-                onclick={() => offerFilter = 'host'}
-                class="px-5 py-2 rounded-full text-sm font-bold transition-all {offerFilter === 'host' ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-lg' : 'bg-white/10 text-gray-400 hover:bg-white/15'}"
-            >
-                🏠 מציעים לארח
-            </button>
-            <button
-                onclick={() => offerFilter = 'guest'}
-                class="px-5 py-2 rounded-full text-sm font-bold transition-all {offerFilter === 'guest' ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg' : 'bg-white/10 text-gray-400 hover:bg-white/15'}"
-            >
-                🎒 מחפשים להתארח
-            </button>
         </div>
 
         <!-- Add buttons -->
@@ -160,130 +117,132 @@
             </a>
         </div>
 
-        <!-- Counter -->
-        <div class="text-center mb-6">
-            <p class="text-gray-500 text-sm">
-                🕯️🕯️ {hasReal ? filtered.length : filteredMockForDisplay.length} מודעות
-                {hasReal ? '' : '(דוגמאות)'}
-            </p>
+        <!-- Two-column layout: guests right, hosts left -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+
+            <!-- טור ימין: מחפשים להתארח -->
+            <div>
+                <h2 class="text-center text-sm font-bold text-cyan-400 mb-3 tracking-wide">🎒 מחפשים להתארח</h2>
+                <div class="flex flex-col gap-3">
+                    {#if hasReal}
+                        {#each filteredGuests as item}
+                            {@const meal = getMeal(item)}
+                            {@const capacity = getCapacity(item)}
+                            {@const guest_type = getGuestType(item)}
+                            {@const notes = getPreferences(item)}
+                            <div class="rounded-2xl bg-[#0f172a] border border-cyan-500/30 overflow-hidden shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1">
+                                <div class="bg-gradient-to-r from-cyan-500 to-blue-600 p-3 flex items-center gap-3">
+                                    <div class="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center text-xl flex-shrink-0">🎒</div>
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="text-white font-black text-base">{item.label}</h3>
+                                        {#if item.city}<p class="text-white/80 text-xs">📍 {item.city}{item.neighborhood ? ` · ${item.neighborhood}` : ''}</p>{/if}
+                                    </div>
+                                </div>
+                                <div class="p-3">
+                                    <div class="flex flex-wrap gap-1.5 mb-2">
+                                        {#if meal}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">🍽️ {meal}</span>{/if}
+                                        {#if capacity}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">👥 עד {capacity}</span>{/if}
+                                        {#if guest_type}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">🧑‍🤝‍🧑 {guest_type}</span>{/if}
+                                    </div>
+                                    {#if notes}<p class="text-gray-300 text-sm leading-relaxed mb-3">{notes}</p>{/if}
+                                    <div class="flex gap-2">
+                                        <a href={waLink(item.phone)} target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2 rounded-xl transition-colors text-sm">💬 WhatsApp</a>
+                                        <a href="tel:{item.phone}" class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold py-2 px-3 rounded-xl transition-colors text-sm">📞</a>
+                                    </div>
+                                </div>
+                            </div>
+                        {/each}
+                        {#if filteredGuests.length === 0}
+                            <p class="text-center text-gray-500 text-sm py-8">אין מחפשים כרגע</p>
+                        {/if}
+                    {:else}
+                        {#each mockGuestsFiltered as m}
+                            <div class="rounded-2xl bg-[#0f172a] border border-cyan-500/30 overflow-hidden shadow-xl relative">
+                                <div class="absolute top-2 left-2 z-10 text-[10px] font-bold bg-black/50 text-amber-300 px-2 py-0.5 rounded-full">דוגמה</div>
+                                <div class="bg-gradient-to-r from-cyan-500 to-blue-600 p-3 flex items-center gap-3">
+                                    <div class="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center text-xl flex-shrink-0">🎒</div>
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="text-white font-black text-base">{m.label}</h3>
+                                        <p class="text-white/80 text-xs">📍 {m.city}{m.neighborhood ? ` · ${m.neighborhood}` : ''}</p>
+                                    </div>
+                                </div>
+                                <div class="p-3">
+                                    <div class="flex flex-wrap gap-1.5 mb-2">
+                                        {#if m.meal}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">🍽️ {m.meal}</span>{/if}
+                                        {#if m.capacity}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">👥 עד {m.capacity}</span>{/if}
+                                        {#if m.guest_type}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">🧑‍🤝‍🧑 {m.guest_type}</span>{/if}
+                                    </div>
+                                    <p class="text-gray-300 text-sm leading-relaxed mb-3">{m.notes}</p>
+                                    <a href="/add/realestate" class="block text-center bg-white/10 hover:bg-white/20 text-white text-xs font-bold py-2 rounded-xl transition-colors">✨ פרסם מודעה אמיתית</a>
+                                </div>
+                            </div>
+                        {/each}
+                    {/if}
+                </div>
+            </div>
+
+            <!-- טור שמאל: מציעים לארח -->
+            <div>
+                <h2 class="text-center text-sm font-bold text-amber-400 mb-3 tracking-wide">🏠 מציעים לארח</h2>
+                <div class="flex flex-col gap-3">
+                    {#if hasReal}
+                        {#each filteredHosts as item}
+                            {@const meal = getMeal(item)}
+                            {@const capacity = getCapacity(item)}
+                            {@const guest_type = getGuestType(item)}
+                            {@const notes = getPreferences(item)}
+                            <div class="rounded-2xl bg-[#0f172a] border border-amber-500/30 overflow-hidden shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1">
+                                <div class="bg-gradient-to-r from-amber-500 to-orange-600 p-3 flex items-center gap-3">
+                                    <div class="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center text-xl flex-shrink-0">🏠</div>
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="text-white font-black text-base">{item.label}</h3>
+                                        {#if item.city}<p class="text-white/80 text-xs">📍 {item.city}{item.neighborhood ? ` · ${item.neighborhood}` : ''}</p>{/if}
+                                    </div>
+                                </div>
+                                <div class="p-3">
+                                    <div class="flex flex-wrap gap-1.5 mb-2">
+                                        {#if meal}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">🍽️ {meal}</span>{/if}
+                                        {#if capacity}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">👥 עד {capacity}</span>{/if}
+                                        {#if guest_type}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">🧑‍🤝‍🧑 {guest_type}</span>{/if}
+                                    </div>
+                                    {#if notes}<p class="text-gray-300 text-sm leading-relaxed mb-3">{notes}</p>{/if}
+                                    <div class="flex gap-2">
+                                        <a href={waLink(item.phone)} target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2 rounded-xl transition-colors text-sm">💬 WhatsApp</a>
+                                        <a href="tel:{item.phone}" class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold py-2 px-3 rounded-xl transition-colors text-sm">📞</a>
+                                    </div>
+                                </div>
+                            </div>
+                        {/each}
+                        {#if filteredHosts.length === 0}
+                            <p class="text-center text-gray-500 text-sm py-8">אין מארחים כרגע</p>
+                        {/if}
+                    {:else}
+                        {#each mockHostsFiltered as m}
+                            <div class="rounded-2xl bg-[#0f172a] border border-amber-500/30 overflow-hidden shadow-xl relative">
+                                <div class="absolute top-2 left-2 z-10 text-[10px] font-bold bg-black/50 text-amber-300 px-2 py-0.5 rounded-full">דוגמה</div>
+                                <div class="bg-gradient-to-r from-amber-500 to-orange-600 p-3 flex items-center gap-3">
+                                    <div class="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center text-xl flex-shrink-0">🏠</div>
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="text-white font-black text-base">{m.label}</h3>
+                                        <p class="text-white/80 text-xs">📍 {m.city}{m.neighborhood ? ` · ${m.neighborhood}` : ''}</p>
+                                    </div>
+                                </div>
+                                <div class="p-3">
+                                    <div class="flex flex-wrap gap-1.5 mb-2">
+                                        {#if m.meal}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">🍽️ {m.meal}</span>{/if}
+                                        {#if m.capacity}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">👥 עד {m.capacity}</span>{/if}
+                                        {#if m.guest_type}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">🧑‍🤝‍🧑 {m.guest_type}</span>{/if}
+                                    </div>
+                                    <p class="text-gray-300 text-sm leading-relaxed mb-3">{m.notes}</p>
+                                    <a href="/add/realestate" class="block text-center bg-white/10 hover:bg-white/20 text-white text-xs font-bold py-2 rounded-xl transition-colors">✨ פרסם מודעה אמיתית</a>
+                                </div>
+                            </div>
+                        {/each}
+                    {/if}
+                </div>
+            </div>
+
         </div>
-
-        <!-- Real items grid -->
-        {#if hasReal}
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {#each filtered as item}
-                    {@const host = isHost(item)}
-                    {@const food = getFood(item)}
-                    {@const meal = getMeal(item)}
-                    {@const capacity = getCapacity(item)}
-                    {@const guest_type = getGuestType(item)}
-                    {@const notes = getPreferences(item)}
-                    <div class="rounded-2xl bg-[#0f172a] border {host ? 'border-amber-500/30' : 'border-cyan-500/30'} overflow-hidden shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1">
-                        <div class="bg-gradient-to-r {host ? 'from-amber-500 to-orange-600' : 'from-cyan-500 to-blue-600'} p-4 flex items-center gap-3 relative">
-                            <div class="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-2xl flex-shrink-0">
-                                {host ? '🏠' : '🎒'}
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <h3 class="text-white font-black text-lg">{item.label}</h3>
-                                <div class="flex flex-wrap items-center gap-2 text-white/80 text-xs">
-                                    {#if item.city}
-                                        <span>📍 {item.city}{item.neighborhood ? ` · ${item.neighborhood}` : ''}</span>
-                                    {/if}
-                                </div>
-                            </div>
-                            <span class="shrink-0 text-[10px] font-black uppercase bg-black/30 text-white px-2 py-1 rounded-full">
-                                {host ? 'מארח' : 'מחפש'}
-                            </span>
-                        </div>
-
-                        <div class="p-4">
-                            <div class="flex flex-wrap gap-1.5 mb-3">
-                                {#if meal}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">🍽️ {meal}</span>{/if}
-                                {#if food}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">🥘 {food}</span>{/if}
-                                {#if capacity}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">👥 עד {capacity}</span>{/if}
-                                {#if guest_type}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">🧑‍🤝‍🧑 {guest_type}</span>{/if}
-                            </div>
-
-                            {#if notes}
-                                <p class="text-gray-300 text-sm leading-relaxed mb-4">{notes}</p>
-                            {/if}
-
-                            <div class="flex gap-2">
-                                <a
-                                    href={waLink(item.phone)}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    aria-label="שלח הודעת וואטסאפ ל-{item.contact || item.label}"
-                                    class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 rounded-xl transition-colors text-sm"
-                                >
-                                    💬 WhatsApp
-                                </a>
-                                <a
-                                    href="tel:{item.phone}"
-                                    class="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-2.5 px-4 rounded-xl transition-colors text-sm"
-                                >
-                                    📞 התקשר
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                {/each}
-            </div>
-
-            {#if filtered.length === 0}
-                <div class="text-center py-16">
-                    <span class="text-5xl mb-4 block">🕯️🕯️</span>
-                    <p class="text-gray-400 text-lg">אין מודעות שתואמות את הסינון</p>
-                    <p class="text-gray-500 text-sm mt-2">נסה לאפס את הסינון או לפרסם מודעה משלך</p>
-                </div>
-            {/if}
-        {:else}
-            <!-- Mock fallback -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {#each filteredMockForDisplay as m}
-                    <div class="rounded-2xl bg-[#0f172a] border {m.isHost ? 'border-amber-500/30' : 'border-cyan-500/30'} overflow-hidden shadow-xl relative">
-                        <div class="absolute top-2 left-2 z-10 text-[10px] font-bold bg-black/50 text-amber-300 px-2 py-0.5 rounded-full">דוגמה</div>
-                        <div class="bg-gradient-to-r {m.isHost ? 'from-amber-500 to-orange-600' : 'from-cyan-500 to-blue-600'} p-4 flex items-center gap-3">
-                            <div class="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-2xl flex-shrink-0">
-                                {m.isHost ? '🏠' : '🎒'}
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <h3 class="text-white font-black text-lg">{m.label}</h3>
-                                <div class="flex flex-wrap items-center gap-2 text-white/80 text-xs">
-                                    <span>📍 {m.city}{m.neighborhood ? ` · ${m.neighborhood}` : ''}</span>
-                                </div>
-                            </div>
-                            <span class="shrink-0 text-[10px] font-black uppercase bg-black/30 text-white px-2 py-1 rounded-full">
-                                {m.isHost ? 'מארח' : 'מחפש'}
-                            </span>
-                        </div>
-                        <div class="p-4">
-                            <div class="flex flex-wrap gap-1.5 mb-3">
-                                {#if m.meal}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">🍽️ {m.meal}</span>{/if}
-                                {#if m.food}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">🥘 {m.food}</span>{/if}
-                                {#if m.capacity}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">👥 עד {m.capacity}</span>{/if}
-                                {#if m.guest_type}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">🧑‍🤝‍🧑 {m.guest_type}</span>{/if}
-                            </div>
-                            <p class="text-gray-300 text-sm leading-relaxed mb-4">{m.notes}</p>
-                            <a
-                                href="/add/realestate"
-                                class="block text-center bg-white/10 hover:bg-white/20 text-white text-xs font-bold py-2 rounded-xl transition-colors"
-                            >
-                                ✨ פרסם מודעה אמיתית במקום הדוגמה
-                            </a>
-                        </div>
-                    </div>
-                {/each}
-            </div>
-
-            {#if filteredMockForDisplay.length === 0}
-                <div class="text-center py-16">
-                    <span class="text-5xl mb-4 block">🕯️🕯️</span>
-                    <p class="text-gray-400 text-lg">עדיין אין מודעות{city ? ` ב${city}` : ''}</p>
-                    <p class="text-gray-500 text-sm mt-2">היה הראשון לפרסם!</p>
-                </div>
-            {/if}
-        {/if}
 
         <!-- Back link -->
         <div class="text-center mt-8 flex flex-wrap justify-center gap-4">
