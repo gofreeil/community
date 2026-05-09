@@ -107,24 +107,6 @@
             </p>
         </div>
 
-        <!-- Add buttons -->
-        <div class="grid grid-cols-2 gap-3 mb-6">
-            <a
-                href="/add/realestate"
-                class="flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold px-5 py-3 rounded-full shadow-lg hover:shadow-cyan-500/25 transition-all hover:scale-105"
-            >
-                <span class="text-lg font-black">+</span>
-                אני מחפש להתארח
-            </a>
-            <a
-                href="/add/realestate"
-                class="flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold px-5 py-3 rounded-full shadow-lg hover:shadow-amber-500/25 transition-all hover:scale-105"
-            >
-                <span class="text-lg font-black">+</span>
-                אני מציע לארח
-            </a>
-        </div>
-
         <!-- Two-column layout: guests right, hosts left -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
 
