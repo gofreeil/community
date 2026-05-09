@@ -26,10 +26,8 @@
     let { items, city }: Props = $props();
 
     type OfferFilter = 'all' | 'host' | 'guest';
-    type FoodFilter = 'all' | 'ספרדי' | 'אשכנזי' | 'תימני' | 'מעורב';
 
     let offerFilter = $state<OfferFilter>('all');
-    let foodFilter = $state<FoodFilter>('all');
 
     function parseExtra(raw: string): Record<string, unknown> {
         try {
@@ -42,11 +40,6 @@
     function isHost(item: DbItem): boolean {
         const ef = parseExtra(item.extra_fields);
         return String(ef.offer_type ?? '').includes('מציע');
-    }
-
-    function getFood(item: DbItem): string {
-        const ef = parseExtra(item.extra_fields);
-        return String(ef.food_style ?? '');
     }
 
     function getMeal(item: DbItem): string {
@@ -79,7 +72,6 @@
         items.filter(item => {
             if (offerFilter === 'host' && !isHost(item)) return false;
             if (offerFilter === 'guest' && isHost(item)) return false;
-            if (foodFilter !== 'all' && getFood(item) !== foodFilter) return false;
             return true;
         })
     );
@@ -106,7 +98,6 @@
             if (city && m.city !== city) return false;
             if (offerFilter === 'host' && !m.isHost) return false;
             if (offerFilter === 'guest' && m.isHost) return false;
-            if (foodFilter !== 'all' && m.food !== foodFilter) return false;
             return true;
         });
     });
@@ -148,40 +139,6 @@
                 class="px-5 py-2 rounded-full text-sm font-bold transition-all {offerFilter === 'guest' ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg' : 'bg-white/10 text-gray-400 hover:bg-white/15'}"
             >
                 🎒 מחפשים להתארח
-            </button>
-        </div>
-
-        <!-- Food style tabs -->
-        <div class="flex flex-wrap justify-center gap-2 mb-6">
-            <button
-                onclick={() => foodFilter = 'all'}
-                class="px-4 py-1.5 rounded-full text-xs font-bold transition-all {foodFilter === 'all' ? 'bg-white/20 text-white' : 'bg-white/5 text-gray-400 hover:bg-white/10'}"
-            >
-                כל סגנון
-            </button>
-            <button
-                onclick={() => foodFilter = 'ספרדי'}
-                class="px-4 py-1.5 rounded-full text-xs font-bold transition-all {foodFilter === 'ספרדי' ? 'bg-white/20 text-white' : 'bg-white/5 text-gray-400 hover:bg-white/10'}"
-            >
-                ספרדי
-            </button>
-            <button
-                onclick={() => foodFilter = 'אשכנזי'}
-                class="px-4 py-1.5 rounded-full text-xs font-bold transition-all {foodFilter === 'אשכנזי' ? 'bg-white/20 text-white' : 'bg-white/5 text-gray-400 hover:bg-white/10'}"
-            >
-                אשכנזי
-            </button>
-            <button
-                onclick={() => foodFilter = 'תימני'}
-                class="px-4 py-1.5 rounded-full text-xs font-bold transition-all {foodFilter === 'תימני' ? 'bg-white/20 text-white' : 'bg-white/5 text-gray-400 hover:bg-white/10'}"
-            >
-                תימני
-            </button>
-            <button
-                onclick={() => foodFilter = 'מעורב'}
-                class="px-4 py-1.5 rounded-full text-xs font-bold transition-all {foodFilter === 'מעורב' ? 'bg-white/20 text-white' : 'bg-white/5 text-gray-400 hover:bg-white/10'}"
-            >
-                מעורב
             </button>
         </div>
 
