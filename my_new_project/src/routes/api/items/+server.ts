@@ -1,8 +1,57 @@
 import { json } from '@sveltejs/kit';
-import { createItem, getAllItems, incrementItemViewCount } from '$lib/server/db';
+import { createItem, getAllItems, incrementItemViewCount, getItemsByCategory } from '$lib/server/db';
 import { categoryConfig, getCategoryIcon, getCategoryColor } from '$lib/categoryFields';
 import { Resend } from 'resend';
 import type { RequestHandler } from './$types';
+
+const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
+
+async function notifyShabbatMatches(
+    newItemId: string,
+    newLabel: string,
+    newContact: string,
+    extraFields: Record<string, unknown>,
+) {
+    const isNewHost = String(extraFields.offer_type ?? '').includes('מציע');
+    const cutoff = Date.now() - THREE_DAYS_MS;
+
+    const existing = await getItemsByCategory('shabbat_hosting');
+    const candidates = existing.filter(item => {
+        if (!item.user_id) return false;
+        if (item.id === newItemId) return false;
+        if (new Date(item.created_at).getTime() < cutoff) return false;
+        let ef: Record<string, unknown> = {};
+        try { ef = item.extra_fields ? JSON.parse(String(item.extra_fields)) : {}; } catch { ef = {}; }
+        const offerType = String(ef.offer_type ?? '');
+        return isNewHost ? offerType.includes('מחפש') : offerType.includes('מציע');
+    });
+
+    await Promise.all(candidates.map(target => {
+        if (isNewHost) {
+            return createItem({
+                category: 'message',
+                label: '🕯️🕯️ מישהו יכול לארח אותך השבת!',
+                description: `פרסמת שאתה מחפש אירוח לשבת — "${newLabel}" הציע לארח. היכנס ללוח האירוח ובדוק אם זה מתאים לך!`,
+                contact: newContact || newLabel,
+                user_id: target.user_id!,
+                icon: '🕯️',
+                color: 'amber',
+                extra_fields: { type: 'shabbat_hosting_match', matched_item_id: newItemId, read: false },
+            });
+        } else {
+            return createItem({
+                category: 'message',
+                label: '🎒 מישהו מחפש אירוח לשבת!',
+                description: `פרסמת שאתה מציע לארח — "${newLabel}" מחפש אירוח. היכנס ללוח האירוח וצור קשר להזמינו!`,
+                contact: newContact || newLabel,
+                user_id: target.user_id!,
+                icon: '🎒',
+                color: 'blue',
+                extra_fields: { type: 'shabbat_hosting_match', matched_item_id: newItemId, read: false },
+            });
+        }
+    }));
+}
 
 // ---- GET: list all active items ----
 export const GET: RequestHandler = async () => {
@@ -59,6 +108,16 @@ export const POST: RequestHandler = async (event) => {
         extra_fields: (extra_fields ?? {}) as Record<string, unknown>,
         user_id:     session?.user?.id ?? undefined,
     });
+
+    // ---- התאמת אירוח לשבת ----
+    if (category === 'shabbat_hosting') {
+        notifyShabbatMatches(
+            item.id,
+            String(label),
+            String(rest.contact ?? ''),
+            (extra_fields ?? {}) as Record<string, unknown>,
+        ).catch(e => console.warn('shabbat match notify failed:', e));
+    }
 
     // ---- שלח מייל לאדמין ----
     try {
