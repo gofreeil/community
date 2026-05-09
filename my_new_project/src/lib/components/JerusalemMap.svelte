@@ -622,6 +622,8 @@
         }
     });
 
+    let categoryButtonsWrapperRef: HTMLElement;
+
     function handleCategoryClick(categoryId: string) {
         selectedCategory = categoryId;
         // בתצוגת רשימה — פתח אוטומטית את הקטגוריה הנבחרת
@@ -629,6 +631,12 @@
             const next = new Set(expandedCategories);
             next.add(categoryId);
             expandedCategories = next;
+        }
+        // גלול לאט כך שהכפתורים יהיו בראש המסך
+        if (!isFullscreen && categoryButtonsWrapperRef) {
+            const rect = categoryButtonsWrapperRef.getBoundingClientRect();
+            const targetY = window.scrollY + rect.top - 8;
+            window.scrollTo({ top: targetY, behavior: 'smooth' });
         }
     }
 
@@ -937,7 +945,7 @@
 
         <div class="flex flex-col gap-2">
             <!-- Buttons Container with left-edge fade for mobile -->
-            <div class="relative">
+            <div class="relative" bind:this={categoryButtonsWrapperRef}>
                 <!-- fade on left edge: indicates hidden buttons off-screen (RTL) -->
                 <div class="md:hidden pointer-events-none absolute top-0 left-0 bottom-0 w-6 z-10" style="background: linear-gradient(to right, rgba(7,11,20,0.75) 0%, transparent);"></div>
             <div
