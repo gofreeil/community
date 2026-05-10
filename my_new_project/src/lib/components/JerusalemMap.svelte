@@ -79,7 +79,7 @@
         {
             id: "realestate",
             label: "אירוח לשבת",
-            icon: "🕯️🕯️",
+            icon: "🍽️",
             items: [
                 { id: "host-offer", label: "מציע לארח משפחה" },
                 { id: "guest-request", label: "מחפש להתארח בשבת" },

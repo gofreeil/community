@@ -478,7 +478,7 @@
                             <p class="text-white font-bold">לוח פנויים פנויות</p>
                         </a>
                         <a href="/shabbat-hosting" class="flex items-center gap-2 bg-white/5 rounded-lg p-2.5 border border-white/8 hover:bg-white/10 transition-all">
-                            <span class="flex-shrink-0 text-base">🕯️🕯️</span>
+                            <span class="flex-shrink-0 text-base">🍽️</span>
                             <p class="text-white font-bold">לוח אירוח לשבת</p>
                         </a>
                         <a href="/jobs" class="flex items-center gap-2 bg-white/5 rounded-lg p-2.5 border border-white/8 hover:bg-white/10 transition-all">

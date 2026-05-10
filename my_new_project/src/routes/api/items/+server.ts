@@ -30,11 +30,11 @@ async function notifyShabbatMatches(
         if (isNewHost) {
             return createItem({
                 category: 'message',
-                label: '🕯️🕯️ מישהו יכול לארח אותך השבת!',
+                label: '🍽️ מישהו יכול לארח אותך השבת!',
                 description: `פרסמת שאתה מחפש אירוח לשבת — "${newLabel}" הציע לארח. היכנס ללוח האירוח ובדוק אם זה מתאים לך!`,
                 contact: newContact || newLabel,
                 user_id: target.user_id!,
-                icon: '🕯️',
+                icon: '🍽️',
                 color: 'amber',
                 extra_fields: { type: 'shabbat_hosting_match', matched_item_id: newItemId, read: false },
             });
