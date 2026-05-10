@@ -92,39 +92,39 @@
     let mockGuestsFiltered = $derived(mockGuests.filter(m => !city || m.city === city));
 </script>
 
-<div class="min-h-screen bg-[#070b14] pt-6 pb-20 px-4" dir="rtl">
-    <div class="max-w-4xl mx-auto">
-        <!-- Header -->
-        <div class="text-center mb-6">
-            <span class="text-5xl mb-3 block">🕯️🕯️</span>
-            <h1 class="text-3xl font-black text-white mb-2">
-                {city ? `אירוח לשבת ב${city}` : 'לוח אירוח לשבת'}
-            </h1>
-            <p class="text-gray-400">
-                {city
-                    ? 'מארחים ומתארחים בעיר שלך'
-                    : 'לוח ארצי — מציעים לארח ומחפשים להתארח לשבת'}
-            </p>
-        </div>
+<div class="min-h-screen bg-[#070b14] pt-6 pb-20" dir="rtl">
+    <!-- Header -->
+    <div class="max-w-4xl mx-auto px-4 text-center mb-6">
+        <span class="text-5xl mb-3 block">🕯️🕯️</span>
+        <h1 class="text-3xl font-black text-white mb-2">
+            {city ? `אירוח לשבת ב${city}` : 'לוח אירוח לשבת'}
+        </h1>
+        <p class="text-gray-400">
+            {city
+                ? 'מארחים ומתארחים בעיר שלך'
+                : 'לוח ארצי — מציעים לארח ומחפשים להתארח לשבת'}
+        </p>
+    </div>
 
-        <!-- Add buttons -->
-        <div class="grid grid-cols-2 gap-3 mb-6">
-            <a
-                href="/add/realestate"
-                class="flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold px-5 py-3 rounded-full shadow-lg hover:shadow-cyan-500/25 transition-all hover:scale-105"
-            >
-                <span class="text-lg font-black">+</span>
-                אני מחפש להתארח
-            </a>
-            <a
-                href="/add/realestate"
-                class="flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold px-5 py-3 rounded-full shadow-lg hover:shadow-amber-500/25 transition-all hover:scale-105"
-            >
-                <span class="text-lg font-black">+</span>
-                אני מציע לארח
-            </a>
-        </div>
+    <!-- Add buttons — full width to screen edges -->
+    <div class="grid grid-cols-2 gap-4 px-4 mb-6">
+        <a
+            href="/add/realestate"
+            class="flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3 rounded-full shadow-lg hover:shadow-cyan-500/25 transition-all hover:scale-105"
+        >
+            <span class="text-lg font-black">+</span>
+            אני מחפש להתארח
+        </a>
+        <a
+            href="/add/realestate"
+            class="flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold py-3 rounded-full shadow-lg hover:shadow-amber-500/25 transition-all hover:scale-105"
+        >
+            <span class="text-lg font-black">+</span>
+            אני מציע לארח
+        </a>
+    </div>
 
+    <div class="max-w-4xl mx-auto px-4">
         <!-- Two-column layout: guests right, hosts left -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
 
