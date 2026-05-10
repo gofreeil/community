@@ -7,7 +7,7 @@
 
     let { data }: { data: PageData } = $props();
 
-    const { categoryId, config, userId } = data;
+    const { categoryId, config, userId, userProfile } = data;
 
     const DRAFT_KEY = `add_draft_${categoryId}`;
 
@@ -28,7 +28,15 @@
     onMount(() => {
         if (!browser) return;
 
-        // שחזר שכונה
+        // מלא מפרופיל המשתמש לפני localStorage
+        if (userProfile) {
+            if (userProfile.nickname) setFieldValue('contact', userProfile.nickname);
+            if (userProfile.phone)    setFieldValue('phone',   userProfile.phone);
+            if (userProfile.neighborhood) neighborhood = userProfile.neighborhood;
+            if (userProfile.city)         city         = userProfile.city;
+        }
+
+        // שחזר שכונה (localStorage גובר על פרופיל)
         try {
             const saved = localStorage.getItem(LS_KEY);
             if (saved) {
