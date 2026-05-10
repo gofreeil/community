@@ -17,7 +17,7 @@
 
     // ---- Form state ----
     let formValues = $state<Record<string, string>>(
-        Object.fromEntries(config.fields.map(f => [f.key, '']))
+        Object.fromEntries(config.fields.map(f => [f.key, f.type === 'toggle' && f.options ? f.options[0] : '']))
     );
 
     let submitting      = $state(false);
@@ -261,7 +261,22 @@
                         {/if}
                     </label>
 
-                    {#if field.type === 'textarea'}
+                    {#if field.type === 'toggle' && field.options}
+                        <div class="flex rounded-xl overflow-hidden border border-white/15">
+                            {#each field.options as opt}
+                                <button
+                                    type="button"
+                                    onclick={() => setFieldValue(field.key, opt)}
+                                    class="flex-1 py-3 text-sm font-bold transition-all {getFieldValue(field.key) === opt
+                                        ? `${colors.btn} text-white`
+                                        : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'}"
+                                >
+                                    {opt}
+                                </button>
+                            {/each}
+                        </div>
+
+                    {:else if field.type === 'textarea'}
                         <textarea
                             id="field-{field.key}"
                             value={getFieldValue(field.key)}

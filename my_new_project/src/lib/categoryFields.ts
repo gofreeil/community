@@ -1,7 +1,7 @@
 export interface FieldDef {
     key: string;
     label: string;
-    type: 'text' | 'tel' | 'textarea' | 'select' | 'number' | 'time' | 'date' | 'email';
+    type: 'text' | 'tel' | 'textarea' | 'select' | 'toggle' | 'number' | 'time' | 'date' | 'email';
     required: boolean;
     placeholder?: string;
     options?: string[];
@@ -92,7 +92,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
         color: 'yellow',
         priceRow: null,
         fields: [
-            { key: 'offer_type',  label: 'אני',                  type: 'select',   required: true,  options: ['מציע לארח', 'מחפש להתארח'] },
+            { key: 'offer_type',  label: 'אני',                  type: 'toggle',   required: true,  options: ['מציע לארח', 'מחפש להתארח'] },
             { key: 'label',       label: 'כותרת',                 type: 'text',     required: true,  placeholder: 'מציע לארח משפחה לשבת' },
             { key: 'meal',        label: 'סעודה',                 type: 'select',   required: false, options: ['ליל שבת', 'יום שבת (סעודת בוקר)', 'סעודה שלישית', 'כל הסעודות'] },
             { key: 'food_style',  label: 'סגנון אוכל',            type: 'select',   required: false, options: ['ספרדי', 'אשכנזי', 'תימני', 'מעורב', 'אחר'] },

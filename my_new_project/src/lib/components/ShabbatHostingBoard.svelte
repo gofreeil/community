@@ -135,21 +135,14 @@
         </p>
     </div>
 
-    <!-- Add buttons -->
-    <div class="flex justify-center gap-8 px-4 mb-6">
+    <!-- Add button -->
+    <div class="flex justify-center px-4 mb-6">
         <a
             href="/add/realestate"
-            class="flex items-center gap-1.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold px-5 py-2 rounded-full shadow-lg hover:shadow-cyan-500/25 transition-all hover:scale-105 text-sm"
+            class="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold px-8 py-3 rounded-full shadow-lg hover:shadow-amber-500/30 transition-all hover:scale-105 text-sm"
         >
-            <span class="font-black">+</span>
-            אני מחפש להתארח
-        </a>
-        <a
-            href="/add/realestate"
-            class="flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold px-5 py-2 rounded-full shadow-lg hover:shadow-amber-500/25 transition-all hover:scale-105 text-sm"
-        >
-            <span class="font-black">+</span>
-            אני מציע לארח
+            <span class="font-black text-lg leading-none">+</span>
+            הוסף הזמנה או בקשה לאירוח
         </a>
     </div>
 
