@@ -59,6 +59,17 @@
         return String(ef.preferences ?? item.description ?? '');
     }
 
+    function getFreeText(item: DbItem): string {
+        const ef = parseExtra(item.extra_fields);
+        return String(ef.free_text ?? '');
+    }
+
+    function formatDate(created_at: string): string {
+        const d = new Date(created_at);
+        if (isNaN(d.getTime())) return '';
+        return d.toLocaleDateString('he-IL', { day: 'numeric', month: 'numeric', year: '2-digit' });
+    }
+
     function waLink(phone: string): string {
         const digits = (phone ?? '').replace(/\D/g, '').replace(/^0/, '972');
         return `https://wa.me/${digits}`;
@@ -106,20 +117,20 @@
         </p>
     </div>
 
-    <!-- Add buttons — full width to screen edges -->
-    <div class="grid grid-cols-2 gap-4 px-4 mb-6">
+    <!-- Add buttons -->
+    <div class="flex justify-center gap-3 px-4 mb-6">
         <a
             href="/add/realestate"
-            class="flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3 rounded-full shadow-lg hover:shadow-cyan-500/25 transition-all hover:scale-105"
+            class="flex items-center gap-1.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold px-5 py-2 rounded-full shadow-lg hover:shadow-cyan-500/25 transition-all hover:scale-105 text-sm"
         >
-            <span class="text-lg font-black">+</span>
+            <span class="font-black">+</span>
             אני מחפש להתארח
         </a>
         <a
             href="/add/realestate"
-            class="flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold py-3 rounded-full shadow-lg hover:shadow-amber-500/25 transition-all hover:scale-105"
+            class="flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold px-5 py-2 rounded-full shadow-lg hover:shadow-amber-500/25 transition-all hover:scale-105 text-sm"
         >
-            <span class="text-lg font-black">+</span>
+            <span class="font-black">+</span>
             אני מציע לארח
         </a>
     </div>
@@ -138,6 +149,8 @@
                             {@const capacity = getCapacity(item)}
                             {@const guest_type = getGuestType(item)}
                             {@const notes = getPreferences(item)}
+                            {@const freeText = getFreeText(item)}
+                            {@const dateStr = formatDate(item.created_at)}
                             <div class="rounded-2xl bg-[#0f172a] border border-cyan-500/30 overflow-hidden shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1">
                                 <div class="bg-gradient-to-r from-cyan-500 to-blue-600 p-3 flex items-center gap-3">
                                     <div class="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center text-xl flex-shrink-0">🎒</div>
@@ -145,6 +158,7 @@
                                         <h3 class="text-white font-black text-base">{item.label}</h3>
                                         {#if item.city}<p class="text-white/80 text-xs">📍 {item.city}{item.neighborhood ? ` · ${item.neighborhood}` : ''}</p>{/if}
                                     </div>
+                                    {#if dateStr}<span class="text-[10px] text-white/60 flex-shrink-0">{dateStr}</span>{/if}
                                 </div>
                                 <div class="p-3">
                                     <div class="flex flex-wrap gap-1.5 mb-2">
@@ -152,7 +166,8 @@
                                         {#if capacity}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">👥 עד {capacity}</span>{/if}
                                         {#if guest_type}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">🧑‍🤝‍🧑 {guest_type}</span>{/if}
                                     </div>
-                                    {#if notes}<p class="text-gray-300 text-sm leading-relaxed mb-3">{notes}</p>{/if}
+                                    {#if notes}<p class="text-gray-300 text-sm leading-relaxed mb-2">{notes}</p>{/if}
+                                    {#if freeText}<p class="text-cyan-300/80 text-xs italic mb-3">"{freeText}"</p>{/if}
                                     <div class="flex gap-2">
                                         <a href={waLink(item.phone)} target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2 rounded-xl transition-colors text-sm">💬 WhatsApp</a>
                                         <a href="tel:{item.phone}" class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold py-2 px-3 rounded-xl transition-colors text-sm">📞</a>
@@ -199,6 +214,8 @@
                             {@const capacity = getCapacity(item)}
                             {@const guest_type = getGuestType(item)}
                             {@const notes = getPreferences(item)}
+                            {@const freeText = getFreeText(item)}
+                            {@const dateStr = formatDate(item.created_at)}
                             <div class="rounded-2xl bg-[#0f172a] border border-amber-500/30 overflow-hidden shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1">
                                 <div class="bg-gradient-to-r from-amber-500 to-orange-600 p-3 flex items-center gap-3">
                                     <div class="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center text-xl flex-shrink-0">🏠</div>
@@ -206,6 +223,7 @@
                                         <h3 class="text-white font-black text-base">{item.label}</h3>
                                         {#if item.city}<p class="text-white/80 text-xs">📍 {item.city}{item.neighborhood ? ` · ${item.neighborhood}` : ''}</p>{/if}
                                     </div>
+                                    {#if dateStr}<span class="text-[10px] text-white/60 flex-shrink-0">{dateStr}</span>{/if}
                                 </div>
                                 <div class="p-3">
                                     <div class="flex flex-wrap gap-1.5 mb-2">
@@ -213,7 +231,8 @@
                                         {#if capacity}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">👥 עד {capacity}</span>{/if}
                                         {#if guest_type}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">🧑‍🤝‍🧑 {guest_type}</span>{/if}
                                     </div>
-                                    {#if notes}<p class="text-gray-300 text-sm leading-relaxed mb-3">{notes}</p>{/if}
+                                    {#if notes}<p class="text-gray-300 text-sm leading-relaxed mb-2">{notes}</p>{/if}
+                                    {#if freeText}<p class="text-amber-300/80 text-xs italic mb-3">"{freeText}"</p>{/if}
                                     <div class="flex gap-2">
                                         <a href={waLink(item.phone)} target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2 rounded-xl transition-colors text-sm">💬 WhatsApp</a>
                                         <a href="tel:{item.phone}" class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold py-2 px-3 rounded-xl transition-colors text-sm">📞</a>
