@@ -106,7 +106,7 @@
 <div class="min-h-screen bg-[#070b14] pt-6 pb-20" dir="rtl">
     <!-- Header -->
     <div class="max-w-4xl mx-auto px-4 text-center mb-6">
-        <img src="/images/shabat.png" alt="שבת" class="h-20 mx-auto mb-3 object-contain" />
+        <img src="/images/shabat.png" alt="שבת" class="h-40 mx-auto mb-3 object-contain rounded-3xl ring-2 ring-white/20 shadow-2xl shadow-amber-500/20" />
         <h1 class="text-3xl font-black text-white mb-2">
             {city ? `אירוח לשבת ב${city}` : 'לוח אירוח לשבת'}
         </h1>
