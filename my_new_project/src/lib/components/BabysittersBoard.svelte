@@ -225,22 +225,11 @@
     // ===== Filters =====
     let searchQuery   = $state('');
     let selectedCity  = $state('');
-    let rateRange     = $state<'all' | 'lt40' | '40-60' | '60-80' | 'gt80'>('all');
     let ageGroup      = $state<'all' | '0-2' | '2-5' | '5-10' | '10+'>('all');
     let dayFilter     = $state<'all' | 'weekday' | 'weekend'>('all');
     let verifiedOnly  = $state(false);
     let certifiedOnly = $state(false);
     let sortBy        = $state<'featured' | 'rating' | 'rate_low' | 'rate_high' | 'experience'>('featured');
-
-    function inRate(rate: number): boolean {
-        if (rateRange === 'all') return true;
-        if (rate <= 0) return true; // ללא מחיר — לא מסננים
-        if (rateRange === 'lt40')  return rate < 40;
-        if (rateRange === '40-60') return rate >= 40 && rate <= 60;
-        if (rateRange === '60-80') return rate > 60 && rate <= 80;
-        if (rateRange === 'gt80')  return rate > 80;
-        return true;
-    }
 
     let availableCities = $derived(
         [...new Set(allSitters.map(s => s.city).filter(Boolean))].sort()
@@ -255,13 +244,12 @@
                 s.specialties.some(x => x.includes(q)) ||
                 s.languages.some(x => x.includes(q));
             const matchCity   = !selectedCity || s.city === selectedCity;
-            const matchRate   = inRate(s.rate);
             const matchAge    = ageGroup === 'all' || s.ageGroups.includes(ageGroup);
             const matchDay    = dayFilter === 'all' ||
                 (dayFilter === 'weekday' ? s.days.some(d => ['א','ב','ג','ד','ה'].includes(d)) : s.days.some(d => ['ו','ש'].includes(d)));
             const matchVer    = !verifiedOnly  || s.verified;
             const matchCert   = !certifiedOnly || s.certifications.length > 0;
-            return matchSearch && matchCity && matchRate && matchAge && matchDay && matchVer && matchCert;
+            return matchSearch && matchCity && matchAge && matchDay && matchVer && matchCert;
         });
 
         if (sortBy === 'rating')     arr = [...arr].sort((a,b) => b.rating - a.rating);
@@ -273,7 +261,7 @@
     });
 
     function clearAll() {
-        searchQuery = ''; selectedCity = ''; rateRange = 'all';
+        searchQuery = ''; selectedCity = '';
         ageGroup = 'all'; dayFilter = 'all';
         verifiedOnly = false; certifiedOnly = false; sortBy = 'featured';
     }
@@ -366,26 +354,6 @@
             {/each}
         </div>
 
-        <!-- שורת סינון: מחיר -->
-        <div class="flex items-center gap-2 mb-2 overflow-x-auto pb-1">
-            <span class="text-gray-500 text-xs whitespace-nowrap">מחיר/שעה:</span>
-            {#each [
-                { v: 'all',   l: 'הכל' },
-                { v: 'lt40',  l: 'עד ₪40' },
-                { v: '40-60', l: '₪40-60' },
-                { v: '60-80', l: '₪60-80' },
-                { v: 'gt80',  l: 'מעל ₪80' },
-            ] as opt}
-                <button type="button" onclick={() => (rateRange = opt.v as any)}
-                    class="px-3 py-1.5 rounded-full text-xs font-bold border transition-all whitespace-nowrap cursor-pointer
-                        {rateRange === opt.v
-                            ? 'bg-pink-500/20 text-pink-300 border-pink-500/50'
-                            : 'bg-white/5 text-gray-400 border-white/10 hover:text-white'}">
-                    {opt.l}
-                </button>
-            {/each}
-        </div>
-
         <!-- שורת סינון: זמינות + תגי אמינות -->
         <div class="flex items-center gap-2 mb-2 overflow-x-auto pb-1">
             <span class="text-gray-500 text-xs whitespace-nowrap">זמינות:</span>
@@ -422,7 +390,7 @@
         <!-- סיכום + נקה -->
         <p class="text-gray-500 text-sm mt-3 flex items-center gap-3">
             <span>מציג <span class="text-white font-bold">{filtered.length}</span> בייבי סיטר</span>
-            {#if searchQuery || selectedCity || rateRange !== 'all' || ageGroup !== 'all' || dayFilter !== 'all' || verifiedOnly || certifiedOnly}
+            {#if searchQuery || selectedCity || ageGroup !== 'all' || dayFilter !== 'all' || verifiedOnly || certifiedOnly}
                 <button onclick={clearAll} class="text-pink-400 hover:text-pink-300 underline cursor-pointer text-xs">נקה סינון</button>
             {/if}
         </p>
