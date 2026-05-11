@@ -1,7 +1,7 @@
 export interface FieldDef {
     key: string;
     label: string;
-    type: 'text' | 'tel' | 'textarea' | 'select' | 'toggle' | 'number' | 'time' | 'date' | 'email' | 'availability_grid';
+    type: 'text' | 'tel' | 'textarea' | 'select' | 'toggle' | 'number' | 'time' | 'date' | 'email' | 'availability_grid' | 'multi_select';
     required: boolean;
     placeholder?: string;
     options?: string[];
@@ -49,6 +49,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
             { key: 'age_range',   label: 'גילאי ילדים',         type: 'text',     required: true,  placeholder: 'מגיל 0 עד גיל 10' },
             { key: 'experience',  label: 'ניסיון',              type: 'select',   required: true,  options: ['ללא ניסיון', 'שנה אחת', '2-3 שנים', '4+ שנים'] },
             { key: 'availability',label: 'זמינות',              type: 'availability_grid', required: true },
+            { key: 'languages',   label: 'שפות נוספות',          type: 'multi_select', required: false, options: ['אנגלית', 'רוסית', 'צרפתית'], hint: 'בנוסף לעברית — בחרו שפות שאתם דוברים' },
             { key: 'price_hour',  label: 'מחיר לשעה (₪)',       type: 'number',   required: false, placeholder: '40' },
             { key: 'description', label: 'קצת עלייך',           type: 'textarea', required: false, placeholder: 'מומלץ לכתוב את הייחודיות והיתרונות שלכם, ואם יש לכם תוספות מלבד השמירה — כגון עבודות בית קלות, בישול וכו׳' },
             { key: 'address',     label: 'שכונה',               type: 'text',     required: false, placeholder: 'קרית משה' },

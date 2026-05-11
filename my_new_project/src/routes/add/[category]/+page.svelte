@@ -300,6 +300,29 @@
                             required={field.required}
                         ></textarea>
 
+                    {:else if field.type === 'multi_select' && field.options}
+                        {@const selected = (getFieldValue(field.key) || '').split(',').filter(Boolean)}
+                        <div class="flex flex-wrap gap-2">
+                            {#each field.options as opt}
+                                {@const isOn = selected.includes(opt)}
+                                <button
+                                    type="button"
+                                    onclick={() => {
+                                        const current = (getFieldValue(field.key) || '').split(',').filter(Boolean);
+                                        const idx = current.indexOf(opt);
+                                        if (idx >= 0) current.splice(idx, 1);
+                                        else current.push(opt);
+                                        setFieldValue(field.key, current.join(','));
+                                    }}
+                                    class="px-4 py-2 rounded-full border-2 text-sm font-bold transition-all {isOn
+                                        ? `${colors.btn} text-white border-transparent shadow-md`
+                                        : 'bg-white/5 border-white/15 text-gray-300 hover:bg-white/10 hover:border-white/30'}"
+                                >
+                                    {isOn ? '✓ ' : ''}{opt}
+                                </button>
+                            {/each}
+                        </div>
+
                     {:else if field.type === 'availability_grid'}
                         {@const grid = (getFieldValue(field.key) || '').split(',').filter(Boolean)}
                         <div class="rounded-xl border border-white/15 bg-white/5 p-3 md:p-4">

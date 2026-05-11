@@ -136,7 +136,12 @@
             verified: false,
             bgCheck: false,
             ageGroups: ageGroups.length ? ageGroups : ['0-2','2-5','5-10'],
-            languages: ['עברית'],
+            languages: (() => {
+                const extra = typeof ef.languages === 'string'
+                    ? ef.languages.split(',').map(s => s.trim()).filter(Boolean)
+                    : [];
+                return ['עברית', ...extra];
+            })(),
             certifications: [],
             specialties: [],
             days: ['א','ב','ג','ד','ה'],
