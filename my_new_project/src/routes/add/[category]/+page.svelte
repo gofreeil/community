@@ -308,13 +308,8 @@
                     {:else if field.type === 'availability_grid'}
                         {@const grid = (getFieldValue(field.key) || '').split(',').filter(Boolean)}
                         <div class="rounded-xl border border-white/15 bg-white/5 p-3 md:p-4">
-                            <!-- כותרת "ימים" מעל עמודות הימים -->
-                            <div class="grid gap-1.5 mb-1" style="grid-template-columns: minmax(48px, auto) repeat(7, minmax(0, 1fr));">
-                                <div></div>
-                                <div class="col-span-7 text-center text-xs md:text-sm font-bold text-pink-300">ימים</div>
-                            </div>
                             <div class="grid gap-1.5" style="grid-template-columns: minmax(48px, auto) repeat(7, minmax(0, 1fr));">
-                                <div></div>
+                                <div class="text-xs md:text-sm font-bold text-pink-300 text-right pl-1 self-center">ימים</div>
                                 {#each ['א','ב','ג','ד','ה','ו','ש'] as d}
                                     <div class="text-center font-bold text-gray-300 text-xs md:text-sm py-1">{d}</div>
                                 {/each}
