@@ -208,7 +208,7 @@
 
     <!-- Header -->
     <div class="text-center mb-4">
-        <div class="mb-1">{@html iconHtml('lg')}</div>
+        <div class="-mb-2">{@html iconHtml('lg')}</div>
         <div class="relative flex items-center justify-center">
             <h1 class="text-2xl md:text-3xl font-black text-white mb-2">
                 הוסף {config.label}
