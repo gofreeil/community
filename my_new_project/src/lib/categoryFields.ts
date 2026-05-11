@@ -100,7 +100,6 @@ export const categoryConfig: Record<string, CategoryConfig> = {
             { key: 'capacity',    label: 'כמה אנשים',             type: 'number',   required: false, placeholder: '4', default: '1', half: true },
             { key: 'guest_type',  label: 'מתאים ל',               type: 'select',   required: false, options: ['משפחה', 'זוג', 'יחיד/ה', 'קבוצה', 'הכל מתאים'], default: 'יחיד/ה', half: true },
             { key: 'preferences', label: 'העדפות / הערות',         type: 'textarea', required: false, placeholder: 'רמת דתיות, ללא אלרגיות, לינה...' },
-            { key: 'free_text',   label: 'הודעה קצרה (אופציונלי)', type: 'text',     required: false, placeholder: 'משהו שרוצים להוסיף בשורה אחת...' },
             { key: 'address',     label: 'שכונה / אזור',          type: 'text',     required: true,  placeholder: 'קרית משה, ירושלים' },
             { key: 'contact',     label: 'כינוי / שם',             type: 'text',     required: true,  placeholder: 'יוסי מירושלים' },
             { key: 'phone',       label: 'טלפון / וואטסאפ',       type: 'tel',      required: false, placeholder: '05X-XXXXXXX', hint: 'לא חובה — ניתן לשלוח הודעה בפרטי' },
