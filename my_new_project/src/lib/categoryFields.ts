@@ -88,7 +88,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
 
     realestate: {
         label: 'אירוח לשבת',
-        icon: '🍽️',
+        icon: '/icons/shavat-shalom.png',
         color: 'yellow',
         priceRow: null,
         fields: [

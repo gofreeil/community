@@ -11,6 +11,12 @@
 
     const DRAFT_KEY = `add_draft_${categoryId}`;
 
+    // Helper: מחזיר HTML לאיקון — תמונה אם src, אמוגי אם לא
+    const iconHtml = (size: 'lg' | 'sm' = 'sm') =>
+        config.icon?.startsWith('/')
+            ? `<img src="${config.icon}" class="${size === 'lg' ? 'w-14 h-14 mx-auto' : 'w-5 h-5 inline-block align-middle'}" alt="${config.label}" />`
+            : config.icon ?? '';
+
     // ---- Neighborhood from localStorage ----
     let neighborhood = $state(DEFAULT_NEIGHBORHOOD);
     let city         = $state('ירושלים');
@@ -197,7 +203,7 @@
 
     <!-- Header -->
     <div class="text-center mb-8">
-        <div class="text-5xl mb-3">{config.icon}</div>
+        <div class="mb-3">{@html iconHtml('lg')}</div>
         <h1 class="text-2xl md:text-3xl font-black text-white mb-2">
             הוסף {config.label}
         </h1>
@@ -341,9 +347,9 @@
                           style="animation: spin 0.7s linear infinite; vertical-align: middle;"></span>
                     שומר...
                 {:else if config.priceRow !== null}
-                    {config.icon} שלח ועבור לתשלום ←
+                    {@html iconHtml()} שלח ועבור לתשלום ←
                 {:else}
-                    {config.icon} הוסף לשכונה ✓
+                    {@html iconHtml()} הוסף לשכונה ✓
                 {/if}
             </button>
 
