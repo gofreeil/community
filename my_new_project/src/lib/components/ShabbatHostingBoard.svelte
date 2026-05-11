@@ -104,14 +104,14 @@
     let hostPageItems  = $derived(filteredHosts.slice((hostPage  - 1) * PAGE_SIZE, hostPage  * PAGE_SIZE));
 
     const mockHosts = [
-        { id: 'm1', label: 'משפחת כהן', city: 'ירושלים', neighborhood: 'קרית משה', meal: 'ליל שבת', capacity: '6', guest_type: 'משפחה', notes: 'מארחים בשמחה משפחה עם ילדים. אווירה חמה ושירי שבת.', contact: 'יוסי', phone: '050-1111111', isHost: true },
-        { id: 'm2', label: 'משפחת לוי', city: 'בני ברק', neighborhood: 'רמת אהרן', meal: 'כל הסעודות', capacity: '4', guest_type: 'זוג', notes: 'מארחים זוגות צעירים, אפשר לינה.', contact: 'חיים', phone: '050-2222222', isHost: true },
-        { id: 'm3', label: 'משפחת אדרי', city: 'אשדוד', neighborhood: 'רובע ז', meal: 'ליל שבת', capacity: '8', guest_type: 'הכל מתאים', notes: 'אווירה תימנית מסורתית, חמין משובח.', contact: 'יהודה', phone: '050-3333333', isHost: true },
+        { id: 'm1', label: 'משפחת כהן', city: 'ירושלים', neighborhood: 'קרית משה', meal: 'ליל שבת', capacity: '6', guest_type: 'משפחה', notes: 'מארחים בשמחה משפחה עם ילדים. אווירה חמה ושירי שבת.', contact: 'יוסי', phone: '050-1111111', isHost: true, date: '01/04/25' },
+        { id: 'm2', label: 'משפחת לוי', city: 'בני ברק', neighborhood: 'רמת אהרן', meal: 'כל הסעודות', capacity: '4', guest_type: 'זוג', notes: 'מארחים זוגות צעירים, אפשר לינה.', contact: 'חיים', phone: '050-2222222', isHost: true, date: '28/03/25' },
+        { id: 'm3', label: 'משפחת אדרי', city: 'אשדוד', neighborhood: 'רובע ז', meal: 'ליל שבת', capacity: '8', guest_type: 'הכל מתאים', notes: 'אווירה תימנית מסורתית, חמין משובח.', contact: 'יהודה', phone: '050-3333333', isHost: true, date: '10/04/25' },
     ];
 
     const mockGuests = [
-        { id: 'g1', label: 'בחור ישיבה', city: 'ירושלים', neighborhood: '', meal: 'ליל שבת', capacity: '', guest_type: 'יחיד/ה', notes: 'בחור ישיבה רווק, מחפש משפחה לאירוח לשבת פרשת בלק.', contact: 'אהרן', phone: '052-1111111', isHost: false },
-        { id: 'g2', label: 'רווקה', city: 'תל אביב', neighborhood: '', meal: 'כל הסעודות', capacity: '', guest_type: 'יחיד/ה', notes: 'מחפשת אווירה חמה לשבת חתן.', contact: 'שירה', phone: '052-2222222', isHost: false },
+        { id: 'g1', label: 'בחור ישיבה', city: 'ירושלים', neighborhood: '', meal: 'ליל שבת', capacity: '', guest_type: 'יחיד/ה', notes: 'בחור ישיבה רווק, מחפש משפחה לאירוח לשבת פרשת בלק.', contact: 'אהרן', phone: '052-1111111', isHost: false, date: '09/04/25' },
+        { id: 'g2', label: 'רווקה', city: 'תל אביב', neighborhood: '', meal: 'כל הסעודות', capacity: '', guest_type: 'יחיד/ה', notes: 'מחפשת אווירה חמה לשבת חתן.', contact: 'שירה', phone: '052-2222222', isHost: false, date: '07/04/25' },
     ];
 
     let mockHostsFiltered = $derived(mockHosts.filter(m => !city || m.city === city));
@@ -165,13 +165,13 @@
                                 {@const freeText = getFreeText(item)}
                                 {@const dateStr = formatDate(item.created_at)}
                                 <div class="rounded-2xl bg-[#0f172a] border border-cyan-500/30 overflow-hidden shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1">
-                                    <div class="bg-gradient-to-r from-cyan-500 to-blue-600 p-3 flex items-center gap-3">
-                                        <div class="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center text-xl flex-shrink-0">🎒</div>
+                                    <div class="border-b border-cyan-500/20 p-3 flex items-center gap-3">
+                                        <div class="w-11 h-11 rounded-full bg-cyan-500/15 flex items-center justify-center text-xl flex-shrink-0">🎒</div>
                                         <div class="flex-1 min-w-0">
-                                            <h3 class="text-white font-black text-base">{item.label}</h3>
-                                            {#if item.city}<p class="text-white/80 text-xs">📍 {item.city}{item.neighborhood ? ` · ${item.neighborhood}` : ''}</p>{/if}
+                                            <h3 class="text-cyan-300 font-black text-base">{item.label}</h3>
+                                            {#if item.city}<p class="text-gray-400 text-xs">📍 {item.city}{item.neighborhood ? ` · ${item.neighborhood}` : ''}</p>{/if}
                                         </div>
-                                        {#if dateStr}<span class="text-[10px] text-white/60 flex-shrink-0">{dateStr}</span>{/if}
+                                        {#if dateStr}<span class="text-[10px] text-gray-500 flex-shrink-0">{dateStr}</span>{/if}
                                     </div>
                                     <div class="p-3">
                                         <div class="flex flex-wrap gap-1.5 mb-2">
@@ -200,12 +200,13 @@
                         {#each mockGuestsFiltered as m}
                             <div class="rounded-2xl bg-[#0f172a] border border-cyan-500/30 overflow-hidden shadow-xl relative">
                                 <div class="absolute top-2 left-2 z-10 text-[10px] font-bold bg-black/50 text-amber-300 px-2 py-0.5 rounded-full">דוגמה</div>
-                                <div class="bg-gradient-to-r from-cyan-500 to-blue-600 p-3 flex items-center gap-3">
-                                    <div class="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center text-xl flex-shrink-0">🎒</div>
+                                <div class="border-b border-cyan-500/20 p-3 flex items-center gap-3">
+                                    <div class="w-11 h-11 rounded-full bg-cyan-500/15 flex items-center justify-center text-xl flex-shrink-0">🎒</div>
                                     <div class="flex-1 min-w-0">
-                                        <h3 class="text-white font-black text-base">{m.label}</h3>
-                                        <p class="text-white/80 text-xs">📍 {m.city}{m.neighborhood ? ` · ${m.neighborhood}` : ''}</p>
+                                        <h3 class="text-cyan-300 font-black text-base">{m.label}</h3>
+                                        <p class="text-gray-400 text-xs">📍 {m.city}{m.neighborhood ? ` · ${m.neighborhood}` : ''}</p>
                                     </div>
+                                    <span class="text-[10px] text-gray-500 flex-shrink-0">{m.date}</span>
                                 </div>
                                 <div class="p-3">
                                     <div class="flex flex-wrap gap-1.5 mb-2">
@@ -214,7 +215,10 @@
                                         {#if m.guest_type}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">🧑‍🤝‍🧑 {m.guest_type}</span>{/if}
                                     </div>
                                     <p class="text-gray-300 text-sm leading-relaxed mb-3">{m.notes}</p>
-                                    <a href="/add/realestate" class="block text-center bg-white/10 hover:bg-white/20 text-white text-xs font-bold py-2 rounded-xl transition-colors">✨ פרסם מודעה אמיתית</a>
+                                    <div class="flex gap-2">
+                                        <a href={waLink(m.phone)} target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2 rounded-xl transition-colors text-sm">💬 צור קשר עם המפרסם</a>
+                                        <a href="tel:{m.phone}" class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold py-2 px-3 rounded-xl transition-colors text-sm">📞</a>
+                                    </div>
                                 </div>
                             </div>
                         {/each}
@@ -238,13 +242,13 @@
                                 {@const freeText = getFreeText(item)}
                                 {@const dateStr = formatDate(item.created_at)}
                                 <div class="rounded-2xl bg-[#0f172a] border border-amber-500/30 overflow-hidden shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1">
-                                    <div class="bg-gradient-to-r from-amber-500 to-orange-600 p-3 flex items-center gap-3">
-                                        <div class="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center text-xl flex-shrink-0">🏠</div>
+                                    <div class="border-b border-amber-500/20 p-3 flex items-center gap-3">
+                                        <div class="w-11 h-11 rounded-full bg-amber-500/15 flex items-center justify-center text-xl flex-shrink-0">🏠</div>
                                         <div class="flex-1 min-w-0">
-                                            <h3 class="text-white font-black text-base">{item.label}</h3>
-                                            {#if item.city}<p class="text-white/80 text-xs">📍 {item.city}{item.neighborhood ? ` · ${item.neighborhood}` : ''}</p>{/if}
+                                            <h3 class="text-amber-300 font-black text-base">{item.label}</h3>
+                                            {#if item.city}<p class="text-gray-400 text-xs">📍 {item.city}{item.neighborhood ? ` · ${item.neighborhood}` : ''}</p>{/if}
                                         </div>
-                                        {#if dateStr}<span class="text-[10px] text-white/60 flex-shrink-0">{dateStr}</span>{/if}
+                                        {#if dateStr}<span class="text-[10px] text-gray-500 flex-shrink-0">{dateStr}</span>{/if}
                                     </div>
                                     <div class="p-3">
                                         <div class="flex flex-wrap gap-1.5 mb-2">
@@ -273,12 +277,13 @@
                         {#each mockHostsFiltered as m}
                             <div class="rounded-2xl bg-[#0f172a] border border-amber-500/30 overflow-hidden shadow-xl relative">
                                 <div class="absolute top-2 left-2 z-10 text-[10px] font-bold bg-black/50 text-amber-300 px-2 py-0.5 rounded-full">דוגמה</div>
-                                <div class="bg-gradient-to-r from-amber-500 to-orange-600 p-3 flex items-center gap-3">
-                                    <div class="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center text-xl flex-shrink-0">🏠</div>
+                                <div class="border-b border-amber-500/20 p-3 flex items-center gap-3">
+                                    <div class="w-11 h-11 rounded-full bg-amber-500/15 flex items-center justify-center text-xl flex-shrink-0">🏠</div>
                                     <div class="flex-1 min-w-0">
-                                        <h3 class="text-white font-black text-base">{m.label}</h3>
-                                        <p class="text-white/80 text-xs">📍 {m.city}{m.neighborhood ? ` · ${m.neighborhood}` : ''}</p>
+                                        <h3 class="text-amber-300 font-black text-base">{m.label}</h3>
+                                        <p class="text-gray-400 text-xs">📍 {m.city}{m.neighborhood ? ` · ${m.neighborhood}` : ''}</p>
                                     </div>
+                                    <span class="text-[10px] text-gray-500 flex-shrink-0">{m.date}</span>
                                 </div>
                                 <div class="p-3">
                                     <div class="flex flex-wrap gap-1.5 mb-2">
@@ -287,7 +292,10 @@
                                         {#if m.guest_type}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">🧑‍🤝‍🧑 {m.guest_type}</span>{/if}
                                     </div>
                                     <p class="text-gray-300 text-sm leading-relaxed mb-3">{m.notes}</p>
-                                    <a href="/add/realestate" class="block text-center bg-white/10 hover:bg-white/20 text-white text-xs font-bold py-2 rounded-xl transition-colors">✨ פרסם מודעה אמיתית</a>
+                                    <div class="flex gap-2">
+                                        <a href={waLink(m.phone)} target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2 rounded-xl transition-colors text-sm">💬 צור קשר עם המפרסם</a>
+                                        <a href="tel:{m.phone}" class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold py-2 px-3 rounded-xl transition-colors text-sm">📞</a>
+                                    </div>
                                 </div>
                             </div>
                         {/each}
