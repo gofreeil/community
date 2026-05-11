@@ -79,7 +79,7 @@
         {
             id: "realestate",
             label: "אירוח לשבת",
-            icon: "🍽️",
+            icon: "/icons/shavat-shalom.png",
             items: [
                 { id: "host-offer", label: "מציע לארח משפחה" },
                 { id: "guest-request", label: "מחפש להתארח בשבת" },
@@ -963,12 +963,16 @@
                               ? 'bg-gradient-to-br from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-gray-900 border-yellow-500'
                               : 'bg-gradient-to-br from-white to-gray-200 hover:from-blue-100 hover:to-white text-gray-900 border-purple-300'} px-3 py-2 md:py-1.5 rounded-full md:rounded-lg text-sm md:text-xs font-bold shadow-lg transition-all hover:scale-105 border shrink-0 whitespace-nowrap md:flex-1 md:min-w-[15%] map-category-button"
                     >
-                        <span
-                            class="text-lg md:text-base icon"
-                            style={category.id === "realestate"
-                                ? "letter-spacing: -0.25em; margin-left: 0.15em; display: inline-block;"
-                                : ""}>{category.icon}</span
-                        >
+                        {#if category.icon?.startsWith('/')}
+                            <img src={category.icon} class="w-5 h-5 inline-block" alt={category.label} />
+                        {:else}
+                            <span
+                                class="text-lg md:text-base icon"
+                                style={category.id === "realestate"
+                                    ? "letter-spacing: -0.25em; margin-left: 0.15em; display: inline-block;"
+                                    : ""}>{category.icon}</span
+                            >
+                        {/if}
                         {category.label}
                     </button>
                 {/each}
@@ -1191,6 +1195,12 @@
                                                 alt=""
                                                 class="w-7 h-7 md:w-8 md:h-8 object-contain"
                                             />
+                                        {:else if category.icon?.startsWith('/')}
+                                            <img
+                                                src={category.icon}
+                                                alt={category.label}
+                                                class="w-7 h-7 md:w-8 md:h-8 object-contain"
+                                            />
                                         {:else}
                                             <span
                                                 class="text-2xl md:text-xl md:text-3xl"
@@ -1326,9 +1336,11 @@
                         >
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-1.5 md:gap-2">
-                                    <span class="text-xl md:text-2xl"
-                                        >{category.icon}</span
-                                    >
+                                    {#if category.icon?.startsWith('/')}
+                                        <img src={category.icon} class="w-6 h-6 md:w-7 md:h-7 inline-block" alt={category.label} />
+                                    {:else}
+                                        <span class="text-xl md:text-2xl">{category.icon}</span>
+                                    {/if}
                                     <span
                                         class="text-white font-bold text-xs md:text-sm"
                                         >{category.label}</span

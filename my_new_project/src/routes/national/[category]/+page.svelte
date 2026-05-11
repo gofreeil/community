@@ -167,7 +167,7 @@
 					onclick={() => (foodTypeFilter = 'all')}
 					class="px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer
 					       {foodTypeFilter === 'all' ? 'bg-gradient-to-r from-orange-600 to-amber-700 text-white shadow' : 'text-gray-400 hover:text-white'}"
-				>🍽️ הכל</button>
+				><img src="/icons/shavat-shalom.png" class="w-4 h-4 inline-block align-middle" alt="הכל" /> הכל</button>
 				<button
 					type="button"
 					onclick={() => (foodTypeFilter = 'fast')}
