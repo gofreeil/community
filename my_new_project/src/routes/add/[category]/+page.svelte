@@ -17,13 +17,25 @@
             ? `<img src="${config.icon}" class="${size === 'lg' ? 'w-28 h-28 mx-auto' : 'w-5 h-5 inline-block align-middle'}" alt="${config.label}" />`
             : config.icon ?? '';
 
-    // ---- Neighborhood from localStorage ----
-    let neighborhood = $state(DEFAULT_NEIGHBORHOOD);
-    let city         = $state('ירושלים');
+    // ---- Neighborhood — מתמלא מיד מהפרופיל ----
+    let neighborhood = $state(userProfile?.neighborhood || DEFAULT_NEIGHBORHOOD);
+    let city         = $state(userProfile?.city         || 'ירושלים');
 
-    // ---- Form state ----
+    // ---- ערכי ברירת מחדל לשדות מפרופיל המשתמש ----
+    function profileDefault(key: string, type: string, options?: string[]): string {
+        if (type === 'toggle' && options) return options[0];
+        if (key === 'contact' && userProfile?.nickname) return userProfile.nickname;
+        if (key === 'phone'   && userProfile?.phone)    return userProfile.phone;
+        if (key === 'address') {
+            const parts = [userProfile?.neighborhood, userProfile?.city].filter(Boolean);
+            if (parts.length) return parts.join(', ');
+        }
+        return '';
+    }
+
+    // ---- Form state — מתמלא מיד מהפרופיל ללא המתנה ל-onMount ----
     let formValues = $state<Record<string, string>>(
-        Object.fromEntries(config.fields.map(f => [f.key, f.type === 'toggle' && f.options ? f.options[0] : '']))
+        Object.fromEntries(config.fields.map(f => [f.key, profileDefault(f.key, f.type, f.options)]))
     );
 
     let submitting      = $state(false);
@@ -34,15 +46,7 @@
     onMount(() => {
         if (!browser) return;
 
-        // מלא מפרופיל המשתמש לפני localStorage
-        if (userProfile) {
-            if (userProfile.nickname) setFieldValue('contact', userProfile.nickname);
-            if (userProfile.phone)    setFieldValue('phone',   userProfile.phone);
-            if (userProfile.neighborhood) neighborhood = userProfile.neighborhood;
-            if (userProfile.city)         city         = userProfile.city;
-        }
-
-        // שחזר שכונה (localStorage גובר על פרופיל)
+        // שחזר שכונה מ-localStorage (גובר על פרופיל)
         try {
             const saved = localStorage.getItem(LS_KEY);
             if (saved) {
@@ -52,15 +56,14 @@
             }
         } catch {}
 
-        // שחזר טיוטא אם קיימת
+        // שחזר טיוטא אם קיימת (גובר על הכל)
         try {
             const draft = localStorage.getItem(DRAFT_KEY);
             if (draft) {
                 const parsed = JSON.parse(draft);
-                if (parsed.formValues) formValues   = { ...formValues, ...parsed.formValues };
+                if (parsed.formValues)   formValues   = { ...formValues, ...parsed.formValues };
                 if (parsed.neighborhood) neighborhood = parsed.neighborhood;
                 if (parsed.city)         city         = parsed.city;
-                // מחק טיוטא אחרי שחזור (תישמר מחדש אם יידרש)
                 localStorage.removeItem(DRAFT_KEY);
             }
         } catch {}
@@ -190,23 +193,23 @@
     <title>הוסף {config.label} | קהילה בשכונה</title>
 </svelte:head>
 
-<div class="max-w-2xl mx-auto px-4 py-8 md:py-12" dir="rtl">
-
-    <!-- Back -->
-    <button
-        type="button"
-        onclick={() => history.back()}
-        class="text-gray-400 hover:text-white text-sm mb-6 flex items-center gap-1.5 transition-colors"
-    >
-        ← חזרה
-    </button>
+<div class="max-w-2xl mx-auto px-4 py-4 md:py-6" dir="rtl">
 
     <!-- Header -->
-    <div class="text-center mb-8">
+    <div class="text-center mb-4">
         <div class="mb-1">{@html iconHtml('lg')}</div>
-        <h1 class="text-2xl md:text-3xl font-black text-white mb-2">
-            הוסף {config.label}
-        </h1>
+        <div class="relative flex items-center justify-center">
+            <h1 class="text-2xl md:text-3xl font-black text-white mb-2">
+                הוסף {config.label}
+            </h1>
+            <button
+                type="button"
+                onclick={() => history.back()}
+                class="absolute right-0 top-0 text-gray-400 hover:text-white text-sm flex items-center gap-1.5 transition-colors"
+            >
+                ← חזרה
+            </button>
+        </div>
         <p class="text-gray-400 text-sm">
             שכונה: <span class="{colors.text} font-bold">{neighborhood}</span>
             {#if city} · {city}{/if}
