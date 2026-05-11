@@ -64,6 +64,11 @@
                 const parsed = JSON.parse(saved);
                 if (parsed.neighborhood) neighborhood = parsed.neighborhood;
                 if (parsed.city)         city         = parsed.city;
+                // מלא שדה address מהשכונה הנבחרה אם עדיין ריק
+                if (!getFieldValue('address')) {
+                    const parts = [parsed.neighborhood, parsed.city].filter(Boolean);
+                    if (parts.length) setFieldValue('address', parts.join(', '));
+                }
             }
         } catch {}
 
