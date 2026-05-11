@@ -274,7 +274,7 @@
                     </label>
 
                     {#if field.type === 'toggle' && field.options}
-                        <div class="flex rounded-xl overflow-hidden border border-white/15">
+                        <div class="flex rounded-xl overflow-hidden border border-white/15 max-w-xs">
                             {#each field.options as opt}
                                 <button
                                     type="button"
