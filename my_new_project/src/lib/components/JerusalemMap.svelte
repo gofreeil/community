@@ -1013,6 +1013,30 @@
         onmouseenter={handleMouseEnter}
         onmouseleave={handleMouseLeave}
     >
+        <!-- SVG filter שמסיר רקע לבן מתמונת הטביעת אצבע (white → alpha 0, dark → alpha 1) -->
+        <svg
+            width="0"
+            height="0"
+            style="position: absolute; width: 0; height: 0; pointer-events: none;"
+            aria-hidden="true"
+            focusable="false"
+        >
+            <defs>
+                <filter
+                    id="fingerprintTransparent"
+                    color-interpolation-filters="sRGB"
+                >
+                    <feColorMatrix
+                        type="matrix"
+                        values="0 0 0 0 1
+                                0 0 0 0 1
+                                0 0 0 0 1
+                                -1 -1 -1 0 1"
+                    />
+                </filter>
+            </defs>
+        </svg>
+
         <!-- כפתור מעבר תצוגה - משולש מקופל בפינה -->
         <button
             onclick={() => {
@@ -2106,9 +2130,9 @@
         -webkit-user-drag: none;
         display: none;
         background: transparent;
-        /* הסרת הרקע הלבן של ה-JPEG: היפוך + מצב מסך כדי שהרקע הלבן ייעלם והקווים הכהים יזרחו על רקע הדף הכהה */
-        filter: invert(1) brightness(1.4) contrast(1.2);
-        mix-blend-mode: screen;
+        /* הסרת הרקע הלבן של ה-JPEG באמצעות feColorMatrix שמהפך לוּמיננציה ל-alpha:
+           פיקסלים לבנים → alpha 0 (שקוף), פיקסלים כהים → alpha 1 (גלוי בלבן) */
+        filter: url(#fingerprintTransparent);
     }
 
     .page-corner.auto-switching .hint-cursor {
@@ -2168,7 +2192,7 @@
         52% {
             opacity: 1;
             transform: translate(22px, 22px) rotate(-38deg) scale(0.72);
-            filter: invert(1) brightness(1.6) contrast(1.3)
+            filter: url(#fingerprintTransparent)
                 drop-shadow(0 0 12px rgba(147, 51, 234, 0.95));
         }
         62% {
