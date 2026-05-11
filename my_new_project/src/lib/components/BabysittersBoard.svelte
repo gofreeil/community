@@ -286,13 +286,16 @@
 
     <!-- ===== Hero ===== -->
     <div class="max-w-6xl mx-auto px-4 mb-6">
-        <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-pink-600 via-rose-500 to-orange-500 p-6 md:p-10 text-center">
-            <div class="absolute inset-0 opacity-20 bg-[url('data:image/svg+xml,%3Csvg width=\'40\' height=\'40\' viewBox=\'0 0 40 40\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.6\'%3E%3Cpath d=\'M20 20a4 4 0 100-8 4 4 0 000 8z\'/%3E%3C/g%3E%3C/svg%3E')]"></div>
+        <div class="relative overflow-hidden rounded-3xl p-6 md:p-12 text-center min-h-[260px] md:min-h-[340px] flex items-center justify-center">
+            <!-- תמונת רקע -->
+            <img src="/images/babysitter.png" alt="" class="absolute inset-0 w-full h-full object-cover" />
+            <!-- שכבת כהות מעל התמונה כדי שהטקסט יבלוט -->
+            <div class="absolute inset-0 bg-black/55"></div>
+            <!-- תוכן -->
             <div class="relative">
-                <div class="text-6xl md:text-7xl mb-3">👶</div>
-                <h1 class="text-3xl md:text-4xl font-black text-white mb-2">לוח בייבי סיטר ארצי</h1>
-                <p class="text-white/85 text-sm md:text-base mb-4">מצאו בייבי סיטר מומלצת לפי שכונה, גיל הילדים, מחיר וזמינות</p>
-                <div class="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/30 rounded-full px-4 py-2">
+                <h1 class="text-3xl md:text-5xl font-black text-white mb-3 drop-shadow-lg">לוח בייבי סיטר ארצי</h1>
+                <p class="text-white/95 text-sm md:text-lg mb-4 drop-shadow">מצאו בייבי סיטר מומלצת לפי שכונה, גיל הילדים, מחיר וזמינות</p>
+                <div class="inline-flex items-center gap-2 bg-black/40 backdrop-blur-sm border border-white/30 rounded-full px-4 py-2">
                     <span class="w-2 h-2 rounded-full bg-green-300 animate-pulse"></span>
                     <span class="text-white text-sm font-medium">{allSitters.length} מטפלות זמינות</span>
                 </div>
