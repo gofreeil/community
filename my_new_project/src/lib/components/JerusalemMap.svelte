@@ -330,6 +330,7 @@
         attractions: '/national/attractions',
         jobs:        '/national/jobs',
         restaurants: '/national/restaurants',
+        business:    '/babysitters',
     };
     let nationalBoardUrl = $derived(nationalBoardUrls[selectedCategory] || '');
     let hasShownListAnimation = $state(false); // עקוב אם כבר הראינו את האנימציה
