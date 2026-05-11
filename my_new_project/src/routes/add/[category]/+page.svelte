@@ -2,7 +2,7 @@
     import { onMount } from 'svelte';
     import { browser } from '$app/environment';
     import { goto } from '$app/navigation';
-    import { LS_KEY, DEFAULT_NEIGHBORHOOD } from '$lib/neighborhoodsData';
+    import { LS_KEY, DEFAULT_NEIGHBORHOOD, citiesAndNeighborhoods } from '$lib/neighborhoodsData';
     import type { PageData } from './$types';
 
     let { data }: { data: PageData } = $props();
@@ -26,6 +26,9 @@
         if (type === 'toggle' && options) return options[0];
         if (key === 'contact' && userProfile?.nickname) return userProfile.nickname;
         if (key === 'phone'   && userProfile?.phone)    return userProfile.phone;
+        if (key === 'address' && type === 'neighborhood_select') {
+            return userProfile?.neighborhood || DEFAULT_NEIGHBORHOOD;
+        }
         if (key === 'address') {
             const parts = [userProfile?.neighborhood, userProfile?.city].filter(Boolean);
             if (parts.length) return parts.join(', ');
@@ -373,6 +376,23 @@
                             <option value="">-- בחר --</option>
                             {#each field.options as opt}
                                 <option value={opt}>{opt}</option>
+                            {/each}
+                        </select>
+
+                    {:else if field.type === 'neighborhood_select'}
+                        <select
+                            id="field-{field.key}"
+                            value={getFieldValue(field.key)}
+                            onchange={(e) => setFieldValue(field.key, (e.target as HTMLSelectElement).value)}
+                            class="{inputClass} cursor-pointer"
+                            required={field.required}
+                        >
+                            {#each Object.entries(citiesAndNeighborhoods) as [cty, neighbs]}
+                                <optgroup label={cty}>
+                                    {#each neighbs as nb}
+                                        <option value={nb} style="background:#fff;color:#0f172a;">{nb}</option>
+                                    {/each}
+                                </optgroup>
                             {/each}
                         </select>
 

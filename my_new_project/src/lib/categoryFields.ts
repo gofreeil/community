@@ -1,7 +1,7 @@
 export interface FieldDef {
     key: string;
     label: string;
-    type: 'text' | 'tel' | 'textarea' | 'select' | 'toggle' | 'number' | 'time' | 'date' | 'email' | 'availability_grid' | 'multi_select';
+    type: 'text' | 'tel' | 'textarea' | 'select' | 'toggle' | 'number' | 'time' | 'date' | 'email' | 'availability_grid' | 'multi_select' | 'neighborhood_select';
     required: boolean;
     placeholder?: string;
     options?: string[];
@@ -63,7 +63,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
             ], hint: 'בחרו את היתרונות שיש לכם להציע — יוצגו בכרטיסיה' },
             { key: 'price_hour',  label: 'מחיר לשעה (₪)',       type: 'number',   required: false, placeholder: '40' },
             { key: 'description', label: 'טקסט חופשי',           type: 'textarea', required: false },
-            { key: 'address',     label: 'שכונה',               type: 'text',     required: false, placeholder: 'קרית משה' },
+            { key: 'address',     label: 'שכונה',               type: 'neighborhood_select', required: false },
             { key: 'phone',       label: 'טלפון',               type: 'tel',      required: true,  placeholder: '05X-XXXXXXX' },
         ],
     },
