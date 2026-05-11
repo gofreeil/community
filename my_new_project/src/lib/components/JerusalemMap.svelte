@@ -1047,6 +1047,24 @@
                     {viewMode === "map" ? "רשימה" : "מפה"}
                 </text>
             </svg>
+            <span class="hint hint-cursor" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="34" height="34">
+                    <path
+                        d="M4 2 L4 20 L9 16 L12 23 L15.5 21.5 L12.5 14.5 L19 14.5 Z"
+                        fill="white"
+                        stroke="#0f172a"
+                        stroke-width="1.6"
+                        stroke-linejoin="round"
+                    />
+                </svg>
+            </span>
+            <img
+                class="hint hint-fingerprint"
+                src="/images/fingerprint.jfif"
+                alt=""
+                aria-hidden="true"
+                draggable="false"
+            />
         </button>
 
         {#if viewMode === "map"}
@@ -2047,64 +2065,103 @@
         position: relative;
     }
 
-    .page-corner.auto-switching::before {
-        content: "";
+    .hint {
         position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 4px;
-        height: 4px;
-        background: linear-gradient(45deg, #ffffff, #9333ea, #ffffff);
-        border-radius: 50%;
-        animation: lightningStrike 4s ease-in-out;
-        z-index: 20;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+        opacity: 0;
+        z-index: 35;
+        will-change: transform, opacity;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.55));
     }
 
-    @keyframes lightningStrike {
+    .hint-cursor {
+        display: inline-block;
+        line-height: 0;
+    }
+
+    .hint-fingerprint {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        object-fit: cover;
+        user-select: none;
+        -webkit-user-drag: none;
+        display: none;
+    }
+
+    .page-corner.auto-switching .hint-cursor {
+        animation: hintClickDesktop 4s ease-in-out;
+    }
+
+    .page-corner.auto-switching .hint-fingerprint {
+        animation: hintClickMobile 4s ease-in-out;
+    }
+
+    @keyframes hintClickDesktop {
         0% {
-            transform: translate(50px, -50px) scale(0);
             opacity: 0;
-            box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+            transform: translate(110px, -25px) scale(0.5);
         }
-        15% {
-            transform: translate(35px, -35px) scale(2);
+        18% {
             opacity: 1;
-            box-shadow:
-                0 0 30px rgba(255, 255, 255, 1),
-                0 0 60px rgba(147, 51, 234, 0.8);
-        }
-        30% {
-            transform: translate(20px, -20px) scale(3);
-            opacity: 1;
-            box-shadow:
-                0 0 40px rgba(255, 255, 255, 1),
-                0 0 80px rgba(147, 51, 234, 1);
+            transform: translate(92px, -8px) scale(0.95);
         }
         45% {
-            transform: translate(10px, -10px) scale(4);
             opacity: 1;
-            box-shadow:
-                0 0 50px rgba(255, 255, 255, 1),
-                0 0 100px rgba(147, 51, 234, 1);
+            transform: translate(42px, 38px) scale(1);
+        }
+        52% {
+            opacity: 1;
+            transform: translate(42px, 38px) scale(0.78);
+            filter: drop-shadow(0 0 14px rgba(147, 51, 234, 0.95))
+                drop-shadow(0 2px 4px rgba(0, 0, 0, 0.55));
         }
         60% {
-            transform: translate(0, 0) scale(6);
             opacity: 1;
-            box-shadow:
-                0 0 60px rgba(255, 255, 255, 1),
-                0 0 120px rgba(147, 51, 234, 1);
+            transform: translate(42px, 38px) scale(1.05);
         }
-        80% {
-            transform: translate(0, 0) scale(4);
-            opacity: 0.9;
-            box-shadow:
-                0 0 40px rgba(255, 255, 255, 0.8),
-                0 0 80px rgba(147, 51, 234, 0.8);
+        85% {
+            opacity: 1;
+            transform: translate(42px, 38px) scale(1);
         }
         100% {
-            transform: translate(0, 0) scale(0);
             opacity: 0;
-            box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+            transform: translate(30px, 50px) scale(0.85);
+        }
+    }
+
+    @keyframes hintClickMobile {
+        0% {
+            opacity: 0;
+            transform: translate(72px, -18px) scale(0.5);
+        }
+        18% {
+            opacity: 1;
+            transform: translate(58px, -4px) scale(0.95);
+        }
+        45% {
+            opacity: 1;
+            transform: translate(22px, 22px) scale(1);
+        }
+        52% {
+            opacity: 1;
+            transform: translate(22px, 22px) scale(0.75);
+            filter: drop-shadow(0 0 14px rgba(147, 51, 234, 0.95))
+                drop-shadow(0 2px 4px rgba(0, 0, 0, 0.55));
+        }
+        60% {
+            opacity: 1;
+            transform: translate(22px, 22px) scale(1.08);
+        }
+        85% {
+            opacity: 1;
+            transform: translate(22px, 22px) scale(1);
+        }
+        100% {
+            opacity: 0;
+            transform: translate(14px, 32px) scale(0.85);
         }
     }
 
@@ -2222,13 +2279,23 @@
         }
 
         /* Make triangle button smaller on mobile */
-        .page-corner svg {
+        .page-corner > svg {
             width: 80px !important;
             height: 80px !important;
         }
 
         .page-corner text {
             font-size: 14px !important;
+        }
+
+        .hint-cursor {
+            display: none !important;
+        }
+
+        .hint-fingerprint {
+            display: block !important;
+            width: 34px;
+            height: 34px;
         }
     }
 </style>
