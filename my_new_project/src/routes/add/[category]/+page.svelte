@@ -327,7 +327,7 @@
                     {/if}
 
                     {#if field.hint}
-                        <p class="text-gray-600 text-xs mt-1">{field.hint}</p>
+                        <p class="text-gray-300 text-sm mt-1">{field.hint}</p>
                     {/if}
                 </div>
             {/each}
@@ -359,7 +359,7 @@
                         {@html iconHtml()} הוסף לשכונה ✓
                     {/if}
                 </button>
-                <p class="text-gray-600 text-xs text-center">
+                <p class="text-gray-300 text-sm text-center">
                     הפריט יופיע מיד לאחר השמירה
                     {#if config.priceRow !== null}· ניתן לתשלום בשלב הבא{/if}
                 </p>
