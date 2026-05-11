@@ -16,6 +16,8 @@ export interface CategoryConfig {
     color: string;
     /** שורה בטבלת המחירים (1-7). null = ללא תשלום */
     priceRow: number | null;
+    /** כותרת מותאמת לדף ההוספה. אם לא מוגדר — "הוסף {label}" */
+    addPageTitle?: string;
     fields: FieldDef[];
 }
 
@@ -41,13 +43,14 @@ export const categoryConfig: Record<string, CategoryConfig> = {
         icon: '👶',
         color: 'pink',
         priceRow: 2,
+        addPageTitle: 'הוספת כרטיס בייבי סיטר',
         fields: [
             { key: 'label',       label: 'שמך המלא',           type: 'text',     required: true,  placeholder: 'שם פרטי ומשפחה' },
             { key: 'age_range',   label: 'גילאי ילדים',         type: 'text',     required: true,  placeholder: 'מגיל 0 עד גיל 10' },
             { key: 'experience',  label: 'ניסיון',              type: 'select',   required: true,  options: ['ללא ניסיון', 'שנה אחת', '2-3 שנים', '4+ שנים'] },
             { key: 'availability',label: 'זמינות',              type: 'availability_grid', required: true },
             { key: 'price_hour',  label: 'מחיר לשעה (₪)',       type: 'number',   required: false, placeholder: '40' },
-            { key: 'description', label: 'קצת עלייך',           type: 'textarea', required: false, placeholder: 'ספרי קצת על עצמך...' },
+            { key: 'description', label: 'קצת עלייך',           type: 'textarea', required: false, placeholder: 'ספרי קצת על עצמך...', hint: 'מומלץ לכתוב את הייחודיות והיתרונות שלכם, ואם יש לכם תוספות מלבד השמירה — כגון עבודות בית קלות, בישול וכו׳' },
             { key: 'address',     label: 'שכונה',               type: 'text',     required: false, placeholder: 'קרית משה' },
             { key: 'phone',       label: 'טלפון',               type: 'tel',      required: true,  placeholder: '05X-XXXXXXX' },
         ],
