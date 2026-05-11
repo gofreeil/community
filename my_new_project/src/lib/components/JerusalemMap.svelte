@@ -699,32 +699,49 @@
                 viewMode === "map"
             ) {
                 hasShownListAnimation = true;
-                isAutoSwitching = true;
+                isAutoSwitching = true; // hint cycle 1 — מציג לחיצה לפני המעבר לרשימה
 
-                // עבור לרשימה
-                isFlipping = true;
+                // המתן לסיום פעימת הלחיצה, ואז עבור לרשימה
                 setTimeout(() => {
-                    viewMode = "list";
-                }, 350);
-                setTimeout(() => {
-                    isFlipping = false;
-                }, 700);
-
-                // חזור למפה אחרי 3.5 שניות
-                setTimeout(() => {
-                    if (!userInteracted && viewMode === "list") {
-                        isFlipping = true;
-                        setTimeout(() => {
-                            viewMode = "map";
-                        }, 350);
-                        setTimeout(() => {
-                            isFlipping = false;
-                            isAutoSwitching = false;
-                        }, 700);
-                    } else {
+                    if (userInteracted) {
                         isAutoSwitching = false;
+                        return;
                     }
-                }, 3500);
+                    isFlipping = true;
+                    setTimeout(() => {
+                        viewMode = "list";
+                    }, 350);
+                    setTimeout(() => {
+                        isFlipping = false;
+                    }, 700);
+                }, 2000);
+
+                // לאחר סיום מחזור 1, אתחל את האנימציה ונגן לחיצה שנייה לפני החזרה
+                setTimeout(() => {
+                    if (userInteracted || viewMode !== "list") {
+                        isAutoSwitching = false;
+                        return;
+                    }
+                    isAutoSwitching = false; // הסר כיתה כדי לאפשר רענון אנימציה
+                    setTimeout(() => {
+                        if (userInteracted) return;
+                        isAutoSwitching = true; // hint cycle 2 — לחיצה לפני החזרה למפה
+                        setTimeout(() => {
+                            if (userInteracted || viewMode !== "list") {
+                                isAutoSwitching = false;
+                                return;
+                            }
+                            isFlipping = true;
+                            setTimeout(() => {
+                                viewMode = "map";
+                            }, 350);
+                            setTimeout(() => {
+                                isFlipping = false;
+                                isAutoSwitching = false;
+                            }, 700);
+                        }, 2000);
+                    }, 80);
+                }, 4200);
             }
         }, 8000); // 8 שניות
 
@@ -2084,11 +2101,14 @@
     .hint-fingerprint {
         width: 44px;
         height: 44px;
-        border-radius: 50%;
-        object-fit: cover;
+        object-fit: contain;
         user-select: none;
         -webkit-user-drag: none;
         display: none;
+        background: transparent;
+        /* הסרת הרקע הלבן של ה-JPEG: היפוך + מצב מסך כדי שהרקע הלבן ייעלם והקווים הכהים יזרחו על רקע הדף הכהה */
+        filter: invert(1) brightness(1.4) contrast(1.2);
+        mix-blend-mode: screen;
     }
 
     .page-corner.auto-switching .hint-cursor {
@@ -2102,11 +2122,11 @@
     @keyframes hintClickDesktop {
         0% {
             opacity: 0;
-            transform: translate(110px, -25px) scale(0.5);
+            transform: translate(62px, 14px) scale(0.85);
         }
-        18% {
+        15% {
             opacity: 1;
-            transform: translate(92px, -8px) scale(0.95);
+            transform: translate(58px, 18px) scale(0.95);
         }
         45% {
             opacity: 1;
@@ -2118,50 +2138,50 @@
             filter: drop-shadow(0 0 14px rgba(147, 51, 234, 0.95))
                 drop-shadow(0 2px 4px rgba(0, 0, 0, 0.55));
         }
-        60% {
+        62% {
             opacity: 1;
             transform: translate(42px, 38px) scale(1.05);
         }
-        85% {
+        88% {
             opacity: 1;
             transform: translate(42px, 38px) scale(1);
         }
         100% {
             opacity: 0;
-            transform: translate(30px, 50px) scale(0.85);
+            transform: translate(35px, 45px) scale(0.9);
         }
     }
 
     @keyframes hintClickMobile {
         0% {
             opacity: 0;
-            transform: translate(72px, -18px) scale(0.5);
+            transform: translate(78px, -38px) rotate(-45deg) scale(0.6);
         }
         18% {
             opacity: 1;
-            transform: translate(58px, -4px) scale(0.95);
+            transform: translate(58px, -18px) rotate(-42deg) scale(0.95);
         }
         45% {
             opacity: 1;
-            transform: translate(22px, 22px) scale(1);
+            transform: translate(22px, 22px) rotate(-38deg) scale(1);
         }
         52% {
             opacity: 1;
-            transform: translate(22px, 22px) scale(0.75);
-            filter: drop-shadow(0 0 14px rgba(147, 51, 234, 0.95))
-                drop-shadow(0 2px 4px rgba(0, 0, 0, 0.55));
+            transform: translate(22px, 22px) rotate(-38deg) scale(0.72);
+            filter: invert(1) brightness(1.6) contrast(1.3)
+                drop-shadow(0 0 12px rgba(147, 51, 234, 0.95));
         }
-        60% {
+        62% {
             opacity: 1;
-            transform: translate(22px, 22px) scale(1.08);
+            transform: translate(22px, 22px) rotate(-38deg) scale(1.1);
         }
-        85% {
+        88% {
             opacity: 1;
-            transform: translate(22px, 22px) scale(1);
+            transform: translate(22px, 22px) rotate(-38deg) scale(1);
         }
         100% {
             opacity: 0;
-            transform: translate(14px, 32px) scale(0.85);
+            transform: translate(8px, 40px) rotate(-30deg) scale(0.85);
         }
     }
 
