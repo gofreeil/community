@@ -27,6 +27,7 @@
         id: string;
         name: string;
         age: number;
+        sector?: string;         // 'כללי' | 'דתי' | 'חרדי'
         city: string;
         neighborhood: string;
         rating: number;
@@ -127,6 +128,7 @@
             id: item.id,
             name: item.label || item.contact || 'בייבי סיטר',
             age: Number(ef.age) || 22,
+            sector: typeof ef.sector === 'string' && ef.sector ? ef.sector : undefined,
             city: item.city || '',
             neighborhood: item.neighborhood || item.address || '',
             rating: 0,
@@ -161,7 +163,7 @@
     // ===== Mock data — נתונים עשירים בהשראת אתרים מובילים =====
     const _mockSittersBase: Omit<Sitter, 'availability'>[] = [
         {
-            id: 'mb1', name: 'שירה לוי', age: 23, city: 'ירושלים', neighborhood: 'קרית משה',
+            id: 'mb1', name: 'שירה לוי', age: 23, sector: 'דתי', city: 'ירושלים', neighborhood: 'קרית משה',
             rating: 4.9, reviews: 47, rate: 50, experience: 4,
             verified: true, bgCheck: true,
             ageGroups: ['0-2','2-5','5-10'], languages: ['עברית','אנגלית'],
@@ -171,7 +173,7 @@
             phone: '050-1234567', photoSeed: 'shira', gradient: 'from-pink-500 to-rose-600', lastActive: 'פעילה היום',
         },
         {
-            id: 'mb2', name: 'נועה כהן', age: 19, city: 'תל אביב', neighborhood: 'רמת אביב',
+            id: 'mb2', name: 'נועה כהן', age: 19, sector: 'כללי', city: 'תל אביב', neighborhood: 'רמת אביב',
             rating: 4.8, reviews: 23, rate: 45, experience: 2,
             verified: true, bgCheck: false,
             ageGroups: ['2-5','5-10'], languages: ['עברית','אנגלית','רוסית'],
@@ -181,7 +183,7 @@
             phone: '052-2345678', photoSeed: 'noa', gradient: 'from-purple-500 to-fuchsia-600', lastActive: 'פעילה היום',
         },
         {
-            id: 'mb3', name: 'מיכל ברקוביץ׳', age: 28, city: 'בני ברק', neighborhood: 'רמת אהרן',
+            id: 'mb3', name: 'מיכל ברקוביץ׳', age: 28, sector: 'חרדי', city: 'בני ברק', neighborhood: 'רמת אהרן',
             rating: 5.0, reviews: 89, rate: 65, experience: 5,
             verified: true, bgCheck: true,
             ageGroups: ['0-2','2-5'], languages: ['עברית','אנגלית','יידיש'],
@@ -191,7 +193,7 @@
             phone: '053-3456789', photoSeed: 'michal', gradient: 'from-sky-500 to-blue-600', lastActive: 'פעילה היום',
         },
         {
-            id: 'mb4', name: 'אביגיל אדרי', age: 21, city: 'אשדוד', neighborhood: 'רובע ז',
+            id: 'mb4', name: 'אביגיל אדרי', age: 21, sector: 'דתי', city: 'אשדוד', neighborhood: 'רובע ז',
             rating: 4.7, reviews: 31, rate: 40, experience: 3,
             verified: true, bgCheck: true,
             ageGroups: ['2-5','5-10','10+'], languages: ['עברית','צרפתית'],
@@ -201,7 +203,7 @@
             phone: '054-4567890', photoSeed: 'avigail', gradient: 'from-emerald-500 to-teal-600', lastActive: 'אתמול',
         },
         {
-            id: 'mb5', name: 'יעל ישראלי', age: 25, city: 'חיפה', neighborhood: 'הדר',
+            id: 'mb5', name: 'יעל ישראלי', age: 25, sector: 'כללי', city: 'חיפה', neighborhood: 'הדר',
             rating: 4.9, reviews: 56, rate: 55, experience: 4,
             verified: true, bgCheck: true,
             ageGroups: ['0-2','2-5','5-10'], languages: ['עברית','אנגלית','ערבית'],
@@ -211,7 +213,7 @@
             phone: '055-5678901', photoSeed: 'yael', gradient: 'from-amber-500 to-orange-600', lastActive: 'פעילה היום',
         },
         {
-            id: 'mb6', name: 'תמר שטרן', age: 22, city: 'בית שמש', neighborhood: 'רמת בית שמש א',
+            id: 'mb6', name: 'תמר שטרן', age: 22, sector: 'חרדי', city: 'בית שמש', neighborhood: 'רמת בית שמש א',
             rating: 4.8, reviews: 38, rate: 45, experience: 3,
             verified: true, bgCheck: false,
             ageGroups: ['2-5','5-10'], languages: ['עברית','אנגלית'],
@@ -221,7 +223,7 @@
             phone: '050-6789012', photoSeed: 'tamar', gradient: 'from-indigo-500 to-violet-600', lastActive: 'לפני יומיים',
         },
         {
-            id: 'mb7', name: 'רוני מזרחי', age: 20, city: 'ראשון לציון', neighborhood: 'נווה ים',
+            id: 'mb7', name: 'רוני מזרחי', age: 20, sector: 'כללי', city: 'ראשון לציון', neighborhood: 'נווה ים',
             rating: 4.6, reviews: 14, rate: 40, experience: 1,
             verified: true, bgCheck: false,
             ageGroups: ['5-10','10+'], languages: ['עברית','אנגלית','ספרדית'],
@@ -231,7 +233,7 @@
             phone: '052-7890123', photoSeed: 'roni', gradient: 'from-rose-400 to-pink-500', lastActive: 'פעיל היום',
         },
         {
-            id: 'mb8', name: 'הילה גולדברג', age: 26, city: 'פתח תקווה', neighborhood: 'כפר אברהם',
+            id: 'mb8', name: 'הילה גולדברג', age: 26, sector: 'דתי', city: 'פתח תקווה', neighborhood: 'כפר אברהם',
             rating: 4.9, reviews: 72, rate: 60, experience: 5,
             verified: true, bgCheck: true,
             ageGroups: ['0-2','2-5'], languages: ['עברית','אנגלית'],
@@ -241,7 +243,7 @@
             phone: '053-8901234', photoSeed: 'hila', gradient: 'from-cyan-500 to-blue-500', lastActive: 'פעילה היום',
         },
         {
-            id: 'mb9', name: 'דניאל פרידמן', age: 24, city: 'נתניה', neighborhood: 'קרית השרון',
+            id: 'mb9', name: 'דניאל פרידמן', age: 24, sector: 'כללי', city: 'נתניה', neighborhood: 'קרית השרון',
             rating: 4.7, reviews: 22, rate: 50, experience: 3,
             verified: true, bgCheck: true,
             ageGroups: ['5-10','10+'], languages: ['עברית','אנגלית','גרמנית'],
@@ -251,7 +253,7 @@
             phone: '054-9012345', photoSeed: 'daniel', gradient: 'from-emerald-500 to-teal-600', lastActive: 'לפני יומיים',
         },
         {
-            id: 'mb10', name: 'אסתר רוזנברג', age: 30, city: 'ירושלים', neighborhood: 'הר נוף',
+            id: 'mb10', name: 'אסתר רוזנברג', age: 30, sector: 'חרדי', city: 'ירושלים', neighborhood: 'הר נוף',
             rating: 5.0, reviews: 124, rate: 70, experience: 8,
             verified: true, bgCheck: true,
             ageGroups: ['0-2','2-5','5-10','10+'], languages: ['עברית','אנגלית','יידיש'],
@@ -558,6 +560,15 @@
                                         <span class="inline-flex items-center gap-0.5 text-amber-400 text-xs font-bold">
                                             ★ {s.rating.toFixed(1)}
                                             <span class="text-gray-500 font-normal">({s.reviews})</span>
+                                        </span>
+                                    {/if}
+                                    {#if s.sector}
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {s.sector === 'חרדי'
+                                            ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                                            : s.sector === 'דתי'
+                                                ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+                                                : 'bg-white/10 text-gray-300 border border-white/20'}">
+                                            {s.sector}
                                         </span>
                                     {/if}
                                     <span class="inline-flex items-center gap-1 text-[10px] text-emerald-400 font-medium">
