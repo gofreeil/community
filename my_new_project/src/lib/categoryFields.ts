@@ -62,7 +62,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
                 'מומחיות בתינוקות',
             ], hint: 'בחרו את היתרונות שיש לכם להציע — יוצגו בכרטיסיה' },
             { key: 'price_hour',  label: 'מחיר לשעה (₪)',       type: 'number',   required: false, placeholder: '40' },
-            { key: 'description', label: 'טקסט חופשי',           type: 'textarea', required: false, maxLength: 100 },
+            { key: 'description', label: 'טקסט חופשי',           type: 'textarea', required: false },
             { key: 'address',     label: 'שכונה',               type: 'text',     required: false, placeholder: 'קרית משה' },
             { key: 'phone',       label: 'טלפון',               type: 'tel',      required: true,  placeholder: '05X-XXXXXXX' },
         ],
