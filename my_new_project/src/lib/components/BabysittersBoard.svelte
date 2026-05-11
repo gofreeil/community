@@ -36,7 +36,7 @@
         experience: number;      // שנות ניסיון
         verified: boolean;
         bgCheck: boolean;
-        ageGroups: string[];     // ['0-2','2-5','5-10','10+']
+        ageGroups: string[];     // ['כל הגילאים','תינוקות','4+']
         languages: string[];
         certifications: string[];
         specialties: string[];
@@ -115,12 +115,9 @@
     // המרה מ-DbItem למבנה Sitter מועשר
     function dbToSitter(item: DbItem, idx: number): Sitter {
         const ef = parseExtra(item.extra_fields);
-        const ageRange = String(ef.age_range ?? '').toLowerCase();
-        const ageGroups: string[] = [];
-        if (/0|1|2|תינוק/.test(ageRange)) ageGroups.push('0-2');
-        if (/3|4|5|פעוט/.test(ageRange))  ageGroups.push('2-5');
-        if (/6|7|8|9|10/.test(ageRange))  ageGroups.push('5-10');
-        if (/11|12|13|14|נוער/.test(ageRange)) ageGroups.push('10+');
+        const ageGroups: string[] = typeof ef.age_range === 'string' && ef.age_range
+            ? ef.age_range.split(',').map(s => s.trim()).filter(Boolean)
+            : ['כל הגילאים'];
         const expRaw = String(ef.experience ?? '');
         const expNum = /4\+/.test(expRaw) ? 5 : /2-3/.test(expRaw) ? 3 : /שנה/.test(expRaw) ? 1 : 0;
 
@@ -137,7 +134,7 @@
             experience: expNum,
             verified: false,
             bgCheck: false,
-            ageGroups: ageGroups.length ? ageGroups : ['0-2','2-5','5-10'],
+            ageGroups,
             languages: (() => {
                 const extra = typeof ef.languages === 'string'
                     ? ef.languages.split(',').map(s => s.trim()).filter(Boolean)
@@ -166,8 +163,8 @@
             id: 'mb1', name: 'שירה לוי', age: 23, sector: 'דתי', city: 'ירושלים', neighborhood: 'קרית משה',
             rating: 4.9, reviews: 47, rate: 50, experience: 4,
             verified: true, bgCheck: true,
-            ageGroups: ['0-2','2-5','5-10'], languages: ['עברית','אנגלית'],
-            certifications: ['עזרה ראשונה','החייאה'], specialties: ['עזרה בשיעורים','בישול לילדים'],
+            ageGroups: ['כל הגילאים'], languages: ['עברית','אנגלית'],
+            certifications: ['עזרה ראשונה'], specialties: ['עזרה בשיעורי בית','בישול לילדים'],
             days: ['א','ב','ג','ד','ה','ו'], timeOfDay: ['אחה״צ','ערב','סופ״ש'],
             bio: 'סטודנטית לחינוך מיוחד, אוהבת ילדים, יצירתית וסבלנית. ניסיון עשיר עם תינוקות וילדים בגיל הגן.',
             phone: '050-1234567', photoSeed: 'shira', gradient: 'from-pink-500 to-rose-600', lastActive: 'פעילה היום',
@@ -176,8 +173,8 @@
             id: 'mb2', name: 'נועה כהן', age: 19, sector: 'כללי', city: 'תל אביב', neighborhood: 'רמת אביב',
             rating: 4.8, reviews: 23, rate: 45, experience: 2,
             verified: true, bgCheck: false,
-            ageGroups: ['2-5','5-10'], languages: ['עברית','אנגלית','רוסית'],
-            certifications: ['עזרה ראשונה'], specialties: ['פעילויות יצירה','קריאת ספרים'],
+            ageGroups: ['4+'], languages: ['עברית','אנגלית','רוסית'],
+            certifications: ['עזרה ראשונה'], specialties: ['נקיון קל','כביסה וקיפול'],
             days: ['ג','ד','ה','ו','ש'], timeOfDay: ['ערב','לילה','סופ״ש'],
             bio: 'תלמידת תיכון אחראית, מנוסה עם אחים קטנים. אוהבת לתכנן פעילויות יצירה ומשחקי לוח.',
             phone: '052-2345678', photoSeed: 'noa', gradient: 'from-purple-500 to-fuchsia-600', lastActive: 'פעילה היום',
@@ -186,8 +183,8 @@
             id: 'mb3', name: 'מיכל ברקוביץ׳', age: 28, sector: 'חרדי', city: 'בני ברק', neighborhood: 'רמת אהרן',
             rating: 5.0, reviews: 89, rate: 65, experience: 5,
             verified: true, bgCheck: true,
-            ageGroups: ['0-2','2-5'], languages: ['עברית','אנגלית','יידיש'],
-            certifications: ['עזרה ראשונה','החייאה','קורס מטפלות'], specialties: ['תינוקות','שינה','הזנה'],
+            ageGroups: ['תינוקות'], languages: ['עברית','אנגלית','יידיש'],
+            certifications: ['עזרה ראשונה'], specialties: ['מומחיות בתינוקות','בישול לילדים'],
             days: ['א','ב','ג','ד','ה'], timeOfDay: ['בוקר','צהריים','אחה״צ'],
             bio: 'מטפלת מקצועית בעלת קורס מטפלות מוסמך. מומחיות בתינוקות מגיל לידה — שגרת שינה, האכלה ופעילויות התפתחותיות.',
             phone: '053-3456789', photoSeed: 'michal', gradient: 'from-sky-500 to-blue-600', lastActive: 'פעילה היום',
@@ -196,8 +193,8 @@
             id: 'mb4', name: 'אביגיל אדרי', age: 21, sector: 'דתי', city: 'אשדוד', neighborhood: 'רובע ז',
             rating: 4.7, reviews: 31, rate: 40, experience: 3,
             verified: true, bgCheck: true,
-            ageGroups: ['2-5','5-10','10+'], languages: ['עברית','צרפתית'],
-            certifications: ['עזרה ראשונה'], specialties: ['עזרה בשיעורים','ספורט וטיולים','אנגלית'],
+            ageGroups: ['4+'], languages: ['עברית','צרפתית'],
+            certifications: ['עזרה ראשונה'], specialties: ['עזרה בשיעורי בית','נקיון קל'],
             days: ['א','ב','ג','ד','ה','ו'], timeOfDay: ['אחה״צ','ערב'],
             bio: 'בת שירות לאומי, אחות בכירה במשפחה של 7 ילדים. מצוינת בעזרה בלימודים וביצירת אווירה כיפית בבית.',
             phone: '054-4567890', photoSeed: 'avigail', gradient: 'from-emerald-500 to-teal-600', lastActive: 'אתמול',
@@ -206,8 +203,8 @@
             id: 'mb5', name: 'יעל ישראלי', age: 25, sector: 'כללי', city: 'חיפה', neighborhood: 'הדר',
             rating: 4.9, reviews: 56, rate: 55, experience: 4,
             verified: true, bgCheck: true,
-            ageGroups: ['0-2','2-5','5-10'], languages: ['עברית','אנגלית','ערבית'],
-            certifications: ['עזרה ראשונה','החייאה'], specialties: ['ילדים עם צרכים מיוחדים','גמילה מחיתולים'],
+            ageGroups: ['כל הגילאים'], languages: ['עברית','אנגלית','ערבית'],
+            certifications: ['עזרה ראשונה'], specialties: ['מומחיות בתינוקות','כביסה וקיפול'],
             days: ['א','ב','ג','ד','ה','ש'], timeOfDay: ['בוקר','אחה״צ','ערב','סופ״ש'],
             bio: 'סטודנטית לריפוי בעיסוק, ניסיון עם ילדים עם צרכים מיוחדים. עדינה וקשובה, יודעת להכיל מצבים מאתגרים.',
             phone: '055-5678901', photoSeed: 'yael', gradient: 'from-amber-500 to-orange-600', lastActive: 'פעילה היום',
@@ -216,8 +213,8 @@
             id: 'mb6', name: 'תמר שטרן', age: 22, sector: 'חרדי', city: 'בית שמש', neighborhood: 'רמת בית שמש א',
             rating: 4.8, reviews: 38, rate: 45, experience: 3,
             verified: true, bgCheck: false,
-            ageGroups: ['2-5','5-10'], languages: ['עברית','אנגלית'],
-            certifications: ['עזרה ראשונה'], specialties: ['פעילויות חוץ','משחקי תפקידים'],
+            ageGroups: ['4+'], languages: ['עברית','אנגלית'],
+            certifications: ['עזרה ראשונה'], specialties: ['נקיון קל','בישול לילדים'],
             days: ['ג','ד','ה','ו','ש'], timeOfDay: ['אחה״צ','ערב','סופ״ש'],
             bio: 'אוהבת המון את החיים בחוץ — פארק, טרמפולינות, גינות שעשועים. הילדים מתעייפים בכיף ויוצאים חיוכים.',
             phone: '050-6789012', photoSeed: 'tamar', gradient: 'from-indigo-500 to-violet-600', lastActive: 'לפני יומיים',
@@ -226,8 +223,8 @@
             id: 'mb7', name: 'רוני מזרחי', age: 20, sector: 'כללי', city: 'ראשון לציון', neighborhood: 'נווה ים',
             rating: 4.6, reviews: 14, rate: 40, experience: 1,
             verified: true, bgCheck: false,
-            ageGroups: ['5-10','10+'], languages: ['עברית','אנגלית','ספרדית'],
-            certifications: [], specialties: ['גיימינג','תכנות לילדים'],
+            ageGroups: ['4+'], languages: ['עברית','אנגלית','ספרדית'],
+            certifications: [], specialties: ['עזרה בשיעורי בית'],
             days: ['ג','ה','ו','ש'], timeOfDay: ['ערב','לילה','סופ״ש'],
             bio: 'סטודנט להנדסת מחשבים, מצוין עם ילדים בגיל בית ספר. ילדים אוהבים אותי כי אני מבין אותם.',
             phone: '052-7890123', photoSeed: 'roni', gradient: 'from-rose-400 to-pink-500', lastActive: 'פעיל היום',
@@ -236,8 +233,8 @@
             id: 'mb8', name: 'הילה גולדברג', age: 26, sector: 'דתי', city: 'פתח תקווה', neighborhood: 'כפר אברהם',
             rating: 4.9, reviews: 72, rate: 60, experience: 5,
             verified: true, bgCheck: true,
-            ageGroups: ['0-2','2-5'], languages: ['עברית','אנגלית'],
-            certifications: ['עזרה ראשונה','החייאה','גננת בהכשרה'], specialties: ['פעוטות','שעת לילה','תאומים'],
+            ageGroups: ['תינוקות'], languages: ['עברית','אנגלית'],
+            certifications: ['עזרה ראשונה'], specialties: ['מומחיות בתינוקות','כביסה וקיפול'],
             days: ['א','ב','ג','ד','ה','ו','ש'], timeOfDay: ['בוקר','צהריים','אחה״צ','ערב','סופ״ש'],
             bio: 'גננת בהכשרה עם 5 שנות ניסיון. מתמחה בתאומים, מודעת להתפתחות חברתית-רגשית של פעוטות.',
             phone: '053-8901234', photoSeed: 'hila', gradient: 'from-cyan-500 to-blue-500', lastActive: 'פעילה היום',
@@ -246,8 +243,8 @@
             id: 'mb9', name: 'דניאל פרידמן', age: 24, sector: 'כללי', city: 'נתניה', neighborhood: 'קרית השרון',
             rating: 4.7, reviews: 22, rate: 50, experience: 3,
             verified: true, bgCheck: true,
-            ageGroups: ['5-10','10+'], languages: ['עברית','אנגלית','גרמנית'],
-            certifications: ['עזרה ראשונה'], specialties: ['ספורט','שחייה','עזרה בשיעורים'],
+            ageGroups: ['4+'], languages: ['עברית','אנגלית','גרמנית'],
+            certifications: ['עזרה ראשונה'], specialties: ['עזרה בשיעורי בית','נקיון קל'],
             days: ['א','ב','ג','ד','ה'], timeOfDay: ['אחה״צ','ערב'],
             bio: 'מאמן שחייה לילדים, סטודנט לחינוך גופני. אוהב לקחת ילדים לפעילויות ספורט ולעודד אורח חיים בריא.',
             phone: '054-9012345', photoSeed: 'daniel', gradient: 'from-emerald-500 to-teal-600', lastActive: 'לפני יומיים',
@@ -256,8 +253,8 @@
             id: 'mb10', name: 'אסתר רוזנברג', age: 30, sector: 'חרדי', city: 'ירושלים', neighborhood: 'הר נוף',
             rating: 5.0, reviews: 124, rate: 70, experience: 8,
             verified: true, bgCheck: true,
-            ageGroups: ['0-2','2-5','5-10','10+'], languages: ['עברית','אנגלית','יידיש'],
-            certifications: ['עזרה ראשונה','החייאה','קורס מטפלות','אחות מוסמכת'], specialties: ['תינוקות','ילדים מרובים','שינה','אורח חיים דתי'],
+            ageGroups: ['כל הגילאים'], languages: ['עברית','אנגלית','יידיש'],
+            certifications: ['עזרה ראשונה'], specialties: ['מומחיות בתינוקות','בישול לילדים','נקיון קל'],
             days: ['א','ב','ג','ד','ה','ו'], timeOfDay: ['בוקר','צהריים','אחה״צ','ערב','לילה'],
             bio: 'אחות מוסמכת בעלת 8 שנות ניסיון. מתמחה בטיפול בתינוקות וילדים מרובים. שומרת מסורת.',
             phone: '055-0123456', photoSeed: 'esther', gradient: 'from-purple-500 to-fuchsia-600', lastActive: 'פעילה היום',
@@ -594,8 +591,8 @@
                                 <div class="text-[10px] text-gray-500 mt-0.5">שנות ניסיון</div>
                             </div>
                             <div class="py-2.5">
-                                <div class="text-white font-black text-base leading-none">{s.ageGroups.length}</div>
-                                <div class="text-[10px] text-gray-500 mt-0.5">קבוצות גיל</div>
+                                <div class="text-white font-black text-base leading-none">{s.ageGroups.join(', ')}</div>
+                                <div class="text-[10px] text-gray-500 mt-0.5">גילאי ילדים</div>
                             </div>
                         </div>
 
@@ -604,7 +601,7 @@
                             <div class="flex flex-wrap gap-1.5 mb-2">
                                 {#each s.ageGroups as ag}
                                     <span class="text-[10px] bg-pink-500/10 border border-pink-500/30 text-pink-300 px-2 py-0.5 rounded-full font-bold">
-                                        {ag === '0-2' ? '🍼' : ag === '2-5' ? '🧸' : ag === '5-10' ? '🎒' : '🎮'} {ag}
+                                        {ag === 'תינוקות' ? '🍼' : ag === '4+' ? '🎒' : '👶'} {ag}
                                     </span>
                                 {/each}
                                 {#each s.languages as lang}
