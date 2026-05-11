@@ -2,6 +2,7 @@
     import { onMount } from 'svelte';
     import { neighborhoodState } from '$lib/neighborhoodState.svelte';
     import { getCoordsFor, type Coord } from '$lib/neighborhoodCoords';
+    import { isLiked, toggleLike } from '$lib/likedItems';
 
     interface DbItem {
         id: string;
@@ -266,7 +267,30 @@
     }
 
     let saved = $state<Record<string, boolean>>({});
-    function toggleSave(id: string) { saved[id] = !saved[id]; }
+
+    // טוען מצב "אהבתי" מ-localStorage לאחר טעינת הדף
+    onMount(() => {
+        const map: Record<string, boolean> = {};
+        for (const s of allSitters) {
+            if (isLiked('babysitter', s.id)) map[s.id] = true;
+        }
+        saved = map;
+    });
+
+    function toggleSave(s: Sitter) {
+        const cityLine = [s.neighborhood, s.city].filter(Boolean).join(', ');
+        const summary = cityLine
+            ? (s.rate ? `${cityLine} · ₪${s.rate}/שעה` : cityLine)
+            : (s.rate ? `₪${s.rate}/שעה` : '');
+        const isNow = toggleLike({
+            type: 'babysitter',
+            id: s.id,
+            label: `${s.name}${s.age ? `, ${s.age}` : ''}`,
+            url: '/babysitters',
+            summary,
+        });
+        saved[s.id] = isNow;
+    }
 
     // ===== חישוב מרחק (Haversine) =====
     function haversineKm(a: Coord, b: Coord): number {
@@ -481,7 +505,7 @@
                                     <h3 class="text-white font-black text-base truncate">
                                         {s.name}<span class="text-gray-400 font-normal">, {s.age}</span>
                                     </h3>
-                                    <button onclick={() => toggleSave(s.id)} class="flex-shrink-0 text-xl leading-none transition-transform hover:scale-110 cursor-pointer" aria-label="שמור">
+                                    <button onclick={() => toggleSave(s)} class="flex-shrink-0 text-xl leading-none transition-transform hover:scale-110 cursor-pointer" aria-label="שמור" title={saved[s.id] ? 'מוצג בפרופיל שלך כקיצור דרך' : 'סמן אהבתי — יופיע בפרופיל שלך'}>
                                         {saved[s.id] ? '❤️' : '🤍'}
                                     </button>
                                 </div>

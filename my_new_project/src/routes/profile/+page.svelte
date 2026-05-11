@@ -60,6 +60,9 @@
 	let likedSingles = $derived(
 		likedItems.filter((x) => x.type === "single"),
 	);
+	let likedBabysitters = $derived(
+		likedItems.filter((x) => x.type === "babysitter"),
+	);
 	let mobileTab = $state<
 		"main" | "profile" | "messages" | "items" | "levels"
 	>("main");
@@ -1926,9 +1929,11 @@
 							</p>
 							<p class="text-gray-500 text-xs leading-relaxed">
 								לחצי/לחץ על ❤️ בדף
-								<a href="/giveaways" class="text-orange-400 hover:text-orange-300 font-bold">למסירה</a>
-								או בדף
+								<a href="/giveaways" class="text-orange-400 hover:text-orange-300 font-bold">למסירה</a>,
+								בדף
 								<a href="/singles" class="text-pink-400 hover:text-pink-300 font-bold">פנויים ופנויות</a>
+								או בדף
+								<a href="/babysitters" class="text-rose-400 hover:text-rose-300 font-bold">בייבי סיטר</a>
 								כדי להוסיף לכאן קיצור דרך מהיר.
 							</p>
 						</div>
@@ -1997,6 +2002,40 @@
 														<p class="text-white text-sm font-bold truncate group-hover:text-pink-300 transition-colors">{it.label}</p>
 														{#if it.summary}
 															<p class="text-gray-400 text-xs truncate mt-0.5">{it.summary}</p>
+														{/if}
+													</div>
+												</a>
+												<button
+													type="button"
+													onclick={() => unlike(it)}
+													aria-label="הסר מהאהובים"
+													title="הסר מהאהובים"
+													class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-rose-500/10 hover:bg-rose-500/25 text-rose-300 hover:text-rose-200 text-base transition-colors"
+												>❤️</button>
+											</div>
+										{/each}
+									</div>
+								</div>
+							{/if}
+
+							{#if likedBabysitters.length > 0}
+								<div>
+									<h4 class="text-white font-bold text-xs mb-2 flex items-center gap-2">
+										<span class="text-rose-400">👶</span>
+										בייבי סיטר ({likedBabysitters.length})
+									</h4>
+									<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+										{#each likedBabysitters as it (it.id)}
+											<div class="group relative flex items-center gap-3 bg-white/5 hover:bg-white/8 border border-white/10 hover:border-rose-500/40 rounded-2xl p-3 transition-all">
+												<a
+													href={it.url}
+													class="flex items-center gap-3 flex-1 min-w-0"
+												>
+													<div class="w-14 h-14 rounded-full bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center text-2xl flex-shrink-0 shadow-md">👶</div>
+													<div class="min-w-0 flex-1">
+														<p class="text-white text-sm font-bold truncate group-hover:text-rose-300 transition-colors">{it.label}</p>
+														{#if it.summary}
+															<p class="text-gray-400 text-xs truncate mt-0.5">📍 {it.summary}</p>
 														{/if}
 													</div>
 												</a>
