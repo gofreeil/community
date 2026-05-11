@@ -6,6 +6,7 @@ export interface FieldDef {
     placeholder?: string;
     options?: string[];
     hint?: string;
+    default?: string;
 }
 
 export interface CategoryConfig {
@@ -96,7 +97,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
             { key: 'meal',        label: 'סעודה',                 type: 'select',   required: false, options: ['ליל שבת', 'יום שבת (סעודת בוקר)', 'סעודה שלישית', 'כל הסעודות'] },
             { key: 'food_style',  label: 'סגנון אוכל',            type: 'select',   required: false, options: ['ספרדי', 'אשכנזי', 'תימני', 'מעורב', 'אחר'] },
             { key: 'capacity',    label: 'כמה אנשים',             type: 'number',   required: false, placeholder: '4' },
-            { key: 'guest_type',  label: 'מתאים ל',               type: 'select',   required: false, options: ['משפחה', 'זוג', 'יחיד/ה', 'קבוצה', 'הכל מתאים'] },
+            { key: 'guest_type',  label: 'מתאים ל',               type: 'select',   required: false, options: ['משפחה', 'זוג', 'יחיד/ה', 'קבוצה', 'הכל מתאים'], default: 'יחיד/ה' },
             { key: 'preferences', label: 'העדפות / הערות',         type: 'textarea', required: false, placeholder: 'רמת דתיות, ללא אלרגיות, לינה...' },
             { key: 'free_text',   label: 'הודעה קצרה (אופציונלי)', type: 'text',     required: false, placeholder: 'משהו שרוצים להוסיף בשורה אחת...' },
             { key: 'address',     label: 'שכונה / אזור',          type: 'text',     required: true,  placeholder: 'קרית משה, ירושלים' },

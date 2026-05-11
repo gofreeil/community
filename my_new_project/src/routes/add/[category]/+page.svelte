@@ -22,7 +22,7 @@
     let city         = $state(userProfile?.city         || 'ירושלים');
 
     // ---- ערכי ברירת מחדל לשדות מפרופיל המשתמש ----
-    function profileDefault(key: string, type: string, options?: string[]): string {
+    function profileDefault(key: string, type: string, options?: string[], defaultVal?: string): string {
         if (type === 'toggle' && options) return options[0];
         if (key === 'contact' && userProfile?.nickname) return userProfile.nickname;
         if (key === 'phone'   && userProfile?.phone)    return userProfile.phone;
@@ -30,12 +30,13 @@
             const parts = [userProfile?.neighborhood, userProfile?.city].filter(Boolean);
             if (parts.length) return parts.join(', ');
         }
+        if (defaultVal) return defaultVal;
         return '';
     }
 
     // ---- Form state — מתמלא מיד מהפרופיל ללא המתנה ל-onMount ----
     let formValues = $state<Record<string, string>>(
-        Object.fromEntries(config.fields.map(f => [f.key, profileDefault(f.key, f.type, f.options)]))
+        Object.fromEntries(config.fields.map(f => [f.key, profileDefault(f.key, f.type, f.options, f.default)]))
     );
 
     let submitting      = $state(false);
