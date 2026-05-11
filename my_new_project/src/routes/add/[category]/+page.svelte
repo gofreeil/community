@@ -14,7 +14,7 @@
     // Helper: מחזיר HTML לאיקון — תמונה אם src, אמוגי אם לא
     const iconHtml = (size: 'lg' | 'sm' = 'sm') =>
         config.icon?.startsWith('/')
-            ? `<img src="${config.icon}" class="${size === 'lg' ? 'w-14 h-14 mx-auto' : 'w-5 h-5 inline-block align-middle'}" alt="${config.label}" />`
+            ? `<img src="${config.icon}" class="${size === 'lg' ? 'w-28 h-28 mx-auto' : 'w-5 h-5 inline-block align-middle'}" alt="${config.label}" />`
             : config.icon ?? '';
 
     // ---- Neighborhood from localStorage ----
@@ -214,10 +214,6 @@
         {#if config.priceRow !== null}
             <div class="mt-3 inline-flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/30 rounded-full px-4 py-1.5 text-xs font-bold text-amber-400">
                 💳 לאחר השליחה תועבר לדף התשלום
-            </div>
-        {:else}
-            <div class="mt-3 inline-flex items-center gap-1.5 bg-green-500/10 border border-green-500/30 rounded-full px-4 py-1.5 text-xs font-bold text-green-400">
-                ✅ שירות חינמי — ללא תשלום
             </div>
         {/if}
     </div>
