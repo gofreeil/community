@@ -1,7 +1,7 @@
 export interface FieldDef {
     key: string;
     label: string;
-    type: 'text' | 'tel' | 'textarea' | 'select' | 'toggle' | 'number' | 'time' | 'date' | 'email';
+    type: 'text' | 'tel' | 'textarea' | 'select' | 'toggle' | 'number' | 'time' | 'date' | 'email' | 'availability_grid';
     required: boolean;
     placeholder?: string;
     options?: string[];
@@ -45,7 +45,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
             { key: 'label',       label: 'שמך המלא',           type: 'text',     required: true,  placeholder: 'שם פרטי ומשפחה' },
             { key: 'age_range',   label: 'גילאי ילדים',         type: 'text',     required: true,  placeholder: 'מגיל 0 עד גיל 10' },
             { key: 'experience',  label: 'ניסיון',              type: 'select',   required: true,  options: ['ללא ניסיון', 'שנה אחת', '2-3 שנים', '4+ שנים'] },
-            { key: 'availability',label: 'זמינות',              type: 'text',     required: true,  placeholder: 'ערבים + סופי שבוע, א-ה מ-17:00' },
+            { key: 'availability',label: 'זמינות',              type: 'availability_grid', required: true },
             { key: 'price_hour',  label: 'מחיר לשעה (₪)',       type: 'number',   required: false, placeholder: '40' },
             { key: 'description', label: 'קצת עלייך',           type: 'textarea', required: false, placeholder: 'ספרי קצת על עצמך...' },
             { key: 'address',     label: 'שכונה',               type: 'text',     required: false, placeholder: 'קרית משה' },

@@ -41,6 +41,7 @@
         specialties: string[];
         days: string[];          // ['א','ב','ג','ד','ה','ו','ש']
         timeOfDay: string[];     // ['בוקר','צהריים','אחה״צ','ערב','לילה','סופ״ש']
+        availability: string;    // "0-0,1-2,..." day-slot pairs (day 0=ראשון..6=שבת, slot 0=בוקר,1=צהרים,2=ערב)
         bio: string;
         phone: string;
         photoSeed: string;       // למחולל אווטר
@@ -86,6 +87,30 @@
         'from-cyan-500 to-blue-500',
     ];
 
+    // ===== המרת ימים+שעות (פורמט ישן) ל-grid זמינות =====
+    function legacyToGrid(days: string[], times: string[]): string {
+        const dayIdx: Record<string, number> = { 'א':0, 'ב':1, 'ג':2, 'ד':3, 'ה':4, 'ו':5, 'ש':6 };
+        const slotsFor = (t: string): number[] => {
+            if (t.includes('בוקר')) return [0];
+            if (t.includes('צהר') || t.includes('אחה')) return [1];
+            if (t.includes('ערב') || t.includes('לילה')) return [2];
+            return [];
+        };
+        const cells = new Set<string>();
+        const hasWeekend = times.some(t => t.includes('סופ'));
+        const effectiveDays = new Set(days);
+        if (hasWeekend) { effectiveDays.add('ו'); effectiveDays.add('ש'); }
+        const explicitSlots: number[] = [];
+        for (const t of times) for (const s of slotsFor(t)) if (!explicitSlots.includes(s)) explicitSlots.push(s);
+        const slotsToUse = explicitSlots.length ? explicitSlots : [0, 1, 2];
+        for (const d of effectiveDays) {
+            const di = dayIdx[d];
+            if (di === undefined) continue;
+            for (const s of slotsToUse) cells.add(`${di}-${s}`);
+        }
+        return [...cells].join(',');
+    }
+
     // המרה מ-DbItem למבנה Sitter מועשר
     function dbToSitter(item: DbItem, idx: number): Sitter {
         const ef = parseExtra(item.extra_fields);
@@ -116,6 +141,7 @@
             specialties: [],
             days: ['א','ב','ג','ד','ה'],
             timeOfDay: ['אחה״צ','ערב'],
+            availability: typeof ef.availability === 'string' ? ef.availability : '',
             bio: ef.description ? String(ef.description) : (item.description || ''),
             phone: item.phone,
             photoSeed: item.id,
@@ -126,7 +152,7 @@
     }
 
     // ===== Mock data — נתונים עשירים בהשראת אתרים מובילים =====
-    const mockSitters: Sitter[] = [
+    const _mockSittersBase: Omit<Sitter, 'availability'>[] = [
         {
             id: 'mb1', name: 'שירה לוי', age: 23, city: 'ירושלים', neighborhood: 'קרית משה',
             rating: 4.9, reviews: 47, rate: 50, experience: 4,
@@ -228,6 +254,11 @@
             phone: '055-0123456', photoSeed: 'esther', gradient: 'from-purple-500 to-fuchsia-600', lastActive: 'פעילה היום',
         },
     ];
+
+    const mockSitters: Sitter[] = _mockSittersBase.map(s => ({
+        ...s,
+        availability: legacyToGrid(s.days, s.timeOfDay),
+    }));
 
     // איחוד DB + mock
     let realSitters = $derived(items.map((it, idx) => dbToSitter(it, idx)));
@@ -486,6 +517,7 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                     {#each group.items as s}
+                    {@const availCells = (s.availability || '').split(',').filter(Boolean)}
                     <div class="bg-[#0f172a] rounded-2xl border border-white/10 hover:border-pink-500/40 overflow-hidden shadow-xl hover:shadow-2xl hover:shadow-pink-500/10 transition-all hover:-translate-y-1 flex flex-col">
 
                         <!-- כותרת: אווטר + שם + דירוג -->
@@ -594,19 +626,26 @@
                                 </div>
                             {/if}
 
-                            <!-- זמינות -->
-                            <div class="flex items-center gap-1.5 text-[10px] text-gray-400 mb-1">
-                                <span class="text-gray-500">📅 ימים:</span>
-                                {#each ['א','ב','ג','ד','ה','ו','ש'] as d}
-                                    <span class="w-5 h-5 rounded-full flex items-center justify-center font-bold text-[9px] {s.days.includes(d) ? 'bg-pink-500/20 text-pink-300' : 'bg-white/5 text-gray-600'}">
-                                        {d}
-                                    </span>
-                                {/each}
-                            </div>
-                            <div class="flex flex-wrap gap-1 mt-1.5">
-                                {#each s.timeOfDay as t}
-                                    <span class="text-[10px] bg-white/5 text-gray-400 px-2 py-0.5 rounded">🕐 {t}</span>
-                                {/each}
+                            <!-- זמינות שבועית — לוח 7×3 -->
+                            <div class="mt-1">
+                                <div class="text-[10px] text-gray-500 mb-1.5 flex items-center gap-1">
+                                    <span>📅</span> זמינות שבועית
+                                </div>
+                                <div class="grid gap-0.5" style="grid-template-columns: minmax(36px, auto) repeat(7, minmax(0, 1fr));">
+                                    <div></div>
+                                    {#each ['א','ב','ג','ד','ה','ו','ש'] as d}
+                                        <div class="text-center font-bold text-gray-400 text-[9px]">{d}</div>
+                                    {/each}
+                                    {#each ['בוקר','צהריים','ערב'] as slot, sIdx}
+                                        <div class="text-gray-400 text-[9px] self-center text-right pl-1">{slot}</div>
+                                        {#each [0,1,2,3,4,5,6] as dIdx}
+                                            {@const isOn = availCells.includes(`${dIdx}-${sIdx}`)}
+                                            <div class="aspect-square rounded {isOn
+                                                ? 'bg-pink-500/40 border border-pink-400/60'
+                                                : 'bg-white/5 border border-white/10'}"></div>
+                                        {/each}
+                                    {/each}
+                                </div>
                             </div>
                         </div>
 

@@ -304,6 +304,41 @@
                             required={field.required}
                         ></textarea>
 
+                    {:else if field.type === 'availability_grid'}
+                        {@const grid = (getFieldValue(field.key) || '').split(',').filter(Boolean)}
+                        <div class="rounded-xl border border-white/15 bg-white/5 p-3 md:p-4">
+                            <div class="grid gap-1.5" style="grid-template-columns: minmax(48px, auto) repeat(7, minmax(0, 1fr));">
+                                <div></div>
+                                {#each ['א','ב','ג','ד','ה','ו','ש'] as d}
+                                    <div class="text-center font-bold text-gray-300 text-xs md:text-sm py-1">{d}</div>
+                                {/each}
+                                {#each ['בוקר','צהריים','ערב'] as slot, sIdx}
+                                    <div class="text-gray-300 font-bold text-xs md:text-sm self-center text-right pl-1">{slot}</div>
+                                    {#each ['א','ב','ג','ד','ה','ו','ש'] as _d, dIdx}
+                                        {@const cellKey = `${dIdx}-${sIdx}`}
+                                        {@const isOn = grid.includes(cellKey)}
+                                        <button
+                                            type="button"
+                                            onclick={() => {
+                                                const current = (getFieldValue(field.key) || '').split(',').filter(Boolean);
+                                                const idx = current.indexOf(cellKey);
+                                                if (idx >= 0) current.splice(idx, 1);
+                                                else current.push(cellKey);
+                                                setFieldValue(field.key, current.join(','));
+                                            }}
+                                            class="aspect-square rounded-md border-2 transition-all flex items-center justify-center text-sm font-bold {isOn
+                                                ? 'bg-pink-500/40 border-pink-400 text-white shadow-md shadow-pink-500/20'
+                                                : 'bg-white/5 border-white/15 text-gray-600 hover:bg-white/10 hover:border-white/30'}"
+                                            aria-label="{slot}"
+                                        >
+                                            {isOn ? '✓' : ''}
+                                        </button>
+                                    {/each}
+                                {/each}
+                            </div>
+                            <p class="text-xs text-gray-400 mt-3 text-center">לחצו על המשבצות לסימון השעות שבהן אתם זמינים</p>
+                        </div>
+
                     {:else if field.type === 'select' && field.options}
                         <select
                             id="field-{field.key}"
