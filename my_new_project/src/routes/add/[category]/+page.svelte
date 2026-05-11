@@ -206,7 +206,7 @@
 </script>
 
 <svelte:head>
-    <title>הוסף {config.label} | קהילה בשכונה</title>
+    <title>{config.addPageTitle ?? `הוסף ${config.label}`} | קהילה בשכונה</title>
 </svelte:head>
 
 <div class="max-w-2xl mx-auto px-4 py-4 md:py-6" dir="rtl">
@@ -216,7 +216,7 @@
         <div class="-mb-2">{@html iconHtml('lg')}</div>
         <div class="relative flex items-center justify-center">
             <h1 class="text-2xl md:text-3xl font-black text-white mb-2">
-                הוסף {config.label}
+                {config.addPageTitle ?? `הוסף ${config.label}`}
             </h1>
             <button
                 type="button"
