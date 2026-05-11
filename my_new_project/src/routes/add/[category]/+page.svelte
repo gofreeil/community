@@ -253,10 +253,10 @@
         <!-- Form -->
         <form
             onsubmit={handleSubmit}
-            class="rounded-2xl border {colors.border} {colors.bg} p-6 md:p-8 space-y-5"
+            class="rounded-2xl border {colors.border} {colors.bg} p-6 md:p-8 grid grid-cols-2 gap-5"
         >
             {#each config.fields as field}
-                <div>
+                <div class="{field.half ? 'col-span-1' : 'col-span-2'}"
                     <label
                         for="field-{field.key}"
                         class="block text-sm font-bold text-gray-300 mb-1.5"
