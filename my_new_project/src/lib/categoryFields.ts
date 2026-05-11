@@ -102,7 +102,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
             { key: 'preferences', label: 'העדפות / הערות',         type: 'textarea', required: false, placeholder: 'רמת דתיות, ללא אלרגיות, לינה...' },
             { key: 'address',     label: 'שכונה / אזור',          type: 'text',     required: true,  placeholder: 'קרית משה, ירושלים' },
             { key: 'contact',     label: 'כינוי / שם',             type: 'text',     required: true,  placeholder: 'יוסי מירושלים' },
-            { key: 'phone',       label: 'טלפון / וואטסאפ',       type: 'tel',      required: false, placeholder: '05X-XXXXXXX', hint: 'לא חובה — ניתן לשלוח הודעה בפרטי' },
+            { key: 'phone',       label: 'טלפון / וואטסאפ',       type: 'tel',      required: false, placeholder: '05X-XXXXXXX', hint: 'אם לא תשאיר טלפון יהיה ניתן ליצור איתך קשר רק על ידי הודעה שתופיע באזור האישי שלך' },
         ],
     },
 
