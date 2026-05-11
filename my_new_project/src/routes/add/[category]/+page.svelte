@@ -47,6 +47,16 @@
     onMount(() => {
         if (!browser) return;
 
+        // מלא פרטי פרופיל (גיבוי למקרה שה-SSR לא אותחל נכון)
+        if (userProfile) {
+            if (userProfile.nickname    && !getFieldValue('contact'))  setFieldValue('contact',  userProfile.nickname);
+            if (userProfile.phone       && !getFieldValue('phone'))    setFieldValue('phone',    userProfile.phone);
+            if (userProfile.neighborhood && !getFieldValue('address')) {
+                const parts = [userProfile.neighborhood, userProfile.city].filter(Boolean);
+                setFieldValue('address', parts.join(', '));
+            }
+        }
+
         // שחזר שכונה מ-localStorage (גובר על פרופיל)
         try {
             const saved = localStorage.getItem(LS_KEY);
