@@ -331,6 +331,7 @@
         jobs:        '/national/jobs',
         restaurants: '/national/restaurants',
         business:    '/babysitters',
+        realestate:  '/shabbat-hosting',
     };
     let nationalBoardUrl = $derived(nationalBoardUrls[selectedCategory] || '');
     let hasShownListAnimation = $state(false); // עקוב אם כבר הראינו את האנימציה
@@ -1213,6 +1214,7 @@
                         {@const hasNationalPage = ['singles','security','attractions','jobs'].includes(category.id)}
                         {@const giveawayNational = category.id === 'giveaway'}
                         {@const babysitterNational = category.id === 'business'}
+                        {@const shabbatNational = category.id === 'realestate'}
                         <div
                             class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-500/30 rounded-lg md:rounded-xl overflow-hidden transition-all"
                         >
@@ -1284,6 +1286,17 @@
                                                        underline underline-offset-2 decoration-purple-500/40 hover:decoration-purple-400
                                                        transition-colors font-medium whitespace-nowrap"
                                             >← לרשימה הארצית</span>
+                                        {/if}
+                                        {#if shabbatNational}
+                                            <span
+                                                role="link"
+                                                tabindex="0"
+                                                onclick={(e) => { e.stopPropagation(); goto('/shabbat-hosting'); }}
+                                                onkeydown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); goto('/shabbat-hosting'); } }}
+                                                class="text-[11px] text-purple-400 hover:text-purple-300 cursor-pointer
+                                                       underline underline-offset-2 decoration-purple-500/40 hover:decoration-purple-400
+                                                       transition-colors font-medium whitespace-nowrap"
+                                            >← ללוח שבת שלום</span>
                                         {/if}
                                     </div>
                                     <div
