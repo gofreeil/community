@@ -226,11 +226,6 @@
                 ← חזרה
             </button>
         </div>
-        {#if config.priceRow !== null}
-            <div class="mt-3 inline-flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/30 rounded-full px-4 py-1.5 text-xs font-bold text-amber-400">
-                💳 לאחר השליחה תועבר לדף התשלום
-            </div>
-        {/if}
     </div>
 
     {#if redirectingMsg}
@@ -311,7 +306,7 @@
                             <div class="grid gap-1.5" style="grid-template-columns: minmax(48px, auto) repeat(7, minmax(0, 1fr));">
                                 <div class="text-xs md:text-sm font-bold text-pink-300 text-right pl-1 self-center">ימים</div>
                                 {#each ['א','ב','ג','ד','ה','ו','ש'] as d}
-                                    <div class="text-center font-bold text-gray-300 text-xs md:text-sm py-1">{d}</div>
+                                    <div class="text-center font-bold text-pink-300 text-xs md:text-sm py-1">{d}</div>
                                 {/each}
                                 {#each ['בוקר','צהריים','ערב'] as slot, sIdx}
                                     <div class="text-gray-300 font-bold text-xs md:text-sm self-center text-right pl-1">{slot}</div>
