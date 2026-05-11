@@ -49,7 +49,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
             { key: 'label',       label: 'שמך המלא',           type: 'text',     required: true,  placeholder: 'שם פרטי ומשפחה', half: true },
             { key: 'age',         label: 'גילך',                 type: 'number',   required: true,  placeholder: '22', half: true },
             { key: 'sector',      label: 'מגזר',                 type: 'toggle',   required: true,  options: ['כללי', 'דתי', 'חרדי'] },
-            { key: 'age_range',   label: 'גילאי ילדים',         type: 'text',     required: true,  placeholder: 'מגיל 0 עד גיל 10' },
+            { key: 'age_range',   label: 'גילאי ילדים',         type: 'multi_select', required: true, options: ['כל הגילאים', 'תינוקות', '4+'] },
             { key: 'experience',  label: 'ניסיון',              type: 'select',   required: true,  options: ['ללא ניסיון', 'שנה אחת', '2-3 שנים', '4+ שנים'] },
             { key: 'availability',label: 'זמינות',              type: 'availability_grid', required: true },
             { key: 'languages',   label: 'שפות נוספות',          type: 'multi_select', required: false, options: ['אנגלית', 'רוסית', 'צרפתית'], hint: 'בנוסף לעברית — בחרו שפות שאתם דוברים' },
