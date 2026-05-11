@@ -1,4 +1,8 @@
 <script lang="ts">
+    import { onMount } from 'svelte';
+    import { neighborhoodState } from '$lib/neighborhoodState.svelte';
+    import { getCoordsFor, type Coord } from '$lib/neighborhoodCoords';
+
     interface DbItem {
         id: string;
         category: string;
@@ -46,9 +50,15 @@
 
     interface Props {
         items: DbItem[];
+        userNeighborhood?: string | null;
+        userCity?: string | null;
     }
 
-    let { items }: Props = $props();
+    let { items, userNeighborhood = null, userCity = null }: Props = $props();
+
+    onMount(() => {
+        neighborhoodState.init(userNeighborhood, userCity);
+    });
 
     function parseExtra(raw: string): Record<string, unknown> {
         try { return raw ? JSON.parse(raw) : {}; } catch { return {}; }
@@ -252,11 +262,103 @@
     });
 
     function clearAll() {
-        searchQuery = ''; selectedCity = ''; sortBy = 'featured';
+        searchQuery = ''; selectedCity = ''; sortBy = 'featured'; currentPage = 1;
     }
 
     let saved = $state<Record<string, boolean>>({});
     function toggleSave(id: string) { saved[id] = !saved[id]; }
+
+    // ===== חישוב מרחק (Haversine) =====
+    function haversineKm(a: Coord, b: Coord): number {
+        const toRad = (d: number) => (d * Math.PI) / 180;
+        const R = 6371;
+        const dLat = toRad(b[0] - a[0]);
+        const dLon = toRad(b[1] - a[1]);
+        const lat1 = toRad(a[0]);
+        const lat2 = toRad(b[0]);
+        const h = Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;
+        return 2 * R * Math.asin(Math.sqrt(h));
+    }
+
+    // ===== סקציות לפי קרבה למשתמש =====
+    // 0 = השכונה/אזור שלך  |  1 = העיר שלך  |  2 = ערים קרובות  |  3 = שאר הארץ
+    const SECTION_TITLES = [
+        'השמרטפים באזורך',
+        'שמרטפים בעירך',
+        'ערים קרובות',
+        'שאר הארץ',
+    ];
+
+    function sectionFor(s: Sitter, userNeigh: string, userCty: string): number {
+        const sCoord = getCoordsFor(s.neighborhood, s.city);
+        const uCoord = getCoordsFor(userNeigh, userCty);
+        const dist   = haversineKm(sCoord, uCoord);
+
+        if (s.city === userCty) {
+            if (s.neighborhood === userNeigh || dist < 3) return 0; // אזורך
+            return 1; // העיר שלך
+        }
+        if (dist < 35) return 2; // ערים קרובות
+        return 3; // שאר הארץ
+    }
+
+    type SectionedSitter = Sitter & { _section: number; _dist: number };
+
+    let sectionedSitters = $derived.by<SectionedSitter[]>(() => {
+        const uN = neighborhoodState.neighborhood;
+        const uC = neighborhoodState.city;
+        const uCoord = getCoordsFor(uN, uC);
+        return filtered.map(s => {
+            const sCoord = getCoordsFor(s.neighborhood, s.city);
+            return {
+                ...s,
+                _section: sectionFor(s, uN, uC),
+                _dist:    haversineKm(sCoord, uCoord),
+            };
+        }).sort((a, b) => {
+            if (a._section !== b._section) return a._section - b._section;
+            return a._dist - b._dist;
+        });
+    });
+
+    // ===== פאג'ינציה (8 כרטיסים לעמוד) =====
+    const PAGE_SIZE = 8;
+    let currentPage = $state(1);
+    let totalPages  = $derived(Math.max(1, Math.ceil(sectionedSitters.length / PAGE_SIZE)));
+
+    // נרמול עמוד נוכחי כאשר הסינון/מצב משתנה
+    $effect(() => {
+        if (currentPage > totalPages) currentPage = totalPages;
+        if (currentPage < 1)          currentPage = 1;
+    });
+
+    // קיבוץ הכרטיסים בעמוד הנוכחי לפי סקציות, כדי שנציג את הכותרת רק כשהסקציה מתחילה
+    let pageGroups = $derived.by(() => {
+        const start = (currentPage - 1) * PAGE_SIZE;
+        const slice = sectionedSitters.slice(start, start + PAGE_SIZE);
+        const groups: { section: number; items: SectionedSitter[] }[] = [];
+        for (const s of slice) {
+            const last = groups[groups.length - 1];
+            if (!last || last.section !== s._section) {
+                groups.push({ section: s._section, items: [s] });
+            } else {
+                last.items.push(s);
+            }
+        }
+        return groups;
+    });
+
+    function goToPage(p: number) {
+        if (p < 1 || p > totalPages) return;
+        currentPage = p;
+        if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // איפוס עמוד כאשר משנים סינון/חיפוש/מיון
+    $effect(() => {
+        searchQuery; selectedCity; sortBy;
+        currentPage = 1;
+    });
 </script>
 
 <div class="min-h-screen bg-[#070b14] pt-6 pb-20" dir="rtl">
@@ -341,8 +443,25 @@
                 <button onclick={clearAll} class="text-pink-400 hover:text-pink-300 underline text-sm cursor-pointer">נקה סינון</button>
             </div>
         {:else}
-            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {#each filtered as s}
+            {#each pageGroups as group (group.section + '-' + currentPage)}
+                <!-- כותרת סקציה + קו -->
+                <div class="flex items-center gap-3 mt-6 mb-4 first:mt-0">
+                    <span class="text-xl">
+                        {group.section === 0 ? '📍' : group.section === 1 ? '🏙️' : group.section === 2 ? '🚗' : '🇮🇱'}
+                    </span>
+                    <h2 class="text-white font-black text-base md:text-lg whitespace-nowrap">
+                        {SECTION_TITLES[group.section]}
+                        {#if group.section === 0 && neighborhoodState.neighborhood}
+                            <span class="text-pink-300 font-bold">— {neighborhoodState.neighborhood}</span>
+                        {:else if group.section === 1 && neighborhoodState.city}
+                            <span class="text-pink-300 font-bold">— {neighborhoodState.city}</span>
+                        {/if}
+                    </h2>
+                    <div class="flex-1 h-px bg-gradient-to-l from-pink-500/40 via-white/10 to-transparent"></div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {#each group.items as s}
                     <div class="bg-[#0f172a] rounded-2xl border border-white/10 hover:border-pink-500/40 overflow-hidden shadow-xl hover:shadow-2xl hover:shadow-pink-500/10 transition-all hover:-translate-y-1 flex flex-col">
 
                         <!-- כותרת: אווטר + שם + דירוג -->
@@ -479,8 +598,46 @@
                             </a>
                         </div>
                     </div>
-                {/each}
-            </div>
+                    {/each}
+                </div>
+            {/each}
+
+            <!-- ===== Pagination ===== -->
+            {#if totalPages > 1}
+                <div class="mt-10 flex flex-col items-center gap-3">
+                    <div class="flex items-center gap-2 flex-wrap justify-center">
+                        <button
+                            onclick={() => goToPage(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            class="px-3 py-2 rounded-xl bg-[#0f172a] border border-white/10 text-white text-sm font-bold hover:border-pink-500/40 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                            aria-label="עמוד קודם"
+                        >→ הקודם</button>
+
+                        {#each Array.from({ length: totalPages }, (_, i) => i + 1) as p}
+                            <button
+                                onclick={() => goToPage(p)}
+                                class="w-10 h-10 rounded-xl text-sm font-bold transition-all cursor-pointer
+                                    {currentPage === p
+                                        ? 'bg-gradient-to-r from-pink-500 to-rose-600 text-white shadow-lg shadow-pink-500/30'
+                                        : 'bg-[#0f172a] border border-white/10 text-white hover:border-pink-500/40'}"
+                                aria-label="עמוד {p}"
+                                aria-current={currentPage === p ? 'page' : undefined}
+                            >{p}</button>
+                        {/each}
+
+                        <button
+                            onclick={() => goToPage(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                            class="px-3 py-2 rounded-xl bg-[#0f172a] border border-white/10 text-white text-sm font-bold hover:border-pink-500/40 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                            aria-label="עמוד הבא"
+                        >הבא ←</button>
+                    </div>
+
+                    <p class="text-gray-400 text-sm font-medium">
+                        עמוד <span class="text-white font-black">{currentPage}</span> מתוך <span class="text-white font-black">{totalPages}</span>
+                    </p>
+                </div>
+            {/if}
         {/if}
 
         <!-- חזרה -->
