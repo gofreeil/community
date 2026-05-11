@@ -8,6 +8,7 @@ export interface FieldDef {
     hint?: string;
     default?: string;
     half?: boolean;
+    maxLength?: number;
 }
 
 export interface CategoryConfig {
@@ -58,15 +59,10 @@ export const categoryConfig: Record<string, CategoryConfig> = {
                 'בישול לילדים',
                 'נקיון קל',
                 'כביסה וקיפול',
-                'פעילויות יצירה',
-                'קריאת ספרים',
-                'משחקי לוח',
-                'רכב להסעות',
-                'שמירת לילה',
                 'מומחיות בתינוקות',
             ], hint: 'בחרו את היתרונות שיש לכם להציע — יוצגו בכרטיסיה' },
             { key: 'price_hour',  label: 'מחיר לשעה (₪)',       type: 'number',   required: false, placeholder: '40' },
-            { key: 'description', label: 'קצת עלייך',           type: 'textarea', required: false, placeholder: 'מומלץ לכתוב את הייחודיות והיתרונות שלכם, ואם יש לכם תוספות מלבד השמירה — כגון עבודות בית קלות, בישול וכו׳' },
+            { key: 'description', label: 'טקסט חופשי',           type: 'textarea', required: false, maxLength: 80, placeholder: 'מומלץ לכתוב את הייחודיות והיתרונות שלכם, ואם יש לכם תוספות מלבד השמירה — כגון עבודות בית קלות, בישול וכו׳' },
             { key: 'address',     label: 'שכונה',               type: 'text',     required: false, placeholder: 'קרית משה' },
             { key: 'phone',       label: 'טלפון',               type: 'tel',      required: true,  placeholder: '05X-XXXXXXX' },
         ],

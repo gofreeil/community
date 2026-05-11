@@ -295,10 +295,14 @@
                             value={getFieldValue(field.key)}
                             oninput={(e) => setFieldValue(field.key, (e.target as HTMLTextAreaElement).value)}
                             placeholder={field.placeholder ?? ''}
-                            rows="3"
+                            rows={field.maxLength ? 1 : 3}
+                            maxlength={field.maxLength ?? undefined}
                             class="{inputClass} resize-none"
                             required={field.required}
                         ></textarea>
+                        {#if field.maxLength}
+                            <p class="text-xs text-slate-400 mt-1 text-left" dir="ltr">{(getFieldValue(field.key) || '').length}/{field.maxLength}</p>
+                        {/if}
 
                     {:else if field.type === 'multi_select' && field.options}
                         {@const selected = (getFieldValue(field.key) || '').split(',').filter(Boolean)}
