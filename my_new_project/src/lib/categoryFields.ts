@@ -50,7 +50,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
             { key: 'experience',  label: 'ניסיון',              type: 'select',   required: true,  options: ['ללא ניסיון', 'שנה אחת', '2-3 שנים', '4+ שנים'] },
             { key: 'availability',label: 'זמינות',              type: 'availability_grid', required: true },
             { key: 'price_hour',  label: 'מחיר לשעה (₪)',       type: 'number',   required: false, placeholder: '40' },
-            { key: 'description', label: 'קצת עלייך',           type: 'textarea', required: false, placeholder: 'ספרי קצת על עצמך...', hint: 'מומלץ לכתוב את הייחודיות והיתרונות שלכם, ואם יש לכם תוספות מלבד השמירה — כגון עבודות בית קלות, בישול וכו׳' },
+            { key: 'description', label: 'קצת עלייך',           type: 'textarea', required: false, placeholder: 'מומלץ לכתוב את הייחודיות והיתרונות שלכם, ואם יש לכם תוספות מלבד השמירה — כגון עבודות בית קלות, בישול וכו׳' },
             { key: 'address',     label: 'שכונה',               type: 'text',     required: false, placeholder: 'קרית משה' },
             { key: 'phone',       label: 'טלפון',               type: 'tel',      required: true,  placeholder: '05X-XXXXXXX' },
         ],
