@@ -252,8 +252,9 @@
         <div class="rounded-2xl border-2 border-green-500/40 bg-green-900/20 p-8 text-center"
              style="animation: fadeIn 0.4s ease-out;">
             <div class="text-4xl mb-3">✅</div>
-            <h2 class="text-xl font-black text-green-300 mb-2">נשמר בהצלחה!</h2>
+            <h2 class="text-xl font-black text-green-300 mb-2">המודעה שלך נשמרה</h2>
             {#if config.priceRow !== null}
+                <p class="text-amber-200 text-base font-bold mb-1">שלם 15 ש"ח בחודש על מנת להופיע</p>
                 <p class="text-gray-400 text-sm">מועבר לדף התשלום...</p>
             {:else}
                 <p class="text-gray-400 text-sm">הפריט שלך נוסף לשכונה! מועבר לדף הבית...</p>
@@ -393,15 +394,16 @@
                         <span class="inline-block w-5 h-5 border-2 border-gray-500 border-t-white rounded-full mr-2"
                               style="animation: spin 0.7s linear infinite; vertical-align: middle;"></span>
                         שומר...
-                    {:else if config.priceRow !== null}
-                        {@html iconHtml()} שלח ועבור לתשלום ←
                     {:else}
-                        {@html iconHtml()} הוסף לשכונה ✓
+                        {@html iconHtml()} פרסם
                     {/if}
                 </button>
                 <p class="text-gray-300 text-sm text-center">
-                    הפריט יופיע מיד
-                    {#if config.priceRow !== null}· ניתן לתשלום בשלב הבא{/if}
+                    {#if config.priceRow !== null}
+                        15 ₪ בחודש · התשלום בשלב הבא
+                    {:else}
+                        הפריט יופיע מיד
+                    {/if}
                 </p>
             </div>
         </form>
