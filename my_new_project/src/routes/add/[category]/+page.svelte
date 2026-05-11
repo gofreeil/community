@@ -340,29 +340,30 @@
             {/if}
 
             <!-- Submit -->
-            <button
-                type="submit"
-                disabled={submitting}
-                class="w-full rounded-xl px-6 py-4 font-black text-base transition-all shadow-lg
-                    {submitting
-                        ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                        : `${colors.btn} text-white hover:scale-[1.02] shadow-${config.color}-500/20`}"
-            >
-                {#if submitting}
-                    <span class="inline-block w-5 h-5 border-2 border-gray-500 border-t-white rounded-full mr-2"
-                          style="animation: spin 0.7s linear infinite; vertical-align: middle;"></span>
-                    שומר...
-                {:else if config.priceRow !== null}
-                    {@html iconHtml()} שלח ועבור לתשלום ←
-                {:else}
-                    {@html iconHtml()} הוסף לשכונה ✓
-                {/if}
-            </button>
-
-            <p class="text-gray-600 text-xs text-center">
-                הפריט יופיע מיד לאחר השמירה
-                {#if config.priceRow !== null}· ניתן לתשלום בשלב הבא{/if}
-            </p>
+            <div class="col-span-2 flex flex-col gap-2">
+                <button
+                    type="submit"
+                    disabled={submitting}
+                    class="w-full rounded-xl px-6 py-4 font-black text-base transition-all shadow-lg
+                        {submitting
+                            ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                            : `${colors.btn} text-white hover:scale-[1.02] shadow-${config.color}-500/20`}"
+                >
+                    {#if submitting}
+                        <span class="inline-block w-5 h-5 border-2 border-gray-500 border-t-white rounded-full mr-2"
+                              style="animation: spin 0.7s linear infinite; vertical-align: middle;"></span>
+                        שומר...
+                    {:else if config.priceRow !== null}
+                        {@html iconHtml()} שלח ועבור לתשלום ←
+                    {:else}
+                        {@html iconHtml()} הוסף לשכונה ✓
+                    {/if}
+                </button>
+                <p class="text-gray-600 text-xs text-center">
+                    הפריט יופיע מיד לאחר השמירה
+                    {#if config.priceRow !== null}· ניתן לתשלום בשלב הבא{/if}
+                </p>
+            </div>
         </form>
     {/if}
 </div>
