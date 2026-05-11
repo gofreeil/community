@@ -365,7 +365,7 @@
                     {/if}
                 </button>
                 <p class="text-gray-300 text-sm text-center">
-                    הפריט יופיע מיד לאחר השמירה
+                    הפריט יופיע מיד
                     {#if config.priceRow !== null}· ניתן לתשלום בשלב הבא{/if}
                 </p>
             </div>
