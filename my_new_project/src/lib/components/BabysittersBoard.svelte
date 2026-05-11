@@ -142,8 +142,10 @@
                     : [];
                 return ['עברית', ...extra];
             })(),
-            certifications: [],
-            specialties: [],
+            certifications: typeof ef.advantages === 'string' && /עזרה ראשונה/.test(ef.advantages) ? ['עזרה ראשונה'] : [],
+            specialties: typeof ef.advantages === 'string'
+                ? ef.advantages.split(',').map(s => s.trim()).filter(Boolean).filter(x => x !== 'עזרה ראשונה')
+                : [],
             days: ['א','ב','ג','ד','ה'],
             timeOfDay: ['אחה״צ','ערב'],
             availability: typeof ef.availability === 'string' ? ef.availability : '',
