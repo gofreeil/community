@@ -704,8 +704,18 @@
         {/if}
 
         <!-- חזרה -->
-        <div class="text-center mt-10">
-            <a href="/" class="text-gray-500 hover:text-white transition-colors text-sm">← חזרה לדף הראשי</a>
+        <div class="text-center mt-10 flex items-center justify-center gap-3 text-sm">
+            <button
+                type="button"
+                onclick={() => typeof window !== 'undefined' && window.scrollTo({ top: 0, behavior: 'smooth' })}
+                class="text-gray-500 hover:text-white transition-colors cursor-pointer"
+            >↑ חזור לראש הדף</button>
+            <span class="text-gray-700">|</span>
+            <button
+                type="button"
+                onclick={() => typeof window !== 'undefined' && window.history.back()}
+                class="text-gray-500 hover:text-white transition-colors cursor-pointer"
+            >← חזור אחורה</button>
         </div>
     </div>
 </div>
