@@ -1179,6 +1179,7 @@
                         {@const totalItems = (category.items?.length || 0) + categoryDbItems.length}
                         {@const hasNationalPage = ['singles','security','attractions','jobs'].includes(category.id)}
                         {@const giveawayNational = category.id === 'giveaway'}
+                        {@const babysitterNational = category.id === 'business'}
                         <div
                             class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-500/30 rounded-lg md:rounded-xl overflow-hidden transition-all"
                         >
@@ -1235,6 +1236,17 @@
                                                 tabindex="0"
                                                 onclick={(e) => { e.stopPropagation(); goto('/giveaways'); }}
                                                 onkeydown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); goto('/giveaways'); } }}
+                                                class="text-[11px] text-purple-400 hover:text-purple-300 cursor-pointer
+                                                       underline underline-offset-2 decoration-purple-500/40 hover:decoration-purple-400
+                                                       transition-colors font-medium whitespace-nowrap"
+                                            >← לרשימה הארצית</span>
+                                        {/if}
+                                        {#if babysitterNational}
+                                            <span
+                                                role="link"
+                                                tabindex="0"
+                                                onclick={(e) => { e.stopPropagation(); goto('/babysitters'); }}
+                                                onkeydown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); goto('/babysitters'); } }}
                                                 class="text-[11px] text-purple-400 hover:text-purple-300 cursor-pointer
                                                        underline underline-offset-2 decoration-purple-500/40 hover:decoration-purple-400
                                                        transition-colors font-medium whitespace-nowrap"
