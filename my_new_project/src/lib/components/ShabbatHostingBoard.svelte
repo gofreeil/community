@@ -121,9 +121,8 @@
 <div class="min-h-screen bg-[#070b14] pt-6 pb-20" dir="rtl">
     <!-- Header -->
     <div class="max-w-4xl mx-auto px-4 text-center mb-6">
-        <div class="relative mx-auto mb-3 inline-block rounded-3xl shadow-2xl overflow-hidden" style="background: linear-gradient(135deg,#451a03 0%,#78350f 45%,#92400e 100%); padding: 12px;">
-            <div class="absolute inset-0 pointer-events-none" style="background: radial-gradient(ellipse at 60% 20%,rgba(251,191,36,0.35) 0%,transparent 60%),radial-gradient(ellipse at 20% 80%,rgba(245,158,11,0.2) 0%,transparent 50%);"></div>
-            <img src="/images/shabat.png" alt="שבת" class="relative h-40 object-contain rounded-2xl" />
+        <div class="relative mx-auto mb-3 inline-block" style="mask-image: radial-gradient(ellipse 90% 85% at center, black 55%, transparent 88%); -webkit-mask-image: radial-gradient(ellipse 90% 85% at center, black 55%, transparent 88%);">
+            <img src="/images/shabat.png" alt="שבת" class="h-48 object-contain" />
         </div>
         <h1 class="text-3xl font-black text-white mb-2">
             {city ? `אירוח לשבת ב${city}` : 'לוח אירוח לשבת'}
