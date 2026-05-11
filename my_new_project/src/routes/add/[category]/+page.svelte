@@ -308,6 +308,11 @@
                     {:else if field.type === 'availability_grid'}
                         {@const grid = (getFieldValue(field.key) || '').split(',').filter(Boolean)}
                         <div class="rounded-xl border border-white/15 bg-white/5 p-3 md:p-4">
+                            <!-- כותרת "ימים" מעל עמודות הימים -->
+                            <div class="grid gap-1.5 mb-1" style="grid-template-columns: minmax(48px, auto) repeat(7, minmax(0, 1fr));">
+                                <div></div>
+                                <div class="col-span-7 text-center text-xs md:text-sm font-bold text-pink-300">ימים</div>
+                            </div>
                             <div class="grid gap-1.5" style="grid-template-columns: minmax(48px, auto) repeat(7, minmax(0, 1fr));">
                                 <div></div>
                                 {#each ['א','ב','ג','ד','ה','ו','ש'] as d}
@@ -327,7 +332,7 @@
                                                 else current.push(cellKey);
                                                 setFieldValue(field.key, current.join(','));
                                             }}
-                                            class="aspect-square rounded-md border-2 transition-all flex items-center justify-center text-sm font-bold {isOn
+                                            class="h-7 md:h-8 rounded-md border-2 transition-all flex items-center justify-center text-sm font-bold {isOn
                                                 ? 'bg-pink-500/40 border-pink-400 text-white shadow-md shadow-pink-500/20'
                                                 : 'bg-white/5 border-white/15 text-gray-600 hover:bg-white/10 hover:border-white/30'}"
                                             aria-label="{slot}"
