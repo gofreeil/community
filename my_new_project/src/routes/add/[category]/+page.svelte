@@ -211,10 +211,6 @@
                 ← חזרה
             </button>
         </div>
-        <p class="text-gray-400 text-sm">
-            שכונה: <span class="{colors.text} font-bold">{neighborhood}</span>
-            {#if city} · {city}{/if}
-        </p>
         {#if config.priceRow !== null}
             <div class="mt-3 inline-flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/30 rounded-full px-4 py-1.5 text-xs font-bold text-amber-400">
                 💳 לאחר השליחה תועבר לדף התשלום
