@@ -1013,30 +1013,6 @@
         onmouseenter={handleMouseEnter}
         onmouseleave={handleMouseLeave}
     >
-        <!-- SVG filter שמסיר רקע לבן מתמונת הטביעת אצבע (white → alpha 0, dark → alpha 1) -->
-        <svg
-            width="0"
-            height="0"
-            style="position: absolute; width: 0; height: 0; pointer-events: none;"
-            aria-hidden="true"
-            focusable="false"
-        >
-            <defs>
-                <filter
-                    id="fingerprintTransparent"
-                    color-interpolation-filters="sRGB"
-                >
-                    <feColorMatrix
-                        type="matrix"
-                        values="0 0 0 0 1
-                                0 0 0 0 1
-                                0 0 0 0 1
-                                -1 -1 -1 0 1"
-                    />
-                </filter>
-            </defs>
-        </svg>
-
         <!-- כפתור מעבר תצוגה - משולש מקופל בפינה -->
         <button
             onclick={() => {
@@ -1089,23 +1065,21 @@
                 </text>
             </svg>
             <span class="hint hint-cursor" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="34" height="34">
+                <svg viewBox="0 0 24 24" width="32" height="32">
                     <path
                         d="M4 2 L4 20 L9 16 L12 23 L15.5 21.5 L12.5 14.5 L19 14.5 Z"
                         fill="white"
-                        stroke="#0f172a"
-                        stroke-width="1.6"
-                        stroke-linejoin="round"
                     />
                 </svg>
             </span>
-            <img
-                class="hint hint-fingerprint"
-                src="/images/fingerprint.jfif"
-                alt=""
-                aria-hidden="true"
-                draggable="false"
-            />
+            <span class="hint hint-fingerprint" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="36" height="36">
+                    <path
+                        d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74l-3.43-.72c-.08-.01-.15-.03-.24-.03-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"
+                        fill="white"
+                    />
+                </svg>
+            </span>
         </button>
 
         {#if viewMode === "map"}
@@ -2123,16 +2097,8 @@
     }
 
     .hint-fingerprint {
-        width: 44px;
-        height: 44px;
-        object-fit: contain;
-        user-select: none;
-        -webkit-user-drag: none;
         display: none;
-        background: transparent;
-        /* הסרת הרקע הלבן של ה-JPEG באמצעות feColorMatrix שמהפך לוּמיננציה ל-alpha:
-           פיקסלים לבנים → alpha 0 (שקוף), פיקסלים כהים → alpha 1 (גלוי בלבן) */
-        filter: url(#fingerprintTransparent);
+        line-height: 0;
     }
 
     .page-corner.auto-switching .hint-cursor {
@@ -2192,8 +2158,8 @@
         52% {
             opacity: 1;
             transform: translate(22px, 22px) rotate(-38deg) scale(0.72);
-            filter: url(#fingerprintTransparent)
-                drop-shadow(0 0 12px rgba(147, 51, 234, 0.95));
+            filter: drop-shadow(0 0 12px rgba(147, 51, 234, 0.95))
+                drop-shadow(0 2px 4px rgba(0, 0, 0, 0.55));
         }
         62% {
             opacity: 1;
@@ -2337,9 +2303,12 @@
         }
 
         .hint-fingerprint {
-            display: block !important;
-            width: 34px;
-            height: 34px;
+            display: inline-block !important;
+        }
+
+        .hint-fingerprint svg {
+            width: 32px !important;
+            height: 32px !important;
         }
     }
 </style>
