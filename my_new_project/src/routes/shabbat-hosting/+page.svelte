@@ -10,4 +10,10 @@
     <meta name="description" content="לוח ארצי לאירוח בשבת — מציעים לארח ומחפשים להתארח, לפי שכונה וסגנון אוכל" />
 </svelte:head>
 
-<ShabbatHostingBoard items={data.items} city={null} />
+<ShabbatHostingBoard
+    items={data.items}
+    city={null}
+    userId={data.userId}
+    isBanned={data.isBanned}
+    blockedHostUserIds={data.blockedHostUserIds}
+/>
