@@ -203,7 +203,7 @@
 
     <!-- Header -->
     <div class="text-center mb-8">
-        <div class="mb-3">{@html iconHtml('lg')}</div>
+        <div class="mb-1">{@html iconHtml('lg')}</div>
         <h1 class="text-2xl md:text-3xl font-black text-white mb-2">
             הוסף {config.label}
         </h1>
