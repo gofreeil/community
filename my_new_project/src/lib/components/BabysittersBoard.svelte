@@ -225,10 +225,6 @@
     // ===== Filters =====
     let searchQuery   = $state('');
     let selectedCity  = $state('');
-    let ageGroup      = $state<'all' | '0-2' | '2-5' | '5-10' | '10+'>('all');
-    let dayFilter     = $state<'all' | 'weekday' | 'weekend'>('all');
-    let verifiedOnly  = $state(false);
-    let certifiedOnly = $state(false);
     let sortBy        = $state<'featured' | 'rating' | 'rate_low' | 'rate_high' | 'experience'>('featured');
 
     let availableCities = $derived(
@@ -244,12 +240,7 @@
                 s.specialties.some(x => x.includes(q)) ||
                 s.languages.some(x => x.includes(q));
             const matchCity   = !selectedCity || s.city === selectedCity;
-            const matchAge    = ageGroup === 'all' || s.ageGroups.includes(ageGroup);
-            const matchDay    = dayFilter === 'all' ||
-                (dayFilter === 'weekday' ? s.days.some(d => ['א','ב','ג','ד','ה'].includes(d)) : s.days.some(d => ['ו','ש'].includes(d)));
-            const matchVer    = !verifiedOnly  || s.verified;
-            const matchCert   = !certifiedOnly || s.certifications.length > 0;
-            return matchSearch && matchCity && matchAge && matchDay && matchVer && matchCert;
+            return matchSearch && matchCity;
         });
 
         if (sortBy === 'rating')     arr = [...arr].sort((a,b) => b.rating - a.rating);
@@ -261,9 +252,7 @@
     });
 
     function clearAll() {
-        searchQuery = ''; selectedCity = '';
-        ageGroup = 'all'; dayFilter = 'all';
-        verifiedOnly = false; certifiedOnly = false; sortBy = 'featured';
+        searchQuery = ''; selectedCity = ''; sortBy = 'featured';
     }
 
     let saved = $state<Record<string, boolean>>({});
@@ -334,63 +323,10 @@
             </select>
         </div>
 
-        <!-- שורת סינון: גיל הילדים -->
-        <div class="flex items-center gap-2 mb-2 overflow-x-auto pb-1">
-            <span class="text-gray-500 text-xs whitespace-nowrap">גיל הילדים:</span>
-            {#each [
-                { v: 'all',  l: 'הכל' },
-                { v: '0-2',  l: '🍼 0-2' },
-                { v: '2-5',  l: '🧸 2-5' },
-                { v: '5-10', l: '🎒 5-10' },
-                { v: '10+',  l: '🎮 10+' },
-            ] as opt}
-                <button type="button" onclick={() => (ageGroup = opt.v as any)}
-                    class="px-3 py-1.5 rounded-full text-xs font-bold border transition-all whitespace-nowrap cursor-pointer
-                        {ageGroup === opt.v
-                            ? 'bg-pink-500/20 text-pink-300 border-pink-500/50'
-                            : 'bg-white/5 text-gray-400 border-white/10 hover:text-white'}">
-                    {opt.l}
-                </button>
-            {/each}
-        </div>
-
-        <!-- שורת סינון: זמינות + תגי אמינות -->
-        <div class="flex items-center gap-2 mb-2 overflow-x-auto pb-1">
-            <span class="text-gray-500 text-xs whitespace-nowrap">זמינות:</span>
-            {#each [
-                { v: 'all',     l: 'תמיד' },
-                { v: 'weekday', l: 'א-ה' },
-                { v: 'weekend', l: 'סופ״ש' },
-            ] as opt}
-                <button type="button" onclick={() => (dayFilter = opt.v as any)}
-                    class="px-3 py-1.5 rounded-full text-xs font-bold border transition-all whitespace-nowrap cursor-pointer
-                        {dayFilter === opt.v
-                            ? 'bg-pink-500/20 text-pink-300 border-pink-500/50'
-                            : 'bg-white/5 text-gray-400 border-white/10 hover:text-white'}">
-                    {opt.l}
-                </button>
-            {/each}
-            <span class="mx-2 text-gray-700">|</span>
-            <button type="button" onclick={() => (verifiedOnly = !verifiedOnly)}
-                class="px-3 py-1.5 rounded-full text-xs font-bold border transition-all whitespace-nowrap cursor-pointer
-                    {verifiedOnly
-                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50'
-                        : 'bg-white/5 text-gray-400 border-white/10 hover:text-white'}">
-                ✓ מאומתות
-            </button>
-            <button type="button" onclick={() => (certifiedOnly = !certifiedOnly)}
-                class="px-3 py-1.5 rounded-full text-xs font-bold border transition-all whitespace-nowrap cursor-pointer
-                    {certifiedOnly
-                        ? 'bg-amber-500/20 text-amber-300 border-amber-500/50'
-                        : 'bg-white/5 text-gray-400 border-white/10 hover:text-white'}">
-                🏥 עם הסמכות
-            </button>
-        </div>
-
         <!-- סיכום + נקה -->
         <p class="text-gray-500 text-sm mt-3 flex items-center gap-3">
             <span>מציג <span class="text-white font-bold">{filtered.length}</span> בייבי סיטר</span>
-            {#if searchQuery || selectedCity || ageGroup !== 'all' || dayFilter !== 'all' || verifiedOnly || certifiedOnly}
+            {#if searchQuery || selectedCity}
                 <button onclick={clearAll} class="text-pink-400 hover:text-pink-300 underline cursor-pointer text-xs">נקה סינון</button>
             {/if}
         </p>
