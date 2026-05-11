@@ -46,7 +46,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
         priceRow: 2,
         addPageTitle: 'הוספת כרטיס בייבי סיטר',
         fields: [
-            { key: 'label',       label: 'שמך המלא',           type: 'text',     required: true,  placeholder: 'שם פרטי ומשפחה' },
+            { key: 'label',       label: 'שמך המלא',           type: 'text',     required: true,  placeholder: 'שם פרטי ומשפחה', half: true },
             { key: 'age',         label: 'גילך',                 type: 'number',   required: true,  placeholder: '22', half: true },
             { key: 'sector',      label: 'מגזר',                 type: 'toggle',   required: true,  options: ['כללי', 'דתי', 'חרדי'] },
             { key: 'age_range',   label: 'גילאי ילדים',         type: 'text',     required: true,  placeholder: 'מגיל 0 עד גיל 10' },
