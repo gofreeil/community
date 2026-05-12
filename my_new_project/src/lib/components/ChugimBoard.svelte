@@ -738,18 +738,6 @@
                                 <p class="text-gray-300 text-xs leading-relaxed mb-3 line-clamp-3">{k.description}</p>
                             {/if}
 
-                            {#if k.skills.length > 0}
-                                <div class="flex flex-wrap gap-1 mb-3">
-                                    {#each k.skills.slice(0, 4) as skill}
-                                        <span class="text-[10px] bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-md">
-                                            ⭐ {skill}
-                                        </span>
-                                    {/each}
-                                    {#if k.skills.length > 4}
-                                        <span class="text-[10px] text-gray-500 px-1 py-0.5">+{k.skills.length - 4}</span>
-                                    {/if}
-                                </div>
-                            {/if}
 
                             <!-- ימי שבוע ויזואלי -->
                             <div class="mt-2">
