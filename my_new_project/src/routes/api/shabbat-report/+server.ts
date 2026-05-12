@@ -2,19 +2,10 @@ import { json } from '@sveltejs/kit';
 import { createItem, getItemsByCategory, getUserById } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
-// חלון הדיווח: שבת(6) + ראשון–רביעי(0-3)
-function isReportWindowOpen(): boolean {
-    const day = new Date().getDay();
-    return [0, 1, 2, 3, 6].includes(day);
-}
-
 export const POST: RequestHandler = async (event) => {
     const session = await event.locals.auth();
     if (!session?.user?.id) {
         return json({ success: false, message: 'יש להתחבר כדי לדווח' }, { status: 401 });
-    }
-    if (!isReportWindowOpen()) {
-        return json({ success: false, message: 'ניתן לדווח רק ממוצאי שבת עד יום רביעי' }, { status: 403 });
     }
 
     let body: { reported_phone?: string; reported_contact?: string } = {};
@@ -26,17 +17,18 @@ export const POST: RequestHandler = async (event) => {
     }
 
     try {
-        // וודא שהמדווח הוא מארח פעיל
-        const realestateItems = await getItemsByCategory('realestate');
-        const reporterIsHost = realestateItems.some(item => {
-            if (item.user_id !== (session.user!.id as string)) return false;
+        // רק מארח שאישר את האורח רשאי לדווח עליו
+        const requestItems = await getItemsByCategory('shabbat_request');
+        const hasApproved = requestItems.some(r => {
+            if (!r.phone || r.phone.trim() !== reported_phone) return false;
             try {
-                const ef = JSON.parse(item.extra_fields || '{}');
-                return String(ef.offer_type ?? '').includes('מציע');
+                const ef = JSON.parse(r.extra_fields || '{}');
+                return ef.host_user_id === (session.user!.id as string) && ef.status === 'approved';
             } catch { return false; }
         });
-        if (!reporterIsHost) {
-            return json({ success: false, message: 'רק מארח שפרסם הזמנה יכול לדווח' }, { status: 403 });
+
+        if (!hasApproved) {
+            return json({ success: false, message: 'ניתן לדווח רק על אורח שאישרת בעצמך' }, { status: 403 });
         }
 
         // בדוק כפילות

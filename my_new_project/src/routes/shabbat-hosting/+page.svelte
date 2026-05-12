@@ -16,4 +16,9 @@
     userId={data.userId}
     isBanned={data.isBanned}
     blockedHostUserIds={data.blockedHostUserIds}
+    approvedHostItemIds={data.approvedHostItemIds}
+    pendingGuestRequestItemIds={data.pendingGuestRequestItemIds}
+    rejectedGuestRequestItemIds={data.rejectedGuestRequestItemIds}
+    pendingRequestsForHost={data.pendingRequestsForHost}
+    approvedGuestPhonesForHost={data.approvedGuestPhonesForHost}
 />

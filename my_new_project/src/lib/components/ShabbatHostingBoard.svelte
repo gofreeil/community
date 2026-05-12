@@ -18,15 +18,38 @@
         view_count: number;
     }
 
+    interface PendingRequest {
+        requestItemId: string;
+        guestName: string;
+        guestPhone: string;
+        guestMessage: string;
+        hostItemId: string;
+    }
+
     interface Props {
         items: DbItem[];
         city: string | null;
         userId?: string | null;
         isBanned?: boolean;
         blockedHostUserIds?: string[];
+        approvedHostItemIds?: string[];
+        pendingGuestRequestItemIds?: string[];
+        rejectedGuestRequestItemIds?: string[];
+        pendingRequestsForHost?: PendingRequest[];
+        approvedGuestPhonesForHost?: string[];
     }
 
-    let { items, city, userId = null, isBanned = false, blockedHostUserIds = [] }: Props = $props();
+    let {
+        items, city,
+        userId = null,
+        isBanned = false,
+        blockedHostUserIds = [],
+        approvedHostItemIds = [],
+        pendingGuestRequestItemIds = [],
+        rejectedGuestRequestItemIds = [],
+        pendingRequestsForHost = [],
+        approvedGuestPhonesForHost = [],
+    }: Props = $props();
 
     function parseExtra(raw: string): Record<string, unknown> {
         try { return raw ? JSON.parse(raw) : {}; } catch { return {}; }
@@ -64,20 +87,13 @@
         return (Date.now() - new Date(created_at).getTime()) > GUEST_EXPIRY_DAYS * 86400000;
     }
 
-    // חלון הדיווח: שבת(6) + ראשון–רביעי(0–3)
-    const reportWindowOpen = [0, 1, 2, 3, 6].includes(new Date().getDay());
-
     const PAGE_SIZE = 8;
     function sortByNewest(arr: DbItem[]): DbItem[] {
         return [...arr].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     }
 
-    // האם הצופה הנוכחי הוא מארח פעיל?
     let viewerIsHost = $derived(userId ? items.some(i => i.user_id === userId && isHost(i)) : false);
-
     let filteredGuests = $derived(sortByNewest(items.filter(i => !isHost(i) && !isExpired(i.created_at))));
-
-    // מארחים — מסונן: הסר מארחים שחסמו את הצופה
     let filteredHosts = $derived(
         sortByNewest(items.filter(i =>
             isHost(i) && !(i.user_id && blockedHostUserIds.includes(i.user_id))
@@ -94,6 +110,65 @@
 
     let guestPageItems = $derived(filteredGuests.slice((guestPage - 1) * PAGE_SIZE, guestPage * PAGE_SIZE));
     let hostPageItems  = $derived(filteredHosts.slice((hostPage  - 1) * PAGE_SIZE, hostPage  * PAGE_SIZE));
+
+    // --- מצב אישורים (עדכוני אופטימיסטי) ---
+    let localApprovedHostItemIds    = $state([...approvedHostItemIds]);
+    let localPendingGuestItemIds    = $state([...pendingGuestRequestItemIds]);
+    let localRejectedHostItemIds    = $state([...rejectedGuestRequestItemIds]);
+    let localPendingForHost         = $state([...pendingRequestsForHost]);
+    let localApprovedGuestPhones    = $state([...approvedGuestPhonesForHost]);
+
+    // --- בקשת אירוח ---
+    let requestingItemId  = $state<string | null>(null);
+    let requestMessage    = $state('');
+    let requestStatus     = $state<'idle' | 'sending' | 'success' | 'error'>('idle');
+    let requestErrorMsg   = $state('');
+
+    async function sendRequest(item: DbItem) {
+        requestStatus = 'sending';
+        try {
+            const res = await fetch('/api/shabbat-request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ host_item_id: item.id, message: requestMessage }),
+            });
+            const data = await res.json();
+            if (data.success) {
+                localPendingGuestItemIds = [...localPendingGuestItemIds, item.id];
+                requestingItemId = null;
+                requestMessage = '';
+                requestStatus = 'idle';
+            } else {
+                requestStatus = 'error';
+                requestErrorMsg = data.message ?? 'שגיאה לא ידועה';
+            }
+        } catch {
+            requestStatus = 'error';
+            requestErrorMsg = 'שגיאת תקשורת — נסה שוב';
+        }
+    }
+
+    // --- אישור/דחיית בקשה (מארח) ---
+    let approvingRequestId = $state<string | null>(null);
+
+    async function handleApprove(req: PendingRequest, action: 'approved' | 'rejected') {
+        approvingRequestId = req.requestItemId;
+        try {
+            const res = await fetch('/api/shabbat-approve', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ request_item_id: req.requestItemId, action }),
+            });
+            const data = await res.json();
+            if (data.success) {
+                localPendingForHost = localPendingForHost.filter(r => r.requestItemId !== req.requestItemId);
+                if (action === 'approved' && req.guestPhone) {
+                    localApprovedGuestPhones = [...localApprovedGuestPhones, req.guestPhone.trim()];
+                }
+            }
+        } catch { /* silent */ }
+        approvingRequestId = null;
+    }
 
     // --- דיווח על אורח ---
     let reportingItemId = $state<string | null>(null);
@@ -122,15 +197,17 @@
         }
     }
 
+    let showGuide = $state(false);
+
     const mockHosts = [
-        { id: 'm1', label: 'משפחת כהן', city: 'ירושלים', neighborhood: 'קרית משה', meal: 'ליל שבת', capacity: '6', guest_type: 'משפחה', notes: 'מארחים בשמחה משפחה עם ילדים. אווירה חמה ושירי שבת.', contact: 'יוסי', phone: '050-1111111', isHost: true, date: '01/04/25' },
-        { id: 'm2', label: 'משפחת לוי', city: 'בני ברק', neighborhood: 'רמת אהרן', meal: 'כל הסעודות', capacity: '4', guest_type: 'זוג', notes: 'מארחים זוגות צעירים, אפשר לינה.', contact: 'חיים', phone: '050-2222222', isHost: true, date: '28/03/25' },
-        { id: 'm3', label: 'משפחת אדרי', city: 'אשדוד', neighborhood: 'רובע ז', meal: 'ליל שבת', capacity: '8', guest_type: 'הכל מתאים', notes: 'אווירה תימנית מסורתית, חמין משובח.', contact: 'יהודה', phone: '050-3333333', isHost: true, date: '10/04/25' },
+        { id: 'm1', label: 'משפחת כהן', city: 'ירושלים', neighborhood: 'קרית משה', meal: 'ליל שבת', capacity: '6', guest_type: 'משפחה', notes: 'מארחים בשמחה משפחה עם ילדים. אווירה חמה ושירי שבת.', contact: 'יוסי', phone: '050-1111111', date: '01/04/25' },
+        { id: 'm2', label: 'משפחת לוי', city: 'בני ברק', neighborhood: 'רמת אהרן', meal: 'כל הסעודות', capacity: '4', guest_type: 'זוג', notes: 'מארחים זוגות צעירים, אפשר לינה.', contact: 'חיים', phone: '050-2222222', date: '28/03/25' },
+        { id: 'm3', label: 'משפחת אדרי', city: 'אשדוד', neighborhood: 'רובע ז', meal: 'ליל שבת', capacity: '8', guest_type: 'הכל מתאים', notes: 'אווירה תימנית מסורתית, חמין משובח.', contact: 'יהודה', phone: '050-3333333', date: '10/04/25' },
     ];
 
     const mockGuests = [
-        { id: 'g1', label: 'בחור ישיבה', city: 'ירושלים', neighborhood: '', meal: 'ליל שבת', capacity: '', guest_type: 'יחיד/ה', notes: 'בחור ישיבה רווק, מחפש משפחה לאירוח לשבת פרשת בלק.', contact: 'אהרן', phone: '052-1111111', isHost: false, date: '09/04/25' },
-        { id: 'g2', label: 'רווקה', city: 'תל אביב', neighborhood: '', meal: 'כל הסעודות', capacity: '', guest_type: 'יחיד/ה', notes: 'מחפשת אווירה חמה לשבת חתן.', contact: 'שירה', phone: '052-2222222', isHost: false, date: '07/04/25' },
+        { id: 'g1', label: 'בחור ישיבה', city: 'ירושלים', neighborhood: '', meal: 'ליל שבת', capacity: '', guest_type: 'יחיד/ה', notes: 'בחור ישיבה רווק, מחפש משפחה לאירוח לשבת פרשת בלק.', contact: 'אהרן', phone: '052-1111111', date: '09/04/25' },
+        { id: 'g2', label: 'רווקה', city: 'תל אביב', neighborhood: '', meal: 'כל הסעודות', capacity: '', guest_type: 'יחיד/ה', notes: 'מחפשת אווירה חמה לשבת חתן.', contact: 'שירה', phone: '052-2222222', date: '07/04/25' },
     ];
 
     let mockHostsFiltered = $derived(mockHosts.filter(m => !city || m.city === city));
@@ -149,12 +226,10 @@
         <p class="text-gray-400 mb-3">
             {city ? 'מארחים ומתארחים בעיר שלך' : 'לוח ארצי — מציעים לארח ומחפשים להתארח לשבת'}
         </p>
-        <!-- אזהרת כללי התנהגות -->
         <div class="inline-flex items-start gap-2 bg-amber-900/20 border border-amber-500/30 rounded-xl px-4 py-2.5 text-right max-w-lg">
             <span class="text-amber-400 text-sm mt-0.5 flex-shrink-0">⚠️</span>
             <p class="text-amber-300/90 text-xs leading-relaxed">
-                אורח שהתנהג שלא כראוי יחסם מלהכנס ללוח המארחים.
-                המארח רשאי לדווח על אורח בעייתי עד יום רביעי שלאחר השבת.
+                טלפון המארח נחשף רק לאחר אישורו. אורח שהתנהג שלא כראוי יחסם על ידי המארח.
             </p>
         </div>
     </div>
@@ -173,7 +248,6 @@
     <div class="max-w-4xl mx-auto px-4">
 
         {#if isBanned}
-            <!-- הודעת חסימה -->
             <div class="flex flex-col items-center justify-center py-16 text-center gap-4">
                 <span class="text-6xl">🚫</span>
                 <h2 class="text-xl font-black text-red-400">חשבונך חסום מלוח האירוח</h2>
@@ -185,7 +259,6 @@
             </div>
 
         {:else}
-            <!-- Two-column layout -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
 
                 <!-- טור ימין: מחפשים להתארח -->
@@ -203,6 +276,7 @@
                                     {@const notes = getPreferences(item)}
                                     {@const freeText = getFreeText(item)}
                                     {@const dateStr = formatDate(item.created_at)}
+                                    {@const canReport = viewerIsHost && userId !== item.user_id && localApprovedGuestPhones.includes(item.phone?.trim() ?? '')}
                                     <div class="rounded-2xl bg-[#0f172a] border border-cyan-500/30 overflow-hidden shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1">
                                         <div class="border-b border-cyan-500/20 p-3 flex items-center gap-3">
                                             <div class="w-11 h-11 rounded-full bg-cyan-500/15 flex items-center justify-center text-xl flex-shrink-0">🎒</div>
@@ -224,9 +298,8 @@
                                                 <a href={waLink(item.phone)} target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2 rounded-xl transition-colors text-sm">💬 WhatsApp</a>
                                                 <a href="tel:{item.phone}" class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold py-2 px-3 rounded-xl transition-colors text-sm">📞</a>
                                             </div>
-                                            <!-- אזהרה + כפתור דיווח (למארחים בחלון הזמן) -->
                                             <p class="text-[10px] text-amber-500/70 text-center mt-1">⚠️ אין להגיע ללא תיאום מראש</p>
-                                            {#if viewerIsHost && reportWindowOpen && userId !== item.user_id}
+                                            {#if canReport}
                                                 {#if reportingItemId === item.id}
                                                     <div class="mt-2 p-2 bg-red-900/20 border border-red-500/30 rounded-xl text-center space-y-2">
                                                         {#if reportStatus === 'success'}
@@ -285,7 +358,7 @@
                                         </div>
                                         <p class="text-gray-300 text-sm leading-relaxed mb-2">{m.notes}</p>
                                         <div class="flex gap-2 mb-2">
-                                            <a href={waLink(m.phone)} target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2 rounded-xl transition-colors text-sm">💬 צור קשר עם המפרסם</a>
+                                            <a href={waLink(m.phone)} target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2 rounded-xl transition-colors text-sm">💬 צור קשר</a>
                                             <a href="tel:{m.phone}" class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold py-2 px-3 rounded-xl transition-colors text-sm">📞</a>
                                         </div>
                                         <p class="text-[10px] text-amber-500/70 text-center">⚠️ אין להגיע ללא תיאום מראש</p>
@@ -311,6 +384,11 @@
                                     {@const notes = getPreferences(item)}
                                     {@const freeText = getFreeText(item)}
                                     {@const dateStr = formatDate(item.created_at)}
+                                    {@const isOwnCard = item.user_id === userId}
+                                    {@const isApproved = localApprovedHostItemIds.includes(item.id)}
+                                    {@const isPending = localPendingGuestItemIds.includes(item.id)}
+                                    {@const isRejected = localRejectedHostItemIds.includes(item.id)}
+                                    {@const hostPendingReqs = localPendingForHost.filter(r => r.hostItemId === item.id)}
                                     <div class="rounded-2xl bg-[#0f172a] border border-amber-500/30 overflow-hidden shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1">
                                         <div class="border-b border-amber-500/20 p-3 flex items-center gap-3">
                                             <div class="w-11 h-11 rounded-full bg-amber-500/15 flex items-center justify-center text-xl flex-shrink-0">🏠</div>
@@ -318,7 +396,12 @@
                                                 <h3 class="text-amber-300 font-black text-base">{item.label}</h3>
                                                 {#if item.city}<p class="text-gray-400 text-xs">📍 {item.city}{item.neighborhood ? ` · ${item.neighborhood}` : ''}</p>{/if}
                                             </div>
-                                            {#if dateStr}<span class="text-[10px] text-gray-500 flex-shrink-0">{dateStr}</span>{/if}
+                                            <div class="flex items-center gap-1.5 flex-shrink-0">
+                                                {#if isOwnCard}
+                                                    <span class="text-[10px] font-bold bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full">הכרטיס שלך</span>
+                                                {/if}
+                                                {#if dateStr}<span class="text-[10px] text-gray-500">{dateStr}</span>{/if}
+                                            </div>
                                         </div>
                                         <div class="p-3">
                                             <div class="flex flex-wrap gap-1.5 mb-2">
@@ -328,11 +411,103 @@
                                             </div>
                                             {#if notes}<p class="text-gray-300 text-sm leading-relaxed mb-2">{notes}</p>{/if}
                                             {#if freeText}<p class="text-amber-300/80 text-xs italic mb-3">"{freeText}"</p>{/if}
-                                            <div class="flex gap-2 mb-2">
-                                                <a href={waLink(item.phone)} target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2 rounded-xl transition-colors text-sm">💬 WhatsApp</a>
-                                                <a href="tel:{item.phone}" class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold py-2 px-3 rounded-xl transition-colors text-sm">📞</a>
-                                            </div>
-                                            <p class="text-[10px] text-amber-500/70 text-center">⚠️ אין להגיע ללא תיאום מראש</p>
+
+                                            <!-- אזור טלפון / בקשת אירוח -->
+                                            {#if isOwnCard}
+                                                <!-- המארח רואה את הכרטיס שלו עצמו -->
+                                                <div class="flex gap-2 mb-2">
+                                                    <a href={waLink(item.phone)} target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2 rounded-xl transition-colors text-sm">💬 WhatsApp</a>
+                                                    <a href="tel:{item.phone}" class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold py-2 px-3 rounded-xl transition-colors text-sm">📞</a>
+                                                </div>
+                                                <!-- בקשות ממתינות -->
+                                                {#if hostPendingReqs.length > 0}
+                                                    <div class="mt-2 rounded-xl bg-purple-900/20 border border-purple-500/30 p-3 space-y-2">
+                                                        <p class="text-purple-300 text-xs font-bold">📬 בקשות אירוח ממתינות ({hostPendingReqs.length})</p>
+                                                        {#each hostPendingReqs as req}
+                                                            <div class="bg-white/5 rounded-lg p-2.5 space-y-1.5">
+                                                                <p class="text-white text-xs font-bold">{req.guestName}</p>
+                                                                {#if req.guestMessage}<p class="text-gray-400 text-[11px] italic">"{req.guestMessage}"</p>{/if}
+                                                                <div class="flex gap-2">
+                                                                    <button
+                                                                        onclick={() => handleApprove(req, 'approved')}
+                                                                        disabled={approvingRequestId === req.requestItemId}
+                                                                        class="flex-1 bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white text-xs font-bold py-1.5 rounded-lg transition-colors"
+                                                                    >{approvingRequestId === req.requestItemId ? '...' : '✓ אשר'}</button>
+                                                                    <button
+                                                                        onclick={() => handleApprove(req, 'rejected')}
+                                                                        disabled={approvingRequestId === req.requestItemId}
+                                                                        class="flex-1 bg-white/10 hover:bg-white/20 disabled:opacity-50 text-gray-300 text-xs py-1.5 rounded-lg transition-colors"
+                                                                    >{approvingRequestId === req.requestItemId ? '...' : '✗ דחה'}</button>
+                                                                </div>
+                                                            </div>
+                                                        {/each}
+                                                    </div>
+                                                {:else}
+                                                    <p class="text-[10px] text-gray-500 text-center">אין בקשות ממתינות כרגע</p>
+                                                {/if}
+                                            {:else if isApproved}
+                                                <!-- אורח שאושר — רואה טלפון -->
+                                                <div class="mb-1">
+                                                    <p class="text-green-400 text-[11px] font-bold text-center mb-1.5">✅ בקשתך אושרה — הנה פרטי הקשר</p>
+                                                    <div class="flex gap-2">
+                                                        <a href={waLink(item.phone)} target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2 rounded-xl transition-colors text-sm">💬 WhatsApp</a>
+                                                        <a href="tel:{item.phone}" class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold py-2 px-3 rounded-xl transition-colors text-sm">📞</a>
+                                                    </div>
+                                                </div>
+                                            {:else if isPending}
+                                                <!-- בקשה ממתינה לאישור -->
+                                                <div class="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-yellow-900/20 border border-yellow-500/30">
+                                                    <span class="text-yellow-400 text-sm">⏳</span>
+                                                    <span class="text-yellow-300 text-xs font-bold">ממתין לאישור המארח</span>
+                                                </div>
+                                            {:else if isRejected}
+                                                <!-- בקשה נדחתה -->
+                                                <div class="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-red-900/10 border border-red-500/20">
+                                                    <span class="text-red-400 text-sm">✗</span>
+                                                    <span class="text-red-300/70 text-xs">הבקשה נדחתה</span>
+                                                </div>
+                                            {:else if !userId}
+                                                <!-- לא מחובר -->
+                                                <a href="/login" class="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-white/5 border border-white/15 text-gray-400 hover:text-white text-xs transition-colors">
+                                                    🔐 התחבר כדי לשלוח בקשת אירוח
+                                                </a>
+                                            {:else if requestingItemId === item.id}
+                                                <!-- טופס בקשה -->
+                                                <div class="rounded-xl bg-purple-900/15 border border-purple-500/30 p-3 space-y-2">
+                                                    <p class="text-purple-300 text-xs font-bold text-center">🤝 שלח בקשת אירוח</p>
+                                                    <textarea
+                                                        bind:value={requestMessage}
+                                                        placeholder="הודעה אישית למארח (לא חובה)..."
+                                                        rows="2"
+                                                        class="w-full bg-white/5 border border-white/15 rounded-lg text-white text-xs p-2 resize-none placeholder:text-gray-500 focus:outline-none focus:border-purple-400"
+                                                    ></textarea>
+                                                    {#if requestStatus === 'error'}
+                                                        <p class="text-red-400 text-[10px] text-center">{requestErrorMsg}</p>
+                                                    {/if}
+                                                    <div class="flex gap-2">
+                                                        <button
+                                                            onclick={() => sendRequest(item)}
+                                                            disabled={requestStatus === 'sending'}
+                                                            class="flex-1 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white text-xs font-bold py-2 rounded-lg transition-colors"
+                                                        >{requestStatus === 'sending' ? 'שולח...' : '✓ שלח בקשה'}</button>
+                                                        <button
+                                                            onclick={() => { requestingItemId = null; requestMessage = ''; requestStatus = 'idle'; }}
+                                                            class="bg-white/10 hover:bg-white/20 text-gray-300 text-xs py-2 px-3 rounded-lg transition-colors"
+                                                        >ביטול</button>
+                                                    </div>
+                                                </div>
+                                            {:else}
+                                                <!-- כפתור שליחת בקשה -->
+                                                <button
+                                                    onclick={() => { requestingItemId = item.id; requestStatus = 'idle'; requestErrorMsg = ''; requestMessage = ''; }}
+                                                    class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-purple-600/80 hover:bg-purple-600 text-white font-bold text-sm transition-colors"
+                                                >
+                                                    🤝 שלח בקשת אירוח
+                                                </button>
+                                                <p class="text-[10px] text-gray-500 text-center mt-1">הטלפון יחשף לאחר אישור המארח</p>
+                                            {/if}
+
+                                            <p class="text-[10px] text-amber-500/70 text-center mt-2">⚠️ אין להגיע ללא תיאום מראש</p>
                                         </div>
                                     </div>
                                 {/each}
@@ -363,11 +538,11 @@
                                             {#if m.guest_type}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">🧑‍🤝‍🧑 {m.guest_type}</span>{/if}
                                         </div>
                                         <p class="text-gray-300 text-sm leading-relaxed mb-2">{m.notes}</p>
-                                        <div class="flex gap-2 mb-2">
-                                            <a href={waLink(m.phone)} target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2 rounded-xl transition-colors text-sm">💬 צור קשר עם המפרסם</a>
-                                            <a href="tel:{m.phone}" class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold py-2 px-3 rounded-xl transition-colors text-sm">📞</a>
-                                        </div>
-                                        <p class="text-[10px] text-amber-500/70 text-center">⚠️ אין להגיע ללא תיאום מראש</p>
+                                        <button disabled class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-purple-600/50 text-white/60 font-bold text-sm cursor-default">
+                                            🤝 שלח בקשת אירוח
+                                        </button>
+                                        <p class="text-[10px] text-gray-500 text-center mt-1">הטלפון יחשף לאחר אישור המארח</p>
+                                        <p class="text-[10px] text-amber-500/70 text-center mt-1">⚠️ אין להגיע ללא תיאום מראש</p>
                                     </div>
                                 </div>
                             {/each}
@@ -375,6 +550,49 @@
                     </div>
                 </div>
 
+            </div>
+
+            <!-- מדריך שימוש -->
+            <div class="mt-8 rounded-2xl bg-[#0f172a] border border-purple-500/20 overflow-hidden">
+                <button
+                    class="w-full flex items-center justify-between p-4 text-right hover:bg-white/3 transition-colors"
+                    onclick={() => showGuide = !showGuide}
+                >
+                    <span class="text-purple-300 font-bold text-sm">📖 כיצד מערכת האירוח עובדת?</span>
+                    <span class="text-gray-500 text-xs">{showGuide ? '▲ סגור' : '▼ הצג מדריך'}</span>
+                </button>
+                {#if showGuide}
+                    <div class="px-4 pb-5 space-y-4 border-t border-purple-500/10">
+                        <div class="flex gap-3 pt-4">
+                            <span class="text-2xl flex-shrink-0">🏠</span>
+                            <div>
+                                <p class="text-amber-300 font-bold text-sm mb-0.5">שלב 1 — המארח מפרסם הזמנה</p>
+                                <p class="text-gray-400 text-xs leading-relaxed">המארח מפרסם כרטיס עם סגנון הסעודה, כמות המקומות וסגנון האירוח. הטלפון שלו <strong class="text-white/70">אינו מוצג</strong> ברבים — רק לאורחים שאישר.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            <span class="text-2xl flex-shrink-0">🤝</span>
+                            <div>
+                                <p class="text-cyan-300 font-bold text-sm mb-0.5">שלב 2 — האורח שולח בקשה</p>
+                                <p class="text-gray-400 text-xs leading-relaxed">האורח לוחץ על "שלח בקשת אירוח" ויכול לצרף הודעה קצרה. הבקשה מגיעה למארח בלבד.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            <span class="text-2xl flex-shrink-0">✅</span>
+                            <div>
+                                <p class="text-green-300 font-bold text-sm mb-0.5">שלב 3 — המארח מאשר ומגלה טלפון</p>
+                                <p class="text-gray-400 text-xs leading-relaxed">המארח רואה את הבקשות על הכרטיס שלו ויכול לאשר או לדחות. לאחר האישור — הטלפון נחשף לאותו אורח בלבד.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            <span class="text-2xl flex-shrink-0">🚩</span>
+                            <div>
+                                <p class="text-red-300 font-bold text-sm mb-0.5">שלב 4 — דיווח על אורח לא ראוי</p>
+                                <p class="text-gray-400 text-xs leading-relaxed">מארח שאישר אורח ואז חווה התנהגות לא ראויה (ביטול ברגע האחרון, אי-הגעה, התנהגות פוגענית) יכול לדווח עליו. כאשר <strong class="text-white/70">שני מארחים שונים</strong> ידווחו — האורח יחסם מלוח המארחים.</p>
+                            </div>
+                        </div>
+                    </div>
+                {/if}
             </div>
         {/if}
 
