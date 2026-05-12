@@ -280,10 +280,18 @@
             onclick={() => nativeShare(it)}
             title="שיתוף"
             aria-label="שיתוף"
-            class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 border border-white/10 text-gray-300 hover:text-white text-sm flex items-center justify-center transition-colors"
-        >📤</button>
+            class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold py-2.5 px-3 rounded-xl transition-colors"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="18" cy="5" r="3"/>
+                <circle cx="6" cy="12" r="3"/>
+                <circle cx="18" cy="19" r="3"/>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+        </button>
         {#if shareMenuItemId === it.id}
-            <div class="absolute left-0 top-full mt-1.5 z-30 w-44 rounded-xl bg-slate-900 border border-white/15 shadow-2xl p-1.5 flex flex-col gap-0.5">
+            <div class="absolute right-0 bottom-full mb-1.5 z-30 w-44 rounded-xl bg-slate-900 border border-white/15 shadow-2xl p-1.5 flex flex-col gap-0.5">
                 <button type="button" onclick={() => shareTo('whatsapp', it)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">💬 WhatsApp</button>
                 <button type="button" onclick={() => shareTo('telegram', it)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">✈️ Telegram</button>
                 <button type="button" onclick={() => shareTo('facebook', it)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">📘 Facebook</button>
@@ -360,7 +368,6 @@
                                                 <h3 class="text-cyan-300 font-black text-lg">{item.label}</h3>
                                                 {#if item.city}<p class="text-gray-400 text-sm">📍 {item.city}{item.neighborhood ? ` · ${item.neighborhood}` : ''}</p>{/if}
                                             </div>
-                                            {@render shareButton(item)}
                                             {#if dateStr}<span class="text-xs text-gray-500 flex-shrink-0">{dateStr}</span>{/if}
                                         </div>
                                         <div class="p-3">
@@ -375,6 +382,7 @@
                                             <div class="flex gap-2 mb-2">
                                                 <a href={waLink(item.phone)} target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 rounded-xl transition-colors text-base">💬 WhatsApp</a>
                                                 <a href="tel:{item.phone}" class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold py-2.5 px-3 rounded-xl transition-colors text-base">📞</a>
+                                                {@render shareButton(item)}
                                             </div>
                                             {#if canReport}
                                                 {#if reportingItemId === item.id}
@@ -425,7 +433,6 @@
                                             <h3 class="text-cyan-300 font-black text-lg">{m.label}</h3>
                                             <p class="text-gray-400 text-sm">📍 {m.city}{m.neighborhood ? ` · ${m.neighborhood}` : ''}</p>
                                         </div>
-                                        {@render shareButton({ id: `mockg-${m.label}`, label: m.label, city: m.city, neighborhood: m.neighborhood })}
                                         <span class="text-xs text-gray-500 flex-shrink-0">{m.date}</span>
                                     </div>
                                     <div class="p-3">
@@ -438,6 +445,7 @@
                                         <div class="flex gap-2 mb-2">
                                             <a href={waLink(m.phone)} target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 rounded-xl transition-colors text-base">💬 צור קשר</a>
                                             <a href="tel:{m.phone}" class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold py-2.5 px-3 rounded-xl transition-colors text-base">📞</a>
+                                            {@render shareButton({ id: `mockg-${m.label}`, label: m.label, city: m.city, neighborhood: m.neighborhood })}
                                         </div>
                                     </div>
                                 </div>
@@ -474,7 +482,6 @@
                                                 <h3 class="text-amber-300 font-black text-lg">{item.label}</h3>
                                                 {#if item.city}<p class="text-gray-400 text-sm">📍 {item.city}{item.neighborhood ? ` · ${item.neighborhood}` : ''}</p>{/if}
                                             </div>
-                                            {@render shareButton(item)}
                                             <div class="flex items-center gap-1.5 flex-shrink-0">
                                                 {#if isOwnCard}
                                                     <span class="text-[10px] font-bold bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full">הכרטיס שלך</span>
@@ -498,6 +505,7 @@
                                                 <div class="flex gap-2 mb-2">
                                                     <a href={waLink(item.phone)} target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 rounded-xl transition-colors text-base">💬 WhatsApp</a>
                                                     <a href="tel:{item.phone}" class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold py-2.5 px-3 rounded-xl transition-colors text-base">📞</a>
+                                                    {@render shareButton(item)}
                                                     <button
                                                         type="button"
                                                         onclick={() => removeOwnAd(item)}
@@ -539,6 +547,7 @@
                                                     <div class="flex gap-2">
                                                         <a href={waLink(item.phone)} target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 rounded-xl transition-colors text-base">💬 WhatsApp</a>
                                                         <a href="tel:{item.phone}" class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold py-2.5 px-3 rounded-xl transition-colors text-base">📞</a>
+                                                        {@render shareButton(item)}
                                                     </div>
                                                 </div>
                                             {:else if isPending}
@@ -616,7 +625,6 @@
                                             <h3 class="text-amber-300 font-black text-lg">{m.label}</h3>
                                             <p class="text-gray-400 text-sm">📍 {m.city}{m.neighborhood ? ` · ${m.neighborhood}` : ''}</p>
                                         </div>
-                                        {@render shareButton({ id: `mockh-${m.label}`, label: m.label, city: m.city, neighborhood: m.neighborhood })}
                                         <span class="text-xs text-gray-500 flex-shrink-0">{m.date}</span>
                                     </div>
                                     <div class="p-3">
@@ -626,9 +634,12 @@
                                             {#if m.guest_type}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full">{m.guest_type}</span>{/if}
                                         </div>
                                         <p class="text-gray-300 text-base leading-relaxed mb-2">{m.notes}</p>
-                                        <button disabled class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-purple-600/50 text-white/60 font-bold text-sm cursor-default">
-                                            🤝 שלח בקשת אירוח
-                                        </button>
+                                        <div class="flex gap-2">
+                                            <button disabled class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-purple-600/50 text-white/60 font-bold text-sm cursor-default">
+                                                🤝 שלח בקשת אירוח
+                                            </button>
+                                            {@render shareButton({ id: `mockh-${m.label}`, label: m.label, city: m.city, neighborhood: m.neighborhood })}
+                                        </div>
                                         <p class="text-[10px] text-gray-500 text-center mt-1">הטלפון יחשף לאחר אישור המארח</p>
                                         <p class="text-[10px] text-amber-500/70 text-center mt-1">⚠️ אין להגיע ללא תיאום מראש</p>
                                     </div>
