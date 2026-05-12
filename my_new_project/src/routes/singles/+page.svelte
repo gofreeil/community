@@ -84,6 +84,35 @@
         catch { return ''; }
     }
 
+    // --- שיתוף כרטיס ---
+    let shareMenuItemId = $state<string | null>(null);
+    function buildShareText(it: { label: string; age?: string; city?: string; description?: string }): { title: string; text: string; url: string } {
+        const url = typeof window !== 'undefined' ? `${window.location.origin}/singles` : 'https://kehila-bashchuna.co.il/singles';
+        const meta = [it.age ? `🎂 ${it.age}` : '', it.city ? `📍 ${it.city}` : ''].filter(Boolean).join(' · ');
+        const lines = [`💑 לוח פנויים ופנויות — ${it.label}`];
+        if (meta) lines.push(meta);
+        if (it.description) lines.push(it.description);
+        lines.push(url);
+        return { title: 'לוח פנויים ופנויות — קהילה בשכונה', text: lines.join('\n'), url };
+    }
+    async function nativeShare(it: { id: string; label: string; age?: string; city?: string; description?: string }) {
+        const payload = buildShareText(it);
+        if (typeof navigator !== 'undefined' && (navigator as Navigator & { share?: (d: ShareData) => Promise<void> }).share) {
+            try { await (navigator as Navigator & { share: (d: ShareData) => Promise<void> }).share(payload); return; } catch {}
+        }
+        shareMenuItemId = it.id;
+    }
+    function shareTo(network: 'whatsapp' | 'telegram' | 'facebook' | 'x' | 'copy', it: { label: string; age?: string; city?: string; description?: string }) {
+        const { text, url } = buildShareText(it);
+        const enc = encodeURIComponent;
+        if (network === 'whatsapp')      window.open(`https://wa.me/?text=${enc(text)}`, '_blank');
+        else if (network === 'telegram') window.open(`https://t.me/share/url?url=${enc(url)}&text=${enc(text)}`, '_blank');
+        else if (network === 'facebook') window.open(`https://www.facebook.com/sharer/sharer.php?u=${enc(url)}`, '_blank');
+        else if (network === 'x')        window.open(`https://twitter.com/intent/tweet?text=${enc(text)}`, '_blank');
+        else if (network === 'copy')     navigator.clipboard?.writeText(text);
+        shareMenuItemId = null;
+    }
+
     function waLink(phone: string): string {
         const digits = phone.replace(/\D/g, '').replace(/^0/, '972');
         return `https://wa.me/${digits}`;
@@ -234,6 +263,33 @@
                         <p class="text-gray-300 text-sm leading-relaxed mb-4">{person.description}</p>
 
                         <div class="flex gap-2">
+                            <div class="relative flex-shrink-0">
+                                <button
+                                    type="button"
+                                    onclick={() => nativeShare(person)}
+                                    title="שיתוף"
+                                    aria-label="שיתוף"
+                                    class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold py-2.5 px-3 rounded-xl transition-colors"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <circle cx="18" cy="5" r="3"/>
+                                        <circle cx="6" cy="12" r="3"/>
+                                        <circle cx="18" cy="19" r="3"/>
+                                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                                    </svg>
+                                </button>
+                                {#if shareMenuItemId === person.id}
+                                    <div class="absolute right-0 bottom-full mb-1.5 z-30 w-44 rounded-xl bg-slate-900 border border-white/15 shadow-2xl p-1.5 flex flex-col gap-0.5">
+                                        <button type="button" onclick={() => shareTo('whatsapp', person)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">💬 WhatsApp</button>
+                                        <button type="button" onclick={() => shareTo('telegram', person)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">✈️ Telegram</button>
+                                        <button type="button" onclick={() => shareTo('facebook', person)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">📘 Facebook</button>
+                                        <button type="button" onclick={() => shareTo('x',        person)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">𝕏 Twitter</button>
+                                        <button type="button" onclick={() => shareTo('copy',     person)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">📋 העתק קישור</button>
+                                        <button type="button" onclick={() => shareMenuItemId = null} class="flex items-center justify-center text-gray-500 hover:text-gray-300 rounded-lg px-2.5 py-1 text-[10px] transition-colors">סגור</button>
+                                    </div>
+                                {/if}
+                            </div>
                             <a
                                 href={waLink(person.phone)}
                                 target="_blank"
