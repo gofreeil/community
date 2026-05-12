@@ -77,6 +77,36 @@
         return `https://wa.me/${digits}`;
     }
 
+    // --- שיתוף כרטיס בייביסיטר ---
+    let shareMenuSitterId = $state<string | null>(null);
+    function buildSitterShareText(s: { name?: string; label?: string; city?: string; neighborhood?: string; description?: string }): { title: string; text: string; url: string } {
+        const url = typeof window !== 'undefined' ? `${window.location.origin}/babysitters` : 'https://kehila-bashchuna.co.il/babysitters';
+        const loc = [s.neighborhood, s.city].filter(Boolean).join(', ');
+        const name = s.name || s.label || 'בייביסיטר';
+        const lines = [`👶 בייביסיטר — ${name}`];
+        if (loc) lines.push(`📍 ${loc}`);
+        if (s.description) lines.push(s.description);
+        lines.push(url);
+        return { title: 'בייביסיטר — קהילה בשכונה', text: lines.join('\n'), url };
+    }
+    async function nativeShareSitter(s: { id: string; name?: string; label?: string; city?: string; neighborhood?: string; description?: string }) {
+        const payload = buildSitterShareText(s);
+        if (typeof navigator !== 'undefined' && (navigator as Navigator & { share?: (d: ShareData) => Promise<void> }).share) {
+            try { await (navigator as Navigator & { share: (d: ShareData) => Promise<void> }).share(payload); return; } catch {}
+        }
+        shareMenuSitterId = s.id;
+    }
+    function shareSitterTo(network: 'whatsapp' | 'telegram' | 'facebook' | 'x' | 'copy', s: { name?: string; label?: string; city?: string; neighborhood?: string; description?: string }) {
+        const { text, url } = buildSitterShareText(s);
+        const enc = encodeURIComponent;
+        if (network === 'whatsapp')      window.open(`https://wa.me/?text=${enc(text)}`, '_blank');
+        else if (network === 'telegram') window.open(`https://t.me/share/url?url=${enc(url)}&text=${enc(text)}`, '_blank');
+        else if (network === 'facebook') window.open(`https://www.facebook.com/sharer/sharer.php?u=${enc(url)}`, '_blank');
+        else if (network === 'x')        window.open(`https://twitter.com/intent/tweet?text=${enc(text)}`, '_blank');
+        else if (network === 'copy')     navigator.clipboard?.writeText(text);
+        shareMenuSitterId = null;
+    }
+
     const GRADIENTS = [
         'from-pink-500 to-rose-600',
         'from-purple-500 to-fuchsia-600',
@@ -422,6 +452,36 @@
     });
 </script>
 
+{#snippet shareSitterButton(s: { id: string; name?: string; label?: string; city?: string; neighborhood?: string; description?: string })}
+    <div class="relative flex-shrink-0">
+        <button
+            type="button"
+            onclick={() => nativeShareSitter(s)}
+            title="שיתוף"
+            aria-label="שיתוף"
+            class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white py-2.5 px-3 rounded-xl transition-colors"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="18" cy="5" r="3"/>
+                <circle cx="6" cy="12" r="3"/>
+                <circle cx="18" cy="19" r="3"/>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+        </button>
+        {#if shareMenuSitterId === s.id}
+            <div class="absolute right-0 bottom-full mb-1.5 z-30 w-44 rounded-xl bg-slate-900 border border-white/15 shadow-2xl p-1.5 flex flex-col gap-0.5">
+                <button type="button" onclick={() => shareSitterTo('whatsapp', s)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">💬 WhatsApp</button>
+                <button type="button" onclick={() => shareSitterTo('telegram', s)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">✈️ Telegram</button>
+                <button type="button" onclick={() => shareSitterTo('facebook', s)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">📘 Facebook</button>
+                <button type="button" onclick={() => shareSitterTo('x',        s)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">𝕏 Twitter</button>
+                <button type="button" onclick={() => shareSitterTo('copy',     s)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">📋 העתק קישור</button>
+                <button type="button" onclick={() => shareMenuSitterId = null} class="flex items-center justify-center text-gray-500 hover:text-gray-300 rounded-lg px-2.5 py-1 text-[10px] transition-colors">סגור</button>
+            </div>
+        {/if}
+    </div>
+{/snippet}
+
 <div class="min-h-screen bg-[#070b14] pt-6 pb-20" dir="rtl">
 
     <!-- ===== Hero ===== -->
@@ -666,6 +726,7 @@
 
                         <!-- פעולות -->
                         <div class="p-3 pt-2 flex gap-2 border-t border-white/5">
+                            {@render shareSitterButton({ id: s.id, name: s.name, city: s.city, neighborhood: s.neighborhood, description: s.bio })}
                             <a href={waLink(s.phone)} target="_blank" rel="noopener noreferrer"
                                 class="flex-1 flex items-center justify-center gap-1.5 bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 rounded-xl transition-colors text-sm">
                                 💬 WhatsApp
