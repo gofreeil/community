@@ -298,43 +298,35 @@
                         {#if field.required}
                             <span class="text-red-400">*</span>
                         {/if}
-                        {#if field.hint && field.type === 'toggle'}
-                            <span class="relative inline-block align-middle ml-1 group">
-                                <button
-                                    type="button"
-                                    aria-label="הסבר"
-                                    class="w-4 h-4 inline-flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-gray-300 text-[10px] font-bold cursor-help select-none"
-                                    onmouseenter={() => openHintKey = field.key}
-                                    onmouseleave={() => openHintKey = ''}
-                                    onpointerdown={() => startLongPress(field.key)}
-                                    onpointerup={cancelLongPress}
-                                    onpointercancel={cancelLongPress}
-                                    onpointerleave={cancelLongPress}
-                                    oncontextmenu={(e) => e.preventDefault()}
-                                >ⓘ</button>
-                                {#if openHintKey === field.key}
-                                    <span
-                                        role="tooltip"
-                                        class="absolute z-20 top-full right-0 mt-1.5 w-64 max-w-[80vw] p-2.5 rounded-lg bg-slate-900 border border-white/15 shadow-xl text-gray-200 text-xs font-normal leading-relaxed text-right whitespace-normal"
-                                    >{field.hint}</span>
-                                {/if}
-                            </span>
-                        {/if}
                     </label>
 
                     {#if field.type === 'toggle' && field.options}
-                        <div class="flex p-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm gap-1 mx-auto w-full max-w-[280px]">
-                            {#each field.options as opt}
-                                <button
-                                    type="button"
-                                    onclick={() => setFieldValue(field.key, opt)}
-                                    class="flex-1 px-3 py-2 text-xs font-semibold rounded-full transition-all duration-200 {getFieldValue(field.key) === opt
-                                        ? 'bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-lg shadow-indigo-500/30 scale-[1.02]'
-                                        : 'text-gray-400 hover:text-white hover:bg-white/5'}"
-                                >
-                                    {opt}
-                                </button>
-                            {/each}
+                        <div class="relative mx-auto w-full max-w-[280px]">
+                            <div class="flex p-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm gap-1">
+                                {#each field.options as opt}
+                                    {@const hintTarget = field.hint && opt === (field.default ?? field.options[0])}
+                                    <button
+                                        type="button"
+                                        onclick={() => setFieldValue(field.key, opt)}
+                                        onmouseenter={hintTarget ? () => openHintKey = field.key : undefined}
+                                        onmouseleave={hintTarget ? () => openHintKey = '' : undefined}
+                                        onpointerdown={hintTarget ? () => startLongPress(field.key) : undefined}
+                                        onpointerup={hintTarget ? cancelLongPress : undefined}
+                                        onpointercancel={hintTarget ? cancelLongPress : undefined}
+                                        class="flex-1 px-3 py-2 text-xs font-semibold rounded-full transition-all duration-200 {getFieldValue(field.key) === opt
+                                            ? 'bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-lg shadow-indigo-500/30 scale-[1.02]'
+                                            : 'text-gray-400 hover:text-white hover:bg-white/5'}"
+                                    >
+                                        {opt}
+                                    </button>
+                                {/each}
+                            </div>
+                            {#if field.hint && openHintKey === field.key}
+                                <span
+                                    role="tooltip"
+                                    class="absolute z-20 top-full left-1/2 -translate-x-1/2 mt-1.5 w-64 max-w-[90vw] p-2.5 rounded-lg bg-slate-900 border border-white/15 shadow-xl text-gray-200 text-xs font-normal leading-relaxed text-center whitespace-normal"
+                                >{field.hint}</span>
+                            {/if}
                         </div>
 
                     {:else if field.type === 'textarea'}
