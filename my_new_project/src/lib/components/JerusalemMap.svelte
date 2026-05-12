@@ -332,6 +332,7 @@
         restaurants: '/national/restaurants',
         business:    '/babysitters',
         realestate:  '/shabbat-hosting',
+        education:   '/chugim',
     };
     let nationalBoardUrl = $derived(nationalBoardUrls[selectedCategory] || '');
     let hasShownListAnimation = $state(false); // עקוב אם כבר הראינו את האנימציה
@@ -1215,6 +1216,7 @@
                         {@const giveawayNational = category.id === 'giveaway'}
                         {@const babysitterNational = category.id === 'business'}
                         {@const shabbatNational = category.id === 'realestate'}
+                        {@const chugimNational = category.id === 'education'}
                         <div
                             class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-500/30 rounded-lg md:rounded-xl overflow-hidden transition-all"
                         >
@@ -1297,6 +1299,22 @@
                                                        underline underline-offset-2 decoration-purple-500/40 hover:decoration-purple-400
                                                        transition-colors font-medium whitespace-nowrap"
                                             >← ללוח שבת שלום</span>
+                                        {/if}
+                                        {#if chugimNational}
+                                            <span
+                                                role="link"
+                                                tabindex="0"
+                                                onclick={(e) => { e.stopPropagation(); goto('/chugim'); }}
+                                                onkeydown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); goto('/chugim'); } }}
+                                                class="inline-flex items-center gap-1.5 text-[11px] font-bold text-white
+                                                       bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-400 hover:to-violet-500
+                                                       px-2.5 py-1 rounded-full shadow-md shadow-indigo-500/30 hover:shadow-indigo-500/50
+                                                       transition-all whitespace-nowrap cursor-pointer"
+                                                title="לוח חוגים ארצי"
+                                            >
+                                                <span class="bg-white/25 px-1.5 rounded-full text-[10px] font-black">{totalItems}</span>
+                                                ← ללוח חוגים ארצי
+                                            </span>
                                         {/if}
                                     </div>
                                     <div
