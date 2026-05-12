@@ -2,7 +2,7 @@
 // כך דף הפרופיל יכול להציג קיצורי דרך + תקציר לכל פריט שאהב המשתמש,
 // בלי תלות בנתוני שרת או בנתוני mock.
 
-export type LikedItemType = 'giveaway' | 'single' | 'babysitter';
+export type LikedItemType = 'giveaway' | 'single' | 'babysitter' | 'class';
 
 export interface LikedItem {
     type: LikedItemType;
