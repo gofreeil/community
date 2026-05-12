@@ -291,14 +291,14 @@
                     </label>
 
                     {#if field.type === 'toggle' && field.options}
-                        <div class="flex rounded-xl overflow-hidden border border-white/15 max-w-xs mx-auto">
+                        <div class="inline-flex p-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm gap-1 mx-auto w-full max-w-[280px]">
                             {#each field.options as opt}
                                 <button
                                     type="button"
                                     onclick={() => setFieldValue(field.key, opt)}
-                                    class="flex-1 py-3 text-sm font-bold transition-all {getFieldValue(field.key) === opt
-                                        ? `${colors.btn} text-white`
-                                        : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'}"
+                                    class="flex-1 px-3 py-2 text-xs font-semibold rounded-full transition-all duration-200 {getFieldValue(field.key) === opt
+                                        ? 'bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-lg shadow-indigo-500/30 scale-[1.02]'
+                                        : 'text-gray-400 hover:text-white hover:bg-white/5'}"
                                 >
                                     {opt}
                                 </button>
