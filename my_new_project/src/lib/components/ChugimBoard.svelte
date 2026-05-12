@@ -541,7 +541,7 @@
             class="flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-400 hover:to-violet-500 text-white font-bold px-7 py-3 rounded-full shadow-lg hover:shadow-indigo-500/30 transition-all hover:scale-105 text-sm"
         >
             <span class="font-black text-lg leading-none">+</span>
-            הוסף חוג ללוח
+            הוסף חוג
         </a>
     </div>
 

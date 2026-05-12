@@ -92,6 +92,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
         icon: '🎨',
         color: 'red',
         priceRow: 3,
+        addPageTitle: 'הוסף חוג',
         fields: [
             { key: 'label',       label: 'שם החוג',             type: 'text',     required: true,  placeholder: 'חוג ציור, כדורגל לילדים...' },
             { key: 'age_group',   label: 'קבוצת גיל',           type: 'text',     required: true,  placeholder: 'גילאי 6-12' },
