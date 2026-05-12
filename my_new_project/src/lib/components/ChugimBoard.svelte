@@ -711,18 +711,6 @@
                                         <span class="text-gray-500 font-normal">({k.reviews})</span>
                                     </span>
                                 {/if}
-                                {#if k.sector}
-                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {k.sector === 'חרדי'
-                                        ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
-                                        : k.sector === 'דתי'
-                                            ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
-                                            : 'bg-white/10 text-gray-300 border border-white/20'}">
-                                        {k.sector}
-                                    </span>
-                                {/if}
-                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-gray-300">
-                                    {k.format === 'מקוון' ? '💻' : k.format === 'היברידי' ? '🔀' : '🏫'} {k.format}
-                                </span>
                             </div>
                         </div>
 
