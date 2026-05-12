@@ -117,7 +117,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
             { key: 'food_style',  label: 'סגנון אוכל',            type: 'select',   required: false, options: ['ספרדי', 'אשכנזי', 'תימני', 'מעורב', 'אחר'] },
             { key: 'capacity',    label: 'כמה אנשים',             type: 'number',   required: false, placeholder: '4', default: '1', half: true },
             { key: 'guest_type',  label: 'מתאים ל',               type: 'select',   required: false, options: ['משפחה', 'זוג', 'יחיד/ה', 'קבוצה', 'הכל מתאים'], default: 'יחיד/ה', half: true },
-            { key: 'preferences', label: 'העדפות / הערות',         type: 'textarea', required: false, placeholder: 'רמת דתיות, ללא אלרגיות, לינה...' },
+            { key: 'preferences', label: 'הערות / טקסט חופשי',     type: 'textarea', required: false, placeholder: 'רמת דתיות, ללא אלרגיות, לינה...' },
             { key: 'address',     label: 'שכונה / אזור',          type: 'text',     required: false, placeholder: 'קרית משה, ירושלים' },
             { key: 'contact',     label: 'איש קשר',                type: 'text',     required: false, placeholder: 'יוסי מירושלים' },
             { key: 'phone',       label: 'טלפון / וואטסאפ',       type: 'tel',      required: false, placeholder: '05X-XXXXXXX', hint: 'הטלפון שלך ייחשף למעוניין להתארח רק לאחר אישורך האישי' },
