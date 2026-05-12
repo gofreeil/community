@@ -11,6 +11,20 @@
         : data.currentUserGender === 'female' ? 'male'
         : null;
     let filter = $state<Gender>(lockedFilter ?? 'all');
+
+    type AgeGroup = 'all' | 'under30' | '30plus' | 'golden';
+    type Religiosity = 'all' | 'haredi' | 'dl' | 'general';
+    let ageFilter = $state<AgeGroup>('all');
+    let relFilter = $state<Religiosity>('all');
+
+    function ageGroupOf(ageStr: string): AgeGroup {
+        const n = parseInt(ageStr, 10);
+        if (!Number.isFinite(n)) return 'all';
+        if (n >= 60) return 'golden';
+        if (n >= 30) return '30plus';
+        return 'under30';
+    }
+
     let favorites = $state<Set<string>>(new Set());
 
     $effect(() => {
@@ -83,20 +97,21 @@
 
     // Mock data for display
     const mockSingles = [
-        { id: '1', label: 'דוד כ.', gender: 'male' as const, age: '28', city: 'ירושלים', description: 'סטודנט למדעי המחשב, אוהב טיולים ומוזיקה. מחפש בת זוג רצינית.', contact: 'דוד', phone: '050-1234567' },
-        { id: '2', label: 'שרה מ.', gender: 'female' as const, age: '25', city: 'ירושלים', description: 'מורה לאנגלית, אוהבת ספרים ובישול. מחפשת בן זוג ירא שמיים.', contact: 'שרה', phone: '050-2345678' },
-        { id: '3', label: 'יוסף ל.', gender: 'male' as const, age: '31', city: 'בני ברק', description: 'מהנדס תוכנה, בוגר ישיבה. מחפש בת זוג עם ערכים.', contact: 'יוסף', phone: '050-3456789' },
-        { id: '4', label: 'רחל א.', gender: 'female' as const, age: '24', city: 'רמת גן', description: 'סטודנטית לעבודה סוציאלית, מתנדבת. מחפשת בן זוג רציני.', contact: 'רחל', phone: '050-4567890' },
-        { id: '5', label: 'משה ד.', gender: 'male' as const, age: '29', city: 'ירושלים', description: 'עורך דין, אוהב ספורט ושיעורי תורה. מחפש את הבת זוג הנכונה.', contact: 'משה', phone: '050-5678901' },
-        { id: '6', label: 'לאה ב.', gender: 'female' as const, age: '27', city: 'פתח תקווה', description: 'גרפיקאית, אוהבת אמנות ויצירה. מחפשת בן זוג עם חוש הומור.', contact: 'לאה', phone: '050-6789012' },
-        { id: '7', label: 'אברהם ש.', gender: 'male' as const, age: '33', city: 'ירושלים', description: 'רואה חשבון, אוהב חסד ועזרה לזולת. מחפש בת זוג לבניין בית.', contact: 'אברהם', phone: '050-7890123' },
-        { id: '8', label: 'מרים ג.', gender: 'female' as const, age: '26', city: 'ירושלים', description: 'אחות מוסמכת, אוהבת טבע וטיולים. מחפשת בן זוג אמיתי.', contact: 'מרים', phone: '050-8901234' },
+        { id: '1', label: 'דוד כ.', gender: 'male' as const, age: '28', religiosity: 'haredi' as const, city: 'ירושלים', description: 'סטודנט למדעי המחשב, אוהב טיולים ומוזיקה. מחפש בת זוג רצינית.', contact: 'דוד', phone: '050-1234567' },
+        { id: '2', label: 'שרה מ.', gender: 'female' as const, age: '25', religiosity: 'haredi' as const, city: 'ירושלים', description: 'מורה לאנגלית, אוהבת ספרים ובישול. מחפשת בן זוג ירא שמיים.', contact: 'שרה', phone: '050-2345678' },
+        { id: '3', label: 'יוסף ל.', gender: 'male' as const, age: '31', religiosity: 'haredi' as const, city: 'בני ברק', description: 'מהנדס תוכנה, בוגר ישיבה. מחפש בת זוג עם ערכים.', contact: 'יוסף', phone: '050-3456789' },
+        { id: '4', label: 'רחל א.', gender: 'female' as const, age: '24', religiosity: 'dl' as const, city: 'רמת גן', description: 'סטודנטית לעבודה סוציאלית, מתנדבת. מחפשת בן זוג רציני.', contact: 'רחל', phone: '050-4567890' },
+        { id: '5', label: 'משה ד.', gender: 'male' as const, age: '29', religiosity: 'dl' as const, city: 'ירושלים', description: 'עורך דין, אוהב ספורט ושיעורי תורה. מחפש את הבת זוג הנכונה.', contact: 'משה', phone: '050-5678901' },
+        { id: '6', label: 'לאה ב.', gender: 'female' as const, age: '27', religiosity: 'general' as const, city: 'פתח תקווה', description: 'גרפיקאית, אוהבת אמנות ויצירה. מחפשת בן זוג עם חוש הומור.', contact: 'לאה', phone: '050-6789012' },
+        { id: '7', label: 'אברהם ש.', gender: 'male' as const, age: '63', religiosity: 'dl' as const, city: 'ירושלים', description: 'רואה חשבון בגמלאות, אוהב חסד ועזרה לזולת. מחפש בת זוג לבניין בית.', contact: 'אברהם', phone: '050-7890123' },
+        { id: '8', label: 'מרים ג.', gender: 'female' as const, age: '65', religiosity: 'general' as const, city: 'ירושלים', description: 'אחות בדימוס, אוהבת טבע וטיולים. מחפשת בן זוג אמיתי.', contact: 'מרים', phone: '050-8901234' },
     ];
 
     let filteredMock = $derived(
-        filter === 'all'
-            ? mockSingles
-            : mockSingles.filter(s => s.gender === filter)
+        mockSingles
+            .filter(s => filter === 'all' || s.gender === filter)
+            .filter(s => ageFilter === 'all' || ageGroupOf(s.age) === ageFilter)
+            .filter(s => relFilter === 'all' || s.religiosity === relFilter)
     );
 </script>
 
@@ -113,37 +128,63 @@
             <p class="text-gray-400">לוח ארצי — מציאת בן/בת זוג מכל רחבי הארץ</p>
         </div>
 
-        <!-- Filter tabs -->
-        {#if lockedFilter}
-            <!-- מגדר נעול לפי הפרופיל — מציגים תווית ולא טאבים -->
-            <div class="flex justify-center mb-6">
-                <div class="inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold bg-gradient-to-r {lockedFilter === 'male' ? 'from-blue-500 to-cyan-500' : 'from-pink-500 to-rose-500'} text-white shadow-lg">
-                    <span>{lockedFilter === 'male' ? '👨 פנויים' : '👩 פנויות'}</span>
-                    <span class="text-white/80 text-xs">· מותאם לפרופיל שלך</span>
+        <!-- Filters: גילאים + רמה דתית -->
+        <div class="mb-6 space-y-3">
+            <!-- גילאים -->
+            <div>
+                <div class="text-gray-400 text-xs font-bold mb-2 text-center">גילאים</div>
+                <div class="flex flex-wrap justify-center gap-2">
+                    <button
+                        onclick={() => ageFilter = 'all'}
+                        class="px-4 py-1.5 rounded-full text-sm font-bold transition-all {ageFilter === 'all' ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg' : 'bg-white/10 text-gray-300 hover:bg-white/15'}"
+                    >הכל</button>
+                    <button
+                        onclick={() => ageFilter = 'under30'}
+                        class="px-4 py-1.5 rounded-full text-sm font-bold transition-all {ageFilter === 'under30' ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg' : 'bg-white/10 text-gray-300 hover:bg-white/15'}"
+                    >עד גיל 30</button>
+                    <button
+                        onclick={() => ageFilter = '30plus'}
+                        class="px-4 py-1.5 rounded-full text-sm font-bold transition-all {ageFilter === '30plus' ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg' : 'bg-white/10 text-gray-300 hover:bg-white/15'}"
+                    >30+</button>
+                    <button
+                        onclick={() => ageFilter = 'golden'}
+                        class="px-4 py-1.5 rounded-full text-sm font-bold transition-all {ageFilter === 'golden' ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg' : 'bg-white/10 text-gray-300 hover:bg-white/15'}"
+                    >גיל הזהב</button>
                 </div>
             </div>
-        {:else}
-            <div class="flex justify-center gap-2 mb-6">
-                <button
-                    onclick={() => filter = 'all'}
-                    class="px-5 py-2 rounded-full text-sm font-bold transition-all {filter === 'all' ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg' : 'bg-white/10 text-gray-400 hover:bg-white/15'}"
-                >
-                    🌍 הכל
-                </button>
-                <button
-                    onclick={() => filter = 'male'}
-                    class="px-5 py-2 rounded-full text-sm font-bold transition-all {filter === 'male' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg' : 'bg-white/10 text-gray-400 hover:bg-white/15'}"
-                >
-                    👨 פנויים
-                </button>
-                <button
-                    onclick={() => filter = 'female'}
-                    class="px-5 py-2 rounded-full text-sm font-bold transition-all {filter === 'female' ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg' : 'bg-white/10 text-gray-400 hover:bg-white/15'}"
-                >
-                    👩 פנויות
-                </button>
+
+            <!-- רמה דתית -->
+            <div>
+                <div class="text-gray-400 text-xs font-bold mb-2 text-center">רמה דתית</div>
+                <div class="flex flex-wrap justify-center gap-2">
+                    <button
+                        onclick={() => relFilter = 'all'}
+                        class="px-4 py-1.5 rounded-full text-sm font-bold transition-all {relFilter === 'all' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg' : 'bg-white/10 text-gray-300 hover:bg-white/15'}"
+                    >הכל</button>
+                    <button
+                        onclick={() => relFilter = 'haredi'}
+                        class="px-4 py-1.5 rounded-full text-sm font-bold transition-all {relFilter === 'haredi' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg' : 'bg-white/10 text-gray-300 hover:bg-white/15'}"
+                    >חרדי</button>
+                    <button
+                        onclick={() => relFilter = 'dl'}
+                        class="px-4 py-1.5 rounded-full text-sm font-bold transition-all {relFilter === 'dl' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg' : 'bg-white/10 text-gray-300 hover:bg-white/15'}"
+                    >דתי לאומי</button>
+                    <button
+                        onclick={() => relFilter = 'general'}
+                        class="px-4 py-1.5 rounded-full text-sm font-bold transition-all {relFilter === 'general' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg' : 'bg-white/10 text-gray-300 hover:bg-white/15'}"
+                    >מגזר כללי</button>
+                </div>
             </div>
-        {/if}
+
+            {#if lockedFilter}
+                <div class="flex justify-center">
+                    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r {lockedFilter === 'male' ? 'from-blue-500 to-cyan-500' : 'from-pink-500 to-rose-500'} text-white shadow">
+                        <span>{lockedFilter === 'male' ? '👨 פנויים' : '👩 פנויות'}</span>
+                        <span class="text-white/80">· מותאם לפרופיל שלך</span>
+                    </div>
+                </div>
+            {/if}
+        </div>
 
         <!-- Add button -->
         <div class="flex justify-center mb-6">
