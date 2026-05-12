@@ -621,7 +621,7 @@
                             <span class="text-2xl flex-shrink-0">🚩</span>
                             <div>
                                 <p class="text-red-300 font-bold text-base mb-1">שלב 4 — דיווח על אורח לא ראוי</p>
-                                <p class="text-gray-300 text-sm leading-relaxed">מארח שאישר אורח ואז חווה התנהגות לא ראויה (ביטול ברגע האחרון, אי-הגעה, התנהגות פוגענית) יכול לדווח עליו. כאשר <strong class="text-white/70">שני מארחים שונים</strong> ידווחו — האורח יחסם מלוח המארחים.</p>
+                                <p class="text-gray-300 text-sm leading-relaxed">מארח שאישר אורח ואז חווה התנהגות לא ראויה (ביטול ברגע האחרון, אי-הגעה, התנהגות פוגענית) יכול לדווח עליו. כאשר <strong class="text-white/70">שני מארחים שונים</strong> ידווחו — האורח יחסם לצמיתות מלוח המארחים.</p>
                             </div>
                         </div>
                     </div>
