@@ -44,9 +44,11 @@
 		likedItems = getLikedItems();
 	}
 
-	// --- מחיקה לצמיתות של פריט מהפרופיל ---
+	// --- ניהול מודעות מוקפאות מהפרופיל: מחיקה לצמיתות / פרסום שנית ---
 	let deletingItemId = $state<string | null>(null);
 	let deletedItemIds = $state<string[]>([]);
+	let republishingItemId = $state<string | null>(null);
+	let republishedItemIds = $state<string[]>([]);
 
 	async function deleteOwnItem(itemId: string, label: string) {
 		if (!confirm(`למחוק לצמיתות את "${label}"? פעולה זו אינה הפיכה.`)) return;
@@ -66,6 +68,26 @@
 			alert('שגיאת תקשורת — נסה שוב');
 		}
 		deletingItemId = null;
+	}
+
+	async function republishOwnItem(itemId: string) {
+		republishingItemId = itemId;
+		try {
+			const res = await fetch(`/api/items/${itemId}`, {
+				method: 'PATCH',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ action: 'unfreeze' }),
+			});
+			const data = await res.json();
+			if (data.success) {
+				republishedItemIds = [...republishedItemIds, itemId];
+			} else {
+				alert(data.message ?? 'שגיאה בפרסום מחדש');
+			}
+		} catch {
+			alert('שגיאת תקשורת — נסה שוב');
+		}
+		republishingItemId = null;
 	}
 
 	function unlike(item: LikedItem) {
@@ -1934,7 +1956,18 @@
 										</div>
 									</div>
 								</a>
-								<div class="mt-3 pt-3 border-t border-white/5 flex justify-end">
+								<div class="mt-3 pt-3 border-t border-white/5 flex justify-end gap-2 flex-wrap">
+									{#if item.status === 'frozen' && !republishedItemIds.includes(item.id)}
+										<button
+											type="button"
+											onclick={() => republishOwnItem(item.id)}
+											disabled={republishingItemId === item.id}
+											class="text-[11px] font-bold text-green-400/90 hover:text-green-300 hover:bg-green-500/10 px-2.5 py-1 rounded-md transition-colors disabled:opacity-50"
+											title="פרסם מחדש בלוח הציבורי"
+										>{republishingItemId === item.id ? '...' : '🚀 פרסם שנית'}</button>
+									{:else if republishedItemIds.includes(item.id)}
+										<span class="text-[11px] font-bold text-green-300 px-2.5 py-1">✓ פורסם מחדש</span>
+									{/if}
 									<button
 										type="button"
 										onclick={() => deleteOwnItem(item.id, item.label)}

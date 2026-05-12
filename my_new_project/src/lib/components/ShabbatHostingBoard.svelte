@@ -175,9 +175,10 @@
     // --- הסרת מודעה (freeze) על ידי הבעלים מהלוח הציבורי ---
     let removingItemId = $state<string | null>(null);
     let removedItemIds = $state<string[]>([]);
+    let showFrozenInfoModal = $state(false);
 
     async function removeOwnAd(item: DbItem) {
-        if (!confirm('להסיר את המודעה מהלוח? היא תעבור לסטטוס "מוקפא" ותוצג בפרופיל שלך, ושם תוכל למחוק לצמיתות.')) return;
+        if (!confirm('להסיר את המודעה מהלוח?')) return;
         removingItemId = item.id;
         try {
             const res = await fetch(`/api/items/${item.id}`, {
@@ -188,6 +189,7 @@
             const data = await res.json();
             if (data.success) {
                 removedItemIds = [...removedItemIds, item.id];
+                showFrozenInfoModal = true;
             } else {
                 alert(data.message ?? 'שגיאה בהסרה');
             }
@@ -631,3 +633,41 @@
         </div>
     </div>
 </div>
+
+{#if showFrozenInfoModal}
+    <div
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+        onclick={() => (showFrozenInfoModal = false)}
+        role="dialog"
+        aria-modal="true"
+    >
+        <div
+            class="max-w-md w-full rounded-2xl border-2 border-blue-500/40 bg-[#0f172a] shadow-2xl p-6 text-center"
+            onclick={(e) => e.stopPropagation()}
+            role="document"
+        >
+            <div class="text-5xl mb-3">❄️</div>
+            <h3 class="text-blue-300 font-black text-lg mb-2">המודעה הוקפאה</h3>
+            <p class="text-gray-300 text-sm leading-relaxed mb-4">
+                המודעה שלך הוסרה מהלוח הציבורי ונמצאת בסטטוס <strong class="text-blue-200">"מודעה מוקפאת"</strong> בדף הפרופיל שלך.
+                <br>
+                משם תוכל <strong class="text-white">לפרסם אותה שנית</strong> או <strong class="text-white">למחוק אותה לצמיתות</strong>.
+            </p>
+            <div class="flex flex-col gap-2">
+                <a
+                    href="/profile"
+                    class="block w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-black py-2.5 rounded-xl transition-colors text-sm"
+                >
+                    👤 פתח את דף הפרופיל
+                </a>
+                <button
+                    type="button"
+                    onclick={() => (showFrozenInfoModal = false)}
+                    class="text-gray-400 hover:text-white text-xs font-bold py-2 transition-colors"
+                >
+                    סגור
+                </button>
+            </div>
+        </div>
+    </div>
+{/if}
