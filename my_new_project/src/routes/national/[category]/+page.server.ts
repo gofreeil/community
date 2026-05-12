@@ -1,12 +1,16 @@
-import { error } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { getItemsByCategory } from '$lib/server/db';
 import { categoryConfig } from '$lib/categoryFields';
 
+// הפניות לדפים ארציים שכבר קיימים כדף ייעודי באתר (למנוע כפילות)
+const nationalRedirects: Record<string, string> = {
+    singles: '/singles',
+};
+
 // קטגוריות שיש להן דף ארצי
 // ⚠️ אין export — SvelteKit מאפשר רק: load, actions, prerender, csr, ssr, trailingSlash, config, entries, או עם '_' prefix
 const nationalCategories: Record<string, { slug: string; title: string }> = {
-    singles:     { slug: 'singles',     title: 'שידוכים — פנויים ופנויות' },
     security:    { slug: 'security',    title: 'צימרים ונופש' },
     attractions: { slug: 'attractions', title: 'אטרקציות' },
     jobs:        { slug: 'jobs',        title: 'דרושים עובדים' },
@@ -15,6 +19,10 @@ const nationalCategories: Record<string, { slug: string; title: string }> = {
 
 export const load: PageServerLoad = async ({ params }) => {
     const categoryId = params.category;
+
+    if (nationalRedirects[categoryId]) {
+        redirect(308, nationalRedirects[categoryId]);
+    }
 
     if (!nationalCategories[categoryId]) {
         error(404, `אין דף ארצי לקטגוריה "${categoryId}"`);

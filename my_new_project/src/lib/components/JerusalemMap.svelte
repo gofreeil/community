@@ -325,7 +325,7 @@
     // מיפוי קטגוריה → URL של הלוח הארצי שלה (אם קיים)
     const nationalBoardUrls: Record<string, string> = {
         gemachim:    'https://national-gemach.vercel.app/',
-        singles:     '/national/singles',
+        singles:     '/singles',
         security:    '/national/security',
         attractions: '/national/attractions',
         jobs:        '/national/jobs',
