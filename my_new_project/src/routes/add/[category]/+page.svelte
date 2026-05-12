@@ -105,6 +105,18 @@
         formValues = { ...formValues, [key]: value };
     }
 
+    // ---- כשמשתמש בוחר 'מחפש להתארח' — ברירת המחדל של 'משך הפרסום' היא 'לשבת הקרובה בלבד' ----
+    let prevOfferType = $state(formValues.offer_type ?? '');
+    $effect(() => {
+        const ot = formValues.offer_type;
+        if (ot !== prevOfferType) {
+            prevOfferType = ot;
+            if (categoryId === 'realestate' && formValues.posting_type !== undefined) {
+                setFieldValue('posting_type', ot === 'מחפש להתארח' ? 'לשבת הקרובה בלבד' : 'קבוע');
+            }
+        }
+    });
+
     // ---- Visibility (showIf) ----
     function isFieldVisible(field: typeof config.fields[number]): boolean {
         if (!field.showIf) return true;
