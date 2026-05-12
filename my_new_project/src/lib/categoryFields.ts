@@ -9,6 +9,8 @@ export interface FieldDef {
     default?: string;
     half?: boolean;
     maxLength?: number;
+    /** הצג שדה זה רק כאשר ערך של שדה אחר תואם — לוגיקה מותנית */
+    showIf?: { field: string; equals: string };
 }
 
 export interface CategoryConfig {
@@ -110,6 +112,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
         priceRow: null,
         fields: [
             { key: 'offer_type',  label: 'אני',                  type: 'toggle',   required: true,  options: ['מציע לארח', 'מחפש להתארח'] },
+            { key: 'family_name', label: 'שם המשפחה',             type: 'text',     required: true,  placeholder: 'לדוגמה: כהן', hint: 'יופיע בכותרת הכרטיס: "משפחת כהן"', showIf: { field: 'offer_type', equals: 'מציע לארח' } },
             { key: 'meal',        label: 'סעודה',                 type: 'select',   required: false, options: ['ליל שבת', 'יום שבת (סעודת בוקר)', 'סעודה שלישית', 'כל הסעודות'] },
             { key: 'food_style',  label: 'סגנון אוכל',            type: 'select',   required: false, options: ['ספרדי', 'אשכנזי', 'תימני', 'מעורב', 'אחר'] },
             { key: 'capacity',    label: 'כמה אנשים',             type: 'number',   required: false, placeholder: '4', default: '1', half: true },

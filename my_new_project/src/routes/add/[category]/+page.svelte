@@ -95,9 +95,16 @@
         formValues = { ...formValues, [key]: value };
     }
 
+    // ---- Visibility (showIf) ----
+    function isFieldVisible(field: typeof config.fields[number]): boolean {
+        if (!field.showIf) return true;
+        return formValues[field.showIf.field] === field.showIf.equals;
+    }
+
     // ---- Validation ----
     function validate(): string | null {
         for (const field of config.fields) {
+            if (!isFieldVisible(field)) continue;
             if (field.required && !formValues[field.key]?.trim()) {
                 return `השדה "${field.label}" הוא חובה`;
             }
@@ -146,6 +153,11 @@
         if (!topLevel.label) {
             const labelField = config.fields.find(f => f.key === 'label');
             topLevel.label = extra[labelField?.key ?? ''] ?? config.label;
+        }
+
+        // אירוח לשבת: כותרת הכרטיס מורכבת משם המשפחה (רק למארח)
+        if (categoryId === 'realestate' && extra.offer_type === 'מציע לארח' && extra.family_name?.trim()) {
+            topLevel.label = `משפחת ${extra.family_name.trim()}`;
         }
 
         try {
@@ -266,6 +278,7 @@
             class="rounded-2xl border {colors.border} {colors.bg} p-6 md:p-8 grid grid-cols-2 gap-5"
         >
             {#each config.fields as field}
+                {#if isFieldVisible(field)}
                 <div class="{field.half ? 'col-span-1' : 'col-span-2'}">
                     <label
                         for="field-{field.key}"
@@ -413,6 +426,7 @@
                         <p class="text-gray-300 text-sm mt-1">{field.hint}</p>
                     {/if}
                 </div>
+                {/if}
             {/each}
 
             <!-- Error -->
