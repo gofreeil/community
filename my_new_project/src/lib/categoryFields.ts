@@ -95,12 +95,12 @@ export const categoryConfig: Record<string, CategoryConfig> = {
         addPageTitle: 'הוסף חוג',
         fields: [
             { key: 'label',       label: 'שם החוג',             type: 'text',     required: true,  placeholder: 'חוג ציור, כדורגל לילדים...' },
+            { key: 'contact',     label: 'שם המדריך',            type: 'text',     required: true,  placeholder: 'שמך המלא' },
             { key: 'age_group',   label: 'קבוצת גיל',           type: 'text',     required: true,  placeholder: 'גילאי 6-12' },
             { key: 'days',        label: 'ימים',                 type: 'multi_select', required: true,  options: ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'], hint: 'בחרו את הימים שבהם החוג מתקיים' },
             { key: 'time',        label: 'שעה',                  type: 'time',     required: true },
             { key: 'price_month', label: 'מחיר לחודש (₪)',       type: 'number',   required: false, placeholder: '200' },
             { key: 'address',     label: 'כתובת',                type: 'text',     required: true,  placeholder: 'מיקום החוג' },
-            { key: 'contact',     label: 'שם המדריך',            type: 'text',     required: true,  placeholder: 'שמך המלא' },
             { key: 'phone',       label: 'טלפון',                type: 'tel',      required: true,  placeholder: '05X-XXXXXXX' },
             { key: 'description', label: 'תיאור החוג',           type: 'textarea', required: false, placeholder: 'מה לומדים, מה מיוחד בחוג...' },
         ],
