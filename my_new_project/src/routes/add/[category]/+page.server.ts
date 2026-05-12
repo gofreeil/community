@@ -23,7 +23,7 @@ export const load: PageServerLoad = async (event) => {
         try {
             const jwt = event.cookies.get('strapi_jwt');
             const u = await getUserById(session.user.id as string, jwt);
-            if (u) userProfile = { nickname: u.nickname ?? '', phone: u.phone ?? '', neighborhood: u.neighborhood ?? '', city: u.city ?? '' };
+            if (u) userProfile = { nickname: (u.nickname || u.name || '') as string, phone: u.phone ?? '', neighborhood: u.neighborhood ?? '', city: u.city ?? '' };
         } catch { /* שקט */ }
     }
 
