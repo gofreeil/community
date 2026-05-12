@@ -1,7 +1,7 @@
 export interface FieldDef {
     key: string;
     label: string;
-    type: 'text' | 'tel' | 'textarea' | 'select' | 'toggle' | 'number' | 'time' | 'date' | 'email' | 'availability_grid' | 'multi_select' | 'neighborhood_select';
+    type: 'text' | 'tel' | 'textarea' | 'select' | 'toggle' | 'number' | 'time' | 'date' | 'email' | 'availability_grid' | 'multi_select' | 'neighborhood_select' | 'images';
     required: boolean;
     placeholder?: string;
     options?: string[];
@@ -229,6 +229,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
             { key: 'description', label: 'קצת עליי',                type: 'textarea', required: true,  placeholder: 'כמה מילים על עצמך (לא יוצג שם)' },
             { key: 'looking_for_m', label: 'מחפש',                  type: 'textarea', required: false, placeholder: 'מה אתה מחפש בבת הזוג?', maxLength: 100, showIf: { field: 'gender', equals: 'גבר' } },
             { key: 'looking_for_f', label: 'מחפשת',                 type: 'textarea', required: false, placeholder: 'מה את מחפשת בבן הזוג?',  maxLength: 100, showIf: { field: 'gender', equals: 'אישה' } },
+            { key: 'images',      label: 'גלריית תמונות',           type: 'images',   required: false },
             { key: 'matchmaker',  label: 'שדכן/ית (אופציונלי)',       type: 'text',     required: false, placeholder: 'שם ומספר שדכן/ית' },
             { key: 'contact',     label: 'דרך קשר',                  type: 'text',     required: true,  placeholder: 'דרך שדכן/ית / וואטסאפ' },
             { key: 'phone',       label: 'טלפון (לא מוצג)',           type: 'tel',      required: true,  placeholder: '05X-XXXXXXX', hint: 'הטלפון יישמר פנימית ולא יוצג לציבור' },

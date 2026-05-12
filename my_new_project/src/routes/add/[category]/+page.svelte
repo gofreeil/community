@@ -49,6 +49,56 @@
     let openHintKey     = $state(''); // איזה hint פתוח כרגע (לחיצה ארוכה / hover במובייל)
     let longPressTimer: ReturnType<typeof setTimeout> | null = null;
 
+    const MAX_IMAGES = 5;
+
+    function compressImage(file: File): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const MAX = 1000;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const src = ev.target?.result as string;
+                const img = new Image();
+                img.onload = () => {
+                    let w = img.naturalWidth;
+                    let h = img.naturalHeight;
+                    if (w > MAX || h > MAX) {
+                        const ratio = Math.min(MAX / w, MAX / h);
+                        w = Math.round(w * ratio);
+                        h = Math.round(h * ratio);
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width  = w;
+                    canvas.height = h;
+                    canvas.getContext('2d')!.drawImage(img, 0, 0, w, h);
+                    resolve(canvas.toDataURL('image/jpeg', 0.82));
+                };
+                img.onerror = reject;
+                img.src = src;
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function getImages(key: string): string[] {
+        try { return JSON.parse(getFieldValue(key) || '[]'); } catch { return []; }
+    }
+    function setImages(key: string, arr: string[]) {
+        setFieldValue(key, JSON.stringify(arr));
+    }
+    async function handleImagesChange(key: string, e: Event) {
+        const input = e.target as HTMLInputElement;
+        const files = Array.from(input.files ?? []);
+        const current = getImages(key);
+        const slots = MAX_IMAGES - current.length;
+        const compressed = await Promise.all(files.slice(0, slots).map(compressImage));
+        setImages(key, [...current, ...compressed]);
+        input.value = '';
+    }
+    function removeImageAt(key: string, idx: number) {
+        setImages(key, getImages(key).filter((_, i) => i !== idx));
+    }
+
     function startLongPress(key: string) {
         if (longPressTimer) clearTimeout(longPressTimer);
         longPressTimer = setTimeout(() => { openHintKey = key; }, 400);
@@ -413,6 +463,47 @@
                             </div>
                             <p class="text-xs text-gray-400 mt-3 text-center">לחצו על המשבצות לסימון השעות שבהן אתם זמינים</p>
                         </div>
+
+                    {:else if field.type === 'images'}
+                        {@const imgs = getImages(field.key)}
+                        <div class="rounded-xl border-2 border-amber-500/40 bg-amber-900/15 p-3 mb-3">
+                            <p class="text-amber-200 text-sm font-bold leading-relaxed text-center">
+                                ⚠️ התמונות חייבות להיות <span class="underline">הולמות וצנועות</span> בלבד.<br />
+                                משתמש שינסה להפר את הכללים — <span class="text-red-300 font-black">ייחסם לצמיתות</span>.
+                            </p>
+                        </div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-gray-400 text-xs">{imgs.length}/{MAX_IMAGES}</span>
+                        </div>
+                        {#if imgs.length > 0}
+                            <div class="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-2">
+                                {#each imgs as src, i (i)}
+                                    <div class="relative aspect-square rounded-xl overflow-hidden border border-white/10">
+                                        <img src={src} alt="" class="w-full h-full object-cover" />
+                                        <button
+                                            type="button"
+                                            onclick={() => removeImageAt(field.key, i)}
+                                            class="absolute top-1 left-1 bg-black/70 hover:bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold transition-colors"
+                                            aria-label="הסר תמונה"
+                                        >×</button>
+                                    </div>
+                                {/each}
+                                {#if imgs.length < MAX_IMAGES}
+                                    <label class="flex flex-col items-center justify-center gap-1 aspect-square rounded-xl border-2 border-dashed border-white/15 hover:border-amber-500/50 bg-white/5 hover:bg-amber-900/10 cursor-pointer transition-all">
+                                        <span class="text-2xl">＋</span>
+                                        <span class="text-gray-500 text-[10px]">עוד</span>
+                                        <input type="file" accept="image/*" multiple class="hidden" onchange={(e) => handleImagesChange(field.key, e)} />
+                                    </label>
+                                {/if}
+                            </div>
+                        {:else}
+                            <label class="flex flex-col items-center justify-center gap-2 w-full h-32 rounded-xl border-2 border-dashed border-white/15 hover:border-amber-500/50 bg-white/5 hover:bg-amber-900/10 cursor-pointer transition-all">
+                                <span class="text-3xl">📷</span>
+                                <span class="text-gray-300 text-sm font-bold">לחץ להעלאת תמונות</span>
+                                <span class="text-gray-500 text-xs">JPG, PNG · עד {MAX_IMAGES}</span>
+                                <input type="file" accept="image/*" multiple class="hidden" onchange={(e) => handleImagesChange(field.key, e)} />
+                            </label>
+                        {/if}
 
                     {:else if field.type === 'select' && field.options}
                         <select
