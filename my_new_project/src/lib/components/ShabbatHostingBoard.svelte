@@ -83,6 +83,35 @@
         return `https://wa.me/${digits}`;
     }
 
+    // --- שיתוף כרטיס ---
+    let shareMenuItemId = $state<string | null>(null);
+    function buildShareText(it: { label: string; city?: string; neighborhood?: string; description?: string }): { title: string; text: string; url: string } {
+        const url = typeof window !== 'undefined' ? `${window.location.origin}/shabbat-hosting` : 'https://kehila-bashchuna.co.il/shabbat-hosting';
+        const loc = [it.neighborhood, it.city].filter(Boolean).join(', ');
+        const lines = [`🍽 אירוח לשבת — ${it.label}`];
+        if (loc) lines.push(`📍 ${loc}`);
+        if (it.description) lines.push(it.description);
+        lines.push(url);
+        return { title: 'אירוח לשבת — קהילה בשכונה', text: lines.join('\n'), url };
+    }
+    async function nativeShare(it: { id: string; label: string; city?: string; neighborhood?: string; description?: string }) {
+        const payload = buildShareText(it);
+        if (typeof navigator !== 'undefined' && (navigator as Navigator & { share?: (d: ShareData) => Promise<void> }).share) {
+            try { await (navigator as Navigator & { share: (d: ShareData) => Promise<void> }).share(payload); return; } catch {}
+        }
+        shareMenuItemId = it.id;
+    }
+    function shareTo(network: 'whatsapp' | 'telegram' | 'facebook' | 'x' | 'copy', it: { label: string; city?: string; neighborhood?: string; description?: string }) {
+        const { text, url } = buildShareText(it);
+        const enc = encodeURIComponent;
+        if (network === 'whatsapp')      window.open(`https://wa.me/?text=${enc(text)}`, '_blank');
+        else if (network === 'telegram') window.open(`https://t.me/share/url?url=${enc(url)}&text=${enc(text)}`, '_blank');
+        else if (network === 'facebook') window.open(`https://www.facebook.com/sharer/sharer.php?u=${enc(url)}`, '_blank');
+        else if (network === 'x')        window.open(`https://twitter.com/intent/tweet?text=${enc(text)}`, '_blank');
+        else if (network === 'copy')     navigator.clipboard?.writeText(text);
+        shareMenuItemId = null;
+    }
+
     const GUEST_EXPIRY_DAYS = 4;
     function isExpired(created_at: string): boolean {
         return (Date.now() - new Date(created_at).getTime()) > GUEST_EXPIRY_DAYS * 86400000;
@@ -244,6 +273,28 @@
     let mockGuestsFiltered = $derived(mockGuests.filter(m => !city || m.city === city));
 </script>
 
+{#snippet shareButton(it: { id: string; label: string; city?: string; neighborhood?: string; description?: string })}
+    <div class="relative flex-shrink-0">
+        <button
+            type="button"
+            onclick={() => nativeShare(it)}
+            title="שיתוף"
+            aria-label="שיתוף"
+            class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 border border-white/10 text-gray-300 hover:text-white text-sm flex items-center justify-center transition-colors"
+        >📤</button>
+        {#if shareMenuItemId === it.id}
+            <div class="absolute left-0 top-full mt-1.5 z-30 w-44 rounded-xl bg-slate-900 border border-white/15 shadow-2xl p-1.5 flex flex-col gap-0.5">
+                <button type="button" onclick={() => shareTo('whatsapp', it)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">💬 WhatsApp</button>
+                <button type="button" onclick={() => shareTo('telegram', it)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">✈️ Telegram</button>
+                <button type="button" onclick={() => shareTo('facebook', it)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">📘 Facebook</button>
+                <button type="button" onclick={() => shareTo('x',        it)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">𝕏 Twitter</button>
+                <button type="button" onclick={() => shareTo('copy',     it)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">📋 העתק קישור</button>
+                <button type="button" onclick={() => shareMenuItemId = null} class="flex items-center justify-center text-gray-500 hover:text-gray-300 rounded-lg px-2.5 py-1 text-[10px] transition-colors">סגור</button>
+            </div>
+        {/if}
+    </div>
+{/snippet}
+
 <div class="min-h-screen bg-[#070b14] pt-6 pb-20" dir="rtl">
     <!-- Header -->
     <div class="max-w-4xl mx-auto px-4 text-center mb-6">
@@ -309,6 +360,7 @@
                                                 <h3 class="text-cyan-300 font-black text-base">{item.label}</h3>
                                                 {#if item.city}<p class="text-gray-400 text-xs">📍 {item.city}{item.neighborhood ? ` · ${item.neighborhood}` : ''}</p>{/if}
                                             </div>
+                                            {@render shareButton(item)}
                                             {#if dateStr}<span class="text-[10px] text-gray-500 flex-shrink-0">{dateStr}</span>{/if}
                                         </div>
                                         <div class="p-3">
@@ -373,6 +425,7 @@
                                             <h3 class="text-cyan-300 font-black text-base">{m.label}</h3>
                                             <p class="text-gray-400 text-xs">📍 {m.city}{m.neighborhood ? ` · ${m.neighborhood}` : ''}</p>
                                         </div>
+                                        {@render shareButton({ id: `mockg-${m.label}`, label: m.label, city: m.city, neighborhood: m.neighborhood })}
                                         <span class="text-[10px] text-gray-500 flex-shrink-0">{m.date}</span>
                                     </div>
                                     <div class="p-3">
@@ -421,6 +474,7 @@
                                                 <h3 class="text-amber-300 font-black text-base">{item.label}</h3>
                                                 {#if item.city}<p class="text-gray-400 text-xs">📍 {item.city}{item.neighborhood ? ` · ${item.neighborhood}` : ''}</p>{/if}
                                             </div>
+                                            {@render shareButton(item)}
                                             <div class="flex items-center gap-1.5 flex-shrink-0">
                                                 {#if isOwnCard}
                                                     <span class="text-[10px] font-bold bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full">הכרטיס שלך</span>
@@ -562,6 +616,7 @@
                                             <h3 class="text-amber-300 font-black text-base">{m.label}</h3>
                                             <p class="text-gray-400 text-xs">📍 {m.city}{m.neighborhood ? ` · ${m.neighborhood}` : ''}</p>
                                         </div>
+                                        {@render shareButton({ id: `mockh-${m.label}`, label: m.label, city: m.city, neighborhood: m.neighborhood })}
                                         <span class="text-[10px] text-gray-500 flex-shrink-0">{m.date}</span>
                                     </div>
                                     <div class="p-3">
