@@ -65,6 +65,7 @@
         return v ? String(v) : '';
     }
     function getGuestType(item: DbItem): string { return String(parseExtra(item.extra_fields).guest_type ?? ''); }
+    function getFoodStyle(item: DbItem): string { return String(parseExtra(item.extra_fields).food_style ?? ''); }
     function getPreferences(item: DbItem): string {
         const ef = parseExtra(item.extra_fields);
         return String(ef.preferences ?? item.description ?? '');
@@ -296,6 +297,7 @@
                                     {@const meal = getMeal(item)}
                                     {@const capacity = getCapacity(item)}
                                     {@const guest_type = getGuestType(item)}
+                                    {@const food_style = getFoodStyle(item)}
                                     {@const notes = getPreferences(item)}
                                     {@const freeText = getFreeText(item)}
                                     {@const dateStr = formatDate(item.created_at)}
@@ -314,6 +316,7 @@
                                                 {#if meal}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full"><img src="/icons/shavat-shalom.png" class="w-4 h-4 inline-block align-middle" alt="שבת שלום" /> {meal}</span>{/if}
                                                 {#if capacity}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">👥 עד {capacity}</span>{/if}
                                                 {#if guest_type}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">🧑‍🤝‍🧑 {guest_type}</span>{/if}
+                                                {#if food_style}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">🍽 {food_style}</span>{/if}
                                             </div>
                                             {#if notes}<p class="text-gray-300 text-sm leading-relaxed mb-2">{notes}</p>{/if}
                                             {#if freeText}<p class="text-cyan-300/80 text-xs italic mb-3">"{freeText}"</p>{/if}
@@ -402,6 +405,7 @@
                                     {@const meal = getMeal(item)}
                                     {@const capacity = getCapacity(item)}
                                     {@const guest_type = getGuestType(item)}
+                                    {@const food_style = getFoodStyle(item)}
                                     {@const notes = getPreferences(item)}
                                     {@const freeText = getFreeText(item)}
                                     {@const dateStr = formatDate(item.created_at)}
@@ -429,6 +433,7 @@
                                                 {#if meal}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full"><img src="/icons/shavat-shalom.png" class="w-4 h-4 inline-block align-middle" alt="שבת שלום" /> {meal}</span>{/if}
                                                 {#if capacity}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">👥 עד {capacity}</span>{/if}
                                                 {#if guest_type}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">🧑‍🤝‍🧑 {guest_type}</span>{/if}
+                                                {#if food_style}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">🍽 {food_style}</span>{/if}
                                             </div>
                                             {#if notes}<p class="text-gray-300 text-sm leading-relaxed mb-2">{notes}</p>{/if}
                                             {#if freeText}<p class="text-amber-300/80 text-xs italic mb-3">"{freeText}"</p>{/if}
