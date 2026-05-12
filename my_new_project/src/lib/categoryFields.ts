@@ -116,7 +116,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
             { key: 'guest_type',  label: 'מתאים ל',               type: 'select',   required: false, options: ['משפחה', 'זוג', 'יחיד/ה', 'קבוצה', 'הכל מתאים'], default: 'יחיד/ה', half: true },
             { key: 'preferences', label: 'העדפות / הערות',         type: 'textarea', required: false, placeholder: 'רמת דתיות, ללא אלרגיות, לינה...' },
             { key: 'address',     label: 'שכונה / אזור',          type: 'text',     required: false, placeholder: 'קרית משה, ירושלים' },
-            { key: 'contact',     label: 'כינוי / שם',             type: 'text',     required: false, placeholder: 'יוסי מירושלים' },
+            { key: 'contact',     label: 'איש קשר',                type: 'text',     required: false, placeholder: 'יוסי מירושלים' },
             { key: 'phone',       label: 'טלפון / וואטסאפ',       type: 'tel',      required: false, placeholder: '05X-XXXXXXX', hint: 'הטלפון שלך ייחשף למעוניין להתארח רק לאחר אישורך האישי' },
         ],
     },
