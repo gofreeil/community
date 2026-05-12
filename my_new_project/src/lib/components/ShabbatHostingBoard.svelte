@@ -591,37 +591,37 @@
                     class="w-full flex items-center justify-between p-4 text-right hover:bg-white/3 transition-colors"
                     onclick={() => showGuide = !showGuide}
                 >
-                    <span class="text-purple-300 font-bold text-sm">📖 כיצד מערכת האירוח עובדת?</span>
-                    <span class="text-gray-500 text-xs">{showGuide ? '▲ סגור' : '▼ הצג מדריך'}</span>
+                    <span class="text-purple-300 font-bold text-base md:text-lg">📖 כיצד מערכת האירוח עובדת?</span>
+                    <span class="text-gray-500 text-sm">{showGuide ? '▲ סגור' : '▼ הצג מדריך'}</span>
                 </button>
                 {#if showGuide}
                     <div class="px-4 pb-5 space-y-4 border-t border-purple-500/10">
                         <div class="flex gap-3 pt-4">
                             <span class="text-2xl flex-shrink-0">🏠</span>
                             <div>
-                                <p class="text-amber-300 font-bold text-sm mb-0.5">שלב 1 — המארח מפרסם הזמנה</p>
-                                <p class="text-gray-400 text-xs leading-relaxed">המארח מפרסם כרטיס עם סגנון הסעודה, כמות המקומות וסגנון האירוח. הטלפון שלו <strong class="text-white/70">אינו מוצג</strong> ברבים — רק לאורחים שאישר.</p>
+                                <p class="text-amber-300 font-bold text-base mb-1">שלב 1 — המארח מפרסם הזמנה</p>
+                                <p class="text-gray-300 text-sm leading-relaxed">המארח מפרסם כרטיס עם סגנון הסעודה, כמות המקומות וסגנון האירוח. הטלפון שלו <strong class="text-white/70">אינו מוצג</strong> ברבים — רק לאורחים שאישר.</p>
                             </div>
                         </div>
                         <div class="flex gap-3">
                             <span class="text-2xl flex-shrink-0">🤝</span>
                             <div>
-                                <p class="text-cyan-300 font-bold text-sm mb-0.5">שלב 2 — האורח שולח בקשה</p>
-                                <p class="text-gray-400 text-xs leading-relaxed">האורח לוחץ על "שלח בקשת אירוח" ויכול לצרף הודעה קצרה. הבקשה מגיעה למארח בלבד.</p>
+                                <p class="text-cyan-300 font-bold text-base mb-1">שלב 2 — האורח שולח בקשה</p>
+                                <p class="text-gray-300 text-sm leading-relaxed">האורח לוחץ על "שלח בקשת אירוח" ויכול לצרף הודעה קצרה. הבקשה מגיעה למארח בלבד.</p>
                             </div>
                         </div>
                         <div class="flex gap-3">
                             <span class="text-2xl flex-shrink-0">✅</span>
                             <div>
-                                <p class="text-green-300 font-bold text-sm mb-0.5">שלב 3 — המארח מאשר ומגלה טלפון</p>
-                                <p class="text-gray-400 text-xs leading-relaxed">המארח רואה את הבקשות על הכרטיס שלו ויכול לאשר או לדחות. לאחר האישור — הטלפון נחשף לאותו אורח בלבד.</p>
+                                <p class="text-green-300 font-bold text-base mb-1">שלב 3 — המארח מאשר ומגלה טלפון</p>
+                                <p class="text-gray-300 text-sm leading-relaxed">המארח רואה את הבקשות על הכרטיס שלו ויכול לאשר או לדחות. לאחר האישור — הטלפון נחשף לאותו אורח בלבד.</p>
                             </div>
                         </div>
                         <div class="flex gap-3">
                             <span class="text-2xl flex-shrink-0">🚩</span>
                             <div>
-                                <p class="text-red-300 font-bold text-sm mb-0.5">שלב 4 — דיווח על אורח לא ראוי</p>
-                                <p class="text-gray-400 text-xs leading-relaxed">מארח שאישר אורח ואז חווה התנהגות לא ראויה (ביטול ברגע האחרון, אי-הגעה, התנהגות פוגענית) יכול לדווח עליו. כאשר <strong class="text-white/70">שני מארחים שונים</strong> ידווחו — האורח יחסם מלוח המארחים.</p>
+                                <p class="text-red-300 font-bold text-base mb-1">שלב 4 — דיווח על אורח לא ראוי</p>
+                                <p class="text-gray-300 text-sm leading-relaxed">מארח שאישר אורח ואז חווה התנהגות לא ראויה (ביטול ברגע האחרון, אי-הגעה, התנהגות פוגענית) יכול לדווח עליו. כאשר <strong class="text-white/70">שני מארחים שונים</strong> ידווחו — האורח יחסם מלוח המארחים.</p>
                             </div>
                         </div>
                     </div>
