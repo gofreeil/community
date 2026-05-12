@@ -1922,7 +1922,7 @@
 													{item.status === "active"
 														? tFn("status_active")
 														: item.status === "frozen"
-															? "מודעה מוקפאת"
+															? "לא פעילה"
 															: item.status}
 												</span>
 											</div>

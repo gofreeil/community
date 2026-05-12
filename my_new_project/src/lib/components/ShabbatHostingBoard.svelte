@@ -654,7 +654,7 @@
             <div class="text-5xl mb-3">❄️</div>
             <h3 class="text-blue-300 font-black text-lg mb-2">המודעה הוקפאה</h3>
             <p class="text-gray-300 text-sm leading-relaxed mb-4">
-                המודעה שלך הוסרה מהלוח הציבורי ונמצאת בסטטוס <strong class="text-blue-200">"מודעה מוקפאת"</strong> בדף הפרופיל שלך.
+                המודעה שלך הוסרה מהלוח הציבורי ונמצאת בסטטוס <strong class="text-blue-200">"לא פעילה"</strong> בדף הפרופיל שלך.
                 <br>
                 משם תוכל <strong class="text-white">לפרסם אותה שנית</strong> או <strong class="text-white">למחוק אותה לצמיתות</strong>.
             </p>
