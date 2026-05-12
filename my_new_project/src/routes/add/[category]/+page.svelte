@@ -23,7 +23,7 @@
 
     // ---- ערכי ברירת מחדל לשדות מפרופיל המשתמש ----
     function profileDefault(key: string, type: string, options?: string[], defaultVal?: string): string {
-        if (type === 'toggle' && options) return options[0];
+        if (type === 'toggle' && options) return defaultVal && options.includes(defaultVal) ? defaultVal : options[0];
         if (key === 'contact' && userProfile?.nickname) return userProfile.nickname;
         if (key === 'phone'   && userProfile?.phone)    return userProfile.phone;
         if (key === 'address' && type === 'neighborhood_select') {
@@ -46,6 +46,16 @@
     let errorMsg        = $state('');
     let submitted       = $state(false);
     let redirectingMsg  = $state(''); // הודעה לפני מעבר להרשמה
+    let openHintKey     = $state(''); // איזה hint פתוח כרגע (לחיצה ארוכה / hover במובייל)
+    let longPressTimer: ReturnType<typeof setTimeout> | null = null;
+
+    function startLongPress(key: string) {
+        if (longPressTimer) clearTimeout(longPressTimer);
+        longPressTimer = setTimeout(() => { openHintKey = key; }, 400);
+    }
+    function cancelLongPress() {
+        if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+    }
 
     onMount(() => {
         if (!browser) return;
@@ -288,6 +298,28 @@
                         {#if field.required}
                             <span class="text-red-400">*</span>
                         {/if}
+                        {#if field.hint && field.type === 'toggle'}
+                            <span class="relative inline-block align-middle ml-1 group">
+                                <button
+                                    type="button"
+                                    aria-label="הסבר"
+                                    class="w-4 h-4 inline-flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-gray-300 text-[10px] font-bold cursor-help select-none"
+                                    onmouseenter={() => openHintKey = field.key}
+                                    onmouseleave={() => openHintKey = ''}
+                                    onpointerdown={() => startLongPress(field.key)}
+                                    onpointerup={cancelLongPress}
+                                    onpointercancel={cancelLongPress}
+                                    onpointerleave={cancelLongPress}
+                                    oncontextmenu={(e) => e.preventDefault()}
+                                >ⓘ</button>
+                                {#if openHintKey === field.key}
+                                    <span
+                                        role="tooltip"
+                                        class="absolute z-20 top-full right-0 mt-1.5 w-64 max-w-[80vw] p-2.5 rounded-lg bg-slate-900 border border-white/15 shadow-xl text-gray-200 text-xs font-normal leading-relaxed text-right whitespace-normal"
+                                    >{field.hint}</span>
+                                {/if}
+                            </span>
+                        {/if}
                     </label>
 
                     {#if field.type === 'toggle' && field.options}
@@ -422,7 +454,7 @@
                         />
                     {/if}
 
-                    {#if field.hint}
+                    {#if field.hint && field.type !== 'toggle'}
                         <p class="text-gray-300 text-sm mt-1">{field.hint}</p>
                     {/if}
                 </div>

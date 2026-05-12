@@ -285,7 +285,7 @@ export async function getItemsByCategory(category: string): Promise<DbItem[]> {
     }
 }
 
-const ONE_TIME_POSTING_PREFIX = 'חד-פעמי';
+const ONE_TIME_POSTING_PREFIX = 'לשבת הקרובה';
 const THREE_DAYS_MS_DB = 3 * 24 * 60 * 60 * 1000;
 
 /** מסיר מודעות אירוח חד-פעמיות שעברו 3 ימים ומקפיא אותן ב-Strapi ברקע */
@@ -297,7 +297,8 @@ function autoFreezeExpiredOneTimeAds(items: DbItem[]): DbItem[] {
         try { ef = it.extra_fields ? JSON.parse(it.extra_fields) : {}; } catch {}
         const postingType = String(ef.posting_type ?? '');
         const createdMs = new Date(it.created_at).getTime();
-        if (postingType.startsWith(ONE_TIME_POSTING_PREFIX) && createdMs > 0 && createdMs < cutoff) {
+        const isOneTime = postingType.startsWith(ONE_TIME_POSTING_PREFIX) || postingType.startsWith('חד-פעמי');
+        if (isOneTime && createdMs > 0 && createdMs < cutoff) {
             // freeze בענן ברקע — לא מעכב את התשובה
             updateItem(it.id, { status: 'frozen' }).catch(e => console.warn('[db] auto-freeze failed:', it.id, e));
             continue;
