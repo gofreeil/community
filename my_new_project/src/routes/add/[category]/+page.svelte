@@ -323,7 +323,7 @@
                     </label>
 
                     {#if field.type === 'toggle' && field.options}
-                        <div class="inline-flex p-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm gap-1 mx-auto w-full max-w-[280px]">
+                        <div class="flex p-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm gap-1 mx-auto w-full max-w-[280px]">
                             {#each field.options as opt}
                                 <button
                                     type="button"
