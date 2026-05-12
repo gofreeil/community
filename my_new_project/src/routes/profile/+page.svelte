@@ -44,6 +44,30 @@
 		likedItems = getLikedItems();
 	}
 
+	// --- מחיקה לצמיתות של פריט מהפרופיל ---
+	let deletingItemId = $state<string | null>(null);
+	let deletedItemIds = $state<string[]>([]);
+
+	async function deleteOwnItem(itemId: string, label: string) {
+		if (!confirm(`למחוק לצמיתות את "${label}"? פעולה זו אינה הפיכה.`)) return;
+		deletingItemId = itemId;
+		try {
+			const res = await fetch(`/api/items/${itemId}`, {
+				method: 'DELETE',
+				headers: { 'X-From-Profile': '1' },
+			});
+			const data = await res.json();
+			if (data.success) {
+				deletedItemIds = [...deletedItemIds, itemId];
+			} else {
+				alert(data.message ?? 'שגיאה במחיקה');
+			}
+		} catch {
+			alert('שגיאת תקשורת — נסה שוב');
+		}
+		deletingItemId = null;
+	}
+
 	function unlike(item: LikedItem) {
 		removeLike(item.type, item.id);
 		refreshLikes();
@@ -1846,11 +1870,11 @@
 						</div>
 					{:else}
 						<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-							{#each data.items as item}
+							{#each data.items.filter(i => !deletedItemIds.includes(i.id)) as item}
+								<div class="bg-white/5 rounded-2xl border border-white/10 p-4 hover:border-purple-500/30 hover:bg-white/8 transition-all group">
 								<a
 									href="/items/{item.id}"
-									class="bg-white/5 rounded-2xl border border-white/10 p-4
-								       hover:border-purple-500/30 hover:bg-white/8 transition-all group block"
+									class="block"
 								>
 									<div class="flex items-start gap-3">
 										<span class="text-3xl flex-shrink-0 mt-0.5"
@@ -1869,11 +1893,15 @@
 													class="text-xs px-2 py-0.5 rounded-full font-bold flex-shrink-0
 											  {item.status === 'active'
 														? 'bg-green-500/20 text-green-400 border border-green-500/30'
+														: item.status === 'frozen'
+														? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
 														: 'bg-gray-500/20 text-gray-400 border border-gray-500/30'}"
 												>
 													{item.status === "active"
 														? tFn("status_active")
-														: item.status}
+														: item.status === "frozen"
+															? "מודעה מוקפאת"
+															: item.status}
 												</span>
 											</div>
 											{#if item.description}
@@ -1906,6 +1934,16 @@
 										</div>
 									</div>
 								</a>
+								<div class="mt-3 pt-3 border-t border-white/5 flex justify-end">
+									<button
+										type="button"
+										onclick={() => deleteOwnItem(item.id, item.label)}
+										disabled={deletingItemId === item.id}
+										class="text-[11px] font-bold text-red-400/80 hover:text-red-300 hover:bg-red-500/10 px-2.5 py-1 rounded-md transition-colors disabled:opacity-50"
+										title="מחיקה לצמיתות (אינה הפיכה)"
+									>{deletingItemId === item.id ? '...' : '🗑 מחק לצמיתות'}</button>
+								</div>
+							</div>
 							{/each}
 						</div>
 					{/if}

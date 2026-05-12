@@ -96,7 +96,9 @@
     let filteredGuests = $derived(sortByNewest(items.filter(i => !isHost(i) && !isExpired(i.created_at))));
     let filteredHosts = $derived(
         sortByNewest(items.filter(i =>
-            isHost(i) && !(i.user_id && blockedHostUserIds.includes(i.user_id))
+            isHost(i)
+            && !(i.user_id && blockedHostUserIds.includes(i.user_id))
+            && !removedItemIds.includes(i.id)
         ))
     );
 
@@ -168,6 +170,31 @@
             }
         } catch { /* silent */ }
         approvingRequestId = null;
+    }
+
+    // --- הסרת מודעה (freeze) על ידי הבעלים מהלוח הציבורי ---
+    let removingItemId = $state<string | null>(null);
+    let removedItemIds = $state<string[]>([]);
+
+    async function removeOwnAd(item: DbItem) {
+        if (!confirm('להסיר את המודעה מהלוח? היא תעבור לסטטוס "מוקפא" ותוצג בפרופיל שלך, ושם תוכל למחוק לצמיתות.')) return;
+        removingItemId = item.id;
+        try {
+            const res = await fetch(`/api/items/${item.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'freeze' }),
+            });
+            const data = await res.json();
+            if (data.success) {
+                removedItemIds = [...removedItemIds, item.id];
+            } else {
+                alert(data.message ?? 'שגיאה בהסרה');
+            }
+        } catch {
+            alert('שגיאת תקשורת — נסה שוב');
+        }
+        removingItemId = null;
     }
 
     // --- דיווח על אורח ---
@@ -410,6 +437,13 @@
                                                 <div class="flex gap-2 mb-2">
                                                     <a href={waLink(item.phone)} target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2 rounded-xl transition-colors text-sm">💬 WhatsApp</a>
                                                     <a href="tel:{item.phone}" class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold py-2 px-3 rounded-xl transition-colors text-sm">📞</a>
+                                                    <button
+                                                        type="button"
+                                                        onclick={() => removeOwnAd(item)}
+                                                        disabled={removingItemId === item.id}
+                                                        class="flex items-center justify-center bg-white/10 hover:bg-red-600/30 text-gray-300 hover:text-red-300 font-bold py-2 px-3 rounded-xl transition-colors text-sm disabled:opacity-50"
+                                                        title="הסר את המודעה מהלוח — תועבר לפרופיל לסטטוס 'מוקפא'"
+                                                    >{removingItemId === item.id ? '...' : '🗑 הסר'}</button>
                                                 </div>
                                                 <!-- בקשות ממתינות -->
                                                 {#if hostPendingReqs.length > 0}

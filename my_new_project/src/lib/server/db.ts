@@ -273,11 +273,38 @@ export async function getItemsByCategory(category: string): Promise<DbItem[]> {
             'sort':                    'createdAt:desc',
             'pagination[limit]':       '1000',
         });
-        return (res.data ?? []).map(mapStrapiItem);
+        const items = (res.data ?? []).map(mapStrapiItem);
+        // אירוח לשבת: מודעה חד-פעמית > 3 ימים → freeze אוטומטי (lazy, fire-and-forget)
+        if (category === 'realestate') {
+            return autoFreezeExpiredOneTimeAds(items);
+        }
+        return items;
     } catch (e) {
         if (e instanceof StrapiContentTypeError) return [];
         throw e;
     }
+}
+
+const ONE_TIME_POSTING_PREFIX = 'חד-פעמי';
+const THREE_DAYS_MS_DB = 3 * 24 * 60 * 60 * 1000;
+
+/** מסיר מודעות אירוח חד-פעמיות שעברו 3 ימים ומקפיא אותן ב-Strapi ברקע */
+function autoFreezeExpiredOneTimeAds(items: DbItem[]): DbItem[] {
+    const cutoff = Date.now() - THREE_DAYS_MS_DB;
+    const survivors: DbItem[] = [];
+    for (const it of items) {
+        let ef: Record<string, unknown> = {};
+        try { ef = it.extra_fields ? JSON.parse(it.extra_fields) : {}; } catch {}
+        const postingType = String(ef.posting_type ?? '');
+        const createdMs = new Date(it.created_at).getTime();
+        if (postingType.startsWith(ONE_TIME_POSTING_PREFIX) && createdMs > 0 && createdMs < cutoff) {
+            // freeze בענן ברקע — לא מעכב את התשובה
+            updateItem(it.id, { status: 'frozen' }).catch(e => console.warn('[db] auto-freeze failed:', it.id, e));
+            continue;
+        }
+        survivors.push(it);
+    }
+    return survivors;
 }
 
 export async function searchItems(query: string): Promise<DbItem[]> {
@@ -356,6 +383,11 @@ export async function updateItem(documentId: string, data: UpdateItemData): Prom
     if (data.extra_fields !== undefined) payload.extra_fields = data.extra_fields;
     if (data.status       !== undefined) payload.status1      = data.status;
     await strapiPut(`/api/items/${documentId}`, { data: payload });
+}
+
+/** מחיקה לצמיתות של פריט (רק הבעלים — נבדק ב-endpoint) */
+export async function deleteItem(documentId: string): Promise<void> {
+    await strapiDelete(`/api/items/${documentId}`);
 }
 
 export async function getResolvedCount(category: string): Promise<number> {
