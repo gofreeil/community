@@ -123,7 +123,7 @@
     <div class="max-w-4xl mx-auto">
         <!-- Header -->
         <div class="text-center mb-6">
-            <img src="/images/Available.png" alt="לוח פנויים ופנויות" class="h-16 mx-auto mb-3" />
+            <img src="/images/Available.png" alt="לוח פנויים ופנויות" class="h-48 md:h-64 mx-auto mb-4" />
             <h1 class="text-3xl font-black text-white mb-2">לוח פנויים ופנויות</h1>
             <p class="text-gray-400">לוח ארצי — מציאת בן/בת זוג מכל רחבי הארץ</p>
         </div>
