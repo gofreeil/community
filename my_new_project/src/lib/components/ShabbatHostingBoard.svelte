@@ -226,12 +226,6 @@
         <p class="text-gray-400 mb-3">
             {city ? 'מארחים ומתארחים בעיר שלך' : 'לוח ארצי — מציעים לארח ומחפשים להתארח לשבת'}
         </p>
-        <div class="inline-flex items-start gap-2 bg-amber-900/20 border border-amber-500/30 rounded-xl px-4 py-2.5 text-right max-w-lg">
-            <span class="text-amber-400 text-sm mt-0.5 flex-shrink-0">⚠️</span>
-            <p class="text-amber-300/90 text-xs leading-relaxed">
-                טלפון המארח נחשף רק לאחר אישורו. אורח שהתנהג שלא כראוי יחסם על ידי המארח.
-            </p>
-        </div>
     </div>
 
     <!-- Add button -->
