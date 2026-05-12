@@ -357,24 +357,24 @@
                                         <div class="border-b border-cyan-500/20 p-3 flex items-center gap-3">
                                             <div class="w-11 h-11 rounded-full bg-cyan-500/15 flex items-center justify-center text-xl flex-shrink-0">🎒</div>
                                             <div class="flex-1 min-w-0">
-                                                <h3 class="text-cyan-300 font-black text-base">{item.label}</h3>
-                                                {#if item.city}<p class="text-gray-400 text-xs">📍 {item.city}{item.neighborhood ? ` · ${item.neighborhood}` : ''}</p>{/if}
+                                                <h3 class="text-cyan-300 font-black text-lg">{item.label}</h3>
+                                                {#if item.city}<p class="text-gray-400 text-sm">📍 {item.city}{item.neighborhood ? ` · ${item.neighborhood}` : ''}</p>{/if}
                                             </div>
                                             {@render shareButton(item)}
-                                            {#if dateStr}<span class="text-[10px] text-gray-500 flex-shrink-0">{dateStr}</span>{/if}
+                                            {#if dateStr}<span class="text-xs text-gray-500 flex-shrink-0">{dateStr}</span>{/if}
                                         </div>
                                         <div class="p-3">
                                             <div class="flex flex-wrap gap-1.5 mb-2">
-                                                {#if meal}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full"><img src="/icons/shavat-shalom.png" class="w-4 h-4 inline-block align-middle" alt="שבת שלום" /> {meal}</span>{/if}
-                                                {#if capacity}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">👥 עד {capacity}</span>{/if}
-                                                {#if guest_type}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">{guest_type}</span>{/if}
-                                                {#if food_style}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">🍽 {food_style}</span>{/if}
+                                                {#if meal}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full"><img src="/icons/shavat-shalom.png" class="w-4 h-4 inline-block align-middle" alt="שבת שלום" /> {meal}</span>{/if}
+                                                {#if capacity}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full">👥 עד {capacity}</span>{/if}
+                                                {#if guest_type}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full">{guest_type}</span>{/if}
+                                                {#if food_style}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full">🍽 {food_style}</span>{/if}
                                             </div>
-                                            {#if notes}<p class="text-gray-300 text-sm leading-relaxed mb-2">{notes}</p>{/if}
-                                            {#if freeText}<p class="text-cyan-300/80 text-xs italic mb-3">"{freeText}"</p>{/if}
+                                            {#if notes}<p class="text-gray-300 text-base leading-relaxed mb-2">{notes}</p>{/if}
+                                            {#if freeText}<p class="text-cyan-300/80 text-sm italic mb-3">"{freeText}"</p>{/if}
                                             <div class="flex gap-2 mb-2">
-                                                <a href={waLink(item.phone)} target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2 rounded-xl transition-colors text-sm">💬 WhatsApp</a>
-                                                <a href="tel:{item.phone}" class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold py-2 px-3 rounded-xl transition-colors text-sm">📞</a>
+                                                <a href={waLink(item.phone)} target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 rounded-xl transition-colors text-base">💬 WhatsApp</a>
+                                                <a href="tel:{item.phone}" class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold py-2.5 px-3 rounded-xl transition-colors text-base">📞</a>
                                             </div>
                                             {#if canReport}
                                                 {#if reportingItemId === item.id}
@@ -422,22 +422,22 @@
                                     <div class="border-b border-cyan-500/20 p-3 flex items-center gap-3">
                                         <div class="w-11 h-11 rounded-full bg-cyan-500/15 flex items-center justify-center text-xl flex-shrink-0">🎒</div>
                                         <div class="flex-1 min-w-0">
-                                            <h3 class="text-cyan-300 font-black text-base">{m.label}</h3>
-                                            <p class="text-gray-400 text-xs">📍 {m.city}{m.neighborhood ? ` · ${m.neighborhood}` : ''}</p>
+                                            <h3 class="text-cyan-300 font-black text-lg">{m.label}</h3>
+                                            <p class="text-gray-400 text-sm">📍 {m.city}{m.neighborhood ? ` · ${m.neighborhood}` : ''}</p>
                                         </div>
                                         {@render shareButton({ id: `mockg-${m.label}`, label: m.label, city: m.city, neighborhood: m.neighborhood })}
-                                        <span class="text-[10px] text-gray-500 flex-shrink-0">{m.date}</span>
+                                        <span class="text-xs text-gray-500 flex-shrink-0">{m.date}</span>
                                     </div>
                                     <div class="p-3">
                                         <div class="flex flex-wrap gap-1.5 mb-2">
-                                            {#if m.meal}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full"><img src="/icons/shavat-shalom.png" class="w-4 h-4 inline-block align-middle" alt="שבת שלום" /> {m.meal}</span>{/if}
-                                            {#if m.capacity}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">👥 עד {m.capacity}</span>{/if}
-                                            {#if m.guest_type}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">{m.guest_type}</span>{/if}
+                                            {#if m.meal}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full"><img src="/icons/shavat-shalom.png" class="w-4 h-4 inline-block align-middle" alt="שבת שלום" /> {m.meal}</span>{/if}
+                                            {#if m.capacity}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full">👥 עד {m.capacity}</span>{/if}
+                                            {#if m.guest_type}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full">{m.guest_type}</span>{/if}
                                         </div>
-                                        <p class="text-gray-300 text-sm leading-relaxed mb-2">{m.notes}</p>
+                                        <p class="text-gray-300 text-base leading-relaxed mb-2">{m.notes}</p>
                                         <div class="flex gap-2 mb-2">
-                                            <a href={waLink(m.phone)} target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2 rounded-xl transition-colors text-sm">💬 צור קשר</a>
-                                            <a href="tel:{m.phone}" class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold py-2 px-3 rounded-xl transition-colors text-sm">📞</a>
+                                            <a href={waLink(m.phone)} target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 rounded-xl transition-colors text-base">💬 צור קשר</a>
+                                            <a href="tel:{m.phone}" class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold py-2.5 px-3 rounded-xl transition-colors text-base">📞</a>
                                         </div>
                                     </div>
                                 </div>
@@ -471,33 +471,33 @@
                                         <div class="border-b border-amber-500/20 p-3 flex items-center gap-3">
                                             <div class="w-11 h-11 rounded-full bg-amber-500/15 flex items-center justify-center text-xl flex-shrink-0">🏠</div>
                                             <div class="flex-1 min-w-0">
-                                                <h3 class="text-amber-300 font-black text-base">{item.label}</h3>
-                                                {#if item.city}<p class="text-gray-400 text-xs">📍 {item.city}{item.neighborhood ? ` · ${item.neighborhood}` : ''}</p>{/if}
+                                                <h3 class="text-amber-300 font-black text-lg">{item.label}</h3>
+                                                {#if item.city}<p class="text-gray-400 text-sm">📍 {item.city}{item.neighborhood ? ` · ${item.neighborhood}` : ''}</p>{/if}
                                             </div>
                                             {@render shareButton(item)}
                                             <div class="flex items-center gap-1.5 flex-shrink-0">
                                                 {#if isOwnCard}
                                                     <span class="text-[10px] font-bold bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full">הכרטיס שלך</span>
                                                 {/if}
-                                                {#if dateStr}<span class="text-[10px] text-gray-500">{dateStr}</span>{/if}
+                                                {#if dateStr}<span class="text-xs text-gray-500">{dateStr}</span>{/if}
                                             </div>
                                         </div>
                                         <div class="p-3">
                                             <div class="flex flex-wrap gap-1.5 mb-2">
-                                                {#if meal}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full"><img src="/icons/shavat-shalom.png" class="w-4 h-4 inline-block align-middle" alt="שבת שלום" /> {meal}</span>{/if}
-                                                {#if capacity}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">👥 עד {capacity}</span>{/if}
-                                                {#if guest_type}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">{guest_type}</span>{/if}
-                                                {#if food_style}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">🍽 {food_style}</span>{/if}
+                                                {#if meal}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full"><img src="/icons/shavat-shalom.png" class="w-4 h-4 inline-block align-middle" alt="שבת שלום" /> {meal}</span>{/if}
+                                                {#if capacity}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full">👥 עד {capacity}</span>{/if}
+                                                {#if guest_type}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full">{guest_type}</span>{/if}
+                                                {#if food_style}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full">🍽 {food_style}</span>{/if}
                                             </div>
-                                            {#if notes}<p class="text-gray-300 text-sm leading-relaxed mb-2">{notes}</p>{/if}
-                                            {#if freeText}<p class="text-amber-300/80 text-xs italic mb-3">"{freeText}"</p>{/if}
+                                            {#if notes}<p class="text-gray-300 text-base leading-relaxed mb-2">{notes}</p>{/if}
+                                            {#if freeText}<p class="text-amber-300/80 text-sm italic mb-3">"{freeText}"</p>{/if}
 
                                             <!-- אזור טלפון / בקשת אירוח -->
                                             {#if isOwnCard}
                                                 <!-- המארח רואה את הכרטיס שלו עצמו -->
                                                 <div class="flex gap-2 mb-2">
-                                                    <a href={waLink(item.phone)} target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2 rounded-xl transition-colors text-sm">💬 WhatsApp</a>
-                                                    <a href="tel:{item.phone}" class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold py-2 px-3 rounded-xl transition-colors text-sm">📞</a>
+                                                    <a href={waLink(item.phone)} target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 rounded-xl transition-colors text-base">💬 WhatsApp</a>
+                                                    <a href="tel:{item.phone}" class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold py-2.5 px-3 rounded-xl transition-colors text-base">📞</a>
                                                     <button
                                                         type="button"
                                                         onclick={() => removeOwnAd(item)}
@@ -537,8 +537,8 @@
                                                 <div class="mb-1">
                                                     <p class="text-green-400 text-[11px] font-bold text-center mb-1.5">✅ בקשתך אושרה — הנה פרטי הקשר</p>
                                                     <div class="flex gap-2">
-                                                        <a href={waLink(item.phone)} target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2 rounded-xl transition-colors text-sm">💬 WhatsApp</a>
-                                                        <a href="tel:{item.phone}" class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold py-2 px-3 rounded-xl transition-colors text-sm">📞</a>
+                                                        <a href={waLink(item.phone)} target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 rounded-xl transition-colors text-base">💬 WhatsApp</a>
+                                                        <a href="tel:{item.phone}" class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold py-2.5 px-3 rounded-xl transition-colors text-base">📞</a>
                                                     </div>
                                                 </div>
                                             {:else if isPending}
@@ -613,19 +613,19 @@
                                     <div class="border-b border-amber-500/20 p-3 flex items-center gap-3">
                                         <div class="w-11 h-11 rounded-full bg-amber-500/15 flex items-center justify-center text-xl flex-shrink-0">🏠</div>
                                         <div class="flex-1 min-w-0">
-                                            <h3 class="text-amber-300 font-black text-base">{m.label}</h3>
-                                            <p class="text-gray-400 text-xs">📍 {m.city}{m.neighborhood ? ` · ${m.neighborhood}` : ''}</p>
+                                            <h3 class="text-amber-300 font-black text-lg">{m.label}</h3>
+                                            <p class="text-gray-400 text-sm">📍 {m.city}{m.neighborhood ? ` · ${m.neighborhood}` : ''}</p>
                                         </div>
                                         {@render shareButton({ id: `mockh-${m.label}`, label: m.label, city: m.city, neighborhood: m.neighborhood })}
-                                        <span class="text-[10px] text-gray-500 flex-shrink-0">{m.date}</span>
+                                        <span class="text-xs text-gray-500 flex-shrink-0">{m.date}</span>
                                     </div>
                                     <div class="p-3">
                                         <div class="flex flex-wrap gap-1.5 mb-2">
-                                            {#if m.meal}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full"><img src="/icons/shavat-shalom.png" class="w-4 h-4 inline-block align-middle" alt="שבת שלום" /> {m.meal}</span>{/if}
-                                            {#if m.capacity}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">👥 עד {m.capacity}</span>{/if}
-                                            {#if m.guest_type}<span class="text-[11px] bg-white/5 border border-white/10 text-gray-300 px-2 py-1 rounded-full">{m.guest_type}</span>{/if}
+                                            {#if m.meal}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full"><img src="/icons/shavat-shalom.png" class="w-4 h-4 inline-block align-middle" alt="שבת שלום" /> {m.meal}</span>{/if}
+                                            {#if m.capacity}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full">👥 עד {m.capacity}</span>{/if}
+                                            {#if m.guest_type}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full">{m.guest_type}</span>{/if}
                                         </div>
-                                        <p class="text-gray-300 text-sm leading-relaxed mb-2">{m.notes}</p>
+                                        <p class="text-gray-300 text-base leading-relaxed mb-2">{m.notes}</p>
                                         <button disabled class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-purple-600/50 text-white/60 font-bold text-sm cursor-default">
                                             🤝 שלח בקשת אירוח
                                         </button>
