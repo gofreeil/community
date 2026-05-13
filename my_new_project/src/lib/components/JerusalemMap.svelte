@@ -182,6 +182,14 @@
     let showWaves = $state(false);
     let showSuccessMessage = $state(false);
 
+    // מובייל: האם כל הקטגוריות מורחבות (אחרת — רק 2 שורות ראשונות)
+    let categoriesExpandedMobile = $state(false);
+    const MOBILE_COLLAPSED_COUNT = 8; // 2 שורות של 4 כפתורים
+    const mobileVisibleCategories = $derived(
+        categoriesExpandedMobile ? categories : categories.slice(0, MOBILE_COLLAPSED_COUNT)
+    );
+    const mobileHiddenCount = $derived(categories.length - MOBILE_COLLAPSED_COUNT);
+
     // ----- מצב מסך מלא לדסקטופ -----
     let isFullscreen = $state(false);
 
@@ -983,39 +991,79 @@
         <!-- כותרת שכונה - הוסרה לדף הראשי -->
 
         <div class="flex flex-col gap-2">
-            <!-- Buttons Container with left-edge fade for mobile -->
+            <!-- Buttons Container -->
             <div class="relative" bind:this={categoryButtonsWrapperRef}>
-                <!-- fade on left edge: indicates hidden buttons off-screen (RTL) -->
-                <div class="md:hidden pointer-events-none absolute top-0 left-0 bottom-0 w-6 z-10" style="background: linear-gradient(to right, rgba(7,11,20,0.75) 0%, transparent);"></div>
-            <div
-                class="category-buttons-container flex flex-nowrap md:flex-wrap justify-start md:justify-between gap-2 md:gap-x-2 md:gap-y-3 overflow-x-auto md:overflow-x-visible px-4 py-3 md:p-2 w-full"
-            >
-                {#each categories as category, index}
-                    <button
-                        onclick={() => handleCategoryClick(category.id)}
-                        title="לחץ כדי לסנן במפה"
-                        class="flex items-center justify-center gap-1.5 {selectedCategory === category.id
-                            ? category.id === 'benefits'
-                                ? 'bg-gradient-to-br from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-gray-900 border-yellow-500 ring-2 ring-yellow-300'
-                                : 'bg-gradient-to-br from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-purple-500 ring-2 ring-purple-300'
-                            : category.id === 'benefits'
-                              ? 'bg-gradient-to-br from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-gray-900 border-yellow-500'
-                              : 'bg-gradient-to-br from-white to-gray-200 hover:from-blue-100 hover:to-white text-gray-900 border-purple-300'} px-3 py-2 md:py-1.5 rounded-full md:rounded-lg text-sm md:text-xs font-bold shadow-lg transition-all hover:scale-105 border shrink-0 whitespace-nowrap md:flex-1 md:min-w-[15%] map-category-button"
-                    >
-                        {#if category.icon?.startsWith('/')}
-                            <img src={category.icon} class="w-5 h-5 inline-block" alt={category.label} />
-                        {:else}
-                            <span
-                                class="text-lg md:text-base icon"
-                                style={category.id === "realestate"
-                                    ? "letter-spacing: -0.25em; margin-left: 0.15em; display: inline-block;"
-                                    : ""}>{category.icon}</span
+                <!-- Mobile: רשת קומפקטית של 4 עמודות, מציגה את כל הקטגוריות בלי גלילה -->
+                <div class="md:hidden px-2 py-2 w-full">
+                    <div class="grid grid-cols-4 gap-1.5">
+                        {#each mobileVisibleCategories as category}
+                            <button
+                                onclick={() => handleCategoryClick(category.id)}
+                                title="לחץ כדי לסנן במפה"
+                                class="flex flex-col items-center justify-center gap-0.5 {selectedCategory === category.id
+                                    ? category.id === 'benefits'
+                                        ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-gray-900 border-yellow-500 ring-2 ring-yellow-300'
+                                        : 'bg-gradient-to-br from-purple-600 to-blue-600 text-white border-purple-500 ring-2 ring-purple-300'
+                                    : category.id === 'benefits'
+                                      ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-gray-900 border-yellow-500'
+                                      : 'bg-gradient-to-br from-white to-gray-200 text-gray-900 border-purple-300'} px-1 py-1.5 rounded-lg text-[10px] font-bold shadow-md transition-all active:scale-95 border map-category-button min-h-[52px]"
                             >
+                                {#if category.icon?.startsWith('/')}
+                                    <img src={category.icon} class="w-5 h-5" alt={category.label} />
+                                {:else}
+                                    <span
+                                        class="text-lg leading-none icon"
+                                        style={category.id === "realestate"
+                                            ? "letter-spacing: -0.25em; margin-left: 0.15em; display: inline-block;"
+                                            : ""}>{category.icon}</span
+                                    >
+                                {/if}
+                                <span class="leading-tight text-center">{category.label}</span>
+                            </button>
+                        {/each}
+                        {#if mobileHiddenCount > 0}
+                            <button
+                                onclick={() => (categoriesExpandedMobile = !categoriesExpandedMobile)}
+                                class="flex flex-col items-center justify-center gap-0.5 bg-gradient-to-br from-purple-700 to-blue-700 text-white border border-purple-400 px-1 py-1.5 rounded-lg text-[10px] font-bold shadow-md transition-all active:scale-95 min-h-[52px]"
+                                aria-expanded={categoriesExpandedMobile}
+                            >
+                                <span class="text-lg leading-none">{categoriesExpandedMobile ? '▲' : '▼'}</span>
+                                <span class="leading-tight">{categoriesExpandedMobile ? 'סגור' : `+${mobileHiddenCount} עוד`}</span>
+                            </button>
                         {/if}
-                        {category.label}
-                    </button>
-                {/each}
-            </div>
+                    </div>
+                </div>
+
+                <!-- Desktop: שורה אחת flex-wrap (ללא שינוי) -->
+                <div
+                    class="hidden md:flex category-buttons-container flex-wrap justify-between gap-x-2 gap-y-3 p-2 w-full"
+                >
+                    {#each categories as category, index}
+                        <button
+                            onclick={() => handleCategoryClick(category.id)}
+                            title="לחץ כדי לסנן במפה"
+                            class="flex items-center justify-center gap-1.5 {selectedCategory === category.id
+                                ? category.id === 'benefits'
+                                    ? 'bg-gradient-to-br from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-gray-900 border-yellow-500 ring-2 ring-yellow-300'
+                                    : 'bg-gradient-to-br from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-purple-500 ring-2 ring-purple-300'
+                                : category.id === 'benefits'
+                                  ? 'bg-gradient-to-br from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-gray-900 border-yellow-500'
+                                  : 'bg-gradient-to-br from-white to-gray-200 hover:from-blue-100 hover:to-white text-gray-900 border-purple-300'} px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg transition-all hover:scale-105 border shrink-0 whitespace-nowrap flex-1 min-w-[15%] map-category-button"
+                        >
+                            {#if category.icon?.startsWith('/')}
+                                <img src={category.icon} class="w-5 h-5 inline-block" alt={category.label} />
+                            {:else}
+                                <span
+                                    class="text-base icon"
+                                    style={category.id === "realestate"
+                                        ? "letter-spacing: -0.25em; margin-left: 0.15em; display: inline-block;"
+                                        : ""}>{category.icon}</span
+                                >
+                            {/if}
+                            {category.label}
+                        </button>
+                    {/each}
+                </div>
             </div><!-- /relative wrapper -->
         </div>
     </div>
