@@ -792,7 +792,7 @@
 
             <!-- Image (left side in RTL) — fades smoothly into banner background -->
             <div
-                class="relative z-10 w-2/5 md:w-3/5 bg-cover bg-center transition-transform duration-300 group-hover:scale-105 farm-image-fade"
+                class="relative z-10 w-1/2 md:w-3/5 bg-cover bg-center transition-transform duration-300 group-hover:scale-105 farm-image-fade"
                 style="background-image: url('/images/Copilot_20260514_012104.png');"
             ></div>
         </a>
@@ -868,10 +868,17 @@
         0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
         50%      { box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.35); }
     }
-    /* באנר חקלאות ישירה — מעבר אלכסוני (135°) ימין-עליון → שמאל-תחתון, מסתיים שקוף ב-70% */
+    /* באנר חקלאות ישירה — מובייל: fade אופקי פשוט (אלכסון על פס צר נראה גרוע) */
     .farm-image-fade {
-        -webkit-mask-image: linear-gradient(135deg, black 0%, black 20%, rgba(0,0,0,0.85) 35%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.2) 60%, transparent 70%);
-                mask-image: linear-gradient(135deg, black 0%, black 20%, rgba(0,0,0,0.85) 35%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.2) 60%, transparent 70%);
+        -webkit-mask-image: linear-gradient(to right, black 0%, black 40%, rgba(0,0,0,0.7) 60%, rgba(0,0,0,0.3) 80%, transparent 100%);
+                mask-image: linear-gradient(to right, black 0%, black 40%, rgba(0,0,0,0.7) 60%, rgba(0,0,0,0.3) 80%, transparent 100%);
+    }
+    /* דסקטופ: אלכסון 135° ימין-עליון → שמאל-תחתון */
+    @media (min-width: 768px) {
+        .farm-image-fade {
+            -webkit-mask-image: linear-gradient(135deg, black 0%, black 20%, rgba(0,0,0,0.85) 35%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.2) 60%, transparent 70%);
+                    mask-image: linear-gradient(135deg, black 0%, black 20%, rgba(0,0,0,0.85) 35%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.2) 60%, transparent 70%);
+        }
     }
 
     @keyframes hintFadeIn {

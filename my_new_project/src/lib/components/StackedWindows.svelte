@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { onMount } from 'svelte';
     import CoaliEmbed from './CoaliEmbed.svelte';
     import ReferendumBanner from './ReferendumBanner.svelte';
     import FacebookComments from './FacebookComments.svelte';
@@ -8,10 +9,53 @@
     }
     let { showCoali = false }: Props = $props();
 
+    const LS_LAST = 'stackedWindows.lastActive';
+    const LS_DEMO = 'stackedWindows.seenDemo';
+
     let active: 'vote' | 'chat' = $state('vote');
+    let stackEl: HTMLElement | undefined = $state();
+
+    onMount(() => {
+        try {
+            const last = localStorage.getItem(LS_LAST);
+            if (last === 'vote' || last === 'chat') active = last;
+        } catch {}
+
+        let seen = false;
+        try { seen = localStorage.getItem(LS_DEMO) === '1'; } catch {}
+        if (seen) return;
+
+        let played = false;
+        const playDemo = () => {
+            if (played) return;
+            played = true;
+            window.removeEventListener('scroll', tryDemo);
+            const original = active;
+            const other: 'vote' | 'chat' = original === 'vote' ? 'chat' : 'vote';
+            setTimeout(() => { active = other; }, 700);
+            setTimeout(() => {
+                active = original;
+                try { localStorage.setItem(LS_DEMO, '1'); } catch {}
+            }, 2100);
+        };
+
+        const tryDemo = () => {
+            if (played || !stackEl) return;
+            const r = stackEl.getBoundingClientRect();
+            if (r.top < window.innerHeight * 0.85 && r.bottom > window.innerHeight * 0.15) {
+                playDemo();
+            }
+        };
+
+        // initial check after layout settles
+        setTimeout(tryDemo, 200);
+        window.addEventListener('scroll', tryDemo, { passive: true });
+        return () => window.removeEventListener('scroll', tryDemo);
+    });
 
     function bringFront(which: 'vote' | 'chat') {
         active = which;
+        try { localStorage.setItem(LS_LAST, which); } catch {}
     }
 </script>
 
@@ -25,7 +69,7 @@
     </div>
 
     <!-- 3D stack container -->
-    <div class="relative h-[520px] md:h-[670px]" style="transform-style: preserve-3d;">
+    <div bind:this={stackEl} class="relative h-[520px] md:h-[670px]" style="transform-style: preserve-3d;">
         <!-- Mobile peek tap target — outside 3D so it gets reliable hit-testing -->
         <button
             type="button"
