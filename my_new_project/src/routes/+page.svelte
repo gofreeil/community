@@ -720,7 +720,7 @@
             <!-- Image (left side in RTL) -->
             <div
                 class="relative z-10 w-1/3 md:w-2/5 bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
-                style="background-image: url('/images/farm-direct.png');"
+                style="background-image: url('/images/Copilot_20260513_223743.png');"
             ></div>
         </a>
 
