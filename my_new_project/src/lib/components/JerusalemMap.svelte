@@ -182,13 +182,8 @@
     let showWaves = $state(false);
     let showSuccessMessage = $state(false);
 
-    // מובייל: האם כל הקטגוריות מורחבות (אחרת — רק 2 שורות ראשונות)
-    let categoriesExpandedMobile = $state(false);
-    const MOBILE_COLLAPSED_COUNT = 8; // 2 שורות של 4 כפתורים
-    const mobileVisibleCategories = $derived(
-        categoriesExpandedMobile ? categories : categories.slice(0, MOBILE_COLLAPSED_COUNT)
-    );
-    const mobileHiddenCount = $derived(categories.length - MOBILE_COLLAPSED_COUNT);
+    // מובייל: bottom sheet עם כל הקטגוריות
+    let showCategorySheet = $state(false);
 
     // ----- מצב מסך מלא לדסקטופ -----
     let isFullscreen = $state(false);
@@ -993,46 +988,98 @@
         <div class="flex flex-col gap-2">
             <!-- Buttons Container -->
             <div class="relative" bind:this={categoryButtonsWrapperRef}>
-                <!-- Mobile: רשת קומפקטית של 4 עמודות, מציגה את כל הקטגוריות בלי גלילה -->
-                <div class="md:hidden px-2 py-2 w-full">
-                    <div class="grid grid-cols-4 gap-1.5">
-                        {#each mobileVisibleCategories as category}
-                            <button
-                                onclick={() => handleCategoryClick(category.id)}
-                                title="לחץ כדי לסנן במפה"
-                                class="flex flex-col items-center justify-center gap-0.5 {selectedCategory === category.id
-                                    ? category.id === 'benefits'
-                                        ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-gray-900 border-yellow-500 ring-2 ring-yellow-300'
-                                        : 'bg-gradient-to-br from-purple-600 to-blue-600 text-white border-purple-500 ring-2 ring-purple-300'
-                                    : category.id === 'benefits'
-                                      ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-gray-900 border-yellow-500'
-                                      : 'bg-gradient-to-br from-white to-gray-200 text-gray-900 border-purple-300'} px-1 py-1.5 rounded-lg text-[10px] font-bold shadow-md transition-all active:scale-95 border map-category-button min-h-[52px]"
-                            >
-                                {#if category.icon?.startsWith('/')}
-                                    <img src={category.icon} class="w-5 h-5" alt={category.label} />
-                                {:else}
-                                    <span
-                                        class="text-lg leading-none icon"
-                                        style={category.id === "realestate"
-                                            ? "letter-spacing: -0.25em; margin-left: 0.15em; display: inline-block;"
-                                            : ""}>{category.icon}</span
-                                    >
-                                {/if}
-                                <span class="leading-tight text-center">{category.label}</span>
-                            </button>
-                        {/each}
-                        {#if mobileHiddenCount > 0}
-                            <button
-                                onclick={() => (categoriesExpandedMobile = !categoriesExpandedMobile)}
-                                class="flex flex-col items-center justify-center gap-0.5 bg-gradient-to-br from-purple-700 to-blue-700 text-white border border-purple-400 px-1 py-1.5 rounded-lg text-[10px] font-bold shadow-md transition-all active:scale-95 min-h-[52px]"
-                                aria-expanded={categoriesExpandedMobile}
-                            >
-                                <span class="text-lg leading-none">{categoriesExpandedMobile ? '▲' : '▼'}</span>
-                                <span class="leading-tight">{categoriesExpandedMobile ? 'סגור' : `+${mobileHiddenCount} עוד`}</span>
-                            </button>
-                        {/if}
-                    </div>
+                <!-- Mobile: שורה אחת קומפקטית — סינון פעיל + כפתור פתיחת bottom sheet -->
+                <div class="md:hidden px-3 py-2 w-full flex items-center gap-2">
+                    <!-- כפתור פתיחת חלונית סינון -->
+                    <button
+                        type="button"
+                        onclick={() => (showCategorySheet = true)}
+                        class="flex items-center gap-1.5 bg-gradient-to-br from-purple-600 to-blue-600 text-white px-3 py-2 rounded-full text-xs font-bold shadow-lg active:scale-95 border border-purple-400 shrink-0"
+                        aria-label="פתח סינון קטגוריות"
+                    >
+                        <span class="text-base leading-none">🎛️</span>
+                        <span>סנן</span>
+                    </button>
+                    <!-- שבב המראה את הסינון הפעיל -->
+                    {#each [categories.find(c => c.id === selectedCategory) ?? categories[0]] as active}
+                        <button
+                            type="button"
+                            onclick={() => (showCategorySheet = true)}
+                            class="flex items-center gap-1.5 flex-1 min-w-0 {active.id === 'benefits'
+                                ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-gray-900 border-yellow-500'
+                                : 'bg-gradient-to-br from-purple-600 to-blue-600 text-white border-purple-500'}
+                                px-3 py-2 rounded-full text-xs font-bold shadow-lg active:scale-95 border whitespace-nowrap overflow-hidden"
+                        >
+                            {#if active.icon?.startsWith('/')}
+                                <img src={active.icon} class="w-5 h-5 shrink-0" alt={active.label} />
+                            {:else}
+                                <span class="text-base leading-none shrink-0">{active.icon}</span>
+                            {/if}
+                            <span class="truncate">{active.label}</span>
+                            <span class="mr-auto text-[10px] opacity-75 shrink-0">▾</span>
+                        </button>
+                    {/each}
                 </div>
+
+                <!-- Bottom Sheet: כל הקטגוריות -->
+                {#if showCategorySheet}
+                    <!-- Backdrop -->
+                    <div
+                        class="md:hidden fixed inset-0 bg-black/60 z-[10000] backdrop-blur-sm"
+                        role="presentation"
+                        onclick={() => (showCategorySheet = false)}
+                    ></div>
+                    <!-- Sheet -->
+                    <div
+                        class="md:hidden fixed bottom-0 left-0 right-0 z-[10001] bg-[#0f172a] border-t-2 border-purple-500 rounded-t-2xl shadow-2xl max-h-[80vh] flex flex-col"
+                        style="animation: sheetSlideUp 0.25s ease-out;"
+                        role="dialog"
+                        aria-label="סינון קטגוריות"
+                    >
+                        <!-- Drag handle + header -->
+                        <div class="pt-2 pb-1 flex flex-col items-center shrink-0">
+                            <div class="w-12 h-1.5 rounded-full bg-white/30 mb-2"></div>
+                            <div class="w-full px-4 flex items-center justify-between">
+                                <h3 class="text-white font-bold text-base">🎛️ סנן יתרונות</h3>
+                                <button
+                                    type="button"
+                                    onclick={() => (showCategorySheet = false)}
+                                    class="text-white/70 hover:text-white text-2xl leading-none px-2"
+                                    aria-label="סגור"
+                                >×</button>
+                            </div>
+                        </div>
+                        <!-- Grid of all categories -->
+                        <div class="px-3 pb-4 pt-2 overflow-y-auto">
+                            <div class="grid grid-cols-3 gap-2">
+                                {#each categories as category}
+                                    <button
+                                        onclick={() => { handleCategoryClick(category.id); showCategorySheet = false; }}
+                                        class="flex flex-col items-center justify-center gap-1 {selectedCategory === category.id
+                                            ? category.id === 'benefits'
+                                                ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-gray-900 border-yellow-500 ring-2 ring-yellow-300'
+                                                : 'bg-gradient-to-br from-purple-600 to-blue-600 text-white border-purple-500 ring-2 ring-purple-300'
+                                            : category.id === 'benefits'
+                                              ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-gray-900 border-yellow-500'
+                                              : 'bg-gradient-to-br from-white to-gray-200 text-gray-900 border-purple-300'} px-2 py-3 rounded-xl text-[11px] font-bold shadow-md active:scale-95 border map-category-button min-h-[68px]"
+                                    >
+                                        {#if category.icon?.startsWith('/')}
+                                            <img src={category.icon} class="w-6 h-6" alt={category.label} />
+                                        {:else}
+                                            <span
+                                                class="text-2xl leading-none"
+                                                style={category.id === "realestate"
+                                                    ? "letter-spacing: -0.25em; margin-left: 0.15em; display: inline-block;"
+                                                    : ""}>{category.icon}</span
+                                            >
+                                        {/if}
+                                        <span class="leading-tight text-center">{category.label}</span>
+                                    </button>
+                                {/each}
+                            </div>
+                        </div>
+                    </div>
+                {/if}
 
                 <!-- Desktop: שורה אחת flex-wrap (ללא שינוי) -->
                 <div
@@ -1940,6 +1987,11 @@
 {/if}
 
 <style>
+    @keyframes sheetSlideUp {
+        from { transform: translateY(100%); }
+        to   { transform: translateY(0); }
+    }
+
     /* ----- מרקרי מפה (Leaflet) ----- */
     :global(.jmap-pin-wrap) {
         background: transparent !important;
