@@ -71,17 +71,11 @@
             <div class="absolute inset-0 flex flex-col items-center justify-center gap-4 text-center p-6">
                 <span class="text-5xl">🗳️</span>
                 <p class="text-white text-base md:text-lg font-bold">
-                    לא ניתן להטמיע את ההצבעות ישירות באתר
+                    ההצבעות אינן זמינות כרגע
                 </p>
                 <p class="text-gray-400 text-sm max-w-md">
-                    מערכת Coali לא מאפשרת הטמעה בחלון פנימי. לחץ על הכפתור כדי לפתוח את ההצבעות בטאב חדש.
+                    אירעה תקלה זמנית בטעינת ההצבעות. אנא נסו שוב מאוחר יותר.
                 </p>
-                <a
-                    href={coaliUrl}
-                    class="mt-2 inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-500 hover:from-purple-500 hover:via-blue-500 hover:to-cyan-400 text-white font-bold px-6 py-3 rounded-full transition-all shadow-lg hover:shadow-blue-500/50"
-                >
-                    🗳️ פתח הצבעות →
-                </a>
             </div>
         {/if}
 
