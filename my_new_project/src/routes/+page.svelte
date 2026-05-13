@@ -773,7 +773,7 @@
         <!-- Direct Agriculture Banner -->
         <a
             href="/farm-direct"
-            class="flex group relative overflow-hidden rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-green-500/30 transition-all duration-300 hover:-translate-y-1 mt-3 md:mt-6 cursor-pointer min-h-[90px] md:min-h-[110px] items-stretch"
+            class="flex group relative overflow-hidden rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-green-500/30 transition-all duration-300 hover:-translate-y-1 mt-3 md:mt-6 mx-2 md:mx-0 mb-2 md:mb-0 cursor-pointer min-h-[90px] md:min-h-[110px] items-stretch"
         >
             <!-- Background gradient -->
             <div class="absolute inset-0 bg-gradient-to-l from-green-950 via-emerald-900 to-emerald-800"></div>
