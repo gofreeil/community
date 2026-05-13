@@ -254,7 +254,7 @@
                         class="relative group w-full text-center pointer-events-none"
                     >
                         <h2
-                            class="text-[2.2rem] md:text-2xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent cursor-default leading-tight"
+                            class="text-[1.6rem] md:text-2xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent cursor-default leading-tight"
                         >
                             {neighborhoodState.city}
                         </h2>
