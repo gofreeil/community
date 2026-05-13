@@ -231,7 +231,7 @@
 <div class="pb-0 md:pb-8 pt-4 md:pt-8" onclick={() => calMenuOpen = null}>
     <!-- Title Section - centered across full width -->
     <section class="max-w-7xl mx-auto px-4">
-        <div class="text-center mb-8 relative neighborhoods-menu-container">
+        <div class="text-center mb-3 md:mb-8 relative neighborhoods-menu-container">
             <!-- Mobile: title with button on left side -->
             <div class="md:hidden mb-2">
                 <div class="relative group text-center mb-1 w-full">
