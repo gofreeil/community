@@ -1165,7 +1165,7 @@
                     <button
                         type="button"
                         onclick={(e) => { e.stopPropagation(); goto('/giveaways'); }}
-                        class="absolute bottom-4 left-4 z-20 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white text-sm font-black px-4 py-2 rounded-xl shadow-lg border border-orange-300/60 transition-all hover:scale-105 flex items-center gap-2 text-center leading-tight"
+                        class="absolute bottom-4 left-4 z-20 bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 hover:from-amber-300 hover:via-orange-400 hover:to-red-400 text-white text-sm font-black px-4 py-2 rounded-xl shadow-lg border border-orange-300/60 transition-all hover:scale-105 flex items-center gap-2 text-center leading-tight"
                         title="עבור ללוח הארצי של פריטים למסירה"
                     >
                         <img src="/images/delivery.png" alt="" class="w-5 h-5 object-contain" />
@@ -1191,7 +1191,7 @@
                                 target={nationalBoardUrl.startsWith('http') ? '_blank' : '_self'}
                                 rel={nationalBoardUrl.startsWith('http') ? 'noopener noreferrer' : undefined}
                                 onclick={(e) => e.stopPropagation()}
-                                class="bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white text-sm font-black px-4 py-2 rounded-xl shadow-lg border border-orange-300/60 transition-all hover:scale-105 flex flex-col items-center text-center leading-tight"
+                                class="bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 hover:from-amber-300 hover:via-orange-400 hover:to-red-400 text-white text-sm font-black px-4 py-2 rounded-xl shadow-lg border border-orange-300/60 transition-all hover:scale-105 flex flex-col items-center text-center leading-tight"
                                 title="עבור ללוח הארצי"
                             >
                                 <span>{neighborhoodDbItems.length} פריטים ב{neighborhoodState.neighborhood}</span>
