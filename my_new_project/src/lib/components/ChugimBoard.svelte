@@ -609,14 +609,6 @@
 
         <!-- Toggles + סיכום -->
         <div class="flex flex-wrap items-center gap-3 mt-2 text-xs">
-            <label class="flex items-center gap-2 cursor-pointer select-none">
-                <input type="checkbox" bind:checked={onlyFreeTrial} class="accent-indigo-500 w-4 h-4 cursor-pointer" />
-                <span class="text-gray-300">🎁 רק עם שיעור ניסיון חינם</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer select-none">
-                <input type="checkbox" bind:checked={onlyAvailable} class="accent-indigo-500 w-4 h-4 cursor-pointer" />
-                <span class="text-gray-300">✅ רק עם מקומות פנויים</span>
-            </label>
             <div class="flex-1"></div>
             <p class="text-gray-500 flex items-center gap-3">
                 <span>מציג <span class="text-white font-bold">{filtered.length}</span> חוגים</span>
