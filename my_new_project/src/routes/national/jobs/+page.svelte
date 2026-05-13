@@ -1,4 +1,8 @@
 <script lang="ts">
+    import { onMount } from 'svelte';
+    import { neighborhoodState } from '$lib/neighborhoodState.svelte';
+    import { getCoordsFor, type Coord } from '$lib/neighborhoodCoords';
+
     // לוח דרושים ארצי — בהשראת LinkedIn Jobs / Indeed / Glassdoor / AllJobs
     interface Item {
         id: string;
@@ -18,6 +22,10 @@
     }
 
     let { data } = $props();
+
+    onMount(() => {
+        neighborhoodState.init(data.userNeighborhood ?? null, data.userCity ?? null);
+    });
 
     // ====== Helpers ======
     function ef(item: Item, key: string): string {
@@ -218,6 +226,51 @@
             out.sort((a, b) => parseSalaryNumber(ef(b, 'salary')) - parseSalaryNumber(ef(a, 'salary')));
         }
         return out;
+    });
+
+    // ====== חלוקה לסקציות לפי מיקום המשתמש ======
+    function haversineKm(a: Coord, b: Coord): number {
+        const toRad = (d: number) => (d * Math.PI) / 180;
+        const R = 6371;
+        const dLat = toRad(b[0] - a[0]);
+        const dLon = toRad(b[1] - a[1]);
+        const lat1 = toRad(a[0]);
+        const lat2 = toRad(b[0]);
+        const h = Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;
+        return 2 * R * Math.asin(Math.sqrt(h));
+    }
+    const SECTION_TITLES = ['בשכונה שלי', 'בעיר שלי', 'בערים סביבי', 'ארצי'];
+    function sectionFor(it: Item, uN: string, uC: string): number {
+        const sCoord = getCoordsFor(it.neighborhood, it.city);
+        const uCoord = getCoordsFor(uN, uC);
+        const dist = haversineKm(sCoord, uCoord);
+        if (it.city === uC) {
+            if (it.neighborhood === uN || dist < 3) return 0;
+            return 1;
+        }
+        if (dist < 35) return 2;
+        return 3;
+    }
+    type SectionedItem = Item & { _section: number; _dist: number };
+    let sectionedItems = $derived.by<SectionedItem[]>(() => {
+        const uN = neighborhoodState.neighborhood;
+        const uC = neighborhoodState.city;
+        const uCoord = getCoordsFor(uN, uC);
+        return filteredItems.map((it) => {
+            const sCoord = getCoordsFor(it.neighborhood, it.city);
+            return { ...it, _section: sectionFor(it, uN, uC), _dist: haversineKm(sCoord, uCoord) };
+        });
+        // ⚠️ לא ממיינים פנימית — כדי שלא נדרוס את ה-sortBy שכבר הופעל ב-filteredItems
+    });
+    let groupedSections = $derived.by(() => {
+        const sorted = [...sectionedItems].sort((a, b) => a._section - b._section);
+        const groups: { section: number; items: SectionedItem[] }[] = [];
+        for (const it of sorted) {
+            const last = groups[groups.length - 1];
+            if (!last || last.section !== it._section) groups.push({ section: it._section, items: [it] });
+            else last.items.push(it);
+        }
+        return groups;
     });
 
     // סטטיסטיקות לכותרת
@@ -472,8 +525,21 @@
                 >נקה סינון</button>
             </div>
         {:else}
+            {#each groupedSections as group (group.section)}
+            <div class="flex items-center gap-3 mt-8 mb-4 first:mt-0">
+                <h2 class="text-white font-black text-xl md:text-2xl whitespace-nowrap">
+                    {SECTION_TITLES[group.section]}
+                    {#if group.section === 0 && neighborhoodState.neighborhood}
+                        <span class="text-indigo-300 font-bold">— {neighborhoodState.neighborhood}</span>
+                    {:else if group.section === 1 && neighborhoodState.city}
+                        <span class="text-indigo-300 font-bold">— {neighborhoodState.city}</span>
+                    {/if}
+                </h2>
+                <span class="text-gray-500 text-xs md:text-sm">({group.items.length})</span>
+                <div class="flex-1 h-px bg-gradient-to-l from-white/20 via-white/10 to-transparent"></div>
+            </div>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                {#each filteredItems as item}
+                {#each group.items as item}
                     {@const jt = ef(item, 'job_type')}
                     {@const salary = ef(item, 'salary')}
                     {@const hours = ef(item, 'hours')}
@@ -562,6 +628,7 @@
                     </div>
                 {/each}
             </div>
+            {/each}
         {/if}
     </div>
 
