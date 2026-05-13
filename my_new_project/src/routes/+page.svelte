@@ -689,33 +689,6 @@
             </a>
         </div>
 
-        <!-- Direct Agriculture Banner (desktop) -->
-        <a
-            href="/farm-direct"
-            class="flex group relative overflow-hidden rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-green-500/30 transition-all duration-300 hover:-translate-y-1 mt-3 md:mt-6 cursor-pointer min-h-[90px] md:min-h-[110px] items-stretch"
-        >
-            <!-- Background gradient -->
-            <div class="absolute inset-0 bg-gradient-to-l from-green-950 via-emerald-900 to-emerald-800"></div>
-
-            <!-- Content (right side in RTL) -->
-            <div class="relative z-20 flex-1 px-4 md:px-8 py-3 md:py-4 flex flex-col justify-center">
-                <div class="mb-1 md:mb-2">
-                    <h3 class="text-lg md:text-3xl font-black text-white group-hover:text-yellow-200 transition-colors">
-                        חקלאות ישירה
-                    </h3>
-                </div>
-                <p class="text-[11px] md:text-base text-green-100 leading-tight md:leading-relaxed max-w-2xl">
-                    חיבור ישיר בין חקלאים לצרכנים ללא פערי תיווך
-                </p>
-            </div>
-
-            <!-- Image (left side in RTL) — fades smoothly into banner background -->
-            <div
-                class="relative z-10 w-2/5 md:w-3/5 bg-cover bg-top transition-transform duration-300 group-hover:scale-105 farm-image-fade"
-                style="background-image: url('/images/Copilot_20260513_223743.png');"
-            ></div>
-        </a>
-
         <!-- Mobile: 3 cards in one row, equal width -->
         <div class="md:hidden">
             <div class="grid grid-cols-3 gap-2 h-28">
@@ -796,6 +769,33 @@
                 </a>
             </div>
         </div>
+
+        <!-- Direct Agriculture Banner -->
+        <a
+            href="/farm-direct"
+            class="flex group relative overflow-hidden rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-green-500/30 transition-all duration-300 hover:-translate-y-1 mt-3 md:mt-6 cursor-pointer min-h-[90px] md:min-h-[110px] items-stretch"
+        >
+            <!-- Background gradient -->
+            <div class="absolute inset-0 bg-gradient-to-l from-green-950 via-emerald-900 to-emerald-800"></div>
+
+            <!-- Content (right side in RTL) -->
+            <div class="relative z-20 flex-1 px-4 md:px-8 py-3 md:py-4 flex flex-col justify-center">
+                <div class="mb-1 md:mb-2">
+                    <h3 class="text-lg md:text-3xl font-black text-white group-hover:text-yellow-200 transition-colors">
+                        חקלאות ישירה
+                    </h3>
+                </div>
+                <p class="text-[11px] md:text-base text-green-100 leading-tight md:leading-relaxed max-w-2xl">
+                    חיבור ישיר בין חקלאים לצרכנים ללא פערי תיווך
+                </p>
+            </div>
+
+            <!-- Image (left side in RTL) — fades smoothly into banner background -->
+            <div
+                class="relative z-10 w-2/5 md:w-3/5 bg-cover bg-top transition-transform duration-300 group-hover:scale-105 farm-image-fade"
+                style="background-image: url('/images/Copilot_20260513_223743.png');"
+            ></div>
+        </a>
     </section>
 </div>
 
