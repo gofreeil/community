@@ -92,8 +92,8 @@
         const lines = [`💑 לוח פנויים ופנויות — ${it.label}`];
         if (meta) lines.push(meta);
         if (it.description) lines.push(it.description);
-        lines.push(url);
-        return { title: 'לוח פנויים ופנויות — קהילה בשכונה', text: lines.join('\n'), url };
+        const text = lines.join('\n');
+        return { title: 'לוח פנויים ופנויות — קהילה בשכונה', text, url };
     }
     async function nativeShare(it: { id: string; label: string; age?: string; city?: string; description?: string }) {
         const payload = buildShareText(it);
@@ -104,12 +104,13 @@
     }
     function shareTo(network: 'whatsapp' | 'telegram' | 'facebook' | 'x' | 'copy', it: { label: string; age?: string; city?: string; description?: string }) {
         const { text, url } = buildShareText(it);
+        const textWithUrl = `${text}\n${url}`;
         const enc = encodeURIComponent;
-        if (network === 'whatsapp')      window.open(`https://wa.me/?text=${enc(text)}`, '_blank');
+        if (network === 'whatsapp')      window.open(`https://wa.me/?text=${enc(textWithUrl)}`, '_blank');
         else if (network === 'telegram') window.open(`https://t.me/share/url?url=${enc(url)}&text=${enc(text)}`, '_blank');
         else if (network === 'facebook') window.open(`https://www.facebook.com/sharer/sharer.php?u=${enc(url)}`, '_blank');
-        else if (network === 'x')        window.open(`https://twitter.com/intent/tweet?text=${enc(text)}`, '_blank');
-        else if (network === 'copy')     navigator.clipboard?.writeText(text);
+        else if (network === 'x')        window.open(`https://twitter.com/intent/tweet?text=${enc(textWithUrl)}`, '_blank');
+        else if (network === 'copy')     navigator.clipboard?.writeText(textWithUrl);
         shareMenuItemId = null;
     }
 

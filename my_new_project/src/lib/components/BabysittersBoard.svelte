@@ -86,8 +86,8 @@
         const lines = [`👶 בייביסיטר — ${name}`];
         if (loc) lines.push(`📍 ${loc}`);
         if (s.description) lines.push(s.description);
-        lines.push(url);
-        return { title: 'בייביסיטר — קהילה בשכונה', text: lines.join('\n'), url };
+        const text = lines.join('\n');
+        return { title: 'בייביסיטר — קהילה בשכונה', text, url };
     }
     async function nativeShareSitter(s: { id: string; name?: string; label?: string; city?: string; neighborhood?: string; description?: string }) {
         const payload = buildSitterShareText(s);
@@ -98,12 +98,13 @@
     }
     function shareSitterTo(network: 'whatsapp' | 'telegram' | 'facebook' | 'x' | 'copy', s: { name?: string; label?: string; city?: string; neighborhood?: string; description?: string }) {
         const { text, url } = buildSitterShareText(s);
+        const textWithUrl = `${text}\n${url}`;
         const enc = encodeURIComponent;
-        if (network === 'whatsapp')      window.open(`https://wa.me/?text=${enc(text)}`, '_blank');
+        if (network === 'whatsapp')      window.open(`https://wa.me/?text=${enc(textWithUrl)}`, '_blank');
         else if (network === 'telegram') window.open(`https://t.me/share/url?url=${enc(url)}&text=${enc(text)}`, '_blank');
         else if (network === 'facebook') window.open(`https://www.facebook.com/sharer/sharer.php?u=${enc(url)}`, '_blank');
-        else if (network === 'x')        window.open(`https://twitter.com/intent/tweet?text=${enc(text)}`, '_blank');
-        else if (network === 'copy')     navigator.clipboard?.writeText(text);
+        else if (network === 'x')        window.open(`https://twitter.com/intent/tweet?text=${enc(textWithUrl)}`, '_blank');
+        else if (network === 'copy')     navigator.clipboard?.writeText(textWithUrl);
         shareMenuSitterId = null;
     }
 
