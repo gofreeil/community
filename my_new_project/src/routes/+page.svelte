@@ -793,7 +793,7 @@
             <!-- Image (left side in RTL) — fades smoothly into banner background -->
             <div
                 class="relative z-10 w-2/5 md:w-3/5 bg-cover bg-top transition-transform duration-300 group-hover:scale-105 farm-image-fade"
-                style="background-image: url('/images/Copilot_20260513_223743.png');"
+                style="background-image: url('/images/Copilot_20260514_012104.png');"
             ></div>
         </a>
     </section>
@@ -868,10 +868,10 @@
         0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
         50%      { box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.35); }
     }
-    /* באנר חקלאות ישירה — מעבר הדרגתי ארוך מהתמונה אל רקע הבאנר */
+    /* באנר חקלאות ישירה — מעבר אלכסוני הדרגתי ארוך מהתמונה אל רקע הבאנר */
     .farm-image-fade {
-        -webkit-mask-image: linear-gradient(to right, black 0%, black 25%, rgba(0,0,0,0.85) 45%, rgba(0,0,0,0.5) 70%, rgba(0,0,0,0.15) 88%, transparent 100%);
-                mask-image: linear-gradient(to right, black 0%, black 25%, rgba(0,0,0,0.85) 45%, rgba(0,0,0,0.5) 70%, rgba(0,0,0,0.15) 88%, transparent 100%);
+        -webkit-mask-image: linear-gradient(to top right, black 0%, black 25%, rgba(0,0,0,0.85) 45%, rgba(0,0,0,0.5) 70%, rgba(0,0,0,0.15) 88%, transparent 100%);
+                mask-image: linear-gradient(to top right, black 0%, black 25%, rgba(0,0,0,0.85) 45%, rgba(0,0,0,0.5) 70%, rgba(0,0,0,0.15) 88%, transparent 100%);
     }
 
     @keyframes hintFadeIn {
