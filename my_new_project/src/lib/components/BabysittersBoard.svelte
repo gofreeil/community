@@ -375,10 +375,10 @@
     // ===== סקציות לפי קרבה למשתמש =====
     // 0 = השכונה/אזור שלך  |  1 = העיר שלך  |  2 = ערים קרובות  |  3 = שאר הארץ
     const SECTION_TITLES = [
-        'השמרטפים באזורך',
-        'שמרטפים בעירך',
-        'ערים קרובות',
-        'שאר הארץ',
+        'בשכונה שלי',
+        'בעיר שלי',
+        'בערים סביבי',
+        'ארצי',
     ];
 
     function sectionFor(s: Sitter, userNeigh: string, userCty: string): number {
@@ -567,11 +567,8 @@
         {:else}
             {#each pageGroups as group (group.section + '-' + currentPage)}
                 <!-- כותרת סקציה + קו -->
-                <div class="flex items-center gap-3 mt-6 mb-4 first:mt-0">
-                    <span class="text-xl">
-                        {group.section === 0 ? '📍' : group.section === 1 ? '🏙️' : group.section === 2 ? '🚗' : '🇮🇱'}
-                    </span>
-                    <h2 class="text-white font-black text-base md:text-lg whitespace-nowrap">
+                <div class="flex items-center gap-3 mt-8 mb-4 first:mt-0">
+                    <h2 class="text-white font-black text-xl md:text-2xl whitespace-nowrap">
                         {SECTION_TITLES[group.section]}
                         {#if group.section === 0 && neighborhoodState.neighborhood}
                             <span class="text-pink-300 font-bold">— {neighborhoodState.neighborhood}</span>
@@ -579,6 +576,7 @@
                             <span class="text-pink-300 font-bold">— {neighborhoodState.city}</span>
                         {/if}
                     </h2>
+                    <span class="text-gray-500 text-xs md:text-sm">({group.items.length})</span>
                     <div class="flex-1 h-px bg-gradient-to-l from-pink-500/40 via-white/10 to-transparent"></div>
                 </div>
 
