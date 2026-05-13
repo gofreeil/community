@@ -184,6 +184,8 @@
 
     // מובייל: bottom sheet עם כל הקטגוריות
     let showCategorySheet = $state(false);
+    const benefitsCat = categories.find(c => c.id === 'benefits') ?? categories[0];
+    const otherCats = categories.filter(c => c.id !== 'benefits');
 
     // ----- מצב מסך מלא לדסקטופ -----
     let isFullscreen = $state(false);
@@ -1051,23 +1053,32 @@
                         </div>
                         <!-- Grid of all categories -->
                         <div class="px-3 pb-4 pt-2 overflow-y-auto">
-                            <div class="grid grid-cols-3 gap-2">
-                                {#each categories as category}
+                            <!-- שורה 1: 'כל היתרונות' לבד וממורכז -->
+                            <div class="flex justify-center mb-2">
+                                <button
+                                    onclick={() => { handleCategoryClick(benefitsCat.id); showCategorySheet = false; }}
+                                    class="flex flex-col items-center justify-center gap-1 {selectedCategory === benefitsCat.id
+                                        ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-gray-900 border-yellow-500 ring-2 ring-yellow-300'
+                                        : 'bg-gradient-to-br from-yellow-400 to-orange-500 text-gray-900 border-yellow-500'} px-6 py-3 rounded-xl text-xs font-bold shadow-md active:scale-95 border map-category-button min-h-[68px] w-[42%]"
+                                >
+                                    <span class="text-2xl leading-none">{benefitsCat.icon}</span>
+                                    <span class="leading-tight text-center">{benefitsCat.label}</span>
+                                </button>
+                            </div>
+                            <!-- שורה 2+: 16 קטגוריות בגריד 4×4 סימטרי -->
+                            <div class="grid grid-cols-4 gap-1.5">
+                                {#each otherCats as category}
                                     <button
                                         onclick={() => { handleCategoryClick(category.id); showCategorySheet = false; }}
                                         class="flex flex-col items-center justify-center gap-1 {selectedCategory === category.id
-                                            ? category.id === 'benefits'
-                                                ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-gray-900 border-yellow-500 ring-2 ring-yellow-300'
-                                                : 'bg-gradient-to-br from-purple-600 to-blue-600 text-white border-purple-500 ring-2 ring-purple-300'
-                                            : category.id === 'benefits'
-                                              ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-gray-900 border-yellow-500'
-                                              : 'bg-gradient-to-br from-white to-gray-200 text-gray-900 border-purple-300'} px-2 py-3 rounded-xl text-[11px] font-bold shadow-md active:scale-95 border map-category-button min-h-[68px]"
+                                            ? 'bg-gradient-to-br from-purple-600 to-blue-600 text-white border-purple-500 ring-2 ring-purple-300'
+                                            : 'bg-gradient-to-br from-white to-gray-200 text-gray-900 border-purple-300'} px-1 py-2.5 rounded-xl text-[10px] font-bold shadow-md active:scale-95 border map-category-button min-h-[64px]"
                                     >
                                         {#if category.icon?.startsWith('/')}
                                             <img src={category.icon} class="w-6 h-6" alt={category.label} />
                                         {:else}
                                             <span
-                                                class="text-2xl leading-none"
+                                                class="text-xl leading-none"
                                                 style={category.id === "realestate"
                                                     ? "letter-spacing: -0.25em; margin-left: 0.15em; display: inline-block;"
                                                     : ""}>{category.icon}</span
