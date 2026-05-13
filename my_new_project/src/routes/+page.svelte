@@ -778,9 +778,9 @@
             <!-- Background gradient -->
             <div class="absolute inset-0 bg-gradient-to-l from-green-950 via-emerald-900 to-emerald-800"></div>
 
-            <!-- Image (full width, fades diagonally — text floats on top via z-index) -->
+            <!-- Image (extends slightly into text area — only small overlap) -->
             <div
-                class="absolute inset-0 z-10 bg-cover bg-center transition-transform duration-300 group-hover:scale-105 farm-image-fade"
+                class="absolute inset-y-0 left-0 w-4/5 md:w-3/4 z-10 bg-cover bg-center transition-transform duration-300 group-hover:scale-105 farm-image-fade"
                 style="background-image: url('/images/Copilot_20260514_012104.png');"
             ></div>
 
@@ -792,7 +792,7 @@
                     </h3>
                 </div>
                 <p class="text-[11px] md:text-base text-green-100 leading-tight md:leading-relaxed max-w-2xl drop-shadow-[0_1px_3px_rgba(0,0,0,0.5)]">
-                    חיבור ישיר בין חקלאים לצרכנים ללא פערי תיווך
+                    חיבור ישיר בין חקלאים לצרכנים ללא <span class="whitespace-nowrap">פערי תיווך</span>
                 </p>
             </div>
         </a>
