@@ -709,10 +709,10 @@
                     <div class="relative z-10 p-2 h-full flex flex-col justify-between">
                         <div class="text-center text-white">
                             <span class="text-xl mb-1 block">🙏</span>
-                            <h3 class="text-xs font-black leading-tight">כותל המשאלות</h3>
+                            <h3 class="text-sm font-black leading-tight">כותל המשאלות</h3>
                         </div>
                         <div
-                            class="bg-blue-600/50 text-white px-1 py-1 rounded text-[10px] font-bold text-center w-full"
+                            class="bg-blue-600/50 text-white px-1 py-1 rounded text-xs font-bold text-center w-full"
                         >
                             וקופת השכונה
                         </div>
@@ -733,10 +733,10 @@
                     <div class="relative z-10 p-2 h-full flex flex-col justify-between">
                         <div class="text-center text-white">
                             <span class="text-xl mb-1 block">🏛️</span>
-                            <h3 class="text-xs font-black leading-tight">ועד השכונה</h3>
+                            <h3 class="text-sm font-black leading-tight">ועד השכונה</h3>
                         </div>
                         <button
-                            class="bg-purple-600/50 text-white px-1 py-1 rounded text-[10px] font-bold w-full hover:bg-purple-600/70"
+                            class="bg-purple-600/50 text-white px-1 py-1 rounded text-xs font-bold w-full hover:bg-purple-600/70"
                         >
                             פנה לועד השכונה
                         </button>
@@ -757,11 +757,11 @@
                     <div class="relative z-10 p-2 h-full flex flex-col justify-between">
                         <div class="text-center text-white">
                             <span class="text-xl mb-1 block">🚨</span>
-                            <h3 class="text-xs font-black leading-tight">כיתת כוננות</h3>
-                            <p class="text-[10px] text-yellow-100 mt-0.5">{data.emergencyTeamCount} חברים</p>
+                            <h3 class="text-sm font-black leading-tight">כיתת כוננות</h3>
+                            <p class="text-xs text-yellow-100 mt-0.5">{data.emergencyTeamCount} חברים</p>
                         </div>
                         <div
-                            class="bg-red-600/50 text-white px-1 py-1 rounded text-[10px] font-bold w-full text-center"
+                            class="bg-red-600/50 text-white px-1 py-1 rounded text-xs font-bold w-full text-center"
                         >
                             הצטרף
                         </div>
