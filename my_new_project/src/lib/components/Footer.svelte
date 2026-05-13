@@ -71,7 +71,7 @@
             </nav>
 
             <!-- Left: Copyright -->
-            <p class="text-gray-400 font-bold text-sm md:text-lg text-center md:text-right">
+            <p class="text-gray-400 font-bold text-[10px] md:text-lg text-center md:text-right pb-2 md:pb-0">
                 &copy; {new Date().getFullYear()} {tFn("all_rights_reserved")}
             </p>
         </div>
