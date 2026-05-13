@@ -635,12 +635,28 @@
             next.add(categoryId);
             expandedCategories = next;
         }
-        // גלול לאט כך שהכפתורים יהיו בראש המסך
+        // גלול לאט כך שהכפתורים נשארים נראים (לא לגלול מתחת אליהם)
         if (!isFullscreen && categoryButtonsWrapperRef) {
             const rect = categoryButtonsWrapperRef.getBoundingClientRect();
-            const targetY = window.scrollY + rect.top - 8;
-            window.scrollTo({ top: targetY, behavior: 'smooth' });
+            const targetY = Math.max(0, window.scrollY + rect.top - 12);
+            smoothScrollTo(targetY, 1100);
         }
+    }
+
+    function smoothScrollTo(targetY: number, duration: number) {
+        const startY = window.scrollY;
+        const diff = targetY - startY;
+        if (Math.abs(diff) < 2) return;
+        const startTime = performance.now();
+        const easeInOutCubic = (t: number) =>
+            t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        function step(now: number) {
+            const elapsed = now - startTime;
+            const t = Math.min(1, elapsed / duration);
+            window.scrollTo(0, startY + diff * easeInOutCubic(t));
+            if (t < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
     }
 
     // citiesAndNeighborhoods imported from $lib/neighborhoodsData
