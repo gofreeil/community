@@ -238,7 +238,7 @@
                     <h2
                         class="text-[1.6rem] md:text-2xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent cursor-default leading-tight w-full line-clamp-2 break-words"
                     >
-                        יתרונות שכונת {neighborhoodState.neighborhood}
+                        שכונת {neighborhoodState.neighborhood}
                     </h2>
                 </div>
                 <div class="relative flex items-center w-full">
