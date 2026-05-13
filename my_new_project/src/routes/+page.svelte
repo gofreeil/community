@@ -695,7 +695,7 @@
             class="hidden md:flex group relative overflow-hidden rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-green-500/30 transition-all duration-300 hover:-translate-y-1 mt-6 cursor-pointer min-h-[110px] items-stretch"
         >
             <!-- Background gradient -->
-            <div class="absolute inset-0 bg-gradient-to-l from-green-800 via-emerald-700 to-emerald-600"></div>
+            <div class="absolute inset-0 bg-gradient-to-l from-green-950 via-emerald-900 to-emerald-800"></div>
 
             <!-- Content (right side in RTL) -->
             <div class="relative z-20 flex-1 px-6 md:px-8 py-4 flex flex-col justify-center">
