@@ -78,8 +78,6 @@
                 </p>
                 <a
                     href={coaliUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     class="mt-2 inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-500 hover:from-purple-500 hover:via-blue-500 hover:to-cyan-400 text-white font-bold px-6 py-3 rounded-full transition-all shadow-lg hover:shadow-blue-500/50"
                 >
                     🗳️ פתח הצבעות →
