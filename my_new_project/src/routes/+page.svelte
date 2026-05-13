@@ -236,7 +236,7 @@
             <div class="md:hidden mb-2">
                 <div class="relative group text-center mb-1 w-full">
                     <h2
-                        class="text-[2.2rem] md:text-2xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent cursor-default leading-tight w-full"
+                        class="text-[1.6rem] md:text-2xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent cursor-default leading-tight w-full line-clamp-2 break-words"
                     >
                         יתרונות שכונת {neighborhoodState.neighborhood}
                     </h2>
