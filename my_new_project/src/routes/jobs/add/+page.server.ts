@@ -47,6 +47,6 @@ export const actions: Actions = {
             return fail(500, { error: 'שגיאה בשמירת המודעה, נסה שוב' });
         }
 
-        throw redirect(303, '/jobs');
+        throw redirect(303, '/national/jobs');
     },
 };

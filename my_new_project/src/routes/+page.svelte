@@ -481,9 +481,9 @@
                             <span class="flex-shrink-0"><img src="/icons/shavat-shalom.png" class="w-5 h-5 inline-block" alt="שבת שלום" /></span>
                             <p class="text-white font-bold">לוח אירוח לשבת</p>
                         </a>
-                        <a href="/jobs" class="flex items-center gap-2 bg-white/5 rounded-lg p-2.5 border border-white/8 hover:bg-white/10 transition-all">
+                        <a href="/national/jobs" class="flex items-center gap-2 bg-white/5 rounded-lg p-2.5 border border-white/8 hover:bg-white/10 transition-all">
                             <span class="flex-shrink-0 text-base">💼</span>
-                            <p class="text-white font-bold">לוח דורשים לעבודה</p>
+                            <p class="text-white font-bold">לוח דרושים ארצי</p>
                         </a>
                         <a href="/rides" class="flex items-center gap-2 bg-white/5 rounded-lg p-2.5 border border-white/8 hover:bg-white/10 transition-all">
                             <span class="flex-shrink-0 text-base">🚗</span>

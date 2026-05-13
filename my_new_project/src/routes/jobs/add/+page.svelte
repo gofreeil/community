@@ -106,7 +106,7 @@
         {/if}
 
         <div class="text-center mt-6">
-            <a href="/jobs" class="text-gray-500 hover:text-white transition-colors text-sm">← חזרה ללוח עבודה</a>
+            <a href="/national/jobs" class="text-gray-500 hover:text-white transition-colors text-sm">← חזרה ללוח דרושים</a>
         </div>
     </div>
 </div>
