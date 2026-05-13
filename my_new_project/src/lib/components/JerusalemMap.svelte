@@ -635,10 +635,12 @@
             next.add(categoryId);
             expandedCategories = next;
         }
-        // גלול לאט כך שהכפתורים נשארים נראים (לא לגלול מתחת אליהם)
+        // גלול לאט כך שהכפתורים נשארים נראים (לא לגלול מתחת אליהם או מתחת ל-header הדביק)
         if (!isFullscreen && categoryButtonsWrapperRef) {
             const rect = categoryButtonsWrapperRef.getBoundingClientRect();
-            const targetY = Math.max(0, window.scrollY + rect.top - 12);
+            const stickyHeader = document.querySelector('header.sticky') as HTMLElement | null;
+            const headerH = stickyHeader?.getBoundingClientRect().height ?? 0;
+            const targetY = Math.max(0, window.scrollY + rect.top - headerH - 12);
             smoothScrollTo(targetY, 1100);
         }
     }
