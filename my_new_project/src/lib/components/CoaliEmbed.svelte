@@ -33,9 +33,9 @@
     });
 </script>
 
-<div class="relative rounded-2xl overflow-hidden bg-gradient-to-br from-purple-900/40 via-blue-900/40 to-cyan-900/40 border-2 border-blue-500/40 shadow-2xl -mx-2 md:mx-0">
+<div class="relative rounded-2xl overflow-hidden bg-gradient-to-br from-purple-900/40 via-blue-900/40 to-cyan-900/40 border-2 border-blue-500/40 shadow-2xl -mx-2 md:mx-0 h-full flex flex-col">
     <!-- Header -->
-    <div class="bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-500 p-3 md:p-4 flex items-center justify-between">
+    <div class="bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-500 p-3 md:p-4 flex items-center justify-between flex-shrink-0">
         <div class="flex items-center gap-2 md:gap-3">
             <span class="text-2xl md:text-3xl">🗳️</span>
             <div>
@@ -56,7 +56,7 @@
 
     <!-- Iframe container -->
     <div
-        class="relative w-full bg-[#0f172a] h-[210px] md:h-[400px]"
+        class="relative w-full bg-[#0f172a] flex-1 min-h-[210px]"
         onmouseleave={deactivate}
         role="region"
     >
@@ -111,7 +111,7 @@
     </div>
 
     <!-- Footer note (mobile open link only) -->
-    <div class="md:hidden bg-black/40 px-3 py-2 flex items-center justify-end border-t border-white/10">
+    <div class="md:hidden bg-black/40 px-3 py-2 flex items-center justify-end border-t border-white/10 flex-shrink-0">
         <a
             href={coaliUrl}
             target="_blank"

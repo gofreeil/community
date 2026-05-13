@@ -17,21 +17,21 @@
 
 <div class="relative w-full max-w-md mx-auto" style="perspective: 1400px;">
     <!-- Title -->
-    <div class="text-center mb-3">
-        <h2 class="text-lg md:text-xl font-black bg-gradient-to-r from-purple-300 via-blue-300 to-cyan-300 bg-clip-text text-transparent">
+    <div class="text-center mt-8 mb-4">
+        <h2 class="text-2xl md:text-3xl font-black bg-gradient-to-r from-purple-300 via-blue-300 to-cyan-300 bg-clip-text text-transparent">
             שיח פתוח ומשאלי עם בשכונה
         </h2>
-        <div class="h-px bg-gradient-to-r from-transparent via-blue-400/40 to-transparent mt-2"></div>
+        <div class="h-px bg-gradient-to-r from-transparent via-blue-400/40 to-transparent mt-3"></div>
     </div>
 
     <!-- 3D stack container -->
     <div class="relative" style="height: 670px; transform-style: preserve-3d;">
         <!-- VOTE card -->
         <div
-            class="absolute top-0 right-0 left-0 bottom-0 rounded-2xl overflow-hidden bg-[#0b1020] shadow-2xl transition-all duration-500 ease-out origin-right"
-            style={active === 'vote'
-                ? 'transform: translateX(0) translateZ(0) rotateY(0deg); z-index: 20; filter: brightness(1);'
-                : 'transform: translateX(-30%) translateZ(-140px) rotateY(22deg); z-index: 10; filter: brightness(0.5);'}
+            class="absolute top-0 right-0 left-0 bottom-0 rounded-2xl overflow-hidden bg-[#0b1020] origin-right will-change-transform"
+            style="transition: transform 800ms cubic-bezier(0.65, 0, 0.35, 1), filter 800ms cubic-bezier(0.65, 0, 0.35, 1), box-shadow 800ms ease-out; {active === 'vote'
+                ? 'transform: translateX(0) translateZ(0) rotateY(0deg) scale(1); z-index: 20; filter: brightness(1) saturate(1); box-shadow: 0 25px 60px -10px rgba(59, 130, 246, 0.5), 0 0 0 1px rgba(255,255,255,0.08);'
+                : 'transform: translateX(-28%) translateZ(-220px) rotateY(28deg) scale(0.92); z-index: 10; filter: brightness(0.45) saturate(0.7); box-shadow: 0 10px 30px -5px rgba(0,0,0,0.6);'}"
         >
             <div class="w-full h-full overflow-y-auto bg-[#0b1020]">
                 {#if showCoali}
@@ -52,10 +52,10 @@
 
         <!-- CHAT card -->
         <div
-            class="absolute top-0 right-0 left-0 bottom-0 rounded-2xl overflow-hidden bg-[#0b1020] shadow-2xl transition-all duration-500 ease-out origin-left"
-            style={active === 'chat'
-                ? 'transform: translateX(0) translateZ(0) rotateY(0deg); z-index: 20; filter: brightness(1);'
-                : 'transform: translateX(-30%) translateZ(-140px) rotateY(22deg); z-index: 10; filter: brightness(0.5);'}
+            class="absolute top-0 right-0 left-0 bottom-0 rounded-2xl overflow-hidden bg-[#0b1020] origin-right will-change-transform"
+            style="transition: transform 800ms cubic-bezier(0.65, 0, 0.35, 1), filter 800ms cubic-bezier(0.65, 0, 0.35, 1), box-shadow 800ms ease-out; {active === 'chat'
+                ? 'transform: translateX(0) translateZ(0) rotateY(0deg) scale(1); z-index: 20; filter: brightness(1) saturate(1); box-shadow: 0 25px 60px -10px rgba(59, 130, 246, 0.5), 0 0 0 1px rgba(255,255,255,0.08);'
+                : 'transform: translateX(-28%) translateZ(-220px) rotateY(28deg) scale(0.92); z-index: 10; filter: brightness(0.45) saturate(0.7); box-shadow: 0 10px 30px -5px rgba(0,0,0,0.6);'}"
         >
             <div class="w-full h-full overflow-y-auto bg-[#0b1020] p-3 flex flex-col">
                 <h3 class="text-base md:text-lg font-bold text-white mb-3 text-center flex items-center justify-center gap-2 flex-shrink-0">
