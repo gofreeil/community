@@ -1,4 +1,8 @@
 <script lang="ts">
+    import { onMount } from 'svelte';
+    import { neighborhoodState } from '$lib/neighborhoodState.svelte';
+    import { getCoordsFor, type Coord } from '$lib/neighborhoodCoords';
+
     interface DbItem {
         id: string;
         category: string;
@@ -29,6 +33,8 @@
     interface Props {
         items: DbItem[];
         city: string | null;
+        userNeighborhood?: string | null;
+        userCity?: string | null;
         userId?: string | null;
         isBanned?: boolean;
         blockedHostUserIds?: string[];
@@ -41,6 +47,8 @@
 
     let {
         items, city,
+        userNeighborhood = null,
+        userCity = null,
         userId = null,
         isBanned = false,
         blockedHostUserIds = [],
@@ -50,6 +58,48 @@
         pendingRequestsForHost = [],
         approvedGuestPhonesForHost = [],
     }: Props = $props();
+
+    onMount(() => {
+        neighborhoodState.init(userNeighborhood, userCity);
+    });
+
+    // ====== Sectioning ======
+    function haversineKm(a: Coord, b: Coord): number {
+        const toRad = (d: number) => (d * Math.PI) / 180;
+        const R = 6371;
+        const dLat = toRad(b[0] - a[0]);
+        const dLon = toRad(b[1] - a[1]);
+        const lat1 = toRad(a[0]);
+        const lat2 = toRad(b[0]);
+        const h = Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;
+        return 2 * R * Math.asin(Math.sqrt(h));
+    }
+    const SECTION_TITLES = ['בשכונה שלי', 'בעיר שלי', 'בערים סביבי', 'ארצי'];
+    function sectionForItem(it: DbItem, uN: string, uC: string): number {
+        const sCoord = getCoordsFor(it.neighborhood, it.city);
+        const uCoord = getCoordsFor(uN, uC);
+        const dist = haversineKm(sCoord, uCoord);
+        if (it.city === uC) {
+            if (it.neighborhood === uN || dist < 3) return 0;
+            return 1;
+        }
+        if (dist < 35) return 2;
+        return 3;
+    }
+    type Sectioned = DbItem & { _section: number };
+    function groupBySection(arr: DbItem[]) {
+        const uN = neighborhoodState.neighborhood;
+        const uC = neighborhoodState.city;
+        const enriched: Sectioned[] = arr.map(it => ({ ...it, _section: sectionForItem(it, uN, uC) }));
+        const sorted = enriched.sort((a, b) => a._section - b._section);
+        const groups: { section: number; items: Sectioned[] }[] = [];
+        for (const it of sorted) {
+            const last = groups[groups.length - 1];
+            if (!last || last.section !== it._section) groups.push({ section: it._section, items: [it] });
+            else last.items.push(it);
+        }
+        return groups;
+    }
 
     function parseExtra(raw: string): Record<string, unknown> {
         try { return raw ? JSON.parse(raw) : {}; } catch { return {}; }
@@ -143,6 +193,9 @@
 
     let guestPageItems = $derived(filteredGuests.slice((guestPage - 1) * PAGE_SIZE, guestPage * PAGE_SIZE));
     let hostPageItems  = $derived(filteredHosts.slice((hostPage  - 1) * PAGE_SIZE, hostPage  * PAGE_SIZE));
+
+    let guestPageGroups = $derived(groupBySection(guestPageItems));
+    let hostPageGroups  = $derived(groupBySection(hostPageItems));
 
     // --- מצב אישורים (עדכוני אופטימיסטי) ---
     let localApprovedHostItemIds    = $state([...approvedHostItemIds]);
@@ -353,7 +406,20 @@
                             {#if filteredGuests.length === 0}
                                 <p class="text-center text-gray-500 text-sm py-8">אין מחפשים כרגע</p>
                             {:else}
-                                {#each guestPageItems as item}
+                                {#each guestPageGroups as group (group.section + '-g-' + guestPage)}
+                                <div class="flex items-center gap-3 mt-4 mb-2 first:mt-0">
+                                    <h3 class="text-white font-black text-lg md:text-xl whitespace-nowrap">
+                                        {SECTION_TITLES[group.section]}
+                                        {#if group.section === 0 && neighborhoodState.neighborhood}
+                                            <span class="text-cyan-300 font-bold">— {neighborhoodState.neighborhood}</span>
+                                        {:else if group.section === 1 && neighborhoodState.city}
+                                            <span class="text-cyan-300 font-bold">— {neighborhoodState.city}</span>
+                                        {/if}
+                                    </h3>
+                                    <span class="text-gray-500 text-xs">({group.items.length})</span>
+                                    <div class="flex-1 h-px bg-gradient-to-l from-cyan-500/40 via-white/10 to-transparent"></div>
+                                </div>
+                                {#each group.items as item}
                                     {@const meal = getMeal(item)}
                                     {@const capacity = getCapacity(item)}
                                     {@const guest_type = getGuestType(item)}
@@ -416,6 +482,7 @@
                                         </div>
                                     </div>
                                 {/each}
+                                {/each}
                                 {#if guestTotalPages > 1}
                                     <div class="flex items-center justify-center gap-2 pt-2">
                                         <button onclick={() => { guestPage = Math.max(1, guestPage - 1); }} disabled={guestPage === 1} class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-30 text-white text-sm transition-colors">‹</button>
@@ -463,7 +530,20 @@
                             {#if filteredHosts.length === 0}
                                 <p class="text-center text-gray-500 text-sm py-8">אין מארחים כרגע</p>
                             {:else}
-                                {#each hostPageItems as item}
+                                {#each hostPageGroups as group (group.section + '-h-' + hostPage)}
+                                <div class="flex items-center gap-3 mt-4 mb-2 first:mt-0">
+                                    <h3 class="text-white font-black text-lg md:text-xl whitespace-nowrap">
+                                        {SECTION_TITLES[group.section]}
+                                        {#if group.section === 0 && neighborhoodState.neighborhood}
+                                            <span class="text-amber-300 font-bold">— {neighborhoodState.neighborhood}</span>
+                                        {:else if group.section === 1 && neighborhoodState.city}
+                                            <span class="text-amber-300 font-bold">— {neighborhoodState.city}</span>
+                                        {/if}
+                                    </h3>
+                                    <span class="text-gray-500 text-xs">({group.items.length})</span>
+                                    <div class="flex-1 h-px bg-gradient-to-l from-amber-500/40 via-white/10 to-transparent"></div>
+                                </div>
+                                {#each group.items as item}
                                     {@const meal = getMeal(item)}
                                     {@const capacity = getCapacity(item)}
                                     {@const guest_type = getGuestType(item)}
@@ -607,6 +687,7 @@
                                             <p class="text-[10px] text-amber-500/70 text-center mt-2">⚠️ אין להגיע ללא תיאום מראש</p>
                                         </div>
                                     </div>
+                                {/each}
                                 {/each}
                                 {#if hostTotalPages > 1}
                                     <div class="flex items-center justify-center gap-2 pt-2">

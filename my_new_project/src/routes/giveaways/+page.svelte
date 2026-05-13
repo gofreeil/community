@@ -3,6 +3,7 @@
     import type { PageData } from './$types';
     import { giveawayCategories, detectCategory, categoryByKey } from '$lib/giveawayCategories';
     import { neighborhoodState } from '$lib/neighborhoodState.svelte';
+    import { getCoordsFor, type Coord } from '$lib/neighborhoodCoords';
     import { toggleLike } from '$lib/likedItems';
 
     let { data }: { data: PageData } = $props();
@@ -210,27 +211,56 @@
 
     let currentSortLabel = $derived(sortOptions.find(o => o.key === sortBy)?.label ?? '');
 
-    // Location-aware grouping — only when the user is searching for a specific product.
-    // Tier 1 = my neighborhood; Tier 2 = my city (excluding my neighborhood); Tier 3 = rest of country (newest→oldest).
-    let searching = $derived(debouncedSearch.length > 0);
+    // ====== חלוקה ל-4 קומות לפי קרבה למשתמש (תמיד מוצגות) ======
+    function haversineKm(a: Coord, b: Coord): number {
+        const toRad = (d: number) => (d * Math.PI) / 180;
+        const R = 6371;
+        const dLat = toRad(b[0] - a[0]);
+        const dLon = toRad(b[1] - a[1]);
+        const lat1 = toRad(a[0]);
+        const lat2 = toRad(b[0]);
+        const h = Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;
+        return 2 * R * Math.asin(Math.sqrt(h));
+    }
 
     let groupNeighborhood = $derived.by(() => {
-        if (!searching) return [] as typeof filtered;
-        return filtered.filter(i => i.neighborhood === neighborhoodState.neighborhood);
+        const uN = neighborhoodState.neighborhood;
+        const uC = neighborhoodState.city;
+        const uCoord = getCoordsFor(uN, uC);
+        return filtered.filter(i => {
+            if (i.city !== uC) return false;
+            if (i.neighborhood === uN) return true;
+            return haversineKm(getCoordsFor(i.neighborhood, i.city), uCoord) < 3;
+        });
     });
 
     let groupCity = $derived.by(() => {
-        if (!searching) return [] as typeof filtered;
-        return filtered.filter(i =>
-            i.city === neighborhoodState.city &&
-            i.neighborhood !== neighborhoodState.neighborhood
-        );
+        const uN = neighborhoodState.neighborhood;
+        const uC = neighborhoodState.city;
+        const uCoord = getCoordsFor(uN, uC);
+        return filtered.filter(i => {
+            if (i.city !== uC) return false;
+            if (i.neighborhood === uN) return false;
+            return haversineKm(getCoordsFor(i.neighborhood, i.city), uCoord) >= 3;
+        });
+    });
+
+    let groupNearby = $derived.by(() => {
+        const uC = neighborhoodState.city;
+        const uCoord = getCoordsFor(neighborhoodState.neighborhood, uC);
+        return filtered.filter(i => {
+            if (i.city === uC) return false;
+            return haversineKm(getCoordsFor(i.neighborhood, i.city), uCoord) < 35;
+        });
     });
 
     let groupRest = $derived.by(() => {
-        if (!searching) return [] as typeof filtered;
-        const list = filtered.filter(i => i.city !== neighborhoodState.city);
-        // The user explicitly asked: "rest of the country — newest down to oldest", regardless of the active sort.
+        const uC = neighborhoodState.city;
+        const uCoord = getCoordsFor(neighborhoodState.neighborhood, uC);
+        const list = filtered.filter(i => {
+            if (i.city === uC) return false;
+            return haversineKm(getCoordsFor(i.neighborhood, i.city), uCoord) >= 35;
+        });
         return [...list].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     });
 </script>
@@ -597,54 +627,53 @@
             </div>
         {/snippet}
 
-        {#snippet sectionHeader(icon: string, title: string, count: number, accent: string)}
-            <div class="flex items-center gap-2 mb-3 mt-2">
-                <span class="text-xl">{icon}</span>
-                <h3 class="text-white font-black text-base md:text-lg">{title}</h3>
-                <span class="text-xs font-bold px-2 py-0.5 rounded-full {accent}">{count}</span>
+        {#snippet sectionHeader(title: string, suffix: string, count: number)}
+            <div class="flex items-center gap-3 mt-8 mb-4">
+                <h2 class="text-white font-black text-xl md:text-2xl whitespace-nowrap">
+                    {title}
+                    {#if suffix}<span class="text-orange-300 font-bold">— {suffix}</span>{/if}
+                </h2>
+                <span class="text-gray-500 text-xs md:text-sm">({count})</span>
+                <div class="flex-1 h-px bg-gradient-to-l from-orange-500/40 via-white/10 to-transparent"></div>
             </div>
         {/snippet}
 
-        {#if searching}
-            <!-- Tier 1: my neighborhood -->
-            {#if groupNeighborhood.length > 0}
-                <section class="mb-4">
-                    {@render sectionHeader('🏘️', `השכונה שלי — ${neighborhoodState.neighborhood}`, groupNeighborhood.length, 'bg-orange-500/20 text-orange-300 border border-orange-500/40')}
-                    {#if viewMode === 'list'}{@render listView(groupNeighborhood)}{:else}{@render gridView(groupNeighborhood)}{/if}
-                </section>
-                {#if groupCity.length > 0 || groupRest.length > 0}
-                    <hr class="border-0 border-t-2 border-dashed border-orange-500/30 my-6" />
-                {/if}
-            {/if}
+        <!-- Tier 1: בשכונה שלי -->
+        {#if groupNeighborhood.length > 0}
+            <section class="mb-2">
+                {@render sectionHeader('בשכונה שלי', neighborhoodState.neighborhood, groupNeighborhood.length)}
+                {#if viewMode === 'list'}{@render listView(groupNeighborhood)}{:else}{@render gridView(groupNeighborhood)}{/if}
+            </section>
+        {/if}
 
-            <!-- Tier 2: my city (excluding neighborhood) -->
-            {#if groupCity.length > 0}
-                <section class="mb-4">
-                    {@render sectionHeader('🏙️', `בעיר שלי — ${neighborhoodState.city}`, groupCity.length, 'bg-blue-500/20 text-blue-300 border border-blue-500/40')}
-                    {#if viewMode === 'list'}{@render listView(groupCity)}{:else}{@render gridView(groupCity)}{/if}
-                </section>
-                {#if groupRest.length > 0}
-                    <hr class="border-0 border-t-2 border-dashed border-blue-500/30 my-6" />
-                {/if}
-            {/if}
+        <!-- Tier 2: בעיר שלי -->
+        {#if groupCity.length > 0}
+            <section class="mb-2">
+                {@render sectionHeader('בעיר שלי', neighborhoodState.city, groupCity.length)}
+                {#if viewMode === 'list'}{@render listView(groupCity)}{:else}{@render gridView(groupCity)}{/if}
+            </section>
+        {/if}
 
-            <!-- Tier 3: rest of country (newest → oldest) -->
-            {#if groupRest.length > 0}
-                <section class="mb-4">
-                    {@render sectionHeader('🇮🇱', 'מכל הארץ — מהחדש לישן', groupRest.length, 'bg-white/10 text-gray-300 border border-white/20')}
-                    {#if viewMode === 'list'}{@render listView(groupRest)}{:else}{@render gridView(groupRest)}{/if}
-                </section>
-            {/if}
-        {:else if viewMode === 'list'}
-            {@render listView(pagedItems)}
-        {:else}
-            {@render gridView(pagedItems)}
+        <!-- Tier 3: בערים סביבי -->
+        {#if groupNearby.length > 0}
+            <section class="mb-2">
+                {@render sectionHeader('בערים סביבי', '', groupNearby.length)}
+                {#if viewMode === 'list'}{@render listView(groupNearby)}{:else}{@render gridView(groupNearby)}{/if}
+            </section>
+        {/if}
+
+        <!-- Tier 4: ארצי -->
+        {#if groupRest.length > 0}
+            <section class="mb-2">
+                {@render sectionHeader('ארצי', '', groupRest.length)}
+                {#if viewMode === 'list'}{@render listView(groupRest)}{:else}{@render gridView(groupRest)}{/if}
+            </section>
         {/if}
 
         {/if}
 
-        <!-- Pagination — shows only on the flat (non-search) view when there's more than one page -->
-        {#if !searching && totalPages > 1}
+        <!-- Pagination disabled — all items are shown in floors -->
+        {#if false}
             <nav aria-label="ניווט בין דפים" class="mt-8 flex flex-col items-center gap-3">
                 <p class="text-gray-300 text-sm md:text-base">
                     עמוד <span class="text-orange-300 font-black">{currentPage}</span>
@@ -677,9 +706,6 @@
         {/if}
 
         <div class="text-center mt-10 mb-4">
-            {#if !searching && totalPages > 1}
-                <p class="text-gray-500 text-xs mb-2">עמוד {currentPage} מתוך {totalPages}</p>
-            {/if}
             <a href="/" class="text-gray-500 hover:text-white transition-colors text-sm">← חזרה לדף הראשי</a>
         </div>
     </div>

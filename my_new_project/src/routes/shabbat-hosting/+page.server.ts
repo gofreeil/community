@@ -58,8 +58,12 @@ export const load: PageServerLoad = async (event) => {
         }> = [];
         let approvedGuestPhonesForHost: string[] = [];
 
+        let userNeighborhood: string | null = null;
+        let userCity: string | null = null;
         if (userId) {
             const u = await getUserById(userId);
+            if (u?.neighborhood) userNeighborhood = u.neighborhood;
+            if (u?.city) userCity = u.city;
             const viewerPhone = u?.phone?.trim() ?? '';
             if (viewerPhone) {
                 const reporters = reportMap[viewerPhone];
@@ -99,6 +103,8 @@ export const load: PageServerLoad = async (event) => {
         return {
             items,
             city: null as string | null,
+            userNeighborhood,
+            userCity,
             userId,
             isBanned,
             blockedHostUserIds,
@@ -113,6 +119,8 @@ export const load: PageServerLoad = async (event) => {
         return {
             items: [],
             city: null as string | null,
+            userNeighborhood: null as string | null,
+            userCity: null as string | null,
             userId: null,
             isBanned: false,
             blockedHostUserIds: [],

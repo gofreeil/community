@@ -13,6 +13,8 @@
 <ShabbatHostingBoard
     items={data.items}
     city={null}
+    userNeighborhood={data.userNeighborhood}
+    userCity={data.userCity}
     userId={data.userId}
     isBanned={data.isBanned}
     blockedHostUserIds={data.blockedHostUserIds}
