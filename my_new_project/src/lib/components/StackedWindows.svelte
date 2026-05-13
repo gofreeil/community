@@ -15,7 +15,7 @@
     }
 </script>
 
-<div class="relative w-full max-w-xs md:max-w-md mx-auto" style="perspective: 1400px;">
+<div class="stack-wrap relative w-[78%] max-w-[280px] md:max-w-md mx-auto" style="perspective: 1400px;">
     <!-- Title -->
     <div class="text-center mt-4 md:mt-8 mb-3 md:mb-4">
         <h2 class="text-base md:text-3xl font-black bg-gradient-to-r from-purple-300 via-blue-300 to-cyan-300 bg-clip-text text-transparent">
@@ -25,13 +25,10 @@
     </div>
 
     <!-- 3D stack container -->
-    <div class="relative h-[440px] md:h-[670px]" style="transform-style: preserve-3d;">
+    <div class="relative h-[420px] md:h-[670px]" style="transform-style: preserve-3d;">
         <!-- VOTE card -->
         <div
-            class="absolute top-0 right-0 left-0 bottom-0 rounded-2xl overflow-hidden bg-[#0b1020] origin-right will-change-transform"
-            style="transition: transform 800ms cubic-bezier(0.65, 0, 0.35, 1), filter 800ms cubic-bezier(0.65, 0, 0.35, 1), box-shadow 800ms ease-out; {active === 'vote'
-                ? 'transform: translateX(0) translateZ(0) rotateY(0deg) scale(1); z-index: 20; filter: brightness(1) saturate(1); box-shadow: 0 25px 60px -10px rgba(59, 130, 246, 0.5), 0 0 0 1px rgba(255,255,255,0.08);'
-                : 'transform: translateX(-28%) translateZ(-220px) rotateY(28deg) scale(0.92); z-index: 10; filter: brightness(0.45) saturate(0.7); box-shadow: 0 10px 30px -5px rgba(0,0,0,0.6);'}"
+            class="card absolute top-0 right-0 left-0 bottom-0 rounded-2xl overflow-hidden bg-[#0b1020] origin-right will-change-transform {active === 'vote' ? 'card-front' : 'card-back'}"
         >
             <div class="w-full h-full overflow-y-auto bg-[#0b1020]">
                 {#if showCoali}
@@ -52,10 +49,7 @@
 
         <!-- CHAT card -->
         <div
-            class="absolute top-0 right-0 left-0 bottom-0 rounded-2xl overflow-hidden bg-[#0b1020] origin-right will-change-transform"
-            style="transition: transform 800ms cubic-bezier(0.65, 0, 0.35, 1), filter 800ms cubic-bezier(0.65, 0, 0.35, 1), box-shadow 800ms ease-out; {active === 'chat'
-                ? 'transform: translateX(0) translateZ(0) rotateY(0deg) scale(1); z-index: 20; filter: brightness(1) saturate(1); box-shadow: 0 25px 60px -10px rgba(59, 130, 246, 0.5), 0 0 0 1px rgba(255,255,255,0.08);'
-                : 'transform: translateX(-28%) translateZ(-220px) rotateY(28deg) scale(0.92); z-index: 10; filter: brightness(0.45) saturate(0.7); box-shadow: 0 10px 30px -5px rgba(0,0,0,0.6);'}"
+            class="card absolute top-0 right-0 left-0 bottom-0 rounded-2xl overflow-hidden bg-[#0b1020] origin-right will-change-transform {active === 'chat' ? 'card-front' : 'card-back'}"
         >
             <div class="w-full h-full overflow-y-auto bg-[#0b1020] p-3 flex flex-col">
                 <h3 class="text-base md:text-lg font-bold text-white mb-3 text-center flex items-center justify-center gap-2 flex-shrink-0">
@@ -79,3 +73,31 @@
         </div>
     </div>
 </div>
+
+<style>
+    .card {
+        transition: transform 800ms cubic-bezier(0.65, 0, 0.35, 1),
+                    filter 800ms cubic-bezier(0.65, 0, 0.35, 1),
+                    box-shadow 800ms ease-out;
+    }
+    .card-front {
+        transform: translateX(0) translateZ(0) rotateY(0deg) scale(1);
+        z-index: 20;
+        filter: brightness(1) saturate(1);
+        box-shadow: 0 25px 60px -10px rgba(59, 130, 246, 0.5), 0 0 0 1px rgba(255,255,255,0.08);
+    }
+    .card-back {
+        /* mobile defaults — peek to the left stays inside the viewport */
+        transform-origin: center center;
+        transform: translateX(-28%) translateZ(-100px) rotateY(20deg) scale(0.92);
+        z-index: 10;
+        filter: brightness(0.45) saturate(0.7);
+        box-shadow: 0 10px 30px -5px rgba(0,0,0,0.6);
+    }
+    @media (min-width: 768px) {
+        .card-back {
+            transform-origin: right center;
+            transform: translateX(-28%) translateZ(-220px) rotateY(28deg) scale(0.92);
+        }
+    }
+</style>
