@@ -695,14 +695,11 @@
             class="hidden md:flex group relative overflow-hidden rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-green-500/30 transition-all duration-300 hover:-translate-y-1 mt-6 cursor-pointer min-h-[160px] items-stretch"
         >
             <!-- Background gradient -->
-            <div class="absolute inset-0 bg-gradient-to-l from-green-700 via-emerald-700 to-lime-700"></div>
-            <!-- Decorative pattern overlay -->
-            <div class="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent"></div>
+            <div class="absolute inset-0 bg-gradient-to-l from-green-800 via-emerald-700 to-emerald-600"></div>
 
             <!-- Content (right side in RTL) -->
-            <div class="relative z-10 flex-1 p-6 md:p-8 flex flex-col justify-center">
-                <div class="flex items-center gap-3 mb-2">
-                    <span class="text-4xl transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12">🥬</span>
+            <div class="relative z-20 flex-1 p-6 md:p-8 flex flex-col justify-center">
+                <div class="mb-2">
                     <h3 class="text-2xl md:text-3xl font-black text-white group-hover:text-yellow-200 transition-colors">
                         חקלאות ישירה
                     </h3>
@@ -717,9 +714,9 @@
                 </div>
             </div>
 
-            <!-- Image (left side in RTL) -->
+            <!-- Image (left side in RTL) — fades smoothly into banner background -->
             <div
-                class="relative z-10 w-1/3 md:w-2/5 bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
+                class="relative z-10 w-1/2 md:w-3/5 bg-cover bg-top transition-transform duration-300 group-hover:scale-105 farm-image-fade"
                 style="background-image: url('/images/Copilot_20260513_223743.png');"
             ></div>
         </a>
@@ -876,6 +873,12 @@
         0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
         50%      { box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.35); }
     }
+    /* באנר חקלאות ישירה — מעבר הדרגתי ארוך מהתמונה אל רקע הבאנר */
+    .farm-image-fade {
+        -webkit-mask-image: linear-gradient(to right, black 0%, black 25%, rgba(0,0,0,0.85) 45%, rgba(0,0,0,0.5) 70%, rgba(0,0,0,0.15) 88%, transparent 100%);
+                mask-image: linear-gradient(to right, black 0%, black 25%, rgba(0,0,0,0.85) 45%, rgba(0,0,0,0.5) 70%, rgba(0,0,0,0.15) 88%, transparent 100%);
+    }
+
     @keyframes hintFadeIn {
         from { opacity: 0; transform: translateY(-4px); }
         to   { opacity: 1; transform: translateY(0); }
