@@ -780,19 +780,19 @@
 
             <!-- Image (extends slightly into text area — only small overlap) -->
             <div
-                class="absolute inset-y-0 left-0 w-4/5 md:w-3/4 z-10 bg-cover bg-center transition-transform duration-300 group-hover:scale-105 farm-image-fade"
+                class="absolute inset-y-0 left-0 w-3/4 md:w-2/3 z-10 bg-cover bg-center transition-transform duration-300 group-hover:scale-105 farm-image-fade"
                 style="background-image: url('/images/Copilot_20260514_012104.png');"
             ></div>
 
             <!-- Content (right side in RTL, floats over image) -->
-            <div class="relative z-20 w-1/2 md:w-1/2 ml-auto px-4 md:px-8 py-3 md:py-4 flex flex-col justify-center">
+            <div class="relative z-20 ml-auto px-4 md:px-8 py-3 md:py-4 flex flex-col justify-center">
                 <div class="mb-1 md:mb-2">
                     <h3 class="text-lg md:text-3xl font-black text-white group-hover:text-yellow-200 transition-colors drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]">
                         חקלאות ישירה
                     </h3>
                 </div>
-                <p class="text-[11px] md:text-base text-green-100 leading-tight md:leading-relaxed max-w-2xl drop-shadow-[0_1px_3px_rgba(0,0,0,0.5)]">
-                    חיבור ישיר בין חקלאים לצרכנים ללא <span class="whitespace-nowrap">פערי תיווך</span>
+                <p class="text-[11px] md:text-base text-green-100 leading-tight md:leading-relaxed drop-shadow-[0_1px_3px_rgba(0,0,0,0.5)] whitespace-nowrap">
+                    חיבור ישיר בין חקלאים לצרכנים ללא פערי תיווך
                 </p>
             </div>
         </a>
