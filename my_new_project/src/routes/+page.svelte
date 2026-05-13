@@ -868,10 +868,10 @@
         0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
         50%      { box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.35); }
     }
-    /* באנר חקלאות ישירה — מעבר אלכסוני הדרגתי ארוך מהתמונה אל רקע הבאנר */
+    /* באנר חקלאות ישירה — מעבר אלכסוני (זווית מפורשת) הדרגתי ארוך מהתמונה אל רקע הבאנר */
     .farm-image-fade {
-        -webkit-mask-image: linear-gradient(to top right, black 0%, black 25%, rgba(0,0,0,0.85) 45%, rgba(0,0,0,0.5) 70%, rgba(0,0,0,0.15) 88%, transparent 100%);
-                mask-image: linear-gradient(to top right, black 0%, black 25%, rgba(0,0,0,0.85) 45%, rgba(0,0,0,0.5) 70%, rgba(0,0,0,0.15) 88%, transparent 100%);
+        -webkit-mask-image: linear-gradient(60deg, black 0%, black 30%, rgba(0,0,0,0.85) 50%, rgba(0,0,0,0.5) 72%, rgba(0,0,0,0.15) 90%, transparent 100%);
+                mask-image: linear-gradient(60deg, black 0%, black 30%, rgba(0,0,0,0.85) 50%, rgba(0,0,0,0.5) 72%, rgba(0,0,0,0.15) 90%, transparent 100%);
     }
 
     @keyframes hintFadeIn {
