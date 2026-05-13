@@ -15,6 +15,7 @@ const nationalCategories: Record<string, { slug: string; title: string }> = {
     attractions: { slug: 'attractions', title: 'אטרקציות' },
     jobs:        { slug: 'jobs',        title: 'דרושים עובדים' },
     restaurants: { slug: 'restaurants', title: 'מזון מהיר ומסעדות' },
+    halls:       { slug: 'halls',       title: 'אולמות וחללים — לאירועים ולחוגים' },
 };
 
 export const load: PageServerLoad = async ({ params }) => {

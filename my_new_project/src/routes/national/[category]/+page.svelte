@@ -14,7 +14,23 @@
 	let searchQuery   = $state('');
 	let selectedCity  = $state('');
 	let foodTypeFilter = $state<'all' | 'fast' | 'restaurant'>('all'); // לקטגוריית restaurants
+	let hallUsageFilter = $state<'all' | 'events' | 'classes'>('all'); // לקטגוריית halls
 	let topTenOnly    = $state(false);
+
+	function hallMatchesUsage(item: Item, usage: 'events' | 'classes'): boolean {
+		try {
+			const ef = item.extra_fields ? JSON.parse(item.extra_fields) : {};
+			const raw = ef.usage_type ?? '';
+			const types: string[] = Array.isArray(raw) ? raw : String(raw).split(',').map((s) => s.trim());
+			const haystack = (types.join(' ') + ' ' + (item.label ?? '') + ' ' + (item.description ?? '')).toLowerCase();
+			if (usage === 'events') {
+				return /אירוע|חתונה|בר.?מצוה|בת.?מצוה|הולדת|הרצא|סדנ/.test(haystack);
+			}
+			return /חוג|קבוע|שיעור|סטודיו|אימון/.test(haystack);
+		} catch {
+			return false;
+		}
+	}
 
 	// מילות-מפתח לזיהוי "מזון מהיר"
 	const fastFoodKeywords = [
@@ -59,7 +75,13 @@
 				matchFoodType = foodTypeFilter === 'fast' ? fast : !fast;
 			}
 
-			return matchSearch && matchCity && matchFoodType;
+			// סינון שימוש (אירועים/חוגים) — רלוונטי רק לקטגוריית halls
+			let matchHallUsage = true;
+			if (data.categoryId === 'halls' && hallUsageFilter !== 'all') {
+				matchHallUsage = hallMatchesUsage(item, hallUsageFilter);
+			}
+
+			return matchSearch && matchCity && matchFoodType && matchHallUsage;
 		});
 
 		// טופ 10 — מיון לפי view_count יורד וחיתוך ל-10 ראשונים
@@ -78,6 +100,7 @@
 		attractions: 'from-indigo-600 to-purple-700',
 		jobs:        'from-blue-600 to-cyan-700',
 		restaurants: 'from-orange-600 to-amber-700',
+		halls:       'from-teal-600 to-emerald-700',
 	};
 	const cardBorderMap: Record<string, string> = {
 		singles:     'border-red-500/30 hover:border-red-500/60',
@@ -85,6 +108,7 @@
 		attractions: 'border-indigo-500/30 hover:border-indigo-500/60',
 		jobs:        'border-blue-500/30 hover:border-blue-500/60',
 		restaurants: 'border-orange-500/30 hover:border-orange-500/60',
+		halls:       'border-teal-500/30 hover:border-teal-500/60',
 	};
 	const badgeMap: Record<string, string> = {
 		singles:     'bg-red-500/20 text-red-300 border-red-500/30',
@@ -92,6 +116,7 @@
 		attractions: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
 		jobs:        'bg-blue-500/20 text-blue-300 border-blue-500/30',
 		restaurants: 'bg-orange-500/20 text-orange-300 border-orange-500/30',
+		halls:       'bg-teal-500/20 text-teal-300 border-teal-500/30',
 	};
 
 	let gradient   = $derived(colorMap[data.categoryId]   ?? 'from-purple-600 to-blue-700');
@@ -157,6 +182,32 @@
 		{/if}
 	</div>
 
+	<!-- ===== סינונים ייחודיים לאולמות/חללים ===== -->
+	{#if data.categoryId === 'halls'}
+		<div class="flex flex-wrap items-center gap-2 mb-6 px-4 md:px-0">
+			<div class="inline-flex bg-[#0f172a] border border-white/10 rounded-2xl p-1">
+				<button
+					type="button"
+					onclick={() => (hallUsageFilter = 'all')}
+					class="px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer
+					       {hallUsageFilter === 'all' ? 'bg-gradient-to-r from-teal-600 to-emerald-700 text-white shadow' : 'text-gray-400 hover:text-white'}"
+				>🏛️ הכל</button>
+				<button
+					type="button"
+					onclick={() => (hallUsageFilter = 'events')}
+					class="px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer
+					       {hallUsageFilter === 'events' ? 'bg-gradient-to-r from-teal-600 to-emerald-700 text-white shadow' : 'text-gray-400 hover:text-white'}"
+				>🎉 לאירועים</button>
+				<button
+					type="button"
+					onclick={() => (hallUsageFilter = 'classes')}
+					class="px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer
+					       {hallUsageFilter === 'classes' ? 'bg-gradient-to-r from-teal-600 to-emerald-700 text-white shadow' : 'text-gray-400 hover:text-white'}"
+				>🎨 לחוגים קבועים</button>
+			</div>
+		</div>
+	{/if}
+
 	<!-- ===== סינונים ייחודיים למסעדות ===== -->
 	{#if data.categoryId === 'restaurants'}
 		<div class="flex flex-wrap items-center gap-2 mb-6 px-4 md:px-0">
@@ -214,7 +265,7 @@
 				<div class="text-5xl mb-4">🔎</div>
 				<p class="text-gray-400">לא נמצאו תוצאות{searchQuery ? ` לחיפוש "${searchQuery}"` : ''}</p>
 				<button
-					onclick={() => { searchQuery = ''; selectedCity = ''; foodTypeFilter = 'all'; topTenOnly = false; }}
+					onclick={() => { searchQuery = ''; selectedCity = ''; foodTypeFilter = 'all'; hallUsageFilter = 'all'; topTenOnly = false; }}
 					class="mt-4 text-purple-400 hover:text-purple-300 text-sm underline cursor-pointer"
 				>
 					נקה סינון
@@ -228,9 +279,9 @@
 			{#if topTenOnly}
 				<span class="mr-2 text-yellow-400 font-bold">⭐ טופ 10</span>
 			{/if}
-			{#if searchQuery || selectedCity || foodTypeFilter !== 'all' || topTenOnly}
+			{#if searchQuery || selectedCity || foodTypeFilter !== 'all' || hallUsageFilter !== 'all' || topTenOnly}
 				<button
-					onclick={() => { searchQuery = ''; selectedCity = ''; foodTypeFilter = 'all'; topTenOnly = false; }}
+					onclick={() => { searchQuery = ''; selectedCity = ''; foodTypeFilter = 'all'; hallUsageFilter = 'all'; topTenOnly = false; }}
 					class="mr-2 text-purple-400 hover:text-purple-300 underline cursor-pointer"
 				>
 					נקה סינון
@@ -263,6 +314,8 @@
 								<span class="flex-shrink-0 text-[10px] px-2 py-0.5 rounded-full border font-bold {badge}">
 									{#if data.categoryId === 'restaurants'}
 										{isFastFood(item) ? '🍔 מהיר' : '🍷 מסעדה'}
+									{:else if data.categoryId === 'halls'}
+										{hallMatchesUsage(item, 'events') ? '🎉 אירועים' : hallMatchesUsage(item, 'classes') ? '🎨 חוגים' : '🏛️ אולם'}
 									{:else}
 										{data.config.icon}
 									{/if}

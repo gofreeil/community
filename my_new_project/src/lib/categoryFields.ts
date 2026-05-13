@@ -291,6 +291,32 @@ export const categoryConfig: Record<string, CategoryConfig> = {
         ],
     },
 
+    halls: {
+        label: 'אולמות וחללים',
+        icon: '🏛️',
+        color: 'teal',
+        priceRow: 2,
+        addPageTitle: 'הוסף אולם / חלל להשכרה',
+        fields: [
+            { key: 'label',       label: 'שם האולם / החלל',         type: 'text',     required: true,  placeholder: 'אולם השמחות, סטודיו יצירה...' },
+            { key: 'usage_type',  label: 'מתאים ל',                   type: 'multi_select', required: true, options: ['אירועים חד-פעמיים', 'חוגים קבועים', 'הרצאות וסדנאות', 'חתונות ובר-מצוות', 'ימי הולדת', 'ישיבות ופגישות'], hint: 'אפשר לבחור כמה' },
+            { key: 'capacity',    label: 'קיבולת (אנשים)',            type: 'number',   required: true,  placeholder: '50', half: true },
+            { key: 'size_sqm',    label: 'גודל (מ"ר)',                 type: 'number',   required: false, placeholder: '80', half: true },
+            { key: 'price_hour',  label: 'מחיר לשעה (₪)',             type: 'number',   required: false, placeholder: '150', half: true, hint: 'מתאים לחוגים קבועים' },
+            { key: 'price_event', label: 'מחיר לאירוע (₪)',           type: 'number',   required: false, placeholder: '2500', half: true, hint: 'מתאים לאירוע חד-פעמי' },
+            { key: 'amenities',   label: 'מה כלול',                    type: 'textarea', required: false, placeholder: 'מיזוג, מטבחון, מקרן, הגברה, חניה...' },
+            { key: 'kosher',      label: 'כשרות (אם רלוונטי)',          type: 'select',   required: false, options: ['לא רלוונטי', 'כשר', 'כשר למהדרין', 'ללא אוכל'] },
+            { key: 'address',     label: 'כתובת',                      type: 'text',     required: true,  placeholder: 'רחוב, מספר, עיר' },
+            { key: 'description', label: 'תיאור',                      type: 'textarea', required: true,  placeholder: 'תאר את האולם / החלל...' },
+            { key: 'images',      label: 'תמונות (עד 5)',              type: 'images',   required: false, hint: 'הוסיפו תמונות של החלל. סמנו אחת כתמונה ראשית.' },
+            { key: 'website',     label: 'אתר אינטרנט',                type: 'text',     required: false, placeholder: 'https://example.com', hint: 'יוצג רק בדף המורחב' },
+            { key: 'facebook',    label: 'פייסבוק',                     type: 'text',     required: false, placeholder: 'https://facebook.com/...', half: true, hint: 'יוצג רק בדף המורחב' },
+            { key: 'instagram',   label: 'אינסטגרם',                    type: 'text',     required: false, placeholder: 'https://instagram.com/...', half: true, hint: 'יוצג רק בדף המורחב' },
+            { key: 'contact',     label: 'שם איש קשר',                  type: 'text',     required: true,  placeholder: 'שמך המלא' },
+            { key: 'phone',       label: 'טלפון',                       type: 'tel',      required: true,  placeholder: '05X-XXXXXXX' },
+        ],
+    },
+
     'safe-space': {
         label: 'מרחב מוגן',
         icon: '🛡️',

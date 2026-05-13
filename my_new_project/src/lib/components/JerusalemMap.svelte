@@ -330,6 +330,7 @@
         attractions: '/national/attractions',
         jobs:        '/national/jobs',
         restaurants: '/national/restaurants',
+        halls:       '/national/halls',
         business:    '/babysitters',
         realestate:  '/shabbat-hosting',
         education:   '/chugim',
