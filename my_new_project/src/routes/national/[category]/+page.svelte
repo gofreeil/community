@@ -52,14 +52,78 @@
 		}
 	}
 
+	// ====== Mock fallback לאולמות (לפי המדיניות — דוגמאות עד שיש פריטים אמיתיים) ======
+	const mockHalls: Item[] = [
+		{
+			id: 'mock-hall-1', label: 'אולם "היכל שלמה"',
+			description: 'אולם אירועים מרכזי לחתונות, בר/בת מצוות וברית. עד 400 איש, חניה צמודה, כשרות מהדרין.',
+			icon: '🏛️', city: 'ירושלים', neighborhood: 'קרית משה',
+			phone: '02-6512345', contact: 'משה ברנשטיין', category: 'halls',
+			created_at: new Date(Date.now() - 1000 * 60 * 60 * 4).toISOString(), status: 'active',
+			extra_fields: JSON.stringify({ usage_type: 'אירועים, חתונה, בר מצווה', capacity: '400', price_range: '₪₪₪' }),
+			view_count: 318,
+		},
+		{
+			id: 'mock-hall-2', label: 'סטודיו "מרכז התנועה"',
+			description: 'חלל לחוגי תנועה ויוגה, ריצוף פרקט, מראות, מקלחות. השכרה לפי שעה לחוגים קבועים.',
+			icon: '🎨', city: 'תל אביב', neighborhood: 'פלורנטין',
+			phone: '054-7891234', contact: 'גלית', category: 'halls',
+			created_at: new Date(Date.now() - 1000 * 60 * 60 * 18).toISOString(), status: 'active',
+			extra_fields: JSON.stringify({ usage_type: 'חוג, סטודיו, שיעור קבוע', capacity: '25', price_range: '₪' }),
+			view_count: 142,
+		},
+		{
+			id: 'mock-hall-3', label: 'אולם הקהילתי "בית ועד"',
+			description: 'אולם רב-תכליתי לאירועים קטנים ובינוניים, הרצאות וסדנאות. תאורה מקצועית ומערכת שמע.',
+			icon: '🎉', city: 'בני ברק', neighborhood: '',
+			phone: '03-5778899', contact: 'הקהילה', category: 'halls',
+			created_at: new Date(Date.now() - 1000 * 60 * 60 * 26).toISOString(), status: 'active',
+			extra_fields: JSON.stringify({ usage_type: 'אירועים, הרצאה, סדנה', capacity: '120', price_range: '₪₪' }),
+			view_count: 89,
+		},
+		{
+			id: 'mock-hall-4', label: 'חלל יצירה "בית המלאכה"',
+			description: 'חלל פתוח לחוגי יצירה, ציור וקדרות לילדים ומבוגרים. מתאים לחוגים קבועים בשעות אחה״צ.',
+			icon: '🖌️', city: 'ירושלים', neighborhood: 'בקעה',
+			phone: '058-2233445', contact: 'נעמה', category: 'halls',
+			created_at: new Date(Date.now() - 1000 * 60 * 60 * 50).toISOString(), status: 'active',
+			extra_fields: JSON.stringify({ usage_type: 'חוג, סטודיו, חוג קבוע', capacity: '20', price_range: '₪' }),
+			view_count: 64,
+		},
+		{
+			id: 'mock-hall-5', label: 'אולם שמחות "פאר היכלים"',
+			description: 'אולם מפואר לחתונות וברי מצוות, תפריט עשיר, צוות מקצועי. אופציה להפרדה / אולם נשים.',
+			icon: '💍', city: 'אשדוד', neighborhood: '',
+			phone: '08-8645566', contact: 'משרד האולם', category: 'halls',
+			created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), status: 'active',
+			extra_fields: JSON.stringify({ usage_type: 'אירועים, חתונה, בת מצווה', capacity: '600', price_range: '₪₪₪₪' }),
+			view_count: 506,
+		},
+		{
+			id: 'mock-hall-6', label: 'סטודיו פילאטיס "Core"',
+			description: 'סטודיו מאובזר במכשירי רפורמר וקאדילק להשכרה למאמני פילאטיס לחוגים קבועים.',
+			icon: '🧘', city: 'רעננה', neighborhood: '',
+			phone: '052-9911223', contact: 'יעל', category: 'halls',
+			created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(), status: 'active',
+			extra_fields: JSON.stringify({ usage_type: 'חוג, אימון, סטודיו', capacity: '12', price_range: '₪₪' }),
+			view_count: 73,
+		},
+	];
+
+	let effectiveItems = $derived<Item[]>(
+		data.categoryId === 'halls' && (data.items as Item[]).length === 0
+			? mockHalls
+			: (data.items as Item[])
+	);
+
 	// ערים ייחודיות מתוך הפריטים
 	let availableCities = $derived(
-		[...new Set((data.items as Item[]).map((i) => i.city).filter(Boolean))].sort()
+		[...new Set(effectiveItems.map((i) => i.city).filter(Boolean))].sort()
 	);
 
 	// פריטים מסוננים
 	let filteredItems = $derived.by(() => {
-		const items = (data.items as Item[]).filter((item) => {
+		const items = effectiveItems.filter((item) => {
 			const matchSearch =
 				!searchQuery ||
 				item.label.includes(searchQuery) ||
@@ -138,7 +202,7 @@
 			<div class="text-6xl md:text-7xl mb-4">{data.config.icon}</div>
 			<h1 class="text-3xl md:text-4xl font-black text-white mb-2">{data.meta.title}</h1>
 			<p class="text-white/70 text-sm md:text-base mb-4">
-				רשימה ארצית · כל הארץ · {data.items.length} מודעות
+				רשימה ארצית · כל הארץ · {effectiveItems.length} מודעות
 			</p>
 			<div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2">
 				<span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
@@ -146,6 +210,26 @@
 			</div>
 		</div>
 	</div>
+
+	<!-- ===== כפתור הוספה עליון ===== -->
+	<div class="flex justify-center mb-6 px-4 md:px-0">
+		<a
+			href="/add/{data.categoryId}"
+			class="inline-flex items-center gap-2 bg-gradient-to-r {gradient} hover:opacity-90 text-white font-bold
+			       px-6 py-3 rounded-2xl shadow-lg transition-all hover:-translate-y-0.5"
+		>
+			<span class="text-lg">＋</span>
+			<span>הוסף {data.config.label} משלך</span>
+		</a>
+	</div>
+
+	{#if data.categoryId === 'halls' && (data.items as Item[]).length === 0}
+		<div class="mx-4 md:mx-0 mb-6 bg-teal-500/10 border border-teal-500/30 rounded-2xl px-4 py-3 text-center">
+			<p class="text-teal-200 text-xs md:text-sm">
+				✨ אלו דוגמאות בלבד — היה הראשון לפרסם אולם או חלל אמיתי בקטגוריה!
+			</p>
+		</div>
+	{/if}
 
 	<!-- ===== סינון + חיפוש ===== -->
 	<div class="flex flex-col md:flex-row gap-3 mb-6 px-4 md:px-0">
