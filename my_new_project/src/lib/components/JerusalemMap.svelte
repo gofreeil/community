@@ -990,17 +990,7 @@
             <div class="relative" bind:this={categoryButtonsWrapperRef}>
                 <!-- Mobile: שורה אחת קומפקטית — סינון פעיל + כפתור פתיחת bottom sheet -->
                 <div class="md:hidden px-3 py-2 w-full flex items-center gap-2">
-                    <!-- כפתור פתיחת חלונית סינון -->
-                    <button
-                        type="button"
-                        onclick={() => (showCategorySheet = true)}
-                        class="flex items-center gap-1.5 bg-gradient-to-br from-purple-600 to-blue-600 text-white px-3 py-2 rounded-full text-xs font-bold shadow-lg active:scale-95 border border-purple-400 shrink-0"
-                        aria-label="פתח סינון קטגוריות"
-                    >
-                        <span class="text-base leading-none">🎛️</span>
-                        <span>סנן</span>
-                    </button>
-                    <!-- שבב המראה את הסינון הפעיל -->
+                    <!-- שבב המראה את הסינון הפעיל (מימין) -->
                     {#each [categories.find(c => c.id === selectedCategory) ?? categories[0]] as active}
                         <button
                             type="button"
@@ -1016,9 +1006,19 @@
                                 <span class="text-base leading-none shrink-0">{active.icon}</span>
                             {/if}
                             <span class="truncate">{active.label}</span>
-                            <span class="mr-auto text-[10px] opacity-75 shrink-0">▾</span>
+                            <span class="ms-auto text-[10px] opacity-75 shrink-0">▾</span>
                         </button>
                     {/each}
+                    <!-- כפתור פתיחת חלונית סינון (משמאל) -->
+                    <button
+                        type="button"
+                        onclick={() => (showCategorySheet = true)}
+                        class="flex items-center gap-1.5 bg-gradient-to-br from-purple-600 to-blue-600 text-white px-3 py-2 rounded-full text-xs font-bold shadow-lg active:scale-95 border border-purple-400 shrink-0"
+                        aria-label="פתח סינון קטגוריות"
+                    >
+                        <span class="text-base leading-none">🎛️</span>
+                        <span>סנן</span>
+                    </button>
                 </div>
 
                 <!-- Bottom Sheet: כל הקטגוריות -->

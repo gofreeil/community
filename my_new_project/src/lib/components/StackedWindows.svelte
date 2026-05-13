@@ -15,17 +15,17 @@
     }
 </script>
 
-<div class="relative w-full max-w-md mx-auto" style="perspective: 1400px;">
+<div class="relative w-full max-w-xs md:max-w-md mx-auto" style="perspective: 1400px;">
     <!-- Title -->
-    <div class="text-center mt-8 mb-4">
-        <h2 class="text-2xl md:text-3xl font-black bg-gradient-to-r from-purple-300 via-blue-300 to-cyan-300 bg-clip-text text-transparent">
+    <div class="text-center mt-4 md:mt-8 mb-3 md:mb-4">
+        <h2 class="text-base md:text-3xl font-black bg-gradient-to-r from-purple-300 via-blue-300 to-cyan-300 bg-clip-text text-transparent">
             שיח פתוח ומשאלי עם בשכונה
         </h2>
-        <div class="h-px bg-gradient-to-r from-transparent via-blue-400/40 to-transparent mt-3"></div>
+        <div class="h-px bg-gradient-to-r from-transparent via-blue-400/40 to-transparent mt-2 md:mt-3"></div>
     </div>
 
     <!-- 3D stack container -->
-    <div class="relative" style="height: 670px; transform-style: preserve-3d;">
+    <div class="relative h-[440px] md:h-[670px]" style="transform-style: preserve-3d;">
         <!-- VOTE card -->
         <div
             class="absolute top-0 right-0 left-0 bottom-0 rounded-2xl overflow-hidden bg-[#0b1020] origin-right will-change-transform"
