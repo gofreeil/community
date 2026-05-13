@@ -10,33 +10,27 @@
     let { showCoali = false }: Props = $props();
 
     const LS_LAST = 'stackedWindows.lastActive';
-    const LS_DEMO = 'stackedWindows.seenDemo';
 
     let active: 'vote' | 'chat' = $state('vote');
     let stackEl: HTMLElement | undefined = $state();
 
     onMount(() => {
+        let target: 'vote' | 'chat' = 'vote';
         try {
             const last = localStorage.getItem(LS_LAST);
-            if (last === 'vote' || last === 'chat') active = last;
+            if (last === 'vote' || last === 'chat') target = last;
         } catch {}
 
-        let seen = false;
-        try { seen = localStorage.getItem(LS_DEMO) === '1'; } catch {}
-        if (seen) return;
+        // Start with the OPPOSITE of target so the toggle animation runs and ends on target.
+        const opposite: 'vote' | 'chat' = target === 'vote' ? 'chat' : 'vote';
+        active = opposite;
 
         let played = false;
         const playDemo = () => {
             if (played) return;
             played = true;
             window.removeEventListener('scroll', tryDemo);
-            const original = active;
-            const other: 'vote' | 'chat' = original === 'vote' ? 'chat' : 'vote';
-            setTimeout(() => { active = other; }, 700);
-            setTimeout(() => {
-                active = original;
-                try { localStorage.setItem(LS_DEMO, '1'); } catch {}
-            }, 2100);
+            setTimeout(() => { active = target; }, 900);
         };
 
         const tryDemo = () => {
@@ -47,7 +41,6 @@
             }
         };
 
-        // initial check after layout settles
         setTimeout(tryDemo, 200);
         window.addEventListener('scroll', tryDemo, { passive: true });
         return () => window.removeEventListener('scroll', tryDemo);
