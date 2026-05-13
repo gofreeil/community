@@ -1,5 +1,5 @@
 <script lang="ts">
-    const coaliUrl = "https://coali.app/?channel=%D7%99%D7%95%D7%A6%D7%90%D7%99%D7%9D-%D7%9C%D7%97%D7%99%D7%A8%D7%95%D7%AA-mkobk902";
+    const coaliUrl = "https://coali.app/i/xNUdy5m0bHA4wzUDYP7kzSpyVYpD4zGD";
     let iframeLoaded = $state(false);
     let iframeFailed = $state(false);
     let loadTimeout: ReturnType<typeof setTimeout>;
