@@ -33,7 +33,7 @@
     });
 </script>
 
-<div class="relative rounded-2xl overflow-hidden bg-gradient-to-br from-purple-900/40 via-blue-900/40 to-cyan-900/40 border-2 border-blue-500/40 shadow-2xl -mx-2 md:mx-0 h-full flex flex-col">
+<div class="relative rounded-2xl overflow-hidden bg-gradient-to-br from-purple-900/40 via-blue-900/40 to-cyan-900/40 border-2 border-blue-500/40 shadow-2xl h-full flex flex-col">
     <!-- Header -->
     <div class="bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-500 p-3 md:p-4 flex items-center justify-between flex-shrink-0">
         <div class="flex items-center gap-2 md:gap-3">
