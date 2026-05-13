@@ -1,6 +1,6 @@
 import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { getItemsByCategory } from '$lib/server/db';
+import { getItemsByCategory, getUserById } from '$lib/server/db';
 import { categoryConfig } from '$lib/categoryFields';
 
 // הפניות לדפים ארציים שכבר קיימים כדף ייעודי באתר (למנוע כפילות)
@@ -18,8 +18,8 @@ const nationalCategories: Record<string, { slug: string; title: string }> = {
     halls:       { slug: 'halls',       title: 'אולמות וחללים — לאירועים ולחוגים' },
 };
 
-export const load: PageServerLoad = async ({ params }) => {
-    const categoryId = params.category;
+export const load: PageServerLoad = async (event) => {
+    const categoryId = event.params.category;
 
     if (nationalRedirects[categoryId]) {
         redirect(308, nationalRedirects[categoryId]);
@@ -41,11 +41,27 @@ export const load: PageServerLoad = async ({ params }) => {
         console.error(`[national/${categoryId}] getItemsByCategory failed:`, err);
     }
 
+    // מיקום המשתמש מהפרופיל — לשכבות "באזורך / בעירך / סביבך / ארצי"
+    let userNeighborhood: string | null = null;
+    let userCity: string | null = null;
+    try {
+        const session = await event.locals.auth();
+        const uid = session?.user?.id ?? null;
+        if (uid) {
+            const jwt = event.cookies.get('strapi_jwt');
+            const user = await getUserById(uid, jwt);
+            if (user?.neighborhood) userNeighborhood = user.neighborhood;
+            if (user?.city) userCity = user.city;
+        }
+    } catch {}
+
     return {
         categoryId,
         // מחזירים רק את מה שהעמוד צריך (icon + label) — מונע בעיות serialization
         config: { icon: config.icon, label: config.label },
         items,
         meta: nationalCategories[categoryId],
+        userNeighborhood,
+        userCity,
     };
 };

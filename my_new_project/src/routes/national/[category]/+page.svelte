@@ -1,4 +1,8 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+	import { neighborhoodState } from '$lib/neighborhoodState.svelte';
+	import { getCoordsFor, type Coord } from '$lib/neighborhoodCoords';
+
 	// טיפוס מקומי — לא מייבאים מ-$lib/server (אסור בקומפוננטת client)
 	interface Item {
 		id: string; label: string; description: string; icon: string;
@@ -9,6 +13,10 @@
 	}
 
 	let { data } = $props();
+
+	onMount(() => {
+		neighborhoodState.init(data.userNeighborhood ?? null, data.userCity ?? null);
+	});
 
 	// חיפוש וסינון
 	let searchQuery   = $state('');
@@ -186,6 +194,62 @@
 	let gradient   = $derived(colorMap[data.categoryId]   ?? 'from-purple-600 to-blue-700');
 	let cardBorder = $derived(cardBorderMap[data.categoryId] ?? 'border-purple-500/30 hover:border-purple-500/60');
 	let badge      = $derived(badgeMap[data.categoryId]    ?? 'bg-purple-500/20 text-purple-300 border-purple-500/30');
+
+	// ====== חלוקה לסקציות לפי מיקום המשתמש ======
+	function haversineKm(a: Coord, b: Coord): number {
+		const toRad = (d: number) => (d * Math.PI) / 180;
+		const R = 6371;
+		const dLat = toRad(b[0] - a[0]);
+		const dLon = toRad(b[1] - a[1]);
+		const lat1 = toRad(a[0]);
+		const lat2 = toRad(b[0]);
+		const h = Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;
+		return 2 * R * Math.asin(Math.sqrt(h));
+	}
+
+	// 0 = בשכונה שלי | 1 = בעיר שלי | 2 = בערים סביבי | 3 = ארצי
+	const SECTION_TITLES = ['בשכונה שלי', 'בעיר שלי', 'בערים סביבי', 'ארצי'];
+
+	function sectionFor(item: Item, uN: string, uC: string): number {
+		const sCoord = getCoordsFor(item.neighborhood, item.city);
+		const uCoord = getCoordsFor(uN, uC);
+		const dist = haversineKm(sCoord, uCoord);
+		if (item.city === uC) {
+			if (item.neighborhood === uN || dist < 3) return 0;
+			return 1;
+		}
+		if (dist < 35) return 2;
+		return 3;
+	}
+
+	type SectionedItem = Item & { _section: number; _dist: number };
+
+	let sectionedItems = $derived.by<SectionedItem[]>(() => {
+		const uN = neighborhoodState.neighborhood;
+		const uC = neighborhoodState.city;
+		const uCoord = getCoordsFor(uN, uC);
+		return filteredItems.map((it) => {
+			const sCoord = getCoordsFor(it.neighborhood, it.city);
+			return {
+				...it,
+				_section: sectionFor(it, uN, uC),
+				_dist: haversineKm(sCoord, uCoord),
+			};
+		}).sort((a, b) => {
+			if (a._section !== b._section) return a._section - b._section;
+			return a._dist - b._dist;
+		});
+	});
+
+	let groupedSections = $derived.by(() => {
+		const groups: { section: number; items: SectionedItem[] }[] = [];
+		for (const it of sectionedItems) {
+			const last = groups[groups.length - 1];
+			if (!last || last.section !== it._section) groups.push({ section: it._section, items: [it] });
+			else last.items.push(it);
+		}
+		return groups;
+	});
 </script>
 
 <svelte:head>
@@ -373,9 +437,23 @@
 			{/if}
 		</p>
 
-		<!-- גריד מודעות -->
+		<!-- ===== תוצאות לפי קומות (בשכונה שלי / בעיר שלי / סביבי / ארצי) ===== -->
+		{#each groupedSections as group (group.section)}
+			<div class="flex items-center gap-3 mt-8 mb-4 first:mt-0 px-4 md:px-0">
+				<h2 class="text-white font-black text-xl md:text-2xl whitespace-nowrap">
+					{SECTION_TITLES[group.section]}
+					{#if group.section === 0 && neighborhoodState.neighborhood}
+						<span class="text-teal-300 font-bold">— {neighborhoodState.neighborhood}</span>
+					{:else if group.section === 1 && neighborhoodState.city}
+						<span class="text-teal-300 font-bold">— {neighborhoodState.city}</span>
+					{/if}
+				</h2>
+				<span class="text-gray-500 text-xs md:text-sm">({group.items.length})</span>
+				<div class="flex-1 h-px bg-gradient-to-l from-white/20 via-white/10 to-transparent"></div>
+			</div>
+
 		<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 px-4 md:px-0">
-			{#each filteredItems as item, idx}
+			{#each group.items as item, idx}
 				<a
 					href="/items/{item.id}"
 					class="block bg-[#0f172a] rounded-2xl border {cardBorder} p-5 transition-all
@@ -439,6 +517,7 @@
 				</a>
 			{/each}
 		</div>
+		{/each}
 	{/if}
 
 	<!-- ===== CTA הוספת מודעה ===== -->
