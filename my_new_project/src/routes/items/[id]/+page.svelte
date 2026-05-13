@@ -72,6 +72,73 @@
 
     let copied = $state(false);
 
+    // ---- Singles phone-request flow ----
+    let singlesState = $state(
+        (item as unknown as { singlesStatus?: { state: string; requestItemId?: string } })?.singlesStatus?.state ?? null
+    );
+    $effect(() => {
+        const s = (item as unknown as { singlesStatus?: { state: string } })?.singlesStatus?.state;
+        if (s) singlesState = s;
+    });
+    let singlesError = $state('');
+    let singlesSending = $state(false);
+
+    async function requestSinglesPhone() {
+        if (!item?.id || singlesSending) return;
+        singlesError = '';
+        singlesSending = true;
+        try {
+            const res = await fetch('/api/singles-request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ target_item_id: item.id }),
+            });
+            const data = await res.json();
+            if (!data.success) {
+                singlesError = data.message || 'שגיאה';
+            } else {
+                singlesState = 'pending';
+            }
+        } catch {
+            singlesError = 'בעיית תקשורת — נסה שוב';
+        } finally {
+            singlesSending = false;
+        }
+    }
+
+    let approving = $state<string | null>(null);
+    let approveError = $state('');
+    let incoming = $state(
+        ((item as unknown as { incomingRequests?: Array<{ id: string; requester_snapshot: Record<string, unknown>; requested_at: string; status: string }> })?.incomingRequests) ?? []
+    );
+    $effect(() => {
+        const i = (item as unknown as { incomingRequests?: typeof incoming })?.incomingRequests;
+        if (Array.isArray(i)) incoming = i;
+    });
+
+    async function decideRequest(reqId: string, action: 'approved' | 'rejected') {
+        if (approving) return;
+        approving = reqId;
+        approveError = '';
+        try {
+            const res = await fetch('/api/singles-approve', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ request_item_id: reqId, action }),
+            });
+            const data = await res.json();
+            if (!data.success) {
+                approveError = data.message || 'שגיאה';
+            } else {
+                incoming = incoming.filter(r => r.id !== reqId);
+            }
+        } catch {
+            approveError = 'בעיית תקשורת';
+        } finally {
+            approving = null;
+        }
+    }
+
     function shareUrl(): string {
         return typeof window !== 'undefined' ? window.location.href : '';
     }
@@ -318,7 +385,7 @@
                                             </div>
                                         </div>
                                     {/if}
-                                    {#if item.phone}
+                                    {#if item.phone && item.category !== 'singles'}
                                         <div
                                             class="bg-white/5 p-4 rounded-xl border border-white/5 flex items-center gap-4"
                                         >
@@ -337,6 +404,14 @@
                                                 >
                                                     {item.phone}
                                                 </p>
+                                            </div>
+                                        </div>
+                                    {:else if item.category === 'singles' && singlesState === 'approved' && item.phone}
+                                        <div class="bg-emerald-900/20 p-4 rounded-xl border border-emerald-500/30 flex items-center gap-4">
+                                            <span class="text-2xl text-emerald-300">✅</span>
+                                            <div>
+                                                <p class="text-xs text-emerald-300 uppercase font-bold tracking-wider">טלפון (אושר)</p>
+                                                <p class="text-white font-medium">{item.phone}</p>
                                             </div>
                                         </div>
                                     {/if}
@@ -370,30 +445,123 @@
 
                         <!-- Sidebar / Actions -->
                         <div class="space-y-6">
-                            <div
-                                class="bg-gradient-to-br from-purple-600 to-blue-600 p-8 rounded-3xl shadow-xl"
-                            >
-                                <h3 class="text-white font-bold text-xl mb-4">
-                                    זקוק לפרטים נוספים?
-                                </h3>
-                                <p class="text-white/80 text-sm mb-6">
-                                    צור קשר ישירות עם המפרסם לקבלת פרטים נוספים
-                                    או תיאום.
-                                </p>
-                                <a
-                                    href="tel:{item.phone}"
-                                    aria-label="התקשר עכשיו – {item.phone}"
-                                    class="block w-full bg-white text-purple-600 font-bold py-3 rounded-xl text-center shadow-lg hover:scale-105 transition-transform"
+                            {#if item.category === 'singles'}
+                                <!-- Singles: בקשת טלפון / סטטוס / תיבת בעלים -->
+                                {#if singlesState === 'owner'}
+                                    <div class="bg-gradient-to-br from-rose-600 to-pink-600 p-6 rounded-3xl shadow-xl">
+                                        <h3 class="text-white font-bold text-xl mb-2">📥 בקשות נכנסות</h3>
+                                        <p class="text-white/80 text-sm mb-4">משתמשים שביקשו לקבל את הטלפון שלך. הצג פרטים, ואשר רק אם מתאים.</p>
+                                        {#if incoming.length === 0}
+                                            <p class="text-white/80 text-sm bg-white/10 rounded-xl px-3 py-2">אין בקשות ממתינות</p>
+                                        {:else}
+                                            <ul class="space-y-3">
+                                                {#each incoming as r (r.id)}
+                                                    <li class="bg-white/10 rounded-xl p-3">
+                                                        <div class="text-white text-sm font-bold mb-1">
+                                                            {r.requester_snapshot.nickname || 'משתמש'}
+                                                            {#if r.requester_snapshot.gender}· {r.requester_snapshot.gender}{/if}
+                                                            {#if r.requester_snapshot.age}· גיל {r.requester_snapshot.age}{/if}
+                                                        </div>
+                                                        {#if r.requester_snapshot.neighborhood || r.requester_snapshot.city}
+                                                            <div class="text-white/80 text-xs mb-2">
+                                                                {[r.requester_snapshot.neighborhood, r.requester_snapshot.city].filter(Boolean).join(', ')}
+                                                            </div>
+                                                        {/if}
+                                                        <div class="flex gap-2">
+                                                            <button
+                                                                type="button"
+                                                                disabled={approving === r.id}
+                                                                onclick={() => decideRequest(r.id, 'approved')}
+                                                                class="flex-1 bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-bold py-1.5 rounded-lg disabled:opacity-50"
+                                                            >✓ אשר ושלח טלפון</button>
+                                                            <button
+                                                                type="button"
+                                                                disabled={approving === r.id}
+                                                                onclick={() => decideRequest(r.id, 'rejected')}
+                                                                class="flex-1 bg-white/15 hover:bg-white/25 text-white text-sm font-bold py-1.5 rounded-lg disabled:opacity-50"
+                                                            >דחה</button>
+                                                        </div>
+                                                    </li>
+                                                {/each}
+                                            </ul>
+                                            {#if approveError}
+                                                <p class="text-red-200 text-xs mt-2">{approveError}</p>
+                                            {/if}
+                                        {/if}
+                                    </div>
+                                {:else if singlesState === 'guest'}
+                                    <div class="bg-gradient-to-br from-rose-600 to-pink-600 p-8 rounded-3xl shadow-xl text-center">
+                                        <h3 class="text-white font-bold text-xl mb-2">🔒 הטלפון מוגן</h3>
+                                        <p class="text-white/80 text-sm mb-4">כדי לבקש את הטלפון יש להתחבר. רק לאחר אישור הצד השני — תקבל את מספרו.</p>
+                                        <a href="/login?redirect=/items/{item.id}" class="block w-full bg-white text-rose-600 font-bold py-3 rounded-xl text-center shadow-lg hover:scale-[1.02] transition-transform">התחבר כדי לבקש</a>
+                                    </div>
+                                {:else if singlesState === 'pending'}
+                                    <div class="bg-gradient-to-br from-amber-600 to-orange-600 p-8 rounded-3xl shadow-xl text-center">
+                                        <div class="text-4xl mb-2">⏳</div>
+                                        <h3 class="text-white font-bold text-xl mb-2">בקשתך נשלחה</h3>
+                                        <p class="text-white/85 text-sm">הצד השני יקבל את הפרופיל שלך וייחליט. ברגע שיאשר — הטלפון יופיע כאן.</p>
+                                    </div>
+                                {:else if singlesState === 'approved'}
+                                    <div class="bg-gradient-to-br from-emerald-600 to-green-600 p-8 rounded-3xl shadow-xl text-center">
+                                        <div class="text-4xl mb-2">✅</div>
+                                        <h3 class="text-white font-bold text-xl mb-2">בקשתך אושרה!</h3>
+                                        <p class="text-white/85 text-sm mb-4">הטלפון מוצג למעלה.</p>
+                                        {#if item.phone}
+                                            <a href="tel:{item.phone}" class="block w-full bg-white text-emerald-600 font-bold py-3 rounded-xl text-center shadow-lg hover:scale-[1.02] transition-transform">📞 התקשר עכשיו</a>
+                                        {/if}
+                                    </div>
+                                {:else if singlesState === 'rejected'}
+                                    <div class="bg-gradient-to-br from-gray-700 to-gray-800 p-8 rounded-3xl shadow-xl text-center">
+                                        <div class="text-4xl mb-2">😕</div>
+                                        <h3 class="text-white font-bold text-xl mb-2">הבקשה לא אושרה</h3>
+                                        <p class="text-white/70 text-sm">הצד השני בחר לא לשתף את הטלפון בשלב הזה.</p>
+                                    </div>
+                                {:else}
+                                    <div class="bg-gradient-to-br from-rose-600 to-pink-600 p-8 rounded-3xl shadow-xl">
+                                        <h3 class="text-white font-bold text-xl mb-2">🔒 הטלפון מוגן</h3>
+                                        <p class="text-white/85 text-sm mb-4">
+                                            לחיצה תשלח לצד השני את הפרופיל שלך (שם, גיל, מגזר, שכונה). הטלפון יישלח אליך רק לאחר אישורו.
+                                        </p>
+                                        <button
+                                            type="button"
+                                            disabled={singlesSending}
+                                            onclick={requestSinglesPhone}
+                                            class="block w-full bg-white text-rose-600 font-black py-3 rounded-xl text-center shadow-lg hover:scale-[1.02] transition-transform disabled:opacity-60"
+                                        >
+                                            {singlesSending ? 'שולח...' : '💌 שלח בקשת טלפון'}
+                                        </button>
+                                        {#if singlesError}
+                                            <p class="text-red-100 text-xs mt-3 bg-red-900/30 rounded-lg px-3 py-2">{singlesError}</p>
+                                        {/if}
+                                        <p class="text-white/70 text-xs mt-3 text-center">מקס׳ 3 בקשות ב-24 שעות · ההגנה מבוטים</p>
+                                    </div>
+                                {/if}
+                            {:else}
+                                <div
+                                    class="bg-gradient-to-br from-purple-600 to-blue-600 p-8 rounded-3xl shadow-xl"
                                 >
-                                    התקשר עכשיו
-                                </a>
-                                <button
-                                    aria-label="שלח הודעה למפרסם"
-                                    class="block w-full mt-3 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-xl text-center transition-all border border-white/20"
-                                >
-                                    שלח הודעה
-                                </button>
-                            </div>
+                                    <h3 class="text-white font-bold text-xl mb-4">
+                                        זקוק לפרטים נוספים?
+                                    </h3>
+                                    <p class="text-white/80 text-sm mb-6">
+                                        צור קשר ישירות עם המפרסם לקבלת פרטים נוספים
+                                        או תיאום.
+                                    </p>
+                                    <a
+                                        href="tel:{item.phone}"
+                                        aria-label="התקשר עכשיו – {item.phone}"
+                                        class="block w-full bg-white text-purple-600 font-bold py-3 rounded-xl text-center shadow-lg hover:scale-105 transition-transform"
+                                    >
+                                        התקשר עכשיו
+                                    </a>
+                                    <button
+                                        aria-label="שלח הודעה למפרסם"
+                                        class="block w-full mt-3 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-xl text-center transition-all border border-white/20"
+                                    >
+                                        שלח הודעה
+                                    </button>
+                                </div>
+                            {/if}
 
                             <div
                                 class="bg-white/5 p-6 rounded-3xl border border-white/10 backdrop-blur-sm"
