@@ -98,6 +98,13 @@
     function removeImageAt(key: string, idx: number) {
         setImages(key, getImages(key).filter((_, i) => i !== idx));
     }
+    function setMainImage(key: string, idx: number) {
+        const arr = getImages(key);
+        if (idx <= 0 || idx >= arr.length) return;
+        const [picked] = arr.splice(idx, 1);
+        arr.unshift(picked);
+        setImages(key, arr);
+    }
 
     function startLongPress(key: string) {
         if (longPressTimer) clearTimeout(longPressTimer);
@@ -212,11 +219,14 @@
 
         const topLevelKeys = ['label', 'description', 'contact', 'phone', 'address'];
         const topLevel: Record<string, string> = {};
-        const extra: Record<string, string> = {};
+        const extra: Record<string, unknown> = {};
+        const imageKeys = new Set(config.fields.filter(f => f.type === 'images').map(f => f.key));
 
         for (const [k, v] of Object.entries(formValues)) {
             if (topLevelKeys.includes(k)) {
                 topLevel[k] = v;
+            } else if (imageKeys.has(k)) {
+                try { extra[k] = JSON.parse(v || '[]'); } catch { extra[k] = []; }
             } else {
                 extra[k] = v;
             }
@@ -224,12 +234,14 @@
 
         if (!topLevel.label) {
             const labelField = config.fields.find(f => f.key === 'label');
-            topLevel.label = extra[labelField?.key ?? ''] ?? config.label;
+            const fallback = extra[labelField?.key ?? ''];
+            topLevel.label = (typeof fallback === 'string' ? fallback : '') || config.label;
         }
 
         // אירוח לשבת: כותרת הכרטיס מורכבת משם המשפחה (רק למארח)
-        if (categoryId === 'realestate' && extra.offer_type === 'מציע לארח' && extra.family_name?.trim()) {
-            topLevel.label = `משפחת ${extra.family_name.trim()}`;
+        const familyName = typeof extra.family_name === 'string' ? extra.family_name.trim() : '';
+        if (categoryId === 'realestate' && extra.offer_type === 'מציע לארח' && familyName) {
+            topLevel.label = `משפחת ${familyName}`;
         }
 
         try {
@@ -474,11 +486,14 @@
                         </div>
                         <div class="flex items-center justify-between mb-2">
                             <span class="text-gray-400 text-xs">{imgs.length}/{MAX_IMAGES}</span>
+                            {#if imgs.length > 1}
+                                <span class="text-amber-300 text-[11px] font-bold">⭐ הראשונה היא התמונה הראשית</span>
+                            {/if}
                         </div>
                         {#if imgs.length > 0}
                             <div class="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-2">
                                 {#each imgs as src, i (i)}
-                                    <div class="relative aspect-square rounded-xl overflow-hidden border border-white/10">
+                                    <div class="relative aspect-square rounded-xl overflow-hidden border-2 {i === 0 ? 'border-amber-400 shadow-lg shadow-amber-500/30' : 'border-white/10'}">
                                         <img src={src} alt="" class="w-full h-full object-cover" />
                                         <button
                                             type="button"
@@ -486,6 +501,16 @@
                                             class="absolute top-1 left-1 bg-black/70 hover:bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold transition-colors"
                                             aria-label="הסר תמונה"
                                         >×</button>
+                                        {#if i === 0}
+                                            <span class="absolute bottom-1 right-1 bg-amber-400 text-amber-900 text-[10px] font-black px-1.5 py-0.5 rounded-full shadow">⭐ ראשית</span>
+                                        {:else}
+                                            <button
+                                                type="button"
+                                                onclick={() => setMainImage(field.key, i)}
+                                                class="absolute bottom-1 right-1 bg-black/70 hover:bg-amber-500 text-white hover:text-amber-900 text-[10px] font-bold px-1.5 py-0.5 rounded-full transition-colors"
+                                                aria-label="הפוך לתמונה ראשית"
+                                            >סמן כראשית</button>
+                                        {/if}
                                     </div>
                                 {/each}
                                 {#if imgs.length < MAX_IMAGES}

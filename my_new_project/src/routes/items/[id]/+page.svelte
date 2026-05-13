@@ -182,9 +182,58 @@
     <title>{item ? item.label : tFn("item_not_found")} | קהילה בשכונה</title>
 </svelte:head>
 
+{#snippet socialLinksBlock()}
+    {@const ef = (item?.isUserSubmitted ? item?.extraFields : null) as Record<string, unknown> | null}
+    {@const website   = typeof ef?.website   === 'string' ? ef.website   : ''}
+    {@const facebook  = typeof ef?.facebook  === 'string' ? ef.facebook  : ''}
+    {@const instagram = typeof ef?.instagram === 'string' ? ef.instagram : ''}
+    {@const youtube   = typeof ef?.youtube   === 'string' ? ef.youtube   : ''}
+    {@const tiktok    = typeof ef?.tiktok    === 'string' ? ef.tiktok    : ''}
+    {@const ensureUrl = (u: string) => (/^https?:\/\//i.test(u) ? u : `https://${u}`)}
+    {#if website || facebook || instagram || youtube || tiktok}
+        <section>
+            <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <span class="w-1.5 h-8 bg-indigo-500 rounded-full"></span>קישורים
+            </h2>
+            <div class="flex flex-wrap gap-3">
+                {#if website}
+                    <a href={ensureUrl(website)} target="_blank" rel="noopener noreferrer"
+                        class="flex items-center gap-2 bg-white/5 hover:bg-indigo-600/20 border border-white/10 hover:border-indigo-500/50 text-white font-bold px-4 py-2.5 rounded-xl transition-all">
+                        🌐 אתר אינטרנט
+                    </a>
+                {/if}
+                {#if facebook}
+                    <a href={ensureUrl(facebook)} target="_blank" rel="noopener noreferrer"
+                        class="flex items-center gap-2 bg-white/5 hover:bg-blue-600/20 border border-white/10 hover:border-blue-500/50 text-white font-bold px-4 py-2.5 rounded-xl transition-all">
+                        📘 פייסבוק
+                    </a>
+                {/if}
+                {#if instagram}
+                    <a href={ensureUrl(instagram)} target="_blank" rel="noopener noreferrer"
+                        class="flex items-center gap-2 bg-white/5 hover:bg-pink-600/20 border border-white/10 hover:border-pink-500/50 text-white font-bold px-4 py-2.5 rounded-xl transition-all">
+                        📷 אינסטגרם
+                    </a>
+                {/if}
+                {#if youtube}
+                    <a href={ensureUrl(youtube)} target="_blank" rel="noopener noreferrer"
+                        class="flex items-center gap-2 bg-white/5 hover:bg-red-600/20 border border-white/10 hover:border-red-500/50 text-white font-bold px-4 py-2.5 rounded-xl transition-all">
+                        ▶️ יוטיוב
+                    </a>
+                {/if}
+                {#if tiktok}
+                    <a href={ensureUrl(tiktok)} target="_blank" rel="noopener noreferrer"
+                        class="flex items-center gap-2 bg-white/5 hover:bg-fuchsia-600/20 border border-white/10 hover:border-fuchsia-500/50 text-white font-bold px-4 py-2.5 rounded-xl transition-all">
+                        🎵 טיקטוק
+                    </a>
+                {/if}
+            </div>
+        </section>
+    {/if}
+{/snippet}
+
 <!-- Hidden keys (rendered in dedicated sections, complex types, or internal-only) -->
 {#snippet extraFieldsBlock()}
-    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'price'])}
+    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'price', 'website', 'facebook', 'instagram', 'youtube', 'tiktok'])}
     {@const visibleEntries = item?.isUserSubmitted && item.extraFields
         ? Object.entries(item.extraFields).filter(([k, v]) => !HIDDEN_KEYS.has(k) && v != null && v !== '')
         : []}
@@ -439,6 +488,8 @@
                                     {/if}
                                 </div>
                             </section>
+
+                            {@render socialLinksBlock()}
 
                             {@render extraFieldsBlock()}
                         </div>

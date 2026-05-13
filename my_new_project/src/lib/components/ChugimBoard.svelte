@@ -57,6 +57,8 @@
         startedYear: number;
         lastActive: string;
         isReal?: boolean;
+        mainImage?: string;
+        detailUrl?: string;
     }
 
     interface Props {
@@ -148,6 +150,10 @@
         const meta = CAT_META[category];
         const age = parseAge(String(ef.age_group ?? ''));
         const time = parseTime(String(ef.time ?? ''));
+        const rawImages = ef.images;
+        const images: string[] = Array.isArray(rawImages)
+            ? rawImages.filter((s): s is string => typeof s === 'string')
+            : (typeof rawImages === 'string' ? (() => { try { const p = JSON.parse(rawImages); return Array.isArray(p) ? p.filter((s: unknown): s is string => typeof s === 'string') : []; } catch { return []; } })() : []);
         return {
             id: item.id,
             label: item.label || 'חוג',
@@ -176,6 +182,8 @@
             startedYear: new Date().getFullYear() - 1,
             lastActive: 'פעיל לאחרונה',
             isReal: true,
+            mainImage: images[0],
+            detailUrl: `/items/${item.id}`,
         };
     }
 
@@ -650,9 +658,14 @@
                     {@const meta = CAT_META[k.category]}
                     <div class="bg-[#0f172a] rounded-2xl border border-white/10 hover:border-indigo-500/40 overflow-hidden shadow-xl hover:shadow-2xl hover:shadow-indigo-500/10 transition-all hover:-translate-y-1 flex flex-col">
 
-                        <!-- ===== באנר קטגוריה (Outschool-style) ===== -->
-                        <div class="relative h-24 bg-gradient-to-br {meta.gradient} flex items-center justify-center">
-                            <span class="text-6xl drop-shadow-lg">{meta.icon}</span>
+                        <!-- ===== באנר קטגוריה / תמונה ראשית ===== -->
+                        <div class="relative h-24 bg-gradient-to-br {meta.gradient} flex items-center justify-center overflow-hidden">
+                            {#if k.mainImage}
+                                <img src={k.mainImage} alt={k.label} class="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+                            {:else}
+                                <span class="text-6xl drop-shadow-lg">{meta.icon}</span>
+                            {/if}
                             <span class="absolute top-2 right-2 text-[10px] font-black bg-black/40 backdrop-blur-sm text-white px-2 py-1 rounded-full">
                                 {k.category}
                             </span>
@@ -683,7 +696,13 @@
                         <!-- כותרת + מדריך -->
                         <div class="p-4 border-b border-white/5">
                             <div class="flex items-start justify-between gap-2 mb-1">
-                                <h3 class="text-white font-black text-base leading-tight">{k.label}</h3>
+                                {#if k.detailUrl}
+                                    <a href={k.detailUrl} class="text-white font-black text-base leading-tight hover:text-indigo-300 transition-colors">
+                                        <h3 class="inline">{k.label}</h3>
+                                    </a>
+                                {:else}
+                                    <h3 class="text-white font-black text-base leading-tight">{k.label}</h3>
+                                {/if}
                             </div>
                             <p class="text-gray-300 text-xs flex items-center gap-1.5">
                                 <span class="text-indigo-300">👤</span>
@@ -754,6 +773,12 @@
                         <!-- פעולות -->
                         <div class="p-3 pt-2 flex gap-2 border-t border-white/5">
                             {@render shareBtn(k)}
+                            {#if k.detailUrl}
+                                <a href={k.detailUrl}
+                                    class="flex items-center justify-center bg-indigo-600/80 hover:bg-indigo-500 text-white py-2.5 px-3 rounded-xl transition-colors text-sm font-bold" aria-label="פרטים נוספים" title="כל הפרטים, גלריה וקישורים">
+                                    🔍
+                                </a>
+                            {/if}
                             <a href={waLink(k.phone)} target="_blank" rel="noopener noreferrer"
                                 class="flex-1 flex items-center justify-center gap-1.5 bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 rounded-xl transition-colors text-sm">
                                 💬 הירשמו עכשיו

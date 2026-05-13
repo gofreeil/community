@@ -103,6 +103,10 @@ export const categoryConfig: Record<string, CategoryConfig> = {
             { key: 'address',     label: 'כתובת',                type: 'text',     required: true,  placeholder: 'מיקום החוג' },
             { key: 'phone',       label: 'טלפון',                type: 'tel',      required: true,  placeholder: '05X-XXXXXXX' },
             { key: 'description', label: 'תיאור החוג',           type: 'textarea', required: false, placeholder: 'מה לומדים, מה מיוחד בחוג...' },
+            { key: 'images',      label: 'תמונות (עד 5)',         type: 'images',   required: false, hint: 'הוסיפו תמונות של החוג. סמנו אחת כתמונה ראשית — היא תופיע בכרטיסיה הראשית של החוג.' },
+            { key: 'website',     label: 'אתר אינטרנט',          type: 'text',     required: false, placeholder: 'https://example.com', hint: 'יוצג רק בדף המורחב של החוג' },
+            { key: 'facebook',    label: 'פייסבוק',               type: 'text',     required: false, placeholder: 'https://facebook.com/...', half: true, hint: 'יוצג רק בדף המורחב' },
+            { key: 'instagram',   label: 'אינסטגרם',              type: 'text',     required: false, placeholder: 'https://instagram.com/...', half: true, hint: 'יוצג רק בדף המורחב' },
         ],
     },
 

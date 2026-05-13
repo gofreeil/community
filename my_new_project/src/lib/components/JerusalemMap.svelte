@@ -1165,12 +1165,14 @@
                     <button
                         type="button"
                         onclick={(e) => { e.stopPropagation(); goto('/giveaways'); }}
-                        class="absolute bottom-4 left-4 z-20 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white text-xs font-black px-3 py-1.5 rounded-full shadow-lg border border-purple-400/50 transition-all hover:scale-105 flex items-center gap-1.5 whitespace-nowrap"
+                        class="absolute bottom-4 left-4 z-20 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white text-sm font-black px-4 py-2 rounded-xl shadow-lg border border-orange-300/60 transition-all hover:scale-105 flex items-center gap-2 text-center leading-tight"
                         title="עבור ללוח הארצי של פריטים למסירה"
                     >
-                        <img src="/images/delivery.png" alt="" class="w-4 h-4 object-contain" />
-                        <span>{neighborhoodDbItems.length} למסירה ב{neighborhoodState.neighborhood} — ללוח הארצי</span>
-                        <span class="text-sm">←</span>
+                        <img src="/images/delivery.png" alt="" class="w-5 h-5 object-contain" />
+                        <span class="flex flex-col items-center">
+                            <span>{neighborhoodDbItems.length} למסירה ב{neighborhoodState.neighborhood}</span>
+                            <span>← ללוח הארצי</span>
+                        </span>
                     </button>
                 {:else if neighborhoodDbItems.length > 0 || nationalBoardUrl}
                     <div class="absolute bottom-4 left-4 z-20 flex flex-wrap items-center gap-2">
@@ -1189,10 +1191,11 @@
                                 target={nationalBoardUrl.startsWith('http') ? '_blank' : '_self'}
                                 rel={nationalBoardUrl.startsWith('http') ? 'noopener noreferrer' : undefined}
                                 onclick={(e) => e.stopPropagation()}
-                                class="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white text-xs font-black px-3 py-1.5 rounded-full shadow-lg border border-purple-400/50 transition-all hover:scale-105 whitespace-nowrap"
+                                class="bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white text-sm font-black px-4 py-2 rounded-xl shadow-lg border border-orange-300/60 transition-all hover:scale-105 flex flex-col items-center text-center leading-tight"
                                 title="עבור ללוח הארצי"
                             >
-                                ← ללוח הארצי
+                                <span>{neighborhoodDbItems.length} פריטים ב{neighborhoodState.neighborhood}</span>
+                                <span>← ללוח הארצי</span>
                             </a>
                         {/if}
                     </div>
