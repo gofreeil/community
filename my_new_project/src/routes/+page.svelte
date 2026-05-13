@@ -792,7 +792,7 @@
 
             <!-- Image (left side in RTL) — fades smoothly into banner background -->
             <div
-                class="relative z-10 w-2/5 md:w-3/5 bg-cover bg-top transition-transform duration-300 group-hover:scale-105 farm-image-fade"
+                class="relative z-10 w-2/5 md:w-3/5 bg-cover bg-center transition-transform duration-300 group-hover:scale-105 farm-image-fade"
                 style="background-image: url('/images/Copilot_20260514_012104.png');"
             ></div>
         </a>

@@ -26,6 +26,13 @@
 
     <!-- 3D stack container -->
     <div class="relative h-[520px] md:h-[670px]" style="transform-style: preserve-3d;">
+        <!-- Mobile peek tap target — outside 3D so it gets reliable hit-testing -->
+        <button
+            type="button"
+            onclick={() => bringFront(active === 'vote' ? 'chat' : 'vote')}
+            class="md:hidden absolute left-0 top-0 bottom-0 w-[16%] z-40 cursor-pointer bg-transparent"
+            aria-label="עבור לחלון השני"
+        ></button>
         <!-- VOTE card -->
         <div
             class="card absolute inset-y-0 right-0 w-[85%] md:w-auto md:inset-0 rounded-2xl overflow-hidden bg-[#0b1020] will-change-transform {active === 'vote' ? 'card-front' : 'card-back'}"
