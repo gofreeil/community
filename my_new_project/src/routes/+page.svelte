@@ -14,6 +14,16 @@
 
     const currentYear = new Date().getFullYear();
 
+    // Mock — לוח "העזרה לקהילה". יוחלף בנתונים אמיתיים כשהאינטגרציות יסתיימו.
+    const communityHelpMock = [
+        { icon: '🔑', title: 'הוחזר צרור מפתחות לשרה כהן', date: '12 במאי 2026' },
+        { icon: '🆘', title: 'נענתה קריאה: עזרה בהובלת ארון לדוד לוי', date: '10 במאי 2026' },
+        { icon: '💍', title: 'שידוך חדש נוצר דרך האתר — מזל טוב!', date: '8 במאי 2026' },
+        { icon: '📦', title: 'נאסף ספה מהלוח "למסירה" ע״י משפחת אברהם', date: '6 במאי 2026' },
+        { icon: '💝', title: 'נתרמו 350₪ ומומשה משאלה מכותל המשאלות', date: '3 במאי 2026' },
+        { icon: '🧸', title: 'הוחזר דובי אבוד לילד מגן "הרימון"', date: '1 במאי 2026' }
+    ];
+
     import { citiesAndNeighborhoods, citiesData } from "$lib/neighborhoodsData";
     import { neighborhoodState } from "$lib/neighborhoodState.svelte";
     import type { PageData } from './$types';
@@ -462,7 +472,18 @@
                             הקהילה עזרה לפתור {$communityHelpCount} קריאות בשנת {currentYear}
                         </p>
                     </div>
-                    <div class="p-2 flex-1 overflow-hidden"></div>
+                    <div class="p-2 flex-1 overflow-hidden flex flex-col gap-1.5 relative">
+                        {#each communityHelpMock as h}
+                            <div class="flex gap-2 items-start bg-white/5 rounded-lg p-1.5 border border-white/8">
+                                <span class="text-base flex-shrink-0 leading-none mt-0.5">{h.icon}</span>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-white text-[11px] font-bold leading-tight">{h.title}</p>
+                                    <p class="text-rose-200/70 text-[10px] mt-0.5">{h.date}</p>
+                                </div>
+                            </div>
+                        {/each}
+                        <div class="pointer-events-none absolute bottom-0 left-0 right-0 h-12 rounded-b-lg" style="background: linear-gradient(to bottom, transparent, #0f172a 90%);"></div>
+                    </div>
                 </div>
             </div>
         </div>
