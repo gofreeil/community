@@ -7,8 +7,12 @@
     import FacebookComments from "$lib/components/FacebookComments.svelte";
     import CoaliEmbed from "$lib/components/CoaliEmbed.svelte";
     import ReferendumBanner from "$lib/components/ReferendumBanner.svelte";
+    import StackedWindows from "$lib/components/StackedWindows.svelte";
     import { triggerAdPopup } from "$lib/adPopupStore";
     import { ads } from "$lib/adsData";
+    import { communityHelpCount } from "$lib/communityHelpStore";
+
+    const currentYear = new Date().getFullYear();
 
     import { citiesAndNeighborhoods, citiesData } from "$lib/neighborhoodsData";
     import { neighborhoodState } from "$lib/neighborhoodState.svelte";
@@ -367,7 +371,7 @@
     </div>
 
     <!-- Map + Referendum + Sidebar (unified desktop layout) -->
-    <section class="max-w-7xl mx-auto px-4 mt-4">
+    <section class="max-w-7xl mx-auto px-4 mt-4 mb-8">
         <!-- Desktop: left column (map+referendum) + right column (3 boards) -->
         <div class="hidden lg:flex gap-4">
             <!-- Left column (3/4): Map on top, Referendum below -->
@@ -375,11 +379,7 @@
                 <div>
                     <JerusalemMap bind:showNeighborhoodsMenu dbItems={data.dbItems} />
                 </div>
-                {#if showCoali}
-                    <CoaliEmbed />
-                {:else}
-                    <ReferendumBanner />
-                {/if}
+                <StackedWindows {showCoali} />
             </div>
 
             <!-- Right column (1/4): boards constrained to left column height -->
@@ -451,49 +451,18 @@
                     <LostAndFound items={data.dbItems.filter(i => i.category === 'lost_and_found' && i.neighborhood === neighborhoodState.neighborhood)} />
                 </div>
 
-                <!-- 3. Community Feed -->
-                <div class="flex-1 min-h-0 rounded-2xl bg-[#0f172a] border border-2 border-amber-500/30 overflow-hidden shadow-2xl flex flex-col">
-                    <div class="bg-gradient-to-r from-amber-600 to-orange-600 p-3 flex items-center justify-between flex-shrink-0">
+                <!-- 3. Community Help -->
+                <div class="flex-1 min-h-0 rounded-2xl bg-[#0f172a] border border-2 border-rose-500/30 overflow-hidden shadow-2xl flex flex-col">
+                    <div class="bg-gradient-to-r from-rose-600 to-pink-600 p-3 flex-shrink-0">
                         <h3 class="text-sm font-bold text-white flex items-center gap-2">
-                            <span class="text-base">📢</span>
-                            הלוחות הארציים
+                            <span class="text-base">🤝</span>
+                            העזרה לקהילה
                         </h3>
-                        <span class="text-[10px] text-amber-200/70 font-bold">LIVE</span>
+                        <p class="text-[11px] text-rose-100/90 mt-1 leading-tight">
+                            הקהילה עזרה לפתור {$communityHelpCount} קריאות בשנת {currentYear}
+                        </p>
                     </div>
-                    <div class="p-2 flex-1 overflow-hidden flex flex-col justify-evenly text-xs">
-                        <a href="/giveaways" class="flex items-center gap-2 bg-white/5 rounded-lg p-2.5 border border-white/8 hover:bg-white/10 transition-all">
-                            <span class="flex-shrink-0 text-base">📦</span>
-                            <p class="text-white font-bold">לוח למסירה</p>
-                        </a>
-                        <a href="https://national-gemach.vercel.app" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 bg-white/5 rounded-lg p-2.5 border border-white/8 hover:bg-white/10 transition-all">
-                            <span class="flex-shrink-0 text-base">🤝</span>
-                            <p class="text-white font-bold">לוח גמ"חים <span class="text-amber-300/70 text-[10px] font-normal">(אתר ארצי ↗)</span></p>
-                        </a>
-                        <a href="/lost-and-found" class="flex items-center gap-2 bg-white/5 rounded-lg p-2.5 border border-white/8 hover:bg-white/10 transition-all">
-                            <span class="flex-shrink-0 text-base">🔍</span>
-                            <p class="text-white font-bold">לוח אבדות ומציאות</p>
-                        </a>
-                        <a href="/singles" class="flex items-center gap-2 bg-white/5 rounded-lg p-2.5 border border-white/8 hover:bg-white/10 transition-all">
-                            <span class="flex-shrink-0 text-base">💑</span>
-                            <p class="text-white font-bold">לוח פנויים פנויות</p>
-                        </a>
-                        <a href="/shabbat-hosting" class="flex items-center gap-2 bg-white/5 rounded-lg p-2.5 border border-white/8 hover:bg-white/10 transition-all">
-                            <span class="flex-shrink-0"><img src="/icons/shavat-shalom.png" class="w-5 h-5 inline-block" alt="שבת שלום" /></span>
-                            <p class="text-white font-bold">לוח אירוח לשבת</p>
-                        </a>
-                        <a href="/national/jobs" class="flex items-center gap-2 bg-white/5 rounded-lg p-2.5 border border-white/8 hover:bg-white/10 transition-all">
-                            <span class="flex-shrink-0 text-base">💼</span>
-                            <p class="text-white font-bold">לוח דרושים ארצי</p>
-                        </a>
-                        <a href="/rides" class="flex items-center gap-2 bg-white/5 rounded-lg p-2.5 border border-white/8 hover:bg-white/10 transition-all">
-                            <span class="flex-shrink-0 text-base">🚗</span>
-                            <p class="text-white font-bold">לוח טרמפים</p>
-                        </a>
-                        <a href="https://index-chi-sage.vercel.app/" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 bg-white/5 rounded-lg p-2.5 border border-white/8 hover:bg-white/10 transition-all">
-                            <span class="flex-shrink-0 text-base">👨‍💼</span>
-                            <p class="text-white font-bold">בעלי מקצוע כשירים <span class="text-amber-300/70 text-[10px] font-normal">(אתר חיצוני ↗)</span></p>
-                        </a>
-                    </div>
+                    <div class="p-2 flex-1 overflow-hidden"></div>
                 </div>
             </div>
         </div>
@@ -567,37 +536,7 @@
                     <LostAndFound items={data.dbItems.filter(i => i.category === 'lost_and_found' && i.neighborhood === neighborhoodState.neighborhood)} />
                 </div>
             </div>
-            {#if showCoali}
-                <CoaliEmbed />
-            {:else}
-                <ReferendumBanner />
-            {/if}
-        </div>
-    </section>
-
-    <!-- Facebook Comments Section -->
-    <section class="max-w-6xl mx-auto px-4 mt-6 mb-8">
-        <div
-            class="rounded-2xl bg-gradient-to-br from-blue-900/20 to-purple-900/20 border border-white/10 backdrop-blur-sm p-3 md:p-6"
-            title="שאל שאלה, הבע דעתך והצטרף לשיח בשכונה"
-        >
-            <h3
-                class="text-lg md:text-2xl font-bold text-white mb-3 md:mb-6 text-center flex items-center justify-center gap-2"
-            >
-                <svg
-                    class="w-5 h-5 md:w-8 md:h-8 text-blue-400"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                    focusable="false"
-                >
-                    <path
-                        d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
-                    />
-                </svg>
-                שיח פתוח
-            </h3>
-            <FacebookComments numPosts={10} />
+            <StackedWindows {showCoali} />
         </div>
     </section>
 

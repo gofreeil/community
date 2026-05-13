@@ -345,7 +345,7 @@
     };
     let nationalBoardUrl = $derived(nationalBoardUrls[selectedCategory] || '');
     let hasShownListAnimation = $state(false); // עקוב אם כבר הראינו את האנימציה
-    let communityHelpCount = $state(135);
+    import { communityHelpCount } from '$lib/communityHelpStore';
     const currentYear = new Date().getFullYear();
 
     // אנימציה של רשימה פעם אחת בלבד אחרי 15 שניות מכניסה לאתר
@@ -936,7 +936,7 @@
 
     function handleSurveyResponse(response: "community" | "other" | "cancel") {
         if (response === "community") {
-            communityHelpCount = communityHelpCount + 1;
+            communityHelpCount.update(n => n + 1);
             successMessageText = "תודה! שמחים שהקהילה עזרה 🎉";
             showSuccessMessage = true;
             setTimeout(() => {
@@ -1757,9 +1757,11 @@
     </div>
 </div>
 
-<div class="text-white text-lg text-center mt-2">
-    הקהילה עזרה לפתור {communityHelpCount} קריאות בשנת {currentYear}
-</div>
+{#if handRaised}
+    <div class="text-white text-lg text-center mt-2">
+        הקהילה עזרה לפתור {$communityHelpCount} קריאות בשנת {currentYear}
+    </div>
+{/if}
 
 <!-- ===== מודל קריאת עזרה ===== -->
 {#if showRaiseHandModal}
