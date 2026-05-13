@@ -778,23 +778,23 @@
             <!-- Background gradient -->
             <div class="absolute inset-0 bg-gradient-to-l from-green-950 via-emerald-900 to-emerald-800"></div>
 
-            <!-- Content (right side in RTL) -->
-            <div class="relative z-20 flex-1 px-4 md:px-8 py-3 md:py-4 flex flex-col justify-center">
+            <!-- Image (full width, fades diagonally — text floats on top via z-index) -->
+            <div
+                class="absolute inset-0 z-10 bg-cover bg-center transition-transform duration-300 group-hover:scale-105 farm-image-fade"
+                style="background-image: url('/images/Copilot_20260514_012104.png');"
+            ></div>
+
+            <!-- Content (right side in RTL, floats over image) -->
+            <div class="relative z-20 w-1/2 md:w-1/2 ml-auto px-4 md:px-8 py-3 md:py-4 flex flex-col justify-center">
                 <div class="mb-1 md:mb-2">
-                    <h3 class="text-lg md:text-3xl font-black text-white group-hover:text-yellow-200 transition-colors">
+                    <h3 class="text-lg md:text-3xl font-black text-white group-hover:text-yellow-200 transition-colors drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]">
                         חקלאות ישירה
                     </h3>
                 </div>
-                <p class="text-[11px] md:text-base text-green-100 leading-tight md:leading-relaxed max-w-2xl">
+                <p class="text-[11px] md:text-base text-green-100 leading-tight md:leading-relaxed max-w-2xl drop-shadow-[0_1px_3px_rgba(0,0,0,0.5)]">
                     חיבור ישיר בין חקלאים לצרכנים ללא פערי תיווך
                 </p>
             </div>
-
-            <!-- Image (left side in RTL) — fades smoothly into banner background -->
-            <div
-                class="relative z-10 w-2/3 md:w-3/5 bg-cover bg-center transition-transform duration-300 group-hover:scale-105 farm-image-fade"
-                style="background-image: url('/images/Copilot_20260514_012104.png');"
-            ></div>
         </a>
     </section>
 </div>
