@@ -707,11 +707,6 @@
                 <p class="text-sm md:text-base text-green-100 leading-relaxed max-w-2xl">
                     חיבור ישיר בין חקלאים לצרכנים ללא פערי תיווך
                 </p>
-                <div class="mt-3">
-                    <span class="inline-block bg-white/20 hover:bg-white/30 text-white px-4 py-1.5 rounded-lg text-sm font-bold transition-all group-hover:scale-105">
-                        לפרטים ←
-                    </span>
-                </div>
             </div>
 
             <!-- Image (left side in RTL) — fades smoothly into banner background -->
