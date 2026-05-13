@@ -689,6 +689,41 @@
             </a>
         </div>
 
+        <!-- Direct Agriculture Banner (desktop) -->
+        <a
+            href="/farm-direct"
+            class="hidden md:flex group relative overflow-hidden rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-green-500/30 transition-all duration-300 hover:-translate-y-1 mt-6 cursor-pointer min-h-[160px] items-stretch"
+        >
+            <!-- Background gradient -->
+            <div class="absolute inset-0 bg-gradient-to-l from-green-700 via-emerald-700 to-lime-700"></div>
+            <!-- Decorative pattern overlay -->
+            <div class="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent"></div>
+
+            <!-- Content (right side in RTL) -->
+            <div class="relative z-10 flex-1 p-6 md:p-8 flex flex-col justify-center">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="text-4xl transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12">🥬</span>
+                    <h3 class="text-2xl md:text-3xl font-black text-white group-hover:text-yellow-200 transition-colors">
+                        חקלאות ישירה
+                    </h3>
+                </div>
+                <p class="text-sm md:text-base text-green-100 leading-relaxed max-w-2xl">
+                    חיבור ישיר בין חקלאים לצרכנים ללא פערי תיווך
+                </p>
+                <div class="mt-3">
+                    <span class="inline-block bg-white/20 hover:bg-white/30 text-white px-4 py-1.5 rounded-lg text-sm font-bold transition-all group-hover:scale-105">
+                        לפרטים ←
+                    </span>
+                </div>
+            </div>
+
+            <!-- Image (left side in RTL) -->
+            <div
+                class="relative z-10 w-1/3 md:w-2/5 bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
+                style="background-image: url('/images/farm-direct.png');"
+            ></div>
+        </a>
+
         <!-- Mobile: 3 cards in one row, equal width -->
         <div class="md:hidden">
             <div class="grid grid-cols-3 gap-2 h-28">
