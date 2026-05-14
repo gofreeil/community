@@ -153,7 +153,7 @@
         z-index: 20;
         filter: brightness(1) saturate(1);
         box-shadow: 0 25px 60px -10px rgba(59, 130, 246, 0.5), 0 0 0 1px rgba(255,255,255,0.08);
-        animation: cardToFront 1300ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+        animation: cardToFront 1400ms linear both;
     }
     .card-back {
         transform-origin: center center;
@@ -161,17 +161,23 @@
         z-index: 10;
         filter: brightness(0.45) saturate(0.7);
         box-shadow: 0 10px 30px -5px rgba(0,0,0,0.6);
-        animation: cardToBack 1300ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+        animation: cardToBack 1400ms linear both;
     }
 
-    /* Mobile keyframes — direct interpolation, no mid-keyframe (avoids per-segment easing hitch) */
+    /* Mobile keyframes — hook arc so cards visibly pass each other (one nudges left, one nudges right) */
     @keyframes cardToFront {
-        from { transform: translateX(-22%) translateZ(-100px) rotateY(20deg) scale(0.92); z-index: 15; }
-        to   { transform: translateX(0)    translateZ(0)     rotateY(0deg)  scale(1); z-index: 20; }
+        0%   { transform: translateX(-22%) translateZ(-100px) rotateY(20deg) scale(0.92); z-index: 15; }
+        25%  { transform: translateX(-16%) translateZ(0)      rotateY(15deg) scale(0.94); z-index: 22; }
+        50%  { transform: translateX(-10%) translateZ(30px)   rotateY(10deg) scale(0.96); z-index: 22; }
+        75%  { transform: translateX(-4%)  translateZ(15px)   rotateY(5deg)  scale(0.98); z-index: 22; }
+        100% { transform: translateX(0)    translateZ(0)      rotateY(0deg)  scale(1); z-index: 20; }
     }
     @keyframes cardToBack {
-        from { transform: translateX(0)    translateZ(0)     rotateY(0deg)   scale(1); z-index: 18; }
-        to   { transform: translateX(-22%) translateZ(-100px) rotateY(20deg) scale(0.92); z-index: 10; }
+        0%   { transform: translateX(0)    translateZ(0)      rotateY(0deg)   scale(1); z-index: 18; }
+        25%  { transform: translateX(5%)   translateZ(15px)   rotateY(-4deg)  scale(0.98); z-index: 12; }
+        50%  { transform: translateX(8%)   translateZ(30px)   rotateY(-8deg)  scale(0.96); z-index: 12; }
+        75%  { transform: translateX(-5%)  translateZ(0)      rotateY(8deg)   scale(0.94); z-index: 12; }
+        100% { transform: translateX(-22%) translateZ(-100px) rotateY(20deg)  scale(0.92); z-index: 10; }
     }
 
     /* Desktop — back peeks RIGHT, full-width cards. Cards arc through forward space passing each other. */
@@ -180,14 +186,20 @@
             transform-origin: left center;
             transform: translateX(38%) translateZ(-220px) rotateY(-28deg) scale(0.92);
         }
-        /* Desktop — direct interpolation, no mid-keyframe (smooth, no hitch) */
+        /* Desktop — hook arc with multiple keyframes for smooth pass-by motion */
         @keyframes cardToFront {
-            from { transform: translateX(38%) translateZ(-220px) rotateY(-28deg) scale(0.92); z-index: 15; }
-            to   { transform: translateX(0)   translateZ(0)      rotateY(0deg)   scale(1); z-index: 20; }
+            0%   { transform: translateX(38%) translateZ(-220px) rotateY(-28deg) scale(0.92); z-index: 15; }
+            25%  { transform: translateX(28%) translateZ(-90px)  rotateY(-21deg) scale(0.94); z-index: 22; }
+            50%  { transform: translateX(20%) translateZ(40px)   rotateY(-14deg) scale(0.97); z-index: 22; }
+            75%  { transform: translateX(8%)  translateZ(20px)   rotateY(-6deg)  scale(0.99); z-index: 22; }
+            100% { transform: translateX(0)   translateZ(0)      rotateY(0deg)   scale(1); z-index: 20; }
         }
         @keyframes cardToBack {
-            from { transform: translateX(0)    translateZ(0)      rotateY(0deg)   scale(1); z-index: 18; }
-            to   { transform: translateX(38%)  translateZ(-220px) rotateY(-28deg) scale(0.92); z-index: 10; }
+            0%   { transform: translateX(0)    translateZ(0)      rotateY(0deg)   scale(1); z-index: 18; }
+            25%  { transform: translateX(-7%)  translateZ(20px)   rotateY(7deg)   scale(0.99); z-index: 12; }
+            50%  { transform: translateX(-12%) translateZ(40px)   rotateY(12deg)  scale(0.97); z-index: 12; }
+            75%  { transform: translateX(8%)   translateZ(-90px)  rotateY(-8deg)  scale(0.94); z-index: 12; }
+            100% { transform: translateX(38%)  translateZ(-220px) rotateY(-28deg) scale(0.92); z-index: 10; }
         }
     }
 </style>
