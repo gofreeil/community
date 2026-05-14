@@ -153,7 +153,7 @@
         z-index: 20;
         filter: brightness(1) saturate(1);
         box-shadow: 0 25px 60px -10px rgba(59, 130, 246, 0.5), 0 0 0 1px rgba(255,255,255,0.08);
-        animation: cardToFront 1100ms linear both;
+        animation: cardToFront 1000ms linear both;
     }
     .card-back {
         transform-origin: center center;
@@ -161,7 +161,7 @@
         z-index: 10;
         filter: brightness(0.45) saturate(0.7);
         box-shadow: 0 10px 30px -5px rgba(0,0,0,0.6);
-        animation: cardToBack 1100ms linear both;
+        animation: cardToBack 1000ms linear both;
     }
 
     /* Mobile keyframes — smooth monotonic-after-peak path, no Z direction inflection mid-anim */
