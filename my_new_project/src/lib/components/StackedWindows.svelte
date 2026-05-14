@@ -31,11 +31,11 @@
             if (played) return;
             played = true;
             window.removeEventListener('scroll', tryDemo);
-            // Single, clean swap to the target — only animation the user sees on entry.
-            setTimeout(() => {
+            // Wait two frames so the initial pose paints, then start the swap — single fluid motion, no freeze.
+            requestAnimationFrame(() => requestAnimationFrame(() => {
                 noAnim = false;
                 active = target;
-            }, 600);
+            }));
         };
 
         const tryDemo = () => {
@@ -46,7 +46,8 @@
             }
         };
 
-        setTimeout(tryDemo, 200);
+        // Try immediately on mount — if visible, animation kicks in without delay.
+        tryDemo();
         window.addEventListener('scroll', tryDemo, { passive: true });
         return () => window.removeEventListener('scroll', tryDemo);
     });
@@ -151,7 +152,7 @@
         z-index: 20;
         filter: brightness(1) saturate(1);
         box-shadow: 0 25px 60px -10px rgba(59, 130, 246, 0.5), 0 0 0 1px rgba(255,255,255,0.08);
-        animation: cardToFront 2000ms cubic-bezier(0.65, 0, 0.35, 1) both;
+        animation: cardToFront 1800ms cubic-bezier(0.4, 0, 0.2, 1) both;
     }
     .card-back {
         transform-origin: center center;
@@ -159,7 +160,7 @@
         z-index: 10;
         filter: brightness(0.45) saturate(0.7);
         box-shadow: 0 10px 30px -5px rgba(0,0,0,0.6);
-        animation: cardToBack 2000ms cubic-bezier(0.65, 0, 0.35, 1) both;
+        animation: cardToBack 1800ms cubic-bezier(0.4, 0, 0.2, 1) both;
     }
 
     /* Mobile keyframes — back peeks LEFT, so cards arc away from each other through forward space */
