@@ -21,12 +21,12 @@
         { icon: '🆘', title: 'בקשת עזרה: ליווי לבדיקה רפואית',          date: '12 במאי 2026' },
     ];
 
-    // Mock — חצי תחתון: משאלות לב שמולאו.
+    // Mock — חצי תחתון: משאלות מכותל המשאלות / קופת השכונה שהוגשמו.
     const fulfilledWishesMock = [
-        { icon: '🔑', title: 'הוחזר צרור מפתחות לשרה כהן',               date: '12 במאי 2026' },
-        { icon: '💍', title: 'שידוך חדש נוצר דרך האתר — מזל טוב!',     date: '8 במאי 2026' },
-        { icon: '📦', title: 'נאסף ספה מהלוח "למסירה" ע״י משפחת אברהם', date: '6 במאי 2026' },
-        { icon: '💝', title: 'נתרמו 350₪ ומומשה משאלה מכותל המשאלות',  date: '3 במאי 2026' },
+        { icon: '🎒', title: 'מומשה משאלה: ילקוט וציוד לכיתה א׳ למשפחת כהן',   date: '12 במאי 2026' },
+        { icon: '🍞', title: 'גויס סל מזון לחג למשפחת לוי מקופת השכונה',         date: '9 במאי 2026' },
+        { icon: '👰', title: 'מומשה משאלה: השלמת הוצאות חתונה לכלה יתומה',     date: '6 במאי 2026' },
+        { icon: '💊', title: 'נתרמו 1,200₪ מקופת השכונה לתרופות דחופות',          date: '3 במאי 2026' },
     ];
 
     import { citiesAndNeighborhoods, citiesData } from "$lib/neighborhoodsData";
@@ -500,7 +500,7 @@
                         <!-- חצי תחתון: משאלות לב שמולאו -->
                         <div class="flex-1 min-h-0 overflow-hidden flex flex-col gap-1.5">
                             <div class="flex items-center gap-1.5 px-0.5 flex-shrink-0">
-                                <span class="text-[10px] font-bold text-emerald-300 uppercase tracking-wide">💚 משאלות לב שמולאו</span>
+                                <span class="text-[10px] font-bold text-emerald-300 uppercase tracking-wide">💚 משאלות שהוגשמו מהכותל / קופת השכונה</span>
                                 <div class="flex-1 h-px bg-emerald-500/30"></div>
                             </div>
                             <div class="flex-1 min-h-0 overflow-hidden flex flex-col gap-1">
