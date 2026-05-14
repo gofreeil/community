@@ -137,7 +137,8 @@
     }
     .card {
         backface-visibility: visible;
-        transition: filter 1800ms ease, box-shadow 1800ms ease;
+        transition: filter 1300ms ease, box-shadow 1300ms ease;
+        will-change: transform, filter;
     }
     /* Suppress all animation/transition before the demo swap fires (prevents mount jumps) */
     .no-anim .card,
@@ -152,7 +153,7 @@
         z-index: 20;
         filter: brightness(1) saturate(1);
         box-shadow: 0 25px 60px -10px rgba(59, 130, 246, 0.5), 0 0 0 1px rgba(255,255,255,0.08);
-        animation: cardToFront 1800ms cubic-bezier(0.4, 0, 0.2, 1) both;
+        animation: cardToFront 1300ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
     }
     .card-back {
         transform-origin: center center;
@@ -160,19 +161,17 @@
         z-index: 10;
         filter: brightness(0.45) saturate(0.7);
         box-shadow: 0 10px 30px -5px rgba(0,0,0,0.6);
-        animation: cardToBack 1800ms cubic-bezier(0.4, 0, 0.2, 1) both;
+        animation: cardToBack 1300ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
     }
 
-    /* Mobile keyframes — back peeks LEFT, so cards arc away from each other through forward space */
+    /* Mobile keyframes — direct interpolation, no mid-keyframe (avoids per-segment easing hitch) */
     @keyframes cardToFront {
-        0%   { transform: translateX(-22%) translateZ(-100px) rotateY(20deg) scale(0.92); z-index: 15; }
-        50%  { transform: translateX(-10%) translateZ(30px)  rotateY(10deg) scale(0.96); z-index: 22; }
-        100% { transform: translateX(0)    translateZ(0)     rotateY(0deg)  scale(1); z-index: 20; }
+        from { transform: translateX(-22%) translateZ(-100px) rotateY(20deg) scale(0.92); z-index: 15; }
+        to   { transform: translateX(0)    translateZ(0)     rotateY(0deg)  scale(1); z-index: 20; }
     }
     @keyframes cardToBack {
-        0%   { transform: translateX(0)    translateZ(0)     rotateY(0deg)   scale(1); z-index: 18; }
-        50%  { transform: translateX(8%)   translateZ(30px)  rotateY(-8deg)  scale(0.96); z-index: 12; }
-        100% { transform: translateX(-22%) translateZ(-100px) rotateY(20deg) scale(0.92); z-index: 10; }
+        from { transform: translateX(0)    translateZ(0)     rotateY(0deg)   scale(1); z-index: 18; }
+        to   { transform: translateX(-22%) translateZ(-100px) rotateY(20deg) scale(0.92); z-index: 10; }
     }
 
     /* Desktop — back peeks RIGHT, full-width cards. Cards arc through forward space passing each other. */
@@ -181,17 +180,14 @@
             transform-origin: left center;
             transform: translateX(38%) translateZ(-220px) rotateY(-28deg) scale(0.92);
         }
-        /* Desktop swap: back card never overshoots past +38% (avoids right ads sidebar).
-           Front detours LEFT to clear room, back card slides smoothly into center. */
+        /* Desktop — direct interpolation, no mid-keyframe (smooth, no hitch) */
         @keyframes cardToFront {
-            0%   { transform: translateX(38%) translateZ(-220px) rotateY(-28deg) scale(0.92); z-index: 15; }
-            50%  { transform: translateX(20%) translateZ(40px)   rotateY(-14deg) scale(0.97); z-index: 22; }
-            100% { transform: translateX(0)   translateZ(0)      rotateY(0deg)   scale(1); z-index: 20; }
+            from { transform: translateX(38%) translateZ(-220px) rotateY(-28deg) scale(0.92); z-index: 15; }
+            to   { transform: translateX(0)   translateZ(0)      rotateY(0deg)   scale(1); z-index: 20; }
         }
         @keyframes cardToBack {
-            0%   { transform: translateX(0)    translateZ(0)      rotateY(0deg)   scale(1); z-index: 18; }
-            50%  { transform: translateX(-12%) translateZ(40px)   rotateY(12deg)  scale(0.97); z-index: 12; }
-            100% { transform: translateX(38%)  translateZ(-220px) rotateY(-28deg) scale(0.92); z-index: 10; }
+            from { transform: translateX(0)    translateZ(0)      rotateY(0deg)   scale(1); z-index: 18; }
+            to   { transform: translateX(38%)  translateZ(-220px) rotateY(-28deg) scale(0.92); z-index: 10; }
         }
     }
 </style>
