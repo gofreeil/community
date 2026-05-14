@@ -14,14 +14,19 @@
 
     const currentYear = new Date().getFullYear();
 
-    // Mock — לוח "העזרה לקהילה". יוחלף בנתונים אמיתיים כשהאינטגרציות יסתיימו.
-    const communityHelpMock = [
-        { icon: '🔑', title: 'הוחזר צרור מפתחות לשרה כהן', date: '12 במאי 2026' },
-        { icon: '🆘', title: 'נענתה קריאה: עזרה בהובלת ארון לדוד לוי', date: '10 במאי 2026' },
-        { icon: '💍', title: 'שידוך חדש נוצר דרך האתר — מזל טוב!', date: '8 במאי 2026' },
+    // Mock — חצי עליון: רמות יד פעילות שעדיין לא קיבלו מענה.
+    const raisedHandsMock = [
+        { icon: '👴', title: 'מבוגר זקוק לעזרה בקניות שבועיות',         date: '13 במאי 2026' },
+        { icon: '🚗', title: 'דרוש סיוע בהתנעת רכב ברחוב הרב הרצוג',   date: '13 במאי 2026' },
+        { icon: '🆘', title: 'בקשת עזרה: ליווי לבדיקה רפואית',          date: '12 במאי 2026' },
+    ];
+
+    // Mock — חצי תחתון: משאלות לב שמולאו.
+    const fulfilledWishesMock = [
+        { icon: '🔑', title: 'הוחזר צרור מפתחות לשרה כהן',               date: '12 במאי 2026' },
+        { icon: '💍', title: 'שידוך חדש נוצר דרך האתר — מזל טוב!',     date: '8 במאי 2026' },
         { icon: '📦', title: 'נאסף ספה מהלוח "למסירה" ע״י משפחת אברהם', date: '6 במאי 2026' },
-        { icon: '💝', title: 'נתרמו 350₪ ומומשה משאלה מכותל המשאלות', date: '3 במאי 2026' },
-        { icon: '🤲', title: 'נענתה קריאה: ליווי ובישול לחולה ברחוב הרצוג', date: '1 במאי 2026' }
+        { icon: '💝', title: 'נתרמו 350₪ ומומשה משאלה מכותל המשאלות',  date: '3 במאי 2026' },
     ];
 
     import { citiesAndNeighborhoods, citiesData } from "$lib/neighborhoodsData";
@@ -473,15 +478,43 @@
                         </p>
                     </div>
                     <div class="p-2 flex-1 overflow-hidden flex flex-col gap-1.5 relative">
-                        {#each communityHelpMock as h}
-                            <div class="flex gap-2 items-start bg-white/5 rounded-lg p-1.5 border border-white/8">
-                                <span class="text-base flex-shrink-0 leading-none mt-0.5">{h.icon}</span>
-                                <div class="min-w-0 flex-1">
-                                    <p class="text-white text-[11px] font-bold leading-tight">{h.title}</p>
-                                    <p class="text-rose-200/70 text-[10px] mt-0.5">{h.date}</p>
-                                </div>
+                        <!-- חצי עליון: רמות יד פעילות שעדיין לא קיבלו מענה -->
+                        <div class="flex-1 min-h-0 overflow-hidden flex flex-col gap-1.5">
+                            <div class="flex items-center gap-1.5 px-0.5 flex-shrink-0">
+                                <span class="text-[10px] font-bold text-red-300 uppercase tracking-wide">✋ רמות יד פעילות</span>
+                                <div class="flex-1 h-px bg-red-500/30"></div>
                             </div>
-                        {/each}
+                            <div class="flex-1 min-h-0 overflow-hidden flex flex-col gap-1">
+                                {#each raisedHandsMock as h}
+                                    <div class="flex gap-2 items-start bg-red-500/10 rounded-lg p-1.5 border border-red-500/20">
+                                        <span class="text-base flex-shrink-0 leading-none mt-0.5">{h.icon}</span>
+                                        <div class="min-w-0 flex-1">
+                                            <p class="text-white text-[11px] font-bold leading-tight">{h.title}</p>
+                                            <p class="text-red-200/70 text-[10px] mt-0.5">{h.date}</p>
+                                        </div>
+                                    </div>
+                                {/each}
+                            </div>
+                        </div>
+
+                        <!-- חצי תחתון: משאלות לב שמולאו -->
+                        <div class="flex-1 min-h-0 overflow-hidden flex flex-col gap-1.5">
+                            <div class="flex items-center gap-1.5 px-0.5 flex-shrink-0">
+                                <span class="text-[10px] font-bold text-emerald-300 uppercase tracking-wide">💚 משאלות לב שמולאו</span>
+                                <div class="flex-1 h-px bg-emerald-500/30"></div>
+                            </div>
+                            <div class="flex-1 min-h-0 overflow-hidden flex flex-col gap-1">
+                                {#each fulfilledWishesMock as h}
+                                    <div class="flex gap-2 items-start bg-white/5 rounded-lg p-1.5 border border-white/8">
+                                        <span class="text-base flex-shrink-0 leading-none mt-0.5">{h.icon}</span>
+                                        <div class="min-w-0 flex-1">
+                                            <p class="text-white text-[11px] font-bold leading-tight">{h.title}</p>
+                                            <p class="text-rose-200/70 text-[10px] mt-0.5">{h.date}</p>
+                                        </div>
+                                    </div>
+                                {/each}
+                            </div>
+                        </div>
                         <div class="pointer-events-none absolute bottom-0 left-0 right-0 h-12 rounded-b-lg" style="background: linear-gradient(to bottom, transparent, #0f172a 90%);"></div>
                     </div>
                 </div>
