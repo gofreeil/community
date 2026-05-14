@@ -129,9 +129,7 @@
         height: 0;
     }
     .card {
-        transition: transform 2000ms cubic-bezier(0.65, 0, 0.35, 1),
-                    filter 2000ms cubic-bezier(0.65, 0, 0.35, 1),
-                    box-shadow 2000ms ease-out;
+        backface-visibility: visible;
     }
     /* Mobile defaults — front anchored right, back peeks left inside wrap */
     .card-front {
@@ -139,6 +137,7 @@
         z-index: 20;
         filter: brightness(1) saturate(1);
         box-shadow: 0 25px 60px -10px rgba(59, 130, 246, 0.5), 0 0 0 1px rgba(255,255,255,0.08);
+        animation: cardToFront 2000ms cubic-bezier(0.65, 0, 0.35, 1) both;
     }
     .card-back {
         transform-origin: center center;
@@ -146,12 +145,48 @@
         z-index: 10;
         filter: brightness(0.45) saturate(0.7);
         box-shadow: 0 10px 30px -5px rgba(0,0,0,0.6);
+        animation: cardToBack 2000ms cubic-bezier(0.65, 0, 0.35, 1) both;
     }
-    /* Desktop — full-width cards with deeper 3D peek (back card peeks to the RIGHT) */
+
+    /* Mobile keyframes — back peeks LEFT, so cards arc away from each other through forward space */
+    @keyframes cardToFront {
+        0%   { transform: translateX(-22%) translateZ(-100px) rotateY(20deg) scale(0.92);
+               filter: brightness(0.45) saturate(0.7); z-index: 15; }
+        50%  { transform: translateX(-32%) translateZ(80px)  rotateY(10deg) scale(0.98);
+               filter: brightness(0.85) saturate(0.9); z-index: 22; }
+        100% { transform: translateX(0)    translateZ(0)     rotateY(0deg)  scale(1);
+               filter: brightness(1) saturate(1); z-index: 20; }
+    }
+    @keyframes cardToBack {
+        0%   { transform: translateX(0)    translateZ(0)     rotateY(0deg)   scale(1);
+               filter: brightness(1) saturate(1); z-index: 18; }
+        50%  { transform: translateX(15%)  translateZ(80px)  rotateY(-15deg) scale(0.98);
+               filter: brightness(0.85) saturate(0.9); z-index: 12; }
+        100% { transform: translateX(-22%) translateZ(-100px) rotateY(20deg) scale(0.92);
+               filter: brightness(0.45) saturate(0.7); z-index: 10; }
+    }
+
+    /* Desktop — back peeks RIGHT, full-width cards. Cards arc through forward space passing each other. */
     @media (min-width: 768px) {
         .card-back {
             transform-origin: left center;
             transform: translateX(38%) translateZ(-220px) rotateY(-28deg) scale(0.92);
+        }
+        @keyframes cardToFront {
+            0%   { transform: translateX(38%) translateZ(-220px) rotateY(-28deg) scale(0.92);
+                   filter: brightness(0.45) saturate(0.7); z-index: 15; }
+            50%  { transform: translateX(55%) translateZ(180px)  rotateY(-18deg) scale(1.02);
+                   filter: brightness(0.9) saturate(0.95); z-index: 22; }
+            100% { transform: translateX(0)   translateZ(0)      rotateY(0deg)   scale(1);
+                   filter: brightness(1) saturate(1); z-index: 20; }
+        }
+        @keyframes cardToBack {
+            0%   { transform: translateX(0)    translateZ(0)      rotateY(0deg)   scale(1);
+                   filter: brightness(1) saturate(1); z-index: 18; }
+            50%  { transform: translateX(-22%) translateZ(180px)  rotateY(20deg)  scale(1.02);
+                   filter: brightness(0.9) saturate(0.95); z-index: 12; }
+            100% { transform: translateX(38%)  translateZ(-220px) rotateY(-28deg) scale(0.92);
+                   filter: brightness(0.45) saturate(0.7); z-index: 10; }
         }
     }
 </style>
