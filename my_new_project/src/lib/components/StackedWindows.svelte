@@ -147,11 +147,11 @@
         filter: brightness(0.45) saturate(0.7);
         box-shadow: 0 10px 30px -5px rgba(0,0,0,0.6);
     }
-    /* Desktop — full-width cards with deeper 3D peek */
+    /* Desktop — full-width cards with deeper 3D peek (back card peeks to the RIGHT) */
     @media (min-width: 768px) {
         .card-back {
-            transform-origin: right center;
-            transform: translateX(-28%) translateZ(-220px) rotateY(28deg) scale(0.92);
+            transform-origin: left center;
+            transform: translateX(38%) translateZ(-220px) rotateY(-28deg) scale(0.92);
         }
     }
 </style>
