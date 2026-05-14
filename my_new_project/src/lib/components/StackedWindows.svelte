@@ -130,6 +130,7 @@
     }
     .card {
         backface-visibility: visible;
+        transition: filter 1800ms ease, box-shadow 1800ms ease;
     }
     /* Mobile defaults — front anchored right, back peeks left inside wrap */
     .card-front {
@@ -150,20 +151,14 @@
 
     /* Mobile keyframes — back peeks LEFT, so cards arc away from each other through forward space */
     @keyframes cardToFront {
-        0%   { transform: translateX(-22%) translateZ(-100px) rotateY(20deg) scale(0.92);
-               filter: brightness(0.45) saturate(0.7); z-index: 15; }
-        50%  { transform: translateX(-10%) translateZ(30px)  rotateY(10deg) scale(0.96);
-               filter: brightness(0.85) saturate(0.9); z-index: 22; }
-        100% { transform: translateX(0)    translateZ(0)     rotateY(0deg)  scale(1);
-               filter: brightness(1) saturate(1); z-index: 20; }
+        0%   { transform: translateX(-22%) translateZ(-100px) rotateY(20deg) scale(0.92); z-index: 15; }
+        50%  { transform: translateX(-10%) translateZ(30px)  rotateY(10deg) scale(0.96); z-index: 22; }
+        100% { transform: translateX(0)    translateZ(0)     rotateY(0deg)  scale(1); z-index: 20; }
     }
     @keyframes cardToBack {
-        0%   { transform: translateX(0)    translateZ(0)     rotateY(0deg)   scale(1);
-               filter: brightness(1) saturate(1); z-index: 18; }
-        50%  { transform: translateX(8%)   translateZ(30px)  rotateY(-8deg)  scale(0.96);
-               filter: brightness(0.85) saturate(0.9); z-index: 12; }
-        100% { transform: translateX(-22%) translateZ(-100px) rotateY(20deg) scale(0.92);
-               filter: brightness(0.45) saturate(0.7); z-index: 10; }
+        0%   { transform: translateX(0)    translateZ(0)     rotateY(0deg)   scale(1); z-index: 18; }
+        50%  { transform: translateX(8%)   translateZ(30px)  rotateY(-8deg)  scale(0.96); z-index: 12; }
+        100% { transform: translateX(-22%) translateZ(-100px) rotateY(20deg) scale(0.92); z-index: 10; }
     }
 
     /* Desktop — back peeks RIGHT, full-width cards. Cards arc through forward space passing each other. */
@@ -175,20 +170,14 @@
         /* Desktop swap: back card never overshoots past +38% (avoids right ads sidebar).
            Front detours LEFT to clear room, back card slides smoothly into center. */
         @keyframes cardToFront {
-            0%   { transform: translateX(38%) translateZ(-220px) rotateY(-28deg) scale(0.92);
-                   filter: brightness(0.45) saturate(0.7); z-index: 15; }
-            50%  { transform: translateX(20%) translateZ(40px)   rotateY(-14deg) scale(0.97);
-                   filter: brightness(0.9) saturate(0.95); z-index: 22; }
-            100% { transform: translateX(0)   translateZ(0)      rotateY(0deg)   scale(1);
-                   filter: brightness(1) saturate(1); z-index: 20; }
+            0%   { transform: translateX(38%) translateZ(-220px) rotateY(-28deg) scale(0.92); z-index: 15; }
+            50%  { transform: translateX(20%) translateZ(40px)   rotateY(-14deg) scale(0.97); z-index: 22; }
+            100% { transform: translateX(0)   translateZ(0)      rotateY(0deg)   scale(1); z-index: 20; }
         }
         @keyframes cardToBack {
-            0%   { transform: translateX(0)    translateZ(0)      rotateY(0deg)   scale(1);
-                   filter: brightness(1) saturate(1); z-index: 18; }
-            50%  { transform: translateX(-12%) translateZ(40px)   rotateY(12deg)  scale(0.97);
-                   filter: brightness(0.9) saturate(0.95); z-index: 12; }
-            100% { transform: translateX(38%)  translateZ(-220px) rotateY(-28deg) scale(0.92);
-                   filter: brightness(0.45) saturate(0.7); z-index: 10; }
+            0%   { transform: translateX(0)    translateZ(0)      rotateY(0deg)   scale(1); z-index: 18; }
+            50%  { transform: translateX(-12%) translateZ(40px)   rotateY(12deg)  scale(0.97); z-index: 12; }
+            100% { transform: translateX(38%)  translateZ(-220px) rotateY(-28deg) scale(0.92); z-index: 10; }
         }
     }
 </style>
