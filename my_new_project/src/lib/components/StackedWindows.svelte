@@ -12,6 +12,7 @@
     const LS_LAST = 'stackedWindows.lastActive';
 
     let active: 'vote' | 'chat' = $state('vote');
+    let noAnim = $state(true);
     let stackEl: HTMLElement | undefined = $state();
 
     onMount(() => {
@@ -21,7 +22,7 @@
             if (last === 'vote' || last === 'chat') target = last;
         } catch {}
 
-        // Start with the OPPOSITE of target so the toggle animation runs and ends on target.
+        // Start silently in the OPPOSITE of target (no animation on first paint).
         const opposite: 'vote' | 'chat' = target === 'vote' ? 'chat' : 'vote';
         active = opposite;
 
@@ -30,7 +31,11 @@
             if (played) return;
             played = true;
             window.removeEventListener('scroll', tryDemo);
-            setTimeout(() => { active = target; }, 900);
+            // Single, clean swap to the target — only animation the user sees on entry.
+            setTimeout(() => {
+                noAnim = false;
+                active = target;
+            }, 600);
         };
 
         const tryDemo = () => {
@@ -47,12 +52,13 @@
     });
 
     function bringFront(which: 'vote' | 'chat') {
+        if (noAnim) noAnim = false;
         active = which;
         try { localStorage.setItem(LS_LAST, which); } catch {}
     }
 </script>
 
-<div class="stack-wrap relative w-full max-w-md mx-auto overflow-hidden md:overflow-visible" style="perspective: 1400px;">
+<div class="stack-wrap relative w-full max-w-md mx-auto overflow-hidden md:overflow-visible {noAnim ? 'no-anim' : ''}" style="perspective: 1400px;">
     <!-- Title -->
     <div class="text-center mt-4 md:mt-8 mb-3 md:mb-4">
         <h2 class="text-base md:text-3xl font-black bg-gradient-to-r from-purple-300 via-blue-300 to-cyan-300 bg-clip-text text-transparent">
@@ -131,6 +137,13 @@
     .card {
         backface-visibility: visible;
         transition: filter 1800ms ease, box-shadow 1800ms ease;
+    }
+    /* Suppress all animation/transition before the demo swap fires (prevents mount jumps) */
+    .no-anim .card,
+    .no-anim .card-front,
+    .no-anim .card-back {
+        animation: none !important;
+        transition: none !important;
     }
     /* Mobile defaults — front anchored right, back peeks left inside wrap */
     .card-front {
