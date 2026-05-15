@@ -105,7 +105,7 @@
             <div class="w-full h-full overflow-x-hidden overflow-y-auto no-scrollbar bg-[#0b1020] p-3 flex flex-col">
                 <h3 class="text-base md:text-lg font-bold text-white mb-3 text-center flex items-center justify-center gap-2 flex-shrink-0">
                     <svg class="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                        <path d="M12 2C6.48 2 2 6.04 2 11c0 2.6 1.23 4.94 3.2 6.56-.1 1.2-.5 2.86-1.7 4.44 1.9-.2 3.7-.9 5.1-1.9 1.05.3 2.18.46 3.4.46 5.52 0 10-4.04 10-9.56S17.52 2 12 2z"/>
                     </svg>
                     שיח פתוח
                 </h3>
