@@ -2477,8 +2477,8 @@
         }
 
         /* Add margin to map container */
-        .relative.w-full.border-4 {
-            margin-top: 28px !important;
+        .relative.w-full.border-8 {
+            margin-top: 8px !important;
         }
 
         /* Make triangle button smaller on mobile */
