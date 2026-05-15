@@ -40,7 +40,7 @@
 
 <section
     aria-label="חדשות ארציות"
-    class="news-ticker-container border-b border-blue-900/30 bg-[#0f172a]/90 pt-4 pb-2 backdrop-blur-md"
+    class="news-ticker-container border-b border-blue-900/30 bg-[#0f172a]/90 pt-4 pb-0 backdrop-blur-md"
 >
     <!-- תוכן נגיש לקוראי מסך (מוסתר ויזואלית) -->
     <ul class="sr-only">
@@ -68,7 +68,7 @@
         </div>
 
         <!-- Scrolling Content -->
-        <div class="overflow-hidden flex-grow relative h-16">
+        <div class="overflow-hidden flex-grow relative h-14">
             <div
                 class="ticker-content flex gap-16 items-center absolute right-0 whitespace-nowrap h-full"
                 class:paused

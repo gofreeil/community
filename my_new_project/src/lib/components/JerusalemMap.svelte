@@ -184,6 +184,30 @@
 
     // מובייל: bottom sheet עם כל הקטגוריות
     let showCategorySheet = $state(false);
+    let sheetDragY = $state(0);
+    let sheetDragStartY = 0;
+    let sheetDragging = false;
+
+    function onSheetDragStart(e: PointerEvent) {
+        sheetDragging = true;
+        sheetDragStartY = e.clientY;
+        sheetDragY = 0;
+        (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    }
+    function onSheetDragMove(e: PointerEvent) {
+        if (!sheetDragging) return;
+        const dy = e.clientY - sheetDragStartY;
+        sheetDragY = Math.max(0, dy);
+    }
+    function onSheetDragEnd(e: PointerEvent) {
+        if (!sheetDragging) return;
+        sheetDragging = false;
+        try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
+        if (sheetDragY > 80) {
+            showCategorySheet = false;
+        }
+        sheetDragY = 0;
+    }
     const benefitsCat = categories.find(c => c.id === 'benefits') ?? categories[0];
     const otherCats = categories.filter(c => c.id !== 'benefits');
 
@@ -1034,21 +1058,24 @@
                     <!-- Sheet -->
                     <div
                         class="md:hidden fixed bottom-0 left-0 right-0 z-[10001] bg-[#0f172a] border-t-2 border-purple-500 rounded-t-2xl shadow-2xl max-h-[80vh] flex flex-col"
-                        style="animation: sheetSlideUp 0.25s ease-out;"
+                        style="animation: sheetSlideUp 0.25s ease-out; transform: translateY({sheetDragY}px); transition: {sheetDragging ? 'none' : 'transform 0.2s ease-out'};"
                         role="dialog"
                         aria-label="סינון קטגוריות"
                     >
                         <!-- Drag handle + header -->
-                        <div class="pt-2 pb-1 flex flex-col items-center shrink-0">
-                            <div class="w-12 h-1.5 rounded-full bg-white/30 mb-2"></div>
-                            <div class="w-full px-4 flex items-center justify-between">
-                                <h3 class="text-white font-bold text-base">🎛️ סנן יתרונות</h3>
-                                <button
-                                    type="button"
-                                    onclick={() => (showCategorySheet = false)}
-                                    class="text-white/70 hover:text-white text-2xl leading-none px-2"
-                                    aria-label="סגור"
-                                >×</button>
+                        <div
+                            class="pt-2 pb-1 flex flex-col items-center shrink-0 cursor-grab active:cursor-grabbing touch-none select-none"
+                            onpointerdown={onSheetDragStart}
+                            onpointermove={onSheetDragMove}
+                            onpointerup={onSheetDragEnd}
+                            onpointercancel={onSheetDragEnd}
+                            role="button"
+                            tabindex="0"
+                            aria-label="גרור למטה כדי לסגור"
+                        >
+                            <div class="w-16 h-1.5 rounded-full bg-white/40 mb-2"></div>
+                            <div class="w-full px-4 flex items-center justify-end">
+                                <h3 class="text-white font-bold text-lg">🎛️ סנן יתרונות</h3>
                             </div>
                         </div>
                         <!-- Grid of all categories -->
@@ -1059,9 +1086,9 @@
                                     onclick={() => { handleCategoryClick(benefitsCat.id); showCategorySheet = false; }}
                                     class="flex flex-col items-center justify-center gap-1 {selectedCategory === benefitsCat.id
                                         ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-gray-900 border-yellow-500 ring-2 ring-yellow-300'
-                                        : 'bg-gradient-to-br from-yellow-400 to-orange-500 text-gray-900 border-yellow-500'} px-6 py-3 rounded-xl text-xs font-bold shadow-md active:scale-95 border map-category-button min-h-[68px] w-[42%]"
+                                        : 'bg-gradient-to-br from-yellow-400 to-orange-500 text-gray-900 border-yellow-500'} px-6 py-3 rounded-xl text-sm font-bold shadow-md active:scale-95 border map-category-button min-h-[72px] w-[42%]"
                                 >
-                                    <span class="text-2xl leading-none">{benefitsCat.icon}</span>
+                                    <span class="text-3xl leading-none">{benefitsCat.icon}</span>
                                     <span class="leading-tight text-center">{benefitsCat.label}</span>
                                 </button>
                             </div>
@@ -1072,13 +1099,13 @@
                                         onclick={() => { handleCategoryClick(category.id); showCategorySheet = false; }}
                                         class="flex flex-col items-center justify-center gap-1 {selectedCategory === category.id
                                             ? 'bg-gradient-to-br from-purple-600 to-blue-600 text-white border-purple-500 ring-2 ring-purple-300'
-                                            : 'bg-gradient-to-br from-white to-gray-200 text-gray-900 border-purple-300'} px-1 py-2.5 rounded-xl text-[10px] font-bold shadow-md active:scale-95 border map-category-button min-h-[64px]"
+                                            : 'bg-gradient-to-br from-white to-gray-200 text-gray-900 border-purple-300'} px-1 py-2.5 rounded-xl text-xs font-bold shadow-md active:scale-95 border map-category-button min-h-[70px]"
                                     >
                                         {#if category.icon?.startsWith('/')}
-                                            <img src={category.icon} class="w-6 h-6" alt={category.label} />
+                                            <img src={category.icon} class="w-7 h-7" alt={category.label} />
                                         {:else}
                                             <span
-                                                class="text-xl leading-none"
+                                                class="text-2xl leading-none"
                                                 style={category.id === "realestate"
                                                     ? "letter-spacing: -0.25em; margin-left: 0.15em; display: inline-block;"
                                                     : ""}>{category.icon}</span
@@ -2451,7 +2478,7 @@
 
         /* Add margin to map container */
         .relative.w-full.border-4 {
-            margin-top: 8px !important;
+            margin-top: 20px !important;
         }
 
         /* Make triangle button smaller on mobile */

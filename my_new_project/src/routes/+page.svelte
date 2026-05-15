@@ -386,7 +386,7 @@
     </div>
 
     <!-- Map + Referendum + Sidebar (unified desktop layout) -->
-    <section class="max-w-7xl mx-auto px-4 mt-1 md:mt-4 mb-8">
+    <section class="max-w-7xl mx-auto px-4 mt-3 md:mt-4 mb-8">
         <!-- Desktop: left column (map+referendum) + right column (3 boards) -->
         <div class="hidden lg:flex gap-4">
             <!-- Left column (3/4): Map on top, Referendum below -->
