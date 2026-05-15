@@ -4,7 +4,6 @@
     import JerusalemMap from "$lib/components/JerusalemMap.svelte";
     import NewsTicker from "$lib/components/NewsTicker.svelte";
     import LostAndFound from "$lib/components/LostAndFound.svelte";
-    import FacebookComments from "$lib/components/FacebookComments.svelte";
     import CoaliEmbed from "$lib/components/CoaliEmbed.svelte";
     import ReferendumBanner from "$lib/components/ReferendumBanner.svelte";
     import StackedWindows from "$lib/components/StackedWindows.svelte";

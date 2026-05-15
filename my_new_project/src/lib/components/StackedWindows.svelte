@@ -2,7 +2,7 @@
     import { onMount } from 'svelte';
     import CoaliEmbed from './CoaliEmbed.svelte';
     import ReferendumBanner from './ReferendumBanner.svelte';
-    import FacebookComments from './FacebookComments.svelte';
+    import NeighborhoodChat from './NeighborhoodChat.svelte';
 
     interface Props {
         showCoali?: boolean;
@@ -110,7 +110,7 @@
                     שיח פתוח
                 </h3>
                 <div class="flex-1 min-h-0 overflow-x-hidden overflow-y-auto no-scrollbar">
-                    <FacebookComments numPosts={10} />
+                    <NeighborhoodChat />
                 </div>
             </div>
             {#if active !== 'chat'}
