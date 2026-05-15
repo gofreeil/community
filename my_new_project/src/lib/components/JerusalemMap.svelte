@@ -604,7 +604,7 @@
             [33.45, 36.0]  // צפון-מזרח (מאפשר טימרון למזרח גם)
         );
         leafletMap = leafletL.map(mapEl, {
-            zoomControl: true,
+            zoomControl: false,
             attributionControl: true,
             scrollWheelZoom: true,
             maxBounds: israelBounds,
@@ -2478,7 +2478,7 @@
 
         /* Add margin to map container */
         .relative.w-full.border-4 {
-            margin-top: 20px !important;
+            margin-top: 28px !important;
         }
 
         /* Make triangle button smaller on mobile */
