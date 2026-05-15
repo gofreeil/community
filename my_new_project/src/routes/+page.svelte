@@ -238,7 +238,7 @@
     <section class="max-w-7xl mx-auto px-4">
         <div class="text-center mb-3 md:mb-8 relative neighborhoods-menu-container">
             <!-- Mobile: title with button on left side -->
-            <div class="md:hidden mb-4">
+            <div class="md:hidden mb-2">
                 <div class="relative group text-center mb-0 w-full">
                     <h2
                         class="text-[1.6rem] md:text-2xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent cursor-default leading-tight w-full line-clamp-2 break-words"
@@ -259,7 +259,7 @@
                         class="relative group w-full text-center pointer-events-none"
                     >
                         <h2
-                            class="text-[1.6rem] md:text-2xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent cursor-default leading-normal pb-2"
+                            class="text-[1.6rem] md:text-2xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent cursor-default leading-[1.3]"
                         >
                             {neighborhoodState.city}
                         </h2>
