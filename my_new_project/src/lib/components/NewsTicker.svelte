@@ -40,7 +40,7 @@
 
 <section
     aria-label="חדשות ארציות"
-    class="news-ticker-container border-b border-blue-900/30 bg-[#0f172a]/90 py-4 backdrop-blur-md"
+    class="news-ticker-container border-b border-blue-900/30 bg-[#0f172a]/90 pt-4 pb-2 backdrop-blur-md"
 >
     <!-- תוכן נגיש לקוראי מסך (מוסתר ויזואלית) -->
     <ul class="sr-only">
