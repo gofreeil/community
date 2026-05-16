@@ -202,7 +202,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
     },
 
     rides: {
-        label: 'טרמפים',
+        label: 'טרמפים ומסירות',
         icon: '🚗',
         color: 'green',
         priceRow: null,

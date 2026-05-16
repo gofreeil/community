@@ -116,7 +116,7 @@
         },
         {
             id: "rides",
-            label: "טרמפים",
+            label: "טרמפים ומסירות",
             icon: "🚗",
             items: [
                 { id: "ride-jerusalem", label: "טרמפ יומי לירושלים (7:00)" },
@@ -360,6 +360,7 @@
         jobs:        '/national/jobs',
         restaurants: '/national/restaurants',
         halls:       '/national/halls',
+        rides:       '/rides',
         business:    '/babysitters',
         realestate:  '/shabbat-hosting',
         education:   '/chugim',

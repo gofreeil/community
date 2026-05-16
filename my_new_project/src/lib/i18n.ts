@@ -40,7 +40,7 @@ register('he', () => Promise.resolve({
     for_kids: "לילדים",
     shops: "חנויות",
     restaurants: "מזון ומסעדות",
-    rides: "טרמפים",
+    rides: "טרמפים ומסירות",
 
     // פריטי קטגוריות
     restaurant: "מסעדה",
@@ -266,7 +266,7 @@ register('en', () => Promise.resolve({
     for_kids: "For Kids",
     shops: "Shops",
     restaurants: "Food & Restaurants",
-    rides: "Rideshare",
+    rides: "Rideshare & Deliveries",
 
     restaurant: "Restaurant",
     fast_food: "Fast Food",
@@ -481,7 +481,7 @@ register('ru', () => Promise.resolve({
     for_kids: "Для детей",
     shops: "Магазины",
     restaurants: "Еда и рестораны",
-    rides: "Поездки",
+    rides: "Поездки и доставки",
 
     restaurant: "Ресторан",
     fast_food: "Быстрое питание",

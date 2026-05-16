@@ -10,8 +10,8 @@
         neighborhoodState.init(data.userNeighborhood ?? null, data.userCity ?? null);
     });
 
-    type Direction = 'all' | 'driver' | 'passenger';
-    let filter = $state<Direction>('all');
+    type Role = 'all' | 'courier' | 'sender';
+    let filter = $state<Role>('all');
 
     function getField(extraFields: string, key: string): string {
         try { return JSON.parse(extraFields)?.[key] ?? ''; }
@@ -26,10 +26,10 @@
     let filtered = $derived(
         filter === 'all'
             ? data.items
-            : data.items.filter(i => getField(i.extra_fields, 'direction') === filter)
+            : data.items.filter(i => getField(i.extra_fields, 'role') === filter)
     );
 
-    // ====== חלוקה ל-4 קומות (קרבה למשתמש) — בטרמפים מתחשבים גם ב-from וגם ב-to ======
+    // ====== חלוקה ל-4 קומות (קרבה למשתמש) ======
     function haversineKm(a: Coord, b: Coord): number {
         const toRad = (d: number) => (d * Math.PI) / 180;
         const R = 6371;
@@ -42,9 +42,9 @@
     }
     const SECTION_TITLES = ['בשכונה שלי', 'בעיר שלי', 'בערים סביבי', 'ארצי'];
 
-    type RideItem = (typeof data.items)[number];
+    type DeliveryItem = (typeof data.items)[number];
 
-    function sectionForRide(it: RideItem): number {
+    function sectionFor(it: DeliveryItem): number {
         const uN = neighborhoodState.neighborhood;
         const uC = neighborhoodState.city;
         const uCoord = getCoordsFor(uN, uC);
@@ -58,9 +58,9 @@
         return 3;
     }
 
-    type Sectioned = RideItem & { _section: number };
+    type Sectioned = DeliveryItem & { _section: number };
     let groupedSections = $derived.by(() => {
-        const enriched: Sectioned[] = filtered.map((it: RideItem) => ({ ...it, _section: sectionForRide(it) }));
+        const enriched: Sectioned[] = filtered.map((it: DeliveryItem) => ({ ...it, _section: sectionFor(it) }));
         const sorted = enriched.sort((a, b) => a._section - b._section);
         const groups: { section: number; items: Sectioned[] }[] = [];
         for (const it of sorted) {
@@ -73,18 +73,18 @@
 </script>
 
 <svelte:head>
-    <title>לוח טרמפים | קהילה בשכונה</title>
+    <title>לוח מסירות חבילות | קהילה בשכונה</title>
 </svelte:head>
 
 <div class="min-h-screen bg-[#070b14] pt-6 pb-20 px-4" dir="rtl">
     <div class="max-w-4xl mx-auto">
         <div class="text-center mb-6">
-            <span class="text-5xl mb-3 block">🚗</span>
-            <h1 class="text-3xl font-black text-white mb-2">לוח טרמפים</h1>
-            <p class="text-gray-400">לוח ארצי — נסיעות משותפות בכל רחבי הארץ</p>
+            <span class="text-5xl mb-3 block">📦</span>
+            <h1 class="text-3xl font-black text-white mb-2">לוח מסירות חבילות</h1>
+            <p class="text-gray-400">לוח ארצי — נהגים מתנדבים מעבירים חבילות בדרך, בחסד</p>
         </div>
 
-        <div class="flex justify-center gap-2 mb-6">
+        <div class="flex justify-center gap-2 mb-6 flex-wrap">
             <button
                 onclick={() => filter = 'all'}
                 class="px-5 py-2 rounded-full text-sm font-bold transition-all {filter === 'all' ? 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white shadow-lg' : 'bg-white/10 text-gray-400 hover:bg-white/15'}"
@@ -92,37 +92,37 @@
                 🌍 הכל
             </button>
             <button
-                onclick={() => filter = 'driver'}
-                class="px-5 py-2 rounded-full text-sm font-bold transition-all {filter === 'driver' ? 'bg-gradient-to-r from-green-500 to-teal-500 text-white shadow-lg' : 'bg-white/10 text-gray-400 hover:bg-white/15'}"
+                onclick={() => filter = 'courier'}
+                class="px-5 py-2 rounded-full text-sm font-bold transition-all {filter === 'courier' ? 'bg-gradient-to-r from-green-500 to-teal-500 text-white shadow-lg' : 'bg-white/10 text-gray-400 hover:bg-white/15'}"
             >
-                🚙 מציעים טרמפ
+                🚚 נהגים בדרך
             </button>
             <button
-                onclick={() => filter = 'passenger'}
-                class="px-5 py-2 rounded-full text-sm font-bold transition-all {filter === 'passenger' ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg' : 'bg-white/10 text-gray-400 hover:bg-white/15'}"
+                onclick={() => filter = 'sender'}
+                class="px-5 py-2 rounded-full text-sm font-bold transition-all {filter === 'sender' ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg' : 'bg-white/10 text-gray-400 hover:bg-white/15'}"
             >
-                🙋 מחפשים טרמפ
+                📦 חבילות למסירה
             </button>
         </div>
 
         <div class="flex justify-center gap-2 mb-6 flex-wrap">
             <a
-                href="/rides/add"
+                href="/deliveries/add"
                 class="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold px-6 py-3 rounded-full shadow-lg hover:shadow-blue-500/25 transition-all hover:scale-105"
             >
                 <span class="text-lg">➕</span>
-                פרסם טרמפ חדש
+                פרסם מודעה חדשה
             </a>
             <a
-                href="/deliveries"
+                href="/rides"
                 class="inline-flex items-center gap-2 bg-white/10 hover:bg-white/15 text-gray-300 font-bold px-6 py-3 rounded-full transition-all"
             >
-                📦 ללוח מסירת חבילות
+                🚗 ללוח הטרמפים
             </a>
         </div>
 
         <div class="text-center mb-6">
-            <p class="text-gray-500 text-sm">🚗 {filtered.length} טרמפים פעילים</p>
+            <p class="text-gray-500 text-sm">📦 {filtered.length} מודעות פעילות</p>
         </div>
 
         {#each groupedSections as group (group.section)}
@@ -140,21 +140,21 @@
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             {#each group.items as item}
-                {@const direction = getField(item.extra_fields, 'direction')}
-                {@const isDriver  = direction === 'driver'}
-                {@const from      = getField(item.extra_fields, 'from')      || item.address}
-                {@const to        = getField(item.extra_fields, 'to')        || ''}
-                {@const date      = getField(item.extra_fields, 'date')      || ''}
-                {@const time      = getField(item.extra_fields, 'time')      || ''}
-                {@const seats     = getField(item.extra_fields, 'seats')     || ''}
-                <div class="rounded-2xl bg-[#0f172a] border {isDriver ? 'border-green-500/30' : 'border-orange-500/30'} overflow-hidden shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1">
-                    <div class="bg-gradient-to-r {isDriver ? 'from-green-600 to-teal-600' : 'from-orange-600 to-amber-500'} p-4 flex items-center gap-3">
+                {@const role     = getField(item.extra_fields, 'role')}
+                {@const isCourier = role === 'courier'}
+                {@const from     = getField(item.extra_fields, 'from')  || item.address}
+                {@const to       = getField(item.extra_fields, 'to')    || ''}
+                {@const date     = getField(item.extra_fields, 'date')  || ''}
+                {@const time     = getField(item.extra_fields, 'time')  || ''}
+                {@const pkg      = getField(item.extra_fields, 'item')  || ''}
+                <div class="rounded-2xl bg-[#0f172a] border {isCourier ? 'border-green-500/30' : 'border-orange-500/30'} overflow-hidden shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1">
+                    <div class="bg-gradient-to-r {isCourier ? 'from-green-600 to-teal-600' : 'from-orange-600 to-amber-500'} p-4 flex items-center gap-3">
                         <div class="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-2xl flex-shrink-0">
-                            {isDriver ? '🚙' : '🙋'}
+                            {isCourier ? '🚚' : '📦'}
                         </div>
                         <div class="min-w-0">
                             <h3 class="text-white font-black text-lg">{item.label}</h3>
-                            <p class="text-white/80 text-sm truncate">{isDriver ? 'מציע/ה טרמפ' : 'מחפש/ת טרמפ'}</p>
+                            <p class="text-white/80 text-sm truncate">{isCourier ? 'נהג/ת מתנדב/ת — מעביר/ה חבילות בדרך' : 'מחפש/ת נהג שיעביר חבילה'}</p>
                         </div>
                     </div>
                     <div class="p-4">
@@ -170,10 +170,10 @@
                                 <span>{date} {time}</span>
                             </div>
                         {/if}
-                        {#if seats}
+                        {#if pkg}
                             <div class="flex items-center gap-2 text-gray-300 text-sm mb-3">
-                                <span class="text-base">💺</span>
-                                <span>{seats} מקומות</span>
+                                <span class="text-base">📦</span>
+                                <span>{pkg}</span>
                             </div>
                         {/if}
                         {#if item.description}
@@ -205,8 +205,8 @@
 
         {#if filtered.length === 0}
             <div class="text-center py-16">
-                <span class="text-5xl mb-4 block">🚗</span>
-                <p class="text-gray-400 text-lg">אין טרמפים בקטגוריה זו כרגע</p>
+                <span class="text-5xl mb-4 block">📦</span>
+                <p class="text-gray-400 text-lg">אין מודעות בקטגוריה זו כרגע</p>
                 <p class="text-gray-500 text-sm mt-2">היה הראשון לפרסם!</p>
             </div>
         {/if}
