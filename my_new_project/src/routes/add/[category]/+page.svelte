@@ -592,6 +592,17 @@
                     {#if field.hint && field.type !== 'toggle'}
                         <p class="text-gray-300 text-sm mt-1">{field.hint}</p>
                     {/if}
+
+                    {#if field.key === 'club_discount' && categoryId === 'restaurants'}
+                        <a
+                            href="/club-discounts"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="inline-flex items-center gap-1.5 mt-2 text-pink-300 hover:text-pink-200 text-sm font-bold underline underline-offset-2 transition-colors"
+                        >
+                            🎟️ למה כדאי לתת הנחה לחברי המועדון של יוצאים לחירות?
+                        </a>
+                    {/if}
                 </div>
                 {/if}
             {/each}
