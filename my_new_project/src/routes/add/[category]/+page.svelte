@@ -197,7 +197,12 @@
     function validate(): string | null {
         for (const field of config.fields) {
             if (!isFieldVisible(field)) continue;
-            if (field.required && !formValues[field.key]?.trim()) {
+            if (!field.required) continue;
+            if (field.type === 'images') {
+                let count = 0;
+                try { count = JSON.parse(formValues[field.key] || '[]').length; } catch { count = 0; }
+                if (count === 0) return `השדה "${field.label}" הוא חובה`;
+            } else if (!formValues[field.key]?.trim()) {
                 return `השדה "${field.label}" הוא חובה`;
             }
         }

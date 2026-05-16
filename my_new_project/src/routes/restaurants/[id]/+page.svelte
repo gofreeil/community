@@ -31,7 +31,6 @@
     let wazeLink    = $derived(str(E.waze_link));
     let gmapsLink   = $derived(str(E.gmaps_link));
     let transport   = $derived(str(E.transport));
-    let website     = $derived(str(E.website));
     let facebook    = $derived(str(E.facebook));
     let instagram   = $derived(str(E.instagram));
     let customLabel = $derived(str(E.custom_link_label));
@@ -281,16 +280,10 @@
         {/if}
 
         <!-- ===== קישורים ===== -->
-        {#if website || facebook || instagram || (customLabel && customUrl)}
+        {#if facebook || instagram || (customLabel && customUrl)}
             <div class="bg-[#0f172a] border border-white/10 rounded-2xl p-5 mb-6">
                 <h2 class="text-white font-black text-base mb-3">קישורים</h2>
                 <div class="flex flex-wrap gap-2">
-                    {#if website}
-                        <a href={website} target="_blank" rel="noopener noreferrer"
-                           class="bg-white/5 hover:bg-white/10 border border-white/15 text-white text-sm font-bold px-4 py-2 rounded-xl transition-colors">
-                            🌐 אתר / תפריט
-                        </a>
-                    {/if}
                     {#if facebook}
                         <a href={facebook} target="_blank" rel="noopener noreferrer"
                            class="bg-blue-600/80 hover:bg-blue-500 text-white text-sm font-bold px-4 py-2 rounded-xl transition-colors">
