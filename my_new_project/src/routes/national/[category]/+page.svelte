@@ -2,6 +2,8 @@
 	import { onMount } from 'svelte';
 	import { neighborhoodState } from '$lib/neighborhoodState.svelte';
 	import { getCoordsFor, type Coord } from '$lib/neighborhoodCoords';
+	import RestaurantReviewsModal from '$lib/components/RestaurantReviewsModal.svelte';
+	import { getRatingSummary } from '$lib/restaurantReviews';
 
 	// טיפוס מקומי — לא מייבאים מ-$lib/server (אסור בקומפוננטת client)
 	interface Item {
@@ -24,6 +26,14 @@
 	let foodTypeFilter = $state<'all' | 'fast' | 'restaurant'>('all'); // לקטגוריית restaurants
 	let hallUsageFilter = $state<'all' | 'events' | 'classes'>('all'); // לקטגוריית halls
 	let topTenOnly    = $state(false);
+
+	// סינונים ייחודיים למסעדות
+	let deliveryOnly      = $state(false);
+	let seatingOnly       = $state(false);
+	let clubDiscountOnly  = $state(false);
+
+	// מודל דירוגים ותגובות
+	let reviewsModalItem = $state<Item | null>(null);
 
 	function hallMatchesUsage(item: Item, usage: 'events' | 'classes'): boolean {
 		try {
@@ -59,6 +69,136 @@
 			return false;
 		}
 	}
+
+	// ====== עוזרים לקריאת שדות מסעדה מתוך extra_fields ======
+	function restField(item: Item, key: string): string {
+		try {
+			const ef = item.extra_fields ? JSON.parse(item.extra_fields) : {};
+			const v = ef[key];
+			return Array.isArray(v) ? v.join(', ') : String(v ?? '');
+		} catch {
+			return '';
+		}
+	}
+	function restList(item: Item, key: string): string[] {
+		try {
+			const ef = item.extra_fields ? JSON.parse(item.extra_fields) : {};
+			const v = ef[key];
+			if (Array.isArray(v)) return v.map((s) => String(s).trim()).filter(Boolean);
+			return String(v ?? '').split(',').map((s) => s.trim()).filter(Boolean);
+		} catch {
+			return [];
+		}
+	}
+	function hasDelivery(item: Item): boolean {
+		return restList(item, 'service').includes('משלוחים');
+	}
+	function hasSeating(item: Item): boolean {
+		return restList(item, 'service').includes('ישיבה במקום');
+	}
+	function hasClubDiscount(item: Item): boolean {
+		return restField(item, 'club_discount') === 'יש הנחה';
+	}
+
+	// ====== Mock fallback למסעדות (דוגמאות עד שיש פריטים אמיתיים) ======
+	function ago(hours: number): string {
+		return new Date(Date.now() - 1000 * 60 * 60 * hours).toISOString();
+	}
+	const mockRestaurants: Item[] = [
+		{
+			id: 'mock-rest-1', label: 'פיצה קרית משה',
+			description: 'פיצרייה משפחתית עם בצק דק במקום, מבחר תוספות טריות ופינת ישיבה נעימה.',
+			icon: '🍕', city: 'ירושלים', neighborhood: 'קרית משה',
+			phone: '02-6519988', contact: 'משה', category: 'restaurants',
+			created_at: ago(5), status: 'active',
+			extra_fields: JSON.stringify({
+				food_type: 'פיצה', price_range: '₪₪ — בינוני', kosher: 'כשר למהדרין',
+				service: ['ישיבה במקום', 'טייק-אווי', 'משלוחים'],
+				delivery_by: ['שליח עצמאי', 'Wolt'],
+				amenities: ['מתאים למשפחות', 'פינת ילדים', 'Wi-Fi חופשי'],
+				club_discount: 'יש הנחה', club_discount_detail: '10% הנחה לחברי מועדון בהצגת כרטיס',
+				hours: 'א-ה 11:00-23:00, מוצ"ש משעה לאחר צאת השבת',
+			}),
+			view_count: 412,
+		},
+		{
+			id: 'mock-rest-2', label: 'פלאפל הנסיך',
+			description: 'דוכן פלאפל ותיק — מנה חמה, סלטים ביתיים וחומוס טחון במקום.',
+			icon: '🧆', city: 'ירושלים', neighborhood: 'קרית משה',
+			phone: '054-7712233', contact: 'יענקי', category: 'restaurants',
+			created_at: ago(20), status: 'active',
+			extra_fields: JSON.stringify({
+				food_type: 'פלאפל, חומוס', price_range: '₪ — זול', kosher: 'כשר',
+				service: ['טייק-אווי'],
+				amenities: ['נגישות לכיסא גלגלים'],
+				club_discount: 'יש הנחה', club_discount_detail: 'מנה 11 חינם לחברי מועדון',
+				hours: 'א-ה 09:00-19:00, שישי 09:00-14:00',
+			}),
+			view_count: 287,
+		},
+		{
+			id: 'mock-rest-3', label: 'מסעדת הגליל',
+			description: 'מסעדה בשרית עם תפריט עשיר, אווירה חמה ואפשרות הזמנת מקום לאירועים קטנים.',
+			icon: '🍷', city: 'ירושלים', neighborhood: 'בקעה',
+			phone: '02-5667788', contact: 'הנהלת המסעדה', category: 'restaurants',
+			created_at: ago(30), status: 'active',
+			extra_fields: JSON.stringify({
+				food_type: 'בשרים, מטבח ים-תיכוני', price_range: '₪₪₪ — יקר', kosher: 'כשר למהדרין',
+				service: ['ישיבה במקום', 'הזמנת מקום מראש'],
+				amenities: ['ישיבה בחוץ', 'חניה', 'אפשרות הפרדה'],
+				club_discount: 'ללא הנחה',
+				hours: 'א-ה 12:00-23:00',
+			}),
+			view_count: 198,
+		},
+		{
+			id: 'mock-rest-4', label: 'סושי בר תל אביב',
+			description: 'סושי טרי במשלוח מהיר, רולים מיוחדים ותפריט טבעוני נרחב.',
+			icon: '🍣', city: 'תל אביב', neighborhood: 'פלורנטין',
+			phone: '03-5512345', contact: 'דניאל', category: 'restaurants',
+			created_at: ago(48), status: 'active',
+			extra_fields: JSON.stringify({
+				food_type: 'סושי, אסייתי', price_range: '₪₪₪ — יקר', kosher: 'ללא',
+				service: ['ישיבה במקום', 'משלוחים', 'טייק-אווי'],
+				delivery_by: ['Wolt', 'תן ביס'],
+				amenities: ['Wi-Fi חופשי'],
+				club_discount: 'יש הנחה', club_discount_detail: 'משלוח חינם לחברי מועדון',
+				hours: 'כל יום 12:00-23:30',
+			}),
+			view_count: 356,
+		},
+		{
+			id: 'mock-rest-5', label: 'בורגר בית בני ברק',
+			description: 'המבורגר עסיסי על האש, בשר טחון במקום וצ׳יפס בלגי. מתאים למשפחות.',
+			icon: '🍔', city: 'בני ברק', neighborhood: '',
+			phone: '03-6778899', contact: 'אבי', category: 'restaurants',
+			created_at: ago(60), status: 'active',
+			extra_fields: JSON.stringify({
+				food_type: 'המבורגר', price_range: '₪₪ — בינוני', kosher: 'כשר למהדרין',
+				service: ['ישיבה במקום', 'טייק-אווי', 'משלוחים'],
+				delivery_by: ['שליח עצמאי'],
+				amenities: ['מתאים למשפחות', 'פינת ילדים', 'חניה'],
+				club_discount: 'ללא הנחה',
+				hours: 'א-ה 11:30-22:00',
+			}),
+			view_count: 244,
+		},
+		{
+			id: 'mock-rest-6', label: 'קפה פינתי',
+			description: 'בית קפה שכונתי עם מאפים טריים, ארוחות בוקר ופינת ישיבה חוץ נעימה.',
+			icon: '☕', city: 'ירושלים', neighborhood: 'רחביה',
+			phone: '054-8899001', contact: 'שירה', category: 'restaurants',
+			created_at: ago(72), status: 'active',
+			extra_fields: JSON.stringify({
+				food_type: 'בית קפה, מאפים', price_range: '₪₪ — בינוני', kosher: 'כשר',
+				service: ['ישיבה במקום', 'טייק-אווי'],
+				amenities: ['ישיבה בחוץ', 'Wi-Fi חופשי', 'מתאים למשפחות'],
+				club_discount: 'יש הנחה', club_discount_detail: 'קפה שני ב-50% לחברי מועדון',
+				hours: 'א-ה 07:00-19:00, שישי 07:00-14:00',
+			}),
+			view_count: 167,
+		},
+	];
 
 	// ====== Mock fallback לאולמות (לפי המדיניות — דוגמאות עד שיש פריטים אמיתיים) ======
 	const mockHalls: Item[] = [
@@ -118,11 +258,13 @@
 		},
 	];
 
-	let effectiveItems = $derived<Item[]>(
-		data.categoryId === 'halls' && (data.items as Item[]).length === 0
-			? mockHalls
-			: (data.items as Item[])
-	);
+	let effectiveItems = $derived.by<Item[]>(() => {
+		const real = data.items as Item[];
+		if (real.length > 0) return real;
+		if (data.categoryId === 'halls') return mockHalls;
+		if (data.categoryId === 'restaurants') return mockRestaurants;
+		return real;
+	});
 
 	// ערים ייחודיות מתוך הפריטים
 	let availableCities = $derived(
@@ -147,13 +289,21 @@
 				matchFoodType = foodTypeFilter === 'fast' ? fast : !fast;
 			}
 
+			// סינוני מסעדה נוספים — משלוחים / ישיבה / הנחת מועדון
+			let matchRestaurant = true;
+			if (data.categoryId === 'restaurants') {
+				if (deliveryOnly && !hasDelivery(item)) matchRestaurant = false;
+				if (seatingOnly && !hasSeating(item)) matchRestaurant = false;
+				if (clubDiscountOnly && !hasClubDiscount(item)) matchRestaurant = false;
+			}
+
 			// סינון שימוש (אירועים/חוגים) — רלוונטי רק לקטגוריית halls
 			let matchHallUsage = true;
 			if (data.categoryId === 'halls' && hallUsageFilter !== 'all') {
 				matchHallUsage = hallMatchesUsage(item, hallUsageFilter);
 			}
 
-			return matchSearch && matchCity && matchFoodType && matchHallUsage;
+			return matchSearch && matchCity && matchFoodType && matchHallUsage && matchRestaurant;
 		});
 
 		// טופ 10 — מיון לפי view_count יורד וחיתוך ל-10 ראשונים
@@ -392,6 +542,42 @@
 			>
 				⭐ טופ 10 הפופולריות
 			</button>
+
+			<!-- משלוחים -->
+			<button
+				type="button"
+				onclick={() => (deliveryOnly = !deliveryOnly)}
+				class="px-4 py-2 rounded-2xl text-xs font-bold border transition-all cursor-pointer
+				       {deliveryOnly
+				         ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white border-orange-400 shadow-lg'
+				         : 'bg-[#0f172a] border-white/10 text-gray-300 hover:text-white hover:border-orange-400/40'}"
+			>
+				🛵 עם משלוחים
+			</button>
+
+			<!-- ישיבה במקום -->
+			<button
+				type="button"
+				onclick={() => (seatingOnly = !seatingOnly)}
+				class="px-4 py-2 rounded-2xl text-xs font-bold border transition-all cursor-pointer
+				       {seatingOnly
+				         ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white border-orange-400 shadow-lg'
+				         : 'bg-[#0f172a] border-white/10 text-gray-300 hover:text-white hover:border-orange-400/40'}"
+			>
+				🍽️ ישיבה במקום
+			</button>
+
+			<!-- הנחת חברי מועדון -->
+			<button
+				type="button"
+				onclick={() => (clubDiscountOnly = !clubDiscountOnly)}
+				class="px-4 py-2 rounded-2xl text-xs font-bold border transition-all cursor-pointer
+				       {clubDiscountOnly
+				         ? 'bg-gradient-to-r from-pink-600 to-rose-600 text-white border-pink-400 shadow-lg'
+				         : 'bg-[#0f172a] border-white/10 text-gray-300 hover:text-white hover:border-pink-400/40'}"
+			>
+				🎟️ הנחה לחברי מועדון
+			</button>
 		</div>
 	{/if}
 
@@ -413,7 +599,7 @@
 				<div class="text-5xl mb-4">🔎</div>
 				<p class="text-gray-400">לא נמצאו תוצאות{searchQuery ? ` לחיפוש "${searchQuery}"` : ''}</p>
 				<button
-					onclick={() => { searchQuery = ''; selectedCity = ''; foodTypeFilter = 'all'; hallUsageFilter = 'all'; topTenOnly = false; }}
+					onclick={() => { searchQuery = ''; selectedCity = ''; foodTypeFilter = 'all'; hallUsageFilter = 'all'; topTenOnly = false; deliveryOnly = false; seatingOnly = false; clubDiscountOnly = false; }}
 					class="mt-4 text-purple-400 hover:text-purple-300 text-sm underline cursor-pointer"
 				>
 					נקה סינון
@@ -427,9 +613,9 @@
 			{#if topTenOnly}
 				<span class="mr-2 text-yellow-400 font-bold">⭐ טופ 10</span>
 			{/if}
-			{#if searchQuery || selectedCity || foodTypeFilter !== 'all' || hallUsageFilter !== 'all' || topTenOnly}
+			{#if searchQuery || selectedCity || foodTypeFilter !== 'all' || hallUsageFilter !== 'all' || topTenOnly || deliveryOnly || seatingOnly || clubDiscountOnly}
 				<button
-					onclick={() => { searchQuery = ''; selectedCity = ''; foodTypeFilter = 'all'; hallUsageFilter = 'all'; topTenOnly = false; }}
+					onclick={() => { searchQuery = ''; selectedCity = ''; foodTypeFilter = 'all'; hallUsageFilter = 'all'; topTenOnly = false; deliveryOnly = false; seatingOnly = false; clubDiscountOnly = false; }}
 					class="mr-2 text-purple-400 hover:text-purple-300 underline cursor-pointer"
 				>
 					נקה סינון
@@ -454,6 +640,119 @@
 
 		<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 px-4 md:px-0">
 			{#each group.items as item, idx}
+				{#if data.categoryId === 'restaurants'}
+					{@const summary = getRatingSummary(item.id)}
+					{@const priceRange = restField(item, 'price_range')}
+					{@const kosher = restField(item, 'kosher')}
+					{@const delivers = hasDelivery(item)}
+					{@const seats = hasSeating(item)}
+					{@const club = hasClubDiscount(item)}
+					<div
+						class="bg-[#0f172a] rounded-2xl border {cardBorder} transition-all
+						       hover:-translate-y-0.5 hover:shadow-lg hover:shadow-orange-900/20 relative flex flex-col"
+					>
+						{#if topTenOnly && idx < 10}
+							<div class="absolute -top-2 -right-2 bg-gradient-to-br from-yellow-400 to-orange-500 text-white text-xs font-black w-8 h-8 rounded-full flex items-center justify-center shadow-lg border-2 border-[#0f172a] z-10">
+								#{idx + 1}
+							</div>
+						{/if}
+
+						<a href="/items/{item.id}" class="block p-5 pb-2 group">
+							<div class="flex items-start gap-3">
+								<span class="text-3xl flex-shrink-0 mt-0.5">{item.icon}</span>
+								<div class="min-w-0 flex-1">
+
+									<!-- כותרת + badge -->
+									<div class="flex items-start justify-between gap-2 mb-1">
+										<h3 class="text-white font-bold text-sm group-hover:text-orange-300 transition-colors truncate">
+											{item.label}
+										</h3>
+										<span class="flex-shrink-0 text-[10px] px-2 py-0.5 rounded-full border font-bold {badge}">
+											{isFastFood(item) ? '🍔 מהיר' : '🍷 מסעדה'}
+										</span>
+									</div>
+
+									<!-- דירוג כוכבים -->
+									<div class="flex items-center gap-1.5 mb-2">
+										<span class="text-yellow-400 text-xs tracking-tight">
+											{#each [1,2,3,4,5] as s}{s <= Math.round(summary.avg) ? '★' : '☆'}{/each}
+										</span>
+										{#if summary.count > 0}
+											<span class="text-white text-xs font-bold">{summary.avg}</span>
+											<span class="text-gray-500 text-xs">({summary.count})</span>
+										{:else}
+											<span class="text-gray-500 text-xs">אין דירוגים עדיין</span>
+										{/if}
+									</div>
+
+									<!-- תיאור -->
+									{#if item.description}
+										<p class="text-gray-400 text-xs line-clamp-2 mb-2">{item.description}</p>
+									{/if}
+
+									<!-- תגיות אפשרויות -->
+									<div class="flex flex-wrap gap-1.5 mb-2">
+										{#if priceRange}
+											<span class="text-[10px] px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-amber-300 font-bold">
+												{priceRange.split(' ')[0]}
+											</span>
+										{/if}
+										<span class="text-[10px] px-2 py-0.5 rounded-full border font-bold {delivers ? 'bg-green-500/15 border-green-500/30 text-green-300' : 'bg-white/5 border-white/10 text-gray-500'}">
+											{delivers ? '🛵 משלוחים' : '🚫 אין משלוחים'}
+										</span>
+										<span class="text-[10px] px-2 py-0.5 rounded-full border font-bold {seats ? 'bg-blue-500/15 border-blue-500/30 text-blue-300' : 'bg-white/5 border-white/10 text-gray-400'}">
+											{seats ? '🍽️ ישיבה במקום' : '🥡 טייק-אווי בלבד'}
+										</span>
+										{#if kosher && kosher !== 'ללא'}
+											<span class="text-[10px] px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-gray-300 font-bold">
+												✡️ {kosher}
+											</span>
+										{/if}
+									</div>
+
+									<!-- מיקום -->
+									{#if item.neighborhood || item.city}
+										<div class="flex items-center gap-1">
+											<span class="text-orange-400/80 text-xs">📍</span>
+											<span class="text-gray-400 text-xs">
+												{[item.neighborhood, item.city].filter(Boolean).join(', ')}
+											</span>
+										</div>
+									{/if}
+								</div>
+							</div>
+						</a>
+
+						<!-- הנחת חברי מועדון -->
+						{#if club}
+							<div class="mx-5 mb-2 flex items-center gap-1.5 bg-pink-500/10 border border-pink-500/30 rounded-lg px-2.5 py-1.5">
+								<span class="text-sm">🎟️</span>
+								<span class="text-pink-200 text-[11px] font-bold leading-tight">
+									{restField(item, 'club_discount_detail') || 'הנחה לחברי מועדון הקהילה'}
+								</span>
+							</div>
+						{/if}
+
+						<!-- שורת פעולות -->
+						<div class="flex items-center gap-2 px-4 pb-4 pt-1 mt-auto border-t border-white/5">
+							<button
+								type="button"
+								onclick={() => (reviewsModalItem = item)}
+								class="flex-1 flex items-center justify-center gap-1.5 bg-white/5 hover:bg-orange-600/80 border border-orange-500/30 text-orange-300 hover:text-white text-xs font-bold py-2 rounded-xl transition-all cursor-pointer"
+							>
+								⭐ דירוגים ותגובות
+							</button>
+							{#if item.phone}
+								<a
+									href="tel:{item.phone}"
+									class="flex items-center justify-center gap-1 bg-green-600/90 hover:bg-green-500 text-white text-xs font-bold py-2 px-3 rounded-xl transition-colors"
+								>
+									📞 חיוג
+								</a>
+							{/if}
+						</div>
+					</div>
+				{:else}
 				<a
 					href="/items/{item.id}"
 					class="block bg-[#0f172a] rounded-2xl border {cardBorder} p-5 transition-all
@@ -474,9 +773,7 @@
 									{item.label}
 								</h3>
 								<span class="flex-shrink-0 text-[10px] px-2 py-0.5 rounded-full border font-bold {badge}">
-									{#if data.categoryId === 'restaurants'}
-										{isFastFood(item) ? '🍔 מהיר' : '🍷 מסעדה'}
-									{:else if data.categoryId === 'halls'}
+									{#if data.categoryId === 'halls'}
 										{hallMatchesUsage(item, 'events') ? '🎉 אירועים' : hallMatchesUsage(item, 'classes') ? '🎨 חוגים' : '🏛️ אולם'}
 									{:else}
 										{data.config.icon}
@@ -515,6 +812,7 @@
 						</div>
 					</div>
 				</a>
+				{/if}
 			{/each}
 		</div>
 		{/each}
@@ -540,5 +838,15 @@
 			</div>
 		</div>
 	</div>
+
+	<!-- ===== מודל דירוגים ותגובות ===== -->
+	{#if reviewsModalItem}
+		<RestaurantReviewsModal
+			open={true}
+			itemId={reviewsModalItem.id}
+			itemLabel={reviewsModalItem.label}
+			onclose={() => (reviewsModalItem = null)}
+		/>
+	{/if}
 
 </div>
