@@ -197,7 +197,8 @@ export const categoryConfig: Record<string, CategoryConfig> = {
             { key: 'custom_link_label', label: 'כותרת לקישור נוסף', type: 'text',    required: false, placeholder: 'למשל: הזמנת מקום, תפריט אירועים', half: true, hint: 'תנו שם לקישור — הוא יוצג ככפתור בדף המסעדה' },
             { key: 'custom_link_url',   label: 'הקישור הנוסף',      type: 'text',    required: false, placeholder: 'https://...', half: true },
             { key: 'description', label: 'תיאור',                  type: 'textarea', required: false, placeholder: 'מה מיוחד במסעדה — מנת הדגל, אווירה, קהל יעד...' },
-            { key: 'images',      label: 'תמונות (עד 5)',          type: 'images',   required: false, hint: 'הוסיפו תמונות של העסק והמנות. סמנו אחת כתמונה ראשית.' },
+            { key: 'images',      label: 'תמונות העסק (עד 5)',      type: 'images',   required: false, hint: 'תמונות של העסק והמנות. סמנו אחת כתמונה ראשית.' },
+            { key: 'menu_images', label: 'תמונות התפריט (עד 5)',     type: 'images',   required: false, hint: 'צלמו את התפריט בנפרד משאר התמונות — ברור, מואר וקריא.' },
         ],
     },
 
