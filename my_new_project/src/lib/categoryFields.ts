@@ -174,7 +174,8 @@ export const categoryConfig: Record<string, CategoryConfig> = {
             { key: 'label',       label: 'שם העסק',               type: 'text',     required: true,  placeholder: 'פיצה השכונה' },
             { key: 'food_type',   label: 'סוג מטבח / מזון',         type: 'text',     required: true,  placeholder: 'פיצה, פלאפל, סושי, איטלקי...', half: true },
             { key: 'price_range', label: 'טווח מחירים',            type: 'select',   required: false, half: true, options: ['₪ — זול', '₪₪ — בינוני', '₪₪₪ — יקר', '₪₪₪₪ — יוקרתי'] },
-            { key: 'kosher',      label: 'כשרות',                  type: 'select',   required: false, options: ['ללא', 'כשר', 'כשר למהדרין', 'חלבי', 'בשרי', 'פרווה'] },
+            { key: 'kosher',      label: 'כשרות',                  type: 'select',   required: false, half: true, options: ['ללא', 'כשר', 'כשר למהדרין'] },
+            { key: 'meat_dairy',  label: 'חלבי / בשרי / פרווה',     type: 'select',   required: false, half: true, options: ['חלבי', 'בשרי', 'פרווה'] },
             { key: 'service',     label: 'אופן הגשה',              type: 'multi_select', required: true, options: ['ישיבה במקום', 'טייק-אווי', 'משלוחים', 'הזמנת מקום מראש'], hint: 'בחרו את כל האפשרויות שהעסק מציע — יוצג בבירור בכרטיסיה' },
             { key: 'delivery_by', label: 'משלוחים באמצעות',         type: 'multi_select', required: false, options: ['שליח עצמאי', 'Wolt', 'תן ביס', 'משלוחה'], hint: 'מלאו רק אם סימנתם "משלוחים" באופן ההגשה' },
             { key: 'amenities',   label: 'שירותים ונוחות',         type: 'multi_select', required: false, options: ['ישיבה בחוץ', 'חניה', 'נגישות לכיסא גלגלים', 'Wi-Fi חופשי', 'מתאים למשפחות', 'פינת ילדים', 'אפשרות הפרדה'] },
@@ -186,7 +187,6 @@ export const categoryConfig: Record<string, CategoryConfig> = {
             { key: 'website',     label: 'אתר / תפריט',            type: 'text',     required: false, placeholder: 'https://example.com', half: true },
             { key: 'description', label: 'תיאור',                  type: 'textarea', required: false, placeholder: 'מה מיוחד במסעדה — מנת הדגל, אווירה, קהל יעד...' },
             { key: 'images',      label: 'תמונות (עד 5)',          type: 'images',   required: false, hint: 'הוסיפו תמונות של העסק והמנות. סמנו אחת כתמונה ראשית.' },
-            { key: 'contact',     label: 'שם איש קשר',             type: 'text',     required: false, placeholder: 'שם מלא' },
         ],
     },
 

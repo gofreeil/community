@@ -482,8 +482,8 @@
                         {@const imgs = getImages(field.key)}
                         <div class="rounded-xl border-2 border-amber-500/40 bg-amber-900/15 p-3 mb-3">
                             <p class="text-amber-200 text-sm font-bold leading-relaxed text-center">
-                                ⚠️ התמונות חייבות להיות <span class="underline">הולמות וצנועות</span> בלבד.<br />
-                                משתמש שינסה להפר את הכללים — <span class="text-red-300 font-black">ייחסם לצמיתות</span>.
+                                ⚠️ התמונות חייבות להיות <span class="underline">הולמות וצנועות</span> בלבד.{#if categoryId !== 'restaurants'}<br />
+                                משתמש שינסה להפר את הכללים — <span class="text-red-300 font-black">ייחסם לצמיתות</span>.{/if}
                             </p>
                         </div>
                         <div class="flex items-center justify-between mb-2">
