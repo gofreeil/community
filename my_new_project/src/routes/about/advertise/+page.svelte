@@ -185,7 +185,7 @@
             const pending = localStorage.getItem('pending_ad');
             if (pending) {
                 const { priceRow, categoryLabel, itemLabel } = JSON.parse(pending);
-                if (typeof priceRow === 'number' && priceRow >= 1 && priceRow <= 9) {
+                if (typeof priceRow === 'number' && priceRow >= 1 && priceRow <= 11) {
                     planMap = new Map([[priceRow, 'half']]);
                 }
                 if (categoryLabel) pendingItemCategory = String(categoryLabel);
@@ -365,8 +365,10 @@
         { num: 4, type: "צימר / סאבלט",  half: 45,  total: 270, single: 60, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
         { num: 5, type: "דרושים לעבודה", half: 5,   total: 30,  single: 25, reach: "לכל שכונה רצויה",   details: "מופיע רק ברשימה" },
         { num: 6, type: "פנויים פנויות", half: 20,  total: 120, single: 30, reach: "כולל רשימה ארצית",  details: "מופיע רק ברשימה" },
+        { num: 7, type: "מסעדה",          half: 45,  total: 270, single: 60, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
         { num: 8, type: "בייבי סיטר",    half: 8,   total: 48,  single: 20, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
         { num: 9, type: "אולמות",         half: 45,  total: 270, single: 60, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
+        { num: 10, type: "מזון מהיר",     half: 30,  total: 180, single: 45, reach: "לכל שכונה רצויה",   details: "פלאפל, שווארמה, פיצה, גלידה" },
     ];
 
     // ---- Calculator state: each row can be 'half' | 'single' | unset ----

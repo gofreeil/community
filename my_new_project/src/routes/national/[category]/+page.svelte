@@ -59,6 +59,9 @@
 	function isFastFood(item: Item): boolean {
 		try {
 			const ef = item.extra_fields ? JSON.parse(item.extra_fields) : {};
+			// בחירה מפורשת של בעל העסק גוברת על זיהוי לפי מילות-מפתח
+			if (ef.venue_type === 'מזון מהיר') return true;
+			if (ef.venue_type === 'מסעדה') return false;
 			const haystack = [
 				ef.food_type ?? '',
 				item.label ?? '',

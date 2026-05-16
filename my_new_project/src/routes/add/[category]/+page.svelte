@@ -42,6 +42,19 @@
         Object.fromEntries(config.fields.map(f => [f.key, profileDefault(f.key, f.type, f.options, f.default)]))
     );
 
+    // ---- תמחור מסעדות — מסעדה 45 ₪, מזון מהיר 30 ₪ (תלוי בבחירת המשתמש) ----
+    const RESTAURANT_PRICING: Record<string, { row: number; price: number }> = {
+        'מסעדה':     { row: 7,  price: 45 },
+        'מזון מהיר': { row: 10, price: 30 },
+    };
+    let restaurantPlan = $derived(
+        categoryId === 'restaurants'
+            ? (RESTAURANT_PRICING[formValues.venue_type] ?? RESTAURANT_PRICING['מסעדה'])
+            : null
+    );
+    let effectivePriceRow = $derived(restaurantPlan ? restaurantPlan.row : config.priceRow);
+    let monthlyPrice      = $derived(restaurantPlan ? restaurantPlan.price : 15);
+
     let submitting      = $state(false);
     let errorMsg        = $state('');
     let submitted       = $state(false);
@@ -269,7 +282,7 @@
             if (config.priceRow !== null) {
                 if (browser) {
                     localStorage.setItem('pending_ad', JSON.stringify({
-                        priceRow:      config.priceRow,
+                        priceRow:      effectivePriceRow,
                         categoryLabel: config.label,
                         itemLabel:     topLevel.label,
                         itemId:        result.id,
@@ -350,7 +363,7 @@
             <div class="text-4xl mb-3">✅</div>
             <h2 class="text-xl font-black text-green-300 mb-2">המודעה שלך נשמרה</h2>
             {#if config.priceRow !== null}
-                <p class="text-amber-200 text-base font-bold mb-1">שלם 15 ש"ח בחודש על מנת להופיע</p>
+                <p class="text-amber-200 text-base font-bold mb-1">שלם {monthlyPrice} ש"ח בחודש על מנת להופיע</p>
                 <p class="text-gray-400 text-sm">מועבר לדף התשלום...</p>
             {:else}
                 <p class="text-gray-400 text-sm">הפריט שלך נוסף לשכונה! מועבר לדף הבית...</p>
@@ -610,7 +623,7 @@
                 </button>
                 <p class="text-gray-300 text-sm text-center">
                     {#if config.priceRow !== null}
-                        15 ₪ בחודש · התשלום בשלב הבא
+                        {monthlyPrice} ₪ בחודש · התשלום בשלב הבא
                     {:else}
                         הפריט יופיע מיד
                     {/if}
