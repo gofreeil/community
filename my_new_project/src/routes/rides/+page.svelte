@@ -18,9 +18,10 @@
         catch { return ''; }
     }
 
-    function waLink(phone: string): string {
+    function waLink(phone: string, text = ''): string {
         const digits = phone.replace(/\D/g, '').replace(/^0/, '972');
-        return `https://wa.me/${digits}`;
+        const q = text ? `?text=${encodeURIComponent(text)}` : '';
+        return `https://wa.me/${digits}${q}`;
     }
 
     let filtered = $derived(
@@ -80,8 +81,8 @@
     <div class="max-w-4xl mx-auto">
         <div class="text-center mb-6">
             <span class="text-5xl mb-3 block">🚗</span>
-            <h1 class="text-3xl font-black text-white mb-2">לוח טרמפים</h1>
-            <p class="text-gray-400">לוח ארצי — נסיעות משותפות בכל רחבי הארץ</p>
+            <h1 class="text-3xl font-black text-white mb-2">לוח טרמפים ומסירות</h1>
+            <p class="text-gray-400">לוח ארצי — טרמפים ומסירת חבילות בחסד בכל רחבי הארץ</p>
         </div>
 
         <div class="flex justify-center gap-2 mb-6">
@@ -105,19 +106,13 @@
             </button>
         </div>
 
-        <div class="flex justify-center gap-2 mb-6 flex-wrap">
+        <div class="flex justify-center mb-6">
             <a
                 href="/rides/add"
                 class="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold px-6 py-3 rounded-full shadow-lg hover:shadow-blue-500/25 transition-all hover:scale-105"
             >
                 <span class="text-lg">➕</span>
                 פרסם טרמפ חדש
-            </a>
-            <a
-                href="/deliveries"
-                class="inline-flex items-center gap-2 bg-white/10 hover:bg-white/15 text-gray-300 font-bold px-6 py-3 rounded-full transition-all"
-            >
-                📦 ללוח מסירת חבילות
             </a>
         </div>
 
@@ -154,7 +149,7 @@
                         </div>
                         <div class="min-w-0">
                             <h3 class="text-white font-black text-lg">{item.label}</h3>
-                            <p class="text-white/80 text-sm truncate">{isDriver ? 'מציע/ה טרמפ' : 'מחפש/ת טרמפ'}</p>
+                            <p class="text-white/80 text-sm truncate">{isDriver ? 'מציע/ה טרמפ · מעביר/ה גם חבילות בדרך' : 'מחפש/ת טרמפ'}</p>
                         </div>
                     </div>
                     <div class="p-4">
@@ -180,22 +175,49 @@
                             <p class="text-gray-300 text-sm leading-relaxed mb-4">{item.description}</p>
                         {/if}
                         {#if item.phone}
-                            <div class="flex gap-2">
-                                <a
-                                    href={waLink(item.phone)}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 rounded-xl transition-colors text-sm"
-                                >
-                                    💬 WhatsApp
-                                </a>
+                            {#if isDriver}
+                                <div class="grid grid-cols-2 gap-2 mb-2">
+                                    <a
+                                        href={waLink(item.phone, `שלום! ראיתי בלוח שאתה נוסע מ${from} ל${to}. אשמח לטרמפ 🙏`)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="flex items-center justify-center gap-1 bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 rounded-xl transition-colors text-sm"
+                                    >
+                                        🙋 בקש טרמפ
+                                    </a>
+                                    <a
+                                        href={waLink(item.phone, `שלום! ראיתי בלוח שאתה נוסע מ${from} ל${to}. אפשר לבקש שתעביר חבילה בדרך? 🙏`)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="flex items-center justify-center gap-1 bg-orange-600 hover:bg-orange-500 text-white font-bold py-2.5 rounded-xl transition-colors text-sm"
+                                    >
+                                        📦 בקש מסירה
+                                    </a>
+                                </div>
                                 <a
                                     href="tel:{item.phone}"
-                                    class="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-2.5 px-4 rounded-xl transition-colors text-sm"
+                                    class="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-2.5 rounded-xl transition-colors text-sm"
                                 >
                                     📞 התקשר
                                 </a>
-                            </div>
+                            {:else}
+                                <div class="flex gap-2">
+                                    <a
+                                        href={waLink(item.phone)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 rounded-xl transition-colors text-sm"
+                                    >
+                                        💬 WhatsApp
+                                    </a>
+                                    <a
+                                        href="tel:{item.phone}"
+                                        class="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-2.5 px-4 rounded-xl transition-colors text-sm"
+                                    >
+                                        📞 התקשר
+                                    </a>
+                                </div>
+                            {/if}
                         {/if}
                     </div>
                 </div>

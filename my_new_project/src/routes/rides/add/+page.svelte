@@ -39,6 +39,12 @@
                     <input type="hidden" name="direction" value={direction} />
                 </div>
 
+                {#if direction === 'driver'}
+                    <p class="text-gray-400 text-xs text-center">
+                        סמן/י את המסלול שלך — מאיפה לאן. אנשים בלוח יוכלו לבקש ממך טרמפ או להעביר חבילה בדרך, בחסד.
+                    </p>
+                {/if}
+
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label for="from" class="text-white text-sm font-bold mb-1 block">מאיפה</label>
