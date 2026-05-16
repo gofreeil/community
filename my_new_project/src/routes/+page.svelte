@@ -292,7 +292,7 @@
                     onclick={handleToggleMenu}
                     class="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-lg transition-all hover:scale-105"
                 >
-                    🏘️ לכלל השכונות
+                    🇮🇱 לכלל השכונות
                 </button>
             </div>
 
@@ -335,7 +335,11 @@
                         </div>
                     </div>
 
-                    {#if filteredCities.length === 0}
+                    {#if searchQuery.trim() === ''}
+                        <div class="text-center text-gray-400 py-6 text-sm">
+                            הקלד שם עיר או שכונה בשורת החיפוש
+                        </div>
+                    {:else if filteredCities.length === 0}
                         <div class="text-center text-gray-400 py-6 text-sm">
                             לא נמצאו ערים או שכונות תואמות "{searchQuery}"
                         </div>
