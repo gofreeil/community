@@ -1128,13 +1128,13 @@
                         <button
                             onclick={() => handleCategoryClick(category.id)}
                             title="לחץ כדי לסנן במפה"
-                            class="flex items-center justify-center gap-1.5 {selectedCategory === category.id
+                            class="flex items-center justify-center flex-1 {category.id === 'rides' ? 'gap-1 px-2 min-w-[19%]' : category.id === 'education' ? 'gap-1.5 px-3 min-w-[11%]' : 'gap-1.5 px-3 min-w-[15%]'} {selectedCategory === category.id
                                 ? category.id === 'benefits'
                                     ? 'bg-gradient-to-br from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-gray-900 border-yellow-500 ring-2 ring-yellow-300'
                                     : 'bg-gradient-to-br from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-purple-500 ring-2 ring-purple-300'
                                 : category.id === 'benefits'
                                   ? 'bg-gradient-to-br from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-gray-900 border-yellow-500'
-                                  : 'bg-gradient-to-br from-white to-gray-200 hover:from-blue-100 hover:to-white text-gray-900 border-purple-300'} px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg transition-all hover:scale-105 border shrink-0 whitespace-nowrap flex-1 min-w-[15%] map-category-button"
+                                  : 'bg-gradient-to-br from-white to-gray-200 hover:from-blue-100 hover:to-white text-gray-900 border-purple-300'} py-1.5 rounded-lg text-xs font-bold shadow-lg transition-all hover:scale-105 border shrink-0 whitespace-nowrap map-category-button"
                         >
                             {#if category.icon?.startsWith('/')}
                                 <img src={category.icon} class="w-5 h-5 inline-block" alt={category.label} />
