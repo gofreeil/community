@@ -37,6 +37,7 @@
     let customUrl   = $derived(str(E.custom_link_url));
     let images      = $derived(list(E.images));
     let menuImages  = $derived(list(E.menu_images));
+    let mainImage   = $derived(images[0] ?? '');
 
     let hasDelivery = $derived(service.includes('משלוחים'));
     let hasSeating  = $derived(service.includes('ישיבה במקום'));
@@ -66,16 +67,23 @@
 
         <!-- ===== Hero ===== -->
         <div class="relative overflow-hidden rounded-3xl mb-6">
-            <div class="absolute inset-0 bg-gradient-to-br from-orange-600 via-amber-600 to-orange-700 opacity-95"></div>
+            {#if mainImage}
+                <img src={mainImage} alt={item.label} class="absolute inset-0 w-full h-full object-cover" />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/55 to-black/45"></div>
+            {:else}
+                <div class="absolute inset-0 bg-gradient-to-br from-orange-600 via-amber-600 to-orange-700 opacity-95"></div>
+            {/if}
             <div class="relative px-6 py-8 text-center">
-                <div class="text-6xl mb-3">{item.icon}</div>
-                <h1 class="text-3xl md:text-4xl font-black text-white mb-2">{item.label}</h1>
+                {#if !mainImage}
+                    <div class="text-6xl mb-3">{item.icon}</div>
+                {/if}
+                <h1 class="text-3xl md:text-4xl font-black text-white mb-2 drop-shadow-lg">{item.label}</h1>
                 <div class="flex flex-wrap items-center justify-center gap-2 mb-3">
-                    <span class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-white/15 border border-white/25 text-white">
+                    <span class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-black/50 border border-white/30 text-white">
                         {venueType === 'מזון מהיר' ? '🍔 מזון מהיר' : '🍷 מסעדה'}
                     </span>
                     {#if foodType}
-                        <span class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-white/15 border border-white/25 text-white">
+                        <span class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-black/50 border border-white/30 text-white">
                             {foodType}
                         </span>
                     {/if}
@@ -84,7 +92,7 @@
                 <button
                     type="button"
                     onclick={() => (reviewsOpen = true)}
-                    class="inline-flex items-center gap-2 bg-black/25 hover:bg-black/40 rounded-full px-4 py-1.5 transition-colors cursor-pointer"
+                    class="inline-flex items-center gap-2 bg-black/55 hover:bg-black/70 border border-white/15 rounded-full px-4 py-1.5 transition-colors cursor-pointer"
                 >
                     <span class="text-yellow-300 text-sm">
                         {#each [1,2,3,4,5] as s}{s <= Math.round(summary.avg) ? '★' : '☆'}{/each}
@@ -93,7 +101,7 @@
                     <span class="text-white/70 text-xs">({summary.count} ביקורות)</span>
                 </button>
                 {#if item.neighborhood || item.city}
-                    <p class="text-white/80 text-sm mt-3">
+                    <p class="text-white/90 text-sm mt-3 drop-shadow">
                         📍 {[item.neighborhood, item.city].filter(Boolean).join(', ')}
                     </p>
                 {/if}
