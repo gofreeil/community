@@ -1322,7 +1322,7 @@
                     >
                         <img src="/images/delivery.png" alt="" class="w-5 h-5 object-contain" />
                         <span class="flex flex-col items-center">
-                            <span>{neighborhoodDbItems.length} למסירה ב{neighborhoodState.neighborhood}</span>
+                            <span>{neighborhoodDbItems.length} למסירה בשכונה</span>
                             <span>← ללוח הארצי</span>
                         </span>
                     </button>
@@ -1346,7 +1346,7 @@
                                 class="bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 hover:from-amber-300 hover:via-orange-400 hover:to-red-400 text-white text-sm font-black px-4 py-2 rounded-xl shadow-lg border border-orange-300/60 transition-all hover:scale-105 flex flex-col items-center text-center leading-tight"
                                 title="עבור ללוח הארצי"
                             >
-                                <span>{neighborhoodDbItems.length} פריטים ב{neighborhoodState.neighborhood}</span>
+                                <span>{neighborhoodDbItems.length} פריטים בשכונה</span>
                                 <span>← ללוח הארצי</span>
                             </a>
                         {/if}
