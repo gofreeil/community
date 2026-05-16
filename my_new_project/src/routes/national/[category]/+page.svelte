@@ -433,7 +433,7 @@
 			       px-6 py-3 rounded-2xl shadow-lg transition-all hover:-translate-y-0.5"
 		>
 			<span class="text-lg">＋</span>
-			<span>הוסף {data.config.label} משלך</span>
+			<span>{data.categoryId === 'restaurants' ? 'הוסף מסעדה / חנות מזון' : `הוסף ${data.config.label} משלך`}</span>
 		</a>
 	</div>
 
@@ -818,26 +818,28 @@
 		{/each}
 	{/if}
 
-	<!-- ===== CTA הוספת מודעה ===== -->
-	<div class="mt-12 mb-6 text-center px-4 md:px-0">
-		<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-8">
-			<p class="text-gray-400 text-sm mb-4">
-				יש לך {data.config.icon} {data.config.label}? פרסם בחינם!
-			</p>
-			<a
-				href="/add/{data.categoryId}"
-				class="inline-block bg-gradient-to-r {gradient} hover:opacity-90 text-white font-bold
-				       px-8 py-3 rounded-2xl shadow-lg transition-all hover:-translate-y-0.5"
-			>
-				+ הוסף מודעה
-			</a>
-			<div class="mt-4">
-				<a href="/" class="text-gray-600 hover:text-gray-400 text-xs transition-colors">
-					← חזרה לדף הבית
+	{#if data.categoryId !== 'restaurants'}
+		<!-- ===== CTA הוספת מודעה ===== -->
+		<div class="mt-12 mb-6 text-center px-4 md:px-0">
+			<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-8">
+				<p class="text-gray-400 text-sm mb-4">
+					יש לך {data.config.icon} {data.config.label}? פרסם בחינם!
+				</p>
+				<a
+					href="/add/{data.categoryId}"
+					class="inline-block bg-gradient-to-r {gradient} hover:opacity-90 text-white font-bold
+					       px-8 py-3 rounded-2xl shadow-lg transition-all hover:-translate-y-0.5"
+				>
+					+ הוסף מודעה
 				</a>
+				<div class="mt-4">
+					<a href="/" class="text-gray-600 hover:text-gray-400 text-xs transition-colors">
+						← חזרה לדף הבית
+					</a>
+				</div>
 			</div>
 		</div>
-	</div>
+	{/if}
 
 	<!-- ===== מודל דירוגים ותגובות ===== -->
 	{#if reviewsModalItem}
