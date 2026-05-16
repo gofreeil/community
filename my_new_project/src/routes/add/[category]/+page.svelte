@@ -312,7 +312,9 @@
 
     <!-- Header -->
     <div class="text-center mb-4">
-        <div class="-mb-2">{@html iconHtml('lg')}</div>
+        {#if categoryId !== 'restaurants'}
+            <div class="-mb-2">{@html iconHtml('lg')}</div>
+        {/if}
         <div class="relative flex items-center justify-center">
             <h1 class="text-2xl md:text-3xl font-black text-white mb-2">
                 {config.addPageTitle ?? `הוסף ${config.label}`}
@@ -603,7 +605,7 @@
                               style="animation: spin 0.7s linear infinite; vertical-align: middle;"></span>
                         שומר...
                     {:else}
-                        {@html iconHtml()} פרסם
+                        {#if categoryId !== 'restaurants'}{@html iconHtml()} {/if}פרסם
                     {/if}
                 </button>
                 <p class="text-gray-300 text-sm text-center">
