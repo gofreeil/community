@@ -600,7 +600,7 @@
                             rel="noopener noreferrer"
                             class="inline-flex items-center gap-1.5 mt-2 text-pink-300 hover:text-pink-200 text-sm font-bold underline underline-offset-2 transition-colors"
                         >
-                            🎟️ למה כדאי לתת הנחה לחברי המועדון של יוצאים לחירות?
+                            🎟️ כיצד להצטרף למעדון המסעדות של יוצאים לחירות
                         </a>
                     {/if}
                 </div>
