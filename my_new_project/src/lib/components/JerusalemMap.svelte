@@ -131,12 +131,12 @@
             label: "לילדים",
             icon: "🎈",
             items: [
-                { id: "jamboree", label: "ג'ימבורי שכונתי" },
-                { id: "story-time", label: "שעת סיפור בספרייה" },
-                { id: "playground-updates", label: "עדכוני גינות משחקים" },
-                { id: "attraction-park", label: "פארק שעשועים מקומי" },
-                { id: "attraction-museum", label: "מוזיאון המדע לילדים" },
-                { id: "attraction-zoo", label: "פינת חי קהילתית" },
+                { id: "jamboree", label: "ג'ימבורי שכונתי", paid: true },
+                { id: "story-time", label: "שעת סיפור בספרייה", paid: false },
+                { id: "playground-updates", label: "עדכוני גינות משחקים", paid: false },
+                { id: "attraction-park", label: "פארק שעשועים מקומי", paid: false },
+                { id: "attraction-museum", label: "מוזיאון המדע לילדים", paid: true },
+                { id: "attraction-zoo", label: "פינת חי קהילתית", paid: false },
             ],
         },
         {
@@ -1517,11 +1517,22 @@
                                             href="/items/{item.id}"
                                             class="bg-purple-900/20 border border-purple-500/20 rounded-lg p-3 hover:bg-purple-900/30 hover:border-purple-500/40 transition-all cursor-pointer flex items-center justify-between group/item"
                                         >
-                                            <span class="text-white text-sm"
-                                                >• {item.label}</span
-                                            >
+                                            <span class="flex items-center gap-2 min-w-0">
+                                                <span class="text-white text-sm truncate"
+                                                    >• {item.label}</span
+                                                >
+                                                {#if 'paid' in item}
+                                                    <span
+                                                        class="flex-shrink-0 text-[10px] font-black px-2 py-0.5 rounded-full border {item.paid
+                                                            ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                                                            : 'bg-green-500/20 text-green-400 border-green-500/40'}"
+                                                    >
+                                                        {item.paid ? 'בתשלום' : 'חינם'}
+                                                    </span>
+                                                {/if}
+                                            </span>
                                             <div
-                                                class="bg-purple-600 group-hover/item:bg-purple-500 text-white px-3 py-1 rounded text-xs font-bold transition-colors"
+                                                class="flex-shrink-0 bg-purple-600 group-hover/item:bg-purple-500 text-white px-3 py-1 rounded text-xs font-bold transition-colors"
                                             >
                                                 צפה בפרטים
                                             </div>
