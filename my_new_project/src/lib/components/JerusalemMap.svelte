@@ -33,11 +33,13 @@
         {
             id: "attractions",
             label: "שירות ציבורי",
-            icon: "🎡",
+            icon: "🏛️",
             items: [
-                { id: "attraction-park", label: "פארק שעשועים מקומי" },
-                { id: "attraction-museum", label: "מוזיאון המדע לילדים" },
-                { id: "attraction-zoo", label: "פינת חי קהילתית" },
+                { id: "service-post", label: "סניף דואר" },
+                { id: "service-bank", label: "סניף בנק" },
+                { id: "service-municipality", label: "עירייה / מוקד עירוני" },
+                { id: "service-atm", label: "כספומט" },
+                { id: "service-gas", label: "תחנת דלק" },
             ],
         },
         {
@@ -132,6 +134,9 @@
                 { id: "jamboree", label: "ג'ימבורי שכונתי" },
                 { id: "story-time", label: "שעת סיפור בספרייה" },
                 { id: "playground-updates", label: "עדכוני גינות משחקים" },
+                { id: "attraction-park", label: "פארק שעשועים מקומי" },
+                { id: "attraction-museum", label: "מוזיאון המדע לילדים" },
+                { id: "attraction-zoo", label: "פינת חי קהילתית" },
             ],
         },
         {
