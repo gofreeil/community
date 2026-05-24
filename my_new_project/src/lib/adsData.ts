@@ -36,7 +36,7 @@ export const ads: Ad[] = [
         title: "ועדי שכונות",
         description: "מהפכת משילות העם על המוסדות",
         cta: "הכר והשתתף במהפכת משילות העם על מוסדותיו",
-        href: "https://www.melecshop.com/page/peace-on-earth_VRHH",
+        href: "https://neighborhoods-il.vercel.app/",
         image: "/images/news/vaadei-shchunot.png",
         color: "from-blue-600 to-cyan-600"
     },
@@ -98,5 +98,15 @@ export const ads: Ad[] = [
         href: "https://index-chi-sage.vercel.app/",
         image: "/images/professionals.png",
         color: "from-yellow-500 to-orange-500"
+    },
+    {
+        id: 7,
+        title: "חנות החירות",
+        description: "מוצרים נבחרים לבריאות טבעית, חקלאות ביתית, טכנולוגיה ועוד",
+        cta: "כנסו לחנות לחיים טובים יותר",
+        hover: "החנות שלנו!",
+        href: "https://heirut-shop.vercel.app/",
+        image: "/images/freedom-store.png",
+        color: "from-emerald-600 to-teal-700"
     }
 ];
