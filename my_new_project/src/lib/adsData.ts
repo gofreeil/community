@@ -38,7 +38,8 @@ export const ads: Ad[] = [
         cta: "הכר והשתתף במהפכת משילות העם על מוסדותיו",
         href: "https://neighborhoods-il.vercel.app/",
         image: "/images/news/vaadei-shchunot.png",
-        color: "from-blue-600 to-cyan-600"
+        color: "from-blue-600 to-cyan-600",
+        imageHeight: "110px"
     },
     {
         id: 5,
@@ -59,7 +60,7 @@ export const ads: Ad[] = [
         href: "https://public-rating-il.vercel.app/",
         image: "/images/public-rating.jpeg",
         color: "from-indigo-600 to-blue-600",
-        imageHeight: "200px",
+        imageHeight: "110px",
         imageScale: 0.9,
     },
     {
@@ -97,7 +98,8 @@ export const ads: Ad[] = [
         cta: "מחפש בעל מקצוע איכותי באזורך?",
         href: "https://index-chi-sage.vercel.app/",
         image: "/images/professionals.png",
-        color: "from-yellow-500 to-orange-500"
+        color: "from-yellow-500 to-orange-500",
+        imageHeight: "110px"
     },
     {
         id: 7,
@@ -106,7 +108,8 @@ export const ads: Ad[] = [
         cta: "כנסו לחנות לחיים טובים יותר",
         hover: "החנות שלנו!",
         href: "https://heirut-shop.vercel.app/",
-        image: "/images/freedom-store.png",
-        color: "from-emerald-600 to-teal-700"
+        image: "/images/shop.png",
+        color: "from-emerald-600 to-teal-700",
+        imageHeight: "110px"
     }
 ];
