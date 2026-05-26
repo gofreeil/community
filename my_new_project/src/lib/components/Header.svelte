@@ -328,7 +328,7 @@
                 <div class="relative group">
                     <a
                         href="/"
-                        class="flex h-28 w-28 animate-pulse-slow items-center justify-center rounded-xl shadow-lg transition-transform hover:scale-105"
+                        class="flex h-28 w-28 items-center justify-center rounded-xl shadow-lg transition-transform hover:scale-105"
                     >
                         <div class="h-16 w-16 rounded-full overflow-hidden">
                             <img
