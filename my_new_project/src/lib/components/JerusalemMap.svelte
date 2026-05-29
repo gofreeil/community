@@ -1045,10 +1045,10 @@
                     <button
                         type="button"
                         onclick={() => (showCategorySheet = true)}
-                        class="flex items-center justify-center gap-2 flex-1 min-w-0 bg-gradient-to-br from-purple-600 to-blue-600 text-white px-3 py-2.5 rounded-full text-sm font-bold shadow-lg active:scale-95 border border-purple-400"
+                        class="flex items-center justify-center gap-1.5 flex-1 min-w-0 bg-gradient-to-br from-purple-600 to-blue-600 text-white px-3 py-2 rounded-full text-xs font-bold shadow-lg active:scale-95 border border-purple-400"
                         aria-label="פתח סינון קטגוריות"
                     >
-                        <span class="text-lg leading-none shrink-0">🎛️</span>
+                        <span class="text-base leading-none shrink-0">🎛️</span>
                         <span class="truncate">בחר קטגוריה</span>
                     </button>
                 </div>
