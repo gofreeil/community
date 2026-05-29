@@ -1063,8 +1063,8 @@
                     ></div>
                     <!-- Sheet -->
                     <div
-                        class="md:hidden fixed bottom-0 left-0 right-0 z-[10001] bg-[#0f172a] border-t-2 border-purple-500 rounded-t-2xl shadow-2xl max-h-[80vh] flex flex-col"
-                        style="animation: sheetSlideUp 0.25s ease-out; transform: translateY({sheetDragY}px); transition: {sheetDragging ? 'none' : 'transform 0.2s ease-out'};"
+                        class="md:hidden fixed top-1/2 left-3 right-3 z-[10001] bg-[#0f172a] border-2 border-purple-500 rounded-2xl shadow-2xl max-h-[80vh] flex flex-col"
+                        style="animation: sheetFadeIn 0.25s ease-out; transform: translateY(calc(-50% + {sheetDragY}px)); transition: {sheetDragging ? 'none' : 'transform 0.2s ease-out'};"
                         role="dialog"
                         aria-label="סינון קטגוריות"
                     >
@@ -2045,6 +2045,10 @@
     @keyframes sheetSlideUp {
         from { transform: translateY(100%); }
         to   { transform: translateY(0); }
+    }
+    @keyframes sheetFadeIn {
+        from { transform: translateY(calc(-50% + 20px)); opacity: 0; }
+        to   { transform: translateY(-50%); opacity: 1; }
     }
 
     /* ----- מרקרי מפה (Leaflet) ----- */
