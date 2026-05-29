@@ -1027,10 +1027,10 @@
                         <button
                             type="button"
                             onclick={() => (showCategorySheet = true)}
-                            class="flex items-center gap-1.5 flex-1 min-w-0 {active.id === 'benefits'
+                            class="flex items-center gap-1 shrink-0 max-w-[45%] {active.id === 'benefits'
                                 ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-gray-900 border-yellow-500'
                                 : 'bg-gradient-to-br from-purple-600 to-blue-600 text-white border-purple-500'}
-                                px-3 py-2 rounded-full text-xs font-bold shadow-lg active:scale-95 border whitespace-nowrap overflow-hidden"
+                                px-2.5 py-2 rounded-full text-xs font-bold shadow-lg active:scale-95 border whitespace-nowrap overflow-hidden"
                         >
                             {#if active.icon?.startsWith('/')}
                                 <img src={active.icon} class="w-5 h-5 shrink-0" alt={active.label} />
@@ -1038,18 +1038,18 @@
                                 <span class="text-base leading-none shrink-0">{active.icon}</span>
                             {/if}
                             <span class="truncate">{active.label}</span>
-                            <span class="ms-auto text-[10px] opacity-75 shrink-0">▾</span>
+                            <span class="text-[10px] opacity-75 shrink-0">▾</span>
                         </button>
                     {/each}
                     <!-- כפתור פתיחת חלונית סינון (משמאל) -->
                     <button
                         type="button"
                         onclick={() => (showCategorySheet = true)}
-                        class="flex items-center gap-1.5 bg-gradient-to-br from-purple-600 to-blue-600 text-white px-3 py-2 rounded-full text-xs font-bold shadow-lg active:scale-95 border border-purple-400 shrink-0"
+                        class="flex items-center justify-center gap-2 flex-1 min-w-0 bg-gradient-to-br from-purple-600 to-blue-600 text-white px-3 py-2.5 rounded-full text-sm font-bold shadow-lg active:scale-95 border border-purple-400"
                         aria-label="פתח סינון קטגוריות"
                     >
-                        <span class="text-base leading-none">🎛️</span>
-                        <span>סנן</span>
+                        <span class="text-lg leading-none shrink-0">🎛️</span>
+                        <span class="truncate">בחר קטגוריה</span>
                     </button>
                 </div>
 
