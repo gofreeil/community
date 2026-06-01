@@ -254,7 +254,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
             { key: 'looking_for_f', label: 'מחפשת',                 type: 'textarea', required: false, placeholder: 'למשל: רגיש, חכם, ירא שמיים, עם חוש הומור...',  maxLength: 100, showIf: { field: 'gender', equals: 'אישה' } },
             { key: 'inspiration', label: 'משפט מעורר השראה (אופציונלי)', type: 'textarea', required: false, placeholder: 'משפט או ציטוט שאתה שואב ממנו השראה', maxLength: 150 },
             { key: 'images',      label: 'גלריית תמונות',           type: 'images',   required: false },
-            { key: 'matchmaker',  label: 'שדכן/ית (אופציונלי)',       type: 'text',     required: false, placeholder: 'שם ומספר שדכן/ית' },
+            { key: 'matchmaker',  label: 'שדכן או חבר (אופציונלי)',    type: 'text',     required: false, placeholder: 'שם וטלפון' },
             { key: 'contact',     label: 'דרך קשר',                  type: 'text',     required: true,  placeholder: 'דרך שדכן/ית / וואטסאפ' },
             { key: 'phone',       label: 'טלפון (לא מוצג)',           type: 'tel',      required: true,  placeholder: '05X-XXXXXXX', hint: 'הטלפון יישמר פנימית ולא יוצג לציבור' },
         ],
