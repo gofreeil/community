@@ -247,7 +247,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
             { key: 'gender',      label: 'מין',                     type: 'select',   required: true,  options: ['גבר', 'אישה'] },
             { key: 'age',         label: 'גיל',                     type: 'number',   required: true,  placeholder: '28' },
             { key: 'sector',      label: 'מגזר / רקע',              type: 'select',   required: false, options: ['דתי', 'דתי-לאומי', 'חרדי', 'מסורתי', 'חילוני'] },
-            { key: 'education',   label: 'השכלה',                   type: 'text',     required: false, placeholder: 'תואר / ישיבה / מקצוע...' },
+            { key: 'education',   label: 'מקצוע / תעסוקה / השכלה',  type: 'text',     required: false, placeholder: 'תואר / ישיבה / מקצוע...' },
             { key: 'interests',   label: 'תחומי עניין',              type: 'textarea', required: false, placeholder: 'ספורט, מוזיקה, בישול...' },
             { key: 'description', label: 'קצת עליי',                type: 'textarea', required: true,  placeholder: 'כמה מילים על עצמך (לא יוצג שם)' },
             { key: 'looking_for_m', label: 'מחפש',                  type: 'textarea', required: false, placeholder: 'למשל: רגישה, חכמה, יראת שמיים, עם חוש הומור...', maxLength: 100, showIf: { field: 'gender', equals: 'גבר' } },
