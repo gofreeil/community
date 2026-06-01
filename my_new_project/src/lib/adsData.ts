@@ -46,7 +46,7 @@ export const ads: Ad[] = [
         title: "מבקר רשויות המדינה",
         description: "מבקרים את הרשויות, ממצים את זכות התושב",
         cta: "מבקרים את הרשויות, ממצים את זכות התושב",
-        href: "https://right-to-live.vercel.app/",
+        href: "https://criticism.vercel.app/",
         image: "/images/mevaker-rashuyot.png",
         color: "from-blue-700 to-indigo-700",
         imageHeight: "120px",

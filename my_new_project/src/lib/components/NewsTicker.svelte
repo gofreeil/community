@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onMount } from 'svelte';
 
-    const NATIONAL_NEWS_API = 'https://right-to-live.vercel.app/api/national-news';
+    const NATIONAL_NEWS_API = 'https://criticism.vercel.app/api/national-news';
 
     // חדשות ברירת מחדל אם ה-API לא זמין
     type NewsItem = { line1: string; line2: string; sourceUrl?: string | null; documentId?: string };
