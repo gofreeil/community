@@ -160,7 +160,11 @@
     <div class="max-w-4xl mx-auto">
         <!-- Header -->
         <div class="text-center mb-6">
-            <img src="/images/Available.png" alt="לוח פנויים ופנויות" class="h-48 md:h-64 mx-auto mb-4" />
+            <div class="inline-block p-[3px] rounded-3xl bg-gradient-to-br from-pink-500 via-rose-400 to-purple-600 shadow-2xl shadow-pink-500/30 mb-4">
+                <div class="rounded-[1.3rem] bg-[#0f172a] p-2">
+                    <img src="/images/Available.png" alt="לוח פנויים ופנויות" class="h-48 md:h-64 rounded-2xl mx-auto block" />
+                </div>
+            </div>
             <h1 class="text-3xl font-black text-white mb-2">לוח פנויים ופנויות</h1>
             <p class="text-gray-400">לוח ארצי — מציאת בן/בת זוג מכל רחבי הארץ</p>
         </div>
