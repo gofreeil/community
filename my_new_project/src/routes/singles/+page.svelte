@@ -129,7 +129,9 @@
     // התמונות נוצרות דינמית ע"י DiceBear (SVG מאויר — אנונימי, פרטי, ולא משויך לאדם אמיתי)
     const avatar = (seed: string, female: boolean) =>
         `https://api.dicebear.com/9.x/personas/svg?seed=${encodeURIComponent(seed)}` +
-        (female ? '&hair=longCurly,longStraight,bunUndercut,buns' : '&hair=shortCombover,shortComboverChops,shortBread,shortMessy');
+        (female
+            ? '&hair=long,curly,bobCut,bobBangs,curlyBun,straightBun,pigtails,bunUndercut'
+            : '&hair=shortCombover,shortComboverChops,buzzcut,fade,sideShave,curlyHighTop');
 
     const mockSingles = [
         { id: '1', nickname: 'דודי',     label: 'פנוי, 28, ירושלים',   gender: 'male'   as const, age: '28', religiosity: 'haredi'  as const, city: 'ירושלים',   description: 'סטודנט למדעי המחשב, אוהב טיולים ומוזיקה.',           lookingFor: 'בת זוג רצינית, יראת שמיים, עם חוש הומור',  inspiration: '"איזהו עשיר? השמח בחלקו"',                  avatar: avatar('Dudi-1',  false), contact: 'דוד',     phone: '050-1234567' },
