@@ -126,15 +126,20 @@
     );
 
     // Mock data for display
+    // התמונות נוצרות דינמית ע"י DiceBear (SVG מאויר — אנונימי, פרטי, ולא משויך לאדם אמיתי)
+    const avatar = (seed: string, female: boolean) =>
+        `https://api.dicebear.com/9.x/personas/svg?seed=${encodeURIComponent(seed)}` +
+        (female ? '&hair=longCurly,longStraight,bunUndercut,buns' : '&hair=shortCombover,shortComboverChops,shortBread,shortMessy');
+
     const mockSingles = [
-        { id: '1', label: 'דוד כ.', gender: 'male' as const, age: '28', religiosity: 'haredi' as const, city: 'ירושלים', description: 'סטודנט למדעי המחשב, אוהב טיולים ומוזיקה. מחפש בת זוג רצינית.', contact: 'דוד', phone: '050-1234567' },
-        { id: '2', label: 'שרה מ.', gender: 'female' as const, age: '25', religiosity: 'haredi' as const, city: 'ירושלים', description: 'מורה לאנגלית, אוהבת ספרים ובישול. מחפשת בן זוג ירא שמיים.', contact: 'שרה', phone: '050-2345678' },
-        { id: '3', label: 'יוסף ל.', gender: 'male' as const, age: '31', religiosity: 'haredi' as const, city: 'בני ברק', description: 'מהנדס תוכנה, בוגר ישיבה. מחפש בת זוג עם ערכים.', contact: 'יוסף', phone: '050-3456789' },
-        { id: '4', label: 'רחל א.', gender: 'female' as const, age: '24', religiosity: 'dl' as const, city: 'רמת גן', description: 'סטודנטית לעבודה סוציאלית, מתנדבת. מחפשת בן זוג רציני.', contact: 'רחל', phone: '050-4567890' },
-        { id: '5', label: 'משה ד.', gender: 'male' as const, age: '29', religiosity: 'dl' as const, city: 'ירושלים', description: 'עורך דין, אוהב ספורט ושיעורי תורה. מחפש את הבת זוג הנכונה.', contact: 'משה', phone: '050-5678901' },
-        { id: '6', label: 'לאה ב.', gender: 'female' as const, age: '27', religiosity: 'general' as const, city: 'פתח תקווה', description: 'גרפיקאית, אוהבת אמנות ויצירה. מחפשת בן זוג עם חוש הומור.', contact: 'לאה', phone: '050-6789012' },
-        { id: '7', label: 'אברהם ש.', gender: 'male' as const, age: '63', religiosity: 'dl' as const, city: 'ירושלים', description: 'רואה חשבון בגמלאות, אוהב חסד ועזרה לזולת. מחפש בת זוג לבניין בית.', contact: 'אברהם', phone: '050-7890123' },
-        { id: '8', label: 'מרים ג.', gender: 'female' as const, age: '65', religiosity: 'general' as const, city: 'ירושלים', description: 'אחות בדימוס, אוהבת טבע וטיולים. מחפשת בן זוג אמיתי.', contact: 'מרים', phone: '050-8901234' },
+        { id: '1', nickname: 'דודי',     label: 'פנוי, 28, ירושלים',   gender: 'male'   as const, age: '28', religiosity: 'haredi'  as const, city: 'ירושלים',   description: 'סטודנט למדעי המחשב, אוהב טיולים ומוזיקה.',           lookingFor: 'בת זוג רצינית, יראת שמיים, עם חוש הומור',  inspiration: '"איזהו עשיר? השמח בחלקו"',                  avatar: avatar('Dudi-1',  false), contact: 'דוד',     phone: '050-1234567' },
+        { id: '2', nickname: 'שרהל\'ה', label: 'פנויה, 25, ירושלים',  gender: 'female' as const, age: '25', religiosity: 'haredi'  as const, city: 'ירושלים',   description: 'מורה לאנגלית, אוהבת ספרים ובישול.',                  lookingFor: 'בן זוג ירא שמיים, רגיש וחכם, עם שאיפות',     inspiration: '"כל מה שעשה הקב"ה — לטובה עשה"',           avatar: avatar('Sara-2',  true),  contact: 'שרה',     phone: '050-2345678' },
+        { id: '3', nickname: 'יוסי',     label: 'פנוי, 31, בני ברק',   gender: 'male'   as const, age: '31', religiosity: 'haredi'  as const, city: 'בני ברק',   description: 'מהנדס תוכנה, בוגר ישיבה.',                            lookingFor: 'בת זוג עם ערכים, יראת שמיים, אכפתית',       inspiration: '"איזהו חכם? הלומד מכל אדם"',                avatar: avatar('Yossi-3', false), contact: 'יוסף',    phone: '050-3456789' },
+        { id: '4', nickname: 'רחלי',     label: 'פנויה, 24, רמת גן',   gender: 'female' as const, age: '24', religiosity: 'dl'      as const, city: 'רמת גן',    description: 'סטודנטית לעבודה סוציאלית, מתנדבת בארגון "לתת".',     lookingFor: 'בן זוג רציני, אוהב חסד, עם לב טוב',          inspiration: '"ואהבת לרעך כמוך"',                          avatar: avatar('Racheli-4', true),  contact: 'רחל',     phone: '050-4567890' },
+        { id: '5', nickname: 'מושיק',    label: 'פנוי, 29, ירושלים',   gender: 'male'   as const, age: '29', religiosity: 'dl'      as const, city: 'ירושלים',   description: 'עורך דין, אוהב ספורט ושיעורי תורה.',                  lookingFor: 'בת זוג עם חוש הומור, חכמה, רגישה',           inspiration: '"חזק ואמץ כי אתה תנחיל"',                    avatar: avatar('Moshik-5', false), contact: 'משה',     phone: '050-5678901' },
+        { id: '6', nickname: 'לאל\'ה',  label: 'פנויה, 27, פתח תקווה', gender: 'female' as const, age: '27', religiosity: 'general' as const, city: 'פתח תקווה', description: 'גרפיקאית, אוהבת אמנות ויצירה.',                       lookingFor: 'בן זוג עם חוש הומור, יצירתי, אוהב חיים',     inspiration: '"להאמין ולחלום ולא לוותר"',                  avatar: avatar('Leah-6',   true),  contact: 'לאה',     phone: '050-6789012' },
+        { id: '7', nickname: 'אברימי',  label: 'פנוי, 63, ירושלים',   gender: 'male'   as const, age: '63', religiosity: 'dl'      as const, city: 'ירושלים',   description: 'רואה חשבון בגמלאות, אוהב חסד ועזרה לזולת.',          lookingFor: 'בת זוג לבניין בית, חמה ואוהבת',              inspiration: '"בלי לוותר על אהבה — בכל גיל"',              avatar: avatar('Avremi-7', false), contact: 'אברהם',  phone: '050-7890123' },
+        { id: '8', nickname: 'מירי',     label: 'פנויה, 65, ירושלים',  gender: 'female' as const, age: '65', religiosity: 'general' as const, city: 'ירושלים',   description: 'אחות בדימוס, אוהבת טבע וטיולים.',                     lookingFor: 'בן זוג אמיתי, רגיש, אוהב חיים',              inspiration: '"זה הזמן להתחיל פרק חדש"',                   avatar: avatar('Miri-8',   true),  contact: 'מרים',   phone: '050-8901234' },
     ];
 
     let filteredMock = $derived(
@@ -240,12 +245,13 @@
                 <div class="rounded-2xl bg-[#0f172a] border {isMale ? 'border-blue-500/30' : 'border-pink-500/30'} overflow-hidden shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1">
                     <!-- Card header -->
                     <div class="bg-gradient-to-r {isMale ? 'from-blue-600 to-cyan-600' : 'from-pink-600 to-rose-500'} p-4 flex items-center gap-3 relative">
-                        <div class="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-2xl flex-shrink-0">
-                            {isMale ? '👨' : '👩'}
+                        <div class="w-16 h-16 rounded-full bg-white/25 ring-2 ring-white/30 overflow-hidden flex items-center justify-center flex-shrink-0 shadow-md">
+                            <img src={person.avatar} alt={person.nickname} class="w-full h-full object-cover" loading="lazy" />
                         </div>
                         <div class="flex-1 min-w-0">
-                            <h3 class="text-white font-black text-lg">{person.label}</h3>
-                            <div class="flex items-center gap-3 text-white/80 text-sm">
+                            <h3 class="text-white font-black text-lg leading-tight">{person.nickname}</h3>
+                            <p class="text-white/70 text-xs font-medium mb-1">{person.label}</p>
+                            <div class="flex items-center gap-3 text-white/85 text-sm">
                                 <span>🎂 {person.age}</span>
                                 <span>📍 {person.city}</span>
                             </div>
@@ -261,7 +267,20 @@
 
                     <!-- Card body -->
                     <div class="p-4">
-                        <p class="text-gray-300 text-sm leading-relaxed mb-4">{person.description}</p>
+                        <p class="text-gray-300 text-sm leading-relaxed mb-3">{person.description}</p>
+
+                        {#if person.lookingFor}
+                            <div class="mb-3 rounded-lg bg-white/5 border border-white/10 px-3 py-2">
+                                <p class="text-[11px] font-bold {isMale ? 'text-cyan-300' : 'text-pink-300'} mb-0.5">{isMale ? 'מחפש' : 'מחפשת'}</p>
+                                <p class="text-gray-200 text-sm leading-snug">{person.lookingFor}</p>
+                            </div>
+                        {/if}
+
+                        {#if person.inspiration}
+                            <p class="text-gray-400 text-xs italic leading-snug mb-4 border-r-2 {isMale ? 'border-cyan-500/40' : 'border-pink-500/40'} pr-2">
+                                {person.inspiration}
+                            </p>
+                        {/if}
 
                         <div class="flex gap-2">
                             <div class="relative flex-shrink-0">
