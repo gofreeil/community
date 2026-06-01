@@ -18,12 +18,18 @@ export const load: PageServerLoad = async (event) => {
         error(404, `קטגוריה "${event.params.category}" לא קיימת`);
     }
 
-    let userProfile: { nickname: string; phone: string; neighborhood: string; city: string } | null = null;
+    let userProfile: { nickname: string; phone: string; neighborhood: string; city: string; family_status: string } | null = null;
     if (session?.user?.id) {
         try {
             const jwt = event.cookies.get('strapi_jwt');
             const u = await getUserById(session.user.id as string, jwt);
-            if (u) userProfile = { nickname: (u.nickname || u.name || '') as string, phone: u.phone ?? '', neighborhood: u.neighborhood ?? '', city: u.city ?? '' };
+            if (u) userProfile = {
+                nickname:      (u.nickname || u.name || '') as string,
+                phone:         u.phone         ?? '',
+                neighborhood:  u.neighborhood  ?? '',
+                city:          u.city          ?? '',
+                family_status: u.family_status ?? '',
+            };
         } catch { /* שקט */ }
     }
 

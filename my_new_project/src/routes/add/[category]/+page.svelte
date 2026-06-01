@@ -33,6 +33,16 @@
             const parts = [userProfile?.neighborhood, userProfile?.city].filter(Boolean);
             if (parts.length) return parts.join(', ');
         }
+        // מצב משפחתי — נלקח מהפרופיל (single_m/single_f → רווק/ה)
+        if (key === 'marital_status' && userProfile?.family_status) {
+            const fs = userProfile.family_status;
+            if (fs === 'single_m' || fs === 'single_f') return 'רווק/ה';
+        }
+        // מין — אם בפרופיל נשמר ידע על מגדר, מקדים כברירת מחדל
+        if (key === 'gender' && userProfile?.family_status) {
+            if (userProfile.family_status === 'single_m') return 'גבר';
+            if (userProfile.family_status === 'single_f') return 'אישה';
+        }
         if (defaultVal) return defaultVal;
         return '';
     }
