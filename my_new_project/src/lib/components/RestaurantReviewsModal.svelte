@@ -94,7 +94,7 @@
             <!-- סיכום דירוג -->
             <div class="flex items-center gap-5 mb-5">
                 <div class="text-center flex-shrink-0">
-                    <div class="text-4xl font-black text-orange-400">{summary.avg || '—'}</div>
+                    <div class="text-4xl font-black text-orange-400">{summary.avg || '-'}</div>
                     <div class="text-yellow-400 text-sm">
                         {#each [1,2,3,4,5] as s}
                             <span>{s <= Math.round(summary.avg) ? '★' : '☆'}</span>
@@ -145,7 +145,7 @@
                 />
                 <textarea
                     bind:value={formText}
-                    placeholder="ספרו על החוויה שלכם — האוכל, השירות, האווירה..."
+                    placeholder="ספרו על החוויה שלכם - האוכל, השירות, האווירה..."
                     rows="3"
                     class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:border-orange-500"
                 ></textarea>

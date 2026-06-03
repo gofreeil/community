@@ -10,7 +10,7 @@
         };
     }>();
 
-    // ===== Persistence — same key as the main builder so state shares freely =====
+    // ===== Persistence - same key as the main builder so state shares freely =====
     const LS_KEY = "ad_builder_draft_v1";
     const PAID_KEY = "ad_paid";
 
@@ -303,7 +303,7 @@
 </script>
 
 <svelte:head>
-    <title>עריכת דף נחיתה — בונה הפרסומות</title>
+    <title>עריכת דף נחיתה - בונה הפרסומות</title>
 </svelte:head>
 
 <div class="ad-builder max-w-5xl mx-auto px-4 py-8 md:py-12" dir="rtl">
@@ -331,11 +331,11 @@
         <!-- ===== Page header ===== -->
         <header class="text-center mb-8">
             <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 mb-4">
-                <span class="text-amber-300 text-xs font-bold tracking-wider">שלב הבא — עריכת דף הנחיתה</span>
+                <span class="text-amber-300 text-xs font-bold tracking-wider">שלב הבא - עריכת דף הנחיתה</span>
             </div>
             <h1 class="text-3xl md:text-4xl font-black text-white mb-3">עכשיו בואו נעצב את דף הנחיתה</h1>
             <p class="text-gray-300 text-sm md:text-base max-w-2xl mx-auto leading-relaxed">
-                הפרסומת שלך נשמרה כטיוטה. כאן תעצב את הדף הפנימי שיוצג לגולש כשהוא לוחץ על הפרסומת —
+                הפרסומת שלך נשמרה כטיוטה. כאן תעצב את הדף הפנימי שיוצג לגולש כשהוא לוחץ על הפרסומת -
                 כותרת, תיאור, יתרונות, תמונה, מוצרים, פרטי קשר, ושעות פעילות.
             </p>
             <div class="mt-4">
@@ -352,9 +352,9 @@
         <section class="step-card">
             <div class="step-head">
                 <span class="step-num">1</span>
-                <h2>דף נחיתה — לאן המשתמש יגיע?</h2>
+                <h2>דף נחיתה - לאן המשתמש יגיע?</h2>
             </div>
-            <p class="step-help">בחר אופציה אחת או יותר — אם יש לך אתר, נשלח את הגולש אליו. אם לא — נשתמש בדף הנחיתה הפנימי שלנו.</p>
+            <p class="step-help">בחר אופציה אחת או יותר - אם יש לך אתר, נשלח את הגולש אליו. אם לא - נשתמש בדף הנחיתה הפנימי שלנו.</p>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -375,7 +375,7 @@
                 </div>
 
                 <div class="md:col-span-2">
-                    <label class="field-label">כותרת לדף הנחיתה (אופציונלי — אחרת נשתמש בכותרת הראשית)</label>
+                    <label class="field-label">כותרת לדף הנחיתה (אופציונלי - אחרת נשתמש בכותרת הראשית)</label>
                     <input type="text" bind:value={landingHeadline} placeholder="ברוכים הבאים ל..." class="text-input" />
                 </div>
                 <div class="md:col-span-2">
@@ -385,7 +385,7 @@
                 <div class="md:col-span-2">
                     <label class="field-label">תוכן מורחב לדף הנחיתה (אופציונלי)</label>
                     <p class="text-xs text-gray-400 mb-1.5 leading-relaxed">
-                        מקום להרחיב — סיפור העסק/השירות, פירוט מה אתם מציעים ולמי, ערכים, ניסיון, ומה מבדיל אתכם.
+                        מקום להרחיב - סיפור העסק/השירות, פירוט מה אתם מציעים ולמי, ערכים, ניסיון, ומה מבדיל אתכם.
                         אפשר לכתוב כמה פסקאות (ירידות שורה יישמרו). הטקסט יוצג כסעיף נפרד בדף הנחיתה, מתחת לכותרת הראשית.
                     </p>
                     <textarea bind:value={landingExtended} rows="8"
@@ -394,9 +394,9 @@
                 </div>
 
                 <div class="md:col-span-2">
-                    <label class="field-label">🖼️ תמונה לדף הנחיתה (אופציונלי — אחרת נשתמש בתמונת הפרסומת)</label>
+                    <label class="field-label">🖼️ תמונה לדף הנחיתה (אופציונלי - אחרת נשתמש בתמונת הפרסומת)</label>
                     <p class="text-xs text-gray-400 mb-2 leading-relaxed">
-                        אפשר להעלות תמונה אחרת ספציפית לדף הנחיתה — בדרך כלל תמונה רחבה ואיכותית יותר מזו שבפרסומת הקטנה.
+                        אפשר להעלות תמונה אחרת ספציפית לדף הנחיתה - בדרך כלל תמונה רחבה ואיכותית יותר מזו שבפרסומת הקטנה.
                     </p>
                     <label class="upload-zone-sm"
                            class:has-image={!!landingImage}
@@ -420,16 +420,16 @@
                 <div class="md:col-span-2">
                     <label class="field-label">✓ שלושה יתרונות של המוצר/השירות שלך (אופציונלי)</label>
                     <p class="text-xs text-gray-400 mb-2 leading-relaxed">
-                        כתוב <strong class="text-amber-300">שלושה יתרונות קצרים וברורים</strong> שגורמים לבחור בך — כל יתרון בשורה משלו.
+                        כתוב <strong class="text-amber-300">שלושה יתרונות קצרים וברורים</strong> שגורמים לבחור בך - כל יתרון בשורה משלו.
                         הם יוצגו בדף הנחיתה כרשימה מעוצבת עם סימני וי (✓) על רקע צבע הפרסומת.
                     </p>
                     <div class="space-y-2">
                         <input type="text" bind:value={landingAdvantages[0]} maxlength="80"
-                               placeholder="יתרון 1 — לדוגמה: איכות חומרי גלם פרימיום בלעדית" class="text-input" />
+                               placeholder="יתרון 1 - לדוגמה: איכות חומרי גלם פרימיום בלעדית" class="text-input" />
                         <input type="text" bind:value={landingAdvantages[1]} maxlength="80"
-                               placeholder="יתרון 2 — לדוגמה: שירות אישי 7 ימים בשבוע" class="text-input" />
+                               placeholder="יתרון 2 - לדוגמה: שירות אישי 7 ימים בשבוע" class="text-input" />
                         <input type="text" bind:value={landingAdvantages[2]} maxlength="80"
-                               placeholder="יתרון 3 — לדוגמה: אחריות מלאה לשנה" class="text-input" />
+                               placeholder="יתרון 3 - לדוגמה: אחריות מלאה לשנה" class="text-input" />
                     </div>
                 </div>
             </div>
@@ -487,12 +487,12 @@
             </div>
             <p class="step-help">
                 🌟 <strong class="text-amber-300">זה החלק הכי חשוב!</strong>
-                תושבי השכונה רוצים לדעת — למה דווקא אצלך? נסיון, איכות, מחיר, יחס אישי, ערך מוסף.
+                תושבי השכונה רוצים לדעת - למה דווקא אצלך? נסיון, איכות, מחיר, יחס אישי, ערך מוסף.
                 כתוב 2-3 משפטים שמסבירים את הייחוד שלך.
             </p>
 
             <textarea bind:value={uniqueness} rows="5" maxlength="500"
-                      placeholder={`לדוגמה:\n• 15 שנות נסיון בשכונה — אנחנו חלק מהקהילה\n• כל המוצרים בייצור בית, ללא חומרים משמרים\n• אחריות מלאה ושירות אישי 24/7`}
+                      placeholder={`לדוגמה:\n• 15 שנות נסיון בשכונה - אנחנו חלק מהקהילה\n• כל המוצרים בייצור בית, ללא חומרים משמרים\n• אחריות מלאה ושירות אישי 24/7`}
                       class="text-input"></textarea>
             <div class="text-xs text-gray-500 mt-1 text-left">{uniqueness.length}/500</div>
         </section>
@@ -524,7 +524,7 @@
                 <span class="step-num">👁️</span>
                 <h2>תצוגה מקדימה של דף הנחיתה</h2>
             </div>
-            <p class="step-help">כך ייראה דף הנחיתה שעיצבת — אליו הגולש יגיע בלחיצה על הפרסומת.</p>
+            <p class="step-help">כך ייראה דף הנחיתה שעיצבת - אליו הגולש יגיע בלחיצה על הפרסומת.</p>
 
             <div class="preview-frame landing">
                 <div class="landing-mock">

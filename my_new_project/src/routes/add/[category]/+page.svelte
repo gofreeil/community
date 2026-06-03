@@ -11,13 +11,13 @@
 
     const DRAFT_KEY = `add_draft_${categoryId}`;
 
-    // Helper: מחזיר HTML לאיקון — תמונה אם src, אמוגי אם לא
+    // Helper: מחזיר HTML לאיקון - תמונה אם src, אמוגי אם לא
     const iconHtml = (size: 'lg' | 'sm' = 'sm') =>
         config.icon?.startsWith('/')
             ? `<img src="${config.icon}" class="${size === 'lg' ? 'w-28 h-28 mx-auto' : 'w-5 h-5 inline-block align-middle'}" alt="${config.label}" />`
             : config.icon ?? '';
 
-    // ---- Neighborhood — מתמלא מיד מהפרופיל ----
+    // ---- Neighborhood - מתמלא מיד מהפרופיל ----
     let neighborhood = $state(userProfile?.neighborhood || DEFAULT_NEIGHBORHOOD);
     let city         = $state(userProfile?.city         || 'ירושלים');
 
@@ -33,12 +33,12 @@
             const parts = [userProfile?.neighborhood, userProfile?.city].filter(Boolean);
             if (parts.length) return parts.join(', ');
         }
-        // מצב משפחתי — נלקח מהפרופיל (single_m/single_f → רווק/ה)
+        // מצב משפחתי - נלקח מהפרופיל (single_m/single_f → רווק/ה)
         if (key === 'marital_status' && userProfile?.family_status) {
             const fs = userProfile.family_status;
             if (fs === 'single_m' || fs === 'single_f') return 'רווק/ה';
         }
-        // מין — אם בפרופיל נשמר ידע על מגדר, מקדים כברירת מחדל
+        // מין - אם בפרופיל נשמר ידע על מגדר, מקדים כברירת מחדל
         if (key === 'gender' && userProfile?.family_status) {
             if (userProfile.family_status === 'single_m') return 'גבר';
             if (userProfile.family_status === 'single_f') return 'אישה';
@@ -47,12 +47,12 @@
         return '';
     }
 
-    // ---- Form state — מתמלא מיד מהפרופיל ללא המתנה ל-onMount ----
+    // ---- Form state - מתמלא מיד מהפרופיל ללא המתנה ל-onMount ----
     let formValues = $state<Record<string, string>>(
         Object.fromEntries(config.fields.map(f => [f.key, profileDefault(f.key, f.type, f.options, f.default)]))
     );
 
-    // ---- תמחור מסעדות — מסעדה 45 ₪, מזון מהיר 30 ₪ (תלוי בבחירת המשתמש) ----
+    // ---- תמחור מסעדות - מסעדה 45 ₪, מזון מהיר 30 ₪ (תלוי בבחירת המשתמש) ----
     const RESTAURANT_PRICING: Record<string, { row: number; price: number }> = {
         'מסעדה':     { row: 7,  price: 45 },
         'מזון מהיר': { row: 10, price: 30 },
@@ -185,7 +185,7 @@
         formValues = { ...formValues, [key]: value };
     }
 
-    // ---- כשמשתמש בוחר 'מחפש להתארח' — ברירת המחדל של 'משך הפרסום' היא 'לשבת הקרובה בלבד' ----
+    // ---- כשמשתמש בוחר 'מחפש להתארח' - ברירת המחדל של 'משך הפרסום' היא 'לשבת הקרובה בלבד' ----
     let prevOfferType = $state(formValues.offer_type ?? '');
     $effect(() => {
         const ot = formValues.offer_type;
@@ -233,10 +233,10 @@
         const err = validate();
         if (err) { errorMsg = err; return; }
 
-        // אם לא מחובר — שמור טיוטא והפנה להרשמה
+        // אם לא מחובר - שמור טיוטא והפנה להרשמה
         if (!userId) {
             saveDraft();
-            redirectingMsg = 'הטיוטה שלך נשמרה ✓\nאתה מועבר להרשמה — הפרסום יושלם מיד לאחריה.';
+            redirectingMsg = 'הטיוטה שלך נשמרה ✓\nאתה מועבר להרשמה - הפרסום יושלם מיד לאחריה.';
             setTimeout(() => {
                 goto(`/login?redirect=/add/${categoryId}`);
             }, 2200);
@@ -318,7 +318,7 @@
             }
 
         } catch {
-            errorMsg = 'בעיית תקשורת — נסה שוב';
+            errorMsg = 'בעיית תקשורת - נסה שוב';
             submitting = false;
         }
     }
@@ -520,7 +520,7 @@
                         <div class="rounded-xl border-2 border-amber-500/40 bg-amber-900/15 p-3 mb-3">
                             <p class="text-amber-200 text-sm font-bold leading-relaxed text-center">
                                 ⚠️ התמונות חייבות להיות <span class="underline">הולמות וצנועות</span> בלבד.{#if categoryId !== 'restaurants'}<br />
-                                משתמש שינסה להפר את הכללים — <span class="text-red-300 font-black">ייחסם לצמיתות</span>.{/if}
+                                משתמש שינסה להפר את הכללים - <span class="text-red-300 font-black">ייחסם לצמיתות</span>.{/if}
                             </p>
                         </div>
                         <div class="flex items-center justify-between mb-2">

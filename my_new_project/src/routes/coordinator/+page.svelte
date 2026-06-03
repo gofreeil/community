@@ -12,7 +12,7 @@
         <div class="text-center mb-8">
             <span class="text-5xl mb-3 block">🛠️</span>
             <h1 class="text-3xl font-black text-white mb-2">פאנל רכז שכונה</h1>
-            <p class="text-gray-400">ניהול תוכן עבור: <strong class="text-white">{data.neighborhoods.join(', ') || '—'}</strong></p>
+            <p class="text-gray-400">ניהול תוכן עבור: <strong class="text-white">{data.neighborhoods.join(', ') || '-'}</strong></p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

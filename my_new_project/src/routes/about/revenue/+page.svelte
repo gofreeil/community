@@ -175,10 +175,10 @@
 			</div>
 		</div>
 
-		<!-- מה זה + שירותי השכונה — מסגרת אחת -->
+		<!-- מה זה + שירותי השכונה - מסגרת אחת -->
 		<div class="mb-10 rounded-3xl p-7" style="background:linear-gradient(135deg,#0f172a,#1e293b); border:1px solid rgba(139,92,246,0.2);">
 
-			<!-- מה זה? — שורה אחת ארוכה -->
+			<!-- מה זה? - שורה אחת ארוכה -->
 			<h2 class="text-2xl font-black mb-4 text-purple-300">קהילה בשכונה</h2>
 			<p class="text-base md:text-lg text-gray-200 leading-relaxed mb-7">
 				הפלטפורמה מרכזת את כל מה שקורה בשכונה שלך: גמ"חים, עסקים מקומיים, מניינים, חוגים, אירועים, חפצים למסירה ועוד - הכל במקום אחד נגיש ונוח.
@@ -273,12 +273,12 @@
 				{data.hero_subtitle}
 			</p>
 
-			<!-- 1. תקציר חלוקת הרווחים — בתוך ה-hero -->
+			<!-- 1. תקציר חלוקת הרווחים - בתוך ה-hero -->
 			<div class="mt-10 pt-8 border-t border-white/10">
 				<h2 class="text-xl font-black mb-1">
 					תקציר חלוקת הרווחים
 				</h2>
-				<p class="text-indigo-200 text-sm mb-6 text-center">מהרווח הנקי — כל שקל מתחלק בין שלושה גורמים:</p>
+				<p class="text-indigo-200 text-sm mb-6 text-center">מהרווח הנקי - כל שקל מתחלק בין שלושה גורמים:</p>
 				<div class="grid grid-cols-3 gap-2 sm:gap-4">
 					{#each data.distribution as card}
 						<a href={card.link}
@@ -352,7 +352,7 @@
 						<span class="font-bold text-gray-400 text-[10px] text-center leading-tight">סה"כ<br/>עלויות</span>
 					</div>
 				</div>
-				<!-- גרף עלויות HTML/CSS — פינות מעוגלות מושלמות בכל צדדים -->
+				<!-- גרף עלויות HTML/CSS - פינות מעוגלות מושלמות בכל צדדים -->
 				<div class="flex flex-col gap-5 w-full justify-center py-2">
 					<!-- סרגל מוערם -->
 					<div class="rounded-2xl overflow-hidden flex w-full" style="height: 90px;" dir="ltr">
@@ -375,7 +375,7 @@
 						</div>
 						<div class="flex items-center gap-2">
 							<div class="w-4 h-4 rounded-md" style="background: #facc15;"></div>
-							<span class="text-gray-300">הרווחים מתחלקים אוטומטית — לבעלים, לרכזים ולצדקה</span>
+							<span class="text-gray-300">הרווחים מתחלקים אוטומטית - לבעלים, לרכזים ולצדקה</span>
 						</div>
 					</div>
 				</div>
@@ -388,7 +388,7 @@
 		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 			<span class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black text-black flex-shrink-0"
 				style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity:0.85;">3</span>
-			הכנסה לרכזי השטח — פירוט
+			הכנסה לרכזי השטח - פירוט
 		</h2>
 		<!-- רשימה + גרף -->
 		<div class="grid grid-cols-2 gap-4 mb-6 items-center">
@@ -426,7 +426,7 @@
 						style="background: rgba(180,83,9,0.2); color: #d97706;">5%</div>
 					<div class="flex-1">
 						<div class="font-black text-white text-xs md:text-base mb-0.5">מועדון ההשקעות</div>
-						<p class="text-gray-300 text-[10px] md:text-sm leading-tight">זכות להשקיע במועדון — תשואה עתידית</p>
+						<p class="text-gray-300 text-[10px] md:text-sm leading-tight">זכות להשקיע במועדון - תשואה עתידית</p>
 					</div>
 					<span class="text-2xl md:text-3xl leading-none flex-shrink-0">📈</span>
 				</div>
@@ -483,7 +483,7 @@
 						style="background: rgba(59,130,246,0.2); color: #93c5fd;">40%</div>
 					<div class="flex-1">
 						<div class="font-black text-white text-sm md:text-base mb-0.5">ישיר לארנק</div>
-						<p class="text-gray-300 text-xs md:text-sm leading-relaxed">מההכנסות שמייצרות כל השכונות — נכנס ישירות לארנק הבעלים</p>
+						<p class="text-gray-300 text-xs md:text-sm leading-relaxed">מההכנסות שמייצרות כל השכונות - נכנס ישירות לארנק הבעלים</p>
 					</div>
 					<span class="text-2xl md:text-3xl leading-none flex-shrink-0">💰</span>
 				</div>
@@ -494,7 +494,7 @@
 						style="background: rgba(37,99,235,0.2); color: #60a5fa;">10%</div>
 					<div class="flex-1">
 						<div class="font-black text-white text-sm md:text-base mb-0.5">קרן פרסום</div>
-						<p class="text-gray-300 text-xs md:text-sm leading-relaxed">יופקד לפרסום הפלטפורמה — בכפוף להסכמת ולהצבעת הבעלים</p>
+						<p class="text-gray-300 text-xs md:text-sm leading-relaxed">יופקד לפרסום הפלטפורמה - בכפוף להסכמת ולהצבעת הבעלים</p>
 					</div>
 					<span class="text-2xl md:text-3xl leading-none flex-shrink-0">📣</span>
 				</div>
@@ -643,8 +643,8 @@
 				ביזור לעומת ריכוז
 			</h2>
 			<p class="text-gray-300 text-lg mb-6 max-w-3xl leading-relaxed">
-				במקום שכל הרווחים והשליטה יוחזקו אצל בעלים אחד ריכוזי — המודל שלנו מבזר את הבעלות והרווחים, הפלטפורמה בנויה כדי לקדם את הקהילה, במקום הפרד ומשול יש לנו <span class="text-yellow-300 font-black">אחד וחזק!</span> וכדי שתישאר כזו <span class="text-yellow-300 font-black">אנו לא נאפשר לבעלי ההון לרכוש את הפלטפורמה!</span><br/>
-				כיצד — אנו לא מאפשרים לכל אחד לרכוש כמה מניות שהוא חפץ אלא <span class="text-blue-300 font-bold">כל בית אב רשאי לרכוש עד 5,000 מניות בלבד</span>
+				במקום שכל הרווחים והשליטה יוחזקו אצל בעלים אחד ריכוזי - המודל שלנו מבזר את הבעלות והרווחים, הפלטפורמה בנויה כדי לקדם את הקהילה, במקום הפרד ומשול יש לנו <span class="text-yellow-300 font-black">אחד וחזק!</span> וכדי שתישאר כזו <span class="text-yellow-300 font-black">אנו לא נאפשר לבעלי ההון לרכוש את הפלטפורמה!</span><br/>
+				כיצד - אנו לא מאפשרים לכל אחד לרכוש כמה מניות שהוא חפץ אלא <span class="text-blue-300 font-bold">כל בית אב רשאי לרכוש עד 5,000 מניות בלבד</span>
 			</p>
 			<div class="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-white/10 py-2">
 				<!-- ריכוז -->
@@ -667,7 +667,7 @@
 					</div>
 					<ul class="space-y-2 text-lg text-gray-300">
 						<li class="flex gap-2"><span class="text-emerald-400">•</span> 50% מהרווחים חוזרים אל הקהילה</li>
-						<li class="flex gap-2"><span class="text-emerald-400">•</span> עד 50,000 מניות — עד 5,000 למשפחה</li>
+						<li class="flex gap-2"><span class="text-emerald-400">•</span> עד 50,000 מניות - עד 5,000 למשפחה</li>
 						<li class="flex gap-2"><span class="text-emerald-400">•</span> שאיפה: בעלי מניות בכל שכונה בארץ</li>
 					</ul>
 				</div>
@@ -706,12 +706,12 @@
 				צורת המודל
 			</h2>
 			<p class="text-xl md:text-2xl font-black text-blue-100 leading-relaxed mb-5">
-				המודל לוקח את האלמנטים החיוביים הן מהשיטה <span class="text-yellow-300 font-black">הקפיטליסטית</span> (שוק חופשי) והן מהשיטה <span class="text-yellow-300 font-black">הקומוניסטית</span> (הגבלת רכישה) — מאחדת אותם למודל אחד באופן שאנשים רבים יהיו שותפים אך לא יתאפשר רכישה של כל המניות בידי מעטים, כך שהפלטפורמה תהיה באמת שייכת לעם תמיד ולא יעוותו את אופיה המקדם חברה משופרת. מודל זה מבוסס על רעיון <span class="text-yellow-300 font-black">הנחלות בארץ ישראל</span> — ששומר על החופש והעצמאות מחד, ולא מאפשר ריכוזיות בידיים מעטות מאידך!
+				המודל לוקח את האלמנטים החיוביים הן מהשיטה <span class="text-yellow-300 font-black">הקפיטליסטית</span> (שוק חופשי) והן מהשיטה <span class="text-yellow-300 font-black">הקומוניסטית</span> (הגבלת רכישה) - מאחדת אותם למודל אחד באופן שאנשים רבים יהיו שותפים אך לא יתאפשר רכישה של כל המניות בידי מעטים, כך שהפלטפורמה תהיה באמת שייכת לעם תמיד ולא יעוותו את אופיה המקדם חברה משופרת. מודל זה מבוסס על רעיון <span class="text-yellow-300 font-black">הנחלות בארץ ישראל</span> - ששומר על החופש והעצמאות מחד, ולא מאפשר ריכוזיות בידיים מעטות מאידך!
 			</p>
 
 			<div class="grid grid-cols-1 sm:grid-cols-2">
 				{#each [
-					['👤','א. למשתמשי הקצה','#3b82f6','כל יתרונות השכונה תחת קורת גג אחת — לשימוש אישי ללא תשלום.'],
+					['👤','א. למשתמשי הקצה','#3b82f6','כל יתרונות השכונה תחת קורת גג אחת - לשימוש אישי ללא תשלום.'],
 					['🏪','ב. לבעלי עסקים','#f59e0b','פרסום איכותי וממוקד תמורת תשלום הוגן וקל לכל כיס.'],
 					['❤️','ג. לצדקה ולחברה','#10b981','קופת צדקה קבועה, עמותת יוצאים לחירות, הגרלה חודשית למסייע לקהילה.'],
 					['🏘️','ד. לרכזי השכונות','#f472b6','חלק נכבד מהרווחים למפעילי האתר בכל שכונה ושכונה.']
@@ -748,15 +748,15 @@
 				<div class="rounded-2xl p-8 text-center flex flex-col items-center justify-center h-full" style="background:linear-gradient(135deg,#1e3a8a,#1e1b4b); border:2px solid rgba(147,197,253,0.4);">
 					<div class="text-6xl font-black text-yellow-300 mb-2">200₪</div>
 					<div class="text-xl font-black text-white mb-1">ליחידה אחת</div>
-					<div class="text-gray-400 text-lg">ההוצאה הראשונה היא גם האחרונה — לאחר מכן הכל מתוך הרווחים</div>
+					<div class="text-gray-400 text-lg">ההוצאה הראשונה היא גם האחרונה - לאחר מכן הכל מתוך הרווחים</div>
 				</div>
 				<!-- פרטים -->
 				<div class="flex flex-col gap-2">
 					{#each [
 						['💬','קבוצת ווצאפ','בעלי היחידות מתנהלים ומצביעים יחד בקבוצה ייעודית'],
-						['©️','זכויות יוצרים','אם מדינות נוספות ירצו לפתוח את האפליקציה — ישלמו לבעלי הזכויות'],
+						['©️','זכויות יוצרים','אם מדינות נוספות ירצו לפתוח את האפליקציה - ישלמו לבעלי הזכויות'],
 						['🔄','מכירה חופשית','ניתן חופשי למכור או להעביר את המניות, בכפוף להגבלת 5,000 לבית אב'],
-						['🔒','הגבלת ריכוז','עד 5,000 יחידות למשפחה גרעינית אחת — לשמר כח ביזור']
+						['🔒','הגבלת ריכוז','עד 5,000 יחידות למשפחה גרעינית אחת - לשמר כח ביזור']
 					] as [ico, title, desc]}
 						<div class="rounded-xl px-3 py-2 flex gap-2.5 items-center"
 							style="background:rgba(255,255,255,0.04); border:1px solid rgba(59,130,246,0.2);">
@@ -785,8 +785,8 @@
 					<div class="text-lg text-gray-400 mt-1">מההכנסות לתפעול</div>
 				</div>
 				<div class="text-lg text-gray-300 leading-relaxed">
-					<p class="mb-3">חברת ניהול מטפלת בשרתים, אבטחת מידע, שירות לקוחות ותפעול שוטף. <span class="text-yellow-300 font-bold">ללא משכורות קבועות</span> וללא הפתעות — רק 35% מההכנסות.</p>
-					<p>החברה היא חלק בלתי נפרד מהפלטפורמה — <span class="text-yellow-300 font-bold">ההוצאה הראשונה היא גם האחרונה.</span> לאחר מכן כל ההוצאות מתוך הרווחים בלבד.</p>
+					<p class="mb-3">חברת ניהול מטפלת בשרתים, אבטחת מידע, שירות לקוחות ותפעול שוטף. <span class="text-yellow-300 font-bold">ללא משכורות קבועות</span> וללא הפתעות - רק 35% מההכנסות.</p>
+					<p>החברה היא חלק בלתי נפרד מהפלטפורמה - <span class="text-yellow-300 font-bold">ההוצאה הראשונה היא גם האחרונה.</span> לאחר מכן כל ההוצאות מתוך הרווחים בלבד.</p>
 				</div>
 			</div>
 		</div>
@@ -815,7 +815,7 @@
 					היה רכז בשכונתך
 				</h1>
 				<p class="text-amber-100 text-base md:text-lg max-w-2xl mx-auto mb-10">
-					הפעל את הקהילה בשכונה שלך, קבל הכרה ותגמול נדיב — ותיהנה מ-30% מכל רווחי השכונה שלך
+					הפעל את הקהילה בשכונה שלך, קבל הכרה ותגמול נדיב - ותיהנה מ-30% מכל רווחי השכונה שלך
 				</p>
 				<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
 					{#each [
@@ -935,12 +935,12 @@
 					style="background:linear-gradient(135deg,#fbbf24,#d97706);">3</span>
 				פירוט התגמול
 			</h2>
-			<p class="text-gray-400 text-base md:text-lg mb-6 max-w-2xl pr-12">30% מכלל רווחי השכונה שלך — מחולקים בצורה הוגנת</p>
+			<p class="text-gray-400 text-base md:text-lg mb-6 max-w-2xl pr-12">30% מכלל רווחי השכונה שלך - מחולקים בצורה הוגנת</p>
 			<div class="flex flex-col gap-1.5">
 				{#each [
 					['💰','10% ישיר לארנק','מכל הכנסה שמייצרת השכונה שלך','#fbbf24','rgba(251,191,36,0.15)'],
 					['🤝','5% תגמול קבוצתי','מתחלק מקופת כלל השכונות לרכזי הרשת','#f59e0b','rgba(245,158,11,0.12)'],
-					['📈','5% מועדון ההשקעות','זכות להשקיע בפלטפורמה — תשואה עתידית','#d97706','rgba(217,119,6,0.12)'],
+					['📈','5% מועדון ההשקעות','זכות להשקיע בפלטפורמה - תשואה עתידית','#d97706','rgba(217,119,6,0.12)'],
 					['🛍️','10% רכישות בקהילה','זכות לרכוש שירותים ומוצרים אצל בעלי מקצוע כשירים','#b45309','rgba(180,83,9,0.12)']
 				] as [ico,title,desc,color,bg]}
 					<div class="rounded-xl p-3 md:p-4 flex gap-3 items-center" style="background:{bg}; border:1px solid {color}40;">
@@ -969,11 +969,11 @@
 
 	</div><!-- /coordinator tab -->
 
-	<!-- CTA משותף — מופיע בכל הטאבים -->
+	<!-- CTA משותף - מופיע בכל הטאבים -->
 	<div class="mt-10 mb-2 rounded-2xl px-6 py-8 text-center"
 		style="background:linear-gradient(135deg,#1e1b4b 0%,#312e81 50%,#1e3a5f 100%); border:1px solid rgba(255,255,255,0.12); box-shadow:0 0 40px rgba(124,58,237,0.15);">
 		<h2 class="text-xl md:text-2xl font-black mb-1">רוצה להיות חלק מההצלחה?</h2>
-		<p class="text-gray-300 text-sm mb-6 max-w-lg mx-auto">הצטרף אלינו כמשקיע או כרכז שכונה — ותיהנה מפירות הקהילה</p>
+		<p class="text-gray-300 text-sm mb-6 max-w-lg mx-auto">הצטרף אלינו כמשקיע או כרכז שכונה - ותיהנה מפירות הקהילה</p>
 		<div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
 			<button
 				onclick={() => setTab('owners')}
@@ -994,7 +994,7 @@
 </div>
 
 <style>
-	/* גובה scroll — נייד 110px, דסקטופ 150px */
+	/* גובה scroll - נייד 110px, דסקטופ 150px */
 	:global(.scroll-target) {
 		scroll-margin-top: 110px;
 	}

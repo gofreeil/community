@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { strapiGet } from '$lib/server/strapiClient';
 
-// ערכי ברירת מחדל — משמשים כ-fallback אם אין רשומה ב-Strapi
+// ערכי ברירת מחדל - משמשים כ-fallback אם אין רשומה ב-Strapi
 const DEFAULT_STATS = [
     { num: '50%', lbl: 'בעלי הפלטפורמה' },
     { num: '30%', lbl: 'רכזי השכונות' },
@@ -41,11 +41,11 @@ export const load: PageServerLoad = async () => {
         const res = await strapiGet<{ data: Record<string, unknown> }>('/api/revenue-config');
         cfg = (res.data ?? res) as Record<string, unknown>;
     } catch {
-        // fallback — Strapi לא נגיש או הרשומה לא קיימת
+        // fallback - Strapi לא נגיש או הרשומה לא קיימת
     }
 
     return {
-        hero_title:   (cfg.hero_title   as string) || 'איך הקהילה מייצרת ערך — ומחזירה אותו לחברים',
+        hero_title:   (cfg.hero_title   as string) || 'איך הקהילה מייצרת ערך - ומחזירה אותו לחברים',
         hero_subtitle:(cfg.hero_subtitle as string) || 'מודל כלכלי חברתי שקוף שבו כל הכנסה מתחלקת בין הקהילה, הבעלים, ורכזי השכונות - כולם נהנים ומרוויחים!',
         stats:        (cfg.stats        as typeof DEFAULT_STATS)        || DEFAULT_STATS,
         channels:     (cfg.channels     as typeof DEFAULT_CHANNELS)     || DEFAULT_CHANNELS,

@@ -18,19 +18,19 @@
 				totalDistributed = data.totalDistributed ?? 0;
 			}
 		} catch {
-			// אם ה-API לא זמין — נשאר 0
+			// אם ה-API לא זמין - נשאר 0
 		}
 	});
 
 	onMount(() => {
-		// טיפול בwheel scroll — קדימות לעמוד אלא אם כן יש overflow בתוכן
+		// טיפול בwheel scroll - קדימות לעמוד אלא אם כן יש overflow בתוכן
 		const handleWheelEvent = (e: WheelEvent) => {
 			if (!textareaEl) return;
 			const hasScroll = textareaEl.scrollHeight > textareaEl.clientHeight;
 			const isAtTop = textareaEl.scrollTop === 0 && e.deltaY < 0;
 			const isAtBottom = textareaEl.scrollTop + textareaEl.clientHeight >= textareaEl.scrollHeight && e.deltaY > 0;
 
-			// אם אין scroll כלל, או שנמצאים בקצה של ה-textarea — תן לעמוד גלול
+			// אם אין scroll כלל, או שנמצאים בקצה של ה-textarea - תן לעמוד גלול
 			if (!hasScroll || isAtTop || isAtBottom) {
 				return;
 			}
@@ -82,7 +82,7 @@
 
 			<!-- תמונת קופת העיר -->
 			<div class="bag-scene">
-				<!-- אנימציית מטבעות — מושהית לשימוש עתידי
+				<!-- אנימציית מטבעות - מושהית לשימוש עתידי
 				<svg class="coins-svg" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
 					<defs>
 						<radialGradient id="cg1" cx="35%" cy="30%" r="70%">

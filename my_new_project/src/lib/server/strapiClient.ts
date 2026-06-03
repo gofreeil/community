@@ -4,7 +4,7 @@
 // ============================================================
 
 const STRAPI_URL   = process.env.STRAPI_URL   ?? 'http://localhost:1337';
-// STRAPI_TOKEN — Strapi API Token עם הרשאות Full Access.
+// STRAPI_TOKEN - Strapi API Token עם הרשאות Full Access.
 // משמש כ-fallback כשאין user JWT (למשל: מיזוג חשבונות OAuth+credentials).
 // ניצור אותו ב: Strapi Admin → Settings → API Tokens → Create new token
 const STRAPI_TOKEN = process.env.STRAPI_TOKEN ?? '';
@@ -63,28 +63,28 @@ export async function strapiGet<T = unknown>(
 
             const text = await res.text();
 
-            // content type לא רשום — אין טעם לנסות שוב
+            // content type לא רשום - אין טעם לנסות שוב
             if (isContentTypeError(res.status, text)) {
                 throw new StrapiContentTypeError(path, res.status);
             }
-            // שגיאת HTTP שאינה זמנית — אין טעם לנסות שוב
+            // שגיאת HTTP שאינה זמנית - אין טעם לנסות שוב
             if (!isRetryable(res.status)) {
                 throw new Error(`[Strapi] GET ${path} → ${res.status}: ${text}`);
             }
-            // שגיאה זמנית (5xx/429) — נמשיך לנסות
+            // שגיאה זמנית (5xx/429) - נמשיך לנסות
             lastError = new Error(`[Strapi] GET ${path} → ${res.status}: ${text}`);
         } catch (e) {
-            // StrapiContentTypeError + שגיאות HTTP קבועות — זורקים מיד בלי retry
+            // StrapiContentTypeError + שגיאות HTTP קבועות - זורקים מיד בלי retry
             if (e instanceof StrapiContentTypeError) throw e;
             const err = e instanceof Error ? e : new Error(String(e));
             const isHttp = err.message.startsWith('[Strapi] GET') && !err.message.includes('fetch failed');
             if (isHttp) throw err;
-            // שגיאת רשת (fetch failed) — נסה שוב
+            // שגיאת רשת (fetch failed) - נסה שוב
             lastError = err;
         }
 
         if (attempt < RETRY_ATTEMPTS) {
-            console.warn(`[Strapi] GET ${path} — retry ${attempt}/${RETRY_ATTEMPTS - 1}`);
+            console.warn(`[Strapi] GET ${path} - retry ${attempt}/${RETRY_ATTEMPTS - 1}`);
             await delay(RETRY_DELAY_MS * attempt);
         }
     }
@@ -131,7 +131,7 @@ export async function strapiPut<T = unknown>(path: string, body: unknown, jwt?: 
 }
 
 // ============================================================
-// ---- Auth (users-permissions plugin — ללא token) ----
+// ---- Auth (users-permissions plugin - ללא token) ----
 // ============================================================
 
 export interface StrapiUser {
@@ -203,7 +203,7 @@ export async function strapiLogin(identifier: string, password: string): Promise
 // ============================================================
 
 /**
- * GET /api/users (users-permissions) — returns array directly (no {data} wrapper)
+ * GET /api/users (users-permissions) - returns array directly (no {data} wrapper)
  * Uses STRAPI_TOKEN for admin access by default
  */
 export async function findStrapiUpUsers(params: Record<string, string>, jwt?: string): Promise<unknown[]> {

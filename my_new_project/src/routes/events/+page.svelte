@@ -27,7 +27,7 @@
         return days;
     });
 
-    // אירועי דוגמה — מוצגים כל עוד אין אירוע אמיתי (ללוגיקה זהה ללוח האבדות)
+    // אירועי דוגמה - מוצגים כל עוד אין אירוע אמיתי (ללוגיקה זהה ללוח האבדות)
     function isoPlusDays(days: number): string {
         const d = new Date();
         d.setDate(d.getDate() + days);
@@ -35,7 +35,7 @@
     }
     const mockEvents: any[] = [
         { id: 'mev1', title: 'הרצאה בנושא חינוך ילדים',     date: isoPlusDays(2),  time: '20:00', location: 'בית הכנסת המרכזי', icon: '🎤', color: 'green',  description: 'הרצאה מרתקת לגיל הרך עם פאנל הורים',                              price: 0,  status: 'approved' },
-        { id: 'mev2', title: 'מרוץ קהילתי — 5 ק"מ',          date: isoPlusDays(5),  time: '07:30', location: 'גן הציבורי',         icon: '🏃', color: 'blue',   description: 'מרוץ פתוח לכל הגילאים, כיבוד קל בסיום',                            price: 0,  status: 'approved' },
+        { id: 'mev2', title: 'מרוץ קהילתי - 5 ק"מ',          date: isoPlusDays(5),  time: '07:30', location: 'גן הציבורי',         icon: '🏃', color: 'blue',   description: 'מרוץ פתוח לכל הגילאים, כיבוד קל בסיום',                            price: 0,  status: 'approved' },
         { id: 'mev3', title: 'ערב הוקרה למתנדבי השכונה',     date: isoPlusDays(8),  time: '19:30', location: 'מתנ"ס שכונתי',       icon: '🎉', color: 'purple', description: 'מופע מוזיקלי, סיפורי השראה ותעודות הוקרה',                          price: 25, status: 'approved' },
         { id: 'mev4', title: 'יום ניקיון ושיפור פני השכונה', date: isoPlusDays(14), time: '09:00', location: 'כיכר השכונה',         icon: '🌱', color: 'orange', description: 'יוצאים לשטח לניקיון, צביעה ושתילת פרחים. כיבוד לכל המשתתפים',         price: 0,  status: 'approved' },
     ];
@@ -102,7 +102,7 @@
 </script>
 
 <svelte:head>
-    <title>לוח אירועים — קהילה בשכונה</title>
+    <title>לוח אירועים - קהילה בשכונה</title>
 </svelte:head>
 
 <div class="min-h-screen bg-[#070b14] py-6 md:py-12 px-4" dir="rtl">
@@ -135,7 +135,7 @@
                                     <p class="text-gray-400 text-sm mt-1">📅 {formatEventDate(pev.date)}{pev.time ? ' · ' + pev.time : ''}</p>
                                     {#if pev.location}<p class="text-gray-500 text-xs">📍 {pev.location}</p>{/if}
                                     {#if pev.description}<p class="text-gray-400 text-xs mt-1 line-clamp-2">{pev.description}</p>{/if}
-                                    <p class="text-amber-400/70 text-xs mt-1">שכונה: {pev.neighborhood ?? '—'}</p>
+                                    <p class="text-amber-400/70 text-xs mt-1">שכונה: {pev.neighborhood ?? '-'}</p>
                                 </div>
                                 <div class="flex flex-col gap-2 min-w-[180px]">
                                     <!-- Price on approve -->
@@ -377,7 +377,7 @@
                         </div>
                         <!-- Price -->
                         <div>
-                            <label class="block text-gray-300 text-sm font-semibold mb-1">מחיר (₪) — אפס = חינם</label>
+                            <label class="block text-gray-300 text-sm font-semibold mb-1">מחיר (₪) - אפס = חינם</label>
                             <input type="number" name="price" min="0" value="0"
                                 class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-green-400/60" />
                         </div>

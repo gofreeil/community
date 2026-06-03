@@ -5,7 +5,7 @@
     "singularName": "submitted-ad",
     "pluralName": "submitted-ads",
     "displayName": "Submitted Ad",
-    "description": "פרסומות שמשתמשים שלחו לאישור — pending / approved / rejected"
+    "description": "פרסומות שמשתמשים שלחו לאישור - pending / approved / rejected"
   },
   "options": {
     "draftAndPublish": false

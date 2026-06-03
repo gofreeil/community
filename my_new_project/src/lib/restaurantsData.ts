@@ -1,5 +1,5 @@
 // src/lib/restaurantsData.ts
-// מסעדות דוגמה (mock) — מוצגות בלוח המסעדות ובדף הפרטים כל עוד אין פריטים אמיתיים.
+// מסעדות דוגמה (mock) - מוצגות בלוח המסעדות ובדף הפרטים כל עוד אין פריטים אמיתיים.
 // משותף בין דף הלוח (national/[category]) לבין דף הפרטים (/restaurants/[id]).
 
 export interface RestaurantItem {
@@ -44,7 +44,7 @@ export const mockRestaurants: RestaurantItem[] = [
     },
     {
         id: 'mock-rest-2', label: 'פלאפל הנסיך',
-        description: 'דוכן פלאפל ותיק — מנה חמה, סלטים ביתיים וחומוס טחון במקום.',
+        description: 'דוכן פלאפל ותיק - מנה חמה, סלטים ביתיים וחומוס טחון במקום.',
         icon: '🧆', city: 'ירושלים', neighborhood: 'קרית משה',
         phone: '054-7712233', contact: 'יענקי', category: 'restaurants',
         created_at: ago(20), status: 'active',

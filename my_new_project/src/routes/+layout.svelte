@@ -44,7 +44,7 @@
 	<title>קהילה בשכונה</title>
 	<link rel="icon" href="/images/community-logo1.png" type="image/png" />
 	<link rel="apple-touch-icon" href="/images/community-logo1.png" />
-	<!-- tabnav: מושבת לבינתיים — לא רשום על הדומיין הנוכחי -->
+	<!-- tabnav: מושבת לבינתיים - לא רשום על הדומיין הנוכחי -->
 	<!-- <script src="https://widget.tabnav.com/widget.min.js.gz" defer></script> -->
 	<!-- <noscript>נדרש ג'אווה סקריפט כדי ש<a href="https://tabnav.com/he">הנגשת אתרים</a> תעבוד כראוי.</noscript> -->
 	<!-- Google Analytics -->

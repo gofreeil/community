@@ -4,7 +4,7 @@
     let iframeFailed = $state(false);
     let loadTimeout: ReturnType<typeof setTimeout>;
 
-    // ----- "הגנת זכוכית" — ההצבעות לא אינטראקטיביות עד שלוחצים עליהן -----
+    // ----- "הגנת זכוכית" - ההצבעות לא אינטראקטיביות עד שלוחצים עליהן -----
     let isInteractive = $state(false);
 
     function activate() {
@@ -89,7 +89,7 @@
             onerror={handleError}
         ></iframe>
 
-        <!-- "הגנת זכוכית" — שכבת overlay שקופה כשההצבעות לא אינטראקטיביות -->
+        <!-- "הגנת זכוכית" - שכבת overlay שקופה כשההצבעות לא אינטראקטיביות -->
         {#if !isInteractive && iframeLoaded}
             <button
                 type="button"

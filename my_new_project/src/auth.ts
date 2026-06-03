@@ -14,10 +14,10 @@ const AUTH_FACEBOOK_ID    = process.env.AUTH_FACEBOOK_ID    ?? '';
 const AUTH_FACEBOOK_SECRET= process.env.AUTH_FACEBOOK_SECRET?? '';
 
 // ============================================================
-// Defensive fallback — אם AUTH_SECRET חסר (preview deployment ללא env,
+// Defensive fallback - אם AUTH_SECRET חסר (preview deployment ללא env,
 // fork מ-contributor, dev מקומי בלי .env), לא לאתחל SvelteKitAuth כלל
 // כי assertConfig של @auth/core זורק 500 בכל בקשה ומפיל את ה-SSR.
-// במקום זה — handle no-op שמגדיר event.locals.auth כפונקציה ריקה,
+// במקום זה - handle no-op שמגדיר event.locals.auth כפונקציה ריקה,
 // וכך כל הדפים נטענים כמשתמש אנונימי.
 // ============================================================
 const noOpHandle: Handle = async ({ event, resolve }) => {
@@ -34,14 +34,14 @@ const noOpAction = async (): Promise<never> => {
 // ============================================================
 async function getOrCreateStrapiJwt(email: string | null | undefined, stableId: string): Promise<string | null> {
     if (!email) return null;
-    // סיסמה דטרמיניסטית — sha256(stableId + AUTH_SECRET), קבועה לכל login
+    // סיסמה דטרמיניסטית - sha256(stableId + AUTH_SECRET), קבועה לכל login
     const password = createHash('sha256').update(stableId + AUTH_SECRET).digest('hex').slice(0, 32);
     const username = stableId.replace(/[^a-zA-Z0-9_]/g, '_').slice(0, 30);
     try {
         const { jwt } = await strapiLogin(email, password);
         return jwt;
     } catch {
-        // משתמש לא קיים — ניצור אותו
+        // משתמש לא קיים - ניצור אותו
         try {
             const { jwt } = await strapiRegister(username, email, password);
             return jwt;
@@ -54,7 +54,7 @@ async function getOrCreateStrapiJwt(email: string | null | undefined, stableId: 
 
 export const { handle, signIn, signOut } = !AUTH_SECRET
     ? (() => {
-        console.warn('[auth] AUTH_SECRET missing — auth disabled (no-op fallback)');
+        console.warn('[auth] AUTH_SECRET missing - auth disabled (no-op fallback)');
         return { handle: noOpHandle, signIn: noOpAction, signOut: noOpAction };
     })()
     : SvelteKitAuth({
@@ -62,7 +62,7 @@ export const { handle, signIn, signOut } = !AUTH_SECRET
 
     session: {
         maxAge:    365 * 24 * 60 * 60, // שנה אחת
-        updateAge:  24 * 60 * 60,       // מרענן ב-כל ביקור יומי — מאריך שנה נוספת
+        updateAge:  24 * 60 * 60,       // מרענן ב-כל ביקור יומי - מאריך שנה נוספת
     },
 
     cookies: {
@@ -118,13 +118,13 @@ export const { handle, signIn, signOut } = !AUTH_SECRET
 
     callbacks: {
         async signIn({ user, account }) {
-            console.log('[auth] signIn called — provider:', account?.provider, 'email:', user?.email);
+            console.log('[auth] signIn called - provider:', account?.provider, 'email:', user?.email);
             if (!account || !user) {
-                console.warn('[auth] signIn rejected — missing account or user');
+                console.warn('[auth] signIn rejected - missing account or user');
                 return false;
             }
 
-            // Credentials provider — ה-JWT מגיע מה-authorize callback דרך ה-user object
+            // Credentials provider - ה-JWT מגיע מה-authorize callback דרך ה-user object
             if (account.provider === 'credentials') {
                 const strapiJwt = (user as { strapiJwt?: string }).strapiJwt;
                 const stableId  = user.id ?? `credentials_${user.email}`;
@@ -153,7 +153,7 @@ export const { handle, signIn, signOut } = !AUTH_SECRET
             }
 
             // 2. מיזוג חשבונות: קבע stableId ישירות לפי credentials_email (לא דורש STRAPI_TOKEN)
-            // אם נרשמת קודם עם credentials — הID שלך הוא credentials_<email>
+            // אם נרשמת קודם עם credentials - הID שלך הוא credentials_<email>
             if (user.email) {
                 const credentialsId = `credentials_${user.email}`;
                 // נסה לאמת דרך Strapi אם אפשר, אחרת פשוט השתמש ב-credentialsId
@@ -170,9 +170,9 @@ export const { handle, signIn, signOut } = !AUTH_SECRET
                         }
                     }
                 } catch {
-                    // Strapi לא נגיש (403/network) — הנח שמשתמש credentials קיים
+                    // Strapi לא נגיש (403/network) - הנח שמשתמש credentials קיים
                     stableId = credentialsId;
-                    console.log('[auth] Strapi unreachable — assuming credentials user:', credentialsId);
+                    console.log('[auth] Strapi unreachable - assuming credentials user:', credentialsId);
                 }
             }
 
@@ -187,7 +187,7 @@ export const { handle, signIn, signOut } = !AUTH_SECRET
                 }, strapiJwt ?? undefined);
             } catch (error) {
                 console.error('[auth] OAuth community-user sync failed:', error);
-                // ממשיכים — ההתחברות לא תיכשל בגלל community-user
+                // ממשיכים - ההתחברות לא תיכשל בגלל community-user
             }
 
             user.id = stableId;
@@ -198,7 +198,7 @@ export const { handle, signIn, signOut } = !AUTH_SECRET
             // user + account מועברים רק ב-sign-in הראשון
             if (user && account) {
                 // user.id כבר הוגדר ל-stableId בעת מיזוג חשבונות (ב-signIn callback)
-                // לכן נשתמש בו תמיד — גם עבור OAuth — כדי שה-ID יתאים לרשומה ב-DB
+                // לכן נשתמש בו תמיד - גם עבור OAuth - כדי שה-ID יתאים לרשומה ב-DB
                 token.dbUserId = user.id;
                 token.provider = account.provider;
                 if (user.email) token.email = user.email;
@@ -216,7 +216,7 @@ export const { handle, signIn, signOut } = !AUTH_SECRET
                         token.neighborhood = dbUser.neighborhood;
                         token.banned = dbUser.banned;
                     }
-                } catch { /* ignore — fallback to 'user' */ }
+                } catch { /* ignore - fallback to 'user' */ }
             }
             return token;
         },

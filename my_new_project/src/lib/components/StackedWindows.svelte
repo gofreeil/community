@@ -31,7 +31,7 @@
             if (played) return;
             played = true;
             window.removeEventListener('scroll', tryDemo);
-            // Wait two frames so the initial pose paints, then start the swap — single fluid motion, no freeze.
+            // Wait two frames so the initial pose paints, then start the swap - single fluid motion, no freeze.
             requestAnimationFrame(() => requestAnimationFrame(() => {
                 noAnim = false;
                 active = target;
@@ -46,7 +46,7 @@
             }
         };
 
-        // Try immediately on mount — if visible, animation kicks in without delay.
+        // Try immediately on mount - if visible, animation kicks in without delay.
         tryDemo();
         window.addEventListener('scroll', tryDemo, { passive: true });
         return () => window.removeEventListener('scroll', tryDemo);
@@ -70,7 +70,7 @@
 
     <!-- 3D stack container -->
     <div bind:this={stackEl} class="relative h-[520px] md:h-[670px]" style="transform-style: preserve-3d;">
-        <!-- Mobile peek tap target — outside 3D so it gets reliable hit-testing -->
+        <!-- Mobile peek tap target - outside 3D so it gets reliable hit-testing -->
         <button
             type="button"
             onclick={() => bringFront(active === 'vote' ? 'chat' : 'vote')}
@@ -147,7 +147,7 @@
         animation: none !important;
         transition: none !important;
     }
-    /* Mobile defaults — front anchored right, back peeks left inside wrap */
+    /* Mobile defaults - front anchored right, back peeks left inside wrap */
     .card-front {
         transform: translateX(0) translateZ(0) rotateY(0deg) scale(1);
         z-index: 20;
@@ -164,7 +164,7 @@
         animation: cardToBack 1000ms linear both;
     }
 
-    /* Mobile keyframes — smooth monotonic-after-peak path, no Z direction inflection mid-anim */
+    /* Mobile keyframes - smooth monotonic-after-peak path, no Z direction inflection mid-anim */
     @keyframes cardToFront {
         0%   { transform: translateX(-22%) translateZ(-100px) rotateY(20deg) scale(0.92); z-index: 15; }
         25%  { transform: translateX(-17%) translateZ(-30px)  rotateY(15deg) scale(0.94); z-index: 22; }
@@ -180,13 +180,13 @@
         100% { transform: translateX(-22%) translateZ(-100px) rotateY(20deg)  scale(0.92); z-index: 10; }
     }
 
-    /* Desktop — back peeks RIGHT, full-width cards. Cards arc through forward space passing each other. */
+    /* Desktop - back peeks RIGHT, full-width cards. Cards arc through forward space passing each other. */
     @media (min-width: 768px) {
         .card-back {
             transform-origin: left center;
             transform: translateX(38%) translateZ(-220px) rotateY(-28deg) scale(0.92);
         }
-        /* Desktop — smooth monotonic-after-peak path, no Z direction inflection mid-anim */
+        /* Desktop - smooth monotonic-after-peak path, no Z direction inflection mid-anim */
         @keyframes cardToFront {
             0%   { transform: translateX(38%) translateZ(-220px) rotateY(-28deg) scale(0.92); z-index: 15; }
             25%  { transform: translateX(30%) translateZ(-110px) rotateY(-22deg) scale(0.94); z-index: 22; }

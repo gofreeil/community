@@ -140,7 +140,7 @@
     onMount(() => {
         if (!browser) return;
 
-        // אם אין נתוני פרופיל — נסה localStorage של בחירת השכונה הכללית
+        // אם אין נתוני פרופיל - נסה localStorage של בחירת השכונה הכללית
         if (!data.userCity || !data.userNeighborhood) {
             try {
                 const saved = localStorage.getItem(LS_KEY);
@@ -183,7 +183,7 @@
 
     let neighborhoodsForCity = $derived(citiesAndNeighborhoods[city] ?? []);
 
-    // אם משתנה עיר — איפוס לשכונה הראשונה אם הקיימת לא תואמת
+    // אם משתנה עיר - איפוס לשכונה הראשונה אם הקיימת לא תואמת
     $effect(() => {
         if (neighborhoodsForCity.length > 0 && !neighborhoodsForCity.includes(neighborhood)) {
             neighborhood = neighborhoodsForCity[0];
@@ -208,7 +208,7 @@
                 logoBase64, images, tags,
             }));
         } catch {
-            // אם חרגנו ממכסת localStorage (תמונות גדולות) — שמור בלי תמונות
+            // אם חרגנו ממכסת localStorage (תמונות גדולות) - שמור בלי תמונות
             try {
                 localStorage.setItem(DRAFT_KEY, JSON.stringify({
                     title, headline, summary, icon, description, street, buildingNum, floor, apartment, arrivalNotes, hours, contact, phone, gmachType, city, neighborhood, tags,
@@ -227,15 +227,15 @@
             return;
         }
 
-        // אם לא מחובר — שמור טיוטה והפנה להרשמה
+        // אם לא מחובר - שמור טיוטה והפנה להרשמה
         if (!data.userId) {
             e.preventDefault();
             saveDraft();
-            redirectingMsg = 'הטיוטה שלך נשמרה ✓\nאתה מועבר להרשמה — הפרסום יושלם מיד לאחריה.';
+            redirectingMsg = 'הטיוטה שלך נשמרה ✓\nאתה מועבר להרשמה - הפרסום יושלם מיד לאחריה.';
             setTimeout(() => goto('/login?redirect=/gmachim/add'), 2200);
             return;
         }
-        // מחובר — תן ל-form action הרגיל לרוץ
+        // מחובר - תן ל-form action הרגיל לרוץ
     }
 </script>
 
@@ -248,12 +248,12 @@
         <div class="text-center mb-6">
             <span class="text-5xl mb-3 block">🤝</span>
             <h1 class="text-3xl font-black text-white mb-2">פרסום גמ"ח חדש</h1>
-            <p class="text-gray-400">פרסם את הגמ"ח שלך — יופיע בקהילה ובאתר הגמ"ח הארצי</p>
+            <p class="text-gray-400">פרסם את הגמ"ח שלך - יופיע בקהילה ובאתר הגמ"ח הארצי</p>
         </div>
 
         {#if !data.userId}
             <div class="rounded-xl bg-blue-900/20 border border-blue-500/30 p-3 mb-4 text-center text-blue-200 text-sm">
-                💡 ניתן למלא את הטופס כעת — בסיום תועבר להרשמה קצרה והפרסום יושלם אוטומטית.
+                💡 ניתן למלא את הטופס כעת - בסיום תועבר להרשמה קצרה והפרסום יושלם אוטומטית.
             </div>
         {/if}
 
@@ -322,7 +322,7 @@
                         </div>
                         <p class="text-gray-500 text-xs mt-1.5 leading-relaxed">
                             לחץ <kbd class="px-1.5 py-0.5 rounded bg-white/10 border border-white/15 text-gray-300 text-[10px]">Enter</kbd>
-                            להוספת תג חדש — כל תג יופיע בחלון נפרד.<br />
+                            להוספת תג חדש - כל תג יופיע בחלון נפרד.<br />
                             דוגמאות: <span class="text-amber-300">#בגדי תינוקות</span> · <span class="text-amber-300">#אוכל לנזקקים</span> · <span class="text-amber-300">#כלי בית</span>
                         </p>
                         <input type="hidden" name="tags_json" value={JSON.stringify(tags)} />

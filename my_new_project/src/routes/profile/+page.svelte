@@ -18,10 +18,10 @@
 
 	let { data, form } = $props();
 
-	// snapshot ראשוני של נתוני המשתמש לאתחול שדות הטופס (intentional — form manages its own state)
+	// snapshot ראשוני של נתוני המשתמש לאתחול שדות הטופס (intentional - form manages its own state)
 	const _ud = data.user;
 
-	// tFn: פונקציית תרגום reactive — לא משתמשים ב-$t ישירות כי Prettier מוחק אותו
+	// tFn: פונקציית תרגום reactive - לא משתמשים ב-$t ישירות כי Prettier מוחק אותו
 	let _loc = $state(get(locale));
 	$effect(() => locale.subscribe((l) => (_loc = l)));
 	const tFn = (k: string) => {
@@ -65,7 +65,7 @@
 				alert(data.message ?? 'שגיאה במחיקה');
 			}
 		} catch {
-			alert('שגיאת תקשורת — נסה שוב');
+			alert('שגיאת תקשורת - נסה שוב');
 		}
 		deletingItemId = null;
 	}
@@ -85,7 +85,7 @@
 				alert(data.message ?? 'שגיאה בפרסום מחדש');
 			}
 		} catch {
-			alert('שגיאת תקשורת — נסה שוב');
+			alert('שגיאת תקשורת - נסה שוב');
 		}
 		republishingItemId = null;
 	}
@@ -113,7 +113,7 @@
 		"main" | "profile" | "messages" | "items" | "levels"
 	>("main");
 
-	// ניהול המלצות — מחיקה / דחייה לאוחר
+	// ניהול המלצות - מחיקה / דחייה לאוחר
 	function loadRecSet(key: string): Set<string> {
 		if (typeof localStorage === "undefined") return new Set();
 		try {
@@ -186,7 +186,7 @@
 				],
 	);
 
-	// === ניהול מצב הודעות (מחיקה / ארכיון / תזכורת) — נשמר ב-localStorage ===
+	// === ניהול מצב הודעות (מחיקה / ארכיון / תזכורת) - נשמר ב-localStorage ===
 	const MSG_DELETED_KEY = "msgs_deleted_v1";
 	const MSG_ARCHIVED_KEY = "msgs_archived_v1";
 	const MSG_SNOOZED_KEY = "msgs_snoozed_v1";
@@ -244,10 +244,10 @@
 		saveJSON(MSG_SNOOZED_KEY, snoozedMsgs);
 	}
 	function markRead(id: string) {
-		// "אם הוא קרא — מחוק את ההתראות מהפרופיל שלו"
+		// "אם הוא קרא - מחוק את ההתראות מהפרופיל שלו"
 		deleteMsg(id);
 	}
-	// הודעה אישית עבור טיוטת פרסומת — מופיעה למעלה אם יש טיוטה.
+	// הודעה אישית עבור טיוטת פרסומת - מופיעה למעלה אם יש טיוטה.
 	// כוללת תזכורת על חלון העריכה החינמי (היום עד 23:59) או שהוא פג.
 	let freeEditInfo = $derived.by(() => {
 		try {
@@ -278,7 +278,7 @@
 		void nowTs;
 		const base = visibleMessages;
 		if (!adDraft) return base;
-		// אם המשתמש סיים את העריכה (100%) — לא צריך להציג nag "סיים את עריכתו".
+		// אם המשתמש סיים את העריכה (100%) - לא צריך להציג nag "סיים את עריכתו".
 		// הוא יראה את כרטיס "פרסומת בעריכה" למטה אם ירצה להמשיך לפרסום.
 		if (adDraftProgress >= 100) return base;
 		// מכבד את אותן פעולות (מחיקה/ארכיון/הזכר) כמו הודעות רגילות
@@ -289,13 +289,13 @@
 		let extraTxt = "";
 		if (freeEditInfo) {
 			extraTxt = freeEditInfo.expired
-				? ` ⌛ זמן העריכה החינמי שלך נגמר ב-${freeEditInfo.dateStr} ב-23:59. כל זמן שעובר ללא ניצול — מבוזבז.`
-				: ` ⏰ נותר לך זמן עריכה חינם עד ${freeEditInfo.dateStr} ב-23:59 — עדיף לסיים היום!`;
+				? ` ⌛ זמן העריכה החינמי שלך נגמר ב-${freeEditInfo.dateStr} ב-23:59. כל זמן שעובר ללא ניצול - מבוזבז.`
+				: ` ⏰ נותר לך זמן עריכה חינם עד ${freeEditInfo.dateStr} ב-23:59 - עדיף לסיים היום!`;
 		}
 		const draftMsg = {
 			id: "draft",
 			from: "🎨 בילדר הפרסומות",
-			text: `יש לך פרסום בטיוטא — סיים את עריכתו! "${adDraft.title || "ללא כותרת"}" (${adDraftProgress}% הושלמו).${extraTxt}`,
+			text: `יש לך פרסום בטיוטא - סיים את עריכתו! "${adDraft.title || "ללא כותרת"}" (${adDraftProgress}% הושלמו).${extraTxt}`,
 			time: "עכשיו",
 			read: false,
 			isDraft: true,
@@ -421,7 +421,7 @@
 			if (sub) {
 				await saveSubscription(sub, data.user?.id);
 			} else {
-				// המשתמש סירב להרשאה — החזר toggle
+				// המשתמש סירב להרשאה - החזר toggle
 				notifications = false;
 			}
 		} else {
@@ -554,7 +554,7 @@
 		(data.user?.name ?? data.user?.email ?? "U").charAt(0).toUpperCase(),
 	);
 
-	// מעגל מילוי פרופיל — דינמי: כל שדה שווה 100/מספר_שדות
+	// מעגל מילוי פרופיל - דינמי: כל שדה שווה 100/מספר_שדות
 	const ringCircumference = 2 * Math.PI * 43; // r=43, SVG 92×92
 
 	// שדות פרופיל שהמשתמש צריך למלא (לא notifications שמגיע כברירת מחדל)
@@ -591,10 +591,10 @@
 	// דרגה 2 = משתמש (מילא עיר, שכונה, אימייל וטלפון)
 	let userLevel = $derived(city && neighborhood && email && phone ? 2 : 1);
 
-	// מספר מניות פלטפורמה — placeholder פרונט בלבד עד חיבור ל-backend
+	// מספר מניות פלטפורמה - placeholder פרונט בלבד עד חיבור ל-backend
 	let userShares = $derived(10 + data.items.length * 5);
 
-	// טיוטות במסירה — מודעות שהמשתמש התחיל אך טרם הוסיף תמונה
+	// טיוטות במסירה - מודעות שהמשתמש התחיל אך טרם הוסיף תמונה
 	let giveawayDrafts = $derived(
 		data.items.filter(
 			(i: import("$lib/server/db").DbItem) =>
@@ -609,13 +609,13 @@
 
 	let isSuperAdmin = $derived((data.user as any)?.role === "super_admin");
 
-	// דרגה 3 — רכז שכונה: מי שיש לו coordinator_of או role=neighborhood_admin (לא super_admin)
+	// דרגה 3 - רכז שכונה: מי שיש לו coordinator_of או role=neighborhood_admin (לא super_admin)
 	let isCoordOrNbhAdmin = $derived(
 		((data.user as any)?.coordinator_of?.length ?? 0) > 0 ||
 		(data.user as any)?.role === "neighborhood_admin",
 	);
 
-	// טיפ למעגל — המפתח של השדה הבא שלא מולא
+	// טיפ למעגל - המפתח של השדה הבא שלא מולא
 	const ringTipKeys = [
 		"tip_name",
 		"tip_email",
@@ -645,7 +645,7 @@
 	let showRingTooltip = $state(false);
 	let ringTipX = $state(0);
 
-	// אנימציה מדורגת של המעגל — מופעלת רק כשנכנס לתצוגה
+	// אנימציה מדורגת של המעגל - מופעלת רק כשנכנס לתצוגה
 	let animatedCompletion = $state(0);
 	let ringAnimated = $state(false);
 
@@ -913,7 +913,7 @@
 		</div>
 	{/if}
 
-	<!-- ===== ברוך הבא — הרשמה חדשה ===== -->
+	<!-- ===== ברוך הבא - הרשמה חדשה ===== -->
 	{#if page.url.searchParams.get("new") === "1"}
 		<div
 			class="mb-6 rounded-2xl bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-purple-500/30 px-6 py-5 text-center shadow-lg"
@@ -926,7 +926,7 @@
 		</div>
 	{/if}
 
-	<!-- ===== לשוניות ניווט — נייד בלבד ===== -->
+	<!-- ===== לשוניות ניווט - נייד בלבד ===== -->
 	<div class="md:hidden flex gap-1 overflow-x-auto pb-1 mb-3 scrollbar-none">
 		{#each [{ id: "main", icon: "🏠", label: "ראשי" }, { id: "profile", icon: "✏️", label: "פרופיל" }, { id: "messages", icon: "💬", label: "הודעות" }, { id: "items", icon: "📦", label: "נכסים" }, { id: "levels", icon: "🏆", label: "דרגות" }] as tab}
 			<button
@@ -943,7 +943,7 @@
 		{/each}
 	</div>
 
-	<!-- באנר outage — מוצג כש-Strapi לא זמין -->
+	<!-- באנר outage - מוצג כש-Strapi לא זמין -->
 	{#if data.user && data.strapiAvailable === false}
 		<div
 			class="mb-3 rounded-2xl border-2 border-amber-500/40 bg-gradient-to-r from-amber-500/15 to-orange-500/10 px-4 py-3 flex items-start gap-3 shadow-lg"
@@ -957,7 +957,7 @@
 				<p class="text-amber-100/80 text-xs md:text-sm">
 					המידע שלך מאובטח ולא נמחק.
 					{#if data.userFromStaleCache}
-						אנחנו מציגים נתונים מהזיכרון האחרון —
+						אנחנו מציגים נתונים מהזיכרון האחרון -
 					{/if}
 					נסה לרענן את הדף בעוד דקה.
 				</p>
@@ -1093,7 +1093,7 @@
 						/>
 					</svg>
 
-					<!-- עיגול הודעות — שמאל מטה -->
+					<!-- עיגול הודעות - שמאל מטה -->
 					{#if unreadCount > 0}
 						<button
 							onclick={(e) => {
@@ -1169,7 +1169,7 @@
 				</div>
 			</div>
 
-			<!-- הארנק שלי — גם בנייד בלשונית ראשי -->
+			<!-- הארנק שלי - גם בנייד בלשונית ראשי -->
 			<a
 				href="/receipts"
 				class="order-3 md:order-2 flex-1 {mobileTab === 'main'
@@ -1279,7 +1279,7 @@
 		<div class="mt-2"></div>
 	</div>
 
-	<!-- ===== ניהול האתר (סופר־אדמין בלבד) — מתחת ללוח הבקרה ===== -->
+	<!-- ===== ניהול האתר (סופר־אדמין בלבד) - מתחת ללוח הבקרה ===== -->
 	{#if isSuperAdmin}
 		<div class="bg-gradient-to-br from-amber-500/10 to-emerald-500/10 rounded-2xl border border-amber-500/30 p-3 md:p-4 mb-2 {mobileTab !== 'main' ? 'hidden md:block' : ''}">
 			<div class="flex items-center justify-between gap-2 mb-3 flex-wrap">
@@ -1466,7 +1466,7 @@
 										type="button"
 										onclick={() => markRead(msg.id)}
 										class="text-[11px] text-gray-400 hover:text-green-400 transition-colors px-2 py-1 rounded-lg hover:bg-green-500/10"
-										title="סמן כנקראה — תוסר מהפרופיל"
+										title="סמן כנקראה - תוסר מהפרופיל"
 									>
 										👁️ סמן כנקראה
 									</button>
@@ -1839,7 +1839,7 @@
 										<span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 font-bold">{adDraftProgress}% הושלמו</span>
 									</div>
 									<p class="text-white font-bold text-xs md:text-sm leading-tight mb-2 truncate">
-										{adDraft.title || "ללא כותרת"}{adDraft.subtitle ? " — " + adDraft.subtitle : ""}
+										{adDraft.title || "ללא כותרת"}{adDraft.subtitle ? " - " + adDraft.subtitle : ""}
 									</p>
 									<div class="flex items-center gap-2 flex-wrap">
 										<a href="/about/advertise/builder"
@@ -2175,27 +2175,27 @@
 				{#if isSuperAdmin}
 					<span
 						class="text-sm bg-red-500/20 text-red-300 border border-red-500/30 px-3 py-1.5 rounded-full font-bold"
-						>דרגה נוכחית — מנהל ראשי 👑</span
+						>דרגה נוכחית - מנהל ראשי 👑</span
 					>
 				{:else if (data.user as any)?.role === "neighborhood_admin"}
 					<span
 						class="text-sm bg-amber-500/20 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-full font-bold"
-						>דרגה נוכחית — אדמין שכונתי 🛡️</span
+						>דרגה נוכחית - אדמין שכונתי 🛡️</span
 					>
 				{:else if ((data.user as any)?.coordinator_of?.length ?? 0) > 0}
 					<span
 						class="text-sm bg-blue-500/20 text-blue-300 border border-blue-500/30 px-3 py-1.5 rounded-full font-bold"
-						>דרגה נוכחית — רכז שכונה 🏘️</span
+						>דרגה נוכחית - רכז שכונה 🏘️</span
 					>
 				{:else if userLevel >= 2}
 					<span
 						class="text-sm bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1.5 rounded-full font-bold"
-						>דרגה נוכחית — משתמש</span
+						>דרגה נוכחית - משתמש</span
 					>
 				{:else}
 					<span
 						class="text-sm bg-gray-500/20 text-gray-300 border border-gray-500/30 px-3 py-1.5 rounded-full font-bold"
-						>דרגה נוכחית — צופה</span
+						>דרגה נוכחית - צופה</span
 					>
 				{/if}
 				<svg
@@ -2590,7 +2590,7 @@
 							/>
 						{:else}
 							<p class="text-white font-medium py-3 px-1">
-								{name || "—"}
+								{name || "-"}
 							</p>
 						{/if}
 					</div>
@@ -2614,7 +2614,7 @@
 							/>
 						{:else}
 							<p class="text-white font-medium py-3 px-1">
-								{email || "—"}
+								{email || "-"}
 							</p>
 						{/if}
 					</div>
@@ -2736,7 +2736,7 @@
 							/>
 						{:else}
 							<p class="text-white font-medium py-3 px-1">
-								{nickname || "—"}
+								{nickname || "-"}
 							</p>
 						{/if}
 					</div>
@@ -2785,7 +2785,7 @@
 									? tFn("male")
 									: gender === "female"
 										? tFn("female")
-										: "—"}
+										: "-"}
 							</p>
 						{/if}
 					</div>
@@ -2809,12 +2809,12 @@
 							/>
 						{:else}
 							<p class="text-white font-medium py-3 px-1">
-								{phone || "—"}
+								{phone || "-"}
 							</p>
 						{/if}
 					</div>
 
-					<!-- עיר + שכונה — תמיד ביחד -->
+					<!-- עיר + שכונה - תמיד ביחד -->
 					<div
 						class="md:col-span-2 grid grid-cols-2 gap-3 rounded-2xl border border-purple-500/20 bg-purple-500/5 p-3"
 					>
@@ -2849,7 +2849,7 @@
 								</select>
 							{:else}
 								<p class="text-white font-medium py-3 px-1">
-									{city || "—"}
+									{city || "-"}
 								</p>
 							{/if}
 						</div>
@@ -2886,12 +2886,12 @@
 								</select>
 							{:else}
 								<p class="text-white font-medium py-3 px-1">
-									{neighborhood || "—"}
+									{neighborhood || "-"}
 								</p>
 							{/if}
 						</div>
 
-						<!-- מיקום שאינו מופיע ברשימה — בתוך אותה מסגרת -->
+						<!-- מיקום שאינו מופיע ברשימה - בתוך אותה מסגרת -->
 						{#if isEditing}
 							<div
 								class="col-span-2 border-t border-purple-500/15 pt-3 mt-1 transition-all duration-500"
@@ -2914,7 +2914,7 @@
 									📍 {locationInteracted ? 'לא מצאת את העיר או השכונה שלך ברשימה?' : 'מיקום שאינו מופיע ברשימה?'}
 								</label>
 								<p class="text-gray-500 text-xs mb-2 leading-relaxed">
-									כתוב כאן את העיר והשכונה שלך — הבקשה תישלח
+									כתוב כאן את העיר והשכונה שלך - הבקשה תישלח
 									מיד למנהל האתר ותתווסף לרשימה.
 								</p>
 								<input
@@ -2933,7 +2933,7 @@
 					</div>
 					<!-- סגירת מסגרת עיר+שכונה -->
 
-					<!-- עסק + סטטוס משפחתי + תאריך לידה — שורה אחת בדסקטופ -->
+					<!-- עסק + סטטוס משפחתי + תאריך לידה - שורה אחת בדסקטופ -->
 					<div
 						class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-5"
 					>
@@ -2954,7 +2954,7 @@
 								/>
 							{:else}
 								<p class="text-white font-medium py-3 px-1">
-									{business || "—"}
+									{business || "-"}
 								</p>
 							{/if}
 						</div>
@@ -2992,7 +2992,7 @@
 											? tFn("status_single_f")
 											: family_status === "family"
 												? tFn("status_family")
-												: "—"}
+												: "-"}
 								</p>
 							{/if}
 							<p class="text-gray-600 text-xs mt-1 px-1">
@@ -3000,7 +3000,7 @@
 							</p>
 						</div>
 
-						<!-- תאריך לידה — באותה שורה עם עסק וסטטוס -->
+						<!-- תאריך לידה - באותה שורה עם עסק וסטטוס -->
 						<div>
 							<label
 								for="p-birth-day"
@@ -3068,7 +3068,7 @@
 								<p class="text-white font-medium py-3 px-1">
 									{birthDay && birthMonth && birthYear
 										? `${birthDay} / ${tFn("months_list").split(",")[parseInt(birthMonth) - 1]} / ${birthYear}`
-										: "—"}
+										: "-"}
 								</p>
 							{/if}
 							<p class="text-gray-600 text-xs mt-1 px-1">
@@ -3077,7 +3077,7 @@
 						</div>
 					</div>
 
-					<!-- סטטוס — מוצג לקהילה -->
+					<!-- סטטוס - מוצג לקהילה -->
 					<div class="md:col-span-2">
 						<label
 							class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2"
@@ -3114,18 +3114,18 @@
 						{/if}
 					</div>
 
-					<!-- שאלת ביטחון + התראות — שורה אחת -->
+					<!-- שאלת ביטחון + התראות - שורה אחת -->
 					<div
 						class="md:col-span-2 grid md:grid-cols-2 gap-4 items-start"
 					>
-						<!-- שאלת ביטחון — אופציונלי -->
+						<!-- שאלת ביטחון - אופציונלי -->
 						<div>
 							<label
 								class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2"
 							>
 								🛡️ שאלת ביטחון <span
 									class="text-purple-400 text-xs font-normal normal-case"
-									>(אופציונלי — לשחזור סיסמה)</span
+									>(אופציונלי - לשחזור סיסמה)</span
 								>
 							</label>
 							{#if isEditing}
@@ -3134,7 +3134,7 @@
 									bind:value={security_question}
 									class="w-full bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none mb-2"
 								>
-									<option value="">— בחר שאלה —</option>
+									<option value="">- בחר שאלה -</option>
 									<option value="שם הרחוב שגדלת בו"
 										>שם הרחוב שגדלת בו</option
 									>
@@ -3163,7 +3163,7 @@
 								{/if}
 							{:else}
 								<p class="text-white font-medium py-3 px-1">
-									{security_question || "—"}
+									{security_question || "-"}
 								</p>
 							{/if}
 							<p class="text-gray-400 text-sm mt-1 px-1">
@@ -3358,7 +3358,7 @@
 
 		{#if showFeedback}
 			<p class="relative text-gray-400 text-sm mb-5">
-				כתוב לנו כיצד לשפר את האתר עבורך — הצוות של יוצאים לחירות יקרא
+				כתוב לנו כיצד לשפר את האתר עבורך - הצוות של יוצאים לחירות יקרא
 				ויחזור אליך.
 			</p>
 

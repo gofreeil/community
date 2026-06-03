@@ -3,7 +3,7 @@
     import { neighborhoodState } from '$lib/neighborhoodState.svelte';
     import { getCoordsFor, type Coord } from '$lib/neighborhoodCoords';
 
-    // לוח דרושים ארצי — בהשראת LinkedIn Jobs / Indeed / Glassdoor / AllJobs
+    // לוח דרושים ארצי - בהשראת LinkedIn Jobs / Indeed / Glassdoor / AllJobs
     interface Item {
         id: string;
         label: string;
@@ -71,7 +71,7 @@
         return palette[h % palette.length];
     }
 
-    // ====== Mock fallback (לפי המדיניות — דוגמאות עד שיש מספיק פריטים אמיתיים) ======
+    // ====== Mock fallback (לפי המדיניות - דוגמאות עד שיש מספיק פריטים אמיתיים) ======
     const mockItems: Item[] = [
         {
             id: 'mock-job-1', label: 'מנהל/ת חשבונות בכיר/ה',
@@ -95,7 +95,7 @@
             id: 'mock-job-3', label: 'מפתח/ת Frontend (React/Svelte)',
             description: 'סטארטאפ צומח מחפש מפתח/ת Frontend עם ניסיון. עבודה היברידית, גמישות מלאה.',
             icon: '💻', city: 'תל אביב', neighborhood: '', address: 'תל אביב',
-            phone: '053-9988776', contact: 'דנה — HR', category: 'jobs',
+            phone: '053-9988776', contact: 'דנה - HR', category: 'jobs',
             created_at: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(), status: 'active',
             extra_fields: JSON.stringify({ job_type: 'משרה מלאה', salary: '25,000-35,000 ₪', hours: 'גמיש', employer: 'NovaTech', requirements: 'React/Svelte, TypeScript, 3+ שנים' }),
             view_count: 921,
@@ -260,7 +260,7 @@
             const sCoord = getCoordsFor(it.neighborhood, it.city);
             return { ...it, _section: sectionFor(it, uN, uC), _dist: haversineKm(sCoord, uCoord) };
         });
-        // ⚠️ לא ממיינים פנימית — כדי שלא נדרוס את ה-sortBy שכבר הופעל ב-filteredItems
+        // ⚠️ לא ממיינים פנימית - כדי שלא נדרוס את ה-sortBy שכבר הופעל ב-filteredItems
     });
     let groupedSections = $derived.by(() => {
         const sorted = [...sectionedItems].sort((a, b) => a._section - b._section);
@@ -285,7 +285,7 @@
         };
     });
 
-    // משרות "חמות" — לפי view_count
+    // משרות "חמות" - לפי view_count
     let hotJobs = $derived(
         [...baseItems].sort((a, b) => (b.view_count ?? 0) - (a.view_count ?? 0)).slice(0, 3)
     );
@@ -313,7 +313,7 @@
 
 <svelte:head>
     <title>לוח דרושים ארצי | קהילה בשכונה</title>
-    <meta name="description" content="לוח דרושים ארצי — אלפי משרות מובחרות מכל הארץ. חיפוש, סינון לפי סוג משרה, שכר ומיקום." />
+    <meta name="description" content="לוח דרושים ארצי - אלפי משרות מובחרות מכל הארץ. חיפוש, סינון לפי סוג משרה, שכר ומיקום." />
 </svelte:head>
 
 <div class="min-h-screen" dir="rtl">
@@ -334,7 +334,7 @@
                         <span class="text-4xl md:text-5xl">💼</span>
                         דרושים לעבודה
                     </h1>
-                    <p class="text-white/80 text-sm md:text-base">המשרה הבאה שלך מחכה — חיפוש חכם בכל הארץ</p>
+                    <p class="text-white/80 text-sm md:text-base">המשרה הבאה שלך מחכה - חיפוש חכם בכל הארץ</p>
                 </div>
                 <a
                     href="/jobs/add"
@@ -530,9 +530,9 @@
                 <h2 class="text-white font-black text-xl md:text-2xl whitespace-nowrap">
                     {SECTION_TITLES[group.section]}
                     {#if group.section === 0 && neighborhoodState.neighborhood}
-                        <span class="text-indigo-300 font-bold">— {neighborhoodState.neighborhood}</span>
+                        <span class="text-indigo-300 font-bold">- {neighborhoodState.neighborhood}</span>
                     {:else if group.section === 1 && neighborhoodState.city}
-                        <span class="text-indigo-300 font-bold">— {neighborhoodState.city}</span>
+                        <span class="text-indigo-300 font-bold">- {neighborhoodState.city}</span>
                     {/if}
                 </h2>
                 <span class="text-gray-500 text-xs md:text-sm">({group.items.length})</span>

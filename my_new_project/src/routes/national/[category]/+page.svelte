@@ -6,7 +6,7 @@
 	import { getRatingSummary } from '$lib/restaurantReviews';
 	import { mockRestaurants } from '$lib/restaurantsData';
 
-	// טיפוס מקומי — לא מייבאים מ-$lib/server (אסור בקומפוננטת client)
+	// טיפוס מקומי - לא מייבאים מ-$lib/server (אסור בקומפוננטת client)
 	interface Item {
 		id: string; label: string; description: string; icon: string;
 		city: string; neighborhood: string; phone: string; contact: string;
@@ -104,7 +104,7 @@
 		return restField(item, 'club_discount') === 'יש הנחה';
 	}
 
-	// ====== Mock fallback לאולמות (לפי המדיניות — דוגמאות עד שיש פריטים אמיתיים) ======
+	// ====== Mock fallback לאולמות (לפי המדיניות - דוגמאות עד שיש פריטים אמיתיים) ======
 	const mockHalls: Item[] = [
 		{
 			id: 'mock-hall-1', label: 'אולם "היכל שלמה"',
@@ -186,14 +186,14 @@
 				(item.city ?? '').includes(searchQuery);
 			const matchCity = !selectedCity || item.city === selectedCity;
 
-			// סינון מזון מהיר/מסעדה — רלוונטי רק לקטגוריית restaurants
+			// סינון מזון מהיר/מסעדה - רלוונטי רק לקטגוריית restaurants
 			let matchFoodType = true;
 			if (data.categoryId === 'restaurants' && foodTypeFilter !== 'all') {
 				const fast = isFastFood(item);
 				matchFoodType = foodTypeFilter === 'fast' ? fast : !fast;
 			}
 
-			// סינוני מסעדה נוספים — משלוחים / ישיבה / הנחת מועדון
+			// סינוני מסעדה נוספים - משלוחים / ישיבה / הנחת מועדון
 			let matchRestaurant = true;
 			if (data.categoryId === 'restaurants') {
 				if (deliveryOnly && !hasDelivery(item)) matchRestaurant = false;
@@ -201,7 +201,7 @@
 				if (clubDiscountOnly && !hasClubDiscount(item)) matchRestaurant = false;
 			}
 
-			// סינון שימוש (אירועים/חוגים) — רלוונטי רק לקטגוריית halls
+			// סינון שימוש (אירועים/חוגים) - רלוונטי רק לקטגוריית halls
 			let matchHallUsage = true;
 			if (data.categoryId === 'halls' && hallUsageFilter !== 'all') {
 				matchHallUsage = hallMatchesUsage(item, hallUsageFilter);
@@ -210,7 +210,7 @@
 			return matchSearch && matchCity && matchFoodType && matchHallUsage && matchRestaurant;
 		});
 
-		// טופ 10 — מיון לפי view_count יורד וחיתוך ל-10 ראשונים
+		// טופ 10 - מיון לפי view_count יורד וחיתוך ל-10 ראשונים
 		if (topTenOnly) {
 			return [...items]
 				.sort((a, b) => (b.view_count ?? 0) - (a.view_count ?? 0))
@@ -344,7 +344,7 @@
 	{#if data.categoryId === 'halls' && (data.items as Item[]).length === 0}
 		<div class="mx-4 md:mx-0 mb-6 bg-teal-500/10 border border-teal-500/30 rounded-2xl px-4 py-3 text-center">
 			<p class="text-teal-200 text-xs md:text-sm">
-				✨ אלו דוגמאות בלבד — היה הראשון לפרסם אולם או חלל אמיתי בקטגוריה!
+				✨ אלו דוגמאות בלבד - היה הראשון לפרסם אולם או חלל אמיתי בקטגוריה!
 			</p>
 		</div>
 	{/if}
@@ -533,9 +533,9 @@
 				<h2 class="text-white font-black text-xl md:text-2xl whitespace-nowrap">
 					{SECTION_TITLES[group.section]}
 					{#if group.section === 0 && neighborhoodState.neighborhood}
-						<span class="text-teal-300 font-bold">— {neighborhoodState.neighborhood}</span>
+						<span class="text-teal-300 font-bold">- {neighborhoodState.neighborhood}</span>
 					{:else if group.section === 1 && neighborhoodState.city}
-						<span class="text-teal-300 font-bold">— {neighborhoodState.city}</span>
+						<span class="text-teal-300 font-bold">- {neighborhoodState.city}</span>
 					{/if}
 				</h2>
 				<span class="text-gray-500 text-xs md:text-sm">({group.items.length})</span>

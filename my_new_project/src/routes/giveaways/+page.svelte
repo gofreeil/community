@@ -171,7 +171,7 @@
         return list;
     });
 
-    // Pagination — only applies to the flat (non-search) view, so the grouped tiers stay intact.
+    // Pagination - only applies to the flat (non-search) view, so the grouped tiers stay intact.
     const PAGE_SIZE = 12;
     let currentPage = $state(1);
 
@@ -267,7 +267,7 @@
 
 <svelte:head>
     <title>למסירה | קהילה בשכונה</title>
-    <meta name="description" content="פריטים למסירה חינם בקהילה — ספות, מוצרי חשמל, ספרים, בגדים ועוד" />
+    <meta name="description" content="פריטים למסירה חינם בקהילה - ספות, מוצרי חשמל, ספרים, בגדים ועוד" />
 </svelte:head>
 
 <svelte:window onclick={() => showSortMenu = false} />
@@ -308,7 +308,7 @@
                         decoding="async"
                         class="absolute inset-0 w-full h-full object-cover object-top block"
                     />
-                    <!-- Gradient darkening overlay — בהיר למעלה, עדין באמצע, מתון למטה -->
+                    <!-- Gradient darkening overlay - בהיר למעלה, עדין באמצע, מתון למטה -->
                     <div class="absolute inset-0 bg-gradient-to-b from-black/0 via-black/10 to-black/35 pointer-events-none"></div>
                 </div>
                 <a
@@ -333,7 +333,7 @@
 
     <!-- Categories Tiles (Yad2-style) -->
     <div class="relative max-w-7xl mx-auto px-4 pt-2">
-        <!-- Featured "all" category as wide banner — heading on the right, button centered, count on the left -->
+        <!-- Featured "all" category as wide banner - heading on the right, button centered, count on the left -->
         {#each giveawayCategories.filter(c => c.key === 'all') as cat}
             {@const count = categoryCounts[cat.key] ?? 0}
             {@const active = categoryFilter === cat.key}
@@ -353,7 +353,7 @@
                         loading="lazy"
                         class="absolute inset-0 w-full h-full object-cover object-[center_30%] scale-110 transition-transform duration-500 group-hover:scale-[1.15]"
                     />
-                    <!-- Bottom-weighted dark gradient — מדגיש את הכיתוב בתחתית -->
+                    <!-- Bottom-weighted dark gradient - מדגיש את הכיתוב בתחתית -->
                     <div class="absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-transparent {active ? 'from-orange-900/65 via-orange-900/20' : ''}"></div>
 
                     <!-- Label aligned to bottom of image -->
@@ -408,7 +408,7 @@
     </div>
     </div>
 
-    <!-- Sticky Search & Filter Bar — single combined row -->
+    <!-- Sticky Search & Filter Bar - single combined row -->
     <div class="sticky top-0 z-30 bg-[#070b14]/95 backdrop-blur-md border-b border-white/10 shadow-lg mt-4">
         <div class="max-w-7xl mx-auto px-4 py-3">
             <div class="flex items-center gap-1.5 md:gap-2">
@@ -434,7 +434,7 @@
                     {/if}
                 </div>
 
-                <!-- Price filter — segmented control (קבוצה מקושרת) -->
+                <!-- Price filter - segmented control (קבוצה מקושרת) -->
                 <div role="group" aria-label="סינון לפי מחיר" class="shrink-0 inline-flex items-center bg-white/5 border border-white/10 rounded-full p-0.5 gap-0.5">
                     <button
                         onclick={() => priceFilter = 'all'}
@@ -631,7 +631,7 @@
             <div class="flex items-center gap-3 mt-8 mb-4">
                 <h2 class="text-white font-black text-xl md:text-2xl whitespace-nowrap">
                     {title}
-                    {#if suffix}<span class="text-orange-300 font-bold">— {suffix}</span>{/if}
+                    {#if suffix}<span class="text-orange-300 font-bold">- {suffix}</span>{/if}
                 </h2>
                 <span class="text-gray-500 text-xs md:text-sm">({count})</span>
                 <div class="flex-1 h-px bg-gradient-to-l from-orange-500/40 via-white/10 to-transparent"></div>
@@ -672,7 +672,7 @@
 
         {/if}
 
-        <!-- Pagination disabled — all items are shown in floors -->
+        <!-- Pagination disabled - all items are shown in floors -->
         {#if false}
             <nav aria-label="ניווט בין דפים" class="mt-8 flex flex-col items-center gap-3">
                 <p class="text-gray-300 text-sm md:text-base">

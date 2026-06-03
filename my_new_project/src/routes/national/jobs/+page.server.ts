@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { getItemsByCategory, getUserById } from '$lib/server/db';
 
-// לוח דרושים ארצי — דף ייעודי בהשראת LinkedIn / Indeed / Glassdoor / AllJobs
+// לוח דרושים ארצי - דף ייעודי בהשראת LinkedIn / Indeed / Glassdoor / AllJobs
 // טוען גם פריטים שנוצרו דרך /jobs/add (category='job')
 // וגם פריטים שנוצרו דרך /add/jobs (category='jobs') כדי שלא תהיה כפילות/אובדן.
 export const load: PageServerLoad = async (event) => {

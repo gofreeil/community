@@ -7,7 +7,7 @@ export interface CityEntry {
     neighborhoods: string[];
 }
 
-// יישובים בודדים ללא שכונות מוגדרות — כברירת מחדל "מרכז"
+// יישובים בודדים ללא שכונות מוגדרות - כברירת מחדל "מרכז"
 const DEFAULT_NB = ["מרכז"];
 
 export const citiesData: CityEntry[] = [
@@ -1219,7 +1219,7 @@ export const citiesData: CityEntry[] = [
 ];
 
 // Convenience: plain object for components that need Record<string, string[]>
-// אם עיר מופיעה פעמיים — מאחדים שכונות ומסירים כפילויות
+// אם עיר מופיעה פעמיים - מאחדים שכונות ומסירים כפילויות
 export const citiesAndNeighborhoods: Record<string, string[]> = (() => {
     const map = new Map<string, string[]>();
     for (const entry of citiesData) {

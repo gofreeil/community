@@ -1,5 +1,5 @@
 // ============================================================
-// db.ts — שכבת הנתונים
+// db.ts - שכבת הנתונים
 //
 // פריטים + קופת קהילה + משתמשים → Strapi 5 (async, cloud-persistent)
 // ============================================================
@@ -299,7 +299,7 @@ function autoFreezeExpiredOneTimeAds(items: DbItem[]): DbItem[] {
         const createdMs = new Date(it.created_at).getTime();
         const isOneTime = postingType.startsWith(ONE_TIME_POSTING_PREFIX) || postingType.startsWith('חד-פעמי');
         if (isOneTime && createdMs > 0 && createdMs < cutoff) {
-            // freeze בענן ברקע — לא מעכב את התשובה
+            // freeze בענן ברקע - לא מעכב את התשובה
             updateItem(it.id, { status: 'frozen' }).catch(e => console.warn('[db] auto-freeze failed:', it.id, e));
             continue;
         }
@@ -340,7 +340,7 @@ export async function resolveItem(documentId: string, resolverPhone: string): Pr
     await strapiPut(`/api/items/${documentId}`, {
         data: {
             status1:     'resolved',
-            description: `[הוסר על ידי הפורסם — טלפון מחזיר: ${resolverPhone}]`,
+            description: `[הוסר על ידי הפורסם - טלפון מחזיר: ${resolverPhone}]`,
         },
     });
 }
@@ -386,7 +386,7 @@ export async function updateItem(documentId: string, data: UpdateItemData): Prom
     await strapiPut(`/api/items/${documentId}`, { data: payload });
 }
 
-/** מחיקה לצמיתות של פריט (רק הבעלים — נבדק ב-endpoint) */
+/** מחיקה לצמיתות של פריט (רק הבעלים - נבדק ב-endpoint) */
 export async function deleteItem(documentId: string): Promise<void> {
     await strapiDelete(`/api/items/${documentId}`);
 }
@@ -551,7 +551,7 @@ export async function deleteEvent(documentId: string): Promise<void> {
 // ---- Admin actions ----
 // ============================================================
 
-/** מחיקת פריט (אדמין בלבד) — מעביר לסטטוס deleted */
+/** מחיקת פריט (אדמין בלבד) - מעביר לסטטוס deleted */
 export async function adminDeleteItem(documentId: string, adminId: string): Promise<void> {
     await strapiPut(`/api/items/${documentId}`, {
         data: {
@@ -575,7 +575,7 @@ export async function getAllSuperAdmins(): Promise<DbUser[]> {
     }
 }
 
-/** מציאת רכז שכונה — אם אין, מחזיר סופר אדמין */
+/** מציאת רכז שכונה - אם אין, מחזיר סופר אדמין */
 export async function findAdminForNeighborhood(neighborhood: string): Promise<DbUser | undefined> {
     // קודם מחפש neighborhood_admin של השכונה הספציפית
     if (neighborhood) {
@@ -586,7 +586,7 @@ export async function findAdminForNeighborhood(neighborhood: string): Promise<Db
         });
         if (arr.length > 0) return mapUpUser(arr[0] as StrapiUpUser);
     }
-    // fallback — סופר אדמין
+    // fallback - סופר אדמין
     const arr = await findStrapiUpUsers({
         'filters[app_role][$eq]': 'super_admin',
         'pagination[limit]':      '1',
@@ -682,7 +682,7 @@ export async function addFundContribution(neighborhood: string, totalPayment: nu
         data: {
             amount:      tithe,
             source:      'order',
-            note:        `10% מהזמנת פרסום — ${neighborhood}`,
+            note:        `10% מהזמנת פרסום - ${neighborhood}`,
             publishedAt: new Date().toISOString(),
         },
     });
@@ -690,7 +690,7 @@ export async function addFundContribution(neighborhood: string, totalPayment: nu
 }
 
 // ============================================================
-// ---- Users (users-permissions — up_users table) ----
+// ---- Users (users-permissions - up_users table) ----
 // ============================================================
 
 /** מחפש משתמש לפי external_id (מזהה Auth.js) */
@@ -699,7 +699,7 @@ async function findUpUser(externalId: string): Promise<StrapiUpUser | undefined>
     return arr[0] as StrapiUpUser | undefined;
 }
 
-/** מחפש משתמש לפי אימייל (מעדיף רשומה ישנה — credentials) */
+/** מחפש משתמש לפי אימייל (מעדיף רשומה ישנה - credentials) */
 async function findUpUserByEmail(email: string): Promise<StrapiUpUser | undefined> {
     const arr = await findStrapiUpUsers({
         'filters[email][$eq]': email,
@@ -723,7 +723,7 @@ export async function upsertUser(data: UpsertUserData, _jwt?: string): Promise<v
     const updates: Record<string, unknown> = {};
     if (!user.external_id) updates.external_id = data.id;
     if (data.provider && !user.provider) updates.provider = data.provider;
-    // avatar_url — מעדכן רק אם אין כבר תמונה מקומית (base64)
+    // avatar_url - מעדכן רק אם אין כבר תמונה מקומית (base64)
     if (data.avatar_url && !user.avatar_url?.startsWith('data:')) {
         updates.avatar_url = data.avatar_url;
     }
@@ -748,7 +748,7 @@ export async function updateUserProfile(id: string, data: UpdateProfileData, _jw
     if (!user) return undefined;
 
     const updates: Record<string, unknown> = {};
-    // "שם" בפרופיל → nickname (לא username — username הוא שם כניסה ויחודי)
+    // "שם" בפרופיל → nickname (לא username - username הוא שם כניסה ויחודי)
     if (data.name          !== undefined) updates.nickname      = data.name;
     if (data.email         !== undefined) updates.email         = data.email;
     if (data.phone         !== undefined) updates.phone         = data.phone;
@@ -778,7 +778,7 @@ export async function updateUserProfile(id: string, data: UpdateProfileData, _jw
 
 /**
  * קישור משתמש שנרשם דרך Strapi users-permissions לשדה external_id
- * נקרא אחרי strapiRegister — המשתמש כבר קיים ב-up_users, רק מגדירים external_id
+ * נקרא אחרי strapiRegister - המשתמש כבר קיים ב-up_users, רק מגדירים external_id
  */
 export async function registerWithCredentials(
     _name: string,
@@ -790,7 +790,7 @@ export async function registerWithCredentials(
     const user = await findUpUserByEmail(email);
     if (!user) throw new Error('Email already taken');
 
-    // אם ה-external_id כבר מוגדר — משתמש קיים
+    // אם ה-external_id כבר מוגדר - משתמש קיים
     if (user.external_id && user.external_id !== externalId) {
         throw new Error('Email already taken');
     }

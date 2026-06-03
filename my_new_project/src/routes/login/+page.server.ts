@@ -20,7 +20,7 @@ export const load: PageServerLoad = async (event) => {
 export const actions: Actions = {
     /**
      * שלב 1: בדיקת אימייל+סיסמה בשרת (validation + Strapi JWT cookie).
-     * אם הכל תקין, מחזיר { success: true } —
+     * אם הכל תקין, מחזיר { success: true } -
      * ואז הקליינט קורא ל-signIn('credentials') של Auth.js.
      */
     credentials: async (event) => {

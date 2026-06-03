@@ -69,7 +69,7 @@ export const actions: Actions = {
             if (user?.security_question) {
                 return { hasQuestion: true, email, question: user.security_question };
             }
-            // אין שאלה — שולחים מייל ישירות
+            // אין שאלה - שולחים מייל ישירות
             await forgotPassword(email);
             clearAttempts(cookies);
             return { success: true };
@@ -126,8 +126,8 @@ export const actions: Actions = {
                             const isNeighborhoodAdmin = admin.role === 'neighborhood_admin';
                             await createItem({
                                 category:    'admin_alert',
-                                label:       `חשבון ננעל — ${user.name ?? user.email}`,
-                                description: `המשתמש ${user.name ?? ''} (${user.email}) ניסה ${MAX_ATTEMPTS} פעמים לאמת שאלת ביטחון ונכשל.\nהחשבון ננעל אוטומטית.\n\nשכונה: ${user.neighborhood ?? '—'}\n\nנדרש בירור ידני לפתיחת החשבון.`,
+                                label:       `חשבון ננעל - ${user.name ?? user.email}`,
+                                description: `המשתמש ${user.name ?? ''} (${user.email}) ניסה ${MAX_ATTEMPTS} פעמים לאמת שאלת ביטחון ונכשל.\nהחשבון ננעל אוטומטית.\n\nשכונה: ${user.neighborhood ?? '-'}\n\nנדרש בירור ידני לפתיחת החשבון.`,
                                 icon:        '🔒',
                                 color:       'red',
                                 user_id:     admin.id,

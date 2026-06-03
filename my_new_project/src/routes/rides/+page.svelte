@@ -30,7 +30,7 @@
             : data.items.filter(i => getField(i.extra_fields, 'direction') === filter)
     );
 
-    // ====== חלוקה ל-4 קומות (קרבה למשתמש) — בטרמפים מתחשבים גם ב-from וגם ב-to ======
+    // ====== חלוקה ל-4 קומות (קרבה למשתמש) - בטרמפים מתחשבים גם ב-from וגם ב-to ======
     function haversineKm(a: Coord, b: Coord): number {
         const toRad = (d: number) => (d * Math.PI) / 180;
         const R = 6371;
@@ -82,7 +82,7 @@
         <div class="text-center mb-6">
             <span class="text-5xl mb-3 block">🚗</span>
             <h1 class="text-3xl font-black text-white mb-2">לוח טרמפים ומסירות</h1>
-            <p class="text-gray-400">לוח ארצי — טרמפים ומסירת חבילות בחסד בכל רחבי הארץ</p>
+            <p class="text-gray-400">לוח ארצי - טרמפים ומסירת חבילות בחסד בכל רחבי הארץ</p>
         </div>
 
         <div class="flex justify-center gap-2 mb-6">
@@ -125,9 +125,9 @@
             <h2 class="text-white font-black text-xl md:text-2xl whitespace-nowrap">
                 {SECTION_TITLES[group.section]}
                 {#if group.section === 0 && neighborhoodState.neighborhood}
-                    <span class="text-blue-300 font-bold">— {neighborhoodState.neighborhood}</span>
+                    <span class="text-blue-300 font-bold">- {neighborhoodState.neighborhood}</span>
                 {:else if group.section === 1 && neighborhoodState.city}
-                    <span class="text-blue-300 font-bold">— {neighborhoodState.city}</span>
+                    <span class="text-blue-300 font-bold">- {neighborhoodState.city}</span>
                 {/if}
             </h2>
             <span class="text-gray-500 text-xs md:text-sm">({group.items.length})</span>

@@ -100,7 +100,7 @@
                 singlesState = 'pending';
             }
         } catch {
-            singlesError = 'בעיית תקשורת — נסה שוב';
+            singlesError = 'בעיית תקשורת - נסה שוב';
         } finally {
             singlesSending = false;
         }
@@ -543,14 +543,14 @@
                                 {:else if singlesState === 'guest'}
                                     <div class="bg-gradient-to-br from-rose-600 to-pink-600 p-8 rounded-3xl shadow-xl text-center">
                                         <h3 class="text-white font-bold text-xl mb-2">🔒 הטלפון מוגן</h3>
-                                        <p class="text-white/80 text-sm mb-4">כדי לבקש את הטלפון יש להתחבר. רק לאחר אישור הצד השני — תקבל את מספרו.</p>
+                                        <p class="text-white/80 text-sm mb-4">כדי לבקש את הטלפון יש להתחבר. רק לאחר אישור הצד השני - תקבל את מספרו.</p>
                                         <a href="/login?redirect=/items/{item.id}" class="block w-full bg-white text-rose-600 font-bold py-3 rounded-xl text-center shadow-lg hover:scale-[1.02] transition-transform">התחבר כדי לבקש</a>
                                     </div>
                                 {:else if singlesState === 'pending'}
                                     <div class="bg-gradient-to-br from-amber-600 to-orange-600 p-8 rounded-3xl shadow-xl text-center">
                                         <div class="text-4xl mb-2">⏳</div>
                                         <h3 class="text-white font-bold text-xl mb-2">בקשתך נשלחה</h3>
-                                        <p class="text-white/85 text-sm">הצד השני יקבל את הפרופיל שלך וייחליט. ברגע שיאשר — הטלפון יופיע כאן.</p>
+                                        <p class="text-white/85 text-sm">הצד השני יקבל את הפרופיל שלך וייחליט. ברגע שיאשר - הטלפון יופיע כאן.</p>
                                     </div>
                                 {:else if singlesState === 'approved'}
                                     <div class="bg-gradient-to-br from-emerald-600 to-green-600 p-8 rounded-3xl shadow-xl text-center">

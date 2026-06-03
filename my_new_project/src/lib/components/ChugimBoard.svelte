@@ -187,7 +187,7 @@
         };
     }
 
-    // ===== Mock data — בהשראת Outschool / Sawyer / KidPass =====
+    // ===== Mock data - בהשראת Outschool / Sawyer / KidPass =====
     const mockKlasses: Klass[] = [
         {
             id: 'mc1', label: 'כדורגל לילדים', category: 'ספורט', instructor: 'דני אבני', sector: 'כללי',
@@ -216,7 +216,7 @@
             ageMin: 4, ageMax: 10, days: ['ב','ה'], timeStart: '17:00', timeEnd: '18:30',
             verified: true, spotsLeft: 5, capacity: 12,
             skills: ['קרמיקה','ציור','עבודת יד'],
-            description: 'סדנת יצירה לילדים — קרמיקה, ציור וקולאז\'. כל ילד לוקח הביתה יצירה. החומרים כלולים.',
+            description: 'סדנת יצירה לילדים - קרמיקה, ציור וקולאז\'. כל ילד לוקח הביתה יצירה. החומרים כלולים.',
             phone: '050-3333333', gradient: 'from-pink-500 to-rose-600', startedYear: 2015, lastActive: 'פעילה היום',
         },
         {
@@ -230,13 +230,13 @@
             phone: '050-4444444', gradient: 'from-fuchsia-500 to-pink-600', startedYear: 2008, lastActive: 'פעילה היום',
         },
         {
-            id: 'mc5', label: 'קראטה — חגורה לחגורה', category: 'אומנויות לחימה', instructor: 'אבי שני (חגורה שחורה 3 דאן)',
+            id: 'mc5', label: 'קראטה - חגורה לחגורה', category: 'אומנויות לחימה', instructor: 'אבי שני (חגורה שחורה 3 דאן)',
             city: 'בני ברק', neighborhood: 'רמת אהרן', sector: 'דתי', rating: 4.8, reviews: 41,
             pricePerMonth: 280, freeTrial: true, format: 'פרונטלי',
             ageMin: 6, ageMax: 15, days: ['ב','ד','ה'], timeStart: '17:30', timeEnd: '18:30',
             verified: true, spotsLeft: 4, capacity: 18,
             skills: ['משמעת','ביטחון עצמי','כושר'],
-            description: 'דוג\'ו מסורתי, גישה חינוכית — דגש על משמעת, ערכים וביטחון עצמי. מבחני חגורה פעמיים בשנה.',
+            description: 'דוג\'ו מסורתי, גישה חינוכית - דגש על משמעת, ערכים וביטחון עצמי. מבחני חגורה פעמיים בשנה.',
             phone: '050-5555555', gradient: 'from-red-500 to-orange-600', startedYear: 2014, lastActive: 'פעיל היום',
         },
         {
@@ -256,7 +256,7 @@
             ageMin: 8, ageMax: 14, days: ['ד'], timeStart: '17:00', timeEnd: '19:00',
             verified: true, spotsLeft: 3, capacity: 8,
             skills: ['בטיחות במטבח','אפייה','מתכונים בריאים'],
-            description: 'מטבח לילדים — אפייה, פסטות, סלטים. כל מפגש המנה הולכת הביתה. כל המרכיבים כלולים.',
+            description: 'מטבח לילדים - אפייה, פסטות, סלטים. כל מפגש המנה הולכת הביתה. כל המרכיבים כלולים.',
             phone: '050-7777777', gradient: 'from-amber-500 to-orange-600', startedYear: 2020, lastActive: 'פעילה היום',
         },
         {
@@ -266,7 +266,7 @@
             ageMin: 9, ageMax: 17, days: ['ב'], timeStart: '18:00', timeEnd: '19:30',
             verified: true, spotsLeft: 6, capacity: 14,
             skills: ['ביטוי עצמי','אילתור','עבודה מול קהל'],
-            description: 'סטודיו למשחק — אילתורים, מונולוגים, סצינות. הצגת סוף שנה. שחרור הבמה — פחות ביישנות, יותר ביטחון.',
+            description: 'סטודיו למשחק - אילתורים, מונולוגים, סצינות. הצגת סוף שנה. שחרור הבמה - פחות ביישנות, יותר ביטחון.',
             phone: '050-8888888', gradient: 'from-purple-500 to-fuchsia-600', startedYear: 2016, lastActive: 'פעיל אתמול',
         },
         {
@@ -296,7 +296,7 @@
             ageMin: 10, ageMax: 16, days: ['א','ב','ג','ד','ה'], timeStart: '19:00', timeEnd: '20:00',
             verified: true, spotsLeft: 7, capacity: 18,
             skills: ['לימוד עיוני','חשיבה אנליטית'],
-            description: 'שיעור גמרא יומי לילדים אחה"צ. גישה משכילית — הבנת הסוגיה, לא רק שינון. גם בזום.',
+            description: 'שיעור גמרא יומי לילדים אחה"צ. גישה משכילית - הבנת הסוגיה, לא רק שינון. גם בזום.',
             phone: '050-1234567', gradient: 'from-blue-500 to-indigo-600', startedYear: 2013, lastActive: 'פעיל היום',
         },
         {
@@ -384,12 +384,12 @@
     function buildShareText(k: Klass): { title: string; text: string; url: string } {
         const url = typeof window !== 'undefined' ? `${window.location.origin}/chugim` : 'https://kehila-bashchuna.co.il/chugim';
         const loc = [k.neighborhood, k.city].filter(Boolean).join(', ');
-        const lines = [`${CAT_META[k.category].icon} ${k.label} — ${k.instructor}`];
+        const lines = [`${CAT_META[k.category].icon} ${k.label} - ${k.instructor}`];
         if (loc) lines.push(`📍 ${loc}`);
         if (k.pricePerMonth) lines.push(`💰 ₪${k.pricePerMonth}/חודש`);
         if (k.description) lines.push(k.description);
         const text = lines.join('\n');
-        return { title: 'חוגים — קהילה בשכונה', text, url };
+        return { title: 'חוגים - קהילה בשכונה', text, url };
     }
     async function nativeShare(k: Klass) {
         const payload = buildShareText(k);
@@ -534,7 +534,7 @@
             </div>
             <div class="relative">
                 <h1 class="text-3xl md:text-5xl font-black text-white mb-3 drop-shadow-lg">לוח חוגים ארצי</h1>
-                <p class="text-white/95 text-sm md:text-lg mb-4 drop-shadow">מצאו חוג מושלם לילד שלכם — לפי גיל, קטגוריה, מחיר ומיקום</p>
+                <p class="text-white/95 text-sm md:text-lg mb-4 drop-shadow">מצאו חוג מושלם לילד שלכם - לפי גיל, קטגוריה, מחיר ומיקום</p>
                 <div class="inline-flex items-center gap-2 bg-black/40 backdrop-blur-sm border border-white/30 rounded-full px-4 py-2">
                     <span class="w-2 h-2 rounded-full bg-green-300 animate-pulse"></span>
                     <span class="text-white text-sm font-medium">{allKlasses.length} חוגים פעילים</span>
@@ -554,7 +554,7 @@
         </a>
     </div>
 
-    <!-- ===== קטגוריות (chips אופקיים) — בהשראת CourseHorse/Outschool ===== -->
+    <!-- ===== קטגוריות (chips אופקיים) - בהשראת CourseHorse/Outschool ===== -->
     <div class="max-w-6xl mx-auto px-4 mb-3">
         <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-thin" style="scrollbar-width: thin;">
             <button
@@ -642,9 +642,9 @@
                     <h2 class="text-white font-black text-xl md:text-2xl whitespace-nowrap">
                         {SECTION_TITLES[group.section]}
                         {#if group.section === 0 && neighborhoodState.neighborhood}
-                            <span class="text-indigo-300 font-bold">— {neighborhoodState.neighborhood}</span>
+                            <span class="text-indigo-300 font-bold">- {neighborhoodState.neighborhood}</span>
                         {:else if group.section === 1 && neighborhoodState.city}
-                            <span class="text-indigo-300 font-bold">— {neighborhoodState.city}</span>
+                            <span class="text-indigo-300 font-bold">- {neighborhoodState.city}</span>
                         {/if}
                     </h2>
                     <span class="text-gray-500 text-xs md:text-sm">({group.items.length})</span>
@@ -686,7 +686,7 @@
                                 </span>
                             {:else if k.spotsLeft === 0}
                                 <span class="absolute bottom-2 left-2 text-[10px] font-black bg-gray-700 text-gray-300 px-2 py-1 rounded-full">
-                                    מלא — רשימת המתנה
+                                    מלא - רשימת המתנה
                                 </span>
                             {/if}
                         </div>
@@ -728,7 +728,7 @@
                         <div class="grid grid-cols-3 divide-x divide-x-reverse divide-white/5 border-b border-white/5 text-center">
                             <div class="py-2.5">
                                 <div class="text-indigo-300 font-black text-base leading-none">
-                                    {k.pricePerMonth ? `₪${k.pricePerMonth}` : '—'}
+                                    {k.pricePerMonth ? `₪${k.pricePerMonth}` : '-'}
                                 </div>
                                 <div class="text-[10px] text-gray-500 mt-0.5">לחודש</div>
                             </div>

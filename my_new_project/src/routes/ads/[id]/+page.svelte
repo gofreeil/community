@@ -6,7 +6,7 @@
 </script>
 
 <svelte:head>
-    <title>{ad.title} — קהילה בשכונה</title>
+    <title>{ad.title} - קהילה בשכונה</title>
 </svelte:head>
 
 <div class="min-h-screen bg-[#0b1220] text-white" dir="rtl">

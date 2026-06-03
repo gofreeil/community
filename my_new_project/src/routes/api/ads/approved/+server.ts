@@ -4,7 +4,7 @@ import { listApproved } from '$lib/server/adsStore';
 
 export const GET: RequestHandler = async () => {
     const approved = await listApproved();
-    // Return only fields needed by the public sidebar — no submitter PII.
+    // Return only fields needed by the public sidebar - no submitter PII.
     const slim = approved.map(a => ({
         id: a.id,
         title: a.title,

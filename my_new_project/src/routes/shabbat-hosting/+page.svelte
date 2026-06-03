@@ -6,8 +6,8 @@
 </script>
 
 <svelte:head>
-    <title>לוח אירוח לשבת — קהילה בשכונה</title>
-    <meta name="description" content="לוח ארצי לאירוח בשבת — מציעים לארח ומחפשים להתארח, לפי שכונה וסגנון אוכל" />
+    <title>לוח אירוח לשבת - קהילה בשכונה</title>
+    <meta name="description" content="לוח ארצי לאירוח בשבת - מציעים לארח ומחפשים להתארח, לפי שכונה וסגנון אוכל" />
 </svelte:head>
 
 <ShabbatHostingBoard

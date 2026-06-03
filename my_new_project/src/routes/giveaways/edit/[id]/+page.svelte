@@ -50,7 +50,7 @@
 </script>
 
 <svelte:head>
-    <title>השלמת פרסום — {data.item.label} | קהילה בשכונה</title>
+    <title>השלמת פרסום - {data.item.label} | קהילה בשכונה</title>
 </svelte:head>
 
 <div class="min-h-screen bg-[#070b14] pt-6 pb-20 px-4" dir="rtl">

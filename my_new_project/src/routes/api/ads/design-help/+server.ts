@@ -43,7 +43,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         return json({ error: 'אנא ציין אימייל או כינוי כדי שנדע למצוא אותך' }, { status: 400 });
     }
 
-    // Compose admin message — link is relative so it opens within the site
+    // Compose admin message - link is relative so it opens within the site
     const description =
         `🆘 בקשת עזרה בעיצוב מהבונה פרסומות\n\n` +
         `🧑 ${identityLine}\n\n` +
@@ -55,7 +55,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         const admins = await getAllSuperAdmins();
         await Promise.all(admins.map(admin => createItem({
             category:    'message',
-            label:       `🆘 בקשת עזרה בעיצוב — ${userNickname || userName || userEmail || contact || 'משתמש'}`,
+            label:       `🆘 בקשת עזרה בעיצוב - ${userNickname || userName || userEmail || contact || 'משתמש'}`,
             description,
             icon:        '🆘',
             color:       'red',
@@ -75,7 +75,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         })));
     } catch (e) {
         console.warn('[design-help] notify super_admins failed:', e);
-        // Continue — WhatsApp should still work even if DB write fails.
+        // Continue - WhatsApp should still work even if DB write fails.
     }
 
     return json({

@@ -9,7 +9,7 @@ export interface FieldDef {
     default?: string;
     half?: boolean;
     maxLength?: number;
-    /** הצג שדה זה רק כאשר ערך של שדה אחר תואם — לוגיקה מותנית */
+    /** הצג שדה זה רק כאשר ערך של שדה אחר תואם - לוגיקה מותנית */
     showIf?: { field: string; equals: string };
 }
 
@@ -19,7 +19,7 @@ export interface CategoryConfig {
     color: string;
     /** שורה בטבלת המחירים (1-7). null = ללא תשלום */
     priceRow: number | null;
-    /** כותרת מותאמת לדף ההוספה. אם לא מוגדר — "הוסף {label}" */
+    /** כותרת מותאמת לדף ההוספה. אם לא מוגדר - "הוסף {label}" */
     addPageTitle?: string;
     fields: FieldDef[];
 }
@@ -54,7 +54,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
             { key: 'age_range',   label: 'גילאי ילדים',         type: 'multi_select', required: true, options: ['כל הגילאים', 'תינוקות', '4+'] },
             { key: 'experience',  label: 'ניסיון',              type: 'select',   required: true,  options: ['ללא ניסיון', 'שנה אחת', '2-3 שנים', '4+ שנים'] },
             { key: 'availability',label: 'זמינות',              type: 'availability_grid', required: true },
-            { key: 'languages',   label: 'שפות נוספות',          type: 'multi_select', required: false, options: ['אנגלית', 'רוסית', 'צרפתית'], hint: 'בנוסף לעברית — בחרו שפות שאתם דוברים' },
+            { key: 'languages',   label: 'שפות נוספות',          type: 'multi_select', required: false, options: ['אנגלית', 'רוסית', 'צרפתית'], hint: 'בנוסף לעברית - בחרו שפות שאתם דוברים' },
             { key: 'advantages',  label: 'יתרונות נוספים',        type: 'multi_select', required: false, options: [
                 'עזרה ראשונה',
                 'עזרה בשיעורי בית',
@@ -62,7 +62,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
                 'נקיון קל',
                 'כביסה וקיפול',
                 'מומחיות בתינוקות',
-            ], hint: 'בחרו את היתרונות שיש לכם להציע — יוצגו בכרטיסיה' },
+            ], hint: 'בחרו את היתרונות שיש לכם להציע - יוצגו בכרטיסיה' },
             { key: 'price_hour',  label: 'מחיר לשעה (₪)',       type: 'number',   required: false, placeholder: '40' },
             { key: 'description', label: 'טקסט חופשי',           type: 'textarea', required: false },
             { key: 'address',     label: 'שכונה',               type: 'neighborhood_select', required: false },
@@ -103,7 +103,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
             { key: 'address',     label: 'כתובת',                type: 'text',     required: true,  placeholder: 'מיקום החוג' },
             { key: 'phone',       label: 'טלפון',                type: 'tel',      required: true,  placeholder: '05X-XXXXXXX' },
             { key: 'description', label: 'תיאור החוג',           type: 'textarea', required: false, placeholder: 'מה לומדים, מה מיוחד בחוג...' },
-            { key: 'images',      label: 'תמונות (עד 5)',         type: 'images',   required: false, hint: 'הוסיפו תמונות של החוג. סמנו אחת כתמונה ראשית — היא תופיע בכרטיסיה הראשית של החוג.' },
+            { key: 'images',      label: 'תמונות (עד 5)',         type: 'images',   required: false, hint: 'הוסיפו תמונות של החוג. סמנו אחת כתמונה ראשית - היא תופיע בכרטיסיה הראשית של החוג.' },
             { key: 'website',     label: 'אתר אינטרנט',          type: 'text',     required: false, placeholder: 'https://example.com', hint: 'יוצג רק בדף המורחב של החוג' },
             { key: 'facebook',    label: 'פייסבוק',               type: 'text',     required: false, placeholder: 'https://facebook.com/...', half: true, hint: 'יוצג רק בדף המורחב' },
             { key: 'instagram',   label: 'אינסטגרם',              type: 'text',     required: false, placeholder: 'https://instagram.com/...', half: true, hint: 'יוצג רק בדף המורחב' },
@@ -172,13 +172,13 @@ export const categoryConfig: Record<string, CategoryConfig> = {
         addPageTitle: 'הוספת מסעדה / עסק מזון',
         fields: [
             { key: 'label',       label: 'שם העסק',               type: 'text',     required: true,  placeholder: 'פיצה השכונה' },
-            { key: 'venue_type',  label: 'סוג העסק',              type: 'toggle',   required: true,  options: ['מסעדה', 'מזון מהיר'], default: 'מסעדה', hint: 'מסעדה — 45 ₪ לחודש · מזון מהיר (פלאפל, שווארמה, פיצה, גלידה) — 30 ₪ לחודש' },
+            { key: 'venue_type',  label: 'סוג העסק',              type: 'toggle',   required: true,  options: ['מסעדה', 'מזון מהיר'], default: 'מסעדה', hint: 'מסעדה - 45 ₪ לחודש · מזון מהיר (פלאפל, שווארמה, פיצה, גלידה) - 30 ₪ לחודש' },
             { key: 'food_type',   label: 'סוג מטבח / מזון',         type: 'text',     required: true,  placeholder: 'פיצה, פלאפל, סושי, איטלקי...', half: true },
             { key: 'price_range', label: 'טווח מחירים',            type: 'select',   required: false, half: true, options: ['זול', 'בינוני', 'יקר'] },
             { key: 'kosher',      label: 'כשרות',                  type: 'select',   required: false, half: true, options: ['ללא', 'כשר רבנות', 'למהדרין', 'אחר'] },
             { key: 'meat_dairy',  label: 'חלבי / בשרי / פרווה',     type: 'select',   required: false, half: true, options: ['חלבי', 'בשרי', 'פרווה'] },
             { key: 'kosher_other', label: 'פרטו את הכשרות',         type: 'text',     required: false, placeholder: 'איזו כשרות?', showIf: { field: 'kosher', equals: 'אחר' } },
-            { key: 'service',     label: 'אופן הגשה',              type: 'multi_select', required: true, options: ['ישיבה במקום', 'טייק-אווי', 'משלוחים', 'הזמנת מקום מראש', 'קטרינג'], hint: 'בחרו את כל האפשרויות שהעסק מציע — יוצג בבירור בכרטיסיה' },
+            { key: 'service',     label: 'אופן הגשה',              type: 'multi_select', required: true, options: ['ישיבה במקום', 'טייק-אווי', 'משלוחים', 'הזמנת מקום מראש', 'קטרינג'], hint: 'בחרו את כל האפשרויות שהעסק מציע - יוצג בבירור בכרטיסיה' },
             { key: 'delivery_by', label: 'משלוחים באמצעות',         type: 'multi_select', required: false, options: ['שליח עצמאי', 'Wolt', 'תן ביס', 'משלוחה'], hint: 'מלאו רק אם סימנתם "משלוחים" באופן ההגשה' },
             { key: 'amenities',   label: 'שירותים ונוחות',         type: 'multi_select', required: false, options: ['ישיבה בחוץ', 'נגישות לכיסא גלגלים', 'Wi-Fi חופשי', 'מתאים למשפחות', 'פינת ילדים', 'אפשרות הפרדה'] },
             { key: 'parking',     label: 'חניה',                   type: 'toggle',   required: true,  options: ['יש חניה', 'אין חניה'], default: 'יש חניה' },
@@ -194,10 +194,10 @@ export const categoryConfig: Record<string, CategoryConfig> = {
             { key: 'facebook',    label: 'פייסבוק',                type: 'text',     required: false, placeholder: 'https://facebook.com/...', half: true },
             { key: 'instagram',   label: 'אינסטגרם',               type: 'text',     required: false, placeholder: 'https://instagram.com/...', half: true },
             { key: 'custom_link_url',   label: 'הקישור הנוסף',      type: 'text',    required: false, placeholder: 'https://...', half: true },
-            { key: 'custom_link_label', label: 'כותרת לקישור נוסף', type: 'text',    required: false, placeholder: 'למשל: הזמנת מקום, תפריט אירועים', half: true, hint: 'תנו שם לקישור — הוא יוצג ככפתור בדף המסעדה' },
-            { key: 'description', label: 'תיאור',                  type: 'textarea', required: false, placeholder: 'מה מיוחד במסעדה — מנת הדגל, אווירה, קהל יעד...' },
+            { key: 'custom_link_label', label: 'כותרת לקישור נוסף', type: 'text',    required: false, placeholder: 'למשל: הזמנת מקום, תפריט אירועים', half: true, hint: 'תנו שם לקישור - הוא יוצג ככפתור בדף המסעדה' },
+            { key: 'description', label: 'תיאור',                  type: 'textarea', required: false, placeholder: 'מה מיוחד במסעדה - מנת הדגל, אווירה, קהל יעד...' },
             { key: 'images',      label: 'תמונות העסק (עד 5)',      type: 'images',   required: false, hint: 'תמונות של העסק והמנות. סמנו אחת כתמונה ראשית.' },
-            { key: 'menu_images', label: 'תמונות התפריט (עד 5)',     type: 'images',   required: true,  hint: 'חובה — צלמו או העלו קובץ של התפריט בנפרד משאר התמונות — ברור, מואר וקריא.' },
+            { key: 'menu_images', label: 'תמונות התפריט (עד 5)',     type: 'images',   required: true,  hint: 'חובה - צלמו או העלו קובץ של התפריט בנפרד משאר התמונות - ברור, מואר וקריא.' },
         ],
     },
 

@@ -6,9 +6,9 @@ import { citiesData } from '$lib/neighborhoodsData';
 import { categoryConfig } from '$lib/categoryFields';
 import { countPending } from '$lib/server/adsStore';
 
-// קטגוריות פרסום אמיתיות (גמ"ח, למסירה, חוגים וכו') — לא קריאות שכונה
+// קטגוריות פרסום אמיתיות (גמ"ח, למסירה, חוגים וכו') - לא קריאות שכונה
 const PUBLICATION_CATEGORIES = new Set(Object.keys(categoryConfig));
-// קטגוריות קריאות קהילתיות — יוצגו בהודעות
+// קטגוריות קריאות קהילתיות - יוצגו בהודעות
 const COMMUNITY_CALL_CATEGORIES = new Set(['raise_hand', 'lost_and_found', 'admin_alert', 'location_request', 'user_feedback']);
 
 export const load: PageServerLoad = async (event) => {
@@ -16,10 +16,10 @@ export const load: PageServerLoad = async (event) => {
     try {
         session = await event.locals.auth();
     } catch {
-        // cookie פגום — מפנה להתחברות
+        // cookie פגום - מפנה להתחברות
     }
 
-    // אורח — מאפשרים כניסה לדף אך ללא נתוני משתמש
+    // אורח - מאפשרים כניסה לדף אך ללא נתוני משתמש
     if (!session?.user?.id) {
         return {
             user:       null,
@@ -34,7 +34,7 @@ export const load: PageServerLoad = async (event) => {
         };
     }
 
-    // העתקת תמונה מגוגל — המשתמש לחץ "העתק מחשבון גוגל" וחזר עם ?copy_photo=1
+    // העתקת תמונה מגוגל - המשתמש לחץ "העתק מחשבון גוגל" וחזר עם ?copy_photo=1
     const copyPhoto = event.url.searchParams.get('copy_photo') === '1';
     if (copyPhoto && session.user?.image) {
         try {
@@ -69,7 +69,7 @@ export const load: PageServerLoad = async (event) => {
         items = [];
     }
 
-    // אם המשתמש לא נמצא לפי ID — נסה לפי אימייל (מיזוג OAuth+credentials)
+    // אם המשתמש לא נמצא לפי ID - נסה לפי אימייל (מיזוג OAuth+credentials)
     if (!user && session.user?.email) {
         try {
             const byEmail = await getUserByEmail(session.user.email);
@@ -82,7 +82,7 @@ export const load: PageServerLoad = async (event) => {
         }
     }
 
-    // אם עדיין לא נמצא — צור משתמש חדש מה-session (רק אם אין קיים עם אותו אימייל)
+    // אם עדיין לא נמצא - צור משתמש חדש מה-session (רק אם אין קיים עם אותו אימייל)
     if (!user && session.user?.id) {
         try {
             const provider = (session.user as { provider?: string }).provider ?? 'google';
@@ -116,7 +116,7 @@ export const load: PageServerLoad = async (event) => {
             phone: '', nickname: '', city: '', neighborhood: '',
             business: '', gender: '', family_status: '', birth_date: '',
             notifications: 1, provider: null, password_hash: null, created_at: '',
-            // משמר את התפקיד מהסשן כשה-DB לא זמין — אחרת סופר־אדמין יוצג כ"צופה"
+            // משמר את התפקיד מהסשן כשה-DB לא זמין - אחרת סופר־אדמין יוצג כ"צופה"
             role: ((session.user as { role?: string })?.role ?? 'user') as 'user' | 'neighborhood_admin' | 'super_admin',
             banned: false,
             coordinator_of: ((session.user as { coordinator_of?: string[] })?.coordinator_of) ?? [],
@@ -130,12 +130,12 @@ export const load: PageServerLoad = async (event) => {
         console.warn('[profile] getMessagesByUserId failed:', e);
     }
 
-    // פרסומים אמיתיים — רק קטגוריות מ-categoryConfig
+    // פרסומים אמיתיים - רק קטגוריות מ-categoryConfig
     const publicationItems = (items ?? []).filter(i => PUBLICATION_CATEGORIES.has(i.category));
-    // קריאות קהילתיות — יוצגו בהודעות
+    // קריאות קהילתיות - יוצגו בהודעות
     const communityRequests = (items ?? []).filter(i => COMMUNITY_CALL_CATEGORIES.has(i.category));
 
-    // ספירת פרסומות ממתינות לאישור — לבאדג' של סופר־אדמין בכותרת לוח הבקרה
+    // ספירת פרסומות ממתינות לאישור - לבאדג' של סופר־אדמין בכותרת לוח הבקרה
     let pendingAdsCount = 0;
     let coordinatorsCount = 0;
     if (resolvedUser?.role === 'super_admin') {
@@ -215,7 +215,7 @@ export const actions: Actions = {
                 status,
             }, strapiJwt);
 
-            // אם המשתמש ביקש להוסיף מיקום חדש — שלח בקשה לסופר אדמין
+            // אם המשתמש ביקש להוסיף מיקום חדש - שלח בקשה לסופר אדמין
             if (customLocation) {
                 const requesterEmail = email || session.user.email || '';
                 const requesterName  = name  || session.user.id;

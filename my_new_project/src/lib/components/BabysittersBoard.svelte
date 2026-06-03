@@ -83,11 +83,11 @@
         const url = typeof window !== 'undefined' ? `${window.location.origin}/babysitters` : 'https://kehila-bashchuna.co.il/babysitters';
         const loc = [s.neighborhood, s.city].filter(Boolean).join(', ');
         const name = s.name || s.label || 'בייביסיטר';
-        const lines = [`👶 בייביסיטר — ${name}`];
+        const lines = [`👶 בייביסיטר - ${name}`];
         if (loc) lines.push(`📍 ${loc}`);
         if (s.description) lines.push(s.description);
         const text = lines.join('\n');
-        return { title: 'בייביסיטר — קהילה בשכונה', text, url };
+        return { title: 'בייביסיטר - קהילה בשכונה', text, url };
     }
     async function nativeShareSitter(s: { id: string; name?: string; label?: string; city?: string; neighborhood?: string; description?: string }) {
         const payload = buildSitterShareText(s);
@@ -188,7 +188,7 @@
         };
     }
 
-    // ===== Mock data — נתונים עשירים בהשראת אתרים מובילים =====
+    // ===== Mock data - נתונים עשירים בהשראת אתרים מובילים =====
     const _mockSittersBase: Omit<Sitter, 'availability'>[] = [
         {
             id: 'mb1', name: 'שירה לוי', age: 23, sector: 'דתי', city: 'ירושלים', neighborhood: 'קרית משה',
@@ -217,7 +217,7 @@
             ageGroups: ['תינוקות'], languages: ['עברית','אנגלית','יידיש'],
             certifications: ['עזרה ראשונה'], specialties: ['מומחיות בתינוקות','בישול לילדים'],
             days: ['א','ב','ג','ד','ה'], timeOfDay: ['בוקר','צהריים','אחה״צ'],
-            bio: 'מטפלת מקצועית בעלת קורס מטפלות מוסמך. מומחיות בתינוקות מגיל לידה — שגרת שינה, האכלה ופעילויות התפתחותיות.',
+            bio: 'מטפלת מקצועית בעלת קורס מטפלות מוסמך. מומחיות בתינוקות מגיל לידה - שגרת שינה, האכלה ופעילויות התפתחותיות.',
             phone: '053-3456789', photoSeed: 'michal', gradient: 'from-sky-500 to-blue-600', lastActive: 'פעילה היום',
         },
         {
@@ -247,7 +247,7 @@
             ageGroups: ['4+'], languages: ['עברית','אנגלית'],
             certifications: ['עזרה ראשונה'], specialties: ['נקיון קל','בישול לילדים'],
             days: ['ג','ד','ה','ו','ש'], timeOfDay: ['אחה״צ','ערב','סופ״ש'],
-            bio: 'אוהבת המון את החיים בחוץ — פארק, טרמפולינות, גינות שעשועים. הילדים מתעייפים בכיף ויוצאים חיוכים.',
+            bio: 'אוהבת המון את החיים בחוץ - פארק, טרמפולינות, גינות שעשועים. הילדים מתעייפים בכיף ויוצאים חיוכים.',
             phone: '050-6789012', photoSeed: 'tamar', gradient: 'from-indigo-500 to-violet-600', lastActive: 'לפני יומיים',
         },
         {
@@ -571,9 +571,9 @@
                     <h2 class="text-white font-black text-xl md:text-2xl whitespace-nowrap">
                         {SECTION_TITLES[group.section]}
                         {#if group.section === 0 && neighborhoodState.neighborhood}
-                            <span class="text-pink-300 font-bold">— {neighborhoodState.neighborhood}</span>
+                            <span class="text-pink-300 font-bold">- {neighborhoodState.neighborhood}</span>
                         {:else if group.section === 1 && neighborhoodState.city}
-                            <span class="text-pink-300 font-bold">— {neighborhoodState.city}</span>
+                            <span class="text-pink-300 font-bold">- {neighborhoodState.city}</span>
                         {/if}
                     </h2>
                     <span class="text-gray-500 text-xs md:text-sm">({group.items.length})</span>
@@ -602,7 +602,7 @@
                                     <h3 class="text-white font-black text-base truncate">
                                         {s.name}<span class="text-gray-400 font-normal">, {s.age}</span>
                                     </h3>
-                                    <button onclick={() => toggleSave(s)} class="flex-shrink-0 text-xl leading-none transition-transform hover:scale-110 cursor-pointer" aria-label="שמור" title={saved[s.id] ? 'מוצג בפרופיל שלך כקיצור דרך' : 'סמן אהבתי — יופיע בפרופיל שלך'}>
+                                    <button onclick={() => toggleSave(s)} class="flex-shrink-0 text-xl leading-none transition-transform hover:scale-110 cursor-pointer" aria-label="שמור" title={saved[s.id] ? 'מוצג בפרופיל שלך כקיצור דרך' : 'סמן אהבתי - יופיע בפרופיל שלך'}>
                                         {saved[s.id] ? '❤️' : '🤍'}
                                     </button>
                                 </div>
@@ -639,13 +639,13 @@
                         <div class="grid grid-cols-3 divide-x divide-x-reverse divide-white/5 border-b border-white/5 text-center">
                             <div class="py-2.5">
                                 <div class="text-pink-300 font-black text-base leading-none">
-                                    {s.rate ? `₪${s.rate}` : '—'}
+                                    {s.rate ? `₪${s.rate}` : '-'}
                                 </div>
                                 <div class="text-[10px] text-gray-500 mt-0.5">לשעה</div>
                             </div>
                             <div class="py-2.5">
                                 <div class="text-white font-black text-base leading-none">
-                                    {s.experience || '—'}{s.experience ? '+' : ''}
+                                    {s.experience || '-'}{s.experience ? '+' : ''}
                                 </div>
                                 <div class="text-[10px] text-gray-500 mt-0.5">שנות ניסיון</div>
                             </div>
@@ -700,7 +700,7 @@
                                 </div>
                             {/if}
 
-                            <!-- זמינות שבועית — לוח 7×3 -->
+                            <!-- זמינות שבועית - לוח 7×3 -->
                             <div class="mt-1">
                                 <div class="text-[10px] text-gray-500 mb-1.5 flex items-center gap-1">
                                     <span>📅</span> זמינות שבועית

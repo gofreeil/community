@@ -54,8 +54,8 @@
 </script>
 
 <svelte:head>
-    <title>{item.label} | מזון ומסעדות — קהילה בשכונה</title>
-    <meta name="description" content={item.description || `${item.label} — ${foodType}`} />
+    <title>{item.label} | מזון ומסעדות - קהילה בשכונה</title>
+    <meta name="description" content={item.description || `${item.label} - ${foodType}`} />
 </svelte:head>
 
 <div class="min-h-screen bg-[#070b14] pt-6 pb-20 px-4" dir="rtl">
@@ -97,7 +97,7 @@
                     <span class="text-yellow-300 text-sm">
                         {#each [1,2,3,4,5] as s}{s <= Math.round(summary.avg) ? '★' : '☆'}{/each}
                     </span>
-                    <span class="text-white font-bold text-sm">{summary.avg || '—'}</span>
+                    <span class="text-white font-bold text-sm">{summary.avg || '-'}</span>
                     <span class="text-white/70 text-xs">({summary.count} ביקורות)</span>
                 </button>
                 {#if item.neighborhood || item.city}
@@ -165,7 +165,7 @@
                     <div>
                         <div class="text-gray-400 text-xs">כשרות</div>
                         <div class="text-white text-sm font-bold">
-                            {[kosher, meatDairy].filter(Boolean).join(' · ') || '—'}
+                            {[kosher, meatDairy].filter(Boolean).join(' · ') || '-'}
                         </div>
                     </div>
                 </div>

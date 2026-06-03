@@ -7,7 +7,7 @@ export const load: LayoutServerLoad = async (event) => {
     try {
         session = await event.locals.auth();
     } catch {
-        // session לא תקין — נמשיך כמשתמש אנונימי
+        // session לא תקין - נמשיך כמשתמש אנונימי
     }
 
     // טעינת פרטי משתמש מלאים לתצוגה בדרואר
@@ -19,7 +19,7 @@ export const load: LayoutServerLoad = async (event) => {
         } catch { /* שקט */ }
     }
 
-    // פרסומות מאושרות — לשתילה ב-AdsSidebar לצד הסטטיות
+    // פרסומות מאושרות - לשתילה ב-AdsSidebar לצד הסטטיות
     let approvedAds: Array<{ id: string; title: string; subtitle: string; cta: string; hover: string; gradient: string; mainImage: string }> = [];
     try {
         const all = await listApproved();

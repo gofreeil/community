@@ -7,12 +7,12 @@ import { countPending } from '$lib/server/adsStore';
 export const load: PageServerLoad = async (event) => {
     const session = await event.locals.auth();
 
-    // בדיקת הרשאה — ישירות מ-DB + fallback לפי אימייל (מיזוג OAuth+credentials)
+    // בדיקת הרשאה - ישירות מ-DB + fallback לפי אימייל (מיזוג OAuth+credentials)
     let isSuperAdmin = session?.user?.role === 'super_admin';
     if (!isSuperAdmin && session?.user?.id) {
         try {
             let dbUser = await getUserById(session.user.id);
-            // fallback לפי אימייל — כמו בדף הפרופיל
+            // fallback לפי אימייל - כמו בדף הפרופיל
             if (!dbUser && session.user.email) {
                 dbUser = await getUserByEmail(session.user.email);
             }

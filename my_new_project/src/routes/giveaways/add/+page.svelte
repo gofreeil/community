@@ -302,7 +302,7 @@
 
                     {#if hasDefaults}
                         <div class="rounded-lg bg-emerald-900/20 border border-emerald-500/20 px-3 py-2 text-emerald-300 text-xs">
-                            💡 השדות שלמטה הוזנו מראש מהפרופיל שלך — אפשר לערוך אם צריך
+                            💡 השדות שלמטה הוזנו מראש מהפרופיל שלך - אפשר לערוך אם צריך
                         </div>
                     {/if}
 

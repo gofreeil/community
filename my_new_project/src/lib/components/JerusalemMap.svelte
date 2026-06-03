@@ -219,7 +219,7 @@
     // ----- מצב מסך מלא לדסקטופ -----
     let isFullscreen = $state(false);
 
-    // ----- "הגנת זכוכית" — המפה לא אינטראקטיבית עד שלוחצים עליה -----
+    // ----- "הגנת זכוכית" - המפה לא אינטראקטיבית עד שלוחצים עליה -----
     let isMapInteractive = $state(false);
 
     function activateMap() {
@@ -269,7 +269,7 @@
         return () => { document.body.style.overflow = prev; };
     });
 
-    // במסך מלא — המפה תמיד אינטראקטיבית
+    // במסך מלא - המפה תמיד אינטראקטיבית
     $effect(() => {
         if (isFullscreen) isMapInteractive = true;
     });
@@ -294,10 +294,10 @@
     let modalImagePreview = $state('');
 
     const fieldsByOption: Record<number, { descLabel: string; descPlaceholder: string; locationPlaceholder: string }> = {
-        1: { descLabel: 'תיאור המצב', descPlaceholder: 'פרט את המצב — מה קרה, באיזו עזרה נדרש...', locationPlaceholder: 'רחוב, כניסה, קומה...' },
+        1: { descLabel: 'תיאור המצב', descPlaceholder: 'פרט את המצב - מה קרה, באיזו עזרה נדרש...', locationPlaceholder: 'רחוב, כניסה, קומה...' },
         2: { descLabel: 'פרטי הרכב', descPlaceholder: 'צבע הרכב, דגם, לוחית רישוי...', locationPlaceholder: 'היכן הרכב חונה? רחוב ומספר...' },
         3: { descLabel: 'תיאור הילד', descPlaceholder: 'גיל, לבוש, מאפיינים בולטים, מתי נעלם...', locationPlaceholder: 'איפה נראה לאחרונה? שם המקום, רחוב...' },
-        4: { descLabel: 'תיאור בקשת העזרה', descPlaceholder: 'פרט מה קרה ובמה נדרשת עזרה...', locationPlaceholder: 'מיקום — רחוב, שכונה...' },
+        4: { descLabel: 'תיאור בקשת העזרה', descPlaceholder: 'פרט מה קרה ובמה נדרשת עזרה...', locationPlaceholder: 'מיקום - רחוב, שכונה...' },
         5: { descLabel: 'תיאור הכלב', descPlaceholder: 'גזע, צבע, שם הכלב, מתי ואיפה נעלם...', locationPlaceholder: 'אזור שאבד לאחרונה...' },
     };
 
@@ -336,7 +336,7 @@
             item.description?.toLowerCase().includes(q) ||
             item.category?.toLowerCase().includes(q)
         ).sort((a, b) => {
-            // השכונה שלך — ראשון
+            // השכונה שלך - ראשון
             const aNeigh = a.neighborhood === neighborhoodState.neighborhood ? 0 : 1;
             const bNeigh = b.neighborhood === neighborhoodState.neighborhood ? 0 : 1;
             if (aNeigh !== bNeigh) return aNeigh - bNeigh;
@@ -347,7 +347,7 @@
         });
     });
 
-    // פריטים מהשכונה הנוכחית — ריאקטיבי לשינויי neighborhoodState ול-selectedCategory
+    // פריטים מהשכונה הנוכחית - ריאקטיבי לשינויי neighborhoodState ול-selectedCategory
     let neighborhoodDbItems = $derived(
         dbItems.filter(d =>
             (d.neighborhood === neighborhoodState.neighborhood ||
@@ -424,7 +424,7 @@
             "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3366.1!2d34.8437!3d32.3183!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151d4f456789012g%3A0x13579bdf2468ace0!2z16DXldeV15Ug15LXoNeZ150!5e0!3m2!1siw!2sil!4v1700000000000!5m2!1siw!2sil",
     };
 
-    // כתובת המפה — ריאקטיבית לשינויי neighborhoodState
+    // כתובת המפה - ריאקטיבית לשינויי neighborhoodState
     let mapUrl = $derived(
         neighborhoodMaps[neighborhoodState.neighborhood] ??
         // fallback דינמי: חיפוש גוגל לפי שם שכונה + עיר מהפרופיל
@@ -436,7 +436,7 @@
     // ---- מרקרים דינמיים נטועים במפה (lat/lng אמיתי) ----
     const MAX_MARKERS = 30;
 
-    // דוגמאות mock — מוצגות בכל שכונה כל עוד אין באותה שכונה ולו פריט אמיתי אחד.
+    // דוגמאות mock - מוצגות בכל שכונה כל עוד אין באותה שכונה ולו פריט אמיתי אחד.
     // לחיצה על מרקר דמו מובילה אל /add/{category} כדי לעודד הוספת פריט אמיתי.
     const MOCK_ITEMS: { suffix: string; category: string; icon: string; label: string; color: string }[] = [
         { suffix: 'gemach-books', category: 'gemachim',    icon: '📚', label: 'גמ״ח ספרים',     color: 'rose' },
@@ -454,7 +454,7 @@
             (d.neighborhood === '' && d.city === neighborhoodState.city)
         );
 
-        // יש פריט אמיתי אחד לפחות — מציגים רק את האמיתיים, בלי דמו
+        // יש פריט אמיתי אחד לפחות - מציגים רק את האמיתיים, בלי דמו
         if (inHood.length > 0) {
             const sorted = [...inHood].sort((a, b) =>
                 (b.created_at || '').localeCompare(a.created_at || '')
@@ -477,14 +477,14 @@
             });
         }
 
-        // אין פריטים אמיתיים בשכונה — מפזרים דוגמאות במעגל סביב מרכז השכונה
+        // אין פריטים אמיתיים בשכונה - מפזרים דוגמאות במעגל סביב מרכז השכונה
         const center = getCoordsFor(neighborhoodState.neighborhood, neighborhoodState.city);
         const nbId = `${neighborhoodState.city}_${neighborhoodState.neighborhood}`;
-        // hash של שם השכונה — קובע את זווית ההתחלה של המעגל (כדי שלא כל השכונות יציגו אותה תבנית)
+        // hash של שם השכונה - קובע את זווית ההתחלה של המעגל (כדי שלא כל השכונות יציגו אותה תבנית)
         let nbHash = 0;
         for (let i = 0; i < nbId.length; i++) nbHash = ((nbHash * 31) + nbId.charCodeAt(i)) | 0;
         const startAngle = (Math.abs(nbHash) % 360) * Math.PI / 180;
-        // רדיוסים מתחלפים — חיצוני/פנימי — נראה טבעי יותר ממעגל מושלם
+        // רדיוסים מתחלפים - חיצוני/פנימי - נראה טבעי יותר ממעגל מושלם
         const RADII = [0.0085, 0.0055, 0.0095, 0.0070, 0.0090, 0.0060, 0.0080]; // ~600-1050 מטר
         const N = MOCK_ITEMS.length;
         return MOCK_ITEMS.map((m, i) => {
@@ -638,7 +638,7 @@
         };
     });
 
-    // ריאקטיב: כש-dynamicMarkers משתנה (פריטים חדשים, החלפת קטגוריה) — לבנות מחדש
+    // ריאקטיב: כש-dynamicMarkers משתנה (פריטים חדשים, החלפת קטגוריה) - לבנות מחדש
     $effect(() => {
         // תלות מפורשת
         void dynamicMarkers;
@@ -646,14 +646,14 @@
         rebuildMarkers();
     });
 
-    // ריאקטיב: כשהמשתמש מחליף שכונה — למרכז את המפה מחדש
+    // ריאקטיב: כשהמשתמש מחליף שכונה - למרכז את המפה מחדש
     $effect(() => {
         void neighborhoodState.neighborhood;
         void neighborhoodState.city;
         recenterMap();
     });
 
-    // כש-fullscreen משתנה — Leaflet צריך לעדכן את גודל המיכל
+    // כש-fullscreen משתנה - Leaflet צריך לעדכן את גודל המיכל
     $effect(() => {
         void isFullscreen;
         if (leafletMap) {
@@ -665,7 +665,7 @@
 
     function handleCategoryClick(categoryId: string) {
         selectedCategory = categoryId;
-        // בתצוגת רשימה — פתח אוטומטית את הקטגוריה הנבחרת
+        // בתצוגת רשימה - פתח אוטומטית את הקטגוריה הנבחרת
         if (categoryId !== "benefits") {
             const next = new Set(expandedCategories);
             next.add(categoryId);
@@ -755,7 +755,7 @@
                 viewMode === "map"
             ) {
                 hasShownListAnimation = true;
-                isAutoSwitching = true; // hint cycle 1 — מציג לחיצה לפני המעבר לרשימה
+                isAutoSwitching = true; // hint cycle 1 - מציג לחיצה לפני המעבר לרשימה
 
                 // המתן לסיום פעימת הלחיצה, ואז עבור לרשימה
                 setTimeout(() => {
@@ -781,7 +781,7 @@
                     isAutoSwitching = false; // הסר כיתה כדי לאפשר רענון אנימציה
                     setTimeout(() => {
                         if (userInteracted) return;
-                        isAutoSwitching = true; // hint cycle 2 — לחיצה לפני החזרה למפה
+                        isAutoSwitching = true; // hint cycle 2 - לחיצה לפני החזרה למפה
                         setTimeout(() => {
                             if (userInteracted || viewMode !== "list") {
                                 isAutoSwitching = false;
@@ -1020,7 +1020,7 @@
         <div class="flex flex-col gap-2">
             <!-- Buttons Container -->
             <div class="relative" bind:this={categoryButtonsWrapperRef}>
-                <!-- Mobile: שורה אחת קומפקטית — סינון פעיל + כפתור פתיחת bottom sheet -->
+                <!-- Mobile: שורה אחת קומפקטית - סינון פעיל + כפתור פתיחת bottom sheet -->
                 <div class="md:hidden px-3 py-2 w-full flex items-center gap-2">
                     <!-- שבב המראה את הסינון הפעיל (מימין) -->
                     {#each [categories.find(c => c.id === selectedCategory) ?? categories[0]] as active}
@@ -1295,7 +1295,7 @@
                     </div>
                 {/if}
 
-                <!-- מפת Leaflet — מרקרים אמיתיים שזזים יחד עם המפה -->
+                <!-- מפת Leaflet - מרקרים אמיתיים שזזים יחד עם המפה -->
                 <div
                     bind:this={mapEl}
                     onmouseleave={deactivateMap}
@@ -1303,7 +1303,7 @@
                     aria-label="מפת השכונה"
                 ></div>
 
-                <!-- "הגנת זכוכית" — שכבת overlay מעל המפה כשהיא לא אינטראקטיבית -->
+                <!-- "הגנת זכוכית" - שכבת overlay מעל המפה כשהיא לא אינטראקטיבית -->
                 {#if !isMapInteractive}
                     <button
                         type="button"
@@ -1319,7 +1319,7 @@
 
                 <!-- Badge לפריטים חדשים בשכונה + קישור ללוח הארצי -->
                 {#if selectedCategory === 'giveaway'}
-                    <!-- כשנבחרת "למסירה" — אותו כפתור מוביל ללוח הארצי -->
+                    <!-- כשנבחרת "למסירה" - אותו כפתור מוביל ללוח הארצי -->
                     <button
                         type="button"
                         onclick={(e) => { e.stopPropagation(); goto('/giveaways'); }}
@@ -1340,7 +1340,7 @@
                                 class="bg-green-600/90 backdrop-blur-sm text-white text-xs font-black px-3 py-1.5 rounded-full shadow-lg border border-green-400/50 hover:bg-green-500/90 transition-all hover:scale-105"
                                 title="עבור לרשימה לצפייה בפריטים החדשים"
                             >
-                                🆕 {neighborhoodDbItems.length} פריטים ב{neighborhoodState.neighborhood} — לחץ לצפייה
+                                🆕 {neighborhoodDbItems.length} פריטים ב{neighborhoodState.neighborhood} - לחץ לצפייה
                             </button>
                         {/if}
                         {#if nationalBoardUrl}
@@ -1417,7 +1417,7 @@
                                             </span>
                                         {/if}
                                         {#if hasNationalPage}
-                                            <!-- קישור ארצי — ליד שם הקטגוריה בשורת הכותרת -->
+                                            <!-- קישור ארצי - ליד שם הקטגוריה בשורת הכותרת -->
                                             <span
                                                 role="link"
                                                 tabindex="0"
@@ -1629,7 +1629,7 @@
                     {/if}
                 </div>
 
-                <!-- מצב ריק — תמונה ללא גלילה -->
+                <!-- מצב ריק - תמונה ללא גלילה -->
                 {#if !searchQuery.trim()}
                     <div class="text-center py-4 text-gray-500">
                         <div class="text-4xl mb-3">🔍</div>
@@ -1880,7 +1880,7 @@
                 <div class="bg-[#1e293b] border border-white/10 rounded-2xl p-8 shadow-2xl text-center mt-8">
                     <div class="text-6xl mb-4">✅</div>
                     <h2 class="text-xl font-black text-white mb-3">הקריאה נשלחה לקהילה!</h2>
-                    <p class="text-gray-400 text-sm mb-6">אנחנו על זה — הקהילה תעזור בהקדם</p>
+                    <p class="text-gray-400 text-sm mb-6">אנחנו על זה - הקהילה תעזור בהקדם</p>
                     <button
                         onclick={() => showRaiseHandModal = false}
                         class="w-full py-3 rounded-xl font-black text-sm bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500 text-white shadow-lg transition-all"
@@ -2084,7 +2084,7 @@
         text-overflow: ellipsis;
         box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     }
-    /* מרקרי דוגמה — האייקון נשאר ברור, רק התווית הטקסטואלית מקבלת שקיפות + מסגרת מקווקווית */
+    /* מרקרי דוגמה - האייקון נשאר ברור, רק התווית הטקסטואלית מקבלת שקיפות + מסגרת מקווקווית */
     :global(.jmap-pin--mock .jmap-pin-icon) {
         opacity: 1;
         filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));

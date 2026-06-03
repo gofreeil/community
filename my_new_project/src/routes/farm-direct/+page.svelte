@@ -69,8 +69,8 @@
 </script>
 
 <svelte:head>
-    <title>חקלאות ישירה — קהילה בשכונה</title>
-    <meta name="description" content="חקלאות ישירה — הזמינו פעם בשבוע תוצרת טרייה ישירות מהחקלאים לשכונה שלכם." />
+    <title>חקלאות ישירה - קהילה בשכונה</title>
+    <meta name="description" content="חקלאות ישירה - הזמינו פעם בשבוע תוצרת טרייה ישירות מהחקלאים לשכונה שלכם." />
 </svelte:head>
 
 <div class="min-h-screen bg-[#070b14] pt-6 pb-20" dir="rtl">
@@ -82,7 +82,7 @@
                 🌾 חקלאות ישירה
             </h1>
             <p class="text-gray-300 text-sm md:text-base max-w-2xl mx-auto leading-relaxed">
-                פעם בשבוע — תוצרת טרייה ישירות מהחקלאים אל שכונת
+                פעם בשבוע - תוצרת טרייה ישירות מהחקלאים אל שכונת
                 <span class="text-emerald-300 font-bold">{neighborhoodState.neighborhood}</span>.
                 בחרו מראש את המוצרים, סמנו כמות, וקבלו אותם במקום ובמועד המכירה.
             </p>
@@ -114,7 +114,7 @@
 
         {#if isMock}
             <p class="text-center text-amber-300/80 text-xs mb-5">
-                💡 אלו מוצרי דוגמה. ברגע שחקלאי יפרסם תוצרת לשכונת {neighborhoodState.neighborhood} — הרשימה תתעדכן.
+                💡 אלו מוצרי דוגמה. ברגע שחקלאי יפרסם תוצרת לשכונת {neighborhoodState.neighborhood} - הרשימה תתעדכן.
             </p>
         {/if}
 

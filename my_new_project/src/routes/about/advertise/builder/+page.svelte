@@ -14,7 +14,7 @@
     // ===== Persistence =====
     const LS_KEY = "ad_builder_draft_v1";
     const PAID_KEY = "ad_paid";
-    const PAID_AT_KEY = "ad_paid_at";   // ISO timestamp of payment — used to compute free-edit window
+    const PAID_AT_KEY = "ad_paid_at";   // ISO timestamp of payment - used to compute free-edit window
 
     // ===== Access gate state =====
     let accessGranted = $state(false);
@@ -45,8 +45,8 @@
     // ===== Form state =====
     type ProductRow = { id: number; name: string; price: string; image: string; description: string };
 
-    let logo            = $state<string>("");                  // base64 data url — what is rendered (cropped circle or original)
-    let logoOriginal    = $state<string>("");                  // base64 data url — raw upload kept as cropping source
+    let logo            = $state<string>("");                  // base64 data url - what is rendered (cropped circle or original)
+    let logoOriginal    = $state<string>("");                  // base64 data url - raw upload kept as cropping source
     let logoShape       = $state<"square" | "circle">("square");
     let hasCircleCrop   = $state<boolean>(false);              // true once user confirmed a circular crop
     let logoPosition    = $state<"right" | "left" | "cta">("right");
@@ -142,7 +142,7 @@
     let hoverText       = $state<string>("");
     let cta             = $state<string>("הקלק לפרטים והזמנות");
     let gradient        = $state<string>("from-amber-500 to-orange-600");
-    let diagHeight      = $state<number>(12);   // % of image — height of the diagonal color band (range 5..50)
+    let diagHeight      = $state<number>(12);   // % of image - height of the diagonal color band (range 5..50)
     let landingHeadline = $state<string>("");
     let landingPitch    = $state<string>("");
     let landingExtended = $state<string>("");
@@ -160,7 +160,7 @@
 
     // ===== Tutorial state (lit-number + glowing title + finger pointer) =====
     // Note: steps 8+ (landing-link, products, uniqueness, address, submit, done)
-    // moved to /about/advertise/builder/landing — this page ends at step 7 (preview).
+    // moved to /about/advertise/builder/landing - this page ends at step 7 (preview).
     type Step =
         | "image" | "logo" | "title" | "subtitle" | "hover"
         | "gradient" | "preview";
@@ -205,7 +205,7 @@
         gradient: null, preview: null,
     });
 
-    // Demo positioning — the demo "jumps" to align with the active step's vertical position
+    // Demo positioning - the demo "jumps" to align with the active step's vertical position
     let demoTop = $state(0);
     function updateDemoPosition() {
         if (!browser) return;
@@ -382,14 +382,14 @@
             mainImage = url;
             mainImageObjectX = 50;       // reset position on new upload
             mainImageObjectY = 50;
-            // Don't auto-advance — let the user crop/position the image with the arrows
+            // Don't auto-advance - let the user crop/position the image with the arrows
             // and click the explicit "next step" button when ready.
         } else if (target === "logo") {
             logoOriginal = url;
             logo = url;
             hasCircleCrop = false;
             if (logoShape === "circle") openCropper();
-            // Don't auto-advance — let the user pick shape (square/circle) and position
+            // Don't auto-advance - let the user pick shape (square/circle) and position
             // (corner/band-corner) and click "next step" themselves.
         } else if (target === "landingImage") {
             landingImage = url;
@@ -487,13 +487,13 @@
     // ===== Mobile/Desktop preview toggle =====
     let previewMode = $state<"mobile" | "desktop">("mobile");
     let hoverPreview = $state(false);
-    // בשלב 6 (טקסט בריחוף) — מציגים אוטומטית את הצד האחורי (מצב hover) של הפרסומת
+    // בשלב 6 (טקסט בריחוף) - מציגים אוטומטית את הצד האחורי (מצב hover) של הפרסומת
     const showHover = $derived(hoverPreview || activeStep === "hover");
 
     // ===== Access gate =====
     // Allow entry when one of:
     //   1. Server marked the user as super_admin → unlimited testing access
-    //   2. localStorage[PAID_KEY] is set (real flow — set by payment confirmation)
+    //   2. localStorage[PAID_KEY] is set (real flow - set by payment confirmation)
     function checkAccess() {
         if (!browser) return;
         const paid = localStorage.getItem(PAID_KEY) === "1";
@@ -535,7 +535,7 @@
         // Tick every minute to update the free-edit countdown.
         const tickId = window.setInterval(() => { now = new Date(); }, 60_000);
 
-        // beforeunload — warn the user that their free editing day is running out
+        // beforeunload - warn the user that their free editing day is running out
         const beforeUnload = (e: BeforeUnloadEvent) => {
             if (!submitted && !freeEditExpired) {
                 e.preventDefault();
@@ -668,18 +668,18 @@
         if (movingToLanding) return;
         movingToLanding = true;
         // Fire-and-forget: notify the personal area. We don't block navigation
-        // on success — even if the message fails to deliver, the user proceeds.
+        // on success - even if the message fails to deliver, the user proceeds.
         try {
             await fetch("/api/ads/landing-ready", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: "{}",
             });
-        } catch { /* network — ignore */ }
+        } catch { /* network - ignore */ }
         await goto("/about/advertise/builder/landing");
     }
 
-    // ===== Design-help modal — sends to admin via WhatsApp + personal area =====
+    // ===== Design-help modal - sends to admin via WhatsApp + personal area =====
     const ADMIN_WA_NUMBER = "972508750632";
     let helpOpen        = $state<boolean>(false);
     let helpProblem     = $state<string>("");
@@ -736,13 +736,13 @@
             });
             const out = await res.json().catch(() => ({}));
             if (!res.ok) {
-                helpError = out?.error || "שגיאה בשליחה — נסה שוב";
+                helpError = out?.error || "שגיאה בשליחה - נסה שוב";
                 helpSubmitting = false;
                 return;
             }
             if (out?.identityLine) identityForWa = out.identityLine;
         } catch {
-            // Network failed — still let the user reach WhatsApp.
+            // Network failed - still let the user reach WhatsApp.
         }
         const waText =
             `שלום, אני בונה פרסומת באתר וצריך עזרה בעיצוב 🎨\n\n` +
@@ -761,11 +761,11 @@
 </svelte:head>
 
 {#if accessChecked && !accessGranted}
-    <!-- ===== GATE — payment required ===== -->
+    <!-- ===== GATE - payment required ===== -->
     <div class="max-w-xl mx-auto px-4 py-12 md:py-20 text-center" dir="rtl">
         <div class="text-6xl mb-4">🔒</div>
         <h1 class="text-2xl md:text-4xl font-black text-amber-400 mb-3">
-            דף בניית הפרסומת — נעול
+            דף בניית הפרסומת - נעול
         </h1>
         <p class="text-gray-300 text-base md:text-lg mb-6 leading-relaxed">
             הדף הזה זמין רק למפרסמים שהשלימו תשלום.
@@ -779,7 +779,7 @@
             <a href="https://wa.me/972508750632?text=שלום, שילמתי על פרסום ואני רוצה לבנות את הפרסומת באתר"
                target="_blank" rel="noopener noreferrer"
                class="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-green-600 hover:bg-green-500 text-white font-black transition-colors">
-                💬 שילמתי כבר — צרו קשר
+                💬 שילמתי כבר - צרו קשר
             </a>
         </div>
 
@@ -805,11 +805,11 @@
                     </p>
                     <p class="text-gray-100 text-xs md:text-sm leading-relaxed">
                         התמונה בפרסומת מוגבלת ל-<strong class="text-amber-200">5 מגה</strong>.
-                        העלית תמונה במשקל <strong class="text-amber-200">{compressNotice.originalMB.toFixed(1)} מגה</strong> —
+                        העלית תמונה במשקל <strong class="text-amber-200">{compressNotice.originalMB.toFixed(1)} מגה</strong> -
                         כדי שהפרסומת תיטען מהר אצל הגולשים, הקטנו את האיכות שלה אוטומטית
                         ל-<strong class="text-amber-200">{compressNotice.finalMB.toFixed(1)} מגה</strong>.
                         <br/>
-                        התמונה נשמרה ככה — אין צורך לעשות כלום.
+                        התמונה נשמרה ככה - אין צורך לעשות כלום.
                     </p>
                 </div>
             </div>
@@ -824,22 +824,22 @@
         </h1>
         <p class="text-gray-300 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
             עברנו את שלב התשלום. עכשיו, יחד, ב-5 דקות נבנה פרסומת שתבלוט לתושבי השכונה.
-            <br/>פשוט מלא שלב אחרי שלב — בכל רגע תראה תצוגה מקדימה חיה.
+            <br/>פשוט מלא שלב אחרי שלב - בכל רגע תראה תצוגה מקדימה חיה.
         </p>
 
-        <!-- Free-edit countdown banner — only when paidAt is known and not expired yet -->
+        <!-- Free-edit countdown banner - only when paidAt is known and not expired yet -->
         {#if paidAt && !freeEditExpired && freeEditUntil}
             <div class="mt-5 mx-auto max-w-2xl rounded-2xl border-2 border-amber-500/50 bg-gradient-to-br from-amber-900/25 to-orange-900/15 px-4 py-3 md:px-5 md:py-4 text-right">
                 <div class="flex items-start gap-3">
                     <span class="text-3xl flex-shrink-0">⏰</span>
                     <div class="flex-1 min-w-0">
                         <p class="font-black text-amber-300 text-sm md:text-base mb-1">
-                            יום העריכה החינמי שלך — נגמר ב-23:59 הערב!
+                            יום העריכה החינמי שלך - נגמר ב-23:59 הערב!
                         </p>
                         <p class="text-gray-200 text-xs md:text-sm leading-relaxed mb-2">
                             נותרו לך <strong class="text-amber-200 text-base">{fmtCountdown(freeMsRemaining)}</strong>
                             (שעות:דקות) לעריכה ללא תשלום נוסף.
-                            כדאי <strong class="text-amber-200">לסיים את העריכה היום</strong> —
+                            כדאי <strong class="text-amber-200">לסיים את העריכה היום</strong> -
                             אחרי חצות, זמן העריכה החינמי מסתיים והפרסומת תרוץ עד כולל {fmtDateShort(new Date(paidAt.getTime() + 30*24*60*60*1000))}.
                         </p>
                     </div>
@@ -854,7 +854,7 @@
                             יום העריכה החינמי הסתיים
                         </p>
                         <p class="text-gray-200 text-xs md:text-sm leading-relaxed">
-                            הטיוטה עדיין שמורה — אך מעבר לחצות של יום התשלום, הזמן שעובר ללא ניצול הוא בזבוז.
+                            הטיוטה עדיין שמורה - אך מעבר לחצות של יום התשלום, הזמן שעובר ללא ניצול הוא בזבוז.
                             השלם את העריכה בהקדם!
                         </p>
                     </div>
@@ -862,7 +862,7 @@
             </div>
         {/if}
 
-        <!-- Autosave callout — explicit resume-from-profile message -->
+        <!-- Autosave callout - explicit resume-from-profile message -->
         <div class="mt-3 mx-auto max-w-2xl rounded-2xl border border-green-500/40 bg-green-500/8 px-4 py-3 md:px-5 md:py-4 text-right">
             <div class="flex items-start gap-3">
                 <span class="text-2xl flex-shrink-0">💾</span>
@@ -871,9 +871,9 @@
                         הטיוטה שלך נשמרת אוטומטית
                     </p>
                     <p class="text-gray-300 text-xs md:text-sm leading-relaxed">
-                        אם תיסגר הכרטיסייה או יקרה משהו — אל דאגה. כל מה שמילאת ישמר בדפדפן ובחשבון שלך.
+                        אם תיסגר הכרטיסייה או יקרה משהו - אל דאגה. כל מה שמילאת ישמר בדפדפן ובחשבון שלך.
                         <br/>
-                        תמיד תוכל לחזור ולהמשיך מהמקום שעצרת — מתוך
+                        תמיד תוכל לחזור ולהמשיך מהמקום שעצרת - מתוך
                         <a href="/profile" class="text-amber-400 hover:text-amber-300 font-bold underline underline-offset-2">
                             הפרופיל האישי שלך
                         </a>.
@@ -902,7 +902,7 @@
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
         </div>
-        <p class="step-help">תמונה איכותית — מוצר, חזית העסק, אווירת השירות. תופיע גם בנייד וגם בדסקטופ. עד 5 מגה — אם תעלו תמונה גדולה יותר נקטין אותה אוטומטית.</p>
+        <p class="step-help">תמונה איכותית - מוצר, חזית העסק, אווירת השירות. תופיע גם בנייד וגם בדסקטופ. עד 5 מגה - אם תעלו תמונה גדולה יותר נקטין אותה אוטומטית.</p>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!-- Tips first → on RIGHT in RTL grid -->
@@ -910,9 +910,9 @@
                 <p class="font-bold text-amber-400 mb-3 text-base md:text-xl">💡 טיפים לתמונה מנצחת</p>
                 <ul class="space-y-2 md:space-y-3 text-[13px] md:text-lg leading-relaxed">
                     <li>✨ צילום ברור עם תאורה טובה</li>
-                    <li>🎯 פוקוס על המוצר/שירות — לא רקע מבולגן</li>
+                    <li>🎯 פוקוס על המוצר/שירות - לא רקע מבולגן</li>
                     <li>📐 יחס מומלץ: 4:3 או 16:9 (אופקי)</li>
-                    <li>🚫 בלי טקסט מודבק על התמונה — נכתוב טקסט בנפרד</li>
+                    <li>🚫 בלי טקסט מודבק על התמונה - נכתוב טקסט בנפרד</li>
                 </ul>
             </div>
 
@@ -928,7 +928,7 @@
                          style:object-fit="cover"
                          style:object-position="{mainImageObjectX}% {mainImageObjectY}%" />
                     <button type="button" class="remove-x" onclick={(e) => { e.preventDefault(); clearImage("main"); }} aria-label="הסר תמונה">✕</button>
-                    <!-- Directional crop nudges — let user position the image inside the demo frame -->
+                    <!-- Directional crop nudges - let user position the image inside the demo frame -->
                     <button type="button" class="crop-arrow crop-arrow-up"    onclick={(e) => { e.preventDefault(); nudgeMainImage("up"); }}    aria-label="הזז למעלה">▲</button>
                     <button type="button" class="crop-arrow crop-arrow-down"  onclick={(e) => { e.preventDefault(); nudgeMainImage("down"); }}  aria-label="הזז למטה">▼</button>
                     <button type="button" class="crop-arrow crop-arrow-left"  onclick={(e) => { e.preventDefault(); nudgeMainImage("left"); }}  aria-label="הזז שמאלה">◀</button>
@@ -940,7 +940,7 @@
                         <p class="font-bold text-base text-white">
                             {isDraggingMain ? "✨ שחרר כאן" : "לחץ או גרור תמונה לכאן"}
                         </p>
-                        <p class="text-xs text-gray-400 mt-1">כל סוגי התמונה — עד 5 מגה (גדול יותר → נקטין אוטומטית)</p>
+                        <p class="text-xs text-gray-400 mt-1">כל סוגי התמונה - עד 5 מגה (גדול יותר → נקטין אוטומטית)</p>
                     </div>
                 {/if}
                 <input type="file" accept="image/*" onchange={(e) => handleImage(e, "main")} class="hidden" />
@@ -950,7 +950,7 @@
             <p class="crop-hint">השתמש בחיצים השקופים שעל התמונה כדי להזיז את התוכן בתוך מסגרת הדמו (חצים ←↑↓→). לאיפוס לחץ ⊙.</p>
             <div class="step-nav-row">
                 <button type="button" class="step-nav-btn" onclick={() => advance("logo")}>
-                    סיימתי למרכז — המשך לשלב הבא ←
+                    סיימתי למרכז - המשך לשלב הבא ←
                 </button>
             </div>
         {/if}
@@ -965,7 +965,7 @@
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
         </div>
-        <p class="step-help">העלה לוגו — עדיף עם רקע שקוף (PNG). יוצב <strong class="text-amber-300">קטן בפינה</strong> של הפרסומת. אם אין לוגו — דלג.</p>
+        <p class="step-help">העלה לוגו - עדיף עם רקע שקוף (PNG). יוצב <strong class="text-amber-300">קטן בפינה</strong> של הפרסומת. אם אין לוגו - דלג.</p>
 
         <div class="flex items-center gap-3 flex-wrap">
             <div class="flex flex-col items-center gap-1">
@@ -995,7 +995,7 @@
             </div>
 
             {#if logo}
-                <!-- Logo shape + position controls — placed side-by-side -->
+                <!-- Logo shape + position controls - placed side-by-side -->
                 <div class="flex flex-row flex-wrap gap-2 self-center">
                     <div>
                         <p class="text-xs font-bold text-gray-400 mb-1">צורת חיתוך:</p>
@@ -1088,7 +1088,7 @@
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
 
-            <!-- Title color picker — inline to the left of the heading -->
+            <!-- Title color picker - inline to the left of the heading -->
             <div class="title-color-rail" aria-label="צבע הכותרת">
                 <span class="title-color-label">בחר צבע כותרת</span>
                 {#each [
@@ -1119,18 +1119,18 @@
                 </label>
             </div>
         </div>
-        <p class="step-help">שם העסק או המוצר — קצר וברור. עד 35 תווים.</p>
+        <p class="step-help">שם העסק או המוצר - קצר וברור. עד 35 תווים.</p>
 
         <input type="text" bind:value={title} maxlength="35"
                onfocus={() => activeStep === "title" || (activeStep = "title")}
                onblur={() => title.trim() && commitField("title")}
-               placeholder="לדוגמה: גמ״ח כלי עבודה — קרית משה"
+               placeholder="לדוגמה: גמ״ח כלי עבודה - קרית משה"
                class="text-input" />
         <div class="flex items-center justify-end gap-2 text-xs text-gray-500 mt-2">
             <span>{title.length}/35</span>
         </div>
 
-        <!-- Title vertical offset slider — move title up/down on the banner -->
+        <!-- Title vertical offset slider - move title up/down on the banner -->
         <div class="mt-4">
             <div class="flex items-center justify-between mb-1.5">
                 <p class="text-sm font-bold text-gray-300">מיקום הכותרת על הבאנר: <span class="text-amber-300">{titleOffsetY > 0 ? `+${titleOffsetY}` : titleOffsetY}px</span></p>
@@ -1161,14 +1161,14 @@
     <section bind:this={stepRefs.gradient} class="step-card">
         <div class="step-head" class:step-title-light={litFlags.gradient.title}>
             <span class="step-num" class:step-num-light={litFlags.gradient.num}>4</span>
-            <h2>🎨 צבע ועיצוב הרצועה — הרקע הצבעוני של הפרסומת</h2>
+            <h2>🎨 צבע ועיצוב הרצועה - הרקע הצבעוני של הפרסומת</h2>
             {#if activeStep === "gradient"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
         </div>
         <p class="step-help">בחר את צבע הרצועה האלכסונית שמופיעה על התמונה. הצבע יחול גם על כפתור ה-CTA ועל דף הנחיתה. כוונן את גובה הרצועה כך שיתאים לכמות הטקסט שלך.</p>
 
-        <!-- Color palette — 22 gradients in a 2-column grid -->
+        <!-- Color palette - 22 gradients in a 2-column grid -->
         <div class="mt-3">
             <p class="text-sm font-bold text-gray-300 mb-2">צבע הרצועה:</p>
             <div class="color-rail" aria-label="בחירת צבע פרסומת" style="margin-inline:auto">
@@ -1222,7 +1222,7 @@
         <input type="text" bind:value={subtitle} maxlength="70"
                onfocus={() => activeStep === "subtitle" || (activeStep = "subtitle")}
                onblur={() => subtitle.trim() && commitField("subtitle")}
-               placeholder="לדוגמה: כל כלי עבודה שצריך — בלי תשלום, בלי בירוקרטיה"
+               placeholder="לדוגמה: כל כלי עבודה שצריך - בלי תשלום, בלי בירוקרטיה"
                class="text-input" />
         <div class="text-xs text-gray-500 mt-2 text-end">{subtitle.length}/70</div>
 
@@ -1246,22 +1246,22 @@
              }}>
         <div class="step-head" class:step-title-light={litFlags.hover.title}>
             <span class="step-num" class:step-num-light={litFlags.hover.num}>6</span>
-            <h2>טקסט בריחוף — מה רואים כשהעכבר על הפרסומת</h2>
+            <h2>טקסט בריחוף - מה רואים כשהעכבר על הפרסומת</h2>
             {#if activeStep === "hover"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
         </div>
         <p class="step-help">
-            כשמשתמש בדסקטופ מצביע עם העכבר על הפרסומת — הטקסט הזה יופיע במקום התמונה.
+            כשמשתמש בדסקטופ מצביע עם העכבר על הפרסומת - הטקסט הזה יופיע במקום התמונה.
             <br/>
-            <strong class="text-amber-300">כתוב משפט קצר שמסקרן</strong> את הגולש —
+            <strong class="text-amber-300">כתוב משפט קצר שמסקרן</strong> את הגולש -
             אבל ברור מספיק כדי שיבין מיד באיזה מוצר או שירות מדובר.
         </p>
 
         <textarea bind:value={hoverText} maxlength="90" rows="2"
                   onfocus={() => activeStep === "hover" || (activeStep = "hover")}
                   onblur={() => hoverText.trim() && commitField("hover")}
-                  placeholder="לדוגמה: כלי עבודה לכל בית — להשאלה חינם 🛠️"
+                  placeholder="לדוגמה: כלי עבודה לכל בית - להשאלה חינם 🛠️"
                   class="text-input"></textarea>
         <div class="text-xs text-gray-500 mt-2 text-end">{hoverText.length}/90</div>
 
@@ -1281,7 +1281,7 @@
     <section bind:this={stepRefs.preview} class="step-card">
         <div class="step-head" class:step-title-light={litFlags.preview.title}>
             <span class="step-num" class:step-num-light={litFlags.preview.num}>7</span>
-            <h2>תצוגה מקדימה — איך זה יראה לגולשים?</h2>
+            <h2>תצוגה מקדימה - איך זה יראה לגולשים?</h2>
             {#if activeStep === "preview"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
@@ -1304,7 +1304,7 @@
         {/snippet}
 
         <div class="preview-with-rail">
-        <!-- ===== MOBILE PREVIEW — full-screen popup style ===== -->
+        <!-- ===== MOBILE PREVIEW - full-screen popup style ===== -->
         {#if previewMode === "mobile"}
             <div class="preview-frame mobile">
                 <div class="preview-with-side-caption">
@@ -1349,11 +1349,11 @@
             </div>
         {/if}
 
-        <!-- ===== DESKTOP PREVIEW — TWO COMPETING OPTIONS for the user to pick ===== -->
+        <!-- ===== DESKTOP PREVIEW - TWO COMPETING OPTIONS for the user to pick ===== -->
         {#if previewMode === "desktop"}
             <div class="preview-frame desktop">
 
-                <!-- ===== OPTION B — clean standalone card (no site context) ===== -->
+                <!-- ===== OPTION B - clean standalone card (no site context) ===== -->
                 <div class="preview-option">
                     <div class="preview-with-side-caption">
                         {@render previewSideControls()}
@@ -1394,7 +1394,7 @@
                             </div>
                         </div>
                     </div>
-                        <p class="preview-caption preview-caption-side">כך הפרסומת תוצג לגולשים במחשב — מוצגת קבוע בסרגל הצד של האתר.</p>
+                        <p class="preview-caption preview-caption-side">כך הפרסומת תוצג לגולשים במחשב - מוצגת קבוע בסרגל הצד של האתר.</p>
                     </div>
                 </div>
 
@@ -1409,10 +1409,10 @@
             </button>
             <div class="relative group">
                 <button type="button" onclick={openHelp}
-                        aria-label="פנייה לתמיכה — עיצוב על ידי גרפיקאי כרוך בתשלום"
+                        aria-label="פנייה לתמיכה - עיצוב על ידי גרפיקאי כרוך בתשלום"
                         class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-400/50 text-gray-200 hover:text-amber-300 font-bold transition-colors">
                     <span aria-hidden="true">😩</span>
-                    <span>דורש עזרה — פנה לתמיכה</span>
+                    <span>דורש עזרה - פנה לתמיכה</span>
                     <span aria-hidden="true">🆘</span>
                 </button>
                 <span role="tooltip"
@@ -1440,10 +1440,10 @@
 
     </div><!-- /.builder-steps -->
 
-    <!-- ========== LIVE DEMO SIDEBAR — jumps to align with the active step ========== -->
+    <!-- ========== LIVE DEMO SIDEBAR - jumps to align with the active step ========== -->
     <aside class="builder-demo" aria-label="תצוגה חיה של הפרסומת" style:top="{demoTop}px">
         <div class="live-demo-card">
-            <p class="live-demo-label">📍 הדמו שלך — מתעדכן בזמן אמת</p>
+            <p class="live-demo-label">📍 הדמו שלך - מתעדכן בזמן אמת</p>
             <div class="live-demo-frame pro-ad" dir="rtl">
                 <div class="ad-img-wrap pro-img-wrap live-demo-img-wrap">
                     {#if mainImage}
@@ -1462,14 +1462,14 @@
                         {#if title}
                             <h3 class="pro-title" style:color={titleColor}>{title}</h3>
                         {:else}
-                            <div class="placeholder-dashed placeholder-line">כותרת — שלב 3</div>
+                            <div class="placeholder-dashed placeholder-line">כותרת - שלב 3</div>
                         {/if}
                     </div>
                     <div class="pro-title-wrap" style:opacity={activeStep === "hover" ? 0 : 1}>
                         {#if subtitle}
                             <p class="pro-sub">{subtitle}</p>
                         {:else}
-                            <div class="placeholder-dashed placeholder-line small">סלוגן — שלב 4</div>
+                            <div class="placeholder-dashed placeholder-line small">סלוגן - שלב 4</div>
                         {/if}
                     </div>
                     {#if logo}
@@ -1501,7 +1501,7 @@
     <div class="fixed top-4 left-1/2 -translate-x-1/2 z-[200] rounded-xl border border-purple-500/50 bg-gray-900/95 px-4 py-2 shadow-2xl backdrop-blur" dir="rtl">
         <p class="text-purple-300 text-xs font-bold flex items-center gap-2">
             <span>🛡️</span>
-            <span>מצב סופר-אדמין — גישה ללא הגבלה לבדיקות</span>
+            <span>מצב סופר-אדמין - גישה ללא הגבלה לבדיקות</span>
         </p>
     </div>
 {/if}
@@ -1520,7 +1520,7 @@
             </div>
 
             <p class="help-intro">
-                ספר לנו במשפט-שניים מה התקיעה שלך — נחזור אליך בוואטסאפ עם פתרון, ובמקביל תיפתח אצלנו פנייה אישית כדי לא לאבד אותך.
+                ספר לנו במשפט-שניים מה התקיעה שלך - נחזור אליך בוואטסאפ עם פתרון, ובמקביל תיפתח אצלנו פנייה אישית כדי לא לאבד אותך.
             </p>
 
             <label class="help-field">
@@ -1549,7 +1549,7 @@
                 <p class="help-identity">
                     <span class="help-identity-icon" aria-hidden="true">🧑</span>
                     מזוהה כ: <strong>{data?.layoutUser?.nickname || data?.layoutUser?.email}</strong>
-                    <span class="help-identity-note">— כך נמצא אותך במערכת</span>
+                    <span class="help-identity-note">- כך נמצא אותך במערכת</span>
                 </p>
             {/if}
 
@@ -1677,7 +1677,7 @@
         color: rgb(156, 163, 175); font-size: 0.875rem; line-height: 1.55; margin: 0 0 1rem;
     }
 
-    /* "Back one step" button — sits on the visual end of step-head */
+    /* "Back one step" button - sits on the visual end of step-head */
     :global(.step-back) {
         margin-inline-start: auto;
         display: inline-flex; align-items: center; gap: 0.3rem;
@@ -1853,7 +1853,7 @@
         width: 100%;
     }
     :global(.preview-side-caption-spacer) { display: none; }
-    /* Side caption — narrow box on the visual left in RTL.
+    /* Side caption - narrow box on the visual left in RTL.
        Width capped to fit the available space next to the centered preview (~137px gap).
        Color is near-white and font sits at 0.95rem so it stays readable in the narrow box. */
     :global(.preview-caption-side) {
@@ -1872,7 +1872,7 @@
         background: transparent;
         border: none;
     }
-    /* Side controls — narrow box on the visual right in RTL (mode toggle + help text).
+    /* Side controls - narrow box on the visual right in RTL (mode toggle + help text).
        Sits opposite the left-side caption for visual symmetry next to the centered preview. */
     :global(.preview-side-controls) {
         position: absolute;
@@ -1928,7 +1928,7 @@
         color: #fff;
     }
     @media (max-width: 700px) {
-        /* On narrow screens absolute positioning would overlap the phone — switch to flow. */
+        /* On narrow screens absolute positioning would overlap the phone - switch to flow. */
         :global(.preview-with-side-caption) { flex-direction: column; row-gap: 0.75rem; }
         :global(.preview-caption-side) {
             position: static; transform: none;
@@ -1958,7 +1958,7 @@
         width: 100%; max-width: 240px; background: #0f172a;
         border-radius: 1rem; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.5);
     }
-    /* Mobile title — sits ABOVE the image in a clearly separate header band */
+    /* Mobile title - sits ABOVE the image in a clearly separate header band */
     :global(.popup-title-above) {
         margin: 0;
         padding: 1.1rem 0.9rem 1rem;
@@ -2039,8 +2039,8 @@
         left: auto !important;
     }
 
-    /* ============== TWO-COLUMN BUILDER LAYOUT — steps + jumping live demo ============== */
-    /* The demo is absolutely positioned — its top is computed dynamically to align with
+    /* ============== TWO-COLUMN BUILDER LAYOUT - steps + jumping live demo ============== */
+    /* The demo is absolutely positioned - its top is computed dynamically to align with
        the active step. As activeStep changes, the demo "jumps" smoothly via CSS transition
        and stays parked at that step (no sticky scrolling that competes with the page header). */
     :global(.builder-cols) {
@@ -2189,7 +2189,7 @@
     :global(.placeholder-logo.logo-pos-left)  { left: 6px; }
     :global(.placeholder-logo.logo-pos-cta)   { top: auto; bottom: calc(100% - var(--diag-top-right, 78%) - 14px); right: 6px; }
 
-    /* ============== DESKTOP PREVIEW — TWO COMPETING OPTIONS ============== */
+    /* ============== DESKTOP PREVIEW - TWO COMPETING OPTIONS ============== */
     :global(.preview-option) {
         margin-bottom: 1.5rem;
         width: 100%;
@@ -2200,7 +2200,7 @@
         text-align: center;
     }
 
-    /* Option B — clean card with the user's ad at natural ad proportions, no site context */
+    /* Option B - clean card with the user's ad at natural ad proportions, no site context */
     :global(.clean-card-wrap) {
         display: flex; justify-content: center;
     }
@@ -2226,7 +2226,7 @@
         position: relative;
     }
 
-    /* Option C — DARK MASK that hides the original right ad column in the screenshot.
+    /* Option C - DARK MASK that hides the original right ad column in the screenshot.
        Positioned to cover the entire right ad area generously, so the user's demo on top
        of it doesn't visually compete with whatever ad was originally rendered there. */
     :global(.slot-mask) {
@@ -2242,13 +2242,13 @@
         box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
     }
 
-    /* ============== DESKTOP PREVIEW — real site screenshot with overlay ============== */
+    /* ============== DESKTOP PREVIEW - real site screenshot with overlay ============== */
     /* The frame is a cropper: it has aspect-ratio matching the VISIBLE region (after we
        hide the left ad strip and bottom map area). overflow:hidden clips the rest. */
     :global(.site-shot-frame) {
         position: relative;
         width: 100%; max-width: 1200px;
-        aspect-ratio: 1298 / 720;          /* visible portion: 88% × 82% of original 1475×875 — keeps the full right-ad slot inside the visible area */
+        aspect-ratio: 1298 / 720;          /* visible portion: 88% × 82% of original 1475×875 - keeps the full right-ad slot inside the visible area */
         overflow: hidden;
         border-radius: 0.85rem;
         border: 1px solid rgba(255,255,255,0.08);
@@ -2262,7 +2262,7 @@
         position: absolute;
         top: 0;
         right: 0;
-        width: calc(100% * 1475 / 1298);   /* ≈ 113.6% — restores full image width after 12% left crop */
+        width: calc(100% * 1475 / 1298);   /* ≈ 113.6% - restores full image width after 12% left crop */
         aspect-ratio: 1475 / 875;           /* explicit height for child % positioning */
     }
     /* Slight darkening over the screenshot so the user's bright demo stands out */
@@ -2279,7 +2279,7 @@
     }
     /* Overlay positioned on the FIRST right ad slot. Width drives the overlay; the height
        is derived naturally from the children (image-wrap with the real RightAdBanner
-       aspect-ratio + the small CTA below it). This preserves authentic ad proportions —
+       aspect-ratio + the small CTA below it). This preserves authentic ad proportions -
        width and height stay locked together, never independently sized. */
     :global(.site-shot-overlay.desktop-ad) {
         position: absolute;
@@ -2407,7 +2407,7 @@
         display: flex; gap: 0.75rem; padding: 0.85rem;
     }
 
-    /* Right ad column — matches real RightAdBanner (w-36 = 144px, slots 490px tall) */
+    /* Right ad column - matches real RightAdBanner (w-36 = 144px, slots 490px tall) */
     :global(.mock-right-ad) {
         width: 144px; flex-shrink: 0; position: relative;
     }
@@ -2644,7 +2644,7 @@
     }
     :global(.crop-btn-confirm:hover) { transform: translateY(-1px); }
 
-    /* ============== COLOR RAIL — vertical round palette next to preview ============== */
+    /* ============== COLOR RAIL - vertical round palette next to preview ============== */
     /* In RTL flex-row, justify-content:flex-end packs items toward the LEFT visually.
        Combined with flex:1 on the desktop preview, the rail sits flush against the left
        edge and the screenshot expands to fill the rest of the row. */
@@ -2656,17 +2656,17 @@
         gap: 0.55rem;
         flex-wrap: wrap;
     }
-    /* Desktop preview grows to fill the remaining row width — rail stays compact on left */
+    /* Desktop preview grows to fill the remaining row width - rail stays compact on left */
     :global(.preview-frame.desktop) {
         flex: 1 1 auto;
         min-width: 0;
     }
-    /* Mobile preview also fills the row — its inner align-items:center centers the phone horizontally */
+    /* Mobile preview also fills the row - its inner align-items:center centers the phone horizontally */
     :global(.preview-frame.mobile) {
         flex: 1 1 auto;
         min-width: 0;
     }
-    /* Horizontal color picker — wide strip, two short rows */
+    /* Horizontal color picker - wide strip, two short rows */
     :global(.color-rail) {
         display: grid;
         grid-template-columns: repeat(11, 28px);
@@ -2699,7 +2699,7 @@
         border-color: white;
         box-shadow: 0 0 0 3px rgba(255,255,255,0.22), 0 4px 12px rgba(0,0,0,0.45);
     }
-    /* On narrow screens — flatten into a 9×2 horizontal strip */
+    /* On narrow screens - flatten into a 9×2 horizontal strip */
     @media (max-width: 640px) {
         :global(.color-rail) {
             grid-template-columns: repeat(9, 28px);
@@ -2707,14 +2707,14 @@
         }
     }
 
-    /* ============== PRO AD STYLE — diagonal banner with overlaid title ============== */
+    /* ============== PRO AD STYLE - diagonal banner with overlaid title ============== */
     :global(.pro-img-wrap) { position: relative; overflow: hidden; }
 
-    /* Diagonal color band — covers the bottom portion of the image at an angle */
+    /* Diagonal color band - covers the bottom portion of the image at an angle */
     :global(.pro-diag) {
         position: absolute; inset: 0;
         /* clip-path uses CSS variables so the user can adjust the band height in step 6.
-           top-left and top-right are y% from the top — smaller numbers = taller band. */
+           top-left and top-right are y% from the top - smaller numbers = taller band. */
         clip-path: polygon(
             0 var(--diag-top-left, 88%),
             100% var(--diag-top-right, 78%),
@@ -2732,7 +2732,7 @@
         pointer-events: none;
     }
 
-    /* Title color picker — sits inline on the left side of the step heading */
+    /* Title color picker - sits inline on the left side of the step heading */
     .title-color-rail {
         margin-inline-start: auto;
         display: inline-flex; align-items: center; gap: 0.3rem;
@@ -2780,7 +2780,7 @@
     }
     /* Decorative diagonal-following first-line: float on the visual-left with a triangular
        shape-outside, so the FIRST line wraps shorter (matching the diagonal band's tip),
-       and subsequent lines flow at full width. Invisible — pure layout. */
+       and subsequent lines flow at full width. Invisible - pure layout. */
     :global(.pro-sub::before) {
         content: '';
         float: left;
@@ -2793,7 +2793,7 @@
         width: 32%;
         height: 1.4em;
     }
-    /* Title — centered at the TOP of the ad, on a soft dark fade for readability */
+    /* Title - centered at the TOP of the ad, on a soft dark fade for readability */
     :global(.pro-title-top) {
         position: absolute; left: 0; right: 0; top: 0;
         padding: 0.55rem 0.7rem 0.85rem;
@@ -2845,7 +2845,7 @@
         display: flex; flex-direction: column; align-items: center; justify-content: center;
         overflow: hidden;
     }
-    /* Image is smaller now — covers hero but with reduced opacity so text reads clearly */
+    /* Image is smaller now - covers hero but with reduced opacity so text reads clearly */
     :global(.landing-hero-bg) {
         position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
         opacity: 0.28;
@@ -2872,7 +2872,7 @@
     :global(.landing-hero h1) { color: white; font-size: 1.55rem; font-weight: 900; margin: 0 0 0.4rem; }
     :global(.landing-hero p)  { color: rgba(255,255,255,0.92); font-size: 0.95rem; margin: 0 0 1rem; line-height: 1.45; }
 
-    /* ===== Advantages list — artistic 3-row card with V checkmarks ===== */
+    /* ===== Advantages list - artistic 3-row card with V checkmarks ===== */
     :global(.advantages-list) {
         list-style: none; padding: 0; margin: 0;
         display: grid; gap: 0.65rem;

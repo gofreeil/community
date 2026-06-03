@@ -4,7 +4,7 @@ import { getUserById, getUserByEmail } from '$lib/server/db';
 export const load: PageServerLoad = async (event) => {
     const session = await event.locals.auth();
 
-    // Super-admin check — allows unlimited testing without payment.
+    // Super-admin check - allows unlimited testing without payment.
     // Mirrors the pattern in /admin/+page.server.ts (DB lookup + email fallback).
     let isSuperAdmin = session?.user?.role === 'super_admin';
     if (!isSuperAdmin && session?.user?.id) {
@@ -15,7 +15,7 @@ export const load: PageServerLoad = async (event) => {
             }
             isSuperAdmin = dbUser?.role === 'super_admin';
         } catch {
-            // ignore — treat as non-admin
+            // ignore - treat as non-admin
         }
     }
 

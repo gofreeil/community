@@ -28,7 +28,7 @@ export const actions: Actions = {
         }
 
         // 1. יצירת משתמש ב-Strapi users-permissions
-        // כשה-email confirmation מופעל — Strapi שולח מייל אישור ולא מחזיר JWT
+        // כשה-email confirmation מופעל - Strapi שולח מייל אישור ולא מחזיר JWT
         try {
             await strapiRegister(username, email, password);
         } catch (e) {
@@ -40,11 +40,11 @@ export const actions: Actions = {
             return fail(500, { error: 'שגיאה בהרשמה. נסה שוב.', username, email });
         }
 
-        // 2. קישור external_id (ייתכן שיכשל אם Strapi לא מחזיר JWT לפני אישור מייל — זה בסדר)
+        // 2. קישור external_id (ייתכן שיכשל אם Strapi לא מחזיר JWT לפני אישור מייל - זה בסדר)
         try {
             await registerWithCredentials(username, email, password);
         } catch {
-            // לא קריטי — external_id יוגדר בכניסה הראשונה
+            // לא קריטי - external_id יוגדר בכניסה הראשונה
         }
 
         // 3. מחזירים success עם בקשה לאמת אימייל (לא מתחברים אוטומטית)

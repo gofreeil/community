@@ -20,12 +20,12 @@ const MOCK_POOL: Omit<Review, 'id' | 'date'>[] = [
     { author: 'דנה ל.',    rating: 5, text: 'המנות טריות והמחירים הוגנים. ממליצה בחום.' },
     { author: 'אבי ש.',    rating: 4, text: 'מקום נעים לשבת עם המשפחה, צוות חביב.' },
     { author: 'רותם ב.',   rating: 3, text: 'בסדר גמור, שום דבר יוצא דופן אבל הוגן.' },
-    { author: 'מיכל ד.',   rating: 5, text: 'מהמקומות הכי טובים בשכונה — האוכל פשוט מנצח.' },
+    { author: 'מיכל ד.',   rating: 5, text: 'מהמקומות הכי טובים בשכונה - האוכל פשוט מנצח.' },
     { author: 'איתי ר.',   rating: 4, text: 'משלוח הגיע מהר וחם. איכות יפה.' },
     { author: 'שירה פ.',   rating: 5, text: 'אווירה מקסימה ויחס אישי. ממש כיף.' },
 ];
 
-// hash פשוט ויציב לפי מזהה — כדי שכל מסעדה תקבל אותן ביקורות דוגמה תמיד
+// hash פשוט ויציב לפי מזהה - כדי שכל מסעדה תקבל אותן ביקורות דוגמה תמיד
 function hash(str: string): number {
     let h = 0;
     for (let i = 0; i < str.length; i++) {
@@ -72,7 +72,7 @@ function saveUserReviews(itemId: string, reviews: Review[]) {
     }
 }
 
-/** כל הביקורות למסעדה — דוגמאות + ביקורות שהמשתמש הוסיף, החדשות בראש */
+/** כל הביקורות למסעדה - דוגמאות + ביקורות שהמשתמש הוסיף, החדשות בראש */
 export function getReviews(itemId: string): Review[] {
     const user = loadUserReviews(itemId);
     return [...user, ...seededReviews(itemId)];
@@ -99,7 +99,7 @@ export interface RatingSummary {
     count: number;
 }
 
-/** סיכום דירוג — ממוצע וכמות, מחושב מכל הביקורות */
+/** סיכום דירוג - ממוצע וכמות, מחושב מכל הביקורות */
 export function getRatingSummary(itemId: string): RatingSummary {
     const all = getReviews(itemId);
     if (all.length === 0) return { avg: 0, count: 0 };

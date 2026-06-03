@@ -92,7 +92,7 @@
 </script>
 
 <svelte:head>
-    <title>אישור פרסומות — מנהל ראשי</title>
+    <title>אישור פרסומות - מנהל ראשי</title>
 </svelte:head>
 
 <div class="max-w-6xl mx-auto px-3 md:px-4 py-4 md:py-10" dir="rtl">
@@ -100,7 +100,7 @@
     <header class="mb-5 md:mb-6 flex flex-wrap items-start gap-3 justify-between">
         <div class="min-w-0">
             <h1 class="text-2xl md:text-3xl font-black text-white mb-1">📢 אישור פרסומות</h1>
-            <p class="text-xs md:text-sm text-gray-400">פרסומות שנשלחו על־ידי משתמשים — אשר/דחה לפני פרסום באתר.</p>
+            <p class="text-xs md:text-sm text-gray-400">פרסומות שנשלחו על־ידי משתמשים - אשר/דחה לפני פרסום באתר.</p>
         </div>
         <div class="flex items-center gap-2 flex-wrap">
             <a href="/admin"
@@ -126,7 +126,7 @@
 
     {#if data.backendUnavailable}
         <div class="mb-4 rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-            ⚠️ הבאקאנד (Strapi) לא זמין כרגע — הרשימות והסטטיסטיקות עשויות להיות חלקיות. נסה לרענן בעוד רגע.
+            ⚠️ הבאקאנד (Strapi) לא זמין כרגע - הרשימות והסטטיסטיקות עשויות להיות חלקיות. נסה לרענן בעוד רגע.
         </div>
     {/if}
 
@@ -446,7 +446,7 @@
                             <tr class="border-t border-white/10 hover:bg-white/5">
                                 <td class="px-3 py-2 font-bold text-white truncate max-w-[180px]">{s.title}</td>
                                 <td class="px-3 py-2 text-gray-300 hidden md:table-cell">
-                                    <div class="truncate max-w-[160px]">{s.advertiserName || '—'}</div>
+                                    <div class="truncate max-w-[160px]">{s.advertiserName || '-'}</div>
                                     <div class="text-[10px] text-gray-500 truncate max-w-[160px]">{s.advertiserEmail}</div>
                                 </td>
                                 <td class="px-3 py-2 text-gray-300 whitespace-nowrap">{fmtDate(s.publishedAt)}</td>
@@ -477,7 +477,7 @@
     </section>
 
     <!-- ============================================================ -->
-    <!-- מפרסמים — קיבוץ לפי אימייל                                  -->
+    <!-- מפרסמים - קיבוץ לפי אימייל                                  -->
     <!-- ============================================================ -->
     <section class="mt-10 mb-12">
         <div class="flex items-center gap-2 mb-3">
@@ -509,14 +509,14 @@
                         {#each data.advertisers as a (a.key)}
                             <tr class="border-t border-white/10 hover:bg-white/5">
                                 <td class="px-3 py-2 font-bold text-white">
-                                    <div class="truncate max-w-[160px]">{a.name || '—'}</div>
+                                    <div class="truncate max-w-[160px]">{a.name || '-'}</div>
                                     <div class="text-[10px] text-gray-500 truncate max-w-[160px]">{a.email}</div>
                                 </td>
-                                <td class="px-3 py-2 text-gray-300 hidden md:table-cell truncate max-w-[160px]">{a.companyName || '—'}</td>
-                                <td class="px-3 py-2 text-gray-300 hidden md:table-cell truncate max-w-[160px]">{a.address || '—'}</td>
-                                <td class="px-3 py-2 text-gray-300 hidden lg:table-cell whitespace-nowrap">{a.phone || '—'}</td>
+                                <td class="px-3 py-2 text-gray-300 hidden md:table-cell truncate max-w-[160px]">{a.companyName || '-'}</td>
+                                <td class="px-3 py-2 text-gray-300 hidden md:table-cell truncate max-w-[160px]">{a.address || '-'}</td>
+                                <td class="px-3 py-2 text-gray-300 hidden lg:table-cell whitespace-nowrap">{a.phone || '-'}</td>
                                 <td class="px-3 py-2 font-black text-emerald-300 whitespace-nowrap">
-                                    {a.totalPaid > 0 ? `₪${a.totalPaid.toLocaleString('he-IL')}` : '—'}
+                                    {a.totalPaid > 0 ? `₪${a.totalPaid.toLocaleString('he-IL')}` : '-'}
                                 </td>
                                 <td class="px-3 py-2 text-gray-300">{a.adsCount}</td>
                                 <td class="px-3 py-2 {a.activeCount > 0 ? 'text-emerald-300 font-black' : 'text-gray-500'}">{a.activeCount}</td>

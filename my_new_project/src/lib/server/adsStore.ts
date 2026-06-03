@@ -1,5 +1,5 @@
 // ============================================================
-// adsStore.ts — מאגר פרסומות שנשלחו לאישור / אושרו
+// adsStore.ts - מאגר פרסומות שנשלחו לאישור / אושרו
 // אחסון מבוסס Strapi (Content Type: submitted-ad)
 // API ציבורי זהה לגרסה הקודמת (JSON-on-disk) כדי שלא ישבר קוד קורא.
 // ============================================================
@@ -141,7 +141,7 @@ async function listByStatus(status: AdStatus): Promise<SubmittedAd[]> {
         return (res.data ?? []).map(fromStrapi);
     } catch (e) {
         if (e instanceof StrapiContentTypeError) {
-            console.warn('[adsStore] submitted-ad content type לא רשום ב-Strapi — מחזיר []');
+            console.warn('[adsStore] submitted-ad content type לא רשום ב-Strapi - מחזיר []');
             return [];
         }
         throw e;
@@ -154,7 +154,7 @@ async function findByDocumentId(id: string): Promise<StrapiAd | null> {
         return res.data ?? null;
     } catch (e) {
         if (e instanceof StrapiContentTypeError) return null;
-        // 404 — לא קיים
+        // 404 - לא קיים
         const msg = e instanceof Error ? e.message : String(e);
         if (msg.includes('404')) return null;
         throw e;
@@ -359,7 +359,7 @@ export function computeSchedule(ad: SubmittedAd): AdSchedule | null {
     return {
         id: ad.id,
         title: ad.title,
-        advertiserName: ad.submittedBy?.name ?? ad.companyName ?? '—',
+        advertiserName: ad.submittedBy?.name ?? ad.companyName ?? '-',
         advertiserEmail: ad.submittedBy?.email ?? '',
         publishedAt,
         expiresAt,
@@ -415,7 +415,7 @@ async function sendReminderMessage(ad: SubmittedAd, rule: ReminderRule): Promise
                                 `היום היום האחרון של הפרסומת שלך "${ad.title}"`;
     const description = rule.stage === '1d'
         ? `הפרסומת תוסר מהאתר בסוף היום (${expiryDate}).\n\nרוצה להאריך? הכנס לאזור האישי שלך וצור איתנו קשר.`
-        : `הפרסומת תפוג בתאריך ${expiryDate}.\n\nכדי להאריך את הפרסום או לעדכן את התוכן — היכנס לאזור האישי שלך.`;
+        : `הפרסומת תפוג בתאריך ${expiryDate}.\n\nכדי להאריך את הפרסום או לעדכן את התוכן - היכנס לאזור האישי שלך.`;
     try {
         await createItem({
             category:    'message',
@@ -468,7 +468,7 @@ export async function processExpiryReminders(): Promise<{ sent: number; checked:
 }
 
 // ============================================================
-// סיכומי מפרסמים — קיבוץ לפי email/id
+// סיכומי מפרסמים - קיבוץ לפי email/id
 // ============================================================
 
 export interface AdvertiserSummary {

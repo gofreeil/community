@@ -6,7 +6,7 @@ import type { PageServerLoad } from './$types';
 export const load: PageServerLoad = async (event) => {
     const { id } = event.params;
 
-    // פריט אמיתי מ-Strapi, ואם אין — מסעדת דוגמה
+    // פריט אמיתי מ-Strapi, ואם אין - מסעדת דוגמה
     let raw: {
         id: string; label: string; description: string; icon: string;
         city: string; neighborhood: string; phone: string; contact: string;

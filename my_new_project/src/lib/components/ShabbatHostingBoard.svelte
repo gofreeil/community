@@ -138,11 +138,11 @@
     function buildShareText(it: { label: string; city?: string; neighborhood?: string; description?: string }): { title: string; text: string; url: string } {
         const url = typeof window !== 'undefined' ? `${window.location.origin}/shabbat-hosting` : 'https://kehila-bashchuna.co.il/shabbat-hosting';
         const loc = [it.neighborhood, it.city].filter(Boolean).join(', ');
-        const lines = [`🍽 אירוח לשבת — ${it.label}`];
+        const lines = [`🍽 אירוח לשבת - ${it.label}`];
         if (loc) lines.push(`📍 ${loc}`);
         if (it.description) lines.push(it.description);
         const text = lines.join('\n');
-        return { title: 'אירוח לשבת — קהילה בשכונה', text, url };
+        return { title: 'אירוח לשבת - קהילה בשכונה', text, url };
     }
     async function nativeShare(it: { id: string; label: string; city?: string; neighborhood?: string; description?: string }) {
         const payload = buildShareText(it);
@@ -230,7 +230,7 @@
             }
         } catch {
             requestStatus = 'error';
-            requestErrorMsg = 'שגיאת תקשורת — נסה שוב';
+            requestErrorMsg = 'שגיאת תקשורת - נסה שוב';
         }
     }
 
@@ -278,7 +278,7 @@
                 alert(data.message ?? 'שגיאה בהסרה');
             }
         } catch {
-            alert('שגיאת תקשורת — נסה שוב');
+            alert('שגיאת תקשורת - נסה שוב');
         }
         removingItemId = null;
     }
@@ -306,7 +306,7 @@
             }
         } catch {
             reportStatus = 'error';
-            reportErrorMsg = 'שגיאת תקשורת — נסה שוב';
+            reportErrorMsg = 'שגיאת תקשורת - נסה שוב';
         }
     }
 
@@ -367,7 +367,7 @@
             {city ? `אירוח לשבת ב${city}` : 'לוח אירוח לשבת'}
         </h1>
         <p class="text-gray-400 mb-3">
-            {city ? 'מארחים ומתארחים בעיר שלך' : 'לוח ארצי — מציעים לארח ומחפשים להתארח לשבת'}
+            {city ? 'מארחים ומתארחים בעיר שלך' : 'לוח ארצי - מציעים לארח ומחפשים להתארח לשבת'}
         </p>
     </div>
 
@@ -411,9 +411,9 @@
                                     <h3 class="text-white font-black text-lg md:text-xl whitespace-nowrap">
                                         {SECTION_TITLES[group.section]}
                                         {#if group.section === 0 && neighborhoodState.neighborhood}
-                                            <span class="text-cyan-300 font-bold">— {neighborhoodState.neighborhood}</span>
+                                            <span class="text-cyan-300 font-bold">- {neighborhoodState.neighborhood}</span>
                                         {:else if group.section === 1 && neighborhoodState.city}
-                                            <span class="text-cyan-300 font-bold">— {neighborhoodState.city}</span>
+                                            <span class="text-cyan-300 font-bold">- {neighborhoodState.city}</span>
                                         {/if}
                                     </h3>
                                     <span class="text-gray-500 text-xs">({group.items.length})</span>
@@ -461,7 +461,7 @@
                                                             <button onclick={() => { reportingItemId = null; reportStatus = 'idle'; }} class="text-gray-400 text-xs underline">סגור</button>
                                                         {:else}
                                                             <p class="text-red-300 text-xs font-bold">דיווח על אורח לא ראוי</p>
-                                                            <p class="text-gray-400 text-[10px]">פעולה זו תישמר. אם 2 מארחים ידווחו — האורח יחסם.</p>
+                                                            <p class="text-gray-400 text-[10px]">פעולה זו תישמר. אם 2 מארחים ידווחו - האורח יחסם.</p>
                                                             <div class="flex gap-2 justify-center">
                                                                 <button
                                                                     onclick={() => submitReport(item)}
@@ -535,9 +535,9 @@
                                     <h3 class="text-white font-black text-lg md:text-xl whitespace-nowrap">
                                         {SECTION_TITLES[group.section]}
                                         {#if group.section === 0 && neighborhoodState.neighborhood}
-                                            <span class="text-amber-300 font-bold">— {neighborhoodState.neighborhood}</span>
+                                            <span class="text-amber-300 font-bold">- {neighborhoodState.neighborhood}</span>
                                         {:else if group.section === 1 && neighborhoodState.city}
-                                            <span class="text-amber-300 font-bold">— {neighborhoodState.city}</span>
+                                            <span class="text-amber-300 font-bold">- {neighborhoodState.city}</span>
                                         {/if}
                                     </h3>
                                     <span class="text-gray-500 text-xs">({group.items.length})</span>
@@ -592,7 +592,7 @@
                                                         onclick={() => removeOwnAd(item)}
                                                         disabled={removingItemId === item.id}
                                                         class="flex items-center justify-center bg-white/10 hover:bg-red-600/30 text-gray-300 hover:text-red-300 font-bold py-2 px-3 rounded-xl transition-colors text-sm disabled:opacity-50"
-                                                        title="הסר את המודעה מהלוח — תועבר לפרופיל לסטטוס 'מוקפא'"
+                                                        title="הסר את המודעה מהלוח - תועבר לפרופיל לסטטוס 'מוקפא'"
                                                     >{removingItemId === item.id ? '...' : '🗑 הסר'}</button>
                                                 </div>
                                                 <!-- בקשות ממתינות -->
@@ -622,9 +622,9 @@
                                                     <p class="text-[10px] text-gray-500 text-center">אין בקשות ממתינות כרגע</p>
                                                 {/if}
                                             {:else if isApproved}
-                                                <!-- אורח שאושר — רואה טלפון -->
+                                                <!-- אורח שאושר - רואה טלפון -->
                                                 <div class="mb-1">
-                                                    <p class="text-green-400 text-[11px] font-bold text-center mb-1.5">✅ בקשתך אושרה — הנה פרטי הקשר</p>
+                                                    <p class="text-green-400 text-[11px] font-bold text-center mb-1.5">✅ בקשתך אושרה - הנה פרטי הקשר</p>
                                                     <div class="flex gap-2">
                                                         {@render shareButton(item)}
                                                         <a href={waLink(item.phone)} target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 rounded-xl transition-colors text-base">💬 WhatsApp</a>
@@ -747,29 +747,29 @@
                         <div class="flex gap-3 pt-4">
                             <span class="text-2xl flex-shrink-0">🏠</span>
                             <div>
-                                <p class="text-amber-300 font-bold text-base mb-1">שלב 1 — המארח מפרסם הזמנה</p>
-                                <p class="text-gray-300 text-sm leading-relaxed">המארח מפרסם כרטיס עם סגנון הסעודה, כמות המקומות וסגנון האירוח. הטלפון שלו <strong class="text-white/70">אינו מוצג</strong> ברבים — רק לאורחים שאישר.</p>
+                                <p class="text-amber-300 font-bold text-base mb-1">שלב 1 - המארח מפרסם הזמנה</p>
+                                <p class="text-gray-300 text-sm leading-relaxed">המארח מפרסם כרטיס עם סגנון הסעודה, כמות המקומות וסגנון האירוח. הטלפון שלו <strong class="text-white/70">אינו מוצג</strong> ברבים - רק לאורחים שאישר.</p>
                             </div>
                         </div>
                         <div class="flex gap-3">
                             <span class="text-2xl flex-shrink-0">🤝</span>
                             <div>
-                                <p class="text-cyan-300 font-bold text-base mb-1">שלב 2 — האורח שולח בקשה</p>
+                                <p class="text-cyan-300 font-bold text-base mb-1">שלב 2 - האורח שולח בקשה</p>
                                 <p class="text-gray-300 text-sm leading-relaxed">האורח לוחץ על "שלח בקשת אירוח" ויכול לצרף הודעה קצרה. הבקשה מגיעה למארח בלבד.</p>
                             </div>
                         </div>
                         <div class="flex gap-3">
                             <span class="text-2xl flex-shrink-0">✅</span>
                             <div>
-                                <p class="text-green-300 font-bold text-base mb-1">שלב 3 — המארח מאשר ומגלה טלפון</p>
-                                <p class="text-gray-300 text-sm leading-relaxed">המארח רואה את הבקשות על הכרטיס שלו ויכול לאשר או לדחות. לאחר האישור — הטלפון נחשף לאותו אורח בלבד.</p>
+                                <p class="text-green-300 font-bold text-base mb-1">שלב 3 - המארח מאשר ומגלה טלפון</p>
+                                <p class="text-gray-300 text-sm leading-relaxed">המארח רואה את הבקשות על הכרטיס שלו ויכול לאשר או לדחות. לאחר האישור - הטלפון נחשף לאותו אורח בלבד.</p>
                             </div>
                         </div>
                         <div class="flex gap-3">
                             <span class="text-2xl flex-shrink-0">🚩</span>
                             <div>
-                                <p class="text-red-300 font-bold text-base mb-1">שלב 4 — דיווח על אורח לא ראוי</p>
-                                <p class="text-gray-300 text-sm leading-relaxed">מארח שאישר אורח ואז חווה התנהגות לא ראויה (ביטול ברגע האחרון, אי-הגעה, התנהגות פוגענית) יכול לדווח עליו. כאשר <strong class="text-white/70">שני מארחים שונים</strong> ידווחו — האורח יחסם לצמיתות מלוח המארחים.</p>
+                                <p class="text-red-300 font-bold text-base mb-1">שלב 4 - דיווח על אורח לא ראוי</p>
+                                <p class="text-gray-300 text-sm leading-relaxed">מארח שאישר אורח ואז חווה התנהגות לא ראויה (ביטול ברגע האחרון, אי-הגעה, התנהגות פוגענית) יכול לדווח עליו. כאשר <strong class="text-white/70">שני מארחים שונים</strong> ידווחו - האורח יחסם לצמיתות מלוח המארחים.</p>
                             </div>
                         </div>
                     </div>

@@ -37,12 +37,12 @@
 			});
 			const data = await res.json().catch(() => ({}));
 			if (!res.ok || data?.success === false) {
-				errorMsg = data?.message || 'שגיאה בשמירת האמנה — נסו שוב';
+				errorMsg = data?.message || 'שגיאה בשמירת האמנה - נסו שוב';
 				return;
 			}
 			submitted = true;
 		} catch {
-			errorMsg = 'בעיית תקשורת — נסו שוב';
+			errorMsg = 'בעיית תקשורת - נסו שוב';
 		} finally {
 			submitting = false;
 		}
@@ -98,7 +98,7 @@
 			<div class="text-5xl mb-3">✅</div>
 			<h2 class="text-2xl md:text-3xl font-black text-emerald-300 mb-2">האמנה נחתמה בהצלחה</h2>
 			<p class="text-emerald-100 text-base md:text-lg">
-				תודה <span class="font-black text-yellow-300">{fullName}</span> — שמך נשמר אצלנו כחתום על אמנת יוצאים לחירות.
+				תודה <span class="font-black text-yellow-300">{fullName}</span> - שמך נשמר אצלנו כחתום על אמנת יוצאים לחירות.
 			</p>
 			<p class="text-gray-300 text-sm mt-4">תאריך חתימה: {today}</p>
 		</div>
@@ -158,7 +158,7 @@
 			<!-- Signature -->
 			<div class="mb-5">
 				<label for="signature" class="block text-sm font-bold text-gray-200 mb-1.5">
-					חתימה — חתום/י על ידי הקלדת שמך המלא שוב
+					חתימה - חתום/י על ידי הקלדת שמך המלא שוב
 				</label>
 				<input
 					id="signature"

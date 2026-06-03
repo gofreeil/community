@@ -8,13 +8,13 @@
 	let searchQuery = $state('');
 	let roleFilter = $state<'all' | 'user' | 'neighborhood_admin' | 'super_admin'>('all');
 
-	// מינוי אדמין — מודל
+	// מינוי אדמין - מודל
 	let showRoleModal = $state(false);
 	let roleModalUser = $state<{ id: string; name: string | null; role: string; neighborhood: string } | null>(null);
 	let newRole = $state('user');
 	let newNeighborhood = $state('');
 
-	// מינוי רכז — מודל
+	// מינוי רכז - מודל
 	let showCoordModal  = $state(false);
 	let coordModalUser  = $state<{ id: string; name: string | null; coordinator_of: string[] } | null>(null);
 	let coordNeighborhoods = $state(''); // שכונות מופרדות בשורות
@@ -50,7 +50,7 @@
 		return list;
 	});
 
-	// רכזי שכונות — כל משתמש עם coordinator_of שאינו ריק.
+	// רכזי שכונות - כל משתמש עם coordinator_of שאינו ריק.
 	// יוצגו בקבוצה ייחודית בראש הטאב כדי שיהיה קל לסופר־אדמין לראות מי מנהל תוכן באיזו שכונה.
 	const coordinatorUsers = $derived(() => {
 		const list = (data.users ?? []).filter(u => Array.isArray((u as any).coordinator_of) && (u as any).coordinator_of.length > 0);
@@ -176,7 +176,7 @@
 
 		<!-- טאב משתמשים -->
 		{#if activeTab === 'users'}
-			<!-- סקציית רכזי שכונות — מנהלי תוכן בשכונה שלהם -->
+			<!-- סקציית רכזי שכונות - מנהלי תוכן בשכונה שלהם -->
 			<section id="coordinators" class="mb-6 scroll-mt-4">
 				<div class="flex items-center justify-between mb-3">
 					<div class="flex items-center gap-2">
@@ -215,7 +215,7 @@
 												<span class="text-xs bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded-full">חסום</span>
 											{/if}
 										</div>
-										<div class="text-sm text-gray-400 truncate">{user.email ?? '—'}</div>
+										<div class="text-sm text-gray-400 truncate">{user.email ?? '-'}</div>
 									</div>
 								</div>
 
@@ -284,13 +284,13 @@
 										<span class="text-xs bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded-full">חסום</span>
 									{/if}
 								</div>
-								<div class="text-sm text-gray-400 truncate">{user.email ?? '—'}</div>
+								<div class="text-sm text-gray-400 truncate">{user.email ?? '-'}</div>
 							</div>
 						</div>
 
 						<!-- שכונה -->
 						<div class="text-sm text-gray-400 min-w-[100px]">
-							{user.neighborhood || '—'}
+							{user.neighborhood || '-'}
 						</div>
 
 						<!-- תפקיד -->
@@ -384,7 +384,7 @@
 
 						<!-- שכונה -->
 						<div class="text-sm text-gray-400 min-w-[80px]">
-							{item.neighborhood || '—'}
+							{item.neighborhood || '-'}
 						</div>
 
 						<!-- מחיקה -->

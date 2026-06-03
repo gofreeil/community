@@ -32,7 +32,7 @@ async function ensureSuperAdmin(event: any) {
 
 export const load: PageServerLoad = async (event) => {
     await ensureSuperAdmin(event);
-    // Lazy cron: בכל טעינה של הדף — בודק אם יש פרסומות שצריך לשלוח עליהן תזכורת.
+    // Lazy cron: בכל טעינה של הדף - בודק אם יש פרסומות שצריך לשלוח עליהן תזכורת.
     // אידימפוטנטי, שולח רק פעם אחת לכל שלב (30/7/1 ימים לפני פקיעה).
     const reminderRun = await processExpiryReminders().catch(() => ({ sent: 0, checked: 0 }));
     const [pendingRes, approvedRes, statsRes, schedulesRes, advertisersRes] = await Promise.allSettled([

@@ -1,7 +1,7 @@
 export interface GiveawayCategory {
     key: string;
     label: string;
-    /** תווית מקוצרת לתצוגת מובייל. אם לא מוגדר — נשתמש ב-label. */
+    /** תווית מקוצרת לתצוגת מובייל. אם לא מוגדר - נשתמש ב-label. */
     mobileLabel?: string;
     icon: string;
     color: string;
@@ -50,7 +50,7 @@ export const giveawayCategories: GiveawayCategory[] = [
       image: LOCAL('other.png') },
 ];
 
-/** מנרמל מפתח קטגוריה — תומך גם בנתונים ישנים שנשמרו לפני המיזוג. */
+/** מנרמל מפתח קטגוריה - תומך גם בנתונים ישנים שנשמרו לפני המיזוג. */
 function normalizeKey(key: string | undefined): string | undefined {
     if (!key) return undefined;
     return LEGACY_KEY_MAP[key] ?? key;

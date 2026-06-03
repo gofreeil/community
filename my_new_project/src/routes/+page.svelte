@@ -13,14 +13,14 @@
 
     const currentYear = new Date().getFullYear();
 
-    // Mock — חצי עליון: רמות יד פעילות שעדיין לא קיבלו מענה.
+    // Mock - חצי עליון: רמות יד פעילות שעדיין לא קיבלו מענה.
     const raisedHandsMock = [
         { icon: '👴', title: 'מבוגר זקוק לעזרה בקניות שבועיות',         date: '13 במאי 2026' },
         { icon: '🚗', title: 'דרוש סיוע בהתנעת רכב ברחוב הרב הרצוג',   date: '13 במאי 2026' },
         { icon: '🆘', title: 'בקשת עזרה: ליווי לבדיקה רפואית',          date: '12 במאי 2026' },
     ];
 
-    // Mock — חצי תחתון: משאלות מכותל המשאלות / קופת השכונה שהוגשמו.
+    // Mock - חצי תחתון: משאלות מכותל המשאלות / קופת השכונה שהוגשמו.
     const fulfilledWishesMock = [
         { icon: '🎒', title: 'מומשה משאלה: ילקוט וציוד לכיתה א׳ למשפחת כהן',   date: '12 במאי 2026' },
         { icon: '🍞', title: 'גויס סל מזון לחג למשפחת לוי מקופת השכונה',         date: '9 במאי 2026' },
@@ -46,13 +46,13 @@
         hintTimer = setTimeout(() => { hintCity = null; }, 4000);
     }
 
-    // CoaliEmbed מוצג רק לקרית משה בירושלים; לכל השאר — ReferendumBanner (דוגמא)
+    // CoaliEmbed מוצג רק לקרית משה בירושלים; לכל השאר - ReferendumBanner (דוגמא)
     const showCoali = $derived(
         neighborhoodState.neighborhood === "קרית משה" &&
         neighborhoodState.city === "ירושלים"
     );
 
-    // איחוד כל הערים — אם עיר מופיעה פעמיים בנתונים, נאחד את השכונות שלה (ללא כפילויות)
+    // איחוד כל הערים - אם עיר מופיעה פעמיים בנתונים, נאחד את השכונות שלה (ללא כפילויות)
     const allCitiesMerged = (() => {
         const map = new Map<string, string[]>();
         for (const entry of citiesData) {
@@ -67,8 +67,8 @@
     })();
 
     // חיפוש ערים ושכונות לפי query
-    // אם ה-query תואם שם עיר — מציגים את כל השכונות שלה.
-    // אם ה-query תואם שמות שכונות בתוך עיר (אבל לא את העיר עצמה) — מציגים רק את השכונות התואמות.
+    // אם ה-query תואם שם עיר - מציגים את כל השכונות שלה.
+    // אם ה-query תואם שמות שכונות בתוך עיר (אבל לא את העיר עצמה) - מציגים רק את השכונות התואמות.
     const filteredCities = $derived.by(() => {
         const q = searchQuery.trim().toLowerCase();
         if (!q) return allCitiesMerged;
@@ -147,7 +147,7 @@
     // רק אירועים עתידיים, ממופים לפורמט ה־UI
     const todayIso = new Date().toISOString().split('T')[0];
 
-    // אירועי דוגמה (mock) — מוצגים כל עוד אין אירוע אמיתי בשכונה
+    // אירועי דוגמה (mock) - מוצגים כל עוד אין אירוע אמיתי בשכונה
     function isoPlusDays(days: number): string {
         const d = new Date();
         d.setDate(d.getDate() + days);
@@ -155,7 +155,7 @@
     }
     const mockEvents: EventCard[] = [
         { title: '🎤 הרצאה בנושא חינוך ילדים',     location: 'בית הכנסת המרכזי', date: isoPlusDays(2),  startTime: '20:00', endTime: '21:00', bgColor: COLOR_MAP.green.bg,  textColor: COLOR_MAP.green.text,  subColor: COLOR_MAP.green.sub  },
-        { title: '🏃 מרוץ קהילתי — 5 ק"מ',          location: 'גן הציבורי',         date: isoPlusDays(5),  startTime: '07:30', endTime: '08:30', bgColor: COLOR_MAP.blue.bg,   textColor: COLOR_MAP.blue.text,   subColor: COLOR_MAP.blue.sub   },
+        { title: '🏃 מרוץ קהילתי - 5 ק"מ',          location: 'גן הציבורי',         date: isoPlusDays(5),  startTime: '07:30', endTime: '08:30', bgColor: COLOR_MAP.blue.bg,   textColor: COLOR_MAP.blue.text,   subColor: COLOR_MAP.blue.sub   },
         { title: '🎉 ערב הוקרה למתנדבי השכונה',     location: 'מתנ"ס שכונתי',       date: isoPlusDays(8),  startTime: '19:30', endTime: '20:30', bgColor: COLOR_MAP.purple.bg, textColor: COLOR_MAP.purple.text, subColor: COLOR_MAP.purple.sub },
         { title: '🌱 יום ניקיון ושיפור פני השכונה', location: 'כיכר השכונה',         date: isoPlusDays(14), startTime: '09:00', endTime: '10:00', bgColor: COLOR_MAP.orange.bg, textColor: COLOR_MAP.orange.text, subColor: COLOR_MAP.orange.sub },
     ];
@@ -314,7 +314,7 @@
                         <h3 class="text-white text-base md:text-lg font-bold whitespace-nowrap text-center sm:text-right">
                             🏘️ בחר עיר ושכונה
                         </h3>
-                        <!-- חיפוש + סגור — תמיד באותה שורה -->
+                        <!-- חיפוש + סגור - תמיד באותה שורה -->
                         <div class="flex flex-row items-center gap-2 flex-1">
                             <div class="relative flex-1">
                                 <span class="absolute right-3 top-1/2 -translate-y-1/2 text-purple-400 text-sm pointer-events-none">🔎</span>
@@ -814,7 +814,7 @@
             <!-- Background gradient -->
             <div class="absolute inset-0 bg-gradient-to-l from-green-950 via-emerald-900 to-emerald-800"></div>
 
-            <!-- Image (extends slightly into text area — only small overlap) -->
+            <!-- Image (extends slightly into text area - only small overlap) -->
             <div
                 class="absolute inset-y-0 left-0 w-3/4 md:w-2/3 z-10 bg-cover bg-center transition-transform duration-300 group-hover:scale-105 farm-image-fade"
                 style="background-image: url('/images/Copilot_20260514_012104.png');"
@@ -860,7 +860,7 @@
         }
     }
 
-    /* Masonry layout לבחירת ערים — ערים קטנות מתחבאות תחת הגדולות */
+    /* Masonry layout לבחירת ערים - ערים קטנות מתחבאות תחת הגדולות */
     .cities-masonry {
         column-count: 3;
         column-gap: 0.4rem;
@@ -879,7 +879,7 @@
         width: 100%;
     }
 
-    /* כפתורי שכונות — קישור פעיל ברור: hover מגדיל, מבליט וצובע */
+    /* כפתורי שכונות - קישור פעיל ברור: hover מגדיל, מבליט וצובע */
     .neighborhood-link {
         cursor: pointer;
         position: relative;
@@ -895,7 +895,7 @@
     .neighborhood-link:active {
         transform: scale(0.95);
     }
-    /* פעימה עדינה לציון שאלו קישורים פעילים — נפעלת רק כש-card מסומן ברמז */
+    /* פעימה עדינה לציון שאלו קישורים פעילים - נפעלת רק כש-card מסומן ברמז */
     .city-card.\[ring-amber-500\/40\] .neighborhood-link,
     .city-card[class*="ring-amber"] .neighborhood-link {
         animation: nbPulse 1.6s ease-in-out infinite;
@@ -904,7 +904,7 @@
         0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
         50%      { box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.35); }
     }
-    /* באנר חקלאות ישירה — אלכסון 135° ימין-עליון → שמאל-תחתון, גם במובייל וגם בדסקטופ */
+    /* באנר חקלאות ישירה - אלכסון 135° ימין-עליון → שמאל-תחתון, גם במובייל וגם בדסקטופ */
     .farm-image-fade {
         -webkit-mask-image: linear-gradient(135deg, black 0%, black 25%, rgba(0,0,0,0.85) 40%, rgba(0,0,0,0.5) 55%, rgba(0,0,0,0.2) 65%, transparent 75%);
                 mask-image: linear-gradient(135deg, black 0%, black 25%, rgba(0,0,0,0.85) 40%, rgba(0,0,0,0.5) 55%, rgba(0,0,0,0.2) 65%, transparent 75%);

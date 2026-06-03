@@ -8,7 +8,7 @@
 	let isLoading    = $state(false);
 	let showPassword = $state(true);
 	let showConfirm  = $state(true);
-	// tFn: תרגום reactive — $t אסור ב-Svelte 5
+	// tFn: תרגום reactive - $t אסור ב-Svelte 5
 	let _loc = $state(get(locale));
 	$effect(() => locale.subscribe(l => (_loc = l)));
 	const tFn = (k: string) => { void _loc; return get(t)(k); };
@@ -41,7 +41,7 @@
 					<p class="text-gray-400 text-sm">{tFn("create_account")}</p>
 				</div>
 
-				<!-- הרשמה הצליחה — בדוק אימייל -->
+				<!-- הרשמה הצליחה - בדוק אימייל -->
 				{#if form?.success}
 					<div class="text-center py-4">
 						<div class="text-5xl mb-4">📧</div>

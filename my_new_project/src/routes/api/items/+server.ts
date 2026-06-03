@@ -31,7 +31,7 @@ async function notifyShabbatMatches(
             return createItem({
                 category: 'message',
                 label: '🕯️ מישהו יכול לארח אותך השבת!',
-                description: `פרסמת שאתה מחפש אירוח לשבת — "${newLabel}" הציע לארח. היכנס ללוח האירוח ובדוק אם זה מתאים לך!`,
+                description: `פרסמת שאתה מחפש אירוח לשבת - "${newLabel}" הציע לארח. היכנס ללוח האירוח ובדוק אם זה מתאים לך!`,
                 contact: newContact || newLabel,
                 user_id: target.user_id!,
                 icon: '/icons/shavat-shalom.png',
@@ -42,7 +42,7 @@ async function notifyShabbatMatches(
             return createItem({
                 category: 'message',
                 label: '🎒 מישהו מחפש אירוח לשבת!',
-                description: `פרסמת שאתה מציע לארח — "${newLabel}" מחפש אירוח. היכנס ללוח האירוח וצור קשר להזמינו!`,
+                description: `פרסמת שאתה מציע לארח - "${newLabel}" מחפש אירוח. היכנס ללוח האירוח וצור קשר להזמינו!`,
                 contact: newContact || newLabel,
                 user_id: target.user_id!,
                 icon: '🎒',
@@ -61,7 +61,7 @@ export const GET: RequestHandler = async () => {
 
 // ---- POST: create a new item ----
 export const POST: RequestHandler = async (event) => {
-    // קבל את פרטי המשתמש המחובר (אופציונלי — guard נעשה בדף הטופס)
+    // קבל את פרטי המשתמש המחובר (אופציונלי - guard נעשה בדף הטופס)
     const session = await event.locals.auth();
 
     let body: Record<string, unknown>;
@@ -150,7 +150,7 @@ export const POST: RequestHandler = async (event) => {
             </body></html>`,
         });
     } catch (e) {
-        // מייל לאדמין הוא best-effort — לא נכשיל את הבקשה
+        // מייל לאדמין הוא best-effort - לא נכשיל את הבקשה
         console.warn('Admin email failed:', e);
     }
 

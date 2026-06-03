@@ -5,7 +5,7 @@
     let { data }: { data: PageData } = $props();
 
     type Gender = 'all' | 'male' | 'female';
-    // אם המשתמש מחובר ויש לו מגדר — נועלים את הסינון על המגדר הנגדי
+    // אם המשתמש מחובר ויש לו מגדר - נועלים את הסינון על המגדר הנגדי
     const lockedFilter: Gender | null =
         data.currentUserGender === 'male' ? 'female'
         : data.currentUserGender === 'female' ? 'male'
@@ -89,11 +89,11 @@
     function buildShareText(it: { label: string; age?: string; city?: string; description?: string }): { title: string; text: string; url: string } {
         const url = typeof window !== 'undefined' ? `${window.location.origin}/singles` : 'https://kehila-bashchuna.co.il/singles';
         const meta = [it.age ? `🎂 ${it.age}` : '', it.city ? `📍 ${it.city}` : ''].filter(Boolean).join(' · ');
-        const lines = [`💑 לוח פנויים ופנויות — ${it.label}`];
+        const lines = [`💑 לוח פנויים ופנויות - ${it.label}`];
         if (meta) lines.push(meta);
         if (it.description) lines.push(it.description);
         const text = lines.join('\n');
-        return { title: 'לוח פנויים ופנויות — קהילה בשכונה', text, url };
+        return { title: 'לוח פנויים ופנויות - קהילה בשכונה', text, url };
     }
     async function nativeShare(it: { id: string; label: string; age?: string; city?: string; description?: string }) {
         const payload = buildShareText(it);
@@ -126,7 +126,7 @@
     );
 
     // Mock data for display
-    // התמונות נוצרות דינמית ע"י DiceBear (SVG מאויר — אנונימי, פרטי, ולא משויך לאדם אמיתי)
+    // התמונות נוצרות דינמית ע"י DiceBear (SVG מאויר - אנונימי, פרטי, ולא משויך לאדם אמיתי)
     const avatar = (seed: string, female: boolean) =>
         `https://api.dicebear.com/9.x/personas/svg?seed=${encodeURIComponent(seed)}` +
         (female
@@ -135,12 +135,12 @@
 
     const mockSingles = [
         { id: '1', nickname: 'דודי',     label: 'פנוי, 28, ירושלים',   gender: 'male'   as const, age: '28', religiosity: 'haredi'  as const, city: 'ירושלים',   description: 'סטודנט למדעי המחשב, אוהב טיולים ומוזיקה.',           lookingFor: 'בת זוג רצינית, יראת שמיים, עם חוש הומור',  inspiration: '"איזהו עשיר? השמח בחלקו"',                  avatar: avatar('Dudi-1',  false), contact: 'דוד',     phone: '050-1234567' },
-        { id: '2', nickname: 'שרהל\'ה', label: 'פנויה, 25, ירושלים',  gender: 'female' as const, age: '25', religiosity: 'haredi'  as const, city: 'ירושלים',   description: 'מורה לאנגלית, אוהבת ספרים ובישול.',                  lookingFor: 'בן זוג ירא שמיים, רגיש וחכם, עם שאיפות',     inspiration: '"כל מה שעשה הקב"ה — לטובה עשה"',           avatar: avatar('Sara-2',  true),  contact: 'שרה',     phone: '050-2345678' },
+        { id: '2', nickname: 'שרהל\'ה', label: 'פנויה, 25, ירושלים',  gender: 'female' as const, age: '25', religiosity: 'haredi'  as const, city: 'ירושלים',   description: 'מורה לאנגלית, אוהבת ספרים ובישול.',                  lookingFor: 'בן זוג ירא שמיים, רגיש וחכם, עם שאיפות',     inspiration: '"כל מה שעשה הקב"ה - לטובה עשה"',           avatar: avatar('Sara-2',  true),  contact: 'שרה',     phone: '050-2345678' },
         { id: '3', nickname: 'יוסי',     label: 'פנוי, 31, בני ברק',   gender: 'male'   as const, age: '31', religiosity: 'haredi'  as const, city: 'בני ברק',   description: 'מהנדס תוכנה, בוגר ישיבה.',                            lookingFor: 'בת זוג עם ערכים, יראת שמיים, אכפתית',       inspiration: '"איזהו חכם? הלומד מכל אדם"',                avatar: avatar('Yossi-3', false), contact: 'יוסף',    phone: '050-3456789' },
         { id: '4', nickname: 'רחלי',     label: 'פנויה, 24, רמת גן',   gender: 'female' as const, age: '24', religiosity: 'dl'      as const, city: 'רמת גן',    description: 'סטודנטית לעבודה סוציאלית, מתנדבת בארגון "לתת".',     lookingFor: 'בן זוג רציני, אוהב חסד, עם לב טוב',          inspiration: '"ואהבת לרעך כמוך"',                          avatar: avatar('Racheli-4', true),  contact: 'רחל',     phone: '050-4567890' },
         { id: '5', nickname: 'מושיק',    label: 'פנוי, 29, ירושלים',   gender: 'male'   as const, age: '29', religiosity: 'dl'      as const, city: 'ירושלים',   description: 'עורך דין, אוהב ספורט ושיעורי תורה.',                  lookingFor: 'בת זוג עם חוש הומור, חכמה, רגישה',           inspiration: '"חזק ואמץ כי אתה תנחיל"',                    avatar: avatar('Moshik-5', false), contact: 'משה',     phone: '050-5678901' },
         { id: '6', nickname: 'לאל\'ה',  label: 'פנויה, 27, פתח תקווה', gender: 'female' as const, age: '27', religiosity: 'general' as const, city: 'פתח תקווה', description: 'גרפיקאית, אוהבת אמנות ויצירה.',                       lookingFor: 'בן זוג עם חוש הומור, יצירתי, אוהב חיים',     inspiration: '"להאמין ולחלום ולא לוותר"',                  avatar: avatar('Leah-6',   true),  contact: 'לאה',     phone: '050-6789012' },
-        { id: '7', nickname: 'אברימי',  label: 'פנוי, 63, ירושלים',   gender: 'male'   as const, age: '63', religiosity: 'dl'      as const, city: 'ירושלים',   description: 'רואה חשבון בגמלאות, אוהב חסד ועזרה לזולת.',          lookingFor: 'בת זוג לבניין בית, חמה ואוהבת',              inspiration: '"בלי לוותר על אהבה — בכל גיל"',              avatar: avatar('Avremi-7', false), contact: 'אברהם',  phone: '050-7890123' },
+        { id: '7', nickname: 'אברימי',  label: 'פנוי, 63, ירושלים',   gender: 'male'   as const, age: '63', religiosity: 'dl'      as const, city: 'ירושלים',   description: 'רואה חשבון בגמלאות, אוהב חסד ועזרה לזולת.',          lookingFor: 'בת זוג לבניין בית, חמה ואוהבת',              inspiration: '"בלי לוותר על אהבה - בכל גיל"',              avatar: avatar('Avremi-7', false), contact: 'אברהם',  phone: '050-7890123' },
         { id: '8', nickname: 'מירי',     label: 'פנויה, 65, ירושלים',  gender: 'female' as const, age: '65', religiosity: 'general' as const, city: 'ירושלים',   description: 'אחות בדימוס, אוהבת טבע וטיולים.',                     lookingFor: 'בן זוג אמיתי, רגיש, אוהב חיים',              inspiration: '"זה הזמן להתחיל פרק חדש"',                   avatar: avatar('Miri-8',   true),  contact: 'מרים',   phone: '050-8901234' },
     ];
 
@@ -166,7 +166,7 @@
                 </div>
             </div>
             <h1 class="text-3xl font-black text-white mb-2">לוח פנויים ופנויות</h1>
-            <p class="text-gray-400">לוח ארצי — מציאת בן/בת זוג מכל רחבי הארץ</p>
+            <p class="text-gray-400">לוח ארצי - מציאת בן/בת זוג מכל רחבי הארץ</p>
         </div>
 
         <!-- Filters: גילאים + רמה דתית -->

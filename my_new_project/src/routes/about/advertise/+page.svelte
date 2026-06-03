@@ -4,7 +4,7 @@
     import { citiesData, LS_KEY, DEFAULT_NEIGHBORHOOD } from "$lib/neighborhoodsData";
     import { coinAnim } from "$lib/coinAnimationState.svelte";
 
-    // Page data — layoutUser provides the logged-in user's profile (email, phone)
+    // Page data - layoutUser provides the logged-in user's profile (email, phone)
     let { data } = $props<{ data: { layoutUser?: { email?: string | null; phone?: string | null } | null } }>();
 
     const packages = [
@@ -52,7 +52,7 @@
     let citySearchInput: HTMLInputElement | null = $state(null);
     let pickerPanel: HTMLDivElement | null = $state(null);
 
-    // Popular cities — quick-pick chips for the most common selections
+    // Popular cities - quick-pick chips for the most common selections
     const popularCities = ['ירושלים', 'תל אביב יפו', 'חיפה', 'באר שבע', 'נתניה', 'ראשון לציון'];
 
     // ---- Guided tutorial pointer ----
@@ -168,7 +168,7 @@
     onMount(() => {
         if (!browser) return;
 
-        // Read last neighborhood chosen on the home page — map to its city
+        // Read last neighborhood chosen on the home page - map to its city
         const saved = localStorage.getItem(LS_KEY);
         if (saved) {
             try {
@@ -197,13 +197,13 @@
 
     function setNational() {
         if (isNational) {
-            // Toggle off — return to "בחר עיר / שכונה" state
+            // Toggle off - return to "בחר עיר / שכונה" state
             isNational = false;
             return;
         }
         isNational = true;
         selectedCities = new Set();
-        // National scope is for "פרסומת ארוכה" (row 1) — highlight it immediately
+        // National scope is for "פרסומת ארוכה" (row 1) - highlight it immediately
         highlightRow(1);
     }
 
@@ -235,7 +235,7 @@
         selectedCities = next;
         isNational = false;
         citySearchQuery = '';
-        showPicker = false; // auto-close after selection — user can reopen to add more
+        showPicker = false; // auto-close after selection - user can reopen to add more
         advanceFromCity();
     }
 
@@ -251,7 +251,7 @@
 
     let neighborhoodLabel = $derived(
         isNational
-            ? "ארצי — כל הארץ"
+            ? "ארצי - כל הארץ"
             : selectedCities.size === 0
                 ? "בחר עיר / שכונה"
                 : selectedCities.size === 1
@@ -279,14 +279,14 @@
 
     // ---- Free editing day + ad-period expiration ----
     // The user gets the day of payment as a FREE editing day (until 23:59).
-    // Their ad runs for one calendar month — same date next month inclusive.
+    // Their ad runs for one calendar month - same date next month inclusive.
     let confirmedPeriod = $state(false);
     let today           = new Date();
     function addOneMonthSameDate(d: Date) {
         const r = new Date(d);
         r.setMonth(r.getMonth() + 1);
         // If the original day doesn't exist in the next month (e.g. 31 → 30/28), JS rolls over.
-        // We accept the rollover behavior — last day of the next month is fine.
+        // We accept the rollover behavior - last day of the next month is fine.
         return r;
     }
     function endOfToday(d: Date) {
@@ -302,7 +302,7 @@
     function fmtMonthName(d: Date) {
         return d.toLocaleDateString('he-IL', { month: 'long', year: 'numeric' });
     }
-    // Build a calendar-month grid (Sunday-first) for a given date — returns rows of Date objects.
+    // Build a calendar-month grid (Sunday-first) for a given date - returns rows of Date objects.
     function buildCalendar(anchor: Date) {
         const firstOfMonth = new Date(anchor.getFullYear(), anchor.getMonth(), 1);
         const startDow = firstOfMonth.getDay(); // 0=Sun..6=Sat
@@ -343,7 +343,7 @@
             const data = await res.json();
             if (data.success) {
                 emailSent = true;
-                // השרת כבר הוסיף את המעשר — מפעיל אנימציה עם הנתונים שחזרו
+                // השרת כבר הוסיף את המעשר - מפעיל אנימציה עם הנתונים שחזרו
                 const tithe = Math.round(totalPayment * 0.1);
                 if (tithe > 0) {
                     coinAnim.trigger(tithe, totalPayment, data.fundTotal ?? tithe);
@@ -352,7 +352,7 @@
                 emailError = data.message || 'שגיאה בשליחת המייל';
             }
         } catch {
-            emailError = 'בעיית תקשורת — נסה שוב';
+            emailError = 'בעיית תקשורת - נסה שוב';
         } finally {
             emailSending = false;
         }
@@ -401,7 +401,7 @@
         }, 700);
     }
 
-    // Custom slow scroll — browser's `behavior: 'smooth'` is ~500ms, too quick for this flow
+    // Custom slow scroll - browser's `behavior: 'smooth'` is ~500ms, too quick for this flow
     function slowScrollTo(el: HTMLElement | null, duration: number) {
         if (!el) return;
         const startY = window.scrollY;
@@ -412,7 +412,7 @@
         const distance = targetY - startY;
         if (Math.abs(distance) < 4) return;
         const startTime = performance.now();
-        // easeInOutCubic — gentle accelerate/decelerate
+        // easeInOutCubic - gentle accelerate/decelerate
         const ease = (t: number) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
         function step(now: number) {
@@ -440,7 +440,7 @@
         !isNational && selectedCities.size === 1 && selectedCities.has('ירושלים')
     );
 
-    // Only "פרסומת ארוכה" (num=1) scales with neighborhood count — every other ad type is a flat
+    // Only "פרסומת ארוכה" (num=1) scales with neighborhood count - every other ad type is a flat
     // table price regardless of the number of neighborhoods or city
     const PER_NEIGHBORHOOD_NUMS = new Set([1]);
 
@@ -467,7 +467,7 @@
     let singleItems      = $derived(selectedItems.filter(r => r.plan === 'single'));
     let hasSelection     = $derived(planMap.size > 0);
 
-    // תמונת רקע לכל שכונה — מוצגת בכפתור הבחירה כשבוחרים שכונה בודדת
+    // תמונת רקע לכל שכונה - מוצגת בכפתור הבחירה כשבוחרים שכונה בודדת
     const neighborhoodImages: Record<string, string> = {
         'קרית משה':    '/images/kiryat-moshe-vaad.jfif',
         'רחביה':       '/images/neighborhoods/rehavia.jpg',
@@ -488,7 +488,7 @@
         'חשמונאים':    '/images/kiryat-moshe-vaad.jfif',
     };
 
-    // City images — keyed by city name
+    // City images - keyed by city name
     const cityImages: Record<string, string> = {
         'ירושלים':       '/images/kiryat-moshe-vaad.jfif',
         'תל אביב':       '/images/neighborhoods/florentin.jpg',
@@ -505,11 +505,11 @@
     let mailtoBody = $derived(
         `ערים: ${neighborhoodLabel} (×${neighborhoodCount} שכונות)%0A` +
         selectedItems.map(r =>
-            `${r.type}${r.perNeighborhood ? ` (×${neighborhoodCount} שכונות)` : ''} — ${r.plan === 'half' ? `חצי שנה ₪${r.eTotal * r.multiplier}` : `חודש בודד ₪${r.eTotal * r.multiplier}`}`
+            `${r.type}${r.perNeighborhood ? ` (×${neighborhoodCount} שכונות)` : ''} - ${r.plan === 'half' ? `חצי שנה ₪${r.eTotal * r.multiplier}` : `חודש בודד ₪${r.eTotal * r.multiplier}`}`
         ).join('%0A') + `%0A%0Aסה״כ: ₪${fmt(totalPayment)}`
     );
 
-    // wa.me URL — includes the user's phone in the message body if entered
+    // wa.me URL - includes the user's phone in the message body if entered
     let whatsappHref = $derived.by(() => {
         const types    = selectedItems.map(r => r.type).join(', ');
         const phoneLine = userPhone.trim() ? `%0Aהטלפון שלי: ${userPhone.trim()}` : '';
@@ -545,7 +545,7 @@
             {pendingItemLabel ? 'שדרג את החשיפה שלך' : 'פרסם באתר הקהילה'}
         </h1>
         <p class="text-gray-300 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
-            היחשף לתושבי השכונה ישירות — קהל מקומי, ממוקד ומעורב
+            היחשף לתושבי השכונה ישירות - קהל מקומי, ממוקד ומעורב
         </p>
     </div>
 
@@ -642,8 +642,8 @@
                             : 'border-white/10 bg-white/5 text-gray-300 hover:border-purple-400/40 hover:text-white'}"
                 >
                     <span class="text-xl md:text-2xl">🌍</span>
-                    <span>ארצי — כל הארץ</span>
-                    <span class="text-sm md:text-base font-normal text-gray-400">({fmt(totalNeighborhoodsCount)} — כל השכונות בארץ)</span>
+                    <span>ארצי - כל הארץ</span>
+                    <span class="text-sm md:text-base font-normal text-gray-400">({fmt(totalNeighborhoodsCount)} - כל השכונות בארץ)</span>
                     <span class="inline-flex items-center gap-1 text-amber-300 text-sm md:text-base font-black"
                           style="animation: dealPulse 2s ease-in-out infinite;">
                         🎉 מבצע! 5,000 ₪ לחודש
@@ -653,7 +653,7 @@
                     {/if}
                 </button>
 
-                <!-- Selected city chips — inline next to the national button -->
+                <!-- Selected city chips - inline next to the national button -->
                 {#if !isNational && selectedCities.size > 0}
                     {#each [...selectedCities] as cityName}
                         {@const chipCount = citiesData.find(c => c.city === cityName)?.neighborhoods.length ?? 0}
@@ -738,7 +738,7 @@
                     </div>
                 {/if}
             {:else if !isNational && selectedCities.size === 0}
-                <!-- Popular cities quick-pick — only when nothing is selected and no search active -->
+                <!-- Popular cities quick-pick - only when nothing is selected and no search active -->
                 <div class="mb-3">
                     <p class="text-xs text-gray-500 mb-2 font-bold">⚡ ערים פופולריות:</p>
                     <div class="flex flex-wrap gap-2">
@@ -777,7 +777,7 @@
                 </div>
             {/if}
 
-            <!-- Explanation + Confirm — 3-col grid: text right, button centered, left empty (RTL) -->
+            <!-- Explanation + Confirm - 3-col grid: text right, button centered, left empty (RTL) -->
             <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 items-center gap-3">
                 <p class="text-gray-300 text-sm md:text-base font-medium leading-snug text-center sm:text-right">
                     המחיר מחושב לפי מספר השכונות<br/>הפעילות בכל עיר.
@@ -798,9 +798,9 @@
         </div>
     {/if}
 
-    <!-- Pricing Table — step 2 (right in RTL) + step 3 (left in RTL) -->
+    <!-- Pricing Table - step 2 (right in RTL) + step 3 (left in RTL) -->
     <div class="flex flex-row justify-between items-center gap-3 mb-6 px-1">
-        <!-- Step 2 — right in RTL (first child) -->
+        <!-- Step 2 - right in RTL (first child) -->
         <p class="text-gray-200 text-sm md:text-base font-bold leading-snug flex items-center gap-2 rounded-xl px-2 py-1 opacity-90"
            class:step-title-light={step2TitleLight}>
             <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
@@ -812,7 +812,7 @@
                       aria-hidden="true">👇</span>
             {/if}
         </p>
-        <!-- Step 3 — left in RTL (last child) -->
+        <!-- Step 3 - left in RTL (last child) -->
         <p class="text-gray-200 text-sm md:text-base font-bold leading-snug flex items-center gap-2 rounded-xl px-2 py-1 transition-opacity
                   {tutorialStep === 'pick-row' ? 'opacity-50' : 'opacity-90'}"
            class:step-title-light={step3TitleLight}>
@@ -883,12 +883,12 @@
                 <!-- Prices row -->
                 <div class="flex gap-4 text-sm mt-1">
                     <div class="flex items-baseline gap-1">
-                        <span class="text-gray-300 text-sm font-semibold">חצי שנה —</span>
+                        <span class="text-gray-300 text-sm font-semibold">חצי שנה -</span>
                         <span class="font-black text-amber-400 text-sm">₪{fmt(row.half)}</span>
                         <span class="text-gray-300 text-sm font-semibold">/חודש</span>
                     </div>
                     <div class="flex items-baseline gap-1">
-                        <span class="text-gray-300 text-sm font-semibold">חודש בודד —</span>
+                        <span class="text-gray-300 text-sm font-semibold">חודש בודד -</span>
                         <span class="font-black text-white text-sm">₪{fmt(row.single)}</span>
                     </div>
                 </div>
@@ -913,7 +913,7 @@
                     </th>
                     <th class="px-4 py-4 font-black text-amber-400">פריסה</th>
                     <th class="px-4 py-4 font-black text-amber-400">פרטים</th>
-                    <!-- Toggle column header — last = left side in RTL -->
+                    <!-- Toggle column header - last = left side in RTL -->
                     <th class="px-4 py-4 text-center bg-white/8 border-r border-white/10">
                         <div class="flex flex-col items-center gap-1">
                             <span class="text-xs font-bold text-amber-400/80">½שנה</span>
@@ -971,7 +971,7 @@
                         <td class="px-4 py-4 text-gray-300 text-sm">{row.reach}</td>
                         <td class="px-4 py-4 text-gray-400 text-sm">{row.details}</td>
 
-                        <!-- 3-state toggle — last column = left side in RTL -->
+                        <!-- 3-state toggle - last column = left side in RTL -->
                         <td class="px-3 py-3 text-center border-r border-white/10 relative"
                             style="background: {plan === 'half' ? 'rgba(245,158,11,0.12)' : plan === 'single' ? 'rgba(59,130,246,0.12)' : 'rgba(255,255,255,0.06)'}">
 
@@ -1043,7 +1043,7 @@
                 {/if}
                 {#if isJerusalemOnly}
                     <span class="bg-green-500/20 border border-green-500/40 text-green-300 text-xs font-black px-2 py-0.5 rounded-full">
-                        🎉 הנחת ירושלים — ₪{JERUSALEM_FLAT}/שכונה
+                        🎉 הנחת ירושלים - ₪{JERUSALEM_FLAT}/שכונה
                     </span>
                 {/if}
             </div>
@@ -1082,7 +1082,7 @@
                                         : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'}">
                                     {item.plan === 'half' ? '½ שנה' : 'חודש'}
                                 </span>
-                                <!-- Price (one line — duration sits beside the amount, not stacked) -->
+                                <!-- Price (one line - duration sits beside the amount, not stacked) -->
                                 <div class="flex items-center gap-2 whitespace-nowrap">
                                     {#if item.perNeighborhood && neighborhoodCount > 1}
                                         <span class="text-gray-600 text-[10px]">
@@ -1103,13 +1103,13 @@
                 </ul>
             </div>
 
-            <!-- Total + Email — single merged box with a divider line between them -->
+            <!-- Total + Email - single merged box with a divider line between them -->
             <div class="rounded-2xl border-2 border-white/20 bg-white/5 mb-6 overflow-hidden">
             <div class="grid grid-cols-1 md:grid-cols-2 items-stretch">
 
-            <!-- Total — right side in RTL (DOM-first), with right-aligned content -->
+            <!-- Total - right side in RTL (DOM-first), with right-aligned content -->
             <div class="px-6 py-5 text-right flex flex-col justify-center gap-3 border-b md:border-b-0 md:border-l border-white/15">
-                <!-- Per-item math breakdown — rate × neighborhoods × months -->
+                <!-- Per-item math breakdown - rate × neighborhoods × months -->
                 <div class="space-y-1.5">
                     {#each selectedItems as item}
                         <p class="text-gray-100 text-base md:text-lg font-bold leading-snug">
@@ -1147,7 +1147,7 @@
 
             <!-- ===== Email confirmation section ===== -->
             {#if emailSent}
-                <!-- Success state — inside the merged box, accent green tint as background -->
+                <!-- Success state - inside the merged box, accent green tint as background -->
                 <div class="bg-green-900/15 p-5 text-center"
                      style="animation: slideDown 0.3s ease-out;">
                     <div class="text-3xl mb-2">✅</div>
@@ -1159,7 +1159,7 @@
                     <p class="text-gray-500 text-xs mt-2">ניצור איתך קשר בהקדם לתיאום הסופי</p>
                 </div>
             {:else}
-                <!-- Email + WhatsApp input — now inside the merged box, no border/rounded of its own -->
+                <!-- Email + WhatsApp input - now inside the merged box, no border/rounded of its own -->
                 <div class="p-5 flex flex-col justify-center"
                      style="animation: slideDown 0.25s ease-out;">
                     <p class="text-gray-300 text-sm font-bold mb-3 text-center flex items-center justify-center gap-2"
@@ -1167,10 +1167,10 @@
                         <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
                               class:step-num-light={step4NumLight}
                               style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">4</span>
-                        📧 קבל אישור הזמנה — מייל / וואטסאפ
+                        📧 קבל אישור הזמנה - מייל / וואטסאפ
                     </p>
                     <div class="flex flex-col gap-2">
-                        <!-- Row 1: phone + WhatsApp — equal columns (50/50) so all inputs/buttons align -->
+                        <!-- Row 1: phone + WhatsApp - equal columns (50/50) so all inputs/buttons align -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             <input
                                 type="tel"
@@ -1194,7 +1194,7 @@
                                 💬 שלח בוואטסאפ
                             </a>
                         </div>
-                        <!-- Row 2: email + send-email — same equal columns -->
+                        <!-- Row 2: email + send-email - same equal columns -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             <input
                                 type="email"
@@ -1222,7 +1222,7 @@
                                           style="animation: spin 0.7s linear infinite;"></span>
                                     שולח…
                                 {:else}
-                                    ✉️ שלח תיעוד — ₪{fmt(totalPayment)}
+                                    ✉️ שלח תיעוד - ₪{fmt(totalPayment)}
                                 {/if}
                             </button>
                         </div>
@@ -1278,11 +1278,11 @@
         <div class="rounded-xl bg-white/3 border border-white/10 p-4 md:p-5 mb-5">
             <p class="text-amber-300 font-black text-sm md:text-base mb-2 flex items-center gap-2">
                 <span class="text-xl">🎁</span>
-                <span>יום העריכה — חינם על חשבון המערכת</span>
+                <span>יום העריכה - חינם על חשבון המערכת</span>
             </p>
             <ul class="text-gray-200 text-xs md:text-sm leading-relaxed space-y-1.5 pr-6 list-disc list-outside">
-                <li>היום, <strong class="text-amber-200">{fmtDate(today)}</strong>, הוא יום העריכה החינמית — לא נספר בתקופת הפרסום.</li>
-                <li>הפרסומת תרוץ <strong class="text-amber-200">חודש מלא</strong> — עד <strong class="text-amber-200">{fmtDate(expirationDate)} כולל</strong>.</li>
+                <li>היום, <strong class="text-amber-200">{fmtDate(today)}</strong>, הוא יום העריכה החינמית - לא נספר בתקופת הפרסום.</li>
+                <li>הפרסומת תרוץ <strong class="text-amber-200">חודש מלא</strong> - עד <strong class="text-amber-200">{fmtDate(expirationDate)} כולל</strong>.</li>
                 <li>תקופת העריכה החינמית נגמרת היום ב<strong class="text-amber-200">23:59</strong>. כדאי לסיים את העריכה לפני זה!</li>
             </ul>
         </div>
@@ -1317,7 +1317,7 @@
 
         <!-- Calendar legend -->
         <div class="flex flex-wrap items-center justify-center gap-4 text-xs text-gray-400 mb-5">
-            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-amber-500"></span> היום — יום עריכה חינם</span>
+            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-amber-500"></span> היום - יום עריכה חינם</span>
             <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-red-500"></span> תאריך תפוגת הפרסומת</span>
         </div>
 
@@ -1330,7 +1330,7 @@
                     הבנתי את אורך התקופה ואת תאריך התפוגה
                 </p>
                 <p class="text-gray-400 text-xs md:text-sm leading-relaxed">
-                    היום ({fmtDate(today)}) — יום עריכה חינם.
+                    היום ({fmtDate(today)}) - יום עריכה חינם.
                     הפרסומת שלי תפעל עד <span class="text-amber-300 font-bold">{fmtDate(expirationDate)} כולל</span>.
                 </p>
             </div>
@@ -1355,7 +1355,7 @@
             </p>
         {/if}
         <p class="text-gray-400 text-sm text-center mb-6">
-            התשלום מתבצע בצורה מאובטחת דרך חברת הסליקה — פרטי האשראי שלך לא מגיעים אלינו
+            התשלום מתבצע בצורה מאובטחת דרך חברת הסליקה - פרטי האשראי שלך לא מגיעים אלינו
         </p>
 
         <div class="flex flex-wrap justify-center gap-3 mb-6">
@@ -1367,12 +1367,12 @@
         <div class="rounded-xl border-2 border-dashed border-blue-500/40 bg-blue-900/10 p-6 text-center">
             <div class="text-3xl mb-3">💳</div>
             <h3 class="text-white font-black mb-1">סליקה מאובטחת</h3>
-            <p class="text-gray-400 text-sm mb-4">מחוברים לחברת סליקה מורשית — עסקה מאובטחת ב-SSL</p>
+            <p class="text-gray-400 text-sm mb-4">מחוברים לחברת סליקה מורשית - עסקה מאובטחת ב-SSL</p>
 
-            <!-- Temporary notice — payment processor not yet connected -->
+            <!-- Temporary notice - payment processor not yet connected -->
             <p class="mb-4 rounded-xl border border-orange-500/40 bg-orange-500/10 px-4 py-3 text-orange-200 text-sm md:text-base font-bold text-center leading-snug flex flex-col sm:flex-row items-center justify-center gap-2">
                 <span class="text-lg">🚧</span>
-                <span>הסליקה באתר עדיין לא מחוברת — לסיום ההזמנה ולתשלום, צור קשר בוואטסאפ:
+                <span>הסליקה באתר עדיין לא מחוברת - לסיום ההזמנה ולתשלום, צור קשר בוואטסאפ:
                     <a href="https://wa.me/972508750632?text=שלום, אני מעוניין/ת להשלים תשלום על פרסום (סה״כ ₪{fmt(totalPayment)})."
                        target="_blank" rel="noopener noreferrer"
                        class="text-white font-black underline underline-offset-2 hover:text-orange-100 whitespace-nowrap">
@@ -1384,13 +1384,13 @@
             <div class="flex flex-col sm:flex-row gap-3 justify-center">
                 <a href="https://wa.me/972508750632?text=שלום, אני מעוניין/ת להשלים תשלום על פרסום באתר. סה״כ: ₪{fmt(totalPayment)}. {selectedItems.length > 0 ? `פריטים: ${selectedItems.map(r => r.type).join(', ')}.` : ''}"
                    target="_blank" rel="noopener noreferrer"
-                   aria-label="לתשלום זמני — צור קשר בוואטסאפ (נפתח בחלון חדש)"
+                   aria-label="לתשלום זמני - צור קשר בוואטסאפ (נפתח בחלון חדש)"
                    class="inline-flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-500 text-white font-black px-6 py-3 rounded-xl text-sm transition-all hover:scale-105">
-                    🔗 לדף התשלום — Grow
+                    🔗 לדף התשלום - Grow
                 </a>
                 <a href="/about/advertise/builder"
                    class="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-black px-6 py-3 rounded-xl text-sm transition-all hover:scale-105">
-                    🎨 כבר שילמתי — לבנות את הפרסומת
+                    🎨 כבר שילמתי - לבנות את הפרסומת
                 </a>
             </div>
             <p class="mt-4 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-amber-200 text-sm md:text-base font-bold text-center leading-snug flex items-center justify-center gap-2">
@@ -1402,11 +1402,11 @@
             <div class="mt-3 rounded-xl border border-green-500/40 bg-green-500/10 px-4 py-3 text-right">
                 <p class="text-green-300 font-black text-sm md:text-base mb-1.5 flex items-center gap-2">
                     <span class="text-lg">💾</span>
-                    <span>אחרי התשלום — איך ממשיכים?</span>
+                    <span>אחרי התשלום - איך ממשיכים?</span>
                 </p>
                 <ul class="text-gray-200 text-xs md:text-sm leading-relaxed space-y-1 pr-6 list-disc list-outside">
-                    <li>תועברו אוטומטית ל<a href="/about/advertise/builder" class="text-amber-300 hover:text-amber-200 font-bold underline">בילדר הפרסומת</a> — שלב אחר שלב, עם תצוגה מקדימה חיה.</li>
-                    <li>הטיוטה <strong class="text-green-300">נשמרת אוטומטית בכל רגע</strong> — אם הדף נסגר, הכל יישמר.</li>
+                    <li>תועברו אוטומטית ל<a href="/about/advertise/builder" class="text-amber-300 hover:text-amber-200 font-bold underline">בילדר הפרסומת</a> - שלב אחר שלב, עם תצוגה מקדימה חיה.</li>
+                    <li>הטיוטה <strong class="text-green-300">נשמרת אוטומטית בכל רגע</strong> - אם הדף נסגר, הכל יישמר.</li>
                     <li>תוכלו לחזור ולערוך בכל עת מ<a href="/profile" class="text-amber-300 hover:text-amber-200 font-bold underline">הפרופיל האישי שלכם</a> (כרטיס "📝 פרסומת בעריכה").</li>
                 </ul>
             </div>
@@ -1538,7 +1538,7 @@
         100% { opacity: 0; transform: scale(1); }
     }
 
-    /* Step indicator — single brief flash on the number badge (~0.7s) */
+    /* Step indicator - single brief flash on the number badge (~0.7s) */
     @keyframes stepNumFlashAnim {
         0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); transform: scale(1); filter: brightness(1); }
         50%      { box-shadow: 0 0 18px 6px rgba(251, 191, 36, 0.95); transform: scale(1.25); filter: brightness(1.55); }
@@ -1547,7 +1547,7 @@
         animation: stepNumFlashAnim 0.7s ease-in-out 1;
     }
 
-    /* Step indicator — title glow that lights up AFTER the number flash (~1.5s) */
+    /* Step indicator - title glow that lights up AFTER the number flash (~1.5s) */
     @keyframes stepTitleGlowAnim {
         0%, 100% { color: rgb(229 231 235); text-shadow: 0 0 0 rgba(251, 191, 36, 0); }
         50%      { color: #fbbf24;            text-shadow: 0 0 14px rgba(251, 191, 36, 0.9), 0 0 28px rgba(251, 191, 36, 0.5); }
@@ -1573,7 +1573,7 @@
         animation: totalFlashAnim 0.75s ease-in-out 2;
     }
 
-    /* Step 2 partial highlight — outlines all cells in the row except the toggle column (last td) */
+    /* Step 2 partial highlight - outlines all cells in the row except the toggle column (last td) */
     :global(tr.partial-highlight > td) {
         box-shadow: inset 0 2px 0 #fbbf24, inset 0 -2px 0 #fbbf24;
     }
@@ -1587,7 +1587,7 @@
         box-shadow: none;
     }
 
-    /* Step 3 checkmark pop — plays once when a plan is selected, then fades */
+    /* Step 3 checkmark pop - plays once when a plan is selected, then fades */
     @keyframes confirmCheckPop {
         0%   { opacity: 0; transform: scale(0); }
         35%  { opacity: 1; transform: scale(1.35); }

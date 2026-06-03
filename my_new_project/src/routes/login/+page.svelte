@@ -35,12 +35,12 @@
 			OAuthCallback:         'שגיאה בחזרה מהספק. נסה שוב.',
 			OAuthAccountNotLinked: 'החשבון כבר קיים עם ספק אחר.',
 			Callback:              'שגיאה בתהליך ההתחברות.',
-			CredentialsSignin:     'אימייל או סיסמה שגויים. אם נרשמת לאחרונה — ודא שאישרת את האימייל.',
+			CredentialsSignin:     'אימייל או סיסמה שגויים. אם נרשמת לאחרונה - ודא שאישרת את האימייל.',
 			Default:               'שגיאה לא ידועה. נסה שוב.',
 		};
 		return map[code] ?? map['Default'];
 	}
-	// tFn: תרגום reactive — $t אסור ב-Svelte 5
+	// tFn: תרגום reactive - $t אסור ב-Svelte 5
 	let _loc = $state(get(locale));
 	$effect(() => locale.subscribe(l => (_loc = l)));
 	const tFn = (k: string) => { void _loc; return get(t)(k); };
@@ -97,7 +97,7 @@
 					</div>
 				{/if}
 
-				<!-- 1. טופס אימייל/סיסמה — בחירה ראשונה -->
+				<!-- 1. טופס אימייל/סיסמה - בחירה ראשונה -->
 				<form method="POST" action="?/credentials" use:enhance={() => {
 					isLoading = true;
 					loadingProvider = 'credentials';

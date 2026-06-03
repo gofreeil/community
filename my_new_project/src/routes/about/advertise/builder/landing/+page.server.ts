@@ -13,7 +13,7 @@ export const load: PageServerLoad = async (event) => {
             }
             isSuperAdmin = dbUser?.role === 'super_admin';
         } catch {
-            // ignore — treat as non-admin
+            // ignore - treat as non-admin
         }
     }
 

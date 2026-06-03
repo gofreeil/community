@@ -7,7 +7,7 @@ async function runMigrations(strapi: Core.Strapi) {
   const client = process.env.DATABASE_CLIENT;
 
   if (client !== 'postgres') {
-    strapi.log.info('[migrations] Skipping — not PostgreSQL');
+    strapi.log.info('[migrations] Skipping - not PostgreSQL');
     return;
   }
 
