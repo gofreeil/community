@@ -923,11 +923,14 @@
         transform: none !important;
     }
     @keyframes farmConstructionPulse {
-        0%, 100% { transform: scale(1); opacity: 1; }
-        50%      { transform: scale(1.08); opacity: 0.85; }
+        0%   { transform: scale(1);    opacity: 1; }
+        25%  { transform: scale(1.15); opacity: 0.9; }
+        50%  { transform: scale(0.97); opacity: 1; }
+        75%  { transform: scale(1.08); opacity: 0.95; }
+        100% { transform: scale(1);    opacity: 1; }
     }
     .farm-construction-pulse {
-        animation: farmConstructionPulse 1.2s ease-in-out infinite;
+        animation: farmConstructionPulse 0.9s ease-in-out 1 both;
         color: #fde047 !important;
         font-size: 1.05em;
     }
