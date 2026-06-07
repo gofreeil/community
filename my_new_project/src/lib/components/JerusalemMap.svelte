@@ -193,6 +193,31 @@
     let sheetDragStartY = 0;
     let sheetDragging = false;
 
+    // מובייל: טולטיפ-המתנה - מציג תיאור הקטגוריה במשך זמן הטעינה
+    let mobileTooltipFor = $state<string | null>(null);
+    let mobileTooltipTimer: ReturnType<typeof setTimeout> | null = null;
+    const MOBILE_TOOLTIP_MS = 2000;
+
+    function handleMobileCategoryTap(categoryId: string) {
+        // בטל תזמון קודם אם המשתמש לחץ שוב לפני שנגמרה הספירה
+        if (mobileTooltipTimer) clearTimeout(mobileTooltipTimer);
+        mobileTooltipFor = categoryId;
+        mobileTooltipTimer = setTimeout(() => {
+            mobileTooltipFor = null;
+            mobileTooltipTimer = null;
+            handleCategoryClick(categoryId);
+            showCategorySheet = false;
+        }, MOBILE_TOOLTIP_MS);
+    }
+
+    function cancelMobileTooltip() {
+        if (mobileTooltipTimer) {
+            clearTimeout(mobileTooltipTimer);
+            mobileTooltipTimer = null;
+        }
+        mobileTooltipFor = null;
+    }
+
     function onSheetDragStart(e: PointerEvent) {
         sheetDragging = true;
         sheetDragStartY = e.clientY;
@@ -1080,7 +1105,7 @@
                     <div
                         class="md:hidden fixed inset-0 bg-black/60 z-[10000] backdrop-blur-sm"
                         role="presentation"
-                        onclick={() => (showCategorySheet = false)}
+                        onclick={() => { cancelMobileTooltip(); showCategorySheet = false; }}
                     ></div>
                     <!-- Sheet -->
                     <div
@@ -1110,7 +1135,7 @@
                             <!-- שורה 1: 'כל היתרונות' לבד וממורכז -->
                             <div class="flex justify-center mb-2">
                                 <button
-                                    onclick={() => { handleCategoryClick(benefitsCat.id); showCategorySheet = false; }}
+                                    onclick={() => handleMobileCategoryTap(benefitsCat.id)}
                                     class="flex flex-col items-center justify-center gap-1 {selectedCategory === benefitsCat.id
                                         ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-gray-900 border-yellow-500 ring-2 ring-yellow-300'
                                         : 'bg-gradient-to-br from-yellow-400 to-orange-500 text-gray-900 border-yellow-500'} px-6 py-3 rounded-xl text-sm font-bold shadow-md active:scale-95 border map-category-button min-h-[72px] w-[42%]"
@@ -1123,7 +1148,7 @@
                             <div class="grid grid-cols-4 gap-1.5">
                                 {#each otherCats as category}
                                     <button
-                                        onclick={() => { handleCategoryClick(category.id); showCategorySheet = false; }}
+                                        onclick={() => handleMobileCategoryTap(category.id)}
                                         class="flex flex-col items-center justify-center gap-1 {selectedCategory === category.id
                                             ? 'bg-gradient-to-br from-purple-600 to-blue-600 text-white border-purple-500 ring-2 ring-purple-300'
                                             : 'bg-gradient-to-br from-white to-gray-200 text-gray-900 border-purple-300'} px-1 py-2.5 rounded-xl text-xs font-bold shadow-md active:scale-95 border map-category-button min-h-[70px]"
@@ -1143,6 +1168,41 @@
                                 {/each}
                             </div>
                         </div>
+
+                        <!-- שכבת המתנה: תיאור הקטגוריה למשך זמן הטעינה -->
+                        {#if mobileTooltipFor}
+                            {@const tooltipCat = categories.find(c => c.id === mobileTooltipFor)}
+                            {#if tooltipCat}
+                                <div
+                                    class="md:hidden absolute inset-0 z-10 flex items-center justify-center px-5 rounded-2xl"
+                                    style="background: linear-gradient(160deg, rgba(15,23,42,0.96), rgba(30,27,75,0.96)); animation: mobileTooltipFadeIn 0.18s ease-out;"
+                                    role="status"
+                                    aria-live="polite"
+                                >
+                                    <div class="flex flex-col items-center gap-3 text-center max-w-[85%]">
+                                        {#if tooltipCat.icon?.startsWith('/')}
+                                            <img src={tooltipCat.icon} class="w-14 h-14" alt={tooltipCat.label} />
+                                        {:else}
+                                            <span class="text-5xl leading-none">{tooltipCat.icon}</span>
+                                        {/if}
+                                        <h4 class="text-yellow-300 text-xl font-extrabold leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+                                            {tooltipCat.label}
+                                        </h4>
+                                        <p class="text-slate-100 text-sm leading-relaxed">
+                                            {categoryTooltips[mobileTooltipFor] ?? ''}
+                                        </p>
+                                        <!-- פס התקדמות שמסמן שתכף הסינון נכנס לתוקף -->
+                                        <div class="w-40 h-1 mt-1 rounded-full bg-white/15 overflow-hidden">
+                                            <div
+                                                class="h-full bg-gradient-to-l from-yellow-300 to-orange-400"
+                                                style="animation: mobileTooltipProgress {MOBILE_TOOLTIP_MS}ms linear forwards;"
+                                            ></div>
+                                        </div>
+                                        <span class="text-xs text-slate-400 mt-1">טוען נתונים...</span>
+                                    </div>
+                                </div>
+                            {/if}
+                        {/if}
                     </div>
                 {/if}
 
@@ -2128,9 +2188,19 @@
         transform: translateX(-50%) translateY(0);
         transition-delay: 0.12s;
     }
-    /* Touch: אל תציג טולטיפ במכשירי מגע - מפריע ל-tap-to-filter */
+    /* Touch: אל תציג טולטיפ דסקטופ במכשירי מגע - מפריע ל-tap-to-filter */
     @media (hover: none) {
         .category-tooltip { display: none; }
+    }
+
+    /* ===== טולטיפ-המתנה במובייל ===== */
+    @keyframes mobileTooltipFadeIn {
+        from { opacity: 0; transform: scale(0.96); }
+        to   { opacity: 1; transform: scale(1); }
+    }
+    @keyframes mobileTooltipProgress {
+        from { width: 0%; }
+        to   { width: 100%; }
     }
 
     @keyframes sheetSlideUp {
