@@ -216,6 +216,27 @@
     const benefitsCat = categories.find(c => c.id === 'benefits') ?? categories[0];
     const otherCats = categories.filter(c => c.id !== 'benefits');
 
+    // תיאורים לטולטיפים מתחת לכפתורי הקטגוריות
+    const categoryTooltips: Record<string, string> = {
+        'benefits':    'כל השירותים והיתרונות שיש בשכונה',
+        'gemachim':    'התארגנות גמילות החסדים שבשכונה',
+        'attractions': 'בנקים, עיריה, דואר, בתי ספר, מתנ"סים וכו׳',
+        'giveaway':    'חפצים למסירה או למכירה יד 2',
+        'business':    'השמרטפיות הקרובות ביותר',
+        'minyanim':    'בתי כנסת, מקוואות, שיעורים וחברותות',
+        'education':   'חוגים לכלל הגילאים',
+        'realestate':  'דורשים או מציעים, סעודה או מקום לינה',
+        'security':    'לכלל השנה או לחגים',
+        'shops':       'כלל החנויות בשכונה',
+        'restaurants': 'החל מאוכל מהיר וכלה במסעדות יוקרה',
+        'rides':       'דרישה והצעה לטרמפים או הסעות בהתנדבות או בתשלום',
+        'for_kids':    'גני שעשועים, ספריות ואטרקציות',
+        'jobs':        'משרות והצעות עבודה',
+        'singles':     'מכירים את הפנויים והפנויות לגילאים המתאימים לך לקשר כן',
+        'halls':       'לאירועים חד פעמיים או לחוגים קבועים',
+        'safe-space':  'ציבורי רשמי או פרטי פתוח לקהל',
+    };
+
     // ----- מצב מסך מלא לדסקטופ -----
     let isFullscreen = $state(false);
 
@@ -1132,14 +1153,13 @@
                     {#each categories as category, index}
                         <button
                             onclick={() => handleCategoryClick(category.id)}
-                            title="לחץ כדי לסנן במפה"
-                            class="flex items-center justify-center flex-1 {category.id === 'rides' ? 'gap-1 px-2 min-w-[19%]' : category.id === 'education' ? 'gap-1.5 px-3 min-w-[11%]' : 'gap-1.5 px-3 min-w-[15%]'} {selectedCategory === category.id
+                            class="relative flex items-center justify-center flex-1 {category.id === 'rides' ? 'gap-1 px-2 min-w-[19%]' : category.id === 'education' ? 'gap-1.5 px-3 min-w-[11%]' : 'gap-1.5 px-3 min-w-[15%]'} {selectedCategory === category.id
                                 ? category.id === 'benefits'
                                     ? 'bg-gradient-to-br from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-gray-900 border-yellow-500 ring-2 ring-yellow-300'
                                     : 'bg-gradient-to-br from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-purple-500 ring-2 ring-purple-300'
                                 : category.id === 'benefits'
                                   ? 'bg-gradient-to-br from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-gray-900 border-yellow-500'
-                                  : 'bg-gradient-to-br from-white to-gray-200 hover:from-blue-100 hover:to-white text-gray-900 border-purple-300'} py-1.5 rounded-lg text-xs font-bold shadow-lg transition-all hover:scale-105 border shrink-0 whitespace-nowrap map-category-button"
+                                  : 'bg-gradient-to-br from-white to-gray-200 hover:from-blue-100 hover:to-white text-gray-900 border-purple-300'} py-1.5 rounded-lg text-xs font-bold shadow-lg transition-all hover:scale-105 border shrink-0 whitespace-nowrap map-category-button category-with-tooltip"
                         >
                             {#if category.icon?.startsWith('/')}
                                 <img src={category.icon} class="w-5 h-5 inline-block" alt={category.label} />
@@ -1152,6 +1172,12 @@
                                 >
                             {/if}
                             {category.label}
+                            {#if categoryTooltips[category.id]}
+                                <span class="category-tooltip" role="tooltip">
+                                    <span class="category-tooltip-title">{category.label}</span>
+                                    <span class="category-tooltip-desc">{categoryTooltips[category.id]}</span>
+                                </span>
+                            {/if}
                         </button>
                     {/each}
                 </div>
@@ -2042,6 +2068,71 @@
 {/if}
 
 <style>
+    /* ===== טולטיפ לכפתורי קטגוריות (דסקטופ) ===== */
+    .category-with-tooltip {
+        position: relative;
+        overflow: visible;
+    }
+    .category-tooltip {
+        position: absolute;
+        top: calc(100% + 10px);
+        left: 50%;
+        transform: translateX(-50%) translateY(-4px);
+        background: linear-gradient(135deg, rgba(15,23,42,0.97), rgba(30,41,59,0.97));
+        color: #f8fafc;
+        padding: 8px 12px;
+        border-radius: 10px;
+        white-space: normal;
+        width: max-content;
+        max-width: 260px;
+        min-width: 160px;
+        text-align: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.18s ease, transform 0.18s ease;
+        z-index: 60;
+        border: 1px solid rgba(168,85,247,0.45);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        font-weight: 400;
+        line-height: 1.35;
+        direction: rtl;
+    }
+    .category-tooltip::before {
+        content: '';
+        position: absolute;
+        top: -6px;
+        left: 50%;
+        transform: translateX(-50%) rotate(45deg);
+        width: 12px;
+        height: 12px;
+        background: linear-gradient(135deg, rgba(15,23,42,0.97), rgba(30,41,59,0.97));
+        border-top: 1px solid rgba(168,85,247,0.45);
+        border-left: 1px solid rgba(168,85,247,0.45);
+    }
+    .category-tooltip-title {
+        display: block;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #fde047;
+        margin-bottom: 2px;
+    }
+    .category-tooltip-desc {
+        display: block;
+        font-size: 0.72rem;
+        color: #e2e8f0;
+    }
+    /* Tailwind v4 group-hover שבור — חייבים hover מפורש על האב */
+    .category-with-tooltip:hover .category-tooltip,
+    .category-with-tooltip:focus-visible .category-tooltip {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+        transition-delay: 0.12s;
+    }
+    /* Touch: אל תציג טולטיפ במכשירי מגע - מפריע ל-tap-to-filter */
+    @media (hover: none) {
+        .category-tooltip { display: none; }
+    }
+
     @keyframes sheetSlideUp {
         from { transform: translateY(100%); }
         to   { transform: translateY(0); }
