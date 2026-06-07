@@ -196,7 +196,7 @@
     // מובייל: טולטיפ-המתנה - מציג תיאור הקטגוריה במשך זמן הטעינה
     let mobileTooltipFor = $state<string | null>(null);
     let mobileTooltipTimer: ReturnType<typeof setTimeout> | null = null;
-    const MOBILE_TOOLTIP_MS = 2000;
+    const MOBILE_TOOLTIP_MS = 3000;
 
     function handleMobileCategoryTap(categoryId: string) {
         // בטל תזמון קודם אם המשתמש לחץ שוב לפני שנגמרה הספירה
@@ -1179,26 +1179,26 @@
                                     role="status"
                                     aria-live="polite"
                                 >
-                                    <div class="flex flex-col items-center gap-3 text-center max-w-[85%]">
+                                    <div class="flex flex-col items-center gap-4 text-center max-w-[90%]">
                                         {#if tooltipCat.icon?.startsWith('/')}
-                                            <img src={tooltipCat.icon} class="w-14 h-14" alt={tooltipCat.label} />
+                                            <img src={tooltipCat.icon} class="w-20 h-20" alt={tooltipCat.label} />
                                         {:else}
-                                            <span class="text-5xl leading-none">{tooltipCat.icon}</span>
+                                            <span class="text-7xl leading-none">{tooltipCat.icon}</span>
                                         {/if}
-                                        <h4 class="text-yellow-300 text-xl font-extrabold leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+                                        <h4 class="text-yellow-300 text-3xl font-extrabold leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
                                             {tooltipCat.label}
                                         </h4>
-                                        <p class="text-slate-100 text-sm leading-relaxed">
+                                        <p class="text-slate-100 text-lg leading-relaxed font-medium">
                                             {categoryTooltips[mobileTooltipFor] ?? ''}
                                         </p>
                                         <!-- פס התקדמות שמסמן שתכף הסינון נכנס לתוקף -->
-                                        <div class="w-40 h-1 mt-1 rounded-full bg-white/15 overflow-hidden">
+                                        <div class="w-48 h-1.5 mt-2 rounded-full bg-white/15 overflow-hidden">
                                             <div
                                                 class="h-full bg-gradient-to-l from-yellow-300 to-orange-400"
                                                 style="animation: mobileTooltipProgress {MOBILE_TOOLTIP_MS}ms linear forwards;"
                                             ></div>
                                         </div>
-                                        <span class="text-xs text-slate-400 mt-1">טוען נתונים...</span>
+                                        <span class="text-sm text-slate-400 mt-1">טוען נתונים...</span>
                                     </div>
                                 </div>
                             {/if}
