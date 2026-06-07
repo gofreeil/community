@@ -36,6 +36,7 @@
 
     let showNeighborhoodsMenu = $state(false);
     let searchQuery = $state('');
+    let farmBannerClicked = $state(false);
     // איזו עיר מציגה כעת רמז "לחץ על השכונה" (אחרי שהמשתמש לחץ על שם העיר עצמו)
     let hintCity = $state<string | null>(null);
     let hintTimer: ReturnType<typeof setTimeout> | null = null;
@@ -807,9 +808,11 @@
         </div>
 
         <!-- Direct Agriculture Banner -->
-        <a
-            href="/farm-direct"
-            class="flex group relative overflow-hidden rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-green-500/30 transition-all duration-300 hover:-translate-y-1 mt-3 md:mt-6 mx-2 md:mx-0 mb-2 md:mb-0 cursor-pointer min-h-[90px] md:min-h-[110px] items-stretch"
+        <button
+            type="button"
+            onclick={() => farmBannerClicked = true}
+            class="flex group relative overflow-hidden rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-green-500/30 transition-all duration-500 hover:-translate-y-1 mt-3 md:mt-6 mx-2 md:mx-0 mb-2 md:mb-0 cursor-pointer min-h-[90px] md:min-h-[110px] items-stretch w-full text-right"
+            class:farm-banner-disabled={farmBannerClicked}
         >
             <!-- Background gradient -->
             <div class="absolute inset-0 bg-gradient-to-l from-green-950 via-emerald-900 to-emerald-800"></div>
@@ -822,16 +825,23 @@
 
             <!-- Content (right side in RTL, floats over image) -->
             <div class="relative z-20 ml-auto px-4 md:px-8 py-3 md:py-4 flex flex-col justify-center">
-                <div class="mb-1 md:mb-2">
+                <div class="mb-1 md:mb-2 flex items-center gap-2">
                     <h3 class="text-lg md:text-3xl font-black text-white group-hover:text-yellow-200 transition-colors drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]">
                         חקלאות ישירה
                     </h3>
+                    <span class="text-lg md:text-2xl drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]" aria-label="בשלבי בניה">🔒</span>
                 </div>
                 <p class="text-[11px] md:text-base text-green-100 leading-tight md:leading-relaxed drop-shadow-[0_1px_3px_rgba(0,0,0,0.5)] whitespace-nowrap">
                     חיבור ישיר בין חקלאים לצרכנים ללא פערי תיווך
                 </p>
+                <p
+                    class="mt-1 md:mt-2 text-[11px] md:text-sm font-bold text-yellow-200 leading-tight drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)] transition-all duration-300"
+                    class:farm-construction-pulse={farmBannerClicked}
+                >
+                    🔒 בשלבי בניה והתארגנות
+                </p>
             </div>
-        </a>
+        </button>
     </section>
 </div>
 
@@ -903,6 +913,23 @@
     @keyframes nbPulse {
         0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
         50%      { box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.35); }
+    }
+    /* מצב "בשלבי בניה" - הופך את הבאנר לשחור-לבן בלחיצה */
+    .farm-banner-disabled {
+        filter: grayscale(100%);
+        cursor: default;
+    }
+    .farm-banner-disabled:hover {
+        transform: none !important;
+    }
+    @keyframes farmConstructionPulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50%      { transform: scale(1.08); opacity: 0.85; }
+    }
+    .farm-construction-pulse {
+        animation: farmConstructionPulse 1.2s ease-in-out infinite;
+        color: #fde047 !important;
+        font-size: 1.05em;
     }
     /* באנר חקלאות ישירה - אלכסון 135° ימין-עליון → שמאל-תחתון, גם במובייל וגם בדסקטופ */
     .farm-image-fade {
