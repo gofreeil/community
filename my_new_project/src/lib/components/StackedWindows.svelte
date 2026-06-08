@@ -15,6 +15,77 @@
     let noAnim = $state(true);
     let stackEl: HTMLElement | undefined = $state();
 
+    // Swipe state
+    let isDragging = $state(false);
+    let dragX = $state(0);
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let pointerId: number | null = null;
+    let dragAxis: 'none' | 'horizontal' | 'vertical' = 'none';
+    const SWIPE_THRESHOLD = 55;
+    const AXIS_THRESHOLD = 6;
+
+    function onPointerDown(e: PointerEvent) {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        pointerId = e.pointerId;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        dragX = 0;
+        dragAxis = 'none';
+        isDragging = true;
+        if (noAnim) noAnim = false;
+    }
+
+    function onPointerMove(e: PointerEvent) {
+        if (!isDragging || e.pointerId !== pointerId) return;
+        const dx = e.clientX - dragStartX;
+        const dy = e.clientY - dragStartY;
+
+        if (dragAxis === 'none') {
+            if (Math.abs(dx) < AXIS_THRESHOLD && Math.abs(dy) < AXIS_THRESHOLD) return;
+            if (Math.abs(dx) > Math.abs(dy)) {
+                dragAxis = 'horizontal';
+                try { (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId); } catch {}
+            } else {
+                // Vertical intent - bail out so the page can scroll
+                isDragging = false;
+                pointerId = null;
+                dragX = 0;
+                return;
+            }
+        }
+
+        if (dragAxis === 'horizontal') {
+            const max = 220;
+            const sign = Math.sign(dx);
+            const abs = Math.min(Math.abs(dx), max);
+            dragX = sign * abs;
+        }
+    }
+
+    function endDrag() {
+        const dx = dragX;
+        const wasHorizontal = dragAxis === 'horizontal';
+        isDragging = false;
+        pointerId = null;
+        dragAxis = 'none';
+        dragX = 0;
+
+        if (wasHorizontal && Math.abs(dx) > SWIPE_THRESHOLD) {
+            bringFront(active === 'vote' ? 'chat' : 'vote');
+        }
+    }
+
+    function onPointerUp(e: PointerEvent) {
+        if (!isDragging || e.pointerId !== pointerId) return;
+        endDrag();
+    }
+
+    function onPointerCancel(e: PointerEvent) {
+        if (!isDragging || e.pointerId !== pointerId) return;
+        endDrag();
+    }
+
     onMount(() => {
         let target: 'vote' | 'chat' = 'vote';
         try {
@@ -69,7 +140,15 @@
     </div>
 
     <!-- 3D stack container -->
-    <div bind:this={stackEl} class="relative h-[520px] md:h-[670px]" style="transform-style: preserve-3d;">
+    <div
+        bind:this={stackEl}
+        class="stack-inner relative h-[520px] md:h-[670px] {isDragging ? 'dragging' : ''}"
+        style="transform-style: preserve-3d; transform: translate3d({dragX}px, 0, 0);"
+        onpointerdown={onPointerDown}
+        onpointermove={onPointerMove}
+        onpointerup={onPointerUp}
+        onpointercancel={onPointerCancel}
+    >
         <!-- Mobile peek tap target - outside 3D so it gets reliable hit-testing -->
         <button
             type="button"
@@ -134,6 +213,13 @@
         display: none;
         width: 0;
         height: 0;
+    }
+    .stack-inner {
+        touch-action: pan-y;
+        transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .stack-inner.dragging {
+        transition: none;
     }
     .card {
         backface-visibility: visible;
