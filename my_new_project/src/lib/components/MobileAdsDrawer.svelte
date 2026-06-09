@@ -98,8 +98,8 @@
 
 	$effect(() => {
 		if (typeof window !== 'undefined' && tabY === 0) {
-			// ברירת מחדל ייחודית של community: 2/3 מהגובה (לא 4/5 כמו השאר)
-			tabY = Math.round(window.innerHeight * 2 / 3);
+			// ברירת מחדל: החלק התחתון של המסך (4/5 מהגובה)
+			tabY = Math.round(window.innerHeight * 4 / 5);
 		}
 	});
 
@@ -688,12 +688,14 @@
 		padding: 0.15rem 0.45rem;
 	}
 
-	/* ---- לשונית — מחוברת לקצה הימני של ה-drawer (צבע מוצק ייחודי ל-community) ---- */
+	/* ---- לשונית — מחוברת לקצה הימני של ה-drawer בתוך drawer-system ---- */
 	.tab {
 		position: absolute;
 		left: 100%;
 		z-index: 2;
-		background: linear-gradient(180deg, #4f46e5, #7c3aed);
+		background: linear-gradient(180deg, rgba(79, 70, 229, 0.78), rgba(124, 58, 237, 0.78));
+		backdrop-filter: blur(3px);
+		-webkit-backdrop-filter: blur(3px);
 		border: none;
 		border-radius: 0 9px 9px 0;
 		padding: 0.6rem 0.3rem;
