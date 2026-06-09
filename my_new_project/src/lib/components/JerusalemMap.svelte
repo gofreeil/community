@@ -1065,7 +1065,7 @@
 
         <div class="flex flex-col gap-2">
             <!-- Buttons Container -->
-            <div class="relative" bind:this={categoryButtonsWrapperRef}>
+            <div class="relative category-buttons-wrapper" bind:this={categoryButtonsWrapperRef}>
                 <!-- Mobile: שורה אחת קומפקטית - סינון פעיל + כפתור פתיחת bottom sheet -->
                 <div class="md:hidden px-3 py-2 w-full flex items-center gap-2">
                     <!-- שבב המראה את הסינון הפעיל (מימין) -->
@@ -2129,57 +2129,71 @@
 
 <style>
     /* ===== טולטיפ לכפתורי קטגוריות (דסקטופ) ===== */
+    /* מיכל הכפתורים חייב להיות מעל פאנלי Leaflet (z=200..700)
+       וגם stacking-context סגור כדי שה-z-index של הטולטיפ יעבוד נכון */
+    .category-buttons-wrapper {
+        position: relative;
+        z-index: 1000;
+        isolation: isolate;
+    }
     .category-with-tooltip {
         position: relative;
         overflow: visible;
+    }
+    /* הרמת הכפתור המרוחף מעל אחיו (שורה הבאה ב-flex-wrap)
+       — אחרת transform: scale(1.05) יוצר stacking-context שלוכד את הטולטיפ */
+    .category-with-tooltip:hover,
+    .category-with-tooltip:focus-visible {
+        z-index: 20;
     }
     .category-tooltip {
         position: absolute;
         top: calc(100% + 10px);
         left: 50%;
         transform: translateX(-50%) translateY(-4px);
-        background: linear-gradient(135deg, rgba(15,23,42,0.97), rgba(30,41,59,0.97));
+        background: linear-gradient(135deg, #1e1b4b, #312e81);
         color: #f8fafc;
-        padding: 8px 12px;
-        border-radius: 10px;
+        padding: 10px 14px;
+        border-radius: 12px;
         white-space: normal;
         width: max-content;
         max-width: 260px;
-        min-width: 160px;
+        min-width: 180px;
         text-align: center;
         opacity: 0;
         pointer-events: none;
         transition: opacity 0.18s ease, transform 0.18s ease;
-        z-index: 60;
-        border: 1px solid rgba(168,85,247,0.45);
-        box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        z-index: 9999;
+        border: 1.5px solid #a855f7;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.75), 0 0 0 1px rgba(168,85,247,0.25);
         font-weight: 400;
-        line-height: 1.35;
+        line-height: 1.4;
         direction: rtl;
     }
     .category-tooltip::before {
         content: '';
         position: absolute;
-        top: -6px;
+        top: -7px;
         left: 50%;
         transform: translateX(-50%) rotate(45deg);
-        width: 12px;
-        height: 12px;
-        background: linear-gradient(135deg, rgba(15,23,42,0.97), rgba(30,41,59,0.97));
-        border-top: 1px solid rgba(168,85,247,0.45);
-        border-left: 1px solid rgba(168,85,247,0.45);
+        width: 13px;
+        height: 13px;
+        background: #1e1b4b;
+        border-top: 1.5px solid #a855f7;
+        border-left: 1.5px solid #a855f7;
     }
     .category-tooltip-title {
         display: block;
-        font-size: 0.78rem;
+        font-size: 0.85rem;
         font-weight: 700;
         color: #fde047;
-        margin-bottom: 2px;
+        margin-bottom: 3px;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.5);
     }
     .category-tooltip-desc {
         display: block;
-        font-size: 0.72rem;
-        color: #e2e8f0;
+        font-size: 0.78rem;
+        color: #f1f5f9;
     }
     /* Tailwind v4 group-hover שבור — חייבים hover מפורש על האב */
     .category-with-tooltip:hover .category-tooltip,
