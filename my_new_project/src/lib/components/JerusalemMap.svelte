@@ -1126,7 +1126,7 @@
                             aria-label="גרור למטה כדי לסגור"
                         >
                             <div class="w-16 h-1.5 rounded-full bg-white/40 mb-2"></div>
-                            <div class="w-full px-4 flex items-center justify-end">
+                            <div class="w-full px-4 flex items-center justify-center">
                                 <h3 class="text-white font-bold text-lg">סנן את היתרונות הדרושים לך</h3>
                             </div>
                         </div>
