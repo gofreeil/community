@@ -417,7 +417,7 @@ export interface DbEvent {
     color: string;
     neighborhood: string;
     city: string;
-    created_by_id: string;
+    creator_id: string;
     submitted_by_id: string;
     description: string;
     status: EventStatus;
@@ -435,7 +435,7 @@ export interface CreateEventData {
     color?: string;
     neighborhood: string;
     city?: string;
-    created_by_id: string;
+    creator_id: string;
     submitted_by_id?: string;
     description?: string;
     status?: EventStatus;
@@ -454,7 +454,7 @@ interface StrapiEvent {
     color: string | null;
     neighborhood: string | null;
     city: string | null;
-    created_by_id: string | null;
+    creator_id: string | null;
     submitted_by_id: string | null;
     description: string | null;
     status: EventStatus | null;
@@ -474,7 +474,7 @@ function mapStrapiEvent(e: StrapiEvent): DbEvent {
         color:            e.color            ?? 'blue',
         neighborhood:     e.neighborhood     ?? '',
         city:             e.city             ?? '',
-        created_by_id:    e.created_by_id    ?? '',
+        creator_id:    e.creator_id    ?? '',
         submitted_by_id:  e.submitted_by_id  ?? '',
         description:      e.description      ?? '',
         status:           e.status           ?? 'pending',
@@ -528,8 +528,8 @@ export async function createEvent(data: CreateEventData): Promise<DbEvent> {
             color:             data.color             ?? 'blue',
             neighborhood:      data.neighborhood,
             city:              data.city              ?? '',
-            created_by_id:     data.created_by_id,
-            submitted_by_id:   data.submitted_by_id  ?? data.created_by_id,
+            creator_id:     data.creator_id,
+            submitted_by_id:   data.submitted_by_id  ?? data.creator_id,
             description:       data.description       ?? '',
             status:            data.status            ?? 'pending',
             price:             data.price             ?? 0,

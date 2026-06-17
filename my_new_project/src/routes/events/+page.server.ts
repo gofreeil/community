@@ -61,7 +61,7 @@ export const actions: Actions = {
             title, date, time, location, description, icon,
             neighborhood:    user.neighborhood,
             city:            user.city,
-            created_by_id:   session.user.id,
+            creator_id:   session.user.id,
             submitted_by_id: session.user.id,
             status:          'pending',
             price:           0,
@@ -107,7 +107,7 @@ export const actions: Actions = {
         await createEvent({
             title, date, time, location, icon, color, description,
             neighborhood, city: user.city,
-            created_by_id: session.user.id,
+            creator_id: session.user.id,
             status:        'approved',
             price, price_description,
         });
