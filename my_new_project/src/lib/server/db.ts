@@ -727,6 +727,10 @@ export async function upsertUser(data: UpsertUserData, _jwt?: string): Promise<v
     if (data.avatar_url && !user.avatar_url?.startsWith('data:')) {
         updates.avatar_url = data.avatar_url;
     }
+    // שם תצוגה מ-OAuth - רק אם המשתמש עדיין לא קבע nickname משלו
+    if (data.name && !user.nickname) {
+        updates.nickname = data.name;
+    }
 
     if (Object.keys(updates).length > 0) {
         await updateStrapiUpUser(user.id, updates);
