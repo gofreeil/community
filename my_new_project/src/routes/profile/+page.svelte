@@ -1781,52 +1781,6 @@
 
 		{#if showMyInfo}
 			<div class="flex flex-col gap-4">
-				<!-- ===== סאב-מקטע: ניהול האתר (סופר־אדמין בלבד) ===== -->
-				{#if isSuperAdmin}
-					<div class="bg-gradient-to-br from-amber-500/10 to-emerald-500/10 rounded-2xl border border-amber-500/30 p-3 md:p-4">
-						<div class="flex items-center justify-between gap-2 mb-3 flex-wrap">
-							<h3 class="text-white font-bold text-sm flex items-center gap-2">
-								<span class="text-amber-400 text-lg">👑</span>
-								ניהול האתר
-								<span class="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full font-bold">סופר־אדמין</span>
-							</h3>
-						</div>
-						<div class="flex flex-wrap gap-2">
-							<a
-								href="/admin/ads-review"
-								class="relative flex-1 min-w-[160px] text-xs md:text-sm font-bold text-emerald-300 hover:text-emerald-200 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-emerald-500/10 border border-emerald-500/30 hover:border-emerald-400/50 flex items-center justify-center gap-1.5"
-								title="אישור פרסומות, תזמון, מפרסמים, תזכורות"
-							>
-								📢 ניהול פרסומות
-								{#if (data.pendingAdsCount ?? 0) > 0}
-									<span class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-amber-500 text-black text-[11px] font-black shadow-lg animate-pulse">
-										{data.pendingAdsCount}
-									</span>
-								{/if}
-							</a>
-							<a
-								href="/admin?tab=users#coordinators"
-								class="relative flex-1 min-w-[160px] text-xs md:text-sm font-bold text-amber-300 hover:text-amber-200 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-amber-500/10 border border-amber-500/30 hover:border-amber-400/50 flex items-center justify-center gap-1.5"
-								title="ניהול רכזי שכונות שמאשרים תוכן"
-							>
-								🏘️ ניהול רכזים
-								{#if (data.coordinatorsCount ?? 0) > 0}
-									<span class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-amber-500/30 text-amber-100 border border-amber-400/40 text-[11px] font-black">
-										{data.coordinatorsCount}
-									</span>
-								{/if}
-							</a>
-							<a
-								href="/admin"
-								class="flex-1 min-w-[160px] text-xs md:text-sm font-bold text-amber-400 hover:text-amber-300 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-amber-500/10 border border-amber-500/30 hover:border-amber-400/50 flex items-center justify-center gap-1.5"
-								title="לוח ניהול ראשי"
-							>
-								👑 לוח ניהול ראשי
-							</a>
-						</div>
-					</div>
-				{/if}
-
 				<!-- ===== סאב-מקטע: פרסומיי ===== -->
 				<div class="bg-[#0a1224]/60 rounded-2xl border border-white/10 p-3 md:p-4">
 					<div class="flex items-center justify-between gap-2 mb-3 flex-wrap">
