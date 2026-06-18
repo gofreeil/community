@@ -52,6 +52,12 @@
         return day === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear();
     }
 
+    function isPast(day: number) {
+        const d = new Date(currentYear, currentMonth, day);
+        const t = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        return d < t;
+    }
+
     function prevMonth() {
         if (currentMonth === 0) { currentMonth = 11; currentYear--; }
         else currentMonth--;
@@ -222,15 +228,17 @@
                                     <div class="aspect-square" role="gridcell" aria-label=" "></div>
                                 {:else}
                                     {@const dayEvents = getEventsForDay(day)}
+                                    {@const past = isPast(day)}
                                     <button
                                         role="gridcell"
-                                        aria-label="{day} {hebrewMonths[currentMonth]}{dayEvents.length > 0 ? ' – ' + dayEvents.length + ' אירועים' : ''}{isToday(day) ? ' (היום)' : ''}"
+                                        disabled={past}
+                                        aria-label="{day} {hebrewMonths[currentMonth]}{dayEvents.length > 0 ? ' – ' + dayEvents.length + ' אירועים' : ''}{isToday(day) ? ' (היום)' : ''}{past ? ' (עבר)' : ''}"
                                         class="aspect-square rounded-xl border transition-all flex flex-col items-center justify-center gap-0.5 relative
-                                            {isToday(day) ? 'bg-green-600/30 border-green-500/50 ring-2 ring-green-400/50' : 'border-white/5 hover:border-white/20 hover:bg-white/5'}
-                                            {dayEvents.length > 0 ? 'cursor-pointer' : 'cursor-default'}"
-                                        onclick={() => { if (dayEvents.length > 0) selectedEvent = dayEvents[0]; }}
+                                            {isToday(day) ? 'bg-green-600/30 border-green-500/50 ring-2 ring-green-400/50' : past ? 'border-white/5 opacity-40' : 'border-white/5 hover:border-white/20 hover:bg-white/5'}
+                                            {past ? 'cursor-not-allowed' : dayEvents.length > 0 ? 'cursor-pointer' : 'cursor-default'}"
+                                        onclick={() => { if (!past && dayEvents.length > 0) selectedEvent = dayEvents[0]; }}
                                     >
-                                        <span class="text-sm md:text-base font-bold {isToday(day) ? 'text-green-300' : 'text-white/80'}" aria-hidden="true">{day}</span>
+                                        <span class="text-sm md:text-base font-bold {isToday(day) ? 'text-green-300' : past ? 'text-white/40' : 'text-white/80'}" aria-hidden="true">{day}</span>
                                         {#if dayEvents.length > 0}
                                             <div class="flex gap-0.5" aria-hidden="true">
                                                 {#each dayEvents as _ev}
