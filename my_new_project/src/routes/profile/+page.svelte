@@ -1315,6 +1315,13 @@
 					{/if}
 				</a>
 				<a
+					href="/coordinator"
+					class="flex-1 min-w-[160px] text-xs md:text-sm font-bold text-emerald-300 hover:text-emerald-200 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-emerald-500/10 border border-emerald-500/30 hover:border-emerald-400/50 flex items-center justify-center gap-1.5"
+					title="אישור אירועים שכונתיים"
+				>
+					🏘️ אזור רכזים
+				</a>
+				<a
 					href="/admin"
 					class="flex-1 min-w-[160px] text-xs md:text-sm font-bold text-amber-400 hover:text-amber-300 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-amber-500/10 border border-amber-500/30 hover:border-amber-400/50 flex items-center justify-center gap-1.5"
 					title="לוח ניהול ראשי"
@@ -1322,6 +1329,22 @@
 					👑 לוח ניהול ראשי
 				</a>
 			</div>
+		</div>
+	{:else if ((data.user as any)?.coordinator_of?.length ?? 0) > 0}
+		<div class="bg-gradient-to-br from-emerald-500/10 to-blue-500/10 rounded-2xl border border-emerald-500/30 p-3 md:p-4 mb-2 {mobileTab !== 'main' ? 'hidden md:block' : ''}">
+			<div class="flex items-center justify-between gap-2 mb-3 flex-wrap">
+				<h3 class="text-white font-bold text-sm flex items-center gap-2">
+					<span class="text-emerald-400 text-lg">🏘️</span>
+					אזור רכזים
+				</h3>
+			</div>
+			<a
+				href="/coordinator"
+				class="block text-center text-xs md:text-sm font-bold text-emerald-300 hover:text-emerald-200 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-emerald-500/10 border border-emerald-500/30 hover:border-emerald-400/50"
+				title="אישור אירועים שכונתיים"
+			>
+				כניסה לאישור אירועים
+			</a>
 		</div>
 	{/if}
 
