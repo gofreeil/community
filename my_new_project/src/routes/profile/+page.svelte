@@ -35,9 +35,9 @@
 	let isEditing = $state(_photoDone);
 	let showLevels = $state(false);
 	let showMessages = $state(false);
-	let showMyInfo = $state(true);
+	let showMyInfo = $state(false);
 	let showFeedback = $state(false);
-	let showLikes = $state(true);
+	let showLikes = $state(false);
 	let likedItems = $state<LikedItem[]>([]);
 
 	function refreshLikes() {
@@ -308,6 +308,19 @@
 		if (!_msgsAutoOpened && unreadCount > 0) {
 			showMessages = true;
 			_msgsAutoOpened = true;
+		}
+	});
+
+	// פתיחה אוטומטית של פאנל "פרטיי" אם הפרופיל לא מושלם (סטטוס לא-פטיר)
+	let _myInfoAutoOpened = false;
+	$effect(() => {
+		if (_myInfoAutoOpened) return;
+		const u = data.user;
+		if (!u) return;
+		const isIncomplete = !u.name?.trim() || !u.phone?.trim() || !u.city?.trim() || !u.neighborhood?.trim();
+		if (isIncomplete) {
+			showMyInfo = true;
+			_myInfoAutoOpened = true;
 		}
 	});
 	let secTipShow = $state(false);
@@ -1765,18 +1778,17 @@
 				הנכסים שלי
 			</h2>
 			<svg
-					class="w-4 h-4 text-yellow-400 transition-transform duration-300 flex-shrink-0 {showMyInfo
-						? 'rotate-180'
-						: ''}"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2.5"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					><polyline points="6 9 12 15 18 9" /></svg
-				>
-			</div>
+				class="w-4 h-4 text-yellow-400 transition-transform duration-300 flex-shrink-0 {showMyInfo
+					? 'rotate-180'
+					: ''}"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2.5"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				><polyline points="6 9 12 15 18 9" /></svg
+			>
 		</div>
 
 		{#if showMyInfo}
@@ -3376,6 +3388,7 @@
 			{/if}
 		{/if}
 	</div>
+</div>
 
 {#if showRingTooltip}
 	<div
