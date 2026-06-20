@@ -894,10 +894,15 @@
 			</a>
 			<a
 				href="/register"
-				class="px-5 py-2.5 rounded-xl border border-white/15 hover:border-purple-500/50
+				class="group relative px-5 py-2.5 rounded-xl border border-white/15 hover:border-purple-500/50
 			          text-gray-300 hover:text-white text-sm font-bold transition-all hover:bg-white/5"
 			>
-				הרשמה חינם
+				הירשם
+				<span class="absolute top-full right-1/2 translate-x-1/2 mt-2 hidden group-hover:block
+				             bg-gray-900 text-white text-xs font-bold rounded-lg px-3 py-1.5
+				             whitespace-nowrap border border-white/10 shadow-xl pointer-events-none z-50">
+					צור חשבון חדש
+				</span>
 			</a>
 			<button
 				type="button"
