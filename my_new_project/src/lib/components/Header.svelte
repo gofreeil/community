@@ -301,19 +301,15 @@
                         {:else}
                             <a
                                 href="/profile"
-                                class="relative group flex-shrink-0"
+                                class="relative group flex-shrink-0 flex items-center gap-1 px-2 h-9 rounded-full
+                                       border border-white/30 shadow-md hover:scale-105 transition-transform"
+                                style="background:linear-gradient(135deg,#2563eb,#7c3aed); box-shadow:0 2px 10px rgba(124,58,237,0.45);"
                                 aria-label="האזור האישי"
                             >
-                                <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-9 w-9 rounded-full border-2 border-white/20 group-hover:border-purple-400 transition-all">
-                                    <circle cx="20" cy="20" r="20" fill="#374151"/>
-                                    <circle cx="20" cy="16" r="7" fill="#6b7280"/>
-                                    <ellipse cx="20" cy="34" rx="12" ry="8" fill="#6b7280"/>
+                                <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" aria-hidden="true">
+                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                                 </svg>
-                                <span class="absolute bottom-full right-1/2 translate-x-1/2 mb-2 hidden group-hover:block
-                                             bg-gray-900 text-white text-[10px] font-bold rounded-lg px-2 py-1
-                                             whitespace-nowrap border border-white/10 shadow-xl pointer-events-none">
-                                    האזור האישי
-                                </span>
+                                <span class="text-white text-[11px] font-extrabold whitespace-nowrap">כניסה</span>
                             </a>
                         {/if}
                     </div>
@@ -497,19 +493,15 @@
                     {:else}
                         <a
                             href="/profile"
-                            class="relative group flex-shrink-0"
+                            class="relative group flex-shrink-0 flex items-center gap-2 px-4 h-12 rounded-full
+                                   border border-white/30 shadow-md hover:scale-105 transition-transform"
+                            style="background:linear-gradient(135deg,#2563eb,#7c3aed); box-shadow:0 4px 15px rgba(124,58,237,0.4);"
                             aria-label="האזור האישי"
                         >
-                            <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-14 w-14 rounded-full border-2 border-white/20 group-hover:border-purple-400 transition-all">
-                                <circle cx="20" cy="20" r="20" fill="#374151"/>
-                                <circle cx="20" cy="16" r="7" fill="#6b7280"/>
-                                <ellipse cx="20" cy="34" rx="12" ry="8" fill="#6b7280"/>
+                            <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" aria-hidden="true">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                             </svg>
-                            <span class="absolute top-full right-1/2 translate-x-1/2 mt-2 hidden group-hover:block
-                                         bg-gray-900 text-white text-sm font-bold rounded-lg px-3 py-1.5
-                                         whitespace-nowrap border border-white/10 shadow-xl pointer-events-none z-50">
-                                האזור האישי
-                            </span>
+                            <span class="text-white text-sm font-extrabold whitespace-nowrap">כניסה לאזור האישי</span>
                         </a>
                     {/if}
                 </div>
