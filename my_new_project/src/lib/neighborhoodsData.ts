@@ -1216,7 +1216,7 @@ export const citiesData: CityEntry[] = [
     { city: "תל ציון", neighborhoods: DEFAULT_NB },
     { city: "תלם", neighborhoods: DEFAULT_NB },
     { city: "תקוע", neighborhoods: DEFAULT_NB },
-];
+].sort((a, b) => a.city.localeCompare(b.city, 'he'));
 
 // Convenience: plain object for components that need Record<string, string[]>
 // אם עיר מופיעה פעמיים - מאחדים שכונות ומסירים כפילויות
