@@ -67,6 +67,8 @@ export interface DbUser {
     created_at: string;
     security_question: string;
     security_answer: string;
+    security_question_2: string;
+    security_answer_2: string;
     status: string;
     coordinator_of: string[];
 }
@@ -94,6 +96,8 @@ export interface UpdateProfileData {
     birth_date?: string;
     security_question?: string;
     security_answer?: string;
+    security_question_2?: string;
+    security_answer_2?: string;
     status?: string;
     coordinator_of?: string[];
 }
@@ -152,6 +156,8 @@ interface StrapiUpUser {
     app_role: string | null;
     security_question: string | null;
     security_answer: string | null;
+    security_question_2: string | null;
+    security_answer_2: string | null;
     status: string | null;
     coordinator_of: string[] | null;
     createdAt: string;
@@ -205,9 +211,11 @@ function mapUpUser(u: StrapiUpUser): DbUser {
         role:              (u.app_role as DbUser['role']) ?? 'user',
         banned:            u.blocked           ?? false,
         created_at:        u.createdAt         ?? '',
-        security_question: u.security_question ?? '',
-        security_answer:   u.security_answer   ?? '',
-        status:            u.status            ?? 'active',
+        security_question:   u.security_question   ?? '',
+        security_answer:     u.security_answer     ?? '',
+        security_question_2: u.security_question_2 ?? '',
+        security_answer_2:   u.security_answer_2   ?? '',
+        status:              u.status              ?? 'active',
         coordinator_of: Array.isArray(u.coordinator_of) ? u.coordinator_of : [],
     };
 }
@@ -765,9 +773,11 @@ export async function updateUserProfile(id: string, data: UpdateProfileData, _jw
     if (data.gender        !== undefined) updates.gender        = data.gender;
     if (data.avatar_url        !== undefined) updates.avatar_url        = data.avatar_url;
     if (data.birth_date        !== undefined) updates.birth_date        = data.birth_date;
-    if (data.security_question !== undefined) updates.security_question = data.security_question;
-    if (data.security_answer   !== undefined) updates.security_answer   = data.security_answer;
-    if (data.status            !== undefined) updates.status            = data.status;
+    if (data.security_question   !== undefined) updates.security_question   = data.security_question;
+    if (data.security_answer     !== undefined) updates.security_answer     = data.security_answer;
+    if (data.security_question_2 !== undefined) updates.security_question_2 = data.security_question_2;
+    if (data.security_answer_2   !== undefined) updates.security_answer_2   = data.security_answer_2;
+    if (data.status              !== undefined) updates.status              = data.status;
     if (data.coordinator_of    !== undefined) updates.coordinator_of    = data.coordinator_of;
 
     if (Object.keys(updates).length === 0) return mapUpUser(user);

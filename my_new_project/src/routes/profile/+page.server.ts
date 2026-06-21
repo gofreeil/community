@@ -120,7 +120,7 @@ export const load: PageServerLoad = async (event) => {
             role: ((session.user as { role?: string })?.role ?? 'user') as 'user' | 'neighborhood_admin' | 'super_admin',
             banned: false,
             coordinator_of: ((session.user as { coordinator_of?: string[] })?.coordinator_of) ?? [],
-            security_question: '', security_answer: '', status: 'active',
+            security_question: '', security_answer: '', security_question_2: '', security_answer_2: '', status: 'active',
           };
 
     let messages: Awaited<ReturnType<typeof getMessagesByUserId>> = [];
@@ -187,8 +187,10 @@ export const actions: Actions = {
             : '';
         const gender        = formData.get('gender')?.toString()               ?? '';
         const notifications      = formData.get('notifications') === 'true' ? 1 : 0;
-        const security_question  = formData.get('security_question')?.toString().trim() ?? '';
-        const security_answer    = formData.get('security_answer')?.toString().trim()   ?? '';
+        const security_question    = formData.get('security_question')?.toString().trim()    ?? '';
+        const security_answer      = formData.get('security_answer')?.toString().trim()      ?? '';
+        const security_question_2  = formData.get('security_question_2')?.toString().trim()  ?? '';
+        const security_answer_2    = formData.get('security_answer_2')?.toString().trim()    ?? '';
         const status             = formData.get('status')?.toString().trim()             ?? 'active';
         const avatarBase64     = formData.get('avatar_base64')?.toString()     ?? '';
         const customLocation   = formData.get('custom_location')?.toString().trim() ?? '';
@@ -212,6 +214,7 @@ export const actions: Actions = {
                 notifications,
                 ...(avatarBase64 ? { avatar_url: avatarBase64 } : {}),
                 ...(security_question ? { security_question, security_answer } : {}),
+                ...(security_question_2 ? { security_question_2, security_answer_2 } : {}),
                 status,
             }, strapiJwt);
 

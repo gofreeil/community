@@ -140,6 +140,65 @@
 	function isRecVisible(id: string) {
 		return !dismissedRecs.has(id) && !snoozedRecs.has(id);
 	}
+
+	// ===== business_type (localStorage) =====
+	const BIZ_TYPE_KEY = "business_type_v1";
+	let businessType = $state(
+		typeof localStorage !== "undefined"
+			? (localStorage.getItem(BIZ_TYPE_KEY) ?? "")
+			: "",
+	);
+	$effect(() => {
+		try { localStorage.setItem(BIZ_TYPE_KEY, businessType); } catch {}
+	});
+
+	type RecColor = "amber" | "pink" | "green" | "blue" | "purple" | "red" | "orange" | "cyan";
+	interface DailyRec {
+		id: string;
+		emoji: string;
+		title: string;
+		sub: string;
+		href: string;
+		external: boolean;
+		color: RecColor;
+		eligible: () => boolean;
+	}
+	function recColorClasses(c: RecColor): string {
+		return ({
+			amber:  "bg-amber-500/10 border-amber-500/30",
+			pink:   "bg-pink-500/10 border-pink-500/30",
+			green:  "bg-green-500/10 border-green-500/30",
+			blue:   "bg-blue-500/10 border-blue-500/30",
+			purple: "bg-purple-500/10 border-purple-500/30",
+			red:    "bg-red-500/10 border-red-500/30",
+			orange: "bg-orange-500/10 border-orange-500/30",
+			cyan:   "bg-cyan-500/10 border-cyan-500/30",
+		})[c];
+	}
+	function recButtonClasses(c: RecColor): string {
+		return ({
+			amber:  "bg-amber-500/25 hover:bg-amber-500/40",
+			pink:   "bg-pink-500/25 hover:bg-pink-500/40",
+			green:  "bg-green-500/25 hover:bg-green-500/40",
+			blue:   "bg-blue-500/25 hover:bg-blue-500/40",
+			purple: "bg-purple-500/25 hover:bg-purple-500/40",
+			red:    "bg-red-500/25 hover:bg-red-500/40",
+			orange: "bg-orange-500/25 hover:bg-orange-500/40",
+			cyan:   "bg-cyan-500/25 hover:bg-cyan-500/40",
+		})[c];
+	}
+	function recSubColorClass(c: RecColor): string {
+		return ({
+			amber:  "text-amber-300/80",
+			pink:   "text-pink-300/80",
+			green:  "text-green-300/80",
+			blue:   "text-blue-300/80",
+			purple: "text-purple-300/80",
+			red:    "text-red-300/80",
+			orange: "text-orange-300/80",
+			cyan:   "text-cyan-300/80",
+		})[c];
+	}
 	// === Ad-builder draft (resume from /about/advertise/builder) ===
 	type AdDraft = { title?: string; subtitle?: string; mainImage?: string; logo?: string; phone?: string; products?: unknown[]; address?: string };
 	let adDraft = $state<AdDraft | null>(null);
@@ -431,10 +490,17 @@
 	let security_question = $state(_ud?.security_question ?? "");
 	let security_answer = $state(_ud?.security_answer ?? "");
 	let securityAnswerConfirmed = $state(false);
+	let security_question_2 = $state((_ud as any)?.security_question_2 ?? "");
+	let security_answer_2 = $state((_ud as any)?.security_answer_2 ?? "");
+	let securityAnswer2Confirmed = $state(false);
 
 	function confirmSecurityAnswer() {
 		if (!security_question || !security_answer.trim()) return;
 		securityAnswerConfirmed = true;
+	}
+	function confirmSecurityAnswer2() {
+		if (!security_question_2 || !security_answer_2.trim()) return;
+		securityAnswer2Confirmed = true;
 	}
 	let status = $state((_ud as any)?.status ?? "active");
 
@@ -455,9 +521,11 @@
 		gender:            _ud?.gender ?? "",
 		birth_date:        _ud?.birth_date ?? "",
 		notifications:     _ud?.notifications !== 0,
-		security_question: _ud?.security_question ?? "",
-		security_answer:   _ud?.security_answer ?? "",
-		status:            (_ud as any)?.status ?? "active",
+		security_question:   _ud?.security_question ?? "",
+		security_answer:     _ud?.security_answer ?? "",
+		security_question_2: (_ud as any)?.security_question_2 ?? "",
+		security_answer_2:   (_ud as any)?.security_answer_2 ?? "",
+		status:              (_ud as any)?.status ?? "active",
 		avatar_url:        _ud?.avatar_url ?? null,
 	};
 	let suppressDirtyCheck = $state(false);
@@ -481,9 +549,11 @@
 			gender            !== initialSnapshot.gender            ||
 			composedBirth     !== initialSnapshot.birth_date        ||
 			notifications     !== initialSnapshot.notifications     ||
-			security_question !== initialSnapshot.security_question ||
-			security_answer   !== initialSnapshot.security_answer   ||
-			status            !== initialSnapshot.status            ||
+			security_question   !== initialSnapshot.security_question   ||
+			security_answer     !== initialSnapshot.security_answer     ||
+			security_question_2 !== initialSnapshot.security_question_2 ||
+			security_answer_2   !== initialSnapshot.security_answer_2   ||
+			status              !== initialSnapshot.status              ||
 			!!avatarBase64
 		)
 	);
@@ -507,6 +577,172 @@
 			"יש לך שינויים שלא נשמרו בפרופיל.\n\nלחץ 'ביטול' כדי לחזור ולשמור, או 'אישור' כדי לעזוב ולאבד את השינויים."
 		);
 		if (!ok) cancel();
+	});
+
+	// ===== מאגר 12 ההמלצות =====
+	let allRecs = $derived<DailyRec[]>([
+		{
+			id: "biz_discount",
+			emoji: "🎁",
+			title: "תן הנחה לקהילת יוצאים לחירות וצרף את העסק לאתר הרכישות הקבוצתיות",
+			sub: "חשיפה לאלפי לקוחות מהקהילה — והצטרפות למועדון ההנחות של יוצאים לחירות",
+			href: "https://purchasing-groups.vercel.app/",
+			external: true,
+			color: "amber",
+			eligible: () => businessType === "business_owner",
+		},
+		{
+			id: "service_index",
+			emoji: "🛠️",
+			title: "פרסם חינם את המקצוע שלך באינדקס בעלי המקצוע של הקהילה",
+			sub: "תושבי הקהילה מחפשים בעלי מקצוע אמינים — תופיע אצלם בחיפוש, ללא עלות",
+			href: "https://index-chi-sage.vercel.app/",
+			external: true,
+			color: "orange",
+			eligible: () => businessType === "service_provider",
+		},
+		{
+			id: "singles",
+			emoji: "💑",
+			title: "רשימת הפנויים והפנויות הארצית של הקהילה",
+			sub: gender === "female"
+				? "הכירי את הפנויים בארץ ומצאי את המוצא חן בעיניך"
+				: "הכר את הפנויות ברשימה הארצית ומצא את המוצאת חן בעיניך",
+			href: "/national/singles",
+			external: false,
+			color: "pink",
+			eligible: () => family_status === "single_m" || family_status === "single_f",
+		},
+		{
+			id: "coordinator",
+			emoji: "🏘️",
+			title: "היה רכז השכונה שלך — וקבל 30% מהרווחים שמייצרת השכונה",
+			sub: "הפעל את הקהילה בשכונתך, היה שותף ב-30% מההכנסות. כל הפרטים בעמוד אודותינו",
+			href: "/about/revenue#section-4",
+			external: false,
+			color: "amber",
+			eligible: () => true,
+		},
+		{
+			id: "shareholders",
+			emoji: "📈",
+			title: "היה בעל מניות בפלטפורמה — ותשתתף בחלק מרווחי כל השכונות",
+			sub: "השקעה בפלטפורמת קהילה הולכת ומתפתחת. כל הפרטים בעמוד אודותינו",
+			href: "/about/revenue#section-5",
+			external: false,
+			color: "blue",
+			eligible: () => true,
+		},
+		{
+			id: "ad_pius",
+			emoji: "🤝",
+			title: "בתי הפיוס — יש לך סכסוך?",
+			sub: "מתנדבים נותנים לך סיוע מלא בדין ובפיוס בכל סכסוך — חינם",
+			href: "https://chachmim.vercel.app/",
+			external: true,
+			color: "red",
+			eligible: () => true,
+		},
+		{
+			id: "ad_gemach",
+			emoji: "🎁",
+			title: 'כל הגמ"חים של ישראל במקום אחד',
+			sub: 'מצא בקלות כל גמ"ח שאתה צריך — תרופות, ציוד, ספרים, ועוד',
+			href: "https://national-gemach.vercel.app/",
+			external: true,
+			color: "pink",
+			eligible: () => true,
+		},
+		{
+			id: "ad_vaadim",
+			emoji: "🏛️",
+			title: "ועדי שכונות — מהפכת משילות העם",
+			sub: "הכר את המהפכה של משילות התושב על מוסדות השלטון והשתתף",
+			href: "https://neighborhoods-il.vercel.app/",
+			external: true,
+			color: "cyan",
+			eligible: () => true,
+		},
+		{
+			id: "ad_criticism",
+			emoji: "🔎",
+			title: "מבקר רשויות המדינה — מצה את זכותך",
+			sub: "מבקרים את הרשויות, מטפלים בליקויים, ממצים את זכות התושב",
+			href: "https://criticism.vercel.app/",
+			external: true,
+			color: "blue",
+			eligible: () => true,
+		},
+		{
+			id: "ad_rating",
+			emoji: "⭐",
+			title: "דירוג ציבורי — העם מדרג",
+			sub: "תן ציון לרשויות ולעובדי הציבור שאתה מכיר — שקיפות מבוססת קהילה",
+			href: "https://public-rating-il.vercel.app/",
+			external: true,
+			color: "amber",
+			eligible: () => true,
+		},
+		{
+			id: "ad_referendum",
+			emoji: "🗳️",
+			title: "משאלי העם — הבע דעתך",
+			sub: "הצבע על הסוגיות האקטואליות שעל סדר היום הציבורי",
+			href: "https://referendum-il.vercel.app/",
+			external: true,
+			color: "purple",
+			eligible: () => true,
+		},
+		{
+			id: "ad_shop",
+			emoji: "🛍️",
+			title: "חנות החירות — מוצרים נבחרים",
+			sub: "בריאות טבעית, חקלאות ביתית, טכנולוגיה ועוד — מוצרים נבחרים בקפידה",
+			href: "https://heirut-shop.vercel.app/",
+			external: true,
+			color: "green",
+			eligible: () => true,
+		},
+	]);
+
+	// ===== "אחת ביום עד שתסתיים הרשימה" =====
+	const DAILY_KEY = "daily_rec_v1";
+	type DailyState = { lastDate: string; shownIds: string[] };
+	function loadDaily(): DailyState {
+		if (typeof localStorage === "undefined") return { lastDate: "", shownIds: [] };
+		try {
+			const raw = localStorage.getItem(DAILY_KEY);
+			if (!raw) return { lastDate: "", shownIds: [] };
+			const p = JSON.parse(raw);
+			return {
+				lastDate: typeof p?.lastDate === "string" ? p.lastDate : "",
+				shownIds: Array.isArray(p?.shownIds) ? p.shownIds.filter((x: unknown) => typeof x === "string") : [],
+			};
+		} catch { return { lastDate: "", shownIds: [] }; }
+	}
+	function saveDaily(s: DailyState) {
+		try { localStorage.setItem(DAILY_KEY, JSON.stringify(s)); } catch {}
+	}
+	let dailyState = $state<DailyState>(loadDaily());
+
+	onMount(() => {
+		const today = new Date().toISOString().slice(0, 10);
+		if (dailyState.lastDate === today && dailyState.shownIds.length > 0) {
+			const lastId = dailyState.shownIds[dailyState.shownIds.length - 1];
+			if (allRecs.find(r => r.id === lastId && r.eligible() && isRecVisible(r.id))) return;
+		}
+		const next = allRecs.find(r => r.eligible() && isRecVisible(r.id) && !dailyState.shownIds.includes(r.id));
+		if (!next) return;
+		dailyState = { lastDate: today, shownIds: [...dailyState.shownIds, next.id] };
+		saveDaily(dailyState);
+	});
+
+	let todaysRec = $derived.by<DailyRec | null>(() => {
+		if (!dailyState.shownIds.length) return null;
+		const lastId = dailyState.shownIds[dailyState.shownIds.length - 1];
+		const r = allRecs.find(rec => rec.id === lastId);
+		if (!r || !r.eligible() || !isRecVisible(r.id)) return null;
+		return r;
 	});
 
 	// סטטוסים לפי מגדר
@@ -2674,9 +2910,11 @@
 							initialSnapshot.gender            = gender;
 							initialSnapshot.birth_date        = composedBirth;
 							initialSnapshot.notifications     = notifications;
-							initialSnapshot.security_question = security_question;
-							initialSnapshot.security_answer   = security_answer;
-							initialSnapshot.status            = status;
+							initialSnapshot.security_question   = security_question;
+							initialSnapshot.security_answer     = security_answer;
+							initialSnapshot.security_question_2 = security_question_2;
+							initialSnapshot.security_answer_2   = security_answer_2;
+							initialSnapshot.status              = status;
 							avatarBase64 = "";
 							// עדכן ערכי תצוגה בלוח המכוונים
 							savedCity         = city;
@@ -3353,8 +3591,72 @@
 												✅ תשובתך נקלטה במערכת
 											</p>
 											<p class="text-gray-300 text-[11px] mt-1 leading-relaxed">
-												💡 מומלץ להגדיר בעתיד שאלת ביטחון נוספת לאבטחה כפולה (בפיתוח)
+												💡 מומלץ להגדיר שאלת ביטחון נוספת לאבטחה כפולה
 											</p>
+										</div>
+
+										<!-- שאלת ביטחון שנייה (אבטחה כפולה) -->
+										<div class="mt-3">
+											<label
+												class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2"
+											>
+												🛡️ שאלת ביטחון שנייה <span
+													class="text-purple-400 text-xs font-normal normal-case"
+													>(אבטחה כפולה - אופציונלי)</span
+												>
+											</label>
+											<select
+												name="security_question_2"
+												bind:value={security_question_2}
+												class="w-full bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none mb-2"
+											>
+												<option value="">- בחר שאלה שנייה -</option>
+												{#each [
+													"שם הרחוב שגדלת בו",
+													"שם החיה הראשונה שלך",
+													"שם בית הספר היסודי שלך",
+													"עיר הולדתך",
+													"שם משפחה של אמא לפני הנישואים",
+												].filter((q) => q !== security_question) as q}
+													<option value={q}>{q}</option>
+												{/each}
+											</select>
+											{#if security_question_2}
+												<div class="flex gap-2">
+													<input
+														type="text"
+														name="security_answer_2"
+														bind:value={security_answer_2}
+														oninput={() => (securityAnswer2Confirmed = false)}
+														onkeydown={(e) => {
+															if (e.key === "Enter") {
+																e.preventDefault();
+																confirmSecurityAnswer2();
+															}
+														}}
+														placeholder="תשובה (לא תוצג בפומבי)"
+														class="flex-1 bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none placeholder-white/20"
+													/>
+													<button
+														type="button"
+														onclick={confirmSecurityAnswer2}
+														disabled={!security_answer_2.trim() || securityAnswer2Confirmed}
+														class="px-4 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600
+														       hover:from-purple-500 hover:to-blue-500 text-white text-sm font-bold
+														       shadow-md transition-all whitespace-nowrap
+														       disabled:opacity-40 disabled:cursor-not-allowed"
+													>
+														{securityAnswer2Confirmed ? "✓ נקלט" : "אישור"}
+													</button>
+												</div>
+												{#if securityAnswer2Confirmed}
+													<div class="mt-2 rounded-xl bg-green-500/10 border border-green-500/30 px-3 py-2">
+														<p class="text-green-400 text-xs font-bold">
+															✅ תשובה שנייה נקלטה - אבטחה כפולה מופעלת
+														</p>
+													</div>
+												{/if}
+											{/if}
 										</div>
 									{/if}
 								{/if}
@@ -3362,6 +3664,11 @@
 								<p class="text-white font-medium py-3 px-1">
 									{security_question || "-"}
 								</p>
+								{#if security_question_2}
+									<p class="text-white/80 font-medium py-1 px-1 text-sm">
+										+ {security_question_2}
+									</p>
+								{/if}
 							{/if}
 							<p class="text-gray-400 text-sm mt-1 px-1">
 								משמש לאימות זהות בעת שחזור סיסמה
