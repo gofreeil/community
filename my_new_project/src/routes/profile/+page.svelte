@@ -3292,7 +3292,7 @@
 							>
 								🛡️ שאלת ביטחון <span
 									class="text-purple-400 text-xs font-normal normal-case"
-									>(אופציונלי - לשחזור סיסמה)</span
+									>(מומלץ - לשחזור סיסמה)</span
 								>
 							</label>
 							{#if isEditing}
