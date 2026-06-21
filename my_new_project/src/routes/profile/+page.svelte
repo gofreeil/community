@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from "$app/forms";
+	import { beforeNavigate } from "$app/navigation";
 	import { signOut, signIn } from "@auth/sveltekit/client";
 	import {
 		subscribeToPush,
@@ -436,6 +437,73 @@
 		securityAnswerConfirmed = true;
 	}
 	let status = $state((_ud as any)?.status ?? "active");
+
+	// ===== אזהרת שינויים לא-שמורים =====
+	const initialSnapshot = {
+		name:              _ud?.name ?? "",
+		email:             _ud?.email ?? "",
+		nickname:          _ud?.nickname ?? "",
+		phone:             _ud?.phone ?? "",
+		city:              _ud?.city ?? "",
+		neighborhood:      _ud?.neighborhood ?? "",
+		business:          _ud?.business ?? "",
+		family_status:     _ud?.family_status ?? "",
+		gender:            _ud?.gender ?? "",
+		birth_date:        _ud?.birth_date ?? "",
+		notifications:     _ud?.notifications !== 0,
+		security_question: _ud?.security_question ?? "",
+		security_answer:   _ud?.security_answer ?? "",
+		status:            (_ud as any)?.status ?? "active",
+		avatar_url:        _ud?.avatar_url ?? null,
+	};
+	let suppressDirtyCheck = $state(false);
+
+	let composedBirth = $derived(
+		(birthYear || birthMonth || birthDay)
+			? `${birthYear}-${String(birthMonth).padStart(2, '0')}-${String(birthDay).padStart(2, '0')}`
+			: ""
+	);
+
+	let isDirty = $derived(
+		isEditing && !suppressDirtyCheck && (
+			name              !== initialSnapshot.name              ||
+			email             !== initialSnapshot.email             ||
+			nickname          !== initialSnapshot.nickname          ||
+			phone             !== initialSnapshot.phone             ||
+			city              !== initialSnapshot.city              ||
+			neighborhood      !== initialSnapshot.neighborhood      ||
+			business          !== initialSnapshot.business          ||
+			family_status     !== initialSnapshot.family_status     ||
+			gender            !== initialSnapshot.gender            ||
+			composedBirth     !== initialSnapshot.birth_date        ||
+			notifications     !== initialSnapshot.notifications     ||
+			security_question !== initialSnapshot.security_question ||
+			security_answer   !== initialSnapshot.security_answer   ||
+			status            !== initialSnapshot.status            ||
+			!!avatarBase64
+		)
+	);
+
+	$effect(() => {
+		function onBeforeUnload(e: BeforeUnloadEvent) {
+			if (isDirty) {
+				e.preventDefault();
+				e.returnValue = "";
+			}
+		}
+		window.addEventListener("beforeunload", onBeforeUnload);
+		return () => window.removeEventListener("beforeunload", onBeforeUnload);
+	});
+
+	beforeNavigate(({ cancel, to }) => {
+		if (!isDirty) return;
+		const target = to?.url?.pathname ?? "";
+		if (target === page.url.pathname) return;
+		const ok = window.confirm(
+			"יש לך שינויים שלא נשמרו בפרופיל.\n\nלחץ 'ביטול' כדי לחזור ולשמור, או 'אישור' כדי לעזוב ולאבד את השינויים."
+		);
+		if (!ok) cancel();
+	});
 
 	// סטטוסים לפי מגדר
 	const statusOptions = $derived(() => {
@@ -2590,6 +2658,22 @@
 							isEditing = false;
 							saveSuccess = true;
 							clearDraft();
+							// עדכן snapshot כדי שעריכה הבאה תתחיל "נקי"
+							initialSnapshot.name              = name;
+							initialSnapshot.email             = email;
+							initialSnapshot.nickname          = nickname;
+							initialSnapshot.phone             = phone;
+							initialSnapshot.city              = city;
+							initialSnapshot.neighborhood      = neighborhood;
+							initialSnapshot.business          = business;
+							initialSnapshot.family_status     = family_status;
+							initialSnapshot.gender            = gender;
+							initialSnapshot.birth_date        = composedBirth;
+							initialSnapshot.notifications     = notifications;
+							initialSnapshot.security_question = security_question;
+							initialSnapshot.security_answer   = security_answer;
+							initialSnapshot.status            = status;
+							avatarBase64 = "";
 							// סנכרן שכונה ועיר לstate המשותף → מעדכן דף הבית + מפה
 							if (neighborhood && city) {
 								neighborhoodState.select(neighborhood, city);
