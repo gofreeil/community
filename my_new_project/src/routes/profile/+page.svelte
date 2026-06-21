@@ -3410,6 +3410,8 @@
 			<div class="text-white text-xs leading-snug">
 				{#if profileCompletion >= 100}
 					לעריכת פרופיל
+				{:else if profileCompletion === 0}
+					💡 הירשם וצור חשבון
 				{:else if nextTipKey === "tip_security"}
 					🛡️ הוסף שאלת ביטחון לחשבונך
 					{#if securityFieldsRemaining > 0}
