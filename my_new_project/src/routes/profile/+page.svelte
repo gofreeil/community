@@ -373,6 +373,47 @@
 	let phone = $state(_ud?.phone ?? "");
 	let city = $state(_ud?.city ?? "");
 	let neighborhood = $state(_ud?.neighborhood ?? "");
+	let cityQuery = $state(_ud?.city ?? "");
+	let showCitySuggestions = $state(false);
+	let cityHighlightIdx = $state(-1);
+
+	function citySuggestions(): string[] {
+		const q = cityQuery.trim().toLowerCase();
+		const all = (data.citiesData as CityEntry[]).map((c) => c.city);
+		if (!q) return all.slice(0, 50);
+		return all.filter((c) => c.toLowerCase().includes(q)).slice(0, 50);
+	}
+
+	function pickCity(c: string) {
+		city = c;
+		cityQuery = c;
+		neighborhood = "";
+		showCitySuggestions = false;
+		cityHighlightIdx = -1;
+		locationInteracted = true;
+	}
+
+	function onCityInputKey(e: KeyboardEvent) {
+		const list = citySuggestions();
+		if (e.key === "ArrowDown") {
+			e.preventDefault();
+			showCitySuggestions = true;
+			cityHighlightIdx = Math.min(cityHighlightIdx + 1, list.length - 1);
+		} else if (e.key === "ArrowUp") {
+			e.preventDefault();
+			cityHighlightIdx = Math.max(cityHighlightIdx - 1, 0);
+		} else if (e.key === "Enter") {
+			if (cityHighlightIdx >= 0 && list[cityHighlightIdx]) {
+				e.preventDefault();
+				pickCity(list[cityHighlightIdx]);
+			} else if (list.length === 1) {
+				e.preventDefault();
+				pickCity(list[0]);
+			}
+		} else if (e.key === "Escape") {
+			showCitySuggestions = false;
+		}
+	}
 	let business = $state(_ud?.business ?? "");
 	let customLocation = $state("");
 	let locationInteracted = $state(false);
@@ -388,6 +429,12 @@
 	let notifications = $state(_ud?.notifications !== 0);
 	let security_question = $state(_ud?.security_question ?? "");
 	let security_answer = $state(_ud?.security_answer ?? "");
+	let securityAnswerConfirmed = $state(false);
+
+	function confirmSecurityAnswer() {
+		if (!security_question || !security_answer.trim()) return;
+		securityAnswerConfirmed = true;
+	}
 	let status = $state((_ud as any)?.status ?? "active");
 
 	// סטטוסים לפי מגדר
@@ -2822,25 +2869,60 @@
 								<span class="text-red-400">*</span>
 							</label>
 							{#if isEditing}
-								<select
-									id="p-city"
-									name="city"
-									bind:value={city}
-									onchange={() => { neighborhood = ""; locationInteracted = true; }}
-									onfocus={() => (locationInteracted = true)}
-									required
-									class="w-full bg-[#070b14] border {!city
-										? 'border-red-500/50'
-										: 'border-white/10'} focus:border-purple-500/50 rounded-xl
-								       px-4 py-3 text-white text-sm transition-colors outline-none appearance-none"
-								>
-									<option value=""
-										>{tFn("choose_city")}</option
-									>
-									{#each data.citiesData as CityEntry[] as c}
-										<option value={c.city}>{c.city}</option>
-									{/each}
-								</select>
+								<div class="relative">
+									<input
+										id="p-city"
+										type="text"
+										autocomplete="off"
+										bind:value={cityQuery}
+										oninput={() => {
+											showCitySuggestions = true;
+											cityHighlightIdx = -1;
+											locationInteracted = true;
+											if (cityQuery !== city) city = "";
+										}}
+										onfocus={() => {
+											showCitySuggestions = true;
+											locationInteracted = true;
+										}}
+										onblur={() => setTimeout(() => (showCitySuggestions = false), 150)}
+										onkeydown={onCityInputKey}
+										placeholder={tFn("choose_city") + " - הקלד לחיפוש..."}
+										class="w-full bg-[#070b14] border {!city
+											? 'border-red-500/50'
+											: 'border-white/10'} focus:border-purple-500/50 rounded-xl
+									       px-4 py-3 text-white text-sm transition-colors outline-none placeholder-white/30"
+									/>
+									<input type="hidden" name="city" value={city} />
+									{#if showCitySuggestions}
+										{@const list = citySuggestions()}
+										<ul
+											class="absolute z-50 right-0 left-0 mt-1 max-h-64 overflow-y-auto rounded-xl
+											       bg-[#0f172a] border border-purple-500/30 shadow-2xl"
+											role="listbox"
+										>
+											{#if list.length === 0}
+												<li class="px-4 py-3 text-gray-400 text-xs">
+													לא נמצאו ערים תואמות. מלא ב"לא מצאת את העיר?" למטה.
+												</li>
+											{:else}
+												{#each list as c, i}
+													<li
+														role="option"
+														aria-selected={cityHighlightIdx === i}
+														onmousedown={() => pickCity(c)}
+														onmouseenter={() => (cityHighlightIdx = i)}
+														class="px-4 py-2 text-sm text-white cursor-pointer transition-colors
+														       {cityHighlightIdx === i ? 'bg-purple-600/30' : 'hover:bg-white/5'}
+														       {c === city ? 'font-bold text-purple-300' : ''}"
+													>
+														{c}
+													</li>
+												{/each}
+											{/if}
+										</ul>
+									{/if}
+								</div>
 							{:else}
 								<p class="text-white font-medium py-3 px-1">
 									{city || "-"}
@@ -3147,13 +3229,43 @@
 									>
 								</select>
 								{#if security_question}
-									<input
-										type="text"
-										name="security_answer"
-										bind:value={security_answer}
-										placeholder="תשובה (לא תוצג בפומבי)"
-										class="w-full bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none placeholder-white/20"
-									/>
+									<div class="flex gap-2">
+										<input
+											type="text"
+											name="security_answer"
+											bind:value={security_answer}
+											oninput={() => (securityAnswerConfirmed = false)}
+											onkeydown={(e) => {
+												if (e.key === "Enter") {
+													e.preventDefault();
+													confirmSecurityAnswer();
+												}
+											}}
+											placeholder="תשובה (לא תוצג בפומבי)"
+											class="flex-1 bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none placeholder-white/20"
+										/>
+										<button
+											type="button"
+											onclick={confirmSecurityAnswer}
+											disabled={!security_answer.trim() || securityAnswerConfirmed}
+											class="px-4 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600
+											       hover:from-purple-500 hover:to-blue-500 text-white text-sm font-bold
+											       shadow-md transition-all whitespace-nowrap
+											       disabled:opacity-40 disabled:cursor-not-allowed"
+										>
+											{securityAnswerConfirmed ? "✓ נקלט" : "אישור"}
+										</button>
+									</div>
+									{#if securityAnswerConfirmed}
+										<div class="mt-2 rounded-xl bg-green-500/10 border border-green-500/30 px-3 py-2">
+											<p class="text-green-400 text-xs font-bold">
+												✅ תשובתך נקלטה במערכת
+											</p>
+											<p class="text-gray-300 text-[11px] mt-1 leading-relaxed">
+												💡 מומלץ להגדיר בעתיד שאלת ביטחון נוספת לאבטחה כפולה (בפיתוח)
+											</p>
+										</div>
+									{/if}
 								{/if}
 							{:else}
 								<p class="text-white font-medium py-3 px-1">
