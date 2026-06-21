@@ -89,9 +89,46 @@
     const totalCities = allCitiesMerged.length;
     const totalNeighborhoods = allCitiesMerged.reduce((sum, [, n]) => sum + n.length, 0);
 
+    // ===== מועדפות שכונה (localStorage) =====
+    const FAV_KEY = 'favorite_neighborhoods_v1';
+    type Fav = { city: string; neighborhood: string };
+    let favorites = $state<Fav[]>([]);
+
+    function favKey(c: string, n: string) { return `${c}|${n}`; }
+
+    function loadFavorites() {
+        try {
+            const raw = localStorage.getItem(FAV_KEY);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed)) favorites = parsed.filter(f => f?.city && f?.neighborhood);
+            }
+        } catch {}
+    }
+
+    function saveFavorites() {
+        try { localStorage.setItem(FAV_KEY, JSON.stringify(favorites)); } catch {}
+    }
+
+    function isFavorite(c: string, n: string): boolean {
+        return favorites.some(f => f.city === c && f.neighborhood === n);
+    }
+
+    function toggleFavorite(c: string, n: string, e?: Event) {
+        e?.stopPropagation();
+        e?.preventDefault();
+        if (isFavorite(c, n)) {
+            favorites = favorites.filter(f => !(f.city === c && f.neighborhood === n));
+        } else {
+            favorites = [...favorites, { city: c, neighborhood: n }];
+        }
+        saveFavorites();
+    }
+
     onMount(() => {
         // אתחל עם נתוני פרופיל מהשרת (או localStorage כ-fallback)
         neighborhoodState.init(data.userNeighborhood, data.userCity);
+        loadFavorites();
     });
 
     function handleToggleMenu() {
@@ -336,10 +373,42 @@
                         </div>
                     </div>
 
-                    {#if searchQuery.trim() === ''}
+                    {#if favorites.length > 0 && searchQuery.trim() === ''}
+                        <div class="mb-3 rounded-lg p-2 border border-amber-500/40 bg-gradient-to-br from-amber-500/10 to-yellow-500/5">
+                            <h4 class="text-amber-300 text-xs md:text-sm font-bold mb-1.5 flex items-center gap-1.5">
+                                <span>⭐</span>
+                                <span>השכונות המועדפות שלי</span>
+                                <span class="text-amber-400/70 font-normal">({favorites.length})</span>
+                            </h4>
+                            <div class="flex flex-wrap gap-1">
+                                {#each favorites as fav (favKey(fav.city, fav.neighborhood))}
+                                    <span class="inline-flex items-stretch rounded overflow-hidden bg-gray-700/60 hover:bg-purple-600/80 transition-colors">
+                                        <button
+                                            onclick={() => selectNeighborhood(fav.neighborhood, fav.city)}
+                                            class="text-white text-[11px] md:text-xs px-2 py-0.5"
+                                            title="{fav.neighborhood}, {fav.city}"
+                                        >
+                                            {fav.neighborhood}
+                                            <span class="text-amber-400/60 mr-1">· {fav.city}</span>
+                                        </button>
+                                        <button
+                                            onclick={(e) => toggleFavorite(fav.city, fav.neighborhood, e)}
+                                            class="px-1.5 text-yellow-400 hover:text-red-400 text-sm border-r border-black/20"
+                                            aria-label="הסר ממועדפות"
+                                            title="הסר ממועדפות"
+                                        >★</button>
+                                    </span>
+                                {/each}
+                            </div>
+                        </div>
+                    {/if}
+
+                    {#if searchQuery.trim() === '' && favorites.length === 0}
                         <div class="text-center text-gray-400 py-6 text-sm">
                             הקלד שם עיר או שכונה בשורת החיפוש
                         </div>
+                    {:else if searchQuery.trim() === ''}
+                        <!-- יש מועדפות, אבל לא חיפש - לא נציג את כל הערים -->
                     {:else if filteredCities.length === 0}
                         <div class="text-center text-gray-400 py-6 text-sm">
                             לא נמצאו ערים או שכונות תואמות "{searchQuery}"
@@ -366,13 +435,24 @@
                                     {/if}
                                     <div class="flex flex-wrap gap-1">
                                         {#each neighborhoods as neighborhood}
-                                            <button
-                                                onclick={() => selectNeighborhood(neighborhood, city)}
-                                                class="neighborhood-link text-white text-[11px] md:text-xs bg-gray-700/50 hover:bg-purple-600 px-2 py-0.5 rounded transition-all
-                                                    {hintCity === city ? 'ring-1 ring-amber-400/50 bg-purple-700/40' : ''}"
-                                            >
-                                                {neighborhood}
-                                            </button>
+                                            {@const fav = isFavorite(city, neighborhood)}
+                                            <span class="neighborhood-link inline-flex items-stretch rounded overflow-hidden transition-all
+                                                {hintCity === city ? 'ring-1 ring-amber-400/50' : ''}
+                                                {fav ? 'bg-amber-500/15 ring-1 ring-amber-500/40' : 'bg-gray-700/50'}">
+                                                <button
+                                                    onclick={() => selectNeighborhood(neighborhood, city)}
+                                                    class="text-white text-[11px] md:text-xs px-2 py-0.5 hover:bg-purple-600 transition-colors"
+                                                >
+                                                    {neighborhood}
+                                                </button>
+                                                <button
+                                                    onclick={(e) => toggleFavorite(city, neighborhood, e)}
+                                                    class="px-1 text-sm leading-none border-r border-black/20 transition-colors
+                                                        {fav ? 'text-yellow-400 hover:text-red-400' : 'text-gray-500 hover:text-yellow-400'}"
+                                                    aria-label="{fav ? 'הסר ממועדפות' : 'הוסף למועדפות'}"
+                                                    title="{fav ? 'הסר ממועדפות' : 'הוסף למועדפות'}"
+                                                >{fav ? '★' : '☆'}</button>
+                                            </span>
                                         {/each}
                                     </div>
                                 </div>

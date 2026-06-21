@@ -438,6 +438,10 @@
 	}
 	let status = $state((_ud as any)?.status ?? "active");
 
+	// ===== ערך תצוגה בלוח המכוונים: מתעדכן אחרי שמירה מוצלחת בלבד =====
+	let savedCity         = $state(_ud?.city ?? "");
+	let savedNeighborhood = $state(_ud?.neighborhood ?? "");
+
 	// ===== אזהרת שינויים לא-שמורים =====
 	const initialSnapshot = {
 		name:              _ud?.name ?? "",
@@ -1350,8 +1354,8 @@
 						<p class="text-gray-400 text-sm">{data.user.email}</p>
 					{/if}
 					<p class="text-purple-400 text-sm">
-						{#if data.user?.neighborhood || data.user?.city}
-							📍 {[data.user.neighborhood, data.user.city]
+						{#if savedNeighborhood || savedCity}
+							📍 {[savedNeighborhood, savedCity]
 								.filter(Boolean)
 								.join(", ")}
 						{:else}
@@ -2674,6 +2678,9 @@
 							initialSnapshot.security_answer   = security_answer;
 							initialSnapshot.status            = status;
 							avatarBase64 = "";
+							// עדכן ערכי תצוגה בלוח המכוונים
+							savedCity         = city;
+							savedNeighborhood = neighborhood;
 							// סנכרן שכונה ועיר לstate המשותף → מעדכן דף הבית + מפה
 							if (neighborhood && city) {
 								neighborhoodState.select(neighborhood, city);
