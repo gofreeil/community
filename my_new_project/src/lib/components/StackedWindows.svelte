@@ -22,6 +22,7 @@
     let dragStartY = 0;
     let pointerId: number | null = null;
     let dragAxis: 'none' | 'horizontal' | 'vertical' = 'none';
+    let suppressNextClick = false;
     const SWIPE_THRESHOLD = 55;
     const AXIS_THRESHOLD = 6;
 
@@ -71,9 +72,18 @@
         dragAxis = 'none';
         dragX = 0;
 
-        if (wasHorizontal && Math.abs(dx) > SWIPE_THRESHOLD) {
-            bringFront(active === 'vote' ? 'chat' : 'vote');
+        if (wasHorizontal) {
+            suppressNextClick = true;
+            setTimeout(() => { suppressNextClick = false; }, 50);
+            if (Math.abs(dx) > SWIPE_THRESHOLD) {
+                bringFront(active === 'vote' ? 'chat' : 'vote');
+            }
         }
+    }
+
+    function safeBringFront(which: 'vote' | 'chat') {
+        if (suppressNextClick) return;
+        bringFront(which);
     }
 
     function onPointerUp(e: PointerEvent) {
@@ -152,7 +162,7 @@
         <!-- Mobile peek tap target - outside 3D so it gets reliable hit-testing -->
         <button
             type="button"
-            onclick={() => bringFront(active === 'vote' ? 'chat' : 'vote')}
+            onclick={() => safeBringFront(active === 'vote' ? 'chat' : 'vote')}
             class="md:hidden absolute left-0 top-0 bottom-0 w-[16%] z-40 cursor-pointer bg-transparent"
             aria-label="עבור לחלון השני"
         ></button>
@@ -170,7 +180,7 @@
             {#if active !== 'vote'}
                 <button
                     type="button"
-                    onclick={() => bringFront('vote')}
+                    onclick={() => safeBringFront('vote')}
                     class="absolute inset-0 z-30 cursor-pointer"
                     aria-label="הבא להצבעות"
                 ></button>
@@ -195,7 +205,7 @@
             {#if active !== 'chat'}
                 <button
                     type="button"
-                    onclick={() => bringFront('chat')}
+                    onclick={() => safeBringFront('chat')}
                     class="absolute inset-0 z-30 cursor-pointer"
                     aria-label="הבא לשיח פתוח"
                 ></button>
