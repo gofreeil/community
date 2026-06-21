@@ -122,11 +122,12 @@ export const whatsappGroups: WhatsAppGroup[] = [
 ];
 
 /**
- * Find matching WhatsApp groups for a user based on city and neighborhood.
- * Returns: exact neighborhood match first, then all groups for the city (max 4).
+ * Find WhatsApp groups that match the user's exact city + neighborhood.
+ * Returns nothing if the neighborhood doesn't match — we don't recommend
+ * groups of OTHER neighborhoods to the user.
  */
 export function findWhatsAppGroups(city: string, neighborhood: string): WhatsAppGroup[] {
-  if (!city) return [];
+  if (!city || !neighborhood) return [];
 
   const normalize = (s: string) =>
     s.trim()
@@ -136,26 +137,14 @@ export function findWhatsAppGroups(city: string, neighborhood: string): WhatsApp
       .trim();
 
   const userCity = normalize(city);
-  const userNeigh = normalize(neighborhood || '');
+  const userNeigh = normalize(neighborhood);
+  if (!userCity || !userNeigh) return [];
 
-  // Find all groups that match the city
-  const cityMatches = whatsappGroups.filter(g =>
-    normalize(g.city).includes(userCity) || userCity.includes(normalize(g.city))
-  );
-
-  if (cityMatches.length === 0) return [];
-
-  // If we have a neighborhood, try to find exact match first
-  if (userNeigh) {
-    const neighMatches = cityMatches.filter(g =>
-      g.neigh && (
-        normalize(g.neigh).includes(userNeigh) ||
-        userNeigh.includes(normalize(g.neigh))
-      )
-    );
-    if (neighMatches.length > 0) return neighMatches;
-  }
-
-  // Return all city groups (max 4)
-  return cityMatches.slice(0, 4);
+  return whatsappGroups.filter(g => {
+    const gCity  = normalize(g.city);
+    const gNeigh = normalize(g.neigh || '');
+    const cityMatch  = gCity.includes(userCity) || userCity.includes(gCity);
+    const neighMatch = !!gNeigh && (gNeigh.includes(userNeigh) || userNeigh.includes(gNeigh));
+    return cityMatch && neighMatch;
+  });
 }
