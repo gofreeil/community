@@ -1017,24 +1017,71 @@
 	let animatedCompletion = $state(0);
 	let ringAnimated = $state(false);
 
+	// ניגון צליל קצר (WebAudio) בזמן מילוי המעגל
+	let ringAudioCtx: AudioContext | null = null;
+	function playRingTone(progress: number, isFinal = false) {
+		try {
+			if (typeof window === "undefined") return;
+			if (!ringAudioCtx) {
+				const Ctor = (window as any).AudioContext ?? (window as any).webkitAudioContext;
+				if (!Ctor) return;
+				ringAudioCtx = new Ctor();
+			}
+			const ctx = ringAudioCtx!;
+			if (ctx.state === "suspended") ctx.resume().catch(() => {});
+			const osc = ctx.createOscillator();
+			const gain = ctx.createGain();
+			// תדר עולה עם ההתקדמות (440Hz → ~880Hz)
+			const freq = 440 + Math.min(progress, 100) * 4.4;
+			osc.type = "sine";
+			osc.frequency.value = isFinal ? freq + 80 : freq;
+			const peak = isFinal ? 0.09 : 0.045;
+			const tail = isFinal ? 0.22 : 0.09;
+			const now = ctx.currentTime;
+			gain.gain.setValueAtTime(0.0001, now);
+			gain.gain.exponentialRampToValueAtTime(peak, now + 0.012);
+			gain.gain.exponentialRampToValueAtTime(0.0001, now + tail);
+			osc.connect(gain);
+			gain.connect(ctx.destination);
+			osc.start(now);
+			osc.stop(now + tail + 0.02);
+		} catch {
+			// אין תמיכה – פשוט בלי צליל
+		}
+	}
+
 	function animateRing(target: number) {
 		if (ringAnimated) return;
 		ringAnimated = true;
-		const duration = 1400; // ms
-		const steps = 60;
-		const stepTime = duration / steps;
-		let current = 0;
-		const increment = target / steps;
+		const duration = 2800; // ms - איטי יותר כדי שהמשתמש יראה את המעגל מתמלא
+		const startTime = performance.now();
+		let lastTickAt = 0;
+		let lastReported = -1;
 
-		const timer = setInterval(() => {
-			current = Math.min(current + increment, target);
+		function step(now: number) {
+			const elapsed = now - startTime;
+			const tNorm = Math.min(elapsed / duration, 1);
+			// easeOutCubic - מילוי מורגש בסוף
+			const eased = 1 - Math.pow(1 - tNorm, 3);
+			const current = target * eased;
 			animatedCompletion = Math.round(current);
-			if (current >= target) {
-				clearInterval(timer);
-				// ודא שהערך הסופי תמיד מדויק
-				animatedCompletion = target;
+
+			// צליל "טיק" כל ~140ms תוך כדי המילוי
+			if (tNorm < 1 && now - lastTickAt > 140 && animatedCompletion !== lastReported) {
+				playRingTone(current);
+				lastTickAt = now;
+				lastReported = animatedCompletion;
 			}
-		}, stepTime);
+
+			if (tNorm < 1) {
+				requestAnimationFrame(step);
+			} else {
+				animatedCompletion = target;
+				// צליל סיום בולט יותר
+				playRingTone(target, true);
+			}
+		}
+		requestAnimationFrame(step);
 	}
 
 	// אם profileCompletion משתנה אחרי האנימציה (נטען מהשרת), עדכן ישירות
@@ -1085,16 +1132,58 @@
 			slowScrollTo(top);
 		}, 50);
 	}
+	// מיפוי שדות פרופיל ל-ID של האלמנט המתאים בטופס העריכה
+	const profileFieldElementIds = [
+		"p-name",          // 0  - שם
+		"email",           // 1  - אימייל
+		"p-avatar",        // 2  - תמונת פרופיל
+		"p-nickname",      // 3  - כינוי
+		"p-phone",         // 4  - טלפון
+		"p-city",          // 5  - עיר
+		"p-neighborhood",  // 6  - שכונה
+		"p-gender",        // 7  - מגדר
+		"p-business",      // 8  - עסק
+		"p-family-status", // 9  - סטטוס משפחתי
+		"p-birth-day",     // 10 - תאריך לידה
+		"p-security",      // 11 - שאלת ביטחון
+	] as const;
+
+	function flashField(id: string) {
+		const el = document.getElementById(id);
+		if (!el) return;
+		el.classList.remove("field-flash");
+		// כפיית reflow כדי להפעיל מחדש את האנימציה אם קוראים פעמיים ברצף
+		void (el as HTMLElement).offsetWidth;
+		el.classList.add("field-flash");
+		setTimeout(() => el.classList.remove("field-flash"), 1300);
+	}
+
 	function scrollToEditProfile() {
 		if (profileCompletion >= 100) return;
-		if (isEditing) return;
-		isEditing = true;
+		const wasEditing = isEditing;
+		if (!wasEditing) isEditing = true;
+
+		// מצא את השדה הראשון שלא מולא
+		const missingIdx = profileFields.findIndex((f) => !f);
+		const targetId =
+			missingIdx >= 0 ? profileFieldElementIds[missingIdx] : null;
+
+		// אם הטופס כבר פתוח – נגלול מיד; אחרת ניתן זמן ל-DOM להיבנות
+		const delay = wasEditing ? 50 : 200;
 		setTimeout(() => {
-			const el = document.getElementById("sec-edit-profile");
+			const targetEl = targetId
+				? document.getElementById(targetId)
+				: null;
+			const fallback = document.getElementById("sec-edit-profile");
+			const el = targetEl ?? fallback;
 			if (!el) return;
-			const top = el.getBoundingClientRect().top + window.scrollY - 80;
+			const top = el.getBoundingClientRect().top + window.scrollY - 100;
 			slowScrollTo(top);
-		}, 50);
+			if (targetEl && targetId) {
+				// היבהוב קל אחרי שהגלילה מתחילה
+				setTimeout(() => flashField(targetId), 350);
+			}
+		}, delay);
 	}
 	function handleRingMouseMove(e: MouseEvent) {
 		ringTipX = e.clientX + 14;
@@ -1972,128 +2061,68 @@
 					</div>
 				{/if}
 
-				<!-- המלצות מותאמות אישית -->
-				{#if business || family_status === "single_m" || family_status === "single_f" || whatsappMatches.length > 0}
-					{@const allRecs = [
-						...(business
-							? [
-									{
-										id: "biz",
-										emoji: "🏪",
-										title: "מועדון בעלי העסקים הכשרים",
-										sub: "הצטרף לרשת בעלי העסקים הכשרים בישראל",
-										href: "https://index-chi-sage.vercel.app/",
-										external: true,
-										color: "amber",
-									},
-								]
-							: []),
-						...(family_status === "single_m" ||
-						family_status === "single_f"
-							? [
-									{
-										id: "singles",
-										emoji: "💑",
-										title: "רשימת הפנויים והפנויות הארצית",
-										sub: "הצטרף לרשימה ומצא את השידוך המתאים",
-										href: "/national/singles",
-										external: false,
-										color: "pink",
-									},
-								]
-							: []),
-						...whatsappMatches.map((g) => ({
-							id: "wa_" + g.label,
-							emoji: "💬",
-							title: g.label,
-							sub: "הצטרף לקבוצת הווטסאפ של השכונה שלך",
-							href: g.url,
-							external: true,
-							color: "green",
-						})),
-					]}
-					{@const visibleRecs = allRecs.filter((r) =>
-						isRecVisible(r.id),
-					)}
-					{#if visibleRecs.length > 0}
-						<div class="mt-2 flex flex-col gap-3">
-							<p
-								class="text-xs text-gray-400 uppercase tracking-widest font-bold"
+				<!-- קבוצות וואטסאפ של השכונה (מידע קהילתי - תמיד מוצג כשיש התאמה) -->
+				{#if whatsappMatches.length > 0}
+					<div class="mt-2 flex flex-col gap-2">
+						<p class="text-xs text-gray-400 uppercase tracking-widest font-bold">
+							💬 קבוצות וואטסאפ של השכונה שלך
+						</p>
+						{#each whatsappMatches as g}
+							<a
+								href={g.url}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="block rounded-xl border border-green-500/30 bg-green-500/10 hover:bg-green-500/20 transition-colors px-3 py-2"
 							>
-								המלצות עבורך
-							</p>
-							{#each visibleRecs as rec}
-								<div
-									class="rounded-2xl border px-4 pt-4 pb-3
-					{rec.color === 'amber'
-										? 'bg-amber-500/10 border-amber-500/30'
-										: rec.color === 'pink'
-											? 'bg-pink-500/10  border-pink-500/30'
-											: 'bg-green-500/10 border-green-500/30'}"
-								>
-									<!-- תוכן -->
-									<div class="flex items-center gap-3 mb-3">
-										<span class="text-3xl flex-shrink-0"
-											>{rec.emoji}</span
-										>
-										<div class="flex-1 text-right">
-											<p
-												class="text-white font-bold text-sm"
-											>
-												{rec.title}
-											</p>
-											<p
-												class="text-xs mt-0.5
-								{rec.color === 'amber'
-													? 'text-amber-300/80'
-													: rec.color === 'pink'
-														? 'text-pink-300/80'
-														: 'text-green-300/80'}"
-											>
-												{rec.sub} ←
-											</p>
-										</div>
-									</div>
-									<!-- כפתורי פעולה -->
-									<div
-										class="flex items-center gap-2 justify-end border-t border-white/8 pt-2.5"
-									>
-										<button
-											type="button"
-											onclick={() => dismissRec(rec.id)}
-											class="text-[11px] text-gray-500 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10"
-										>
-											🗑 מחק
-										</button>
-										<button
-											type="button"
-											onclick={() => snoozeRec(rec.id)}
-											class="text-[11px] text-gray-500 hover:text-yellow-300 transition-colors px-2 py-1 rounded-lg hover:bg-yellow-500/10"
-										>
-											🔔 הזכר לי מאוחר יותר
-										</button>
-										<a
-											href={rec.href}
-											target={rec.external
-												? "_blank"
-												: "_self"}
-											rel={rec.external
-												? "noopener noreferrer"
-												: ""}
-											class="text-[11px] font-bold text-white px-3 py-1 rounded-lg
-							{rec.color === 'amber'
-												? 'bg-amber-500/25 hover:bg-amber-500/40'
-												: rec.color === 'pink'
-													? 'bg-pink-500/25  hover:bg-pink-500/40'
-													: 'bg-green-500/25 hover:bg-green-500/40'} transition-colors"
-										>
-											עבור אל ←
-										</a>
-									</div>
+								<p class="text-white font-bold text-sm">💬 {g.label}</p>
+								<p class="text-green-300/80 text-xs mt-0.5">הצטרף לקבוצת הווטסאפ של השכונה שלך ←</p>
+							</a>
+						{/each}
+					</div>
+				{/if}
+
+				<!-- המלצה יומית (מתחלפת מדי יום עד שמיצינו את כל הרשימה) -->
+				{#if todaysRec}
+					<div class="mt-2 flex flex-col gap-3">
+						<p class="text-xs text-gray-400 uppercase tracking-widest font-bold">
+							💡 ההמלצה היומית שלך
+						</p>
+						<div class="rounded-2xl border px-4 pt-4 pb-3 {recColorClasses(todaysRec.color)}">
+							<div class="flex items-center gap-3 mb-3">
+								<span class="text-3xl flex-shrink-0">{todaysRec.emoji}</span>
+								<div class="flex-1 text-right">
+									<p class="text-white font-bold text-sm">{todaysRec.title}</p>
+									<p class="text-xs mt-0.5 {recSubColorClass(todaysRec.color)}">
+										{todaysRec.sub} ←
+									</p>
 								</div>
-							{/each}
+							</div>
+							<div class="flex items-center gap-2 justify-end border-t border-white/8 pt-2.5">
+								<button
+									type="button"
+									onclick={() => dismissRec(todaysRec!.id)}
+									class="text-[11px] text-gray-500 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10"
+								>
+									🗑 מחק
+								</button>
+								<button
+									type="button"
+									onclick={() => snoozeRec(todaysRec!.id)}
+									class="text-[11px] text-gray-500 hover:text-yellow-300 transition-colors px-2 py-1 rounded-lg hover:bg-yellow-500/10"
+								>
+									🔔 הזכר לי מחר
+								</button>
+								<a
+									href={todaysRec.href}
+									target={todaysRec.external ? "_blank" : "_self"}
+									rel={todaysRec.external ? "noopener noreferrer" : ""}
+									class="text-[11px] font-bold text-white px-3 py-1 rounded-lg transition-colors {recButtonClasses(todaysRec.color)}"
+								>
+									עבור אל ←
+								</a>
+							</div>
 						</div>
-					{/if}
+					</div>
 				{/if}
 			</div>
 		{/if}
@@ -3344,22 +3373,35 @@
 					>
 						<div>
 							<label
-								for="p-business"
+								for="p-business-type"
 								class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2"
-								>{tFn("business_label")}</label
+								>בעל עסק / נותן שירות?</label
 							>
 							{#if isEditing}
-								<input
-									id="p-business"
-									name="business"
-									type="text"
-									bind:value={business}
-									placeholder={tFn("business_placeholder")}
-									class="w-full bg-white/5 border border-white/10 focus:border-purple-500/50 rounded-xl px-4 py-3 text-white text-sm transition-colors outline-none placeholder:text-white/15 hover:placeholder:text-transparent focus:placeholder:text-transparent placeholder:transition-colors placeholder:duration-200"
-								/>
+								<select
+									id="p-business-type"
+									bind:value={businessType}
+									class="w-full bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none mb-2"
+								>
+									<option value="">לא רלוונטי</option>
+									<option value="business_owner">בעל עסק</option>
+									<option value="service_provider">נותן שירות / בעל מקצוע</option>
+								</select>
+								{#if businessType}
+									<input
+										id="p-business"
+										name="business"
+										type="text"
+										bind:value={business}
+										placeholder={businessType === 'service_provider' ? 'תחום המקצוע (לדוגמה: רואה חשבון)' : tFn("business_placeholder")}
+										class="w-full bg-white/5 border border-white/10 focus:border-purple-500/50 rounded-xl px-4 py-3 text-white text-sm transition-colors outline-none placeholder:text-white/15 hover:placeholder:text-transparent focus:placeholder:text-transparent placeholder:transition-colors placeholder:duration-200"
+									/>
+								{:else}
+									<input type="hidden" name="business" value={business} />
+								{/if}
 							{:else}
 								<p class="text-white font-medium py-3 px-1">
-									{business || "-"}
+									{businessType === 'business_owner' ? `🏪 ${business || 'בעל עסק'}` : businessType === 'service_provider' ? `🛠️ ${business || 'נותן שירות'}` : business || '-'}
 								</p>
 							{/if}
 						</div>
