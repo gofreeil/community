@@ -1216,6 +1216,48 @@ export const citiesData: CityEntry[] = [
     { city: "תל ציון", neighborhoods: DEFAULT_NB },
     { city: "תלם", neighborhoods: DEFAULT_NB },
     { city: "תקוע", neighborhoods: DEFAULT_NB },
+
+    // ============== ערים ערביות חסרות ==============
+    { city: "אום אל-פחם", neighborhoods: DEFAULT_NB },
+    { city: "סחנין", neighborhoods: DEFAULT_NB },
+    { city: "טירה", neighborhoods: DEFAULT_NB },
+    { city: "כפר קאסם", neighborhoods: DEFAULT_NB },
+    { city: "באקה אל-גרבייה", neighborhoods: DEFAULT_NB },
+    { city: "ערערה", neighborhoods: DEFAULT_NB },
+    { city: "כפר כנא", neighborhoods: DEFAULT_NB },
+    { city: "כפר מנדא", neighborhoods: DEFAULT_NB },
+    { city: "ריינה", neighborhoods: DEFAULT_NB },
+    { city: "אכסאל", neighborhoods: DEFAULT_NB },
+    { city: "טורעאן", neighborhoods: DEFAULT_NB },
+    { city: "פוריידיס", neighborhoods: DEFAULT_NB },
+    { city: "ג'סר א-זרקא", neighborhoods: DEFAULT_NB },
+    { city: "מג'אר", neighborhoods: DEFAULT_NB },
+    { city: "ראמה", neighborhoods: DEFAULT_NB },
+    { city: "שעב", neighborhoods: DEFAULT_NB },
+    { city: "בענה", neighborhoods: DEFAULT_NB },
+    { city: "דייר אל-אסד", neighborhoods: DEFAULT_NB },
+    { city: "מג'ד אל-כרום", neighborhoods: DEFAULT_NB },
+    { city: "ביר אל-מכסור", neighborhoods: DEFAULT_NB },
+    { city: "כעביה-טבאש-חג'אג'רה", neighborhoods: DEFAULT_NB },
+    { city: "ערב אל-נעים", neighborhoods: DEFAULT_NB },
+
+    // ============== כפרים דרוזים חסרים ==============
+    { city: "ירכא", neighborhoods: DEFAULT_NB },
+    { city: "דאלית אל-כרמל", neighborhoods: DEFAULT_NB },
+    { city: "עוספיא", neighborhoods: DEFAULT_NB },
+    { city: "בית ג'אן", neighborhoods: DEFAULT_NB },
+    { city: "חורפיש", neighborhoods: DEFAULT_NB },
+    { city: "פסוטה", neighborhoods: DEFAULT_NB },
+    { city: "ינוח-ג'ת", neighborhoods: DEFAULT_NB },
+    { city: "מג'דל שמס", neighborhoods: DEFAULT_NB },
+    { city: "בוקעתא", neighborhoods: DEFAULT_NB },
+    { city: "מסעדה", neighborhoods: DEFAULT_NB },
+    { city: "עין קנייה", neighborhoods: DEFAULT_NB },
+
+    // ============== יישובים בדואיים חסרים ==============
+    { city: "חורה", neighborhoods: DEFAULT_NB },
+    { city: "לקיה", neighborhoods: DEFAULT_NB },
+    { city: "ערערה בנגב", neighborhoods: DEFAULT_NB },
 ].sort((a, b) => a.city.localeCompare(b.city, 'he'));
 
 // Convenience: plain object for components that need Record<string, string[]>
