@@ -13,6 +13,25 @@
 
     let mounted = $state(false);
     let galleryIndex = $state(0);
+    let lightboxOpen = $state(false);
+
+    function openLightbox() { lightboxOpen = true; }
+    function closeLightbox() { lightboxOpen = false; }
+    function onLightboxKey(e: KeyboardEvent) {
+        if (e.key === 'Escape') closeLightbox();
+        else if (e.key === 'ArrowLeft') nextImage();
+        else if (e.key === 'ArrowRight') prevImage();
+    }
+    $effect(() => {
+        if (lightboxOpen) {
+            window.addEventListener('keydown', onLightboxKey);
+            document.body.style.overflow = 'hidden';
+            return () => {
+                window.removeEventListener('keydown', onLightboxKey);
+                document.body.style.overflow = '';
+            };
+        }
+    });
 
     const galleryImages = $derived<string[]>(
         Array.isArray((item as { images?: string[] } | null)?.images)
@@ -324,12 +343,20 @@
                 <div class="relative bg-[#0a0f1a] flex items-center justify-center min-h-[150px]" class:h-[110px]={galleryImages.length === 0} class:md:h-[140px]={galleryImages.length === 0}>
                     {#if galleryImages.length > 0}
                         {#key galleryIndex}
-                            <img
-                                src={galleryImages[galleryIndex]}
-                                alt={item.label}
-                                class="max-w-full max-h-[150px] md:max-h-[180px] w-auto h-auto object-contain"
-                                in:fade={{ duration: 200 }}
-                            />
+                            <button
+                                type="button"
+                                onclick={openLightbox}
+                                aria-label="הגדל תמונה"
+                                title="לחץ להגדלה"
+                                class="contents cursor-zoom-in"
+                            >
+                                <img
+                                    src={galleryImages[galleryIndex]}
+                                    alt={item.label}
+                                    class="max-w-full max-h-[150px] md:max-h-[180px] w-auto h-auto object-contain cursor-zoom-in"
+                                    in:fade={{ duration: 200 }}
+                                />
+                            </button>
                         {/key}
                         {#if galleryImages.length > 1}
                             <!-- Prev/Next -->
@@ -726,6 +753,49 @@
         {/if}
     </div>
 </div>
+
+{#if lightboxOpen && item && galleryImages.length > 0}
+    <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="תצוגת תמונה מוגדלת"
+        class="fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm flex items-center justify-center p-4"
+        onclick={closeLightbox}
+    >
+        <button
+            type="button"
+            onclick={closeLightbox}
+            aria-label="סגור"
+            class="absolute top-4 left-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white text-2xl font-black flex items-center justify-center backdrop-blur-sm transition-colors z-10"
+        >×</button>
+        {#if galleryImages.length > 1}
+            <button
+                type="button"
+                onclick={(e) => { e.stopPropagation(); prevImage(); }}
+                aria-label="הקודם"
+                class="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white text-2xl font-black flex items-center justify-center backdrop-blur-sm transition-colors z-10"
+            >→</button>
+            <button
+                type="button"
+                onclick={(e) => { e.stopPropagation(); nextImage(); }}
+                aria-label="הבא"
+                class="absolute left-16 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white text-2xl font-black flex items-center justify-center backdrop-blur-sm transition-colors z-10"
+            >←</button>
+            <span class="absolute bottom-4 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm text-white text-sm font-bold z-10">
+                📷 {galleryIndex + 1} / {galleryImages.length}
+            </span>
+        {/if}
+        {#key galleryIndex}
+            <img
+                src={galleryImages[galleryIndex]}
+                alt={item.label}
+                onclick={(e) => e.stopPropagation()}
+                class="max-w-[95vw] max-h-[90vh] w-auto h-auto object-contain rounded-lg shadow-2xl"
+                in:fade={{ duration: 200 }}
+            />
+        {/key}
+    </div>
+{/if}
 
 <style>
     :global(body) {
