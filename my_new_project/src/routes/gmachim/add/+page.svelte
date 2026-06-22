@@ -452,13 +452,13 @@
                 </button>
 
                 <p class="text-gray-400 text-sm text-center pt-2 border-t border-white/5">
-                    🌐 הגמ"ח יופיע באתר הקהילה וגם <a href="https://national-gemach.vercel.app/" target="_blank" rel="noopener noreferrer" class="text-amber-400 hover:text-amber-300 underline">באתר הגמ"ח הארצי</a>
+                    🌐 הגמ"ח יופיע באתר הקהילה וגם <a href="https://gemach.gofreeil.com/" target="_blank" rel="noopener noreferrer" class="text-amber-400 hover:text-amber-300 underline">באתר הגמ"ח הארצי</a>
                 </p>
             </form>
         {/if}
 
         <div class="text-center mt-6">
-            <a href="https://national-gemach.vercel.app" target="_blank" rel="noopener noreferrer" class="text-gray-500 hover:text-white transition-colors text-sm">← לכל הגמ"חים באתר הארצי ↗</a>
+            <a href="https://gemach.gofreeil.com" target="_blank" rel="noopener noreferrer" class="text-gray-500 hover:text-white transition-colors text-sm">← לכל הגמ"חים באתר הארצי ↗</a>
         </div>
     </div>
 </div>

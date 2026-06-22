@@ -11,7 +11,7 @@ export const GET: RequestHandler = async () => {
         const logoBuffer = readFileSync(logoPath);
         logoBase64 = `data:image/png;base64,${logoBuffer.toString('base64')}`;
     } catch {
-        logoBase64 = 'https://community-il.vercel.app/images/community-logo1.png';
+        logoBase64 = 'https://community.gofreeil.com/images/community-logo1.png';
     }
 
     return new ImageResponse(

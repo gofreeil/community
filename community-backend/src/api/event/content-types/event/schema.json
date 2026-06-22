@@ -17,6 +17,7 @@
     "color":         { "type": "string",  "default": "blue" },
     "neighborhood":  { "type": "string" },
     "city":          { "type": "string" },
+    "creator_id":      { "type": "string" },
     "submitted_by_id": { "type": "string" },
     "description":   { "type": "text" },
     "status": {
