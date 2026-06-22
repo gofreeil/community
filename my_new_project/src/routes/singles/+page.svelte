@@ -167,7 +167,7 @@
         const isMale = g === 'male';
         const nickname = u.nickname || u.name || (isMale ? 'אני' : 'אני');
         const age = calcAge(u.birth_date);
-        const labelParts = [isMale ? 'פנוי' : 'פנויה', age, u.city].filter(Boolean);
+        const labelParts = [age, u.city].filter(Boolean);
         return {
             id: 'self',
             nickname,
