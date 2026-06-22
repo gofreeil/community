@@ -285,9 +285,9 @@
         <section>
             <h2 class="text-sm font-bold text-white mb-1.5 flex items-center gap-1.5">
                 <span class="w-1 h-4 bg-green-500 rounded-full"></span>{tFn("more_details")}</h2>
-            <dl class="rounded-xl bg-white/5 border border-white/10 overflow-hidden divide-y divide-white/5">
+            <dl class="rounded-xl border border-white/10 overflow-hidden grid grid-cols-1 sm:grid-cols-2 gap-px bg-white/10">
                 {#each visibleEntries as [key, value]}
-                    <div class="grid grid-cols-[auto,1fr] gap-x-3 px-3 py-2">
+                    <div class="grid grid-cols-[auto,1fr] gap-x-3 px-3 py-2 bg-[#0f172a]">
                         <dt class="text-xs text-gray-400 font-semibold whitespace-nowrap">{LABELS_HE[key] ?? key}</dt>
                         <dd class="text-white font-medium text-xs">{formatValue(key, value)}</dd>
                     </div>
