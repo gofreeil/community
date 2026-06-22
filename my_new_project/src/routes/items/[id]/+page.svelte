@@ -486,22 +486,25 @@
                     {#if nickname}
                         <p class="text-white text-xl md:text-2xl font-bold leading-tight">{nickname}</p>
                     {/if}
-                    {#if sector || age != null}
-                        <p class="text-gray-300 text-base leading-tight">
-                            {#if sector}<span>{sector}</span>{/if}
-                            {#if sector && age != null}<span class="text-gray-500"> · </span>{/if}
-                            {#if age != null}<span>גיל: {age}</span>{/if}
-                        </p>
+                    {#if age != null}
+                        <p class="text-gray-300 text-base leading-tight">גיל: {age}</p>
+                    {/if}
+                    {#if sector}
+                        <p class="text-gray-300 text-base leading-tight">{sector}</p>
                     {/if}
                     <p class="text-gray-200 text-base leading-snug flex-1">
                         {item.description}
                     </p>
                     {#if item.address}
+                        {@const cityOnly = (() => {
+                            const parts = String(item.address).split(',').map(p => p.trim()).filter(Boolean);
+                            return parts[parts.length - 1] || item.address;
+                        })()}
                         <div class="flex items-center gap-2">
                             <span class="text-xl text-blue-400">📍</span>
                             <div>
                                 <p class="text-xs text-gray-400 uppercase font-bold tracking-wider">כתובת</p>
-                                <p class="text-white font-medium text-base">{item.address}</p>
+                                <p class="text-white font-medium text-base">{cityOnly}</p>
                             </div>
                         </div>
                     {/if}
