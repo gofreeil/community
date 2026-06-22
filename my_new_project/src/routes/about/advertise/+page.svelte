@@ -364,7 +364,7 @@
         { num: 3, type: "חוג",            half: 10,  total: 60,  single: 25, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
         { num: 4, type: "צימר / סאבלט",  half: 45,  total: 270, single: 60, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
         { num: 5, type: "דרושים לעבודה", half: 5,   total: 30,  single: 25, reach: "לכל שכונה רצויה",   details: "מופיע רק ברשימה" },
-        { num: 6, type: "פנויים פנויות", half: 20,  total: 120, single: 30, reach: "כולל רשימה ארצית",  details: "מופיע רק ברשימה" },
+        { num: 6, type: "פנויים פנויות", half: 10,  total: 60,  single: 15, regularHalf: 20, regularTotal: 120, regularSingle: 30, promo: 'מבצע זמני', reach: "כולל רשימה ארצית",  details: "מופיע רק ברשימה" },
         { num: 7, type: "מסעדה",          half: 45,  total: 270, single: 60, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
         { num: 8, type: "בייבי סיטר",    half: 8,   total: 48,  single: 20, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
         { num: 9, type: "אולמות",         half: 45,  total: 270, single: 60, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
@@ -855,6 +855,9 @@
                     <div class="flex items-center gap-2 min-w-0">
                         <span class="text-xs font-black text-gray-400 flex-shrink-0">#{row.num}</span>
                         <span class="font-black text-white text-base truncate">{row.type}</span>
+                        {#if (row as { promo?: string }).promo}
+                            <span class="text-[10px] font-black bg-rose-500/25 text-rose-200 border border-rose-400/50 px-2 py-0.5 rounded-full animate-pulse whitespace-nowrap">🔥 {(row as { promo?: string }).promo}</span>
+                        {/if}
                     </div>
                     <!-- Toggle -->
                     <div
@@ -881,14 +884,20 @@
                     </div>
                 </div>
                 <!-- Prices row -->
-                <div class="flex gap-4 text-sm mt-1">
+                <div class="flex gap-4 text-sm mt-1 flex-wrap">
                     <div class="flex items-baseline gap-1">
                         <span class="text-gray-300 text-sm font-semibold">חצי שנה -</span>
+                        {#if (row as { regularHalf?: number }).regularHalf}
+                            <span class="text-gray-500 text-xs line-through">₪{fmt((row as { regularHalf?: number }).regularHalf as number)}</span>
+                        {/if}
                         <span class="font-black text-amber-400 text-sm">₪{fmt(row.half)}</span>
                         <span class="text-gray-300 text-sm font-semibold">/חודש</span>
                     </div>
                     <div class="flex items-baseline gap-1">
                         <span class="text-gray-300 text-sm font-semibold">חודש בודד -</span>
+                        {#if (row as { regularSingle?: number }).regularSingle}
+                            <span class="text-gray-500 text-xs line-through">₪{fmt((row as { regularSingle?: number }).regularSingle as number)}</span>
+                        {/if}
                         <span class="font-black text-white text-sm">₪{fmt(row.single)}</span>
                     </div>
                 </div>
@@ -945,7 +954,12 @@
 
                         <td class="px-4 py-4 font-bold relative group/typecell
                             {plan === 'half' ? 'text-amber-300' : plan === 'single' ? 'text-blue-300' : 'text-white'}">
-                            {row.type}
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span>{row.type}</span>
+                                {#if (row as { promo?: string }).promo}
+                                    <span class="text-[10px] font-black bg-rose-500/25 text-rose-200 border border-rose-400/50 px-2 py-0.5 rounded-full animate-pulse whitespace-nowrap">🔥 {(row as { promo?: string }).promo}</span>
+                                {/if}
+                            </div>
                             {#if row.num === 1}
                                 <!-- Tooltip: "פרסומת ארוכה" = הפרסומות שבצד ימין -->
                                 <div class="pointer-events-none absolute z-50 left-1/2 -translate-x-1/2 bottom-full mb-2
@@ -960,11 +974,22 @@
                         </td>
 
                         <td class="px-4 py-4 text-center">
+                            {#if (row as { regularHalf?: number }).regularHalf}
+                                <span class="text-gray-500 text-xs line-through me-1">₪{fmt((row as { regularHalf?: number }).regularHalf as number)}</span>
+                            {/if}
                             <span class="font-bold text-white text-sm">₪{fmt(row.half)}</span>
-                            <span class="block font-black text-base {plan === 'half' ? 'text-amber-300' : 'text-amber-400'}">סה"כ ₪{fmt(row.total)}</span>
+                            <span class="block font-black text-base {plan === 'half' ? 'text-amber-300' : 'text-amber-400'}">
+                                {#if (row as { regularTotal?: number }).regularTotal}
+                                    <span class="text-gray-500 text-[11px] line-through font-bold me-1">₪{fmt((row as { regularTotal?: number }).regularTotal as number)}</span>
+                                {/if}
+                                סה"כ ₪{fmt(row.total)}
+                            </span>
                         </td>
 
                         <td class="px-4 py-4 text-center">
+                            {#if (row as { regularSingle?: number }).regularSingle}
+                                <span class="text-gray-500 text-xs line-through me-1">₪{fmt((row as { regularSingle?: number }).regularSingle as number)}</span>
+                            {/if}
                             <span class="font-bold {plan === 'single' ? 'text-blue-300' : 'text-gray-300'}">₪{fmt(row.single)}</span>
                         </td>
 
