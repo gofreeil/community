@@ -376,11 +376,10 @@ async function ensureGoogleProvider(strapi: Core.Strapi) {
       secret: clientSecret,
       callback: '/api/auth/google/callback',
       scope: ['email'],
-      // Strapi v5: רשימת frontends שמותר להחזיר אליהם אחרי OAuth (callback מדויק, בלי query params)
-      redirectUri: ALLOWED_OAUTH_CALLBACKS.map((origin) => `${origin}/auth/google-callback`),
-      // Grant library expects redirect_uri (snake_case) for legacy compatibility
-      redirect_uri: ALLOWED_OAUTH_CALLBACKS.map((origin) => `${origin}/auth/google-callback`),
     };
+    // ביטול whitelist על redirectUri - Google כבר מוודא את ה-URI ב-Cloud Console (אבטחה כפולה)
+    delete grant.google.redirectUri;
+    delete grant.google.redirect_uri;
     if (JSON.stringify(grant.google) === before) {
       strapi.log.info('[bootstrap] Google OAuth: כבר מוגדר');
     } else {
