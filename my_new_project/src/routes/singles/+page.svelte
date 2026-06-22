@@ -15,6 +15,16 @@
         : null;
     const filter: Gender = lockedFilter ?? 'all';
 
+    // אורח (לא מחובר) - טשטוש תמונות + חסימת כניסה לדף פרופיל
+    const isGuest: boolean = !data.currentUserId;
+    function openProfile(id: string) {
+        if (isGuest) {
+            goto('/login?next=' + encodeURIComponent(`/singles/${id}`));
+            return;
+        }
+        goto(`/singles/${id}`);
+    }
+
     type AgeGroup = 'all' | 'under30' | '30plus' | 'golden';
     type Religiosity = 'all' | 'haredi' | 'dl' | 'general';
     let ageFilter = $state<AgeGroup>('all');
@@ -331,15 +341,20 @@
                 <div
                     role="link"
                     tabindex="0"
-                    aria-label="פרטים מלאים על {person.nickname}"
-                    onclick={() => goto(`/singles/${person.id}`)}
-                    onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goto(`/singles/${person.id}`); } }}
-                    class="rounded-2xl bg-[#0f172a] border {isMale ? 'border-blue-500/30' : 'border-pink-500/30'} overflow-hidden shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-400/60"
+                    aria-label={isGuest ? `התחבר כדי לצפות בפרופיל של ${person.nickname}` : `פרטים מלאים על ${person.nickname}`}
+                    onclick={() => openProfile(person.id)}
+                    onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openProfile(person.id); } }}
+                    class="relative rounded-2xl bg-[#0f172a] border {isMale ? 'border-blue-500/30' : 'border-pink-500/30'} overflow-hidden shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-400/60"
                 >
+                    {#if isGuest}
+                        <div class="absolute top-2 left-2 z-20 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-black/60 backdrop-blur text-white border border-white/15 shadow-lg">
+                            🔒 התחבר לצפייה
+                        </div>
+                    {/if}
                     <!-- Card header -->
                     <div class="bg-gradient-to-r {isMale ? 'from-blue-600 to-cyan-600' : 'from-pink-600 to-rose-500'} p-4 flex items-center gap-3 relative">
                         <div class="w-16 h-16 rounded-full bg-white/25 ring-2 ring-white/30 overflow-hidden flex items-center justify-center flex-shrink-0 shadow-md">
-                            <img src={person.avatar} alt={person.nickname} class="w-full h-full object-cover" loading="lazy" />
+                            <img src={person.avatar} alt={person.nickname} class="w-full h-full object-cover transition-all {isGuest ? 'blur-md scale-110' : ''}" loading="lazy" />
                         </div>
                         <div class="flex-1 min-w-0">
                             <h3 class="text-white font-black text-lg leading-tight mb-1">{person.nickname}</h3>

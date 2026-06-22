@@ -1,10 +1,17 @@
-import { error } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import { getDbItemById } from '$lib/server/db';
 import { mockSingles } from '$lib/singlesMock';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ params }) => {
-    const id = params.id;
+export const load: PageServerLoad = async (event) => {
+    // דפי פרופיל נחשפים רק למשתמשים רשומים
+    let session = null;
+    try { session = await event.locals.auth(); } catch {}
+    if (!session?.user?.id) {
+        throw redirect(302, '/login?next=' + encodeURIComponent(event.url.pathname));
+    }
+
+    const id = event.params.id;
 
     // קודם ננסה מ-DB (פריט אמיתי), אחר כך mock
     try {
