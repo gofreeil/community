@@ -376,8 +376,10 @@ async function ensureGoogleProvider(strapi: Core.Strapi) {
       secret: clientSecret,
       callback: '/api/auth/google/callback',
       scope: ['email'],
-      // Strapi v5: רשימת frontends שמותר להחזיר אליהם אחרי OAuth
+      // Strapi v5: רשימת frontends שמותר להחזיר אליהם אחרי OAuth (callback מדויק, בלי query params)
       redirectUri: ALLOWED_OAUTH_CALLBACKS.map((origin) => `${origin}/auth/google-callback`),
+      // Grant library expects redirect_uri (snake_case) for legacy compatibility
+      redirect_uri: ALLOWED_OAUTH_CALLBACKS.map((origin) => `${origin}/auth/google-callback`),
     };
     if (JSON.stringify(grant.google) === before) {
       strapi.log.info('[bootstrap] Google OAuth: כבר מוגדר');
