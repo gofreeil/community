@@ -71,8 +71,11 @@
     }
 
     function getAge(extraFields: string): string {
-        try { return JSON.parse(extraFields)?.age ?? ''; }
-        catch { return ''; }
+        try {
+            const ef = JSON.parse(extraFields);
+            if (ef?.birth_date) return calcAge(ef.birth_date);
+            return ef?.age ?? '';
+        } catch { return ''; }
     }
 
     function getCity(extraFields: string): string {
