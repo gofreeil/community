@@ -241,6 +241,45 @@
     <title>{item ? displayLabel : tFn("item_not_found")} | קהילה בשכונה</title>
 </svelte:head>
 
+{#snippet shareBlock()}
+    <div class="bg-white/5 p-2 rounded-lg border border-white/10 backdrop-blur-sm shrink-0 self-start">
+        <h4 class="text-white font-bold mb-1 text-[10px] text-center uppercase tracking-wider">שתף</h4>
+        <div class="flex sm:flex-col gap-1 justify-center">
+            <button type="button" onclick={shareWhatsApp} aria-label="שתף בוואטסאפ" title="שתף בוואטסאפ"
+                class="bg-green-600/20 hover:bg-green-600/40 p-1.5 rounded-md transition-all flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#25D366" aria-hidden="true" class="w-4 h-4">
+                    <path d="M19.05 4.91A10 10 0 0 0 12 2a10 10 0 0 0-8.6 15.04L2 22l5.13-1.34A10 10 0 0 0 12 22a10 10 0 0 0 7.05-17.09zM12 20.27a8.27 8.27 0 0 1-4.22-1.16l-.3-.18-3.05.8.81-2.97-.2-.31A8.27 8.27 0 1 1 20.27 12 8.27 8.27 0 0 1 12 20.27zm4.55-6.2c-.25-.13-1.47-.73-1.7-.81-.23-.08-.4-.13-.56.13-.17.25-.64.81-.79.98-.15.17-.29.19-.54.06-.25-.13-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.15-.25-.02-.39.11-.51.11-.11.25-.29.38-.44.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.36-.77-1.86-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31s-.88.86-.88 2.1.9 2.43 1.03 2.6c.13.17 1.78 2.71 4.3 3.8.6.26 1.07.41 1.43.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.11-.23-.17-.48-.3z"/>
+                </svg>
+            </button>
+            <button type="button" onclick={shareFacebook} aria-label="שתף בפייסבוק" title="שתף בפייסבוק"
+                class="bg-blue-600/20 hover:bg-blue-600/40 p-1.5 rounded-md transition-all flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#1877F2" aria-hidden="true" class="w-4 h-4">
+                    <path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.78-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.45 2.89h-2.34v6.99A10 10 0 0 0 22 12z"/>
+                </svg>
+            </button>
+            <button type="button" onclick={shareTelegram} aria-label="שתף בטלגרם" title="שתף בטלגרם"
+                class="bg-sky-500/20 hover:bg-sky-500/40 p-1.5 rounded-md transition-all flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#229ED9" aria-hidden="true" class="w-4 h-4">
+                    <path d="M9.78 15.27 9.6 18.9c.27 0 .39-.12.53-.26l1.27-1.22 2.64 1.93c.48.27.83.13.96-.45l1.74-8.16c.17-.74-.27-1.04-.74-.86L5.5 13.93c-.72.28-.71.69-.12.87l2.94.92 6.83-4.3c.32-.21.61-.09.37.13l-5.74 5.72z"/>
+                </svg>
+            </button>
+            <button type="button" onclick={copyLink} aria-label="העתק קישור" title={copied ? 'הקישור הועתק' : 'העתק קישור'}
+                class="bg-white/10 hover:bg-white/20 p-1.5 rounded-md transition-all flex items-center justify-center text-white">
+                {#if copied}
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="w-4 h-4 text-emerald-400">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                {:else}
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="w-4 h-4">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                    </svg>
+                {/if}
+            </button>
+        </div>
+    </div>
+{/snippet}
+
 {#snippet socialLinksBlock()}
     {@const ef = (item?.isUserSubmitted ? item?.extraFields : null) as Record<string, unknown> | null}
     {@const website   = typeof ef?.website   === 'string' ? ef.website   : ''}
@@ -582,19 +621,21 @@
 
                             {@render socialLinksBlock()}
 
-                            {@render extraFieldsBlock()}
+                            <div class="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2 items-start">
+                                <div class="min-w-0">{@render extraFieldsBlock()}</div>
+                                {@render shareBlock()}
+                            </div>
                         </div>
 
-                        <!-- Actions (inline, no sidebar) -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <!-- Actions (compact, full width) -->
+                        <div class="grid grid-cols-1 gap-2">
                             {#if item.category === 'singles'}
                                 <!-- Singles: בקשת טלפון / סטטוס / תיבת בעלים -->
                                 {#if singlesState === 'owner'}
-                                    <div class="bg-gradient-to-br from-rose-600 to-pink-600 p-4 rounded-2xl shadow-xl">
-                                        <h3 class="text-white font-bold text-base mb-1">📥 בקשות נכנסות</h3>
-                                        <p class="text-white/80 text-xs mb-2">משתמשים שביקשו לקבל את הטלפון שלך. הצג פרטים, ואשר רק אם מתאים.</p>
+                                    <div class="bg-gradient-to-br from-rose-600 to-pink-600 p-2 rounded-xl shadow-md">
+                                        <h3 class="text-white font-bold text-sm mb-0.5 flex items-center gap-1">📥 בקשות נכנסות</h3>
                                         {#if incoming.length === 0}
-                                            <p class="text-white/80 text-xs bg-white/10 rounded-lg px-2.5 py-1.5">אין בקשות ממתינות</p>
+                                            <p class="text-white/80 text-[11px] bg-white/10 rounded px-2 py-0.5">אין בקשות ממתינות</p>
                                         {:else}
                                             <ul class="space-y-3">
                                                 {#each incoming as r (r.id)}
@@ -632,19 +673,19 @@
                                         {/if}
                                     </div>
                                 {:else if singlesState === 'guest'}
-                                    <div class="bg-gradient-to-br from-rose-600 to-pink-600 p-4 rounded-2xl shadow-xl text-center">
+                                    <div class="bg-gradient-to-br from-rose-600 to-pink-600 p-2 rounded-xl shadow-md text-center">
                                         <h3 class="text-white font-bold text-base mb-1">🔒 הטלפון מוגן</h3>
                                         <p class="text-white/80 text-xs mb-2">כדי לבקש את הטלפון יש להתחבר. רק לאחר אישור הצד השני - תקבל את מספרו.</p>
                                         <a href="/login?redirect=/items/{item.id}" class="block w-full bg-white text-rose-600 font-bold py-2 rounded-lg text-center shadow-lg hover:scale-[1.02] transition-transform text-sm">התחבר כדי לבקש</a>
                                     </div>
                                 {:else if singlesState === 'pending'}
-                                    <div class="bg-gradient-to-br from-amber-600 to-orange-600 p-4 rounded-2xl shadow-xl text-center">
+                                    <div class="bg-gradient-to-br from-amber-600 to-orange-600 p-2 rounded-xl shadow-md text-center">
                                         <div class="text-2xl mb-1">⏳</div>
                                         <h3 class="text-white font-bold text-base mb-1">בקשתך נשלחה</h3>
                                         <p class="text-white/85 text-xs">הצד השני יקבל את הפרופיל שלך וייחליט. ברגע שיאשר - הטלפון יופיע כאן.</p>
                                     </div>
                                 {:else if singlesState === 'approved'}
-                                    <div class="bg-gradient-to-br from-emerald-600 to-green-600 p-4 rounded-2xl shadow-xl text-center">
+                                    <div class="bg-gradient-to-br from-emerald-600 to-green-600 p-2 rounded-xl shadow-md text-center">
                                         <div class="text-2xl mb-1">✅</div>
                                         <h3 class="text-white font-bold text-base mb-1">בקשתך אושרה!</h3>
                                         <p class="text-white/85 text-xs mb-2">הטלפון מוצג למעלה.</p>
@@ -653,13 +694,13 @@
                                         {/if}
                                     </div>
                                 {:else if singlesState === 'rejected'}
-                                    <div class="bg-gradient-to-br from-gray-700 to-gray-800 p-4 rounded-2xl shadow-xl text-center">
+                                    <div class="bg-gradient-to-br from-gray-700 to-gray-800 p-2 rounded-xl shadow-md text-center">
                                         <div class="text-2xl mb-1">😕</div>
                                         <h3 class="text-white font-bold text-base mb-1">הבקשה לא אושרה</h3>
                                         <p class="text-white/70 text-xs">הצד השני בחר לא לשתף את הטלפון בשלב הזה.</p>
                                     </div>
                                 {:else}
-                                    <div class="bg-gradient-to-br from-rose-600 to-pink-600 p-4 rounded-2xl shadow-xl">
+                                    <div class="bg-gradient-to-br from-rose-600 to-pink-600 p-2 rounded-xl shadow-md">
                                         <h3 class="text-white font-bold text-base mb-1">🔒 הטלפון מוגן</h3>
                                         <p class="text-white/85 text-xs mb-2">
                                             לחיצה תשלח לצד השני את הפרופיל שלך (שם, גיל, מגזר, שכונה). הטלפון יישלח אליך רק לאחר אישורו.
@@ -680,7 +721,7 @@
                                 {/if}
                             {:else}
                                 <div
-                                    class="bg-gradient-to-br from-purple-600 to-blue-600 p-4 rounded-2xl shadow-xl"
+                                    class="bg-gradient-to-br from-purple-600 to-blue-600 p-2 rounded-xl shadow-md"
                                 >
                                     <h3 class="text-white font-bold text-base mb-2">
                                         זקוק לפרטים נוספים?
@@ -705,66 +746,6 @@
                                 </div>
                             {/if}
 
-                            <div
-                                class="bg-white/5 p-3 rounded-2xl border border-white/10 backdrop-blur-sm"
-                            >
-                                <h4 class="text-white font-bold mb-2 text-sm">
-                                    שתף עם חברים
-                                </h4>
-                                <div class="flex gap-2 flex-wrap">
-                                    <button
-                                        type="button"
-                                        onclick={shareWhatsApp}
-                                        aria-label="שתף בוואטסאפ"
-                                        title="שתף בוואטסאפ"
-                                        class="bg-green-600/20 hover:bg-green-600/40 p-2 rounded-lg transition-all flex items-center justify-center"
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#25D366" aria-hidden="true" class="w-5 h-5">
-                                            <path d="M19.05 4.91A10 10 0 0 0 12 2a10 10 0 0 0-8.6 15.04L2 22l5.13-1.34A10 10 0 0 0 12 22a10 10 0 0 0 7.05-17.09zM12 20.27a8.27 8.27 0 0 1-4.22-1.16l-.3-.18-3.05.8.81-2.97-.2-.31A8.27 8.27 0 1 1 20.27 12 8.27 8.27 0 0 1 12 20.27zm4.55-6.2c-.25-.13-1.47-.73-1.7-.81-.23-.08-.4-.13-.56.13-.17.25-.64.81-.79.98-.15.17-.29.19-.54.06-.25-.13-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.15-.25-.02-.39.11-.51.11-.11.25-.29.38-.44.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.36-.77-1.86-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31s-.88.86-.88 2.1.9 2.43 1.03 2.6c.13.17 1.78 2.71 4.3 3.8.6.26 1.07.41 1.43.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.11-.23-.17-.48-.3z"/>
-                                        </svg>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onclick={shareFacebook}
-                                        aria-label="שתף בפייסבוק"
-                                        title="שתף בפייסבוק"
-                                        class="bg-blue-600/20 hover:bg-blue-600/40 p-2 rounded-lg transition-all flex items-center justify-center"
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#1877F2" aria-hidden="true" class="w-5 h-5">
-                                            <path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.78-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.45 2.89h-2.34v6.99A10 10 0 0 0 22 12z"/>
-                                        </svg>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onclick={shareTelegram}
-                                        aria-label="שתף בטלגרם"
-                                        title="שתף בטלגרם"
-                                        class="bg-sky-500/20 hover:bg-sky-500/40 p-2 rounded-lg transition-all flex items-center justify-center"
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#229ED9" aria-hidden="true" class="w-5 h-5">
-                                            <path d="M9.78 15.27 9.6 18.9c.27 0 .39-.12.53-.26l1.27-1.22 2.64 1.93c.48.27.83.13.96-.45l1.74-8.16c.17-.74-.27-1.04-.74-.86L5.5 13.93c-.72.28-.71.69-.12.87l2.94.92 6.83-4.3c.32-.21.61-.09.37.13l-5.74 5.72z"/>
-                                        </svg>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onclick={copyLink}
-                                        aria-label="העתק קישור"
-                                        title={copied ? 'הקישור הועתק' : 'העתק קישור'}
-                                        class="bg-white/10 hover:bg-white/20 p-2 rounded-lg transition-all flex items-center justify-center text-white"
-                                    >
-                                        {#if copied}
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="w-6 h-6 text-emerald-400">
-                                                <polyline points="20 6 9 17 4 12"/>
-                                            </svg>
-                                        {:else}
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="w-5 h-5">
-                                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                                            </svg>
-                                        {/if}
-                                    </button>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
