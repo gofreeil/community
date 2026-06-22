@@ -220,7 +220,7 @@
 		? {
 				id: "singles-match",
 				from: "💑 פנויים/פנויות",
-				text: `דף הפרופיל שלך מוכן ויש עבורך כ-${(data as { singlesMatchInfo?: { count: number } }).singlesMatchInfo!.count} ${(data as { singlesMatchInfo?: { oppositeGenderLabel: string } }).singlesMatchInfo!.oppositeGenderLabel} בגילך (${(data as { singlesMatchInfo?: { ageGroupLabel: string } }).singlesMatchInfo!.ageGroupLabel}). לחץ כאן ←`,
+				text: `דף הפרופיל שלך מוכן ויש עבורך כ-${(data as { singlesMatchInfo?: { count: number } }).singlesMatchInfo!.count} ${(data as { singlesMatchInfo?: { oppositeGenderLabel: string } }).singlesMatchInfo!.oppositeGenderLabel} בגילך (${(data as { singlesMatchInfo?: { ageGroupLabel: string } }).singlesMatchInfo!.ageGroupLabel}).`,
 				time: "עכשיו",
 				read: false,
 			}
@@ -1924,6 +1924,7 @@
 			>
 				{#each finalDisplayedMessages as msg}
 					{@const isDraft = (msg as { isDraft?: boolean }).isDraft}
+					{@const isSinglesMatch = msg.id === 'singles-match'}
 					<div
 						class="flex items-start gap-3 rounded-2xl border px-4 py-3 transition-all
 							{isDraft
@@ -1949,6 +1950,16 @@
 								>
 							</div>
 							<p class="text-gray-300 text-xs leading-relaxed">{msg.text}</p>
+							{#if isSinglesMatch}
+								<div class="flex items-center gap-2 mt-2 flex-wrap">
+									<a
+										href="/singles"
+										class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-400 hover:to-rose-400 text-white font-black text-xs transition-colors shadow-lg"
+									>
+										💑 לצפייה בלוח ובכרטיס שלך ←
+									</a>
+								</div>
+							{/if}
 							{#if isDraft}
 								<div class="flex items-center gap-1.5 justify-between mt-2 flex-wrap">
 									<a href="/about/advertise/builder"
