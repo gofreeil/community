@@ -409,7 +409,7 @@
                         {item.description}
                     </p>
                     {#if item.address}
-                        <div class="bg-white/5 p-2 rounded-lg border border-white/5 flex items-center gap-2">
+                        <div class="flex items-center gap-2">
                             <span class="text-xl text-blue-400">📍</span>
                             <div>
                                 <p class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">כתובת</p>
