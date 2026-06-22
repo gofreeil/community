@@ -296,7 +296,7 @@
     {@const ensureUrl = (u: string) => (/^https?:\/\//i.test(u) ? u : `https://${u}`)}
     {#if website || facebook || instagram || youtube || tiktok}
         <section>
-            <h2 class="text-sm font-bold text-white mb-1.5 flex items-center gap-1.5">
+            <h2 class="text-base font-bold text-white mb-1.5 flex items-center gap-1.5">
                 <span class="w-1 h-4 bg-indigo-500 rounded-full"></span>קישורים
             </h2>
             <div class="flex flex-wrap gap-2">
@@ -380,7 +380,7 @@
         : []}
     {#if visibleEntries.length > 0}
         <section>
-            <h2 class="text-sm font-bold text-white mb-1.5 flex items-center gap-1.5">
+            <h2 class="text-base font-bold text-white mb-1.5 flex items-center gap-1.5">
                 <span class="w-1 h-4 bg-green-500 rounded-full"></span>{tFn("more_details")}</h2>
             <dl class="rounded-xl border border-white/10 overflow-hidden grid grid-cols-1 sm:grid-cols-2 gap-px bg-white/10">
                 {#each visibleEntries as [key, value]}
@@ -431,7 +431,7 @@
                                 <img
                                     src={galleryImages[galleryIndex]}
                                     alt={item.label}
-                                    class="max-w-full max-h-[150px] md:max-h-[180px] w-auto h-auto object-contain cursor-zoom-in"
+                                    class="max-w-full max-h-[220px] md:max-h-[280px] w-auto h-auto object-contain cursor-zoom-in"
                                     in:fade={{ duration: 200 }}
                                 />
                             </button>
@@ -484,24 +484,24 @@
                 <!-- Side info: nickname + description + address (next to image on md+) -->
                 <div class="px-3 md:px-4 py-2 flex flex-col gap-2">
                     {#if nickname}
-                        <p class="text-white text-lg md:text-xl font-bold leading-tight">{nickname}</p>
+                        <p class="text-white text-xl md:text-2xl font-bold leading-tight">{nickname}</p>
                     {/if}
                     {#if sector || age != null}
-                        <p class="text-gray-300 text-sm leading-tight">
+                        <p class="text-gray-300 text-base leading-tight">
                             {#if sector}<span>{sector}</span>{/if}
                             {#if sector && age != null}<span class="text-gray-500"> · </span>{/if}
                             {#if age != null}<span>גיל: {age}</span>{/if}
                         </p>
                     {/if}
-                    <p class="text-gray-200 text-sm leading-snug flex-1">
+                    <p class="text-gray-200 text-base leading-snug flex-1">
                         {item.description}
                     </p>
                     {#if item.address}
                         <div class="flex items-center gap-2">
                             <span class="text-xl text-blue-400">📍</span>
                             <div>
-                                <p class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">כתובת</p>
-                                <p class="text-white font-medium text-sm">{item.address}</p>
+                                <p class="text-xs text-gray-400 uppercase font-bold tracking-wider">כתובת</p>
+                                <p class="text-white font-medium text-base">{item.address}</p>
                             </div>
                         </div>
                     {/if}
@@ -531,7 +531,7 @@
                         <div class="space-y-2">
                             {#if itemCondition}
                                 <section>
-                                    <h2 class="text-sm font-bold text-white mb-1.5 flex items-center gap-1.5">
+                                    <h2 class="text-base font-bold text-white mb-1.5 flex items-center gap-1.5">
                                         <span class="w-1 h-4 bg-orange-500 rounded-full"></span>
                                         מצב הפריט
                                     </h2>
@@ -546,34 +546,13 @@
 
                             <section>
                                 <h2
-                                    class="text-sm font-bold text-white mb-1.5 flex items-center gap-1.5"
+                                    class="text-base font-bold text-white mb-1.5 flex items-center gap-1.5"
                                 >
                                     <span
                                         class="w-1 h-4 bg-blue-500 rounded-full"
                                     ></span>
                                     מיקום ופרטי קשר
                                 </h2>
-                                <div
-                                    class="mb-1.5 bg-white/5 p-2 rounded-lg border border-white/5 flex items-center gap-2"
-                                    class:hidden={!(item as { isOwner?: boolean } | null)?.isOwner}
-                                >
-                                    <span class="text-xl text-yellow-400"
-                                        >👁️</span
-                                    >
-                                    <div>
-                                        <p
-                                            class="text-[10px] text-gray-400 uppercase font-bold tracking-wider"
-                                        >
-                                            תצפיות
-                                        </p>
-                                        <p
-                                            class="text-white font-medium text-sm"
-                                        >
-                                            {item?.viewCount ?? 0} אנשים ראו את הפריט הזה
-                                        </p>
-                                        <p class="text-[10px] text-gray-500 mt-0.5">🔒 הנתון גלוי רק לך, בעל הפריט</p>
-                                    </div>
-                                </div>
                                 <div
                                     class="grid grid-cols-1 sm:grid-cols-2 gap-2"
                                 >
@@ -587,12 +566,12 @@
                                             >
                                             <div>
                                                 <p
-                                                    class="text-[10px] text-gray-400 uppercase font-bold tracking-wider"
+                                                    class="text-xs text-gray-400 uppercase font-bold tracking-wider"
                                                 >
                                                     טלפון
                                                 </p>
                                                 <p
-                                                    class="text-white font-medium text-sm"
+                                                    class="text-white font-medium text-base"
                                                 >
                                                     {item.phone}
                                                 </p>
@@ -602,8 +581,8 @@
                                         <div class="bg-emerald-900/20 p-2.5 rounded-lg border border-emerald-500/30 flex items-center gap-3">
                                             <span class="text-xl text-emerald-300">✅</span>
                                             <div>
-                                                <p class="text-[10px] text-emerald-300 uppercase font-bold tracking-wider">טלפון (אושר)</p>
-                                                <p class="text-white font-medium text-sm">{item.phone}</p>
+                                                <p class="text-xs text-emerald-300 uppercase font-bold tracking-wider">טלפון (אושר)</p>
+                                                <p class="text-white font-medium text-base">{item.phone}</p>
                                             </div>
                                         </div>
                                     {/if}
@@ -617,12 +596,12 @@
                                             >
                                             <div>
                                                 <p
-                                                    class="text-[10px] text-gray-400 uppercase font-bold tracking-wider"
+                                                    class="text-xs text-gray-400 uppercase font-bold tracking-wider"
                                                 >
                                                     איש קשר
                                                 </p>
                                                 <p
-                                                    class="text-white font-medium text-sm"
+                                                    class="text-white font-medium text-base"
                                                 >
                                                     {item.contact}
                                                 </p>
@@ -646,7 +625,13 @@
                                 <!-- Singles: בקשת טלפון / סטטוס / תיבת בעלים -->
                                 {#if singlesState === 'owner'}
                                     <div class="bg-gradient-to-br from-rose-600 to-pink-600 p-2 rounded-xl shadow-md">
-                                        <h3 class="text-white font-bold text-sm mb-0.5 flex items-center gap-1">📥 בקשות נכנסות</h3>
+                                        <div class="flex items-center justify-between gap-2 mb-0.5">
+                                            <h3 class="text-white font-bold text-sm flex items-center gap-1">📥 בקשות נכנסות</h3>
+                                            <span
+                                                class="inline-flex items-center gap-1 text-white/85 text-[11px] bg-white/15 rounded-full px-2 py-0.5 whitespace-nowrap"
+                                                title="🔒 הנתון גלוי רק לך, בעל הפריט"
+                                            >👁️ {item?.viewCount ?? 0} צפיות</span>
+                                        </div>
                                         {#if incoming.length === 0}
                                             <p class="text-white/80 text-[11px] bg-white/10 rounded px-2 py-0.5">אין בקשות ממתינות</p>
                                         {:else}
