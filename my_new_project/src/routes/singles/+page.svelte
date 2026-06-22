@@ -286,8 +286,7 @@
                             <img src={selfCard.avatar} alt={selfCard.nickname} class="w-full h-full object-cover" loading="lazy" />
                         </div>
                         <div class="flex-1 min-w-0">
-                            <h3 class="text-white font-black text-lg leading-tight">{selfCard.nickname}</h3>
-                            <p class="text-white/70 text-xs font-medium mb-1">{selfCard.label}</p>
+                            <h3 class="text-white font-black text-lg leading-tight mb-1">{selfCard.nickname}</h3>
                             <div class="flex items-center gap-3 text-white/85 text-sm">
                                 {#if selfCard.age}<span>🎂 {selfCard.age}</span>{/if}
                                 {#if selfCard.city}<span>📍 {selfCard.city}</span>{/if}
@@ -323,8 +322,7 @@
                             <img src={person.avatar} alt={person.nickname} class="w-full h-full object-cover" loading="lazy" />
                         </div>
                         <div class="flex-1 min-w-0">
-                            <h3 class="text-white font-black text-lg leading-tight">{person.nickname}</h3>
-                            <p class="text-white/70 text-xs font-medium mb-1">{person.label}</p>
+                            <h3 class="text-white font-black text-lg leading-tight mb-1">{person.nickname}</h3>
                             <div class="flex items-center gap-3 text-white/85 text-sm">
                                 <span>🎂 {person.age}</span>
                                 <span>📍 {person.city}</span>
