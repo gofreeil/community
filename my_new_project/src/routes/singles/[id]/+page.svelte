@@ -1,5 +1,6 @@
 <script lang="ts">
     import type { PageData } from './$types';
+    import { religiosityLabel } from '$lib/singlesMock';
     let { data }: { data: PageData } = $props();
 
     const s = data.single!;
@@ -39,7 +40,12 @@
                             {#if s.city}<span class="inline-flex items-center gap-1">📍 {s.city}</span>{/if}
                             {#if s.religiosity}
                                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/15 text-xs font-bold">
-                                    {s.religiosity === 'haredi' ? 'חרדי' : s.religiosity === 'dl' ? 'דתי לאומי' : 'מגזר כללי'}
+                                    {religiosityLabel(s.religiosity, s.gender)}
+                                </span>
+                            {/if}
+                            {#if s.maritalStatus}
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/15 text-xs font-bold">
+                                    💍 {s.maritalStatus}
                                 </span>
                             {/if}
                         </div>
@@ -53,6 +59,20 @@
                     <section>
                         <h2 class="text-{isMale ? 'cyan' : 'pink'}-300 text-sm font-black mb-2 uppercase tracking-wider">קצת עליי</h2>
                         <p class="text-gray-200 text-base leading-relaxed">{s.description}</p>
+                    </section>
+                {/if}
+
+                {#if s.education}
+                    <section>
+                        <h2 class="text-{isMale ? 'cyan' : 'pink'}-300 text-sm font-black mb-2 uppercase tracking-wider">מקצוע / השכלה</h2>
+                        <p class="text-gray-200 text-base leading-relaxed">{s.education}</p>
+                    </section>
+                {/if}
+
+                {#if s.interests}
+                    <section>
+                        <h2 class="text-{isMale ? 'cyan' : 'pink'}-300 text-sm font-black mb-2 uppercase tracking-wider">תחומי עניין</h2>
+                        <p class="text-gray-200 text-base leading-relaxed">{s.interests}</p>
                     </section>
                 {/if}
 
@@ -79,6 +99,12 @@
                             <div class="flex items-center gap-2 text-sm">
                                 <span class="text-gray-400">📨 דרך:</span>
                                 <span class="font-bold">{s.contact}</span>
+                            </div>
+                        {/if}
+                        {#if s.matchmaker}
+                            <div class="flex items-center gap-2 text-sm">
+                                <span class="text-gray-400">🤝 שדכן/חבר:</span>
+                                <span class="font-bold">{s.matchmaker}</span>
                             </div>
                         {/if}
                     </div>
