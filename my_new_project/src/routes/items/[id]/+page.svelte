@@ -192,10 +192,10 @@
     {@const ensureUrl = (u: string) => (/^https?:\/\//i.test(u) ? u : `https://${u}`)}
     {#if website || facebook || instagram || youtube || tiktok}
         <section>
-            <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-                <span class="w-1.5 h-8 bg-indigo-500 rounded-full"></span>קישורים
+            <h2 class="text-sm font-bold text-white mb-1.5 flex items-center gap-1.5">
+                <span class="w-1 h-4 bg-indigo-500 rounded-full"></span>קישורים
             </h2>
-            <div class="flex flex-wrap gap-3">
+            <div class="flex flex-wrap gap-2">
                 {#if website}
                     <a href={ensureUrl(website)} target="_blank" rel="noopener noreferrer"
                         class="flex items-center gap-2 bg-white/5 hover:bg-indigo-600/20 border border-white/10 hover:border-indigo-500/50 text-white font-bold px-4 py-2.5 rounded-xl transition-all">
@@ -276,13 +276,13 @@
         : []}
     {#if visibleEntries.length > 0}
         <section>
-            <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-                <span class="w-1.5 h-8 bg-green-500 rounded-full"></span>{tFn("more_details")}</h2>
-            <dl class="rounded-2xl bg-white/5 border border-white/10 overflow-hidden divide-y divide-white/5">
+            <h2 class="text-sm font-bold text-white mb-1.5 flex items-center gap-1.5">
+                <span class="w-1 h-4 bg-green-500 rounded-full"></span>{tFn("more_details")}</h2>
+            <dl class="rounded-xl bg-white/5 border border-white/10 overflow-hidden divide-y divide-white/5">
                 {#each visibleEntries as [key, value]}
-                    <div class="grid grid-cols-[auto,1fr] gap-x-4 px-4 py-3">
-                        <dt class="text-sm text-gray-400 font-semibold whitespace-nowrap">{LABELS_HE[key] ?? key}</dt>
-                        <dd class="text-white font-medium text-sm">{formatValue(key, value)}</dd>
+                    <div class="grid grid-cols-[auto,1fr] gap-x-3 px-3 py-2">
+                        <dt class="text-xs text-gray-400 font-semibold whitespace-nowrap">{LABELS_HE[key] ?? key}</dt>
+                        <dd class="text-white font-medium text-xs">{formatValue(key, value)}</dd>
                     </div>
                 {/each}
             </dl>
@@ -290,13 +290,13 @@
     {/if}
 {/snippet}
 
-<div class="min-h-screen bg-[#070b14] py-12 px-4 md:px-8">
+<div class="min-h-screen bg-[#070b14] py-2 md:py-3 px-3 md:px-6">
     <div class="max-w-4xl mx-auto">
         <!-- Back button -->
         <button
             onclick={goBack}
             aria-label="חזרה לדף הקודם"
-            class="mb-8 flex items-center gap-2 text-purple-400 hover:text-purple-300 transition-colors group"
+            class="mb-2 flex items-center gap-2 text-purple-400 hover:text-purple-300 transition-colors group text-xs"
         >
             <span
                 class="text-xl group-hover:-translate-x-1 transition-transform"
@@ -312,7 +312,7 @@
                 in:fly={{ y: 50, duration: 800, delay: 200 }}
             >
                 <!-- Header / Image gallery -->
-                <div class="relative h-[300px] md:h-[450px] bg-[#0a0f1a]">
+                <div class="relative h-[110px] md:h-[140px] bg-[#0a0f1a]">
                     {#if galleryImages.length > 0}
                         {#key galleryIndex}
                             <img
@@ -359,10 +359,10 @@
                     {/if}
                     <div class="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-transparent to-transparent pointer-events-none"></div>
 
-                    <div class="absolute bottom-8 right-8 text-white pointer-events-none">
-                        <div class="flex items-center gap-4 mb-4">
-                            <span class="text-4xl p-3 bg-white/10 backdrop-blur-md rounded-2xl shadow-xl">{item.icon}</span>
-                            <h2 class="text-4xl md:text-6xl font-black tracking-tight drop-shadow-2xl">{item.label}</h2>
+                    <div class="absolute bottom-2 right-3 text-white pointer-events-none">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-xl p-1.5 bg-white/10 backdrop-blur-md rounded-lg shadow-xl">{item.icon}</span>
+                            <h2 class="text-xl md:text-2xl font-black tracking-tight drop-shadow-2xl">{item.label}</h2>
                         </div>
                     </div>
                 </div>
@@ -384,21 +384,21 @@
                 {/if}
 
                 <!-- Content -->
-                <div class="p-8 md:p-12">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+                <div class="p-3 md:p-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
                         <!-- Main info -->
-                        <div class="md:col-span-2 space-y-8">
+                        <div class="md:col-span-2 space-y-2">
                             <section>
                                 <h2
-                                    class="text-2xl font-bold text-white mb-4 flex items-center gap-2"
+                                    class="text-sm font-bold text-white mb-1.5 flex items-center gap-1.5"
                                 >
                                     <span
-                                        class="w-1.5 h-8 bg-purple-500 rounded-full"
+                                        class="w-1 h-4 bg-purple-500 rounded-full"
                                     ></span>
                                     תיאור הפריט
                                 </h2>
                                 <p
-                                    class="text-gray-300 text-lg leading-relaxed bg-white/5 p-6 rounded-2xl border border-white/5"
+                                    class="text-gray-300 text-sm leading-snug bg-white/5 p-2.5 rounded-lg border border-white/5"
                                 >
                                     {item.description}
                                 </p>
@@ -406,12 +406,12 @@
 
                             {#if itemCondition}
                                 <section>
-                                    <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-                                        <span class="w-1.5 h-8 bg-orange-500 rounded-full"></span>
+                                    <h2 class="text-sm font-bold text-white mb-1.5 flex items-center gap-1.5">
+                                        <span class="w-1 h-4 bg-orange-500 rounded-full"></span>
                                         מצב הפריט
                                     </h2>
-                                    <div class="bg-white/5 p-4 rounded-xl border border-white/5 flex items-center gap-3">
-                                        <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-base font-bold border {conditionBadgeClass(itemCondition)}">
+                                    <div class="bg-white/5 p-2 rounded-lg border border-white/5 flex items-center gap-2">
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-bold border {conditionBadgeClass(itemCondition)}">
                                             <span aria-hidden="true">{conditionIcon(itemCondition)}</span>
                                             <span>{itemCondition}</span>
                                         </span>
@@ -421,28 +421,28 @@
 
                             <section>
                                 <h2
-                                    class="text-2xl font-bold text-white mb-4 flex items-center gap-2"
+                                    class="text-sm font-bold text-white mb-1.5 flex items-center gap-1.5"
                                 >
                                     <span
-                                        class="w-1.5 h-8 bg-blue-500 rounded-full"
+                                        class="w-1 h-4 bg-blue-500 rounded-full"
                                     ></span>
                                     מיקום ופרטי קשר
                                 </h2>
                                 <div
-                                    class="mb-4 bg-white/5 p-4 rounded-xl border border-white/5 flex items-center gap-4"
+                                    class="mb-1.5 bg-white/5 p-2 rounded-lg border border-white/5 flex items-center gap-2"
                                     class:hidden={!(item as { isOwner?: boolean } | null)?.isOwner}
                                 >
-                                    <span class="text-2xl text-yellow-400"
+                                    <span class="text-xl text-yellow-400"
                                         >👁️</span
                                     >
                                     <div>
                                         <p
-                                            class="text-xs text-gray-400 uppercase font-bold tracking-wider"
+                                            class="text-[10px] text-gray-400 uppercase font-bold tracking-wider"
                                         >
                                             תצפיות
                                         </p>
                                         <p
-                                            class="text-white font-medium"
+                                            class="text-white font-medium text-sm"
                                         >
                                             {item?.viewCount ?? 0} אנשים ראו את הפריט הזה
                                         </p>
@@ -450,23 +450,23 @@
                                     </div>
                                 </div>
                                 <div
-                                    class="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                                    class="grid grid-cols-1 sm:grid-cols-2 gap-2"
                                 >
                                     {#if item.address}
                                         <div
-                                            class="bg-white/5 p-4 rounded-xl border border-white/5 flex items-center gap-4"
+                                            class="bg-white/5 p-2 rounded-lg border border-white/5 flex items-center gap-2"
                                         >
-                                            <span class="text-2xl text-blue-400"
+                                            <span class="text-xl text-blue-400"
                                                 >📍</span
                                             >
                                             <div>
                                                 <p
-                                                    class="text-xs text-gray-400 uppercase font-bold tracking-wider"
+                                                    class="text-[10px] text-gray-400 uppercase font-bold tracking-wider"
                                                 >
                                                     כתובת
                                                 </p>
                                                 <p
-                                                    class="text-white font-medium"
+                                                    class="text-white font-medium text-sm"
                                                 >
                                                     {item.address}
                                                 </p>
@@ -475,50 +475,50 @@
                                     {/if}
                                     {#if item.phone && item.category !== 'singles'}
                                         <div
-                                            class="bg-white/5 p-4 rounded-xl border border-white/5 flex items-center gap-4"
+                                            class="bg-white/5 p-2 rounded-lg border border-white/5 flex items-center gap-2"
                                         >
                                             <span
-                                                class="text-2xl text-green-400"
+                                                class="text-xl text-green-400"
                                                 >📞</span
                                             >
                                             <div>
                                                 <p
-                                                    class="text-xs text-gray-400 uppercase font-bold tracking-wider"
+                                                    class="text-[10px] text-gray-400 uppercase font-bold tracking-wider"
                                                 >
                                                     טלפון
                                                 </p>
                                                 <p
-                                                    class="text-white font-medium"
+                                                    class="text-white font-medium text-sm"
                                                 >
                                                     {item.phone}
                                                 </p>
                                             </div>
                                         </div>
                                     {:else if item.category === 'singles' && singlesState === 'approved' && item.phone}
-                                        <div class="bg-emerald-900/20 p-4 rounded-xl border border-emerald-500/30 flex items-center gap-4">
-                                            <span class="text-2xl text-emerald-300">✅</span>
+                                        <div class="bg-emerald-900/20 p-2.5 rounded-lg border border-emerald-500/30 flex items-center gap-3">
+                                            <span class="text-xl text-emerald-300">✅</span>
                                             <div>
-                                                <p class="text-xs text-emerald-300 uppercase font-bold tracking-wider">טלפון (אושר)</p>
-                                                <p class="text-white font-medium">{item.phone}</p>
+                                                <p class="text-[10px] text-emerald-300 uppercase font-bold tracking-wider">טלפון (אושר)</p>
+                                                <p class="text-white font-medium text-sm">{item.phone}</p>
                                             </div>
                                         </div>
                                     {/if}
                                     {#if item.contact}
                                         <div
-                                            class="bg-white/5 p-4 rounded-xl border border-white/5 flex items-center gap-4"
+                                            class="bg-white/5 p-2 rounded-lg border border-white/5 flex items-center gap-2"
                                         >
                                             <span
-                                                class="text-2xl text-purple-400"
+                                                class="text-xl text-purple-400"
                                                 >👤</span
                                             >
                                             <div>
                                                 <p
-                                                    class="text-xs text-gray-400 uppercase font-bold tracking-wider"
+                                                    class="text-[10px] text-gray-400 uppercase font-bold tracking-wider"
                                                 >
                                                     איש קשר
                                                 </p>
                                                 <p
-                                                    class="text-white font-medium"
+                                                    class="text-white font-medium text-sm"
                                                 >
                                                     {item.contact}
                                                 </p>
@@ -534,15 +534,15 @@
                         </div>
 
                         <!-- Sidebar / Actions -->
-                        <div class="space-y-6">
+                        <div class="space-y-3">
                             {#if item.category === 'singles'}
                                 <!-- Singles: בקשת טלפון / סטטוס / תיבת בעלים -->
                                 {#if singlesState === 'owner'}
-                                    <div class="bg-gradient-to-br from-rose-600 to-pink-600 p-6 rounded-3xl shadow-xl">
-                                        <h3 class="text-white font-bold text-xl mb-2">📥 בקשות נכנסות</h3>
-                                        <p class="text-white/80 text-sm mb-4">משתמשים שביקשו לקבל את הטלפון שלך. הצג פרטים, ואשר רק אם מתאים.</p>
+                                    <div class="bg-gradient-to-br from-rose-600 to-pink-600 p-4 rounded-2xl shadow-xl">
+                                        <h3 class="text-white font-bold text-base mb-1">📥 בקשות נכנסות</h3>
+                                        <p class="text-white/80 text-xs mb-2">משתמשים שביקשו לקבל את הטלפון שלך. הצג פרטים, ואשר רק אם מתאים.</p>
                                         {#if incoming.length === 0}
-                                            <p class="text-white/80 text-sm bg-white/10 rounded-xl px-3 py-2">אין בקשות ממתינות</p>
+                                            <p class="text-white/80 text-xs bg-white/10 rounded-lg px-2.5 py-1.5">אין בקשות ממתינות</p>
                                         {:else}
                                             <ul class="space-y-3">
                                                 {#each incoming as r (r.id)}
@@ -580,73 +580,73 @@
                                         {/if}
                                     </div>
                                 {:else if singlesState === 'guest'}
-                                    <div class="bg-gradient-to-br from-rose-600 to-pink-600 p-8 rounded-3xl shadow-xl text-center">
-                                        <h3 class="text-white font-bold text-xl mb-2">🔒 הטלפון מוגן</h3>
-                                        <p class="text-white/80 text-sm mb-4">כדי לבקש את הטלפון יש להתחבר. רק לאחר אישור הצד השני - תקבל את מספרו.</p>
-                                        <a href="/login?redirect=/items/{item.id}" class="block w-full bg-white text-rose-600 font-bold py-3 rounded-xl text-center shadow-lg hover:scale-[1.02] transition-transform">התחבר כדי לבקש</a>
+                                    <div class="bg-gradient-to-br from-rose-600 to-pink-600 p-4 rounded-2xl shadow-xl text-center">
+                                        <h3 class="text-white font-bold text-base mb-1">🔒 הטלפון מוגן</h3>
+                                        <p class="text-white/80 text-xs mb-2">כדי לבקש את הטלפון יש להתחבר. רק לאחר אישור הצד השני - תקבל את מספרו.</p>
+                                        <a href="/login?redirect=/items/{item.id}" class="block w-full bg-white text-rose-600 font-bold py-2 rounded-lg text-center shadow-lg hover:scale-[1.02] transition-transform text-sm">התחבר כדי לבקש</a>
                                     </div>
                                 {:else if singlesState === 'pending'}
-                                    <div class="bg-gradient-to-br from-amber-600 to-orange-600 p-8 rounded-3xl shadow-xl text-center">
-                                        <div class="text-4xl mb-2">⏳</div>
-                                        <h3 class="text-white font-bold text-xl mb-2">בקשתך נשלחה</h3>
-                                        <p class="text-white/85 text-sm">הצד השני יקבל את הפרופיל שלך וייחליט. ברגע שיאשר - הטלפון יופיע כאן.</p>
+                                    <div class="bg-gradient-to-br from-amber-600 to-orange-600 p-4 rounded-2xl shadow-xl text-center">
+                                        <div class="text-2xl mb-1">⏳</div>
+                                        <h3 class="text-white font-bold text-base mb-1">בקשתך נשלחה</h3>
+                                        <p class="text-white/85 text-xs">הצד השני יקבל את הפרופיל שלך וייחליט. ברגע שיאשר - הטלפון יופיע כאן.</p>
                                     </div>
                                 {:else if singlesState === 'approved'}
-                                    <div class="bg-gradient-to-br from-emerald-600 to-green-600 p-8 rounded-3xl shadow-xl text-center">
-                                        <div class="text-4xl mb-2">✅</div>
-                                        <h3 class="text-white font-bold text-xl mb-2">בקשתך אושרה!</h3>
-                                        <p class="text-white/85 text-sm mb-4">הטלפון מוצג למעלה.</p>
+                                    <div class="bg-gradient-to-br from-emerald-600 to-green-600 p-4 rounded-2xl shadow-xl text-center">
+                                        <div class="text-2xl mb-1">✅</div>
+                                        <h3 class="text-white font-bold text-base mb-1">בקשתך אושרה!</h3>
+                                        <p class="text-white/85 text-xs mb-2">הטלפון מוצג למעלה.</p>
                                         {#if item.phone}
-                                            <a href="tel:{item.phone}" class="block w-full bg-white text-emerald-600 font-bold py-3 rounded-xl text-center shadow-lg hover:scale-[1.02] transition-transform">📞 התקשר עכשיו</a>
+                                            <a href="tel:{item.phone}" class="block w-full bg-white text-emerald-600 font-bold py-2 rounded-lg text-center shadow-lg hover:scale-[1.02] transition-transform text-sm">📞 התקשר עכשיו</a>
                                         {/if}
                                     </div>
                                 {:else if singlesState === 'rejected'}
-                                    <div class="bg-gradient-to-br from-gray-700 to-gray-800 p-8 rounded-3xl shadow-xl text-center">
-                                        <div class="text-4xl mb-2">😕</div>
-                                        <h3 class="text-white font-bold text-xl mb-2">הבקשה לא אושרה</h3>
-                                        <p class="text-white/70 text-sm">הצד השני בחר לא לשתף את הטלפון בשלב הזה.</p>
+                                    <div class="bg-gradient-to-br from-gray-700 to-gray-800 p-4 rounded-2xl shadow-xl text-center">
+                                        <div class="text-2xl mb-1">😕</div>
+                                        <h3 class="text-white font-bold text-base mb-1">הבקשה לא אושרה</h3>
+                                        <p class="text-white/70 text-xs">הצד השני בחר לא לשתף את הטלפון בשלב הזה.</p>
                                     </div>
                                 {:else}
-                                    <div class="bg-gradient-to-br from-rose-600 to-pink-600 p-8 rounded-3xl shadow-xl">
-                                        <h3 class="text-white font-bold text-xl mb-2">🔒 הטלפון מוגן</h3>
-                                        <p class="text-white/85 text-sm mb-4">
+                                    <div class="bg-gradient-to-br from-rose-600 to-pink-600 p-4 rounded-2xl shadow-xl">
+                                        <h3 class="text-white font-bold text-base mb-1">🔒 הטלפון מוגן</h3>
+                                        <p class="text-white/85 text-xs mb-2">
                                             לחיצה תשלח לצד השני את הפרופיל שלך (שם, גיל, מגזר, שכונה). הטלפון יישלח אליך רק לאחר אישורו.
                                         </p>
                                         <button
                                             type="button"
                                             disabled={singlesSending}
                                             onclick={requestSinglesPhone}
-                                            class="block w-full bg-white text-rose-600 font-black py-3 rounded-xl text-center shadow-lg hover:scale-[1.02] transition-transform disabled:opacity-60"
+                                            class="block w-full bg-white text-rose-600 font-black py-2 rounded-lg text-center shadow-lg hover:scale-[1.02] transition-transform disabled:opacity-60 text-sm"
                                         >
                                             {singlesSending ? 'שולח...' : '💌 שלח בקשת טלפון'}
                                         </button>
                                         {#if singlesError}
-                                            <p class="text-red-100 text-xs mt-3 bg-red-900/30 rounded-lg px-3 py-2">{singlesError}</p>
+                                            <p class="text-red-100 text-xs mt-2 bg-red-900/30 rounded-lg px-2.5 py-1.5">{singlesError}</p>
                                         {/if}
-                                        <p class="text-white/70 text-xs mt-3 text-center">מקס׳ 3 בקשות ב-24 שעות · ההגנה מבוטים</p>
+                                        <p class="text-white/70 text-[10px] mt-2 text-center">מקס׳ 3 בקשות ב-24 שעות · ההגנה מבוטים</p>
                                     </div>
                                 {/if}
                             {:else}
                                 <div
-                                    class="bg-gradient-to-br from-purple-600 to-blue-600 p-8 rounded-3xl shadow-xl"
+                                    class="bg-gradient-to-br from-purple-600 to-blue-600 p-4 rounded-2xl shadow-xl"
                                 >
-                                    <h3 class="text-white font-bold text-xl mb-4">
+                                    <h3 class="text-white font-bold text-base mb-2">
                                         זקוק לפרטים נוספים?
                                     </h3>
-                                    <p class="text-white/80 text-sm mb-6">
+                                    <p class="text-white/80 text-xs mb-3">
                                         צור קשר ישירות עם המפרסם לקבלת פרטים נוספים
                                         או תיאום.
                                     </p>
                                     <a
                                         href="tel:{item.phone}"
                                         aria-label="התקשר עכשיו – {item.phone}"
-                                        class="block w-full bg-white text-purple-600 font-bold py-3 rounded-xl text-center shadow-lg hover:scale-105 transition-transform"
+                                        class="block w-full bg-white text-purple-600 font-bold py-2 rounded-lg text-center shadow-lg hover:scale-105 transition-transform text-sm"
                                     >
                                         התקשר עכשיו
                                     </a>
                                     <button
                                         aria-label="שלח הודעה למפרסם"
-                                        class="block w-full mt-3 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-xl text-center transition-all border border-white/20"
+                                        class="block w-full mt-2 bg-white/10 hover:bg-white/20 text-white font-bold py-2 rounded-lg text-center transition-all border border-white/20 text-sm"
                                     >
                                         שלח הודעה
                                     </button>
@@ -654,20 +654,20 @@
                             {/if}
 
                             <div
-                                class="bg-white/5 p-6 rounded-3xl border border-white/10 backdrop-blur-sm"
+                                class="bg-white/5 p-3 rounded-2xl border border-white/10 backdrop-blur-sm"
                             >
-                                <h4 class="text-white font-bold mb-4">
+                                <h4 class="text-white font-bold mb-2 text-sm">
                                     שתף עם חברים
                                 </h4>
-                                <div class="flex gap-4 flex-wrap">
+                                <div class="flex gap-2 flex-wrap">
                                     <button
                                         type="button"
                                         onclick={shareWhatsApp}
                                         aria-label="שתף בוואטסאפ"
                                         title="שתף בוואטסאפ"
-                                        class="bg-green-600/20 hover:bg-green-600/40 p-3 rounded-xl transition-all flex items-center justify-center"
+                                        class="bg-green-600/20 hover:bg-green-600/40 p-2 rounded-lg transition-all flex items-center justify-center"
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#25D366" aria-hidden="true" class="w-6 h-6">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#25D366" aria-hidden="true" class="w-5 h-5">
                                             <path d="M19.05 4.91A10 10 0 0 0 12 2a10 10 0 0 0-8.6 15.04L2 22l5.13-1.34A10 10 0 0 0 12 22a10 10 0 0 0 7.05-17.09zM12 20.27a8.27 8.27 0 0 1-4.22-1.16l-.3-.18-3.05.8.81-2.97-.2-.31A8.27 8.27 0 1 1 20.27 12 8.27 8.27 0 0 1 12 20.27zm4.55-6.2c-.25-.13-1.47-.73-1.7-.81-.23-.08-.4-.13-.56.13-.17.25-.64.81-.79.98-.15.17-.29.19-.54.06-.25-.13-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.15-.25-.02-.39.11-.51.11-.11.25-.29.38-.44.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.36-.77-1.86-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31s-.88.86-.88 2.1.9 2.43 1.03 2.6c.13.17 1.78 2.71 4.3 3.8.6.26 1.07.41 1.43.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.11-.23-.17-.48-.3z"/>
                                         </svg>
                                     </button>
@@ -676,9 +676,9 @@
                                         onclick={shareFacebook}
                                         aria-label="שתף בפייסבוק"
                                         title="שתף בפייסבוק"
-                                        class="bg-blue-600/20 hover:bg-blue-600/40 p-3 rounded-xl transition-all flex items-center justify-center"
+                                        class="bg-blue-600/20 hover:bg-blue-600/40 p-2 rounded-lg transition-all flex items-center justify-center"
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#1877F2" aria-hidden="true" class="w-6 h-6">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#1877F2" aria-hidden="true" class="w-5 h-5">
                                             <path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.78-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.45 2.89h-2.34v6.99A10 10 0 0 0 22 12z"/>
                                         </svg>
                                     </button>
@@ -687,9 +687,9 @@
                                         onclick={shareTelegram}
                                         aria-label="שתף בטלגרם"
                                         title="שתף בטלגרם"
-                                        class="bg-sky-500/20 hover:bg-sky-500/40 p-3 rounded-xl transition-all flex items-center justify-center"
+                                        class="bg-sky-500/20 hover:bg-sky-500/40 p-2 rounded-lg transition-all flex items-center justify-center"
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#229ED9" aria-hidden="true" class="w-6 h-6">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#229ED9" aria-hidden="true" class="w-5 h-5">
                                             <path d="M9.78 15.27 9.6 18.9c.27 0 .39-.12.53-.26l1.27-1.22 2.64 1.93c.48.27.83.13.96-.45l1.74-8.16c.17-.74-.27-1.04-.74-.86L5.5 13.93c-.72.28-.71.69-.12.87l2.94.92 6.83-4.3c.32-.21.61-.09.37.13l-5.74 5.72z"/>
                                         </svg>
                                     </button>
@@ -698,14 +698,14 @@
                                         onclick={copyLink}
                                         aria-label="העתק קישור"
                                         title={copied ? 'הקישור הועתק' : 'העתק קישור'}
-                                        class="bg-white/10 hover:bg-white/20 p-3 rounded-xl transition-all flex items-center justify-center text-white"
+                                        class="bg-white/10 hover:bg-white/20 p-2 rounded-lg transition-all flex items-center justify-center text-white"
                                     >
                                         {#if copied}
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="w-6 h-6 text-emerald-400">
                                                 <polyline points="20 6 9 17 4 12"/>
                                             </svg>
                                         {:else}
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="w-6 h-6">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="w-5 h-5">
                                                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
                                                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
                                             </svg>
