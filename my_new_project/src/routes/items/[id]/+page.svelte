@@ -52,6 +52,12 @@
             : ''
     );
 
+    const sector = $derived<string>(
+        typeof (item as { extraFields?: { sector?: unknown } } | null)?.extraFields?.sector === 'string'
+            ? ((item as { extraFields: { sector: string } }).extraFields.sector).trim()
+            : ''
+    );
+
     const age = $derived.by<number | null>(() => {
         const ef = (item as { extraFields?: Record<string, unknown> } | null)?.extraFields;
         if (!ef) return null;
@@ -331,7 +337,7 @@
 
 <!-- Hidden keys (rendered in dedicated sections, complex types, or internal-only) -->
 {#snippet extraFieldsBlock()}
-    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'price', 'website', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname', 'age', 'birth_date'])}
+    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'price', 'website', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname', 'age', 'birth_date', 'sector'])}
     {@const LABELS_HE: Record<string, string> = {
         nickname: 'שם או כינוי',
         gender: 'מין',
@@ -477,8 +483,15 @@
 
                 <!-- Side info: nickname + description + address (next to image on md+) -->
                 <div class="px-3 md:px-4 py-2 flex flex-col gap-2">
-                    {#if nicknameWithAge}
-                        <p class="text-white text-lg md:text-xl font-bold leading-tight">{nicknameWithAge}</p>
+                    {#if nickname}
+                        <p class="text-white text-lg md:text-xl font-bold leading-tight">{nickname}</p>
+                    {/if}
+                    {#if sector || age != null}
+                        <p class="text-gray-300 text-sm leading-tight">
+                            {#if sector}<span>{sector}</span>{/if}
+                            {#if sector && age != null}<span class="text-gray-500"> · </span>{/if}
+                            {#if age != null}<span>גיל: {age}</span>{/if}
+                        </p>
                     {/if}
                     <p class="text-gray-200 text-sm leading-snug flex-1">
                         {item.description}
@@ -776,7 +789,7 @@
         role="dialog"
         aria-modal="true"
         aria-label="תצוגת תמונה מוגדלת"
-        class="fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm flex items-center justify-center p-4"
+        class="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-sm flex items-center justify-center p-4"
         onclick={closeLightbox}
     >
         <button
