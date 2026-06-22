@@ -290,17 +290,14 @@
             <p class="text-gray-500 text-sm">💑 {filteredMock.length} פרופילים פעילים</p>
         </div>
 
-        <!-- Cards grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {#if selfCard}
-                {@const isMale = selfCard.gender === 'male'}
-                <div class="rounded-2xl bg-[#0f172a] border-2 {isMale ? 'border-blue-400' : 'border-pink-400'} overflow-hidden shadow-xl ring-2 {isMale ? 'ring-blue-500/40' : 'ring-pink-500/40'} relative">
-                    <!-- תווית "הכרטיס שלי" -->
-                    <div class="absolute top-2 left-2 z-10">
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-black shadow-lg">
-                            ⭐ הכרטיס שלי
-                        </span>
-                    </div>
+        <!-- כרטיס המשתמש - במרכז מעל הרשת, להבדלה ברורה -->
+        {#if selfCard}
+            {@const isMale = selfCard.gender === 'male'}
+            <div class="mb-8 flex flex-col items-center">
+                <h2 class="text-amber-300 text-sm md:text-base font-bold mb-3 text-center">
+                    ⭐ כך נראה הכרטיס שלך
+                </h2>
+                <div class="w-full max-w-md rounded-2xl bg-[#0f172a] border-2 {isMale ? 'border-blue-400' : 'border-pink-400'} overflow-hidden shadow-xl ring-2 {isMale ? 'ring-blue-500/40' : 'ring-pink-500/40'} relative">
                     <!-- Card header -->
                     <div class="bg-gradient-to-r {isMale ? 'from-blue-600 to-cyan-600' : 'from-pink-600 to-rose-500'} p-4 flex items-center gap-3 relative">
                         <div class="w-16 h-16 rounded-full bg-white/25 ring-2 ring-white/30 overflow-hidden flex items-center justify-center flex-shrink-0 shadow-md">
@@ -329,7 +326,11 @@
                         </a>
                     </div>
                 </div>
-            {/if}
+            </div>
+        {/if}
+
+        <!-- Cards grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             {#each filteredMock as person}
                 {@const isMale = person.gender === 'male'}
                 {@const isFav = favorites.has(person.id)}
