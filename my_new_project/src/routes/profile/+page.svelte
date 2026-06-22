@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { enhance } from "$app/forms";
-	import { beforeNavigate } from "$app/navigation";
+	import { beforeNavigate, goto } from "$app/navigation";
 	import { signOut, signIn } from "@auth/sveltekit/client";
 	import {
 		subscribeToPush,
@@ -1926,12 +1926,20 @@
 					{@const isDraft = (msg as { isDraft?: boolean }).isDraft}
 					{@const isSinglesMatch = msg.id === 'singles-match'}
 					<div
+						role={isSinglesMatch ? 'link' : undefined}
+						tabindex={isSinglesMatch ? 0 : undefined}
+						aria-label={isSinglesMatch ? 'פתח את לוח פנויים/פנויות' : undefined}
+						onclick={isSinglesMatch ? () => goto('/singles') : undefined}
+						onkeydown={isSinglesMatch ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goto('/singles'); } } : undefined}
 						class="flex items-start gap-3 rounded-2xl border px-4 py-3 transition-all
+							{isSinglesMatch ? 'cursor-pointer hover:scale-[1.01] hover:shadow-lg hover:shadow-pink-500/10 focus:outline-none focus:ring-2 focus:ring-pink-400/60' : ''}
 							{isDraft
 								? 'bg-gradient-to-br from-purple-900/30 to-indigo-900/20 border-purple-500/50 hover:border-purple-400/70'
-								: msg.read
-									? 'bg-white/5 border-white/5 hover:border-white/15'
-									: 'bg-white/5 border-orange-500/20 hover:border-white/15'}"
+								: isSinglesMatch
+									? 'bg-gradient-to-br from-pink-900/30 to-rose-900/20 border-pink-500/40 hover:border-pink-400/60'
+									: msg.read
+										? 'bg-white/5 border-white/5 hover:border-white/15'
+										: 'bg-white/5 border-orange-500/20 hover:border-white/15'}"
 					>
 						<div
 							class="w-2 h-2 rounded-full mt-1.5 flex-shrink-0
@@ -1950,16 +1958,6 @@
 								>
 							</div>
 							<p class="text-gray-300 text-xs leading-relaxed">{msg.text}</p>
-							{#if isSinglesMatch}
-								<div class="flex items-center gap-2 mt-2 flex-wrap">
-									<a
-										href="/singles"
-										class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-400 hover:to-rose-400 text-white font-black text-xs transition-colors shadow-lg"
-									>
-										💑 לצפייה בלוח ובכרטיס שלך ←
-									</a>
-								</div>
-							{/if}
 							{#if isDraft}
 								<div class="flex items-center gap-1.5 justify-between mt-2 flex-wrap">
 									<a href="/about/advertise/builder"
@@ -1994,10 +1992,15 @@
 									</div>
 								</div>
 							{:else}
-								<div class="flex items-center gap-1.5 justify-end mt-2 pt-2 border-t border-white/8 flex-wrap">
+								<div
+									class="flex items-center gap-1.5 justify-end mt-2 pt-2 border-t border-white/8 flex-wrap"
+									onclick={(e) => e.stopPropagation()}
+									onkeydown={(e) => e.stopPropagation()}
+									role="group"
+								>
 									<button
 										type="button"
-										onclick={() => markRead(msg.id)}
+										onclick={(e) => { e.stopPropagation(); markRead(msg.id); }}
 										class="text-[11px] text-gray-400 hover:text-green-400 transition-colors px-2 py-1 rounded-lg hover:bg-green-500/10"
 										title="סמן כנקראה - תוסר מהפרופיל"
 									>
@@ -2005,7 +2008,7 @@
 									</button>
 									<button
 										type="button"
-										onclick={() => snoozeMsg(msg.id)}
+										onclick={(e) => { e.stopPropagation(); snoozeMsg(msg.id); }}
 										class="text-[11px] text-gray-400 hover:text-yellow-300 transition-colors px-2 py-1 rounded-lg hover:bg-yellow-500/10"
 										title="תוצג שוב בעוד יומיים"
 									>
@@ -2013,7 +2016,7 @@
 									</button>
 									<button
 										type="button"
-										onclick={() => archiveMsg(msg.id)}
+										onclick={(e) => { e.stopPropagation(); archiveMsg(msg.id); }}
 										class="text-[11px] text-gray-400 hover:text-blue-400 transition-colors px-2 py-1 rounded-lg hover:bg-blue-500/10"
 										title="העבר לארכיון"
 									>
@@ -2021,7 +2024,7 @@
 									</button>
 									<button
 										type="button"
-										onclick={() => deleteMsg(msg.id)}
+										onclick={(e) => { e.stopPropagation(); deleteMsg(msg.id); }}
 										class="text-[11px] text-gray-400 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10"
 										title="מחק לצמיתות"
 									>
