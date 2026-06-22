@@ -303,12 +303,10 @@
             topLevel.label = `משפחת ${familyName}`;
         }
 
-        // פנויים/פנויות: כותרת מורכבת אוטומטית מ"פנוי/ה, גיל, עיר"
+        // פנויים/פנויות: כותרת אוטומטית "גיל, עיר" (בלי 'פנוי'/'פנויה')
         if (categoryId === 'singles') {
-            const genderRaw = typeof extra.gender === 'string' ? extra.gender : '';
             const ageRaw = typeof extra.age === 'string' ? extra.age.trim() : '';
-            const singleWord = genderRaw === 'אישה' ? 'פנויה' : 'פנוי';
-            const parts = [singleWord, ageRaw, city].filter(Boolean);
+            const parts = [ageRaw, city].filter(Boolean);
             topLevel.label = parts.join(', ');
         }
 
