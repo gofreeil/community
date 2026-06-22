@@ -198,43 +198,52 @@
             <p class="text-gray-400">לוח ארצי - מציאת בן/בת זוג מכל רחבי הארץ</p>
         </div>
 
-        <!-- Filters: כל הכפתורים בשורה אחת זורמת -->
+        <!-- Filters: chips מינימליסטיים בשורה זורמת -->
         <div class="mb-6">
-            <div class="flex flex-wrap justify-center gap-2">
-                <!-- גילאים (ורוד/סגול) -->
+            <div class="flex flex-wrap justify-center items-center gap-x-2 gap-y-2">
+                <span class="text-gray-300 text-sm font-semibold tracking-wide me-1 inline-flex items-center gap-1.5">
+                    <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+                    </svg>
+                    סנן:
+                </span>
+
+                <!-- גילאים -->
                 <button
                     onclick={() => ageFilter = 'all'}
-                    class="px-4 py-1.5 rounded-full text-sm font-bold transition-all {ageFilter === 'all' ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg' : 'bg-white/10 text-gray-300 hover:bg-white/15'}"
-                >הכל הגילאים</button>
+                    class="px-3 py-1.5 rounded-md text-[13px] font-medium border transition-colors {ageFilter === 'all' ? 'bg-pink-500/15 text-pink-200 border-pink-400/60' : 'bg-transparent text-gray-400 border-white/10 hover:border-white/25 hover:text-gray-200'}"
+                >כל הגילאים</button>
                 <button
                     onclick={() => ageFilter = 'under30'}
-                    class="px-4 py-1.5 rounded-full text-sm font-bold transition-all {ageFilter === 'under30' ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg' : 'bg-white/10 text-gray-300 hover:bg-white/15'}"
-                >עד גיל 30</button>
+                    class="px-3 py-1.5 rounded-md text-[13px] font-medium border transition-colors {ageFilter === 'under30' ? 'bg-pink-500/15 text-pink-200 border-pink-400/60' : 'bg-transparent text-gray-400 border-white/10 hover:border-white/25 hover:text-gray-200'}"
+                >עד 30</button>
                 <button
                     onclick={() => ageFilter = '30plus'}
-                    class="px-4 py-1.5 rounded-full text-sm font-bold transition-all {ageFilter === '30plus' ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg' : 'bg-white/10 text-gray-300 hover:bg-white/15'}"
+                    class="px-3 py-1.5 rounded-md text-[13px] font-medium border transition-colors {ageFilter === '30plus' ? 'bg-pink-500/15 text-pink-200 border-pink-400/60' : 'bg-transparent text-gray-400 border-white/10 hover:border-white/25 hover:text-gray-200'}"
                 >30+</button>
                 <button
                     onclick={() => ageFilter = 'golden'}
-                    class="px-4 py-1.5 rounded-full text-sm font-bold transition-all {ageFilter === 'golden' ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg' : 'bg-white/10 text-gray-300 hover:bg-white/15'}"
+                    class="px-3 py-1.5 rounded-md text-[13px] font-medium border transition-colors {ageFilter === 'golden' ? 'bg-pink-500/15 text-pink-200 border-pink-400/60' : 'bg-transparent text-gray-400 border-white/10 hover:border-white/25 hover:text-gray-200'}"
                 >גיל הזהב</button>
 
-                <!-- רמה דתית (כחול/ציאן) -->
+                <span class="text-gray-600 mx-1 hidden sm:inline">·</span>
+
+                <!-- רמה דתית -->
                 <button
                     onclick={() => relFilter = 'all'}
-                    class="px-4 py-1.5 rounded-full text-sm font-bold transition-all {relFilter === 'all' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg' : 'bg-white/10 text-gray-300 hover:bg-white/15'}"
+                    class="px-3 py-1.5 rounded-md text-[13px] font-medium border transition-colors {relFilter === 'all' ? 'bg-cyan-500/15 text-cyan-200 border-cyan-400/60' : 'bg-transparent text-gray-400 border-white/10 hover:border-white/25 hover:text-gray-200'}"
                 >כל המגזרים</button>
                 <button
                     onclick={() => relFilter = 'haredi'}
-                    class="px-4 py-1.5 rounded-full text-sm font-bold transition-all {relFilter === 'haredi' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg' : 'bg-white/10 text-gray-300 hover:bg-white/15'}"
+                    class="px-3 py-1.5 rounded-md text-[13px] font-medium border transition-colors {relFilter === 'haredi' ? 'bg-cyan-500/15 text-cyan-200 border-cyan-400/60' : 'bg-transparent text-gray-400 border-white/10 hover:border-white/25 hover:text-gray-200'}"
                 >חרדי</button>
                 <button
                     onclick={() => relFilter = 'dl'}
-                    class="px-4 py-1.5 rounded-full text-sm font-bold transition-all {relFilter === 'dl' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg' : 'bg-white/10 text-gray-300 hover:bg-white/15'}"
+                    class="px-3 py-1.5 rounded-md text-[13px] font-medium border transition-colors {relFilter === 'dl' ? 'bg-cyan-500/15 text-cyan-200 border-cyan-400/60' : 'bg-transparent text-gray-400 border-white/10 hover:border-white/25 hover:text-gray-200'}"
                 >דתי לאומי</button>
                 <button
                     onclick={() => relFilter = 'general'}
-                    class="px-4 py-1.5 rounded-full text-sm font-bold transition-all {relFilter === 'general' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg' : 'bg-white/10 text-gray-300 hover:bg-white/15'}"
+                    class="px-3 py-1.5 rounded-md text-[13px] font-medium border transition-colors {relFilter === 'general' ? 'bg-cyan-500/15 text-cyan-200 border-cyan-400/60' : 'bg-transparent text-gray-400 border-white/10 hover:border-white/25 hover:text-gray-200'}"
                 >מגזר כללי</button>
             </div>
 
