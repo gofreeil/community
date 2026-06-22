@@ -238,19 +238,15 @@
                 >מגזר כללי</button>
             </div>
 
-            {#if lockedFilter}
-                <div class="flex justify-center mt-3">
+            <div class="flex justify-center items-center gap-3 mt-3 flex-wrap">
+                {#if lockedFilter}
                     <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r {lockedFilter === 'male' ? 'from-blue-500 to-cyan-500' : 'from-pink-500 to-rose-500'} text-white shadow">
                         <span>{lockedFilter === 'male' ? '👨 פנויים' : '👩 פנויות'}</span>
                         <span class="text-white/80">· מותאם לפרופיל שלך</span>
                     </div>
-                </div>
-            {/if}
-        </div>
-
-        <!-- Counter -->
-        <div class="text-center mb-6">
-            <p class="text-gray-500 text-sm">💑 {filteredMock.length} פרופילים פעילים</p>
+                {/if}
+                <p class="text-gray-400 text-sm">💑 {filteredMock.length} פרופילים פעילים</p>
+            </div>
         </div>
 
         <!-- כרטיס המשתמש - במרכז מעל הרשת, להבדלה ברורה -->
