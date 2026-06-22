@@ -947,6 +947,16 @@
 		),
 	);
 
+	// פרופיל הושלם ל-100% → להסתיר תזכורת "השלם את הפרופיל"
+	let finalDisplayedMessages = $derived(
+		profileCompletion >= 100
+			? displayedMessages.filter((m) => !m.text?.includes("השלם את הפרופיל"))
+			: displayedMessages,
+	);
+	let finalUnreadCount = $derived(
+		finalDisplayedMessages.filter((m) => !m.read).length,
+	);
+
 	let ringColor = $derived(
 		profileCompletion < 40
 			? "#ef4444"
@@ -1556,7 +1566,7 @@
 					</svg>
 
 					<!-- עיגול הודעות - שמאל מטה -->
-					{#if unreadCount > 0}
+					{#if finalUnreadCount > 0}
 						<button
 							onclick={(e) => {
 								e.stopPropagation();
@@ -1568,7 +1578,7 @@
 						       text-white text-[11px] font-black leading-none shadow-lg
 						       hover:bg-orange-400 transition-colors whitespace-nowrap"
 						>
-							{unreadCount} הודעות
+							{finalUnreadCount} הודעות
 						</button>
 					{/if}
 				</div>
@@ -1859,10 +1869,10 @@
 				הודעות אישיות
 			</h2>
 			<div class="flex items-center gap-2">
-				{#if unreadCount > 0}
+				{#if finalUnreadCount > 0}
 					<span
 						class="text-sm bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1.5 rounded-full font-bold"
-						>{unreadCount} הודעות שלא נקראו</span
+						>{finalUnreadCount} הודעות שלא נקראו</span
 					>
 				{/if}
 				<svg
@@ -1885,7 +1895,7 @@
 				class="flex flex-col gap-3"
 				onclick={(e) => e.stopPropagation()}
 			>
-				{#each displayedMessages as msg}
+				{#each finalDisplayedMessages as msg}
 					{@const isDraft = (msg as { isDraft?: boolean }).isDraft}
 					<div
 						class="flex items-start gap-3 rounded-2xl border px-4 py-3 transition-all
@@ -3020,7 +3030,7 @@
 
 					<!-- תמונת פרופיל -->
 					{#if isEditing}
-						<div class="md:col-span-2 flex items-center gap-5">
+						<div id="p-avatar" class="md:col-span-2 flex items-center gap-5">
 							<div class="relative flex-shrink-0">
 								{#if avatarPreview}
 									<img
@@ -3141,7 +3151,7 @@
 					</div>
 
 					<!-- מגדר -->
-					<div>
+					<div id="p-gender">
 						<p
 							id="gender-label"
 							class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2"
@@ -3566,7 +3576,7 @@
 						class="md:col-span-2 grid md:grid-cols-2 gap-4 items-start"
 					>
 						<!-- שאלת ביטחון - אופציונלי -->
-						<div>
+						<div id="p-security">
 							<label
 								class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2"
 							>
@@ -4158,5 +4168,34 @@
 	}
 	.custom-loc-glow:not(:focus) {
 		animation: customLocGlow 2.8s ease-in-out infinite;
+	}
+
+	/* היבהוב קצר לשדה שצריך השלמה - מופעל כשהמשתמש לוחץ על מעגל הפרופיל */
+	@keyframes fieldFlash {
+		0% {
+			box-shadow: 0 0 0 0 rgba(168, 85, 247, 0);
+			background-color: transparent;
+		}
+		25% {
+			box-shadow:
+				0 0 0 4px rgba(168, 85, 247, 0.5),
+				0 0 26px 8px rgba(168, 85, 247, 0.45);
+			background-color: rgba(168, 85, 247, 0.14);
+		}
+		60% {
+			box-shadow:
+				0 0 0 3px rgba(168, 85, 247, 0.35),
+				0 0 18px 6px rgba(168, 85, 247, 0.3);
+			background-color: rgba(168, 85, 247, 0.08);
+		}
+		100% {
+			box-shadow: 0 0 0 0 rgba(168, 85, 247, 0);
+			background-color: transparent;
+		}
+	}
+	:global(.field-flash) {
+		animation: fieldFlash 1.2s ease-out;
+		border-radius: 14px;
+		scroll-margin-top: 100px;
 	}
 </style>
