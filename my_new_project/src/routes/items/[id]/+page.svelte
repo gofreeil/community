@@ -431,7 +431,7 @@
                                 <img
                                     src={galleryImages[galleryIndex]}
                                     alt={item.label}
-                                    class="max-w-full max-h-[220px] md:max-h-[280px] w-auto h-auto object-contain cursor-zoom-in"
+                                    class="max-w-full max-h-[320px] md:max-h-[420px] w-auto h-auto object-contain cursor-zoom-in"
                                     in:fade={{ duration: 200 }}
                                 />
                             </button>
@@ -511,20 +511,26 @@
                 </div>
                 </div>
 
-                <!-- Thumbnail strip -->
+                <!-- Image gallery section (named) -->
                 {#if galleryImages.length > 1}
-                    <div class="flex gap-1.5 px-3 pt-2 overflow-x-auto hide-scrollbar">
-                        {#each galleryImages as src, i}
-                            <button
-                                type="button"
-                                onclick={() => galleryIndex = i}
-                                class="shrink-0 w-10 h-10 md:w-12 md:h-12 rounded-md overflow-hidden border-2 transition-all {i === galleryIndex ? 'border-orange-400 shadow-md shadow-orange-500/30 scale-105' : 'border-white/10 hover:border-white/30 opacity-70 hover:opacity-100'}"
-                                aria-label={`תמונה ${i + 1}`}
-                            >
-                                <img src={src} alt="" loading="lazy" decoding="async" class="w-full h-full object-cover" />
-                            </button>
-                        {/each}
-                    </div>
+                    <section class="px-3 pt-2">
+                        <h2 class="text-base font-bold text-white mb-1.5 flex items-center gap-1.5">
+                            <span class="w-1 h-4 bg-pink-500 rounded-full"></span>
+                            גלריית תמונות ({galleryImages.length})
+                        </h2>
+                        <div class="flex gap-1.5 overflow-x-auto hide-scrollbar">
+                            {#each galleryImages as src, i}
+                                <button
+                                    type="button"
+                                    onclick={() => galleryIndex = i}
+                                    class="shrink-0 w-14 h-14 md:w-16 md:h-16 rounded-md overflow-hidden border-2 transition-all {i === galleryIndex ? 'border-orange-400 shadow-md shadow-orange-500/30 scale-105' : 'border-white/10 hover:border-white/30 opacity-70 hover:opacity-100'}"
+                                    aria-label={`תמונה ${i + 1}`}
+                                >
+                                    <img src={src} alt="" loading="lazy" decoding="async" class="w-full h-full object-cover" />
+                                </button>
+                            {/each}
+                        </div>
+                    </section>
                 {/if}
 
                 <!-- Content -->
@@ -548,14 +554,6 @@
                             {/if}
 
                             <section>
-                                <h2
-                                    class="text-base font-bold text-white mb-1.5 flex items-center gap-1.5"
-                                >
-                                    <span
-                                        class="w-1 h-4 bg-blue-500 rounded-full"
-                                    ></span>
-                                    מיקום ופרטי קשר
-                                </h2>
                                 <div
                                     class="grid grid-cols-1 sm:grid-cols-2 gap-2"
                                 >
@@ -590,6 +588,9 @@
                                         </div>
                                     {/if}
                                     {#if item.contact}
+                                        {@const waPhone = item.phone ? String(item.phone).replace(/\D/g, '').replace(/^0/, '972') : ''}
+                                        {@const phoneVisible = item.phone && (item.category !== 'singles' || singlesState === 'approved' || singlesState === 'owner')}
+                                        {@const waUrl = waPhone && phoneVisible ? `https://wa.me/${waPhone}` : null}
                                         <div
                                             class="bg-white/5 p-2 rounded-lg border border-white/5 flex items-center gap-2"
                                         >
@@ -597,17 +598,30 @@
                                                 class="text-xl text-purple-400"
                                                 >👤</span
                                             >
-                                            <div>
+                                            <div class="min-w-0">
                                                 <p
                                                     class="text-xs text-gray-400 uppercase font-bold tracking-wider"
                                                 >
-                                                    איש קשר
+                                                    איש קשר / שגריר / שדכן
                                                 </p>
-                                                <p
-                                                    class="text-white font-medium text-base"
-                                                >
-                                                    {item.contact}
-                                                </p>
+                                                {#if waUrl}
+                                                    <a
+                                                        href={waUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        class="text-emerald-300 hover:text-emerald-200 font-medium text-base inline-flex items-center gap-1.5"
+                                                        title="פתח בוואטסאפ"
+                                                    >
+                                                        <span aria-hidden="true">💬</span>
+                                                        <span>{item.contact}</span>
+                                                    </a>
+                                                {:else}
+                                                    <p
+                                                        class="text-white font-medium text-base"
+                                                    >
+                                                        {item.contact}
+                                                    </p>
+                                                {/if}
                                             </div>
                                         </div>
                                     {/if}
