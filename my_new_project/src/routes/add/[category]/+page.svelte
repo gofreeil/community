@@ -109,14 +109,35 @@
     function setImages(key: string, arr: string[]) {
         setFieldValue(key, JSON.stringify(arr));
     }
-    async function handleImagesChange(key: string, e: Event) {
-        const input = e.target as HTMLInputElement;
-        const files = Array.from(input.files ?? []);
+    async function addFilesToField(key: string, files: File[]) {
+        const onlyImages = files.filter((f) => f.type.startsWith('image/'));
+        if (!onlyImages.length) return;
         const current = getImages(key);
         const slots = MAX_IMAGES - current.length;
-        const compressed = await Promise.all(files.slice(0, slots).map(compressImage));
+        if (slots <= 0) return;
+        const compressed = await Promise.all(onlyImages.slice(0, slots).map(compressImage));
         setImages(key, [...current, ...compressed]);
+    }
+    async function handleImagesChange(key: string, e: Event) {
+        const input = e.target as HTMLInputElement;
+        await addFilesToField(key, Array.from(input.files ?? []));
         input.value = '';
+    }
+    let draggingKey = $state<string | null>(null);
+    function onDragOver(key: string, e: DragEvent) {
+        e.preventDefault();
+        draggingKey = key;
+    }
+    function onDragLeave(_key: string, e: DragEvent) {
+        // נשמור על המסגרת אם הגרירה עברה לאלמנט פנימי
+        if (e.currentTarget instanceof Element && e.relatedTarget instanceof Node && e.currentTarget.contains(e.relatedTarget)) return;
+        draggingKey = null;
+    }
+    async function onDrop(key: string, e: DragEvent) {
+        e.preventDefault();
+        draggingKey = null;
+        const files = Array.from(e.dataTransfer?.files ?? []);
+        await addFilesToField(key, files);
     }
     function removeImageAt(key: string, idx: number) {
         setImages(key, getImages(key).filter((_, i) => i !== idx));
@@ -527,7 +548,12 @@
                             {/if}
                         </div>
                         {#if imgs.length > 0}
-                            <div class="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-2">
+                            <div
+                                ondragover={(e) => onDragOver(field.key, e)}
+                                ondragleave={(e) => onDragLeave(field.key, e)}
+                                ondrop={(e) => onDrop(field.key, e)}
+                                class="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-2 rounded-xl p-1 transition-all {draggingKey === field.key ? 'bg-amber-500/15 ring-2 ring-amber-400/60' : ''}"
+                            >
                                 {#each imgs as src, i (i)}
                                     <div class="relative aspect-square rounded-xl overflow-hidden border-2 {i === 0 ? 'border-amber-400 shadow-lg shadow-amber-500/30' : 'border-white/10'}">
                                         <img src={src} alt="" class="w-full h-full object-cover" />
@@ -558,9 +584,16 @@
                                 {/if}
                             </div>
                         {:else}
-                            <label class="flex flex-col items-center justify-center gap-2 w-full h-32 rounded-xl border-2 border-dashed border-white/15 hover:border-amber-500/50 bg-white/5 hover:bg-amber-900/10 cursor-pointer transition-all">
+                            <label
+                                ondragover={(e) => onDragOver(field.key, e)}
+                                ondragleave={(e) => onDragLeave(field.key, e)}
+                                ondrop={(e) => onDrop(field.key, e)}
+                                class="flex flex-col items-center justify-center gap-2 w-full h-36 rounded-xl border-2 border-dashed cursor-pointer transition-all {draggingKey === field.key ? 'border-amber-400 bg-amber-500/15 scale-[1.01]' : 'border-white/15 hover:border-amber-500/50 bg-white/5 hover:bg-amber-900/10'}"
+                            >
                                 <span class="text-3xl">📷</span>
-                                <span class="text-gray-300 text-sm font-bold">לחץ להעלאת תמונות</span>
+                                <span class="text-gray-200 text-sm font-bold">
+                                    {draggingKey === field.key ? 'שחרר כאן להעלאה' : 'לחץ או גרור תמונות לכאן'}
+                                </span>
                                 <span class="text-gray-500 text-xs">JPG, PNG · עד {MAX_IMAGES}</span>
                                 <input type="file" accept="image/*" multiple class="hidden" onchange={(e) => handleImagesChange(field.key, e)} />
                             </label>
