@@ -1,5 +1,6 @@
 <script lang="ts">
     import type { PageData } from './$types';
+    import { goto } from '$app/navigation';
     import { toggleLike, isLiked } from '$lib/likedItems';
     import { mockSingles, avatarUrl as avatar } from '$lib/singlesMock';
 
@@ -327,7 +328,14 @@
             {#each filteredMock as person}
                 {@const isMale = person.gender === 'male'}
                 {@const isFav = favorites.has(person.id)}
-                <div class="rounded-2xl bg-[#0f172a] border {isMale ? 'border-blue-500/30' : 'border-pink-500/30'} overflow-hidden shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1">
+                <div
+                    role="link"
+                    tabindex="0"
+                    aria-label="פרטים מלאים על {person.nickname}"
+                    onclick={() => goto(`/singles/${person.id}`)}
+                    onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goto(`/singles/${person.id}`); } }}
+                    class="rounded-2xl bg-[#0f172a] border {isMale ? 'border-blue-500/30' : 'border-pink-500/30'} overflow-hidden shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-400/60"
+                >
                     <!-- Card header -->
                     <div class="bg-gradient-to-r {isMale ? 'from-blue-600 to-cyan-600' : 'from-pink-600 to-rose-500'} p-4 flex items-center gap-3 relative">
                         <div class="w-16 h-16 rounded-full bg-white/25 ring-2 ring-white/30 overflow-hidden flex items-center justify-center flex-shrink-0 shadow-md">
@@ -366,18 +374,11 @@
                             </p>
                         {/if}
 
-                        <a
-                            href="/singles/{person.id}"
-                            class="block w-full mb-3 text-center {isMale ? 'bg-blue-500/15 hover:bg-blue-500/25 text-cyan-200 border-blue-400/30' : 'bg-pink-500/15 hover:bg-pink-500/25 text-pink-200 border-pink-400/30'} border font-bold py-2 rounded-xl transition-all text-sm"
-                        >
-                            ← פרטים מלאים
-                        </a>
-
-                        <div class="flex gap-2">
+                        <div class="flex gap-2" onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.stopPropagation()} role="group">
                             <div class="relative flex-shrink-0">
                                 <button
                                     type="button"
-                                    onclick={() => nativeShare(person)}
+                                    onclick={(e) => { e.stopPropagation(); nativeShare(person); }}
                                     title="שיתוף"
                                     aria-label="שיתוף"
                                     class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold py-2.5 px-3 rounded-xl transition-colors"
@@ -392,12 +393,12 @@
                                 </button>
                                 {#if shareMenuItemId === person.id}
                                     <div class="absolute right-0 bottom-full mb-1.5 z-30 w-44 rounded-xl bg-slate-900 border border-white/15 shadow-2xl p-1.5 flex flex-col gap-0.5">
-                                        <button type="button" onclick={() => shareTo('whatsapp', person)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">💬 WhatsApp</button>
-                                        <button type="button" onclick={() => shareTo('telegram', person)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">✈️ Telegram</button>
-                                        <button type="button" onclick={() => shareTo('facebook', person)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">📘 Facebook</button>
-                                        <button type="button" onclick={() => shareTo('x',        person)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">𝕏 Twitter</button>
-                                        <button type="button" onclick={() => shareTo('copy',     person)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">📋 העתק קישור</button>
-                                        <button type="button" onclick={() => shareMenuItemId = null} class="flex items-center justify-center text-gray-500 hover:text-gray-300 rounded-lg px-2.5 py-1 text-[10px] transition-colors">סגור</button>
+                                        <button type="button" onclick={(e) => { e.stopPropagation(); shareTo('whatsapp', person); }} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">💬 WhatsApp</button>
+                                        <button type="button" onclick={(e) => { e.stopPropagation(); shareTo('telegram', person); }} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">✈️ Telegram</button>
+                                        <button type="button" onclick={(e) => { e.stopPropagation(); shareTo('facebook', person); }} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">📘 Facebook</button>
+                                        <button type="button" onclick={(e) => { e.stopPropagation(); shareTo('x',        person); }} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">𝕏 Twitter</button>
+                                        <button type="button" onclick={(e) => { e.stopPropagation(); shareTo('copy',     person); }} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">📋 העתק קישור</button>
+                                        <button type="button" onclick={(e) => { e.stopPropagation(); shareMenuItemId = null; }} class="flex items-center justify-center text-gray-500 hover:text-gray-300 rounded-lg px-2.5 py-1 text-[10px] transition-colors">סגור</button>
                                     </div>
                                 {/if}
                             </div>
