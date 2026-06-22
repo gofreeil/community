@@ -234,6 +234,43 @@
 <!-- Hidden keys (rendered in dedicated sections, complex types, or internal-only) -->
 {#snippet extraFieldsBlock()}
     {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'price', 'website', 'facebook', 'instagram', 'youtube', 'tiktok'])}
+    {@const LABELS_HE: Record<string, string> = {
+        nickname: 'שם או כינוי',
+        gender: 'מין',
+        age: 'גיל',
+        birth_date: 'תאריך לידה',
+        sector: 'מגזר / רקע',
+        marital_status: 'מצב משפחתי',
+        education: 'מקצוע / השכלה',
+        interests: 'תחומי עניין',
+        description: 'קצת עליי',
+        about: 'קצת עליי',
+        looking_for_m: 'מחפש',
+        looking_for_f: 'מחפשת',
+        inspiration: 'משפט מעורר השראה',
+        matchmaker: 'שדכן או חבר',
+        city: 'עיר',
+        neighborhood: 'שכונה',
+        address: 'כתובת',
+        phone: 'טלפון',
+        contact: 'דרך קשר',
+    }}
+    {@const formatValue = (key: string, val: unknown): string => {
+        if (val == null || val === '') return '';
+        const s = String(val);
+        if (key === 'birth_date') {
+            const d = new Date(s);
+            if (!isNaN(d.getTime())) {
+                const now = new Date();
+                let age = now.getFullYear() - d.getFullYear();
+                const m = now.getMonth() - d.getMonth();
+                if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
+                return age > 0 && age < 130 ? `${age} (${d.toLocaleDateString('he-IL')})` : d.toLocaleDateString('he-IL');
+            }
+        }
+        if (key === 'gender') return s === 'male' ? 'גבר' : s === 'female' ? 'אישה' : s;
+        return s;
+    }}
     {@const visibleEntries = item?.isUserSubmitted && item.extraFields
         ? Object.entries(item.extraFields).filter(([k, v]) => !HIDDEN_KEYS.has(k) && v != null && v !== '')
         : []}
@@ -241,14 +278,14 @@
         <section>
             <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
                 <span class="w-1.5 h-8 bg-green-500 rounded-full"></span>{tFn("more_details")}</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <dl class="rounded-2xl bg-white/5 border border-white/10 overflow-hidden divide-y divide-white/5">
                 {#each visibleEntries as [key, value]}
-                    <div class="bg-white/5 p-4 rounded-xl border border-white/5">
-                        <p class="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">{key}</p>
-                        <p class="text-white font-medium">{value}</p>
+                    <div class="grid grid-cols-[auto,1fr] gap-x-4 px-4 py-3">
+                        <dt class="text-sm text-gray-400 font-semibold whitespace-nowrap">{LABELS_HE[key] ?? key}</dt>
+                        <dd class="text-white font-medium text-sm">{formatValue(key, value)}</dd>
                     </div>
                 {/each}
-            </div>
+            </dl>
         </section>
     {/if}
 {/snippet}
@@ -393,6 +430,7 @@
                                 </h2>
                                 <div
                                     class="mb-4 bg-white/5 p-4 rounded-xl border border-white/5 flex items-center gap-4"
+                                    class:hidden={!(item as { isOwner?: boolean } | null)?.isOwner}
                                 >
                                     <span class="text-2xl text-yellow-400"
                                         >👁️</span
@@ -408,6 +446,7 @@
                                         >
                                             {item?.viewCount ?? 0} אנשים ראו את הפריט הזה
                                         </p>
+                                        <p class="text-[10px] text-gray-500 mt-0.5">🔒 הנתון גלוי רק לך, בעל הפריט</p>
                                     </div>
                                 </div>
                                 <div

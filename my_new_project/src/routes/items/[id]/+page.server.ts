@@ -89,6 +89,7 @@ export const load: PageServerLoad = async (event) => {
             }
         }
 
+        const isOwner = !!viewerId && dbItem.user_id === viewerId;
         return {
             item: {
                 id:          dbItem.id,
@@ -106,6 +107,7 @@ export const load: PageServerLoad = async (event) => {
                 city:        dbItem.city,
                 extraFields,
                 isUserSubmitted: true,
+                isOwner,
                 viewCount:   dbItem.view_count,
                 singlesStatus,
                 incomingRequests,
