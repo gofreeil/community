@@ -5,12 +5,13 @@
     let { data }: { data: PageData } = $props();
 
     type Gender = 'all' | 'male' | 'female';
-    // אם המשתמש מחובר ויש לו מגדר - נועלים את הסינון על המגדר הנגדי
+    // גבר רואה רק נקבות, אישה רואה רק גברים — נעול לחלוטין, אין ממשק שינוי.
+    // אם אין מגדר משתמש (אורח/לא מולא בפרופיל) — מציגים הכל.
     const lockedFilter: Gender | null =
         data.currentUserGender === 'male' ? 'female'
         : data.currentUserGender === 'female' ? 'male'
         : null;
-    let filter = $state<Gender>(lockedFilter ?? 'all');
+    const filter: Gender = lockedFilter ?? 'all';
 
     type AgeGroup = 'all' | 'under30' | '30plus' | 'golden';
     type Religiosity = 'all' | 'haredi' | 'dl' | 'general';
