@@ -325,7 +325,7 @@
                             <img
                                 src={galleryImages[galleryIndex]}
                                 alt={item.label}
-                                class="max-w-full max-h-[200px] md:max-h-[240px] w-auto h-auto object-contain"
+                                class="max-w-full max-h-[150px] md:max-h-[180px] w-auto h-auto object-contain"
                                 in:fade={{ duration: 200 }}
                             />
                         {/key}
@@ -376,12 +376,12 @@
 
                 <!-- Thumbnail strip -->
                 {#if galleryImages.length > 1}
-                    <div class="flex gap-2 px-6 pt-4 overflow-x-auto hide-scrollbar">
+                    <div class="flex gap-1.5 px-3 pt-2 overflow-x-auto hide-scrollbar">
                         {#each galleryImages as src, i}
                             <button
                                 type="button"
                                 onclick={() => galleryIndex = i}
-                                class="shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden border-2 transition-all {i === galleryIndex ? 'border-orange-400 shadow-lg shadow-orange-500/30 scale-105' : 'border-white/10 hover:border-white/30 opacity-70 hover:opacity-100'}"
+                                class="shrink-0 w-10 h-10 md:w-12 md:h-12 rounded-md overflow-hidden border-2 transition-all {i === galleryIndex ? 'border-orange-400 shadow-md shadow-orange-500/30 scale-105' : 'border-white/10 hover:border-white/30 opacity-70 hover:opacity-100'}"
                                 aria-label={`תמונה ${i + 1}`}
                             >
                                 <img src={src} alt="" loading="lazy" decoding="async" class="w-full h-full object-cover" />
@@ -392,9 +392,9 @@
 
                 <!-- Content -->
                 <div class="p-3 md:p-4">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                    <div class="space-y-2">
                         <!-- Main info -->
-                        <div class="md:col-span-2 space-y-2">
+                        <div class="space-y-2">
                             <section>
                                 <h2
                                     class="text-sm font-bold text-white mb-1.5 flex items-center gap-1.5"
@@ -540,8 +540,8 @@
                             {@render extraFieldsBlock()}
                         </div>
 
-                        <!-- Sidebar / Actions -->
-                        <div class="space-y-3">
+                        <!-- Actions (inline, no sidebar) -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             {#if item.category === 'singles'}
                                 <!-- Singles: בקשת טלפון / סטטוס / תיבת בעלים -->
                                 {#if singlesState === 'owner'}
