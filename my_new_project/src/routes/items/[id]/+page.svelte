@@ -20,6 +20,13 @@
             : (item?.image ? [item.image] : [])
     );
 
+    // Strip legacy "פנוי, " / "פנויה, " prefix from titles (user requested twice)
+    const displayLabel = $derived.by(() => {
+        const raw = String(item?.label || '');
+        const cleaned = raw.replace(/^\s*פנוי(ה)?\s*,?\s*/, '').trim();
+        return cleaned || raw;
+    });
+
     onMount(async () => {
         mounted = true;
         if (item?.id) {
@@ -179,7 +186,7 @@
 </script>
 
 <svelte:head>
-    <title>{item ? item.label : tFn("item_not_found")} | קהילה בשכונה</title>
+    <title>{item ? displayLabel : tFn("item_not_found")} | קהילה בשכונה</title>
 </svelte:head>
 
 {#snippet socialLinksBlock()}
@@ -312,13 +319,13 @@
                 in:fly={{ y: 50, duration: 800, delay: 200 }}
             >
                 <!-- Header / Image gallery -->
-                <div class="relative h-[110px] md:h-[140px] bg-[#0a0f1a]">
+                <div class="relative bg-[#0a0f1a] flex items-center justify-center" class:h-[110px]={galleryImages.length === 0} class:md:h-[140px]={galleryImages.length === 0}>
                     {#if galleryImages.length > 0}
                         {#key galleryIndex}
                             <img
                                 src={galleryImages[galleryIndex]}
                                 alt={item.label}
-                                class="w-full h-full object-cover"
+                                class="max-w-full max-h-[200px] md:max-h-[240px] w-auto h-auto object-contain"
                                 in:fade={{ duration: 200 }}
                             />
                         {/key}
@@ -362,7 +369,7 @@
                     <div class="absolute bottom-2 right-3 text-white pointer-events-none">
                         <div class="flex items-center gap-2 mb-1">
                             <span class="text-xl p-1.5 bg-white/10 backdrop-blur-md rounded-lg shadow-xl">{item.icon}</span>
-                            <h2 class="text-xl md:text-2xl font-black tracking-tight drop-shadow-2xl">{item.label}</h2>
+                            <h2 class="text-xl md:text-2xl font-black tracking-tight drop-shadow-2xl">{displayLabel}</h2>
                         </div>
                     </div>
                 </div>
