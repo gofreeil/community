@@ -46,6 +46,12 @@
         return cleaned || raw;
     });
 
+    const nickname = $derived<string>(
+        typeof (item as { extraFields?: { nickname?: unknown } } | null)?.extraFields?.nickname === 'string'
+            ? ((item as { extraFields: { nickname: string } }).extraFields.nickname).trim()
+            : ''
+    );
+
     onMount(async () => {
         mounted = true;
         if (item?.id) {
@@ -259,7 +265,7 @@
 
 <!-- Hidden keys (rendered in dedicated sections, complex types, or internal-only) -->
 {#snippet extraFieldsBlock()}
-    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'price', 'website', 'facebook', 'instagram', 'youtube', 'tiktok'])}
+    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'price', 'website', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname'])}
     {@const LABELS_HE: Record<string, string> = {
         nickname: 'שם או כינוי',
         gender: 'מין',
@@ -403,8 +409,11 @@
                     </div>
                 </div>
 
-                <!-- Side info: description + address (next to image on md+) -->
+                <!-- Side info: nickname + description + address (next to image on md+) -->
                 <div class="px-3 md:px-4 py-2 flex flex-col gap-2">
+                    {#if nickname}
+                        <p class="text-white text-lg md:text-xl font-bold leading-tight">{nickname}</p>
+                    {/if}
                     <p class="text-gray-200 text-sm leading-snug flex-1">
                         {item.description}
                     </p>
