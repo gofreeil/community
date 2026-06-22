@@ -95,12 +95,6 @@
                 <section class="rounded-2xl bg-gradient-to-br from-white/[0.04] to-white/[0.02] border border-white/10 p-5">
                     <h2 class="text-amber-300 text-sm font-black mb-3 uppercase tracking-wider">יצירת קשר דרך שדכן/חבר</h2>
                     <div class="space-y-2 text-gray-200">
-                        {#if s.contact}
-                            <div class="flex items-center gap-2 text-sm">
-                                <span class="text-gray-400">📨 דרך:</span>
-                                <span class="font-bold">{s.contact}</span>
-                            </div>
-                        {/if}
                         {#if s.matchmaker}
                             <div class="flex items-center gap-2 text-sm">
                                 <span class="text-gray-400">🤝 שדכן/חבר:</span>

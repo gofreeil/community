@@ -256,7 +256,6 @@ export const categoryConfig: Record<string, CategoryConfig> = {
             { key: 'inspiration', label: 'משפט מעורר השראה (אופציונלי)', type: 'textarea', required: false, placeholder: 'משפט או ציטוט שאתה שואב ממנו השראה', maxLength: 150 },
             { key: 'images',      label: 'גלריית תמונות',           type: 'images',   required: false },
             { key: 'matchmaker',  label: 'שדכן או חבר (אופציונלי)',    type: 'text',     required: false, placeholder: 'שם וטלפון', hint: '⚠️ הטלפון שתזין כאן יוצג בגלוי בכרטיס שלך ובדף הפרופיל - זוהי דרך הקשר היחידה שתוצג לציבור.' },
-            { key: 'contact',     label: 'דרך קשר',                  type: 'text',     required: true,  placeholder: 'דרך שדכן/ית / וואטסאפ' },
             { key: 'phone',       label: 'טלפון (לא מוצג)',           type: 'tel',      required: true,  placeholder: '05X-XXXXXXX', hint: 'הטלפון יישמר פנימית ולא יוצג לציבור' },
         ],
     },
