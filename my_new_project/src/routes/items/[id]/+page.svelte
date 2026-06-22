@@ -377,8 +377,8 @@
                 </div>
 
                 <!-- Side info: description + address (next to image on md+) -->
-                <div class="p-3 md:p-4 flex flex-col gap-2">
-                    <p class="text-gray-300 text-sm leading-snug bg-white/5 p-2.5 rounded-lg border border-white/5 flex-1">
+                <div class="px-3 md:px-4 py-2 flex flex-col gap-2">
+                    <p class="text-gray-200 text-sm leading-snug flex-1">
                         {item.description}
                     </p>
                     {#if item.address}
