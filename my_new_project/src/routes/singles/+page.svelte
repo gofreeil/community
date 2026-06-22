@@ -151,6 +151,49 @@
             .filter(s => ageFilter === 'all' || ageGroupOf(s.age) === ageFilter)
             .filter(s => relFilter === 'all' || s.religiosity === relFilter)
     );
+
+    // ===== כרטיס המשתמש המחובר =====
+    function calcAge(birth: string): string {
+        if (!birth) return '';
+        const d = new Date(birth);
+        if (isNaN(d.getTime())) return '';
+        const now = new Date();
+        let age = now.getFullYear() - d.getFullYear();
+        const m = now.getMonth() - d.getMonth();
+        if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
+        return age > 0 && age < 130 ? String(age) : '';
+    }
+
+    type SelfCard = {
+        id: 'self';
+        nickname: string;
+        label: string;
+        gender: 'male' | 'female';
+        age: string;
+        city: string;
+        avatar: string;
+        phone: string;
+    };
+    const selfCard: SelfCard | null = (() => {
+        const u = data.currentUser;
+        if (!u) return null;
+        const g = (u.gender || '').toLowerCase();
+        if (g !== 'male' && g !== 'female') return null;
+        const isMale = g === 'male';
+        const nickname = u.nickname || u.name || (isMale ? 'אני' : 'אני');
+        const age = calcAge(u.birth_date);
+        const labelParts = [isMale ? 'פנוי' : 'פנויה', age, u.city].filter(Boolean);
+        return {
+            id: 'self',
+            nickname,
+            label: labelParts.join(', '),
+            gender: g,
+            age,
+            city: u.city,
+            avatar: u.avatar_url || avatar(nickname || 'me', !isMale),
+            phone: u.phone,
+        };
+    })();
 </script>
 
 <svelte:head>
@@ -246,6 +289,44 @@
 
         <!-- Cards grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {#if selfCard}
+                {@const isMale = selfCard.gender === 'male'}
+                <div class="rounded-2xl bg-[#0f172a] border-2 {isMale ? 'border-blue-400' : 'border-pink-400'} overflow-hidden shadow-xl ring-2 {isMale ? 'ring-blue-500/40' : 'ring-pink-500/40'} relative">
+                    <!-- תווית "הכרטיס שלי" -->
+                    <div class="absolute top-2 left-2 z-10">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-black shadow-lg">
+                            ⭐ הכרטיס שלי
+                        </span>
+                    </div>
+                    <!-- Card header -->
+                    <div class="bg-gradient-to-r {isMale ? 'from-blue-600 to-cyan-600' : 'from-pink-600 to-rose-500'} p-4 flex items-center gap-3 relative">
+                        <div class="w-16 h-16 rounded-full bg-white/25 ring-2 ring-white/30 overflow-hidden flex items-center justify-center flex-shrink-0 shadow-md">
+                            <img src={selfCard.avatar} alt={selfCard.nickname} class="w-full h-full object-cover" loading="lazy" />
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="text-white font-black text-lg leading-tight">{selfCard.nickname}</h3>
+                            <p class="text-white/70 text-xs font-medium mb-1">{selfCard.label}</p>
+                            <div class="flex items-center gap-3 text-white/85 text-sm">
+                                {#if selfCard.age}<span>🎂 {selfCard.age}</span>{/if}
+                                {#if selfCard.city}<span>📍 {selfCard.city}</span>{/if}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card body -->
+                    <div class="p-4">
+                        <p class="text-gray-400 text-sm leading-relaxed mb-3">
+                            ככה הקהילה תראה אותך - עדכן את הפרופיל שלך והוסף תיאור, גיל, מה אתה מחפש ועוד.
+                        </p>
+                        <a
+                            href="/add/singles"
+                            class="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-black font-bold py-2.5 rounded-xl transition-all text-sm shadow-lg"
+                        >
+                            ✏️ ערוך את הכרטיס שלי
+                        </a>
+                    </div>
+                </div>
+            {/if}
             {#each filteredMock as person}
                 {@const isMale = person.gender === 'male'}
                 {@const isFav = favorites.has(person.id)}
