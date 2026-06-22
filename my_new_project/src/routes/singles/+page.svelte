@@ -248,17 +248,6 @@
             {/if}
         </div>
 
-        <!-- Add button -->
-        <div class="flex justify-center mb-6">
-            <a
-                href="/singles/add"
-                class="inline-flex items-center gap-2 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-bold px-6 py-3 rounded-full shadow-lg hover:shadow-pink-500/25 transition-all hover:scale-105"
-            >
-                <span class="text-lg">💌</span>
-                פרסם מודעה חדשה
-            </a>
-        </div>
-
         <!-- Counter -->
         <div class="text-center mb-6">
             <p class="text-gray-500 text-sm">💑 {filteredMock.length} פרופילים פעילים</p>
