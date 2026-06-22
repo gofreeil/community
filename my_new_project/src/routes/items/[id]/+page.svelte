@@ -337,7 +337,7 @@
 
 <!-- Hidden keys (rendered in dedicated sections, complex types, or internal-only) -->
 {#snippet extraFieldsBlock()}
-    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'price', 'website', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname', 'age', 'birth_date', 'sector'])}
+    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'price', 'website', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname', 'age', 'birth_date', 'sector', 'gender'])}
     {@const LABELS_HE: Record<string, string> = {
         nickname: 'שם או כינוי',
         gender: 'מין',
