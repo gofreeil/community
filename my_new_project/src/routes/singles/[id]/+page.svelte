@@ -91,9 +91,9 @@
                     </section>
                 {/if}
 
-                <!-- פרטי קשר -->
+                <!-- פרטי קשר - רק דרך השדכן/חבר -->
                 <section class="rounded-2xl bg-gradient-to-br from-white/[0.04] to-white/[0.02] border border-white/10 p-5">
-                    <h2 class="text-amber-300 text-sm font-black mb-3 uppercase tracking-wider">דרכי קשר</h2>
+                    <h2 class="text-amber-300 text-sm font-black mb-3 uppercase tracking-wider">יצירת קשר דרך שדכן/חבר</h2>
                     <div class="space-y-2 text-gray-200">
                         {#if s.contact}
                             <div class="flex items-center gap-2 text-sm">
@@ -104,27 +104,33 @@
                         {#if s.matchmaker}
                             <div class="flex items-center gap-2 text-sm">
                                 <span class="text-gray-400">🤝 שדכן/חבר:</span>
-                                <span class="font-bold">{s.matchmaker}</span>
+                                <span class="font-bold">{s.matchmaker}{s.matchmakerPhone ? ' · ' + s.matchmakerPhone : ''}</span>
                             </div>
                         {/if}
                     </div>
 
-                    <div class="grid grid-cols-2 gap-2 mt-4">
-                        <a
-                            href={waLink(s.phone)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl transition-colors text-sm"
-                        >
-                            💬 WhatsApp
-                        </a>
-                        <a
-                            href="tel:{s.phone}"
-                            class="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-xl transition-colors text-sm"
-                        >
-                            📞 התקשר
-                        </a>
-                    </div>
+                    {#if s.matchmakerPhone}
+                        <div class="grid grid-cols-2 gap-2 mt-4">
+                            <a
+                                href={waLink(s.matchmakerPhone)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl transition-colors text-sm"
+                            >
+                                💬 WhatsApp לשדכן
+                            </a>
+                            <a
+                                href="tel:{s.matchmakerPhone}"
+                                class="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-xl transition-colors text-sm"
+                            >
+                                📞 התקשר לשדכן
+                            </a>
+                        </div>
+                    {:else}
+                        <p class="mt-4 text-center text-gray-400 text-sm italic">
+                            לא הוגדר שדכן/חבר ליצירת קשר. הפרופיל לתצוגה בלבד.
+                        </p>
+                    {/if}
                 </section>
             </div>
         </div>
