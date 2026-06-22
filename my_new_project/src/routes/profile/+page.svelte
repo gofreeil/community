@@ -986,6 +986,8 @@
 	);
 
 	let isSuperAdmin = $derived((data.user as any)?.role === "super_admin");
+	// קישור פרטי שלי בלבד - גישה ישירה ל-DB של Strapi
+	let isPrimaryAdmin = $derived((data.user as any)?.email === "yahavanter@gmail.com");
 
 	// דרגה 3 - רכז שכונה: מי שיש לו coordinator_of או role=neighborhood_admin (לא super_admin)
 	let isCoordOrNbhAdmin = $derived(
@@ -1800,6 +1802,17 @@
 				>
 					👑 לוח ניהול ראשי
 				</a>
+				{#if isPrimaryAdmin}
+					<a
+						href="https://community-il.duckdns.org/admin"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="flex-1 min-w-[160px] text-xs md:text-sm font-bold text-rose-300 hover:text-rose-200 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-rose-500/10 border border-rose-500/30 hover:border-rose-400/50 flex items-center justify-center gap-1.5"
+						title="גישה ישירה ל-Strapi (פרטי - רק לך)"
+					>
+						🗄️ Strapi DB
+					</a>
+				{/if}
 			</div>
 		</div>
 	{:else if ((data.user as any)?.coordinator_of?.length ?? 0) > 0}
