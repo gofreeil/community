@@ -318,8 +318,10 @@
                 class="bg-[#0f172a] rounded-3xl overflow-hidden shadow-2xl border border-white/10"
                 in:fly={{ y: 50, duration: 800, delay: 200 }}
             >
+                <!-- Top: image side-by-side with description+address -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-0">
                 <!-- Header / Image gallery -->
-                <div class="relative bg-[#0a0f1a] flex items-center justify-center" class:h-[110px]={galleryImages.length === 0} class:md:h-[140px]={galleryImages.length === 0}>
+                <div class="relative bg-[#0a0f1a] flex items-center justify-center min-h-[150px]" class:h-[110px]={galleryImages.length === 0} class:md:h-[140px]={galleryImages.length === 0}>
                     {#if galleryImages.length > 0}
                         {#key galleryIndex}
                             <img
@@ -374,6 +376,23 @@
                     </div>
                 </div>
 
+                <!-- Side info: description + address (next to image on md+) -->
+                <div class="p-3 md:p-4 flex flex-col gap-2">
+                    <p class="text-gray-300 text-sm leading-snug bg-white/5 p-2.5 rounded-lg border border-white/5 flex-1">
+                        {item.description}
+                    </p>
+                    {#if item.address}
+                        <div class="bg-white/5 p-2 rounded-lg border border-white/5 flex items-center gap-2">
+                            <span class="text-xl text-blue-400">📍</span>
+                            <div>
+                                <p class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">כתובת</p>
+                                <p class="text-white font-medium text-sm">{item.address}</p>
+                            </div>
+                        </div>
+                    {/if}
+                </div>
+                </div>
+
                 <!-- Thumbnail strip -->
                 {#if galleryImages.length > 1}
                     <div class="flex gap-1.5 px-3 pt-2 overflow-x-auto hide-scrollbar">
@@ -395,22 +414,6 @@
                     <div class="space-y-2">
                         <!-- Main info -->
                         <div class="space-y-2">
-                            <section>
-                                <h2
-                                    class="text-sm font-bold text-white mb-1.5 flex items-center gap-1.5"
-                                >
-                                    <span
-                                        class="w-1 h-4 bg-purple-500 rounded-full"
-                                    ></span>
-                                    תיאור הפריט
-                                </h2>
-                                <p
-                                    class="text-gray-300 text-sm leading-snug bg-white/5 p-2.5 rounded-lg border border-white/5"
-                                >
-                                    {item.description}
-                                </p>
-                            </section>
-
                             {#if itemCondition}
                                 <section>
                                     <h2 class="text-sm font-bold text-white mb-1.5 flex items-center gap-1.5">
@@ -459,27 +462,6 @@
                                 <div
                                     class="grid grid-cols-1 sm:grid-cols-2 gap-2"
                                 >
-                                    {#if item.address}
-                                        <div
-                                            class="bg-white/5 p-2 rounded-lg border border-white/5 flex items-center gap-2"
-                                        >
-                                            <span class="text-xl text-blue-400"
-                                                >📍</span
-                                            >
-                                            <div>
-                                                <p
-                                                    class="text-[10px] text-gray-400 uppercase font-bold tracking-wider"
-                                                >
-                                                    כתובת
-                                                </p>
-                                                <p
-                                                    class="text-white font-medium text-sm"
-                                                >
-                                                    {item.address}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    {/if}
                                     {#if item.phone && item.category !== 'singles'}
                                         <div
                                             class="bg-white/5 p-2 rounded-lg border border-white/5 flex items-center gap-2"
