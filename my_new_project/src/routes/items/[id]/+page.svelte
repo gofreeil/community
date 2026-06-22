@@ -52,6 +52,33 @@
             : ''
     );
 
+    const age = $derived.by<number | null>(() => {
+        const ef = (item as { extraFields?: Record<string, unknown> } | null)?.extraFields;
+        if (!ef) return null;
+        const rawAge = ef.age;
+        if (typeof rawAge === 'number' && rawAge > 0 && rawAge < 130) return rawAge;
+        if (typeof rawAge === 'string' && /^\d+$/.test(rawAge.trim())) {
+            const n = Number(rawAge.trim());
+            if (n > 0 && n < 130) return n;
+        }
+        const bd = ef.birth_date;
+        if (typeof bd === 'string' && bd.trim()) {
+            const d = new Date(bd);
+            if (!isNaN(d.getTime())) {
+                const now = new Date();
+                let a = now.getFullYear() - d.getFullYear();
+                const m = now.getMonth() - d.getMonth();
+                if (m < 0 || (m === 0 && now.getDate() < d.getDate())) a--;
+                if (a > 0 && a < 130) return a;
+            }
+        }
+        return null;
+    });
+
+    const nicknameWithAge = $derived(
+        nickname && age != null ? `${nickname}, ${age}` : (nickname || (age != null ? String(age) : ''))
+    );
+
     onMount(async () => {
         mounted = true;
         if (item?.id) {
@@ -265,7 +292,7 @@
 
 <!-- Hidden keys (rendered in dedicated sections, complex types, or internal-only) -->
 {#snippet extraFieldsBlock()}
-    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'price', 'website', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname'])}
+    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'price', 'website', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname', 'age', 'birth_date'])}
     {@const LABELS_HE: Record<string, string> = {
         nickname: 'שם או כינוי',
         gender: 'מין',
@@ -411,8 +438,8 @@
 
                 <!-- Side info: nickname + description + address (next to image on md+) -->
                 <div class="px-3 md:px-4 py-2 flex flex-col gap-2">
-                    {#if nickname}
-                        <p class="text-white text-lg md:text-xl font-bold leading-tight">{nickname}</p>
+                    {#if nicknameWithAge}
+                        <p class="text-white text-lg md:text-xl font-bold leading-tight">{nicknameWithAge}</p>
                     {/if}
                     <p class="text-gray-200 text-sm leading-snug flex-1">
                         {item.description}
