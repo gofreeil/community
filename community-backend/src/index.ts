@@ -304,30 +304,39 @@ async function ensurePermissions(strapi: Core.Strapi) {
     }
 }
 
+// סופר אדמינים קבועים - יוקצו אוטומטית בכל startup אם נרשמו ב-Strapi.
+// SUPER_ADMIN_EMAIL נוסף לרשימה אם הוגדר ב-env.
+const HARDCODED_SUPER_ADMINS = ['yahavanter@gmail.com'];
+
 async function ensureSuperAdmin(strapi: Core.Strapi) {
-  const email = process.env.SUPER_ADMIN_EMAIL;
-  if (!email) return;
-  try {
-    const users = await strapi.db.query('plugin::users-permissions.user').findMany({
-      where: { email: { $eqi: email } },
-      limit: 1,
-    });
-    if (users.length === 0) {
-      strapi.log.warn(`[bootstrap] Super admin user not found: ${email}`);
-      return;
-    }
-    const user = users[0] as { id: number; app_role?: string };
-    if (user.app_role !== 'super_admin') {
-      await strapi.db.query('plugin::users-permissions.user').update({
-        where: { id: user.id },
-        data: { app_role: 'super_admin' },
+  const envEmail = process.env.SUPER_ADMIN_EMAIL;
+  const emails = Array.from(new Set(
+    [...HARDCODED_SUPER_ADMINS, envEmail].filter(Boolean) as string[]
+  )).map((e) => e.toLowerCase());
+  if (emails.length === 0) return;
+  for (const email of emails) {
+    try {
+      const users = await strapi.db.query('plugin::users-permissions.user').findMany({
+        where: { email: { $eqi: email } },
+        limit: 1,
       });
-      strapi.log.info(`[bootstrap] ✅ Set super_admin for: ${email}`);
-    } else {
-      strapi.log.info(`[bootstrap] Already super_admin: ${email}`);
+      if (users.length === 0) {
+        strapi.log.info(`[bootstrap] super_admin ממתין להרשמה: ${email}`);
+        continue;
+      }
+      const user = users[0] as { id: number; app_role?: string };
+      if (user.app_role !== 'super_admin') {
+        await strapi.db.query('plugin::users-permissions.user').update({
+          where: { id: user.id },
+          data: { app_role: 'super_admin' },
+        });
+        strapi.log.info(`[bootstrap] ✅ Set super_admin for: ${email}`);
+      } else {
+        strapi.log.info(`[bootstrap] Already super_admin: ${email}`);
+      }
+    } catch (e) {
+      strapi.log.warn(`[bootstrap] ensureSuperAdmin failed for ${email}:`, e);
     }
-  } catch (e) {
-    strapi.log.warn('[bootstrap] ensureSuperAdmin failed:', e);
   }
 }
 
