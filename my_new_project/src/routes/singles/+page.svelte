@@ -89,6 +89,32 @@
         catch { return ''; }
     }
 
+    function getReligiosity(extraFields: string): Religiosity | null {
+        try {
+            const v = String(JSON.parse(extraFields)?.sector ?? '').trim();
+            if (!v) return null;
+            if (v === 'חרדי') return 'haredi';
+            if (v === 'דתי-לאומי' || v === 'דתי לאומי') return 'dl';
+            return 'general';
+        } catch { return null; }
+    }
+
+    // ספירה אמיתית - data.items מסונן לפי המסננים הפעילים
+    let realFiltered = $derived(
+        data.items.filter((i: { extra_fields: string }) => {
+            if (filter !== 'all' && getGender(i.extra_fields) !== filter) return false;
+            if (ageFilter !== 'all') {
+                const age = getAge(i.extra_fields);
+                if (ageGroupOf(age) !== ageFilter) return false;
+            }
+            if (relFilter !== 'all') {
+                const r = getReligiosity(i.extra_fields);
+                if (r !== relFilter) return false;
+            }
+            return true;
+        })
+    );
+
     // --- שיתוף כרטיס ---
     let shareMenuItemId = $state<string | null>(null);
     function buildShareText(it: { label: string; age?: string; city?: string; description?: string }): { title: string; text: string; url: string } {
@@ -254,7 +280,7 @@
                         <span class="text-white/80">· מותאם לפרופיל שלך</span>
                     </div>
                 {/if}
-                <p class="text-gray-400 text-sm">💑 {filteredMock.length} פרופילים פעילים</p>
+                <p class="text-gray-400 text-sm">💑 {realFiltered.length} פרופילים פעילים</p>
             </div>
         </div>
 
