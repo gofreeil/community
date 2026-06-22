@@ -215,35 +215,49 @@
 		adDraft = null;
 	}
 
+	// הודעת התאמה לדף פנויים/פנויות - לפי קבוצת הגיל והמגדר של המשתמש
+	const singlesMatchMessage = (data as { singlesMatchInfo?: { count: number; ageGroupLabel: string; oppositeGenderLabel: string } | null }).singlesMatchInfo
+		? {
+				id: "singles-match",
+				from: "💑 פנויים/פנויות",
+				text: `דף הפרופיל שלך מוכן ויש עבורך כ-${(data as { singlesMatchInfo?: { count: number } }).singlesMatchInfo!.count} ${(data as { singlesMatchInfo?: { oppositeGenderLabel: string } }).singlesMatchInfo!.oppositeGenderLabel} בגילך (${(data as { singlesMatchInfo?: { ageGroupLabel: string } }).singlesMatchInfo!.ageGroupLabel}). לחץ כאן ←`,
+				time: "עכשיו",
+				read: false,
+			}
+		: null;
+
 	let messages = $state(
-		(data.messages ?? []).length > 0
-			? (data.messages ?? []).map(
-					(m: import("$lib/server/db").DbItem) => ({
-						id: `db-${m.id}`,
-						from: m.label ?? "מערכת",
-						text: m.description ?? "",
-						time: new Date(m.created_at).toLocaleDateString(
-							"he-IL",
-						),
-						read: false,
-					}),
-				)
-			: [
-					{
-						id: "mock-welcome",
-						from: "מערכת",
-						text: "ברוך הבא לקהילה! השלם את הפרופיל שלך.",
-						time: "לפני 2 ימים",
-						read: false,
-					},
-					{
-						id: "mock-approved",
-						from: "מנהל",
-						text: "הצטרפות שלך אושרה. כעת תוכל לפרסם תוכן.",
-						time: "לפני 5 ימים",
-						read: false,
-					},
-				],
+		[
+			...(singlesMatchMessage ? [singlesMatchMessage] : []),
+			...((data.messages ?? []).length > 0
+				? (data.messages ?? []).map(
+						(m: import("$lib/server/db").DbItem) => ({
+							id: `db-${m.id}`,
+							from: m.label ?? "מערכת",
+							text: m.description ?? "",
+							time: new Date(m.created_at).toLocaleDateString(
+								"he-IL",
+							),
+							read: false,
+						}),
+					)
+				: [
+						{
+							id: "mock-welcome",
+							from: "מערכת",
+							text: "ברוך הבא לקהילה! השלם את הפרופיל שלך.",
+							time: "לפני 2 ימים",
+							read: false,
+						},
+						{
+							id: "mock-approved",
+							from: "מנהל",
+							text: "הצטרפות שלך אושרה. כעת תוכל לפרסם תוכן.",
+							time: "לפני 5 ימים",
+							read: false,
+						},
+					]),
+		],
 	);
 
 	// === ניהול מצב הודעות (מחיקה / ארכיון / תזכורת) - נשמר ב-localStorage ===

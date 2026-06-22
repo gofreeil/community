@@ -186,7 +186,7 @@
             }
         } catch {}
 
-        // שחזר טיוטא אם קיימת (גובר על הכל)
+        // שחזר טיוטא אם קיימת (גובר על הכל). הטיוטא משמרת את עצמה עד שליחה מוצלחת.
         try {
             const draft = localStorage.getItem(DRAFT_KEY);
             if (draft) {
@@ -194,8 +194,18 @@
                 if (parsed.formValues)   formValues   = { ...formValues, ...parsed.formValues };
                 if (parsed.neighborhood) neighborhood = parsed.neighborhood;
                 if (parsed.city)         city         = parsed.city;
-                localStorage.removeItem(DRAFT_KEY);
             }
+        } catch {}
+    });
+
+    // ---- שמירה אוטומטית של טיוטא בכל שינוי (נשמר גם אם המשתמש לא שילם) ----
+    $effect(() => {
+        if (!browser) return;
+        void formValues;
+        void neighborhood;
+        void city;
+        try {
+            localStorage.setItem(DRAFT_KEY, JSON.stringify({ formValues, neighborhood, city }));
         } catch {}
     });
 

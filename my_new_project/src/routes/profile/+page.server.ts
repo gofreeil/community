@@ -1,6 +1,6 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { getUserById, getUserByEmail, updateUserProfile, getItemsByUserId, upsertUser, getMessagesByUserId, createItem, getAllSuperAdmins, getAllUsers } from '$lib/server/db';
+import { getUserById, getUserByEmail, updateUserProfile, getItemsByUserId, upsertUser, getMessagesByUserId, createItem, getAllSuperAdmins, getAllUsers, getItemsByCategory } from '$lib/server/db';
 import { getCachedUserById, invalidateCachedUser } from '$lib/server/userCache';
 import { citiesData } from '$lib/neighborhoodsData';
 import { categoryConfig } from '$lib/categoryFields';
@@ -146,6 +146,54 @@ export const load: PageServerLoad = async (event) => {
         } catch { /* שקט */ }
     }
 
+    // ספירת פנויים/פנויות במגדר הנגדי + קבוצת הגיל של המשתמש
+    type AgeGroup = 'under30' | '30plus' | 'golden';
+    function ageGroupOf(birthDate: string): AgeGroup | null {
+        if (!birthDate) return null;
+        const d = new Date(birthDate);
+        if (isNaN(d.getTime())) return null;
+        const now = new Date();
+        let age = now.getFullYear() - d.getFullYear();
+        const m = now.getMonth() - d.getMonth();
+        if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
+        if (age < 0 || age > 130) return null;
+        if (age >= 60) return 'golden';
+        if (age >= 30) return '30plus';
+        return 'under30';
+    }
+    function ageGroupLabel(g: AgeGroup): string {
+        return g === 'golden' ? 'גיל הזהב' : g === '30plus' ? '30+' : 'עד 30';
+    }
+    let singlesMatchInfo: { count: number; ageGroupLabel: string; oppositeGenderLabel: string } | null = null;
+    const myGender = (resolvedUser?.gender ?? '').toLowerCase();
+    const myAgeGroup = ageGroupOf(resolvedUser?.birth_date ?? '');
+    if ((myGender === 'male' || myGender === 'female') && myAgeGroup) {
+        try {
+            const allSingles = await getItemsByCategory('singles');
+            const opposite = myGender === 'male' ? 'female' : 'male';
+            let count = 0;
+            for (const it of allSingles) {
+                try {
+                    const ef = JSON.parse(it.extra_fields || '{}');
+                    if ((ef.gender ?? '').toLowerCase() !== opposite) continue;
+                    const birth = ef.birth_date || '';
+                    if (!birth && ef.age) {
+                        const n = Number(ef.age);
+                        const g: AgeGroup = n >= 60 ? 'golden' : n >= 30 ? '30plus' : 'under30';
+                        if (g === myAgeGroup) count++;
+                        continue;
+                    }
+                    if (ageGroupOf(birth) === myAgeGroup) count++;
+                } catch { /* skip */ }
+            }
+            singlesMatchInfo = {
+                count,
+                ageGroupLabel: ageGroupLabel(myAgeGroup),
+                oppositeGenderLabel: opposite === 'female' ? 'נשים' : 'גברים',
+            };
+        } catch { /* ignore */ }
+    }
+
     return {
         user: resolvedUser,
         items: publicationItems,
@@ -157,6 +205,7 @@ export const load: PageServerLoad = async (event) => {
         coordinatorsCount,
         strapiAvailable,
         userFromStaleCache,
+        singlesMatchInfo,
     };
 };
 
