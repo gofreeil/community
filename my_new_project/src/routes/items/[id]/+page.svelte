@@ -481,8 +481,8 @@
                     </div>
                 </div>
 
-                <!-- Side info: nickname + description + address (next to image on md+) -->
-                <div class="px-3 md:px-4 py-2 flex flex-col gap-2">
+                <!-- Side info: nickname + description + address + contact + extra fields -->
+                <div class="px-3 md:px-4 py-2 flex flex-col gap-1.5">
                     {#if nickname}
                         <p class="text-white text-xl md:text-2xl font-bold leading-tight">{nickname}</p>
                     {/if}
@@ -492,7 +492,7 @@
                     {#if sector}
                         <p class="text-gray-300 text-base leading-tight">{sector}</p>
                     {/if}
-                    <p class="text-gray-200 text-base leading-snug flex-1">
+                    <p class="text-gray-200 text-base leading-snug">
                         {item.description}
                     </p>
                     {#if item.address}
@@ -500,14 +500,45 @@
                             const parts = String(item.address).split(',').map(p => p.trim()).filter(Boolean);
                             return parts[parts.length - 1] || item.address;
                         })()}
-                        <div class="flex items-center gap-2">
-                            <span class="text-xl text-blue-400">📍</span>
-                            <div>
-                                <p class="text-xs text-gray-400 uppercase font-bold tracking-wider">כתובת</p>
-                                <p class="text-white font-medium text-base">{cityOnly}</p>
-                            </div>
-                        </div>
+                        <p class="text-base text-gray-200 flex items-center gap-1.5">
+                            <span class="text-blue-400">📍</span>
+                            <span>{cityOnly}</span>
+                        </p>
                     {/if}
+
+                    <!-- Phone (non-singles or singles approved) -->
+                    {#if item.phone && item.category !== 'singles'}
+                        <p class="text-base text-gray-200 flex items-center gap-1.5">
+                            <span class="text-green-400">📞</span>
+                            <a href="tel:{item.phone}" class="hover:text-white">{item.phone}</a>
+                        </p>
+                    {:else if item.category === 'singles' && singlesState === 'approved' && item.phone}
+                        <p class="text-base text-emerald-200 flex items-center gap-1.5">
+                            <span>✅</span>
+                            <a href="tel:{item.phone}" class="hover:text-white">{item.phone}</a>
+                        </p>
+                    {/if}
+
+                    <!-- Contact (שגריר/שדכן) with WhatsApp link -->
+                    {#if item.contact}
+                        {@const waPhone = item.phone ? String(item.phone).replace(/\D/g, '').replace(/^0/, '972') : ''}
+                        {@const phoneVisible = item.phone && (item.category !== 'singles' || singlesState === 'approved' || singlesState === 'owner')}
+                        {@const waUrl = waPhone && phoneVisible ? `https://wa.me/${waPhone}` : null}
+                        <p class="text-base text-gray-200 flex items-center gap-1.5">
+                            <span class="text-purple-400">👤</span>
+                            <span class="text-xs text-gray-400">איש קשר / שגריר / שדכן:</span>
+                            {#if waUrl}
+                                <a href={waUrl} target="_blank" rel="noopener noreferrer" class="text-emerald-300 hover:text-emerald-200 font-medium inline-flex items-center gap-1" title="פתח בוואטסאפ">
+                                    💬 <span>{item.contact}</span>
+                                </a>
+                            {:else}
+                                <span class="font-medium text-white">{item.contact}</span>
+                            {/if}
+                        </p>
+                    {/if}
+
+                    <!-- Extra fields: compact list -->
+                    {@render extraFieldsBlock()}
                 </div>
                 </div>
 
@@ -553,85 +584,9 @@
                                 </section>
                             {/if}
 
-                            <section>
-                                <div
-                                    class="grid grid-cols-1 sm:grid-cols-2 gap-2"
-                                >
-                                    {#if item.phone && item.category !== 'singles'}
-                                        <div
-                                            class="bg-white/5 p-2 rounded-lg border border-white/5 flex items-center gap-2"
-                                        >
-                                            <span
-                                                class="text-xl text-green-400"
-                                                >📞</span
-                                            >
-                                            <div>
-                                                <p
-                                                    class="text-xs text-gray-400 uppercase font-bold tracking-wider"
-                                                >
-                                                    טלפון
-                                                </p>
-                                                <p
-                                                    class="text-white font-medium text-base"
-                                                >
-                                                    {item.phone}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    {:else if item.category === 'singles' && singlesState === 'approved' && item.phone}
-                                        <div class="bg-emerald-900/20 p-2.5 rounded-lg border border-emerald-500/30 flex items-center gap-3">
-                                            <span class="text-xl text-emerald-300">✅</span>
-                                            <div>
-                                                <p class="text-xs text-emerald-300 uppercase font-bold tracking-wider">טלפון (אושר)</p>
-                                                <p class="text-white font-medium text-base">{item.phone}</p>
-                                            </div>
-                                        </div>
-                                    {/if}
-                                    {#if item.contact}
-                                        {@const waPhone = item.phone ? String(item.phone).replace(/\D/g, '').replace(/^0/, '972') : ''}
-                                        {@const phoneVisible = item.phone && (item.category !== 'singles' || singlesState === 'approved' || singlesState === 'owner')}
-                                        {@const waUrl = waPhone && phoneVisible ? `https://wa.me/${waPhone}` : null}
-                                        <div
-                                            class="bg-white/5 p-2 rounded-lg border border-white/5 flex items-center gap-2"
-                                        >
-                                            <span
-                                                class="text-xl text-purple-400"
-                                                >👤</span
-                                            >
-                                            <div class="min-w-0">
-                                                <p
-                                                    class="text-xs text-gray-400 uppercase font-bold tracking-wider"
-                                                >
-                                                    איש קשר / שגריר / שדכן
-                                                </p>
-                                                {#if waUrl}
-                                                    <a
-                                                        href={waUrl}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        class="text-emerald-300 hover:text-emerald-200 font-medium text-base inline-flex items-center gap-1.5"
-                                                        title="פתח בוואטסאפ"
-                                                    >
-                                                        <span aria-hidden="true">💬</span>
-                                                        <span>{item.contact}</span>
-                                                    </a>
-                                                {:else}
-                                                    <p
-                                                        class="text-white font-medium text-base"
-                                                    >
-                                                        {item.contact}
-                                                    </p>
-                                                {/if}
-                                            </div>
-                                        </div>
-                                    {/if}
-                                </div>
-                            </section>
-
                             {@render socialLinksBlock()}
 
-                            <div class="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2 items-start">
-                                <div class="min-w-0">{@render extraFieldsBlock()}</div>
+                            <div class="flex justify-end">
                                 {@render shareBlock()}
                             </div>
                         </div>
