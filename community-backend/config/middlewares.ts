@@ -25,8 +25,23 @@ const config: Core.Config.Middlewares = [
         'http://localhost:4173',
         'http://localhost:5174',
         'http://localhost:5175',
-        // Domain אחיד — gofreeil.com (apex) + כל הסאב-דומיינים
+        // Domain אחיד — gofreeil.com (apex) + סאב-דומיינים מפורשים
         'https://gofreeil.com',
+        'https://chachmim.gofreeil.com',
+        'https://chachmei-haeda.gofreeil.com',
+        'https://community.gofreeil.com',
+        'https://community-il.gofreeil.com',
+        'https://shop.gofreeil.com',
+        'https://referendum.gofreeil.com',
+        'https://criticism.gofreeil.com',
+        'https://national-gemach.gofreeil.com',
+        'https://purchasing-groups.gofreeil.com',
+        'https://the-experts.gofreeil.com',
+        'https://public-rating.gofreeil.com',
+        'https://investors-group.gofreeil.com',
+        'https://neighborhoods.gofreeil.com',
+        'https://index.gofreeil.com',
+        // fallback regex (אם משום מה לא נתפס)
         /^https:\/\/[a-z0-9-]+\.gofreeil\.com$/,
         // Vercel.app legacy — נשמרים זמנית עד להשלמת ההגירה
         'https://community-il.vercel.app',
@@ -47,13 +62,11 @@ const config: Core.Config.Middlewares = [
   {
     name: 'strapi::session',
     config: {
-      // OAuth דורש session cross-domain. Koa לא מזהה HTTPS מאחורי proxy → cookie.secure: false
-      // האבטחה נשמרת ע"י HTTPS של nginx + sameSite=lax למניעת CSRF
-      cookie: {
-        secure: false,
-        sameSite: 'lax',
-        httpOnly: true,
-      },
+      // OAuth דורש session cross-domain. Strapi default = secure:true ב-production
+      // אבל Koa לא מזהה HTTPS מאחורי nginx proxy → cookie נכשל. מבטלים secure.
+      secure: false,
+      sameSite: 'lax',
+      httpOnly: true,
     },
   },
   'strapi::favicon',

@@ -1329,6 +1329,8 @@ export interface ApiPgSatisfactionResponsePgSatisfactionResponse
     draftAndPublish: false;
   };
   attributes: {
+    admin_liked: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    admin_reply: Schema.Attribute.Text;
     campaign_slug: Schema.Attribute.String & Schema.Attribute.Required;
     comments: Schema.Attribute.Text;
     company: Schema.Attribute.String;
@@ -1336,6 +1338,7 @@ export interface ApiPgSatisfactionResponsePgSatisfactionResponse
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     improvements: Schema.Attribute.Text;
+    is_featured: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     level: Schema.Attribute.Integer &
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMax<
