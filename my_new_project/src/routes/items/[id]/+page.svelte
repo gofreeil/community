@@ -556,6 +556,12 @@
 
                 <!-- Side info: nickname + description + address + contact + extra fields -->
                 <div class="px-3 md:px-4 py-2 flex flex-col gap-1.5">
+                    {#if (item as { isOwner?: boolean } | null)?.isOwner || singlesState === 'owner'}
+                        <a
+                            href={item.category === 'singles' ? `/add/singles?edit=${item.id}` : `/add/${item.category}?edit=${item.id}`}
+                            class="self-start bg-amber-500/15 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-bold text-sm rounded-xl px-3 py-2 transition-all"
+                        >✏️ ערוך פרופיל</a>
+                    {/if}
                     {#if nickname}
                         <p class="text-white text-xl md:text-2xl font-bold leading-tight">{nickname}</p>
                     {/if}
@@ -613,14 +619,8 @@
                         </p>
                     {/if}
 
-                    <!-- Bottom actions (owner only): Edit profile + Share -->
-                    <div class="mt-auto pt-2 flex flex-col gap-1.5">
-                        {#if (item as { isOwner?: boolean } | null)?.isOwner || singlesState === 'owner'}
-                            <a
-                                href={item.category === 'singles' ? '/singles/add' : '/profile'}
-                                class="bg-amber-500/15 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-bold text-sm rounded-xl px-3 py-2 text-center transition-all"
-                            >✏️ ערוך פרופיל</a>
-                        {/if}
+                    <!-- Share buttons at bottom of side panel -->
+                    <div class="mt-auto pt-2">
                         {@render shareBlock()}
                     </div>
                 </div>

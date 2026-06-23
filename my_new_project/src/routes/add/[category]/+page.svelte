@@ -7,7 +7,8 @@
 
     let { data }: { data: PageData } = $props();
 
-    const { categoryId, config, userId, userProfile } = data;
+    const { categoryId, config, userId, userProfile, editItem } = data;
+    const isEditMode = !!editItem;
 
     const DRAFT_KEY = `add_draft_${categoryId}`;
 
@@ -22,7 +23,28 @@
     let city         = $state(userProfile?.city         || 'ירושלים');
 
     // ---- ערכי ברירת מחדל לשדות מפרופיל המשתמש ----
+    // במצב עריכה (?edit=<id>) - מועדף ערך מהפריט הקיים על פני userProfile.
     function profileDefault(key: string, type: string, options?: string[], defaultVal?: string): string {
+        // Edit mode: ערכים מהפריט הקיים גוברים על הכל
+        if (editItem) {
+            const ef = editItem.extra_fields ?? {};
+            // קודם בשדה הספציפי של ה-item ואחר כך ב-extra_fields
+            const direct = (() => {
+                switch (key) {
+                    case 'label':       return editItem.label;
+                    case 'description': return editItem.description;
+                    case 'phone':       return editItem.phone;
+                    case 'contact':     return editItem.contact;
+                    case 'address':     return editItem.address;
+                    default:            return undefined;
+                }
+            })();
+            if (direct !== undefined && direct !== '') return String(direct);
+            const fromExtra = ef[key];
+            if (fromExtra != null && fromExtra !== '') return String(fromExtra);
+            // נשאר לא ממולא - נופלים ל-default רגיל
+        }
+
         if (type === 'toggle' && options) return defaultVal && options.includes(defaultVal) ? defaultVal : options[0];
         if (key === 'contact' && userProfile?.nickname) return userProfile.nickname;
         if (key === 'phone'   && userProfile?.phone)    return userProfile.phone;
