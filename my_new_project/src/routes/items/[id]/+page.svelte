@@ -87,7 +87,9 @@
 
     onMount(async () => {
         mounted = true;
-        if (item?.id) {
+        // ספירת צפיות - רק כשצופה שאינו הבעלים (הספירה מוצגת רק לבעלים,
+        // ולכן צריכה לשקף צפיות של אחרים ולא רענונים של הבעלים עצמו)
+        if (item?.id && !(item as { isOwner?: boolean }).isOwner) {
             try {
                 await fetch('/api/items', {
                     method: 'PATCH',
