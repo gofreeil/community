@@ -512,7 +512,10 @@
                         </p>
                     {/if}
 
-                    <!-- Contact (שגריר/שדכן) with WhatsApp link -->
+                    <!-- Extra fields: compact list -->
+                    {@render extraFieldsBlock()}
+
+                    <!-- Contact (שגריר/שדכן) - under פרטים נוספים -->
                     {#if item.contact}
                         {@const waPhone = item.phone ? String(item.phone).replace(/\D/g, '').replace(/^0/, '972') : ''}
                         {@const phoneVisible = item.phone && (item.category !== 'singles' || singlesState === 'approved' || singlesState === 'owner')}
@@ -530,11 +533,14 @@
                         </p>
                     {/if}
 
-                    <!-- Extra fields: compact list -->
-                    {@render extraFieldsBlock()}
-
-                    <!-- Share buttons inside side panel - fills empty space -->
-                    <div class="mt-auto pt-2">
+                    <!-- Bottom actions (owner only): Edit profile + Share -->
+                    <div class="mt-auto pt-2 flex flex-col gap-1.5">
+                        {#if (item as { isOwner?: boolean } | null)?.isOwner || singlesState === 'owner'}
+                            <a
+                                href={item.category === 'singles' ? '/singles/add' : '/profile'}
+                                class="bg-amber-500/15 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-bold text-sm rounded-xl px-3 py-2 text-center transition-all"
+                            >✏️ ערוך פרופיל</a>
+                        {/if}
                         {@render shareBlock()}
                     </div>
                 </div>
