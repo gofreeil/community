@@ -57,10 +57,53 @@
         }
         shareMenuOpen = false;
     }
+
+    // --- Open Graph לקדימוני שיתוף ---
+    // DiceBear מחזיר SVG כברירת מחדל; וואטסאפ/פייסבוק מעדיפים PNG כתמונת קדימון.
+    function ogImage(avatar: string): string {
+        if (!avatar) return '';
+        // DiceBear: החלפה ל-PNG בגודל גדול
+        if (avatar.includes('api.dicebear.com') && avatar.includes('/svg?')) {
+            return avatar.replace('/svg?', '/png?') + '&size=512&backgroundColor=fce7f3,dbeafe,fef3c7';
+        }
+        return avatar;
+    }
+    const origin = data.origin || (typeof window !== 'undefined' ? window.location.origin : 'https://community.gofreeil.com');
+    const canonicalUrl = `${origin}/singles/${s.id}`;
+    const ogTitle = `${s.nickname} · ${[s.age, s.city].filter(Boolean).join(', ')} | ${isMale ? 'פנוי' : 'פנויה'} מקהילה בשכונה`;
+    const ogDescBits = [
+        s.description,
+        s.lookingFor ? `${isMale ? 'מחפש' : 'מחפשת'}: ${s.lookingFor}` : '',
+    ].filter(Boolean);
+    const ogDescription = (ogDescBits.join(' · ') || `הכירו את ${s.nickname}, ${s.label}`) + ' — לדף המלא:';
+    const ogImg = ogImage(s.avatar);
 </script>
 
 <svelte:head>
     <title>{s.nickname} - {s.label} | פנויים ופנויות</title>
+    <meta name="description" content={ogDescription} />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="profile" />
+    <meta property="og:site_name" content="קהילה בשכונה" />
+    <meta property="og:title" content={ogTitle} />
+    <meta property="og:description" content={ogDescription} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:locale" content="he_IL" />
+    {#if ogImg}
+        <meta property="og:image" content={ogImg} />
+        <meta property="og:image:secure_url" content={ogImg} />
+        <meta property="og:image:width" content="512" />
+        <meta property="og:image:height" content="512" />
+        <meta property="og:image:alt" content="תמונת הפרופיל של {s.nickname}" />
+    {/if}
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={ogTitle} />
+    <meta name="twitter:description" content={ogDescription} />
+    {#if ogImg}<meta name="twitter:image" content={ogImg} />{/if}
 </svelte:head>
 
 <div class="min-h-screen bg-[#070b14] pt-6 pb-20 px-4" dir="rtl">

@@ -268,6 +268,20 @@
 
 <svelte:head>
     <title>קהילה בשכונה</title>
+    <meta name="description" content="כל יתרונות השכונה תחת קורת גג אחת" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="קהילה בשכונה" />
+    <meta property="og:title" content="קהילה בשכונה" />
+    <meta property="og:description" content="כל יתרונות השכונה תחת קורת גג אחת" />
+    <meta property="og:image" content="https://community.gofreeil.com/images/community-logo1.png" />
+    <meta property="og:image:width" content="1024" />
+    <meta property="og:image:height" content="1024" />
+    <meta property="og:url" content="https://community.gofreeil.com" />
+    <meta property="og:locale" content="he_IL" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="קהילה בשכונה" />
+    <meta name="twitter:description" content="כל יתרונות השכונה תחת קורת גג אחת" />
+    <meta name="twitter:image" content="https://community.gofreeil.com/images/community-logo1.png" />
 </svelte:head>
 
 <div class="pb-0 md:pb-8 pt-4 md:pt-8" onclick={() => calMenuOpen = null}>

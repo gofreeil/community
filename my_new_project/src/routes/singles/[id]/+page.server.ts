@@ -3,21 +3,27 @@ import { getDbItemById } from '$lib/server/db';
 import { mockSingles } from '$lib/singlesMock';
 import type { PageServerLoad } from './$types';
 
+// בוטים של רשתות חברתיות וסקרפרים שצריכים לראות תגי OG בלי לוגין
+const BOT_UA_RX = /(WhatsApp|TelegramBot|facebookexternalhit|facebookcatalog|Twitterbot|LinkedInBot|Slackbot|Discordbot|Pinterest|redditbot|Googlebot|bingbot|YandexBot|DuckDuckBot|Applebot|baiduspider|Embedly|ia_archiver|vkShare|W3C_Validator|Snapchat|Bytespider|TikTokBot)/i;
+
 export const load: PageServerLoad = async (event) => {
-    // דפי פרופיל נחשפים רק למשתמשים רשומים
+    const ua = event.request.headers.get('user-agent') ?? '';
+    const isBot = BOT_UA_RX.test(ua);
+
+    // משתמשים רגילים חייבים להיות מחוברים, אבל סקרפרים מקבלים גישה ל-OG
     let session = null;
     try { session = await event.locals.auth(); } catch {}
-    if (!session?.user?.id) {
+    if (!session?.user?.id && !isBot) {
         throw redirect(302, '/login?next=' + encodeURIComponent(event.url.pathname));
     }
 
     const id = event.params.id;
+    const origin = event.url.origin;
 
-    // קודם ננסה מ-DB (פריט אמיתי), אחר כך mock
     try {
         const dbItem = await getDbItemById(id);
         if (dbItem && dbItem.category === 'singles') {
-            return { single: null, dbItem };
+            return { single: null, dbItem, isBot, origin };
         }
     } catch {
         // ignore - ניפול ל-mock
@@ -26,5 +32,5 @@ export const load: PageServerLoad = async (event) => {
     const single = mockSingles.find((s) => s.id === id);
     if (!single) throw error(404, 'הפרופיל לא נמצא');
 
-    return { single, dbItem: null };
+    return { single, dbItem: null, isBot, origin };
 };
