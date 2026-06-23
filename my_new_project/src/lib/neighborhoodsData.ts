@@ -1072,7 +1072,7 @@ export const citiesData: CityEntry[] = [
     { city: "אלעזר", neighborhoods: DEFAULT_NB },
     { city: "אלפי מנשה", neighborhoods: DEFAULT_NB },
     { city: "אלקנה", neighborhoods: DEFAULT_NB },
-    { city: "אפרת", neighborhoods: DEFAULT_NB },
+    { city: "אפרת", neighborhoods: ["הדגן", "הזית", "הגפן", "הרימון", "התאנה", "התמר", "הדקל", "האלון"] },
     { city: "ארגמן", neighborhoods: DEFAULT_NB },
     { city: "אריאל", neighborhoods: ["מרכז", "גבעה א", "גבעה ב"] },
     { city: "אש קודש", neighborhoods: DEFAULT_NB },
