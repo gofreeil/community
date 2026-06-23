@@ -294,10 +294,11 @@
             || '';
         if (!candidate || !item) return '';
         // data URLs לא נתמכים ע"י סקרפרים - נשלח דרך endpoint שמפענח ומגיש כתמונה
-        if (candidate.startsWith('data:')) return `${origin}/api/items/${item.id}/image`;
+        // סיומת .jpg חשובה - חלק מהסקרפרים (כולל טלגרם) בודקים סיומת בנוסף ל-Content-Type
+        if (candidate.startsWith('data:')) return `${origin}/api/items/${item.id}/og.jpg`;
         if (/^https?:\/\//i.test(candidate)) return toRasterImage(candidate);
         if (candidate.startsWith('/')) return `${origin}${candidate}`;
-        return `${origin}/api/items/${item.id}/image`;
+        return `${origin}/api/items/${item.id}/og.jpg`;
     });
 
     const ogType = $derived(isSingles ? 'profile' : 'website');
