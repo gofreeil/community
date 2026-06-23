@@ -472,13 +472,6 @@
                         </div>
                     {/if}
                     <div class="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-transparent to-transparent pointer-events-none"></div>
-
-                    <div class="absolute bottom-2 right-3 text-white pointer-events-none">
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-xl p-1.5 bg-white/10 backdrop-blur-md rounded-lg shadow-xl">{item.icon}</span>
-                            <h2 class="text-xl md:text-2xl font-black tracking-tight drop-shadow-2xl">{displayLabel}</h2>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Side info: nickname + description + address + contact + extra fields -->
@@ -539,6 +532,11 @@
 
                     <!-- Extra fields: compact list -->
                     {@render extraFieldsBlock()}
+
+                    <!-- Share buttons inside side panel - fills empty space -->
+                    <div class="mt-auto pt-2">
+                        {@render shareBlock()}
+                    </div>
                 </div>
                 </div>
 
@@ -585,8 +583,6 @@
                             {/if}
 
                             {@render socialLinksBlock()}
-
-                            {@render shareBlock()}
                         </div>
 
                         <!-- Actions (compact, full width) -->
