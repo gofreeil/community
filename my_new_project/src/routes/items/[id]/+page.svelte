@@ -248,35 +248,35 @@
 </svelte:head>
 
 {#snippet shareBlock()}
-    <div class="bg-white/5 p-2 rounded-lg border border-white/10 backdrop-blur-sm shrink-0 self-start">
-        <h4 class="text-white font-bold mb-1 text-[10px] text-center uppercase tracking-wider">שתף</h4>
-        <div class="flex sm:flex-col gap-1 justify-center">
+    <div class="bg-white/5 px-3 py-2 rounded-xl border border-white/10 backdrop-blur-sm flex items-center gap-3">
+        <span class="text-xs font-bold text-gray-300 uppercase tracking-wider shrink-0">שתף:</span>
+        <div class="flex gap-2 flex-1 justify-around">
             <button type="button" onclick={shareWhatsApp} aria-label="שתף בוואטסאפ" title="שתף בוואטסאפ"
-                class="bg-green-600/20 hover:bg-green-600/40 p-1.5 rounded-md transition-all flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#25D366" aria-hidden="true" class="w-4 h-4">
+                class="bg-green-600/15 hover:bg-green-600/35 hover:scale-110 active:scale-95 w-10 h-10 rounded-lg transition-all flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#25D366" aria-hidden="true" class="w-6 h-6">
                     <path d="M19.05 4.91A10 10 0 0 0 12 2a10 10 0 0 0-8.6 15.04L2 22l5.13-1.34A10 10 0 0 0 12 22a10 10 0 0 0 7.05-17.09zM12 20.27a8.27 8.27 0 0 1-4.22-1.16l-.3-.18-3.05.8.81-2.97-.2-.31A8.27 8.27 0 1 1 20.27 12 8.27 8.27 0 0 1 12 20.27zm4.55-6.2c-.25-.13-1.47-.73-1.7-.81-.23-.08-.4-.13-.56.13-.17.25-.64.81-.79.98-.15.17-.29.19-.54.06-.25-.13-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.15-.25-.02-.39.11-.51.11-.11.25-.29.38-.44.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.36-.77-1.86-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31s-.88.86-.88 2.1.9 2.43 1.03 2.6c.13.17 1.78 2.71 4.3 3.8.6.26 1.07.41 1.43.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.11-.23-.17-.48-.3z"/>
                 </svg>
             </button>
             <button type="button" onclick={shareFacebook} aria-label="שתף בפייסבוק" title="שתף בפייסבוק"
-                class="bg-blue-600/20 hover:bg-blue-600/40 p-1.5 rounded-md transition-all flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#1877F2" aria-hidden="true" class="w-4 h-4">
+                class="bg-blue-600/15 hover:bg-blue-600/35 hover:scale-110 active:scale-95 w-10 h-10 rounded-lg transition-all flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#1877F2" aria-hidden="true" class="w-6 h-6">
                     <path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.78-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.45 2.89h-2.34v6.99A10 10 0 0 0 22 12z"/>
                 </svg>
             </button>
             <button type="button" onclick={shareTelegram} aria-label="שתף בטלגרם" title="שתף בטלגרם"
-                class="bg-sky-500/20 hover:bg-sky-500/40 p-1.5 rounded-md transition-all flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#229ED9" aria-hidden="true" class="w-4 h-4">
+                class="bg-sky-500/15 hover:bg-sky-500/35 hover:scale-110 active:scale-95 w-10 h-10 rounded-lg transition-all flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#229ED9" aria-hidden="true" class="w-6 h-6">
                     <path d="M9.78 15.27 9.6 18.9c.27 0 .39-.12.53-.26l1.27-1.22 2.64 1.93c.48.27.83.13.96-.45l1.74-8.16c.17-.74-.27-1.04-.74-.86L5.5 13.93c-.72.28-.71.69-.12.87l2.94.92 6.83-4.3c.32-.21.61-.09.37.13l-5.74 5.72z"/>
                 </svg>
             </button>
             <button type="button" onclick={copyLink} aria-label="העתק קישור" title={copied ? 'הקישור הועתק' : 'העתק קישור'}
-                class="bg-white/10 hover:bg-white/20 p-1.5 rounded-md transition-all flex items-center justify-center text-white">
+                class="bg-white/10 hover:bg-white/25 hover:scale-110 active:scale-95 w-10 h-10 rounded-lg transition-all flex items-center justify-center text-white">
                 {#if copied}
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="w-4 h-4 text-emerald-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="w-6 h-6 text-emerald-400">
                         <polyline points="20 6 9 17 4 12"/>
                     </svg>
                 {:else}
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="w-4 h-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="w-6 h-6">
                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
                     </svg>
@@ -565,13 +565,13 @@
                 {/if}
 
                 <!-- Content -->
-                <div class="p-3 md:p-4">
-                    <div class="space-y-2">
+                <div class="px-3 md:px-4 pt-1 pb-2">
+                    <div class="space-y-1.5">
                         <!-- Main info -->
-                        <div class="space-y-2">
+                        <div class="space-y-1.5">
                             {#if itemCondition}
                                 <section>
-                                    <h2 class="text-base font-bold text-white mb-1.5 flex items-center gap-1.5">
+                                    <h2 class="text-base font-bold text-white mb-1 flex items-center gap-1.5">
                                         <span class="w-1 h-4 bg-orange-500 rounded-full"></span>
                                         מצב הפריט
                                     </h2>
@@ -586,13 +586,11 @@
 
                             {@render socialLinksBlock()}
 
-                            <div class="flex justify-end">
-                                {@render shareBlock()}
-                            </div>
+                            {@render shareBlock()}
                         </div>
 
                         <!-- Actions (compact, full width) -->
-                        <div class="grid grid-cols-1 gap-2">
+                        <div class="grid grid-cols-1 gap-1.5">
                             {#if item.category === 'singles'}
                                 <!-- Singles: בקשת טלפון / סטטוס / תיבת בעלים -->
                                 {#if singlesState === 'owner'}
