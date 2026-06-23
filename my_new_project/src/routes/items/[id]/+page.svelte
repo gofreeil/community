@@ -268,24 +268,22 @@
         if (!item) return 'קהילה בשכונה';
         if (isSingles) {
             const who = nickname || displayLabel;
-            const meta = [age, (item as { city?: string }).city].filter(Boolean).join(', ');
+            const city = (item as { city?: string }).city;
+            const bits = [who];
+            if (age != null && age !== '') bits.push(`גיל ${age}`);
+            if (city) bits.push(`מ${city}`);
             const tag = isFemale ? 'פנויה' : 'פנוי';
-            return meta ? `${who} · ${meta} | ${tag} מקהילה בשכונה` : `${who} | ${tag} מקהילה בשכונה`;
+            return `${bits.join(', ')} | ${tag} מקהילה בשכונה`;
         }
         return `${displayLabel} | קהילה בשכונה`;
     });
 
+    // ה-OG description לא כולל את המשפטים החופשיים (description / looking_for) -
+    // רק קריאה לפעולה גנרית. מה שצריך כבר נמצא בכותרת.
     const ogDescription = $derived.by(() => {
         if (!item) return 'כל יתרונות השכונה תחת קורת גג אחת';
-        const desc = String(item.description || '').replace(/\s+/g, ' ').trim();
-        const bits: string[] = [];
-        if (desc) bits.push(desc.length > 180 ? desc.slice(0, 177) + '…' : desc);
-        if (isSingles) {
-            const ef = (item as { extraFields?: Record<string, unknown> })?.extraFields ?? {};
-            const looking = typeof ef.looking_for === 'string' ? ef.looking_for.trim() : '';
-            if (looking) bits.push(`${isFemale ? 'מחפשת' : 'מחפש'}: ${looking.length > 120 ? looking.slice(0, 117) + '…' : looking}`);
-        }
-        return (bits.join(' · ') || 'הכירו עוד דרך לוח קהילה בשכונה') + ' — לדף המלא:';
+        if (isSingles) return 'לפרופיל המלא והתחלת שיחה — לדף המלא:';
+        return 'לדף המלא:';
     });
 
     const ogImage = $derived.by(() => {
