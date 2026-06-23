@@ -494,9 +494,17 @@
 
         {#if item}
             <div
-                class="bg-[#0f172a] rounded-3xl overflow-hidden shadow-2xl border border-white/10"
+                class="bg-[#0f172a] rounded-3xl shadow-2xl border border-white/10 relative"
                 in:fly={{ y: 50, duration: 800, delay: 200 }}
             >
+                <!-- Edit profile button - floating in top-left corner of card -->
+                {#if (item as { isOwner?: boolean } | null)?.isOwner || singlesState === 'owner'}
+                    <a
+                        href={item.category === 'singles' ? `/add/singles?edit=${item.id}` : `/add/${item.category}?edit=${item.id}`}
+                        class="absolute top-3 left-3 z-30 bg-amber-500/15 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-bold text-sm rounded-xl px-3 py-1.5 transition-all backdrop-blur-sm whitespace-nowrap shadow-lg"
+                    >✏️ ערוך פרופיל</a>
+                {/if}
+
                 <!-- Top: image side-by-side with description+address -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-0">
                 <!-- Header / Image gallery -->
@@ -558,12 +566,6 @@
 
                 <!-- Side info: nickname + description + address + contact + extra fields -->
                 <div class="px-3 md:px-4 py-2 flex flex-col gap-1.5">
-                    {#if (item as { isOwner?: boolean } | null)?.isOwner || singlesState === 'owner'}
-                        <a
-                            href={item.category === 'singles' ? `/add/singles?edit=${item.id}` : `/add/${item.category}?edit=${item.id}`}
-                            class="self-start bg-amber-500/15 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-bold text-sm rounded-xl px-3 py-2 transition-all"
-                        >✏️ ערוך פרופיל</a>
-                    {/if}
                     {#if nickname}
                         <p class="text-white text-xl md:text-2xl font-bold leading-tight">{nickname}</p>
                     {/if}
