@@ -294,9 +294,12 @@
             || galleryImages[0]
             || (typeof (item as { image?: string } | null)?.image === 'string' ? (item as { image: string }).image : '')
             || '';
-        if (!candidate) return '';
+        if (!candidate || !item) return '';
+        // data URLs לא נתמכים ע"י סקרפרים - נשלח דרך endpoint שמפענח ומגיש כתמונה
+        if (candidate.startsWith('data:')) return `${origin}/api/items/${item.id}/image`;
         if (/^https?:\/\//i.test(candidate)) return toRasterImage(candidate);
-        return `${origin}${candidate.startsWith('/') ? '' : '/'}${candidate}`;
+        if (candidate.startsWith('/')) return `${origin}${candidate}`;
+        return `${origin}/api/items/${item.id}/image`;
     });
 
     const ogType = $derived(isSingles ? 'profile' : 'website');
