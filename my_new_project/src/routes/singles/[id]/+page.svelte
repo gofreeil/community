@@ -94,8 +94,6 @@
     {#if ogImg}
         <meta property="og:image" content={ogImg} />
         <meta property="og:image:secure_url" content={ogImg} />
-        <meta property="og:image:width" content="512" />
-        <meta property="og:image:height" content="512" />
         <meta property="og:image:alt" content="תמונת הפרופיל של {s.nickname}" />
     {/if}
 
