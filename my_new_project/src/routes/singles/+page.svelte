@@ -128,23 +128,32 @@
 
     // --- שיתוף כרטיס ---
     let shareMenuItemId = $state<string | null>(null);
-    function buildShareText(it: { label: string; age?: string; city?: string; description?: string }): { title: string; text: string; url: string } {
-        const url = typeof window !== 'undefined' ? `${window.location.origin}/singles` : 'https://kehila-bashchuna.co.il/singles';
+    let copiedItemId = $state<string | null>(null);
+    function buildShareText(it: { id: string; nickname?: string; label: string; gender?: 'male' | 'female'; age?: string; city?: string; description?: string }): { title: string; text: string; url: string } {
+        const origin = typeof window !== 'undefined' ? window.location.origin : 'https://kehila-bashchuna.co.il';
+        const url = `${origin}/singles/${it.id}`;
+        const who = it.nickname || it.label;
         const meta = [it.age ? `🎂 ${it.age}` : '', it.city ? `📍 ${it.city}` : ''].filter(Boolean).join(' · ');
-        const lines = [`💑 לוח פנויים ופנויות - ${it.label}`];
+        const heading = it.gender === 'female'
+            ? `💑 הכירו את ${who} - פנויה מלוח קהילה בשכונה`
+            : it.gender === 'male'
+            ? `💑 הכירו את ${who} - פנוי מלוח קהילה בשכונה`
+            : `💑 ${who} - לוח פנויים ופנויות`;
+        const lines = [heading];
         if (meta) lines.push(meta);
-        if (it.description) lines.push(it.description);
+        if (it.description) lines.push('', it.description);
+        lines.push('', '👇 לפרופיל המלא:');
         const text = lines.join('\n');
         return { title: 'לוח פנויים ופנויות - קהילה בשכונה', text, url };
     }
-    async function nativeShare(it: { id: string; label: string; age?: string; city?: string; description?: string }) {
+    async function nativeShare(it: { id: string; nickname?: string; label: string; gender?: 'male' | 'female'; age?: string; city?: string; description?: string }) {
         const payload = buildShareText(it);
         if (typeof navigator !== 'undefined' && (navigator as Navigator & { share?: (d: ShareData) => Promise<void> }).share) {
             try { await (navigator as Navigator & { share: (d: ShareData) => Promise<void> }).share(payload); return; } catch {}
         }
         shareMenuItemId = it.id;
     }
-    function shareTo(network: 'whatsapp' | 'telegram' | 'facebook' | 'x' | 'copy', it: { label: string; age?: string; city?: string; description?: string }) {
+    function shareTo(network: 'whatsapp' | 'telegram' | 'facebook' | 'x' | 'copy', it: { id: string; nickname?: string; label: string; gender?: 'male' | 'female'; age?: string; city?: string; description?: string }) {
         const { text, url } = buildShareText(it);
         const textWithUrl = `${text}\n${url}`;
         const enc = encodeURIComponent;
@@ -152,8 +161,12 @@
         else if (network === 'telegram') window.open(`https://t.me/share/url?url=${enc(url)}&text=${enc(text)}`, '_blank');
         else if (network === 'facebook') window.open(`https://www.facebook.com/sharer/sharer.php?u=${enc(url)}`, '_blank');
         else if (network === 'x')        window.open(`https://twitter.com/intent/tweet?text=${enc(textWithUrl)}`, '_blank');
-        else if (network === 'copy')     navigator.clipboard?.writeText(textWithUrl);
-        shareMenuItemId = null;
+        else if (network === 'copy') {
+            navigator.clipboard?.writeText(textWithUrl);
+            copiedItemId = it.id;
+            setTimeout(() => { if (copiedItemId === it.id) copiedItemId = null; }, 1800);
+        }
+        if (network !== 'copy') shareMenuItemId = null;
     }
 
     function waLink(phone: string): string {
@@ -412,7 +425,9 @@
                                         <button type="button" onclick={(e) => { e.stopPropagation(); shareTo('telegram', person); }} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">✈️ Telegram</button>
                                         <button type="button" onclick={(e) => { e.stopPropagation(); shareTo('facebook', person); }} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">📘 Facebook</button>
                                         <button type="button" onclick={(e) => { e.stopPropagation(); shareTo('x',        person); }} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">𝕏 Twitter</button>
-                                        <button type="button" onclick={(e) => { e.stopPropagation(); shareTo('copy',     person); }} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">📋 העתק קישור</button>
+                                        <button type="button" onclick={(e) => { e.stopPropagation(); shareTo('copy',     person); }} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">
+                                            {copiedItemId === person.id ? '✓ הועתק!' : '📋 העתק קישור'}
+                                        </button>
                                         <button type="button" onclick={(e) => { e.stopPropagation(); shareMenuItemId = null; }} class="flex items-center justify-center text-gray-500 hover:text-gray-300 rounded-lg px-2.5 py-1 text-[10px] transition-colors">סגור</button>
                                     </div>
                                 {/if}

@@ -10,6 +10,53 @@
         const digits = phone.replace(/\D/g, '').replace(/^0/, '972');
         return `https://wa.me/${digits}`;
     }
+
+    // --- שיתוף פרופיל ---
+    let shareMenuOpen = $state(false);
+    let copied = $state(false);
+
+    function buildShareText(): { title: string; text: string; url: string } {
+        const origin = typeof window !== 'undefined' ? window.location.origin : 'https://kehila-bashchuna.co.il';
+        const url = `${origin}/singles/${s.id}`;
+        const meta = [s.age ? `🎂 ${s.age}` : '', s.city ? `📍 ${s.city}` : ''].filter(Boolean).join(' · ');
+        const heading = s.gender === 'female'
+            ? `💑 הכירו את ${s.nickname} - פנויה מלוח קהילה בשכונה`
+            : `💑 הכירו את ${s.nickname} - פנוי מלוח קהילה בשכונה`;
+        const lines = [heading];
+        if (meta) lines.push(meta);
+        if (s.description) lines.push('', s.description);
+        if (s.lookingFor) lines.push('', `${isMale ? 'מחפש' : 'מחפשת'}: ${s.lookingFor}`);
+        lines.push('', '👇 לפרופיל המלא:');
+        return { title: `${s.nickname} | לוח פנויים ופנויות`, text: lines.join('\n'), url };
+    }
+
+    async function nativeShare() {
+        const payload = buildShareText();
+        if (typeof navigator !== 'undefined' && (navigator as Navigator & { share?: (d: ShareData) => Promise<void> }).share) {
+            try {
+                await (navigator as Navigator & { share: (d: ShareData) => Promise<void> }).share(payload);
+                return;
+            } catch {}
+        }
+        shareMenuOpen = !shareMenuOpen;
+    }
+
+    function shareTo(network: 'whatsapp' | 'telegram' | 'facebook' | 'x' | 'copy') {
+        const { text, url } = buildShareText();
+        const textWithUrl = `${text}\n${url}`;
+        const enc = encodeURIComponent;
+        if (network === 'whatsapp')      window.open(`https://wa.me/?text=${enc(textWithUrl)}`, '_blank');
+        else if (network === 'telegram') window.open(`https://t.me/share/url?url=${enc(url)}&text=${enc(text)}`, '_blank');
+        else if (network === 'facebook') window.open(`https://www.facebook.com/sharer/sharer.php?u=${enc(url)}`, '_blank');
+        else if (network === 'x')        window.open(`https://twitter.com/intent/tweet?text=${enc(textWithUrl)}`, '_blank');
+        else if (network === 'copy') {
+            navigator.clipboard?.writeText(textWithUrl);
+            copied = true;
+            setTimeout(() => { copied = false; }, 1800);
+            return;
+        }
+        shareMenuOpen = false;
+    }
 </script>
 
 <svelte:head>
@@ -125,6 +172,71 @@
                             לא הוגדר שדכן/חבר ליצירת קשר. הפרופיל לתצוגה בלבד.
                         </p>
                     {/if}
+                </section>
+
+                <!-- שיתוף הכרטיס -->
+                <section class="rounded-2xl bg-gradient-to-br from-green-500/10 to-emerald-500/5 border border-green-500/20 p-5">
+                    <div class="flex items-start gap-3 mb-3">
+                        <span class="text-2xl">💬</span>
+                        <div class="flex-1">
+                            <h2 class="text-green-300 text-sm font-black mb-1 uppercase tracking-wider">מכיר/ה מישהו שיכול להתאים?</h2>
+                            <p class="text-gray-400 text-xs leading-relaxed">שתפו את הכרטיס בווטסאפ ובוו תפיצו את הבשורה - אולי השידוך נמצא שם!</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        <button
+                            type="button"
+                            onclick={() => shareTo('whatsapp')}
+                            class="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl transition-colors text-sm shadow-lg shadow-green-900/30"
+                        >
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.03L.789 23.702l4.823-1.467A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75c-2.33 0-4.481-.76-6.234-2.048l-.447-.334-2.862.87.908-2.745-.367-.472A9.718 9.718 0 012.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"/></svg>
+                            WhatsApp
+                        </button>
+                        <button
+                            type="button"
+                            onclick={() => shareTo('telegram')}
+                            class="flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 rounded-xl transition-colors text-sm shadow-lg shadow-sky-900/30"
+                        >
+                            ✈️ Telegram
+                        </button>
+                        <button
+                            type="button"
+                            onclick={() => shareTo('facebook')}
+                            class="flex items-center justify-center gap-2 bg-blue-700 hover:bg-blue-600 text-white font-bold py-3 rounded-xl transition-colors text-sm shadow-lg shadow-blue-900/30"
+                        >
+                            📘 Facebook
+                        </button>
+                        <button
+                            type="button"
+                            onclick={() => shareTo('x')}
+                            class="flex items-center justify-center gap-2 bg-black hover:bg-gray-800 text-white font-bold py-3 rounded-xl transition-colors text-sm border border-white/10"
+                        >
+                            𝕏 Twitter
+                        </button>
+                        <button
+                            type="button"
+                            onclick={() => shareTo('copy')}
+                            class="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-xl transition-colors text-sm"
+                        >
+                            {copied ? '✓ הועתק!' : '📋 העתק קישור'}
+                        </button>
+                        <button
+                            type="button"
+                            onclick={nativeShare}
+                            class="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-xl transition-colors text-sm"
+                            aria-label="שיתוף נוסף"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <circle cx="18" cy="5" r="3"/>
+                                <circle cx="6" cy="12" r="3"/>
+                                <circle cx="18" cy="19" r="3"/>
+                                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                            </svg>
+                            עוד...
+                        </button>
+                    </div>
                 </section>
             </div>
         </div>
