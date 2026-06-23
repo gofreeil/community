@@ -52,6 +52,14 @@ const setStrApiCookie: Handle = async ({ event, resolve }) => {
  * הפתרון: אם handle זורק, נמשיך ב-resolve רגיל (משתמש אנונימי).
  */
 export const handle: Handle = async ({ event, resolve }) => {
+    // נתיב תמונת הקדימון (OG) ציבורי לחלוטין - עוקפים את ה-auth כדי שלא
+    // ייווסף Set-Cookie (שמונע cache ב-CDN). כך סקרפרים של רשתות חברתיות
+    // (טלגרם/וואטסאפ/פייסבוק) מקבלים את התמונה מהר ומה-edge cache.
+    if (/^\/api\/items\/[^/]+\/og\.jpg$/.test(event.url.pathname)) {
+        (event.locals as Record<string, unknown>).auth = async () => null;
+        return await resolve(event);
+    }
+
     try {
         return await sequence(authHandle, checkBanned, setStrApiCookie)({ event, resolve });
     } catch (err) {
