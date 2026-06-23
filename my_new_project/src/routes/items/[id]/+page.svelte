@@ -241,10 +241,90 @@
             document.body.removeChild(ta);
         }
     }
+
+    // ---- Open Graph לקדימוני שיתוף (WhatsApp/FB/Telegram/Twitter) ----
+    const origin = $derived(
+        (data as unknown as { origin?: string })?.origin
+            || (typeof window !== 'undefined' ? window.location.origin : 'https://community.gofreeil.com')
+    );
+    const canonicalUrl = $derived(item ? `${origin}/items/${item.id}` : origin);
+
+    // המרת DiceBear SVG ל-PNG (וואטסאפ דורש תמונה ראסטרית לקדימון)
+    function toRasterImage(url: string): string {
+        if (!url) return '';
+        if (url.includes('api.dicebear.com') && url.includes('/svg?')) {
+            return url.replace('/svg?', '/png?') + (url.includes('size=') ? '' : '&size=512');
+        }
+        return url;
+    }
+
+    const isSingles = $derived(item?.category === 'singles');
+    const isFemale = $derived(
+        typeof (item as { extraFields?: { gender?: unknown } } | null)?.extraFields?.gender === 'string'
+            && (item as { extraFields: { gender: string } }).extraFields.gender === 'female'
+    );
+
+    const ogTitle = $derived.by(() => {
+        if (!item) return 'קהילה בשכונה';
+        if (isSingles) {
+            const who = nickname || displayLabel;
+            const meta = [age, (item as { city?: string }).city].filter(Boolean).join(', ');
+            const tag = isFemale ? 'פנויה' : 'פנוי';
+            return meta ? `${who} · ${meta} | ${tag} מקהילה בשכונה` : `${who} | ${tag} מקהילה בשכונה`;
+        }
+        return `${displayLabel} | קהילה בשכונה`;
+    });
+
+    const ogDescription = $derived.by(() => {
+        if (!item) return 'כל יתרונות השכונה תחת קורת גג אחת';
+        const desc = String(item.description || '').replace(/\s+/g, ' ').trim();
+        const bits: string[] = [];
+        if (desc) bits.push(desc.length > 180 ? desc.slice(0, 177) + '…' : desc);
+        if (isSingles) {
+            const ef = (item as { extraFields?: Record<string, unknown> })?.extraFields ?? {};
+            const looking = typeof ef.looking_for === 'string' ? ef.looking_for.trim() : '';
+            if (looking) bits.push(`${isFemale ? 'מחפשת' : 'מחפש'}: ${looking.length > 120 ? looking.slice(0, 117) + '…' : looking}`);
+        }
+        return (bits.join(' · ') || 'הכירו עוד דרך לוח קהילה בשכונה') + ' — לדף המלא:';
+    });
+
+    const ogImage = $derived.by(() => {
+        const ef = (item as { extraFields?: Record<string, unknown> })?.extraFields ?? {};
+        const candidate = (typeof ef.avatar === 'string' && ef.avatar)
+            || galleryImages[0]
+            || (typeof (item as { image?: string } | null)?.image === 'string' ? (item as { image: string }).image : '')
+            || '';
+        if (!candidate) return '';
+        if (/^https?:\/\//i.test(candidate)) return toRasterImage(candidate);
+        return `${origin}${candidate.startsWith('/') ? '' : '/'}${candidate}`;
+    });
+
+    const ogType = $derived(isSingles ? 'profile' : 'website');
 </script>
 
 <svelte:head>
     <title>{item ? displayLabel : tFn("item_not_found")} | קהילה בשכונה</title>
+    {#if item}
+        <meta name="description" content={ogDescription} />
+        <link rel="canonical" href={canonicalUrl} />
+        <meta property="og:type" content={ogType} />
+        <meta property="og:site_name" content="קהילה בשכונה" />
+        <meta property="og:title" content={ogTitle} />
+        <meta property="og:description" content={ogDescription} />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:locale" content="he_IL" />
+        {#if ogImage}
+            <meta property="og:image" content={ogImage} />
+            <meta property="og:image:secure_url" content={ogImage} />
+            <meta property="og:image:width" content="512" />
+            <meta property="og:image:height" content="512" />
+            <meta property="og:image:alt" content={ogTitle} />
+        {/if}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={ogTitle} />
+        <meta name="twitter:description" content={ogDescription} />
+        {#if ogImage}<meta name="twitter:image" content={ogImage} />{/if}
+    {/if}
 </svelte:head>
 
 {#snippet shareBlock()}

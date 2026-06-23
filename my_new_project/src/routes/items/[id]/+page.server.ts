@@ -20,6 +20,7 @@ export const load: PageServerLoad = async (event) => {
     try { session = await event.locals.auth(); } catch {}
     const demoOwnerId = session?.user?.id ?? 'demo-user';
     const viewerId = session?.user?.id as string | undefined;
+    const origin = event.url.origin;
 
     // נסה קודם ב-DB (פריטים שהמשתמשים הוסיפו), ואחר-כך פריטי דמו
     const dbItem = (await getDbItemById(params.id)) ?? getDemoItemById(params.id, demoOwnerId);
@@ -91,6 +92,7 @@ export const load: PageServerLoad = async (event) => {
 
         const isOwner = !!viewerId && dbItem.user_id === viewerId;
         return {
+            origin,
             item: {
                 id:          dbItem.id,
                 label:       dbItem.label,
@@ -119,6 +121,7 @@ export const load: PageServerLoad = async (event) => {
     const staticItem = getStaticItemById(params.id);
     if (staticItem) {
         return {
+            origin,
             item: {
                 ...staticItem,
                 images:       staticItem.image ? [staticItem.image] : [],
@@ -131,5 +134,5 @@ export const load: PageServerLoad = async (event) => {
         };
     }
 
-    return { item: null };
+    return { origin, item: null };
 };
