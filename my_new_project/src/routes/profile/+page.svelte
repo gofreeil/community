@@ -43,6 +43,21 @@
 	let likedItems = $state<LikedItem[]>([]);
 	let userStatus = $state<UserStatus>('available');
 	let showStatusSelector = $state(false);
+	let receivedMessages = $state<any[]>([]);
+	let showReceivedMessages = $state(false);
+
+	$effect(() => {
+		if (typeof window === "undefined") return;
+		(async () => {
+			try {
+				const res = await fetch('/api/messages');
+				if (res.ok) {
+					const msgs = await res.json();
+					receivedMessages = msgs.slice(0, 10);
+				}
+			} catch {}
+		})();
+	});
 
 	function refreshLikes() {
 		likedItems = getLikedItems();
@@ -4096,6 +4111,79 @@
 				<p class="text-xs text-gray-500 mt-4">
 					הסטטוס שלך יופיע בתוך כמה שניות בלוח הפנויים
 				</p>
+			</div>
+		{/if}
+	</div>
+
+	<!-- ===== קומה 8: הודעות שקיבלתי ===== -->
+	<div
+		class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-4 md:p-6 shadow-xl mb-2 overflow-hidden
+	            before:absolute before:inset-x-0 before:top-0 before:h-24 before:rounded-t-3xl
+	            before:bg-gradient-to-b before:from-white/8 before:to-transparent
+	            before:transition-all before:duration-300 before:pointer-events-none
+	            hover:before:from-white/18 {mobileTab !== 'messages'
+			? 'hidden md:block'
+			: ''}"
+	>
+		<div
+			class="relative flex items-center justify-between cursor-pointer select-none -mx-4 px-4 -mt-4 pt-3 md:-mx-6 md:px-6 md:-mt-6 md:pt-4 min-h-14 {showReceivedMessages
+				? 'pb-4 mb-4'
+				: 'pb-4'}"
+			onclick={() => {
+				showReceivedMessages = !showReceivedMessages;
+			}}
+			role="button"
+			tabindex={0}
+		>
+			<h2 class="text-xl font-black text-white flex items-center gap-2">
+				<span
+					class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+					style="background: radial-gradient(circle, #60a5fa 0%, #3b82f6 60%, #1d4ed8 100%); opacity: 0.75"
+					>8</span
+				>
+				הודעות שקיבלתי
+				{#if receivedMessages.length > 0}
+					<span class="text-xs bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2.5 py-0.5 rounded-full font-bold">{receivedMessages.length}</span>
+				{/if}
+			</h2>
+			<svg
+				class="w-4 h-4 text-blue-400 transition-transform duration-300 flex-shrink-0 {showReceivedMessages
+					? 'rotate-180'
+					: ''}"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2.5"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				><polyline points="6 9 12 15 18 9" /></svg
+			>
+		</div>
+
+		{#if showReceivedMessages}
+			<div class="relative">
+				{#if receivedMessages.length === 0}
+					<p class="text-center text-gray-400 text-sm py-6">🔇 עדיין לא קיבלת הודעות</p>
+				{:else}
+					<div class="flex flex-col gap-3">
+						{#each receivedMessages as msg}
+							<div class="bg-white/5 border border-white/10 rounded-2xl p-4 hover:bg-white/8 transition-colors">
+								<div class="flex items-start justify-between gap-2 mb-2">
+									<span class="font-bold text-white text-sm">
+										{msg.sender?.username || msg.sender?.email?.split('@')[0] || 'משתמש'}
+									</span>
+									<span class="text-gray-500 text-xs flex-shrink-0">
+										{new Date(msg.createdAt).toLocaleDateString('he-IL')}
+									</span>
+								</div>
+								<p class="text-gray-200 text-sm leading-relaxed mb-3">{msg.content}</p>
+								<button class="text-xs font-bold text-blue-300 hover:text-blue-200 transition-colors">
+									💬 הגב
+								</button>
+							</div>
+						{/each}
+					</div>
+				{/if}
 			</div>
 		{/if}
 	</div>

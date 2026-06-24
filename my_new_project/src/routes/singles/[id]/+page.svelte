@@ -8,6 +8,82 @@
 
     let contactMenuOpen = $state(false);
     let selectedContact: 'request' | 'exchange' | 'message' | null = $state(null);
+    let contactLoading = $state(false);
+    let contactMessage = $state('');
+    let contactError = $state('');
+    let contactSuccess = $state(false);
+
+    async function sendContactRequest() {
+        contactLoading = true;
+        contactError = '';
+        try {
+            const res = await fetch('/api/contact-request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ receiverId: s.id, message: contactMessage }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                contactSuccess = true;
+                contactMessage = '';
+                setTimeout(() => { selectedContact = null; contactSuccess = false; }, 2000);
+            } else {
+                contactError = data.message || 'שגיאה בשליחה';
+            }
+        } catch (e) {
+            contactError = 'שגיאה בתקשורת';
+        } finally {
+            contactLoading = false;
+        }
+    }
+
+    async function sendMessage() {
+        contactLoading = true;
+        contactError = '';
+        try {
+            const res = await fetch('/api/messages', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ receiverId: s.id, content: contactMessage }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                contactSuccess = true;
+                contactMessage = '';
+                setTimeout(() => { selectedContact = null; contactSuccess = false; }, 2000);
+            } else {
+                contactError = data.message || 'שגיאה בשליחה';
+            }
+        } catch (e) {
+            contactError = 'שגיאה בתקשורת';
+        } finally {
+            contactLoading = false;
+        }
+    }
+
+    async function sendCardExchange() {
+        contactLoading = true;
+        contactError = '';
+        try {
+            const res = await fetch('/api/card-exchange', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user2Id: s.id, message: contactMessage }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                contactSuccess = true;
+                contactMessage = '';
+                setTimeout(() => { selectedContact = null; contactSuccess = false; }, 2000);
+            } else {
+                contactError = data.message || 'שגיאה בשליחה';
+            }
+        } catch (e) {
+            contactError = 'שגיאה בתקשורת';
+        } finally {
+            contactLoading = false;
+        }
+    }
 
     function waLink(phone: string): string {
         const digits = phone.replace(/\D/g, '').replace(/^0/, '972');
@@ -332,54 +408,134 @@
 
     <!-- Modals for contact options -->
     {#if selectedContact === 'request'}
-        <div class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 dir-rtl">
+        <div class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50" dir="rtl">
             <div class="bg-[#0f172a] rounded-3xl border border-purple-500/30 max-w-md w-full p-6 shadow-2xl">
                 <div class="flex items-center gap-3 mb-4">
                     <span class="text-3xl">📞</span>
                     <h3 class="text-white font-black text-lg">שלח בקשה להתקשרויות</h3>
                 </div>
-                <p class="text-gray-300 text-sm mb-4">כדי להשלים, עדיין חסרים: שדיכה ממשק משתמש, API, וrequests DB</p>
-                <p class="text-gray-400 text-xs mb-6">בינתיים - המודל יופעל כשיהיה מובנה ב-Strapi ו-frontend</p>
-                <button onclick={() => { selectedContact = null; }} class="w-full bg-white/10 hover:bg-white/20 text-white font-bold py-2 rounded-xl transition-colors">
-                    סגור
-                </button>
+                {#if contactSuccess}
+                    <div class="bg-green-500/20 border border-green-500/50 text-green-300 p-4 rounded-xl text-sm font-bold text-center mb-4">
+                        ✅ הבקשה נשלחה בהצלחה!
+                    </div>
+                {:else}
+                    <p class="text-gray-300 text-sm mb-4">
+                        כתוב הודעה קצרה - {s.nickname} יקבל אותה ויוכל ליצור איתך קשר
+                    </p>
+                    {#if contactError}
+                        <p class="text-red-400 text-xs mb-3">{contactError}</p>
+                    {/if}
+                    <textarea
+                        bind:value={contactMessage}
+                        placeholder="כתוב בקשה..."
+                        class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 mb-4 text-sm placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:bg-white/10"
+                        rows={3}
+                    ></textarea>
+                    <div class="flex gap-2">
+                        <button
+                            onclick={() => { selectedContact = null; }}
+                            disabled={contactLoading}
+                            class="flex-1 bg-white/10 hover:bg-white/20 text-white font-bold py-2 rounded-xl transition-colors disabled:opacity-50"
+                        >
+                            ביטול
+                        </button>
+                        <button
+                            onclick={sendContactRequest}
+                            disabled={contactLoading || !contactMessage.trim()}
+                            class="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 rounded-xl transition-colors disabled:opacity-50"
+                        >
+                            {contactLoading ? '⏳ שולח...' : 'שלח'}
+                        </button>
+                    </div>
+                {/if}
             </div>
         </div>
     {/if}
 
     {#if selectedContact === 'exchange'}
-        <div class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 dir-rtl">
+        <div class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50" dir="rtl">
             <div class="bg-[#0f172a] rounded-3xl border border-orange-500/30 max-w-md w-full p-6 shadow-2xl">
                 <div class="flex items-center gap-3 mb-4">
                     <span class="text-3xl">🔄</span>
                     <h3 class="text-white font-black text-lg">החלף כרטיסים</h3>
                 </div>
-                <p class="text-gray-300 text-sm mb-4">זה מאפשר לך להחליף קרטים בדרך הדדית</p>
-                <p class="text-gray-400 text-xs mb-6">בינתיים - המודל יופעל כשיהיה מובנה ב-Strapi ו-frontend</p>
-                <button onclick={() => { selectedContact = null; }} class="w-full bg-white/10 hover:bg-white/20 text-white font-bold py-2 rounded-xl transition-colors">
-                    סגור
-                </button>
+                {#if contactSuccess}
+                    <div class="bg-green-500/20 border border-green-500/50 text-green-300 p-4 rounded-xl text-sm font-bold text-center mb-4">
+                        ✅ בקשת ההחלפה נשלחה בהצלחה!
+                    </div>
+                {:else}
+                    <p class="text-gray-300 text-sm mb-4">
+                        שלח בקשה להחלפת כרטיסים - אם {s.nickname} יקבל, תוכלו ליצור קשר הדדי
+                    </p>
+                    {#if contactError}
+                        <p class="text-red-400 text-xs mb-3">{contactError}</p>
+                    {/if}
+                    <textarea
+                        bind:value={contactMessage}
+                        placeholder="כתוב הודעה (אופציונלי)..."
+                        class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 mb-4 text-sm placeholder-gray-500 focus:outline-none focus:border-orange-500/50 focus:bg-white/10"
+                        rows={3}
+                    ></textarea>
+                    <div class="flex gap-2">
+                        <button
+                            onclick={() => { selectedContact = null; }}
+                            disabled={contactLoading}
+                            class="flex-1 bg-white/10 hover:bg-white/20 text-white font-bold py-2 rounded-xl transition-colors disabled:opacity-50"
+                        >
+                            ביטול
+                        </button>
+                        <button
+                            onclick={sendCardExchange}
+                            disabled={contactLoading}
+                            class="flex-1 bg-orange-600 hover:bg-orange-500 text-white font-bold py-2 rounded-xl transition-colors disabled:opacity-50"
+                        >
+                            {contactLoading ? '⏳ שולח...' : 'שלח'}
+                        </button>
+                    </div>
+                {/if}
             </div>
         </div>
     {/if}
 
     {#if selectedContact === 'message'}
-        <div class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 dir-rtl">
+        <div class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50" dir="rtl">
             <div class="bg-[#0f172a] rounded-3xl border border-indigo-500/30 max-w-md w-full p-6 shadow-2xl">
                 <div class="flex items-center gap-3 mb-4">
                     <span class="text-3xl">💬</span>
                     <h3 class="text-white font-black text-lg">שלח הודעה</h3>
                 </div>
-                <p class="text-gray-300 text-sm mb-4">שלח הודעה קצרה - {s.nickname} תקבל אותה בחשבונו</p>
-                <textarea placeholder="כתוב הודעה..." class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 mb-4 text-sm placeholder-gray-500 focus:outline-none focus:border-indigo-500/50 focus:bg-white/10"></textarea>
-                <div class="flex gap-2">
-                    <button onclick={() => { selectedContact = null; }} class="flex-1 bg-white/10 hover:bg-white/20 text-white font-bold py-2 rounded-xl transition-colors">
-                        ביטול
-                    </button>
-                    <button class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-xl transition-colors">
-                        שלח
-                    </button>
-                </div>
+                {#if contactSuccess}
+                    <div class="bg-green-500/20 border border-green-500/50 text-green-300 p-4 rounded-xl text-sm font-bold text-center mb-4">
+                        ✅ ההודעה נשלחה בהצלחה!
+                    </div>
+                {:else}
+                    <p class="text-gray-300 text-sm mb-4">שלח הודעה קצרה - {s.nickname} תקבל אותה בחשבונו</p>
+                    {#if contactError}
+                        <p class="text-red-400 text-xs mb-3">{contactError}</p>
+                    {/if}
+                    <textarea
+                        bind:value={contactMessage}
+                        placeholder="כתוב הודעה..."
+                        class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 mb-4 text-sm placeholder-gray-500 focus:outline-none focus:border-indigo-500/50 focus:bg-white/10"
+                        rows={3}
+                    ></textarea>
+                    <div class="flex gap-2">
+                        <button
+                            onclick={() => { selectedContact = null; }}
+                            disabled={contactLoading}
+                            class="flex-1 bg-white/10 hover:bg-white/20 text-white font-bold py-2 rounded-xl transition-colors disabled:opacity-50"
+                        >
+                            ביטול
+                        </button>
+                        <button
+                            onclick={sendMessage}
+                            disabled={contactLoading || !contactMessage.trim()}
+                            class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-xl transition-colors disabled:opacity-50"
+                        >
+                            {contactLoading ? '⏳ שולח...' : 'שלח'}
+                        </button>
+                    </div>
+                {/if}
             </div>
         </div>
     {/if}
