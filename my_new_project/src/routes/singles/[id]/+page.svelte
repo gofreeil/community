@@ -1,10 +1,13 @@
 <script lang="ts">
     import type { PageData } from './$types';
-    import { religiosityLabel } from '$lib/singlesMock';
+    import { religiosityLabel, statusLabel } from '$lib/singlesMock';
     let { data }: { data: PageData } = $props();
 
     const s = data.single!;
     const isMale = s.gender === 'male';
+
+    let contactMenuOpen = $state(false);
+    let selectedContact: 'request' | 'exchange' | 'message' | null = $state(null);
 
     function waLink(phone: string): string {
         const digits = phone.replace(/\D/g, '').replace(/^0/, '972');
@@ -136,6 +139,11 @@
                                     💍 {s.maritalStatus}
                                 </span>
                             {/if}
+                            {#if s.status}
+                                <span class="inline-flex items-center gap-1 px-3 py-0.5 rounded-full bg-white/20 text-xs font-bold">
+                                    {statusLabel(s.status)}
+                                </span>
+                            {/if}
                         </div>
                     </div>
                 </div>
@@ -215,6 +223,41 @@
                     {/if}
                 </section>
 
+                <!-- יצירת קשר ישירה -->
+                <section class="rounded-2xl bg-gradient-to-br from-purple-500/10 to-violet-500/5 border border-purple-500/20 p-5">
+                    <div class="flex items-start gap-3 mb-4">
+                        <span class="text-2xl">💌</span>
+                        <div class="flex-1">
+                            <h2 class="text-purple-300 text-sm font-black mb-1 uppercase tracking-wider">יצירת קשר</h2>
+                            <p class="text-gray-400 text-xs leading-relaxed">אתה יכול ליצור קשר ישירות או להחליף כרטיסים</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <button
+                            type="button"
+                            onclick={() => { selectedContact = 'request'; }}
+                            class="flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-xl transition-colors text-sm shadow-lg shadow-purple-900/30"
+                        >
+                            📞 שלח בקשה
+                        </button>
+                        <button
+                            type="button"
+                            onclick={() => { selectedContact = 'exchange'; }}
+                            class="flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-500 text-white font-bold py-3 rounded-xl transition-colors text-sm shadow-lg shadow-orange-900/30"
+                        >
+                            🔄 החלף כרטיסים
+                        </button>
+                        <button
+                            type="button"
+                            onclick={() => { selectedContact = 'message'; }}
+                            class="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition-colors text-sm shadow-lg shadow-indigo-900/30"
+                        >
+                            💬 שלח הודעה
+                        </button>
+                    </div>
+                </section>
+
                 <!-- שיתוף הכרטיס -->
                 <section class="rounded-2xl bg-gradient-to-br from-green-500/10 to-emerald-500/5 border border-green-500/20 p-5">
                     <div class="flex items-start gap-3 mb-3">
@@ -286,4 +329,58 @@
             הפרופיל הוצג בלוח פנויים ופנויות של קהילה בשכונה
         </p>
     </div>
+
+    <!-- Modals for contact options -->
+    {#if selectedContact === 'request'}
+        <div class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 dir-rtl">
+            <div class="bg-[#0f172a] rounded-3xl border border-purple-500/30 max-w-md w-full p-6 shadow-2xl">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="text-3xl">📞</span>
+                    <h3 class="text-white font-black text-lg">שלח בקשה להתקשרויות</h3>
+                </div>
+                <p class="text-gray-300 text-sm mb-4">כדי להשלים, עדיין חסרים: שדיכה ממשק משתמש, API, וrequests DB</p>
+                <p class="text-gray-400 text-xs mb-6">בינתיים - המודל יופעל כשיהיה מובנה ב-Strapi ו-frontend</p>
+                <button onclick={() => { selectedContact = null; }} class="w-full bg-white/10 hover:bg-white/20 text-white font-bold py-2 rounded-xl transition-colors">
+                    סגור
+                </button>
+            </div>
+        </div>
+    {/if}
+
+    {#if selectedContact === 'exchange'}
+        <div class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 dir-rtl">
+            <div class="bg-[#0f172a] rounded-3xl border border-orange-500/30 max-w-md w-full p-6 shadow-2xl">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="text-3xl">🔄</span>
+                    <h3 class="text-white font-black text-lg">החלף כרטיסים</h3>
+                </div>
+                <p class="text-gray-300 text-sm mb-4">זה מאפשר לך להחליף קרטים בדרך הדדית</p>
+                <p class="text-gray-400 text-xs mb-6">בינתיים - המודל יופעל כשיהיה מובנה ב-Strapi ו-frontend</p>
+                <button onclick={() => { selectedContact = null; }} class="w-full bg-white/10 hover:bg-white/20 text-white font-bold py-2 rounded-xl transition-colors">
+                    סגור
+                </button>
+            </div>
+        </div>
+    {/if}
+
+    {#if selectedContact === 'message'}
+        <div class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 dir-rtl">
+            <div class="bg-[#0f172a] rounded-3xl border border-indigo-500/30 max-w-md w-full p-6 shadow-2xl">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="text-3xl">💬</span>
+                    <h3 class="text-white font-black text-lg">שלח הודעה</h3>
+                </div>
+                <p class="text-gray-300 text-sm mb-4">שלח הודעה קצרה - {s.nickname} תקבל אותה בחשבונו</p>
+                <textarea placeholder="כתוב הודעה..." class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 mb-4 text-sm placeholder-gray-500 focus:outline-none focus:border-indigo-500/50 focus:bg-white/10"></textarea>
+                <div class="flex gap-2">
+                    <button onclick={() => { selectedContact = null; }} class="flex-1 bg-white/10 hover:bg-white/20 text-white font-bold py-2 rounded-xl transition-colors">
+                        ביטול
+                    </button>
+                    <button class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-xl transition-colors">
+                        שלח
+                    </button>
+                </div>
+            </div>
+        </div>
+    {/if}
 </div>

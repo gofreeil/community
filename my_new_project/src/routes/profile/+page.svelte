@@ -16,6 +16,7 @@
 	import { neighborhoodState } from "$lib/neighborhoodState.svelte";
 	import { findWhatsAppGroups } from "$lib/data/whatsapp-groups";
 	import { getLikedItems, removeLike, type LikedItem } from "$lib/likedItems";
+	import { statusLabel, type UserStatus } from "$lib/singlesMock";
 
 	let { data, form } = $props();
 
@@ -40,6 +41,8 @@
 	let showFeedback = $state(false);
 	let showLikes = $state(false);
 	let likedItems = $state<LikedItem[]>([]);
+	let userStatus = $state<UserStatus>('available');
+	let showStatusSelector = $state(false);
 
 	function refreshLikes() {
 		likedItems = getLikedItems();
@@ -3994,6 +3997,106 @@
 					</button>
 				</form>
 			{/if}
+		{/if}
+	</div>
+
+	<!-- ===== קומה 7: סטטוס לפנויים ===== -->
+	<div
+		class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-4 md:p-6 shadow-xl mb-2 overflow-hidden
+	            before:absolute before:inset-x-0 before:top-0 before:h-24 before:rounded-t-3xl
+	            before:bg-gradient-to-b before:from-white/8 before:to-transparent
+	            before:transition-all before:duration-300 before:pointer-events-none
+	            hover:before:from-white/18 {mobileTab !== 'main'
+			? 'hidden md:block'
+			: ''}"
+	>
+		<div
+			class="relative flex items-center justify-between cursor-pointer select-none -mx-4 px-4 -mt-4 pt-3 md:-mx-6 md:px-6 md:-mt-6 md:pt-4 min-h-14 {showStatusSelector
+				? 'pb-4 mb-4'
+				: 'pb-4'}"
+			onclick={() => {
+				showStatusSelector = !showStatusSelector;
+			}}
+			role="button"
+			tabindex={0}
+			onkeydown={(e) => {
+				if (e.key === "Enter" || e.key === " ")
+					showStatusSelector = !showStatusSelector;
+			}}
+		>
+			<h2 class="text-xl font-black text-white flex items-center gap-2">
+				<span
+					class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+					style="background: radial-gradient(circle, #a78bfa 0%, #9f7aea 60%, #805ad5 100%); opacity: 0.75"
+					>7</span
+				>
+				הסטטוס שלי בלוח פנויים
+			</h2>
+			<svg
+				class="w-4 h-4 text-purple-400 transition-transform duration-300 flex-shrink-0 {showStatusSelector
+					? 'rotate-180'
+					: ''}"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2.5"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				><polyline points="6 9 12 15 18 9" /></svg
+			>
+		</div>
+
+		{#if showStatusSelector}
+			<div class="relative">
+				<p class="text-gray-400 text-sm mb-4">
+					בחר את הסטטוס שלך - אחרים יראו זאת בפרופיל שלך בלוח הפנויים
+				</p>
+				<div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+					<button
+						type="button"
+						onclick={() => { userStatus = 'available'; }}
+						class="flex flex-col items-center gap-2 p-4 rounded-xl border transition-all {userStatus === 'available'
+							? 'bg-green-500/20 border-green-500/50'
+							: 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-green-500/30'}"
+					>
+						<span class="text-3xl">✅</span>
+						<span class="text-xs font-bold text-white text-center">זמין/ה</span>
+					</button>
+					<button
+						type="button"
+						onclick={() => { userStatus = 'not_available'; }}
+						class="flex flex-col items-center gap-2 p-4 rounded-xl border transition-all {userStatus === 'not_available'
+							? 'bg-red-500/20 border-red-500/50'
+							: 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-red-500/30'}"
+					>
+						<span class="text-3xl">🔴</span>
+						<span class="text-xs font-bold text-white text-center">לא זמין/ה</span>
+					</button>
+					<button
+						type="button"
+						onclick={() => { userStatus = 'in_relationship'; }}
+						class="flex flex-col items-center gap-2 p-4 rounded-xl border transition-all {userStatus === 'in_relationship'
+							? 'bg-pink-500/20 border-pink-500/50'
+							: 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-pink-500/30'}"
+					>
+						<span class="text-3xl">💑</span>
+						<span class="text-xs font-bold text-white text-center">בקשר</span>
+					</button>
+					<button
+						type="button"
+						onclick={() => { userStatus = 'taking_break'; }}
+						class="flex flex-col items-center gap-2 p-4 rounded-xl border transition-all {userStatus === 'taking_break'
+							? 'bg-blue-500/20 border-blue-500/50'
+							: 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-blue-500/30'}"
+					>
+						<span class="text-3xl">⏸️</span>
+						<span class="text-xs font-bold text-white text-center">הפסקה זמנית</span>
+					</button>
+				</div>
+				<p class="text-xs text-gray-500 mt-4">
+					הסטטוס שלך יופיע בתוך כמה שניות בלוח הפנויים
+				</p>
+			</div>
 		{/if}
 	</div>
 </div>

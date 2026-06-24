@@ -83,6 +83,15 @@
     },
     "user_id": {
       "type": "string"
+    },
+    "view_count": {
+      "type": "integer",
+      "default": 0
+    },
+    "user_status": {
+      "type": "enumeration",
+      "enum": ["available", "not_available", "in_relationship", "taking_break"],
+      "default": "available"
     }
   }
 }
