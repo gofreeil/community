@@ -1,4 +1,4 @@
-import { json, error } from '@sveltekit/server';
+import { json, error } from '@sveltejs/kit';
 import { AUTH_TOKEN, STRAPI_URL } from '$env/static/private';
 import type { RequestHandler } from '@sveltejs/kit';
 
