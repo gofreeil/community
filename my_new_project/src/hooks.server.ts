@@ -27,18 +27,36 @@ const checkBanned: Handle = async ({ event, resolve }) => {
 };
 
 const setStrApiCookie: Handle = async ({ event, resolve }) => {
-    if (!event.cookies.get('strapi_jwt')) {
+    const isProd = process.env.NODE_ENV === 'production';
+    // עוגייה משותפת לכל 13 אתרי gofreeil.com: זיהוי מאוחד מול רשימת המשתמשים
+    // האחת ב-Strapi המשותף. כל אתר תחת .gofreeil.com קורא אותה ומזהה את המשתמש
+    // ישירות — בלי redirect ובלי הקלדת פרטים.
+    const needsLocal  = !event.cookies.get('strapi_jwt');
+    const needsShared = isProd && !event.cookies.get('gofreeil-auth');
+    if (needsLocal || needsShared) {
         try {
             const session = await event.locals.auth();
             const jwt = (session?.user as { strapiJwt?: string } | undefined)?.strapiJwt;
             if (jwt) {
-                event.cookies.set('strapi_jwt', jwt, {
-                    httpOnly: true,
-                    secure:   process.env.NODE_ENV === 'production',
-                    sameSite: 'strict',
-                    path:     '/',
-                    maxAge:   60 * 60 * 24 * 365,
-                });
+                if (needsLocal) {
+                    event.cookies.set('strapi_jwt', jwt, {
+                        httpOnly: true,
+                        secure:   isProd,
+                        sameSite: 'strict',
+                        path:     '/',
+                        maxAge:   60 * 60 * 24 * 365,
+                    });
+                }
+                if (needsShared) {
+                    event.cookies.set('gofreeil-auth', jwt, {
+                        httpOnly: true,
+                        secure:   true,
+                        sameSite: 'lax',
+                        path:     '/',
+                        domain:   '.gofreeil.com',
+                        maxAge:   60 * 60 * 24 * 30,
+                    });
+                }
             }
         } catch { /* ignore - session unavailable */ }
     }
