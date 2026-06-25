@@ -1,6 +1,9 @@
 import { json, error } from '@sveltejs/kit';
-import { AUTH_TOKEN, STRAPI_URL } from '$env/static/private';
 import type { RequestHandler } from '@sveltejs/kit';
+
+// process.env (לא $env/static/private) כדי שהבנייה לא תיכשל כשהמשתנה חסר בזמן build
+const STRAPI_URL = process.env.STRAPI_URL ?? 'http://localhost:1337';
+const STRAPI_TOKEN = process.env.STRAPI_TOKEN ?? '';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
 	try {
@@ -14,7 +17,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
-				'Authorization': `Bearer ${AUTH_TOKEN}`,
+				'Authorization': `Bearer ${STRAPI_TOKEN}`,
 			},
 			body: JSON.stringify({
 				data: {

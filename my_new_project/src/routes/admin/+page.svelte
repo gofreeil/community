@@ -213,8 +213,8 @@
 						{#each coordinatorUsers() as user (user.id)}
 							{@const coordList = ((user as any).coordinator_of as string[]) ?? []}
 							<div class="bg-amber-500/5 rounded-2xl border border-amber-500/30 p-3 md:p-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 transition-all hover:border-amber-500/50">
-								<!-- אווטר + שם -->
-								<div class="flex items-center gap-3 flex-1 min-w-0">
+								<!-- אווטר + שם (לחיץ - פרופיל מלא) -->
+								<a href="/admin/users/{user.id}" title="צפה בפרופיל המלא" class="user-link flex items-center gap-3 flex-1 min-w-0 cursor-pointer">
 									{#if user.avatar_url}
 										<img src={user.avatar_url} alt="" class="w-10 h-10 rounded-full object-cover flex-shrink-0 ring-2 ring-amber-400/40" />
 									{:else}
@@ -223,7 +223,7 @@
 										</div>
 									{/if}
 									<div class="min-w-0">
-										<div class="text-lg font-bold truncate flex items-center gap-2 text-white">
+										<div class="user-name text-lg font-bold truncate flex items-center gap-2 text-white">
 											{user.name ?? 'ללא שם'}
 											{#if user.banned}
 												<span class="text-sm bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded-full">חסום</span>
@@ -231,7 +231,7 @@
 										</div>
 										<div class="text-base text-gray-400 truncate">{user.email ?? '-'}</div>
 									</div>
-								</div>
+								</a>
 
 								<!-- שכונות שהוא רכז עליהן -->
 								<div class="flex flex-wrap gap-1 max-w-full sm:max-w-[260px]">
@@ -284,8 +284,8 @@
 					{@const isCoord = (user as any).coordinator_of?.length > 0}
 					{@const hasHigherRole = user.role === 'super_admin' || user.role === 'neighborhood_admin'}
 					<div class="bg-[#0f172a] rounded-2xl border border-white/10 p-4 flex flex-col sm:flex-row sm:items-center gap-4 transition-all hover:border-white/20">
-						<!-- אווטאר + שם -->
-						<div class="flex items-center gap-3 flex-1 min-w-0">
+						<!-- אווטאר + שם (לחיץ - פרופיל מלא) -->
+						<a href="/admin/users/{user.id}" title="צפה בפרופיל המלא" class="user-link flex items-center gap-3 flex-1 min-w-0 cursor-pointer">
 							{#if user.avatar_url}
 								<img src={user.avatar_url} alt="" class="w-10 h-10 rounded-full object-cover flex-shrink-0" />
 							{:else}
@@ -294,7 +294,7 @@
 								</div>
 							{/if}
 							<div class="min-w-0">
-								<div class="text-lg font-bold truncate flex items-center gap-2">
+								<div class="user-name text-lg font-bold truncate flex items-center gap-2">
 									{user.name ?? 'ללא שם'}
 									{#if user.banned}
 										<span class="text-sm bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded-full">חסום</span>
@@ -302,7 +302,7 @@
 								</div>
 								<div class="text-base text-gray-400 truncate">{user.email ?? '-'}</div>
 							</div>
-						</div>
+						</a>
 
 						<!-- שכונה -->
 						<div class="text-base text-gray-400 min-w-[100px]">
@@ -581,3 +581,10 @@
 		</div>
 	</div>
 {/if}
+
+<style>
+	/* קו תחתון לשם המשתמש בריחוף - group-hover שבור ב-Tailwind v4 */
+	.user-link:hover .user-name {
+		text-decoration: underline;
+	}
+</style>
