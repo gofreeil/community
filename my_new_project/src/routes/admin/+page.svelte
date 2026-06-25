@@ -346,7 +346,7 @@
 				{#if coordinatorUsers().length === 0}
 					<div class="rounded-2xl border border-dashed border-amber-500/20 bg-amber-500/5 px-4 py-6 text-center">
 						<p class="text-sm text-amber-200/80 font-bold mb-1">{searchQuery ? 'לא נמצאו רכזים תואמים' : 'עוד לא מונו רכזים'}</p>
-						<p class="text-xs text-gray-500">השתמש בכפתור 🏘️ רכז ליד כל משתמש כדי למנות אותו לרכז שכונה</p>
+						<p class="text-xs text-gray-500">רכזים ממונים דרך אישור בקשה בסקציית "בקשות להיות רכז" למעלה (כפתור ✅ אשר כרכז)</p>
 					</div>
 				{:else}
 					<div class="grid gap-2 md:gap-3">
@@ -466,15 +466,6 @@
 
 						<!-- פעולות -->
 						<div class="flex gap-2 flex-shrink-0 flex-wrap">
-							<!-- מינוי רכז -->
-							<button
-								onclick={() => openCoordModal({ id: user.id, name: user.name, coordinator_of: (user as any).coordinator_of ?? [], neighborhood: user.neighborhood, city: (user as any).city })}
-								class="px-3 py-1.5 text-sm rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/30
-								       hover:bg-amber-500/20 transition-all cursor-pointer"
-								title="מנה / הסר רכז"
-							>
-								🏘️ רכז
-							</button>
 							<!-- שינוי תפקיד -->
 							<button
 								onclick={() => openRoleModal({ id: user.id, name: user.name, role: user.role, neighborhood: user.neighborhood })}
