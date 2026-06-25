@@ -16,12 +16,15 @@
 
 	// מינוי רכז - מודל
 	let showCoordModal  = $state(false);
-	let coordModalUser  = $state<{ id: string; name: string | null; coordinator_of: string[] } | null>(null);
+	let coordModalUser  = $state<{ id: string; name: string | null; coordinator_of: string[]; neighborhood?: string | null } | null>(null);
 	let coordNeighborhoods = $state(''); // שכונות מופרדות בשורות
 
-	function openCoordModal(user: { id: string; name: string | null; coordinator_of: string[] }) {
+	function openCoordModal(user: { id: string; name: string | null; coordinator_of: string[]; neighborhood?: string | null }) {
 		coordModalUser = user;
-		coordNeighborhoods = user.coordinator_of.join('\n');
+		// ברירת מחדל: אם כבר רכז - השכונות הקיימות; אחרת שכונת המגורים מהפרופיל
+		coordNeighborhoods = user.coordinator_of.length > 0
+			? user.coordinator_of.join('\n')
+			: (user.neighborhood?.trim() ?? '');
 		showCoordModal = true;
 	}
 
@@ -231,7 +234,7 @@
 								<!-- פעולות -->
 								<div class="flex gap-2 flex-shrink-0 flex-wrap">
 									<button
-										onclick={() => openCoordModal({ id: user.id, name: user.name, coordinator_of: coordList })}
+										onclick={() => openCoordModal({ id: user.id, name: user.name, coordinator_of: coordList, neighborhood: user.neighborhood })}
 										class="px-3 py-1.5 text-xs rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/40 hover:bg-amber-500/25 transition-all cursor-pointer font-bold"
 										title="ערוך שכונות שהוא רכז עליהן"
 									>
@@ -309,7 +312,7 @@
 						<div class="flex gap-2 flex-shrink-0 flex-wrap">
 							<!-- מינוי רכז -->
 							<button
-								onclick={() => openCoordModal({ id: user.id, name: user.name, coordinator_of: (user as any).coordinator_of ?? [] })}
+								onclick={() => openCoordModal({ id: user.id, name: user.name, coordinator_of: (user as any).coordinator_of ?? [], neighborhood: user.neighborhood })}
 								class="px-3 py-1.5 text-xs rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/30
 								       hover:bg-amber-500/20 transition-all cursor-pointer"
 								title="מנה / הסר רכז"
@@ -422,10 +425,17 @@
 			onclick={(e) => e.stopPropagation()}
 			role="dialog"
 		>
-			<h2 class="text-xl font-bold mb-1">🏘️ מינוי רכז שכונה</h2>
-			<p class="text-gray-400 text-sm mb-5">
+			<h2 class="text-2xl font-bold mb-1">🏘️ מינוי רכז שכונה</h2>
+			<p class="text-gray-300 text-base mb-4">
 				משתמש: <span class="text-white font-bold">{coordModalUser.name ?? coordModalUser.id}</span>
 			</p>
+
+			<!-- שכונת המגורים של המשתמש לפי הפרופיל -->
+			<div class="mb-4 flex items-center gap-2 rounded-xl bg-white/5 border border-white/10 px-4 py-3">
+				<span class="text-xl">🏠</span>
+				<span class="text-base text-gray-300">מתגורר בשכונה:</span>
+				<span class="text-base font-bold text-white">{coordModalUser.neighborhood?.trim() || 'לא צוין בפרופיל'}</span>
+			</div>
 
 			<form method="POST" action="?/setCoordinator" use:enhance={() => {
 				return async ({ update }) => {
@@ -435,31 +445,31 @@
 			}}>
 				<input type="hidden" name="userId" value={coordModalUser.id} />
 
-				<label class="block text-sm font-medium text-gray-300 mb-1">
-					שכונות (שורה אחת לכל שכונה)
+				<label class="block text-base font-medium text-gray-200 mb-1">
+					שכונות שהוא רכז עליהן (שורה אחת לכל שכונה)
 				</label>
-				<p class="text-gray-500 text-xs mb-2">השאר ריק כדי להסיר את הרכזות מהמשתמש</p>
+				<p class="text-gray-400 text-sm mb-2">השאר ריק כדי להסיר את הרכזות מהמשתמש</p>
 				<textarea
 					name="neighborhoods"
 					bind:value={coordNeighborhoods}
 					rows="4"
-					placeholder={"קרית משה\nרמות\nגילה\nחשמונאים"}
-					class="w-full bg-[#1e293b] border border-white/10 rounded-xl px-4 py-2.5 text-white
+					placeholder={coordModalUser.neighborhood?.trim() || 'שם השכונה'}
+					class="w-full bg-[#1e293b] border border-white/10 rounded-xl px-4 py-3 text-base text-white
 					       placeholder-gray-500 focus:outline-none focus:border-amber-500 transition-colors resize-none mb-4"
 				></textarea>
 
 				{#if coordNeighborhoods.trim()}
 					<div class="mb-4 p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl">
-						<p class="text-amber-300 text-xs font-semibold mb-1">שכונות שיוגדרו:</p>
+						<p class="text-amber-300 text-sm font-semibold mb-1.5">שכונות שיוגדרו:</p>
 						<div class="flex flex-wrap gap-1.5">
 							{#each coordNeighborhoods.split('\n').map(s => s.trim()).filter(Boolean) as n}
-								<span class="bg-amber-500/20 text-amber-200 text-xs px-2 py-0.5 rounded-full border border-amber-500/30">{n}</span>
+								<span class="bg-amber-500/20 text-amber-200 text-sm px-2.5 py-0.5 rounded-full border border-amber-500/30">{n}</span>
 							{/each}
 						</div>
 					</div>
 				{:else}
 					<div class="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
-						<p class="text-red-400 text-xs">⚠️ שמירה ריקה תסיר את הרכזות מהמשתמש</p>
+						<p class="text-red-400 text-sm">⚠️ שמירה ריקה תסיר את הרכזות מהמשתמש</p>
 					</div>
 				{/if}
 
