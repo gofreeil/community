@@ -409,7 +409,11 @@
 		if (_myInfoAutoOpened) return;
 		const u = data.user;
 		if (!u) return;
-		const isIncomplete = !u.name?.trim() || !u.phone?.trim() || !u.city?.trim() || !u.neighborhood?.trim();
+		// עיר ללא שכונות ברשימה → שכונה אינה נדרשת לצורך "פרופיל מושלם"
+		const savedCityHasNeighborhoods =
+			((data.citiesData as CityEntry[]).find((c) => c.city === u.city)?.neighborhoods ?? []).length > 0;
+		const neighborhoodMissing = savedCityHasNeighborhoods && !u.neighborhood?.trim();
+		const isIncomplete = !u.name?.trim() || !u.phone?.trim() || !u.city?.trim() || neighborhoodMissing;
 		if (isIncomplete) {
 			showMyInfo = true;
 			_myInfoAutoOpened = true;
@@ -950,6 +954,12 @@
 			?.neighborhoods ?? [],
 	);
 
+	// עיר נבחרה אך אין לה שכונות ברשימה (לדוגמה: כפר תפוח) →
+	// אין לחייב בחירת שכונה, אפשר לשמור עם העיר בלבד
+	let cityWithoutNeighborhoods = $derived(
+		!!city && availableNeighborhoods.length === 0,
+	);
+
 	let avatarLetter = $derived(
 		(data.user?.name ?? data.user?.email ?? "U").charAt(0).toUpperCase(),
 	);
@@ -965,7 +975,7 @@
 		!!nickname,
 		!!phone,
 		!!city,
-		!!neighborhood,
+		!!neighborhood || cityWithoutNeighborhoods,
 		!!gender,
 		!!business,
 		!!family_status,
@@ -999,7 +1009,9 @@
 
 	// דרגה 1 = צופה (נרשם בלבד)
 	// דרגה 2 = משתמש (מילא עיר, שכונה, אימייל וטלפון)
-	let userLevel = $derived(city && neighborhood && email && phone ? 2 : 1);
+	let userLevel = $derived(
+		city && (neighborhood || cityWithoutNeighborhoods) && email && phone ? 2 : 1,
+	);
 
 	// מספר מניות פלטפורמה - placeholder פרונט בלבד עד חיבור ל-backend
 	let userShares = $derived(10 + data.items.length * 5);
@@ -3363,30 +3375,43 @@
 								class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2"
 							>
 								{tFn("neighborhood_label")}
-								<span class="text-red-400">*</span>
+								{#if !cityWithoutNeighborhoods}
+									<span class="text-red-400">*</span>
+								{/if}
 							</label>
 							{#if isEditing}
-								<select
-									id="p-neighborhood"
-									name="neighborhood"
-									bind:value={neighborhood}
-									onfocus={() => (locationInteracted = true)}
-									onchange={() => (locationInteracted = true)}
-									disabled={!city}
-									required
-									class="w-full bg-[#070b14] border {!neighborhood
-										? 'border-red-500/50'
-										: 'border-white/10'} focus:border-purple-500/50 rounded-xl
-								       px-4 py-3 text-white text-sm transition-colors outline-none appearance-none
-								       disabled:opacity-40 disabled:cursor-not-allowed"
-								>
-									<option value=""
-										>{tFn("choose_neighborhood")}</option
+								{#if cityWithoutNeighborhoods}
+									<!-- אין שכונות רשומות בעיר זו - אפשר לשמור עם העיר בלבד -->
+									<input type="hidden" name="neighborhood" value="" />
+									<div
+										class="w-full bg-[#070b14] border border-white/10 rounded-xl
+									       px-4 py-3 text-gray-400 text-xs leading-relaxed"
 									>
-									{#each availableNeighborhoods as n}
-										<option value={n}>{n}</option>
-									{/each}
-								</select>
+										אין שכונות רשומות בעיר זו — אפשר לשמור עם העיר בלבד.
+									</div>
+								{:else}
+									<select
+										id="p-neighborhood"
+										name="neighborhood"
+										bind:value={neighborhood}
+										onfocus={() => (locationInteracted = true)}
+										onchange={() => (locationInteracted = true)}
+										disabled={!city}
+										required
+										class="w-full bg-[#070b14] border {!neighborhood
+											? 'border-red-500/50'
+											: 'border-white/10'} focus:border-purple-500/50 rounded-xl
+									       px-4 py-3 text-white text-sm transition-colors outline-none appearance-none
+									       disabled:opacity-40 disabled:cursor-not-allowed"
+									>
+										<option value=""
+											>{tFn("choose_neighborhood")}</option
+										>
+										{#each availableNeighborhoods as n}
+											<option value={n}>{n}</option>
+										{/each}
+									</select>
+								{/if}
 							{:else}
 								<p class="text-white font-medium py-3 px-1">
 									{neighborhood || "-"}
@@ -3901,9 +3926,15 @@
 									showTermsError = true;
 									return;
 								}
-								if (!city || !neighborhood) {
+								if (!city) {
 									e.preventDefault();
-									alert("יש למלא עיר ושכונה לפני השמירה");
+									alert("יש לבחור עיר לפני השמירה");
+									return;
+								}
+								// שכונה נדרשת רק אם קיימות שכונות ברשימה לעיר זו
+								if (!cityWithoutNeighborhoods && !neighborhood) {
+									e.preventDefault();
+									alert("יש לבחור שכונה לפני השמירה");
 									return;
 								}
 							}}
