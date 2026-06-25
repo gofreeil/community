@@ -472,6 +472,8 @@
 	let cityQuery = $state(_ud?.city ?? "");
 	let showCitySuggestions = $state(false);
 	let cityHighlightIdx = $state(-1);
+	// רשימת שכונות נפתחת (dropdown מותאם)
+	let showNbSuggestions = $state(false);
 
 	function citySuggestions(): string[] {
 		const q = cityQuery.trim().toLowerCase();
@@ -483,10 +485,35 @@
 	function pickCity(c: string) {
 		city = c;
 		cityQuery = c;
-		neighborhood = "";
 		showCitySuggestions = false;
 		cityHighlightIdx = -1;
 		locationInteracted = true;
+		// קביעת השכונה לפי העיר שנבחרה
+		const nbs = (data.citiesData as CityEntry[]).find((x) => x.city === c)?.neighborhoods ?? [];
+		const noReal = nbs.length === 0 || (nbs.length === 1 && nbs[0] === "מרכז");
+		if (noReal) {
+			// אין שכונות אמיתיות בעיר → "מרכז" מסומן אוטומטית
+			neighborhood = "מרכז";
+			showNbSuggestions = false;
+		} else {
+			// יש שכונות → פתח מיד את הרשימה כדי שהמשתמש יבחר
+			neighborhood = "";
+			showNbSuggestions = true;
+		}
+	}
+
+	function pickNeighborhood(n: string) {
+		neighborhood = n;
+		showNbSuggestions = false;
+		locationInteracted = true;
+	}
+
+	// "לא מצאתי את השכונה שלי" → חשיפת תיבת המיקום החופשי שנשלחת למנהל
+	function pickNeighborhoodNotFound() {
+		neighborhood = "";
+		showNbSuggestions = false;
+		locationInteracted = true;
+		setTimeout(() => document.getElementById("p-custom-location")?.focus(), 50);
 	}
 
 	function onCityInputKey(e: KeyboardEvent) {
@@ -954,10 +981,13 @@
 			?.neighborhoods ?? [],
 	);
 
-	// עיר נבחרה אך אין לה שכונות ברשימה (לדוגמה: כפר תפוח) →
+	// עיר נבחרה אך אין לה שכונות אמיתיות (לדוגמה: כפר תפוח - רק "מרכז") →
 	// אין לחייב בחירת שכונה, אפשר לשמור עם העיר בלבד
 	let cityWithoutNeighborhoods = $derived(
-		!!city && availableNeighborhoods.length === 0,
+		!!city &&
+			(availableNeighborhoods.length === 0 ||
+				(availableNeighborhoods.length === 1 &&
+					availableNeighborhoods[0] === "מרכז")),
 	);
 
 	let avatarLetter = $derived(
@@ -3381,36 +3411,67 @@
 							</label>
 							{#if isEditing}
 								{#if cityWithoutNeighborhoods}
-									<!-- אין שכונות רשומות בעיר זו - אפשר לשמור עם העיר בלבד -->
-									<input type="hidden" name="neighborhood" value="" />
-									<div
-										class="w-full bg-[#070b14] border border-white/10 rounded-xl
-									       px-4 py-3 text-gray-400 text-xs leading-relaxed"
+									<!-- אין שכונות אמיתיות בעיר זו - רק "מרכז", מסומן אוטומטית -->
+									<input type="hidden" name="neighborhood" value="מרכז" />
+									<button
+										type="button"
+										onclick={() => pickNeighborhood("מרכז")}
+										class="w-full text-right bg-[#070b14] border border-white/10 rounded-xl
+									       px-4 py-3 text-white text-sm transition-colors outline-none flex items-center justify-between gap-2"
 									>
-										אין שכונות רשומות בעיר זו — אפשר לשמור עם העיר בלבד.
-									</div>
+										<span>מרכז</span>
+										<span class="text-green-400 text-xs">✓ נבחר</span>
+									</button>
+									<p class="text-gray-400 text-xs leading-relaxed mt-1.5">
+										בעיר זו לא קיימת שכונה, רק מרכז — אפשר לשמור עם העיר בלבד.
+									</p>
 								{:else}
-									<select
-										id="p-neighborhood"
-										name="neighborhood"
-										bind:value={neighborhood}
-										onfocus={() => (locationInteracted = true)}
-										onchange={() => (locationInteracted = true)}
-										disabled={!city}
-										required
-										class="w-full bg-[#070b14] border {!neighborhood
-											? 'border-red-500/50'
-											: 'border-white/10'} focus:border-purple-500/50 rounded-xl
-									       px-4 py-3 text-white text-sm transition-colors outline-none appearance-none
-									       disabled:opacity-40 disabled:cursor-not-allowed"
-									>
-										<option value=""
-											>{tFn("choose_neighborhood")}</option
+									<div class="relative">
+										<input type="hidden" name="neighborhood" value={neighborhood} />
+										<button
+											id="p-neighborhood"
+											type="button"
+											onclick={() => { if (city) showNbSuggestions = !showNbSuggestions; locationInteracted = true; }}
+											onblur={() => setTimeout(() => (showNbSuggestions = false), 150)}
+											disabled={!city}
+											class="w-full text-right bg-[#070b14] border {!neighborhood
+												? 'border-red-500/50'
+												: 'border-white/10'} focus:border-purple-500/50 rounded-xl
+										       px-4 py-3 text-sm transition-colors outline-none flex items-center justify-between gap-2
+										       disabled:opacity-40 disabled:cursor-not-allowed {neighborhood ? 'text-white' : 'text-white/40'}"
 										>
-										{#each availableNeighborhoods as n}
-											<option value={n}>{n}</option>
-										{/each}
-									</select>
+											<span>{neighborhood || tFn("choose_neighborhood")}</span>
+											<span class="text-white/40 text-xs">▾</span>
+										</button>
+										{#if showNbSuggestions}
+											<ul
+												class="absolute z-50 right-0 left-0 mt-1 max-h-64 overflow-y-auto rounded-xl
+												       bg-[#0f172a] border border-purple-500/30 shadow-2xl"
+												role="listbox"
+											>
+												{#each availableNeighborhoods as n}
+													<li
+														role="option"
+														aria-selected={n === neighborhood}
+														onmousedown={() => pickNeighborhood(n)}
+														class="px-4 py-2 text-sm text-white cursor-pointer transition-colors
+														       hover:bg-white/5 {n === neighborhood ? 'font-bold text-purple-300' : ''}"
+													>
+														{n}
+													</li>
+												{/each}
+												<li
+													role="option"
+													aria-selected={false}
+													onmousedown={() => pickNeighborhoodNotFound()}
+													class="px-4 py-2.5 text-sm text-yellow-300 cursor-pointer transition-colors
+													       hover:bg-yellow-500/10 border-t border-white/10 font-bold"
+												>
+													📍 לא מצאתי את השכונה שלי
+												</li>
+											</ul>
+										{/if}
+									</div>
 								{/if}
 							{:else}
 								<p class="text-white font-medium py-3 px-1">
