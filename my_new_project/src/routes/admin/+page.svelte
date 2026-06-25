@@ -16,17 +16,28 @@
 
 	// מינוי רכז - מודל
 	let showCoordModal  = $state(false);
-	let coordModalUser  = $state<{ id: string; name: string | null; coordinator_of: string[]; neighborhood?: string | null } | null>(null);
+	let coordModalUser  = $state<{ id: string; name: string | null; coordinator_of: string[]; neighborhood?: string | null; city?: string | null } | null>(null);
 	let coordNeighborhoods = $state(''); // שכונות מופרדות בשורות
 
-	function openCoordModal(user: { id: string; name: string | null; coordinator_of: string[]; neighborhood?: string | null }) {
+	// מקום המגורים להצגה: השכונה שסומנה, אך אם סומן "מרכז" או שאין שכונה - העיר שסומנה
+	function residenceLabel(neighborhood?: string | null, city?: string | null): string {
+		const n = neighborhood?.trim();
+		const c = city?.trim();
+		if (n && n !== 'מרכז') return n;
+		return c ?? '';
+	}
+
+	function openCoordModal(user: { id: string; name: string | null; coordinator_of: string[]; neighborhood?: string | null; city?: string | null }) {
 		coordModalUser = user;
-		// ברירת מחדל: אם כבר רכז - השכונות הקיימות; אחרת שכונת המגורים מהפרופיל
+		// ברירת מחדל: אם כבר רכז - השכונות הקיימות; אחרת מקום המגורים מהפרופיל (שכונה או עיר)
 		coordNeighborhoods = user.coordinator_of.length > 0
 			? user.coordinator_of.join('\n')
-			: (user.neighborhood?.trim() ?? '');
+			: residenceLabel(user.neighborhood, user.city);
 		showCoordModal = true;
 	}
+
+	// מקום המגורים להצגה במודל הרכז
+	const coordResidence = $derived(coordModalUser ? residenceLabel(coordModalUser.neighborhood, coordModalUser.city) : '');
 
 	function openRoleModal(user: typeof roleModalUser) {
 		roleModalUser = user;
@@ -234,7 +245,7 @@
 								<!-- פעולות -->
 								<div class="flex gap-2 flex-shrink-0 flex-wrap">
 									<button
-										onclick={() => openCoordModal({ id: user.id, name: user.name, coordinator_of: coordList, neighborhood: user.neighborhood })}
+										onclick={() => openCoordModal({ id: user.id, name: user.name, coordinator_of: coordList, neighborhood: user.neighborhood, city: (user as any).city })}
 										class="px-3 py-1.5 text-xs rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/40 hover:bg-amber-500/25 transition-all cursor-pointer font-bold"
 										title="ערוך שכונות שהוא רכז עליהן"
 									>
@@ -312,7 +323,7 @@
 						<div class="flex gap-2 flex-shrink-0 flex-wrap">
 							<!-- מינוי רכז -->
 							<button
-								onclick={() => openCoordModal({ id: user.id, name: user.name, coordinator_of: (user as any).coordinator_of ?? [], neighborhood: user.neighborhood })}
+								onclick={() => openCoordModal({ id: user.id, name: user.name, coordinator_of: (user as any).coordinator_of ?? [], neighborhood: user.neighborhood, city: (user as any).city })}
 								class="px-3 py-1.5 text-xs rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/30
 								       hover:bg-amber-500/20 transition-all cursor-pointer"
 								title="מנה / הסר רכז"
@@ -430,11 +441,11 @@
 				משתמש: <span class="text-white font-bold">{coordModalUser.name ?? coordModalUser.id}</span>
 			</p>
 
-			<!-- שכונת המגורים של המשתמש לפי הפרופיל -->
+			<!-- מקום המגורים של המשתמש לפי הפרופיל (שכונה, או העיר אם סומן "מרכז"/אין שכונה) -->
 			<div class="mb-4 flex items-center gap-2 rounded-xl bg-white/5 border border-white/10 px-4 py-3">
 				<span class="text-xl">🏠</span>
-				<span class="text-base text-gray-300">מתגורר בשכונה:</span>
-				<span class="text-base font-bold text-white">{coordModalUser.neighborhood?.trim() || 'לא צוין בפרופיל'}</span>
+				<span class="text-base text-gray-300">מתגורר ב:</span>
+				<span class="text-base font-bold text-white">{coordResidence || 'לא צוין בפרופיל'}</span>
 			</div>
 
 			<form method="POST" action="?/setCoordinator" use:enhance={() => {
@@ -453,7 +464,7 @@
 					name="neighborhoods"
 					bind:value={coordNeighborhoods}
 					rows="4"
-					placeholder={coordModalUser.neighborhood?.trim() || 'שם השכונה'}
+					placeholder={coordResidence || 'שם השכונה'}
 					class="w-full bg-[#1e293b] border border-white/10 rounded-xl px-4 py-3 text-base text-white
 					       placeholder-gray-500 focus:outline-none focus:border-amber-500 transition-colors resize-none mb-4"
 				></textarea>
