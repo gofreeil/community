@@ -750,6 +750,23 @@ export async function getUserById(id: string, _jwt?: string): Promise<DbUser | u
     return u ? mapUpUser(u) : undefined;
 }
 
+/**
+ * שליפת משתמש לפי המזהה שמופיע ברשימת המשתמשים (mapUpUser.id):
+ * external_id אם קיים, אחרת ה-id המספרי של Strapi.
+ * מנסה קודם external_id ואז נופל ל-id המספרי - כדי שגם משתמשי credentials
+ * ללא external_id יהיו נגישים מדף הניהול.
+ */
+export async function getUserByAnyId(id: string, _jwt?: string): Promise<DbUser | undefined> {
+    const byExternal = await findUpUser(id);
+    if (byExternal) return mapUpUser(byExternal);
+    // fallback: id מספרי של Strapi
+    if (/^\d+$/.test(id)) {
+        const arr = await findStrapiUpUsers({ 'filters[id][$eq]': id, 'pagination[limit]': '1' });
+        if (arr[0]) return mapUpUser(arr[0] as StrapiUpUser);
+    }
+    return undefined;
+}
+
 export async function getUserByEmail(email: string, _jwt?: string): Promise<DbUser | undefined> {
     const u = await findUpUserByEmail(email);
     return u ? mapUpUser(u) : undefined;

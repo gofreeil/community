@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { getUserById, getUserByEmail, getItemsByUserId } from '$lib/server/db';
+import { getUserById, getUserByEmail, getUserByAnyId, getItemsByUserId } from '$lib/server/db';
 
 export const load: PageServerLoad = async (event) => {
     const session = await event.locals.auth();
@@ -19,7 +19,7 @@ export const load: PageServerLoad = async (event) => {
     if (!isSuperAdmin) throw error(403, 'נדרשת הרשאת מנהל ראשי');
 
     const userId = event.params.id;
-    const user = await getUserById(userId);
+    const user = await getUserByAnyId(userId);
     if (!user) throw error(404, 'המשתמש לא נמצא');
 
     let items: Awaited<ReturnType<typeof getItemsByUserId>> = [];
