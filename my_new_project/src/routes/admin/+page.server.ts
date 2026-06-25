@@ -1,7 +1,7 @@
 import { redirect, fail, error } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { requireSuperAdmin, requireAdmin } from '$lib/server/auth';
-import { getAllUsers, banUser, unbanUser, setUserRole, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByEmail } from '$lib/server/db';
+import { getAllUsers, banUser, unbanUser, setUserRole, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByEmail, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest } from '$lib/server/db';
 import { countPending } from '$lib/server/adsStore';
 
 export const load: PageServerLoad = async (event) => {
@@ -25,6 +25,7 @@ export const load: PageServerLoad = async (event) => {
 
     let users: Awaited<ReturnType<typeof getAllUsers>> = [];
     let items: Awaited<ReturnType<typeof getAllItems>> = [];
+    let coordinatorRequests: Awaited<ReturnType<typeof getCoordinatorRequests>> = [];
 
     try {
         users = await getAllUsers(jwt);
@@ -38,12 +39,19 @@ export const load: PageServerLoad = async (event) => {
         console.warn('[admin] getAllItems failed:', e);
     }
 
+    try {
+        coordinatorRequests = await getCoordinatorRequests('pending');
+    } catch (e) {
+        console.warn('[admin] getCoordinatorRequests failed:', e);
+    }
+
     let pendingAdsCount = 0;
     try { pendingAdsCount = await countPending(); } catch { /* שקט */ }
 
     return {
         users,
         items,
+        coordinatorRequests,
         currentUserId: session?.user?.id ?? '',
         pendingAdsCount,
     };
@@ -122,6 +130,39 @@ export const actions: Actions = {
             return { success: true, message: msg };
         } catch (e) {
             return fail(500, { error: `שגיאה: ${e instanceof Error ? e.message : e}` });
+        }
+    },
+
+    approveCoordRequest: async (event) => {
+        const session = await event.locals.auth();
+        requireSuperAdmin(session);
+
+        const formData = await event.request.formData();
+        const requestId = formData.get('requestId') as string;
+        if (!requestId) return fail(400, { error: 'חסר מזהה בקשה' });
+
+        try {
+            await approveCoordinatorRequest(requestId, session?.user?.id ?? 'admin');
+            return { success: true, message: 'הבקשה אושרה - המשתמש מונה לרכז' };
+        } catch (e) {
+            return fail(500, { error: `שגיאה באישור: ${e instanceof Error ? e.message : e}` });
+        }
+    },
+
+    rejectCoordRequest: async (event) => {
+        const session = await event.locals.auth();
+        requireSuperAdmin(session);
+
+        const formData = await event.request.formData();
+        const requestId = formData.get('requestId') as string;
+        const reason = (formData.get('reason') as string) ?? '';
+        if (!requestId) return fail(400, { error: 'חסר מזהה בקשה' });
+
+        try {
+            await rejectCoordinatorRequest(requestId, session?.user?.id ?? 'admin', reason);
+            return { success: true, message: 'הבקשה נדחתה' };
+        } catch (e) {
+            return fail(500, { error: `שגיאה בדחייה: ${e instanceof Error ? e.message : e}` });
         }
     },
 

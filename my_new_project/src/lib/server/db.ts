@@ -556,6 +556,98 @@ export async function deleteEvent(documentId: string): Promise<void> {
 }
 
 // ============================================================
+// ---- Coordinator requests (בקשות להיות רכז שכונה) ----
+// ============================================================
+
+export type CoordinatorRequestStatus = 'pending' | 'approved' | 'rejected';
+
+export interface DbCoordinatorRequest {
+    id: string;             // documentId
+    user_id: string;
+    name: string;
+    phone: string;
+    neighborhoods: string[];
+    experience: string;
+    motivation: string;
+    status: CoordinatorRequestStatus;
+    created_at: string;
+}
+
+interface StrapiCoordinatorRequest {
+    id: number;
+    documentId: string;
+    user_id: string;
+    name: string;
+    phone: string;
+    neighborhoods: string | null;
+    experience: string | null;
+    motivation: string | null;
+    status: CoordinatorRequestStatus;
+    decided_at: string | null;
+    decided_by: string | null;
+    rejection_reason: string | null;
+    createdAt: string;
+}
+
+function mapCoordinatorRequest(r: StrapiCoordinatorRequest): DbCoordinatorRequest {
+    return {
+        id:            r.documentId,
+        user_id:       r.user_id,
+        name:          r.name ?? '',
+        phone:         r.phone ?? '',
+        neighborhoods: (r.neighborhoods ?? '').split(',').map(s => s.trim()).filter(Boolean),
+        experience:    r.experience ?? '',
+        motivation:    r.motivation ?? '',
+        status:        r.status ?? 'pending',
+        created_at:    r.createdAt ?? '',
+    };
+}
+
+/** כל בקשות הרכזות הממתינות (pending) - לטיפול סופר-אדמין */
+export async function getCoordinatorRequests(status: CoordinatorRequestStatus = 'pending'): Promise<DbCoordinatorRequest[]> {
+    try {
+        const res = await strapiGet<{ data: StrapiCoordinatorRequest[] }>('/api/coordinator-requests', {
+            'filters[status][$eq]': status,
+            'sort':                 'createdAt:desc',
+            'pagination[limit]':    '200',
+        });
+        return (res.data ?? []).map(mapCoordinatorRequest);
+    } catch (e) {
+        if (e instanceof StrapiContentTypeError) return [];
+        throw e;
+    }
+}
+
+async function getCoordinatorRequestById(documentId: string): Promise<DbCoordinatorRequest | undefined> {
+    const res = await strapiGet<{ data: StrapiCoordinatorRequest | null }>(`/api/coordinator-requests/${documentId}`, {});
+    return res.data ? mapCoordinatorRequest(res.data) : undefined;
+}
+
+/**
+ * אישור בקשת רכזות: ממנה את המשתמש לרכז של השכונות שביקש (במיזוג עם הקיימות)
+ * ומסמן את הבקשה כ-approved כדי שתעלם מרשימת הממתינים.
+ */
+export async function approveCoordinatorRequest(documentId: string, decidedBy: string): Promise<void> {
+    const req = await getCoordinatorRequestById(documentId);
+    if (!req) throw new Error('בקשה לא נמצאה');
+
+    const existing = (await getUserByAnyId(req.user_id))?.coordinator_of ?? [];
+    const merged = Array.from(new Set([...existing, ...req.neighborhoods].map(s => s.trim()).filter(Boolean)));
+    await setCoordinatorOfAnyId(req.user_id, merged);
+
+    await strapiPut(`/api/coordinator-requests/${documentId}`, {
+        data: { status: 'approved', decided_at: new Date().toISOString(), decided_by: decidedBy },
+    });
+}
+
+/** דחיית בקשת רכזות */
+export async function rejectCoordinatorRequest(documentId: string, decidedBy: string, reason = ''): Promise<void> {
+    await strapiPut(`/api/coordinator-requests/${documentId}`, {
+        data: { status: 'rejected', decided_at: new Date().toISOString(), decided_by: decidedBy, rejection_reason: reason },
+    });
+}
+
+// ============================================================
 // ---- Admin actions ----
 // ============================================================
 
@@ -629,6 +721,13 @@ export async function setUserRole(externalId: string, role: string, neighborhood
 /** עדכון שכונות שרכז מנהל (סופר-אדמין בלבד) */
 export async function setCoordinatorOf(externalId: string, neighborhoods: string[]): Promise<void> {
     const user = await findUpUser(externalId);
+    if (!user) throw new Error('משתמש לא נמצא');
+    await updateStrapiUpUser(user.id, { coordinator_of: neighborhoods });
+}
+
+/** כמו setCoordinatorOf אך מאתר את המשתמש גם לפי id מספרי (משתמשי credentials) */
+export async function setCoordinatorOfAnyId(id: string, neighborhoods: string[]): Promise<void> {
+    const user = await findUpUserAny(id);
     if (!user) throw new Error('משתמש לא נמצא');
     await updateStrapiUpUser(user.id, { coordinator_of: neighborhoods });
 }
@@ -751,20 +850,23 @@ export async function getUserById(id: string, _jwt?: string): Promise<DbUser | u
 }
 
 /**
- * שליפת משתמש לפי המזהה שמופיע ברשימת המשתמשים (mapUpUser.id):
- * external_id אם קיים, אחרת ה-id המספרי של Strapi.
- * מנסה קודם external_id ואז נופל ל-id המספרי - כדי שגם משתמשי credentials
- * ללא external_id יהיו נגישים מדף הניהול.
+ * מאתר up_user לפי המזהה שמופיע ב-mapUpUser.id: external_id אם קיים,
+ * אחרת ה-id המספרי של Strapi. כך משתמשי credentials (ללא external_id) נגישים גם הם.
  */
-export async function getUserByAnyId(id: string, _jwt?: string): Promise<DbUser | undefined> {
+async function findUpUserAny(id: string): Promise<StrapiUpUser | undefined> {
     const byExternal = await findUpUser(id);
-    if (byExternal) return mapUpUser(byExternal);
-    // fallback: id מספרי של Strapi
+    if (byExternal) return byExternal;
     if (/^\d+$/.test(id)) {
         const arr = await findStrapiUpUsers({ 'filters[id][$eq]': id, 'pagination[limit]': '1' });
-        if (arr[0]) return mapUpUser(arr[0] as StrapiUpUser);
+        return arr[0] as StrapiUpUser | undefined;
     }
     return undefined;
+}
+
+/** שליפת משתמש לפי המזהה שמופיע ברשימת המשתמשים (external_id או id מספרי) */
+export async function getUserByAnyId(id: string, _jwt?: string): Promise<DbUser | undefined> {
+    const u = await findUpUserAny(id);
+    return u ? mapUpUser(u) : undefined;
 }
 
 export async function getUserByEmail(email: string, _jwt?: string): Promise<DbUser | undefined> {

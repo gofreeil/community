@@ -190,6 +190,80 @@
 
 		<!-- טאב משתמשים -->
 		{#if activeTab === 'users'}
+			<!-- סקציית בקשות להיות רכז - ממתינות לאישור -->
+			{#if (data.coordinatorRequests ?? []).length > 0}
+				<section id="coord-requests" class="mb-6 scroll-mt-4">
+					<div class="flex items-center gap-2 mb-3">
+						<span class="text-2xl">📨</span>
+						<h2 class="text-lg font-black text-blue-300">בקשות להיות רכז</h2>
+						<span class="text-xs font-bold bg-blue-500/15 text-blue-200 border border-blue-500/30 px-2 py-0.5 rounded-full">
+							{data.coordinatorRequests.length}
+						</span>
+						<p class="text-xs text-gray-500 hidden md:block mr-2">ממתינות לאישורך</p>
+					</div>
+
+					<div class="grid gap-2 md:gap-3">
+						{#each data.coordinatorRequests as req (req.id)}
+							<div class="bg-blue-500/5 rounded-2xl border border-blue-500/30 p-3 md:p-4 flex flex-col gap-3 transition-all hover:border-blue-500/50">
+								<div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+									<!-- פרטי המבקש (לחיץ לפרופיל) -->
+									<a href="/admin/users/{req.user_id}" title="צפה בפרופיל המלא" class="user-link flex items-center gap-3 flex-1 min-w-0 cursor-pointer">
+										<div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0 text-sm font-bold ring-2 ring-blue-400/40">
+											{(req.name ?? '?')[0]}
+										</div>
+										<div class="min-w-0">
+											<div class="user-name text-lg font-bold truncate text-white">{req.name || 'ללא שם'}</div>
+											<div class="text-base text-gray-400 truncate">📞 {req.phone || '-'}</div>
+										</div>
+									</a>
+
+									<!-- שכונות מבוקשות -->
+									<div class="flex flex-wrap gap-1 max-w-full sm:max-w-[260px]">
+										{#each req.neighborhoods as n}
+											<span class="text-sm font-bold bg-blue-500/20 text-blue-200 border border-blue-500/40 px-2 py-0.5 rounded-full whitespace-nowrap">
+												{n}
+											</span>
+										{/each}
+									</div>
+
+									<!-- פעולות -->
+									<div class="flex gap-2 flex-shrink-0 flex-wrap">
+										<form method="POST" action="?/approveCoordRequest" use:enhance>
+											<input type="hidden" name="requestId" value={req.id} />
+											<button
+												type="submit"
+												class="px-3 py-1.5 text-sm rounded-lg bg-green-500/15 text-green-300 border border-green-500/40 hover:bg-green-500/25 transition-all cursor-pointer font-bold"
+												title="אשר ומנה לרכז של השכונות המבוקשות"
+											>
+												✅ אשר כרכז
+											</button>
+										</form>
+										<form method="POST" action="?/rejectCoordRequest" use:enhance>
+											<input type="hidden" name="requestId" value={req.id} />
+											<button
+												type="submit"
+												class="px-3 py-1.5 text-sm rounded-lg bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all cursor-pointer"
+												onclick={(e) => { if (!confirm(`לדחות את בקשת הרכזות של ${req.name ?? ''}?`)) e.preventDefault(); }}
+											>
+												✖️ דחה
+											</button>
+										</form>
+									</div>
+								</div>
+
+								<!-- ניסיון ומוטיבציה -->
+								{#if req.experience || req.motivation}
+									<div class="text-sm text-gray-400 space-y-1 border-t border-white/5 pt-2">
+										{#if req.experience}<p><span class="text-gray-500">ניסיון:</span> {req.experience}</p>{/if}
+										{#if req.motivation}<p><span class="text-gray-500">מוטיבציה:</span> {req.motivation}</p>{/if}
+									</div>
+								{/if}
+							</div>
+						{/each}
+					</div>
+				</section>
+			{/if}
+
 			<!-- סקציית רכזי שכונות - מנהלי תוכן בשכונה שלהם -->
 			<section id="coordinators" class="mb-6 scroll-mt-4">
 				<div class="flex items-center justify-between mb-3">
