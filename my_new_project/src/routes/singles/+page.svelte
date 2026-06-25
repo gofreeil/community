@@ -245,7 +245,14 @@
                 </div>
             </div>
             <h1 class="text-3xl font-black text-white mb-2">לוח פנויים ופנויות</h1>
-            <p class="text-gray-400">לוח ארצי - מציאת בן/בת זוג מכל רחבי הארץ</p>
+            <p class="text-gray-400 mb-4">לוח ארצי - מציאת בן/בת זוג מכל רחבי הארץ</p>
+
+            <a
+                href="/add/singles"
+                class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-400 hover:to-rose-400 text-white font-bold py-2.5 px-6 rounded-full transition-all text-sm shadow-lg shadow-pink-500/30"
+            >
+                ➕ הוסף כרטיס פרופיל
+            </a>
         </div>
 
         <!-- Filters: chips מינימליסטיים בשורה זורמת -->
