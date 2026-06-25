@@ -1,6 +1,7 @@
 import { error, redirect } from '@sveltejs/kit';
 import { getDbItemById } from '$lib/server/db';
 import { mockSingles } from '$lib/singlesMock';
+import { dbItemToProfile } from '$lib/singlesMap';
 import type { PageServerLoad } from './$types';
 
 // בוטים של רשתות חברתיות וסקרפרים שצריכים לראות תגי OG בלי לוגין
@@ -23,7 +24,8 @@ export const load: PageServerLoad = async (event) => {
     try {
         const dbItem = await getDbItemById(id);
         if (dbItem && dbItem.category === 'singles') {
-            return { single: null, dbItem, isBot, origin };
+            // ממפים את הפריט האמיתי למבנה single שהדף יודע להציג
+            return { single: dbItemToProfile(dbItem), dbItem, isBot, origin };
         }
     } catch {
         // ignore - ניפול ל-mock

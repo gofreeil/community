@@ -1,11 +1,17 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { browser } from "$app/environment";
+    import { goto } from "$app/navigation";
     import { citiesData, LS_KEY, DEFAULT_NEIGHBORHOOD } from "$lib/neighborhoodsData";
     import { coinAnim } from "$lib/coinAnimationState.svelte";
+    import { evaluateDiscount, discountAmount, type DiscountCode } from "$lib/discountCodes";
 
     // Page data - layoutUser provides the logged-in user's profile (email, phone)
-    let { data } = $props<{ data: { layoutUser?: { email?: string | null; phone?: string | null } | null } }>();
+    let { data } = $props<{ data: {
+        layoutUser?: { email?: string | null; phone?: string | null } | null;
+        discountCodes?: DiscountCode[];
+        isCoordinator?: boolean;
+    } }>();
 
     const packages = [
         {
@@ -335,8 +341,10 @@
                     selectedItems,
                     neighborhoodLabel,
                     neighborhoodCount,
-                    totalPayment,
+                    totalPayment:      effectiveTotal,
                     totalMonthly,
+                    discountLabel:     discountValue > 0 ? (discountEval.matched?.label ?? '') : '',
+                    discountValue,
                 }),
             });
 
@@ -344,9 +352,9 @@
             if (data.success) {
                 emailSent = true;
                 // השרת כבר הוסיף את המעשר - מפעיל אנימציה עם הנתונים שחזרו
-                const tithe = Math.round(totalPayment * 0.1);
+                const tithe = Math.round(effectiveTotal * 0.1);
                 if (tithe > 0) {
-                    coinAnim.trigger(tithe, totalPayment, data.fundTotal ?? tithe);
+                    coinAnim.trigger(tithe, effectiveTotal, data.fundTotal ?? tithe);
                 }
             } else {
                 emailError = data.message || 'שגיאה בשליחת המייל';
@@ -467,6 +475,30 @@
     let singleItems      = $derived(selectedItems.filter(r => r.plan === 'single'));
     let hasSelection     = $derived(planMap.size > 0);
 
+    // ---- Discount code ("מגירת" הנחת רכז / בעלים / פטור) ----
+    const discountCodes   = (data?.discountCodes ?? []) as DiscountCode[];
+    const isCoordinator   = Boolean(data?.isCoordinator);
+    let   discountInput   = $state('');
+
+    let discountEval  = $derived(evaluateDiscount(discountInput, discountCodes, isCoordinator));
+    let discountValue = $derived(
+        discountEval.applied && discountEval.matched ? discountAmount(totalPayment, discountEval.matched) : 0
+    );
+    // הסכום בפועל לתשלום אחרי הנחה (לעולם לא שלילי)
+    let effectiveTotal = $derived(Math.max(0, totalPayment - discountValue));
+    // פטור מלא - הפרסום עולה ללא עלות
+    let isFreeExempt   = $derived(discountEval.applied && discountEval.matched?.kind === 'free');
+
+    // שחרור הגישה לבילדר ומעבר אליו - לפטור מלא (העלאת פרסום ללא תשלום)
+    function uploadFree() {
+        if (!browser) return;
+        try {
+            localStorage.setItem('ad_paid', '1');
+            localStorage.setItem('ad_paid_at', new Date().toISOString());
+        } catch { /* ignore */ }
+        goto('/about/advertise/builder');
+    }
+
     // תמונת רקע לכל שכונה - מוצגת בכפתור הבחירה כשבוחרים שכונה בודדת
     const neighborhoodImages: Record<string, string> = {
         'קרית משה':    '/images/kiryat-moshe-vaad.jfif',
@@ -506,14 +538,19 @@
         `ערים: ${neighborhoodLabel} (×${neighborhoodCount} שכונות)%0A` +
         selectedItems.map(r =>
             `${r.type}${r.perNeighborhood ? ` (×${neighborhoodCount} שכונות)` : ''} - ${r.plan === 'half' ? `חצי שנה ₪${r.eTotal * r.multiplier}` : `חודש בודד ₪${r.eTotal * r.multiplier}`}`
-        ).join('%0A') + `%0A%0Aסה״כ: ₪${fmt(totalPayment)}`
+        ).join('%0A') +
+        (discountValue > 0 ? `%0Aהנחה (${discountEval.matched?.label ?? ''}): -₪${fmt(discountValue)}` : '') +
+        `%0A%0Aסה״כ: ₪${fmt(effectiveTotal)}`
     );
 
     // wa.me URL - includes the user's phone in the message body if entered
     let whatsappHref = $derived.by(() => {
         const types    = selectedItems.map(r => r.type).join(', ');
         const phoneLine = userPhone.trim() ? `%0Aהטלפון שלי: ${userPhone.trim()}` : '';
-        return `https://wa.me/972500000000?text=שלום, אני מעוניין לפרסם: ${types}. סה״כ ₪${fmt(totalPayment)}.${phoneLine}`;
+        const discountLine = discountValue > 0
+            ? `%0Aהנחה (${discountEval.matched?.label ?? ''}): -₪${fmt(discountValue)}`
+            : '';
+        return `https://wa.me/972500000000?text=שלום, אני מעוניין לפרסם: ${types}. סה״כ ₪${fmt(effectiveTotal)}.${discountLine}${phoneLine}`;
     });
 </script>
 
@@ -1164,9 +1201,20 @@
                     {/each}
                 </div>
                 <div class="flex items-center justify-start flex-wrap gap-x-3 gap-y-1">
-                    <p class="text-5xl md:text-6xl font-black text-white inline-block"
-                       class:total-flash={flashTotal}>₪{fmt(totalPayment)}</p>
-                    <span class="text-gray-400 text-xs md:text-sm font-bold">ניתן לפרוס לתשלומים</span>
+                    {#if discountValue > 0}
+                        <span class="text-2xl md:text-3xl font-black text-gray-500 line-through">₪{fmt(totalPayment)}</span>
+                    {/if}
+                    <p class="text-5xl md:text-6xl font-black inline-block {discountValue > 0 ? 'text-green-400' : 'text-white'}"
+                       class:total-flash={flashTotal}>₪{fmt(effectiveTotal)}</p>
+                    {#if isFreeExempt}
+                        <span class="text-green-300 text-xs md:text-sm font-black bg-green-500/15 border border-green-500/30 rounded-full px-3 py-1">פטור מלא מתשלום 🎉</span>
+                    {:else if discountValue > 0}
+                        <span class="text-green-300 text-xs md:text-sm font-black bg-green-500/15 border border-green-500/30 rounded-full px-3 py-1">
+                            {discountEval.matched?.label} · חסכת ₪{fmt(discountValue)}
+                        </span>
+                    {:else}
+                        <span class="text-gray-400 text-xs md:text-sm font-bold">ניתן לפרוס לתשלומים</span>
+                    {/if}
                 </div>
             </div>
 
@@ -1247,7 +1295,7 @@
                                           style="animation: spin 0.7s linear infinite;"></span>
                                     שולח…
                                 {:else}
-                                    ✉️ שלח תיעוד - ₪{fmt(totalPayment)}
+                                    ✉️ שלח תיעוד - ₪{fmt(effectiveTotal)}
                                 {/if}
                             </button>
                         </div>
@@ -1383,6 +1431,59 @@
             התשלום מתבצע בצורה מאובטחת דרך חברת הסליקה - פרטי האשראי שלך לא מגיעים אלינו
         </p>
 
+        <!-- ===== Discount drawer (הנחת רכז / בעלים / פטור) ===== -->
+        <div class="mb-6 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 md:p-5">
+            <label for="discount-code" class="block text-amber-200 font-black text-sm md:text-base mb-1.5 text-right">
+                🎟️ הנחת רכז / בעלים
+            </label>
+            <p class="text-gray-400 text-xs mb-2.5 text-right">יש לך קוד הנחה? הזן/י אותו כאן והסכום יתעדכן אוטומטית.</p>
+            <input
+                id="discount-code"
+                type="text"
+                bind:value={discountInput}
+                placeholder="הקלד/י כאן את מילות ההנחה"
+                dir="rtl"
+                class="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3
+                       text-white placeholder:text-gray-600 text-sm text-right
+                       focus:outline-none focus:border-amber-500/60 focus:bg-amber-900/10 transition-all"
+            />
+            {#if discountInput.trim()}
+                {#if discountEval.applied && discountEval.matched}
+                    <p class="mt-2.5 rounded-lg bg-green-500/10 border border-green-500/30 px-3 py-2 text-green-300 text-sm font-bold text-right">
+                        {#if isFreeExempt}
+                            ✅ פטור מלא מתשלום - {discountEval.matched.label}. ניתן להעלות את הפרסום ללא עלות.
+                        {:else}
+                            ✅ ההנחה הופעלה: {discountEval.matched.label} ({discountEval.matched.percent}%) · חסכת ₪{fmt(discountValue)}
+                        {/if}
+                    </p>
+                {:else if discountEval.reason === 'not-coordinator'}
+                    <p class="mt-2.5 rounded-lg bg-red-500/10 border border-red-500/30 px-3 py-2 text-red-300 text-sm font-bold text-right">
+                        ⛔ קוד זה מיועד לרכזים מאושרים בלבד. החשבון שלך אינו מסומן כרכז במערכת.
+                    </p>
+                {:else if discountEval.reason === 'inactive'}
+                    <p class="mt-2.5 rounded-lg bg-gray-500/10 border border-gray-500/30 px-3 py-2 text-gray-300 text-sm font-bold text-right">
+                        קוד זה אינו פעיל כרגע.
+                    </p>
+                {:else}
+                    <p class="mt-2.5 text-gray-500 text-xs text-right">הקוד שהוזן אינו מזוהה.</p>
+                {/if}
+            {/if}
+        </div>
+
+        {#if isFreeExempt}
+            <!-- ===== Free exemption flow - upload publication at no cost ===== -->
+            <div class="rounded-xl border-2 border-green-500/50 bg-green-900/15 p-6 text-center">
+                <div class="text-3xl mb-3">🎉</div>
+                <h3 class="text-green-300 font-black text-lg mb-1">פטור מלא מתשלום</h3>
+                <p class="text-gray-300 text-sm mb-5">לַה' הָאָרֶץ וּמְלוֹאָהּ - אפשר להעלות את הפרסום ללא כל עלות.</p>
+                <button
+                    type="button"
+                    onclick={uploadFree}
+                    class="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-black px-7 py-3.5 rounded-xl text-base transition-all hover:scale-105 shadow-lg shadow-green-500/20">
+                    🎨 להעלות את הפרסום בחינם
+                </button>
+            </div>
+        {:else}
         <div class="flex flex-wrap justify-center gap-3 mb-6">
             {#each ["Visa", "Mastercard", "American Express", "Bit", "PayPal"] as method}
                 <div class="bg-white/10 border border-white/10 rounded-lg px-4 py-2 text-sm font-bold text-gray-300">{method}</div>
@@ -1398,7 +1499,7 @@
             <p class="mb-4 rounded-xl border border-orange-500/40 bg-orange-500/10 px-4 py-3 text-orange-200 text-sm md:text-base font-bold text-center leading-snug flex flex-col sm:flex-row items-center justify-center gap-2">
                 <span class="text-lg">🚧</span>
                 <span>הסליקה באתר עדיין לא מחוברת - לסיום ההזמנה ולתשלום, צור קשר בוואטסאפ:
-                    <a href="https://wa.me/972508750632?text=שלום, אני מעוניין/ת להשלים תשלום על פרסום (סה״כ ₪{fmt(totalPayment)})."
+                    <a href="https://wa.me/972508750632?text=שלום, אני מעוניין/ת להשלים תשלום על פרסום (סה״כ ₪{fmt(effectiveTotal)})."
                        target="_blank" rel="noopener noreferrer"
                        class="text-white font-black underline underline-offset-2 hover:text-orange-100 whitespace-nowrap">
                         050-875-0632 💬
@@ -1407,7 +1508,7 @@
             </p>
 
             <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                <a href="https://wa.me/972508750632?text=שלום, אני מעוניין/ת להשלים תשלום על פרסום באתר. סה״כ: ₪{fmt(totalPayment)}. {selectedItems.length > 0 ? `פריטים: ${selectedItems.map(r => r.type).join(', ')}.` : ''}"
+                <a href="https://wa.me/972508750632?text=שלום, אני מעוניין/ת להשלים תשלום על פרסום באתר. סה״כ: ₪{fmt(effectiveTotal)}. {selectedItems.length > 0 ? `פריטים: ${selectedItems.map(r => r.type).join(', ')}.` : ''}"
                    target="_blank" rel="noopener noreferrer"
                    aria-label="לתשלום זמני - צור קשר בוואטסאפ (נפתח בחלון חדש)"
                    class="inline-flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-500 text-white font-black px-6 py-3 rounded-xl text-sm transition-all hover:scale-105">
@@ -1436,6 +1537,7 @@
                 </ul>
             </div>
         </div>
+        {/if}
 
         <div class="flex flex-wrap justify-center gap-4 mt-5">
             {#each [

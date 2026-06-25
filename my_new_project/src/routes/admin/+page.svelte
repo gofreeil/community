@@ -1,10 +1,34 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
+	import type { DiscountCode } from '$lib/discountCodes';
 
 	let { data, form } = $props();
 
-	let activeTab = $state<'users' | 'items'>('users');
+	let activeTab = $state<'users' | 'items' | 'discounts'>('users');
+
+	// ---- עורך קודי הנחה (סופר-אדמין) ----
+	// עותק מקומי הניתן לעריכה; נשמר ל-Strapi דרך action saveDiscounts
+	let discountCodes = $state<DiscountCode[]>(
+		(data.discountCodes ?? []).map((c: DiscountCode) => ({ ...c }))
+	);
+
+	function addDiscountCode() {
+		discountCodes = [...discountCodes, {
+			id: `code_${Date.now()}`,
+			label: '',
+			code: '',
+			kind: 'percent',
+			percent: 10,
+			requiresCoordinator: false,
+			active: true,
+			note: '',
+		}];
+	}
+
+	function removeDiscountCode(idx: number) {
+		discountCodes = discountCodes.filter((_, i) => i !== idx);
+	}
 	let searchQuery = $state('');
 	let roleFilter = $state<'all' | 'user' | 'neighborhood_admin' | 'super_admin'>('all');
 
@@ -162,6 +186,14 @@
 					: 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'}"
 			>
 				📋 פרסומים ({data.items?.length ?? 0})
+			</button>
+			<button
+				onclick={() => (activeTab = 'discounts')}
+				class="px-5 py-2.5 rounded-xl font-bold transition-all cursor-pointer {activeTab === 'discounts'
+					? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+					: 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'}"
+			>
+				🎟️ קודי הנחה ({discountCodes.length})
 			</button>
 		</div>
 

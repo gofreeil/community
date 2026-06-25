@@ -1,4 +1,5 @@
 import { getItemsByCategory, getUserById } from '$lib/server/db';
+import { dbItemToProfile } from '$lib/singlesMap';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
@@ -41,9 +42,11 @@ export const load: PageServerLoad = async (event) => {
 
     try {
         const items = await getItemsByCategory('singles');
-        return { items, currentUserId: session?.user?.id ?? null, currentUserGender, currentUser };
+        // כל הכרטיסים הפעילים מוצגים - כולל כאלה שלא שילמו
+        const profiles = items.map(dbItemToProfile);
+        return { items, profiles, currentUserId: session?.user?.id ?? null, currentUserGender, currentUser };
     } catch (e) {
         console.warn('[singles] load failed:', e instanceof Error ? e.message : e);
-        return { items: [], currentUserId: null, currentUserGender, currentUser };
+        return { items: [], profiles: [], currentUserId: null, currentUserGender, currentUser };
     }
 };

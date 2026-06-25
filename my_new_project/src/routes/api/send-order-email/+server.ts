@@ -21,10 +21,14 @@ interface OrderPayload {
     neighborhoodCount: number;
     totalPayment: number;
     totalMonthly: number;
+    discountLabel?: string;
+    discountValue?: number;
 }
 
 function buildEmailHtml(payload: OrderPayload): string {
     const { selectedItems, neighborhoodLabel, neighborhoodCount, totalPayment, totalMonthly } = payload;
+    const discountValue = payload.discountValue ?? 0;
+    const discountLabel = payload.discountLabel ?? '';
 
     const halfItems  = selectedItems.filter(r => r.plan === 'half');
     const singleItems = selectedItems.filter(r => r.plan === 'single');
@@ -127,6 +131,7 @@ function buildEmailHtml(payload: OrderPayload): string {
             <div style="background:linear-gradient(135deg,#1a2744 0%,#1a1a3e 100%);
                          border:2px solid #334155; border-radius:14px; padding:24px; text-align:center; margin-bottom:28px;">
               <p style="margin:0 0 4px; color:#64748b; font-size:13px; font-weight:700;">סה"כ לתשלום</p>
+              ${discountValue > 0 ? `<p style="margin:0 0 8px; color:#22c55e; font-size:13px; font-weight:700;">🎟️ הנחה (${discountLabel}): -₪${discountValue}</p>` : ''}
               ${neighborhoodCount > 1 ? `<p style="margin:0 0 8px; color:#475569; font-size:12px;">₪${Math.round(totalPayment / neighborhoodCount)} × ${neighborhoodCount} שכונות</p>` : ''}
               <p style="margin:0 0 6px; color:#ffffff; font-size:48px; font-weight:900; line-height:1;">₪${totalPayment}</p>
               ${summaryLine}

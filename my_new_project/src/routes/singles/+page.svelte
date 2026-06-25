@@ -2,7 +2,8 @@
     import type { PageData } from './$types';
     import { goto } from '$app/navigation';
     import { toggleLike, isLiked } from '$lib/likedItems';
-    import { mockSingles, avatarUrl as avatar } from '$lib/singlesMock';
+    import { avatarUrl as avatar } from '$lib/singlesMock';
+    import type { SingleProfile } from '$lib/singlesMock';
 
     let { data }: { data: PageData } = $props();
 
@@ -75,53 +76,12 @@
         favorites = next;
     }
 
-    function getGender(extraFields: string): 'male' | 'female' {
-        try {
-            const ef = JSON.parse(extraFields);
-            return ef.gender === 'male' ? 'male' : 'female';
-        } catch { return 'male'; }
-    }
-
-    function getAge(extraFields: string): string {
-        try {
-            const ef = JSON.parse(extraFields);
-            if (ef?.birth_date) return calcAge(ef.birth_date);
-            return ef?.age ?? '';
-        } catch { return ''; }
-    }
-
-    function getCity(extraFields: string): string {
-        try { return JSON.parse(extraFields)?.city ?? ''; }
-        catch { return ''; }
-    }
-
-    function getDescription(extraFields: string): string {
-        try { return JSON.parse(extraFields)?.about ?? ''; }
-        catch { return ''; }
-    }
-
-    function getReligiosity(extraFields: string): Religiosity | null {
-        try {
-            const v = String(JSON.parse(extraFields)?.sector ?? '').trim();
-            if (!v) return null;
-            if (v === 'חרדי') return 'haredi';
-            if (v === 'דתי-לאומי' || v === 'דתי לאומי') return 'dl';
-            return 'general';
-        } catch { return null; }
-    }
-
-    // ספירה אמיתית - data.items מסונן לפי המסננים הפעילים
-    let realFiltered = $derived(
-        data.items.filter((i: { extra_fields: string }) => {
-            if (filter !== 'all' && getGender(i.extra_fields) !== filter) return false;
-            if (ageFilter !== 'all') {
-                const age = getAge(i.extra_fields);
-                if (ageGroupOf(age) !== ageFilter) return false;
-            }
-            if (relFilter !== 'all') {
-                const r = getReligiosity(i.extra_fields);
-                if (r !== relFilter) return false;
-            }
+    // כל הפרופילים האמיתיים מ-Strapi, מסוננים לפי המסננים הפעילים
+    let filteredProfiles = $derived(
+        (data.profiles as SingleProfile[]).filter((p) => {
+            if (filter !== 'all' && p.gender !== filter) return false;
+            if (ageFilter !== 'all' && ageGroupOf(p.age) !== ageFilter) return false;
+            if (relFilter !== 'all' && p.religiosity !== relFilter) return false;
             return true;
         })
     );
@@ -173,19 +133,6 @@
         const digits = phone.replace(/\D/g, '').replace(/^0/, '972');
         return `https://wa.me/${digits}`;
     }
-
-    let filtered = $derived(
-        filter === 'all'
-            ? data.items
-            : data.items.filter(i => getGender(i.extra_fields) === filter)
-    );
-
-    let filteredMock = $derived(
-        mockSingles
-            .filter(s => filter === 'all' || s.gender === filter)
-            .filter(s => ageFilter === 'all' || ageGroupOf(s.age) === ageFilter)
-            .filter(s => relFilter === 'all' || s.religiosity === relFilter)
-    );
 
     // ===== כרטיס המשתמש המחובר =====
     function calcAge(birth: string): string {
@@ -311,7 +258,7 @@
                         <span class="text-white/80">· מותאם לפרופיל שלך</span>
                     </div>
                 {/if}
-                <p class="text-gray-400 text-sm">💑 {realFiltered.length} פרופילים פעילים</p>
+                <p class="text-gray-400 text-sm">💑 {filteredProfiles.length} פרופילים פעילים</p>
             </div>
         </div>
 
@@ -355,7 +302,7 @@
 
         <!-- Cards grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {#each filteredMock as person}
+            {#each filteredProfiles as person}
                 {@const isMale = person.gender === 'male'}
                 {@const isFav = favorites.has(person.id)}
                 <div
@@ -469,7 +416,7 @@
             {/each}
         </div>
 
-        {#if filteredMock.length === 0}
+        {#if filteredProfiles.length === 0}
             <div class="text-center py-16">
                 <span class="text-5xl mb-4 block">💔</span>
                 <p class="text-gray-400 text-lg">אין פרופילים בקטגוריה זו כרגע</p>

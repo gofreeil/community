@@ -1,7 +1,8 @@
 import { redirect, fail, error } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { requireSuperAdmin, requireAdmin } from '$lib/server/auth';
-import { getAllUsers, banUser, unbanUser, setUserRole, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByEmail, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, approveNeighborhood, rejectNeighborhood } from '$lib/server/db';
+import { getAllUsers, banUser, unbanUser, setUserRole, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByEmail, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, approveNeighborhood, rejectNeighborhood, getDiscountCodes, saveDiscountCodes } from '$lib/server/db';
+import { DEFAULT_DISCOUNT_CODES, type DiscountCode } from '$lib/discountCodes';
 import { countPending } from '$lib/server/adsStore';
 
 export const load: PageServerLoad = async (event) => {
@@ -55,6 +56,13 @@ export const load: PageServerLoad = async (event) => {
     let pendingAdsCount = 0;
     try { pendingAdsCount = await countPending(); } catch { /* שקט */ }
 
+    let discountCodes: Awaited<ReturnType<typeof getDiscountCodes>> = DEFAULT_DISCOUNT_CODES;
+    try {
+        discountCodes = await getDiscountCodes();
+    } catch (e) {
+        console.warn('[admin] getDiscountCodes failed:', e);
+    }
+
     return {
         users,
         items,
@@ -62,6 +70,7 @@ export const load: PageServerLoad = async (event) => {
         pendingNeighborhoods,
         currentUserId: session?.user?.id ?? '',
         pendingAdsCount,
+        discountCodes,
     };
 };
 
@@ -219,6 +228,42 @@ export const actions: Actions = {
             return { success: true, message: 'הפריט נמחק' };
         } catch (e) {
             return fail(500, { error: `שגיאה במחיקה: ${e instanceof Error ? e.message : e}` });
+        }
+    },
+
+    saveDiscounts: async (event) => {
+        const session = await event.locals.auth();
+        requireSuperAdmin(session);
+
+        const formData = await event.request.formData();
+        const raw = formData.get('codes') as string;
+        if (!raw) return fail(400, { error: 'חסרים נתונים' });
+
+        let codes: DiscountCode[];
+        try {
+            codes = JSON.parse(raw);
+            if (!Array.isArray(codes)) throw new Error('not an array');
+        } catch {
+            return fail(400, { error: 'מבנה הנתונים אינו תקין' });
+        }
+
+        // ולידציה + נירמול בסיסי
+        const clean: DiscountCode[] = codes.map((c, i) => ({
+            id:    String(c.id || `code_${i}`).trim(),
+            label: String(c.label || '').trim(),
+            code:  String(c.code || '').trim(),
+            kind:  c.kind === 'free' ? 'free' : 'percent',
+            percent: c.kind === 'free' ? 100 : Math.max(0, Math.min(100, Number(c.percent) || 0)),
+            requiresCoordinator: Boolean(c.requiresCoordinator),
+            active: Boolean(c.active),
+            note:  c.note ? String(c.note).trim() : '',
+        })).filter(c => c.code && c.label);
+
+        try {
+            await saveDiscountCodes(clean);
+            return { success: true, message: 'קודי ההנחה נשמרו' };
+        } catch (e) {
+            return fail(500, { error: `שגיאה בשמירה: ${e instanceof Error ? e.message : e}` });
         }
     },
 };

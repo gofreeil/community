@@ -5,6 +5,7 @@
 // ============================================================
 
 import { strapiGet, strapiPost, strapiPut, strapiDelete, StrapiContentTypeError, findStrapiUpUsers, updateStrapiUpUser } from './strapiClient.js';
+import { DEFAULT_DISCOUNT_CODES, type DiscountCode } from '$lib/discountCodes';
 
 // ============================================================
 // ---- Types ----
@@ -1064,4 +1065,26 @@ export async function registerWithCredentials(
     }
 
     return mapUpUser({ ...user, external_id: externalId });
+}
+
+// ============================================================
+// ---- Discount config (קודי הנחה לדף התשלום) ----
+// singleType discount-config ב-Strapi, עם נפילה לברירות-המחדל
+// ============================================================
+
+/** קריאת קודי ההנחה. נופל לברירות-המחדל אם Strapi לא נגיש / הרשומה ריקה. */
+export async function getDiscountCodes(): Promise<DiscountCode[]> {
+    try {
+        const res = await strapiGet<{ data: { codes?: DiscountCode[] } | null }>('/api/discount-config');
+        const codes = res?.data?.codes;
+        if (Array.isArray(codes) && codes.length > 0) return codes;
+    } catch {
+        // Strapi לא נגיש או content-type טרם נפרס - נשתמש בברירות המחדל
+    }
+    return DEFAULT_DISCOUNT_CODES;
+}
+
+/** שמירת קודי ההנחה (סופר-אדמין בלבד). singleType -> PUT /api/discount-config */
+export async function saveDiscountCodes(codes: DiscountCode[]): Promise<void> {
+    await strapiPut('/api/discount-config', { data: { codes } });
 }
