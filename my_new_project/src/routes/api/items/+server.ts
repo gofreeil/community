@@ -1,10 +1,14 @@
 import { json } from '@sveltejs/kit';
-import { createItem, getAllItems, incrementItemViewCount, getItemsByCategory } from '$lib/server/db';
+import { createItem, getAllItems, incrementItemViewCount, getItemsByCategory, getItemsByUserId, updateItem } from '$lib/server/db';
 import { categoryConfig, getCategoryIcon, getCategoryColor } from '$lib/categoryFields';
 import { Resend } from 'resend';
 import type { RequestHandler } from './$types';
 
 const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
+
+// קטגוריות שבהן מותר כרטיס אחד בלבד לכל משתמש.
+// פנויים/פנויות: לכל אדם פרופיל יחיד - "פרסום נוסף" מעדכן את הכרטיס הקיים במקום ליצור כפילות.
+const ONE_PER_USER_CATEGORIES = new Set(['singles']);
 
 async function notifyShabbatMatches(
     newItemId: string,
@@ -95,6 +99,31 @@ export const POST: RequestHandler = async (event) => {
 
     const icon  = getCategoryIcon(category);
     const color = getCategoryColor(category);
+    const userId = session?.user?.id ?? undefined;
+
+    // ---- כרטיס אחד למשתמש (פנויים/פנויות): עדכן קיים במקום ליצור חדש ----
+    if (userId && ONE_PER_USER_CATEGORIES.has(category)) {
+        try {
+            const existing = (await getItemsByUserId(String(userId)))
+                .find(it => it.category === category);
+            if (existing) {
+                await updateItem(existing.id, {
+                    label:        String(label),
+                    description:  String(rest.description ?? ''),
+                    contact:      String(rest.contact ?? ''),
+                    phone:        String(rest.phone ?? ''),
+                    address:      String(rest.address ?? ''),
+                    neighborhood: String(neighborhood ?? ''),
+                    city:         String(city ?? ''),
+                    extra_fields: (extra_fields ?? {}) as Record<string, unknown>,
+                });
+                return json({ success: true, id: existing.id, updated: true });
+            }
+        } catch (e) {
+            // אם בדיקת/עדכון הכרטיס הקיים נכשלה - לא נכשיל את המשתמש, ניפול ליצירה רגילה
+            console.warn('[api/items] one-per-user upsert failed, falling back to create:', e);
+        }
+    }
 
     let item;
     try {
