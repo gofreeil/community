@@ -638,6 +638,29 @@ export async function approveCoordinatorRequest(documentId: string, decidedBy: s
     await strapiPut(`/api/coordinator-requests/${documentId}`, {
         data: { status: 'approved', decided_at: new Date().toISOString(), decided_by: decidedBy },
     });
+
+    // שליחת הודעת אישור אוטומטית למשתמש (הודעה באתר = פריט category 'message')
+    // try/catch - כשל בהודעה לא יבטל את האישור עצמו
+    try {
+        const areas = req.neighborhoods.join(', ');
+        await createItem({
+            category: 'message',
+            label: '🎉 אישור מינוי רכז',
+            description: `שלום ${req.name || ''}! 🎉\n\nאישרנו את מינויך כרכז קהילה${areas ? ` ב${areas}` : ''}. מעכשיו יש לך גישה לכלי הרכז באתר: אישור אירועים, ועד שכונתי, סקרים וצוות חירום.\n\nתודה רבה על ההתנדבות והנכונות לתרום לקהילה 🙏\n\n— הנהלת קהילה בשכונה`,
+            contact: 'הנהלת קהילה בשכונה',
+            user_id: req.user_id,
+            icon: '🎉',
+            color: 'purple',
+            extra_fields: {
+                type: 'coordinator_approved',
+                sender_name: 'הנהלת קהילה בשכונה',
+                item_label: `מינוי רכז${areas ? ` – ${areas}` : ''}`,
+                read: false,
+            },
+        });
+    } catch (e) {
+        console.warn('[approveCoordinatorRequest] notify failed:', e instanceof Error ? e.message : e);
+    }
 }
 
 /** דחיית בקשת רכזות */
