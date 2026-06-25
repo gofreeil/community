@@ -250,15 +250,26 @@
 			...(singlesMatchMessage ? [singlesMatchMessage] : []),
 			...((data.messages ?? []).length > 0
 				? (data.messages ?? []).map(
-						(m: import("$lib/server/db").DbItem) => ({
-							id: `db-${m.id}`,
-							from: m.label ?? "מערכת",
-							text: m.description ?? "",
-							time: new Date(m.created_at).toLocaleDateString(
-								"he-IL",
-							),
-							read: false,
-						}),
+						(m: import("$lib/server/db").DbItem) => {
+							let efType = "";
+							try {
+								efType = JSON.parse(m.extra_fields || "{}")?.type ?? "";
+							} catch {}
+							return {
+								id: `db-${m.id}`,
+								from: m.label ?? "מערכת",
+								text: m.description ?? "",
+								time: new Date(m.created_at).toLocaleDateString(
+									"he-IL",
+								),
+								read: false,
+								// בקשת רכז → לחיצה על הכרטיס פותחת את עמוד הניהול לקריאה מלאה
+								link:
+									efType === "coordinator_request"
+										? "/admin#coord-requests"
+										: undefined,
+							};
+						},
 					)
 				: [
 						{
@@ -1997,14 +2008,18 @@
 				{#each finalDisplayedMessages as msg}
 					{@const isDraft = (msg as { isDraft?: boolean }).isDraft}
 					{@const isSinglesMatch = msg.id === 'singles-match'}
+					{@const msgLink = (msg as { link?: string }).link}
+					{@const navTarget = isSinglesMatch ? '/singles' : msgLink}
+					{@const isClickable = !!navTarget}
 					<div
-						role={isSinglesMatch ? 'link' : undefined}
-						tabindex={isSinglesMatch ? 0 : undefined}
-						aria-label={isSinglesMatch ? 'פתח את לוח פנויים/פנויות' : undefined}
-						onclick={isSinglesMatch ? () => goto('/singles') : undefined}
-						onkeydown={isSinglesMatch ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goto('/singles'); } } : undefined}
+						role={isClickable ? 'link' : undefined}
+						tabindex={isClickable ? 0 : undefined}
+						aria-label={isSinglesMatch ? 'פתח את לוח פנויים/פנויות' : (isClickable ? 'פתח את ההודעה בעמוד הניהול' : undefined)}
+						onclick={isClickable ? () => goto(navTarget!) : undefined}
+						onkeydown={isClickable ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goto(navTarget!); } } : undefined}
 						class="flex items-start gap-3 rounded-2xl border px-4 py-3 transition-all
-							{isSinglesMatch ? 'cursor-pointer hover:scale-[1.01] hover:shadow-lg hover:shadow-pink-500/10 focus:outline-none focus:ring-2 focus:ring-pink-400/60' : ''}
+							{isClickable ? 'cursor-pointer hover:scale-[1.01] hover:shadow-lg focus:outline-none focus:ring-2' : ''}
+							{isSinglesMatch ? 'hover:shadow-pink-500/10 focus:ring-pink-400/60' : (isClickable ? 'hover:shadow-blue-500/10 focus:ring-blue-400/60' : '')}
 							{isDraft
 								? 'bg-gradient-to-br from-purple-900/30 to-indigo-900/20 border-purple-500/50 hover:border-purple-400/70'
 								: isSinglesMatch

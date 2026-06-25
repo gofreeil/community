@@ -589,6 +589,102 @@
 				{/each}
 			</div>
 		{/if}
+
+		<!-- טאב קודי הנחה -->
+		{#if activeTab === 'discounts'}
+			<section class="mb-6">
+				<div class="flex items-center gap-2 mb-2">
+					<span class="text-2xl">🎟️</span>
+					<h2 class="text-lg font-black text-amber-300">קודי הנחה לדף התשלום</h2>
+				</div>
+				<p class="text-gray-400 text-sm mb-5 leading-relaxed">
+					המילים שהמפרסם מקליד ב"מגירת ההנחה" בדף התשלום, וההנחה שתחול.
+					הנחת רכז תחול <strong class="text-amber-200">רק</strong> אם המשתמש מסומן כרכז במערכת.
+					"פטור מלא" = הפרסום עולה ללא תשלום.
+				</p>
+
+				<form method="POST" action="?/saveDiscounts" use:enhance>
+					<input type="hidden" name="codes" value={JSON.stringify(discountCodes)} />
+
+					<div class="space-y-4">
+						{#each discountCodes as code, idx (code.id)}
+							<div class="rounded-2xl bg-[#0f172a] border border-white/10 p-4 md:p-5">
+								<div class="flex items-center justify-between mb-3">
+									<span class="text-xs font-bold text-gray-500">קוד #{idx + 1}</span>
+									<button
+										type="button"
+										onclick={() => removeDiscountCode(idx)}
+										class="text-red-400 hover:text-red-300 text-sm font-bold cursor-pointer"
+									>🗑️ מחק</button>
+								</div>
+
+								<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+									<div>
+										<label class="block text-xs text-gray-400 mb-1">שם תצוגה</label>
+										<input bind:value={code.label} placeholder="הנחת רכז"
+											class="w-full bg-[#1e293b] border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500" />
+									</div>
+									<div>
+										<label class="block text-xs text-gray-400 mb-1">מילות הקוד (מה שמקלידים)</label>
+										<input bind:value={code.code} placeholder="רכז יוצאים לחירות"
+											class="w-full bg-[#1e293b] border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500" />
+									</div>
+									<div>
+										<label class="block text-xs text-gray-400 mb-1">סוג</label>
+										<select bind:value={code.kind}
+											class="w-full bg-[#1e293b] border border-white/10 rounded-lg px-3 py-2 text-white text-sm cursor-pointer focus:outline-none focus:border-amber-500">
+											<option value="percent">אחוז הנחה</option>
+											<option value="free">פטור מלא</option>
+										</select>
+									</div>
+									<div>
+										<label class="block text-xs text-gray-400 mb-1">אחוז (%)</label>
+										<input type="number" min="0" max="100" bind:value={code.percent}
+											disabled={code.kind === 'free'}
+											class="w-full bg-[#1e293b] border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500 disabled:opacity-40" />
+									</div>
+								</div>
+
+								<div class="flex flex-wrap items-center gap-5 mt-3">
+									<label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
+										<input type="checkbox" bind:checked={code.requiresCoordinator}
+											class="w-4 h-4 accent-amber-500 cursor-pointer" />
+										דורש אישור רכז
+									</label>
+									<label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
+										<input type="checkbox" bind:checked={code.active}
+											class="w-4 h-4 accent-green-500 cursor-pointer" />
+										פעיל
+									</label>
+								</div>
+
+								<div class="mt-3">
+									<label class="block text-xs text-gray-400 mb-1">הערה (פנימית)</label>
+									<input bind:value={code.note} placeholder="הערה לעצמך - לא מוצג למשתמש"
+										class="w-full bg-[#1e293b] border border-white/10 rounded-lg px-3 py-2 text-gray-300 text-sm focus:outline-none focus:border-amber-500" />
+								</div>
+							</div>
+						{/each}
+					</div>
+
+					{#if discountCodes.length === 0}
+						<div class="text-center text-gray-500 py-8">אין קודי הנחה - הוסף קוד חדש</div>
+					{/if}
+
+					<div class="flex flex-wrap gap-3 mt-5">
+						<button
+							type="button"
+							onclick={addDiscountCode}
+							class="px-5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-200 hover:bg-white/10 font-bold cursor-pointer"
+						>➕ הוסף קוד</button>
+						<button
+							type="submit"
+							class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-black font-black hover:scale-105 transition-transform cursor-pointer"
+						>💾 שמור שינויים</button>
+					</div>
+				</form>
+			</section>
+		{/if}
 	</div>
 </div>
 

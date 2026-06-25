@@ -248,7 +248,7 @@ export const actions: Actions = {
         }
 
         // ולידציה + נירמול בסיסי
-        const clean: DiscountCode[] = codes.map((c, i) => ({
+        const clean: DiscountCode[] = codes.map((c, i): DiscountCode => ({
             id:    String(c.id || `code_${i}`).trim(),
             label: String(c.label || '').trim(),
             code:  String(c.code || '').trim(),
