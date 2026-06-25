@@ -26,6 +26,21 @@
     let showLangDropdown = $state(false);
     let onlineUsers = $state(1);
 
+    // מספר הודעות שלא נקראו - להצגת עיגול התראה על תמונת הפרופיל (כמו בדף הפרופיל)
+    let unreadMessages = $state(0);
+    let unreadLabel = $derived(unreadMessages > 99 ? '99+' : String(unreadMessages));
+
+    async function fetchUnreadMessages() {
+        if (!currentUser) { unreadMessages = 0; return; }
+        try {
+            const res = await fetch('/api/messages');
+            if (res.ok) {
+                const msgs = await res.json();
+                unreadMessages = Array.isArray(msgs) ? msgs.filter((m: any) => !m.read).length : 0;
+            }
+        } catch { /* ignore */ }
+    }
+
     async function pingServer() {
         try {
             const res = await fetch('/api/ping', { method: 'POST' });
@@ -100,6 +115,9 @@
         pingServer();
         const usersInterval = setInterval(pingServer, 30000);
 
+        fetchUnreadMessages();
+        const msgsInterval = setInterval(fetchUnreadMessages, 30000);
+
         // hover על כפתור אודות - תמונה ב-fixed position
         const preview = document.getElementById('about-preview') as HTMLElement | null;
         const btnWrapper = document.getElementById('about-btn-wrapper');
@@ -124,6 +142,7 @@
         document.addEventListener("click", handleClickOutside);
         return () => {
             clearInterval(usersInterval);
+            clearInterval(msgsInterval);
             document.removeEventListener("click", handleClickOutside);
         };
     });
@@ -296,6 +315,16 @@
                                     <div class="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-blue-500 shadow-lg border border-white/10" aria-hidden="true">
                                         <span class="font-bold text-white text-xs">{currentUser.username?.charAt(0) || "U"}</span>
                                     </div>
+                                {/if}
+                                <!-- עיגול הודעות שלא נקראו -->
+                                {#if unreadMessages > 0}
+                                    <span
+                                        class="absolute -top-1.5 -left-1.5 min-w-[18px] h-[18px] px-1
+                                               bg-orange-500 border-2 border-[#0f172a] rounded-full
+                                               flex items-center justify-center text-white text-[10px]
+                                               font-black leading-none shadow-lg"
+                                        aria-label="{unreadMessages} הודעות חדשות"
+                                    >{unreadLabel}</span>
                                 {/if}
                             </a>
                         {:else}
@@ -487,6 +516,16 @@
                                          aria-hidden="true">
                                         <span class="font-bold text-white text-sm">{userName.charAt(0)}</span>
                                     </div>
+                                {/if}
+                                <!-- עיגול הודעות שלא נקראו -->
+                                {#if unreadMessages > 0}
+                                    <span
+                                        class="absolute -top-1 -left-1 min-w-[22px] h-[22px] px-1.5
+                                               bg-orange-500 border-2 border-[#0f172a] rounded-full
+                                               flex items-center justify-center text-white text-[11px]
+                                               font-black leading-none shadow-lg"
+                                        aria-label="{unreadMessages} הודעות חדשות"
+                                    >{unreadLabel}</span>
                                 {/if}
                             </a>
                         </div>
