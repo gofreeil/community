@@ -281,6 +281,8 @@
 			<div class="space-y-3">
 				{#each filteredUsers() as user (user.id)}
 					{@const badge = roleBadge(user.role)}
+					{@const isCoord = (user as any).coordinator_of?.length > 0}
+					{@const hasHigherRole = user.role === 'super_admin' || user.role === 'neighborhood_admin'}
 					<div class="bg-[#0f172a] rounded-2xl border border-white/10 p-4 flex flex-col sm:flex-row sm:items-center gap-4 transition-all hover:border-white/20">
 						<!-- אווטאר + שם -->
 						<div class="flex items-center gap-3 flex-1 min-w-0">
@@ -309,10 +311,13 @@
 
 						<!-- תפקיד -->
 						<div class="flex flex-col gap-1 items-start">
-							<span class="text-xs font-bold border px-2.5 py-1 rounded-full whitespace-nowrap {badge.color}">
-								{badge.text}
-							</span>
-							{#if (user as any).coordinator_of?.length > 0}
+							<!-- מציגים רק את הדרגה המתקדמת: אם המשתמש רכז ואין לו דרגה גבוהה יותר, מדלגים על תווית "משתמש" -->
+							{#if hasHigherRole || !isCoord}
+								<span class="text-xs font-bold border px-2.5 py-1 rounded-full whitespace-nowrap {badge.color}">
+									{badge.text}
+								</span>
+							{/if}
+							{#if isCoord}
 								<span class="text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full whitespace-nowrap">
 									🏘️ רכז · {(user as any).coordinator_of.join(', ')}
 								</span>
