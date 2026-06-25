@@ -1788,31 +1788,7 @@
             </button>
         </div>
 
-        <!-- כפתור הוסף יתרון - בחלק העליון -->
-        <div
-            class="absolute left-1/2 transform -translate-x-1/2 z-50"
-            style="top: -10px;"
-        >
-            <button
-                onclick={handleAddAdvantage}
-                title={showAddMenu ? "סגור תפריט" : "הוסף יתרון חדש לשכונה"}
-                class="relative group overflow-hidden bg-gradient-to-br {showAddMenu
-                    ? 'from-green-900 via-emerald-900 to-teal-950'
-                    : 'from-green-500 via-emerald-500 to-teal-600'} hover:{showAddMenu
-                    ? 'from-green-800 via-emerald-800 to-teal-900'
-                    : 'from-green-400 via-emerald-400 hover:to-teal-500'} text-white px-3 py-1.5 rounded-lg font-bold text-base shadow-xl transition-all hover:scale-105 border-2 {showAddMenu
-                    ? 'border-red-500'
-                    : 'border-purple-600'}"
-            >
-                <div
-                    class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer-once"
-                ></div>
-                <div class="relative flex flex-row items-center justify-center gap-1.5 whitespace-nowrap">
-                    <span class="text-[10px] leading-none">{showAddMenu ? "✖️" : "➕"}</span>
-                    <span class="leading-none">{showAddMenu ? "סגור" : "הוסף"}</span>
-                </div>
-            </button>
-        </div>
+        <!-- כפתור "הוסף יתרון" הירוק הוסר - אין בו צורך -->
 
         <!-- כפתור הרמת יד מיוחד - בתחתית המפה -->
         <div
