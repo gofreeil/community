@@ -1414,11 +1414,11 @@
                     <button
                         type="button"
                         onclick={(e) => { e.stopPropagation(); goto('/giveaways'); }}
-                        class="absolute bottom-4 left-4 z-20 bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 hover:from-amber-300 hover:via-orange-400 hover:to-red-400 text-white text-sm font-black px-4 py-2 rounded-xl shadow-lg border border-orange-300/60 transition-all hover:scale-105 flex items-center gap-2 text-center leading-tight"
+                        class="absolute bottom-4 left-4 z-20 bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 hover:from-amber-300 hover:via-orange-400 hover:to-red-400 text-white font-black px-6 py-3 rounded-2xl shadow-lg border border-orange-300/60 transition-all hover:scale-105 hover:opacity-100 flex flex-col items-center gap-1.5 text-center leading-tight opacity-25"
                         title="עבור ללוח הארצי של פריטים למסירה"
                     >
-                        <img src="/images/delivery.png" alt="" class="w-5 h-5 object-contain" />
-                        <span class="text-base">← ללוח הארצי</span>
+                        <span class="text-lg">← ללוח הארצי</span>
+                        <img src="/images/delivery.png" alt="" class="w-7 h-7 object-contain" />
                     </button>
                 {:else if neighborhoodDbItems.length > 0 || nationalBoardUrl}
                     <div class="absolute bottom-4 left-4 z-20 flex flex-wrap items-center gap-2">
