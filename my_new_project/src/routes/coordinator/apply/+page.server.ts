@@ -17,6 +17,8 @@ export const load: PageServerLoad = async ({ locals }) => {
             user: user ? {
                 name: user.name,
                 phone: user.phone,
+                neighborhood: user.neighborhood,
+                city: user.city,
             } : null,
         };
     } catch (error) {

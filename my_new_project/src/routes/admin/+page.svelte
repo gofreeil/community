@@ -264,6 +264,72 @@
 				</section>
 			{/if}
 
+			<!-- סקציית שכונות חדשות שהוצעו ע"י תושבים (עם פין על המפה) - ממתינות לאישור -->
+			{#if (data.pendingNeighborhoods ?? []).length > 0}
+				<section id="pending-neighborhoods" class="mb-6 scroll-mt-4">
+					<div class="flex items-center gap-2 mb-3">
+						<span class="text-2xl">📍</span>
+						<h2 class="text-lg font-black text-amber-300">שכונות ממתינות לאישור</h2>
+						<span class="text-xs font-bold bg-amber-500/15 text-amber-200 border border-amber-500/30 px-2 py-0.5 rounded-full">
+							{data.pendingNeighborhoods.length}
+						</span>
+						<p class="text-xs text-gray-500 hidden md:block mr-2">תושבים שסימנו שכונה חדשה על המפה</p>
+					</div>
+
+					<div class="grid gap-2 md:gap-3">
+						{#each data.pendingNeighborhoods as nb (nb.id)}
+							<div class="bg-amber-500/5 rounded-2xl border border-amber-500/30 p-3 md:p-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 transition-all hover:border-amber-500/50">
+								<!-- שם השכונה והעיר -->
+								<div class="flex items-center gap-3 flex-1 min-w-0">
+									<div class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center flex-shrink-0 text-lg ring-2 ring-amber-400/40">
+										📍
+									</div>
+									<div class="min-w-0">
+										<div class="text-lg font-bold truncate text-white">{nb.name}</div>
+										<div class="text-base text-gray-400 truncate">🏙️ {nb.city || '—'}</div>
+									</div>
+								</div>
+
+								<!-- מיקום על המפה -->
+								<a
+									href="https://www.google.com/maps?q={nb.lat},{nb.lng}"
+									target="_blank"
+									rel="noopener noreferrer"
+									class="text-sm font-bold bg-amber-500/15 text-amber-200 border border-amber-500/40 px-3 py-1.5 rounded-lg hover:bg-amber-500/25 transition-all whitespace-nowrap"
+									title="פתח את המיקום ב-Google Maps"
+								>
+									🗺️ {nb.lat.toFixed(4)}, {nb.lng.toFixed(4)}
+								</a>
+
+								<!-- פעולות -->
+								<div class="flex gap-2 flex-shrink-0 flex-wrap">
+									<form method="POST" action="?/approveNeighborhood" use:enhance>
+										<input type="hidden" name="neighborhoodId" value={nb.id} />
+										<button
+											type="submit"
+											class="px-3 py-1.5 text-sm rounded-lg bg-green-500/15 text-green-300 border border-green-500/40 hover:bg-green-500/25 transition-all cursor-pointer font-bold"
+											title="אשר - השכונה תופיע בבוררים ובמפה לכל המשתמשים"
+										>
+											✅ אשר שכונה
+										</button>
+									</form>
+									<form method="POST" action="?/rejectNeighborhood" use:enhance>
+										<input type="hidden" name="neighborhoodId" value={nb.id} />
+										<button
+											type="submit"
+											class="px-3 py-1.5 text-sm rounded-lg bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all cursor-pointer"
+											onclick={(e) => { if (!confirm(`לדחות את השכונה "${nb.name}"?`)) e.preventDefault(); }}
+										>
+											✖️ דחה
+										</button>
+									</form>
+								</div>
+							</div>
+						{/each}
+					</div>
+				</section>
+			{/if}
+
 			<!-- סקציית רכזי שכונות - מנהלי תוכן בשכונה שלהם -->
 			<section id="coordinators" class="mb-6 scroll-mt-4">
 				<div class="flex items-center justify-between mb-3">

@@ -508,7 +508,12 @@
 
             return sorted.map(item => {
                 const id = String(item.id);
-                const center = getCoordsFor(item.neighborhood, item.city);
+                // פריט עם פין מדויק (שכונה שהוצעה ע"י תושב) - משתמשים בקואורדינטות שלו;
+                // אחרת נופלים למרכז השכונה/העיר.
+                const center: [number, number] =
+                    item.lat != null && item.lng != null
+                        ? [item.lat, item.lng]
+                        : getCoordsFor(item.neighborhood, item.city);
                 const [lat, lng] = jitterCoord(center, id);
                 return {
                     id,

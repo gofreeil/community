@@ -63,6 +63,12 @@
     "city": {
       "type": "string"
     },
+    "lat": {
+      "type": "float"
+    },
+    "lng": {
+      "type": "float"
+    },
     "extra_fields": {
       "type": "json"
     },

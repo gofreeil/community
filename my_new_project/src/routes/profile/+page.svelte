@@ -17,6 +17,7 @@
 	import { findWhatsAppGroups } from "$lib/data/whatsapp-groups";
 	import { getLikedItems, removeLike, type LikedItem } from "$lib/likedItems";
 	import { statusLabel, type UserStatus } from "$lib/singlesMock";
+	import NeighborhoodPicker from "$lib/components/NeighborhoodPicker.svelte";
 
 	let { data, form } = $props();
 
@@ -539,6 +540,8 @@
 	}
 	let business = $state(_ud?.business ?? "");
 	let customLocation = $state("");
+	let customLat = $state<number | null>(null);
+	let customLng = $state<number | null>(null);
 	let locationInteracted = $state(false);
 	let family_status = $state(_ud?.family_status ?? "");
 	let gender = $state(_ud?.gender ?? "");
@@ -976,10 +979,19 @@
 		editTooltipY = e.clientY + 20;
 	}
 
-	let availableNeighborhoods = $derived(
-		(data.citiesData as CityEntry[]).find((c) => c.city === city)
-			?.neighborhoods ?? [],
+	// שכונות מאושרות שהוצעו ע"י תושבים (פין על המפה) - מתמזגות לרשימה לפי עיר
+	let approvedForCity = $derived(
+		((data as any).approvedNeighborhoods as Array<{ name: string; city: string }> | undefined)
+			?.filter((n) => n.city === city)
+			.map((n) => n.name) ?? [],
 	);
+
+	let availableNeighborhoods = $derived([
+		...((data.citiesData as CityEntry[]).find((c) => c.city === city)?.neighborhoods ?? []),
+		...approvedForCity.filter(
+			(n) => !((data.citiesData as CityEntry[]).find((c) => c.city === city)?.neighborhoods ?? []).includes(n),
+		),
+	]);
 
 	// עיר נבחרה אך אין לה שכונות אמיתיות (לדוגמה: כפר תפוח - רק "מרכז") →
 	// אין לחייב בחירת שכונה, אפשר לשמור עם העיר בלבד
@@ -3517,6 +3529,23 @@
 							       focus:border-yellow-500/70 focus:shadow-[0_0_18px_2px_rgba(250,204,21,0.25)]
 							       {locationInteracted ? 'border-yellow-500/40 custom-loc-glow' : 'border-white/10'}"
 								/>
+
+								<!-- סימון מיקום מדויק על המפה - מאפשר למנהל להציב את השכונה במקום הנכון -->
+								{#if customLocation.trim()}
+									<div class="mt-3">
+										<p class="text-yellow-300 text-xs font-bold mb-1.5">
+											🗺️ סמן את מיקום השכונה המדויק על המפה
+										</p>
+										<p class="text-gray-500 text-xs mb-2 leading-relaxed">
+											לא חובה, אבל עוזר לנו למקם את השכונה בדיוק. אם יש לך קואורדינטות — אפשר להקליד אותן.
+										</p>
+										<NeighborhoodPicker {city} bind:lat={customLat} bind:lng={customLng} />
+									</div>
+								{/if}
+
+								<!-- שדות נסתרים שנשלחים עם הטופס -->
+								<input type="hidden" name="custom_lat" value={customLat ?? ''} />
+								<input type="hidden" name="custom_lng" value={customLng ?? ''} />
 							</div>
 						{/if}
 					</div>

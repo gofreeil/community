@@ -14,8 +14,17 @@
 	import { goto, beforeNavigate } from "$app/navigation";
 	import { page } from "$app/state";
 	import { closeAdPopup } from "$lib/adPopupStore";
+	import { registerDynamicNeighborhoods } from "$lib/neighborhoodCoords";
 
 	let { children, data } = $props();
+
+	// רישום שכונות מאושרות (פין מדויק) למנגנון הקואורדינטות - כך שהמפה
+	// תציב פריטים בשכונות חדשות במקום שסומן, בכל האתר.
+	$effect(() => {
+		if (data.approvedNeighborhoods?.length) {
+			registerDynamicNeighborhoods(data.approvedNeighborhoods);
+		}
+	});
 
 	// ממפה את session.user לצורה שה-Header מצפה לה
 	let currentUser = $derived(

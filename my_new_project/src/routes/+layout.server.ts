@@ -1,5 +1,5 @@
 import type { LayoutServerLoad } from './$types';
-import { getUserById } from '$lib/server/db';
+import { getUserById, getNeighborhoods } from '$lib/server/db';
 import { listApproved } from '$lib/server/adsStore';
 
 export const load: LayoutServerLoad = async (event) => {
@@ -34,5 +34,13 @@ export const load: LayoutServerLoad = async (event) => {
         }));
     } catch { /* שקט */ }
 
-    return { session, layoutUser, approvedAds };
+    // שכונות שהוצעו ע"י תושבים ואושרו - מתמזגות לבוררים ולמפה בכל האתר
+    let approvedNeighborhoods: Array<{ name: string; city: string; lat: number; lng: number }> = [];
+    try {
+        approvedNeighborhoods = (await getNeighborhoods('approved')).map(n => ({
+            name: n.name, city: n.city, lat: n.lat, lng: n.lng,
+        }));
+    } catch { /* שקט */ }
+
+    return { session, layoutUser, approvedAds, approvedNeighborhoods };
 };

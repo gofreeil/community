@@ -150,13 +150,41 @@ export const neighborhoodCenters: Record<string, Coord> = {
 
 const DEFAULT_COORD: Coord = [31.7683, 35.2137]; // ירושלים מרכז
 
+// ---- שכונות שהוצעו ע"י תושבים ואושרו (נטענות בזמן ריצה מ-Strapi) ----
+// ממופות לפי שם וגם לפי "עיר|שכונה" כדי למנוע התנגשות שמות בין ערים.
+const dynamicNeighborhoodCenters: Record<string, Coord> = {};
+
+const dynKey = (city: string, neighborhood: string) => `${city}|${neighborhood}`;
+
+/**
+ * רישום שכונות מאושרות (עם פין מדויק) שנטענו מהשרת.
+ * נקרא מה-layout בעת טעינה כדי שהמפה תציב פריטים בשכונות חדשות במקום הנכון.
+ */
+export function registerDynamicNeighborhoods(
+    list: Array<{ name: string; city: string; lat: number; lng: number }>,
+): void {
+    for (const n of list) {
+        if (!n?.name || !Number.isFinite(n.lat) || !Number.isFinite(n.lng)) continue;
+        const coord: Coord = [n.lat, n.lng];
+        dynamicNeighborhoodCenters[dynKey(n.city ?? '', n.name)] = coord;
+        // גיבוי לפי שם בלבד (אם לא הועברה עיר בקריאה ל-getCoordsFor)
+        if (!(n.name in neighborhoodCenters)) {
+            dynamicNeighborhoodCenters[n.name] = coord;
+        }
+    }
+}
+
 /**
  * החזרת קואורדינטות לפריט לפי שכונה ועיר.
- * אם השכונה ידועה - מחזיר את מרכז השכונה.
- * אחרת אם העיר ידועה - מחזיר את מרכז העיר.
- * אחרת - מחזיר את ירושלים כברירת מחדל.
+ * סדר עדיפויות: שכונה מאושרת (דינמי) → שכונה סטטית → מרכז עיר → ירושלים.
  */
 export function getCoordsFor(neighborhood?: string, city?: string): Coord {
+    if (neighborhood && city && dynamicNeighborhoodCenters[dynKey(city, neighborhood)]) {
+        return dynamicNeighborhoodCenters[dynKey(city, neighborhood)];
+    }
+    if (neighborhood && dynamicNeighborhoodCenters[neighborhood]) {
+        return dynamicNeighborhoodCenters[neighborhood];
+    }
     if (neighborhood && neighborhoodCenters[neighborhood]) {
         return neighborhoodCenters[neighborhood];
     }

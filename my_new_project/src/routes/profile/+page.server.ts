@@ -1,6 +1,6 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { getUserById, getUserByEmail, updateUserProfile, getItemsByUserId, upsertUser, getMessagesByUserId, createItem, getAllSuperAdmins, getAllUsers, getItemsByCategory } from '$lib/server/db';
+import { getUserById, getUserByEmail, updateUserProfile, getItemsByUserId, upsertUser, getMessagesByUserId, createItem, getAllSuperAdmins, getAllUsers, getItemsByCategory, createNeighborhoodRequest } from '$lib/server/db';
 import { getCachedUserById, invalidateCachedUser } from '$lib/server/userCache';
 import { citiesData } from '$lib/neighborhoodsData';
 import { categoryConfig } from '$lib/categoryFields';
@@ -243,6 +243,11 @@ export const actions: Actions = {
         const status             = formData.get('status')?.toString().trim()             ?? 'active';
         const avatarBase64     = formData.get('avatar_base64')?.toString()     ?? '';
         const customLocation   = formData.get('custom_location')?.toString().trim() ?? '';
+        const customLatRaw     = formData.get('custom_lat')?.toString().trim() ?? '';
+        const customLngRaw     = formData.get('custom_lng')?.toString().trim() ?? '';
+        const customLat        = Number(customLatRaw);
+        const customLng        = Number(customLngRaw);
+        const hasPin           = !!customLocation && Number.isFinite(customLat) && Number.isFinite(customLng) && customLatRaw !== '' && customLngRaw !== '';
 
         if (!name || name.length < 2) {
             return fail(400, { error: 'שם חייב להכיל לפחות 2 תווים' });
@@ -271,6 +276,22 @@ export const actions: Actions = {
             if (customLocation) {
                 const requesterEmail = email || session.user.email || '';
                 const requesterName  = name  || session.user.id;
+
+                // אם סומן פין מדויק על המפה - צור רשומת שכונה ממתינה (status=pending)
+                // לאחר אישור באדמין היא תופיע בבוררים ובמפה לכל המשתמשים, במיקום שסומן.
+                if (hasPin) {
+                    try {
+                        await createNeighborhoodRequest({
+                            name: customLocation,
+                            city: city || '',
+                            lat:  customLat,
+                            lng:  customLng,
+                            user_id: session.user.id,
+                        });
+                    } catch (e) {
+                        console.warn('[profile] createNeighborhoodRequest failed:', e);
+                    }
+                }
                 try {
                     await createItem({
                         category:    'location_request',
@@ -298,14 +319,18 @@ export const actions: Actions = {
                         label:       `📍 בקשת מיקום חדש: ${customLocation}`,
                         description:
                             `המשתמש ${requesterName} (${requesterEmail}) ביקש להוסיף מיקום שאינו מופיע ברשימה:\n\n` +
-                            `"${customLocation}"\n\n` +
-                            `יש לבחון אם להוסיף לרשימת הערים/השכונות.`,
+                            `"${customLocation}"${city ? ` (עיר: ${city})` : ''}\n\n` +
+                            (hasPin
+                                ? `📍 המיקום סומן על המפה: ${customLat}, ${customLng}\nhttps://www.google.com/maps?q=${customLat},${customLng}\n\nאשר/דחה בעמוד הניהול תחת "שכונות ממתינות".`
+                                : `יש לבחון אם להוסיף לרשימת הערים/השכונות.`),
                         icon:        '📍',
                         color:       'yellow',
                         user_id:     admin.id,
                         extra_fields: {
                             type:               'location_request',
                             requested_location: customLocation,
+                            requested_lat:      hasPin ? customLat : null,
+                            requested_lng:      hasPin ? customLng : null,
                             requested_by_name:  name  || '',
                             requested_by_email: requesterEmail,
                             requested_by_id:    session.user.id,

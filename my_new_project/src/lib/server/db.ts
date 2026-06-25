@@ -22,6 +22,8 @@ export interface DbItem {
     color: string;
     neighborhood: string;
     city: string;
+    lat: number | null;
+    lng: number | null;
     extra_fields: string;   // JSON string
     status: string;
     user_id: string | null;
@@ -41,6 +43,8 @@ export interface CreateItemData {
     color?: string;
     neighborhood?: string;
     city?: string;
+    lat?: number | null;
+    lng?: number | null;
     extra_fields?: Record<string, unknown>;
     user_id?: string;
     status?: string;
@@ -119,6 +123,8 @@ interface StrapiItem {
     color: string | null;
     neighborhood: string | null;
     city: string | null;
+    lat: number | null;
+    lng: number | null;
     extra_fields: Record<string, unknown> | null;
     status1: string | null;
     user_id: string | null;
@@ -180,6 +186,8 @@ function mapStrapiItem(item: StrapiItem): DbItem {
         color:        item.color        ?? 'purple',
         neighborhood: item.neighborhood ?? '',
         city:         item.city         ?? '',
+        lat:          item.lat ?? null,
+        lng:          item.lng ?? null,
         extra_fields: item.extra_fields && typeof item.extra_fields === 'object'
             ? JSON.stringify(item.extra_fields)
             : '{}',
@@ -254,6 +262,8 @@ export async function createItem(data: CreateItemData): Promise<DbItem> {
             color:        data.color        ?? 'purple',
             neighborhood: data.neighborhood ?? '',
             city:         data.city         ?? '',
+            lat:          data.lat ?? null,
+            lng:          data.lng ?? null,
             extra_fields: data.extra_fields ?? {},
             status1:      data.status ?? 'active',
             user_id:      data.user_id ?? null,
@@ -667,6 +677,100 @@ export async function approveCoordinatorRequest(documentId: string, decidedBy: s
 export async function rejectCoordinatorRequest(documentId: string, decidedBy: string, reason = ''): Promise<void> {
     await strapiPut(`/api/coordinator-requests/${documentId}`, {
         data: { status: 'rejected', decided_at: new Date().toISOString(), decided_by: decidedBy, rejection_reason: reason },
+    });
+}
+
+// ============================================================
+// ---- Neighborhoods (שכונות שהוצעו ע"י תושבים עם פין על המפה) ----
+// ============================================================
+
+export type NeighborhoodStatus = 'pending' | 'approved' | 'rejected';
+
+export interface DbNeighborhood {
+    id: string;             // documentId
+    name: string;
+    city: string;
+    lat: number;
+    lng: number;
+    user_id: string;
+    status: NeighborhoodStatus;
+    created_at: string;
+}
+
+interface StrapiNeighborhood {
+    id: number;
+    documentId: string;
+    name: string;
+    city: string;
+    lat: number;
+    lng: number;
+    user_id: string | null;
+    status: NeighborhoodStatus;
+    decided_at: string | null;
+    decided_by: string | null;
+    createdAt: string;
+}
+
+function mapNeighborhood(n: StrapiNeighborhood): DbNeighborhood {
+    return {
+        id:         n.documentId,
+        name:       n.name ?? '',
+        city:       n.city ?? '',
+        lat:        n.lat,
+        lng:        n.lng,
+        user_id:    n.user_id ?? '',
+        status:     n.status ?? 'pending',
+        created_at: n.createdAt ?? '',
+    };
+}
+
+/** שכונות לפי סטטוס (ברירת מחדל: מאושרות) - משמש את הבורר ואת תור האישור באדמין */
+export async function getNeighborhoods(status: NeighborhoodStatus = 'approved'): Promise<DbNeighborhood[]> {
+    try {
+        const res = await strapiGet<{ data: StrapiNeighborhood[] }>('/api/neighborhoods', {
+            'filters[status][$eq]': status,
+            'sort':                 'createdAt:desc',
+            'pagination[limit]':    '500',
+        });
+        return (res.data ?? []).map(mapNeighborhood);
+    } catch (e) {
+        if (e instanceof StrapiContentTypeError) return [];
+        throw e;
+    }
+}
+
+/** יצירת בקשת שכונה חדשה (status=pending) - תושב שסימן פין על המפה */
+export async function createNeighborhoodRequest(data: {
+    name: string;
+    city: string;
+    lat: number;
+    lng: number;
+    user_id?: string;
+}): Promise<DbNeighborhood> {
+    const res = await strapiPost<{ data: StrapiNeighborhood }>('/api/neighborhoods', {
+        data: {
+            name:    data.name,
+            city:    data.city,
+            lat:     data.lat,
+            lng:     data.lng,
+            user_id: data.user_id ?? null,
+            status:  'pending',
+        },
+    });
+    return mapNeighborhood(res.data);
+}
+
+/** אישור שכונה - מעכשיו תופיע בבורר ובמפה לכל המשתמשים */
+export async function approveNeighborhood(documentId: string, decidedBy: string): Promise<void> {
+    await strapiPut(`/api/neighborhoods/${documentId}`, {
+        data: { status: 'approved', decided_at: new Date().toISOString(), decided_by: decidedBy },
+    });
+}
+
+/** דחיית שכונה */
+export async function rejectNeighborhood(documentId: string, decidedBy: string): Promise<void> {
+    await strapiPut(`/api/neighborhoods/${documentId}`, {
+        data: { status: 'rejected', decided_at: new Date().toISOString(), decided_by: decidedBy },
     });
 }
 

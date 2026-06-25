@@ -71,12 +71,14 @@ export const POST: RequestHandler = async (event) => {
         return json({ success: false, message: 'נתונים לא תקינים' }, { status: 400 });
     }
 
-    const { category, label, extra_fields, neighborhood, city, ...rest } = body as {
+    const { category, label, extra_fields, neighborhood, city, lat, lng, ...rest } = body as {
         category: string;
         label: string;
         extra_fields?: Record<string, unknown>;
         neighborhood?: string;
         city?: string;
+        lat?: number;
+        lng?: number;
         description?: string;
         contact?: string;
         phone?: string;
@@ -105,6 +107,8 @@ export const POST: RequestHandler = async (event) => {
         color,
         neighborhood: String(neighborhood ?? ''),
         city:         String(city ?? ''),
+        lat:          Number.isFinite(Number(lat)) ? Number(lat) : null,
+        lng:          Number.isFinite(Number(lng)) ? Number(lng) : null,
         extra_fields: (extra_fields ?? {}) as Record<string, unknown>,
         user_id:     session?.user?.id ?? undefined,
     });

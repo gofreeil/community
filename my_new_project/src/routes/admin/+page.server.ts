@@ -1,7 +1,7 @@
 import { redirect, fail, error } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { requireSuperAdmin, requireAdmin } from '$lib/server/auth';
-import { getAllUsers, banUser, unbanUser, setUserRole, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByEmail, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest } from '$lib/server/db';
+import { getAllUsers, banUser, unbanUser, setUserRole, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByEmail, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, approveNeighborhood, rejectNeighborhood } from '$lib/server/db';
 import { countPending } from '$lib/server/adsStore';
 
 export const load: PageServerLoad = async (event) => {
@@ -26,6 +26,7 @@ export const load: PageServerLoad = async (event) => {
     let users: Awaited<ReturnType<typeof getAllUsers>> = [];
     let items: Awaited<ReturnType<typeof getAllItems>> = [];
     let coordinatorRequests: Awaited<ReturnType<typeof getCoordinatorRequests>> = [];
+    let pendingNeighborhoods: Awaited<ReturnType<typeof getNeighborhoods>> = [];
 
     try {
         users = await getAllUsers(jwt);
@@ -45,6 +46,12 @@ export const load: PageServerLoad = async (event) => {
         console.warn('[admin] getCoordinatorRequests failed:', e);
     }
 
+    try {
+        pendingNeighborhoods = await getNeighborhoods('pending');
+    } catch (e) {
+        console.warn('[admin] getNeighborhoods failed:', e);
+    }
+
     let pendingAdsCount = 0;
     try { pendingAdsCount = await countPending(); } catch { /* שקט */ }
 
@@ -52,6 +59,7 @@ export const load: PageServerLoad = async (event) => {
         users,
         items,
         coordinatorRequests,
+        pendingNeighborhoods,
         currentUserId: session?.user?.id ?? '',
         pendingAdsCount,
     };
@@ -161,6 +169,38 @@ export const actions: Actions = {
         try {
             await rejectCoordinatorRequest(requestId, session?.user?.id ?? 'admin', reason);
             return { success: true, message: 'הבקשה נדחתה' };
+        } catch (e) {
+            return fail(500, { error: `שגיאה בדחייה: ${e instanceof Error ? e.message : e}` });
+        }
+    },
+
+    approveNeighborhood: async (event) => {
+        const session = await event.locals.auth();
+        requireSuperAdmin(session);
+
+        const formData = await event.request.formData();
+        const neighborhoodId = formData.get('neighborhoodId') as string;
+        if (!neighborhoodId) return fail(400, { error: 'חסר מזהה שכונה' });
+
+        try {
+            await approveNeighborhood(neighborhoodId, session?.user?.id ?? 'admin');
+            return { success: true, message: 'השכונה אושרה - מעכשיו תופיע בבוררים ובמפה' };
+        } catch (e) {
+            return fail(500, { error: `שגיאה באישור: ${e instanceof Error ? e.message : e}` });
+        }
+    },
+
+    rejectNeighborhood: async (event) => {
+        const session = await event.locals.auth();
+        requireSuperAdmin(session);
+
+        const formData = await event.request.formData();
+        const neighborhoodId = formData.get('neighborhoodId') as string;
+        if (!neighborhoodId) return fail(400, { error: 'חסר מזהה שכונה' });
+
+        try {
+            await rejectNeighborhood(neighborhoodId, session?.user?.id ?? 'admin');
+            return { success: true, message: 'השכונה נדחתה' };
         } catch (e) {
             return fail(500, { error: `שגיאה בדחייה: ${e instanceof Error ? e.message : e}` });
         }

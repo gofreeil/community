@@ -1,25 +1,27 @@
 <script lang="ts">
     import { _ } from 'svelte-i18n';
-    import { citiesData } from '$lib/neighborhoodsData';
 
     interface PageData {
-        user: { name: string; phone: string } | null;
+        user: { name: string; phone: string; neighborhood?: string; city?: string } | null;
     }
 
     let { data }: { data: PageData } = $props();
 
     let name = $state(data.user?.name || '');
     let phone = $state(data.user?.phone || '');
-    let neighborhoods = $state<string[]>([]);
     let experience = $state('');
     let motivation = $state('');
     let isLoading = $state(false);
     let error = $state<string | null>(null);
     let success = $state(false);
 
-    const allNeighborhoods = (citiesData ?? []).flatMap(({ city, neighborhoods: cityNeighborhoods }) =>
-        cityNeighborhoods.map((n) => ({ name: n, city }))
-    );
+    // מי שרשום - אנחנו כבר יודעים את השכונה שלו, אין צורך לבחור
+    const myNeighborhoodLabel = [data.user?.neighborhood, data.user?.city]
+        .filter(Boolean)
+        .join(' - ');
+    const neighborhoods = data.user?.neighborhood
+        ? [data.user.city ? `${data.user.neighborhood} (${data.user.city})` : data.user.neighborhood]
+        : [];
 
     async function handleSubmit(e: Event) {
         e.preventDefault();
@@ -39,9 +41,6 @@
             }
 
             success = true;
-            name = '';
-            phone = '';
-            neighborhoods = [];
             experience = '';
             motivation = '';
         } catch (err) {
@@ -96,36 +95,15 @@
                     />
                 </div>
 
-                <!-- Neighborhoods -->
+                <!-- Neighborhood (מזוהה אוטומטית מהמשתמש הרשום) -->
                 <div class="mb-6">
-                    <label class="block text-sm font-medium mb-3"
-                        >{$_('coordinator_neighborhood')}</label
-                    >
-                    <div class="grid grid-cols-2 gap-3 max-h-64 overflow-y-auto">
-                        {#each allNeighborhoods as { name: neighborhoodName, city }, i (i)}
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    checked={neighborhoods.includes(`${neighborhoodName} (${city})`)}
-                                    onchange={() => {
-                                        const fullName = `${neighborhoodName} (${city})`;
-                                        if (neighborhoods.includes(fullName)) {
-                                            neighborhoods = neighborhoods.filter((n) => n !== fullName);
-                                        } else {
-                                            neighborhoods = [...neighborhoods, fullName];
-                                        }
-                                    }}
-                                    class="w-4 h-4"
-                                />
-                                <span class="text-sm">
-                                    {neighborhoodName}
-                                    <span class="text-slate-400">({city})</span>
-                                </span>
-                            </label>
-                        {/each}
-                    </div>
-                    {#if neighborhoods.length === 0}
-                        <p class="text-red-400 text-sm mt-2">חייב לבחור לפחות שכונה אחת</p>
+                    <label class="block text-sm font-medium mb-2">{$_('coordinator_neighborhood')}</label>
+                    {#if neighborhoods.length > 0}
+                        <div class="w-full bg-slate-900 border border-slate-600 rounded px-4 py-2 text-white">
+                            {myNeighborhoodLabel}
+                        </div>
+                    {:else}
+                        <p class="text-red-400 text-sm mt-2">{$_('coordinator_no_neighborhood')}</p>
                     {/if}
                 </div>
 
