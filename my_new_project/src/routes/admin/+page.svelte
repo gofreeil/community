@@ -223,20 +223,20 @@
 										</div>
 									{/if}
 									<div class="min-w-0">
-										<div class="font-bold truncate flex items-center gap-2 text-white">
+										<div class="text-lg font-bold truncate flex items-center gap-2 text-white">
 											{user.name ?? 'ללא שם'}
 											{#if user.banned}
-												<span class="text-xs bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded-full">חסום</span>
+												<span class="text-sm bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded-full">חסום</span>
 											{/if}
 										</div>
-										<div class="text-sm text-gray-400 truncate">{user.email ?? '-'}</div>
+										<div class="text-base text-gray-400 truncate">{user.email ?? '-'}</div>
 									</div>
 								</div>
 
 								<!-- שכונות שהוא רכז עליהן -->
 								<div class="flex flex-wrap gap-1 max-w-full sm:max-w-[260px]">
 									{#each coordList as n}
-										<span class="text-xs font-bold bg-amber-500/20 text-amber-200 border border-amber-500/40 px-2 py-0.5 rounded-full whitespace-nowrap">
+										<span class="text-sm font-bold bg-amber-500/20 text-amber-200 border border-amber-500/40 px-2 py-0.5 rounded-full whitespace-nowrap">
 											{n}
 										</span>
 									{/each}
@@ -246,7 +246,7 @@
 								<div class="flex gap-2 flex-shrink-0 flex-wrap">
 									<button
 										onclick={() => openCoordModal({ id: user.id, name: user.name, coordinator_of: coordList, neighborhood: user.neighborhood, city: (user as any).city })}
-										class="px-3 py-1.5 text-xs rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/40 hover:bg-amber-500/25 transition-all cursor-pointer font-bold"
+										class="px-3 py-1.5 text-sm rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/40 hover:bg-amber-500/25 transition-all cursor-pointer font-bold"
 										title="ערוך שכונות שהוא רכז עליהן"
 									>
 										✏️ ערוך שכונות
@@ -256,7 +256,7 @@
 										<input type="hidden" name="neighborhoods" value="" />
 										<button
 											type="submit"
-											class="px-3 py-1.5 text-xs rounded-lg bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all cursor-pointer"
+											class="px-3 py-1.5 text-sm rounded-lg bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all cursor-pointer"
 											onclick={(e) => { if (!confirm(`להסיר את הרכזות מ-${user.name ?? user.id}?`)) e.preventDefault(); }}
 										>
 											🗑 הסר רכזות
@@ -294,18 +294,18 @@
 								</div>
 							{/if}
 							<div class="min-w-0">
-								<div class="font-bold truncate flex items-center gap-2">
+								<div class="text-lg font-bold truncate flex items-center gap-2">
 									{user.name ?? 'ללא שם'}
 									{#if user.banned}
-										<span class="text-xs bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded-full">חסום</span>
+										<span class="text-sm bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded-full">חסום</span>
 									{/if}
 								</div>
-								<div class="text-sm text-gray-400 truncate">{user.email ?? '-'}</div>
+								<div class="text-base text-gray-400 truncate">{user.email ?? '-'}</div>
 							</div>
 						</div>
 
 						<!-- שכונה -->
-						<div class="text-sm text-gray-400 min-w-[100px]">
+						<div class="text-base text-gray-400 min-w-[100px]">
 							{user.neighborhood || '-'}
 						</div>
 
@@ -313,12 +313,12 @@
 						<div class="flex flex-col gap-1 items-start">
 							<!-- מציגים רק את הדרגה המתקדמת: אם המשתמש רכז ואין לו דרגה גבוהה יותר, מדלגים על תווית "משתמש" -->
 							{#if hasHigherRole || !isCoord}
-								<span class="text-xs font-bold border px-2.5 py-1 rounded-full whitespace-nowrap {badge.color}">
+								<span class="text-sm font-bold border px-2.5 py-1 rounded-full whitespace-nowrap {badge.color}">
 									{badge.text}
 								</span>
 							{/if}
 							{#if isCoord}
-								<span class="text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full whitespace-nowrap">
+								<span class="text-xs font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full whitespace-nowrap">
 									🏘️ רכז · {(user as any).coordinator_of.join(', ')}
 								</span>
 							{/if}
@@ -329,7 +329,7 @@
 							<!-- מינוי רכז -->
 							<button
 								onclick={() => openCoordModal({ id: user.id, name: user.name, coordinator_of: (user as any).coordinator_of ?? [], neighborhood: user.neighborhood, city: (user as any).city })}
-								class="px-3 py-1.5 text-xs rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/30
+								class="px-3 py-1.5 text-sm rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/30
 								       hover:bg-amber-500/20 transition-all cursor-pointer"
 								title="מנה / הסר רכז"
 							>
@@ -338,7 +338,7 @@
 							<!-- שינוי תפקיד -->
 							<button
 								onclick={() => openRoleModal({ id: user.id, name: user.name, role: user.role, neighborhood: user.neighborhood })}
-								class="px-3 py-1.5 text-xs rounded-lg bg-white/5 text-gray-300 border border-white/10
+								class="px-3 py-1.5 text-sm rounded-lg bg-white/5 text-gray-300 border border-white/10
 								       hover:bg-white/10 transition-all cursor-pointer"
 								title="שנה תפקיד"
 							>
@@ -352,7 +352,7 @@
 										<input type="hidden" name="userId" value={user.id} />
 										<button
 											type="submit"
-											class="px-3 py-1.5 text-xs rounded-lg bg-green-500/10 text-green-400 border border-green-500/30
+											class="px-3 py-1.5 text-sm rounded-lg bg-green-500/10 text-green-400 border border-green-500/30
 											       hover:bg-green-500/20 transition-all cursor-pointer"
 										>
 											✅ בטל חסימה
@@ -363,7 +363,7 @@
 										<input type="hidden" name="userId" value={user.id} />
 										<button
 											type="submit"
-											class="px-3 py-1.5 text-xs rounded-lg bg-red-500/10 text-red-400 border border-red-500/30
+											class="px-3 py-1.5 text-sm rounded-lg bg-red-500/10 text-red-400 border border-red-500/30
 											       hover:bg-red-500/20 transition-all cursor-pointer"
 											onclick={(e) => { if (!confirm(`לחסום את ${user.name ?? user.id}?`)) e.preventDefault(); }}
 										>
