@@ -1,16 +1,19 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { strapiPost } from '$lib/server/strapiClient';
+import { getAllSuperAdmins, createItem } from '$lib/server/db';
 import { Resend } from 'resend';
 
-/** שולח מייל לאדמין על בקשת רכז חדשה - best-effort, לא מכשיל את הבקשה */
-async function notifyAdmin(data: {
+interface CoordRequestInfo {
     name: string;
     phone: string;
     neighborhoods: string[];
     experience: string;
     motivation: string;
     user_id: string;
-}) {
+}
+
+/** שולח מייל לאדמין על בקשת רכז חדשה - best-effort, לא מכשיל את הבקשה */
+async function notifyAdminEmail(data: CoordRequestInfo) {
     const resend   = new Resend(process.env.RESEND_API_KEY);
     const fromAddr = process.env.FROM_EMAIL || 'onboarding@resend.dev';
     await resend.emails.send({
@@ -31,6 +34,36 @@ async function notifyAdmin(data: {
           <p style="margin-top:16px;"><a href="https://community.gofreeil.com/admin#coord-requests" style="color:#60a5fa;font-weight:700;">➜ לאישור/דחייה בפאנל הניהול</a></p>
         </body></html>`,
     });
+}
+
+/**
+ * שולח הודעה אישית (category 'message') לכל סופר־אדמין כדי שהבקשה תופיע מיד
+ * בתיבת ההודעות בפרופיל ותיספר בבאדג' ההודעות שלא נקראו - best-effort.
+ */
+async function notifySuperAdminsInApp(data: CoordRequestInfo) {
+    const admins = await getAllSuperAdmins();
+    const areas = data.neighborhoods.join(', ');
+    await Promise.all(admins.map(admin => createItem({
+        category:    'message',
+        label:       `🙋 בקשת רכז חדשה: ${data.name}`,
+        description:
+            `${data.name} (${data.phone}) ביקש/ה להיות רכז שכונה${areas ? ` ב${areas}` : ''}.\n\n` +
+            (data.experience ? `ניסיון: ${data.experience}\n` : '') +
+            (data.motivation ? `מוטיבציה: ${data.motivation}\n` : '') +
+            `\nהיכנס/י לעמוד הניהול תחת "בקשות להיות רכז" כדי לאשר או לדחות.`,
+        icon:        '🙋',
+        color:       'blue',
+        user_id:     admin.id,
+        extra_fields: {
+            type:               'coordinator_request',
+            requested_by_name:  data.name,
+            requested_by_phone: data.phone,
+            neighborhoods:      areas,
+            requested_by_id:    data.user_id,
+            requested_at:       new Date().toISOString(),
+            read:               false,
+        },
+    })));
 }
 
 export const POST: RequestHandler = async ({ request, locals }) => {
@@ -61,16 +94,23 @@ export const POST: RequestHandler = async ({ request, locals }) => {
             },
         });
 
-        // הודעה לאדמין - best-effort, לא מכשיל את הבקשה אם המייל נכשל
+        const info: CoordRequestInfo = {
+            name,
+            phone,
+            neighborhoods,
+            experience: experience || '',
+            motivation: motivation || '',
+            user_id: String(session.user.id),
+        };
+
+        // התראות לאדמין - כל אחת best-effort בנפרד, לא מכשילות את הבקשה
         try {
-            await notifyAdmin({
-                name,
-                phone,
-                neighborhoods,
-                experience: experience || '',
-                motivation: motivation || '',
-                user_id: String(session.user.id),
-            });
+            await notifySuperAdminsInApp(info);
+        } catch (e) {
+            console.warn('[coordinator-request] in-app notify failed:', e);
+        }
+        try {
+            await notifyAdminEmail(info);
         } catch (e) {
             console.warn('[coordinator-request] admin email failed:', e);
         }
