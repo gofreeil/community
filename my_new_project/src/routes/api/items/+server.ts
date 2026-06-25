@@ -96,22 +96,33 @@ export const POST: RequestHandler = async (event) => {
     const icon  = getCategoryIcon(category);
     const color = getCategoryColor(category);
 
-    const item = await createItem({
-        category,
-        label: String(label),
-        description: String(rest.description ?? ''),
-        contact:     String(rest.contact ?? ''),
-        phone:       String(rest.phone ?? ''),
-        address:     String(rest.address ?? ''),
-        icon,
-        color,
-        neighborhood: String(neighborhood ?? ''),
-        city:         String(city ?? ''),
-        lat:          Number.isFinite(Number(lat)) ? Number(lat) : null,
-        lng:          Number.isFinite(Number(lng)) ? Number(lng) : null,
-        extra_fields: (extra_fields ?? {}) as Record<string, unknown>,
-        user_id:     session?.user?.id ?? undefined,
-    });
+    let item;
+    try {
+        item = await createItem({
+            category,
+            label: String(label),
+            description: String(rest.description ?? ''),
+            contact:     String(rest.contact ?? ''),
+            phone:       String(rest.phone ?? ''),
+            address:     String(rest.address ?? ''),
+            icon,
+            color,
+            neighborhood: String(neighborhood ?? ''),
+            city:         String(city ?? ''),
+            lat:          Number.isFinite(Number(lat)) ? Number(lat) : null,
+            lng:          Number.isFinite(Number(lng)) ? Number(lng) : null,
+            extra_fields: (extra_fields ?? {}) as Record<string, unknown>,
+            user_id:     session?.user?.id ?? undefined,
+        });
+    } catch (e) {
+        // אל תיתן לשגיאת Strapi להתפוצץ ל-500 אטום ("Internal Error") אצל המשתמש.
+        // לוגג את הסיבה האמיתית (כולל גוף התשובה מ-Strapi) ומחזיר הודעה ידידותית.
+        console.error('[api/items] createItem failed:', e);
+        return json(
+            { success: false, message: 'שמירת הפריט נכשלה. נסה שוב בעוד רגע, ואם זה חוזר פנה לתמיכה.' },
+            { status: 500 },
+        );
+    }
 
     // ---- התאמת אירוח לשבת ----
     if (category === 'shabbat_hosting') {
