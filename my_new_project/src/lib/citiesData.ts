@@ -420,6 +420,7 @@ export const cities: City[] = [
     { id: 'tel-aviv-naveh-seret', name: 'תל אביב - נווה שרת', category: 'neighborhood', parentCity: 'tel-aviv-jaffa' },
     { id: 'tel-aviv-nofei-yam', name: 'תל אביב - נופי ים', category: 'neighborhood', parentCity: 'tel-aviv-jaffa' },
     { id: 'tel-aviv-nordia', name: 'תל אביב - נורדיה', category: 'neighborhood', parentCity: 'tel-aviv-jaffa' },
+    { id: 'tel-aviv-nir-aviv', name: 'תל אביב - ניר אביב', category: 'neighborhood', parentCity: 'tel-aviv-jaffa' },
     { id: 'tel-aviv-nachlat-binyamin', name: 'תל אביב - נחלת בנימין', category: 'neighborhood', parentCity: 'tel-aviv-jaffa' },
     { id: 'tel-aviv-nachlat-yitzhak-east', name: 'תל אביב - נחלת יצחק (מזרח)', category: 'neighborhood', parentCity: 'tel-aviv-jaffa' },
     { id: 'tel-aviv-nachlat-yitzhak-center', name: 'תל אביב - נחלת יצחק (מרכז)', category: 'neighborhood', parentCity: 'tel-aviv-jaffa' },
