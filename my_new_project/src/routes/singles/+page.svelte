@@ -263,11 +263,68 @@
         </div>
 
         <!-- כרטיס המשתמש - במרכז מעל הרשת, להבדלה ברורה -->
-        {#if selfCard}
-            {@const isMale = selfCard.gender === 'male'}
+        {#if data.selfProfile}
+            <!-- הכרטיס האמיתי של המשתמש, בדיוק כפי שאחרים רואים אותו -->
+            {@const me = data.selfProfile as SingleProfile}
+            {@const isMale = me.gender === 'male'}
             <div class="mb-8 flex flex-col items-center">
                 <h2 class="text-amber-300 text-sm md:text-base font-bold mb-3 text-center">
                     ⭐ כך נראה הכרטיס שלך
+                </h2>
+                <div class="w-full max-w-md rounded-2xl bg-[#0f172a] border-2 {isMale ? 'border-blue-400' : 'border-pink-400'} overflow-hidden shadow-xl ring-2 {isMale ? 'ring-blue-500/40' : 'ring-pink-500/40'} relative">
+                    <!-- Card header -->
+                    <div class="bg-gradient-to-r {isMale ? 'from-blue-600 to-cyan-600' : 'from-pink-600 to-rose-500'} p-4 flex items-center gap-3 relative">
+                        <div class="w-16 h-16 rounded-full bg-white/25 ring-2 ring-white/30 overflow-hidden flex items-center justify-center flex-shrink-0 shadow-md">
+                            <img src={me.avatar} alt={me.nickname} class="w-full h-full object-cover" loading="lazy" />
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="text-white font-black text-lg leading-tight mb-1">{me.nickname}</h3>
+                            <div class="flex items-center gap-3 text-white/85 text-sm">
+                                {#if me.age}<span>🎂 {me.age}</span>{/if}
+                                {#if me.city}<span>📍 {me.city}</span>{/if}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card body - תוכן אמיתי -->
+                    <div class="p-4">
+                        {#if me.description}
+                            <p class="text-gray-300 text-sm leading-relaxed mb-3">{me.description}</p>
+                        {/if}
+                        {#if me.lookingFor}
+                            <div class="mb-3 rounded-lg bg-white/5 border border-white/10 px-3 py-2">
+                                <p class="text-[11px] font-bold {isMale ? 'text-cyan-300' : 'text-pink-300'} mb-0.5">{isMale ? 'מחפש' : 'מחפשת'}</p>
+                                <p class="text-gray-200 text-sm leading-snug">{me.lookingFor}</p>
+                            </div>
+                        {/if}
+                        {#if me.inspiration}
+                            <p class="text-gray-400 text-xs italic leading-snug mb-4 border-r-2 {isMale ? 'border-cyan-500/40' : 'border-pink-500/40'} pr-2">
+                                {me.inspiration}
+                            </p>
+                        {/if}
+                        <div class="flex gap-2">
+                            <a
+                                href="/singles/{me.id}"
+                                class="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-2.5 rounded-xl transition-colors text-sm"
+                            >
+                                👁️ צפה בכרטיס המלא
+                            </a>
+                            <a
+                                href="/add/singles"
+                                class="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-black font-bold py-2.5 rounded-xl transition-all text-sm shadow-lg"
+                            >
+                                ✏️ ערוך
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {:else if selfCard}
+            <!-- אין עדיין כרטיס פנויים - תצוגת CTA גנרית להקמתו -->
+            {@const isMale = selfCard.gender === 'male'}
+            <div class="mb-8 flex flex-col items-center">
+                <h2 class="text-amber-300 text-sm md:text-base font-bold mb-3 text-center">
+                    ⭐ כך ייראה הכרטיס שלך
                 </h2>
                 <div class="w-full max-w-md rounded-2xl bg-[#0f172a] border-2 {isMale ? 'border-blue-400' : 'border-pink-400'} overflow-hidden shadow-xl ring-2 {isMale ? 'ring-blue-500/40' : 'ring-pink-500/40'} relative">
                     <!-- Card header -->
@@ -287,13 +344,13 @@
                     <!-- Card body -->
                     <div class="p-4">
                         <p class="text-gray-400 text-sm leading-relaxed mb-3">
-                            ככה הקהילה תראה אותך - עדכן את הפרופיל שלך והוסף תיאור, גיל, מה אתה מחפש ועוד.
+                            עדיין לא יצרת כרטיס פנויים - צור אחד עם תיאור, גיל, מה אתה מחפש ועוד, והקהילה תראה אותך.
                         </p>
                         <a
                             href="/add/singles"
                             class="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-black font-bold py-2.5 rounded-xl transition-all text-sm shadow-lg"
                         >
-                            ✏️ ערוך את הכרטיס שלי
+                            ➕ צור את הכרטיס שלי
                         </a>
                     </div>
                 </div>

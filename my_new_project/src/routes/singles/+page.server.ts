@@ -44,9 +44,13 @@ export const load: PageServerLoad = async (event) => {
         const items = await getItemsByCategory('singles');
         // כל הכרטיסים הפעילים מוצגים - כולל כאלה שלא שילמו
         const profiles = items.map(dbItemToProfile);
-        return { items, profiles, currentUserId: session?.user?.id ?? null, currentUserGender, currentUser };
+        // הכרטיס האמיתי של המשתמש המחובר (מסונן החוצה מהרשת בגלל נעילת המגדר),
+        // כדי שנוכל להציג לו אותו בדיוק כפי שאחרים רואים אותו ב"כך נראה הכרטיס שלך".
+        const ownItem = session?.user?.id ? items.find((i) => String(i.user_id) === String(session.user.id)) : null;
+        const selfProfile = ownItem ? dbItemToProfile(ownItem) : null;
+        return { items, profiles, selfProfile, currentUserId: session?.user?.id ?? null, currentUserGender, currentUser };
     } catch (e) {
         console.warn('[singles] load failed:', e instanceof Error ? e.message : e);
-        return { items: [], profiles: [], currentUserId: null, currentUserGender, currentUser };
+        return { items: [], profiles: [], selfProfile: null, currentUserId: null, currentUserGender, currentUser };
     }
 };
