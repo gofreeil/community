@@ -30,14 +30,36 @@
     let unreadMessages = $state(0);
     let unreadLabel = $derived(unreadMessages > 99 ? '99+' : String(unreadMessages));
 
+    // אותם מפתחות localStorage כמו דף הפרופיל - כדי שהספירה תהיה עקבית עם תיבת ההודעות
+    function loadMsgSet(key: string): Set<string> {
+        if (typeof localStorage === 'undefined') return new Set();
+        try { return new Set(JSON.parse(localStorage.getItem(key) ?? '[]')); } catch { return new Set(); }
+    }
+    function loadMsgMap(key: string): Record<string, number> {
+        if (typeof localStorage === 'undefined') return {};
+        try { return JSON.parse(localStorage.getItem(key) ?? '{}') ?? {}; } catch { return {}; }
+    }
+
     async function fetchUnreadMessages() {
         if (!currentUser) { unreadMessages = 0; return; }
         try {
-            const res = await fetch('/api/messages');
-            if (res.ok) {
-                const msgs = await res.json();
-                unreadMessages = Array.isArray(msgs) ? msgs.filter((m: any) => !m.read).length : 0;
-            }
+            // /api/my-messages = הודעות חיות (category='message'); הישן /api/messages הוא collection מת
+            const res = await fetch('/api/my-messages');
+            if (!res.ok) { unreadMessages = 0; return; }
+            const msgs = await res.json();
+            if (!Array.isArray(msgs)) { unreadMessages = 0; return; }
+            // מחריגים הודעות שהמשתמש מחק / העביר לארכיון / דחה - בדיוק כמו בדף הפרופיל
+            const deleted  = loadMsgSet('msgs_deleted_v1');
+            const archived = loadMsgSet('msgs_archived_v1');
+            const snoozed  = loadMsgMap('msgs_snoozed_v1');
+            const now = Date.now();
+            unreadMessages = msgs.filter((m: any) => {
+                const id = `db-${m.id}`;
+                if (deleted.has(id) || archived.has(id)) return false;
+                const sn = snoozed[id];
+                if (sn && sn > now) return false;
+                return true;
+            }).length;
         } catch { /* ignore */ }
     }
 
