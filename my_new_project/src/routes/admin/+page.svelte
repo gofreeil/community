@@ -76,9 +76,9 @@
 
 	function roleBadge(role: string) {
 		switch (role) {
-			case 'super_admin': return { text: 'מנהל ראשי', color: 'bg-red-500/20 text-red-400 border-red-500/30' };
-			case 'neighborhood_admin': return { text: 'אדמין שכונתי', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' };
-			default: return { text: 'משתמש', color: 'bg-gray-500/20 text-gray-400 border-gray-500/30' };
+			case 'super_admin': return { text: 'מנהל ראשי', color: 'bg-white/15 text-white border-white/30 font-black' };
+			case 'neighborhood_admin': return { text: 'אדמין שכונתי', color: 'bg-white/5 text-gray-200 border-white/20' };
+			default: return { text: 'משתמש', color: 'bg-white/5 text-gray-500 border-white/10' };
 		}
 	}
 </script>
@@ -273,7 +273,7 @@
 							{#if user.avatar_url}
 								<img src={user.avatar_url} alt="" class="w-10 h-10 rounded-full object-cover flex-shrink-0" />
 							{:else}
-								<div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center flex-shrink-0 text-sm font-bold">
+								<div class="w-10 h-10 rounded-full bg-white/10 border border-white/10 flex items-center justify-center flex-shrink-0 text-sm font-bold text-gray-300">
 									{(user.name ?? '?')[0]}
 								</div>
 							{/if}
@@ -319,8 +319,8 @@
 							<!-- שינוי תפקיד -->
 							<button
 								onclick={() => openRoleModal({ id: user.id, name: user.name, role: user.role, neighborhood: user.neighborhood })}
-								class="px-3 py-1.5 text-xs rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/30
-								       hover:bg-purple-500/20 transition-all cursor-pointer"
+								class="px-3 py-1.5 text-xs rounded-lg bg-white/5 text-gray-300 border border-white/10
+								       hover:bg-white/10 transition-all cursor-pointer"
 								title="שנה תפקיד"
 							>
 								🛡️ תפקיד
