@@ -1418,10 +1418,7 @@
                         title="עבור ללוח הארצי של פריטים למסירה"
                     >
                         <img src="/images/delivery.png" alt="" class="w-5 h-5 object-contain" />
-                        <span class="flex flex-col items-center">
-                            <span>{neighborhoodDbItems.length} למסירה בשכונה</span>
-                            <span>← ללוח הארצי</span>
-                        </span>
+                        <span class="text-base">← ללוח הארצי</span>
                     </button>
                 {:else if neighborhoodDbItems.length > 0 || nationalBoardUrl}
                     <div class="absolute bottom-4 left-4 z-20 flex flex-wrap items-center gap-2">
@@ -1440,14 +1437,24 @@
                                 target={nationalBoardUrl.startsWith('http') ? '_blank' : '_self'}
                                 rel={nationalBoardUrl.startsWith('http') ? 'noopener noreferrer' : undefined}
                                 onclick={(e) => e.stopPropagation()}
-                                class="bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 hover:from-amber-300 hover:via-orange-400 hover:to-red-400 text-white text-sm font-black px-4 py-2 rounded-xl shadow-lg border border-orange-300/60 transition-all hover:scale-105 flex flex-col items-center text-center leading-tight"
+                                class="bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 hover:from-amber-300 hover:via-orange-400 hover:to-red-400 text-white text-base font-black px-4 py-2 rounded-xl shadow-lg border border-orange-300/60 transition-all hover:scale-105 flex items-center text-center leading-tight"
                                 title="עבור ללוח הארצי"
                             >
-                                <span>{neighborhoodDbItems.length} פריטים בשכונה</span>
                                 <span>← ללוח הארצי</span>
                             </a>
                         {/if}
                     </div>
+                {/if}
+
+                <!-- מספר הפריטים בשכונה - מופיע לכמה שניות בצד ימין ואז נעלם לאט -->
+                {#if neighborhoodDbItems.length > 0}
+                    {#key `${selectedCategory}-${neighborhoodState.neighborhood}-${neighborhoodDbItems.length}`}
+                        <div
+                            class="neighborhood-count-fade absolute top-4 right-4 z-20 bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 text-white text-sm font-black px-4 py-2 rounded-xl shadow-lg border border-orange-300/60"
+                        >
+                            {neighborhoodDbItems.length} {selectedCategory === 'giveaway' ? 'למסירה' : 'פריטים'} בשכונה
+                        </div>
+                    {/key}
                 {/if}
             </div>
         {:else if viewMode === "list"}
@@ -2133,6 +2140,18 @@
 {/if}
 
 <style>
+    /* ===== מספר הפריטים בשכונה - מופיע לכמה שניות ואז נעלם בהדרגה ===== */
+    @keyframes neighborhoodCountFade {
+        0%   { opacity: 0; transform: translateY(-6px); }
+        8%   { opacity: 1; transform: translateY(0); }
+        45%  { opacity: 1; transform: translateY(0); }
+        100% { opacity: 0; transform: translateY(0); }
+    }
+    .neighborhood-count-fade {
+        animation: neighborhoodCountFade 7s ease-in-out forwards;
+        pointer-events: none;
+    }
+
     /* ===== טולטיפ לכפתורי קטגוריות (דסקטופ) ===== */
     /* מיכל הכפתורים חייב להיות מעל פאנלי Leaflet (z=200..700)
        וגם stacking-context סגור כדי שה-z-index של הטולטיפ יעבוד נכון */
