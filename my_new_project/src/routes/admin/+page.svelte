@@ -283,11 +283,11 @@
 									</div>
 								</div>
 
-								<!-- ניסיון ומוטיבציה -->
+								<!-- ניסיון ומוטיבציה - מוצג בפונט גדול לקריאה נוחה -->
 								{#if req.experience || req.motivation}
-									<div class="text-sm text-gray-400 space-y-1 border-t border-white/5 pt-2">
-										{#if req.experience}<p><span class="text-gray-500">ניסיון:</span> {req.experience}</p>{/if}
-										{#if req.motivation}<p><span class="text-gray-500">מוטיבציה:</span> {req.motivation}</p>{/if}
+									<div class="text-base md:text-lg text-gray-200 leading-relaxed space-y-2 border-t border-white/5 pt-3">
+										{#if req.experience}<p><span class="text-gray-400 font-bold">ניסיון:</span> {req.experience}</p>{/if}
+										{#if req.motivation}<p><span class="text-gray-400 font-bold">מוטיבציה:</span> {req.motivation}</p>{/if}
 									</div>
 								{/if}
 							</div>
