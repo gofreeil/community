@@ -304,6 +304,22 @@ export async function getItemsByCategory(category: string): Promise<DbItem[]> {
     }
 }
 
+/** שליפת פריטים לפי קטגוריה + סטטוס (למשל פנויים שממתינים לאישור: 'singles','pending') */
+export async function getItemsByCategoryAndStatus(category: string, status: string): Promise<DbItem[]> {
+    try {
+        const res = await strapiGet<{ data: StrapiItem[] }>('/api/items', {
+            'filters[category][$eq]':  category,
+            'filters[status1][$eq]':   status,
+            'sort':                    'createdAt:desc',
+            'pagination[limit]':       '1000',
+        });
+        return (res.data ?? []).map(mapStrapiItem);
+    } catch (e) {
+        if (e instanceof StrapiContentTypeError) return [];
+        throw e;
+    }
+}
+
 const ONE_TIME_POSTING_PREFIX = 'לשבת הקרובה';
 const THREE_DAYS_MS_DB = 3 * 24 * 60 * 60 * 1000;
 

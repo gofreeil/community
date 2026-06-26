@@ -136,7 +136,18 @@
 				</h1>
 				<p class="text-gray-400 mt-1">ניהול משתמשים, תוכן והרשאות</p>
 			</div>
-			<div class="flex gap-2">
+			<div class="flex gap-2 flex-wrap">
+				<button
+					onclick={() => goto('/admin/singles-review')}
+					class="relative px-4 py-2 rounded-xl bg-pink-500/15 border border-pink-500/40 text-pink-200 hover:bg-pink-500/25 transition-all cursor-pointer font-bold flex items-center gap-1.5"
+				>
+					💑 אישור פנויים
+					{#if (data.pendingSinglesCount ?? 0) > 0}
+						<span class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-pink-500 text-white text-[11px] font-black shadow-lg animate-pulse">
+							{data.pendingSinglesCount}
+						</span>
+					{/if}
+				</button>
 				<button
 					onclick={() => goto('/admin/ads-review')}
 					class="relative px-4 py-2 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-200 hover:bg-amber-500/25 transition-all cursor-pointer font-bold flex items-center gap-1.5"

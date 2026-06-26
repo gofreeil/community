@@ -14,7 +14,9 @@
         data.currentUserGender === 'male' ? 'female'
         : data.currentUserGender === 'female' ? 'male'
         : null;
-    const filter: Gender = lockedFilter ?? 'all';
+    // סופר-אדמין יכול לעקוף את הנעילה ולבחון את לוח הגברים/הנשים.
+    let adminGender = $state<Gender>('all');
+    const filter = $derived<Gender>(data.isSuperAdmin ? adminGender : (lockedFilter ?? 'all'));
 
     // אורח (לא מחובר) - טשטוש תמונות + חסימת כניסה לדף פרופיל
     const isGuest: boolean = !data.currentUserId;
@@ -252,8 +254,21 @@
                 >מגזר כללי</button>
             </div>
 
+            {#if data.isSuperAdmin}
+                <div class="flex justify-center items-center gap-2 mt-3 flex-wrap">
+                    <span class="text-amber-300 text-xs font-bold">🛡️ מנהל · בחן לוח:</span>
+                    {#each [['all', 'הכל'], ['male', '👨 גברים'], ['female', '👩 נשים']] as [val, lbl]}
+                        <button
+                            onclick={() => adminGender = val as Gender}
+                            class="px-3 py-1.5 rounded-md text-[13px] font-medium border transition-colors {adminGender === val ? 'bg-amber-500/20 text-amber-100 border-amber-400/60' : 'bg-transparent text-gray-400 border-white/10 hover:border-white/25 hover:text-gray-200'}"
+                        >{lbl}</button>
+                    {/each}
+                    <a href="/admin/singles-review" class="px-3 py-1.5 rounded-md text-[13px] font-bold border border-pink-400/60 bg-pink-500/15 text-pink-200 hover:bg-pink-500/25 transition-colors">💑 דף אישור</a>
+                </div>
+            {/if}
+
             <div class="flex justify-center items-center gap-3 mt-3 flex-wrap">
-                {#if lockedFilter}
+                {#if lockedFilter && !data.isSuperAdmin}
                     <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r {lockedFilter === 'male' ? 'from-blue-500 to-cyan-500' : 'from-pink-500 to-rose-500'} text-white shadow">
                         <span>{lockedFilter === 'male' ? '👨 פנויים' : '👩 פנויות'}</span>
                         <span class="text-white/80">· מותאם לפרופיל שלך</span>
@@ -268,10 +283,23 @@
             <!-- הכרטיס האמיתי של המשתמש, בדיוק כפי שאחרים רואים אותו -->
             {@const me = data.selfProfile as SingleProfile}
             {@const isMale = me.gender === 'male'}
+            {@const isPending = data.selfStatus === 'pending'}
+            {@const isRejected = data.selfStatus === 'rejected'}
             <div class="mb-8 flex flex-col items-center">
                 <h2 class="text-amber-300 text-sm md:text-base font-bold mb-3 text-center">
                     ⭐ כך נראה הכרטיס שלך
                 </h2>
+                {#if isPending}
+                    <div class="w-full max-w-md mb-2 rounded-xl bg-amber-500/15 border border-amber-400/40 px-4 py-2.5 text-center">
+                        <p class="text-amber-200 text-sm font-bold">⏳ הכרטיס ממתין לאישור מנהל</p>
+                        <p class="text-amber-300/70 text-xs mt-0.5">לאחר בדיקת התמונות הוא יופיע בלוח. בינתיים הוא גלוי רק לך.</p>
+                    </div>
+                {:else if isRejected}
+                    <div class="w-full max-w-md mb-2 rounded-xl bg-red-500/15 border border-red-400/40 px-4 py-2.5 text-center">
+                        <p class="text-red-200 text-sm font-bold">🚫 הכרטיס נדחה</p>
+                        <p class="text-red-300/70 text-xs mt-0.5">ייתכן שהתמונות לא היו צנועות. ערוך והעלה שוב לאישור מחדש.</p>
+                    </div>
+                {/if}
                 <div class="w-full max-w-md rounded-2xl bg-[#0f172a] border-2 {isMale ? 'border-blue-400' : 'border-pink-400'} overflow-hidden shadow-xl ring-2 {isMale ? 'ring-blue-500/40' : 'ring-pink-500/40'} relative">
                     <!-- Card header -->
                     <div class="bg-gradient-to-r {isMale ? 'from-blue-600 to-cyan-600' : 'from-pink-600 to-rose-500'} p-4 flex items-center gap-3 relative">

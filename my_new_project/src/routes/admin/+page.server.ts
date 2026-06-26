@@ -1,7 +1,7 @@
 import { redirect, fail, error } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { requireSuperAdmin, requireAdmin } from '$lib/server/auth';
-import { getAllUsers, banUser, unbanUser, setUserRole, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByEmail, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, approveNeighborhood, rejectNeighborhood, getDiscountCodes, saveDiscountCodes } from '$lib/server/db';
+import { getAllUsers, banUser, unbanUser, setUserRole, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByEmail, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, approveNeighborhood, rejectNeighborhood, getDiscountCodes, saveDiscountCodes, getItemsByCategoryAndStatus } from '$lib/server/db';
 import { DEFAULT_DISCOUNT_CODES, type DiscountCode } from '$lib/discountCodes';
 import { countPending } from '$lib/server/adsStore';
 
@@ -56,6 +56,9 @@ export const load: PageServerLoad = async (event) => {
     let pendingAdsCount = 0;
     try { pendingAdsCount = await countPending(); } catch { /* שקט */ }
 
+    let pendingSinglesCount = 0;
+    try { pendingSinglesCount = (await getItemsByCategoryAndStatus('singles', 'pending')).length; } catch { /* שקט */ }
+
     let discountCodes: Awaited<ReturnType<typeof getDiscountCodes>> = DEFAULT_DISCOUNT_CODES;
     try {
         discountCodes = await getDiscountCodes();
@@ -70,6 +73,7 @@ export const load: PageServerLoad = async (event) => {
         pendingNeighborhoods,
         currentUserId: session?.user?.id ?? '',
         pendingAdsCount,
+        pendingSinglesCount,
         discountCodes,
     };
 };
