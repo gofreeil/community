@@ -19,11 +19,12 @@
     // אורח (לא מחובר) - טשטוש תמונות + חסימת כניסה לדף פרופיל
     const isGuest: boolean = !data.currentUserId;
     function openProfile(id: string) {
+        // פתיחת הדף המלא בעיצוב העשיר (/items/[id]) - לבקשת המשתמש
         if (isGuest) {
-            goto('/login?next=' + encodeURIComponent(`/singles/${id}`));
+            goto('/login?next=' + encodeURIComponent(`/items/${id}`));
             return;
         }
-        goto(`/singles/${id}`);
+        goto(`/items/${id}`);
     }
 
     type AgeGroup = 'all' | 'under30' | '30plus' | 'golden';
@@ -91,7 +92,7 @@
     let copiedItemId = $state<string | null>(null);
     function buildShareText(it: { id: string; nickname?: string; label: string; gender?: 'male' | 'female'; age?: string; city?: string; description?: string }): { title: string; text: string; url: string } {
         const origin = typeof window !== 'undefined' ? window.location.origin : 'https://kehila-bashchuna.co.il';
-        const url = `${origin}/singles/${it.id}`;
+        const url = `${origin}/items/${it.id}`;
         const who = it.nickname || it.label;
         const meta = [it.age ? `🎂 ${it.age}` : '', it.city ? `📍 ${it.city}` : ''].filter(Boolean).join(' · ');
         const heading = it.gender === 'female'
@@ -304,7 +305,7 @@
                         {/if}
                         <div class="flex gap-2">
                             <a
-                                href="/singles/{me.id}"
+                                href="/items/{me.id}"
                                 class="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-2.5 rounded-xl transition-colors text-sm"
                             >
                                 👁️ צפה בכרטיס המלא
