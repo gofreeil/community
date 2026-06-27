@@ -1145,6 +1145,18 @@
 	let animatedCompletion = $state(0);
 	let ringAnimated = $state(false);
 
+	// ברגע שהפרופיל הגיע ל-100% האנימציה רצה פעם אחת אחרונה ואז לא חוזרת.
+	// מסמנים זאת ב-localStorage כדי שבביקורים הבאים המעגל יוצג מלא מיד, בלי מילוי וצליל.
+	const RING_DONE_KEY = "profile_ring_100_done";
+	function ringAlreadyCelebrated(): boolean {
+		try {
+			return typeof window !== "undefined" &&
+				localStorage.getItem(RING_DONE_KEY) === "1";
+		} catch {
+			return false;
+		}
+	}
+
 	// ניגון צליל קצר (WebAudio) בזמן מילוי המעגל
 	let ringAudioCtx: AudioContext | null = null;
 	function playRingTone(progress: number, isFinal = false) {
@@ -1207,6 +1219,14 @@
 				animatedCompletion = target;
 				// צליל סיום בולט יותר
 				playRingTone(target, true);
+				// הגענו ל-100% → לסמן שהאנימציה רצה פעם אחת אחרונה ולא תחזור
+				if (target >= 100) {
+					try {
+						localStorage.setItem(RING_DONE_KEY, "1");
+					} catch {
+						// אין localStorage – פשוט בלי שמירה
+					}
+				}
 			}
 		}
 		requestAnimationFrame(step);
@@ -1223,7 +1243,13 @@
 		const observer = new IntersectionObserver(
 			(entries) => {
 				if (entries[0].isIntersecting) {
-					setTimeout(() => animateRing(profileCompletion), 400);
+					// כבר חגגנו 100% בעבר → להציג את המעגל מלא מיד, בלי מילוי וצליל
+					if (profileCompletion >= 100 && ringAlreadyCelebrated()) {
+						ringAnimated = true;
+						animatedCompletion = profileCompletion;
+					} else {
+						setTimeout(() => animateRing(profileCompletion), 400);
+					}
 					observer.disconnect();
 				}
 			},
