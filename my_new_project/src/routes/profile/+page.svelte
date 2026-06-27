@@ -266,6 +266,8 @@
 									"he-IL",
 								),
 								read: false,
+								// סוג ההודעה (singles_review וכו') - משמש לזיהוי התראות שניתן לסמן כטופלו
+								kind: efType,
 								// בקשת רכז → לחיצה על הכרטיס פותחת את עמוד הניהול לקריאה מלאה
 								link:
 									efLink ??
@@ -326,6 +328,7 @@
 	let snoozedMsgs = $state<Record<string, number>>(loadIdMap(MSG_SNOOZED_KEY));
 	let nowTs = $state(Date.now());
 	let showArchive = $state(false);
+	let showHandled = $state(false);
 
 	$effect(() => {
 		if (typeof window === "undefined") return;
@@ -371,17 +374,29 @@
 		} catch { return null; }
 	});
 
+	// התראות "כרטיס פנויים ממתין לאישור" נחשבות טופלו ברגע שאין יותר כרטיסים ממתינים.
+	// אז הן יורדות מההתראות הפעילות (ומספירת שלא-נקראו) ועוברות להיסטוריית ההודעות עם וי ירוק.
+	let pendingSinglesCount = $derived(data.pendingSinglesCount ?? 0);
+	function isHandledMsg(m: { id: string; kind?: string }): boolean {
+		return m.kind === "singles_review" && pendingSinglesCount === 0;
+	}
+
 	let visibleMessages = $derived.by(() => {
 		void nowTs;
 		return messages.filter((m) => {
 			if (deletedMsgs.has(m.id)) return false;
 			if (archivedMsgs.has(m.id)) return false;
+			if (isHandledMsg(m)) return false; // טופלה → להיסטוריה
 			const sn = snoozedMsgs[m.id];
 			if (sn && sn > nowTs) return false;
 			return true;
 		});
 	});
 	let archivedList = $derived(messages.filter((m) => archivedMsgs.has(m.id)));
+	// הודעות שטופלו (התראות פנויים אחרי שכל הממתינים אושרו/נדחו) - לא מחוקות, מוצגות בהיסטוריה
+	let handledList = $derived(
+		messages.filter((m) => isHandledMsg(m) && !deletedMsgs.has(m.id)),
+	);
 	let displayedMessages = $derived.by(() => {
 		void nowTs;
 		const base = visibleMessages;
@@ -2163,6 +2178,52 @@
 											<button
 												type="button"
 												onclick={() => { unarchiveMsg(msg.id); deleteMsg(msg.id); }}
+												class="text-[11px] text-gray-400 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10"
+												title="מחק לצמיתות"
+											>
+												🗑 מחק
+											</button>
+										</div>
+									</div>
+								</div>
+							{/each}
+						</div>
+					{/if}
+				{/if}
+
+				<!-- היסטוריית הודעות שטופלו (התראות פנויים אחרי שכל הממתינים אושרו/נדחו) -->
+				{#if handledList.length > 0}
+					<button
+						type="button"
+						onclick={() => (showHandled = !showHandled)}
+						class="self-start text-xs font-bold text-green-300 hover:text-green-200 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 mt-1"
+					>
+						✅ הודעות שטופלו
+						<span class="bg-green-500/30 text-white rounded-full px-2 py-0.5 text-[10px]">{handledList.length}</span>
+						<svg class="w-3 h-3 transition-transform {showHandled ? 'rotate-180' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
+					</button>
+
+					{#if showHandled}
+						<div class="flex flex-col gap-2 mt-1">
+							<p class="text-[11px] text-gray-500 px-1">התראות שכל הממתינים בהן כבר טופלו</p>
+							{#each handledList as msg}
+								<div class="flex items-start gap-3 rounded-2xl border border-green-500/20 bg-green-500/[0.04] px-4 py-3">
+									<div class="w-5 h-5 rounded-full mt-0.5 flex-shrink-0 bg-green-500/20 border border-green-500/40 flex items-center justify-center">
+										<span class="text-green-400 text-xs font-black leading-none">✓</span>
+									</div>
+									<div class="min-w-0 flex-1">
+										<div class="flex items-center justify-between gap-2 mb-0.5">
+											<span class="text-gray-300 text-xs font-black">{msg.from}</span>
+											<span class="text-gray-600 text-[10px] flex-shrink-0">{msg.time}</span>
+										</div>
+										<p class="text-gray-400 text-xs leading-relaxed">{msg.text}</p>
+										<div class="flex items-center gap-1.5 justify-between mt-2 pt-2 border-t border-white/8 flex-wrap">
+											<span class="inline-flex items-center gap-1 text-[10px] font-bold text-green-300 bg-green-500/15 border border-green-500/30 px-2 py-0.5 rounded-full">
+												✓ טופלה
+											</span>
+											<button
+												type="button"
+												onclick={() => deleteMsg(msg.id)}
 												class="text-[11px] text-gray-400 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10"
 												title="מחק לצמיתות"
 											>

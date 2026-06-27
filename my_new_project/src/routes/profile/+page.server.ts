@@ -1,6 +1,6 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { getUserById, getUserByEmail, updateUserProfile, getItemsByUserId, upsertUser, getMessagesByUserId, createItem, getAllSuperAdmins, getAllUsers, getItemsByCategory, createNeighborhoodRequest } from '$lib/server/db';
+import { getUserById, getUserByEmail, updateUserProfile, getItemsByUserId, upsertUser, getMessagesByUserId, createItem, getAllSuperAdmins, getAllUsers, getItemsByCategory, getItemsByCategoryAndStatus, createNeighborhoodRequest } from '$lib/server/db';
 import { getCachedUserById, invalidateCachedUser } from '$lib/server/userCache';
 import { citiesData } from '$lib/neighborhoodsData';
 import { categoryConfig } from '$lib/categoryFields';
@@ -138,12 +138,15 @@ export const load: PageServerLoad = async (event) => {
     // ספירת פרסומות ממתינות לאישור - לבאדג' של סופר־אדמין בכותרת לוח הבקרה
     let pendingAdsCount = 0;
     let coordinatorsCount = 0;
+    // כרטיסי פנויים שממתינים לאישור - אם 0, התראות "כרטיס פנויים ממתין" מסומנות כטופלו ועוברות להיסטוריה
+    let pendingSinglesCount = 0;
     if (resolvedUser?.role === 'super_admin') {
         try { pendingAdsCount = await countPending(); } catch { /* שקט */ }
         try {
             const allUsers = await getAllUsers();
             coordinatorsCount = allUsers.filter(u => Array.isArray(u.coordinator_of) && u.coordinator_of.length > 0).length;
         } catch { /* שקט */ }
+        try { pendingSinglesCount = (await getItemsByCategoryAndStatus('singles', 'pending')).length; } catch { /* שקט */ }
     }
 
     // ספירת פנויים/פנויות במגדר הנגדי + קבוצת הגיל של המשתמש
@@ -203,6 +206,7 @@ export const load: PageServerLoad = async (event) => {
         oauth_image: session.user?.image ?? null,
         pendingAdsCount,
         coordinatorsCount,
+        pendingSinglesCount,
         strapiAvailable,
         userFromStaleCache,
         singlesMatchInfo,
