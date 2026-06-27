@@ -542,7 +542,7 @@
                                 <!-- עיגול הודעות שלא נקראו -->
                                 {#if unreadMessages > 0}
                                     <span
-                                        class="absolute -top-1 -left-1 min-w-[22px] h-[22px] px-1.5
+                                        class="absolute -bottom-1 -left-1 min-w-[22px] h-[22px] px-1.5
                                                bg-orange-500 border-2 border-[#0f172a] rounded-full
                                                flex items-center justify-center text-white text-[11px]
                                                font-black leading-none shadow-lg"
