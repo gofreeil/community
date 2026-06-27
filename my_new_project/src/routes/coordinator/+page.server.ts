@@ -1,6 +1,6 @@
 import { redirect, error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { getUserById, getItemsByCategory, getPendingEvents } from '$lib/server/db';
+import { getUserById, getItemsByCategory, getPendingEvents, getAllUsers } from '$lib/server/db';
 
 export const load: PageServerLoad = async (event) => {
     let session = null;
@@ -23,17 +23,20 @@ export const load: PageServerLoad = async (event) => {
         : user.coordinator_of;
 
     // ספירות מהירות לדשבורד
-    let emergencyCount = 0, vaadCount = 0, activePollsCount = 0, pendingEventsCount = 0;
+    let emergencyCount = 0, vaadCount = 0, activePollsCount = 0, pendingEventsCount = 0, residentsCount = 0;
     try {
-        const [emergency, vaad, polls] = await Promise.all([
+        const [emergency, vaad, polls, allUsers] = await Promise.all([
             getItemsByCategory('emergency_team'),
             getItemsByCategory('vaad_member'),
             getItemsByCategory('poll'),
+            getAllUsers().catch(() => []),
         ]);
         const inMyNeighborhoods = (it: { neighborhood: string }) => neighborhoods.includes(it.neighborhood);
         emergencyCount   = emergency.filter(inMyNeighborhoods).length;
         vaadCount        = vaad.filter(inMyNeighborhoods).length;
         activePollsCount = polls.filter(inMyNeighborhoods).filter(p => p.status === 'active').length;
+        // תושבים שנרשמו תחת השכונה/ות שהרכז מנהל
+        residentsCount   = allUsers.filter(u => u.neighborhood && neighborhoods.includes(u.neighborhood)).length;
 
         const pendingArrays = await Promise.all(
             neighborhoods.map(n => getPendingEvents(n).catch(() => []))
@@ -50,5 +53,6 @@ export const load: PageServerLoad = async (event) => {
         vaadCount,
         activePollsCount,
         pendingEventsCount,
+        residentsCount,
     };
 };

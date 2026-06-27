@@ -15,6 +15,18 @@
             <p class="text-gray-400">ניהול תוכן עבור: <strong class="text-white">{data.neighborhoods.join(', ') || '-'}</strong></p>
         </div>
 
+        <!-- ספירת תושבים רשומים בשכונה -->
+        <div class="mb-6 rounded-2xl bg-gradient-to-l from-cyan-500/10 to-blue-500/10 border border-cyan-500/30 p-5 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="text-4xl">👥</div>
+                <div>
+                    <h3 class="text-white text-lg font-black">תושבים רשומים בשכונה</h3>
+                    <p class="text-gray-400 text-sm">סך התושבים שנרשמו תחת {data.neighborhoods.length > 1 ? 'השכונות שלך' : 'השכונה שלך'}</p>
+                </div>
+            </div>
+            <span class="text-3xl md:text-4xl font-black text-cyan-300 tabular-nums flex-shrink-0">{data.residentsCount}</span>
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!-- Events -->
             <a href="/events" class="group rounded-2xl bg-[#0f172a] border border-green-500/30 p-5 hover:border-green-400/60 transition-all hover:-translate-y-1">
