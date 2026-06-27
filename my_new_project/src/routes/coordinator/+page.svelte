@@ -87,6 +87,26 @@
             </a>
         </div>
 
+        <!-- באנר קישור לאתר ועדי שכונות הארצי -->
+        <a
+            href="https://neighborhoods.gofreeil.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="group mt-6 block rounded-2xl bg-gradient-to-l from-indigo-600/20 via-purple-600/15 to-pink-600/20 border border-indigo-500/40 p-5 hover:border-indigo-400/70 transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-indigo-500/10"
+        >
+            <div class="flex items-center gap-4">
+                <div class="text-4xl">🏘️</div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2">
+                        <h3 class="text-white text-lg font-black">אתר ועדי השכונות הארצי</h3>
+                        <span class="text-indigo-300 text-xs font-bold bg-indigo-500/20 border border-indigo-500/30 px-2 py-0.5 rounded-full">קישור חיצוני ↗</span>
+                    </div>
+                    <p class="text-gray-300 text-sm mt-1">שיתופי פעולה בין שכונות וערים, מעגלי שיח, הצבעות ומיצוי זכויות משותפות</p>
+                </div>
+                <svg class="w-6 h-6 text-indigo-300 flex-shrink-0 transition-transform group-hover:-translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+            </div>
+        </a>
+
         <div class="text-center mt-8">
             <a href="/" class="text-gray-500 hover:text-white transition-colors text-sm">← חזרה לדף הראשי</a>
         </div>
