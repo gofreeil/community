@@ -252,8 +252,11 @@
 				? (data.messages ?? []).map(
 						(m: import("$lib/server/db").DbItem) => {
 							let efType = "";
+							let efLink: string | undefined;
 							try {
-								efType = JSON.parse(m.extra_fields || "{}")?.type ?? "";
+								const ef = JSON.parse(m.extra_fields || "{}");
+								efType = ef?.type ?? "";
+								efLink = ef?.link ?? undefined;
 							} catch {}
 							return {
 								id: `db-${m.id}`,
@@ -265,9 +268,10 @@
 								read: false,
 								// בקשת רכז → לחיצה על הכרטיס פותחת את עמוד הניהול לקריאה מלאה
 								link:
-									efType === "coordinator_request"
+									efLink ??
+									(efType === "coordinator_request"
 										? "/admin#coord-requests"
-										: undefined,
+										: undefined),
 							};
 						},
 					)
