@@ -1,6 +1,8 @@
 <script lang="ts">
     import { enhance } from '$app/forms';
     import type { PageData, ActionData } from './$types';
+    import JsonLd from "$lib/components/JsonLd.svelte";
+    import { breadcrumbSchema, collectionSchema, canonical } from "$lib/seo";
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
 
@@ -64,8 +66,12 @@
 </script>
 
 <svelte:head>
-    <title>אבדות ומציאות | קהילה בשכונה</title>
+    <title>אבדות ומציאות בשכונה | קהילה בשכונה</title>
+    <meta name="description" content="לוח אבדות ומציאות בשכונה — דיווח על פריט שאבד או נמצא, והחזרת אבדות לבעליהן, בקהילה בשכונה." />
+    <link rel="canonical" href={canonical('/lost-and-found')} />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
 </svelte:head>
+<JsonLd schema={[breadcrumbSchema([{ name: 'בית', path: '/' }, { name: 'אבדות ומציאות', path: '/lost-and-found' }]), collectionSchema({ name: 'אבדות ומציאות', description: 'לוח אבדות ומציאות בשכונה — דיווח על פריט שאבד או נמצא, והחזרת אבדות לבעליהן, בקהילה בשכונה.', path: '/lost-and-found' })]} />
 
 <!-- Message modal -->
 {#if msgModal}

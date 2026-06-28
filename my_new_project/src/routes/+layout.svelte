@@ -65,7 +65,8 @@
 </script>
 
 <svelte:head>
-	<title>קהילה בשכונה</title>
+	<!-- אין כאן <title> בכוונה: כל דף מגדיר את ה-title שלו ב-<svelte:head>.
+	     title קבוע ב-layout היה דורס את ה-title של דף הבית. -->
 	<link rel="icon" href="/images/community-logo1.png" type="image/png" />
 	<link rel="apple-touch-icon" href="/images/community-logo1.png" />
 	<!-- tabnav: מושבת לבינתיים - לא רשום על הדומיין הנוכחי -->

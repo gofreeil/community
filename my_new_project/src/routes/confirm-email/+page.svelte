@@ -2,6 +2,11 @@
     import { page } from '$app/stores';
 </script>
 
+<svelte:head>
+    <title>אישור כתובת אימייל | קהילה בשכונה</title>
+    <meta name="robots" content="noindex, follow" />
+</svelte:head>
+
 <div class="min-h-screen flex items-center justify-center bg-[#070b14] px-4" dir="rtl">
     <div class="max-w-md w-full text-center">
         {#if $page.url.searchParams.get('error')}

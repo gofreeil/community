@@ -1,6 +1,8 @@
 <script lang="ts">
     import { enhance } from '$app/forms';
     import type { PageData } from './$types';
+    import JsonLd from "$lib/components/JsonLd.svelte";
+    import { breadcrumbSchema, collectionSchema, canonical } from "$lib/seo";
 
     let { data }: { data: PageData } = $props();
 
@@ -108,8 +110,12 @@
 </script>
 
 <svelte:head>
-    <title>לוח אירועים - קהילה בשכונה</title>
+    <title>אירועים קהילתיים בשכונה | קהילה בשכונה</title>
+    <meta name="description" content="לוח אירועים קהילתיים בשכונה — הרצאות, חוגים, מפגשים, אירועי ילדים ועוד. גלו מה קורה בשכונה שלכם, בקהילה בשכונה." />
+    <link rel="canonical" href={canonical('/events')} />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
 </svelte:head>
+<JsonLd schema={[breadcrumbSchema([{ name: 'בית', path: '/' }, { name: 'אירועים', path: '/events' }]), collectionSchema({ name: 'אירועים קהילתיים', description: 'לוח אירועים קהילתיים בשכונה — הרצאות, חוגים, מפגשים, אירועי ילדים ועוד. גלו מה קורה בשכונה שלכם, בקהילה בשכונה.', path: '/events' })]} />
 
 <div class="min-h-screen bg-[#070b14] py-6 md:py-12 px-4" dir="rtl">
     <div class="max-w-6xl mx-auto">

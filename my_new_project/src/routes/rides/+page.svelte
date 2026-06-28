@@ -3,6 +3,8 @@
     import { neighborhoodState } from '$lib/neighborhoodState.svelte';
     import { getCoordsFor, type Coord } from '$lib/neighborhoodCoords';
     import type { PageData } from './$types';
+    import JsonLd from "$lib/components/JsonLd.svelte";
+    import { breadcrumbSchema, collectionSchema, canonical } from "$lib/seo";
 
     let { data }: { data: PageData } = $props();
 
@@ -74,8 +76,12 @@
 </script>
 
 <svelte:head>
-    <title>לוח טרמפים | קהילה בשכונה</title>
+    <title>טרמפים ונסיעות משותפות בשכונה | קהילה בשכונה</title>
+    <meta name="description" content="לוח טרמפים ונסיעות משותפות — מצאו או הציעו טרמפ בין שכנים, חסכו בנסיעות, בקהילה בשכונה." />
+    <link rel="canonical" href={canonical('/rides')} />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
 </svelte:head>
+<JsonLd schema={[breadcrumbSchema([{ name: 'בית', path: '/' }, { name: 'טרמפים', path: '/rides' }]), collectionSchema({ name: 'טרמפים ונסיעות משותפות', description: 'לוח טרמפים ונסיעות משותפות — מצאו או הציעו טרמפ בין שכנים, חסכו בנסיעות, בקהילה בשכונה.', path: '/rides' })]} />
 
 <div class="min-h-screen bg-[#070b14] pt-6 pb-20 px-4" dir="rtl">
     <div class="max-w-4xl mx-auto">

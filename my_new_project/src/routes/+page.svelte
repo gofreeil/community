@@ -10,6 +10,17 @@
     import { triggerAdPopup } from "$lib/adPopupStore";
     import { ads } from "$lib/adsData";
     import { communityHelpCount } from "$lib/communityHelpStore";
+    import JsonLd from "$lib/components/JsonLd.svelte";
+    import { websiteSchema, organizationSchema, faqSchema, SITE_URL } from "$lib/seo";
+
+    // Structured data לדף הבית - WebSite+חיפוש, Organization, ושאלות נפוצות.
+    // עונה ישירות על "מה זה קהילה בשכונה" עבור Google ו-AI.
+    const homeFaq = faqSchema([
+        { q: 'מה זה קהילה בשכונה?', a: 'קהילה בשכונה היא פלטפורמה שכונתית חינמית שמרכזת במקום אחד את כל יתרונות השכונה: יד שנייה ומסירה, דירות ואירוח, שידוכים, חוגים, גמ"חים, בייבי סיטר, טרמפים, אבדות ומציאות, אירועים והנחות מקומיות — לכל שכונה ויישוב בישראל.' },
+        { q: 'איך מוצאים יד שנייה ופריטים למסירה בשכונה?', a: 'בלוח "למסירה" אפשר למצוא ולפרסם פריטי יד שנייה וחינם מהשכנים — ריהוט, מוצרי חשמל, בגדים, צעצועים ועוד, מסוננים לפי השכונה שלך.' },
+        { q: 'יש באתר שידוכים, חוגים ודירות?', a: 'כן. יש לוח שידוכים (פנויים ופנויות), לוח חוגים ארצי, לוח אירוח לשבת ודירות, וכן בייבי סיטר, טרמפים, גמ"חים, אבדות ומציאות ועוד.' },
+        { q: 'האם השימוש בקהילה בשכונה בחינם?', a: 'כן, השימוש חינמי לחלוטין לכל תושב, בכל שכונה ויישוב בישראל.' },
+    ]);
 
     const currentYear = new Date().getFullYear();
 
@@ -267,24 +278,31 @@
 </script>
 
 <svelte:head>
-    <title>קהילה בשכונה</title>
-    <meta name="description" content="כל יתרונות השכונה תחת קורת גג אחת" />
+    <title>קהילה בשכונה — יד שנייה, דירות, שידוכים, חוגים וכל יתרונות השכונה</title>
+    <meta name="description" content="קהילה בשכונה — כל יתרונות השכונה במקום אחד: יד שנייה ולמסירה, דירות ואירוח לשבת, שידוכים, חוגים, גמ״חים, בייבי סיטר, טרמפים, אבדות ומציאות והטבות מקומיות. חינם, לכל שכונה ויישוב בישראל." />
+    <meta name="keywords" content="קהילה בשכונה, יד 2, יד שנייה, דירות, שידוכים, חוגים, גמח, בייבי סיטר, טרמפים, אבדות ומציאות, אירוח לשבת, אירועים, שכונה" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+    <link rel="canonical" href={SITE_URL} />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="קהילה בשכונה" />
-    <meta property="og:title" content="קהילה בשכונה" />
-    <meta property="og:description" content="כל יתרונות השכונה תחת קורת גג אחת" />
+    <meta property="og:title" content="קהילה בשכונה — כל יתרונות השכונה במקום אחד" />
+    <meta property="og:description" content="יד שנייה, דירות, שידוכים, חוגים, גמ״חים, בייבי סיטר, טרמפים, אבדות ומציאות ועוד — חינם, לכל שכונה ויישוב בישראל." />
     <meta property="og:image" content="https://community.gofreeil.com/images/community-logo1.png" />
     <meta property="og:image:width" content="1024" />
     <meta property="og:image:height" content="1024" />
     <meta property="og:url" content="https://community.gofreeil.com" />
     <meta property="og:locale" content="he_IL" />
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="קהילה בשכונה" />
-    <meta name="twitter:description" content="כל יתרונות השכונה תחת קורת גג אחת" />
+    <meta name="twitter:title" content="קהילה בשכונה — כל יתרונות השכונה במקום אחד" />
+    <meta name="twitter:description" content="יד שנייה, דירות, שידוכים, חוגים, גמ״חים, בייבי סיטר, טרמפים ועוד — חינם, לכל שכונה בישראל." />
     <meta name="twitter:image" content="https://community.gofreeil.com/images/community-logo1.png" />
 </svelte:head>
 
+<JsonLd schema={[websiteSchema(), organizationSchema(), homeFaq]} />
+
 <div class="pb-0 md:pb-8 pt-4 md:pt-8" onclick={() => calMenuOpen = null}>
+    <!-- כותרת SEO ראשית (נסרקת ע"י גוגל/AI, מוסתרת ויזואלית) -->
+    <h1 class="sr-only">קהילה בשכונה — יד שנייה ולמסירה, דירות ואירוח לשבת, שידוכים, חוגים, גמ״חים, בייבי סיטר, טרמפים ואבדות ומציאות בשכונה ובכל יישוב בישראל</h1>
     <!-- Title Section - centered across full width -->
     <section class="max-w-7xl mx-auto px-4">
         <div class="text-center mb-3 md:mb-8 relative neighborhoods-menu-container">

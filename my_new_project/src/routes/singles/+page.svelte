@@ -4,6 +4,8 @@
     import { toggleLike, isLiked } from '$lib/likedItems';
     import { avatarUrl as avatar } from '$lib/singlesMock';
     import type { SingleProfile } from '$lib/singlesMock';
+    import JsonLd from "$lib/components/JsonLd.svelte";
+    import { breadcrumbSchema, collectionSchema, canonical } from "$lib/seo";
 
     let { data }: { data: PageData } = $props();
 
@@ -182,8 +184,12 @@
 </script>
 
 <svelte:head>
-    <title>לוח פנויים ופנויות | קהילה בשכונה</title>
+    <title>שידוכים — פנויים ופנויות בשכונה | קהילה בשכונה</title>
+    <meta name="description" content="לוח שידוכים והיכרויות קהילתי — פנויים ופנויות, סינון לפי גיל, מגזר ומיקום. מצאו שידוך בשכונה ובכל הארץ, בקהילה בשכונה." />
+    <link rel="canonical" href={canonical('/singles')} />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
 </svelte:head>
+<JsonLd schema={[breadcrumbSchema([{ name: 'בית', path: '/' }, { name: 'שידוכים', path: '/singles' }]), collectionSchema({ name: 'שידוכים — פנויים ופנויות', description: 'לוח שידוכים והיכרויות קהילתי — פנויים ופנויות, סינון לפי גיל, מגזר ומיקום. מצאו שידוך בשכונה ובכל הארץ, בקהילה בשכונה.', path: '/singles' })]} />
 
 <div class="min-h-screen bg-[#070b14] pt-6 pb-20 px-4" dir="rtl">
     <div class="max-w-4xl mx-auto">

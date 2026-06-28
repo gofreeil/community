@@ -5,6 +5,8 @@
     import { neighborhoodState } from '$lib/neighborhoodState.svelte';
     import { getCoordsFor, type Coord } from '$lib/neighborhoodCoords';
     import { toggleLike } from '$lib/likedItems';
+    import JsonLd from "$lib/components/JsonLd.svelte";
+    import { breadcrumbSchema, collectionSchema, canonical } from "$lib/seo";
 
     let { data }: { data: PageData } = $props();
 
@@ -266,9 +268,12 @@
 </script>
 
 <svelte:head>
-    <title>למסירה | קהילה בשכונה</title>
-    <meta name="description" content="פריטים למסירה חינם בקהילה - ספות, מוצרי חשמל, ספרים, בגדים ועוד" />
+    <title>יד שנייה ולמסירה בשכונה — פריטים בחינם | קהילה בשכונה</title>
+    <meta name="description" content="לוח יד שנייה ולמסירה בשכונה: רהיטים, מוצרי חשמל, בגדים, צעצועים ופריטים בחינם מהשכנים. מצאו ומסרו יד 2 בשכונה שלכם — בקהילה בשכונה." />
+    <link rel="canonical" href={canonical('/giveaways')} />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
 </svelte:head>
+<JsonLd schema={[breadcrumbSchema([{ name: 'בית', path: '/' }, { name: 'יד שנייה ולמסירה', path: '/giveaways' }]), collectionSchema({ name: 'יד שנייה ולמסירה בשכונה', description: 'לוח יד שנייה ולמסירה בשכונה: רהיטים, מוצרי חשמל, בגדים, צעצועים ופריטים בחינם מהשכנים. מצאו ומסרו יד 2 בשכונה שלכם — בקהילה בשכונה.', path: '/giveaways' })]} />
 
 <svelte:window onclick={() => showSortMenu = false} />
 

@@ -9,6 +9,11 @@
     let lockedEmail = $derived((data as any)?.email || (form as any)?.email || '');
 </script>
 
+<svelte:head>
+    <title>שחזור סיסמה | קהילה בשכונה</title>
+    <meta name="robots" content="noindex, follow" />
+</svelte:head>
+
 <div class="min-h-screen flex items-center justify-center bg-[#070b14] px-4" dir="rtl">
     <div class="max-w-md w-full">
         <div class="bg-[#0f172a] rounded-2xl border border-white/10 p-8">

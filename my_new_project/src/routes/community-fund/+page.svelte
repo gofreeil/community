@@ -63,6 +63,12 @@
 	}
 </script>
 
+<svelte:head>
+	<title>קופת השכונה — עזרה הדדית קהילתית | קהילה בשכונה</title>
+	<meta name="description" content="קופת השכונה של קהילה בשכונה — עזרה הדדית, תרומות והגשמת משאלות למשפחות בשכונה." />
+	<link rel="canonical" href="https://community.gofreeil.com/community-fund" />
+</svelte:head>
+
 <div class="min-h-screen py-12 px-4">
 	<div class="max-w-4xl mx-auto">
 

@@ -51,6 +51,12 @@
     }
 </script>
 
+<svelte:head>
+    <title>בקשה להיות רכז שכונה | קהילה בשכונה</title>
+    <meta name="description" content="הגישו בקשה להיות רכז שכונה בקהילה בשכונה ולהוביל את הפעילות הקהילתית בשכונה שלכם." />
+    <link rel="canonical" href="https://community.gofreeil.com/coordinator/apply" />
+</svelte:head>
+
 <div class="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white py-12 px-4">
     <div class="max-w-2xl mx-auto">
         <div class="text-center mb-8">

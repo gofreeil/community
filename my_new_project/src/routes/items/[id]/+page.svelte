@@ -7,6 +7,8 @@
     const tFn = (k: string) => { void _loc; return get(t)(k); };
     import { fade, fly, scale } from "svelte/transition";
     import type { PageData } from './$types';
+    import JsonLd from "$lib/components/JsonLd.svelte";
+    import { productSchema, eventSchema } from "$lib/seo";
 
     let { data }: { data: PageData } = $props();
     const item = $derived(data.item);
@@ -304,6 +306,28 @@
     });
 
     const ogType = $derived(isSingles ? 'profile' : 'website');
+
+    // Structured data לפריט. singles מדולגים (פרטיות). אירועים → Event, השאר → Product.
+    const isEvent = $derived(item?.category === 'events' || item?.category === 'event');
+    const itemSchema = $derived.by(() => {
+        if (!item || isSingles) return null;
+        const path = `/items/${item.id}`;
+        const description = (item.description && String(item.description).trim()) || displayLabel;
+        const ef = (item as { extraFields?: Record<string, unknown> })?.extraFields ?? {};
+        const priceRaw = ef.price ?? ef.cost;
+        const price = typeof priceRaw === 'number' ? priceRaw : (typeof priceRaw === 'string' ? parseFloat(priceRaw) || 0 : 0);
+        if (isEvent) {
+            return eventSchema({
+                name: displayLabel, description, path,
+                location: (item as { city?: string }).city || (item as { neighborhood?: string }).neighborhood,
+                image: ogImage || undefined,
+            });
+        }
+        return productSchema({
+            name: displayLabel, description, path, price,
+            image: ogImage || undefined,
+        });
+    });
 </script>
 
 <svelte:head>
@@ -328,6 +352,8 @@
         {#if ogImage}<meta name="twitter:image" content={ogImage} />{/if}
     {/if}
 </svelte:head>
+
+{#if itemSchema}<JsonLd schema={itemSchema} />{/if}
 
 {#snippet shareBlock()}
     <div class="bg-white/5 px-3 py-2 rounded-xl border border-white/10 backdrop-blur-sm flex items-center gap-3">

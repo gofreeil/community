@@ -1,3 +1,37 @@
-# allow crawling everything by default
+# קהילה בשכונה - https://community.gofreeil.com
+# מאפשר סריקה מלאה של התוכן הציבורי, חוסם אזורים אישיים/ניהוליים.
+
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /admin
+Disallow: /api/
+Disallow: /coordinator
+Disallow: /profile
+Disallow: /messages
+Disallow: /receipts
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /confirm-email
+Disallow: /banned
+Disallow: /*/add
+Disallow: /*/edit
+
+# בוטים של AI (ChatGPT, Claude, Perplexity, Gemini) - מורשים לסרוק ולצטט
+User-agent: GPTBot
+Allow: /
+User-agent: OAI-SearchBot
+Allow: /
+User-agent: ChatGPT-User
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: Claude-Web
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://community.gofreeil.com/sitemap.xml
