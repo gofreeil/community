@@ -353,6 +353,17 @@
 									<div class="min-w-0">
 										<div class="text-lg font-bold truncate text-white">{nb.name}</div>
 										<div class="text-base text-gray-400 truncate">🏙️ {nb.city || '—'}</div>
+										{#if nb.requester}
+											<div class="text-sm text-amber-200/80 truncate mt-0.5">
+												👤 ביקש: <span class="font-bold">{nb.requester.name || 'תושב'}</span>
+												{#if nb.requester.email}
+													· <a href="mailto:{nb.requester.email}" class="underline hover:text-amber-100">{nb.requester.email}</a>
+												{/if}
+												{#if nb.requester.phone}
+													· <a href="tel:{nb.requester.phone}" class="underline hover:text-amber-100" dir="ltr">{nb.requester.phone}</a>
+												{/if}
+											</div>
+										{/if}
 									</div>
 								</div>
 

@@ -53,6 +53,18 @@ export const load: PageServerLoad = async (event) => {
         console.warn('[admin] getNeighborhoods failed:', e);
     }
 
+    // צירוף פרטי מבקש לכל שכונה ממתינה - כדי שהאדמין יראה מי ביקש להגדיר את המפה
+    const usersById = new Map(users.map((u) => [u.id, u]));
+    const pendingNeighborhoodsWithRequester = pendingNeighborhoods.map((nb) => {
+        const u = nb.user_id ? usersById.get(nb.user_id) : undefined;
+        return {
+            ...nb,
+            requester: u
+                ? { name: u.name ?? u.nickname ?? null, email: u.email ?? null, phone: u.phone ?? '' }
+                : null,
+        };
+    });
+
     let pendingAdsCount = 0;
     try { pendingAdsCount = await countPending(); } catch { /* שקט */ }
 
@@ -70,7 +82,7 @@ export const load: PageServerLoad = async (event) => {
         users,
         items,
         coordinatorRequests,
-        pendingNeighborhoods,
+        pendingNeighborhoods: pendingNeighborhoodsWithRequester,
         currentUserId: session?.user?.id ?? '',
         pendingAdsCount,
         pendingSinglesCount,
