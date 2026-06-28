@@ -1012,6 +1012,10 @@
 			localStorage.removeItem(DRAFT_KEY);
 		} catch {}
 		try {
+			if (localStorage.getItem(VIEWER_TIP_KEY) === "1")
+				viewerTipDismissed = true;
+		} catch {}
+		try {
 			const raw = localStorage.getItem("ad_builder_draft_v1");
 			if (raw) {
 				const d = JSON.parse(raw);
@@ -1134,6 +1138,17 @@
 	let userLevel = $derived(
 		city && (neighborhood || cityWithoutNeighborhoods) && email && phone ? 2 : 1,
 	);
+
+	// טיפ ל"צופה" - מעודד למלא שכונה ושאר פרטים כדי לעלות לדרגת משתמש.
+	// נסגר ע"י המשתמש (נשמר ב-localStorage) ומוסתר אוטומטית כשמגיע לדרגה 2.
+	const VIEWER_TIP_KEY = "profile_viewer_tip_dismissed";
+	let viewerTipDismissed = $state(false);
+	function dismissViewerTip() {
+		viewerTipDismissed = true;
+		try {
+			localStorage.setItem(VIEWER_TIP_KEY, "1");
+		} catch {}
+	}
 
 	// מספר מניות פלטפורמה - placeholder פרונט בלבד עד חיבור ל-backend
 	let userShares = $derived(10 + data.items.length * 5);
@@ -1638,6 +1653,40 @@
 		</div>
 	{/if}
 
+	<!-- ===== טיפ לצופה - מעודד למלא שכונה ופרטים ===== -->
+	{#if data.user && userLevel === 1 && !viewerTipDismissed}
+		<div
+			class="mb-4 rounded-2xl border border-purple-500/30 bg-gradient-to-r from-blue-600/15 to-purple-600/15 px-4 py-3 md:px-5 md:py-4 flex items-start gap-3 shadow-lg"
+			role="status"
+		>
+			<span class="text-2xl flex-shrink-0">👋</span>
+			<div class="flex-1 min-w-0">
+				<p class="text-white font-black text-sm md:text-base mb-0.5">
+					כרגע אתה בדרגת <span class="text-purple-300">צופה</span>
+				</p>
+				<p class="text-gray-300 text-xs md:text-sm leading-relaxed">
+					הוסף את השכונה שלך ושאר הפרטים בפרופיל כדי לקבל את מלוא
+					השירות מהקהילה הקרובה למקומך וליהנות מכל יתרונות האתר.
+				</p>
+				<button
+					type="button"
+					onclick={scrollToEditProfile}
+					class="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-600/30 text-purple-100 text-xs md:text-sm font-black border border-purple-500/40 hover:bg-purple-600/50 transition-colors cursor-pointer"
+				>
+					✏️ השלמת הפרטים שלי
+				</button>
+			</div>
+			<button
+				type="button"
+				onclick={dismissViewerTip}
+				class="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+				aria-label="סגור"
+			>
+				✕
+			</button>
+		</div>
+	{/if}
+
 	<!-- ===== קומה 1: האזור האישי ===== -->
 	<div
 		class="bg-[#0f172a] rounded-3xl border border-white/10 p-4 md:p-6 shadow-xl mb-2 {mobileTab !==
@@ -1989,7 +2038,7 @@
 				</a>
 				{#if isPrimaryAdmin}
 					<a
-						href="https://community-il.duckdns.org/admin"
+						href="https://api.gofreeil.com/admin"
 						target="_blank"
 						rel="noopener noreferrer"
 						class="flex-1 min-w-[160px] text-xs md:text-sm font-bold text-rose-300 hover:text-rose-200 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-rose-500/10 border border-rose-500/30 hover:border-rose-400/50 flex items-center justify-center gap-1.5"
@@ -2210,6 +2259,20 @@
 						</div>
 					</div>
 				{/each}
+
+				<!-- מצב ריק: אין הודעות פעילות → 0 שלא נקראו + קישור להיסטוריה -->
+				{#if finalDisplayedMessages.length === 0}
+					<div class="flex flex-col items-center text-center py-6 gap-3">
+						<div class="text-4xl">📭</div>
+						<p class="font-bold text-gray-300">0 הודעות שלא נקראו</p>
+						<a
+							href="/messages"
+							class="inline-flex items-center gap-1.5 text-sm font-bold text-blue-300 hover:text-blue-200 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 px-4 py-2 rounded-xl transition-colors"
+						>
+							🗂️ להיסטוריית ההודעות
+						</a>
+					</div>
+				{/if}
 
 				<!-- כפתור הצגת הארכיון -->
 				{#if archivedList.length > 0}
