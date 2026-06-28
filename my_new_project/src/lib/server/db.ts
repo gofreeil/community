@@ -661,6 +661,7 @@ export interface DbGathering {
     location: string;
     description: string;
     host_name: string;
+    image: string;
     icon: string;
     color: string;
     city: string;
@@ -680,6 +681,7 @@ export interface CreateGatheringData {
     location?: string;
     description?: string;
     host_name?: string;
+    image?: string;
     icon?: string;
     color?: string;
     city?: string;
@@ -700,6 +702,7 @@ interface StrapiGathering {
     location: string | null;
     description: string | null;
     host_name: string | null;
+    image: string | null;
     icon: string | null;
     color: string | null;
     city: string | null;
@@ -721,6 +724,7 @@ function mapStrapiGathering(g: StrapiGathering): DbGathering {
         location:     g.location     ?? '',
         description:  g.description  ?? '',
         host_name:    g.host_name    ?? '',
+        image:        g.image        ?? '',
         icon:         g.icon         ?? '🍽️',
         color:        g.color        ?? 'amber',
         city:         g.city         ?? '',
@@ -772,6 +776,7 @@ export async function createGathering(data: CreateGatheringData): Promise<DbGath
             location:     data.location     ?? '',
             description:  data.description  ?? '',
             host_name:    data.host_name    ?? '',
+            image:        data.image        ?? '',
             icon:         data.icon         ?? '🍽️',
             color:        data.color        ?? 'amber',
             city:         data.city         ?? '',

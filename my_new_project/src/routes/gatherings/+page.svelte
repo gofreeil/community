@@ -18,6 +18,38 @@
     let submitting = $state(false);
     let createIcon = $state('🍽️');
 
+    // ── תמונת שער ──
+    let coverImage = $state('');
+    function compressImage(file: File): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const MAX = 1200;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const img = new Image();
+                img.onload = () => {
+                    let w = img.naturalWidth, h = img.naturalHeight;
+                    if (w > MAX || h > MAX) {
+                        const r = Math.min(MAX / w, MAX / h);
+                        w = Math.round(w * r); h = Math.round(h * r);
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d')!.drawImage(img, 0, 0, w, h);
+                    resolve(canvas.toDataURL('image/jpeg', 0.82));
+                };
+                img.onerror = reject;
+                img.src = ev.target?.result as string;
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+    async function handleCoverChange(e: Event) {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (file) coverImage = await compressImage(file);
+        (e.target as HTMLInputElement).value = '';
+    }
+
     // רשימת מאכלים התחלתית בטופס ההקמה
     type FoodDraft = { name: string; qty: string };
     let foodDraft = $state<FoodDraft[]>([{ name: '', qty: '' }]);
@@ -101,6 +133,24 @@
                         <input type="hidden" name="icon" value={createIcon} />
                     </div>
 
+                    <!-- תמונת שער -->
+                    <div>
+                        <label class="block text-sm text-gray-300 mb-2">תמונת שער (לא חובה)</label>
+                        {#if coverImage}
+                            <div class="relative inline-block">
+                                <img src={coverImage} alt="תצוגה מקדימה" class="h-32 rounded-xl object-cover border border-white/10" />
+                                <button type="button" onclick={() => (coverImage = '')} class="absolute -top-2 -left-2 w-7 h-7 rounded-full bg-rose-500 text-white text-sm flex items-center justify-center shadow-lg">✕</button>
+                            </div>
+                        {:else}
+                            <label class="flex flex-col items-center justify-center gap-1 h-28 rounded-xl border-2 border-dashed border-white/15 hover:border-amber-500/50 cursor-pointer transition text-gray-400 hover:text-amber-300">
+                                <span class="text-2xl">🖼️</span>
+                                <span class="text-xs">לחצו להעלאת תמונה</span>
+                                <input type="file" accept="image/*" class="hidden" onchange={handleCoverChange} />
+                            </label>
+                        {/if}
+                        <input type="hidden" name="image" value={coverImage} />
+                    </div>
+
                     <div class="grid md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm text-gray-300 mb-1">שם הסעודה *</label>
@@ -178,8 +228,11 @@
 
 {#snippet card(g: any)}
     <a href={`/gatherings/${g.id}`}
-        class="block bg-[#0f172a] border border-white/10 rounded-2xl p-5 hover:border-amber-500/40 transition group">
-        <div class="flex items-start gap-3">
+        class="block bg-[#0f172a] border border-white/10 rounded-2xl overflow-hidden hover:border-amber-500/40 transition group">
+        {#if g.image}
+            <img src={g.image} alt={g.title} class="w-full h-32 object-cover" />
+        {/if}
+        <div class="flex items-start gap-3 p-5">
             <div class="text-3xl">{g.icon}</div>
             <div class="flex-1 min-w-0">
                 <h3 class="font-bold text-white text-lg group-hover:text-amber-300 transition truncate">{g.title}</h3>

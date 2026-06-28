@@ -37,6 +37,38 @@
     let rsvpCount = $state(myAttendance?.count ?? 1);
     let rsvpNote  = $state(myAttendance?.note ?? '');
 
+    // ── תמונת שער (עריכה למנהל) ──
+    let editImage = $state(g.image ?? '');
+    function compressImage(file: File): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const MAX = 1200;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const img = new Image();
+                img.onload = () => {
+                    let w = img.naturalWidth, h = img.naturalHeight;
+                    if (w > MAX || h > MAX) {
+                        const r = Math.min(MAX / w, MAX / h);
+                        w = Math.round(w * r); h = Math.round(h * r);
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d')!.drawImage(img, 0, 0, w, h);
+                    resolve(canvas.toDataURL('image/jpeg', 0.82));
+                };
+                img.onerror = reject;
+                img.src = ev.target?.result as string;
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+    async function handleEditImage(e: Event) {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (file) editImage = await compressImage(file);
+        (e.target as HTMLInputElement).value = '';
+    }
+
     // ── שיתוף בכל האמצעים ──
     const enc = encodeURIComponent;
     let shareUrl   = $derived(`https://community.gofreeil.com/gatherings/${g.id}`);
@@ -98,7 +130,11 @@
         {:else}
 
         <!-- ── כותרת הסעודה ── -->
-        <div class="bg-gradient-to-br from-amber-500/15 to-rose-500/10 border border-amber-500/25 rounded-2xl p-6 mb-6">
+        <div class="bg-gradient-to-br from-amber-500/15 to-rose-500/10 border border-amber-500/25 rounded-2xl mb-6 overflow-hidden">
+            {#if g.image}
+                <img src={g.image} alt={g.title} class="w-full h-48 md:h-60 object-cover" />
+            {/if}
+            <div class="p-6">
             <div class="flex items-start gap-4">
                 <div class="text-5xl">{g.icon}</div>
                 <div class="flex-1 min-w-0">
@@ -124,6 +160,7 @@
                     {/if}
                 </div>
             {/if}
+            </div>
         </div>
 
         <!-- ── שיתוף הסעודה ── -->
@@ -170,6 +207,25 @@
                 </div>
                 <input name="location" value={g.location} placeholder="מיקום" class="w-full bg-[#070b14] border border-white/10 rounded-lg px-3 py-2 text-white" />
                 <textarea name="description" rows="2" placeholder="תיאור" class="w-full bg-[#070b14] border border-white/10 rounded-lg px-3 py-2 text-white">{g.description}</textarea>
+
+                <!-- תמונת שער -->
+                <div>
+                    <span class="block text-xs text-gray-400 mb-2">תמונת שער</span>
+                    {#if editImage}
+                        <div class="relative inline-block">
+                            <img src={editImage} alt="תצוגה מקדימה" class="h-28 rounded-xl object-cover border border-white/10" />
+                            <button type="button" onclick={() => (editImage = '')} class="absolute -top-2 -left-2 w-7 h-7 rounded-full bg-rose-500 text-white text-sm flex items-center justify-center shadow-lg">✕</button>
+                        </div>
+                    {:else}
+                        <label class="flex flex-col items-center justify-center gap-1 h-24 rounded-xl border-2 border-dashed border-white/15 hover:border-amber-500/50 cursor-pointer transition text-gray-400 hover:text-amber-300">
+                            <span class="text-xl">🖼️</span>
+                            <span class="text-xs">העלאת תמונה</span>
+                            <input type="file" accept="image/*" class="hidden" onchange={handleEditImage} />
+                        </label>
+                    {/if}
+                    <input type="hidden" name="image" value={editImage} />
+                </div>
+
                 <div class="flex gap-2">
                     <button type="submit" class="px-4 py-2 rounded-lg bg-amber-500 text-white font-bold">שמירה</button>
                     <button type="button" onclick={() => (editing = false)} class="px-4 py-2 rounded-lg bg-white/10 text-white">ביטול</button>
@@ -181,7 +237,7 @@
         {#if isManager && showManagers}
             <div class="bg-[#0f172a] border border-white/10 rounded-2xl p-5 mb-6">
                 <h3 class="font-bold text-amber-300 mb-3">מנהלי הסעודה</h3>
-                <p class="text-xs text-gray-400 mb-3">מנהלים יכולים לערוך פרטים ולנהל את רשימת המאכלים. אפשר למנות כל מי שאישר הגעה.</p>
+                <p class="text-xs text-gray-400 mb-3">מנהלים יכולים לערוך פרטים ולנהל את רשימת המאכלים. אפשר למנות כל מי שאישר הגעה — והוא יקבל על כך הודעה אישית בפרופיל.</p>
                 <ul class="space-y-2">
                     {#each g.attendees as a}
                         {@const isMgr = g.manager_ids.includes(a.user_id)}

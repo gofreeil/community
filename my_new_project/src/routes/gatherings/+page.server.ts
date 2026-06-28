@@ -47,6 +47,7 @@ export const actions: Actions = {
         const location    = fd.get('location')?.toString().trim()    ?? '';
         const description = fd.get('description')?.toString().trim()  ?? '';
         const icon        = fd.get('icon')?.toString().trim()        || '🍽️';
+        const image       = fd.get('image')?.toString()             ?? '';
         const foodRaw     = fd.get('food_items')?.toString()         ?? '[]';
 
         if (!title || !date) return fail(400, { error: 'כותרת ותאריך חובה' });
@@ -67,7 +68,7 @@ export const actions: Actions = {
         } catch {}
 
         const created = await createGathering({
-            title, date, time, location, description, icon,
+            title, date, time, location, description, icon, image,
             host_name:    user.name || user.nickname || '',
             city:         user.city,
             neighborhood: user.neighborhood,
