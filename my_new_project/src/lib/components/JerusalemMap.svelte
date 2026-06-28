@@ -393,11 +393,17 @@
         });
     });
 
+    // פריט שייך לאזור הנוכחי רק אם *העיר* תואמת - כך "מרכז" של עיר אחת (למשל אפרת)
+    // לא גולש לעיר אחרת (כפר תפוח). בתוך העיר: אותה שכונה, או פריט ללא שכונה ספציפית.
+    function belongsToMyArea(d: { neighborhood?: string; city?: string }): boolean {
+        if ((d.city ?? '') !== neighborhoodState.city) return false;
+        return d.neighborhood === neighborhoodState.neighborhood || !d.neighborhood;
+    }
+
     // פריטים מהשכונה הנוכחית - ריאקטיבי לשינויי neighborhoodState ול-selectedCategory
     let neighborhoodDbItems = $derived(
         dbItems.filter(d =>
-            (d.neighborhood === neighborhoodState.neighborhood ||
-                (d.neighborhood === '' && d.city === neighborhoodState.city)) &&
+            belongsToMyArea(d) &&
             (selectedCategory === "benefits" || d.category === selectedCategory)
         )
     );
@@ -499,10 +505,7 @@
     ];
 
     let dynamicMarkers = $derived.by(() => {
-        const inHood = dbItems.filter(d =>
-            d.neighborhood === neighborhoodState.neighborhood ||
-            (d.neighborhood === '' && d.city === neighborhoodState.city)
-        );
+        const inHood = dbItems.filter(d => belongsToMyArea(d));
 
         // יש פריט אמיתי אחד לפחות - מציגים רק את האמיתיים, בלי דמו
         if (inHood.length > 0) {
@@ -635,10 +638,24 @@
         }
     }
 
+    // ברירת מחדל: התקרבות שממלאת את המסך עם השכונה/הישוב (לפי המרקרים),
+    // כך שרואים את הפרטים. המשתמש יכול להתקרב/להתרחק יותר ידנית.
+    function fitToMarkers(animate = true): boolean {
+        if (!leafletL || !leafletMap || !mapMarkerLayer) return false;
+        const layers = mapMarkerLayer.getLayers();
+        if (!layers.length) return false;
+        const bounds = leafletL.latLngBounds(layers.map((l: any) => l.getLatLng()));
+        leafletMap.fitBounds(bounds, { padding: [50, 50], maxZoom: 16, animate });
+        return true;
+    }
+
     function recenterMap() {
         if (!leafletMap) return;
-        const center = getCoordsFor(neighborhoodState.neighborhood, neighborhoodState.city);
-        leafletMap.setView(center, 14, { animate: true });
+        rebuildMarkers();
+        if (!fitToMarkers()) {
+            const center = getCoordsFor(neighborhoodState.neighborhood, neighborhoodState.city);
+            leafletMap.setView(center, 15, { animate: true });
+        }
     }
 
     let leafletReady = $state(false);
@@ -681,9 +698,11 @@
 
         mapMarkerLayer = leafletL.layerGroup().addTo(leafletMap);
         rebuildMarkers();
+        // ברירת מחדל: למלא את המסך עם הישוב/השכונה (במקום זום קבוע רחוק)
+        fitToMarkers(false);
 
-        setTimeout(() => leafletMap?.invalidateSize?.(), 0);
-        setTimeout(() => leafletMap?.invalidateSize?.(), 250);
+        setTimeout(() => { leafletMap?.invalidateSize?.(); fitToMarkers(false); }, 0);
+        setTimeout(() => { leafletMap?.invalidateSize?.(); fitToMarkers(false); }, 250);
 
         // ניקוי כשה-element מנותק
         return () => {
@@ -708,11 +727,11 @@
         recenterMap();
     });
 
-    // כש-fullscreen משתנה - Leaflet צריך לעדכן את גודל המיכל
+    // כש-fullscreen משתנה - Leaflet צריך לעדכן את גודל המיכל ולהתאים מחדש לישוב
     $effect(() => {
         void isFullscreen;
         if (leafletMap) {
-            setTimeout(() => leafletMap.invalidateSize(), 100);
+            setTimeout(() => { leafletMap.invalidateSize(); fitToMarkers(); }, 100);
         }
     });
 
@@ -1412,6 +1431,29 @@
                     </button>
                 {/if}
 
+                <!-- כפתורי זום - עובדים גם מעל שכבת ההפעלה (במיוחד בנייד שאין גלגלת) -->
+                <div class="absolute top-3 left-3 z-30 flex flex-col gap-1.5">
+                    <button
+                        type="button"
+                        onclick={(e) => { e.stopPropagation(); activateMap(); zoomIn(); }}
+                        class="w-10 h-10 rounded-lg bg-black/60 hover:bg-black/80 text-white text-2xl leading-none font-bold flex items-center justify-center backdrop-blur-sm border border-white/25 shadow-lg"
+                        aria-label="הגדל מפה"
+                    >+</button>
+                    <button
+                        type="button"
+                        onclick={(e) => { e.stopPropagation(); activateMap(); zoomOut(); }}
+                        class="w-10 h-10 rounded-lg bg-black/60 hover:bg-black/80 text-white text-2xl leading-none font-bold flex items-center justify-center backdrop-blur-sm border border-white/25 shadow-lg"
+                        aria-label="הקטן מפה"
+                    >−</button>
+                    <button
+                        type="button"
+                        onclick={(e) => { e.stopPropagation(); fitToMarkers(); }}
+                        class="w-10 h-10 rounded-lg bg-black/60 hover:bg-black/80 text-white text-lg leading-none flex items-center justify-center backdrop-blur-sm border border-white/25 shadow-lg"
+                        aria-label="התאם לישוב"
+                        title="התאם תצוגה לישוב"
+                    >⊙</button>
+                </div>
+
                 <!-- Badge לפריטים חדשים בשכונה + קישור ללוח הארצי -->
                 {#if selectedCategory === 'giveaway'}
                     <!-- כשנבחרת "למסירה" - אותו כפתור מוביל ללוח הארצי -->
@@ -1470,9 +1512,7 @@
                 <div class="space-y-2 md:space-y-3">
                     {#each categories.filter((cat) => cat.id !== "benefits" && (selectedCategory === "benefits" || cat.id === selectedCategory)) as category}
                         {@const categoryDbItems = dbItems.filter(d =>
-                            d.category === category.id &&
-                            (d.neighborhood === neighborhoodState.neighborhood ||
-                             (d.neighborhood === '' && d.city === neighborhoodState.city))
+                            d.category === category.id && belongsToMyArea(d)
                         )}
                         {@const totalItems = (category.items?.length || 0) + categoryDbItems.length}
                         {@const hasNationalPage = ['singles','security','attractions','jobs'].includes(category.id)}
