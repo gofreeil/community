@@ -1,5 +1,6 @@
 <script lang="ts">
     import type { ActionData, PageData } from './$types';
+    import { enhance } from '$app/forms';
     import { categoryConfig } from '$lib/categoryFields';
     import { citiesAndNeighborhoods } from '$lib/neighborhoodsData';
     import { giveawayCategories } from '$lib/giveawayCategories';
@@ -93,6 +94,9 @@
     const DESC_MAX = 1500;
 
     const hasDefaults = !!(defName || defPhone || defNeighborhood || defCity);
+
+    // שליחה דרך use:enhance - שגיאה לא מרעננת את הדף ולא מאבדת את התמונות שהועלו.
+    let submitting = $state(false);
 </script>
 
 <svelte:head>
@@ -112,7 +116,17 @@
                 <a href="/login?redirect=/giveaways/add" class="inline-block bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-bold">התחברות</a>
             </div>
         {:else}
-            <form method="POST" class="rounded-2xl bg-[#0f172a] border border-white/10 p-6 space-y-5">
+            <form
+                method="POST"
+                use:enhance={() => {
+                    submitting = true;
+                    // reset: false - לשמר את הקלט והתמונות אם השרת החזיר שגיאה.
+                    return async ({ update }) => {
+                        await update({ reset: false });
+                        submitting = false;
+                    };
+                }}
+                class="rounded-2xl bg-[#0f172a] border border-white/10 p-6 space-y-5">
 
                 <!-- Section 1: העיקר -->
                 <div class="space-y-4">
@@ -438,9 +452,10 @@
 
                 <button
                     type="submit"
-                    class="w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-black py-3.5 rounded-xl shadow-lg shadow-orange-500/20 transition-all hover:scale-[1.01]"
+                    disabled={submitting}
+                    class="w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-black py-3.5 rounded-xl shadow-lg shadow-orange-500/20 transition-all hover:scale-[1.01] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
-                    📦 פרסם פריט
+                    {submitting ? '⏳ מפרסם…' : '📦 פרסם פריט'}
                 </button>
 
                 <p class="text-gray-500 text-xs text-center">
