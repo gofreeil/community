@@ -36,6 +36,40 @@
     let showManagers = $state(false);
     let rsvpCount = $state(myAttendance?.count ?? 1);
     let rsvpNote  = $state(myAttendance?.note ?? '');
+
+    // ── שיתוף בכל האמצעים ──
+    const enc = encodeURIComponent;
+    let shareUrl   = $derived(`https://community.gofreeil.com/gatherings/${g.id}`);
+    let shareText  = $derived(`${g.title} — ${formatFullDate(g.date)}${g.time ? ' · ' + g.time : ''}${g.location ? ', ' + g.location : ''}. הצטרפו לסעודה הקהילתית:`);
+    let shareMsg   = $derived(`${shareText} ${shareUrl}`);
+    let waLink     = $derived(`https://wa.me/?text=${enc(shareMsg)}`);
+    let tgLink     = $derived(`https://t.me/share/url?url=${enc(shareUrl)}&text=${enc(shareText)}`);
+    let fbLink     = $derived(`https://www.facebook.com/sharer/sharer.php?u=${enc(shareUrl)}`);
+    let mailLink   = $derived(`mailto:?subject=${enc(g.title)}&body=${enc(shareMsg)}`);
+    let smsLink    = $derived(`sms:?&body=${enc(shareMsg)}`);
+    let copied = $state(false);
+
+    let canNativeShare = $state(false);
+    $effect(() => { canNativeShare = typeof navigator !== 'undefined' && !!navigator.share; });
+
+    async function shareNative() {
+        try {
+            await navigator.share({ title: g.title, text: shareText, url: shareUrl });
+        } catch { /* המשתמש ביטל */ }
+    }
+    async function copyLink() {
+        try {
+            await navigator.clipboard.writeText(shareUrl);
+        } catch {
+            const ta = document.createElement('textarea');
+            ta.value = shareUrl; ta.style.position = 'fixed'; ta.style.opacity = '0';
+            document.body.appendChild(ta); ta.focus(); ta.select();
+            try { document.execCommand('copy'); } catch {}
+            ta.remove();
+        }
+        copied = true;
+        setTimeout(() => (copied = false), 2000);
+    }
 </script>
 
 <svelte:head>
@@ -90,6 +124,38 @@
                     {/if}
                 </div>
             {/if}
+        </div>
+
+        <!-- ── שיתוף הסעודה ── -->
+        <div class="bg-[#0f172a] border border-white/10 rounded-2xl p-5 mb-6">
+            <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+                <h2 class="text-lg font-bold text-white">📣 הזמינו עוד אנשים</h2>
+                {#if canNativeShare}
+                    <button onclick={shareNative} class="text-sm px-4 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold hover:opacity-90 transition">
+                        שיתוף בכל האמצעים…
+                    </button>
+                {/if}
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <a href={waLink} target="_blank" rel="noopener" class="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#25D366]/15 text-[#25D366] border border-[#25D366]/30 hover:bg-[#25D366]/25 transition text-sm font-medium">
+                    <span>💬</span> וואטסאפ
+                </a>
+                <a href={tgLink} target="_blank" rel="noopener" class="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#229ED9]/15 text-[#3aa9e0] border border-[#229ED9]/30 hover:bg-[#229ED9]/25 transition text-sm font-medium">
+                    <span>✈️</span> טלגרם
+                </a>
+                <a href={fbLink} target="_blank" rel="noopener" class="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#1877F2]/15 text-[#4a93f7] border border-[#1877F2]/30 hover:bg-[#1877F2]/25 transition text-sm font-medium">
+                    <span>👍</span> פייסבוק
+                </a>
+                <a href={smsLink} class="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/25 transition text-sm font-medium">
+                    <span>📱</span> SMS
+                </a>
+                <a href={mailLink} class="flex items-center gap-2 px-3 py-2 rounded-lg bg-rose-500/15 text-rose-300 border border-rose-500/30 hover:bg-rose-500/25 transition text-sm font-medium">
+                    <span>✉️</span> אימייל
+                </a>
+                <button onclick={copyLink} class="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 text-gray-200 border border-white/15 hover:bg-white/10 transition text-sm font-medium">
+                    <span>{copied ? '✅' : '🔗'}</span> {copied ? 'הקישור הועתק!' : 'העתקת קישור'}
+                </button>
+            </div>
         </div>
 
         <!-- ── עריכת פרטים (מנהל) ── -->
