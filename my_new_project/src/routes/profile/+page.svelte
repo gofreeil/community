@@ -2517,6 +2517,16 @@
 
 		{#if showMyInfo}
 			<div class="flex flex-col gap-4">
+				<!-- ===== ערבי מפגש / סעודות קהילתיות ===== -->
+				<a href="/gatherings" class="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-amber-500/15 to-rose-500/10 border border-amber-500/30 hover:border-amber-500/60 px-4 py-3.5 transition-all group">
+					<span class="text-3xl flex-shrink-0">🍽️</span>
+					<div class="flex-1 min-w-0">
+						<p class="text-white font-bold text-sm">ערבי מפגש וסעודות קהילתיות</p>
+						<p class="text-amber-200/80 text-xs mt-0.5">הקימו סעודה משותפת, חלקו את רשימת המאכלים וראו מי מגיע</p>
+					</div>
+					<span class="text-amber-300 text-lg flex-shrink-0 transition-transform group-hover:translate-x-[-3px]" aria-hidden="true">←</span>
+				</a>
+
 				<!-- ===== סאב-מקטע: פרסומיי ===== -->
 				<div class="bg-[#0a1224]/60 rounded-2xl border border-white/10 p-3 md:p-4">
 					<div class="flex items-center justify-between gap-2 mb-3 flex-wrap">

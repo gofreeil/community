@@ -211,6 +211,17 @@
             </a>
         </div>
 
+        <!-- ── באנר ערבי מפגש / סעודות ── -->
+        <a href="/gatherings" class="block mb-6 rounded-2xl bg-gradient-to-r from-amber-500/15 to-rose-500/10 border border-amber-500/30 px-4 py-3.5 hover:border-amber-500/60 transition">
+            <div class="flex items-center gap-3">
+                <div class="text-2xl">🍽️</div>
+                <div class="flex-1 text-right">
+                    <p class="text-white font-bold text-sm">להיפגש פנים אל פנים? ערבי מפגש וסעודות קהילתיות</p>
+                    <p class="text-amber-200/80 text-xs mt-0.5">הקימו או הצטרפו לסעודה משותפת, וראו מי עוד מגיע →</p>
+                </div>
+            </div>
+        </a>
+
         <!-- Filters: chips מינימליסטיים בשורה זורמת -->
         <div class="mb-6">
             <div class="flex flex-wrap justify-center items-center gap-x-2 gap-y-2">
