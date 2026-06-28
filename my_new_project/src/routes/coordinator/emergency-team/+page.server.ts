@@ -1,9 +1,9 @@
-import { redirect, fail, error } from '@sveltejs/kit';
+import { redirect, fail, error, type RequestEvent } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { getUserById, getItemsByCategory, createItem, adminDeleteItem } from '$lib/server/db';
 import { strapiPut } from '$lib/server/strapiClient.js';
 
-async function requireCoordinator(event: Parameters<PageServerLoad>[0]) {
+async function requireCoordinator(event: RequestEvent) {
     let session = null;
     try { session = await event.locals.auth(); } catch {}
     if (!session?.user?.id) throw redirect(302, '/login?redirect=/coordinator/emergency-team');
