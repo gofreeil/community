@@ -66,6 +66,9 @@
 	let coordModalUser  = $state<{ id: string; name: string | null; coordinator_of: string[]; neighborhood?: string | null; city?: string | null } | null>(null);
 	let coordNeighborhoods = $state(''); // שכונות מופרדות בשורות
 
+	// תפריט "עוד" בכרטיס רכז - מחזיק את ה-id של הכרטיס הפתוח (כדי להסתיר פעולות מסוכנות מלחיצה בטעות)
+	let openCoordMenuId = $state<string | null>(null);
+
 	// מקום המגורים להצגה: השכונה שסומנה, אך אם סומן "מרכז" או שאין שכונה - העיר שסומנה
 	function residenceLabel(neighborhood?: string | null, city?: string | null): string {
 		const n = neighborhood?.trim();
@@ -430,8 +433,8 @@
 						{#each coordinatorUsers() as user (user.id)}
 							{@const coordList = ((user as any).coordinator_of as string[]) ?? []}
 							<div class="bg-amber-500/5 rounded-2xl border border-amber-500/30 p-3 md:p-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 transition-all hover:border-amber-500/50">
-								<!-- אווטר + שם (לחיץ - פרופיל מלא) -->
-								<a href="/admin/users/{user.id}" title="צפה בפרופיל המלא" class="user-link flex items-center gap-3 flex-1 min-w-0 cursor-pointer">
+								<!-- אווטר + שם + עיר/שכונה (לחיץ - פרופיל מלא) - מקובצים בצד ימין -->
+								<a href="/admin/users/{user.id}" title="צפה בפרופיל המלא" class="user-link flex items-center gap-3 min-w-0 cursor-pointer">
 									{#if user.avatar_url}
 										<img src={user.avatar_url} alt="" class="w-10 h-10 rounded-full object-cover flex-shrink-0 ring-2 ring-amber-400/40" />
 									{:else}
@@ -446,11 +449,13 @@
 												<span class="text-sm bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded-full">חסום</span>
 											{/if}
 										</div>
-										<div class="text-base text-gray-400 truncate">{user.email ?? '-'}</div>
+										{#if residenceLabel(user.neighborhood, (user as any).city)}
+											<div class="text-base text-amber-200/70 truncate">📍 {residenceLabel(user.neighborhood, (user as any).city)}</div>
+										{/if}
 									</div>
 								</a>
 
-								<!-- שכונות שהוא רכז עליהן -->
+								<!-- שכונות שהוא רכז עליהן - צמוד לשם בצד ימין -->
 								<div class="flex flex-wrap gap-1 max-w-full sm:max-w-[260px]">
 									{#each coordList as n}
 										<span class="text-sm font-bold bg-amber-500/20 text-amber-200 border border-amber-500/40 px-2 py-0.5 rounded-full whitespace-nowrap">
@@ -459,26 +464,40 @@
 									{/each}
 								</div>
 
-								<!-- פעולות -->
-								<div class="flex gap-2 flex-shrink-0 flex-wrap">
+								<!-- פעולות מוסתרות תחת "עוד" כדי למנוע לחיצות בטעות -->
+								<div class="relative flex-shrink-0 sm:ms-auto">
 									<button
-										onclick={() => openCoordModal({ id: user.id, name: user.name, coordinator_of: coordList, neighborhood: user.neighborhood, city: (user as any).city })}
-										class="px-3 py-1.5 text-sm rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/40 hover:bg-amber-500/25 transition-all cursor-pointer font-bold"
-										title="ערוך שכונות שהוא רכז עליהן"
+										type="button"
+										onclick={() => openCoordMenuId = openCoordMenuId === user.id ? null : user.id}
+										class="px-3 py-1.5 text-sm rounded-lg bg-white/5 text-gray-300 border border-white/15 hover:bg-white/10 transition-all cursor-pointer font-bold"
+										title="פעולות נוספות"
 									>
-										✏️ ערוך שכונות
+										⋯ עוד
 									</button>
-									<form method="POST" action="?/setCoordinator" use:enhance>
-										<input type="hidden" name="userId" value={user.id} />
-										<input type="hidden" name="neighborhoods" value="" />
-										<button
-											type="submit"
-											class="px-3 py-1.5 text-sm rounded-lg bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all cursor-pointer"
-											onclick={(e) => { if (!confirm(`להסיר את הרכזות מ-${user.name ?? user.id}?`)) e.preventDefault(); }}
-										>
-											🗑 הסר רכזות
-										</button>
-									</form>
+									{#if openCoordMenuId === user.id}
+										<!-- שכבת רקע לסגירת התפריט בלחיצה בחוץ -->
+										<button type="button" class="fixed inset-0 z-10 cursor-default" onclick={() => openCoordMenuId = null} aria-label="סגור תפריט"></button>
+										<div class="absolute z-20 mt-1 end-0 min-w-[180px] rounded-xl border border-white/15 bg-[#0f172a] shadow-xl p-1.5 flex flex-col gap-1">
+											<button
+												type="button"
+												onclick={() => { openCoordMenuId = null; openCoordModal({ id: user.id, name: user.name, coordinator_of: coordList, neighborhood: user.neighborhood, city: (user as any).city }); }}
+												class="w-full text-right px-3 py-2 text-sm rounded-lg bg-amber-500/10 text-amber-300 border border-amber-500/30 hover:bg-amber-500/20 transition-all cursor-pointer font-bold"
+											>
+												✏️ ערוך שכונות
+											</button>
+											<form method="POST" action="?/setCoordinator" use:enhance>
+												<input type="hidden" name="userId" value={user.id} />
+												<input type="hidden" name="neighborhoods" value="" />
+												<button
+													type="submit"
+													class="w-full text-right px-3 py-2 text-sm rounded-lg bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all cursor-pointer font-bold"
+													onclick={(e) => { if (!confirm(`להסיר את הרכזות מ-${user.name ?? user.id}?`)) { e.preventDefault(); } else { openCoordMenuId = null; } }}
+												>
+													🗑 הסר רכזות
+												</button>
+											</form>
+										</div>
+									{/if}
 								</div>
 							</div>
 						{/each}
