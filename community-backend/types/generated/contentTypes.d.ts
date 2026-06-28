@@ -506,6 +506,47 @@ export interface ApiAdvertisementAdvertisement
   };
 }
 
+export interface ApiCardExchangeCardExchange
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'card_exchanges';
+  info: {
+    displayName: 'Card Exchange';
+    pluralName: 'card-exchanges';
+    singularName: 'card-exchange';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::card-exchange.card-exchange'
+    > &
+      Schema.Attribute.Private;
+    message: Schema.Attribute.Text;
+    publishedAt: Schema.Attribute.DateTime;
+    status: Schema.Attribute.Enumeration<
+      ['pending', 'accepted', 'rejected', 'completed']
+    > &
+      Schema.Attribute.DefaultTo<'pending'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user1: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    user2: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+  };
+}
+
 export interface ApiChActivityItemChActivityItem
   extends Struct.CollectionTypeSchema {
   collectionName: 'ch_activity_items';
@@ -1050,6 +1091,47 @@ export interface ApiCommunityUserCommunityUser
   };
 }
 
+export interface ApiContactRequestContactRequest
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'contact_requests';
+  info: {
+    displayName: 'Contact Request';
+    pluralName: 'contact-requests';
+    singularName: 'contact-request';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::contact-request.contact-request'
+    > &
+      Schema.Attribute.Private;
+    message: Schema.Attribute.Text;
+    publishedAt: Schema.Attribute.DateTime;
+    receiver: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    requester: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    status: Schema.Attribute.Enumeration<
+      ['pending', 'accepted', 'rejected', 'cancelled']
+    > &
+      Schema.Attribute.DefaultTo<'pending'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiCoordinatorRequestCoordinatorRequest
   extends Struct.CollectionTypeSchema {
   collectionName: 'coordinator_requests';
@@ -1088,6 +1170,35 @@ export interface ApiCoordinatorRequestCoordinatorRequest
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     user_id: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
+export interface ApiDiscountConfigDiscountConfig
+  extends Struct.SingleTypeSchema {
+  collectionName: 'discount_config';
+  info: {
+    displayName: 'Discount Config';
+    pluralName: 'discount-configs';
+    singularName: 'discount-config';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    codes: Schema.Attribute.JSON;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::discount-config.discount-config'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
   };
 }
 
@@ -1130,6 +1241,51 @@ export interface ApiEventEvent extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiGatheringGathering extends Struct.CollectionTypeSchema {
+  collectionName: 'gatherings';
+  info: {
+    displayName: 'Gathering';
+    pluralName: 'gatherings';
+    singularName: 'gathering';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    attendees: Schema.Attribute.JSON;
+    city: Schema.Attribute.String;
+    color: Schema.Attribute.String & Schema.Attribute.DefaultTo<'amber'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    creator_id: Schema.Attribute.String;
+    date: Schema.Attribute.Date & Schema.Attribute.Required;
+    description: Schema.Attribute.Text;
+    food_items: Schema.Attribute.JSON;
+    host_name: Schema.Attribute.String;
+    icon: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'\uD83C\uDF7D\uFE0F'>;
+    image: Schema.Attribute.Text;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::gathering.gathering'
+    > &
+      Schema.Attribute.Private;
+    location: Schema.Attribute.String;
+    manager_ids: Schema.Attribute.JSON;
+    neighborhood: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    status: Schema.Attribute.Enumeration<['pending', 'approved', 'rejected']> &
+      Schema.Attribute.DefaultTo<'approved'>;
+    time: Schema.Attribute.String;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiItemItem extends Struct.CollectionTypeSchema {
   collectionName: 'items';
   info: {
@@ -1164,6 +1320,7 @@ export interface ApiItemItem extends Struct.CollectionTypeSchema {
         'lost_and_found',
         'message',
         'raise_hand',
+        'user_feedback',
       ]
     >;
     city: Schema.Attribute.String;
@@ -1176,6 +1333,8 @@ export interface ApiItemItem extends Struct.CollectionTypeSchema {
     extra_fields: Schema.Attribute.JSON;
     icon: Schema.Attribute.String;
     label: Schema.Attribute.Text;
+    lat: Schema.Attribute.Float;
+    lng: Schema.Attribute.Float;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::item.item'> &
       Schema.Attribute.Private;
@@ -1183,7 +1342,15 @@ export interface ApiItemItem extends Struct.CollectionTypeSchema {
     phone: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     status1: Schema.Attribute.Enumeration<
-      ['active', 'inactive', 'deleted', 'resolved']
+      [
+        'active',
+        'inactive',
+        'deleted',
+        'resolved',
+        'pending',
+        'rejected',
+        'frozen',
+      ]
     >;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -1193,6 +1360,10 @@ export interface ApiItemItem extends Struct.CollectionTypeSchema {
       'plugin::users-permissions.user'
     >;
     user_id: Schema.Attribute.String;
+    user_status: Schema.Attribute.Enumeration<
+      ['available', 'not_available', 'in_relationship', 'taking_break']
+    > &
+      Schema.Attribute.DefaultTo<'available'>;
     view_count: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
   };
 }
@@ -1229,6 +1400,82 @@ export interface ApiLostFoundRequestLostFoundRequest
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+  };
+}
+
+export interface ApiMessageMessage extends Struct.CollectionTypeSchema {
+  collectionName: 'messages';
+  info: {
+    displayName: 'Message';
+    pluralName: 'messages';
+    singularName: 'message';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    content: Schema.Attribute.Text & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::message.message'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    read: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    receiver: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    sender: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiNeighborhoodNeighborhood
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'neighborhoods';
+  info: {
+    description: '\u05E9\u05DB\u05D5\u05E0\u05D5\u05EA \u05E9\u05D4\u05D5\u05E6\u05E2\u05D5 \u05E2"\u05D9 \u05EA\u05D5\u05E9\u05D1\u05D9\u05DD \u05E2\u05DD \u05DE\u05D9\u05E7\u05D5\u05DD \u05DE\u05D3\u05D5\u05D9\u05E7 \u05E2\u05DC \u05D4\u05DE\u05E4\u05D4 - \u05DE\u05D0\u05D5\u05E9\u05E8\u05D5\u05EA \u05E2"\u05D9 \u05D1\u05E2\u05DC \u05D4\u05D0\u05EA\u05E8';
+    displayName: 'Neighborhood';
+    pluralName: 'neighborhoods';
+    singularName: 'neighborhood';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    city: Schema.Attribute.String & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    decided_at: Schema.Attribute.DateTime;
+    decided_by: Schema.Attribute.String;
+    lat: Schema.Attribute.Float & Schema.Attribute.Required;
+    lng: Schema.Attribute.Float & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::neighborhood.neighborhood'
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    status: Schema.Attribute.Enumeration<['pending', 'approved', 'rejected']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'pending'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user_id: Schema.Attribute.String;
   };
 }
 
@@ -1349,6 +1596,8 @@ export interface ApiPgSatisfactionResponsePgSatisfactionResponse
         },
         number
       >;
+    liked_by: Schema.Attribute.JSON;
+    likes: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -1356,6 +1605,7 @@ export interface ApiPgSatisfactionResponsePgSatisfactionResponse
     > &
       Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
+    replies: Schema.Attribute.JSON;
     submitted_at: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -2090,6 +2340,7 @@ declare module '@strapi/strapi' {
       'admin::user': AdminUser;
       'api::advertisement-order.advertisement-order': ApiAdvertisementOrderAdvertisementOrder;
       'api::advertisement.advertisement': ApiAdvertisementAdvertisement;
+      'api::card-exchange.card-exchange': ApiCardExchangeCardExchange;
       'api::ch-activity-item.ch-activity-item': ApiChActivityItemChActivityItem;
       'api::ch-article.ch-article': ApiChArticleChArticle;
       'api::ch-charter-signature.ch-charter-signature': ApiChCharterSignatureChCharterSignature;
@@ -2105,10 +2356,15 @@ declare module '@strapi/strapi' {
       'api::city.city': ApiCityCity;
       'api::community-fund.community-fund': ApiCommunityFundCommunityFund;
       'api::community-user.community-user': ApiCommunityUserCommunityUser;
+      'api::contact-request.contact-request': ApiContactRequestContactRequest;
       'api::coordinator-request.coordinator-request': ApiCoordinatorRequestCoordinatorRequest;
+      'api::discount-config.discount-config': ApiDiscountConfigDiscountConfig;
       'api::event.event': ApiEventEvent;
+      'api::gathering.gathering': ApiGatheringGathering;
       'api::item.item': ApiItemItem;
       'api::lost-found-request.lost-found-request': ApiLostFoundRequestLostFoundRequest;
+      'api::message.message': ApiMessageMessage;
+      'api::neighborhood.neighborhood': ApiNeighborhoodNeighborhood;
       'api::news-ticker-item.news-ticker-item': ApiNewsTickerItemNewsTickerItem;
       'api::pg-campaign.pg-campaign': ApiPgCampaignPgCampaign;
       'api::pg-satisfaction-response.pg-satisfaction-response': ApiPgSatisfactionResponsePgSatisfactionResponse;
