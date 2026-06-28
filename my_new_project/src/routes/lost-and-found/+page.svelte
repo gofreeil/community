@@ -220,7 +220,9 @@
             <h1 class="text-2xl font-black text-white flex items-center gap-2">
                 🔍 אבדות ומציאות
             </h1>
-            <p class="text-gray-400 text-sm mt-0.5">{data.items.length} מודעות פעילות</p>
+            <p class="text-gray-400 text-sm mt-0.5">
+                {#if data.userCity}<span class="text-blue-300 font-bold">{data.userCity}</span> · {/if}{data.items.length} מודעות פעילות
+            </p>
             {#if data.returnedCount > 0}
                 <p class="text-green-400 text-xs mt-1 font-bold">🕊️ {data.returnedCount} אבידות הושבו דרך הקהילה</p>
             {/if}
@@ -257,12 +259,21 @@
     {#if filtered.length === 0}
         <div class="text-center py-16 text-gray-500">
             <div class="text-5xl mb-3">🔍</div>
-            <p class="font-bold text-lg text-gray-400">אין מודעות עדיין</p>
-            <p class="text-sm mt-1">היה הראשון להוסיף!</p>
-            <a href="/lost-and-found/add"
-               class="mt-4 inline-block bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors">
-                + הוסף מודעה
-            </a>
+            {#if !data.userCity}
+                <p class="font-bold text-lg text-gray-400">בחר עיר בפרופיל כדי לראות מודעות</p>
+                <p class="text-sm mt-1">לוח אבדות ומציאות מחולק לפי עיר — עדכן את העיר שלך בפרופיל.</p>
+                <a href="/profile"
+                   class="mt-4 inline-block bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors">
+                    לעדכון הפרופיל
+                </a>
+            {:else}
+                <p class="font-bold text-lg text-gray-400">אין מודעות ב{data.userCity} עדיין</p>
+                <p class="text-sm mt-1">היה הראשון להוסיף!</p>
+                <a href="/lost-and-found/add"
+                   class="mt-4 inline-block bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors">
+                    + הוסף מודעה
+                </a>
+            {/if}
         </div>
     {:else}
         <div class="space-y-3">

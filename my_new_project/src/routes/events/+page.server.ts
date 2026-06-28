@@ -15,17 +15,18 @@ export const load: PageServerLoad = async (event) => {
         }
     } catch {}
 
-    const neighborhood  = user?.neighborhood ?? '';
+    // הלוח מחולק לפי עיר - לא לפי שכונה.
+    const city          = user?.city ?? '';
     const isCoordinator = (user?.coordinator_of?.length ?? 0) > 0;
     const isAdmin       = user?.role === 'neighborhood_admin' || user?.role === 'super_admin';
 
     const [events, pendingEvents] = await Promise.all([
-        getEvents(neighborhood || undefined).catch((e) => {
+        getEvents(city || undefined).catch((e) => {
             console.error('[events] getEvents failed:', e instanceof Error ? e.message : e);
             return [];
         }),
-        (isCoordinator || isAdmin)
-            ? getPendingEvents(neighborhood).catch((e) => {
+        ((isCoordinator || isAdmin) && city)
+            ? getPendingEvents(city).catch((e) => {
                 console.error('[events] getPendingEvents failed:', e instanceof Error ? e.message : e);
                 return [];
             })
@@ -97,11 +98,10 @@ export const actions: Actions = {
 
         if (!title || !date) return fail(400, { error: 'כותרת ותאריך חובה' });
 
-        // רכז יכול לפרסם רק בשכונה שלו
-        if (isCoordinator && !isAdmin) {
-            if (!user.coordinator_of.includes(neighborhood)) {
-                return fail(403, { error: 'אין הרשאה לשכונה זו' });
-            }
+        // הלוח מחולק לפי עיר: רכז/מנהל מפרסם תמיד לעיר שלו (city=user.city),
+        // כך שמידע של עיר אחת לעולם לא גולש לאחרת. השכונה היא תווית-משנה בלבד.
+        if (isCoordinator && !isAdmin && !user.city) {
+            return fail(403, { error: 'חסרה עיר בפרופיל - לא ניתן לפרסם' });
         }
 
         await createEvent({

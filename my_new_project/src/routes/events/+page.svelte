@@ -120,7 +120,9 @@
             <h1 class="text-3xl md:text-5xl font-black bg-gradient-to-r from-green-400 via-teal-400 to-blue-400 bg-clip-text text-transparent">
                 🗓️ לוח אירועים קהילתי
             </h1>
-            <p class="text-gray-400 mt-2 text-sm md:text-base">כל האירועים והמפגשים בשכונה במקום אחד</p>
+            <p class="text-gray-400 mt-2 text-sm md:text-base">
+                כל האירועים והמפגשים{#if (data.user as any)?.city} ב<span class="text-teal-300 font-bold">{(data.user as any).city}</span>{/if} במקום אחד
+            </p>
         </div>
 
         <!-- ── Pending queue (coordinator / admin only) ── -->

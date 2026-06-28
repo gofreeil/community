@@ -20,7 +20,7 @@ export const load: PageServerLoad = async (event) => {
 
     const [dbItemsRes, eventsRes] = await Promise.allSettled([
         getAllItems(),
-        getEvents(userNeighborhood ?? undefined),
+        getEvents(userCity ?? undefined),
     ]);
 
     const dbItems = dbItemsRes.status === 'fulfilled' ? dbItemsRes.value : [];

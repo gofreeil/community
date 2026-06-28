@@ -1,4 +1,4 @@
-import { getItemsByCategory, createItem, resolveItem, getResolvedCount } from '$lib/server/db';
+import { getItemsByCategoryAndCity, createItem, resolveItem, getResolvedCount, getUserById } from '$lib/server/db';
 import { fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 
@@ -6,15 +6,25 @@ export const load: PageServerLoad = async (event) => {
     let session = null;
     try { session = await event.locals.auth(); } catch {}
 
+    // הלוח מחולק לפי עיר - מציגים רק מודעות של העיר של המשתמש, בלי גלישה בין ערים.
+    let userCity = '';
+    try {
+        if (session?.user?.id) {
+            const jwt = event.cookies.get('strapi_jwt');
+            const user = await getUserById(session.user.id, jwt ?? undefined);
+            userCity = user?.city ?? '';
+        }
+    } catch {}
+
     try {
         const [items, returnedCount] = await Promise.all([
-            getItemsByCategory('lost_and_found'),
+            userCity ? getItemsByCategoryAndCity('lost_and_found', userCity) : Promise.resolve([]),
             getResolvedCount('lost_and_found'),
         ]);
-        return { items, currentUserId: session?.user?.id ?? null, returnedCount };
+        return { items, currentUserId: session?.user?.id ?? null, returnedCount, userCity };
     } catch (e) {
         console.warn('[lost-and-found] load failed:', e instanceof Error ? e.message : e);
-        return { items: [], currentUserId: null, returnedCount: 0 };
+        return { items: [], currentUserId: null, returnedCount: 0, userCity };
     }
 };
 

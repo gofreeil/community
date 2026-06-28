@@ -317,6 +317,26 @@ export async function getItemsByCategory(category: string): Promise<DbItem[]> {
     });
 }
 
+/** פריטים לפי קטגוריה מסוננים לפי עיר - ללוחות מחולקים-עיר (אבדות/מציאות).
+ *  מונע גלישת מידע מעיר אחת לאחרת. */
+export async function getItemsByCategoryAndCity(category: string, city: string): Promise<DbItem[]> {
+    return cached(`items:cat:${category}:city:${city}`, TTL_ITEMS, async () => {
+        try {
+            const res = await strapiGet<{ data: StrapiItem[] }>('/api/items', {
+                'filters[category][$eq]': category,
+                'filters[status1][$eq]':  'active',
+                'filters[city][$eq]':     city,
+                'sort':                   'createdAt:desc',
+                'pagination[limit]':      '1000',
+            });
+            return (res.data ?? []).map(mapStrapiItem);
+        } catch (e) {
+            if (e instanceof StrapiContentTypeError) return [];
+            throw e;
+        }
+    });
+}
+
 /** שליפת פריטים לפי קטגוריה + סטטוס (למשל פנויים שממתינים לאישור: 'singles','pending') */
 export async function getItemsByCategoryAndStatus(category: string, status: string): Promise<DbItem[]> {
     try {
@@ -535,16 +555,16 @@ function mapStrapiEvent(e: StrapiEvent): DbEvent {
     };
 }
 
-/** מחזיר אירועים מאושרים לשכונה (ציבורי) */
-export async function getEvents(neighborhood?: string): Promise<DbEvent[]> {
-    return cached(`events:${neighborhood ?? 'all'}`, TTL_EVENTS, async () => {
+/** מחזיר אירועים מאושרים לעיר (ציבורי). הלוח מחולק לפי עיר - לא לפי שכונה. */
+export async function getEvents(city?: string): Promise<DbEvent[]> {
+    return cached(`events:city:${city ?? 'all'}`, TTL_EVENTS, async () => {
         try {
             const params: Record<string,string> = {
                 'filters[status][$eq]': 'approved',
                 'sort':                 'date:asc',
                 'pagination[limit]':    '500',
             };
-            if (neighborhood) params['filters[neighborhood][$eq]'] = neighborhood;
+            if (city) params['filters[city][$eq]'] = city;
             const res = await strapiGet<{ data: StrapiEvent[] }>('/api/events', params);
             return (res.data ?? []).map(mapStrapiEvent);
         } catch (e) {
@@ -554,14 +574,14 @@ export async function getEvents(neighborhood?: string): Promise<DbEvent[]> {
     });
 }
 
-/** מחזיר אירועים ממתינים לאישור (לרכז בלבד) */
-export async function getPendingEvents(neighborhood: string): Promise<DbEvent[]> {
+/** מחזיר אירועים ממתינים לאישור בעיר (לרכז/מנהל בלבד) */
+export async function getPendingEvents(city: string): Promise<DbEvent[]> {
     try {
         const res = await strapiGet<{ data: StrapiEvent[] }>('/api/events', {
-            'filters[neighborhood][$eq]': neighborhood,
-            'filters[status][$eq]':      'pending',
-            'sort':                      'createdAt:desc',
-            'pagination[limit]':         '100',
+            'filters[city][$eq]':   city,
+            'filters[status][$eq]': 'pending',
+            'sort':                 'createdAt:desc',
+            'pagination[limit]':    '100',
         });
         return (res.data ?? []).map(mapStrapiEvent);
     } catch (e) {

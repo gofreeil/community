@@ -38,10 +38,9 @@ export const load: PageServerLoad = async (event) => {
         // תושבים שנרשמו תחת השכונה/ות שהרכז מנהל
         residentsCount   = allUsers.filter(u => u.neighborhood && neighborhoods.includes(u.neighborhood)).length;
 
-        const pendingArrays = await Promise.all(
-            neighborhoods.map(n => getPendingEvents(n).catch(() => []))
-        );
-        pendingEventsCount = pendingArrays.reduce((sum, arr) => sum + arr.length, 0);
+        // לוח האירועים מחולק לפי עיר - סופרים אירועים ממתינים בעיר של הרכז.
+        const pending = user.city ? await getPendingEvents(user.city).catch(() => []) : [];
+        pendingEventsCount = pending.length;
     } catch (e) {
         console.warn('[coordinator] dashboard counts failed:', e);
     }
