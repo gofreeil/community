@@ -19,7 +19,11 @@
             : config.icon ?? '';
 
     // ---- Neighborhood - מתמלא מיד מהפרופיל ----
-    let neighborhood = $state(userProfile?.neighborhood || DEFAULT_NEIGHBORHOOD);
+    // אם למשתמש יש עיר אבל אין שכונה (יישוב חד-שכונתי כמו כפר תפוח) - "מרכז",
+    // ולא ברירת המחדל הגלובלית (קרית משה) שתשמור את הפריט באזור הלא נכון.
+    let neighborhood = $state(
+        userProfile?.neighborhood || (userProfile?.city ? 'מרכז' : DEFAULT_NEIGHBORHOOD),
+    );
     let city         = $state(userProfile?.city         || 'ירושלים');
 
     // ---- ערכי ברירת מחדל לשדות מפרופיל המשתמש ----
@@ -49,7 +53,7 @@
         if (key === 'contact' && userProfile?.nickname) return userProfile.nickname;
         if (key === 'phone'   && userProfile?.phone)    return userProfile.phone;
         if (key === 'address' && type === 'neighborhood_select') {
-            return userProfile?.neighborhood || DEFAULT_NEIGHBORHOOD;
+            return userProfile?.neighborhood || (userProfile?.city ? 'מרכז' : DEFAULT_NEIGHBORHOOD);
         }
         if (key === 'address') {
             const parts = [userProfile?.neighborhood, userProfile?.city].filter(Boolean);

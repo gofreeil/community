@@ -80,7 +80,9 @@
 
     $effect(() => {
         if (city && !neighborhoodOptions.includes(neighborhood)) {
-            neighborhood = '';
+            // יישוב עם שכונה אחת (כמו כפר תפוח - רק "מרכז") → בחירה אוטומטית,
+            // כך שהמשתמש לא נתקע בלי שכונה והפרסום לא נכשל.
+            neighborhood = neighborhoodOptions.length === 1 ? neighborhoodOptions[0] : '';
         }
     });
 

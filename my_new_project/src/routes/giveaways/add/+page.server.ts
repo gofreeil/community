@@ -48,8 +48,11 @@ export const actions: Actions = {
         const contact      = fd.get('contact')?.toString().trim()      ?? '';
         const phone        = fd.get('phone')?.toString().trim()        ?? '';
         const tags         = fd.get('tags')?.toString().trim()         ?? '';
-        const neighborhood = fd.get('neighborhood')?.toString().trim() ?? '';
+        let   neighborhood = fd.get('neighborhood')?.toString().trim() ?? '';
         const city         = fd.get('city')?.toString().trim()         ?? '';
+        // ביישוב חד-שכונתי (כמו כפר תפוח - רק "מרכז") ייתכן שלא נבחרה שכונה במפורש;
+        // משלימים "מרכז" כדי שהפרסום לא ייכשל על משתמש תקין עם עיר.
+        if (!neighborhood && city) neighborhood = 'מרכז';
         const images_json  = fd.get('images_json')?.toString()         ?? '';
         let images: string[] = [];
         try { const parsed = JSON.parse(images_json); if (Array.isArray(parsed)) images = parsed.filter(s => typeof s === 'string'); } catch {}
