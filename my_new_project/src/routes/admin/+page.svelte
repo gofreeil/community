@@ -1,11 +1,34 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
 	import type { DiscountCode } from '$lib/discountCodes';
 
 	let { data, form } = $props();
 
 	let activeTab = $state<'users' | 'items' | 'discounts'>('users');
+
+	// ---- סימון ידני "כבר אישרתי" על פרסומים/הודעות (וי ירוק) ----
+	// נשמר ב-localStorage של הדפדפן (זיכרון אישי לאדמין, ללא צורך בבאקאנד)
+	const APPROVED_KEY = 'admin_approved_items';
+	let approvedIds = $state<Set<string>>(new Set());
+
+	onMount(() => {
+		try {
+			const raw = localStorage.getItem(APPROVED_KEY);
+			if (raw) approvedIds = new Set(JSON.parse(raw));
+		} catch { /* ignore */ }
+	});
+
+	function toggleApproved(id: string) {
+		const next = new Set(approvedIds);
+		if (next.has(id)) next.delete(id);
+		else next.add(id);
+		approvedIds = next;
+		try {
+			localStorage.setItem(APPROVED_KEY, JSON.stringify([...next]));
+		} catch { /* ignore */ }
+	}
 
 	// ---- עורך קודי הנחה (סופר-אדמין) ----
 	// עותק מקומי הניתן לעריכה; נשמר ל-Strapi דרך action saveDiscounts
@@ -560,7 +583,8 @@
 		{#if activeTab === 'items'}
 			<div class="space-y-3">
 				{#each filteredItems() as item (item.id)}
-					<div class="bg-[#0f172a] rounded-2xl border border-white/10 p-4 flex flex-col sm:flex-row sm:items-center gap-4 transition-all hover:border-white/20">
+					{@const isApproved = approvedIds.has(item.id)}
+					<div class="rounded-2xl border p-4 flex flex-col sm:flex-row sm:items-center gap-4 transition-all {isApproved ? 'bg-green-500/5 border-green-500/40' : 'bg-[#0f172a] border-white/10 hover:border-white/20'}">
 						<!-- אייקון + שם -->
 						<div class="flex items-center gap-3 flex-1 min-w-0">
 							<span class="text-2xl flex-shrink-0">{item.icon || '📦'}</span>
@@ -579,6 +603,18 @@
 						<div class="text-sm text-gray-400 min-w-[80px]">
 							{item.neighborhood || '-'}
 						</div>
+
+						<!-- סימון "כבר אישרתי" - וי ירוק (זיכרון אישי לאדמין) -->
+						<button
+							type="button"
+							onclick={() => toggleApproved(item.id)}
+							class="px-3 py-1.5 text-xs rounded-lg border transition-all cursor-pointer font-bold flex items-center gap-1 whitespace-nowrap {isApproved
+								? 'bg-green-500/20 text-green-300 border-green-500/50'
+								: 'bg-white/5 text-gray-500 border-white/10 hover:text-green-400 hover:border-green-500/30'}"
+							title={isApproved ? 'מסומן כאושר - לחץ לביטול' : 'סמן כ"כבר אישרתי"'}
+						>
+							{isApproved ? '✅ אושר' : '✓ סמן אושר'}
+						</button>
 
 						<!-- מחיקה -->
 						<form method="POST" action="?/deleteItem" use:enhance>

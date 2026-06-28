@@ -13,14 +13,12 @@
     "user1": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "plugin::users-permissions.user",
-      "inversedBy": "card_exchanges_initiated"
+      "target": "plugin::users-permissions.user"
     },
     "user2": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "plugin::users-permissions.user",
-      "inversedBy": "card_exchanges_received"
+      "target": "plugin::users-permissions.user"
     },
     "message": {
       "type": "text"

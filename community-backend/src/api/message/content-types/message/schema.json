@@ -13,14 +13,12 @@
     "sender": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "plugin::users-permissions.user",
-      "inversedBy": "messages_sent"
+      "target": "plugin::users-permissions.user"
     },
     "receiver": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "plugin::users-permissions.user",
-      "inversedBy": "messages_received"
+      "target": "plugin::users-permissions.user"
     },
     "content": {
       "type": "text",
