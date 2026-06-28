@@ -227,6 +227,17 @@ register('he', () => Promise.resolve({
     coordinator_submitting: "שולח...",
     coordinator_success: "✅ בקשתך נשלחה בהצלחה! צוות הניהול יצור איתך קשר בקרוב.",
     coordinator_error: "שגיאה בשליחת הבקשה. אנא נסה שוב.",
+    coordinator_city: "העיר / היישוב שלך *",
+    coordinator_choose_city: "בחר/י עיר או יישוב",
+    coordinator_choose_neighborhood: "בחר/י שכונה",
+    coordinator_nb_not_listed: "השכונה שלי לא מופיעה ברשימה",
+    coordinator_new_nb_name: "שם השכונה החדשה",
+    coordinator_city_only_note: "ביישוב זה אין שכונות מוגדרות — תוכל/י להירשם כרכז/ת היישוב כולו.",
+    coordinator_verify_location: "🗺️ סמן/י את המיקום על המפה לאימות (יישלח לאישור מנהל)",
+    coordinator_verify_optional: "לא חובה, אך עוזר לנו לאמת את המיקום המדויק.",
+    coordinator_need_area: "בחר/י עיר. אם יש שכונות — בחר/י שכונה או סמן/י שכונה חדשה על המפה.",
+    coordinator_area_city: "רכז/ת היישוב",
+    coordinator_area_neighborhood: "רכז/ת השכונה",
 }));
 
 register('en', () => Promise.resolve({
@@ -443,6 +454,17 @@ register('en', () => Promise.resolve({
     coordinator_submitting: "Sending...",
     coordinator_success: "✅ Your request has been sent successfully! The management team will contact you soon.",
     coordinator_error: "Error sending request. Please try again.",
+    coordinator_city: "Your city / town *",
+    coordinator_choose_city: "Choose a city or town",
+    coordinator_choose_neighborhood: "Choose a neighborhood",
+    coordinator_nb_not_listed: "My neighborhood is not listed",
+    coordinator_new_nb_name: "New neighborhood name",
+    coordinator_city_only_note: "This town has no defined neighborhoods — you can register as coordinator of the whole town.",
+    coordinator_verify_location: "🗺️ Mark the location on the map to verify (sent for admin approval)",
+    coordinator_verify_optional: "Optional, but helps us verify the exact location.",
+    coordinator_need_area: "Choose a city. If it has neighborhoods — pick one or mark a new neighborhood on the map.",
+    coordinator_area_city: "Town coordinator",
+    coordinator_area_neighborhood: "Neighborhood coordinator",
 }));
 
 register('ru', () => Promise.resolve({
@@ -659,6 +681,17 @@ register('ru', () => Promise.resolve({
     coordinator_submitting: "Отправка...",
     coordinator_success: "✅ Ваша заявка успешно отправлена! Команда управления свяжется с вами в ближайшее время.",
     coordinator_error: "Ошибка при отправке заявки. Пожалуйста, попробуйте ещё раз.",
+    coordinator_city: "Ваш город / посёлок *",
+    coordinator_choose_city: "Выберите город или посёлок",
+    coordinator_choose_neighborhood: "Выберите район",
+    coordinator_nb_not_listed: "Моего района нет в списке",
+    coordinator_new_nb_name: "Название нового района",
+    coordinator_city_only_note: "В этом посёлке нет определённых районов — вы можете зарегистрироваться координатором всего посёлка.",
+    coordinator_verify_location: "🗺️ Отметьте место на карте для проверки (отправляется на одобрение администратора)",
+    coordinator_verify_optional: "Необязательно, но помогает нам проверить точное местоположение.",
+    coordinator_need_area: "Выберите город. Если есть районы — выберите район или отметьте новый на карте.",
+    coordinator_area_city: "Координатор посёлка",
+    coordinator_area_neighborhood: "Координатор района",
 }));
 
 init({
