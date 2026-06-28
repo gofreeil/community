@@ -14,7 +14,8 @@
 	import { goto, beforeNavigate } from "$app/navigation";
 	import { page } from "$app/state";
 	import { closeAdPopup } from "$lib/adPopupStore";
-	import { registerDynamicNeighborhoods } from "$lib/neighborhoodCoords";
+	import { registerDynamicNeighborhoods, MY_PIN_LS_KEY } from "$lib/neighborhoodCoords";
+	import { browser } from "$app/environment";
 
 	let { children, data } = $props();
 
@@ -24,6 +25,20 @@
 		if (data.approvedNeighborhoods?.length) {
 			registerDynamicNeighborhoods(data.approvedNeighborhoods);
 		}
+	});
+
+	// מיקום אישי שהמשתמש סימן בעצמו (לפני אישור אדמין) - תיקון מיידי למפה שלו
+	// בלבד, נשמר מקומית במכשיר. אחרי אישור אדמין זה ממילא יגיע מ-approvedNeighborhoods.
+	$effect(() => {
+		if (!browser) return;
+		try {
+			const raw = localStorage.getItem(MY_PIN_LS_KEY);
+			if (!raw) return;
+			const p = JSON.parse(raw);
+			if (p?.city && p?.name && Number.isFinite(p.lat) && Number.isFinite(p.lng)) {
+				registerDynamicNeighborhoods([p]);
+			}
+		} catch {}
 	});
 
 	// ממפה את session.user לצורה שה-Header מצפה לה

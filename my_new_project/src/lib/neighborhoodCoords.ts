@@ -151,6 +151,9 @@ export const neighborhoodCenters: Record<string, Coord> = {
 
 const DEFAULT_COORD: Coord = [31.7683, 35.2137]; // ירושלים מרכז
 
+// מפתח localStorage למיקום האישי שהמשתמש סימן (תיקון מיידי לפני אישור אדמין)
+export const MY_PIN_LS_KEY = 'gofreeil_my_location_pin';
+
 // ---- שכונות שהוצעו ע"י תושבים ואושרו (נטענות בזמן ריצה מ-Strapi) ----
 // ממופות לפי שם וגם לפי "עיר|שכונה" כדי למנוע התנגשות שמות בין ערים.
 const dynamicNeighborhoodCenters: Record<string, Coord> = {};
@@ -193,6 +196,19 @@ export function getCoordsFor(neighborhood?: string, city?: string): Coord {
         return cityCenters[city];
     }
     return DEFAULT_COORD;
+}
+
+/**
+ * האם קיימת קואורדינטה *מדויקת* לעיר/שכונה (סטטית, דינמית או אישית) -
+ * להבדיל מנפילה ל-DEFAULT_COORD (ירושלים). משמש כדי להציע למשתמש לסמן
+ * את מיקום הישוב שלו רק כשהמפה באמת לא מדויקת.
+ */
+export function hasPreciseCoords(neighborhood?: string, city?: string): boolean {
+    if (neighborhood && city && dynamicNeighborhoodCenters[dynKey(city, neighborhood)]) return true;
+    if (neighborhood && dynamicNeighborhoodCenters[neighborhood]) return true;
+    if (neighborhood && neighborhoodCenters[neighborhood]) return true;
+    if (city && cityCenters[city]) return true;
+    return false;
 }
 
 /**

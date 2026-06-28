@@ -14,6 +14,7 @@
 	import { t, locale } from "svelte-i18n";
 	import { get } from "svelte/store";
 	import { neighborhoodState } from "$lib/neighborhoodState.svelte";
+	import { registerDynamicNeighborhoods, hasPreciseCoords, MY_PIN_LS_KEY } from "$lib/neighborhoodCoords";
 	import { findWhatsAppGroups } from "$lib/data/whatsapp-groups";
 	import { getLikedItems, removeLike, type LikedItem } from "$lib/likedItems";
 	import { statusLabel, type UserStatus } from "$lib/singlesMock";
@@ -576,6 +577,52 @@
 	let customLat = $state<number | null>(null);
 	let customLng = $state<number | null>(null);
 	let locationInteracted = $state(false);
+
+	// ---- סימון עצמי של מיקום הישוב על המפה (כשהמפה לא מדויקת) ----
+	let showCityPin = $state(false);
+	let cityPinLat = $state<number | null>(null);
+	let cityPinLng = $state<number | null>(null);
+	let savingCityPin = $state(false);
+	let cityPinSaved = $state(false);
+	let cityPinError = $state("");
+	// המפה כבר מדויקת לישוב? (אם לא - נציע למשתמש לסמן בעצמו)
+	let cityHasCoords = $derived(hasPreciseCoords(neighborhood, city));
+
+	async function saveCityPin() {
+		if (cityPinLat == null || cityPinLng == null) {
+			cityPinError = "נא לסמן את המיקום על המפה";
+			return;
+		}
+		if (!city) {
+			cityPinError = "יש לבחור עיר תחילה";
+			return;
+		}
+		savingCityPin = true;
+		cityPinError = "";
+		const nb = neighborhood || "מרכז";
+		const pin = { name: nb, city, lat: cityPinLat, lng: cityPinLng };
+		try {
+			// 1) רשומת שכונה ממתינה - לאחר אישור אדמין תתקן את המפה לכל תושבי הישוב
+			const res = await fetch("/api/neighborhoods", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(pin),
+			});
+			const r = await res.json();
+			if (!r?.success) {
+				cityPinError = r?.message || "השמירה נכשלה, נסה שוב";
+				savingCityPin = false;
+				return;
+			}
+			// 2) תיקון מיידי למפה של המשתמש עצמו - רישום מקומי + שמירה במכשיר
+			registerDynamicNeighborhoods([pin]);
+			try { localStorage.setItem(MY_PIN_LS_KEY, JSON.stringify(pin)); } catch {}
+			cityPinSaved = true;
+		} catch {
+			cityPinError = "שגיאה בשמירה, נסה שוב";
+		}
+		savingCityPin = false;
+	}
 	let family_status = $state(_ud?.family_status ?? "");
 	let gender = $state(_ud?.gender ?? "");
 	let whatsappMatches = $derived(findWhatsAppGroups(city, neighborhood));
@@ -3630,6 +3677,59 @@
 								<input type="hidden" name="custom_lat" value={customLat ?? ''} />
 								<input type="hidden" name="custom_lng" value={customLng ?? ''} />
 							</div>
+
+							<!-- סימון עצמי של מיקום הישוב על המפה (כשהמפה לא מדויקת) -->
+							{#if city}
+								<div class="col-span-2 border-t border-emerald-500/15 pt-3 mt-1">
+									<button
+										type="button"
+										onclick={() => (showCityPin = !showCityPin)}
+										class="w-full flex items-center justify-between gap-2 text-right rounded-xl px-4 py-3 transition-colors
+										       {cityHasCoords
+											? 'bg-[#070b14] border border-white/10 text-gray-300'
+											: 'bg-emerald-500/10 border border-emerald-500/40 text-emerald-200'}"
+									>
+										<span class="flex items-center gap-2 text-sm font-bold">
+											🗺️ {cityHasCoords
+												? 'המפה לא מדויקת? סמן את מיקום הישוב שלך'
+												: `המפה של ${city} לא מדויקת — סמן את מיקום הישוב`}
+										</span>
+										<span class="text-xs opacity-70">{showCityPin ? '▴' : '▾'}</span>
+									</button>
+
+									{#if showCityPin}
+										<div class="mt-3 space-y-2">
+											<p class="text-gray-400 text-xs leading-relaxed">
+												לחץ על המפה במקום שבו נמצא הישוב שלך (אפשר לגרור את הסמן לדיוק).
+												המיקום יתוקן <span class="text-emerald-300 font-bold">מיד אצלך</span>,
+												ויעודכן לכל תושבי {city} לאחר אישור מנהל.
+											</p>
+											<NeighborhoodPicker {city} bind:lat={cityPinLat} bind:lng={cityPinLng} />
+
+											{#if cityPinError}
+												<p class="text-red-400 text-sm">{cityPinError}</p>
+											{/if}
+
+											{#if cityPinSaved}
+												<p class="text-emerald-400 text-sm font-bold bg-emerald-900/20 border border-emerald-500/30 rounded-lg py-2 px-3">
+													✓ המיקום נשמר! המפה שלך כבר מתוקנת. הוא יופיע לכל תושבי {city} לאחר אישור מנהל.
+												</p>
+											{:else}
+												<button
+													type="button"
+													onclick={saveCityPin}
+													disabled={savingCityPin || cityPinLat == null}
+													class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500
+													       text-white font-black py-3 rounded-xl transition-all
+													       disabled:opacity-50 disabled:cursor-not-allowed"
+												>
+													{savingCityPin ? '⏳ שומר…' : '📍 שמור את מיקום הישוב'}
+												</button>
+											{/if}
+										</div>
+									{/if}
+								</div>
+							{/if}
 						{/if}
 					</div>
 					<!-- סגירת מסגרת עיר+שכונה -->
