@@ -211,10 +211,20 @@
                         {#if !nbNotListed}
                             <select
                                 id="c-neighborhood"
-                                bind:value={neighborhood}
+                                value={neighborhood}
+                                onchange={(e) => {
+                                    const v = e.currentTarget.value;
+                                    if (v === '__not_listed__') {
+                                        nbNotListed = true;
+                                        neighborhood = '';
+                                    } else {
+                                        neighborhood = v;
+                                    }
+                                }}
                                 class="w-full bg-slate-900 border border-slate-600 rounded px-4 py-2 text-white focus:outline-none focus:border-blue-500"
                             >
                                 <option value="">{$_('coordinator_choose_neighborhood')}</option>
+                                <option value="__not_listed__">{$_('coordinator_nb_not_listed')}</option>
                                 {#each cityNeighborhoods as nb}
                                     <option value={nb}>{nb}</option>
                                 {/each}
