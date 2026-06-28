@@ -2013,26 +2013,26 @@
 			</div>
 			<div class="flex flex-wrap gap-2">
 				<a
-					href="/admin/ads-review"
-					class="relative flex-1 min-w-[160px] text-xs md:text-sm font-bold text-emerald-300 hover:text-emerald-200 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-emerald-500/10 border border-emerald-500/30 hover:border-emerald-400/50 flex items-center justify-center gap-1.5"
-					title="אישור פרסומות, תזמון, מפרסמים, תזכורות"
+					href="/admin?tab=users#coordinators"
+					class="relative flex-1 min-w-[160px] text-xs md:text-sm font-bold text-amber-300 hover:text-amber-200 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-amber-500/10 border border-amber-500/30 hover:border-amber-400/50 flex items-center justify-center gap-1.5"
+					title="ניהול משתמשים ורכזי שכונות"
 				>
-					📢 ניהול פרסומות
-					{#if (data.pendingAdsCount ?? 0) > 0}
-						<span class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-amber-500 text-black text-[11px] font-black shadow-lg animate-pulse">
-							{data.pendingAdsCount}
+					🏘️ ניהול משתמשים
+					{#if (data.coordinatorsCount ?? 0) > 0}
+						<span class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-amber-500/30 text-amber-100 border border-amber-400/40 text-[11px] font-black">
+							{data.coordinatorsCount}
 						</span>
 					{/if}
 				</a>
 				<a
-					href="/admin?tab=users#coordinators"
-					class="relative flex-1 min-w-[160px] text-xs md:text-sm font-bold text-amber-300 hover:text-amber-200 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-amber-500/10 border border-amber-500/30 hover:border-amber-400/50 flex items-center justify-center gap-1.5"
-					title="ניהול רכזי שכונות שמאשרים תוכן"
+					href="/admin/ads-review"
+					class="relative flex-1 min-w-[160px] text-xs md:text-sm font-bold text-emerald-300 hover:text-emerald-200 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-emerald-500/10 border border-emerald-500/30 hover:border-emerald-400/50 flex items-center justify-center gap-1.5"
+					title="ניהול תוכן, פרסומות, תזמון ומפרסמים"
 				>
-					🏘️ ניהול רכזים
-					{#if (data.coordinatorsCount ?? 0) > 0}
-						<span class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-amber-500/30 text-amber-100 border border-amber-400/40 text-[11px] font-black">
-							{data.coordinatorsCount}
+					📢 ניהול תוכן
+					{#if (data.pendingAdsCount ?? 0) > 0}
+						<span class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-amber-500 text-black text-[11px] font-black shadow-lg animate-pulse">
+							{data.pendingAdsCount}
 						</span>
 					{/if}
 				</a>
