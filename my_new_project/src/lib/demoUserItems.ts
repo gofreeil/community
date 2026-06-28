@@ -201,6 +201,8 @@ export function buildDemoUserItems(userId: string): DbItem[] {
             color:        'orange',
             neighborhood: 'קרית משה',
             city:         'ירושלים',
+            lat:          null,
+            lng:          null,
             extra_fields: JSON.stringify(extra),
             status:       'active',
             user_id:      userId,

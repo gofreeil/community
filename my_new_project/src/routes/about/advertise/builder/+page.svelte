@@ -163,7 +163,8 @@
     // moved to /about/advertise/builder/landing - this page ends at step 7 (preview).
     type Step =
         | "image" | "logo" | "title" | "subtitle" | "hover"
-        | "gradient" | "preview";
+        | "gradient" | "preview"
+        | "done";   // מצב טרמינלי לאחר שליחה - לא נכלל ב-stepOrder ואין לו כרטיס
 
     const stepOrder: Step[] = [
         "image", "logo", "title", "gradient", "subtitle", "hover", "preview"
@@ -180,6 +181,7 @@
         hover:    { num: false, title: false },
         gradient: { num: false, title: false },
         preview:  { num: false, title: false },
+        done:     { num: false, title: false },
     });
 
     const NUM_MS = 700;
@@ -202,7 +204,7 @@
 
     let stepRefs: Record<Step, HTMLElement | null> = $state({
         image: null, logo: null, title: null, subtitle: null, hover: null,
-        gradient: null, preview: null,
+        gradient: null, preview: null, done: null,
     });
 
     // Demo positioning - the demo "jumps" to align with the active step's vertical position
@@ -369,7 +371,7 @@
         compressNotice = { ...compressNotice, visible: false };
     }
 
-    async function processImageFile(file: File | null | undefined, target: "main" | "logo" | { kind: "product"; id: number }) {
+    async function processImageFile(file: File | null | undefined, target: "main" | "logo" | "landingImage" | { kind: "product"; id: number }) {
         if (!file) return;
         if (!file.type.startsWith("image/")) {
             alert("נא להעלות קובץ תמונה");

@@ -45,8 +45,6 @@ export const load: PageServerLoad = async (event) => {
         address: string;
         neighborhood: string;
         city: string;
-        image: string;
-        images: string[];
         extra_fields: Record<string, unknown>;
     } | null = null;
     if (editId && session?.user?.id) {
@@ -62,8 +60,6 @@ export const load: PageServerLoad = async (event) => {
                     address: dbItem.address ?? '',
                     neighborhood: dbItem.neighborhood ?? '',
                     city: dbItem.city ?? '',
-                    image: dbItem.image ?? '',
-                    images: Array.isArray(dbItem.images) ? dbItem.images : [],
                     extra_fields: typeof dbItem.extra_fields === 'string'
                         ? (() => { try { return JSON.parse(dbItem.extra_fields); } catch { return {}; } })()
                         : (dbItem.extra_fields ?? {}),

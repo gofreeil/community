@@ -274,7 +274,7 @@
             const who = nickname || displayLabel;
             const city = (item as { city?: string }).city;
             const bits = [who];
-            if (age != null && age !== '') bits.push(`גיל ${age}`);
+            if (age != null) bits.push(`גיל ${age}`);
             if (city) bits.push(`מ${city}`);
             const tag = isFemale ? 'פנויה' : 'פנוי';
             return `${bits.join(', ')} | ${tag} מקהילה בשכונה`;

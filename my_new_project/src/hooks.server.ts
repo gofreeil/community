@@ -74,7 +74,7 @@ export const handle: Handle = async ({ event, resolve }) => {
     // ייווסף Set-Cookie (שמונע cache ב-CDN). כך סקרפרים של רשתות חברתיות
     // (טלגרם/וואטסאפ/פייסבוק) מקבלים את התמונה מהר ומה-edge cache.
     if (/^\/api\/items\/[^/]+\/og\.jpg$/.test(event.url.pathname)) {
-        (event.locals as Record<string, unknown>).auth = async () => null;
+        (event.locals as unknown as Record<string, unknown>).auth = async () => null;
         return await resolve(event);
     }
 
@@ -84,7 +84,7 @@ export const handle: Handle = async ({ event, resolve }) => {
         console.warn('[hooks] auth handle threw - continuing anonymously:', err);
         // fallback: מגדיר auth בטוח כדי שקוד downstream לא יזרוק TypeError
         if (!event.locals.auth) {
-            (event.locals as Record<string, unknown>).auth = async () => null;
+            (event.locals as unknown as Record<string, unknown>).auth = async () => null;
         }
         return await resolve(event);
     }
