@@ -134,6 +134,25 @@
 		"main" | "profile" | "messages" | "items" | "levels"
 	>("main");
 
+	// בחירת לשונית בנייד - פותחת אוטומטית את המקטעים השייכים אליה
+	// כדי שהמשתמש לא יצטרך ללחוץ לחיצה נוספת כדי לפתוח
+	function selectTab(
+		id: "main" | "profile" | "messages" | "items" | "levels",
+	) {
+		mobileTab = id;
+		if (id === "messages") {
+			showMessages = true;
+			showFeedback = true;
+			showReceivedMessages = true;
+		} else if (id === "items") {
+			showMyInfo = true;
+		} else if (id === "levels") {
+			showLevels = true;
+		} else if (id === "profile") {
+			isEditing = true;
+		}
+	}
+
 	// ניהול המלצות - מחיקה / דחייה לאוחר
 	function loadRecSet(key: string): Set<string> {
 		if (typeof localStorage === "undefined") return new Set();
@@ -1619,7 +1638,7 @@
 		{#each [{ id: "main", icon: "🏠", label: "ראשי" }, { id: "profile", icon: "✏️", label: "פרופיל" }, { id: "messages", icon: "💬", label: "הודעות" }, { id: "items", icon: "📦", label: "נכסים" }, { id: "levels", icon: "🏆", label: "דרגות" }] as tab}
 			<button
 				type="button"
-				onclick={() => (mobileTab = tab.id as typeof mobileTab)}
+				onclick={() => selectTab(tab.id as typeof mobileTab)}
 				class="flex-shrink-0 flex flex-col items-center gap-0.5 px-3 py-2 rounded-2xl text-[11px] font-bold transition-all
 					{mobileTab === tab.id
 					? 'bg-purple-600/30 border border-purple-500/50 text-white'
