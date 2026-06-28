@@ -6,6 +6,10 @@
 
 import { strapiGet, strapiPost, strapiPut, strapiDelete, StrapiContentTypeError } from './strapiClient.js';
 import { createItem } from './db.js';
+import { cached, invalidate } from './cache.js';
+
+// פרסומות מאושרות נטענות בכל ניווט (ב-+layout.server) — cache קצר חוסך round-trip
+const TTL_ADS = 120_000;
 
 const ENDPOINT = '/api/submitted-ads';
 
@@ -176,7 +180,7 @@ export async function listPending(): Promise<SubmittedAd[]> {
 }
 
 export async function listApproved(): Promise<SubmittedAd[]> {
-    return listByStatus('approved');
+    return cached('ads:approved', TTL_ADS, () => listByStatus('approved'));
 }
 
 export async function getAd(id: string): Promise<SubmittedAd | null> {
@@ -223,6 +227,7 @@ export async function approveAd(id: string, decidedBy: string, durationDays?: nu
             reminders_sent:   [],
         },
     });
+    invalidate('ads:');
     return fromStrapi(res.data);
 }
 
@@ -237,6 +242,7 @@ export async function rejectAd(id: string, decidedBy: string, reason?: string): 
             rejection_reason: reason ?? null,
         },
     });
+    invalidate('ads:');
     return fromStrapi(res.data);
 }
 
@@ -251,6 +257,7 @@ export async function unrejectAd(id: string): Promise<SubmittedAd | null> {
             rejection_reason: null,
         },
     });
+    invalidate('ads:');
     return fromStrapi(res.data);
 }
 
@@ -265,6 +272,7 @@ export async function unapproveAd(id: string): Promise<SubmittedAd | null> {
             rejection_reason: null,
         },
     });
+    invalidate('ads:');
     return fromStrapi(res.data);
 }
 
@@ -273,6 +281,7 @@ export async function removeAd(id: string): Promise<boolean> {
     if (!existing) return false;
     try {
         await strapiDelete(`${ENDPOINT}/${id}`);
+        invalidate('ads:');
         return true;
     } catch {
         return false;
@@ -292,6 +301,7 @@ export async function updateAdFields(id: string, fields: EditableFields): Promis
     const existing = await findByDocumentId(id);
     if (!existing) return null;
     const res = await strapiPut<{ data: StrapiAd }>(`${ENDPOINT}/${id}`, { data });
+    invalidate('ads:');
     return fromStrapi(res.data);
 }
 

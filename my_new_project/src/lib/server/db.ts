@@ -6,6 +6,14 @@
 
 import { strapiGet, strapiPost, strapiPut, strapiDelete, StrapiContentTypeError, findStrapiUpUsers, updateStrapiUpUser } from './strapiClient.js';
 import { DEFAULT_DISCOUNT_CODES, type DiscountCode } from '$lib/discountCodes';
+import { cached, invalidate } from './cache.js';
+
+// TTL לערכי ה-cache (במילישניות). קצר מספיק שעדכונים נראים מהר,
+// ארוך מספיק שניווט פעיל לא נוגע ב-Strapi כמעט בכלל.
+const TTL_ITEMS         = 30_000;
+const TTL_EVENTS        = 30_000;
+const TTL_NEIGHBORHOODS = 120_000;
+const TTL_USER          = 15_000;
 
 // ============================================================
 // ---- Types ----
@@ -234,20 +242,22 @@ function mapUpUser(u: StrapiUpUser): DbUser {
 // ============================================================
 
 export async function getAllItems(): Promise<DbItem[]> {
-    try {
-        const res = await strapiGet<{ data: StrapiItem[] }>('/api/items', {
-            'filters[status1][$eq]': 'active',
-            'sort':                  'createdAt:desc',
-            'pagination[limit]':     '1000',
-        });
-        return (res.data ?? []).map(mapStrapiItem);
-    } catch (e) {
-        if (e instanceof StrapiContentTypeError) {
-            console.warn('[db] getAllItems: content type not registered, returning []');
-            return [];
+    return cached('items:all', TTL_ITEMS, async () => {
+        try {
+            const res = await strapiGet<{ data: StrapiItem[] }>('/api/items', {
+                'filters[status1][$eq]': 'active',
+                'sort':                  'createdAt:desc',
+                'pagination[limit]':     '1000',
+            });
+            return (res.data ?? []).map(mapStrapiItem);
+        } catch (e) {
+            if (e instanceof StrapiContentTypeError) {
+                console.warn('[db] getAllItems: content type not registered, returning []');
+                return [];
+            }
+            throw e;
         }
-        throw e;
-    }
+    });
 }
 
 export async function createItem(data: CreateItemData): Promise<DbItem> {
@@ -271,6 +281,7 @@ export async function createItem(data: CreateItemData): Promise<DbItem> {
             publishedAt:  new Date().toISOString(),
         },
     });
+    invalidate('items:');
     return mapStrapiItem(res.data);
 }
 
@@ -285,23 +296,25 @@ export async function getDbItemById(id: string): Promise<DbItem | undefined> {
 }
 
 export async function getItemsByCategory(category: string): Promise<DbItem[]> {
-    try {
-        const res = await strapiGet<{ data: StrapiItem[] }>('/api/items', {
-            'filters[category][$eq]':  category,
-            'filters[status1][$eq]':   'active',
-            'sort':                    'createdAt:desc',
-            'pagination[limit]':       '1000',
-        });
-        const items = (res.data ?? []).map(mapStrapiItem);
-        // אירוח לשבת: מודעה חד-פעמית > 3 ימים → freeze אוטומטי (lazy, fire-and-forget)
-        if (category === 'realestate') {
-            return autoFreezeExpiredOneTimeAds(items);
+    return cached(`items:cat:${category}`, TTL_ITEMS, async () => {
+        try {
+            const res = await strapiGet<{ data: StrapiItem[] }>('/api/items', {
+                'filters[category][$eq]':  category,
+                'filters[status1][$eq]':   'active',
+                'sort':                    'createdAt:desc',
+                'pagination[limit]':       '1000',
+            });
+            const items = (res.data ?? []).map(mapStrapiItem);
+            // אירוח לשבת: מודעה חד-פעמית > 3 ימים → freeze אוטומטי (lazy, fire-and-forget)
+            if (category === 'realestate') {
+                return autoFreezeExpiredOneTimeAds(items);
+            }
+            return items;
+        } catch (e) {
+            if (e instanceof StrapiContentTypeError) return [];
+            throw e;
         }
-        return items;
-    } catch (e) {
-        if (e instanceof StrapiContentTypeError) return [];
-        throw e;
-    }
+    });
 }
 
 /** שליפת פריטים לפי קטגוריה + סטטוס (למשל פנויים שממתינים לאישור: 'singles','pending') */
@@ -378,6 +391,7 @@ export async function resolveItem(documentId: string, resolverPhone: string): Pr
             description: `[הוסר על ידי הפורסם - טלפון מחזיר: ${resolverPhone}]`,
         },
     });
+    invalidate('items:');
 }
 
 export async function incrementItemViewCount(documentId: string): Promise<void> {
@@ -419,11 +433,13 @@ export async function updateItem(documentId: string, data: UpdateItemData): Prom
     if (data.extra_fields !== undefined) payload.extra_fields = data.extra_fields;
     if (data.status       !== undefined) payload.status1      = data.status;
     await strapiPut(`/api/items/${documentId}`, { data: payload });
+    invalidate('items:');
 }
 
 /** מחיקה לצמיתות של פריט (רק הבעלים - נבדק ב-endpoint) */
 export async function deleteItem(documentId: string): Promise<void> {
     await strapiDelete(`/api/items/${documentId}`);
+    invalidate('items:');
 }
 
 export async function getResolvedCount(category: string): Promise<number> {
@@ -521,19 +537,21 @@ function mapStrapiEvent(e: StrapiEvent): DbEvent {
 
 /** מחזיר אירועים מאושרים לשכונה (ציבורי) */
 export async function getEvents(neighborhood?: string): Promise<DbEvent[]> {
-    try {
-        const params: Record<string,string> = {
-            'filters[status][$eq]': 'approved',
-            'sort':                 'date:asc',
-            'pagination[limit]':    '500',
-        };
-        if (neighborhood) params['filters[neighborhood][$eq]'] = neighborhood;
-        const res = await strapiGet<{ data: StrapiEvent[] }>('/api/events', params);
-        return (res.data ?? []).map(mapStrapiEvent);
-    } catch (e) {
-        if (e instanceof StrapiContentTypeError) return [];
-        throw e;
-    }
+    return cached(`events:${neighborhood ?? 'all'}`, TTL_EVENTS, async () => {
+        try {
+            const params: Record<string,string> = {
+                'filters[status][$eq]': 'approved',
+                'sort':                 'date:asc',
+                'pagination[limit]':    '500',
+            };
+            if (neighborhood) params['filters[neighborhood][$eq]'] = neighborhood;
+            const res = await strapiGet<{ data: StrapiEvent[] }>('/api/events', params);
+            return (res.data ?? []).map(mapStrapiEvent);
+        } catch (e) {
+            if (e instanceof StrapiContentTypeError) return [];
+            throw e;
+        }
+    });
 }
 
 /** מחזיר אירועים ממתינים לאישור (לרכז בלבד) */
@@ -571,15 +589,18 @@ export async function createEvent(data: CreateEventData): Promise<DbEvent> {
             price_description: data.price_description ?? '',
         },
     });
+    invalidate('events:');
     return mapStrapiEvent(res.data);
 }
 
 export async function updateEventStatus(documentId: string, status: EventStatus): Promise<void> {
     await strapiPut(`/api/events/${documentId}`, { data: { status } });
+    invalidate('events:');
 }
 
 export async function deleteEvent(documentId: string): Promise<void> {
     await strapiDelete(`/api/events/${documentId}`);
+    invalidate('events:');
 }
 
 // ============================================================
@@ -743,17 +764,19 @@ function mapNeighborhood(n: StrapiNeighborhood): DbNeighborhood {
 
 /** שכונות לפי סטטוס (ברירת מחדל: מאושרות) - משמש את הבורר ואת תור האישור באדמין */
 export async function getNeighborhoods(status: NeighborhoodStatus = 'approved'): Promise<DbNeighborhood[]> {
-    try {
-        const res = await strapiGet<{ data: StrapiNeighborhood[] }>('/api/neighborhoods', {
-            'filters[status][$eq]': status,
-            'sort':                 'createdAt:desc',
-            'pagination[limit]':    '500',
-        });
-        return (res.data ?? []).map(mapNeighborhood);
-    } catch (e) {
-        if (e instanceof StrapiContentTypeError) return [];
-        throw e;
-    }
+    return cached(`neighborhoods:${status}`, TTL_NEIGHBORHOODS, async () => {
+        try {
+            const res = await strapiGet<{ data: StrapiNeighborhood[] }>('/api/neighborhoods', {
+                'filters[status][$eq]': status,
+                'sort':                 'createdAt:desc',
+                'pagination[limit]':    '500',
+            });
+            return (res.data ?? []).map(mapNeighborhood);
+        } catch (e) {
+            if (e instanceof StrapiContentTypeError) return [];
+            throw e;
+        }
+    });
 }
 
 /** יצירת בקשת שכונה חדשה (status=pending) - תושב שסימן פין על המפה */
@@ -774,6 +797,7 @@ export async function createNeighborhoodRequest(data: {
             status:  'pending',
         },
     });
+    invalidate('neighborhoods:');
     return mapNeighborhood(res.data);
 }
 
@@ -782,6 +806,7 @@ export async function approveNeighborhood(documentId: string, decidedBy: string)
     await strapiPut(`/api/neighborhoods/${documentId}`, {
         data: { status: 'approved', decided_at: new Date().toISOString(), decided_by: decidedBy },
     });
+    invalidate('neighborhoods:');
 }
 
 /** דחיית שכונה */
@@ -789,6 +814,7 @@ export async function rejectNeighborhood(documentId: string, decidedBy: string):
     await strapiPut(`/api/neighborhoods/${documentId}`, {
         data: { status: 'rejected', decided_at: new Date().toISOString(), decided_by: decidedBy },
     });
+    invalidate('neighborhoods:');
 }
 
 // ============================================================
@@ -803,6 +829,7 @@ export async function adminDeleteItem(documentId: string, adminId: string): Prom
             description: `[הוסר ע"י אדמין: ${adminId}]`,
         },
     });
+    invalidate('items:');
 }
 
 /** שליפת כל הסופר־אדמינים (לשליחת התראות מערכת) */
@@ -860,6 +887,7 @@ export async function setUserRole(externalId: string, role: string, neighborhood
         app_role: role,
         ...(neighborhood !== undefined ? { neighborhood } : {}),
     });
+    invalidate('user:');
 }
 
 /** עדכון שכונות שרכז מנהל (סופר-אדמין בלבד) */
@@ -867,6 +895,7 @@ export async function setCoordinatorOf(externalId: string, neighborhoods: string
     const user = await findUpUser(externalId);
     if (!user) throw new Error('משתמש לא נמצא');
     await updateStrapiUpUser(user.id, { coordinator_of: neighborhoods });
+    invalidate('user:');
 }
 
 /** כמו setCoordinatorOf אך מאתר את המשתמש גם לפי id מספרי (משתמשי credentials) */
@@ -874,6 +903,7 @@ export async function setCoordinatorOfAnyId(id: string, neighborhoods: string[])
     const user = await findUpUserAny(id);
     if (!user) throw new Error('משתמש לא נמצא');
     await updateStrapiUpUser(user.id, { coordinator_of: neighborhoods });
+    invalidate('user:');
 }
 
 /** חסימת משתמש (אדמין בלבד) */
@@ -881,6 +911,7 @@ export async function banUser(externalId: string, _jwt?: string): Promise<void> 
     const user = await findUpUser(externalId);
     if (!user) throw new Error('משתמש לא נמצא');
     await updateStrapiUpUser(user.id, { blocked: true });
+    invalidate('user:');
 }
 
 /** ביטול חסימת משתמש */
@@ -888,6 +919,7 @@ export async function unbanUser(externalId: string, _jwt?: string): Promise<void
     const user = await findUpUser(externalId);
     if (!user) throw new Error('משתמש לא נמצא');
     await updateStrapiUpUser(user.id, { blocked: false });
+    invalidate('user:');
 }
 
 export async function getMessagesByUserId(userId: string): Promise<DbItem[]> {
@@ -985,12 +1017,15 @@ export async function upsertUser(data: UpsertUserData, _jwt?: string): Promise<v
 
     if (Object.keys(updates).length > 0) {
         await updateStrapiUpUser(user.id, updates);
+        invalidate('user:');
     }
 }
 
 export async function getUserById(id: string, _jwt?: string): Promise<DbUser | undefined> {
-    const u = await findUpUser(id);
-    return u ? mapUpUser(u) : undefined;
+    return cached(`user:${id}`, TTL_USER, async () => {
+        const u = await findUpUser(id);
+        return u ? mapUpUser(u) : undefined;
+    });
 }
 
 /**
@@ -1046,6 +1081,7 @@ export async function updateUserProfile(id: string, data: UpdateProfileData, _jw
     if (Object.keys(updates).length === 0) return mapUpUser(user);
 
     const updated = await updateStrapiUpUser(user.id, updates);
+    invalidate('user:');
     return mapUpUser(updated as StrapiUpUser);
 }
 
