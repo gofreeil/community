@@ -235,6 +235,14 @@
 		adDraft = null;
 	}
 
+	// מיפוי סוג הודעת ניהול → מקום הטיפול בעמוד הניהול (כל הכרטיס נעשה קישור)
+	const MSG_TYPE_LINKS: Record<string, string> = {
+		coordinator_request: "/admin#coord-requests",
+		location_request: "/admin#pending-neighborhoods",
+		neighborhood_request: "/admin#pending-neighborhoods",
+		singles_review: "/admin/singles-review",
+	};
+
 	// הודעת התאמה לדף פנויים/פנויות - לפי קבוצת הגיל והמגדר של המשתמש
 	const singlesMatchMessage = (data as { singlesMatchInfo?: { count: number; ageGroupLabel: string; oppositeGenderLabel: string } | null }).singlesMatchInfo
 		? {
@@ -269,12 +277,11 @@
 								read: false,
 								// סוג ההודעה (singles_review וכו') - משמש לזיהוי התראות שניתן לסמן כטופלו
 								kind: efType,
-								// בקשת רכז → לחיצה על הכרטיס פותחת את עמוד הניהול לקריאה מלאה
+								// לחיצה על כל הכרטיס פותחת את עמוד הניהול במקום הרלוונטי לטיפול בבקשה
 								link:
 									efLink ??
-									(efType === "coordinator_request"
-										? "/admin#coord-requests"
-										: undefined),
+									MSG_TYPE_LINKS[efType] ??
+									undefined,
 							};
 						},
 					)
