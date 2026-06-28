@@ -1940,13 +1940,6 @@
 				>
 					🏘️ אזור רכזים
 				</a>
-				<a
-					href="/admin"
-					class="flex-1 min-w-[160px] text-xs md:text-sm font-bold text-amber-400 hover:text-amber-300 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-amber-500/10 border border-amber-500/30 hover:border-amber-400/50 flex items-center justify-center gap-1.5"
-					title="לוח ניהול ראשי"
-				>
-					👑 לוח ניהול ראשי
-				</a>
 				{#if isPrimaryAdmin}
 					<a
 						href="https://community-il.duckdns.org/admin"
