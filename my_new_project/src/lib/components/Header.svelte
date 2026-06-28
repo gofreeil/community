@@ -81,8 +81,8 @@
         tooltipY = e.clientY + 18;
     }
 
-    // מעגל מילוי פרופיל בהדר
-    const headerRingC = 2 * Math.PI * 30; // r=30, SVG 68×68
+    // מעגל מילוי פרופיל בהדר - זהה ללוח הבקרה בדף הפרופיל
+    const headerRingC = 2 * Math.PI * 27; // r=27, viewBox 60×60
 
     let headerCompletion = $derived(
         currentUser ? Math.round([
@@ -327,17 +327,28 @@
 
                         {#if currentUser}
                             <a href="/profile" class="relative group flex-shrink-0" aria-label="לאזור האישי – {currentUser.username ?? 'משתמש'}">
-                                {#if currentUser.avatar_url}
-                                    <img
-                                        src={currentUser.avatar_url}
-                                        alt=""
-                                        class="h-9 w-9 rounded-full object-cover border-2 border-purple-500/40 shadow-lg"
-                                    />
-                                {:else}
-                                    <div class="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-blue-500 shadow-lg border border-white/10" aria-hidden="true">
-                                        <span class="font-bold text-white text-xs">{currentUser.username?.charAt(0) || "U"}</span>
-                                    </div>
-                                {/if}
+                                <div class="relative h-9 w-9">
+                                    {#if currentUser.avatar_url}
+                                        <img
+                                            src={currentUser.avatar_url}
+                                            alt=""
+                                            class="h-9 w-9 rounded-full object-cover shadow-lg"
+                                        />
+                                    {:else}
+                                        <div class="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-blue-500 shadow-lg" aria-hidden="true">
+                                            <span class="font-bold text-white text-xs">{currentUser.username?.charAt(0) || "U"}</span>
+                                        </div>
+                                    {/if}
+                                    <!-- מעגל מילוי פרופיל - זהה ללוח הבקרה -->
+                                    <svg class="absolute inset-0 w-full h-full -rotate-90 pointer-events-none"
+                                         viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="30" cy="30" r="27" stroke="rgba(255,255,255,0.08)" stroke-width="4" fill="none" />
+                                        <circle cx="30" cy="30" r="27" stroke={headerRingColor} stroke-width="4" fill="none"
+                                                stroke-linecap="round" stroke-dasharray={headerRingC}
+                                                stroke-dashoffset={headerRingC * (1 - Math.min(headerCompletion, 100) / 100)}
+                                                style="filter: drop-shadow(0 0 3px {headerRingColor}88);" />
+                                    </svg>
+                                </div>
                                 <!-- עיגול הודעות שלא נקראו -->
                                 {#if unreadMessages > 0}
                                     <span
@@ -524,21 +535,30 @@
                                 onmouseleave={() => showProfileTooltip = false}
                                 onmousemove={handleProfileMouseMove}
                             >
-                                {#if currentUser.avatar_url}
-                                    <img
-                                        src={currentUser.avatar_url}
-                                        alt=""
-                                        class="h-14 w-14 rounded-full object-cover border-2 border-purple-500/40
-                                               shadow-lg hover:border-purple-400 transition-all"
-                                    />
-                                {:else}
-                                    <div class="flex h-14 w-14 items-center justify-center rounded-full
-                                                bg-gradient-to-br from-green-400 to-blue-500 shadow-lg
-                                                border-2 border-transparent hover:border-purple-400 transition-all"
-                                         aria-hidden="true">
-                                        <span class="font-bold text-white text-sm">{userName.charAt(0)}</span>
-                                    </div>
-                                {/if}
+                                <div class="relative h-14 w-14">
+                                    {#if currentUser.avatar_url}
+                                        <img
+                                            src={currentUser.avatar_url}
+                                            alt=""
+                                            class="h-14 w-14 rounded-full object-cover shadow-lg transition-all"
+                                        />
+                                    {:else}
+                                        <div class="flex h-14 w-14 items-center justify-center rounded-full
+                                                    bg-gradient-to-br from-green-400 to-blue-500 shadow-lg transition-all"
+                                             aria-hidden="true">
+                                            <span class="font-bold text-white text-sm">{userName.charAt(0)}</span>
+                                        </div>
+                                    {/if}
+                                    <!-- מעגל מילוי פרופיל - זהה ללוח הבקרה -->
+                                    <svg class="absolute inset-0 w-full h-full -rotate-90 pointer-events-none"
+                                         viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="30" cy="30" r="27" stroke="rgba(255,255,255,0.08)" stroke-width="3" fill="none" />
+                                        <circle cx="30" cy="30" r="27" stroke={headerRingColor} stroke-width="3" fill="none"
+                                                stroke-linecap="round" stroke-dasharray={headerRingC}
+                                                stroke-dashoffset={headerRingC * (1 - Math.min(headerCompletion, 100) / 100)}
+                                                style="filter: drop-shadow(0 0 4px {headerRingColor}88);" />
+                                    </svg>
+                                </div>
                                 <!-- עיגול הודעות שלא נקראו -->
                                 {#if unreadMessages > 0}
                                     <span
