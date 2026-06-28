@@ -473,9 +473,13 @@
     // כתובת המפה - ריאקטיבית לשינויי neighborhoodState
     let mapUrl = $derived(
         neighborhoodMaps[neighborhoodState.neighborhood] ??
-        // fallback דינמי: חיפוש גוגל לפי שם שכונה + עיר מהפרופיל
-        (neighborhoodState.neighborhood && neighborhoodState.city
-            ? `https://maps.google.com/maps?q=${encodeURIComponent(neighborhoodState.neighborhood + ', ' + neighborhoodState.city + ', ישראל')}&output=embed&hl=iw&z=15`
+        // fallback דינמי: חיפוש גוגל לפי שם שכונה + עיר מהפרופיל.
+        // אם יש עיר - תמיד לפתוח עליה (גם בלי שכונה), ולא ליפול לברירת מחדל קרית משה.
+        (neighborhoodState.city
+            ? `https://maps.google.com/maps?q=${encodeURIComponent(
+                  (neighborhoodState.neighborhood && neighborhoodState.neighborhood !== 'מרכז'
+                      ? neighborhoodState.neighborhood + ', '
+                      : '') + neighborhoodState.city + ', ישראל')}&output=embed&hl=iw&z=15`
             : neighborhoodMaps["קרית משה"])
     );
 

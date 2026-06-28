@@ -21,9 +21,12 @@ class NeighborhoodState {
         if (!browser) return;
 
         // עדיפות: פרופיל משתמש (DB) > localStorage > default
-        if (userNeighborhood && userCity) {
-            this.neighborhood = userNeighborhood;
-            this.city         = userCity;
+        // חשוב: מספיק שיש למשתמש *עיר* כדי לפתוח לו את האזור שלו.
+        // ביישובים עם שכונה אחת בלבד (כמו כפר תפוח) השכונה לא תמיד נשמרת,
+        // ואסור שבמקרה כזה המפה תיפול חזרה לברירת המחדל (קרית משה).
+        if (userCity?.trim()) {
+            this.city         = userCity.trim();
+            this.neighborhood = userNeighborhood?.trim() || 'מרכז';
             this._save();
             return;
         }
