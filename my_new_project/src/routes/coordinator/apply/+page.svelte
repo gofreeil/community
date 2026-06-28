@@ -5,9 +5,14 @@
 
     interface PageData {
         user: { name: string; phone: string; neighborhood?: string; city?: string } | null;
+        takenAreas?: Record<string, string>;
     }
 
     let { data }: { data: PageData } = $props();
+
+    /** מפתח השוואה אחיד לאזור: שם|עיר באותיות קטנות, תואם לצד השרת */
+    const areaMatchKey = (name: string, cityName: string) =>
+        `${name.trim().toLowerCase()}|${(cityName || '').trim().toLowerCase()}`;
 
     let name = $state(data.user?.name || '');
     let phone = $state(data.user?.phone || '');
@@ -48,6 +53,7 @@
     type Area = {
         label: string;
         roleLabel: string;
+        key: string;
         pendingNeighborhood?: { name: string; city: string; lat: number; lng: number } | null;
     };
     const area = $derived.by((): Area | null => {
@@ -60,23 +66,28 @@
                 if (!nm) return null;
                 return {
                     label: `${nm} (${c})`,
+                    key: areaMatchKey(nm, c),
                     roleLabel: $_('coordinator_area_neighborhood'),
                     pendingNeighborhood:
                         pinLat != null && pinLng != null ? { name: nm, city: c, lat: pinLat, lng: pinLng } : null,
                 };
             }
             if (!neighborhood) return null;
-            return { label: `${neighborhood} (${c})`, roleLabel: $_('coordinator_area_neighborhood') };
+            return { label: `${neighborhood} (${c})`, key: areaMatchKey(neighborhood, c), roleLabel: $_('coordinator_area_neighborhood') };
         }
 
         // ליישוב אין שכונות מוגדרות → רכז של היישוב כולו (לא חוסמים!)
         return {
             label: c,
+            key: areaMatchKey(c, ''),
             roleLabel: $_('coordinator_area_city'),
             pendingNeighborhood:
                 pinLat != null && pinLng != null ? { name: neighborhood || 'מרכז', city: c, lat: pinLat, lng: pinLng } : null,
         };
     });
+
+    // אם לאזור שנבחר כבר יש רכז — שם הרכז הנוכחי (אחרת null)
+    const existingCoordinator = $derived(area ? (data.takenAreas?.[area.key] ?? null) : null);
 
     const canSubmit = $derived(!!name.trim() && !!phone.trim() && area !== null);
 
@@ -261,6 +272,12 @@
                         placeholder={$_('coordinator_motivation')}
                     ></textarea>
                 </div>
+
+                {#if existingCoordinator}
+                    <div class="bg-amber-900/30 border border-amber-500/40 rounded-lg p-4 mb-4">
+                        <p class="text-amber-200 text-sm">{$_('coordinator_already_has', { values: { name: existingCoordinator } })}</p>
+                    </div>
+                {/if}
 
                 {#if !canSubmit && city}
                     <p class="text-amber-300/80 text-sm mb-3">{$_('coordinator_need_area')}</p>

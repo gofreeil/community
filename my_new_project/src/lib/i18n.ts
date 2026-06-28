@@ -236,6 +236,7 @@ register('he', () => Promise.resolve({
     coordinator_verify_location: "🗺️ סמן/י את המיקום על המפה לאימות (יישלח לאישור מנהל)",
     coordinator_verify_optional: "לא חובה, אך עוזר לנו לאמת את המיקום המדויק.",
     coordinator_need_area: "בחר/י עיר. אם יש שכונות — בחר/י שכונה או סמן/י שכונה חדשה על המפה.",
+    coordinator_already_has: "⚠️ לאזור זה כבר יש רכז: {name}. ניתן להגיש בקשה — אם תאושר, המינוי שלך יחליף את הרכז הנוכחי.",
     coordinator_area_city: "רכז/ת היישוב",
     coordinator_area_neighborhood: "רכז/ת השכונה",
 }));
@@ -463,6 +464,7 @@ register('en', () => Promise.resolve({
     coordinator_verify_location: "🗺️ Mark the location on the map to verify (sent for admin approval)",
     coordinator_verify_optional: "Optional, but helps us verify the exact location.",
     coordinator_need_area: "Choose a city. If it has neighborhoods — pick one or mark a new neighborhood on the map.",
+    coordinator_already_has: "⚠️ This area already has a coordinator: {name}. You can still apply — if approved, your appointment will replace the current coordinator.",
     coordinator_area_city: "Town coordinator",
     coordinator_area_neighborhood: "Neighborhood coordinator",
 }));
@@ -690,6 +692,7 @@ register('ru', () => Promise.resolve({
     coordinator_verify_location: "🗺️ Отметьте место на карте для проверки (отправляется на одобрение администратора)",
     coordinator_verify_optional: "Необязательно, но помогает нам проверить точное местоположение.",
     coordinator_need_area: "Выберите город. Если есть районы — выберите район или отметьте новый на карте.",
+    coordinator_already_has: "⚠️ В этом районе уже есть координатор: {name}. Вы можете подать заявку — если её одобрят, вы замените текущего координатора.",
     coordinator_area_city: "Координатор посёлка",
     coordinator_area_neighborhood: "Координатор района",
 }));

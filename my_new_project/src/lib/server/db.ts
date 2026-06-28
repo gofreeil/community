@@ -874,9 +874,18 @@ async function getCoordinatorRequestById(documentId: string): Promise<DbCoordina
     return res.data ? mapCoordinatorRequest(res.data) : undefined;
 }
 
+/** מפתח השוואה לאזור רכזות: "אושיות (רחובות)" ו-"אושיות(רחובות)" נחשבים זהים */
+function coordAreaKey(entry: string): string {
+    const m = entry.match(/^(.*?)\s*\(([^)]*)\)\s*$/);
+    const name = (m ? m[1] : entry).trim().toLowerCase();
+    const city = (m ? m[2] : '').trim().toLowerCase();
+    return `${name}|${city}`;
+}
+
 /**
  * אישור בקשת רכזות: ממנה את המשתמש לרכז של השכונות שביקש (במיזוג עם הקיימות)
  * ומסמן את הבקשה כ-approved כדי שתעלם מרשימת הממתינים.
+ * מדיניות "רכז אחד לשכונה": המינוי מסיר אוטומטית כל רכז קיים מאותן שכונות.
  */
 export async function approveCoordinatorRequest(documentId: string, decidedBy: string): Promise<void> {
     const req = await getCoordinatorRequestById(documentId);
@@ -884,6 +893,45 @@ export async function approveCoordinatorRequest(documentId: string, decidedBy: s
 
     const existing = (await getUserByAnyId(req.user_id))?.coordinator_of ?? [];
     const merged = Array.from(new Set([...existing, ...req.neighborhoods].map(s => s.trim()).filter(Boolean)));
+
+    // אכיפת רכז אחד לשכונה: הסרת השכונות המאושרות מכל רכז אחר שמחזיק אותן
+    const approvedKeys = new Set(req.neighborhoods.map(coordAreaKey));
+    try {
+        const allUsers = await getAllUsers();
+        for (const u of allUsers) {
+            if (String(u.id) === String(req.user_id)) continue; // את המבקש מטפלים בנפרד
+            const current = u.coordinator_of ?? [];
+            const kept = current.filter(e => !approvedKeys.has(coordAreaKey(e)));
+            if (kept.length === current.length) continue; // לא היה רכז לשכונות אלו אצלו
+
+            const removed = current.filter(e => approvedKeys.has(coordAreaKey(e)));
+            await setCoordinatorOfAnyId(u.id, kept);
+
+            // הודעה לרכז שהוחלף - best-effort
+            try {
+                await createItem({
+                    category: 'message',
+                    label: 'ℹ️ עדכון בתפקיד הרכזות',
+                    description: `שלום ${u.name || ''},\n\nמונה רכז חדש לאזור${removed.length > 1 ? 'ים' : ''}: ${removed.join(', ')}, ולכן הוסרת מתפקיד הרכז שם. תודה רבה על תרומתך לקהילה 🙏\n\n— הנהלת קהילה בשכונה`,
+                    contact: 'הנהלת קהילה בשכונה',
+                    user_id: u.id,
+                    icon: 'ℹ️',
+                    color: 'blue',
+                    extra_fields: {
+                        type: 'coordinator_removed',
+                        sender_name: 'הנהלת קהילה בשכונה',
+                        item_label: `סיום רכזות – ${removed.join(', ')}`,
+                        read: false,
+                    },
+                });
+            } catch (e) {
+                console.warn('[approveCoordinatorRequest] notify removed failed:', e instanceof Error ? e.message : e);
+            }
+        }
+    } catch (e) {
+        console.warn('[approveCoordinatorRequest] reassign cleanup failed:', e instanceof Error ? e.message : e);
+    }
+
     await setCoordinatorOfAnyId(req.user_id, merged);
 
     await strapiPut(`/api/coordinator-requests/${documentId}`, {
