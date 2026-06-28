@@ -624,6 +624,184 @@ export async function deleteEvent(documentId: string): Promise<void> {
 }
 
 // ============================================================
+// ---- Gatherings (ערב מפגש / סעודה קהילתית) ----
+// סעודה משותפת שמקים תושב: פרטי האירוע, רשימת מאכלים שכל אחד
+// משבץ את שמו לידם, ורשימת מגיעים עם כרטיסים. JSON פנימי כדי
+// להימנע מטבלאות-קשר נפרדות בסקייל של שכונה.
+// ============================================================
+
+export type GatheringStatus = 'pending' | 'approved' | 'rejected';
+
+/** פריט ברשימת המאכלים. claimed = מי שהתחייב להביא אותו (ריק = פנוי). */
+export interface GatheringFood {
+    id: string;
+    name: string;
+    qty: string;                    // כמות חופשית: "2 בקבוקים", "סלט גדול"...
+    claimed_by_id: string | null;
+    claimed_by_name: string | null;
+}
+
+/** מגיע לסעודה - מקור לכרטיס שמוצג בלוח (גברים ונשים כאחד). */
+export interface GatheringAttendee {
+    user_id: string;
+    name: string;
+    gender: string;
+    avatar_url: string | null;
+    city: string;
+    neighborhood: string;
+    count: number;                  // כמה אנשים הוא מביא (כולל עצמו)
+    note: string;
+}
+
+export interface DbGathering {
+    id: string;
+    title: string;
+    date: string;
+    time: string;
+    location: string;
+    description: string;
+    host_name: string;
+    icon: string;
+    color: string;
+    city: string;
+    neighborhood: string;
+    creator_id: string;
+    manager_ids: string[];
+    food_items: GatheringFood[];
+    attendees: GatheringAttendee[];
+    status: GatheringStatus;
+    created_at: string;
+}
+
+export interface CreateGatheringData {
+    title: string;
+    date: string;
+    time?: string;
+    location?: string;
+    description?: string;
+    host_name?: string;
+    icon?: string;
+    color?: string;
+    city?: string;
+    neighborhood?: string;
+    creator_id: string;
+    manager_ids?: string[];
+    food_items?: GatheringFood[];
+    attendees?: GatheringAttendee[];
+    status?: GatheringStatus;
+}
+
+interface StrapiGathering {
+    id: number;
+    documentId: string;
+    title: string;
+    date: string;
+    time: string | null;
+    location: string | null;
+    description: string | null;
+    host_name: string | null;
+    icon: string | null;
+    color: string | null;
+    city: string | null;
+    neighborhood: string | null;
+    creator_id: string | null;
+    manager_ids: string[] | null;
+    food_items: GatheringFood[] | null;
+    attendees: GatheringAttendee[] | null;
+    status: GatheringStatus | null;
+    createdAt: string;
+}
+
+function mapStrapiGathering(g: StrapiGathering): DbGathering {
+    return {
+        id:           g.documentId,
+        title:        g.title        ?? '',
+        date:         g.date         ?? '',
+        time:         g.time         ?? '',
+        location:     g.location     ?? '',
+        description:  g.description  ?? '',
+        host_name:    g.host_name    ?? '',
+        icon:         g.icon         ?? '🍽️',
+        color:        g.color        ?? 'amber',
+        city:         g.city         ?? '',
+        neighborhood: g.neighborhood ?? '',
+        creator_id:   g.creator_id   ?? '',
+        manager_ids:  Array.isArray(g.manager_ids) ? g.manager_ids : [],
+        food_items:   Array.isArray(g.food_items)  ? g.food_items  : [],
+        attendees:    Array.isArray(g.attendees)   ? g.attendees   : [],
+        status:       g.status       ?? 'approved',
+        created_at:   g.createdAt    ?? '',
+    };
+}
+
+/** סעודות מאושרות לעיר (ציבורי לחברים). מחולק לפי עיר כמו שאר הלוחות. */
+export async function getGatherings(city?: string): Promise<DbGathering[]> {
+    return cached(`gatherings:city:${city ?? 'all'}`, TTL_EVENTS, async () => {
+        try {
+            const params: Record<string, string> = {
+                'filters[status][$eq]': 'approved',
+                'sort':                 'date:asc',
+                'pagination[limit]':    '300',
+            };
+            if (city) params['filters[city][$eq]'] = city;
+            const res = await strapiGet<{ data: StrapiGathering[] }>('/api/gatherings', params);
+            return (res.data ?? []).map(mapStrapiGathering);
+        } catch (e) {
+            if (e instanceof StrapiContentTypeError) return [];
+            throw e;
+        }
+    });
+}
+
+export async function getGatheringById(documentId: string): Promise<DbGathering | undefined> {
+    try {
+        const res = await strapiGet<{ data: StrapiGathering | null }>(`/api/gatherings/${documentId}`);
+        return res.data ? mapStrapiGathering(res.data) : undefined;
+    } catch (e) {
+        if (e instanceof StrapiContentTypeError) return undefined;
+        throw e;
+    }
+}
+
+export async function createGathering(data: CreateGatheringData): Promise<DbGathering> {
+    const res = await strapiPost<{ data: StrapiGathering }>('/api/gatherings', {
+        data: {
+            title:        data.title,
+            date:         data.date,
+            time:         data.time         ?? '',
+            location:     data.location     ?? '',
+            description:  data.description  ?? '',
+            host_name:    data.host_name    ?? '',
+            icon:         data.icon         ?? '🍽️',
+            color:        data.color        ?? 'amber',
+            city:         data.city         ?? '',
+            neighborhood: data.neighborhood ?? '',
+            creator_id:   data.creator_id,
+            manager_ids:  data.manager_ids  ?? [data.creator_id],
+            food_items:   data.food_items   ?? [],
+            attendees:    data.attendees    ?? [],
+            status:       data.status       ?? 'approved',
+        },
+    });
+    invalidate('gatherings:');
+    return mapStrapiGathering(res.data);
+}
+
+/** עדכון חלקי של סעודה (פרטים / רשימת מאכלים / מגיעים / מנהלים). */
+export async function updateGathering(
+    documentId: string,
+    data: Partial<Omit<CreateGatheringData, 'creator_id'>>,
+): Promise<void> {
+    await strapiPut(`/api/gatherings/${documentId}`, { data });
+    invalidate('gatherings:');
+}
+
+export async function deleteGathering(documentId: string): Promise<void> {
+    await strapiDelete(`/api/gatherings/${documentId}`);
+    invalidate('gatherings:');
+}
+
+// ============================================================
 // ---- Coordinator requests (בקשות להיות רכז שכונה) ----
 // ============================================================
 

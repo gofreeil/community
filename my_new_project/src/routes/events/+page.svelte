@@ -131,6 +131,17 @@
             </p>
         </div>
 
+        <!-- ── באנר ערבי מפגש / סעודות ── -->
+        <a href="/gatherings" class="block mb-6 rounded-2xl bg-gradient-to-r from-amber-500/15 to-rose-500/10 border border-amber-500/30 p-4 md:p-5 hover:border-amber-500/60 transition">
+            <div class="flex items-center gap-4">
+                <div class="text-3xl">🍽️</div>
+                <div class="flex-1">
+                    <p class="text-white font-bold">ערבי מפגש וסעודות קהילתיות</p>
+                    <p class="text-amber-200/80 text-sm mt-0.5">הקימו סעודה משותפת, חלקו את רשימת המאכלים בין המשתתפים וראו מי מגיע →</p>
+                </div>
+            </div>
+        </a>
+
         <!-- ── Pending queue (coordinator / admin only) ── -->
         {#if (data.isCoordinator || data.isAdmin) && (data.pendingEvents as any[]).length > 0}
             <div class="mb-6 rounded-2xl bg-amber-500/10 border border-amber-500/40 p-4 md:p-6">
