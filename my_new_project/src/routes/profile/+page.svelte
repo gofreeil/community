@@ -491,7 +491,10 @@
 	}
 	let saveSuccess = $state(_photoDone); // הצג הצלחה אם חזרנו מהעתקת תמונה
 	if (_photoDone) setTimeout(() => (saveSuccess = false), 3000);
-	let avatarPreview = $state<string | null>(_ud?.avatar_url ?? null);
+	// ברירת מחדל לתמונה: avatar_url מה-DB, ואם אין - תמונת הפרופיל מגוגל (oauth_image)
+	let avatarPreview = $state<string | null>(
+		_ud?.avatar_url || (data as { oauth_image?: string | null }).oauth_image || null,
+	);
 	let avatarBase64 = $state("");
 
 	let name = $state(_ud?.name ?? "");
@@ -3303,25 +3306,6 @@
 											onchange={handleImageChange}
 										/>
 									</label>
-									<!-- כפתור גוגל - תמיד פעיל -->
-									<button
-										type="button"
-										onclick={(e) => {
-											e.stopPropagation();
-											signIn("google", {
-												callbackUrl:
-													"/profile?copy_photo=1",
-											});
-										}}
-										class="cursor-pointer bg-white/5 hover:bg-white/10 border border-white/15 hover:border-red-400/50 rounded-xl px-3 py-2 text-sm text-gray-200 transition-all inline-flex items-center gap-2"
-									>
-										<img
-											src="https://www.google.com/favicon.ico"
-											class="w-4 h-4"
-											alt="Google"
-										/>
-										העתק מחשבון גוגל
-									</button>
 									<!-- כפתור פייסבוק - תמיד פעיל -->
 									<button
 										type="button"
