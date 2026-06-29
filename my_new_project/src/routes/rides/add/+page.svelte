@@ -3,6 +3,7 @@
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
     let direction = $state<'driver' | 'passenger'>('driver');
+    let submitting = $state(false);
 </script>
 
 <svelte:head>
@@ -23,7 +24,7 @@
                 <a href="/login?redirect=/rides/add" class="inline-block bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-bold">התחברות</a>
             </div>
         {:else}
-            <form method="POST" class="rounded-2xl bg-[#0f172a] border border-white/10 p-6 space-y-4">
+            <form method="POST" onsubmit={() => (submitting = true)} class="rounded-2xl bg-[#0f172a] border border-white/10 p-6 space-y-4">
                 <!-- Direction -->
                 <div class="grid grid-cols-2 gap-2">
                     <button
@@ -91,8 +92,8 @@
                     <p class="text-red-400 text-sm text-center">{form.error}</p>
                 {/if}
 
-                <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold py-3 rounded-xl shadow-lg transition-all">
-                    פרסם טרמפ
+                <button type="submit" disabled={submitting} class="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold py-3 rounded-xl shadow-lg transition-all disabled:opacity-60 disabled:cursor-not-allowed">
+                    {submitting ? 'מפרסם…' : 'פרסם טרמפ'}
                 </button>
             </form>
         {/if}

@@ -229,28 +229,28 @@
             <div class="p-6 md:p-8 space-y-6">
                 {#if s.description}
                     <section>
-                        <h2 class="text-{isMale ? 'cyan' : 'pink'}-300 text-sm font-black mb-2 uppercase tracking-wider">קצת עליי</h2>
+                        <h2 class="{isMale ? 'text-cyan-300' : 'text-pink-300'} text-sm font-black mb-2 uppercase tracking-wider">קצת עליי</h2>
                         <p class="text-gray-200 text-base leading-relaxed">{s.description}</p>
                     </section>
                 {/if}
 
                 {#if s.education}
                     <section>
-                        <h2 class="text-{isMale ? 'cyan' : 'pink'}-300 text-sm font-black mb-2 uppercase tracking-wider">מקצוע / השכלה</h2>
+                        <h2 class="{isMale ? 'text-cyan-300' : 'text-pink-300'} text-sm font-black mb-2 uppercase tracking-wider">מקצוע / השכלה</h2>
                         <p class="text-gray-200 text-base leading-relaxed">{s.education}</p>
                     </section>
                 {/if}
 
                 {#if s.interests}
                     <section>
-                        <h2 class="text-{isMale ? 'cyan' : 'pink'}-300 text-sm font-black mb-2 uppercase tracking-wider">תחומי עניין</h2>
+                        <h2 class="{isMale ? 'text-cyan-300' : 'text-pink-300'} text-sm font-black mb-2 uppercase tracking-wider">תחומי עניין</h2>
                         <p class="text-gray-200 text-base leading-relaxed">{s.interests}</p>
                     </section>
                 {/if}
 
                 {#if s.lookingFor}
                     <section class="rounded-2xl bg-white/5 border border-white/10 px-5 py-4">
-                        <h2 class="text-{isMale ? 'cyan' : 'pink'}-300 text-sm font-black mb-2 uppercase tracking-wider">
+                        <h2 class="{isMale ? 'text-cyan-300' : 'text-pink-300'} text-sm font-black mb-2 uppercase tracking-wider">
                             {isMale ? 'מחפש' : 'מחפשת'}
                         </h2>
                         <p class="text-gray-100 text-base leading-relaxed">{s.lookingFor}</p>

@@ -3,6 +3,7 @@
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
     let job_type = $state<'offering' | 'seeking'>('offering');
+    let submitting = $state(false);
 </script>
 
 <svelte:head>
@@ -23,7 +24,7 @@
                 <a href="/login?redirect=/jobs/add" class="inline-block bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-bold">התחברות</a>
             </div>
         {:else}
-            <form method="POST" class="rounded-2xl bg-[#0f172a] border border-white/10 p-6 space-y-4">
+            <form method="POST" onsubmit={() => (submitting = true)} class="rounded-2xl bg-[#0f172a] border border-white/10 p-6 space-y-4">
                 <div class="grid grid-cols-2 gap-2">
                     <button
                         type="button"
@@ -99,8 +100,8 @@
                     <p class="text-red-400 text-sm text-center">{form.error}</p>
                 {/if}
 
-                <button type="submit" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-3 rounded-xl shadow-lg transition-all">
-                    פרסם מודעה
+                <button type="submit" disabled={submitting} class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-3 rounded-xl shadow-lg transition-all disabled:opacity-60 disabled:cursor-not-allowed">
+                    {submitting ? 'מפרסם…' : 'פרסם מודעה'}
                 </button>
             </form>
         {/if}

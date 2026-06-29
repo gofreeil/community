@@ -800,6 +800,7 @@
                                     </div>
                                 {/if}
                             {:else}
+                                {@const waDigits = item.phone ? String(item.phone).replace(/\D/g, '').replace(/^0/, '972') : ''}
                                 <div
                                     class="bg-gradient-to-br from-purple-600 to-blue-600 p-2 rounded-xl shadow-md"
                                 >
@@ -810,19 +811,28 @@
                                         צור קשר ישירות עם המפרסם לקבלת פרטים נוספים
                                         או תיאום.
                                     </p>
-                                    <a
-                                        href="tel:{item.phone}"
-                                        aria-label="התקשר עכשיו – {item.phone}"
-                                        class="block w-full bg-white text-purple-600 font-bold py-2 rounded-lg text-center shadow-lg hover:scale-105 transition-transform text-sm"
-                                    >
-                                        התקשר עכשיו
-                                    </a>
-                                    <button
-                                        aria-label="שלח הודעה למפרסם"
-                                        class="block w-full mt-2 bg-white/10 hover:bg-white/20 text-white font-bold py-2 rounded-lg text-center transition-all border border-white/20 text-sm"
-                                    >
-                                        שלח הודעה
-                                    </button>
+                                    {#if item.phone}
+                                        <a
+                                            href="tel:{item.phone}"
+                                            aria-label="התקשר עכשיו – {item.phone}"
+                                            class="block w-full bg-white text-purple-600 font-bold py-2 rounded-lg text-center shadow-lg hover:scale-105 transition-transform text-sm"
+                                        >
+                                            📞 התקשר עכשיו
+                                        </a>
+                                        <a
+                                            href="https://wa.me/{waDigits}"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            aria-label="שלח הודעה בוואטסאפ"
+                                            class="block w-full mt-2 bg-white/10 hover:bg-white/20 text-white font-bold py-2 rounded-lg text-center transition-all border border-white/20 text-sm"
+                                        >
+                                            💬 שלח הודעה בוואטסאפ
+                                        </a>
+                                    {:else}
+                                        <p class="text-white/80 text-xs text-center bg-white/10 rounded-lg py-2 px-2">
+                                            פרטי יצירת קשר אינם זמינים לפריט זה.
+                                        </p>
+                                    {/if}
                                 </div>
                             {/if}
 
