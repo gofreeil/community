@@ -529,6 +529,20 @@
 	let email = $state(_ud?.email ?? "");
 	let nickname = $state(_ud?.nickname ?? "");
 	let phone = $state(_ud?.phone ?? "");
+
+	// נרמול טלפון בעת יציאה מהשדה - מונע פורמטים מבלבלים (+972, רווחים, סוגריים)
+	// וממיר לפורמט ישראלי אחיד 05X-XXXXXXX כדי שההתאמה במערכת לא תיכשל.
+	function normalizePhoneInput() {
+		let d = (phone ?? "").replace(/\D/g, "");
+		if (!d) { phone = ""; return; }
+		if (d.startsWith("972")) d = "0" + d.slice(3);           // +972-5x → 05x
+		else if (d.length === 9 && d[0] !== "0") d = "0" + d;     // 5xxxxxxxx → 05xxxxxxxx
+		// הוספת מקף אחרי הקידומת (050-, 02-) לקריאוּת
+		if (d.length >= 9 && d.startsWith("05")) phone = d.slice(0, 3) + "-" + d.slice(3);
+		else if (d.length >= 9 && d[0] === "0") phone = d.slice(0, 2) + "-" + d.slice(2);
+		else phone = d;
+	}
+
 	let city = $state(_ud?.city ?? "");
 	let neighborhood = $state(_ud?.neighborhood ?? "");
 	let cityQuery = $state(_ud?.city ?? "");
@@ -3574,11 +3588,16 @@
 								id="p-phone"
 								name="phone"
 								type="tel"
+								inputmode="tel"
+								dir="ltr"
+								maxlength="20"
 								bind:value={phone}
+								onblur={normalizePhoneInput}
 								placeholder="050-0000000"
 								class="w-full bg-white/5 border border-white/10 focus:border-purple-500/50 rounded-xl
-							       px-4 py-3 text-white text-sm transition-colors outline-none"
+							       px-4 py-3 text-white text-sm transition-colors outline-none text-right"
 							/>
+							<p class="text-xs text-gray-500 mt-1.5">{tFn("phone_hint")}</p>
 						{:else}
 							<p class="text-white font-medium py-3 px-1">
 								{phone || "-"}

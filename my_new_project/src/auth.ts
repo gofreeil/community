@@ -95,18 +95,21 @@ export const { handle, signIn, signOut } = !AUTH_SECRET
             },
             async authorize(credentials) {
                 if (!credentials?.email || !credentials?.password) return null;
+                // נרמול אימייל לאותיות קטנות - מונע מזהי credentials_<EMAIL> ברישיות שונה
+                // שגורמים לכפילות משתמשים ולכשל באיתור ("משתמש לא נמצא")
+                const emailLc = (credentials.email as string).trim().toLowerCase();
                 try {
                     const { jwt } = await strapiLogin(
-                        credentials.email as string,
+                        emailLc,
                         credentials.password as string,
                     );
-                    const communityUser = await getUserByEmail(credentials.email as string, jwt);
-                    const id = communityUser?.id ?? `credentials_${credentials.email}`;
+                    const communityUser = await getUserByEmail(emailLc, jwt);
+                    const id = communityUser?.id ?? `credentials_${emailLc}`;
                     // מעביר את ה-JWT הלאה דרך ה-user object
                     return {
                         id,
                         name:       communityUser?.name  ?? '',
-                        email:      communityUser?.email ?? credentials.email as string,
+                        email:      communityUser?.email ?? emailLc,
                         strapiJwt:  jwt,
                     } as { id: string; name: string; email: string; strapiJwt: string };
                 } catch {
@@ -155,7 +158,7 @@ export const { handle, signIn, signOut } = !AUTH_SECRET
             // 2. מיזוג חשבונות: קבע stableId ישירות לפי credentials_email (לא דורש STRAPI_TOKEN)
             // אם נרשמת קודם עם credentials - הID שלך הוא credentials_<email>
             if (user.email) {
-                const credentialsId = `credentials_${user.email}`;
+                const credentialsId = `credentials_${user.email.trim().toLowerCase()}`;
                 // נסה לאמת דרך Strapi אם אפשר, אחרת פשוט השתמש ב-credentialsId
                 try {
                     const existingById = await getUserById(credentialsId, strapiJwt ?? undefined);
