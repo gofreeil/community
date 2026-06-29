@@ -26,6 +26,45 @@ const checkBanned: Handle = async ({ event, resolve }) => {
     return resolve(event);
 };
 
+/**
+ * זיהוי-SSO אוטומטי: משתמש שכבר מחובר באתר אחר תחת gofreeil.com מגיע עם
+ * עוגיית `gofreeil-auth` אך בלי סשן קהילה. במקרה כזה מפנים פעם אחת ל-/sso-adopt
+ * שמקים סשן דרך הספק gofreeil-sso — וכך הוא "כבר מחובר" בלי ללחוץ על כלום.
+ * עוגיית `sso_adopt_tried` (שעה) מונעת לולאת-הפניות אם ה-JWT פג/לא תקין.
+ */
+const ssoAutoAdopt: Handle = async ({ event, resolve }) => {
+    const path = event.url.pathname;
+    const isHtmlGet =
+        event.request.method === 'GET' &&
+        (event.request.headers.get('accept') ?? '').includes('text/html');
+    const hasShared  = !!event.cookies.get('gofreeil-auth');
+    const alreadyTried = !!event.cookies.get('sso_adopt_tried');
+    // לא מפנים על נתיבי auth/adopt/login עצמם, על נכסים, או על בקשות שאינן ניווט HTML
+    const excluded =
+        path.startsWith('/api') ||
+        path.startsWith('/sso-adopt') ||
+        path === '/login' || path === '/register' || path === '/banned';
+
+    if (isHtmlGet && hasShared && !alreadyTried && !excluded) {
+        let loggedIn = false;
+        try {
+            const session = await event.locals.auth();
+            loggedIn = !!session?.user;
+        } catch { /* ignore */ }
+        if (!loggedIn) {
+            event.cookies.set('sso_adopt_tried', '1', {
+                path: '/', httpOnly: true, sameSite: 'lax', secure: true, maxAge: 60 * 60,
+            });
+            const target = event.url.pathname + event.url.search;
+            return new Response(null, {
+                status: 302,
+                headers: { location: `/sso-adopt?redirect=${encodeURIComponent(target)}` },
+            });
+        }
+    }
+    return resolve(event);
+};
+
 const setStrApiCookie: Handle = async ({ event, resolve }) => {
     const isProd = process.env.NODE_ENV === 'production';
     // עוגייה משותפת לכל 13 אתרי gofreeil.com: זיהוי מאוחד מול רשימת המשתמשים
@@ -38,6 +77,10 @@ const setStrApiCookie: Handle = async ({ event, resolve }) => {
             const session = await event.locals.auth();
             const jwt = (session?.user as { strapiJwt?: string } | undefined)?.strapiJwt;
             if (jwt) {
+                // יש סשן תקין → מנקים את דגל ניסיון ה-SSO כדי שמחזור logout/login הבא יעבוד
+                if (event.cookies.get('sso_adopt_tried')) {
+                    event.cookies.delete('sso_adopt_tried', { path: '/' });
+                }
                 if (needsLocal) {
                     event.cookies.set('strapi_jwt', jwt, {
                         httpOnly: true,
@@ -79,7 +122,7 @@ export const handle: Handle = async ({ event, resolve }) => {
     }
 
     try {
-        return await sequence(authHandle, checkBanned, setStrApiCookie)({ event, resolve });
+        return await sequence(authHandle, ssoAutoAdopt, checkBanned, setStrApiCookie)({ event, resolve });
     } catch (err) {
         console.warn('[hooks] auth handle threw - continuing anonymously:', err);
         // fallback: מגדיר auth בטוח כדי שקוד downstream לא יזרוק TypeError

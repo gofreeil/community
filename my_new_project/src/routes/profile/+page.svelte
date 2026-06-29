@@ -1627,15 +1627,16 @@
 			{#if showLoginOptions}
 				<div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
 					<!-- 1. יוצאים לחירות (החשבון המאוחד לכל אתרי gofreeil) -->
-					<a
-						href="/login?redirect=/profile"
-						class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl
+					<button
+						type="button"
+						onclick={() => signIn("gofreeil-sso", { callbackUrl: "/profile" })}
+						class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl cursor-pointer
 						       bg-gradient-to-r from-amber-500/15 to-pink-500/15 border border-amber-400/30
 						       hover:border-amber-400/60 text-sm font-bold text-white transition-all hover:-translate-y-0.5"
 					>
 						<span class="text-base">🕊️</span>
 						עם יוצאים לחירות
-					</a>
+					</button>
 					<!-- 2. גוגל -->
 					<button
 						type="button"

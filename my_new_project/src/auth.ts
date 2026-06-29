@@ -5,7 +5,20 @@ import Credentials from '@auth/sveltekit/providers/credentials';
 import { createHash } from 'crypto';
 import type { Handle } from '@sveltejs/kit';
 import { upsertUser, getUserByEmail, getUserById } from '$lib/server/db';
-import { strapiLogin, strapiRegister } from '$lib/server/strapiClient';
+import { strapiLogin, strapiRegister, getStrapiMe } from '$lib/server/strapiClient';
+
+/** קריאת ערך עוגייה מתוך כותרת Cookie גולמית (authorize מקבל Request, לא event.cookies) */
+function readCookie(cookieHeader: string | null | undefined, name: string): string | null {
+    if (!cookieHeader) return null;
+    for (const part of cookieHeader.split(';')) {
+        const idx = part.indexOf('=');
+        if (idx === -1) continue;
+        if (part.slice(0, idx).trim() === name) {
+            return decodeURIComponent(part.slice(idx + 1).trim());
+        }
+    }
+    return null;
+}
 
 const AUTH_SECRET         = process.env.AUTH_SECRET         ?? '';
 const AUTH_GOOGLE_ID      = process.env.AUTH_GOOGLE_ID      ?? '';
@@ -86,6 +99,34 @@ export const { handle, signIn, signOut } = !AUTH_SECRET
             clientId:     AUTH_FACEBOOK_ID,
             clientSecret: AUTH_FACEBOOK_SECRET,
         }),
+        // ============================================================
+        // יוצאים לחירות (SSO) - זיהוי מיידי לפי העוגייה המשותפת gofreeil-auth.
+        // אתר אחר תחת gofreeil.com כבר שתל JWT של ה-Strapi המשותף; כאן מאמתים
+        // אותו ומקימים סשן קהילה בלי הקלדת פרטים - בדיוק כמו "המשך עם גוגל",
+        // רק שספק הזהות הוא רשימת המשתמשים המאוחדת של gofreeil.
+        // ============================================================
+        Credentials({
+            id:   'gofreeil-sso',
+            name: 'יוצאים לחירות',
+            credentials: {},
+            async authorize(_credentials, request) {
+                const jwt = readCookie(request?.headers?.get('cookie'), 'gofreeil-auth');
+                if (!jwt) return null;
+                // מאמת את ה-JWT מול ה-Strapi המשותף
+                const me = await getStrapiMe(jwt);
+                if (!me?.email) return null;
+                const emailLc = me.email.trim().toLowerCase();
+                // מזהה את כרטיס הקהילה לפי האימייל (אם קיים); אחרת מזהה credentials דטרמיניסטי
+                const communityUser = await getUserByEmail(emailLc, jwt).catch(() => null);
+                const id = communityUser?.id ?? `credentials_${emailLc}`;
+                return {
+                    id,
+                    name:      communityUser?.name  ?? me.username ?? '',
+                    email:     communityUser?.email ?? emailLc,
+                    strapiJwt: jwt,
+                } as { id: string; name: string; email: string; strapiJwt: string };
+            },
+        }),
         Credentials({
             id:   'credentials',
             name: 'Email & Password',
@@ -127,8 +168,9 @@ export const { handle, signIn, signOut } = !AUTH_SECRET
                 return false;
             }
 
-            // Credentials provider - ה-JWT מגיע מה-authorize callback דרך ה-user object
-            if (account.provider === 'credentials') {
+            // Credentials / SSO - ה-JWT מגיע מה-authorize callback דרך ה-user object
+            // (gofreeil-sso = זיהוי לפי העוגייה המשותפת; שניהם כבר מחזיקים JWT תקף)
+            if (account.provider === 'credentials' || account.provider === 'gofreeil-sso') {
                 const strapiJwt = (user as { strapiJwt?: string }).strapiJwt;
                 const stableId  = user.id ?? `credentials_${user.email}`;
                 if (strapiJwt) {
