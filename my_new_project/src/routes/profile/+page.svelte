@@ -1635,7 +1635,7 @@
 
 	<!-- ===== לשוניות ניווט - נייד בלבד ===== -->
 	<div class="md:hidden flex gap-1 overflow-x-auto pb-1 mb-3 scrollbar-none">
-		{#each [{ id: "main", icon: "🏠", label: "ראשי" }, { id: "profile", icon: "✏️", label: "פרופיל" }, { id: "messages", icon: "💬", label: "הודעות" }, { id: "items", icon: "📦", label: "נכסים" }, { id: "levels", icon: "🏆", label: "דרגות" }] as tab}
+		{#each [{ id: "main", icon: "🏠", label: "לוח הבקרה" }, { id: "profile", icon: "✏️", label: "פרופיל" }, { id: "messages", icon: "💬", label: "הודעות" }, { id: "items", icon: "📦", label: "נכסים" }, { id: "levels", icon: "🏆", label: "דרגות" }] as tab}
 			<button
 				type="button"
 				onclick={() => selectTab(tab.id as typeof mobileTab)}
