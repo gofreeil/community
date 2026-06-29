@@ -453,7 +453,7 @@
         <!-- Form -->
         <form
             onsubmit={handleSubmit}
-            class="rounded-2xl border {colors.border} {colors.bg} p-6 md:p-8 grid grid-cols-2 gap-5"
+            class="rounded-2xl border {colors.border} {colors.bg} p-6 md:p-8 grid grid-cols-1 sm:grid-cols-2 gap-5"
         >
             {#each config.fields as field}
                 {#if isFieldVisible(field)}

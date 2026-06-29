@@ -383,12 +383,12 @@
             class="hidden md:flex flex-col items-center pt-0 pb-0.5 md:flex-row md:items-center md:justify-between"
         >
             <div class="flex items-center space-x-4">
-                <div class="relative group">
+                <div class="relative group logo-wrap">
                     <a
                         href="/"
-                        class="flex h-28 w-28 items-center justify-center rounded-xl shadow-lg transition-transform hover:scale-105"
+                        class="flex h-28 w-28 items-center justify-center transition-transform hover:scale-105"
                     >
-                        <div class="h-16 w-16 rounded-full overflow-hidden">
+                        <div class="h-16 w-16 rounded-full overflow-hidden shadow-lg">
                             <img
                                 src="/images/community-logo1.png"
                                 alt=""
@@ -398,14 +398,14 @@
                     </a>
                     <!-- Tooltip - Below Logo -->
                     <div
-                        class="absolute top-full left-1/2 -translate-x-1/2 mt-2 hidden group-hover:block z-[9999]"
+                        class="logo-tip absolute top-full left-1/2 mt-2 z-[9999]"
                     >
                         <div
                             class="bg-gray-900 text-white text-sm rounded-lg px-4 py-2 shadow-xl whitespace-nowrap"
                         >
                             {tFn("back_home")}
                             <div
-                                class="absolute bottom-full left-1/2 -translate-x-1/2 border-8 border-transparent border-b-gray-900"
+                                class="logo-tip-arrow absolute bottom-full left-1/2 border-8 border-transparent border-b-gray-900"
                             ></div>
                         </div>
                     </div>
@@ -609,6 +609,18 @@
 {/if}
 
 <style>
+    /* טולטיפ הלוגו — group-hover ו--translate-x-1/2 שבורים ב-Tailwind v4, לכן ב-CSS מפורש */
+    .logo-tip {
+        display: none;
+        transform: translateX(-50%);
+    }
+    .logo-wrap:hover .logo-tip {
+        display: block;
+    }
+    .logo-tip-arrow {
+        transform: translateX(-50%);
+    }
+
     @keyframes pulse-slow {
         0%,
         100% {
