@@ -281,10 +281,11 @@
                         <!-- כפתור אודות - מובייל -->
                         <button
                             onclick={() => goto("/about/revenue")}
-                            class="flex items-center justify-center w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors"
+                            class="flex items-center justify-center gap-1 h-8 px-3 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors"
                             aria-label="אודות קהילה"
                         >
-                            <span class="text-xl font-bold text-white leading-none">ℹ</span>
+                            <span class="text-base font-bold text-white leading-none">ℹ</span>
+                            <span class="text-sm font-bold text-white leading-none whitespace-nowrap">{tFn("about")}</span>
                         </button>
 
                         <!-- כפתור דגל שפה - מובייל -->
@@ -292,14 +293,14 @@
                             <button
                                 onclick={() => (showLangDropdown = !showLangDropdown)}
                                 onkeydown={handleLangKeydown}
-                                class="flex items-center justify-center w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors"
+                                class="flex items-center justify-center w-7 h-8 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors"
                                 aria-label="בחר שפה"
                                 aria-haspopup="listbox"
                                 aria-expanded={showLangDropdown}
                             >
                                 <span
                                     class="fi fi-{languages.find((l) => l.code === $locale || $locale?.startsWith(l.code))?.flag || 'il'}"
-                                    style="font-size: 1.2rem;"
+                                    style="font-size: 0.95rem;"
                                     aria-hidden="true"
                                 ></span>
                             </button>
