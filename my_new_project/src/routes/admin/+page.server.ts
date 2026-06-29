@@ -4,6 +4,7 @@ import { requireSuperAdmin, requireAdmin } from '$lib/server/auth';
 import { getAllUsers, banUser, unbanUser, setUserRole, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByEmail, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, approveNeighborhood, rejectNeighborhood, getDiscountCodes, saveDiscountCodes, getItemsByCategoryAndStatus } from '$lib/server/db';
 import { DEFAULT_DISCOUNT_CODES, type DiscountCode } from '$lib/discountCodes';
 import { countPending } from '$lib/server/adsStore';
+import { isTotpConfigured } from '$lib/server/totp';
 
 export const load: PageServerLoad = async (event) => {
     const session = await event.locals.auth();
@@ -87,6 +88,7 @@ export const load: PageServerLoad = async (event) => {
         pendingAdsCount,
         pendingSinglesCount,
         discountCodes,
+        twoFAConfigured: isTotpConfigured(session?.user?.email),
     };
 };
 

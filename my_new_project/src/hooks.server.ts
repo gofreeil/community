@@ -1,6 +1,11 @@
 import { handle as authHandle } from './auth';
 import { sequence } from '@sveltejs/kit/hooks';
 import type { Handle } from '@sveltejs/kit';
+import {
+    getAdminTotpSecret,
+    verifyTrustToken,
+    TRUST_COOKIE_NAME,
+} from '$lib/server/totp';
 
 /**
  * אחרי auth - אם המשתמש מחובר ויש לו strapiJwt בסשן אך אין cookie,
@@ -65,6 +70,44 @@ const ssoAutoAdopt: Handle = async ({ event, resolve }) => {
     return resolve(event);
 };
 
+/**
+ * שער 2FA לאזור הניהול. רץ ב-hook (לפני ניתוב) כך שהוא חוסם גם טעינת דפים
+ * וגם POST-ים ל-form actions ההרסניים (ban/setRole/delete...) — לא רק את ה-UI.
+ *
+ * הלוגיקה: סופר-אדמין שיש לו סוד TOTP מוגדר (ADMIN_TOTP_SECRET) אך אין לו עוגיית
+ * מכשיר-מהימן תקפה → GET מופנה ל-/admin/verify, POST נחסם 403. מכשיר שכבר אומת
+ * פעם אחת נושא עוגייה חתומה ועובר חלק. אם 2FA לא הוגדר כלל — השער שקוף.
+ */
+const adminGate: Handle = async ({ event, resolve }) => {
+    const path = event.url.pathname;
+    const guarded =
+        path.startsWith('/admin') &&
+        path !== '/admin/verify' &&
+        path !== '/admin/2fa-setup';
+    if (!guarded) return resolve(event);
+
+    let session = null;
+    try { session = await event.locals.auth(); } catch { /* ignore */ }
+    // לא-אדמין: נותנים ל-load/route עצמו לזרוק 403 כרגיל
+    if (session?.user?.role !== 'super_admin') return resolve(event);
+
+    const secret = getAdminTotpSecret(session.user.email);
+    if (!secret) return resolve(event); // 2FA לא הוגדר → שער שקוף
+
+    const trusted = verifyTrustToken(event.cookies.get(TRUST_COOKIE_NAME), session.user.email, secret);
+    if (trusted) return resolve(event);
+
+    // לא מאומת במכשיר זה
+    if (event.request.method === 'GET') {
+        const target = event.url.pathname + event.url.search;
+        return new Response(null, {
+            status: 302,
+            headers: { location: `/admin/verify?redirect=${encodeURIComponent(target)}` },
+        });
+    }
+    return new Response('נדרש אימות דו-שלבי', { status: 403 });
+};
+
 const setStrApiCookie: Handle = async ({ event, resolve }) => {
     const isProd = process.env.NODE_ENV === 'production';
     // עוגייה משותפת לכל 13 אתרי gofreeil.com: זיהוי מאוחד מול רשימת המשתמשים
@@ -122,7 +165,7 @@ export const handle: Handle = async ({ event, resolve }) => {
     }
 
     try {
-        return await sequence(authHandle, ssoAutoAdopt, checkBanned, setStrApiCookie)({ event, resolve });
+        return await sequence(authHandle, ssoAutoAdopt, adminGate, checkBanned, setStrApiCookie)({ event, resolve });
     } catch (err) {
         console.warn('[hooks] auth handle threw - continuing anonymously:', err);
         // fallback: מגדיר auth בטוח כדי שקוד downstream לא יזרוק TypeError

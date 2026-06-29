@@ -164,6 +164,16 @@
 			</div>
 			<div class="flex gap-2 flex-wrap">
 				<button
+					onclick={() => goto('/admin/2fa-setup')}
+					class="relative px-4 py-2 rounded-xl border transition-all cursor-pointer font-bold flex items-center gap-1.5
+						{data.twoFAConfigured
+							? 'bg-green-500/15 border-green-500/40 text-green-200 hover:bg-green-500/25'
+							: 'bg-red-500/15 border-red-500/50 text-red-200 hover:bg-red-500/25 animate-pulse'}"
+					title={data.twoFAConfigured ? 'אימות דו-שלבי פעיל' : 'הפעל אימות דו-שלבי - מומלץ!'}
+				>
+					🔐 {data.twoFAConfigured ? '2FA פעיל' : 'הפעל 2FA'}
+				</button>
+				<button
 					onclick={() => goto('/admin/singles-review')}
 					class="relative px-4 py-2 rounded-xl bg-pink-500/15 border border-pink-500/40 text-pink-200 hover:bg-pink-500/25 transition-all cursor-pointer font-bold flex items-center gap-1.5"
 				>

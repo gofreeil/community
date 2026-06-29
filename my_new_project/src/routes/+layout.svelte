@@ -47,6 +47,18 @@
 			? {
 				username:   data.layoutUser?.nickname || data.layoutUser?.name || (data.session.user.name ?? data.session.user.email ?? 'משתמש'),
 				avatar_url: data.layoutUser?.avatar_url ?? data.session.user.image ?? null,
+					name:              data.layoutUser?.name ?? null,
+					email:             data.layoutUser?.email ?? data.session.user.email ?? null,
+					nickname:          data.layoutUser?.nickname ?? null,
+					phone:             data.layoutUser?.phone ?? null,
+					city:              data.layoutUser?.city ?? null,
+					neighborhood:      data.layoutUser?.neighborhood ?? null,
+					gender:            data.layoutUser?.gender ?? null,
+					business:          data.layoutUser?.business ?? null,
+					family_status:     data.layoutUser?.family_status ?? null,
+					birth_date:        data.layoutUser?.birth_date ?? null,
+					security_question: data.layoutUser?.security_question ?? null,
+					security_answer:   data.layoutUser?.security_answer ?? null,
 			  }
 			: undefined
 	);
