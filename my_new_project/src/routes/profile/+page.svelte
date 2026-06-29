@@ -1663,18 +1663,18 @@
 	{/if}
 
 	<!-- ===== לשוניות ניווט - נייד בלבד ===== -->
-	<div class="md:hidden flex gap-1 overflow-x-auto pb-1 mb-3 scrollbar-none">
+	<div class="md:hidden flex gap-1 mb-3">
 		{#each [{ id: "main", icon: "🎛️", label: "לוח הבקרה" }, { id: "profile", icon: "✏️", label: "פרופיל" }, { id: "messages", icon: "💬", label: "הודעות" }, { id: "items", icon: "📦", label: "נכסים" }, { id: "levels", icon: "🏆", label: "דרגות" }] as tab}
 			<button
 				type="button"
 				onclick={() => selectTab(tab.id as typeof mobileTab)}
-				class="flex-shrink-0 flex flex-col items-center gap-0.5 px-3 py-2 rounded-2xl text-[11px] font-bold transition-all
+				class="flex-1 min-w-0 flex flex-col items-center justify-center gap-1 px-1 py-2.5 rounded-2xl text-[13px] leading-tight font-bold transition-all
 					{mobileTab === tab.id
 					? 'bg-purple-600/30 border border-purple-500/50 text-white'
 					: 'bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10'}"
 			>
-				<span class="text-base leading-none">{tab.icon}</span>
-				<span>{tab.label}</span>
+				<span class="text-xl leading-none">{tab.icon}</span>
+				<span class="text-center">{tab.label}</span>
 			</button>
 		{/each}
 	</div>
