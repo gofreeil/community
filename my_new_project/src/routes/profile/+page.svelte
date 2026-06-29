@@ -1775,14 +1775,6 @@
 					>
 						{tFn("logout_btn")}
 					</button>
-				{:else}
-					<a
-						href="/login?redirect=/profile"
-						class="text-sm font-bold text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 px-5 py-2.5 rounded-xl shadow-lg transition-all duration-200 hover:-translate-y-0.5 flex items-center gap-1.5"
-						title="כניסה לחשבון"
-					>
-						🔓 כניסה
-					</a>
 				{/if}
 			</div>
 		</div>
