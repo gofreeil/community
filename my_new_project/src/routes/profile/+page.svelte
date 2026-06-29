@@ -182,11 +182,12 @@
 	}
 
 	// ===== business_type (localStorage) =====
+	// ערך-דגל לשדה business עבור מי שאין לו עסק/שירות — נשמר ב-DB כדי שהפרופיל יגיע ל-100%
+	const NO_BUSINESS = "ללא עסק או שירות עצמאי";
 	const BIZ_TYPE_KEY = "business_type_v1";
 	let businessType = $state(
-		typeof localStorage !== "undefined"
-			? (localStorage.getItem(BIZ_TYPE_KEY) ?? "")
-			: "",
+		(typeof localStorage !== "undefined" ? localStorage.getItem(BIZ_TYPE_KEY) : null)
+			?? (_ud?.business === NO_BUSINESS ? "none" : ""),
 	);
 	$effect(() => {
 		try { localStorage.setItem(BIZ_TYPE_KEY, businessType); } catch {}
@@ -614,6 +615,12 @@
 		}
 	}
 	let business = $state(_ud?.business ?? "");
+	// בחירת "ללא עסק או שירות עצמאי" ממלאת את שדה העסק (כך הפרופיל מגיע ל-100%);
+	// מעבר משם מנקה את ערך-הדגל כדי לא להשאיר אותו בטעות.
+	$effect(() => {
+		if (businessType === "none" && business !== NO_BUSINESS) business = NO_BUSINESS;
+		else if (businessType !== "none" && business === NO_BUSINESS) business = "";
+	});
 	let customLocation = $state("");
 	let customLat = $state<number | null>(null);
 	let customLng = $state<number | null>(null);
@@ -3889,11 +3896,12 @@
 									bind:value={businessType}
 									class="w-full bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none mb-2"
 								>
-									<option value="">לא רלוונטי</option>
+									<option value="">בחר/י...</option>
+										<option value="none">ללא עסק או שירות עצמאי</option>
 									<option value="business_owner">בעל עסק</option>
 									<option value="service_provider">נותן שירות / בעל מקצוע</option>
 								</select>
-								{#if businessType}
+								{#if businessType === 'business_owner' || businessType === 'service_provider'}
 									<input
 										id="p-business"
 										name="business"
@@ -3907,7 +3915,7 @@
 								{/if}
 							{:else}
 								<p class="text-white font-medium py-3 px-1">
-									{businessType === 'business_owner' ? `🏪 ${business || 'בעל עסק'}` : businessType === 'service_provider' ? `🛠️ ${business || 'נותן שירות'}` : business || '-'}
+									{businessType === 'business_owner' ? `🏪 ${business || 'בעל עסק'}` : businessType === 'service_provider' ? `🛠️ ${business || 'נותן שירות'}` : (business === NO_BUSINESS ? 'ללא עסק' : business || '-')}
 								</p>
 							{/if}
 						</div>
