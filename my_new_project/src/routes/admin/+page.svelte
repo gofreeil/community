@@ -535,6 +535,11 @@
 									{#if user.banned}
 										<span class="text-sm bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded-full">חסום</span>
 									{/if}
+									{#if ((user as any).merged_count ?? 1) > 1}
+										<span class="text-xs font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2 py-0.5 rounded-full whitespace-nowrap" title="אוחד אוטומטית מחשבונות שחולקים אימייל/טלפון">
+											🔗 מאוחד · {(user as any).merged_count} חשבונות
+										</span>
+									{/if}
 								</div>
 								<div class="text-base text-gray-400 truncate">{user.email ?? '-'}</div>
 							</div>

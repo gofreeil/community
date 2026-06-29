@@ -84,6 +84,10 @@ export interface DbUser {
     security_answer_2: string;
     status: string;
     coordinator_of: string[];
+    /** כל מזהי החשבונות האמיתיים שאוחדו לכרטיס זה (כולל ה-id הראשי) */
+    merged_ids?: string[];
+    /** מספר החשבונות שאוחדו (1 = חשבון יחיד) */
+    merged_count?: number;
 }
 
 export interface UpsertUserData {
@@ -897,7 +901,7 @@ export async function approveCoordinatorRequest(documentId: string, decidedBy: s
     // אכיפת רכז אחד לשכונה: הסרת השכונות המאושרות מכל רכז אחר שמחזיק אותן
     const approvedKeys = new Set(req.neighborhoods.map(coordAreaKey));
     try {
-        const allUsers = await getAllUsers();
+        const allUsers = await getAllUsersRaw();
         for (const u of allUsers) {
             if (String(u.id) === String(req.user_id)) continue; // את המבקש מטפלים בנפרד
             const current = u.coordinator_of ?? [];
@@ -1116,8 +1120,121 @@ export async function findAdminForNeighborhood(neighborhood: string): Promise<Db
     return arr.length > 0 ? mapUpUser(arr[0] as StrapiUpUser) : undefined;
 }
 
-/** שליפת כל המשתמשים (אדמין בלבד) */
-export async function getAllUsers(_jwt?: string): Promise<DbUser[]> {
+// ============================================================
+// ---- איחוד משתמשים כפולים לפי אימייל / טלפון ----
+// אדם שנרשם בכמה דרכים (גוגל, אימייל, טלפון) נספר כמשתמש אחד -
+// גם בתצוגה (רשימת אדמין, ספירות) וגם מאחורי הקלעים.
+// ============================================================
+
+/** נרמול אימייל לצורך השוואה (lowercase + trim) */
+function normEmail(e: string | null | undefined): string {
+    return (e ?? '').trim().toLowerCase();
+}
+
+/** נרמול טלפון לצורך השוואה - ספרות בלבד, המרת קידומת 972 ל-0 */
+function normPhone(p: string | null | undefined): string {
+    let d = (p ?? '').replace(/\D/g, '');
+    if (!d) return '';
+    if (d.startsWith('972')) d = '0' + d.slice(3);        // +972-5x → 05x
+    else if (d.length === 9 && d[0] !== '0') d = '0' + d; // 5xxxxxxxx → 05xxxxxxxx
+    return d;
+}
+
+const ROLE_PRIORITY: Record<string, number> = { super_admin: 3, neighborhood_admin: 2, user: 1 };
+
+/** כמה שדות פרופיל מלאים יש לכרטיס - לבחירת הכרטיס ה"ראשי" באיחוד */
+function completeness(u: DbUser): number {
+    const fields = [u.name, u.email, u.phone, u.neighborhood, u.city, u.avatar_url,
+        u.business, u.family_status, u.gender, u.birth_date];
+    return fields.filter((f) => f != null && String(f).trim() !== '').length;
+}
+
+/**
+ * מאחד משתמשים שחולקים אימייל או טלפון לכרטיס אחד.
+ * משתמש ב-union-find כך שאיחוד מעבר (A↔B דרך אימייל, B↔C דרך טלפון) מקבץ את שלושתם.
+ */
+export function mergeDuplicateUsers(users: DbUser[]): DbUser[] {
+    const n = users.length;
+    const parent = Array.from({ length: n }, (_, i) => i);
+    const find = (x: number): number => {
+        while (parent[x] !== x) { parent[x] = parent[parent[x]]; x = parent[x]; }
+        return x;
+    };
+    const union = (a: number, b: number) => { parent[find(a)] = find(b); };
+
+    // מיפוי מפתח (אימייל/טלפון מנורמל) → אינדקס משתמש ראשון שנראה איתו
+    const byEmail = new Map<string, number>();
+    const byPhone = new Map<string, number>();
+    users.forEach((u, i) => {
+        const em = normEmail(u.email);
+        if (em) {
+            if (byEmail.has(em)) union(i, byEmail.get(em)!);
+            else byEmail.set(em, i);
+        }
+        const ph = normPhone(u.phone);
+        if (ph) {
+            if (byPhone.has(ph)) union(i, byPhone.get(ph)!);
+            else byPhone.set(ph, i);
+        }
+    });
+
+    // קיבוץ לפי שורש union-find
+    const groups = new Map<number, DbUser[]>();
+    users.forEach((u, i) => {
+        const root = find(i);
+        const g = groups.get(root) ?? [];
+        g.push(u);
+        groups.set(root, g);
+    });
+
+    const merged: DbUser[] = [];
+    for (const group of groups.values()) {
+        if (group.length === 1) {
+            merged.push({ ...group[0], merged_ids: [group[0].id], merged_count: 1 });
+            continue;
+        }
+        // בחירת הכרטיס הראשי: תפקיד גבוה > פרופיל מלא יותר > ותק
+        const sorted = [...group].sort((a, b) => {
+            const r = (ROLE_PRIORITY[b.role] ?? 0) - (ROLE_PRIORITY[a.role] ?? 0);
+            if (r !== 0) return r;
+            const c = completeness(b) - completeness(a);
+            if (c !== 0) return c;
+            return (a.created_at || '').localeCompare(b.created_at || '');
+        });
+        const primary = sorted[0];
+        const result: DbUser = { ...primary };
+
+        // מילוי שדות חסרים מהכרטיסים האחרים
+        const pickFilled = (key: keyof DbUser) => {
+            const cur = result[key];
+            if (cur != null && String(cur).trim() !== '') return;
+            for (const u of sorted) {
+                const v = u[key];
+                if (v != null && String(v).trim() !== '') { (result as any)[key] = v; return; }
+            }
+        };
+        (['name', 'email', 'phone', 'neighborhood', 'city', 'avatar_url', 'provider',
+          'nickname', 'business', 'family_status', 'gender', 'birth_date',
+          'security_question', 'security_answer', 'security_question_2', 'security_answer_2'] as (keyof DbUser)[])
+            .forEach(pickFilled);
+
+        result.balance        = group.reduce((s, u) => s + (u.balance || 0), 0); // מאזן מצטבר
+        result.notifications  = Math.max(...group.map((u) => u.notifications || 0));
+        result.banned         = group.some((u) => u.banned);                     // חסום באחד = חסום
+        result.coordinator_of = Array.from(new Set(group.flatMap((u) => u.coordinator_of ?? [])));
+        result.created_at     = group.map((u) => u.created_at).filter(Boolean).sort()[0] ?? result.created_at;
+        result.merged_ids     = group.map((u) => u.id);
+        result.merged_count   = group.length;
+        merged.push(result);
+    }
+
+    // שמירה על מיון לפי תאריך יצירה יורד (כמו במקור)
+    merged.sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+    return merged;
+}
+
+/** שליפת כל המשתמשים הגולמיים (ללא איחוד) - לשימוש פנימי שצריך לגעת בכל רשומה אמיתית */
+export async function getAllUsersRaw(_jwt?: string): Promise<DbUser[]> {
     try {
         const arr = await findStrapiUpUsers({
             'pagination[limit]': '1000',
@@ -1125,9 +1242,14 @@ export async function getAllUsers(_jwt?: string): Promise<DbUser[]> {
         });
         return (arr as StrapiUpUser[]).map(mapUpUser);
     } catch (e) {
-        console.warn('[db] getAllUsers failed:', e);
+        console.warn('[db] getAllUsersRaw failed:', e);
         return [];
     }
+}
+
+/** שליפת כל המשתמשים - מאוחדים לפי אימייל/טלפון (אדמין בלבד) */
+export async function getAllUsers(_jwt?: string): Promise<DbUser[]> {
+    return mergeDuplicateUsers(await getAllUsersRaw(_jwt));
 }
 
 /** שינוי role של משתמש (סופר-אדמין בלבד) */
