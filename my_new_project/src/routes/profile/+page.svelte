@@ -1753,7 +1753,7 @@
 		<div class="flex items-center justify-between mb-5">
 			<div class="flex items-center gap-2">
 				<span
-					class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+					class="w-7 h-7 rounded-full text-black text-sm font-black hidden md:flex items-center justify-center flex-shrink-0"
 					style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75"
 					>1</span
 				>
@@ -2156,7 +2156,7 @@
 		>
 			<h2 class="text-xl font-black text-white flex items-center gap-2">
 				<span
-					class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+					class="w-7 h-7 rounded-full text-black text-sm font-black hidden md:flex items-center justify-center flex-shrink-0"
 					style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75"
 					>2</span
 				>
@@ -2542,7 +2542,7 @@
 		>
 			<h2 class="text-xl font-black text-white flex items-center gap-2">
 				<span
-					class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+					class="w-7 h-7 rounded-full text-black text-sm font-black hidden md:flex items-center justify-center flex-shrink-0"
 					style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75"
 					>3</span
 				>
@@ -2934,7 +2934,7 @@
 				class="relative text-xl font-black text-white flex items-center gap-2"
 			>
 				<span
-					class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+					class="w-7 h-7 rounded-full text-black text-sm font-black hidden md:flex items-center justify-center flex-shrink-0"
 					style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75"
 					>4</span
 				>
@@ -3282,7 +3282,7 @@
 		>
 			<h2 class="text-xl font-black text-white flex items-center gap-2">
 				<span
-					class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+					class="w-7 h-7 rounded-full text-black text-sm font-black hidden md:flex items-center justify-center flex-shrink-0"
 					style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75"
 					>5</span
 				>
@@ -4376,7 +4376,7 @@
 		>
 			<h2 class="text-xl font-black text-white flex items-center gap-2">
 				<span
-					class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+					class="w-7 h-7 rounded-full text-black text-sm font-black hidden md:flex items-center justify-center flex-shrink-0"
 					style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75"
 					>6</span
 				>
@@ -4466,7 +4466,7 @@
 		>
 			<h2 class="text-xl font-black text-white flex items-center gap-2">
 				<span
-					class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+					class="w-7 h-7 rounded-full text-black text-sm font-black hidden md:flex items-center justify-center flex-shrink-0"
 					style="background: radial-gradient(circle, #a78bfa 0%, #9f7aea 60%, #805ad5 100%); opacity: 0.75"
 					>7</span
 				>
@@ -4562,7 +4562,7 @@
 		>
 			<h2 class="text-xl font-black text-white flex items-center gap-2">
 				<span
-					class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+					class="w-7 h-7 rounded-full text-black text-sm font-black hidden md:flex items-center justify-center flex-shrink-0"
 					style="background: radial-gradient(circle, #60a5fa 0%, #3b82f6 60%, #1d4ed8 100%); opacity: 0.75"
 					>8</span
 				>
