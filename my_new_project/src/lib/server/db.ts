@@ -895,7 +895,17 @@ export async function approveCoordinatorRequest(documentId: string, decidedBy: s
     const req = await getCoordinatorRequestById(documentId);
     if (!req) throw new Error('בקשה לא נמצאה');
 
-    const existing = (await getUserByAnyId(req.user_id))?.coordinator_of ?? [];
+    // איתור המשתמש המבקש - לפי המזהה, ובכשל לפי הטלפון שבבקשה.
+    // חשבונות OAuth/credentials שמוזגו עלולים לקבל external_id שונה מזה שנשמר
+    // בעת הגשת הבקשה, ואז חיפוש לפי user_id בלבד נכשל ("משתמש לא נמצא").
+    let targetUser = await findUpUserAny(req.user_id);
+    if (!targetUser && req.phone) targetUser = await findUpUserByPhone(req.phone);
+    if (!targetUser) {
+        throw new Error(`משתמש לא נמצא (מזהה: ${req.user_id}${req.phone ? `, טלפון: ${req.phone}` : ''})`);
+    }
+    const targetMappedId = mapUpUser(targetUser).id; // external_id ?? id מספרי
+
+    const existing = mapUpUser(targetUser).coordinator_of ?? [];
     const merged = Array.from(new Set([...existing, ...req.neighborhoods].map(s => s.trim()).filter(Boolean)));
 
     // אכיפת רכז אחד לשכונה: הסרת השכונות המאושרות מכל רכז אחר שמחזיק אותן
@@ -903,7 +913,7 @@ export async function approveCoordinatorRequest(documentId: string, decidedBy: s
     try {
         const allUsers = await getAllUsersRaw();
         for (const u of allUsers) {
-            if (String(u.id) === String(req.user_id)) continue; // את המבקש מטפלים בנפרד
+            if (String(u.id) === String(targetMappedId)) continue; // את המבקש מטפלים בנפרד
             const current = u.coordinator_of ?? [];
             const kept = current.filter(e => !approvedKeys.has(coordAreaKey(e)));
             if (kept.length === current.length) continue; // לא היה רכז לשכונות אלו אצלו
@@ -936,7 +946,8 @@ export async function approveCoordinatorRequest(documentId: string, decidedBy: s
         console.warn('[approveCoordinatorRequest] reassign cleanup failed:', e instanceof Error ? e.message : e);
     }
 
-    await setCoordinatorOfAnyId(req.user_id, merged);
+    await updateStrapiUpUser(targetUser.id, { coordinator_of: merged });
+    invalidate('user:');
 
     await strapiPut(`/api/coordinator-requests/${documentId}`, {
         data: { status: 'approved', decided_at: new Date().toISOString(), decided_by: decidedBy },
@@ -1363,6 +1374,14 @@ async function findUpUserByEmail(email: string): Promise<StrapiUpUser | undefine
         'pagination[limit]':   '1',
     });
     return arr[0] as StrapiUpUser | undefined;
+}
+
+/** מחפש משתמש לפי טלפון (השוואה מנורמלת) - fallback כש-external_id השתנה */
+async function findUpUserByPhone(phone: string): Promise<StrapiUpUser | undefined> {
+    const target = normPhone(phone);
+    if (!target) return undefined;
+    const arr = await findStrapiUpUsers({ 'pagination[limit]': '1000' });
+    return (arr as StrapiUpUser[]).find(u => normPhone(u.phone) === target);
 }
 
 export async function upsertUser(data: UpsertUserData, _jwt?: string): Promise<void> {
