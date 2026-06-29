@@ -84,10 +84,12 @@
     // מעגל מילוי פרופיל בהדר - זהה ללוח הבקרה בדף הפרופיל
     const headerRingC = 2 * Math.PI * 27; // r=27, viewBox 60×60
 
+    // זהה לחישוב profileCompletion בלוח הבקרה (12 שדות) כדי ששתי הטבעות יציגו אותו ערך
     let headerCompletion = $derived(
         currentUser ? Math.round([
-            !!currentUser.avatar_url,
             !!currentUser.name,
+            !!currentUser.email,
+            !!currentUser.avatar_url,
             !!currentUser.nickname,
             !!currentUser.phone,
             !!currentUser.city,
@@ -95,8 +97,9 @@
             !!currentUser.gender,
             !!currentUser.business,
             !!currentUser.family_status,
-            !!currentUser.notifications,
-        ].filter(Boolean).length / 10 * 100) : 0
+            !!currentUser.birth_date,
+            !!(currentUser.security_question && currentUser.security_answer),
+        ].filter(Boolean).length / 12 * 100) : 0
     );
 
     let headerRingColor = $derived(
