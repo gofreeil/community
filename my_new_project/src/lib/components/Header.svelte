@@ -292,7 +292,7 @@
                             <button
                                 onclick={() => (showLangDropdown = !showLangDropdown)}
                                 onkeydown={handleLangKeydown}
-                                class="flex items-center justify-center w-7 h-8 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors"
+                                class="flex items-center justify-center w-7 h-8 hover:opacity-80 transition-opacity"
                                 aria-label="בחר שפה"
                                 aria-haspopup="listbox"
                                 aria-expanded={showLangDropdown}
