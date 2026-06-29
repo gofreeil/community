@@ -1582,7 +1582,7 @@
 				          hover:from-purple-500 hover:to-blue-500 text-white text-sm font-bold
 				          shadow-lg transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
 				>
-					התחבר
+					התחבר:
 					<svg class="w-4 h-4 transition-transform duration-300 {showLoginOptions ? 'rotate-180' : ''}"
 						viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -1613,7 +1613,7 @@
 						       hover:border-amber-400/60 text-sm font-bold text-white transition-all hover:-translate-y-0.5"
 					>
 						<span class="text-base">🕊️</span>
-						יוצאים לחירות
+						עם יוצאים לחירות
 					</a>
 					<!-- 2. גוגל -->
 					<button
@@ -1623,7 +1623,7 @@
 						       border border-white/10 hover:border-red-400/40 text-sm font-bold text-gray-200 transition-all cursor-pointer"
 					>
 						<img src="https://www.google.com/favicon.ico" class="w-4 h-4" alt="" />
-						גוגל
+						עם גוגל
 					</button>
 					<!-- 3. פייסבוק -->
 					<button
@@ -1633,7 +1633,7 @@
 						       border border-white/10 hover:border-blue-400/40 text-sm font-bold text-gray-200 transition-all cursor-pointer"
 					>
 						<img src="https://www.facebook.com/favicon.ico" class="w-4 h-4" alt="" />
-						פייסבוק
+						עם פייסבוק
 					</button>
 					<!-- 4. שם משתמש וסיסמה -->
 					<a
@@ -1642,7 +1642,7 @@
 						       border border-white/10 hover:border-purple-400/40 text-sm font-bold text-gray-200 transition-all"
 					>
 						<span class="text-base">🔑</span>
-						שם משתמש וסיסמה
+						עם שם משתמש וסיסמה
 					</a>
 				</div>
 			{/if}
