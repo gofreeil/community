@@ -1,5 +1,6 @@
 <script lang="ts">
     import { enhance } from '$app/forms';
+    import { formMemory } from '$lib/formMemory';
     import type { ActionData } from './$types';
 
     let { form }: { form: ActionData } = $props();
@@ -103,6 +104,7 @@
                         submitting = false;
                     };
                 }}
+                use:formMemory
                 class="space-y-5"
             >
                 <!-- Type selection -->

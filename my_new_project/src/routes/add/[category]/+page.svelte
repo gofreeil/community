@@ -3,6 +3,7 @@
     import { browser } from '$app/environment';
     import { goto } from '$app/navigation';
     import { LS_KEY, DEFAULT_NEIGHBORHOOD, citiesAndNeighborhoods } from '$lib/neighborhoodsData';
+    import { getFormMemory, rememberFields } from '$lib/formMemory';
     import type { PageData } from './$types';
 
     let { data }: { data: PageData } = $props();
@@ -199,6 +200,15 @@
             }
         }
 
+        // מלא שדות אישיים שכבר מולאו פעם בטופס אחר (זיכרון חוצה-טפסים בעוגייה),
+        // רק אם השדה עדיין ריק - כך לא דורסים ערכי עריכה/פרופיל קיימים.
+        try {
+            const mem = getFormMemory();
+            for (const [k, v] of Object.entries(mem)) {
+                if (v && k in formValues && !getFieldValue(k)) setFieldValue(k, v);
+            }
+        } catch {}
+
         // שחזר שכונה מ-localStorage (גובר על פרופיל)
         try {
             const saved = localStorage.getItem(LS_KEY);
@@ -235,6 +245,8 @@
         try {
             localStorage.setItem(DRAFT_KEY, JSON.stringify({ formValues, neighborhood, city }));
         } catch {}
+        // שמור את השדות האישיים גם בעוגייה חוצת-טפסים (שם/טלפון/איש קשר/קישורים)
+        rememberFields(formValues);
     });
 
     function getFieldValue(key: string): string {

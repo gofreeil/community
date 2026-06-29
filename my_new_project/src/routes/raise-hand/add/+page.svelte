@@ -1,5 +1,6 @@
 <script lang="ts">
     import { enhance } from '$app/forms';
+    import { formMemory } from '$lib/formMemory';
     import type { PageData, ActionData } from './$types';
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -98,6 +99,7 @@
                     submitting = true;
                     return async ({ update }) => { await update(); submitting = false; };
                 }}
+                use:formMemory
                 class="space-y-5">
 
                 <input type="hidden" name="option_id" value={data.optionId} />

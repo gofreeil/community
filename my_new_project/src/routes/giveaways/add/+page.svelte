@@ -4,6 +4,7 @@
     import { categoryConfig } from '$lib/categoryFields';
     import { citiesAndNeighborhoods } from '$lib/neighborhoodsData';
     import { giveawayCategories } from '$lib/giveawayCategories';
+    import { formMemory } from '$lib/formMemory';
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
 
@@ -126,6 +127,7 @@
                         submitting = false;
                     };
                 }}
+                use:formMemory
                 class="rounded-2xl bg-[#0f172a] border border-white/10 p-6 space-y-5">
 
                 <!-- Section 1: העיקר -->

@@ -4,6 +4,7 @@
     import { goto } from '$app/navigation';
     import { enhance } from '$app/forms';
     import { citiesAndNeighborhoods, LS_KEY, DEFAULT_NEIGHBORHOOD } from '$lib/neighborhoodsData';
+    import { formMemory } from '$lib/formMemory';
     import type { ActionData, PageData } from './$types';
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -268,7 +269,7 @@
                 </div>
             </div>
         {:else}
-            <form method="POST" onsubmit={handleSubmit} use:enhance class="rounded-2xl bg-[#0f172a] border border-white/10 p-6 space-y-4">
+            <form method="POST" onsubmit={handleSubmit} use:enhance use:formMemory class="rounded-2xl bg-[#0f172a] border border-white/10 p-6 space-y-4">
                 <div>
                     <label for="title" class="text-white text-sm font-bold mb-1 block">שם הגמ"ח *</label>
                     <input id="title" name="title" bind:value={title} required placeholder='לדוגמה: גמ"ח כיסאות' class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
