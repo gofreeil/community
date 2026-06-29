@@ -284,7 +284,6 @@
                             class="flex items-center justify-center gap-1 h-8 px-3 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors"
                             aria-label="אודות קהילה"
                         >
-                            <span class="text-base font-bold text-white leading-none">ℹ</span>
                             <span class="text-sm font-bold text-white leading-none whitespace-nowrap">{tFn("about")}</span>
                         </button>
 
