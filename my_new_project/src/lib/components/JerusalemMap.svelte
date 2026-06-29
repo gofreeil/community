@@ -1466,17 +1466,8 @@
                         <span class="text-lg">← ללוח הארצי</span>
                         <img src="/images/delivery.png" alt="" class="w-7 h-7 object-contain" />
                     </button>
-                {:else if neighborhoodDbItems.length > 0 || nationalBoardUrl}
+                {:else if nationalBoardUrl}
                     <div class="absolute bottom-4 left-4 z-20 flex flex-wrap items-center gap-2">
-                        {#if neighborhoodDbItems.length > 0}
-                            <button
-                                onclick={() => handleViewToggle(false)}
-                                class="bg-green-600/90 backdrop-blur-sm text-white text-xs font-black px-3 py-1.5 rounded-full shadow-lg border border-green-400/50 hover:bg-green-500/90 transition-all hover:scale-105"
-                                title="עבור לרשימה לצפייה בפריטים החדשים"
-                            >
-                                🆕 {neighborhoodDbItems.length} פריטים ב{neighborhoodState.neighborhood} - לחץ לצפייה
-                            </button>
-                        {/if}
                         {#if nationalBoardUrl}
                             <a
                                 href={nationalBoardUrl}
@@ -1832,7 +1823,31 @@
             </button>
         </div>
 
-        <!-- כפתור "הוסף יתרון" הירוק הוסר - אין בו צורך -->
+        <!-- כפתור הוסף יתרון - בחלק העליון (שוחזר; מירכוז ב-translateX מפורש כי -translate-x-1/2 שבור ב-v4) -->
+        <div
+            class="absolute left-1/2 z-50"
+            style="top: -10px; transform: translateX(-50%);"
+        >
+            <button
+                onclick={handleAddAdvantage}
+                title={showAddMenu ? "סגור תפריט" : "הוסף יתרון חדש לשכונה"}
+                class="relative group overflow-hidden bg-gradient-to-br {showAddMenu
+                    ? 'from-green-900 via-emerald-900 to-teal-950'
+                    : 'from-green-500 via-emerald-500 to-teal-600'} hover:{showAddMenu
+                    ? 'from-green-800 via-emerald-800 to-teal-900'
+                    : 'from-green-400 via-emerald-400 hover:to-teal-500'} text-white px-3 py-1.5 rounded-lg font-bold text-base shadow-xl transition-all hover:scale-105 border-2 {showAddMenu
+                    ? 'border-red-500'
+                    : 'border-purple-600'}"
+            >
+                <div
+                    class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer-once"
+                ></div>
+                <div class="relative flex flex-row items-center justify-center gap-1.5 whitespace-nowrap">
+                    <span class="text-[10px] leading-none">{showAddMenu ? "✖️" : "➕"}</span>
+                    <span class="leading-none">{showAddMenu ? "סגור" : "הוסף"}</span>
+                </div>
+            </button>
+        </div>
 
         <!-- כפתור הרמת יד מיוחד - בתחתית המפה -->
         <div
