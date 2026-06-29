@@ -76,13 +76,6 @@
         return `לפני ${days} ימים`;
     }
 
-    // כמה ימים נותרו עד מחיקה אוטומטית (60 יום מיצירת ההודעה)
-    function daysLeft(iso: string): number {
-        if (!iso) return 60;
-        const age = Date.now() - new Date(iso).getTime();
-        return Math.max(0, 60 - Math.floor(age / 86400000));
-    }
-
     function waLink(phone: string): string {
         const digits = phone.replace(/\D/g, '').replace(/^0/, '972');
         return `https://wa.me/${digits}`;
@@ -102,6 +95,16 @@
         </h1>
         <p class="text-gray-400 text-sm mt-0.5">{data.messages.length} הודעות</p>
     </div>
+
+    <!-- הסבר חד-פעמי על מחיקה אוטומטית -->
+    {#if data.messages.length > 0}
+        <div class="mb-4 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5">
+            <p class="text-gray-400 text-xs leading-relaxed text-center">
+                ℹ️ הודעות נמחקות אוטומטית לאחר <span class="font-bold text-gray-300">60 יום</span>.
+                כדי לשמור הודעה - סמן אותה בכפתור <span class="font-bold text-amber-300">📌 שמור</span>.
+            </p>
+        </div>
+    {/if}
 
     <!-- טאבים + מחיקת הכל -->
     {#if data.messages.length > 0}
@@ -151,7 +154,6 @@
                 {@const sender    = getSender(msg.extra_fields)}
                 {@const itemLabel = getItemLabel(msg.extra_fields)}
                 {@const archived  = isArchived(msg)}
-                {@const left      = daysLeft(msg.created_at)}
                 <div class="rounded-2xl border p-4 transition-all {archived ? 'border-amber-500/40 bg-amber-900/10' : 'border-purple-500/20 bg-purple-900/10 hover:bg-purple-900/20'}">
                     <!-- Header row -->
                     <div class="flex items-start justify-between gap-2 mb-2">
@@ -225,28 +227,15 @@
                         </form>
                     </div>
 
-                    <!-- מונה מחיקה אוטומטית / סטטוס שמור -->
                     {#if archived}
                         <p class="text-amber-400/70 text-[11px] mt-2">
                             📌 שמור - לא יימחק אוטומטית
-                        </p>
-                    {:else}
-                        <p class="text-gray-600 text-[11px] mt-2">
-                            ⏳ תימחק אוטומטית בעוד {left} {left === 1 ? 'יום' : 'ימים'}
                         </p>
                     {/if}
                 </div>
             {/each}
         </div>
     {/if}
-
-    <!-- הסבר על מחיקה אוטומטית -->
-    <div class="mt-6 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-center">
-        <p class="text-gray-400 text-xs leading-relaxed">
-            ℹ️ כל ההודעות נמחקות אוטומטית מהמערכת לאחר <span class="font-bold text-gray-300">60 יום</span>.
-            כדי לשמור הודעה לאורך זמן - סמן אותה בכפתור <span class="font-bold text-amber-300">📌 שמור</span>.
-        </p>
-    </div>
 
     <!-- Back -->
     <div class="text-center mt-6">
