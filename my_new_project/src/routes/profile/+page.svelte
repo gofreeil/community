@@ -45,6 +45,7 @@
 	let likedItems = $state<LikedItem[]>([]);
 	let userStatus = $state<UserStatus>('available');
 	let showStatusSelector = $state(false);
+	let showLoginOptions = $state(false);
 	let receivedMessages = $state<any[]>([]);
 	let showReceivedMessages = $state(false);
 
@@ -1570,53 +1571,81 @@
 <div class="max-w-3xl mx-auto px-4 py-8 overflow-x-hidden" dir="rtl">
 	<!-- כפתור התחברות/הרשמה לאורחים בלבד -->
 	{#if !data.user}
-		<div
-			class="flex flex-wrap justify-center gap-2 mb-4 p-4 bg-[#0f172a] rounded-2xl border border-white/10"
-		>
-			<a
-				href="/login?redirect=/profile"
-				class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600
-			          hover:from-purple-500 hover:to-blue-500 text-white text-sm font-bold
-			          shadow-lg transition-all duration-200 hover:-translate-y-0.5"
-			>
-				כניסה לחשבון
-			</a>
-			<a
-				href="/register"
-				class="group relative px-5 py-2.5 rounded-xl border border-white/15 hover:border-purple-500/50
-			          text-gray-300 hover:text-white text-sm font-bold transition-all hover:bg-white/5"
-			>
-				הירשם
-				<span class="absolute top-full right-1/2 translate-x-1/2 mt-2 hidden group-hover:block
-				             bg-gray-900 text-white text-xs font-bold rounded-lg px-3 py-1.5
-				             whitespace-nowrap border border-white/10 shadow-xl pointer-events-none z-50">
-					צור חשבון חדש
-				</span>
-			</a>
-			<button
-				type="button"
-				onclick={() => signIn("google", { callbackUrl: "/profile" })}
-				class="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10
-				       border border-white/10 hover:border-red-400/40 text-sm text-gray-300 transition-all cursor-pointer"
-			>
-				<img
-					src="https://www.google.com/favicon.ico"
-					class="w-4 h-4"
-					alt=""
-				/>Google
-			</button>
-			<button
-				type="button"
-				onclick={() => signIn("facebook", { callbackUrl: "/profile" })}
-				class="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10
-				       border border-white/10 hover:border-blue-400/40 text-sm text-gray-300 transition-all cursor-pointer"
-			>
-				<img
-					src="https://www.facebook.com/favicon.ico"
-					class="w-4 h-4"
-					alt=""
-				/>Facebook
-			</button>
+		<div class="mb-4 p-4 bg-[#0f172a] rounded-2xl border border-white/10">
+			<!-- שני כפתורים ראשיים: התחבר / הירשם -->
+			<div class="flex flex-wrap justify-center gap-2">
+				<button
+					type="button"
+					onclick={() => (showLoginOptions = !showLoginOptions)}
+					aria-expanded={showLoginOptions}
+					class="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600
+				          hover:from-purple-500 hover:to-blue-500 text-white text-sm font-bold
+				          shadow-lg transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
+				>
+					התחבר
+					<svg class="w-4 h-4 transition-transform duration-300 {showLoginOptions ? 'rotate-180' : ''}"
+						viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+					</svg>
+				</button>
+				<a
+					href="/register"
+					class="group relative px-6 py-2.5 rounded-xl border border-white/15 hover:border-purple-500/50
+				          text-gray-300 hover:text-white text-sm font-bold transition-all hover:bg-white/5"
+				>
+					הירשם
+					<span class="absolute top-full right-1/2 translate-x-1/2 mt-2 hidden group-hover:block
+					             bg-gray-900 text-white text-xs font-bold rounded-lg px-3 py-1.5
+					             whitespace-nowrap border border-white/10 shadow-xl pointer-events-none z-50">
+						צור חשבון חדש
+					</span>
+				</a>
+			</div>
+
+			<!-- אפשרויות התחברות - נפתחות בלחיצה על 'התחבר' -->
+			{#if showLoginOptions}
+				<div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
+					<!-- 1. יוצאים לחירות (החשבון המאוחד לכל אתרי gofreeil) -->
+					<a
+						href="/login?redirect=/profile"
+						class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl
+						       bg-gradient-to-r from-amber-500/15 to-pink-500/15 border border-amber-400/30
+						       hover:border-amber-400/60 text-sm font-bold text-white transition-all hover:-translate-y-0.5"
+					>
+						<span class="text-base">🕊️</span>
+						יוצאים לחירות
+					</a>
+					<!-- 2. גוגל -->
+					<button
+						type="button"
+						onclick={() => signIn("google", { callbackUrl: "/profile" })}
+						class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10
+						       border border-white/10 hover:border-red-400/40 text-sm font-bold text-gray-200 transition-all cursor-pointer"
+					>
+						<img src="https://www.google.com/favicon.ico" class="w-4 h-4" alt="" />
+						גוגל
+					</button>
+					<!-- 3. פייסבוק -->
+					<button
+						type="button"
+						onclick={() => signIn("facebook", { callbackUrl: "/profile" })}
+						class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10
+						       border border-white/10 hover:border-blue-400/40 text-sm font-bold text-gray-200 transition-all cursor-pointer"
+					>
+						<img src="https://www.facebook.com/favicon.ico" class="w-4 h-4" alt="" />
+						פייסבוק
+					</button>
+					<!-- 4. שם משתמש וסיסמה -->
+					<a
+						href="/login?redirect=/profile"
+						class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10
+						       border border-white/10 hover:border-purple-400/40 text-sm font-bold text-gray-200 transition-all"
+					>
+						<span class="text-base">🔑</span>
+						שם משתמש וסיסמה
+					</a>
+				</div>
+			{/if}
 		</div>
 	{/if}
 
