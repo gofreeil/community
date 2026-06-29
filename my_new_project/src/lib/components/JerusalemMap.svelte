@@ -2183,7 +2183,7 @@
         100% { opacity: 0; transform: translateY(0); }
     }
     .neighborhood-count-fade {
-        animation: neighborhoodCountFade 7s ease-in-out forwards;
+        animation: neighborhoodCountFade 14s ease-in-out forwards;
         pointer-events: none;
     }
 
