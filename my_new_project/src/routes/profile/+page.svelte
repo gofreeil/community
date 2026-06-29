@@ -3899,7 +3899,7 @@
 									<option value="">בחר/י...</option>
 										<option value="none">ללא עסק או שירות עצמאי</option>
 									<option value="business_owner">בעל עסק</option>
-									<option value="service_provider">נותן שירות / בעל מקצוע</option>
+									<option value="service_provider">נותן שירות</option>
 								</select>
 								{#if businessType === 'business_owner' || businessType === 'service_provider'}
 									<input
