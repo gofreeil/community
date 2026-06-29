@@ -50,8 +50,9 @@
         }
 
         if (type === 'toggle' && options) return defaultVal && options.includes(defaultVal) ? defaultVal : options[0];
-        if (key === 'contact' && userProfile?.nickname) return userProfile.nickname;
-        if (key === 'phone'   && userProfile?.phone)    return userProfile.phone;
+        if (key === 'contact'  && userProfile?.nickname) return userProfile.nickname;
+        if (key === 'nickname' && userProfile?.nickname) return userProfile.nickname;
+        if (key === 'phone'    && userProfile?.phone)    return userProfile.phone;
         if (key === 'address' && type === 'neighborhood_select') {
             return userProfile?.neighborhood || (userProfile?.city ? 'מרכז' : DEFAULT_NEIGHBORHOOD);
         }
@@ -190,6 +191,7 @@
         // מלא פרטי פרופיל (גיבוי למקרה שה-SSR לא אותחל נכון)
         if (userProfile) {
             if (userProfile.nickname    && !getFieldValue('contact'))  setFieldValue('contact',  userProfile.nickname);
+            if (userProfile.nickname    && !getFieldValue('nickname')) setFieldValue('nickname', userProfile.nickname);
             if (userProfile.phone       && !getFieldValue('phone'))    setFieldValue('phone',    userProfile.phone);
             if (userProfile.neighborhood && !getFieldValue('address')) {
                 const parts = [userProfile.neighborhood, userProfile.city].filter(Boolean);
