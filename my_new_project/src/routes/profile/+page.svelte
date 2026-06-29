@@ -4425,7 +4425,7 @@
 	            before:absolute before:inset-x-0 before:top-0 before:h-24 before:rounded-t-3xl
 	            before:bg-gradient-to-b before:from-white/8 before:to-transparent
 	            before:transition-all before:duration-300 before:pointer-events-none
-	            hover:before:from-white/18 {mobileTab !== 'main'
+	            hover:before:from-white/18 {mobileTab !== 'profile'
 			? 'hidden md:block'
 			: ''}"
 	>
