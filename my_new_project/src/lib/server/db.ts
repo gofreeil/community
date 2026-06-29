@@ -899,6 +899,12 @@ export async function approveCoordinatorRequest(documentId: string, decidedBy: s
     // חשבונות OAuth/credentials שמוזגו עלולים לקבל external_id שונה מזה שנשמר
     // בעת הגשת הבקשה, ואז חיפוש לפי user_id בלבד נכשל ("משתמש לא נמצא").
     let targetUser = await findUpUserAny(req.user_id);
+    // fallback לפי אימייל: מזהי credentials הם "credentials_<email>",
+    // וה-external_id/email נשמרים בד"כ באותיות קטנות בעוד הבקשה עלולה לשמור רישיות.
+    if (!targetUser && req.user_id?.toLowerCase().startsWith('credentials_')) {
+        const email = req.user_id.slice('credentials_'.length).trim();
+        if (email.includes('@')) targetUser = await findUpUserByEmail(email);
+    }
     if (!targetUser && req.phone) targetUser = await findUpUserByPhone(req.phone);
     if (!targetUser) {
         throw new Error(`משתמש לא נמצא (מזהה: ${req.user_id}${req.phone ? `, טלפון: ${req.phone}` : ''})`);
@@ -1366,12 +1372,12 @@ async function findUpUser(externalId: string): Promise<StrapiUpUser | undefined>
     return arr[0] as StrapiUpUser | undefined;
 }
 
-/** מחפש משתמש לפי אימייל (מעדיף רשומה ישנה - credentials) */
+/** מחפש משתמש לפי אימייל (מעדיף רשומה ישנה - credentials; השוואה ללא תלות ברישיות) */
 async function findUpUserByEmail(email: string): Promise<StrapiUpUser | undefined> {
     const arr = await findStrapiUpUsers({
-        'filters[email][$eq]': email,
-        'sort[0]':             'createdAt:asc',
-        'pagination[limit]':   '1',
+        'filters[email][$eqi]': email,
+        'sort[0]':              'createdAt:asc',
+        'pagination[limit]':    '1',
     });
     return arr[0] as StrapiUpUser | undefined;
 }
