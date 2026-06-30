@@ -131,44 +131,59 @@
 			</div>
 		</div>
 
-		<!-- צ'אט פנימי - הודעות אישיות למשתמש -->
-		<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 mb-6">
-			<div class="flex items-center gap-2 mb-4">
-				<h2 class="text-lg font-black text-purple-300">💬 צ'אט פנימי</h2>
-				<span class="text-xs text-gray-500">— שלח הודעה אישית ל{u.name ?? 'משתמש'}</span>
+		<!-- צ'אט בסגנון וואטסאפ/טלגרם -->
+		<div class="rounded-2xl border border-white/10 overflow-hidden mb-6 shadow-lg">
+			<!-- סרגל עליון: בן-שיח -->
+			<div class="flex items-center gap-3 px-4 py-2.5 bg-[#0f172a] border-b border-black/30">
+				{#if u.avatar_url}
+					<img src={u.avatar_url} alt="" class="w-9 h-9 rounded-full object-cover flex-shrink-0" />
+				{:else}
+					<div class="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-sm font-black flex-shrink-0">
+						{(u.name ?? '?')[0]}
+					</div>
+				{/if}
+				<div class="min-w-0">
+					<div class="font-bold text-sm leading-tight truncate">{u.name ?? 'משתמש'}</div>
+					<div class="text-[11px] text-gray-500 leading-tight">הודעה אישית</div>
+				</div>
 			</div>
 
-			<!-- היסטוריית שיחה -->
+			<!-- אזור ההודעות -->
 			<div
 				bind:this={scrollBox}
-				class="space-y-2 max-h-80 overflow-y-auto mb-4 pe-1"
+				class="h-80 overflow-y-auto px-3 py-4 space-y-1.5 bg-[#0b141a]"
 			>
 				{#if data.thread.length === 0}
-					<p class="text-sm text-gray-500 text-center py-8">אין עדיין הודעות. שלח הודעה ראשונה ↓</p>
+					<div class="h-full flex items-center justify-center">
+						<p class="text-xs text-gray-500 bg-black/30 rounded-full px-4 py-1.5">אין עדיין הודעות — כתוב למטה כדי להתחיל</p>
+					</div>
 				{:else}
 					{#each data.thread as msg (msg.id)}
 						<div class="flex {msg.direction === 'out' ? 'justify-end' : 'justify-start'}">
 							<div
-								class="max-w-[80%] rounded-2xl px-4 py-2 {msg.direction === 'out'
-									? 'bg-purple-600 text-white rounded-bl-sm'
-									: 'bg-white/10 text-gray-100 rounded-br-sm'}"
+								class="relative max-w-[78%] px-3 py-1.5 text-sm shadow-md {msg.direction === 'out'
+									? 'bg-[#7c3aed] text-white rounded-2xl rounded-tl-md'
+									: 'bg-[#202c33] text-gray-100 rounded-2xl rounded-tr-md'}"
 							>
-								<p class="text-sm whitespace-pre-wrap break-words leading-relaxed">{msg.text}</p>
-								<p class="text-[10px] mt-1 {msg.direction === 'out' ? 'text-purple-200/80' : 'text-gray-500'} text-left">
-									{fmtChatTime(msg.created_at)}
-								</p>
+								<p class="whitespace-pre-wrap break-words leading-relaxed">{msg.text}</p>
+								<div class="flex items-center justify-end gap-1 mt-0.5 {msg.direction === 'out' ? 'text-purple-200/70' : 'text-gray-400/70'}">
+									<span class="text-[10px]">{fmtChatTime(msg.created_at)}</span>
+									{#if msg.direction === 'out'}
+										<svg viewBox="0 0 18 18" class="w-3.5 h-3.5" fill="currentColor"><path d="M5.6 12.4 2 8.8l1-1 2.6 2.6L11.5 4.5l1 1zm4 0L6 8.8l1-1 2.6 2.6L15.5 4.5l1 1z"/></svg>
+									{/if}
+								</div>
 							</div>
 						</div>
 					{/each}
 				{/if}
 			</div>
 
-			<!-- שגיאה / הצלחה -->
+			<!-- שגיאה -->
 			{#if form?.chatError}
-				<p class="text-sm text-red-400 mb-2">{form.chatError}</p>
+				<p class="text-sm text-red-400 px-4 py-1.5 bg-[#0f172a]">{form.chatError}</p>
 			{/if}
 
-			<!-- שליחת הודעה -->
+			<!-- סרגל הקלדה -->
 			<form
 				method="POST"
 				action="?/sendMessage"
@@ -185,14 +200,14 @@
 						}
 					};
 				}}
-				class="flex items-end gap-2"
+				class="flex items-end gap-2 px-3 py-2.5 bg-[#0f172a] border-t border-black/30"
 			>
 				<textarea
 					name="text"
 					bind:value={chatText}
-					rows="2"
-					placeholder="כתוב הודעה אישית..."
-					class="flex-1 resize-none bg-[#070b14] border border-white/10 rounded-2xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:border-purple-500/50 focus:outline-none"
+					rows="1"
+					placeholder="הקלד הודעה..."
+					class="flex-1 resize-none max-h-28 bg-[#202c33] rounded-3xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-purple-500/40"
 					onkeydown={(e) => {
 						if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
 							e.preventDefault();
@@ -203,12 +218,16 @@
 				<button
 					type="submit"
 					disabled={sending || !chatText.trim()}
-					class="flex-shrink-0 bg-purple-600 hover:bg-purple-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold px-5 py-3 rounded-2xl transition-colors text-sm"
+					aria-label="שלח"
+					class="flex-shrink-0 w-11 h-11 rounded-full bg-purple-600 hover:bg-purple-500 disabled:opacity-40 disabled:cursor-not-allowed text-white flex items-center justify-center transition-colors"
 				>
-					{sending ? '...' : 'שלח'}
+					{#if sending}
+						<span class="text-lg leading-none">⋯</span>
+					{:else}
+						<svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor" style="transform: scaleX(-1)"><path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+					{/if}
 				</button>
 			</form>
-			<p class="text-[11px] text-gray-600 mt-2">ההודעה תופיע בתיבת ההודעות האישית של המשתמש. Ctrl+Enter לשליחה מהירה.</p>
 		</div>
 
 		<!-- פרסומים של המשתמש -->
