@@ -160,6 +160,9 @@ function sign(email: string, secret: string): string {
 export const TRUST_COOKIE_NAME = TRUST_COOKIE;
 export const TRUST_COOKIE_MAX_AGE = TRUST_MAX_AGE;
 
+/** עוגיית מכשיר-מהימן נפרדת לאזור הרכזים (בלתי תלויה בעוגיית האדמין) */
+export const COORD_TRUST_COOKIE_NAME = 'coord_trust';
+
 /** ערך העוגייה לקביעה אחרי אימות מוצלח */
 export function makeTrustToken(email: string, secret: string): string {
     return sign(email, secret);

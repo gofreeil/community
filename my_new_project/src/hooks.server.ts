@@ -5,7 +5,9 @@ import {
     getAdminTotpSecret,
     verifyTrustToken,
     TRUST_COOKIE_NAME,
+    COORD_TRUST_COOKIE_NAME,
 } from '$lib/server/totp';
+import { getUserTotpSecret } from '$lib/server/db';
 
 /**
  * אחרי auth - אם המשתמש מחובר ויש לו strapiJwt בסשן אך אין cookie,
@@ -108,6 +110,45 @@ const adminGate: Handle = async ({ event, resolve }) => {
     return new Response('נדרש אימות דו-שלבי', { status: 403 });
 };
 
+/**
+ * שער 2FA לאזור הרכזים (/coordinator). מקביל ל-adminGate אך פר-משתמש:
+ * הסוד נשמר ב-DB (totp_secret על המשתמש) ולא ב-env, כך שכל רכז מגדיר 2FA
+ * משלו. רכז שלא הפעיל 2FA → השער שקוף. רכז שהפעיל אך אין לו עוגיית מכשיר-
+ * מהימן → GET מופנה ל-/coordinator/verify, POST נחסם 403 (חוסם גם form actions).
+ * דפי ההגדרה והאימות עצמם פטורים כדי לא ליצור לולאה.
+ */
+const coordinatorGate: Handle = async ({ event, resolve }) => {
+    const path = event.url.pathname;
+    const guarded =
+        path.startsWith('/coordinator') &&
+        path !== '/coordinator/verify' &&
+        path !== '/coordinator/2fa-setup' &&
+        path !== '/coordinator/apply';
+    if (!guarded) return resolve(event);
+
+    let session = null;
+    try { session = await event.locals.auth(); } catch { /* ignore */ }
+    // לא מחובר: ה-load של הדף יפנה ל-/login כרגיל
+    if (!session?.user?.id) return resolve(event);
+
+    let secret: string | null = null;
+    try { secret = await getUserTotpSecret(session.user.id); } catch { /* ignore */ }
+    if (!secret) return resolve(event); // 2FA לא הופעל → שער שקוף
+
+    const identity = session.user.email ?? session.user.id;
+    const trusted = verifyTrustToken(event.cookies.get(COORD_TRUST_COOKIE_NAME), identity, secret);
+    if (trusted) return resolve(event);
+
+    if (event.request.method === 'GET') {
+        const target = event.url.pathname + event.url.search;
+        return new Response(null, {
+            status: 302,
+            headers: { location: `/coordinator/verify?redirect=${encodeURIComponent(target)}` },
+        });
+    }
+    return new Response('נדרש אימות דו-שלבי', { status: 403 });
+};
+
 const setStrApiCookie: Handle = async ({ event, resolve }) => {
     const isProd = process.env.NODE_ENV === 'production';
     // עוגייה משותפת לכל 13 אתרי gofreeil.com: זיהוי מאוחד מול רשימת המשתמשים
@@ -165,7 +206,7 @@ export const handle: Handle = async ({ event, resolve }) => {
     }
 
     try {
-        return await sequence(authHandle, ssoAutoAdopt, adminGate, checkBanned, setStrApiCookie)({ event, resolve });
+        return await sequence(authHandle, ssoAutoAdopt, adminGate, coordinatorGate, checkBanned, setStrApiCookie)({ event, resolve });
     } catch (err) {
         console.warn('[hooks] auth handle threw - continuing anonymously:', err);
         // fallback: מגדיר auth בטוח כדי שקוד downstream לא יזרוק TypeError

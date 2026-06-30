@@ -107,6 +107,28 @@
             </div>
         </a>
 
+        <!-- אבטחה: אימות דו-שלבי לרכז -->
+        <a
+            href="/coordinator/2fa-setup"
+            class="group mt-6 block rounded-2xl bg-[#0f172a] border border-white/10 p-5 hover:border-cyan-400/60 transition-all hover:-translate-y-1"
+        >
+            <div class="flex items-center gap-4">
+                <div class="text-4xl">🔐</div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <h3 class="text-white text-lg font-black">אימות דו-שלבי (2FA)</h3>
+                        {#if data.user?.totp_enabled}
+                            <span class="text-green-300 text-xs font-bold bg-green-500/20 border border-green-500/30 px-2 py-0.5 rounded-full">✅ פעיל</span>
+                        {:else}
+                            <span class="text-amber-300 text-xs font-bold bg-amber-500/20 border border-amber-500/30 px-2 py-0.5 rounded-full">מומלץ להפעיל</span>
+                        {/if}
+                    </div>
+                    <p class="text-gray-400 text-sm mt-1">הגנה נוספת על פאנל הרכז — קוד חד-פעמי מהטלפון בכל כניסה ממכשיר חדש</p>
+                </div>
+                <svg class="w-6 h-6 text-cyan-300 flex-shrink-0 transition-transform group-hover:-translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+            </div>
+        </a>
+
         <div class="text-center mt-8">
             <a href="/" class="text-gray-500 hover:text-white transition-colors text-sm">← חזרה לדף הראשי</a>
         </div>

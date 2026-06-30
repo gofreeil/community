@@ -84,6 +84,8 @@ export interface DbUser {
     security_answer_2: string;
     status: string;
     coordinator_of: string[];
+    /** האם לרכז/מנהל מוגדר אימות דו-שלבי (TOTP) — בוליאני בלבד, הסוד עצמו לא נחשף */
+    totp_enabled: boolean;
     /** כל מזהי החשבונות האמיתיים שאוחדו לכרטיס זה (כולל ה-id הראשי) */
     merged_ids?: string[];
     /** מספר החשבונות שאוחדו (1 = חשבון יחיד) */
@@ -179,6 +181,7 @@ interface StrapiUpUser {
     security_answer_2: string | null;
     status: string | null;
     coordinator_of: string[] | null;
+    totp_secret: string | null;
     createdAt: string;
 }
 
@@ -238,6 +241,8 @@ function mapUpUser(u: StrapiUpUser): DbUser {
         security_answer_2:   u.security_answer_2   ?? '',
         status:              u.status              ?? 'active',
         coordinator_of: Array.isArray(u.coordinator_of) ? u.coordinator_of : [],
+        // חושפים רק בוליאני — הסוד עצמו (u.totp_secret) לעולם לא יוצא ל-DbUser/דפים
+        totp_enabled: !!(u.totp_secret && u.totp_secret.trim()),
     };
 }
 
@@ -1481,6 +1486,31 @@ export async function updateUserProfile(id: string, data: UpdateProfileData, _jw
     const updated = await updateStrapiUpUser(user.id, updates);
     invalidate('user:');
     return mapUpUser(updated as StrapiUpUser);
+}
+
+// ============================================================
+// ---- 2FA (TOTP) per-user secret ----
+// הסוד נשמר על רשומת ה-up_user (שדה totp_secret). נקרא/נכתב אך ורק בצד-שרת
+// עם STRAPI_TOKEN; הוא נשלף במפורש כאן ואינו עובר דרך mapUpUser, כך שלעולם
+// אינו מגיע ל-DbUser או לדפים. mapUpUser חושף רק את totp_enabled (בוליאני).
+// ============================================================
+
+/** מחזיר את סוד ה-TOTP של המשתמש (לפי external_id או id מספרי), או null אם לא הוגדר */
+export async function getUserTotpSecret(id: string): Promise<string | null> {
+    return cached(`totp:${id}`, TTL_USER, async () => {
+        const u = await findUpUserAny(id);
+        const secret = (u as StrapiUpUser | undefined)?.totp_secret;
+        return secret && secret.trim() ? secret.trim() : null;
+    });
+}
+
+/** קובע (או מנקה — secret=null) את סוד ה-TOTP של המשתמש */
+export async function setUserTotpSecret(id: string, secret: string | null): Promise<void> {
+    const u = await findUpUserAny(id);
+    if (!u) throw new Error('user not found');
+    await updateStrapiUpUser(u.id, { totp_secret: secret ?? null });
+    invalidate('totp:');
+    invalidate('user:');
 }
 
 // ============================================================
