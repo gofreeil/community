@@ -8,6 +8,17 @@
 
 	let activeTab = $state<'users' | 'items' | 'discounts'>('users');
 
+	// פורמט תאריך+שעה בעברית - כדי שהאדמין ידע איזו בקשה הגיעה אחרונה
+	function fmtDateTime(iso: string): string {
+		if (!iso) return '';
+		const d = new Date(iso);
+		if (isNaN(d.getTime())) return '';
+		return d.toLocaleString('he-IL', {
+			day: '2-digit', month: '2-digit', year: 'numeric',
+			hour: '2-digit', minute: '2-digit',
+		});
+	}
+
 	// ---- סימון ידני "כבר אישרתי" על פרסומים/הודעות (וי ירוק) ----
 	// נשמר ב-localStorage של הדפדפן (זיכרון אישי לאדמין, ללא צורך בבאקאנד)
 	const APPROVED_KEY = 'admin_approved_items';
@@ -356,7 +367,7 @@
 					</div>
 
 					<div class="grid gap-2 md:gap-3">
-						{#each data.pendingNeighborhoods as nb (nb.id)}
+						{#each data.pendingNeighborhoods as nb, i (nb.id)}
 							<div class="bg-amber-500/5 rounded-2xl border border-amber-500/30 p-3 md:p-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 transition-all hover:border-amber-500/50">
 								<!-- שם השכונה והעיר -->
 								<div class="flex items-center gap-3 flex-1 min-w-0">
@@ -364,8 +375,16 @@
 										📍
 									</div>
 									<div class="min-w-0">
-										<div class="text-lg font-bold truncate text-white">{nb.name}</div>
+										<div class="flex items-center gap-2 flex-wrap">
+											<div class="text-lg font-bold truncate text-white">{nb.name}</div>
+											{#if i === 0}
+												<span class="text-[11px] font-bold bg-green-500/20 text-green-300 border border-green-500/40 px-2 py-0.5 rounded-full whitespace-nowrap">🆕 הבקשה האחרונה</span>
+											{/if}
+										</div>
 										<div class="text-base text-gray-400 truncate">🏙️ {nb.city || '—'}</div>
+										{#if nb.created_at}
+											<div class="text-xs text-amber-200/70 truncate mt-0.5" dir="ltr">🕒 {fmtDateTime(nb.created_at)}</div>
+										{/if}
 										{#if nb.requester}
 											<div class="text-sm text-amber-200/80 truncate mt-0.5">
 												👤 ביקש: <span class="font-bold">{nb.requester.name || 'תושב'}</span>
