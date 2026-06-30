@@ -31,7 +31,7 @@ function parseEF(s: string | null | undefined): Record<string, unknown> {
     try { return JSON.parse(s || '{}'); } catch { return {}; }
 }
 
-/** בונה את שרשור השיחה הדו-כיווני בין האדמין למשתמש (הודעות chat בלבד) */
+/** בונה את שרשור השיחה: כל ההודעות שהמשתמש קיבל (יוצאות) + תשובות שלו לאדמין (נכנסות) */
 async function loadThread(adminId: string, userId: string) {
     try {
         const [toUser, toAdmin] = await Promise.all([
@@ -39,19 +39,32 @@ async function loadThread(adminId: string, userId: string) {
             getMessagesByUserId(adminId),
         ]);
 
-        const out = toUser
-            .filter((m) => {
-                const ef = parseEF(m.extra_fields);
-                return ef.chat === true && ef.sender_id === adminId;
-            })
-            .map((m) => ({ id: m.id, text: m.description, created_at: m.created_at, direction: 'out' as const }));
+        // כל ההודעות שהמשתמש קיבל - מוצגות כבועות "יוצאות" (אל המשתמש).
+        // הודעת צ'אט מהאדמין: רק הטקסט. התראת מערכת/הודעה מאחר: שם השולח + כותרת.
+        const out = toUser.map((m) => {
+            const ef = parseEF(m.extra_fields);
+            const fromAdmin = ef.chat === true && ef.sender_id === adminId;
+            return {
+                id: m.id,
+                text: m.description,
+                title: fromAdmin ? '' : (m.label || ''),
+                sender_name: fromAdmin ? '' : String(ef.sender_name || 'מערכת'),
+                created_at: m.created_at,
+                direction: 'out' as const,
+            };
+        });
 
+        // תשובות מהמשתמש הזה אל האדמין
         const incoming = toAdmin
-            .filter((m) => {
-                const ef = parseEF(m.extra_fields);
-                return ef.chat === true && ef.sender_id === userId;
-            })
-            .map((m) => ({ id: m.id, text: m.description, created_at: m.created_at, direction: 'in' as const }));
+            .filter((m) => parseEF(m.extra_fields).sender_id === userId)
+            .map((m) => ({
+                id: m.id,
+                text: m.description,
+                title: '',
+                sender_name: '',
+                created_at: m.created_at,
+                direction: 'in' as const,
+            }));
 
         return [...out, ...incoming].sort(
             (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
@@ -71,7 +84,8 @@ export const load: PageServerLoad = async (event) => {
 
     let items: Awaited<ReturnType<typeof getItemsByUserId>> = [];
     try {
-        items = await getItemsByUserId(userId);
+        // הודעות אישיות (category 'message') אינן פרסומים - הן מוצגות בצ'אט בלבד
+        items = (await getItemsByUserId(userId)).filter((it) => it.category !== 'message');
     } catch (e) {
         console.warn('[admin/users] getItemsByUserId failed:', e);
     }

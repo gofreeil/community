@@ -165,6 +165,12 @@
 									? 'bg-[#7c3aed] text-white rounded-2xl rounded-tl-md'
 									: 'bg-[#202c33] text-gray-100 rounded-2xl rounded-tr-md'}"
 							>
+								{#if msg.sender_name}
+									<p class="text-[11px] font-bold text-amber-200 leading-tight mb-0.5">{msg.sender_name}</p>
+								{/if}
+								{#if msg.title}
+									<p class="font-bold leading-snug">{msg.title}</p>
+								{/if}
 								<p class="whitespace-pre-wrap break-words leading-relaxed">{msg.text}</p>
 								<div class="flex items-center justify-end gap-1 mt-0.5 {msg.direction === 'out' ? 'text-purple-200/70' : 'text-gray-400/70'}">
 									<span class="text-[10px]">{fmtChatTime(msg.created_at)}</span>
