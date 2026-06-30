@@ -521,7 +521,7 @@
         <!-- =================== LIVE PREVIEW =================== -->
         <section class="step-card">
             <div class="step-head">
-                <span class="step-num">👁️</span>
+                <span class="step-num">🔍</span>
                 <h2>תצוגה מקדימה של דף הנחיתה</h2>
             </div>
             <p class="step-help">כך ייראה דף הנחיתה שעיצבת - אליו הגולש יגיע בלחיצה על הפרסומת.</p>

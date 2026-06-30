@@ -116,15 +116,15 @@
 		</div>
 
 		<!-- פרטי פרופיל -->
-		<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 mb-6">
-			<h2 class="text-lg font-black text-purple-300 mb-4">פרטי פרופיל</h2>
-			<div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+		<div class="bg-[#0f172a] rounded-2xl border border-white/10 p-4 mb-6">
+			<h2 class="text-lg font-black text-purple-300 mb-3">פרטי פרופיל</h2>
+			<div class="grid grid-cols-2 sm:grid-cols-3 gap-x-3 gap-y-2.5">
 				{#each fields as f}
-					<div class="flex items-start gap-3">
-						<span class="text-xl flex-shrink-0">{f.icon}</span>
+					<div class="flex items-start gap-2">
+						<span class="text-xl flex-shrink-0 leading-tight">{f.icon}</span>
 						<div class="min-w-0">
-							<div class="text-xs text-gray-500">{f.label}</div>
-							<div class="text-base font-bold break-words">{f.value}</div>
+							<div class="text-xs text-gray-500 leading-tight">{f.label}</div>
+							<div class="text-base font-bold break-words leading-tight">{f.value}</div>
 						</div>
 					</div>
 				{/each}
@@ -237,7 +237,7 @@
 								</div>
 								<div class="text-xs text-gray-500 flex-shrink-0 text-left">
 									<div>{item.category}</div>
-									<div>👁️ {item.view_count ?? 0}</div>
+									<div>{item.view_count ?? 0} צפיות</div>
 								</div>
 							</div>
 						</a>

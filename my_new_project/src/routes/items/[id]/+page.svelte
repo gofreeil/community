@@ -712,7 +712,7 @@
                                             <span
                                                 class="inline-flex items-center gap-1 text-white/85 text-[11px] bg-white/15 rounded-full px-2 py-0.5 whitespace-nowrap"
                                                 title="🔒 הנתון גלוי רק לך, בעל הפריט"
-                                            >👁️ {item?.viewCount ?? 0} צפיות</span>
+                                            >{item?.viewCount ?? 0} צפיות</span>
                                         </div>
                                         {#if incoming.length === 0}
                                             <p class="text-white/80 text-[11px] bg-white/10 rounded px-2 py-0.5">אין בקשות ממתינות</p>

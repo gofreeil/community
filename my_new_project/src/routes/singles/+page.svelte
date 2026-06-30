@@ -353,7 +353,7 @@
                                 href="/items/{me.id}"
                                 class="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-2.5 rounded-xl transition-colors text-sm"
                             >
-                                👁️ צפה בכרטיס המלא
+                                צפה בכרטיס המלא
                             </a>
                             <a
                                 href="/add/singles"

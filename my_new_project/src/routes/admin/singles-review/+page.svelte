@@ -94,7 +94,7 @@
                                 <h3 class="text-white font-black text-lg leading-tight">{c.nickname}</h3>
                                 <p class="text-white/85 text-sm">{genderLabel(c.gender)} · {c.age || '—'} · {c.city || '—'}</p>
                             </div>
-                            <a href="/items/{c.id}" target="_blank" class="shrink-0 text-xs bg-black/30 hover:bg-black/50 text-white px-3 py-1.5 rounded-lg transition-colors">👁️ דף מלא</a>
+                            <a href="/items/{c.id}" target="_blank" class="shrink-0 text-xs bg-black/30 hover:bg-black/50 text-white px-3 py-1.5 rounded-lg transition-colors">דף מלא</a>
                         </div>
 
                         <!-- תמונות בגדול לבדיקת צניעות -->

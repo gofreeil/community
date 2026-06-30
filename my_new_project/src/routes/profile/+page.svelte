@@ -2297,7 +2297,7 @@
 										class="text-[11px] text-gray-400 hover:text-green-400 transition-colors px-2 py-1 rounded-lg hover:bg-green-500/10"
 										title="סמן כנקראה - תוסר מהפרופיל"
 									>
-										👁️ סמן כנקראה
+										סמן כנקראה
 									</button>
 									<button
 										type="button"
@@ -2741,7 +2741,7 @@
 													<span
 														class="text-yellow-400/70 text-xs flex items-center gap-1"
 													>
-														👁️ {item.view_count} ביקורים
+														{item.view_count} ביקורים
 													</span>
 												{/if}
 											</div>

@@ -308,7 +308,7 @@
 
                     {#if editingId !== ad.id}
                         <details class="mt-3 text-xs text-gray-300">
-                            <summary class="cursor-pointer text-amber-300 font-bold">👁 תצוגה מקדימה של דף הנחיתה</summary>
+                            <summary class="cursor-pointer text-amber-300 font-bold">תצוגה מקדימה של דף הנחיתה</summary>
                             <div class="mt-2 p-3 rounded-lg bg-black/40 border border-white/10 space-y-2">
                                 {#if ad.landing?.headline}<p class="font-bold text-white">{ad.landing.headline}</p>{/if}
                                 {#if ad.landing?.pitch}<p>{ad.landing.pitch}</p>{/if}
@@ -352,7 +352,7 @@
                             {:else if activeTab === 'approved'}
                                 <a href={`/ads/${ad.id}`} target="_blank" rel="noopener"
                                    class="px-4 py-2 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-200 font-black text-sm hover:bg-amber-500/25">
-                                    👁 פתח דף נחיתה
+                                    פתח דף נחיתה
                                 </a>
                                 <button type="button" onclick={() => startEdit(ad)}
                                         class="px-4 py-2 rounded-xl bg-blue-500/20 border border-blue-500/40 text-blue-200 font-black text-sm hover:bg-blue-500/30">
