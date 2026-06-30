@@ -20,8 +20,17 @@ export const load: PageServerLoad = async (event) => {
         return { configured: true, email, secret: null, otpauthUri: null, qrDataUrl: null };
     }
 
-    // טרם הוגדר - מחוללים סוד חדש להצגה חד-פעמית (המנהל ישמור אותו ב-env)
-    const secret = generateSecret();
+    // טרם הוגדר. חשוב: שומרים את הסוד שהוצג בעוגייה ומשתמשים בו שוב בכל רענון —
+    // אחרת כל טעינה הייתה מייצרת סוד חדש, וה-QR שנסרק לא היה תואם לסוד שהמנהל
+    // מעתיק ל-env (סיבה נפוצה ל"קוד שגוי"). העוגייה תקפה לשעה, עד שההגדרה תושלם.
+    const PENDING_COOKIE = 'admin_totp_pending';
+    let secret = event.cookies.get(PENDING_COOKIE) ?? '';
+    if (!/^[A-Z2-7]{16,}$/.test(secret)) {
+        secret = generateSecret();
+        event.cookies.set(PENDING_COOKIE, secret, {
+            path: '/admin', httpOnly: true, secure: true, sameSite: 'lax', maxAge: 60 * 60,
+        });
+    }
     const otpauthUri = buildOtpauthUri(email, secret);
     const qrDataUrl = await QRCode.toDataURL(otpauthUri, { margin: 1, width: 240 });
     return { configured: false, email, secret, otpauthUri, qrDataUrl };

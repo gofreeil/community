@@ -80,10 +80,11 @@ function hotp(secret: Buffer, counter: number): string {
 }
 
 /**
- * מאמת קוד TOTP. window=1 → סובלנות של ±30 שניות לסחיפת שעון.
+ * מאמת קוד TOTP. window=2 → סובלנות של ±60 שניות לסחיפת שעון בין הטלפון לשרת
+ * (סיבה נפוצה ל"קוד שגוי" כשהשעון בטלפון לא מסונכרן לגמרי).
  * משווה בזמן-קבוע כדי למנוע timing attacks.
  */
-export function verifyTotp(secretBase32: string, token: string, window = 1): boolean {
+export function verifyTotp(secretBase32: string, token: string, window = 2): boolean {
     const cleaned = (token ?? '').replace(/\s+/g, '');
     if (!/^\d{6}$/.test(cleaned)) return false;
     const secret = base32Decode(secretBase32);
