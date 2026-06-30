@@ -1,7 +1,37 @@
 <script lang="ts">
-	let { data } = $props();
+	import { enhance } from '$app/forms';
+	import { tick } from 'svelte';
+
+	let { data, form } = $props();
 
 	const u = $derived(data.profileUser);
+
+	// === צ'אט פנימי ===
+	let chatText = $state('');
+	let sending = $state(false);
+	let scrollBox = $state<HTMLDivElement | null>(null);
+
+	async function scrollToBottom() {
+		await tick();
+		if (scrollBox) scrollBox.scrollTop = scrollBox.scrollHeight;
+	}
+
+	// גלילה לתחתית עם טעינת/עדכון השרשור
+	$effect(() => {
+		if (data.thread) scrollToBottom();
+	});
+
+	function fmtChatTime(iso: string): string {
+		if (!iso) return '';
+		try {
+			return new Date(iso).toLocaleString('he-IL', {
+				day: 'numeric', month: 'numeric',
+				hour: '2-digit', minute: '2-digit',
+			});
+		} catch {
+			return '';
+		}
+	}
 
 	function roleBadge(role: string) {
 		switch (role) {
@@ -99,6 +129,86 @@
 					</div>
 				{/each}
 			</div>
+		</div>
+
+		<!-- צ'אט פנימי - הודעות אישיות למשתמש -->
+		<div class="bg-[#0f172a] rounded-3xl border border-white/10 p-6 md:p-8 mb-6">
+			<div class="flex items-center gap-2 mb-4">
+				<h2 class="text-lg font-black text-purple-300">💬 צ'אט פנימי</h2>
+				<span class="text-xs text-gray-500">— שלח הודעה אישית ל{u.name ?? 'משתמש'}</span>
+			</div>
+
+			<!-- היסטוריית שיחה -->
+			<div
+				bind:this={scrollBox}
+				class="space-y-2 max-h-80 overflow-y-auto mb-4 pe-1"
+			>
+				{#if data.thread.length === 0}
+					<p class="text-sm text-gray-500 text-center py-8">אין עדיין הודעות. שלח הודעה ראשונה ↓</p>
+				{:else}
+					{#each data.thread as msg (msg.id)}
+						<div class="flex {msg.direction === 'out' ? 'justify-end' : 'justify-start'}">
+							<div
+								class="max-w-[80%] rounded-2xl px-4 py-2 {msg.direction === 'out'
+									? 'bg-purple-600 text-white rounded-bl-sm'
+									: 'bg-white/10 text-gray-100 rounded-br-sm'}"
+							>
+								<p class="text-sm whitespace-pre-wrap break-words leading-relaxed">{msg.text}</p>
+								<p class="text-[10px] mt-1 {msg.direction === 'out' ? 'text-purple-200/80' : 'text-gray-500'} text-left">
+									{fmtChatTime(msg.created_at)}
+								</p>
+							</div>
+						</div>
+					{/each}
+				{/if}
+			</div>
+
+			<!-- שגיאה / הצלחה -->
+			{#if form?.chatError}
+				<p class="text-sm text-red-400 mb-2">{form.chatError}</p>
+			{/if}
+
+			<!-- שליחת הודעה -->
+			<form
+				method="POST"
+				action="?/sendMessage"
+				use:enhance={() => {
+					sending = true;
+					return async ({ result, update }) => {
+						sending = false;
+						if (result.type === 'success') {
+							chatText = '';
+							await update();        // טוען מחדש את השרשור מהשרת
+							scrollToBottom();
+						} else {
+							await update({ reset: false });
+						}
+					};
+				}}
+				class="flex items-end gap-2"
+			>
+				<textarea
+					name="text"
+					bind:value={chatText}
+					rows="2"
+					placeholder="כתוב הודעה אישית..."
+					class="flex-1 resize-none bg-[#070b14] border border-white/10 rounded-2xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:border-purple-500/50 focus:outline-none"
+					onkeydown={(e) => {
+						if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+							e.preventDefault();
+							(e.currentTarget.form as HTMLFormElement)?.requestSubmit();
+						}
+					}}
+				></textarea>
+				<button
+					type="submit"
+					disabled={sending || !chatText.trim()}
+					class="flex-shrink-0 bg-purple-600 hover:bg-purple-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold px-5 py-3 rounded-2xl transition-colors text-sm"
+				>
+					{sending ? '...' : 'שלח'}
+				</button>
+			</form>
+			<p class="text-[11px] text-gray-600 mt-2">ההודעה תופיע בתיבת ההודעות האישית של המשתמש. Ctrl+Enter לשליחה מהירה.</p>
 		</div>
 
 		<!-- פרסומים של המשתמש -->
