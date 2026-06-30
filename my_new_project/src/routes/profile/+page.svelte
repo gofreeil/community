@@ -1733,7 +1733,7 @@
 	<!-- בדסקטופ כל המקטעים גלויים בערימה; הכפתורים גוללים ישירות למקטע המבוקש -->
 	<!-- המספרים תואמים למספרי המקטעים שמופיעים בכותרות -->
 	<div class="hidden md:flex flex-wrap gap-2 mb-3">
-		{#each [{ id: "main", num: 1, icon: "🎛️", label: "לוח הבקרה" }, { id: "messages", num: 2, icon: "💬", label: "הודעות" }, { id: "items", num: 3, icon: "💼", label: "נכסים" }, { id: "levels", num: 4, icon: "🔑", label: "הרשאות" }, { id: "profile", num: 5, icon: "👤", label: "פרופיל" }] as sc}
+		{#each [{ id: "messages", num: 2, icon: "💬", label: "הודעות" }, { id: "items", num: 3, icon: "💼", label: "נכסים" }, { id: "levels", num: 4, icon: "🔑", label: "הרשאות" }, { id: "profile", num: 5, icon: "👤", label: "פרופיל" }] as sc}
 			<button
 				type="button"
 				onclick={() =>
