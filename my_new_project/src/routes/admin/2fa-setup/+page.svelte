@@ -28,16 +28,37 @@
 					</div>
 				</div>
 				<h1 class="text-xl font-black text-white mb-1">אימות דו-שלבי למנהל</h1>
+				<p class="text-gray-400 text-sm">הגנה נוספת על אזור הניהול</p>
 			</div>
 
-			{#if data.configured}
-				<div class="rounded-xl bg-green-500/10 border border-green-500/30 px-4 py-4 text-center">
+			{#if data.configured || form?.ok}
+				<div class="rounded-xl bg-green-500/10 border border-green-500/30 px-4 py-4 text-center mb-4">
 					<p class="text-green-400 font-bold mb-1">✅ 2FA פעיל</p>
 					<p class="text-gray-400 text-sm">
-						אימות דו-שלבי מוגדר לחשבון זה. כדי להחליף סוד או לנתק את כל המכשירים —
-						עדכן את <code class="text-amber-300">ADMIN_TOTP_SECRET</code> ב-Vercel ובצע Redeploy.
+						{form?.message ?? 'אימות דו-שלבי מוגדר לחשבונך. בכניסה ממכשיר חדש תתבקש קוד מאפליקציית האימות.'}
 					</p>
 				</div>
+
+				{#if !form?.disabled}
+					<details class="rounded-xl bg-[#1e293b] border border-white/10 px-4 py-3">
+						<summary class="text-gray-400 text-sm cursor-pointer">ביטול אימות דו-שלבי</summary>
+						<form method="POST" action="?/disable" use:enhance class="mt-3 flex gap-2">
+							<input
+								name="code"
+								inputmode="numeric"
+								maxlength="6"
+								placeholder="קוד נוכחי"
+								class="flex-1 text-center tracking-widest font-bold bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-600 focus:outline-none focus:border-red-500"
+							/>
+							<button type="submit" class="px-4 rounded-lg bg-red-500/20 border border-red-500/40 text-red-200 font-bold text-sm hover:bg-red-500/30 cursor-pointer">
+								כבה
+							</button>
+						</form>
+						{#if form && !form.ok}
+							<p class="mt-2 text-sm text-red-400">{form.message}</p>
+						{/if}
+					</details>
+				{/if}
 			{:else}
 				<ol class="text-gray-300 text-sm space-y-4">
 					<li>
@@ -46,9 +67,7 @@
 						<div class="flex justify-center my-3">
 							<img src={data.qrDataUrl} alt="QR" class="rounded-xl border border-white/10 bg-white p-2" width="200" height="200" />
 						</div>
-						<p class="text-gray-500 text-xs text-center">
-							אין מצלמה? הזן ידנית את המפתח:
-						</p>
+						<p class="text-gray-500 text-xs text-center">אין מצלמה? הזן ידנית את המפתח:</p>
 						<button
 							type="button"
 							onclick={copySecret}
@@ -60,32 +79,25 @@
 					</li>
 
 					<li>
-						<span class="font-bold text-white">2. הוסף ל-Vercel</span> משתנה סביבה
-						(Settings → Environment Variables) ובצע Redeploy:
-						<div class="mt-2 font-mono text-xs bg-[#1e293b] border border-white/10 rounded-lg px-3 py-2 text-gray-300 break-all">
-							ADMIN_TOTP_SECRET = {data.secret}
-						</div>
-						<p class="text-amber-300/80 text-xs mt-1">⚠️ זה הסוד היחיד שלך — אל תשתף ואל תאבד אותו.</p>
-					</li>
-
-					<li>
-						<span class="font-bold text-white">3. בדוק שזה עובד</span> — הזן את הקוד הנוכחי מהאפליקציה:
-						<form method="POST" action="?/test" use:enhance class="mt-2 flex gap-2">
+						<span class="font-bold text-white">2. הזן את הקוד הנוכחי</span> מהאפליקציה כדי להפעיל:
+						<form method="POST" action="?/enable" use:enhance class="mt-2 flex gap-2">
 							<input type="hidden" name="secret" value={data.secret} />
 							<input
 								name="code"
 								inputmode="numeric"
+								autocomplete="one-time-code"
 								maxlength="6"
 								placeholder="000000"
 								class="flex-1 text-center tracking-widest font-bold bg-[#1e293b] border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-600 focus:outline-none focus:border-amber-500"
 							/>
 							<button type="submit" class="px-4 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-200 font-bold text-sm hover:bg-amber-500/30 cursor-pointer">
-								בדוק
+								הפעל
 							</button>
 						</form>
-						{#if form?.tested}
-							<p class="mt-2 text-sm {form.ok ? 'text-green-400' : 'text-red-400'}">{form.message}</p>
+						{#if form?.done && !form.ok}
+							<p class="mt-2 text-sm text-red-400">{form.message}</p>
 						{/if}
+						<p class="text-amber-300/70 text-xs mt-2">💡 הסוד נשמר מאובטח בחשבונך — אין צורך להגדיר דבר ב-Vercel.</p>
 					</li>
 				</ol>
 			{/if}

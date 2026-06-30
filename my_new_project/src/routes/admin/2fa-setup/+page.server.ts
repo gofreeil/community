@@ -2,58 +2,76 @@ import { error } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import QRCode from 'qrcode';
 import {
-    getAdminTotpSecret,
     generateSecret,
     buildOtpauthUri,
     verifyTotp,
+    makeTrustToken,
+    TRUST_COOKIE_NAME,
+    TRUST_COOKIE_MAX_AGE,
 } from '$lib/server/totp';
+import { getUserTotpSecret, setUserTotpSecret } from '$lib/server/db';
 
 export const load: PageServerLoad = async (event) => {
     const session = await event.locals.auth();
     if (session?.user?.role !== 'super_admin') throw error(403, 'נדרשת הרשאת מנהל ראשי');
 
     const email = session.user.email ?? 'admin';
-    const configured = !!getAdminTotpSecret(email);
 
-    // אם כבר מוגדר - לא חושפים אותו שוב; רק מציינים שהוא פעיל.
-    if (configured) {
-        return { configured: true, email, secret: null, otpauthUri: null, qrDataUrl: null };
+    // כבר מופעל - לא חושפים אותו שוב; רק מציינים שהוא פעיל.
+    if (await getUserTotpSecret(session.user.id!)) {
+        return { configured: true, secret: null, qrDataUrl: null };
     }
 
-    // טרם הוגדר. חשוב: שומרים את הסוד שהוצג בעוגייה ומשתמשים בו שוב בכל רענון —
-    // אחרת כל טעינה הייתה מייצרת סוד חדש, וה-QR שנסרק לא היה תואם לסוד שהמנהל
-    // מעתיק ל-env (סיבה נפוצה ל"קוד שגוי"). העוגייה תקפה לשעה, עד שההגדרה תושלם.
-    const PENDING_COOKIE = 'admin_totp_pending';
-    let secret = event.cookies.get(PENDING_COOKIE) ?? '';
-    if (!/^[A-Z2-7]{16,}$/.test(secret)) {
-        secret = generateSecret();
-        event.cookies.set(PENDING_COOKIE, secret, {
-            path: '/admin', httpOnly: true, secure: true, sameSite: 'lax', maxAge: 60 * 60,
-        });
-    }
-    const otpauthUri = buildOtpauthUri(email, secret);
+    // טרם הופעל - מחוללים סוד חדש להצגה. ההפעלה אטומית (action enable מאמת
+    // ושומר את אותו הסוד), כך שאין סיכון שה-QR שנסרק לא יתאים לסוד השמור.
+    const secret = generateSecret();
+    const otpauthUri = buildOtpauthUri(email, secret, 'קהילה בשכונה (מנהל)');
     const qrDataUrl = await QRCode.toDataURL(otpauthUri, { margin: 1, width: 240 });
-    return { configured: false, email, secret, otpauthUri, qrDataUrl };
+    return { configured: false, secret, qrDataUrl };
 };
 
 export const actions: Actions = {
-    // בדיקה שהסוד הוטמע באפליקציה כראוי - לפני שהמנהל שם אותו ב-env
-    test: async (event) => {
+    // הפעלה: מאמתים קוד מול הסוד שהוצג, ואז שומרים אותו על המשתמש ומסמנים
+    // את המכשיר הנוכחי כמהימן — הכל בצעד אחד.
+    enable: async (event) => {
         const session = await event.locals.auth();
         if (session?.user?.role !== 'super_admin') throw error(403, 'נדרשת הרשאת מנהל ראשי');
 
         const formData = await event.request.formData();
         const secret = (formData.get('secret') as string) ?? '';
         const code = (formData.get('code') as string) ?? '';
-        if (!secret) return { tested: true, ok: false, message: 'חסר סוד' };
+        if (!secret) return { done: true, ok: false, message: 'חסר סוד' };
 
-        const ok = verifyTotp(secret, code);
-        return {
-            tested: true,
-            ok,
-            message: ok
-                ? '✅ הקוד תקין! כעת הוסף את הסוד ל-env ב-Vercel ובצע Redeploy.'
-                : '❌ קוד שגוי. ודא שסרקת את ה-QR ושהשעון מסונכרן.',
-        };
+        if (!verifyTotp(secret, code)) {
+            return { done: true, ok: false, message: '❌ קוד שגוי. ודא שסרקת את ה-QR ושהשעון בטלפון מסונכרן.' };
+        }
+
+        await setUserTotpSecret(session.user.id!, secret);
+
+        const identity = session.user.email ?? session.user.id!;
+        event.cookies.set(TRUST_COOKIE_NAME, makeTrustToken(identity, secret), {
+            path: '/', httpOnly: true, secure: true, sameSite: 'lax', maxAge: TRUST_COOKIE_MAX_AGE,
+        });
+
+        return { done: true, ok: true, message: '✅ אימות דו-שלבי הופעל! מעכשיו תתבקש קוד בכל כניסה ממכשיר חדש.' };
+    },
+
+    // ביטול: דורש קוד תקף מהאפליקציה כדי לכבות 2FA
+    disable: async (event) => {
+        const session = await event.locals.auth();
+        if (session?.user?.role !== 'super_admin') throw error(403, 'נדרשת הרשאת מנהל ראשי');
+
+        const secret = await getUserTotpSecret(session.user.id!);
+        if (!secret) return { done: true, ok: true, disabled: true, message: '2FA כבר אינו פעיל.' };
+
+        const formData = await event.request.formData();
+        const code = (formData.get('code') as string) ?? '';
+        if (!verifyTotp(secret, code)) {
+            return { done: true, ok: false, message: '❌ קוד שגוי. לביטול ה-2FA נדרש קוד תקף מהאפליקציה.' };
+        }
+
+        await setUserTotpSecret(session.user.id!, null);
+        event.cookies.delete(TRUST_COOKIE_NAME, { path: '/' });
+        return { done: true, ok: true, disabled: true, message: '🔓 אימות דו-שלבי בוטל.' };
     },
 };

@@ -1,12 +1,12 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import {
-    getAdminTotpSecret,
     verifyTotp,
     makeTrustToken,
     TRUST_COOKIE_NAME,
     TRUST_COOKIE_MAX_AGE,
 } from '$lib/server/totp';
+import { getUserTotpSecret } from '$lib/server/db';
 
 function safeRedirect(raw: string | null): string {
     if (!raw) return '/admin';
@@ -17,8 +17,8 @@ export const load: PageServerLoad = async (event) => {
     const session = await event.locals.auth();
     if (session?.user?.role !== 'super_admin') throw error(403, 'נדרשת הרשאת מנהל ראשי');
 
-    // אם 2FA לא הוגדר - אין מה לאמת, חזרה לאדמין
-    if (!getAdminTotpSecret(session.user.email)) throw redirect(302, '/admin');
+    // אם 2FA לא הופעל - אין מה לאמת, חזרה לאדמין
+    if (!(await getUserTotpSecret(session.user.id!))) throw redirect(302, '/admin');
 
     return { redirect: safeRedirect(event.url.searchParams.get('redirect')) };
 };
@@ -28,7 +28,7 @@ export const actions: Actions = {
         const session = await event.locals.auth();
         if (session?.user?.role !== 'super_admin') throw error(403, 'נדרשת הרשאת מנהל ראשי');
 
-        const secret = getAdminTotpSecret(session.user.email);
+        const secret = await getUserTotpSecret(session.user.id!);
         if (!secret) throw redirect(302, '/admin');
 
         const formData = await event.request.formData();
@@ -40,7 +40,8 @@ export const actions: Actions = {
         }
 
         // אימות הצליח → סימון המכשיר כמהימן (עוגייה חתומה, מוגבלת לאתר זה בלבד)
-        event.cookies.set(TRUST_COOKIE_NAME, makeTrustToken(session.user.email!, secret), {
+        const identity = session.user.email ?? session.user.id!;
+        event.cookies.set(TRUST_COOKIE_NAME, makeTrustToken(identity, secret), {
             path: '/',
             httpOnly: true,
             secure: true,

@@ -1,14 +1,14 @@
 // ============================================================
-// totp.ts - אימות דו-שלבי (2FA) לסופר-אדמין
+// totp.ts - אימות דו-שלבי (2FA) לסופר-אדמין ולרכזים
 //
 // • TOTP (RFC 6238, תואם Google Authenticator) - מומש עם node:crypto בלבד,
 //   בלי תלות חיצונית.
 // • "מכשיר מהימן" - אחרי אימות TOTP מוצלח קובעים עוגייה חתומה; באותו דפדפן
 //   לא מבקשים קוד שוב. מכשיר/דפדפן חדש = אין עוגייה = מבקשים קוד.
 //
-// הסוד עצמו נשמר במשתנה סביבה (לא ב-DB):
-//   ADMIN_TOTP_SECRET   = סוד יחיד (חל על כל סופר-אדמין)
-//   ADMIN_TOTP_SECRETS  = JSON { "admin@email": "BASE32", ... } פר-אדמין
+// הסוד עצמו נשמר פר-משתמש ב-DB (שדה totp_secret על המשתמש) — ראה
+// getUserTotpSecret/setUserTotpSecret ב-db.ts. ההפעלה אטומית: מאמתים קוד מול
+// הסוד ושומרים אותו באותו צעד, כך שלעולם אין פער בין ה-QR שנסרק לסוד השמור.
 // ============================================================
 
 import { createHmac, timingSafeEqual, randomBytes } from 'node:crypto';
@@ -103,28 +103,10 @@ export function verifyTotp(secretBase32: string, token: string, window = 2): boo
 }
 
 // ============================================================
-// ---- ניהול הסוד (env) ----
+// ---- ניהול הסוד ----
+// הסוד נשמר/נקרא ב-DB (db.ts: getUserTotpSecret/setUserTotpSecret).
+// כאן רק חישוב ה-TOTP, חילול סוד, ובניית ה-otpauth URI.
 // ============================================================
-
-/** מחזיר את סוד ה-TOTP לאדמין לפי האימייל, או null אם 2FA לא הוגדר */
-export function getAdminTotpSecret(email: string | null | undefined): string | null {
-    const emailLc = (email ?? '').trim().toLowerCase();
-    const map = process.env.ADMIN_TOTP_SECRETS;
-    if (map) {
-        try {
-            const parsed = JSON.parse(map) as Record<string, string>;
-            const byEmail = parsed[emailLc];
-            if (byEmail) return byEmail.trim();
-        } catch { /* לא JSON תקין - ננסה סוד יחיד */ }
-    }
-    const single = process.env.ADMIN_TOTP_SECRET;
-    return single ? single.trim() : null;
-}
-
-/** האם 2FA פעיל בכלל (יש סוד מוגדר) - לקביעה האם להפעיל את השער */
-export function isTotpConfigured(email: string | null | undefined): boolean {
-    return getAdminTotpSecret(email) !== null;
-}
 
 /** מחולל סוד base32 חדש (להגדרה ראשונית) */
 export function generateSecret(): string {
