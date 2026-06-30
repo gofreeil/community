@@ -1731,14 +1731,20 @@
 
 	<!-- ===== קיצורי דרך - דסקטופ בלבד ===== -->
 	<!-- בדסקטופ כל המקטעים גלויים בערימה; הכפתורים גוללים ישירות למקטע המבוקש -->
+	<!-- המספרים תואמים למספרי המקטעים שמופיעים בכותרות -->
 	<div class="hidden md:flex flex-wrap gap-2 mb-3">
-		{#each [{ id: "main", icon: "🎛️", label: "לוח הבקרה" }, { id: "profile", icon: "👤", label: "פרופיל" }, { id: "messages", icon: "💬", label: "הודעות" }, { id: "items", icon: "💼", label: "נכסים" }, { id: "levels", icon: "🔑", label: "הרשאות" }] as sc}
+		{#each [{ id: "main", num: 1, icon: "🎛️", label: "לוח הבקרה" }, { id: "messages", num: 2, icon: "💬", label: "הודעות" }, { id: "items", num: 3, icon: "💼", label: "נכסים" }, { id: "levels", num: 4, icon: "🔑", label: "הרשאות" }, { id: "profile", num: 5, icon: "👤", label: "פרופיל" }] as sc}
 			<button
 				type="button"
 				onclick={() =>
 					gotoSection(sc.id as "main" | "messages" | "items" | "levels" | "profile")}
-				class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:bg-purple-600/25 hover:border-purple-500/50 transition-all cursor-pointer"
+				class="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-bold bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:bg-purple-600/25 hover:border-purple-500/50 transition-all cursor-pointer"
 			>
+				<span
+					class="w-5 h-5 rounded-md text-black text-xs font-black flex items-center justify-center flex-shrink-0"
+					style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.85"
+					>{sc.num}</span
+				>
 				<span class="text-base leading-none">{sc.icon}</span>
 				<span>{sc.label}</span>
 			</button>
