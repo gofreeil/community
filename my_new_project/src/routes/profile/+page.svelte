@@ -1714,7 +1714,7 @@
 
 	<!-- ===== לשוניות ניווט - נייד בלבד ===== -->
 	<div class="md:hidden flex gap-1 mb-3">
-		{#each [{ id: "main", icon: "🎛️", label: "לוח הבקרה" }, { id: "profile", icon: "✏️", label: "פרופיל" }, { id: "messages", icon: "💬", label: "הודעות" }, { id: "items", icon: "💼", label: "נכסים" }, { id: "levels", icon: "🔑", label: "הרשאות" }] as tab}
+		{#each [{ id: "main", icon: "🎛️", label: "לוח הבקרה" }, { id: "profile", icon: "👤", label: "פרופיל" }, { id: "messages", icon: "💬", label: "הודעות" }, { id: "items", icon: "💼", label: "נכסים" }, { id: "levels", icon: "🔑", label: "הרשאות" }] as tab}
 			<button
 				type="button"
 				onclick={() => selectTab(tab.id as typeof mobileTab)}
@@ -1732,7 +1732,7 @@
 	<!-- ===== קיצורי דרך - דסקטופ בלבד ===== -->
 	<!-- בדסקטופ כל המקטעים גלויים בערימה; הכפתורים גוללים ישירות למקטע המבוקש -->
 	<div class="hidden md:flex flex-wrap gap-2 mb-3">
-		{#each [{ id: "main", icon: "🎛️", label: "לוח הבקרה" }, { id: "profile", icon: "✏️", label: "פרופיל" }, { id: "messages", icon: "💬", label: "הודעות" }, { id: "items", icon: "💼", label: "נכסים" }, { id: "levels", icon: "🔑", label: "הרשאות" }] as sc}
+		{#each [{ id: "main", icon: "🎛️", label: "לוח הבקרה" }, { id: "profile", icon: "👤", label: "פרופיל" }, { id: "messages", icon: "💬", label: "הודעות" }, { id: "items", icon: "💼", label: "נכסים" }, { id: "levels", icon: "🔑", label: "הרשאות" }] as sc}
 			<button
 				type="button"
 				onclick={() =>
