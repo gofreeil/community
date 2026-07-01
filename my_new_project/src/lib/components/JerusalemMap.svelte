@@ -1885,7 +1885,7 @@
             <!-- תפריט עזרה -->
             {#if showHelpMenu}
                 <div
-                    class="fixed md:absolute bottom-24 md:bottom-full left-1/2 transform -translate-x-1/2 md:mb-2 w-80 max-w-[90vw] bg-white rounded-xl shadow-2xl border-2 border-purple-600 overflow-hidden animate-slideDown z-[100]"
+                    class="fixed md:absolute bottom-24 md:bottom-full left-1/2 transform -translate-x-1/2 md:mb-2 w-80 max-w-[90vw] bg-white rounded-xl shadow-2xl border-2 border-purple-600 overflow-hidden animate-slideDown z-[10001]"
                 >
                     <div
                         class="bg-gradient-to-r from-red-500 to-pink-500 p-3 text-center"
@@ -1917,7 +1917,7 @@
             <!-- סקר הורדת יד -->
             {#if showSurvey}
                 <div
-                    class="fixed md:absolute bottom-24 md:bottom-full left-1/2 transform -translate-x-1/2 md:mb-2 w-80 max-w-[90vw] bg-white rounded-xl shadow-2xl border-2 border-yellow-600 overflow-hidden animate-slideDown z-[100]"
+                    class="fixed md:absolute bottom-24 md:bottom-full left-1/2 transform -translate-x-1/2 md:mb-2 w-80 max-w-[90vw] bg-white rounded-xl shadow-2xl border-2 border-yellow-600 overflow-hidden animate-slideDown z-[10001]"
                 >
                     <div
                         class="bg-gradient-to-r from-yellow-500 to-orange-500 p-3 text-center"
