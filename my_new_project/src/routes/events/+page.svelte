@@ -105,6 +105,41 @@
     let addIcon    = $state('📅');
     let suggestIcon = $state('📅');
 
+    // ── העלאת תמונה כחלופה לאימוג'י ──
+    let addImage     = $state('');
+    let suggestImage = $state('');
+
+    function compressEventImage(file: File): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const MAX = 900;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const img = new Image();
+                img.onload = () => {
+                    let w = img.naturalWidth, h = img.naturalHeight;
+                    if (w > MAX || h > MAX) {
+                        const r = Math.min(MAX / w, MAX / h);
+                        w = Math.round(w * r); h = Math.round(h * r);
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d')!.drawImage(img, 0, 0, w, h);
+                    resolve(canvas.toDataURL('image/jpeg', 0.8));
+                };
+                img.onerror = reject;
+                img.src = ev.target?.result as string;
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+    async function pickImage(e: Event, set: (v: string) => void) {
+        const input = e.target as HTMLInputElement;
+        const file = input.files?.[0];
+        if (file && file.type.startsWith('image/')) set(await compressEventImage(file));
+        input.value = '';
+    }
+
     // coordinator neighborhoods
     const coordNeighborhoods: string[] = (data.user as any)?.coordinator_of ?? [];
 </script>
@@ -116,6 +151,15 @@
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
 </svelte:head>
 <JsonLd schema={[breadcrumbSchema([{ name: 'בית', path: '/' }, { name: 'אירועים', path: '/events' }]), collectionSchema({ name: 'אירועים קהילתיים', description: 'לוח אירועים קהילתיים בשכונה — הרצאות, חוגים, מפגשים, אירועי ילדים ועוד. גלו מה קורה בשכונה שלכם, בקהילה בשכונה.', path: '/events' })]} />
+
+<!-- ויזואל אירוע: תמונה שהועלתה אם קיימת, אחרת אימוג'י -->
+{#snippet eventVisual(ev: any, imgCls: string)}
+    {#if ev.image}
+        <img src={ev.image} alt="" class="{imgCls} rounded-lg object-cover inline-block align-middle shrink-0" />
+    {:else}
+        <span>{ev.icon ?? '📅'}</span>
+    {/if}
+{/snippet}
 
 <div class="min-h-screen bg-[#070b14] py-6 md:py-12 px-4" dir="rtl">
     <div class="max-w-6xl mx-auto">
@@ -156,7 +200,7 @@
                         <div class="bg-[#0f172a] rounded-xl border border-amber-500/20 p-4">
                             <div class="flex flex-wrap items-start gap-3 justify-between">
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-white font-bold">{pev.icon ?? '📅'} {pev.title}</p>
+                                    <p class="text-white font-bold flex items-center gap-1.5">{@render eventVisual(pev, 'w-5 h-5')} {pev.title}</p>
                                     <p class="text-gray-400 text-sm mt-1">📅 {formatEventDate(pev.date)}{pev.time ? ' · ' + pev.time : ''}</p>
                                     {#if pev.location}<p class="text-gray-500 text-xs">📍 {pev.location}</p>{/if}
                                     {#if pev.description}<p class="text-gray-400 text-xs mt-1 line-clamp-2">{pev.description}</p>{/if}
@@ -265,7 +309,7 @@
                                                 {/each}
                                             </div>
                                             <span class="hidden md:block text-[9px] text-green-300/70 leading-tight text-center truncate w-full px-1" aria-hidden="true">
-                                                {dayEvents[0].icon ?? '📅'} {dayEvents[0].title.slice(0, 12)}
+                                                {@render eventVisual(dayEvents[0], 'w-3 h-3')} {dayEvents[0].title.slice(0, 12)}
                                             </span>
                                         {/if}
                                     </button>
@@ -292,7 +336,7 @@
                                     {selectedEvent === ev ? 'ring-2 ring-white/30 scale-[1.02]' : 'hover:scale-[1.01]'}"
                                 onclick={() => selectedEvent = ev}
                             >
-                                <div class="text-2xl flex-shrink-0">{ev.icon ?? '📅'}</div>
+                                <div class="text-2xl flex-shrink-0">{@render eventVisual(ev, 'w-8 h-8')}</div>
                                 <div class="min-w-0 flex-1">
                                     <div class="flex items-start justify-between gap-1">
                                         <p class="text-white text-sm font-bold leading-tight">{ev.title}</p>
@@ -413,18 +457,36 @@
                             <input type="text" name="price_description" placeholder="לדוגמה: כולל חומרים"
                                 class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-green-400/60" />
                         </div>
-                        <!-- Icon -->
+                        <!-- Icon / Image -->
                         <div class="md:col-span-2">
-                            <label class="block text-gray-300 text-sm font-semibold mb-2">אייקון</label>
-                            <input type="hidden" name="icon" value={addIcon} />
-                            <div class="flex flex-wrap gap-2">
+                            <label class="block text-gray-300 text-sm font-semibold mb-2">אייקון או תמונה</label>
+                            <input type="hidden" name="icon" value={addImage ? '' : addIcon} />
+                            <input type="hidden" name="image" value={addImage} />
+                            <div class="flex flex-wrap items-center gap-2">
+                                {#if addImage}
+                                    <div class="relative">
+                                        <img src={addImage} alt="תצוגה מקדימה" class="w-12 h-12 rounded-lg object-cover ring-2 ring-green-400/60" />
+                                        <button type="button" onclick={() => addImage = ''}
+                                            class="absolute -top-1.5 -right-1.5 bg-black/70 hover:bg-red-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold transition-colors"
+                                            aria-label="הסר תמונה">×</button>
+                                    </div>
+                                {:else}
+                                    <label class="cursor-pointer flex items-center gap-1.5 px-3 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 border border-dashed border-green-400/40 text-gray-200 text-sm font-semibold transition-all">
+                                        📷 <span>העלה תמונה</span>
+                                        <input type="file" accept="image/*" class="hidden" onchange={(e) => pickImage(e, (v) => addImage = v)} />
+                                    </label>
+                                {/if}
+                                <span class="text-gray-500 text-xs px-1">או בחר אייקון:</span>
                                 {#each iconOptions as ic}
-                                    <button type="button" onclick={() => addIcon = ic}
-                                        class="text-2xl p-1.5 rounded-lg transition-all {addIcon === ic ? 'bg-green-600/40 ring-2 ring-green-400/60' : 'bg-white/5 hover:bg-white/10'}">
+                                    <button type="button" onclick={() => { addIcon = ic; addImage = ''; }}
+                                        class="text-2xl p-1.5 rounded-lg transition-all {(!addImage && addIcon === ic) ? 'bg-green-600/40 ring-2 ring-green-400/60' : 'bg-white/5 hover:bg-white/10'}">
                                         {ic}
                                     </button>
                                 {/each}
                             </div>
+                            {#if addImage}
+                                <p class="text-xs text-green-300/80 mt-1.5">✓ התמונה תוצג במקום האייקון</p>
+                            {/if}
                         </div>
                         <!-- Color -->
                         <div>
@@ -497,14 +559,28 @@
                             <input type="text" name="location" placeholder="כתובת / מקום"
                                 class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-teal-400/60" />
                         </div>
-                        <!-- Icon -->
+                        <!-- Icon / Image -->
                         <div>
-                            <label class="block text-gray-300 text-sm font-semibold mb-2">אייקון</label>
-                            <input type="hidden" name="icon" value={suggestIcon} />
-                            <div class="flex flex-wrap gap-1.5">
+                            <label class="block text-gray-300 text-sm font-semibold mb-2">אייקון או תמונה</label>
+                            <input type="hidden" name="icon" value={suggestImage ? '' : suggestIcon} />
+                            <input type="hidden" name="image" value={suggestImage} />
+                            <div class="flex flex-wrap items-center gap-1.5">
+                                {#if suggestImage}
+                                    <div class="relative">
+                                        <img src={suggestImage} alt="תצוגה מקדימה" class="w-11 h-11 rounded-lg object-cover ring-2 ring-teal-400/60" />
+                                        <button type="button" onclick={() => suggestImage = ''}
+                                            class="absolute -top-1.5 -right-1.5 bg-black/70 hover:bg-red-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold transition-colors"
+                                            aria-label="הסר תמונה">×</button>
+                                    </div>
+                                {:else}
+                                    <label class="cursor-pointer flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-dashed border-teal-400/40 text-gray-200 text-sm font-semibold transition-all">
+                                        📷 <span>תמונה</span>
+                                        <input type="file" accept="image/*" class="hidden" onchange={(e) => pickImage(e, (v) => suggestImage = v)} />
+                                    </label>
+                                {/if}
                                 {#each iconOptions as ic}
-                                    <button type="button" onclick={() => suggestIcon = ic}
-                                        class="text-xl p-1 rounded-lg transition-all {suggestIcon === ic ? 'bg-teal-600/40 ring-2 ring-teal-400/60' : 'bg-white/5 hover:bg-white/10'}">
+                                    <button type="button" onclick={() => { suggestIcon = ic; suggestImage = ''; }}
+                                        class="text-xl p-1 rounded-lg transition-all {(!suggestImage && suggestIcon === ic) ? 'bg-teal-600/40 ring-2 ring-teal-400/60' : 'bg-white/5 hover:bg-white/10'}">
                                         {ic}
                                     </button>
                                 {/each}
@@ -535,7 +611,7 @@
             <div class="mt-6 rounded-2xl md:rounded-3xl bg-[#0f172a] border md:border-2 border-green-500/30 overflow-hidden shadow-2xl">
                 <div class="bg-gradient-to-r from-green-600 to-teal-600 p-4 flex items-center justify-between">
                     <h3 class="text-lg font-bold text-white flex items-center gap-2">
-                        {selectedEvent.icon ?? '📅'} {selectedEvent.title}
+                        {@render eventVisual(selectedEvent, 'w-6 h-6')} {selectedEvent.title}
                     </h3>
                     <div class="flex items-center gap-3">
                         {#if selectedEvent.price > 0}
@@ -546,6 +622,9 @@
                         <button onclick={() => selectedEvent = null} class="text-white/70 hover:text-white text-xl font-bold transition-colors">✕</button>
                     </div>
                 </div>
+                {#if selectedEvent.image}
+                    <img src={selectedEvent.image} alt={selectedEvent.title} class="w-full max-h-72 object-cover" />
+                {/if}
                 <div class="p-6 flex flex-col md:flex-row gap-6">
                     <div class="flex-1 space-y-3">
                         <div class="flex items-center gap-2 text-gray-300">

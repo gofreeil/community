@@ -494,6 +494,7 @@ export interface DbEvent {
     time: string;
     location: string;
     icon: string;
+    image: string;
     color: string;
     neighborhood: string;
     city: string;
@@ -512,6 +513,7 @@ export interface CreateEventData {
     time?: string;
     location?: string;
     icon?: string;
+    image?: string;
     color?: string;
     neighborhood: string;
     city?: string;
@@ -531,6 +533,7 @@ interface StrapiEvent {
     time: string | null;
     location: string | null;
     icon: string | null;
+    image: string | null;
     color: string | null;
     neighborhood: string | null;
     city: string | null;
@@ -551,6 +554,7 @@ function mapStrapiEvent(e: StrapiEvent): DbEvent {
         time:             e.time             ?? '',
         location:         e.location         ?? '',
         icon:             e.icon             ?? '📅',
+        image:            e.image            ?? '',
         color:            e.color            ?? 'blue',
         neighborhood:     e.neighborhood     ?? '',
         city:             e.city             ?? '',
@@ -600,24 +604,26 @@ export async function getPendingEvents(city: string): Promise<DbEvent[]> {
 }
 
 export async function createEvent(data: CreateEventData): Promise<DbEvent> {
-    const res = await strapiPost<{ data: StrapiEvent }>('/api/events', {
-        data: {
-            title:             data.title,
-            date:              data.date,
-            time:              data.time              ?? '',
-            location:          data.location          ?? '',
-            icon:              data.icon              ?? '📅',
-            color:             data.color             ?? 'blue',
-            neighborhood:      data.neighborhood,
-            city:              data.city              ?? '',
-            creator_id:     data.creator_id,
-            submitted_by_id:   data.submitted_by_id  ?? data.creator_id,
-            description:       data.description       ?? '',
-            status:            data.status            ?? 'pending',
-            price:             data.price             ?? 0,
-            price_description: data.price_description ?? '',
-        },
-    });
+    const payload: Record<string, unknown> = {
+        title:             data.title,
+        date:              data.date,
+        time:              data.time              ?? '',
+        location:          data.location          ?? '',
+        icon:              data.icon              ?? '📅',
+        color:             data.color             ?? 'blue',
+        neighborhood:      data.neighborhood,
+        city:              data.city              ?? '',
+        creator_id:     data.creator_id,
+        submitted_by_id:   data.submitted_by_id  ?? data.creator_id,
+        description:       data.description       ?? '',
+        status:            data.status            ?? 'pending',
+        price:             data.price             ?? 0,
+        price_description: data.price_description ?? '',
+    };
+    // נשלח את התמונה רק כשקיימת - כך אירוע ללא תמונה לא נשבר גם אם שדה
+    // ה-image עדיין לא נפרס בסכמת ה-Strapi.
+    if (data.image) payload.image = data.image;
+    const res = await strapiPost<{ data: StrapiEvent }>('/api/events', { data: payload });
     invalidate('events:');
     return mapStrapiEvent(res.data);
 }

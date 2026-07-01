@@ -55,11 +55,12 @@ export const actions: Actions = {
         const location    = fd.get('location')?.toString().trim()    ?? '';
         const description = fd.get('description')?.toString().trim() ?? '';
         const icon        = fd.get('icon')?.toString().trim()        || '📅';
+        const image       = fd.get('image')?.toString()             ?? '';
 
         if (!title || !date) return fail(400, { error: 'כותרת ותאריך חובה' });
 
         await createEvent({
-            title, date, time, location, description, icon,
+            title, date, time, location, description, icon, image,
             neighborhood:    user.neighborhood,
             city:            user.city,
             creator_id:   session.user.id,
@@ -90,6 +91,7 @@ export const actions: Actions = {
         const time              = fd.get('time')?.toString().trim()              ?? '';
         const location          = fd.get('location')?.toString().trim()          ?? '';
         const icon              = fd.get('icon')?.toString().trim()              || '📅';
+        const image             = fd.get('image')?.toString()                    ?? '';
         const color             = fd.get('color')?.toString().trim()             || 'blue';
         const description       = fd.get('description')?.toString().trim()       ?? '';
         const neighborhood      = fd.get('neighborhood')?.toString().trim()      || user.neighborhood;
@@ -105,7 +107,7 @@ export const actions: Actions = {
         }
 
         await createEvent({
-            title, date, time, location, icon, color, description,
+            title, date, time, location, icon, image, color, description,
             neighborhood, city: user.city,
             creator_id: session.user.id,
             status:        'approved',
