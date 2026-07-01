@@ -1950,7 +1950,7 @@
 
 					<!-- מעגל מילוי פרופיל -->
 					<svg
-						class="absolute inset-0 w-full h-full -rotate-90 pointer-events-none"
+						class="absolute -inset-[6px] -rotate-90 pointer-events-none"
 						viewBox="0 0 92 92"
 						xmlns="http://www.w3.org/2000/svg"
 						use:ringObserver
