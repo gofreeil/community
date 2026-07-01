@@ -1146,6 +1146,16 @@
 					availableNeighborhoods[0] === "מרכז")),
 	);
 
+	// יש בקשת "הוסף שכונה" ממתינה (או שהמשתמש ממלא אחת עכשיו) → נחשיב את שדה השכונה כמולא
+	// כדי שהאחוז יעלה ולא ייראה "לא הושלם", מה שגרם למשתמשים לשלוח שוב ושוב.
+	// נשען על data.communityRequests כדי שהמצב יישמר גם אחרי טעינה מחדש.
+	let hasPendingLocationRequest = $derived(
+		!!customLocation.trim() ||
+			(data.communityRequests ?? []).some(
+				(r) => r.category === "location_request" && r.status !== "handled",
+			),
+	);
+
 	let avatarLetter = $derived(
 		(data.user?.name ?? data.user?.email ?? "U").charAt(0).toUpperCase(),
 	);
@@ -1161,7 +1171,7 @@
 		!!nickname,
 		!!phone,
 		!!city,
-		!!neighborhood || cityWithoutNeighborhoods,
+		!!neighborhood || cityWithoutNeighborhoods || hasPendingLocationRequest,
 		!!gender,
 		!!business,
 		!!family_status,
@@ -1198,7 +1208,7 @@
 	// דרגה 1 = צופה (נרשם בלבד)
 	// דרגה 2 = משתמש (מילא עיר, שכונה, אימייל וטלפון)
 	let userLevel = $derived(
-		city && (neighborhood || cityWithoutNeighborhoods) && email && phone ? 2 : 1,
+		city && (neighborhood || cityWithoutNeighborhoods || hasPendingLocationRequest) && email && phone ? 2 : 1,
 	);
 
 	// טיפ ל"צופה" - מעודד למלא שכונה ושאר פרטים כדי לעלות לדרגת משתמש.
