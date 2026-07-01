@@ -45,6 +45,32 @@
 	let likedItems = $state<LikedItem[]>([]);
 	let userStatus = $state<UserStatus>('available');
 	let showLoginOptions = $state(false);
+	let ssoLoading = $state(false);
+	let ssoError = $state<string | null>(null);
+
+	// התחברות "עם יוצאים לחירות": זיהוי דרך העוגייה המשותפת gofreeil-auth בלבד
+	// (SSO פר-דפדפן, לא חוצה-מכשירים). אם אין עוגייה בדפדפן הזה - הזיהוי לא יכול
+	// להצליח, אז מציגים מיד עצה במקום סיבוב-שרת מיותר. אם יש עוגייה אך פגה/לא
+	// תקפה - signIn מחזיר error (redirect:false) ואנחנו מציגים אותה עצה.
+	async function loginWithGofreeil() {
+		ssoError = null;
+		const advice =
+			'לא זיהינו אותך דרך "יוצאים לחירות". הזיהוי המיידי עובד רק בדפדפן שכבר ' +
+			'התחברת בו לאחד מאתרי gofreeil. עצה: התחבר פעם אחת עם גוגל, פייסבוק או ' +
+			'אימייל וסיסמה — ומאותו רגע תזוהה כאן אוטומטית, וגם בשאר אתרי הרשת באותו דפדפן.';
+		if (!data.hasSharedSso) { ssoError = advice; return; }
+		ssoLoading = true;
+		try {
+			const res = await signIn('gofreeil-sso', { callbackUrl: '/profile', redirect: false });
+			if (res?.error) { ssoError = advice; }
+			else if (res?.url) { window.location.href = res.url; }
+			else { ssoError = advice; }
+		} catch {
+			ssoError = 'אירעה שגיאה בהתחברות. נסה שוב או התחבר עם גוגל/אימייל.';
+		} finally {
+			ssoLoading = false;
+		}
+	}
 
 	function refreshLikes() {
 		likedItems = getLikedItems();
@@ -1706,21 +1732,25 @@
 			{#if showLoginOptions}
 				<div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
 					<!-- 1. יוצאים לחירות (החשבון המאוחד לכל אתרי gofreeil) -->
-					<!-- מוצג רק כשקיימת העוגייה המשותפת gofreeil-auth בדפדפן הזה: הכפתור
-					     מזהה דרכה בלבד (SSO לפי דפדפן, לא חוצה-מכשירים), ובלעדיה כל לחיצה
-					     היא מבוי סתום שקט - לכן במקומה מציגים גוגל/פייסבוק/סיסמה. -->
-					{#if data.hasSharedSso}
-						<button
-							type="button"
-							onclick={() => signIn("gofreeil-sso", { callbackUrl: "/profile" })}
-							class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl cursor-pointer
-							       bg-gradient-to-r from-amber-500/15 to-pink-500/15 border border-amber-400/30
-							       hover:border-amber-400/60 text-sm font-bold text-white transition-all hover:-translate-y-0.5"
-						>
+					<!-- הזיהוי עובד רק דרך עוגיית gofreeil-auth (פר-דפדפן, לא חוצה-מכשירים).
+					     אם היא חסרה/פגה - loginWithGofreeil מציג עצה במקום כישלון שקט. -->
+					<button
+						type="button"
+						onclick={loginWithGofreeil}
+						disabled={ssoLoading}
+						class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl cursor-pointer
+						       bg-gradient-to-r from-amber-500/15 to-pink-500/15 border border-amber-400/30
+						       hover:border-amber-400/60 text-sm font-bold text-white transition-all hover:-translate-y-0.5
+						       disabled:opacity-60 disabled:cursor-not-allowed"
+					>
+						{#if ssoLoading}
+							<span class="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>
+							מזהה…
+						{:else}
 							<span class="text-base">🕊️</span>
 							עם יוצאים לחירות
-						</button>
-					{/if}
+						{/if}
+					</button>
 					<!-- 2. גוגל -->
 					<button
 						type="button"
@@ -1751,6 +1781,13 @@
 						עם שם משתמש וסיסמה
 					</a>
 				</div>
+
+				<!-- הודעת שגיאה + עצה כשזיהוי "יוצאים לחירות" לא הצליח -->
+				{#if ssoError}
+					<div role="alert" class="mt-3 rounded-xl bg-amber-500/10 border border-amber-400/30 px-4 py-3 text-right">
+						<p class="text-amber-200 text-sm font-medium leading-relaxed">{ssoError}</p>
+					</div>
+				{/if}
 			{/if}
 		</div>
 	{/if}
