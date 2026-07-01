@@ -15,9 +15,16 @@
 	import { page } from "$app/state";
 	import { closeAdPopup } from "$lib/adPopupStore";
 	import { registerDynamicNeighborhoods, MY_PIN_LS_KEY } from "$lib/neighborhoodCoords";
+	import { neighborhoodState } from "$lib/neighborhoodState.svelte";
 	import { browser } from "$app/environment";
 
 	let { children, data } = $props();
+
+	// מקור אמת יחיד למצב ההתחברות של מצב-השכונה: הסשן מה-layout, בכל עמוד.
+	// אורח → init תמיד יפתח בברירת המחדל, ובחירת שכונה תציג נדנוד להרשמה.
+	$effect(() => {
+		neighborhoodState.setLoggedIn(!!data.session?.user);
+	});
 
 	// רישום שכונות מאושרות (פין מדויק) למנגנון הקואורדינטות - כך שהמפה
 	// תציב פריטים בשכונות חדשות במקום שסומן, בכל האתר.
@@ -117,7 +124,108 @@
 	<Footer />
 </div>
 
+<!-- נדנוד הרשמה: מופיע כשאורח (לא מחובר) בוחר שכונה, כדי לתמרץ הרשמה -->
+{#if neighborhoodState.showRegisterNudge && !data.session?.user}
+	<div class="register-nudge" dir="rtl" role="status">
+		<button
+			class="nudge-close"
+			aria-label="סגירה"
+			onclick={() => neighborhoodState.dismissNudge()}
+		>×</button>
+		<div class="nudge-text">
+			<span class="nudge-emoji">💜</span>
+			כדי שהפלטפורמה תזכור את השכונה שבחרת בפעם הבאה — כדאי להירשם.
+		</div>
+		<button
+			class="nudge-cta"
+			onclick={() => {
+				neighborhoodState.dismissNudge();
+				goto(`/register?redirect=${encodeURIComponent(page.url.pathname)}`);
+			}}
+		>הרשמה מהירה</button>
+	</div>
+{/if}
+
 <style>
+	/* נדנוד הרשמה לאורחים */
+	.register-nudge {
+		position: fixed;
+		bottom: 1.25rem;
+		left: 50%;
+		transform: translateX(-50%);
+		z-index: 60;
+		display: flex;
+		align-items: center;
+		gap: 0.85rem;
+		max-width: min(92vw, 30rem);
+		padding: 0.85rem 1.1rem;
+		border-radius: 1rem;
+		background: linear-gradient(135deg, #4c1d95, #7c3aed, #db2777);
+		color: #fff;
+		box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+		border: 1px solid rgba(255, 255, 255, 0.15);
+		animation: nudge-in 0.35s ease;
+	}
+
+	@keyframes nudge-in {
+		from { opacity: 0; transform: translate(-50%, 1rem); }
+		to   { opacity: 1; transform: translate(-50%, 0); }
+	}
+
+	.nudge-text {
+		font-size: 0.9rem;
+		line-height: 1.4;
+		flex: 1;
+		min-width: 0;
+	}
+
+	.nudge-emoji {
+		margin-inline-end: 0.25rem;
+	}
+
+	.nudge-cta {
+		flex-shrink: 0;
+		background: #fff;
+		color: #6d28d9;
+		font-weight: 700;
+		font-size: 0.85rem;
+		padding: 0.5rem 0.9rem;
+		border-radius: 0.7rem;
+		border: none;
+		cursor: pointer;
+		transition: transform 0.15s ease, box-shadow 0.15s ease;
+	}
+
+	.nudge-cta:hover {
+		transform: translateY(-1px);
+		box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+	}
+
+	.nudge-close {
+		position: absolute;
+		top: 0.35rem;
+		inset-inline-start: 0.5rem;
+		background: none;
+		border: none;
+		color: rgba(255, 255, 255, 0.75);
+		font-size: 1.25rem;
+		line-height: 1;
+		cursor: pointer;
+		padding: 0.15rem 0.35rem;
+	}
+
+	.nudge-close:hover {
+		color: #fff;
+	}
+
+	@media (max-width: 640px) {
+		.register-nudge {
+			flex-direction: column;
+			text-align: center;
+			bottom: 0.75rem;
+		}
+	}
+
 	.layout-container {
 		max-width: 1440px;
 		margin: 0 auto;
