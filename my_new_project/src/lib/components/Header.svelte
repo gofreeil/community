@@ -344,7 +344,7 @@
                                         </div>
                                     {/if}
                                     <!-- מעגל מילוי פרופיל - זהה ללוח הבקרה -->
-                                    <svg style="width:43px;height:43px" class="absolute inset-0 m-auto -rotate-90 pointer-events-none"
+                                    <svg style="width:40px;height:40px" class="absolute inset-0 m-auto -rotate-90 pointer-events-none"
                                          viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
                                         <circle cx="30" cy="30" r="27" stroke="rgba(255,255,255,0.08)" stroke-width="2.5" fill="none" />
                                         <circle cx="30" cy="30" r="27" stroke={headerRingColor} stroke-width="2.5" fill="none"
@@ -554,7 +554,7 @@
                                         </div>
                                     {/if}
                                     <!-- מעגל מילוי פרופיל - זהה ללוח הבקרה -->
-                                    <svg style="width:68px;height:68px" class="absolute inset-0 m-auto -rotate-90 pointer-events-none"
+                                    <svg style="width:62px;height:62px" class="absolute inset-0 m-auto -rotate-90 pointer-events-none"
                                          viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
                                         <circle cx="30" cy="30" r="27" stroke="rgba(255,255,255,0.08)" stroke-width="2" fill="none" />
                                         <circle cx="30" cy="30" r="27" stroke={headerRingColor} stroke-width="2" fill="none"
