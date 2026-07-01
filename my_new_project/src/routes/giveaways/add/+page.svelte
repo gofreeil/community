@@ -2,7 +2,7 @@
     import type { ActionData, PageData } from './$types';
     import { enhance } from '$app/forms';
     import { categoryConfig } from '$lib/categoryFields';
-    import { citiesAndNeighborhoods } from '$lib/neighborhoodsData';
+    import { citiesAndNeighborhoods, effectiveNeighborhoods } from '$lib/neighborhoodsData';
     import { giveawayCategories } from '$lib/giveawayCategories';
     import { formMemory } from '$lib/formMemory';
 
@@ -78,7 +78,7 @@
     let contact      = $state(defName);
     let phone        = $state(defPhone);
 
-    let neighborhoodOptions = $derived(citiesAndNeighborhoods[city] ?? []);
+    let neighborhoodOptions = $derived(effectiveNeighborhoods(city, (data as any).approvedNeighborhoods));
 
     $effect(() => {
         if (city && !neighborhoodOptions.includes(neighborhood)) {

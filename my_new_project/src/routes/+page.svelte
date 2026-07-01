@@ -64,8 +64,9 @@
         neighborhoodState.city === "ירושלים"
     );
 
-    // איחוד כל הערים - אם עיר מופיעה פעמיים בנתונים, נאחד את השכונות שלה (ללא כפילויות)
-    const allCitiesMerged = (() => {
+    // איחוד כל הערים - אם עיר מופיעה פעמיים בנתונים, נאחד את השכונות שלה (ללא כפילויות),
+    // וממזגים גם שכונות שאושרו ע"י אדמין (data.approvedNeighborhoods) כדי שיופיעו בבורר.
+    const allCitiesMerged = $derived.by(() => {
         const map = new Map<string, string[]>();
         for (const entry of citiesData) {
             const existing = map.get(entry.city) ?? [];
@@ -74,9 +75,15 @@
             const unique = Array.from(new Set(combined));
             map.set(entry.city, unique);
         }
+        const approved = (data as any).approvedNeighborhoods as Array<{ name: string; city: string }> | undefined;
+        for (const n of approved ?? []) {
+            if (!n?.name || !n?.city) continue;
+            const existing = map.get(n.city) ?? [];
+            if (!existing.includes(n.name)) map.set(n.city, [...existing, n.name]);
+        }
         // מיון אלפביתי בעברית
         return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b, 'he'));
-    })();
+    });
 
     // חיפוש ערים ושכונות לפי query
     // אם ה-query תואם שם עיר - מציגים את כל השכונות שלה.

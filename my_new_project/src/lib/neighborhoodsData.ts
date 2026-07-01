@@ -1274,3 +1274,20 @@ export const citiesAndNeighborhoods: Record<string, string[]> = (() => {
 
 export const DEFAULT_NEIGHBORHOOD = "קרית משה";
 export const LS_KEY = "shchuna_selected_neighborhood"; // localStorage key
+
+/**
+ * מקור-אמת יחיד לשכונות של עיר: הרשימה הסטטית + שכונות שאושרו ע"י אדמין
+ * (`data.approvedNeighborhoods` מה-layout). כל בורר/מחירון באתר צריך לצרוך את זה,
+ * כדי ששכונה מאושרת חדשה תופיע בכל האתר - כולל חישוב המחיר לפי מספר השכונות.
+ */
+export function effectiveNeighborhoods(
+    city: string,
+    approved?: ReadonlyArray<{ name: string; city: string }> | null,
+): string[] {
+    const base = citiesAndNeighborhoods[city] ?? [];
+    if (!approved?.length) return base;
+    const extra = approved
+        .filter((n) => n.city === city && n.name && !base.includes(n.name))
+        .map((n) => n.name);
+    return extra.length ? [...base, ...extra] : base;
+}

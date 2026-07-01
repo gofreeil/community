@@ -2,7 +2,7 @@
     import { onMount } from 'svelte';
     import { browser } from '$app/environment';
     import { goto } from '$app/navigation';
-    import { LS_KEY, DEFAULT_NEIGHBORHOOD, citiesAndNeighborhoods } from '$lib/neighborhoodsData';
+    import { LS_KEY, DEFAULT_NEIGHBORHOOD, citiesAndNeighborhoods, effectiveNeighborhoods } from '$lib/neighborhoodsData';
     import { getFormMemory, rememberFields } from '$lib/formMemory';
     import NeighborhoodPicker from '$lib/components/NeighborhoodPicker.svelte';
     import {
@@ -40,6 +40,13 @@
         userProfile?.neighborhood || (userProfile?.city ? 'מרכז' : DEFAULT_NEIGHBORHOOD),
     );
     let city         = $state(userProfile?.city         || 'ירושלים');
+
+    // ערים+שכונות לבורר, כולל שכונות שאושרו ע"י אדמין (מקור-אמת אחד לכל האתר)
+    let citiesWithApproved = $derived(
+        Object.keys(citiesAndNeighborhoods).map(
+            (c) => [c, effectiveNeighborhoods(c, (data as any).approvedNeighborhoods)] as [string, string[]],
+        ),
+    );
 
     // ---- פין מיקום על המפה (שדות מסוג map_pin) ----
     let pinLat = $state<number | null>(editItem?.lat ?? null);
@@ -820,7 +827,7 @@
                             class="{inputClass} cursor-pointer"
                             required={field.required}
                         >
-                            {#each Object.entries(citiesAndNeighborhoods) as [cty, neighbs]}
+                            {#each citiesWithApproved as [cty, neighbs]}
                                 <optgroup label={cty}>
                                     {#each neighbs as nb}
                                         <option value={nb} style="background:#fff;color:#0f172a;">{nb}</option>

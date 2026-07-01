@@ -3,7 +3,7 @@
     import { browser } from '$app/environment';
     import { goto } from '$app/navigation';
     import { enhance } from '$app/forms';
-    import { citiesAndNeighborhoods, LS_KEY, DEFAULT_NEIGHBORHOOD } from '$lib/neighborhoodsData';
+    import { citiesAndNeighborhoods, effectiveNeighborhoods, LS_KEY, DEFAULT_NEIGHBORHOOD } from '$lib/neighborhoodsData';
     import { formMemory } from '$lib/formMemory';
     import type { ActionData, PageData } from './$types';
 
@@ -182,7 +182,7 @@
         } catch {}
     });
 
-    let neighborhoodsForCity = $derived(citiesAndNeighborhoods[city] ?? []);
+    let neighborhoodsForCity = $derived(effectiveNeighborhoods(city, (data as any).approvedNeighborhoods));
 
     // אם משתנה עיר - איפוס לשכונה הראשונה אם הקיימת לא תואמת
     $effect(() => {

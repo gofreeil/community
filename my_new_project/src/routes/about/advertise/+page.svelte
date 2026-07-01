@@ -2,7 +2,7 @@
     import { onMount } from "svelte";
     import { browser } from "$app/environment";
     import { goto } from "$app/navigation";
-    import { citiesData, LS_KEY, DEFAULT_NEIGHBORHOOD } from "$lib/neighborhoodsData";
+    import { citiesData, citiesAndNeighborhoods, effectiveNeighborhoods, LS_KEY, DEFAULT_NEIGHBORHOOD } from "$lib/neighborhoodsData";
     import { coinAnim } from "$lib/coinAnimationState.svelte";
     import { evaluateDiscount, discountAmount, type DiscountCode } from "$lib/discountCodes";
 
@@ -432,14 +432,19 @@
         requestAnimationFrame(step);
     }
 
-    // Price multiplier = total neighborhoods in selected cities
-    const totalNeighborhoodsCount = citiesData.reduce((s, c) => s + c.neighborhoods.length, 0);
+    // מספר השכונות בעיר = הרשימה הסטטית + שכונות שאושרו ע"י אדמין. כך שכונה מאושרת
+    // חדשה מעלה מיד את המחיר של אותה עיר (המחיר מוכפל במספר השכונות).
+    const approvedNbs = ((data as any).approvedNeighborhoods ?? []) as Array<{ name: string; city: string }>;
+    const nbCount = (city: string) => effectiveNeighborhoods(city, approvedNbs).length;
+
+    // Price multiplier = total neighborhoods in selected cities (כולל שכונות מאושרות)
+    const totalNeighborhoodsCount =
+        citiesData.reduce((s, c) => s + c.neighborhoods.length, 0) +
+        approvedNbs.filter(n => n.name && !(citiesAndNeighborhoods[n.city] ?? []).includes(n.name)).length;
     let neighborhoodCount = $derived(
         isNational
             ? totalNeighborhoodsCount
-            : Math.max(1, citiesData
-                .filter(c => selectedCities.has(c.city))
-                .reduce((s, c) => s + c.neighborhoods.length, 0))
+            : Math.max(1, [...selectedCities].reduce((s, c) => s + nbCount(c), 0))
     );
 
     // Jerusalem-only discount: flat 10 ₪ per neighborhood per ad type (overrides row prices in the calculator)
@@ -693,7 +698,7 @@
                 <!-- Selected city chips - inline next to the national button -->
                 {#if !isNational && selectedCities.size > 0}
                     {#each [...selectedCities] as cityName}
-                        {@const chipCount = citiesData.find(c => c.city === cityName)?.neighborhoods.length ?? 0}
+                        {@const chipCount = nbCount(cityName)}
                         <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-300 text-sm font-bold">
                             {cityName}
                             <span class="text-[11px] font-normal text-amber-300/80">({fmt(chipCount)} שכונות)</span>
@@ -768,7 +773,7 @@
                                     {/if}
                                 </span>
                                 <span class="text-xs {selected ? 'text-amber-400/70' : 'text-gray-500'}">
-                                    {selected ? 'נבחר ✓' : `${cityEntry.neighborhoods.length} שכונות`}
+                                    {selected ? 'נבחר ✓' : `${nbCount(cityEntry.city)} שכונות`}
                                 </span>
                             </button>
                         {/each}
@@ -807,7 +812,7 @@
                                 {#if selected}<span class="text-amber-400 text-base">✓</span>{/if}
                             </div>
                             <span class="text-sm mt-0.5 {selected ? 'text-amber-400/80' : 'text-gray-400'}">
-                                {cityEntry.neighborhoods.length} שכונות
+                                {nbCount(cityEntry.city)} שכונות
                             </span>
                         </button>
                     {/each}

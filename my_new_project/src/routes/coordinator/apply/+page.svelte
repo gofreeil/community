@@ -1,6 +1,6 @@
 <script lang="ts">
     import { _ } from 'svelte-i18n';
-    import { citiesAndNeighborhoods } from '$lib/neighborhoodsData';
+    import { citiesAndNeighborhoods, effectiveNeighborhoods } from '$lib/neighborhoodsData';
     import NeighborhoodPicker from '$lib/components/NeighborhoodPicker.svelte';
 
     interface PageData {
@@ -30,7 +30,7 @@
 
     // שכונות אמיתיות של העיר הנבחרת — מסננים את ה"מרכז" הגנרי (יישוב ללא שכונות מוגדרות)
     const cityNeighborhoods = $derived(
-        (citiesAndNeighborhoods[city] ?? []).filter((n) => n && n !== 'מרכז')
+        effectiveNeighborhoods(city, (data as any).approvedNeighborhoods).filter((n) => n && n !== 'מרכז')
     );
     // יודעים בוודאות שיש לעיר שכונות? רק אז דורשים בחירת שכונה
     const cityHasNeighborhoods = $derived(cityNeighborhoods.length > 0);
