@@ -4578,18 +4578,18 @@
 		{/if}
 	</div>
 
-	<!-- חזרה לראש העמוד -->
-	<div class="flex items-center justify-center mt-4 mb-2">
-		<button
-			type="button"
-			onclick={() => typeof window !== 'undefined' && window.scrollTo({ top: 0, behavior: 'smooth' })}
-			class="inline-flex items-center gap-2 bg-gradient-to-l from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold text-sm px-6 py-2.5 rounded-full transition-all shadow-lg cursor-pointer"
-		>
-			↑ חזור לראש העמוד
-		</button>
-	</div>
 
+</div>
 
+<!-- חזרה לראש העמוד -->
+<div class="px-4 pb-8 text-right">
+	<button
+		type="button"
+		onclick={() => typeof window !== 'undefined' && window.scrollTo({ top: 0, behavior: 'smooth' })}
+		class="inline-flex items-center gap-2 bg-gradient-to-l from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold text-sm px-6 py-2.5 rounded-full transition-all shadow-lg cursor-pointer"
+	>
+		↑ חזור לראש העמוד
+	</button>
 </div>
 
 {#if showRingTooltip}
