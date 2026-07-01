@@ -350,6 +350,16 @@
                 return `השדה "${field.label}" הוא חובה`;
             }
         }
+        // חובה מיקום: כתובת או פין על המפה (לפחות אחד), אחרת הפריט לא יופיע על המפה.
+        const hasAddressField = config.fields.some(f => f.key === 'address');
+        const hasPinField     = config.fields.some(f => f.type === 'map_pin');
+        if (hasAddressField || hasPinField) {
+            const addressFilled = !!formValues['address']?.trim();
+            const pinPlaced     = pinLat != null && pinLng != null;
+            if (!addressFilled && !pinPlaced) {
+                return 'נא להזין כתובת או לסמן מיקום על המפה';
+            }
+        }
         if (!neighborhood) return 'נא לבחור שכונה';
         return null;
     }

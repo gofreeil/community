@@ -446,6 +446,8 @@ export interface UpdateItemData {
     address?: string;
     neighborhood?: string;
     city?: string;
+    lat?: number | null;
+    lng?: number | null;
     extra_fields?: Record<string, unknown>;
     status?: string;
 }
@@ -459,6 +461,8 @@ export async function updateItem(documentId: string, data: UpdateItemData): Prom
     if (data.address      !== undefined) payload.address      = data.address;
     if (data.neighborhood !== undefined) payload.neighborhood = data.neighborhood;
     if (data.city         !== undefined) payload.city         = data.city;
+    if (data.lat          !== undefined) payload.lat          = data.lat;
+    if (data.lng          !== undefined) payload.lng          = data.lng;
     if (data.extra_fields !== undefined) payload.extra_fields = data.extra_fields;
     if (data.status       !== undefined) payload.status1      = data.status;
     await strapiPut(`/api/items/${documentId}`, { data: payload });

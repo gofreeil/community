@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { createItem, getAllItems, incrementItemViewCount, getItemsByCategory, getItemsByUserId, updateItem, getAllSuperAdmins } from '$lib/server/db';
 import { categoryConfig, getCategoryIcon, getCategoryColor } from '$lib/categoryFields';
+import { resolveItemCoords } from '$lib/server/geocode';
 import { Resend } from 'resend';
 import type { RequestHandler } from './$types';
 
@@ -9,6 +10,10 @@ const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
 // קטגוריות שבהן מותר כרטיס אחד בלבד לכל משתמש.
 // פנויים/פנויות: לכל אדם פרופיל יחיד - "פרסום נוסף" מעדכן את הכרטיס הקיים במקום ליצור כפילות.
 const ONE_PER_USER_CATEGORIES = new Set(['singles']);
+
+// קטגוריות רגישות לפרטיות: קואורדינטות ברמת שכונה בלבד (בלי geocoding לכתובת מדויקת).
+// עדיין מקבלות נקודה כדי להיספר כפריט בשכונה ולהופיע על המפה - רק לא במיקום מדויק.
+const NEIGHBORHOOD_ONLY_CATEGORIES = new Set(['singles']);
 
 async function notifyShabbatMatches(
     newItemId: string,
@@ -126,6 +131,16 @@ export const POST: RequestHandler = async (event) => {
     const color = getCategoryColor(category);
     const userId = session?.user?.id ?? undefined;
 
+    // קואורדינטות: פין מפורש → geocoding של הכתובת → מרכז השכונה/עיר.
+    // כך פריט עם כתובת בלבד (בלי פין) עדיין מקבל נקודה ומופיע על המפה.
+    const coords = await resolveItemCoords({
+        lat, lng,
+        address: rest.address,
+        neighborhood,
+        city,
+        neighborhoodOnly: NEIGHBORHOOD_ONLY_CATEGORIES.has(category),
+    });
+
     // ---- כרטיס אחד למשתמש (פנויים/פנויות): עדכן קיים במקום ליצור חדש ----
     if (userId && ONE_PER_USER_CATEGORIES.has(category)) {
         try {
@@ -140,6 +155,8 @@ export const POST: RequestHandler = async (event) => {
                     address:      String(rest.address ?? ''),
                     neighborhood: String(neighborhood ?? ''),
                     city:         String(city ?? ''),
+                    lat:          coords.lat,
+                    lng:          coords.lng,
                     extra_fields: (extra_fields ?? {}) as Record<string, unknown>,
                     // עריכת כרטיס פנויים מחזירה אותו לאישור מחדש (התמונות עשויות להשתנות)
                     ...(MODERATED_CATEGORIES.has(category) ? { status: 'pending' } : {}),
@@ -169,8 +186,8 @@ export const POST: RequestHandler = async (event) => {
             color,
             neighborhood: String(neighborhood ?? ''),
             city:         String(city ?? ''),
-            lat:          Number.isFinite(Number(lat)) ? Number(lat) : null,
-            lng:          Number.isFinite(Number(lng)) ? Number(lng) : null,
+            lat:          coords.lat,
+            lng:          coords.lng,
             extra_fields: (extra_fields ?? {}) as Record<string, unknown>,
             user_id:     session?.user?.id ?? undefined,
             // קטגוריות מבוקרות (פנויים) עולות כ-pending עד אישור אדמין
