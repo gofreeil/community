@@ -31,6 +31,10 @@ export const load: PageServerLoad = async (event) => {
             coordinatorsCount: 0,
             strapiAvailable: true,
             userFromStaleCache: false,
+            // כפתור "עם יוצאים לחירות" מזהה רק דרך העוגייה המשותפת gofreeil-auth
+            // (SSO לפי דפדפן, לא חוצה-מכשירים). אם היא לא קיימת בדפדפן הזה הכפתור
+            // לא יכול להצליח - לכן נציג אותו רק כשהעוגייה נוכחת, אחרת מבוי סתום שקט.
+            hasSharedSso: !!event.cookies.get('gofreeil-auth'),
         };
     }
 
