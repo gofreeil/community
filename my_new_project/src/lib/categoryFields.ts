@@ -347,6 +347,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
         fields: [
             { key: 'label',       label: 'שם המרחב',                type: 'text',     required: true,  placeholder: 'מקלט ציבורי, מרחב מוגן...' },
             { key: 'address',     label: 'כתובת מדויקת',            type: 'text',     required: true,  placeholder: 'רחוב ומספר, כניסה...' },
+            { key: 'location',    label: 'סימון על המפה',           type: 'map_pin',  required: false },
             { key: 'capacity',    label: 'קיבולת (אנשים)',           type: 'number',   required: false },
             { key: 'description', label: 'פרטים',                   type: 'textarea', required: false, placeholder: 'מידע נוסף על המרחב...' },
             { key: 'contact',     label: 'טלפון אחראי',             type: 'tel',      required: false, placeholder: '05X-XXXXXXX' },
