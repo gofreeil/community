@@ -297,6 +297,18 @@
                             </label>
                         {/if}
                         <input type="hidden" name="images_json" value={JSON.stringify(images)} />
+
+                        {#if images.length === 0}
+                            <p class="mt-2 flex items-start gap-1.5 text-amber-300 text-xs bg-amber-900/15 border border-amber-500/25 rounded-lg px-3 py-2">
+                                <span aria-hidden="true">📷</span>
+                                <span>ברגע שתעלה תמונה - המודעה תעלה לרשת ותוצג בלוח. ללא תמונה המודעה תישמר כטיוטה בלבד ולא תופיע לאחרים.</span>
+                            </p>
+                        {:else}
+                            <p class="mt-2 flex items-center gap-1.5 text-emerald-300 text-xs bg-emerald-900/15 border border-emerald-500/25 rounded-lg px-3 py-2">
+                                <span aria-hidden="true">✓</span>
+                                <span>יש תמונה - עם הפרסום המודעה תעלה לרשת מיד.</span>
+                            </p>
+                        {/if}
                     </div>
 
                     <div>
