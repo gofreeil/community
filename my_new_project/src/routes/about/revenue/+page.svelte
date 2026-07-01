@@ -125,7 +125,23 @@
 </script>
 
 <svelte:head>
-	<title>שיטת התגמול | קהילה בשכונה</title>
+	<title>אודות קהילה בשכונה | כל יתרונות השכונה במקום אחד</title>
+	<meta name="description" content="קהילה בשכונה — הפלטפורמה הקהילתית הראשונה בישראל המחברת את התושבים לכל השירותים, היתרונות והמשאבים של השכונה. הכירו את התנועה, שיטת התגמול והרכזים, והצטרפו אלינו." />
+	<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+	<link rel="canonical" href="https://community.gofreeil.com/about/revenue" />
+	<meta property="og:type" content="website" />
+	<meta property="og:site_name" content="קהילה בשכונה" />
+	<meta property="og:title" content="אודות קהילה בשכונה" />
+	<meta property="og:description" content="הפלטפורמה הקהילתית הראשונה בישראל המחברת את התושבים לכל יתרונות השכונה — יד שנייה, שידוכים, גמ״חים, חוגים ועוד. הכירו את התנועה והצטרפו אלינו." />
+	<meta property="og:image" content="https://community.gofreeil.com/images/community-logo1.png" />
+	<meta property="og:image:width" content="1024" />
+	<meta property="og:image:height" content="1024" />
+	<meta property="og:url" content="https://community.gofreeil.com/about/revenue" />
+	<meta property="og:locale" content="he_IL" />
+	<meta name="twitter:card" content="summary" />
+	<meta name="twitter:title" content="אודות קהילה בשכונה" />
+	<meta name="twitter:description" content="הפלטפורמה הקהילתית הראשונה בישראל המחברת את התושבים לכל יתרונות השכונה. הכירו את התנועה והצטרפו אלינו." />
+	<meta name="twitter:image" content="https://community.gofreeil.com/images/community-logo1.png" />
 </svelte:head>
 
 <div class="text-white" dir="rtl">
