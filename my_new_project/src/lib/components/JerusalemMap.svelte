@@ -1487,7 +1487,7 @@
                 {#if neighborhoodDbItems.length > 0}
                     {#key `${selectedCategory}-${neighborhoodState.neighborhood}-${neighborhoodDbItems.length}`}
                         <div
-                            class="neighborhood-count-fade absolute top-4 right-4 z-20 bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 text-white text-sm font-black px-4 py-2 rounded-xl shadow-lg border border-orange-300/60"
+                            class="neighborhood-count-fade absolute top-16 right-4 z-20 bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 text-white text-base font-black px-5 py-2.5 rounded-xl shadow-lg border border-orange-300/60"
                         >
                             {neighborhoodDbItems.length} {selectedCategory === 'giveaway' ? 'למסירה' : 'פריטים'} בשכונה
                         </div>
