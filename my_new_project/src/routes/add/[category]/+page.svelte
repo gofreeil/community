@@ -4,6 +4,13 @@
     import { goto } from '$app/navigation';
     import { LS_KEY, DEFAULT_NEIGHBORHOOD, citiesAndNeighborhoods } from '$lib/neighborhoodsData';
     import { getFormMemory, rememberFields } from '$lib/formMemory';
+    import {
+        emptyOpeningHours,
+        parseOpeningHours,
+        serializeOpeningHours,
+        DAY_SHORT,
+        type OpeningHours,
+    } from '$lib/openingHours';
     import type { PageData } from './$types';
 
     let { data }: { data: PageData } = $props();
@@ -51,6 +58,7 @@
         }
 
         if (type === 'toggle' && options) return defaultVal && options.includes(defaultVal) ? defaultVal : options[0];
+        if (type === 'opening_hours') return serializeOpeningHours(emptyOpeningHours());
         if (key === 'contact'  && userProfile?.nickname) return userProfile.nickname;
         if (key === 'nickname' && userProfile?.nickname) return userProfile.nickname;
         if (key === 'phone'    && userProfile?.phone)    return userProfile.phone;
@@ -176,6 +184,39 @@
         const [picked] = arr.splice(idx, 1);
         arr.unshift(picked);
         setImages(key, arr);
+    }
+
+    // ---- שעות פתיחה (opening_hours) ----
+    function getOpeningHours(key: string): OpeningHours {
+        return parseOpeningHours(getFieldValue(key)) ?? emptyOpeningHours();
+    }
+    function setOpeningHours(key: string, oh: OpeningHours) {
+        setFieldValue(key, serializeOpeningHours(oh));
+    }
+    function toggleDayOpen(key: string, idx: number) {
+        const oh = getOpeningHours(key);
+        oh.days[idx].open = !oh.days[idx].open;
+        setOpeningHours(key, oh);
+    }
+    function setUniform(key: string, uniform: boolean) {
+        const oh = getOpeningHours(key);
+        oh.uniform = uniform;
+        // מעבר למצב "שעות זהות" - מחיל את שעות היום הפתוח הראשון על כל הימים
+        if (uniform) {
+            const first = oh.days.find((d) => d.open) ?? oh.days[0];
+            for (const d of oh.days) { d.from = first.from; d.to = first.to; }
+        }
+        setOpeningHours(key, oh);
+    }
+    function setUniformTime(key: string, which: 'from' | 'to', val: string) {
+        const oh = getOpeningHours(key);
+        for (const d of oh.days) d[which] = val;
+        setOpeningHours(key, oh);
+    }
+    function setDayTime(key: string, idx: number, which: 'from' | 'to', val: string) {
+        const oh = getOpeningHours(key);
+        oh.days[idx][which] = val;
+        setOpeningHours(key, oh);
     }
 
     function startLongPress(key: string) {
@@ -582,6 +623,96 @@
                                 {/each}
                             </div>
                             <p class="text-xs text-gray-400 mt-3 text-center">לחצו על המשבצות לסימון השעות שבהן אתם זמינים</p>
+                        </div>
+
+                    {:else if field.type === 'opening_hours'}
+                        {@const oh = getOpeningHours(field.key)}
+                        {@const anyOpen = oh.days.some((d) => d.open)}
+                        {@const rep = oh.days.find((d) => d.open) ?? oh.days[0]}
+                        {@const timeInput = 'rounded-lg border border-white/15 bg-white/10 px-2.5 py-2 text-white text-sm text-center focus:outline-none focus:border-amber-500/60'}
+                        <div class="rounded-xl border border-white/15 bg-white/5 p-3 md:p-4 space-y-3">
+                            <!-- בחירת ימים פתוחים -->
+                            <p class="text-xs text-gray-400">אילו ימים פתוח?</p>
+                            <div class="grid grid-cols-7 gap-1.5">
+                                {#each DAY_SHORT as d, dIdx}
+                                    {@const isOpen = oh.days[dIdx].open}
+                                    <button
+                                        type="button"
+                                        onclick={() => toggleDayOpen(field.key, dIdx)}
+                                        class="h-9 rounded-lg border-2 text-xs font-bold transition-all {isOpen
+                                            ? `${colors.btn} text-white border-transparent shadow-md`
+                                            : 'bg-white/5 border-white/15 text-gray-500 hover:bg-white/10 hover:border-white/30'}"
+                                        aria-pressed={isOpen}
+                                    >{d}</button>
+                                {/each}
+                            </div>
+
+                            {#if anyOpen}
+                                <!-- מתג: שעות זהות לכל הימים / שעה לכל יום -->
+                                <div class="flex p-1 rounded-full bg-white/5 border border-white/10 gap-1 mx-auto w-full max-w-[300px]">
+                                    <button
+                                        type="button"
+                                        onclick={() => setUniform(field.key, true)}
+                                        class="flex-1 px-3 py-1.5 text-xs font-bold rounded-full transition-all {oh.uniform ? `${colors.btn} text-white shadow` : 'text-gray-400 hover:text-white'}"
+                                    >אותן שעות בכל הימים</button>
+                                    <button
+                                        type="button"
+                                        onclick={() => setUniform(field.key, false)}
+                                        class="flex-1 px-3 py-1.5 text-xs font-bold rounded-full transition-all {!oh.uniform ? `${colors.btn} text-white shadow` : 'text-gray-400 hover:text-white'}"
+                                    >שעות שונות לפי יום</button>
+                                </div>
+
+                                {#if oh.uniform}
+                                    <!-- זוג שעות אחד לכל הימים הפתוחים -->
+                                    <div class="flex items-center justify-center gap-2" dir="ltr">
+                                        <input
+                                            type="time"
+                                            value={rep.from}
+                                            onchange={(e) => setUniformTime(field.key, 'from', (e.target as HTMLInputElement).value)}
+                                            class={timeInput}
+                                            aria-label="שעת פתיחה"
+                                        />
+                                        <span class="text-gray-400 font-bold">–</span>
+                                        <input
+                                            type="time"
+                                            value={rep.to}
+                                            onchange={(e) => setUniformTime(field.key, 'to', (e.target as HTMLInputElement).value)}
+                                            class={timeInput}
+                                            aria-label="שעת סגירה"
+                                        />
+                                    </div>
+                                {:else}
+                                    <!-- שורת שעות נפרדת לכל יום פתוח -->
+                                    <div class="space-y-2">
+                                        {#each DAY_SHORT as d, dIdx}
+                                            {#if oh.days[dIdx].open}
+                                                <div class="flex items-center gap-2">
+                                                    <span class="w-10 shrink-0 text-sm font-bold text-gray-200">{d}</span>
+                                                    <div class="flex items-center justify-end gap-2 flex-1" dir="ltr">
+                                                        <input
+                                                            type="time"
+                                                            value={oh.days[dIdx].from}
+                                                            onchange={(e) => setDayTime(field.key, dIdx, 'from', (e.target as HTMLInputElement).value)}
+                                                            class={timeInput}
+                                                            aria-label="שעת פתיחה {d}"
+                                                        />
+                                                        <span class="text-gray-400 font-bold">–</span>
+                                                        <input
+                                                            type="time"
+                                                            value={oh.days[dIdx].to}
+                                                            onchange={(e) => setDayTime(field.key, dIdx, 'to', (e.target as HTMLInputElement).value)}
+                                                            class={timeInput}
+                                                            aria-label="שעת סגירה {d}"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            {/if}
+                                        {/each}
+                                    </div>
+                                {/if}
+                            {:else}
+                                <p class="text-xs text-gray-500 text-center py-1">לא נבחרו ימים — יוצג ללא שעות פתיחה</p>
+                            {/if}
                         </div>
 
                     {:else if field.type === 'images'}

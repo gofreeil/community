@@ -1,7 +1,7 @@
 export interface FieldDef {
     key: string;
     label: string;
-    type: 'text' | 'tel' | 'textarea' | 'select' | 'toggle' | 'number' | 'time' | 'date' | 'email' | 'availability_grid' | 'multi_select' | 'neighborhood_select' | 'images';
+    type: 'text' | 'tel' | 'textarea' | 'select' | 'toggle' | 'number' | 'time' | 'date' | 'email' | 'availability_grid' | 'opening_hours' | 'multi_select' | 'neighborhood_select' | 'images';
     required: boolean;
     placeholder?: string;
     options?: string[];
@@ -157,7 +157,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
             { key: 'biz_type',    label: 'סוג עסק',                type: 'text',     required: true,  placeholder: 'מכולת, מאפייה, בגדים...' },
             { key: 'address',     label: 'כתובת',                  type: 'text',     required: true,  placeholder: 'רחוב ומספר' },
             { key: 'phone',       label: 'טלפון',                   type: 'tel',      required: true,  placeholder: '05X-XXXXXXX' },
-            { key: 'hours',       label: 'שעות פתיחה',             type: 'text',     required: false, placeholder: 'א-ה 8:00-20:00, שישי 8:00-13:00' },
+            { key: 'hours',       label: 'שעות פתיחה',             type: 'opening_hours', required: false },
             { key: 'kosher',      label: 'כשרות',                  type: 'select',   required: false, options: ['ללא', 'כשר', 'כשר למהדרין', 'חלב ישראל', 'מהדרין'] },
             { key: 'description', label: 'תיאור העסק',             type: 'textarea', required: false, placeholder: 'מה מיוחד בעסק שלך...' },
             { key: 'contact',     label: 'שם בעל העסק',            type: 'text',     required: false, placeholder: 'שם מלא' },
@@ -185,7 +185,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
             { key: 'parking_notes', label: 'פרטי חניה (חופשי)',     type: 'text',     required: false, placeholder: 'חניון סמוך, חניה כחול-לבן, חניה חינם בערב...' },
             { key: 'club_discount', label: 'הנחה לחברי מועדון',     type: 'toggle',   required: true,  options: ['ללא הנחה', 'יש הנחה'], default: 'ללא הנחה', hint: 'חברי מועדון הקהילה יקבלו תג מיוחד בכרטיסיה' },
             { key: 'club_discount_detail', label: 'פרטי ההנחה',     type: 'text',     required: false, placeholder: 'לדוגמה: 10% הנחה בהצגת כרטיס חבר', showIf: { field: 'club_discount', equals: 'יש הנחה' } },
-            { key: 'hours',       label: 'שעות פתיחה',             type: 'text',     required: false, placeholder: 'א-ה 12:00-22:00, שישי 9:00-14:00' },
+            { key: 'hours',       label: 'שעות פתיחה',             type: 'opening_hours', required: false },
             { key: 'address',     label: 'כתובת',                  type: 'text',     required: true,  placeholder: 'רחוב ומספר' },
             { key: 'waze_link',   label: 'קישור Waze',             type: 'text',     required: false, placeholder: 'https://waze.com/ul/...', half: true, hint: 'הדבקת קישור ניווט ב-Waze תעזור ללקוחות להגיע אליכם בקלות' },
             { key: 'gmaps_link',  label: 'קישור Google Maps',       type: 'text',     required: false, placeholder: 'https://maps.app.goo.gl/...', half: true },
@@ -303,7 +303,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
         fields: [
             { key: 'label',       label: 'שם האטרקציה',             type: 'text',     required: true,  placeholder: 'פארק שעשועים, מוזיאון...' },
             { key: 'address',     label: 'כתובת',                   type: 'text',     required: true,  placeholder: 'מיקום' },
-            { key: 'hours',       label: 'שעות פתיחה',              type: 'text',     required: false, placeholder: 'א-ה 10:00-18:00' },
+            { key: 'hours',       label: 'שעות פתיחה',              type: 'opening_hours', required: false },
             { key: 'price',       label: 'מחיר',                    type: 'text',     required: false, placeholder: 'חינם / מחיר' },
             { key: 'description', label: 'תיאור',                   type: 'textarea', required: true,  placeholder: 'תאר את האטרקציה...' },
             { key: 'phone',       label: 'טלפון',                   type: 'tel',      required: false, placeholder: '05X-XXXXXXX' },

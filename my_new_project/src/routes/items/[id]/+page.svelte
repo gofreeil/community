@@ -9,6 +9,7 @@
     import type { PageData } from './$types';
     import JsonLd from "$lib/components/JsonLd.svelte";
     import { productSchema, eventSchema } from "$lib/seo";
+    import { formatOpeningHours } from "$lib/openingHours";
 
     let { data }: { data: PageData } = $props();
     const item = $derived(data.item);
@@ -466,6 +467,7 @@
         address: 'כתובת',
         phone: 'טלפון',
         contact: 'דרך קשר',
+        hours: 'שעות פתיחה',
     }}
     {@const formatValue = (key: string, val: unknown): string => {
         if (val == null || val === '') return '';
@@ -481,6 +483,7 @@
             }
         }
         if (key === 'gender') return s === 'male' ? 'גבר' : s === 'female' ? 'אישה' : s;
+        if (key === 'hours') return formatOpeningHours(s);
         return s;
     }}
     {@const visibleEntries = item?.isUserSubmitted && item.extraFields
