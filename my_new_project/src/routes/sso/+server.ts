@@ -48,7 +48,7 @@ export const GET: RequestHandler = async ({ locals, url, cookies }) => {
 			sameSite: 'lax',
 			secure: true,
 			domain: '.gofreeil.com',
-			maxAge: 60 * 60 * 24 * 30, // 30 ימים
+			maxAge: 60 * 60 * 24 * 90, // 90 ימים
 		});
 		throw redirect(302, callback.toString());
 	}

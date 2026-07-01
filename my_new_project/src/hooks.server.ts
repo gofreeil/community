@@ -185,7 +185,7 @@ const setStrApiCookie: Handle = async ({ event, resolve }) => {
                         sameSite: 'lax',
                         path:     '/',
                         domain:   '.gofreeil.com',
-                        maxAge:   60 * 60 * 24 * 30,
+                        maxAge:   60 * 60 * 24 * 90,
                     });
                 }
             }
