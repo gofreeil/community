@@ -12,7 +12,7 @@ const nationalRedirects: Record<string, string> = {
 // ⚠️ אין export - SvelteKit מאפשר רק: load, actions, prerender, csr, ssr, trailingSlash, config, entries, או עם '_' prefix
 const nationalCategories: Record<string, { slug: string; title: string }> = {
     security:    { slug: 'security',    title: 'צימרים ונופש' },
-    attractions: { slug: 'attractions', title: 'אטרקציות' },
+    attractions: { slug: 'attractions', title: 'שירות ציבורי' },
     jobs:        { slug: 'jobs',        title: 'דרושים עובדים' },
     restaurants: { slug: 'restaurants', title: 'מזון מהיר ומסעדות' },
     halls:       { slug: 'halls',       title: 'אולמות וחללים - לאירועים ולחוגים' },

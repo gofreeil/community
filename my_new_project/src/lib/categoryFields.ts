@@ -296,16 +296,17 @@ export const categoryConfig: Record<string, CategoryConfig> = {
     },
 
     attractions: {
-        label: 'אטרקציות',
-        icon: '🎡',
+        label: 'שירות ציבורי',
+        addPageTitle: 'הוסף שירות ציבורי',
+        icon: '🏛️',
         color: 'indigo',
         priceRow: null,
         fields: [
-            { key: 'label',       label: 'שם האטרקציה',             type: 'text',     required: true,  placeholder: 'פארק שעשועים, מוזיאון...' },
+            { key: 'label',       label: 'שם השירות',               type: 'text',     required: true,  placeholder: 'בנק, עירייה, דואר, בית ספר...' },
             { key: 'address',     label: 'כתובת',                   type: 'text',     required: true,  placeholder: 'מיקום' },
             { key: 'hours',       label: 'שעות פתיחה',              type: 'opening_hours', required: false },
             { key: 'price',       label: 'מחיר',                    type: 'text',     required: false, placeholder: 'חינם / מחיר' },
-            { key: 'description', label: 'תיאור',                   type: 'textarea', required: true,  placeholder: 'תאר את האטרקציה...' },
+            { key: 'description', label: 'תיאור',                   type: 'textarea', required: true,  placeholder: 'תאר את השירות...' },
             { key: 'phone',       label: 'טלפון',                   type: 'tel',      required: false, placeholder: '05X-XXXXXXX' },
             { key: 'contact',     label: 'שם',                      type: 'text',     required: false },
         ],

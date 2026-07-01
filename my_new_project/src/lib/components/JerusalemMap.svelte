@@ -501,7 +501,7 @@
         { suffix: 'minyan',       category: 'minyanim',    icon: '✡️', label: 'מניין שחרית',    color: 'blue' },
         { suffix: 'art-class',    category: 'education',   icon: '🎨', label: 'חוג ציור',       color: 'purple' },
         { suffix: 'giveaway',     category: 'giveaway',    icon: '🛋️', label: 'מסירת ספה',      color: 'teal' },
-        { suffix: 'attraction',   category: 'attractions', icon: '🎡', label: 'גן שעשועים',     color: 'green' },
+        { suffix: 'attraction',   category: 'attractions', icon: '🏛️', label: 'עירייה',         color: 'green' },
     ];
 
     let dynamicMarkers = $derived.by(() => {
