@@ -44,7 +44,6 @@
 	let showLikes = $state(false);
 	let likedItems = $state<LikedItem[]>([]);
 	let userStatus = $state<UserStatus>('available');
-	let showStatusSelector = $state(false);
 	let showLoginOptions = $state(false);
 
 	function refreshLikes() {
@@ -1600,6 +1599,60 @@
 	<title>{tFn("profile_title")}</title>
 </svelte:head>
 
+<!-- בורר "הסטטוס שלי בלוח פנויים" - משובץ גם בפרופיל וגם בנכסים שלי (לא קומה נפרדת) -->
+{#snippet singlesStatusCard()}
+	<div class="rounded-2xl bg-white/5 border border-white/10 p-4">
+		<p class="text-white font-bold text-sm mb-1 flex items-center gap-2">
+			💜 הסטטוס שלי בלוח פנויים
+		</p>
+		<p class="text-gray-400 text-xs mb-3">
+			בחר את הסטטוס שלך - אחרים יראו זאת בפרופיל שלך בלוח הפנויים
+		</p>
+		<div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+			<button
+				type="button"
+				onclick={() => { userStatus = 'available'; }}
+				class="flex flex-col items-center gap-2 p-3 rounded-xl border transition-all {userStatus === 'available'
+					? 'bg-green-500/20 border-green-500/50'
+					: 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-green-500/30'}"
+			>
+				<span class="text-2xl">✅</span>
+				<span class="text-xs font-bold text-white text-center">זמין/ה</span>
+			</button>
+			<button
+				type="button"
+				onclick={() => { userStatus = 'not_available'; }}
+				class="flex flex-col items-center gap-2 p-3 rounded-xl border transition-all {userStatus === 'not_available'
+					? 'bg-red-500/20 border-red-500/50'
+					: 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-red-500/30'}"
+			>
+				<span class="text-2xl">🔴</span>
+				<span class="text-xs font-bold text-white text-center">לא זמין/ה</span>
+			</button>
+			<button
+				type="button"
+				onclick={() => { userStatus = 'in_relationship'; }}
+				class="flex flex-col items-center gap-2 p-3 rounded-xl border transition-all {userStatus === 'in_relationship'
+					? 'bg-pink-500/20 border-pink-500/50'
+					: 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-pink-500/30'}"
+			>
+				<span class="text-2xl">💑</span>
+				<span class="text-xs font-bold text-white text-center">בקשר</span>
+			</button>
+			<button
+				type="button"
+				onclick={() => { userStatus = 'taking_break'; }}
+				class="flex flex-col items-center gap-2 p-3 rounded-xl border transition-all {userStatus === 'taking_break'
+					? 'bg-blue-500/20 border-blue-500/50'
+					: 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-blue-500/30'}"
+			>
+				<span class="text-2xl">⏸️</span>
+				<span class="text-xs font-bold text-white text-center">הפסקה זמנית</span>
+			</button>
+		</div>
+	</div>
+{/snippet}
+
 <div class="max-w-3xl mx-auto px-4 py-8 overflow-x-hidden" dir="rtl">
 	<!-- כפתור התחברות/הרשמה לאורחים בלבד -->
 	{#if !data.user}
@@ -2620,6 +2673,8 @@
 
 		{#if showMyInfo}
 			<div class="flex flex-col gap-4">
+				<!-- ===== הסטטוס שלי בלוח פנויים ===== -->
+				{@render singlesStatusCard()}
 				<!-- ===== ערבי מפגש / סעודות קהילתיות ===== -->
 				<a href="/gatherings" class="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-amber-500/15 to-rose-500/10 border border-amber-500/30 hover:border-amber-500/60 px-4 py-3.5 transition-all group">
 					<span class="text-3xl flex-shrink-0">🍽️</span>
@@ -4404,6 +4459,11 @@
 				{/if}
 			</form>
 		{/if}
+
+		<!-- הסטטוס שלי בלוח פנויים - משובץ בתוך הפרופיל -->
+		<div class="mt-4">
+			{@render singlesStatusCard()}
+		</div>
 	</div>
 
 	<!-- ===== קומה 6: כתוב למערכת ===== -->
@@ -4502,105 +4562,6 @@
 		{/if}
 	</div>
 
-	<!-- ===== קומה 7: סטטוס לפנויים ===== -->
-	<div
-		class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-4 md:p-6 shadow-xl mb-2 overflow-hidden
-	            before:absolute before:inset-x-0 before:top-0 before:h-24 before:rounded-t-3xl
-	            before:bg-gradient-to-b before:from-white/8 before:to-transparent
-	            before:transition-all before:duration-300 before:pointer-events-none
-	            hover:before:from-white/18 {mobileTab !== 'profile'
-			? 'hidden md:block'
-			: ''}"
-	>
-		<div
-			class="relative flex items-center justify-between cursor-pointer select-none -mx-4 px-4 -mt-4 pt-3 md:-mx-6 md:px-6 md:-mt-6 md:pt-4 min-h-14 {showStatusSelector
-				? 'pb-4 mb-4'
-				: 'pb-4'}"
-			onclick={() => {
-				showStatusSelector = !showStatusSelector;
-			}}
-			role="button"
-			tabindex={0}
-			onkeydown={(e) => {
-				if (e.key === "Enter" || e.key === " ")
-					showStatusSelector = !showStatusSelector;
-			}}
-		>
-			<h2 class="text-xl font-black text-white flex items-center gap-2">
-				<span
-					class="w-7 h-7 rounded-full text-black text-sm font-black hidden md:flex items-center justify-center flex-shrink-0"
-					style="background: radial-gradient(circle, #a78bfa 0%, #9f7aea 60%, #805ad5 100%); opacity: 0.75"
-					>7</span
-				>
-				הסטטוס שלי בלוח פנויים
-			</h2>
-			<svg
-				class="w-4 h-4 text-purple-400 transition-transform duration-300 flex-shrink-0 {showStatusSelector
-					? 'rotate-180'
-					: ''}"
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="2.5"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-				><polyline points="6 9 12 15 18 9" /></svg
-			>
-		</div>
-
-		{#if showStatusSelector}
-			<div class="relative">
-				<p class="text-gray-400 text-sm mb-4">
-					בחר את הסטטוס שלך - אחרים יראו זאת בפרופיל שלך בלוח הפנויים
-				</p>
-				<div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-					<button
-						type="button"
-						onclick={() => { userStatus = 'available'; }}
-						class="flex flex-col items-center gap-2 p-4 rounded-xl border transition-all {userStatus === 'available'
-							? 'bg-green-500/20 border-green-500/50'
-							: 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-green-500/30'}"
-					>
-						<span class="text-3xl">✅</span>
-						<span class="text-xs font-bold text-white text-center">זמין/ה</span>
-					</button>
-					<button
-						type="button"
-						onclick={() => { userStatus = 'not_available'; }}
-						class="flex flex-col items-center gap-2 p-4 rounded-xl border transition-all {userStatus === 'not_available'
-							? 'bg-red-500/20 border-red-500/50'
-							: 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-red-500/30'}"
-					>
-						<span class="text-3xl">🔴</span>
-						<span class="text-xs font-bold text-white text-center">לא זמין/ה</span>
-					</button>
-					<button
-						type="button"
-						onclick={() => { userStatus = 'in_relationship'; }}
-						class="flex flex-col items-center gap-2 p-4 rounded-xl border transition-all {userStatus === 'in_relationship'
-							? 'bg-pink-500/20 border-pink-500/50'
-							: 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-pink-500/30'}"
-					>
-						<span class="text-3xl">💑</span>
-						<span class="text-xs font-bold text-white text-center">בקשר</span>
-					</button>
-					<button
-						type="button"
-						onclick={() => { userStatus = 'taking_break'; }}
-						class="flex flex-col items-center gap-2 p-4 rounded-xl border transition-all {userStatus === 'taking_break'
-							? 'bg-blue-500/20 border-blue-500/50'
-							: 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-blue-500/30'}"
-					>
-						<span class="text-3xl">⏸️</span>
-						<span class="text-xs font-bold text-white text-center">הפסקה זמנית</span>
-					</button>
-				</div>
-				<p class="text-xs text-gray-500 mt-4">
-					הסטטוס שלך יופיע בתוך כמה שניות בלוח הפנויים
-				</p>
-			</div>
-		{/if}
-	</div>
 
 </div>
 
