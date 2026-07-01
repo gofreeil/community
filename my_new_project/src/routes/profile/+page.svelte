@@ -2174,7 +2174,7 @@
 			</div>
 			<div class="flex flex-wrap gap-2">
 				<a
-					href="/admin?tab=users#coordinators"
+					href="/admin?tab=users"
 					class="relative flex-1 min-w-[160px] text-xs md:text-sm font-bold text-amber-300 hover:text-amber-200 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-amber-500/10 border border-amber-500/30 hover:border-amber-400/50 flex items-center justify-center gap-1.5"
 					title="ניהול משתמשים ורכזי שכונות"
 				>

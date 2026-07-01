@@ -34,6 +34,22 @@
 		חזרה לפרופיל
 	</a>
 
+	<!-- כפתור אימות דו-שלבי לאדמין (מהבהב אדום עד הפעלה, ירוק כשפעיל) -->
+	{#if data.user?.role === 'super_admin'}
+		<div class="mb-6 flex justify-start">
+			<a
+				href="/admin/2fa-setup"
+				class="relative px-4 py-2 rounded-xl border transition-all cursor-pointer font-bold flex items-center gap-1.5
+					{data.user.totp_enabled
+						? 'bg-green-500/15 border-green-500/40 text-green-200 hover:bg-green-500/25'
+						: 'bg-red-500/15 border-red-500/50 text-red-200 hover:bg-red-500/25 animate-pulse'}"
+				title={data.user.totp_enabled ? 'אימות דו-שלבי פעיל' : 'הפעל אימות דו-שלבי - מומלץ!'}
+			>
+				🔐 {data.user.totp_enabled ? '2FA פעיל' : 'הפעל 2FA'}
+			</a>
+		</div>
+	{/if}
+
 	<!-- כותרת דף -->
 	<div class="text-center mb-8">
 		<h1 class="text-3xl font-black text-white leading-tight">ארנק ותגמולים</h1>
