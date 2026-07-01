@@ -191,14 +191,26 @@
         }
     });
 
-    function validate(): string | null {
-        if (!title.trim())        return 'יש למלא שם הגמ"ח';
-        if (!phone.trim())        return 'יש למלא טלפון ליצירת קשר';
-        if (!street.trim())       return 'יש למלא רחוב';
-        if (!buildingNum.trim())  return 'יש למלא מספר בניין';
-        if (!city.trim())         return 'יש לבחור עיר';
-        if (!neighborhood.trim()) return 'יש לבחור שכונה';
+    // כל שגיאה מצביעה על השדה המדויק שחסר, כדי שנוכל להאיר ולגלול אליו
+    function validate(): { field: string; message: string } | null {
+        if (!title.trim())        return { field: 'title',        message: 'רק חסר שם לגמ"ח וסיימנו 🙂' };
+        if (!street.trim())       return { field: 'street',       message: 'איזה רחוב? צריך למלא את שם הרחוב כדי שיֵדעו איפה למצוא אתכם' };
+        if (!buildingNum.trim())  return { field: 'buildingNum',  message: 'רק מספר הבניין חסר - בלעדיו קשה למצוא את הכתובת' };
+        if (!city.trim())         return { field: 'city',         message: 'צריך לבחור עיר מהרשימה' };
+        if (!neighborhood.trim()) return { field: 'neighborhood', message: 'צריך לבחור שכונה מהרשימה' };
+        if (!phone.trim())        return { field: 'phone',        message: 'רק טלפון ליצירת קשר חסר - בלעדיו לא יוכלו לפנות אליכם' };
         return null;
+    }
+
+    // מאיר את השדה החסר, גולל אליו וממקד בו את הסמן
+    function focusField(field: string) {
+        if (!browser) return;
+        const el = document.getElementById(field) as HTMLElement | null;
+        if (!el) return;
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('field-error-flash');
+        setTimeout(() => el.classList.remove('field-error-flash'), 1800);
+        setTimeout(() => el.focus({ preventScroll: true }), 300);
     }
 
     function saveDraft() {
@@ -224,7 +236,8 @@
         const err = validate();
         if (err) {
             e.preventDefault();
-            clientError = err;
+            clientError = err.message;
+            focusField(err.field);
             return;
         }
 
@@ -243,6 +256,16 @@
 <svelte:head>
     <title>פרסום גמ"ח חדש | קהילה בשכונה</title>
 </svelte:head>
+
+{#if clientError}
+    <div class="fixed top-4 inset-x-0 z-50 flex justify-center px-4 pointer-events-none" dir="rtl">
+        <div class="pointer-events-auto flex items-center gap-2 max-w-md w-full rounded-xl bg-red-950/95 border border-red-500/50 shadow-2xl px-4 py-3 text-red-100 text-sm font-medium backdrop-blur">
+            <span class="text-lg">⚠️</span>
+            <span class="flex-1">{clientError}</span>
+            <button type="button" onclick={() => (clientError = '')} aria-label="סגור" class="text-red-300 hover:text-white text-lg leading-none">✕</button>
+        </div>
+    </div>
+{/if}
 
 <div class="min-h-screen bg-[#070b14] pt-6 pb-20 px-4" dir="rtl">
     <div class="max-w-2xl mx-auto">
@@ -441,9 +464,6 @@
                     <input type="hidden" name="images_json" value={JSON.stringify(images)} />
                 </div>
 
-                {#if clientError}
-                    <p class="text-red-400 text-sm text-center">{clientError}</p>
-                {/if}
                 {#if form?.error}
                     <p class="text-red-400 text-sm text-center">{form.error}</p>
                 {/if}
@@ -463,3 +483,14 @@
         </div>
     </div>
 </div>
+
+<style>
+    /* הבהוב אדום קצר על השדה החסר כדי להדגיש בדיוק מה צריך למלא */
+    :global(.field-error-flash) {
+        animation: field-error-flash 1.8s ease-out;
+    }
+    @keyframes field-error-flash {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); border-color: rgba(255, 255, 255, 0.1); }
+        15%      { box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.35); border-color: rgba(239, 68, 68, 0.9); }
+    }
+</style>
