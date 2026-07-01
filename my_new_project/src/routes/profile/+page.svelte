@@ -3531,6 +3531,23 @@
 							} else if (pending) {
 								locationNotice = { text: pending, already: true };
 							}
+							// אם המשתמש סימן פין לשכונה החדשה - תקן את המפה שלו *מיד* (מקומית),
+							// עוד לפני אישור האדמין, בדיוק כמו saveCityPin. אחרי אישור זה ממילא
+							// יגיע לכולם מ-approvedNeighborhoods.
+							if (
+								(sent || pending) &&
+								customLocation.trim() &&
+								city &&
+								typeof customLat === "number" &&
+								typeof customLng === "number" &&
+								Number.isFinite(customLat) &&
+								Number.isFinite(customLng)
+							) {
+								const pin = { name: customLocation.trim(), city, lat: customLat, lng: customLng };
+								registerDynamicNeighborhoods([pin]);
+								try { localStorage.setItem(MY_PIN_LS_KEY, JSON.stringify(pin)); } catch {}
+								neighborhoodState.select(pin.name, city);
+							}
 							clearDraft();
 							// עדכן snapshot כדי שעריכה הבאה תתחיל "נקי"
 							initialSnapshot.name              = name;
