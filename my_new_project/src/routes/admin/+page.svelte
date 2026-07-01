@@ -461,6 +461,7 @@
 					<div class="grid gap-2 md:gap-3">
 						{#each coordinatorUsers() as user (user.id)}
 							{@const coordList = ((user as any).coordinator_of as string[]) ?? []}
+							{@const stat = (data.coordinatorStats ?? {})[user.id] ?? { residents: 0, items: 0, itemsOnMap: 0 }}
 							<div class="bg-amber-500/5 rounded-2xl border border-amber-500/30 p-3 md:p-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 transition-all hover:border-amber-500/50">
 								<!-- אווטר + שם + עיר/שכונה (לחיץ - פרופיל מלא) - מקובצים בצד ימין -->
 								<a href="/admin/users/{user.id}" title="צפה בפרופיל המלא" class="user-link flex items-center gap-3 min-w-0 cursor-pointer">
@@ -493,8 +494,22 @@
 									{/each}
 								</div>
 
+								<!-- סיכום: כמה פריטים כבר על המפה בשכונתו וכמה תושבים רשומים -->
+								<div class="flex gap-2 flex-shrink-0 sm:ms-auto">
+									<div class="flex flex-col items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 min-w-[76px]"
+										title="פריטים שכבר מופיעים על המפה בשכונה ({stat.items} סה״כ פרסומים)">
+										<span class="text-lg font-black text-emerald-300 leading-none">📍 {stat.itemsOnMap}</span>
+										<span class="text-[11px] text-emerald-200/70 mt-0.5">על המפה</span>
+									</div>
+									<div class="flex flex-col items-center justify-center rounded-xl bg-blue-500/10 border border-blue-500/30 px-3 py-1.5 min-w-[76px]"
+										title="תושבים שנרשמו בשכונה שהרכז מנהל">
+										<span class="text-lg font-black text-blue-300 leading-none">👥 {stat.residents}</span>
+										<span class="text-[11px] text-blue-200/70 mt-0.5">רשומים</span>
+									</div>
+								</div>
+
 								<!-- פעולות מוסתרות תחת "עוד" כדי למנוע לחיצות בטעות -->
-								<div class="relative flex-shrink-0 sm:ms-auto">
+								<div class="relative flex-shrink-0">
 									<button
 										type="button"
 										onclick={() => openCoordMenuId = openCoordMenuId === user.id ? null : user.id}

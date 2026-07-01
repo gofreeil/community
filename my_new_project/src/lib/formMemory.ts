@@ -65,20 +65,29 @@ export function rememberFields(values: Record<string, string>): void {
     }
 }
 
+// שדות "שם איש קשר" - ממולאים אוטומטית רק בטפסים מסוימים (מסירה/טרמפ/פנויים/דרושים).
+// בשאר הטפסים אסור למלא את השם אוטומטית, כדי שרכז שמעלה נתונים עבור אחרים
+// לא יקבל את שמו שלו בכל טופס. הערכים עדיין *נשמרים* לעוגייה, רק לא ממולאים.
+export const NAME_FIELD_KEYS = new Set(['contact', 'nickname']);
+
 // ---- Svelte action: use:formMemory על אלמנט <form> ----
 // ממלא אוטומטית שדות אישיים ריקים מהעוגייה (לפי שם השדה), ושומר כל שינוי
 // בשדות האישיים בחזרה לעוגייה. עובד גם עם inputs רגילים וגם עם bind:value
 // (מפעיל אירוע input כדי לסנכרן את ה-state של Svelte).
-export function formMemory(node: HTMLElement) {
+// param.fillName=true מאפשר גם מילוי אוטומטי של שדות השם (contact/nickname).
+export function formMemory(node: HTMLElement, param?: { fillName?: boolean }) {
     if (!browser) return;
 
+    const fillName = param?.fillName ?? false;
     const mem = getFormMemory();
     const selector = 'input[name], textarea[name], select[name]';
 
     // מילוי ראשוני - רק שדות ריקים, כדי לא לדרוס ערכי פרופיל/עריכה קיימים.
     for (const el of Array.from(node.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(selector))) {
         const name = el.getAttribute('name') ?? '';
-        if (SHARED_FIELD_KEYS.has(name) && !el.value && mem[name]) {
+        if (!SHARED_FIELD_KEYS.has(name)) continue;
+        if (NAME_FIELD_KEYS.has(name) && !fillName) continue; // שם - לא ממלאים אוטומטית בטופס זה
+        if (!el.value && mem[name]) {
             el.value = mem[name];
             el.dispatchEvent(new Event('input', { bubbles: true }));
             el.dispatchEvent(new Event('change', { bubbles: true }));

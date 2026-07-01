@@ -127,7 +127,7 @@
                         submitting = false;
                     };
                 }}
-                use:formMemory
+                use:formMemory={{ fillName: true }}
                 class="rounded-2xl bg-[#0f172a] border border-white/10 p-6 space-y-5">
 
                 <!-- Section 1: העיקר -->

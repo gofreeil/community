@@ -19,6 +19,12 @@
     const { categoryId, config, userId, userProfile, editItem } = data;
     const isEditMode = !!editItem;
 
+    // מילוי אוטומטי של שם איש הקשר מותר רק בטפסים שבהם המפרסם הוא בדרך כלל
+    // האדם עצמו (מסירה/טרמפ/פנויים/דרושים). בשאר הקטגוריות רכז עלול להעלות
+    // נתונים עבור אחרים - ולכן אסור למלא את שמו שלו אוטומטית.
+    const NAME_AUTOFILL_CATEGORIES = new Set(['giveaway', 'rides', 'jobs', 'singles']);
+    const autofillName = NAME_AUTOFILL_CATEGORIES.has(categoryId);
+
     const DRAFT_KEY = `add_draft_${categoryId}`;
 
     // Helper: מחזיר HTML לאיקון - תמונה אם src, אמוגי אם לא
@@ -66,8 +72,8 @@
 
         if (type === 'toggle' && options) return defaultVal && options.includes(defaultVal) ? defaultVal : options[0];
         if (type === 'opening_hours') return serializeOpeningHours(emptyOpeningHours());
-        if (key === 'contact'  && userProfile?.nickname) return userProfile.nickname;
-        if (key === 'nickname' && userProfile?.nickname) return userProfile.nickname;
+        if (key === 'contact'  && autofillName && userProfile?.nickname) return userProfile.nickname;
+        if (key === 'nickname' && autofillName && userProfile?.nickname) return userProfile.nickname;
         if (key === 'phone'    && userProfile?.phone)    return userProfile.phone;
         if (key === 'address' && type === 'neighborhood_select') {
             return userProfile?.neighborhood || (userProfile?.city ? 'מרכז' : DEFAULT_NEIGHBORHOOD);
@@ -239,8 +245,8 @@
 
         // מלא פרטי פרופיל (גיבוי למקרה שה-SSR לא אותחל נכון)
         if (userProfile) {
-            if (userProfile.nickname    && !getFieldValue('contact'))  setFieldValue('contact',  userProfile.nickname);
-            if (userProfile.nickname    && !getFieldValue('nickname')) setFieldValue('nickname', userProfile.nickname);
+            if (autofillName && userProfile.nickname && !getFieldValue('contact'))  setFieldValue('contact',  userProfile.nickname);
+            if (autofillName && userProfile.nickname && !getFieldValue('nickname')) setFieldValue('nickname', userProfile.nickname);
             if (userProfile.phone       && !getFieldValue('phone'))    setFieldValue('phone',    userProfile.phone);
             if (userProfile.neighborhood && !getFieldValue('address')) {
                 const parts = [userProfile.neighborhood, userProfile.city].filter(Boolean);
@@ -253,6 +259,8 @@
         try {
             const mem = getFormMemory();
             for (const [k, v] of Object.entries(mem)) {
+                // שם איש קשר לא ממולא אוטומטית אלא בקטגוריות המותרות
+                if ((k === 'contact' || k === 'nickname') && !autofillName) continue;
                 if (v && k in formValues && !getFieldValue(k)) setFieldValue(k, v);
             }
         } catch {}

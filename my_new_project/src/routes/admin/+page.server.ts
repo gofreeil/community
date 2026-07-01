@@ -5,6 +5,50 @@ import { getAllUsers, banUser, unbanUser, setUserRole, setCoordinatorOf, getAllI
 import { DEFAULT_DISCOUNT_CODES, type DiscountCode } from '$lib/discountCodes';
 import { countPending } from '$lib/server/adsStore';
 
+// "אושיות (רחובות)" → { name: "אושיות", city: "רחובות" }
+function parseArea(entry: string): { name: string; city: string } {
+    const m = entry.match(/^(.*?)\s*\(([^)]*)\)\s*$/);
+    return m ? { name: m[1].trim(), city: m[2].trim() } : { name: entry.trim(), city: '' };
+}
+const stripCityName = (s: string) => s.replace(/\s*\([^)]*\)\s*$/, '').trim();
+
+// לכל רכז: מספר התושבים הרשומים בשכונותיו ומספר הפריטים שכבר על המפה בהן.
+// התאמה לפי שכונה + עיר (זהה ל-/api/coordinators). מפתח = מזהה המשתמש.
+function buildCoordinatorStats(
+    users: Awaited<ReturnType<typeof getAllUsers>>,
+    items: Awaited<ReturnType<typeof getAllItems>>,
+): Record<string, { residents: number; items: number; itemsOnMap: number }> {
+    const stats: Record<string, { residents: number; items: number; itemsOnMap: number }> = {};
+
+    for (const u of users) {
+        const coordOf = (u as any).coordinator_of as string[] | null | undefined;
+        if (!coordOf || coordOf.length === 0) continue;
+        const areas = coordOf.map(parseArea);
+        const matchesArea = (neighborhood?: string | null, city?: string | null) => {
+            if (!neighborhood) return false;
+            const n = stripCityName(neighborhood);
+            return areas.some(a => a.name === n && (a.city ? city === a.city : true));
+        };
+
+        let residents = 0;
+        for (const r of users) {
+            if (matchesArea(r.neighborhood, r.city)) residents++;
+        }
+
+        let itemCount = 0;
+        let itemsOnMap = 0;
+        for (const it of items) {
+            if (!matchesArea(it.neighborhood, it.city)) continue;
+            itemCount++;
+            if (it.lat != null && it.lng != null) itemsOnMap++;
+        }
+
+        stats[u.id] = { residents, items: itemCount, itemsOnMap };
+    }
+
+    return stats;
+}
+
 export const load: PageServerLoad = async (event) => {
     const session = await event.locals.auth();
 
@@ -65,6 +109,10 @@ export const load: PageServerLoad = async (event) => {
         };
     });
 
+    // ---- סטטיסטיקת רכזים: לכל רכז כמה פריטים כבר יש על המפה בשכונתו וכמה תושבים רשומים ----
+    // התאמה לפי שכונה + עיר, בדיוק כמו /api/coordinators. פריט "על המפה" = בעל קואורדינטות (lat/lng).
+    const coordinatorStats = buildCoordinatorStats(users, items);
+
     let pendingAdsCount = 0;
     try { pendingAdsCount = await countPending(); } catch { /* שקט */ }
 
@@ -86,6 +134,7 @@ export const load: PageServerLoad = async (event) => {
         currentUserId: session?.user?.id ?? '',
         pendingAdsCount,
         pendingSinglesCount,
+        coordinatorStats,
         discountCodes,
         twoFAConfigured: session?.user?.id ? !!(await getUserTotpSecret(session.user.id)) : false,
     };

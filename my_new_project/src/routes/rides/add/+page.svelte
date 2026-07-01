@@ -25,7 +25,7 @@
                 <a href="/login?redirect=/rides/add" class="inline-block bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-bold">התחברות</a>
             </div>
         {:else}
-            <form method="POST" use:formMemory onsubmit={() => (submitting = true)} class="rounded-2xl bg-[#0f172a] border border-white/10 p-6 space-y-4">
+            <form method="POST" use:formMemory={{ fillName: true }} onsubmit={() => (submitting = true)} class="rounded-2xl bg-[#0f172a] border border-white/10 p-6 space-y-4">
                 <!-- Direction -->
                 <div class="grid grid-cols-2 gap-2">
                     <button
