@@ -113,6 +113,22 @@ export const load: PageServerLoad = async (event) => {
     // התאמה לפי שכונה + עיר, בדיוק כמו /api/coordinators. פריט "על המפה" = בעל קואורדינטות (lat/lng).
     const coordinatorStats = buildCoordinatorStats(users, items);
 
+    // ---- סיכום ללוח הבקרה (באנר עליון) ----
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+    const inThisMonth = (iso?: string | null) => {
+        if (!iso) return false;
+        const t = new Date(iso).getTime();
+        return !isNaN(t) && t >= monthStart;
+    };
+    const dashboard = {
+        totalUsers:        users.length,
+        totalItems:        items.length,
+        totalCoordinators: users.filter(u => ((u as any).coordinator_of?.length ?? 0) > 0).length,
+        newUsersThisMonth: users.filter(u => inThisMonth((u as any).created_at)).length,
+        newItemsThisMonth: items.filter(i => inThisMonth((i as any).created_at)).length,
+    };
+
     let pendingAdsCount = 0;
     try { pendingAdsCount = await countPending(); } catch { /* שקט */ }
 
@@ -135,6 +151,7 @@ export const load: PageServerLoad = async (event) => {
         pendingAdsCount,
         pendingSinglesCount,
         coordinatorStats,
+        dashboard,
         discountCodes,
         twoFAConfigured: session?.user?.id ? !!(await getUserTotpSecret(session.user.id)) : false,
     };

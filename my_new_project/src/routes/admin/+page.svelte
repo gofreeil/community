@@ -8,6 +8,9 @@
 
 	let activeTab = $state<'users' | 'items' | 'discounts'>('users');
 
+	// סיכום ללוח הבקרה (באנר עליון)
+	const dash = $derived(data.dashboard ?? { totalUsers: 0, totalItems: 0, totalCoordinators: 0, newUsersThisMonth: 0, newItemsThisMonth: 0 });
+
 	// פורמט תאריך+שעה בעברית - כדי שהאדמין ידע איזו בקשה הגיעה אחרונה
 	function fmtDateTime(iso: string): string {
 		if (!iso) return '';
@@ -212,6 +215,49 @@
 				>
 					חזרה לאתר
 				</button>
+			</div>
+		</div>
+
+		<!-- באנר לוח בקרה - סיכום מהיר של הקהילה -->
+		<div class="mb-8 grid grid-cols-2 lg:grid-cols-4 gap-3">
+			<!-- משתמשים -->
+			<div class="relative overflow-hidden rounded-2xl border border-blue-500/25 bg-gradient-to-br from-blue-600/15 to-blue-500/5 p-4">
+				<div class="flex items-center gap-2 text-blue-200/80 text-sm font-bold mb-1">
+					<span class="text-lg">👥</span> משתמשים
+				</div>
+				<div class="text-4xl font-black text-white leading-none">{dash.totalUsers}</div>
+				{#if dash.newUsersThisMonth > 0}
+					<div class="text-xs text-blue-300/80 mt-1.5 font-bold">+{dash.newUsersThisMonth} החודש</div>
+				{/if}
+			</div>
+
+			<!-- פרסומים בקהילה -->
+			<div class="relative overflow-hidden rounded-2xl border border-purple-500/25 bg-gradient-to-br from-purple-600/15 to-purple-500/5 p-4">
+				<div class="flex items-center gap-2 text-purple-200/80 text-sm font-bold mb-1">
+					<span class="text-lg">📋</span> פרסומים בקהילה
+				</div>
+				<div class="text-4xl font-black text-white leading-none">{dash.totalItems}</div>
+				{#if dash.newItemsThisMonth > 0}
+					<div class="text-xs text-purple-300/80 mt-1.5 font-bold">+{dash.newItemsThisMonth} החודש</div>
+				{/if}
+			</div>
+
+			<!-- רכזים -->
+			<div class="relative overflow-hidden rounded-2xl border border-amber-500/25 bg-gradient-to-br from-amber-600/15 to-amber-500/5 p-4">
+				<div class="flex items-center gap-2 text-amber-200/80 text-sm font-bold mb-1">
+					<span class="text-lg">🏘️</span> רכזי שכונות
+				</div>
+				<div class="text-4xl font-black text-white leading-none">{dash.totalCoordinators}</div>
+				<div class="text-xs text-amber-300/70 mt-1.5 font-bold">מנהלי תוכן פעילים</div>
+			</div>
+
+			<!-- הצטרפו החודש -->
+			<div class="relative overflow-hidden rounded-2xl border border-emerald-500/25 bg-gradient-to-br from-emerald-600/15 to-emerald-500/5 p-4">
+				<div class="flex items-center gap-2 text-emerald-200/80 text-sm font-bold mb-1">
+					<span class="text-lg">🆕</span> הצטרפו החודש
+				</div>
+				<div class="text-4xl font-black text-white leading-none">{dash.newUsersThisMonth}</div>
+				<div class="text-xs text-emerald-300/70 mt-1.5 font-bold">משתמשים חדשים</div>
 			</div>
 		</div>
 
