@@ -4,6 +4,7 @@
     import { goto } from '$app/navigation';
     import { LS_KEY, DEFAULT_NEIGHBORHOOD, citiesAndNeighborhoods } from '$lib/neighborhoodsData';
     import { getFormMemory, rememberFields } from '$lib/formMemory';
+    import NeighborhoodPicker from '$lib/components/NeighborhoodPicker.svelte';
     import {
         emptyOpeningHours,
         parseOpeningHours,
@@ -33,6 +34,10 @@
         userProfile?.neighborhood || (userProfile?.city ? 'מרכז' : DEFAULT_NEIGHBORHOOD),
     );
     let city         = $state(userProfile?.city         || 'ירושלים');
+
+    // ---- פין מיקום על המפה (שדות מסוג map_pin) ----
+    let pinLat = $state<number | null>(editItem?.lat ?? null);
+    let pinLng = $state<number | null>(editItem?.lng ?? null);
 
     // ---- ערכי ברירת מחדל לשדות מפרופיל המשתמש ----
     // במצב עריכה (?edit=<id>) - מועדף ערך מהפריט הקיים על פני userProfile.
@@ -361,9 +366,13 @@
         const topLevel: Record<string, string> = {};
         const extra: Record<string, unknown> = {};
         const imageKeys = new Set(config.fields.filter(f => f.type === 'images').map(f => f.key));
+        // שדות map_pin אינם ערך טקסט - הם נשמרים כ-lat/lng ברמה העליונה, לא ב-extra_fields
+        const mapPinKeys = new Set(config.fields.filter(f => f.type === 'map_pin').map(f => f.key));
 
         for (const [k, v] of Object.entries(formValues)) {
-            if (topLevelKeys.includes(k)) {
+            if (mapPinKeys.has(k)) {
+                continue;
+            } else if (topLevelKeys.includes(k)) {
                 topLevel[k] = v;
             } else if (imageKeys.has(k)) {
                 try { extra[k] = JSON.parse(v || '[]'); } catch { extra[k] = []; }
@@ -399,6 +408,7 @@
                     category:     categoryId,
                     neighborhood,
                     city,
+                    ...(pinLat != null && pinLng != null ? { lat: pinLat, lng: pinLng } : {}),
                     ...topLevel,
                     extra_fields: extra,
                 }),
@@ -808,6 +818,9 @@
                                 </optgroup>
                             {/each}
                         </select>
+
+                    {:else if field.type === 'map_pin'}
+                        <NeighborhoodPicker {city} bind:lat={pinLat} bind:lng={pinLng} />
 
                     {:else}
                         <input

@@ -49,9 +49,11 @@ export const load: PageServerLoad = async (event) => {
         address: string;
         neighborhood: string;
         city: string;
+        lat: number | null;
+        lng: number | null;
         extra_fields: Record<string, unknown>;
     };
-    const toEditItem = (dbItem: { id: string; label?: string | null; description?: string | null; phone?: string | null; contact?: string | null; address?: string | null; neighborhood?: string | null; city?: string | null; extra_fields?: unknown }): EditItem => ({
+    const toEditItem = (dbItem: { id: string; label?: string | null; description?: string | null; phone?: string | null; contact?: string | null; address?: string | null; neighborhood?: string | null; city?: string | null; lat?: number | null; lng?: number | null; extra_fields?: unknown }): EditItem => ({
         id: dbItem.id,
         label: dbItem.label ?? '',
         description: dbItem.description ?? '',
@@ -60,6 +62,8 @@ export const load: PageServerLoad = async (event) => {
         address: dbItem.address ?? '',
         neighborhood: dbItem.neighborhood ?? '',
         city: dbItem.city ?? '',
+        lat: dbItem.lat ?? null,
+        lng: dbItem.lng ?? null,
         extra_fields: typeof dbItem.extra_fields === 'string'
             ? (() => { try { return JSON.parse(dbItem.extra_fields as string); } catch { return {}; } })()
             : ((dbItem.extra_fields as Record<string, unknown>) ?? {}),

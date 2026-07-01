@@ -1,7 +1,7 @@
 export interface FieldDef {
     key: string;
     label: string;
-    type: 'text' | 'tel' | 'textarea' | 'select' | 'toggle' | 'number' | 'time' | 'date' | 'email' | 'availability_grid' | 'opening_hours' | 'multi_select' | 'neighborhood_select' | 'images';
+    type: 'text' | 'tel' | 'textarea' | 'select' | 'toggle' | 'number' | 'time' | 'date' | 'email' | 'availability_grid' | 'opening_hours' | 'multi_select' | 'neighborhood_select' | 'images' | 'map_pin';
     required: boolean;
     placeholder?: string;
     options?: string[];
@@ -303,7 +303,8 @@ export const categoryConfig: Record<string, CategoryConfig> = {
         priceRow: null,
         fields: [
             { key: 'label',       label: 'שם השירות',               type: 'text',     required: true,  placeholder: 'בנק, עירייה, דואר, בית ספר...' },
-            { key: 'address',     label: 'כתובת',                   type: 'text',     required: true,  placeholder: 'מיקום' },
+            { key: 'address',     label: 'כתובת מדויקת',            type: 'text',     required: true,  placeholder: 'רחוב, מספר בית ועיר', hint: 'ציינו רחוב ומספר בית מדויקים' },
+            { key: 'location',    label: 'סימון על המפה',           type: 'map_pin',  required: false },
             { key: 'hours',       label: 'שעות פתיחה',              type: 'opening_hours', required: false },
             { key: 'price',       label: 'מחיר',                    type: 'text',     required: false, placeholder: 'חינם / מחיר' },
             { key: 'description', label: 'תיאור',                   type: 'textarea', required: true,  placeholder: 'תאר את השירות...' },
