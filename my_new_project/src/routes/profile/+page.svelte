@@ -4583,7 +4583,7 @@
 		<button
 			type="button"
 			onclick={() => typeof window !== 'undefined' && window.scrollTo({ top: 0, behavior: 'smooth' })}
-			class="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white px-6 py-3 rounded-lg font-bold transition-all shadow-lg hover:shadow-purple-500/30 cursor-pointer"
+			class="inline-flex items-center gap-2 bg-gradient-to-l from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold text-sm px-6 py-2.5 rounded-full transition-all shadow-lg cursor-pointer"
 		>
 			↑ חזור לראש העמוד
 		</button>
