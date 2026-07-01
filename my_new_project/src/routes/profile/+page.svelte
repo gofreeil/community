@@ -530,6 +530,8 @@
 	}
 	let saveSuccess = $state(_photoDone); // הצג הצלחה אם חזרנו מהעתקת תמונה
 	if (_photoDone) setTimeout(() => (saveSuccess = false), 3000);
+	// אישור מתמשך לבקשת הוספת שכונה/מיקום - לא נעלם אוטומטית, כדי שהמשתמש לא ינחש שזה נכשל וישלח שוב
+	let locationNotice = $state<{ text: string; already: boolean } | null>(null);
 	// ברירת מחדל לתמונה: avatar_url מה-DB, ואם אין - תמונת הפרופיל מגוגל (oauth_image)
 	let avatarPreview = $state<string | null>(
 		_ud?.avatar_url || (data as { oauth_image?: string | null }).oauth_image || null,
@@ -3476,6 +3478,31 @@
 			</div>
 		</div>
 
+		<!-- אישור מתמשך לבקשת הוספת שכונה/מיקום - נשאר גלוי עד שהמשתמש סוגר, כדי שלא ינחש שנכשל וישלח שוב -->
+		{#if locationNotice}
+			<div class="relative bg-emerald-500/10 border border-emerald-500/40 rounded-2xl p-4 mb-4 flex items-start gap-3">
+				<span class="text-xl leading-none flex-shrink-0">📍</span>
+				<div class="flex-1 text-sm">
+					<p class="text-emerald-300 font-black mb-1">
+						{locationNotice.already
+							? "כבר קיבלנו את הבקשה שלך — היא בטיפול"
+							: "בקשתך נקלטה בהצלחה!"}
+					</p>
+					<p class="text-emerald-100/90 leading-relaxed">
+						{locationNotice.already
+							? `הבקשה להוסיף את "${locationNotice.text}" כבר ממתינה לאישור המנהל. אין צורך לשלוח שוב — נעדכן אותך בתיבת ההודעות ברגע שהשכונה תתווסף.`
+							: `הבקשה להוסיף את "${locationNotice.text}" נשלחה למנהל וממתינה לאישור. שלחנו לך אישור לתיבת ההודעות, ונעדכן אותך שם ברגע שהשכונה תתווסף. אין צורך לשלוח שוב 🙏`}
+					</p>
+				</div>
+				<button
+					type="button"
+					onclick={() => (locationNotice = null)}
+					class="flex-shrink-0 text-emerald-300/70 hover:text-emerald-200 text-lg leading-none"
+					aria-label="סגור"
+				>×</button>
+			</div>
+		{/if}
+
 		{#if isEditing}
 			<form
 				method="POST"
@@ -3486,6 +3513,14 @@
 						if (result.type === "success") {
 							isEditing = false;
 							saveSuccess = true;
+							// בקשת מיקום/שכונה חדשה - הצג אישור מתמשך ברור (לא הטוסט הגנרי של 3 שניות)
+							const sent    = (result.data as any)?.locationRequestSent;
+							const pending = (result.data as any)?.locationAlreadyPending;
+							if (sent) {
+								locationNotice = { text: sent, already: false };
+							} else if (pending) {
+								locationNotice = { text: pending, already: true };
+							}
 							clearDraft();
 							// עדכן snapshot כדי שעריכה הבאה תתחיל "נקי"
 							initialSnapshot.name              = name;

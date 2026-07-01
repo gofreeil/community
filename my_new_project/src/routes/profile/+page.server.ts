@@ -285,6 +285,30 @@ export const actions: Actions = {
                 const requesterEmail = email || session.user.email || '';
                 const requesterName  = name  || session.user.id;
 
+                // נרמול לזיהוי כפילויות - מסיר "שכונת"/"שכונה" מובילה ורווחים כפולים
+                // כך ש"שכונת פארק הנחל" ו-"פארק הנחל" נחשבים לאותה בקשה
+                const normalizeLoc = (s: string) =>
+                    s.trim().replace(/\s+/g, ' ').replace(/^(שכונת|שכונה)\s+/, '').toLowerCase();
+                const normalizedNew = normalizeLoc(customLocation);
+
+                // כבר קיימת בקשת מיקום פתוחה מאותו משתמש לאותו מיקום? → אל תיצור כפילות ואל תציף את האדמין
+                let alreadyPending = false;
+                try {
+                    const myItems = await getItemsByUserId(session.user.id);
+                    alreadyPending = (myItems ?? []).some(it =>
+                        it.category === 'location_request' &&
+                        (it.status ?? 'pending') !== 'handled' &&
+                        normalizeLoc((it.label ?? '').replace(/^בקשה להוספת מיקום:\s*/, '')) === normalizedNew
+                    );
+                } catch (e) {
+                    console.warn('[profile] location_request dedupe check failed:', e);
+                }
+
+                if (alreadyPending) {
+                    invalidateCachedUser(session.user.id);
+                    return { success: true, locationAlreadyPending: customLocation };
+                }
+
                 // אם סומן פין מדויק על המפה - צור רשומת שכונה ממתינה (status=pending)
                 // לאחר אישור באדמין היא תופיע בבוררים ובמפה לכל המשתמשים, במיקום שסומן.
                 if (hasPin) {
@@ -348,6 +372,31 @@ export const actions: Actions = {
                 } catch (e) {
                     console.warn('[profile] notify super_admins failed:', e);
                 }
+
+                // הודעת אישור לצרכן עצמו - מופיעה מיד ב-/messages ומהווה הוכחה שהבקשה נקלטה.
+                // בלי זה המשתמש לא מקבל שום סימן שהבקשה עברה, מניח שנכשל, ושולח שוב ושוב.
+                try {
+                    await createItem({
+                        category:    'message',
+                        label:       `📍 בקשתך להוספת "${customLocation}" התקבלה`,
+                        description:
+                            `קיבלנו את בקשתך להוסיף את "${customLocation}"${city ? ` (${city})` : ''} לרשימת השכונות.\n` +
+                            `הבקשה ממתינה לאישור מנהל — נעדכן אותך כאן ברגע שהשכונה תתווסף. אין צורך לשלוח שוב 🙏`,
+                        icon:        '📍',
+                        color:       'green',
+                        user_id:     session.user.id,
+                        extra_fields: {
+                            type:               'location_request_ack',
+                            requested_location: customLocation,
+                            requested_at:       new Date().toISOString(),
+                        },
+                    });
+                } catch (e) {
+                    console.warn('[profile] user ack message failed:', e);
+                }
+
+                invalidateCachedUser(session.user.id);
+                return { success: true, locationRequestSent: customLocation };
             }
 
             invalidateCachedUser(session.user.id);
