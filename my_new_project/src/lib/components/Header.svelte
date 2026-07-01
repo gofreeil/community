@@ -346,8 +346,8 @@
                                     <!-- מעגל מילוי פרופיל - זהה ללוח הבקרה -->
                                     <svg style="width:46px;height:46px" class="absolute inset-0 m-auto -rotate-90 pointer-events-none"
                                          viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
-                                        <circle cx="30" cy="30" r="27" stroke="rgba(255,255,255,0.08)" stroke-width="4" fill="none" />
-                                        <circle cx="30" cy="30" r="27" stroke={headerRingColor} stroke-width="4" fill="none"
+                                        <circle cx="30" cy="30" r="27" stroke="rgba(255,255,255,0.08)" stroke-width="2.5" fill="none" />
+                                        <circle cx="30" cy="30" r="27" stroke={headerRingColor} stroke-width="2.5" fill="none"
                                                 stroke-linecap="round" stroke-dasharray={headerRingC}
                                                 stroke-dashoffset={headerRingC * (1 - Math.min(headerCompletion, 100) / 100)}
                                                 style="filter: drop-shadow(0 0 3px {headerRingColor}88);" />
@@ -556,8 +556,8 @@
                                     <!-- מעגל מילוי פרופיל - זהה ללוח הבקרה -->
                                     <svg style="width:68px;height:68px" class="absolute inset-0 m-auto -rotate-90 pointer-events-none"
                                          viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
-                                        <circle cx="30" cy="30" r="27" stroke="rgba(255,255,255,0.08)" stroke-width="3" fill="none" />
-                                        <circle cx="30" cy="30" r="27" stroke={headerRingColor} stroke-width="3" fill="none"
+                                        <circle cx="30" cy="30" r="27" stroke="rgba(255,255,255,0.08)" stroke-width="2" fill="none" />
+                                        <circle cx="30" cy="30" r="27" stroke={headerRingColor} stroke-width="2" fill="none"
                                                 stroke-linecap="round" stroke-dasharray={headerRingC}
                                                 stroke-dashoffset={headerRingC * (1 - Math.min(headerCompletion, 100) / 100)}
                                                 style="filter: drop-shadow(0 0 4px {headerRingColor}88);" />
