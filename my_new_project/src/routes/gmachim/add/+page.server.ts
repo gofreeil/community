@@ -34,7 +34,14 @@ export const actions: Actions = {
         const headline     = fd.get('headline')?.toString().trim()     ?? '';
         const summary      = fd.get('summary')?.toString().trim()      ?? '';
         const description  = fd.get('description')?.toString().trim()  ?? '';
-        const address      = fd.get('address')?.toString().trim()      ?? '';
+        // Address arrives as separate parts from the form (street / building / floor / apt),
+        // not as a single "address" field. Build the display address from them.
+        const street       = fd.get('street')?.toString().trim()       ?? '';
+        const buildingNum  = fd.get('buildingNum')?.toString().trim()  ?? '';
+        const floor        = fd.get('floor')?.toString().trim()        ?? '';
+        const apartment    = fd.get('apartment')?.toString().trim()    ?? '';
+        const arrivalNotes = fd.get('arrivalNotes')?.toString().trim() ?? '';
+        const address      = [street, buildingNum].filter(Boolean).join(' ');
         const hours        = fd.get('hours')?.toString().trim()        ?? '';
         const contact      = fd.get('contact')?.toString().trim()      ?? '';
         const phone        = fd.get('phone')?.toString().trim()        ?? '';
@@ -60,7 +67,8 @@ export const actions: Actions = {
 
         if (!title)        return fail(400, { error: 'יש למלא שם הגמ"ח' });
         if (!phone)        return fail(400, { error: 'יש למלא טלפון ליצירת קשר' });
-        if (!address)      return fail(400, { error: 'יש למלא כתובת מדויקת' });
+        if (!street)       return fail(400, { error: 'יש למלא רחוב' });
+        if (!buildingNum)  return fail(400, { error: 'יש למלא מספר בניין' });
         if (!city)         return fail(400, { error: 'יש לבחור עיר (חובה לאתר הארצי)' });
         if (!neighborhood) return fail(400, { error: 'יש לבחור שכונה (חובה לאתר הארצי)' });
 
@@ -79,6 +87,11 @@ export const actions: Actions = {
                 extra_fields: {
                     hours,
                     gmach_type: gmachType,
+                    ...(street       ? { street }       : {}),
+                    ...(buildingNum  ? { building_num: buildingNum } : {}),
+                    ...(floor        ? { floor }        : {}),
+                    ...(apartment    ? { apartment }    : {}),
+                    ...(arrivalNotes ? { arrival_notes: arrivalNotes } : {}),
                     ...(headline ? { headline } : {}),
                     ...(summary  ? { summary }  : {}),
                     ...(logoBase64 ? { logo: logoBase64 } : {}),
