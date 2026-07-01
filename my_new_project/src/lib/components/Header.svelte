@@ -103,6 +103,7 @@
     );
 
     let headerRingColor = $derived(
+        headerCompletion >= 100 ? '#fbbf24' :   // זהב — פרופיל מלא 100%
         headerCompletion < 40 ? '#ef4444' :
         headerCompletion < 70 ? '#eab308' : '#22c55e'
     );

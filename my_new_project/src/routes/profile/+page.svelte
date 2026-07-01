@@ -1158,11 +1158,13 @@
 	);
 
 	let ringColor = $derived(
-		profileCompletion < 40
-			? "#ef4444"
-			: profileCompletion < 70
-				? "#eab308"
-				: "#22c55e",
+		profileCompletion >= 100
+			? "#fbbf24" // זהב — פרופיל מלא 100%
+			: profileCompletion < 40
+				? "#ef4444"
+				: profileCompletion < 70
+					? "#eab308"
+					: "#22c55e",
 	);
 
 	// דרגה 1 = צופה (נרשם בלבד)
