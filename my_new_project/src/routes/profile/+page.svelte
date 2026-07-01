@@ -1407,8 +1407,19 @@
 		setTimeout(() => {
 			const el = document.getElementById(anchor);
 			if (!el) return;
-			const top = el.getBoundingClientRect().top + window.scrollY - 80;
+			// אופסט גדול יותר כדי שההדר הדביק לא יסתיר את כותרת המקטע + מעט רווח מעל
+			const top = el.getBoundingClientRect().top + window.scrollY - 130;
 			slowScrollTo(top);
+			// הבהוב קצר על המקטע שהגענו אליו כדי לסמן למשתמש לאן נחת
+			setTimeout(() => {
+				el.classList.remove("section-flash");
+				void (el as HTMLElement).offsetWidth;
+				el.classList.add("section-flash");
+				setTimeout(
+					() => el.classList.remove("section-flash"),
+					1500,
+				);
+			}, 450);
 		}, 50);
 	}
 	// מיפוי שדות פרופיל ל-ID של האלמנט המתאים בטופס העריכה
@@ -4808,5 +4819,24 @@
 		animation: fieldFlash 1.2s ease-out;
 		border-radius: 14px;
 		scroll-margin-top: 100px;
+	}
+
+	/* הבהוב קצר על מקטע שלם שגללנו אליו דרך קיצור דרך */
+	@keyframes sectionFlash {
+		0% {
+			box-shadow: 0 0 0 0 rgba(139, 92, 246, 0);
+		}
+		30% {
+			box-shadow:
+				0 0 0 3px rgba(139, 92, 246, 0.55),
+				0 0 34px 8px rgba(139, 92, 246, 0.4);
+		}
+		100% {
+			box-shadow: 0 0 0 0 rgba(139, 92, 246, 0);
+		}
+	}
+	:global(.section-flash) {
+		animation: sectionFlash 1.5s ease-out;
+		scroll-margin-top: 130px;
 	}
 </style>
