@@ -38,6 +38,8 @@
     // ---- פין מיקום על המפה (שדות מסוג map_pin) ----
     let pinLat = $state<number | null>(editItem?.lat ?? null);
     let pinLng = $state<number | null>(editItem?.lng ?? null);
+    // המפה נטענת רק אחרי שהמשתמש בוחר לסמן (או אם כבר יש פין שמור מעריכה)
+    let showMap = $state(editItem?.lat != null && editItem?.lng != null);
 
     // ---- ערכי ברירת מחדל לשדות מפרופיל המשתמש ----
     // במצב עריכה (?edit=<id>) - מועדף ערך מהפריט הקיים על פני userProfile.
@@ -820,7 +822,24 @@
                         </select>
 
                     {:else if field.type === 'map_pin'}
-                        <NeighborhoodPicker {city} bind:lat={pinLat} bind:lng={pinLng} />
+                        {#if !showMap}
+                            <button
+                                type="button"
+                                onclick={() => (showMap = true)}
+                                class="w-full flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10 text-gray-200 text-sm font-bold py-3 transition-all"
+                            >
+                                📍 סמן מיקום על המפה
+                            </button>
+                        {:else}
+                            <NeighborhoodPicker {city} bind:lat={pinLat} bind:lng={pinLng} />
+                            <button
+                                type="button"
+                                onclick={() => { showMap = false; pinLat = null; pinLng = null; }}
+                                class="mt-2 text-xs text-gray-400 hover:text-gray-200 underline underline-offset-2 transition-colors"
+                            >
+                                הסתר מפה והסר סימון
+                            </button>
+                        {/if}
 
                     {:else}
                         <input
