@@ -15,16 +15,57 @@
             <p class="text-gray-400">ניהול תוכן עבור: <strong class="text-white">{data.neighborhoods.join(', ') || '-'}</strong></p>
         </div>
 
-        <!-- ספירת תושבים רשומים בשכונה -->
-        <div class="mb-6 rounded-2xl bg-gradient-to-l from-cyan-500/10 to-blue-500/10 border border-cyan-500/30 p-5 flex items-center justify-between gap-4">
-            <div class="flex items-center gap-4">
-                <div class="text-4xl">👥</div>
-                <div>
-                    <h3 class="text-white text-lg font-black">תושבים רשומים בשכונה</h3>
-                    <p class="text-gray-400 text-sm">סך התושבים שנרשמו תחת {data.neighborhoods.length > 1 ? 'השכונות שלך' : 'השכונה שלך'}</p>
+        <!-- לוח בקרה - סיכום השכונה של הרכז בלבד -->
+        <div class="mb-6">
+            <div class="flex items-center gap-2 mb-3">
+                <span class="text-xl">📊</span>
+                <h2 class="text-white text-lg font-black">לוח בקרה — {data.neighborhoods.join(', ') || 'השכונה שלי'}</h2>
+            </div>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <!-- תושבים רשומים -->
+                <div class="rounded-2xl border border-cyan-500/25 bg-gradient-to-br from-cyan-600/15 to-blue-500/5 p-4">
+                    <div class="flex items-center gap-2 text-cyan-200/80 text-sm font-bold mb-1">
+                        <span class="text-lg">👥</span> תושבים רשומים
+                    </div>
+                    <div class="text-4xl font-black text-white leading-none tabular-nums">{data.residentsCount}</div>
+                    {#if data.newResidentsThisMonth > 0}
+                        <div class="text-xs text-cyan-300/80 mt-1.5 font-bold">+{data.newResidentsThisMonth} החודש</div>
+                    {:else}
+                        <div class="text-xs text-cyan-300/60 mt-1.5 font-bold">בשכונה שלך</div>
+                    {/if}
+                </div>
+
+                <!-- פריטים על המפה -->
+                <div class="rounded-2xl border border-emerald-500/25 bg-gradient-to-br from-emerald-600/15 to-emerald-500/5 p-4">
+                    <div class="flex items-center gap-2 text-emerald-200/80 text-sm font-bold mb-1">
+                        <span class="text-lg">📍</span> על המפה
+                    </div>
+                    <div class="text-4xl font-black text-white leading-none tabular-nums">{data.itemsOnMap}</div>
+                    <div class="text-xs text-emerald-300/70 mt-1.5 font-bold">פריטים מוצגים במפה</div>
+                </div>
+
+                <!-- סך פרסומים בשכונה -->
+                <div class="rounded-2xl border border-purple-500/25 bg-gradient-to-br from-purple-600/15 to-purple-500/5 p-4">
+                    <div class="flex items-center gap-2 text-purple-200/80 text-sm font-bold mb-1">
+                        <span class="text-lg">📋</span> פרסומים בשכונה
+                    </div>
+                    <div class="text-4xl font-black text-white leading-none tabular-nums">{data.itemsCount}</div>
+                    {#if data.newItemsThisMonth > 0}
+                        <div class="text-xs text-purple-300/80 mt-1.5 font-bold">+{data.newItemsThisMonth} החודש</div>
+                    {:else}
+                        <div class="text-xs text-purple-300/60 mt-1.5 font-bold">סך הכל</div>
+                    {/if}
+                </div>
+
+                <!-- אירועים ממתינים -->
+                <div class="rounded-2xl border border-amber-500/25 bg-gradient-to-br from-amber-600/15 to-amber-500/5 p-4">
+                    <div class="flex items-center gap-2 text-amber-200/80 text-sm font-bold mb-1">
+                        <span class="text-lg">🗓️</span> אירועים ממתינים
+                    </div>
+                    <div class="text-4xl font-black text-white leading-none tabular-nums">{data.pendingEventsCount}</div>
+                    <div class="text-xs text-amber-300/70 mt-1.5 font-bold">לאישורך</div>
                 </div>
             </div>
-            <span class="text-3xl md:text-4xl font-black text-cyan-300 tabular-nums flex-shrink-0">{data.residentsCount}</span>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
