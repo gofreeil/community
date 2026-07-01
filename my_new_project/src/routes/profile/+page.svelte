@@ -116,24 +116,25 @@
 		likedItems.filter((x) => x.type === "babysitter"),
 	);
 	let mobileTab = $state<
-		"main" | "profile" | "messages" | "items" | "levels"
+		"main" | "profile" | "messages" | "items" | "levels" | "feedback"
 	>("main");
 
 	// בחירת לשונית בנייד - פותחת אוטומטית את המקטעים השייכים אליה
 	// כדי שהמשתמש לא יצטרך ללחוץ לחיצה נוספת כדי לפתוח
 	function selectTab(
-		id: "main" | "profile" | "messages" | "items" | "levels",
+		id: "main" | "profile" | "messages" | "items" | "levels" | "feedback",
 	) {
 		mobileTab = id;
 		if (id === "messages") {
 			showMessages = true;
-			showFeedback = true;
 		} else if (id === "items") {
 			showMyInfo = true;
 		} else if (id === "levels") {
 			showLevels = true;
 		} else if (id === "profile") {
 			isEditing = true;
+		} else if (id === "feedback") {
+			showFeedback = true;
 		}
 	}
 
@@ -1385,7 +1386,7 @@
 	// קיצורי דרך בדסקטופ - גלילה למקטע המתאים + פתיחת התוכן שלו
 	// (מקביל ל-selectTab בנייד, אך בדסקטופ הכל גלוי ולכן רק גוללים)
 	function gotoSection(
-		id: "main" | "messages" | "items" | "levels" | "profile",
+		id: "main" | "messages" | "items" | "levels" | "profile" | "feedback",
 	) {
 		if (id === "main") {
 			scrollToTop();
@@ -1393,13 +1394,14 @@
 		}
 		if (id === "messages") {
 			showMessages = true;
-			showFeedback = true;
 		} else if (id === "items") {
 			showMyInfo = true;
 		} else if (id === "levels") {
 			showLevels = true;
 		} else if (id === "profile") {
 			isEditing = true;
+		} else if (id === "feedback") {
+			showFeedback = true;
 		}
 		const anchor = id === "profile" ? "sec-edit-profile" : `sec-${id}`;
 		setTimeout(() => {
@@ -1750,7 +1752,7 @@
 
 	<!-- ===== לשוניות ניווט - נייד בלבד ===== -->
 	<div class="md:hidden flex gap-1 mb-3">
-		{#each [{ id: "main", icon: "🎛️", label: "לוח הבקרה" }, { id: "profile", icon: "👤", label: "פרופיל" }, { id: "messages", icon: "💬", label: "הודעות" }, { id: "items", icon: "💼", label: "נכסים" }, { id: "levels", icon: "🔑", label: "הרשאות" }] as tab}
+		{#each [{ id: "main", icon: "🎛️", label: "לוח הבקרה" }, { id: "profile", icon: "👤", label: "פרופיל" }, { id: "messages", icon: "💬", label: "הודעות" }, { id: "items", icon: "💼", label: "נכסים" }, { id: "levels", icon: "🔑", label: "הרשאות" }, { id: "feedback", icon: "✉️", label: "כתוב למערכת" }] as tab}
 			<button
 				type="button"
 				onclick={() => selectTab(tab.id as typeof mobileTab)}
@@ -1769,11 +1771,11 @@
 	<!-- בדסקטופ כל המקטעים גלויים בערימה; הכפתורים גוללים ישירות למקטע המבוקש -->
 	<!-- המספרים תואמים למספרי המקטעים שמופיעים בכותרות -->
 	<div class="hidden md:flex flex-wrap gap-2 mb-3">
-		{#each [{ id: "messages", num: 2, icon: "💬", label: "הודעות" }, { id: "items", num: 3, icon: "💼", label: "נכסים" }, { id: "levels", num: 4, icon: "🔑", label: "הרשאות" }, { id: "profile", num: 5, icon: "👤", label: "פרופיל" }] as sc}
+		{#each [{ id: "messages", num: 2, icon: "💬", label: "הודעות" }, { id: "items", num: 3, icon: "💼", label: "נכסים" }, { id: "levels", num: 4, icon: "🔑", label: "הרשאות" }, { id: "profile", num: 5, icon: "👤", label: "פרופיל" }, { id: "feedback", num: 6, icon: "✉️", label: "כתוב למערכת" }] as sc}
 			<button
 				type="button"
 				onclick={() =>
-					gotoSection(sc.id as "main" | "messages" | "items" | "levels" | "profile")}
+					gotoSection(sc.id as "main" | "messages" | "items" | "levels" | "profile" | "feedback")}
 				class="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-bold bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:bg-purple-600/25 hover:border-purple-500/50 transition-all cursor-pointer"
 			>
 				<span
@@ -4468,11 +4470,12 @@
 
 	<!-- ===== קומה 6: כתוב למערכת ===== -->
 	<div
+		id="sec-feedback"
 		class="relative bg-[#0f172a] rounded-3xl border border-white/10 p-4 md:p-6 shadow-xl mb-2 overflow-hidden
 	            before:absolute before:inset-x-0 before:top-0 before:h-24 before:rounded-t-3xl
 	            before:bg-gradient-to-b before:from-white/8 before:to-transparent
 	            before:transition-all before:duration-300 before:pointer-events-none
-	            hover:before:from-white/18 {mobileTab !== 'messages'
+	            hover:before:from-white/18 {mobileTab !== 'feedback'
 			? 'hidden md:block'
 			: ''}"
 	>
