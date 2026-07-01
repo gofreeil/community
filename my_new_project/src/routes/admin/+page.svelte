@@ -282,7 +282,7 @@
 		{#if activeTab === 'users'}
 			<!-- סקציית בקשות להיות רכז - ממתינות לאישור -->
 			{#if (data.coordinatorRequests ?? []).length > 0}
-				<section id="coord-requests" class="mb-6 scroll-mt-4">
+				<section id="coord-requests" class="mb-6 scroll-mt-8 md:scroll-mt-32">
 					<div class="flex items-center gap-2 mb-3">
 						<span class="text-2xl">📨</span>
 						<h2 class="text-lg font-black text-blue-300">בקשות להיות רכז</h2>
@@ -356,7 +356,7 @@
 
 			<!-- סקציית שכונות חדשות שהוצעו ע"י תושבים (עם פין על המפה) - ממתינות לאישור -->
 			{#if (data.pendingNeighborhoods ?? []).length > 0}
-				<section id="pending-neighborhoods" class="mb-6 scroll-mt-4">
+				<section id="pending-neighborhoods" class="mb-6 scroll-mt-8 md:scroll-mt-32">
 					<div class="flex items-center gap-2 mb-3">
 						<span class="text-2xl">📍</span>
 						<h2 class="text-lg font-black text-amber-300">שכונות ממתינות לאישור</h2>
@@ -440,7 +440,7 @@
 			{/if}
 
 			<!-- סקציית רכזי שכונות - מנהלי תוכן בשכונה שלהם -->
-			<section id="coordinators" class="mb-6 scroll-mt-4">
+			<section id="coordinators" class="mb-6 scroll-mt-8 md:scroll-mt-32">
 				<div class="flex items-center justify-between mb-3">
 					<div class="flex items-center gap-2">
 						<span class="text-2xl">🏘️</span>
