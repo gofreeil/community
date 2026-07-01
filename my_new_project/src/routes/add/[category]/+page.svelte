@@ -697,21 +697,21 @@
                                         {#each DAY_SHORT as d, dIdx}
                                             {#if oh.days[dIdx].open}
                                                 <div class="flex items-center gap-2">
-                                                    <span class="w-10 shrink-0 text-sm font-bold text-gray-200">{d}</span>
-                                                    <div class="flex items-center justify-end gap-2 flex-1" dir="ltr">
+                                                    <span class="w-8 shrink-0 text-sm font-bold text-gray-200">{d}</span>
+                                                    <div class="flex items-center gap-1.5 flex-1 min-w-0" dir="ltr">
                                                         <input
                                                             type="time"
                                                             value={oh.days[dIdx].from}
                                                             onchange={(e) => setDayTime(field.key, dIdx, 'from', (e.target as HTMLInputElement).value)}
-                                                            class={timeInput}
+                                                            class="{timeInput} flex-1 min-w-0"
                                                             aria-label="שעת פתיחה {d}"
                                                         />
-                                                        <span class="text-gray-400 font-bold">–</span>
+                                                        <span class="text-gray-400 font-bold shrink-0">–</span>
                                                         <input
                                                             type="time"
                                                             value={oh.days[dIdx].to}
                                                             onchange={(e) => setDayTime(field.key, dIdx, 'to', (e.target as HTMLInputElement).value)}
-                                                            class={timeInput}
+                                                            class="{timeInput} flex-1 min-w-0"
                                                             aria-label="שעת סגירה {d}"
                                                         />
                                                     </div>
