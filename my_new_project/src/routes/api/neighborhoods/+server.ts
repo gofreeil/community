@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { getNeighborhoods, createNeighborhoodRequest, createItem, getUserById } from '$lib/server/db';
+import { getNeighborhoods, createNeighborhoodRequest, createItem, getUserById, getAllSuperAdmins } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
 // ---- GET: approved neighborhoods (for merging into the picker / map) ----
@@ -61,6 +61,39 @@ export const POST: RequestHandler = async (event) => {
             alreadyPending:  created.status === 'pending',
             alreadyApproved: created.status === 'approved',
         });
+    }
+
+    // הודעה לכל סופר-אדמין - שהבקשה תופיע גם בתיבת ההודעות שלו, לא רק בפאנל
+    // (המסלול הזה, פין-על-המפה, לא שלח שום התראה עד היום - בניגוד למסלול הפרופיל)
+    try {
+        const admins = await getAllSuperAdmins();
+        const requesterLine = requesterName || requesterPhone
+            ? `👤 מבקש: ${requesterName || 'ללא שם'}${requesterPhone ? ` · ${requesterPhone}` : ''}\n`
+            : `👤 המבקש לא היה מחובר ולא השאיר פרטים\n`;
+        await Promise.all(admins.map(admin => createItem({
+            category:    'message',
+            label:       `📍 בקשת שכונה חדשה: ${name} (${city})`,
+            description:
+                `התקבלה בקשה להוספת השכונה "${name}" ב${city} עם פין על המפה.\n\n` +
+                requesterLine +
+                `🗺️ ${lat}, ${lng}\nhttps://www.google.com/maps?q=${lat},${lng}\n\n` +
+                `אשר/דחה בעמוד הניהול תחת "שכונות ממתינות לאישור".`,
+            icon:        '📍',
+            color:       'yellow',
+            user_id:     admin.id,
+            extra_fields: {
+                type:               'neighborhood_request',
+                requested_location: name,
+                requested_city:     city,
+                requested_lat:      lat,
+                requested_lng:      lng,
+                requester_name:     requesterName,
+                requester_phone:    requesterPhone,
+                requested_at:       new Date().toISOString(),
+            },
+        })));
+    } catch (e) {
+        console.warn('[api/neighborhoods] notify super_admins failed:', e);
     }
 
     // אישור קבוע בתיבת ההודעות - הוכחה שהבקשה נקלטה, כדי שהמשתמש לא ישלח שוב ושוב.
