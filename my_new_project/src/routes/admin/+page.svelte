@@ -126,7 +126,8 @@
 				(u.name?.toLowerCase().includes(q)) ||
 				(u.email?.toLowerCase().includes(q)) ||
 				(u.id?.toLowerCase().includes(q)) ||
-				(u.neighborhood?.toLowerCase().includes(q))
+				(u.neighborhood?.toLowerCase().includes(q)) ||
+				((u as any).city?.toLowerCase().includes(q))
 			);
 		}
 		if (roleFilter !== 'all') {
@@ -653,9 +654,12 @@
 							</div>
 						</a>
 
-						<!-- שכונה -->
+						<!-- שכונה + עיר -->
 						<div class="text-base text-gray-400 min-w-[100px]">
-							{user.neighborhood || '-'}
+							<div>{user.neighborhood || '-'}</div>
+							{#if (user as any).city}
+								<div class="text-sm text-gray-500">{(user as any).city}</div>
+							{/if}
 						</div>
 
 						<!-- תפקיד -->

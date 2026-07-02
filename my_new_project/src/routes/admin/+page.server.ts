@@ -25,9 +25,12 @@ function buildCoordinatorStats(
         if (!coordOf || coordOf.length === 0) continue;
         const areas = coordOf.map(parseArea);
         const matchesArea = (neighborhood?: string | null, city?: string | null) => {
-            if (!neighborhood) return false;
-            const n = stripCityName(neighborhood);
-            return areas.some(a => a.name === n && (a.city ? city === a.city : true));
+            const n = neighborhood ? stripCityName(neighborhood) : '';
+            return areas.some(a => {
+                // רשומה בלי "(עיר)" ששמה הוא שם העיר = רכז עיר, תופס את כל העיר
+                if (!a.city && city && a.name === city) return true;
+                return !!n && a.name === n && (a.city ? city === a.city : true);
+            });
         };
 
         let residents = 0;

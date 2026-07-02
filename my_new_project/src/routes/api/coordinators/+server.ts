@@ -26,9 +26,12 @@ export const GET: RequestHandler = async () => {
                 // ספירת תושבים רשומים בשכונות שהרכז מנהל (התאמה לפי שכונה + עיר)
                 const residentIds = new Set<string>();
                 for (const r of users) {
-                    if (!r.neighborhood) continue;
-                    const rn = stripCity(r.neighborhood);
-                    const match = areas.some(a => a.name === rn && (a.city ? r.city === a.city : true));
+                    const rn = r.neighborhood ? stripCity(r.neighborhood) : '';
+                    const match = areas.some(a => {
+                        // רשומה בלי "(עיר)" ששמה הוא שם העיר = רכז עיר, תופס את כל העיר
+                        if (!a.city && r.city && a.name === r.city) return true;
+                        return !!rn && a.name === rn && (a.city ? r.city === a.city : true);
+                    });
                     if (match) residentIds.add(r.id);
                 }
                 return {
