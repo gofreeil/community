@@ -25,6 +25,22 @@ export function isNeighborhoodAdmin(session: Session | null, neighborhood?: stri
     return false;
 }
 
+/** האם המשתמש רכז של שכונה מסוימת (לפי coordinator_of על רשומת המשתמש) */
+export function isCoordinatorOfArea(
+    coordinatorOf: string[] | undefined | null,
+    neighborhood?: string | null,
+    city?: string | null,
+): boolean {
+    if (!coordinatorOf?.length || !neighborhood) return false;
+    const stripCity = (s: string) => s.replace(/\s*\([^)]*\)\s*$/, '').trim();
+    const parseArea = (entry: string) => {
+        const m = entry.match(/^(.*?)\s*\(([^)]*)\)\s*$/);
+        return m ? { name: m[1].trim(), city: m[2].trim() } : { name: entry.trim(), city: '' };
+    };
+    const n = stripCity(neighborhood);
+    return coordinatorOf.map(parseArea).some(a => a.name === n && (a.city ? city === a.city : true));
+}
+
 /** האם למשתמש יש הרשאות אדמין כלשהן */
 export function isAdmin(session: Session | null): boolean {
     return isNeighborhoodAdmin(session) || isSuperAdmin(session);

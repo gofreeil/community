@@ -1,4 +1,5 @@
-import { getDbItemById, getItemsByCategory } from '$lib/server/db';
+import { getDbItemById, getItemsByCategory, getUserByAnyId } from '$lib/server/db';
+import { isSuperAdmin, isCoordinatorOfArea } from '$lib/server/auth';
 import { getItemById as getStaticItemById } from '$lib/itemsData';
 import { getDemoItemById } from '$lib/demoUserItems';
 import type { PageServerLoad } from './$types';
@@ -91,6 +92,14 @@ export const load: PageServerLoad = async (event) => {
         }
 
         const isOwner = !!viewerId && dbItem.user_id === viewerId;
+
+        // האם המשתמש רשאי לערוך את לוח הפעילויות: בעלים / רכז השכונה / סופר-אדמין
+        let canEditActivities = isOwner || isSuperAdmin(session);
+        if (!canEditActivities && viewerId) {
+            const u = await getUserByAnyId(viewerId);
+            canEditActivities = isCoordinatorOfArea(u?.coordinator_of, dbItem.neighborhood, dbItem.city);
+        }
+
         return {
             origin,
             item: {
@@ -110,6 +119,7 @@ export const load: PageServerLoad = async (event) => {
                 extraFields,
                 isUserSubmitted: true,
                 isOwner,
+                canEditActivities,
                 viewCount:   dbItem.view_count,
                 singlesStatus,
                 incomingRequests,

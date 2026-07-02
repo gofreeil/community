@@ -88,6 +88,66 @@
         nickname && age != null ? `${nickname}, ${age}` : (nickname || (age != null ? String(age) : ''))
     );
 
+    // ---- לוח פעילויות (בית כנסת + שיעור + מקווה...) ----
+    type ScheduleRow = { type: string; time: string; days: string; note: string };
+    const ACTIVITY_TYPES = ['תפילה / מניין', 'שיעור תורה', 'מקווה', 'שבת', 'אחר'];
+
+    const activities = $derived.by<ScheduleRow[]>(() => {
+        const a = (item as { extraFields?: { activities?: unknown } } | null)?.extraFields?.activities;
+        if (!Array.isArray(a)) return [];
+        return a
+            .filter((r): r is Record<string, unknown> => !!r && typeof r === 'object')
+            .map(r => ({
+                type: String(r.type ?? ''), time: String(r.time ?? ''),
+                days: String(r.days ?? ''), note: String(r.note ?? ''),
+            }));
+    });
+    const canEditActivities = $derived(!!(item as { canEditActivities?: boolean } | null)?.canEditActivities);
+
+    let editingSchedule = $state(false);
+    let scheduleRows = $state<ScheduleRow[]>([]);
+    let savingSchedule = $state(false);
+    let scheduleError = $state('');
+
+    function startEditSchedule() {
+        scheduleRows = activities.length
+            ? activities.map(a => ({ ...a }))
+            : [{ type: '', time: '', days: '', note: '' }];
+        scheduleError = '';
+        editingSchedule = true;
+    }
+    function addScheduleRow() {
+        scheduleRows = [...scheduleRows, { type: '', time: '', days: '', note: '' }];
+    }
+    function removeScheduleRow(i: number) {
+        scheduleRows = scheduleRows.filter((_, idx) => idx !== i);
+    }
+    async function saveSchedule() {
+        if (!item?.id) return;
+        savingSchedule = true;
+        scheduleError = '';
+        const clean = scheduleRows
+            .map(r => ({ type: r.type.trim(), time: r.time.trim(), days: r.days.trim(), note: r.note.trim() }))
+            .filter(r => r.type || r.time || r.days || r.note);
+        try {
+            const res = await fetch(`/api/items/${item.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'update_activities', activities: clean }),
+            });
+            const resData = await res.json().catch(() => ({}));
+            if (!res.ok || !resData.success) {
+                scheduleError = resData.message || 'שגיאה בשמירה';
+            } else {
+                location.reload();
+            }
+        } catch {
+            scheduleError = 'שגיאה ברשת';
+        } finally {
+            savingSchedule = false;
+        }
+    }
+
     onMount(async () => {
         mounted = true;
         // ספירת צפיות - רק כשצופה שאינו הבעלים (הספירה מוצגת רק לבעלים,
@@ -446,7 +506,7 @@
 
 <!-- Hidden keys (rendered in dedicated sections, complex types, or internal-only) -->
 {#snippet extraFieldsBlock()}
-    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'price', 'website', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname', 'age', 'birth_date', 'sector', 'gender', 'type'])}
+    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'price', 'website', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname', 'age', 'birth_date', 'sector', 'gender', 'type', 'activities'])}
     {@const LABELS_HE: Record<string, string> = {
         nickname: 'שם או כינוי',
         gender: 'מין',
@@ -650,6 +710,72 @@
 
                     <!-- Services badges (synagogue + lesson + mikveh...) -->
                     {@render servicesBlock()}
+
+                    <!-- Activities schedule (each activity has its own time) -->
+                    {#if activities.length > 0 || canEditActivities}
+                        <section>
+                            <div class="flex items-center justify-between mb-1.5">
+                                <h2 class="text-base font-bold text-white flex items-center gap-1.5">
+                                    <span class="w-1 h-4 bg-amber-400 rounded-full"></span>לוח פעילויות ושעות</h2>
+                                {#if canEditActivities && !editingSchedule}
+                                    <button type="button" onclick={startEditSchedule}
+                                        class="text-xs font-bold text-amber-300 hover:text-amber-200 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-lg px-2.5 py-1 transition-all">
+                                        ✏️ {activities.length ? 'ערוך' : 'הוסף פעילויות'}
+                                    </button>
+                                {/if}
+                            </div>
+
+                            {#if !editingSchedule}
+                                {#if activities.length > 0}
+                                    <ul class="rounded-xl border border-white/10 divide-y divide-white/10 overflow-hidden">
+                                        {#each activities as a}
+                                            <li class="flex items-center gap-2 px-3 py-2 bg-[#0f172a] text-xs">
+                                                {#if a.type}<span class="font-bold text-amber-200 whitespace-nowrap">{a.type}</span>{/if}
+                                                {#if a.time}<span class="text-white font-mono whitespace-nowrap" dir="ltr">{a.time}</span>{/if}
+                                                {#if a.days}<span class="text-gray-300 whitespace-nowrap">{a.days}</span>{/if}
+                                                {#if a.note}<span class="text-gray-400 truncate">· {a.note}</span>{/if}
+                                            </li>
+                                        {/each}
+                                    </ul>
+                                {/if}
+                            {:else}
+                                <!-- Editor -->
+                                <div class="rounded-xl border border-amber-500/20 bg-amber-500/[0.03] p-2.5 space-y-2">
+                                    {#each scheduleRows as row, i}
+                                        <div class="flex flex-wrap items-center gap-1.5 bg-[#0f172a] rounded-lg p-1.5 border border-white/10">
+                                            <select bind:value={row.type}
+                                                class="bg-[#0a0f1a] border border-white/15 rounded-md text-xs text-white px-2 py-1 min-w-[110px]">
+                                                <option value="">סוג...</option>
+                                                {#each ACTIVITY_TYPES as t}<option value={t}>{t}</option>{/each}
+                                            </select>
+                                            <input type="time" bind:value={row.time} dir="ltr"
+                                                class="bg-[#0a0f1a] border border-white/15 rounded-md text-xs text-white px-2 py-1 w-[95px]" />
+                                            <input type="text" bind:value={row.days} placeholder="ימים (א-ה)"
+                                                class="bg-[#0a0f1a] border border-white/15 rounded-md text-xs text-white px-2 py-1 w-[90px]" />
+                                            <input type="text" bind:value={row.note} placeholder="הערה"
+                                                class="bg-[#0a0f1a] border border-white/15 rounded-md text-xs text-white px-2 py-1 flex-1 min-w-[80px]" />
+                                            <button type="button" onclick={() => removeScheduleRow(i)} aria-label="הסר שורה"
+                                                class="text-red-400 hover:text-red-300 px-1.5 text-lg leading-none">×</button>
+                                        </div>
+                                    {/each}
+                                    <button type="button" onclick={addScheduleRow}
+                                        class="text-xs font-bold text-amber-300 hover:text-amber-200">➕ הוסף פעילות</button>
+
+                                    {#if scheduleError}
+                                        <p class="text-xs text-red-400">{scheduleError}</p>
+                                    {/if}
+                                    <div class="flex items-center gap-2 pt-1">
+                                        <button type="button" onclick={saveSchedule} disabled={savingSchedule}
+                                            class="text-xs font-bold text-white bg-amber-500 hover:bg-amber-400 disabled:opacity-50 rounded-lg px-3 py-1.5 transition-all">
+                                            {savingSchedule ? 'שומר…' : '💾 שמור'}
+                                        </button>
+                                        <button type="button" onclick={() => (editingSchedule = false)} disabled={savingSchedule}
+                                            class="text-xs font-bold text-gray-300 hover:text-white px-2 py-1.5">ביטול</button>
+                                    </div>
+                                </div>
+                            {/if}
+                        </section>
+                    {/if}
 
                     <!-- Extra fields: compact list -->
                     {@render extraFieldsBlock()}

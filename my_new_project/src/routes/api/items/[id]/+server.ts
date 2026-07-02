@@ -1,6 +1,24 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { getDbItemById, updateItem, deleteItem } from '$lib/server/db';
+import { getDbItemById, updateItem, deleteItem, getUserByAnyId } from '$lib/server/db';
+import { isSuperAdmin, isCoordinatorOfArea } from '$lib/server/auth';
+
+interface Activity { type: string; time: string; days: string; note: string; }
+
+/** ניקוי מערך הפעילויות שמגיע מהלקוח */
+function sanitizeActivities(raw: unknown): Activity[] {
+    if (!Array.isArray(raw)) return [];
+    return raw
+        .filter((r): r is Record<string, unknown> => !!r && typeof r === 'object')
+        .map(r => ({
+            type: String(r.type ?? '').trim().slice(0, 60),
+            time: String(r.time ?? '').trim().slice(0, 40),
+            days: String(r.days ?? '').trim().slice(0, 60),
+            note: String(r.note ?? '').trim().slice(0, 200),
+        }))
+        .filter(a => a.type || a.time || a.days || a.note)
+        .slice(0, 30);
+}
 
 /**
  * PATCH /api/items/[id]
@@ -23,9 +41,41 @@ export const PATCH: RequestHandler = async (event) => {
 
     const item = await getDbItemById(id);
     if (!item) return json({ success: false, message: 'פריט לא נמצא' }, { status: 404 });
-    if (item.user_id !== userId) return json({ success: false, message: 'אין הרשאה' }, { status: 403 });
 
+    const isOwner = item.user_id === userId;
     const action = String(body.action ?? '');
+
+    // ---- עדכון לוח פעילויות: בעלים / רכז השכונה / סופר-אדמין ----
+    if (action === 'update_activities') {
+        let allowed = isOwner || isSuperAdmin(session);
+        if (!allowed) {
+            const user = await getUserByAnyId(userId);
+            allowed = isCoordinatorOfArea(user?.coordinator_of, item.neighborhood, item.city);
+        }
+        if (!allowed) return json({ success: false, message: 'אין הרשאה' }, { status: 403 });
+
+        const activities = sanitizeActivities(body.activities);
+        let extra: Record<string, unknown> = {};
+        try { extra = item.extra_fields ? JSON.parse(item.extra_fields) : {}; } catch { extra = {}; }
+        extra.activities = activities;
+
+        // אחד את סוגי הפעילויות לתוך type (המולטי-סלקט) כדי שהסינון/המפה ימשיכו לתפוס
+        const existingTypes = String(extra.type ?? '').split(',').map(s => s.trim()).filter(Boolean);
+        const merged = Array.from(new Set([...existingTypes, ...activities.map(a => a.type).filter(Boolean)]));
+        extra.type = merged.join(',');
+
+        try {
+            await updateItem(id, { extra_fields: extra });
+            return json({ success: true, activities });
+        } catch (e) {
+            console.error('[items/:id PATCH activities] failed:', e);
+            return json({ success: false, message: 'שגיאה בשמירה' }, { status: 500 });
+        }
+    }
+
+    // ---- הקפאה/הפעלה/סטטוס: בעלים בלבד ----
+    if (!isOwner) return json({ success: false, message: 'אין הרשאה' }, { status: 403 });
+
     let newStatus: string | null = null;
     if (action === 'freeze') newStatus = 'frozen';
     else if (action === 'unfreeze') newStatus = 'active';
