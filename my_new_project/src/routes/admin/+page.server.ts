@@ -85,6 +85,10 @@ export const load: PageServerLoad = async (event) => {
         console.warn('[admin] getAllItems failed:', e);
     }
 
+    // הודעות מערכת (category='message') הן התראות אישיות למשתמש, לא פרסומים -
+    // בלעדיהן מונה "פרסומים בקהילה" וטאב הפרסומים משקפים רק תוכן אמיתי בלוחות.
+    items = items.filter((i) => i.category !== 'message');
+
     try {
         coordinatorRequests = await getCoordinatorRequests('pending');
     } catch (e) {
