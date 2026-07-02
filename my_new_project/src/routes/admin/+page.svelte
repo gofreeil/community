@@ -526,11 +526,11 @@
 						<p class="text-xs text-gray-500">רכזים ממונים דרך אישור בקשה בסקציית "בקשות להיות רכז" למעלה (כפתור ✅ אשר כרכז)</p>
 					</div>
 				{:else}
-					<div class="grid gap-2 md:gap-3">
+					<div class="grid gap-1.5 md:gap-2">
 						{#each coordinatorUsers() as user (user.id)}
 							{@const coordList = ((user as any).coordinator_of as string[]) ?? []}
 							{@const stat = (data.coordinatorStats ?? {})[user.id] ?? { residents: 0, items: 0, itemsOnMap: 0 }}
-							<div class="bg-amber-500/5 rounded-2xl border border-amber-500/30 p-3 md:p-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 transition-all hover:border-amber-500/50">
+							<div class="bg-amber-500/5 rounded-2xl border border-amber-500/30 px-3 py-2 md:px-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 transition-all hover:border-amber-500/50">
 								<!-- אווטר + שם + עיר/שכונה (לחיץ - פרופיל מלא) - מקובצים בצד ימין -->
 								<a href="/admin/users/{user.id}" title="צפה בפרופיל המלא" class="user-link flex items-center gap-3 min-w-0 cursor-pointer">
 									{#if user.avatar_url}
@@ -547,9 +547,6 @@
 												<span class="text-sm bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded-full">חסום</span>
 											{/if}
 										</div>
-										{#if residenceLabel(user.neighborhood, (user as any).city)}
-											<div class="text-base text-amber-200/70 truncate">📍 {residenceLabel(user.neighborhood, (user as any).city)}</div>
-										{/if}
 									</div>
 								</a>
 
@@ -564,15 +561,15 @@
 
 								<!-- סיכום: כמה פריטים כבר על המפה בשכונתו וכמה תושבים רשומים -->
 								<div class="flex gap-2 flex-shrink-0 sm:ms-auto">
-									<div class="flex flex-col items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 min-w-[76px]"
+									<div class="flex items-center justify-center gap-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 min-w-[76px]"
 										title="פריטים שכבר מופיעים על המפה בשכונה ({stat.items} סה״כ פרסומים)">
 										<span class="text-lg font-black text-emerald-300 leading-none">📍 {stat.itemsOnMap}</span>
-										<span class="text-[11px] text-emerald-200/70 mt-0.5">על המפה</span>
+										<span class="text-[11px] text-emerald-200/70">על המפה</span>
 									</div>
-									<div class="flex flex-col items-center justify-center rounded-xl bg-blue-500/10 border border-blue-500/30 px-3 py-1.5 min-w-[76px]"
+									<div class="flex items-center justify-center gap-1.5 rounded-xl bg-blue-500/10 border border-blue-500/30 px-3 py-1 min-w-[76px]"
 										title="תושבים שנרשמו בשכונה שהרכז מנהל">
 										<span class="text-lg font-black text-blue-300 leading-none">👥 {stat.residents}</span>
-										<span class="text-[11px] text-blue-200/70 mt-0.5">רשומים</span>
+										<span class="text-[11px] text-blue-200/70">רשומים</span>
 									</div>
 								</div>
 
