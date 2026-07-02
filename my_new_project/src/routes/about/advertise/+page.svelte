@@ -5,6 +5,7 @@
     import { citiesData, citiesAndNeighborhoods, effectiveNeighborhoods, LS_KEY, DEFAULT_NEIGHBORHOOD } from "$lib/neighborhoodsData";
     import { coinAnim } from "$lib/coinAnimationState.svelte";
     import { evaluateDiscount, discountAmount, type DiscountCode } from "$lib/discountCodes";
+    import { FREE_PROMO, FREE_PROMO_LABEL } from "$lib/freePromo";
 
     // Page data - layoutUser provides the logged-in user's profile (email, phone)
     let { data } = $props<{ data: {
@@ -343,7 +344,7 @@
                     neighborhoodCount,
                     totalPayment:      effectiveTotal,
                     totalMonthly,
-                    discountLabel:     discountValue > 0 ? (discountEval.matched?.label ?? '') : '',
+                    discountLabel:     discountValue > 0 ? discountLabelText : '',
                     discountValue,
                 }),
             });
@@ -487,12 +488,16 @@
 
     let discountEval  = $derived(evaluateDiscount(discountInput, discountCodes, isCoordinator));
     let discountValue = $derived(
-        discountEval.applied && discountEval.matched ? discountAmount(totalPayment, discountEval.matched) : 0
+        FREE_PROMO
+            ? totalPayment
+            : discountEval.applied && discountEval.matched ? discountAmount(totalPayment, discountEval.matched) : 0
     );
     // הסכום בפועל לתשלום אחרי הנחה (לעולם לא שלילי)
     let effectiveTotal = $derived(Math.max(0, totalPayment - discountValue));
-    // פטור מלא - הפרסום עולה ללא עלות
-    let isFreeExempt   = $derived(discountEval.applied && discountEval.matched?.kind === 'free');
+    // פטור מלא - הפרסום עולה ללא עלות (מבצע גלובלי או קוד הנחה מסוג free)
+    let isFreeExempt   = $derived(FREE_PROMO || (discountEval.applied && discountEval.matched?.kind === 'free'));
+    // תווית ההנחה להצגה ולתיעוד במייל/וואטסאפ
+    let discountLabelText = $derived(FREE_PROMO ? FREE_PROMO_LABEL : (discountEval.matched?.label ?? ''));
 
     // שחרור הגישה לבילדר ומעבר אליו - לפטור מלא (העלאת פרסום ללא תשלום)
     function uploadFree() {
@@ -544,7 +549,7 @@
         selectedItems.map(r =>
             `${r.type}${r.perNeighborhood ? ` (×${neighborhoodCount} שכונות)` : ''} - ${r.plan === 'half' ? `חצי שנה ₪${r.eTotal * r.multiplier}` : `חודש בודד ₪${r.eTotal * r.multiplier}`}`
         ).join('%0A') +
-        (discountValue > 0 ? `%0Aהנחה (${discountEval.matched?.label ?? ''}): -₪${fmt(discountValue)}` : '') +
+        (discountValue > 0 ? `%0Aהנחה (${discountLabelText}): -₪${fmt(discountValue)}` : '') +
         `%0A%0Aסה״כ: ₪${fmt(effectiveTotal)}`
     );
 
@@ -553,7 +558,7 @@
         const types    = selectedItems.map(r => r.type).join(', ');
         const phoneLine = userPhone.trim() ? `%0Aהטלפון שלי: ${userPhone.trim()}` : '';
         const discountLine = discountValue > 0
-            ? `%0Aהנחה (${discountEval.matched?.label ?? ''}): -₪${fmt(discountValue)}`
+            ? `%0Aהנחה (${discountLabelText}): -₪${fmt(discountValue)}`
             : '';
         return `https://wa.me/972500000000?text=שלום, אני מעוניין לפרסם: ${types}. סה״כ ₪${fmt(effectiveTotal)}.${discountLine}${phoneLine}`;
     });
@@ -590,6 +595,20 @@
             היחשף לתושבי השכונה ישירות - קהל מקומי, ממוקד ומעורב
         </p>
     </div>
+
+    {#if FREE_PROMO}
+        <!-- מבצע גלובלי: כל הפרסום חינם לתקופה מוגבלת -->
+        <div class="mb-10 rounded-2xl border-2 border-green-500/60 bg-gradient-to-br from-green-900/30 to-emerald-900/20 p-6 text-center shadow-lg shadow-green-500/10"
+             style="animation: slideDown 0.4s ease-out;">
+            <div class="text-4xl mb-2">🎉</div>
+            <h2 class="text-2xl md:text-3xl font-black text-green-300 mb-2">הפרסום באתר חינם - לתקופה מוגבלת!</h2>
+            <p class="text-gray-200 text-base md:text-lg leading-relaxed">
+                כל סוגי הפרסום, בכל הערים והשכונות - <span class="text-green-300 font-black">ללא תשלום</span> עד להודעה חדשה.
+                <br class="hidden md:block" />
+                המחירון למטה מוצג לידיעה בלבד - בסיכום תראו <span class="text-green-300 font-black">₪0</span>.
+            </p>
+        </div>
+    {/if}
 
     <!-- Packages -->
     <h2 class="text-xl md:text-2xl font-black text-white mb-4 text-center">אפשרויות הפרסום</h2>
@@ -1212,7 +1231,7 @@
                     <p class="text-5xl md:text-6xl font-black inline-block {discountValue > 0 ? 'text-green-400' : 'text-white'}"
                        class:total-flash={flashTotal}>₪{fmt(effectiveTotal)}</p>
                     {#if isFreeExempt}
-                        <span class="text-green-300 text-xs md:text-sm font-black bg-green-500/15 border border-green-500/30 rounded-full px-3 py-1">פטור מלא מתשלום 🎉</span>
+                        <span class="text-green-300 text-xs md:text-sm font-black bg-green-500/15 border border-green-500/30 rounded-full px-3 py-1">{FREE_PROMO ? `🎉 ${FREE_PROMO_LABEL}` : 'פטור מלא מתשלום 🎉'}</span>
                     {:else if discountValue > 0}
                         <span class="text-green-300 text-xs md:text-sm font-black bg-green-500/15 border border-green-500/30 rounded-full px-3 py-1">
                             {discountEval.matched?.label} · חסכת ₪{fmt(discountValue)}
@@ -1425,18 +1444,21 @@
             <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
                   class:step-num-light={step5NumLight}
                   style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">6</span>
-            🔒 תשלום מאובטח
+            {FREE_PROMO ? '🎉 העלאת הפרסום - חינם' : '🔒 תשלום מאובטח'}
         </h2>
         {#if hasSelection && !confirmedPeriod}
             <p class="text-amber-300 text-sm font-bold text-center mb-3 -mt-1">
                 ⬆️ סמן/י תחילה את התיבה למעלה (שלב 5) כדי לפתוח את התשלום
             </p>
         {/if}
+        {#if !FREE_PROMO}
         <p class="text-gray-400 text-sm text-center mb-6">
             התשלום מתבצע בצורה מאובטחת דרך חברת הסליקה - פרטי האשראי שלך לא מגיעים אלינו
         </p>
+        {/if}
 
-        <!-- ===== Discount drawer (הנחת רכז / בעלים / פטור) ===== -->
+        <!-- ===== Discount drawer (הנחת רכז / בעלים / פטור) - מוסתר בזמן מבצע החינם ===== -->
+        {#if !FREE_PROMO}
         <div class="mb-6 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 md:p-5">
             <label for="discount-code" class="block text-amber-200 font-black text-sm md:text-base mb-1.5 text-right">
                 🎟️ הנחת רכז / בעלים
@@ -1474,13 +1496,14 @@
                 {/if}
             {/if}
         </div>
+        {/if}
 
         {#if isFreeExempt}
             <!-- ===== Free exemption flow - upload publication at no cost ===== -->
             <div class="rounded-xl border-2 border-green-500/50 bg-green-900/15 p-6 text-center">
                 <div class="text-3xl mb-3">🎉</div>
-                <h3 class="text-green-300 font-black text-lg mb-1">פטור מלא מתשלום</h3>
-                <p class="text-gray-300 text-sm mb-5">לַה' הָאָרֶץ וּמְלוֹאָהּ - אפשר להעלות את הפרסום ללא כל עלות.</p>
+                <h3 class="text-green-300 font-black text-lg mb-1">{FREE_PROMO ? 'הפרסום חינם - לתקופה מוגבלת' : 'פטור מלא מתשלום'}</h3>
+                <p class="text-gray-300 text-sm mb-5">{FREE_PROMO ? 'המבצע פעיל - אפשר להעלות את הפרסום ללא כל עלות.' : "לַה' הָאָרֶץ וּמְלוֹאָהּ - אפשר להעלות את הפרסום ללא כל עלות."}</p>
                 <button
                     type="button"
                     onclick={uploadFree}

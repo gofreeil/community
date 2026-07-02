@@ -12,11 +12,15 @@
         DAY_SHORT,
         type OpeningHours,
     } from '$lib/openingHours';
+    import { FREE_PROMO } from '$lib/freePromo';
     import type { PageData } from './$types';
 
     let { data }: { data: PageData } = $props();
 
     const { categoryId, config, userId, userProfile, editItem } = data;
+
+    // מבצע חינם גלובלי: קטגוריות בתשלום מתנהגות כחינמיות - בלי הפניה לדף תשלום
+    const isPaidFlow = config.priceRow !== null && !FREE_PROMO;
     const isEditMode = !!editItem;
 
     // מילוי אוטומטי של שם איש הקשר מותר רק בטפסים שבהם המפרסם הוא בדרך כלל
@@ -450,7 +454,7 @@
 
             submitted = true;
 
-            if (config.priceRow !== null) {
+            if (isPaidFlow) {
                 if (browser) {
                     localStorage.setItem('pending_ad', JSON.stringify({
                         priceRow:      effectivePriceRow,
@@ -533,10 +537,13 @@
              style="animation: fadeIn 0.4s ease-out;">
             <div class="text-4xl mb-3">✅</div>
             <h2 class="text-xl font-black text-green-300 mb-2">המודעה שלך נשמרה</h2>
-            {#if config.priceRow !== null}
+            {#if isPaidFlow}
                 <p class="text-amber-200 text-base font-bold mb-1">שלם {monthlyPrice} ש"ח בחודש על מנת להופיע</p>
                 <p class="text-gray-400 text-sm">מועבר לדף התשלום...</p>
             {:else}
+                {#if FREE_PROMO && config.priceRow !== null}
+                    <p class="text-green-300 text-base font-black mb-1">🎉 מבצע - הפרסום חינם לתקופה מוגבלת!</p>
+                {/if}
                 <p class="text-gray-400 text-sm">הפריט שלך נוסף לשכונה! מועבר לדף הבית...</p>
             {/if}
         </div>
@@ -923,8 +930,10 @@
                     {/if}
                 </button>
                 <p class="text-gray-300 text-sm text-center">
-                    {#if config.priceRow !== null}
+                    {#if isPaidFlow}
                         {monthlyPrice} ₪ בחודש · התשלום בשלב הבא
+                    {:else if FREE_PROMO && config.priceRow !== null}
+                        <span class="text-green-300 font-black">🎉 חינם לתקופה מוגבלת · הפריט יופיע מיד</span>
                     {:else}
                         הפריט יופיע מיד
                     {/if}

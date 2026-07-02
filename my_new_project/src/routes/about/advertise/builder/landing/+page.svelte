@@ -2,6 +2,7 @@
     import { onMount } from "svelte";
     import { browser } from "$app/environment";
     import { goto } from "$app/navigation";
+    import { FREE_PROMO } from "$lib/freePromo";
 
     let { data } = $props<{
         data: {
@@ -185,7 +186,8 @@
     function checkAccess() {
         if (!browser) return;
         const paid = localStorage.getItem(PAID_KEY) === "1";
-        accessGranted = isSuperAdmin || paid;
+        // FREE_PROMO - מבצע חינם גלובלי, הבילדר פתוח לכולם עד לעצירת המבצע
+        accessGranted = isSuperAdmin || paid || FREE_PROMO;
         accessChecked = true;
     }
 
