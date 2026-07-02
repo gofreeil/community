@@ -2,7 +2,6 @@
     import { onMount } from "svelte";
     import { browser } from "$app/environment";
     import { goto } from "$app/navigation";
-    import { FREE_PROMO } from "$lib/freePromo";
 
     // ===== Page payload (logged-in user prefill + admin status) =====
     let { data } = $props<{
@@ -496,13 +495,13 @@
     // ===== Access gate =====
     // Allow entry when one of:
     //   1. Server marked the user as super_admin → unlimited testing access
-    //   2. localStorage[PAID_KEY] is set (real flow - set by payment confirmation)
-    //   3. FREE_PROMO - מבצע חינם גלובלי, הבילדר פתוח לכולם עד לעצירת המבצע
+    //   2. localStorage[PAID_KEY] is set (real flow - set by payment confirmation,
+    //      כולל פטור מלא עם קוד מבצע ההשקה "יוצאים לחירות" בדף התשלום)
     function checkAccess() {
         if (!browser) return;
         const paid = localStorage.getItem(PAID_KEY) === "1";
 
-        if (isSuperAdmin || paid || FREE_PROMO) {
+        if (isSuperAdmin || paid) {
             accessGranted = true;
         } else {
             accessGranted = false;

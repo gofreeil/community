@@ -12,15 +12,16 @@
         DAY_SHORT,
         type OpeningHours,
     } from '$lib/openingHours';
-    import { FREE_PROMO } from '$lib/freePromo';
+    import { FREE_PROMO, FREE_PROMO_CODE_TEXT } from '$lib/freePromo';
     import type { PageData } from './$types';
 
     let { data }: { data: PageData } = $props();
 
     const { categoryId, config, userId, userProfile, editItem } = data;
 
-    // מבצע חינם גלובלי: קטגוריות בתשלום מתנהגות כחינמיות - בלי הפניה לדף תשלום
-    const isPaidFlow = config.priceRow !== null && !FREE_PROMO;
+    // קטגוריות בתשלום מפנות לדף התשלום; בזמן מבצע ההשקה הקוד "יוצאים לחירות"
+    // בשדה ההנחה שם נותן פטור מלא (freePromo.ts).
+    const isPaidFlow = config.priceRow !== null;
     const isEditMode = !!editItem;
 
     // מילוי אוטומטי של שם איש הקשר מותר רק בטפסים שבהם המפרסם הוא בדרך כלל
@@ -538,12 +539,13 @@
             <div class="text-4xl mb-3">✅</div>
             <h2 class="text-xl font-black text-green-300 mb-2">המודעה שלך נשמרה</h2>
             {#if isPaidFlow}
-                <p class="text-amber-200 text-base font-bold mb-1">שלם {monthlyPrice} ש"ח בחודש על מנת להופיע</p>
+                {#if FREE_PROMO}
+                    <p class="text-green-300 text-base font-black mb-1">🎉 בתקופה הראשונית הפרסום חינם - עם הקוד "{FREE_PROMO_CODE_TEXT}" בדף הבא</p>
+                {:else}
+                    <p class="text-amber-200 text-base font-bold mb-1">שלם {monthlyPrice} ש"ח בחודש על מנת להופיע</p>
+                {/if}
                 <p class="text-gray-400 text-sm">מועבר לדף התשלום...</p>
             {:else}
-                {#if FREE_PROMO && config.priceRow !== null}
-                    <p class="text-green-300 text-base font-black mb-1">🎉 מבצע - הפרסום חינם לתקופה מוגבלת!</p>
-                {/if}
                 <p class="text-gray-400 text-sm">הפריט שלך נוסף לשכונה! מועבר לדף הבית...</p>
             {/if}
         </div>
@@ -931,9 +933,11 @@
                 </button>
                 <p class="text-gray-300 text-sm text-center">
                     {#if isPaidFlow}
-                        {monthlyPrice} ₪ בחודש · התשלום בשלב הבא
-                    {:else if FREE_PROMO && config.priceRow !== null}
-                        <span class="text-green-300 font-black">🎉 חינם לתקופה מוגבלת · הפריט יופיע מיד</span>
+                        {#if FREE_PROMO}
+                            <span class="text-green-300 font-black">🎉 בתקופה הראשונית - חינם עם הקוד "{FREE_PROMO_CODE_TEXT}" בשלב הבא</span>
+                        {:else}
+                            {monthlyPrice} ₪ בחודש · התשלום בשלב הבא
+                        {/if}
                     {:else}
                         הפריט יופיע מיד
                     {/if}
