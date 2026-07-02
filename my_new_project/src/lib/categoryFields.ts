@@ -1,3 +1,5 @@
+import { FREE_PROMO } from './freePromo';
+
 export interface FieldDef {
     key: string;
     label: string;
@@ -172,7 +174,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
         addPageTitle: 'הוספת מסעדה / עסק מזון',
         fields: [
             { key: 'label',       label: 'שם העסק',               type: 'text',     required: true,  placeholder: 'פיצה השכונה' },
-            { key: 'venue_type',  label: 'סוג העסק',              type: 'toggle',   required: true,  options: ['מסעדה', 'מזון מהיר'], default: 'מסעדה', hint: 'מסעדה - 45 ₪ לחודש · מזון מהיר (פלאפל, שווארמה, פיצה, גלידה) - 30 ₪ לחודש' },
+            { key: 'venue_type',  label: 'סוג העסק',              type: 'toggle',   required: true,  options: ['מסעדה', 'מזון מהיר'], default: 'מסעדה', hint: FREE_PROMO ? '🎉 מבצע - הפרסום חינם לתקופה מוגבלת' : 'מסעדה - 45 ₪ לחודש · מזון מהיר (פלאפל, שווארמה, פיצה, גלידה) - 30 ₪ לחודש' },
             { key: 'food_type',   label: 'סוג מטבח / מזון',         type: 'text',     required: true,  placeholder: 'פיצה, פלאפל, סושי, איטלקי...', half: true },
             { key: 'price_range', label: 'טווח מחירים',            type: 'select',   required: false, half: true, options: ['זול', 'בינוני', 'יקר'] },
             { key: 'kosher',      label: 'כשרות',                  type: 'select',   required: false, half: true, options: ['ללא', 'כשר רבנות', 'למהדרין', 'אחר'] },
