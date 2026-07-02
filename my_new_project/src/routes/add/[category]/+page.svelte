@@ -128,6 +128,8 @@
 
     let submitting      = $state(false);
     let errorMsg        = $state('');
+    // כשל בצד השרת (להבדיל משגיאת ולידציה) - מציגים גם קישור לתמיכה
+    let serverFailed    = $state(false);
     let submitted       = $state(false);
     let redirectingMsg  = $state(''); // הודעה לפני מעבר להרשמה
     let openHintKey     = $state(''); // איזה hint פתוח כרגע (לחיצה ארוכה / hover במובייל)
@@ -390,6 +392,7 @@
     async function handleSubmit(e: Event) {
         e.preventDefault();
         errorMsg = '';
+        serverFailed = false;
         const err = validate();
         if (err) { errorMsg = err; return; }
 
@@ -460,6 +463,7 @@
             const result = await res.json();
             if (!result.success) {
                 errorMsg = result.message ?? 'שגיאה בשמירה';
+                serverFailed = res.status >= 500;
                 submitting = false;
                 return;
             }
@@ -488,6 +492,7 @@
 
         } catch {
             errorMsg = 'בעיית תקשורת - נסה שוב';
+            serverFailed = true;
             submitting = false;
         }
     }
@@ -925,8 +930,16 @@
 
             <!-- Error -->
             {#if errorMsg}
-                <div class="col-span-2 rounded-xl border border-red-500/30 bg-red-900/20 px-4 py-3">
+                <!-- grid-column מפורש - שהתיבה לעולם לא תיצטמצם לעמודה אחת צרה -->
+                <div class="col-span-2 w-full rounded-xl border border-red-500/30 bg-red-900/20 px-4 py-3"
+                     style="grid-column: 1 / -1;">
                     <p class="text-red-400 text-sm font-bold">{errorMsg}</p>
+                    {#if serverFailed}
+                        <a href="/profile?tab=feedback"
+                           class="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-lg bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-200 hover:text-white text-xs font-bold transition-colors">
+                            💬 לפנייה לתמיכה - "כתוב למערכת" בדף הפרופיל
+                        </a>
+                    {/if}
                 </div>
             {/if}
 

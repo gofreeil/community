@@ -1070,6 +1070,18 @@
 
 	// נקה טיוטת פרופיל ישנה + טען טיוטת בילדר פרסומת
 	onMount(() => {
+		// קישור ישיר למקטע ("/profile?tab=feedback" = צ'אט התמיכה "כתוב למערכת") -
+		// פותח את המקטע וגולל אליו, גם בנייד וגם בדסקטופ
+		try {
+			const tab = page.url.searchParams.get("tab");
+			if (tab === "main" || tab === "profile" || tab === "messages" || tab === "items" || tab === "levels" || tab === "feedback") {
+				selectTab(tab);
+				const secId = tab === "profile" ? "sec-edit-profile" : `sec-${tab}`;
+				setTimeout(() => {
+					document.getElementById(secId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+				}, 150);
+			}
+		} catch {}
 		try {
 			localStorage.removeItem(DRAFT_KEY);
 		} catch {}

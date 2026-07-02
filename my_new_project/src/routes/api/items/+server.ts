@@ -198,7 +198,7 @@ export const POST: RequestHandler = async (event) => {
         // לוגג את הסיבה האמיתית (כולל גוף התשובה מ-Strapi) ומחזיר הודעה ידידותית.
         console.error('[api/items] createItem failed:', e);
         return json(
-            { success: false, message: 'שמירת הפריט נכשלה. נסה שוב בעוד רגע, ואם זה חוזר פנה לתמיכה.' },
+            { success: false, message: 'שמירת הפריט נכשלה. נסה שוב בעוד רגע, ואם זה חוזר - פנה לתמיכה דרך "כתוב למערכת" בדף הפרופיל שלך.' },
             { status: 500 },
         );
     }
