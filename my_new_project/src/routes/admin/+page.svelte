@@ -242,7 +242,7 @@
 			<!-- פרסומים בקהילה -->
 			<div class="relative overflow-hidden rounded-2xl border border-purple-500/25 bg-gradient-to-br from-purple-600/15 to-purple-500/5 p-4">
 				<div class="flex items-center gap-2 text-purple-200/80 text-sm font-bold mb-1">
-					<span class="text-lg">📋</span> פרסומים בקהילה
+					<span class="text-lg">📋</span> פרטים בקהילה
 				</div>
 				<div class="text-4xl font-black text-white leading-none">{dash.totalItems}</div>
 				{#if dash.newItemsThisMonth > 0}
