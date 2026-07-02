@@ -49,9 +49,19 @@ export const actions: Actions = {
         const city         = fd.get('city')?.toString().trim()         ?? '';
         const neighborhood = fd.get('neighborhood')?.toString().trim() ?? '';
         const gmachType    = fd.get('gmach_type')?.toString().trim()   ?? '';
+        const gmachTypesJson = fd.get('gmach_types_json')?.toString()  ?? '';
         const logoBase64   = fd.get('logo_base64')?.toString()         ?? '';
         const imagesJson   = fd.get('images_json')?.toString()         ?? '';
         const tagsJson     = fd.get('tags_json')?.toString()           ?? '';
+
+        // נושאים מרובים; gmach_type הראשי נשמר לתאימות עם האתר הארצי (מסנן לפי ערך יחיד)
+        let gmachTypes: string[] = [];
+        try {
+            const parsed = JSON.parse(gmachTypesJson || '[]');
+            if (Array.isArray(parsed)) gmachTypes = parsed.filter(s => typeof s === 'string' && s.trim().length > 0);
+        } catch {}
+        if (gmachTypes.length === 0 && gmachType) gmachTypes = [gmachType];
+        const primaryGmachType = gmachTypes[0] ?? '';
 
         let images: string[] = [];
         try {
@@ -86,7 +96,8 @@ export const actions: Actions = {
                 neighborhood,
                 extra_fields: {
                     hours,
-                    gmach_type: gmachType,
+                    gmach_type: primaryGmachType,
+                    ...(gmachTypes.length > 0 ? { gmach_types: gmachTypes } : {}),
                     ...(street       ? { street }       : {}),
                     ...(buildingNum  ? { building_num: buildingNum } : {}),
                     ...(floor        ? { floor }        : {}),

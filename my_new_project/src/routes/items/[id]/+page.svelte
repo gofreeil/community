@@ -10,6 +10,7 @@
     import JsonLd from "$lib/components/JsonLd.svelte";
     import { productSchema, eventSchema } from "$lib/seo";
     import { formatOpeningHours } from "$lib/openingHours";
+    import { gmachTypeLabel } from "$lib/gmachTypes";
 
     let { data }: { data: PageData } = $props();
     const item = $derived(data.item);
@@ -506,7 +507,7 @@
 
 <!-- Hidden keys (rendered in dedicated sections, complex types, or internal-only) -->
 {#snippet extraFieldsBlock()}
-    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'price', 'website', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname', 'age', 'birth_date', 'sector', 'gender', 'type', 'activities'])}
+    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'price', 'website', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname', 'age', 'birth_date', 'sector', 'gender', 'type', 'activities', 'gmach_type', 'gmach_types'])}
     {@const LABELS_HE: Record<string, string> = {
         nickname: 'שם או כינוי',
         gender: 'מין',
@@ -576,6 +577,25 @@
             <div class="flex flex-wrap gap-2">
                 {#each services as s}
                     <span class="px-3 py-1 rounded-full text-xs font-bold bg-blue-500/15 border border-blue-400/40 text-blue-200">{s}</span>
+                {/each}
+            </div>
+        </section>
+    {/if}
+{/snippet}
+
+<!-- Gmach topics badges (a gmach can serve several topics) -->
+{#snippet gmachTopicsBlock()}
+    {@const ef = (item as { extraFields?: { gmach_types?: unknown; gmach_type?: unknown } } | null)?.extraFields}
+    {@const keys = Array.isArray(ef?.gmach_types)
+        ? (ef.gmach_types as unknown[]).filter((k): k is string => typeof k === 'string' && k.length > 0)
+        : (typeof ef?.gmach_type === 'string' && ef.gmach_type ? [ef.gmach_type] : [])}
+    {#if keys.length > 0}
+        <section>
+            <h2 class="text-base font-bold text-white mb-1.5 flex items-center gap-1.5">
+                <span class="w-1 h-4 bg-amber-400 rounded-full"></span>נושאי הגמ"ח</h2>
+            <div class="flex flex-wrap gap-2">
+                {#each keys as k}
+                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 border border-amber-400/40 text-amber-200">{gmachTypeLabel(k)}</span>
                 {/each}
             </div>
         </section>
@@ -710,6 +730,9 @@
 
                     <!-- Services badges (synagogue + lesson + mikveh...) -->
                     {@render servicesBlock()}
+
+                    <!-- Gmach topics badges (several topics per gmach) -->
+                    {@render gmachTopicsBlock()}
 
                     <!-- Activities schedule (each activity has its own time) -->
                     {#if activities.length > 0 || canEditActivities}

@@ -5,27 +5,12 @@
     import { enhance } from '$app/forms';
     import { citiesAndNeighborhoods, effectiveNeighborhoods, LS_KEY, DEFAULT_NEIGHBORHOOD } from '$lib/neighborhoodsData';
     import { formMemory } from '$lib/formMemory';
+    import { GMACH_TYPES } from '$lib/gmachTypes';
     import type { ActionData, PageData } from './$types';
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
 
     const DRAFT_KEY = 'add_draft_gmach';
-
-    // Shared vocabulary with the national site (national-gemach):
-    // value = key stored in Strapi (extra_fields.gmach_type), label = Hebrew display.
-    const GMACH_TYPES = [
-        { key: 'clothing',    label: '👕 ביגוד' },
-        { key: 'baby',        label: '🍼 תינוקות' },
-        { key: 'books',       label: '📚 ספרים' },
-        { key: 'furniture',   label: '🪑 ריהוט' },
-        { key: 'medical',     label: '🏥 ציוד רפואי' },
-        { key: 'food',        label: '🥫 מזון' },
-        { key: 'tools',       label: '🔧 כלים' },
-        { key: 'wedding',     label: '💍 חתונה' },
-        { key: 'judaism',     label: '✡️ יהדות' },
-        { key: 'initiatives', label: '🌟 מיזמים חשובים לציבור' },
-        { key: 'other',       label: '📦 אחר' },
-    ];
 
     // ---- Form state ----
     let title       = $state('');
@@ -41,7 +26,7 @@
     let hours       = $state('');
     let contact     = $state('');
     let phone       = $state('');
-    let gmachType   = $state('');
+    let gmachTypes  = $state<string[]>([]);
     let city        = $state(data.userCity || 'ירושלים');
     let neighborhood = $state(data.userNeighborhood || DEFAULT_NEIGHBORHOOD);
     let logoBase64  = $state('');
@@ -68,6 +53,12 @@
 
     function removeTag(i: number) {
         tags = tags.filter((_, idx) => idx !== i);
+    }
+
+    function toggleGmachType(key: string) {
+        gmachTypes = gmachTypes.includes(key)
+            ? gmachTypes.filter(k => k !== key)
+            : [...gmachTypes, key];
     }
 
     const MAX_IMAGES = 6;
@@ -171,7 +162,8 @@
                 if (d.hours)        hours        = d.hours;
                 if (d.contact)      contact      = d.contact;
                 if (d.phone)        phone        = d.phone;
-                if (d.gmachType)    gmachType    = d.gmachType;
+                if (Array.isArray(d.gmachTypes)) gmachTypes = d.gmachTypes;
+                else if (d.gmachType)            gmachTypes = [d.gmachType];
                 if (d.city)         city         = d.city;
                 if (d.neighborhood) neighborhood = d.neighborhood;
                 if (d.logoBase64)   logoBase64   = d.logoBase64;
@@ -217,14 +209,14 @@
         if (!browser) return;
         try {
             localStorage.setItem(DRAFT_KEY, JSON.stringify({
-                title, headline, summary, icon, description, street, buildingNum, floor, apartment, arrivalNotes, hours, contact, phone, gmachType, city, neighborhood,
+                title, headline, summary, icon, description, street, buildingNum, floor, apartment, arrivalNotes, hours, contact, phone, gmachTypes, city, neighborhood,
                 logoBase64, images, tags,
             }));
         } catch {
             // אם חרגנו ממכסת localStorage (תמונות גדולות) - שמור בלי תמונות
             try {
                 localStorage.setItem(DRAFT_KEY, JSON.stringify({
-                    title, headline, summary, icon, description, street, buildingNum, floor, apartment, arrivalNotes, hours, contact, phone, gmachType, city, neighborhood, tags,
+                    title, headline, summary, icon, description, street, buildingNum, floor, apartment, arrivalNotes, hours, contact, phone, gmachTypes, city, neighborhood, tags,
                 }));
             } catch {}
         }
@@ -303,14 +295,21 @@
                     <input id="headline" name="headline" bind:value={headline} placeholder="כותרת קצרה ומושכת לגמ&quot;ח" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
                 </div>
 
-                <div>
-                    <label for="gmach_type" class="text-white text-sm font-bold mb-1 block">קטגוריה</label>
-                    <select id="gmach_type" name="gmach_type" bind:value={gmachType} class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white" style="color-scheme: dark;">
-                        <option value="" style="color: #000;">-- בחר סוג --</option>
+                <div id="gmach_type" role="group" aria-label="נושאי הגמח">
+                    <p class="text-white text-sm font-bold mb-1">נושאים <span class="text-gray-400 font-normal text-xs">(אפשר לבחור כמה)</span></p>
+                    <div class="flex flex-wrap gap-2">
                         {#each GMACH_TYPES as t}
-                            <option value={t.key} style="color: #000;">{t.label}</option>
+                            {@const isOn = gmachTypes.includes(t.key)}
+                            <button type="button" onclick={() => toggleGmachType(t.key)}
+                                class="px-3 py-1.5 rounded-full border-2 text-sm font-bold transition-all {isOn
+                                    ? 'bg-amber-600 text-white border-transparent shadow-md'
+                                    : 'bg-white/5 border-white/15 text-gray-300 hover:bg-white/10 hover:border-white/30'}">
+                                {isOn ? '✓ ' : ''}{t.label}
+                            </button>
                         {/each}
-                    </select>
+                    </div>
+                    <input type="hidden" name="gmach_type" value={gmachTypes[0] ?? ''} />
+                    <input type="hidden" name="gmach_types_json" value={JSON.stringify(gmachTypes)} />
                 </div>
 
                 <div>
