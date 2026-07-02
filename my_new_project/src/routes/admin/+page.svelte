@@ -242,7 +242,7 @@
 			<!-- פרסומים בקהילה -->
 			<div class="relative overflow-hidden rounded-2xl border border-purple-500/25 bg-gradient-to-br from-purple-600/15 to-purple-500/5 p-4">
 				<div class="flex items-center gap-2 text-purple-200/80 text-sm font-bold mb-1">
-					<span class="text-lg">📋</span> פרטים בקהילה
+					<span class="text-lg">📋</span> פרטים במפה
 				</div>
 				<div class="text-4xl font-black text-white leading-none">{dash.totalItems}</div>
 				{#if dash.newItemsThisMonth > 0}
@@ -262,7 +262,7 @@
 			<!-- הצטרפו החודש -->
 			<div class="relative overflow-hidden rounded-2xl border border-emerald-500/25 bg-gradient-to-br from-emerald-600/15 to-emerald-500/5 p-4">
 				<div class="flex items-center gap-2 text-emerald-200/80 text-sm font-bold mb-1">
-					<span class="text-lg">🆕</span> הצטרפו החודש
+					<span class="text-lg">🆕</span> כניסות
 				</div>
 				<div class="text-4xl font-black text-white leading-none">{dash.newUsersThisMonth}</div>
 				<div class="text-xs text-emerald-300/70 mt-1.5 font-bold">משתמשים חדשים</div>
