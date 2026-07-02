@@ -226,12 +226,6 @@
 						</span>
 					{/if}
 				</button>
-				<button
-					onclick={() => goto('/')}
-					class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
-				>
-					חזרה לאתר
-				</button>
 			</div>
 		</div>
 
