@@ -107,7 +107,8 @@
                     await fetch('/api/neighborhoods', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(area.pendingNeighborhood),
+                        // שם וטלפון מהטופס - כדי שהאדמין יוכל ליצור קשר עם המבקש מהפאנל
+                        body: JSON.stringify({ ...area.pendingNeighborhood, requester_name: name.trim(), requester_phone: phone.trim() }),
                     });
                 } catch { /* לא מכשיל את בקשת הרכז */ }
             }

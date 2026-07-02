@@ -97,14 +97,18 @@ export const load: PageServerLoad = async (event) => {
         console.warn('[admin] getNeighborhoods failed:', e);
     }
 
-    // צירוף פרטי מבקש לכל שכונה ממתינה - כדי שהאדמין יראה מי ביקש להגדיר את המפה
+    // צירוף פרטי מבקש לכל שכונה ממתינה - כדי שהאדמין יראה מי ביקש להגדיר את המפה.
+    // קודם מחשבון המשתמש (אם היה מחובר), ואם לא - מהשם/טלפון שנשמרו על הבקשה עצמה
+    // (בקשת רכז נשלחת גם בלי חשבון).
     const usersById = new Map(users.map((u) => [u.id, u]));
     const pendingNeighborhoodsWithRequester = pendingNeighborhoods.map((nb) => {
         const u = nb.user_id ? usersById.get(nb.user_id) : undefined;
+        const name  = u?.name ?? u?.nickname ?? (nb.requester_name || null);
+        const phone = u?.phone || nb.requester_phone || '';
         return {
             ...nb,
-            requester: u
-                ? { name: u.name ?? u.nickname ?? null, email: u.email ?? null, phone: u.phone ?? '' }
+            requester: (name || phone)
+                ? { name, email: u?.email ?? null, phone }
                 : null,
         };
     });

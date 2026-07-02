@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { getNeighborhoods, createNeighborhoodRequest, createItem } from '$lib/server/db';
+import { getNeighborhoods, createNeighborhoodRequest, createItem, getUserById } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
 // ---- GET: approved neighborhoods (for merging into the picker / map) ----
@@ -31,12 +31,26 @@ export const POST: RequestHandler = async (event) => {
         return json({ success: false, message: 'נא לסמן את מיקום השכונה על המפה' }, { status: 400 });
     }
 
+    // פרטי קשר של המבקש - כדי שהאדמין יוכל לפתוח איתו צ'אט ישירות מהפאנל.
+    // מהטופס (בקשת רכז נשלחת גם בלי חשבון), ואם חסר - מפרופיל המשתמש המחובר.
+    let requesterName  = String(body.requester_name  ?? '').trim();
+    let requesterPhone = String(body.requester_phone ?? '').trim();
+    if ((!requesterName || !requesterPhone) && session?.user?.id) {
+        try {
+            const u = await getUserById(session.user.id);
+            if (!requesterName)  requesterName  = u?.name ?? u?.nickname ?? '';
+            if (!requesterPhone) requesterPhone = u?.phone ?? '';
+        } catch { /* לא חוסם את הבקשה */ }
+    }
+
     const created = await createNeighborhoodRequest({
         name,
         city,
         lat,
         lng,
         user_id: session?.user?.id ?? undefined,
+        requester_name:  requesterName  || undefined,
+        requester_phone: requesterPhone || undefined,
     });
 
     // בקשה זהה כבר קיימת - לא נוצרה כפילות, מחזירים את המצב האמיתי

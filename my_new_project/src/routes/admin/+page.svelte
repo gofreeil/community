@@ -22,6 +22,13 @@
 		});
 	}
 
+	// צ'אט וואטסאפ ישיר עם מבקש שכונה - עם הודעת פתיחה מוכנה על הבקשה שלו
+	function requesterChatLink(phone: string, nbName: string, city: string): string {
+		const digits = phone.replace(/\D/g, '').replace(/^0/, '972');
+		const text = `שלום, כאן הנהלת קהילה בשכונה 👋 בקשר לבקשתך להוספת השכונה "${nbName}"${city ? ` ב${city}` : ''} למפה:`;
+		return `https://wa.me/${digits}?text=${encodeURIComponent(text)}`;
+	}
+
 	// ---- סימון ידני "כבר אישרתי" על פרסומים/הודעות (וי ירוק) ----
 	// נשמר ב-localStorage של הדפדפן (זיכרון אישי לאדמין, ללא צורך בבאקאנד)
 	const APPROVED_KEY = 'admin_approved_items';
@@ -458,6 +465,17 @@
 
 								<!-- פעולות -->
 								<div class="flex gap-2 flex-shrink-0 flex-wrap">
+									{#if nb.requester?.phone}
+										<a
+											href={requesterChatLink(nb.requester.phone, nb.name, nb.city)}
+											target="_blank"
+											rel="noopener noreferrer"
+											class="px-3 py-1.5 text-sm rounded-lg bg-emerald-500/15 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/25 transition-all font-bold whitespace-nowrap"
+											title="פתח צ'אט וואטסאפ עם {nb.requester.name || 'המבקש'} על הבקשה הזו"
+										>
+											💬 צ'אט עם המבקש
+										</a>
+									{/if}
 									<form method="POST" action="?/approveNeighborhood" use:enhance>
 										<input type="hidden" name="neighborhoodId" value={nb.id} />
 										<button

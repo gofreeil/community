@@ -1018,6 +1018,8 @@ export interface DbNeighborhood {
     lat: number;
     lng: number;
     user_id: string;
+    requester_name: string;
+    requester_phone: string;
     status: NeighborhoodStatus;
     created_at: string;
 }
@@ -1030,6 +1032,8 @@ interface StrapiNeighborhood {
     lat: number;
     lng: number;
     user_id: string | null;
+    requester_name?: string | null;
+    requester_phone?: string | null;
     status: NeighborhoodStatus;
     decided_at: string | null;
     decided_by: string | null;
@@ -1044,6 +1048,8 @@ function mapNeighborhood(n: StrapiNeighborhood): DbNeighborhood {
         lat:        n.lat,
         lng:        n.lng,
         user_id:    n.user_id ?? '',
+        requester_name:  n.requester_name ?? '',
+        requester_phone: n.requester_phone ?? '',
         status:     n.status ?? 'pending',
         created_at: n.createdAt ?? '',
     };
@@ -1075,6 +1081,8 @@ export async function createNeighborhoodRequest(data: {
     lat: number;
     lng: number;
     user_id?: string;
+    requester_name?: string;
+    requester_phone?: string;
 }): Promise<DbNeighborhood & { alreadyExisted?: boolean }> {
     const norm = (s: string) => s.trim().replace(/\s+/g, ' ').replace(/^(שכונת|שכונה)\s+/, '');
     try {
@@ -1096,6 +1104,8 @@ export async function createNeighborhoodRequest(data: {
             lat:     data.lat,
             lng:     data.lng,
             user_id: data.user_id ?? null,
+            requester_name:  data.requester_name  ?? null,
+            requester_phone: data.requester_phone ?? null,
             status:  'pending',
         },
     });
