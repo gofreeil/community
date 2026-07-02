@@ -41,10 +41,11 @@
     // ---- Neighborhood - מתמלא מיד מהפרופיל ----
     // אם למשתמש יש עיר אבל אין שכונה (יישוב חד-שכונתי כמו כפר תפוח) - "מרכז",
     // ולא ברירת המחדל הגלובלית (קרית משה) שתשמור את הפריט באזור הלא נכון.
+    // במצב עריכה - המיקום של הפריט הקיים גובר על הפרופיל
     let neighborhood = $state(
-        userProfile?.neighborhood || (userProfile?.city ? 'מרכז' : DEFAULT_NEIGHBORHOOD),
+        editItem?.neighborhood || userProfile?.neighborhood || (userProfile?.city ? 'מרכז' : DEFAULT_NEIGHBORHOOD),
     );
-    let city         = $state(userProfile?.city         || 'ירושלים');
+    let city         = $state(editItem?.city || userProfile?.city || 'ירושלים');
 
     // ערים+שכונות לבורר, כולל שכונות שאושרו ע"י אדמין (מקור-אמת אחד לכל האתר)
     let citiesWithApproved = $derived(
@@ -52,6 +53,21 @@
             (c) => [c, effectiveNeighborhoods(c, (data as any).approvedNeighborhoods)] as [string, string[]],
         ),
     );
+
+    // ---- בורר מיקום הפרסום (עיר+שכונה) - גלוי למפרסם, לא נלקח בשקט מהפרופיל ----
+    // הערך הנוכחי תמיד מופיע ברשימה גם אם אינו בבורר (פרופיל ישן / שכונה מותאמת)
+    const cityOptions = $derived.by(() => {
+        const names = citiesWithApproved.map(([c]) => c);
+        return names.includes(city) ? names : [city, ...names];
+    });
+    const cityNeighborhoods = $derived.by(() => {
+        const list = citiesWithApproved.find(([c]) => c === city)?.[1] ?? [];
+        return list.includes(neighborhood) ? list : [neighborhood, ...list].filter(Boolean);
+    });
+    function onCityChange() {
+        const list = citiesWithApproved.find(([c]) => c === city)?.[1] ?? [];
+        neighborhood = list.includes('מרכז') || list.length === 0 ? 'מרכז' : list[0];
+    }
 
     // ---- פין מיקום על המפה (שדות מסוג map_pin) ----
     let pinLat = $state<number | null>(editItem?.lat ?? null);
@@ -578,6 +594,32 @@
             onsubmit={handleSubmit}
             class="rounded-2xl border {colors.border} {colors.bg} p-4 md:p-8 grid grid-cols-2 gap-x-3 gap-y-3.5 md:gap-5"
         >
+            <!-- מיקום הפרסום - העיר והשכונה שבהן הפריט יופיע בלוחות ועל המפה -->
+            <div class="col-span-2 rounded-xl border border-white/15 bg-white/5 p-3 md:p-4">
+                <p class="text-[13px] md:text-sm font-bold text-gray-300 mb-2">
+                    📍 איפה זה נמצא? <span class="text-red-400">*</span>
+                </p>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label for="pub-city" class="block text-xs text-gray-400 mb-1">עיר / יישוב</label>
+                        <select id="pub-city" bind:value={city} onchange={onCityChange} class="{inputClass} cursor-pointer">
+                            {#each cityOptions as cty}
+                                <option value={cty} style="background:#fff;color:#0f172a;">{cty}</option>
+                            {/each}
+                        </select>
+                    </div>
+                    <div>
+                        <label for="pub-neighborhood" class="block text-xs text-gray-400 mb-1">שכונה</label>
+                        <select id="pub-neighborhood" bind:value={neighborhood} class="{inputClass} cursor-pointer">
+                            {#each cityNeighborhoods as nb}
+                                <option value={nb} style="background:#fff;color:#0f172a;">{nb}</option>
+                            {/each}
+                        </select>
+                    </div>
+                </div>
+                <p class="text-gray-400 text-xs mt-1.5">מולא אוטומטית לפי הפרופיל שלך - שנו אם הפרסום נמצא במקום אחר</p>
+            </div>
+
             {#each config.fields as field}
                 {#if isFieldVisible(field)}
                 <div class="{field.half ? 'col-span-1' : 'col-span-2'}">

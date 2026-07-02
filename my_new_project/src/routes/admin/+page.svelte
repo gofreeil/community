@@ -98,12 +98,21 @@
 		return c ?? '';
 	}
 
+	// ברירת מחדל למינוי רכז: "שכונה (עיר)" - רשומה בלי עיר עמומה בין ערים,
+	// ורשומה שהיא שם עיר בלבד ממנה רכז לכל העיר
+	function defaultCoordArea(neighborhood?: string | null, city?: string | null): string {
+		const n = neighborhood?.trim();
+		const c = city?.trim();
+		if (n && n !== 'מרכז') return c ? `${n} (${c})` : n;
+		return c ?? '';
+	}
+
 	function openCoordModal(user: { id: string; name: string | null; coordinator_of: string[]; neighborhood?: string | null; city?: string | null }) {
 		coordModalUser = user;
-		// ברירת מחדל: אם כבר רכז - השכונות הקיימות; אחרת מקום המגורים מהפרופיל (שכונה או עיר)
+		// ברירת מחדל: אם כבר רכז - השכונות הקיימות; אחרת מקום המגורים מהפרופיל (שכונה+עיר)
 		coordNeighborhoods = user.coordinator_of.length > 0
 			? user.coordinator_of.join('\n')
-			: residenceLabel(user.neighborhood, user.city);
+			: defaultCoordArea(user.neighborhood, user.city);
 		showCoordModal = true;
 	}
 
