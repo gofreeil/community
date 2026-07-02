@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { getNeighborhoods, createNeighborhoodRequest } from '$lib/server/db';
+import { getNeighborhoods, createNeighborhoodRequest, createItem } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
 // ---- GET: approved neighborhoods (for merging into the picker / map) ----
@@ -38,6 +38,41 @@ export const POST: RequestHandler = async (event) => {
         lng,
         user_id: session?.user?.id ?? undefined,
     });
+
+    // בקשה זהה כבר קיימת - לא נוצרה כפילות, מחזירים את המצב האמיתי
+    if (created.alreadyExisted) {
+        return json({
+            success: true,
+            id: created.id,
+            alreadyPending:  created.status === 'pending',
+            alreadyApproved: created.status === 'approved',
+        });
+    }
+
+    // אישור קבוע בתיבת ההודעות - הוכחה שהבקשה נקלטה, כדי שהמשתמש לא ישלח שוב ושוב.
+    // (רק למשתמש מחובר; מטופס בקשת רכז אפשר להגיע גם בלי חשבון)
+    if (session?.user?.id) {
+        try {
+            await createItem({
+                category:    'message',
+                label:       `📍 בקשתך להוספת "${name}" התקבלה`,
+                description:
+                    `קיבלנו את בקשתך להוסיף את "${name}" (${city}) למפת השכונות.\n` +
+                    `הבקשה ממתינה לאישור מנהל — נעדכן אותך כאן ברגע שהשכונה תתווסף. אין צורך לשלוח שוב 🙏`,
+                icon:        '📍',
+                color:       'green',
+                user_id:     session.user.id,
+                extra_fields: {
+                    type:               'neighborhood_request_ack',
+                    requested_location: name,
+                    requested_city:     city,
+                    requested_at:       new Date().toISOString(),
+                },
+            });
+        } catch (e) {
+            console.warn('[api/neighborhoods] user ack message failed:', e);
+        }
+    }
 
     return json({ success: true, id: created.id });
 };

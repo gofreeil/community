@@ -1066,14 +1066,29 @@ export async function getNeighborhoods(status: NeighborhoodStatus = 'approved'):
     });
 }
 
-/** יצירת בקשת שכונה חדשה (status=pending) - תושב שסימן פין על המפה */
+/** יצירת בקשת שכונה חדשה (status=pending) - תושב שסימן פין על המפה.
+ *  אם כבר קיימת שכונה ממתינה/מאושרת באותו שם ועיר - לא נוצרת כפילות,
+ *  והרשומה הקיימת מוחזרת עם alreadyExisted (קרה בפועל: 7 בקשות זהות לאותה שכונה). */
 export async function createNeighborhoodRequest(data: {
     name: string;
     city: string;
     lat: number;
     lng: number;
     user_id?: string;
-}): Promise<DbNeighborhood> {
+}): Promise<DbNeighborhood & { alreadyExisted?: boolean }> {
+    const norm = (s: string) => s.trim().replace(/\s+/g, ' ').replace(/^(שכונת|שכונה)\s+/, '');
+    try {
+        const [pending, approved] = await Promise.all([
+            getNeighborhoods('pending'),
+            getNeighborhoods('approved'),
+        ]);
+        const existing = [...pending, ...approved].find(
+            n => norm(n.name) === norm(data.name) && n.city.trim() === data.city.trim(),
+        );
+        if (existing) return { ...existing, alreadyExisted: true };
+    } catch (e) {
+        console.warn('[db] neighborhood dedupe check failed:', e);
+    }
     const res = await strapiPost<{ data: StrapiNeighborhood }>('/api/neighborhoods', {
         data: {
             name:    data.name,
