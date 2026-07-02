@@ -76,9 +76,9 @@ export const categoryConfig: Record<string, CategoryConfig> = {
         color: 'blue',
         priceRow: null,
         fields: [
-            { key: 'label',       label: 'שם / סוג',           type: 'text',     required: true,  placeholder: 'מניין שחרית, שיעור דף יומי...' },
-            { key: 'type',        label: 'סוג',                 type: 'select',   required: true,  options: ['מניין', 'שיעור תורה', 'מקווה', 'אחר'] },
-            { key: 'time',        label: 'שעה',                 type: 'time',     required: true },
+            { key: 'label',       label: 'שם המקום',            type: 'text',     required: true,  placeholder: 'בית הכנסת "אהל יוסף", מניין דף היומי...' },
+            { key: 'type',        label: 'מה יש במקום (אפשר לבחור כמה)', type: 'multi_select', required: true, options: ['בית כנסת', 'תפילה / מניין', 'שיעור תורה', 'מקווה', 'אחר'] },
+            { key: 'time',        label: 'שעה עיקרית',          type: 'time',     required: false },
             { key: 'days',        label: 'ימים',                type: 'text',     required: false, placeholder: 'כל יום, א-ה, שישי בלבד...' },
             { key: 'address',     label: 'כתובת',               type: 'text',     required: true,  placeholder: 'שם בית הכנסת, כתובת' },
             { key: 'contact',     label: 'שם הרב / מארגן',      type: 'text',     required: false, placeholder: 'הרב ישראל ישראלי' },

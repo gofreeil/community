@@ -446,7 +446,7 @@
 
 <!-- Hidden keys (rendered in dedicated sections, complex types, or internal-only) -->
 {#snippet extraFieldsBlock()}
-    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'price', 'website', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname', 'age', 'birth_date', 'sector', 'gender'])}
+    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'price', 'website', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname', 'age', 'birth_date', 'sector', 'gender', 'type'])}
     {@const LABELS_HE: Record<string, string> = {
         nickname: 'שם או כינוי',
         gender: 'מין',
@@ -501,6 +501,23 @@
                     </div>
                 {/each}
             </dl>
+        </section>
+    {/if}
+{/snippet}
+
+<!-- Services badges (e.g. a synagogue that also hosts a lesson + mikveh) -->
+{#snippet servicesBlock()}
+    {@const rawType = (item as { extraFields?: { type?: unknown } } | null)?.extraFields?.type}
+    {@const services = typeof rawType === 'string' ? rawType.split(',').map(s => s.trim()).filter(Boolean) : []}
+    {#if services.length > 0}
+        <section>
+            <h2 class="text-base font-bold text-white mb-1.5 flex items-center gap-1.5">
+                <span class="w-1 h-4 bg-blue-500 rounded-full"></span>מה יש במקום</h2>
+            <div class="flex flex-wrap gap-2">
+                {#each services as s}
+                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-blue-500/15 border border-blue-400/40 text-blue-200">{s}</span>
+                {/each}
+            </div>
         </section>
     {/if}
 {/snippet}
@@ -630,6 +647,9 @@
                             <a href="tel:{item.phone}" class="hover:text-white">{item.phone}</a>
                         </p>
                     {/if}
+
+                    <!-- Services badges (synagogue + lesson + mikveh...) -->
+                    {@render servicesBlock()}
 
                     <!-- Extra fields: compact list -->
                     {@render extraFieldsBlock()}
