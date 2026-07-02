@@ -292,14 +292,21 @@
             }
         } catch {}
 
-        // שחזר טיוטא אם קיימת (גובר על הכל). הטיוטא משמרת את עצמה עד שליחה מוצלחת.
-        try {
+        // שחזר טיוטא אם קיימת (גובר על הכל). הטיוטא משמרת את עצמה עד שליחה מוצלחת,
+        // כך שרענון/קריסה/באג בפרסום לא מאבדים שום דבר שהוקלד.
+        // במצב עריכה מדלגים - הערכים מגיעים מהפריט הקיים ואסור שטיוטת הוספה ישנה תדרוס אותם.
+        if (!isEditMode) try {
             const draft = localStorage.getItem(DRAFT_KEY);
             if (draft) {
                 const parsed = JSON.parse(draft);
                 if (parsed.formValues)   formValues   = { ...formValues, ...parsed.formValues };
                 if (parsed.neighborhood) neighborhood = parsed.neighborhood;
                 if (parsed.city)         city         = parsed.city;
+                if (parsed.pinLat != null && parsed.pinLng != null) {
+                    pinLat = parsed.pinLat;
+                    pinLng = parsed.pinLng;
+                    showMap = true;
+                }
             }
         } catch {}
     });
@@ -310,9 +317,13 @@
         void formValues;
         void neighborhood;
         void city;
-        try {
-            localStorage.setItem(DRAFT_KEY, JSON.stringify({ formValues, neighborhood, city }));
-        } catch {}
+        void pinLat;
+        void pinLng;
+        if (!isEditMode) {
+            try {
+                localStorage.setItem(DRAFT_KEY, JSON.stringify({ formValues, neighborhood, city, pinLat, pinLng }));
+            } catch {}
+        }
         // שמור את השדות האישיים גם בעוגייה חוצת-טפסים (שם/טלפון/איש קשר/קישורים)
         rememberFields(formValues);
     });
@@ -372,7 +383,7 @@
     // ---- שמירת טיוטא ל-localStorage ----
     function saveDraft() {
         if (!browser) return;
-        localStorage.setItem(DRAFT_KEY, JSON.stringify({ formValues, neighborhood, city }));
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({ formValues, neighborhood, city, pinLat, pinLng }));
     }
 
     // ---- Submit ----
@@ -454,6 +465,12 @@
             }
 
             submitted = true;
+
+            // הפרסום הצליח - הטיוטא סיימה את תפקידה. בלי זה נתונים ישנים
+            // צצים שוב בפעם הבאה שפותחים את הטופס באותה קטגוריה.
+            if (browser && !isEditMode) {
+                try { localStorage.removeItem(DRAFT_KEY); } catch {}
+            }
 
             if (isPaidFlow) {
                 if (browser) {

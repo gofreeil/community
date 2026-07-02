@@ -1,5 +1,7 @@
 <script lang="ts">
     import type { ActionData, PageData } from './$types';
+    import { onMount } from 'svelte';
+    import { browser } from '$app/environment';
     import { enhance } from '$app/forms';
     import { categoryConfig } from '$lib/categoryFields';
     import { citiesAndNeighborhoods, effectiveNeighborhoods } from '$lib/neighborhoodsData';
@@ -7,6 +9,10 @@
     import { formMemory } from '$lib/formMemory';
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
+
+    // טיוטא אוטומטית: כל מה שהוקלד (כולל תמונות) שורד רענון/קריסה/שגיאת שרת,
+    // ונמחק רק אחרי פרסום מוצלח. אותו דפוס כמו /add/[category].
+    const DRAFT_KEY = 'add_draft_giveaway';
 
     const conditions = categoryConfig.giveaway.fields.find(f => f.key === 'condition')?.options ?? [];
     const cities = Object.keys(citiesAndNeighborhoods).sort();
@@ -98,6 +104,38 @@
 
     // שליחה דרך use:enhance - שגיאה לא מרעננת את הדף ולא מאבדת את התמונות שהועלו.
     let submitting = $state(false);
+
+    // ---- שחזור טיוטא (אחרי רענון/קריסה/יציאה באמצע) ----
+    onMount(() => {
+        try {
+            const raw = localStorage.getItem(DRAFT_KEY);
+            if (!raw) return;
+            const d = JSON.parse(raw);
+            if (d.label)        label     = d.label;
+            if (d.description)  description = d.description;
+            if (d.category)     category  = d.category;
+            if (d.condition)    condition = d.condition;
+            if (d.priceMode)    priceMode = d.priceMode;
+            if (d.price)        price     = d.price;
+            if (d.city)         city      = d.city;
+            if (d.neighborhood) neighborhood = d.neighborhood;
+            if (d.contact)      contact   = d.contact;
+            if (d.phone)        phone     = d.phone;
+            if (Array.isArray(d.images) && d.images.length) images = d.images;
+        } catch {}
+    });
+
+    // ---- שמירה אוטומטית של טיוטא בכל שינוי ----
+    $effect(() => {
+        if (!browser) return;
+        const draft = { label, description, category, condition, priceMode, price, city, neighborhood, contact, phone, images };
+        try {
+            localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+        } catch {
+            // התמונות (base64) עלולות לחרוג ממכסת ה-localStorage - נשמור לפחות את הטקסט
+            try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ ...draft, images: [] })); } catch {}
+        }
+    });
 </script>
 
 <svelte:head>
@@ -122,7 +160,11 @@
                 use:enhance={() => {
                     submitting = true;
                     // reset: false - לשמר את הקלט והתמונות אם השרת החזיר שגיאה.
-                    return async ({ update }) => {
+                    return async ({ result, update }) => {
+                        // פרסום מוצלח מסתיים ב-redirect - הטיוטא סיימה את תפקידה
+                        if (result.type === 'redirect') {
+                            try { localStorage.removeItem(DRAFT_KEY); } catch {}
+                        }
                         await update({ reset: false });
                         submitting = false;
                     };
