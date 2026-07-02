@@ -30,7 +30,7 @@
     // Helper: מחזיר HTML לאיקון - תמונה אם src, אמוגי אם לא
     const iconHtml = (size: 'lg' | 'sm' = 'sm') =>
         config.icon?.startsWith('/')
-            ? `<img src="${config.icon}" class="${size === 'lg' ? 'w-28 h-28 mx-auto' : 'w-5 h-5 inline-block align-middle'}" alt="${config.label}" />`
+            ? `<img src="${config.icon}" class="${size === 'lg' ? 'w-20 h-20 md:w-28 md:h-28 mx-auto' : 'w-5 h-5 inline-block align-middle'}" alt="${config.label}" />`
             : config.icon ?? '';
 
     // ---- Neighborhood - מתמלא מיד מהפרופיל ----
@@ -482,7 +482,7 @@
     };
     const colors = colorClasses[config.color] ?? colorClasses['purple'];
 
-    const inputClass = `w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3
+    const inputClass = `w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 md:px-4 md:py-3
         text-white placeholder:text-gray-600 text-sm
         focus:outline-none focus:border-amber-500/60 focus:bg-amber-900/10
         transition-all`;
@@ -495,7 +495,7 @@
 <div class="max-w-2xl mx-auto px-4 py-4 md:py-6" dir="rtl">
 
     <!-- Header -->
-    <div class="text-center mb-4">
+    <div class="text-center mb-3 md:mb-4">
         {#if categoryId !== 'restaurants'}
             <div class="-mb-2">{@html iconHtml('lg')}</div>
         {/if}
@@ -545,14 +545,14 @@
         <!-- Form -->
         <form
             onsubmit={handleSubmit}
-            class="rounded-2xl border {colors.border} {colors.bg} p-6 md:p-8 grid grid-cols-1 sm:grid-cols-2 gap-5"
+            class="rounded-2xl border {colors.border} {colors.bg} p-4 md:p-8 grid grid-cols-2 gap-x-3 gap-y-3.5 md:gap-5"
         >
             {#each config.fields as field}
                 {#if isFieldVisible(field)}
                 <div class="{field.half ? 'col-span-1' : 'col-span-2'}">
                     <label
                         for="field-{field.key}"
-                        class="block text-sm font-bold text-gray-300 mb-1.5"
+                        class="block text-[13px] md:text-sm font-bold text-gray-300 mb-1 md:mb-1.5"
                     >
                         {field.label}
                         {#if field.required}
@@ -606,7 +606,7 @@
 
                     {:else if field.type === 'multi_select' && field.options}
                         {@const selected = (getFieldValue(field.key) || '').split(',').filter(Boolean)}
-                        <div class="flex flex-wrap gap-2">
+                        <div class="flex flex-wrap gap-1.5 md:gap-2">
                             {#each field.options as opt}
                                 {@const isOn = selected.includes(opt)}
                                 <button
@@ -618,7 +618,7 @@
                                         else current.push(opt);
                                         setFieldValue(field.key, current.join(','));
                                     }}
-                                    class="px-4 py-2 rounded-full border-2 text-sm font-bold transition-all {isOn
+                                    class="px-2.5 py-1.5 md:px-4 md:py-2 rounded-full border md:border-2 text-xs md:text-sm font-bold transition-all {isOn
                                         ? `${colors.btn} text-white border-transparent shadow-md`
                                         : 'bg-white/5 border-white/15 text-gray-300 hover:bg-white/10 hover:border-white/30'}"
                                 >
@@ -880,7 +880,7 @@
                     {/if}
 
                     {#if field.hint && field.type !== 'toggle'}
-                        <p class="text-gray-300 text-sm mt-1">{field.hint}</p>
+                        <p class="text-gray-400 text-xs md:text-sm mt-0.5 md:mt-1">{field.hint}</p>
                     {/if}
 
                     {#if field.key === 'club_discount' && categoryId === 'restaurants'}
@@ -899,7 +899,7 @@
 
             <!-- Error -->
             {#if errorMsg}
-                <div class="rounded-xl border border-red-500/30 bg-red-900/20 px-4 py-3">
+                <div class="col-span-2 rounded-xl border border-red-500/30 bg-red-900/20 px-4 py-3">
                     <p class="text-red-400 text-sm font-bold">{errorMsg}</p>
                 </div>
             {/if}
@@ -909,7 +909,7 @@
                 <button
                     type="submit"
                     disabled={submitting}
-                    class="w-full rounded-xl px-6 py-4 font-black text-base transition-all shadow-lg
+                    class="w-full rounded-xl px-6 py-3 md:py-4 font-black text-base transition-all shadow-lg
                         {submitting
                             ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
                             : `${colors.btn} text-white hover:scale-[1.02] shadow-${config.color}-500/20`}"
