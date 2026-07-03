@@ -526,8 +526,9 @@
 							{@const coordList = ((user as any).coordinator_of as string[]) ?? []}
 							{@const stat = (data.coordinatorStats ?? {})[user.id] ?? { residents: 0, items: 0, itemsOnMap: 0 }}
 							<div class="bg-amber-500/5 rounded-2xl border border-amber-500/30 px-3 py-2 md:px-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 transition-all hover:border-amber-500/50">
-								<!-- אווטר + שם + עיר/שכונה (לחיץ - פרופיל מלא) - מקובצים בצד ימין -->
-								<a href="/admin/users/{user.id}" title="צפה בפרופיל המלא" class="user-link flex items-center gap-3 min-w-0 cursor-pointer">
+								<!-- אווטר + שם (לחיץ - פרופיל מלא). רוחב קבוע ב-sm+ כדי שעמודת השכונות
+								     תתחיל תמיד באותו קו אנכי בכל הכרטיסים -->
+								<a href="/admin/users/{user.id}" title="צפה בפרופיל המלא" class="user-link flex items-center gap-3 min-w-0 cursor-pointer sm:w-56 sm:flex-shrink-0">
 									{#if user.avatar_url}
 										<img src={user.avatar_url} alt="" class="w-10 h-10 rounded-full object-cover flex-shrink-0 ring-2 ring-amber-400/40" />
 									{:else}
