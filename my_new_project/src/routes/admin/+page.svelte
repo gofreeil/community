@@ -98,6 +98,13 @@
 		return c ?? '';
 	}
 
+	// תצוגת אזור רכז: "נאות שקמה (ראשון לציון)" → "ראשון לציון · נאות שקמה"
+	// (הפורמט עם הסוגריים נשאר ב-DB - זו המרה לתצוגה בלבד)
+	function areaLabel(entry: string): string {
+		const m = entry.match(/^(.*?)\s*\(([^)]*)\)\s*$/);
+		return m ? `${m[2].trim()} · ${m[1].trim()}` : entry.trim();
+	}
+
 	// ברירת מחדל למינוי רכז: "שכונה (עיר)" - רשומה בלי עיר עמומה בין ערים,
 	// ורשומה שהיא שם עיר בלבד ממנה רכז לכל העיר
 	function defaultCoordArea(neighborhood?: string | null, city?: string | null): string {
@@ -542,7 +549,7 @@
 								<div class="flex flex-wrap gap-1 max-w-full sm:max-w-[260px]">
 									{#each coordList as n}
 										<span class="text-sm font-bold bg-amber-500/20 text-amber-200 border border-amber-500/40 px-2 py-0.5 rounded-full whitespace-nowrap">
-											{n}
+											{areaLabel(n)}
 										</span>
 									{/each}
 								</div>
@@ -642,12 +649,9 @@
 							</div>
 						</a>
 
-						<!-- שכונה + עיר -->
+						<!-- עיר ואז שכונה -->
 						<div class="text-base text-gray-400 min-w-[100px]">
-							<div>{user.neighborhood || '-'}</div>
-							{#if (user as any).city}
-								<div class="text-sm text-gray-500">{(user as any).city}</div>
-							{/if}
+							{[(user as any).city, user.neighborhood].filter(Boolean).join(' · ') || '-'}
 						</div>
 
 						<!-- תפקיד -->

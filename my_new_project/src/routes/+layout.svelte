@@ -81,6 +81,16 @@
 	beforeNavigate(() => {
 		closeAdPopup();
 	});
+
+	// ספירת כניסות: beacon יחיד לכל session של הדפדפן (לסטטיסטיקה בלוח הניהול)
+	$effect(() => {
+		if (!browser) return;
+		try {
+			if (sessionStorage.getItem('visit_tracked')) return;
+			sessionStorage.setItem('visit_tracked', '1');
+			fetch('/api/track-visit', { method: 'POST', keepalive: true }).catch(() => {});
+		} catch { /* גלישה פרטית וכו' - לא קריטי */ }
+	});
 </script>
 
 <svelte:head>

@@ -4,6 +4,7 @@ import { requireSuperAdmin, requireAdmin } from '$lib/server/auth';
 import { getAllUsers, banUser, unbanUser, setUserRole, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByEmail, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, approveNeighborhood, rejectNeighborhood, getDiscountCodes, saveDiscountCodes, getItemsByCategoryAndStatus, getUserTotpSecret } from '$lib/server/db';
 import { DEFAULT_DISCOUNT_CODES, type DiscountCode } from '$lib/discountCodes';
 import { countPending } from '$lib/server/adsStore';
+import { getVisitsThisMonth } from '$lib/server/visitStats';
 
 // "אושיות (רחובות)" → { name: "אושיות", city: "רחובות" }
 function parseArea(entry: string): { name: string; city: string } {
@@ -132,12 +133,17 @@ export const load: PageServerLoad = async (event) => {
         const t = new Date(iso).getTime();
         return !isNaN(t) && t >= monthStart;
     };
+    // כניסות החודש - נספר ב-visit-stat, מוצג עם רענון של פעם ביום (cache בשכבת visitStats)
+    let monthlyVisits = 0;
+    try { monthlyVisits = await getVisitsThisMonth(); } catch (e) { console.warn('[admin] getVisitsThisMonth failed:', e); }
+
     const dashboard = {
         totalUsers:        users.length,
         totalItems:        items.length,
         totalCoordinators: users.filter(u => ((u as any).coordinator_of?.length ?? 0) > 0).length,
         newUsersThisMonth: users.filter(u => inThisMonth((u as any).created_at)).length,
         newItemsThisMonth: items.filter(i => inThisMonth((i as any).created_at)).length,
+        monthlyVisits,
     };
 
     let pendingAdsCount = 0;
