@@ -913,8 +913,9 @@
 		},
 	]);
 
-	// ===== "אחת ביום עד שתסתיים הרשימה" =====
+	// ===== "אחת ליומיים עד שתסתיים הרשימה" =====
 	const DAILY_KEY = "daily_rec_v1";
+	const REC_INTERVAL_DAYS = 2; // המלצה חדשה רק אחרי יומיים (במקום כל יום)
 	type DailyState = { lastDate: string; shownIds: string[] };
 	function loadDaily(): DailyState {
 		if (typeof localStorage === "undefined") return { lastDate: "", shownIds: [] };
@@ -935,7 +936,11 @@
 
 	onMount(() => {
 		const today = new Date().toISOString().slice(0, 10);
-		if (dailyState.lastDate === today && dailyState.shownIds.length > 0) {
+		// כמה ימים עברו מאז ההמלצה האחרונה - מתקדמים להמלצה הבאה רק אחרי REC_INTERVAL_DAYS
+		const daysSinceLast = dailyState.lastDate
+			? Math.floor((new Date(today).getTime() - new Date(dailyState.lastDate).getTime()) / 86_400_000)
+			: Infinity;
+		if (daysSinceLast < REC_INTERVAL_DAYS && dailyState.shownIds.length > 0) {
 			const lastId = dailyState.shownIds[dailyState.shownIds.length - 1];
 			if (allRecs.find(r => r.id === lastId && r.eligible() && isRecVisible(r.id))) return;
 		}
@@ -2654,11 +2659,11 @@
 					</div>
 				{/if}
 
-				<!-- המלצה יומית (מתחלפת מדי יום עד שמיצינו את כל הרשימה) -->
+				<!-- המלצה מתחלפת אחת ליומיים (עד שמיצינו את כל הרשימה) -->
 				{#if todaysRec}
 					<div class="mt-2 flex flex-col gap-3">
 						<p class="text-xs text-gray-400 uppercase tracking-widest font-bold">
-							💡 ההמלצה היומית שלך
+							💡 ההמלצה שלך
 						</p>
 						<div class="rounded-2xl border px-4 pt-4 pb-3 {recColorClasses(todaysRec.color)}">
 							<div class="flex items-center gap-3 mb-3">
