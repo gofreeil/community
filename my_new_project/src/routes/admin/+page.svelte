@@ -9,7 +9,7 @@
 	let activeTab = $state<'users' | 'items' | 'discounts'>('users');
 
 	// סיכום ללוח הבקרה (באנר עליון)
-	const dash = $derived(data.dashboard ?? { totalUsers: 0, totalItems: 0, totalCoordinators: 0, newUsersThisMonth: 0, newItemsThisMonth: 0 });
+	const dash = $derived(data.dashboard ?? { totalUsers: 0, totalItems: 0, totalCoordinators: 0, newUsersThisMonth: 0, newItemsThisMonth: 0, monthlyVisits: 0 });
 
 	// פורמט תאריך+שעה בעברית - כדי שהאדמין ידע איזו בקשה הגיעה אחרונה
 	function fmtDateTime(iso: string): string {
@@ -226,6 +226,22 @@
 						</span>
 					{/if}
 				</button>
+				<button
+					onclick={() => goto('/admin/statistics')}
+					class="relative px-4 py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-200 hover:bg-emerald-500/25 transition-all cursor-pointer font-bold flex items-center gap-1.5"
+				>
+					📈 סטטיסטיקה
+				</button>
+				<button
+					onclick={() => (activeTab = activeTab === 'discounts' ? 'users' : 'discounts')}
+					class="relative px-4 py-2 rounded-xl border transition-all cursor-pointer font-bold flex items-center gap-1.5
+						{activeTab === 'discounts'
+							? 'bg-purple-500/30 border-purple-400/60 text-white shadow-lg'
+							: 'bg-purple-500/15 border-purple-500/40 text-purple-200 hover:bg-purple-500/25'}"
+					title={activeTab === 'discounts' ? 'חזרה לרשימת המשתמשים' : 'עריכת קודי הנחה'}
+				>
+					🎟️ קודי הנחה ({discountCodes.length})
+				</button>
 			</div>
 		</div>
 
@@ -262,14 +278,14 @@
 				<div class="text-xs text-amber-300/70 mt-1.5 font-bold">מנהלי תוכן פעילים</div>
 			</div>
 
-			<!-- הצטרפו החודש -->
-			<div class="relative overflow-hidden rounded-2xl border border-emerald-500/25 bg-gradient-to-br from-emerald-600/15 to-emerald-500/5 p-4">
+			<!-- כניסות החודש - מונה מ-visit-stat, מתעדכן פעם ביום. לחיצה = דף סטטיסטיקה -->
+			<a href="/admin/statistics" class="relative overflow-hidden rounded-2xl border border-emerald-500/25 bg-gradient-to-br from-emerald-600/15 to-emerald-500/5 p-4 block hover:border-emerald-400/50 transition-all">
 				<div class="flex items-center gap-2 text-emerald-200/80 text-sm font-bold mb-1">
-					<span class="text-lg">🆕</span> כניסות
+					<span class="text-lg">📈</span> כניסות
 				</div>
-				<div class="text-4xl font-black text-white leading-none">{dash.newUsersThisMonth}</div>
-				<div class="text-xs text-emerald-300/70 mt-1.5 font-bold">משתמשים חדשים</div>
-			</div>
+				<div class="text-4xl font-black text-white leading-none">{dash.monthlyVisits}</div>
+				<div class="text-xs text-emerald-300/70 mt-1.5 font-bold">החודש · להיסטוריה המלאה ←</div>
+			</a>
 		</div>
 
 		<!-- הודעת הצלחה/שגיאה -->
@@ -283,34 +299,6 @@
 				<p class="text-red-400 text-sm font-medium">{form.error}</p>
 			</div>
 		{/if}
-
-		<!-- טאבים -->
-		<div class="flex gap-2 mb-6">
-			<button
-				onclick={() => (activeTab = 'users')}
-				class="px-5 py-2.5 rounded-xl font-bold transition-all cursor-pointer {activeTab === 'users'
-					? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-					: 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'}"
-			>
-				👥 משתמשים ({data.users?.length ?? 0})
-			</button>
-			<button
-				onclick={() => (activeTab = 'items')}
-				class="px-5 py-2.5 rounded-xl font-bold transition-all cursor-pointer {activeTab === 'items'
-					? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-					: 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'}"
-			>
-				📋 פרסומים ({data.items?.length ?? 0})
-			</button>
-			<button
-				onclick={() => (activeTab = 'discounts')}
-				class="px-5 py-2.5 rounded-xl font-bold transition-all cursor-pointer {activeTab === 'discounts'
-					? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-					: 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'}"
-			>
-				🎟️ קודי הנחה ({discountCodes.length})
-			</button>
-		</div>
 
 		<!-- חיפוש -->
 		<div class="mb-6 flex gap-3 flex-wrap">
