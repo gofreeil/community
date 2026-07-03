@@ -1,6 +1,7 @@
 import { redirect, error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { getUserById, getItemsByCategory, getPendingEvents, getAllUsers, getAllItems } from '$lib/server/db';
+import { getVisitsThisMonth } from '$lib/server/visitStats';
 
 // "אושיות (רחובות)" → { name: "אושיות", city: "רחובות" }
 function parseArea(entry: string): { name: string; city: string } {
@@ -49,6 +50,8 @@ export const load: PageServerLoad = async (event) => {
     // ספירות מהירות לדשבורד
     let emergencyCount = 0, vaadCount = 0, activePollsCount = 0, pendingEventsCount = 0, residentsCount = 0;
     let itemsCount = 0, itemsOnMap = 0, newItemsThisMonth = 0, newResidentsThisMonth = 0;
+    // נתוני האתר הכלליים - אותו פאנל כמו בלוח הניהול, גלוי לכל רכז מאושר
+    const site = { totalUsers: 0, totalItems: 0, totalCoordinators: 0, newUsersThisMonth: 0, newItemsThisMonth: 0, monthlyVisits: 0 };
     try {
         const [emergency, vaad, polls, allUsers, allItems] = await Promise.all([
             getItemsByCategory('emergency_team'),
@@ -75,6 +78,15 @@ export const load: PageServerLoad = async (event) => {
         // לוח האירועים מחולק לפי עיר - סופרים אירועים ממתינים בעיר של הרכז.
         const pending = user.city ? await getPendingEvents(user.city).catch(() => []) : [];
         pendingEventsCount = pending.length;
+
+        // נתוני האתר הכלליים (זהה לחישוב בלוח הניהול: הודעות מערכת לא נספרות כפריטים)
+        const publicItems = allItems.filter((i) => i.category !== 'message');
+        site.totalUsers        = allUsers.length;
+        site.totalItems        = publicItems.length;
+        site.totalCoordinators = allUsers.filter(u => (((u as any).coordinator_of)?.length ?? 0) > 0).length;
+        site.newUsersThisMonth = allUsers.filter(u => inThisMonth((u as any).created_at)).length;
+        site.newItemsThisMonth = publicItems.filter(i => inThisMonth((i as any).created_at)).length;
+        site.monthlyVisits     = await getVisitsThisMonth().catch(() => 0);
     } catch (e) {
         console.warn('[coordinator] dashboard counts failed:', e);
     }
@@ -91,5 +103,6 @@ export const load: PageServerLoad = async (event) => {
         itemsOnMap,
         newItemsThisMonth,
         newResidentsThisMonth,
+        site,
     };
 };
