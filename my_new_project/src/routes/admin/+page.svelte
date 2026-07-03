@@ -664,7 +664,7 @@
 							{/if}
 							{#if isCoord}
 								<span class="text-xs font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full whitespace-nowrap">
-									🏘️ רכז · {(user as any).coordinator_of.join(', ')}
+									🏘️ רכז · {((user as any).coordinator_of as string[]).map(areaLabel).join(', ')}
 								</span>
 							{/if}
 						</div>
