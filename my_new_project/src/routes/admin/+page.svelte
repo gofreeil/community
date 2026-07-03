@@ -619,12 +619,12 @@
 				</span>
 			</div>
 
-			<div class="space-y-3">
+			<div class="space-y-1.5 md:space-y-2">
 				{#each filteredUsers() as user (user.id)}
 					{@const badge = roleBadge(user.role)}
 					{@const isCoord = (user as any).coordinator_of?.length > 0}
 					{@const hasHigherRole = user.role === 'super_admin' || user.role === 'neighborhood_admin'}
-					<div class="bg-[#0f172a] rounded-2xl border border-white/10 p-4 flex flex-col sm:flex-row sm:items-center gap-4 transition-all hover:border-white/20">
+					<div class="bg-[#0f172a] rounded-2xl border border-white/10 px-3 py-2 md:px-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 transition-all hover:border-white/20">
 						<!-- אווטאר + שם (לחיץ - פרופיל מלא) -->
 						<a href="/admin/users/{user.id}" title="צפה בפרופיל המלא" class="user-link flex items-center gap-3 flex-1 min-w-0 cursor-pointer">
 							{#if user.avatar_url}
@@ -646,7 +646,6 @@
 										</span>
 									{/if}
 								</div>
-								<div class="text-base text-gray-400 truncate">{user.email ?? '-'}</div>
 							</div>
 						</a>
 
