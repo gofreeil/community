@@ -1,5 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { strapiGet } from '$lib/server/strapiClient';
+import { cached } from '$lib/server/cache';
 
 // ערכי ברירת מחדל - משמשים כ-fallback אם אין רשומה ב-Strapi
 const DEFAULT_STATS = [
@@ -35,14 +36,19 @@ const DEFAULT_FLOW = [
     { ico: '🤲', t: 'חלוקה',         s: 'לשלושה גורמים', border: 'rgba(16,185,129,0.4)'  },
 ];
 
+const HOUR_MS = 60 * 60 * 1000;
+
 export const load: PageServerLoad = async () => {
-    let cfg: Record<string, unknown> = {};
-    try {
-        const res = await strapiGet<{ data: Record<string, unknown> }>('/api/revenue-config');
-        cfg = (res.data ?? res) as Record<string, unknown>;
-    } catch {
-        // fallback - Strapi לא נגיש או הרשומה לא קיימת
-    }
+    // התוכן משתנה רק דרך אדמין Strapi, לכן נשמר ב-cache (SWR) לשעה - הדף נפתח
+    // מיידית מהזיכרון גם כש-Strapi איטי. כשל נשמר כאובייקט ריק → ברירות המחדל.
+    const cfg = await cached<Record<string, unknown>>('revenueConfig', HOUR_MS, async () => {
+        try {
+            const res = await strapiGet<{ data: Record<string, unknown> }>('/api/revenue-config');
+            return (res.data ?? res) as Record<string, unknown>;
+        } catch {
+            return {}; // fallback - Strapi לא נגיש או הרשומה לא קיימת
+        }
+    });
 
     return {
         hero_title:   (cfg.hero_title   as string) || 'איך הקהילה מייצרת ערך - ומחזירה אותו לחברים',

@@ -72,38 +72,25 @@ export const load: PageServerLoad = async (event) => {
 
     const jwt = event.cookies.get('strapi_jwt');
 
-    let users: Awaited<ReturnType<typeof getAllUsers>> = [];
-    let items: Awaited<ReturnType<typeof getAllItems>> = [];
-    let coordinatorRequests: Awaited<ReturnType<typeof getCoordinatorRequests>> = [];
-    let pendingNeighborhoods: Awaited<ReturnType<typeof getNeighborhoods>> = [];
+    // כל השליפות עצמאיות זו מזו - יוצאות לדרך מיד ובמקביל, כדי שאף ספירה
+    // (כניסות, פרסומות ממתינות, פנויים, קודי הנחה) לא תעכב את פתיחת הדף.
+    const monthlyVisitsPromise  = getVisitsThisMonth().catch((e) => { console.warn('[admin] getVisitsThisMonth failed:', e); return 0; });
+    const pendingAdsPromise     = countPending().catch(() => 0);
+    const pendingSinglesPromise = getItemsByCategoryAndStatus('singles', 'pending').then((l) => l.length).catch(() => 0);
+    const discountCodesPromise  = getDiscountCodes().catch((e) => { console.warn('[admin] getDiscountCodes failed:', e); return DEFAULT_DISCOUNT_CODES; });
+    const totpPromise           = session?.user?.id ? getUserTotpSecret(session.user.id).catch(() => null) : Promise.resolve(null);
 
-    try {
-        users = await getAllUsers(jwt);
-    } catch (e) {
-        console.warn('[admin] getAllUsers failed:', e);
-    }
-
-    try {
-        items = await getAllItems();
-    } catch (e) {
-        console.warn('[admin] getAllItems failed:', e);
-    }
+    const [users, items0, coordinatorRequests, pendingNeighborhoods] = await Promise.all([
+        getAllUsers(jwt).catch((e) => { console.warn('[admin] getAllUsers failed:', e); return [] as Awaited<ReturnType<typeof getAllUsers>>; }),
+        getAllItems().catch((e) => { console.warn('[admin] getAllItems failed:', e); return [] as Awaited<ReturnType<typeof getAllItems>>; }),
+        getCoordinatorRequests('pending').catch((e) => { console.warn('[admin] getCoordinatorRequests failed:', e); return [] as Awaited<ReturnType<typeof getCoordinatorRequests>>; }),
+        getNeighborhoods('pending').catch((e) => { console.warn('[admin] getNeighborhoods failed:', e); return [] as Awaited<ReturnType<typeof getNeighborhoods>>; }),
+    ]);
+    let items = items0;
 
     // הודעות מערכת (category='message') הן התראות אישיות למשתמש, לא פרסומים -
     // בלעדיהן מונה "פרסומים בקהילה" וטאב הפרסומים משקפים רק תוכן אמיתי בלוחות.
     items = items.filter((i) => i.category !== 'message');
-
-    try {
-        coordinatorRequests = await getCoordinatorRequests('pending');
-    } catch (e) {
-        console.warn('[admin] getCoordinatorRequests failed:', e);
-    }
-
-    try {
-        pendingNeighborhoods = await getNeighborhoods('pending');
-    } catch (e) {
-        console.warn('[admin] getNeighborhoods failed:', e);
-    }
 
     // צירוף פרטי מבקש לכל שכונה ממתינה - כדי שהאדמין יראה מי ביקש להגדיר את המפה.
     // קודם מחשבון המשתמש (אם היה מחובר), ואם לא - מהשם/טלפון שנשמרו על הבקשה עצמה
@@ -133,9 +120,9 @@ export const load: PageServerLoad = async (event) => {
         const t = new Date(iso).getTime();
         return !isNaN(t) && t >= monthStart;
     };
-    // כניסות החודש - נספר ב-visit-stat, מוצג עם רענון של פעם ביום (cache בשכבת visitStats)
-    let monthlyVisits = 0;
-    try { monthlyVisits = await getVisitsThisMonth(); } catch (e) { console.warn('[admin] getVisitsThisMonth failed:', e); }
+    // כניסות החודש - נספר ב-visit-stat, מוצג עם רענון של פעם ביום (cache בשכבת visitStats).
+    // ה-promise יצא לדרך בתחילת ה-load, כאן רק אוספים את התוצאה.
+    const monthlyVisits = await monthlyVisitsPromise;
 
     const dashboard = {
         totalUsers:        users.length,
@@ -146,18 +133,8 @@ export const load: PageServerLoad = async (event) => {
         monthlyVisits,
     };
 
-    let pendingAdsCount = 0;
-    try { pendingAdsCount = await countPending(); } catch { /* שקט */ }
-
-    let pendingSinglesCount = 0;
-    try { pendingSinglesCount = (await getItemsByCategoryAndStatus('singles', 'pending')).length; } catch { /* שקט */ }
-
-    let discountCodes: Awaited<ReturnType<typeof getDiscountCodes>> = DEFAULT_DISCOUNT_CODES;
-    try {
-        discountCodes = await getDiscountCodes();
-    } catch (e) {
-        console.warn('[admin] getDiscountCodes failed:', e);
-    }
+    const [pendingAdsCount, pendingSinglesCount, discountCodes, totpSecret] =
+        await Promise.all([pendingAdsPromise, pendingSinglesPromise, discountCodesPromise, totpPromise]);
 
     return {
         users,
@@ -170,7 +147,7 @@ export const load: PageServerLoad = async (event) => {
         coordinatorStats,
         dashboard,
         discountCodes,
-        twoFAConfigured: session?.user?.id ? !!(await getUserTotpSecret(session.user.id)) : false,
+        twoFAConfigured: !!totpSecret,
     };
 };
 

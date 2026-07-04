@@ -53,12 +53,15 @@ export const load: PageServerLoad = async (event) => {
     // נתוני האתר הכלליים - אותו פאנל כמו בלוח הניהול, גלוי לכל רכז מאושר
     const site = { totalUsers: 0, totalItems: 0, totalCoordinators: 0, newUsersThisMonth: 0, newItemsThisMonth: 0, monthlyVisits: 0 };
     try {
-        const [emergency, vaad, polls, allUsers, allItems] = await Promise.all([
+        // הכל במקביל - כולל אירועים ממתינים וספירת הכניסות - כדי שהדף לא יחכה לאף שליפה בטור
+        const [emergency, vaad, polls, allUsers, allItems, pending, visits] = await Promise.all([
             getItemsByCategory('emergency_team'),
             getItemsByCategory('vaad_member'),
             getItemsByCategory('poll'),
             getAllUsers().catch(() => []),
             getAllItems().catch(() => []),
+            user.city ? getPendingEvents(user.city).catch(() => []) : Promise.resolve([]),
+            getVisitsThisMonth().catch(() => 0),
         ]);
         emergencyCount   = emergency.filter(inMyNeighborhoods).length;
         vaadCount        = vaad.filter(inMyNeighborhoods).length;
@@ -76,7 +79,6 @@ export const load: PageServerLoad = async (event) => {
         newItemsThisMonth = myItems.filter(it => inThisMonth((it as any).created_at)).length;
 
         // לוח האירועים מחולק לפי עיר - סופרים אירועים ממתינים בעיר של הרכז.
-        const pending = user.city ? await getPendingEvents(user.city).catch(() => []) : [];
         pendingEventsCount = pending.length;
 
         // נתוני האתר הכלליים (זהה לחישוב בלוח הניהול: הודעות מערכת לא נספרות כפריטים)
@@ -86,7 +88,7 @@ export const load: PageServerLoad = async (event) => {
         site.totalCoordinators = allUsers.filter(u => (((u as any).coordinator_of)?.length ?? 0) > 0).length;
         site.newUsersThisMonth = allUsers.filter(u => inThisMonth((u as any).created_at)).length;
         site.newItemsThisMonth = publicItems.filter(i => inThisMonth((i as any).created_at)).length;
-        site.monthlyVisits     = await getVisitsThisMonth().catch(() => 0);
+        site.monthlyVisits     = visits;
     } catch (e) {
         console.warn('[coordinator] dashboard counts failed:', e);
     }
