@@ -436,10 +436,20 @@
 		lr?: { location: string; city: string; lat: number | null; lng: number | null; requesterId: string };
 	};
 	let lrBusyId = $state("");
+	// אישור דחייה בתוך הכרטיס (לא confirm של הדפדפן שמציג "האתר אומר")
+	let lrConfirmId = $state("");
+	// הודעת משוב בתוך הדף במקום alert של הדפדפן
+	let lrNotice = $state<{ kind: "success" | "error"; text: string } | null>(null);
+	let lrNoticeTimer: ReturnType<typeof setTimeout> | undefined;
+	function showLrNotice(kind: "success" | "error", text: string) {
+		lrNotice = { kind, text };
+		clearTimeout(lrNoticeTimer);
+		lrNoticeTimer = setTimeout(() => (lrNotice = null), 8000);
+	}
 	async function decideLocationRequest(msg: LrMsg, decision: "approve" | "reject") {
 		if (!msg.lr || lrBusyId) return;
 		const { location, city, lat, lng, requesterId } = msg.lr;
-		if (decision === "reject" && !confirm(`לדחות את הבקשה להוספת "${location}"? המבקש יקבל על כך הודעה.`)) return;
+		lrConfirmId = "";
 		lrBusyId = msg.id;
 		try {
 			const fd = new FormData();
@@ -459,20 +469,21 @@
 			if (result.type === "success") {
 				// ההתראה נמחקה מה-DB - מסירים גם מהתצוגה
 				messages = messages.filter((m) => m.id !== msg.id);
-				alert(
+				showLrNotice(
+					"success",
 					decision === "approve"
 						? `✅ "${location}" אושר ונוסף לרשימת השכונות. המבקש קיבל הודעה.`
-						: `הבקשה להוספת "${location}" נדחתה והמבקש קיבל הודעה.`,
+						: `✖️ הבקשה להוספת "${location}" נדחתה והמבקש קיבל הודעה.`,
 				);
 			} else {
 				const errMsg =
 					result.type === "failure"
 						? String((result.data as { lrError?: string })?.lrError ?? "שגיאה בטיפול בבקשה")
 						: "שגיאה בטיפול בבקשה";
-				alert(errMsg);
+				showLrNotice("error", errMsg);
 			}
 		} catch {
-			alert("שגיאה בתקשורת עם השרת, נסה שוב");
+			showLrNotice("error", "שגיאה בתקשורת עם השרת, נסה שוב");
 		} finally {
 			lrBusyId = "";
 		}
@@ -2465,6 +2476,24 @@
 				class="flex flex-col gap-3"
 				onclick={(e) => e.stopPropagation()}
 			>
+				{#if lrNotice}
+					<!-- משוב אישור/דחייה בתוך הדף (במקום alert של הדפדפן) -->
+					<div
+						class="flex items-center justify-between gap-3 rounded-2xl border px-4 py-2.5 text-sm font-bold {lrNotice.kind === 'success'
+							? 'bg-green-500/10 border-green-500/40 text-green-200'
+							: 'bg-red-500/10 border-red-500/40 text-red-200'}"
+					>
+						<span>{lrNotice.text}</span>
+						<button
+							type="button"
+							onclick={() => (lrNotice = null)}
+							class="text-xs text-gray-400 hover:text-white transition-colors cursor-pointer flex-shrink-0"
+							title="סגור"
+						>
+							✕
+						</button>
+					</div>
+				{/if}
 				{#each finalDisplayedMessages as msg}
 					{@const isDraft = (msg as { isDraft?: boolean }).isDraft}
 					{@const msgLr = (msg as LrMsg).lr ? (msg as LrMsg) : null}
@@ -2548,24 +2577,44 @@
 								>
 									{#if msgLr}
 										<!-- אשר/דחה בקשת מיקום - ישירות מהכרטיס, בלי לחפש בעמוד הניהול -->
-										<button
-											type="button"
-											disabled={lrBusyId === msg.id}
-											onclick={(e) => { e.stopPropagation(); decideLocationRequest(msgLr, "approve"); }}
-											class="text-xs font-black bg-green-500/15 text-green-300 border border-green-500/40 hover:bg-green-500/25 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
-											title="הוסף לרשימת הערים/השכונות ועדכן את המבקש"
-										>
-											{lrBusyId === msg.id ? "⏳ מטפל..." : "✅ אשר והוסף"}
-										</button>
-										<button
-											type="button"
-											disabled={lrBusyId === msg.id}
-											onclick={(e) => { e.stopPropagation(); decideLocationRequest(msgLr, "reject"); }}
-											class="text-xs font-black bg-red-500/10 text-red-300 border border-red-500/40 hover:bg-red-500/20 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
-											title="דחה את הבקשה ועדכן את המבקש"
-										>
-											✖️ דחה
-										</button>
+										{#if lrConfirmId === msg.id}
+											<!-- אישור דחייה בתוך הכרטיס במקום confirm() של הדפדפן -->
+											<span class="text-xs font-bold text-red-200">לדחות את הבקשה? המבקש יקבל הודעה</span>
+											<button
+												type="button"
+												disabled={lrBusyId === msg.id}
+												onclick={(e) => { e.stopPropagation(); decideLocationRequest(msgLr, "reject"); }}
+												class="text-xs font-black bg-red-500/20 text-red-200 border border-red-500/50 hover:bg-red-500/30 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
+											>
+												{lrBusyId === msg.id ? "⏳ מטפל..." : "כן, דחה"}
+											</button>
+											<button
+												type="button"
+												onclick={(e) => { e.stopPropagation(); lrConfirmId = ""; }}
+												class="text-xs font-bold text-gray-300 border border-white/15 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+											>
+												ביטול
+											</button>
+										{:else}
+											<button
+												type="button"
+												disabled={lrBusyId === msg.id}
+												onclick={(e) => { e.stopPropagation(); decideLocationRequest(msgLr, "approve"); }}
+												class="text-xs font-black bg-green-500/15 text-green-300 border border-green-500/40 hover:bg-green-500/25 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
+												title="הוסף לרשימת הערים/השכונות ועדכן את המבקש"
+											>
+												{lrBusyId === msg.id ? "⏳ מטפל..." : "✅ אשר והוסף"}
+											</button>
+											<button
+												type="button"
+												disabled={lrBusyId === msg.id}
+												onclick={(e) => { e.stopPropagation(); lrConfirmId = msg.id; }}
+												class="text-xs font-black bg-red-500/10 text-red-300 border border-red-500/40 hover:bg-red-500/20 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
+												title="דחה את הבקשה ועדכן את המבקש"
+											>
+												✖️ דחה
+											</button>
+										{/if}
 										<span class="flex-1"></span>
 									{/if}
 									<button
