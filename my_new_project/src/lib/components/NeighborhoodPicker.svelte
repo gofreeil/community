@@ -11,6 +11,7 @@
         restrictToCity = false,
         lat = $bindable<number | null>(null),
         lng = $bindable<number | null>(null),
+        onUserPin,
     }: {
         city?: string;
         /** כשידועה - המפה נפתחת ממוקדת על השכונה (זום קרוב) במקום על מרכז העיר */
@@ -19,6 +20,8 @@
         restrictToCity?: boolean;
         lat?: number | null;
         lng?: number | null;
+        /** נקרא כשהמשתמש עצמו הזיז/סימן פין (להבדיל מהצבה תוכנתית מבחוץ) */
+        onUserPin?: () => void;
     } = $props();
 
     const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
@@ -39,9 +42,10 @@
         });
     }
 
-    function setPin(latlng: { lat: number; lng: number }, recenter = false) {
+    function setPin(latlng: { lat: number; lng: number }, recenter = false, byUser = true) {
         lat = +latlng.lat.toFixed(6);
         lng = +latlng.lng.toFixed(6);
+        if (byUser) onUserPin?.();
         if (!map) return;
         if (!marker) {
             marker = L.marker([lat, lng], { draggable: true, icon: pinIcon() }).addTo(map);
@@ -57,6 +61,18 @@
             setPin({ lat, lng }, true);
         }
     }
+
+    // הצבת פין מבחוץ (geocoding של הכתובת שהוקלדה): כשה-lat/lng הכבולים משתנים
+    // שלא דרך אינטראקציה עם המפה - מזיזים את הסמן ומתמקדים עליו.
+    $effect(() => {
+        const la = lat, ln = lng;
+        if (!map || la == null || ln == null) return;
+        if (marker) {
+            const cur = marker.getLatLng();
+            if (Math.abs(cur.lat - la) < 1e-7 && Math.abs(cur.lng - ln) < 1e-7) return;
+        }
+        setPin({ lat: la, lng: ln }, true, false);
+    });
 
     onMount(async () => {
         try {
@@ -109,7 +125,8 @@
         L.tileLayer(TILE_URL, { attribution: TILE_ATTR, maxZoom: 19 }).addTo(map);
         map.on('click', (e: any) => setPin(e.latlng));
 
-        if (lat != null && lng != null) setPin({ lat, lng });
+        // פין קיים (עריכה/geocoding) מוצב תוכנתית - לא נחשב סימון ידני של המשתמש
+        if (lat != null && lng != null) setPin({ lat, lng }, false, false);
 
         setTimeout(() => map?.invalidateSize?.(), 50);
         setTimeout(() => map?.invalidateSize?.(), 300);

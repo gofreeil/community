@@ -11,7 +11,8 @@ const NOMINATIM = 'https://nominatim.openstreetmap.org/search';
 
 // geocoding חיצוני של כתובת חופשית דרך OpenStreetMap (Nominatim).
 // best-effort: מחזיר null אם נכשל/אין תוצאה, והקורא נופל למרכז השכונה.
-async function geocodeAddress(query: string): Promise<{ lat: number; lng: number } | null> {
+// exported גם עבור /api/geocode - תצוגה מקדימה של הפין בזמן מילוי הטופס.
+export async function geocodeAddress(query: string): Promise<{ lat: number; lng: number } | null> {
     try {
         const url = new URL(NOMINATIM);
         url.searchParams.set('q', query);
