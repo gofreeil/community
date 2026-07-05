@@ -1,8 +1,9 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { getUserById, getUserByEmail, updateUserProfile, getItemsByUserId, upsertUser, getMessagesByUserId, createItem, getAllSuperAdmins, getAllUsers, getItemsByCategory, getItemsByCategoryAndStatus, createNeighborhoodRequest } from '$lib/server/db';
+import { getUserById, getUserByEmail, updateUserProfile, getItemsByUserId, upsertUser, getMessagesByUserId, createItem, getAllSuperAdmins, getAllUsers, getItemsByCategory, getItemsByCategoryAndStatus, createNeighborhoodRequest, approveNeighborhood, deleteItem, updateItem } from '$lib/server/db';
 import { getCachedUserById, invalidateCachedUser } from '$lib/server/userCache';
 import { citiesData } from '$lib/neighborhoodsData';
+import { cityCenters } from '$lib/neighborhoodCoords';
 import { categoryConfig } from '$lib/categoryFields';
 import { countPending } from '$lib/server/adsStore';
 
@@ -361,6 +362,7 @@ export const actions: Actions = {
                         extra_fields: {
                             type:               'location_request',
                             requested_location: customLocation,
+                            requested_city:     city || '',
                             requested_lat:      hasPin ? customLat : null,
                             requested_lng:      hasPin ? customLng : null,
                             requested_by_name:  name  || '',
@@ -460,4 +462,106 @@ export const actions: Actions = {
             return fail(500, { feedbackError: 'שגיאה בשליחת הפנייה, נסה שוב' });
         }
     },
+
+    // אישור בקשת מיקום מתוך כרטיס ההודעה (סופר-אדמין בלבד):
+    // יוצר/מאשר רשומת שכונה, מודיע למבקש, ומוחק את ההתראה מה-DB
+    approveLocationRequest: (event) => handleLocationRequest(event, 'approve'),
+
+    // דחיית בקשת מיקום מתוך כרטיס ההודעה (סופר-אדמין בלבד)
+    rejectLocationRequest: (event) => handleLocationRequest(event, 'reject'),
 };
+
+/** מוודא שהמשתמש המחובר הוא סופר-אדמין (כולל fallback לפי אימייל למיזוג OAuth+credentials) */
+async function requireSuperAdminId(event: Parameters<NonNullable<Actions[string]>>[0]): Promise<string | null> {
+    let session = null;
+    try { session = await event.locals.auth(); } catch {}
+    if (!session?.user?.id) return null;
+    let isSuper = session.user.role === 'super_admin';
+    if (!isSuper) {
+        try {
+            let dbUser = await getUserById(session.user.id);
+            if (!dbUser && session.user.email) dbUser = await getUserByEmail(session.user.email);
+            isSuper = dbUser?.role === 'super_admin';
+        } catch { /* ignore */ }
+    }
+    return isSuper ? session.user.id : null;
+}
+
+/** טיפול בבקשת מיקום (אישור/דחייה) מכרטיס ההודעה בפרופיל הסופר-אדמין */
+async function handleLocationRequest(event: Parameters<NonNullable<Actions[string]>>[0], decision: 'approve' | 'reject') {
+    const adminId = await requireSuperAdminId(event);
+    if (!adminId) return fail(403, { lrError: 'נדרשת הרשאת מנהל ראשי' });
+
+    const form = await event.request.formData();
+    const msgId       = form.get('msgId')?.toString() ?? '';
+    const location    = form.get('location')?.toString().trim() ?? '';
+    const city        = form.get('city')?.toString().trim() ?? '';
+    const requesterId = form.get('requesterId')?.toString() ?? '';
+    const latRaw      = parseFloat(form.get('lat')?.toString() ?? '');
+    const lngRaw      = parseFloat(form.get('lng')?.toString() ?? '');
+    if (!location) return fail(400, { lrError: 'חסר שם המיקום בבקשה' });
+
+    try {
+        if (decision === 'approve') {
+            // קואורדינטות: פין אם סומן, אחרת מרכז העיר, אחרת ברירת מחדל ירושלים
+            const hasPin = Number.isFinite(latRaw) && Number.isFinite(lngRaw);
+            const fallback = cityCenters[city] ?? cityCenters[location] ?? cityCenters['ירושלים'];
+            const nb = await createNeighborhoodRequest({
+                name:    location,
+                city:    city || location,
+                lat:     hasPin ? latRaw : fallback[0],
+                lng:     hasPin ? lngRaw : fallback[1],
+                user_id: requesterId || undefined,
+            });
+            if (nb.status !== 'approved') await approveNeighborhood(nb.id, adminId);
+        }
+
+        // הודעה למבקש על ההחלטה
+        if (requesterId) {
+            try {
+                await createItem({
+                    category:    'message',
+                    label:       decision === 'approve'
+                        ? `✅ בקשתך אושרה: "${location}" נוסף לרשימה`
+                        : `❌ בקשתך להוספת "${location}" לא אושרה`,
+                    description: decision === 'approve'
+                        ? `המנהל אישר את בקשתך — "${location}"${city ? ` (${city})` : ''} נוסף לרשימת השכונות וכעת ניתן לבחור בו בפרופיל ובפרסום.`
+                        : `המנהל בחן את בקשתך להוסיף את "${location}" והחליט שלא להוסיף אותו כרגע. אפשר לבחור שכונה קיימת או לפנות אלינו דרך "כתוב למערכת" בפרופיל.`,
+                    icon:        decision === 'approve' ? '✅' : '❌',
+                    color:       decision === 'approve' ? 'green' : 'red',
+                    user_id:     requesterId,
+                    extra_fields: {
+                        type:               'location_request_decision',
+                        decision,
+                        requested_location: location,
+                        decided_at:         new Date().toISOString(),
+                    },
+                });
+            } catch (e) {
+                console.warn('[profile] location request decision notify failed:', e);
+            }
+
+            // סגירת פריט הבקשה של המבקש (כדי שבדיקת הכפילויות תאפשר בקשה עתידית)
+            try {
+                const reqItems = await getItemsByUserId(requesterId);
+                const open = (reqItems ?? []).filter(it =>
+                    it.category === 'location_request' &&
+                    (it.status ?? 'pending') !== 'handled' &&
+                    (it.label ?? '').includes(location));
+                await Promise.all(open.map(it => updateItem(it.id, { status: 'handled' })));
+            } catch (e) {
+                console.warn('[profile] location request item close failed:', e);
+            }
+        }
+
+        // מחיקת ההתראה מתיבת האדמין - טופלה
+        if (msgId) {
+            try { await deleteItem(msgId); } catch (e) { console.warn('[profile] admin msg delete failed:', e); }
+        }
+
+        return { lrSuccess: decision, lrLocation: location };
+    } catch (e) {
+        console.warn('[profile] handleLocationRequest failed:', e);
+        return fail(500, { lrError: 'שגיאה בטיפול בבקשה, נסה שוב' });
+    }
+}

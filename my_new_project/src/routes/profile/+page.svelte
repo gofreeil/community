@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { enhance } from "$app/forms";
+	import { enhance, deserialize } from "$app/forms";
 	import { beforeNavigate, goto } from "$app/navigation";
 	import { signOut, signIn } from "@auth/sveltekit/client";
 	import {
@@ -295,13 +295,30 @@
 							let efLink: string | undefined;
 							let efRequesterId = "";
 							let efHasPin = false;
+							let ef: Record<string, unknown> = {};
 							try {
-								const ef = JSON.parse(m.extra_fields || "{}");
-								efType = ef?.type ?? "";
-								efLink = ef?.link ?? undefined;
-								efRequesterId = String(ef?.requested_by_id ?? "");
+								ef = JSON.parse(m.extra_fields || "{}") ?? {};
+								efType = String(ef?.type ?? "");
+								efLink = (ef?.link as string | undefined) ?? undefined;
+								efRequesterId = ef?.requested_by_id ? String(ef.requested_by_id) : "";
 								efHasPin = ef?.requested_lat != null;
 							} catch {}
+							// נתוני בקשת מיקום לכפתורי אשר/דחה על הכרטיס.
+							// הודעות ישנות לא שמרו city ב-extra_fields - נחלץ מטקסט ההודעה
+							const lr =
+								efType === "location_request"
+									? {
+											location:
+												String(ef?.requested_location ?? "") ||
+												(m.label ?? "").replace(/^📍?\s*בקשת מיקום חדש:\s*/, "").trim(),
+											city:
+												String(ef?.requested_city ?? "") ||
+												((m.description ?? "").match(/\(עיר:\s*([^)]+)\)/)?.[1] ?? "").trim(),
+											lat: efHasPin ? Number(ef?.requested_lat) : null,
+											lng: efHasPin ? Number(ef?.requested_lng) : null,
+											requesterId: efRequesterId,
+										}
+									: undefined;
 							// בקשת מיקום בלי פין: לא נוצרה רשומת שכונה לאישור, ולכן העוגן
 							// #pending-neighborhoods לא קיים בעמוד הניהול והלחיצה נחתה על ראש
 							// הדף (בקשות רכזים). במקום זה - ישר לעמוד המשתמש המבקש: פרופיל,
@@ -312,6 +329,8 @@
 									: MSG_TYPE_LINKS[efType];
 							return {
 								id: `db-${m.id}`,
+								dbId: m.id,
+								lr,
 								from: m.label ?? "מערכת",
 								text: m.description ?? "",
 								time: new Date(m.created_at).toLocaleDateString(
@@ -408,6 +427,55 @@
 	function markRead(id: string) {
 		// "אם הוא קרא - מחוק את ההתראות מהפרופיל שלו"
 		deleteMsg(id);
+	}
+
+	// === אישור/דחיית בקשת מיקום ישירות מכרטיס ההודעה (סופר-אדמין) ===
+	type LrMsg = {
+		id: string;
+		dbId?: string;
+		lr?: { location: string; city: string; lat: number | null; lng: number | null; requesterId: string };
+	};
+	let lrBusyId = $state("");
+	async function decideLocationRequest(msg: LrMsg, decision: "approve" | "reject") {
+		if (!msg.lr || lrBusyId) return;
+		const { location, city, lat, lng, requesterId } = msg.lr;
+		if (decision === "reject" && !confirm(`לדחות את הבקשה להוספת "${location}"? המבקש יקבל על כך הודעה.`)) return;
+		lrBusyId = msg.id;
+		try {
+			const fd = new FormData();
+			fd.set("msgId", msg.dbId ?? "");
+			fd.set("location", location);
+			fd.set("city", city);
+			if (lat != null && lng != null) {
+				fd.set("lat", String(lat));
+				fd.set("lng", String(lng));
+			}
+			fd.set("requesterId", requesterId);
+			const res = await fetch(
+				`?/${decision === "approve" ? "approveLocationRequest" : "rejectLocationRequest"}`,
+				{ method: "POST", body: fd, headers: { "x-sveltekit-action": "true" } },
+			);
+			const result = deserialize(await res.text());
+			if (result.type === "success") {
+				// ההתראה נמחקה מה-DB - מסירים גם מהתצוגה
+				messages = messages.filter((m) => m.id !== msg.id);
+				alert(
+					decision === "approve"
+						? `✅ "${location}" אושר ונוסף לרשימת השכונות. המבקש קיבל הודעה.`
+						: `הבקשה להוספת "${location}" נדחתה והמבקש קיבל הודעה.`,
+				);
+			} else {
+				const errMsg =
+					result.type === "failure"
+						? String((result.data as { lrError?: string })?.lrError ?? "שגיאה בטיפול בבקשה")
+						: "שגיאה בטיפול בבקשה";
+				alert(errMsg);
+			}
+		} catch {
+			alert("שגיאה בתקשורת עם השרת, נסה שוב");
+		} finally {
+			lrBusyId = "";
+		}
 	}
 	// הודעה אישית עבור טיוטת פרסומת - מופיעה למעלה אם יש טיוטה.
 	// כוללת תזכורת על חלון העריכה החינמי (היום עד 23:59) או שהוא פג.
@@ -2399,6 +2467,7 @@
 			>
 				{#each finalDisplayedMessages as msg}
 					{@const isDraft = (msg as { isDraft?: boolean }).isDraft}
+					{@const msgLr = (msg as LrMsg).lr ? (msg as LrMsg) : null}
 					{@const isSinglesMatch = msg.id === 'singles-match'}
 					{@const msgLink = (msg as { link?: string }).link}
 					{@const navTarget = isSinglesMatch ? '/singles' : msgLink}
@@ -2477,6 +2546,28 @@
 									onkeydown={(e) => e.stopPropagation()}
 									role="group"
 								>
+									{#if msgLr}
+										<!-- אשר/דחה בקשת מיקום - ישירות מהכרטיס, בלי לחפש בעמוד הניהול -->
+										<button
+											type="button"
+											disabled={lrBusyId === msg.id}
+											onclick={(e) => { e.stopPropagation(); decideLocationRequest(msgLr, "approve"); }}
+											class="text-xs font-black bg-green-500/15 text-green-300 border border-green-500/40 hover:bg-green-500/25 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
+											title="הוסף לרשימת הערים/השכונות ועדכן את המבקש"
+										>
+											{lrBusyId === msg.id ? "⏳ מטפל..." : "✅ אשר והוסף"}
+										</button>
+										<button
+											type="button"
+											disabled={lrBusyId === msg.id}
+											onclick={(e) => { e.stopPropagation(); decideLocationRequest(msgLr, "reject"); }}
+											class="text-xs font-black bg-red-500/10 text-red-300 border border-red-500/40 hover:bg-red-500/20 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
+											title="דחה את הבקשה ועדכן את המבקש"
+										>
+											✖️ דחה
+										</button>
+										<span class="flex-1"></span>
+									{/if}
 									<button
 										type="button"
 										onclick={(e) => { e.stopPropagation(); markRead(msg.id); }}
