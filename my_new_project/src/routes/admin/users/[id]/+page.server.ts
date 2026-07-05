@@ -54,17 +54,25 @@ async function loadThread(adminId: string, userId: string) {
             };
         });
 
-        // תשובות מהמשתמש הזה אל האדמין
+        // תשובות מהמשתמש הזה אל האדמין + בקשות שהוא יזם (בקשת מיקום וכו')
+        // שנשלחו לאדמין כהתראה עם requested_by_id - כך רואים בצ'אט את ההקשר המלא
         const incoming = toAdmin
-            .filter((m) => parseEF(m.extra_fields).sender_id === userId)
-            .map((m) => ({
-                id: m.id,
-                text: m.description,
-                title: '',
-                sender_name: '',
-                created_at: m.created_at,
-                direction: 'in' as const,
-            }));
+            .filter((m) => {
+                const ef = parseEF(m.extra_fields);
+                return ef.sender_id === userId || ef.requested_by_id === userId;
+            })
+            .map((m) => {
+                const ef = parseEF(m.extra_fields);
+                const isChat = ef.chat === true;
+                return {
+                    id: m.id,
+                    text: m.description,
+                    title: isChat ? '' : (m.label || ''),
+                    sender_name: '',
+                    created_at: m.created_at,
+                    direction: 'in' as const,
+                };
+            });
 
         return [...out, ...incoming].sort(
             (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),

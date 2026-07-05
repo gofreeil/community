@@ -293,11 +293,23 @@
 						(m: import("$lib/server/db").DbItem) => {
 							let efType = "";
 							let efLink: string | undefined;
+							let efRequesterId = "";
+							let efHasPin = false;
 							try {
 								const ef = JSON.parse(m.extra_fields || "{}");
 								efType = ef?.type ?? "";
 								efLink = ef?.link ?? undefined;
+								efRequesterId = String(ef?.requested_by_id ?? "");
+								efHasPin = ef?.requested_lat != null;
 							} catch {}
+							// בקשת מיקום בלי פין: לא נוצרה רשומת שכונה לאישור, ולכן העוגן
+							// #pending-neighborhoods לא קיים בעמוד הניהול והלחיצה נחתה על ראש
+							// הדף (בקשות רכזים). במקום זה - ישר לעמוד המשתמש המבקש: פרופיל,
+							// צ'אט, והפריטים שלו עם הקטגוריות.
+							const typeLink =
+								efType === "location_request" && !efHasPin && efRequesterId
+									? `/admin/users/${efRequesterId}`
+									: MSG_TYPE_LINKS[efType];
 							return {
 								id: `db-${m.id}`,
 								from: m.label ?? "מערכת",
@@ -311,7 +323,7 @@
 								// לחיצה על כל הכרטיס פותחת את עמוד הניהול במקום הרלוונטי לטיפול בבקשה
 								link:
 									efLink ??
-									MSG_TYPE_LINKS[efType] ??
+									typeLink ??
 									undefined,
 							};
 						},
