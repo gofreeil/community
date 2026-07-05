@@ -19,6 +19,17 @@
     let galleryIndex = $state(0);
     let lightboxOpen = $state(false);
 
+    // ---- מצב בניית הדף: הבעלים/רכז עורך את הדף בדיוק כפי שהגולש רואה אותו ----
+    const canEditPage = $derived(!!(item as { canEditPage?: boolean } | null)?.canEditPage);
+    let builderMode = $state(false);
+    let isNewItem = $state(false);
+
+    // ערכים שנשמרו הרגע במצב בנייה - מוצגים מיד, בלי רענון דף
+    let fieldOverrides = $state<Record<string, string>>({});
+    let imagesOverride = $state<string[] | null>(null);
+    let activitiesOverride = $state<ScheduleRow[] | null>(null);
+    let linksOverride = $state<Array<{ label: string; url: string }> | null>(null);
+
     function openLightbox() { lightboxOpen = true; }
     function closeLightbox() { lightboxOpen = false; }
     function onLightboxKey(e: KeyboardEvent) {
@@ -38,16 +49,39 @@
     });
 
     const galleryImages = $derived<string[]>(
-        Array.isArray((item as { images?: string[] } | null)?.images)
-            ? ((item as { images?: string[] }).images ?? [])
-            : (item?.image ? [item.image] : [])
+        imagesOverride ?? (
+            Array.isArray((item as { images?: string[] } | null)?.images)
+                ? ((item as { images?: string[] }).images ?? [])
+                : (item?.image ? [item.image] : [])
+        )
     );
 
     // Strip legacy "פנוי, " / "פנויה, " prefix from titles (user requested twice)
     const displayLabel = $derived.by(() => {
-        const raw = String(item?.label || '');
+        const raw = String(fieldOverrides.label ?? item?.label ?? '');
         const cleaned = raw.replace(/^\s*פנוי(ה)?\s*,?\s*/, '').trim();
         return cleaned || raw;
+    });
+
+    // ערכי תצוגה עם עדיפות לעריכות שנשמרו הרגע במצב בנייה
+    const displayDescription = $derived(fieldOverrides.description ?? String(item?.description ?? ''));
+    const displayPhone       = $derived(fieldOverrides.phone       ?? String(item?.phone ?? ''));
+    const displayContact     = $derived(fieldOverrides.contact     ?? String(item?.contact ?? ''));
+
+    // קישורים מותאמים-אישית (extra_fields.links) - מוצגים ככפתורים בדף
+    const customLinks = $derived.by<Array<{ label: string; url: string }>>(() => {
+        if (linksOverride) return linksOverride;
+        const raw = (item as { extraFields?: { links?: unknown } } | null)?.extraFields?.links;
+        if (!Array.isArray(raw)) return [];
+        return raw
+            .filter((l): l is Record<string, unknown> => !!l && typeof l === 'object')
+            .map(l => ({ label: String(l.label ?? '').trim() || 'קישור', url: String(l.url ?? '').trim() }))
+            .filter(l => l.url);
+    });
+    const hasSocialLinks = $derived.by(() => {
+        const ef = (item as { extraFields?: Record<string, unknown> } | null)?.extraFields;
+        return ['website', 'facebook', 'instagram', 'youtube', 'tiktok']
+            .some(k => typeof ef?.[k] === 'string' && (ef[k] as string).trim() !== '');
     });
 
     const nickname = $derived<string>(
@@ -94,6 +128,7 @@
     const ACTIVITY_TYPES = ['תפילה / מניין', 'שיעור תורה', 'מקווה', 'שבת', 'אחר'];
 
     const activities = $derived.by<ScheduleRow[]>(() => {
+        if (activitiesOverride) return activitiesOverride;
         const a = (item as { extraFields?: { activities?: unknown } } | null)?.extraFields?.activities;
         if (!Array.isArray(a)) return [];
         return a
@@ -140,7 +175,9 @@
             if (!res.ok || !resData.success) {
                 scheduleError = resData.message || 'שגיאה בשמירה';
             } else {
-                location.reload();
+                // עדכון מקומי מיידי - הדף נשאר "מול העיניים" בלי רענון
+                activitiesOverride = Array.isArray(resData.activities) ? resData.activities : clean;
+                editingSchedule = false;
             }
         } catch {
             scheduleError = 'שגיאה ברשת';
@@ -149,8 +186,208 @@
         }
     }
 
+    // ---- שמירה מיידית ממצב בנייה (PATCH update_fields) ----
+    let savingTag = $state<string | null>(null);
+    let builderError = $state('');
+
+    async function saveFields(fields: Record<string, unknown>, tag: string): Promise<boolean> {
+        if (!item?.id) return false;
+        savingTag = tag;
+        builderError = '';
+        try {
+            const res = await fetch(`/api/items/${item.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'update_fields', fields }),
+            });
+            const d = await res.json().catch(() => ({}));
+            if (!res.ok || !d.success) {
+                builderError = d.message || 'שגיאה בשמירה - נסו שוב';
+                return false;
+            }
+            return true;
+        } catch {
+            builderError = 'בעיית תקשורת - נסו שוב';
+            return false;
+        } finally {
+            savingTag = null;
+        }
+    }
+
+    // עריכת שדה טקסט בודד במקום (כותרת / תיאור / טלפון / איש קשר)
+    let editingField = $state('');
+    let draftText = $state('');
+
+    function startEditField(field: string, current: string) {
+        editingField = field;
+        draftText = current;
+        builderError = '';
+    }
+    async function saveTextField() {
+        const f = editingField;
+        if (!f) return;
+        const val = draftText.trim();
+        if (f === 'label' && !val) { builderError = 'שם המקום לא יכול להישאר ריק'; return; }
+        const ok = await saveFields({ [f]: val }, f);
+        if (ok) {
+            fieldOverrides = { ...fieldOverrides, [f]: val };
+            editingField = '';
+        }
+    }
+    function cancelEditField() {
+        editingField = '';
+        builderError = '';
+    }
+
+    /** פוקוס אוטומטי לשדה עריכה שנפתח במקום */
+    function focusOnMount(node: HTMLElement) {
+        node.focus();
+        if (node instanceof HTMLInputElement) node.select();
+    }
+    /** Enter שומר (חוץ מ-textarea), Escape מבטל */
+    function editorKeys(e: KeyboardEvent) {
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            cancelEditField();
+        } else if (e.key === 'Enter' && (e.currentTarget as HTMLElement).tagName !== 'TEXTAREA') {
+            e.preventDefault();
+            saveTextField();
+        }
+    }
+
+    // ---- עורך קישורים (כפתורים בדף: אתר, טופס הרשמה, קבוצת וואטסאפ...) ----
+    let draftLinks = $state<Array<{ label: string; url: string }>>([]);
+
+    function startEditLinks() {
+        draftLinks = customLinks.length ? customLinks.map(l => ({ ...l })) : [{ label: '', url: '' }];
+        editingField = 'links';
+        builderError = '';
+    }
+    function addDraftLink() {
+        draftLinks = [...draftLinks, { label: '', url: '' }];
+    }
+    function removeDraftLink(i: number) {
+        draftLinks = draftLinks.filter((_, idx) => idx !== i);
+    }
+    async function saveLinks() {
+        const clean = draftLinks
+            .map(l => ({ label: l.label.trim(), url: l.url.trim() }))
+            .filter(l => l.url);
+        const ok = await saveFields({ links: clean }, 'links');
+        if (ok) {
+            linksOverride = clean.map(l => ({
+                label: l.label || 'קישור',
+                url: /^https?:\/\//i.test(l.url) ? l.url : `https://${l.url}`,
+            }));
+            editingField = '';
+        }
+    }
+
+    // ---- העלאת תמונות במצב בנייה (דחיסה כמו בטופס הפרסום) ----
+    const MAX_IMAGES = 5;
+    let uploadingImages = $state(false);
+    let imageInputEl = $state<HTMLInputElement | null>(null);
+
+    function compressImage(file: File): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const img = new Image();
+                img.onload = () => {
+                    const MAX = 1000;
+                    let { width, height } = img;
+                    if (width > MAX || height > MAX) {
+                        const scale = Math.min(MAX / width, MAX / height);
+                        width = Math.round(width * scale);
+                        height = Math.round(height * scale);
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    if (!ctx) { reject(new Error('canvas')); return; }
+                    ctx.drawImage(img, 0, 0, width, height);
+                    resolve(canvas.toDataURL('image/jpeg', 0.82));
+                };
+                img.onerror = () => reject(new Error('image'));
+                img.src = String(reader.result);
+            };
+            reader.onerror = () => reject(new Error('read'));
+            reader.readAsDataURL(file);
+        });
+    }
+
+    async function onImagesPicked(e: Event) {
+        const input = e.currentTarget as HTMLInputElement;
+        const files = Array.from(input.files ?? []);
+        input.value = '';
+        if (!files.length) return;
+        uploadingImages = true;
+        builderError = '';
+        try {
+            const current = [...galleryImages];
+            for (const f of files) {
+                if (current.length >= MAX_IMAGES) { builderError = `אפשר עד ${MAX_IMAGES} תמונות`; break; }
+                if (!f.type.startsWith('image/')) continue;
+                try { current.push(await compressImage(f)); } catch { builderError = 'קובץ תמונה לא נתמך'; }
+            }
+            if (current.length !== galleryImages.length) {
+                const ok = await saveFields({ images: current }, 'images');
+                if (ok) {
+                    imagesOverride = current;
+                    galleryIndex = current.length - 1;
+                }
+            }
+        } finally {
+            uploadingImages = false;
+        }
+    }
+
+    async function removeCurrentImage() {
+        if (!galleryImages.length) return;
+        const next = galleryImages.filter((_, idx) => idx !== galleryIndex);
+        const ok = await saveFields({ images: next }, 'images');
+        if (ok) {
+            imagesOverride = next;
+            galleryIndex = 0;
+        }
+    }
+
+    // ---- התקדמות בניית הדף ----
+    let sharedOnce = $state(false);
+    const builderSteps = $derived([
+        { icon: '📷', label: 'תמונות',        done: galleryImages.length > 0 },
+        { icon: '📝', label: 'תיאור',          done: !!displayDescription.trim() },
+        { icon: '🕒', label: 'לוח פעילויות',   done: activities.length > 0 },
+        { icon: '📞', label: 'טלפון',          done: !!displayPhone.trim() },
+        { icon: '👤', label: 'איש קשר',        done: !!displayContact.trim() },
+        { icon: '🔗', label: 'קישורים',        done: customLinks.length > 0 || hasSocialLinks },
+        { icon: '📤', label: 'שיתוף',          done: sharedOnce },
+    ]);
+    const doneSteps = $derived(builderSteps.filter(s => s.done).length);
+
+    function finishBuilder() {
+        builderMode = false;
+        isNewItem = false;
+        editingField = '';
+        editingSchedule = false;
+        // מנקה את ?builder/?new מהכתובת כדי שרענון יפתח כתצוגת גולש
+        if (item?.id) {
+            try { history.replaceState(null, '', `/items/${item.id}`); } catch {}
+        }
+    }
+
     onMount(async () => {
         mounted = true;
+        // מצב בנייה נפתח אוטומטית כשמגיעים מהטופס (?builder=1) - רק למי שמורשה
+        try {
+            const sp = new URLSearchParams(window.location.search);
+            if (canEditPage && (sp.get('builder') === '1' || sp.get('new') === '1')) {
+                builderMode = true;
+                isNewItem = sp.get('new') === '1';
+            }
+        } catch {}
+        canNativeShare = typeof navigator !== 'undefined' && !!navigator.share;
         // ספירת צפיות - רק כשצופה שאינו הבעלים (הספירה מוצגת רק לבעלים,
         // ולכן צריכה לשקף צפיות של אחרים ולא רענונים של הבעלים עצמו)
         if (item?.id && !(item as { isOwner?: boolean }).isOwner) {
@@ -273,24 +510,38 @@
     function shareUrl(): string {
         return typeof window !== 'undefined' ? window.location.href : '';
     }
+    // כותרת השיתוף: שם הדף + תת-כותרת קבועה של האתר
     function shareText(): string {
-        return item ? `${item.label} | קהילה בשכונה` : 'קהילה בשכונה';
+        return item
+            ? `${displayLabel} | קהילה בשכונה - כל יתרונות הקהילה תחת קורת גג אחת`
+            : 'קהילה בשכונה - כל יתרונות הקהילה תחת קורת גג אחת';
+    }
+    let canNativeShare = $state(false);
+    async function shareNative() {
+        try {
+            await navigator.share({ title: displayLabel, text: shareText(), url: shareUrl() });
+            sharedOnce = true;
+        } catch {}
     }
     function shareWhatsApp() {
         const url = shareUrl();
         const text = shareText();
         window.open(`https://wa.me/?text=${encodeURIComponent(text + '\n' + url)}`, '_blank', 'noopener,noreferrer');
+        sharedOnce = true;
     }
     function shareFacebook() {
         const url = shareUrl();
         window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank', 'noopener,noreferrer');
+        sharedOnce = true;
     }
     function shareTelegram() {
         const url = shareUrl();
         const text = shareText();
         window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
+        sharedOnce = true;
     }
     async function copyLink() {
+        sharedOnce = true;
         const url = shareUrl();
         try {
             await navigator.clipboard.writeText(url);
@@ -347,9 +598,10 @@
     // ה-OG description לא כולל את המשפטים החופשיים (description / looking_for) -
     // רק קריאה לפעולה גנרית. מה שצריך כבר נמצא בכותרת.
     const ogDescription = $derived.by(() => {
-        if (!item) return 'כל יתרונות השכונה תחת קורת גג אחת';
+        if (!item) return 'קהילה בשכונה - כל יתרונות הקהילה תחת קורת גג אחת';
         if (isSingles) return 'לפרופיל המלא והתחלת שיחה — לדף המלא:';
-        return 'לדף המלא:';
+        // תת-הכותרת של האתר - מופיעה מתחת לכותרת בקדימוני השיתוף ברשתות
+        return 'קהילה בשכונה - כל יתרונות הקהילה תחת קורת גג אחת';
     });
 
     const ogImage = $derived.by(() => {
@@ -417,7 +669,24 @@
 
 {#if itemSchema}<JsonLd schema={itemSchema} />{/if}
 
+<!-- הדרכה צהובה במצב בנייה - מוצמדת לכל אזור שאפשר למלא -->
+{#snippet tip(text: string)}
+    {#if builderMode}
+        <p class="text-[11px] text-amber-200/95 bg-amber-500/10 border border-amber-500/25 rounded-lg px-2.5 py-1.5 flex items-start gap-1.5 leading-snug">
+            <span aria-hidden="true">💡</span><span>{text}</span>
+        </p>
+    {/if}
+{/snippet}
+
 {#snippet shareBlock()}
+    <div class="space-y-1.5">
+        {@render tip('הדף מוכן? שתפו אותו - הקישור יגיע לרשתות עם הכותרת של הדף ותת-הכותרת "קהילה בשכונה - כל יתרונות הקהילה תחת קורת גג אחת"')}
+        {#if canNativeShare}
+            <button type="button" onclick={shareNative}
+                class="w-full bg-gradient-to-l from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold text-sm py-2 rounded-xl shadow-md hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2">
+                📤 שתפו את הדף
+            </button>
+        {/if}
     <div class="bg-white/5 px-3 py-2 rounded-xl border border-white/10 backdrop-blur-sm flex items-center gap-3">
         <span class="text-xs font-bold text-gray-300 uppercase tracking-wider shrink-0">שתף:</span>
         <div class="flex gap-2 flex-1 justify-around">
@@ -454,6 +723,7 @@
             </button>
         </div>
     </div>
+    </div>
 {/snippet}
 
 {#snippet socialLinksBlock()}
@@ -464,12 +734,43 @@
     {@const youtube   = typeof ef?.youtube   === 'string' ? ef.youtube   : ''}
     {@const tiktok    = typeof ef?.tiktok    === 'string' ? ef.tiktok    : ''}
     {@const ensureUrl = (u: string) => (/^https?:\/\//i.test(u) ? u : `https://${u}`)}
-    {#if website || facebook || instagram || youtube || tiktok}
+    {#if website || facebook || instagram || youtube || tiktok || customLinks.length > 0 || builderMode}
         <section>
             <h2 class="text-base font-bold text-white mb-1.5 flex items-center gap-1.5">
                 <span class="w-1 h-4 bg-indigo-500 rounded-full"></span>קישורים
             </h2>
+            {#if builderMode && editingField === 'links'}
+                <!-- עורך קישורים: כל שורה הופכת לכפתור בדף -->
+                <div class="rounded-xl border border-amber-500/20 bg-amber-500/[0.03] p-2.5 space-y-2">
+                    {@render tip('כל שורה הופכת לכפתור בדף: אתר, טופס הרשמה, קבוצת וואטסאפ, תרומות... כתבו שם קצר והדביקו קישור')}
+                    {#each draftLinks as link, i}
+                        <div class="flex flex-wrap items-center gap-1.5 bg-[#0f172a] rounded-lg p-1.5 border border-white/10">
+                            <input type="text" bind:value={link.label} placeholder="שם הכפתור (למשל: קבוצת וואטסאפ)" maxlength="60"
+                                class="bg-[#0a0f1a] border border-white/15 rounded-md text-xs text-white px-2 py-1 flex-1 min-w-[130px]" />
+                            <input type="url" bind:value={link.url} placeholder="https://..." dir="ltr" maxlength="300"
+                                class="bg-[#0a0f1a] border border-white/15 rounded-md text-xs text-white px-2 py-1 flex-1 min-w-[130px]" />
+                            <button type="button" onclick={() => removeDraftLink(i)} aria-label="הסר קישור"
+                                class="text-red-400 hover:text-red-300 px-1.5 text-lg leading-none">×</button>
+                        </div>
+                    {/each}
+                    <button type="button" onclick={addDraftLink}
+                        class="text-xs font-bold text-amber-300 hover:text-amber-200">➕ הוסף קישור</button>
+                    <div class="flex items-center gap-2 pt-1">
+                        <button type="button" onclick={saveLinks} disabled={savingTag === 'links'}
+                            class="text-xs font-bold text-white bg-amber-500 hover:bg-amber-400 disabled:opacity-50 rounded-lg px-3 py-1.5 transition-all">
+                            {savingTag === 'links' ? 'שומר…' : '💾 שמור'}
+                        </button>
+                        <button type="button" onclick={cancelEditField} class="text-xs font-bold text-gray-300 hover:text-white px-2 py-1.5">ביטול</button>
+                    </div>
+                </div>
+            {:else}
             <div class="flex flex-wrap gap-2">
+                {#each customLinks as link}
+                    <a href={ensureUrl(link.url)} target="_blank" rel="noopener noreferrer"
+                        class="flex items-center gap-2 bg-white/5 hover:bg-purple-600/20 border border-white/10 hover:border-purple-500/50 text-white font-bold px-4 py-2.5 rounded-xl transition-all">
+                        🔗 {link.label}
+                    </a>
+                {/each}
                 {#if website}
                     <a href={ensureUrl(website)} target="_blank" rel="noopener noreferrer"
                         class="flex items-center gap-2 bg-white/5 hover:bg-indigo-600/20 border border-white/10 hover:border-indigo-500/50 text-white font-bold px-4 py-2.5 rounded-xl transition-all">
@@ -500,14 +801,21 @@
                         🎵 טיקטוק
                     </a>
                 {/if}
+                {#if builderMode}
+                    <button type="button" onclick={startEditLinks}
+                        class="flex items-center gap-2 border-2 border-dashed border-amber-400/40 hover:border-amber-400/70 bg-amber-500/5 hover:bg-amber-500/10 text-amber-200 font-bold px-4 py-2.5 rounded-xl transition-all text-sm">
+                        ➕ {customLinks.length ? 'ערוך קישורים' : 'הוסיפו כפתור או קישור (אתר, טופס הרשמה, קבוצת וואטסאפ...)'}
+                    </button>
+                {/if}
             </div>
+            {/if}
         </section>
     {/if}
 {/snippet}
 
 <!-- Hidden keys (rendered in dedicated sections, complex types, or internal-only) -->
 {#snippet extraFieldsBlock()}
-    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'price', 'website', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname', 'age', 'birth_date', 'sector', 'gender', 'type', 'activities', 'gmach_type', 'gmach_types'])}
+    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'price', 'website', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname', 'age', 'birth_date', 'sector', 'gender', 'type', 'activities', 'links', 'gmach_type', 'gmach_types'])}
     {@const LABELS_HE: Record<string, string> = {
         nickname: 'שם או כינוי',
         gender: 'מין',
@@ -529,6 +837,8 @@
         phone: 'טלפון',
         contact: 'דרך קשר',
         hours: 'שעות פתיחה',
+        time: 'שעה עיקרית',
+        days: 'ימים',
     }}
     {@const formatValue = (key: string, val: unknown): string => {
         if (val == null || val === '') return '';
@@ -619,16 +929,57 @@
         </button>
 
         {#if item}
+            <!-- מצב בנייה: ברכה + התקדמות -->
+            {#if builderMode}
+                <div class="mb-2 rounded-2xl border border-amber-500/40 bg-gradient-to-l from-amber-900/25 to-[#0f172a] p-3 md:p-4 shadow-lg"
+                    in:fly={{ y: -16, duration: 400 }}>
+                    {#if isNewItem}
+                        <p class="text-emerald-300 font-black text-base md:text-lg mb-0.5">🎉 מזל טוב - הפריט עלה למפה!</p>
+                    {/if}
+                    <p class="text-amber-100 font-bold text-sm mb-0.5">🎨 מצב בניית הדף</p>
+                    <p class="text-gray-300 text-xs leading-snug mb-2">
+                        זה בדיוק הדף שהגולשים רואים. לחצו על האזורים המסומנים כדי למלא אותם לפי ההדרכות הצהובות - כל שינוי נשמר מיד.
+                    </p>
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        {#each builderSteps as s}
+                            <span class="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5 border {s.done ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300' : 'bg-white/5 border-white/15 text-gray-400'}">
+                                {s.done ? '✓' : s.icon} {s.label}
+                            </span>
+                        {/each}
+                        <span class="text-[11px] text-gray-400 font-bold me-auto">{doneSteps}/{builderSteps.length} הושלמו</span>
+                        <button type="button" onclick={finishBuilder}
+                            class="text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg px-2.5 py-1 transition-all whitespace-nowrap">
+                            👁️ סיימתי - הצג כמו גולש
+                        </button>
+                    </div>
+                    {#if builderError}
+                        <p class="text-red-400 text-xs font-bold mt-1.5">⚠️ {builderError}</p>
+                    {/if}
+                    {#if savingTag}
+                        <p class="text-amber-300/80 text-[11px] mt-1.5">שומר...</p>
+                    {/if}
+                </div>
+            {/if}
+
             <div
-                class="bg-[#0f172a] rounded-3xl shadow-2xl border border-white/10 relative"
+                class="bg-[#0f172a] rounded-3xl shadow-2xl border border-white/10 relative {builderMode ? 'ring-1 ring-amber-500/30' : ''}"
                 in:fly={{ y: 50, duration: 800, delay: 200 }}
             >
-                <!-- Edit profile button - floating in top-left corner of card -->
-                {#if (item as { isOwner?: boolean } | null)?.isOwner || singlesState === 'owner'}
-                    <a
-                        href={item.category === 'singles' ? `/add/singles?edit=${item.id}` : `/add/${item.category}?edit=${item.id}`}
-                        class="absolute top-3 left-3 z-30 bg-amber-500/15 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-bold text-sm rounded-xl px-3 py-1.5 transition-all backdrop-blur-sm whitespace-nowrap shadow-lg"
-                    >✏️ ערוך פרופיל</a>
+                <!-- Owner/coordinator buttons - floating in top-left corner of card -->
+                {#if (item as { isOwner?: boolean } | null)?.isOwner || singlesState === 'owner' || canEditPage}
+                    <div class="absolute top-3 left-3 z-30 flex items-center gap-1.5">
+                        {#if canEditPage && !builderMode}
+                            <button type="button" onclick={() => (builderMode = true)}
+                                class="bg-amber-500/15 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-bold text-sm rounded-xl px-3 py-1.5 transition-all backdrop-blur-sm whitespace-nowrap shadow-lg"
+                            >🎨 עריכת הדף</button>
+                        {/if}
+                        {#if (item as { isOwner?: boolean } | null)?.isOwner || singlesState === 'owner'}
+                            <a
+                                href={item.category === 'singles' ? `/add/singles?edit=${item.id}` : `/add/${item.category}?edit=${item.id}`}
+                                class="bg-white/5 hover:bg-white/15 border border-white/20 text-gray-300 font-bold text-sm rounded-xl px-3 py-1.5 transition-all backdrop-blur-sm whitespace-nowrap shadow-lg"
+                            >✏️ {canEditPage ? 'טופס עריכה' : 'ערוך פרופיל'}</a>
+                        {/if}
+                    </div>
                 {/if}
 
                 <!-- Top: image side-by-side with description+address -->
@@ -666,12 +1017,12 @@
                                 aria-label="הבא"
                                 class="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/60 hover:bg-black/80 text-white text-xl font-black flex items-center justify-center backdrop-blur-sm transition-colors"
                             >←</button>
-                            <!-- Counter -->
-                            <span class="absolute top-3 end-3 z-20 px-3 py-1 rounded-full bg-black/60 backdrop-blur-sm text-white text-xs font-bold">
+                            <!-- Counter (בפינה הפנויה - כפתורי הבעלים יושבים ב-end העליון) -->
+                            <span class="absolute top-3 start-3 z-20 px-3 py-1 rounded-full bg-black/60 backdrop-blur-sm text-white text-xs font-bold">
                                 📷 {galleryIndex + 1} / {galleryImages.length}
                             </span>
-                            <!-- Dots -->
-                            <div class="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex gap-1.5">
+                            <!-- Dots (במצב בנייה עולים מעל כפתורי הוסף/הסר תמונה) -->
+                            <div class="absolute {builderMode ? 'bottom-10' : 'bottom-3'} left-1/2 -translate-x-1/2 z-20 flex gap-1.5">
                                 {#each galleryImages as _, i}
                                     <button
                                         type="button"
@@ -682,11 +1033,35 @@
                                 {/each}
                             </div>
                         {/if}
+                    {:else if builderMode}
+                        <!-- מצב בנייה בלי תמונות: אזור העלאה מודגש -->
+                        <button type="button" onclick={() => imageInputEl?.click()} disabled={uploadingImages}
+                            class="w-full h-full min-h-[150px] flex flex-col items-center justify-center gap-1.5 border-2 border-dashed border-amber-400/50 bg-amber-500/5 hover:bg-amber-500/10 transition-all rounded-t-3xl md:rounded-t-none md:rounded-r-3xl disabled:opacity-60">
+                            <span class="text-4xl" aria-hidden="true">📷</span>
+                            <span class="text-amber-200 font-bold text-sm">{uploadingImages ? 'מעלה תמונה...' : 'הוסיפו תמונה של המקום'}</span>
+                            <span class="text-[11px] text-amber-300/80 px-4 text-center">דף עם תמונה מושך הרבה יותר גולשים - אפשר עד {MAX_IMAGES} תמונות</span>
+                        </button>
                     {:else}
                         <div class="w-full h-full bg-gradient-to-br from-purple-900 to-blue-900 flex items-center justify-center">
                             <span class="text-[120px]">{item.icon}</span>
                         </div>
                     {/if}
+                    {#if builderMode && galleryImages.length > 0}
+                        <!-- מצב בנייה עם תמונות: הוספה/הסרה מעל התמונה -->
+                        <div class="absolute bottom-2 right-2 z-20 flex gap-1.5">
+                            {#if galleryImages.length < MAX_IMAGES}
+                                <button type="button" onclick={() => imageInputEl?.click()} disabled={uploadingImages}
+                                    class="text-[11px] font-bold text-white bg-black/70 hover:bg-black/90 border border-amber-400/40 rounded-lg px-2 py-1 backdrop-blur-sm transition-all disabled:opacity-60">
+                                    {uploadingImages ? 'מעלה...' : '📷 הוסף תמונה'}
+                                </button>
+                            {/if}
+                            <button type="button" onclick={removeCurrentImage} disabled={savingTag === 'images'}
+                                class="text-[11px] font-bold text-red-300 bg-black/70 hover:bg-black/90 border border-red-400/40 rounded-lg px-2 py-1 backdrop-blur-sm transition-all disabled:opacity-60">
+                                🗑 הסר תמונה זו
+                            </button>
+                        </div>
+                    {/if}
+                    <input bind:this={imageInputEl} type="file" accept="image/*" multiple class="hidden" onchange={onImagesPicked} />
                     <div class="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-transparent to-transparent pointer-events-none"></div>
                 </div>
 
@@ -695,15 +1070,65 @@
                     {#if nickname}
                         <p class="text-white text-xl md:text-2xl font-bold leading-tight">{nickname}</p>
                     {/if}
+                    <!-- שם המקום ככותרת הדף (לא בפנויים - שם הכינוי הוא הכותרת) -->
+                    {#if !isSingles && (displayLabel || builderMode)}
+                        {#if builderMode && editingField === 'label'}
+                            <div class="space-y-1.5">
+                                <input type="text" bind:value={draftText} maxlength="120" use:focusOnMount onkeydown={editorKeys}
+                                    class="w-full bg-[#0a0f1a] border border-amber-500/50 rounded-lg text-white text-lg font-black px-2.5 py-1.5" />
+                                <div class="flex gap-2">
+                                    <button type="button" onclick={saveTextField} disabled={savingTag === 'label'}
+                                        class="text-xs font-bold text-white bg-amber-500 hover:bg-amber-400 disabled:opacity-50 rounded-lg px-3 py-1.5">💾 שמור</button>
+                                    <button type="button" onclick={cancelEditField} class="text-xs font-bold text-gray-300 hover:text-white px-2 py-1.5">ביטול</button>
+                                </div>
+                            </div>
+                        {:else}
+                            <h1 class="text-white text-xl md:text-2xl font-black leading-tight flex items-start gap-2">
+                                <span>{displayLabel}</span>
+                                {#if builderMode}
+                                    <button type="button" onclick={() => startEditField('label', displayLabel)}
+                                        aria-label="ערוך את שם המקום" title="ערוך את שם המקום"
+                                        class="text-sm bg-amber-500/15 hover:bg-amber-500/30 border border-amber-500/40 rounded-lg px-1.5 py-0.5 transition-all shrink-0">✏️</button>
+                                {/if}
+                            </h1>
+                        {/if}
+                    {/if}
                     {#if age != null}
                         <p class="text-gray-300 text-base leading-tight">גיל: {age}</p>
                     {/if}
                     {#if sector}
                         <p class="text-gray-300 text-base leading-tight">{sector}</p>
                     {/if}
-                    <p class="text-gray-200 text-base leading-snug">
-                        {item.description}
-                    </p>
+
+                    <!-- תיאור: עריכה במקום במצב בנייה -->
+                    {#if builderMode && editingField === 'description'}
+                        <div class="space-y-1.5">
+                            {@render tip('ספרו לגולשים מה מיוחד במקום, למי הוא מתאים ומה כדאי לדעת לפני שמגיעים')}
+                            <textarea bind:value={draftText} rows="4" maxlength="3000" use:focusOnMount onkeydown={editorKeys}
+                                class="w-full bg-[#0a0f1a] border border-amber-500/50 rounded-lg text-white text-sm px-2.5 py-1.5 leading-snug"
+                                placeholder="מידע על המקום, המניין או השיעור..."></textarea>
+                            <div class="flex gap-2">
+                                <button type="button" onclick={saveTextField} disabled={savingTag === 'description'}
+                                    class="text-xs font-bold text-white bg-amber-500 hover:bg-amber-400 disabled:opacity-50 rounded-lg px-3 py-1.5">💾 שמור</button>
+                                <button type="button" onclick={cancelEditField} class="text-xs font-bold text-gray-300 hover:text-white px-2 py-1.5">ביטול</button>
+                            </div>
+                        </div>
+                    {:else if displayDescription.trim()}
+                        <p class="text-gray-200 text-base leading-snug whitespace-pre-line">
+                            {displayDescription}
+                            {#if builderMode}
+                                <button type="button" onclick={() => startEditField('description', displayDescription)}
+                                    aria-label="ערוך תיאור" title="ערוך תיאור"
+                                    class="text-sm bg-amber-500/15 hover:bg-amber-500/30 border border-amber-500/40 rounded-lg px-1.5 py-0.5 transition-all ms-1 align-middle">✏️</button>
+                            {/if}
+                        </p>
+                    {:else if builderMode}
+                        <button type="button" onclick={() => startEditField('description', '')}
+                            class="w-full text-right border-2 border-dashed border-amber-400/40 hover:border-amber-400/70 bg-amber-500/5 hover:bg-amber-500/10 rounded-xl px-3 py-2 text-amber-200 text-sm font-bold transition-all">
+                            📝 הוסיפו תיאור קצר - מה מיוחד במקום? למי הוא מיועד?
+                        </button>
+                    {/if}
+
                     {#if item.address}
                         {@const cityOnly = (() => {
                             const parts = String(item.address).split(',').map(p => p.trim()).filter(Boolean);
@@ -712,16 +1137,44 @@
                         <p class="text-base text-gray-200 flex items-center gap-1.5">
                             <span class="text-blue-400">📍</span>
                             <span>{cityOnly}</span>
+                            {#if builderMode && (item as { isOwner?: boolean }).isOwner}
+                                <!-- רק לבעלים - טופס העריכה מזהה בעלות לפי edit_id -->
+                                <a href={`/add/${item.category}?edit=${item.id}`}
+                                    class="text-[11px] text-blue-300/90 hover:text-blue-200 underline underline-offset-2">שינוי כתובת / מיקום על המפה</a>
+                            {/if}
                         </p>
                     {/if}
 
                     <!-- Phone (non-singles or singles approved) -->
-                    {#if item.phone && item.category !== 'singles'}
-                        <p class="text-base text-gray-200 flex items-center gap-1.5">
-                            <span class="text-green-400">📞</span>
-                            <a href="tel:{item.phone}" class="hover:text-white">{item.phone}</a>
-                        </p>
-                    {:else if item.category === 'singles' && singlesState === 'approved' && item.phone}
+                    {#if item.category !== 'singles'}
+                        {#if builderMode && editingField === 'phone'}
+                            <div class="space-y-1.5">
+                                {@render tip('טלפון שיוצג לכולם בדף - אליו יתקשרו גולשים שרוצים פרטים')}
+                                <input type="tel" dir="ltr" bind:value={draftText} maxlength="40" placeholder="05X-XXXXXXX" use:focusOnMount onkeydown={editorKeys}
+                                    class="w-full bg-[#0a0f1a] border border-amber-500/50 rounded-lg text-white text-sm px-2.5 py-1.5" />
+                                <div class="flex gap-2">
+                                    <button type="button" onclick={saveTextField} disabled={savingTag === 'phone'}
+                                        class="text-xs font-bold text-white bg-amber-500 hover:bg-amber-400 disabled:opacity-50 rounded-lg px-3 py-1.5">💾 שמור</button>
+                                    <button type="button" onclick={cancelEditField} class="text-xs font-bold text-gray-300 hover:text-white px-2 py-1.5">ביטול</button>
+                                </div>
+                            </div>
+                        {:else if displayPhone}
+                            <p class="text-base text-gray-200 flex items-center gap-1.5">
+                                <span class="text-green-400">📞</span>
+                                <a href="tel:{displayPhone}" class="hover:text-white">{displayPhone}</a>
+                                {#if builderMode}
+                                    <button type="button" onclick={() => startEditField('phone', displayPhone)}
+                                        aria-label="ערוך טלפון" title="ערוך טלפון"
+                                        class="text-sm bg-amber-500/15 hover:bg-amber-500/30 border border-amber-500/40 rounded-lg px-1.5 py-0.5 transition-all">✏️</button>
+                                {/if}
+                            </p>
+                        {:else if builderMode}
+                            <button type="button" onclick={() => startEditField('phone', '')}
+                                class="w-full text-right border-2 border-dashed border-amber-400/40 hover:border-amber-400/70 bg-amber-500/5 hover:bg-amber-500/10 rounded-xl px-3 py-2 text-amber-200 text-sm font-bold transition-all">
+                                📞 הוסיפו טלפון ליצירת קשר
+                            </button>
+                        {/if}
+                    {:else if singlesState === 'approved' && item.phone}
                         <p class="text-base text-emerald-200 flex items-center gap-1.5">
                             <span>✅</span>
                             <a href="tel:{item.phone}" class="hover:text-white">{item.phone}</a>
@@ -749,6 +1202,12 @@
                             </div>
 
                             {#if !editingSchedule}
+                                {#if activities.length === 0 && builderMode && canEditActivities}
+                                    <button type="button" onclick={startEditSchedule}
+                                        class="w-full text-right border-2 border-dashed border-amber-400/40 hover:border-amber-400/70 bg-amber-500/5 hover:bg-amber-500/10 rounded-xl px-3 py-2 text-amber-200 text-sm font-bold transition-all">
+                                        🕒 הוסיפו לוח פעילויות - לכל תפילה / שיעור שורה עם שעה וימים משלה
+                                    </button>
+                                {/if}
                                 {#if activities.length > 0}
                                     <ul class="rounded-xl border border-white/10 divide-y divide-white/10 overflow-hidden">
                                         {#each activities as a}
@@ -764,6 +1223,7 @@
                             {:else}
                                 <!-- Editor -->
                                 <div class="rounded-xl border border-amber-500/20 bg-amber-500/[0.03] p-2.5 space-y-2">
+                                    {@render tip('לכל פעילות שורה משלה: בחרו סוג (תפילה, שיעור, מקווה...), שעה וימים - הגולשים יראו לוח מסודר')}
                                     {#each scheduleRows as row, i}
                                         <div class="flex flex-wrap items-center gap-1.5 bg-[#0f172a] rounded-lg p-1.5 border border-white/10">
                                             <select bind:value={row.type}
@@ -803,22 +1263,43 @@
                     <!-- Extra fields: compact list -->
                     {@render extraFieldsBlock()}
 
-                    <!-- Contact (שגריר/שדכן) - under פרטים נוספים -->
-                    {#if item.contact}
-                        {@const waPhone = item.phone ? String(item.phone).replace(/\D/g, '').replace(/^0/, '972') : ''}
-                        {@const phoneVisible = item.phone && (item.category !== 'singles' || singlesState === 'approved' || singlesState === 'owner')}
+                    <!-- Contact (רב/מארגן/שגריר/שדכן) - under פרטים נוספים -->
+                    {#if builderMode && editingField === 'contact'}
+                        <div class="space-y-1.5">
+                            {@render tip('שם הרב, המארגן או איש הקשר - כדי שהגולשים יידעו למי לפנות')}
+                            <input type="text" bind:value={draftText} maxlength="120" placeholder="הרב ישראל ישראלי" use:focusOnMount onkeydown={editorKeys}
+                                class="w-full bg-[#0a0f1a] border border-amber-500/50 rounded-lg text-white text-sm px-2.5 py-1.5" />
+                            <div class="flex gap-2">
+                                <button type="button" onclick={saveTextField} disabled={savingTag === 'contact'}
+                                    class="text-xs font-bold text-white bg-amber-500 hover:bg-amber-400 disabled:opacity-50 rounded-lg px-3 py-1.5">💾 שמור</button>
+                                <button type="button" onclick={cancelEditField} class="text-xs font-bold text-gray-300 hover:text-white px-2 py-1.5">ביטול</button>
+                            </div>
+                        </div>
+                    {:else if displayContact}
+                        {@const waPhone = displayPhone ? String(displayPhone).replace(/\D/g, '').replace(/^0/, '972') : ''}
+                        {@const phoneVisible = displayPhone && (item.category !== 'singles' || singlesState === 'approved' || singlesState === 'owner')}
                         {@const waUrl = waPhone && phoneVisible ? `https://wa.me/${waPhone}` : null}
                         <p class="text-base text-gray-200 flex items-center gap-1.5">
                             <span class="text-purple-400">👤</span>
-                            <span class="text-xs text-gray-400">איש קשר / שגריר / שדכן:</span>
+                            <span class="text-xs text-gray-400">איש קשר / רב / מארגן:</span>
                             {#if waUrl}
                                 <a href={waUrl} target="_blank" rel="noopener noreferrer" class="text-emerald-300 hover:text-emerald-200 font-medium inline-flex items-center gap-1" title="פתח בוואטסאפ">
-                                    💬 <span>{item.contact}</span>
+                                    💬 <span>{displayContact}</span>
                                 </a>
                             {:else}
-                                <span class="font-medium text-white">{item.contact}</span>
+                                <span class="font-medium text-white">{displayContact}</span>
+                            {/if}
+                            {#if builderMode}
+                                <button type="button" onclick={() => startEditField('contact', displayContact)}
+                                    aria-label="ערוך איש קשר" title="ערוך איש קשר"
+                                    class="text-sm bg-amber-500/15 hover:bg-amber-500/30 border border-amber-500/40 rounded-lg px-1.5 py-0.5 transition-all">✏️</button>
                             {/if}
                         </p>
+                    {:else if builderMode}
+                        <button type="button" onclick={() => startEditField('contact', '')}
+                            class="w-full text-right border-2 border-dashed border-amber-400/40 hover:border-amber-400/70 bg-amber-500/5 hover:bg-amber-500/10 rounded-xl px-3 py-2 text-amber-200 text-sm font-bold transition-all">
+                            👤 הוסיפו שם רב / מארגן / איש קשר
+                        </button>
                     {/if}
 
                     <!-- Share buttons at bottom of side panel -->
@@ -972,7 +1453,7 @@
                                     </div>
                                 {/if}
                             {:else}
-                                {@const waDigits = item.phone ? String(item.phone).replace(/\D/g, '').replace(/^0/, '972') : ''}
+                                {@const waDigits = displayPhone ? String(displayPhone).replace(/\D/g, '').replace(/^0/, '972') : ''}
                                 <div
                                     class="bg-gradient-to-br from-purple-600 to-blue-600 p-2 rounded-xl shadow-md"
                                 >
@@ -983,16 +1464,16 @@
                                         צור קשר ישירות עם המפרסם לקבלת פרטים נוספים
                                         או תיאום.
                                     </p>
-                                    {#if item.phone}
+                                    {#if displayPhone}
                                         <a
-                                            href="tel:{item.phone}"
-                                            aria-label="התקשר עכשיו – {item.phone}"
+                                            href="tel:{displayPhone}"
+                                            aria-label="התקשר עכשיו – {displayPhone}"
                                             class="block w-full bg-white text-purple-600 font-bold py-2 rounded-lg text-center shadow-lg hover:scale-105 transition-transform text-sm"
                                         >
                                             📞 התקשר עכשיו
                                         </a>
                                         <a
-                                            href="https://wa.me/{waDigits}"
+                                            href={`https://wa.me/${waDigits}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             aria-label="שלח הודעה בוואטסאפ"

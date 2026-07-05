@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { createItem, getAllItems, incrementItemViewCount, getItemsByCategory, getItemsByUserId, updateItem, getAllSuperAdmins } from '$lib/server/db';
+import { createItem, getAllItems, getDbItemByIdFresh, incrementItemViewCount, getItemsByCategory, getItemsByUserId, updateItem, getAllSuperAdmins } from '$lib/server/db';
 import { categoryConfig, getCategoryIcon, getCategoryColor } from '$lib/categoryFields';
 import { resolveItemCoords } from '$lib/server/geocode';
 import { Resend } from 'resend';
@@ -140,6 +140,53 @@ export const POST: RequestHandler = async (event) => {
         city,
         neighborhoodOnly: NEIGHBORHOOD_ONLY_CATEGORIES.has(category),
     });
+
+    // ---- עריכת פריט קיים (?edit= בטופס): עדכון במקום - בלי ליצור כפילות ----
+    const editId = typeof (body as { edit_id?: unknown }).edit_id === 'string'
+        ? String((body as { edit_id: string }).edit_id)
+        : '';
+    if (editId) {
+        if (!userId) return json({ success: false, message: 'לא מחובר' }, { status: 401 });
+        // קריאה טרייה (לא דרך cache) - מיזוג מול עותק ישן היה מוחק שדות שנשמרו הרגע
+        const existing = await getDbItemByIdFresh(editId);
+        if (!existing || existing.user_id !== String(userId)) {
+            return json({ success: false, message: 'אין הרשאה לערוך את הפריט' }, { status: 403 });
+        }
+        if (existing.category !== category) {
+            return json({ success: false, message: 'קטגוריה לא תואמת לפריט' }, { status: 400 });
+        }
+        // moderation לפי הקטגוריה האמיתית של הפריט, לא לפי מה שהלקוח שלח
+        const isModerated = MODERATED_CATEGORIES.has(existing.category);
+        // מיזוג extra_fields: הטופס שולח רק את השדות שלו - אסור למחוק שדות
+        // שנוספו במצב בניית הדף (תמונות, לוח פעילויות, קישורים, time/days ישנים)
+        const prevExtra: Record<string, unknown> = (() => {
+            try { return existing.extra_fields ? JSON.parse(existing.extra_fields) : {}; } catch { return {}; }
+        })();
+        try {
+            await updateItem(editId, {
+                label:        String(label),
+                // שדה שהטופס לא מרנדר לא נשלח בכלל - ואז לא דורסים את הערך הקיים
+                ...(rest.description !== undefined ? { description: String(rest.description) } : {}),
+                ...(rest.contact     !== undefined ? { contact:     String(rest.contact) }     : {}),
+                ...(rest.phone       !== undefined ? { phone:       String(rest.phone) }       : {}),
+                ...(rest.address     !== undefined ? { address:     String(rest.address) }     : {}),
+                neighborhood: String(neighborhood ?? ''),
+                city:         String(city ?? ''),
+                lat:          coords.lat,
+                lng:          coords.lng,
+                extra_fields: { ...prevExtra, ...((extra_fields ?? {}) as Record<string, unknown>) },
+                ...(isModerated ? { status: 'pending' } : {}),
+            });
+            if (isModerated) {
+                notifySinglesReview(String(label), (extra_fields ?? {}) as Record<string, unknown>)
+                    .catch((e) => console.warn('[api/items] singles review notify failed:', e));
+            }
+            return json({ success: true, id: editId, updated: true, pending: isModerated });
+        } catch (e) {
+            console.error('[api/items] edit update failed:', e);
+            return json({ success: false, message: 'עדכון הפריט נכשל. נסה שוב בעוד רגע.' }, { status: 500 });
+        }
+    }
 
     // ---- כרטיס אחד למשתמש (פנויים/פנויות): עדכן קיים במקום ליצור חדש ----
     if (userId && ONE_PER_USER_CATEGORIES.has(category)) {

@@ -294,11 +294,29 @@ export async function createItem(data: CreateItemData): Promise<DbItem> {
     return mapStrapiItem(res.data);
 }
 
-export async function getDbItemById(id: string): Promise<DbItem | undefined> {
+/** שליפה טרייה ישירות מ-Strapi - חובה בכל מסלול קריאה-שינוי-כתיבה (PATCH,
+ *  עריכה, ספירת צפיות). קריאה דרך ה-cache שם עלולה למזג מול עותק ישן
+ *  מאינסטנס אחר של ה-lambda ולמחוק בשקט שדות שנשמרו הרגע. */
+export async function getDbItemByIdFresh(id: string): Promise<DbItem | undefined> {
     try {
         const res = await strapiGet<{ data: StrapiItem }>(`/api/items/${id}`);
         if (!res.data) return undefined;
         return mapStrapiItem(res.data);
+    } catch {
+        return undefined;
+    }
+}
+
+export async function getDbItemById(id: string): Promise<DbItem | undefined> {
+    // cached תחת קידומת items: כך שכל עדכון/מחיקה (invalidate('items:')) מרענן גם אותו.
+    // שגיאה/404 זורקת החוצה ולא נכנסת ל-cache - אחרת טופס עריכה היה "שוכח"
+    // פריט קיים ל-30 שניות ויוצר כפילות.
+    try {
+        return await cached(`items:id:${id}`, TTL_ITEMS, async () => {
+            const res = await strapiGet<{ data: StrapiItem }>(`/api/items/${id}`);
+            if (!res.data) throw new Error('item not found');
+            return mapStrapiItem(res.data);
+        });
     } catch {
         return undefined;
     }
@@ -425,13 +443,15 @@ export async function resolveItem(documentId: string, resolverPhone: string): Pr
 
 export async function incrementItemViewCount(documentId: string): Promise<void> {
     try {
-        const item = await getDbItemById(documentId);
+        // קריאה טרייה - ספירה על בסיס ערך מה-cache הייתה קורסת ל-+1 לכל חלון TTL
+        const item = await getDbItemByIdFresh(documentId);
         if (item) {
             await strapiPut(`/api/items/${documentId}`, {
                 data: {
                     view_count: (item.view_count ?? 0) + 1,
                 },
             });
+            invalidate(`items:id:${documentId}`);
         }
     } catch (e) {
         console.warn('[db] incrementItemViewCount failed:', e);

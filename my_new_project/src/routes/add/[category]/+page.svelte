@@ -540,6 +540,8 @@
                     category:     categoryId,
                     neighborhood,
                     city,
+                    // עריכה מעדכנת את הפריט הקיים - בלי edit_id נוצרת כפילות
+                    ...(isEditMode && editItem?.id ? { edit_id: editItem.id } : {}),
                     ...(pinLat != null && pinLng != null ? { lat: pinLat, lng: pinLng } : {}),
                     ...topLevel,
                     extra_fields: extra,
@@ -572,6 +574,10 @@
                     }));
                 }
                 setTimeout(() => goto('/about/advertise'), 1500);
+            } else if (result.id) {
+                // זרימה דו-שלבית: הפרטים הראשוניים נשמרו ועלו למפה - עוברים לדף
+                // הפריט המלא במצב בנייה, שם משלימים תמונות/שעות/קישורים מול העיניים
+                setTimeout(() => goto(`/items/${result.id}${isEditMode ? '' : '?builder=1&new=1'}`), 1600);
             } else {
                 setTimeout(() => goto('/'), 2500);
             }
@@ -653,8 +659,11 @@
                     <p class="text-amber-200 text-base font-bold mb-1">שלם {monthlyPrice} ש"ח בחודש על מנת להופיע</p>
                 {/if}
                 <p class="text-gray-400 text-sm">מועבר לדף התשלום...</p>
+            {:else if isEditMode}
+                <p class="text-gray-400 text-sm">העדכון נשמר. עוברים לדף הפריט...</p>
             {:else}
-                <p class="text-gray-400 text-sm">הפריט שלך נוסף לשכונה! מועבר לדף הבית...</p>
+                <p class="text-green-200 text-base font-bold mb-1">🎉 הפריט עלה למפה!</p>
+                <p class="text-gray-400 text-sm">עוברים לדף המלא של הפריט - שם תוכלו להוסיף תמונות, שעות וקישורים בדיוק כפי שהגולשים יראו אותם.</p>
             {/if}
         </div>
 

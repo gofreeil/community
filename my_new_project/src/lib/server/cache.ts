@@ -35,7 +35,13 @@ export async function cached<T>(key: string, ttlMs: number, fn: () => Promise<T>
         if (!entry.refreshing) {
             entry.refreshing = true;
             fn()
-                .then((v) => store.set(key, { value: v, freshUntil: Date.now() + ttlMs, refreshing: false }))
+                .then((v) => {
+                    // אם בינתיים המפתח בוטל (invalidate אחרי כתיבה) או הוחלף -
+                    // אסור להחיות ערך שנשלף לפני הכתיבה
+                    if (store.get(key) === entry) {
+                        store.set(key, { value: v, freshUntil: Date.now() + ttlMs, refreshing: false });
+                    }
+                })
                 .catch(() => { entry.refreshing = false; /* נשמור את הערך הישן, ננסה שוב בפעם הבאה */ });
         }
         return entry.value;

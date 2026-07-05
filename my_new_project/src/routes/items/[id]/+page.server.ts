@@ -99,6 +99,8 @@ export const load: PageServerLoad = async (event) => {
             const u = await getUserByAnyId(viewerId);
             canEditActivities = isCoordinatorOfArea(u?.coordinator_of, dbItem.neighborhood, dbItem.city);
         }
+        // מצב בניית הדף (עריכה במקום): אותה הרשאה, אבל לא לפנויים - שם יש טופס ייעודי
+        const canEditPage = canEditActivities && dbItem.category !== 'singles';
 
         return {
             origin,
@@ -120,6 +122,7 @@ export const load: PageServerLoad = async (event) => {
                 isUserSubmitted: true,
                 isOwner,
                 canEditActivities,
+                canEditPage,
                 viewCount:   dbItem.view_count,
                 singlesStatus,
                 incomingRequests,

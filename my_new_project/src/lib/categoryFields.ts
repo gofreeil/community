@@ -78,16 +78,15 @@ export const categoryConfig: Record<string, CategoryConfig> = {
         icon: '✡️',
         color: 'blue',
         priceRow: null,
+        // שלב 1 בלבד: פרטים ראשוניים שמעלים את המקום למפה. השאר (תמונות, לוח
+        // פעילויות ושעות, שם הרב, תיאור, קישורים) מושלם בדף הפריט במצב בנייה.
         fields: [
             { key: 'label',       label: 'שם המקום',            type: 'text',     required: true,  placeholder: 'בית הכנסת "אהל יוסף", מניין דף היומי...' },
             { key: 'type',        label: 'מה יש במקום (אפשר לבחור כמה)', type: 'multi_select', required: true, options: ['בית כנסת', 'תפילה / מניין', 'שיעור תורה', 'מקווה', 'אחר'] },
-            { key: 'time',        label: 'שעה עיקרית',          type: 'time',     required: false },
-            { key: 'days',        label: 'ימים',                type: 'text',     required: false, placeholder: 'כל יום, א-ה, שישי בלבד...' },
             { key: 'address',     label: 'כתובת',               type: 'address',  required: true,  placeholder: 'שם הרחוב' },
             { key: 'location',    label: 'סימון על המפה',       type: 'map_pin',  required: false },
-            { key: 'contact',     label: 'שם הרב / מארגן',      type: 'text',     required: false, placeholder: 'הרב ישראל ישראלי' },
-            { key: 'phone',       label: 'טלפון ליצירת קשר',    type: 'tel',      required: false, placeholder: '05X-XXXXXXX' },
-            { key: 'description', label: 'פרטים נוספים',        type: 'textarea', required: false, placeholder: 'מידע נוסף על המניין / שיעור' },
+            { key: 'phone',       label: 'טלפון ליצירת קשר',    type: 'tel',      required: false, placeholder: '05X-XXXXXXX',
+              hint: 'אחרי הפרסום נעבור יחד לדף המלא של המקום - שם מוסיפים תמונות, לוח פעילויות ושעות, שם הרב וכל השאר' },
         ],
     },
 
