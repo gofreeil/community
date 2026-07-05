@@ -1,4 +1,4 @@
-import { register, init, getLocaleFromNavigator } from 'svelte-i18n';
+import { register, init } from 'svelte-i18n';
 
 register('he', () => Promise.resolve({
     welcome: "קהילה בשכונה",
@@ -702,5 +702,6 @@ register('ru', () => Promise.resolve({
 
 init({
     fallbackLocale: 'he',
-    initialLocale: (typeof window !== 'undefined' && localStorage.getItem('lang')) || getLocaleFromNavigator() || 'he',
+    // תמיד עברית כברירת מחדל — שפת המכשיר לא קובעת; רק בחירה ידנית שנשמרה
+    initialLocale: (typeof window !== 'undefined' && localStorage.getItem('lang')) || 'he',
 });
