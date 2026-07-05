@@ -1,5 +1,5 @@
 import { redirect, fail } from '@sveltejs/kit';
-import { createItem } from '$lib/server/db';
+import { createItem, getUserById } from '$lib/server/db';
 import type { PageServerLoad, Actions } from './$types';
 
 const OPTIONS: Record<string, { text: string; icon: string }> = {
@@ -13,7 +13,19 @@ const OPTIONS: Record<string, { text: string; icon: string }> = {
 export const load: PageServerLoad = async (event) => {
     const optionId = event.url.searchParams.get('option') ?? '4';
     const option   = OPTIONS[optionId] ?? OPTIONS['4'];
-    return { optionId, option };
+
+    // עיר המשתמש - שבורר הרחובות בשדה המיקום יציע רחובות מהעיר הנכונה
+    let userCity = '';
+    try {
+        const session = await event.locals.auth();
+        if (session?.user?.id) {
+            const jwt = event.cookies.get('strapi_jwt');
+            const user = await getUserById(session.user.id, jwt ?? undefined);
+            userCity = user?.city ?? '';
+        }
+    } catch {}
+
+    return { optionId, option, userCity };
 };
 
 export const actions: Actions = {

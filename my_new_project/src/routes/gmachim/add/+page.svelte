@@ -6,6 +6,7 @@
     import { citiesAndNeighborhoods, effectiveNeighborhoods, LS_KEY, DEFAULT_NEIGHBORHOOD } from '$lib/neighborhoodsData';
     import { formMemory } from '$lib/formMemory';
     import { GMACH_TYPES } from '$lib/gmachTypes';
+    import StreetPicker from '$lib/components/StreetPicker.svelte';
     import type { ActionData, PageData } from './$types';
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -374,7 +375,9 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label for="street" class="text-white text-sm font-bold mb-1 block">רחוב *</label>
-                        <input id="street" name="street" bind:value={street} required placeholder="שם הרחוב" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
+                        <!-- בחירה מרשימת הרחובות הרשמית של העיר - איות אחיד; הקלדה חופשית עדיין אפשרית -->
+                        <StreetPicker {city} value={street} withHouseNumber={false} onValueChange={(v) => (street = v)} />
+                        <input type="hidden" name="street" value={street} />
                     </div>
                     <div>
                         <label for="buildingNum" class="text-white text-sm font-bold mb-1 block">מספר בניין *</label>

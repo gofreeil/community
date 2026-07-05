@@ -1,10 +1,12 @@
 <script lang="ts">
     import { enhance } from '$app/forms';
     import { formMemory } from '$lib/formMemory';
+    import StreetPicker from '$lib/components/StreetPicker.svelte';
     import type { PageData, ActionData } from './$types';
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
 
+    let location     = $state('');
     let submitting   = $state(false);
     let imageBase64  = $state('');
     let imagePreview = $state('');
@@ -124,14 +126,15 @@
                     <label for="rh-location" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
                         מיקום *
                     </label>
-                    <input
-                        id="rh-location"
-                        name="location"
-                        type="text"
-                        required
+                    <!-- הצעות מרשימת הרחובות של עיר המשתמש; תיאור חופשי ("ליד הגן") עדיין אפשרי -->
+                    <StreetPicker
+                        city={data.userCity ?? ''}
+                        value={location}
+                        withHouseNumber={false}
                         placeholder={fields.locationPlaceholder}
-                        class="w-full bg-white/5 border border-white/10 focus:border-red-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none transition-colors placeholder:text-gray-600"
+                        onValueChange={(v) => (location = v)}
                     />
+                    <input type="hidden" name="location" value={location} />
                 </div>
 
                 <!-- Image -->

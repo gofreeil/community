@@ -7,6 +7,7 @@
     import { citiesAndNeighborhoods, effectiveNeighborhoods } from '$lib/neighborhoodsData';
     import { giveawayCategories } from '$lib/giveawayCategories';
     import { formMemory } from '$lib/formMemory';
+    import StreetPicker from '$lib/components/StreetPicker.svelte';
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
 
@@ -83,6 +84,8 @@
     let neighborhood = $state(defNeighborhood);
     let contact      = $state(defName);
     let phone        = $state(defPhone);
+    let street       = $state('');
+    let buildingNum  = $state('');
 
     let neighborhoodOptions = $derived(effectiveNeighborhoods(city, (data as any).approvedNeighborhoods));
 
@@ -415,22 +418,20 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label for="street" class="text-white text-sm font-bold mb-1 block">רחוב (אופציונלי)</label>
-                            <input
-                                id="street"
-                                name="street"
-                                placeholder="שם הרחוב"
-                                class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:border-orange-500/50 focus:outline-none transition-colors"
-                            />
+                            <!-- בחירה מרשימת הרחובות הרשמית של העיר - איות אחיד; הקלדה חופשית עדיין אפשרית -->
+                            <StreetPicker {city} value={street} withHouseNumber={false} onValueChange={(v) => (street = v)} />
                         </div>
                         <div>
                             <label for="buildingNum" class="text-white text-sm font-bold mb-1 block">מספר בניין (אופציונלי)</label>
                             <input
                                 id="buildingNum"
-                                name="buildingNum"
+                                bind:value={buildingNum}
                                 placeholder="מספר"
                                 class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:border-orange-500/50 focus:outline-none transition-colors"
                             />
                         </div>
+                        <!-- השרת קורא שדה address אחד - עד עכשיו רחוב+מספר נשלחו בשמות אחרים ופשוט נזרקו -->
+                        <input type="hidden" name="address" value={[street, buildingNum].map((s) => s.trim()).filter(Boolean).join(' ')} />
                     </div>
 
                     <div class="grid grid-cols-3 gap-3">

@@ -6,16 +6,21 @@
         city = '',
         value = '',
         placeholder = 'שם הרחוב',
+        withHouseNumber = true,
         onValueChange,
     }: {
         city?: string;
         value?: string;
         placeholder?: string;
+        /** false = שדה רחוב בלבד (כשמספר הבית הוא שדה נפרד בטופס המארח) */
+        withHouseNumber?: boolean;
         onValueChange: (v: string) => void;
     } = $props();
 
     // פירוק ערך קיים (טיוטא/עריכה) של "רחוב מספר" לשני השדות
-    const initialMatch = (value ?? '').trim().match(/^(.*?)\s+(\d+[^\s]*)$/);
+    const initialMatch = withHouseNumber
+        ? (value ?? '').trim().match(/^(.*?)\s+(\d+[^\s]*)$/)
+        : null;
     let street   = $state(initialMatch ? initialMatch[1] : (value ?? '').trim());
     let houseNum = $state(initialMatch ? initialMatch[2] : '');
 
@@ -28,6 +33,17 @@
     function emit() {
         onValueChange([street.trim(), houseNum.trim()].filter(Boolean).join(' '));
     }
+
+    // סנכרון פנימה כשהערך משתנה מבחוץ אחרי האתחול (שחזור טיוטא / מצב עריכה):
+    // בלי זה הרכיב היה מציג שדה ריק למרות שהטופס כבר מחזיק כתובת.
+    $effect(() => {
+        const v = (value ?? '').trim();
+        const combined = [street.trim(), houseNum.trim()].filter(Boolean).join(' ');
+        if (v === combined) return;
+        const m = withHouseNumber ? v.match(/^(.*?)\s+(\d+[^\s]*)$/) : null;
+        street   = m ? m[1] : v;
+        houseNum = m ? m[2] : '';
+    });
 
     // טעינת רחובות בכל החלפת עיר (עם הגנה מתשובות ישנות שמגיעות באיחור)
     $effect(() => {
@@ -135,15 +151,17 @@
         </div>
 
         <!-- מספר בית -->
-        <input
-            type="text"
-            inputmode="numeric"
-            value={houseNum}
-            oninput={(e) => { houseNum = (e.target as HTMLInputElement).value; emit(); }}
-            placeholder="מס'"
-            class="{inputClass} !w-20 shrink-0 text-center"
-            autocomplete="off"
-        />
+        {#if withHouseNumber}
+            <input
+                type="text"
+                inputmode="numeric"
+                value={houseNum}
+                oninput={(e) => { houseNum = (e.target as HTMLInputElement).value; emit(); }}
+                placeholder="מס'"
+                class="{inputClass} !w-20 shrink-0 text-center"
+                autocomplete="off"
+            />
+        {/if}
     </div>
 
     {#if street.trim()}

@@ -1,13 +1,15 @@
 <script lang="ts">
     import { enhance } from '$app/forms';
     import { formMemory } from '$lib/formMemory';
-    import type { ActionData } from './$types';
+    import StreetPicker from '$lib/components/StreetPicker.svelte';
+    import type { ActionData, PageData } from './$types';
 
-    let { form }: { form: ActionData } = $props();
+    let { data, form }: { data: PageData; form: ActionData } = $props();
 
     let submitted = $derived(!!form?.success);
 
     let type        = $state<'lost' | 'found' | ''>('');
+    let location    = $state('');
     let submitting  = $state(false);
     let imageBase64 = $state('');
     let imagePreview = $state('');
@@ -201,14 +203,15 @@
                     <label for="laf-location" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
                         מיקום *
                     </label>
-                    <input
-                        id="laf-location"
-                        name="location"
-                        type="text"
-                        required
-                        placeholder="רחוב, שכונה, עיר..."
-                        class="w-full bg-white/5 border border-white/10 focus:border-blue-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none transition-colors placeholder:text-gray-600"
+                    <!-- הצעות מרשימת הרחובות של עיר המשתמש; מקומות חופשיים ("גן סאקר") עדיין אפשריים -->
+                    <StreetPicker
+                        city={data.userCity ?? ''}
+                        value={location}
+                        withHouseNumber={false}
+                        placeholder="רחוב, שכונה או מקום..."
+                        onValueChange={(v) => (location = v)}
                     />
+                    <input type="hidden" name="location" value={location} />
                 </div>
 
                 <!-- Contact -->

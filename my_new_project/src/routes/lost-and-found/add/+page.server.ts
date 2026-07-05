@@ -6,7 +6,17 @@ export const load: PageServerLoad = async (event) => {
     let session = null;
     try { session = await event.locals.auth(); } catch {}
 
-    return { userId: session?.user?.id ?? null };
+    // עיר המשתמש - כדי שבורר הרחובות בטופס יציע את הרחובות של העיר הנכונה
+    let userCity = '';
+    if (session?.user?.id) {
+        try {
+            const jwt = event.cookies.get('strapi_jwt');
+            const user = await getUserById(session.user.id, jwt ?? undefined);
+            userCity = user?.city ?? '';
+        } catch {}
+    }
+
+    return { userId: session?.user?.id ?? null, userCity };
 };
 
 export const actions: Actions = {
