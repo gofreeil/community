@@ -10,6 +10,7 @@
         emptyOpeningHours,
         parseOpeningHours,
         serializeOpeningHours,
+        nextRangeAfter,
         DAY_SHORT,
         type OpeningHours,
     } from '$lib/openingHours';
@@ -75,6 +76,37 @@
     let pinLng = $state<number | null>(editItem?.lng ?? null);
     // המפה נטענת רק אחרי שהמשתמש בוחר לסמן (או אם כבר יש פין שמור מעריכה)
     let showMap = $state(editItem?.lat != null && editItem?.lng != null);
+    // מקור הפין: 'manual' = המשתמש סימן/גרר (מקודש - לא דורסים), 'geo' = זוהה
+    // אוטומטית מהכתובת (מותר לעדכן כשהכתובת משתנה), null = אין פין עדיין
+    let pinSource = $state<'manual' | 'geo' | null>(editItem?.lat != null ? 'manual' : null);
+
+    // ---- פין אוטומטי מהכתובת: רחוב+מספר נבחרו → הפין קופץ על המפה לאישור ----
+    const hasMapPinField = config.fields.some(f => f.type === 'map_pin');
+    let geocodeTimer: ReturnType<typeof setTimeout> | null = null;
+    $effect(() => {
+        const addr = (formValues['address'] ?? '').trim();
+        const c = city;
+        void pinSource;
+        if (!browser || !hasMapPinField) return;
+        // פין ידני של המשתמש לא נדרס; מחכים לכתובת עם מספר בית (אחרת זה ניחוש גס)
+        if (pinSource === 'manual' || !addr || !/\d/.test(addr)) return;
+        if (geocodeTimer) clearTimeout(geocodeTimer);
+        geocodeTimer = setTimeout(async () => {
+            try {
+                const res = await fetch(`/api/geocode?q=${encodeURIComponent(addr)}&city=${encodeURIComponent(c)}`);
+                const data = await res.json();
+                // בזמן ההמתנה המשתמש אולי סימן פין בעצמו - הידני גובר
+                if (pinSource === 'manual') return;
+                if (data?.lat != null && data?.lng != null) {
+                    pinLat = data.lat;
+                    pinLng = data.lng;
+                    pinSource = 'geo';
+                    showMap = true;
+                }
+            } catch { /* אין תצוגה מקדימה - השרת עדיין יאתר בשמירה */ }
+        }, 900);
+        return () => { if (geocodeTimer) clearTimeout(geocodeTimer); };
+    });
 
     // ---- ערכי ברירת מחדל לשדות מפרופיל המשתמש ----
     // במצב עריכה (?edit=<id>) - מועדף ערך מהפריט הקיים על פני userProfile.
@@ -248,18 +280,42 @@
         // מעבר למצב "שעות זהות" - מחיל את שעות היום הפתוח הראשון על כל הימים
         if (uniform) {
             const first = oh.days.find((d) => d.open) ?? oh.days[0];
-            for (const d of oh.days) { d.from = first.from; d.to = first.to; }
+            for (const d of oh.days) d.ranges = first.ranges.map((r) => ({ ...r }));
         }
         setOpeningHours(key, oh);
     }
-    function setUniformTime(key: string, which: 'from' | 'to', val: string) {
+    function setUniformTime(key: string, rIdx: number, which: 'from' | 'to', val: string) {
         const oh = getOpeningHours(key);
-        for (const d of oh.days) d[which] = val;
+        for (const d of oh.days) { if (d.ranges[rIdx]) d.ranges[rIdx][which] = val; }
         setOpeningHours(key, oh);
     }
-    function setDayTime(key: string, idx: number, which: 'from' | 'to', val: string) {
+    function addUniformRange(key: string) {
         const oh = getOpeningHours(key);
-        oh.days[idx][which] = val;
+        const rep = oh.days.find((d) => d.open) ?? oh.days[0];
+        const next = nextRangeAfter(rep.ranges[rep.ranges.length - 1]);
+        for (const d of oh.days) d.ranges.push({ ...next });
+        setOpeningHours(key, oh);
+    }
+    function removeUniformRange(key: string, rIdx: number) {
+        const oh = getOpeningHours(key);
+        for (const d of oh.days) { if (d.ranges.length > 1) d.ranges.splice(rIdx, 1); }
+        setOpeningHours(key, oh);
+    }
+    function setDayTime(key: string, idx: number, rIdx: number, which: 'from' | 'to', val: string) {
+        const oh = getOpeningHours(key);
+        const r = oh.days[idx].ranges[rIdx];
+        if (r) r[which] = val;
+        setOpeningHours(key, oh);
+    }
+    function addDayRange(key: string, idx: number) {
+        const oh = getOpeningHours(key);
+        const ranges = oh.days[idx].ranges;
+        ranges.push(nextRangeAfter(ranges[ranges.length - 1]));
+        setOpeningHours(key, oh);
+    }
+    function removeDayRange(key: string, idx: number, rIdx: number) {
+        const oh = getOpeningHours(key);
+        if (oh.days[idx].ranges.length > 1) oh.days[idx].ranges.splice(rIdx, 1);
         setOpeningHours(key, oh);
     }
 
@@ -324,6 +380,8 @@
                 if (parsed.pinLat != null && parsed.pinLng != null) {
                     pinLat = parsed.pinLat;
                     pinLng = parsed.pinLng;
+                    // פין משוחזר מטיוטא נחשב ידני - שה-geocoding לא יזיז אותו
+                    pinSource = 'manual';
                     showMap = true;
                 }
             }
@@ -779,52 +837,108 @@
                                 </div>
 
                                 {#if oh.uniform}
-                                    <!-- זוג שעות אחד לכל הימים הפתוחים -->
-                                    <div class="flex items-center justify-center gap-2" dir="ltr">
-                                        <input
-                                            type="time"
-                                            value={rep.from}
-                                            onchange={(e) => setUniformTime(field.key, 'from', (e.target as HTMLInputElement).value)}
-                                            class={timeInput}
-                                            aria-label="שעת פתיחה"
-                                        />
-                                        <span class="text-gray-400 font-bold">–</span>
-                                        <input
-                                            type="time"
-                                            value={rep.to}
-                                            onchange={(e) => setUniformTime(field.key, 'to', (e.target as HTMLInputElement).value)}
-                                            class={timeInput}
-                                            aria-label="שעת סגירה"
-                                        />
+                                    <!-- טווחי שעות משותפים לכל הימים הפתוחים -->
+                                    <div class="space-y-2">
+                                        {#each rep.ranges as r, rIdx (rIdx)}
+                                            <div class="flex items-center justify-center gap-2">
+                                                <div class="flex items-center gap-2" dir="ltr">
+                                                    <input
+                                                        type="time"
+                                                        value={r.from}
+                                                        onchange={(e) => setUniformTime(field.key, rIdx, 'from', (e.target as HTMLInputElement).value)}
+                                                        class={timeInput}
+                                                        aria-label="שעת פתיחה - טווח {rIdx + 1}"
+                                                    />
+                                                    <span class="text-gray-400 font-bold">–</span>
+                                                    <input
+                                                        type="time"
+                                                        value={r.to}
+                                                        onchange={(e) => setUniformTime(field.key, rIdx, 'to', (e.target as HTMLInputElement).value)}
+                                                        class={timeInput}
+                                                        aria-label="שעת סגירה - טווח {rIdx + 1}"
+                                                    />
+                                                </div>
+                                                {#if rep.ranges.length > 1}
+                                                    <button
+                                                        type="button"
+                                                        onclick={() => removeUniformRange(field.key, rIdx)}
+                                                        class="w-7 h-7 shrink-0 rounded-full border border-white/15 text-gray-500 text-sm leading-none transition-colors hover:text-red-300 hover:border-red-400/50 hover:bg-red-500/10"
+                                                        aria-label="הסרת טווח {rIdx + 1}"
+                                                        title="הסרת טווח שעות"
+                                                    >✕</button>
+                                                {/if}
+                                            </div>
+                                        {/each}
+                                        <div class="flex justify-center">
+                                            <button
+                                                type="button"
+                                                onclick={() => addUniformRange(field.key)}
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-dashed border-white/25 text-xs font-bold text-gray-300 transition-colors hover:text-white hover:border-white/50 hover:bg-white/5"
+                                            ><span class="text-base leading-none">＋</span> הוספת טווח שעות</button>
+                                        </div>
+                                        <p class="text-[11px] text-gray-500 text-center leading-relaxed">
+                                            סגורים בצהריים? לחצו על ＋ והוסיפו טווח נוסף — למשל 9:00–13:00 וגם 16:00–19:00
+                                        </p>
                                     </div>
                                 {:else}
-                                    <!-- שורת שעות נפרדת לכל יום פתוח -->
-                                    <div class="space-y-2">
+                                    <!-- טווחי שעות נפרדים לכל יום פתוח -->
+                                    <div class="divide-y divide-white/10">
                                         {#each DAY_SHORT as d, dIdx}
                                             {#if oh.days[dIdx].open}
-                                                <div class="flex items-center gap-2 md:justify-center md:gap-3">
-                                                    <span class="w-8 shrink-0 text-sm font-bold text-gray-200 md:text-center">{d}</span>
-                                                    <div class="flex items-center gap-1.5 flex-1 md:flex-none min-w-0" dir="ltr">
-                                                        <input
-                                                            type="time"
-                                                            value={oh.days[dIdx].from}
-                                                            onchange={(e) => setDayTime(field.key, dIdx, 'from', (e.target as HTMLInputElement).value)}
-                                                            class="{timeInput} flex-1 md:flex-none md:w-28 min-w-0"
-                                                            aria-label="שעת פתיחה {d}"
-                                                        />
-                                                        <span class="text-gray-400 font-bold shrink-0">–</span>
-                                                        <input
-                                                            type="time"
-                                                            value={oh.days[dIdx].to}
-                                                            onchange={(e) => setDayTime(field.key, dIdx, 'to', (e.target as HTMLInputElement).value)}
-                                                            class="{timeInput} flex-1 md:flex-none md:w-28 min-w-0"
-                                                            aria-label="שעת סגירה {d}"
-                                                        />
+                                                <div class="flex gap-2 py-2 md:justify-center md:gap-3">
+                                                    <span class="w-12 shrink-0 pt-2 text-sm font-bold text-gray-200">{d}</span>
+                                                    <div class="flex flex-col gap-1.5 flex-1 md:flex-none min-w-0">
+                                                        {#each oh.days[dIdx].ranges as r, rIdx (rIdx)}
+                                                            <div class="flex items-center gap-1.5">
+                                                                <div class="flex items-center gap-1.5 flex-1 md:flex-none min-w-0" dir="ltr">
+                                                                    <input
+                                                                        type="time"
+                                                                        value={r.from}
+                                                                        onchange={(e) => setDayTime(field.key, dIdx, rIdx, 'from', (e.target as HTMLInputElement).value)}
+                                                                        class="{timeInput} flex-1 md:flex-none md:w-28 min-w-0"
+                                                                        aria-label="שעת פתיחה {d} - טווח {rIdx + 1}"
+                                                                    />
+                                                                    <span class="text-gray-400 font-bold shrink-0">–</span>
+                                                                    <input
+                                                                        type="time"
+                                                                        value={r.to}
+                                                                        onchange={(e) => setDayTime(field.key, dIdx, rIdx, 'to', (e.target as HTMLInputElement).value)}
+                                                                        class="{timeInput} flex-1 md:flex-none md:w-28 min-w-0"
+                                                                        aria-label="שעת סגירה {d} - טווח {rIdx + 1}"
+                                                                    />
+                                                                </div>
+                                                                {#if rIdx === oh.days[dIdx].ranges.length - 1}
+                                                                    <button
+                                                                        type="button"
+                                                                        onclick={() => addDayRange(field.key, dIdx)}
+                                                                        class="w-7 h-7 shrink-0 rounded-full border border-dashed border-white/25 text-gray-300 text-base leading-none transition-colors hover:text-white hover:border-white/50 hover:bg-white/5"
+                                                                        aria-label="הוספת טווח שעות ליום {d}"
+                                                                        title="הוספת טווח שעות ליום זה"
+                                                                    >＋</button>
+                                                                {:else}
+                                                                    <span class="w-7 shrink-0"></span>
+                                                                {/if}
+                                                                {#if oh.days[dIdx].ranges.length > 1}
+                                                                    <button
+                                                                        type="button"
+                                                                        onclick={() => removeDayRange(field.key, dIdx, rIdx)}
+                                                                        class="w-7 h-7 shrink-0 rounded-full border border-white/15 text-gray-500 text-sm leading-none transition-colors hover:text-red-300 hover:border-red-400/50 hover:bg-red-500/10"
+                                                                        aria-label="הסרת טווח {rIdx + 1} ביום {d}"
+                                                                        title="הסרת טווח שעות"
+                                                                    >✕</button>
+                                                                {:else}
+                                                                    <span class="w-7 shrink-0"></span>
+                                                                {/if}
+                                                            </div>
+                                                        {/each}
                                                     </div>
                                                 </div>
                                             {/if}
                                         {/each}
                                     </div>
+                                    <p class="text-[11px] text-gray-500 text-center leading-relaxed">
+                                        לחיצה על ＋ ליד יום מוסיפה לו טווח שעות נוסף — למשל פתוח בבוקר וגם בערב
+                                    </p>
                                 {/if}
                             {:else}
                                 <p class="text-xs text-gray-500 text-center py-1">לא נבחרו ימים — יוצג ללא שעות פתיחה</p>
@@ -944,10 +1058,22 @@
                             </button>
                         {:else}
                             <!-- המפה נפתחת ממוקדת על השכונה שנבחרה למעלה, ונעולה לסביבת העיר -->
-                            <NeighborhoodPicker {city} {neighborhood} restrictToCity bind:lat={pinLat} bind:lng={pinLng} />
+                            <NeighborhoodPicker
+                                {city}
+                                {neighborhood}
+                                restrictToCity
+                                bind:lat={pinLat}
+                                bind:lng={pinLng}
+                                onUserPin={() => (pinSource = 'manual')}
+                            />
+                            {#if pinSource === 'geo'}
+                                <p class="mt-1.5 text-xs text-cyan-300">
+                                    🎯 המיקום זוהה אוטומטית מהכתובת - גררו את הסמן אם צריך לדייק
+                                </p>
+                            {/if}
                             <button
                                 type="button"
-                                onclick={() => { showMap = false; pinLat = null; pinLng = null; }}
+                                onclick={() => { showMap = false; pinLat = null; pinLng = null; pinSource = null; }}
                                 class="mt-2 text-xs text-gray-400 hover:text-gray-200 underline underline-offset-2 transition-colors"
                             >
                                 הסתר מפה והסר סימון
