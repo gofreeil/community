@@ -226,7 +226,7 @@
 	// tFn: תרגום reactive - $t אסור ב-Svelte 5
 	let _loc = $state(get(locale));
 	$effect(() => locale.subscribe(l => (_loc = l)));
-	const tFn = (k: string) => { void _loc; return get(t)(k); };
+	const tFn = (k: string, options?: { values?: Record<string, unknown> }) => { void _loc; return get(t)(k, options as any); };
 
 	// סגור תמונת preview של אודות בזמן ניווט
 	beforeNavigate(() => {
@@ -286,7 +286,7 @@
                         <button
                             onclick={() => goto("/about/revenue")}
                             class="flex items-center justify-center gap-1 h-8 px-1.5 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors"
-                            aria-label="אודות קהילה"
+                            aria-label={tFn("chrome.about_community_aria")}
                         >
                             <span class="text-sm font-bold text-white leading-none whitespace-nowrap">{tFn("about")}</span>
                         </button>
@@ -297,7 +297,7 @@
                                 onclick={() => (showLangDropdown = !showLangDropdown)}
                                 onkeydown={handleLangKeydown}
                                 class="flex items-center justify-center w-7 h-8 hover:opacity-80 transition-opacity"
-                                aria-label="בחר שפה"
+                                aria-label={tFn("chrome.choose_language")}
                                 aria-haspopup="listbox"
                                 aria-expanded={showLangDropdown}
                             >
@@ -311,7 +311,7 @@
                                 <div
                                     class="absolute left-0 z-[160] mt-2 w-36 rounded-lg bg-[#0f172a] border border-white/10 shadow-xl"
                                     role="listbox"
-                                    aria-label="בחר שפה"
+                                    aria-label={tFn("chrome.choose_language")}
                                 >
                                     {#each languages as langOption}
                                         <button
@@ -330,7 +330,7 @@
                         </div>
 
                         {#if currentUser}
-                            <a href="/profile" class="relative group flex-shrink-0" aria-label="לאזור האישי – {currentUser.username ?? 'משתמש'}">
+                            <a href="/profile" class="relative group flex-shrink-0" aria-label={tFn("chrome.to_personal_area", { values: { name: currentUser.username ?? tFn("default_user") } })}>
                                 <div class="relative h-9 w-9">
                                     {#if currentUser.avatar_url}
                                         <img
@@ -360,7 +360,7 @@
                                                bg-orange-500 border-2 border-[#0f172a] rounded-full
                                                flex items-center justify-center text-white text-[10px]
                                                font-black leading-none shadow-lg"
-                                        aria-label="{unreadMessages} הודעות חדשות"
+                                        aria-label={tFn("chrome.unread_messages", { values: { n: unreadMessages } })}
                                     >{unreadLabel}</span>
                                 {/if}
                             </a>
@@ -370,12 +370,12 @@
                                 class="relative group flex-shrink-0 flex items-center gap-1 px-2 h-9 rounded-full
                                        border border-white/30 shadow-md hover:scale-105 transition-transform"
                                 style="background:linear-gradient(135deg,#2563eb,#7c3aed); box-shadow:0 2px 10px rgba(124,58,237,0.45);"
-                                aria-label="האזור האישי"
+                                aria-label={tFn("chrome.personal_area")}
                             >
                                 <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" aria-hidden="true">
                                     <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                                 </svg>
-                                <span class="text-white text-[11px] font-extrabold whitespace-nowrap">כניסה</span>
+                                <span class="text-white text-[11px] font-extrabold whitespace-nowrap">{tFn("chrome.login")}</span>
                             </a>
                         {/if}
                     </div>
@@ -444,7 +444,7 @@
                             transform-origin: top center;">
                     <img
                         src="/images/community-neighborhood.png"
-                        alt="קהילה בשכונה"
+                        alt={tFn("welcome")}
                         style="width:580px; border-radius:24px;
                                -webkit-mask-image: radial-gradient(ellipse 90% 90% at 50% 50%, black 55%, transparent 100%);
                                mask-image: radial-gradient(ellipse 90% 90% at 50% 50%, black 55%, transparent 100%);
@@ -457,7 +457,7 @@
                         class="flex items-center rounded-lg bg-white/10 hover:bg-white/20 px-3 py-2 text-sm text-white transition-colors"
                         onclick={() => (showLangDropdown = !showLangDropdown)}
                         onkeydown={handleLangKeydown}
-                        aria-label="בחר שפה"
+                        aria-label={tFn("chrome.choose_language")}
                         aria-haspopup="listbox"
                         aria-expanded={showLangDropdown}
                     >
@@ -489,7 +489,7 @@
                         <div
                             class="absolute right-0 z-[160] mt-2 w-44 rounded-lg bg-[#0f172a] border border-white/10 shadow-xl"
                             role="listbox"
-                            aria-label="בחר שפה"
+                            aria-label={tFn("chrome.choose_language")}
                         >
                             {#each languages as langOption}
                                 <button
@@ -519,7 +519,7 @@
                     <!-- מספר גולשים -->
                     <div
                         class="flex items-center gap-2 bg-blue-900/30 px-3 py-2 rounded-lg border border-blue-500/30 online-counter"
-                        aria-label="{onlineUsers} משתמשים מחוברים כעת"
+                        aria-label={tFn("chrome.online_now", { values: { n: onlineUsers } })}
                         role="status"
                     >
                         <span class="text-green-400 text-xl" aria-hidden="true">●</span>
@@ -534,7 +534,7 @@
                             <a
                                 href="/profile"
                                 class="relative flex-shrink-0"
-                                aria-label="לאזור האישי – {userName}"
+                                aria-label={tFn("chrome.to_personal_area", { values: { name: userName } })}
                                 onmouseenter={() => showProfileTooltip = true}
                                 onmouseleave={() => showProfileTooltip = false}
                                 onmousemove={handleProfileMouseMove}
@@ -570,7 +570,7 @@
                                                bg-orange-500 border-2 border-[#0f172a] rounded-full
                                                flex items-center justify-center text-white text-[11px]
                                                font-black leading-none shadow-lg"
-                                        aria-label="{unreadMessages} הודעות חדשות"
+                                        aria-label={tFn("chrome.unread_messages", { values: { n: unreadMessages } })}
                                     >{unreadLabel}</span>
                                 {/if}
                             </a>
@@ -581,12 +581,12 @@
                             class="relative group flex-shrink-0 flex items-center gap-2 px-4 h-12 rounded-full
                                    border border-white/30 shadow-md hover:scale-105 transition-transform"
                             style="background:linear-gradient(135deg,#2563eb,#7c3aed); box-shadow:0 4px 15px rgba(124,58,237,0.4);"
-                            aria-label="האזור האישי"
+                            aria-label={tFn("chrome.personal_area")}
                         >
                             <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" aria-hidden="true">
                                 <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                             </svg>
-                            <span class="text-white text-sm font-extrabold whitespace-nowrap">כניסה לאזור האישי</span>
+                            <span class="text-white text-sm font-extrabold whitespace-nowrap">{tFn("chrome.login_personal_area")}</span>
                         </a>
                     {/if}
                 </div>
@@ -602,7 +602,7 @@
         style="left: {tooltipX}px; top: {tooltipY}px;"
     >
         <div class="bg-gray-900 text-white text-xs rounded-lg px-3 py-1.5 shadow-xl whitespace-nowrap border border-white/10">
-            👤 לפרופיל שלי
+            {tFn("chrome.my_profile_tooltip")}
         </div>
     </div>
 {/if}

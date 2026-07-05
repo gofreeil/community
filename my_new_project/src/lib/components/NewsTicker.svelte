@@ -1,22 +1,22 @@
 <script lang="ts">
     import { onMount } from 'svelte';
+    import { _ } from 'svelte-i18n';
 
     const NATIONAL_NEWS_API = 'https://criticism.gofreeil.com/api/national-news';
 
-    // חדשות ברירת מחדל אם ה-API לא זמין
+    // חדשות ברירת מחדל אם ה-API לא זמין (הטקסטים במילון home)
     type NewsItem = { line1: string; line2: string; sourceUrl?: string | null; documentId?: string };
 
-    const fallbackItems: NewsItem[] = [
-        { line1: "מערכת חדשה לניהול ועדי שכונות", line2: "הושקה השבוע בהצלחה רבה" },
-        { line1: "קבוצת הרכישה למזון אורגני", line2: "חצתה את רף 200 המשפחות" },
-        { line1: "מיזם 'בעלי מקצוע כשירים'", line2: "התרחב ל-5 ערים נוספות" },
-        { line1: "השקעות קבוצתיות: נכס חדש", line2: "נרכש עבור חברי הקהילה בירושלים" },
-        { line1: "מפגש תושבים בנושא מיצוי זכויות", line2: "יתקיים ביום שלישי הקרוב בזום" },
-        { line1: "עדכון: הושלמה פריסת עמדות", line2: "הגידול הביתי בשכונות המרכז" },
-    ];
+    const fallbackItems: NewsItem[] = $derived(
+        [1, 2, 3, 4, 5, 6].map((k) => ({
+            line1: $_(`home.news${k}_line1`),
+            line2: $_(`home.news${k}_line2`)
+        }))
+    );
 
     let paused = $state(false);
-    let newsItems = $state<NewsItem[]>(fallbackItems);
+    let fetchedItems = $state<NewsItem[] | null>(null);
+    const newsItems = $derived(fetchedItems ?? fallbackItems);
 
     onMount(async () => {
         try {
@@ -24,7 +24,7 @@
             if (res.ok) {
                 const data = await res.json();
                 if (data.posts && data.posts.length > 0) {
-                    newsItems = data.posts.map((p: any) => ({
+                    fetchedItems = data.posts.map((p: any) => ({
                         line1: p.title,
                         line2: p.summary || p.category || '',
                         sourceUrl: p.sourceUrl || null,
@@ -39,7 +39,7 @@
 </script>
 
 <section
-    aria-label="חדשות ארציות"
+    aria-label={$_('home.national_news')}
     class="news-ticker-container border-b border-blue-900/30 bg-[#0f172a]/90 pt-4 pb-0 backdrop-blur-md"
 >
     <!-- תוכן נגיש לקוראי מסך (מוסתר ויזואלית) -->
@@ -53,9 +53,9 @@
     <button
         onclick={() => (paused = !paused)}
         class="sr-only focus:not-sr-only focus:fixed focus:top-16 focus:right-4 focus:z-50 focus:bg-blue-700 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm"
-        aria-label={paused ? 'המשך הפעלת טיקר חדשות' : 'עצור טיקר חדשות'}
+        aria-label={paused ? $_('home.ticker_resume_aria') : $_('home.ticker_pause_aria')}
     >
-        {paused ? '▶ המשך' : '⏸ עצור'}
+        {paused ? `▶ ${$_('home.resume')}` : `⏸ ${$_('home.pause')}`}
     </button>
 
     <div class="mx-auto max-w-7xl flex items-center px-4" aria-hidden="true">
@@ -63,8 +63,8 @@
         <div
             class="z-10 bg-red-600 px-6 py-4 rounded-lg text-lg font-black text-white shadow-xl flex-shrink-0 ml-6 flex-col items-center justify-center border border-red-400 lg:flex hidden"
         >
-            <span>חדשות</span>
-            <span>ארציות:</span>
+            <span>{$_('home.news_label_line1')}</span>
+            <span>{$_('home.news_label_line2')}</span>
         </div>
 
         <!-- Scrolling Content -->

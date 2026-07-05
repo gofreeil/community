@@ -1,4 +1,7 @@
-import { register, init } from 'svelte-i18n';
+import { register, init, addMessages } from 'svelte-i18n';
+import * as chrome from './translations/chrome';
+import * as home from './translations/home';
+import * as aboutRevenue from './translations/aboutRevenue';
 
 register('he', () => Promise.resolve({
     welcome: "קהילה בשכונה",
@@ -699,6 +702,13 @@ register('ru', () => Promise.resolve({
     coordinator_area_city: "Координатор посёлка",
     coordinator_area_neighborhood: "Координатор района",
 }));
+
+// מילונים מודולריים לפי אזור באתר - מתמזגים לתוך המילון הראשי
+for (const mod of [chrome, home, aboutRevenue]) {
+    addMessages('he', mod.he);
+    addMessages('en', mod.en);
+    addMessages('ru', mod.ru);
+}
 
 init({
     fallbackLocale: 'he',

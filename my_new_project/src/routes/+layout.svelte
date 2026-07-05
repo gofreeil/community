@@ -2,6 +2,7 @@
 	import "../app.css";
 	import "flag-icons/css/flag-icons.min.css";
 	import "$lib/i18n";
+	import { _ } from "svelte-i18n";
 	import Header from "$lib/components/Header.svelte";
 	import NewsTicker from "$lib/components/NewsTicker.svelte";
 	import RightAdBanner from "$lib/components/RightAdBanner.svelte";
@@ -112,7 +113,7 @@
 </script>`}
 </svelte:head>
 
-<a href="#main-content" class="skip-link">דלג לתוכן הראשי</a>
+<a href="#main-content" class="skip-link">{$_('chrome.skip_to_content')}</a>
 <CoinAnimation />
 <MobileAdsDrawer currentUser={currentUser} layoutUser={data.layoutUser} />
 <MobileAdPopup />
@@ -139,12 +140,12 @@
 	<div class="register-nudge" dir="rtl" role="status">
 		<button
 			class="nudge-close"
-			aria-label="סגירה"
+			aria-label={$_('chrome.close')}
 			onclick={() => neighborhoodState.dismissNudge()}
 		>×</button>
 		<div class="nudge-text">
 			<span class="nudge-emoji">💜</span>
-			כדי שהפלטפורמה תזכור את השכונה שבחרת בפעם הבאה — כדאי להירשם.
+			{$_('chrome.register_nudge_text')}
 		</div>
 		<button
 			class="nudge-cta"
@@ -152,7 +153,7 @@
 				neighborhoodState.dismissNudge();
 				goto(`/register?redirect=${encodeURIComponent(page.url.pathname)}`);
 			}}
-		>הרשמה מהירה</button>
+		>{$_('chrome.register_nudge_cta')}</button>
 	</div>
 {/if}
 

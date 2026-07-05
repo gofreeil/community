@@ -1,5 +1,6 @@
 <script lang="ts">
     import { triggerAdPopup } from '$lib/adPopupStore';
+    import { _ } from 'svelte-i18n';
 
     interface LafItem {
         id: string;
@@ -17,12 +18,13 @@
 
     let { items = [] }: Props = $props();
 
-    const mockItems: LafItem[] = [
-        { id: 'm1', label: 'מצאתי צרור מפתחות', address: "רחוב המלך ג'ורג'", extra_fields: '{"type":"found"}', phone: '', contact: '', created_at: '' },
-        { id: 'm2', label: 'אבד כלב מסוג פודל',  address: 'שכונת רחביה',         extra_fields: '{"type":"lost"}',  phone: '', contact: '', created_at: '' },
-        { id: 'm3', label: 'נמצא כרטיס רב-קו',   address: 'תחנה מרכזית',          extra_fields: '{"type":"found"}', phone: '', contact: '', created_at: '' },
-        { id: 'm4', label: 'אבד טלפון סמסונג שחור', address: 'שוק מחנה יהודה',    extra_fields: '{"type":"lost"}',  phone: '', contact: '', created_at: '' },
-    ];
+    // פריטי דוגמה - הטקסטים במילון home (i18n)
+    const mockItems: LafItem[] = $derived([
+        { id: 'm1', label: $_('home.laf_mock1_label'), address: $_('home.laf_mock1_address'), extra_fields: '{"type":"found"}', phone: '', contact: '', created_at: '' },
+        { id: 'm2', label: $_('home.laf_mock2_label'), address: $_('home.laf_mock2_address'), extra_fields: '{"type":"lost"}',  phone: '', contact: '', created_at: '' },
+        { id: 'm3', label: $_('home.laf_mock3_label'), address: $_('home.laf_mock3_address'), extra_fields: '{"type":"found"}', phone: '', contact: '', created_at: '' },
+        { id: 'm4', label: $_('home.laf_mock4_label'), address: $_('home.laf_mock4_address'), extra_fields: '{"type":"lost"}',  phone: '', contact: '', created_at: '' },
+    ]);
 
     let displayItems = $derived(items.length > 0 ? items : mockItems);
     let isMock       = $derived(items.length === 0);
@@ -36,12 +38,12 @@
         if (!iso) return '';
         const diff  = Date.now() - new Date(iso).getTime();
         const mins  = Math.floor(diff / 60000);
-        if (mins < 60) return `לפני ${mins} דק'`;
+        if (mins < 60) return $_('home.mins_ago', { values: { n: mins } });
         const hours = Math.floor(mins / 60);
-        if (hours < 24) return `לפני ${hours} שע'`;
+        if (hours < 24) return $_('home.hours_ago', { values: { n: hours } });
         const days = Math.floor(hours / 24);
-        if (days === 1) return 'אתמול';
-        return `לפני ${days} ימים`;
+        if (days === 1) return $_('home.yesterday');
+        return $_('home.days_ago', { values: { n: days } });
     }
 
     function waLink(phone: string): string {
@@ -59,14 +61,14 @@
         <a href="/lost-and-found" class="absolute inset-0 z-0" aria-hidden="true"></a>
         <a href="/lost-and-found" class="text-sm font-bold text-white flex items-center gap-1 md:gap-2 hover:text-yellow-200 transition-colors relative z-10">
             <span class="text-base">🔍</span>
-            אבדות ומציאות
+            {$_('home.lost_and_found')}
         </a>
         <a
             href="/lost-and-found/add"
-            aria-label="הוסף אבידה או מציאה"
+            aria-label={$_('home.add_laf_aria')}
             class="inline-flex items-center self-center bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-2 md:px-3 py-1 md:py-1.5 rounded-full transition-colors border border-white/20 flex-shrink-0 relative z-10"
         >
-            + הוסף
+            {$_('home.add_btn')}
         </a>
     </div>
 
@@ -77,7 +79,7 @@
                 {@const type = getType(item.extra_fields)}
                 <a
                     href={isMock ? '/lost-and-found' : `/lost-and-found/${item.id}`}
-                    aria-label="{type === 'found' ? 'נמצא' : 'אבד'}: {item.label}{item.address ? ' – ' + item.address : ''}"
+                    aria-label="{type === 'found' ? $_('home.found') : $_('home.lost')}: {item.label}{item.address ? ' – ' + item.address : ''}"
                     class="relative p-2 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-all group overflow-hidden cursor-pointer block no-underline flex-shrink-0"
                 >
                     <div
@@ -85,7 +87,7 @@
                             ? 'bg-green-500 text-white'
                             : 'bg-red-500 text-white'} rounded-br"
                     >
-                        {type === 'found' ? 'נמצא' : 'אבד'}
+                        {type === 'found' ? $_('home.found') : $_('home.lost')}
                     </div>
                     <div class="mt-2">
                         <h4 class="font-bold text-white text-xs mb-1 group-hover:text-blue-400 transition-colors leading-tight">
@@ -109,10 +111,10 @@
         <div class="flex-1"></div>
         <a
             href="/lost-and-found"
-            aria-label="לוח אבדות ומציאות המלא"
+            aria-label={$_('home.laf_full_aria')}
             class="flex-shrink-0 block text-center text-yellow-400 hover:text-white text-[10px] font-bold transition-colors underline underline-offset-2 py-1.5"
         >
-            ללוח המלא...
+            {$_('home.full_board')}
         </a>
     </div>
 
@@ -123,7 +125,7 @@
                 {@const type = getType(item.extra_fields)}
                 <a
                     href={isMock ? '/lost-and-found' : `/lost-and-found/${item.id}`}
-                    aria-label="{type === 'found' ? 'נמצא' : 'אבד'}: {item.label}{item.address ? ' – ' + item.address : ''}"
+                    aria-label="{type === 'found' ? $_('home.found') : $_('home.lost')}: {item.label}{item.address ? ' – ' + item.address : ''}"
                     class="relative p-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all group overflow-hidden block no-underline cursor-pointer"
                 >
                     <div
@@ -131,7 +133,7 @@
                             ? 'bg-green-500 text-white'
                             : 'bg-red-500 text-white'} rounded-br-lg"
                     >
-                        {type === 'found' ? 'נמצא' : 'אבד'}
+                        {type === 'found' ? $_('home.found') : $_('home.lost')}
                     </div>
                     <div class="mt-3">
                         <h4 class="font-bold text-white text-xs group-hover:text-blue-400 transition-colors leading-tight">
@@ -148,10 +150,10 @@
         </div>
         <a
             href="/lost-and-found"
-            aria-label="לוח אבדות ומציאות המלא"
+            aria-label={$_('home.laf_full_aria')}
             class="flex-shrink-0 block text-center text-yellow-400 hover:text-white text-xs font-bold transition-colors underline underline-offset-2 py-2"
         >
-            ללוח המלא...
+            {$_('home.full_board')}
         </a>
     </div>
 </div>

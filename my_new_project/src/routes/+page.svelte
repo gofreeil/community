@@ -24,19 +24,19 @@
 
     const currentYear = new Date().getFullYear();
 
-    // Mock - חצי עליון: רמות יד פעילות שעדיין לא קיבלו מענה.
+    // Mock - חצי עליון: רמות יד פעילות שעדיין לא קיבלו מענה (הטקסטים במילון home).
     const raisedHandsMock = [
-        { icon: '👴', title: 'מבוגר זקוק לעזרה בקניות שבועיות',         date: '13 במאי 2026' },
-        { icon: '🚗', title: 'דרוש סיוע בהתנעת רכב ברחוב הרב הרצוג',   date: '13 במאי 2026' },
-        { icon: '🆘', title: 'בקשת עזרה: ליווי לבדיקה רפואית',          date: '12 במאי 2026' },
+        { icon: '👴', key: 'hand1' },
+        { icon: '🚗', key: 'hand2' },
+        { icon: '🆘', key: 'hand3' },
     ];
 
-    // Mock - חצי תחתון: משאלות מכותל המשאלות / קופת השכונה שהוגשמו.
+    // Mock - חצי תחתון: משאלות מכותל המשאלות / קופת השכונה שהוגשמו (הטקסטים במילון home).
     const fulfilledWishesMock = [
-        { icon: '🎒', title: 'מומשה משאלה: ילקוט וציוד לכיתה א׳ למשפחת כהן',   date: '12 במאי 2026' },
-        { icon: '🍞', title: 'גויס סל מזון לחג למשפחת לוי מקופת השכונה',         date: '9 במאי 2026' },
-        { icon: '👰', title: 'מומשה משאלה: השלמת הוצאות חתונה לכלה יתומה',     date: '6 במאי 2026' },
-        { icon: '💊', title: 'נתרמו 1,200₪ מקופת השכונה לתרופות דחופות',          date: '3 במאי 2026' },
+        { icon: '🎒', key: 'wish1' },
+        { icon: '🍞', key: 'wish2' },
+        { icon: '👰', key: 'wish3' },
+        { icon: '💊', key: 'wish4' },
     ];
 
     import { citiesAndNeighborhoods, citiesData } from "$lib/neighborhoodsData";
@@ -209,12 +209,12 @@
         d.setDate(d.getDate() + days);
         return d.toISOString().split('T')[0];
     }
-    const mockEvents: EventCard[] = [
-        { title: '🎤 הרצאה בנושא חינוך ילדים',     location: 'בית הכנסת המרכזי', date: isoPlusDays(2),  startTime: '20:00', endTime: '21:00', bgColor: COLOR_MAP.green.bg,  textColor: COLOR_MAP.green.text,  subColor: COLOR_MAP.green.sub  },
-        { title: '🏃 מרוץ קהילתי - 5 ק"מ',          location: 'גן הציבורי',         date: isoPlusDays(5),  startTime: '07:30', endTime: '08:30', bgColor: COLOR_MAP.blue.bg,   textColor: COLOR_MAP.blue.text,   subColor: COLOR_MAP.blue.sub   },
-        { title: '🎉 ערב הוקרה למתנדבי השכונה',     location: 'מתנ"ס שכונתי',       date: isoPlusDays(8),  startTime: '19:30', endTime: '20:30', bgColor: COLOR_MAP.purple.bg, textColor: COLOR_MAP.purple.text, subColor: COLOR_MAP.purple.sub },
-        { title: '🌱 יום ניקיון ושיפור פני השכונה', location: 'כיכר השכונה',         date: isoPlusDays(14), startTime: '09:00', endTime: '10:00', bgColor: COLOR_MAP.orange.bg, textColor: COLOR_MAP.orange.text, subColor: COLOR_MAP.orange.sub },
-    ];
+    const mockEvents: EventCard[] = $derived([
+        { title: `🎤 ${$t('home.mock_event1_title')}`, location: $t('home.mock_event1_location'), date: isoPlusDays(2),  startTime: '20:00', endTime: '21:00', bgColor: COLOR_MAP.green.bg,  textColor: COLOR_MAP.green.text,  subColor: COLOR_MAP.green.sub  },
+        { title: `🏃 ${$t('home.mock_event2_title')}`, location: $t('home.mock_event2_location'), date: isoPlusDays(5),  startTime: '07:30', endTime: '08:30', bgColor: COLOR_MAP.blue.bg,   textColor: COLOR_MAP.blue.text,   subColor: COLOR_MAP.blue.sub   },
+        { title: `🎉 ${$t('home.mock_event3_title')}`, location: $t('home.mock_event3_location'), date: isoPlusDays(8),  startTime: '19:30', endTime: '20:30', bgColor: COLOR_MAP.purple.bg, textColor: COLOR_MAP.purple.text, subColor: COLOR_MAP.purple.sub },
+        { title: `🌱 ${$t('home.mock_event4_title')}`, location: $t('home.mock_event4_location'), date: isoPlusDays(14), startTime: '09:00', endTime: '10:00', bgColor: COLOR_MAP.orange.bg, textColor: COLOR_MAP.orange.text, subColor: COLOR_MAP.orange.sub },
+    ]);
 
     const realEvents: EventCard[] = $derived(
         (data.events ?? [])
@@ -256,7 +256,7 @@
             `DTEND:${toICSDate(ev.date, ev.endTime)}`,
             `SUMMARY:${ev.title}`,
             `LOCATION:${ev.location}`,
-            `DESCRIPTION:אירוע קהילתי מ"קהילה בשכונה"`,
+            `DESCRIPTION:${$t('home.calendar_event_desc')}`,
             'END:VEVENT',
             'END:VCALENDAR'
         ].join('\r\n');
@@ -273,7 +273,7 @@
     function openGoogleCalendar(ev: CalEvent) {
         const start = toICSDate(ev.date, ev.startTime);
         const end = toICSDate(ev.date, ev.endTime);
-        const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(ev.title)}&dates=${start}/${end}&location=${encodeURIComponent(ev.location)}&details=${encodeURIComponent('אירוע קהילתי מ"קהילה בשכונה"')}`;
+        const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(ev.title)}&dates=${start}/${end}&location=${encodeURIComponent(ev.location)}&details=${encodeURIComponent($t('home.calendar_event_desc'))}`;
         window.open(url, '_blank');
         calMenuOpen = null;
     }
@@ -319,7 +319,7 @@
                     <h2
                         class="text-[1.6rem] md:text-2xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent cursor-default leading-tight w-full line-clamp-2 break-words"
                     >
-                        שכונת {neighborhoodState.neighborhood}
+                        {$t('home.neighborhood_prefix', { values: { name: neighborhoodState.neighborhood } })}
                     </h2>
                 </div>
                 <div class="relative flex items-center w-full">
@@ -328,7 +328,7 @@
                             onclick={handleToggleMenu}
                             class="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white px-3 py-1.5 rounded-md font-bold text-xs shadow-lg transition-all hover:scale-105 whitespace-nowrap relative z-50 pointer-events-auto"
                         >
-                            לכל השכונות
+                            {$t('home.all_neighborhoods_short')}
                         </button>
                     </div>
                     <div
@@ -349,7 +349,7 @@
                     <h2
                         class="text-5xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent cursor-default"
                     >
-                        יתרונות שכונת {neighborhoodState.neighborhood}, {neighborhoodState.city}
+                        {$t('home.advantages_title', { values: { name: neighborhoodState.neighborhood, city: neighborhoodState.city } })}
                     </h2>
                     <!-- Tooltip -->
                     <div
@@ -358,7 +358,7 @@
                         <div
                             class="bg-gray-900 text-white text-sm rounded-lg px-4 py-2 shadow-xl whitespace-nowrap"
                         >
-                            גלה את כל מה שהשכונה שלך מציעה
+                            {$t('home.discover_tooltip')}
                             <div
                                 class="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-gray-900"
                             ></div>
@@ -369,7 +369,7 @@
                     onclick={handleToggleMenu}
                     class="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-lg transition-all hover:scale-105"
                 >
-                    לכלל השכונות
+                    {$t('home.all_neighborhoods')}
                 </button>
             </div>
 
@@ -389,7 +389,7 @@
                     <!-- Header עם חיפוש (קפוא בראש התפריט) -->
                     <div class="sticky top-0 z-10 -mx-3 md:-mx-4 -mt-3 md:-mt-4 px-3 md:px-4 pt-3 md:pt-4 pb-2 mb-3 bg-gray-900 border-b border-purple-500/20 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                         <h3 class="text-white text-base md:text-lg font-bold whitespace-nowrap text-center sm:text-right">
-                            🏘️ בחר עיר ושכונה
+                            🏘️ {$t('home.pick_city_neighborhood')}
                         </h3>
                         <!-- חיפוש + סגור - תמיד באותה שורה -->
                         <div class="flex flex-row items-center gap-2 flex-1">
@@ -397,7 +397,7 @@
                                 <span class="absolute right-3 top-1/2 -translate-y-1/2 text-purple-400 text-sm pointer-events-none">🔎</span>
                                 <input
                                     type="text"
-                                    placeholder={`חיפוש עיר או שכונה... (${totalCities} ערים, ${totalNeighborhoods} שכונות)`}
+                                    placeholder={$t('home.search_placeholder', { values: { cities: totalCities, neighborhoods: totalNeighborhoods } })}
                                     bind:value={searchQuery}
                                     class="w-full bg-gray-800 border border-purple-500/40 text-white rounded-lg pr-9 pl-3 py-1.5 text-sm focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
                                 />
@@ -405,9 +405,9 @@
                             <button
                                 onclick={closeMenu}
                                 class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold transition-colors whitespace-nowrap shrink-0"
-                                aria-label="סגור"
+                                aria-label={$t('home.close')}
                             >
-                                ✕ סגור
+                                ✕ {$t('home.close')}
                             </button>
                         </div>
                     </div>
@@ -416,7 +416,7 @@
                         <div class="mb-3 rounded-lg p-2 border border-amber-500/40 bg-gradient-to-br from-amber-500/10 to-yellow-500/5">
                             <h4 class="text-amber-300 text-xs md:text-sm font-bold mb-1.5 flex items-center gap-1.5">
                                 <span>⭐</span>
-                                <span>השכונות המועדפות שלי</span>
+                                <span>{$t('home.my_favorites')}</span>
                                 <span class="text-amber-400/70 font-normal">({favorites.length})</span>
                             </h4>
                             <div class="flex flex-wrap gap-1">
@@ -433,8 +433,8 @@
                                         <button
                                             onclick={(e) => toggleFavorite(fav.city, fav.neighborhood, e)}
                                             class="px-1.5 text-yellow-400 hover:text-red-400 text-sm border-r border-black/20"
-                                            aria-label="הסר ממועדפות"
-                                            title="הסר ממועדפות"
+                                            aria-label={$t('home.remove_favorite')}
+                                            title={$t('home.remove_favorite')}
                                         >★</button>
                                     </span>
                                 {/each}
@@ -444,13 +444,13 @@
 
                     {#if searchQuery.trim() === '' && favorites.length === 0}
                         <div class="text-center text-gray-400 py-6 text-sm">
-                            הקלד שם עיר או שכונה בשורת החיפוש
+                            {$t('home.type_to_search')}
                         </div>
                     {:else if searchQuery.trim() === ''}
                         <!-- יש מועדפות, אבל לא חיפש - לא נציג את כל הערים -->
                     {:else if filteredCities.length === 0}
                         <div class="text-center text-gray-400 py-6 text-sm">
-                            לא נמצאו ערים או שכונות תואמות "{searchQuery}"
+                            {$t('home.no_matches', { values: { query: searchQuery } })}
                         </div>
                     {:else}
                         <div class="cities-masonry">
@@ -461,7 +461,7 @@
                                         type="button"
                                         onclick={() => showCityHint(city)}
                                         class="w-full text-purple-400 hover:text-purple-300 font-bold mb-1.5 text-xs md:text-sm border-b border-purple-500/20 pb-1 text-right cursor-help"
-                                        aria-label="לחץ על השכונה הרצויה בתוך {city}"
+                                        aria-label={$t('home.click_neighborhood_aria', { values: { city } })}
                                     >
                                         {city}
                                     </button>
@@ -469,7 +469,7 @@
                                         <div class="mb-1.5 px-2 py-1 rounded bg-amber-500/15 border border-amber-500/40 text-amber-300 text-[11px] md:text-xs font-bold flex items-center gap-1.5"
                                              style="animation: hintFadeIn 0.25s ease-out;">
                                             <span>👇</span>
-                                            <span>לחץ בתוך העיר הזו על השכונה הרצויה לך</span>
+                                            <span>{$t('home.click_neighborhood_hint')}</span>
                                         </div>
                                     {/if}
                                     <div class="flex flex-wrap gap-1">
@@ -488,8 +488,8 @@
                                                     onclick={(e) => toggleFavorite(city, neighborhood, e)}
                                                     class="px-1 text-sm leading-none border-r border-black/20 transition-colors
                                                         {fav ? 'text-yellow-400 hover:text-red-400' : 'text-gray-500 hover:text-yellow-400'}"
-                                                    aria-label="{fav ? 'הסר ממועדפות' : 'הוסף למועדפות'}"
-                                                    title="{fav ? 'הסר ממועדפות' : 'הוסף למועדפות'}"
+                                                    aria-label={fav ? $t('home.remove_favorite') : $t('home.add_favorite')}
+                                                    title={fav ? $t('home.remove_favorite') : $t('home.add_favorite')}
                                                 >{fav ? '★' : '☆'}</button>
                                             </span>
                                         {/each}
@@ -529,27 +529,27 @@
                         <a href="/events" class="absolute inset-0 z-0" aria-hidden="true"></a>
                         <a href="/events" class="text-sm font-bold text-white flex items-center gap-2 hover:text-yellow-200 transition-colors relative z-10">
                             <span class="text-base">🗓️</span>
-                            לוח אירועים
+                            {$t('home.events_board')}
                         </a>
                         <a href="/events#add" class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-3 py-1.5 rounded-full transition-colors border border-white/20 relative z-10">
-                            + הוסף
+                            {$t('home.add_btn')}
                         </a>
                     </div>
                     <div class="p-3 flex-1 overflow-hidden flex flex-col justify-evenly relative">
                         {#if events.length === 0}
                             <div class="flex-1 flex items-center justify-center text-center px-2">
-                                <p class="text-gray-400 text-xs">אין אירועים קרובים<br/><a href="/events#add" class="text-yellow-400 hover:text-white underline">הצע אירוע</a></p>
+                                <p class="text-gray-400 text-xs">{$t('home.no_upcoming_events')}<br/><a href="/events#add" class="text-yellow-400 hover:text-white underline">{$t('home.suggest_event')}</a></p>
                             </div>
                         {/if}
                         {#each events as ev, i}
                             {@const day = ev.date.split('-')[2]}
-                            {@const months = ['', 'ינו', 'פבר', 'מרץ', 'אפר', 'מאי', 'יונ', 'יול', 'אוג', 'ספט', 'אוק', 'נוב', 'דצמ']}
-                            {@const month = months[parseInt(ev.date.split('-')[1])]}
+                            {@const months = $t('home.months').split(',')}
+                            {@const month = months[parseInt(ev.date.split('-')[1]) - 1]}
                             <div class="relative flex gap-3 items-center bg-white/5 rounded-xl p-3 border border-white/8 cursor-pointer hover:bg-white/10 transition-all group">
                                 <button
                                     onclick={(e) => handleCalClick(i, e)}
                                     class="flex flex-col items-center {ev.bgColor} rounded-lg px-2 py-1.5 min-w-[44px] text-center flex-shrink-0 active:opacity-70 transition-opacity"
-                                    title="הוסף ליומן"
+                                    title={$t('home.add_to_calendar')}
                                 >
                                     <span class="{ev.textColor} font-bold text-base leading-none">{day}</span>
                                     <span class="{ev.subColor} text-[10px] leading-none mt-0.5">{month}</span>
@@ -579,7 +579,7 @@
                     </div>
                     <div class="px-3 pb-2 flex-shrink-0">
                         <a href="/events" class="block text-center text-yellow-400 hover:text-white text-xs font-bold transition-colors underline underline-offset-2 py-1">
-                            לכל האירועים...
+                            {$t('home.all_events')}
                         </a>
                     </div>
                     </div>
@@ -594,17 +594,17 @@
                     <div class="bg-gradient-to-r from-rose-600 to-pink-600 p-3 flex-shrink-0">
                         <h3 class="text-sm font-bold text-white flex items-center gap-2">
                             <span class="text-base">🤝</span>
-                            העזרה לקהילה
+                            {$t('home.community_help')}
                         </h3>
                         <p class="text-[11px] text-rose-100/90 mt-1 leading-tight">
-                            הקהילה עזרה לפתור {$communityHelpCount} קריאות בשנת {currentYear}
+                            {$t('home.help_solved', { values: { n: $communityHelpCount, year: currentYear } })}
                         </p>
                     </div>
                     <div class="p-2 flex-1 overflow-hidden flex flex-col gap-1.5 relative">
                         <!-- חצי עליון: רמות יד פעילות שעדיין לא קיבלו מענה -->
                         <div class="flex-1 min-h-0 overflow-hidden flex flex-col gap-1.5">
                             <div class="flex items-center gap-1.5 px-0.5 flex-shrink-0">
-                                <span class="text-[10px] font-bold text-red-300 uppercase tracking-wide">✋ רמות יד פעילות</span>
+                                <span class="text-[10px] font-bold text-red-300 uppercase tracking-wide">✋ {$t('home.active_hands')}</span>
                                 <div class="flex-1 h-px bg-red-500/30"></div>
                             </div>
                             <div class="flex-1 min-h-0 overflow-hidden flex flex-col gap-1">
@@ -612,8 +612,8 @@
                                     <div class="flex gap-2 items-start bg-red-500/10 rounded-lg p-1.5 border border-red-500/20">
                                         <span class="text-base flex-shrink-0 leading-none mt-0.5">{h.icon}</span>
                                         <div class="min-w-0 flex-1">
-                                            <p class="text-white text-[11px] font-bold leading-tight">{h.title}</p>
-                                            <p class="text-red-200/70 text-[10px] mt-0.5">{h.date}</p>
+                                            <p class="text-white text-[11px] font-bold leading-tight">{$t(`home.${h.key}_title`)}</p>
+                                            <p class="text-red-200/70 text-[10px] mt-0.5">{$t(`home.${h.key}_date`)}</p>
                                         </div>
                                     </div>
                                 {/each}
@@ -623,7 +623,7 @@
                         <!-- חצי תחתון: משאלות לב שמולאו -->
                         <div class="flex-1 min-h-0 overflow-hidden flex flex-col gap-1.5">
                             <div class="flex items-center gap-1.5 px-0.5 flex-shrink-0">
-                                <span class="text-[10px] font-bold text-emerald-300 uppercase tracking-wide">💚 משאלות שהוגשמו מהכותל / קופת השכונה</span>
+                                <span class="text-[10px] font-bold text-emerald-300 uppercase tracking-wide">💚 {$t('home.fulfilled_wishes')}</span>
                                 <div class="flex-1 h-px bg-emerald-500/30"></div>
                             </div>
                             <div class="flex-1 min-h-0 overflow-hidden flex flex-col gap-1">
@@ -631,8 +631,8 @@
                                     <div class="flex gap-2 items-start bg-white/5 rounded-lg p-1.5 border border-white/8">
                                         <span class="text-base flex-shrink-0 leading-none mt-0.5">{h.icon}</span>
                                         <div class="min-w-0 flex-1">
-                                            <p class="text-white text-[11px] font-bold leading-tight">{h.title}</p>
-                                            <p class="text-rose-200/70 text-[10px] mt-0.5">{h.date}</p>
+                                            <p class="text-white text-[11px] font-bold leading-tight">{$t(`home.${h.key}_title`)}</p>
+                                            <p class="text-rose-200/70 text-[10px] mt-0.5">{$t(`home.${h.key}_date`)}</p>
                                         </div>
                                     </div>
                                 {/each}
@@ -655,28 +655,28 @@
                         <a href="/events" class="absolute inset-0 z-0" aria-hidden="true"></a>
                         <a href="/events" class="text-sm font-bold text-white flex items-center gap-1 hover:text-yellow-200 transition-colors relative z-10">
                             <span class="text-base">🗓️</span>
-                            לוח אירועים
+                            {$t('home.events_board')}
                         </a>
                         <a href="/events#add" class="inline-flex items-center self-center bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-2 py-1 rounded-full transition-colors border border-white/20 flex-shrink-0 relative z-10">
-                            + הוסף
+                            {$t('home.add_btn')}
                         </a>
                     </div>
                     <div class="p-1.5 overflow-hidden flex flex-col gap-1 relative flex-1 min-h-0">
                         {#if events.length === 0}
                             <div class="flex-1 flex items-center justify-center text-center px-1">
-                                <p class="text-gray-400 text-[10px]">אין אירועים<br/><a href="/events#add" class="text-yellow-400 underline">הצע אירוע</a></p>
+                                <p class="text-gray-400 text-[10px]">{$t('home.no_events')}<br/><a href="/events#add" class="text-yellow-400 underline">{$t('home.suggest_event')}</a></p>
                             </div>
                         {/if}
                         {#each events as ev, i}
                             {@const day = ev.date.split('-')[2]}
-                            {@const months = ['', 'ינו', 'פבר', 'מרץ', 'אפר', 'מאי', 'יונ', 'יול', 'אוג', 'ספט', 'אוק', 'נוב', 'דצמ']}
-                            {@const month = months[parseInt(ev.date.split('-')[1])]}
+                            {@const months = $t('home.months').split(',')}
+                            {@const month = months[parseInt(ev.date.split('-')[1]) - 1]}
                             <div class="relative flex gap-1.5 items-center bg-white/5 rounded-lg p-1.5 border border-white/8 cursor-pointer">
                                 <!-- Date + cal button stacked on left -->
                                 <button
                                     onclick={(e) => handleCalClick(100 + i, e)}
                                     class="flex flex-col items-center {ev.bgColor} rounded-md px-1 py-1 min-w-[32px] text-center flex-shrink-0 active:opacity-70 transition-opacity"
-                                    title="הוסף ליומן"
+                                    title={$t('home.add_to_calendar')}
                                 >
                                     <span class="{ev.textColor} font-bold text-xs leading-none">{day}</span>
                                     <span class="{ev.subColor} text-[8px] leading-none">{month}</span>
@@ -705,7 +705,7 @@
                         <div class="pointer-events-none absolute bottom-0 left-0 right-0 h-12 rounded-b-lg" style="background: linear-gradient(to bottom, transparent, #0f172a 90%);"></div>
                     </div>
                     <a href="/events" class="block text-center text-yellow-400 hover:text-white text-[10px] font-bold transition-colors underline underline-offset-2 py-1.5 flex-shrink-0">
-                        לכל האירועים...
+                        {$t('home.all_events')}
                     </a>
                 </div>
                 <!-- Right: Lost and Found -->
@@ -746,13 +746,13 @@
                         <h3
                             class="em-title text-xl font-black mb-2 transition-colors duration-300"
                         >
-                            <span class="em-label-default">כותל המשאלות</span>
-                            <span class="em-label-hover">עניי עירך קודמין</span>
+                            <span class="em-label-default">{$t('home.wish_wall')}</span>
+                            <span class="em-label-hover">{$t('home.wish_wall_hover')}</span>
                         </h3>
                         <div
                             class="em-btn bg-blue-600/50 hover:bg-blue-600/70 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all w-full text-center mt-auto"
                         >
-                            וקופת השכונה
+                            {$t('home.and_community_fund')}
                         </div>
                     </div>
                 </div>
@@ -782,17 +782,17 @@
                         <h3
                             class="em-title text-xl font-black mb-2 transition-colors duration-300"
                         >
-                            ועד השכונה
+                            {$t('home.committee')}
                         </h3>
                         <p
                             class="text-sm mb-4 text-purple-100 transition-opacity duration-300 flex-grow"
                         >
-                            יש לך הצעה? רוצה לשפר את השכונה?
+                            {$t('home.committee_text')}
                         </p>
                         <button
                             class="em-btn bg-purple-600/50 hover:bg-purple-600/70 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all w-full mt-auto"
                         >
-                            פנה לועד השכונה
+                            {$t('home.contact_committee')}
                         </button>
                     </div>
                 </div>
@@ -823,18 +823,18 @@
                         <h3
                             class="em-title text-xl font-black mb-2 transition-colors duration-300"
                         >
-                            <span class="em-label-default">כיתת כוננות</span>
-                            <span class="em-label-hover">חזק את ביטחון השכונה</span>
+                            <span class="em-label-default">{$t('home.emergency_team')}</span>
+                            <span class="em-label-hover">{$t('home.emergency_team_hover')}</span>
                         </h3>
                         <p
                             class="text-xs mb-3 text-yellow-100"
                         >
-                            <span class="font-bold">{data.emergencyTeamCount}</span> חברים פעילים
+                            <span class="font-bold">{data.emergencyTeamCount}</span> {$t('home.active_members_suffix')}
                         </p>
                         <div
                             class="em-btn bg-red-600/50 hover:bg-red-600/70 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all w-full mt-auto text-center"
                         >
-                            הצטרף עכשיו
+                            {$t('home.join_now')}
                         </div>
                     </div>
                 </div>
@@ -861,12 +861,12 @@
                     <div class="relative z-10 p-2 h-full flex flex-col justify-between">
                         <div class="text-center text-white">
                             <span class="text-xl mb-1 block">🙏</span>
-                            <h3 class="text-sm font-black leading-tight">כותל המשאלות</h3>
+                            <h3 class="text-sm font-black leading-tight">{$t('home.wish_wall')}</h3>
                         </div>
                         <div
                             class="bg-blue-600/50 text-white px-1 py-1 rounded text-xs font-bold text-center w-full"
                         >
-                            וקופת השכונה
+                            {$t('home.and_community_fund')}
                         </div>
                     </div>
                 </a>
@@ -885,12 +885,12 @@
                     <div class="relative z-10 p-2 h-full flex flex-col justify-between">
                         <div class="text-center text-white">
                             <span class="text-xl mb-1 block">🏛️</span>
-                            <h3 class="text-sm font-black leading-tight">ועד השכונה</h3>
+                            <h3 class="text-sm font-black leading-tight">{$t('home.committee')}</h3>
                         </div>
                         <button
                             class="bg-purple-600/50 text-white px-1 py-1 rounded text-xs font-bold w-full hover:bg-purple-600/70"
                         >
-                            פנה לועד השכונה
+                            {$t('home.contact_committee')}
                         </button>
                     </div>
                 </div>
@@ -909,13 +909,13 @@
                     <div class="relative z-10 p-2 h-full flex flex-col justify-between">
                         <div class="text-center text-white">
                             <span class="text-xl mb-1 block">🚨</span>
-                            <h3 class="text-sm font-black leading-tight">כיתת כוננות</h3>
-                            <p class="text-xs text-yellow-100 mt-0.5">{data.emergencyTeamCount} חברים</p>
+                            <h3 class="text-sm font-black leading-tight">{$t('home.emergency_team')}</h3>
+                            <p class="text-xs text-yellow-100 mt-0.5">{data.emergencyTeamCount} {$t('home.members_suffix')}</p>
                         </div>
                         <div
                             class="bg-red-600/50 text-white px-1 py-1 rounded text-xs font-bold w-full text-center"
                         >
-                            הצטרף
+                            {$t('home.join')}
                         </div>
                     </div>
                 </a>
@@ -942,18 +942,18 @@
             <div class="relative z-20 ml-auto px-4 md:px-8 py-3 md:py-4 flex flex-col justify-center">
                 <div class="mb-1 md:mb-2 flex items-center gap-2">
                     <h3 class="text-lg md:text-3xl font-black text-white group-hover:text-yellow-200 transition-colors drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]">
-                        חקלאות ישירה
+                        {$t('home.direct_agriculture')}
                     </h3>
-                    <span class="text-lg md:text-2xl drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]" aria-label="בשלבי בניה">🔒</span>
+                    <span class="text-lg md:text-2xl drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]" aria-label={$t('home.under_construction_aria')}>🔒</span>
                 </div>
                 <p class="text-[11px] md:text-base text-green-100 leading-tight md:leading-relaxed drop-shadow-[0_1px_3px_rgba(0,0,0,0.5)] whitespace-nowrap">
-                    חיבור ישיר בין חקלאים לצרכנים ללא פערי תיווך
+                    {$t('home.agriculture_desc')}
                 </p>
                 <p
                     class="mt-1 md:mt-2 text-[11px] md:text-sm font-bold text-yellow-200 leading-tight drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)] transition-all duration-300"
                     class:farm-construction-pulse={farmBannerClicked}
                 >
-                    🔒 בשלבי בניה והתארגנות
+                    🔒 {$t('home.under_construction')}
                 </p>
             </div>
         </button>

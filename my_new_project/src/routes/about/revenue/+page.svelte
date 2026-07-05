@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { _ } from 'svelte-i18n';
 	import type { PageData } from './$types';
 	let { data }: { data: PageData } = $props();
 
@@ -60,7 +61,7 @@
 		observeChart('ownersChart', {
 			type: 'doughnut',
 			data: {
-				labels: ['ישיר לארנק', 'קרן פרסום', ''],
+				labels: [$_('aboutRevenue.chartDirectWallet'), $_('aboutRevenue.chartAdFund'), ''],
 				datasets: [{ data: [40, 10, 50], backgroundColor: ['#93c5fd','#3b82f6','#1c2030'], borderWidth: 2, borderColor: '#0f172a' }]
 			},
 			options: {
@@ -81,7 +82,7 @@
 		observeChart('charityChart', {
 			type: 'doughnut',
 			data: {
-				labels: ['יוצאים לחירות', 'קופת הצדקה', 'הגרלת הקהילה', ''],
+				labels: [$_('aboutRevenue.chartFreedom'), $_('aboutRevenue.chartCharityFund'), $_('aboutRevenue.chartLottery'), ''],
 				datasets: [{ data: [10, 9, 1, 80], backgroundColor: ['#6ee7b7','#34d399','#10b981','#1c2030'], borderWidth: 2, borderColor: '#0f172a' }]
 			},
 			options: {
@@ -102,7 +103,7 @@
 		observeChart('coordinatorChart', {
 			type: 'doughnut',
 			data: {
-				labels: ['ישיר לארנק', 'תגמול קבוצתי', 'מועדון השקעות', 'רכישות בקהילה', ''],
+				labels: [$_('aboutRevenue.chartDirectWallet'), $_('aboutRevenue.chartGroupReward'), $_('aboutRevenue.chartInvestClub'), $_('aboutRevenue.chartPurchases'), ''],
 				datasets: [{ data: [10, 5, 5, 10, 70], backgroundColor: ['#fbbf24','#f59e0b','#d97706','#b45309','#1c2030'], borderWidth: 2, borderColor: '#0f172a' }]
 			},
 			options: {
@@ -149,14 +150,14 @@
 	<!-- TAB BAR -->
 	<div class="flex gap-2 mb-6 p-1.5 rounded-2xl backdrop-blur-lg"
 		style="background: rgba(7,11,20,0.85); border: 1px solid rgba(255,255,255,0.1);">
-		{#each ([['about','🏘️','אודותינו'],['rewards','💰','שיטת התגמול'],['owners','🏛️','היה מהבעלים'],['coordinator','👥','היה רכז']] as const) as [id, icon, label]}
+		{#each ([['about','🏘️','aboutRevenue.tabAbout'],['rewards','💰','aboutRevenue.tabRewards'],['owners','🏛️','aboutRevenue.tabOwners'],['coordinator','👥','aboutRevenue.tabCoordinator']] as const) as [id, icon, label]}
 			<button
 				onclick={() => setTab(id as TabId)}
 				class="flex-1 flex items-center justify-center gap-2 px-2 py-3 rounded-xl font-black text-xs md:text-sm transition-all duration-200"
 				style={activeTab === id
 					? 'background: linear-gradient(135deg,#2563eb,#7c3aed); color:#fff; box-shadow: 0 4px 15px rgba(37,99,235,0.4);'
 					: 'color:#94a3b8;'}>
-				{icon} {label}
+				{icon} {$_(label)}
 			</button>
 		{/each}
 	</div>
@@ -170,21 +171,21 @@
 			<div class="absolute inset-0 pointer-events-none"
 				style="background:radial-gradient(ellipse at 60% 20%,rgba(139,92,246,0.4) 0%,transparent 60%),radial-gradient(ellipse at 20% 80%,rgba(59,130,246,0.25) 0%,transparent 50%);"></div>
 			<div class="relative z-10">
-				<img src="/images/community-neighborhood.png" alt="קהילה בשכונה" class="mx-auto mb-6 w-full md:w-[40rem] lg:w-[64rem] object-contain rounded-3xl" />
-				<h1 class="text-4xl md:text-5xl font-black leading-tight mb-4" style="color:#facc15;">קהילה בשכונה</h1>
+				<img src="/images/community-neighborhood.png" alt={$_('aboutRevenue.heroImageAlt')} class="mx-auto mb-6 w-full md:w-[40rem] lg:w-[64rem] object-contain rounded-3xl" />
+				<h1 class="text-4xl md:text-5xl font-black leading-tight mb-4" style="color:#facc15;">{$_('aboutRevenue.heroTitle')}</h1>
 				<p class="text-indigo-100 text-base md:text-lg max-w-2xl mx-auto mb-6 font-bold">
-					הפלטפורמה הקהילתית הראשונה בישראל המחברת בין התושבים אל כל היתרונות, השירותים והמשאבים של השכונה בה הם מתגוררים!
+					{$_('aboutRevenue.heroSubtitle')}
 				</p>
 				<div class="grid grid-cols-2 sm:grid-cols-4 gap-0 mt-2">
 					{#each [
-						['🤲','נגישות מלאה של כל צרכי התושב בכף היד'],
-						['🤝','קידום החברה לחברה סולידרית בעלת ערך גבוה של ואהבת לרעך כמוך'],
-						['💪','הוזלת יוקר המחיה, שיפור הביטחון, חיזוק הכח של התושב מול הרשויות'],
-						['💰','משתפת 50% מהרווחים של הפלטפורמה חזרה לקהילה']
+						['🤲','aboutRevenue.heroFeature1'],
+						['🤝','aboutRevenue.heroFeature2'],
+						['💪','aboutRevenue.heroFeature3'],
+						['💰','aboutRevenue.heroFeature4']
 					] as [ico,txt], i}
 						<div class="px-3 py-3 text-center flex flex-col items-center gap-1.5" style="border: 0.5px solid rgba(255,255,255,0.12);">
 							<div class="text-xl">{ico}</div>
-							<p class="text-xs sm:text-sm leading-snug font-semibold text-indigo-100">{txt}</p>
+							<p class="text-xs sm:text-sm leading-snug font-semibold text-indigo-100">{$_(txt)}</p>
 						</div>
 					{/each}
 				</div>
@@ -195,35 +196,35 @@
 		<div class="mb-8 rounded-3xl p-6" style="background:linear-gradient(135deg,#0f172a,#1e293b); border:1px solid rgba(139,92,246,0.2);">
 
 			<!-- מה זה? - שורה אחת ארוכה -->
-			<h2 class="text-2xl font-black mb-3 text-purple-300">קהילה בשכונה</h2>
+			<h2 class="text-2xl font-black mb-3 text-purple-300">{$_('aboutRevenue.whatTitle')}</h2>
 			<p class="text-base md:text-lg text-gray-200 leading-relaxed mb-5">
-				הפלטפורמה מרכזת את כל מה שקורה בשכונה שלך: גמ"חים, עסקים מקומיים, מניינים, חוגים, אירועים, חפצים למסירה ועוד - הכל במקום אחד נגיש ונוח.
+				{$_('aboutRevenue.whatText')}
 			</p>
 
 			<!-- קו מפריד -->
 			<div class="mb-5 mr-0 ml-auto" style="height:1px; width:66%; background:rgba(139,92,246,0.25);"></div>
 
 			<!-- שירותי השכונה -->
-			<h2 class="text-xl font-black mb-4 text-white">כל שירותי השכונה במקום אחד</h2>
+			<h2 class="text-xl font-black mb-4 text-white">{$_('aboutRevenue.servicesTitle')}</h2>
 			<div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-4">
 				{#each [
-					['🎁','גמ"חים','השאלת פריטים וציוד בחינם'],
-					['📦','מסירות חינם','רהיטים ובגדים ממשפחות לשכנים'],
-					['👶','בייביסיטינג','שמרטפים מאומתים מהשכונה'],
-					['✡️','מניינים','לוח מניינים יומי לכל בתי הכנסת'],
-					['🏪','עסקים מקומיים','חנויות, מסעדות ושירותים'],
-					['🎨','חוגים ושיעורים','פעילויות לילדים ומבוגרים'],
-					['🏠','צימרים','השכרה קצרת טווח בקהילה'],
-					['💑','פנויים ופנויות','היכרויות שכונתיות'],
-					['🚗','טרמפים','נסיעות משותפות בין שכנים'],
-					['🔍','אבידות ומציאות','לוח לדיווח ואיתור חפצים'],
-					['📅','אירועים','לוח אירועים שכונתי'],
-					['💼','דרושים','לוח דרושים מקומי']
+					['🎁','aboutRevenue.svc1Title','aboutRevenue.svc1Desc'],
+					['📦','aboutRevenue.svc2Title','aboutRevenue.svc2Desc'],
+					['👶','aboutRevenue.svc3Title','aboutRevenue.svc3Desc'],
+					['✡️','aboutRevenue.svc4Title','aboutRevenue.svc4Desc'],
+					['🏪','aboutRevenue.svc5Title','aboutRevenue.svc5Desc'],
+					['🎨','aboutRevenue.svc6Title','aboutRevenue.svc6Desc'],
+					['🏠','aboutRevenue.svc7Title','aboutRevenue.svc7Desc'],
+					['💑','aboutRevenue.svc8Title','aboutRevenue.svc8Desc'],
+					['🚗','aboutRevenue.svc9Title','aboutRevenue.svc9Desc'],
+					['🔍','aboutRevenue.svc10Title','aboutRevenue.svc10Desc'],
+					['📅','aboutRevenue.svc11Title','aboutRevenue.svc11Desc'],
+					['💼','aboutRevenue.svc12Title','aboutRevenue.svc12Desc']
 				] as [ico,title,desc]}
 					<div class="service-cell p-4 flex flex-col gap-1.5 transition-all hover:bg-white/5">
 						<span class="text-2xl">{ico}</span>
-						<div class="font-black text-sm md:text-base text-indigo-200">{title}</div>
-						<p class="text-gray-400 text-xs md:text-sm leading-relaxed">{desc}</p>
+						<div class="font-black text-sm md:text-base text-indigo-200">{$_(title)}</div>
+						<p class="text-gray-400 text-xs md:text-sm leading-relaxed">{$_(desc)}</p>
 					</div>
 				{/each}
 			</div>
@@ -231,33 +232,33 @@
 			<!-- מה הפלטפורמה מאפשרת -->
 			<ul class="space-y-3 mb-5 mt-6">
 				{#each [
-					['מאפשרת למפרסמים להגיע בדיוק לקהל היעד הנחוץ להם','#60a5fa'],
-					['מאפשרת ואף מעודדת אותך להיות חלק מהבעלים שלה','#facc15'],
-					['מאפשרת ואף מעודדת אותך להיות רכז שכונה ולהיות שותף ברווחים שהפלטפורמה מייצרת בכל חודש','#f59e0b'],
-					['מאפשרת צימצום עוני וסיוע לחלשים, כך שכאשר אתה משתמש בפלטפורמה אתה גם נהנה מהיתרונות שלה חינם וגם מסייע כלכלית לחלשים !','#34d399']
+					['aboutRevenue.enable1','#60a5fa'],
+					['aboutRevenue.enable2','#facc15'],
+					['aboutRevenue.enable3','#f59e0b'],
+					['aboutRevenue.enable4','#34d399']
 				] as [txt, clr]}
 					<li class="flex items-start gap-3 text-base md:text-lg text-gray-100 leading-relaxed">
 						<span class="mt-1 text-lg font-black flex-shrink-0" style="color:{clr};">✦</span>
-						<span>{txt}</span>
+						<span>{$_(txt)}</span>
 					</li>
 				{/each}
 			</ul>
 			<div class="pt-4">
 				<div style="width:50%; height:1px; background:rgba(255,255,255,0.1); margin-bottom:1rem;"></div>
-				<p class="text-indigo-200 text-base md:text-lg leading-relaxed mb-2">בתיקווה לחברה מתוקנת יותר וחופשיה יותר</p>
-				<p class="text-2xl md:text-3xl font-black" style="color:#facc15;">כוחנו באחדותו!</p>
+				<p class="text-indigo-200 text-base md:text-lg leading-relaxed mb-2">{$_('aboutRevenue.hopeText')}</p>
+				<p class="text-2xl md:text-3xl font-black" style="color:#facc15;">{$_('aboutRevenue.unityText')}</p>
 			</div>
 		</div>
 
 		<!-- ערכים -->
 		<div class="mb-8">
-			<h2 class="text-2xl font-black mb-4 text-white">הערכים שמנחים אותנו</h2>
+			<h2 class="text-2xl font-black mb-4 text-white">{$_('aboutRevenue.valuesTitle')}</h2>
 			<div class="grid grid-cols-5 gap-0">
-				{#each [['🎯','נגישות','כל צרכי התושב תחת קורת גג אחת'],['🤝','ערבות הדדית','הנגשת צרכי הפרט אל הקהילה בלחיצת כפתור'],['💰','מודל כלכלי חדש','50% מהרווחים חולקים חזרה אל הקהילה כהכרת הטוב למי שקידם אותה'],['💪','העצמה קהילתית','מאפשרים שיח נגיש, קבלת החלטות משותפות, מקדמים חברה שמחה וסולידרית'],['🦅','עצמאות','מפעילים מיזמים המקדמים אותנו לעצמאות חברתית ואף לשליטה על מוסדות המדינה']] as [ico,title,desc]}
+				{#each [['🎯','aboutRevenue.value1Title','aboutRevenue.value1Desc'],['🤝','aboutRevenue.value2Title','aboutRevenue.value2Desc'],['💰','aboutRevenue.value3Title','aboutRevenue.value3Desc'],['💪','aboutRevenue.value4Title','aboutRevenue.value4Desc'],['🦅','aboutRevenue.value5Title','aboutRevenue.value5Desc']] as [ico,title,desc]}
 					<div class="px-3 py-5 flex flex-col gap-2 text-center" style="border-bottom:1px solid rgba(255,255,255,0.08); border-right:1px solid rgba(255,255,255,0.08);">
 						<div class="text-2xl md:text-3xl">{ico}</div>
-						<div class="font-black text-white text-xs md:text-base">{title}</div>
-						<p class="text-gray-400 text-sm leading-snug hidden md:block">{desc}</p>
+						<div class="font-black text-white text-xs md:text-base">{$_(title)}</div>
+						<p class="text-gray-400 text-sm leading-snug hidden md:block">{$_(desc)}</p>
 					</div>
 				{/each}
 			</div>
@@ -265,10 +266,10 @@
 
 		<!-- תת-כותרת מודל כלכלי -->
 		<p class="text-lg md:text-xl font-bold text-white leading-relaxed mt-4 mb-2">
-			מיזם פועל לפי מודל כלכלי / חברתי ייחודי שבו חצי מהרווחים משותפים חזרה אל הקהילה! <button
+			{$_('aboutRevenue.modelIntro')} <button
 				onclick={() => setTab('rewards')}
 				class="inline items-baseline gap-1 font-bold text-yellow-300 hover:text-yellow-200 underline underline-offset-4 decoration-yellow-400/60 hover:decoration-yellow-300 transition-colors duration-200"
-			>הכר את שיטת התגמול ←</button>
+			>{$_('aboutRevenue.modelIntroCta')}</button>
 		</p>
 
 	</div><!-- /about tab -->
@@ -283,7 +284,7 @@
 			style="background: radial-gradient(ellipse at 70% 30%, rgba(124,58,237,0.35) 0%, transparent 60%);"></div>
 		<div class="relative z-10">
 			<h1 class="text-4xl md:text-6xl font-black leading-tight mb-4" style="color:#facc15;">
-				🏆 שיטת התגמול של קהילה בשכונה
+				🏆 {$_('aboutRevenue.rewardsHeroTitle')}
 			</h1>
 			<p class="text-indigo-200 text-base md:text-lg max-w-2xl mx-auto">
 				{data.hero_subtitle}
@@ -292,9 +293,9 @@
 			<!-- 1. תקציר חלוקת הרווחים - בתוך ה-hero -->
 			<div class="mt-8 pt-6 border-t border-white/10">
 				<h2 class="text-xl font-black mb-1">
-					תקציר חלוקת הרווחים
+					{$_('aboutRevenue.summaryTitle')}
 				</h2>
-				<p class="text-indigo-200 text-sm mb-6 text-center">מהרווח הנקי - כל שקל מתחלק בין שלושה גורמים:</p>
+				<p class="text-indigo-200 text-sm mb-6 text-center">{$_('aboutRevenue.summarySubtitle')}</p>
 				<div class="grid grid-cols-3 gap-2 sm:gap-4">
 					{#each data.distribution as card}
 						<a href={card.link}
@@ -305,7 +306,7 @@
 							<div class="text-sm sm:text-xl font-bold mb-1 sm:mb-2">{card.title}</div>
 							<div class="text-xs sm:text-base opacity-90 leading-relaxed">{card.desc}</div>
 							<div class="mt-auto pt-2 text-[10px] sm:text-sm font-black">
-								<span class="inline-block px-2 py-0.5 rounded-full bg-black/30 text-yellow-200">← לפירוט מלא</span>
+								<span class="inline-block px-2 py-0.5 rounded-full bg-black/30 text-yellow-200">{$_('aboutRevenue.fullDetail')}</span>
 							</div>
 						</a>
 					{/each}
@@ -319,9 +320,9 @@
 		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 			<span class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black text-black flex-shrink-0"
 				style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity:0.85;">1</span>
-			ערוצי ההכנסה
+			{$_('aboutRevenue.channelsTitle')}
 		</h2>
-		<p class="text-gray-300 text-base md:text-lg mb-4 max-w-2xl">מקורות ההכנסה של הפלטפורמה מגיעים מפרסומים ומשיתופי פעולה:</p>
+		<p class="text-gray-300 text-base md:text-lg mb-4 max-w-2xl">{$_('aboutRevenue.channelsSubtitle')}</p>
 		<div class="grid grid-cols-6 sm:grid-cols-2 lg:grid-cols-5">
 			{#each data.channels as ch, i}
 				<div class="col-span-2 sm:col-span-1 {i === 3 ? 'col-start-2 sm:col-start-auto' : ''} p-2 sm:p-5 flex flex-col gap-1.5 transition-all hover:bg-white/5"
@@ -340,7 +341,7 @@
 		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 			<span class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black text-black flex-shrink-0"
 				style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity:0.85;">2</span>
-			העלויות - חברת הניהול
+			{$_('aboutRevenue.costsTitle')}
 		</h2>
 		<div class="rounded-2xl p-8 mt-6" style="background: linear-gradient(135deg,#1a1035,#0f172a); border: 1px solid rgba(234,179,8,0.25);">
 			<div class="grid md:grid-cols-2 gap-8 items-center">
@@ -365,7 +366,7 @@
 					<!-- סיכום -->
 					<div class="self-stretch flex flex-col items-center justify-center gap-0.5 w-14 flex-shrink-0">
 						<span class="font-black text-yellow-300 text-2xl leading-none">35%</span>
-						<span class="font-bold text-gray-400 text-[10px] text-center leading-tight">סה"כ<br/>עלויות</span>
+						<span class="font-bold text-gray-400 text-[10px] text-center leading-tight">{$_('aboutRevenue.costsTotal1')}<br/>{$_('aboutRevenue.costsTotal2')}</span>
 					</div>
 				</div>
 				<!-- גרף עלויות HTML/CSS - פינות מעוגלות מושלמות בכל צדדים -->
@@ -375,23 +376,23 @@
 						<!-- כסף לחלוקה 65% -->
 						<div class="flex flex-col items-center justify-center gap-0.5" style="width: 65%; background: #facc15;">
 							<span class="text-2xl font-black text-black leading-none">65%</span>
-							<span class="text-sm font-bold text-black opacity-80">כסף לחלוקה</span>
+							<span class="text-sm font-bold text-black opacity-80">{$_('aboutRevenue.barDistributable')}</span>
 						</div>
 						<!-- הוצאות 35% -->
 						<div class="flex flex-col items-center justify-center gap-0.5 text-white" style="width: 35%; background: #334155;">
 							<span class="text-2xl font-black leading-none">35%</span>
-							<span class="text-sm font-bold opacity-80">הוצאות</span>
+							<span class="text-sm font-bold opacity-80">{$_('aboutRevenue.barExpenses')}</span>
 						</div>
 					</div>
 					<!-- מקרא -->
 					<div class="flex items-center justify-center gap-6 text-sm" dir="rtl">
 						<div class="flex items-center gap-2">
 							<div class="w-4 h-4 rounded-md" style="background: #334155;"></div>
-							<span class="text-gray-300">הוצאות</span>
+							<span class="text-gray-300">{$_('aboutRevenue.legendExpenses')}</span>
 						</div>
 						<div class="flex items-center gap-2">
 							<div class="w-4 h-4 rounded-md" style="background: #facc15;"></div>
-							<span class="text-gray-300">הרווחים מתחלקים אוטומטית - לבעלים, לרכזים ולצדקה</span>
+							<span class="text-gray-300">{$_('aboutRevenue.legendProfits')}</span>
 						</div>
 					</div>
 				</div>
@@ -404,7 +405,7 @@
 		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 			<span class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black text-black flex-shrink-0"
 				style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity:0.85;">3</span>
-			הכנסה לרכזי השטח - פירוט
+			{$_('aboutRevenue.coordIncomeTitle')}
 		</h2>
 		<!-- רשימה + גרף -->
 		<div class="grid grid-cols-2 gap-4 mb-6 items-center">
@@ -417,8 +418,8 @@
 					<div class="w-10 h-10 rounded-md flex items-center justify-center text-sm font-black flex-shrink-0"
 						style="background: rgba(245,158,11,0.25); color: #fbbf24;">10%</div>
 					<div class="flex-1">
-						<div class="font-black text-white text-xs md:text-base mb-0.5">ישיר לארנק</div>
-						<p class="text-gray-300 text-[10px] md:text-sm leading-tight">מכל הכנסה שמייצרת השכונה שלך</p>
+						<div class="font-black text-white text-xs md:text-base mb-0.5">{$_('aboutRevenue.coordDirectTitle')}</div>
+						<p class="text-gray-300 text-[10px] md:text-sm leading-tight">{$_('aboutRevenue.coordDirectDesc')}</p>
 					</div>
 					<span class="text-2xl md:text-3xl leading-none flex-shrink-0">💰</span>
 				</div>
@@ -429,8 +430,8 @@
 					<div class="w-10 h-10 rounded-md flex items-center justify-center text-sm font-black flex-shrink-0"
 						style="background: rgba(217,119,6,0.2); color: #f59e0b;">5%</div>
 					<div class="flex-1">
-						<div class="font-black text-white text-xs md:text-base mb-0.5">תגמול קבוצתי</div>
-						<p class="text-gray-300 text-[10px] md:text-sm leading-tight">מתחלק מקופת כלל השכונות לרכזי הרשת</p>
+						<div class="font-black text-white text-xs md:text-base mb-0.5">{$_('aboutRevenue.coordGroupTitle')}</div>
+						<p class="text-gray-300 text-[10px] md:text-sm leading-tight">{$_('aboutRevenue.coordGroupDesc')}</p>
 					</div>
 					<span class="text-2xl md:text-3xl leading-none flex-shrink-0">🤝</span>
 				</div>
@@ -441,8 +442,8 @@
 					<div class="w-10 h-10 rounded-md flex items-center justify-center text-sm font-black flex-shrink-0"
 						style="background: rgba(180,83,9,0.2); color: #d97706;">5%</div>
 					<div class="flex-1">
-						<div class="font-black text-white text-xs md:text-base mb-0.5">מועדון ההשקעות</div>
-						<p class="text-gray-300 text-[10px] md:text-sm leading-tight">זכות להשקיע במועדון - תשואה עתידית</p>
+						<div class="font-black text-white text-xs md:text-base mb-0.5">{$_('aboutRevenue.coordInvestTitle')}</div>
+						<p class="text-gray-300 text-[10px] md:text-sm leading-tight">{$_('aboutRevenue.coordInvestDesc')}</p>
 					</div>
 					<span class="text-2xl md:text-3xl leading-none flex-shrink-0">📈</span>
 				</div>
@@ -453,8 +454,8 @@
 					<div class="w-10 h-10 rounded-md flex items-center justify-center text-sm font-black flex-shrink-0"
 						style="background: rgba(245,158,11,0.2); color: #fbbf24;">10%</div>
 					<div class="flex-1">
-						<div class="font-black text-white text-xs md:text-base mb-0.5">רכישות בקהילה</div>
-						<p class="text-gray-300 text-[10px] md:text-sm leading-tight">זכות לרכוש אצל בעלי המקצוע הכשירים</p>
+						<div class="font-black text-white text-xs md:text-base mb-0.5">{$_('aboutRevenue.coordPurchaseTitle')}</div>
+						<p class="text-gray-300 text-[10px] md:text-sm leading-tight">{$_('aboutRevenue.coordPurchaseDesc')}</p>
 					</div>
 					<span class="text-2xl md:text-3xl leading-none flex-shrink-0">🛍️</span>
 				</div>
@@ -462,7 +463,7 @@
 
 			<!-- גרף עוגה -->
 			<div class="rounded-2xl p-3 flex flex-col items-center" style="background:#0f172a; border:1px solid rgba(245,158,11,0.2);">
-				<h3 class="font-black text-amber-400 mb-2 text-xs">התפלגות 30% לרכז</h3>
+				<h3 class="font-black text-amber-400 mb-2 text-xs">{$_('aboutRevenue.coordChartTitle')}</h3>
 				<div class="h-56 w-full"><canvas id="coordinatorChart"></canvas></div>
 			</div>
 		</div>
@@ -473,8 +474,8 @@
 			<div class="flex items-center gap-3">
 				<span class="text-2xl">🏆</span>
 				<div>
-					<div class="font-black text-white text-base md:text-lg">סה"כ תגמול לרכז שכונה</div>
-					<div class="text-xs md:text-sm text-gray-400">10% ישיר + 5% קבוצתי + 5% השקעות + 10% קניות</div>
+					<div class="font-black text-white text-base md:text-lg">{$_('aboutRevenue.coordTotalTitle')}</div>
+					<div class="text-xs md:text-sm text-gray-400">{$_('aboutRevenue.coordTotalBreakdown')}</div>
 				</div>
 			</div>
 			<div class="text-4xl font-black text-amber-300">30%</div>
@@ -486,7 +487,7 @@
 		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 			<span class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black text-black flex-shrink-0"
 				style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity:0.85;">4</span>
-			הכנסה לבעלים
+			{$_('aboutRevenue.ownersIncomeTitle')}
 		</h2>
 		<div class="grid grid-cols-2 gap-6 mb-6 items-center">
 
@@ -498,8 +499,8 @@
 					<div class="w-12 h-12 rounded-xl flex items-center justify-center text-base font-black flex-shrink-0"
 						style="background: rgba(59,130,246,0.2); color: #93c5fd;">40%</div>
 					<div class="flex-1">
-						<div class="font-black text-white text-sm md:text-base mb-0.5">ישיר לארנק</div>
-						<p class="text-gray-300 text-xs md:text-sm leading-relaxed">מההכנסות שמייצרות כל השכונות - נכנס ישירות לארנק הבעלים</p>
+						<div class="font-black text-white text-sm md:text-base mb-0.5">{$_('aboutRevenue.ownersDirectTitle')}</div>
+						<p class="text-gray-300 text-xs md:text-sm leading-relaxed">{$_('aboutRevenue.ownersDirectDesc')}</p>
 					</div>
 					<span class="text-2xl md:text-3xl leading-none flex-shrink-0">💰</span>
 				</div>
@@ -509,8 +510,8 @@
 					<div class="w-12 h-12 rounded-xl flex items-center justify-center text-base font-black flex-shrink-0"
 						style="background: rgba(37,99,235,0.2); color: #60a5fa;">10%</div>
 					<div class="flex-1">
-						<div class="font-black text-white text-sm md:text-base mb-0.5">קרן פרסום</div>
-						<p class="text-gray-300 text-xs md:text-sm leading-relaxed">יופקד לפרסום הפלטפורמה - בכפוף להסכמת ולהצבעת הבעלים</p>
+						<div class="font-black text-white text-sm md:text-base mb-0.5">{$_('aboutRevenue.adFundTitle')}</div>
+						<p class="text-gray-300 text-xs md:text-sm leading-relaxed">{$_('aboutRevenue.adFundDesc')}</p>
 					</div>
 					<span class="text-2xl md:text-3xl leading-none flex-shrink-0">📣</span>
 				</div>
@@ -518,7 +519,7 @@
 
 			<!-- שמאל: גרף עגול -->
 			<div class="rounded-2xl p-4 flex flex-col items-center relative" style="background:#0f172a; border:1px solid rgba(59,130,246,0.2);">
-				<h3 class="absolute top-3 right-3 font-black text-blue-400 text-xs text-right leading-tight">התפלגות 50%<br/>לבעלים</h3>
+				<h3 class="absolute top-3 right-3 font-black text-blue-400 text-xs text-right leading-tight">{$_('aboutRevenue.ownersChartTitle1')}<br/>{$_('aboutRevenue.ownersChartTitle2')}</h3>
 				<div class="h-48 w-full"><canvas id="ownersChart"></canvas></div>
 			</div>
 		</div>
@@ -529,8 +530,8 @@
 			<div class="flex items-center gap-3">
 				<span class="text-2xl">🏛️</span>
 				<div>
-					<div class="font-black text-white text-lg md:text-xl">סה"כ תגמול לבעלי הפלטפורמה</div>
-					<div class="text-sm text-gray-400">40% ישיר לארנק + 10% קרן פרסום</div>
+					<div class="font-black text-white text-lg md:text-xl">{$_('aboutRevenue.ownersTotalTitle')}</div>
+					<div class="text-sm text-gray-400">{$_('aboutRevenue.ownersTotalBreakdown')}</div>
 				</div>
 			</div>
 			<div class="text-4xl font-black text-blue-300">50%</div>
@@ -542,7 +543,7 @@
 		<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 			<span class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black text-black flex-shrink-0"
 				style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity:0.85;">5</span>
-			חברה, צדקה וחסד
+			{$_('aboutRevenue.charityTitle')}
 		</h2>
 		<div class="grid grid-cols-2 gap-6 mb-6 items-center">
 
@@ -555,8 +556,8 @@
 					<div class="w-12 h-12 rounded-xl flex items-center justify-center text-base font-black flex-shrink-0"
 						style="background: rgba(16,185,129,0.2); color: #6ee7b7;">10%</div>
 					<div class="flex-1">
-						<div class="font-black text-white text-xs md:text-base mb-0.5">יוצאים לחירות</div>
-						<p class="text-gray-300 text-[10px] md:text-sm leading-tight">לעמותת יוצאים לחירות</p>
+						<div class="font-black text-white text-xs md:text-base mb-0.5">{$_('aboutRevenue.freedomTitle')}</div>
+						<p class="text-gray-300 text-[10px] md:text-sm leading-tight">{$_('aboutRevenue.freedomDesc')}</p>
 					</div>
 					<span class="text-2xl md:text-3xl leading-none flex-shrink-0">🕊️</span>
 				</div>
@@ -567,8 +568,8 @@
 					<div class="w-12 h-12 rounded-xl flex items-center justify-center text-base font-black flex-shrink-0"
 						style="background: rgba(5,150,105,0.2); color: #34d399;">9%</div>
 					<div class="flex-1">
-						<div class="font-black text-white text-xs md:text-base mb-0.5">קופת הצדקה הקהילתית</div>
-						<p class="text-gray-300 text-[10px] md:text-sm leading-tight">לסיוע למשפחות ולנזקקים בשכונות הרשת</p>
+						<div class="font-black text-white text-xs md:text-base mb-0.5">{$_('aboutRevenue.charityFundTitle')}</div>
+						<p class="text-gray-300 text-[10px] md:text-sm leading-tight">{$_('aboutRevenue.charityFundDesc')}</p>
 					</div>
 					<span class="text-2xl md:text-3xl leading-none flex-shrink-0">❤️</span>
 				</div>
@@ -579,8 +580,8 @@
 					<div class="w-12 h-12 rounded-xl flex items-center justify-center text-base font-black flex-shrink-0"
 						style="background: rgba(16,185,129,0.15); color: #10b981;">1%</div>
 					<div class="flex-1">
-						<div class="font-black text-white text-xs md:text-base mb-0.5">הגרלת הקהילה</div>
-						<p class="text-gray-300 text-[10px] md:text-sm leading-tight">יחולק בהגרלה למשתמש אחד בחודש ששיפר את חיי הקהילה</p>
+						<div class="font-black text-white text-xs md:text-base mb-0.5">{$_('aboutRevenue.lotteryTitle')}</div>
+						<p class="text-gray-300 text-[10px] md:text-sm leading-tight">{$_('aboutRevenue.lotteryDesc')}</p>
 					</div>
 					<span class="text-2xl md:text-3xl leading-none flex-shrink-0">🎲</span>
 				</div>
@@ -588,7 +589,7 @@
 
 			<!-- גרף -->
 			<div class="rounded-2xl p-4 flex flex-col items-center relative" style="background:#0f172a; border:1px solid rgba(16,185,129,0.2);">
-				<h3 class="absolute top-3 right-3 font-black text-emerald-400 text-xs text-right leading-tight">התפלגות 20%<br/>לצדקה וחסד</h3>
+				<h3 class="absolute top-3 right-3 font-black text-emerald-400 text-xs text-right leading-tight">{$_('aboutRevenue.charityChartTitle1')}<br/>{$_('aboutRevenue.charityChartTitle2')}</h3>
 				<div class="h-48 w-full"><canvas id="charityChart"></canvas></div>
 			</div>
 		</div>
@@ -599,8 +600,8 @@
 			<div class="flex items-center gap-3">
 				<span class="text-2xl">🤲</span>
 				<div>
-					<div class="font-black text-white text-lg md:text-xl">סה"כ לחברה, צדקה וחסד</div>
-					<div class="text-sm text-gray-400">10% יוצאים לחירות + 9% קופת צדקה + 1% הגרלה</div>
+					<div class="font-black text-white text-lg md:text-xl">{$_('aboutRevenue.charityTotalTitle')}</div>
+					<div class="text-sm text-gray-400">{$_('aboutRevenue.charityTotalBreakdown')}</div>
 				</div>
 			</div>
 			<div class="text-4xl font-black text-emerald-300">20%</div>
@@ -612,7 +613,7 @@
 		<button
 			onclick={() => setTab('owners')}
 			class="inline items-baseline gap-1 font-bold text-yellow-300 hover:text-yellow-200 underline underline-offset-4 decoration-yellow-400/60 hover:decoration-yellow-300 transition-colors duration-200"
-		>היה חלק מבעלי פלטפורמת קהילה בשכונה ←</button>
+		>{$_('aboutRevenue.ownersCta')}</button>
 	</p>
 
 	</div><!-- /rewards tab -->
@@ -627,24 +628,24 @@
 				style="background: radial-gradient(ellipse at 30% 30%, rgba(59,130,246,0.3) 0%, transparent 60%);"></div>
 			<div class="relative z-10">
 				<h1 class="text-3xl md:text-5xl font-black leading-tight mb-4" style="color:#93c5fd;">
-					🏛️ היה מהבעלים של קהילה בשכונה
+					🏛️ {$_('aboutRevenue.ownersHeroTitle')}
 				</h1>
 				<p class="text-blue-100 text-base md:text-lg max-w-2xl mx-auto mb-6">
-					הפלטפורמה פועלת לפי מודל ייחודי של כלכלה מבוזרת וחברתית, המחזיקה בעלות על ידי אנשים רבים ואף משתפת חצי מהרווחים שלה עם הקהילה!
+					{$_('aboutRevenue.ownersHeroSubtitle')}
 				</p>
 				<!-- סטטיסטיקות מהירות -->
 				<div class="grid grid-cols-2 md:grid-cols-5 gap-2">
 					{#each [
-						['♾️','אחזקה נצחית','כולל זכות ירושה לילדים','#a78bfa'],
-						['💰','50% מהרווחים','לבעלי הפלטפורמה','#34d399'],
-						['🌐','עד 50,000','מחזיקי בעלות שונים','#60a5fa'],
-						['📣','זכות ראשונית','והנחה קבועה בפרסום','#facc15'],
-						['🗳️','החלטות','משותפות','#f472b6']
+						['♾️','aboutRevenue.stat1Val','aboutRevenue.stat1Lbl','#a78bfa'],
+						['💰','aboutRevenue.stat2Val','aboutRevenue.stat2Lbl','#34d399'],
+						['🌐','aboutRevenue.stat3Val','aboutRevenue.stat3Lbl','#60a5fa'],
+						['📣','aboutRevenue.stat4Val','aboutRevenue.stat4Lbl','#facc15'],
+						['🗳️','aboutRevenue.stat5Val','aboutRevenue.stat5Lbl','#f472b6']
 					] as [ico,val,lbl,clr]}
 						<div class="rounded-xl p-3 text-center" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);">
 							<div class="text-3xl mb-1">{ico}</div>
-							<div class="text-lg font-black leading-tight" style="color:{clr};">{val}</div>
-							<div class="text-sm text-blue-200 mt-0.5 leading-tight">{lbl}</div>
+							<div class="text-lg font-black leading-tight" style="color:{clr};">{$_(val)}</div>
+							<div class="text-sm text-blue-200 mt-0.5 leading-tight">{$_(lbl)}</div>
 						</div>
 					{/each}
 				</div>
@@ -656,35 +657,35 @@
 			<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 				<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
 					style="background: linear-gradient(135deg,#facc15,#f59e0b);">1</span>
-				ביזור לעומת ריכוז
+				{$_('aboutRevenue.decentTitle')}
 			</h2>
 			<p class="text-gray-300 text-lg mb-4 max-w-3xl leading-relaxed">
-				במקום שכל הרווחים והשליטה יוחזקו אצל בעלים אחד ריכוזי - המודל שלנו מבזר את הבעלות והרווחים, הפלטפורמה בנויה כדי לקדם את הקהילה, במקום הפרד ומשול יש לנו <span class="text-yellow-300 font-black">אחד וחזק!</span> וכדי שתישאר כזו <span class="text-yellow-300 font-black">אנו לא נאפשר לבעלי ההון לרכוש את הפלטפורמה!</span><br/>
-				כיצד - אנו לא מאפשרים לכל אחד לרכוש כמה מניות שהוא חפץ אלא <span class="text-blue-300 font-bold">כל בית אב רשאי לרכוש עד 5,000 מניות בלבד</span>
+				{$_('aboutRevenue.decent1')}<span class="text-yellow-300 font-black">{$_('aboutRevenue.decentStrong1')}</span>{$_('aboutRevenue.decent2')}<span class="text-yellow-300 font-black">{$_('aboutRevenue.decentStrong2')}</span><br/>
+				{$_('aboutRevenue.decent3')}<span class="text-blue-300 font-bold">{$_('aboutRevenue.decentStrong3')}</span>
 			</p>
 			<div class="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-white/10 py-2">
 				<!-- ריכוז -->
 				<div class="pb-6 md:pb-0 md:pl-8">
 					<div class="flex items-center gap-3 mb-4">
 						<span class="text-3xl">❌</span>
-						<h3 class="font-black text-red-400 text-lg">מודל ריכוזי (פייסבוק, טיקטוק...)</h3>
+						<h3 class="font-black text-red-400 text-lg">{$_('aboutRevenue.centralTitle')}</h3>
 					</div>
 					<ul class="space-y-2 text-lg text-gray-300">
-						<li class="flex gap-2"><span class="text-red-400">•</span> כל הרווחים לבעל הפלטפורמה בלבד</li>
-						<li class="flex gap-2"><span class="text-red-400">•</span> כח ריכוזי בידי קבוצה קטנה</li>
-						<li class="flex gap-2"><span class="text-red-400">•</span> אין ייצוג לקהילה בהחלטות</li>
+						<li class="flex gap-2"><span class="text-red-400">•</span> {$_('aboutRevenue.central1')}</li>
+						<li class="flex gap-2"><span class="text-red-400">•</span> {$_('aboutRevenue.central2')}</li>
+						<li class="flex gap-2"><span class="text-red-400">•</span> {$_('aboutRevenue.central3')}</li>
 					</ul>
 				</div>
 				<!-- ביזור -->
 				<div class="pt-6 md:pt-0 md:pr-8">
 					<div class="flex items-center gap-3 mb-4">
 						<span class="text-3xl">✅</span>
-						<h3 class="font-black text-emerald-400 text-lg">המודל המבוזר שלנו</h3>
+						<h3 class="font-black text-emerald-400 text-lg">{$_('aboutRevenue.decentModelTitle')}</h3>
 					</div>
 					<ul class="space-y-2 text-lg text-gray-300">
-						<li class="flex gap-2"><span class="text-emerald-400">•</span> 50% מהרווחים חוזרים אל הקהילה</li>
-						<li class="flex gap-2"><span class="text-emerald-400">•</span> עד 50,000 מניות - עד 5,000 למשפחה</li>
-						<li class="flex gap-2"><span class="text-emerald-400">•</span> שאיפה: בעלי מניות בכל שכונה בארץ</li>
+						<li class="flex gap-2"><span class="text-emerald-400">•</span> {$_('aboutRevenue.decentList1')}</li>
+						<li class="flex gap-2"><span class="text-emerald-400">•</span> {$_('aboutRevenue.decentList2')}</li>
+						<li class="flex gap-2"><span class="text-emerald-400">•</span> {$_('aboutRevenue.decentList3')}</li>
 					</ul>
 				</div>
 			</div>
@@ -695,11 +696,11 @@
 			<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 				<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
 					style="background: linear-gradient(135deg,#facc15,#f59e0b);">2</span>
-				החלטות משותפות
+				{$_('aboutRevenue.decisionsTitle')}
 			</h2>
-			<p class="text-gray-400 text-lg mb-4 max-w-2xl">הבעלים מחליטים יחד בהצבעה על כל ההחלטות המנהליות</p>
+			<p class="text-gray-400 text-lg mb-4 max-w-2xl">{$_('aboutRevenue.decisionsSubtitle')}</p>
 			<div class="grid grid-cols-2 sm:grid-cols-3">
-				{#each [['📣','אופן הפרסום'],['📜','תנאי השימוש'],['💲','מחירון'],['⚙️','ביצוע שדרוגים'],['🚫','מדיניות צנזורה'],['📋','החלטות מנהליות']] as [ico, lbl], i}
+				{#each [['📣','aboutRevenue.decision1'],['📜','aboutRevenue.decision2'],['💲','aboutRevenue.decision3'],['⚙️','aboutRevenue.decision4'],['🚫','aboutRevenue.decision5'],['📋','aboutRevenue.decision6']] as [ico, lbl], i}
 					<div class="py-5 px-5 flex items-center gap-3 relative">
 						{#if i < 3}
 							<div class="absolute bottom-0 right-[10%] left-[10%] h-px bg-white/10"></div>
@@ -708,7 +709,7 @@
 							<div class="absolute top-[10%] bottom-[10%] left-0 w-px bg-white/10 hidden sm:block"></div>
 						{/if}
 						<span class="text-2xl">{ico}</span>
-						<span class="font-bold text-lg text-blue-100">{lbl}</span>
+						<span class="font-bold text-lg text-blue-100">{$_(lbl)}</span>
 					</div>
 				{/each}
 			</div>
@@ -719,18 +720,18 @@
 			<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 				<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
 					style="background: linear-gradient(135deg,#facc15,#f59e0b);">3</span>
-				צורת המודל
+				{$_('aboutRevenue.shapeTitle')}
 			</h2>
 			<p class="text-xl md:text-2xl font-black text-blue-100 leading-relaxed mb-5">
-				המודל לוקח את האלמנטים החיוביים הן מהשיטה <span class="text-yellow-300 font-black">הקפיטליסטית</span> (שוק חופשי) והן מהשיטה <span class="text-yellow-300 font-black">הקומוניסטית</span> (הגבלת רכישה) - מאחדת אותם למודל אחד באופן שאנשים רבים יהיו שותפים אך לא יתאפשר רכישה של כל המניות בידי מעטים, כך שהפלטפורמה תהיה באמת שייכת לעם תמיד ולא יעוותו את אופיה המקדם חברה משופרת. מודל זה מבוסס על רעיון <span class="text-yellow-300 font-black">הנחלות בארץ ישראל</span> - ששומר על החופש והעצמאות מחד, ולא מאפשר ריכוזיות בידיים מעטות מאידך!
+				{$_('aboutRevenue.shape1')}<span class="text-yellow-300 font-black">{$_('aboutRevenue.shapeCapitalist')}</span>{$_('aboutRevenue.shape2')}<span class="text-yellow-300 font-black">{$_('aboutRevenue.shapeCommunist')}</span>{$_('aboutRevenue.shape3')}<span class="text-yellow-300 font-black">{$_('aboutRevenue.shapeHomesteads')}</span>{$_('aboutRevenue.shape4')}
 			</p>
 
 			<div class="grid grid-cols-1 sm:grid-cols-2">
 				{#each [
-					['👤','א. למשתמשי הקצה','#3b82f6','כל יתרונות השכונה תחת קורת גג אחת - לשימוש אישי ללא תשלום.'],
-					['🏪','ב. לבעלי עסקים','#f59e0b','פרסום איכותי וממוקד תמורת תשלום הוגן וקל לכל כיס.'],
-					['❤️','ג. לצדקה ולחברה','#10b981','קופת צדקה קבועה, עמותת יוצאים לחירות, הגרלה חודשית למסייע לקהילה.'],
-					['🏘️','ד. לרכזי השכונות','#f472b6','חלק נכבד מהרווחים למפעילי האתר בכל שכונה ושכונה.']
+					['👤','aboutRevenue.benefit1Title','#3b82f6','aboutRevenue.benefit1Desc'],
+					['🏪','aboutRevenue.benefit2Title','#f59e0b','aboutRevenue.benefit2Desc'],
+					['❤️','aboutRevenue.benefit3Title','#10b981','aboutRevenue.benefit3Desc'],
+					['🏘️','aboutRevenue.benefit4Title','#f472b6','aboutRevenue.benefit4Desc']
 				] as [ico, title, color, desc], i}
 					<div class="py-5 px-4 flex gap-4 items-start relative">
 						{#if i < 3}
@@ -743,8 +744,8 @@
 							<div class="absolute top-[10%] bottom-[10%] left-0 w-px bg-white/10 hidden sm:block"></div>
 						{/if}
 						<div class="flex-1">
-							<div class="font-black text-base mb-1" style="color:{color};">{title}</div>
-							<p class="text-gray-300 text-lg leading-relaxed">{desc}</p>
+							<div class="font-black text-base mb-1" style="color:{color};">{$_(title)}</div>
+							<p class="text-gray-300 text-lg leading-relaxed">{$_(desc)}</p>
 						</div>
 						<span class="text-3xl mt-0.5 flex-shrink-0">{ico}</span>
 					</div>
@@ -757,28 +758,28 @@
 			<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 				<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
 					style="background: linear-gradient(135deg,#facc15,#f59e0b);">4</span>
-				עלות רכישה
+				{$_('aboutRevenue.purchaseCostTitle')}
 			</h2>
 			<div class="grid md:grid-cols-2 gap-5">
 				<!-- מחיר -->
 				<div class="rounded-2xl p-8 text-center flex flex-col items-center justify-center h-full" style="background:linear-gradient(135deg,#1e3a8a,#1e1b4b); border:2px solid rgba(147,197,253,0.4);">
 					<div class="text-6xl font-black text-yellow-300 mb-2">200₪</div>
-					<div class="text-xl font-black text-white mb-1">ליחידה אחת</div>
-					<div class="text-gray-400 text-lg">ההוצאה הראשונה היא גם האחרונה - לאחר מכן הכל מתוך הרווחים</div>
+					<div class="text-xl font-black text-white mb-1">{$_('aboutRevenue.priceUnit')}</div>
+					<div class="text-gray-400 text-lg">{$_('aboutRevenue.priceNote')}</div>
 				</div>
 				<!-- פרטים -->
 				<div class="flex flex-col gap-2">
 					{#each [
-						['💬','קבוצת ווצאפ','בעלי היחידות מתנהלים ומצביעים יחד בקבוצה ייעודית'],
-						['©️','זכויות יוצרים','אם מדינות נוספות ירצו לפתוח את האפליקציה - ישלמו לבעלי הזכויות'],
-						['🔄','מכירה חופשית','ניתן חופשי למכור או להעביר את המניות, בכפוף להגבלת 5,000 לבית אב'],
-						['🔒','הגבלת ריכוז','עד 5,000 יחידות למשפחה גרעינית אחת - לשמר כח ביזור']
+						['💬','aboutRevenue.buy1Title','aboutRevenue.buy1Desc'],
+						['©️','aboutRevenue.buy2Title','aboutRevenue.buy2Desc'],
+						['🔄','aboutRevenue.buy3Title','aboutRevenue.buy3Desc'],
+						['🔒','aboutRevenue.buy4Title','aboutRevenue.buy4Desc']
 					] as [ico, title, desc]}
 						<div class="rounded-xl px-3 py-2 flex gap-2.5 items-center"
 							style="background:rgba(255,255,255,0.04); border:1px solid rgba(59,130,246,0.2);">
 							<div class="flex-1">
-								<div class="font-black text-blue-200 text-base leading-tight">{title}</div>
-								<div class="text-gray-400 text-sm leading-tight mt-0.5">{desc}</div>
+								<div class="font-black text-blue-200 text-base leading-tight">{$_(title)}</div>
+								<div class="text-gray-400 text-sm leading-tight mt-0.5">{$_(desc)}</div>
 							</div>
 							<span class="text-lg flex-shrink-0">{ico}</span>
 						</div>
@@ -792,27 +793,27 @@
 			<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 				<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
 					style="background: linear-gradient(135deg,#facc15,#f59e0b);">5</span>
-				הוצאות שוטפות
+				{$_('aboutRevenue.expensesTitle')}
 			</h2>
 			<div class="rounded-2xl p-7 flex flex-col md:flex-row gap-6 items-center"
 				style="background:linear-gradient(135deg,#1a1035,#1e293b); border:1px solid rgba(250,204,21,0.25);">
 				<div class="text-center flex-shrink-0">
 					<div class="text-6xl font-black text-yellow-300">35%</div>
-					<div class="text-lg text-gray-400 mt-1">מההכנסות לתפעול</div>
+					<div class="text-lg text-gray-400 mt-1">{$_('aboutRevenue.expensesOf')}</div>
 				</div>
 				<div class="text-lg text-gray-300 leading-relaxed">
-					<p class="mb-3">חברת ניהול מטפלת בשרתים, אבטחת מידע, שירות לקוחות ותפעול שוטף. <span class="text-yellow-300 font-bold">ללא משכורות קבועות</span> וללא הפתעות - רק 35% מההכנסות.</p>
-					<p>החברה היא חלק בלתי נפרד מהפלטפורמה - <span class="text-yellow-300 font-bold">ההוצאה הראשונה היא גם האחרונה.</span> לאחר מכן כל ההוצאות מתוך הרווחים בלבד.</p>
+					<p class="mb-3">{$_('aboutRevenue.expensesP1a')}<span class="text-yellow-300 font-bold">{$_('aboutRevenue.expensesP1Strong')}</span>{$_('aboutRevenue.expensesP1b')}</p>
+					<p>{$_('aboutRevenue.expensesP2a')}<span class="text-yellow-300 font-bold">{$_('aboutRevenue.expensesP2Strong')}</span>{$_('aboutRevenue.expensesP2b')}</p>
 				</div>
 			</div>
 		</div>
 
 		<!-- תת-כותרת היה רכז -->
 		<p class="text-lg md:text-xl font-bold text-white leading-relaxed mt-4 mb-2">
-			הצטרף לצוות הרכזים שלנו וסייע לשפר את החברה לחברה מתוקנת - <button
+			{$_('aboutRevenue.coordCtaText')}<button
 				onclick={() => setTab('coordinator')}
 				class="inline items-baseline gap-1 font-bold text-yellow-300 hover:text-yellow-200 underline underline-offset-4 decoration-yellow-400/60 hover:decoration-yellow-300 transition-colors duration-200"
-			>היה רכז שכונה ←</button>
+			>{$_('aboutRevenue.coordCtaLink')}</button>
 		</p>
 
 	</div><!-- /owners tab -->
@@ -826,19 +827,19 @@
 			<div class="absolute inset-0 pointer-events-none"
 				style="background:radial-gradient(ellipse at 50% 30%,rgba(245,158,11,0.35) 0%,transparent 60%);"></div>
 			<div class="relative z-10">
-				<img src="/images/committee.png" alt="רכז שכונה" class="mx-auto mb-6 w-full max-w-md md:max-w-2xl lg:max-w-4xl object-contain rounded-3xl" style="box-shadow: 0 0 60px 15px rgba(251,191,36,0.35), 0 0 120px 30px rgba(245,158,11,0.2); border: 1px solid rgba(251,191,36,0.3);" />
+				<img src="/images/committee.png" alt={$_('aboutRevenue.coordHeroAlt')} class="mx-auto mb-6 w-full max-w-md md:max-w-2xl lg:max-w-4xl object-contain rounded-3xl" style="box-shadow: 0 0 60px 15px rgba(251,191,36,0.35), 0 0 120px 30px rgba(245,158,11,0.2); border: 1px solid rgba(251,191,36,0.3);" />
 				<h1 class="text-3xl md:text-5xl font-black leading-tight mb-4" style="color:#fbbf24;">
-					היה רכז בשכונתך
+					{$_('aboutRevenue.coordHeroTitle')}
 				</h1>
 				<p class="text-amber-100 text-base md:text-lg max-w-2xl mx-auto mb-6">
-					הפעל את הקהילה בשכונה שלך, קבל הכרה ותגמול נדיב - ותיהנה מ-30% מכל רווחי השכונה שלך
+					{$_('aboutRevenue.coordHeroSubtitle')}
 				</p>
 				<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
 					{#each [
-						['💰','30%','מהרווחים הכלכליים','#fbbf24'],
-						['🎛️','','שליטה בניהול תוכן בשכונתך','#f59e0b'],
-						['🌟','','הזכות לקדם את החברה לטובה יותר','#d97706'],
-						['🚀','','זכות ראשונים ובלעדיות להפצת טכנולוגיה מתקדמת התומכת בחירות התושב','#b45309']
+						['💰','30%','aboutRevenue.cstat1Lbl','#fbbf24'],
+						['🎛️','','aboutRevenue.cstat2Lbl','#f59e0b'],
+						['🌟','','aboutRevenue.cstat3Lbl','#d97706'],
+						['🚀','','aboutRevenue.cstat4Lbl','#b45309']
 					] as [ico,val,lbl,clr]}
 						<div class="rounded-xl p-5 text-center flex flex-col items-center justify-between gap-2" style="background:rgba(0,0,0,0.3); border:1px solid rgba(245,158,11,0.3);">
 							<div class="text-4xl md:text-5xl leading-none">{ico}</div>
@@ -846,7 +847,7 @@
 								{#if val}
 									<div class="text-3xl md:text-4xl font-black leading-none" style="color:{clr};">{val}</div>
 								{/if}
-								<div class="text-sm md:text-base text-amber-200 leading-snug font-bold">{lbl}</div>
+								<div class="text-sm md:text-base text-amber-200 leading-snug font-bold">{$_(lbl)}</div>
 							</div>
 						</div>
 					{/each}
@@ -859,7 +860,7 @@
 			<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 				<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
 					style="background:linear-gradient(135deg,#fbbf24,#d97706);">1</span>
-				תפקידי הרכז וחובותיו!
+				{$_('aboutRevenue.dutiesTitle')}
 			</h2>
 
 			<div class="rounded-2xl p-5 mt-6 grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-amber-500/20"
@@ -868,18 +869,18 @@
 				<div class="pb-5 md:pb-0 md:pl-5">
 					<div class="flex items-center gap-3 mb-4">
 						<span class="text-3xl">🏘️</span>
-						<div class="font-black text-amber-300 text-lg">חובת פעילות בשטח</div>
+						<div class="font-black text-amber-300 text-lg">{$_('aboutRevenue.fieldDutyTitle')}</div>
 					</div>
 					<ul class="space-y-3">
 						{#each [
-							'למלא את כל נתוני השכונה החינמים: גמחים, בית כנסת, מניינים וכו',
-							'לדאוג שכל המוסדות לשירותים ציבוריים בשכונה יופיעו במפה, כגון דואר בנקים וכו',
-							'לקדם חיבור בין הקהילה בשכונתו אל הפלטפורה ולפרסם בכל האמצעים העומדים לרשותו אצל בעלי החנויות, נותני השירות, החוגים הצמרים וכו\' כדי שיהיו נוכחים בפלטפורמה.',
-							'להעלות משאלי עם להצבעה בשכונה שלו לפי ההסכמה הקבוצתית של רכזי השכונות'
+							'aboutRevenue.fieldDuty1',
+							'aboutRevenue.fieldDuty2',
+							'aboutRevenue.fieldDuty3',
+							'aboutRevenue.fieldDuty4'
 						] as item}
 							<li class="flex gap-2 text-gray-300 text-base leading-relaxed">
 								<span class="text-amber-400 mt-1 flex-shrink-0">✦</span>
-								<span>{item}</span>
+								<span>{$_(item)}</span>
 							</li>
 						{/each}
 					</ul>
@@ -889,20 +890,19 @@
 				<div class="pt-5 md:pt-0 md:pr-5">
 					<div class="flex items-center gap-3 mb-4">
 						<span class="text-3xl">🕊️</span>
-						<div class="font-black text-amber-300 text-lg">חובה מוסרית ערכית</div>
+						<div class="font-black text-amber-300 text-lg">{$_('aboutRevenue.moralDutyTitle')}</div>
 					</div>
 					<ul class="space-y-3">
 						<li class="flex gap-2 text-gray-300 text-base leading-relaxed">
 							<span class="text-amber-400 mt-1 flex-shrink-0">✦</span>
 							<span>
-								אנשי רכזי השכונות, הינם מהטובים והמובחרים של עדת ישראל, ככאלו ניסחנו יחד את
-								<a href="/about/charter" class="font-black text-yellow-300 hover:text-yellow-200 underline underline-offset-4 decoration-yellow-400/60 hover:decoration-yellow-300 transition-colors">אמנת יוצאים לחירות</a>,
-								כדי לשמר על איכות האנשים לתמיד, יש לחתום על אמנה זו כדי להיות חלק מאיתנו!
+								{$_('aboutRevenue.moral1a')}
+								<a href="/about/charter" class="font-black text-yellow-300 hover:text-yellow-200 underline underline-offset-4 decoration-yellow-400/60 hover:decoration-yellow-300 transition-colors">{$_('aboutRevenue.moralCharterLink')}</a>{$_('aboutRevenue.moral1b')}
 							</span>
 						</li>
 						<li class="flex gap-2 text-gray-300 text-base leading-relaxed">
 							<span class="text-amber-400 mt-1 flex-shrink-0">✦</span>
-							<span>רכזי השכונות פועלים יחד למטרות קידום חירות התושב בישראל באופן קבוצתי על ידי עמותת יוצאים לחירות, לצורך כך אנו מנהלים שיח תקשורתי, הצבעות שיחות ומפגשים, רכז שכונה צריך להיות זמין לפחות לשיחת זום פעם בחודש ומפגש פיזי פעם בשנה!</span>
+							<span>{$_('aboutRevenue.moral2')}</span>
 						</li>
 					</ul>
 				</div>
@@ -914,15 +914,15 @@
 			<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 				<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
 					style="background:linear-gradient(135deg,#fbbf24,#d97706);">2</span>
-				זכויות הרכזים
+				{$_('aboutRevenue.rightsTitle')}
 			</h2>
-			<p class="text-gray-400 text-base md:text-lg mb-4 max-w-2xl pr-12">מה מקבל הרכז תמורת פעילותו בשכונה</p>
+			<p class="text-gray-400 text-base md:text-lg mb-4 max-w-2xl pr-12">{$_('aboutRevenue.rightsSubtitle')}</p>
 			<div class="grid sm:grid-cols-2">
 				{#each [
-					['💰','שותפות ברווחים','חולקים שותפות של 30% מכל הרווח שמייצרת השכונה (ראה שיטת התגמול)'],
-					['📅','ניהול לוח האירועים','הזכות לערוך ולנהל את לוח האירועים כולל גביית תשלום עבור המודעות'],
-					['🏷️','הנחה בפרסום','הנחה של 10% על פירסום באתר'],
-					['🚀','בלעדיות לטכנולוגיות','זכות ראשונים ובלעדיות להיות נקודת מכירה לטכנולוגיות מתקדמות באותה השכונה']
+					['💰','aboutRevenue.right1Title','aboutRevenue.right1Desc'],
+					['📅','aboutRevenue.right2Title','aboutRevenue.right2Desc'],
+					['🏷️','aboutRevenue.right3Title','aboutRevenue.right3Desc'],
+					['🚀','aboutRevenue.right4Title','aboutRevenue.right4Desc']
 				] as [ico,title,desc], i}
 					<div class="p-5 flex gap-4 items-start relative">
 						{#if i < 3}
@@ -936,8 +936,8 @@
 						{/if}
 						<span class="text-3xl flex-shrink-0">{ico}</span>
 						<div>
-							<div class="font-black text-amber-300 mb-1 text-lg">{title}</div>
-							<p class="text-gray-300 text-base leading-relaxed">{desc}</p>
+							<div class="font-black text-amber-300 mb-1 text-lg">{$_(title)}</div>
+							<p class="text-gray-300 text-base leading-relaxed">{$_(desc)}</p>
 						</div>
 					</div>
 				{/each}
@@ -949,15 +949,15 @@
 			<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 				<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
 					style="background:linear-gradient(135deg,#fbbf24,#d97706);">3</span>
-				פירוט התגמול
+				{$_('aboutRevenue.detailTitle')}
 			</h2>
-			<p class="text-gray-400 text-base md:text-lg mb-4 max-w-2xl pr-12">30% מכלל רווחי השכונה שלך - מחולקים בצורה הוגנת</p>
+			<p class="text-gray-400 text-base md:text-lg mb-4 max-w-2xl pr-12">{$_('aboutRevenue.detailSubtitle')}</p>
 			<div class="flex flex-col gap-1.5">
 				{#each [
-					['💰','10% ישיר לארנק','מכל הכנסה שמייצרת השכונה שלך','#fbbf24','rgba(251,191,36,0.15)'],
-					['🤝','5% תגמול קבוצתי','מתחלק מקופת כלל השכונות לרכזי הרשת','#f59e0b','rgba(245,158,11,0.12)'],
-					['📈','5% מועדון ההשקעות','זכות להשקיע בפלטפורמה - תשואה עתידית','#d97706','rgba(217,119,6,0.12)'],
-					['🛍️','10% רכישות בקהילה','זכות לרכוש שירותים ומוצרים אצל בעלי מקצוע כשירים','#b45309','rgba(180,83,9,0.12)']
+					['💰',$_('aboutRevenue.detail1Title'),$_('aboutRevenue.detail1Desc'),'#fbbf24','rgba(251,191,36,0.15)'],
+					['🤝',$_('aboutRevenue.detail2Title'),$_('aboutRevenue.detail2Desc'),'#f59e0b','rgba(245,158,11,0.12)'],
+					['📈',$_('aboutRevenue.detail3Title'),$_('aboutRevenue.detail3Desc'),'#d97706','rgba(217,119,6,0.12)'],
+					['🛍️',$_('aboutRevenue.detail4Title'),$_('aboutRevenue.detail4Desc'),'#b45309','rgba(180,83,9,0.12)']
 				] as [ico,title,desc,color,bg]}
 					<div class="rounded-xl p-3 md:p-4 flex gap-3 items-center" style="background:{bg}; border:1px solid {color}40;">
 						<div class="w-12 h-12 md:w-14 md:h-14 rounded-lg flex items-center justify-center text-2xl md:text-3xl flex-shrink-0" style="background:{color}20;">{ico}</div>
@@ -975,8 +975,8 @@
 				<div class="flex items-center gap-4">
 					<span class="text-3xl md:text-4xl">🏆</span>
 					<div>
-						<div class="font-black text-white text-lg md:text-2xl">סה"כ תגמול לרכז שכונה</div>
-						<div class="text-base md:text-lg text-gray-300">מההכנסות של שכונתו</div>
+						<div class="font-black text-white text-lg md:text-2xl">{$_('aboutRevenue.coordTotalTitle')}</div>
+						<div class="text-base md:text-lg text-gray-300">{$_('aboutRevenue.coordSummaryDesc')}</div>
 					</div>
 				</div>
 				<div class="text-4xl md:text-5xl font-black text-amber-300">30%</div>
@@ -988,21 +988,21 @@
 	<!-- CTA משותף - מופיע בכל הטאבים -->
 	<div class="mt-8 mb-2 rounded-2xl px-6 py-6 text-center"
 		style="background:linear-gradient(135deg,#1e1b4b 0%,#312e81 50%,#1e3a5f 100%); border:1px solid rgba(255,255,255,0.12); box-shadow:0 0 40px rgba(124,58,237,0.15);">
-		<h2 class="text-xl md:text-2xl font-black mb-1">רוצה להיות חלק מההצלחה?</h2>
-		<p class="text-gray-300 text-sm mb-5 max-w-lg mx-auto">הצטרף אלינו כמשקיע או כרכז שכונה - ותיהנה מפירות הקהילה</p>
+		<h2 class="text-xl md:text-2xl font-black mb-1">{$_('aboutRevenue.ctaTitle')}</h2>
+		<p class="text-gray-300 text-sm mb-5 max-w-lg mx-auto">{$_('aboutRevenue.ctaSubtitle')}</p>
 		<div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
 			<button
 				onclick={() => setTab('owners')}
 				class="flex items-center justify-center gap-2 px-7 py-3 rounded-xl font-black text-base transition-all duration-200 hover:scale-105 hover:brightness-110 shadow-lg w-64"
 				style="background:linear-gradient(135deg,#1e3a8a,#3b82f6); border:2px solid rgba(147,197,253,0.35);">
 				<span class="text-xl">📈</span>
-				<span>רכישת מניות</span>
+				<span>{$_('aboutRevenue.ctaShares')}</span>
 			</button>
 			<button
 				onclick={() => window.location.href = '/coordinator/apply'}
 				class="flex items-center justify-center gap-2 px-7 py-3 rounded-xl font-black text-base transition-all duration-200 hover:scale-105 hover:brightness-110 shadow-lg w-64"
 				style="background:linear-gradient(135deg,#78350f,#f59e0b); border:2px solid rgba(251,191,36,0.35); cursor: pointer;">
-				<span>הצטרף לצוות הרכזים</span>
+				<span>{$_('aboutRevenue.ctaJoin')}</span>
 			</button>
 		</div>
 	</div>

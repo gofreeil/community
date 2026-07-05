@@ -16,13 +16,13 @@
                 href="https://gofreeil.com/"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="יוצאים לחירות – לכלל פעילות התנועה החברתית (נפתח בחלון חדש)"
+                aria-label={tFn("chrome.freedom_link_aria")}
                 style="cursor: pointer;"
                 class="flex items-center gap-3 hover:opacity-80 transition-opacity"
             >
                 <img
                     src="/images/yotzim-lecherut.png"
-                    alt="יוצאים לחירות"
+                    alt={tFn("chrome.freedom_movement")}
                     class="h-28 w-28 md:h-32 md:w-32 object-contain rounded-lg hover:scale-105 transition-transform flex-shrink-0"
                 />
 
@@ -31,10 +31,10 @@
                     class="flex md:hidden flex-col text-right leading-tight text-sm"
                 >
                     <p class="text-yellow-400 font-black text-sm">
-                        יוצאים לחירות
+                        {tFn("chrome.freedom_movement")}
                     </p>
                     <p class="text-gray-300 font-normal text-xs">
-                        לכלל פעילות התנועה החברתית
+                        {tFn("chrome.freedom_tagline")}
                     </p>
                 </div>
 
@@ -45,29 +45,29 @@
                     <p
                         class="text-base md:text-lg text-gray-300 font-normal"
                     >
-                        לכלל פעילות התנועה החברתית
+                        {tFn("chrome.freedom_tagline")}
                     </p>
                     <p
                         class="text-lg md:text-xl font-black flex items-center gap-2 justify-end text-yellow-500"
                     >
-                        <span>👉</span> יוצאים לחירות
+                        <span>👉</span> {tFn("chrome.freedom_movement")}
                     </p>
                 </div>
             </a>
 
             <!-- Center: Links -->
             <nav
-                aria-label="ניווט תחתון"
+                aria-label={tFn("chrome.footer_nav_aria")}
                 class="flex items-center gap-4 text-base md:text-lg text-gray-300 font-bold flex-wrap justify-center"
             >
                 <a href="/about/legal" class="hover:text-white transition-colors">
-                    <span class="md:hidden block">תנאי שימוש<br />הצהרת נגישות וכו'</span>
-                    <span class="hidden md:inline-block whitespace-nowrap">תנאי שימוש, הצהרת נגישות וכו'</span>
+                    <span class="md:hidden block">{tFn("chrome.legal_links_l1")}<br />{tFn("chrome.legal_links_l2")}</span>
+                    <span class="hidden md:inline-block whitespace-nowrap">{tFn("chrome.legal_links")}</span>
                 </a>
                 <span class="text-gray-600 font-black" aria-hidden="true">|</span>
-                <a href="mailto:freedomhasbegun@gmail.com" class="hover:text-white transition-colors" aria-label="צור קשר – שלח אימייל">{tFn("contact_us")}</a>
+                <a href="mailto:freedomhasbegun@gmail.com" class="hover:text-white transition-colors" aria-label={tFn("chrome.contact_email_aria")}>{tFn("contact_us")}</a>
                 <span class="text-gray-600 font-black" aria-hidden="true">|</span>
-                <a href="/about/advertise" class="hover:text-white transition-colors">פרסם אצלנו</a>
+                <a href="/about/advertise" class="hover:text-white transition-colors">{tFn("chrome.advertise")}</a>
             </nav>
 
             <!-- Left: Copyright -->

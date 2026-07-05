@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from 'svelte';
+    import { _ } from 'svelte-i18n';
     import CoaliEmbed from './CoaliEmbed.svelte';
     import ReferendumBanner from './ReferendumBanner.svelte';
     import NeighborhoodChat from './NeighborhoodChat.svelte';
@@ -144,7 +145,7 @@
     <!-- Title -->
     <div class="text-center mt-4 md:mt-8 mb-3 md:mb-4">
         <h2 class="text-base md:text-3xl font-black bg-gradient-to-r from-purple-300 via-blue-300 to-cyan-300 bg-clip-text text-transparent">
-            שיח פתוח ומשאלי עם בשכונה
+            {$_('home.stacked_title')}
         </h2>
         <div class="h-px bg-gradient-to-r from-transparent via-blue-400/40 to-transparent mt-2 md:mt-3"></div>
     </div>
@@ -164,7 +165,7 @@
             type="button"
             onclick={() => safeBringFront(active === 'vote' ? 'chat' : 'vote')}
             class="md:hidden absolute left-0 top-0 bottom-0 w-[16%] z-40 cursor-pointer bg-transparent"
-            aria-label="עבור לחלון השני"
+            aria-label={$_('home.switch_window_aria')}
         ></button>
         <!-- VOTE card -->
         <div
@@ -182,7 +183,7 @@
                     type="button"
                     onclick={() => safeBringFront('vote')}
                     class="absolute inset-0 z-30 cursor-pointer"
-                    aria-label="הבא להצבעות"
+                    aria-label={$_('home.bring_vote_aria')}
                 ></button>
             {/if}
         </div>
@@ -196,7 +197,7 @@
                     <svg class="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M12 2C6.48 2 2 6.04 2 11c0 2.6 1.23 4.94 3.2 6.56-.1 1.2-.5 2.86-1.7 4.44 1.9-.2 3.7-.9 5.1-1.9 1.05.3 2.18.46 3.4.46 5.52 0 10-4.04 10-9.56S17.52 2 12 2z"/>
                     </svg>
-                    שיח פתוח
+                    {$_('home.open_chat')}
                 </h3>
                 <div class="flex-1 min-h-0 overflow-x-hidden overflow-y-auto no-scrollbar">
                     <NeighborhoodChat />
@@ -207,7 +208,7 @@
                     type="button"
                     onclick={() => safeBringFront('chat')}
                     class="absolute inset-0 z-30 cursor-pointer"
-                    aria-label="הבא לשיח פתוח"
+                    aria-label={$_('home.bring_chat_aria')}
                 ></button>
             {/if}
         </div>
