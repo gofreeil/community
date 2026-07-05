@@ -443,14 +443,25 @@
                 return `השדה "${field.label}" הוא חובה`;
             }
         }
-        // חובה מיקום: כתובת או פין על המפה (לפחות אחד), אחרת הפריט לא יופיע על המפה.
-        const hasAddressField = config.fields.some(f => f.key === 'address');
-        const hasPinField     = config.fields.some(f => f.type === 'map_pin');
-        if (hasAddressField || hasPinField) {
-            const addressFilled = !!formValues['address']?.trim();
-            const pinPlaced     = pinLat != null && pinLng != null;
-            if (!addressFilled && !pinPlaced) {
-                return 'נא להזין כתובת או לסמן מיקום על המפה';
+        // חובה מיקום שאפשר להציב על המפה - אחת משתי הדרכים:
+        //   1. כתובת מלאה (בשדות בורר-רחוב: רחוב + מספר בית)
+        //   2. נקודה מסומנת על המפה
+        // בלי אחת מהן הפריט לא ימוקם נכון - חוסמים ומדריכים מה להשלים.
+        const addressField = config.fields.find(f => f.key === 'address' && f.type !== 'neighborhood_select');
+        const hasPinField  = config.fields.some(f => f.type === 'map_pin');
+        if (addressField || hasPinField) {
+            const addr      = (formValues['address'] ?? '').trim();
+            const pinPlaced = pinLat != null && pinLng != null;
+            if (!pinPlaced) {
+                if (!addr) {
+                    if (hasPinField) showMap = true; // פותחים את המפה - שהאפשרות השנייה תהיה מול העיניים
+                    return '📍 חסר מיקום לפריט: הזינו כתובת מלאה (רחוב + מספר בית), או סמנו את הנקודה על המפה - אחת מהשתיים מספיקה';
+                }
+                // כתובת מבורר הרחובות בלי מספר בית = חצי כתובת - לא מספיק מדויק למפה
+                if (addressField?.type === 'address' && !/\d/.test(addr)) {
+                    if (hasPinField) showMap = true;
+                    return '📍 הכתובת חסרה מספר בית: השלימו את המספר ליד שם הרחוב, או סמנו את הנקודה המדויקת על המפה';
+                }
             }
         }
         if (!neighborhood) return 'נא לבחור שכונה';
