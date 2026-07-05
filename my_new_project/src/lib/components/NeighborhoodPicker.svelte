@@ -2,14 +2,24 @@
     // בורר מיקום שכונה: התושב לוחץ/גורר פין על המפה כדי לסמן את מיקום השכונה החדשה,
     // או מקליד קואורדינטות ידנית אם יש לו. lat/lng נחשפים ב-bind.
     import { onMount } from 'svelte';
-    import { getCoordsFor } from '$lib/neighborhoodCoords';
+    import { getCoordsFor, hasPreciseCoords } from '$lib/neighborhoodCoords';
     import 'leaflet/dist/leaflet.css';
 
     let {
         city = '',
+        neighborhood = '',
+        restrictToCity = false,
         lat = $bindable<number | null>(null),
         lng = $bindable<number | null>(null),
-    }: { city?: string; lat?: number | null; lng?: number | null } = $props();
+    }: {
+        city?: string;
+        /** כשידועה - המפה נפתחת ממוקדת על השכונה (זום קרוב) במקום על מרכז העיר */
+        neighborhood?: string;
+        /** נועל את הגלילה לסביבת העיר - שהמשתמש לא ישוטט בטעות בכל הארץ */
+        restrictToCity?: boolean;
+        lat?: number | null;
+        lng?: number | null;
+    } = $props();
 
     const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
     const TILE_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
@@ -58,19 +68,43 @@
         }
     });
 
+    // נקודת הפתיחה: שכונה מדויקת (זום קרוב) → מרכז עיר → ברירת מחדל.
+    // שכונה נחשבת מדויקת רק אם יש לה קואורדינטה משלה (שונה ממרכז העיר).
+    function homeView(): { center: [number, number]; zoom: number } {
+        const cityCenter = getCoordsFor(undefined, city);
+        if (neighborhood) {
+            const nb = getCoordsFor(neighborhood, city);
+            if (nb[0] !== cityCenter[0] || nb[1] !== cityCenter[1]) {
+                return { center: nb, zoom: 15 };
+            }
+        }
+        return { center: cityCenter, zoom: 13 };
+    }
+
+    // גבולות שוטטות סביב העיר (±~13 ק"מ) - רק כשהעיר באמת מוכרת לנו,
+    // אחרת (יישוב חדש ללא קואורדינטות) המפה נשארת חופשית.
+    function cityBounds(): [[number, number], [number, number]] | null {
+        if (!restrictToCity || !hasPreciseCoords(undefined, city)) return null;
+        const [cLat, cLng] = getCoordsFor(undefined, city);
+        return [[cLat - 0.12, cLng - 0.15], [cLat + 0.12, cLng + 0.15]];
+    }
+
     // אתחול המפה כשהיא מוכנה
     $effect(() => {
         if (!ready || !L || !mapEl || map) return;
 
+        const home = homeView();
         const center: [number, number] =
-            lat != null && lng != null ? [lat, lng] : getCoordsFor(undefined, city);
+            lat != null && lng != null ? [lat, lng] : home.center;
+        const bounds = cityBounds();
 
         map = L.map(mapEl, {
             zoomControl: true,
             scrollWheelZoom: true,
-            minZoom: 8,
+            minZoom: bounds ? 11 : 8,
             maxZoom: 19,
-        }).setView(center, lat != null && lng != null ? 15 : 13);
+            ...(bounds ? { maxBounds: bounds, maxBoundsViscosity: 1.0 } : {}),
+        }).setView(center, lat != null && lng != null ? 15 : home.zoom);
 
         L.tileLayer(TILE_URL, { attribution: TILE_ATTR, maxZoom: 19 }).addTo(map);
         map.on('click', (e: any) => setPin(e.latlng));
@@ -87,11 +121,21 @@
         };
     });
 
-    // מרכוז מחדש על העיר כשאין עדיין פין והעיר משתנה
+    // מרכוז מחדש כשאין עדיין פין והעיר/שכונה משתנות + עדכון גבולות השוטטות
     $effect(() => {
-        const c = city; // תלות מפורשת
-        if (!map || marker) return;
-        map.setView(getCoordsFor(undefined, c), 13, { animate: true });
+        void city; void neighborhood; // תלות מפורשת
+        if (!map) return;
+        const bounds = cityBounds();
+        if (bounds) {
+            map.setMaxBounds(bounds);
+            map.setMinZoom(11);
+        } else {
+            map.setMaxBounds(null);
+            map.setMinZoom(8);
+        }
+        if (marker) return;
+        const home = homeView();
+        map.setView(home.center, home.zoom, { animate: true });
     });
 </script>
 

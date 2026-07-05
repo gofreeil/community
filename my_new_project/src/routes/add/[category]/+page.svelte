@@ -5,6 +5,7 @@
     import { LS_KEY, DEFAULT_NEIGHBORHOOD, citiesAndNeighborhoods, effectiveNeighborhoods } from '$lib/neighborhoodsData';
     import { getFormMemory, rememberFields } from '$lib/formMemory';
     import NeighborhoodPicker from '$lib/components/NeighborhoodPicker.svelte';
+    import StreetPicker from '$lib/components/StreetPicker.svelte';
     import {
         emptyOpeningHours,
         parseOpeningHours,
@@ -618,6 +619,11 @@
                     </div>
                 </div>
                 <p class="text-gray-400 text-xs mt-1.5">מולא אוטומטית לפי הפרופיל שלך - שנו אם הפרסום נמצא במקום אחר</p>
+                <p class="text-gray-500 text-xs mt-1">
+                    היישוב או השכונה חסרים ברשימה?
+                    <a href="/profile" class="text-amber-300/90 hover:text-amber-200 underline underline-offset-2 transition-colors">אפשר להוסיף אותם דרך הפרופיל</a>
+                    - ולאחר אישור הם יופיעו כאן לכולם
+                </p>
             </div>
 
             {#each config.fields as field}
@@ -919,6 +925,14 @@
                             {/each}
                         </select>
 
+                    {:else if field.type === 'address'}
+                        <StreetPicker
+                            {city}
+                            value={getFieldValue(field.key)}
+                            placeholder={field.placeholder ?? 'שם הרחוב'}
+                            onValueChange={(v) => setFieldValue(field.key, v)}
+                        />
+
                     {:else if field.type === 'map_pin'}
                         {#if !showMap}
                             <button
@@ -929,7 +943,8 @@
                                 📍 סמן מיקום על המפה
                             </button>
                         {:else}
-                            <NeighborhoodPicker {city} bind:lat={pinLat} bind:lng={pinLng} />
+                            <!-- המפה נפתחת ממוקדת על השכונה שנבחרה למעלה, ונעולה לסביבת העיר -->
+                            <NeighborhoodPicker {city} {neighborhood} restrictToCity bind:lat={pinLat} bind:lng={pinLng} />
                             <button
                                 type="button"
                                 onclick={() => { showMap = false; pinLat = null; pinLng = null; }}
