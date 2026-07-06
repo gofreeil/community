@@ -1951,11 +1951,6 @@
 					gotoSection(sc.id as "main" | "messages" | "items" | "levels" | "profile" | "feedback")}
 				class="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-bold bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:bg-purple-600/25 hover:border-purple-500/50 transition-all cursor-pointer"
 			>
-				<span
-					class="w-5 h-5 rounded-md text-black text-xs font-black flex items-center justify-center flex-shrink-0"
-					style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.85"
-					>{sc.num}</span
-				>
 				<span class="text-base leading-none">{sc.icon}</span>
 				<span>{sc.label}</span>
 			</button>
@@ -2034,11 +2029,6 @@
 		<!-- כותרת + כפתור התנתקות -->
 		<div class="flex items-center justify-between mb-5">
 			<div class="flex items-center gap-2">
-				<span
-					class="w-7 h-7 rounded-full text-black text-sm font-black hidden md:flex items-center justify-center flex-shrink-0"
-					style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75"
-					>1</span
-				>
 				<h2 class="text-base font-black text-white">
 					<span class="md:hidden">{tFn("profile.tab_main")}</span>
 					<span class="hidden md:inline"
@@ -2437,11 +2427,6 @@
 			}}
 		>
 			<h2 class="text-xl font-black text-white flex items-center gap-2">
-				<span
-					class="w-7 h-7 rounded-full text-black text-sm font-black hidden md:flex items-center justify-center flex-shrink-0"
-					style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75"
-					>2</span
-				>
 				{tFn("profile.messages_title")}
 			</h2>
 			<div class="flex items-center gap-2">
@@ -2885,11 +2870,6 @@
 			}}
 		>
 			<h2 class="text-xl font-black text-white flex items-center gap-2">
-				<span
-					class="w-7 h-7 rounded-full text-black text-sm font-black hidden md:flex items-center justify-center flex-shrink-0"
-					style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75"
-					>3</span
-				>
 				{tFn("profile.my_assets")}
 			</h2>
 			<svg
@@ -3273,11 +3253,6 @@
 			<h2
 				class="relative text-xl font-black text-white flex items-center gap-2"
 			>
-				<span
-					class="w-7 h-7 rounded-full text-black text-sm font-black hidden md:flex items-center justify-center flex-shrink-0"
-					style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75"
-					>4</span
-				>
 				{tFn("profile.levels_title")}
 			</h2>
 			<!-- סיכום דרגה נוכחית -->
@@ -3621,11 +3596,6 @@
 			}}
 		>
 			<h2 class="text-xl font-black text-white flex items-center gap-2">
-				<span
-					class="w-7 h-7 rounded-full text-black text-sm font-black hidden md:flex items-center justify-center flex-shrink-0"
-					style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75"
-					>5</span
-				>
 				{tFn("section_profile_details")}
 			</h2>
 			<div class="flex items-center gap-2">
@@ -4773,11 +4743,6 @@
 			}}
 		>
 			<h2 class="text-xl font-black text-white flex items-center gap-2">
-				<span
-					class="w-7 h-7 rounded-full text-black text-sm font-black hidden md:flex items-center justify-center flex-shrink-0"
-					style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75"
-					>6</span
-				>
 				{tFn("profile.tab_feedback")}
 			</h2>
 			<svg
