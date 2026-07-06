@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { getDbItemByIdFresh, updateItem, deleteItem, getUserByAnyId } from '$lib/server/db';
+import { getDbItemByIdFresh, updateItem, deleteItem, getUserByAnyId, createItem } from '$lib/server/db';
 import { isSuperAdmin, isCoordinatorOfArea } from '$lib/server/auth';
 import { PLACE_STATUS_VALUES, DELETE_RESTORE_DAYS } from '$lib/placeStatus';
 
@@ -194,8 +194,31 @@ export const PATCH: RequestHandler = async (event) => {
         let extra: Record<string, unknown> = {};
         try { extra = item.extra_fields ? JSON.parse(item.extra_fields) : {}; } catch { extra = {}; }
         extra.deleted_at = new Date().toISOString();
+        delete extra.deletion_warned; // איפוס דגל התזכורת - מחיקה חדשה מתחילה מניין נקי
         try {
             await updateItem(id, { status: 'deleted', extra_fields: extra });
+            // הודעה מיידית לבעלים: הנכס ירד מהמפה ויש 30 יום לשחזור
+            if (item.user_id) {
+                try {
+                    await createItem({
+                        category: 'message',
+                        label: '🗑 הנכס ירד מהמפה',
+                        description: `הנכס "${item.label}" הוסר מהמפה.\n\nהוא שמור בפרופיל שלך בסטטוס "מחוק" וניתן לשחזר אותו תוך 30 יום דרך "הנכסים שלי". לאחר 30 יום הוא יימחק לצמיתות ולא ניתן יהיה לשחזר - רק ליצור נכס חדש.`,
+                        contact: 'מערכת קהילה בשכונה',
+                        user_id: item.user_id,
+                        icon: '🗑',
+                        color: 'red',
+                        extra_fields: {
+                            type: 'item_soft_deleted',
+                            sender_name: 'מערכת קהילה בשכונה',
+                            item_label: item.label,
+                            read: false,
+                        },
+                    });
+                } catch (e) {
+                    console.warn('[items/:id soft_delete] notify failed:', e instanceof Error ? e.message : e);
+                }
+            }
             return json({ success: true });
         } catch (e) {
             console.error('[items/:id PATCH soft_delete] failed:', e);
@@ -218,6 +241,7 @@ export const PATCH: RequestHandler = async (event) => {
             return json({ success: false, message: `חלון השחזור (${DELETE_RESTORE_DAYS} יום) חלף - לא ניתן לשחזר. אפשר ליצור נכס חדש.` }, { status: 400 });
         }
         delete extra.deleted_at;
+        delete extra.deletion_warned;
         try {
             await updateItem(id, { status: 'active', extra_fields: extra });
             return json({ success: true });
