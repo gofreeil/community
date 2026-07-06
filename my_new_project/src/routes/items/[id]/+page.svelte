@@ -949,7 +949,7 @@
                         <span class="text-[11px] text-gray-400 font-bold me-auto">{doneSteps}/{builderSteps.length} הושלמו</span>
                         <button type="button" onclick={finishBuilder}
                             class="text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg px-2.5 py-1 transition-all whitespace-nowrap">
-                            👁️ סיימתי - הצג כמו גולש
+                            סיימתי - הצג כמו גולש
                         </button>
                     </div>
                     {#if builderError}
@@ -977,7 +977,7 @@
                             <a
                                 href={item.category === 'singles' ? `/add/singles?edit=${item.id}` : `/add/${item.category}?edit=${item.id}`}
                                 class="bg-white/5 hover:bg-white/15 border border-white/20 text-gray-300 font-bold text-sm rounded-xl px-3 py-1.5 transition-all backdrop-blur-sm whitespace-nowrap shadow-lg"
-                            >✏️ {canEditPage ? 'טופס עריכה' : 'ערוך פרופיל'}</a>
+                            >✏️ {canEditPage ? 'עריכת טופס' : 'ערוך פרופיל'}</a>
                         {/if}
                     </div>
                 {/if}
