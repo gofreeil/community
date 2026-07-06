@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
+    import { _ } from "svelte-i18n";
     import { browser } from "$app/environment";
     import { goto } from "$app/navigation";
     import { citiesData, citiesAndNeighborhoods, effectiveNeighborhoods, LS_KEY, DEFAULT_NEIGHBORHOOD } from "$lib/neighborhoodsData";
@@ -16,33 +17,33 @@
 
     const packages = [
         {
-            name: "באנר צד",
+            nameKey: "pkg1_name",
             icon: "📌",
-            location: "מופיע בגירסת הדסקטופ",
+            locationKey: "pkg1_loc",
             color: "from-blue-600 to-cyan-600",
             border: "border-blue-500/40",
             bg: "bg-blue-900/10",
-            features: ["חשיפה גבוהה בכל עמוד", "קהל מקומי ממוקד", "לינק לאתר שלך"],
+            featureKeys: ["pkg1_f1", "pkg1_f2", "pkg1_f3"],
             image: "/images/advertisement-page/Desktop-advertisement.png",
         },
         {
-            name: "כרטיס תוכן",
+            nameKey: "pkg2_name",
             icon: "🖼️",
-            location: "בתוכן עמוד הבית",
+            locationKey: "pkg2_loc",
             color: "from-purple-600 to-pink-600",
             border: "border-purple-500/40",
             bg: "bg-purple-900/10",
-            features: ["הופעה על המפה בדיוק בשכונה", "הופעה ברשימת התצוגה", "דף פרטי עם הפרטים"],
+            featureKeys: ["pkg2_f1", "pkg2_f2", "pkg2_f3"],
             image: "/images/advertisement-page/neighborhood-map.png",
         },
         {
-            name: "פרסומת נייד",
+            nameKey: "pkg3_name",
             icon: "📱",
-            location: "באנר במסך מלא",
+            locationKey: "pkg3_loc",
             color: "from-green-600 to-emerald-600",
             border: "border-green-500/40",
             bg: "bg-green-900/10",
-            features: ["פרסומת ל4 שניות כאשר הגולש לוחץ על היתרונות באתר", "כולל דף נחיתה", "קישור ישיר לאתר המפרסם"],
+            featureKeys: ["pkg3_f1", "pkg3_f2", "pkg3_f3"],
             image: "/images/advertisement-page/mobile.png",
             imageScale: 1.45,
             imageOrigin: "65% 0%",
@@ -258,9 +259,9 @@
 
     let neighborhoodLabel = $derived(
         isNational
-            ? "ארצי - כל הארץ"
+            ? $_('advertise.national_all')
             : selectedCities.size === 0
-                ? "בחר עיר / שכונה"
+                ? $_('advertise.pick_city')
                 : selectedCities.size === 1
                     ? [...selectedCities][0]
                     : `${[...selectedCities][0]} +${selectedCities.size - 1}`
@@ -327,7 +328,7 @@
 
     async function sendOrderEmail() {
         if (!userEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userEmail)) {
-            emailError = 'נא להזין כתובת אימייל תקינה';
+            emailError = $_('advertise.err_email');
             return;
         }
         emailError   = '';
@@ -358,26 +359,26 @@
                     coinAnim.trigger(tithe, effectiveTotal, data.fundTotal ?? tithe);
                 }
             } else {
-                emailError = data.message || 'שגיאה בשליחת המייל';
+                emailError = data.message || $_('advertise.err_send');
             }
         } catch {
-            emailError = 'בעיית תקשורת - נסה שוב';
+            emailError = $_('advertise.err_net');
         } finally {
             emailSending = false;
         }
     }
 
     const rows = [
-        { num: 1, type: "פרסומת ארוכה",  half: 5,   total: 30,  single: 25, reach: "לכל שכונה רצויה",   details: "מופיע ל-6 שניות ונעלם 12 שניות" },
-        { num: 2, type: "עסק",            half: 25,  total: 150, single: 35, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
-        { num: 3, type: "חוג",            half: 10,  total: 60,  single: 25, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
-        { num: 4, type: "צימר / סאבלט",  half: 45,  total: 270, single: 60, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
-        { num: 5, type: "דרושים לעבודה", half: 5,   total: 30,  single: 25, reach: "לכל שכונה רצויה",   details: "מופיע רק ברשימה" },
-        { num: 6, type: "פנויים פנויות", half: 10,  total: 60,  single: 15, regularHalf: 20, regularTotal: 120, regularSingle: 30, promo: 'מבצע זמני', reach: "כולל רשימה ארצית",  details: "מופיע רק ברשימה" },
-        { num: 7, type: "מסעדה",          half: 45,  total: 270, single: 60, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
-        { num: 8, type: "בייבי סיטר",    half: 8,   total: 48,  single: 20, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
-        { num: 9, type: "אולמות",         half: 45,  total: 270, single: 60, reach: "לכל שכונה רצויה",   details: "מופיע במפה וברשימה" },
-        { num: 10, type: "מזון מהיר",     half: 30,  total: 180, single: 45, reach: "לכל שכונה רצויה",   details: "פלאפל, שווארמה, פיצה, גלידה" },
+        { num: 1, typeKey: "row_long",       half: 5,   total: 30,  single: 25, reachKey: "reach_any",      detailsKey: "details_banner" },
+        { num: 2, typeKey: "row_business",   half: 25,  total: 150, single: 35, reachKey: "reach_any",      detailsKey: "details_map_list" },
+        { num: 3, typeKey: "row_class",      half: 10,  total: 60,  single: 25, reachKey: "reach_any",      detailsKey: "details_map_list" },
+        { num: 4, typeKey: "row_zimmer",     half: 45,  total: 270, single: 60, reachKey: "reach_any",      detailsKey: "details_map_list" },
+        { num: 5, typeKey: "row_jobs",       half: 5,   total: 30,  single: 25, reachKey: "reach_any",      detailsKey: "details_list_only" },
+        { num: 6, typeKey: "row_singles",    half: 10,  total: 60,  single: 15, regularHalf: 20, regularTotal: 120, regularSingle: 30, promo: true, reachKey: "reach_national", detailsKey: "details_list_only" },
+        { num: 7, typeKey: "row_restaurant", half: 45,  total: 270, single: 60, reachKey: "reach_any",      detailsKey: "details_map_list" },
+        { num: 8, typeKey: "row_babysitter", half: 8,   total: 48,  single: 20, reachKey: "reach_any",      detailsKey: "details_map_list" },
+        { num: 9, typeKey: "row_halls",      half: 45,  total: 270, single: 60, reachKey: "reach_any",      detailsKey: "details_map_list" },
+        { num: 10, typeKey: "row_fastfood",  half: 30,  total: 180, single: 45, reachKey: "reach_any",      detailsKey: "details_fastfood" },
     ];
 
     // ---- Calculator state: each row can be 'half' | 'single' | unset ----
@@ -547,22 +548,22 @@
 
     // Build mailto body
     let mailtoBody = $derived(
-        `ערים: ${neighborhoodLabel} (×${neighborhoodCount} שכונות)%0A` +
+        `${$_('advertise.mail_cities', { values: { label: neighborhoodLabel, n: neighborhoodCount } })}%0A` +
         selectedItems.map(r =>
-            `${r.type}${r.perNeighborhood ? ` (×${neighborhoodCount} שכונות)` : ''} - ${r.plan === 'half' ? `חצי שנה ₪${r.eTotal * r.multiplier}` : `חודש בודד ₪${r.eTotal * r.multiplier}`}`
+            `${$_(`advertise.${r.typeKey}`)}${r.perNeighborhood ? ` ${$_('advertise.mail_x_neighborhoods', { values: { n: neighborhoodCount } })}` : ''} - ${r.plan === 'half' ? $_('advertise.mail_half', { values: { n: r.eTotal * r.multiplier } }) : $_('advertise.mail_single', { values: { n: r.eTotal * r.multiplier } })}`
         ).join('%0A') +
-        (discountValue > 0 ? `%0Aהנחה (${discountLabelText}): -₪${fmt(discountValue)}` : '') +
-        `%0A%0Aסה״כ: ₪${fmt(effectiveTotal)}`
+        (discountValue > 0 ? `%0A${$_('advertise.mail_discount', { values: { label: discountLabelText, n: fmt(discountValue) } })}` : '') +
+        `%0A%0A${$_('advertise.mail_total', { values: { n: fmt(effectiveTotal) } })}`
     );
 
     // wa.me URL - includes the user's phone in the message body if entered
     let whatsappHref = $derived.by(() => {
-        const types    = selectedItems.map(r => r.type).join(', ');
-        const phoneLine = userPhone.trim() ? `%0Aהטלפון שלי: ${userPhone.trim()}` : '';
+        const types    = selectedItems.map(r => $_(`advertise.${r.typeKey}`)).join(', ');
+        const phoneLine = userPhone.trim() ? `%0A${$_('advertise.wa_my_phone', { values: { phone: userPhone.trim() } })}` : '';
         const discountLine = discountValue > 0
-            ? `%0Aהנחה (${discountLabelText}): -₪${fmt(discountValue)}`
+            ? `%0A${$_('advertise.mail_discount', { values: { label: discountLabelText, n: fmt(discountValue) } })}`
             : '';
-        return `https://wa.me/972500000000?text=שלום, אני מעוניין לפרסם: ${types}. סה״כ ₪${fmt(effectiveTotal)}.${discountLine}${phoneLine}`;
+        return `https://wa.me/972500000000?text=${$_('advertise.wa_msg', { values: { types, n: fmt(effectiveTotal) } })}${discountLine}${phoneLine}`;
     });
 </script>
 
@@ -578,11 +579,11 @@
              style="animation: slideDown 0.4s ease-out;">
             <div class="text-3xl mb-2">✅</div>
             <p class="text-green-300 font-black text-base mb-1">
-                "{pendingItemLabel}" נשמר בהצלחה!
+                {$_('advertise.saved_ok', { values: { label: pendingItemLabel } })}
             </p>
             <p class="text-gray-400 text-sm">
-                הפריט כבר מופיע ברשימת השכונה.
-                כעת בחר תוכנית פרסום כדי לשפר את החשיפה שלו ↓
+                {$_('advertise.saved_sub1')}
+                {$_('advertise.saved_sub2')}
             </p>
         </div>
     {/if}
@@ -591,10 +592,10 @@
     <div class="text-center mb-10 md:mb-14">
         <div class="text-5xl mb-4">📢</div>
         <h1 class="text-3xl md:text-5xl font-black bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 bg-clip-text text-transparent mb-4">
-            {pendingItemLabel ? 'שדרג את החשיפה שלך' : 'פרסם באתר הקהילה'}
+            {pendingItemLabel ? $_('advertise.h1_upgrade') : $_('advertise.h1_publish')}
         </h1>
         <p class="text-gray-300 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
-            היחשף לתושבי השכונה ישירות - קהל מקומי, ממוקד ומעורב
+            {$_('advertise.hero_sub')}
         </p>
     </div>
 
@@ -603,36 +604,36 @@
         <div class="mb-10 rounded-2xl border-2 border-green-500/60 bg-gradient-to-br from-green-900/30 to-emerald-900/20 p-6 text-center shadow-lg shadow-green-500/10"
              style="animation: slideDown 0.4s ease-out;">
             <div class="text-4xl mb-2">🎉</div>
-            <h2 class="text-2xl md:text-3xl font-black text-green-300 mb-2">בתקופה הראשונית - הפרסום חינם!</h2>
+            <h2 class="text-2xl md:text-3xl font-black text-green-300 mb-2">{$_('advertise.promo_banner_title')}</h2>
             <p class="text-gray-200 text-base md:text-lg leading-relaxed">
-                בשדה קוד ההנחה שבתחתית הדף רשמו
+                {$_('advertise.promo_banner_p1')}
                 <span class="inline-block bg-green-500/20 border border-green-400/50 rounded-lg px-3 py-0.5 text-green-200 font-black whitespace-nowrap">"{FREE_PROMO_CODE_TEXT}"</span>
                 <br class="hidden md:block" />
-                ותוכלו להעלות את הפרסום <span class="text-green-300 font-black">ללא תשלום</span>.
+                {$_('advertise.promo_banner_p2')} <span class="text-green-300 font-black">{$_('advertise.promo_banner_free')}</span>.
             </p>
         </div>
     {/if}
 
     <!-- Packages -->
-    <h2 class="text-xl md:text-2xl font-black text-white mb-4 text-center">אפשרויות הפרסום</h2>
+    <h2 class="text-xl md:text-2xl font-black text-white mb-4 text-center">{$_('advertise.packages_title')}</h2>
     <div class="grid grid-cols-3 gap-2 md:gap-4 mb-12">
         {#each packages as pkg}
             <div class="rounded-xl border {pkg.border} {pkg.bg} p-2.5 md:p-5 flex flex-col md:flex-row-reverse md:items-stretch md:gap-5">
                 <div class="md:flex-1 flex flex-col">
-                    <h3 class="text-xs md:text-lg font-black text-white mb-2 md:mb-3 leading-tight">{pkg.name}</h3>
-                    <p class="text-[10px] md:text-sm text-gray-400 mb-3 md:mb-5 leading-tight">{pkg.location}</p>
+                    <h3 class="text-xs md:text-lg font-black text-white mb-2 md:mb-3 leading-tight">{$_(`advertise.${pkg.nameKey}`)}</h3>
+                    <p class="text-[10px] md:text-sm text-gray-400 mb-3 md:mb-5 leading-tight">{$_(`advertise.${pkg.locationKey}`)}</p>
                     <ul class="space-y-1 md:space-y-1.5">
-                        {#each pkg.features as feature}
+                        {#each pkg.featureKeys as featureKey}
                             <li class="text-[10px] md:text-sm text-gray-300 flex items-start gap-1 md:gap-1.5 leading-tight">
                                 <span class="text-green-400 flex-shrink-0">✓</span>
-                                {feature}
+                                {$_(`advertise.${featureKey}`)}
                             </li>
                         {/each}
                     </ul>
                 </div>
                 {#if pkg.image}
                     <div class="hidden md:block md:flex-1 md:rounded-lg md:overflow-hidden">
-                        <img src={pkg.image} alt={pkg.name} class="w-full h-full object-cover object-right-top" style={pkg.imageScale ? `transform: scale(${pkg.imageScale}); transform-origin: ${pkg.imageOrigin ?? 'top right'};` : ''} loading="lazy" />
+                        <img src={pkg.image} alt={$_(`advertise.${pkg.nameKey}`)} class="w-full h-full object-cover object-right-top" style={pkg.imageScale ? `transform: scale(${pkg.imageScale}); transform-origin: ${pkg.imageOrigin ?? 'top right'};` : ''} loading="lazy" />
                     </div>
                 {/if}
             </div>
@@ -640,7 +641,7 @@
     </div>
 
     <!-- Pricing Table heading -->
-    <h2 bind:this={pricingHeadingEl} class="text-xl md:text-4xl font-black text-white mb-6 md:mb-8 text-center scroll-mt-4">מחירון</h2>
+    <h2 bind:this={pricingHeadingEl} class="text-xl md:text-4xl font-black text-white mb-6 md:mb-8 text-center scroll-mt-4">{$_('advertise.pricing_title')}</h2>
 
     <!-- Neighborhood picker trigger -->
     <p class="text-gray-300 text-base font-bold text-center mb-3 flex items-center justify-center gap-2 relative"
@@ -648,7 +649,7 @@
         <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
               class:step-num-light={step1NumLight}
               style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">1</span>
-        תחילה בחר עיר / שכונה
+        {$_('advertise.step1_label')}
         {#if tutorialStep === 'pick-city' && !showPicker}
             <span class="tutorial-finger pointer-events-none select-none text-base md:text-lg drop-shadow-[0_0_5px_rgba(245,158,11,0.45)]"
                   aria-hidden="true">👇</span>
@@ -678,12 +679,12 @@
             </div>
             {#if isNational || selectedCities.size > 0}
                 <div class="text-xs md:text-sm font-bold mb-1 {neighborhoodImage ? 'text-amber-200' : 'text-amber-400/90'}">
-                    סה"כ {fmt(neighborhoodCount)} שכונות
+                    {$_('advertise.total_n_neighborhoods', { values: { n: fmt(neighborhoodCount) } })}
                 </div>
             {/if}
             <div class="text-xs md:text-sm flex items-center justify-center
                 {neighborhoodImage ? 'text-gray-200' : 'text-gray-400'}">
-                <span>העיר המסומנת, לחץ לשינוי!</span>
+                <span>{$_('advertise.marked_city')}</span>
             </div>
         </div>
     </button>
@@ -699,21 +700,21 @@
                 <button
                     type="button"
                     onclick={setNational}
-                    title={isNational ? 'לחץ לביטול' : 'בחר ארצי'}
+                    title={isNational ? $_('advertise.click_cancel') : $_('advertise.pick_national')}
                     class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border transition-all font-bold text-base md:text-lg
                         {isNational
                             ? 'border-purple-500 bg-purple-500/20 text-white'
                             : 'border-white/10 bg-white/5 text-gray-300 hover:border-purple-400/40 hover:text-white'}"
                 >
                     <span class="text-xl md:text-2xl">🌍</span>
-                    <span>ארצי - כל הארץ</span>
-                    <span class="text-sm md:text-base font-normal text-gray-400">({fmt(totalNeighborhoodsCount)} - כל השכונות בארץ)</span>
+                    <span>{$_('advertise.national_all')}</span>
+                    <span class="text-sm md:text-base font-normal text-gray-400">{$_('advertise.all_country_count', { values: { n: fmt(totalNeighborhoodsCount) } })}</span>
                     <span class="inline-flex items-center gap-1 text-amber-300 text-sm md:text-base font-black"
                           style="animation: dealPulse 2s ease-in-out infinite;">
-                        🎉 מבצע! 5,000 ₪ לחודש
+                        {$_('advertise.national_deal')}
                     </span>
                     {#if isNational}
-                        <span class="text-purple-300 text-sm font-bold">✓ ביטול ✕</span>
+                        <span class="text-purple-300 text-sm font-bold">{$_('advertise.cancel_check')}</span>
                     {/if}
                 </button>
 
@@ -723,12 +724,12 @@
                         {@const chipCount = nbCount(cityName)}
                         <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-300 text-sm font-bold">
                             {cityName}
-                            <span class="text-[11px] font-normal text-amber-300/80">({fmt(chipCount)} שכונות)</span>
+                            <span class="text-[11px] font-normal text-amber-300/80">{$_('advertise.chip_count', { values: { n: fmt(chipCount) } })}</span>
                             <button
                                 type="button"
                                 onclick={() => removeCity(cityName)}
                                 class="w-5 h-5 rounded-full bg-amber-500/25 hover:bg-red-500/60 text-amber-300 hover:text-white transition-colors leading-none flex items-center justify-center text-xs font-black"
-                                aria-label="הסר {cityName}"
+                                aria-label={$_('advertise.remove_city', { values: { city: cityName } })}
                             >×</button>
                         </span>
                     {/each}
@@ -744,7 +745,7 @@
                         type="text"
                         bind:value={citySearchQuery}
                         onkeydown={onSearchKeydown}
-                        placeholder="שנה או הוסף עיר"
+                        placeholder={$_('advertise.search_city_ph')}
                         class="w-full pr-10 pl-9 py-3 rounded-xl bg-white/5 border-2 border-white/10 focus:border-amber-500/60 focus:bg-white/8 outline-none text-white text-sm font-medium placeholder:text-gray-500 transition-all"
                     />
                     {#if citySearchQuery}
@@ -752,27 +753,27 @@
                             type="button"
                             onclick={() => citySearchQuery = ''}
                             class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white text-base leading-none"
-                            aria-label="נקה חיפוש"
+                            aria-label={$_('advertise.clear_search')}
                         >×</button>
                     {/if}
                 </div>
                 <button
                     type="button"
                     onclick={() => showAllCities = !showAllCities}
-                    title={showAllCities ? 'הסתר רשימה מלאה' : 'דפדף בכל הערים'}
+                    title={showAllCities ? $_('advertise.hide_all_cities') : $_('advertise.browse_all_cities')}
                     class="flex-shrink-0 px-3 rounded-xl border-2 transition-all text-xs font-bold whitespace-nowrap
                         {showAllCities
                             ? 'border-amber-500/60 bg-amber-500/15 text-amber-300'
                             : 'border-white/10 bg-white/3 text-gray-300 hover:border-amber-400/40 hover:text-amber-300'}"
                 >
-                    🏙️ כל הערים
+                    {$_('advertise.all_cities')}
                 </button>
             </div>
 
             <!-- Search results (live) -->
             {#if citySearchQuery.trim()}
                 {#if filteredCities.length === 0}
-                    <p class="text-gray-500 text-sm text-center py-4">לא נמצאו תוצאות עבור "{citySearchQuery}"</p>
+                    <p class="text-gray-500 text-sm text-center py-4">{$_('advertise.no_results', { values: { q: citySearchQuery } })}</p>
                 {:else}
                     <div class="max-h-64 overflow-y-auto rounded-xl border border-white/10 bg-black/20 mb-3">
                         {#each filteredCities as cityEntry, idx}
@@ -791,11 +792,11 @@
                                 <span class="font-bold text-sm flex items-center gap-2">
                                     {cityEntry.city}
                                     {#if !selected && idx === 0}
-                                        <span class="text-[10px] text-amber-400/70 font-normal">↵ לבחירה מהירה</span>
+                                        <span class="text-[10px] text-amber-400/70 font-normal">{$_('advertise.quick_pick')}</span>
                                     {/if}
                                 </span>
                                 <span class="text-xs {selected ? 'text-amber-400/70' : 'text-gray-500'}">
-                                    {selected ? 'נבחר ✓' : `${nbCount(cityEntry.city)} שכונות`}
+                                    {selected ? $_('advertise.selected_mark') : $_('advertise.n_neighborhoods', { values: { n: nbCount(cityEntry.city) } })}
                                 </span>
                             </button>
                         {/each}
@@ -804,7 +805,7 @@
             {:else if !isNational && selectedCities.size === 0}
                 <!-- Popular cities quick-pick - only when nothing is selected and no search active -->
                 <div class="mb-3">
-                    <p class="text-xs text-gray-500 mb-2 font-bold">⚡ ערים פופולריות:</p>
+                    <p class="text-xs text-gray-500 mb-2 font-bold">{$_('advertise.popular_cities')}</p>
                     <div class="flex flex-wrap gap-2">
                         {#each popularCities as city}
                             <button
@@ -834,7 +835,7 @@
                                 {#if selected}<span class="text-amber-400 text-base">✓</span>{/if}
                             </div>
                             <span class="text-sm mt-0.5 {selected ? 'text-amber-400/80' : 'text-gray-400'}">
-                                {nbCount(cityEntry.city)} שכונות
+                                {$_('advertise.n_neighborhoods', { values: { n: nbCount(cityEntry.city) } })}
                             </span>
                         </button>
                     {/each}
@@ -844,18 +845,18 @@
             <!-- Explanation + Confirm - 3-col grid: text right, button centered, left empty (RTL) -->
             <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 items-center gap-3">
                 <p class="text-gray-300 text-sm md:text-base font-medium leading-snug text-center sm:text-right">
-                    המחיר מחושב לפי מספר השכונות<br/>הפעילות בכל עיר.
+                    {$_('advertise.price_calc_l1')}<br/>{$_('advertise.price_calc_l2')}
                 </p>
                 <button
                     type="button"
                     onclick={() => { showPicker = false; citySearchQuery = ''; showAllCities = false; advanceFromCity(); }}
                     class="justify-self-center px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-black font-black text-sm shadow-lg shadow-amber-500/30 hover:scale-[1.02] transition-all flex items-center gap-2"
                 >
-                    ✓ אישור
+                    {$_('advertise.confirm_btn')}
                     {#if isNational}
-                        <span class="text-[11px] font-bold opacity-80">· ארצי ({fmt(totalNeighborhoodsCount)})</span>
+                        <span class="text-[11px] font-bold opacity-80">{$_('advertise.national_suffix', { values: { n: fmt(totalNeighborhoodsCount) } })}</span>
                     {:else if selectedCities.size > 0}
-                        <span class="text-[11px] font-bold opacity-80">· {selectedCities.size === 1 ? `${[...selectedCities][0]}` : `${selectedCities.size} ערים`} ({fmt(neighborhoodCount)})</span>
+                        <span class="text-[11px] font-bold opacity-80">· {selectedCities.size === 1 ? `${[...selectedCities][0]}` : $_('advertise.n_cities', { values: { n: selectedCities.size } })} ({fmt(neighborhoodCount)})</span>
                     {/if}
                 </button>
             </div>
@@ -870,7 +871,7 @@
             <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
                   class:step-num-light={step2NumLight}
                   style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">2</span>
-            בחר את סוג הפרסום
+            {$_('advertise.step2_label')}
             {#if tutorialStep === 'pick-row'}
                 <span class="tutorial-finger pointer-events-none select-none text-base md:text-lg drop-shadow-[0_0_5px_rgba(245,158,11,0.45)]"
                       aria-hidden="true">👇</span>
@@ -883,7 +884,7 @@
             <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
                   class:step-num-light={step3NumLight}
                   style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">3</span>
-            בחר את פרק הזמן
+            {$_('advertise.step3_label')}
             {#if tutorialStep === 'pick-plan'}
                 <span class="tutorial-finger pointer-events-none select-none text-base md:text-lg drop-shadow-[0_0_5px_rgba(245,158,11,0.45)]"
                       aria-hidden="true">👇</span>
@@ -918,9 +919,9 @@
                 <div class="flex items-center justify-between gap-3 mb-2">
                     <div class="flex items-center gap-2 min-w-0">
                         <span class="text-xs font-black text-gray-400 flex-shrink-0">#{row.num}</span>
-                        <span class="font-black text-white text-base truncate">{row.type}</span>
-                        {#if (row as { promo?: string }).promo}
-                            <span class="text-[10px] font-black bg-rose-500/25 text-rose-200 border border-rose-400/50 px-2 py-0.5 rounded-full animate-pulse whitespace-nowrap">🔥 {(row as { promo?: string }).promo}</span>
+                        <span class="font-black text-white text-base truncate">{$_(`advertise.${row.typeKey}`)}</span>
+                        {#if (row as { promo?: boolean }).promo}
+                            <span class="text-[10px] font-black bg-rose-500/25 text-rose-200 border border-rose-400/50 px-2 py-0.5 rounded-full animate-pulse whitespace-nowrap">🔥 {$_('advertise.promo_tag')}</span>
                         {/if}
                     </div>
                     <!-- Toggle -->
@@ -935,7 +936,7 @@
                             onclick={() => setPlan(row.num, 'half')}
                             class="toggle-segment relative z-10 rounded-full px-3 text-xs font-black transition-all duration-200 whitespace-nowrap leading-none flex items-center"
                             style="background: {plan === 'half' ? '#f59e0b' : 'transparent'}; color: {plan === 'half' ? '#000' : plan ? '#9ca3af' : '#e5e7eb'};"
-                        >½שנה</button>
+                        >{$_('advertise.seg_half')}</button>
                         {#if !plan}
                             <span class="self-center text-white/50 text-xs font-black mx-0.5 flex-shrink-0 leading-none">/</span>
                         {/if}
@@ -944,21 +945,21 @@
                             onclick={() => setPlan(row.num, 'single')}
                             class="toggle-segment relative z-10 rounded-full px-3 text-xs font-black transition-all duration-200 whitespace-nowrap leading-none flex items-center"
                             style="background: {plan === 'single' ? '#3b82f6' : 'transparent'}; color: {plan === 'single' ? '#fff' : plan ? '#9ca3af' : '#e5e7eb'};"
-                        >חודש</button>
+                        >{$_('advertise.seg_month')}</button>
                     </div>
                 </div>
                 <!-- Prices row -->
                 <div class="flex gap-4 text-sm mt-1 flex-wrap">
                     <div class="flex items-baseline gap-1">
-                        <span class="text-gray-300 text-sm font-semibold">חצי שנה -</span>
+                        <span class="text-gray-300 text-sm font-semibold">{$_('advertise.half_year')} -</span>
                         {#if (row as { regularHalf?: number }).regularHalf}
                             <span class="text-gray-500 text-xs line-through">₪{fmt((row as { regularHalf?: number }).regularHalf as number)}</span>
                         {/if}
                         <span class="font-black text-amber-400 text-sm">₪{fmt(row.half)}</span>
-                        <span class="text-gray-300 text-sm font-semibold">/חודש</span>
+                        <span class="text-gray-300 text-sm font-semibold">{$_('advertise.per_month_suffix')}</span>
                     </div>
                     <div class="flex items-baseline gap-1">
-                        <span class="text-gray-300 text-sm font-semibold">חודש בודד -</span>
+                        <span class="text-gray-300 text-sm font-semibold">{$_('advertise.single_month')} -</span>
                         {#if (row as { regularSingle?: number }).regularSingle}
                             <span class="text-gray-500 text-xs line-through">₪{fmt((row as { regularSingle?: number }).regularSingle as number)}</span>
                         {/if}
@@ -966,7 +967,7 @@
                     </div>
                 </div>
                 <!-- Details -->
-                <p class="text-sm text-gray-300 mt-1.5 font-medium">{row.reach} · {row.details}</p>
+                <p class="text-sm text-gray-300 mt-1.5 font-medium">{$_(`advertise.${row.reachKey}`)} · {$_(`advertise.${row.detailsKey}`)}</p>
             </div>
         {/each}
     </div>
@@ -977,25 +978,25 @@
             <thead>
                 <tr class="bg-amber-500/20 border-b border-amber-500/30">
                     <th class="px-4 py-4 font-black text-amber-400 text-center">#</th>
-                    <th class="px-4 py-4 font-black text-amber-400">סוג</th>
+                    <th class="px-4 py-4 font-black text-amber-400">{$_('advertise.th_type')}</th>
                     <th class="px-4 py-4 font-black text-amber-400 whitespace-nowrap text-center">
-                        לחודש ₪<br/><span class="text-sm font-normal text-amber-400/70">(חצי שנה)</span>
+                        {$_('advertise.th_per_month')}<br/><span class="text-sm font-normal text-amber-400/70">{$_('advertise.th_half_year_note')}</span>
                     </th>
                     <th class="px-4 py-4 font-black text-amber-400 whitespace-nowrap text-center">
-                        לחודש<br/><span class="text-sm font-normal text-amber-400/70">בודד</span>
+                        {$_('advertise.th_per_month2')}<br/><span class="text-sm font-normal text-amber-400/70">{$_('advertise.th_single_note')}</span>
                     </th>
-                    <th class="px-4 py-4 font-black text-amber-400">פריסה</th>
-                    <th class="px-4 py-4 font-black text-amber-400">פרטים</th>
+                    <th class="px-4 py-4 font-black text-amber-400">{$_('advertise.th_reach')}</th>
+                    <th class="px-4 py-4 font-black text-amber-400">{$_('advertise.th_details')}</th>
                     <!-- Toggle column header - last = left side in RTL -->
                     <th class="px-4 py-4 text-center bg-white/8 border-r border-white/10">
                         <div class="flex flex-col items-center gap-1">
-                            <span class="text-xs font-bold text-amber-400/80">½שנה</span>
+                            <span class="text-xs font-bold text-amber-400/80">{$_('advertise.seg_half')}</span>
                             <div class="flex items-center gap-1">
                                 <div class="h-px w-4 bg-amber-500/50"></div>
                                 <div class="w-2 h-2 rounded-full bg-white/30"></div>
                                 <div class="h-px w-4 bg-blue-400/40"></div>
                             </div>
-                            <span class="text-xs font-bold text-blue-400/80">חודש</span>
+                            <span class="text-xs font-bold text-blue-400/80">{$_('advertise.seg_month')}</span>
                         </div>
                     </th>
                 </tr>
@@ -1019,9 +1020,9 @@
                         <td class="px-4 py-4 font-bold relative group/typecell
                             {plan === 'half' ? 'text-amber-300' : plan === 'single' ? 'text-blue-300' : 'text-white'}">
                             <div class="flex items-center gap-2 flex-wrap">
-                                <span>{row.type}</span>
-                                {#if (row as { promo?: string }).promo}
-                                    <span class="text-[10px] font-black bg-rose-500/25 text-rose-200 border border-rose-400/50 px-2 py-0.5 rounded-full animate-pulse whitespace-nowrap">🔥 {(row as { promo?: string }).promo}</span>
+                                <span>{$_(`advertise.${row.typeKey}`)}</span>
+                                {#if (row as { promo?: boolean }).promo}
+                                    <span class="text-[10px] font-black bg-rose-500/25 text-rose-200 border border-rose-400/50 px-2 py-0.5 rounded-full animate-pulse whitespace-nowrap">🔥 {$_('advertise.promo_tag')}</span>
                                 {/if}
                             </div>
                             {#if row.num === 1}
@@ -1030,7 +1031,7 @@
                                             opacity-0 group-hover/typecell:opacity-100 transition-opacity duration-200
                                             bg-gray-900 border border-purple-500/60 text-white text-xs font-medium
                                             px-3 py-1.5 rounded-lg shadow-xl whitespace-nowrap">
-                                    📢 הפרסומות שבצד ימין
+                                    {$_('advertise.tip_right_ads')}
                                     <div class="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0
                                                 border-x-4 border-x-transparent border-t-4 border-t-gray-900"></div>
                                 </div>
@@ -1046,7 +1047,7 @@
                                 {#if (row as { regularTotal?: number }).regularTotal}
                                     <span class="text-gray-500 text-[11px] line-through font-bold me-1">₪{fmt((row as { regularTotal?: number }).regularTotal as number)}</span>
                                 {/if}
-                                סה"כ ₪{fmt(row.total)}
+                                {$_('advertise.total_price', { values: { n: fmt(row.total) } })}
                             </span>
                         </td>
 
@@ -1057,8 +1058,8 @@
                             <span class="font-bold {plan === 'single' ? 'text-blue-300' : 'text-gray-300'}">₪{fmt(row.single)}</span>
                         </td>
 
-                        <td class="px-4 py-4 text-gray-300 text-sm">{row.reach}</td>
-                        <td class="px-4 py-4 text-gray-400 text-sm">{row.details}</td>
+                        <td class="px-4 py-4 text-gray-300 text-sm">{$_(`advertise.${row.reachKey}`)}</td>
+                        <td class="px-4 py-4 text-gray-400 text-sm">{$_(`advertise.${row.detailsKey}`)}</td>
 
                         <!-- 3-state toggle - last column = left side in RTL -->
                         <td class="px-3 py-3 text-center border-r border-white/10 relative"
@@ -1088,8 +1089,8 @@
                                         onclick={() => setPlan(row.num, 'half')}
                                         class="toggle-segment relative z-10 rounded-full px-3 text-xs font-black transition-all duration-200 whitespace-nowrap leading-none flex items-center"
                                         style="background: {plan === 'half' ? '#f59e0b' : 'transparent'}; color: {plan === 'half' ? '#000' : plan ? '#9ca3af' : '#e5e7eb'};"
-                                        title="חצי שנה"
-                                    >½שנה</button>
+                                        title={$_('advertise.half_year')}
+                                    >{$_('advertise.seg_half')}</button>
 
                                     {#if !plan}
                                         <span class="self-center text-white/50 text-xs font-black mx-0.5 flex-shrink-0 leading-none">/</span>
@@ -1101,8 +1102,8 @@
                                         onclick={() => setPlan(row.num, 'single')}
                                         class="toggle-segment relative z-10 rounded-full px-3 text-xs font-black transition-all duration-200 whitespace-nowrap leading-none flex items-center"
                                         style="background: {plan === 'single' ? '#3b82f6' : 'transparent'}; color: {plan === 'single' ? '#fff' : plan ? '#9ca3af' : '#e5e7eb'};"
-                                        title="חודש בודד"
-                                    >חודש</button>
+                                        title={$_('advertise.single_month')}
+                                    >{$_('advertise.seg_month')}</button>
                                 </div>
                             </div>
                         </td>
@@ -1121,18 +1122,18 @@
             <!-- Title -->
             <div class="flex flex-wrap items-center justify-center gap-2 mb-6">
                 <span class="text-3xl">🧮</span>
-                <h2 class="text-xl md:text-2xl font-black text-white">מחשבון וסיכום</h2>
+                <h2 class="text-xl md:text-2xl font-black text-white">{$_('advertise.calc_title')}</h2>
                 <span class="bg-white/10 border border-white/20 text-gray-300 text-xs font-black px-2 py-0.5 rounded-full">
-                    {planMap.size} נבחרו
+                    {$_('advertise.n_selected', { values: { n: planMap.size } })}
                 </span>
                 {#if neighborhoodCount > 1}
                     <span class="bg-amber-500/20 border border-amber-500/40 text-amber-400 text-xs font-black px-2 py-0.5 rounded-full">
-                        × {fmt(neighborhoodCount)} שכונות
+                        {$_('advertise.times_neighborhoods', { values: { n: fmt(neighborhoodCount) } })}
                     </span>
                 {/if}
                 {#if isJerusalemOnly}
                     <span class="bg-green-500/20 border border-green-500/40 text-green-300 text-xs font-black px-2 py-0.5 rounded-full">
-                        🎉 הנחת ירושלים - ₪{JERUSALEM_FLAT}/שכונה
+                        {$_('advertise.jerusalem_discount', { values: { n: JERUSALEM_FLAT } })}
                     </span>
                 {/if}
             </div>
@@ -1140,13 +1141,13 @@
             <!-- Selected items breakdown -->
             <div class="bg-black/40 rounded-xl border border-white/10 mb-6 overflow-hidden">
                 <div class="px-4 py-2 bg-white/5 border-b border-white/10 flex items-center justify-between">
-                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">פרסומות שנבחרו</p>
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">{$_('advertise.selected_ads')}</p>
                     <div class="flex gap-3 text-[10px]">
                         {#if halfItems.length > 0}
-                            <span class="text-amber-400 font-bold">🟡 {halfItems.length} חצי שנה</span>
+                            <span class="text-amber-400 font-bold">{$_('advertise.n_half', { values: { n: halfItems.length } })}</span>
                         {/if}
                         {#if singleItems.length > 0}
-                            <span class="text-blue-400 font-bold">🔵 {singleItems.length} חודש בודד</span>
+                            <span class="text-blue-400 font-bold">{$_('advertise.n_single', { values: { n: singleItems.length } })}</span>
                         {/if}
                     </div>
                 </div>
@@ -1158,10 +1159,10 @@
                                     type="button"
                                     onclick={() => { const n = new Map(planMap); n.delete(item.num); planMap = n; }}
                                     class="text-gray-600 hover:text-red-400 transition-colors text-xs flex-shrink-0"
-                                    aria-label="הסר"
+                                    aria-label={$_('advertise.remove')}
                                 >✕</button>
                                 <span class="font-bold text-sm truncate
-                                    {item.plan === 'half' ? 'text-amber-200' : 'text-blue-200'}">{item.type}</span>
+                                    {item.plan === 'half' ? 'text-amber-200' : 'text-blue-200'}">{$_(`advertise.${item.typeKey}`)}</span>
                             </div>
                             <div class="flex items-center gap-3 flex-shrink-0">
                                 <!-- Plan badge -->
@@ -1169,7 +1170,7 @@
                                     {item.plan === 'half'
                                         ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
                                         : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'}">
-                                    {item.plan === 'half' ? '½ שנה' : 'חודש'}
+                                    {item.plan === 'half' ? $_('advertise.badge_half') : $_('advertise.seg_month')}
                                 </span>
                                 <!-- Price (one line - duration sits beside the amount, not stacked) -->
                                 <div class="flex items-center gap-2 whitespace-nowrap">
@@ -1179,7 +1180,7 @@
                                         </span>
                                     {:else}
                                         <span class="text-gray-600 text-xs">
-                                            {item.plan === 'half' ? 'ל-6 חודשים' : 'לחודש'}
+                                            {item.plan === 'half' ? $_('advertise.for_6_months') : $_('advertise.for_month')}
                                         </span>
                                     {/if}
                                     <span class="font-black text-sm {item.plan === 'half' ? 'text-amber-400' : 'text-blue-400'}">
@@ -1202,24 +1203,24 @@
                 <div class="space-y-1.5">
                     {#each selectedItems as item}
                         <p class="text-gray-100 text-base md:text-lg font-bold leading-snug">
-                            <span class="{item.plan === 'half' ? 'text-amber-300' : 'text-blue-300'}">{item.type}:</span>
+                            <span class="{item.plan === 'half' ? 'text-amber-300' : 'text-blue-300'}">{$_(`advertise.${item.typeKey}`)}:</span>
                             <span class="text-white">₪{fmt(item.eMonthly)}</span>
                             {#if item.perNeighborhood}
-                                <span class="text-gray-300 font-medium">לשכונה</span>
+                                <span class="text-gray-300 font-medium">{$_('advertise.per_neighborhood')}</span>
                                 <span class="text-gray-400 mx-0.5">×</span>
                                 <span class="text-white">{fmt(neighborhoodCount)}</span>
-                                <span class="text-gray-300 font-medium">{neighborhoodCount === 1 ? 'שכונה' : 'שכונות'}</span>
+                                <span class="text-gray-300 font-medium">{neighborhoodCount === 1 ? $_('advertise.neighborhood_one') : $_('advertise.neighborhoods_word')}</span>
                                 {#if !isJerusalemOnly}
                                     <span class="text-gray-400 mx-0.5">×</span>
                                     <span class="text-white">{item.monthsCount}</span>
-                                    <span class="text-gray-300 font-medium">{item.monthsCount === 1 ? 'חודש' : 'חודשים'}</span>
+                                    <span class="text-gray-300 font-medium">{item.monthsCount === 1 ? $_('advertise.seg_month') : $_('advertise.months_word')}</span>
                                 {/if}
                             {:else}
-                                <span class="text-gray-300 font-medium">לחודש</span>
+                                <span class="text-gray-300 font-medium">{$_('advertise.for_month')}</span>
                                 {#if item.monthsCount > 1}
                                     <span class="text-gray-400 mx-0.5">×</span>
                                     <span class="text-white">{item.monthsCount}</span>
-                                    <span class="text-gray-300 font-medium">חודשים</span>
+                                    <span class="text-gray-300 font-medium">{$_('advertise.months_word')}</span>
                                 {/if}
                             {/if}
                             <span class="text-gray-400 mx-1">=</span>
@@ -1234,13 +1235,13 @@
                     <p class="text-5xl md:text-6xl font-black inline-block {discountValue > 0 ? 'text-green-400' : 'text-white'}"
                        class:total-flash={flashTotal}>₪{fmt(effectiveTotal)}</p>
                     {#if isFreeExempt}
-                        <span class="text-green-300 text-xs md:text-sm font-black bg-green-500/15 border border-green-500/30 rounded-full px-3 py-1">🎉 {discountLabelText || 'פטור מלא מתשלום'}</span>
+                        <span class="text-green-300 text-xs md:text-sm font-black bg-green-500/15 border border-green-500/30 rounded-full px-3 py-1">🎉 {discountLabelText || $_('advertise.free_exempt')}</span>
                     {:else if discountValue > 0}
                         <span class="text-green-300 text-xs md:text-sm font-black bg-green-500/15 border border-green-500/30 rounded-full px-3 py-1">
-                            {discountEval.matched?.label} · חסכת ₪{fmt(discountValue)}
+                            {discountEval.matched?.label} · {$_('advertise.you_saved', { values: { n: fmt(discountValue) } })}
                         </span>
                     {:else}
-                        <span class="text-gray-400 text-xs md:text-sm font-bold">ניתן לפרוס לתשלומים</span>
+                        <span class="text-gray-400 text-xs md:text-sm font-bold">{$_('advertise.installments')}</span>
                     {/if}
                 </div>
             </div>
@@ -1251,12 +1252,12 @@
                 <div class="bg-green-900/15 p-5 text-center"
                      style="animation: slideDown 0.3s ease-out;">
                     <div class="text-3xl mb-2">✅</div>
-                    <p class="text-green-300 font-black text-base mb-1">המייל נשלח בהצלחה!</p>
+                    <p class="text-green-300 font-black text-base mb-1">{$_('advertise.email_sent')}</p>
                     <p class="text-gray-400 text-sm">
-                        שלחנו אישור הזמנה לכתובת
+                        {$_('advertise.email_sent_to')}
                         <span class="text-green-400 font-bold">{userEmail}</span>
                     </p>
-                    <p class="text-gray-500 text-xs mt-2">ניצור איתך קשר בהקדם לתיאום הסופי</p>
+                    <p class="text-gray-500 text-xs mt-2">{$_('advertise.we_will_contact')}</p>
                 </div>
             {:else}
                 <!-- Email + WhatsApp input - now inside the merged box, no border/rounded of its own -->
@@ -1267,7 +1268,7 @@
                         <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
                               class:step-num-light={step4NumLight}
                               style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">4</span>
-                        📧 קבל אישור הזמנה - מייל / וואטסאפ
+                        {$_('advertise.step4_label')}
                     </p>
                     <div class="flex flex-col gap-2">
                         <!-- Row 1: phone + WhatsApp - equal columns (50/50) so all inputs/buttons align -->
@@ -1286,12 +1287,12 @@
                                 href={whatsappHref}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                aria-label="שלח הזמנת פרסום בוואטסאפ (נפתח בחלון חדש)"
+                                aria-label={$_('advertise.wa_send_aria')}
                                 class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3
                                        font-black text-sm transition-all shadow-lg
                                        bg-green-600 hover:bg-green-500 text-white hover:scale-105 shadow-green-500/20"
                             >
-                                💬 שלח בוואטסאפ
+                                {$_('advertise.wa_send')}
                             </a>
                         </div>
                         <!-- Row 2: email + send-email - same equal columns -->
@@ -1320,9 +1321,9 @@
                                 {#if emailSending}
                                     <span class="inline-block w-4 h-4 border-2 border-gray-500 border-t-amber-400 rounded-full"
                                           style="animation: spin 0.7s linear infinite;"></span>
-                                    שולח…
+                                    {$_('advertise.sending')}
                                 {:else}
-                                    ✉️ שלח תיעוד - ₪{fmt(effectiveTotal)}
+                                    {$_('advertise.send_doc', { values: { n: fmt(effectiveTotal) } })}
                                 {/if}
                             </button>
                         </div>
@@ -1341,14 +1342,14 @@
             {#if halfItems.length > 0 && singleItems.length > 0}
                 <div class="grid grid-cols-2 gap-3 mb-6">
                     <div class="rounded-xl bg-amber-500/10 border border-amber-500/20 p-3 text-center">
-                        <p class="text-[10px] text-amber-400/70 font-bold uppercase mb-1">חצי שנה</p>
+                        <p class="text-[10px] text-amber-400/70 font-bold uppercase mb-1">{$_('advertise.half_year')}</p>
                         <p class="text-xl font-black text-amber-400">₪{fmt(halfItems.reduce((s,r) => s + r.eTotal * r.multiplier, 0))}</p>
-                        <p class="text-[10px] text-gray-500">{halfItems.length} פרסומות · 6 חודשים</p>
+                        <p class="text-[10px] text-gray-500">{$_('advertise.n_ads_6_months', { values: { n: halfItems.length } })}</p>
                     </div>
                     <div class="rounded-xl bg-blue-500/10 border border-blue-500/20 p-3 text-center">
-                        <p class="text-[10px] text-blue-400/70 font-bold uppercase mb-1">חודש בודד</p>
+                        <p class="text-[10px] text-blue-400/70 font-bold uppercase mb-1">{$_('advertise.single_month')}</p>
                         <p class="text-xl font-black text-blue-400">₪{fmt(singleItems.reduce((s,r) => s + r.eTotal * r.multiplier, 0))}</p>
-                        <p class="text-[10px] text-gray-500">{singleItems.length} פרסומות · חודש בודד</p>
+                        <p class="text-[10px] text-gray-500">{$_('advertise.n_ads_single', { values: { n: singleItems.length } })}</p>
                     </div>
                 </div>
             {/if}
@@ -1359,8 +1360,8 @@
         <!-- Empty state -->
         <div class="mb-12 rounded-2xl border-2 border-dashed border-white/10 bg-white/2 p-5 text-center">
             <p class="text-gray-500 text-sm">
-                🧮 בחר את סוג הפרסום ותקופתו כדי לראות את
-                <span class="text-white font-bold">סיכום המחיר!</span>
+                {$_('advertise.empty_calc_pre')}
+                <span class="text-white font-bold">{$_('advertise.empty_calc_strong')}</span>
             </p>
         </div>
     {/if}
@@ -1371,19 +1372,19 @@
         <h2 class="text-xl md:text-2xl font-black text-white mb-3 text-center flex items-center justify-center gap-2">
             <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
                   style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.85">5</span>
-            📅 תקופת הפרסום ותאריך התפוגה
+            {$_('advertise.step5_title')}
         </h2>
 
         <!-- Explainer -->
         <div class="rounded-xl bg-white/3 border border-white/10 p-4 md:p-5 mb-5">
             <p class="text-amber-300 font-black text-sm md:text-base mb-2 flex items-center gap-2">
                 <span class="text-xl">🎁</span>
-                <span>יום העריכה - חינם על חשבון המערכת</span>
+                <span>{$_('advertise.gift_title')}</span>
             </p>
             <ul class="text-gray-200 text-xs md:text-sm leading-relaxed space-y-1.5 pr-6 list-disc list-outside">
-                <li>היום, <strong class="text-amber-200">{fmtDate(today)}</strong>, הוא יום העריכה החינמית - לא נספר בתקופת הפרסום.</li>
-                <li>הפרסומת תרוץ <strong class="text-amber-200">חודש מלא</strong> - עד <strong class="text-amber-200">{fmtDate(expirationDate)} כולל</strong>.</li>
-                <li>תקופת העריכה החינמית נגמרת היום ב<strong class="text-amber-200">23:59</strong>. כדאי לסיים את העריכה לפני זה!</li>
+                <li>{$_('advertise.gift_li1_pre')} <strong class="text-amber-200">{fmtDate(today)}</strong>, {$_('advertise.gift_li1_post')}</li>
+                <li>{$_('advertise.gift_li2_pre')} <strong class="text-amber-200">{$_('advertise.gift_li2_month')}</strong> {$_('advertise.gift_li2_until')} <strong class="text-amber-200">{fmtDate(expirationDate)} {$_('advertise.incl')}</strong>.</li>
+                <li>{$_('advertise.gift_li3_pre')}<strong class="text-amber-200">23:59</strong>{$_('advertise.gift_li3_post')}</li>
             </ul>
         </div>
 
@@ -1394,8 +1395,8 @@
                 <div class="rounded-xl bg-black/30 border border-white/10 p-3">
                     <p class="text-center text-amber-300 font-black text-sm mb-2">{fmtMonthName(anchor)}</p>
                     <div class="grid grid-cols-7 gap-0.5 text-[10px] text-gray-500 mb-1 text-center font-bold">
-                        {#each ["א","ב","ג","ד","ה","ו","ש"] as dow}
-                            <div>{dow}</div>
+                        {#each ['dow_sun','dow_mon','dow_tue','dow_wed','dow_thu','dow_fri','dow_sat'] as dowKey}
+                            <div>{$_(`advertise.${dowKey}`)}</div>
                         {/each}
                     </div>
                     <div class="grid grid-cols-7 gap-0.5">
@@ -1417,8 +1418,8 @@
 
         <!-- Calendar legend -->
         <div class="flex flex-wrap items-center justify-center gap-4 text-xs text-gray-400 mb-5">
-            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-amber-500"></span> היום - יום עריכה חינם</span>
-            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-red-500"></span> תאריך תפוגת הפרסומת</span>
+            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-amber-500"></span> {$_('advertise.legend_today')}</span>
+            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-red-500"></span> {$_('advertise.legend_expiry')}</span>
         </div>
 
         <!-- Confirmation checkbox -->
@@ -1427,11 +1428,11 @@
                    class="mt-0.5 w-5 h-5 rounded border-2 border-amber-500/50 accent-amber-500 cursor-pointer flex-shrink-0" />
             <div class="flex-1">
                 <p class="text-white font-bold text-sm md:text-base mb-1">
-                    הבנתי את אורך התקופה ואת תאריך התפוגה
+                    {$_('advertise.confirm_period')}
                 </p>
                 <p class="text-gray-400 text-xs md:text-sm leading-relaxed">
-                    היום ({fmtDate(today)}) - יום עריכה חינם.
-                    הפרסומת שלי תפעל עד <span class="text-amber-300 font-bold">{fmtDate(expirationDate)} כולל</span>.
+                    {$_('advertise.confirm_period_sub1', { values: { date: fmtDate(today) } })}
+                    {$_('advertise.confirm_period_sub2')} <span class="text-amber-300 font-bold">{fmtDate(expirationDate)} {$_('advertise.incl')}</span>.
                 </p>
             </div>
         </label>
@@ -1447,34 +1448,34 @@
             <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
                   class:step-num-light={step5NumLight}
                   style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">6</span>
-            🔒 תשלום מאובטח
+            {$_('advertise.step6_title')}
         </h2>
         {#if hasSelection && !confirmedPeriod}
             <p class="text-amber-300 text-sm font-bold text-center mb-3 -mt-1">
-                ⬆️ סמן/י תחילה את התיבה למעלה (שלב 5) כדי לפתוח את התשלום
+                {$_('advertise.check_step5_first')}
             </p>
         {/if}
         <p class="text-gray-400 text-sm text-center mb-6">
-            התשלום מתבצע בצורה מאובטחת דרך חברת הסליקה - פרטי האשראי שלך לא מגיעים אלינו
+            {$_('advertise.secure_note')}
         </p>
 
         <!-- ===== Discount drawer (הנחת רכז / בעלים / פטור / קוד מבצע ההשקה) ===== -->
         <div class="mb-6 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 md:p-5">
             <label for="discount-code" class="block text-amber-200 font-black text-sm md:text-base mb-1.5 text-right">
-                🎟️ קוד הנחה
+                {$_('advertise.discount_code')}
             </label>
             {#if FREE_PROMO}
                 <p class="text-green-300 text-xs md:text-sm font-bold mb-2.5 text-right">
-                    🎉 בתקופה הראשונית: רשמו כאן "{FREE_PROMO_CODE_TEXT}" והעלאת הפרסום חינם - ללא תשלום.
+                    {$_('advertise.promo_type_here', { values: { code: FREE_PROMO_CODE_TEXT } })}
                 </p>
             {:else}
-                <p class="text-gray-400 text-xs mb-2.5 text-right">יש לך קוד הנחה? הזן/י אותו כאן והסכום יתעדכן אוטומטית.</p>
+                <p class="text-gray-400 text-xs mb-2.5 text-right">{$_('advertise.discount_have')}</p>
             {/if}
             <input
                 id="discount-code"
                 type="text"
                 bind:value={discountInput}
-                placeholder="הקלד/י כאן את מילות ההנחה"
+                placeholder={$_('advertise.discount_ph')}
                 dir="rtl"
                 class="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3
                        text-white placeholder:text-gray-600 text-sm text-right
@@ -1484,21 +1485,21 @@
                 {#if discountEval.applied && discountEval.matched}
                     <p class="mt-2.5 rounded-lg bg-green-500/10 border border-green-500/30 px-3 py-2 text-green-300 text-sm font-bold text-right">
                         {#if isFreeExempt}
-                            ✅ פטור מלא מתשלום - {discountEval.matched.label}. ניתן להעלות את הפרסום ללא עלות.
+                            {$_('advertise.discount_free_ok', { values: { label: discountEval.matched.label } })}
                         {:else}
-                            ✅ ההנחה הופעלה: {discountEval.matched.label} ({discountEval.matched.percent}%) · חסכת ₪{fmt(discountValue)}
+                            {$_('advertise.discount_applied', { values: { label: discountEval.matched.label, percent: discountEval.matched.percent, n: fmt(discountValue) } })}
                         {/if}
                     </p>
                 {:else if discountEval.reason === 'not-coordinator'}
                     <p class="mt-2.5 rounded-lg bg-red-500/10 border border-red-500/30 px-3 py-2 text-red-300 text-sm font-bold text-right">
-                        ⛔ קוד זה מיועד לרכזים מאושרים בלבד. החשבון שלך אינו מסומן כרכז במערכת.
+                        {$_('advertise.discount_coord_only')}
                     </p>
                 {:else if discountEval.reason === 'inactive'}
                     <p class="mt-2.5 rounded-lg bg-gray-500/10 border border-gray-500/30 px-3 py-2 text-gray-300 text-sm font-bold text-right">
-                        קוד זה אינו פעיל כרגע.
+                        {$_('advertise.discount_inactive')}
                     </p>
                 {:else}
-                    <p class="mt-2.5 text-gray-500 text-xs text-right">הקוד שהוזן אינו מזוהה.</p>
+                    <p class="mt-2.5 text-gray-500 text-xs text-right">{$_('advertise.discount_unknown')}</p>
                 {/if}
             {/if}
         </div>
@@ -1507,13 +1508,13 @@
             <!-- ===== Free exemption flow - upload publication at no cost ===== -->
             <div class="rounded-xl border-2 border-green-500/50 bg-green-900/15 p-6 text-center">
                 <div class="text-3xl mb-3">🎉</div>
-                <h3 class="text-green-300 font-black text-lg mb-1">{discountLabelText || 'פטור מלא מתשלום'}</h3>
-                <p class="text-gray-300 text-sm mb-5">הקוד התקבל - אפשר להעלות את הפרסום ללא כל עלות.</p>
+                <h3 class="text-green-300 font-black text-lg mb-1">{discountLabelText || $_('advertise.free_exempt')}</h3>
+                <p class="text-gray-300 text-sm mb-5">{$_('advertise.code_accepted')}</p>
                 <button
                     type="button"
                     onclick={uploadFree}
                     class="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-black px-7 py-3.5 rounded-xl text-base transition-all hover:scale-105 shadow-lg shadow-green-500/20">
-                    🎨 להעלות את הפרסום בחינם
+                    {$_('advertise.upload_free_btn')}
                 </button>
             </div>
         {:else}
@@ -1525,14 +1526,14 @@
 
         <div class="rounded-xl border-2 border-dashed border-blue-500/40 bg-blue-900/10 p-6 text-center">
             <div class="text-3xl mb-3">💳</div>
-            <h3 class="text-white font-black mb-1">סליקה מאובטחת</h3>
-            <p class="text-gray-400 text-sm mb-4">מחוברים לחברת סליקה מורשית - עסקה מאובטחת ב-SSL</p>
+            <h3 class="text-white font-black mb-1">{$_('advertise.secure_clearing')}</h3>
+            <p class="text-gray-400 text-sm mb-4">{$_('advertise.secure_clearing_sub')}</p>
 
             <!-- Temporary notice - payment processor not yet connected -->
             <p class="mb-4 rounded-xl border border-orange-500/40 bg-orange-500/10 px-4 py-3 text-orange-200 text-sm md:text-base font-bold text-center leading-snug flex flex-col sm:flex-row items-center justify-center gap-2">
                 <span class="text-lg">🚧</span>
-                <span>הסליקה באתר עדיין לא מחוברת - לסיום ההזמנה ולתשלום, צור קשר בוואטסאפ:
-                    <a href="https://wa.me/972508750632?text=שלום, אני מעוניין/ת להשלים תשלום על פרסום (סה״כ ₪{fmt(effectiveTotal)})."
+                <span>{$_('advertise.clearing_soon')}
+                    <a href="https://wa.me/972508750632?text={$_('advertise.wa_pay_msg', { values: { n: fmt(effectiveTotal) } })}"
                        target="_blank" rel="noopener noreferrer"
                        class="text-white font-black underline underline-offset-2 hover:text-orange-100 whitespace-nowrap">
                         050-875-0632 💬
@@ -1541,32 +1542,32 @@
             </p>
 
             <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                <a href="https://wa.me/972508750632?text=שלום, אני מעוניין/ת להשלים תשלום על פרסום באתר. סה״כ: ₪{fmt(effectiveTotal)}. {selectedItems.length > 0 ? `פריטים: ${selectedItems.map(r => r.type).join(', ')}.` : ''}"
+                <a href="https://wa.me/972508750632?text={$_('advertise.wa_pay_msg2', { values: { n: fmt(effectiveTotal) } })} {selectedItems.length > 0 ? $_('advertise.wa_items', { values: { items: selectedItems.map(r => $_(`advertise.${r.typeKey}`)).join(', ') } }) : ''}"
                    target="_blank" rel="noopener noreferrer"
-                   aria-label="לתשלום זמני - צור קשר בוואטסאפ (נפתח בחלון חדש)"
+                   aria-label={$_('advertise.temp_pay_aria')}
                    class="inline-flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-500 text-white font-black px-6 py-3 rounded-xl text-sm transition-all hover:scale-105">
-                    🔗 לדף התשלום - Grow
+                    {$_('advertise.grow_btn')}
                 </a>
                 <a href="/about/advertise/builder"
                    class="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-black px-6 py-3 rounded-xl text-sm transition-all hover:scale-105">
-                    🎨 כבר שילמתי - לבנות את הפרסומת
+                    {$_('advertise.already_paid_btn')}
                 </a>
             </div>
             <p class="mt-4 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-amber-200 text-sm md:text-base font-bold text-center leading-snug flex items-center justify-center gap-2">
                 <span class="text-lg">📞</span>
-                <span>לאחר השלמת הרכישה ניצור איתכם קשר לתיאום הפרסום <span class="text-amber-100 font-black">בהקדם</span></span>
+                <span>{$_('advertise.after_purchase_pre')} <span class="text-amber-100 font-black">{$_('advertise.soon')}</span></span>
             </p>
 
             <!-- After-payment guidance: where to find the builder + draft autosave -->
             <div class="mt-3 rounded-xl border border-green-500/40 bg-green-500/10 px-4 py-3 text-right">
                 <p class="text-green-300 font-black text-sm md:text-base mb-1.5 flex items-center gap-2">
                     <span class="text-lg">💾</span>
-                    <span>אחרי התשלום - איך ממשיכים?</span>
+                    <span>{$_('advertise.after_pay_title')}</span>
                 </p>
                 <ul class="text-gray-200 text-xs md:text-sm leading-relaxed space-y-1 pr-6 list-disc list-outside">
-                    <li>תועברו אוטומטית ל<a href="/about/advertise/builder" class="text-amber-300 hover:text-amber-200 font-bold underline">בילדר הפרסומת</a> - שלב אחר שלב, עם תצוגה מקדימה חיה.</li>
-                    <li>הטיוטה <strong class="text-green-300">נשמרת אוטומטית בכל רגע</strong> - אם הדף נסגר, הכל יישמר.</li>
-                    <li>תוכלו לחזור ולערוך בכל עת מ<a href="/profile" class="text-amber-300 hover:text-amber-200 font-bold underline">הפרופיל האישי שלכם</a> (כרטיס "📝 פרסומת בעריכה").</li>
+                    <li>{$_('advertise.after_li1_pre')}<a href="/about/advertise/builder" class="text-amber-300 hover:text-amber-200 font-bold underline">{$_('advertise.builder_link')}</a> {$_('advertise.after_li1_post')}</li>
+                    <li>{$_('advertise.after_li2_pre')} <strong class="text-green-300">{$_('advertise.autosaved_always')}</strong> {$_('advertise.after_li2_post')}</li>
+                    <li>{$_('advertise.after_li3_pre')}<a href="/profile" class="text-amber-300 hover:text-amber-200 font-bold underline">{$_('advertise.your_profile')}</a> {$_('advertise.after_li3_post')}</li>
                 </ul>
             </div>
         </div>
@@ -1574,14 +1575,14 @@
 
         <div class="flex flex-wrap justify-center gap-4 mt-5">
             {#each [
-                { icon: "🔒", label: "SSL מאובטח" },
-                { icon: "✅", label: "PCI DSS תקן" },
-                { icon: "🏦", label: "בנק ישראל מורשה" },
-                { icon: "↩️", label: "החזר כספי תוך 14 יום" },
+                { icon: "🔒", labelKey: "badge_ssl" },
+                { icon: "✅", labelKey: "badge_pci" },
+                { icon: "🏦", labelKey: "badge_bank" },
+                { icon: "↩️", labelKey: "badge_refund" },
             ] as badge}
                 <div class="flex items-center gap-1.5 text-xs text-gray-400">
                     <span>{badge.icon}</span>
-                    <span>{badge.label}</span>
+                    <span>{$_(`advertise.${badge.labelKey}`)}</span>
                 </div>
             {/each}
         </div>
@@ -1589,16 +1590,16 @@
 
     <!-- Contact CTA -->
     <div class="mt-6 rounded-2xl bg-gradient-to-br from-amber-900/30 to-yellow-900/20 border-2 border-amber-500/40 p-4 md:p-6 text-center">
-        <h2 class="text-lg md:text-xl font-black text-amber-400 mb-3">ליצירת קשר אנושי</h2>
+        <h2 class="text-lg md:text-xl font-black text-amber-400 mb-3">{$_('advertise.human_contact')}</h2>
         <div class="flex flex-col sm:flex-row gap-2 justify-center">
             <a href="mailto:ads@shchuna.co.il"
                class="inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-black font-black px-5 py-2.5 rounded-xl text-sm transition-all hover:scale-105 shadow-lg shadow-amber-500/30">
-                ✉️ שלח מייל
+                {$_('advertise.send_mail_btn')}
             </a>
             <a href="https://wa.me/972500000000" target="_blank" rel="noopener noreferrer"
-               aria-label="צור קשר בוואטסאפ (נפתח בחלון חדש)"
+               aria-label={$_('advertise.wa_contact_aria')}
                class="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-black px-5 py-2.5 rounded-xl text-sm transition-all hover:scale-105 shadow-lg shadow-green-500/30">
-                💬 וואטסאפ
+                {$_('advertise.whatsapp_btn')}
             </a>
         </div>
         <p class="text-gray-500 text-xs mt-3">ads@shchuna.co.il</p>
@@ -1627,20 +1628,20 @@
             <span class="text-2xl flex-shrink-0">📍</span>
             <div class="flex-1 min-w-0">
                 <p class="text-white font-bold text-sm leading-snug">
-                    מפרסם ב: <span class="text-amber-400">{neighborhoodLabel}</span>
+                    {$_('advertise.toast_pub_in')} <span class="text-amber-400">{neighborhoodLabel}</span>
                 </p>
-                <p class="text-gray-400 text-xs mt-0.5">רוצה לפרסם בשכונות נוספות?</p>
+                <p class="text-gray-400 text-xs mt-0.5">{$_('advertise.toast_more_q')}</p>
                 <button
                     type="button"
                     onclick={() => { toastVisible = false; showPicker = true; window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                     class="text-amber-400 text-xs hover:text-amber-300 transition-colors mt-1 underline underline-offset-2 font-bold"
-                >שנה שכונות ←</button>
+                >{$_('advertise.toast_change')}</button>
             </div>
             <button
                 type="button"
                 onclick={() => toastVisible = false}
                 class="text-gray-600 hover:text-white transition-colors text-sm flex-shrink-0 mt-0.5"
-                aria-label="סגור"
+                aria-label={$_('advertise.close')}
             >✕</button>
         </div>
     </div>

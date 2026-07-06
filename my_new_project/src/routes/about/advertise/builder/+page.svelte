@@ -769,26 +769,26 @@
     <div class="max-w-xl mx-auto px-4 py-12 md:py-20 text-center" dir="rtl">
         <div class="text-6xl mb-4">🔒</div>
         <h1 class="text-2xl md:text-4xl font-black text-amber-400 mb-3">
-            דף בניית הפרסומת - נעול
+            {$_('advertise.b_gate_title')}
         </h1>
         <p class="text-gray-300 text-base md:text-lg mb-6 leading-relaxed">
-            הדף הזה זמין רק למפרסמים שהשלימו תשלום.
-            <br />ראיתם את העלות בדף הפרסום ושילמתם דרך הסליקה? אנחנו בודקים ומאשרים גישה.
+            {$_('advertise.b_gate_p1')}
+            <br />{$_('advertise.b_gate_p2')}
         </p>
         <div class="flex flex-col sm:flex-row gap-3 justify-center mb-8">
             <a href="/about/advertise"
                class="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black transition-colors">
-                💳 לדף התשלום
+                {$_('advertise.b_gate_pay')}
             </a>
-            <a href="https://wa.me/972508750632?text=שלום, שילמתי על פרסום ואני רוצה לבנות את הפרסומת באתר"
+            <a href={"https://wa.me/972508750632?text=" + $_('advertise.b_gate_wa_msg')}
                target="_blank" rel="noopener noreferrer"
                class="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-green-600 hover:bg-green-500 text-white font-black transition-colors">
-                💬 שילמתי כבר - צרו קשר
+                {$_('advertise.b_gate_paid_contact')}
             </a>
         </div>
 
         <p class="text-xs text-gray-500 mt-6">
-            🛡️ למפתחים: הדף פתוח ללא הגבלה רק למחוברים בתפקיד <code class="text-amber-300">super_admin</code>.
+            {$_('advertise.b_gate_dev_pre')} <code class="text-amber-300">super_admin</code>.
         </p>
     </div>
 {:else if !accessChecked}
@@ -800,20 +800,19 @@
     <!-- Floating toast: image was auto-compressed -->
     {#if compressNotice.visible}
         <div class="compress-toast" role="status" aria-live="polite">
-            <button type="button" class="compress-toast-close" onclick={dismissCompressNotice} aria-label="סגור הודעה">✕</button>
+            <button type="button" class="compress-toast-close" onclick={dismissCompressNotice} aria-label={$_('advertise.b_close_notice')}>✕</button>
             <div class="flex items-start gap-3">
                 <span class="text-3xl flex-shrink-0">🪄</span>
                 <div class="flex-1 min-w-0 text-right">
                     <p class="font-black text-amber-200 text-sm md:text-base mb-1">
-                        התאמנו את התמונה אוטומטית
+                        {$_('advertise.b_ct_title')}
                     </p>
                     <p class="text-gray-100 text-xs md:text-sm leading-relaxed">
-                        התמונה בפרסומת מוגבלת ל-<strong class="text-amber-200">5 מגה</strong>.
-                        העלית תמונה במשקל <strong class="text-amber-200">{compressNotice.originalMB.toFixed(1)} מגה</strong> -
-                        כדי שהפרסומת תיטען מהר אצל הגולשים, הקטנו את האיכות שלה אוטומטית
-                        ל-<strong class="text-amber-200">{compressNotice.finalMB.toFixed(1)} מגה</strong>.
+                        {$_('advertise.b_ct_p1')}<strong class="text-amber-200">{$_('advertise.b_mb', { values: { n: 5 } })}</strong>.
+                        {$_('advertise.b_ct_p2')} <strong class="text-amber-200">{$_('advertise.b_mb', { values: { n: compressNotice.originalMB.toFixed(1) } })}</strong>
+                        {$_('advertise.b_ct_p3')}<strong class="text-amber-200">{$_('advertise.b_mb', { values: { n: compressNotice.finalMB.toFixed(1) } })}</strong>.
                         <br/>
-                        התמונה נשמרה ככה - אין צורך לעשות כלום.
+                        {$_('advertise.b_ct_p4')}
                     </p>
                 </div>
             </div>
@@ -824,11 +823,11 @@
     <div class="text-center mb-8 md:mb-12">
         <div class="text-5xl mb-3">🎨</div>
         <h1 class="text-3xl md:text-5xl font-black bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 bg-clip-text text-transparent mb-3">
-            בונים את הפרסומת שלי
+            {$_('advertise.b_title')}
         </h1>
         <p class="text-gray-300 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
-            עברנו את שלב התשלום. עכשיו, יחד, ב-5 דקות נבנה פרסומת שתבלוט לתושבי השכונה.
-            <br/>פשוט מלא שלב אחרי שלב - בכל רגע תראה תצוגה מקדימה חיה.
+            {$_('advertise.b_hero_1')}
+            <br/>{$_('advertise.b_hero_2')}
         </p>
 
         <!-- Free-edit countdown banner - only when paidAt is known and not expired yet -->
@@ -838,13 +837,12 @@
                     <span class="text-3xl flex-shrink-0">⏰</span>
                     <div class="flex-1 min-w-0">
                         <p class="font-black text-amber-300 text-sm md:text-base mb-1">
-                            יום העריכה החינמי שלך - נגמר ב-23:59 הערב!
+                            {$_('advertise.b_cd_title')}
                         </p>
                         <p class="text-gray-200 text-xs md:text-sm leading-relaxed mb-2">
-                            נותרו לך <strong class="text-amber-200 text-base">{fmtCountdown(freeMsRemaining)}</strong>
-                            (שעות:דקות) לעריכה ללא תשלום נוסף.
-                            כדאי <strong class="text-amber-200">לסיים את העריכה היום</strong> -
-                            אחרי חצות, זמן העריכה החינמי מסתיים והפרסומת תרוץ עד כולל {fmtDateShort(new Date(paidAt.getTime() + 30*24*60*60*1000))}.
+                            {$_('advertise.b_cd_left')} <strong class="text-amber-200 text-base">{fmtCountdown(freeMsRemaining)}</strong>
+                            {$_('advertise.b_cd_mid')} <strong class="text-amber-200">{$_('advertise.b_cd_finish')}</strong>
+                            {$_('advertise.b_cd_end', { values: { date: fmtDateShort(new Date(paidAt.getTime() + 30*24*60*60*1000)) } })}
                         </p>
                     </div>
                 </div>
@@ -855,11 +853,10 @@
                     <span class="text-2xl flex-shrink-0">⌛</span>
                     <div class="flex-1 min-w-0">
                         <p class="font-black text-red-300 text-sm md:text-base mb-1">
-                            יום העריכה החינמי הסתיים
+                            {$_('advertise.b_exp_title')}
                         </p>
                         <p class="text-gray-200 text-xs md:text-sm leading-relaxed">
-                            הטיוטה עדיין שמורה - אך מעבר לחצות של יום התשלום, הזמן שעובר ללא ניצול הוא בזבוז.
-                            השלם את העריכה בהקדם!
+                            {$_('advertise.b_exp_body')}
                         </p>
                     </div>
                 </div>
@@ -872,14 +869,14 @@
                 <span class="text-2xl flex-shrink-0">💾</span>
                 <div class="flex-1 min-w-0">
                     <p class="font-black text-green-300 text-sm md:text-base mb-1">
-                        הטיוטה שלך נשמרת אוטומטית
+                        {$_('advertise.b_autosave_title')}
                     </p>
                     <p class="text-gray-300 text-xs md:text-sm leading-relaxed">
-                        אם תיסגר הכרטיסייה או יקרה משהו - אל דאגה. כל מה שמילאת ישמר בדפדפן ובחשבון שלך.
+                        {$_('advertise.b_autosave_p1')}
                         <br/>
-                        תמיד תוכל לחזור ולהמשיך מהמקום שעצרת - מתוך
+                        {$_('advertise.b_autosave_p2')}
                         <a href="/profile" class="text-amber-400 hover:text-amber-300 font-bold underline underline-offset-2">
-                            הפרופיל האישי שלך
+                            {$_('advertise.b_your_profile')}
                         </a>.
                     </p>
                 </div>
@@ -888,7 +885,7 @@
 
         <div class="mt-3 flex items-center justify-center gap-3 text-xs text-gray-500">
             <button type="button" onclick={resetDraft} class="text-amber-400 hover:text-amber-300 underline underline-offset-2">
-                איפוס טיוטה והתחלה מחדש
+                {$_('advertise.b_reset')}
             </button>
         </div>
     </div>
@@ -901,22 +898,22 @@
     <section bind:this={stepRefs.image} class="step-card" onclick={() => activeStep === "image" || (activeStep = "image")}>
         <div class="step-head" class:step-title-light={litFlags.image.title}>
             <span class="step-num" class:step-num-light={litFlags.image.num}>1</span>
-            <h2>העלה תמונה ראשית לפרסומת</h2>
+            <h2>{$_('advertise.b_s1_title')}</h2>
             {#if activeStep === "image"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
         </div>
-        <p class="step-help">תמונה איכותית - מוצר, חזית העסק, אווירת השירות. תופיע גם בנייד וגם בדסקטופ. עד 5 מגה - אם תעלו תמונה גדולה יותר נקטין אותה אוטומטית.</p>
+        <p class="step-help">{$_('advertise.b_s1_help')}</p>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!-- Tips first → on RIGHT in RTL grid -->
             <div class="bg-white/3 rounded-2xl border border-white/10 p-4 md:p-6 text-gray-300">
-                <p class="font-bold text-amber-400 mb-3 text-base md:text-xl">💡 טיפים לתמונה מנצחת</p>
+                <p class="font-bold text-amber-400 mb-3 text-base md:text-xl">{$_('advertise.b_tips_title')}</p>
                 <ul class="space-y-2 md:space-y-3 text-[13px] md:text-lg leading-relaxed">
-                    <li>✨ צילום ברור עם תאורה טובה</li>
-                    <li>🎯 פוקוס על המוצר/שירות - לא רקע מבולגן</li>
-                    <li>📐 יחס מומלץ: 4:3 או 16:9 (אופקי)</li>
-                    <li>🚫 בלי טקסט מודבק על התמונה - נכתוב טקסט בנפרד</li>
+                    <li>{$_('advertise.b_tip1')}</li>
+                    <li>{$_('advertise.b_tip2')}</li>
+                    <li>{$_('advertise.b_tip3')}</li>
+                    <li>{$_('advertise.b_tip4')}</li>
                 </ul>
             </div>
 
@@ -928,33 +925,33 @@
                    ondragleave={(e) => dragLeave(e, v => isDraggingMain = v)}
                    ondrop={(e) => handleDrop(e, "main", v => isDraggingMain = v)}>
                 {#if mainImage}
-                    <img src={mainImage} alt="תמונה ראשית"
+                    <img src={mainImage} alt={$_('advertise.b_main_image_alt')}
                          style:object-fit="cover"
                          style:object-position="{mainImageObjectX}% {mainImageObjectY}%" />
-                    <button type="button" class="remove-x" onclick={(e) => { e.preventDefault(); clearImage("main"); }} aria-label="הסר תמונה">✕</button>
+                    <button type="button" class="remove-x" onclick={(e) => { e.preventDefault(); clearImage("main"); }} aria-label={$_('advertise.b_remove_image')}>✕</button>
                     <!-- Directional crop nudges - let user position the image inside the demo frame -->
-                    <button type="button" class="crop-arrow crop-arrow-up"    onclick={(e) => { e.preventDefault(); nudgeMainImage("up"); }}    aria-label="הזז למעלה">▲</button>
-                    <button type="button" class="crop-arrow crop-arrow-down"  onclick={(e) => { e.preventDefault(); nudgeMainImage("down"); }}  aria-label="הזז למטה">▼</button>
-                    <button type="button" class="crop-arrow crop-arrow-left"  onclick={(e) => { e.preventDefault(); nudgeMainImage("left"); }}  aria-label="הזז שמאלה">◀</button>
-                    <button type="button" class="crop-arrow crop-arrow-right" onclick={(e) => { e.preventDefault(); nudgeMainImage("right"); }} aria-label="הזז ימינה">▶</button>
-                    <button type="button" class="crop-reset" onclick={(e) => { e.preventDefault(); mainImageObjectX = 50; mainImageObjectY = 50; }} aria-label="אפס מיקום">⊙</button>
+                    <button type="button" class="crop-arrow crop-arrow-up"    onclick={(e) => { e.preventDefault(); nudgeMainImage("up"); }}    aria-label={$_('advertise.b_nudge_up')}>▲</button>
+                    <button type="button" class="crop-arrow crop-arrow-down"  onclick={(e) => { e.preventDefault(); nudgeMainImage("down"); }}  aria-label={$_('advertise.b_nudge_down')}>▼</button>
+                    <button type="button" class="crop-arrow crop-arrow-left"  onclick={(e) => { e.preventDefault(); nudgeMainImage("left"); }}  aria-label={$_('advertise.b_nudge_left')}>◀</button>
+                    <button type="button" class="crop-arrow crop-arrow-right" onclick={(e) => { e.preventDefault(); nudgeMainImage("right"); }} aria-label={$_('advertise.b_nudge_right')}>▶</button>
+                    <button type="button" class="crop-reset" onclick={(e) => { e.preventDefault(); mainImageObjectX = 50; mainImageObjectY = 50; }} aria-label={$_('advertise.b_reset_pos')}>⊙</button>
                 {:else}
                     <div class="upload-empty">
                         <div class="text-4xl mb-2">📸</div>
                         <p class="font-bold text-base text-white">
-                            {isDraggingMain ? "✨ שחרר כאן" : "לחץ או גרור תמונה לכאן"}
+                            {isDraggingMain ? $_('advertise.b_drop_here') : $_('advertise.b_click_or_drag')}
                         </p>
-                        <p class="text-xs text-gray-400 mt-1">כל סוגי התמונה - עד 5 מגה (גדול יותר → נקטין אוטומטית)</p>
+                        <p class="text-xs text-gray-400 mt-1">{$_('advertise.b_upload_note')}</p>
                     </div>
                 {/if}
                 <input type="file" accept="image/*" onchange={(e) => handleImage(e, "main")} class="hidden" />
             </label>
         </div>
         {#if mainImage}
-            <p class="crop-hint">השתמש בחיצים השקופים שעל התמונה כדי להזיז את התוכן בתוך מסגרת הדמו (חצים ←↑↓→). לאיפוס לחץ ⊙.</p>
+            <p class="crop-hint">{$_('advertise.b_crop_hint')}</p>
             <div class="step-nav-row">
                 <button type="button" class="step-nav-btn" onclick={() => advance("logo")}>
-                    סיימתי למרכז - המשך לשלב הבא ←
+                    {$_('advertise.b_done_centering')}
                 </button>
             </div>
         {/if}
@@ -964,12 +961,12 @@
     <section bind:this={stepRefs.logo} class="step-card">
         <div class="step-head" class:step-title-light={litFlags.logo.title}>
             <span class="step-num" class:step-num-light={litFlags.logo.num}>2</span>
-            <h2>לוגו (אופציונלי)</h2>
+            <h2>{$_('advertise.b_s2_title')}</h2>
             {#if activeStep === "logo"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
         </div>
-        <p class="step-help">העלה לוגו - עדיף עם רקע שקוף (PNG). יוצב <strong class="text-amber-300">קטן בפינה</strong> של הפרסומת. אם אין לוגו - דלג.</p>
+        <p class="step-help">{$_('advertise.b_s2_help_pre')} <strong class="text-amber-300">{$_('advertise.b_s2_help_strong')}</strong> {$_('advertise.b_s2_help_post')}</p>
 
         <div class="flex items-center gap-3 flex-wrap">
             <div class="flex flex-col items-center gap-1">
@@ -980,12 +977,12 @@
                        ondragleave={(e) => dragLeave(e, v => isDraggingLogo = v)}
                        ondrop={(e) => handleDrop(e, "logo", v => isDraggingLogo = v)}>
                     {#if logo}
-                        <img src={logo} alt="לוגו" />
-                        <button type="button" class="remove-x" onclick={(e) => { e.preventDefault(); clearImage("logo"); }} aria-label="הסר לוגו">✕</button>
+                        <img src={logo} alt={$_('advertise.b_logo_alt')} />
+                        <button type="button" class="remove-x" onclick={(e) => { e.preventDefault(); clearImage("logo"); }} aria-label={$_('advertise.b_remove_logo')}>✕</button>
                     {:else}
                         <div class="text-center">
                             <div class="text-2xl mb-1">{isDraggingLogo ? "✨" : "🏷️"}</div>
-                            <p class="text-xs font-bold text-gray-300">{isDraggingLogo ? "שחרר" : "העלה לוגו"}</p>
+                            <p class="text-xs font-bold text-gray-300">{isDraggingLogo ? $_('advertise.b_release') : $_('advertise.b_upload_logo')}</p>
                         </div>
                     {/if}
                     <input type="file" accept="image/*" onchange={(e) => handleImage(e, "logo")} class="hidden" />
@@ -993,7 +990,7 @@
                 {#if logo && logoShape === 'circle' && hasCircleCrop}
                     <button type="button" onclick={openCropper}
                         class="text-[10px] text-amber-300 hover:text-amber-200 underline">
-                        ✂️ ערוך חיתוך
+                        {$_('advertise.b_edit_crop')}
                     </button>
                 {/if}
             </div>
@@ -1002,37 +999,37 @@
                 <!-- Logo shape + position controls - placed side-by-side -->
                 <div class="flex flex-row flex-wrap gap-2 self-center">
                     <div>
-                        <p class="text-xs font-bold text-gray-400 mb-1">צורת חיתוך:</p>
+                        <p class="text-xs font-bold text-gray-400 mb-1">{$_('advertise.b_crop_shape')}</p>
                         <div class="inline-flex rounded-lg border border-white/10 bg-black/20 p-1">
                             <button type="button" onclick={chooseSquare}
                                 class="px-2.5 py-1 rounded-md text-xs font-bold transition-colors
                                        {logoShape === 'square' ? 'bg-amber-500 text-black' : 'text-gray-300 hover:text-white'}">
-                                ⬛ מרובע
+                                {$_('advertise.b_square')}
                             </button>
                             <button type="button" onclick={chooseCircle}
                                 class="px-2.5 py-1 rounded-md text-xs font-bold transition-colors
                                        {logoShape === 'circle' ? 'bg-amber-500 text-black' : 'text-gray-300 hover:text-white'}">
-                                ⚫ עגול
+                                {$_('advertise.b_circle')}
                             </button>
                         </div>
                     </div>
                     <div>
-                        <p class="text-xs font-bold text-gray-400 mb-1">מיקום הלוגו:</p>
+                        <p class="text-xs font-bold text-gray-400 mb-1">{$_('advertise.b_logo_pos')}</p>
                         <div class="inline-flex rounded-lg border border-white/10 bg-black/20 p-1">
                             <button type="button" onclick={() => { logoPosition = "right"; logoPositionExplicit = true; }}
                                 class="px-2.5 py-1 rounded-md text-xs font-bold transition-colors
                                        {logoPosition === 'right' ? 'bg-amber-500 text-black' : 'text-gray-300 hover:text-white'}">
-                                ⬆️ ימין
+                                {$_('advertise.b_pos_right')}
                             </button>
                             <button type="button" onclick={() => { logoPosition = "left"; logoPositionExplicit = true; }}
                                 class="px-2.5 py-1 rounded-md text-xs font-bold transition-colors
                                        {logoPosition === 'left' ? 'bg-amber-500 text-black' : 'text-gray-300 hover:text-white'}">
-                                ⬆️ שמאל
+                                {$_('advertise.b_pos_left')}
                             </button>
                             <button type="button" onclick={() => { logoPosition = "cta"; logoPositionExplicit = true; }}
                                 class="px-2.5 py-1 rounded-md text-xs font-bold transition-colors
                                        {logoPosition === 'cta' ? 'bg-amber-500 text-black' : 'text-gray-300 hover:text-white'}">
-                                ⬇️ למטה
+                                {$_('advertise.b_pos_bottom')}
                             </button>
                         </div>
                     </div>
@@ -1043,40 +1040,40 @@
 
         <div class="step-nav-row">
             <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("logo"))}>
-                ↻ שלב קודם
+                {$_('advertise.b_prev_step')}
             </button>
             <button type="button" class="step-nav-btn" onclick={() => advance("title")}>
-                {logo ? "שלב הבא ←" : "דלג שלב זה →"}
+                {logo ? $_('advertise.b_next_step') : $_('advertise.b_skip_step')}
             </button>
         </div>
 
         <!-- ===== Circular crop modal ===== -->
         {#if cropOpen}
-            <div class="crop-modal-bg" role="dialog" aria-modal="true" aria-label="חיתוך לוגו לעיגול">
+            <div class="crop-modal-bg" role="dialog" aria-modal="true" aria-label={$_('advertise.b_crop_modal_aria')}>
                 <div class="crop-modal">
                     <div class="crop-modal-head">
-                        <h3>חיתוך הלוגו לעיגול</h3>
-                        <button type="button" class="crop-modal-x" onclick={cancelCrop} aria-label="סגור">✕</button>
+                        <h3>{$_('advertise.b_crop_title')}</h3>
+                        <button type="button" class="crop-modal-x" onclick={cancelCrop} aria-label={$_('advertise.close')}>✕</button>
                     </div>
-                    <p class="crop-help">גרור את התמונה לכל כיוון, וזום פנימה/החוצה. החלק שבתוך העיגול הוא מה שיוצג.</p>
+                    <p class="crop-help">{$_('advertise.b_crop_help')}</p>
                     <div class="crop-stage"
                          onpointerdown={cropPointerDown}
                          onpointermove={cropPointerMove}
                          onpointerup={cropPointerUp}
                          onpointercancel={cropPointerUp}
                          onwheel={cropWheel}>
-                        <img src={logoOriginal} alt="לוגו" class="crop-img" draggable="false"
+                        <img src={logoOriginal} alt={$_('advertise.b_logo_alt')} class="crop-img" draggable="false"
                              style:transform="translate({cropOffsetX}px, {cropOffsetY}px) scale({cropZoom})" />
                         <div class="crop-circle-mask"></div>
                     </div>
                     <div class="crop-controls">
-                        <span class="crop-zoom-label">🔍 זום</span>
-                        <input type="range" min="0.3" max="4" step="0.01" bind:value={cropZoom} class="crop-zoom-slider" aria-label="רמת זום" />
+                        <span class="crop-zoom-label">{$_('advertise.b_zoom')}</span>
+                        <input type="range" min="0.3" max="4" step="0.01" bind:value={cropZoom} class="crop-zoom-slider" aria-label={$_('advertise.b_zoom_level')} />
                         <span class="crop-zoom-val">{Math.round(cropZoom * 100)}%</span>
                     </div>
                     <div class="crop-actions">
-                        <button type="button" class="crop-btn-cancel" onclick={cancelCrop}>ביטול</button>
-                        <button type="button" class="crop-btn-confirm" onclick={confirmCrop}>✓ אשר חיתוך</button>
+                        <button type="button" class="crop-btn-cancel" onclick={cancelCrop}>{$_('advertise.b_cancel')}</button>
+                        <button type="button" class="crop-btn-confirm" onclick={confirmCrop}>{$_('advertise.b_confirm_crop')}</button>
                     </div>
                 </div>
             </div>
@@ -1087,48 +1084,48 @@
     <section bind:this={stepRefs.title} class="step-card">
         <div class="step-head" class:step-title-light={litFlags.title.title}>
             <span class="step-num" class:step-num-light={litFlags.title.num}>3</span>
-            <h2>כותרת ראשית</h2>
+            <h2>{$_('advertise.b_s3_title')}</h2>
             {#if activeStep === "title"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
 
             <!-- Title color picker - inline to the left of the heading -->
-            <div class="title-color-rail" aria-label="צבע הכותרת">
-                <span class="title-color-label">בחר צבע כותרת</span>
+            <div class="title-color-rail" aria-label={$_('advertise.b_title_color_aria')}>
+                <span class="title-color-label">{$_('advertise.b_pick_title_color')}</span>
                 {#each [
-                    { c: "#ffffff", label: "לבן" },
-                    { c: "#fbbf24", label: "זהב" },
-                    { c: "#fde047", label: "צהוב" },
-                    { c: "#fb923c", label: "כתום" },
-                    { c: "#f87171", label: "אדום" },
-                    { c: "#f9a8d4", label: "ורוד" },
-                    { c: "#c4b5fd", label: "סגול" },
-                    { c: "#67e8f9", label: "תכלת" },
-                    { c: "#86efac", label: "ירוק" },
-                    { c: "#0f172a", label: "שחור" }
+                    { c: "#ffffff", labelKey: "c_white" },
+                    { c: "#fbbf24", labelKey: "c_gold" },
+                    { c: "#fde047", labelKey: "c_yellow" },
+                    { c: "#fb923c", labelKey: "c_orange" },
+                    { c: "#f87171", labelKey: "c_red" },
+                    { c: "#f9a8d4", labelKey: "c_pink" },
+                    { c: "#c4b5fd", labelKey: "c_purple" },
+                    { c: "#67e8f9", labelKey: "c_cyan" },
+                    { c: "#86efac", labelKey: "c_green" },
+                    { c: "#0f172a", labelKey: "c_black" }
                 ] as p}
                     <button type="button"
                             onclick={() => (titleColor = p.c)}
                             class="title-color-dot"
                             class:selected={titleColor === p.c}
                             style:background={p.c}
-                            title={p.label}
-                            aria-label={p.label}
+                            title={$_(`advertise.${p.labelKey}`)}
+                            aria-label={$_(`advertise.${p.labelKey}`)}
                             aria-pressed={titleColor === p.c}>
                     </button>
                 {/each}
-                <label class="title-color-custom" title="בחר צבע מותאם">
-                    <input type="color" bind:value={titleColor} aria-label="בחירת צבע מותאם" />
+                <label class="title-color-custom" title={$_('advertise.b_custom_color')}>
+                    <input type="color" bind:value={titleColor} aria-label={$_('advertise.b_custom_color_pick')} />
                     <span>🎨</span>
                 </label>
             </div>
         </div>
-        <p class="step-help">שם העסק או המוצר - קצר וברור. עד 35 תווים.</p>
+        <p class="step-help">{$_('advertise.b_s3_help')}</p>
 
         <input type="text" bind:value={title} maxlength="35"
                onfocus={() => activeStep === "title" || (activeStep = "title")}
                onblur={() => title.trim() && commitField("title")}
-               placeholder="לדוגמה: גמ״ח כלי עבודה - קרית משה"
+               placeholder={$_('advertise.b_s3_ph')}
                class="text-input" />
         <div class="flex items-center justify-end gap-2 text-xs text-gray-500 mt-2">
             <span>{title.length}/35</span>
@@ -1137,25 +1134,25 @@
         <!-- Title vertical offset slider - move title up/down on the banner -->
         <div class="mt-4">
             <div class="flex items-center justify-between mb-1.5">
-                <p class="text-sm font-bold text-gray-300">מיקום הכותרת על הבאנר: <span class="text-amber-300">{titleOffsetY > 0 ? `+${titleOffsetY}` : titleOffsetY}px</span></p>
+                <p class="text-sm font-bold text-gray-300">{$_('advertise.b_title_pos')} <span class="text-amber-300">{titleOffsetY > 0 ? `+${titleOffsetY}` : titleOffsetY}px</span></p>
                 <button type="button" onclick={() => (titleOffsetY = 0)}
-                        class="text-[11px] text-gray-400 hover:text-amber-300 underline">איפוס</button>
+                        class="text-[11px] text-gray-400 hover:text-amber-300 underline">{$_('advertise.b_reset_word')}</button>
             </div>
             <input type="range" min="-20" max="60" step="1" bind:value={titleOffsetY}
-                   class="w-full accent-amber-500" aria-label="מיקום אנכי של הכותרת" />
+                   class="w-full accent-amber-500" aria-label={$_('advertise.b_title_pos_aria')} />
             <div class="flex justify-between text-[11px] text-gray-500 mt-1">
-                <span>למעלה ↑</span>
-                <span>למטה ↓</span>
+                <span>{$_('advertise.b_up')}</span>
+                <span>{$_('advertise.b_down')}</span>
             </div>
         </div>
 
         <div class="step-nav-row">
             <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("title"))}>
-                ↻ שלב קודם
+                {$_('advertise.b_prev_step')}
             </button>
             {#if title}
                 <button type="button" class="step-nav-btn" onclick={() => commitField("title")}>
-                    שלב הבא ←
+                    {$_('advertise.b_next_step')}
                 </button>
             {/if}
         </div>
@@ -1165,17 +1162,17 @@
     <section bind:this={stepRefs.gradient} class="step-card">
         <div class="step-head" class:step-title-light={litFlags.gradient.title}>
             <span class="step-num" class:step-num-light={litFlags.gradient.num}>4</span>
-            <h2>🎨 צבע ועיצוב הרצועה - הרקע הצבעוני של הפרסומת</h2>
+            <h2>{$_('advertise.b_s4_title')}</h2>
             {#if activeStep === "gradient"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
         </div>
-        <p class="step-help">בחר את צבע הרצועה האלכסונית שמופיעה על התמונה. הצבע יחול גם על כפתור ה-CTA ועל דף הנחיתה. כוונן את גובה הרצועה כך שיתאים לכמות הטקסט שלך.</p>
+        <p class="step-help">{$_('advertise.b_s4_help')}</p>
 
         <!-- Color palette - 22 gradients in a 2-column grid -->
         <div class="mt-3">
-            <p class="text-sm font-bold text-gray-300 mb-2">צבע הרצועה:</p>
-            <div class="color-rail" aria-label="בחירת צבע פרסומת" style="margin-inline:auto">
+            <p class="text-sm font-bold text-gray-300 mb-2">{$_('advertise.b_band_color')}</p>
+            <div class="color-rail" aria-label={$_('advertise.b_band_color_aria')} style="margin-inline:auto">
                 {#each palettes as p}
                     <button type="button"
                             onclick={() => (gradient = p.cls)}
@@ -1192,22 +1189,22 @@
         <!-- Diagonal band height slider -->
         <div class="mt-5">
             <div class="flex items-center justify-between mb-1.5">
-                <p class="text-sm font-bold text-gray-300">גובה הרצועה הצבעונית: <span class="text-amber-300">{diagHeight}%</span> מגובה התמונה</p>
+                <p class="text-sm font-bold text-gray-300">{$_('advertise.b_band_height')} <span class="text-amber-300">{diagHeight}%</span> {$_('advertise.b_of_image_height')}</p>
             </div>
             <input type="range" min="5" max="50" step="1" bind:value={diagHeight}
-                   class="w-full accent-amber-500" aria-label="גובה הרצועה הצבעונית" />
+                   class="w-full accent-amber-500" aria-label={$_('advertise.b_band_height_aria')} />
             <div class="flex justify-between text-[11px] text-gray-500 mt-1">
-                <span>נמוכה (יותר תמונה גלויה)</span>
-                <span>גבוהה (יותר רקע צבעוני)</span>
+                <span>{$_('advertise.b_band_low')}</span>
+                <span>{$_('advertise.b_band_high')}</span>
             </div>
         </div>
 
         <div class="step-nav-row">
             <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("gradient"))}>
-                ↻ שלב קודם
+                {$_('advertise.b_prev_step')}
             </button>
             <button type="button" class="step-nav-btn" onclick={() => advance("subtitle")}>
-                המשך לשלב הבא ←
+                {$_('advertise.b_continue_next')}
             </button>
         </div>
     </section>
@@ -1216,27 +1213,27 @@
     <section bind:this={stepRefs.subtitle} class="step-card">
         <div class="step-head" class:step-title-light={litFlags.subtitle.title}>
             <span class="step-num" class:step-num-light={litFlags.subtitle.num}>5</span>
-            <h2>כותרת משנה / סלוגן</h2>
+            <h2>{$_('advertise.b_s5_title')}</h2>
             {#if activeStep === "subtitle"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
         </div>
-        <p class="step-help">משפט אחד שמסביר מה אתה מציע ולמה זה שווה לתושבים. עד 70 תווים.</p>
+        <p class="step-help">{$_('advertise.b_s5_help')}</p>
 
         <input type="text" bind:value={subtitle} maxlength="70"
                onfocus={() => activeStep === "subtitle" || (activeStep = "subtitle")}
                onblur={() => subtitle.trim() && commitField("subtitle")}
-               placeholder="לדוגמה: כל כלי עבודה שצריך - בלי תשלום, בלי בירוקרטיה"
+               placeholder={$_('advertise.b_s5_ph')}
                class="text-input" />
         <div class="text-xs text-gray-500 mt-2 text-end">{subtitle.length}/70</div>
 
         <div class="step-nav-row">
             <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("subtitle"))}>
-                ↻ שלב קודם
+                {$_('advertise.b_prev_step')}
             </button>
             {#if subtitle}
                 <button type="button" class="step-nav-btn" onclick={() => commitField("subtitle")}>
-                    שלב הבא ←
+                    {$_('advertise.b_next_step')}
                 </button>
             {/if}
         </div>
@@ -1250,32 +1247,31 @@
              }}>
         <div class="step-head" class:step-title-light={litFlags.hover.title}>
             <span class="step-num" class:step-num-light={litFlags.hover.num}>6</span>
-            <h2>טקסט בריחוף - מה רואים כשהעכבר על הפרסומת</h2>
+            <h2>{$_('advertise.b_s6_title')}</h2>
             {#if activeStep === "hover"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
         </div>
         <p class="step-help">
-            כשמשתמש בדסקטופ מצביע עם העכבר על הפרסומת - הטקסט הזה יופיע במקום התמונה.
+            {$_('advertise.b_s6_help1')}
             <br/>
-            <strong class="text-amber-300">כתוב משפט קצר שמסקרן</strong> את הגולש -
-            אבל ברור מספיק כדי שיבין מיד באיזה מוצר או שירות מדובר.
+            <strong class="text-amber-300">{$_('advertise.b_s6_help_strong')}</strong> {$_('advertise.b_s6_help2')}
         </p>
 
         <textarea bind:value={hoverText} maxlength="90" rows="2"
                   onfocus={() => activeStep === "hover" || (activeStep = "hover")}
                   onblur={() => hoverText.trim() && commitField("hover")}
-                  placeholder="לדוגמה: כלי עבודה לכל בית - להשאלה חינם 🛠️"
+                  placeholder={$_('advertise.b_s6_ph')}
                   class="text-input"></textarea>
         <div class="text-xs text-gray-500 mt-2 text-end">{hoverText.length}/90</div>
 
         <div class="step-nav-row">
             <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("hover"))}>
-                ↻ שלב קודם
+                {$_('advertise.b_prev_step')}
             </button>
             {#if hoverText}
                 <button type="button" class="step-nav-btn" onclick={() => commitField("hover")}>
-                    שלב הבא ←
+                    {$_('advertise.b_next_step')}
                 </button>
             {/if}
         </div>
@@ -1321,7 +1317,7 @@
                                  Image area below is reserved entirely for the photo + diagonal band + subtitle. -->
                             <div class="popup-title-row">
                                 {#if logo}
-                                    <img src={logo} alt="לוגו"
+                                    <img src={logo} alt={$_('advertise.b_logo_alt')}
                                          class="popup-logo-above {logoShape === 'circle' ? 'popup-logo-above-circle' : ''}" />
                                 {/if}
                                 <h3 class="popup-title-above" style:color={titleColor}>{title || "כותרת ראשית"}</h3>
@@ -1389,7 +1385,7 @@
                                     <p class="hover-text">{hoverText || "כאן יופיע הטקסט בריחוף"}</p>
                                 </div>
                                 {#if logo}
-                                    <img src={logo} alt="לוגו"
+                                    <img src={logo} alt={$_('advertise.b_logo_alt')}
                                          class="ad-logo {logoShape === 'circle' ? 'ad-logo-circle' : ''} {logoPosition === 'left' ? 'ad-logo-left' : logoPosition === 'cta' ? 'ad-logo-cta' : 'ad-logo-right'}" />
                                 {/if}
                             </div>
@@ -1409,7 +1405,7 @@
 
         <div class="step-nav-row">
             <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("preview"))}>
-                ↻ שלב קודם
+                {$_('advertise.b_prev_step')}
             </button>
             <div class="relative group">
                 <button type="button" onclick={openHelp}
@@ -1477,7 +1473,7 @@
                         {/if}
                     </div>
                     {#if logo}
-                        <img src={logo} alt="לוגו"
+                        <img src={logo} alt={$_('advertise.b_logo_alt')}
                              class="ad-logo {logoShape === 'circle' ? 'ad-logo-circle' : ''} {logoPosition === 'left' ? 'ad-logo-left' : logoPosition === 'cta' ? 'ad-logo-cta' : 'ad-logo-right'}"
                              style:opacity={activeStep === "hover" ? 0 : 1} />
                     {:else}
@@ -1520,7 +1516,7 @@
             <div class="help-modal-head">
                 <span class="help-modal-icon" aria-hidden="true">🆘</span>
                 <h2 id="help-modal-title">פנייה לעזרה בעיצוב</h2>
-                <button type="button" class="help-close" onclick={closeHelp} aria-label="סגור">×</button>
+                <button type="button" class="help-close" onclick={closeHelp} aria-label={$_('advertise.close')}>×</button>
             </div>
 
             <p class="help-intro">

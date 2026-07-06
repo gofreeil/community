@@ -15,6 +15,55 @@
             <p class="text-gray-400">ניהול תוכן עבור: <strong class="text-white">{data.neighborhoods.join(', ') || '-'}</strong></p>
         </div>
 
+        <!-- נתוני האתר הכלליים - אותו פאנל כמו בלוח הניהול -->
+        <div class="mb-6">
+            <div class="flex items-center gap-2 mb-3">
+                <span class="text-xl">🌍</span>
+                <h2 class="text-white text-lg font-black">נתוני האתר הכלליים</h2>
+            </div>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <!-- משתמשים -->
+                <div class="relative overflow-hidden rounded-2xl border border-blue-500/25 bg-gradient-to-br from-blue-600/15 to-blue-500/5 p-4">
+                    <div class="flex items-center gap-2 text-blue-200/80 text-sm font-bold mb-1">
+                        <span class="text-lg">👥</span> משתמשים
+                    </div>
+                    <div class="text-4xl font-black text-white leading-none tabular-nums">{data.site.totalUsers}</div>
+                    {#if data.site.newUsersThisMonth > 0}
+                        <div class="text-xs text-blue-300/80 mt-1.5 font-bold">+{data.site.newUsersThisMonth} החודש</div>
+                    {/if}
+                </div>
+
+                <!-- פרטים במפה -->
+                <div class="relative overflow-hidden rounded-2xl border border-purple-500/25 bg-gradient-to-br from-purple-600/15 to-purple-500/5 p-4">
+                    <div class="flex items-center gap-2 text-purple-200/80 text-sm font-bold mb-1">
+                        <span class="text-lg">📋</span> פרטים במפה
+                    </div>
+                    <div class="text-4xl font-black text-white leading-none tabular-nums">{data.site.totalItems}</div>
+                    {#if data.site.newItemsThisMonth > 0}
+                        <div class="text-xs text-purple-300/80 mt-1.5 font-bold">+{data.site.newItemsThisMonth} החודש</div>
+                    {/if}
+                </div>
+
+                <!-- רכזים -->
+                <div class="relative overflow-hidden rounded-2xl border border-amber-500/25 bg-gradient-to-br from-amber-600/15 to-amber-500/5 p-4">
+                    <div class="flex items-center gap-2 text-amber-200/80 text-sm font-bold mb-1">
+                        <span class="text-lg">🏘️</span> רכזי שכונות
+                    </div>
+                    <div class="text-4xl font-black text-white leading-none tabular-nums">{data.site.totalCoordinators}</div>
+                    <div class="text-xs text-amber-300/70 mt-1.5 font-bold">מנהלי תוכן פעילים</div>
+                </div>
+
+                <!-- כניסות החודש - מתעדכן פעם ביום -->
+                <div class="relative overflow-hidden rounded-2xl border border-emerald-500/25 bg-gradient-to-br from-emerald-600/15 to-emerald-500/5 p-4">
+                    <div class="flex items-center gap-2 text-emerald-200/80 text-sm font-bold mb-1">
+                        <span class="text-lg">📈</span> כניסות
+                    </div>
+                    <div class="text-4xl font-black text-white leading-none tabular-nums">{data.site.monthlyVisits}</div>
+                    <div class="text-xs text-emerald-300/70 mt-1.5 font-bold">החודש</div>
+                </div>
+            </div>
+        </div>
+
         <!-- לוח בקרה - סיכום השכונה של הרכז בלבד -->
         <div class="mb-6">
             <div class="flex items-center gap-2 mb-3">
@@ -64,55 +113,6 @@
                     </div>
                     <div class="text-4xl font-black text-white leading-none tabular-nums">{data.pendingEventsCount}</div>
                     <div class="text-xs text-amber-300/70 mt-1.5 font-bold">לאישורך</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- נתוני האתר הכלליים - אותו פאנל כמו בלוח הניהול -->
-        <div class="mb-6">
-            <div class="flex items-center gap-2 mb-3">
-                <span class="text-xl">🌍</span>
-                <h2 class="text-white text-lg font-black">נתוני האתר הכלליים</h2>
-            </div>
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                <!-- משתמשים -->
-                <div class="relative overflow-hidden rounded-2xl border border-blue-500/25 bg-gradient-to-br from-blue-600/15 to-blue-500/5 p-4">
-                    <div class="flex items-center gap-2 text-blue-200/80 text-sm font-bold mb-1">
-                        <span class="text-lg">👥</span> משתמשים
-                    </div>
-                    <div class="text-4xl font-black text-white leading-none tabular-nums">{data.site.totalUsers}</div>
-                    {#if data.site.newUsersThisMonth > 0}
-                        <div class="text-xs text-blue-300/80 mt-1.5 font-bold">+{data.site.newUsersThisMonth} החודש</div>
-                    {/if}
-                </div>
-
-                <!-- פרטים במפה -->
-                <div class="relative overflow-hidden rounded-2xl border border-purple-500/25 bg-gradient-to-br from-purple-600/15 to-purple-500/5 p-4">
-                    <div class="flex items-center gap-2 text-purple-200/80 text-sm font-bold mb-1">
-                        <span class="text-lg">📋</span> פרטים במפה
-                    </div>
-                    <div class="text-4xl font-black text-white leading-none tabular-nums">{data.site.totalItems}</div>
-                    {#if data.site.newItemsThisMonth > 0}
-                        <div class="text-xs text-purple-300/80 mt-1.5 font-bold">+{data.site.newItemsThisMonth} החודש</div>
-                    {/if}
-                </div>
-
-                <!-- רכזים -->
-                <div class="relative overflow-hidden rounded-2xl border border-amber-500/25 bg-gradient-to-br from-amber-600/15 to-amber-500/5 p-4">
-                    <div class="flex items-center gap-2 text-amber-200/80 text-sm font-bold mb-1">
-                        <span class="text-lg">🏘️</span> רכזי שכונות
-                    </div>
-                    <div class="text-4xl font-black text-white leading-none tabular-nums">{data.site.totalCoordinators}</div>
-                    <div class="text-xs text-amber-300/70 mt-1.5 font-bold">מנהלי תוכן פעילים</div>
-                </div>
-
-                <!-- כניסות החודש - מתעדכן פעם ביום -->
-                <div class="relative overflow-hidden rounded-2xl border border-emerald-500/25 bg-gradient-to-br from-emerald-600/15 to-emerald-500/5 p-4">
-                    <div class="flex items-center gap-2 text-emerald-200/80 text-sm font-bold mb-1">
-                        <span class="text-lg">📈</span> כניסות
-                    </div>
-                    <div class="text-4xl font-black text-white leading-none tabular-nums">{data.site.monthlyVisits}</div>
-                    <div class="text-xs text-emerald-300/70 mt-1.5 font-bold">החודש</div>
                 </div>
             </div>
         </div>

@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
+    import { _ } from "svelte-i18n";
     import { browser } from "$app/environment";
     import { goto } from "$app/navigation";
 
@@ -119,7 +120,7 @@
 
     async function processImageFile(file: File | null | undefined, target: "landing" | { kind: "product"; id: number }) {
         if (!file) return;
-        if (!file.type.startsWith("image/")) { alert("נא להעלות קובץ תמונה"); return; }
+        if (!file.type.startsWith("image/")) { alert($_("advertise.b_upload_image_file")); return; }
         const MAX_BYTES = 5 * 1024 * 1024;
         const { dataUrl, wasCompressed, originalMB, finalMB } = await compressImageToFit(file, MAX_BYTES);
         if (wasCompressed) showCompressNotice(originalMB, finalMB);
@@ -290,7 +291,7 @@
             });
             if (!res.ok) {
                 const txt = await res.text().catch(() => "");
-                throw new Error(txt || `שגיאה ${res.status}`);
+                throw new Error(txt || $_("advertise.l_err_status", { values: { n: res.status } }));
             }
             submitted = true;
         } catch (e) {
@@ -311,20 +312,20 @@
 
     {#if accessChecked && !accessGranted}
         <div class="rounded-2xl border border-amber-500/40 bg-amber-500/5 p-6 text-center">
-            <h1 class="text-xl font-black text-amber-300 mb-2">דרושה גישה לבונה הפרסומות</h1>
-            <p class="text-sm text-gray-300 mb-4">חזור לדף הראשי של הבונה כדי להמשיך.</p>
+            <h1 class="text-xl font-black text-amber-300 mb-2">{$_("advertise.l_gate_title")}</h1>
+            <p class="text-sm text-gray-300 mb-4">{$_("advertise.l_gate_body")}</p>
             <button type="button" onclick={goBack}
                     class="px-5 py-2.5 rounded-xl bg-amber-500 text-black font-bold">
-                חזרה לבונה
+                {$_("advertise.l_back_builder")}
             </button>
         </div>
     {:else if accessGranted}
 
         {#if compressNotice.visible}
             <div class="compress-toast" role="status" aria-live="polite">
-                <button type="button" class="compress-toast-close" onclick={dismissCompressNotice} aria-label="סגור">✕</button>
+                <button type="button" class="compress-toast-close" onclick={dismissCompressNotice} aria-label={$_("advertise.close")}>✕</button>
                 <p class="text-sm text-amber-100 font-bold m-0">
-                    🗜️ התמונה דחוסה אוטומטית: {compressNotice.originalMB.toFixed(1)}MB → {compressNotice.finalMB.toFixed(1)}MB
+                    {$_("advertise.l_ct_compressed", { values: { a: compressNotice.originalMB.toFixed(1), b: compressNotice.finalMB.toFixed(1) } })}
                 </p>
             </div>
         {/if}
@@ -332,17 +333,16 @@
         <!-- ===== Page header ===== -->
         <header class="text-center mb-8">
             <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 mb-4">
-                <span class="text-amber-300 text-xs font-bold tracking-wider">שלב הבא - עריכת דף הנחיתה</span>
+                <span class="text-amber-300 text-xs font-bold tracking-wider">{$_("advertise.l_badge")}</span>
             </div>
-            <h1 class="text-3xl md:text-4xl font-black text-white mb-3">עכשיו בואו נעצב את דף הנחיתה</h1>
+            <h1 class="text-3xl md:text-4xl font-black text-white mb-3">{$_("advertise.l_title")}</h1>
             <p class="text-gray-300 text-sm md:text-base max-w-2xl mx-auto leading-relaxed">
-                הפרסומת שלך נשמרה כטיוטה. כאן תעצב את הדף הפנימי שיוצג לגולש כשהוא לוחץ על הפרסומת -
-                כותרת, תיאור, יתרונות, תמונה, מוצרים, פרטי קשר, ושעות פעילות.
+                {$_("advertise.l_intro")}
             </p>
             <div class="mt-4">
                 <button type="button" onclick={goBack}
                         class="text-xs text-gray-400 hover:text-amber-300 transition-colors">
-                    ↻ חזרה לעריכת הפרסומת
+                    {$_("advertise.l_back_edit")}
                 </button>
             </div>
         </header>
@@ -353,51 +353,50 @@
         <section class="step-card">
             <div class="step-head">
                 <span class="step-num">1</span>
-                <h2>דף נחיתה - לאן המשתמש יגיע?</h2>
+                <h2>{$_("advertise.l_s1_title")}</h2>
             </div>
-            <p class="step-help">בחר אופציה אחת או יותר - אם יש לך אתר, נשלח את הגולש אליו. אם לא - נשתמש בדף הנחיתה הפנימי שלנו.</p>
+            <p class="step-help">{$_("advertise.l_s1_help")}</p>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="field-label">📞 טלפון לקבלת פניות</label>
+                    <label class="field-label">{$_("advertise.l_phone")}</label>
                     <input type="tel" bind:value={phone} placeholder="050-1234567" class="text-input" />
                 </div>
                 <div>
-                    <label class="field-label">💬 וואטסאפ</label>
+                    <label class="field-label">{$_("advertise.l_whatsapp")}</label>
                     <input type="tel" bind:value={whatsapp} placeholder="050-1234567" class="text-input" />
                 </div>
                 <div>
-                    <label class="field-label">🌐 אתר אינטרנט (אופציונלי)</label>
+                    <label class="field-label">{$_("advertise.l_website")}</label>
                     <input type="url" bind:value={website} placeholder="https://my-site.co.il" class="text-input" />
                 </div>
                 <div>
-                    <label class="field-label">✉️ אימייל</label>
+                    <label class="field-label">{$_("advertise.l_email")}</label>
                     <input type="email" bind:value={email} placeholder="me@example.com" class="text-input" />
                 </div>
 
                 <div class="md:col-span-2">
-                    <label class="field-label">כותרת לדף הנחיתה (אופציונלי - אחרת נשתמש בכותרת הראשית)</label>
-                    <input type="text" bind:value={landingHeadline} placeholder="ברוכים הבאים ל..." class="text-input" />
+                    <label class="field-label">{$_("advertise.l_headline_label")}</label>
+                    <input type="text" bind:value={landingHeadline} placeholder={$_("advertise.l_headline_ph")} class="text-input" />
                 </div>
                 <div class="md:col-span-2">
-                    <label class="field-label">פסקת פתיחה לדף הנחיתה (אופציונלי)</label>
-                    <textarea bind:value={landingPitch} rows="3" placeholder="תיאור קצר על מה שאתם מציעים, למי זה מתאים, ומה הופך אתכם למיוחדים." class="text-input"></textarea>
+                    <label class="field-label">{$_("advertise.l_pitch_label")}</label>
+                    <textarea bind:value={landingPitch} rows="3" placeholder={$_("advertise.l_pitch_ph")} class="text-input"></textarea>
                 </div>
                 <div class="md:col-span-2">
-                    <label class="field-label">תוכן מורחב לדף הנחיתה (אופציונלי)</label>
+                    <label class="field-label">{$_("advertise.l_extended_label")}</label>
                     <p class="text-xs text-gray-400 mb-1.5 leading-relaxed">
-                        מקום להרחיב - סיפור העסק/השירות, פירוט מה אתם מציעים ולמי, ערכים, ניסיון, ומה מבדיל אתכם.
-                        אפשר לכתוב כמה פסקאות (ירידות שורה יישמרו). הטקסט יוצג כסעיף נפרד בדף הנחיתה, מתחת לכותרת הראשית.
+                        {$_("advertise.l_extended_help")}
                     </p>
                     <textarea bind:value={landingExtended} rows="8"
-                              placeholder="לדוגמה: אנחנו פועלים בשכונה כבר 12 שנה ומלווים מאות משפחות בכל גיל. הסטנדרטים שלנו...&#10;&#10;מה שמייחד אותנו: ..."
+                              placeholder={$_("advertise.l_extended_ph")}
                               class="text-input"></textarea>
                 </div>
 
                 <div class="md:col-span-2">
-                    <label class="field-label">🖼️ תמונה לדף הנחיתה (אופציונלי - אחרת נשתמש בתמונת הפרסומת)</label>
+                    <label class="field-label">{$_("advertise.l_image_label")}</label>
                     <p class="text-xs text-gray-400 mb-2 leading-relaxed">
-                        אפשר להעלות תמונה אחרת ספציפית לדף הנחיתה - בדרך כלל תמונה רחבה ואיכותית יותר מזו שבפרסומת הקטנה.
+                        {$_("advertise.l_image_help")}
                     </p>
                     <label class="upload-zone-sm"
                            class:has-image={!!landingImage}
@@ -406,12 +405,12 @@
                            ondragleave={dragLeaveLanding}
                            ondrop={dropLanding}>
                         {#if landingImage}
-                            <img src={landingImage} alt="תמונה לדף נחיתה" />
-                            <button type="button" class="remove-x" onclick={(e) => { e.preventDefault(); clearLandingImage(); }} aria-label="הסר תמונה">✕</button>
+                            <img src={landingImage} alt={$_("advertise.l_image_alt")} />
+                            <button type="button" class="remove-x" onclick={(e) => { e.preventDefault(); clearLandingImage(); }} aria-label={$_("advertise.b_remove_image")}>✕</button>
                         {:else}
                             <div class="text-center">
                                 <div class="text-2xl mb-1">{isDraggingLandingImage ? "✨" : "🖼️"}</div>
-                                <p class="text-xs font-bold text-gray-300">{isDraggingLandingImage ? "שחרר" : "העלה תמונה"}</p>
+                                <p class="text-xs font-bold text-gray-300">{isDraggingLandingImage ? $_("advertise.b_release") : $_("advertise.l_upload_image")}</p>
                             </div>
                         {/if}
                         <input type="file" accept="image/*" onchange={handleLandingImage} class="hidden" />
@@ -419,18 +418,17 @@
                 </div>
 
                 <div class="md:col-span-2">
-                    <label class="field-label">✓ שלושה יתרונות של המוצר/השירות שלך (אופציונלי)</label>
+                    <label class="field-label">{$_("advertise.l_adv_label")}</label>
                     <p class="text-xs text-gray-400 mb-2 leading-relaxed">
-                        כתוב <strong class="text-amber-300">שלושה יתרונות קצרים וברורים</strong> שגורמים לבחור בך - כל יתרון בשורה משלו.
-                        הם יוצגו בדף הנחיתה כרשימה מעוצבת עם סימני וי (✓) על רקע צבע הפרסומת.
+                        {$_("advertise.l_adv_help_pre")} <strong class="text-amber-300">{$_("advertise.l_adv_help_strong")}</strong> {$_("advertise.l_adv_help_post")}
                     </p>
                     <div class="space-y-2">
                         <input type="text" bind:value={landingAdvantages[0]} maxlength="80"
-                               placeholder="יתרון 1 - לדוגמה: איכות חומרי גלם פרימיום בלעדית" class="text-input" />
+                               placeholder={$_("advertise.l_adv1_ph")} class="text-input" />
                         <input type="text" bind:value={landingAdvantages[1]} maxlength="80"
-                               placeholder="יתרון 2 - לדוגמה: שירות אישי 7 ימים בשבוע" class="text-input" />
+                               placeholder={$_("advertise.l_adv2_ph")} class="text-input" />
                         <input type="text" bind:value={landingAdvantages[2]} maxlength="80"
-                               placeholder="יתרון 3 - לדוגמה: אחריות מלאה לשנה" class="text-input" />
+                               placeholder={$_("advertise.l_adv3_ph")} class="text-input" />
                     </div>
                 </div>
             </div>
@@ -440,9 +438,9 @@
         <section class="step-card">
             <div class="step-head">
                 <span class="step-num">2</span>
-                <h2>תמונות מוצרים / שירותים + מחירים</h2>
+                <h2>{$_("advertise.l_s2_title")}</h2>
             </div>
-            <p class="step-help">הוסף עד 3 מוצרים או שירותים. תמונה איכותית ומחיר ברור הם הדבר הכי משכנע.</p>
+            <p class="step-help">{$_("advertise.l_s2_help")}</p>
 
             <div class="space-y-3">
                 {#each products as p, idx (p.id)}
@@ -457,17 +455,17 @@
                                 <img src={p.image} alt={p.name} />
                             {:else}
                                 <div class="text-center text-xs text-gray-400">
-                                    {#if draggingProductId === p.id}✨<br/>שחרר{:else}📷<br/>תמונה{/if}
+                                    {#if draggingProductId === p.id}✨<br/>{$_("advertise.b_release")}{:else}📷<br/>{$_("advertise.l_photo")}{/if}
                                 </div>
                             {/if}
                             <input type="file" accept="image/*" onchange={(e) => handleProductImage(e, p.id)} class="hidden" />
                         </label>
                         <div class="grow grid grid-cols-1 md:grid-cols-3 gap-2">
-                            <input type="text" bind:value={products[idx].name} placeholder="שם המוצר/שירות" class="text-input small" />
-                            <input type="text" bind:value={products[idx].price} placeholder="מחיר (₪)" class="text-input small" />
-                            <input type="text" bind:value={products[idx].description} placeholder="תיאור קצר (אופציונלי)" class="text-input small" />
+                            <input type="text" bind:value={products[idx].name} placeholder={$_("advertise.l_product_name_ph")} class="text-input small" />
+                            <input type="text" bind:value={products[idx].price} placeholder={$_("advertise.l_price_ph")} class="text-input small" />
+                            <input type="text" bind:value={products[idx].description} placeholder={$_("advertise.l_desc_ph")} class="text-input small" />
                         </div>
-                        <button type="button" onclick={() => removeProduct(p.id)} class="remove-btn" aria-label="הסר">✕</button>
+                        <button type="button" onclick={() => removeProduct(p.id)} class="remove-btn" aria-label={$_("advertise.remove")}>✕</button>
                     </div>
                 {/each}
             </div>
@@ -475,7 +473,7 @@
             {#if products.length < 3}
                 <button type="button" onclick={addProduct}
                     class="mt-3 w-full py-3 rounded-xl border-2 border-dashed border-amber-500/40 bg-amber-500/5 text-amber-300 hover:bg-amber-500/10 hover:border-amber-500/70 font-bold text-sm transition-colors">
-                    + הוסף מוצר
+                    {$_("advertise.l_add_product")}
                 </button>
             {/if}
         </section>
@@ -484,16 +482,15 @@
         <section class="step-card">
             <div class="step-head">
                 <span class="step-num">3</span>
-                <h2>מה מייחד אותך?</h2>
+                <h2>{$_("advertise.l_s3_title")}</h2>
             </div>
             <p class="step-help">
-                🌟 <strong class="text-amber-300">זה החלק הכי חשוב!</strong>
-                תושבי השכונה רוצים לדעת - למה דווקא אצלך? נסיון, איכות, מחיר, יחס אישי, ערך מוסף.
-                כתוב 2-3 משפטים שמסבירים את הייחוד שלך.
+                🌟 <strong class="text-amber-300">{$_("advertise.l_s3_help_strong")}</strong>
+                {$_("advertise.l_s3_help")}
             </p>
 
             <textarea bind:value={uniqueness} rows="5" maxlength="500"
-                      placeholder={`לדוגמה:\n• 15 שנות נסיון בשכונה - אנחנו חלק מהקהילה\n• כל המוצרים בייצור בית, ללא חומרים משמרים\n• אחריות מלאה ושירות אישי 24/7`}
+                      placeholder={$_("advertise.l_uniq_ph")}
                       class="text-input"></textarea>
             <div class="text-xs text-gray-500 mt-1 text-left">{uniqueness.length}/500</div>
         </section>
@@ -502,19 +499,19 @@
         <section class="step-card">
             <div class="step-head">
                 <span class="step-num">4</span>
-                <h2>כתובת ושעות פעילות</h2>
+                <h2>{$_("advertise.l_s4_title")}</h2>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="md:col-span-2">
-                    <label class="field-label">📍 כתובת מלאה (רחוב, מספר, עיר)</label>
+                    <label class="field-label">{$_("advertise.l_address_label")}</label>
                     <input type="text" bind:value={address}
-                           placeholder="לדוגמה: בן ציון 12, קרית משה, ירושלים" class="text-input" />
+                           placeholder={$_("advertise.l_address_ph")} class="text-input" />
                 </div>
                 <div class="md:col-span-2">
-                    <label class="field-label">🕒 שעות פעילות (אופציונלי)</label>
+                    <label class="field-label">{$_("advertise.l_hours_label")}</label>
                     <input type="text" bind:value={hours}
-                           placeholder="לדוגמה: א-ה 9:00-19:00, ו 9:00-13:00" class="text-input" />
+                           placeholder={$_("advertise.l_hours_ph")} class="text-input" />
                 </div>
             </div>
         </section>
@@ -523,9 +520,9 @@
         <section class="step-card">
             <div class="step-head">
                 <span class="step-num">🔍</span>
-                <h2>תצוגה מקדימה של דף הנחיתה</h2>
+                <h2>{$_("advertise.l_preview_title")}</h2>
             </div>
-            <p class="step-help">כך ייראה דף הנחיתה שעיצבת - אליו הגולש יגיע בלחיצה על הפרסומת.</p>
+            <p class="step-help">{$_("advertise.l_preview_help")}</p>
 
             <div class="preview-frame landing">
                 <div class="landing-mock">
@@ -535,17 +532,17 @@
                         {/if}
                         <div class="landing-hero-overlay"></div>
                         {#if logo}
-                            <img src={logo} alt="לוגו" class="landing-logo {logoShape === 'circle' ? 'landing-logo-circle' : ''}" />
+                            <img src={logo} alt={$_("advertise.b_logo_alt")} class="landing-logo {logoShape === 'circle' ? 'landing-logo-circle' : ''}" />
                         {/if}
                         <div class="landing-hero-content">
-                            <h1>{landingHeadline || title || "כותרת מרכזית"}</h1>
-                            <p>{landingPitch || subtitle || "תיאור קצר ומושך"}</p>
+                            <h1>{landingHeadline || title || $_("advertise.l_ph_headline")}</h1>
+                            <p>{landingPitch || subtitle || $_("advertise.l_ph_pitch")}</p>
                             {#if phone}
                                 <a href="tel:{phone}" class="landing-cta">📞 {phone}</a>
                             {:else if website}
-                                <a href={website} class="landing-cta">🌐 לאתר המלא</a>
+                                <a href={website} class="landing-cta">{$_("advertise.l_to_site")}</a>
                             {:else}
-                                <span class="landing-cta opacity-60">השלם פרטי קשר →</span>
+                                <span class="landing-cta opacity-60">{$_("advertise.l_complete_contact")}</span>
                             {/if}
                         </div>
                     </header>
@@ -567,31 +564,31 @@
 
                     {#if landingExtended}
                         <section class="landing-section">
-                            <h2>הסיפור שלנו</h2>
+                            <h2>{$_("advertise.l_our_story")}</h2>
                             <p style="white-space: pre-line">{landingExtended}</p>
                         </section>
                     {/if}
 
                     {#if uniqueness}
                         <section class="landing-section">
-                            <h2>למה דווקא אנחנו</h2>
+                            <h2>{$_("advertise.l_why_us")}</h2>
                             <p style="white-space: pre-line">{uniqueness}</p>
                         </section>
                     {/if}
 
                     {#if products.length > 0}
                         <section class="landing-section">
-                            <h2>המוצרים / השירותים שלנו</h2>
+                            <h2>{$_("advertise.l_our_products")}</h2>
                             <div class="products-grid">
                                 {#each products as p}
                                     <div class="product-card">
                                         {#if p.image}
                                             <img src={p.image} alt={p.name} />
                                         {:else}
-                                            <div class="img-placeholder small">תמונה</div>
+                                            <div class="img-placeholder small">{$_("advertise.l_photo")}</div>
                                         {/if}
                                         <div class="product-info">
-                                            <p class="product-name">{p.name || "שם מוצר"}</p>
+                                            <p class="product-name">{p.name || $_("advertise.l_ph_product_name")}</p>
                                             {#if p.description}<p class="product-desc">{p.description}</p>{/if}
                                             {#if p.price}<p class="product-price">₪{p.price}</p>{/if}
                                         </div>
@@ -602,10 +599,10 @@
                     {/if}
 
                     <section class="landing-section landing-contact">
-                        <h2>צור קשר</h2>
+                        <h2>{$_("advertise.l_contact")}</h2>
                         <ul>
                             {#if phone}<li>📞 <a href="tel:{phone}">{phone}</a></li>{/if}
-                            {#if whatsapp}<li>💬 <a href="https://wa.me/{whatsapp.replace(/\D/g,'')}">וואטסאפ {whatsapp}</a></li>{/if}
+                            {#if whatsapp}<li>💬 <a href="https://wa.me/{whatsapp.replace(/\D/g,'')}">{$_("advertise.l_wa_label", { values: { phone: whatsapp } })}</a></li>{/if}
                             {#if email}<li>✉️ <a href="mailto:{email}">{email}</a></li>{/if}
                             {#if website}<li>🌐 <a href={website} target="_blank" rel="noopener">{website}</a></li>{/if}
                             {#if address}<li>📍 {address}</li>{/if}
@@ -620,31 +617,31 @@
         <section class="step-card">
             <div class="step-head">
                 <span class="step-num">✓</span>
-                <h2>בדיקה אחרונה ושליחה</h2>
+                <h2>{$_("advertise.l_final_title")}</h2>
             </div>
 
             <ul class="checklist">
-                <li class:done={!!mainImage}><span>{mainImage ? "✅" : "⬜"}</span> תמונה ראשית</li>
-                <li class:done={!!title}><span>{title ? "✅" : "⬜"}</span> כותרת ראשית</li>
-                <li class:done={!!subtitle}><span>{subtitle ? "✅" : "⬜"}</span> כותרת משנה</li>
-                <li class:done={!!hoverText}><span>{hoverText ? "✅" : "⬜"}</span> טקסט בריחוף</li>
-                <li class:done={!!(phone || website)}><span>{(phone || website) ? "✅" : "⬜"}</span> ערוץ פנייה (טלפון/אתר)</li>
-                <li class:done={products.length > 0}><span>{products.length > 0 ? "✅" : "⬜"}</span> תמונות מוצרים ({products.length})</li>
-                <li class:done={!!uniqueness}><span>{uniqueness ? "✅" : "⬜"}</span> מה מייחד אותך</li>
-                <li class:done={!!address}><span>{address ? "✅" : "⬜"}</span> כתובת</li>
+                <li class:done={!!mainImage}><span>{mainImage ? "✅" : "⬜"}</span> {$_("advertise.b_main_image_alt")}</li>
+                <li class:done={!!title}><span>{title ? "✅" : "⬜"}</span> {$_("advertise.b_s3_title")}</li>
+                <li class:done={!!subtitle}><span>{subtitle ? "✅" : "⬜"}</span> {$_("advertise.cl_subtitle")}</li>
+                <li class:done={!!hoverText}><span>{hoverText ? "✅" : "⬜"}</span> {$_("advertise.cl_hover")}</li>
+                <li class:done={!!(phone || website)}><span>{(phone || website) ? "✅" : "⬜"}</span> {$_("advertise.cl_channel")}</li>
+                <li class:done={products.length > 0}><span>{products.length > 0 ? "✅" : "⬜"}</span> {$_("advertise.cl_products", { values: { n: products.length } })}</li>
+                <li class:done={!!uniqueness}><span>{uniqueness ? "✅" : "⬜"}</span> {$_("advertise.cl_unique")}</li>
+                <li class:done={!!address}><span>{address ? "✅" : "⬜"}</span> {$_("advertise.cl_address")}</li>
             </ul>
 
             {#if !canSubmit}
-                <p class="text-amber-300 text-sm mt-3 font-bold">⚠️ נא למלא לפחות: תמונה, כותרת, כותרת משנה, טקסט ריחוף, ערוץ פנייה, וכותרת/פסקה לדף הנחיתה.</p>
+                <p class="text-amber-300 text-sm mt-3 font-bold">{$_("advertise.l_fill_min")}</p>
             {/if}
             {#if submitError}
-                <p class="text-red-300 text-sm mt-3 font-bold">❌ שגיאה בשליחה: {submitError}</p>
+                <p class="text-red-300 text-sm mt-3 font-bold">{$_("advertise.l_submit_err", { values: { msg: submitError } })}</p>
             {/if}
 
             <button type="button" onclick={submitAd} disabled={!canSubmit || submitting}
                 class="mt-5 w-full py-4 rounded-2xl bg-gradient-to-r from-green-600 to-emerald-600 text-white font-black text-lg shadow-xl shadow-green-500/30 transition-all
                        {canSubmit && !submitting ? 'hover:scale-[1.02] active:scale-95' : 'opacity-50 cursor-not-allowed'}">
-                {#if submitting}שולח…{:else}🚀 שלח לאישור ופרסום{/if}
+                {#if submitting}{$_("advertise.sending")}{:else}{$_("advertise.l_submit")}{/if}
             </button>
         </section>
 
@@ -653,16 +650,16 @@
             <section class="step-card success-card">
                 <div class="text-center py-6">
                     <div class="text-6xl mb-3">🎉</div>
-                    <h2 class="text-2xl md:text-3xl font-black text-green-300 mb-2">הפרסומת נשלחה לאישור!</h2>
+                    <h2 class="text-2xl md:text-3xl font-black text-green-300 mb-2">{$_("advertise.l_done_title")}</h2>
                     <p class="text-gray-300 max-w-lg mx-auto">
-                        נבחן את הפרסומת ונאשר אותה תוך 24 שעות. תקבל אימייל ברגע שהיא מתפרסמת בפועל בשכונה שלך.
+                        {$_("advertise.l_done_body")}
                     </p>
                     <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
                         <a href="/" class="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold transition-colors">
-                            חזרה לעמוד הבית
+                            {$_("advertise.l_home")}
                         </a>
                         <a href="/profile" class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold transition-colors">
-                            לפרופיל שלי
+                            {$_("advertise.l_my_profile")}
                         </a>
                     </div>
                 </div>
