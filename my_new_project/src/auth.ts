@@ -252,6 +252,20 @@ export const { handle, signIn, signOut } = !AUTH_SECRET
             if (user && (user as { strapiJwt?: string }).strapiJwt) {
                 token.strapiJwt = (user as { strapiJwt?: string }).strapiJwt;
             }
+            // ריפוי-עצמי: סשנים שנוצרו כשה-Strapi המשותף לא היה זמין לרגע נשמרו
+            // בלי strapiJwt. בלעדיו ה-SSO החוצה-אתרים (gofreeil-auth) מחזיר
+            // not_registered למרות שהמשתמש מחובר מצוין. אם חסר — מושכים מחדש לפי
+            // ה-seed הדטרמיניסטי (email + dbUserId). מצליח למשתמשי OAuth שה-id שלהם
+            // == seed הסיסמה; no-op בטוח אחרת. רץ פעם אחת ואז מפסיק (הטוקן נשמר).
+            if (!token.strapiJwt && token.email && token.dbUserId) {
+                try {
+                    const healed = await getOrCreateStrapiJwt(
+                        token.email as string,
+                        token.dbUserId as string
+                    );
+                    if (healed) token.strapiJwt = healed;
+                } catch { /* ignore - נשאר בלי JWT עד ההתחברות הבאה */ }
+            }
             // שלוף role, neighborhood, banned מהדאטאבייס (בכל refresh של token)
             if (token.dbUserId) {
                 try {
