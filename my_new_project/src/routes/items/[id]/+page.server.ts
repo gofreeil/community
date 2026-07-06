@@ -102,6 +102,11 @@ export const load: PageServerLoad = async (event) => {
         // מצב בניית הדף (עריכה במקום): אותה הרשאה, אבל לא לפנויים - שם יש טופס ייעודי
         const canEditPage = canEditActivities && dbItem.category !== 'singles';
 
+        // נכס שנמחק (מחיקה רכה) גלוי רק לבעלים/רכז/סופר-אדמין - כדי לשחזר. לגולש רגיל = לא נמצא.
+        if (dbItem.status === 'deleted' && !canEditActivities) {
+            return { origin, item: null };
+        }
+
         return {
             origin,
             item: {
@@ -118,6 +123,7 @@ export const load: PageServerLoad = async (event) => {
                 images:      galleryImages,
                 neighborhood: dbItem.neighborhood,
                 city:        dbItem.city,
+                status:      dbItem.status,
                 extraFields,
                 isUserSubmitted: true,
                 isOwner,

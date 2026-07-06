@@ -18,6 +18,7 @@
 	import { registerDynamicNeighborhoods, hasPreciseCoords, MY_PIN_LS_KEY } from "$lib/neighborhoodCoords";
 	import { findWhatsAppGroups } from "$lib/data/whatsapp-groups";
 	import { getLikedItems, removeLike, type LikedItem } from "$lib/likedItems";
+	import { restoreDaysLeft } from "$lib/placeStatus";
 	import { statusLabel, type UserStatus } from "$lib/singlesMock";
 	import NeighborhoodPicker from "$lib/components/NeighborhoodPicker.svelte";
 
@@ -80,24 +81,86 @@
 	let republishingItemId = $state<string | null>(null);
 	let republishedItemIds = $state<string[]>([]);
 
-	async function deleteOwnItem(itemId: string, label: string) {
-		if (!confirm(tFn('profile.delete_item_confirm', { label }))) return;
-		deletingItemId = itemId;
+	// מחיקה לצמיתות עוברת דרך שער דו-שלבי (מודל עם שאלת אבטחה) - לא מיידית
+	function deleteOwnItem(itemId: string, label: string) {
+		openPermDelete(itemId, label);
+	}
+
+	// --- שחזור נכס שנמחק (מחיקה רכה) - אפשרי עד 30 יום ---
+	let restoringItemId = $state<string | null>(null);
+	let restoredItemIds = $state<string[]>([]);
+	async function restoreOwnItem(itemId: string) {
+		restoringItemId = itemId;
 		try {
 			const res = await fetch(`/api/items/${itemId}`, {
-				method: 'DELETE',
-				headers: { 'X-From-Profile': '1' },
+				method: 'PATCH',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ action: 'restore' }),
 			});
 			const data = await res.json();
 			if (data.success) {
-				deletedItemIds = [...deletedItemIds, itemId];
+				restoredItemIds = [...restoredItemIds, itemId];
 			} else {
-				alert(data.message ?? tFn('profile.delete_error'));
+				alert(data.message ?? tFn('profile.network_error'));
 			}
 		} catch {
 			alert(tFn('profile.network_error'));
 		}
+		restoringItemId = null;
+	}
+
+	// --- מחיקה לצמיתות: שער דו-שלבי עם שאלת האבטחה שהוגדרה בפרופיל ---
+	let permDeleteTarget = $state<{ id: string; label: string } | null>(null);
+	let permDeleteAnswer = $state("");
+	let permDeleteError = $state("");
+	let permDeleteBusy = $state(false);
+	function openPermDelete(id: string, label: string) {
+		permDeleteTarget = { id, label };
+		permDeleteAnswer = "";
+		permDeleteError = "";
+	}
+	function closePermDelete() {
+		if (permDeleteBusy) return;
+		permDeleteTarget = null;
+	}
+	async function confirmPermDelete() {
+		if (!permDeleteTarget) return;
+		// אם הוגדרה שאלת אבטחה - חובה לענות עליה (מאומת גם בשרת)
+		if (security_question && !permDeleteAnswer.trim()) {
+			permDeleteError = "יש להזין את תשובת שאלת האבטחה";
+			return;
+		}
+		permDeleteBusy = true;
+		permDeleteError = "";
+		deletingItemId = permDeleteTarget.id;
+		try {
+			const res = await fetch(`/api/items/${permDeleteTarget.id}`, {
+				method: "DELETE",
+				headers: { "X-From-Profile": "1", "Content-Type": "application/json" },
+				body: JSON.stringify({ securityAnswer: permDeleteAnswer }),
+			});
+			const data = await res.json();
+			if (data.success) {
+				deletedItemIds = [...deletedItemIds, permDeleteTarget.id];
+				permDeleteTarget = null;
+			} else {
+				permDeleteError = data.message ?? tFn("profile.delete_error");
+			}
+		} catch {
+			permDeleteError = tFn("profile.network_error");
+		}
+		permDeleteBusy = false;
 		deletingItemId = null;
+	}
+
+	// ימים שנותרו לשחזור נכס מחוק (מפענח deleted_at מ-extra_fields)
+	function itemRestoreDaysLeft(item: { extra_fields?: string }): number {
+		try {
+			const ef = JSON.parse(item.extra_fields ?? "{}");
+			return restoreDaysLeft(ef.deleted_at);
+		} catch {
+			return 0;
+		}
 	}
 
 	async function republishOwnItem(itemId: string) {
@@ -2993,7 +3056,9 @@
 					{:else}
 						<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
 							{#each data.items.filter(i => !deletedItemIds.includes(i.id)) as item}
-								<div class="bg-white/5 rounded-2xl border border-white/10 p-4 hover:border-purple-500/30 hover:bg-white/8 transition-all group">
+								{@const eff = restoredItemIds.includes(item.id) ? 'active' : item.status}
+								{@const daysLeft = eff === 'deleted' ? itemRestoreDaysLeft(item) : 0}
+								<div class="bg-white/5 rounded-2xl border border-white/10 p-4 hover:border-purple-500/30 hover:bg-white/8 transition-all group {eff === 'deleted' ? 'opacity-75' : ''}">
 								<a
 									href="/items/{item.id}"
 									class="block"
@@ -3013,18 +3078,27 @@
 												</h3>
 												<span
 													class="text-xs px-2 py-0.5 rounded-full font-bold flex-shrink-0
-											  {item.status === 'active'
+											  {eff === 'active'
 														? 'bg-green-500/20 text-green-400 border border-green-500/30'
-														: item.status === 'frozen'
+														: eff === 'frozen'
 														? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+														: eff === 'deleted'
+														? 'bg-red-500/20 text-red-300 border border-red-500/30'
 														: 'bg-gray-500/20 text-gray-400 border border-gray-500/30'}"
 												>
-													{item.status === "active"
+													{eff === "active"
 														? tFn("status_active")
-														: item.status === "frozen"
+														: eff === "frozen"
 															? tFn("profile.item_inactive")
-															: item.status}
+															: eff === "deleted"
+																? "🗑 מחוק"
+																: eff}
 												</span>
+												{#if eff === 'deleted'}
+													<span class="text-[11px] font-bold {daysLeft > 0 ? 'text-amber-300' : 'text-gray-500'}">
+														{daysLeft > 0 ? `ניתן לשחזר עוד ${daysLeft} ימים` : 'חלון השחזור חלף'}
+													</span>
+												{/if}
 											</div>
 											{#if item.description}
 												<p
@@ -3057,7 +3131,15 @@
 									</div>
 								</a>
 								<div class="mt-3 pt-3 border-t border-white/5 flex justify-end gap-2 flex-wrap">
-									{#if item.status === 'frozen' && !republishedItemIds.includes(item.id)}
+									{#if eff === 'deleted' && daysLeft > 0}
+										<button
+											type="button"
+											onclick={() => restoreOwnItem(item.id)}
+											disabled={restoringItemId === item.id}
+											class="text-[11px] font-bold text-emerald-400/90 hover:text-emerald-300 hover:bg-emerald-500/10 px-2.5 py-1 rounded-md transition-colors disabled:opacity-50"
+											title="שחזור הנכס - יחזור להופיע על המפה"
+										>{restoringItemId === item.id ? '...' : '♻️ שחזר נכס'}</button>
+									{:else if item.status === 'frozen' && !republishedItemIds.includes(item.id)}
 										<button
 											type="button"
 											onclick={() => republishOwnItem(item.id)}
@@ -5017,6 +5099,54 @@
 		            border border-white/10 whitespace-nowrap"
 		>
 			{secTipIsOpen ? tFn("profile.scroll_up") : tFn("profile.scroll_down")}
+		</div>
+	</div>
+{/if}
+
+<!-- מודל מחיקה לצמיתות: שער דו-שלבי עם שאלת האבטחה שהוגדרה בפרופיל -->
+{#if permDeleteTarget}
+	<div class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+		role="button" tabindex="-1" onclick={closePermDelete} onkeydown={(e) => e.key === 'Escape' && closePermDelete()}>
+		<div class="w-full max-w-sm bg-[#0f172a] border border-red-500/30 rounded-2xl shadow-2xl p-5"
+			role="dialog" aria-modal="true" tabindex="-1"
+			onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.stopPropagation()}>
+			<h3 class="text-white font-black text-lg mb-1 flex items-center gap-2">🗑 מחיקה לצמיתות</h3>
+			<p class="text-gray-300 text-sm mb-1">
+				הנכס <span class="font-bold text-white">"{permDeleteTarget.label}"</span> יימחק לצמיתות ולא ניתן יהיה לשחזר אותו.
+			</p>
+			<p class="text-amber-300/80 text-xs mb-3">
+				רוצים לשמור אפשרות שחזור? סגרו כאן והשתמשו ב"מחק" מתוך עריכת הכרטיס - שם המחיקה ניתנת לשחזור עד 30 יום.
+			</p>
+
+			{#if security_question}
+				<label class="block text-xs font-bold text-gray-300 mb-1" for="permDelAnswer">
+					לאישור, ענו על שאלת האבטחה שלכם:
+				</label>
+				<p class="text-sky-200 text-sm font-bold mb-1.5">{security_question}</p>
+				<input
+					id="permDelAnswer"
+					type="text"
+					bind:value={permDeleteAnswer}
+					autocomplete="off"
+					placeholder="התשובה שלכם"
+					class="w-full bg-[#0a0f1a] border border-white/15 focus:border-red-500/60 rounded-lg text-white text-sm px-3 py-2 mb-2 outline-none"
+				/>
+			{:else}
+				<p class="text-gray-400 text-xs mb-3">לא הוגדרה שאלת אבטחה בפרופיל. אישור המחיקה ימחק את הנכס לצמיתות.</p>
+			{/if}
+
+			{#if permDeleteError}
+				<p class="text-red-400 text-xs font-bold mb-2">⚠️ {permDeleteError}</p>
+			{/if}
+
+			<div class="flex items-center justify-end gap-2 mt-1">
+				<button type="button" onclick={closePermDelete} disabled={permDeleteBusy}
+					class="text-sm font-bold text-gray-300 hover:text-white px-3 py-2 disabled:opacity-50">ביטול</button>
+				<button type="button" onclick={confirmPermDelete} disabled={permDeleteBusy}
+					class="text-sm font-bold text-white bg-red-600 hover:bg-red-500 disabled:opacity-50 rounded-lg px-4 py-2 transition-all">
+					{permDeleteBusy ? 'מוחק…' : 'מחק לצמיתות'}
+				</button>
+			</div>
 		</div>
 	</div>
 {/if}

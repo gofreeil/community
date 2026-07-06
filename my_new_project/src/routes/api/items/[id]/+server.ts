@@ -2,6 +2,12 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getDbItemByIdFresh, updateItem, deleteItem, getUserByAnyId } from '$lib/server/db';
 import { isSuperAdmin, isCoordinatorOfArea } from '$lib/server/auth';
+import { PLACE_STATUS_VALUES, DELETE_RESTORE_DAYS } from '$lib/placeStatus';
+
+/** נרמול תשובת שאלת אבטחה להשוואה סלחנית (רווחים/אותיות/סימנים) */
+function normAnswer(s: string): string {
+    return String(s ?? '').trim().toLowerCase().replace(/\s+/g, ' ');
+}
 
 interface Activity { type: string; time: string; days: string; note: string; }
 
@@ -162,6 +168,65 @@ export const PATCH: RequestHandler = async (event) => {
         }
     }
 
+    // ---- סטטוס תפעולי של הנכס (פעיל / בשיפוצים / עברנו כתובת / סגור / נפתח בקרוב) ----
+    // נשמר ב-extra_fields.place_status ואינו משנה נראות - רק תג תצוגה.
+    if (action === 'set_place_status') {
+        if (!(await canEditPage())) return json({ success: false, message: 'אין הרשאה' }, { status: 403 });
+        const ps = String(body.place_status ?? '');
+        if (!PLACE_STATUS_VALUES.includes(ps as (typeof PLACE_STATUS_VALUES)[number])) {
+            return json({ success: false, message: 'סטטוס לא תקין' }, { status: 400 });
+        }
+        let extra: Record<string, unknown> = {};
+        try { extra = item.extra_fields ? JSON.parse(item.extra_fields) : {}; } catch { extra = {}; }
+        extra.place_status = ps;
+        try {
+            await updateItem(id, { extra_fields: extra });
+            return json({ success: true, place_status: ps });
+        } catch (e) {
+            console.error('[items/:id PATCH set_place_status] failed:', e);
+            return json({ success: false, message: 'שגיאה בשמירה' }, { status: 500 });
+        }
+    }
+
+    // ---- מחיקה רכה: הנכס יורד מהמפה אך ניתן לשחזור מהפרופיל עד 30 יום ----
+    if (action === 'soft_delete') {
+        if (!(await canEditPage())) return json({ success: false, message: 'אין הרשאה' }, { status: 403 });
+        let extra: Record<string, unknown> = {};
+        try { extra = item.extra_fields ? JSON.parse(item.extra_fields) : {}; } catch { extra = {}; }
+        extra.deleted_at = new Date().toISOString();
+        try {
+            await updateItem(id, { status: 'deleted', extra_fields: extra });
+            return json({ success: true });
+        } catch (e) {
+            console.error('[items/:id PATCH soft_delete] failed:', e);
+            return json({ success: false, message: 'שגיאה במחיקה' }, { status: 500 });
+        }
+    }
+
+    // ---- שחזור נכס שנמחק (רק בתוך חלון 30 הימים) ----
+    if (action === 'restore') {
+        if (!(await canEditPage())) return json({ success: false, message: 'אין הרשאה' }, { status: 403 });
+        if (item.status !== 'deleted') {
+            return json({ success: false, message: 'הנכס אינו מחוק' }, { status: 400 });
+        }
+        let extra: Record<string, unknown> = {};
+        try { extra = item.extra_fields ? JSON.parse(item.extra_fields) : {}; } catch { extra = {}; }
+        const deletedAt = typeof extra.deleted_at === 'string' ? Date.parse(extra.deleted_at) : NaN;
+        const withinWindow = !Number.isNaN(deletedAt) &&
+            (Date.now() - deletedAt) / 86_400_000 < DELETE_RESTORE_DAYS;
+        if (!withinWindow) {
+            return json({ success: false, message: `חלון השחזור (${DELETE_RESTORE_DAYS} יום) חלף - לא ניתן לשחזר. אפשר ליצור נכס חדש.` }, { status: 400 });
+        }
+        delete extra.deleted_at;
+        try {
+            await updateItem(id, { status: 'active', extra_fields: extra });
+            return json({ success: true });
+        } catch (e) {
+            console.error('[items/:id PATCH restore] failed:', e);
+            return json({ success: false, message: 'שגיאה בשחזור' }, { status: 500 });
+        }
+    }
+
     // ---- הקפאה/הפעלה: בעלים בלבד. רק frozen/active - לא סטטוס חופשי ----
     if (!isOwner) return json({ success: false, message: 'אין הרשאה' }, { status: 403 });
 
@@ -206,6 +271,23 @@ export const DELETE: RequestHandler = async (event) => {
     const item = await getDbItemByIdFresh(id);
     if (!item) return json({ success: false, message: 'פריט לא נמצא' }, { status: 404 });
     if (item.user_id !== userId) return json({ success: false, message: 'אין הרשאה' }, { status: 403 });
+
+    // ---- שער דו-שלבי: אימות תשובת שאלת האבטחה של המשתמש (כמו בהרשמה) ----
+    // מי שהגדיר שאלת אבטחה חייב לענות נכון כדי למחוק לצמיתות. מי שלא הגדיר -
+    // ההגנה היא אישור הכפול בפרופיל בלבד (X-From-Profile + confirm).
+    let body: Record<string, unknown> = {};
+    try { body = await event.request.json(); } catch {}
+    const user = await getUserByAnyId(String(userId));
+    const storedAnswer = String(user?.security_answer ?? '').trim();
+    if (storedAnswer) {
+        const given = normAnswer(String(body.securityAnswer ?? ''));
+        if (!given) {
+            return json({ success: false, message: 'נדרשת תשובת שאלת האבטחה כדי למחוק לצמיתות', code: 'need_security_answer' }, { status: 400 });
+        }
+        if (given !== normAnswer(storedAnswer)) {
+            return json({ success: false, message: 'תשובת האבטחה שגויה', code: 'wrong_security_answer' }, { status: 403 });
+        }
+    }
 
     try {
         await deleteItem(id);

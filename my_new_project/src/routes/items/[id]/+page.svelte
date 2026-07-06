@@ -13,6 +13,8 @@
     import { gmachTypeLabel } from "$lib/gmachTypes";
     import { imageDrop } from "$lib/imageDrop";
     import { canUseMapImage, MAP_IMAGE_PRICE_YEARLY } from "$lib/mapImage";
+    import { goto } from "$app/navigation";
+    import { PLACE_STATUSES, placeStatusInfo } from "$lib/placeStatus";
 
     let { data }: { data: PageData } = $props();
     const item = $derived(data.item);
@@ -469,6 +471,65 @@
     async function clearMapImage() {
         const ok = await saveFields({ map_image: '' }, 'map_image');
         if (ok) mapImageOverride = '';
+    }
+
+    // ---- סטטוס תפעולי של הנכס (פעיל / בשיפוצים / עברנו כתובת / סגור / נפתח בקרוב) ----
+    let placeStatusOverride = $state<string | null>(null);
+    const placeStatus = $derived<string>(
+        placeStatusOverride ??
+        (typeof (item as { extraFields?: { place_status?: unknown } } | null)?.extraFields?.place_status === 'string'
+            ? (item as { extraFields: { place_status: string } }).extraFields.place_status
+            : 'active')
+    );
+    const placeStatusBadge = $derived(placeStatusInfo(placeStatus));
+    let savingStatus = $state(false);
+    let statusMenuOpen = $state(false);
+
+    async function changePlaceStatus(v: string) {
+        if (!item?.id || v === placeStatus) { statusMenuOpen = false; return; }
+        savingStatus = true;
+        builderError = '';
+        try {
+            const res = await fetch(`/api/items/${item.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'set_place_status', place_status: v }),
+            });
+            const d = await res.json().catch(() => ({}));
+            if (!res.ok || !d.success) builderError = d.message || 'שגיאה בשמירת הסטטוס';
+            else placeStatusOverride = v;
+        } catch {
+            builderError = 'בעיית תקשורת - נסו שוב';
+        } finally {
+            savingStatus = false;
+            statusMenuOpen = false;
+        }
+    }
+
+    // ---- מחיקה רכה מתוך עריכת הכרטיס (ניתן לשחזר מהפרופיל עד 30 יום) ----
+    let deletingItem = $state(false);
+    async function softDeleteItem() {
+        if (!item?.id) return;
+        if (!confirm('למחוק את הכרטיס?\n\nהנכס יורד מהמפה, אך יופיע בפרופיל בסטטוס "מחוק" וניתן יהיה לשחזר אותו תוך 30 יום. לאחר מכן לא ניתן לשחזר - רק ליצור נכס חדש.')) return;
+        deletingItem = true;
+        builderError = '';
+        try {
+            const res = await fetch(`/api/items/${item.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'soft_delete' }),
+            });
+            const d = await res.json().catch(() => ({}));
+            if (!res.ok || !d.success) {
+                builderError = d.message || 'שגיאה במחיקה';
+                deletingItem = false;
+            } else {
+                await goto('/profile?tab=items');
+            }
+        } catch {
+            builderError = 'בעיית תקשורת - נסו שוב';
+            deletingItem = false;
+        }
     }
 
     // ---- התקדמות בניית הדף ----
@@ -1070,6 +1131,32 @@
                             סיימתי - הצג כמו גולש
                         </button>
                     </div>
+
+                    <!-- בורר סטטוס הנכס + תפריט "עוד" עם מחיקה -->
+                    <div class="mt-2.5 pt-2.5 border-t border-white/10 flex flex-wrap items-center gap-1.5">
+                        <span class="text-[11px] text-gray-400 font-bold ms-0.5">סטטוס:</span>
+                        {#each PLACE_STATUSES as s}
+                            <button type="button" onclick={() => changePlaceStatus(s.value)} disabled={savingStatus}
+                                class="text-[11px] font-bold rounded-full px-2.5 py-1 border transition-all disabled:opacity-50 {placeStatus === s.value ? s.active : 'bg-white/5 border-white/15 text-gray-300 hover:bg-white/10'}">
+                                {s.emoji} {s.label}
+                            </button>
+                        {/each}
+                        <div class="relative">
+                            <button type="button" onclick={() => (statusMenuOpen = !statusMenuOpen)}
+                                class="text-[11px] font-bold rounded-full px-2.5 py-1 border border-white/15 bg-white/5 text-gray-300 hover:bg-white/10 transition-all">
+                                עוד ▾
+                            </button>
+                            {#if statusMenuOpen}
+                                <div class="absolute z-40 top-full mt-1 end-0 min-w-[130px] rounded-xl border border-white/15 bg-[#0a0f1a] shadow-2xl p-1"
+                                    in:scale={{ duration: 120, start: 0.95 }}>
+                                    <button type="button" onclick={softDeleteItem} disabled={deletingItem}
+                                        class="w-full text-right text-xs font-bold text-red-300 hover:bg-red-500/15 rounded-lg px-2.5 py-1.5 transition-colors disabled:opacity-50">
+                                        {deletingItem ? 'מוחק…' : '🗑 מחק'}
+                                    </button>
+                                </div>
+                            {/if}
+                        </div>
+                    </div>
                     {#if builderError}
                         <p class="text-red-400 text-xs font-bold mt-1.5">⚠️ {builderError}</p>
                     {/if}
@@ -1244,6 +1331,12 @@
                                 {/if}
                             </h1>
                         {/if}
+                    {/if}
+                    <!-- תג סטטוס תפעולי (מוצג לכולם כשהמקום אינו "פעיל") -->
+                    {#if placeStatusBadge && placeStatus !== 'active'}
+                        <span class="inline-flex items-center gap-1 text-xs font-bold rounded-full px-2.5 py-0.5 border w-fit {placeStatusBadge.badge}">
+                            {placeStatusBadge.emoji} {placeStatusBadge.label}
+                        </span>
                     {/if}
                     {#if age != null}
                         <p class="text-gray-300 text-base leading-tight">גיל: {age}</p>
