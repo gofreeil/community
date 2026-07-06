@@ -241,25 +241,30 @@
     const benefitsCat = categories.find(c => c.id === 'benefits') ?? categories[0];
     const otherCats = categories.filter(c => c.id !== 'benefits');
 
-    // תיאורים לטולטיפים מתחת לכפתורי הקטגוריות
+    // מפתח תרגום לתווית קטגוריה - ה-id נשאר מזהה לוגי (השוואות/ניווט), התרגום רק בתצוגה
+    const catKey = (id: string) => 'map.cat_' + id.replace(/-/g, '_');
+    // מפתח תרגום לפריט סטטי לדוגמה בקטגוריה - ה-label בדאטה נשאר, התצוגה דרך המפתח
+    const itemKey = (id: string) => 'map.item_' + id.replace(/-/g, '_');
+
+    // תיאורים לטולטיפים מתחת לכפתורי הקטגוריות (מפתחות תרגום - נפתרים בתצוגה עם $t)
     const categoryTooltips: Record<string, string> = {
-        'benefits':    'כל השירותים והיתרונות שיש בשכונה',
-        'gemachim':    'התארגנות גמילות החסדים שבשכונה',
-        'attractions': 'בנקים, עיריה, דואר, בתי ספר, מתנ"סים וכו׳',
-        'giveaway':    'חפצים למסירה או למכירה יד 2',
-        'business':    'השמרטפיות הקרובות ביותר',
-        'minyanim':    'בתי כנסת, מקוואות, שיעורים וחברותות',
-        'education':   'חוגים לכלל הגילאים',
-        'realestate':  'דורשים או מציעים, סעודה או מקום לינה',
-        'security':    'לכלל השנה או סאבלטים לחופשות וחגים',
-        'shops':       'כלל החנויות בשכונה',
-        'restaurants': 'החל מאוכל מהיר וכלה במסעדות יוקרה',
-        'rides':       'דרישה והצעה לטרמפים או הסעות בהתנדבות או בתשלום',
-        'for_kids':    'גני שעשועים, ספריות ואטרקציות',
-        'jobs':        'משרות והצעות עבודה',
-        'singles':     'מכירים את הפנויים והפנויות לגילאים המתאימים לך לקשר כן',
-        'halls':       'לאירועים חד פעמיים או לחוגים קבועים',
-        'safe-space':  'ציבורי רשמי או פרטי פתוח לקהל',
+        'benefits':    'map.tip_benefits',
+        'gemachim':    'map.tip_gemachim',
+        'attractions': 'map.tip_attractions',
+        'giveaway':    'map.tip_giveaway',
+        'business':    'map.tip_business',
+        'minyanim':    'map.tip_minyanim',
+        'education':   'map.tip_education',
+        'realestate':  'map.tip_realestate',
+        'security':    'map.tip_security',
+        'shops':       'map.tip_shops',
+        'restaurants': 'map.tip_restaurants',
+        'rides':       'map.tip_rides',
+        'for_kids':    'map.tip_for_kids',
+        'jobs':        'map.tip_jobs',
+        'singles':     'map.tip_singles',
+        'halls':       'map.tip_halls',
+        'safe-space':  'map.tip_safe_space',
     };
 
     // ----- מצב מסך מלא לדסקטופ -----
@@ -339,12 +344,13 @@
     let modalImageBase64 = $state('');
     let modalImagePreview = $state('');
 
+    // מפתחות תרגום לשדות הטופס לפי סוג הקריאה - נפתרים בתצוגה עם $t
     const fieldsByOption: Record<number, { descLabel: string; descPlaceholder: string; locationPlaceholder: string }> = {
-        1: { descLabel: 'תיאור המצב', descPlaceholder: 'פרט את המצב - מה קרה, באיזו עזרה נדרש...', locationPlaceholder: 'רחוב, כניסה, קומה...' },
-        2: { descLabel: 'פרטי הרכב', descPlaceholder: 'צבע הרכב, דגם, לוחית רישוי...', locationPlaceholder: 'היכן הרכב חונה? רחוב ומספר...' },
-        3: { descLabel: 'תיאור הילד', descPlaceholder: 'גיל, לבוש, מאפיינים בולטים, מתי נעלם...', locationPlaceholder: 'איפה נראה לאחרונה? שם המקום, רחוב...' },
-        4: { descLabel: 'תיאור בקשת העזרה', descPlaceholder: 'פרט מה קרה ובמה נדרשת עזרה...', locationPlaceholder: 'מיקום - רחוב, שכונה...' },
-        5: { descLabel: 'תיאור הכלב', descPlaceholder: 'גזע, צבע, שם הכלב, מתי ואיפה נעלם...', locationPlaceholder: 'אזור שאבד לאחרונה...' },
+        1: { descLabel: 'map.f1_desc_label', descPlaceholder: 'map.f1_desc_ph', locationPlaceholder: 'map.f1_loc_ph' },
+        2: { descLabel: 'map.f2_desc_label', descPlaceholder: 'map.f2_desc_ph', locationPlaceholder: 'map.f2_loc_ph' },
+        3: { descLabel: 'map.f3_desc_label', descPlaceholder: 'map.f3_desc_ph', locationPlaceholder: 'map.f3_loc_ph' },
+        4: { descLabel: 'map.f4_desc_label', descPlaceholder: 'map.f4_desc_ph', locationPlaceholder: 'map.f4_loc_ph' },
+        5: { descLabel: 'map.f5_desc_label', descPlaceholder: 'map.f5_desc_ph', locationPlaceholder: 'map.f5_loc_ph' },
     };
 
     function handleModalImageChange(e: Event) {
@@ -494,14 +500,15 @@
 
     // דוגמאות mock - מוצגות בכל שכונה כל עוד אין באותה שכונה ולו פריט אמיתי אחד.
     // לחיצה על מרקר דמו מובילה אל /add/{category} כדי לעודד הוספת פריט אמיתי.
+    // label = מפתח תרגום (נפתר עם $t בבניית המרקרים)
     const MOCK_ITEMS: { suffix: string; category: string; icon: string; label: string; color: string }[] = [
-        { suffix: 'gemach-books', category: 'gemachim',    icon: '📚', label: 'גמ״ח ספרים',     color: 'rose' },
-        { suffix: 'gemach-tools', category: 'gemachim',    icon: '🔨', label: 'גמ״ח כלי עבודה', color: 'amber' },
-        { suffix: 'babysitter',   category: 'business',    icon: '👶', label: 'בייבי סיטר',     color: 'pink' },
-        { suffix: 'minyan',       category: 'minyanim',    icon: '✡️', label: 'מניין שחרית',    color: 'blue' },
-        { suffix: 'art-class',    category: 'education',   icon: '🎨', label: 'חוג ציור',       color: 'purple' },
-        { suffix: 'giveaway',     category: 'giveaway',    icon: '🛋️', label: 'מסירת ספה',      color: 'teal' },
-        { suffix: 'attraction',   category: 'attractions', icon: '🏛️', label: 'עירייה',         color: 'green' },
+        { suffix: 'gemach-books', category: 'gemachim',    icon: '📚', label: 'map.mock_gemach_books', color: 'rose' },
+        { suffix: 'gemach-tools', category: 'gemachim',    icon: '🔨', label: 'map.mock_gemach_tools', color: 'amber' },
+        { suffix: 'babysitter',   category: 'business',    icon: '👶', label: 'map.mock_babysitter',   color: 'pink' },
+        { suffix: 'minyan',       category: 'minyanim',    icon: '✡️', label: 'map.mock_minyan',       color: 'blue' },
+        { suffix: 'art-class',    category: 'education',   icon: '🎨', label: 'map.mock_art_class',    color: 'purple' },
+        { suffix: 'giveaway',     category: 'giveaway',    icon: '🛋️', label: 'map.mock_giveaway',     color: 'teal' },
+        { suffix: 'attraction',   category: 'attractions', icon: '🏛️', label: 'map.mock_attraction',   color: 'green' },
     ];
 
     let dynamicMarkers = $derived.by(() => {
@@ -528,7 +535,7 @@
                     lat,
                     lng,
                     icon:     item.icon  || '📌',
-                    label:    item.label || 'פריט',
+                    label:    item.label || $t('map.item_fallback'),
                     color:    item.color || 'purple',
                     isMock:   false,
                 };
@@ -557,7 +564,7 @@
                 lat,
                 lng,
                 icon:   m.icon,
-                label:  m.label,
+                label:  $t(m.label),
                 color:  m.color,
                 isMock: true,
             };
@@ -773,12 +780,13 @@
 
     // citiesAndNeighborhoods imported from $lib/neighborhoodsData
 
+    // key = מפתח תרגום (נפתר בתצוגה עם $t)
     const helpOptions = [
-        { id: 3, text: "הלך ילד לאיבוד", icon: "👶" },
-        { id: 5, text: "אבד כלב", icon: "🐕" },
-        { id: 1, text: "מבוגר זקוק לעזרה", icon: "👴" },
-        { id: 2, text: "זקוק לעזרה עם הרכב להתנעה", icon: "🚗" },
-        { id: 4, text: "אחר - כתוב את העזרה הזקוקה לך", icon: "✍️" },
+        { id: 3, key: "map.help_lost_child", icon: "👶" },
+        { id: 5, key: "map.help_lost_dog", icon: "🐕" },
+        { id: 1, key: "map.help_elderly", icon: "👴" },
+        { id: 2, key: "map.help_car", icon: "🚗" },
+        { id: 4, key: "map.help_other", icon: "✍️" },
     ];
 
     // Automatic switching was removed as per user request to keep it manual
@@ -985,7 +993,7 @@
             () => {
                 showWaves = true;
                 handRaised = true; // סמן שהיד מורמת
-                raisedHandMessage = option?.text || "";
+                raisedHandMessage = option ? $t(option.key) : "";
                 raisedHandIcon = option?.icon || "🆘";
 
                 // כבה את הגלים אחרי 2 שניות
@@ -1000,10 +1008,10 @@
             // אפשרות "אחר" - פתח טופס
             setTimeout(
                 () => {
-                    const customHelp = prompt("תאר את העזרה שאתה זקוק לה:");
+                    const customHelp = prompt($t('map.describe_help'));
                     if (customHelp) {
                         raisedHandMessage = customHelp;
-                        successMessageText = `בקשת עזרה נשלחה: ${customHelp}`;
+                        successMessageText = $t('map.help_sent_msg', { values: { what: customHelp } });
                         showSuccessMessage = true;
                         setTimeout(() => {
                             showSuccessMessage = false;
@@ -1020,7 +1028,7 @@
         } else {
             setTimeout(
                 () => {
-                    successMessageText = `בקשת עזרה נשלחה: ${option?.text}`;
+                    successMessageText = $t('map.help_sent_msg', { values: { what: option ? $t(option.key) : '' } });
                     showSuccessMessage = true;
                     setTimeout(() => {
                         showSuccessMessage = false;
@@ -1038,13 +1046,13 @@
     function handleSurveyResponse(response: "community" | "other" | "cancel") {
         if (response === "community") {
             communityHelpCount.update(n => n + 1);
-            successMessageText = "תודה! שמחים שהקהילה עזרה 🎉";
+            successMessageText = $t('map.thanks_community');
             showSuccessMessage = true;
             setTimeout(() => {
                 showSuccessMessage = false;
             }, 3000);
         } else if (response === "other") {
-            successMessageText = "תודה על המשוב! 👍";
+            successMessageText = $t('map.thanks_feedback');
             showSuccessMessage = true;
             setTimeout(() => {
                 showSuccessMessage = false;
@@ -1066,7 +1074,7 @@
     <!-- שכבה כהה מאחורי המסך המלא -->
     <button
         type="button"
-        aria-label="סגור מסך מלא"
+        aria-label={$t('map.close_fullscreen')}
         onclick={closeFullscreen}
         class="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm cursor-default"
     ></button>
@@ -1081,8 +1089,8 @@
         <button
             type="button"
             onclick={closeFullscreen}
-            aria-label="סגור מסך מלא"
-            title="סגור (Esc)"
+            aria-label={$t('map.close_fullscreen')}
+            title={$t('map.close_esc')}
             class="absolute top-3 left-3 z-[60] w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white text-xl font-bold flex items-center justify-center transition-all backdrop-blur-sm border border-white/20"
         >
             ✕
@@ -1107,11 +1115,11 @@
                                 px-2.5 py-2 rounded-full text-xs font-bold shadow-lg active:scale-95 border whitespace-nowrap overflow-hidden"
                         >
                             {#if active.icon?.startsWith('/')}
-                                <img src={active.icon} class="w-5 h-5 shrink-0" alt={active.label} />
+                                <img src={active.icon} class="w-5 h-5 shrink-0" alt={$t(catKey(active.id))} />
                             {:else}
                                 <span class="text-base leading-none shrink-0">{active.icon}</span>
                             {/if}
-                            <span class="truncate">{active.label}</span>
+                            <span class="truncate">{$t(catKey(active.id))}</span>
                             <span class="text-[10px] opacity-75 shrink-0">▾</span>
                         </button>
                     {/each}
@@ -1120,10 +1128,10 @@
                         type="button"
                         onclick={() => (showCategorySheet = true)}
                         class="flex items-center justify-center gap-1.5 flex-1 min-w-0 bg-gradient-to-br from-purple-600 to-blue-600 text-white px-3 py-2 rounded-full text-xs font-bold shadow-lg active:scale-95 border border-purple-400"
-                        aria-label="פתח סינון קטגוריות"
+                        aria-label={$t('map.open_category_filter')}
                     >
                         <span class="text-base leading-none shrink-0">🎛️</span>
-                        <span class="truncate">בחר קטגוריה</span>
+                        <span class="truncate">{$t('map.choose_category')}</span>
                     </button>
                 </div>
 
@@ -1140,7 +1148,7 @@
                         class="md:hidden fixed top-1/2 left-3 right-3 z-[10001] bg-[#0f172a] border-2 border-purple-500 rounded-2xl shadow-2xl max-h-[80vh] flex flex-col"
                         style="animation: sheetFadeIn 0.25s ease-out; transform: translateY(calc(-50% + {sheetDragY}px)); transition: {sheetDragging ? 'none' : 'transform 0.2s ease-out'};"
                         role="dialog"
-                        aria-label="סינון קטגוריות"
+                        aria-label={$t('map.category_filter')}
                     >
                         <!-- Drag handle + header -->
                         <div
@@ -1151,11 +1159,11 @@
                             onpointercancel={onSheetDragEnd}
                             role="button"
                             tabindex="0"
-                            aria-label="גרור למטה כדי לסגור"
+                            aria-label={$t('map.drag_to_close')}
                         >
                             <div class="w-16 h-1.5 rounded-full bg-white/40 mb-2"></div>
                             <div class="w-full px-4 flex items-center justify-center">
-                                <h3 class="text-white font-bold text-lg">סנן את היתרונות הדרושים לך</h3>
+                                <h3 class="text-white font-bold text-lg">{$t('map.sheet_title')}</h3>
                             </div>
                         </div>
                         <!-- Grid of all categories -->
@@ -1169,7 +1177,7 @@
                                         : 'bg-gradient-to-br from-yellow-400 to-orange-500 text-gray-900 border-yellow-500'} px-6 py-3 rounded-xl text-sm font-bold shadow-md active:scale-95 border map-category-button min-h-[72px] w-[42%]"
                                 >
                                     <span class="text-3xl leading-none">{benefitsCat.icon}</span>
-                                    <span class="leading-tight text-center">{benefitsCat.label}</span>
+                                    <span class="leading-tight text-center">{$t(catKey(benefitsCat.id))}</span>
                                 </button>
                             </div>
                             <!-- שורה 2+: 16 קטגוריות בגריד 4×4 סימטרי -->
@@ -1182,7 +1190,7 @@
                                             : 'bg-gradient-to-br from-white to-gray-200 text-gray-900 border-purple-300'} px-1 py-2.5 rounded-xl text-xs font-bold shadow-md active:scale-95 border map-category-button min-h-[70px]"
                                     >
                                         {#if category.icon?.startsWith('/')}
-                                            <img src={category.icon} class="w-7 h-7" alt={category.label} />
+                                            <img src={category.icon} class="w-7 h-7" alt={$t(catKey(category.id))} />
                                         {:else}
                                             <span
                                                 class="text-2xl leading-none"
@@ -1191,7 +1199,7 @@
                                                     : ""}>{category.icon}</span
                                             >
                                         {/if}
-                                        <span class="leading-tight text-center">{category.label}</span>
+                                        <span class="leading-tight text-center">{$t(catKey(category.id))}</span>
                                     </button>
                                 {/each}
                             </div>
@@ -1209,15 +1217,15 @@
                                 >
                                     <div class="flex flex-col items-center gap-4 text-center max-w-[90%]">
                                         {#if tooltipCat.icon?.startsWith('/')}
-                                            <img src={tooltipCat.icon} class="w-20 h-20" alt={tooltipCat.label} />
+                                            <img src={tooltipCat.icon} class="w-20 h-20" alt={$t(catKey(tooltipCat.id))} />
                                         {:else}
                                             <span class="text-7xl leading-none">{tooltipCat.icon}</span>
                                         {/if}
                                         <h4 class="text-yellow-300 text-3xl font-extrabold leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
-                                            {tooltipCat.label}
+                                            {$t(catKey(tooltipCat.id))}
                                         </h4>
                                         <p class="text-slate-100 text-lg leading-relaxed font-medium">
-                                            {categoryTooltips[mobileTooltipFor] ?? ''}
+                                            {categoryTooltips[mobileTooltipFor] ? $t(categoryTooltips[mobileTooltipFor]) : ''}
                                         </p>
                                         <!-- פס התקדמות שמסמן שתכף הסינון נכנס לתוקף -->
                                         <div class="w-48 h-1.5 mt-2 rounded-full bg-white/15 overflow-hidden">
@@ -1226,7 +1234,7 @@
                                                 style="animation: mobileTooltipProgress {MOBILE_TOOLTIP_MS}ms linear forwards;"
                                             ></div>
                                         </div>
-                                        <span class="text-sm text-slate-400 mt-1">טוען נתונים...</span>
+                                        <span class="text-sm text-slate-400 mt-1">{$t('map.loading_data')}</span>
                                     </div>
                                 </div>
                             {/if}
@@ -1250,7 +1258,7 @@
                                   : 'bg-gradient-to-br from-white to-gray-200 hover:from-blue-100 hover:to-white text-gray-900 border-purple-300'} py-1.5 rounded-lg text-xs font-bold shadow-lg transition-all hover:scale-105 border shrink-0 whitespace-nowrap map-category-button category-with-tooltip"
                         >
                             {#if category.icon?.startsWith('/')}
-                                <img src={category.icon} class="w-5 h-5 inline-block" alt={category.label} />
+                                <img src={category.icon} class="w-5 h-5 inline-block" alt={$t(catKey(category.id))} />
                             {:else}
                                 <span
                                     class="text-base icon"
@@ -1259,11 +1267,11 @@
                                         : ""}>{category.icon}</span
                                 >
                             {/if}
-                            {category.label}
+                            {$t(catKey(category.id))}
                             {#if categoryTooltips[category.id]}
                                 <span class="category-tooltip" role="tooltip">
-                                    <span class="category-tooltip-title">{category.label}</span>
-                                    <span class="category-tooltip-desc">{categoryTooltips[category.id]}</span>
+                                    <span class="category-tooltip-title">{$t(catKey(category.id))}</span>
+                                    <span class="category-tooltip-desc">{$t(categoryTooltips[category.id])}</span>
                                 </span>
                             {/if}
                         </button>
@@ -1298,7 +1306,7 @@
             class:auto-switching={isAutoSwitching}
             class:menu-open={showHelpMenu || showSurvey}
             style="position: absolute; top: 0; left: 0;"
-            aria-label={viewMode === "map" ? "עבור לתצוגת רשימה" : "עבור לתצוגת מפה"}
+            aria-label={viewMode === "map" ? $t('map.to_list_view') : $t('map.to_map_view')}
         >
             <svg
                 width="130"
@@ -1323,7 +1331,7 @@
                     text-anchor="middle"
                     class="pointer-events-none"
                 >
-                    {viewMode === "map" ? "עבור לתצוגת" : "עבור לתצוגת"}
+                    {$t('map.corner_line1')}
                 </text>
                 <text
                     x="60"
@@ -1335,7 +1343,7 @@
                     text-anchor="middle"
                     class="pointer-events-none"
                 >
-                    {viewMode === "map" ? "רשימה" : "מפה"}
+                    {viewMode === "map" ? $t('map.corner_list') : $t('map.corner_map')}
                 </text>
             </svg>
             <span class="hint hint-cursor" aria-hidden="true">
@@ -1367,7 +1375,7 @@
                 ontouchend={handleMapTouchEnd}
                 role="button"
                 tabindex="-1"
-                aria-label="לחץ פעמיים לפתיחה במסך מלא"
+                aria-label={$t('map.dblclick_fullscreen')}
             >
                 <!-- אנימציית גלים -->
                 {#if showWaves}
@@ -1395,13 +1403,13 @@
                                 <span class="text-5xl">{raisedHandIcon}</span>
                                 <div>
                                     <p class="font-black text-xl mb-1">
-                                        🚨 בקשת עזרה פעילה
+                                        {$t('map.active_help_call')}
                                     </p>
                                     <p class="text-lg font-bold">
                                         {raisedHandMessage}
                                     </p>
                                     <p class="text-sm text-yellow-200 mt-2">
-                                        ממתין לעזרה מהקהילה...
+                                        {$t('map.waiting_help')}
                                     </p>
                                 </div>
                             </div>
@@ -1414,7 +1422,7 @@
                     bind:this={mapEl}
                     onmouseleave={deactivateMap}
                     class="w-full h-full relative z-0"
-                    aria-label="מפת השכונה"
+                    aria-label={$t('map.neighborhood_map_aria')}
                 ></div>
 
                 <!-- "הגנת זכוכית" - שכבת overlay מעל המפה כשהיא לא אינטראקטיבית -->
@@ -1423,10 +1431,10 @@
                         type="button"
                         onclick={activateMap}
                         class="absolute inset-0 z-10 w-full h-full bg-transparent cursor-pointer flex items-center justify-center group"
-                        aria-label="לחץ להפעלת המפה"
+                        aria-label={$t('map.click_activate_map')}
                     >
                         <div class="bg-black/50 backdrop-blur-sm text-white px-6 py-3 rounded-xl border border-white/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                            <span class="text-sm font-bold">🖱️ לחץ להפעלת המפה</span>
+                            <span class="text-sm font-bold">🖱️ {$t('map.click_activate_map')}</span>
                         </div>
                     </button>
                 {/if}
@@ -1437,20 +1445,20 @@
                         type="button"
                         onclick={(e) => { e.stopPropagation(); activateMap(); zoomIn(); }}
                         class="w-10 h-10 rounded-lg bg-black/60 hover:bg-black/80 text-white text-2xl leading-none font-bold flex items-center justify-center backdrop-blur-sm border border-white/25 shadow-lg"
-                        aria-label="הגדל מפה"
+                        aria-label={$t('map.zoom_in_map')}
                     >+</button>
                     <button
                         type="button"
                         onclick={(e) => { e.stopPropagation(); activateMap(); zoomOut(); }}
                         class="w-10 h-10 rounded-lg bg-black/60 hover:bg-black/80 text-white text-2xl leading-none font-bold flex items-center justify-center backdrop-blur-sm border border-white/25 shadow-lg"
-                        aria-label="הקטן מפה"
+                        aria-label={$t('map.zoom_out_map')}
                     >−</button>
                     <button
                         type="button"
                         onclick={(e) => { e.stopPropagation(); fitToMarkers(); }}
                         class="w-10 h-10 rounded-lg bg-black/60 hover:bg-black/80 text-white text-lg leading-none flex items-center justify-center backdrop-blur-sm border border-white/25 shadow-lg"
-                        aria-label="התאם לישוב"
-                        title="התאם תצוגה לישוב"
+                        aria-label={$t('map.fit_to_town')}
+                        title={$t('map.fit_to_town_title')}
                     >⊙</button>
                 </div>
 
@@ -1461,9 +1469,9 @@
                         type="button"
                         onclick={(e) => { e.stopPropagation(); goto('/giveaways'); }}
                         class="absolute bottom-4 left-4 z-20 bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 hover:from-amber-300 hover:via-orange-400 hover:to-red-400 text-white font-black px-6 py-3 rounded-2xl shadow-lg border border-orange-300/60 transition-all hover:scale-105 hover:opacity-100 flex flex-col items-center gap-1.5 text-center leading-tight opacity-25"
-                        title="עבור ללוח הארצי של פריטים למסירה"
+                        title={$t('map.national_board_giveaway_title')}
                     >
-                        <span class="text-lg">← ללוח הארצי</span>
+                        <span class="text-lg">{$t('map.to_national_board')}</span>
                         <img src="/images/delivery.png" alt="" class="w-7 h-7 object-contain" />
                     </button>
                 {:else if nationalBoardUrl}
@@ -1475,9 +1483,9 @@
                                 rel={nationalBoardUrl.startsWith('http') ? 'noopener noreferrer' : undefined}
                                 onclick={(e) => e.stopPropagation()}
                                 class="bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 hover:from-amber-300 hover:via-orange-400 hover:to-red-400 text-white text-base font-black px-4 py-2 rounded-xl shadow-lg border border-orange-300/60 transition-all hover:scale-105 flex items-center text-center leading-tight"
-                                title="עבור ללוח הארצי"
+                                title={$t('map.national_board_title')}
                             >
-                                <span>← ללוח הארצי</span>
+                                <span>{$t('map.to_national_board')}</span>
                             </a>
                         {/if}
                     </div>
@@ -1489,7 +1497,9 @@
                         <div
                             class="neighborhood-count-fade absolute top-16 right-4 z-20 bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 text-white text-base font-black px-5 py-2.5 rounded-xl shadow-lg border border-orange-300/60"
                         >
-                            {neighborhoodDbItems.length} {selectedCategory === 'giveaway' ? 'למסירה' : 'פריטים'} בשכונה
+                            {selectedCategory === 'giveaway'
+                                ? $t('map.giveaways_in_hood', { values: { n: neighborhoodDbItems.length } })
+                                : $t('map.items_in_hood', { values: { n: neighborhoodDbItems.length } })}
                         </div>
                     {/key}
                 {/if}
@@ -1531,7 +1541,7 @@
                                         {:else if category.icon?.startsWith('/')}
                                             <img
                                                 src={category.icon}
-                                                alt={category.label}
+                                                alt={$t(catKey(category.id))}
                                                 class="w-7 h-7 md:w-8 md:h-8 object-contain"
                                             />
                                         {:else}
@@ -1542,11 +1552,11 @@
                                         {/if}
                                         <span
                                             class="text-white font-bold text-base md:text-sm md:text-lg"
-                                            >{category.label}</span
+                                            >{$t(catKey(category.id))}</span
                                         >
                                         {#if categoryDbItems.length > 0}
                                             <span class="bg-green-500/20 border border-green-500/40 text-green-400 text-[10px] font-black px-2 py-0.5 rounded-full">
-                                                🆕 {categoryDbItems.length} חדש
+                                                {$t('map.new_count', { values: { n: categoryDbItems.length } })}
                                             </span>
                                         {/if}
                                         {#if hasNationalPage}
@@ -1559,7 +1569,7 @@
                                                 class="text-[11px] text-purple-400 hover:text-purple-300 cursor-pointer
                                                        underline underline-offset-2 decoration-purple-500/40 hover:decoration-purple-400
                                                        transition-colors font-medium whitespace-nowrap"
-                                            >← לרשימה הארצית</span>
+                                            >{$t('map.to_national_list')}</span>
                                         {/if}
                                         {#if giveawayNational}
                                             <span
@@ -1570,7 +1580,7 @@
                                                 class="text-[11px] text-purple-400 hover:text-purple-300 cursor-pointer
                                                        underline underline-offset-2 decoration-purple-500/40 hover:decoration-purple-400
                                                        transition-colors font-medium whitespace-nowrap"
-                                            >← לרשימה הארצית</span>
+                                            >{$t('map.to_national_list')}</span>
                                         {/if}
                                         {#if babysitterNational}
                                             <span
@@ -1581,7 +1591,7 @@
                                                 class="text-[11px] text-purple-400 hover:text-purple-300 cursor-pointer
                                                        underline underline-offset-2 decoration-purple-500/40 hover:decoration-purple-400
                                                        transition-colors font-medium whitespace-nowrap"
-                                            >← לרשימה הארצית</span>
+                                            >{$t('map.to_national_list')}</span>
                                         {/if}
                                         {#if shabbatNational}
                                             <span
@@ -1592,7 +1602,7 @@
                                                 class="text-[11px] text-purple-400 hover:text-purple-300 cursor-pointer
                                                        underline underline-offset-2 decoration-purple-500/40 hover:decoration-purple-400
                                                        transition-colors font-medium whitespace-nowrap"
-                                            >← ללוח שבת שלום</span>
+                                            >{$t('map.to_shabbat_board')}</span>
                                         {/if}
                                         {#if chugimNational}
                                             <span
@@ -1604,10 +1614,10 @@
                                                        bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-400 hover:to-violet-500
                                                        px-2.5 py-1 rounded-full shadow-md shadow-indigo-500/30 hover:shadow-indigo-500/50
                                                        transition-all whitespace-nowrap cursor-pointer"
-                                                title="לוח חוגים ארצי"
+                                                title={$t('map.chugim_board_title')}
                                             >
                                                 <span class="bg-white/25 px-1.5 rounded-full text-[10px] font-black">{totalItems}</span>
-                                                ← ללוח חוגים ארצי
+                                                {$t('map.to_chugim_board')}
                                             </span>
                                         {/if}
                                     </div>
@@ -1616,7 +1626,7 @@
                                     >
                                         <span
                                             class="text-purple-400 text-sm md:text-xs md:text-sm"
-                                            >{totalItems} פריטים</span
+                                            >{$t('map.n_items', { values: { n: totalItems } })}</span
                                         >
                                         <svg
                                             class="w-5 h-5 md:w-4 md:h-4 md:w-6 md:h-6 text-purple-400 transition-transform duration-300 {expandedCategories.has(
@@ -1652,7 +1662,7 @@
                                         >
                                             <span class="flex items-center gap-2 min-w-0">
                                                 <span class="text-white text-sm truncate"
-                                                    >• {item.label}</span
+                                                    >• {$t(itemKey(item.id))}</span
                                                 >
                                                 {#if 'paid' in item}
                                                     <span
@@ -1660,14 +1670,14 @@
                                                             ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
                                                             : 'bg-green-500/20 text-green-400 border-green-500/40'}"
                                                     >
-                                                        {item.paid ? 'בתשלום' : 'חינם'}
+                                                        {item.paid ? $t('map.paid') : $t('map.free')}
                                                     </span>
                                                 {/if}
                                             </span>
                                             <div
                                                 class="flex-shrink-0 bg-purple-600 group-hover/item:bg-purple-500 text-white px-3 py-1 rounded text-xs font-bold transition-colors"
                                             >
-                                                צפה בפרטים
+                                                {$t('map.view_details')}
                                             </div>
                                         </a>
                                     {/each}
@@ -1686,12 +1696,12 @@
                                                         <span class="text-gray-500 text-xs">{dbItem.neighborhood}</span>
                                                     {/if}
                                                 </div>
-                                                <span class="bg-green-500/20 text-green-400 text-[10px] font-black px-1.5 py-0.5 rounded flex-shrink-0">חדש</span>
+                                                <span class="bg-green-500/20 text-green-400 text-[10px] font-black px-1.5 py-0.5 rounded flex-shrink-0">{$t('map.new_badge')}</span>
                                             </div>
                                             <div
                                                 class="bg-green-700 group-hover/item:bg-green-600 text-white px-3 py-1 rounded text-xs font-bold transition-colors flex-shrink-0 mr-2"
                                             >
-                                                צפה בפרטים
+                                                {$t('map.view_details')}
                                             </div>
                                         </a>
                                     {/each}
@@ -1719,13 +1729,13 @@
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-1.5 md:gap-2">
                                     {#if category.icon?.startsWith('/')}
-                                        <img src={category.icon} class="w-6 h-6 md:w-7 md:h-7 inline-block" alt={category.label} />
+                                        <img src={category.icon} class="w-6 h-6 md:w-7 md:h-7 inline-block" alt={$t(catKey(category.id))} />
                                     {:else}
                                         <span class="text-xl md:text-2xl">{category.icon}</span>
                                     {/if}
                                     <span
                                         class="text-white font-bold text-xs md:text-sm"
-                                        >{category.label}</span
+                                        >{$t(catKey(category.id))}</span
                                     >
                                 </div>
                                 <div class="flex items-center">
@@ -1747,7 +1757,7 @@
                     <input
                         bind:value={searchQuery}
                         type="text"
-                        placeholder="חפש חוג, גמ&quot;ח, שמרטפ, מניין..."
+                        placeholder={$t('map.search_placeholder')}
                         autofocus
                         class="flex-1 bg-white/8 border border-white/20 rounded-xl px-5 py-3.5
                                text-white placeholder:text-gray-500 text-base focus:outline-none
@@ -1766,7 +1776,7 @@
                 {#if !searchQuery.trim()}
                     <div class="text-center py-4 text-gray-500">
                         <div class="text-4xl mb-3">🔍</div>
-                        <p class="text-sm">הקלד מה אתה מחפש</p>
+                        <p class="text-sm">{$t('map.search_type_hint')}</p>
                     </div>
                     <div class="flex justify-center mt-3">
                         <img src="/images/vaadei-search.png" alt="" class="max-w-[320px] w-full rounded-xl opacity-80" />
@@ -1778,10 +1788,10 @@
                     {:else if searchResults().length === 0}
                         <div class="text-center py-12 text-gray-500">
                             <div class="text-4xl mb-3">😕</div>
-                            <p class="text-sm">לא נמצאו תוצאות</p>
+                            <p class="text-sm">{$t('map.no_results')}</p>
                         </div>
                     {:else}
-                        <p class="text-xs text-gray-500 mb-2">{searchResults().length} תוצאות</p>
+                        <p class="text-xs text-gray-500 mb-2">{$t('map.n_results', { values: { n: searchResults().length } })}</p>
                         {#each searchResults() as item}
                             <a
                                 href="/items/{item.id}"
@@ -1795,7 +1805,7 @@
                                     {/if}
                                 </div>
                                 {#if item.neighborhood === neighborhoodState.neighborhood}
-                                    <span class="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full flex-shrink-0">השכונה שלך</span>
+                                    <span class="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full flex-shrink-0">{$t('map.your_neighborhood')}</span>
                                 {:else if item.city === neighborhoodState.city}
                                     <span class="text-[10px] bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full flex-shrink-0">{item.city}</span>
                                 {/if}
@@ -1812,14 +1822,14 @@
         <div class="absolute right-4 z-50" style="top: -14px;">
             <button
                 onclick={() => { viewMode = viewMode === 'search' ? 'list' : 'search'; searchQuery = ''; }}
-                title="חיפוש"
+                title={$t('map.search')}
                 class="flex items-center gap-1.5 bg-[#0f172a] border-2 {viewMode === 'search' ? 'border-purple-500 text-purple-300' : 'border-white/20 text-white/70'} hover:border-purple-500/70 hover:text-white px-3 py-1.5 rounded-lg font-bold text-sm shadow-xl transition-all hover:scale-105"
             >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <circle cx="11" cy="11" r="7"/>
                     <path d="m21 21-4.35-4.35"/>
                 </svg>
-                <span class="text-xs hidden md:inline">חיפוש</span>
+                <span class="text-xs hidden md:inline">{$t('map.search')}</span>
             </button>
         </div>
 
@@ -1830,7 +1840,7 @@
         >
             <button
                 onclick={handleAddAdvantage}
-                title={showAddMenu ? "סגור תפריט" : "הוסף יתרון חדש לשכונה"}
+                title={showAddMenu ? $t('map.close_menu') : $t('map.add_advantage_title')}
                 class="relative group overflow-hidden bg-gradient-to-br {showAddMenu
                     ? 'from-green-900 via-emerald-900 to-teal-950'
                     : 'from-green-500 via-emerald-500 to-teal-600'} hover:{showAddMenu
@@ -1844,7 +1854,7 @@
                 ></div>
                 <div class="relative flex flex-row items-center justify-center gap-1.5 whitespace-nowrap">
                     <span class="text-xs leading-none">{showAddMenu ? "✖️" : "➕"}</span>
-                    <span class="leading-none">{showAddMenu ? "סגור" : "הוסף"}</span>
+                    <span class="leading-none">{showAddMenu ? $t('map.close') : $t('map.add')}</span>
                 </div>
             </button>
         </div>
@@ -1857,7 +1867,7 @@
                 <!-- כפתור הרמת יד רגיל -->
                 <button
                     onclick={() => (showHelpMenu = !showHelpMenu)}
-                    title="בקש עזרה מהקהילה"
+                    title={$t('map.ask_community_help')}
                     class="relative group overflow-hidden bg-gradient-to-br from-red-500 via-pink-500 to-purple-600 hover:from-red-400 hover:via-pink-400 hover:to-purple-500 text-white px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl font-bold text-sm md:text-base shadow-xl transition-all hover:scale-105 border-2 md:border-4 border-purple-600"
                 >
                     <div
@@ -1865,19 +1875,19 @@
                     ></div>
                     <div class="relative flex items-center gap-2 md:gap-3">
                         <span class="text-xl md:text-2xl">✋</span>
-                        <span>הרמת יד</span>
+                        <span>{$t('map.raise_hand')}</span>
                     </div>
                 </button>
             {:else}
                 <!-- כפתור יד מורמת -->
                 <button
                     onclick={handleLowerHand}
-                    title="הורד את היד"
+                    title={$t('map.lower_hand_title')}
                     class="relative group overflow-hidden bg-gradient-to-br from-yellow-500 via-orange-500 to-red-600 hover:from-yellow-400 hover:via-orange-400 hover:to-red-500 text-white px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl font-bold text-sm md:text-base shadow-xl transition-all hover:scale-105 border-2 md:border-4 border-yellow-400 animate-pulse"
                 >
                     <div class="relative flex items-center gap-2 md:gap-3">
                         <span class="text-xl md:text-2xl">🙋</span>
-                        <span>יד מורמת - לחץ להורדה</span>
+                        <span>{$t('map.hand_raised')}</span>
                     </div>
                 </button>
             {/if}
@@ -1890,7 +1900,7 @@
                     <div
                         class="bg-gradient-to-r from-red-500 to-pink-500 p-3 text-center"
                     >
-                        <h3 class="text-white font-bold text-lg">פתח קריאה</h3>
+                        <h3 class="text-white font-bold text-lg">{$t('map.open_call')}</h3>
                     </div>
                     <div class="p-2">
                         {#each helpOptions as option}
@@ -1900,7 +1910,7 @@
                             >
                                 <span class="text-2xl">{option.icon}</span>
                                 <span class="text-gray-800 font-medium text-sm"
-                                    >{option.text}</span
+                                    >{$t(option.key)}</span
                                 >
                             </button>
                         {/each}
@@ -1909,7 +1919,7 @@
                         onclick={() => (showHelpMenu = false)}
                         class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 py-2 text-sm font-bold transition-colors"
                     >
-                        ביטול
+                        {$t('map.cancel')}
                     </button>
                 </div>
             {/if}
@@ -1923,7 +1933,7 @@
                         class="bg-gradient-to-r from-yellow-500 to-orange-500 p-3 text-center"
                     >
                         <h3 class="text-white font-bold text-lg">
-                            איך הבעיה נפתרה?
+                            {$t('map.survey_title')}
                         </h3>
                     </div>
                     <div class="p-4 space-y-3">
@@ -1934,10 +1944,10 @@
                             <span class="text-3xl">🤝</span>
                             <div class="text-right">
                                 <p class="font-bold text-green-800">
-                                    הקהילה עזרה לי
+                                    {$t('map.community_helped')}
                                 </p>
                                 <p class="text-xs text-green-600">
-                                    תודה לכולם!
+                                    {$t('map.thanks_all')}
                                 </p>
                             </div>
                         </button>
@@ -1948,10 +1958,10 @@
                             <span class="text-3xl">✅</span>
                             <div class="text-right">
                                 <p class="font-bold text-blue-800">
-                                    הבעיה נפתרה אחרת
+                                    {$t('map.solved_other')}
                                 </p>
                                 <p class="text-xs text-blue-600">
-                                    הכל בסדר עכשיו
+                                    {$t('map.all_ok')}
                                 </p>
                             </div>
                         </button>
@@ -1960,7 +1970,7 @@
                         onclick={() => handleSurveyResponse("cancel")}
                         class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 py-2 text-sm font-bold transition-colors"
                     >
-                        ביטול
+                        {$t('map.cancel')}
                     </button>
                 </div>
             {/if}
@@ -1972,8 +1982,8 @@
                 <button
                     type="button"
                     onclick={zoomIn}
-                    aria-label="הגדל"
-                    title="הגדל (Zoom In)"
+                    aria-label={$t('map.zoom_in')}
+                    title={$t('map.zoom_in_title')}
                     class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white text-lg font-bold flex items-center justify-center transition-all shadow-lg border border-purple-400 hover:scale-110"
                 >
                     +
@@ -1981,8 +1991,8 @@
                 <button
                     type="button"
                     onclick={zoomOut}
-                    aria-label="הקטן"
-                    title="הקטן (Zoom Out)"
+                    aria-label={$t('map.zoom_out')}
+                    title={$t('map.zoom_out_title')}
                     class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white text-lg font-bold flex items-center justify-center transition-all shadow-lg border border-purple-400 hover:scale-110"
                 >
                     −
@@ -1994,7 +2004,7 @@
 
 {#if handRaised}
     <div class="text-white text-lg text-center mt-2">
-        הקהילה עזרה לפתור {$communityHelpCount} קריאות בשנת {currentYear}
+        {$t('map.community_solved', { values: { n: $communityHelpCount, year: currentYear } })}
     </div>
 {/if}
 
@@ -2012,23 +2022,23 @@
                 <!-- מסך הצלחה -->
                 <div class="bg-[#1e293b] border border-white/10 rounded-2xl p-8 shadow-2xl text-center mt-8">
                     <div class="text-6xl mb-4">✅</div>
-                    <h2 class="text-xl font-black text-white mb-3">הקריאה נשלחה לקהילה!</h2>
-                    <p class="text-gray-400 text-sm mb-6">אנחנו על זה - הקהילה תעזור בהקדם</p>
+                    <h2 class="text-xl font-black text-white mb-3">{$t('map.call_sent_title')}</h2>
+                    <p class="text-gray-400 text-sm mb-6">{$t('map.call_sent_sub')}</p>
                     <button
                         onclick={() => showRaiseHandModal = false}
                         class="w-full py-3 rounded-xl font-black text-sm bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500 text-white shadow-lg transition-all"
                     >
-                        סגור
+                        {$t('map.close')}
                     </button>
                 </div>
             {:else}
                 <!-- כותרת -->
                 <div class="text-center mb-6 mt-4">
                     <div class="text-5xl mb-3">{helpOptions.find(o => o.id === modalOptionId)?.icon ?? '🆘'}</div>
-                    <h1 class="text-2xl font-black text-white mb-1">{helpOptions.find(o => o.id === modalOptionId)?.text ?? 'קריאת עזרה'}</h1>
-                    <p class="text-gray-400 text-sm">מלא את הפרטים ונעדכן את הקהילה מיד</p>
+                    <h1 class="text-2xl font-black text-white mb-1">{$t(helpOptions.find(o => o.id === modalOptionId)?.key ?? 'map.help_call')}</h1>
+                    <p class="text-gray-400 text-sm">{$t('map.modal_sub')}</p>
                     <div class="mt-3 inline-flex items-center gap-1.5 bg-red-500/10 border border-red-500/30 rounded-full px-4 py-1.5 text-xs font-bold text-red-400">
-                        🆘 קריאת עזרה לקהילה
+                        {$t('map.call_badge')}
                     </div>
                 </div>
 
@@ -2051,7 +2061,7 @@
                                 if (result.type === 'redirect') {
                                     modalSubmitted = true;
                                 } else if (result.type === 'failure') {
-                                    modalError = (result.data as Record<string, string>)?.error ?? 'שגיאה, נסה שוב';
+                                    modalError = (result.data as Record<string, string>)?.error ?? $t('map.error_retry');
                                 }
                             };
                         }}
@@ -2062,14 +2072,14 @@
                         <!-- תיאור -->
                         <div>
                             <label for="modal-rh-desc" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
-                                {fieldsByOption[modalOptionId]?.descLabel ?? 'תיאור המצב'} *
+                                {$t(fieldsByOption[modalOptionId]?.descLabel ?? 'map.f1_desc_label')} *
                             </label>
                             <textarea
                                 id="modal-rh-desc"
                                 name="description"
                                 rows="4"
                                 required
-                                placeholder={fieldsByOption[modalOptionId]?.descPlaceholder ?? ''}
+                                placeholder={$t(fieldsByOption[modalOptionId]?.descPlaceholder ?? 'map.f1_desc_ph')}
                                 class="w-full bg-white/5 border border-white/10 focus:border-red-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none transition-colors placeholder:text-gray-600 resize-none"
                             ></textarea>
                         </div>
@@ -2077,14 +2087,14 @@
                         <!-- מיקום -->
                         <div>
                             <label for="modal-rh-location" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
-                                מיקום *
+                                {$t('map.location')} *
                             </label>
                             <input
                                 id="modal-rh-location"
                                 name="location"
                                 type="text"
                                 required
-                                placeholder={fieldsByOption[modalOptionId]?.locationPlaceholder ?? 'מיקום...'}
+                                placeholder={$t(fieldsByOption[modalOptionId]?.locationPlaceholder ?? 'map.location_ph')}
                                 class="w-full bg-white/5 border border-white/10 focus:border-red-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none transition-colors placeholder:text-gray-600"
                             />
                         </div>
@@ -2092,11 +2102,11 @@
                         <!-- תמונה -->
                         <div>
                             <p class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
-                                תמונה (אופציונלי)
+                                {$t('map.photo_optional')}
                             </p>
                             {#if modalImagePreview}
                                 <div class="relative w-full rounded-xl overflow-hidden border border-white/10">
-                                    <img src={modalImagePreview} alt="תצוגה מקדימה" class="w-full max-h-52 object-contain bg-black/30" />
+                                    <img src={modalImagePreview} alt={$t('map.preview_alt')} class="w-full max-h-52 object-contain bg-black/30" />
                                     <button
                                         type="button"
                                         onclick={() => { modalImageBase64 = ''; modalImagePreview = ''; }}
@@ -2106,7 +2116,7 @@
                             {:else}
                                 <label class="flex flex-col items-center justify-center gap-2 w-full h-24 rounded-xl border-2 border-dashed border-white/15 hover:border-red-500/50 bg-white/3 hover:bg-red-900/10 cursor-pointer transition-all">
                                     <span class="text-2xl">📷</span>
-                                    <span class="text-gray-400 text-sm font-bold">לחץ להעלאת תמונה</span>
+                                    <span class="text-gray-400 text-sm font-bold">{$t('map.upload_photo')}</span>
                                     <input type="file" accept="image/*" class="hidden" onchange={handleModalImageChange} />
                                 </label>
                             {/if}
@@ -2117,19 +2127,19 @@
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label for="modal-rh-contact" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
-                                    שם ליצירת קשר
+                                    {$t('map.contact_name')}
                                 </label>
                                 <input
                                     id="modal-rh-contact"
                                     name="contact"
                                     type="text"
-                                    placeholder="שם פרטי"
+                                    placeholder={$t('map.first_name_ph')}
                                     class="w-full bg-white/5 border border-white/10 focus:border-red-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none transition-colors placeholder:text-gray-600"
                                 />
                             </div>
                             <div>
                                 <label for="modal-rh-phone" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
-                                    טלפון *
+                                    {$t('map.phone')} *
                                 </label>
                                 <input
                                     id="modal-rh-phone"
@@ -2152,9 +2162,9 @@
                                     : 'bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500 text-white shadow-lg hover:shadow-red-500/25'}"
                         >
                             {#if modalSubmitting}
-                                שולח קריאת עזרה...
+                                {$t('map.sending_call')}
                             {:else}
-                                ✋ שלח קריאת עזרה לקהילה
+                                {$t('map.send_call')}
                             {/if}
                         </button>
                     </form>
@@ -2166,7 +2176,7 @@
                         onclick={() => showRaiseHandModal = false}
                         class="text-gray-500 hover:text-gray-300 text-sm transition-colors"
                     >
-                        ✕ סגור
+                        ✕ {$t('map.close')}
                     </button>
                 </div>
             {/if}

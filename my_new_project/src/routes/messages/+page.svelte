@@ -23,7 +23,7 @@
 
     const localId = (id: string) => `db-${id}`;
 
-    // מקור האמת לסטטוס "שמור" הוא השרת (status='archived') כדי שמחיקת ה-60 יום תדלג עליו
+    // מקור האמת לסטטוס "שמור" הוא השרת (status='archived') כדי שהמחיקה האוטומטית (100 הודעות/3 חודשים) תדלג עליו
     function isArchived(m: { status: string }): boolean { return m.status === 'archived'; }
 
     // עדכון מקביל של ה-localStorage המשותף עם הפרופיל (כדי שהארכוב יסונכרן לתצוגת ההתראות שם)
@@ -100,8 +100,8 @@
     {#if data.messages.length > 0}
         <div class="mb-4 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5">
             <p class="text-gray-400 text-xs leading-relaxed text-center">
-                ℹ️ הודעות נמחקות אוטומטית לאחר <span class="font-bold text-gray-300">60 יום</span>.
-                כדי לשמור הודעה - סמן אותה בכפתור <span class="font-bold text-amber-300">📌 שמור</span>.
+                ℹ️ נשמרות עד <span class="font-bold text-gray-300">100 ההודעות האחרונות</span> או <span class="font-bold text-gray-300">3 חודשים</span> אחורה (המוקדם מביניהם).
+                הודעה שסומנה בכפתור <span class="font-bold text-amber-300">📌 שמור</span> נשמרת לתמיד.
             </p>
         </div>
     {/if}

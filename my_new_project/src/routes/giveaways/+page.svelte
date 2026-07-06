@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from 'svelte';
+    import { _ } from 'svelte-i18n';
     import type { PageData } from './$types';
     import { giveawayCategories, detectCategory, categoryByKey } from '$lib/giveawayCategories';
     import { neighborhoodState } from '$lib/neighborhoodState.svelte';
@@ -118,7 +119,7 @@
         const origin = typeof window !== 'undefined' ? window.location.origin : '';
         const url = `${origin}/items/${item.id}`;
         const lines = [
-            `🎁 למסירה: ${item.label}`,
+            `🎁 ${$_('listings.gv_wa_share')}: ${item.label}`,
             item.address ? `📍 ${item.address}` : '',
             item.description ? `\n${item.description}` : '',
             `\n🔗 ${url}`,
@@ -130,10 +131,10 @@
     function timeAgo(iso: string): string {
         if (!iso) return '';
         const diff = (Date.now() - new Date(iso).getTime()) / 1000;
-        if (diff < 60) return 'הרגע';
-        if (diff < 3600) return `לפני ${Math.floor(diff / 60)} דק'`;
-        if (diff < 86400) return `לפני ${Math.floor(diff / 3600)} שעות`;
-        if (diff < 86400 * 30) return `לפני ${Math.floor(diff / 86400)} ימים`;
+        if (diff < 60) return $_('listings.time_now');
+        if (diff < 3600) return $_('listings.time_min', { values: { n: Math.floor(diff / 60) } });
+        if (diff < 86400) return $_('listings.time_hours', { values: { n: Math.floor(diff / 3600) } });
+        if (diff < 86400 * 30) return $_('listings.time_days', { values: { n: Math.floor(diff / 86400) } });
         return new Date(iso).toLocaleDateString('he-IL');
     }
 
@@ -205,13 +206,16 @@
         return counts;
     });
 
-    const sortOptions: { key: SortOption; label: string; icon: string }[] = [
-        { key: 'newest',  label: 'החדשים ביותר', icon: '🆕' },
-        { key: 'oldest',  label: 'הישנים ביותר', icon: '📅' },
-        { key: 'popular', label: 'פופולריים',    icon: '🔥' },
+    const sortOptions: { key: SortOption; labelKey: string; icon: string }[] = [
+        { key: 'newest',  labelKey: 'listings.gv_sort_newest',  icon: '🆕' },
+        { key: 'oldest',  labelKey: 'listings.gv_sort_oldest',  icon: '📅' },
+        { key: 'popular', labelKey: 'listings.gv_sort_popular', icon: '🔥' },
     ];
 
-    let currentSortLabel = $derived(sortOptions.find(o => o.key === sortBy)?.label ?? '');
+    let currentSortLabel = $derived.by(() => {
+        const k = sortOptions.find(o => o.key === sortBy)?.labelKey;
+        return k ? $_(k) : '';
+    });
 
     // ====== חלוקה ל-4 קומות לפי קרבה למשתמש (תמיד מוצגות) ======
     function haversineKm(a: Coord, b: Coord): number {
@@ -292,12 +296,12 @@
             <a
                 href="/"
                 onclick={(e) => { if (typeof history !== 'undefined' && history.length > 1) { e.preventDefault(); history.back(); } }}
-                aria-label="חזור אחורה"
-                title="חזור אחורה"
+                aria-label={$_('listings.gv_back')}
+                title={$_('listings.gv_back')}
                 class="absolute top-3 start-3 md:top-5 md:start-5 z-10 inline-flex items-center gap-1.5 bg-white/5 hover:bg-orange-500/20 border border-white/10 hover:border-orange-500/40 text-gray-300 hover:text-white px-3 py-1.5 rounded-full text-xs md:text-sm font-bold backdrop-blur-sm transition-all"
             >
                 <span aria-hidden="true">🏠</span>
-                <span class="hidden sm:inline">חזור אחורה</span>
+                <span class="hidden sm:inline">{$_('listings.gv_back')}</span>
                 <span aria-hidden="true">→</span>
             </a>
             <h1 class="absolute top-0 start-0 -z-10 text-base font-bold text-transparent pointer-events-none select-none" aria-hidden="true">למסירה</h1>
@@ -321,7 +325,7 @@
                     class="absolute -start-2 md:-start-14 top-[calc(50%+10px)] md:top-1/2 -translate-y-1/2 z-30 flex flex-col items-center justify-center gap-1 md:gap-2 bg-gradient-to-br from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold px-2.5 py-2 md:px-5 md:py-4 rounded-xl shadow-lg shadow-orange-500/50 ring-1 ring-orange-300/40 transition-all hover:scale-105 whitespace-nowrap text-xs md:text-base"
                 >
                     <span class="text-base md:text-2xl leading-none">➕</span>
-                    <span>פרסם פריט</span>
+                    <span>{$_('listings.gv_post_item')}</span>
                 </a>
                 {#if data.currentUserId}
                     <a
@@ -329,7 +333,7 @@
                         class="absolute -end-2 md:-end-14 top-[calc(50%+10px)] md:top-1/2 -translate-y-1/2 z-30 flex flex-col items-center justify-center gap-1 md:gap-2 bg-gradient-to-br from-orange-500/55 to-amber-600/55 backdrop-blur-md border border-orange-300/70 hover:from-orange-500/75 hover:to-amber-600/75 text-orange-50 hover:text-white font-bold px-2.5 py-2 md:px-5 md:py-4 rounded-xl transition-all hover:scale-105 whitespace-nowrap shadow-lg shadow-orange-500/30 text-xs md:text-base"
                     >
                         <span class="text-base md:text-2xl leading-none">👤</span>
-                        <span>הפריטים שלי</span>
+                        <span>{$_('listings.gv_my_items')}</span>
                     </a>
                 {/if}
             </div>
@@ -345,7 +349,7 @@
             <div class="relative z-20 -mt-5 md:-mt-7 flex items-center justify-center mb-5 pointer-events-none">
                 <h2 class="absolute right-24 md:right-40 text-white font-black text-base md:text-lg flex items-center gap-2 whitespace-nowrap">
                     <span class="text-orange-400">▾</span>
-                    בחר קטגוריות
+                    {$_('listings.gv_choose_categories')}
                 </h2>
                 <button
                     onclick={() => categoryFilter = cat.key}
@@ -422,8 +426,8 @@
                     <input
                         type="search"
                         bind:value={search}
-                        placeholder="מה מחפשים?"
-                        aria-label="חיפוש פריטים"
+                        placeholder={$_('listings.gv_search_ph')}
+                        aria-label={$_('listings.gv_search_aria')}
                         dir="rtl"
                         class="w-full bg-white/5 border-2 border-white/10 rounded-full pe-20 ps-3 py-2 text-white placeholder:text-gray-500 focus:border-orange-500 focus:bg-white/10 focus:outline-none transition-all text-sm md:text-base text-right"
                     />
@@ -431,29 +435,29 @@
                         <button
                             type="button"
                             onclick={() => { search = ''; debouncedSearch = ''; }}
-                            aria-label="נקה חיפוש"
+                            aria-label={$_('listings.gv_clear_search')}
                             class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-lg bg-white/10 hover:bg-white/20 w-6 h-6 rounded-full flex items-center justify-center transition-colors"
                         >×</button>
                     {:else}
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[11px] md:text-xs font-bold text-orange-200 whitespace-nowrap pointer-events-none">{filtered.length} פריטים</span>
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[11px] md:text-xs font-bold text-orange-200 whitespace-nowrap pointer-events-none">{$_('listings.gv_items_count', { values: { n: filtered.length } })}</span>
                     {/if}
                 </div>
 
                 <!-- Price filter - segmented control (קבוצה מקושרת) -->
-                <div role="group" aria-label="סינון לפי מחיר" class="shrink-0 inline-flex items-center bg-white/5 border border-white/10 rounded-full p-0.5 gap-0.5">
+                <div role="group" aria-label={$_('listings.gv_price_filter')} class="shrink-0 inline-flex items-center bg-white/5 border border-white/10 rounded-full p-0.5 gap-0.5">
                     <button
                         onclick={() => priceFilter = 'all'}
                         aria-pressed={priceFilter === 'all'}
                         class="px-2.5 md:px-3 py-1 rounded-full text-[11px] md:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1 {priceFilter === 'all' ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md shadow-orange-500/30' : 'text-gray-300 hover:bg-white/10'}"
                     >
-                        <span>הכל</span>
+                        <span>{$_('listings.gv_all')}</span>
                     </button>
                     <button
                         onclick={() => priceFilter = 'free'}
                         aria-pressed={priceFilter === 'free'}
                         class="px-2.5 md:px-3 py-1 rounded-full text-[11px] md:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1 {priceFilter === 'free' ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-md shadow-emerald-500/30' : 'text-emerald-300 hover:bg-white/10'}"
                     >
-                        <span>חינם</span>
+                        <span>{$_('listings.free')}</span>
                     </button>
                     <span aria-hidden="true" class="text-gray-500 text-[11px] md:text-sm font-bold select-none">/</span>
                     <button
@@ -461,7 +465,7 @@
                         aria-pressed={priceFilter === 'symbolic'}
                         class="px-2.5 md:px-3 py-1 rounded-full text-[11px] md:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1 {priceFilter === 'symbolic' ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-md shadow-amber-500/30' : 'text-amber-300 hover:bg-white/10'}"
                     >
-                        <span>סמלי</span>
+                        <span>{$_('listings.gv_symbolic')}</span>
                     </button>
                 </div>
 
@@ -472,7 +476,7 @@
                         <button
                             onclick={() => showSortMenu = !showSortMenu}
                             class="flex items-center gap-1 bg-white/5 hover:bg-white/10 border border-white/10 text-white px-2.5 md:px-3 py-1.5 rounded-full text-[11px] md:text-sm font-bold transition-colors"
-                            aria-label="מיון"
+                            aria-label={$_('listings.gv_sort')}
                         >
                             <span>↕️</span>
                             <span class="hidden lg:inline">{currentSortLabel}</span>
@@ -485,7 +489,7 @@
                                         class="w-full text-right px-4 py-2.5 text-xs md:text-sm hover:bg-white/10 transition-colors flex items-center gap-2 {sortBy === o.key ? 'text-orange-300 bg-orange-500/10' : 'text-white'}"
                                     >
                                         <span>{o.icon}</span>
-                                        <span class="flex-1">{o.label}</span>
+                                        <span class="flex-1">{$_(o.labelKey)}</span>
                                         {#if sortBy === o.key}<span class="text-orange-400">✓</span>{/if}
                                     </button>
                                 {/each}
@@ -498,14 +502,14 @@
                         <button
                             onclick={() => viewMode = 'grid'}
                             class="px-2.5 py-1 rounded-full text-sm transition-all {viewMode === 'grid' ? 'bg-orange-500 text-white' : 'text-gray-400 hover:text-white'}"
-                            aria-label="תצוגת רשת"
-                            title="תצוגת רשת"
+                            aria-label={$_('listings.gv_grid_view')}
+                            title={$_('listings.gv_grid_view')}
                         >▦</button>
                         <button
                             onclick={() => viewMode = 'list'}
                             class="px-2.5 py-1 rounded-full text-sm transition-all {viewMode === 'list' ? 'bg-orange-500 text-white' : 'text-gray-400 hover:text-white'}"
-                            aria-label="תצוגת רשימה"
-                            title="תצוגת רשימה"
+                            aria-label={$_('listings.gv_list_view')}
+                            title={$_('listings.gv_list_view')}
                         >☰</button>
                     </div>
                 </div>
@@ -519,7 +523,7 @@
         <div class="flex items-center justify-between mb-4 px-1 gap-2 flex-wrap">
             <p class="text-gray-400 text-xs md:text-sm">
                 <span class="text-white font-bold">{filtered.length}</span>
-                {filtered.length === data.items.length ? 'פריטים זמינים' : `מתוך ${data.items.length} פריטים`}
+                {filtered.length === data.items.length ? $_('listings.gv_available') : $_('listings.gv_of_total', { values: { n: data.items.length } })}
                 {#if categoryFilter !== 'all'}
                     {@const cat = categoryByKey(categoryFilter)}
                     {#if cat}
@@ -527,7 +531,7 @@
                     {/if}
                 {/if}
                 {#if debouncedSearch}
-                    <span class="text-gray-500"> · חיפוש: "{debouncedSearch}"</span>
+                    <span class="text-gray-500"> · {$_('listings.gv_search_term', { values: { q: debouncedSearch } })}</span>
                 {/if}
             </p>
             {#if categoryFilter !== 'all' || priceFilter !== 'all' || debouncedSearch}
@@ -535,7 +539,7 @@
                     onclick={() => { categoryFilter = 'all'; priceFilter = 'all'; search = ''; debouncedSearch = ''; }}
                     class="text-xs text-orange-400 hover:text-orange-300 font-bold transition-colors"
                 >
-                    × נקה סינון
+                    × {$_('listings.gv_clear_filters')}
                 </button>
             {/if}
         </div>
@@ -544,17 +548,17 @@
             <div class="text-center py-16 rounded-2xl bg-gradient-to-br from-[#0f172a] to-[#0a0f1a] border border-white/10">
                 <span class="text-7xl mb-4 block">📭</span>
                 {#if data.items.length === 0}
-                    <p class="text-white text-xl font-bold mb-2">אין כרגע פריטים למסירה</p>
-                    <p class="text-gray-400 text-sm mb-6">היה הראשון להציע משהו לקהילה!</p>
+                    <p class="text-white text-xl font-bold mb-2">{$_('listings.gv_empty_title')}</p>
+                    <p class="text-gray-400 text-sm mb-6">{$_('listings.gv_empty_sub')}</p>
                 {:else}
-                    <p class="text-white text-xl font-bold mb-2">לא נמצאו תוצאות</p>
-                    <p class="text-gray-400 text-sm mb-6">נסה לחפש משהו אחר או לנקות את הפילטרים</p>
+                    <p class="text-white text-xl font-bold mb-2">{$_('listings.gv_no_results')}</p>
+                    <p class="text-gray-400 text-sm mb-6">{$_('listings.gv_no_results_sub')}</p>
                 {/if}
                 <a
                     href="/giveaways/add"
                     class="inline-flex items-center gap-2 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold px-6 py-3 rounded-full shadow-lg shadow-orange-500/30 transition-all hover:scale-105"
                 >
-                    ➕ פרסם פריט
+                    ➕ {$_('listings.gv_post_item')}
                 </a>
             </div>
 
@@ -578,7 +582,7 @@
                                 {#if price > 0}
                                     <span class="absolute bottom-2 start-2 px-2 py-0.5 rounded-md text-[11px] font-black bg-amber-500 text-white shadow-lg">₪{price}</span>
                                 {:else}
-                                    <span class="absolute bottom-2 start-2 px-2 py-0.5 rounded-md text-[11px] font-black bg-emerald-500 text-white shadow-lg">חינם</span>
+                                    <span class="absolute bottom-2 start-2 px-2 py-0.5 rounded-md text-[11px] font-black bg-emerald-500 text-white shadow-lg">{$_('listings.free')}</span>
                                 {/if}
                             </div>
                             <div class="flex-1 p-3 md:p-4 flex items-center min-w-0">
@@ -588,7 +592,7 @@
                         <button
                             type="button"
                             onclick={(e) => toggleFavorite(item, e)}
-                            aria-label={isFav ? 'הסר ממועדפים' : 'הוסף למועדפים'}
+                            aria-label={isFav ? $_('listings.gv_fav_remove') : $_('listings.gv_fav_add')}
                             class="absolute top-2 end-2 z-10 w-9 h-9 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/15 text-lg transition-all {isFav ? 'text-rose-400' : 'text-gray-400 hover:text-rose-300'}"
                         >{isFav ? '❤️' : '🤍'}</button>
                     </div>
@@ -614,7 +618,7 @@
                                 {#if price > 0}
                                     <span class="absolute bottom-2 start-2 px-2.5 py-1 rounded-lg text-xs font-black bg-amber-500 text-white shadow-lg shadow-amber-500/40">₪{price}</span>
                                 {:else}
-                                    <span class="absolute bottom-2 start-2 px-2.5 py-1 rounded-lg text-xs font-black bg-emerald-500 text-white shadow-lg shadow-emerald-500/40">חינם</span>
+                                    <span class="absolute bottom-2 start-2 px-2.5 py-1 rounded-lg text-xs font-black bg-emerald-500 text-white shadow-lg shadow-emerald-500/40">{$_('listings.free')}</span>
                                 {/if}
                             </div>
                             <div class="p-2.5 md:p-3">
@@ -624,7 +628,7 @@
                         <button
                             type="button"
                             onclick={(e) => toggleFavorite(item, e)}
-                            aria-label={isFav ? 'הסר ממועדפים' : 'הוסף למועדפים'}
+                            aria-label={isFav ? $_('listings.gv_fav_remove') : $_('listings.gv_fav_add')}
                             class="absolute top-2 end-2 z-10 w-8 h-8 rounded-full flex items-center justify-center bg-black/40 backdrop-blur-sm hover:bg-black/60 text-base transition-all {isFav ? 'text-rose-400 scale-110' : 'text-white/80 hover:text-rose-300'}"
                         >{isFav ? '❤️' : '🤍'}</button>
                     </div>
@@ -646,7 +650,7 @@
         <!-- Tier 1: בשכונה שלי -->
         {#if groupNeighborhood.length > 0}
             <section class="mb-2">
-                {@render sectionHeader('בשכונה שלי', neighborhoodState.neighborhood, groupNeighborhood.length)}
+                {@render sectionHeader($_('listings.tier_neighborhood'), neighborhoodState.neighborhood, groupNeighborhood.length)}
                 {#if viewMode === 'list'}{@render listView(groupNeighborhood)}{:else}{@render gridView(groupNeighborhood)}{/if}
             </section>
         {/if}
@@ -654,7 +658,7 @@
         <!-- Tier 2: בעיר שלי -->
         {#if groupCity.length > 0}
             <section class="mb-2">
-                {@render sectionHeader('בעיר שלי', neighborhoodState.city, groupCity.length)}
+                {@render sectionHeader($_('listings.tier_city'), neighborhoodState.city, groupCity.length)}
                 {#if viewMode === 'list'}{@render listView(groupCity)}{:else}{@render gridView(groupCity)}{/if}
             </section>
         {/if}
@@ -662,7 +666,7 @@
         <!-- Tier 3: בערים סביבי -->
         {#if groupNearby.length > 0}
             <section class="mb-2">
-                {@render sectionHeader('בערים סביבי', '', groupNearby.length)}
+                {@render sectionHeader($_('listings.tier_nearby'), '', groupNearby.length)}
                 {#if viewMode === 'list'}{@render listView(groupNearby)}{:else}{@render gridView(groupNearby)}{/if}
             </section>
         {/if}
@@ -670,7 +674,7 @@
         <!-- Tier 4: ארצי -->
         {#if groupRest.length > 0}
             <section class="mb-2">
-                {@render sectionHeader('ארצי', '', groupRest.length)}
+                {@render sectionHeader($_('listings.tier_national'), '', groupRest.length)}
                 {#if viewMode === 'list'}{@render listView(groupRest)}{:else}{@render gridView(groupRest)}{/if}
             </section>
         {/if}

@@ -1,13 +1,39 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { _ } from 'svelte-i18n';
 
 	type TabId = 'terms' | 'privacy' | 'regulations' | 'accessibility';
 
-	const tabs: { id: TabId; label: string; icon: string }[] = [
-		{ id: 'terms',         label: 'תנאי שימוש',                   icon: '📋' },
-		{ id: 'privacy',       label: 'מדיניות פרטיות ו‑Cookies',     icon: '🔒' },
-		{ id: 'regulations',   label: 'תקנון האתר',                   icon: '📜' },
-		{ id: 'accessibility', label: 'הצהרת נגישות',                 icon: '♿' },
+	const tabs: { id: TabId; labelKey: string; icon: string }[] = [
+		{ id: 'terms',         labelKey: 'aboutPages.tab_terms',         icon: '📋' },
+		{ id: 'privacy',       labelKey: 'aboutPages.tab_privacy',       icon: '🔒' },
+		{ id: 'regulations',   labelKey: 'aboutPages.tab_regulations',   icon: '📜' },
+		{ id: 'accessibility', labelKey: 'aboutPages.tab_accessibility', icon: '♿' },
+	];
+
+	const termsTocKeys = [
+		'aboutPages.terms_toc_1',
+		'aboutPages.terms_toc_2',
+		'aboutPages.terms_toc_3',
+		'aboutPages.terms_toc_4',
+		'aboutPages.terms_toc_5',
+		'aboutPages.terms_toc_6',
+		'aboutPages.terms_toc_7',
+		'aboutPages.terms_toc_8',
+		'aboutPages.terms_toc_9',
+		'aboutPages.terms_toc_10',
+		'aboutPages.terms_toc_11',
+	];
+
+	const forbiddenContentKeys = [
+		'aboutPages.terms_s2_3_li1',
+		'aboutPages.terms_s2_3_li2',
+		'aboutPages.terms_s2_3_li3',
+		'aboutPages.terms_s2_3_li4',
+		'aboutPages.terms_s2_3_li5',
+		'aboutPages.terms_s2_3_li6',
+		'aboutPages.terms_s2_3_li7',
+		'aboutPages.terms_s2_3_li8',
 	];
 
 	let activeTab = $state<TabId>('terms');
@@ -34,9 +60,9 @@
 		<!-- כותרת -->
 		<div class="text-center mb-8">
 			<h1 class="text-3xl md:text-4xl font-black bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-3">
-				מסמכים משפטיים
+				{$_('aboutPages.legal_title')}
 			</h1>
-			<p class="text-gray-400 text-base">תנאי שימוש, מדיניות פרטיות ו‑Cookies, תקנון האתר והצהרת נגישות</p>
+			<p class="text-gray-400 text-base">{$_('aboutPages.legal_subtitle')}</p>
 		</div>
 
 		<!-- טאבים -->
@@ -48,7 +74,7 @@
 						class="tab-btn {activeTab === tab.id ? 'tab-active' : 'tab-inactive'}"
 					>
 						<span>{tab.icon}</span>
-						<span>{tab.label}</span>
+						<span>{$_(tab.labelKey)}</span>
 					</button>
 				{/each}
 			</div>
@@ -58,178 +84,165 @@
 		{#if activeTab === 'terms'}
 		<div class="doc-card">
 			<div class="doc-header">
-				<h2 class="doc-title">📋 תנאי שימוש</h2>
-				<p class="doc-date">תאריך עדכון אחרון: 29/3/2026</p>
+				<h2 class="doc-title">📋 {$_('aboutPages.terms_title')}</h2>
+				<p class="doc-date">{$_('aboutPages.last_updated', { values: { date: '29/3/2026' } })}</p>
 			</div>
 
 			<div class="toc">
-				<p class="toc-title">תוכן עניינים</p>
+				<p class="toc-title">{$_('aboutPages.toc_title')}</p>
 				<ol class="toc-list">
-					<li>פתיח</li>
-					<li>תוכן גולשים</li>
-					<li>הרשמה וחשבונות משתמש</li>
-					<li>שימוש מותר ואסור</li>
-					<li>איסוף מידע ושיתוף עם צדדים שלישיים</li>
-					<li>קניין רוחני</li>
-					<li>הגבלת אחריות</li>
-					<li>מחיקת חשבון וזכויות משתמש</li>
-					<li>שינויים בתנאי השימוש</li>
-					<li>הדין החל וסמכות שיפוט</li>
-					<li>יצירת קשר</li>
+					{#each termsTocKeys as key}
+						<li>{$_(key)}</li>
+					{/each}
 				</ol>
 			</div>
 
 			<section class="sec">
-				<h3 class="sec-title">1. פתיח</h3>
-				<p>השימוש באתר, בתכניו ובשירותיו כפוף לתנאי שימוש אלה ("תנאי השימוש") ולמדיניות הפרטיות של האתר.</p>
-				<p>הכניסה לאתר, השימוש בו, יצירת חשבון, פרסום תוכן או מסירת מידע אישי מהווים את הסכמתך המלאה לתנאים אלה. האתר מיועד לשימוש על ידי כלל הציבור, לרבות משפחות וקטינים.</p>
-				<p>שימוש של קטינים מתחת לגיל 18 מחייב את אישור הוריהם או האפוטרופוס החוקי שלהם.</p>
+				<h3 class="sec-title">{$_('aboutPages.terms_s1_title')}</h3>
+				<p>{$_('aboutPages.terms_s1_p1')}</p>
+				<p>{$_('aboutPages.terms_s1_p2')}</p>
+				<p>{$_('aboutPages.terms_s1_p3')}</p>
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">2. תוכן גולשים</h3>
-				<p>האתר מאפשר למשתמשים לפרסם תכנים שונים, לרבות טקסט, תמונות, מיקום גאוגרפי, פרטי קשר, קישורים, מידע על אירועים, מודעות, שירותים, הצעות ותגובות ("תוכן גולשים").</p>
+				<h3 class="sec-title">{$_('aboutPages.terms_s2_title')}</h3>
+				<p>{$_('aboutPages.terms_s2_p1')}</p>
 
-				<h4 class="sub-title">2.1 אחריות על תוכן גולשים</h4>
-				<p>כל תוכן גולשים מפורסם על אחריותו הבלעדית של המשתמש שיצר או העלה אותו. האתר, מפעיליו, מנהליו ובעליו אינם אחראים לכל נזק, הפסד, טעות, הטעיה, פגיעה בפרטיות, לשון הרע, הפרת זכויות יוצרים או כל פגיעה אחרת הנובעת מתוכן גולשים.</p>
+				<h4 class="sub-title">{$_('aboutPages.terms_s2_1_title')}</h4>
+				<p>{$_('aboutPages.terms_s2_1_p1')}</p>
 
-				<h4 class="sub-title">2.2 רישיון שימוש שהמשתמש מעניק לאתר</h4>
-				<p>בפרסום תוכן גולשים, המשתמש מעניק לאתר רישיון בלתי‑בלעדי, עולמי, ללא תמלוגים, בלתי מוגבל בזמן, להציג, לשכפל, להפיץ, להתאים, לערוך, לתרגם, לשלב, לפרסם ולהשתמש בתוכן בכל דרך הדרושה לצורך תפעול האתר ושיפורו.</p>
+				<h4 class="sub-title">{$_('aboutPages.terms_s2_2_title')}</h4>
+				<p>{$_('aboutPages.terms_s2_2_p1')}</p>
 
-				<h4 class="sub-title">2.3 איסור פרסום תכנים אסורים</h4>
-				<p>המשתמש מתחייב שלא לפרסם תכנים הכוללים:</p>
+				<h4 class="sub-title">{$_('aboutPages.terms_s2_3_title')}</h4>
+				<p>{$_('aboutPages.terms_s2_3_p1')}</p>
 				<ul class="bullet-list">
-					<li>מידע שקרי או מטעה</li>
-					<li>לשון הרע</li>
-					<li>פגיעה בפרטיות</li>
-					<li>תמונות של קטינים ללא אישור הורה</li>
-					<li>תוכן פוגעני, מאיים, גזעני או בלתי חוקי</li>
-					<li>פרטים אישיים של אדם אחר ללא הסכמתו</li>
-					<li>פרסום מסחרי ללא אישור האתר</li>
-					<li>תכנים בעל אופי מיני או תכנים למבוגרים בלבד</li>
+					{#each forbiddenContentKeys as key}
+						<li>{$_(key)}</li>
+					{/each}
 				</ul>
 
-				<h4 class="sub-title">2.4 זכות האתר להסיר תוכן</h4>
-				<p>האתר רשאי, לפי שיקול דעתו הבלעדי, להסיר כל תוכן גולשים, לחסום משתמשים, למחוק מידע או להגביל גישה - ללא צורך בהודעה מוקדמת וללא חובת נימוק.</p>
+				<h4 class="sub-title">{$_('aboutPages.terms_s2_4_title')}</h4>
+				<p>{$_('aboutPages.terms_s2_4_p1')}</p>
 
-				<h4 class="sub-title">2.5 אחריות המשתמש</h4>
-				<p>המשתמש מצהיר כי הוא בעל הזכויות בתוכן שפרסם, התוכן אינו מפר זכויות יוצרים, התוכן אינו מפר חוק כלשהו, והתוכן אינו פוגע בצד שלישי.</p>
+				<h4 class="sub-title">{$_('aboutPages.terms_s2_5_title')}</h4>
+				<p>{$_('aboutPages.terms_s2_5_p1')}</p>
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">3. הרשמה, חשבונות משתמש ואימות זהות</h3>
+				<h3 class="sec-title">{$_('aboutPages.terms_s3_title')}</h3>
 
-				<h4 class="sub-title">3.1 יצירת חשבון</h4>
-				<p>כדי להשתמש בחלק מהשירותים באתר, ייתכן שהמשתמש יידרש ליצור חשבון משתמש ולמסור פרטים כגון שם מלא, ת"ז, תאריך לידה, מספר טלפון, כתובת דוא״ל, כתובת מגורים, מיקום גאוגרפי, תמונת פרופיל ופרטים נוספים לפי הצורך.</p>
-				<p>המשתמש מצהיר כי כל הפרטים שמסר בעת ההרשמה הם נכונים, מדויקים, מלאים ועדכניים.</p>
+				<h4 class="sub-title">{$_('aboutPages.terms_s3_1_title')}</h4>
+				<p>{$_('aboutPages.terms_s3_1_p1')}</p>
+				<p>{$_('aboutPages.terms_s3_1_p2')}</p>
 
-				<h4 class="sub-title">3.2 אבטחת חשבון</h4>
-				<p>המשתמש אחראי לשמור על סודיות פרטי הגישה לחשבונו, לרבות סיסמה, קוד אימות או כל אמצעי זיהוי אחר. כל פעולה שתתבצע באמצעות חשבון המשתמש תיחשב כפעולה של המשתמש עצמו.</p>
+				<h4 class="sub-title">{$_('aboutPages.terms_s3_2_title')}</h4>
+				<p>{$_('aboutPages.terms_s3_2_p1')}</p>
 
-				<h4 class="sub-title">3.3 אימות זהות</h4>
-				<p>האתר רשאי לדרוש אימות זהות באמצעים שונים, לרבות אימות מספר טלפון, אימות דוא״ל, אימות דו‑שלבי, ואימות באמצעות צד שלישי (Google, Facebook וכו׳). האתר רשאי לחסום או להגביל חשבון שלא עבר אימות כנדרש.</p>
+				<h4 class="sub-title">{$_('aboutPages.terms_s3_3_title')}</h4>
+				<p>{$_('aboutPages.terms_s3_3_p1')}</p>
 
-				<h4 class="sub-title">3.4 אחריות המשתמש לחשבונו</h4>
-				<p>המשתמש מתחייב שלא להעביר את חשבונו לאחר, לא לאפשר שימוש לא מורשה, ולדווח לאתר על כל שימוש חריג או חשוד.</p>
+				<h4 class="sub-title">{$_('aboutPages.terms_s3_4_title')}</h4>
+				<p>{$_('aboutPages.terms_s3_4_p1')}</p>
 
-				<h4 class="sub-title">3.5 סגירת חשבון</h4>
-				<p>האתר רשאי, לפי שיקול דעתו הבלעדי, לסגור או להשעות חשבון משתמש במקרה של הפרת תנאי השימוש, פרסום תוכן אסור, שימוש לרעה בשירותים, חשד לפעילות בלתי חוקית, או בקשת המשתמש לסגור את החשבון. סגירת חשבון אינה מחייבת את האתר למחוק תוכן שפורסם על ידי המשתמש, אלא אם הדבר נדרש לפי חוק.</p>
+				<h4 class="sub-title">{$_('aboutPages.terms_s3_5_title')}</h4>
+				<p>{$_('aboutPages.terms_s3_5_p1')}</p>
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">4. שימוש מותר ואסור באתר</h3>
+				<h3 class="sec-title">{$_('aboutPages.terms_s4_title')}</h3>
 
-				<h4 class="sub-title">4.1 שימוש מותר</h4>
-				<p>המשתמש רשאי להשתמש באתר ובשירותיו לצרכים הבאים בלבד: פרסום מודעות, שירותים, אירועים ותוכן קהילתי; יצירת קשר עם משתמשים אחרים לצורך פעילות קהילתית; שימוש במידע המופיע באתר לצרכים אישיים ולא‑מסחריים; השתתפות בפעילויות, חוגים ויוזמות קהילתיות. כל שימוש אחר מחייב אישור מפורש בכתב ממפעילי האתר.</p>
+				<h4 class="sub-title">{$_('aboutPages.terms_s4_1_title')}</h4>
+				<p>{$_('aboutPages.terms_s4_1_p1')}</p>
 
-				<h4 class="sub-title">4.2 שימוש אסור</h4>
-				<p>המשתמש מתחייב שלא לבצע באתר: הפרת חוקי מדינת ישראל, הונאה, התחזות או מסירת מידע כוזב, פגיעה בפרטיות, פרסום מסחרי ללא אישור, שליחת ספאם, חדירה למערכות האתר, שימוש ברובוטים או כלים אוטומטיים, פרסום תכנים פוגעניים, גזעניים, אלימים או פורנוגרפיים.</p>
+				<h4 class="sub-title">{$_('aboutPages.terms_s4_2_title')}</h4>
+				<p>{$_('aboutPages.terms_s4_2_p1')}</p>
 
-				<h4 class="sub-title">4.3 שימוש על ידי קטינים</h4>
-				<p>קטינים רשאים להשתמש באתר רק באישור הורה. הורה המאשר שימוש נושא באחריות מלאה לפעילות הקטין. חל איסור מוחלט על פרסום מידע מזהה על קטינים ללא אישור מפורש.</p>
+				<h4 class="sub-title">{$_('aboutPages.terms_s4_3_title')}</h4>
+				<p>{$_('aboutPages.terms_s4_3_p1')}</p>
 
-				<h4 class="sub-title">4.4 סנקציות על שימוש אסור</h4>
-				<p>האתר רשאי לחסום משתמש, להסיר תוכן, להגביל גישה לשירותים, למסור מידע לרשויות במקרה של חשד לעבירה, ולנקוט בצעדים משפטיים.</p>
+				<h4 class="sub-title">{$_('aboutPages.terms_s4_4_title')}</h4>
+				<p>{$_('aboutPages.terms_s4_4_p1')}</p>
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">5. איסוף מידע, שימוש במידע ושיתוף עם צדדים שלישיים</h3>
-				<p>האתר אוסף מידע אישי, טכני, סטטיסטי והתנהגותי על משתמשיו, בהתאם למדיניות הפרטיות. השימוש באתר מהווה הסכמה לאיסוף, עיבוד ושימוש במידע בהתאם לתנאים אלה.</p>
+				<h3 class="sec-title">{$_('aboutPages.terms_s5_title')}</h3>
+				<p>{$_('aboutPages.terms_s5_p1')}</p>
 
-				<h4 class="sub-title">5.1 סוגי מידע שנאסף</h4>
-				<p>האתר עשוי לאסוף: שם מלא, מספר טלפון, כתובת דוא״ל, כתובת מגורים, ת"ז, מצב משפחתי, תמונות, מיקום גאוגרפי, פרטי קשר, תוכן גולשים, כתובת IP, מזהי מכשיר, נתוני דפדפן, קוקיז ונתוני שימוש.</p>
+				<h4 class="sub-title">{$_('aboutPages.terms_s5_1_title')}</h4>
+				<p>{$_('aboutPages.terms_s5_1_p1')}</p>
 
-				<h4 class="sub-title">5.2 מטרות השימוש במידע</h4>
-				<p>האתר משתמש במידע לצורך תפעול האתר ושיפור השירות, התאמת חוויית המשתמש, הצגת תוכן מותאם אישית, אבטחת מידע ומניעת הונאות, ניתוח סטטיסטי ואנליטי, שליחת עדכונים והתראות, ועמידה בדרישות חוק.</p>
+				<h4 class="sub-title">{$_('aboutPages.terms_s5_2_title')}</h4>
+				<p>{$_('aboutPages.terms_s5_2_p1')}</p>
 
-				<h4 class="sub-title">5.3 שיתוף מידע עם צדדים שלישיים</h4>
-				<p>האתר רשאי לשתף מידע עם ספקי שירות לצורך אחסון, אבטחה, שליחת הודעות ואנליטיקה; עם שותפים עסקיים לצורך פרסום וקידום; ועם רשויות אכיפה במקרים של צו בית משפט או חשד לעבירה.</p>
+				<h4 class="sub-title">{$_('aboutPages.terms_s5_3_title')}</h4>
+				<p>{$_('aboutPages.terms_s5_3_p1')}</p>
 
-				<h4 class="sub-title">5.4 מסחר במידע</h4>
-				<p>האתר לא ימכור מידע מזהה על קטינים. האתר רשאי לעשות שימוש מסחרי במידע אישי של משתמשים בגירים, בכפוף להסכמתם ולחוק.</p>
+				<h4 class="sub-title">{$_('aboutPages.terms_s5_4_title')}</h4>
+				<p>{$_('aboutPages.terms_s5_4_p1')}</p>
 
-				<h4 class="sub-title">5.5 שמירת מידע ואבטחת מידע</h4>
-				<p>האתר נוקט באמצעי אבטחה סבירים ומקובלים, לרבות הצפנה, גיבויים, בקרות גישה וניטור פעילות. עם זאת, האתר אינו יכול להבטיח אבטחה מוחלטת.</p>
+				<h4 class="sub-title">{$_('aboutPages.terms_s5_5_title')}</h4>
+				<p>{$_('aboutPages.terms_s5_5_p1')}</p>
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">6. קניין רוחני</h3>
+				<h3 class="sec-title">{$_('aboutPages.terms_s6_title')}</h3>
 
-				<h4 class="sub-title">6.1 בעלות על תכני האתר</h4>
-				<p>כל זכויות היוצרים, סימני המסחר, העיצובים, הטקסטים, התמונות, הקוד, בסיסי הנתונים, הלוגו, הממשק, התוכן המקורי וכל חומר אחר המופיע באתר - הם רכושו הבלעדי של מפעיל האתר, אלא אם צוין אחרת במפורש. אין להעתיק, לשכפל, להפיץ, לפרסם, לשדר, לתרגם, לעבד, ליצור יצירות נגזרות או לעשות כל שימוש אחר בתכני האתר - ללא אישור מראש ובכתב.</p>
+				<h4 class="sub-title">{$_('aboutPages.terms_s6_1_title')}</h4>
+				<p>{$_('aboutPages.terms_s6_1_p1')}</p>
 
-				<h4 class="sub-title">6.2 זכויות יוצרים בתוכן גולשים</h4>
-				<p>תוכן גולשים שייך למשתמש שיצר אותו. עם זאת, כפי שנכתב בסעיף 2.2, המשתמש מעניק לאתר רישיון שימוש רחב לצורך תפעול האתר ושיפורו.</p>
+				<h4 class="sub-title">{$_('aboutPages.terms_s6_2_title')}</h4>
+				<p>{$_('aboutPages.terms_s6_2_p1')}</p>
 
-				<h4 class="sub-title">6.3 שימוש אסור בתוכן האתר</h4>
-				<p>המשתמש מתחייב שלא להעתיק תכני האתר לצורך יצירת אתר מתחרה, לא לעשות שימוש מסחרי ללא רשות, ולא לבצע כריית מידע (Data Mining) ללא אישור.</p>
+				<h4 class="sub-title">{$_('aboutPages.terms_s6_3_title')}</h4>
+				<p>{$_('aboutPages.terms_s6_3_p1')}</p>
 
-				<h4 class="sub-title">6.4 דיווח על הפרת זכויות יוצרים</h4>
-				<p>אם סבורים כי תוכן באתר מפר זכויות יוצרים - ניתן לפנות למפעילי האתר, והאתר רשאי להסיר את התוכן לפי שיקול דעתו.</p>
+				<h4 class="sub-title">{$_('aboutPages.terms_s6_4_title')}</h4>
+				<p>{$_('aboutPages.terms_s6_4_p1')}</p>
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">7. הגבלת אחריות</h3>
+				<h3 class="sec-title">{$_('aboutPages.terms_s7_title')}</h3>
 
-				<h4 class="sub-title">7.1 אחריות כללית</h4>
-				<p>השימוש באתר ובשירותיו נעשה על אחריות המשתמש בלבד. האתר, מפעיליו, בעליו, מנהליו, עובדיו וספקיו אינם אחראים לכל נזק ישיר, עקיף, תוצאתי, כספי, פיזי, רגשי או אחר - הנובע מהשימוש באתר או מהסתמכות על תוכן המופיע בו.</p>
+				<h4 class="sub-title">{$_('aboutPages.terms_s7_1_title')}</h4>
+				<p>{$_('aboutPages.terms_s7_1_p1')}</p>
 
-				<h4 class="sub-title">7.2 אחריות על תוכן גולשים</h4>
-				<p>האתר אינו אחראי לתוכן שמפורסם על ידי משתמשים. כל הסתמכות על תוכן גולשים היא באחריות המשתמש בלבד.</p>
+				<h4 class="sub-title">{$_('aboutPages.terms_s7_2_title')}</h4>
+				<p>{$_('aboutPages.terms_s7_2_p1')}</p>
 
-				<h4 class="sub-title">7.3 זמינות האתר</h4>
-				<p>האתר אינו מתחייב שהשירותים יהיו זמינים בכל עת, ללא תקלות, ללא הפרעות וללא שגיאות. האתר רשאי להפסיק את פעילותו באופן זמני או קבוע ללא הודעה מוקדמת.</p>
+				<h4 class="sub-title">{$_('aboutPages.terms_s7_3_title')}</h4>
+				<p>{$_('aboutPages.terms_s7_3_p1')}</p>
 
-				<h4 class="sub-title">7.4 אבטחת מידע</h4>
-				<p>האתר נוקט באמצעי אבטחה סבירים, אך אינו יכול להבטיח הגנה מוחלטת מפני פריצות, גניבת מידע, תקיפות סייבר וכשלים טכנולוגיים.</p>
+				<h4 class="sub-title">{$_('aboutPages.terms_s7_4_title')}</h4>
+				<p>{$_('aboutPages.terms_s7_4_p1')}</p>
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">8. מחיקת חשבון, שמירת מידע וזכויות משתמש</h3>
+				<h3 class="sec-title">{$_('aboutPages.terms_s8_title')}</h3>
 
-				<h4 class="sub-title">8.1 בקשת מחיקת חשבון</h4>
-				<p>המשתמש רשאי לבקש את מחיקת חשבונו בכל עת. האתר יפעל למחיקת החשבון בתוך זמן סביר, בהתאם לדרישות החוק. מחיקת חשבון אינה מחייבת את האתר למחוק תוכן גולשים שפורסם בפומבי, מידע שנדרש לשמירה לפי חוק, או מידע אנונימי וסטטיסטי.</p>
+				<h4 class="sub-title">{$_('aboutPages.terms_s8_1_title')}</h4>
+				<p>{$_('aboutPages.terms_s8_1_p1')}</p>
 
-				<h4 class="sub-title">8.2 זכויות משתמש לפי חוק הגנת הפרטיות</h4>
-				<p>בהתאם לחוק הגנת הפרטיות, התשמ"א–1981, המשתמש זכאי לעיין במידע שנשמר עליו, לבקש תיקון מידע שגוי, לבקש מחיקת מידע אישי, לבקש הגבלת שימוש ולבטל הסכמה לשימוש במידע.</p>
+				<h4 class="sub-title">{$_('aboutPages.terms_s8_2_title')}</h4>
+				<p>{$_('aboutPages.terms_s8_2_p1')}</p>
 
-				<h4 class="sub-title">8.3 מידע על קטינים</h4>
-				<p>הורה רשאי לבקש מחיקה מלאה של מידע על ילדו. האתר אינו רשאי למכור מידע מזהה על קטינים, ורשאי לשמור מידע אנונימי בלבד לצרכים סטטיסטיים.</p>
+				<h4 class="sub-title">{$_('aboutPages.terms_s8_3_title')}</h4>
+				<p>{$_('aboutPages.terms_s8_3_p1')}</p>
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">9. שינויים בתנאי השימוש</h3>
-				<p>האתר רשאי לעדכן, לשנות או להחליף את תנאי השימוש בכל עת. שינויים מהותיים יתפרסמו באתר ויכולים לכלול הודעה בעמוד הבית, הודעה למשתמשים רשומים ועדכון תאריך "עודכן לאחרונה". המשך השימוש באתר לאחר פרסום השינויים מהווה הסכמה מלאה לתנאים המעודכנים.</p>
+				<h3 class="sec-title">{$_('aboutPages.terms_s9_title')}</h3>
+				<p>{$_('aboutPages.terms_s9_p1')}</p>
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">10. הדין החל וסמכות שיפוט</h3>
-				<p>על תנאי שימוש אלה יחולו אך ורק דיני מדינת ישראל. בכל מחלוקת, תביעה או הליך משפטי - הסמכות הבלעדית תינתן לבתי המשפט המוסמכים במחוז ירושלים. לא יחולו על האתר דינים זרים, אמנות בינלאומיות או כללי משפט שאינם חלק מהדין הישראלי.</p>
+				<h3 class="sec-title">{$_('aboutPages.terms_s10_title')}</h3>
+				<p>{$_('aboutPages.terms_s10_p1')}</p>
 			</section>
 
 			<section class="sec contact-sec">
-				<h3 class="sec-title">11. יצירת קשר</h3>
-				<p>לכל שאלה, פנייה, בקשה או דיווח - ניתן ליצור קשר עם מפעילי האתר:</p>
+				<h3 class="sec-title">{$_('aboutPages.terms_s11_title')}</h3>
+				<p>{$_('aboutPages.terms_s11_p1')}</p>
 				<div class="contact-grid">
 					<a href="mailto:freedomhasbegun@gmail.com" class="contact-item">
 						<span class="contact-icon">✉️</span>
@@ -248,101 +261,101 @@
 		{#if activeTab === 'privacy'}
 		<div class="doc-card">
 			<div class="doc-header">
-				<h2 class="doc-title">🔒 מדיניות פרטיות ו‑Cookies</h2>
-				<p class="doc-date">תאריך עדכון אחרון: 29/3/2026</p>
+				<h2 class="doc-title">🔒 {$_('aboutPages.priv_title')}</h2>
+				<p class="doc-date">{$_('aboutPages.last_updated', { values: { date: '29/3/2026' } })}</p>
 			</div>
 
 			<section class="sec">
-				<h3 class="sec-title">1. פתיח</h3>
-				<p>מדיניות זו מסבירה כיצד אתר קהילה בשכונה ("האתר") אוסף, משתמש, שומר ומגן על מידע אישי של משתמשיו, וכן כיצד האתר עושה שימוש בקבצי Cookies ובטכנולוגיות דומות.</p>
-				<p>השימוש באתר מהווה הסכמה למדיניות זו ולתנאי השימוש. המדיניות חלה על כל משתמש באתר, לרבות מבוגרים, הורים וקטינים. האתר פועל בהתאם לחוק הגנת הפרטיות, התשמ"א‑1981, תקנות הגנת הפרטיות, וחוק התקשורת (ספאם).</p>
+				<h3 class="sec-title">{$_('aboutPages.priv_s1_title')}</h3>
+				<p>{$_('aboutPages.priv_s1_p1')}</p>
+				<p>{$_('aboutPages.priv_s1_p2')}</p>
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">2. מידע הנאסף על המשתמשים</h3>
+				<h3 class="sec-title">{$_('aboutPages.priv_s2_title')}</h3>
 
-				<h4 class="sub-title">2.1 מידע שמוסר המשתמש באופן ישיר</h4>
+				<h4 class="sub-title">{$_('aboutPages.priv_s2_1_title')}</h4>
 				<ul class="bullet-list">
-					<li>שם מלא, מספר טלפון, כתובת דוא״ל, כתובת מגורים</li>
-					<li>ת"ז, תמונות, מיקום גאוגרפי, פרטי קשר</li>
-					<li>מידע על ילדים (באישור הורה בלבד)</li>
-					<li>תוכן שהמשתמש מפרסם באתר</li>
+					<li>{$_('aboutPages.priv_s2_1_li1')}</li>
+					<li>{$_('aboutPages.priv_s2_1_li2')}</li>
+					<li>{$_('aboutPages.priv_s2_1_li3')}</li>
+					<li>{$_('aboutPages.priv_s2_1_li4')}</li>
 				</ul>
 
-				<h4 class="sub-title">2.2 מידע הנאסף אוטומטית</h4>
+				<h4 class="sub-title">{$_('aboutPages.priv_s2_2_title')}</h4>
 				<ul class="bullet-list">
-					<li>כתובת IP, סוג דפדפן ומערכת הפעלה, מזהי מכשיר</li>
-					<li>עמודים שנצפו, פעולות שבוצעו, נתוני שימוש</li>
-					<li>Cookies וטכנולוגיות מעקב</li>
+					<li>{$_('aboutPages.priv_s2_2_li1')}</li>
+					<li>{$_('aboutPages.priv_s2_2_li2')}</li>
+					<li>{$_('aboutPages.priv_s2_2_li3')}</li>
 				</ul>
 
-				<h4 class="sub-title">2.3 מידע מצד שלישי</h4>
-				<p>האתר עשוי לקבל מידע משירותי אימות זהות, שירותי אנליטיקה, ספקי פרסום, שירותי מיקום ורשתות חברתיות (אם המשתמש מתחבר דרכן).</p>
+				<h4 class="sub-title">{$_('aboutPages.priv_s2_3_title')}</h4>
+				<p>{$_('aboutPages.priv_s2_3_p1')}</p>
 
-				<h4 class="sub-title">2.4 מידע על קטינים</h4>
-				<p>מידע על קטינים ייאסף רק באישור הורה. האתר אינו מוכר מידע מזהה על קטינים. מידע אנונימי עשוי להישמר לצרכים סטטיסטיים בלבד.</p>
+				<h4 class="sub-title">{$_('aboutPages.priv_s2_4_title')}</h4>
+				<p>{$_('aboutPages.priv_s2_4_p1')}</p>
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">3. מטרות השימוש במידע</h3>
+				<h3 class="sec-title">{$_('aboutPages.priv_s3_title')}</h3>
 				<ul class="bullet-list">
-					<li><strong>תפעול ושיפור האתר</strong> - הפעלת האתר, התאמת חוויית המשתמש, איתור תקלות</li>
-					<li><strong>יצירת קשר</strong> - שליחת התראות, הודעות מערכת, מענה לפניות</li>
-					<li><strong>התאמת תוכן</strong> - הצגת תוכן מותאם ומודעות רלוונטיות</li>
-					<li><strong>אבטחת מידע</strong> - אימות זהות, מניעת הונאות, איתור פעילות חשודה</li>
-					<li><strong>מטרות סטטיסטיות</strong> - ניתוח מגמות, הפקת דוחות</li>
-					<li><strong>פרסום ושיווק</strong> - רק בכפוף להסכמה</li>
-					<li><strong>עמידה בדרישות חוק</strong> - מניעת עבירות, מענה לדרישות רשויות</li>
+					<li><strong>{$_('aboutPages.priv_s3_i1_t')}</strong> - {$_('aboutPages.priv_s3_i1_d')}</li>
+					<li><strong>{$_('aboutPages.priv_s3_i2_t')}</strong> - {$_('aboutPages.priv_s3_i2_d')}</li>
+					<li><strong>{$_('aboutPages.priv_s3_i3_t')}</strong> - {$_('aboutPages.priv_s3_i3_d')}</li>
+					<li><strong>{$_('aboutPages.priv_s3_i4_t')}</strong> - {$_('aboutPages.priv_s3_i4_d')}</li>
+					<li><strong>{$_('aboutPages.priv_s3_i5_t')}</strong> - {$_('aboutPages.priv_s3_i5_d')}</li>
+					<li><strong>{$_('aboutPages.priv_s3_i6_t')}</strong> - {$_('aboutPages.priv_s3_i6_d')}</li>
+					<li><strong>{$_('aboutPages.priv_s3_i7_t')}</strong> - {$_('aboutPages.priv_s3_i7_d')}</li>
 				</ul>
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">4. שיתוף מידע עם צדדים שלישיים</h3>
-				<p>האתר עשוי לשתף מידע עם ספקי שירות (אחסון, אבטחה, אנליטיקה, תשלומים), שותפים עסקיים לצורך קידום ופרסום, רשתות פרסום ושיווק (בכפוף להסכמה), ורשויות מוסמכות במקרי צו בית משפט או דרישה חוקית. מידע על קטינים לא יועבר לצרכים מסחריים.</p>
+				<h3 class="sec-title">{$_('aboutPages.priv_s4_title')}</h3>
+				<p>{$_('aboutPages.priv_s4_p1')}</p>
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">5. Cookies וטכנולוגיות מעקב</h3>
+				<h3 class="sec-title">{$_('aboutPages.priv_s5_title')}</h3>
 
-				<h4 class="sub-title">5.1 מה הם Cookies?</h4>
-				<p>Cookies הם קבצים קטנים הנשמרים בדפדפן ומאפשרים זיהוי משתמשים, שמירת העדפות, שיפור ביצועים, ניתוח תנועה והתאמת פרסום.</p>
+				<h4 class="sub-title">{$_('aboutPages.priv_s5_1_title')}</h4>
+				<p>{$_('aboutPages.priv_s5_1_p1')}</p>
 
-				<h4 class="sub-title">5.2 סוגי Cookies</h4>
+				<h4 class="sub-title">{$_('aboutPages.priv_s5_2_title')}</h4>
 				<ul class="bullet-list">
-					<li>Cookies חיוניים - לתפעול בסיסי</li>
-					<li>Cookies פונקציונליים - לשיפור חוויית המשתמש</li>
-					<li>Cookies אנליטיים - לניתוח שימושיות</li>
-					<li>Cookies של פרסום - להתאמת פרסומות</li>
-					<li>Cookies של צד שלישי - Google Analytics, Google Ads, Meta, YouTube</li>
+					<li>{$_('aboutPages.priv_s5_2_li1')}</li>
+					<li>{$_('aboutPages.priv_s5_2_li2')}</li>
+					<li>{$_('aboutPages.priv_s5_2_li3')}</li>
+					<li>{$_('aboutPages.priv_s5_2_li4')}</li>
+					<li>{$_('aboutPages.priv_s5_2_li5')}</li>
 				</ul>
 
-				<h4 class="sub-title">5.3 ניהול Cookies</h4>
-				<p>המשתמש יכול למחוק Cookies, לחסום Cookies, לבטל פרסום מותאם ולהשתמש בגלישה פרטית. חסימה מסוימת עלולה לפגוע בתפקוד האתר.</p>
+				<h4 class="sub-title">{$_('aboutPages.priv_s5_3_title')}</h4>
+				<p>{$_('aboutPages.priv_s5_3_p1')}</p>
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">6. שמירת מידע ואבטחת מידע</h3>
-				<p>המידע יישמר לצורך תפעול האתר, עמידה בדרישות חוק, הגנה משפטית, מניעת הונאות וניתוח סטטיסטי אנונימי. האתר נוקט באמצעי אבטחה הכוללים הצפנה, גיבויים, בקרות גישה, ניטור ושרתים מאובטחים. במקרה של דליפה: האתר יפעל לצמצום הנזק, יעדכן משתמשים וישתף פעולה עם רשויות.</p>
+				<h3 class="sec-title">{$_('aboutPages.priv_s6_title')}</h3>
+				<p>{$_('aboutPages.priv_s6_p1')}</p>
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">7. זכויות משתמש</h3>
-				<p>לפי חוק הגנת הפרטיות: זכות לעיון במידע, זכות לתיקון מידע, זכות למחיקה, זכות להגבלת שימוש, זכות לביטול הסכמה, וזכויות הורים לגבי קטינים.</p>
+				<h3 class="sec-title">{$_('aboutPages.priv_s7_title')}</h3>
+				<p>{$_('aboutPages.priv_s7_p1')}</p>
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">8. העברת מידע לחו״ל</h3>
-				<p>האתר עשוי להעביר מידע לשרתים מחוץ לישראל, בכפוף להגנה מספקת, הסכמי עיבוד נתונים, הצפנה ודרישות החוק. מידע על קטינים לא יועבר לצרכים מסחריים.</p>
+				<h3 class="sec-title">{$_('aboutPages.priv_s8_title')}</h3>
+				<p>{$_('aboutPages.priv_s8_p1')}</p>
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">9. שינויי מדיניות</h3>
-				<p>האתר רשאי לעדכן את המדיניות. שינויים מהותיים יפורסמו באתר. המשך שימוש באתר מהווה הסכמה למדיניות המעודכנת.</p>
+				<h3 class="sec-title">{$_('aboutPages.priv_s9_title')}</h3>
+				<p>{$_('aboutPages.priv_s9_p1')}</p>
 			</section>
 
 			<section class="sec contact-sec">
-				<h3 class="sec-title">10. יצירת קשר</h3>
-				<p>לכל שאלה או בקשה בנוגע למדיניות:</p>
+				<h3 class="sec-title">{$_('aboutPages.priv_s10_title')}</h3>
+				<p>{$_('aboutPages.priv_s10_p1')}</p>
 				<div class="contact-grid">
 					<a href="mailto:freedomhasbegun@gmail.com" class="contact-item">
 						<span class="contact-icon">✉️</span>
@@ -361,68 +374,68 @@
 		{#if activeTab === 'regulations'}
 		<div class="doc-card">
 			<div class="doc-header">
-				<h2 class="doc-title">📜 תקנון האתר – קהילה בשכונה</h2>
+				<h2 class="doc-title">📜 {$_('aboutPages.reg_title')}</h2>
 			</div>
 
 			<section class="sec">
-				<h3 class="sec-title">1. פתיח והסכמה לתנאים</h3>
-				<p>תקנון זה מגדיר את תנאי השימוש באתר קהילה בשכונה ("האתר"). השימוש באתר מהווה הסכמה מלאה לתנאים המפורטים במסמך זה. אם אינך מסכים לתנאים - עליך להימנע משימוש באתר.</p>
+				<h3 class="sec-title">{$_('aboutPages.reg_s1_title')}</h3>
+				<p>{$_('aboutPages.reg_s1_p1')}</p>
 
-				<h4 class="sub-title">1.1 מטרת האתר</h4>
-				<p>האתר משמש כמרכז קהילתי דיגיטלי הכולל תכנים חינוכיים, פעילויות לילדים, מידע קהילתי, אזור משתמשים רשומים ואפשרות להעלאת תכנים.</p>
+				<h4 class="sub-title">{$_('aboutPages.reg_s1_1_title')}</h4>
+				<p>{$_('aboutPages.reg_s1_1_p1')}</p>
 
-				<h4 class="sub-title">1.2 קבלת התנאים</h4>
-				<p>השימוש באתר מהווה אישור שקראת את התקנון והסכמה לכל תנאיו.</p>
+				<h4 class="sub-title">{$_('aboutPages.reg_s1_2_title')}</h4>
+				<p>{$_('aboutPages.reg_s1_2_p1')}</p>
 
-				<h4 class="sub-title">1.3 הגבלת גיל</h4>
-				<p>חלק מהשירותים עשויים לדרוש אישור הורה לקטינים.</p>
+				<h4 class="sub-title">{$_('aboutPages.reg_s1_3_title')}</h4>
+				<p>{$_('aboutPages.reg_s1_3_p1')}</p>
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">2. הרשמה לאתר וחשבון משתמש</h3>
-				<p>ייתכן שתידרש הרשמה הכוללת פרטים בסיסיים, בחירת סיסמה ואישור תנאי השימוש. המשתמש אחראי לשמירת הסיסמה, עדכון פרטים ודיווח על שימוש לא מורשה. אין להשתמש בחשבון שאינו שלך ואין לאפשר לאחרים להשתמש בחשבונך. ניתן לבקש מחיקת חשבון בכל עת - האתר רשאי לשמור מידע מסוים בהתאם לחוק.</p>
+				<h3 class="sec-title">{$_('aboutPages.reg_s2_title')}</h3>
+				<p>{$_('aboutPages.reg_s2_p1')}</p>
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">3. שימוש מותר ואסור באתר</h3>
-				<p><strong>מותר:</strong> צפייה בתכנים, השתתפות בפעילויות, העלאת תכנים בהתאם לכללים.</p>
-				<p><strong>אסור:</strong> פגיעה באתר או במשתמשים, הפרת זכויות יוצרים, העלאת תכנים פוגעניים, שימוש בבוטים, התחזות או פעילות לא חוקית. המשתמש אחראי לכל תוכן שהוא מעלה.</p>
+				<h3 class="sec-title">{$_('aboutPages.reg_s3_title')}</h3>
+				<p><strong>{$_('aboutPages.reg_s3_allowed_l')}</strong> {$_('aboutPages.reg_s3_allowed_d')}</p>
+				<p><strong>{$_('aboutPages.reg_s3_forbidden_l')}</strong> {$_('aboutPages.reg_s3_forbidden_d')}</p>
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">4. תוכן גולשים (UGC)</h3>
-				<p>התוכן חייב להיות חוקי, מקורי ולא פוגעני. המשתמש מעניק לאתר רישיון לא בלעדי להצגת התוכן. האתר רשאי להסיר כל תוכן שאינו עומד בכללים. ניתן לדווח על תכנים בעייתיים.</p>
+				<h3 class="sec-title">{$_('aboutPages.reg_s4_title')}</h3>
+				<p>{$_('aboutPages.reg_s4_p1')}</p>
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">5. קניין רוחני וזכויות יוצרים</h3>
-				<p>כל תכני האתר מוגנים בזכויות יוצרים. מותר ציטוט קצר ושימוש לצורכי לימוד ומחקר. האתר רשאי להסיר תכנים מפרים ולחסום משתמשים.</p>
+				<h3 class="sec-title">{$_('aboutPages.reg_s5_title')}</h3>
+				<p>{$_('aboutPages.reg_s5_p1')}</p>
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">6. פרטיות ואבטחת מידע</h3>
-				<p>האתר אוסף מידע שנמסר על ידי המשתמש, מידע טכני ו‑Cookies לצורך תפעול האתר, שיפור השירות, אבטחה ויצירת קשר. המידע נשמר רק למשך הזמן הנדרש. מדיניות הפרטיות המלאה מהווה חלק מהתקנון.
-					<button onclick={() => setTab('privacy')} class="inline-link">← קרא את מדיניות הפרטיות המלאה</button>
+				<h3 class="sec-title">{$_('aboutPages.reg_s6_title')}</h3>
+				<p>{$_('aboutPages.reg_s6_p1')}
+					<button onclick={() => setTab('privacy')} class="inline-link">{$_('aboutPages.reg_s6_link')}</button>
 				</p>
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">7. הגבלת אחריות</h3>
-				<p>האתר אינו אחראי לטעויות, נזקים או הסתמכות על מידע. ייתכנו תקלות, תחזוקה או הפסקות שירות. האתר אינו אחראי לנזקים ישירים או עקיפים, ולא לתוכן של צדדים שלישיים.</p>
+				<h3 class="sec-title">{$_('aboutPages.reg_s7_title')}</h3>
+				<p>{$_('aboutPages.reg_s7_p1')}</p>
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">8. הפסקת שימוש וחסימת משתמשים</h3>
-				<p>האתר רשאי לחסום משתמש במקרה של הפרת תנאים, פגיעה באתר, תכנים אסורים ועוד. הפסקת שירות כוללת חסימת חשבון, מחיקת תכנים וחסימת IP. האתר רשאי לשנות או להפסיק שירותים ולא אחראי לנזקים עקב חסימה.</p>
+				<h3 class="sec-title">{$_('aboutPages.reg_s8_title')}</h3>
+				<p>{$_('aboutPages.reg_s8_p1')}</p>
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">9. שינויים בתקנון</h3>
-				<p>שינויים יפורסמו באמצעות עדכון תאריך, הודעה באתר או הודעה למשתמשים. שימוש באתר לאחר עדכון התקנון מהווה הסכמה לתנאים החדשים.</p>
+				<h3 class="sec-title">{$_('aboutPages.reg_s9_title')}</h3>
+				<p>{$_('aboutPages.reg_s9_p1')}</p>
 			</section>
 
 			<section class="sec contact-sec">
-				<h3 class="sec-title">10. יצירת קשר</h3>
+				<h3 class="sec-title">{$_('aboutPages.reg_s10_title')}</h3>
 				<div class="contact-grid">
 					<a href="mailto:freedomhasbegun@gmail.com" class="contact-item">
 						<span class="contact-icon">✉️</span>
@@ -441,89 +454,88 @@
 		{#if activeTab === 'accessibility'}
 		<div class="doc-card">
 			<div class="doc-header">
-				<h2 class="doc-title">♿ הצהרת נגישות</h2>
-				<p class="text-gray-400 text-sm mt-1">עדכון אחרון: מרץ 2026</p>
+				<h2 class="doc-title">♿ {$_('aboutPages.tab_accessibility')}</h2>
+				<p class="text-gray-400 text-sm mt-1">{$_('aboutPages.acc_updated')}</p>
 			</div>
 
 			<section class="sec">
-				<h3 class="sec-title">מטרה והתחייבות</h3>
-				<p>אתר "קהילה בשכונה" מחויב לנגישות דיגיטלית מלאה לכלל המשתמשים, לרבות אנשים עם מוגבלויות.
-				האתר פועל לעמוד בדרישות תקן ישראלי 5568 (WCAG 2.1 ברמה AA), וכולל התאמות לאנשים עם לקויות ראייה, שמיעה, קוגניציה ומוטוריקה.</p>
+				<h3 class="sec-title">{$_('aboutPages.la_s1_title')}</h3>
+				<p>{$_('aboutPages.la_s1_p1')}</p>
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">היקף</h3>
-				<p>מדיניות זו חלה על כל דפי האתר, ממשקי משתמש, מסמכים דיגיטליים ושירותים מקוונים המוצעים על ידי האתר.</p>
+				<h3 class="sec-title">{$_('aboutPages.la_s2_title')}</h3>
+				<p>{$_('aboutPages.la_s2_p1')}</p>
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">עקרונות הנגשה</h3>
+				<h3 class="sec-title">{$_('aboutPages.la_s3_title')}</h3>
 				<ul class="bullet-list">
-					<li><strong>נגישות תוכן</strong> - טקסטים, תמונות, וידאו וקבצים יונגשו בהתאם להנחיות נגישות מקובלות.</li>
-					<li><strong>נגישות ניווט</strong> - תפריטים וקישורים יהיו ברורים, עקביים ונגישים באמצעות מקלדת.</li>
-					<li><strong>נגישות חזותית</strong> - צבעים וניגודיות ייבחרו כך שיתאימו לקריאה; טקסטים חשובים יהיו ניתנים להגדלה.</li>
-					<li><strong>נגישות שמיעתית</strong> - תכני וידאו יכללו כתוביות; תכנים קוליים ילוּוו בתמלול כאשר רלוונטי.</li>
-					<li><strong>נגישות טכנית</strong> - האתר ישאף לעמוד בסטנדרטים טכניים מקובלים (WCAG) במידה וניתן.</li>
+					<li><strong>{$_('aboutPages.la_s3_i1_l')}</strong> - {$_('aboutPages.la_s3_i1_d')}</li>
+					<li><strong>{$_('aboutPages.la_s3_i2_l')}</strong> - {$_('aboutPages.la_s3_i2_d')}</li>
+					<li><strong>{$_('aboutPages.la_s3_i3_l')}</strong> - {$_('aboutPages.la_s3_i3_d')}</li>
+					<li><strong>{$_('aboutPages.la_s3_i4_l')}</strong> - {$_('aboutPages.la_s3_i4_d')}</li>
+					<li><strong>{$_('aboutPages.la_s3_i5_l')}</strong> - {$_('aboutPages.la_s3_i5_d')}</li>
 				</ul>
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">התאמות שבוצעו</h3>
+				<h3 class="sec-title">{$_('aboutPages.adapt_title')}</h3>
 				<ul class="bullet-list">
-					<li><strong class="text-green-400">✓</strong> הגדרת שפת הדף כעברית (<code lang="en" class="text-blue-300">lang="he" dir="rtl"</code>) לתמיכה בקוראי מסך</li>
-					<li><strong class="text-green-400">✓</strong> קישור "דלג לתוכן הראשי" מופיע עם פוקוס מקלדת לניווט מהיר</li>
-					<li><strong class="text-green-400">✓</strong> כל הכפתורים, הקישורים והשדות כוללים תיאורי <code lang="en" class="text-blue-300">aria-label</code> ברורים</li>
-					<li><strong class="text-green-400">✓</strong> חלונות קופצים מיישמים מלכודת פוקוס ומחזירים פוקוס לרכיב הפותח עם הסגירה</li>
-					<li><strong class="text-green-400">✓</strong> הודעות דינמיות מוכרזות אוטומטית לקוראי מסך באמצעות <code lang="en" class="text-blue-300">aria-live</code></li>
-					<li><strong class="text-green-400">✓</strong> תפריטי שפה כוללים <code lang="en" class="text-blue-300">aria-haspopup</code> ו-<code lang="en" class="text-blue-300">aria-expanded</code> לציון מצב הפתיחה</li>
-					<li><strong class="text-green-400">✓</strong> אנימציות מושבתות אוטומטית עם <code lang="en" class="text-blue-300">prefers-reduced-motion</code></li>
-					<li><strong class="text-green-400">✓</strong> תמונות דקורטיביות כוללות <code lang="en" class="text-blue-300">alt=""</code> ותמונות תוכן כוללות תיאור מלא</li>
-					<li><strong class="text-green-400">✓</strong> מבנה כותרות היררכי (<code lang="en" class="text-blue-300">h1 → h2 → h3</code>) בכל עמוד</li>
-					<li><strong class="text-green-400">✓</strong> ניגודיות טקסט עומדת בדרישות WCAG AA (לפחות 4.5:1 לטקסט רגיל)</li>
-					<li><strong class="text-green-400">✓</strong> טיקר החדשות הנע מוסתר מקוראי מסך; התוכן זמין בגרסה נגישה מקבילה</li>
-					<li><strong class="text-green-400">✓</strong> כל קישורים חיצוניים מסומנים בבירור כ"נפתח בחלון חדש"</li>
-					<li><strong class="text-green-400">✓</strong> טפסים כוללים <code lang="en" class="text-blue-300">&lt;label&gt;</code> מקושר לכל שדה, סימון שדות חובה וטיפול בשגיאות</li>
+					<li><strong class="text-green-400">✓</strong> {$_('aboutPages.adapt_i1_pre')}<code lang="en" class="text-blue-300">lang="he" dir="rtl"</code>{$_('aboutPages.adapt_i1_post')}</li>
+					<li><strong class="text-green-400">✓</strong> {$_('aboutPages.adapt_i2')}</li>
+					<li><strong class="text-green-400">✓</strong> {$_('aboutPages.adapt_i3_pre')}<code lang="en" class="text-blue-300">aria-label</code>{$_('aboutPages.adapt_i3_post')}</li>
+					<li><strong class="text-green-400">✓</strong> {$_('aboutPages.la_i4')}</li>
+					<li><strong class="text-green-400">✓</strong> {$_('aboutPages.la_i5_pre')}<code lang="en" class="text-blue-300">aria-live</code></li>
+					<li><strong class="text-green-400">✓</strong> {$_('aboutPages.adapt_i6_pre')}<code lang="en" class="text-blue-300">aria-haspopup</code>{$_('aboutPages.adapt_i6_mid')}<code lang="en" class="text-blue-300">aria-expanded</code>{$_('aboutPages.adapt_i6_post')}</li>
+					<li><strong class="text-green-400">✓</strong> {$_('aboutPages.la_i7_pre')}<code lang="en" class="text-blue-300">prefers-reduced-motion</code></li>
+					<li><strong class="text-green-400">✓</strong> {$_('aboutPages.adapt_i8_pre')}<code lang="en" class="text-blue-300">alt=""</code>{$_('aboutPages.adapt_i8_post')}</li>
+					<li><strong class="text-green-400">✓</strong> {$_('aboutPages.adapt_i9_pre')}<code lang="en" class="text-blue-300">h1 → h2 → h3</code>{$_('aboutPages.adapt_i9_post')}</li>
+					<li><strong class="text-green-400">✓</strong> {$_('aboutPages.adapt_i10')}</li>
+					<li><strong class="text-green-400">✓</strong> {$_('aboutPages.adapt_i11')}</li>
+					<li><strong class="text-green-400">✓</strong> {$_('aboutPages.adapt_i12')}</li>
+					<li><strong class="text-green-400">✓</strong> {$_('aboutPages.adapt_i13_pre')}<code lang="en" class="text-blue-300">&lt;label&gt;</code>{$_('aboutPages.adapt_i13_post')}</li>
 				</ul>
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">מגבלות ידועות</h3>
+				<h3 class="sec-title">{$_('aboutPages.known_limits_title')}</h3>
 				<ul class="bullet-list">
-					<li><strong class="text-yellow-400">⚠</strong> מפת השכונות האינטראקטיבית מבוססת על Google Maps Embed - ייתכן שחלק מפונקציות המפה אינן נגישות במלואן לקוראי מסך. ניתן לגשת לרשימת הקטגוריות כחלופה מלאה.</li>
-					<li><strong class="text-yellow-400">⚠</strong> חלק מהרכיבים המורכבים (כמו מסך בחירת שכונה) ממשיכים לשפר מיפוי ARIA. עבודה בתהליך.</li>
-					<li><strong class="text-yellow-400">⚠</strong> ייתכנו תכנים או שירותים שאינם ניתנים להנגשה מלאה מטעמי טכנולוגיה או צד שלישי; האתר יפעל לציין מגבלות אלה ולחפש חלופות.</li>
+					<li><strong class="text-yellow-400">⚠</strong> {$_('aboutPages.lim1')}</li>
+					<li><strong class="text-yellow-400">⚠</strong> {$_('aboutPages.lim2')}</li>
+					<li><strong class="text-yellow-400">⚠</strong> {$_('aboutPages.la_lim3')}</li>
 				</ul>
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">התאמות פרטניות</h3>
-				<p>משתמשים הזקוקים להתאמות מיוחדות מוזמנים לפנות לצוות האתר; האתר ישקול בקשות סבירות ויפעל לספק פתרונות בהתאם ליכולת הטכנית והמשאבים.</p>
+				<h3 class="sec-title">{$_('aboutPages.la_s6_title')}</h3>
+				<p>{$_('aboutPages.la_s6_p1')}</p>
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">כתב ויתור (Disclaimer)</h3>
-				<p>התכנים והשירותים באתר ניתנים למשתמשים כפי שהם, ללא הבטחה מפורשת או משתמעת לגבי שלמותם, דיוקם או התאמתם למטרה מסוימת. השימוש בתכנים ובשירותים נעשה על אחריות המשתמש בלבד. התכנים באתר נועדו למידע כללי בלבד ואינם מהווים ייעוץ מקצועי משפטי, רפואי, פיננסי או אחר.</p>
+				<h3 class="sec-title">{$_('aboutPages.la_s7_title')}</h3>
+				<p>{$_('aboutPages.la_s7_p1')}</p>
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">מדיניות החזרים וביטולים</h3>
-				<p>מוצרים דיגיטליים - בדרך כלל לא יינתן החזר לאחר הורדה או גישה לתוכן דיגיטלי, אלא במקרים חריגים. מוצרים פיזיים - החזר יינתן בהתאם לתנאי החזרת מוצרים, כשהמוצר באריזתו המקורית ובמצב תקין. לבקשות החזר: יש לפנות לשירות הלקוחות עם פרטי הזמנה - האתר יבחן את הבקשה ויעדכן על החלטתו בתוך זמן סביר.</p>
+				<h3 class="sec-title">{$_('aboutPages.la_s8_title')}</h3>
+				<p>{$_('aboutPages.la_s8_p1')}</p>
 			</section>
 
 			<section class="sec">
-				<h3 class="sec-title">מדיניות שימוש בתמונות וזכויות יוצרים</h3>
+				<h3 class="sec-title">{$_('aboutPages.la_s9_title')}</h3>
 				<ul class="bullet-list">
-					<li>המשתמש מצהיר כי הוא בעל הזכויות בתמונה שהעלה, או שיש לו רישיון לשימוש בה.</li>
-					<li>אין להעלות תמונות שמפרות זכויות יוצרים, זכויות פרטיות, או מכילות תוכן פוגעני.</li>
-					<li>המשתמש מעניק לאתר רישיון לא בלעדי, ללא תמלוגים, לשימוש והצגת התמונות שהועלו.</li>
-					<li>אין לפרסם תמונות של אנשים ללא הסכמתם. פרסום תמונות של קטינים מחייב הסכמת הורה.</li>
-					<li>הפרות עלולות לגרור הסרה של תמונות, השעיית חשבון וצעדים משפטיים.</li>
+					<li>{$_('aboutPages.la_s9_li1')}</li>
+					<li>{$_('aboutPages.la_s9_li2')}</li>
+					<li>{$_('aboutPages.la_s9_li3')}</li>
+					<li>{$_('aboutPages.la_s9_li4')}</li>
+					<li>{$_('aboutPages.la_s9_li5')}</li>
 				</ul>
 			</section>
 
 			<section class="sec contact-sec">
-				<h3 class="sec-title">יצירת קשר ודיווח על בעיות נגישות</h3>
-				<p>לכל בעיה או בקשה בנוגע לנגישות:</p>
+				<h3 class="sec-title">{$_('aboutPages.la_s10_title')}</h3>
+				<p>{$_('aboutPages.la_s10_p1')}</p>
 				<div class="contact-grid">
 					<a href="mailto:freedomhasbegun@gmail.com" class="contact-item">
 						<span class="contact-icon">✉️</span>
@@ -541,13 +553,13 @@
 		<!-- חזרה לדף הבית + עלה לראש -->
 		<div class="flex items-center justify-center gap-3 mt-10 flex-wrap">
 			<a href="/" class="inline-block bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-bold transition-all">
-				← חזרה לדף הבית
+				{$_('aboutPages.back_home')}
 			</a>
 			<button
 				onclick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
 				class="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white px-6 py-3 rounded-lg font-bold transition-all shadow-lg hover:shadow-purple-500/30"
 			>
-				↑ עלה לראש הדף
+				{$_('aboutPages.back_top')}
 			</button>
 		</div>
 	</div>

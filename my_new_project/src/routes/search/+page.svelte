@@ -1,5 +1,6 @@
 <script lang="ts">
     import { goto } from '$app/navigation';
+    import { _ } from 'svelte-i18n';
 
     let { data } = $props();
 
@@ -37,7 +38,7 @@
                     bind:value={query}
                     onkeydown={handleKey}
                     type="text"
-                    placeholder="חפש חוג, שירות, עסק..."
+                    placeholder={$_('jobs.search_page_placeholder')}
                     class="flex-1 bg-[#0f172a] border border-white/15 rounded-2xl px-5 py-3
                            text-white placeholder:text-gray-500 focus:outline-none
                            focus:border-purple-500/60 text-base transition-colors"
@@ -49,12 +50,12 @@
                            hover:to-blue-500 text-white font-bold px-6 py-3 rounded-2xl
                            transition-all cursor-pointer shadow-lg"
                 >
-                    🔍 חפש
+                    🔍 {$_('jobs.search_button')}
                 </button>
             </div>
             {#if data.query}
                 <p class="text-gray-400 text-sm mt-3 text-right">
-                    נמצאו <span class="text-white font-bold">{totalResults}</span> תוצאות עבור "<span class="text-purple-300">{data.query}</span>"
+                    {$_('jobs.search_found')} <span class="text-white font-bold">{totalResults}</span> {$_('jobs.search_results_for')} "<span class="text-purple-300">{data.query}</span>"
                 </p>
             {/if}
         </div>
@@ -63,16 +64,16 @@
             <!-- מצב ריק -->
             <div class="text-center py-20">
                 <div class="text-6xl mb-4">🔍</div>
-                <p class="text-gray-400 text-lg">הקלד מה אתה מחפש</p>
-                <p class="text-gray-600 text-sm mt-2">חוג, גמח, שמרטפ, מניין, עסק...</p>
+                <p class="text-gray-400 text-lg">{$_('jobs.search_empty_title')}</p>
+                <p class="text-gray-600 text-sm mt-2">{$_('jobs.search_empty_hint')}</p>
             </div>
 
         {:else if totalResults === 0}
             <!-- אין תוצאות -->
             <div class="text-center py-20">
                 <div class="text-6xl mb-4">😕</div>
-                <p class="text-gray-300 text-lg font-bold">לא נמצאו תוצאות</p>
-                <p class="text-gray-500 text-sm mt-2">נסה מילה אחרת או בדוק את האיות</p>
+                <p class="text-gray-300 text-lg font-bold">{$_('jobs.search_no_results')}</p>
+                <p class="text-gray-500 text-sm mt-2">{$_('jobs.search_no_results_hint')}</p>
             </div>
 
         {:else}
@@ -81,7 +82,7 @@
                 <section class="mb-8">
                     <div class="flex items-center gap-2 mb-4">
                         <span class="text-xl">🏘️</span>
-                        <h2 class="text-white font-black text-lg">השכונה שלך</h2>
+                        <h2 class="text-white font-black text-lg">{$_('jobs.search_section_neighborhood')}</h2>
                         <span class="bg-purple-500/20 text-purple-300 border border-purple-500/30 text-xs font-bold px-2 py-0.5 rounded-full">
                             {data.results.neighborhood.length}
                         </span>
@@ -109,7 +110,7 @@
                 <section class="mb-8">
                     <div class="flex items-center gap-2 mb-4">
                         <span class="text-xl">🏙️</span>
-                        <h2 class="text-white font-black text-lg">בעירך - {data.userCity}</h2>
+                        <h2 class="text-white font-black text-lg">{$_('jobs.search_section_city', { values: { city: data.userCity } })}</h2>
                         <span class="bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs font-bold px-2 py-0.5 rounded-full">
                             {data.results.city.length}
                         </span>
@@ -137,7 +138,7 @@
                 <section class="mb-8">
                     <div class="flex items-center gap-2 mb-4">
                         <span class="text-xl">🗺️</span>
-                        <h2 class="text-white font-black text-lg">ערים קרובות</h2>
+                        <h2 class="text-white font-black text-lg">{$_('jobs.search_section_nearby')}</h2>
                         <span class="bg-green-500/20 text-green-300 border border-green-500/30 text-xs font-bold px-2 py-0.5 rounded-full">
                             {data.results.nearby.length}
                         </span>
@@ -165,7 +166,7 @@
                 <section class="mb-8">
                     <div class="flex items-center gap-2 mb-4">
                         <span class="text-xl">🇮🇱</span>
-                        <h2 class="text-white font-black text-lg">שאר הארץ</h2>
+                        <h2 class="text-white font-black text-lg">{$_('jobs.search_section_other')}</h2>
                         <span class="bg-white/10 text-gray-300 border border-white/10 text-xs font-bold px-2 py-0.5 rounded-full">
                             {data.results.other.length}
                         </span>

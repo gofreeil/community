@@ -1,5 +1,6 @@
 <script lang="ts">
     import { enhance } from '$app/forms';
+    import { _ } from 'svelte-i18n';
     import type { PageData } from './$types';
     import JsonLd from "$lib/components/JsonLd.svelte";
     import { breadcrumbSchema, collectionSchema, canonical } from "$lib/seo";
@@ -10,8 +11,10 @@
     let currentMonth = $state(today.getMonth());
     let currentYear  = $state(today.getFullYear());
 
-    const hebrewMonths = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
-    const hebrewDays   = ['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
+    const monthIdx = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+    const dayIdx   = [0, 1, 2, 3, 4, 5, 6];
+    let months = $derived(monthIdx.map((i) => $_(`community.month_${i}`)));
+    let days   = $derived(dayIdx.map((i) => $_(`community.day_${i}`)));
 
     function getDaysInMonth(month: number, year: number) {
         return new Date(year, month + 1, 0).getDate();
@@ -35,12 +38,12 @@
         d.setDate(d.getDate() + days);
         return d.toISOString().split('T')[0];
     }
-    const mockEvents: any[] = [
-        { id: 'mev1', title: 'הרצאה בנושא חינוך ילדים',     date: isoPlusDays(2),  time: '20:00', location: 'בית הכנסת המרכזי', icon: '🎤', color: 'green',  description: 'הרצאה מרתקת לגיל הרך עם פאנל הורים',                              price: 0,  status: 'approved' },
-        { id: 'mev2', title: 'מרוץ קהילתי - 5 ק"מ',          date: isoPlusDays(5),  time: '07:30', location: 'גן הציבורי',         icon: '🏃', color: 'blue',   description: 'מרוץ פתוח לכל הגילאים, כיבוד קל בסיום',                            price: 0,  status: 'approved' },
-        { id: 'mev3', title: 'ערב הוקרה למתנדבי השכונה',     date: isoPlusDays(8),  time: '19:30', location: 'מתנ"ס שכונתי',       icon: '🎉', color: 'purple', description: 'מופע מוזיקלי, סיפורי השראה ותעודות הוקרה',                          price: 25, status: 'approved' },
-        { id: 'mev4', title: 'יום ניקיון ושיפור פני השכונה', date: isoPlusDays(14), time: '09:00', location: 'כיכר השכונה',         icon: '🌱', color: 'orange', description: 'יוצאים לשטח לניקיון, צביעה ושתילת פרחים. כיבוד לכל המשתתפים',         price: 0,  status: 'approved' },
-    ];
+    let mockEvents = $derived<any[]>([
+        { id: 'mev1', title: $_('community.mock_ev1_title'), date: isoPlusDays(2),  time: '20:00', location: $_('community.mock_ev1_loc'), icon: '🎤', color: 'green',  description: $_('community.mock_ev1_desc'), price: 0,  status: 'approved' },
+        { id: 'mev2', title: $_('community.mock_ev2_title'), date: isoPlusDays(5),  time: '07:30', location: $_('community.mock_ev2_loc'), icon: '🏃', color: 'blue',   description: $_('community.mock_ev2_desc'), price: 0,  status: 'approved' },
+        { id: 'mev3', title: $_('community.mock_ev3_title'), date: isoPlusDays(8),  time: '19:30', location: $_('community.mock_ev3_loc'), icon: '🎉', color: 'purple', description: $_('community.mock_ev3_desc'), price: 25, status: 'approved' },
+        { id: 'mev4', title: $_('community.mock_ev4_title'), date: isoPlusDays(14), time: '09:00', location: $_('community.mock_ev4_loc'), icon: '🌱', color: 'orange', description: $_('community.mock_ev4_desc'), price: 0,  status: 'approved' },
+    ]);
 
     let isMockEvents = $derived((data.events as any[]).length === 0);
     let displayEvents = $derived<any[]>(isMockEvents ? mockEvents : (data.events as any[]));
@@ -89,7 +92,7 @@
 
     function formatEventDate(dateStr: string) {
         const d = new Date(dateStr);
-        return `${d.getDate()} ${hebrewMonths[d.getMonth()]}`;
+        return `${d.getDate()} ${months[d.getMonth()]}`;
     }
 
     // ── Forms state ──
@@ -166,12 +169,12 @@
 
         <!-- Header -->
         <div class="text-center mb-8">
-            <a href="/" class="text-blue-400 hover:text-blue-300 text-sm mb-4 inline-block transition-colors">→ חזרה לעמוד הראשי</a>
+            <a href="/" class="text-blue-400 hover:text-blue-300 text-sm mb-4 inline-block transition-colors">{$_('community.back_to_main')}</a>
             <h1 class="text-3xl md:text-5xl font-black bg-gradient-to-r from-green-400 via-teal-400 to-blue-400 bg-clip-text text-transparent">
-                🗓️ לוח אירועים קהילתי
+                {$_('community.ev_heading')}
             </h1>
             <p class="text-gray-400 mt-2 text-sm md:text-base">
-                כל האירועים והמפגשים{#if (data.user as any)?.city} ב<span class="text-teal-300 font-bold">{(data.user as any).city}</span>{/if} במקום אחד
+                {$_('community.ev_sub_all')}{#if (data.user as any)?.city}{$_('community.in_prefix')}<span class="text-teal-300 font-bold">{(data.user as any).city}</span>{/if} {$_('community.ev_sub_one_place')}
             </p>
         </div>
 
@@ -180,8 +183,8 @@
             <div class="flex items-center gap-4">
                 <div class="text-3xl">🍽️</div>
                 <div class="flex-1">
-                    <p class="text-white font-bold">ערבי מפגש וסעודות קהילתיות</p>
-                    <p class="text-amber-200/80 text-sm mt-0.5">הקימו סעודה משותפת, חלקו את רשימת המאכלים בין המשתתפים וראו מי מגיע →</p>
+                    <p class="text-white font-bold">{$_('community.ev_banner_title')}</p>
+                    <p class="text-amber-200/80 text-sm mt-0.5">{$_('community.ev_banner_sub')}</p>
                 </div>
             </div>
         </a>
@@ -190,7 +193,7 @@
         {#if (data.isCoordinator || data.isAdmin) && (data.pendingEvents as any[]).length > 0}
             <div class="mb-6 rounded-2xl bg-amber-500/10 border border-amber-500/40 p-4 md:p-6">
                 <h2 class="text-amber-300 font-black text-lg mb-4 flex items-center gap-2">
-                    ⏳ הצעות ממתינות לאישור
+                    {$_('community.ev_pending_title')}
                     <span class="bg-amber-500/30 text-amber-200 text-xs font-bold px-2 py-0.5 rounded-full">
                         {(data.pendingEvents as any[]).length}
                     </span>
@@ -204,7 +207,7 @@
                                     <p class="text-gray-400 text-sm mt-1">📅 {formatEventDate(pev.date)}{pev.time ? ' · ' + pev.time : ''}</p>
                                     {#if pev.location}<p class="text-gray-500 text-xs">📍 {pev.location}</p>{/if}
                                     {#if pev.description}<p class="text-gray-400 text-xs mt-1 line-clamp-2">{pev.description}</p>{/if}
-                                    <p class="text-amber-400/70 text-xs mt-1">שכונה: {pev.neighborhood ?? '-'}</p>
+                                    <p class="text-amber-400/70 text-xs mt-1">{$_('community.ev_pending_neighborhood', { values: { name: pev.neighborhood ?? '-' } })}</p>
                                 </div>
                                 <div class="flex flex-col gap-2 min-w-[180px]">
                                     <!-- Price on approve -->
@@ -212,13 +215,13 @@
                                         <input
                                             type="number"
                                             min="0"
-                                            placeholder="מחיר (₪)"
+                                            placeholder={$_('community.ev_price_ph')}
                                             bind:value={approvePrice[pev.id]}
                                             class="w-24 bg-white/10 border border-white/20 rounded-lg px-2 py-1.5 text-white text-sm placeholder-gray-500 text-center"
                                         />
                                         <input
                                             type="text"
-                                            placeholder="תיאור מחיר"
+                                            placeholder={$_('community.ev_price_desc_ph')}
                                             bind:value={approveDesc[pev.id]}
                                             class="flex-1 bg-white/10 border border-white/20 rounded-lg px-2 py-1.5 text-white text-sm placeholder-gray-500"
                                         />
@@ -227,23 +230,23 @@
                                         <!-- Approve -->
                                         <form method="POST" action="?/approveEvent" use:enhance={() => {
                                             submitting = true;
-                                            return async ({ update }) => { await update(); submitting = false; successMsg = 'האירוע אושר ✓'; setTimeout(() => successMsg = '', 3000); };
+                                            return async ({ update }) => { await update(); submitting = false; successMsg = $_('community.ev_approved_msg'); setTimeout(() => successMsg = '', 3000); };
                                         }}>
                                             <input type="hidden" name="id" value={pev.id} />
                                             <input type="hidden" name="price" value={approvePrice[pev.id] ?? 0} />
                                             <input type="hidden" name="price_description" value={approveDesc[pev.id] ?? ''} />
                                             <button type="submit" class="bg-green-600 hover:bg-green-500 text-white font-bold px-4 py-1.5 rounded-lg text-sm transition-all">
-                                                ✓ אשר
+                                                {$_('community.ev_approve')}
                                             </button>
                                         </form>
                                         <!-- Reject -->
                                         <form method="POST" action="?/rejectEvent" use:enhance={() => {
                                             submitting = true;
-                                            return async ({ update }) => { await update(); submitting = false; successMsg = 'האירוע נדחה'; setTimeout(() => successMsg = '', 3000); };
+                                            return async ({ update }) => { await update(); submitting = false; successMsg = $_('community.ev_rejected_msg'); setTimeout(() => successMsg = '', 3000); };
                                         }}>
                                             <input type="hidden" name="id" value={pev.id} />
                                             <button type="submit" class="bg-red-700 hover:bg-red-600 text-white font-bold px-4 py-1.5 rounded-lg text-sm transition-all">
-                                                ✕ דחה
+                                                {$_('community.ev_reject')}
                                             </button>
                                         </form>
                                     </div>
@@ -269,17 +272,17 @@
                 <div class="rounded-2xl md:rounded-3xl bg-[#0f172a] border md:border-2 border-green-500/30 overflow-hidden shadow-2xl">
                     <!-- Month Navigation -->
                     <div class="bg-gradient-to-r from-green-600 to-teal-600 p-4 flex items-center justify-between">
-                        <button onclick={nextMonth} aria-label="חודש הבא" class="text-white hover:bg-white/20 rounded-lg px-3 py-1.5 transition-colors font-bold text-lg">←</button>
+                        <button onclick={nextMonth} aria-label={$_('community.ev_next_month')} class="text-white hover:bg-white/20 rounded-lg px-3 py-1.5 transition-colors font-bold text-lg">←</button>
                         <h2 id="calendar-title" class="text-xl md:text-2xl font-bold text-white">
-                            {hebrewMonths[currentMonth]} {currentYear}
+                            {months[currentMonth]} {currentYear}
                         </h2>
-                        <button onclick={prevMonth} aria-label="חודש קודם" class="text-white hover:bg-white/20 rounded-lg px-3 py-1.5 transition-colors font-bold text-lg">→</button>
+                        <button onclick={prevMonth} aria-label={$_('community.ev_prev_month')} class="text-white hover:bg-white/20 rounded-lg px-3 py-1.5 transition-colors font-bold text-lg">→</button>
                     </div>
 
                     <div class="p-3 md:p-5">
                         <!-- Day Headers -->
                         <div class="grid grid-cols-7 gap-1 mb-2">
-                            {#each hebrewDays as day}
+                            {#each days as day}
                                 <div class="text-center text-xs md:text-sm font-bold text-gray-400 py-2">{day}</div>
                             {/each}
                         </div>
@@ -295,7 +298,7 @@
                                     <button
                                         role="gridcell"
                                         disabled={past}
-                                        aria-label="{day} {hebrewMonths[currentMonth]}{dayEvents.length > 0 ? ' – ' + dayEvents.length + ' אירועים' : ''}{isToday(day) ? ' (היום)' : ''}{past ? ' (עבר)' : ''}"
+                                        aria-label="{day} {months[currentMonth]}{dayEvents.length > 0 ? $_('community.ev_aria_events_count', { values: { n: dayEvents.length } }) : ''}{isToday(day) ? $_('community.ev_aria_today') : ''}{past ? $_('community.ev_aria_past') : ''}"
                                         class="aspect-square rounded-xl border transition-all flex flex-col items-center justify-center gap-0.5 relative
                                             {isToday(day) ? 'bg-green-600/30 border-green-500/50 ring-2 ring-green-400/50' : past ? 'border-white/5 opacity-40' : 'border-white/5 hover:border-white/20 hover:bg-white/5'}
                                             {past ? 'cursor-not-allowed' : dayEvents.length > 0 ? 'cursor-pointer' : 'cursor-default'}"
@@ -326,7 +329,7 @@
                 <!-- Upcoming Events -->
                 <div class="rounded-2xl md:rounded-3xl bg-[#0f172a] border md:border-2 border-green-500/30 overflow-hidden shadow-2xl">
                     <div class="bg-gradient-to-r from-teal-600 to-green-600 p-4">
-                        <h3 class="text-lg font-bold text-white flex items-center gap-2">📋 אירועים קרובים</h3>
+                        <h3 class="text-lg font-bold text-white flex items-center gap-2">{$_('community.ev_upcoming')}</h3>
                     </div>
                     <div class="p-4 flex flex-col gap-3 max-h-[420px] overflow-y-auto">
                         {#each upcomingEvents as ev}
@@ -352,7 +355,7 @@
                             </button>
                         {/each}
                         {#if upcomingEvents.length === 0}
-                            <p class="text-center text-gray-500 py-8">אין אירועים קרובים</p>
+                            <p class="text-center text-gray-500 py-8">{$_('community.ev_no_upcoming')}</p>
                         {/if}
                     </div>
                 </div>
@@ -360,28 +363,28 @@
                 <!-- CTA card -->
                 <div class="rounded-2xl bg-gradient-to-r from-green-600/20 to-teal-600/20 border border-green-500/30 p-4 text-center">
                     {#if data.isCoordinator || data.isAdmin}
-                        <p class="text-white font-bold text-sm mb-1">רכז שכונה 🏘️</p>
-                        <p class="text-gray-400 text-xs mb-3">פרסם אירוע בלוח ישירות</p>
+                        <p class="text-white font-bold text-sm mb-1">{$_('community.ev_coord_role')}</p>
+                        <p class="text-gray-400 text-xs mb-3">{$_('community.ev_coord_hint')}</p>
                         <button
                             onclick={() => { showAddForm = !showAddForm; showSuggestForm = false; }}
                             class="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-500 hover:to-teal-500 text-white font-bold px-6 py-2 rounded-full text-sm transition-all hover:scale-105 shadow-lg"
                         >
-                            {showAddForm ? '✕ סגור' : '+ פרסם אירוע'}
+                            {showAddForm ? $_('community.ev_close') : $_('community.ev_publish')}
                         </button>
                     {:else if data.user}
-                        <p class="text-white font-bold text-sm mb-1">רוצה להוסיף אירוע?</p>
-                        <p class="text-gray-400 text-xs mb-3">הצע אירוע לרכז השכונה לאישור</p>
+                        <p class="text-white font-bold text-sm mb-1">{$_('community.ev_want_add')}</p>
+                        <p class="text-gray-400 text-xs mb-3">{$_('community.ev_suggest_hint')}</p>
                         <button
                             onclick={() => { showSuggestForm = !showSuggestForm; showAddForm = false; }}
                             class="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-500 hover:to-teal-500 text-white font-bold px-6 py-2 rounded-full text-sm transition-all hover:scale-105 shadow-lg"
                         >
-                            {showSuggestForm ? '✕ סגור' : '+ הצע אירוע'}
+                            {showSuggestForm ? $_('community.ev_close') : $_('community.ev_suggest')}
                         </button>
                     {:else}
-                        <p class="text-white font-bold text-sm mb-1">רוצה להציע אירוע?</p>
-                        <p class="text-gray-400 text-xs mb-3">התחבר כדי להציע אירועים לקהילה</p>
+                        <p class="text-white font-bold text-sm mb-1">{$_('community.ev_want_suggest')}</p>
+                        <p class="text-gray-400 text-xs mb-3">{$_('community.ev_login_hint')}</p>
                         <a href="/login" class="inline-block bg-gradient-to-r from-green-600 to-teal-600 text-white font-bold px-6 py-2 rounded-full text-sm transition-all hover:scale-105 shadow-lg">
-                            התחבר
+                            {$_('community.ev_login')}
                         </a>
                     {/if}
                 </div>
@@ -391,46 +394,46 @@
         <!-- ── Coordinator: Add Event Form ── -->
         {#if showAddForm && (data.isCoordinator || data.isAdmin)}
             <div class="mt-6 rounded-2xl bg-[#0f172a] border border-green-500/40 p-5 md:p-8">
-                <h2 class="text-white font-black text-xl mb-5 flex items-center gap-2">📣 פרסם אירוע חדש</h2>
+                <h2 class="text-white font-black text-xl mb-5 flex items-center gap-2">{$_('community.ev_add_title')}</h2>
                 <form method="POST" action="?/addEvent" use:enhance={() => {
                     submitting = true;
                     return async ({ update }) => {
                         await update();
                         submitting = false;
                         showAddForm = false;
-                        successMsg = 'האירוע פורסם בהצלחה ✓';
+                        successMsg = $_('community.ev_published_msg');
                         setTimeout(() => successMsg = '', 3000);
                     };
                 }}>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <!-- Title -->
                         <div class="md:col-span-2">
-                            <label class="block text-gray-300 text-sm font-semibold mb-1">כותרת האירוע *</label>
-                            <input type="text" name="title" required placeholder="שם האירוע"
+                            <label class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_title_label')}</label>
+                            <input type="text" name="title" required placeholder={$_('community.ev_form_title_ph')}
                                 class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-green-400/60" />
                         </div>
                         <!-- Date + Time -->
                         <div>
-                            <label class="block text-gray-300 text-sm font-semibold mb-1">תאריך *</label>
+                            <label class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_date')}</label>
                             <input type="date" name="date" required
                                 class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-green-400/60" />
                         </div>
                         <div>
-                            <label class="block text-gray-300 text-sm font-semibold mb-1">שעה</label>
+                            <label class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_time')}</label>
                             <input type="time" name="time"
                                 class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-green-400/60" />
                         </div>
                         <!-- Location -->
                         <div>
-                            <label class="block text-gray-300 text-sm font-semibold mb-1">מיקום</label>
-                            <input type="text" name="location" placeholder="כתובת / מקום"
+                            <label class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_location')}</label>
+                            <input type="text" name="location" placeholder={$_('community.ev_form_location_ph')}
                                 class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-green-400/60" />
                         </div>
                         <!-- Neighborhood (coordinator may manage multiple) -->
                         <div>
-                            <label class="block text-gray-300 text-sm font-semibold mb-1">שכונה</label>
+                            <label class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_neighborhood')}</label>
                             {#if data.isAdmin}
-                                <input type="text" name="neighborhood" placeholder="שכונה"
+                                <input type="text" name="neighborhood" placeholder={$_('community.ev_form_neighborhood')}
                                     value={(data.user as any)?.neighborhood ?? ''}
                                     class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-green-400/60" />
                             {:else if coordNeighborhoods.length > 1}
@@ -448,35 +451,35 @@
                         </div>
                         <!-- Price -->
                         <div>
-                            <label class="block text-gray-300 text-sm font-semibold mb-1">מחיר (₪) - אפס = חינם</label>
+                            <label class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_price')}</label>
                             <input type="number" name="price" min="0" value="0"
                                 class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-green-400/60" />
                         </div>
                         <div>
-                            <label class="block text-gray-300 text-sm font-semibold mb-1">תיאור מחיר</label>
-                            <input type="text" name="price_description" placeholder="לדוגמה: כולל חומרים"
+                            <label class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_price_desc')}</label>
+                            <input type="text" name="price_description" placeholder={$_('community.ev_form_price_desc_ph')}
                                 class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-green-400/60" />
                         </div>
                         <!-- Icon / Image -->
                         <div class="md:col-span-2">
-                            <label class="block text-gray-300 text-sm font-semibold mb-2">אייקון או תמונה</label>
+                            <label class="block text-gray-300 text-sm font-semibold mb-2">{$_('community.ev_form_icon')}</label>
                             <input type="hidden" name="icon" value={addImage ? '' : addIcon} />
                             <input type="hidden" name="image" value={addImage} />
                             <div class="flex flex-wrap items-center gap-2">
                                 {#if addImage}
                                     <div class="relative">
-                                        <img src={addImage} alt="תצוגה מקדימה" class="w-12 h-12 rounded-lg object-cover ring-2 ring-green-400/60" />
+                                        <img src={addImage} alt={$_('community.ev_preview_alt')} class="w-12 h-12 rounded-lg object-cover ring-2 ring-green-400/60" />
                                         <button type="button" onclick={() => addImage = ''}
                                             class="absolute -top-1.5 -right-1.5 bg-black/70 hover:bg-red-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold transition-colors"
-                                            aria-label="הסר תמונה">×</button>
+                                            aria-label={$_('community.ev_remove_image')}>×</button>
                                     </div>
                                 {:else}
                                     <label class="cursor-pointer flex items-center gap-1.5 px-3 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 border border-dashed border-green-400/40 text-gray-200 text-sm font-semibold transition-all">
-                                        📷 <span>העלה תמונה</span>
+                                        📷 <span>{$_('community.ev_upload_image')}</span>
                                         <input type="file" accept="image/*" class="hidden" onchange={(e) => pickImage(e, (v) => addImage = v)} />
                                     </label>
                                 {/if}
-                                <span class="text-gray-500 text-xs px-1">או בחר אייקון:</span>
+                                <span class="text-gray-500 text-xs px-1">{$_('community.ev_or_icon')}</span>
                                 {#each iconOptions as ic}
                                     <button type="button" onclick={() => { addIcon = ic; addImage = ''; }}
                                         class="text-2xl p-1.5 rounded-lg transition-all {(!addImage && addIcon === ic) ? 'bg-green-600/40 ring-2 ring-green-400/60' : 'bg-white/5 hover:bg-white/10'}">
@@ -485,38 +488,38 @@
                                 {/each}
                             </div>
                             {#if addImage}
-                                <p class="text-xs text-green-300/80 mt-1.5">✓ התמונה תוצג במקום האייקון</p>
+                                <p class="text-xs text-green-300/80 mt-1.5">{$_('community.ev_image_note')}</p>
                             {/if}
                         </div>
                         <!-- Color -->
                         <div>
-                            <label class="block text-gray-300 text-sm font-semibold mb-1">צבע</label>
+                            <label class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_color')}</label>
                             <select name="color"
                                 class="w-full bg-[#0f172a] border border-white/20 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-green-400/60">
-                                <option value="green">ירוק</option>
-                                <option value="blue">כחול</option>
-                                <option value="purple">סגול</option>
-                                <option value="orange">כתום</option>
-                                <option value="teal">טיל</option>
-                                <option value="pink">ורוד</option>
-                                <option value="yellow">צהוב</option>
+                                <option value="green">{$_('community.color_green')}</option>
+                                <option value="blue">{$_('community.color_blue')}</option>
+                                <option value="purple">{$_('community.color_purple')}</option>
+                                <option value="orange">{$_('community.color_orange')}</option>
+                                <option value="teal">{$_('community.color_teal')}</option>
+                                <option value="pink">{$_('community.color_pink')}</option>
+                                <option value="yellow">{$_('community.color_yellow')}</option>
                             </select>
                         </div>
                         <!-- Description -->
                         <div class="md:col-span-2">
-                            <label class="block text-gray-300 text-sm font-semibold mb-1">תיאור</label>
-                            <textarea name="description" rows="3" placeholder="פרטים נוספים על האירוע..."
+                            <label class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_desc')}</label>
+                            <textarea name="description" rows="3" placeholder={$_('community.ev_form_desc_ph')}
                                 class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-green-400/60 resize-none"></textarea>
                         </div>
                     </div>
                     <div class="mt-5 flex gap-3">
                         <button type="submit" disabled={submitting}
                             class="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-500 hover:to-teal-500 text-white font-bold px-8 py-2.5 rounded-xl text-sm transition-all hover:scale-105 shadow-lg disabled:opacity-50">
-                            {submitting ? 'מפרסם...' : '📣 פרסם אירוע'}
+                            {submitting ? $_('community.ev_publishing') : $_('community.ev_publish_submit')}
                         </button>
                         <button type="button" onclick={() => showAddForm = false}
                             class="bg-white/10 hover:bg-white/20 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition-all border border-white/20">
-                            ביטול
+                            {$_('community.ev_cancel')}
                         </button>
                     </div>
                 </form>
@@ -526,55 +529,55 @@
         <!-- ── Regular user: Suggest Event Form ── -->
         {#if showSuggestForm && data.user && !data.isCoordinator && !data.isAdmin}
             <div class="mt-6 rounded-2xl bg-[#0f172a] border border-teal-500/40 p-5 md:p-8">
-                <h2 class="text-white font-black text-xl mb-2 flex items-center gap-2">💡 הצע אירוע לקהילה</h2>
-                <p class="text-gray-400 text-sm mb-5">הצעתך תועבר לרכז השכונה לאישור</p>
+                <h2 class="text-white font-black text-xl mb-2 flex items-center gap-2">{$_('community.ev_suggest_title')}</h2>
+                <p class="text-gray-400 text-sm mb-5">{$_('community.ev_suggest_sub')}</p>
                 <form method="POST" action="?/suggestEvent" use:enhance={() => {
                     submitting = true;
                     return async ({ update }) => {
                         await update();
                         submitting = false;
                         showSuggestForm = false;
-                        successMsg = 'ההצעה נשלחה לרכז השכונה ✓';
+                        successMsg = $_('community.ev_suggestion_sent');
                         setTimeout(() => successMsg = '', 4000);
                     };
                 }}>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="md:col-span-2">
-                            <label class="block text-gray-300 text-sm font-semibold mb-1">כותרת האירוע *</label>
-                            <input type="text" name="title" required placeholder="שם האירוע"
+                            <label class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_title_label')}</label>
+                            <input type="text" name="title" required placeholder={$_('community.ev_form_title_ph')}
                                 class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-teal-400/60" />
                         </div>
                         <div>
-                            <label class="block text-gray-300 text-sm font-semibold mb-1">תאריך *</label>
+                            <label class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_date')}</label>
                             <input type="date" name="date" required
                                 class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-teal-400/60" />
                         </div>
                         <div>
-                            <label class="block text-gray-300 text-sm font-semibold mb-1">שעה</label>
+                            <label class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_time')}</label>
                             <input type="time" name="time"
                                 class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-teal-400/60" />
                         </div>
                         <div>
-                            <label class="block text-gray-300 text-sm font-semibold mb-1">מיקום</label>
-                            <input type="text" name="location" placeholder="כתובת / מקום"
+                            <label class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_location')}</label>
+                            <input type="text" name="location" placeholder={$_('community.ev_form_location_ph')}
                                 class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-teal-400/60" />
                         </div>
                         <!-- Icon / Image -->
                         <div>
-                            <label class="block text-gray-300 text-sm font-semibold mb-2">אייקון או תמונה</label>
+                            <label class="block text-gray-300 text-sm font-semibold mb-2">{$_('community.ev_form_icon')}</label>
                             <input type="hidden" name="icon" value={suggestImage ? '' : suggestIcon} />
                             <input type="hidden" name="image" value={suggestImage} />
                             <div class="flex flex-wrap items-center gap-1.5">
                                 {#if suggestImage}
                                     <div class="relative">
-                                        <img src={suggestImage} alt="תצוגה מקדימה" class="w-11 h-11 rounded-lg object-cover ring-2 ring-teal-400/60" />
+                                        <img src={suggestImage} alt={$_('community.ev_preview_alt')} class="w-11 h-11 rounded-lg object-cover ring-2 ring-teal-400/60" />
                                         <button type="button" onclick={() => suggestImage = ''}
                                             class="absolute -top-1.5 -right-1.5 bg-black/70 hover:bg-red-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold transition-colors"
-                                            aria-label="הסר תמונה">×</button>
+                                            aria-label={$_('community.ev_remove_image')}>×</button>
                                     </div>
                                 {:else}
                                     <label class="cursor-pointer flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-dashed border-teal-400/40 text-gray-200 text-sm font-semibold transition-all">
-                                        📷 <span>תמונה</span>
+                                        📷 <span>{$_('community.ev_image_word')}</span>
                                         <input type="file" accept="image/*" class="hidden" onchange={(e) => pickImage(e, (v) => suggestImage = v)} />
                                     </label>
                                 {/if}
@@ -587,19 +590,19 @@
                             </div>
                         </div>
                         <div class="md:col-span-2">
-                            <label class="block text-gray-300 text-sm font-semibold mb-1">תיאור</label>
-                            <textarea name="description" rows="3" placeholder="ספר על האירוע..."
+                            <label class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_desc')}</label>
+                            <textarea name="description" rows="3" placeholder={$_('community.ev_suggest_desc_ph')}
                                 class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-teal-400/60 resize-none"></textarea>
                         </div>
                     </div>
                     <div class="mt-5 flex gap-3">
                         <button type="submit" disabled={submitting}
                             class="bg-gradient-to-r from-teal-600 to-green-600 hover:from-teal-500 hover:to-green-500 text-white font-bold px-8 py-2.5 rounded-xl text-sm transition-all hover:scale-105 shadow-lg disabled:opacity-50">
-                            {submitting ? 'שולח...' : '💡 שלח הצעה'}
+                            {submitting ? $_('community.ev_sending') : $_('community.ev_send_suggestion')}
                         </button>
                         <button type="button" onclick={() => showSuggestForm = false}
                             class="bg-white/10 hover:bg-white/20 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition-all border border-white/20">
-                            ביטול
+                            {$_('community.ev_cancel')}
                         </button>
                     </div>
                 </form>
@@ -650,10 +653,10 @@
                     <div class="flex flex-col gap-3">
                         <div class="flex gap-3">
                             <button class="bg-green-600 hover:bg-green-500 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition-all hover:scale-105">
-                                אני מגיע! ✓
+                                {$_('community.ev_im_coming')}
                             </button>
                             <button class="bg-white/10 hover:bg-white/20 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition-all border border-white/20">
-                                שתף
+                                {$_('community.ev_share')}
                             </button>
                         </div>
                         <!-- Delete button for coordinator / admin -->
@@ -662,14 +665,14 @@
                                 return async ({ update }) => {
                                     await update();
                                     selectedEvent = null;
-                                    successMsg = 'האירוע נמחק';
+                                    successMsg = $_('community.ev_deleted_msg');
                                     setTimeout(() => successMsg = '', 3000);
                                 };
                             }}>
                                 <input type="hidden" name="id" value={selectedEvent.id} />
                                 <button type="submit"
                                     class="w-full bg-red-700/30 hover:bg-red-700/50 border border-red-600/40 text-red-300 font-bold px-6 py-2 rounded-xl text-sm transition-all">
-                                    🗑️ מחק אירוע
+                                    {$_('community.ev_delete')}
                                 </button>
                             </form>
                         {/if}

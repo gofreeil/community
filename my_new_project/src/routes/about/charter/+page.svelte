@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { _ } from 'svelte-i18n';
+
 	let fullName = $state('');
 	let idNumber = $state('');
 	let birthDate = $state('');
@@ -11,14 +13,23 @@
 
 	const today = new Date().toLocaleDateString('he-IL');
 
+	const clauseKeys = [
+		'aboutPages.ch_clause1',
+		'aboutPages.ch_clause2',
+		'aboutPages.ch_clause3',
+		'aboutPages.ch_clause4',
+		'aboutPages.ch_clause5',
+		'aboutPages.ch_clause6'
+	];
+
 	async function handleSubmit() {
 		errorMsg = '';
 		if (!fullName.trim() || !idNumber.trim() || !birthDate || !signature.trim() || !agreed) {
-			errorMsg = 'נא למלא את כל השדות ולסמן את ההסכמה';
+			errorMsg = $_('aboutPages.ch_err_fill');
 			return;
 		}
 		if (signature.trim() !== fullName.trim()) {
-			errorMsg = 'החתימה צריכה להיות זהה לשם המלא';
+			errorMsg = $_('aboutPages.ch_err_sig');
 			return;
 		}
 
@@ -37,12 +48,12 @@
 			});
 			const data = await res.json().catch(() => ({}));
 			if (!res.ok || data?.success === false) {
-				errorMsg = data?.message || 'שגיאה בשמירת האמנה - נסו שוב';
+				errorMsg = data?.message || $_('aboutPages.ch_err_save');
 				return;
 			}
 			submitted = true;
 		} catch {
-			errorMsg = 'בעיית תקשורת - נסו שוב';
+			errorMsg = $_('aboutPages.ch_err_net');
 		} finally {
 			submitting = false;
 		}
@@ -59,10 +70,10 @@
 	<div class="text-center mb-8">
 		<div class="text-5xl mb-3">🕊️</div>
 		<h1 class="text-3xl md:text-5xl font-black leading-tight mb-3" style="color:#facc15;">
-			אמנת יוצאים לחירות
+			{$_('aboutPages.ch_title')}
 		</h1>
 		<p class="text-indigo-200 text-base md:text-lg max-w-2xl mx-auto">
-			אמנה מוסרית-ערכית לרכזי השכונות ולחברי התנועה
+			{$_('aboutPages.ch_subtitle')}
 		</p>
 	</div>
 
@@ -71,21 +82,14 @@
 	     style="background:linear-gradient(135deg,#0f172a,#1e293b); border:1px solid rgba(139,92,246,0.25);">
 
 		<p class="text-base md:text-lg mb-6">
-			אני מצטרף לתנועה החברתית ולעמותת <span class="font-black text-yellow-300">יוצאים לחירות</span> הפועלת לקידום ערבות הדדית בין כל פלגי העם, מתוך אחווה, וחזון לעצמאות ותקומה רוחנית וגשמית של העם. ידוע לי כי:
+			{$_('aboutPages.ch_intro_pre')}<span class="font-black text-yellow-300">{$_('aboutPages.ch_movement')}</span>{$_('aboutPages.ch_intro_post')}
 		</p>
 
 		<ul class="space-y-4 mb-6">
-			{#each [
-				'אנו שואפים ליצור מציאות חדשה המבוססת על העיקרון של "ואהבת לרעך כמוך", שבה כל אדם תורם את כישוריו ויכולותיו בדרך הייחודית לו, תוך כיבוד רצונו החופשי של האחר כדי לקדם ולחזק את המשילות של העם על כל המוסדות והתאגידים המשפיעים עליו.',
-				'אני מצהיר כי אינני חבר בכתות סודיות ובהצטרפותי אינני מתכוון להטות את חזון החירות הנ"ל מכל סיבה שהיא, בין אידיאולוגית, בין בגלל איום או להבדיל שוחד וטובת הנאה כל שהיא.',
-				'אני מצהיר כי במקרה וינסו גורמים כל שהם להטות אותי מדרכי אני מחויב לדווח לכך לחברי בהקדם האפשרי בשקיפות מלאה.',
-				'כמו כן ידוע לי כי התנועה מגנה בכל תוקף כל צורה של אלימות, לשון הרע או סכסוכים פנימיים, ומתנגדת לכל ניסיון לכפות דעות מחוץ לגבולות הלגיטימיים של שיח מכבד, אני מודע לכך כי הפרה של עקרונות אלו עשויה להוביל להסרת חברותי בעמותה לאלתר.',
-				'במקרה של מחלוקת עם חבריי, אני מתחייב לפעול בדרך של כבוד והידברות, ואם לא אצליח לפתור את המחלוקת בכוחות עצמי – אפנה לגורם צד שלישי או לבתי הפיוס של יוצאים לחירות במטרה להגיע לפתרון בדרכי שלום.',
-				'בהצטרפותי, אני מתחייב לפעול לקידום ערכים של נתינה ואלטרואיזם, להימנע מאגואיזם, ולעשות כל שביכולתי להוסיף חסד לשיפור המצב הקיים וללחום בגבורה כדי לדחות כל עוול, עד לחזון המלא והמשותף של חיים חופשיים בהרמוניה במהרה בימנו אמן.'
-			] as clause}
+			{#each clauseKeys as clause}
 				<li class="flex gap-3 text-base md:text-lg">
 					<span class="text-yellow-400 mt-1 flex-shrink-0">✦</span>
-					<span>{clause}</span>
+					<span>{$_(clause)}</span>
 				</li>
 			{/each}
 		</ul>
@@ -96,31 +100,31 @@
 		<div class="rounded-3xl p-8 text-center"
 		     style="background:linear-gradient(135deg,#064e3b,#1e293b); border:2px solid rgba(16,185,129,0.5);">
 			<div class="text-5xl mb-3">✅</div>
-			<h2 class="text-2xl md:text-3xl font-black text-emerald-300 mb-2">האמנה נחתמה בהצלחה</h2>
+			<h2 class="text-2xl md:text-3xl font-black text-emerald-300 mb-2">{$_('aboutPages.ch_success_title')}</h2>
 			<p class="text-emerald-100 text-base md:text-lg">
-				תודה <span class="font-black text-yellow-300">{fullName}</span> - שמך נשמר אצלנו כחתום על אמנת יוצאים לחירות.
+				{$_('aboutPages.ch_success_pre')}<span class="font-black text-yellow-300">{fullName}</span>{$_('aboutPages.ch_success_post')}
 			</p>
-			<p class="text-gray-300 text-sm mt-4">תאריך חתימה: {today}</p>
+			<p class="text-gray-300 text-sm mt-4">{$_('aboutPages.ch_sign_date', { values: { date: today } })}</p>
 		</div>
 	{:else}
 		<div class="rounded-3xl p-7 md:p-9"
 		     style="background:linear-gradient(135deg,#1a1035,#0f172a); border:2px solid rgba(250,204,21,0.35);">
-			<h2 class="text-xl md:text-2xl font-black mb-1 text-yellow-300">חתימה על האמנה</h2>
-			<p class="text-gray-300 text-sm mb-6">מילוי הפרטים והחתימה למטה מהווה הסכמה לכל סעיפי האמנה</p>
+			<h2 class="text-xl md:text-2xl font-black mb-1 text-yellow-300">{$_('aboutPages.ch_form_title')}</h2>
+			<p class="text-gray-300 text-sm mb-6">{$_('aboutPages.ch_form_note')}</p>
 
 			<div class="grid md:grid-cols-3 gap-4 mb-5">
 				<div>
-					<label for="fullName" class="block text-sm font-bold text-gray-200 mb-1.5">שם מלא</label>
+					<label for="fullName" class="block text-sm font-bold text-gray-200 mb-1.5">{$_('aboutPages.ch_full_name')}</label>
 					<input
 						id="fullName"
 						type="text"
 						bind:value={fullName}
 						class="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-white placeholder:text-gray-600 text-sm focus:outline-none focus:border-yellow-400/60 focus:bg-yellow-900/10 transition-all"
-						placeholder="ישראל ישראלי"
+						placeholder={$_('aboutPages.ch_full_name_ph')}
 					/>
 				</div>
 				<div>
-					<label for="idNumber" class="block text-sm font-bold text-gray-200 mb-1.5">תעודת זהות</label>
+					<label for="idNumber" class="block text-sm font-bold text-gray-200 mb-1.5">{$_('aboutPages.ch_id')}</label>
 					<input
 						id="idNumber"
 						type="text"
@@ -128,12 +132,12 @@
 						maxlength="9"
 						bind:value={idNumber}
 						class="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-white placeholder:text-gray-600 text-sm focus:outline-none focus:border-yellow-400/60 focus:bg-yellow-900/10 transition-all"
-						placeholder="9 ספרות"
+						placeholder={$_('aboutPages.ch_id_ph')}
 						dir="ltr"
 					/>
 				</div>
 				<div>
-					<label for="birthDate" class="block text-sm font-bold text-gray-200 mb-1.5">תאריך לידה</label>
+					<label for="birthDate" class="block text-sm font-bold text-gray-200 mb-1.5">{$_('aboutPages.ch_birth_date')}</label>
 					<input
 						id="birthDate"
 						type="date"
@@ -151,14 +155,14 @@
 					class="mt-1 w-5 h-5 flex-shrink-0 accent-yellow-400 cursor-pointer"
 				/>
 				<span class="text-sm md:text-base text-gray-100 leading-relaxed">
-					אני מצהיר/ה כי קראתי את האמנה לעיל, מבין/ה את משמעותה, ומתחייב/ת לפעול לפי עקרונותיה וערכיה.
+					{$_('aboutPages.ch_agree')}
 				</span>
 			</label>
 
 			<!-- Signature -->
 			<div class="mb-5">
 				<label for="signature" class="block text-sm font-bold text-gray-200 mb-1.5">
-					חתימה - חתום/י על ידי הקלדת שמך המלא שוב
+					{$_('aboutPages.ch_sig_label')}
 				</label>
 				<input
 					id="signature"
@@ -166,9 +170,9 @@
 					bind:value={signature}
 					class="w-full rounded-xl border-2 border-yellow-500/30 bg-yellow-500/5 px-4 py-3 text-yellow-100 text-lg font-black focus:outline-none focus:border-yellow-400 focus:bg-yellow-500/10 transition-all"
 					style="font-family: 'Brush Script MT', 'Lucida Handwriting', cursive; letter-spacing: 1px;"
-					placeholder="הקלד/י את שמך המלא לחתימה"
+					placeholder={$_('aboutPages.ch_sig_ph')}
 				/>
-				<p class="text-xs text-gray-500 mt-1.5">תאריך חתימה: {today}</p>
+				<p class="text-xs text-gray-500 mt-1.5">{$_('aboutPages.ch_sign_date', { values: { date: today } })}</p>
 			</div>
 
 			{#if errorMsg}
@@ -189,9 +193,9 @@
 				{#if submitting}
 					<span class="inline-block w-5 h-5 border-2 border-gray-500 border-t-yellow-400 rounded-full"
 						style="animation: spin 0.7s linear infinite;"></span>
-					שולח חתימה...
+					{$_('aboutPages.ch_sending')}
 				{:else}
-					🕊️ חתום על האמנה
+					🕊️ {$_('aboutPages.ch_submit')}
 				{/if}
 			</button>
 		</div>

@@ -470,6 +470,8 @@ export interface UpdateItemData {
     lng?: number | null;
     extra_fields?: Record<string, unknown>;
     status?: string;
+    icon?: string;
+    color?: string;
 }
 
 export async function updateItem(documentId: string, data: UpdateItemData): Promise<void> {
@@ -485,6 +487,8 @@ export async function updateItem(documentId: string, data: UpdateItemData): Prom
     if (data.lng          !== undefined) payload.lng          = data.lng;
     if (data.extra_fields !== undefined) payload.extra_fields = data.extra_fields;
     if (data.status       !== undefined) payload.status1      = data.status;
+    if (data.icon         !== undefined) payload.icon         = data.icon;
+    if (data.color        !== undefined) payload.color        = data.color;
     await strapiPut(`/api/items/${documentId}`, { data: payload });
     invalidate('items:');
 }
@@ -1090,6 +1094,16 @@ export async function getNeighborhoods(status: NeighborhoodStatus = 'approved'):
             throw e;
         }
     });
+}
+
+/** שליפת שכונה בודדת לפי documentId - טרי, לא דרך cache (משמש את מסלולי האישור) */
+export async function getNeighborhoodById(documentId: string): Promise<DbNeighborhood | undefined> {
+    try {
+        const res = await strapiGet<{ data: StrapiNeighborhood }>(`/api/neighborhoods/${documentId}`);
+        return res.data ? mapNeighborhood(res.data) : undefined;
+    } catch {
+        return undefined;
+    }
 }
 
 /** יצירת בקשת שכונה חדשה (status=pending) - תושב שסימן פין על המפה.

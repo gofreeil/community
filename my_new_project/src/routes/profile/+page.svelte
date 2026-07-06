@@ -28,9 +28,9 @@
 	// tFn: פונקציית תרגום reactive - לא משתמשים ב-$t ישירות כי Prettier מוחק אותו
 	let _loc = $state(get(locale));
 	$effect(() => locale.subscribe((l) => (_loc = l)));
-	const tFn = (k: string) => {
+	const tFn = (k: string, values?: Record<string, string | number | boolean | Date | null | undefined>) => {
 		void _loc;
-		return get(t)(k);
+		return values ? get(t)(k, { values }) : get(t)(k);
 	};
 
 	const DRAFT_KEY = "profile_draft";
@@ -54,10 +54,7 @@
 	// תקפה - signIn מחזיר error (redirect:false) ואנחנו מציגים אותה עצה.
 	async function loginWithGofreeil() {
 		ssoError = null;
-		const advice =
-			'לא זיהינו אותך דרך "יוצאים לחירות". הזיהוי המיידי עובד רק בדפדפן שכבר ' +
-			'התחברת בו לאחד מאתרי gofreeil. עצה: התחבר פעם אחת עם גוגל, פייסבוק או ' +
-			'אימייל וסיסמה — ומאותו רגע תזוהה כאן אוטומטית, וגם בשאר אתרי הרשת באותו דפדפן.';
+		const advice = tFn('profile.sso_advice');
 		if (!data.hasSharedSso) { ssoError = advice; return; }
 		ssoLoading = true;
 		try {
@@ -66,7 +63,7 @@
 			else if (res?.url) { window.location.href = res.url; }
 			else { ssoError = advice; }
 		} catch {
-			ssoError = 'אירעה שגיאה בהתחברות. נסה שוב או התחבר עם גוגל/אימייל.';
+			ssoError = tFn('profile.sso_error');
 		} finally {
 			ssoLoading = false;
 		}
@@ -83,7 +80,7 @@
 	let republishedItemIds = $state<string[]>([]);
 
 	async function deleteOwnItem(itemId: string, label: string) {
-		if (!confirm(`למחוק לצמיתות את "${label}"? פעולה זו אינה הפיכה.`)) return;
+		if (!confirm(tFn('profile.delete_item_confirm', { label }))) return;
 		deletingItemId = itemId;
 		try {
 			const res = await fetch(`/api/items/${itemId}`, {
@@ -94,10 +91,10 @@
 			if (data.success) {
 				deletedItemIds = [...deletedItemIds, itemId];
 			} else {
-				alert(data.message ?? 'שגיאה במחיקה');
+				alert(data.message ?? tFn('profile.delete_error'));
 			}
 		} catch {
-			alert('שגיאת תקשורת - נסה שוב');
+			alert(tFn('profile.network_error'));
 		}
 		deletingItemId = null;
 	}
@@ -114,10 +111,10 @@
 			if (data.success) {
 				republishedItemIds = [...republishedItemIds, itemId];
 			} else {
-				alert(data.message ?? 'שגיאה בפרסום מחדש');
+				alert(data.message ?? tFn('profile.republish_error'));
 			}
 		} catch {
-			alert('שגיאת תקשורת - נסה שוב');
+			alert(tFn('profile.network_error'));
 		}
 		republishingItemId = null;
 	}
@@ -261,7 +258,7 @@
 	});
 
 	function dismissAdDraft() {
-		if (!confirm("למחוק את טיוטת הפרסומת?")) return;
+		if (!confirm(tFn('profile.ad_draft_delete_confirm'))) return;
 		try { localStorage.removeItem("ad_builder_draft_v1"); } catch {}
 		adDraft = null;
 	}
@@ -278,9 +275,9 @@
 	const singlesMatchMessage = (data as { singlesMatchInfo?: { count: number; ageGroupLabel: string; oppositeGenderLabel: string } | null }).singlesMatchInfo
 		? {
 				id: "singles-match",
-				from: "💑 פנויים/פנויות",
-				text: `דף הפרופיל שלך מוכן ויש עבורך כ-${(data as { singlesMatchInfo?: { count: number } }).singlesMatchInfo!.count} ${(data as { singlesMatchInfo?: { oppositeGenderLabel: string } }).singlesMatchInfo!.oppositeGenderLabel} בגילך (${(data as { singlesMatchInfo?: { ageGroupLabel: string } }).singlesMatchInfo!.ageGroupLabel}).`,
-				time: "עכשיו",
+				from: tFn("profile.singles_match_from"),
+				text: tFn("profile.singles_match_text", { count: (data as { singlesMatchInfo?: { count: number } }).singlesMatchInfo!.count, gender: (data as { singlesMatchInfo?: { oppositeGenderLabel: string } }).singlesMatchInfo!.oppositeGenderLabel, ageGroup: (data as { singlesMatchInfo?: { ageGroupLabel: string } }).singlesMatchInfo!.ageGroupLabel }),
+				time: tFn("profile.now"),
 				read: false,
 			}
 		: null;
@@ -304,9 +301,10 @@
 								efHasPin = ef?.requested_lat != null;
 							} catch {}
 							// נתוני בקשת מיקום לכפתורי אשר/דחה על הכרטיס.
-							// הודעות ישנות לא שמרו city ב-extra_fields - נחלץ מטקסט ההודעה
+							// הודעות ישנות לא שמרו city ב-extra_fields - נחלץ מטקסט ההודעה.
+							// בקשה שכבר טופלה (handled) נשארת בהיסטוריה כהודעה רגילה - בלי כפתורים.
 							const lr =
-								efType === "location_request"
+								efType === "location_request" && !ef?.handled
 									? {
 											location:
 												String(ef?.requested_location ?? "") ||
@@ -331,7 +329,7 @@
 								id: `db-${m.id}`,
 								dbId: m.id,
 								lr,
-								from: m.label ?? "מערכת",
+								from: m.label ?? tFn("profile.from_system"),
 								text: m.description ?? "",
 								time: new Date(m.created_at).toLocaleDateString(
 									"he-IL",
@@ -350,16 +348,16 @@
 				: [
 						{
 							id: "mock-welcome",
-							from: "מערכת",
-							text: "ברוך הבא לקהילה! השלם את הפרופיל שלך.",
-							time: "לפני 2 ימים",
+							from: tFn("profile.from_system"),
+							text: tFn("profile.mock_welcome"),
+							time: tFn("profile.days_ago_2"),
 							read: false,
 						},
 						{
 							id: "mock-approved",
-							from: "מנהל",
-							text: "הצטרפות שלך אושרה. כעת תוכל לפרסם תוכן.",
-							time: "לפני 5 ימים",
+							from: tFn("profile.from_admin"),
+							text: tFn("profile.mock_approved"),
+							time: tFn("profile.days_ago_5"),
 							read: false,
 						},
 					]),
@@ -467,23 +465,23 @@
 			);
 			const result = deserialize(await res.text());
 			if (result.type === "success") {
-				// ההתראה נמחקה מה-DB - מסירים גם מהתצוגה
+				// ההתראה סומנה "טופל" ב-DB (נשארת בהיסטוריה) - מסירים מהתצוגה הנוכחית
 				messages = messages.filter((m) => m.id !== msg.id);
 				showLrNotice(
 					"success",
 					decision === "approve"
-						? `✅ "${location}" אושר ונוסף לרשימת השכונות. המבקש קיבל הודעה.`
-						: `✖️ הבקשה להוספת "${location}" נדחתה והמבקש קיבל הודעה.`,
+						? tFn("profile.lr_approved", { location })
+						: tFn("profile.lr_rejected", { location }),
 				);
 			} else {
 				const errMsg =
 					result.type === "failure"
-						? String((result.data as { lrError?: string })?.lrError ?? "שגיאה בטיפול בבקשה")
-						: "שגיאה בטיפול בבקשה";
+						? String((result.data as { lrError?: string })?.lrError ?? tFn("profile.lr_error"))
+						: tFn("profile.lr_error");
 				showLrNotice("error", errMsg);
 			}
 		} catch {
-			showLrNotice("error", "שגיאה בתקשורת עם השרת, נסה שוב");
+			showLrNotice("error", tFn("profile.lr_network"));
 		} finally {
 			lrBusyId = "";
 		}
@@ -542,14 +540,14 @@
 		let extraTxt = "";
 		if (freeEditInfo) {
 			extraTxt = freeEditInfo.expired
-				? ` ⌛ זמן העריכה החינמי שלך נגמר ב-${freeEditInfo.dateStr} ב-23:59. כל זמן שעובר ללא ניצול - מבוזבז.`
-				: ` ⏰ נותר לך זמן עריכה חינם עד ${freeEditInfo.dateStr} ב-23:59 - עדיף לסיים היום!`;
+				? tFn("profile.free_edit_expired", { date: freeEditInfo.dateStr })
+				: tFn("profile.free_edit_left", { date: freeEditInfo.dateStr });
 		}
 		const draftMsg = {
 			id: "draft",
-			from: "🎨 בילדר הפרסומות",
-			text: `יש לך פרסום בטיוטא - סיים את עריכתו! "${adDraft.title || "ללא כותרת"}" (${adDraftProgress}% הושלמו).${extraTxt}`,
-			time: "עכשיו",
+			from: tFn("profile.draft_from"),
+			text: tFn("profile.draft_text", { title: adDraft.title || tFn("profile.untitled"), progress: adDraftProgress }) + extraTxt,
+			time: tFn("profile.now"),
 			read: false,
 			isDraft: true,
 		};
@@ -742,11 +740,11 @@
 
 	async function saveCityPin() {
 		if (cityPinLat == null || cityPinLng == null) {
-			cityPinError = "נא לסמן את המיקום על המפה";
+			cityPinError = tFn("profile.pin_error_mark");
 			return;
 		}
 		if (!city) {
-			cityPinError = "יש לבחור עיר תחילה";
+			cityPinError = tFn("profile.pin_error_city");
 			return;
 		}
 		savingCityPin = true;
@@ -762,7 +760,7 @@
 			});
 			const r = await res.json();
 			if (!r?.success) {
-				cityPinError = r?.message || "השמירה נכשלה, נסה שוב";
+				cityPinError = r?.message || tFn("profile.pin_save_failed");
 				savingCityPin = false;
 				return;
 			}
@@ -772,7 +770,7 @@
 			cityPinSaved = true;
 			cityPinAlreadyPending = !!r.alreadyPending;
 		} catch {
-			cityPinError = "שגיאה בשמירה, נסה שוב";
+			cityPinError = tFn("profile.pin_save_error");
 		}
 		savingCityPin = false;
 	}
@@ -873,7 +871,7 @@
 		const target = to?.url?.pathname ?? "";
 		if (target === page.url.pathname) return;
 		const ok = window.confirm(
-			"יש לך שינויים שלא נשמרו בפרופיל.\n\nלחץ 'ביטול' כדי לחזור ולשמור, או 'אישור' כדי לעזוב ולאבד את השינויים."
+			tFn("profile.unsaved_confirm")
 		);
 		if (!ok) cancel();
 	});
@@ -883,8 +881,8 @@
 		{
 			id: "biz_discount",
 			emoji: "🎁",
-			title: "תן הנחה לקהילת יוצאים לחירות וצרף את העסק לאתר הרכישות הקבוצתיות",
-			sub: "חשיפה לאלפי לקוחות מהקהילה — והצטרפות למועדון ההנחות של יוצאים לחירות",
+			title: tFn("profile.rec_biz_title"),
+			sub: tFn("profile.rec_biz_sub"),
 			href: "https://groups.gofreeil.com/",
 			external: true,
 			color: "amber",
@@ -893,8 +891,8 @@
 		{
 			id: "service_index",
 			emoji: "🛠️",
-			title: "פרסם חינם את המקצוע שלך באינדקס בעלי המקצוע של הקהילה",
-			sub: "תושבי הקהילה מחפשים בעלי מקצוע אמינים — תופיע אצלם בחיפוש, ללא עלות",
+			title: tFn("profile.rec_service_title"),
+			sub: tFn("profile.rec_service_sub"),
 			href: "https://index.gofreeil.com/",
 			external: true,
 			color: "orange",
@@ -903,10 +901,8 @@
 		{
 			id: "singles",
 			emoji: "💑",
-			title: "רשימת הפנויים והפנויות הארצית של הקהילה",
-			sub: gender === "female"
-				? "הכירי את הפנויים בארץ ומצאי את המוצא חן בעיניך"
-				: "הכר את הפנויות ברשימה הארצית ומצא את המוצאת חן בעיניך",
+			title: tFn("profile.rec_singles_title"),
+			sub: gender === "female" ? tFn("profile.rec_singles_sub_f") : tFn("profile.rec_singles_sub_m"),
 			href: "/national/singles",
 			external: false,
 			color: "pink",
@@ -915,8 +911,8 @@
 		{
 			id: "coordinator",
 			emoji: "🏘️",
-			title: "היה רכז השכונה שלך — וקבל 30% מהרווחים שמייצרת השכונה",
-			sub: "הפעל את הקהילה בשכונתך, היה שותף ב-30% מההכנסות. כל הפרטים בעמוד אודותינו",
+			title: tFn("profile.rec_coord_title"),
+			sub: tFn("profile.rec_coord_sub"),
 			href: "/about/revenue#section-4",
 			external: false,
 			color: "amber",
@@ -925,8 +921,8 @@
 		{
 			id: "shareholders",
 			emoji: "📈",
-			title: "היה בעל מניות בפלטפורמה — ותשתתף בחלק מרווחי כל השכונות",
-			sub: "השקעה בפלטפורמת קהילה הולכת ומתפתחת. כל הפרטים בעמוד אודותינו",
+			title: tFn("profile.rec_shares_title"),
+			sub: tFn("profile.rec_shares_sub"),
 			href: "/about/revenue#section-5",
 			external: false,
 			color: "blue",
@@ -935,8 +931,8 @@
 		{
 			id: "ad_pius",
 			emoji: "🤝",
-			title: "בתי הפיוס — יש לך סכסוך?",
-			sub: "מתנדבים נותנים לך סיוע מלא בדין ובפיוס בכל סכסוך — חינם",
+			title: tFn("profile.rec_pius_title"),
+			sub: tFn("profile.rec_pius_sub"),
 			href: "https://chachmim.gofreeil.com/",
 			external: true,
 			color: "red",
@@ -945,8 +941,8 @@
 		{
 			id: "ad_gemach",
 			emoji: "🎁",
-			title: 'כל הגמ"חים של ישראל במקום אחד',
-			sub: 'מצא בקלות כל גמ"ח שאתה צריך — תרופות, ציוד, ספרים, ועוד',
+			title: tFn("profile.rec_gemach_title"),
+			sub: tFn("profile.rec_gemach_sub"),
 			href: "https://gemach.gofreeil.com/",
 			external: true,
 			color: "pink",
@@ -955,8 +951,8 @@
 		{
 			id: "ad_vaadim",
 			emoji: "🏛️",
-			title: "ועדי שכונות — מהפכת משילות העם",
-			sub: "הכר את המהפכה של משילות התושב על מוסדות השלטון והשתתף",
+			title: tFn("profile.rec_vaadim_title"),
+			sub: tFn("profile.rec_vaadim_sub"),
 			href: "https://neighborhoods.gofreeil.com/",
 			external: true,
 			color: "cyan",
@@ -965,8 +961,8 @@
 		{
 			id: "ad_criticism",
 			emoji: "🔎",
-			title: "מבקר רשויות המדינה — מצה את זכותך",
-			sub: "מבקרים את הרשויות, מטפלים בליקויים, ממצים את זכות התושב",
+			title: tFn("profile.rec_criticism_title"),
+			sub: tFn("profile.rec_criticism_sub"),
 			href: "https://criticism.gofreeil.com/",
 			external: true,
 			color: "blue",
@@ -975,8 +971,8 @@
 		{
 			id: "ad_rating",
 			emoji: "⭐",
-			title: "דירוג ציבורי — העם מדרג",
-			sub: "תן ציון לרשויות ולעובדי הציבור שאתה מכיר — שקיפות מבוססת קהילה",
+			title: tFn("profile.rec_rating_title"),
+			sub: tFn("profile.rec_rating_sub"),
 			href: "https://rating.gofreeil.com/",
 			external: true,
 			color: "amber",
@@ -985,8 +981,8 @@
 		{
 			id: "ad_referendum",
 			emoji: "🗳️",
-			title: "משאלי העם — הבע דעתך",
-			sub: "הצבע על הסוגיות האקטואליות שעל סדר היום הציבורי",
+			title: tFn("profile.rec_referendum_title"),
+			sub: tFn("profile.rec_referendum_sub"),
 			href: "https://referendum.gofreeil.com/",
 			external: true,
 			color: "purple",
@@ -995,8 +991,8 @@
 		{
 			id: "ad_shop",
 			emoji: "🛍️",
-			title: "חנות החירות — מוצרים נבחרים",
-			sub: "בריאות טבעית, חקלאות ביתית, טכנולוגיה ועוד — מוצרים נבחרים בקפידה",
+			title: tFn("profile.rec_shop_title"),
+			sub: tFn("profile.rec_shop_sub"),
 			href: "https://shop.gofreeil.com/",
 			external: true,
 			color: "green",
@@ -1056,28 +1052,28 @@
 			{
 				value: "active",
 				emoji: "🟢",
-				label: isFemale ? "פעילה" : "פעיל",
+				label: isFemale ? tFn("profile.st_active_f") : tFn("profile.st_active_m"),
 			},
 			{
 				value: "unavailable",
 				emoji: "🔴",
-				label: isFemale ? "לא זמינה" : "לא זמין",
+				label: isFemale ? tFn("profile.st_unavailable_f") : tFn("profile.st_unavailable_m"),
 			},
 			{
 				value: "pregnant",
 				emoji: "🤰",
-				label: "לפני לידה",
+				label: tFn("profile.st_pregnant"),
 				femaleOnly: true,
 			},
 			{
 				value: "postbirth",
 				emoji: "👶",
-				label: "אחרי לידה",
+				label: tFn("profile.st_postbirth"),
 				femaleOnly: true,
 			},
-			{ value: "vacation", emoji: "🏖️", label: "בחופשה" },
-			{ value: "sick", emoji: "🤒", label: "חולה" },
-			{ value: "miluim", emoji: "🪖", label: "במילואים" },
+			{ value: "vacation", emoji: "🏖️", label: tFn("profile.st_vacation") },
+			{ value: "sick", emoji: "🤒", label: tFn("profile.st_sick") },
+			{ value: "miluim", emoji: "🪖", label: tFn("profile.st_miluim") },
 		].filter((o) => !("femaleOnly" in o) || isFemale);
 	});
 	let termsAccepted = $state(
@@ -1129,14 +1125,14 @@
 				// Google: קבלת URL ישיר של תמונת פרופיל
 				url = socialPhotoInput.trim();
 				if (!url.startsWith("http")) {
-					socialPhotoError = "הכנס URL תקין של תמונת הפרופיל";
+					socialPhotoError = tFn("profile.social_url_invalid");
 					socialPhotoLoading = false;
 					return;
 				}
 			}
 			// טעינת התמונה כ-base64
 			const res = await fetch(url);
-			if (!res.ok) throw new Error("לא ניתן לטעון את התמונה");
+			if (!res.ok) throw new Error("image load failed");
 			const blob = await res.blob();
 			const reader = new FileReader();
 			reader.onload = (e) => {
@@ -1147,7 +1143,7 @@
 			};
 			reader.readAsDataURL(blob);
 		} catch {
-			socialPhotoError = "לא הצלחנו לטעון את התמונה. נסה שנית.";
+			socialPhotoError = tFn("profile.social_load_failed");
 		} finally {
 			socialPhotoLoading = false;
 		}
@@ -1766,10 +1762,10 @@
 {#snippet singlesStatusCard()}
 	<div class="rounded-2xl bg-white/5 border border-white/10 p-4">
 		<p class="text-white font-bold text-sm mb-1 flex items-center gap-2">
-			💜 הסטטוס שלי בלוח פנויים
+			{tFn("profile.ss_title")}
 		</p>
 		<p class="text-gray-400 text-xs mb-3">
-			בחר את הסטטוס שלך - אחרים יראו זאת בפרופיל שלך בלוח הפנויים
+			{tFn("profile.ss_sub")}
 		</p>
 		<div class="grid grid-cols-2 md:grid-cols-4 gap-2">
 			<button
@@ -1780,7 +1776,7 @@
 					: 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-green-500/30'}"
 			>
 				<span class="text-2xl">✅</span>
-				<span class="text-xs font-bold text-white text-center">זמין/ה</span>
+				<span class="text-xs font-bold text-white text-center">{tFn("profile.ss_available")}</span>
 			</button>
 			<button
 				type="button"
@@ -1790,7 +1786,7 @@
 					: 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-red-500/30'}"
 			>
 				<span class="text-2xl">🔴</span>
-				<span class="text-xs font-bold text-white text-center">לא זמין/ה</span>
+				<span class="text-xs font-bold text-white text-center">{tFn("profile.ss_not_available")}</span>
 			</button>
 			<button
 				type="button"
@@ -1800,7 +1796,7 @@
 					: 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-pink-500/30'}"
 			>
 				<span class="text-2xl">💑</span>
-				<span class="text-xs font-bold text-white text-center">בקשר</span>
+				<span class="text-xs font-bold text-white text-center">{tFn("profile.ss_in_relationship")}</span>
 			</button>
 			<button
 				type="button"
@@ -1810,7 +1806,7 @@
 					: 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-blue-500/30'}"
 			>
 				<span class="text-2xl">⏸️</span>
-				<span class="text-xs font-bold text-white text-center">הפסקה זמנית</span>
+				<span class="text-xs font-bold text-white text-center">{tFn("profile.ss_break")}</span>
 			</button>
 		</div>
 	</div>
@@ -1830,7 +1826,7 @@
 				          hover:from-purple-500 hover:to-blue-500 text-white text-sm font-bold
 				          shadow-lg transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
 				>
-					התחבר:
+					{tFn("profile.login_connect")}
 					<svg class="w-4 h-4 transition-transform duration-300 {showLoginOptions ? 'rotate-180' : ''}"
 						viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -1841,11 +1837,11 @@
 					class="group relative px-6 py-2.5 rounded-xl border border-white/15 hover:border-purple-500/50
 				          text-gray-300 hover:text-white text-sm font-bold transition-all hover:bg-white/5"
 				>
-					הירשם
+					{tFn("profile.register")}
 					<span class="absolute top-full right-1/2 translate-x-1/2 mt-2 hidden group-hover:block
 					             bg-gray-900 text-white text-xs font-bold rounded-lg px-3 py-1.5
 					             whitespace-nowrap border border-white/10 shadow-xl pointer-events-none z-50">
-						צור חשבון חדש
+						{tFn("profile.register_tooltip")}
 					</span>
 				</a>
 			</div>
@@ -1867,10 +1863,10 @@
 					>
 						{#if ssoLoading}
 							<span class="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>
-							מזהה…
+							{tFn("profile.sso_identifying")}
 						{:else}
 							<span class="text-base">🕊️</span>
-							עם יוצאים לחירות
+							{tFn("profile.login_gofreeil")}
 						{/if}
 					</button>
 					<!-- 2. גוגל -->
@@ -1881,7 +1877,7 @@
 						       border border-white/10 hover:border-red-400/40 text-sm font-bold text-gray-200 transition-all cursor-pointer"
 					>
 						<img src="https://www.google.com/favicon.ico" class="w-4 h-4" alt="" />
-						עם גוגל
+						{tFn("profile.login_google")}
 					</button>
 					<!-- 3. פייסבוק -->
 					<button
@@ -1891,7 +1887,7 @@
 						       border border-white/10 hover:border-blue-400/40 text-sm font-bold text-gray-200 transition-all cursor-pointer"
 					>
 						<img src="https://www.facebook.com/favicon.ico" class="w-4 h-4" alt="" />
-						עם פייסבוק
+						{tFn("profile.login_facebook")}
 					</button>
 					<!-- 4. שם משתמש וסיסמה -->
 					<a
@@ -1900,7 +1896,7 @@
 						       border border-white/10 hover:border-purple-400/40 text-sm font-bold text-gray-200 transition-all"
 					>
 						<span class="text-base">🔑</span>
-						עם שם משתמש וסיסמה
+						{tFn("profile.login_password")}
 					</a>
 				</div>
 
@@ -1929,7 +1925,7 @@
 
 	<!-- ===== לשוניות ניווט - נייד בלבד ===== -->
 	<div class="md:hidden flex gap-1 mb-3">
-		{#each [{ id: "main", icon: "🎛️", label: "לוח הבקרה" }, { id: "profile", icon: "👤", label: "פרופיל" }, { id: "messages", icon: "💬", label: "הודעות" }, { id: "items", icon: "💼", label: "נכסים" }, { id: "levels", icon: "🔑", label: "הרשאות" }, { id: "feedback", icon: "✉️", label: "כתוב למערכת" }] as tab}
+		{#each [{ id: "main", icon: "🎛️", label: tFn("profile.tab_main") }, { id: "profile", icon: "👤", label: tFn("profile.tab_profile") }, { id: "messages", icon: "💬", label: tFn("profile.tab_messages") }, { id: "items", icon: "💼", label: tFn("profile.tab_items") }, { id: "levels", icon: "🔑", label: tFn("profile.tab_levels") }, { id: "feedback", icon: "✉️", label: tFn("profile.tab_feedback") }] as tab}
 			<button
 				type="button"
 				onclick={() => selectTab(tab.id as typeof mobileTab)}
@@ -1948,7 +1944,7 @@
 	<!-- בדסקטופ כל המקטעים גלויים בערימה; הכפתורים גוללים ישירות למקטע המבוקש -->
 	<!-- המספרים תואמים למספרי המקטעים שמופיעים בכותרות -->
 	<div class="hidden md:flex flex-wrap gap-2 mb-3">
-		{#each [{ id: "messages", num: 2, icon: "💬", label: "הודעות" }, { id: "items", num: 3, icon: "💼", label: "נכסים" }, { id: "levels", num: 4, icon: "🔑", label: "הרשאות" }, { id: "profile", num: 5, icon: "👤", label: "פרופיל" }, { id: "feedback", num: 6, icon: "✉️", label: "כתוב למערכת" }] as sc}
+		{#each [{ id: "messages", num: 2, icon: "💬", label: tFn("profile.tab_messages") }, { id: "items", num: 3, icon: "💼", label: tFn("profile.tab_items") }, { id: "levels", num: 4, icon: "🔑", label: tFn("profile.tab_levels") }, { id: "profile", num: 5, icon: "👤", label: tFn("profile.tab_profile") }, { id: "feedback", num: 6, icon: "✉️", label: tFn("profile.tab_feedback") }] as sc}
 			<button
 				type="button"
 				onclick={() =>
@@ -1975,14 +1971,14 @@
 			<span class="text-2xl flex-shrink-0">⚠️</span>
 			<div class="flex-1 min-w-0">
 				<p class="text-amber-200 font-black text-sm md:text-base mb-0.5">
-					בעיה זמנית בטעינת הפרופיל
+					{tFn("profile.outage_title")}
 				</p>
 				<p class="text-amber-100/80 text-xs md:text-sm">
-					המידע שלך מאובטח ולא נמחק.
+					{tFn("profile.outage_body_secure")}
 					{#if data.userFromStaleCache}
-						אנחנו מציגים נתונים מהזיכרון האחרון -
+						{tFn("profile.outage_body_stale")}
 					{/if}
-					נסה לרענן את הדף בהמשך.
+					{tFn("profile.outage_body_retry")}
 				</p>
 			</div>
 			<button
@@ -1990,7 +1986,7 @@
 				onclick={() => location.reload()}
 				class="flex-shrink-0 px-3 py-1.5 rounded-lg bg-amber-500/20 text-amber-200 text-xs font-black border border-amber-500/40 hover:bg-amber-500/30 transition-colors"
 			>
-				🔄 רענן
+				{tFn("profile.refresh")}
 			</button>
 		</div>
 	{/if}
@@ -2004,25 +2000,24 @@
 			<span class="text-2xl flex-shrink-0">👋</span>
 			<div class="flex-1 min-w-0">
 				<p class="text-white font-black text-sm md:text-base mb-0.5">
-					כרגע אתה בדרגת <span class="text-purple-300">צופה</span>
+					{tFn("profile.viewer_level_prefix")} <span class="text-purple-300">{tFn("profile.role_viewer")}</span>
 				</p>
 				<p class="text-gray-300 text-xs md:text-sm leading-relaxed">
-					הוסף את השכונה שלך ושאר הפרטים בפרופיל כדי לקבל את מלוא
-					השירות מהקהילה הקרובה למקומך וליהנות מכל יתרונות האתר.
+					{tFn("profile.viewer_tip_body")}
 				</p>
 				<button
 					type="button"
 					onclick={scrollToEditProfile}
 					class="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-600/30 text-purple-100 text-xs md:text-sm font-black border border-purple-500/40 hover:bg-purple-600/50 transition-colors cursor-pointer"
 				>
-					✏️ השלמת הפרטים שלי
+					{tFn("profile.complete_my_details")}
 				</button>
 			</div>
 			<button
 				type="button"
 				onclick={dismissViewerTip}
 				class="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-				aria-label="סגור"
+				aria-label={tFn("profile.close")}
 			>
 				✕
 			</button>
@@ -2045,7 +2040,7 @@
 					>1</span
 				>
 				<h2 class="text-base font-black text-white">
-					<span class="md:hidden">לוח הבקרה</span>
+					<span class="md:hidden">{tFn("profile.tab_main")}</span>
 					<span class="hidden md:inline"
 						>{tFn("section_personal_area")}</span
 					>
@@ -2155,7 +2150,7 @@
 						       text-white text-[11px] font-black leading-none shadow-lg
 						       hover:bg-orange-400 transition-colors whitespace-nowrap"
 						>
-							{finalUnreadCount} הודעות
+							{tFn("profile.messages_badge", { n: finalUnreadCount })}
 						</button>
 					{/if}
 				</div>
@@ -2165,7 +2160,7 @@
 					class="relative flex items-center gap-2 flex-wrap justify-center mt-auto pt-4"
 				>
 					<span class="text-base text-orange-400 font-bold"
-						>סטטוס</span
+						>{tFn("profile.status")}</span
 					>
 					{#if true}
 						{@const currentStatus = statusOptions().find(
@@ -2180,7 +2175,7 @@
 								: 'bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30'}"
 						>
 							{currentStatus?.emoji ?? "🟢"}
-							{currentStatus?.label ?? "פעיל/ה"} ▾
+							{currentStatus?.label ?? tFn("profile.st_default")} ▾
 						</button>
 					{/if}
 
@@ -2190,7 +2185,7 @@
 							type="button"
 							class="fixed inset-0 z-40"
 							onclick={() => (showStatusMenu = false)}
-							aria-label="סגור תפריט"
+							aria-label={tFn("profile.close_menu")}
 						></button>
 						<!-- תפריט -->
 						<div
@@ -2231,13 +2226,13 @@
 				>
 					<img
 						src="/images/wallet.png"
-						alt="המזומן שלי"
+						alt={tFn("profile.wallet_alt")}
 						class="w-full h-auto block"
 					/>
 				</div>
 				<span
 					class="text-xs md:text-base text-gray-300 font-bold pt-1 md:pt-4 mt-auto text-center"
-					>היתרה שלי:<br class="md:hidden" /><span
+					>{tFn("profile.my_balance")}<br class="md:hidden" /><span
 						class="text-green-400"
 					>
 						{(data.user as { balance?: number })?.balance ??
@@ -2259,7 +2254,7 @@
 						>
 							{data.user?.nickname ||
 								data.user?.name ||
-								"צופה אנונימי"}
+								tFn("profile.anonymous_viewer")}
 						</h1>
 					</div>
 					{#if data.user?.email}
@@ -2271,7 +2266,7 @@
 								.filter(Boolean)
 								.join(", ")}
 						{:else}
-							📍 שכונה לא ידועה
+							📍 {tFn("profile.unknown_neighborhood")}
 						{/if}
 					</p>
 				</div>
@@ -2287,9 +2282,9 @@
 					{/if}
 					<span
 						class="text-sm text-amber-300 font-bold"
-						title="מניות פלטפורמה"
+						title={tFn("profile.shares_title")}
 					>
-						📈 {userShares} מניות
+						📈 {userShares} {tFn("profile.shares")}
 					</span>
 				</div>
 				<div
@@ -2302,24 +2297,24 @@
 					role="button"
 					tabindex={0}
 				>
-					<span class="text-white/50 text-base font-bold">דרגה:</span>
+					<span class="text-white/50 text-base font-bold">{tFn("profile.level_label")}</span>
 					{#if isUserAdmin}
 						<span class="text-red-400 text-base font-black"
 							>{(data.user as any)?.role === "super_admin"
-								? "מנהל ראשי 👑"
-								: "אדמין שכונתי 🛡️"}</span
+								? tFn("profile.role_super")
+								: tFn("profile.role_nbh_admin")}</span
 						>
 					{:else if (data.user as any)?.coordinator_of?.length > 0}
 						<span class="text-amber-400 text-base font-black"
-							>רכז שכונה 🏘️</span
+							>{tFn("profile.role_coordinator")}</span
 						>
 					{:else if userLevel >= 2}
 						<span class="text-emerald-400 text-base font-black"
-							>משתמש</span
+							>{tFn("profile.role_user")}</span
 						>
 					{:else}
 						<span class="text-gray-400 text-base font-black"
-							>צופה</span
+							>{tFn("profile.role_viewer")}</span
 						>
 					{/if}
 				</div>
@@ -2334,17 +2329,17 @@
 			<div class="flex items-center justify-between gap-2 mb-3 flex-wrap">
 				<h3 class="text-white font-bold text-sm flex items-center gap-2">
 					<span class="text-amber-400 text-lg">👑</span>
-					ניהול האתר
-					<span class="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full font-bold">סופר־אדמין</span>
+					{tFn("profile.site_admin")}
+					<span class="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full font-bold">{tFn("profile.super_admin_badge")}</span>
 				</h3>
 			</div>
 			<div class="flex flex-wrap gap-2">
 				<a
 					href="/admin?tab=users"
 					class="relative flex-1 min-w-[160px] text-xs md:text-sm font-bold text-amber-300 hover:text-amber-200 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-amber-500/10 border border-amber-500/30 hover:border-amber-400/50 flex items-center justify-center gap-1.5"
-					title="ניהול משתמשים ורכזי שכונות"
+					title={tFn("profile.manage_users_title")}
 				>
-					🏘️ ניהול משתמשים
+					{tFn("profile.manage_users")}
 					{#if (data.coordinatorsCount ?? 0) > 0}
 						<span class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-amber-500/30 text-amber-100 border border-amber-400/40 text-[11px] font-black">
 							{data.coordinatorsCount}
@@ -2354,9 +2349,9 @@
 				<a
 					href="/admin/ads-review"
 					class="relative flex-1 min-w-[160px] text-xs md:text-sm font-bold text-emerald-300 hover:text-emerald-200 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-emerald-500/10 border border-emerald-500/30 hover:border-emerald-400/50 flex items-center justify-center gap-1.5"
-					title="ניהול תוכן, פרסומות, תזמון ומפרסמים"
+					title={tFn("profile.manage_content_title")}
 				>
-					📢 ניהול תוכן
+					{tFn("profile.manage_content")}
 					{#if (data.pendingAdsCount ?? 0) > 0}
 						<span class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-amber-500 text-black text-[11px] font-black shadow-lg animate-pulse">
 							{data.pendingAdsCount}
@@ -2366,9 +2361,9 @@
 				<a
 					href="/coordinator"
 					class="flex-1 min-w-[160px] text-xs md:text-sm font-bold text-emerald-300 hover:text-emerald-200 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-emerald-500/10 border border-emerald-500/30 hover:border-emerald-400/50 flex items-center justify-center gap-1.5"
-					title="אישור אירועים שכונתיים"
+					title={tFn("profile.coord_area_title")}
 				>
-					🏘️ אזור רכזים
+					🏘️ {tFn("profile.coord_area")}
 				</a>
 				{#if isPrimaryAdmin}
 					<a
@@ -2376,7 +2371,7 @@
 						target="_blank"
 						rel="noopener noreferrer"
 						class="flex-1 min-w-[160px] text-xs md:text-sm font-bold text-rose-300 hover:text-rose-200 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-rose-500/10 border border-rose-500/30 hover:border-rose-400/50 flex items-center justify-center gap-1.5"
-						title="גישה ישירה ל-Strapi (פרטי - רק לך)"
+						title={tFn("profile.strapi_title")}
 					>
 						🗄️ Strapi DB
 					</a>
@@ -2388,15 +2383,15 @@
 			<div class="flex items-center justify-between gap-2 mb-3 flex-wrap">
 				<h3 class="text-white font-bold text-sm flex items-center gap-2">
 					<span class="text-emerald-400 text-lg">🏘️</span>
-					אזור רכזים
+					{tFn("profile.coord_area")}
 				</h3>
 			</div>
 			<a
 				href="/coordinator"
 				class="block text-center text-xs md:text-sm font-bold text-emerald-300 hover:text-emerald-200 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-emerald-500/10 border border-emerald-500/30 hover:border-emerald-400/50"
-				title="אישור אירועים שכונתיים"
+				title={tFn("profile.coord_area_title")}
 			>
-				כניסה לאישור אירועים
+				{tFn("profile.coord_enter")}
 			</a>
 		</div>
 	{/if}
@@ -2447,13 +2442,13 @@
 					style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75"
 					>2</span
 				>
-				הודעות אישיות
+				{tFn("profile.messages_title")}
 			</h2>
 			<div class="flex items-center gap-2">
 				{#if finalUnreadCount > 0}
 					<span
 						class="text-sm bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1.5 rounded-full font-bold"
-						>{finalUnreadCount} הודעות שלא נקראו</span
+						>{tFn("profile.unread_count", { n: finalUnreadCount })}</span
 					>
 				{/if}
 				<svg
@@ -2488,7 +2483,7 @@
 							type="button"
 							onclick={() => (lrNotice = null)}
 							class="text-xs text-gray-400 hover:text-white transition-colors cursor-pointer flex-shrink-0"
-							title="סגור"
+							title={tFn("profile.close")}
 						>
 							✕
 						</button>
@@ -2504,7 +2499,7 @@
 					<div
 						role={isClickable ? 'link' : undefined}
 						tabindex={isClickable ? 0 : undefined}
-						aria-label={isSinglesMatch ? 'פתח את לוח פנויים/פנויות' : (isClickable ? 'פתח את ההודעה בעמוד הניהול' : undefined)}
+						aria-label={isSinglesMatch ? tFn('profile.open_singles_board') : (isClickable ? tFn('profile.open_admin_msg') : undefined)}
 						onclick={isClickable ? () => goto(navTarget!) : undefined}
 						onkeydown={isClickable ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goto(navTarget!); } } : undefined}
 						class="flex items-start gap-3 rounded-2xl border px-4 py-3 transition-all
@@ -2539,32 +2534,32 @@
 								<div class="flex items-center gap-1.5 justify-between mt-2 flex-wrap">
 									<a href="/about/advertise/builder"
 									   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-black text-xs transition-colors">
-										🚀 סיים את העריכה
+										{tFn("profile.finish_edit")}
 									</a>
 									<div class="flex items-center gap-1.5 flex-wrap">
 										<button
 											type="button"
 											onclick={() => snoozeMsg(msg.id)}
 											class="text-[11px] text-gray-400 hover:text-yellow-300 transition-colors px-2 py-1 rounded-lg hover:bg-yellow-500/10"
-											title="תוצג שוב בעוד יומיים"
+											title={tFn("profile.snooze_title")}
 										>
-											🔔 הזכר לי בהמשך
+											{tFn("profile.snooze")}
 										</button>
 										<button
 											type="button"
 											onclick={() => archiveMsg(msg.id)}
 											class="text-[11px] text-gray-400 hover:text-blue-400 transition-colors px-2 py-1 rounded-lg hover:bg-blue-500/10"
-											title="העבר לארכיון"
+											title={tFn("profile.archive_title")}
 										>
-											📦 לארכיון
+											{tFn("profile.archive")}
 										</button>
 										<button
 											type="button"
 											onclick={() => deleteMsg(msg.id)}
 											class="text-[11px] text-gray-400 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10"
-											title="הסר את ההודעה (הטיוטא תישאר)"
+											title={tFn("profile.draft_remove_title")}
 										>
-											🗑 מחק
+											{tFn("profile.delete")}
 										</button>
 									</div>
 								</div>
@@ -2579,21 +2574,21 @@
 										<!-- אשר/דחה בקשת מיקום - ישירות מהכרטיס, בלי לחפש בעמוד הניהול -->
 										{#if lrConfirmId === msg.id}
 											<!-- אישור דחייה בתוך הכרטיס במקום confirm() של הדפדפן -->
-											<span class="text-xs font-bold text-red-200">לדחות את הבקשה? המבקש יקבל הודעה</span>
+											<span class="text-xs font-bold text-red-200">{tFn("profile.lr_reject_confirm")}</span>
 											<button
 												type="button"
 												disabled={lrBusyId === msg.id}
 												onclick={(e) => { e.stopPropagation(); decideLocationRequest(msgLr, "reject"); }}
 												class="text-xs font-black bg-red-500/20 text-red-200 border border-red-500/50 hover:bg-red-500/30 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
 											>
-												{lrBusyId === msg.id ? "⏳ מטפל..." : "כן, דחה"}
+												{lrBusyId === msg.id ? tFn("profile.lr_processing") : tFn("profile.lr_yes_reject")}
 											</button>
 											<button
 												type="button"
 												onclick={(e) => { e.stopPropagation(); lrConfirmId = ""; }}
 												class="text-xs font-bold text-gray-300 border border-white/15 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
 											>
-												ביטול
+												{tFn("profile.cancel")}
 											</button>
 										{:else}
 											<button
@@ -2601,18 +2596,18 @@
 												disabled={lrBusyId === msg.id}
 												onclick={(e) => { e.stopPropagation(); decideLocationRequest(msgLr, "approve"); }}
 												class="text-xs font-black bg-green-500/15 text-green-300 border border-green-500/40 hover:bg-green-500/25 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
-												title="הוסף לרשימת הערים/השכונות ועדכן את המבקש"
+												title={tFn("profile.lr_approve_title")}
 											>
-												{lrBusyId === msg.id ? "⏳ מטפל..." : "✅ אשר והוסף"}
+												{lrBusyId === msg.id ? tFn("profile.lr_processing") : tFn("profile.lr_approve")}
 											</button>
 											<button
 												type="button"
 												disabled={lrBusyId === msg.id}
 												onclick={(e) => { e.stopPropagation(); lrConfirmId = msg.id; }}
 												class="text-xs font-black bg-red-500/10 text-red-300 border border-red-500/40 hover:bg-red-500/20 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
-												title="דחה את הבקשה ועדכן את המבקש"
+												title={tFn("profile.lr_reject_title")}
 											>
-												✖️ דחה
+												{tFn("profile.lr_reject")}
 											</button>
 										{/if}
 										<span class="flex-1"></span>
@@ -2621,33 +2616,33 @@
 										type="button"
 										onclick={(e) => { e.stopPropagation(); markRead(msg.id); }}
 										class="text-[11px] text-gray-400 hover:text-green-400 transition-colors px-2 py-1 rounded-lg hover:bg-green-500/10"
-										title="סמן כנקראה - תוסר מהפרופיל"
+										title={tFn("profile.mark_read_title")}
 									>
-										סמן כנקראה
+										{tFn("profile.mark_read")}
 									</button>
 									<button
 										type="button"
 										onclick={(e) => { e.stopPropagation(); snoozeMsg(msg.id); }}
 										class="text-[11px] text-gray-400 hover:text-yellow-300 transition-colors px-2 py-1 rounded-lg hover:bg-yellow-500/10"
-										title="תוצג שוב בעוד יומיים"
+										title={tFn("profile.snooze_title")}
 									>
-										🔔 הזכר לי בהמשך
+										{tFn("profile.snooze")}
 									</button>
 									<button
 										type="button"
 										onclick={(e) => { e.stopPropagation(); archiveMsg(msg.id); }}
 										class="text-[11px] text-gray-400 hover:text-blue-400 transition-colors px-2 py-1 rounded-lg hover:bg-blue-500/10"
-										title="העבר לארכיון"
+										title={tFn("profile.archive_title")}
 									>
-										📦 לארכיון
+										{tFn("profile.archive")}
 									</button>
 									<button
 										type="button"
 										onclick={(e) => { e.stopPropagation(); deleteMsg(msg.id); }}
 										class="text-[11px] text-gray-400 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10"
-										title="מחק לצמיתות"
+										title={tFn("profile.delete_forever_title")}
 									>
-										🗑 מחק
+										{tFn("profile.delete")}
 									</button>
 								</div>
 							{/if}
@@ -2659,12 +2654,12 @@
 				{#if finalDisplayedMessages.length === 0}
 					<div class="flex flex-col items-center text-center py-6 gap-3">
 						<div class="text-4xl">📭</div>
-						<p class="font-bold text-gray-300">0 הודעות שלא נקראו</p>
+						<p class="font-bold text-gray-300">{tFn("profile.unread_count", { n: 0 })}</p>
 						<a
 							href="/messages"
 							class="inline-flex items-center gap-1.5 text-sm font-bold text-blue-300 hover:text-blue-200 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 px-4 py-2 rounded-xl transition-colors"
 						>
-							🗂️ להיסטוריית ההודעות
+							{tFn("profile.history_link")}
 						</a>
 					</div>
 				{/if}
@@ -2676,14 +2671,14 @@
 						onclick={() => (showArchive = !showArchive)}
 						class="self-start text-xs font-bold text-blue-300 hover:text-blue-200 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 mt-1"
 					>
-						📦 ארכיון ההודעות
+						{tFn("profile.archive_list")}
 						<span class="bg-blue-500/30 text-white rounded-full px-2 py-0.5 text-[10px]">{archivedList.length}</span>
 						<svg class="w-3 h-3 transition-transform {showArchive ? 'rotate-180' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
 					</button>
 
 					{#if showArchive}
 						<div class="flex flex-col gap-2 mt-1">
-							<p class="text-[11px] text-gray-500 px-1">הודעות שהעברת לארכיון</p>
+							<p class="text-[11px] text-gray-500 px-1">{tFn("profile.archive_hint")}</p>
 							{#each archivedList as msg}
 								<div class="flex items-start gap-3 rounded-2xl border border-white/5 bg-white/[0.02] px-4 py-3">
 									<div class="w-2 h-2 rounded-full mt-1.5 flex-shrink-0 bg-blue-400/60"></div>
@@ -2698,17 +2693,17 @@
 												type="button"
 												onclick={() => unarchiveMsg(msg.id)}
 												class="text-[11px] text-gray-400 hover:text-green-400 transition-colors px-2 py-1 rounded-lg hover:bg-green-500/10"
-												title="החזר להודעות הפעילות"
+												title={tFn("profile.restore_title")}
 											>
-												↩️ שחזר
+												{tFn("profile.restore")}
 											</button>
 											<button
 												type="button"
 												onclick={() => { unarchiveMsg(msg.id); deleteMsg(msg.id); }}
 												class="text-[11px] text-gray-400 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10"
-												title="מחק לצמיתות"
+												title={tFn("profile.delete_forever_title")}
 											>
-												🗑 מחק
+												{tFn("profile.delete")}
 											</button>
 										</div>
 									</div>
@@ -2725,14 +2720,14 @@
 						onclick={() => (showHandled = !showHandled)}
 						class="self-start text-xs font-bold text-green-300 hover:text-green-200 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 mt-1"
 					>
-						✅ הודעות שטופלו
+						{tFn("profile.handled_list")}
 						<span class="bg-green-500/30 text-white rounded-full px-2 py-0.5 text-[10px]">{handledList.length}</span>
 						<svg class="w-3 h-3 transition-transform {showHandled ? 'rotate-180' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
 					</button>
 
 					{#if showHandled}
 						<div class="flex flex-col gap-2 mt-1">
-							<p class="text-[11px] text-gray-500 px-1">התראות שכל הממתינים בהן כבר טופלו</p>
+							<p class="text-[11px] text-gray-500 px-1">{tFn("profile.handled_hint")}</p>
 							{#each handledList as msg}
 								<div class="flex items-start gap-3 rounded-2xl border border-green-500/20 bg-green-500/[0.04] px-4 py-3">
 									<div class="w-5 h-5 rounded-full mt-0.5 flex-shrink-0 bg-green-500/20 border border-green-500/40 flex items-center justify-center">
@@ -2746,15 +2741,15 @@
 										<p class="text-gray-400 text-xs leading-relaxed">{msg.text}</p>
 										<div class="flex items-center gap-1.5 justify-between mt-2 pt-2 border-t border-white/8 flex-wrap">
 											<span class="inline-flex items-center gap-1 text-[10px] font-bold text-green-300 bg-green-500/15 border border-green-500/30 px-2 py-0.5 rounded-full">
-												✓ טופלה
+												{tFn("profile.handled_badge")}
 											</span>
 											<button
 												type="button"
 												onclick={() => deleteMsg(msg.id)}
 												class="text-[11px] text-gray-400 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10"
-												title="מחק לצמיתות"
+												title={tFn("profile.delete_forever_title")}
 											>
-												🗑 מחק
+												{tFn("profile.delete")}
 											</button>
 										</div>
 									</div>
@@ -2767,7 +2762,7 @@
 				<!-- קריאות שכונה שפרסמתי -->
 				{#if (data.communityRequests ?? []).length > 0}
 					<div class="mt-2 mb-1">
-						<p class="text-xs font-black text-orange-400 mb-2 px-1">קריאות שכונה שפרסמתי</p>
+						<p class="text-xs font-black text-orange-400 mb-2 px-1">{tFn("profile.community_requests")}</p>
 						<div class="flex flex-col gap-2">
 							{#each data.communityRequests as req}
 								<div class="flex items-start gap-3 bg-orange-500/5 rounded-2xl border border-orange-500/20 px-4 py-3">
@@ -2782,7 +2777,7 @@
 										{/if}
 										<span class="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full font-bold
 											{req.status === 'active' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-gray-500/20 text-gray-400 border border-gray-500/30'}">
-											{req.status === 'active' ? 'פעיל' : req.status}
+											{req.status === 'active' ? tFn('profile.active') : req.status}
 										</span>
 									</div>
 								</div>
@@ -2795,7 +2790,7 @@
 				{#if whatsappMatches.length > 0}
 					<div class="mt-2 flex flex-col gap-2">
 						<p class="text-xs text-gray-400 uppercase tracking-widest font-bold">
-							💬 קבוצות וואטסאפ של השכונה שלך
+							{tFn("profile.whatsapp_title")}
 						</p>
 						{#each whatsappMatches as g}
 							<a
@@ -2805,7 +2800,7 @@
 								class="block rounded-xl border border-green-500/30 bg-green-500/10 hover:bg-green-500/20 transition-colors px-3 py-2"
 							>
 								<p class="text-white font-bold text-sm">💬 {g.label}</p>
-								<p class="text-green-300/80 text-xs mt-0.5">הצטרף לקבוצת הווטסאפ של השכונה שלך ←</p>
+								<p class="text-green-300/80 text-xs mt-0.5">{tFn("profile.whatsapp_join")}</p>
 							</a>
 						{/each}
 					</div>
@@ -2815,7 +2810,7 @@
 				{#if todaysRec}
 					<div class="mt-2 flex flex-col gap-3">
 						<p class="text-xs text-gray-400 uppercase tracking-widest font-bold">
-							💡 ההמלצה שלך
+							{tFn("profile.rec_title")}
 						</p>
 						<div class="rounded-2xl border px-4 pt-4 pb-3 {recColorClasses(todaysRec.color)}">
 							<div class="flex items-center gap-3 mb-3">
@@ -2833,14 +2828,14 @@
 									onclick={() => dismissRec(todaysRec!.id)}
 									class="text-[11px] text-gray-500 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10"
 								>
-									🗑 מחק
+									{tFn("profile.delete")}
 								</button>
 								<button
 									type="button"
 									onclick={() => snoozeRec(todaysRec!.id)}
 									class="text-[11px] text-gray-500 hover:text-yellow-300 transition-colors px-2 py-1 rounded-lg hover:bg-yellow-500/10"
 								>
-									🔔 הזכר לי מחר
+									{tFn("profile.rec_snooze")}
 								</button>
 								<a
 									href={todaysRec.href}
@@ -2848,7 +2843,7 @@
 									rel={todaysRec.external ? "noopener noreferrer" : ""}
 									class="text-[11px] font-bold text-white px-3 py-1 rounded-lg transition-colors {recButtonClasses(todaysRec.color)}"
 								>
-									עבור אל ←
+									{tFn("profile.rec_go")}
 								</a>
 							</div>
 						</div>
@@ -2895,7 +2890,7 @@
 					style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75"
 					>3</span
 				>
-				הנכסים שלי
+				{tFn("profile.my_assets")}
 			</h2>
 			<svg
 				class="w-4 h-4 text-yellow-400 transition-transform duration-300 flex-shrink-0 {showMyInfo
@@ -2919,8 +2914,8 @@
 				<a href="/gatherings" class="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-amber-500/15 to-rose-500/10 border border-amber-500/30 hover:border-amber-500/60 px-4 py-3.5 transition-all group">
 					<span class="text-3xl flex-shrink-0">🍽️</span>
 					<div class="flex-1 min-w-0">
-						<p class="text-white font-bold text-sm">ערבי מפגש וסעודות קהילתיות</p>
-						<p class="text-amber-200/80 text-xs mt-0.5">הקימו סעודה משותפת, חלקו את רשימת המאכלים וראו מי מגיע</p>
+						<p class="text-white font-bold text-sm">{tFn("profile.gatherings_title")}</p>
+						<p class="text-amber-200/80 text-xs mt-0.5">{tFn("profile.gatherings_sub")}</p>
 					</div>
 					<span class="text-amber-300 text-lg flex-shrink-0 transition-transform group-hover:translate-x-[-3px]" aria-hidden="true">←</span>
 				</a>
@@ -2930,7 +2925,7 @@
 					<div class="flex items-center justify-between gap-2 mb-3 flex-wrap">
 						<h3 class="text-white font-bold text-sm flex items-center gap-2">
 							<span class="text-purple-400 text-lg">📋</span>
-							פרסומיי
+							{tFn("profile.my_pubs")}
 							{#if data.items.length > 0}
 								<span class="text-xs bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2.5 py-0.5 rounded-full font-bold">{data.items.length}</span>
 							{/if}
@@ -2939,9 +2934,9 @@
 							<a
 								href="/about/advertise/builder"
 								class="text-xs font-bold text-purple-300 hover:text-purple-200 transition-colors cursor-pointer px-3 py-1.5 rounded-lg hover:bg-purple-500/10 border border-purple-500/30 hover:border-purple-400/50 flex items-center gap-1.5"
-								title="בילדר פרסומות (סופר-אדמין)"
+								title={tFn("profile.ad_builder_title")}
 							>
-								🎨 בילדר פרסומות
+								{tFn("profile.ad_builder")}
 							</a>
 						{/if}
 					</div>
@@ -2950,26 +2945,26 @@
 						<div class="mb-3 rounded-2xl border-2 border-purple-500/40 bg-gradient-to-br from-purple-900/30 to-indigo-900/20 p-3 md:p-4">
 							<div class="flex items-start gap-3">
 								{#if adDraft.mainImage}
-									<img src={adDraft.mainImage} alt="טיוטת הפרסומת" class="w-14 h-14 md:w-16 md:h-16 rounded-xl object-cover flex-shrink-0 border border-white/10" />
+									<img src={adDraft.mainImage} alt={tFn("profile.ad_draft_alt")} class="w-14 h-14 md:w-16 md:h-16 rounded-xl object-cover flex-shrink-0 border border-white/10" />
 								{:else}
 									<div class="w-14 h-14 md:w-16 md:h-16 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center flex-shrink-0 text-2xl">🎨</div>
 								{/if}
 								<div class="flex-1 min-w-0">
 									<div class="flex items-center gap-2 mb-1 flex-wrap">
-										<span class="text-purple-300 font-black text-sm md:text-base">📝 פרסומת בעריכה</span>
-										<span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 font-bold">{adDraftProgress}% הושלמו</span>
+										<span class="text-purple-300 font-black text-sm md:text-base">{tFn("profile.ad_editing")}</span>
+										<span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 font-bold">{tFn("profile.pct_completed", { n: adDraftProgress })}</span>
 									</div>
 									<p class="text-white font-bold text-xs md:text-sm leading-tight mb-2 truncate">
-										{adDraft.title || "ללא כותרת"}{adDraft.subtitle ? " - " + adDraft.subtitle : ""}
+										{adDraft.title || tFn("profile.untitled")}{adDraft.subtitle ? " - " + adDraft.subtitle : ""}
 									</p>
 									<div class="flex items-center gap-2 flex-wrap">
 										<a href="/about/advertise/builder"
 										   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-black text-xs transition-colors">
-											🚀 המשך לערוך
+											{tFn("profile.continue_edit")}
 										</a>
 										<button type="button" onclick={dismissAdDraft}
 										   class="text-[11px] text-gray-400 hover:text-red-400 underline underline-offset-2 font-bold">
-											מחק טיוטה
+											{tFn("profile.delete_draft")}
 										</button>
 									</div>
 								</div>
@@ -2986,11 +2981,11 @@
 							<div class="flex-1 min-w-0">
 								<p class="text-yellow-200 font-bold text-sm">
 									{giveawayDrafts.length === 1
-										? "טיוטה אחת ממתינה לתמונה"
-										: `${giveawayDrafts.length} טיוטות ממתינות לתמונה`}
+										? tFn("profile.draft_one_waiting")
+										: tFn("profile.drafts_waiting", { n: giveawayDrafts.length })}
 								</p>
 								<p class="text-yellow-300/70 text-xs mt-0.5">
-									השלם את הפרסום על ידי הוספת תמונה למוצר למסירה
+									{tFn("profile.drafts_hint")}
 								</p>
 							</div>
 							<span
@@ -3043,7 +3038,7 @@
 													{item.status === "active"
 														? tFn("status_active")
 														: item.status === "frozen"
-															? "לא פעילה"
+															? tFn("profile.item_inactive")
 															: item.status}
 												</span>
 											</div>
@@ -3070,7 +3065,7 @@
 													<span
 														class="text-yellow-400/70 text-xs flex items-center gap-1"
 													>
-														{item.view_count} ביקורים
+														{tFn("profile.item_visits", { n: item.view_count })}
 													</span>
 												{/if}
 											</div>
@@ -3084,18 +3079,18 @@
 											onclick={() => republishOwnItem(item.id)}
 											disabled={republishingItemId === item.id}
 											class="text-[11px] font-bold text-green-400/90 hover:text-green-300 hover:bg-green-500/10 px-2.5 py-1 rounded-md transition-colors disabled:opacity-50"
-											title="פרסם מחדש בלוח הציבורי"
-										>{republishingItemId === item.id ? '...' : '🚀 פרסם שנית'}</button>
+											title={tFn("profile.republish_title")}
+										>{republishingItemId === item.id ? '...' : tFn('profile.republish')}</button>
 									{:else if republishedItemIds.includes(item.id)}
-										<span class="text-[11px] font-bold text-green-300 px-2.5 py-1">✓ פורסם מחדש</span>
+										<span class="text-[11px] font-bold text-green-300 px-2.5 py-1">{tFn("profile.republished")}</span>
 									{/if}
 									<button
 										type="button"
 										onclick={() => deleteOwnItem(item.id, item.label)}
 										disabled={deletingItemId === item.id}
 										class="text-[11px] font-bold text-red-400/80 hover:text-red-300 hover:bg-red-500/10 px-2.5 py-1 rounded-md transition-colors disabled:opacity-50"
-										title="מחיקה לצמיתות (אינה הפיכה)"
-									>{deletingItemId === item.id ? '...' : '🗑 מחק לצמיתות'}</button>
+										title={tFn("profile.delete_forever_item_title")}
+									>{deletingItemId === item.id ? '...' : tFn('profile.delete_forever')}</button>
 								</div>
 							</div>
 							{/each}
@@ -3107,7 +3102,7 @@
 				<div class="bg-[#0a1224]/60 rounded-2xl border border-white/10 p-3 md:p-4">
 					<h3 class="text-white font-bold text-sm mb-3 flex items-center gap-2">
 						<span class="text-lg" aria-hidden="true">❤️</span>
-						האהבתי
+						{tFn("profile.liked_title")}
 						{#if likedItems.length > 0}
 							<span class="text-xs bg-rose-500/20 text-rose-300 border border-rose-500/30 px-2.5 py-0.5 rounded-full font-bold">{likedItems.length}</span>
 						{/if}
@@ -3117,16 +3112,10 @@
 						<div class="text-center py-6">
 							<span class="text-4xl block mb-2">💔</span>
 							<p class="text-gray-400 text-sm mb-3">
-								עדיין לא סימנת פריטים או אישיות שאהבת
+								{tFn("profile.liked_empty")}
 							</p>
 							<p class="text-gray-500 text-xs leading-relaxed">
-								לחצי/לחץ על ❤️ בדף
-								<a href="/giveaways" class="text-orange-400 hover:text-orange-300 font-bold">למסירה</a>,
-								בדף
-								<a href="/singles" class="text-pink-400 hover:text-pink-300 font-bold">פנויים ופנויות</a>
-								או בדף
-								<a href="/babysitters" class="text-rose-400 hover:text-rose-300 font-bold">בייבי סיטר</a>
-								כדי להוסיף לכאן קיצור דרך מהיר.
+								{tFn("profile.liked_hint_click")} <a href="/giveaways" class="text-orange-400 hover:text-orange-300 font-bold">{tFn("profile.liked_giveaways_link")}</a>{tFn("profile.liked_hint_page")} <a href="/singles" class="text-pink-400 hover:text-pink-300 font-bold">{tFn("profile.liked_singles_link")}</a> {tFn("profile.liked_hint_or")} <a href="/babysitters" class="text-rose-400 hover:text-rose-300 font-bold">{tFn("profile.liked_babysitter_link")}</a> {tFn("profile.liked_hint_suffix")}
 							</p>
 						</div>
 					{:else}
@@ -3135,7 +3124,7 @@
 								<div>
 									<h4 class="text-white font-bold text-xs mb-2 flex items-center gap-2">
 										<span class="text-orange-400">🎁</span>
-										פריטים למסירה ({likedGiveaways.length})
+										{tFn("profile.liked_giveaways")} ({likedGiveaways.length})
 									</h4>
 									<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
 										{#each likedGiveaways as it (it.id)}
@@ -3164,8 +3153,8 @@
 												<button
 													type="button"
 													onclick={() => unlike(it)}
-													aria-label="הסר מהאהובים"
-													title="הסר מהאהובים"
+													aria-label={tFn("profile.unlike")}
+													title={tFn("profile.unlike")}
 													class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-rose-500/10 hover:bg-rose-500/25 text-rose-300 hover:text-rose-200 text-base transition-colors"
 												>❤️</button>
 											</div>
@@ -3178,7 +3167,7 @@
 								<div>
 									<h4 class="text-white font-bold text-xs mb-2 flex items-center gap-2">
 										<span class="text-pink-400">💑</span>
-										פנויים ופנויות ({likedSingles.length})
+										{tFn("profile.liked_singles")} ({likedSingles.length})
 									</h4>
 									<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
 										{#each likedSingles as it (it.id)}
@@ -3200,8 +3189,8 @@
 												<button
 													type="button"
 													onclick={() => unlike(it)}
-													aria-label="הסר מהאהובים"
-													title="הסר מהאהובים"
+													aria-label={tFn("profile.unlike")}
+													title={tFn("profile.unlike")}
 													class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-rose-500/10 hover:bg-rose-500/25 text-rose-300 hover:text-rose-200 text-base transition-colors"
 												>❤️</button>
 											</div>
@@ -3214,7 +3203,7 @@
 								<div>
 									<h4 class="text-white font-bold text-xs mb-2 flex items-center gap-2">
 										<span class="text-rose-400">👶</span>
-										בייבי סיטר ({likedBabysitters.length})
+										{tFn("profile.liked_babysitters")} ({likedBabysitters.length})
 									</h4>
 									<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
 										{#each likedBabysitters as it (it.id)}
@@ -3234,8 +3223,8 @@
 												<button
 													type="button"
 													onclick={() => unlike(it)}
-													aria-label="הסר מהאהובים"
-													title="הסר מהאהובים"
+													aria-label={tFn("profile.unlike")}
+													title={tFn("profile.unlike")}
 													class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-rose-500/10 hover:bg-rose-500/25 text-rose-300 hover:text-rose-200 text-base transition-colors"
 												>❤️</button>
 											</div>
@@ -3289,34 +3278,34 @@
 					style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75"
 					>4</span
 				>
-				דרגה והרשאות
+				{tFn("profile.levels_title")}
 			</h2>
 			<!-- סיכום דרגה נוכחית -->
 			<div class="flex items-center gap-2">
 				{#if isSuperAdmin}
 					<span
 						class="text-sm bg-red-500/20 text-red-300 border border-red-500/30 px-3 py-1.5 rounded-full font-bold"
-						>דרגה נוכחית - מנהל ראשי 👑</span
+						>{tFn("profile.current_level_prefix")} {tFn("profile.role_super")}</span
 					>
 				{:else if (data.user as any)?.role === "neighborhood_admin"}
 					<span
 						class="text-sm bg-amber-500/20 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-full font-bold"
-						>דרגה נוכחית - אדמין שכונתי 🛡️</span
+						>{tFn("profile.current_level_prefix")} {tFn("profile.role_nbh_admin")}</span
 					>
 				{:else if ((data.user as any)?.coordinator_of?.length ?? 0) > 0}
 					<span
 						class="text-sm bg-blue-500/20 text-blue-300 border border-blue-500/30 px-3 py-1.5 rounded-full font-bold"
-						>דרגה נוכחית - רכז שכונה 🏘️</span
+						>{tFn("profile.current_level_prefix")} {tFn("profile.role_coordinator")}</span
 					>
 				{:else if userLevel >= 2}
 					<span
 						class="text-sm bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1.5 rounded-full font-bold"
-						>דרגה נוכחית - משתמש</span
+						>{tFn("profile.current_level_prefix")} {tFn("profile.role_user")}</span
 					>
 				{:else}
 					<span
 						class="text-sm bg-gray-500/20 text-gray-300 border border-gray-500/30 px-3 py-1.5 rounded-full font-bold"
-						>דרגה נוכחית - צופה</span
+						>{tFn("profile.current_level_prefix")} {tFn("profile.role_viewer")}</span
 					>
 				{/if}
 				<svg
@@ -3360,12 +3349,12 @@
 								? 'bg-emerald-500 text-white'
 								: 'bg-white/10 text-gray-400'}">1</span
 						>
-						<span class="font-black text-white text-base">צופה</span
+						<span class="font-black text-white text-base">{tFn("profile.role_viewer")}</span
 						>
 						{#if userLevel === 1}
 							<span
 								class="mr-auto text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold"
-								>הדרגה שלך</span
+								>{tFn("profile.your_level")}</span
 							>
 						{/if}
 					</div>
@@ -3373,23 +3362,23 @@
 						<div class="flex items-center gap-1.5">
 							<span class="text-emerald-400 text-sm">✓</span>
 							<span class="text-gray-300 text-xs font-bold"
-								>כניסה וצפיה באתר</span
+								>{tFn("profile.perm_view")}</span
 							>
 						</div>
 						<div class="flex items-center gap-1.5">
 							<span class="text-red-400 text-sm">✕</span>
 							<span class="text-gray-200 text-xs"
-								>משתתף במשאלי עם שכונתיים</span
+								>{tFn("profile.perm_referendum")}</span
 							>
 						</div>
 						<div class="flex items-center gap-1.5">
 							<span class="text-red-400 text-sm">✕</span>
-							<span class="text-gray-200 text-xs">העלאת תוכן</span
+							<span class="text-gray-200 text-xs">{tFn("profile.perm_upload")}</span
 							>
 						</div>
 						<div class="flex items-center gap-1.5">
 							<span class="text-red-400 text-sm">✕</span>
-							<span class="text-gray-200 text-xs">ניהול תוכן</span
+							<span class="text-gray-200 text-xs">{tFn("profile.perm_manage")}</span
 							>
 						</div>
 					</div>
@@ -3420,12 +3409,12 @@
 								: 'bg-white/10 text-gray-400'}">2</span
 						>
 						<span class="font-black text-white text-base"
-							>משתמש</span
+							>{tFn("profile.role_user")}</span
 						>
 						{#if userLevel === 2}
 							<span
 								class="mr-auto text-[10px] bg-purple-500/20 text-purple-400 border border-purple-500/30 px-2 py-0.5 rounded-full font-bold"
-								>הדרגה שלך</span
+								>{tFn("profile.your_level")}</span
 							>
 						{/if}
 					</div>
@@ -3433,30 +3422,30 @@
 						<div class="flex items-center gap-1.5">
 							<span class="text-purple-400 text-sm">✓</span>
 							<span class="text-gray-300 text-xs font-bold"
-								>כניסה וצפיה באתר</span
+								>{tFn("profile.perm_view")}</span
 							>
 						</div>
 						<div class="flex items-center gap-1.5">
 							<span class="text-purple-400 text-sm">✓</span>
 							<span class="text-gray-300 text-xs font-bold"
-								>העלאת תוכן</span
+								>{tFn("profile.perm_upload")}</span
 							>
 						</div>
 						<div class="flex items-center gap-1.5">
 							<span class="text-purple-400 text-sm">✓</span>
 							<span class="text-gray-300 text-xs font-bold"
-								>משתתף במשאלי עם שכונתיים</span
+								>{tFn("profile.perm_referendum")}</span
 							>
 						</div>
 						<div class="flex items-center gap-1.5">
 							<span class="text-red-400 text-sm">✕</span>
-							<span class="text-gray-200 text-xs">ניהול תוכן</span
+							<span class="text-gray-200 text-xs">{tFn("profile.perm_manage")}</span
 							>
 						</div>
 					</div>
 					{#if userLevel < 2}
 						<p class="text-yellow-500/70 text-[11px]">
-							נדרש: מילוי כל שדות הפרופיל
+							{tFn("profile.level2_req")}
 						</p>
 					{/if}
 				</div>
@@ -3468,7 +3457,7 @@
 		       {isCoordOrNbhAdmin
 							? 'border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/10 hover:bg-blue-500/20 cursor-pointer'
 							: 'border-white/10 bg-white/3 opacity-60 pointer-events-none'}"
-					title={isCoordOrNbhAdmin ? "ניהול תוכן בשכונה שלך" : ""}
+					title={isCoordOrNbhAdmin ? tFn("profile.coord_manage_title") : ""}
 				>
 					{#if isCoordOrNbhAdmin}
 						<div
@@ -3488,12 +3477,12 @@
 									: 'bg-white/10 text-gray-400'}">3</span
 						>
 						<span class="font-black text-white text-base"
-							>רכז שכונה 🏘️</span
+							>{tFn("profile.role_coordinator")}</span
 						>
 						{#if isCoordOrNbhAdmin}
 							<span
 								class="mr-auto text-[10px] bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded-full font-bold"
-								>הדרגה שלך</span
+								>{tFn("profile.your_level")}</span
 							>
 						{/if}
 					</div>
@@ -3501,25 +3490,25 @@
 						<div class="flex items-center gap-1.5">
 							<span class="text-blue-400 text-sm">✓</span>
 							<span class="text-gray-300 text-xs font-bold"
-								>כניסה וצפיה באתר</span
+								>{tFn("profile.perm_view")}</span
 							>
 						</div>
 						<div class="flex items-center gap-1.5">
 							<span class="text-blue-400 text-sm">✓</span>
 							<span class="text-gray-300 text-xs font-bold"
-								>העלאת תוכן</span
+								>{tFn("profile.perm_upload")}</span
 							>
 						</div>
 						<div class="flex items-center gap-1.5">
 							<span class="text-blue-400 text-sm">✓</span>
 							<span class="text-gray-300 text-xs font-bold"
-								>משתתף במשאלי עם שכונתיים</span
+								>{tFn("profile.perm_referendum")}</span
 							>
 						</div>
 						<div class="flex items-center gap-1.5">
 							<span class="text-blue-400 text-sm">✓</span>
 							<span class="text-gray-300 text-xs font-bold"
-								>ניהול תוכן בשכונה שלו</span
+								>{tFn("profile.perm_manage_own")}</span
 							>
 						</div>
 					</div>
@@ -3532,7 +3521,7 @@
 		       {isSuperAdmin
 							? 'border-red-500 bg-gradient-to-br from-red-500/15 to-amber-500/10 shadow-lg shadow-red-500/20 hover:from-red-500/25 hover:to-amber-500/20 cursor-pointer'
 							: 'border-white/10 bg-white/3 opacity-60 pointer-events-none'}"
-					title={isSuperAdmin ? "פאנל ניהול ראשי" : "דרגה זו בלעדית למנהל הראשי של האתר"}
+					title={isSuperAdmin ? tFn("profile.super_panel_title") : tFn("profile.super_only_title")}
 				>
 					{#if isSuperAdmin}
 						<div
@@ -3549,12 +3538,12 @@
 									: 'bg-white/10 text-gray-400'}">4</span
 						>
 						<span class="font-black text-white text-base"
-							>מנהל ראשי 👑</span
+							>{tFn("profile.role_super")}</span
 						>
 						{#if isSuperAdmin}
 							<span
 								class="mr-auto text-[10px] bg-red-500/20 text-red-300 border border-red-500/40 px-2 py-0.5 rounded-full font-bold whitespace-nowrap"
-								>הדרגה שלך</span
+								>{tFn("profile.your_level")}</span
 							>
 						{/if}
 					</div>
@@ -3562,25 +3551,25 @@
 						<div class="flex items-center gap-1.5">
 							<span class="text-red-400 text-sm">✓</span>
 							<span class="text-gray-300 text-xs font-bold"
-								>כל הרשאות הרכזים</span
+								>{tFn("profile.perm_all_coord")}</span
 							>
 						</div>
 						<div class="flex items-center gap-1.5">
 							<span class="text-red-400 text-sm">✓</span>
 							<span class="text-gray-300 text-xs font-bold"
-								>אישור פרסומות + מינוי רכזים</span
+								>{tFn("profile.perm_approve_ads")}</span
 							>
 						</div>
 						<div class="flex items-center gap-1.5">
 							<span class="text-red-400 text-sm">✓</span>
 							<span class="text-gray-300 text-xs font-bold"
-								>ניהול משתמשים והרשאות</span
+								>{tFn("profile.perm_users")}</span
 							>
 						</div>
 						<div class="flex items-center gap-1.5">
 							<span class="text-red-400 text-sm">✓</span>
 							<span class="text-gray-300 text-xs font-bold"
-								>ניהול תוכן בכל האתר</span
+								>{tFn("profile.perm_site_content")}</span
 							>
 						</div>
 					</div>
@@ -3642,7 +3631,7 @@
 			<div class="flex items-center gap-2">
 				<span
 					class="text-sm bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1.5 rounded-full font-bold"
-					>{profileCompletion}% הושלם</span
+					>{tFn("profile.pct_done", { n: profileCompletion })}</span
 				>
 				<svg
 					class="w-4 h-4 text-yellow-400 transition-transform duration-300 flex-shrink-0 {isEditing
@@ -3666,20 +3655,20 @@
 				<div class="flex-1 text-sm">
 					<p class="text-emerald-300 font-black mb-1">
 						{locationNotice.already
-							? "כבר קיבלנו את הבקשה שלך — היא בטיפול"
-							: "בקשתך נקלטה בהצלחה!"}
+							? tFn("profile.loc_pending_title")
+							: tFn("profile.loc_ok_title")}
 					</p>
 					<p class="text-emerald-100/90 leading-relaxed">
 						{locationNotice.already
-							? `הבקשה להוסיף את "${locationNotice.text}" כבר ממתינה לאישור המנהל. אין צורך לשלוח שוב — נעדכן אותך בתיבת ההודעות ברגע שהשכונה תתווסף.`
-							: `הבקשה להוסיף את "${locationNotice.text}" נשלחה למנהל וממתינה לאישור. שלחנו לך אישור לתיבת ההודעות, ונעדכן אותך שם ברגע שהשכונה תתווסף. אין צורך לשלוח שוב 🙏`}
+							? tFn("profile.loc_pending_body", { name: locationNotice.text })
+							: tFn("profile.loc_ok_body", { name: locationNotice.text })}
 					</p>
 				</div>
 				<button
 					type="button"
 					onclick={() => (locationNotice = null)}
 					class="flex-shrink-0 text-emerald-300/70 hover:text-emerald-200 text-lg leading-none"
-					aria-label="סגור"
+					aria-label={tFn("profile.close")}
 				>×</button>
 			</div>
 		{/if}
@@ -3883,7 +3872,7 @@
 											class="w-4 h-4"
 											alt="Facebook"
 										/>
-										העתק מחשבון פייסבוק
+										{tFn("profile.copy_facebook")}
 									</button>
 								</div>
 							</div>
@@ -4024,7 +4013,7 @@
 										}}
 										onblur={() => setTimeout(() => (showCitySuggestions = false), 150)}
 										onkeydown={onCityInputKey}
-										placeholder={tFn("choose_city") + " - הקלד לחיפוש..."}
+										placeholder={tFn("choose_city") + tFn("profile.city_search_suffix")}
 										class="w-full bg-[#070b14] border {!city
 											? 'border-red-500/50'
 											: 'border-white/10'} focus:border-purple-500/50 rounded-xl
@@ -4040,7 +4029,7 @@
 										>
 											{#if list.length === 0}
 												<li class="px-4 py-3 text-gray-400 text-xs">
-													לא נמצאו ערים תואמות. מלא ב"לא מצאת את העיר?" למטה.
+													{tFn("profile.no_cities_found")}
 												</li>
 											{:else}
 												{#each list as c, i}
@@ -4088,10 +4077,10 @@
 									       px-4 py-3 text-white text-sm transition-colors outline-none flex items-center justify-between gap-2"
 									>
 										<span>מרכז</span>
-										<span class="text-green-400 text-xs">✓ נבחר</span>
+										<span class="text-green-400 text-xs">{tFn("profile.selected")}</span>
 									</button>
 									<p class="text-gray-400 text-xs leading-relaxed mt-1.5">
-										בעיר זו לא קיימת שכונה, רק מרכז — אפשר לשמור עם העיר בלבד.
+										{tFn("profile.city_no_nb_note")}
 									</p>
 								{:else}
 									<div class="relative">
@@ -4135,7 +4124,7 @@
 													class="px-4 py-2.5 text-sm text-yellow-300 cursor-pointer transition-colors
 													       hover:bg-yellow-500/10 border-t border-white/10 font-bold"
 												>
-													📍 לא מצאתי את השכונה שלי
+													{tFn("profile.nb_not_found")}
 												</li>
 											</ul>
 										{/if}
@@ -4168,18 +4157,17 @@
 											></span>
 										</span>
 									{/if}
-									📍 {locationInteracted ? 'לא מצאת את העיר או השכונה שלך ברשימה?' : 'מיקום שאינו מופיע ברשימה?'}
+									📍 {locationInteracted ? tFn('profile.custom_loc_q') : tFn('profile.custom_loc_label')}
 								</label>
 								<p class="text-gray-500 text-xs mb-2 leading-relaxed">
-									כתוב כאן את העיר והשכונה שלך - הבקשה תישלח
-									מיד למנהל האתר ותתווסף לרשימה.
+									{tFn("profile.custom_loc_hint")}
 								</p>
 								<input
 									id="p-custom-location"
 									name="custom_location"
 									type="text"
 									bind:value={customLocation}
-									placeholder="לדוגמה: רמת השרון, שכונת הצפון..."
+									placeholder={tFn("profile.custom_loc_placeholder")}
 									class="w-full bg-[#070b14] border rounded-xl px-4 py-3 text-white text-sm
 							       transition-all duration-500 outline-none placeholder:text-white/20
 							       focus:border-yellow-500/70 focus:shadow-[0_0_18px_2px_rgba(250,204,21,0.25)]
@@ -4190,10 +4178,10 @@
 								{#if customLocation.trim()}
 									<div class="mt-3">
 										<p class="text-yellow-300 text-xs font-bold mb-1.5">
-											🗺️ סמן את מיקום השכונה המדויק על המפה
+											{tFn("profile.pin_mark_title")}
 										</p>
 										<p class="text-gray-500 text-xs mb-2 leading-relaxed">
-											לא חובה, אבל עוזר לנו למקם את השכונה בדיוק. אם יש לך קואורדינטות — אפשר להקליד אותן.
+											{tFn("profile.pin_mark_hint")}
 										</p>
 										<NeighborhoodPicker {city} bind:lat={customLat} bind:lng={customLng} />
 									</div>
@@ -4216,9 +4204,7 @@
 											: 'bg-emerald-500/10 border border-emerald-500/40 text-emerald-200'}"
 									>
 										<span class="flex items-center gap-2 text-sm font-bold">
-											🗺️ {cityHasCoords
-												? 'המפה לא מדויקת? סמן את מיקום הישוב שלך'
-												: `המפה של ${city} לא מדויקת — סמן את מיקום הישוב`}
+											🗺️ {cityHasCoords ? tFn('profile.map_fix_q') : tFn('profile.map_fix_city', { city })}
 										</span>
 										<span class="text-xs opacity-70">{showCityPin ? '▴' : '▾'}</span>
 									</button>
@@ -4226,9 +4212,7 @@
 									{#if showCityPin}
 										<div class="mt-3 space-y-2">
 											<p class="text-gray-400 text-xs leading-relaxed">
-												לחץ על המפה במקום שבו נמצא הישוב שלך (אפשר לגרור את הסמן לדיוק).
-												המיקום יתוקן <span class="text-emerald-300 font-bold">מיד אצלך</span>,
-												ויעודכן לכל תושבי {city} לאחר אישור מנהל.
+												{tFn("profile.pin_help_1")} <span class="text-emerald-300 font-bold">{tFn("profile.pin_help_now")}</span>{tFn("profile.pin_help_2", { city })}
 											</p>
 											<NeighborhoodPicker {city} bind:lat={cityPinLat} bind:lng={cityPinLng} />
 
@@ -4239,9 +4223,9 @@
 											{#if cityPinSaved}
 												<p class="text-emerald-400 text-sm font-bold bg-emerald-900/20 border border-emerald-500/30 rounded-lg py-2 px-3">
 													{#if cityPinAlreadyPending}
-														✓ הבקשה שלך כבר התקבלה וממתינה לאישור מנהל — אין צורך לשלוח שוב. המפה שלך כבר מתוקנת.
+														{tFn("profile.pin_already_pending")}
 													{:else}
-														✓ המיקום נשמר! המפה שלך כבר מתוקנת. הוא יופיע לכל תושבי {city} לאחר אישור מנהל. שלחנו לך אישור לתיבת ההודעות.
+														{tFn("profile.pin_saved", { city })}
 													{/if}
 												</p>
 											{:else}
@@ -4253,7 +4237,7 @@
 													       text-white font-black py-3 rounded-xl transition-all
 													       disabled:opacity-50 disabled:cursor-not-allowed"
 												>
-													{savingCityPin ? '⏳ שומר…' : '📍 שמור את מיקום הישוב'}
+													{savingCityPin ? tFn('profile.pin_saving') : tFn('profile.pin_save_btn')}
 												</button>
 											{/if}
 										</div>
@@ -4272,7 +4256,7 @@
 							<label
 								for="p-business-type"
 								class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2"
-								>בעל עסק / נותן שירות?</label
+								>{tFn("profile.business_q")}</label
 							>
 							{#if isEditing}
 								<select
@@ -4280,10 +4264,10 @@
 									bind:value={businessType}
 									class="w-full bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none mb-2"
 								>
-									<option value="">בחר/י...</option>
-										<option value="none">ללא עסק או שירות עצמאי</option>
-									<option value="business_owner">בעל עסק</option>
-									<option value="service_provider">נותן שירות</option>
+									<option value="">{tFn("profile.choose_opt")}</option>
+										<option value="none">{tFn("profile.biz_none")}</option>
+									<option value="business_owner">{tFn("profile.biz_owner")}</option>
+									<option value="service_provider">{tFn("profile.biz_service")}</option>
 								</select>
 								{#if businessType === 'business_owner' || businessType === 'service_provider'}
 									<input
@@ -4291,7 +4275,7 @@
 										name="business"
 										type="text"
 										bind:value={business}
-										placeholder={businessType === 'service_provider' ? 'תחום המקצוע (לדוגמה: רואה חשבון)' : tFn("business_placeholder")}
+										placeholder={businessType === 'service_provider' ? tFn('profile.biz_service_placeholder') : tFn("business_placeholder")}
 										class="w-full bg-white/5 border border-white/10 focus:border-purple-500/50 rounded-xl px-4 py-3 text-white text-sm transition-colors outline-none placeholder:text-white/15 hover:placeholder:text-transparent focus:placeholder:text-transparent placeholder:transition-colors placeholder:duration-200"
 									/>
 								{:else}
@@ -4299,7 +4283,7 @@
 								{/if}
 							{:else}
 								<p class="text-white font-medium py-3 px-1">
-									{businessType === 'business_owner' ? `🏪 ${business || 'בעל עסק'}` : businessType === 'service_provider' ? `🛠️ ${business || 'נותן שירות'}` : (business === NO_BUSINESS ? 'ללא עסק' : business || '-')}
+									{businessType === 'business_owner' ? `🏪 ${business || tFn('profile.biz_owner')}` : businessType === 'service_provider' ? `🛠️ ${business || tFn('profile.biz_service')}` : (business === NO_BUSINESS ? tFn('profile.biz_none_short') : business || '-')}
 								</p>
 							{/if}
 						</div>
@@ -4355,7 +4339,7 @@
 							{#if isEditing}
 								<div class="flex gap-1.5">
 									<label for="p-birth-day" class="sr-only"
-										>יום לידה</label
+										>{tFn("profile.birth_day_sr")}</label
 									>
 									<select
 										id="p-birth-day"
@@ -4373,7 +4357,7 @@
 										{/each}
 									</select>
 									<label for="p-birth-month" class="sr-only"
-										>חודש לידה</label
+										>{tFn("profile.birth_month_sr")}</label
 									>
 									<select
 										id="p-birth-month"
@@ -4391,7 +4375,7 @@
 										{/each}
 									</select>
 									<label for="p-birth-year" class="sr-only"
-										>שנת לידה</label
+										>{tFn("profile.birth_year_sr")}</label
 									>
 									<select
 										id="p-birth-year"
@@ -4427,9 +4411,9 @@
 						<label
 							class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2"
 						>
-							🟢 סטטוס <span
+							🟢 {tFn("profile.status")} <span
 								class="text-purple-400 text-xs font-normal normal-case"
-								>(גלוי לכל הקהילה)</span
+								>{tFn("profile.status_public_note")}</span
 							>
 						</label>
 						{#if isEditing}
@@ -4454,7 +4438,7 @@
 								{statusOptions().find((o) => o.value === status)
 									?.emoji ?? "🟢"}
 								{statusOptions().find((o) => o.value === status)
-									?.label ?? "פעיל/ה"}
+									?.label ?? tFn("profile.st_default")}
 							</p>
 						{/if}
 					</div>
@@ -4468,9 +4452,9 @@
 							<label
 								class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2"
 							>
-								🛡️ שאלת ביטחון <span
+								🛡️ {tFn("profile.security_q_label")} <span
 									class="text-purple-400 text-xs font-normal normal-case"
-									>(מומלץ - לשחזור סיסמה)</span
+									>{tFn("profile.security_q_note")}</span
 								>
 							</label>
 							{#if isEditing}
@@ -4479,7 +4463,7 @@
 									bind:value={security_question}
 									class="w-full bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none mb-2"
 								>
-									<option value="">- בחר שאלה -</option>
+									<option value="">{tFn("profile.choose_question")}</option>
 									<option value="שם הרחוב שגדלת בו"
 										>שם הרחוב שגדלת בו</option
 									>
@@ -4510,7 +4494,7 @@
 													confirmSecurityAnswer();
 												}
 											}}
-											placeholder="תשובה (לא תוצג בפומבי)"
+											placeholder={tFn("profile.answer_placeholder")}
 											class="flex-1 bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none placeholder-white/20"
 										/>
 										<button
@@ -4522,16 +4506,16 @@
 											       shadow-md transition-all whitespace-nowrap
 											       disabled:opacity-40 disabled:cursor-not-allowed"
 										>
-											{securityAnswerConfirmed ? "✓ נקלט" : "אישור"}
+											{securityAnswerConfirmed ? tFn("profile.received") : tFn("profile.confirm")}
 										</button>
 									</div>
 									{#if securityAnswerConfirmed}
 										<div class="mt-2 rounded-xl bg-green-500/10 border border-green-500/30 px-3 py-2">
 											<p class="text-green-400 text-xs font-bold">
-												✅ תשובתך נקלטה במערכת
+												{tFn("profile.answer_saved")}
 											</p>
 											<p class="text-gray-300 text-[11px] mt-1 leading-relaxed">
-												💡 מומלץ להגדיר שאלת ביטחון נוספת לאבטחה כפולה
+												{tFn("profile.second_q_tip")}
 											</p>
 										</div>
 
@@ -4540,9 +4524,9 @@
 											<label
 												class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2"
 											>
-												🛡️ שאלת ביטחון שנייה <span
+												🛡️ {tFn("profile.security_q2_label")} <span
 													class="text-purple-400 text-xs font-normal normal-case"
-													>(אבטחה כפולה - אופציונלי)</span
+													>{tFn("profile.security_q2_note")}</span
 												>
 											</label>
 											<select
@@ -4550,7 +4534,7 @@
 												bind:value={security_question_2}
 												class="w-full bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none mb-2"
 											>
-												<option value="">- בחר שאלה שנייה -</option>
+												<option value="">{tFn("profile.choose_question2")}</option>
 												{#each [
 													"שם הרחוב שגדלת בו",
 													"שם החיה הראשונה שלך",
@@ -4574,7 +4558,7 @@
 																confirmSecurityAnswer2();
 															}
 														}}
-														placeholder="תשובה (לא תוצג בפומבי)"
+														placeholder={tFn("profile.answer_placeholder")}
 														class="flex-1 bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none placeholder-white/20"
 													/>
 													<button
@@ -4586,13 +4570,13 @@
 														       shadow-md transition-all whitespace-nowrap
 														       disabled:opacity-40 disabled:cursor-not-allowed"
 													>
-														{securityAnswer2Confirmed ? "✓ נקלט" : "אישור"}
+														{securityAnswer2Confirmed ? tFn("profile.received") : tFn("profile.confirm")}
 													</button>
 												</div>
 												{#if securityAnswer2Confirmed}
 													<div class="mt-2 rounded-xl bg-green-500/10 border border-green-500/30 px-3 py-2">
 														<p class="text-green-400 text-xs font-bold">
-															✅ תשובה שנייה נקלטה - אבטחה כפולה מופעלת
+															{tFn("profile.answer2_saved")}
 														</p>
 													</div>
 												{/if}
@@ -4611,7 +4595,7 @@
 								{/if}
 							{/if}
 							<p class="text-gray-400 text-sm mt-1 px-1">
-								משמש לאימות זהות בעת שחזור סיסמה
+								{tFn("profile.security_use_note")}
 							</p>
 						</div>
 
@@ -4653,9 +4637,7 @@
 											? 'text-green-400 font-bold'
 											: 'text-gray-500'}"
 									>
-										{notifications
-											? "✅ מסכים לקבל התראות מחברי השכונה בשעת צרה"
-											: "❌ לא מסכים לקבל התראות"}
+										{notifications ? tFn("profile.notif_agree") : tFn("profile.notif_disagree")}
 									</span>
 								</label>
 								<input
@@ -4706,15 +4688,14 @@
 									href="/about/legal"
 									target="_blank"
 									class="text-purple-400 hover:underline"
-									>תנאי השימוש ומדיניות הפרטיות</a
+									>{tFn("profile.terms_link")}</a
 								>
 								{tFn("terms_agree_suffix")}
 							</span>
 						</label>
 						{#if showTermsError}
 							<p class="text-red-400 text-xs font-bold">
-								יש לאשר את תנאי השימוש ומדיניות הפרטיות לפני
-								השמירה
+								{tFn("profile.terms_error")}
 							</p>
 						{/if}
 						{#if form?.error}
@@ -4732,14 +4713,14 @@
 								}
 								if (!city) {
 									e.preventDefault();
-									alert("יש לבחור עיר לפני השמירה");
+									alert(tFn("profile.alert_city"));
 									return;
 								}
 								// שכונה נדרשת רק אם קיימות שכונות ברשימה לעיר זו -
 								// אלא אם המשתמש דיווח על מיקום שאינו ברשימה (אז מותר לשמור והבקשה תישלח למנהל)
 								if (!cityWithoutNeighborhoods && !neighborhood && !customLocation.trim()) {
 									e.preventDefault();
-									alert("יש לבחור שכונה, או — אם השכונה שלך לא מופיעה — למלא אותה בשדה 'לא מצאת את העיר או השכונה שלך?'");
+									alert(tFn("profile.alert_neighborhood"));
 									return;
 								}
 							}}
@@ -4797,7 +4778,7 @@
 					style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75"
 					>6</span
 				>
-				כתוב למערכת
+				{tFn("profile.tab_feedback")}
 			</h2>
 			<svg
 				class="w-4 h-4 text-yellow-400 transition-transform duration-300 flex-shrink-0 {showFeedback
@@ -4815,15 +4796,14 @@
 
 		{#if showFeedback}
 			<p class="relative text-gray-400 text-sm mb-5">
-				כתוב לנו כיצד לשפר את האתר עבורך - הצוות של יוצאים לחירות יקרא
-				ויחזור אליך.
+				{tFn("profile.feedback_intro")}
 			</p>
 
 			{#if form?.feedbackSuccess}
 				<div
 					class="relative bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-4 text-emerald-400 text-sm font-bold text-center"
 				>
-					✅ פנייתך נשלחה בהצלחה! נחזור אליך בהקדם.
+					{tFn("profile.feedback_success")}
 				</div>
 			{:else}
 				<form
@@ -4835,7 +4815,7 @@
 					<textarea
 						name="feedback_text"
 						rows="5"
-						placeholder="כתוב כאן את הצעתך / תלונתך / בקשתך..."
+						placeholder={tFn("profile.feedback_placeholder")}
 						class="w-full bg-[#1e293b] border border-white/10 rounded-2xl px-4 py-3 text-white text-sm
 					       placeholder:text-gray-600 focus:outline-none focus:border-purple-500/50 resize-none
 					       transition-colors"
@@ -4850,7 +4830,7 @@
 						class="self-end bg-gradient-to-l from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500
 					       text-white font-bold text-sm px-6 py-2.5 rounded-full transition-all shadow-lg"
 					>
-						שלח פנייה ←
+						{tFn("profile.feedback_send")}
 					</button>
 				</form>
 			{/if}
@@ -4867,7 +4847,7 @@
 		onclick={() => typeof window !== 'undefined' && window.scrollTo({ top: 0, behavior: 'smooth' })}
 		class="text-sm text-gray-500 hover:text-white transition-colors cursor-pointer"
 	>
-		↑ חזור לראש העמוד
+		{tFn("profile.back_to_top")}
 	</button>
 </div>
 
@@ -4881,18 +4861,18 @@
 		            rounded-xl px-3 py-2 text-center max-w-[200px]"
 		>
 			<div class="text-xs font-black mb-1" style="color: {ringColor}">
-				{profileCompletion}% הושלם
+				{tFn("profile.pct_done", { n: profileCompletion })}
 			</div>
 			<div class="text-white text-xs leading-snug">
 				{#if profileCompletion >= 100}
-					לעריכת פרופיל
+					{tFn("profile.edit_profile")}
 				{:else if profileCompletion === 0}
-					💡 הירשם וצור חשבון
+					{tFn("profile.signup_tip")}
 				{:else if nextTipKey === "tip_security"}
-					🛡️ הוסף שאלת ביטחון לחשבונך
+					{tFn("profile.tip_security_full")}
 					{#if securityFieldsRemaining > 0}
 						<div class="text-orange-300 text-[10px] mt-0.5">
-							נותרו {securityFieldsRemaining} שדות מתוך 2 להגדרה
+							{tFn("profile.security_fields_left", { n: securityFieldsRemaining })}
 						</div>
 					{/if}
 				{:else}
@@ -4922,7 +4902,7 @@
 						class="w-6 h-6"
 						alt="Google"
 					/>
-					<h3 class="text-white font-bold text-lg">קח תמונה מגוגל</h3>
+					<h3 class="text-white font-bold text-lg">{tFn("profile.google_photo_title")}</h3>
 				{:else}
 					<img
 						src="https://www.facebook.com/favicon.ico"
@@ -4930,16 +4910,16 @@
 						alt="Facebook"
 					/>
 					<h3 class="text-white font-bold text-lg">
-						קח תמונה מפייסבוק
+						{tFn("profile.fb_photo_title")}
 					</h3>
 				{/if}
 			</div>
 
 			<p class="text-gray-400 text-sm mb-4">
 				{#if showSocialPhotoModal === "google"}
-					הכנס את ה-URL של תמונת הפרופיל שלך בגוגל
+					{tFn("profile.google_photo_hint")}
 				{:else}
-					הכנס את שם המשתמש שלך בפייסבוק או קישור לפרופיל
+					{tFn("profile.fb_photo_hint")}
 				{/if}
 			</p>
 
@@ -4948,7 +4928,7 @@
 				bind:value={socialPhotoInput}
 				placeholder={showSocialPhotoModal === "google"
 					? "https://lh3.googleusercontent.com/..."
-					: "שם משתמש או קישור לפרופיל"}
+					: tFn("profile.fb_photo_placeholder")}
 				class="w-full bg-white/5 border border-white/10 focus:border-purple-500/50 rounded-xl
 				       px-4 py-3 text-white text-sm placeholder-gray-500 outline-none transition-colors mb-3"
 				onkeydown={(e) => e.key === "Enter" && fetchSocialPhoto()}
@@ -4972,7 +4952,7 @@
 							class="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"
 						></span>
 					{:else}
-						טען תמונה
+						{tFn("profile.load_photo")}
 					{/if}
 				</button>
 				<button
@@ -4981,7 +4961,7 @@
 					class="px-4 py-2.5 rounded-xl border border-white/10 text-gray-400 hover:text-white
 					       hover:border-white/20 text-sm transition-all cursor-pointer"
 				>
-					ביטול
+					{tFn("profile.cancel")}
 				</button>
 			</div>
 		</div>
@@ -4997,9 +4977,9 @@
 		<div
 			class="bg-[#0f172a] border border-white/10 rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl flex flex-col items-center gap-4"
 		>
-			<h3 class="text-white font-black text-lg">חתוך את התמונה</h3>
+			<h3 class="text-white font-black text-lg">{tFn("profile.crop_title")}</h3>
 			<p class="text-gray-400 text-xs text-center">
-				גרור להזזה · גלגלת עכבר להגדלה/הקטנה
+				{tFn("profile.crop_hint")}
 			</p>
 
 			<!-- אזור חיתוך -->
@@ -5011,7 +4991,7 @@
 				{#if cropSrc}
 					<img
 						src={cropSrc}
-						alt="חיתוך"
+						alt={tFn("profile.crop_alt")}
 						onload={onCropLoad}
 						draggable="false"
 						style="
@@ -5038,7 +5018,7 @@
 					class="flex-1 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600
 					       hover:from-purple-500 hover:to-blue-500 text-white font-bold transition-all cursor-pointer"
 				>
-					אשר תמונה
+					{tFn("profile.crop_confirm")}
 				</button>
 				<button
 					type="button"
@@ -5049,7 +5029,7 @@
 					class="px-5 py-3 rounded-xl border border-white/10 text-gray-400 hover:text-white
 					       hover:border-white/20 transition-all cursor-pointer"
 				>
-					ביטול
+					{tFn("profile.cancel")}
 				</button>
 			</div>
 		</div>
@@ -5066,7 +5046,7 @@
 		            text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xl
 		            border border-white/10 whitespace-nowrap"
 		>
-			{secTipIsOpen ? "גלול מעלה" : "גלול מטה לפרטים"}
+			{secTipIsOpen ? tFn("profile.scroll_up") : tFn("profile.scroll_down")}
 		</div>
 	</div>
 {/if}

@@ -1,7 +1,8 @@
 import { redirect, fail, error } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { requireSuperAdmin, requireAdmin } from '$lib/server/auth';
-import { getAllUsers, banUser, unbanUser, setUserRole, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByEmail, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, approveNeighborhood, rejectNeighborhood, getDiscountCodes, saveDiscountCodes, getItemsByCategoryAndStatus, getUserTotpSecret } from '$lib/server/db';
+import { getAllUsers, banUser, unbanUser, setUserRole, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByEmail, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, getNeighborhoodById, approveNeighborhood, rejectNeighborhood, getDiscountCodes, saveDiscountCodes, getItemsByCategoryAndStatus, getUserTotpSecret } from '$lib/server/db';
+import { finalizeLocationDecision } from '$lib/server/locationDecision';
 import { DEFAULT_DISCOUNT_CODES, type DiscountCode } from '$lib/discountCodes';
 import { countPending } from '$lib/server/adsStore';
 import { getVisitsThisMonth } from '$lib/server/visitStats';
@@ -269,7 +270,18 @@ export const actions: Actions = {
         if (!neighborhoodId) return fail(400, { error: 'חסר מזהה שכונה' });
 
         try {
+            // שולפים את הרשומה לפני שינוי הסטטוס - לנתוני המבקש להודעת ההחלטה
+            const nb = await getNeighborhoodById(neighborhoodId);
             await approveNeighborhood(neighborhoodId, session?.user?.id ?? 'admin');
+            // אותה תוצאה כמו אישור מכרטיס ההודעה: הודעה למבקש + סימון "טופל" בתיבת האדמין
+            if (nb) {
+                await finalizeLocationDecision({
+                    decision:    'approve',
+                    location:    nb.name,
+                    city:        nb.city,
+                    requesterId: nb.user_id || undefined,
+                });
+            }
             return { success: true, message: 'השכונה אושרה - מעכשיו תופיע בבוררים ובמפה' };
         } catch (e) {
             return fail(500, { error: `שגיאה באישור: ${e instanceof Error ? e.message : e}` });
@@ -285,7 +297,16 @@ export const actions: Actions = {
         if (!neighborhoodId) return fail(400, { error: 'חסר מזהה שכונה' });
 
         try {
+            const nb = await getNeighborhoodById(neighborhoodId);
             await rejectNeighborhood(neighborhoodId, session?.user?.id ?? 'admin');
+            if (nb) {
+                await finalizeLocationDecision({
+                    decision:    'reject',
+                    location:    nb.name,
+                    city:        nb.city,
+                    requesterId: nb.user_id || undefined,
+                });
+            }
             return { success: true, message: 'השכונה נדחתה' };
         } catch (e) {
             return fail(500, { error: `שגיאה בדחייה: ${e instanceof Error ? e.message : e}` });

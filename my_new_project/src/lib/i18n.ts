@@ -2,6 +2,8 @@ import { register, init, addMessages } from 'svelte-i18n';
 import * as chrome from './translations/chrome';
 import * as home from './translations/home';
 import * as aboutRevenue from './translations/aboutRevenue';
+import * as account from './translations/account';
+import * as profile from './translations/profile';
 
 register('he', () => Promise.resolve({
     welcome: "קהילה בשכונה",
@@ -704,7 +706,7 @@ register('ru', () => Promise.resolve({
 }));
 
 // מילונים מודולריים לפי אזור באתר - מתמזגים לתוך המילון הראשי
-for (const mod of [chrome, home, aboutRevenue]) {
+for (const mod of [chrome, home, aboutRevenue, account, profile]) {
     addMessages('he', mod.he);
     addMessages('en', mod.en);
     addMessages('ru', mod.ru);

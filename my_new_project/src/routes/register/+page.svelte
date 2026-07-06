@@ -45,12 +45,12 @@
 				{#if form?.success}
 					<div class="text-center py-4">
 						<div class="text-5xl mb-4">📧</div>
-						<h2 class="text-xl font-bold text-white mb-2">נשלח אימייל אישור!</h2>
-						<p class="text-white/60 text-sm mb-1">שלחנו קישור אישור לכתובת:</p>
+						<h2 class="text-xl font-bold text-white mb-2">{tFn('account.email_sent_title')}</h2>
+						<p class="text-white/60 text-sm mb-1">{tFn('account.email_sent_to')}</p>
 						<p class="text-purple-400 font-semibold mb-4">{form.email}</p>
-						<p class="text-white/50 text-sm mb-6">לחץ על הקישור במייל כדי להפעיל את החשבון ואז תוכל להתחבר.</p>
+						<p class="text-white/50 text-sm mb-6">{tFn('account.email_sent_instructions')}</p>
 						<a href="/login" class="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold hover:opacity-90 transition text-sm">
-							עבור לכניסה
+							{tFn('account.go_to_login')}
 						</a>
 					</div>
 				{:else}
@@ -158,7 +158,7 @@
 								type="button"
 								onclick={() => (showConfirm = !showConfirm)}
 								class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-								aria-label={showConfirm ? 'הסתר אישור סיסמה' : 'הצג אישור סיסמה'}
+								aria-label={showConfirm ? tFn('account.hide_confirm_password') : tFn('account.show_confirm_password')}
 							>
 								{#if showConfirm}
 									<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" focusable="false">

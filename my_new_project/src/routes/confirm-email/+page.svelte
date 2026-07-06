@@ -1,5 +1,6 @@
 <script lang="ts">
     import { page } from '$app/stores';
+    import { _ } from 'svelte-i18n';
 </script>
 
 <svelte:head>
@@ -11,17 +12,17 @@
     <div class="max-w-md w-full text-center">
         {#if $page.url.searchParams.get('error')}
             <div class="text-6xl mb-6">❌</div>
-            <h1 class="text-2xl font-bold text-white mb-3">האימות נכשל</h1>
-            <p class="text-white/60 mb-6">הקישור אינו תקין או פג תוקפו.</p>
+            <h1 class="text-2xl font-bold text-white mb-3">{$_('account.verify_failed_title')}</h1>
+            <p class="text-white/60 mb-6">{$_('account.verify_failed_desc')}</p>
             <a href="/register" class="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold hover:opacity-90 transition">
-                הרשמה מחדש
+                {$_('account.register_again')}
             </a>
         {:else}
             <div class="text-6xl mb-6">✅</div>
-            <h1 class="text-2xl font-bold text-white mb-3">האימייל אושר!</h1>
-            <p class="text-white/60 mb-6">החשבון שלך פעיל. כעת תוכל להתחבר.</p>
+            <h1 class="text-2xl font-bold text-white mb-3">{$_('account.email_confirmed_title')}</h1>
+            <p class="text-white/60 mb-6">{$_('account.email_confirmed_desc')}</p>
             <a href="/login" class="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold hover:opacity-90 transition">
-                כניסה לחשבון
+                {$_('account.login_to_account')}
             </a>
         {/if}
     </div>

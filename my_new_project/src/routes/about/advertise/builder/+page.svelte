@@ -2,6 +2,7 @@
     import { onMount } from "svelte";
     import { browser } from "$app/environment";
     import { goto } from "$app/navigation";
+    import { _ } from "svelte-i18n";
 
     // ===== Page payload (logged-in user prefill + admin status) =====
     let { data } = $props<{
@@ -374,7 +375,7 @@
     async function processImageFile(file: File | null | undefined, target: "main" | "logo" | "landingImage" | { kind: "product"; id: number }) {
         if (!file) return;
         if (!file.type.startsWith("image/")) {
-            alert("נא להעלות קובץ תמונה");
+            alert($_('advertise.b_upload_image_file'));
             return;
         }
         const MAX_BYTES = 5 * 1024 * 1024;
@@ -462,28 +463,28 @@
 
     // ===== Color palette =====
     const palettes = [
-        { id: "amber",    label: "כתום-זהב",    cls: "from-amber-500 to-orange-600" },
-        { id: "orange",   label: "כתום בוהק",   cls: "from-orange-500 to-red-500" },
-        { id: "yellow",   label: "צהוב-זהב",    cls: "from-yellow-400 to-amber-500" },
-        { id: "red",      label: "אדום-ורוד",   cls: "from-red-600 to-pink-600" },
-        { id: "rose",     label: "ורוד עז",     cls: "from-rose-500 to-fuchsia-600" },
-        { id: "crimson",  label: "בורדו",       cls: "from-rose-700 to-red-900" },
-        { id: "fuchsia",  label: "פוקסיה",      cls: "from-fuchsia-500 to-purple-600" },
-        { id: "purple",   label: "סגול-ורוד",   cls: "from-purple-600 to-pink-600" },
-        { id: "violet",   label: "סגול עמוק",   cls: "from-violet-600 to-indigo-700" },
-        { id: "indigo",   label: "אינדיגו",     cls: "from-indigo-600 to-blue-600" },
-        { id: "blue",     label: "כחול",        cls: "from-blue-600 to-cyan-600" },
-        { id: "sky",      label: "תכלת",        cls: "from-sky-400 to-blue-500" },
-        { id: "teal",     label: "טורקיז",      cls: "from-teal-500 to-cyan-600" },
-        { id: "emerald",  label: "אזמרגד",      cls: "from-emerald-500 to-teal-700" },
-        { id: "green",    label: "ירוק",        cls: "from-green-600 to-emerald-600" },
-        { id: "lime",     label: "ליים",        cls: "from-lime-400 to-green-500" },
-        { id: "slate",    label: "אפור-כסף",    cls: "from-slate-500 to-gray-700" },
-        { id: "dark",     label: "שחור-פלדה",   cls: "from-gray-800 to-slate-900" },
-        { id: "peach",    label: "אפרסק",       cls: "from-orange-300 to-pink-400" },
-        { id: "mint",     label: "מנטה",        cls: "from-emerald-300 to-teal-400" },
-        { id: "gold",     label: "זהב",         cls: "from-yellow-500 to-amber-700" },
-        { id: "midnight", label: "חצות",        cls: "from-slate-700 to-blue-900" },
+        { id: "amber",    labelKey: "p_amber",    cls: "from-amber-500 to-orange-600" },
+        { id: "orange",   labelKey: "p_orange",   cls: "from-orange-500 to-red-500" },
+        { id: "yellow",   labelKey: "p_yellow",   cls: "from-yellow-400 to-amber-500" },
+        { id: "red",      labelKey: "p_red",      cls: "from-red-600 to-pink-600" },
+        { id: "rose",     labelKey: "p_rose",     cls: "from-rose-500 to-fuchsia-600" },
+        { id: "crimson",  labelKey: "p_crimson",  cls: "from-rose-700 to-red-900" },
+        { id: "fuchsia",  labelKey: "p_fuchsia",  cls: "from-fuchsia-500 to-purple-600" },
+        { id: "purple",   labelKey: "p_purple",   cls: "from-purple-600 to-pink-600" },
+        { id: "violet",   labelKey: "p_violet",   cls: "from-violet-600 to-indigo-700" },
+        { id: "indigo",   labelKey: "p_indigo",   cls: "from-indigo-600 to-blue-600" },
+        { id: "blue",     labelKey: "p_blue",     cls: "from-blue-600 to-cyan-600" },
+        { id: "sky",      labelKey: "p_sky",      cls: "from-sky-400 to-blue-500" },
+        { id: "teal",     labelKey: "p_teal",     cls: "from-teal-500 to-cyan-600" },
+        { id: "emerald",  labelKey: "p_emerald",  cls: "from-emerald-500 to-teal-700" },
+        { id: "green",    labelKey: "p_green",    cls: "from-green-600 to-emerald-600" },
+        { id: "lime",     labelKey: "p_lime",     cls: "from-lime-400 to-green-500" },
+        { id: "slate",    labelKey: "p_slate",    cls: "from-slate-500 to-gray-700" },
+        { id: "dark",     labelKey: "p_dark",     cls: "from-gray-800 to-slate-900" },
+        { id: "peach",    labelKey: "p_peach",    cls: "from-orange-300 to-pink-400" },
+        { id: "mint",     labelKey: "p_mint",     cls: "from-emerald-300 to-teal-400" },
+        { id: "gold",     labelKey: "p_gold",     cls: "from-yellow-500 to-amber-700" },
+        { id: "midnight", labelKey: "p_midnight", cls: "from-slate-700 to-blue-900" },
     ];
 
     // ===== Mobile/Desktop preview toggle =====
@@ -657,7 +658,7 @@
     }
 
     function resetDraft() {
-        if (!confirm("לאפס את כל השדות ולהתחיל מחדש?")) return;
+        if (!confirm($_('advertise.b_reset_confirm'))) return;
         try { localStorage.removeItem(LS_KEY); } catch {}
         location.reload();
     }
@@ -706,25 +707,25 @@
     }
     function buildDraftSummary(): string {
         const parts: string[] = [];
-        if (title)      parts.push(`כותרת: "${title}"`);
-        if (subtitle)   parts.push(`כותרת משנה: "${subtitle}"`);
-        if (mainImage)  parts.push("תמונה ראשית: ✔");
-        if (logo)       parts.push("לוגו: ✔");
-        if (hoverText)  parts.push(`טקסט בריחוף: "${hoverText.slice(0, 60)}${hoverText.length > 60 ? "…" : ""}"`);
-        if (gradient)   parts.push(`גרדיאנט: ${gradient}`);
-        if (titleColor && titleColor !== "#ffffff") parts.push(`צבע כותרת: ${titleColor}`);
+        if (title)      parts.push($_('advertise.b_d_title', { values: { v: title } }));
+        if (subtitle)   parts.push($_('advertise.b_d_subtitle', { values: { v: subtitle } }));
+        if (mainImage)  parts.push($_('advertise.b_d_main_image'));
+        if (logo)       parts.push($_('advertise.b_d_logo'));
+        if (hoverText)  parts.push($_('advertise.b_d_hover', { values: { v: `${hoverText.slice(0, 60)}${hoverText.length > 60 ? "…" : ""}` } }));
+        if (gradient)   parts.push($_('advertise.b_d_gradient', { values: { v: gradient } }));
+        if (titleColor && titleColor !== "#ffffff") parts.push($_('advertise.b_d_title_color', { values: { v: titleColor } }));
         return parts.join(" · ");
     }
     async function submitHelp() {
         const problem = helpProblem.trim();
         const contact = helpContact.trim();
         if (problem.length < 5) {
-            helpError = "אנא תאר את הבעיה (לפחות 5 תווים)";
+            helpError = $_('advertise.b_err_describe');
             return;
         }
         const isLoggedIn = Boolean(data?.layoutUser?.email || data?.layoutUser?.nickname);
         if (!isLoggedIn && !contact) {
-            helpError = "אנא ציין אימייל או כינוי כדי שנדע למצוא אותך";
+            helpError = $_('advertise.b_err_contact');
             return;
         }
         helpError = "";
@@ -739,7 +740,7 @@
             });
             const out = await res.json().catch(() => ({}));
             if (!res.ok) {
-                helpError = out?.error || "שגיאה בשליחה - נסה שוב";
+                helpError = out?.error || $_('advertise.b_err_send');
                 helpSubmitting = false;
                 return;
             }
@@ -748,10 +749,10 @@
             // Network failed - still let the user reach WhatsApp.
         }
         const waText =
-            `שלום, אני בונה פרסומת באתר וצריך עזרה בעיצוב 🎨\n\n` +
-            `🧑 ${identityForWa || "(אנונימי)"}\n\n` +
-            `הבעיה:\n"${problem}"` +
-            (draftSummary ? `\n\nמצב הטיוטה: ${draftSummary}` : "");
+            `${$_('advertise.b_wa_help_msg')}\n\n` +
+            `🧑 ${identityForWa || $_('advertise.b_anonymous')}\n\n` +
+            `${$_('advertise.b_the_problem')}\n"${problem}"` +
+            (draftSummary ? `\n\n${$_('advertise.b_draft_state')} ${draftSummary}` : "");
         const waUrl = `https://wa.me/${ADMIN_WA_NUMBER}?text=${encodeURIComponent(waText)}`;
         window.open(waUrl, "_blank", "noopener,noreferrer");
         helpSubmitting = false;
@@ -1180,8 +1181,8 @@
                             onclick={() => (gradient = p.cls)}
                             class="color-dot bg-gradient-to-br {p.cls}"
                             class:selected={gradient === p.cls}
-                            title={p.label}
-                            aria-label={p.label}
+                            title={$_(`advertise.${p.labelKey}`)}
+                            aria-label={$_(`advertise.${p.labelKey}`)}
                             aria-pressed={gradient === p.cls}>
                     </button>
                 {/each}

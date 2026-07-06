@@ -1,5 +1,6 @@
 <script lang="ts">
     import type { PageData } from './$types';
+    import { _ } from 'svelte-i18n';
     import { goto } from '$app/navigation';
     import { toggleLike, isLiked } from '$lib/likedItems';
     import { avatarUrl as avatar } from '$lib/singlesMock';
@@ -100,16 +101,16 @@
         const who = it.nickname || it.label;
         const meta = [it.age ? `🎂 ${it.age}` : '', it.city ? `📍 ${it.city}` : ''].filter(Boolean).join(' · ');
         const heading = it.gender === 'female'
-            ? `💑 הכירו את ${who} - פנויה מלוח קהילה בשכונה`
+            ? $_('extras.s_share_heading_f', { values: { name: who } })
             : it.gender === 'male'
-            ? `💑 הכירו את ${who} - פנוי מלוח קהילה בשכונה`
-            : `💑 ${who} - לוח פנויים ופנויות`;
+            ? $_('extras.s_share_heading_m', { values: { name: who } })
+            : $_('extras.s_share_heading_n', { values: { name: who } });
         const lines = [heading];
         if (meta) lines.push(meta);
         if (it.description) lines.push('', it.description);
-        lines.push('', '👇 לפרופיל המלא:');
+        lines.push('', $_('extras.s_share_full_profile'));
         const text = lines.join('\n');
-        return { title: 'לוח פנויים ופנויות - קהילה בשכונה', text, url };
+        return { title: $_('extras.s_share_title'), text, url };
     }
     async function nativeShare(it: { id: string; nickname?: string; label: string; gender?: 'male' | 'female'; age?: string; city?: string; description?: string }) {
         const payload = buildShareText(it);
@@ -167,7 +168,7 @@
         const g = (u.gender || '').toLowerCase();
         if (g !== 'male' && g !== 'female') return null;
         const isMale = g === 'male';
-        const nickname = u.nickname || u.name || (isMale ? 'אני' : 'אני');
+        const nickname = u.nickname || u.name || '';
         const age = calcAge(u.birth_date);
         const labelParts = [age, u.city].filter(Boolean);
         return {
@@ -197,17 +198,17 @@
         <div class="text-center mb-6">
             <div class="inline-block p-[3px] rounded-3xl bg-gradient-to-br from-pink-500 via-rose-400 to-purple-600 shadow-2xl shadow-pink-500/30 mb-4">
                 <div class="rounded-[1.3rem] bg-[#0f172a] p-2">
-                    <img src="/images/Available.png" alt="לוח פנויים ופנויות" class="h-48 md:h-64 rounded-2xl mx-auto block" />
+                    <img src="/images/Available.png" alt={$_('extras.s_board_img_alt')} class="h-48 md:h-64 rounded-2xl mx-auto block" />
                 </div>
             </div>
-            <h1 class="text-3xl font-black text-white mb-2">לוח פנויים ופנויות</h1>
-            <p class="text-gray-400 mb-4">לוח ארצי - מציאת בן/בת זוג מכל רחבי הארץ</p>
+            <h1 class="text-3xl font-black text-white mb-2">{$_('extras.s_title')}</h1>
+            <p class="text-gray-400 mb-4">{$_('extras.s_subtitle')}</p>
 
             <a
                 href="/add/singles"
                 class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-400 hover:to-rose-400 text-white font-bold py-2.5 px-6 rounded-full transition-all text-sm shadow-lg shadow-pink-500/30"
             >
-                ➕ הוסף כרטיס פרופיל
+                {$_('extras.s_add_card')}
             </a>
         </div>
 
@@ -216,8 +217,8 @@
             <div class="flex items-center gap-3">
                 <div class="text-2xl">🍽️</div>
                 <div class="flex-1 text-right">
-                    <p class="text-white font-bold text-sm">להיפגש פנים אל פנים? ערבי מפגש וסעודות קהילתיות</p>
-                    <p class="text-amber-200/80 text-xs mt-0.5">הקימו או הצטרפו לסעודה משותפת, וראו מי עוד מגיע →</p>
+                    <p class="text-white font-bold text-sm">{$_('extras.s_gatherings_title')}</p>
+                    <p class="text-amber-200/80 text-xs mt-0.5">{$_('extras.s_gatherings_sub')}</p>
                 </div>
             </div>
         </a>
@@ -229,26 +230,26 @@
                     <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
                     </svg>
-                    סנן:
+                    {$_('extras.s_filter')}
                 </span>
 
                 <!-- גילאים -->
                 <button
                     onclick={() => ageFilter = 'all'}
                     class="px-3 py-1.5 rounded-md text-[13px] font-medium border transition-colors {ageFilter === 'all' ? 'bg-pink-500/15 text-pink-200 border-pink-400/60' : 'bg-transparent text-gray-400 border-white/10 hover:border-white/25 hover:text-gray-200'}"
-                >כל הגילאים</button>
+                >{$_('extras.s_age_all')}</button>
                 <button
                     onclick={() => ageFilter = 'under30'}
                     class="px-3 py-1.5 rounded-md text-[13px] font-medium border transition-colors {ageFilter === 'under30' ? 'bg-pink-500/15 text-pink-200 border-pink-400/60' : 'bg-transparent text-gray-400 border-white/10 hover:border-white/25 hover:text-gray-200'}"
-                >עד 30</button>
+                >{$_('extras.s_age_under30')}</button>
                 <button
                     onclick={() => ageFilter = '30plus'}
                     class="px-3 py-1.5 rounded-md text-[13px] font-medium border transition-colors {ageFilter === '30plus' ? 'bg-pink-500/15 text-pink-200 border-pink-400/60' : 'bg-transparent text-gray-400 border-white/10 hover:border-white/25 hover:text-gray-200'}"
-                >30+</button>
+                >{$_('extras.s_age_30plus')}</button>
                 <button
                     onclick={() => ageFilter = 'golden'}
                     class="px-3 py-1.5 rounded-md text-[13px] font-medium border transition-colors {ageFilter === 'golden' ? 'bg-pink-500/15 text-pink-200 border-pink-400/60' : 'bg-transparent text-gray-400 border-white/10 hover:border-white/25 hover:text-gray-200'}"
-                >גיל הזהב</button>
+                >{$_('extras.s_age_golden')}</button>
 
                 <span class="text-gray-600 mx-1 hidden sm:inline">·</span>
 
@@ -256,42 +257,42 @@
                 <button
                     onclick={() => relFilter = 'all'}
                     class="px-3 py-1.5 rounded-md text-[13px] font-medium border transition-colors {relFilter === 'all' ? 'bg-cyan-500/15 text-cyan-200 border-cyan-400/60' : 'bg-transparent text-gray-400 border-white/10 hover:border-white/25 hover:text-gray-200'}"
-                >כל המגזרים</button>
+                >{$_('extras.s_rel_all')}</button>
                 <button
                     onclick={() => relFilter = 'haredi'}
                     class="px-3 py-1.5 rounded-md text-[13px] font-medium border transition-colors {relFilter === 'haredi' ? 'bg-cyan-500/15 text-cyan-200 border-cyan-400/60' : 'bg-transparent text-gray-400 border-white/10 hover:border-white/25 hover:text-gray-200'}"
-                >חרדי</button>
+                >{$_('extras.s_rel_haredi')}</button>
                 <button
                     onclick={() => relFilter = 'dl'}
                     class="px-3 py-1.5 rounded-md text-[13px] font-medium border transition-colors {relFilter === 'dl' ? 'bg-cyan-500/15 text-cyan-200 border-cyan-400/60' : 'bg-transparent text-gray-400 border-white/10 hover:border-white/25 hover:text-gray-200'}"
-                >דתי לאומי</button>
+                >{$_('extras.s_rel_dl')}</button>
                 <button
                     onclick={() => relFilter = 'general'}
                     class="px-3 py-1.5 rounded-md text-[13px] font-medium border transition-colors {relFilter === 'general' ? 'bg-cyan-500/15 text-cyan-200 border-cyan-400/60' : 'bg-transparent text-gray-400 border-white/10 hover:border-white/25 hover:text-gray-200'}"
-                >מגזר כללי</button>
+                >{$_('extras.s_rel_general')}</button>
             </div>
 
             {#if data.isSuperAdmin}
                 <div class="flex justify-center items-center gap-2 mt-3 flex-wrap">
-                    <span class="text-amber-300 text-xs font-bold">🛡️ מנהל · בחן לוח:</span>
-                    {#each [['all', 'הכל'], ['male', '👨 גברים'], ['female', '👩 נשים']] as [val, lbl]}
+                    <span class="text-amber-300 text-xs font-bold">{$_('extras.s_admin_test_board')}</span>
+                    {#each [['all', $_('extras.s_admin_all')], ['male', $_('extras.s_admin_male')], ['female', $_('extras.s_admin_female')]] as [val, lbl]}
                         <button
                             onclick={() => adminGender = val as Gender}
                             class="px-3 py-1.5 rounded-md text-[13px] font-medium border transition-colors {adminGender === val ? 'bg-amber-500/20 text-amber-100 border-amber-400/60' : 'bg-transparent text-gray-400 border-white/10 hover:border-white/25 hover:text-gray-200'}"
                         >{lbl}</button>
                     {/each}
-                    <a href="/admin/singles-review" class="px-3 py-1.5 rounded-md text-[13px] font-bold border border-pink-400/60 bg-pink-500/15 text-pink-200 hover:bg-pink-500/25 transition-colors">💑 דף אישור</a>
+                    <a href="/admin/singles-review" class="px-3 py-1.5 rounded-md text-[13px] font-bold border border-pink-400/60 bg-pink-500/15 text-pink-200 hover:bg-pink-500/25 transition-colors">{$_('extras.s_admin_review')}</a>
                 </div>
             {/if}
 
             <div class="flex justify-center items-center gap-3 mt-3 flex-wrap">
                 {#if lockedFilter && !data.isSuperAdmin}
                     <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r {lockedFilter === 'male' ? 'from-blue-500 to-cyan-500' : 'from-pink-500 to-rose-500'} text-white shadow">
-                        <span>{lockedFilter === 'male' ? '👨 פנויים' : '👩 פנויות'}</span>
-                        <span class="text-white/80">· מותאם לפרופיל שלך</span>
+                        <span>{lockedFilter === 'male' ? $_('extras.s_locked_male') : $_('extras.s_locked_female')}</span>
+                        <span class="text-white/80">{$_('extras.s_locked_note')}</span>
                     </div>
                 {/if}
-                <p class="text-gray-400 text-sm">💑 {filteredProfiles.length} פרופילים פעילים</p>
+                <p class="text-gray-400 text-sm">{$_('extras.s_active_profiles', { values: { n: filteredProfiles.length } })}</p>
             </div>
         </div>
 
@@ -304,17 +305,17 @@
             {@const isRejected = data.selfStatus === 'rejected'}
             <div class="mb-8 flex flex-col items-center">
                 <h2 class="text-amber-300 text-sm md:text-base font-bold mb-3 text-center">
-                    ⭐ כך נראה הכרטיס שלך
+                    {$_('extras.s_self_card_title')}
                 </h2>
                 {#if isPending}
                     <div class="w-full max-w-md mb-2 rounded-xl bg-amber-500/15 border border-amber-400/40 px-4 py-2.5 text-center">
-                        <p class="text-amber-200 text-sm font-bold">⏳ הכרטיס ממתין לאישור מנהל</p>
-                        <p class="text-amber-300/70 text-xs mt-0.5">לאחר בדיקת התמונות הוא יופיע בלוח. בינתיים הוא גלוי רק לך.</p>
+                        <p class="text-amber-200 text-sm font-bold">{$_('extras.s_pending_title')}</p>
+                        <p class="text-amber-300/70 text-xs mt-0.5">{$_('extras.s_pending_sub')}</p>
                     </div>
                 {:else if isRejected}
                     <div class="w-full max-w-md mb-2 rounded-xl bg-red-500/15 border border-red-400/40 px-4 py-2.5 text-center">
-                        <p class="text-red-200 text-sm font-bold">🚫 הכרטיס נדחה</p>
-                        <p class="text-red-300/70 text-xs mt-0.5">ייתכן שהתמונות לא היו צנועות. ערוך והעלה שוב לאישור מחדש.</p>
+                        <p class="text-red-200 text-sm font-bold">{$_('extras.s_rejected_title')}</p>
+                        <p class="text-red-300/70 text-xs mt-0.5">{$_('extras.s_rejected_sub')}</p>
                     </div>
                 {/if}
                 <div class="w-full max-w-md rounded-2xl bg-[#0f172a] border-2 {isMale ? 'border-blue-400' : 'border-pink-400'} overflow-hidden shadow-xl ring-2 {isMale ? 'ring-blue-500/40' : 'ring-pink-500/40'} relative">
@@ -339,7 +340,7 @@
                         {/if}
                         {#if me.lookingFor}
                             <div class="mb-3 rounded-lg bg-white/5 border border-white/10 px-3 py-2">
-                                <p class="text-[11px] font-bold {isMale ? 'text-cyan-300' : 'text-pink-300'} mb-0.5">{isMale ? 'מחפש' : 'מחפשת'}</p>
+                                <p class="text-[11px] font-bold {isMale ? 'text-cyan-300' : 'text-pink-300'} mb-0.5">{isMale ? $_('extras.s_looking_m') : $_('extras.s_looking_f')}</p>
                                 <p class="text-gray-200 text-sm leading-snug">{me.lookingFor}</p>
                             </div>
                         {/if}
@@ -353,13 +354,13 @@
                                 href="/items/{me.id}"
                                 class="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-2.5 rounded-xl transition-colors text-sm"
                             >
-                                צפה בכרטיס המלא
+                                {$_('extras.s_view_full')}
                             </a>
                             <a
                                 href="/add/singles"
                                 class="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-black font-bold py-2.5 rounded-xl transition-all text-sm shadow-lg"
                             >
-                                ✏️ ערוך
+                                {$_('extras.s_edit')}
                             </a>
                         </div>
                     </div>
@@ -370,16 +371,16 @@
             {@const isMale = selfCard.gender === 'male'}
             <div class="mb-8 flex flex-col items-center">
                 <h2 class="text-amber-300 text-sm md:text-base font-bold mb-3 text-center">
-                    ⭐ כך ייראה הכרטיס שלך
+                    {$_('extras.s_self_card_future')}
                 </h2>
                 <div class="w-full max-w-md rounded-2xl bg-[#0f172a] border-2 {isMale ? 'border-blue-400' : 'border-pink-400'} overflow-hidden shadow-xl ring-2 {isMale ? 'ring-blue-500/40' : 'ring-pink-500/40'} relative">
                     <!-- Card header -->
                     <div class="bg-gradient-to-r {isMale ? 'from-blue-600 to-cyan-600' : 'from-pink-600 to-rose-500'} p-4 flex items-center gap-3 relative">
                         <div class="w-16 h-16 rounded-full bg-white/25 ring-2 ring-white/30 overflow-hidden flex items-center justify-center flex-shrink-0 shadow-md">
-                            <img src={selfCard.avatar} alt={selfCard.nickname} class="w-full h-full object-cover" loading="lazy" />
+                            <img src={selfCard.avatar} alt={selfCard.nickname || $_('extras.s_me')} class="w-full h-full object-cover" loading="lazy" />
                         </div>
                         <div class="flex-1 min-w-0">
-                            <h3 class="text-white font-black text-lg leading-tight mb-1">{selfCard.nickname}</h3>
+                            <h3 class="text-white font-black text-lg leading-tight mb-1">{selfCard.nickname || $_('extras.s_me')}</h3>
                             <div class="flex items-center gap-3 text-white/85 text-sm">
                                 {#if selfCard.age}<span>🎂 {selfCard.age}</span>{/if}
                                 {#if selfCard.city}<span>📍 {selfCard.city}</span>{/if}
@@ -390,13 +391,13 @@
                     <!-- Card body -->
                     <div class="p-4">
                         <p class="text-gray-400 text-sm leading-relaxed mb-3">
-                            עדיין לא יצרת כרטיס פנויים - צור אחד עם תיאור, גיל, מה אתה מחפש ועוד, והקהילה תראה אותך.
+                            {$_('extras.s_no_card_yet')}
                         </p>
                         <a
                             href="/add/singles"
                             class="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-black font-bold py-2.5 rounded-xl transition-all text-sm shadow-lg"
                         >
-                            ➕ צור את הכרטיס שלי
+                            {$_('extras.s_create_my_card')}
                         </a>
                     </div>
                 </div>
@@ -411,14 +412,14 @@
                 <div
                     role="link"
                     tabindex="0"
-                    aria-label={isGuest ? `התחבר כדי לצפות בפרופיל של ${person.nickname}` : `פרטים מלאים על ${person.nickname}`}
+                    aria-label={isGuest ? $_('extras.s_aria_login_to_view', { values: { name: person.nickname } }) : $_('extras.s_aria_full_details', { values: { name: person.nickname } })}
                     onclick={() => openProfile(person.id)}
                     onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openProfile(person.id); } }}
                     class="relative rounded-2xl bg-[#0f172a] border {isMale ? 'border-blue-500/30' : 'border-pink-500/30'} overflow-hidden shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-400/60"
                 >
                     {#if isGuest}
                         <div class="absolute top-2 left-2 z-20 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-black/60 backdrop-blur text-white border border-white/15 shadow-lg">
-                            🔒 התחבר לצפייה
+                            {$_('extras.s_login_to_view')}
                         </div>
                     {/if}
                     <!-- Card header -->
@@ -436,8 +437,8 @@
                         <button
                             type="button"
                             onclick={(e) => toggleFavorite(person, e)}
-                            aria-label={isFav ? 'הסר מהאהובים' : 'הוסף לאהובים'}
-                            title={isFav ? 'הסר מהאהובים' : 'אהבתי'}
+                            aria-label={isFav ? $_('extras.s_fav_remove') : $_('extras.s_fav_add')}
+                            title={isFav ? $_('extras.s_fav_remove') : $_('extras.s_fav_liked')}
                             class="shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-black/30 hover:bg-black/50 backdrop-blur-sm text-xl transition-all {isFav ? 'text-rose-300 scale-110' : 'text-white/80 hover:text-rose-200'}"
                         >{isFav ? '❤️' : '🤍'}</button>
                     </div>
@@ -448,7 +449,7 @@
 
                         {#if person.lookingFor}
                             <div class="mb-3 rounded-lg bg-white/5 border border-white/10 px-3 py-2">
-                                <p class="text-[11px] font-bold {isMale ? 'text-cyan-300' : 'text-pink-300'} mb-0.5">{isMale ? 'מחפש' : 'מחפשת'}</p>
+                                <p class="text-[11px] font-bold {isMale ? 'text-cyan-300' : 'text-pink-300'} mb-0.5">{isMale ? $_('extras.s_looking_m') : $_('extras.s_looking_f')}</p>
                                 <p class="text-gray-200 text-sm leading-snug">{person.lookingFor}</p>
                             </div>
                         {/if}
@@ -464,8 +465,8 @@
                                 <button
                                     type="button"
                                     onclick={(e) => { e.stopPropagation(); nativeShare(person); }}
-                                    title="שיתוף"
-                                    aria-label="שיתוף"
+                                    title={$_('extras.s_share')}
+                                    aria-label={$_('extras.s_share')}
                                     class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold py-2.5 px-3 rounded-xl transition-colors"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

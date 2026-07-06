@@ -1,6 +1,7 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { getUserById, getUserByEmail, updateUserProfile, getItemsByUserId, upsertUser, getMessagesByUserId, createItem, getAllSuperAdmins, getAllUsers, getItemsByCategory, getItemsByCategoryAndStatus, createNeighborhoodRequest, approveNeighborhood, deleteItem, updateItem } from '$lib/server/db';
+import { getUserById, getUserByEmail, updateUserProfile, getItemsByUserId, upsertUser, getMessagesByUserId, createItem, getAllSuperAdmins, getAllUsers, getItemsByCategory, getItemsByCategoryAndStatus, createNeighborhoodRequest, approveNeighborhood } from '$lib/server/db';
+import { finalizeLocationDecision } from '$lib/server/locationDecision';
 import { getCachedUserById, invalidateCachedUser } from '$lib/server/userCache';
 import { citiesData } from '$lib/neighborhoodsData';
 import { cityCenters } from '$lib/neighborhoodCoords';
@@ -516,48 +517,15 @@ async function handleLocationRequest(event: Parameters<NonNullable<Actions[strin
             if (nb.status !== 'approved') await approveNeighborhood(nb.id, adminId);
         }
 
-        // הודעה למבקש על ההחלטה
-        if (requesterId) {
-            try {
-                await createItem({
-                    category:    'message',
-                    label:       decision === 'approve'
-                        ? `✅ בקשתך אושרה: "${location}" נוסף לרשימה`
-                        : `❌ בקשתך להוספת "${location}" לא אושרה`,
-                    description: decision === 'approve'
-                        ? `המנהל אישר את בקשתך — "${location}"${city ? ` (${city})` : ''} נוסף לרשימת השכונות וכעת ניתן לבחור בו בפרופיל ובפרסום.`
-                        : `המנהל בחן את בקשתך להוסיף את "${location}" והחליט שלא להוסיף אותו כרגע. אפשר לבחור שכונה קיימת או לפנות אלינו דרך "כתוב למערכת" בפרופיל.`,
-                    icon:        decision === 'approve' ? '✅' : '❌',
-                    color:       decision === 'approve' ? 'green' : 'red',
-                    user_id:     requesterId,
-                    extra_fields: {
-                        type:               'location_request_decision',
-                        decision,
-                        requested_location: location,
-                        decided_at:         new Date().toISOString(),
-                    },
-                });
-            } catch (e) {
-                console.warn('[profile] location request decision notify failed:', e);
-            }
-
-            // סגירת פריט הבקשה של המבקש (כדי שבדיקת הכפילויות תאפשר בקשה עתידית)
-            try {
-                const reqItems = await getItemsByUserId(requesterId);
-                const open = (reqItems ?? []).filter(it =>
-                    it.category === 'location_request' &&
-                    (it.status ?? 'pending') !== 'handled' &&
-                    (it.label ?? '').includes(location));
-                await Promise.all(open.map(it => updateItem(it.id, { status: 'handled' })));
-            } catch (e) {
-                console.warn('[profile] location request item close failed:', e);
-            }
-        }
-
-        // מחיקת ההתראה מתיבת האדמין - טופלה
-        if (msgId) {
-            try { await deleteItem(msgId); } catch (e) { console.warn('[profile] admin msg delete failed:', e); }
-        }
+        // תוצאה אחידה מכל מסלול אישור: הודעת החלטה למבקש, סגירת פריטי הבקשה,
+        // וסימון "טופל" על הודעת האדמין (נשארת בהיסטוריה - לא נמחקת)
+        await finalizeLocationDecision({
+            decision,
+            location,
+            city,
+            requesterId: requesterId || undefined,
+            adminMsgId:  msgId || undefined,
+        });
 
         return { lrSuccess: decision, lrLocation: location };
     } catch (e) {

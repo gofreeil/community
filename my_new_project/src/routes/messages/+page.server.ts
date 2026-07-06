@@ -39,7 +39,7 @@ export const actions: Actions = {
         return { success: true, deleted: id };
     },
 
-    // שמירה לארכיון / הסרה ממנו - status 'archived' מפקיע את ההודעה ממחיקת ה-60 יום
+    // שמירה לארכיון / הסרה ממנו - status 'archived' מפקיע את ההודעה מהמחיקה האוטומטית (100 הודעות/3 חודשים)
     setArchive: async (event) => {
         const session = await event.locals.auth();
         if (!session?.user?.id) throw redirect(302, '/login?redirect=/messages');

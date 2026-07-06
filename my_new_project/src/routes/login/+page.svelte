@@ -27,18 +27,18 @@
 		}
 	}
 
-	// תרגום שגיאות OAuth
+	// תרגום שגיאות OAuth — מיפוי קוד שגיאה → מפתח i18n
 	function errorMessage(code: string | null): string {
 		if (!code) return '';
 		const map: Record<string, string> = {
-			OAuthSignin:           'שגיאה בהתחברות. נסה שוב.',
-			OAuthCallback:         'שגיאה בחזרה מהספק. נסה שוב.',
-			OAuthAccountNotLinked: 'החשבון כבר קיים עם ספק אחר.',
-			Callback:              'שגיאה בתהליך ההתחברות.',
-			CredentialsSignin:     'אימייל או סיסמה שגויים. אם נרשמת לאחרונה - ודא שאישרת את האימייל.',
-			Default:               'שגיאה לא ידועה. נסה שוב.',
+			OAuthSignin:           'account.err_oauth_signin',
+			OAuthCallback:         'account.err_oauth_callback',
+			OAuthAccountNotLinked: 'account.err_oauth_not_linked',
+			Callback:              'account.err_callback',
+			CredentialsSignin:     'account.err_credentials',
+			Default:               'account.err_unknown',
 		};
-		return map[code] ?? map['Default'];
+		return tFn(map[code] ?? map['Default']);
 	}
 	// tFn: תרגום reactive - $t אסור ב-Svelte 5
 	let _loc = $state(get(locale));
@@ -113,7 +113,7 @@
 								callbackUrl: data.redirectTo || '/profile',
 							});
 						} else if (result.type === 'failure') {
-							credError = (result.data as { error?: string })?.error ?? 'שגיאה לא ידועה';
+							credError = (result.data as { error?: string })?.error ?? tFn('account.err_unknown');
 							isLoading = false;
 							loadingProvider = null;
 						} else {
@@ -179,7 +179,7 @@
 					<!-- קישור שכחתי סיסמה -->
 					<div class="text-left mb-4">
 						<a href="/forgot-password" class="text-purple-400 hover:text-purple-300 text-sm transition-colors">
-							שכחתי סיסמה
+							{tFn('account.forgot_password_link')}
 						</a>
 					</div>
 
@@ -194,12 +194,12 @@
 						{#if loadingProvider === 'credentials'}
 							<span class="inline-flex items-center gap-2 justify-center">
 								<span class="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>
-								מתחבר...
+								{tFn('account.logging_in')}
 							</span>
 						{:else if emailValue && passwordValue}
-							התחבר
+							{tFn('account.login_submit')}
 						{:else}
-							התחבר עם אימייל וסיסמה
+							{tFn('account.login_submit_email')}
 						{/if}
 					</button>
 				</form>
@@ -265,8 +265,8 @@
 				<!-- הערה -->
 				<div class="text-center">
 					<p class="text-xs text-gray-500 leading-relaxed">
-						בהתחברות אתה מאשר את
-						<a href="/about/legal" target="_blank" class="text-purple-400 hover:text-purple-300 transition-colors">תנאי השימוש ומדיניות הפרטיות</a>
+						{tFn('login_terms')}
+						<a href="/about/legal" target="_blank" class="text-purple-400 hover:text-purple-300 transition-colors">{tFn('account.terms_privacy_link')}</a>
 					</p>
 				</div>
 
