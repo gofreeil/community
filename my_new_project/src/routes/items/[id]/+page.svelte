@@ -1339,8 +1339,93 @@
                     <!-- Gmach topics badges (several topics per gmach) -->
                     {@render gmachTopicsBlock()}
 
+                    <!-- Minyanim: daily prayer times (שחרית / מנחה / ערבית) -->
+                    {#if isMinyanCategory && (canEditActivities || minyanActivities.length > 0)}
+                        <section>
+                            <div class="flex items-center justify-between mb-1.5">
+                                <h2 class="text-base font-bold text-white flex items-center gap-1.5">
+                                    <span class="w-1 h-4 bg-sky-400 rounded-full"></span>✡️ זמני מניינים</h2>
+                                {#if canEditActivities && !editingMinyan}
+                                    <button type="button" onclick={startEditMinyan}
+                                        class="text-xs font-bold text-sky-300 hover:text-sky-200 bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 rounded-lg px-2.5 py-1 transition-all">
+                                        ✏️ {minyanActivities.length ? 'ערוך' : 'הוסף זמנים'}
+                                    </button>
+                                {/if}
+                            </div>
+
+                            {#if !editingMinyan}
+                                {#if minyanActivities.length === 0 && builderMode && canEditActivities}
+                                    <button type="button" onclick={startEditMinyan}
+                                        class="w-full text-right border-2 border-dashed border-sky-400/40 hover:border-sky-400/70 bg-sky-500/5 hover:bg-sky-500/10 rounded-xl px-3 py-2 text-sky-200 text-sm font-bold transition-all">
+                                        🕒 הוסיפו זמני שחרית / מנחה / ערבית - מלאו שעה או דלגו על תפילה שאין בה מניין
+                                    </button>
+                                {/if}
+                                {#if minyanActivities.length > 0}
+                                    <ul class="rounded-xl border border-white/10 divide-y divide-white/10 overflow-hidden">
+                                        {#each MINYAN_PRAYERS as p}
+                                            {@const row = minyanActivities.find(a => a.type === p)}
+                                            {#if row}
+                                                <li class="flex items-center gap-2 px-3 py-2 bg-[#0f172a] text-xs">
+                                                    <span class="font-bold text-sky-200 whitespace-nowrap w-12">{p}</span>
+                                                    <span class="text-white font-mono" dir="ltr">{row.time}</span>
+                                                </li>
+                                            {/if}
+                                        {/each}
+                                    </ul>
+                                {/if}
+                            {:else}
+                                <!-- Editor: שורה לכל תפילה, אפשר כמה שעות או "אין מניין" -->
+                                <div class="rounded-xl border border-sky-500/20 bg-sky-500/[0.03] p-2.5 space-y-2">
+                                    {@render tip('מלאו את שעות המניין לכל תפילה. אפשר כמה מניינים לאותה תפילה. אם אין מניין בתפילה מסוימת - סמנו "אין מניין".')}
+                                    {#each MINYAN_PRAYERS as p}
+                                        <div class="bg-[#0f172a] rounded-lg p-2 border border-white/10">
+                                            <div class="flex items-center justify-between mb-1.5">
+                                                <span class="text-sm font-bold text-sky-200">{p}</span>
+                                                <label class="flex items-center gap-1.5 text-xs text-gray-300 cursor-pointer select-none">
+                                                    <input type="checkbox" checked={minyanSkip[p]} onchange={() => toggleMinyanSkip(p)}
+                                                        class="accent-sky-500 w-3.5 h-3.5" />
+                                                    אין מניין
+                                                </label>
+                                            </div>
+                                            {#if !minyanSkip[p]}
+                                                <div class="flex flex-wrap items-center gap-1.5">
+                                                    {#each minyanSlots[p] ?? [] as _, i}
+                                                        <div class="flex items-center gap-1">
+                                                            <input type="time" bind:value={minyanSlots[p][i]} dir="ltr"
+                                                                class="bg-[#0a0f1a] border border-white/15 rounded-md text-xs text-white px-2 py-1 w-[95px]" />
+                                                            {#if (minyanSlots[p] ?? []).length > 1}
+                                                                <button type="button" onclick={() => removeMinyanSlot(p, i)} aria-label="הסר שעה"
+                                                                    class="text-red-400 hover:text-red-300 px-1 text-base leading-none">×</button>
+                                                            {/if}
+                                                        </div>
+                                                    {/each}
+                                                    <button type="button" onclick={() => addMinyanSlot(p)}
+                                                        class="text-xs font-bold text-sky-300 hover:text-sky-200 px-1">➕ עוד שעה</button>
+                                                </div>
+                                            {:else}
+                                                <p class="text-xs text-gray-500">לא מתקיים מניין בתפילה זו</p>
+                                            {/if}
+                                        </div>
+                                    {/each}
+
+                                    {#if minyanError}
+                                        <p class="text-xs text-red-400">{minyanError}</p>
+                                    {/if}
+                                    <div class="flex items-center gap-2 pt-1">
+                                        <button type="button" onclick={saveMinyan} disabled={savingMinyan}
+                                            class="text-xs font-bold text-white bg-sky-500 hover:bg-sky-400 disabled:opacity-50 rounded-lg px-3 py-1.5 transition-all">
+                                            {savingMinyan ? 'שומר…' : '💾 שמור'}
+                                        </button>
+                                        <button type="button" onclick={() => (editingMinyan = false)} disabled={savingMinyan}
+                                            class="text-xs font-bold text-gray-300 hover:text-white px-2 py-1.5">ביטול</button>
+                                    </div>
+                                </div>
+                            {/if}
+                        </section>
+                    {/if}
+
                     <!-- Activities schedule (each activity has its own time) -->
-                    {#if activities.length > 0 || canEditActivities}
+                    {#if otherActivities.length > 0 || canEditActivities}
                         <section>
                             <div class="flex items-center justify-between mb-1.5">
                                 <h2 class="text-base font-bold text-white flex items-center gap-1.5">
@@ -1348,21 +1433,21 @@
                                 {#if canEditActivities && !editingSchedule}
                                     <button type="button" onclick={startEditSchedule}
                                         class="text-xs font-bold text-amber-300 hover:text-amber-200 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-lg px-2.5 py-1 transition-all">
-                                        ✏️ {activities.length ? 'ערוך' : 'הוסף פעילויות'}
+                                        ✏️ {otherActivities.length ? 'ערוך' : 'הוסף פעילויות'}
                                     </button>
                                 {/if}
                             </div>
 
                             {#if !editingSchedule}
-                                {#if activities.length === 0 && builderMode && canEditActivities}
+                                {#if otherActivities.length === 0 && builderMode && canEditActivities}
                                     <button type="button" onclick={startEditSchedule}
                                         class="w-full text-right border-2 border-dashed border-amber-400/40 hover:border-amber-400/70 bg-amber-500/5 hover:bg-amber-500/10 rounded-xl px-3 py-2 text-amber-200 text-sm font-bold transition-all">
-                                        🕒 הוסיפו לוח פעילויות - לכל תפילה / שיעור שורה עם שעה וימים משלה
+                                        🕒 הוסיפו לוח פעילויות - שיעור / מקווה / שבת: שורה עם שעה וימים משלה
                                     </button>
                                 {/if}
-                                {#if activities.length > 0}
+                                {#if otherActivities.length > 0}
                                     <ul class="rounded-xl border border-white/10 divide-y divide-white/10 overflow-hidden">
-                                        {#each activities as a}
+                                        {#each otherActivities as a}
                                             <li class="flex items-center gap-2 px-3 py-2 bg-[#0f172a] text-xs">
                                                 {#if a.type}<span class="font-bold text-amber-200 whitespace-nowrap">{a.type}</span>{/if}
                                                 {#if a.time}<span class="text-white font-mono whitespace-nowrap" dir="ltr">{a.time}</span>{/if}

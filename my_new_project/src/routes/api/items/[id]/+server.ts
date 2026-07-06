@@ -146,9 +146,11 @@ export const PATCH: RequestHandler = async (event) => {
         try { extra = item.extra_fields ? JSON.parse(item.extra_fields) : {}; } catch { extra = {}; }
         extra.activities = activities;
 
-        // אחד את סוגי הפעילויות לתוך type (המולטי-סלקט) כדי שהסינון/המפה ימשיכו לתפוס
+        // אחד את סוגי הפעילויות לתוך type (המולטי-סלקט) כדי שהסינון/המפה ימשיכו לתפוס.
+        // שמות תפילות (שחרית/מנחה/ערבית) הם שורות מניין - לא שירות עצמאי, ואסור שיזהמו את "מה יש במקום".
+        const PRAYER_TYPES = new Set(['שחרית', 'מנחה', 'ערבית']);
         const existingTypes = String(extra.type ?? '').split(',').map(s => s.trim()).filter(Boolean);
-        const merged = Array.from(new Set([...existingTypes, ...activities.map(a => a.type).filter(Boolean)]));
+        const merged = Array.from(new Set([...existingTypes, ...activities.map(a => a.type).filter(t => t && !PRAYER_TYPES.has(t))]));
         extra.type = merged.join(',');
 
         try {
