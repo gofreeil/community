@@ -8,6 +8,7 @@
         placeholder = 'שם הרחוב',
         withHouseNumber = true,
         onValueChange,
+        onResolvedChange,
     }: {
         city?: string;
         value?: string;
@@ -15,6 +16,12 @@
         /** false = שדה רחוב בלבד (כשמספר הבית הוא שדה נפרד בטופס המארח) */
         withHouseNumber?: boolean;
         onValueChange: (v: string) => void;
+        /**
+         * מדווח האם הכתובת "נפתרה" - כלומר הרחוב נבחר מהרשימה הרשמית של העיר
+         * (וכשהרכיב מנהל גם מספר בית - שהמספר מולא). הטופס המארח משתמש בזה כדי
+         * להציע סימון על המפה רק כשהכתובת לא נפתרה (רחוב חסר / ללא מספר).
+         */
+        onResolvedChange?: (resolved: boolean) => void;
     } = $props();
 
     // פירוק ערך קיים (טיוטא/עריכה) של "רחוב מספר" לשני השדות
@@ -80,6 +87,11 @@
         return [...starts, ...contains].slice(0, 80);
     });
     const exactInList = $derived(streets.some((s) => normalize(s) === normalize(street)) && street.trim() !== '');
+
+    // כתובת "נפתרה": רחוב מהרשימה הרשמית + (אם הרכיב מנהל מספר בית) מספר מולא.
+    // כשאין רשימת רחובות לעיר כלל - אי אפשר לאמת, ולכן נחשב לא-פתור (→ מציעים מפה).
+    const resolved = $derived(withHouseNumber ? (exactInList && houseNum.trim() !== '') : exactInList);
+    $effect(() => { onResolvedChange?.(resolved); });
 
     function pickStreet(s: string) {
         street = s;

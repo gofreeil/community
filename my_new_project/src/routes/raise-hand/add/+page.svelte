@@ -13,6 +13,8 @@
     let pinLat       = $state<number | null>(null);
     let pinLng       = $state<number | null>(null);
     let showMap      = $state(false);
+    // המיקום נבחר מרשימת הרחובות הרשמית? כשלא (מקום חופשי / לא נמצא) - מציעים מפה
+    let locationResolved = $state(false);
     let submitting   = $state(false);
     let imageBase64  = $state('');
     let imagePreview = $state('');
@@ -145,10 +147,12 @@
                         withHouseNumber={false}
                         placeholder={fields.locationPlaceholder}
                         onValueChange={(v) => (location = v)}
+                        onResolvedChange={(v) => (locationResolved = v)}
                     />
                     <input type="hidden" name="location" value={location} />
 
-                    <!-- סימון מיקום מדויק על המפה (אופציונלי) -->
+                    <!-- סימון מדויק על המפה - מוצג רק כשהמיקום אינו רחוב מזוהה מהרשימה -->
+                    {#if !locationResolved}
                     {#if !showMap}
                         <button type="button" onclick={() => (showMap = true)}
                             class="mt-2 w-full flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10 text-gray-200 text-sm font-bold py-3 transition-all">
@@ -162,6 +166,7 @@
                                 הסתר מפה והסר סימון
                             </button>
                         </div>
+                    {/if}
                     {/if}
                     <input type="hidden" name="lat" value={pinLat ?? ''} />
                     <input type="hidden" name="lng" value={pinLng ?? ''} />

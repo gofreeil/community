@@ -15,16 +15,38 @@
         type OpeningHours,
     } from '$lib/openingHours';
     import { FREE_PROMO, FREE_PROMO_CODE_TEXT } from '$lib/freePromo';
+    import { mapStepFields } from '$lib/categoryFields';
+    import { MAP_IMAGE_PRICE_YEARLY } from '$lib/mapImage';
+    import { imageDrop } from '$lib/imageDrop';
     import type { PageData } from './$types';
 
     let { data }: { data: PageData } = $props();
 
     const { categoryId, config, userId, userProfile, editItem } = data;
 
+    // קטגוריית "מקום": הטופס מצומצם ל"הוספת יתרון במפה" - רק שדות שלב-המפה מוצגים,
+    // ושאר הפרטים מושלמים בדף הפריט. activeFields = מה שבאמת מוצג/נשמר בטופס.
+    const activeFields = mapStepFields(config);
+    const activeKeys = new Set(activeFields.map(f => f.key));
+
+    // ---- לוגו/תמונה שתופיע על המפה (רק בקטגוריות mapFirst) ----
+    const initialLogo = (() => {
+        if (!config.mapFirst || !editItem) return '';
+        const v = (editItem.extra_fields as Record<string, unknown> | undefined)?.map_image;
+        return typeof v === 'string' ? v : '';
+    })();
+    let logoImage = $state(initialLogo);
+    let logoUploading = $state(false);
+
     // קטגוריות בתשלום מפנות לדף התשלום; בזמן מבצע ההשקה הקוד "יוצאים לחירות"
     // בשדה ההנחה שם נותן פטור מלא (freePromo.ts).
     const isPaidFlow = config.priceRow !== null;
     const isEditMode = !!editItem;
+
+    // כותרת הדף: קטגוריות mapFirst = "הוספת יתרון במפה" (טופס מצומצם)
+    const pageTitle = config.mapFirst
+        ? (isEditMode ? `עריכת היתרון "${config.label}" במפה` : 'הוספת יתרון במפה')
+        : (config.addPageTitle ?? `הוסף ${config.label}`);
 
     // מילוי אוטומטי של שם איש הקשר מותר רק בטפסים שבהם המפרסם הוא בדרך כלל
     // האדם עצמו (מסירה/טרמפ/פנויים/דרושים). בשאר הקטגוריות רכז עלול להעלות
@@ -79,6 +101,9 @@
     // מקור הפין: 'manual' = המשתמש סימן/גרר (מקודש - לא דורסים), 'geo' = זוהה
     // אוטומטית מהכתובת (מותר לעדכן כשהכתובת משתנה), null = אין פין עדיין
     let pinSource = $state<'manual' | 'geo' | null>(editItem?.lat != null ? 'manual' : null);
+    // הכתובת "נפתרה" = רחוב מהרשימה הרשמית + מספר בית. אז אין צורך במפה;
+    // שדה map_pin מוצג רק כשהכתובת לא נפתרה (רחוב חסר / בלי מספר).
+    let addressResolved = $state(false);
 
     // ---- פין אוטומטי מהכתובת: רחוב+מספר נבחרו → הפין קופץ על המפה לאישור ----
     const hasMapPinField = config.fields.some(f => f.type === 'map_pin');
@@ -214,6 +239,23 @@
             reader.readAsDataURL(file);
         });
     }
+
+    // ---- לוגו למפה: העלאה/גרירה/הסרה ----
+    async function handleLogoChange(e: Event) {
+        const input = e.currentTarget as HTMLInputElement;
+        const file = input.files?.[0];
+        input.value = '';
+        if (!file || !file.type.startsWith('image/')) return;
+        logoUploading = true;
+        try { logoImage = await compressImage(file); } catch { /* קובץ לא נתמך */ } finally { logoUploading = false; }
+    }
+    function handleLogoDrop(files: File[]) {
+        const file = files.find(f => f.type.startsWith('image/'));
+        if (!file) return;
+        logoUploading = true;
+        compressImage(file).then(d => { logoImage = d; }).catch(() => {}).finally(() => { logoUploading = false; });
+    }
+    function removeLogo() { logoImage = ''; }
 
     function getImages(key: string): string[] {
         try { return JSON.parse(getFieldValue(key) || '[]'); } catch { return []; }
@@ -436,13 +478,16 @@
 
     // ---- Visibility (showIf) ----
     function isFieldVisible(field: typeof config.fields[number]): boolean {
+        // מפה מוצגת רק כשהכתובת לא נפתרה (רחוב מהרשימה + מספר). אחרת - רק הרשימה הנפתחת.
+        if (field.type === 'map_pin' && addressResolved) return false;
         if (!field.showIf) return true;
         return formValues[field.showIf.field] === field.showIf.equals;
     }
 
     // ---- Validation ----
     function validate(): string | null {
-        for (const field of config.fields) {
+        // בקטגוריות mapFirst בודקים רק את שדות שלב-המפה (השאר נערך בדף הפריט)
+        for (const field of activeFields) {
             if (!isFieldVisible(field)) continue;
             if (!field.required) continue;
             if (field.type === 'images') {
@@ -512,6 +557,9 @@
         const mapPinKeys = new Set(config.fields.filter(f => f.type === 'map_pin').map(f => f.key));
 
         for (const [k, v] of Object.entries(formValues)) {
+            // mapFirst: שולחים רק שדות שלב-המפה. שאר הפרטים נשמרים בדף הפריט,
+            // וחשוב לא לשלוח אותם כאן כדי לא לדרוס ערכים שנערכו שם (מיזוג בשרת).
+            if (config.mapFirst && !activeKeys.has(k)) continue;
             if (mapPinKeys.has(k)) {
                 continue;
             } else if (topLevelKeys.includes(k)) {
@@ -521,6 +569,11 @@
             } else {
                 extra[k] = v;
             }
+        }
+
+        // לוגו/תמונה שתופיע על המפה (mapFirst) - נשמר ב-extra_fields.map_image
+        if (config.mapFirst) {
+            extra.map_image = logoImage;
         }
 
         if (!topLevel.label) {
@@ -618,7 +671,7 @@
 </script>
 
 <svelte:head>
-    <title>{config.addPageTitle ?? `הוסף ${config.label}`} | קהילה בשכונה</title>
+    <title>{pageTitle} | קהילה בשכונה</title>
 </svelte:head>
 
 <div class="max-w-2xl mx-auto px-4 py-4 md:py-6" dir="rtl">
@@ -630,7 +683,7 @@
         {/if}
         <div class="relative flex items-center justify-center">
             <h1 class="text-2xl md:text-3xl font-black text-white mb-2">
-                {config.addPageTitle ?? `הוסף ${config.label}`}
+                {pageTitle}
             </h1>
             <button
                 type="button"
@@ -640,6 +693,11 @@
                 ← חזרה
             </button>
         </div>
+        {#if config.mapFirst}
+            <p class="text-gray-400 text-sm max-w-md mx-auto">
+                כאן ממקמים את היתרון על המפה. שאר הפרטים - שעות, מחיר, תיאור, טלפון ותמונות - מוסיפים בקלות בדף היתרון עצמו מיד לאחר מכן.
+            </p>
+        {/if}
     </div>
 
     {#if redirectingMsg}
@@ -714,7 +772,7 @@
                 </p>
             </div>
 
-            {#each config.fields as field}
+            {#each activeFields as field}
                 {#if isFieldVisible(field)}
                 <div class="{field.half ? 'col-span-1' : 'col-span-2'}">
                     <label
@@ -1088,6 +1146,7 @@
                             value={getFieldValue(field.key)}
                             placeholder={field.placeholder ?? 'שם הרחוב'}
                             onValueChange={(v) => setFieldValue(field.key, v)}
+                            onResolvedChange={(v) => (addressResolved = v)}
                         />
 
                     {:else if field.type === 'map_pin'}
@@ -1153,6 +1212,41 @@
                 </div>
                 {/if}
             {/each}
+
+            <!-- לוגו / תמונה שתופיע על המפה (mapFirst) -->
+            {#if config.mapFirst}
+                <div class="col-span-2 rounded-xl border border-purple-500/30 bg-purple-500/10 p-3 md:p-4" style="grid-column: 1 / -1;">
+                    <p class="text-[13px] md:text-sm font-bold text-purple-100 mb-1 flex items-center gap-1.5">
+                        🗺️ לוגו או תמונה שתופיע על המפה
+                    </p>
+                    <p class="text-purple-300/80 text-xs mb-2.5">
+                        במקום האייקון הרגיל, על המפה תופיע התמונה שתעלו כאן · תוספת בתשלום של {MAP_IMAGE_PRICE_YEARLY} ₪ לשנה. אפשר להוסיף או להחליף מאוחר יותר.
+                    </p>
+                    {#if logoImage}
+                        <div class="flex items-center gap-3">
+                            <div class="w-16 h-16 rounded-full overflow-hidden border-2 border-purple-400/60 bg-white shrink-0">
+                                <img src={logoImage} alt="לוגו למפה" class="w-full h-full object-cover" />
+                            </div>
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-xs font-bold text-white bg-purple-600 hover:bg-purple-500 rounded-lg px-3 py-1.5 cursor-pointer transition-all text-center">
+                                    {logoUploading ? 'מעלה...' : 'החלף תמונה'}
+                                    <input type="file" accept="image/*" class="hidden" onchange={handleLogoChange} />
+                                </label>
+                                <button type="button" onclick={removeLogo}
+                                    class="text-xs font-bold text-red-300 hover:text-red-200 px-3 py-1 transition-colors">הסר</button>
+                            </div>
+                        </div>
+                    {:else}
+                        <label use:imageDrop={handleLogoDrop}
+                            class="flex flex-col items-center justify-center gap-1.5 border-2 border-dashed border-purple-400/40 hover:border-purple-400/70 bg-purple-500/5 hover:bg-purple-500/10 rounded-xl px-4 py-5 cursor-pointer transition-all text-center">
+                            <span class="text-3xl" aria-hidden="true">📷</span>
+                            <span class="text-purple-200 font-bold text-sm">{logoUploading ? 'מעלה תמונה...' : 'לחצו או גררו לכאן תמונה'}</span>
+                            <span class="text-purple-300/70 text-[11px]">לא חובה - אפשר להשאיר את האייקון הרגיל</span>
+                            <input type="file" accept="image/*" class="hidden" onchange={handleLogoChange} />
+                        </label>
+                    {/if}
+                </div>
+            {/if}
 
             <!-- Error -->
             {#if errorMsg}

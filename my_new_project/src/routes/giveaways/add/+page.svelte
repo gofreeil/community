@@ -87,7 +87,8 @@
     // הערכים ההתחלתיים נטענים פעם אחת מ-data.defaults; המשתמש יכול לערוך
     const { name: defName, phone: defPhone, neighborhood: defNeighborhood, city: defCity } = data.defaults;
     let city         = $state(defCity);
-    let neighborhood = $state(defNeighborhood);
+    // תמיד מסומן מראש: שכונת הפרופיל, או "מרכז" ביישוב חד-שכונתי שבו יש עיר אך אין שכונה
+    let neighborhood = $state(defNeighborhood || (defCity ? 'מרכז' : ''));
     let contact      = $state(defName);
     let phone        = $state(defPhone);
     let street       = $state('');
@@ -96,6 +97,9 @@
     let pinLat       = $state<number | null>(null);
     let pinLng       = $state<number | null>(null);
     let showMap      = $state(false);
+    // הרחוב נבחר מהרשימה הרשמית של העיר? כשלא (או כשאין מספר בניין) - מציעים מפה
+    let streetInList = $state(false);
+    let addressResolved = $derived(streetInList && buildingNum.trim() !== '');
 
     let neighborhoodOptions = $derived(effectiveNeighborhoods(city, (data as any).approvedNeighborhoods));
 
@@ -429,7 +433,7 @@
                         <div>
                             <label for="street" class="text-white text-sm font-bold mb-1 block">רחוב (אופציונלי)</label>
                             <!-- בחירה מרשימת הרחובות הרשמית של העיר - איות אחיד; הקלדה חופשית עדיין אפשרית -->
-                            <StreetPicker {city} value={street} withHouseNumber={false} onValueChange={(v) => (street = v)} />
+                            <StreetPicker {city} value={street} withHouseNumber={false} onValueChange={(v) => (street = v)} onResolvedChange={(v) => (streetInList = v)} />
                         </div>
                         <div>
                             <label for="buildingNum" class="text-white text-sm font-bold mb-1 block">מספר בניין (אופציונלי)</label>
@@ -444,24 +448,27 @@
                         <input type="hidden" name="address" value={[street, buildingNum].map((s) => s.trim()).filter(Boolean).join(' ')} />
                     </div>
 
-                    <!-- סימון מיקום על המפה (אופציונלי) -->
-                    <div>
-                        <p class="text-white text-sm font-bold mb-1">סימון על המפה <span class="text-gray-400 font-normal text-xs">(אופציונלי)</span></p>
-                        {#if !showMap}
-                            <button type="button" onclick={() => (showMap = true)}
-                                class="w-full flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10 text-gray-200 text-sm font-bold py-3 transition-all">
-                                📍 סמן מיקום על המפה
-                            </button>
-                        {:else}
-                            <NeighborhoodPicker {city} {neighborhood} restrictToCity bind:lat={pinLat} bind:lng={pinLng} />
-                            <button type="button" onclick={() => { showMap = false; pinLat = null; pinLng = null; }}
-                                class="mt-2 text-xs text-gray-400 hover:text-gray-200 underline underline-offset-2 transition-colors">
-                                הסתר מפה והסר סימון
-                            </button>
-                        {/if}
-                        <input type="hidden" name="lat" value={pinLat ?? ''} />
-                        <input type="hidden" name="lng" value={pinLng ?? ''} />
-                    </div>
+                    <!-- סימון על המפה - מוצג רק כשהכתובת לא נפתרה (רחוב לא מהרשימה / בלי מספר) -->
+                    {#if !addressResolved}
+                        <div>
+                            <p class="text-white text-sm font-bold mb-1">לא מצאתם את הכתובת המדויקת? סמנו על המפה</p>
+                            <p class="text-gray-400 text-xs mb-2">כשהרחוב לא ברשימה או חסר מספר - סימון על המפה יעזור לאתר אתכם.</p>
+                            {#if !showMap}
+                                <button type="button" onclick={() => (showMap = true)}
+                                    class="w-full flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10 text-gray-200 text-sm font-bold py-3 transition-all">
+                                    📍 סמן מיקום על המפה
+                                </button>
+                            {:else}
+                                <NeighborhoodPicker {city} {neighborhood} restrictToCity bind:lat={pinLat} bind:lng={pinLng} />
+                                <button type="button" onclick={() => { showMap = false; pinLat = null; pinLng = null; }}
+                                    class="mt-2 text-xs text-gray-400 hover:text-gray-200 underline underline-offset-2 transition-colors">
+                                    הסתר מפה והסר סימון
+                                </button>
+                            {/if}
+                        </div>
+                    {/if}
+                    <input type="hidden" name="lat" value={pinLat ?? ''} />
+                    <input type="hidden" name="lng" value={pinLng ?? ''} />
 
                     <div class="grid grid-cols-3 gap-3">
                         <div>
