@@ -346,12 +346,12 @@
     let modalImagePreview = $state('');
 
     // מפתחות תרגום לשדות הטופס לפי סוג הקריאה - נפתרים בתצוגה עם $t
-    const fieldsByOption: Record<number, { descLabel: string; descPlaceholder: string; locationPlaceholder: string }> = {
+    const fieldsByOption: Record<number, { descLabel: string; descPlaceholder: string; locationPlaceholder: string; hasLastSeen?: boolean }> = {
         1: { descLabel: 'map.f1_desc_label', descPlaceholder: 'map.f1_desc_ph', locationPlaceholder: 'map.f1_loc_ph' },
         2: { descLabel: 'map.f2_desc_label', descPlaceholder: 'map.f2_desc_ph', locationPlaceholder: 'map.f2_loc_ph' },
-        3: { descLabel: 'map.f3_desc_label', descPlaceholder: 'map.f3_desc_ph', locationPlaceholder: 'map.f3_loc_ph' },
+        3: { descLabel: 'map.f3_desc_label', descPlaceholder: 'map.f3_desc_ph', locationPlaceholder: 'map.f3_loc_ph', hasLastSeen: true },
         4: { descLabel: 'map.f4_desc_label', descPlaceholder: 'map.f4_desc_ph', locationPlaceholder: 'map.f4_loc_ph' },
-        5: { descLabel: 'map.f5_desc_label', descPlaceholder: 'map.f5_desc_ph', locationPlaceholder: 'map.f5_loc_ph' },
+        5: { descLabel: 'map.f5_desc_label', descPlaceholder: 'map.f5_desc_ph', locationPlaceholder: 'map.f5_loc_ph', hasLastSeen: true },
     };
 
     function handleModalImageChange(e: Event) {
@@ -2115,6 +2115,22 @@
                                 class="w-full bg-white/5 border border-white/10 focus:border-red-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none transition-colors placeholder:text-gray-600"
                             />
                         </div>
+
+                        <!-- מתי נראה לאחרונה (רק אבד ילד/כלב) -->
+                        {#if fieldsByOption[modalOptionId]?.hasLastSeen}
+                        <div>
+                            <label for="modal-rh-lastseen" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
+                                👁️ {$t('map.last_seen_when')}
+                            </label>
+                            <input
+                                id="modal-rh-lastseen"
+                                name="last_seen_time"
+                                type="text"
+                                placeholder={$t('map.last_seen_when_ph')}
+                                class="w-full bg-white/5 border border-white/10 focus:border-red-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none transition-colors placeholder:text-gray-600"
+                            />
+                        </div>
+                        {/if}
 
                         <!-- תמונה -->
                         <div>
