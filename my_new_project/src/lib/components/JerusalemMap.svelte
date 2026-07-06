@@ -523,13 +523,21 @@
 
             return sorted.map(item => {
                 const id = String(item.id);
-                // פריט עם פין מדויק (שכונה שהוצעה ע"י תושב) - משתמשים בקואורדינטות שלו;
+                // פריט עם פין מדויק (שהמשתמש סימן על המפה) - משתמשים בקואורדינטות שלו;
                 // אחרת נופלים למרכז השכונה/העיר.
+                const fallback = getCoordsFor(item.neighborhood, item.city);
                 const center: [number, number] =
                     item.lat != null && item.lng != null
                         ? [item.lat, item.lng]
-                        : getCoordsFor(item.neighborhood, item.city);
-                const [lat, lng] = jitterCoord(center, id);
+                        : fallback;
+                // jitter (±~50 מ׳) נועד רק לפזר פריטים שנופלים לאותה נקודת-מרכז מדויקת
+                // (בלי פין - נגזר מהשכונה/עיר או geocoding שהחזיר את המרכז) כדי שלא
+                // ייערמו זה על זה. פין מדויק שהמשתמש סימן מוצג בדיוק במקומו - בלי jitter,
+                // אחרת המרקר "קופץ" ~50 מ׳ מהמבנה שסומן וזה נראה כמו באג מיקום.
+                const onCenter =
+                    Math.abs(center[0] - fallback[0]) < 1e-9 &&
+                    Math.abs(center[1] - fallback[1]) < 1e-9;
+                const [lat, lng] = onCenter ? jitterCoord(center, id) : center;
                 // תמונה/לוגו על המפה (תוספת בתשלום) - במקום האימוג'י
                 let mapImage = '';
                 if (canUseMapImage(item.category)) {
