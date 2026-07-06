@@ -1876,15 +1876,16 @@
         </div>
 
         <!-- כפתור הרמת יד מיוחד - בתחתית המפה -->
+        <!-- מרכוז ב-flex (לא transform) כדי לא ליצור stacking-context שכולא את z-index של התפריט הנפתח -->
         <div
-            class="absolute -bottom-8 md:-bottom-8 left-1/2 transform -translate-x-1/2 z-50"
+            class="absolute -bottom-8 md:-bottom-8 inset-x-0 flex justify-center pointer-events-none"
         >
             {#if !handRaised}
                 <!-- כפתור הרמת יד רגיל -->
                 <button
                     onclick={() => (showHelpMenu = !showHelpMenu)}
                     title={$t('map.ask_community_help')}
-                    class="relative group overflow-hidden bg-gradient-to-br from-red-500 via-pink-500 to-purple-600 hover:from-red-400 hover:via-pink-400 hover:to-purple-500 text-white px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl font-bold text-sm md:text-base shadow-xl transition-all hover:scale-105 border-2 md:border-4 border-purple-600"
+                    class="pointer-events-auto relative group overflow-hidden bg-gradient-to-br from-red-500 via-pink-500 to-purple-600 hover:from-red-400 hover:via-pink-400 hover:to-purple-500 text-white px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl font-bold text-sm md:text-base shadow-xl transition-all hover:scale-105 border-2 md:border-4 border-purple-600"
                 >
                     <div
                         class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer-once"
@@ -1899,7 +1900,7 @@
                 <button
                     onclick={handleLowerHand}
                     title={$t('map.lower_hand_title')}
-                    class="relative group overflow-hidden bg-gradient-to-br from-yellow-500 via-orange-500 to-red-600 hover:from-yellow-400 hover:via-orange-400 hover:to-red-500 text-white px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl font-bold text-sm md:text-base shadow-xl transition-all hover:scale-105 border-2 md:border-4 border-yellow-400 animate-pulse"
+                    class="pointer-events-auto relative group overflow-hidden bg-gradient-to-br from-yellow-500 via-orange-500 to-red-600 hover:from-yellow-400 hover:via-orange-400 hover:to-red-500 text-white px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl font-bold text-sm md:text-base shadow-xl transition-all hover:scale-105 border-2 md:border-4 border-yellow-400 animate-pulse"
                 >
                     <div class="relative flex items-center gap-2 md:gap-3">
                         <span class="text-xl md:text-2xl">🙋</span>
@@ -1911,7 +1912,7 @@
             <!-- תפריט עזרה -->
             {#if showHelpMenu}
                 <div
-                    class="fixed md:absolute bottom-24 md:bottom-full left-1/2 transform -translate-x-1/2 md:mb-2 w-80 max-w-[90vw] bg-white rounded-xl shadow-2xl border-2 border-purple-600 overflow-hidden animate-slideDown z-[10001]"
+                    class="pointer-events-auto fixed md:absolute bottom-24 md:bottom-full left-1/2 transform -translate-x-1/2 md:mb-2 w-80 max-w-[90vw] bg-white rounded-xl shadow-2xl border-2 border-purple-600 overflow-hidden animate-slideDown z-[10001]"
                 >
                     <div
                         class="bg-gradient-to-r from-red-500 to-pink-500 p-3 text-center"
@@ -1943,7 +1944,7 @@
             <!-- סקר הורדת יד -->
             {#if showSurvey}
                 <div
-                    class="fixed md:absolute bottom-24 md:bottom-full left-1/2 transform -translate-x-1/2 md:mb-2 w-80 max-w-[90vw] bg-white rounded-xl shadow-2xl border-2 border-yellow-600 overflow-hidden animate-slideDown z-[10001]"
+                    class="pointer-events-auto fixed md:absolute bottom-24 md:bottom-full left-1/2 transform -translate-x-1/2 md:mb-2 w-80 max-w-[90vw] bg-white rounded-xl shadow-2xl border-2 border-yellow-600 overflow-hidden animate-slideDown z-[10001]"
                 >
                     <div
                         class="bg-gradient-to-r from-yellow-500 to-orange-500 p-3 text-center"
