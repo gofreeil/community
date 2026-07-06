@@ -33,6 +33,39 @@
     let marker: any = null;
     let ready = $state(false);
 
+    // אנימציית הדגמה: יד שגוררת פין על המפה עם הסבר, נעלמת אחרי כמה שניות
+    let showDemo = $state(false);
+    let demoTimer: ReturnType<typeof setTimeout> | null = null;
+
+    function playDemo() {
+        showDemo = true;
+        if (demoTimer) clearTimeout(demoTimer);
+        demoTimer = setTimeout(() => (showDemo = false), 6500);
+    }
+    function dismissDemo() {
+        showDemo = false;
+        if (demoTimer) clearTimeout(demoTimer);
+        demoTimer = null;
+    }
+
+    // הגדלת המפה למסך מלא וסגירה חזרה
+    let expanded = $state(false);
+    function toggleExpand() {
+        expanded = !expanded;
+        // Leaflet חייב invalidateSize אחרי שינוי גודל המכולה
+        setTimeout(() => map?.invalidateSize?.(), 60);
+        setTimeout(() => map?.invalidateSize?.(), 320);
+    }
+    function onKeydown(e: KeyboardEvent) {
+        if (e.key === 'Escape' && expanded) toggleExpand();
+    }
+    // נעילת גלילת הרקע כשהמפה במסך מלא
+    $effect(() => {
+        if (typeof document === 'undefined') return;
+        document.body.style.overflow = expanded ? 'hidden' : '';
+        return () => { document.body.style.overflow = ''; };
+    });
+
     function pinIcon() {
         return L.divIcon({
             html: '<div style="font-size:30px;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5));">📍</div>',
@@ -45,7 +78,7 @@
     function setPin(latlng: { lat: number; lng: number }, recenter = false, byUser = true) {
         lat = +latlng.lat.toFixed(6);
         lng = +latlng.lng.toFixed(6);
-        if (byUser) onUserPin?.();
+        if (byUser) { onUserPin?.(); dismissDemo(); }
         if (!map) return;
         if (!marker) {
             marker = L.marker([lat, lng], { draggable: true, icon: pinIcon() }).addTo(map);
@@ -131,6 +164,9 @@
         setTimeout(() => map?.invalidateSize?.(), 50);
         setTimeout(() => map?.invalidateSize?.(), 300);
 
+        // הדגמה מונפשת רק כשעדיין אין פין (המשתמש צריך לסמן)
+        if (lat == null || lng == null) setTimeout(playDemo, 400);
+
         return () => {
             try { map?.remove?.(); } catch {}
             map = null;
@@ -156,14 +192,55 @@
     });
 </script>
 
+<svelte:window on:keydown={onKeydown} />
+
 <div class="space-y-2">
-    <div
-        bind:this={mapEl}
-        class="w-full h-56 rounded-xl overflow-hidden border border-white/15 bg-slate-800"
-    ></div>
-    <p class="text-xs text-gray-300">
-        📍 לחצו על המפה כדי לסמן את מיקום השכונה (אפשר לגרור את הסמן לדיוק)
-    </p>
+    <!-- מכולת המפה: יחסית כדי לעגן את שכבת ההדגמה וכפתור ההגדלה -->
+    <div class="map-wrap {expanded ? 'map-wrap--expanded' : ''}">
+        <div
+            bind:this={mapEl}
+            class="map-el {expanded ? '' : 'h-56 rounded-xl'} w-full overflow-hidden border border-white/15 bg-slate-800"
+        ></div>
+
+        <!-- כפתור הגדלה / סגירה -->
+        <button
+            type="button"
+            onclick={toggleExpand}
+            class="map-btn map-btn--expand"
+            aria-label={expanded ? 'סגור מפה' : 'הגדל מפה'}
+            title={expanded ? 'סגירת המפה' : 'הגדלת המפה'}
+        >
+            {#if expanded}
+                <span class="text-lg leading-none">✕</span>
+                <span class="hidden sm:inline">סגור</span>
+            {:else}
+                <span class="text-lg leading-none">⤢</span>
+                <span class="hidden sm:inline">הגדל</span>
+            {/if}
+        </button>
+
+        <!-- שכבת ההדגמה המונפשת: יד גוררת פין על המפה -->
+        {#if showDemo}
+            <div class="demo-overlay">
+                <div class="demo-banner">👇 גררו את הפין למיקום המדויק</div>
+                <div class="demo-stage">
+                    <div class="demo-pin">📍</div>
+                    <div class="demo-hand">🖐️</div>
+                </div>
+            </div>
+            <!-- כפתור הפעלה חוזרת של ההדגמה -->
+            <button type="button" onclick={dismissDemo} class="map-btn map-btn--gotit">הבנתי ✓</button>
+        {:else}
+            <button
+                type="button"
+                onclick={playDemo}
+                class="map-btn map-btn--help"
+                aria-label="איך מסמנים מיקום"
+                title="הצג הדגמה"
+            >?</button>
+        {/if}
+    </div>
+
     <div class="flex gap-2" dir="ltr">
         <input
             type="number" step="any" inputmode="decimal"
@@ -182,3 +259,155 @@
         <p class="text-xs text-emerald-400">✓ מיקום סומן: {lat}, {lng}</p>
     {/if}
 </div>
+
+<style>
+    /* מכולת המפה */
+    .map-wrap {
+        position: relative;
+    }
+    /* מצב מוגדל: מסך מלא מעל כל התוכן */
+    .map-wrap--expanded {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: #0f172a;
+        padding: 0;
+    }
+    .map-wrap--expanded .map-el {
+        height: 100dvh;
+        border-radius: 0;
+        border: 0;
+    }
+
+    /* כפתורי בקרה על המפה (מעל שכבות Leaflet) */
+    .map-btn {
+        position: absolute;
+        z-index: 1000;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-family: inherit;
+        font-weight: 700;
+        color: #0f172a;
+        background: rgba(255, 255, 255, 0.94);
+        border: 1px solid rgba(15, 23, 42, 0.15);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+        cursor: pointer;
+        transition: background 0.15s, transform 0.15s;
+    }
+    .map-btn:hover {
+        background: #fff;
+        transform: translateY(-1px);
+    }
+    .map-btn--expand {
+        top: 0.5rem;
+        left: 0.5rem;
+        padding: 0.35rem 0.6rem;
+        border-radius: 0.6rem;
+        font-size: 0.8rem;
+    }
+    .map-btn--help {
+        bottom: 0.5rem;
+        right: 0.5rem;
+        width: 1.9rem;
+        height: 1.9rem;
+        justify-content: center;
+        border-radius: 999px;
+        font-size: 1.05rem;
+        color: #1e293b;
+    }
+    .map-btn--gotit {
+        bottom: 0.6rem;
+        right: 0.5rem;
+        padding: 0.4rem 0.8rem;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        background: #10b981;
+        color: #fff;
+        border-color: rgba(16, 185, 129, 0.6);
+    }
+    .map-btn--gotit:hover {
+        background: #059669;
+    }
+
+    /* שכבת ההדגמה המונפשת */
+    .demo-overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 900;
+        pointer-events: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: rgba(2, 6, 23, 0.32);
+        backdrop-filter: blur(1px);
+        animation: demo-fade 0.4s ease;
+    }
+    .demo-banner {
+        margin-bottom: 1.4rem;
+        padding: 0.55rem 1.1rem;
+        border-radius: 999px;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #fff;
+        background: linear-gradient(90deg, #2563eb, #7c3aed);
+        box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+        animation: demo-pop 2.2s ease-in-out infinite;
+    }
+    /* אזור התנועה: פין קבוע + יד שנעה וגוררת אותו */
+    .demo-stage {
+        position: relative;
+        width: 160px;
+        height: 60px;
+    }
+    .demo-pin {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        font-size: 2.6rem;
+        line-height: 1;
+        filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.55));
+        transform-origin: bottom center;
+        animation: demo-drag-pin 2.6s ease-in-out infinite;
+    }
+    .demo-hand {
+        position: absolute;
+        top: 1.4rem;
+        left: 50%;
+        font-size: 2.1rem;
+        line-height: 1;
+        filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
+        animation: demo-drag-hand 2.6s ease-in-out infinite;
+    }
+
+    /* הפין: נאחז (קפיצה קטנה) ואז נגרר שמאלה עם היד */
+    @keyframes demo-drag-pin {
+        0%   { transform: translateX(0) scale(1); }
+        12%  { transform: translateX(0) scale(1.18); }
+        20%  { transform: translateX(0) scale(1.12); }
+        60%  { transform: translateX(-58px) scale(1.12); }
+        72%  { transform: translateX(-58px) scale(1); }
+        100% { transform: translateX(-58px) scale(1); }
+    }
+    @keyframes demo-drag-hand {
+        0%   { transform: translateX(6px) rotate(0deg); }
+        12%  { transform: translateX(2px) rotate(-8deg); }
+        60%  { transform: translateX(-56px) rotate(-8deg); }
+        72%  { transform: translateX(-52px) rotate(0deg); }
+        100% { transform: translateX(6px) rotate(0deg); opacity: 0.9; }
+    }
+    @keyframes demo-pop {
+        0%, 100% { transform: scale(1); }
+        50%      { transform: scale(1.06); }
+    }
+    @keyframes demo-fade {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .demo-banner, .demo-pin, .demo-hand { animation: none; }
+    }
+</style>
