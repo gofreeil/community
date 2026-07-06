@@ -4,6 +4,14 @@ import * as home from './translations/home';
 import * as aboutRevenue from './translations/aboutRevenue';
 import * as account from './translations/account';
 import * as profile from './translations/profile';
+import * as aboutPages from './translations/aboutPages';
+import * as advertise from './translations/advertise';
+import * as boards from './translations/boards';
+import * as communityDict from './translations/community';
+import * as extras from './translations/extras';
+import * as jobs from './translations/jobs';
+import * as listings from './translations/listings';
+import * as map from './translations/map';
 
 register('he', () => Promise.resolve({
     welcome: "קהילה בשכונה",
@@ -706,7 +714,7 @@ register('ru', () => Promise.resolve({
 }));
 
 // מילונים מודולריים לפי אזור באתר - מתמזגים לתוך המילון הראשי
-for (const mod of [chrome, home, aboutRevenue, account, profile]) {
+for (const mod of [chrome, home, aboutRevenue, account, profile, aboutPages, advertise, boards, communityDict, extras, jobs, listings, map]) {
     addMessages('he', mod.he);
     addMessages('en', mod.en);
     addMessages('ru', mod.ru);
