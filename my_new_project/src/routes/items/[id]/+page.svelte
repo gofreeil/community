@@ -1142,22 +1142,8 @@
                 class="bg-[#0f172a] rounded-3xl shadow-2xl border border-white/10 relative {builderMode ? 'ring-1 ring-amber-500/30' : ''}"
                 in:fly={{ y: 50, duration: 800, delay: 200 }}
             >
-                <!-- Owner/coordinator buttons - floating in top-left corner of card -->
-                {#if (item as { isOwner?: boolean } | null)?.isOwner || singlesState === 'owner' || canEditPage}
-                    <div class="absolute top-3 left-3 z-30 flex items-center gap-1.5">
-                        {#if canEditPage && !builderMode}
-                            <button type="button" onclick={() => (builderMode = true)}
-                                class="bg-amber-500/15 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-bold text-sm rounded-xl px-3 py-1.5 transition-all backdrop-blur-sm whitespace-nowrap shadow-lg"
-                            >🎨 עריכת דף הפרטים</button>
-                        {/if}
-                        {#if (item as { isOwner?: boolean } | null)?.isOwner || singlesState === 'owner'}
-                            <a
-                                href={item.category === 'singles' ? `/add/singles?edit=${item.id}` : `/add/${item.category}?edit=${item.id}`}
-                                class="bg-white/5 hover:bg-white/15 border border-white/20 text-gray-300 font-bold text-sm rounded-xl px-3 py-1.5 transition-all backdrop-blur-sm whitespace-nowrap shadow-lg"
-                            >✏️ {canEditPage ? 'עריכת פריט על המפה' : 'ערוך פרופיל'}</a>
-                        {/if}
-                    </div>
-                {/if}
+                <!-- כפתורי בעלים/עורך + בורר סטטוס אוחדו לסרגל בזרימה בראש פאנל הפרטים
+                     (למטה) כדי שלא ירחפו מעל התוכן ויתנגשו - ראה "סרגל עורך" -->
 
                 <!-- Top: image side-by-side with description+address -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-0">
@@ -1244,31 +1230,47 @@
 
                 <!-- Side info: nickname + description + address + contact + extra fields -->
                 <div class="px-3 md:px-4 py-2 flex flex-col gap-1.5">
-                    <!-- בורר סטטוס + מחיקה - גלוי לבעלים/רכז/סופר-אדמין תמיד (לא רק במצב בנייה) -->
-                    {#if canEditPage}
+                    <!-- סרגל עורך: כפתורי עריכה + בורר סטטוס + מחיקה. בזרימה (לא מרחף) כדי
+                         שלא יתנגש עם התוכן. גלוי לבעלים / רכז / סופר-אדמין. -->
+                    {#if (item as { isOwner?: boolean } | null)?.isOwner || singlesState === 'owner' || canEditPage}
                         <div class="rounded-xl border border-white/10 bg-white/5 p-2 flex flex-wrap items-center gap-1.5 mb-0.5">
-                            <span class="text-[11px] text-gray-400 font-bold ms-0.5">סטטוס:</span>
-                            {#each PLACE_STATUSES as s}
-                                <button type="button" onclick={() => changePlaceStatus(s.value)} disabled={savingStatus}
-                                    class="text-[11px] font-bold rounded-full px-2.5 py-1 border transition-all disabled:opacity-50 {placeStatus === s.value ? s.active : 'bg-white/5 border-white/15 text-gray-300 hover:bg-white/10'}">
-                                    {s.emoji} {s.label}
+                            {#if canEditPage && !builderMode}
+                                <button type="button" onclick={() => (builderMode = true)}
+                                    class="text-[11px] font-bold rounded-full px-2.5 py-1 border border-amber-500/40 bg-amber-500/15 text-amber-300 hover:bg-amber-500/30 transition-all whitespace-nowrap">
+                                    🎨 עריכת דף הפרטים
                                 </button>
-                            {/each}
-                            <div class="relative">
-                                <button type="button" onclick={() => (statusMenuOpen = !statusMenuOpen)}
-                                    class="text-[11px] font-bold rounded-full px-2.5 py-1 border border-white/15 bg-white/5 text-gray-300 hover:bg-white/10 transition-all">
-                                    עוד ▾
-                                </button>
-                                {#if statusMenuOpen}
-                                    <div class="absolute z-40 top-full mt-1 end-0 min-w-[140px] rounded-xl border border-white/15 bg-[#0a0f1a] shadow-2xl p-1"
-                                        in:scale={{ duration: 120, start: 0.95 }}>
-                                        <button type="button" onclick={softDeleteItem} disabled={deletingItem}
-                                            class="w-full text-right text-xs font-bold text-red-300 hover:bg-red-500/15 rounded-lg px-2.5 py-1.5 transition-colors disabled:opacity-50">
-                                            {deletingItem ? 'מוחק…' : '🗑 מחק את הכרטיס'}
-                                        </button>
-                                    </div>
-                                {/if}
-                            </div>
+                            {/if}
+                            {#if (item as { isOwner?: boolean } | null)?.isOwner || singlesState === 'owner'}
+                                <a href={item.category === 'singles' ? `/add/singles?edit=${item.id}` : `/add/${item.category}?edit=${item.id}`}
+                                    class="text-[11px] font-bold rounded-full px-2.5 py-1 border border-white/20 bg-white/5 text-gray-300 hover:bg-white/15 transition-all whitespace-nowrap">
+                                    ✏️ {canEditPage ? 'עריכת פריט על המפה' : 'ערוך פרופיל'}
+                                </a>
+                            {/if}
+                            {#if canEditPage}
+                                <span class="w-px h-4 bg-white/15 mx-0.5"></span>
+                                <span class="text-[11px] text-gray-400 font-bold">סטטוס:</span>
+                                {#each PLACE_STATUSES as s}
+                                    <button type="button" onclick={() => changePlaceStatus(s.value)} disabled={savingStatus}
+                                        class="text-[11px] font-bold rounded-full px-2.5 py-1 border transition-all disabled:opacity-50 {placeStatus === s.value ? s.active : 'bg-white/5 border-white/15 text-gray-300 hover:bg-white/10'}">
+                                        {s.emoji} {s.label}
+                                    </button>
+                                {/each}
+                                <div class="relative">
+                                    <button type="button" onclick={() => (statusMenuOpen = !statusMenuOpen)}
+                                        class="text-[11px] font-bold rounded-full px-2.5 py-1 border border-white/15 bg-white/5 text-gray-300 hover:bg-white/10 transition-all">
+                                        עוד ▾
+                                    </button>
+                                    {#if statusMenuOpen}
+                                        <div class="absolute z-40 top-full mt-1 end-0 min-w-[140px] rounded-xl border border-white/15 bg-[#0a0f1a] shadow-2xl p-1"
+                                            in:scale={{ duration: 120, start: 0.95 }}>
+                                            <button type="button" onclick={softDeleteItem} disabled={deletingItem}
+                                                class="w-full text-right text-xs font-bold text-red-300 hover:bg-red-500/15 rounded-lg px-2.5 py-1.5 transition-colors disabled:opacity-50">
+                                                {deletingItem ? 'מוחק…' : '🗑 מחק את הכרטיס'}
+                                            </button>
+                                        </div>
+                                    {/if}
+                                </div>
+                            {/if}
                         </div>
                     {/if}
                     {#if nickname}
