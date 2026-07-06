@@ -2010,13 +2010,13 @@
 	<!-- ===== קיצורי דרך - דסקטופ בלבד ===== -->
 	<!-- בדסקטופ כל המקטעים גלויים בערימה; הכפתורים גוללים ישירות למקטע המבוקש -->
 	<!-- המספרים תואמים למספרי המקטעים שמופיעים בכותרות -->
-	<div class="hidden md:flex flex-wrap gap-2 mb-3">
+	<div class="hidden md:flex gap-2 mb-3">
 		{#each [{ id: "messages", num: 2, icon: "💬", label: tFn("profile.tab_messages") }, { id: "items", num: 3, icon: "💼", label: tFn("profile.tab_items") }, { id: "levels", num: 4, icon: "🔑", label: tFn("profile.tab_levels") }, { id: "profile", num: 5, icon: "👤", label: tFn("profile.tab_profile") }, { id: "feedback", num: 6, icon: "✉️", label: tFn("profile.tab_feedback") }] as sc}
 			<button
 				type="button"
 				onclick={() =>
 					gotoSection(sc.id as "main" | "messages" | "items" | "levels" | "profile" | "feedback")}
-				class="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-bold bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:bg-purple-600/25 hover:border-purple-500/50 transition-all cursor-pointer"
+				class="flex flex-1 basis-0 min-w-0 items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-bold bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:bg-purple-600/25 hover:border-purple-500/50 transition-all cursor-pointer"
 			>
 				<span class="text-base leading-none">{sc.icon}</span>
 				<span>{sc.label}</span>
