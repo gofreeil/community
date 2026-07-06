@@ -48,6 +48,10 @@ export const actions: Actions = {
         const icon         = fd.get('icon')?.toString().trim()         || '🤝';
         const city         = fd.get('city')?.toString().trim()         ?? '';
         const neighborhood = fd.get('neighborhood')?.toString().trim() ?? '';
+        const latRaw       = fd.get('lat')?.toString().trim()          ?? '';
+        const lngRaw       = fd.get('lng')?.toString().trim()          ?? '';
+        const lat          = latRaw !== '' && Number.isFinite(+latRaw) ? +latRaw : null;
+        const lng          = lngRaw !== '' && Number.isFinite(+lngRaw) ? +lngRaw : null;
         const gmachType    = fd.get('gmach_type')?.toString().trim()   ?? '';
         const gmachTypesJson = fd.get('gmach_types_json')?.toString()  ?? '';
         const logoBase64   = fd.get('logo_base64')?.toString()         ?? '';
@@ -94,6 +98,7 @@ export const actions: Actions = {
                 color:        'amber',
                 city,
                 neighborhood,
+                ...(lat != null && lng != null ? { lat, lng } : {}),
                 extra_fields: {
                     hours,
                     gmach_type: primaryGmachType,

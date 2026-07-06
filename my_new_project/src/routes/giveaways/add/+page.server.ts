@@ -53,6 +53,10 @@ export const actions: Actions = {
         // ביישוב חד-שכונתי (כמו כפר תפוח - רק "מרכז") ייתכן שלא נבחרה שכונה במפורש;
         // משלימים "מרכז" כדי שהפרסום לא ייכשל על משתמש תקין עם עיר.
         if (!neighborhood && city) neighborhood = 'מרכז';
+        const latRaw       = fd.get('lat')?.toString().trim()          ?? '';
+        const lngRaw       = fd.get('lng')?.toString().trim()          ?? '';
+        const lat          = latRaw !== '' && Number.isFinite(+latRaw) ? +latRaw : null;
+        const lng          = lngRaw !== '' && Number.isFinite(+lngRaw) ? +lngRaw : null;
         const images_json  = fd.get('images_json')?.toString()         ?? '';
         let images: string[] = [];
         try { const parsed = JSON.parse(images_json); if (Array.isArray(parsed)) images = parsed.filter(s => typeof s === 'string'); } catch {}
@@ -84,6 +88,7 @@ export const actions: Actions = {
                 address,
                 neighborhood,
                 city,
+                ...(lat != null && lng != null ? { lat, lng } : {}),
                 icon:         categoryConfig.giveaway.icon,
                 color:        categoryConfig.giveaway.color,
                 extra_fields: {

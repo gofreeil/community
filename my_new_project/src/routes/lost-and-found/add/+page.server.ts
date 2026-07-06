@@ -43,6 +43,10 @@ export const actions: Actions = {
         const phone        = fd.get('phone')?.toString().trim()       ?? '';
         const contact      = fd.get('contact')?.toString().trim()     ?? '';
         const image_base64 = fd.get('image_base64')?.toString()       ?? '';
+        const latRaw       = fd.get('lat')?.toString().trim()         ?? '';
+        const lngRaw       = fd.get('lng')?.toString().trim()         ?? '';
+        const lat          = latRaw !== '' && Number.isFinite(+latRaw) ? +latRaw : null;
+        const lng          = lngRaw !== '' && Number.isFinite(+lngRaw) ? +lngRaw : null;
 
         if (!type)     return fail(400, { error: 'יש לבחור אבד או נמצא' });
         if (!title)    return fail(400, { error: 'יש למלא כותרת' });
@@ -62,6 +66,7 @@ export const actions: Actions = {
                 color:       type === 'lost' ? 'red' : 'green',
                 neighborhood: userNeighborhood,
                 city:         userCity,
+                ...(lat != null && lng != null ? { lat, lng } : {}),
                 extra_fields: { type, location, ...(image_base64 ? { image: image_base64 } : {}) },
                 user_id:     session.user.id,
             });

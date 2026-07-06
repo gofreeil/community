@@ -2,12 +2,17 @@
     import { enhance } from '$app/forms';
     import { formMemory } from '$lib/formMemory';
     import StreetPicker from '$lib/components/StreetPicker.svelte';
+    import NeighborhoodPicker from '$lib/components/NeighborhoodPicker.svelte';
     import { imageDrop } from '$lib/imageDrop';
     import type { PageData, ActionData } from './$types';
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
 
     let location     = $state('');
+    // סימון מיקום על המפה (אופציונלי) - נשמר כ-lat/lng ברמה העליונה של הפריט
+    let pinLat       = $state<number | null>(null);
+    let pinLng       = $state<number | null>(null);
+    let showMap      = $state(false);
     let submitting   = $state(false);
     let imageBase64  = $state('');
     let imagePreview = $state('');
@@ -142,6 +147,24 @@
                         onValueChange={(v) => (location = v)}
                     />
                     <input type="hidden" name="location" value={location} />
+
+                    <!-- סימון מיקום מדויק על המפה (אופציונלי) -->
+                    {#if !showMap}
+                        <button type="button" onclick={() => (showMap = true)}
+                            class="mt-2 w-full flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10 text-gray-200 text-sm font-bold py-3 transition-all">
+                            📍 סמן מיקום מדויק על המפה
+                        </button>
+                    {:else}
+                        <div class="mt-2">
+                            <NeighborhoodPicker city={data.userCity ?? ''} bind:lat={pinLat} bind:lng={pinLng} />
+                            <button type="button" onclick={() => { showMap = false; pinLat = null; pinLng = null; }}
+                                class="mt-2 text-xs text-gray-400 hover:text-gray-200 underline underline-offset-2 transition-colors">
+                                הסתר מפה והסר סימון
+                            </button>
+                        </div>
+                    {/if}
+                    <input type="hidden" name="lat" value={pinLat ?? ''} />
+                    <input type="hidden" name="lng" value={pinLng ?? ''} />
                 </div>
 
                 <!-- Image -->

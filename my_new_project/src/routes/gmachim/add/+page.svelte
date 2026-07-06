@@ -8,6 +8,7 @@
     import { GMACH_TYPES } from '$lib/gmachTypes';
     import { imageDrop } from '$lib/imageDrop';
     import StreetPicker from '$lib/components/StreetPicker.svelte';
+    import NeighborhoodPicker from '$lib/components/NeighborhoodPicker.svelte';
     import type { ActionData, PageData } from './$types';
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -35,6 +36,10 @@
     let images      = $state<string[]>([]);
     let tags        = $state<string[]>([]);
     let tagInput    = $state('');
+    // סימון מיקום הגמ"ח על המפה (אופציונלי) - נשמר כ-lat/lng ברמה העליונה של הפריט
+    let pinLat      = $state<number | null>(null);
+    let pinLng      = $state<number | null>(null);
+    let showMap     = $state(false);
 
     function addTag() {
         const raw = tagInput.trim().replace(/^#+/, '').trim();
@@ -182,6 +187,9 @@
                 if (d.logoBase64)   logoBase64   = d.logoBase64;
                 if (Array.isArray(d.images)) images = d.images;
                 if (Array.isArray(d.tags))   tags   = d.tags;
+                if (d.pinLat != null && d.pinLng != null) {
+                    pinLat = d.pinLat; pinLng = d.pinLng; showMap = true;
+                }
                 localStorage.removeItem(DRAFT_KEY);
             }
         } catch {}
@@ -223,13 +231,13 @@
         try {
             localStorage.setItem(DRAFT_KEY, JSON.stringify({
                 title, headline, summary, icon, description, street, buildingNum, floor, apartment, arrivalNotes, hours, contact, phone, gmachTypes, city, neighborhood,
-                logoBase64, images, tags,
+                logoBase64, images, tags, pinLat, pinLng,
             }));
         } catch {
             // אם חרגנו ממכסת localStorage (תמונות גדולות) - שמור בלי תמונות
             try {
                 localStorage.setItem(DRAFT_KEY, JSON.stringify({
-                    title, headline, summary, icon, description, street, buildingNum, floor, apartment, arrivalNotes, hours, contact, phone, gmachTypes, city, neighborhood, tags,
+                    title, headline, summary, icon, description, street, buildingNum, floor, apartment, arrivalNotes, hours, contact, phone, gmachTypes, city, neighborhood, tags, pinLat, pinLng,
                 }));
             } catch {}
         }
@@ -415,6 +423,38 @@
                 <div>
                     <label for="arrivalNotes" class="text-white text-sm font-bold mb-1 block">הערות הגעה</label>
                     <textarea id="arrivalNotes" name="arrivalNotes" bind:value={arrivalNotes} rows="2" placeholder="לדוגמה: כנסו דרך הכניסה הצדדית" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" style="color-scheme: dark;"></textarea>
+                </div>
+
+                <!-- סימון מיקום הגמ"ח על המפה (אופציונלי) -->
+                <div>
+                    <p class="text-white text-sm font-bold mb-1">סימון על המפה <span class="text-gray-400 font-normal text-xs">(אופציונלי)</span></p>
+                    {#if !showMap}
+                        <button
+                            type="button"
+                            onclick={() => (showMap = true)}
+                            class="w-full flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10 text-gray-200 text-sm font-bold py-3 transition-all"
+                        >
+                            📍 סמן מיקום על המפה
+                        </button>
+                    {:else}
+                        <NeighborhoodPicker
+                            {city}
+                            {neighborhood}
+                            restrictToCity
+                            bind:lat={pinLat}
+                            bind:lng={pinLng}
+                        />
+                        <button
+                            type="button"
+                            onclick={() => { showMap = false; pinLat = null; pinLng = null; }}
+                            class="mt-2 text-xs text-gray-400 hover:text-gray-200 underline underline-offset-2 transition-colors"
+                        >
+                            הסתר מפה והסר סימון
+                        </button>
+                    {/if}
+                    <!-- lat/lng נשלחים עם ה-form action -->
+                    <input type="hidden" name="lat" value={pinLat ?? ''} />
+                    <input type="hidden" name="lng" value={pinLng ?? ''} />
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">

@@ -37,6 +37,10 @@ export const actions: Actions = {
         const contact     = fd.get('contact')?.toString().trim()      ?? '';
         const phone       = fd.get('phone')?.toString().trim()        ?? '';
         const image_b64   = fd.get('image_base64')?.toString()        ?? '';
+        const latRaw      = fd.get('lat')?.toString().trim()          ?? '';
+        const lngRaw      = fd.get('lng')?.toString().trim()          ?? '';
+        const lat         = latRaw !== '' && Number.isFinite(+latRaw) ? +latRaw : null;
+        const lng         = lngRaw !== '' && Number.isFinite(+lngRaw) ? +lngRaw : null;
 
         if (!description) return fail(400, { error: 'יש לתאר את בקשת העזרה' });
         if (!location)    return fail(400, { error: 'יש למלא מיקום' });
@@ -57,6 +61,7 @@ export const actions: Actions = {
                 address:     location,
                 icon:        option.icon,
                 color:       'red',
+                ...(lat != null && lng != null ? { lat, lng } : {}),
                 user_id:     session?.user?.id,
                 extra_fields: {
                     option_id: optionId,

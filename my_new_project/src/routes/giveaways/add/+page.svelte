@@ -9,6 +9,7 @@
     import { formMemory } from '$lib/formMemory';
     import { imageDrop } from '$lib/imageDrop';
     import StreetPicker from '$lib/components/StreetPicker.svelte';
+    import NeighborhoodPicker from '$lib/components/NeighborhoodPicker.svelte';
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
 
@@ -91,6 +92,10 @@
     let phone        = $state(defPhone);
     let street       = $state('');
     let buildingNum  = $state('');
+    // סימון מיקום על המפה (אופציונלי) - נשמר כ-lat/lng ברמה העליונה של הפריט
+    let pinLat       = $state<number | null>(null);
+    let pinLng       = $state<number | null>(null);
+    let showMap      = $state(false);
 
     let neighborhoodOptions = $derived(effectiveNeighborhoods(city, (data as any).approvedNeighborhoods));
 
@@ -437,6 +442,25 @@
                         </div>
                         <!-- השרת קורא שדה address אחד - עד עכשיו רחוב+מספר נשלחו בשמות אחרים ופשוט נזרקו -->
                         <input type="hidden" name="address" value={[street, buildingNum].map((s) => s.trim()).filter(Boolean).join(' ')} />
+                    </div>
+
+                    <!-- סימון מיקום על המפה (אופציונלי) -->
+                    <div>
+                        <p class="text-white text-sm font-bold mb-1">סימון על המפה <span class="text-gray-400 font-normal text-xs">(אופציונלי)</span></p>
+                        {#if !showMap}
+                            <button type="button" onclick={() => (showMap = true)}
+                                class="w-full flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10 text-gray-200 text-sm font-bold py-3 transition-all">
+                                📍 סמן מיקום על המפה
+                            </button>
+                        {:else}
+                            <NeighborhoodPicker {city} {neighborhood} restrictToCity bind:lat={pinLat} bind:lng={pinLng} />
+                            <button type="button" onclick={() => { showMap = false; pinLat = null; pinLng = null; }}
+                                class="mt-2 text-xs text-gray-400 hover:text-gray-200 underline underline-offset-2 transition-colors">
+                                הסתר מפה והסר סימון
+                            </button>
+                        {/if}
+                        <input type="hidden" name="lat" value={pinLat ?? ''} />
+                        <input type="hidden" name="lng" value={pinLng ?? ''} />
                     </div>
 
                     <div class="grid grid-cols-3 gap-3">
