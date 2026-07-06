@@ -10,6 +10,7 @@
     import { citiesAndNeighborhoods } from "$lib/neighborhoodsData";
     import { neighborhoodState } from "$lib/neighborhoodState.svelte";
     import { getCoordsFor, jitterCoord } from "$lib/neighborhoodCoords";
+    import { canUseMapImage, getMapImage, isDisplayableImage } from "$lib/mapImage";
     import type { DbItem } from "$lib/server/db";
     import 'leaflet/dist/leaflet.css';
 
@@ -529,6 +530,15 @@
                         ? [item.lat, item.lng]
                         : getCoordsFor(item.neighborhood, item.city);
                 const [lat, lng] = jitterCoord(center, id);
+                // תמונה/לוגו על המפה (תוספת בתשלום) - במקום האימוג'י
+                let mapImage = '';
+                if (canUseMapImage(item.category)) {
+                    try {
+                        const ef = item.extra_fields ? JSON.parse(item.extra_fields) : {};
+                        const mi = getMapImage(ef);
+                        if (isDisplayableImage(mi)) mapImage = mi;
+                    } catch { /* extra_fields לא תקין - נופלים לאימוג'י */ }
+                }
                 return {
                     id,
                     category: item.category,
@@ -537,6 +547,7 @@
                     icon:     item.icon  || '📌',
                     label:    item.label || $t('map.item_fallback'),
                     color:    item.color || 'purple',
+                    mapImage,
                     isMock:   false,
                 };
             });
@@ -566,6 +577,7 @@
                 icon:   m.icon,
                 label:  $t(m.label),
                 color:  m.color,
+                mapImage: '',
                 isMock: true,
             };
         });
@@ -604,13 +616,17 @@
         rose:     '#e11d48',
     };
 
-    function buildIconHtml(icon: string, label: string, color: string, isMock = false): string {
+    function buildIconHtml(icon: string, label: string, color: string, isMock = false, mapImage = ''): string {
         const hex = colorHex[color] ?? '#9333ea';
         const safeLabel = label.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         const mockClass = isMock ? ' jmap-pin--mock' : '';
+        // תמונה/לוגו על המפה (תוספת בתשלום) - עוקפת את האימוג'י
+        const iconInner = mapImage
+            ? `<div class="jmap-pin-icon jmap-pin-img" style="border-color:${hex}"><img src="${mapImage.replace(/"/g, '&quot;')}" alt="" loading="lazy" /></div>`
+            : `<div class="jmap-pin-icon">${icon}</div>`;
         return `
             <div class="jmap-pin${mockClass}">
-                <div class="jmap-pin-icon">${icon}</div>
+                ${iconInner}
                 <div class="jmap-pin-label" style="background:${hex}">${safeLabel}</div>
             </div>
         `;
@@ -621,7 +637,7 @@
         mapMarkerLayer.clearLayers();
         for (const m of dynamicMarkers) {
             if (!isMarkerVisible(m.category)) continue;
-            const html = buildIconHtml(m.icon, m.label, m.color, m.isMock);
+            const html = buildIconHtml(m.icon, m.label, m.color, m.isMock, m.mapImage);
             const divIcon = leafletL.divIcon({
                 className: 'jmap-pin-wrap',
                 html,
@@ -2313,6 +2329,22 @@
         font-size: 1.875rem;
         line-height: 1;
         filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+    }
+    :global(.jmap-pin-img) {
+        width: 48px;
+        height: 48px;
+        margin: 0 auto;
+        border-radius: 9999px;
+        border: 3px solid #9333ea;
+        background: #fff;
+        overflow: hidden;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.45);
+    }
+    :global(.jmap-pin-img img) {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
     }
     :global(.jmap-pin-label) {
         display: inline-block;

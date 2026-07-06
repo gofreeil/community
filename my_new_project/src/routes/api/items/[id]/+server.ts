@@ -109,6 +109,20 @@ export const PATCH: RequestHandler = async (event) => {
             extra = extra ?? loadExtra();
             extra.links = sanitizeLinks(fields.links);
         }
+        // תמונה/לוגו על המפה (תוספת בתשלום) - מותרת רק אם היא אחת מתמונות הגלריה,
+        // או מחרוזת ריקה לביטול הבחירה. לא זמין לפנויים (כבר נחסם למעלה).
+        if (typeof fields.map_image === 'string') {
+            extra = extra ?? loadExtra();
+            const chosen = fields.map_image.trim();
+            const gallery = (Array.isArray(extra.images) ? extra.images : []) as string[];
+            if (!chosen) {
+                extra.map_image = '';
+            } else if (isSafeImage(chosen) && gallery.includes(chosen)) {
+                extra.map_image = chosen;
+            } else {
+                return json({ success: false, message: 'התמונה שנבחרה למפה חייבת להיות אחת מתמונות הכרטיס' }, { status: 400 });
+            }
+        }
 
         if (Object.keys(updates).length === 0 && extra === undefined) {
             return json({ success: false, message: 'אין שדות לעדכון' }, { status: 400 });

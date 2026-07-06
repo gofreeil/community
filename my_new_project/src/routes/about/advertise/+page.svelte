@@ -7,6 +7,7 @@
     import { coinAnim } from "$lib/coinAnimationState.svelte";
     import { evaluateDiscount, discountAmount, type DiscountCode } from "$lib/discountCodes";
     import { FREE_PROMO, FREE_PROMO_CODE_TEXT, FREE_PROMO_DISCOUNT } from "$lib/freePromo";
+    import { MAP_IMAGE_PRICE_YEARLY } from "$lib/mapImage";
 
     // Page data - layoutUser provides the logged-in user's profile (email, phone)
     let { data } = $props<{ data: {
@@ -347,6 +348,8 @@
                     totalMonthly,
                     discountLabel:     discountValue > 0 ? discountLabelText : '',
                     discountValue,
+                    mapImageAddon,
+                    mapImageAddonPrice,
                 }),
             });
 
@@ -474,8 +477,16 @@
             })
     );
 
-    // Totals: per-item price × per-item multiplier (flat rows use 1)
-    let totalPayment = $derived(selectedItems.reduce((s, r) => s + r.eTotal   * r.multiplier, 0));
+    // ---- תוספת: תמונה/לוגו על המפה - 50 ₪ לשנה ----
+    // מוצג על המפה במקום האימוג'י של הקטגוריה. הבחירה של איזו תמונה בפועל
+    // נעשית בדף הכרטיס עצמו; כאן זו רק תוספת התשלום.
+    let mapImageAddon = $state(false);
+    let mapImageAddonPrice = $derived(mapImageAddon ? MAP_IMAGE_PRICE_YEARLY : 0);
+
+    // Totals: per-item price × per-item multiplier (flat rows use 1) + תוספת המפה
+    let totalPayment = $derived(
+        selectedItems.reduce((s, r) => s + r.eTotal * r.multiplier, 0) + mapImageAddonPrice
+    );
     let totalMonthly = $derived(selectedItems.reduce((s, r) => s + r.eMonthly * r.multiplier, 0));
 
     let halfItems        = $derived(selectedItems.filter(r => r.plan === 'half'));
@@ -1227,7 +1238,30 @@
                             <span class="{item.plan === 'half' ? 'text-amber-300' : 'text-blue-300'} font-black">₪{fmt(item.eTotal * item.multiplier)}</span>
                         </p>
                     {/each}
+                    {#if mapImageAddon}
+                        <p class="text-purple-200 text-base md:text-lg font-bold leading-snug">
+                            <span class="text-purple-300">🗺️ {$_('advertise.map_image_addon')}:</span>
+                            <span class="text-white">₪{fmt(MAP_IMAGE_PRICE_YEARLY)}</span>
+                            <span class="text-gray-300 font-medium">{$_('advertise.map_image_per_year')}</span>
+                        </p>
+                    {/if}
                 </div>
+
+                <!-- תוספת: תמונה/לוגו על המפה - 50 ₪ לשנה -->
+                <button type="button" onclick={() => (mapImageAddon = !mapImageAddon)}
+                    class="text-right rounded-xl border p-3 transition-all {mapImageAddon ? 'border-purple-400/60 bg-purple-500/15' : 'border-white/15 bg-white/5 hover:bg-white/10'}">
+                    <div class="flex items-center gap-2.5">
+                        <span class="text-2xl" aria-hidden="true">🗺️</span>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-white text-sm md:text-base font-black leading-tight">{$_('advertise.map_image_title')}</p>
+                            <p class="text-gray-300 text-xs leading-snug">{$_('advertise.map_image_desc')}</p>
+                        </div>
+                        <span class="shrink-0 w-11 h-6 rounded-full relative transition-colors {mapImageAddon ? 'bg-purple-500' : 'bg-gray-600'}">
+                            <span class="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all {mapImageAddon ? 'start-0.5' : 'end-0.5'}"></span>
+                        </span>
+                    </div>
+                </button>
+
                 <div class="flex items-center justify-start flex-wrap gap-x-3 gap-y-1">
                     {#if discountValue > 0}
                         <span class="text-2xl md:text-3xl font-black text-gray-500 line-through">₪{fmt(totalPayment)}</span>

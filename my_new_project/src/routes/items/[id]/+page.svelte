@@ -12,6 +12,7 @@
     import { formatOpeningHours } from "$lib/openingHours";
     import { gmachTypeLabel } from "$lib/gmachTypes";
     import { imageDrop } from "$lib/imageDrop";
+    import { canUseMapImage, MAP_IMAGE_PRICE_YEARLY } from "$lib/mapImage";
 
     let { data }: { data: PageData } = $props();
     const item = $derived(data.item);
@@ -141,14 +142,89 @@
     });
     const canEditActivities = $derived(!!(item as { canEditActivities?: boolean } | null)?.canEditActivities);
 
+    // ---- מניינים: זמני שחרית / מנחה / ערבית (בקטגוריית יהדות) ----
+    // נשמרים באותו מערך activities עם type = שם התפילה, כדי להיות חלק מלוח הפעילויות.
+    const MINYAN_PRAYERS = ['שחרית', 'מנחה', 'ערבית'];
+    const isMinyanCategory = $derived(item?.category === 'minyanim');
+    // הפרדה: שורות התפילה מול שאר הפעילויות (שיעור/מקווה/שבת...) - כדי לא להציג פעמיים
+    const minyanActivities = $derived<ScheduleRow[]>(activities.filter(a => MINYAN_PRAYERS.includes(a.type)));
+    const otherActivities  = $derived<ScheduleRow[]>(activities.filter(a => !MINYAN_PRAYERS.includes(a.type)));
+
+    let editingMinyan = $state(false);
+    let savingMinyan = $state(false);
+    let minyanError = $state('');
+    // לכל תפילה: רשימת שעות (אפשר כמה מניינים) + סימון "אין מניין"
+    let minyanSlots = $state<Record<string, string[]>>({});
+    let minyanSkip = $state<Record<string, boolean>>({});
+
+    function startEditMinyan() {
+        const slots: Record<string, string[]> = {};
+        const skip: Record<string, boolean> = {};
+        for (const p of MINYAN_PRAYERS) {
+            const row = minyanActivities.find(a => a.type === p);
+            const times = row ? row.time.split(',').map(t => t.trim()).filter(Boolean) : [];
+            slots[p] = times.length ? times : [''];
+            skip[p] = false;
+        }
+        minyanSlots = slots;
+        minyanSkip = skip;
+        minyanError = '';
+        editingMinyan = true;
+    }
+    function addMinyanSlot(p: string) {
+        minyanSlots = { ...minyanSlots, [p]: [...(minyanSlots[p] ?? []), ''] };
+    }
+    function removeMinyanSlot(p: string, i: number) {
+        const next = (minyanSlots[p] ?? []).filter((_, idx) => idx !== i);
+        minyanSlots = { ...minyanSlots, [p]: next.length ? next : [''] };
+    }
+    function toggleMinyanSkip(p: string) {
+        minyanSkip = { ...minyanSkip, [p]: !minyanSkip[p] };
+    }
+    async function saveMinyan() {
+        if (!item?.id) return;
+        savingMinyan = true;
+        minyanError = '';
+        // בונים שורת תפילה לכל מניין שלא סומן "אין" ויש בו לפחות שעה אחת
+        const prayerRows: ScheduleRow[] = MINYAN_PRAYERS
+            .filter(p => !minyanSkip[p])
+            .map(p => ({
+                type: p,
+                time: (minyanSlots[p] ?? []).map(t => t.trim()).filter(Boolean).join(', '),
+                days: '', note: '',
+            }))
+            .filter(r => r.time);
+        // משמרים את שאר הפעילויות (שיעורים, מקווה...) שלא נערכו כאן
+        const full = [...prayerRows, ...otherActivities.map(a => ({ ...a }))];
+        try {
+            const res = await fetch(`/api/items/${item.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'update_activities', activities: full }),
+            });
+            const resData = await res.json().catch(() => ({}));
+            if (!res.ok || !resData.success) {
+                minyanError = resData.message || 'שגיאה בשמירה';
+            } else {
+                activitiesOverride = Array.isArray(resData.activities) ? resData.activities : full;
+                editingMinyan = false;
+            }
+        } catch {
+            minyanError = 'שגיאה ברשת';
+        } finally {
+            savingMinyan = false;
+        }
+    }
+
     let editingSchedule = $state(false);
     let scheduleRows = $state<ScheduleRow[]>([]);
     let savingSchedule = $state(false);
     let scheduleError = $state('');
 
     function startEditSchedule() {
-        scheduleRows = activities.length
-            ? activities.map(a => ({ ...a }))
+        // רק פעילויות שאינן מניינים - זמני התפילה נערכים בבלוק המניינים הייעודי
+        scheduleRows = otherActivities.length
+            ? otherActivities.map(a => ({ ...a }))
             : [{ type: '', time: '', days: '', note: '' }];
         scheduleError = '';
         editingSchedule = true;
@@ -166,18 +242,20 @@
         const clean = scheduleRows
             .map(r => ({ type: r.type.trim(), time: r.time.trim(), days: r.days.trim(), note: r.note.trim() }))
             .filter(r => r.type || r.time || r.days || r.note);
+        // משמרים את שורות המניינים (נערכות בבלוק הייעודי) יחד עם הפעילויות הכלליות
+        const full = [...minyanActivities.map(a => ({ ...a })), ...clean];
         try {
             const res = await fetch(`/api/items/${item.id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'update_activities', activities: clean }),
+                body: JSON.stringify({ action: 'update_activities', activities: full }),
             });
             const resData = await res.json().catch(() => ({}));
             if (!res.ok || !resData.success) {
                 scheduleError = resData.message || 'שגיאה בשמירה';
             } else {
                 // עדכון מקומי מיידי - הדף נשאר "מול העיניים" בלי רענון
-                activitiesOverride = Array.isArray(resData.activities) ? resData.activities : clean;
+                activitiesOverride = Array.isArray(resData.activities) ? resData.activities : full;
                 editingSchedule = false;
             }
         } catch {
@@ -355,11 +433,42 @@
     async function removeCurrentImage() {
         if (!galleryImages.length) return;
         const next = galleryImages.filter((_, idx) => idx !== galleryIndex);
+        const removed = galleryImages[galleryIndex];
         const ok = await saveFields({ images: next }, 'images');
         if (ok) {
             imagesOverride = next;
             galleryIndex = 0;
+            // אם התמונה שהוסרה הייתה תמונת המפה - מבטלים את הבחירה
+            if (removed && removed === currentMapImage) {
+                await saveFields({ map_image: '' }, 'map_image');
+                mapImageOverride = '';
+            }
         }
+    }
+
+    // ---- תמונה/לוגו על המפה (תוספת בתשלום - 50 ₪ לשנה) ----
+    const MAP_IMAGE_PRICE = MAP_IMAGE_PRICE_YEARLY;
+    // הקטגוריה זכאית לפיצ'ר? (הכל חוץ מפנויים/פנויות)
+    const canMapImage = $derived(canUseMapImage(item?.category));
+    // ערך שנשמר הרגע (override) גובר על הערך מה-DB
+    let mapImageOverride = $state<string | null>(null);
+    const currentMapImage = $derived<string>(
+        mapImageOverride ?? (
+            typeof (item as { extraFields?: { map_image?: unknown } } | null)?.extraFields?.map_image === 'string'
+                ? ((item as { extraFields: { map_image: string } }).extraFields.map_image)
+                : ''
+        )
+    );
+    // בוחר את התמונה שכרגע מוצגת בגלריה כתמונת המפה
+    async function setMapImage() {
+        const img = galleryImages[galleryIndex];
+        if (!img) return;
+        const ok = await saveFields({ map_image: img }, 'map_image');
+        if (ok) mapImageOverride = img;
+    }
+    async function clearMapImage() {
+        const ok = await saveFields({ map_image: '' }, 'map_image');
+        if (ok) mapImageOverride = '';
     }
 
     // ---- התקדמות בניית הדף ----
@@ -1073,6 +1182,40 @@
                     <input bind:this={imageInputEl} type="file" accept="image/*" multiple class="hidden" onchange={onImagesPicked} />
                     <div class="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-transparent to-transparent pointer-events-none"></div>
                 </div>
+
+                <!-- תמונה/לוגו על המפה (תוספת בתשלום) - בחירת התמונה שתופיע במקום האימוג'י -->
+                {#if builderMode && canMapImage && galleryImages.length > 0}
+                    <div class="px-3 md:px-4 pt-2">
+                        <div class="rounded-xl border border-purple-500/30 bg-purple-500/10 p-2.5 flex flex-col gap-2">
+                            <div class="flex items-center gap-2">
+                                <span class="text-lg" aria-hidden="true">🗺️</span>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-purple-100 text-sm font-black leading-tight">תמונה או לוגו על המפה</p>
+                                    <p class="text-purple-300/80 text-[11px] leading-tight">התמונה תופיע על המפה במקום האייקון · {MAP_IMAGE_PRICE} ₪ לשנה</p>
+                                </div>
+                            </div>
+                            {#if currentMapImage && currentMapImage === galleryImages[galleryIndex]}
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span class="text-[11px] font-bold text-green-300 flex items-center gap-1">✓ התמונה הזו מוצגת על המפה</span>
+                                    <button type="button" onclick={clearMapImage} disabled={savingTag === 'map_image'}
+                                        class="ms-auto text-[11px] font-bold text-red-300 bg-black/30 hover:bg-black/50 border border-red-400/40 rounded-lg px-2 py-1 transition-all disabled:opacity-60">
+                                        {savingTag === 'map_image' ? 'שומר...' : 'הסר מהמפה'}
+                                    </button>
+                                </div>
+                            {:else}
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    {#if currentMapImage}
+                                        <span class="text-[11px] text-purple-200/70">תמונה אחרת מוצגת כרגע על המפה</span>
+                                    {/if}
+                                    <button type="button" onclick={setMapImage} disabled={savingTag === 'map_image'}
+                                        class="ms-auto text-[11px] font-black text-white bg-purple-600 hover:bg-purple-500 border border-purple-400/40 rounded-lg px-3 py-1.5 transition-all disabled:opacity-60">
+                                        {savingTag === 'map_image' ? 'שומר...' : '🗺️ הצג תמונה זו על המפה'}
+                                    </button>
+                                </div>
+                            {/if}
+                        </div>
+                    </div>
+                {/if}
 
                 <!-- Side info: nickname + description + address + contact + extra fields -->
                 <div class="px-3 md:px-4 py-2 flex flex-col gap-1.5">
