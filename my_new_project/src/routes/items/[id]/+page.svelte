@@ -1129,32 +1129,6 @@
                             סיימתי - הצג כמו גולש
                         </button>
                     </div>
-
-                    <!-- בורר סטטוס הנכס + תפריט "עוד" עם מחיקה -->
-                    <div class="mt-2.5 pt-2.5 border-t border-white/10 flex flex-wrap items-center gap-1.5">
-                        <span class="text-[11px] text-gray-400 font-bold ms-0.5">סטטוס:</span>
-                        {#each PLACE_STATUSES as s}
-                            <button type="button" onclick={() => changePlaceStatus(s.value)} disabled={savingStatus}
-                                class="text-[11px] font-bold rounded-full px-2.5 py-1 border transition-all disabled:opacity-50 {placeStatus === s.value ? s.active : 'bg-white/5 border-white/15 text-gray-300 hover:bg-white/10'}">
-                                {s.emoji} {s.label}
-                            </button>
-                        {/each}
-                        <div class="relative">
-                            <button type="button" onclick={() => (statusMenuOpen = !statusMenuOpen)}
-                                class="text-[11px] font-bold rounded-full px-2.5 py-1 border border-white/15 bg-white/5 text-gray-300 hover:bg-white/10 transition-all">
-                                עוד ▾
-                            </button>
-                            {#if statusMenuOpen}
-                                <div class="absolute z-40 top-full mt-1 end-0 min-w-[130px] rounded-xl border border-white/15 bg-[#0a0f1a] shadow-2xl p-1"
-                                    in:scale={{ duration: 120, start: 0.95 }}>
-                                    <button type="button" onclick={softDeleteItem} disabled={deletingItem}
-                                        class="w-full text-right text-xs font-bold text-red-300 hover:bg-red-500/15 rounded-lg px-2.5 py-1.5 transition-colors disabled:opacity-50">
-                                        {deletingItem ? 'מוחק…' : '🗑 מחק'}
-                                    </button>
-                                </div>
-                            {/if}
-                        </div>
-                    </div>
                     {#if builderError}
                         <p class="text-red-400 text-xs font-bold mt-1.5">⚠️ {builderError}</p>
                     {/if}
@@ -1174,13 +1148,13 @@
                         {#if canEditPage && !builderMode}
                             <button type="button" onclick={() => (builderMode = true)}
                                 class="bg-amber-500/15 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-bold text-sm rounded-xl px-3 py-1.5 transition-all backdrop-blur-sm whitespace-nowrap shadow-lg"
-                            >🎨 עריכת הדף</button>
+                            >🎨 עריכת דף הפרטים</button>
                         {/if}
                         {#if (item as { isOwner?: boolean } | null)?.isOwner || singlesState === 'owner'}
                             <a
                                 href={item.category === 'singles' ? `/add/singles?edit=${item.id}` : `/add/${item.category}?edit=${item.id}`}
                                 class="bg-white/5 hover:bg-white/15 border border-white/20 text-gray-300 font-bold text-sm rounded-xl px-3 py-1.5 transition-all backdrop-blur-sm whitespace-nowrap shadow-lg"
-                            >✏️ {canEditPage ? 'עריכת טופס' : 'ערוך פרופיל'}</a>
+                            >✏️ {canEditPage ? 'עריכת פריט על המפה' : 'ערוך פרופיל'}</a>
                         {/if}
                     </div>
                 {/if}
@@ -1270,6 +1244,33 @@
 
                 <!-- Side info: nickname + description + address + contact + extra fields -->
                 <div class="px-3 md:px-4 py-2 flex flex-col gap-1.5">
+                    <!-- בורר סטטוס + מחיקה - גלוי לבעלים/רכז/סופר-אדמין תמיד (לא רק במצב בנייה) -->
+                    {#if canEditPage}
+                        <div class="rounded-xl border border-white/10 bg-white/5 p-2 flex flex-wrap items-center gap-1.5 mb-0.5">
+                            <span class="text-[11px] text-gray-400 font-bold ms-0.5">סטטוס:</span>
+                            {#each PLACE_STATUSES as s}
+                                <button type="button" onclick={() => changePlaceStatus(s.value)} disabled={savingStatus}
+                                    class="text-[11px] font-bold rounded-full px-2.5 py-1 border transition-all disabled:opacity-50 {placeStatus === s.value ? s.active : 'bg-white/5 border-white/15 text-gray-300 hover:bg-white/10'}">
+                                    {s.emoji} {s.label}
+                                </button>
+                            {/each}
+                            <div class="relative">
+                                <button type="button" onclick={() => (statusMenuOpen = !statusMenuOpen)}
+                                    class="text-[11px] font-bold rounded-full px-2.5 py-1 border border-white/15 bg-white/5 text-gray-300 hover:bg-white/10 transition-all">
+                                    עוד ▾
+                                </button>
+                                {#if statusMenuOpen}
+                                    <div class="absolute z-40 top-full mt-1 end-0 min-w-[140px] rounded-xl border border-white/15 bg-[#0a0f1a] shadow-2xl p-1"
+                                        in:scale={{ duration: 120, start: 0.95 }}>
+                                        <button type="button" onclick={softDeleteItem} disabled={deletingItem}
+                                            class="w-full text-right text-xs font-bold text-red-300 hover:bg-red-500/15 rounded-lg px-2.5 py-1.5 transition-colors disabled:opacity-50">
+                                            {deletingItem ? 'מוחק…' : '🗑 מחק את הכרטיס'}
+                                        </button>
+                                    </div>
+                                {/if}
+                            </div>
+                        </div>
+                    {/if}
                     {#if nickname}
                         <p class="text-white text-xl md:text-2xl font-bold leading-tight">{nickname}</p>
                     {/if}
