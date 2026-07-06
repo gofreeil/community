@@ -12,7 +12,7 @@
     import { formatOpeningHours } from "$lib/openingHours";
     import { gmachTypeLabel } from "$lib/gmachTypes";
     import { imageDrop } from "$lib/imageDrop";
-    import { canUseMapImage, MAP_IMAGE_PRICE_YEARLY } from "$lib/mapImage";
+    import CategoryDetailsEditor from "$lib/components/CategoryDetailsEditor.svelte";
     import { goto } from "$app/navigation";
     import { PLACE_STATUSES, placeStatusInfo } from "$lib/placeStatus";
 
@@ -364,6 +364,9 @@
         }
     }
 
+    // עדכונים חיים של שדות הפרטים (CategoryDetailsEditor) - כדי שהתצוגה תתעדכן מיד
+    let liveExtra = $state<Record<string, unknown>>({});
+
     // ---- העלאת תמונות במצב בנייה (דחיסה כמו בטופס הפרסום) ----
     const MAX_IMAGES = 5;
     let uploadingImages = $state(false);
@@ -435,42 +438,11 @@
     async function removeCurrentImage() {
         if (!galleryImages.length) return;
         const next = galleryImages.filter((_, idx) => idx !== galleryIndex);
-        const removed = galleryImages[galleryIndex];
         const ok = await saveFields({ images: next }, 'images');
         if (ok) {
             imagesOverride = next;
             galleryIndex = 0;
-            // אם התמונה שהוסרה הייתה תמונת המפה - מבטלים את הבחירה
-            if (removed && removed === currentMapImage) {
-                await saveFields({ map_image: '' }, 'map_image');
-                mapImageOverride = '';
-            }
         }
-    }
-
-    // ---- תמונה/לוגו על המפה (תוספת בתשלום - 50 ₪ לשנה) ----
-    const MAP_IMAGE_PRICE = MAP_IMAGE_PRICE_YEARLY;
-    // הקטגוריה זכאית לפיצ'ר? (הכל חוץ מפנויים/פנויות)
-    const canMapImage = $derived(canUseMapImage(item?.category));
-    // ערך שנשמר הרגע (override) גובר על הערך מה-DB
-    let mapImageOverride = $state<string | null>(null);
-    const currentMapImage = $derived<string>(
-        mapImageOverride ?? (
-            typeof (item as { extraFields?: { map_image?: unknown } } | null)?.extraFields?.map_image === 'string'
-                ? ((item as { extraFields: { map_image: string } }).extraFields.map_image)
-                : ''
-        )
-    );
-    // בוחר את התמונה שכרגע מוצגת בגלריה כתמונת המפה
-    async function setMapImage() {
-        const img = galleryImages[galleryIndex];
-        if (!img) return;
-        const ok = await saveFields({ map_image: img }, 'map_image');
-        if (ok) mapImageOverride = img;
-    }
-    async function clearMapImage() {
-        const ok = await saveFields({ map_image: '' }, 'map_image');
-        if (ok) mapImageOverride = '';
     }
 
     // ---- סטטוס תפעולי של הנכס (פעיל / בשיפוצים / עברנו כתובת / סגור / נפתח בקרוב) ----
@@ -994,7 +966,7 @@
 
 <!-- Hidden keys (rendered in dedicated sections, complex types, or internal-only) -->
 {#snippet extraFieldsBlock()}
-    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'price', 'website', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname', 'age', 'birth_date', 'sector', 'gender', 'type', 'activities', 'links', 'gmach_type', 'gmach_types'])}
+    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'menu_images', 'map_image', 'price', 'website', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname', 'age', 'birth_date', 'sector', 'gender', 'type', 'activities', 'links', 'gmach_type', 'gmach_types', 'place_status', 'location'])}
     {@const LABELS_HE: Record<string, string> = {
         nickname: 'שם או כינוי',
         gender: 'מין',
@@ -1036,8 +1008,9 @@
         if (key === 'hours') return formatOpeningHours(s);
         return s;
     }}
-    {@const visibleEntries = item?.isUserSubmitted && item.extraFields
-        ? Object.entries(item.extraFields).filter(([k, v]) => !HIDDEN_KEYS.has(k) && v != null && v !== '')
+    {@const mergedExtra = { ...(item?.extraFields ?? {}), ...liveExtra }}
+    {@const visibleEntries = item?.isUserSubmitted
+        ? Object.entries(mergedExtra).filter(([k, v]) => !HIDDEN_KEYS.has(k) && v != null && v !== '')
         : []}
     {#if visibleEntries.length > 0}
         <section>
@@ -1269,40 +1242,6 @@
                     <input bind:this={imageInputEl} type="file" accept="image/*" multiple class="hidden" onchange={onImagesPicked} />
                     <div class="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-transparent to-transparent pointer-events-none"></div>
                 </div>
-
-                <!-- תמונה/לוגו על המפה (תוספת בתשלום) - בחירת התמונה שתופיע במקום האימוג'י -->
-                {#if builderMode && canMapImage && galleryImages.length > 0}
-                    <div class="px-3 md:px-4 pt-2">
-                        <div class="rounded-xl border border-purple-500/30 bg-purple-500/10 p-2.5 flex flex-col gap-2">
-                            <div class="flex items-center gap-2">
-                                <span class="text-lg" aria-hidden="true">🗺️</span>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-purple-100 text-sm font-black leading-tight">תמונה או לוגו על המפה</p>
-                                    <p class="text-purple-300/80 text-[11px] leading-tight">התמונה תופיע על המפה במקום האייקון · {MAP_IMAGE_PRICE} ₪ לשנה</p>
-                                </div>
-                            </div>
-                            {#if currentMapImage && currentMapImage === galleryImages[galleryIndex]}
-                                <div class="flex items-center gap-2 flex-wrap">
-                                    <span class="text-[11px] font-bold text-green-300 flex items-center gap-1">✓ התמונה הזו מוצגת על המפה</span>
-                                    <button type="button" onclick={clearMapImage} disabled={savingTag === 'map_image'}
-                                        class="ms-auto text-[11px] font-bold text-red-300 bg-black/30 hover:bg-black/50 border border-red-400/40 rounded-lg px-2 py-1 transition-all disabled:opacity-60">
-                                        {savingTag === 'map_image' ? 'שומר...' : 'הסר מהמפה'}
-                                    </button>
-                                </div>
-                            {:else}
-                                <div class="flex items-center gap-2 flex-wrap">
-                                    {#if currentMapImage}
-                                        <span class="text-[11px] text-purple-200/70">תמונה אחרת מוצגת כרגע על המפה</span>
-                                    {/if}
-                                    <button type="button" onclick={setMapImage} disabled={savingTag === 'map_image'}
-                                        class="ms-auto text-[11px] font-black text-white bg-purple-600 hover:bg-purple-500 border border-purple-400/40 rounded-lg px-3 py-1.5 transition-all disabled:opacity-60">
-                                        {savingTag === 'map_image' ? 'שומר...' : '🗺️ הצג תמונה זו על המפה'}
-                                    </button>
-                                </div>
-                            {/if}
-                        </div>
-                    </div>
-                {/if}
 
                 <!-- Side info: nickname + description + address + contact + extra fields -->
                 <div class="px-3 md:px-4 py-2 flex flex-col gap-1.5">
@@ -1590,8 +1529,16 @@
                         </section>
                     {/if}
 
-                    <!-- Extra fields: compact list -->
-                    {@render extraFieldsBlock()}
+                    <!-- Extra fields: עריכה במצב בנייה (שעות, מחיר, כשרות...) או תצוגה קומפקטית -->
+                    {#if builderMode && canEditPage && item?.isUserSubmitted}
+                        <CategoryDetailsEditor
+                            itemId={item.id}
+                            category={item.category}
+                            extraFields={(item.extraFields ?? {}) as Record<string, unknown>}
+                            onSaved={(k, v) => (liveExtra = { ...liveExtra, [k]: v })} />
+                    {:else}
+                        {@render extraFieldsBlock()}
+                    {/if}
 
                     <!-- Contact (רב/מארגן/שגריר/שדכן) - under פרטים נוספים -->
                     {#if builderMode && editingField === 'contact'}

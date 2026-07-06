@@ -13,6 +13,11 @@ export interface FieldDef {
     maxLength?: number;
     /** הצג שדה זה רק כאשר ערך של שדה אחר תואם - לוגיקה מותנית */
     showIf?: { field: string; equals: string };
+    /**
+     * בקטגוריות mapFirst: 'map' = מוצג בטופס "הוספת יתרון במפה" (רק מה שצריך כדי לעלות למפה);
+     * 'details' = נערך בדף הפריט. ברירת מחדל נקבעת לפי MAP_STEP_KEYS.
+     */
+    step?: 'map' | 'details';
 }
 
 export interface CategoryConfig {
@@ -23,6 +28,11 @@ export interface CategoryConfig {
     priceRow: number | null;
     /** כותרת מותאמת לדף ההוספה. אם לא מוגדר - "הוסף {label}" */
     addPageTitle?: string;
+    /**
+     * קטגוריית "מקום" - הטופס מצומצם ל"הוספת יתרון במפה" (שם, כתובת, סימון, לוגו),
+     * וכל שאר הפרטים (שעות, מחיר, תיאור...) נערכים בדף הפריט. ראו mapStepFields/detailStepFields.
+     */
+    mapFirst?: boolean;
     fields: FieldDef[];
 }
 
@@ -78,6 +88,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
         icon: '✡️',
         color: 'blue',
         priceRow: null,
+        mapFirst: true,
         // שלב 1 בלבד: פרטים ראשוניים שמעלים את המקום למפה. השאר (תמונות, לוח
         // פעילויות ושעות, שם הרב, תיאור, קישורים) מושלם בדף הפריט במצב בנייה.
         fields: [
@@ -96,6 +107,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
         color: 'red',
         priceRow: 3,
         addPageTitle: 'הוסף חוג',
+        mapFirst: true,
         fields: [
             { key: 'label',       label: 'שם החוג',             type: 'text',     required: true,  placeholder: 'חוג ציור, כדורגל לילדים...' },
             { key: 'contact',     label: 'שם המדריך',            type: 'text',     required: true,  placeholder: 'שמך המלא' },
@@ -156,6 +168,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
         icon: '🏪',
         color: 'green',
         priceRow: 2,
+        mapFirst: true,
         fields: [
             { key: 'label',       label: 'שם העסק',               type: 'text',     required: true,  placeholder: 'מכולת השכונה' },
             { key: 'biz_type',    label: 'סוג עסק',                type: 'text',     required: true,  placeholder: 'מכולת, מאפייה, בגדים...' },
@@ -175,9 +188,10 @@ export const categoryConfig: Record<string, CategoryConfig> = {
         color: 'orange',
         priceRow: 7,
         addPageTitle: 'הוספת מסעדה / עסק מזון',
+        mapFirst: true,
         fields: [
             { key: 'label',       label: 'שם העסק',               type: 'text',     required: true,  placeholder: 'פיצה השכונה' },
-            { key: 'venue_type',  label: 'סוג העסק',              type: 'toggle',   required: true,  options: ['מסעדה', 'מזון מהיר'], default: 'מסעדה', hint: FREE_PROMO ? '🎉 בתקופה הראשונית הפרסום חינם - עם הקוד "יוצאים לחירות" בדף התשלום' : 'מסעדה - 45 ₪ לחודש · מזון מהיר (פלאפל, שווארמה, פיצה, גלידה) - 30 ₪ לחודש' },
+            { key: 'venue_type',  label: 'סוג העסק',              type: 'toggle',   required: true,  step: 'map', options: ['מסעדה', 'מזון מהיר'], default: 'מסעדה', hint: FREE_PROMO ? '🎉 בתקופה הראשונית הפרסום חינם - עם הקוד "יוצאים לחירות" בדף התשלום' : 'מסעדה - 45 ₪ לחודש · מזון מהיר (פלאפל, שווארמה, פיצה, גלידה) - 30 ₪ לחודש' },
             { key: 'food_type',   label: 'סוג מטבח / מזון',         type: 'text',     required: true,  placeholder: 'פיצה, פלאפל, סושי, איטלקי...', half: true },
             { key: 'price_range', label: 'טווח מחירים',            type: 'select',   required: false, half: true, options: ['זול', 'בינוני', 'יקר'] },
             { key: 'kosher',      label: 'כשרות',                  type: 'select',   required: false, half: true, options: ['ללא', 'כשר רבנות', 'למהדרין', 'אחר'] },
@@ -309,6 +323,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
         icon: '🏛️',
         color: 'indigo',
         priceRow: null,
+        mapFirst: true,
         fields: [
             { key: 'label',       label: 'שם השירות',               type: 'text',     required: true,  placeholder: 'בנק, עירייה, דואר, בית ספר...' },
             { key: 'address',     label: 'כתובת מדויקת',            type: 'address',  required: true,  placeholder: 'שם הרחוב', hint: 'בחרו רחוב מהרשימה של העיר והוסיפו מספר בית' },
@@ -327,6 +342,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
         color: 'teal',
         priceRow: 2,
         addPageTitle: 'הוסף אולם / חלל להשכרה',
+        mapFirst: true,
         fields: [
             { key: 'label',       label: 'שם האולם / החלל',         type: 'text',     required: true,  placeholder: 'אולם השמחות, סטודיו יצירה...' },
             { key: 'usage_type',  label: 'מתאים ל',                   type: 'multi_select', required: true, options: ['אירועים חד-פעמיים', 'חוגים קבועים', 'הרצאות וסדנאות', 'חתונות ובר-מצוות', 'ימי הולדת', 'ישיבות ופגישות'], hint: 'אפשר לבחור כמה' },
@@ -353,6 +369,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
         icon: '🛡️',
         color: 'yellow',
         priceRow: null,
+        mapFirst: true,
         fields: [
             { key: 'label',       label: 'שם המרחב',                type: 'text',     required: true,  placeholder: 'מקלט ציבורי, מרחב מוגן...' },
             { key: 'address',     label: 'כתובת מדויקת',            type: 'address',  required: true,  placeholder: 'שם הרחוב' },
@@ -363,6 +380,31 @@ export const categoryConfig: Record<string, CategoryConfig> = {
         ],
     },
 };
+
+// ============================================================
+// ---- שלב "מפה" מול שלב "פרטים" (קטגוריות mapFirst) ----
+// ============================================================
+
+/** מפתחות ברירת מחדל שנחשבים "שלב המפה" בקטגוריית mapFirst (מה שצריך כדי לעלות למפה) */
+const MAP_STEP_KEYS = new Set(['label', 'address', 'location', 'type']);
+
+/** האם שדה שייך לטופס "הוספת יתרון במפה" (שלב המפה). קטגוריה רגילה - הכל בטופס. */
+export function isMapStepField(cfg: CategoryConfig, field: FieldDef): boolean {
+    if (!cfg.mapFirst) return true;
+    if (field.step === 'map') return true;
+    if (field.step === 'details') return false;
+    return MAP_STEP_KEYS.has(field.key);
+}
+
+/** שדות שמוצגים בטופס ההוספה */
+export function mapStepFields(cfg: CategoryConfig): FieldDef[] {
+    return cfg.fields.filter(f => isMapStepField(cfg, f));
+}
+
+/** שדות שנערכים בדף הפריט (רק בקטגוריות mapFirst; אחרת ריק) */
+export function detailStepFields(cfg: CategoryConfig): FieldDef[] {
+    return cfg.mapFirst ? cfg.fields.filter(f => !isMapStepField(cfg, f)) : [];
+}
 
 /** צבע ברירת מחדל לפי category id */
 export function getCategoryColor(categoryId: string): string {

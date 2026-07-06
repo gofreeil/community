@@ -3,6 +3,7 @@ import type { RequestHandler } from './$types';
 import { getDbItemByIdFresh, updateItem, deleteItem, getUserByAnyId, createItem } from '$lib/server/db';
 import { isSuperAdmin, isCoordinatorOfArea } from '$lib/server/auth';
 import { PLACE_STATUS_VALUES, DELETE_RESTORE_DAYS } from '$lib/placeStatus';
+import { categoryConfig } from '$lib/categoryFields';
 
 /** נרמול תשובת שאלת אבטחה להשוואה סלחנית (רווחים/אותיות/סימנים) */
 function normAnswer(s: string): string {
@@ -107,27 +108,45 @@ export const PATCH: RequestHandler = async (event) => {
         const loadExtra = (): Record<string, unknown> => {
             try { return item!.extra_fields ? JSON.parse(item!.extra_fields) : {}; } catch { return {}; }
         };
-        if (Array.isArray(fields.images)) {
-            extra = extra ?? loadExtra();
-            extra.images = (fields.images as unknown[]).filter(isSafeImage).slice(0, 5);
-        }
-        if (Array.isArray(fields.links)) {
-            extra = extra ?? loadExtra();
-            extra.links = sanitizeLinks(fields.links);
-        }
-        // תמונה/לוגו על המפה (תוספת בתשלום) - מותרת רק אם היא אחת מתמונות הגלריה,
-        // או מחרוזת ריקה לביטול הבחירה. לא זמין לפנויים (כבר נחסם למעלה).
-        if (typeof fields.map_image === 'string') {
-            extra = extra ?? loadExtra();
-            const chosen = fields.map_image.trim();
-            const gallery = (Array.isArray(extra.images) ? extra.images : []) as string[];
-            if (!chosen) {
-                extra.map_image = '';
-            } else if (isSafeImage(chosen) && gallery.includes(chosen)) {
-                extra.map_image = chosen;
-            } else {
-                return json({ success: false, message: 'התמונה שנבחרה למפה חייבת להיות אחת מתמונות הכרטיס' }, { status: 400 });
+
+        // מפת הגדרות השדות של הקטגוריה - קובעת אילו מפתחות מותר לכתוב ל-extra_fields ומאיזה טיפוס
+        const fieldDefs = new Map((categoryConfig[item.category]?.fields ?? []).map(f => [f.key, f]));
+        // מפתחות טופס שכבר טופלו כשדות עמודה (top-level) ואין לכפול אותם ב-extra
+        const TOP_LEVEL = new Set(['label', 'description', 'contact', 'phone']);
+
+        for (const [key, raw] of Object.entries(fields)) {
+            if (TOP_LEVEL.has(key)) continue;
+
+            // מפתחות מיוחדים שמותרים תמיד (גם בלי הגדרת שדה בקטגוריה)
+            if (key === 'images') {
+                extra = extra ?? loadExtra();
+                extra.images = Array.isArray(raw) ? (raw as unknown[]).filter(isSafeImage).slice(0, 5) : [];
+                continue;
             }
+            if (key === 'links') {
+                extra = extra ?? loadExtra();
+                extra.links = sanitizeLinks(raw);
+                continue;
+            }
+            // תמונה/לוגו על המפה (תוספת בתשלום) - תמונה עצמאית שהועלתה בטופס ההוספה; '' מנקה
+            if (key === 'map_image') {
+                extra = extra ?? loadExtra();
+                const chosen = typeof raw === 'string' ? raw.trim() : '';
+                extra.map_image = chosen && isSafeImage(chosen) ? chosen : '';
+                continue;
+            }
+
+            // שאר השדות - רק אם הם מוגדרים בקטגוריה (בטיחות: אי אפשר להזריק מפתחות שרירותיים)
+            const def = fieldDefs.get(key);
+            if (!def || def.type === 'map_pin') continue;
+            if (def.type === 'images') {
+                extra = extra ?? loadExtra();
+                extra[key] = Array.isArray(raw) ? (raw as unknown[]).filter(isSafeImage).slice(0, 5) : [];
+                continue;
+            }
+            // כל השאר נשמר כמחרוזת (text/select/toggle/multi_select/opening_hours/number/time/date/email/textarea/address)
+            extra = extra ?? loadExtra();
+            extra[key] = typeof raw === 'string' ? raw.slice(0, 5000) : raw == null ? '' : String(raw).slice(0, 5000);
         }
 
         if (Object.keys(updates).length === 0 && extra === undefined) {
