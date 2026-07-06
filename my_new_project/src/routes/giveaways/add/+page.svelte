@@ -7,6 +7,7 @@
     import { citiesAndNeighborhoods, effectiveNeighborhoods } from '$lib/neighborhoodsData';
     import { giveawayCategories } from '$lib/giveawayCategories';
     import { formMemory } from '$lib/formMemory';
+    import { imageDrop } from '$lib/imageDrop';
     import StreetPicker from '$lib/components/StreetPicker.svelte';
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -57,13 +58,17 @@
         });
     }
 
-    async function handleImagesChange(e: Event) {
-        const files = Array.from((e.target as HTMLInputElement).files ?? []);
+    async function processFiles(files: File[]) {
         const slots = MAX_IMAGES - images.length;
         const toAdd = files.slice(0, slots);
         const compressed = await Promise.all(toAdd.map(compressImage));
         images = [...images, ...compressed];
-        (e.target as HTMLInputElement).value = '';
+    }
+
+    async function handleImagesChange(e: Event) {
+        const input = e.target as HTMLInputElement;
+        await processFiles(Array.from(input.files ?? []));
+        input.value = '';
     }
 
     function removeImage(index: number) {
@@ -326,7 +331,7 @@
                                     </div>
                                 {/each}
                                 {#if images.length < MAX_IMAGES}
-                                    <label class="flex flex-col items-center justify-center gap-1 aspect-square rounded-xl border-2 border-dashed border-white/15 hover:border-orange-500/50 bg-white/3 hover:bg-orange-900/10 cursor-pointer transition-all">
+                                    <label use:imageDrop={processFiles} class="flex flex-col items-center justify-center gap-1 aspect-square rounded-xl border-2 border-dashed border-white/15 hover:border-orange-500/50 bg-white/3 hover:bg-orange-900/10 cursor-pointer transition-all">
                                         <span class="text-2xl">＋</span>
                                         <span class="text-gray-500 text-[10px]">עוד</span>
                                         <input type="file" accept="image/*" multiple class="hidden" onchange={handleImagesChange} />
@@ -334,7 +339,7 @@
                                 {/if}
                             </div>
                         {:else}
-                            <label class="flex flex-col items-center justify-center gap-2 w-full h-32 rounded-xl border-2 border-dashed border-white/15 hover:border-orange-500/50 bg-white/3 hover:bg-orange-900/10 cursor-pointer transition-all">
+                            <label use:imageDrop={processFiles} class="flex flex-col items-center justify-center gap-2 w-full h-32 rounded-xl border-2 border-dashed border-white/15 hover:border-orange-500/50 bg-white/3 hover:bg-orange-900/10 cursor-pointer transition-all">
                                 <span class="text-3xl">📷</span>
                                 <span class="text-gray-400 text-sm font-bold">לחץ להעלאת תמונות</span>
                                 <span class="text-gray-600 text-xs">ניתן לבחור מספר תמונות · JPG, PNG · עד {MAX_IMAGES}</span>

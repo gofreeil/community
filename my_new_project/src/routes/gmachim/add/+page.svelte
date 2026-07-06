@@ -6,6 +6,7 @@
     import { citiesAndNeighborhoods, effectiveNeighborhoods, LS_KEY, DEFAULT_NEIGHBORHOOD } from '$lib/neighborhoodsData';
     import { formMemory } from '$lib/formMemory';
     import { GMACH_TYPES } from '$lib/gmachTypes';
+    import { imageDrop } from '$lib/imageDrop';
     import StreetPicker from '$lib/components/StreetPicker.svelte';
     import type { ActionData, PageData } from './$types';
 
@@ -96,8 +97,8 @@
         });
     }
 
-    async function handleLogoChange(e: Event) {
-        const file = (e.target as HTMLInputElement).files?.[0];
+    async function processLogoFile(files: File[]) {
+        const file = files[0];
         if (!file) return;
         try {
             logoBase64 = await fileToResizedBase64(file, 400, 0.85);
@@ -106,8 +107,14 @@
         }
     }
 
-    async function handleImagesChange(e: Event) {
-        const files = Array.from((e.target as HTMLInputElement).files ?? []);
+    async function handleLogoChange(e: Event) {
+        const input = e.target as HTMLInputElement;
+        await processLogoFile(Array.from(input.files ?? []));
+        // איפוס ערך ה-input כדי לאפשר העלאה חוזרת של אותו קובץ
+        input.value = '';
+    }
+
+    async function processFiles(files: File[]) {
         if (files.length === 0) return;
 
         const remaining = MAX_IMAGES - images.length;
@@ -122,8 +129,13 @@
         } catch {
             clientError = 'בעיה בטעינת אחת התמונות, נסה תמונות אחרות';
         }
+    }
+
+    async function handleImagesChange(e: Event) {
+        const input = e.target as HTMLInputElement;
+        await processFiles(Array.from(input.files ?? []));
         // איפוס ערך ה-input כדי לאפשר העלאה חוזרת של אותו קובץ
-        (e.target as HTMLInputElement).value = '';
+        input.value = '';
     }
 
     function removeLogo() { logoBase64 = ''; }
@@ -427,7 +439,7 @@
                                     class="absolute -top-2 -left-2 w-7 h-7 rounded-full bg-black/70 hover:bg-red-600 text-white text-sm flex items-center justify-center transition-colors">✕</button>
                             </div>
                         {:else}
-                            <label class="flex flex-col items-center justify-center gap-1 w-32 h-32 rounded-xl border-2 border-dashed border-white/15 hover:border-amber-500/50 bg-white/3 hover:bg-amber-900/10 cursor-pointer transition-all">
+                            <label use:imageDrop={processLogoFile} class="flex flex-col items-center justify-center gap-1 w-32 h-32 rounded-xl border-2 border-dashed border-white/15 hover:border-amber-500/50 bg-white/3 hover:bg-amber-900/10 cursor-pointer transition-all">
                                 <span class="text-2xl">🎨</span>
                                 <span class="text-gray-400 text-xs font-bold">העלה לוגו</span>
                                 <span class="text-gray-600 text-[10px]">תמונה ריבועית מומלצת</span>
@@ -456,7 +468,7 @@
                             </div>
                         {/each}
                         {#if images.length < MAX_IMAGES}
-                            <label class="aspect-square flex flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-white/15 hover:border-amber-500/50 bg-white/3 hover:bg-amber-900/10 cursor-pointer transition-all">
+                            <label use:imageDrop={processFiles} class="aspect-square flex flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-white/15 hover:border-amber-500/50 bg-white/3 hover:bg-amber-900/10 cursor-pointer transition-all">
                                 <span class="text-2xl">📷</span>
                                 <span class="text-gray-400 text-xs font-bold">הוסף</span>
                                 <input type="file" accept="image/*" multiple class="hidden" onchange={handleImagesChange} />

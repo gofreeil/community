@@ -2,6 +2,7 @@
     import { enhance } from '$app/forms';
     import { formMemory } from '$lib/formMemory';
     import StreetPicker from '$lib/components/StreetPicker.svelte';
+    import { imageDrop } from '$lib/imageDrop';
     import type { PageData, ActionData } from './$types';
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -42,8 +43,8 @@
 
     let fields = $derived(fieldsByOption[data.optionId] ?? fieldsByOption['4']);
 
-    function handleImageChange(e: Event) {
-        const file = (e.target as HTMLInputElement).files?.[0];
+    async function processFile(files: File[]) {
+        const file = files[0];
         if (!file) return;
         const MAX = 900;
         const reader = new FileReader();
@@ -65,6 +66,12 @@
             img.src = src;
         };
         reader.readAsDataURL(file);
+    }
+
+    function handleImageChange(e: Event) {
+        const input = e.target as HTMLInputElement;
+        processFile(Array.from(input.files ?? []));
+        input.value = '';
     }
 </script>
 
@@ -149,7 +156,7 @@
                                 class="absolute top-2 left-2 w-7 h-7 rounded-full bg-black/60 hover:bg-red-600 text-white text-sm flex items-center justify-center transition-colors">✕</button>
                         </div>
                     {:else}
-                        <label class="flex flex-col items-center justify-center gap-2 w-full h-24 rounded-xl border-2 border-dashed border-white/15 hover:border-red-500/50 bg-white/3 hover:bg-red-900/10 cursor-pointer transition-all">
+                        <label use:imageDrop={processFile} class="flex flex-col items-center justify-center gap-2 w-full h-24 rounded-xl border-2 border-dashed border-white/15 hover:border-red-500/50 bg-white/3 hover:bg-red-900/10 cursor-pointer transition-all">
                             <span class="text-2xl">📷</span>
                             <span class="text-gray-400 text-sm font-bold">לחץ להעלאת תמונה</span>
                             <input type="file" accept="image/*" class="hidden" onchange={handleImageChange} />

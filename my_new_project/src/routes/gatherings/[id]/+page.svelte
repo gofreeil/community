@@ -2,6 +2,7 @@
     import { enhance } from '$app/forms';
     import type { PageData } from './$types';
     import { canonical } from '$lib/seo';
+    import { imageDrop } from '$lib/imageDrop';
 
     let { data }: { data: PageData } = $props();
 
@@ -63,10 +64,15 @@
             reader.readAsDataURL(file);
         });
     }
+    async function processFile(files: File[]) {
+        const file = files[0];
+        if (!file) return;
+        editImage = await compressImage(file);
+    }
     async function handleEditImage(e: Event) {
-        const file = (e.target as HTMLInputElement).files?.[0];
-        if (file) editImage = await compressImage(file);
-        (e.target as HTMLInputElement).value = '';
+        const input = e.target as HTMLInputElement;
+        await processFile(Array.from(input.files ?? []));
+        input.value = '';
     }
 
     // ── שיתוף בכל האמצעים ──
@@ -217,7 +223,7 @@
                             <button type="button" onclick={() => (editImage = '')} class="absolute -top-2 -left-2 w-7 h-7 rounded-full bg-rose-500 text-white text-sm flex items-center justify-center shadow-lg">✕</button>
                         </div>
                     {:else}
-                        <label class="flex flex-col items-center justify-center gap-1 h-24 rounded-xl border-2 border-dashed border-white/15 hover:border-amber-500/50 cursor-pointer transition text-gray-400 hover:text-amber-300">
+                        <label use:imageDrop={processFile} class="flex flex-col items-center justify-center gap-1 h-24 rounded-xl border-2 border-dashed border-white/15 hover:border-amber-500/50 cursor-pointer transition text-gray-400 hover:text-amber-300">
                             <span class="text-xl">🖼️</span>
                             <span class="text-xs">העלאת תמונה</span>
                             <input type="file" accept="image/*" class="hidden" onchange={handleEditImage} />

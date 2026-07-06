@@ -14,6 +14,7 @@
 	import { t, locale } from "svelte-i18n";
 	import { get } from "svelte/store";
 	import { neighborhoodState } from "$lib/neighborhoodState.svelte";
+	import { imageDrop } from "$lib/imageDrop";
 	import { registerDynamicNeighborhoods, hasPreciseCoords, MY_PIN_LS_KEY } from "$lib/neighborhoodCoords";
 	import { findWhatsAppGroups } from "$lib/data/whatsapp-groups";
 	import { getLikedItems, removeLike, type LikedItem } from "$lib/likedItems";
@@ -1626,8 +1627,8 @@
 		ringTipY = e.clientY + 20;
 	}
 
-	function handleImageChange(e: Event) {
-		const file = (e.target as HTMLInputElement).files?.[0];
+	function processProfileImage(files: File[]) {
+		const file = files[0];
 		if (!file) return;
 		const reader = new FileReader();
 		reader.onload = (ev) => {
@@ -1637,6 +1638,9 @@
 			showCrop = true;
 		};
 		reader.readAsDataURL(file);
+	}
+	function handleImageChange(e: Event) {
+		processProfileImage(Array.from((e.target as HTMLInputElement).files ?? []));
 	}
 
 	function onCropLoad(e: Event) {
@@ -3813,6 +3817,7 @@
 								{/if}
 								<div class="flex flex-wrap gap-2">
 									<label
+										use:imageDrop={processProfileImage}
 										class="cursor-pointer bg-white/5 hover:bg-white/10 border border-white/10
 							              hover:border-purple-500/40 rounded-xl px-4 py-2 text-sm text-gray-300
 							              transition-all inline-block"

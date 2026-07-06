@@ -11,6 +11,7 @@
     import { productSchema, eventSchema } from "$lib/seo";
     import { formatOpeningHours } from "$lib/openingHours";
     import { gmachTypeLabel } from "$lib/gmachTypes";
+    import { imageDrop } from "$lib/imageDrop";
 
     let { data }: { data: PageData } = $props();
     const item = $derived(data.item);
@@ -317,10 +318,7 @@
         });
     }
 
-    async function onImagesPicked(e: Event) {
-        const input = e.currentTarget as HTMLInputElement;
-        const files = Array.from(input.files ?? []);
-        input.value = '';
+    async function processImageFiles(files: File[]) {
         if (!files.length) return;
         uploadingImages = true;
         builderError = '';
@@ -341,6 +339,17 @@
         } finally {
             uploadingImages = false;
         }
+    }
+    async function onImagesPicked(e: Event) {
+        const input = e.currentTarget as HTMLInputElement;
+        const files = Array.from(input.files ?? []);
+        input.value = '';
+        await processImageFiles(files);
+    }
+    // גרירת תמונות לאזור התמונה — רק במצב בנייה
+    function handleImageDrop(files: File[]) {
+        if (!builderMode) return;
+        processImageFiles(files);
     }
 
     async function removeCurrentImage() {
@@ -985,7 +994,7 @@
                 <!-- Top: image side-by-side with description+address -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-0">
                 <!-- Header / Image gallery -->
-                <div class="relative bg-[#0a0f1a] flex items-center justify-center min-h-[150px]" class:h-[110px]={galleryImages.length === 0} class:md:h-[140px]={galleryImages.length === 0}>
+                <div use:imageDrop={handleImageDrop} class="relative bg-[#0a0f1a] flex items-center justify-center min-h-[150px]" class:h-[110px]={galleryImages.length === 0} class:md:h-[140px]={galleryImages.length === 0}>
                     {#if galleryImages.length > 0}
                         {#key galleryIndex}
                             <button

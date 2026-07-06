@@ -3,6 +3,7 @@
     import { _ } from 'svelte-i18n';
     import type { PageData } from './$types';
     import { canonical } from '$lib/seo';
+    import { imageDrop } from '$lib/imageDrop';
 
     let { data }: { data: PageData } = $props();
 
@@ -46,10 +47,15 @@
             reader.readAsDataURL(file);
         });
     }
+    async function processFile(files: File[]) {
+        const file = files[0];
+        if (!file) return;
+        coverImage = await compressImage(file);
+    }
     async function handleCoverChange(e: Event) {
-        const file = (e.target as HTMLInputElement).files?.[0];
-        if (file) coverImage = await compressImage(file);
-        (e.target as HTMLInputElement).value = '';
+        const input = e.target as HTMLInputElement;
+        await processFile(Array.from(input.files ?? []));
+        input.value = '';
     }
 
     // רשימת מאכלים התחלתית בטופס ההקמה
@@ -144,7 +150,7 @@
                                 <button type="button" onclick={() => (coverImage = '')} class="absolute -top-2 -left-2 w-7 h-7 rounded-full bg-rose-500 text-white text-sm flex items-center justify-center shadow-lg">✕</button>
                             </div>
                         {:else}
-                            <label class="flex flex-col items-center justify-center gap-1 h-28 rounded-xl border-2 border-dashed border-white/15 hover:border-amber-500/50 cursor-pointer transition text-gray-400 hover:text-amber-300">
+                            <label use:imageDrop={processFile} class="flex flex-col items-center justify-center gap-1 h-28 rounded-xl border-2 border-dashed border-white/15 hover:border-amber-500/50 cursor-pointer transition text-gray-400 hover:text-amber-300">
                                 <span class="text-2xl">🖼️</span>
                                 <span class="text-xs">{$_('community.ga_upload_hint')}</span>
                                 <input type="file" accept="image/*" class="hidden" onchange={handleCoverChange} />

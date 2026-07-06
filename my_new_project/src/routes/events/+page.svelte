@@ -4,6 +4,7 @@
     import type { PageData } from './$types';
     import JsonLd from "$lib/components/JsonLd.svelte";
     import { breadcrumbSchema, collectionSchema, canonical } from "$lib/seo";
+    import { imageDrop } from '$lib/imageDrop';
 
     let { data }: { data: PageData } = $props();
 
@@ -136,11 +137,18 @@
             reader.readAsDataURL(file);
         });
     }
+    async function processImageFile(file: File, set: (v: string) => void) {
+        if (file && file.type.startsWith('image/')) set(await compressEventImage(file));
+    }
     async function pickImage(e: Event, set: (v: string) => void) {
         const input = e.target as HTMLInputElement;
         const file = input.files?.[0];
-        if (file && file.type.startsWith('image/')) set(await compressEventImage(file));
+        if (file) await processImageFile(file, set);
         input.value = '';
+    }
+    async function dropImage(files: File[], set: (v: string) => void) {
+        if (!files.length) return;
+        await processImageFile(files[0], set);
     }
 
     // coordinator neighborhoods
@@ -474,7 +482,7 @@
                                             aria-label={$_('community.ev_remove_image')}>×</button>
                                     </div>
                                 {:else}
-                                    <label class="cursor-pointer flex items-center gap-1.5 px-3 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 border border-dashed border-green-400/40 text-gray-200 text-sm font-semibold transition-all">
+                                    <label use:imageDrop={(files) => dropImage(files, (v) => addImage = v)} class="cursor-pointer flex items-center gap-1.5 px-3 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 border border-dashed border-green-400/40 text-gray-200 text-sm font-semibold transition-all">
                                         📷 <span>{$_('community.ev_upload_image')}</span>
                                         <input type="file" accept="image/*" class="hidden" onchange={(e) => pickImage(e, (v) => addImage = v)} />
                                     </label>
@@ -576,7 +584,7 @@
                                             aria-label={$_('community.ev_remove_image')}>×</button>
                                     </div>
                                 {:else}
-                                    <label class="cursor-pointer flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-dashed border-teal-400/40 text-gray-200 text-sm font-semibold transition-all">
+                                    <label use:imageDrop={(files) => dropImage(files, (v) => suggestImage = v)} class="cursor-pointer flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-dashed border-teal-400/40 text-gray-200 text-sm font-semibold transition-all">
                                         📷 <span>{$_('community.ev_image_word')}</span>
                                         <input type="file" accept="image/*" class="hidden" onchange={(e) => pickImage(e, (v) => suggestImage = v)} />
                                     </label>

@@ -1,6 +1,7 @@
 <script lang="ts">
     import { enhance } from '$app/forms';
     import { formMemory } from '$lib/formMemory';
+    import { imageDrop } from '$lib/imageDrop';
     import StreetPicker from '$lib/components/StreetPicker.svelte';
     import type { ActionData, PageData } from './$types';
 
@@ -14,8 +15,8 @@
     let imageBase64 = $state('');
     let imagePreview = $state('');
 
-    function handleImageChange(e: Event) {
-        const file = (e.target as HTMLInputElement).files?.[0];
+    async function processFile(files: File[]) {
+        const file = files[0];
         if (!file) return;
 
         const MAX = 900;
@@ -42,6 +43,12 @@
             img.src = src;
         };
         reader.readAsDataURL(file);
+    }
+
+    function handleImageChange(e: Event) {
+        const input = e.target as HTMLInputElement;
+        processFile(Array.from(input.files ?? []));
+        input.value = '';
     }
 
     function removeImage() {
@@ -183,7 +190,7 @@
                             >✕</button>
                         </div>
                     {:else}
-                        <label class="flex flex-col items-center justify-center gap-2 w-full h-28 rounded-xl border-2 border-dashed border-white/15 hover:border-blue-500/50 bg-white/3 hover:bg-blue-900/10 cursor-pointer transition-all">
+                        <label use:imageDrop={processFile} class="flex flex-col items-center justify-center gap-2 w-full h-28 rounded-xl border-2 border-dashed border-white/15 hover:border-blue-500/50 bg-white/3 hover:bg-blue-900/10 cursor-pointer transition-all">
                             <span class="text-2xl">📷</span>
                             <span class="text-gray-400 text-sm font-bold">לחץ להעלאת תמונה</span>
                             <span class="text-gray-600 text-xs">JPG, PNG עד 5MB</span>
