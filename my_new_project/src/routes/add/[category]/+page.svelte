@@ -318,6 +318,16 @@
         if (oh.days[idx].ranges.length > 1) oh.days[idx].ranges.splice(rIdx, 1);
         setOpeningHours(key, oh);
     }
+    // מעתיק את שעות היום הנבחר לכל שאר הימים הפתוחים - מילוי יום אחד מספיק
+    function applyDayToAll(key: string, idx: number) {
+        const oh = getOpeningHours(key);
+        const src = oh.days[idx];
+        for (const d of oh.days) {
+            if (d === src || !d.open) continue;
+            d.ranges = src.ranges.map((r) => ({ ...r }));
+        }
+        setOpeningHours(key, oh);
+    }
 
     function startLongPress(key: string) {
         if (longPressTimer) clearTimeout(longPressTimer);
@@ -822,11 +832,12 @@
                     {:else if field.type === 'opening_hours'}
                         {@const oh = getOpeningHours(field.key)}
                         {@const anyOpen = oh.days.some((d) => d.open)}
+                        {@const openDayCount = oh.days.filter((d) => d.open).length}
                         {@const rep = oh.days.find((d) => d.open) ?? oh.days[0]}
                         {@const timeInput = 'rounded-lg border border-white/15 bg-white/10 px-2.5 py-2 text-white text-sm text-center focus:outline-none focus:border-amber-500/60'}
                         <div class="rounded-xl border border-white/15 bg-white/5 p-3 md:p-4 space-y-3">
                             <!-- בחירת ימים פתוחים -->
-                            <p class="text-xs text-gray-400">אילו ימים פתוח?</p>
+                            <p class="text-xs text-gray-400">אילו ימים פתוח? <span class="text-gray-500">לחצו על יום כדי לפתוח או לסגור אותו — גם ו׳ ומוצ״ש</span></p>
                             <div class="grid grid-cols-7 gap-1.5">
                                 {#each DAY_SHORT as d, dIdx}
                                     {@const isOpen = oh.days[dIdx].open}
@@ -835,8 +846,9 @@
                                         onclick={() => toggleDayOpen(field.key, dIdx)}
                                         class="h-9 rounded-lg border-2 text-xs font-bold transition-all {isOpen
                                             ? `${colors.btn} text-white border-transparent shadow-md`
-                                            : 'bg-white/5 border-white/15 text-gray-500 hover:bg-white/10 hover:border-white/30'}"
+                                            : 'bg-white/5 border-dashed border-white/25 text-gray-400 hover:bg-white/10 hover:border-white/50 hover:text-white'}"
                                         aria-pressed={isOpen}
+                                        title={isOpen ? `${d} פתוח - לחיצה תסגור` : `${d} סגור - לחיצה תפתח`}
                                     >{d}</button>
                                 {/each}
                             </div>
@@ -906,7 +918,17 @@
                                         {#each DAY_SHORT as d, dIdx}
                                             {#if oh.days[dIdx].open}
                                                 <div class="flex gap-2 py-2 md:justify-center md:gap-3">
-                                                    <span class="w-12 shrink-0 pt-2 text-sm font-bold text-gray-200">{d}</span>
+                                                    <div class="w-12 shrink-0 flex flex-col items-start gap-0.5 pt-2">
+                                                        <span class="text-sm font-bold text-gray-200">{d}</span>
+                                                        {#if openDayCount > 1}
+                                                            <button
+                                                                type="button"
+                                                                onclick={() => applyDayToAll(field.key, dIdx)}
+                                                                class="text-[10px] font-bold text-gray-500 hover:text-amber-300 underline underline-offset-2 transition-colors whitespace-nowrap"
+                                                                title="החלת השעות של יום {d} על כל הימים הפתוחים"
+                                                            >⧉ לכולם</button>
+                                                        {/if}
+                                                    </div>
                                                     <div class="flex flex-col gap-1.5 flex-1 md:flex-none min-w-0">
                                                         {#each oh.days[dIdx].ranges as r, rIdx (rIdx)}
                                                             <div class="flex items-center gap-1.5">
@@ -957,6 +979,7 @@
                                         {/each}
                                     </div>
                                     <p class="text-[11px] text-gray-500 text-center leading-relaxed">
+                                        מלאו את השעות של יום אחד ולחצו "⧉ לכולם" כדי להעתיק אותן לכל הימים בבת אחת ·
                                         לחיצה על ＋ ליד יום מוסיפה לו טווח שעות נוסף — למשל פתוח בבוקר וגם בערב
                                     </p>
                                 {/if}
@@ -1172,7 +1195,7 @@
                             {monthlyPrice} ₪ בחודש · התשלום בשלב הבא
                         {/if}
                     {:else}
-                        הפריט יופיע מיד
+                        הפריט יופיע מיד · בשלב הבא תועברו לדף הפריט המלא — שם מוסיפים תמונות ופרטים נוספים
                     {/if}
                 </p>
             </div>
