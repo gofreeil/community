@@ -42,6 +42,14 @@ export const actions: Actions = {
         const lat         = latRaw !== '' && Number.isFinite(+latRaw) ? +latRaw : null;
         const lng         = lngRaw !== '' && Number.isFinite(+lngRaw) ? +lngRaw : null;
 
+        // מגירת "נראה לאחרונה" - פרטי איתור אחרונים (אופציונלי, בעיקר בקריאות אובדן)
+        const lsTime      = fd.get('last_seen_time')?.toString().trim()    ?? '';
+        const lsPlace     = fd.get('last_seen_place')?.toString().trim()   ?? '';
+        const lsDetails   = fd.get('last_seen_details')?.toString().trim() ?? '';
+        const lastSeen    = (lsTime || lsPlace || lsDetails)
+            ? { ...(lsTime ? { time: lsTime } : {}), ...(lsPlace ? { place: lsPlace } : {}), ...(lsDetails ? { details: lsDetails } : {}) }
+            : null;
+
         if (!description) return fail(400, { error: 'יש לתאר את בקשת העזרה' });
         if (!location)    return fail(400, { error: 'יש למלא מיקום' });
         if (!phone)       return fail(400, { error: 'יש למלא טלפון ליצירת קשר' });
@@ -66,6 +74,7 @@ export const actions: Actions = {
                 extra_fields: {
                     option_id: optionId,
                     ...(image_b64 ? { image: image_b64 } : {}),
+                    ...(lastSeen ? { last_seen: lastSeen } : {}),
                 },
             });
         } catch (e) {

@@ -18,9 +18,11 @@
     let submitting   = $state(false);
     let imageBase64  = $state('');
     let imagePreview = $state('');
+    // מגירת "נראה לאחרונה" - פתוחה/סגורה (מוצגת רק בקריאות של אובדן: ילד/כלב)
+    let lastSeenOpen = $state(false);
 
     // שדות דינמיים לפי סוג הקריאה
-    const fieldsByOption: Record<string, { descLabel: string; descPlaceholder: string; locationPlaceholder: string }> = {
+    const fieldsByOption: Record<string, { descLabel: string; descPlaceholder: string; locationPlaceholder: string; hasLastSeen?: boolean }> = {
         '1': {
             descLabel:          'תיאור המצב',
             descPlaceholder:    'פרט את המצב - מה קרה, באיזו עזרה נדרש...',
@@ -35,6 +37,7 @@
             descLabel:          'תיאור הילד',
             descPlaceholder:    'גיל, לבוש, מאפיינים בולטים, מתי נעלם...',
             locationPlaceholder:'איפה נראה לאחרונה? שם המקום, רחוב...',
+            hasLastSeen:        true,
         },
         '4': {
             descLabel:          'תיאור בקשת העזרה',
@@ -45,6 +48,7 @@
             descLabel:          'תיאור הכלב',
             descPlaceholder:    'גזע, צבע, שם הכלב, מתי ואיפה נעלם...',
             locationPlaceholder:'אזור שאבד לאחרונה...',
+            hasLastSeen:        true,
         },
     };
 
@@ -171,6 +175,47 @@
                     <input type="hidden" name="lat" value={pinLat ?? ''} />
                     <input type="hidden" name="lng" value={pinLng ?? ''} />
                 </div>
+
+                <!-- Last seen drawer (רק בקריאות אובדן: ילד / כלב) -->
+                {#if fields.hasLastSeen}
+                <div class="rounded-xl border border-white/10 overflow-hidden">
+                    <button type="button" onclick={() => (lastSeenOpen = !lastSeenOpen)}
+                        class="w-full flex items-center justify-between px-4 py-3 bg-white/5 hover:bg-white/10 transition-colors">
+                        <span class="flex items-center gap-2 text-sm font-bold text-gray-200">
+                            👁️ נראה לאחרונה
+                        </span>
+                        <span class="text-gray-400 text-sm">{lastSeenOpen ? '▲' : '▼'}</span>
+                    </button>
+                    {#if lastSeenOpen}
+                    <div class="p-4 space-y-4 border-t border-white/10">
+                        <div>
+                            <label for="ls-time" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
+                                מתי נראה לאחרונה
+                            </label>
+                            <input id="ls-time" name="last_seen_time" type="text"
+                                placeholder="לדוגמה: היום ב-14:30, לפני חצי שעה..."
+                                class="w-full bg-white/5 border border-white/10 focus:border-red-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none transition-colors placeholder:text-gray-600" />
+                        </div>
+                        <div>
+                            <label for="ls-place" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
+                                היכן נראה לאחרונה
+                            </label>
+                            <input id="ls-place" name="last_seen_place" type="text"
+                                placeholder="כתובת מדויקת, נקודת ציון, ליד..."
+                                class="w-full bg-white/5 border border-white/10 focus:border-red-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none transition-colors placeholder:text-gray-600" />
+                        </div>
+                        <div>
+                            <label for="ls-details" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
+                                לבוש וכיוון תנועה
+                            </label>
+                            <input id="ls-details" name="last_seen_details" type="text"
+                                placeholder="מה לבש/ה, לאיזה כיוון הלך/ה..."
+                                class="w-full bg-white/5 border border-white/10 focus:border-red-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none transition-colors placeholder:text-gray-600" />
+                        </div>
+                    </div>
+                    {/if}
+                </div>
+                {/if}
 
                 <!-- Image -->
                 <div>

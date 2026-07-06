@@ -966,7 +966,7 @@
 
 <!-- Hidden keys (rendered in dedicated sections, complex types, or internal-only) -->
 {#snippet extraFieldsBlock()}
-    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'menu_images', 'map_image', 'price', 'website', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname', 'age', 'birth_date', 'sector', 'gender', 'type', 'activities', 'links', 'gmach_type', 'gmach_types', 'place_status', 'location'])}
+    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'menu_images', 'map_image', 'price', 'website', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname', 'age', 'birth_date', 'sector', 'gender', 'type', 'activities', 'links', 'gmach_type', 'gmach_types', 'place_status', 'location', 'option_id', 'last_seen'])}
     {@const LABELS_HE: Record<string, string> = {
         nickname: 'שם או כינוי',
         gender: 'מין',
@@ -1021,6 +1021,31 @@
                     <div class="grid grid-cols-[auto,1fr] gap-x-3 px-3 py-2 bg-[#0f172a]">
                         <dt class="text-xs text-gray-400 font-semibold whitespace-nowrap">{LABELS_HE[key] ?? key}</dt>
                         <dd class="text-white font-medium text-xs">{formatValue(key, value)}</dd>
+                    </div>
+                {/each}
+            </dl>
+        </section>
+    {/if}
+{/snippet}
+
+<!-- "נראה לאחרונה" - פרטי איתור אחרונים בקריאות אובדן (ילד/כלב) -->
+{#snippet lastSeenBlock()}
+    {@const ls = (item as { extraFields?: { last_seen?: unknown } } | null)?.extraFields?.last_seen}
+    {@const lsObj = ls && typeof ls === 'object' ? ls as { time?: string; place?: string; details?: string } : null}
+    {@const rows = lsObj ? [
+        { label: 'מתי', value: lsObj.time },
+        { label: 'היכן', value: lsObj.place },
+        { label: 'לבוש וכיוון', value: lsObj.details },
+    ].filter(r => typeof r.value === 'string' && r.value.trim()) : []}
+    {#if rows.length > 0}
+        <section>
+            <h2 class="text-base font-bold text-white mb-1.5 flex items-center gap-1.5">
+                <span class="w-1 h-4 bg-red-500 rounded-full"></span>👁️ נראה לאחרונה</h2>
+            <dl class="rounded-xl border border-white/10 overflow-hidden grid grid-cols-1 sm:grid-cols-2 gap-px bg-white/10">
+                {#each rows as row}
+                    <div class="grid grid-cols-[auto,1fr] gap-x-3 px-3 py-2 bg-[#0f172a]">
+                        <dt class="text-xs text-gray-400 font-semibold whitespace-nowrap">{row.label}</dt>
+                        <dd class="text-white font-medium text-xs">{row.value}</dd>
                     </div>
                 {/each}
             </dl>
@@ -1364,6 +1389,9 @@
                             <a href="tel:{item.phone}" class="hover:text-white">{item.phone}</a>
                         </p>
                     {/if}
+
+                    <!-- "נראה לאחרונה" - קריאות אובדן -->
+                    {@render lastSeenBlock()}
 
                     <!-- Services badges (synagogue + lesson + mikveh...) -->
                     {@render servicesBlock()}
