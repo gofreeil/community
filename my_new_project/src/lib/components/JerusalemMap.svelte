@@ -661,6 +661,18 @@
         }
     }
 
+    // הקטנת האמוג'ים בזום קרוב כדי שלא יסתירו את המפה.
+    // Leaflet שומר על divIcon בגודל פיקסלים קבוע בכל זום, לכן צריך לשנות ידנית
+    // לפי רמת הזום דרך CSS variable שהמרקרים יורשים.
+    function applyPinScale() {
+        if (!leafletMap || !mapEl) return;
+        const z = leafletMap.getZoom();
+        // עד זום 14 (תצוגת שכונה) - גודל מלא לקריאוּת;
+        // מזום 14 ומעלה (התקרבות) - מקטינים בהדרגה עד 0.55.
+        const scale = z <= 14 ? 1 : Math.max(0.55, 1 - (z - 14) * 0.09);
+        mapEl.style.setProperty('--jmap-pin-scale', String(scale));
+    }
+
     // ברירת מחדל: התקרבות שממלאת את המסך עם השכונה/הישוב (לפי המרקרים),
     // כך שרואים את הפרטים. המשתמש יכול להתקרב/להתרחק יותר ידנית.
     function fitToMarkers(animate = true): boolean {
@@ -723,6 +735,9 @@
         rebuildMarkers();
         // ברירת מחדל: למלא את המסך עם הישוב/השכונה (במקום זום קבוע רחוק)
         fitToMarkers(false);
+        // הקטנת האמוג'ים בזום קרוב
+        applyPinScale();
+        leafletMap.on('zoomend', applyPinScale);
 
         setTimeout(() => { leafletMap?.invalidateSize?.(); fitToMarkers(false); }, 0);
         setTimeout(() => { leafletMap?.invalidateSize?.(); fitToMarkers(false); }, 250);
@@ -2337,10 +2352,12 @@
     :global(.jmap-pin) {
         text-align: center;
         cursor: pointer;
+        transform: scale(var(--jmap-pin-scale, 1));
+        transform-origin: bottom center;
         transition: transform 0.15s ease;
     }
     :global(.jmap-pin:hover) {
-        transform: scale(1.1);
+        transform: scale(calc(var(--jmap-pin-scale, 1) * 1.12));
     }
     :global(.jmap-pin-icon) {
         font-size: 1.875rem;
