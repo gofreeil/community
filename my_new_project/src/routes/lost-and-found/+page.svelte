@@ -18,11 +18,19 @@
     let resolveSending = $state(false);
     let resolvedIds = $state<string[]>([]);
 
+    // Admin delete modal state
+    let adminDeleteModal = $state<{ id: string; label: string } | null>(null);
+    let adminDeleting = $state(false);
+
     $effect(() => {
         if (form?.msgSent) msgModal = null;
         if (form?.resolved && form.resolvedItemId) {
             resolvedIds = [...resolvedIds, form.resolvedItemId];
             resolveModal = null;
+        }
+        if (form?.adminDeleted && form.deletedItemId) {
+            resolvedIds = [...resolvedIds, form.deletedItemId];
+            adminDeleteModal = null;
         }
     });
 
@@ -218,6 +226,47 @@
     </div>
 {/if}
 
+<!-- Admin delete modal (super-admin only) -->
+{#if adminDeleteModal}
+    <div class="fixed inset-0 bg-black/70 z-[200] flex items-center justify-center px-4" dir="rtl">
+        <div class="w-full max-w-md bg-[#1e293b] rounded-2xl border border-red-500/30 shadow-2xl p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="font-black text-white text-lg">🛡️ מחיקת מודעה (מנהל)</h2>
+                <button onclick={() => adminDeleteModal = null} class="text-gray-400 hover:text-white text-xl leading-none">✕</button>
+            </div>
+
+            <p class="text-gray-300 text-sm mb-5 leading-relaxed">
+                המודעה <span class="text-white font-bold">"{adminDeleteModal.label}"</span> תימחק לצמיתות מהמערכת.
+                פעולה זו אינה ניתנת לשחזור.
+            </p>
+
+            {#if form?.adminDeleteError}
+                <div class="mb-3 px-4 py-2 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 text-sm">
+                    ⚠️ {form.adminDeleteError}
+                </div>
+            {/if}
+
+            <form method="POST" action="?/adminDeleteItem"
+                use:enhance={() => {
+                    adminDeleting = true;
+                    return async ({ update }) => { await update(); adminDeleting = false; };
+                }}
+                class="flex gap-3">
+                <input type="hidden" name="item_id" value={adminDeleteModal.id} />
+                <button type="button" onclick={() => adminDeleteModal = null}
+                    class="flex-1 py-3 rounded-xl font-bold text-sm bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all border border-white/10">
+                    ביטול
+                </button>
+                <button type="submit" disabled={adminDeleting}
+                    class="flex-1 py-3 rounded-xl font-black text-sm transition-all
+                        {adminDeleting ? 'bg-white/10 text-gray-500 cursor-not-allowed' : 'bg-red-600 hover:bg-red-500 text-white shadow-lg'}">
+                    {adminDeleting ? 'מוחק...' : '🗑️ מחק לצמיתות'}
+                </button>
+            </form>
+        </div>
+    </div>
+{/if}
+
 <div class="max-w-2xl mx-auto px-4 py-8" dir="rtl">
 
     <!-- Header -->
@@ -346,6 +395,15 @@
                                     class="w-full py-2 rounded-xl bg-red-600/15 hover:bg-red-600/30 text-red-400 hover:text-red-300 text-xs font-bold transition-all border border-red-500/20"
                                 >
                                     🗑️ הורד מודעה
+                                </button>
+                            {/if}
+
+                            {#if data.isSuperAdmin}
+                                <button
+                                    onclick={() => adminDeleteModal = { id: item.id, label: item.label }}
+                                    class="w-full py-2 rounded-xl bg-red-900/30 hover:bg-red-800/50 text-red-300 hover:text-white text-xs font-bold transition-all border border-red-500/30"
+                                >
+                                    🛡️ מחק כמנהל
                                 </button>
                             {/if}
                         </div>

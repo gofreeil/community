@@ -1,4 +1,5 @@
-import { getItemsByCategoryAndCity, createItem, resolveItem, getResolvedCount, getUserById } from '$lib/server/db';
+import { getItemsByCategoryAndCity, createItem, resolveItem, getResolvedCount, getUserById, deleteItem } from '$lib/server/db';
+import { isSuperAdmin } from '$lib/server/auth';
 import { fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 
@@ -21,10 +22,10 @@ export const load: PageServerLoad = async (event) => {
             userCity ? getItemsByCategoryAndCity('lost_and_found', userCity) : Promise.resolve([]),
             getResolvedCount('lost_and_found'),
         ]);
-        return { items, currentUserId: session?.user?.id ?? null, returnedCount, userCity };
+        return { items, currentUserId: session?.user?.id ?? null, isSuperAdmin: isSuperAdmin(session), returnedCount, userCity };
     } catch (e) {
         console.warn('[lost-and-found] load failed:', e instanceof Error ? e.message : e);
-        return { items: [], currentUserId: null, returnedCount: 0, userCity };
+        return { items: [], currentUserId: null, isSuperAdmin: isSuperAdmin(session), returnedCount: 0, userCity };
     }
 };
 
@@ -92,5 +93,25 @@ export const actions: Actions = {
         }
 
         return { resolved: true, resolvedItemId: item_id };
+    },
+
+    // מחיקה מלאה על ידי סופר-אדמין - לתוכן לא ראוי / מודעות של משתמשים אחרים
+    adminDeleteItem: async (event) => {
+        let session = null;
+        try { session = await event.locals.auth(); } catch {}
+        if (!isSuperAdmin(session)) return fail(403, { adminDeleteError: 'נדרשת הרשאת מנהל ראשי' });
+
+        const fd      = await event.request.formData();
+        const item_id = fd.get('item_id')?.toString() ?? '';
+        if (!item_id) return fail(400, { adminDeleteError: 'חסר מזהה מודעה' });
+
+        try {
+            await deleteItem(item_id);
+        } catch (e) {
+            console.error('[adminDeleteItem] failed:', e);
+            return fail(500, { adminDeleteError: 'שגיאה במחיקת המודעה, נסה שוב' });
+        }
+
+        return { adminDeleted: true, deletedItemId: item_id };
     },
 };
