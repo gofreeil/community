@@ -345,6 +345,19 @@
         </a>
     </div>
 
+    <!-- קישור לאתר הייעודי (אותן מודעות, מסונכרן) -->
+    <a
+        href="https://avedot.gofreeil.com"
+        target="_blank"
+        rel="noopener"
+        class="flex items-center justify-between gap-3 mb-6 bg-gradient-to-l from-cyan-500/10 to-blue-500/10 border border-cyan-400/25 hover:border-cyan-400/50 rounded-xl px-4 py-3 transition-colors"
+    >
+        <span class="text-sm text-cyan-100">
+            🔍 יש גם אתר ייעודי לאבדות — <span class="font-bold">avedot.gofreeil.com</span> · אותן מודעות בדיוק, מסונכרן אוטומטית
+        </span>
+        <span class="text-cyan-300 text-sm font-bold whitespace-nowrap">לאתר ←</span>
+    </a>
+
     <!-- Search -->
     <div class="relative mb-4">
         <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">🔎</span>
