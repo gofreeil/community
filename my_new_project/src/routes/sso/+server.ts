@@ -58,7 +58,7 @@ export const GET: RequestHandler = async ({ locals, url, cookies, request }) => 
 
 	// אבחון: booleans בלבד, בלי ערכי טוקן. נחשף רק עם ?debug=1.
 	const diag: Record<string, unknown> = {
-		marker: 'sso-v3-validate',
+		marker: 'sso-v4-diag',
 		hasSessionCookie: !!request.headers.get('cookie')?.match(/authjs|__Secure-authjs|session-token/i),
 		authThrew,
 		hasSession: !!session,
