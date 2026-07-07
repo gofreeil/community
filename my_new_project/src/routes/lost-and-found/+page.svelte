@@ -7,7 +7,8 @@
     let { data, form }: { data: PageData; form: ActionData } = $props();
 
     type LafType = 'all' | 'lost' | 'found';
-    let filter = $state<LafType>('found');
+    let filter = $state<LafType>('all');
+    let query  = $state('');
 
     // Message modal state
     let msgModal = $state<{ id: string; label: string; user_id: string } | null>(null);
@@ -48,6 +49,17 @@
         catch { return ''; }
     }
 
+    // תגיות/מיקום מתוך extra_fields — לשימוש בחיפוש
+    function getSearchExtras(extraFields: string): string {
+        try {
+            const ef = JSON.parse(extraFields) ?? {};
+            const tags = Array.isArray(ef.tags) ? ef.tags.join(' ') : (ef.tags ?? '');
+            return [tags, ef.location ?? ''].filter(Boolean).join(' ');
+        } catch {
+            return '';
+        }
+    }
+
     function formatDate(iso: string): string {
         if (!iso) return '';
         const diff = Date.now() - new Date(iso).getTime();
@@ -66,20 +78,54 @@
         return `https://wa.me/${digits}`;
     }
 
-    let filtered = $derived(
-        filter === 'all'
-            ? data.items
-            : data.items.filter(i => getItemType(i.extra_fields) === filter)
+    // חיפוש חופשי לפי מילות תיאור, תגיות ומיקום (כותרת/תיאור/כתובת/שכונה/עיר/תגיות)
+    function matchesQuery(item: typeof data.items[number], q: string): boolean {
+        if (!q) return true;
+        const hay = [
+            item.label,
+            item.description,
+            item.address,
+            item.neighborhood,
+            item.city,
+            getSearchExtras(item.extra_fields),
+        ].join(' ').toLowerCase();
+        return q.toLowerCase().split(/\s+/).filter(Boolean).every(w => hay.includes(w));
+    }
+
+    // הרשימה אחרי סינון סוג + חיפוש + הסתרת מודעות שהוסרו. השרת כבר החזיר לפי
+    // תאריך יורד (החדש למעלה), כך שהסינון שומר על הסדר.
+    let base = $derived(
+        data.items
+            .filter(i => filter === 'all' || getItemType(i.extra_fields) === filter)
+            .filter(i => matchesQuery(i, query))
+            .filter(i => !resolvedIds.includes(i.id))
+    );
+
+    // קיבוץ ארצי: השכונה שלי → העיר שלי → כל הארץ
+    let nbItems = $derived(
+        data.userNeighborhood && data.userCity
+            ? base.filter(i => i.city === data.userCity && i.neighborhood === data.userNeighborhood)
+            : []
+    );
+    let cityItems = $derived(
+        data.userCity
+            ? base.filter(i => i.city === data.userCity && !(data.userNeighborhood && i.neighborhood === data.userNeighborhood))
+            : []
+    );
+    let nationalItems = $derived(
+        data.userCity
+            ? base.filter(i => i.city !== data.userCity)
+            : base
     );
 </script>
 
 <svelte:head>
-    <title>אבדות ומציאות בשכונה | קהילה בשכונה</title>
-    <meta name="description" content="לוח אבדות ומציאות בשכונה — דיווח על פריט שאבד או נמצא, והחזרת אבדות לבעליהן, בקהילה בשכונה." />
+    <title>פינת האבדות — לוח אבדות ומציאות ארצי | קהילה בשכונה</title>
+    <meta name="description" content="פינת האבדות — לוח אבדות ומציאות ארצי. דיווח על פריט שאבד או נמצא בכל הארץ, חיפוש לפי תיאור, תגיות ומיקום, והחזרת אבדות לבעליהן." />
     <link rel="canonical" href={canonical('/lost-and-found')} />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
 </svelte:head>
-<JsonLd schema={[breadcrumbSchema([{ name: 'בית', path: '/' }, { name: 'אבדות ומציאות', path: '/lost-and-found' }]), collectionSchema({ name: 'אבדות ומציאות', description: 'לוח אבדות ומציאות בשכונה — דיווח על פריט שאבד או נמצא, והחזרת אבדות לבעליהן, בקהילה בשכונה.', path: '/lost-and-found' })]} />
+<JsonLd schema={[breadcrumbSchema([{ name: 'בית', path: '/' }, { name: 'פינת האבדות', path: '/lost-and-found' }]), collectionSchema({ name: 'פינת האבדות', description: 'פינת האבדות — לוח אבדות ומציאות ארצי. דיווח על פריט שאבד או נמצא בכל הארץ, והחזרת אבדות לבעליהן.', path: '/lost-and-found' })]} />
 
 <!-- Message modal -->
 {#if msgModal}
@@ -273,10 +319,10 @@
     <div class="flex items-center justify-between mb-6">
         <div>
             <h1 class="text-2xl font-black text-white flex items-center gap-2">
-                🔍 אבדות ומציאות
+                🔍 פינת האבדות
             </h1>
             <p class="text-gray-400 text-sm mt-0.5">
-                {#if data.userCity}<span class="text-blue-300 font-bold">{data.userCity}</span> · {/if}{data.items.length} מודעות פעילות
+                לוח ארצי · {data.items.length} מודעות פעילות
             </p>
             {#if data.returnedCount > 0}
                 <p class="text-green-400 text-xs mt-1 font-bold">🕊️ {data.returnedCount} אבידות הושבו דרך הקהילה</p>
@@ -288,6 +334,22 @@
         >
             + הוסף מודעה
         </a>
+    </div>
+
+    <!-- Search -->
+    <div class="relative mb-4">
+        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">🔎</span>
+        <input
+            type="search"
+            bind:value={query}
+            placeholder="חיפוש לפי תיאור, תגיות או מיקום..."
+            class="w-full bg-white/5 border border-white/10 focus:border-blue-500/50 rounded-xl pr-11 pl-4 py-3 text-white text-sm outline-none transition-colors placeholder:text-gray-600"
+        />
+        {#if query}
+            <button type="button" onclick={() => query = ''}
+                aria-label="נקה חיפוש"
+                class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white text-lg leading-none">✕</button>
+        {/if}
     </div>
 
     <!-- Filter tabs -->
@@ -310,19 +372,111 @@
         {/each}
     </div>
 
-    <!-- Items list -->
-    {#if filtered.length === 0}
+    <!-- Card snippet (used in every section) -->
+    {#snippet card(item: typeof data.items[number])}
+        {@const type    = getItemType(item.extra_fields)}
+        {@const image   = getItemImage(item.extra_fields)}
+        {@const isOwner = data.currentUserId && item.user_id === data.currentUserId}
+        <a href="/lost-and-found/{item.id}" class="relative rounded-2xl border border-white/10 bg-white/5 overflow-hidden hover:bg-white/8 transition-all block no-underline group">
+            {#if image}
+                <div class="relative w-full h-40">
+                    <img src={image} alt={item.label} class="w-full h-full object-cover" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#0f172a]/80 to-transparent"></div>
+                </div>
+            {/if}
+
+            <!-- Type badge -->
+            <div class="absolute top-0 right-0 px-3 py-1 text-[10px] font-black uppercase tracking-wider rounded-bl-xl
+                {type === 'found' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}">
+                {type === 'found' ? '✅ נמצא' : '❓ אבד'}
+            </div>
+
+            <div class="p-4 {image ? '' : 'mt-3'}">
+                <h3 class="font-black text-white text-base mb-2 leading-tight">{item.label}</h3>
+
+                {#if item.description}
+                    <p class="text-gray-400 text-sm mb-2 leading-snug">{item.description.replace(/^(❓ אבד|✅ נמצא) \| /, '')}</p>
+                {/if}
+
+                <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 mb-3">
+                    {#if item.address}<span>📍 {item.address}</span>{/if}
+                    {#if item.contact}<span>👤 {item.contact}</span>{/if}
+                    {#if item.created_at}<span>🕒 {formatDate(item.created_at)}</span>{/if}
+                </div>
+
+                <div class="flex flex-col gap-2" onclick={(e) => e.stopPropagation()}>
+                    {#if item.phone}
+                        <div class="flex gap-2">
+                            <button type="button"
+                                onclick={() => window.location.href = `tel:${item.phone}`}
+                                class="flex-1 text-center py-2 rounded-xl bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white text-sm font-bold transition-all border border-blue-500/30">
+                                📞 {item.phone}
+                            </button>
+                            <button type="button"
+                                onclick={() => window.open(waLink(item.phone), '_blank')}
+                                aria-label="שלח הודעת וואטסאפ (נפתח בחלון חדש)"
+                                class="px-4 py-2 rounded-xl bg-green-600/20 hover:bg-green-600 text-green-300 hover:text-white text-sm font-bold transition-all border border-green-500/30">
+                                💬
+                            </button>
+                        </div>
+                    {/if}
+
+                    {#if item.user_id && !isOwner}
+                        <button
+                            onclick={() => msgModal = { id: item.id, label: item.label, user_id: item.user_id! }}
+                            class="w-full py-2 rounded-xl bg-purple-600/20 hover:bg-purple-600 text-purple-300 hover:text-white text-sm font-bold transition-all border border-purple-500/30"
+                        >
+                            ✉️ שלח הודעה לפורסם
+                        </button>
+                    {/if}
+
+                    {#if isOwner}
+                        <button
+                            onclick={() => resolveModal = { id: item.id, label: item.label, user_id: item.user_id!, type }}
+                            class="w-full py-2 rounded-xl bg-red-600/15 hover:bg-red-600/30 text-red-400 hover:text-red-300 text-xs font-bold transition-all border border-red-500/20"
+                        >
+                            🗑️ הורד מודעה
+                        </button>
+                    {/if}
+
+                    {#if data.isSuperAdmin}
+                        <button
+                            onclick={() => adminDeleteModal = { id: item.id, label: item.label }}
+                            class="w-full py-2 rounded-xl bg-red-900/30 hover:bg-red-800/50 text-red-300 hover:text-white text-xs font-bold transition-all border border-red-500/30"
+                        >
+                            🛡️ מחק כמנהל
+                        </button>
+                    {/if}
+                </div>
+            </div>
+        </a>
+    {/snippet}
+
+    <!-- Section divider -->
+    {#snippet divider(icon: string, title: string, count: number)}
+        <div class="flex items-center gap-3 mt-8 mb-4 first:mt-0">
+            <div class="h-px flex-1 bg-white/10"></div>
+            <span class="text-sm font-black text-gray-300 whitespace-nowrap flex items-center gap-1.5">
+                {icon} {title}
+                <span class="text-xs font-bold text-gray-500">({count})</span>
+            </span>
+            <div class="h-px flex-1 bg-white/10"></div>
+        </div>
+    {/snippet}
+
+    <!-- Items list — ארצי: השכונה שלי → העיר שלי → כל הארץ -->
+    {#if base.length === 0}
         <div class="text-center py-16 text-gray-500">
             <div class="text-5xl mb-3">🔍</div>
-            {#if !data.userCity}
-                <p class="font-bold text-lg text-gray-400">בחר עיר בפרופיל כדי לראות מודעות</p>
-                <p class="text-sm mt-1">לוח אבדות ומציאות מחולק לפי עיר — עדכן את העיר שלך בפרופיל.</p>
-                <a href="/profile"
-                   class="mt-4 inline-block bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors">
-                    לעדכון הפרופיל
-                </a>
+            {#if query}
+                <p class="font-bold text-lg text-gray-400">לא נמצאו תוצאות ל"{query}"</p>
+                <p class="text-sm mt-1">נסה מילות חיפוש אחרות או נקה את החיפוש.</p>
+                <button type="button" onclick={() => query = ''}
+                    class="mt-4 inline-block bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors">
+                    נקה חיפוש
+                </button>
             {:else}
-                <p class="font-bold text-lg text-gray-400">אין מודעות ב{data.userCity} עדיין</p>
+                <p class="font-bold text-lg text-gray-400">אין מודעות עדיין</p>
                 <p class="text-sm mt-1">היה הראשון להוסיף!</p>
                 <a href="/lost-and-found/add"
                    class="mt-4 inline-block bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors">
@@ -331,86 +485,28 @@
             {/if}
         </div>
     {:else}
-        <div class="space-y-3">
-            {#each filtered.filter(i => !resolvedIds.includes(i.id)) as item}
-                {@const type    = getItemType(item.extra_fields)}
-                {@const image   = getItemImage(item.extra_fields)}
-                {@const isOwner = data.currentUserId && item.user_id === data.currentUserId}
-                <a href="/lost-and-found/{item.id}" class="relative rounded-2xl border border-white/10 bg-white/5 overflow-hidden hover:bg-white/8 transition-all block no-underline group">
-                    {#if image}
-                        <div class="relative w-full h-40">
-                            <img src={image} alt={item.label} class="w-full h-full object-cover" />
-                            <div class="absolute inset-0 bg-gradient-to-t from-[#0f172a]/80 to-transparent"></div>
-                        </div>
-                    {/if}
+        {#if nbItems.length > 0}
+            {@render divider('🏘️', `השכונה שלי · ${data.userNeighborhood}`, nbItems.length)}
+            <div class="space-y-3">
+                {#each nbItems as item (item.id)}{@render card(item)}{/each}
+            </div>
+        {/if}
 
-                    <!-- Type badge -->
-                    <div class="absolute top-0 right-0 px-3 py-1 text-[10px] font-black uppercase tracking-wider rounded-bl-xl
-                        {type === 'found' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}">
-                        {type === 'found' ? '✅ נמצא' : '❓ אבד'}
-                    </div>
+        {#if cityItems.length > 0}
+            {@render divider('🏙️', data.userCity, cityItems.length)}
+            <div class="space-y-3">
+                {#each cityItems as item (item.id)}{@render card(item)}{/each}
+            </div>
+        {/if}
 
-                    <div class="p-4 {image ? '' : 'mt-3'}">
-                        <h3 class="font-black text-white text-base mb-2 leading-tight">{item.label}</h3>
-
-                        {#if item.description}
-                            <p class="text-gray-400 text-sm mb-2 leading-snug">{item.description.replace(/^(❓ אבד|✅ נמצא) \| /, '')}</p>
-                        {/if}
-
-                        <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 mb-3">
-                            {#if item.address}<span>📍 {item.address}</span>{/if}
-                            {#if item.contact}<span>👤 {item.contact}</span>{/if}
-                            {#if item.created_at}<span>🕒 {formatDate(item.created_at)}</span>{/if}
-                        </div>
-
-                        <div class="flex flex-col gap-2" onclick={(e) => e.stopPropagation()}>
-                            {#if item.phone}
-                                <div class="flex gap-2">
-                                    <button type="button"
-                                        onclick={() => window.location.href = `tel:${item.phone}`}
-                                        class="flex-1 text-center py-2 rounded-xl bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white text-sm font-bold transition-all border border-blue-500/30">
-                                        📞 {item.phone}
-                                    </button>
-                                    <button type="button"
-                                        onclick={() => window.open(waLink(item.phone), '_blank')}
-                                        aria-label="שלח הודעת וואטסאפ (נפתח בחלון חדש)"
-                                        class="px-4 py-2 rounded-xl bg-green-600/20 hover:bg-green-600 text-green-300 hover:text-white text-sm font-bold transition-all border border-green-500/30">
-                                        💬
-                                    </button>
-                                </div>
-                            {/if}
-
-                            {#if item.user_id && !isOwner}
-                                <button
-                                    onclick={() => msgModal = { id: item.id, label: item.label, user_id: item.user_id! }}
-                                    class="w-full py-2 rounded-xl bg-purple-600/20 hover:bg-purple-600 text-purple-300 hover:text-white text-sm font-bold transition-all border border-purple-500/30"
-                                >
-                                    ✉️ שלח הודעה לפורסם
-                                </button>
-                            {/if}
-
-                            {#if isOwner}
-                                <button
-                                    onclick={() => resolveModal = { id: item.id, label: item.label, user_id: item.user_id!, type }}
-                                    class="w-full py-2 rounded-xl bg-red-600/15 hover:bg-red-600/30 text-red-400 hover:text-red-300 text-xs font-bold transition-all border border-red-500/20"
-                                >
-                                    🗑️ הורד מודעה
-                                </button>
-                            {/if}
-
-                            {#if data.isSuperAdmin}
-                                <button
-                                    onclick={() => adminDeleteModal = { id: item.id, label: item.label }}
-                                    class="w-full py-2 rounded-xl bg-red-900/30 hover:bg-red-800/50 text-red-300 hover:text-white text-xs font-bold transition-all border border-red-500/30"
-                                >
-                                    🛡️ מחק כמנהל
-                                </button>
-                            {/if}
-                        </div>
-                    </div>
-                </a>
-            {/each}
-        </div>
+        {#if nationalItems.length > 0}
+            {#if nbItems.length > 0 || cityItems.length > 0}
+                {@render divider('🇮🇱', 'כל הארץ', nationalItems.length)}
+            {/if}
+            <div class="space-y-3">
+                {#each nationalItems as item (item.id)}{@render card(item)}{/each}
+            </div>
+        {/if}
     {/if}
 
     <!-- Back -->

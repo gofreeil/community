@@ -152,8 +152,8 @@ export const he = {
         gvmy_remove: "🗑 הסר",
         gvmy_back_public: "חזרה לרשימה הציבורית",
 
-        // ---- אבדות ומציאות (lost-and-found) ----
-        laf_title: "אבדות ומציאות",
+        // ---- פינת האבדות (lost-and-found) ----
+        laf_title: "פינת האבדות",
         laf_msg_title: "✉️ שלח הודעה לפורסם",
         laf_regarding: "בנוגע ל:",
         laf_msg_sent: "ההודעה נשלחה בהצלחה!",

@@ -1,4 +1,4 @@
-import { getItemsByCategoryAndCity, createItem, resolveItem, getResolvedCount, getUserById, deleteItem } from '$lib/server/db';
+import { getItemsByCategory, createItem, resolveItem, getResolvedCount, getUserById, deleteItem } from '$lib/server/db';
 import { isSuperAdmin } from '$lib/server/auth';
 import { fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
@@ -7,25 +7,28 @@ export const load: PageServerLoad = async (event) => {
     let session = null;
     try { session = await event.locals.auth(); } catch {}
 
-    // הלוח מחולק לפי עיר - מציגים רק מודעות של העיר של המשתמש, בלי גלישה בין ערים.
+    // פינת האבדות ארצית - כל המודעות בכל הארץ. למשתמש רשום מציגים קודם את
+    // השכונה שלו, אחר כך את העיר, ואז את שאר הארץ (הקיבוץ נעשה בצד הלקוח).
     let userCity = '';
+    let userNeighborhood = '';
     try {
         if (session?.user?.id) {
             const jwt = event.cookies.get('strapi_jwt');
             const user = await getUserById(session.user.id, jwt ?? undefined);
-            userCity = user?.city ?? '';
+            userCity         = user?.city ?? '';
+            userNeighborhood = user?.neighborhood ?? '';
         }
     } catch {}
 
     try {
         const [items, returnedCount] = await Promise.all([
-            userCity ? getItemsByCategoryAndCity('lost_and_found', userCity) : Promise.resolve([]),
+            getItemsByCategory('lost_and_found'),
             getResolvedCount('lost_and_found'),
         ]);
-        return { items, currentUserId: session?.user?.id ?? null, isSuperAdmin: isSuperAdmin(session), returnedCount, userCity };
+        return { items, currentUserId: session?.user?.id ?? null, isSuperAdmin: isSuperAdmin(session), returnedCount, userCity, userNeighborhood };
     } catch (e) {
         console.warn('[lost-and-found] load failed:', e instanceof Error ? e.message : e);
-        return { items: [], currentUserId: null, isSuperAdmin: isSuperAdmin(session), returnedCount: 0, userCity };
+        return { items: [], currentUserId: null, isSuperAdmin: isSuperAdmin(session), returnedCount: 0, userCity, userNeighborhood };
     }
 };
 

@@ -102,13 +102,13 @@ export const he = {
         news6_line1: 'עדכון: הושלמה פריסת עמדות',
         news6_line2: 'הגידול הביתי בשכונות המרכז',
 
-        // אבדות ומציאות
-        lost_and_found: 'אבדות ומציאות',
+        // פינת האבדות
+        lost_and_found: 'פינת האבדות',
         add_laf_aria: 'הוסף אבידה או מציאה',
         found: 'נמצא',
         lost: 'אבד',
         full_board: 'ללוח המלא...',
-        laf_full_aria: 'לוח אבדות ומציאות המלא',
+        laf_full_aria: 'פינת האבדות — הלוח המלא',
         mins_ago: "לפני {n} דק'",
         hours_ago: "לפני {n} שע'",
         yesterday: 'אתמול',
