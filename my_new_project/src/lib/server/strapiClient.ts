@@ -209,6 +209,27 @@ export async function getStrapiMe(jwt: string): Promise<StrapiUser | null> {
     }
 }
 
+/**
+ * מנפיק JWT למשתמש קיים דרך נתיב הבאקאנד המותאם (POST /api/sso/issue-jwt),
+ * שמאומת ב-STRAPI_TOKEN (Full Access). זו הדרך היחידה שעובדת ל-SSO של משתמש
+ * שאין לו סיסמה ידועה (OAuth/מיזוג): איפוס-סיסמה דרך REST לא מייצר סיסמה שמישה
+ * לכניסה ב-Strapi 5. מחזיר null אם המשתמש לא קיים / הנתיב עוד לא פרוס / כשל.
+ */
+export async function issueSsoJwtViaBackend(email: string): Promise<string | null> {
+    try {
+        const res = await fetch(STRAPI_URL + '/api/sso/issue-jwt', {
+            method:  'POST',
+            headers: getHeaders(), // STRAPI_TOKEN (Full Access)
+            body:    JSON.stringify({ email }),
+        });
+        if (!res.ok) return null;
+        const data = (await res.json()) as { jwt?: string };
+        return data?.jwt ?? null;
+    } catch {
+        return null;
+    }
+}
+
 /** לוגין עם אימייל + סיסמה */
 export async function strapiLogin(identifier: string, password: string): Promise<StrapiAuthResponse> {
     const res = await fetch(STRAPI_URL + '/api/auth/local', {

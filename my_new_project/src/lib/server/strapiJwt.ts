@@ -2,26 +2,26 @@ import { createHash } from 'crypto';
 import {
     strapiLogin,
     strapiRegister,
-    findStrapiUpUsers,
-    updateStrapiUpUser,
+    issueSsoJwtViaBackend,
 } from './strapiClient';
 
 const AUTH_SECRET = process.env.AUTH_SECRET ?? '';
 
 /**
  * מפיק JWT של ה-Strapi המשותף עבור משתמש ברשימה המאוחדת, בלי סיסמה שהמשתמש
- * מקליד. הסיסמה דטרמיניסטית — sha256(stableId + AUTH_SECRET) — כך שאותו משתמש
- * מקבל תמיד את אותה סיסמה, וכל login עוקב מצליח.
+ * מקליד. הסיסמה דטרמיניסטית — sha256(stableId + AUTH_SECRET).
  *
  * שלושה מסלולים, מהזול ליקר:
  *   1. login עם ה-seed — עובד אם החשבון כבר נוצר תחת אותו stableId.
  *   2. register — עובד אם האימייל עדיין לא קיים ב-Strapi.
- *   3. ריפוי אדמין — האימייל קיים אך עם seed אחר (מיזוג Google↔credentials/אימייל,
- *      או חשבון שנוצר לפני שינוי סכמת ה-seed). מאתרים לפי אימייל דרך טוקן האדמין,
- *      מאפסים את הסיסמה ל-seed ונכנסים. מרפא כל משתמש קיים ברשימה.
+ *   3. הנפקה ישירה מהבאקאנד (POST /api/sso/issue-jwt, מאומת ב-STRAPI_TOKEN) —
+ *      עבור משתמש קיים שאין לו סיסמה תואמת (OAuth/מיזוג/חשבון ישן). זו הדרך
+ *      *היחידה* שעובדת: איפוס-סיסמה דרך REST (PUT /users/:id) ב-Strapi 5 לא
+ *      מייצר סיסמה שמישה לכניסה — ה-PUT מחזיר 200 אך login עוקב נכשל 400
+ *      (אומת חי). לכן במקום זה הבאקאנד מנפיק JWT ישירות דרך שירות ה-jwt.
  *
- * מחזיר null רק אם אין AUTH_SECRET / אין אימייל / הריפוי נכשל (למשל טוקן אדמין
- * בלי הרשאה או Strapi למטה).
+ * מחזיר null רק אם אין AUTH_SECRET/אימייל, או שכל שלושת המסלולים נכשלו
+ * (למשל הנתיב עוד לא פרוס בבאקאנד, או ה-STRAPI_TOKEN בלי הרשאה).
  */
 export async function getOrCreateStrapiJwt(
     email: string | null | undefined,
@@ -38,34 +38,26 @@ export async function getOrCreateStrapiJwt(
     const password = createHash('sha256').update(stableId + AUTH_SECRET).digest('hex').slice(0, 32);
     const username = stableId.replace(/[^a-zA-Z0-9_]/g, '_').slice(0, 30);
 
-    // 1. כניסה עם ה-seed הדטרמיניסטי
+    // 1. כניסה עם ה-seed הדטרמיניסטי (משתמשים שנוצרו במסלול הזה)
     try {
         const { jwt } = await strapiLogin(email, password);
         if (jwt) { if (diag) diag.step1_login = 'ok'; return jwt; }
     } catch (e) { if (diag) diag.step1_login = code(e); }
 
-    // 2. משתמש לא קיים — ניצור אותו
+    // 2. אימייל חדש לגמרי — נרשם ומקבל JWT
     try {
         const { jwt } = await strapiRegister(username, email, password);
         if (jwt) { if (diag) diag.step2_register = 'ok'; return jwt; }
     } catch (e) { if (diag) diag.step2_register = code(e); }
 
-    // 3. ריפוי אדמין: מאתרים לפי אימייל, מאפסים סיסמה ל-seed, נכנסים.
+    // 3. משתמש קיים בלי סיסמה תואמת → הבאקאנד מנפיק JWT ישירות (מאומת ב-STRAPI_TOKEN)
     try {
-        const found = await findStrapiUpUsers({ 'filters[email][$eqi]': email });
-        if (diag) diag.step3_findCount = Array.isArray(found) ? found.length : -1;
-        const existing = found?.[0] as { id?: number } | undefined;
-        if (existing?.id) {
-            if (diag) diag.step3_foundId = true;
-            await updateStrapiUpUser(existing.id, { password });
-            if (diag) diag.step3_updated = true;
-            const { jwt } = await strapiLogin(email, password);
-            if (diag) diag.step3_relogin = jwt ? 'ok' : 'no-jwt';
-            if (jwt) return jwt;
-        }
-    } catch (err) {
-        if (diag) diag.step3_err = code(err);
-        console.warn('[strapiJwt] admin-heal failed:', err);
+        const jwt = await issueSsoJwtViaBackend(email);
+        if (diag) diag.step3_backendIssue = jwt ? 'ok' : 'null';
+        if (jwt) return jwt;
+    } catch (e) {
+        if (diag) diag.step3_backendIssue = code(e);
     }
+
     return null;
 }
