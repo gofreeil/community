@@ -282,14 +282,14 @@
                     </a>
 
                     <div class="flex items-center gap-1.5">
-                        <!-- כפתור אודות - מובייל (קישור <a> כדי לקבל preload בלחיצה/מגע) -->
-                        <a
-                            href="/about/revenue"
+                        <!-- כפתור אודות - מובייל -->
+                        <button
+                            onclick={() => goto("/about/revenue")}
                             class="flex items-center justify-center gap-1 h-8 px-1.5 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors"
                             aria-label={tFn("chrome.about_community_aria")}
                         >
                             <span class="text-sm font-bold text-white leading-none whitespace-nowrap">{tFn("about")}</span>
-                        </a>
+                        </button>
 
                         <!-- כפתור דגל שפה - מובייל -->
                         <div class="relative lang-dropdown-container">
@@ -426,15 +426,15 @@
 <div class="flex items-center gap-2">
                 <!-- כפתור אודות עם תצוגה מקדימה -->
                 <div class="relative" id="about-btn-wrapper">
-                    <a
-                        href="/about/revenue"
+                    <button
                         class="relative flex items-center rounded-lg px-4 py-2 font-bold text-white transition-all duration-300 hover:scale-105 hover:tracking-wide"
                         style="background:linear-gradient(135deg,#4f46e5,#7c3aed); box-shadow:0 4px 15px rgba(124,58,237,0.4);"
                         onmouseenter={(e) => (e.currentTarget as HTMLElement).style.boxShadow='0 0 24px 6px rgba(167,139,250,0.7), 0 4px 15px rgba(124,58,237,0.5)'}
                         onmouseleave={(e) => (e.currentTarget as HTMLElement).style.boxShadow='0 4px 15px rgba(124,58,237,0.4)'}
+                        onclick={() => goto("/about/revenue")}
                     >
                         {tFn("about")}
-                    </a>
+                    </button>
                 </div>
                 <!-- תמונת preview - position:fixed כדי לחמוק מ-overflow של ההדר -->
                 <div id="about-preview"
