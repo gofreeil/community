@@ -23,6 +23,90 @@
     let galleryIndex = $state(0);
     let lightboxOpen = $state(false);
 
+    // ---- תגובות על הפריט ----
+    interface ItemComment { id: string; user_id: string; name: string; text: string; at: string; }
+    // תגובות מקומיות (נוספות/נמחקות מיידית ללא רענון) - מסונכרן מהשרת לפי מזהה הפריט
+    let localComments = $state<ItemComment[]>([]);
+    let commentsForId = $state<string | null>(null);
+    $effect(() => {
+        const id = (item as { id?: string } | null)?.id ?? null;
+        if (id === commentsForId) return; // כבר מסונכרן לפריט הזה
+        const raw = (item as { extraFields?: { comments?: unknown } } | null)?.extraFields?.comments;
+        localComments = Array.isArray(raw)
+            ? raw.filter((c): c is ItemComment =>
+                !!c && typeof c === 'object' && typeof (c as ItemComment).text === 'string')
+            : [];
+        commentsForId = id;
+    });
+    // חדש למעלה, ישן למטה
+    const sortedComments = $derived(
+        [...localComments].sort((a, b) => (b.at || '').localeCompare(a.at || ''))
+    );
+    const isLoggedIn = $derived(!!(data as { isLoggedIn?: boolean }).isLoggedIn);
+    const viewerId = $derived((data as { viewerId?: string }).viewerId ?? '');
+    const canModerateComments = $derived(!!(item as { canEditActivities?: boolean } | null)?.canEditActivities);
+
+    let newComment = $state('');
+    let sendingComment = $state(false);
+    let commentError = $state('');
+
+    function commentTimeAgo(iso: string): string {
+        if (!iso) return '';
+        const diff = Date.now() - new Date(iso).getTime();
+        const mins = Math.floor(diff / 60000);
+        if (mins < 1) return 'הרגע';
+        if (mins < 60) return `לפני ${mins} דק׳`;
+        const hours = Math.floor(mins / 60);
+        if (hours < 24) return `לפני ${hours} שע׳`;
+        const days = Math.floor(hours / 24);
+        if (days === 1) return 'אתמול';
+        if (days < 30) return `לפני ${days} ימים`;
+        return new Date(iso).toLocaleDateString('he-IL');
+    }
+
+    async function submitComment() {
+        const text = newComment.trim();
+        if (!text || sendingComment || !item) return;
+        sendingComment = true;
+        commentError = '';
+        try {
+            const res = await fetch(`/api/items/${item.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'add_comment', text }),
+            });
+            const result = await res.json().catch(() => ({}));
+            if (res.ok && result?.comment) {
+                localComments = [...localComments, result.comment as ItemComment];
+                newComment = '';
+            } else if (res.status === 401) {
+                window.location.href = '/login';
+            } else {
+                commentError = result?.message || 'שגיאה בשליחת התגובה';
+            }
+        } catch {
+            commentError = 'שגיאה בשליחת התגובה';
+        } finally {
+            sendingComment = false;
+        }
+    }
+
+    async function deleteComment(commentId: string) {
+        if (!item) return;
+        const prev = localComments;
+        localComments = localComments.filter(c => c.id !== commentId); // אופטימי
+        try {
+            const res = await fetch(`/api/items/${item.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'delete_comment', comment_id: commentId }),
+            });
+            if (!res.ok) localComments = prev; // כשל - החזרה
+        } catch {
+            localComments = prev;
+        }
+    }
+
     // ---- מצב בניית הדף: הבעלים/רכז עורך את הדף בדיוק כפי שהגולש רואה אותו ----
     const canEditPage = $derived(!!(item as { canEditPage?: boolean } | null)?.canEditPage);
     let builderMode = $state(false);
@@ -1801,6 +1885,79 @@
                     </div>
                 </div>
             </div>
+
+            <!-- ===== תגובות ===== -->
+            <section class="mt-3 bg-[#0f172a] rounded-2xl md:rounded-3xl border border-white/10 shadow-2xl overflow-hidden">
+                <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-3 md:px-4 py-2.5 flex items-center gap-2">
+                    <span class="text-lg">💬</span>
+                    <h2 class="text-white font-bold text-base">תגובות{sortedComments.length ? ` (${sortedComments.length})` : ''}</h2>
+                </div>
+
+                <div class="p-3 md:p-4">
+                    <!-- טופס כתיבה -->
+                    {#if isLoggedIn}
+                        <div class="mb-3">
+                            <textarea
+                                bind:value={newComment}
+                                maxlength="1000"
+                                rows="2"
+                                placeholder="כתוב תגובה..."
+                                onkeydown={(e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) submitComment(); }}
+                                class="w-full bg-[#0a0f1a] border border-white/15 focus:border-blue-500/60 rounded-xl text-white text-sm px-3 py-2 resize-none outline-none transition-colors"
+                            ></textarea>
+                            <div class="flex items-center justify-between mt-1.5">
+                                <span class="text-[11px] text-gray-500">{newComment.length}/1000 · Ctrl+Enter לשליחה</span>
+                                <button
+                                    type="button"
+                                    onclick={submitComment}
+                                    disabled={sendingComment || !newComment.trim()}
+                                    class="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold px-4 py-1.5 rounded-full transition-colors"
+                                >
+                                    {sendingComment ? 'שולח...' : 'פרסם תגובה'}
+                                </button>
+                            </div>
+                            {#if commentError}
+                                <p class="text-red-300 text-xs mt-1.5 bg-red-900/30 rounded-lg px-2.5 py-1.5">{commentError}</p>
+                            {/if}
+                        </div>
+                    {:else}
+                        <a href="/login" class="block mb-3 text-center bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-blue-300 font-bold transition-colors">
+                            התחבר כדי להגיב
+                        </a>
+                    {/if}
+
+                    <!-- רשימת תגובות: חדש למעלה, ישן למטה -->
+                    {#if sortedComments.length}
+                        <div class="flex flex-col gap-2">
+                            {#each sortedComments as c (c.id)}
+                                <div class="bg-white/5 border border-white/10 rounded-xl px-3 py-2">
+                                    <div class="flex items-center justify-between gap-2 mb-0.5">
+                                        <span class="text-white font-bold text-[13px] flex items-center gap-1.5">
+                                            <span class="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-[11px] flex-shrink-0">{(c.name || '?').charAt(0)}</span>
+                                            {c.name || 'תושב/ת'}
+                                        </span>
+                                        <div class="flex items-center gap-2 flex-shrink-0">
+                                            <span class="text-[11px] text-gray-500">{commentTimeAgo(c.at)}</span>
+                                            {#if canModerateComments || c.user_id === viewerId}
+                                                <button
+                                                    type="button"
+                                                    onclick={() => deleteComment(c.id)}
+                                                    aria-label="מחק תגובה"
+                                                    title="מחק תגובה"
+                                                    class="text-gray-500 hover:text-red-400 text-xs transition-colors"
+                                                >🗑</button>
+                                            {/if}
+                                        </div>
+                                    </div>
+                                    <p class="text-gray-200 text-sm leading-snug whitespace-pre-wrap break-words">{c.text}</p>
+                                </div>
+                            {/each}
+                        </div>
+                    {:else}
+                        <p class="text-center text-gray-500 text-sm py-3">אין עדיין תגובות. היה הראשון להגיב 💬</p>
+                    {/if}
+                </div>
+            </section>
         {:else}
             <!-- Not found state -->
             <div

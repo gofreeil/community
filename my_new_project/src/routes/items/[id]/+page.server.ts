@@ -109,6 +109,8 @@ export const load: PageServerLoad = async (event) => {
 
         return {
             origin,
+            isLoggedIn: !!viewerId,
+            viewerId,
             item: {
                 id:          dbItem.id,
                 label:       dbItem.label,

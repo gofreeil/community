@@ -324,6 +324,89 @@ export const PATCH: RequestHandler = async (event) => {
         return json({ success: true, helperName });
     }
 
+    // ---- תגובות על הפריט: כל תושב מחובר יכול להוסיף תגובה ----
+    if (action === 'add_comment') {
+        const text = String(body.text ?? '').trim().slice(0, 1000);
+        if (!text) return json({ success: false, message: 'תגובה ריקה' }, { status: 400 });
+
+        const author = await getUserByAnyId(String(userId));
+        const authorName = author?.name || author?.nickname || 'תושב/ת';
+
+        let extra: Record<string, unknown> = {};
+        try { extra = item.extra_fields ? JSON.parse(item.extra_fields) : {}; } catch { extra = {}; }
+        const comments = Array.isArray(extra.comments) ? (extra.comments as Array<Record<string, unknown>>) : [];
+
+        const comment = {
+            id:      `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            user_id: String(userId),
+            name:    authorName,
+            text,
+            at:      new Date().toISOString(),
+        };
+        // שומרים עד 500 תגובות אחרונות כדי לא לנפח את הרשומה
+        comments.push(comment);
+        extra.comments = comments.slice(-500);
+
+        try {
+            await updateItem(id, { extra_fields: extra });
+        } catch (e) {
+            console.error('[items/:id add_comment] failed:', e);
+            return json({ success: false, message: 'שגיאה בשמירת התגובה' }, { status: 500 });
+        }
+
+        // התראה לבעל הפריט (למעט אם הגיב על עצמו)
+        if (item.user_id && item.user_id !== String(userId)) {
+            try {
+                await createItem({
+                    category: 'message',
+                    label: '💬 תגובה חדשה על הפריט שלך',
+                    description: `${authorName} הגיב/ה על "${item.label}":\n\n"${text}"`,
+                    contact: authorName,
+                    user_id: item.user_id,
+                    icon: '💬',
+                    color: 'blue',
+                    extra_fields: {
+                        type: 'item_comment',
+                        sender_name: authorName,
+                        item_label: item.label,
+                        item_id: item.id,
+                        read: false,
+                    },
+                });
+            } catch (e) {
+                console.warn('[items/:id add_comment] notify failed:', e instanceof Error ? e.message : e);
+            }
+        }
+
+        return json({ success: true, comment });
+    }
+
+    // ---- מחיקת תגובה: כותב התגובה / בעל הפריט / רכז השכונה / סופר-אדמין ----
+    if (action === 'delete_comment') {
+        const commentId = String(body.comment_id ?? '');
+        if (!commentId) return json({ success: false, message: 'חסר מזהה תגובה' }, { status: 400 });
+
+        let extra: Record<string, unknown> = {};
+        try { extra = item.extra_fields ? JSON.parse(item.extra_fields) : {}; } catch { extra = {}; }
+        const comments = Array.isArray(extra.comments) ? (extra.comments as Array<Record<string, unknown>>) : [];
+        const target = comments.find(c => String(c.id) === commentId);
+        if (!target) return json({ success: false, message: 'תגובה לא נמצאה' }, { status: 404 });
+
+        const isAuthor = String(target.user_id) === String(userId);
+        if (!isAuthor && !(await canEditPage())) {
+            return json({ success: false, message: 'אין הרשאה' }, { status: 403 });
+        }
+
+        extra.comments = comments.filter(c => String(c.id) !== commentId);
+        try {
+            await updateItem(id, { extra_fields: extra });
+            return json({ success: true });
+        } catch (e) {
+            console.error('[items/:id delete_comment] failed:', e);
+            return json({ success: false, message: 'שגיאה במחיקה' }, { status: 500 });
+        }
+    }
+
     // ---- הקפאה/הפעלה: בעלים בלבד. רק frozen/active - לא סטטוס חופשי ----
     if (!isOwner) return json({ success: false, message: 'אין הרשאה' }, { status: 403 });
 
