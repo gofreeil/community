@@ -1997,88 +1997,8 @@
                 </button>
             {/if}
 
-            <!-- תפריט עזרה -->
-            {#if showHelpMenu}
-                <div
-                    class="pointer-events-auto fixed md:absolute bottom-24 md:bottom-full left-1/2 transform -translate-x-1/2 md:mb-2 w-80 max-w-[90vw] bg-white rounded-xl shadow-2xl border-2 border-purple-600 overflow-hidden animate-slideDown z-[10001]"
-                >
-                    <div
-                        class="bg-gradient-to-r from-red-500 to-pink-500 p-3 text-center"
-                    >
-                        <h3 class="text-white font-bold text-lg">{$t('map.open_call')}</h3>
-                    </div>
-                    <div class="p-2">
-                        {#each helpOptions as option}
-                            <button
-                                onclick={() => handleHelpRequest(option.id)}
-                                class="w-full flex items-center gap-3 p-3 hover:bg-red-50 rounded-lg transition-colors text-right border-b border-gray-200 last:border-b-0"
-                            >
-                                <span class="text-2xl">{option.icon}</span>
-                                <span class="text-gray-800 font-medium text-sm"
-                                    >{$t(option.key)}</span
-                                >
-                            </button>
-                        {/each}
-                    </div>
-                    <button
-                        onclick={() => (showHelpMenu = false)}
-                        class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 py-2 text-sm font-bold transition-colors"
-                    >
-                        {$t('map.cancel')}
-                    </button>
-                </div>
-            {/if}
-
-            <!-- סקר הורדת יד -->
-            {#if showSurvey}
-                <div
-                    class="pointer-events-auto fixed md:absolute bottom-24 md:bottom-full left-1/2 transform -translate-x-1/2 md:mb-2 w-80 max-w-[90vw] bg-white rounded-xl shadow-2xl border-2 border-yellow-600 overflow-hidden animate-slideDown z-[10001]"
-                >
-                    <div
-                        class="bg-gradient-to-r from-yellow-500 to-orange-500 p-3 text-center"
-                    >
-                        <h3 class="text-white font-bold text-lg">
-                            {$t('map.survey_title')}
-                        </h3>
-                    </div>
-                    <div class="p-4 space-y-3">
-                        <button
-                            onclick={() => handleSurveyResponse("community")}
-                            class="w-full flex items-center gap-3 p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors border-2 border-green-300"
-                        >
-                            <span class="text-3xl">🤝</span>
-                            <div class="text-right">
-                                <p class="font-bold text-green-800">
-                                    {$t('map.community_helped')}
-                                </p>
-                                <p class="text-xs text-green-600">
-                                    {$t('map.thanks_all')}
-                                </p>
-                            </div>
-                        </button>
-                        <button
-                            onclick={() => handleSurveyResponse("other")}
-                            class="w-full flex items-center gap-3 p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border-2 border-blue-300"
-                        >
-                            <span class="text-3xl">✅</span>
-                            <div class="text-right">
-                                <p class="font-bold text-blue-800">
-                                    {$t('map.solved_other')}
-                                </p>
-                                <p class="text-xs text-blue-600">
-                                    {$t('map.all_ok')}
-                                </p>
-                            </div>
-                        </button>
-                    </div>
-                    <button
-                        onclick={() => handleSurveyResponse("cancel")}
-                        class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 py-2 text-sm font-bold transition-colors"
-                    >
-                        {$t('map.cancel')}
-                    </button>
-                </div>
-            {/if}
+            <!-- תפריט "פתח קריאה" והסקר עברו לרמת-העל של הרכיב (מודל מרכזי) כדי -->
+            <!-- להימנע מ-stacking-context/overflow של עוטף המפה שהסתיר אותם בנייד -->
         </div>
 
         <!-- Zoom Buttons בתחתית ימין -->
@@ -2110,6 +2030,91 @@
 {#if handRaised}
     <div class="text-white text-lg text-center mt-2">
         {$t('map.community_solved', { values: { n: $communityHelpCount, year: currentYear } })}
+    </div>
+{/if}
+
+<!-- ===== תפריט "פתח קריאה" (מודל מרכזי ברמת-העל - צף מעל כל שכבה בנייד ובדסקטופ) ===== -->
+{#if showHelpMenu}
+    <div
+        class="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm overflow-y-auto"
+        role="dialog"
+        aria-modal="true"
+        onclick={(e) => { if (e.target === e.currentTarget) showHelpMenu = false; }}
+    >
+        <div
+            class="w-80 max-w-[90vw] bg-white rounded-xl shadow-2xl border-2 border-purple-600 overflow-hidden animate-slideDown"
+            dir="rtl"
+            onclick={(e) => e.stopPropagation()}
+        >
+            <div class="bg-gradient-to-r from-red-500 to-pink-500 p-3 text-center">
+                <h3 class="text-white font-bold text-lg">{$t('map.open_call')}</h3>
+            </div>
+            <div class="p-2">
+                {#each helpOptions as option}
+                    <button
+                        onclick={() => handleHelpRequest(option.id)}
+                        class="w-full flex items-center gap-3 p-3 hover:bg-red-50 rounded-lg transition-colors text-right border-b border-gray-200 last:border-b-0"
+                    >
+                        <span class="text-2xl">{option.icon}</span>
+                        <span class="text-gray-800 font-medium text-sm">{$t(option.key)}</span>
+                    </button>
+                {/each}
+            </div>
+            <button
+                onclick={() => (showHelpMenu = false)}
+                class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 py-2 text-sm font-bold transition-colors"
+            >
+                {$t('map.cancel')}
+            </button>
+        </div>
+    </div>
+{/if}
+
+<!-- ===== סקר הורדת יד (מודל מרכזי ברמת-העל) ===== -->
+{#if showSurvey}
+    <div
+        class="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm overflow-y-auto"
+        role="dialog"
+        aria-modal="true"
+        onclick={(e) => { if (e.target === e.currentTarget) showSurvey = false; }}
+    >
+        <div
+            class="w-80 max-w-[90vw] bg-white rounded-xl shadow-2xl border-2 border-yellow-600 overflow-hidden animate-slideDown"
+            dir="rtl"
+            onclick={(e) => e.stopPropagation()}
+        >
+            <div class="bg-gradient-to-r from-yellow-500 to-orange-500 p-3 text-center">
+                <h3 class="text-white font-bold text-lg">{$t('map.survey_title')}</h3>
+            </div>
+            <div class="p-4 space-y-3">
+                <button
+                    onclick={() => handleSurveyResponse("community")}
+                    class="w-full flex items-center gap-3 p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors border-2 border-green-300"
+                >
+                    <span class="text-3xl">🤝</span>
+                    <div class="text-right">
+                        <p class="font-bold text-green-800">{$t('map.community_helped')}</p>
+                        <p class="text-xs text-green-600">{$t('map.thanks_all')}</p>
+                    </div>
+                </button>
+                <button
+                    onclick={() => handleSurveyResponse("other")}
+                    class="w-full flex items-center gap-3 p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border-2 border-blue-300"
+                >
+                    <span class="text-3xl">✅</span>
+                    <div class="text-right">
+                        <p class="font-bold text-blue-800">{$t('map.solved_other')}</p>
+                        <p class="text-xs text-blue-600">{$t('map.all_ok')}</p>
+                    </div>
+                </button>
+            </div>
+            <button
+                onclick={() => handleSurveyResponse("cancel")}
+                class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 py-2 text-sm font-bold transition-colors"
+            >
+                {$t('map.cancel')}
+            </button>
+        </div>
     </div>
 {/if}
 
