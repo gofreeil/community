@@ -38,20 +38,35 @@ function isAllowedCallback(raw: string | null): URL | null {
 	return u;
 }
 
-export const GET: RequestHandler = async ({ locals, url, cookies }) => {
+export const GET: RequestHandler = async ({ locals, url, cookies, request }) => {
+	const debug = url.searchParams.get('debug') === '1';
 	const callback = isAllowedCallback(url.searchParams.get('callback'));
-	if (!callback) throw error(400, 'callback לא חוקי — חייב להיות כתובת תחת gofreeil.com');
+	if (!callback && !debug) throw error(400, 'callback לא חוקי — חייב להיות כתובת תחת gofreeil.com');
 
 	let session: Awaited<ReturnType<typeof locals.auth>> = null;
+	let authThrew = false;
 	try {
 		session = await locals.auth();
 	} catch {
 		session = null;
+		authThrew = true;
 	}
 
 	const user = session?.user as
 		| { strapiJwt?: string; email?: string | null; id?: string | null }
 		| undefined;
+
+	// אבחון: booleans בלבד, בלי ערכי טוקן. נחשף רק עם ?debug=1.
+	const diag: Record<string, unknown> = {
+		marker: 'sso-v3-validate',
+		hasSessionCookie: !!request.headers.get('cookie')?.match(/authjs|__Secure-authjs|session-token/i),
+		authThrew,
+		hasSession: !!session,
+		hasUser: !!user,
+		hasEmail: !!user?.email,
+		hasUserId: !!user?.id,
+		hadStrapiJwtInSession: !!user?.strapiJwt,
+	};
 
 	// 1. הטוקן שבסשן — אבל רק אם הוא עדיין תקף מול Strapi (לא פג).
 	let jwt: string | undefined = user?.strapiJwt;
@@ -59,8 +74,10 @@ export const GET: RequestHandler = async ({ locals, url, cookies }) => {
 		try {
 			const me = await getStrapiMe(jwt);
 			if (!me) jwt = undefined; // פג/לא תקף → נייצר חדש למטה
+			diag.sessionJwtValid = !!me;
 		} catch {
 			jwt = undefined;
+			diag.sessionJwtValid = false;
 		}
 	}
 
@@ -70,10 +87,25 @@ export const GET: RequestHandler = async ({ locals, url, cookies }) => {
 		const stableId = user.id || `credentials_${user.email.trim().toLowerCase()}`;
 		try {
 			jwt = (await getOrCreateStrapiJwt(user.email, stableId)) ?? undefined;
+			diag.mintedFresh = !!jwt;
 		} catch {
 			jwt = undefined;
+			diag.mintedFresh = false;
+			diag.mintThrew = true;
 		}
 	}
+
+	diag.finalHasJwt = !!jwt;
+
+	if (debug) {
+		return new Response(JSON.stringify(diag, null, 2), {
+			status: 200,
+			headers: { 'content-type': 'application/json; charset=utf-8' },
+		});
+	}
+
+	// כאן debug=false, ולכן (מהבדיקה בראש) callback מובטח קיים
+	if (!callback) throw error(400, 'callback לא חוקי');
 
 	if (jwt) {
 		// אותן אפשרויות בדיוק כמו authCookieOptions של רכישות קבוצתיות
