@@ -41,7 +41,6 @@ export const actions: Actions = {
         const floor        = fd.get('floor')?.toString().trim()        ?? '';
         const apartment    = fd.get('apartment')?.toString().trim()    ?? '';
         const arrivalNotes = fd.get('arrivalNotes')?.toString().trim() ?? '';
-        const address      = [street, buildingNum].filter(Boolean).join(' ');
         const hours        = fd.get('hours')?.toString().trim()        ?? '';
         const contact      = fd.get('contact')?.toString().trim()      ?? '';
         const phone        = fd.get('phone')?.toString().trim()        ?? '';
@@ -79,12 +78,20 @@ export const actions: Actions = {
             if (Array.isArray(parsed)) tags = parsed.filter(s => typeof s === 'string' && s.trim().length > 0);
         } catch {}
 
-        if (!title)        return fail(400, { error: 'יש למלא שם הגמ"ח' });
-        if (!phone)        return fail(400, { error: 'יש למלא טלפון ליצירת קשר' });
-        if (!street)       return fail(400, { error: 'יש למלא רחוב' });
-        if (!buildingNum)  return fail(400, { error: 'יש למלא מספר בניין' });
-        if (!city)         return fail(400, { error: 'יש לבחור עיר (חובה לאתר הארצי)' });
-        if (!neighborhood) return fail(400, { error: 'יש לבחור שכונה (חובה לאתר הארצי)' });
+        // סימון פין על המפה נחשב מיקום תקין - מחליף את הרחוב+מספר הבית
+        const hasPin = lat != null && lng != null;
+
+        if (!title)                  return fail(400, { error: 'יש למלא שם הגמ"ח' });
+        if (!phone)                  return fail(400, { error: 'יש למלא טלפון ליצירת קשר' });
+        if (!street && !hasPin)      return fail(400, { error: 'יש למלא רחוב או לסמן מיקום על המפה' });
+        if (!buildingNum && !hasPin) return fail(400, { error: 'יש למלא מספר בניין או לסמן מיקום על המפה' });
+        if (!city)                   return fail(400, { error: 'יש לבחור עיר (חובה לאתר הארצי)' });
+        if (!neighborhood)           return fail(400, { error: 'יש לבחור שכונה (חובה לאתר הארצי)' });
+
+        // כתובת לתצוגה: רחוב+מספר אם הוזנו, אחרת שכונה/עיר, אחרת ציון שסומן במפה
+        const address = [street, buildingNum].filter(Boolean).join(' ')
+            || [neighborhood, city].filter(Boolean).join(', ')
+            || 'מיקום מסומן על המפה';
 
         try {
             await createItem({

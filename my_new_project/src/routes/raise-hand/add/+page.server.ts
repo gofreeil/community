@@ -50,9 +50,15 @@ export const actions: Actions = {
             ? { ...(lsTime ? { time: lsTime } : {}), ...(lsPlace ? { place: lsPlace } : {}), ...(lsDetails ? { details: lsDetails } : {}) }
             : null;
 
-        if (!description) return fail(400, { error: 'יש לתאר את בקשת העזרה' });
-        if (!location)    return fail(400, { error: 'יש למלא מיקום' });
-        if (!phone)       return fail(400, { error: 'יש למלא טלפון ליצירת קשר' });
+        // סימון פין על המפה נחשב מיקום תקין גם בלי טקסט
+        const hasPin = lat != null && lng != null;
+
+        if (!description)         return fail(400, { error: 'יש לתאר את בקשת העזרה' });
+        if (!location && !hasPin) return fail(400, { error: 'יש למלא מיקום או לסמן על המפה' });
+        if (!phone)               return fail(400, { error: 'יש למלא טלפון ליצירת קשר' });
+
+        // כתובת לתצוגה: הטקסט אם הוקלד, אחרת ציון שסומן במפה
+        const address = location || 'מיקום מסומן על המפה';
 
         const option = OPTIONS[optionId] ?? OPTIONS['4'];
 
@@ -66,7 +72,7 @@ export const actions: Actions = {
                 description,
                 contact,
                 phone,
-                address:     location,
+                address:     address,
                 icon:        option.icon,
                 color:       'red',
                 ...(lat != null && lng != null ? { lat, lng } : {}),
