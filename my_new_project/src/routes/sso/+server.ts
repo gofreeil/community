@@ -86,7 +86,7 @@ export const GET: RequestHandler = async ({ locals, url, cookies, request }) => 
 	if (!jwt && user?.email) {
 		const stableId = user.id || `credentials_${user.email.trim().toLowerCase()}`;
 		try {
-			jwt = (await getOrCreateStrapiJwt(user.email, stableId)) ?? undefined;
+			jwt = (await getOrCreateStrapiJwt(user.email, stableId, debug ? diag : undefined)) ?? undefined;
 			diag.mintedFresh = !!jwt;
 		} catch {
 			jwt = undefined;

@@ -26,33 +26,45 @@ const AUTH_SECRET = process.env.AUTH_SECRET ?? '';
 export async function getOrCreateStrapiJwt(
     email: string | null | undefined,
     stableId: string,
+    diag?: Record<string, unknown>,
 ): Promise<string | null> {
-    if (!email || !AUTH_SECRET) return null;
+    // מחלץ קוד HTTP קצר מהודעת שגיאה של strapiClient (בלי טקסט/PII)
+    const code = (e: unknown): string => {
+        const m = e instanceof Error ? e.message : String(e);
+        const n = m.match(/→\s*(\d{3})/) || m.match(/\b(\d{3})\b/);
+        return n ? n[1] : 'network';
+    };
+    if (!email || !AUTH_SECRET) { if (diag) diag.reason = 'no-email-or-secret'; return null; }
     const password = createHash('sha256').update(stableId + AUTH_SECRET).digest('hex').slice(0, 32);
     const username = stableId.replace(/[^a-zA-Z0-9_]/g, '_').slice(0, 30);
 
     // 1. כניסה עם ה-seed הדטרמיניסטי
     try {
         const { jwt } = await strapiLogin(email, password);
-        if (jwt) return jwt;
-    } catch { /* לא קיים / seed שונה — ממשיכים */ }
+        if (jwt) { if (diag) diag.step1_login = 'ok'; return jwt; }
+    } catch (e) { if (diag) diag.step1_login = code(e); }
 
     // 2. משתמש לא קיים — ניצור אותו
     try {
         const { jwt } = await strapiRegister(username, email, password);
-        if (jwt) return jwt;
-    } catch { /* האימייל כנראה תפוס ע"י חשבון עם seed אחר — ממשיכים לריפוי */ }
+        if (jwt) { if (diag) diag.step2_register = 'ok'; return jwt; }
+    } catch (e) { if (diag) diag.step2_register = code(e); }
 
     // 3. ריפוי אדמין: מאתרים לפי אימייל, מאפסים סיסמה ל-seed, נכנסים.
     try {
         const found = await findStrapiUpUsers({ 'filters[email][$eqi]': email });
+        if (diag) diag.step3_findCount = Array.isArray(found) ? found.length : -1;
         const existing = found?.[0] as { id?: number } | undefined;
         if (existing?.id) {
+            if (diag) diag.step3_foundId = true;
             await updateStrapiUpUser(existing.id, { password });
+            if (diag) diag.step3_updated = true;
             const { jwt } = await strapiLogin(email, password);
+            if (diag) diag.step3_relogin = jwt ? 'ok' : 'no-jwt';
             if (jwt) return jwt;
         }
     } catch (err) {
+        if (diag) diag.step3_err = code(err);
         console.warn('[strapiJwt] admin-heal failed:', err);
     }
     return null;
