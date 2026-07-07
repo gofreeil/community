@@ -48,11 +48,17 @@ export const actions: Actions = {
         const lat          = latRaw !== '' && Number.isFinite(+latRaw) ? +latRaw : null;
         const lng          = lngRaw !== '' && Number.isFinite(+lngRaw) ? +lngRaw : null;
 
-        if (!type)     return fail(400, { error: 'יש לבחור אבד או נמצא' });
-        if (!title)    return fail(400, { error: 'יש למלא כותרת' });
-        if (!location) return fail(400, { error: 'יש למלא מיקום' });
-        if (!phone)    return fail(400, { error: 'יש למלא טלפון ליצירת קשר' });
-        if (!userCity) return fail(400, { error: 'חסרה עיר בפרופיל - עדכן את הפרופיל לפני פרסום מודעה' });
+        // סימון פין על המפה נחשב מיקום תקין גם בלי טקסט - נגזרת כתובת גיבוי מהפרופיל
+        const hasPin = lat != null && lng != null;
+
+        if (!type)                 return fail(400, { error: 'יש לבחור אבד או נמצא' });
+        if (!title)                return fail(400, { error: 'יש למלא כותרת' });
+        if (!location && !hasPin)  return fail(400, { error: 'יש למלא מיקום או לסמן על המפה' });
+        if (!phone)                return fail(400, { error: 'יש למלא טלפון ליצירת קשר' });
+        if (!userCity)             return fail(400, { error: 'חסרה עיר בפרופיל - עדכן את הפרופיל לפני פרסום מודעה' });
+
+        // כתובת לתצוגה בכרטיס: הטקסט אם הוקלד, אחרת שכונה/עיר מהפרופיל, אחרת ציון שסומן במפה
+        const address = location || [userNeighborhood, userCity].filter(Boolean).join(', ') || 'מיקום מסומן על המפה';
 
         try {
             await createItem({
@@ -61,7 +67,7 @@ export const actions: Actions = {
                 description: `${type === 'lost' ? '❓ אבד' : '✅ נמצא'} | ${description}`,
                 contact:     contact,
                 phone:       phone,
-                address:     location,
+                address:     address,
                 icon:        type === 'lost' ? '❓' : '✅',
                 color:       type === 'lost' ? 'red' : 'green',
                 neighborhood: userNeighborhood,
