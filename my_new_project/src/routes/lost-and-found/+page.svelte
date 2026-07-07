@@ -49,6 +49,15 @@
         catch { return ''; }
     }
 
+    function getTags(extraFields: string): string[] {
+        try {
+            const t = JSON.parse(extraFields)?.tags;
+            return Array.isArray(t) ? t.filter(Boolean) : [];
+        } catch {
+            return [];
+        }
+    }
+
     // תגיות/מיקום מתוך extra_fields — לשימוש בחיפוש
     function getSearchExtras(extraFields: string): string {
         try {
@@ -376,6 +385,7 @@
     {#snippet card(item: typeof data.items[number])}
         {@const type    = getItemType(item.extra_fields)}
         {@const image   = getItemImage(item.extra_fields)}
+        {@const tags    = getTags(item.extra_fields)}
         {@const isOwner = data.currentUserId && item.user_id === data.currentUserId}
         <a href="/lost-and-found/{item.id}" class="relative rounded-2xl border border-white/10 bg-white/5 overflow-hidden hover:bg-white/8 transition-all block no-underline group">
             {#if image}
@@ -396,6 +406,14 @@
 
                 {#if item.description}
                     <p class="text-gray-400 text-sm mb-2 leading-snug">{item.description.replace(/^(❓ אבד|✅ נמצא) \| /, '')}</p>
+                {/if}
+
+                {#if tags.length > 0}
+                    <div class="flex flex-wrap gap-1.5 mb-3">
+                        {#each tags as tag}
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/15 text-blue-300 border border-blue-500/20">{tag}</span>
+                        {/each}
+                    </div>
                 {/if}
 
                 <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 mb-3">

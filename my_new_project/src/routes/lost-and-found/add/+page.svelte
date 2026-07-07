@@ -22,6 +22,22 @@
     let imageBase64 = $state('');
     let imagePreview = $state('');
 
+    // מגירת תגים - הפורסם מסמן מאפיינים כדי שמי שאיבד יאתר את הפריט מהר בחיפוש
+    const LAF_TAGS = [
+        '👛 ארנק', '🔑 מפתחות', '📱 טלפון', '👓 משקפיים', '🕶️ משקפי שמש',
+        '🎒 תיק', '💍 תכשיט', '⌚ שעון', '📄 מסמכים', '💳 כרטיס אשראי',
+        '🪪 תעודה', '🐕 כלב', '🐈 חתול', '🧥 בגד', '🧢 כובע', '🧸 צעצוע',
+        '🚲 אופניים', '☂️ מטרייה', '🎧 אוזניות', '🔌 מטען', '💰 כסף', '📚 ספר',
+    ];
+    let selectedTags = $state<string[]>([]);
+    let tagsOpen     = $state(false);
+
+    function toggleTag(tag: string) {
+        selectedTags = selectedTags.includes(tag)
+            ? selectedTags.filter(t => t !== tag)
+            : [...selectedTags, tag];
+    }
+
     async function processFile(files: File[]) {
         const file = files[0];
         if (!file) return;
@@ -74,7 +90,7 @@
         <!-- Header -->
         <div class="text-center mb-8">
             <div class="text-5xl mb-3">🔍</div>
-            <h1 class="text-2xl font-black text-white mb-1">אבדות ומציאות</h1>
+            <h1 class="text-2xl font-black text-white mb-1">פינת האבדות</h1>
             <p class="text-gray-400 text-sm">מלא את הפרטים ונפרסם עבורך בקהילה</p>
         </div>
 
@@ -179,6 +195,41 @@
                         placeholder="תיאור הפריט, סימנים מזהים, נסיבות האבדה / מציאה..."
                         class="w-full bg-white/5 border border-white/10 focus:border-blue-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none transition-colors placeholder:text-gray-600 resize-none"
                     ></textarea>
+                </div>
+
+                <!-- Tags drawer -->
+                <div>
+                    <button type="button" onclick={() => (tagsOpen = !tagsOpen)}
+                        class="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all">
+                        <span class="text-sm font-bold text-gray-200 flex items-center gap-2">
+                            🏷️ תגים
+                            {#if selectedTags.length > 0}
+                                <span class="text-xs font-bold text-blue-300 bg-blue-500/20 rounded-full px-2 py-0.5">{selectedTags.length}</span>
+                            {/if}
+                        </span>
+                        <span class="text-gray-400 text-xs transition-transform {tagsOpen ? 'rotate-180' : ''}">▼</span>
+                    </button>
+
+                    {#if tagsOpen}
+                        <div class="mt-3 p-4 rounded-xl bg-white/3 border border-white/10">
+                            <p class="text-amber-300 text-xs font-bold mb-3 leading-relaxed flex items-start gap-1.5">
+                                <span class="flex-shrink-0">💡</span>
+                                <span>אנא סמן תגים — כדי להקל על מי שאיבד את האבדה לאתר את שלו</span>
+                            </p>
+                            <div class="flex flex-wrap gap-2">
+                                {#each LAF_TAGS as tag}
+                                    <button type="button" onclick={() => toggleTag(tag)}
+                                        class="px-3 py-1.5 rounded-full text-xs font-bold border transition-all
+                                            {selectedTags.includes(tag)
+                                                ? 'bg-blue-600 border-blue-500 text-white'
+                                                : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/25'}">
+                                        {tag}
+                                    </button>
+                                {/each}
+                            </div>
+                        </div>
+                    {/if}
+                    <input type="hidden" name="tags" value={selectedTags.join(',')} />
                 </div>
 
                 <!-- Image upload -->

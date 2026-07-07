@@ -43,6 +43,8 @@ export const actions: Actions = {
         const phone        = fd.get('phone')?.toString().trim()       ?? '';
         const contact      = fd.get('contact')?.toString().trim()     ?? '';
         const image_base64 = fd.get('image_base64')?.toString()       ?? '';
+        const tags         = (fd.get('tags')?.toString() ?? '')
+            .split(',').map(t => t.trim()).filter(Boolean);
         const latRaw       = fd.get('lat')?.toString().trim()         ?? '';
         const lngRaw       = fd.get('lng')?.toString().trim()         ?? '';
         const lat          = latRaw !== '' && Number.isFinite(+latRaw) ? +latRaw : null;
@@ -73,7 +75,7 @@ export const actions: Actions = {
                 neighborhood: userNeighborhood,
                 city:         userCity,
                 ...(lat != null && lng != null ? { lat, lng } : {}),
-                extra_fields: { type, location, ...(image_base64 ? { image: image_base64 } : {}) },
+                extra_fields: { type, location, ...(tags.length ? { tags } : {}), ...(image_base64 ? { image: image_base64 } : {}) },
                 user_id:     session.user.id,
             });
         } catch (e) {
