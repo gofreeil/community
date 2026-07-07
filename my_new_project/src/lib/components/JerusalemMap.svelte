@@ -407,6 +407,22 @@
         return d.neighborhood === neighborhoodState.neighborhood || !d.neighborhood;
     }
 
+    // ---- קריאות עזרה (הרמת יד) ----
+    // מוצגות על המפה במשך יממה מרגע הפרסום, כל עוד לא נענו. אחרי יממה / לאחר
+    // שנענו הן יורדות מהמפה ועוברות לטבלת "קריאות שלא נענו" בדף הבית.
+    const HELP_CALL_WINDOW_MS = 24 * 60 * 60 * 1000;
+    function isAnsweredHelpCall(d: { extra_fields?: string }): boolean {
+        try { return JSON.parse(d.extra_fields ?? '{}')?.answered === true; }
+        catch { return false; }
+    }
+    function isActiveHelpCall(d: { category?: string; created_at?: string; extra_fields?: string }): boolean {
+        if (d.category !== 'raise_hand') return false;
+        if (isAnsweredHelpCall(d)) return false;
+        const ts = d.created_at ? new Date(d.created_at).getTime() : NaN;
+        if (Number.isNaN(ts)) return true; // בלי תאריך - מציגים ליתר ביטחון
+        return (Date.now() - ts) < HELP_CALL_WINDOW_MS;
+    }
+
     // פריטים מהשכונה הנוכחית - ריאקטיבי לשינויי neighborhoodState ול-selectedCategory
     let neighborhoodDbItems = $derived(
         dbItems.filter(d =>
@@ -513,7 +529,9 @@
     ];
 
     let dynamicMarkers = $derived.by(() => {
-        const inHood = dbItems.filter(d => belongsToMyArea(d));
+        // קריאות עזרה מטופלות בשכבה נפרדת (helpCallMarkers) - לא נכללות כאן,
+        // כדי שלא ידכאו את מרקרי הדמו ולא יוגבלו ע"י MAX_MARKERS / סינון קטגוריה.
+        const inHood = dbItems.filter(d => belongsToMyArea(d) && d.category !== 'raise_hand');
 
         // יש פריט אמיתי אחד לפחות - מציגים רק את האמיתיים, בלי דמו
         if (inHood.length > 0) {
@@ -591,6 +609,32 @@
         });
     });
 
+    // מרקרי קריאות עזרה - שכבה נפרדת שתמיד מוצגת (ללא תלות בקטגוריה שנבחרה),
+    // מוגבלת לקריאות פעילות (לא נענו, בתוך יממה) של השכונה הנוכחית.
+    let helpCallMarkers = $derived.by(() => {
+        return dbItems
+            .filter(d => belongsToMyArea(d) && isActiveHelpCall(d))
+            .slice(0, 20)
+            .map(item => {
+                const id = String(item.id);
+                const fallback = getCoordsFor(item.neighborhood, item.city);
+                const center: [number, number] =
+                    item.lat != null && item.lng != null ? [item.lat, item.lng] : fallback;
+                const onCenter =
+                    Math.abs(center[0] - fallback[0]) < 1e-9 &&
+                    Math.abs(center[1] - fallback[1]) < 1e-9;
+                const [lat, lng] = onCenter ? jitterCoord(center, id) : center;
+                return {
+                    id,
+                    lat,
+                    lng,
+                    icon:  item.icon  || '✋',
+                    label: item.label || $t('map.raise_hand'),
+                    color: 'red',
+                };
+            });
+    });
+
     function isMarkerVisible(markerCategory: string): boolean {
         if (selectedCategory === "benefits") return true;
         return markerCategory === selectedCategory;
@@ -659,6 +703,26 @@
                     goto(`/add/${m.category}`);
                     return;
                 }
+                if (window.innerWidth < 1024) {
+                    triggerAdPopup(`/items/${m.id}`);
+                } else {
+                    goto(`/items/${m.id}`);
+                }
+            });
+            mapMarkerLayer.addLayer(marker);
+        }
+
+        // שכבת קריאות עזרה - תמיד מוצגת (מעל השאר), עם הבהוב אדום להדגשה
+        for (const m of helpCallMarkers) {
+            const html = buildIconHtml(m.icon, m.label, m.color);
+            const divIcon = leafletL.divIcon({
+                className: 'jmap-pin-wrap jmap-pin-wrap--help',
+                html,
+                iconSize:   [120, 60],
+                iconAnchor: [60, 60],
+            });
+            const marker = leafletL.marker([m.lat, m.lng], { icon: divIcon, riseOnHover: true, zIndexOffset: 1000 });
+            marker.on('click', () => {
                 if (window.innerWidth < 1024) {
                     triggerAdPopup(`/items/${m.id}`);
                 } else {
@@ -762,6 +826,7 @@
     $effect(() => {
         // תלות מפורשת
         void dynamicMarkers;
+        void helpCallMarkers;
         void selectedCategory;
         rebuildMarkers();
     });
@@ -2356,6 +2421,18 @@
         background: transparent !important;
         border: 0 !important;
         z-index: 20 !important;
+    }
+    /* קריאת עזרה - הבהוב אדום שמושך תשומת לב */
+    :global(.jmap-pin-wrap--help) {
+        z-index: 1000 !important;
+    }
+    :global(.jmap-pin-wrap--help .jmap-pin-icon) {
+        animation: helpPinPulse 1.4s ease-in-out infinite;
+        filter: drop-shadow(0 0 6px rgba(220,38,38,0.9));
+    }
+    @keyframes helpPinPulse {
+        0%, 100% { transform: scale(1); }
+        50%      { transform: scale(1.22); }
     }
     :global(.jmap-pin) {
         text-align: center;

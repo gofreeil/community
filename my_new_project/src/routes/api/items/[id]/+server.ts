@@ -270,6 +270,60 @@ export const PATCH: RequestHandler = async (event) => {
         }
     }
 
+    // ---- "אני עוזר/בדרך": כל תושב מחובר יכול להיענות לקריאת עזרה ----
+    // מסמן את הקריאה כ"נענתה" (יורדת מהמפה ומטבלת הקריאות הפתוחות) ומודיע למבקש.
+    if (action === 'help_respond') {
+        if (item.category !== 'raise_hand') {
+            return json({ success: false, message: 'לא קריאת עזרה' }, { status: 400 });
+        }
+        let extra: Record<string, unknown> = {};
+        try { extra = item.extra_fields ? JSON.parse(item.extra_fields) : {}; } catch { extra = {}; }
+
+        const helper = await getUserByAnyId(String(userId));
+        const helperName = helper?.name || helper?.nickname || 'שכן/ה';
+
+        const helpers = Array.isArray(extra.helpers) ? (extra.helpers as Array<Record<string, unknown>>) : [];
+        const already = helpers.some(h => String(h.id) === String(userId));
+        if (!already) {
+            helpers.push({ id: String(userId), name: helperName, at: new Date().toISOString() });
+        }
+        extra.helpers = helpers;
+        extra.answered = true;
+        extra.answered_at = extra.answered_at ?? new Date().toISOString();
+
+        try {
+            await updateItem(id, { extra_fields: extra });
+        } catch (e) {
+            console.error('[items/:id help_respond] update failed:', e);
+            return json({ success: false, message: 'שגיאה בעדכון' }, { status: 500 });
+        }
+
+        // הודעה למבקש שמישהו בדרך (פעם ראשונה בלבד - כדי לא להציף)
+        if (!already && item.user_id && item.user_id !== String(userId)) {
+            try {
+                await createItem({
+                    category: 'message',
+                    label: '🤝 מישהו בדרך לעזור לך',
+                    description: `${helperName} ראה/תה את קריאת העזרה שלך ("${item.label}") ומגיע/ה לעזור. אפשר ליצור קשר ישירות.`,
+                    contact: helperName,
+                    user_id: item.user_id,
+                    icon: '🤝',
+                    color: 'green',
+                    extra_fields: {
+                        type: 'help_on_the_way',
+                        sender_name: helperName,
+                        item_label: item.label,
+                        read: false,
+                    },
+                });
+            } catch (e) {
+                console.warn('[items/:id help_respond] notify failed:', e instanceof Error ? e.message : e);
+            }
+        }
+
+        return json({ success: true, helperName });
+    }
+
     // ---- הקפאה/הפעלה: בעלים בלבד. רק frozen/active - לא סטטוס חופשי ----
     if (!isOwner) return json({ success: false, message: 'אין הרשאה' }, { status: 403 });
 

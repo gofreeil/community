@@ -24,12 +24,40 @@
 
     const currentYear = new Date().getFullYear();
 
-    // Mock - חצי עליון: רמות יד פעילות שעדיין לא קיבלו מענה (הטקסטים במילון home).
-    const raisedHandsMock = [
-        { icon: '👴', key: 'hand1' },
-        { icon: '🚗', key: 'hand2' },
-        { icon: '🆘', key: 'hand3' },
-    ];
+    // קריאות עזרה (הרמת יד) שטרם נענו - נתונים אמיתיים מ-Strapi, מסוננים לשכונה
+    // הנוכחית. קריאה מוצגת על המפה יממה; כאן מוצגות כל הקריאות שעדיין לא נענו
+    // (כולל אלו שירדו מהמפה), עד שתושב לוחץ "אני עוזר".
+    const HELP_CALL_WINDOW_MS = 24 * 60 * 60 * 1000;
+    let respondedIds = $state<string[]>([]);
+    let respondingId = $state<string | null>(null);
+
+    function helpAnswered(ef: string): boolean {
+        try { return JSON.parse(ef || '{}')?.answered === true; }
+        catch { return false; }
+    }
+    function isOffMap(iso: string): boolean {
+        if (!iso) return false;
+        const ts = new Date(iso).getTime();
+        return !Number.isNaN(ts) && (Date.now() - ts) >= HELP_CALL_WINDOW_MS;
+    }
+
+    async function respondToHelp(id: string) {
+        if (respondingId) return;
+        respondingId = id;
+        try {
+            const res = await fetch(`/api/items/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'help_respond' }),
+            });
+            if (res.ok) {
+                respondedIds = [...respondedIds, id];
+            } else if (res.status === 401) {
+                window.location.href = '/login';
+            }
+        } catch { /* שקט - נשאר בטבלה */ }
+        finally { respondingId = null; }
+    }
 
     // Mock - חצי תחתון: משאלות מכותל המשאלות / קופת השכונה שהוגשמו (הטקסטים במילון home).
     const fulfilledWishesMock = [
@@ -44,6 +72,17 @@
     import type { PageData } from './$types';
 
     let { data }: { data: PageData } = $props();
+
+    // קריאות עזרה פתוחות בשכונה הנוכחית (מסונן אחרי שהוכרז data)
+    let openHelpCalls = $derived(
+        data.dbItems.filter((i: any) =>
+            i.category === 'raise_hand' &&
+            i.city === neighborhoodState.city &&
+            (!i.neighborhood || i.neighborhood === neighborhoodState.neighborhood) &&
+            !helpAnswered(i.extra_fields) &&
+            !respondedIds.includes(i.id)
+        )
+    );
 
     let showNeighborhoodsMenu = $state(false);
     let searchQuery = $state('');
@@ -601,20 +640,32 @@
                         </p>
                     </div>
                     <div class="p-2 flex-1 overflow-hidden flex flex-col gap-1.5 relative">
-                        <!-- חצי עליון: רמות יד פעילות שעדיין לא קיבלו מענה -->
+                        <!-- חצי עליון: קריאות עזרה שטרם נענו -->
                         <div class="flex-1 min-h-0 overflow-hidden flex flex-col gap-1.5">
                             <div class="flex items-center gap-1.5 px-0.5 flex-shrink-0">
-                                <span class="text-[10px] font-bold text-red-300 uppercase tracking-wide">✋ {$t('home.active_hands')}</span>
+                                <span class="text-[10px] font-bold text-red-300 uppercase tracking-wide">✋ {$t('home.unanswered_calls')}</span>
                                 <div class="flex-1 h-px bg-red-500/30"></div>
                             </div>
-                            <div class="flex-1 min-h-0 overflow-hidden flex flex-col gap-1">
-                                {#each raisedHandsMock as h}
+                            <div class="flex-1 min-h-0 overflow-y-auto flex flex-col gap-1">
+                                {#each openHelpCalls as h (h.id)}
                                     <div class="flex gap-2 items-start bg-red-500/10 rounded-lg p-1.5 border border-red-500/20">
-                                        <span class="text-base flex-shrink-0 leading-none mt-0.5">{h.icon}</span>
+                                        <span class="text-base flex-shrink-0 leading-none mt-0.5">{h.icon || '✋'}</span>
                                         <div class="min-w-0 flex-1">
-                                            <p class="text-white text-[11px] font-bold leading-tight">{$t(`home.${h.key}_title`)}</p>
-                                            <p class="text-red-200/70 text-[10px] mt-0.5">{$t(`home.${h.key}_date`)}</p>
+                                            <p class="text-white text-[11px] font-bold leading-tight">{h.label}</p>
+                                            {#if h.address}<p class="text-red-200/70 text-[10px] mt-0.5 truncate">📍 {h.address}{isOffMap(h.created_at) ? ` · ${$t('home.off_map')}` : ''}</p>{/if}
                                         </div>
+                                        <button
+                                            type="button"
+                                            onclick={() => respondToHelp(h.id)}
+                                            disabled={respondingId === h.id}
+                                            class="flex-shrink-0 self-center bg-green-600 hover:bg-green-500 disabled:opacity-60 text-white text-[10px] font-bold px-2 py-1 rounded-full transition-colors"
+                                        >
+                                            {respondingId === h.id ? '…' : $t('home.im_helping')}
+                                        </button>
+                                    </div>
+                                {:else}
+                                    <div class="flex-1 flex items-center justify-center text-center px-2">
+                                        <p class="text-emerald-300/80 text-[11px] font-medium leading-snug">{$t('home.no_open_calls')}</p>
                                     </div>
                                 {/each}
                             </div>
