@@ -275,6 +275,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
             { key: 'looking_for_f', label: 'מחפשת',                 type: 'textarea', required: false, placeholder: 'למשל: רגיש, חכם, ירא שמיים, עם חוש הומור...',  maxLength: 100, showIf: { field: 'gender', equals: 'אישה' } },
             { key: 'inspiration', label: 'משפט מעורר השראה (אופציונלי)', type: 'textarea', required: false, placeholder: 'משפט או ציטוט שאתה שואב ממנו השראה', maxLength: 150 },
             { key: 'images',      label: 'גלריית תמונות',           type: 'images',   required: false },
+            { key: 'visibility',  label: 'מי יראה את הכרטיס?',      type: 'toggle',   required: false, options: ['גלוי לכולם', 'רק לשדכנים שלנו'], default: 'גלוי לכולם', hint: '“גלוי לכולם” — הכרטיס מופיע בלוח הפומבי לכל המשתמשים. “רק לשדכנים שלנו” — הכרטיס לא מופיע בלוח; רק צוות השדכנים שלנו רואה אותו, ומפנה אותו בדיסקרטיות רק להצעות רלוונטיות.' },
             { key: 'matchmaker',  label: 'שדכן או חבר (אופציונלי)',    type: 'text',     required: false, placeholder: 'שם וטלפון', hint: '⚠️ הטלפון שתזין כאן יוצג בגלוי בכרטיס שלך ובדף הפרופיל - זוהי דרך הקשר היחידה שתוצג לציבור.' },
             { key: 'phone',       label: 'טלפון (לא מוצג)',           type: 'tel',      required: true,  placeholder: '05X-XXXXXXX', hint: 'הטלפון יישמר פנימית ולא יוצג לציבור' },
         ],

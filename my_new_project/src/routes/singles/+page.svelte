@@ -303,6 +303,7 @@
             {@const isMale = me.gender === 'male'}
             {@const isPending = data.selfStatus === 'pending'}
             {@const isRejected = data.selfStatus === 'rejected'}
+            {@const isMatchmakersOnly = me.visibility === 'matchmakers'}
             <div class="mb-8 flex flex-col items-center">
                 <h2 class="text-amber-300 text-sm md:text-base font-bold mb-3 text-center">
                     {$_('extras.s_self_card_title')}
@@ -316,6 +317,12 @@
                     <div class="w-full max-w-md mb-2 rounded-xl bg-red-500/15 border border-red-400/40 px-4 py-2.5 text-center">
                         <p class="text-red-200 text-sm font-bold">{$_('extras.s_rejected_title')}</p>
                         <p class="text-red-300/70 text-xs mt-0.5">{$_('extras.s_rejected_sub')}</p>
+                    </div>
+                {/if}
+                {#if isMatchmakersOnly}
+                    <div class="w-full max-w-md mb-2 rounded-xl bg-purple-500/15 border border-purple-400/40 px-4 py-2.5 text-center">
+                        <p class="text-purple-200 text-sm font-bold">🔒 גלוי רק לשדכנים שלנו</p>
+                        <p class="text-purple-300/70 text-xs mt-0.5">הכרטיס אינו מופיע בלוח הפומבי. צוות השדכנים שלנו יפנה אותו רק להצעות רלוונטיות. אפשר לשנות זאת בכל עת דרך עריכת הכרטיס.</p>
                     </div>
                 {/if}
                 <div class="w-full max-w-md rounded-2xl bg-[#0f172a] border-2 {isMale ? 'border-blue-400' : 'border-pink-400'} overflow-hidden shadow-xl ring-2 {isMale ? 'ring-blue-500/40' : 'ring-pink-500/40'} relative">

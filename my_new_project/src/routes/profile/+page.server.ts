@@ -184,6 +184,8 @@ export const load: PageServerLoad = async (event) => {
             for (const it of allSingles) {
                 try {
                     const ef = JSON.parse(it.extra_fields || '{}');
+                    // כרטיסים "רק לשדכנים שלנו" אינם ספירה פומבית של פנויים זמינים
+                    if (String(ef.visibility ?? '').includes('שדכ')) continue;
                     if ((ef.gender ?? '').toLowerCase() !== opposite) continue;
                     const birth = ef.birth_date || '';
                     if (!birth && ef.age) {

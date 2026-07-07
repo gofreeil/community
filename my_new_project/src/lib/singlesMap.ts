@@ -68,6 +68,10 @@ export function dbItemToProfile(item: DbItem): SingleProfile {
     const matchmaker = String(ef.matchmaker ?? '').trim();
     const matchmakerPhone = extractPhone(matchmaker) || item.phone || '';
 
+    // נראות הכרטיס: ברירת מחדל = פומבי. נשמר בעברית ב-extra_fields.visibility.
+    const visibility: 'public' | 'matchmakers' =
+        String(ef.visibility ?? '').includes('שדכ') ? 'matchmakers' : 'public';
+
     return {
         id: String(item.id),
         nickname,
@@ -89,5 +93,6 @@ export function dbItemToProfile(item: DbItem): SingleProfile {
         matchmakerPhone,
         images,
         status: 'available',
+        visibility,
     };
 }

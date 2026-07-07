@@ -11,11 +11,22 @@
     let tab = $state<'pending' | 'active'>('pending');
     // סינון מגדר לבחינת לוח הגברים/הנשים בנפרד
     let gender = $state<'all' | 'male' | 'female'>('all');
+    // סינון נראות: כל הכרטיסים / רק פומביים / רק "לשדכנים שלנו" (דיסקרטיים)
+    let vis = $state<'all' | 'public' | 'matchmakers'>('all');
 
     let cards = $derived(
         (tab === 'pending' ? data.pending : data.active).filter(
-            (c: Card) => gender === 'all' || c.gender === gender,
+            (c: Card) =>
+                (gender === 'all' || c.gender === gender) &&
+                (vis === 'all' || (c.visibility ?? 'public') === vis),
         ),
+    );
+
+    // מספר הכרטיסים הדיסקרטיים (רק לשדכנים) — לתשומת לב הצוות
+    let matchmakerOnlyCount = $derived(
+        (tab === 'pending' ? data.pending : data.active).filter(
+            (c: Card) => c.visibility === 'matchmakers',
+        ).length,
     );
 
     function genderLabel(g: string): string {
@@ -68,7 +79,7 @@
         </div>
 
         <!-- סינון מגדר: בחינת לוח הגברים / הנשים -->
-        <div class="flex gap-2 mb-6 items-center flex-wrap">
+        <div class="flex gap-2 mb-3 items-center flex-wrap">
             <span class="text-gray-400 text-sm">בחן לוח:</span>
             {#each [['all', 'הכל'], ['male', '👨 גברים'], ['female', '👩 נשים']] as [val, lbl]}
                 <button
@@ -76,6 +87,20 @@
                     class="px-3 py-1.5 rounded-md text-[13px] font-medium border transition-colors {gender === val ? 'bg-pink-500/15 text-pink-200 border-pink-400/60' : 'bg-transparent text-gray-400 border-white/10 hover:border-white/25 hover:text-gray-200'}"
                 >{lbl}</button>
             {/each}
+        </div>
+
+        <!-- סינון נראות: דיסקרטיים = "רק לשדכנים שלנו", לפנייה יזומה בלבד -->
+        <div class="flex gap-2 mb-6 items-center flex-wrap">
+            <span class="text-gray-400 text-sm">נראות:</span>
+            {#each [['all', 'הכל'], ['public', '🌐 פומביים'], ['matchmakers', '🔒 רק לשדכנים']] as [val, lbl]}
+                <button
+                    onclick={() => (vis = val as typeof vis)}
+                    class="px-3 py-1.5 rounded-md text-[13px] font-medium border transition-colors {vis === val ? 'bg-purple-500/15 text-purple-200 border-purple-400/60' : 'bg-transparent text-gray-400 border-white/10 hover:border-white/25 hover:text-gray-200'}"
+                >{lbl}</button>
+            {/each}
+            {#if matchmakerOnlyCount > 0}
+                <span class="text-purple-300/80 text-xs mr-1">({matchmakerOnlyCount} דיסקרטיים לפנייה יזומה)</span>
+            {/if}
         </div>
 
         {#if cards.length === 0}
@@ -93,6 +118,9 @@
                             <div class="min-w-0">
                                 <h3 class="text-white font-black text-lg leading-tight">{c.nickname}</h3>
                                 <p class="text-white/85 text-sm">{genderLabel(c.gender)} · {c.age || '—'} · {c.city || '—'}</p>
+                                {#if c.visibility === 'matchmakers'}
+                                    <span class="inline-block mt-1 text-[11px] font-bold bg-black/35 text-purple-100 px-2 py-0.5 rounded-full ring-1 ring-purple-300/40">🔒 רק לשדכנים · לא בלוח הפומבי</span>
+                                {/if}
                             </div>
                             <a href="/items/{c.id}" target="_blank" class="shrink-0 text-xs bg-black/30 hover:bg-black/50 text-white px-3 py-1.5 rounded-lg transition-colors">דף מלא</a>
                         </div>

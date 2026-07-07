@@ -25,6 +25,8 @@ export interface SingleProfile {
     matchmakerPhone?: string;
     images?: string[];
     status?: UserStatus;
+    /** 'public' = מוצג בלוח הפומבי; 'matchmakers' = גלוי רק לצוות השדכנים */
+    visibility?: 'public' | 'matchmakers';
 }
 
 // תצוגת רמה דתית - מותאם למגדר

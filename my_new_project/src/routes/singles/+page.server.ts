@@ -45,8 +45,10 @@ export const load: PageServerLoad = async (event) => {
 
     try {
         const items = await getItemsByCategory('singles');
-        // כל הכרטיסים הפעילים מוצגים - כולל כאלה שלא שילמו
-        const profiles = items.map(dbItemToProfile);
+        // כל הכרטיסים הפעילים מוצגים - כולל כאלה שלא שילמו.
+        // כרטיסים שסומנו "רק לשדכנים שלנו" לא מופיעים בלוח הפומבי (רק צוות
+        // השדכנים רואה אותם בדף /admin/singles-review ומפנה אותם בדיסקרטיות).
+        const profiles = items.map(dbItemToProfile).filter((p) => p.visibility !== 'matchmakers');
         // הכרטיס האמיתי של המשתמש - בכל סטטוס (כולל pending), כדי להציג לו אותו
         // ב"כך נראה הכרטיס שלך" עם תווית "ממתין לאישור" אם עוד לא אושר.
         let selfProfile: ReturnType<typeof dbItemToProfile> | null = null;
