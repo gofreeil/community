@@ -44,6 +44,20 @@ const noOpAction = async (): Promise<never> => {
 // getOrCreateStrapiJwt עבר ל-$lib/server/strapiJwt.ts כדי שגם endpoint ה-SSO
 // (/sso) יוכל לייצר טוקן במקום כשחסר — בלי תלות בתזמון של ה-jwt callback.
 
+/** מפענח את שדה exp (שניות אפוק) מ-JWT בלי אימות חתימה; null אם נכשל */
+function jwtExpSeconds(jwt: unknown): number | null {
+    if (typeof jwt !== 'string') return null;
+    try {
+        const part = jwt.split('.')[1];
+        if (!part) return null;
+        const json = Buffer.from(part.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8');
+        const payload = JSON.parse(json);
+        return typeof payload?.exp === 'number' ? payload.exp : null;
+    } catch {
+        return null;
+    }
+}
+
 export const { handle, signIn, signOut } = !AUTH_SECRET
     ? (() => {
         console.warn('[auth] AUTH_SECRET missing - auth disabled (no-op fallback)');
@@ -231,19 +245,26 @@ export const { handle, signIn, signOut } = !AUTH_SECRET
             if (user && (user as { strapiJwt?: string }).strapiJwt) {
                 token.strapiJwt = (user as { strapiJwt?: string }).strapiJwt;
             }
-            // ריפוי-עצמי: סשנים שנוצרו כשה-Strapi המשותף לא היה זמין לרגע נשמרו
-            // בלי strapiJwt. בלעדיו ה-SSO החוצה-אתרים (gofreeil-auth) מחזיר
-            // not_registered למרות שהמשתמש מחובר מצוין. אם חסר — מושכים מחדש לפי
-            // ה-seed הדטרמיניסטי (email + dbUserId). מצליח למשתמשי OAuth שה-id שלהם
-            // == seed הסיסמה; no-op בטוח אחרת. רץ פעם אחת ואז מפסיק (הטוקן נשמר).
-            if (!token.strapiJwt && token.email && token.dbUserId) {
-                try {
-                    const healed = await getOrCreateStrapiJwt(
-                        token.email as string,
-                        token.dbUserId as string
-                    );
-                    if (healed) token.strapiJwt = healed;
-                } catch { /* ignore - נשאר בלי JWT עד ההתחברות הבאה */ }
+            // ריפוי-עצמי + רענון פג-תוקף: מוודאים ש-strapiJwt קיים *ותקף*. בלעדיו
+            // (או כשהוא פג) ה-SSO החוצה-אתרים והעוגייה המשותפת gofreeil-auth נכשלים —
+            // כל 13 האתרים קוראים אותה. מפענחים את ה-exp מקומית (בלי קריאת רשת); אם
+            // חסר / פג / עומד לפוג תוך 3 ימים — מושכים טוקן חדש (login-seed → register →
+            // הנפקה מהבאקאנד). כך הטוקן שבסשן תמיד חי, וה-hook שמפזר את העוגייה המשותפת
+            // שותל תמיד טוקן תקף. רץ פעם ביום ב-refresh (updateAge) ואז נעצר.
+            {
+                const REFRESH_BUFFER_MS = 3 * 24 * 60 * 60 * 1000; // 3 ימים לפני פג-תוקף
+                const exp = jwtExpSeconds(token.strapiJwt);
+                const needsFresh =
+                    !token.strapiJwt || exp === null || exp * 1000 < Date.now() + REFRESH_BUFFER_MS;
+                if (needsFresh && token.email && token.dbUserId) {
+                    try {
+                        const fresh = await getOrCreateStrapiJwt(
+                            token.email as string,
+                            token.dbUserId as string
+                        );
+                        if (fresh) token.strapiJwt = fresh;
+                    } catch { /* ignore - נשאר עד הרענון הבא */ }
+                }
             }
             // שלוף role, neighborhood, banned מהדאטאבייס (בכל refresh של token)
             if (token.dbUserId) {
