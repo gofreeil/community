@@ -1,7 +1,7 @@
 import { redirect, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getOrCreateStrapiJwt } from '$lib/server/strapiJwt';
-import { getStrapiMe } from '$lib/server/strapiClient';
+import { getStrapiMe, findStrapiUpUsers } from '$lib/server/strapiClient';
 
 /**
  * SSO bridge לכל אתרי gofreeil.com.
@@ -98,6 +98,17 @@ export const GET: RequestHandler = async ({ locals, url, cookies, request }) => 
 	diag.finalHasJwt = !!jwt;
 
 	if (debug) {
+		// בדיקת-עצמאית של ה-STRAPI_TOKEN הפרוס: האם הוא מסוגל לקרוא משתמשים כלל?
+		// זו התלות של שלב הריפוי (findStrapiUpUsers). מריצים תמיד — לא דורש סשן —
+		// כדי שאפשר יהיה לבודד בעיית env-token מבעיית סשן. ספירה בלבד, בלי PII.
+		try {
+			const probe = await findStrapiUpUsers({ 'pagination[pageSize]': '1' });
+			diag.adminTokenReadsUsers = Array.isArray(probe) && probe.length > 0;
+			diag.adminProbeCount = Array.isArray(probe) ? probe.length : -1;
+		} catch (e) {
+			diag.adminTokenReadsUsers = false;
+			diag.adminProbeErr = e instanceof Error ? e.message.slice(0, 140) : 'err';
+		}
 		return new Response(JSON.stringify(diag, null, 2), {
 			status: 200,
 			headers: { 'content-type': 'application/json; charset=utf-8' },
