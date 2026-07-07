@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { strapiGet } from '$lib/server/strapiClient';
-import { cached } from '$lib/server/cache';
+import { cachedBackground } from '$lib/server/cache';
 
 // ערכי ברירת מחדל - משמשים כ-fallback אם אין רשומה ב-Strapi
 const DEFAULT_STATS = [
@@ -38,17 +38,19 @@ const DEFAULT_FLOW = [
 
 const HOUR_MS = 60 * 60 * 1000;
 
-export const load: PageServerLoad = async () => {
-    // התוכן משתנה רק דרך אדמין Strapi, לכן נשמר ב-cache (SWR) לשעה - הדף נפתח
-    // מיידית מהזיכרון גם כש-Strapi איטי. כשל נשמר כאובייקט ריק → ברירות המחדל.
-    const cfg = await cached<Record<string, unknown>>('revenueConfig', HOUR_MS, async () => {
+export const load: PageServerLoad = () => {
+    // התוכן משתנה רק דרך אדמין Strapi ויש ברירות מחדל מלאות למטה, לכן הדף
+    // חייב להיפתח מיידית ולעולם לא להמתין ל-Strapi. cachedBackground מחזיר את
+    // הערך מהזיכרון אם קיים, אחרת מחזיר {} מיד ומחמם את ה-cache ברקע - כך
+    // לחיצה על "אודות" פותחת את הדף בלי השהיה גם כש-Strapi איטי או למטה.
+    const cfg = cachedBackground<Record<string, unknown>>('revenueConfig', HOUR_MS, async () => {
         try {
             const res = await strapiGet<{ data: Record<string, unknown> }>('/api/revenue-config');
             return (res.data ?? res) as Record<string, unknown>;
         } catch {
             return {}; // fallback - Strapi לא נגיש או הרשומה לא קיימת
         }
-    });
+    }, {});
 
     return {
         hero_title:   (cfg.hero_title   as string) || 'איך הקהילה מייצרת ערך - ומחזירה אותו לחברים',

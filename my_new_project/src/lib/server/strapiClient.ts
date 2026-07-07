@@ -11,6 +11,9 @@ const STRAPI_TOKEN = process.env.STRAPI_TOKEN ?? '';
 
 const RETRY_ATTEMPTS = 3;
 const RETRY_DELAY_MS = 800;
+// timeout לכל ניסיון fetch יחיד. בלי זה, כש-Strapi תקוע, הבקשה יכולה להיתלות
+// עשרות שניות (× RETRY_ATTEMPTS) ולחסום את ה-load של הדף → הדף "לא נפתח".
+const FETCH_TIMEOUT_MS = 6000;
 
 /** שגיאה ייחודית ל-content type לא רשום (404/400 מ-Strapi) */
 export class StrapiContentTypeError extends Error {
@@ -58,7 +61,10 @@ export async function strapiGet<T = unknown>(
     let lastError: Error | undefined;
     for (let attempt = 1; attempt <= RETRY_ATTEMPTS; attempt++) {
         try {
-            const res = await fetch(url.toString(), { headers: getHeaders(jwt) });
+            const res = await fetch(url.toString(), {
+                headers: getHeaders(jwt),
+                signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+            });
             if (res.ok) return res.json() as Promise<T>;
 
             const text = await res.text();

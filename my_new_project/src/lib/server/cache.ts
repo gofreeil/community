@@ -65,6 +65,48 @@ export async function cached<T>(key: string, ttlMs: number, fn: () => Promise<T>
     return p;
 }
 
+/**
+ * גרסה שלעולם לא חוסמת ניווט. בניגוד ל-cached, כשהערך חסר לגמרי (lambda קר)
+ * היא לא ממתינה ל-Strapi אלא מחזירה מיד את ה-fallback ומחממת את ה-cache ברקע.
+ * מתאים לדפים עם תוכן ברירת-מחדל מלא (למשל /about/revenue) שבהם עדיף לפתוח
+ * מיידית עם ברירות המחדל מאשר לתקוע את המשתמש בהמתנה כש-Strapi איטי.
+ */
+export function cachedBackground<T>(key: string, ttlMs: number, fn: () => Promise<T>, fallback: T): T {
+    const now = Date.now();
+    const entry = store.get(key) as Entry<T> | undefined;
+
+    if (entry) {
+        if (now < entry.freshUntil) return entry.value;
+        // ישן: מחזירים מיד ומרעננים ברקע (כמו ב-cached)
+        if (!entry.refreshing) {
+            entry.refreshing = true;
+            fn()
+                .then((v) => {
+                    if (store.get(key) === entry) {
+                        store.set(key, { value: v, freshUntil: Date.now() + ttlMs, refreshing: false });
+                    }
+                })
+                .catch(() => { entry.refreshing = false; });
+        }
+        return entry.value;
+    }
+
+    // קר לגמרי: לא חוסמים. מחממים ברקע (עם dedup) ומחזירים fallback מיד.
+    if (!inflight.has(key)) {
+        const p = fn()
+            .then((v) => {
+                store.set(key, { value: v, freshUntil: Date.now() + ttlMs, refreshing: false });
+                inflight.delete(key);
+                return v;
+            })
+            .catch((e) => { inflight.delete(key); throw e; });
+        // בולעים דחייה כדי שלא ייווצר unhandled rejection (הקורא לא ממתין)
+        p.catch(() => {});
+        inflight.set(key, p);
+    }
+    return fallback;
+}
+
 /** מבטל ערכים שמפתחם מתחיל בקידומת (לקריאה אחרי כתיבה). ריק = הכל. */
 export function invalidate(prefix = ''): void {
     for (const k of [...store.keys()]) {
