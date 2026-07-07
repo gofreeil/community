@@ -1,4 +1,4 @@
-import { createItem, updateItem, getItemsByUserId, getMessagesByUserId, getAllSuperAdmins } from './db';
+import { createItem, updateItem, getItemsByUserId, getMessagesByUserId, getAllSuperAdmins, getNeighborhoods, approveNeighborhood, rejectNeighborhood } from './db';
 
 /** נרמול שם מיקום לזיהוי התאמה - מסיר "שכונת"/"שכונה" מובילה ורווחים כפולים */
 function normalizeLoc(s: string): string {
@@ -19,7 +19,9 @@ export interface LocationDecisionInput {
  * (פאנל האדמין "שכונות ממתינות" וכפתורי הכרטיס בפרופיל) כדי שהתוצאה תהיה זהה:
  * 1. הודעת החלטה למבקש (נשלחת פעם אחת - לא משוכפלת אם המסלול השני כבר שלח)
  * 2. סגירת פריטי הבקשה של המבקש (מאפשר לו בקשה עתידית)
- * 3. הודעות הבקשה בתיבות הסופר-אדמינים מסומנות "טופל" ונשארות כהיסטוריה - לא נמחקות
+ * 3. רשומת השכונה הממתינה (פין על המפה) מסונכרנת - מאושרת/נדחית יחד עם הבקשה,
+ *    כך שאישור/דחייה מכרטיס ההודעה בפרופיל מסיר אותה גם מ"שכונות ממתינות" באדמין (ולהפך)
+ * 4. הודעות הבקשה בתיבות הסופר-אדמינים מסומנות "טופל" ונשארות כהיסטוריה - לא נמחקות
  */
 export async function finalizeLocationDecision(input: LocationDecisionInput): Promise<void> {
     const { decision, location, city, requesterId, adminMsgId } = input;
@@ -74,7 +76,24 @@ export async function finalizeLocationDecision(input: LocationDecisionInput): Pr
         }
     }
 
-    // 3. סימון הודעות הבקשה בתיבות האדמינים כ"טופל" - נשארות בהיסטוריה במקום להימחק
+    // 3. סנכרון רשומת השכונה הממתינה (פין) - כדי שההחלטה תיושם בשני המקומות:
+    //    בין אם אושר/נדחה מכרטיס ההודעה בפרופיל ובין אם מ"שכונות ממתינות" באדמין,
+    //    הרשומה עוברת לאותו סטטוס ולא נשארת "ממתינה" במקום השני. idempotent -
+    //    אם המסלול השני כבר עדכן את הרשומה, לא נמצאת שכונה ממתינה ולא קורה כלום.
+    try {
+        const pending = await getNeighborhoods('pending');
+        const matches = pending.filter(n =>
+            normalizeLoc(n.name) === normalized &&
+            (!city || !n.city || n.city.trim() === city.trim()));
+        await Promise.all(matches.map(n =>
+            decision === 'approve'
+                ? approveNeighborhood(n.id, 'sync:locationDecision')
+                : rejectNeighborhood(n.id, 'sync:locationDecision')));
+    } catch (e) {
+        console.warn('[locationDecision] sync neighborhood record failed:', e);
+    }
+
+    // 4. סימון הודעות הבקשה בתיבות האדמינים כ"טופל" - נשארות בהיסטוריה במקום להימחק
     try {
         const admins = await getAllSuperAdmins();
         const decisionWord = decision === 'approve' ? 'אושר' : 'נדחה';

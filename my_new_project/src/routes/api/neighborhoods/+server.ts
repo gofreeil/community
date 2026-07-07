@@ -89,6 +89,9 @@ export const POST: RequestHandler = async (event) => {
                 requested_lng:      lng,
                 requester_name:     requesterName,
                 requester_phone:    requesterPhone,
+                // מזהה המבקש - נדרש כדי שכפתורי אשר/דחה בכרטיס ההודעה בפרופיל
+                // יוכלו להודיע למבקש ולסגור את בקשתו (סנכרון מלא בין המקומות)
+                requested_by_id:    session?.user?.id ?? '',
                 requested_at:       new Date().toISOString(),
             },
         })));

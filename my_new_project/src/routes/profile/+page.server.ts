@@ -1,6 +1,6 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { getUserById, getUserByEmail, updateUserProfile, getItemsByUserId, upsertUser, getMessagesByUserId, createItem, getAllSuperAdmins, getAllUsers, getItemsByCategory, getItemsByCategoryAndStatus, createNeighborhoodRequest, approveNeighborhood } from '$lib/server/db';
+import { getUserById, getUserByEmail, updateUserProfile, getItemsByUserId, upsertUser, getMessagesByUserId, createItem, getAllSuperAdmins, getAllUsers, getItemsByCategory, getItemsByCategoryAndStatus, createNeighborhoodRequest } from '$lib/server/db';
 import { finalizeLocationDecision } from '$lib/server/locationDecision';
 import { getCachedUserById, invalidateCachedUser } from '$lib/server/userCache';
 import { citiesData } from '$lib/neighborhoodsData';
@@ -295,22 +295,28 @@ export const actions: Actions = {
                     s.trim().replace(/\s+/g, ' ').replace(/^(שכונת|שכונה)\s+/, '').toLowerCase();
                 const normalizedNew = normalizeLoc(customLocation);
 
-                // כבר קיימת בקשת מיקום פתוחה מאותו משתמש לאותו מיקום? → אל תיצור כפילות ואל תציף את האדמין
-                let alreadyPending = false;
+                // האם למשתמש כבר יש בקשת מיקום פתוחה (כלשהי, לא רק לאותו שם)?
+                // מגיש בקשה אחת = נסגרת לו האפשרות להגיש שוב עד שהמנהל יטפל בה,
+                // כדי שלא יוכל להציף את האדמין בבקשות רבות. מוחזר שם הבקשה הקיימת
+                // כדי שההודעה למשתמש תהיה מדויקת ("הבקשה שלך כבר בטיפול").
+                let pendingLocationLabel = '';
                 try {
                     const myItems = await getItemsByUserId(session.user.id);
-                    alreadyPending = (myItems ?? []).some(it =>
+                    const openReq = (myItems ?? []).find(it =>
                         it.category === 'location_request' &&
-                        (it.status ?? 'pending') !== 'handled' &&
-                        normalizeLoc((it.label ?? '').replace(/^בקשה להוספת מיקום:\s*/, '')) === normalizedNew
+                        (it.status ?? 'pending') !== 'handled'
                     );
+                    if (openReq) {
+                        pendingLocationLabel =
+                            (openReq.label ?? '').replace(/^בקשה להוספת מיקום:\s*/, '').trim() || customLocation;
+                    }
                 } catch (e) {
                     console.warn('[profile] location_request dedupe check failed:', e);
                 }
 
-                if (alreadyPending) {
+                if (pendingLocationLabel) {
                     invalidateCachedUser(session.user.id);
-                    return { success: true, locationAlreadyPending: customLocation };
+                    return { success: true, locationAlreadyPending: pendingLocationLabel };
                 }
 
                 // אם סומן פין מדויק על המפה - צור רשומת שכונה ממתינה (status=pending)
@@ -347,33 +353,49 @@ export const actions: Actions = {
                     console.warn('[profile] location_request createItem failed:', e);
                 }
 
-                // שלח הודעה אישית לכל סופר־אדמין כדי שהבקשה תופיע מיד בתיבת ההודעות שלו
+                // שלח הודעה אישית לכל סופר־אדמין כדי שהבקשה תופיע מיד בתיבת ההודעות שלו.
+                // דדופ פר-אדמין: אם לאדמין כבר יש הודעת בקשת מיקום פתוחה (לא "טופל") לאותו
+                // מיקום מאותו מבקש - לא שולחים כפילות. "אל תשלח לי משהו כפול".
                 try {
                     const admins = await getAllSuperAdmins();
-                    await Promise.all(admins.map(admin => createItem({
-                        category:    'message',
-                        label:       `📍 בקשת מיקום חדש: ${customLocation}`,
-                        description:
-                            `המשתמש ${requesterName} (${requesterEmail}) ביקש להוסיף מיקום שאינו מופיע ברשימה:\n\n` +
-                            `"${customLocation}"${city ? ` (עיר: ${city})` : ''}\n\n` +
-                            (hasPin
-                                ? `📍 המיקום סומן על המפה: ${customLat}, ${customLng}\nhttps://www.google.com/maps?q=${customLat},${customLng}\n\nאשר/דחה בעמוד הניהול תחת "שכונות ממתינות".`
-                                : `יש לבחון אם להוסיף לרשימת הערים/השכונות.`),
-                        icon:        '📍',
-                        color:       'yellow',
-                        user_id:     admin.id,
-                        extra_fields: {
-                            type:               'location_request',
-                            requested_location: customLocation,
-                            requested_city:     city || '',
-                            requested_lat:      hasPin ? customLat : null,
-                            requested_lng:      hasPin ? customLng : null,
-                            requested_by_name:  name  || '',
-                            requested_by_email: requesterEmail,
-                            requested_by_id:    session.user.id,
-                            requested_at:       new Date().toISOString(),
-                        },
-                    })));
+                    await Promise.all(admins.map(async (admin) => {
+                        try {
+                            const inbox = await getMessagesByUserId(admin.id);
+                            const dup = (inbox ?? []).some((m) => {
+                                let ef: Record<string, unknown> = {};
+                                try { ef = JSON.parse(m.extra_fields || '{}') ?? {}; } catch { return false; }
+                                return String(ef?.type ?? '') === 'location_request' &&
+                                    !ef?.handled &&
+                                    String(ef?.requested_by_id ?? '') === session.user.id &&
+                                    normalizeLoc(String(ef?.requested_location ?? '')) === normalizedNew;
+                            });
+                            if (dup) return;
+                        } catch { /* אם הבדיקה נכשלה - עדיף לשלוח מאשר להחסיר בקשה */ }
+                        await createItem({
+                            category:    'message',
+                            label:       `📍 בקשת מיקום חדש: ${customLocation}`,
+                            description:
+                                `המשתמש ${requesterName} (${requesterEmail}) ביקש להוסיף מיקום שאינו מופיע ברשימה:\n\n` +
+                                `"${customLocation}"${city ? ` (עיר: ${city})` : ''}\n\n` +
+                                (hasPin
+                                    ? `📍 המיקום סומן על המפה: ${customLat}, ${customLng}\nhttps://www.google.com/maps?q=${customLat},${customLng}\n\nאשר/דחה בעמוד הניהול תחת "שכונות ממתינות".`
+                                    : `יש לבחון אם להוסיף לרשימת הערים/השכונות.`),
+                            icon:        '📍',
+                            color:       'yellow',
+                            user_id:     admin.id,
+                            extra_fields: {
+                                type:               'location_request',
+                                requested_location: customLocation,
+                                requested_city:     city || '',
+                                requested_lat:      hasPin ? customLat : null,
+                                requested_lng:      hasPin ? customLng : null,
+                                requested_by_name:  name  || '',
+                                requested_by_email: requesterEmail,
+                                requested_by_id:    session.user.id,
+                                requested_at:       new Date().toISOString(),
+                            },
+                        });
+                    }));
                 } catch (e) {
                     console.warn('[profile] notify super_admins failed:', e);
                 }
@@ -506,21 +528,22 @@ async function handleLocationRequest(event: Parameters<NonNullable<Actions[strin
 
     try {
         if (decision === 'approve') {
+            // ודא שקיימת רשומת שכונה (createNeighborhoodRequest מחזיר קיימת אם יש, או יוצר).
+            // האישור בפועל נעשה בתוך finalizeLocationDecision כדי שיהיה מסלול אישור יחיד.
             // קואורדינטות: פין אם סומן, אחרת מרכז העיר, אחרת ברירת מחדל ירושלים
             const hasPin = Number.isFinite(latRaw) && Number.isFinite(lngRaw);
             const fallback = cityCenters[city] ?? cityCenters[location] ?? cityCenters['ירושלים'];
-            const nb = await createNeighborhoodRequest({
+            await createNeighborhoodRequest({
                 name:    location,
                 city:    city || location,
                 lat:     hasPin ? latRaw : fallback[0],
                 lng:     hasPin ? lngRaw : fallback[1],
                 user_id: requesterId || undefined,
             });
-            if (nb.status !== 'approved') await approveNeighborhood(nb.id, adminId);
         }
 
-        // תוצאה אחידה מכל מסלול אישור: הודעת החלטה למבקש, סגירת פריטי הבקשה,
-        // וסימון "טופל" על הודעת האדמין (נשארת בהיסטוריה - לא נמחקת)
+        // תוצאה אחידה מכל מסלול אישור/דחייה: הודעת החלטה למבקש, סגירת פריטי הבקשה,
+        // סנכרון רשומת השכונה הממתינה (אישור/דחייה), וסימון "טופל" על הודעת האדמין
         await finalizeLocationDecision({
             decision,
             location,

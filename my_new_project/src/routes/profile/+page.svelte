@@ -368,7 +368,7 @@
 							// הודעות ישנות לא שמרו city ב-extra_fields - נחלץ מטקסט ההודעה.
 							// בקשה שכבר טופלה (handled) נשארת בהיסטוריה כהודעה רגילה - בלי כפתורים.
 							const lr =
-								efType === "location_request" && !ef?.handled
+								(efType === "location_request" || efType === "neighborhood_request") && !ef?.handled
 									? {
 											location:
 												String(ef?.requested_location ?? "") ||
