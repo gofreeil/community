@@ -1,6 +1,7 @@
 import { redirect, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getOrCreateStrapiJwt } from '$lib/server/strapiJwt';
+import { getStrapiMe } from '$lib/server/strapiClient';
 
 /**
  * SSO bridge לכל אתרי gofreeil.com.
@@ -13,10 +14,13 @@ import { getOrCreateStrapiJwt } from '$lib/server/strapiJwt';
  *
  * ה-callback חייב להיות תת-דומיין של gofreeil.com (הגנה מ-open-redirect).
  *
- * חסינות: לא מסתמכים על כך ש-`session.user.strapiJwt` כבר קיים. סשנים ישנים/
- * OAuth נשמרו לפעמים בלי strapiJwt (ה-Strapi המשותף לא היה זמין לרגע בעת ההתחברות,
- * או שהחשבון מוזג), וה-jwt callback לא תמיד הספיק לרפא בזמן. לכן אם המשתמש מחובר
- * אך חסר לו strapiJwt — מייצרים אותו כאן ועכשיו לפי אימייל+מזהה, וכך הגשר תמיד עובד.
+ * חסינות: לא מסתמכים על כך ש-`session.user.strapiJwt` כבר קיים *ותקף*. שני מקרים:
+ *   א. חסר לגמרי — סשנים ישנים/OAuth/ממוזגים נשמרו בלי strapiJwt.
+ *   ב. קיים אך פג — הסשן חי שנה (auth.ts) בעוד ש-JWT של Strapi פג הרבה קודם.
+ *      במקרה כזה נשתול טוקן מת בעוגייה, והאתר האחות יאמת אותו מול /api/users/me,
+ *      יקבל 401, ויראה "לא רשום" — למרות שהמשתמש מחובר מצוין.
+ * לכן: מאמתים את הטוקן שבסשן מול Strapi; אם חסר או פג — מייצרים חדש לפי אימייל+מזהה.
+ * כך הגשר תמיד שותל טוקן חי בלבד.
  */
 
 const SHARED_COOKIE = 'gofreeil-auth';
@@ -49,10 +53,18 @@ export const GET: RequestHandler = async ({ locals, url, cookies }) => {
 		| { strapiJwt?: string; email?: string | null; id?: string | null }
 		| undefined;
 
-	// 1. הטוקן כבר בסשן (המסלול הרגיל)
+	// 1. הטוקן שבסשן — אבל רק אם הוא עדיין תקף מול Strapi (לא פג).
 	let jwt: string | undefined = user?.strapiJwt;
+	if (jwt) {
+		try {
+			const me = await getStrapiMe(jwt);
+			if (!me) jwt = undefined; // פג/לא תקף → נייצר חדש למטה
+		} catch {
+			jwt = undefined;
+		}
+	}
 
-	// 2. מחובר אך חסר strapiJwt → מייצרים במקום לפי הזהות שבסשן.
+	// 2. חסר או פג → מייצרים במקום לפי הזהות שבסשן.
 	//    stableId = ה-dbUserId (session.user.id); נפילה ל-credentials_<email> אם חסר.
 	if (!jwt && user?.email) {
 		const stableId = user.id || `credentials_${user.email.trim().toLowerCase()}`;
