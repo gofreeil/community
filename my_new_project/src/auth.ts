@@ -5,7 +5,7 @@ import Credentials from '@auth/sveltekit/providers/credentials';
 import { createHash } from 'crypto';
 import type { Handle } from '@sveltejs/kit';
 import { upsertUser, getUserByEmail, getUserById } from '$lib/server/db';
-import { strapiLogin, strapiRegister, getStrapiMe } from '$lib/server/strapiClient';
+import { strapiLogin, strapiRegister, getStrapiMe, findStrapiUpUsers, updateStrapiUpUser } from '$lib/server/strapiClient';
 
 /** קריאת ערך עוגייה מתוך כותרת Cookie גולמית (authorize מקבל Request, לא event.cookies) */
 function readCookie(cookieHeader: string | null | undefined, name: string): string | null {
@@ -50,19 +50,35 @@ async function getOrCreateStrapiJwt(email: string | null | undefined, stableId: 
     // סיסמה דטרמיניסטית - sha256(stableId + AUTH_SECRET), קבועה לכל login
     const password = createHash('sha256').update(stableId + AUTH_SECRET).digest('hex').slice(0, 32);
     const username = stableId.replace(/[^a-zA-Z0-9_]/g, '_').slice(0, 30);
+    // 1. כניסה עם ה-seed הדטרמיניסטי
     try {
         const { jwt } = await strapiLogin(email, password);
         return jwt;
-    } catch {
-        // משתמש לא קיים - ניצור אותו
-        try {
-            const { jwt } = await strapiRegister(username, email, password);
+    } catch { /* לא קיים / seed שונה - ממשיכים */ }
+
+    // 2. משתמש לא קיים - ניצור אותו
+    try {
+        const { jwt } = await strapiRegister(username, email, password);
+        return jwt;
+    } catch { /* האימייל כנראה כבר תפוס ע"י חשבון עם seed אחר - ממשיכים לריפוי */ }
+
+    // 3. ריפוי: האימייל קיים ב-Strapi אך עם סיסמה אחרת (החשבון נוצר תחת seed/ספק
+    //    אחר - למשל מיזוג Google↔credentials). מאתרים אותו דרך טוקן האדמין, מאפסים
+    //    את הסיסמה ל-seed הדטרמיניסטי ונכנסים. כך מתקבל JWT תקף לכל משתמש ברשימה
+    //    המאוחדת, ללא תלות באופן יצירת החשבון. בטוח: הריפוי רץ רק כשחסר strapiJwt
+    //    בסשן (משתמשי OAuth), והם ממילא לא מקלידים סיסמת Strapi.
+    try {
+        const found = await findStrapiUpUsers({ 'filters[email][$eqi]': email });
+        const existing = found?.[0] as { id?: number } | undefined;
+        if (existing?.id) {
+            await updateStrapiUpUser(existing.id, { password });
+            const { jwt } = await strapiLogin(email, password);
             return jwt;
-        } catch (err) {
-            console.warn('[auth] getOrCreateStrapiJwt failed:', err);
-            return null;
         }
+    } catch (err) {
+        console.warn('[auth] getOrCreateStrapiJwt admin-heal failed:', err);
     }
+    return null;
 }
 
 export const { handle, signIn, signOut } = !AUTH_SECRET
