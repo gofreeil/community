@@ -547,10 +547,10 @@
 								</a>
 
 								<!-- שכונות שהוא רכז עליהן - צמוד לשם בצד ימין -->
-								<div class="flex flex-wrap gap-1 max-w-full sm:max-w-[260px]">
-									{#each coordList as n}
-										<span class="text-sm font-bold bg-amber-500/20 text-amber-200 border border-amber-500/40 px-2 py-0.5 rounded-full whitespace-nowrap">
-											{areaLabel(n)}
+								<div class="flex flex-wrap items-center gap-x-2 gap-y-0.5 max-w-full sm:max-w-[260px]">
+									{#each coordList as n, i}
+										<span class="text-sm font-bold text-amber-200 whitespace-nowrap">
+											{#if i > 0}<span class="text-amber-500/40 me-2">·</span>{/if}{areaLabel(n)}
 										</span>
 									{/each}
 								</div>
