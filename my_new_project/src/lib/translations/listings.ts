@@ -154,10 +154,10 @@ export const he = {
 
         // ---- פינת האבדות (lost-and-found) ----
         laf_title: "פינת האבדות",
-        laf_msg_title: "✉️ שלח הודעה לפורסם",
+        laf_msg_title: "✉️ שלח הודעה למפרסם",
         laf_regarding: "בנוגע ל:",
         laf_msg_sent: "ההודעה נשלחה בהצלחה!",
-        laf_msg_sent_sub: "הפורסם יראה אותה בהודעות האישיות שלו",
+        laf_msg_sent_sub: "המפרסם יראה אותה בהודעות האישיות שלו",
         laf_your_msg: "ההודעה שלך *",
         laf_msg_ph: "כתוב את הודעתך כאן...",
         laf_your_name: "שמך *",

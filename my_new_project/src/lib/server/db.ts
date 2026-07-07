@@ -435,7 +435,7 @@ export async function resolveItem(documentId: string, resolverPhone: string): Pr
     await strapiPut(`/api/items/${documentId}`, {
         data: {
             status1:     'resolved',
-            description: `[הוסר על ידי הפורסם - טלפון מחזיר: ${resolverPhone}]`,
+            description: `[הוסר על ידי המפרסם - טלפון מחזיר: ${resolverPhone}]`,
         },
     });
     invalidate('items:');

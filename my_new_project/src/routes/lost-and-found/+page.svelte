@@ -141,7 +141,7 @@
     <div class="fixed inset-0 bg-black/70 z-[200] flex items-center justify-center px-4" dir="rtl">
         <div class="w-full max-w-md bg-[#1e293b] rounded-2xl border border-white/10 shadow-2xl p-6">
             <div class="flex items-center justify-between mb-4">
-                <h2 class="font-black text-white text-lg">✉️ שלח הודעה לפורסם</h2>
+                <h2 class="font-black text-white text-lg">✉️ שלח הודעה למפרסם</h2>
                 <button onclick={() => msgModal = null} class="text-gray-400 hover:text-white text-xl leading-none">✕</button>
             </div>
             <p class="text-gray-400 text-sm mb-4">
@@ -152,7 +152,7 @@
                 <div class="text-center py-6">
                     <div class="text-4xl mb-2">✅</div>
                     <p class="text-green-300 font-bold">ההודעה נשלחה בהצלחה!</p>
-                    <p class="text-gray-400 text-sm mt-1">הפורסם יראה אותה בהודעות האישיות שלו</p>
+                    <p class="text-gray-400 text-sm mt-1">המפרסם יראה אותה בהודעות האישיות שלו</p>
                     <button onclick={() => msgModal = null}
                         class="mt-4 px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-colors text-sm">
                         סגור
@@ -444,7 +444,7 @@
                             onclick={() => msgModal = { id: item.id, label: item.label, user_id: item.user_id! }}
                             class="w-full py-2 rounded-xl bg-purple-600/20 hover:bg-purple-600 text-purple-300 hover:text-white text-sm font-bold transition-all border border-purple-500/30"
                         >
-                            ✉️ שלח הודעה לפורסם
+                            ✉️ שלח הודעה למפרסם
                         </button>
                     {/if}
 

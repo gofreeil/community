@@ -41,7 +41,7 @@ export const actions: Actions = {
         const sender_name  = fd.get('sender_name')?.toString().trim()  ?? '';
         const sender_phone = fd.get('sender_phone')?.toString().trim() ?? '';
 
-        if (!recipient_id) return fail(400, { msgError: 'לא ניתן לזהות את הפורסם' });
+        if (!recipient_id) return fail(400, { msgError: 'לא ניתן לזהות את המפרסם' });
         if (!message)      return fail(400, { msgError: 'יש לכתוב הודעה' });
         if (!sender_name)  return fail(400, { msgError: 'יש למלא שם ליצירת קשר' });
         if (!sender_phone) return fail(400, { msgError: 'יש למלא מספר טלפון' });
