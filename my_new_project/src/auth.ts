@@ -2,10 +2,10 @@ import { SvelteKitAuth } from '@auth/sveltekit';
 import Google from '@auth/sveltekit/providers/google';
 import Facebook from '@auth/sveltekit/providers/facebook';
 import Credentials from '@auth/sveltekit/providers/credentials';
-import { createHash } from 'crypto';
 import type { Handle } from '@sveltejs/kit';
 import { upsertUser, getUserByEmail, getUserById } from '$lib/server/db';
-import { strapiLogin, strapiRegister, getStrapiMe, findStrapiUpUsers, updateStrapiUpUser } from '$lib/server/strapiClient';
+import { strapiLogin, getStrapiMe } from '$lib/server/strapiClient';
+import { getOrCreateStrapiJwt } from '$lib/server/strapiJwt';
 
 /** קריאת ערך עוגייה מתוך כותרת Cookie גולמית (authorize מקבל Request, לא event.cookies) */
 function readCookie(cookieHeader: string | null | undefined, name: string): string | null {
@@ -41,45 +41,8 @@ const noOpAction = async (): Promise<never> => {
     throw new Error('Auth disabled: AUTH_SECRET not configured');
 };
 
-// ============================================================
-// קבלת JWT של Strapi עבור משתמשי OAuth
-// יוצר חשבון Strapi users-permissions דטרמיניסטי לכל OAuth user
-// ============================================================
-async function getOrCreateStrapiJwt(email: string | null | undefined, stableId: string): Promise<string | null> {
-    if (!email) return null;
-    // סיסמה דטרמיניסטית - sha256(stableId + AUTH_SECRET), קבועה לכל login
-    const password = createHash('sha256').update(stableId + AUTH_SECRET).digest('hex').slice(0, 32);
-    const username = stableId.replace(/[^a-zA-Z0-9_]/g, '_').slice(0, 30);
-    // 1. כניסה עם ה-seed הדטרמיניסטי
-    try {
-        const { jwt } = await strapiLogin(email, password);
-        return jwt;
-    } catch { /* לא קיים / seed שונה - ממשיכים */ }
-
-    // 2. משתמש לא קיים - ניצור אותו
-    try {
-        const { jwt } = await strapiRegister(username, email, password);
-        return jwt;
-    } catch { /* האימייל כנראה כבר תפוס ע"י חשבון עם seed אחר - ממשיכים לריפוי */ }
-
-    // 3. ריפוי: האימייל קיים ב-Strapi אך עם סיסמה אחרת (החשבון נוצר תחת seed/ספק
-    //    אחר - למשל מיזוג Google↔credentials). מאתרים אותו דרך טוקן האדמין, מאפסים
-    //    את הסיסמה ל-seed הדטרמיניסטי ונכנסים. כך מתקבל JWT תקף לכל משתמש ברשימה
-    //    המאוחדת, ללא תלות באופן יצירת החשבון. בטוח: הריפוי רץ רק כשחסר strapiJwt
-    //    בסשן (משתמשי OAuth), והם ממילא לא מקלידים סיסמת Strapi.
-    try {
-        const found = await findStrapiUpUsers({ 'filters[email][$eqi]': email });
-        const existing = found?.[0] as { id?: number } | undefined;
-        if (existing?.id) {
-            await updateStrapiUpUser(existing.id, { password });
-            const { jwt } = await strapiLogin(email, password);
-            return jwt;
-        }
-    } catch (err) {
-        console.warn('[auth] getOrCreateStrapiJwt admin-heal failed:', err);
-    }
-    return null;
-}
+// getOrCreateStrapiJwt עבר ל-$lib/server/strapiJwt.ts כדי שגם endpoint ה-SSO
+// (/sso) יוכל לייצר טוקן במקום כשחסר — בלי תלות בתזמון של ה-jwt callback.
 
 export const { handle, signIn, signOut } = !AUTH_SECRET
     ? (() => {

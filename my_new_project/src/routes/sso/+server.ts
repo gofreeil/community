@@ -1,5 +1,6 @@
 import { redirect, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import { getOrCreateStrapiJwt } from '$lib/server/strapiJwt';
 
 /**
  * SSO bridge לכל אתרי gofreeil.com.
@@ -11,6 +12,11 @@ import type { RequestHandler } from './$types';
  * - אם אינו מחובר/רשום → מחזירים ל-callback עם ?error=not_registered.
  *
  * ה-callback חייב להיות תת-דומיין של gofreeil.com (הגנה מ-open-redirect).
+ *
+ * חסינות: לא מסתמכים על כך ש-`session.user.strapiJwt` כבר קיים. סשנים ישנים/
+ * OAuth נשמרו לפעמים בלי strapiJwt (ה-Strapi המשותף לא היה זמין לרגע בעת ההתחברות,
+ * או שהחשבון מוזג), וה-jwt callback לא תמיד הספיק לרפא בזמן. לכן אם המשתמש מחובר
+ * אך חסר לו strapiJwt — מייצרים אותו כאן ועכשיו לפי אימייל+מזהה, וכך הגשר תמיד עובד.
  */
 
 const SHARED_COOKIE = 'gofreeil-auth';
@@ -32,12 +38,29 @@ export const GET: RequestHandler = async ({ locals, url, cookies }) => {
 	const callback = isAllowedCallback(url.searchParams.get('callback'));
 	if (!callback) throw error(400, 'callback לא חוקי — חייב להיות כתובת תחת gofreeil.com');
 
-	let jwt: string | undefined;
+	let session: Awaited<ReturnType<typeof locals.auth>> = null;
 	try {
-		const session = await locals.auth();
-		jwt = (session?.user as { strapiJwt?: string } | undefined)?.strapiJwt;
+		session = await locals.auth();
 	} catch {
-		jwt = undefined;
+		session = null;
+	}
+
+	const user = session?.user as
+		| { strapiJwt?: string; email?: string | null; id?: string | null }
+		| undefined;
+
+	// 1. הטוקן כבר בסשן (המסלול הרגיל)
+	let jwt: string | undefined = user?.strapiJwt;
+
+	// 2. מחובר אך חסר strapiJwt → מייצרים במקום לפי הזהות שבסשן.
+	//    stableId = ה-dbUserId (session.user.id); נפילה ל-credentials_<email> אם חסר.
+	if (!jwt && user?.email) {
+		const stableId = user.id || `credentials_${user.email.trim().toLowerCase()}`;
+		try {
+			jwt = (await getOrCreateStrapiJwt(user.email, stableId)) ?? undefined;
+		} catch {
+			jwt = undefined;
+		}
 	}
 
 	if (jwt) {
@@ -53,7 +76,7 @@ export const GET: RequestHandler = async ({ locals, url, cookies }) => {
 		throw redirect(302, callback.toString());
 	}
 
-	// לא מחובר → מודיעים לאתר הקורא שהמשתמש אינו רשום
+	// לא מחובר / לא נמצא ברשימה → מודיעים לאתר הקורא
 	callback.searchParams.set('error', 'not_registered');
 	throw redirect(302, callback.toString());
 };
