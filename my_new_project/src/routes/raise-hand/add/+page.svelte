@@ -179,13 +179,16 @@
                         {$_('listings.location_req')}
                     </label>
 
-                    <!-- דרך מהירה בנייד: לקיחת מיקום מדויק ישירות מה-GPS של המכשיר -->
-                    <GpsLocateButton onLocated={onGpsLocated} />
+                    <!-- דרך מהירה בנייד בלבד (<768px): לקיחת מיקום מדויק ישירות מה-GPS של המכשיר.
+                         מוסתר בדסקטופ (md:hidden) - שם ה-GPS פחות מדויק ואין ערך אמיתי מול סימון במפה. -->
+                    <div class="md:hidden">
+                        <GpsLocateButton onLocated={onGpsLocated} />
 
-                    <div class="flex items-center gap-3 my-3 text-[11px] font-bold uppercase tracking-wider text-gray-600">
-                        <span class="h-px flex-1 bg-white/10"></span>
-                        {$_('listings.gps_or')}
-                        <span class="h-px flex-1 bg-white/10"></span>
+                        <div class="flex items-center gap-3 my-3 text-[11px] font-bold uppercase tracking-wider text-gray-600">
+                            <span class="h-px flex-1 bg-white/10"></span>
+                            {$_('listings.gps_or')}
+                            <span class="h-px flex-1 bg-white/10"></span>
+                        </div>
                     </div>
 
                     <!-- הצעות מרשימת הרחובות של עיר המשתמש; תיאור חופשי ("ליד הגן") עדיין אפשרי -->
