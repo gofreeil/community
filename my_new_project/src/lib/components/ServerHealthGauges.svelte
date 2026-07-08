@@ -105,7 +105,7 @@
 		return [
 			{ key: 'cpu',  icon: '🔥', label: 'מעבד',     util: m.cpu.util,  score: m.cpu.score,
 			  sub: `עומס ${m.cpu.load1} · ${m.cpu.cores} ליבות` },
-			{ key: 'ram',  icon: '🧠', label: 'זיכרון',   util: m.ram.util,  score: m.ram.score,
+			{ key: 'ram',  icon: '🧠', label: 'זיכרון RAM', util: m.ram.util,  score: m.ram.score,
 			  sub: `${m.ram.usedGb} / ${m.ram.totalGb} GB` },
 			{ key: 'disk', icon: '💾', label: 'דיסק',     util: m.disk?.util ?? 0, score: m.disk?.score ?? 1,
 			  sub: m.disk ? `${m.disk.usedGb} / ${m.disk.totalGb} GB` : 'לא זמין' },
