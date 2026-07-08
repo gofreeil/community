@@ -346,16 +346,17 @@
     <meta property="og:site_name" content="קהילה בשכונה" />
     <meta property="og:title" content="קהילה בשכונה" />
     <meta property="og:description" content="כל יתרונות השכונה תחת קורת גג אחת" />
-    <meta property="og:image" content="https://community.gofreeil.com/images/community-advantages.png" />
-    <meta property="og:image:width" content="2620" />
-    <meta property="og:image:height" content="1748" />
+    <meta property="og:image" content="https://community.gofreeil.com/images/community-advantages-share.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="801" />
     <meta property="og:image:alt" content="קהילה בשכונה — כל יתרונות השכונה תחת קורת גג אחת" />
     <meta property="og:url" content="https://community.gofreeil.com" />
     <meta property="og:locale" content="he_IL" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="קהילה בשכונה" />
     <meta name="twitter:description" content="כל יתרונות השכונה תחת קורת גג אחת" />
-    <meta name="twitter:image" content="https://community.gofreeil.com/images/community-advantages.png" />
+    <meta name="twitter:image" content="https://community.gofreeil.com/images/community-advantages-share.jpg" />
 </svelte:head>
 
 <JsonLd schema={[websiteSchema(), organizationSchema(), homeFaq]} />
