@@ -1,5 +1,6 @@
 <script lang="ts">
     import { enhance } from '$app/forms';
+    import { _ } from 'svelte-i18n';
     import type { PageData, ActionData } from './$types';
     import JsonLd from "$lib/components/JsonLd.svelte";
     import { breadcrumbSchema, collectionSchema, canonical } from "$lib/seo";
@@ -73,13 +74,13 @@
         if (!iso) return '';
         const diff = Date.now() - new Date(iso).getTime();
         const mins = Math.floor(diff / 60000);
-        if (mins < 1)  return 'עכשיו';
-        if (mins < 60) return `לפני ${mins} דק'`;
+        if (mins < 1)  return $_('listings.time_now_alt');
+        if (mins < 60) return $_('listings.time_min', { values: { n: mins } });
         const hours = Math.floor(mins / 60);
-        if (hours < 24) return `לפני ${hours} שע'`;
+        if (hours < 24) return $_('listings.time_hours_short', { values: { n: hours } });
         const days = Math.floor(hours / 24);
-        if (days === 1) return 'אתמול';
-        return `לפני ${days} ימים`;
+        if (days === 1) return $_('listings.time_yesterday');
+        return $_('listings.time_days', { values: { n: days } });
     }
 
     function waLink(phone: string): string {
@@ -141,21 +142,21 @@
     <div class="fixed inset-0 bg-black/70 z-[200] flex items-center justify-center px-4" dir="rtl">
         <div class="w-full max-w-md bg-[#1e293b] rounded-2xl border border-white/10 shadow-2xl p-6">
             <div class="flex items-center justify-between mb-4">
-                <h2 class="font-black text-white text-lg">✉️ שלח הודעה למפרסם</h2>
+                <h2 class="font-black text-white text-lg">{$_('listings.laf_msg_title')}</h2>
                 <button onclick={() => msgModal = null} class="text-gray-400 hover:text-white text-xl leading-none">✕</button>
             </div>
             <p class="text-gray-400 text-sm mb-4">
-                בנוגע ל: <span class="text-blue-300 font-bold">{msgModal.label}</span>
+                {$_('listings.laf_regarding')} <span class="text-blue-300 font-bold">{msgModal.label}</span>
             </p>
 
             {#if form?.msgSent}
                 <div class="text-center py-6">
                     <div class="text-4xl mb-2">✅</div>
-                    <p class="text-green-300 font-bold">ההודעה נשלחה בהצלחה!</p>
-                    <p class="text-gray-400 text-sm mt-1">המפרסם יראה אותה בהודעות האישיות שלו</p>
+                    <p class="text-green-300 font-bold">{$_('listings.laf_msg_sent')}</p>
+                    <p class="text-gray-400 text-sm mt-1">{$_('listings.laf_msg_sent_sub')}</p>
                     <button onclick={() => msgModal = null}
                         class="mt-4 px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-colors text-sm">
-                        סגור
+                        {$_('listings.close')}
                     </button>
                 </div>
             {:else}
@@ -176,14 +177,14 @@
 
                     <div>
                         <label for="msg-body" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-1.5">
-                            ההודעה שלך *
+                            {$_('listings.laf_your_msg')}
                         </label>
                         <textarea
                             id="msg-body"
                             name="message"
                             rows="3"
                             required
-                            placeholder="כתוב את הודעתך כאן..."
+                            placeholder={$_('listings.laf_msg_ph')}
                             class="w-full bg-white/5 border border-white/10 focus:border-blue-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none transition-colors placeholder:text-gray-600 resize-none"
                         ></textarea>
                     </div>
@@ -191,16 +192,16 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label for="msg-name" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-1.5">
-                                שמך *
+                                {$_('listings.laf_your_name')}
                             </label>
-                            <input id="msg-name" type="text" name="sender_name" required placeholder="שם פרטי"
+                            <input id="msg-name" type="text" name="sender_name" required placeholder={$_('listings.ph_first_name')}
                                 class="w-full bg-white/5 border border-white/10 focus:border-blue-500/50 rounded-xl px-3 py-2.5 text-white text-sm outline-none transition-colors placeholder:text-gray-600" />
                         </div>
                         <div>
                             <label for="msg-phone" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-1.5">
-                                טלפון *
+                                {$_('listings.phone_req')}
                             </label>
-                            <input id="msg-phone" type="tel" name="sender_phone" required placeholder="050-0000000"
+                            <input id="msg-phone" type="tel" name="sender_phone" required placeholder={$_('listings.ph_phone')}
                                 class="w-full bg-white/5 border border-white/10 focus:border-blue-500/50 rounded-xl px-3 py-2.5 text-white text-sm outline-none transition-colors placeholder:text-gray-600" />
                         </div>
                     </div>
@@ -208,7 +209,7 @@
                     <button type="submit" disabled={msgSending}
                         class="w-full py-3 rounded-xl font-black text-sm transition-all
                             {msgSending ? 'bg-white/10 text-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white shadow-lg'}">
-                        {msgSending ? 'שולח...' : '✉️ שלח הודעה'}
+                        {msgSending ? $_('listings.sending') : $_('listings.laf_send')}
                     </button>
                 </form>
             {/if}
@@ -221,16 +222,16 @@
     <div class="fixed inset-0 bg-black/70 z-[200] flex items-center justify-center px-4" dir="rtl">
         <div class="w-full max-w-md bg-[#1e293b] rounded-2xl border border-white/10 shadow-2xl p-6">
             <div class="flex items-center justify-between mb-4">
-                <h2 class="font-black text-white text-lg">✅ הורדת מודעה</h2>
+                <h2 class="font-black text-white text-lg">{$_('listings.laf_resolve_title')}</h2>
                 <button onclick={() => resolveModal = null} class="text-gray-400 hover:text-white text-xl leading-none">✕</button>
             </div>
 
             <p class="text-gray-300 text-sm mb-3 leading-relaxed">
-                נודה לך שתדווח גם כשהאבדה שבה - כדי שנשמח יחד ונקדם חברה מתוקנת יותר 🤝
+                {$_('listings.laf_resolve_blurb')}
             </p>
             <p class="text-gray-500 text-sm mb-5">
-                לפני הסרת המודעה <span class="text-white font-bold">"{resolveModal.label}"</span>,
-                נשמח לדעת:
+                {$_('listings.laf_resolve_before')} <span class="text-white font-bold">"{resolveModal.label}"</span>,
+                {$_('listings.laf_resolve_after')}
             </p>
 
             {#if form?.resolveError}
@@ -251,29 +252,29 @@
                 <div>
                     <label for="resolver-phone" class="block text-sm font-bold text-white mb-2">
                         {resolveModal.type === 'lost'
-                            ? '📞 מה מספר הטלפון של מי שהחזיר לך את האבדה?'
-                            : '📞 מה מספר הטלפון של מי שקיבל ממך את הפריט?'}
+                            ? $_('listings.laf_q_lost')
+                            : $_('listings.laf_q_found')}
                     </label>
                     <input
                         id="resolver-phone"
                         type="tel"
                         name="resolver_phone"
                         required
-                        placeholder="050-0000000"
+                        placeholder={$_('listings.ph_phone')}
                         class="w-full bg-white/5 border border-white/10 focus:border-green-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none transition-colors placeholder:text-gray-600"
                     />
-                    <p class="text-gray-500 text-xs mt-1.5">הפרטים נשמרים לצורך מעקב ואינם מפורסמים</p>
+                    <p class="text-gray-500 text-xs mt-1.5">{$_('listings.laf_privacy')}</p>
                 </div>
 
                 <div class="flex gap-3">
                     <button type="button" onclick={() => resolveModal = null}
                         class="flex-1 py-3 rounded-xl font-bold text-sm bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all border border-white/10">
-                        ביטול
+                        {$_('listings.cancel')}
                     </button>
                     <button type="submit" disabled={resolveSending}
                         class="flex-1 py-3 rounded-xl font-black text-sm transition-all
                             {resolveSending ? 'bg-white/10 text-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-500 hover:to-teal-500 text-white shadow-lg'}">
-                        {resolveSending ? 'מסיר...' : '✅ הסר מודעה'}
+                        {resolveSending ? $_('listings.laf_removing') : $_('listings.laf_resolve_submit')}
                     </button>
                 </div>
             </form>
@@ -286,13 +287,12 @@
     <div class="fixed inset-0 bg-black/70 z-[200] flex items-center justify-center px-4" dir="rtl">
         <div class="w-full max-w-md bg-[#1e293b] rounded-2xl border border-red-500/30 shadow-2xl p-6">
             <div class="flex items-center justify-between mb-4">
-                <h2 class="font-black text-white text-lg">🛡️ מחיקת מודעה (מנהל)</h2>
+                <h2 class="font-black text-white text-lg">{$_('listings.laf_admin_del_title')}</h2>
                 <button onclick={() => adminDeleteModal = null} class="text-gray-400 hover:text-white text-xl leading-none">✕</button>
             </div>
 
             <p class="text-gray-300 text-sm mb-5 leading-relaxed">
-                המודעה <span class="text-white font-bold">"{adminDeleteModal.label}"</span> תימחק לצמיתות מהמערכת.
-                פעולה זו אינה ניתנת לשחזור.
+                {$_('listings.laf_admin_del_before')} <span class="text-white font-bold">"{adminDeleteModal.label}"</span> {$_('listings.laf_admin_del_after')}
             </p>
 
             {#if form?.adminDeleteError}
@@ -310,12 +310,12 @@
                 <input type="hidden" name="item_id" value={adminDeleteModal.id} />
                 <button type="button" onclick={() => adminDeleteModal = null}
                     class="flex-1 py-3 rounded-xl font-bold text-sm bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all border border-white/10">
-                    ביטול
+                    {$_('listings.cancel')}
                 </button>
                 <button type="submit" disabled={adminDeleting}
                     class="flex-1 py-3 rounded-xl font-black text-sm transition-all
                         {adminDeleting ? 'bg-white/10 text-gray-500 cursor-not-allowed' : 'bg-red-600 hover:bg-red-500 text-white shadow-lg'}">
-                    {adminDeleting ? 'מוחק...' : '🗑️ מחק לצמיתות'}
+                    {adminDeleting ? $_('listings.laf_admin_deleting') : $_('listings.laf_admin_del_submit')}
                 </button>
             </form>
         </div>
@@ -328,20 +328,20 @@
     <div class="flex items-center justify-between mb-6">
         <div>
             <h1 class="text-2xl font-black text-white flex items-center gap-2">
-                🔍 פינת האבדות
+                🔍 {$_('listings.laf_title')}
             </h1>
             <p class="text-gray-400 text-sm mt-0.5">
-                לוח ארצי · {data.items.length} מודעות פעילות
+                {$_('listings.laf_national_board')} · {$_('listings.laf_active_count', { values: { n: data.items.length } })}
             </p>
             {#if data.returnedCount > 0}
-                <p class="text-green-400 text-xs mt-1 font-bold">🕊️ {data.returnedCount} אבידות הושבו דרך הקהילה</p>
+                <p class="text-green-400 text-xs mt-1 font-bold">{$_('listings.laf_returned', { values: { n: data.returnedCount } })}</p>
             {/if}
         </div>
         <a
             href="/lost-and-found/add"
             class="inline-flex items-center gap-1.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-all shadow-lg"
         >
-            + הוסף מודעה
+            + {$_('listings.laf_add')}
         </a>
     </div>
 
@@ -353,9 +353,9 @@
         class="flex items-center justify-between gap-3 mb-6 bg-gradient-to-l from-cyan-500/10 to-blue-500/10 border border-cyan-400/25 hover:border-cyan-400/50 rounded-xl px-4 py-3 transition-colors"
     >
         <span class="text-sm text-cyan-100">
-            🔍 יש גם אתר ייעודי לאבדות — <span class="font-bold">avedot.gofreeil.com</span> · אותן מודעות בדיוק, מסונכרן אוטומטית
+            {$_('listings.laf_avedot_pre')}<span class="font-bold">avedot.gofreeil.com</span>{$_('listings.laf_avedot_post')}
         </span>
-        <span class="text-cyan-300 text-sm font-bold whitespace-nowrap">לאתר ←</span>
+        <span class="text-cyan-300 text-sm font-bold whitespace-nowrap">{$_('listings.laf_avedot_cta')}</span>
     </a>
 
     <!-- Search -->
@@ -364,12 +364,12 @@
         <input
             type="search"
             bind:value={query}
-            placeholder="חיפוש לפי תיאור, תגיות או מיקום..."
+            placeholder={$_('listings.laf_search_ph')}
             class="w-full bg-white/5 border border-white/10 focus:border-blue-500/50 rounded-xl pr-11 pl-4 py-3 text-white text-sm outline-none transition-colors placeholder:text-gray-600"
         />
         {#if query}
             <button type="button" onclick={() => query = ''}
-                aria-label="נקה חיפוש"
+                aria-label={$_('listings.gv_clear_search')}
                 class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white text-lg leading-none">✕</button>
         {/if}
     </div>
@@ -377,9 +377,9 @@
     <!-- Filter tabs -->
     <div class="flex gap-2 mb-6">
         {#each [
-            { value: 'all',   label: '🔍 הכל',  count: data.items.length },
-            { value: 'lost',  label: '❓ אבד',   count: data.items.filter(i => getItemType(i.extra_fields) === 'lost').length },
-            { value: 'found', label: '✅ נמצא',  count: data.items.filter(i => getItemType(i.extra_fields) === 'found').length },
+            { value: 'all',   label: $_('listings.laf_filter_all'), count: data.items.length },
+            { value: 'lost',  label: $_('listings.laf_lost'),       count: data.items.filter(i => getItemType(i.extra_fields) === 'lost').length },
+            { value: 'found', label: $_('listings.laf_found'),      count: data.items.filter(i => getItemType(i.extra_fields) === 'found').length },
         ] as tab}
             <button
                 onclick={() => filter = tab.value as LafType}
@@ -411,7 +411,7 @@
             <!-- Type badge -->
             <div class="absolute top-0 right-0 px-3 py-1 text-[10px] font-black uppercase tracking-wider rounded-bl-xl
                 {type === 'found' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}">
-                {type === 'found' ? '✅ נמצא' : '❓ אבד'}
+                {type === 'found' ? $_('listings.laf_found') : $_('listings.laf_lost')}
             </div>
 
             <div class="p-4 {image ? '' : 'mt-3'}">
@@ -445,7 +445,7 @@
                             </button>
                             <button type="button"
                                 onclick={() => window.open(waLink(item.phone), '_blank')}
-                                aria-label="שלח הודעת וואטסאפ (נפתח בחלון חדש)"
+                                aria-label={$_('listings.laf_wa_aria')}
                                 class="px-4 py-2 rounded-xl bg-green-600/20 hover:bg-green-600 text-green-300 hover:text-white text-sm font-bold transition-all border border-green-500/30">
                                 💬
                             </button>
@@ -457,7 +457,7 @@
                             onclick={() => msgModal = { id: item.id, label: item.label, user_id: item.user_id! }}
                             class="w-full py-2 rounded-xl bg-purple-600/20 hover:bg-purple-600 text-purple-300 hover:text-white text-sm font-bold transition-all border border-purple-500/30"
                         >
-                            ✉️ שלח הודעה למפרסם
+                            {$_('listings.laf_msg_title')}
                         </button>
                     {/if}
 
@@ -466,7 +466,7 @@
                             onclick={() => resolveModal = { id: item.id, label: item.label, user_id: item.user_id!, type }}
                             class="w-full py-2 rounded-xl bg-red-600/15 hover:bg-red-600/30 text-red-400 hover:text-red-300 text-xs font-bold transition-all border border-red-500/20"
                         >
-                            🗑️ הורד מודעה
+                            {$_('listings.laf_remove_listing')}
                         </button>
                     {/if}
 
@@ -475,7 +475,7 @@
                             onclick={() => adminDeleteModal = { id: item.id, label: item.label }}
                             class="w-full py-2 rounded-xl bg-red-900/30 hover:bg-red-800/50 text-red-300 hover:text-white text-xs font-bold transition-all border border-red-500/30"
                         >
-                            🛡️ מחק כמנהל
+                            {$_('listings.laf_admin_del_card')}
                         </button>
                     {/if}
                 </div>
@@ -500,24 +500,24 @@
         <div class="text-center py-16 text-gray-500">
             <div class="text-5xl mb-3">🔍</div>
             {#if query}
-                <p class="font-bold text-lg text-gray-400">לא נמצאו תוצאות ל"{query}"</p>
-                <p class="text-sm mt-1">נסה מילות חיפוש אחרות או נקה את החיפוש.</p>
+                <p class="font-bold text-lg text-gray-400">{$_('listings.laf_no_results', { values: { q: query } })}</p>
+                <p class="text-sm mt-1">{$_('listings.laf_no_results_sub')}</p>
                 <button type="button" onclick={() => query = ''}
                     class="mt-4 inline-block bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors">
-                    נקה חיפוש
+                    {$_('listings.gv_clear_search')}
                 </button>
             {:else}
-                <p class="font-bold text-lg text-gray-400">אין מודעות עדיין</p>
-                <p class="text-sm mt-1">היה הראשון להוסיף!</p>
+                <p class="font-bold text-lg text-gray-400">{$_('listings.laf_empty_generic')}</p>
+                <p class="text-sm mt-1">{$_('listings.laf_be_first')}</p>
                 <a href="/lost-and-found/add"
                    class="mt-4 inline-block bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors">
-                    + הוסף מודעה
+                    + {$_('listings.laf_add')}
                 </a>
             {/if}
         </div>
     {:else}
         {#if nbItems.length > 0}
-            {@render divider('🏘️', `השכונה שלי · ${data.userNeighborhood}`, nbItems.length)}
+            {@render divider('🏘️', `${$_('listings.laf_sec_neighborhood')} · ${data.userNeighborhood}`, nbItems.length)}
             <div class="space-y-3">
                 {#each nbItems as item (item.id)}{@render card(item)}{/each}
             </div>
@@ -532,7 +532,7 @@
 
         {#if nationalItems.length > 0}
             {#if nbItems.length > 0 || cityItems.length > 0}
-                {@render divider('🇮🇱', 'כל הארץ', nationalItems.length)}
+                {@render divider('🇮🇱', $_('listings.laf_sec_national'), nationalItems.length)}
             {/if}
             <div class="space-y-3">
                 {#each nationalItems as item (item.id)}{@render card(item)}{/each}
@@ -543,7 +543,7 @@
     <!-- Back -->
     <div class="text-center mt-8">
         <a href="/" class="text-gray-500 hover:text-gray-300 text-sm transition-colors">
-            ← חזרה לדף הראשי
+            ← {$_('listings.back_home')}
         </a>
     </div>
 </div>

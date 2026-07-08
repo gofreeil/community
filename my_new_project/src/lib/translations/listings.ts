@@ -117,6 +117,12 @@ export const he = {
         gvadd_apartment_ph: "לדוגמה: 5",
         gvadd_arrival: "הערות הגעה",
         gvadd_arrival_ph: "לדוגמה: כנסו דרך הכניסה הצדדית",
+        gvadd_pin_required_alert: "📍 ביישוב זה אין רשימת רחובות - חובה לסמן את המיקום המדויק על המפה",
+        gvadd_pin_required_note: "📍 ביישוב זה אין רשימת רחובות - סמנו את המיקום המדויק על המפה (חובה). כך הפריט יופיע במקומו האמיתי ולא ייעֶרם עם השאר על מרכז היישוב.",
+        gvadd_pin_prompt: "לא מצאתם את הכתובת המדויקת? סמנו על המפה",
+        gvadd_pin_hint: "כשהרחוב לא ברשימה או חסר מספר - סימון על המפה יעזור לאתר אתכם.",
+        gvadd_pin_button: "📍 סמן מיקום על המפה",
+        gvadd_pin_hide: "הסתר מפה והסר סימון",
         gvadd_section_contact: "יצירת קשר",
         gvadd_name: "שם *",
         gvadd_name_ph: "שמך",
@@ -261,6 +267,43 @@ export const he = {
         ridesadd_submitting: "מפרסם…",
         ridesadd_submit: "פרסם טרמפ",
         ridesadd_back: "חזרה ללוח טרמפים",
+
+        // ---- סימון מפה כגיבוי (משותף: lost-and-found/add, raise-hand/add) ----
+        pin_required_alert: "📍 ביישוב זה אין רשימת רחובות - חובה לסמן את המיקום המדויק על המפה",
+        pin_required_note: "📍 ביישוב זה אין רשימת רחובות - סמנו את המיקום המדויק על המפה (חובה).",
+        pin_mark_precise: "📍 סמן מיקום מדויק על המפה",
+        pin_hide: "הסתר מפה והסר סימון",
+
+        // ---- פינת האבדות (תוספות) ----
+        laf_national_board: "לוח ארצי",
+        laf_search_ph: "חיפוש לפי תיאור, תגיות או מיקום...",
+        laf_no_results: "לא נמצאו תוצאות ל\"{q}\"",
+        laf_no_results_sub: "נסה מילות חיפוש אחרות או נקה את החיפוש.",
+        laf_empty_generic: "אין מודעות עדיין",
+        laf_sec_neighborhood: "השכונה שלי",
+        laf_sec_national: "כל הארץ",
+        laf_avedot_pre: "🔍 יש גם אתר ייעודי לאבדות — ",
+        laf_avedot_post: " · אותן מודעות בדיוק, מסונכרן אוטומטית",
+        laf_avedot_cta: "לאתר ←",
+        laf_admin_del_title: "🛡️ מחיקת מודעה (מנהל)",
+        laf_admin_del_before: "המודעה",
+        laf_admin_del_after: "תימחק לצמיתות מהמערכת. פעולה זו אינה ניתנת לשחזור.",
+        laf_admin_deleting: "מוחק...",
+        laf_admin_del_submit: "🗑️ מחק לצמיתות",
+        laf_admin_del_card: "🛡️ מחק כמנהל",
+
+        // ---- הוספת אבדה/מציאה (תוספות) ----
+        lafadd_tags: "🏷️ תגים",
+        lafadd_tags_hint: "אנא סמן תגים — כדי להקל על מי שאיבד את האבדה לאתר את שלו",
+
+        // ---- הרמת יד (תוספות) ----
+        rh_last_seen: "👁️ נראה לאחרונה",
+        rh_last_seen_time: "מתי נראה לאחרונה",
+        rh_last_seen_time_ph: "לדוגמה: היום ב-14:30, לפני חצי שעה...",
+        rh_last_seen_place: "היכן נראה לאחרונה",
+        rh_last_seen_place_ph: "כתובת מדויקת, נקודת ציון, ליד...",
+        rh_last_seen_details: "לבוש וכיוון תנועה",
+        rh_last_seen_details_ph: "מה לבש/ה, לאיזה כיוון הלך/ה...",
     },
 };
 
@@ -379,6 +422,12 @@ export const en = {
         gvadd_apartment_ph: "e.g. 5",
         gvadd_arrival: "Arrival notes",
         gvadd_arrival_ph: "e.g. Enter through the side entrance",
+        gvadd_pin_required_alert: "📍 This locality has no street list - you must mark the exact location on the map",
+        gvadd_pin_required_note: "📍 This locality has no street list - mark the exact location on the map (required). This way the item will appear in its real place instead of piling up at the town center.",
+        gvadd_pin_prompt: "Couldn't find the exact address? Mark it on the map",
+        gvadd_pin_hint: "When the street isn't in the list or the number is missing - marking the map helps people find you.",
+        gvadd_pin_button: "📍 Mark location on the map",
+        gvadd_pin_hide: "Hide map and remove marker",
         gvadd_section_contact: "Contact",
         gvadd_name: "Name *",
         gvadd_name_ph: "Your name",
@@ -523,6 +572,43 @@ export const en = {
         ridesadd_submitting: "Publishing…",
         ridesadd_submit: "Post ride",
         ridesadd_back: "Back to the rides board",
+
+        // ---- Map pin fallback (shared: lost-and-found/add, raise-hand/add) ----
+        pin_required_alert: "📍 This locality has no street list - you must mark the exact location on the map",
+        pin_required_note: "📍 This locality has no street list - mark the exact location on the map (required).",
+        pin_mark_precise: "📍 Mark exact location on the map",
+        pin_hide: "Hide map and remove marker",
+
+        // ---- Lost & Found (additions) ----
+        laf_national_board: "Nationwide board",
+        laf_search_ph: "Search by description, tags or location...",
+        laf_no_results: "No results for \"{q}\"",
+        laf_no_results_sub: "Try different search terms or clear the search.",
+        laf_empty_generic: "No listings yet",
+        laf_sec_neighborhood: "My neighborhood",
+        laf_sec_national: "Nationwide",
+        laf_avedot_pre: "🔍 There's also a dedicated lost & found site — ",
+        laf_avedot_post: " · the exact same listings, synced automatically",
+        laf_avedot_cta: "Visit site ←",
+        laf_admin_del_title: "🛡️ Delete listing (admin)",
+        laf_admin_del_before: "The listing",
+        laf_admin_del_after: "will be permanently deleted from the system. This action cannot be undone.",
+        laf_admin_deleting: "Deleting...",
+        laf_admin_del_submit: "🗑️ Delete permanently",
+        laf_admin_del_card: "🛡️ Delete as admin",
+
+        // ---- Add lost/found (additions) ----
+        lafadd_tags: "🏷️ Tags",
+        lafadd_tags_hint: "Please mark tags — to help whoever lost the item find theirs",
+
+        // ---- Raise hand (additions) ----
+        rh_last_seen: "👁️ Last seen",
+        rh_last_seen_time: "When last seen",
+        rh_last_seen_time_ph: "e.g. today at 14:30, half an hour ago...",
+        rh_last_seen_place: "Where last seen",
+        rh_last_seen_place_ph: "Exact address, landmark, near...",
+        rh_last_seen_details: "Clothing and direction of travel",
+        rh_last_seen_details_ph: "What they wore, which way they went...",
     },
 };
 
@@ -641,6 +727,12 @@ export const ru = {
         gvadd_apartment_ph: "напр.: 5",
         gvadd_arrival: "Как добраться",
         gvadd_arrival_ph: "напр.: заходите через боковой вход",
+        gvadd_pin_required_alert: "📍 В этом населённом пункте нет списка улиц - необходимо отметить точное место на карте",
+        gvadd_pin_required_note: "📍 В этом населённом пункте нет списка улиц - отметьте точное место на карте (обязательно). Так вещь появится в своём настоящем месте, а не в центре посёлка вместе с остальными.",
+        gvadd_pin_prompt: "Не нашли точный адрес? Отметьте на карте",
+        gvadd_pin_hint: "Если улицы нет в списке или нет номера дома - отметка на карте поможет вас найти.",
+        gvadd_pin_button: "📍 Отметить место на карте",
+        gvadd_pin_hide: "Скрыть карту и убрать отметку",
         gvadd_section_contact: "Контакт",
         gvadd_name: "Имя *",
         gvadd_name_ph: "Ваше имя",
@@ -785,5 +877,42 @@ export const ru = {
         ridesadd_submitting: "Публикация…",
         ridesadd_submit: "Разместить поездку",
         ridesadd_back: "Назад к доске поездок",
+
+        // ---- Отметка на карте как запасной вариант (общее: lost-and-found/add, raise-hand/add) ----
+        pin_required_alert: "📍 В этом населённом пункте нет списка улиц - необходимо отметить точное место на карте",
+        pin_required_note: "📍 В этом населённом пункте нет списка улиц - отметьте точное место на карте (обязательно).",
+        pin_mark_precise: "📍 Отметить точное место на карте",
+        pin_hide: "Скрыть карту и убрать отметку",
+
+        // ---- Бюро находок (дополнения) ----
+        laf_national_board: "Общенациональная доска",
+        laf_search_ph: "Поиск по описанию, тегам или месту...",
+        laf_no_results: "Ничего не найдено по запросу \"{q}\"",
+        laf_no_results_sub: "Попробуйте другие слова или очистите поиск.",
+        laf_empty_generic: "Объявлений пока нет",
+        laf_sec_neighborhood: "Мой район",
+        laf_sec_national: "По всей стране",
+        laf_avedot_pre: "🔍 Есть и отдельный сайт бюро находок — ",
+        laf_avedot_post: " · те же самые объявления, синхронизируется автоматически",
+        laf_avedot_cta: "На сайт ←",
+        laf_admin_del_title: "🛡️ Удаление объявления (админ)",
+        laf_admin_del_before: "Объявление",
+        laf_admin_del_after: "будет удалено из системы навсегда. Это действие необратимо.",
+        laf_admin_deleting: "Удаление...",
+        laf_admin_del_submit: "🗑️ Удалить навсегда",
+        laf_admin_del_card: "🛡️ Удалить как админ",
+
+        // ---- Добавить потерю/находку (дополнения) ----
+        lafadd_tags: "🏷️ Теги",
+        lafadd_tags_hint: "Пожалуйста, отметьте теги — чтобы тому, кто потерял вещь, было легче её найти",
+
+        // ---- Поднять руку (дополнения) ----
+        rh_last_seen: "👁️ Последний раз видели",
+        rh_last_seen_time: "Когда видели в последний раз",
+        rh_last_seen_time_ph: "напр.: сегодня в 14:30, полчаса назад...",
+        rh_last_seen_place: "Где видели в последний раз",
+        rh_last_seen_place_ph: "Точный адрес, ориентир, рядом с...",
+        rh_last_seen_details: "Одежда и направление движения",
+        rh_last_seen_details_ph: "Во что был одет, в какую сторону пошёл...",
     },
 };

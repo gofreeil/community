@@ -1,5 +1,6 @@
 <script lang="ts">
     import type { ActionData, PageData } from './$types';
+    import { _ } from 'svelte-i18n';
     import { enhance } from '$app/forms';
     import { page } from '$app/state';
 
@@ -20,10 +21,10 @@
     function timeAgo(iso: string): string {
         if (!iso) return '';
         const diff = (Date.now() - new Date(iso).getTime()) / 1000;
-        if (diff < 60) return 'הרגע';
-        if (diff < 3600) return `לפני ${Math.floor(diff / 60)} דק'`;
-        if (diff < 86400) return `לפני ${Math.floor(diff / 3600)} שעות`;
-        if (diff < 86400 * 30) return `לפני ${Math.floor(diff / 86400)} ימים`;
+        if (diff < 60) return $_('listings.time_now');
+        if (diff < 3600) return $_('listings.time_min', { values: { n: Math.floor(diff / 60) } });
+        if (diff < 86400) return $_('listings.time_hours', { values: { n: Math.floor(diff / 3600) } });
+        if (diff < 86400 * 30) return $_('listings.time_days', { values: { n: Math.floor(diff / 86400) } });
         return new Date(iso).toLocaleDateString('he-IL');
     }
 
@@ -41,8 +42,8 @@
     <div class="max-w-3xl mx-auto">
         <div class="text-center mb-6">
             <span class="text-5xl mb-3 block">📦</span>
-            <h1 class="text-3xl font-black text-white mb-2">הפריטים שלי</h1>
-            <p class="text-gray-400">ניהול הפריטים שפרסמת למסירה</p>
+            <h1 class="text-3xl font-black text-white mb-2">{$_('listings.gv_my_items')}</h1>
+            <p class="text-gray-400">{$_('listings.gvmy_subtitle')}</p>
         </div>
 
         <div class="flex flex-wrap justify-center gap-2 mb-6">
@@ -50,13 +51,13 @@
                 onclick={() => tab = 'active'}
                 class="px-5 py-2 rounded-full text-sm font-bold transition-all {tab === 'active' ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg' : 'bg-white/10 text-gray-400 hover:bg-white/15'}"
             >
-                🟢 פעילים ({active.length})
+                🟢 {$_('listings.gvmy_tab_active', { values: { n: active.length } })}
             </button>
             <button
                 onclick={() => tab = 'drafts'}
                 class="relative px-5 py-2 rounded-full text-sm font-bold transition-all {tab === 'drafts' ? 'bg-gradient-to-r from-yellow-500 to-amber-500 text-white shadow-lg' : 'bg-white/10 text-gray-400 hover:bg-white/15'}"
             >
-                📝 טיוטות ({drafts.length})
+                📝 {$_('listings.gvmy_tab_drafts', { values: { n: drafts.length } })}
                 {#if drafts.length > 0 && tab !== 'drafts'}
                     <span class="absolute -top-1 -end-1 w-2.5 h-2.5 rounded-full bg-yellow-400 animate-pulse"></span>
                 {/if}
@@ -65,7 +66,7 @@
                 onclick={() => tab = 'history'}
                 class="px-5 py-2 rounded-full text-sm font-bold transition-all {tab === 'history' ? 'bg-gradient-to-r from-gray-500 to-slate-500 text-white shadow-lg' : 'bg-white/10 text-gray-400 hover:bg-white/15'}"
             >
-                ✓ היסטוריה ({history.length})
+                ✓ {$_('listings.gvmy_tab_history', { values: { n: history.length } })}
             </button>
         </div>
 
@@ -73,26 +74,26 @@
             <div class="rounded-xl bg-yellow-900/20 border border-yellow-500/30 px-4 py-3 mb-4 flex items-start gap-3">
                 <span class="text-2xl flex-shrink-0">📝</span>
                 <div class="flex-1 text-sm">
-                    <p class="text-yellow-200 font-bold mb-1">המודעה שלך נשמרה בטיוטה</p>
-                    <p class="text-yellow-300/80">תעלה לאוויר אוטומטית לאחר שתצרף תמונה לפריט.</p>
+                    <p class="text-yellow-200 font-bold mb-1">{$_('listings.gvmy_draft_saved')}</p>
+                    <p class="text-yellow-300/80">{$_('listings.gvmy_draft_saved_sub')}</p>
                 </div>
                 <button
                     type="button"
                     onclick={() => showDraftSavedMsg = false}
                     class="text-yellow-400 hover:text-white text-lg leading-none"
-                    aria-label="סגור"
+                    aria-label={$_('listings.close')}
                 >×</button>
             </div>
         {/if}
 
         {#if form?.taken}
             <p class="text-emerald-300 text-sm text-center bg-emerald-900/20 border border-emerald-500/30 rounded-lg py-2 mb-4">
-                ✅ הפריט סומן כנמסר
+                {$_('listings.gvmy_marked_taken')}
             </p>
         {/if}
         {#if form?.removed}
             <p class="text-amber-300 text-sm text-center bg-amber-900/20 border border-amber-500/30 rounded-lg py-2 mb-4">
-                🗑 הפריט הוסר
+                {$_('listings.gvmy_removed')}
             </p>
         {/if}
         {#if form?.error}
@@ -105,19 +106,19 @@
             <div class="text-center py-16 rounded-2xl bg-[#0f172a] border border-white/5">
                 <span class="text-6xl mb-4 block">📭</span>
                 {#if tab === 'active'}
-                    <p class="text-gray-300 text-lg font-bold mb-1">אין פריטים פעילים</p>
-                    <p class="text-gray-500 text-sm mb-4">פרסם פריט חדש לקהילה</p>
+                    <p class="text-gray-300 text-lg font-bold mb-1">{$_('listings.gvmy_empty_active')}</p>
+                    <p class="text-gray-500 text-sm mb-4">{$_('listings.gvmy_empty_active_sub')}</p>
                     <a
                         href="/giveaways/add"
                         class="inline-flex items-center gap-2 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold px-6 py-3 rounded-full shadow-lg transition-all"
                     >
-                        ➕ פרסם פריט
+                        ➕ {$_('listings.gv_post_item')}
                     </a>
                 {:else if tab === 'drafts'}
-                    <p class="text-gray-300 text-lg font-bold mb-1">אין טיוטות</p>
-                    <p class="text-gray-500 text-sm">מודעות בלי תמונה ישמרו כאן עד שתשלים אותן</p>
+                    <p class="text-gray-300 text-lg font-bold mb-1">{$_('listings.gvmy_empty_drafts')}</p>
+                    <p class="text-gray-500 text-sm">{$_('listings.gvmy_empty_drafts_sub')}</p>
                 {:else}
-                    <p class="text-gray-300 text-lg font-bold">אין פריטים בהיסטוריה עדיין</p>
+                    <p class="text-gray-300 text-lg font-bold">{$_('listings.gvmy_empty_history')}</p>
                 {/if}
             </div>
         {:else}
@@ -130,7 +131,7 @@
                         {#if isDraft}
                             <a href="/giveaways/edit/{item.id}" class="flex-shrink-0 w-full sm:w-24 aspect-square rounded-xl bg-gradient-to-br from-yellow-900/30 to-amber-900/30 border border-dashed border-yellow-500/40 flex flex-col items-center justify-center text-center gap-1">
                                 <span class="text-3xl" aria-hidden="true">📷</span>
-                                <span class="text-yellow-300/90 text-[10px] font-bold leading-tight">חסרה תמונה</span>
+                                <span class="text-yellow-300/90 text-[10px] font-bold leading-tight">{$_('listings.gvmy_missing_image')}</span>
                             </a>
                         {:else}
                             <a href="/items/{item.id}" class="flex-shrink-0 w-full sm:w-24 aspect-square rounded-xl bg-gradient-to-br from-orange-900/30 to-amber-900/30 flex items-center justify-center">
@@ -146,7 +147,7 @@
                                         </h3>
                                     </a>
                                     <span class="px-2 py-1 rounded-full text-[10px] font-bold bg-yellow-500/20 text-yellow-300 border border-yellow-500/30 flex-shrink-0">
-                                        טיוטה
+                                        {$_('listings.gvmy_draft')}
                                     </span>
                                 {:else}
                                     <a href="/items/{item.id}" class="flex-1 min-w-0">
@@ -170,9 +171,9 @@
                                 {/if}
                                 <span class="flex items-center gap-1">🕐 {timeAgo(item.created_at)}</span>
                                 {#if isDraft}
-                                    <span class="flex items-center gap-1 text-yellow-400">⚠ ממתינה לתמונה</span>
+                                    <span class="flex items-center gap-1 text-yellow-400">⚠ {$_('listings.gvmy_waiting_image')}</span>
                                 {:else if isHist}
-                                    <span class="flex items-center gap-1 text-amber-400">✓ נמסר / הוסר</span>
+                                    <span class="flex items-center gap-1 text-amber-400">{$_('listings.gvmy_hist_status')}</span>
                                 {/if}
                             </div>
                             {#if isDraft}
@@ -181,13 +182,13 @@
                                         href="/giveaways/edit/{item.id}"
                                         class="bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-400 hover:to-amber-400 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors"
                                     >
-                                        📷 השלם פרסום
+                                        {$_('listings.gvmy_complete')}
                                     </a>
                                     <form
                                         method="POST"
                                         action="?/remove"
                                         use:enhance={({ cancel }) => {
-                                            if (!confirm('למחוק את הטיוטה?')) cancel();
+                                            if (!confirm($_('listings.gvmy_confirm_del_draft'))) cancel();
                                         }}
                                         class="inline"
                                     >
@@ -197,7 +198,7 @@
                                             type="submit"
                                             class="bg-white/10 hover:bg-rose-600/80 text-gray-300 hover:text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors"
                                         >
-                                            🗑 מחק טיוטה
+                                            {$_('listings.gvmy_del_draft')}
                                         </button>
                                     </form>
                                 </div>
@@ -210,14 +211,14 @@
                                             type="submit"
                                             class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors"
                                         >
-                                            ✓ סמן כנמסר
+                                            {$_('listings.gvmy_mark_taken')}
                                         </button>
                                     </form>
                                     <form
                                         method="POST"
                                         action="?/remove"
                                         use:enhance={({ cancel }) => {
-                                            if (!confirm('להסיר את הפריט?')) cancel();
+                                            if (!confirm($_('listings.gvmy_confirm_remove'))) cancel();
                                         }}
                                         class="inline"
                                     >
@@ -227,7 +228,7 @@
                                             type="submit"
                                             class="bg-rose-600/80 hover:bg-rose-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors"
                                         >
-                                            🗑 הסר
+                                            {$_('listings.gvmy_remove')}
                                         </button>
                                     </form>
                                 </div>
@@ -239,7 +240,7 @@
         {/if}
 
         <div class="text-center mt-8">
-            <a href="/giveaways" class="text-gray-500 hover:text-white transition-colors text-sm">← חזרה לרשימה הציבורית</a>
+            <a href="/giveaways" class="text-gray-500 hover:text-white transition-colors text-sm">← {$_('listings.gvmy_back_public')}</a>
         </div>
     </div>
 </div>

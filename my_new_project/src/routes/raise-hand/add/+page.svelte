@@ -1,5 +1,6 @@
 <script lang="ts">
     import { enhance } from '$app/forms';
+    import { _ } from 'svelte-i18n';
     import { formMemory } from '$lib/formMemory';
     import StreetPicker from '$lib/components/StreetPicker.svelte';
     import NeighborhoodPicker from '$lib/components/NeighborhoodPicker.svelte';
@@ -26,38 +27,46 @@
     // מגירת "נראה לאחרונה" - פתוחה/סגורה (מוצגת רק בקריאות של אובדן: ילד/כלב)
     let lastSeenOpen = $state(false);
 
-    // שדות דינמיים לפי סוג הקריאה
+    // שדות דינמיים לפי סוג הקריאה — מפתחות i18n, מתורגמים ב-$derived למטה
     const fieldsByOption: Record<string, { descLabel: string; descPlaceholder: string; locationPlaceholder: string; hasLastSeen?: boolean }> = {
         '1': {
-            descLabel:          'תיאור המצב',
-            descPlaceholder:    'פרט את המצב - מה קרה, באיזו עזרה נדרש...',
-            locationPlaceholder:'רחוב, כניסה, קומה...',
+            descLabel:          'listings.rh_desc_1',
+            descPlaceholder:    'listings.rh_desc_ph_1',
+            locationPlaceholder:'listings.rh_loc_ph_1',
         },
         '2': {
-            descLabel:          'פרטי הרכב',
-            descPlaceholder:    'צבע הרכב, דגם, לוחית רישוי...',
-            locationPlaceholder:'היכן הרכב חונה? רחוב ומספר...',
+            descLabel:          'listings.rh_desc_2',
+            descPlaceholder:    'listings.rh_desc_ph_2',
+            locationPlaceholder:'listings.rh_loc_ph_2',
         },
         '3': {
-            descLabel:          'תיאור הילד',
-            descPlaceholder:    'גיל, לבוש, מאפיינים בולטים, מתי נעלם...',
-            locationPlaceholder:'איפה נראה לאחרונה? שם המקום, רחוב...',
+            descLabel:          'listings.rh_desc_3',
+            descPlaceholder:    'listings.rh_desc_ph_3',
+            locationPlaceholder:'listings.rh_loc_ph_3',
             hasLastSeen:        true,
         },
         '4': {
-            descLabel:          'תיאור בקשת העזרה',
-            descPlaceholder:    'פרט מה קרה ובמה נדרשת עזרה...',
-            locationPlaceholder:'מיקום - רחוב, שכונה...',
+            descLabel:          'listings.rh_desc_4',
+            descPlaceholder:    'listings.rh_desc_ph_4',
+            locationPlaceholder:'listings.rh_loc_ph_4',
         },
         '5': {
-            descLabel:          'תיאור הכלב',
-            descPlaceholder:    'גזע, צבע, שם הכלב, מתי ואיפה נעלם...',
-            locationPlaceholder:'אזור שאבד לאחרונה...',
+            descLabel:          'listings.rh_desc_5',
+            descPlaceholder:    'listings.rh_desc_ph_5',
+            locationPlaceholder:'listings.rh_loc_ph_5',
             hasLastSeen:        true,
         },
     };
 
-    let fields = $derived(fieldsByOption[data.optionId] ?? fieldsByOption['4']);
+    let fields = $derived.by(() => {
+        const o = fieldsByOption[data.optionId] ?? fieldsByOption['4'];
+        return {
+            descLabel:           $_(o.descLabel),
+            descPlaceholder:     $_(o.descPlaceholder),
+            locationPlaceholder: $_(o.locationPlaceholder),
+            hasLastSeen:         o.hasLastSeen,
+        };
+    });
 
     async function processFile(files: File[]) {
         const file = files[0];
@@ -104,9 +113,9 @@
         <div class="text-center mb-8">
             <div class="text-5xl mb-3">{data.option.icon}</div>
             <h1 class="text-2xl font-black text-white mb-1">{data.option.text}</h1>
-            <p class="text-gray-400 text-sm">מלא את הפרטים ונעדכן את הקהילה מיד</p>
+            <p class="text-gray-400 text-sm">{$_('listings.rh_subtitle')}</p>
             <div class="mt-3 inline-flex items-center gap-1.5 bg-red-500/10 border border-red-500/30 rounded-full px-4 py-1.5 text-xs font-bold text-red-400">
-                🆘 קריאת עזרה לקהילה
+                {$_('listings.rh_badge')}
             </div>
         </div>
 
@@ -124,7 +133,7 @@
                     // ביישוב בלי רחובות - חובה פין, אחרת הקריאה תיערם על מרכז היישוב
                     if (forceMapPin && !(pinLat != null && pinLng != null)) {
                         showMap = true;
-                        alert('📍 ביישוב זה אין רשימת רחובות - חובה לסמן את המיקום המדויק על המפה');
+                        alert($_('listings.pin_required_alert'));
                         cancel();
                         return;
                     }
@@ -154,7 +163,7 @@
                 <!-- Location -->
                 <div>
                     <label for="rh-location" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
-                        מיקום *
+                        {$_('listings.location_req')}
                     </label>
                     <!-- הצעות מרשימת הרחובות של עיר המשתמש; תיאור חופשי ("ליד הגן") עדיין אפשרי -->
                     <StreetPicker
@@ -172,13 +181,13 @@
                     {#if !locationResolved || forceMapPin}
                     {#if forceMapPin}
                         <p class="mt-2 mb-1 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs font-bold text-amber-200 leading-relaxed">
-                            📍 ביישוב זה אין רשימת רחובות - סמנו את המיקום המדויק על המפה (חובה).
+                            {$_('listings.pin_required_note')}
                         </p>
                     {/if}
                     {#if !showMap}
                         <button type="button" onclick={() => (showMap = true)}
                             class="mt-2 w-full flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10 text-gray-200 text-sm font-bold py-3 transition-all">
-                            📍 סמן מיקום מדויק על המפה
+                            {$_('listings.pin_mark_precise')}
                         </button>
                     {:else}
                         <div class="mt-2">
@@ -186,7 +195,7 @@
                             {#if !forceMapPin}
                                 <button type="button" onclick={() => { showMap = false; pinLat = null; pinLng = null; }}
                                     class="mt-2 text-xs text-gray-400 hover:text-gray-200 underline underline-offset-2 transition-colors">
-                                    הסתר מפה והסר סימון
+                                    {$_('listings.pin_hide')}
                                 </button>
                             {/if}
                         </div>
@@ -202,7 +211,7 @@
                     <button type="button" onclick={() => (lastSeenOpen = !lastSeenOpen)}
                         class="w-full flex items-center justify-between px-4 py-3 bg-white/5 hover:bg-white/10 transition-colors">
                         <span class="flex items-center gap-2 text-sm font-bold text-gray-200">
-                            👁️ נראה לאחרונה
+                            {$_('listings.rh_last_seen')}
                         </span>
                         <span class="text-gray-400 text-sm">{lastSeenOpen ? '▲' : '▼'}</span>
                     </button>
@@ -210,26 +219,26 @@
                     <div class="p-4 space-y-4 border-t border-white/10">
                         <div>
                             <label for="ls-time" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
-                                מתי נראה לאחרונה
+                                {$_('listings.rh_last_seen_time')}
                             </label>
                             <input id="ls-time" name="last_seen_time" type="text"
-                                placeholder="לדוגמה: היום ב-14:30, לפני חצי שעה..."
+                                placeholder={$_('listings.rh_last_seen_time_ph')}
                                 class="w-full bg-white/5 border border-white/10 focus:border-red-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none transition-colors placeholder:text-gray-600" />
                         </div>
                         <div>
                             <label for="ls-place" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
-                                היכן נראה לאחרונה
+                                {$_('listings.rh_last_seen_place')}
                             </label>
                             <input id="ls-place" name="last_seen_place" type="text"
-                                placeholder="כתובת מדויקת, נקודת ציון, ליד..."
+                                placeholder={$_('listings.rh_last_seen_place_ph')}
                                 class="w-full bg-white/5 border border-white/10 focus:border-red-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none transition-colors placeholder:text-gray-600" />
                         </div>
                         <div>
                             <label for="ls-details" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
-                                לבוש וכיוון תנועה
+                                {$_('listings.rh_last_seen_details')}
                             </label>
                             <input id="ls-details" name="last_seen_details" type="text"
-                                placeholder="מה לבש/ה, לאיזה כיוון הלך/ה..."
+                                placeholder={$_('listings.rh_last_seen_details_ph')}
                                 class="w-full bg-white/5 border border-white/10 focus:border-red-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none transition-colors placeholder:text-gray-600" />
                         </div>
                     </div>
@@ -240,18 +249,18 @@
                 <!-- Image -->
                 <div>
                     <p class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
-                        תמונה (אופציונלי)
+                        {$_('listings.image_optional')}
                     </p>
                     {#if imagePreview}
                         <div class="relative w-full rounded-xl overflow-hidden border border-white/10">
-                            <img src={imagePreview} alt="תצוגה מקדימה" class="w-full max-h-52 object-contain bg-black/30" />
+                            <img src={imagePreview} alt={$_('listings.preview_alt')} class="w-full max-h-52 object-contain bg-black/30" />
                             <button type="button" onclick={() => { imageBase64 = ''; imagePreview = ''; }}
                                 class="absolute top-2 left-2 w-7 h-7 rounded-full bg-black/60 hover:bg-red-600 text-white text-sm flex items-center justify-center transition-colors">✕</button>
                         </div>
                     {:else}
                         <label use:imageDrop={processFile} class="flex flex-col items-center justify-center gap-2 w-full h-24 rounded-xl border-2 border-dashed border-white/15 hover:border-red-500/50 bg-white/3 hover:bg-red-900/10 cursor-pointer transition-all">
                             <span class="text-2xl">📷</span>
-                            <span class="text-gray-400 text-sm font-bold">לחץ להעלאת תמונה</span>
+                            <span class="text-gray-400 text-sm font-bold">{$_('listings.upload_click_one')}</span>
                             <input type="file" accept="image/*" class="hidden" onchange={handleImageChange} />
                         </label>
                     {/if}
@@ -262,16 +271,16 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label for="rh-contact" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
-                            שם ליצירת קשר
+                            {$_('listings.contact_name')}
                         </label>
-                        <input id="rh-contact" name="contact" type="text" placeholder="שם פרטי"
+                        <input id="rh-contact" name="contact" type="text" placeholder={$_('listings.ph_first_name')}
                             class="w-full bg-white/5 border border-white/10 focus:border-red-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none transition-colors placeholder:text-gray-600" />
                     </div>
                     <div>
                         <label for="rh-phone" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
-                            טלפון *
+                            {$_('listings.phone_req')}
                         </label>
-                        <input id="rh-phone" name="phone" type="tel" required placeholder="050-0000000"
+                        <input id="rh-phone" name="phone" type="tel" required placeholder={$_('listings.ph_phone')}
                             class="w-full bg-white/5 border border-white/10 focus:border-red-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none transition-colors placeholder:text-gray-600" />
                     </div>
                 </div>
@@ -283,9 +292,9 @@
                             ? 'bg-white/10 text-gray-500 cursor-not-allowed'
                             : 'bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500 text-white shadow-lg hover:shadow-red-500/25'}">
                     {#if submitting}
-                        שולח קריאת עזרה...
+                        {$_('listings.rh_sending')}
                     {:else}
-                        ✋ שלח קריאת עזרה לקהילה
+                        {$_('listings.rh_submit')}
                     {/if}
                 </button>
             </form>
@@ -293,7 +302,7 @@
 
         <div class="text-center mt-6">
             <a href="/" class="text-gray-500 hover:text-gray-300 text-sm transition-colors">
-                ← חזרה לדף הראשי
+                ← {$_('listings.back_home')}
             </a>
         </div>
     </div>

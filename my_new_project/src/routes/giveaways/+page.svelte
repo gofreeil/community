@@ -683,18 +683,18 @@
 
         <!-- Pagination disabled - all items are shown in floors -->
         {#if false}
-            <nav aria-label="ניווט בין דפים" class="mt-8 flex flex-col items-center gap-3">
+            <nav aria-label={$_('listings.gv_page_nav')} class="mt-8 flex flex-col items-center gap-3">
                 <p class="text-gray-300 text-sm md:text-base">
-                    עמוד <span class="text-orange-300 font-black">{currentPage}</span>
-                    מתוך <span class="text-white font-black">{totalPages}</span>
+                    {$_('listings.gv_page')} <span class="text-orange-300 font-black">{currentPage}</span>
+                    {$_('listings.gv_page_of')} <span class="text-white font-black">{totalPages}</span>
                 </p>
                 <div class="flex items-center gap-2 flex-wrap justify-center">
                     <button
                         onclick={() => goToPage(currentPage - 1)}
                         disabled={currentPage === 1}
                         class="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white text-sm font-bold hover:bg-orange-500/20 hover:border-orange-500/40 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-                        aria-label="הדף הקודם"
-                    >→ הקודם</button>
+                        aria-label={$_('listings.gv_prev_aria')}
+                    >→ {$_('listings.gv_prev')}</button>
 
                     {#each Array.from({ length: totalPages }, (_, i) => i + 1) as p}
                         <button
@@ -708,14 +708,14 @@
                         onclick={() => goToPage(currentPage + 1)}
                         disabled={currentPage === totalPages}
                         class="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white text-sm font-bold hover:bg-orange-500/20 hover:border-orange-500/40 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-                        aria-label="הדף הבא"
-                    >הבא ←</button>
+                        aria-label={$_('listings.gv_next_aria')}
+                    >{$_('listings.gv_next')} ←</button>
                 </div>
             </nav>
         {/if}
 
         <div class="text-center mt-10 mb-4">
-            <a href="/" class="text-gray-500 hover:text-white transition-colors text-sm">← חזרה לדף הראשי</a>
+            <a href="/" class="text-gray-500 hover:text-white transition-colors text-sm">← {$_('listings.back_home')}</a>
         </div>
     </div>
 </div>

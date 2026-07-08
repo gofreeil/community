@@ -1,6 +1,7 @@
 <script lang="ts">
     import type { ActionData, PageData } from './$types';
     import { onMount } from 'svelte';
+    import { _ } from 'svelte-i18n';
     import { browser } from '$app/environment';
     import { enhance } from '$app/forms';
     import { categoryConfig } from '$lib/categoryFields';
@@ -171,14 +172,14 @@
 <div class="min-h-screen bg-[#070b14] pt-6 pb-20 px-4" dir="rtl">
     <div class="max-w-2xl mx-auto">
         <div class="text-center mb-6">
-            <h1 class="text-3xl font-black text-white mb-2">פרסום פריט למסירה</h1>
-            <p class="text-gray-400">שתף עם הקהילה את החפצים שאינך נחוץ להם ועזור לצמצם את הפערים בחברה</p>
+            <h1 class="text-3xl font-black text-white mb-2">{$_('listings.gvadd_title')}</h1>
+            <p class="text-gray-400">{$_('listings.gvadd_subtitle')}</p>
         </div>
 
         {#if !data.userId}
             <div class="rounded-xl bg-red-900/30 border border-red-500/30 p-4 mb-4 text-center">
-                <p class="text-red-200 mb-2">יש להתחבר כדי לפרסם</p>
-                <a href="/login?redirect=/giveaways/add" class="inline-block bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-bold">התחברות</a>
+                <p class="text-red-200 mb-2">{$_('listings.login_to_post')}</p>
+                <a href="/login?redirect=/giveaways/add" class="inline-block bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-bold">{$_('listings.login')}</a>
             </div>
         {:else}
             <form
@@ -187,7 +188,7 @@
                     // ביישוב בלי רחובות/שכונות - חובה פין, אחרת הפריט ייעֶרם על מרכז היישוב
                     if (forceMapPin && !(pinLat != null && pinLng != null)) {
                         showMap = true;
-                        alert('📍 ביישוב זה אין רשימת רחובות - חובה לסמן את המיקום המדויק על המפה');
+                        alert($_('listings.gvadd_pin_required_alert'));
                         cancel();
                         return;
                     }
@@ -209,12 +210,12 @@
                 <div class="space-y-4">
                     <h2 class="text-orange-400 text-xs font-black uppercase tracking-wider flex items-center gap-2">
                         <span class="w-1.5 h-5 bg-orange-500 rounded-full"></span>
-                        פרטי הפריט
+                        {$_('listings.gvadd_section_details')}
                     </h2>
 
                     <div>
                         <label for="label" class="text-white text-sm font-bold mb-1 flex justify-between">
-                            <span>שם הפריט *</span>
+                            <span>{$_('listings.gvadd_label')}</span>
                             <span class="text-gray-500 text-xs font-normal">{labelLen}/{LABEL_MAX}</span>
                         </label>
                         <input
@@ -223,13 +224,13 @@
                             required
                             maxlength={LABEL_MAX}
                             bind:value={label}
-                            placeholder="לדוגמה: ספה דו-מושבית במצב מצוין"
+                            placeholder={$_('listings.gvadd_label_ph')}
                             class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:border-orange-500/50 focus:outline-none transition-colors"
                         />
                     </div>
 
                     <div>
-                        <span class="text-white text-sm font-bold mb-2 block">קטגוריה *</span>
+                        <span class="text-white text-sm font-bold mb-2 block">{$_('listings.gvadd_category')}</span>
                         <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
                             {#each itemCategories as c}
                                 <button
@@ -246,7 +247,7 @@
                     </div>
 
                     <div>
-                        <span class="text-white text-sm font-bold mb-2 block">מצב הפריט *</span>
+                        <span class="text-white text-sm font-bold mb-2 block">{$_('listings.gvadd_condition')}</span>
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                             {#each conditions as c}
                                 <button
@@ -261,7 +262,7 @@
 
                     <!-- Price (free or symbolic amount) -->
                     <div>
-                        <span class="text-white text-sm font-bold mb-2 block">תמורה</span>
+                        <span class="text-white text-sm font-bold mb-2 block">{$_('listings.gvadd_price')}</span>
                         <div class="grid grid-cols-2 gap-2">
                             <button
                                 type="button"
@@ -269,7 +270,7 @@
                                 class="flex items-center justify-center gap-2 px-3 py-3 rounded-xl text-sm font-bold transition-all border {priceMode === 'free' ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white border-emerald-400 shadow-lg' : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10'}"
                             >
                                 <span class="text-lg">💚</span>
-                                חינם
+                                {$_('listings.free')}
                             </button>
                             <button
                                 type="button"
@@ -277,7 +278,7 @@
                                 class="flex items-center justify-center gap-2 px-3 py-3 rounded-xl text-sm font-bold transition-all border {priceMode === 'symbolic' ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-amber-400 shadow-lg' : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10'}"
                             >
                                 <span class="text-lg">🪙</span>
-                                סכום סמלי
+                                {$_('listings.gvadd_symbolic')}
                             </button>
                         </div>
                         {#if priceMode === 'symbolic'}
@@ -290,17 +291,17 @@
                                     max="500"
                                     step="1"
                                     bind:value={price}
-                                    placeholder="לדוגמה: 20"
+                                    placeholder={$_('listings.gvadd_price_ph')}
                                     class="w-full bg-white/5 border border-amber-500/30 rounded-lg pe-9 ps-3 py-2 text-white placeholder-gray-500 focus:border-amber-500 focus:outline-none transition-colors"
                                 />
-                                <p class="text-gray-500 text-xs mt-1">סכום סמלי כדי שהפריט ילך למי שבאמת צריך</p>
+                                <p class="text-gray-500 text-xs mt-1">{$_('listings.gvadd_price_hint')}</p>
                             </div>
                         {/if}
                     </div>
 
                     <div>
                         <label for="description" class="text-white text-sm font-bold mb-1 flex justify-between">
-                            <span>תיאור *</span>
+                            <span>{$_('listings.gvadd_desc')}</span>
                             <span class="text-gray-500 text-xs font-normal">{descLen}/{DESC_MAX}</span>
                         </label>
                         <textarea
@@ -310,7 +311,7 @@
                             rows="4"
                             maxlength={DESC_MAX}
                             bind:value={description}
-                            placeholder="תאר את הפריט: גודל, צבע, ניסיון שימוש, סיבת המסירה..."
+                            placeholder={$_('listings.gvadd_desc_ph')}
                             class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:border-orange-500/50 focus:outline-none transition-colors resize-none"
                         ></textarea>
                     </div>
@@ -318,7 +319,7 @@
                     <!-- Multi-image upload -->
                     <div>
                         <div class="flex items-center justify-between mb-2">
-                            <span class="text-white text-sm font-bold">תמונות (עד {MAX_IMAGES})</span>
+                            <span class="text-white text-sm font-bold">{$_('listings.gvadd_images', { values: { n: MAX_IMAGES } })}</span>
                             <span class="text-gray-500 text-xs">{images.length}/{MAX_IMAGES}</span>
                         </div>
                         {#if images.length > 0}
@@ -327,13 +328,13 @@
                                     <div class="relative aspect-square rounded-xl overflow-hidden border border-white/10 group">
                                         <img src={src} alt="" class="w-full h-full object-cover" />
                                         {#if i === 0}
-                                            <span class="absolute bottom-1 start-1 px-1.5 py-0.5 rounded bg-orange-500 text-white text-[9px] font-black shadow">ראשית</span>
+                                            <span class="absolute bottom-1 start-1 px-1.5 py-0.5 rounded bg-orange-500 text-white text-[9px] font-black shadow">{$_('listings.gvadd_img_main')}</span>
                                         {/if}
                                         <button
                                             type="button"
                                             onclick={() => removeImage(i)}
                                             class="absolute top-1 left-1 bg-black/70 hover:bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold transition-colors"
-                                            aria-label="הסר תמונה"
+                                            aria-label={$_('listings.remove_image')}
                                         >×</button>
                                         <div class="absolute top-1 end-1 flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                                             {#if i > 0}
@@ -341,7 +342,7 @@
                                                     type="button"
                                                     onclick={() => moveImage(i, i - 1)}
                                                     class="bg-black/70 hover:bg-orange-600 text-white w-6 h-5 rounded text-[10px] font-bold transition-colors"
-                                                    aria-label="הזז ימינה"
+                                                    aria-label={$_('listings.gvadd_move_right')}
                                                 >→</button>
                                             {/if}
                                             {#if i < images.length - 1}
@@ -349,7 +350,7 @@
                                                     type="button"
                                                     onclick={() => moveImage(i, i + 1)}
                                                     class="bg-black/70 hover:bg-orange-600 text-white w-6 h-5 rounded text-[10px] font-bold transition-colors"
-                                                    aria-label="הזז שמאלה"
+                                                    aria-label={$_('listings.gvadd_move_left')}
                                                 >←</button>
                                             {/if}
                                         </div>
@@ -358,7 +359,7 @@
                                 {#if images.length < MAX_IMAGES}
                                     <label use:imageDrop={processFiles} class="flex flex-col items-center justify-center gap-1 aspect-square rounded-xl border-2 border-dashed border-white/15 hover:border-orange-500/50 bg-white/3 hover:bg-orange-900/10 cursor-pointer transition-all">
                                         <span class="text-2xl">＋</span>
-                                        <span class="text-gray-500 text-[10px]">עוד</span>
+                                        <span class="text-gray-500 text-[10px]">{$_('listings.gvadd_more')}</span>
                                         <input type="file" accept="image/*" multiple class="hidden" onchange={handleImagesChange} />
                                     </label>
                                 {/if}
@@ -366,8 +367,8 @@
                         {:else}
                             <label use:imageDrop={processFiles} class="flex flex-col items-center justify-center gap-2 w-full h-32 rounded-xl border-2 border-dashed border-white/15 hover:border-orange-500/50 bg-white/3 hover:bg-orange-900/10 cursor-pointer transition-all">
                                 <span class="text-3xl">📷</span>
-                                <span class="text-gray-400 text-sm font-bold">לחץ להעלאת תמונות</span>
-                                <span class="text-gray-600 text-xs">ניתן לבחור מספר תמונות · JPG, PNG · עד {MAX_IMAGES}</span>
+                                <span class="text-gray-400 text-sm font-bold">{$_('listings.gvadd_upload_click')}</span>
+                                <span class="text-gray-600 text-xs">{$_('listings.gvadd_upload_hint', { values: { n: MAX_IMAGES } })}</span>
                                 <input type="file" accept="image/*" multiple class="hidden" onchange={handleImagesChange} />
                             </label>
                         {/if}
@@ -376,25 +377,25 @@
                         {#if images.length === 0}
                             <p class="mt-2 flex items-start gap-1.5 text-amber-300 text-xs bg-amber-900/15 border border-amber-500/25 rounded-lg px-3 py-2">
                                 <span aria-hidden="true">📷</span>
-                                <span>ברגע שתעלה תמונה - המודעה תעלה לרשת ותוצג בלוח. ללא תמונה המודעה תישמר כטיוטה בלבד ולא תופיע לאחרים.</span>
+                                <span>{$_('listings.gvadd_no_image_note')}</span>
                             </p>
                         {:else}
                             <p class="mt-2 flex items-center gap-1.5 text-emerald-300 text-xs bg-emerald-900/15 border border-emerald-500/25 rounded-lg px-3 py-2">
                                 <span aria-hidden="true">✓</span>
-                                <span>יש תמונה - עם הפרסום המודעה תעלה לרשת מיד.</span>
+                                <span>{$_('listings.gvadd_has_image_note')}</span>
                             </p>
                         {/if}
                     </div>
 
                     <div>
-                        <label for="tags" class="text-white text-sm font-bold mb-1 block">תגיות (אופציונלי)</label>
+                        <label for="tags" class="text-white text-sm font-bold mb-1 block">{$_('listings.gvadd_tags')}</label>
                         <input
                             id="tags"
                             name="tags"
-                            placeholder="ריהוט, סלון, אורן (מופרדות בפסיקים)"
+                            placeholder={$_('listings.gvadd_tags_ph')}
                             class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:border-orange-500/50 focus:outline-none transition-colors"
                         />
-                        <p class="text-gray-500 text-xs mt-1">תגיות עוזרות לאחרים למצוא את הפריט בחיפוש</p>
+                        <p class="text-gray-500 text-xs mt-1">{$_('listings.gvadd_tags_hint')}</p>
                     </div>
                 </div>
 
@@ -402,18 +403,18 @@
                 <div class="space-y-4 pt-3 border-t border-white/5">
                     <h2 class="text-orange-400 text-xs font-black uppercase tracking-wider flex items-center gap-2">
                         <span class="w-1.5 h-5 bg-orange-500 rounded-full"></span>
-                        מיקום (לאיתור הפריט במפה)
+                        {$_('listings.gvadd_section_location')}
                     </h2>
 
                     {#if hasDefaults}
                         <div class="rounded-lg bg-emerald-900/20 border border-emerald-500/20 px-3 py-2 text-emerald-300 text-xs">
-                            💡 השדות שלמטה הוזנו מראש מהפרופיל שלך - אפשר לערוך אם צריך
+                            {$_('listings.gvadd_defaults_note')}
                         </div>
                     {/if}
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                            <label for="city" class="text-white text-sm font-bold mb-1 block">עיר *</label>
+                            <label for="city" class="text-white text-sm font-bold mb-1 block">{$_('listings.gvadd_city')}</label>
                             <select
                                 id="city"
                                 name="city"
@@ -421,14 +422,14 @@
                                 bind:value={city}
                                 class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-orange-500/50 focus:outline-none transition-colors"
                             >
-                                <option value="">בחר עיר</option>
+                                <option value="">{$_('listings.gvadd_choose_city')}</option>
                                 {#each cities as c}
                                     <option value={c}>{c}</option>
                                 {/each}
                             </select>
                         </div>
                         <div>
-                            <label for="neighborhood" class="text-white text-sm font-bold mb-1 block">שכונה *</label>
+                            <label for="neighborhood" class="text-white text-sm font-bold mb-1 block">{$_('listings.gvadd_neighborhood')}</label>
                             <select
                                 id="neighborhood"
                                 name="neighborhood"
@@ -437,7 +438,7 @@
                                 disabled={!city}
                                 class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-orange-500/50 focus:outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                <option value="">{city ? 'בחר שכונה' : 'בחר עיר קודם'}</option>
+                                <option value="">{city ? $_('listings.gvadd_choose_neighborhood') : $_('listings.gvadd_choose_city_first')}</option>
                                 {#each neighborhoodOptions as n}
                                     <option value={n}>{n}</option>
                                 {/each}
@@ -447,16 +448,16 @@
 
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label for="street" class="text-white text-sm font-bold mb-1 block">רחוב (אופציונלי)</label>
+                            <label for="street" class="text-white text-sm font-bold mb-1 block">{$_('listings.gvadd_street')}</label>
                             <!-- בחירה מרשימת הרחובות הרשמית של העיר - איות אחיד; הקלדה חופשית עדיין אפשרית -->
                             <StreetPicker {city} value={street} withHouseNumber={false} onValueChange={(v) => (street = v)} onResolvedChange={(v) => (streetInList = v)} onStreetListChange={(info) => { cityHasStreetList = info.hasList; streetListLoading = info.loading; }} />
                         </div>
                         <div>
-                            <label for="buildingNum" class="text-white text-sm font-bold mb-1 block">מספר בניין (אופציונלי)</label>
+                            <label for="buildingNum" class="text-white text-sm font-bold mb-1 block">{$_('listings.gvadd_building')}</label>
                             <input
                                 id="buildingNum"
                                 bind:value={buildingNum}
-                                placeholder="מספר"
+                                placeholder={$_('listings.gvadd_number_ph')}
                                 class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:border-orange-500/50 focus:outline-none transition-colors"
                             />
                         </div>
@@ -469,24 +470,23 @@
                         <div>
                             {#if forceMapPin}
                                 <p class="mb-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs font-bold text-amber-200 leading-relaxed">
-                                    📍 ביישוב זה אין רשימת רחובות - סמנו את המיקום המדויק על המפה (חובה).
-                                    כך הפריט יופיע במקומו האמיתי ולא ייעֶרם עם השאר על מרכז היישוב.
+                                    {$_('listings.gvadd_pin_required_note')}
                                 </p>
                             {:else}
-                                <p class="text-white text-sm font-bold mb-1">לא מצאתם את הכתובת המדויקת? סמנו על המפה</p>
-                                <p class="text-gray-400 text-xs mb-2">כשהרחוב לא ברשימה או חסר מספר - סימון על המפה יעזור לאתר אתכם.</p>
+                                <p class="text-white text-sm font-bold mb-1">{$_('listings.gvadd_pin_prompt')}</p>
+                                <p class="text-gray-400 text-xs mb-2">{$_('listings.gvadd_pin_hint')}</p>
                             {/if}
                             {#if !showMap}
                                 <button type="button" onclick={() => (showMap = true)}
                                     class="w-full flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10 text-gray-200 text-sm font-bold py-3 transition-all">
-                                    📍 סמן מיקום על המפה
+                                    {$_('listings.gvadd_pin_button')}
                                 </button>
                             {:else}
                                 <NeighborhoodPicker {city} {neighborhood} restrictToCity bind:lat={pinLat} bind:lng={pinLng} />
                                 {#if !forceMapPin}
                                     <button type="button" onclick={() => { showMap = false; pinLat = null; pinLng = null; }}
                                         class="mt-2 text-xs text-gray-400 hover:text-gray-200 underline underline-offset-2 transition-colors">
-                                        הסתר מפה והסר סימון
+                                        {$_('listings.gvadd_pin_hide')}
                                     </button>
                                 {/if}
                             {/if}
@@ -497,20 +497,20 @@
 
                     <div class="grid grid-cols-3 gap-3">
                         <div>
-                            <label for="floor" class="text-white text-sm font-bold mb-1 block">קומה</label>
+                            <label for="floor" class="text-white text-sm font-bold mb-1 block">{$_('listings.gvadd_floor')}</label>
                             <input
                                 id="floor"
                                 name="floor"
-                                placeholder="לדוגמה: 3"
+                                placeholder={$_('listings.gvadd_floor_ph')}
                                 class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:border-orange-500/50 focus:outline-none transition-colors"
                             />
                         </div>
                         <div>
-                            <label for="apartment" class="text-white text-sm font-bold mb-1 block">מספר דירה</label>
+                            <label for="apartment" class="text-white text-sm font-bold mb-1 block">{$_('listings.gvadd_apartment')}</label>
                             <input
                                 id="apartment"
                                 name="apartment"
-                                placeholder="לדוגמה: 5"
+                                placeholder={$_('listings.gvadd_apartment_ph')}
                                 class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:border-orange-500/50 focus:outline-none transition-colors"
                             />
                         </div>
@@ -518,12 +518,12 @@
                     </div>
 
                     <div>
-                        <label for="arrivalNotes" class="text-white text-sm font-bold mb-1 block">הערות הגעה</label>
+                        <label for="arrivalNotes" class="text-white text-sm font-bold mb-1 block">{$_('listings.gvadd_arrival')}</label>
                         <textarea
                             id="arrivalNotes"
                             name="arrivalNotes"
                             rows="2"
-                            placeholder="לדוגמה: כנסו דרך הכניסה הצדדית"
+                            placeholder={$_('listings.gvadd_arrival_ph')}
                             class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:border-orange-500/50 focus:outline-none transition-colors resize-none"
                             style="color-scheme: dark;"
                         ></textarea>
@@ -534,30 +534,30 @@
                 <div class="space-y-4 pt-3 border-t border-white/5">
                     <h2 class="text-orange-400 text-xs font-black uppercase tracking-wider flex items-center gap-2">
                         <span class="w-1.5 h-5 bg-orange-500 rounded-full"></span>
-                        יצירת קשר
+                        {$_('listings.gvadd_section_contact')}
                     </h2>
 
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label for="contact" class="text-white text-sm font-bold mb-1 block">שם *</label>
+                            <label for="contact" class="text-white text-sm font-bold mb-1 block">{$_('listings.gvadd_name')}</label>
                             <input
                                 id="contact"
                                 name="contact"
                                 required
                                 bind:value={contact}
-                                placeholder="שמך"
+                                placeholder={$_('listings.gvadd_name_ph')}
                                 class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:border-orange-500/50 focus:outline-none transition-colors"
                             />
                         </div>
                         <div>
-                            <label for="phone" class="text-white text-sm font-bold mb-1 block">טלפון *</label>
+                            <label for="phone" class="text-white text-sm font-bold mb-1 block">{$_('listings.phone_req')}</label>
                             <input
                                 id="phone"
                                 name="phone"
                                 type="tel"
                                 required
                                 bind:value={phone}
-                                placeholder="05X-XXXXXXX"
+                                placeholder={$_('listings.gvadd_phone_ph')}
                                 class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:border-orange-500/50 focus:outline-none transition-colors"
                             />
                         </div>
@@ -573,21 +573,21 @@
                     disabled={submitting}
                     class="w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-black py-3.5 rounded-xl shadow-lg shadow-orange-500/20 transition-all hover:scale-[1.01] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
-                    {submitting ? '⏳ מפרסם…' : '📦 פרסם פריט'}
+                    {submitting ? $_('listings.gvadd_submitting') : $_('listings.gvadd_submit')}
                 </button>
 
                 <p class="text-gray-500 text-xs text-center">
-                    בלחיצה על "פרסם" אתה מאשר שהפריט אכן עומד למסירה ושתעדכן כשיילקח
+                    {$_('listings.gvadd_consent')}
                 </p>
 
                 <p class="text-gray-400 text-sm text-center pt-2 border-t border-white/5">
-                    ⏳ הפריט ייעלם אוטומטית מהאתר לאחר 3 חודשים
+                    {$_('listings.gvadd_expiry')}
                 </p>
             </form>
         {/if}
 
         <div class="text-center mt-6">
-            <a href="/giveaways" class="text-gray-500 hover:text-white transition-colors text-sm">← חזרה לרשימה</a>
+            <a href="/giveaways" class="text-gray-500 hover:text-white transition-colors text-sm">← {$_('listings.back_list')}</a>
         </div>
     </div>
 </div>

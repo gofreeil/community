@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from 'svelte';
+    import { _ } from 'svelte-i18n';
     import { neighborhoodState } from '$lib/neighborhoodState.svelte';
     import { getCoordsFor, type Coord } from '$lib/neighborhoodCoords';
     import type { PageData } from './$types';
@@ -43,7 +44,7 @@
         const h = Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;
         return 2 * R * Math.asin(Math.sqrt(h));
     }
-    const SECTION_TITLES = ['בשכונה שלי', 'בעיר שלי', 'בערים סביבי', 'ארצי'];
+    const SECTION_TITLE_KEYS = ['listings.tier_neighborhood', 'listings.tier_city', 'listings.tier_nearby', 'listings.tier_national'];
 
     type RideItem = (typeof data.items)[number];
 
@@ -87,8 +88,8 @@
     <div class="max-w-4xl mx-auto">
         <div class="text-center mb-6">
             <span class="text-5xl mb-3 block">🚗</span>
-            <h1 class="text-3xl font-black text-white mb-2">לוח טרמפים ומסירות</h1>
-            <p class="text-gray-400">לוח ארצי - טרמפים ומסירת חבילות בחסד בכל רחבי הארץ</p>
+            <h1 class="text-3xl font-black text-white mb-2">{$_('listings.rides_title')}</h1>
+            <p class="text-gray-400">{$_('listings.rides_subtitle')}</p>
         </div>
 
         <div class="flex justify-center gap-2 mb-6">
@@ -96,19 +97,19 @@
                 onclick={() => filter = 'all'}
                 class="px-5 py-2 rounded-full text-sm font-bold transition-all {filter === 'all' ? 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white shadow-lg' : 'bg-white/10 text-gray-400 hover:bg-white/15'}"
             >
-                🌍 הכל
+                {$_('listings.rides_all')}
             </button>
             <button
                 onclick={() => filter = 'driver'}
                 class="px-5 py-2 rounded-full text-sm font-bold transition-all {filter === 'driver' ? 'bg-gradient-to-r from-green-500 to-teal-500 text-white shadow-lg' : 'bg-white/10 text-gray-400 hover:bg-white/15'}"
             >
-                🚙 מציעים טרמפ
+                {$_('listings.rides_offering')}
             </button>
             <button
                 onclick={() => filter = 'passenger'}
                 class="px-5 py-2 rounded-full text-sm font-bold transition-all {filter === 'passenger' ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg' : 'bg-white/10 text-gray-400 hover:bg-white/15'}"
             >
-                🙋 מחפשים טרמפ
+                {$_('listings.rides_seeking')}
             </button>
         </div>
 
@@ -118,18 +119,18 @@
                 class="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold px-6 py-3 rounded-full shadow-lg hover:shadow-blue-500/25 transition-all hover:scale-105"
             >
                 <span class="text-lg">➕</span>
-                פרסם טרמפ חדש
+                {$_('listings.rides_post_new')}
             </a>
         </div>
 
         <div class="text-center mb-6">
-            <p class="text-gray-500 text-sm">🚗 {filtered.length} טרמפים פעילים</p>
+            <p class="text-gray-500 text-sm">{$_('listings.rides_active_count', { values: { n: filtered.length } })}</p>
         </div>
 
         {#each groupedSections as group (group.section)}
         <div class="flex items-center gap-3 mt-8 mb-4 first:mt-0">
             <h2 class="text-white font-black text-xl md:text-2xl whitespace-nowrap">
-                {SECTION_TITLES[group.section]}
+                {$_(SECTION_TITLE_KEYS[group.section])}
                 {#if group.section === 0 && neighborhoodState.neighborhood}
                     <span class="text-blue-300 font-bold">- {neighborhoodState.neighborhood}</span>
                 {:else if group.section === 1 && neighborhoodState.city}
@@ -155,7 +156,7 @@
                         </div>
                         <div class="min-w-0">
                             <h3 class="text-white font-black text-lg">{item.label}</h3>
-                            <p class="text-white/80 text-sm truncate">{isDriver ? 'מציע/ה טרמפ · מעביר/ה גם חבילות בדרך' : 'מחפש/ת טרמפ'}</p>
+                            <p class="text-white/80 text-sm truncate">{isDriver ? $_('listings.rides_driver_sub') : $_('listings.rides_passenger_sub')}</p>
                         </div>
                     </div>
                     <div class="p-4">
@@ -174,7 +175,7 @@
                         {#if seats}
                             <div class="flex items-center gap-2 text-gray-300 text-sm mb-3">
                                 <span class="text-base">💺</span>
-                                <span>{seats} מקומות</span>
+                                <span>{$_('listings.rides_seats', { values: { n: seats } })}</span>
                             </div>
                         {/if}
                         {#if item.description}
@@ -184,27 +185,27 @@
                             {#if isDriver}
                                 <div class="grid grid-cols-2 gap-2 mb-2">
                                     <a
-                                        href={waLink(item.phone, `שלום! ראיתי בלוח שאתה נוסע מ${from} ל${to}. אשמח לטרמפ 🙏`)}
+                                        href={waLink(item.phone, $_('listings.rides_wa_ride', { values: { from, to } }))}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         class="flex items-center justify-center gap-1 bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 rounded-xl transition-colors text-sm"
                                     >
-                                        🙋 בקש טרמפ
+                                        {$_('listings.rides_ask_ride')}
                                     </a>
                                     <a
-                                        href={waLink(item.phone, `שלום! ראיתי בלוח שאתה נוסע מ${from} ל${to}. אפשר לבקש שתעביר חבילה בדרך? 🙏`)}
+                                        href={waLink(item.phone, $_('listings.rides_wa_package', { values: { from, to } }))}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         class="flex items-center justify-center gap-1 bg-orange-600 hover:bg-orange-500 text-white font-bold py-2.5 rounded-xl transition-colors text-sm"
                                     >
-                                        📦 בקש מסירה
+                                        {$_('listings.rides_ask_delivery')}
                                     </a>
                                 </div>
                                 <a
                                     href="tel:{item.phone}"
                                     class="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-2.5 rounded-xl transition-colors text-sm"
                                 >
-                                    📞 התקשר
+                                    {$_('listings.rides_call')}
                                 </a>
                             {:else}
                                 <div class="flex gap-2">
@@ -220,7 +221,7 @@
                                         href="tel:{item.phone}"
                                         class="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-2.5 px-4 rounded-xl transition-colors text-sm"
                                     >
-                                        📞 התקשר
+                                        {$_('listings.rides_call')}
                                     </a>
                                 </div>
                             {/if}
@@ -234,13 +235,13 @@
         {#if filtered.length === 0}
             <div class="text-center py-16">
                 <span class="text-5xl mb-4 block">🚗</span>
-                <p class="text-gray-400 text-lg">אין טרמפים בקטגוריה זו כרגע</p>
-                <p class="text-gray-500 text-sm mt-2">היה הראשון לפרסם!</p>
+                <p class="text-gray-400 text-lg">{$_('listings.rides_empty')}</p>
+                <p class="text-gray-500 text-sm mt-2">{$_('listings.rides_empty_sub')}</p>
             </div>
         {/if}
 
         <div class="text-center mt-8">
-            <a href="/" class="text-gray-500 hover:text-white transition-colors text-sm">← חזרה לדף הראשי</a>
+            <a href="/" class="text-gray-500 hover:text-white transition-colors text-sm">← {$_('listings.back_home')}</a>
         </div>
     </div>
 </div>
