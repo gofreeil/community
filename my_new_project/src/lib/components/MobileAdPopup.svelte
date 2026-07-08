@@ -2,6 +2,7 @@
     import { adPopup, closeAdPopup } from '$lib/adPopupStore';
     import { goto } from '$app/navigation';
     import { onDestroy } from 'svelte';
+    import { _ } from 'svelte-i18n';
 
     let popup = $state<{ ad: any; pendingHref?: string } | null>(null);
     let countdown = $state(5);
@@ -43,7 +44,7 @@
         class="fixed inset-0 bg-black/70 z-[2000] cursor-pointer"
         style="border: none; padding: 0;"
         onclick={handleClose}
-        aria-label="סגור פרסומת"
+        aria-label={$_('components.close_ad_aria')}
     ></button>
 
     <!-- Popup -->
@@ -61,7 +62,7 @@
         <button
             onclick={handleClose}
             class="close-countdown"
-            aria-label="סגור"
+            aria-label={$_('components.close')}
         >
             {countdown}
         </button>
@@ -86,7 +87,7 @@
                 href={popup.ad.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="{popup.ad.cta} – {popup.ad.title} (נפתח בחלון חדש)"
+                aria-label="{popup.ad.cta} – {popup.ad.title}{$_('components.opens_new_window_suffix')}"
                 onclick={() => closeAdPopup()}
                 class="block w-full text-center py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-bold hover:from-purple-500 hover:to-indigo-500 transition-all"
             >

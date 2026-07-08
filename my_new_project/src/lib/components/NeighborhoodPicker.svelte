@@ -2,6 +2,7 @@
     // בורר מיקום שכונה: התושב לוחץ/גורר פין על המפה כדי לסמן את מיקום השכונה החדשה,
     // או מקליד קואורדינטות ידנית אם יש לו. lat/lng נחשפים ב-bind.
     import { onMount } from 'svelte';
+    import { _ } from 'svelte-i18n';
     import { getCoordsFor, hasPreciseCoords } from '$lib/neighborhoodCoords';
     import 'leaflet/dist/leaflet.css';
 
@@ -207,36 +208,36 @@
             type="button"
             onclick={toggleExpand}
             class="map-btn map-btn--expand"
-            aria-label={expanded ? 'סגור מפה' : 'הגדל מפה'}
-            title={expanded ? 'סגירת המפה' : 'הגדלת המפה'}
+            aria-label={expanded ? $_('components.np_close_map_aria') : $_('components.np_expand_map_aria')}
+            title={expanded ? $_('components.np_close_map_title') : $_('components.np_expand_map_title')}
         >
             {#if expanded}
                 <span class="text-lg leading-none">✕</span>
-                <span class="hidden sm:inline">סגור</span>
+                <span class="hidden sm:inline">{$_('components.close')}</span>
             {:else}
                 <span class="text-lg leading-none">⤢</span>
-                <span class="hidden sm:inline">הגדל</span>
+                <span class="hidden sm:inline">{$_('components.np_expand')}</span>
             {/if}
         </button>
 
         <!-- שכבת ההדגמה המונפשת: יד גוררת פין על המפה -->
         {#if showDemo}
             <div class="demo-overlay">
-                <div class="demo-banner">👇 גררו את הפין למיקום המדויק</div>
+                <div class="demo-banner">{$_('components.np_drag_pin')}</div>
                 <div class="demo-stage">
                     <div class="demo-pin">📍</div>
                     <div class="demo-hand">🖐️</div>
                 </div>
             </div>
             <!-- כפתור הפעלה חוזרת של ההדגמה -->
-            <button type="button" onclick={dismissDemo} class="map-btn map-btn--gotit">הבנתי ✓</button>
+            <button type="button" onclick={dismissDemo} class="map-btn map-btn--gotit">{$_('components.np_got_it')}</button>
         {:else}
             <button
                 type="button"
                 onclick={playDemo}
                 class="map-btn map-btn--help"
-                aria-label="איך מסמנים מיקום"
-                title="הצג הדגמה"
+                aria-label={$_('components.np_how_to_mark_aria')}
+                title={$_('components.np_show_demo_title')}
             >?</button>
         {/if}
     </div>
@@ -245,18 +246,18 @@
         <input
             type="number" step="any" inputmode="decimal"
             bind:value={lat} oninput={onManualInput}
-            placeholder="lat (קו רוחב)"
+            placeholder={$_('components.np_lat_placeholder')}
             class="w-1/2 rounded-lg bg-white/5 border border-white/15 px-3 py-2 text-sm text-gray-100 placeholder:text-gray-500"
         />
         <input
             type="number" step="any" inputmode="decimal"
             bind:value={lng} oninput={onManualInput}
-            placeholder="lng (קו אורך)"
+            placeholder={$_('components.np_lng_placeholder')}
             class="w-1/2 rounded-lg bg-white/5 border border-white/15 px-3 py-2 text-sm text-gray-100 placeholder:text-gray-500"
         />
     </div>
     {#if lat != null && lng != null}
-        <p class="text-xs text-emerald-400">✓ מיקום סומן: {lat}, {lng}</p>
+        <p class="text-xs text-emerald-400">{$_('components.np_location_marked', { values: { lat, lng } })}</p>
     {/if}
 </div>
 

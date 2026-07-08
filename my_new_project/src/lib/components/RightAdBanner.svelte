@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
+    import { _ } from "svelte-i18n";
 
     let currentGroup = $state(0);
     let totalSwaps = $state(0);
@@ -160,13 +161,13 @@
 
 <!-- RightAdBanner.svelte -->
 <aside
-    aria-label="פרסומות"
+    aria-label={$_('components.rb_ads_aria')}
     class="hidden xl:block w-36 flex-shrink-0 sticky top-4 h-fit pb-8 text-center"
 >
     <h4
         class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-2 px-2"
     >
-        תוכן שיווקי
+        {$_('components.rb_marketing_content')}
     </h4>
     <div class="space-y-3">
         {#each displayedAds as ad, index}
@@ -199,12 +200,12 @@
                             <span
                                 class="text-2xl font-black {ad.textColor} {ad.hoverText} tracking-wider drop-shadow-sm"
                             >
-                                {ad.text} זה
+                                {$_('components.rb_this_ad_space')}
                             </span>
                             <span
                                 class="text-base font-bold {ad.textColor} {ad.hoverText} opacity-90 drop-shadow-sm"
                             >
-                                - {ad.description}
+                                {$_('components.rb_could_be_yours')}
                             </span>
                         </div>
                     </div>
@@ -213,7 +214,7 @@
                         href="/about/advertise"
                         class="mb-4 z-10 rounded-full {ad.buttonColor} px-5 py-2 text-sm font-bold text-white shadow-xl transition-transform hover:scale-105"
                     >
-                        לפרטים
+                        {$_('components.rb_details')}
                     </a>
                 </div>
             </div>

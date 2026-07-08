@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { _ } from 'svelte-i18n';
+
     interface ChatMessage {
         id: number;
         name: string;
@@ -25,10 +27,10 @@
             <svg class="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M12 2C6.48 2 2 6.04 2 11c0 2.6 1.23 4.94 3.2 6.56-.1 1.2-.5 2.86-1.7 4.44 1.9-.2 3.7-.9 5.1-1.9 1.05.3 2.18.46 3.4.46 5.52 0 10-4.04 10-9.56S17.52 2 12 2z"/>
             </svg>
-            <h4 class="text-white font-bold">צ'אט שכונתי חברתי</h4>
+            <h4 class="text-white font-bold">{$_('components.nc_header')}</h4>
         </div>
         <p class="text-gray-400 text-sm">
-            דברו, שאלו ושתפו עם השכנים בזמן אמת - בלי צורך בחשבון חיצוני
+            {$_('components.nc_subtitle')}
         </p>
     </div>
 
@@ -50,16 +52,16 @@
     <div class="composer">
         <input
             type="text"
-            placeholder="כתבו הודעה לשכונה..."
+            placeholder={$_('components.nc_message_placeholder')}
             class="text-input"
-            aria-label="הודעה"
+            aria-label={$_('components.nc_message_aria')}
             disabled
         />
-        <button type="button" class="send-btn" aria-label="שלח הודעה" disabled>
-            שלח
+        <button type="button" class="send-btn" aria-label={$_('components.nc_send_aria')} disabled>
+            {$_('components.nc_send')}
         </button>
     </div>
-    <p class="soon-note">בקרוב - צ'אט שכונתי חי לכל השכנים</p>
+    <p class="soon-note">{$_('components.nc_soon')}</p>
 </div>
 
 <style>

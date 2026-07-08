@@ -1,11 +1,12 @@
 <script lang="ts">
+    import { _ } from 'svelte-i18n';
     // בורר רחוב + מספר בית: הרחובות נטענים מהרשימה הרשמית של העיר הנבחרת
     // (/api/streets) והמשתמש בוחר מתוכם במקום להקליד - כך אין עשרה איותים
     // שונים לאותו רחוב. הקלדה חופשית עדיין אפשרית (רחוב חדש/חסר ברשימה).
     let {
         city = '',
         value = '',
-        placeholder = 'שם הרחוב',
+        placeholder = '',
         withHouseNumber = true,
         onValueChange,
         onResolvedChange,
@@ -136,7 +137,7 @@
                 oninput={onStreetInput}
                 onfocus={() => (dropdownOpen = true)}
                 onblur={onStreetBlur}
-                placeholder={loading ? 'טוען רחובות...' : placeholder}
+                placeholder={loading ? $_('components.sp_loading_streets') : (placeholder || $_('components.sp_street_name'))}
                 class={inputClass}
                 autocomplete="off"
                 dir="rtl"
@@ -153,7 +154,7 @@
                             onclick={() => pickStreet(street.trim())}
                             class="w-full text-right px-3 py-2 text-sm text-amber-300 hover:bg-white/10 transition-colors border-b border-white/10"
                         >
-                            ➕ השתמש ברחוב "{street.trim()}" (לא ברשימה)
+                            {$_('components.sp_use_street', { values: { street: street.trim() } })}
                         </button>
                     {/if}
                     {#each suggestions as s (s)}
@@ -166,7 +167,7 @@
                             {s}
                         </button>
                     {:else}
-                        <p class="px-3 py-2 text-xs text-gray-500">אין רחוב כזה ברשימה - אפשר להמשיך בהקלדה חופשית</p>
+                        <p class="px-3 py-2 text-xs text-gray-500">{$_('components.sp_no_such_street')}</p>
                     {/each}
                 </div>
             {/if}
@@ -179,7 +180,7 @@
                 inputmode="numeric"
                 value={houseNum}
                 oninput={(e) => { houseNum = (e.target as HTMLInputElement).value; emit(); }}
-                placeholder="מס'"
+                placeholder={$_('components.sp_house_num')}
                 class="{inputClass} !w-20 shrink-0 text-center"
                 autocomplete="off"
             />
@@ -188,11 +189,11 @@
 
     {#if street.trim()}
         {#if exactInList}
-            <p class="text-emerald-400 text-xs">✓ רחוב מהרשימה הרשמית של {city}</p>
+            <p class="text-emerald-400 text-xs">{$_('components.sp_from_official_list', { values: { city } })}</p>
         {:else if streets.length > 0}
-            <p class="text-amber-300/90 text-xs">✏️ רחוב בהקלדה חופשית - ודאו שהאיות נכון (או בחרו מהרשימה)</p>
+            <p class="text-amber-300/90 text-xs">{$_('components.sp_free_typing')}</p>
         {/if}
     {:else if streets.length > 0}
-        <p class="text-gray-400 text-xs">התחילו להקליד ובחרו רחוב מהרשימה של {city}</p>
+        <p class="text-gray-400 text-xs">{$_('components.sp_start_typing', { values: { city } })}</p>
     {/if}
 </div>

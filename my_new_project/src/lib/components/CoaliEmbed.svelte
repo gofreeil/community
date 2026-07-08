@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { _ } from "svelte-i18n";
     const coaliUrl = "https://coali.app/i/xNUdy5m0bHA4wzUDYP7kzSpyVYpD4zGD";
     let iframeLoaded = $state(false);
     let iframeFailed = $state(false);
@@ -40,7 +41,7 @@
             <span class="text-2xl md:text-3xl">🗳️</span>
             <div>
                 <h3 class="text-base md:text-xl font-black text-white leading-tight">
-                    הבע את דעתך במשאלי העם
+                    {$_('components.ce_header')}
                 </h3>
             </div>
         </div>
@@ -50,7 +51,7 @@
             rel="noopener noreferrer"
             class="hidden md:inline-flex items-center gap-1 bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-3 py-1.5 rounded-full transition-colors border border-white/20"
         >
-            פתח באפליקציה ↗
+            {$_('components.ce_open_app')}
         </a>
     </div>
 
@@ -63,7 +64,7 @@
         {#if !iframeLoaded && !iframeFailed}
             <div class="absolute inset-0 flex flex-col items-center justify-center gap-3 text-gray-400">
                 <div class="w-10 h-10 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
-                <p class="text-sm font-medium">טוען את ההצבעות...</p>
+                <p class="text-sm font-medium">{$_('components.ce_loading')}</p>
             </div>
         {/if}
 
@@ -71,17 +72,17 @@
             <div class="absolute inset-0 flex flex-col items-center justify-center gap-4 text-center p-6">
                 <span class="text-5xl">🗳️</span>
                 <p class="text-white text-base md:text-lg font-bold">
-                    ההצבעות אינן זמינות כרגע
+                    {$_('components.ce_unavailable')}
                 </p>
                 <p class="text-gray-400 text-sm max-w-md">
-                    אירעה תקלה זמנית בטעינת ההצבעות. אנא נסו שוב מאוחר יותר.
+                    {$_('components.ce_error')}
                 </p>
             </div>
         {/if}
 
         <iframe
             src={coaliUrl}
-            title="הבע את דעתך במשאלי העם"
+            title={$_('components.ce_header')}
             class="w-full h-full border-0 {iframeLoaded ? 'opacity-100' : 'opacity-0'}"
             allow="clipboard-write; fullscreen"
             loading="lazy"
@@ -95,10 +96,10 @@
                 type="button"
                 onclick={activate}
                 class="absolute inset-0 z-10 w-full h-full bg-transparent cursor-pointer flex items-center justify-center group"
-                aria-label="לחץ להפעלת ההצבעות"
+                aria-label={$_('components.ce_activate_aria')}
             >
                 <div class="bg-black/50 backdrop-blur-sm text-white px-6 py-3 rounded-xl border border-white/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                    <span class="text-sm font-bold">🗳️ לחץ להפעלת ההצבעות</span>
+                    <span class="text-sm font-bold">{$_('components.ce_activate')}</span>
                 </div>
             </button>
         {/if}
@@ -112,7 +113,7 @@
             rel="noopener noreferrer"
             class="inline-flex items-center gap-1 text-blue-300 hover:text-white text-xs font-bold"
         >
-            פתח ↗
+            {$_('components.ce_open')}
         </a>
     </div>
 </div>

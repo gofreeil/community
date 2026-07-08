@@ -3,6 +3,7 @@
     let mounted = false;
     import { onMount } from "svelte";
     import { fade } from "svelte/transition";
+    import { _ } from "svelte-i18n";
 
     let container: HTMLElement;
     let mouseX = 0;
@@ -57,7 +58,7 @@
     onfocusin={handleFocusIn}
     onfocusout={handleFocusOut}
     role="region"
-    aria-label="משאל עם קהילתי"
+    aria-label={$_('components.rf_region_aria')}
     class="referendum-banner group relative overflow-hidden rounded-2xl shadow-2xl my-8 cursor-default"
 >
     <!-- רקע גרדיאנט -->
@@ -75,15 +76,15 @@
         >
             <div class="badge-tooltip">
                 <span class="text-lg">✓</span>
-                <span>דמוקרטיה ישירה</span>
+                <span>{$_('components.rf_tip_democracy')}</span>
             </div>
             <div class="badge-tooltip">
                 <span class="text-lg">🎯</span>
-                <span>השפעה אמיתית</span>
+                <span>{$_('components.rf_tip_impact')}</span>
             </div>
             <div class="badge-tooltip">
                 <span class="text-lg">⚡</span>
-                <span>תוצאות מיידיות</span>
+                <span>{$_('components.rf_tip_instant')}</span>
             </div>
         </div>
     {/if}
@@ -98,16 +99,16 @@
                     <h2 class="text-xl md:text-3xl md:text-4xl font-black leading-tight">
                         <span
                             class="inline-block transform hover:scale-110 transition-transform"
-                            >משאל</span
+                            >{$_('components.rf_title_poll')}</span
                         >
                         <span
                             class="inline-block transform hover:scale-110 transition-transform text-yellow-300"
                         >
-                            עם</span
+                            {$_('components.rf_title_am')}</span
                         >
                     </h2>
                     <p class="text-xs md:text-base md:text-lg font-bold text-blue-100">
-                        הקול שלך משנה את המציאות
+                        {$_('components.rf_subtitle')}
                     </p>
                 </div>
             </div>
@@ -115,17 +116,17 @@
             <!-- כפתור פעולה - Hidden on mobile -->
             <button
                 class="hidden md:block cta-button-small transition-all duration-300 hover:scale-105 flex-shrink-0"
-                aria-label="השתתף במשאל הקהילה עכשיו"
+                aria-label={$_('components.rf_participate_aria')}
             >
                 <div
                     class="relative bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl px-6 py-4 shadow-lg"
                 >
                     <div class="text-center">
                         <div class="text-2xl font-black text-purple-900 mb-1">
-                            השתתף עכשיו
+                            {$_('components.rf_participate_now')}
                         </div>
                         <div class="text-xs font-bold text-purple-800">
-                            קולך נשמע! 📢
+                            {$_('components.rf_voice_heard')}
                         </div>
                     </div>
                 </div>
@@ -136,15 +137,15 @@
         <div class="mt-2 md:mt-4 grid grid-cols-3 gap-1.5 md:gap-3 text-center">
             <div class="stat-box">
                 <div class="text-base md:text-2xl font-black text-yellow-300">12,847</div>
-                <div class="text-[9px] md:text-xs text-blue-200">משתתפים</div>
+                <div class="text-[9px] md:text-xs text-blue-200">{$_('components.rf_stat_participants')}</div>
             </div>
             <div class="stat-box">
                 <div class="text-base md:text-2xl font-black text-yellow-300">156</div>
-                <div class="text-[9px] md:text-xs text-blue-200">משאלים פעילים</div>
+                <div class="text-[9px] md:text-xs text-blue-200">{$_('components.rf_stat_active_polls')}</div>
             </div>
             <div class="stat-box">
                 <div class="text-base md:text-2xl font-black text-yellow-300">89%</div>
-                <div class="text-[9px] md:text-xs text-blue-200">שביעות רצון</div>
+                <div class="text-[9px] md:text-xs text-blue-200">{$_('components.rf_stat_satisfaction')}</div>
             </div>
         </div>
 
@@ -156,23 +157,22 @@
                 <span class="text-lg md:text-2xl">♻️</span>
                 <div class="flex-1">
                     <h3 class="text-sm md:text-lg font-bold text-white mb-0.5">
-                        משאל לדוגמה
+                        {$_('components.rf_example_poll')}
                     </h3>
                     <p class="text-white/90 text-xs md:text-sm leading-snug">
-                        האם אתם מעוניינים לעבור למערכת מיחזור אשפה קהילתית חדשה
-                        שתוזיל את העלויות ב-30% ותשפר את השירות
+                        {$_('components.rf_example_question')}
                     </p>
                 </div>
             </div>
 
-            <div class="space-y-1 md:space-y-2" role="group" aria-label="אפשרויות הצבעה">
+            <div class="space-y-1 md:space-y-2" role="group" aria-label={$_('components.rf_vote_options_aria')}>
                 <button
                     class="poll-option poll-yes"
                     aria-pressed={selectedOption === 'yes'}
                     onclick={() => (selectedOption = 'yes')}
                 >
                     <span class="text-base md:text-lg" aria-hidden="true">✅</span>
-                    <span class="font-bold text-xs md:text-sm">כן, אני בעד!</span>
+                    <span class="font-bold text-xs md:text-sm">{$_('components.rf_option_yes')}</span>
                     <span class="text-[10px] md:text-xs opacity-80">(67%)</span>
                 </button>
                 <button
@@ -181,7 +181,7 @@
                     onclick={() => (selectedOption = 'no')}
                 >
                     <span class="text-base md:text-lg" aria-hidden="true">❌</span>
-                    <span class="font-bold text-xs md:text-sm">לא, אני מעדיף להשאר במצב הנוכחי</span>
+                    <span class="font-bold text-xs md:text-sm">{$_('components.rf_option_no')}</span>
                     <span class="text-[10px] md:text-xs opacity-80">(23%)</span>
                 </button>
                 <button
@@ -190,13 +190,13 @@
                     onclick={() => (selectedOption = 'maybe')}
                 >
                     <span class="text-base md:text-lg" aria-hidden="true">🤔</span>
-                    <span class="font-bold text-xs md:text-sm">צריך לבדוק עוד פרטים</span>
+                    <span class="font-bold text-xs md:text-sm">{$_('components.rf_option_maybe')}</span>
                     <span class="text-[10px] md:text-xs opacity-80">(10%)</span>
                 </button>
             </div>
 
             <div class="mt-1.5 md:mt-3 text-center text-[9px] md:text-xs text-blue-200">
-                <span class="font-bold">1,247</span> תושבים הצביעו עד כה
+                <span class="font-bold">1,247</span> {$_('components.rf_voted_so_far')}
             </div>
         </div>
     </div>

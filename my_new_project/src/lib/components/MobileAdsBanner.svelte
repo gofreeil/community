@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from 'svelte';
+    import { _ } from 'svelte-i18n';
 
     let showBanner = false;
 
@@ -66,7 +67,7 @@
     {#if showBanner}
         <div
             role="region"
-            aria-label="פרסומות קהילתיות"
+            aria-label={$_('components.mb_community_ads_aria')}
             class="bg-gradient-to-t from-black/90 to-black/70 backdrop-blur-sm p-4"
         >
             <div class="space-y-2">
@@ -75,7 +76,7 @@
                         href={ad.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        aria-label="{ad.title} – {ad.summary} (נפתח בחלון חדש)"
+                        aria-label="{ad.title} – {ad.summary}{$_('components.opens_new_window_suffix')}"
                         class="w-full flex items-center justify-between bg-gradient-to-r {ad.color} p-3 rounded-lg text-white hover:shadow-lg transition-all"
                     >
                         <div class="text-left">
@@ -88,10 +89,10 @@
             </div>
             <button
                 onclick={() => (showBanner = false)}
-                aria-label="סגור פרסומות"
+                aria-label={$_('components.close_ads_aria')}
                 class="w-full mt-2 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg text-xs font-bold transition-colors"
             >
-                סגור
+                {$_('components.close')}
             </button>
         </div>
     {/if}
