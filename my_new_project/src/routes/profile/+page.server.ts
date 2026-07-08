@@ -1,6 +1,6 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { getUserById, getUserByEmail, updateUserProfile, getItemsByUserId, upsertUser, getMessagesByUserId, createItem, getAllSuperAdmins, getAllUsers, getItemsByCategory, getItemsByCategoryAndStatus, createNeighborhoodRequest } from '$lib/server/db';
+import { getUserById, getUserByEmail, updateUserProfile, getItemsByUserId, upsertUser, getMessagesByUserId, createItem, updateItem, getAllSuperAdmins, getAllUsers, getItemsByCategory, getItemsByCategoryAndStatus, createNeighborhoodRequest } from '$lib/server/db';
 import { finalizeLocationDecision } from '$lib/server/locationDecision';
 import { getCachedUserById, invalidateCachedUser } from '$lib/server/userCache';
 import { citiesData } from '$lib/neighborhoodsData';
@@ -283,6 +283,26 @@ export const actions: Actions = {
                 ...(security_question_2 ? { security_question_2, security_answer_2 } : {}),
                 status,
             }, strapiJwt);
+
+            // סנכרון שכונה: פריט שמפרסמים לפני שהוגדרה שכונה נשמר ב"מרכז הישוב"
+            // (ברירת מחדל כשאין שכונה). ברגע שהמשתמש ממלא שכונה אמיתית - נצמיד
+            // אליה את פריטיו שנשארו ב"מרכז"/ריק (בעיקר כרטיס הפנויים האישי),
+            // אחרת הם לא נספרים ולא מוצגים תחת השכונה הנכונה (ולרכז מראים 0).
+            if (neighborhood && neighborhood !== 'מרכז') {
+                try {
+                    const myItems = await getItemsByUserId(session.user.id);
+                    await Promise.all((myItems ?? [])
+                        .filter((it) => {
+                            const n = (it.neighborhood ?? '').trim();
+                            return (n === '' || n === 'מרכז')
+                                && it.category !== 'message'
+                                && it.category !== 'location_request';
+                        })
+                        .map((it) => updateItem(it.id, { neighborhood, city })));
+                } catch (e) {
+                    console.warn('[profile] sync items neighborhood failed:', e);
+                }
+            }
 
             // אם המשתמש ביקש להוסיף מיקום חדש - שלח בקשה לסופר אדמין
             if (customLocation) {
