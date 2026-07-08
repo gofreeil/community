@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import type { DiscountCode } from '$lib/discountCodes';
+	import ServerHealthGauges from '$lib/components/ServerHealthGauges.svelte';
 
 	let { data, form } = $props();
 
@@ -294,6 +295,9 @@
 				<div class="text-xs text-emerald-300/70 mt-1.5 font-bold">החודש · להיסטוריה המלאה ←</div>
 			</a>
 		</div>
+
+		<!-- לוח מכוונים: מצב/עומס השרת (הבאקאנד) - מתרענן חי -->
+		<ServerHealthGauges initial={data.serverHealth} monthlyVisits={dash.monthlyVisits} />
 
 		<!-- הודעת הצלחה/שגיאה -->
 		{#if form?.success}

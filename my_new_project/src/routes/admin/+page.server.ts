@@ -6,6 +6,7 @@ import { finalizeLocationDecision } from '$lib/server/locationDecision';
 import { DEFAULT_DISCOUNT_CODES, type DiscountCode } from '$lib/discountCodes';
 import { countPending } from '$lib/server/adsStore';
 import { getVisitsThisMonth } from '$lib/server/visitStats';
+import { getServerHealth } from '$lib/server/serverHealth';
 
 // "אושיות (רחובות)" → { name: "אושיות", city: "רחובות" }
 function parseArea(entry: string): { name: string; city: string } {
@@ -76,6 +77,7 @@ export const load: PageServerLoad = async (event) => {
     // כל השליפות עצמאיות זו מזו - יוצאות לדרך מיד ובמקביל, כדי שאף ספירה
     // (כניסות, פרסומות ממתינות, פנויים, קודי הנחה) לא תעכב את פתיחת הדף.
     const monthlyVisitsPromise  = getVisitsThisMonth().catch((e) => { console.warn('[admin] getVisitsThisMonth failed:', e); return 0; });
+    const serverHealthPromise   = getServerHealth().catch((e) => { console.warn('[admin] getServerHealth failed:', e); return null; });
     const pendingAdsPromise     = countPending().catch(() => 0);
     const pendingSinglesPromise = getItemsByCategoryAndStatus('singles', 'pending').then((l) => l.length).catch(() => 0);
     const discountCodesPromise  = getDiscountCodes().catch((e) => { console.warn('[admin] getDiscountCodes failed:', e); return DEFAULT_DISCOUNT_CODES; });
@@ -134,8 +136,8 @@ export const load: PageServerLoad = async (event) => {
         monthlyVisits,
     };
 
-    const [pendingAdsCount, pendingSinglesCount, discountCodes, totpSecret] =
-        await Promise.all([pendingAdsPromise, pendingSinglesPromise, discountCodesPromise, totpPromise]);
+    const [pendingAdsCount, pendingSinglesCount, discountCodes, totpSecret, serverHealth] =
+        await Promise.all([pendingAdsPromise, pendingSinglesPromise, discountCodesPromise, totpPromise, serverHealthPromise]);
 
     return {
         users,
@@ -149,6 +151,7 @@ export const load: PageServerLoad = async (event) => {
         dashboard,
         discountCodes,
         twoFAConfigured: !!totpSecret,
+        serverHealth,
     };
 };
 

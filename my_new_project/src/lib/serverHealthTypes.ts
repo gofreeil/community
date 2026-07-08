@@ -1,0 +1,34 @@
+// ============================================================
+// serverHealthTypes.ts - חוזה הנתונים של מדדי בריאות השרת.
+// קובץ נייטרלי (לא תחת server/) כדי שגם רכיבי לקוח יוכלו לייבא את הטיפוסים
+// בלי להיתקל בחסימת "server-only module" של SvelteKit.
+// ============================================================
+
+export interface HealthMetricCpu {
+    score: number; util: number;
+    load1: number; load5: number; load15: number;
+    cores: number; ratio: number;
+}
+export interface HealthMetricMem {
+    score: number; util: number; usedGb: number; totalGb: number;
+}
+export interface HealthMetricResp {
+    score: number; util: number; latencyMs: number | null;
+}
+
+export interface ServerHealth {
+    ok: boolean;
+    timestamp: string;
+    score: number;                 // עומס כללי 1-10
+    util: number;                  // אחוז ניצולת של צוואר הבקבוק (0-100)
+    status: 'healthy' | 'moderate' | 'high' | 'critical';
+    bottleneck: { key: string; label: string };
+    metrics: {
+        cpu: HealthMetricCpu;
+        ram: HealthMetricMem;
+        disk: HealthMetricMem | null;
+        response: HealthMetricResp;
+    };
+    uptimeSec: number;
+    hostname?: string;
+}
