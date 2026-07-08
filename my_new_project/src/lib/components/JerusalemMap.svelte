@@ -1587,17 +1587,19 @@
                     </button>
                 {/if}
 
-                <!-- כפתורי זום + מסך-מלא - עובדים גם מעל שכבת ההפעלה (במיוחד בנייד שאין גלגלת) -->
-                <!-- ממוקמים בפינה הימנית-תחתונה (מעל הקרדיט) כדי לא להסתיר את פינת "המעבר לרשימה" השמאלית-עליונה -->
-                <!-- מוסתרים במסך-מלא: שם ה-X בראש המפה + זום ייעודי בפינה הימנית התחתונה -->
+                <!-- כפתור מסך-מלא - פינה ימנית-עליונה, נפרד מהזום כדי לפנות את הפינה הימנית-תחתונה -->
+                <!-- (שם יושב תג "פריטים בשכונה") ולא להסתיר את פינת "המעבר לרשימה" השמאלית-עליונה -->
+                <button
+                    type="button"
+                    onclick={(e) => { e.stopPropagation(); openFullscreen(); }}
+                    class="absolute top-12 right-3 z-30 w-10 h-10 rounded-lg bg-purple-600/80 hover:bg-purple-500 text-white text-xl leading-none flex items-center justify-center backdrop-blur-sm border border-white/30 shadow-lg {isFullscreen ? 'hidden' : ''}"
+                    aria-label={$t('map.open_fullscreen')}
+                    title={$t('map.open_fullscreen_title')}
+                >⛶</button>
+
+                <!-- כפתורי זום - עובדים גם מעל שכבת ההפעלה (במיוחד בנייד שאין גלגלת) -->
+                <!-- מוסתרים במסך-מלא: שם זום ייעודי בפינה הימנית התחתונה -->
                 <div class="absolute bottom-9 right-3 z-30 flex-col gap-1.5 {isFullscreen ? 'hidden' : 'flex'}">
-                    <button
-                        type="button"
-                        onclick={(e) => { e.stopPropagation(); openFullscreen(); }}
-                        class="w-10 h-10 mb-1 rounded-lg bg-purple-600/80 hover:bg-purple-500 text-white text-xl leading-none flex items-center justify-center backdrop-blur-sm border border-white/30 shadow-lg"
-                        aria-label={$t('map.open_fullscreen')}
-                        title={$t('map.open_fullscreen_title')}
-                    >⛶</button>
                     <button
                         type="button"
                         onclick={(e) => { e.stopPropagation(); activateMap(); zoomIn(); }}
@@ -1648,15 +1650,19 @@
                     </div>
                 {/if}
 
-                <!-- מספר הפריטים בשכונה - מופיע פעם אחת בכניסה ופעם נוספת בכל סינון קטגוריה -->
+                <!-- מספר הפריטים בשכונה - תג צר בן 2 שורות, צמוד לשוליים הימניים ונמוך יותר -->
+                <!-- כדי לא להסתיר את מרכז המפה ולא להתנגש בכפתורי הזום שבפינה הימנית-תחתונה -->
                 {#if showCountBadge && neighborhoodDbItems.length > 0}
                     <div
-                        class="neighborhood-count-fade absolute top-24 right-4 z-20 bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 text-white text-lg font-black px-6 py-3 rounded-lg shadow-lg border border-orange-300/60"
+                        class="neighborhood-count-fade absolute top-28 right-2 z-20 flex flex-col items-center text-center leading-none bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 text-white font-black px-3.5 py-2 rounded-xl shadow-lg border border-orange-300/60"
                         onanimationend={() => (showCountBadge = false)}
                     >
-                        {selectedCategory === 'giveaway'
-                            ? $t('map.giveaways_in_hood', { values: { n: neighborhoodDbItems.length } })
-                            : $t('map.items_in_hood', { values: { n: neighborhoodDbItems.length } })}
+                        <span class="text-2xl leading-none">{neighborhoodDbItems.length}</span>
+                        <span class="text-xs font-bold mt-0.5 whitespace-nowrap">
+                            {selectedCategory === 'giveaway'
+                                ? $t('map.giveaways_in_hood_label')
+                                : $t('map.items_in_hood_label')}
+                        </span>
                     </div>
                 {/if}
             </div>
