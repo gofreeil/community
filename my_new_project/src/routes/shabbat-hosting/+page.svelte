@@ -3,6 +3,7 @@
     import ShabbatHostingBoard from '$lib/components/ShabbatHostingBoard.svelte';
     import JsonLd from "$lib/components/JsonLd.svelte";
     import { breadcrumbSchema, collectionSchema, canonical } from "$lib/seo";
+    import { _ } from 'svelte-i18n';
 
     let { data }: { data: PageData } = $props();
 </script>
@@ -15,7 +16,7 @@
 </svelte:head>
 <JsonLd schema={[breadcrumbSchema([{ name: 'בית', path: '/' }, { name: 'אירוח לשבת', path: '/shabbat-hosting' }]), collectionSchema({ name: 'אירוח לשבת, צימרים ודירות', description: 'לוח אירוח לשבת, צימרים ודירות לאירוח — מצאו מקום לשבת או אירוח קצר בשכונה ובכל הארץ, בקהילה בשכונה.', path: '/shabbat-hosting' })]} />
 
-<h1 class="sr-only">אירוח לשבת, צימרים ודירות בשכונה ובכל הארץ</h1>
+<h1 class="sr-only">{$_('boards.shabbat.sr_title')}</h1>
 
 <ShabbatHostingBoard
     items={data.items}

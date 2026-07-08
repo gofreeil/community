@@ -3,6 +3,7 @@
     import BabysittersBoard from '$lib/components/BabysittersBoard.svelte';
     import JsonLd from "$lib/components/JsonLd.svelte";
     import { breadcrumbSchema, collectionSchema, canonical } from "$lib/seo";
+    import { _ } from 'svelte-i18n';
 
     let { data }: { data: PageData } = $props();
 </script>
@@ -15,6 +16,6 @@
 </svelte:head>
 <JsonLd schema={[breadcrumbSchema([{ name: 'בית', path: '/' }, { name: 'בייבי סיטר', path: '/babysitters' }]), collectionSchema({ name: 'בייבי סיטר ושמרטפים', description: 'לוח בייבי סיטר ושמרטפים בשכונה — מצאו שמרטף זמין ואמין קרוב לבית, בקהילה בשכונה.', path: '/babysitters' })]} />
 
-<h1 class="sr-only">בייבי סיטר ושמרטפים בשכונה שלך</h1>
+<h1 class="sr-only">{$_('boards.babysitters.sr_title')}</h1>
 
 <BabysittersBoard items={data.items} userNeighborhood={data.userNeighborhood} userCity={data.userCity} />

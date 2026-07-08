@@ -3,6 +3,7 @@
     import { neighborhoodState } from '$lib/neighborhoodState.svelte';
     import { getCoordsFor, type Coord } from '$lib/neighborhoodCoords';
     import { isLiked, toggleLike } from '$lib/likedItems';
+    import { _ } from 'svelte-i18n';
 
     interface DbItem {
         id: string;
@@ -103,6 +104,13 @@
         'מדע ורובוטיקה','בישול','דרמה','שחייה','יהדות','שפות','אחר',
     ];
 
+    const CAT_KEY: Record<ClassCategory, string> = {
+        'ספורט': 'cat_sport', 'מוזיקה': 'cat_music', 'אומנות': 'cat_art', 'ריקוד': 'cat_dance',
+        'אומנויות לחימה': 'cat_martial', 'מדע ורובוטיקה': 'cat_science', 'בישול': 'cat_cooking',
+        'דרמה': 'cat_drama', 'שחייה': 'cat_swim', 'יהדות': 'cat_judaism', 'שפות': 'cat_lang', 'אחר': 'cat_other',
+    };
+    const DAY_KEY: Record<string, string> = { 'א': 'day_sun', 'ב': 'day_mon', 'ג': 'day_tue', 'ד': 'day_wed', 'ה': 'day_thu', 'ו': 'day_fri', 'ש': 'day_sat' };
+
     function detectCategory(label: string, desc: string): ClassCategory {
         const txt = `${label} ${desc}`;
         if (/כדור|ספורט|התעמלות|אופניים|אתלטיקה|טניס/.test(txt)) return 'ספורט';
@@ -156,9 +164,9 @@
             : (typeof rawImages === 'string' ? (() => { try { const p = JSON.parse(rawImages); return Array.isArray(p) ? p.filter((s: unknown): s is string => typeof s === 'string') : []; } catch { return []; } })() : []);
         return {
             id: item.id,
-            label: item.label || 'חוג',
+            label: item.label || $_('boards.chugim.fallback_label'),
             category,
-            instructor: item.contact || 'מדריך/ה',
+            instructor: item.contact || $_('boards.chugim.fallback_instructor'),
             city: item.city || '',
             neighborhood: item.neighborhood || item.address || '',
             address: item.address || '',
@@ -374,7 +382,7 @@
     });
     function toggleSave(k: Klass) {
         const loc = [k.neighborhood, k.city].filter(Boolean).join(', ');
-        const summary = `${k.category} · ${loc}${k.pricePerMonth ? ` · ₪${k.pricePerMonth}/חודש` : ''}`;
+        const summary = `${$_(`boards.chugim.${CAT_KEY[k.category]}`)} · ${loc}${k.pricePerMonth ? ` · ${$_('boards.chugim.month_price', { values: { price: k.pricePerMonth } })}` : ''}`;
         const isNow = toggleLike({ type: 'class', id: k.id, label: k.label, url: '/chugim', summary });
         saved[k.id] = isNow;
     }
@@ -386,10 +394,10 @@
         const loc = [k.neighborhood, k.city].filter(Boolean).join(', ');
         const lines = [`${CAT_META[k.category].icon} ${k.label} - ${k.instructor}`];
         if (loc) lines.push(`📍 ${loc}`);
-        if (k.pricePerMonth) lines.push(`💰 ₪${k.pricePerMonth}/חודש`);
+        if (k.pricePerMonth) lines.push(`💰 ${$_('boards.chugim.month_price', { values: { price: k.pricePerMonth } })}`);
         if (k.description) lines.push(k.description);
         const text = lines.join('\n');
-        return { title: 'חוגים - קהילה בשכונה', text, url };
+        return { title: $_('boards.chugim.share_title'), text, url };
     }
     async function nativeShare(k: Klass) {
         const payload = buildShareText(k);
@@ -422,7 +430,7 @@
         return 2 * R * Math.asin(Math.sqrt(h));
     }
 
-    const SECTION_TITLES = ['בשכונה שלי', 'בעיר שלי', 'בערים סביבי', 'ארצי'];
+    const SECTION_KEYS = ['section_my_neighborhood', 'section_my_city', 'section_nearby', 'section_national'];
 
     function sectionFor(k: Klass, userNeigh: string, userCty: string): number {
         const sCoord = getCoordsFor(k.neighborhood, k.city);
@@ -484,7 +492,7 @@
     });
 
     function ageLabel(k: Klass): string {
-        return `גילאי ${k.ageMin}-${k.ageMax}`;
+        return $_('boards.chugim.ages_range', { values: { min: k.ageMin, max: k.ageMax } });
     }
 </script>
 
@@ -493,8 +501,8 @@
         <button
             type="button"
             onclick={() => nativeShare(k)}
-            title="שיתוף"
-            aria-label="שיתוף"
+            title={$_('boards.share')}
+            aria-label={$_('boards.share')}
             class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white py-2.5 px-3 rounded-xl transition-colors"
         >
             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -511,8 +519,8 @@
                 <button type="button" onclick={() => shareTo('telegram', k)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">✈️ Telegram</button>
                 <button type="button" onclick={() => shareTo('facebook', k)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">📘 Facebook</button>
                 <button type="button" onclick={() => shareTo('x',        k)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">𝕏 Twitter</button>
-                <button type="button" onclick={() => shareTo('copy',     k)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">📋 העתק קישור</button>
-                <button type="button" onclick={() => shareMenuId = null} class="flex items-center justify-center text-gray-500 hover:text-gray-300 rounded-lg px-2.5 py-1 text-[10px] transition-colors">סגור</button>
+                <button type="button" onclick={() => shareTo('copy',     k)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">📋 {$_('boards.copy_link')}</button>
+                <button type="button" onclick={() => shareMenuId = null} class="flex items-center justify-center text-gray-500 hover:text-gray-300 rounded-lg px-2.5 py-1 text-[10px] transition-colors">{$_('boards.close')}</button>
             </div>
         {/if}
     </div>
@@ -533,11 +541,11 @@
                 <span class="absolute bottom-8 left-8">🥋</span>
             </div>
             <div class="relative">
-                <h1 class="text-3xl md:text-5xl font-black text-white mb-3 drop-shadow-lg">לוח חוגים ארצי</h1>
-                <p class="text-white/95 text-sm md:text-lg mb-4 drop-shadow">מצאו חוג מושלם לילד שלכם - לפי גיל, קטגוריה, מחיר ומיקום</p>
+                <h1 class="text-3xl md:text-5xl font-black text-white mb-3 drop-shadow-lg">{$_('boards.chugim.hero_title')}</h1>
+                <p class="text-white/95 text-sm md:text-lg mb-4 drop-shadow">{$_('boards.chugim.hero_sub')}</p>
                 <div class="inline-flex items-center gap-2 bg-black/40 backdrop-blur-sm border border-white/30 rounded-full px-4 py-2">
                     <span class="w-2 h-2 rounded-full bg-green-300 animate-pulse"></span>
-                    <span class="text-white text-sm font-medium">{allKlasses.length} חוגים פעילים</span>
+                    <span class="text-white text-sm font-medium">{$_('boards.chugim.active_count', { values: { n: allKlasses.length } })}</span>
                 </div>
             </div>
         </div>
@@ -550,7 +558,7 @@
             class="flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-400 hover:to-violet-500 text-white font-bold px-7 py-3 rounded-full shadow-lg hover:shadow-indigo-500/30 transition-all hover:scale-105 text-sm"
         >
             <span class="font-black text-lg leading-none">+</span>
-            הוסף חוג
+            {$_('boards.chugim.add_cta')}
         </a>
     </div>
 
@@ -563,7 +571,7 @@
                     {selectedCat === ''
                         ? 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-lg shadow-indigo-500/30'
                         : 'bg-[#0f172a] border border-white/10 text-gray-300 hover:border-indigo-500/40'}"
-            >🌟 הכל</button>
+            >{$_('boards.chugim.all_chip')}</button>
             {#each ALL_CATEGORIES as cat}
                 {@const meta = CAT_META[cat]}
                 <button
@@ -572,7 +580,7 @@
                         {selectedCat === cat
                             ? `bg-gradient-to-r ${meta.gradient} text-white shadow-lg`
                             : 'bg-[#0f172a] border border-white/10 text-gray-300 hover:border-white/30'}"
-                >{meta.icon} {cat}</button>
+                >{meta.icon} {$_(`boards.chugim.${CAT_KEY[cat]}`)}</button>
             {/each}
         </div>
     </div>
@@ -584,7 +592,7 @@
                 <input
                     type="text"
                     bind:value={searchQuery}
-                    placeholder="🔍  חיפוש לפי שם החוג, מדריך, התמחות..."
+                    placeholder={$_('boards.chugim.search_placeholder')}
                     class="w-full bg-[#0f172a] border border-white/10 focus:border-indigo-500/50 rounded-2xl px-5 py-3 text-white placeholder-gray-500 text-sm outline-none transition-colors"
                 />
                 {#if searchQuery}
@@ -593,25 +601,25 @@
             </div>
             {#if availableCities.length > 0}
                 <select bind:value={selectedCity} class="bg-[#0f172a] border border-white/10 focus:border-indigo-500/50 rounded-2xl px-5 py-3 text-white text-sm outline-none appearance-none transition-colors min-w-[150px]">
-                    <option value="" style="background:#fff;color:#0f172a;">📍 כל הערים</option>
+                    <option value="" style="background:#fff;color:#0f172a;">{$_('boards.all_cities')}</option>
                     {#each availableCities as c}
                         <option value={c} style="background:#fff;color:#0f172a;">{c}</option>
                     {/each}
                 </select>
             {/if}
             <select bind:value={selectedAge} class="bg-[#0f172a] border border-white/10 focus:border-indigo-500/50 rounded-2xl px-5 py-3 text-white text-sm outline-none appearance-none transition-colors min-w-[150px]">
-                <option value=""      style="background:#fff;color:#0f172a;">👧 כל הגילאים</option>
-                <option value="tot"   style="background:#fff;color:#0f172a;">🍼 פעוטות (0-5)</option>
-                <option value="child" style="background:#fff;color:#0f172a;">🎒 ילדים (6-10)</option>
-                <option value="tween" style="background:#fff;color:#0f172a;">🛹 חטיבה (11-14)</option>
-                <option value="teen"  style="background:#fff;color:#0f172a;">🎓 נוער (15-18)</option>
+                <option value=""      style="background:#fff;color:#0f172a;">{$_('boards.chugim.age_all')}</option>
+                <option value="tot"   style="background:#fff;color:#0f172a;">{$_('boards.chugim.age_tot')}</option>
+                <option value="child" style="background:#fff;color:#0f172a;">{$_('boards.chugim.age_child')}</option>
+                <option value="tween" style="background:#fff;color:#0f172a;">{$_('boards.chugim.age_tween')}</option>
+                <option value="teen"  style="background:#fff;color:#0f172a;">{$_('boards.chugim.age_teen')}</option>
             </select>
             <select bind:value={sortBy} class="bg-[#0f172a] border border-white/10 focus:border-indigo-500/50 rounded-2xl px-5 py-3 text-white text-sm outline-none appearance-none transition-colors min-w-[150px]">
-                <option value="featured"   style="background:#fff;color:#0f172a;">⭐ מומלצים</option>
-                <option value="rating"     style="background:#fff;color:#0f172a;">★ דירוג גבוה</option>
-                <option value="price_low"  style="background:#fff;color:#0f172a;">₪ מחיר נמוך</option>
-                <option value="price_high" style="background:#fff;color:#0f172a;">₪ מחיר גבוה</option>
-                <option value="newest"     style="background:#fff;color:#0f172a;">🆕 חדשים</option>
+                <option value="featured"   style="background:#fff;color:#0f172a;">{$_('boards.chugim.sort_featured')}</option>
+                <option value="rating"     style="background:#fff;color:#0f172a;">{$_('boards.chugim.sort_rating')}</option>
+                <option value="price_low"  style="background:#fff;color:#0f172a;">{$_('boards.chugim.sort_price_low')}</option>
+                <option value="price_high" style="background:#fff;color:#0f172a;">{$_('boards.chugim.sort_price_high')}</option>
+                <option value="newest"     style="background:#fff;color:#0f172a;">{$_('boards.chugim.sort_newest')}</option>
             </select>
         </div>
 
@@ -619,9 +627,9 @@
         <div class="flex flex-wrap items-center gap-3 mt-2 text-xs">
             <div class="flex-1"></div>
             <p class="text-gray-500 flex items-center gap-3">
-                <span>מציג <span class="text-white font-bold">{filtered.length}</span> חוגים</span>
+                <span>{$_('boards.showing')} <span class="text-white font-bold">{filtered.length}</span> {$_('boards.chugim.showing_suffix')}</span>
                 {#if searchQuery || selectedCity || selectedCat || selectedAge || onlyFreeTrial || onlyAvailable}
-                    <button onclick={clearAll} class="text-indigo-400 hover:text-indigo-300 underline cursor-pointer">נקה סינון</button>
+                    <button onclick={clearAll} class="text-indigo-400 hover:text-indigo-300 underline cursor-pointer">{$_('boards.clear_filters')}</button>
                 {/if}
             </p>
         </div>
@@ -632,15 +640,15 @@
         {#if filtered.length === 0}
             <div class="text-center py-16">
                 <div class="text-5xl mb-4">🔎</div>
-                <p class="text-gray-400 mb-3">לא נמצאו חוגים התואמים לחיפוש</p>
-                <button onclick={clearAll} class="text-indigo-400 hover:text-indigo-300 underline text-sm cursor-pointer">נקה סינון</button>
+                <p class="text-gray-400 mb-3">{$_('boards.chugim.empty')}</p>
+                <button onclick={clearAll} class="text-indigo-400 hover:text-indigo-300 underline text-sm cursor-pointer">{$_('boards.clear_filters')}</button>
             </div>
         {:else}
             {#each pageGroups as group (group.section + '-' + currentPage)}
                 <!-- כותרת סקציה -->
                 <div class="flex items-center gap-3 mt-8 mb-4 first:mt-0">
                     <h2 class="text-white font-black text-xl md:text-2xl whitespace-nowrap">
-                        {SECTION_TITLES[group.section]}
+                        {$_('boards.' + SECTION_KEYS[group.section])}
                         {#if group.section === 0 && neighborhoodState.neighborhood}
                             <span class="text-indigo-300 font-bold">- {neighborhoodState.neighborhood}</span>
                         {:else if group.section === 1 && neighborhoodState.city}
@@ -665,28 +673,28 @@
                                 <span class="text-6xl drop-shadow-lg">{meta.icon}</span>
                             {/if}
                             <span class="absolute top-2 right-2 text-[10px] font-black bg-black/40 backdrop-blur-sm text-white px-2 py-1 rounded-full">
-                                {k.category}
+                                {$_(`boards.chugim.${CAT_KEY[k.category]}`)}
                             </span>
                             <button
                                 onclick={() => toggleSave(k)}
                                 class="absolute top-2 left-2 w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-lg hover:scale-110 transition-transform cursor-pointer"
-                                aria-label="שמור"
-                                title={saved[k.id] ? 'מוצג בפרופיל שלך' : 'סמן אהבתי'}
+                                aria-label={$_('boards.save')}
+                                title={saved[k.id] ? $_('boards.chugim.saved_title') : $_('boards.chugim.save_title')}
                             >
                                 {saved[k.id] ? '❤️' : '🤍'}
                             </button>
                             {#if k.freeTrial}
                                 <span class="absolute bottom-2 right-2 text-[10px] font-black bg-yellow-400 text-amber-900 px-2 py-1 rounded-full shadow-lg animate-pulse">
-                                    🎁 שיעור ניסיון חינם
+                                    {$_('boards.chugim.free_trial')}
                                 </span>
                             {/if}
                             {#if k.spotsLeft > 0 && k.spotsLeft <= 3}
                                 <span class="absolute bottom-2 left-2 text-[10px] font-black bg-red-500 text-white px-2 py-1 rounded-full shadow-lg">
-                                    ⚡ {k.spotsLeft} מקומות אחרונים
+                                    {$_('boards.chugim.spots_left', { values: { n: k.spotsLeft } })}
                                 </span>
                             {:else if k.spotsLeft === 0}
                                 <span class="absolute bottom-2 left-2 text-[10px] font-black bg-gray-700 text-gray-300 px-2 py-1 rounded-full">
-                                    מלא - רשימת המתנה
+                                    {$_('boards.chugim.full_waitlist')}
                                 </span>
                             {/if}
                         </div>
@@ -706,7 +714,7 @@
                                 <span class="text-indigo-300">👤</span>
                                 <span class="font-bold">{k.instructor}</span>
                                 {#if k.verified}
-                                    <span class="inline-flex items-center justify-center w-4 h-4 bg-blue-500 rounded-full text-white text-[9px] font-black" title="מאומת">✓</span>
+                                    <span class="inline-flex items-center justify-center w-4 h-4 bg-blue-500 rounded-full text-white text-[9px] font-black" title={$_('boards.verified')}>✓</span>
                                 {/if}
                             </p>
                             {#if k.city || k.neighborhood}
@@ -730,14 +738,14 @@
                                 <div class="text-indigo-300 font-black text-base leading-none">
                                     {k.pricePerMonth ? `₪${k.pricePerMonth}` : '-'}
                                 </div>
-                                <div class="text-[10px] text-gray-500 mt-0.5">לחודש</div>
+                                <div class="text-[10px] text-gray-500 mt-0.5">{$_('boards.chugim.per_month')}</div>
                             </div>
                             <div class="py-2.5">
                                 <div class="text-white font-black text-sm leading-none">{k.ageMin}-{k.ageMax}</div>
-                                <div class="text-[10px] text-gray-500 mt-0.5">גילאים</div>
+                                <div class="text-[10px] text-gray-500 mt-0.5">{$_('boards.chugim.ages')}</div>
                             </div>
                             <div class="py-2.5">
-                                <div class="text-white font-black text-sm leading-none">{k.days.join(',')}</div>
+                                <div class="text-white font-black text-sm leading-none">{k.days.map(d => $_('boards.' + DAY_KEY[d])).join(',')}</div>
                                 <div class="text-[10px] text-gray-500 mt-0.5">{k.timeStart}-{k.timeEnd}</div>
                             </div>
                         </div>
@@ -752,7 +760,7 @@
                             <!-- ימי שבוע ויזואלי -->
                             <div class="mt-2">
                                 <div class="text-[10px] text-gray-500 mb-1.5 flex items-center gap-1">
-                                    <span>📅</span> ימי החוג
+                                    <span>📅</span> {$_('boards.chugim.class_days')}
                                 </div>
                                 <div class="grid grid-cols-7 gap-1">
                                     {#each ['א','ב','ג','ד','ה','ו','ש'] as d}
@@ -761,7 +769,7 @@
                                             {isOn
                                                 ? 'bg-gradient-to-br ' + meta.gradient + ' text-white shadow'
                                                 : 'bg-white/5 border border-white/10 text-gray-600'}">
-                                            {d}
+                                            {$_('boards.' + DAY_KEY[d])}
                                         </div>
                                     {/each}
                                 </div>
@@ -773,16 +781,16 @@
                             {@render shareBtn(k)}
                             {#if k.detailUrl}
                                 <a href={k.detailUrl}
-                                    class="flex items-center justify-center bg-indigo-600/80 hover:bg-indigo-500 text-white py-2.5 px-3 rounded-xl transition-colors text-sm font-bold" aria-label="פרטים נוספים" title="כל הפרטים, גלריה וקישורים">
+                                    class="flex items-center justify-center bg-indigo-600/80 hover:bg-indigo-500 text-white py-2.5 px-3 rounded-xl transition-colors text-sm font-bold" aria-label={$_('boards.chugim.details_aria')} title={$_('boards.chugim.details_title')}>
                                     🔍
                                 </a>
                             {/if}
                             <a href={waLink(k.phone)} target="_blank" rel="noopener noreferrer"
                                 class="flex-1 flex items-center justify-center gap-1.5 bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 rounded-xl transition-colors text-sm">
-                                💬 הירשמו עכשיו
+                                💬 {$_('boards.chugim.register_now')}
                             </a>
                             <a href="tel:{k.phone}"
-                                class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white py-2.5 px-4 rounded-xl transition-colors text-sm" aria-label="חייג">
+                                class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white py-2.5 px-4 rounded-xl transition-colors text-sm" aria-label={$_('boards.call')}>
                                 📞
                             </a>
                         </div>
@@ -799,8 +807,8 @@
                             onclick={() => goToPage(currentPage - 1)}
                             disabled={currentPage === 1}
                             class="px-3 py-2 rounded-xl bg-[#0f172a] border border-white/10 text-white text-sm font-bold hover:border-indigo-500/40 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
-                            aria-label="עמוד קודם"
-                        >→ הקודם</button>
+                            aria-label={$_('boards.prev_page_aria')}
+                        >{$_('boards.prev_page')}</button>
 
                         {#each Array.from({ length: totalPages }, (_, i) => i + 1) as p}
                             <button
@@ -809,7 +817,7 @@
                                     {currentPage === p
                                         ? 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-lg shadow-indigo-500/30'
                                         : 'bg-[#0f172a] border border-white/10 text-white hover:border-indigo-500/40'}"
-                                aria-label="עמוד {p}"
+                                aria-label={$_('boards.page_n', { values: { n: p } })}
                                 aria-current={currentPage === p ? 'page' : undefined}
                             >{p}</button>
                         {/each}
@@ -818,12 +826,12 @@
                             onclick={() => goToPage(currentPage + 1)}
                             disabled={currentPage === totalPages}
                             class="px-3 py-2 rounded-xl bg-[#0f172a] border border-white/10 text-white text-sm font-bold hover:border-indigo-500/40 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
-                            aria-label="עמוד הבא"
-                        >הבא ←</button>
+                            aria-label={$_('boards.next_page_aria')}
+                        >{$_('boards.next_page')}</button>
                     </div>
 
                     <p class="text-gray-400 text-sm font-medium">
-                        עמוד <span class="text-white font-black">{currentPage}</span> מתוך <span class="text-white font-black">{totalPages}</span>
+                        {$_('boards.page_word')} <span class="text-white font-black">{currentPage}</span> {$_('boards.of_word')} <span class="text-white font-black">{totalPages}</span>
                     </p>
                 </div>
             {/if}
@@ -835,13 +843,13 @@
                 type="button"
                 onclick={() => typeof window !== 'undefined' && window.scrollTo({ top: 0, behavior: 'smooth' })}
                 class="text-gray-500 hover:text-white transition-colors cursor-pointer"
-            >↑ חזור לראש הדף</button>
+            >{$_('boards.back_to_top')}</button>
             <span class="text-gray-700">|</span>
             <button
                 type="button"
                 onclick={() => typeof window !== 'undefined' && window.history.back()}
                 class="text-gray-500 hover:text-white transition-colors cursor-pointer"
-            >← חזור אחורה</button>
+            >{$_('boards.back')}</button>
         </div>
     </div>
 </div>

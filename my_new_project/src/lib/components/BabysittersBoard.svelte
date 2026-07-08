@@ -3,6 +3,7 @@
     import { neighborhoodState } from '$lib/neighborhoodState.svelte';
     import { getCoordsFor, type Coord } from '$lib/neighborhoodCoords';
     import { isLiked, toggleLike } from '$lib/likedItems';
+    import { _ } from 'svelte-i18n';
 
     interface DbItem {
         id: string;
@@ -82,12 +83,12 @@
     function buildSitterShareText(s: { name?: string; label?: string; city?: string; neighborhood?: string; description?: string }): { title: string; text: string; url: string } {
         const url = typeof window !== 'undefined' ? `${window.location.origin}/babysitters` : 'https://kehila-bashchuna.co.il/babysitters';
         const loc = [s.neighborhood, s.city].filter(Boolean).join(', ');
-        const name = s.name || s.label || 'בייביסיטר';
-        const lines = [`👶 בייביסיטר - ${name}`];
+        const name = s.name || s.label || $_('boards.babysitters.fallback_name');
+        const lines = [`👶 ${$_('boards.babysitters.share_label')} - ${name}`];
         if (loc) lines.push(`📍 ${loc}`);
         if (s.description) lines.push(s.description);
         const text = lines.join('\n');
-        return { title: 'בייביסיטר - קהילה בשכונה', text, url };
+        return { title: $_('boards.babysitters.share_title'), text, url };
     }
     async function nativeShareSitter(s: { id: string; name?: string; label?: string; city?: string; neighborhood?: string; description?: string }) {
         const payload = buildSitterShareText(s);
@@ -118,6 +119,23 @@
         'from-rose-400 to-pink-500',
         'from-cyan-500 to-blue-500',
     ];
+
+    const DAY_KEY: Record<string, string> = { 'א': 'day_sun', 'ב': 'day_mon', 'ג': 'day_tue', 'ד': 'day_wed', 'ה': 'day_thu', 'ו': 'day_fri', 'ש': 'day_sat' };
+    // ערכי נתונים (data values) מתורגמים בנקודת התצוגה בלבד - ההשוואות בקוד נשארות בעברית
+    const VALUE_KEYS: Record<string, string> = {
+        'כללי': 'sector_general', 'דתי': 'sector_religious', 'חרדי': 'sector_haredi',
+        'כל הגילאים': 'ages_all', 'תינוקות': 'ages_babies',
+        'עברית': 'lang_he', 'אנגלית': 'lang_en', 'רוסית': 'lang_ru', 'יידיש': 'lang_yi',
+        'צרפתית': 'lang_fr', 'ערבית': 'lang_ar', 'ספרדית': 'lang_es', 'גרמנית': 'lang_de',
+        'עזרה ראשונה': 'first_aid',
+        'עזרה בשיעורי בית': 'spec_homework', 'בישול לילדים': 'spec_cooking', 'נקיון קל': 'spec_cleaning',
+        'כביסה וקיפול': 'spec_laundry', 'מומחיות בתינוקות': 'spec_infants',
+        'פעיל היום': 'active_today_m', 'פעילה היום': 'active_today_f', 'פעיל לאחרונה': 'active_recently',
+        'אתמול': 'active_yesterday', 'פעיל אתמול': 'active_yesterday_m', 'לפני יומיים': 'active_two_days',
+    };
+    function tv(v: string): string {
+        return VALUE_KEYS[v] ? $_(`boards.values.${VALUE_KEYS[v]}`) : v;
+    }
 
     // ===== המרת ימים+שעות (פורמט ישן) ל-grid זמינות =====
     function legacyToGrid(days: string[], times: string[]): string {
@@ -154,7 +172,7 @@
 
         return {
             id: item.id,
-            name: item.label || item.contact || 'בייבי סיטר',
+            name: item.label || item.contact || $_('boards.babysitters.fallback_name'),
             age: Number(ef.age) || 22,
             sector: typeof ef.sector === 'string' && ef.sector ? ef.sector : undefined,
             city: item.city || '',
@@ -347,9 +365,10 @@
 
     function toggleSave(s: Sitter) {
         const cityLine = [s.neighborhood, s.city].filter(Boolean).join(', ');
+        const rateStr = s.rate ? $_('boards.babysitters.hour_price', { values: { price: s.rate } }) : '';
         const summary = cityLine
-            ? (s.rate ? `${cityLine} · ₪${s.rate}/שעה` : cityLine)
-            : (s.rate ? `₪${s.rate}/שעה` : '');
+            ? (rateStr ? `${cityLine} · ${rateStr}` : cityLine)
+            : rateStr;
         const isNow = toggleLike({
             type: 'babysitter',
             id: s.id,
@@ -374,12 +393,7 @@
 
     // ===== סקציות לפי קרבה למשתמש =====
     // 0 = השכונה/אזור שלך  |  1 = העיר שלך  |  2 = ערים קרובות  |  3 = שאר הארץ
-    const SECTION_TITLES = [
-        'בשכונה שלי',
-        'בעיר שלי',
-        'בערים סביבי',
-        'ארצי',
-    ];
+    const SECTION_KEYS = ['section_my_neighborhood', 'section_my_city', 'section_nearby', 'section_national'];
 
     function sectionFor(s: Sitter, userNeigh: string, userCty: string): number {
         const sCoord = getCoordsFor(s.neighborhood, s.city);
@@ -458,8 +472,8 @@
         <button
             type="button"
             onclick={() => nativeShareSitter(s)}
-            title="שיתוף"
-            aria-label="שיתוף"
+            title={$_('boards.share')}
+            aria-label={$_('boards.share')}
             class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white py-2.5 px-3 rounded-xl transition-colors"
         >
             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -476,8 +490,8 @@
                 <button type="button" onclick={() => shareSitterTo('telegram', s)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">✈️ Telegram</button>
                 <button type="button" onclick={() => shareSitterTo('facebook', s)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">📘 Facebook</button>
                 <button type="button" onclick={() => shareSitterTo('x',        s)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">𝕏 Twitter</button>
-                <button type="button" onclick={() => shareSitterTo('copy',     s)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">📋 העתק קישור</button>
-                <button type="button" onclick={() => shareMenuSitterId = null} class="flex items-center justify-center text-gray-500 hover:text-gray-300 rounded-lg px-2.5 py-1 text-[10px] transition-colors">סגור</button>
+                <button type="button" onclick={() => shareSitterTo('copy',     s)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">📋 {$_('boards.copy_link')}</button>
+                <button type="button" onclick={() => shareMenuSitterId = null} class="flex items-center justify-center text-gray-500 hover:text-gray-300 rounded-lg px-2.5 py-1 text-[10px] transition-colors">{$_('boards.close')}</button>
             </div>
         {/if}
     </div>
@@ -494,11 +508,11 @@
             <div class="absolute inset-0 bg-black/55"></div>
             <!-- תוכן -->
             <div class="relative">
-                <h1 class="text-3xl md:text-5xl font-black text-white mb-3 drop-shadow-lg">לוח בייבי סיטר ארצי</h1>
-                <p class="text-white/95 text-sm md:text-lg mb-4 drop-shadow">מצאו בייבי סיטר מומלצת לפי שכונה, גיל הילדים, מחיר וזמינות</p>
+                <h1 class="text-3xl md:text-5xl font-black text-white mb-3 drop-shadow-lg">{$_('boards.babysitters.hero_title')}</h1>
+                <p class="text-white/95 text-sm md:text-lg mb-4 drop-shadow">{$_('boards.babysitters.hero_sub')}</p>
                 <div class="inline-flex items-center gap-2 bg-black/40 backdrop-blur-sm border border-white/30 rounded-full px-4 py-2">
                     <span class="w-2 h-2 rounded-full bg-green-300 animate-pulse"></span>
-                    <span class="text-white text-sm font-medium">{allSitters.length} מטפלות זמינות</span>
+                    <span class="text-white text-sm font-medium">{$_('boards.babysitters.available_count', { values: { n: allSitters.length } })}</span>
                 </div>
             </div>
         </div>
@@ -511,7 +525,7 @@
             class="flex items-center gap-2 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-400 hover:to-rose-500 text-white font-bold px-7 py-3 rounded-full shadow-lg hover:shadow-pink-500/30 transition-all hover:scale-105 text-sm"
         >
             <span class="font-black text-lg leading-none">+</span>
-            הציעו שירותי בייביסיטר
+            {$_('boards.babysitters.add_cta')}
         </a>
     </div>
 
@@ -523,7 +537,7 @@
                 <input
                     type="text"
                     bind:value={searchQuery}
-                    placeholder="🔍  חיפוש לפי שם, שכונה, התמחות..."
+                    placeholder={$_('boards.babysitters.search_placeholder')}
                     class="w-full bg-[#0f172a] border border-white/10 focus:border-pink-500/50 rounded-2xl px-5 py-3 text-white placeholder-gray-500 text-sm outline-none transition-colors"
                 />
                 {#if searchQuery}
@@ -532,26 +546,26 @@
             </div>
             {#if availableCities.length > 0}
                 <select bind:value={selectedCity} class="bg-[#0f172a] border border-white/10 focus:border-pink-500/50 rounded-2xl px-5 py-3 text-white text-sm outline-none appearance-none transition-colors min-w-[160px]">
-                    <option value="" style="background:#fff;color:#0f172a;">📍 כל הערים</option>
+                    <option value="" style="background:#fff;color:#0f172a;">{$_('boards.all_cities')}</option>
                     {#each availableCities as c}
                         <option value={c} style="background:#fff;color:#0f172a;">{c}</option>
                     {/each}
                 </select>
             {/if}
             <select bind:value={sortBy} class="bg-[#0f172a] border border-white/10 focus:border-pink-500/50 rounded-2xl px-5 py-3 text-white text-sm outline-none appearance-none transition-colors min-w-[160px]">
-                <option value="featured"   style="background:#fff;color:#0f172a;">⭐ מומלצות</option>
-                <option value="rating"     style="background:#fff;color:#0f172a;">★ דירוג גבוה</option>
-                <option value="rate_low"   style="background:#fff;color:#0f172a;">₪ מחיר נמוך</option>
-                <option value="rate_high"  style="background:#fff;color:#0f172a;">₪ מחיר גבוה</option>
-                <option value="experience" style="background:#fff;color:#0f172a;">🏆 ניסיון רב</option>
+                <option value="featured"   style="background:#fff;color:#0f172a;">{$_('boards.babysitters.sort_featured')}</option>
+                <option value="rating"     style="background:#fff;color:#0f172a;">{$_('boards.babysitters.sort_rating')}</option>
+                <option value="rate_low"   style="background:#fff;color:#0f172a;">{$_('boards.babysitters.sort_rate_low')}</option>
+                <option value="rate_high"  style="background:#fff;color:#0f172a;">{$_('boards.babysitters.sort_rate_high')}</option>
+                <option value="experience" style="background:#fff;color:#0f172a;">{$_('boards.babysitters.sort_experience')}</option>
             </select>
         </div>
 
         <!-- סיכום + נקה -->
         <p class="text-gray-500 text-sm mt-3 flex items-center gap-3">
-            <span>מציג <span class="text-white font-bold">{filtered.length}</span> בייבי סיטר</span>
+            <span>{$_('boards.showing')} <span class="text-white font-bold">{filtered.length}</span> {$_('boards.babysitters.showing_suffix')}</span>
             {#if searchQuery || selectedCity}
-                <button onclick={clearAll} class="text-pink-400 hover:text-pink-300 underline cursor-pointer text-xs">נקה סינון</button>
+                <button onclick={clearAll} class="text-pink-400 hover:text-pink-300 underline cursor-pointer text-xs">{$_('boards.clear_filters')}</button>
             {/if}
         </p>
     </div>
@@ -561,15 +575,15 @@
         {#if filtered.length === 0}
             <div class="text-center py-16">
                 <div class="text-5xl mb-4">🔎</div>
-                <p class="text-gray-400 mb-3">לא נמצאו בייבי סיטר התואמות לחיפוש</p>
-                <button onclick={clearAll} class="text-pink-400 hover:text-pink-300 underline text-sm cursor-pointer">נקה סינון</button>
+                <p class="text-gray-400 mb-3">{$_('boards.babysitters.empty')}</p>
+                <button onclick={clearAll} class="text-pink-400 hover:text-pink-300 underline text-sm cursor-pointer">{$_('boards.clear_filters')}</button>
             </div>
         {:else}
             {#each pageGroups as group (group.section + '-' + currentPage)}
                 <!-- כותרת סקציה + קו -->
                 <div class="flex items-center gap-3 mt-8 mb-4 first:mt-0">
                     <h2 class="text-white font-black text-xl md:text-2xl whitespace-nowrap">
-                        {SECTION_TITLES[group.section]}
+                        {$_('boards.' + SECTION_KEYS[group.section])}
                         {#if group.section === 0 && neighborhoodState.neighborhood}
                             <span class="text-pink-300 font-bold">- {neighborhoodState.neighborhood}</span>
                         {:else if group.section === 1 && neighborhoodState.city}
@@ -593,7 +607,7 @@
                                     {initials(s.name)}
                                 </div>
                                 {#if s.verified}
-                                    <span class="absolute -bottom-0.5 -left-0.5 w-5 h-5 bg-blue-500 border-2 border-[#0f172a] rounded-full flex items-center justify-center text-white text-[10px] font-black" title="זהות מאומתת">✓</span>
+                                    <span class="absolute -bottom-0.5 -left-0.5 w-5 h-5 bg-blue-500 border-2 border-[#0f172a] rounded-full flex items-center justify-center text-white text-[10px] font-black" title={$_('boards.babysitters.verified_identity')}>✓</span>
                                 {/if}
                             </div>
 
@@ -602,7 +616,7 @@
                                     <h3 class="text-white font-black text-base truncate">
                                         {s.name}<span class="text-gray-400 font-normal">, {s.age}</span>
                                     </h3>
-                                    <button onclick={() => toggleSave(s)} class="flex-shrink-0 text-xl leading-none transition-transform hover:scale-110 cursor-pointer" aria-label="שמור" title={saved[s.id] ? 'מוצג בפרופיל שלך כקיצור דרך' : 'סמן אהבתי - יופיע בפרופיל שלך'}>
+                                    <button onclick={() => toggleSave(s)} class="flex-shrink-0 text-xl leading-none transition-transform hover:scale-110 cursor-pointer" aria-label={$_('boards.save')} title={saved[s.id] ? $_('boards.babysitters.saved_title') : $_('boards.babysitters.save_title')}>
                                         {saved[s.id] ? '❤️' : '🤍'}
                                     </button>
                                 </div>
@@ -624,12 +638,12 @@
                                             : s.sector === 'דתי'
                                                 ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
                                                 : 'bg-white/10 text-gray-300 border border-white/20'}">
-                                            {s.sector}
+                                            {tv(s.sector)}
                                         </span>
                                     {/if}
                                     <span class="inline-flex items-center gap-1 text-[10px] text-emerald-400 font-medium">
                                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                                        {s.lastActive}
+                                        {tv(s.lastActive)}
                                     </span>
                                 </div>
                             </div>
@@ -641,17 +655,17 @@
                                 <div class="text-pink-300 font-black text-base leading-none">
                                     {s.rate ? `₪${s.rate}` : '-'}
                                 </div>
-                                <div class="text-[10px] text-gray-500 mt-0.5">לשעה</div>
+                                <div class="text-[10px] text-gray-500 mt-0.5">{$_('boards.babysitters.per_hour')}</div>
                             </div>
                             <div class="py-2.5">
                                 <div class="text-white font-black text-base leading-none">
                                     {s.experience || '-'}{s.experience ? '+' : ''}
                                 </div>
-                                <div class="text-[10px] text-gray-500 mt-0.5">שנות ניסיון</div>
+                                <div class="text-[10px] text-gray-500 mt-0.5">{$_('boards.babysitters.exp_years')}</div>
                             </div>
                             <div class="py-2.5">
-                                <div class="text-white font-black text-base leading-none">{s.ageGroups.join(', ')}</div>
-                                <div class="text-[10px] text-gray-500 mt-0.5">גילאי ילדים</div>
+                                <div class="text-white font-black text-base leading-none">{s.ageGroups.map(tv).join(', ')}</div>
+                                <div class="text-[10px] text-gray-500 mt-0.5">{$_('boards.babysitters.kids_ages')}</div>
                             </div>
                         </div>
 
@@ -660,12 +674,12 @@
                             <div class="flex flex-wrap gap-1.5 mb-2">
                                 {#each s.ageGroups as ag}
                                     <span class="text-[10px] bg-pink-500/10 border border-pink-500/30 text-pink-300 px-2 py-0.5 rounded-full font-bold">
-                                        {ag === 'תינוקות' ? '🍼' : ag === '4+' ? '🎒' : '👶'} {ag}
+                                        {ag === 'תינוקות' ? '🍼' : ag === '4+' ? '🎒' : '👶'} {tv(ag)}
                                     </span>
                                 {/each}
                                 {#each s.languages as lang}
                                     <span class="text-[10px] bg-white/5 border border-white/10 text-gray-300 px-2 py-0.5 rounded-full">
-                                        🌐 {lang}
+                                        🌐 {tv(lang)}
                                     </span>
                                 {/each}
                             </div>
@@ -680,7 +694,7 @@
                                 <div class="flex flex-wrap gap-1 mb-2">
                                     {#each s.certifications as cert}
                                         <span class="inline-flex items-center gap-1 text-[10px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-md font-medium">
-                                            ✓ {cert}
+                                            ✓ {tv(cert)}
                                         </span>
                                     {/each}
                                 </div>
@@ -691,7 +705,7 @@
                                 <div class="flex flex-wrap gap-1 mb-3">
                                     {#each s.specialties.slice(0, 3) as spec}
                                         <span class="text-[10px] bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-md">
-                                            ⭐ {spec}
+                                            ⭐ {tv(spec)}
                                         </span>
                                     {/each}
                                     {#if s.specialties.length > 3}
@@ -703,15 +717,15 @@
                             <!-- זמינות שבועית - לוח 7×3 -->
                             <div class="mt-1">
                                 <div class="text-[10px] text-gray-500 mb-1.5 flex items-center gap-1">
-                                    <span>📅</span> זמינות שבועית
+                                    <span>📅</span> {$_('boards.babysitters.weekly_availability')}
                                 </div>
                                 <div class="grid gap-0.5" style="grid-template-columns: minmax(36px, auto) repeat(7, minmax(0, 1fr));">
                                     <div></div>
                                     {#each ['א','ב','ג','ד','ה','ו','ש'] as d}
-                                        <div class="text-center font-bold text-gray-400 text-[9px]">{d}</div>
+                                        <div class="text-center font-bold text-gray-400 text-[9px]">{$_('boards.' + DAY_KEY[d])}</div>
                                     {/each}
-                                    {#each ['בוקר','צהריים','ערב'] as slot, sIdx}
-                                        <div class="text-gray-400 text-[9px] self-center text-right pl-1">{slot}</div>
+                                    {#each ['slot_morning','slot_noon','slot_evening'] as slot, sIdx}
+                                        <div class="text-gray-400 text-[9px] self-center text-right pl-1">{$_('boards.' + slot)}</div>
                                         {#each [0,1,2,3,4,5,6] as dIdx}
                                             {@const isOn = availCells.includes(`${dIdx}-${sIdx}`)}
                                             <div class="aspect-square rounded {isOn
@@ -731,7 +745,7 @@
                                 💬 WhatsApp
                             </a>
                             <a href="tel:{s.phone}"
-                                class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white py-2.5 px-4 rounded-xl transition-colors text-sm" aria-label="חייג">
+                                class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white py-2.5 px-4 rounded-xl transition-colors text-sm" aria-label={$_('boards.call')}>
                                 📞
                             </a>
                         </div>
@@ -748,8 +762,8 @@
                             onclick={() => goToPage(currentPage - 1)}
                             disabled={currentPage === 1}
                             class="px-3 py-2 rounded-xl bg-[#0f172a] border border-white/10 text-white text-sm font-bold hover:border-pink-500/40 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
-                            aria-label="עמוד קודם"
-                        >→ הקודם</button>
+                            aria-label={$_('boards.prev_page_aria')}
+                        >{$_('boards.prev_page')}</button>
 
                         {#each Array.from({ length: totalPages }, (_, i) => i + 1) as p}
                             <button
@@ -758,7 +772,7 @@
                                     {currentPage === p
                                         ? 'bg-gradient-to-r from-pink-500 to-rose-600 text-white shadow-lg shadow-pink-500/30'
                                         : 'bg-[#0f172a] border border-white/10 text-white hover:border-pink-500/40'}"
-                                aria-label="עמוד {p}"
+                                aria-label={$_('boards.page_n', { values: { n: p } })}
                                 aria-current={currentPage === p ? 'page' : undefined}
                             >{p}</button>
                         {/each}
@@ -767,12 +781,12 @@
                             onclick={() => goToPage(currentPage + 1)}
                             disabled={currentPage === totalPages}
                             class="px-3 py-2 rounded-xl bg-[#0f172a] border border-white/10 text-white text-sm font-bold hover:border-pink-500/40 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
-                            aria-label="עמוד הבא"
-                        >הבא ←</button>
+                            aria-label={$_('boards.next_page_aria')}
+                        >{$_('boards.next_page')}</button>
                     </div>
 
                     <p class="text-gray-400 text-sm font-medium">
-                        עמוד <span class="text-white font-black">{currentPage}</span> מתוך <span class="text-white font-black">{totalPages}</span>
+                        {$_('boards.page_word')} <span class="text-white font-black">{currentPage}</span> {$_('boards.of_word')} <span class="text-white font-black">{totalPages}</span>
                     </p>
                 </div>
             {/if}
@@ -784,13 +798,13 @@
                 type="button"
                 onclick={() => typeof window !== 'undefined' && window.scrollTo({ top: 0, behavior: 'smooth' })}
                 class="text-gray-500 hover:text-white transition-colors cursor-pointer"
-            >↑ חזור לראש הדף</button>
+            >{$_('boards.back_to_top')}</button>
             <span class="text-gray-700">|</span>
             <button
                 type="button"
                 onclick={() => typeof window !== 'undefined' && window.history.back()}
                 class="text-gray-500 hover:text-white transition-colors cursor-pointer"
-            >← חזור אחורה</button>
+            >{$_('boards.back')}</button>
         </div>
     </div>
 </div>

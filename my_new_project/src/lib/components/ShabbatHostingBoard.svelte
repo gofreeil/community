@@ -2,6 +2,7 @@
     import { onMount } from 'svelte';
     import { neighborhoodState } from '$lib/neighborhoodState.svelte';
     import { getCoordsFor, type Coord } from '$lib/neighborhoodCoords';
+    import { _ } from 'svelte-i18n';
 
     interface DbItem {
         id: string;
@@ -74,7 +75,7 @@
         const h = Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;
         return 2 * R * Math.asin(Math.sqrt(h));
     }
-    const SECTION_TITLES = ['בשכונה שלי', 'בעיר שלי', 'בערים סביבי', 'ארצי'];
+    const SECTION_KEYS = ['section_my_neighborhood', 'section_my_city', 'section_nearby', 'section_national'];
     function sectionForItem(it: DbItem, uN: string, uC: string): number {
         const sCoord = getCoordsFor(it.neighborhood, it.city);
         const uCoord = getCoordsFor(uN, uC);
@@ -103,6 +104,16 @@
 
     function parseExtra(raw: string): Record<string, unknown> {
         try { return raw ? JSON.parse(raw) : {}; } catch { return {}; }
+    }
+
+
+    // ערכי נתונים (data values) מתורגמים בנקודת התצוגה בלבד - ההשוואות בקוד נשארות בעברית
+    const VALUE_KEYS: Record<string, string> = {
+        'ליל שבת': 'meal_friday', 'סעודת יום': 'meal_day', 'סעודה שלישית': 'meal_third', 'כל הסעודות': 'meal_all',
+        'משפחה': 'guest_family', 'זוג': 'guest_couple', 'יחיד/ה': 'guest_single', 'הכל מתאים': 'guest_any',
+    };
+    function tv(v: string): string {
+        return VALUE_KEYS[v] ? $_(`boards.values.${VALUE_KEYS[v]}`) : v;
     }
 
     function isHost(item: DbItem): boolean {
@@ -138,11 +149,11 @@
     function buildShareText(it: { label: string; city?: string; neighborhood?: string; description?: string }): { title: string; text: string; url: string } {
         const url = typeof window !== 'undefined' ? `${window.location.origin}/shabbat-hosting` : 'https://kehila-bashchuna.co.il/shabbat-hosting';
         const loc = [it.neighborhood, it.city].filter(Boolean).join(', ');
-        const lines = [`🍽 אירוח לשבת - ${it.label}`];
+        const lines = [`🍽 ${$_('boards.shabbat.share_label')} - ${it.label}`];
         if (loc) lines.push(`📍 ${loc}`);
         if (it.description) lines.push(it.description);
         const text = lines.join('\n');
-        return { title: 'אירוח לשבת - קהילה בשכונה', text, url };
+        return { title: $_('boards.shabbat.share_title'), text, url };
     }
     async function nativeShare(it: { id: string; label: string; city?: string; neighborhood?: string; description?: string }) {
         const payload = buildShareText(it);
@@ -226,11 +237,11 @@
                 requestStatus = 'idle';
             } else {
                 requestStatus = 'error';
-                requestErrorMsg = data.message ?? 'שגיאה לא ידועה';
+                requestErrorMsg = data.message ?? $_('boards.shabbat.err_unknown');
             }
         } catch {
             requestStatus = 'error';
-            requestErrorMsg = 'שגיאת תקשורת - נסה שוב';
+            requestErrorMsg = $_('boards.shabbat.err_network');
         }
     }
 
@@ -262,7 +273,7 @@
     let showFrozenInfoModal = $state(false);
 
     async function removeOwnAd(item: DbItem) {
-        if (!confirm('להסיר את המודעה מהלוח?')) return;
+        if (!confirm($_('boards.shabbat.confirm_remove'))) return;
         removingItemId = item.id;
         try {
             const res = await fetch(`/api/items/${item.id}`, {
@@ -275,10 +286,10 @@
                 removedItemIds = [...removedItemIds, item.id];
                 showFrozenInfoModal = true;
             } else {
-                alert(data.message ?? 'שגיאה בהסרה');
+                alert(data.message ?? $_('boards.shabbat.err_remove'));
             }
         } catch {
-            alert('שגיאת תקשורת - נסה שוב');
+            alert($_('boards.shabbat.err_network'));
         }
         removingItemId = null;
     }
@@ -302,11 +313,11 @@
                 setTimeout(() => { reportingItemId = null; reportStatus = 'idle'; }, 2500);
             } else {
                 reportStatus = 'error';
-                reportErrorMsg = data.message ?? 'שגיאה לא ידועה';
+                reportErrorMsg = data.message ?? $_('boards.shabbat.err_unknown');
             }
         } catch {
             reportStatus = 'error';
-            reportErrorMsg = 'שגיאת תקשורת - נסה שוב';
+            reportErrorMsg = $_('boards.shabbat.err_network');
         }
     }
 
@@ -332,8 +343,8 @@
         <button
             type="button"
             onclick={() => nativeShare(it)}
-            title="שיתוף"
-            aria-label="שיתוף"
+            title={$_('boards.share')}
+            aria-label={$_('boards.share')}
             class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold py-2.5 px-3 rounded-xl transition-colors"
         >
             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -350,8 +361,8 @@
                 <button type="button" onclick={() => shareTo('telegram', it)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">✈️ Telegram</button>
                 <button type="button" onclick={() => shareTo('facebook', it)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">📘 Facebook</button>
                 <button type="button" onclick={() => shareTo('x',        it)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">𝕏 Twitter</button>
-                <button type="button" onclick={() => shareTo('copy',     it)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">📋 העתק קישור</button>
-                <button type="button" onclick={() => shareMenuItemId = null} class="flex items-center justify-center text-gray-500 hover:text-gray-300 rounded-lg px-2.5 py-1 text-[10px] transition-colors">סגור</button>
+                <button type="button" onclick={() => shareTo('copy',     it)} class="flex items-center gap-2 text-right text-gray-200 hover:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-colors">📋 {$_('boards.copy_link')}</button>
+                <button type="button" onclick={() => shareMenuItemId = null} class="flex items-center justify-center text-gray-500 hover:text-gray-300 rounded-lg px-2.5 py-1 text-[10px] transition-colors">{$_('boards.close')}</button>
             </div>
         {/if}
     </div>
@@ -361,13 +372,13 @@
     <!-- Header -->
     <div class="max-w-4xl mx-auto px-4 text-center mb-6">
         <div class="relative mx-auto mb-3 inline-block" style="mask-image: radial-gradient(ellipse 90% 85% at center, black 55%, transparent 88%); -webkit-mask-image: radial-gradient(ellipse 90% 85% at center, black 55%, transparent 88%);">
-            <img src="/images/shabat.png" alt="שבת" class="h-48 object-contain" />
+            <img src="/images/shabat.png" alt={$_('boards.shabbat.alt_shabbat')} class="h-48 object-contain" />
         </div>
         <h1 class="text-3xl font-black text-white mb-2">
-            {city ? `אירוח לשבת ב${city}` : 'לוח אירוח לשבת'}
+            {city ? $_('boards.shabbat.title_city', { values: { city } }) : $_('boards.shabbat.title_national')}
         </h1>
         <p class="text-gray-400 mb-3">
-            {city ? 'מארחים ומתארחים בעיר שלך' : 'לוח ארצי - מציעים לארח ומחפשים להתארח לשבת'}
+            {city ? $_('boards.shabbat.sub_city') : $_('boards.shabbat.sub_national')}
         </p>
     </div>
 
@@ -378,7 +389,7 @@
             class="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold px-8 py-3 rounded-full shadow-lg hover:shadow-amber-500/30 transition-all hover:scale-105 text-sm"
         >
             <span class="font-black text-lg leading-none">+</span>
-            הוסף הזמנה או בקשה לאירוח
+            {$_('boards.shabbat.add_cta')}
         </a>
     </div>
 
@@ -387,12 +398,12 @@
         {#if isBanned}
             <div class="flex flex-col items-center justify-center py-16 text-center gap-4">
                 <span class="text-6xl">🚫</span>
-                <h2 class="text-xl font-black text-red-400">חשבונך חסום מלוח האירוח</h2>
+                <h2 class="text-xl font-black text-red-400">{$_('boards.shabbat.banned_title')}</h2>
                 <p class="text-gray-400 text-sm max-w-sm leading-relaxed">
-                    שני מארחים דיווחו על התנהגות לא ראויה מצדך.<br>
-                    אינך יכול לצפות ברשימת המארחים ולא להופיע ברשימת מבקשי האירוח.
+                    {$_('boards.shabbat.banned_line1')}<br>
+                    {$_('boards.shabbat.banned_line2')}
                 </p>
-                <a href="/" class="text-gray-500 hover:text-white text-sm transition-colors mt-2">← חזרה לדף הראשי</a>
+                <a href="/" class="text-gray-500 hover:text-white text-sm transition-colors mt-2">{$_('boards.shabbat.back_home')}</a>
             </div>
 
         {:else}
@@ -400,16 +411,16 @@
 
                 <!-- טור ימין: מחפשים להתארח -->
                 <div>
-                    <h2 class="text-center text-sm font-bold text-cyan-400 mb-3 tracking-wide">מחפשים להתארח</h2>
+                    <h2 class="text-center text-sm font-bold text-cyan-400 mb-3 tracking-wide">{$_('boards.shabbat.guests_col')}</h2>
                     <div class="flex flex-col gap-3">
                         {#if hasReal}
                             {#if filteredGuests.length === 0}
-                                <p class="text-center text-gray-500 text-sm py-8">אין מחפשים כרגע</p>
+                                <p class="text-center text-gray-500 text-sm py-8">{$_('boards.shabbat.no_guests')}</p>
                             {:else}
                                 {#each guestPageGroups as group (group.section + '-g-' + guestPage)}
                                 <div class="flex items-center gap-3 mt-4 mb-2 first:mt-0">
                                     <h3 class="text-white font-black text-lg md:text-xl whitespace-nowrap">
-                                        {SECTION_TITLES[group.section]}
+                                        {$_('boards.' + SECTION_KEYS[group.section])}
                                         {#if group.section === 0 && neighborhoodState.neighborhood}
                                             <span class="text-cyan-300 font-bold">- {neighborhoodState.neighborhood}</span>
                                         {:else if group.section === 1 && neighborhoodState.city}
@@ -439,9 +450,9 @@
                                         </div>
                                         <div class="p-3">
                                             <div class="flex flex-wrap gap-1.5 mb-2">
-                                                {#if meal}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full"><img src="/icons/shavat-shalom.png" class="w-4 h-4 inline-block align-middle" alt="שבת שלום" /> {meal}</span>{/if}
-                                                {#if capacity}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full">👥 עד {capacity}</span>{/if}
-                                                {#if guest_type}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full">{guest_type}</span>{/if}
+                                                {#if meal}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full"><img src="/icons/shavat-shalom.png" class="w-4 h-4 inline-block align-middle" alt={$_('boards.shabbat.alt_shabbat_shalom')} /> {tv(meal)}</span>{/if}
+                                                {#if capacity}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full">👥 {$_('boards.shabbat.up_to', { values: { n: capacity } })}</span>{/if}
+                                                {#if guest_type}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full">{tv(guest_type)}</span>{/if}
                                                 {#if food_style}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full">🍽 {food_style}</span>{/if}
                                             </div>
                                             {#if notes}<p class="text-gray-300 text-base leading-relaxed mb-2">{notes}</p>{/if}
@@ -455,20 +466,20 @@
                                                 {#if reportingItemId === item.id}
                                                     <div class="mt-2 p-2 bg-red-900/20 border border-red-500/30 rounded-xl text-center space-y-2">
                                                         {#if reportStatus === 'success'}
-                                                            <p class="text-green-400 text-xs font-bold">✓ הדיווח נשלח בהצלחה</p>
+                                                            <p class="text-green-400 text-xs font-bold">{$_('boards.shabbat.report_success')}</p>
                                                         {:else if reportStatus === 'error'}
                                                             <p class="text-red-400 text-xs">{reportErrorMsg}</p>
-                                                            <button onclick={() => { reportingItemId = null; reportStatus = 'idle'; }} class="text-gray-400 text-xs underline">סגור</button>
+                                                            <button onclick={() => { reportingItemId = null; reportStatus = 'idle'; }} class="text-gray-400 text-xs underline">{$_('boards.close')}</button>
                                                         {:else}
-                                                            <p class="text-red-300 text-xs font-bold">דיווח על אורח לא ראוי</p>
-                                                            <p class="text-gray-400 text-[10px]">פעולה זו תישמר. אם 2 מארחים ידווחו - האורח יחסם.</p>
+                                                            <p class="text-red-300 text-xs font-bold">{$_('boards.shabbat.report_title')}</p>
+                                                            <p class="text-gray-400 text-[10px]">{$_('boards.shabbat.report_note')}</p>
                                                             <div class="flex gap-2 justify-center">
                                                                 <button
                                                                     onclick={() => submitReport(item)}
                                                                     disabled={reportStatus === 'sending'}
                                                                     class="bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors"
-                                                                >{reportStatus === 'sending' ? 'שולח...' : '✓ אשר דיווח'}</button>
-                                                                <button onclick={() => { reportingItemId = null; reportStatus = 'idle'; }} class="bg-white/10 hover:bg-white/20 text-white text-xs px-3 py-1.5 rounded-lg transition-colors">ביטול</button>
+                                                                >{reportStatus === 'sending' ? $_('boards.shabbat.sending') : $_('boards.shabbat.confirm_report')}</button>
+                                                                <button onclick={() => { reportingItemId = null; reportStatus = 'idle'; }} class="bg-white/10 hover:bg-white/20 text-white text-xs px-3 py-1.5 rounded-lg transition-colors">{$_('boards.shabbat.cancel')}</button>
                                                             </div>
                                                         {/if}
                                                     </div>
@@ -476,7 +487,7 @@
                                                     <button
                                                         onclick={() => { reportingItemId = item.id; reportStatus = 'idle'; }}
                                                         class="mt-1.5 w-full text-[10px] text-red-400/60 hover:text-red-400 transition-colors"
-                                                    >🚩 דווח על אורח זה כלא ראוי</button>
+                                                    >{$_('boards.shabbat.report_button')}</button>
                                                 {/if}
                                             {/if}
                                         </div>
@@ -486,7 +497,7 @@
                                 {#if guestTotalPages > 1}
                                     <div class="flex items-center justify-center gap-2 pt-2">
                                         <button onclick={() => { guestPage = Math.max(1, guestPage - 1); }} disabled={guestPage === 1} class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-30 text-white text-sm transition-colors">‹</button>
-                                        <span class="text-xs text-gray-400">עמוד {guestPage} מתוך {guestTotalPages}</span>
+                                        <span class="text-xs text-gray-400">{$_('boards.page_of', { values: { current: guestPage, total: guestTotalPages } })}</span>
                                         <button onclick={() => { guestPage = Math.min(guestTotalPages, guestPage + 1); }} disabled={guestPage === guestTotalPages} class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-30 text-white text-sm transition-colors">›</button>
                                     </div>
                                 {/if}
@@ -494,7 +505,7 @@
                         {:else}
                             {#each mockGuestsFiltered as m}
                                 <div class="rounded-2xl bg-[#0f172a] border border-cyan-500/30 overflow-hidden shadow-xl relative">
-                                    <div class="absolute top-2 left-2 z-10 text-[10px] font-bold bg-black/50 text-amber-300 px-2 py-0.5 rounded-full">דוגמה</div>
+                                    <div class="absolute top-2 left-2 z-10 text-[10px] font-bold bg-black/50 text-amber-300 px-2 py-0.5 rounded-full">{$_('boards.shabbat.example')}</div>
                                     <div class="border-b border-cyan-500/20 p-3 flex items-center gap-3">
                                         <div class="w-11 h-11 rounded-full bg-cyan-500/15 flex items-center justify-center text-xl flex-shrink-0">🎒</div>
                                         <div class="flex-1 min-w-0">
@@ -505,14 +516,14 @@
                                     </div>
                                     <div class="p-3">
                                         <div class="flex flex-wrap gap-1.5 mb-2">
-                                            {#if m.meal}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full"><img src="/icons/shavat-shalom.png" class="w-4 h-4 inline-block align-middle" alt="שבת שלום" /> {m.meal}</span>{/if}
-                                            {#if m.capacity}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full">👥 עד {m.capacity}</span>{/if}
-                                            {#if m.guest_type}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full">{m.guest_type}</span>{/if}
+                                            {#if m.meal}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full"><img src="/icons/shavat-shalom.png" class="w-4 h-4 inline-block align-middle" alt={$_('boards.shabbat.alt_shabbat_shalom')} /> {tv(m.meal)}</span>{/if}
+                                            {#if m.capacity}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full">👥 {$_('boards.shabbat.up_to', { values: { n: m.capacity } })}</span>{/if}
+                                            {#if m.guest_type}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full">{tv(m.guest_type)}</span>{/if}
                                         </div>
                                         <p class="text-gray-300 text-base leading-relaxed mb-2">{m.notes}</p>
                                         <div class="flex gap-2 mb-2">
                                             {@render shareButton({ id: `mockg-${m.label}`, label: m.label, city: m.city, neighborhood: m.neighborhood })}
-                                            <a href={waLink(m.phone)} target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 rounded-xl transition-colors text-base">💬 צור קשר</a>
+                                            <a href={waLink(m.phone)} target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 rounded-xl transition-colors text-base">💬 {$_('boards.shabbat.contact_btn')}</a>
                                             <a href="tel:{m.phone}" class="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold py-2.5 px-3 rounded-xl transition-colors text-base">📞</a>
                                         </div>
                                     </div>
@@ -524,16 +535,16 @@
 
                 <!-- טור שמאל: מציעים לארח -->
                 <div>
-                    <h2 class="text-center text-sm font-bold text-amber-400 mb-3 tracking-wide">מציעים לארח</h2>
+                    <h2 class="text-center text-sm font-bold text-amber-400 mb-3 tracking-wide">{$_('boards.shabbat.hosts_col')}</h2>
                     <div class="flex flex-col gap-3">
                         {#if hasReal}
                             {#if filteredHosts.length === 0}
-                                <p class="text-center text-gray-500 text-sm py-8">אין מארחים כרגע</p>
+                                <p class="text-center text-gray-500 text-sm py-8">{$_('boards.shabbat.no_hosts')}</p>
                             {:else}
                                 {#each hostPageGroups as group (group.section + '-h-' + hostPage)}
                                 <div class="flex items-center gap-3 mt-4 mb-2 first:mt-0">
                                     <h3 class="text-white font-black text-lg md:text-xl whitespace-nowrap">
-                                        {SECTION_TITLES[group.section]}
+                                        {$_('boards.' + SECTION_KEYS[group.section])}
                                         {#if group.section === 0 && neighborhoodState.neighborhood}
                                             <span class="text-amber-300 font-bold">- {neighborhoodState.neighborhood}</span>
                                         {:else if group.section === 1 && neighborhoodState.city}
@@ -565,16 +576,16 @@
                                             </div>
                                             <div class="flex items-center gap-1.5 flex-shrink-0">
                                                 {#if isOwnCard}
-                                                    <span class="text-[10px] font-bold bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full">הכרטיס שלך</span>
+                                                    <span class="text-[10px] font-bold bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full">{$_('boards.shabbat.your_card')}</span>
                                                 {/if}
                                                 {#if dateStr}<span class="text-xs text-gray-500">{dateStr}</span>{/if}
                                             </div>
                                         </div>
                                         <div class="p-3">
                                             <div class="flex flex-wrap gap-1.5 mb-2">
-                                                {#if meal}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full"><img src="/icons/shavat-shalom.png" class="w-4 h-4 inline-block align-middle" alt="שבת שלום" /> {meal}</span>{/if}
-                                                {#if capacity}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full">👥 עד {capacity}</span>{/if}
-                                                {#if guest_type}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full">{guest_type}</span>{/if}
+                                                {#if meal}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full"><img src="/icons/shavat-shalom.png" class="w-4 h-4 inline-block align-middle" alt={$_('boards.shabbat.alt_shabbat_shalom')} /> {tv(meal)}</span>{/if}
+                                                {#if capacity}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full">👥 {$_('boards.shabbat.up_to', { values: { n: capacity } })}</span>{/if}
+                                                {#if guest_type}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full">{tv(guest_type)}</span>{/if}
                                                 {#if food_style}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full">🍽 {food_style}</span>{/if}
                                             </div>
                                             {#if notes}<p class="text-gray-300 text-base leading-relaxed mb-2">{notes}</p>{/if}
@@ -592,13 +603,13 @@
                                                         onclick={() => removeOwnAd(item)}
                                                         disabled={removingItemId === item.id}
                                                         class="flex items-center justify-center bg-white/10 hover:bg-red-600/30 text-gray-300 hover:text-red-300 font-bold py-2 px-3 rounded-xl transition-colors text-sm disabled:opacity-50"
-                                                        title="הסר את המודעה מהלוח - תועבר לפרופיל לסטטוס 'מוקפא'"
-                                                    >{removingItemId === item.id ? '...' : '🗑 הסר'}</button>
+                                                        title={$_('boards.shabbat.remove_title')}
+                                                    >{removingItemId === item.id ? '...' : '🗑 ' + $_('boards.shabbat.remove')}</button>
                                                 </div>
                                                 <!-- בקשות ממתינות -->
                                                 {#if hostPendingReqs.length > 0}
                                                     <div class="mt-2 rounded-xl bg-purple-900/20 border border-purple-500/30 p-3 space-y-2">
-                                                        <p class="text-purple-300 text-xs font-bold">📬 בקשות אירוח ממתינות ({hostPendingReqs.length})</p>
+                                                        <p class="text-purple-300 text-xs font-bold">📬 {$_('boards.shabbat.pending_requests', { values: { n: hostPendingReqs.length } })}</p>
                                                         {#each hostPendingReqs as req}
                                                             <div class="bg-white/5 rounded-lg p-2.5 space-y-1.5">
                                                                 <p class="text-white text-xs font-bold">{req.guestName}</p>
@@ -608,23 +619,23 @@
                                                                         onclick={() => handleApprove(req, 'approved')}
                                                                         disabled={approvingRequestId === req.requestItemId}
                                                                         class="flex-1 bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white text-xs font-bold py-1.5 rounded-lg transition-colors"
-                                                                    >{approvingRequestId === req.requestItemId ? '...' : '✓ אשר'}</button>
+                                                                    >{approvingRequestId === req.requestItemId ? '...' : $_('boards.shabbat.approve')}</button>
                                                                     <button
                                                                         onclick={() => handleApprove(req, 'rejected')}
                                                                         disabled={approvingRequestId === req.requestItemId}
                                                                         class="flex-1 bg-white/10 hover:bg-white/20 disabled:opacity-50 text-gray-300 text-xs py-1.5 rounded-lg transition-colors"
-                                                                    >{approvingRequestId === req.requestItemId ? '...' : '✗ דחה'}</button>
+                                                                    >{approvingRequestId === req.requestItemId ? '...' : $_('boards.shabbat.reject')}</button>
                                                                 </div>
                                                             </div>
                                                         {/each}
                                                     </div>
                                                 {:else}
-                                                    <p class="text-[10px] text-gray-500 text-center">אין בקשות ממתינות כרגע</p>
+                                                    <p class="text-[10px] text-gray-500 text-center">{$_('boards.shabbat.no_pending')}</p>
                                                 {/if}
                                             {:else if isApproved}
                                                 <!-- אורח שאושר - רואה טלפון -->
                                                 <div class="mb-1">
-                                                    <p class="text-green-400 text-[11px] font-bold text-center mb-1.5">✅ בקשתך אושרה - הנה פרטי הקשר</p>
+                                                    <p class="text-green-400 text-[11px] font-bold text-center mb-1.5">{$_('boards.shabbat.approved_msg')}</p>
                                                     <div class="flex gap-2">
                                                         {@render shareButton(item)}
                                                         <a href={waLink(item.phone)} target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 rounded-xl transition-colors text-base">💬 WhatsApp</a>
@@ -635,26 +646,26 @@
                                                 <!-- בקשה ממתינה לאישור -->
                                                 <div class="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-yellow-900/20 border border-yellow-500/30">
                                                     <span class="text-yellow-400 text-sm">⏳</span>
-                                                    <span class="text-yellow-300 text-xs font-bold">ממתין לאישור המארח</span>
+                                                    <span class="text-yellow-300 text-xs font-bold">{$_('boards.shabbat.pending_msg')}</span>
                                                 </div>
                                             {:else if isRejected}
                                                 <!-- בקשה נדחתה -->
                                                 <div class="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-red-900/10 border border-red-500/20">
                                                     <span class="text-red-400 text-sm">✗</span>
-                                                    <span class="text-red-300/70 text-xs">הבקשה נדחתה</span>
+                                                    <span class="text-red-300/70 text-xs">{$_('boards.shabbat.rejected_msg')}</span>
                                                 </div>
                                             {:else if !userId}
                                                 <!-- לא מחובר -->
                                                 <a href="/login" class="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-white/5 border border-white/15 text-gray-400 hover:text-white text-xs transition-colors">
-                                                    🔐 התחבר כדי לשלוח בקשת אירוח
+                                                    {$_('boards.shabbat.login_to_request')}
                                                 </a>
                                             {:else if requestingItemId === item.id}
                                                 <!-- טופס בקשה -->
                                                 <div class="rounded-xl bg-purple-900/15 border border-purple-500/30 p-3 space-y-2">
-                                                    <p class="text-purple-300 text-xs font-bold text-center">🤝 שלח בקשת אירוח</p>
+                                                    <p class="text-purple-300 text-xs font-bold text-center">{$_('boards.shabbat.send_request_title')}</p>
                                                     <textarea
                                                         bind:value={requestMessage}
-                                                        placeholder="הודעה אישית למארח (לא חובה)..."
+                                                        placeholder={$_('boards.shabbat.message_placeholder')}
                                                         rows="2"
                                                         class="w-full bg-white/5 border border-white/15 rounded-lg text-white text-xs p-2 resize-none placeholder:text-gray-500 focus:outline-none focus:border-purple-400"
                                                     ></textarea>
@@ -666,11 +677,11 @@
                                                             onclick={() => sendRequest(item)}
                                                             disabled={requestStatus === 'sending'}
                                                             class="flex-1 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white text-xs font-bold py-2 rounded-lg transition-colors"
-                                                        >{requestStatus === 'sending' ? 'שולח...' : '✓ שלח בקשה'}</button>
+                                                        >{requestStatus === 'sending' ? $_('boards.shabbat.sending') : $_('boards.shabbat.send_request')}</button>
                                                         <button
                                                             onclick={() => { requestingItemId = null; requestMessage = ''; requestStatus = 'idle'; }}
                                                             class="bg-white/10 hover:bg-white/20 text-gray-300 text-xs py-2 px-3 rounded-lg transition-colors"
-                                                        >ביטול</button>
+                                                        >{$_('boards.shabbat.cancel')}</button>
                                                     </div>
                                                 </div>
                                             {:else}
@@ -679,12 +690,12 @@
                                                     onclick={() => { requestingItemId = item.id; requestStatus = 'idle'; requestErrorMsg = ''; requestMessage = ''; }}
                                                     class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-purple-600/80 hover:bg-purple-600 text-white font-bold text-sm transition-colors"
                                                 >
-                                                    🤝 שלח בקשת אירוח
+                                                    {$_('boards.shabbat.send_request_title')}
                                                 </button>
-                                                <p class="text-[10px] text-gray-500 text-center mt-1">הטלפון יחשף לאחר אישור המארח</p>
+                                                <p class="text-[10px] text-gray-500 text-center mt-1">{$_('boards.shabbat.phone_after_approval')}</p>
                                             {/if}
 
-                                            <p class="text-[10px] text-amber-500/70 text-center mt-2">⚠️ אין להגיע ללא תיאום מראש</p>
+                                            <p class="text-[10px] text-amber-500/70 text-center mt-2">{$_('boards.shabbat.no_show_warning')}</p>
                                         </div>
                                     </div>
                                 {/each}
@@ -692,7 +703,7 @@
                                 {#if hostTotalPages > 1}
                                     <div class="flex items-center justify-center gap-2 pt-2">
                                         <button onclick={() => { hostPage = Math.max(1, hostPage - 1); }} disabled={hostPage === 1} class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-30 text-white text-sm transition-colors">‹</button>
-                                        <span class="text-xs text-gray-400">עמוד {hostPage} מתוך {hostTotalPages}</span>
+                                        <span class="text-xs text-gray-400">{$_('boards.page_of', { values: { current: hostPage, total: hostTotalPages } })}</span>
                                         <button onclick={() => { hostPage = Math.min(hostTotalPages, hostPage + 1); }} disabled={hostPage === hostTotalPages} class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-30 text-white text-sm transition-colors">›</button>
                                     </div>
                                 {/if}
@@ -700,7 +711,7 @@
                         {:else}
                             {#each mockHostsFiltered as m}
                                 <div class="rounded-2xl bg-[#0f172a] border border-amber-500/30 overflow-hidden shadow-xl relative">
-                                    <div class="absolute top-2 left-2 z-10 text-[10px] font-bold bg-black/50 text-amber-300 px-2 py-0.5 rounded-full">דוגמה</div>
+                                    <div class="absolute top-2 left-2 z-10 text-[10px] font-bold bg-black/50 text-amber-300 px-2 py-0.5 rounded-full">{$_('boards.shabbat.example')}</div>
                                     <div class="border-b border-amber-500/20 p-3 flex items-center gap-3">
                                         <div class="w-11 h-11 rounded-full bg-amber-500/15 flex items-center justify-center text-xl flex-shrink-0">🏠</div>
                                         <div class="flex-1 min-w-0">
@@ -711,19 +722,19 @@
                                     </div>
                                     <div class="p-3">
                                         <div class="flex flex-wrap gap-1.5 mb-2">
-                                            {#if m.meal}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full"><img src="/icons/shavat-shalom.png" class="w-4 h-4 inline-block align-middle" alt="שבת שלום" /> {m.meal}</span>{/if}
-                                            {#if m.capacity}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full">👥 עד {m.capacity}</span>{/if}
-                                            {#if m.guest_type}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full">{m.guest_type}</span>{/if}
+                                            {#if m.meal}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full"><img src="/icons/shavat-shalom.png" class="w-4 h-4 inline-block align-middle" alt={$_('boards.shabbat.alt_shabbat_shalom')} /> {tv(m.meal)}</span>{/if}
+                                            {#if m.capacity}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full">👥 {$_('boards.shabbat.up_to', { values: { n: m.capacity } })}</span>{/if}
+                                            {#if m.guest_type}<span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-2.5 py-1 rounded-full">{tv(m.guest_type)}</span>{/if}
                                         </div>
                                         <p class="text-gray-300 text-base leading-relaxed mb-2">{m.notes}</p>
                                         <div class="flex gap-2">
                                             {@render shareButton({ id: `mockh-${m.label}`, label: m.label, city: m.city, neighborhood: m.neighborhood })}
                                             <button disabled class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-purple-600/50 text-white/60 font-bold text-sm cursor-default">
-                                                🤝 שלח בקשת אירוח
+                                                {$_('boards.shabbat.send_request_title')}
                                             </button>
                                         </div>
-                                        <p class="text-[10px] text-gray-500 text-center mt-1">הטלפון יחשף לאחר אישור המארח</p>
-                                        <p class="text-[10px] text-amber-500/70 text-center mt-1">⚠️ אין להגיע ללא תיאום מראש</p>
+                                        <p class="text-[10px] text-gray-500 text-center mt-1">{$_('boards.shabbat.phone_after_approval')}</p>
+                                        <p class="text-[10px] text-amber-500/70 text-center mt-1">{$_('boards.shabbat.no_show_warning')}</p>
                                     </div>
                                 </div>
                             {/each}
@@ -739,37 +750,37 @@
                     class="w-full flex items-center justify-between p-4 text-right hover:bg-white/3 transition-colors"
                     onclick={() => showGuide = !showGuide}
                 >
-                    <span class="text-purple-300 font-bold text-base md:text-lg">📖 כיצד מערכת האירוח עובדת?</span>
-                    <span class="text-gray-500 text-sm">{showGuide ? '▲ סגור' : '▼ הצג מדריך'}</span>
+                    <span class="text-purple-300 font-bold text-base md:text-lg">{$_('boards.shabbat.guide_title')}</span>
+                    <span class="text-gray-500 text-sm">{showGuide ? $_('boards.shabbat.guide_close') : $_('boards.shabbat.guide_open')}</span>
                 </button>
                 {#if showGuide}
                     <div class="px-4 pb-5 space-y-4 border-t border-purple-500/10">
                         <div class="flex gap-3 pt-4">
                             <span class="text-2xl flex-shrink-0">🏠</span>
                             <div>
-                                <p class="text-amber-300 font-bold text-base mb-1">שלב 1 - המארח מפרסם הזמנה</p>
-                                <p class="text-gray-300 text-sm leading-relaxed">המארח מפרסם כרטיס עם סגנון הסעודה, כמות המקומות וסגנון האירוח. הטלפון שלו <strong class="text-white/70">אינו מוצג</strong> ברבים - רק לאורחים שאישר.</p>
+                                <p class="text-amber-300 font-bold text-base mb-1">{$_('boards.shabbat.step1_title')}</p>
+                                <p class="text-gray-300 text-sm leading-relaxed">{@html $_('boards.shabbat.step1_body')}</p>
                             </div>
                         </div>
                         <div class="flex gap-3">
                             <span class="text-2xl flex-shrink-0">🤝</span>
                             <div>
-                                <p class="text-cyan-300 font-bold text-base mb-1">שלב 2 - האורח שולח בקשה</p>
-                                <p class="text-gray-300 text-sm leading-relaxed">האורח לוחץ על "שלח בקשת אירוח" ויכול לצרף הודעה קצרה. הבקשה מגיעה למארח בלבד.</p>
+                                <p class="text-cyan-300 font-bold text-base mb-1">{$_('boards.shabbat.step2_title')}</p>
+                                <p class="text-gray-300 text-sm leading-relaxed">{$_('boards.shabbat.step2_body')}</p>
                             </div>
                         </div>
                         <div class="flex gap-3">
                             <span class="text-2xl flex-shrink-0">✅</span>
                             <div>
-                                <p class="text-green-300 font-bold text-base mb-1">שלב 3 - המארח מאשר ומגלה טלפון</p>
-                                <p class="text-gray-300 text-sm leading-relaxed">המארח רואה את הבקשות על הכרטיס שלו ויכול לאשר או לדחות. לאחר האישור - הטלפון נחשף לאותו אורח בלבד.</p>
+                                <p class="text-green-300 font-bold text-base mb-1">{$_('boards.shabbat.step3_title')}</p>
+                                <p class="text-gray-300 text-sm leading-relaxed">{$_('boards.shabbat.step3_body')}</p>
                             </div>
                         </div>
                         <div class="flex gap-3">
                             <span class="text-2xl flex-shrink-0">🚩</span>
                             <div>
-                                <p class="text-red-300 font-bold text-base mb-1">שלב 4 - דיווח על אורח לא ראוי</p>
-                                <p class="text-gray-300 text-sm leading-relaxed">מארח שאישר אורח ואז חווה התנהגות לא ראויה (ביטול ברגע האחרון, אי-הגעה, התנהגות פוגענית) יכול לדווח עליו. כאשר <strong class="text-white/70">שני מארחים שונים</strong> ידווחו - האורח יחסם לצמיתות מלוח המארחים.</p>
+                                <p class="text-red-300 font-bold text-base mb-1">{$_('boards.shabbat.step4_title')}</p>
+                                <p class="text-gray-300 text-sm leading-relaxed">{@html $_('boards.shabbat.step4_body')}</p>
                             </div>
                         </div>
                     </div>
@@ -780,9 +791,9 @@
         <!-- Back link -->
         <div class="text-center mt-8 flex flex-wrap justify-center gap-4">
             {#if city}
-                <a href="/shabbat-hosting" class="text-amber-400 hover:text-amber-300 transition-colors text-sm">← לוח ארצי</a>
+                <a href="/shabbat-hosting" class="text-amber-400 hover:text-amber-300 transition-colors text-sm">{$_('boards.shabbat.national_board')}</a>
             {/if}
-            <a href="/" class="text-gray-500 hover:text-white transition-colors text-sm">← חזרה לדף הראשי</a>
+            <a href="/" class="text-gray-500 hover:text-white transition-colors text-sm">{$_('boards.shabbat.back_home')}</a>
         </div>
     </div>
 </div>
@@ -800,25 +811,23 @@
             role="document"
         >
             <div class="text-5xl mb-3">❄️</div>
-            <h3 class="text-blue-300 font-black text-lg mb-2">המודעה הוקפאה</h3>
+            <h3 class="text-blue-300 font-black text-lg mb-2">{$_('boards.shabbat.frozen_title')}</h3>
             <p class="text-gray-300 text-sm leading-relaxed mb-4">
-                המודעה שלך הוסרה מהלוח הציבורי ונמצאת בסטטוס <strong class="text-blue-200">"לא פעילה"</strong> בדף הפרופיל שלך.
-                <br>
-                משם תוכל <strong class="text-white">לפרסם אותה שנית</strong> או <strong class="text-white">למחוק אותה לצמיתות</strong>.
+                {@html $_('boards.shabbat.frozen_body')}
             </p>
             <div class="flex flex-col gap-2">
                 <a
                     href="/profile"
                     class="block w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-black py-2.5 rounded-xl transition-colors text-sm"
                 >
-                    👤 פתח את דף הפרופיל
+                    {$_('boards.shabbat.open_profile')}
                 </a>
                 <button
                     type="button"
                     onclick={() => (showFrozenInfoModal = false)}
                     class="text-gray-400 hover:text-white text-xs font-bold py-2 transition-colors"
                 >
-                    סגור
+                    {$_('boards.close')}
                 </button>
             </div>
         </div>
