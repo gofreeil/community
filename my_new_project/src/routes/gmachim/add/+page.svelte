@@ -44,6 +44,11 @@
     let streetInList = $state(false);
     let addressResolved = $derived(streetInList && buildingNum.trim() !== '');
 
+    // יישוב בלי רשימת רחובות ובלי שכונות (כמו כפר תפוח): אי אפשר לאמת כתובת ואין
+    // שכונות מובחנות - הפין הופך לחובה, אחרת כל הגמ"חים נערמים על מרכז היישוב.
+    let cityHasStreetList = $state(false);
+    let streetListLoading = $state(true);
+
     function addTag() {
         const raw = tagInput.trim().replace(/^#+/, '').trim();
         if (raw && !tags.includes(raw)) {
@@ -200,6 +205,14 @@
 
     let neighborhoodsForCity = $derived(effectiveNeighborhoods(city, (data as any).approvedNeighborhoods));
 
+    // "יש שכונות אמיתיות" = מעבר ל'מרכז'/ברירת המחדל הגלובלית
+    const cityHasNeighborhoods = $derived(
+        neighborhoodsForCity.filter(n => n && n !== 'מרכז' && n !== DEFAULT_NEIGHBORHOOD).length > 0,
+    );
+    const forceMapPin = $derived(!streetListLoading && !cityHasStreetList && !cityHasNeighborhoods);
+    // כשהמפה חובה - פותחים אותה מיד
+    $effect(() => { if (forceMapPin) showMap = true; });
+
     // אם משתנה עיר - איפוס לשכונה הראשונה אם הקיימת לא תואמת
     $effect(() => {
         if (neighborhoodsForCity.length > 0 && !neighborhoodsForCity.includes(neighborhood)) {
@@ -214,6 +227,11 @@
         if (!buildingNum.trim())  return { field: 'buildingNum',  message: 'רק מספר הבניין חסר - בלעדיו קשה למצוא את הכתובת' };
         if (!city.trim())         return { field: 'city',         message: 'צריך לבחור עיר מהרשימה' };
         if (!neighborhood.trim()) return { field: 'neighborhood', message: 'צריך לבחור שכונה מהרשימה' };
+        // ביישוב בלי רחובות/שכונות - חובה פין, אחרת הגמ"ח ייעֶרם על מרכז היישוב
+        if (forceMapPin && !(pinLat != null && pinLng != null)) {
+            showMap = true;
+            return { field: 'street', message: '📍 ביישוב זה אין רשימת רחובות - חובה לסמן את מיקום הגמ"ח על המפה' };
+        }
         if (!phone.trim())        return { field: 'phone',        message: 'רק טלפון ליצירת קשר חסר - בלעדיו לא יוכלו לפנות אליכם' };
         return null;
     }
@@ -399,7 +417,7 @@
                     <div>
                         <label for="street" class="text-white text-sm font-bold mb-1 block">רחוב *</label>
                         <!-- בחירה מרשימת הרחובות הרשמית של העיר - איות אחיד; הקלדה חופשית עדיין אפשרית -->
-                        <StreetPicker {city} value={street} withHouseNumber={false} onValueChange={(v) => (street = v)} onResolvedChange={(v) => (streetInList = v)} />
+                        <StreetPicker {city} value={street} withHouseNumber={false} onValueChange={(v) => (street = v)} onResolvedChange={(v) => (streetInList = v)} onStreetListChange={(info) => { cityHasStreetList = info.hasList; streetListLoading = info.loading; }} />
                         <input type="hidden" name="street" value={street} />
                     </div>
                     <div>
@@ -428,11 +446,18 @@
                     <textarea id="arrivalNotes" name="arrivalNotes" bind:value={arrivalNotes} rows="2" placeholder="לדוגמה: כנסו דרך הכניסה הצדדית" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" style="color-scheme: dark;"></textarea>
                 </div>
 
-                <!-- סימון על המפה - מוצג רק כשהכתובת לא נפתרה (רחוב לא מהרשימה / בלי מספר בניין) -->
-                {#if !addressResolved}
+                <!-- סימון על המפה - מוצג כשהכתובת לא נפתרה, וחובה ביישוב בלי רחובות/שכונות -->
+                {#if !addressResolved || forceMapPin}
                     <div>
-                        <p class="text-white text-sm font-bold mb-1">לא מצאתם את הכתובת המדויקת? סמנו על המפה</p>
-                        <p class="text-gray-400 text-xs mb-2">כשהרחוב לא ברשימה או חסר מספר בניין - סימון על המפה יעזור לאתר אתכם.</p>
+                        {#if forceMapPin}
+                            <p class="mb-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs font-bold text-amber-200 leading-relaxed">
+                                📍 ביישוב זה אין רשימת רחובות - סמנו את מיקום הגמ"ח על המפה (חובה).
+                                כך הוא יופיע במקומו האמיתי ולא ייעֶרם עם השאר על מרכז היישוב.
+                            </p>
+                        {:else}
+                            <p class="text-white text-sm font-bold mb-1">לא מצאתם את הכתובת המדויקת? סמנו על המפה</p>
+                            <p class="text-gray-400 text-xs mb-2">כשהרחוב לא ברשימה או חסר מספר בניין - סימון על המפה יעזור לאתר אתכם.</p>
+                        {/if}
                         {#if !showMap}
                             <button
                                 type="button"
@@ -449,13 +474,15 @@
                                 bind:lat={pinLat}
                                 bind:lng={pinLng}
                             />
-                            <button
-                                type="button"
-                                onclick={() => { showMap = false; pinLat = null; pinLng = null; }}
-                                class="mt-2 text-xs text-gray-400 hover:text-gray-200 underline underline-offset-2 transition-colors"
-                            >
-                                הסתר מפה והסר סימון
-                            </button>
+                            {#if !forceMapPin}
+                                <button
+                                    type="button"
+                                    onclick={() => { showMap = false; pinLat = null; pinLng = null; }}
+                                    class="mt-2 text-xs text-gray-400 hover:text-gray-200 underline underline-offset-2 transition-colors"
+                                >
+                                    הסתר מפה והסר סימון
+                                </button>
+                            {/if}
                         {/if}
                     </div>
                 {/if}

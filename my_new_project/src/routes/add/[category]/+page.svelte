@@ -105,8 +105,27 @@
     // שדה map_pin מוצג רק כשהכתובת לא נפתרה (רחוב חסר / בלי מספר).
     let addressResolved = $state(false);
 
-    // ---- פין אוטומטי מהכתובת: רחוב+מספר נבחרו → הפין קופץ על המפה לאישור ----
+    // ---- יישוב בלי רשימת רחובות ובלי שכונות → סימון על המפה הוא חובה ----
+    // בכפר תפוח וכד' אין רשימת רחובות רשמית (הכתובת לעולם לא "נפתרת") וגם אין
+    // שכונות מובחנות - ולכן הדרך היחידה למקם פריט נכון היא פין ידני. במצב הזה
+    // פותחים את המפה אוטומטית ודורשים פין, אחרת כל הפריטים נערמים על מרכז היישוב.
     const hasMapPinField = config.fields.some(f => f.type === 'map_pin');
+    let cityHasStreetList = $state(false);
+    // מחכים לדיווח מבורר-הרחובות רק אם יש שדה כתובת כזה; אחרת אין מה לחכות לו.
+    let streetListLoading = $state(config.fields.some(f => f.type === 'address'));
+    // "יש שכונות" = מעבר ל'מרכז'/ברירת המחדל הגלובלית (שהן לא שכונה אמיתית)
+    const cityHasNeighborhoods = $derived(
+        cityNeighborhoods.filter(n => n && n !== 'מרכז' && n !== DEFAULT_NEIGHBORHOOD).length > 0,
+    );
+    const forceMapPin = $derived(
+        hasMapPinField && !streetListLoading && !cityHasStreetList && !cityHasNeighborhoods,
+    );
+    // כשהמפה הופכת לחובה - פותחים אותה מיד (אלא אם המשתמש כבר סימן/סגר ידנית)
+    $effect(() => {
+        if (forceMapPin) showMap = true;
+    });
+
+    // ---- פין אוטומטי מהכתובת: רחוב+מספר נבחרו → הפין קופץ על המפה לאישור ----
     let geocodeTimer: ReturnType<typeof setTimeout> | null = null;
     $effect(() => {
         const addr = (formValues['address'] ?? '').trim();
@@ -479,7 +498,8 @@
     // ---- Visibility (showIf) ----
     function isFieldVisible(field: typeof config.fields[number]): boolean {
         // מפה מוצגת רק כשהכתובת לא נפתרה (רחוב מהרשימה + מספר). אחרת - רק הרשימה הנפתחת.
-        if (field.type === 'map_pin' && addressResolved) return false;
+        // ביישוב בלי רשימת רחובות/שכונות המפה חובה - תמיד מוצגת.
+        if (field.type === 'map_pin' && addressResolved && !forceMapPin) return false;
         if (!field.showIf) return true;
         return formValues[field.showIf.field] === field.showIf.equals;
     }
@@ -504,6 +524,11 @@
         // בלי אחת מהן הפריט לא ימוקם נכון - חוסמים ומדריכים מה להשלים.
         const addressField = config.fields.find(f => f.key === 'address' && f.type !== 'neighborhood_select');
         const hasPinField  = config.fields.some(f => f.type === 'map_pin');
+        // יישוב בלי רחובות/שכונות: הכתובת לעולם לא תמקם נכון - הפין הוא חובה.
+        if (forceMapPin && !(pinLat != null && pinLng != null)) {
+            showMap = true;
+            return '📍 ביישוב זה אין רשימת רחובות - חובה לסמן את המיקום המדויק על המפה כדי שהפריט לא ייעֶרם עם השאר על מרכז היישוב';
+        }
         if (addressField || hasPinField) {
             const addr      = (formValues['address'] ?? '').trim();
             const pinPlaced = pinLat != null && pinLng != null;
@@ -1147,9 +1172,16 @@
                             placeholder={field.placeholder ?? 'שם הרחוב'}
                             onValueChange={(v) => setFieldValue(field.key, v)}
                             onResolvedChange={(v) => (addressResolved = v)}
+                            onStreetListChange={(info) => { cityHasStreetList = info.hasList; streetListLoading = info.loading; }}
                         />
 
                     {:else if field.type === 'map_pin'}
+                        {#if forceMapPin}
+                            <p class="mb-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs font-bold text-amber-200 leading-relaxed">
+                                📍 ביישוב זה אין רשימת רחובות - סמנו את המיקום המדויק על המפה (חובה).
+                                כך הפריט יופיע במקומו האמיתי ולא ייעֶרם עם השאר על מרכז היישוב.
+                            </p>
+                        {/if}
                         {#if !showMap}
                             <button
                                 type="button"
@@ -1173,13 +1205,16 @@
                                     🎯 המיקום זוהה אוטומטית מהכתובת - גררו את הסמן אם צריך לדייק
                                 </p>
                             {/if}
-                            <button
-                                type="button"
-                                onclick={() => { showMap = false; pinLat = null; pinLng = null; pinSource = null; }}
-                                class="mt-2 text-xs text-gray-400 hover:text-gray-200 underline underline-offset-2 transition-colors"
-                            >
-                                הסתר מפה והסר סימון
-                            </button>
+                            <!-- כשהמפה חובה (אין רחובות) לא מציגים "הסתר מפה" - זו הדרך היחידה למקם -->
+                            {#if !forceMapPin}
+                                <button
+                                    type="button"
+                                    onclick={() => { showMap = false; pinLat = null; pinLng = null; pinSource = null; }}
+                                    class="mt-2 text-xs text-gray-400 hover:text-gray-200 underline underline-offset-2 transition-colors"
+                                >
+                                    הסתר מפה והסר סימון
+                                </button>
+                            {/if}
                         {/if}
 
                     {:else}

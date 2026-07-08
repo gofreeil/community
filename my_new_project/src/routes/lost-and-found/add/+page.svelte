@@ -18,6 +18,11 @@
     let showMap     = $state(false);
     // המיקום נבחר מרשימת הרחובות הרשמית? כשלא (מקום חופשי / לא נמצא) - מציעים מפה
     let locationResolved = $state(false);
+    // יישוב בלי רשימת רחובות (כמו כפר תפוח): אי אפשר לאמת מיקום - הפין הופך לחובה
+    let cityHasStreetList = $state(false);
+    let streetListLoading = $state(true);
+    const forceMapPin = $derived(!streetListLoading && !cityHasStreetList);
+    $effect(() => { if (forceMapPin) showMap = true; });
     let submitting  = $state(false);
     let imageBase64 = $state('');
     let imagePreview = $state('');
@@ -129,7 +134,14 @@
 
             <form
                 method="POST"
-                use:enhance={() => {
+                use:enhance={({ cancel }) => {
+                    // ביישוב בלי רחובות - חובה פין, אחרת האבידה תיערם על מרכז היישוב
+                    if (forceMapPin && !(pinLat != null && pinLng != null)) {
+                        showMap = true;
+                        alert('📍 ביישוב זה אין רשימת רחובות - חובה לסמן את המיקום המדויק על המפה');
+                        cancel();
+                        return;
+                    }
                     submitting = true;
                     return async ({ update }) => {
                         await update();
@@ -276,11 +288,17 @@
                         placeholder="רחוב, שכונה או מקום..."
                         onValueChange={(v) => (location = v)}
                         onResolvedChange={(v) => (locationResolved = v)}
+                        onStreetListChange={(info) => { cityHasStreetList = info.hasList; streetListLoading = info.loading; }}
                     />
                     <input type="hidden" name="location" value={location} />
 
-                    <!-- סימון מדויק על המפה - מוצג רק כשהמיקום אינו רחוב מזוהה מהרשימה -->
-                    {#if !locationResolved}
+                    <!-- סימון מדויק על המפה - מוצע כשהמיקום לא מזוהה, וחובה ביישוב בלי רחובות -->
+                    {#if !locationResolved || forceMapPin}
+                    {#if forceMapPin}
+                        <p class="mt-2 mb-1 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs font-bold text-amber-200 leading-relaxed">
+                            📍 ביישוב זה אין רשימת רחובות - סמנו את המיקום המדויק על המפה (חובה).
+                        </p>
+                    {/if}
                     {#if !showMap}
                         <button type="button" onclick={() => (showMap = true)}
                             class="mt-2 w-full flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10 text-gray-200 text-sm font-bold py-3 transition-all">
@@ -289,10 +307,12 @@
                     {:else}
                         <div class="mt-2">
                             <NeighborhoodPicker city={data.userCity ?? ''} bind:lat={pinLat} bind:lng={pinLng} />
-                            <button type="button" onclick={() => { showMap = false; pinLat = null; pinLng = null; }}
-                                class="mt-2 text-xs text-gray-400 hover:text-gray-200 underline underline-offset-2 transition-colors">
-                                הסתר מפה והסר סימון
-                            </button>
+                            {#if !forceMapPin}
+                                <button type="button" onclick={() => { showMap = false; pinLat = null; pinLng = null; }}
+                                    class="mt-2 text-xs text-gray-400 hover:text-gray-200 underline underline-offset-2 transition-colors">
+                                    הסתר מפה והסר סימון
+                                </button>
+                            {/if}
                         </div>
                     {/if}
                     {/if}
