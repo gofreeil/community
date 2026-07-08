@@ -1281,22 +1281,22 @@
     <section bind:this={stepRefs.preview} class="step-card">
         <div class="step-head" class:step-title-light={litFlags.preview.title}>
             <span class="step-num" class:step-num-light={litFlags.preview.num}>7</span>
-            <h2>תצוגה מקדימה - איך זה יראה לגולשים?</h2>
+            <h2>{$_('advertise.b_s7_title')}</h2>
             {#if activeStep === "preview"}
                 <span class="tutorial-finger" aria-hidden="true">👇</span>
             {/if}
         </div>
         {#snippet previewSideControls()}
             <div class="preview-side-controls">
-                <p class="preview-side-controls-help">החלף בין מצבי תצוגה. תוכל לחזור לשלבים הקודמים ולשנות בכל רגע.</p>
+                <p class="preview-side-controls-help">{$_('advertise.b_preview_help')}</p>
                 <div class="preview-side-toggle">
                     {#each [
-                        { id: "mobile",  label: "📱 נייד" },
-                        { id: "desktop", label: "🖥️ דסקטופ" }
+                        { id: "mobile",  labelKey: "b_mobile" },
+                        { id: "desktop", labelKey: "b_desktop" }
                     ] as opt}
                         <button type="button" onclick={() => previewMode = opt.id as any}
                             class="preview-side-toggle-btn {previewMode === opt.id ? 'is-active' : ''}">
-                            {opt.label}
+                            {$_(`advertise.${opt.labelKey}`)}
                         </button>
                     {/each}
                 </div>
@@ -1320,19 +1320,19 @@
                                     <img src={logo} alt={$_('advertise.b_logo_alt')}
                                          class="popup-logo-above {logoShape === 'circle' ? 'popup-logo-above-circle' : ''}" />
                                 {/if}
-                                <h3 class="popup-title-above" style:color={titleColor}>{title || "כותרת ראשית"}</h3>
+                                <h3 class="popup-title-above" style:color={titleColor}>{title || $_('advertise.b_s3_title')}</h3>
                             </div>
                             <div class="popup-img pro-img-wrap">
                                 {#if mainImage}
                                     <img src={mainImage} alt={title} />
                                 {:else}
-                                    <div class="img-placeholder">תמונה ראשית</div>
+                                    <div class="img-placeholder">{$_('advertise.b_main_image_alt')}</div>
                                 {/if}
                                 <!-- Diagonal color band -->
                                 <div class="pro-diag bg-gradient-to-br {gradient}"></div>
                                 <!-- Subtitle stays on the diagonal at the bottom -->
                                 <div class="pro-title-wrap mobile">
-                                    <p class="pro-sub">{subtitle || "כותרת משנה / סלוגן"}</p>
+                                    <p class="pro-sub">{subtitle || $_('advertise.b_s5_title')}</p>
                                 </div>
                                 <div class="close-countdown">5</div>
                             </div>
@@ -1344,7 +1344,7 @@
                         </div>
                     </div>
                     </div>
-                    <p class="preview-caption preview-caption-side">כך הפרסומת תיפתח בנייד למשך 5 שניות כשמשתמש לוחץ על אחד היתרונות באתר.</p>
+                    <p class="preview-caption preview-caption-side">{$_('advertise.b_mobile_caption')}</p>
                 </div>
             </div>
         {/if}
@@ -1371,18 +1371,18 @@
                                 {#if mainImage}
                                     <img src={mainImage} alt={title} class="ad-img" style:opacity={showHover ? 0 : 1} />
                                 {:else}
-                                    <div class="img-placeholder">תמונה</div>
+                                    <div class="img-placeholder">{$_('advertise.b_img_placeholder')}</div>
                                 {/if}
                                 <div class="pro-diag bg-gradient-to-br {gradient}" style:opacity={showHover ? 0 : 1}></div>
                                 <div class="pro-title-top" style:opacity={showHover ? 0 : 1} style:transform="translateY({titleOffsetY}px)">
-                                    <h3 class="pro-title" style:color={titleColor}>{title || "כותרת ראשית"}</h3>
+                                    <h3 class="pro-title" style:color={titleColor}>{title || $_('advertise.b_s3_title')}</h3>
                                 </div>
                                 <div class="pro-title-wrap" style:opacity={showHover ? 0 : 1}>
-                                    <p class="pro-sub">{subtitle || "סלוגן / כותרת משנה"}</p>
+                                    <p class="pro-sub">{subtitle || $_('advertise.b_ph_slogan')}</p>
                                 </div>
                                 <div class="hover-overlay" style:opacity={showHover ? 1 : 0}>
-                                    <h3 class="hover-title">{title || "כותרת"}</h3>
-                                    <p class="hover-text">{hoverText || "כאן יופיע הטקסט בריחוף"}</p>
+                                    <h3 class="hover-title">{title || $_('advertise.b_ph_title_short')}</h3>
+                                    <p class="hover-text">{hoverText || $_('advertise.b_ph_hover')}</p>
                                 </div>
                                 {#if logo}
                                     <img src={logo} alt={$_('advertise.b_logo_alt')}
@@ -1394,7 +1394,7 @@
                             </div>
                         </div>
                     </div>
-                        <p class="preview-caption preview-caption-side">כך הפרסומת תוצג לגולשים במחשב - מוצגת קבוע בסרגל הצד של האתר.</p>
+                        <p class="preview-caption preview-caption-side">{$_('advertise.b_desktop_caption')}</p>
                     </div>
                 </div>
 
@@ -1409,29 +1409,29 @@
             </button>
             <div class="relative group">
                 <button type="button" onclick={openHelp}
-                        aria-label="פנייה לתמיכה - עיצוב על ידי גרפיקאי כרוך בתשלום"
+                        aria-label={$_('advertise.b_help_btn_aria')}
                         class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-400/50 text-gray-200 hover:text-amber-300 font-bold transition-colors">
                     <span aria-hidden="true">😩</span>
-                    <span>דורש עזרה - פנה לתמיכה</span>
+                    <span>{$_('advertise.b_help_btn')}</span>
                     <span aria-hidden="true">🆘</span>
                 </button>
                 <span role="tooltip"
                       class="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg border border-white/10 bg-gray-900/95 px-3 py-2 text-sm font-bold text-amber-200 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
-                    עיצוב על ידי גרפיקאי כרוך בתשלום
+                    {$_('advertise.b_help_tooltip')}
                 </span>
             </div>
             <div class="relative group">
                 <button type="button" class="step-nav-btn" onclick={goToLandingEditor} disabled={movingToLanding}>
                     {#if movingToLanding}
                         <span aria-hidden="true">⏳</span>
-                        מעביר לעורך דף הנחיתה…
+                        {$_('advertise.b_moving_landing')}
                     {:else}
-                        נראה מעולה <span aria-hidden="true">👍</span> לשלב הבא <span aria-hidden="true">←</span>
+                        {$_('advertise.b_looks_great')} <span aria-hidden="true">👍</span> {$_('advertise.b_to_next')} <span aria-hidden="true">←</span>
                     {/if}
                 </button>
                 <span role="tooltip"
                       class="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg border border-white/10 bg-gray-900/95 px-3 py-2 text-sm font-bold text-amber-200 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
-                    עכשיו נערוך את דף הנחיתה
+                    {$_('advertise.b_next_tooltip')}
                 </span>
             </div>
         </div>
@@ -1441,9 +1441,9 @@
     </div><!-- /.builder-steps -->
 
     <!-- ========== LIVE DEMO SIDEBAR - jumps to align with the active step ========== -->
-    <aside class="builder-demo" aria-label="תצוגה חיה של הפרסומת" style:top="{demoTop}px">
+    <aside class="builder-demo" aria-label={$_('advertise.b_demo_aria')} style:top="{demoTop}px">
         <div class="live-demo-card">
-            <p class="live-demo-label">📍 הדמו שלך - מתעדכן בזמן אמת</p>
+            <p class="live-demo-label">{$_('advertise.b_demo_label')}</p>
             <div class="live-demo-frame pro-ad" dir="rtl">
                 <div class="ad-img-wrap pro-img-wrap live-demo-img-wrap">
                     {#if mainImage}
@@ -1453,8 +1453,8 @@
                     {:else}
                         <div class="placeholder-dashed placeholder-img" style:opacity={activeStep === "hover" ? 0 : 1}>
                             <div class="placeholder-icon">📸</div>
-                            <p>תמונה ראשית</p>
-                            <p class="placeholder-hint">שלב 1</p>
+                            <p>{$_('advertise.b_main_image_alt')}</p>
+                            <p class="placeholder-hint">{$_('advertise.b_step_n', { values: { n: 1 } })}</p>
                         </div>
                     {/if}
                     <div class="pro-diag bg-gradient-to-br {gradient}" style:opacity={activeStep === "hover" ? 0 : 1}></div>
@@ -1462,14 +1462,14 @@
                         {#if title}
                             <h3 class="pro-title" style:color={titleColor}>{title}</h3>
                         {:else}
-                            <div class="placeholder-dashed placeholder-line">כותרת - שלב 3</div>
+                            <div class="placeholder-dashed placeholder-line">{$_('advertise.b_ph_title_step')}</div>
                         {/if}
                     </div>
                     <div class="pro-title-wrap" style:opacity={activeStep === "hover" ? 0 : 1}>
                         {#if subtitle}
                             <p class="pro-sub">{subtitle}</p>
                         {:else}
-                            <div class="placeholder-dashed placeholder-line small">סלוגן - שלב 4</div>
+                            <div class="placeholder-dashed placeholder-line small">{$_('advertise.b_ph_slogan_step')}</div>
                         {/if}
                     </div>
                     {#if logo}
@@ -1477,11 +1477,11 @@
                              class="ad-logo {logoShape === 'circle' ? 'ad-logo-circle' : ''} {logoPosition === 'left' ? 'ad-logo-left' : logoPosition === 'cta' ? 'ad-logo-cta' : 'ad-logo-right'}"
                              style:opacity={activeStep === "hover" ? 0 : 1} />
                     {:else}
-                        <div class="placeholder-dashed placeholder-logo {logoPosition === 'left' ? 'logo-pos-left' : logoPosition === 'cta' ? 'logo-pos-cta' : 'logo-pos-right'}" style:opacity={activeStep === "hover" ? 0 : 1}>לוגו<br/>שלב 2</div>
+                        <div class="placeholder-dashed placeholder-logo {logoPosition === 'left' ? 'logo-pos-left' : logoPosition === 'cta' ? 'logo-pos-cta' : 'logo-pos-right'}" style:opacity={activeStep === "hover" ? 0 : 1}>{$_('advertise.b_logo_alt')}<br/>{$_('advertise.b_step_n', { values: { n: 2 } })}</div>
                     {/if}
                     <div class="hover-overlay" style:opacity={activeStep === "hover" ? 1 : 0}>
-                        <h3 class="hover-title">{title || "כותרת"}</h3>
-                        <p class="hover-text">{hoverText || "כאן יופיע הטקסט בריחוף"}</p>
+                        <h3 class="hover-title">{title || $_('advertise.b_ph_title_short')}</h3>
+                        <p class="hover-text">{hoverText || $_('advertise.b_ph_hover')}</p>
                     </div>
                 </div>
                 <div class="ad-cta bg-gradient-to-r {gradient}">
@@ -1501,7 +1501,7 @@
     <div class="fixed top-4 left-1/2 -translate-x-1/2 z-[200] rounded-xl border border-purple-500/50 bg-gray-900/95 px-4 py-2 shadow-2xl backdrop-blur" dir="rtl">
         <p class="text-purple-300 text-xs font-bold flex items-center gap-2">
             <span>🛡️</span>
-            <span>מצב סופר-אדמין - גישה ללא הגבלה לבדיקות</span>
+            <span>{$_('advertise.b_admin_badge')}</span>
         </p>
     </div>
 {/if}
@@ -1515,21 +1515,21 @@
         <div class="help-modal" dir="rtl">
             <div class="help-modal-head">
                 <span class="help-modal-icon" aria-hidden="true">🆘</span>
-                <h2 id="help-modal-title">פנייה לעזרה בעיצוב</h2>
+                <h2 id="help-modal-title">{$_('advertise.b_help_modal_title')}</h2>
                 <button type="button" class="help-close" onclick={closeHelp} aria-label={$_('advertise.close')}>×</button>
             </div>
 
             <p class="help-intro">
-                ספר לנו במשפט-שניים מה התקיעה שלך - נחזור אליך בוואטסאפ עם פתרון, ובמקביל תיפתח אצלנו פנייה אישית כדי לא לאבד אותך.
+                {$_('advertise.b_help_intro')}
             </p>
 
             <label class="help-field">
-                <span class="help-label">מה הבעיה? <span class="help-required">*</span></span>
+                <span class="help-label">{$_('advertise.b_help_problem')} <span class="help-required">*</span></span>
                 <textarea id="help-problem-input"
                           bind:value={helpProblem}
                           maxlength="2000"
                           rows="5"
-                          placeholder="לדוגמה: התמונה לא נכנסת יפה למסגרת · לא מצליח לבחור צבע שמתאים לרקע · הכותרת לא נראית טוב במובייל"
+                          placeholder={$_('advertise.b_help_problem_ph')}
                           class="help-textarea"
                           disabled={helpSubmitting}></textarea>
                 <span class="help-counter">{helpProblem.length}/2000</span>
@@ -1537,19 +1537,19 @@
 
             {#if !data?.layoutUser?.email && !data?.layoutUser?.nickname}
                 <label class="help-field">
-                    <span class="help-label">איך נדע מי אתה? <span class="help-required">*</span></span>
+                    <span class="help-label">{$_('advertise.b_help_identify')} <span class="help-required">*</span></span>
                     <input type="text"
                            bind:value={helpContact}
                            maxlength="200"
-                           placeholder="אימייל או כינוי שאיתו נמצא אותך במערכת"
+                           placeholder={$_('advertise.b_help_identify_ph')}
                            class="help-input"
                            disabled={helpSubmitting} />
                 </label>
             {:else}
                 <p class="help-identity">
                     <span class="help-identity-icon" aria-hidden="true">🧑</span>
-                    מזוהה כ: <strong>{data?.layoutUser?.nickname || data?.layoutUser?.email}</strong>
-                    <span class="help-identity-note">- כך נמצא אותך במערכת</span>
+                    {$_('advertise.b_identified_as')} <strong>{data?.layoutUser?.nickname || data?.layoutUser?.email}</strong>
+                    <span class="help-identity-note">{$_('advertise.b_identify_note')}</span>
                 </p>
             {/if}
 
@@ -1559,15 +1559,15 @@
 
             <div class="help-actions">
                 <button type="button" class="help-btn-secondary" onclick={closeHelp} disabled={helpSubmitting}>
-                    ביטול
+                    {$_('advertise.b_cancel')}
                 </button>
                 <button type="button" class="help-btn-primary" onclick={submitHelp} disabled={helpSubmitting}>
                     {#if helpSubmitting}
                         <span class="help-spinner" aria-hidden="true"></span>
-                        שולח…
+                        {$_('advertise.sending')}
                     {:else}
                         <span aria-hidden="true">💬</span>
-                        שלח ופתח וואטסאפ
+                        {$_('advertise.b_send_open_wa')}
                     {/if}
                 </button>
             </div>
