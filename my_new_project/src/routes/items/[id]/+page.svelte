@@ -1335,13 +1335,13 @@
                             {#if canEditPage && !builderMode}
                                 <button type="button" onclick={() => (builderMode = true)}
                                     class="text-[11px] font-bold rounded-full px-2.5 py-1 border border-amber-500/40 bg-amber-500/15 text-amber-300 hover:bg-amber-500/30 transition-all whitespace-nowrap">
-                                    🎨 עריכת דף
+                                    עריכת כרטיס הפריט
                                 </button>
                             {/if}
                             {#if (item as { isOwner?: boolean } | null)?.isOwner || singlesState === 'owner'}
                                 <a href={item.category === 'singles' ? `/add/singles?edit=${item.id}` : `/add/${item.category}?edit=${item.id}`}
                                     class="text-[11px] font-bold rounded-full px-2.5 py-1 border border-white/20 bg-white/5 text-gray-300 hover:bg-white/15 transition-all whitespace-nowrap">
-                                    ✏️ {canEditPage ? 'עריכה על המפה' : 'ערוך פרופיל'}
+                                    {canEditPage ? 'עריכת הפריט במפה' : 'ערוך פרופיל'}
                                 </a>
                             {/if}
                             {#if canEditPage}
