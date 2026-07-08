@@ -1,11 +1,12 @@
 // ============================================================
 // GET /api/coordinators
 // רשימת רכזי השכונות (ציבורי) - נצרך ע"י neighborhoods.gofreeil.com
-// מחזיר לכל רכז: שם, טלפון, תמונה, עיר, שכונות, ומספר תושבים רשומים
+// מחזיר לכל רכז: שם, טלפון, תמונה, עיר, שכונות, מספר תושבים רשומים,
+// ומספר הפריטים שכבר על המפה (בעלי קואורדינטות) בשכונותיו.
 // ============================================================
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { getAllUsers } from '$lib/server/db';
+import { getAllUsers, getAllItems } from '$lib/server/db';
 
 // "אושיות (רחובות)" → { name: "אושיות", city: "רחובות" }
 function parseArea(entry: string): { name: string; city: string } {
@@ -17,23 +18,34 @@ const stripCity = (s: string) => s.replace(/\s*\([^)]*\)\s*$/, '').trim();
 export const GET: RequestHandler = async () => {
     let coordinators: unknown[] = [];
     try {
-        const users = await getAllUsers();
+        const [users, items] = await Promise.all([getAllUsers(), getAllItems()]);
 
         coordinators = users
             .filter(u => (u.coordinator_of?.length ?? 0) > 0)
             .map(u => {
                 const areas = (u.coordinator_of ?? []).map(parseArea);
-                // ספירת תושבים רשומים בשכונות שהרכז מנהל (התאמה לפי שכונה + עיר)
+                // התאמה לפי שכונה + עיר (זהה ללוח האדמין)
+                const matchesArea = (neighborhood?: string | null, city?: string | null) => {
+                    const n = neighborhood ? stripCity(neighborhood) : '';
+                    return areas.some(a => {
+                        // רשומה בלי "(עיר)" ששמה הוא שם העיר = רכז עיר, תופס את כל העיר
+                        if (!a.city && city && a.name === city) return true;
+                        return !!n && a.name === n && (a.city ? city === a.city : true);
+                    });
+                };
+
+                // ספירת תושבים רשומים בשכונות שהרכז מנהל
                 const residentIds = new Set<string>();
                 for (const r of users) {
-                    const rn = r.neighborhood ? stripCity(r.neighborhood) : '';
-                    const match = areas.some(a => {
-                        // רשומה בלי "(עיר)" ששמה הוא שם העיר = רכז עיר, תופס את כל העיר
-                        if (!a.city && r.city && a.name === r.city) return true;
-                        return !!rn && a.name === rn && (a.city ? r.city === a.city : true);
-                    });
-                    if (match) residentIds.add(r.id);
+                    if (matchesArea(r.neighborhood, r.city)) residentIds.add(r.id);
                 }
+
+                // ספירת פריטים שכבר על המפה (בעלי lat/lng) בשכונות הרכז
+                let itemsOnMap = 0;
+                for (const it of items) {
+                    if (matchesArea(it.neighborhood, it.city) && it.lat != null && it.lng != null) itemsOnMap++;
+                }
+
                 return {
                     id:             u.id,
                     name:           u.name || u.nickname || 'רכז/ת',
@@ -42,6 +54,7 @@ export const GET: RequestHandler = async () => {
                     city:           u.city ?? '',
                     neighborhoods:  (u.coordinator_of ?? []).map(stripCity),
                     residentsCount: residentIds.size,
+                    itemsOnMap,
                 };
             })
             .sort((a, b) => b.residentsCount - a.residentsCount);
