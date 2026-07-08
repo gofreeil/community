@@ -927,15 +927,15 @@
 {#snippet shareBlock()}
     <div class="space-y-1.5">
         {@render tip('הדף מוכן? שתפו אותו - הקישור יגיע לרשתות עם הכותרת של הדף ותת-הכותרת "קהילה בשכונה - כל יתרונות הקהילה תחת קורת גג אחת"')}
-        {#if canNativeShare}
-            <button type="button" onclick={shareNative}
-                class="w-full bg-gradient-to-l from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold text-sm py-2 rounded-xl shadow-md hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2">
-                📤 שתפו את הדף
-            </button>
-        {/if}
-    <div class="bg-white/5 px-3 py-2 rounded-xl border border-white/10 backdrop-blur-sm flex items-center gap-3">
-        <span class="text-xs font-bold text-gray-300 uppercase tracking-wider shrink-0">שתף:</span>
-        <div class="flex gap-2 flex-1 justify-around">
+    <div class="bg-white/5 px-3 py-2 rounded-xl border border-white/10 backdrop-blur-sm flex items-center gap-2">
+        <span class="text-xs font-bold text-gray-300 shrink-0">שתף:</span>
+        <div class="flex gap-1.5 flex-1 justify-around">
+            {#if canNativeShare}
+                <button type="button" onclick={shareNative} aria-label="שתף את הדף" title="שתף את הדף"
+                    class="bg-gradient-to-l from-blue-600 to-purple-600 hover:opacity-90 hover:scale-110 active:scale-95 w-10 h-10 rounded-lg transition-all flex items-center justify-center text-lg">
+                    📤
+                </button>
+            {/if}
             <button type="button" onclick={shareWhatsApp} aria-label="שתף בוואטסאפ" title="שתף בוואטסאפ"
                 class="bg-green-600/15 hover:bg-green-600/35 hover:scale-110 active:scale-95 w-10 h-10 rounded-lg transition-all flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#25D366" aria-hidden="true" class="w-6 h-6">
@@ -981,8 +981,8 @@
     {@const tiktok    = typeof ef?.tiktok    === 'string' ? ef.tiktok    : ''}
     {@const ensureUrl = (u: string) => (/^https?:\/\//i.test(u) ? u : `https://${u}`)}
     {#if website || facebook || instagram || youtube || tiktok || customLinks.length > 0 || builderMode}
-        <section>
-            <h2 class="text-base font-bold text-white mb-1.5 flex items-center gap-1.5">
+        <section class="pt-3 border-t border-white/10">
+            <h2 class="text-base font-bold text-white mb-2 flex items-center gap-1.5">
                 <span class="w-1 h-4 bg-indigo-500 rounded-full"></span>קישורים
             </h2>
             {#if builderMode && editingField === 'links'}
@@ -1111,10 +1111,10 @@
         ? Object.entries(mergedExtra).filter(([k, v]) => !HIDDEN_KEYS.has(k) && v != null && v !== '')
         : []}
     {#if visibleEntries.length > 0}
-        <section>
-            <h2 class="text-base font-bold text-white mb-1.5 flex items-center gap-1.5">
+        <section class="pt-3 border-t border-white/10">
+            <h2 class="text-base font-bold text-white mb-2 flex items-center gap-1.5">
                 <span class="w-1 h-4 bg-green-500 rounded-full"></span>{tFn("more_details")}</h2>
-            <dl class="rounded-xl border border-white/10 overflow-hidden grid grid-cols-1 sm:grid-cols-2 gap-px bg-white/10">
+            <dl class="rounded-xl border border-white/10 overflow-hidden grid grid-cols-1 {visibleEntries.length > 1 ? 'sm:grid-cols-2' : ''} gap-px bg-white/10">
                 {#each visibleEntries as [key, value]}
                     <div class="grid grid-cols-[auto,1fr] gap-x-3 px-3 py-2 bg-[#0f172a]">
                         <dt class="text-xs text-gray-400 font-semibold whitespace-nowrap">{LABELS_HE[key] ?? key}</dt>
@@ -1136,10 +1136,10 @@
         { label: 'לבוש וכיוון', value: lsObj.details },
     ].filter(r => typeof r.value === 'string' && r.value.trim()) : []}
     {#if rows.length > 0}
-        <section>
-            <h2 class="text-base font-bold text-white mb-1.5 flex items-center gap-1.5">
+        <section class="pt-3 border-t border-white/10">
+            <h2 class="text-base font-bold text-white mb-2 flex items-center gap-1.5">
                 <span class="w-1 h-4 bg-red-500 rounded-full"></span>👁️ נראה לאחרונה</h2>
-            <dl class="rounded-xl border border-white/10 overflow-hidden grid grid-cols-1 sm:grid-cols-2 gap-px bg-white/10">
+            <dl class="rounded-xl border border-white/10 overflow-hidden grid grid-cols-1 {rows.length > 1 ? 'sm:grid-cols-2' : ''} gap-px bg-white/10">
                 {#each rows as row}
                     <div class="grid grid-cols-[auto,1fr] gap-x-3 px-3 py-2 bg-[#0f172a]">
                         <dt class="text-xs text-gray-400 font-semibold whitespace-nowrap">{row.label}</dt>
@@ -1156,8 +1156,8 @@
     {@const rawType = (item as { extraFields?: { type?: unknown } } | null)?.extraFields?.type}
     {@const services = typeof rawType === 'string' ? rawType.split(',').map(s => s.trim()).filter(Boolean) : []}
     {#if services.length > 0}
-        <section>
-            <h2 class="text-base font-bold text-white mb-1.5 flex items-center gap-1.5">
+        <section class="pt-3 border-t border-white/10">
+            <h2 class="text-base font-bold text-white mb-2 flex items-center gap-1.5">
                 <span class="w-1 h-4 bg-blue-500 rounded-full"></span>מה יש במקום</h2>
             <div class="flex flex-wrap gap-2">
                 {#each services as s}
@@ -1175,8 +1175,8 @@
         ? (ef.gmach_types as unknown[]).filter((k): k is string => typeof k === 'string' && k.length > 0)
         : (typeof ef?.gmach_type === 'string' && ef.gmach_type ? [ef.gmach_type] : [])}
     {#if keys.length > 0}
-        <section>
-            <h2 class="text-base font-bold text-white mb-1.5 flex items-center gap-1.5">
+        <section class="pt-3 border-t border-white/10">
+            <h2 class="text-base font-bold text-white mb-2 flex items-center gap-1.5">
                 <span class="w-1 h-4 bg-amber-400 rounded-full"></span>נושאי הגמ"ח</h2>
             <div class="flex flex-wrap gap-2">
                 {#each keys as k}
@@ -1327,40 +1327,42 @@
                 </div>
 
                 <!-- Side info: nickname + description + address + contact + extra fields -->
-                <div class="px-3 md:px-4 py-2 flex flex-col gap-1.5">
+                <div class="px-4 md:px-5 py-3 flex flex-col gap-2">
                     <!-- סרגל עורך: כפתורי עריכה + בורר סטטוס + מחיקה. בזרימה (לא מרחף) כדי
                          שלא יתנגש עם התוכן. גלוי לבעלים / רכז / סופר-אדמין. -->
                     {#if (item as { isOwner?: boolean } | null)?.isOwner || singlesState === 'owner' || canEditPage}
-                        <div class="rounded-xl border border-white/10 bg-white/5 p-2 flex flex-wrap items-center gap-1.5 mb-0.5">
+                        <div class="rounded-xl border border-white/10 bg-white/5 p-2 flex flex-wrap items-center gap-1.5 mb-1">
                             {#if canEditPage && !builderMode}
                                 <button type="button" onclick={() => (builderMode = true)}
                                     class="text-[11px] font-bold rounded-full px-2.5 py-1 border border-amber-500/40 bg-amber-500/15 text-amber-300 hover:bg-amber-500/30 transition-all whitespace-nowrap">
-                                    🎨 עריכת דף הפרטים
+                                    🎨 עריכת דף
                                 </button>
                             {/if}
                             {#if (item as { isOwner?: boolean } | null)?.isOwner || singlesState === 'owner'}
                                 <a href={item.category === 'singles' ? `/add/singles?edit=${item.id}` : `/add/${item.category}?edit=${item.id}`}
                                     class="text-[11px] font-bold rounded-full px-2.5 py-1 border border-white/20 bg-white/5 text-gray-300 hover:bg-white/15 transition-all whitespace-nowrap">
-                                    ✏️ {canEditPage ? 'עריכת פריט על המפה' : 'ערוך פרופיל'}
+                                    ✏️ {canEditPage ? 'עריכה על המפה' : 'ערוך פרופיל'}
                                 </a>
                             {/if}
                             {#if canEditPage}
-                                <span class="w-px h-4 bg-white/15 mx-0.5"></span>
-                                <span class="text-[11px] text-gray-400 font-bold">סטטוס:</span>
-                                {#each PLACE_STATUSES as s}
-                                    <button type="button" onclick={() => changePlaceStatus(s.value)} disabled={savingStatus}
-                                        class="text-[11px] font-bold rounded-full px-2.5 py-1 border transition-all disabled:opacity-50 {placeStatus === s.value ? s.active : 'bg-white/5 border-white/15 text-gray-300 hover:bg-white/10'}">
-                                        {s.emoji} {s.label}
-                                    </button>
-                                {/each}
-                                <div class="relative">
-                                    <button type="button" onclick={() => (statusMenuOpen = !statusMenuOpen)}
-                                        class="text-[11px] font-bold rounded-full px-2.5 py-1 border border-white/15 bg-white/5 text-gray-300 hover:bg-white/10 transition-all">
-                                        עוד ▾
+                                {@const cur = PLACE_STATUSES.find(s => s.value === placeStatus) ?? PLACE_STATUSES[0]}
+                                <div class="relative ms-auto">
+                                    <button type="button" onclick={() => (statusMenuOpen = !statusMenuOpen)} disabled={savingStatus}
+                                        class="text-[11px] font-bold rounded-full px-2.5 py-1 border transition-all disabled:opacity-50 flex items-center gap-1 {cur.active}">
+                                        {cur.emoji} {cur.label} <span class="opacity-70">▾</span>
                                     </button>
                                     {#if statusMenuOpen}
-                                        <div class="absolute z-40 top-full mt-1 end-0 min-w-[140px] rounded-xl border border-white/15 bg-[#0a0f1a] shadow-2xl p-1"
+                                        <div class="absolute z-40 top-full mt-1 end-0 min-w-[170px] rounded-xl border border-white/15 bg-[#0a0f1a] shadow-2xl p-1"
                                             in:scale={{ duration: 120, start: 0.95 }}>
+                                            <p class="text-[10px] text-gray-500 font-bold px-2.5 pt-1 pb-0.5">סטטוס המקום</p>
+                                            {#each PLACE_STATUSES as s}
+                                                <button type="button" onclick={() => changePlaceStatus(s.value)} disabled={savingStatus}
+                                                    class="w-full text-right text-xs font-bold rounded-lg px-2.5 py-1.5 transition-colors disabled:opacity-50 flex items-center gap-2 {placeStatus === s.value ? 'bg-white/10 text-white' : 'text-gray-300 hover:bg-white/10'}">
+                                                    <span aria-hidden="true">{s.emoji}</span><span class="flex-1">{s.label}</span>
+                                                    {#if placeStatus === s.value}<span class="text-emerald-400">✓</span>{/if}
+                                                </button>
+                                            {/each}
+                                            <div class="my-1 border-t border-white/10"></div>
                                             <button type="button" onclick={softDeleteItem} disabled={deletingItem}
                                                 class="w-full text-right text-xs font-bold text-red-300 hover:bg-red-500/15 rounded-lg px-2.5 py-1.5 transition-colors disabled:opacity-50">
                                                 {deletingItem ? 'מוחק…' : '🗑 מחק את הכרטיס'}
@@ -1502,8 +1504,8 @@
 
                     <!-- Minyanim: daily prayer times (שחרית / מנחה / ערבית) -->
                     {#if isMinyanCategory && (canEditActivities || minyanActivities.length > 0)}
-                        <section>
-                            <div class="flex items-center justify-between mb-1.5">
+                        <section class="pt-3 border-t border-white/10">
+                            <div class="flex items-center justify-between mb-2">
                                 <h2 class="text-base font-bold text-white flex items-center gap-1.5">
                                     <span class="w-1 h-4 bg-sky-400 rounded-full"></span>✡️ זמני מניינים</h2>
                                 {#if canEditActivities && !editingMinyan}
@@ -1587,8 +1589,8 @@
 
                     <!-- Activities schedule (each activity has its own time) -->
                     {#if otherActivities.length > 0 || canEditActivities}
-                        <section>
-                            <div class="flex items-center justify-between mb-1.5">
+                        <section class="pt-3 border-t border-white/10">
+                            <div class="flex items-center justify-between mb-2">
                                 <h2 class="text-base font-bold text-white flex items-center gap-1.5">
                                     <span class="w-1 h-4 bg-amber-400 rounded-full"></span>לוח פעילויות ושעות</h2>
                                 {#if canEditActivities && !editingSchedule}
@@ -1672,7 +1674,7 @@
                     <!-- Contact (רב/מארגן/שגריר/שדכן) - under פרטים נוספים -->
                     {#if builderMode && editingField === 'contact'}
                         <div class="space-y-1.5">
-                            {@render tip('שם הרב, המארגן או איש הקשר - כדי שהגולשים יידעו למי לפנות')}
+                            {@render tip('שם איש הקשר - כדי שהגולשים יידעו למי לפנות')}
                             <input type="text" bind:value={draftText} maxlength="120" placeholder="הרב ישראל ישראלי" use:focusOnMount onkeydown={editorKeys}
                                 class="w-full bg-[#0a0f1a] border border-amber-500/50 rounded-lg text-white text-sm px-2.5 py-1.5" />
                             <div class="flex gap-2">
@@ -1685,26 +1687,28 @@
                         {@const waPhone = displayPhone ? String(displayPhone).replace(/\D/g, '').replace(/^0/, '972') : ''}
                         {@const phoneVisible = displayPhone && (item.category !== 'singles' || singlesState === 'approved' || singlesState === 'owner')}
                         {@const waUrl = waPhone && phoneVisible ? `https://wa.me/${waPhone}` : null}
-                        <p class="text-base text-gray-200 flex items-center gap-1.5">
-                            <span class="text-purple-400">👤</span>
-                            <span class="text-xs text-gray-400">איש קשר / רב / מארגן:</span>
-                            {#if waUrl}
-                                <a href={waUrl} target="_blank" rel="noopener noreferrer" class="text-emerald-300 hover:text-emerald-200 font-medium inline-flex items-center gap-1" title="פתח בוואטסאפ">
-                                    💬 <span>{displayContact}</span>
-                                </a>
-                            {:else}
-                                <span class="font-medium text-white">{displayContact}</span>
-                            {/if}
+                        <div class="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2">
+                            <span class="text-purple-400 text-lg shrink-0" aria-hidden="true">👤</span>
+                            <div class="flex flex-col leading-tight min-w-0 flex-1">
+                                <span class="text-[11px] text-gray-400">איש קשר</span>
+                                {#if waUrl}
+                                    <a href={waUrl} target="_blank" rel="noopener noreferrer" class="text-emerald-300 hover:text-emerald-200 font-bold text-sm inline-flex items-center gap-1 min-w-0 max-w-full" title="פתח בוואטסאפ">
+                                        💬 <span class="truncate min-w-0">{displayContact}</span>
+                                    </a>
+                                {:else}
+                                    <span class="font-bold text-white text-sm truncate">{displayContact}</span>
+                                {/if}
+                            </div>
                             {#if builderMode}
                                 <button type="button" onclick={() => startEditField('contact', displayContact)}
                                     aria-label="ערוך איש קשר" title="ערוך איש קשר"
-                                    class="text-sm bg-amber-500/15 hover:bg-amber-500/30 border border-amber-500/40 rounded-lg px-1.5 py-0.5 transition-all">✏️</button>
+                                    class="text-sm bg-amber-500/15 hover:bg-amber-500/30 border border-amber-500/40 rounded-lg px-1.5 py-0.5 transition-all shrink-0">✏️</button>
                             {/if}
-                        </p>
+                        </div>
                     {:else if builderMode}
                         <button type="button" onclick={() => startEditField('contact', '')}
                             class="w-full text-right border-2 border-dashed border-amber-400/40 hover:border-amber-400/70 bg-amber-500/5 hover:bg-amber-500/10 rounded-xl px-3 py-2 text-amber-200 text-sm font-bold transition-all">
-                            👤 הוסיפו שם רב / מארגן / איש קשר
+                            👤 הוסיפו איש קשר
                         </button>
                     {/if}
 
@@ -1717,8 +1721,8 @@
 
                 <!-- Image gallery section (named) -->
                 {#if galleryImages.length > 1}
-                    <section class="px-3 pt-2">
-                        <h2 class="text-base font-bold text-white mb-1.5 flex items-center gap-1.5">
+                    <section class="px-4 md:px-5 pt-3 border-t border-white/10">
+                        <h2 class="text-base font-bold text-white mb-2 flex items-center gap-1.5">
                             <span class="w-1 h-4 bg-pink-500 rounded-full"></span>
                             גלריית תמונות ({galleryImages.length})
                         </h2>
@@ -1738,22 +1742,19 @@
                 {/if}
 
                 <!-- Content -->
-                <div class="px-3 md:px-4 pt-1 pb-2">
-                    <div class="space-y-1.5">
+                <div class="px-4 md:px-5 pt-2 pb-3">
+                    <div class="space-y-3">
                         <!-- Main info -->
-                        <div class="space-y-1.5">
+                        <div class="space-y-3">
                             {#if itemCondition}
-                                <section>
-                                    <h2 class="text-base font-bold text-white mb-1 flex items-center gap-1.5">
-                                        <span class="w-1 h-4 bg-orange-500 rounded-full"></span>
-                                        מצב הפריט
+                                <section class="flex items-center flex-wrap gap-2 pt-3 border-t border-white/10">
+                                    <h2 class="text-base font-bold text-white flex items-center gap-1.5">
+                                        <span class="w-1 h-4 bg-orange-500 rounded-full"></span>מצב הפריט
                                     </h2>
-                                    <div class="bg-white/5 p-2 rounded-lg border border-white/5 flex items-center gap-2">
-                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-bold border {conditionBadgeClass(itemCondition)}">
-                                            <span aria-hidden="true">{conditionIcon(itemCondition)}</span>
-                                            <span>{itemCondition}</span>
-                                        </span>
-                                    </div>
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-bold border {conditionBadgeClass(itemCondition)}">
+                                        <span aria-hidden="true">{conditionIcon(itemCondition)}</span>
+                                        <span>{itemCondition}</span>
+                                    </span>
                                 </section>
                             {/if}
 
@@ -1860,33 +1861,29 @@
                                 {/if}
                             {:else}
                                 {@const waDigits = displayPhone ? String(displayPhone).replace(/\D/g, '').replace(/^0/, '972') : ''}
-                                <div
-                                    class="bg-gradient-to-br from-purple-600 to-blue-600 p-2 rounded-xl shadow-md"
-                                >
-                                    <h3 class="text-white font-bold text-base mb-2">
-                                        זקוק לפרטים נוספים?
+                                <div class="rounded-xl border border-white/10 bg-gradient-to-br from-purple-600/90 to-blue-600/90 p-3">
+                                    <h3 class="text-white font-bold text-sm mb-2 flex items-center gap-1.5">
+                                        <span aria-hidden="true">📞</span> יצירת קשר עם המפרסם
                                     </h3>
-                                    <p class="text-white/80 text-xs mb-3">
-                                        צור קשר ישירות עם המפרסם לקבלת פרטים נוספים
-                                        או תיאום.
-                                    </p>
                                     {#if displayPhone}
-                                        <a
-                                            href="tel:{displayPhone}"
-                                            aria-label="התקשר עכשיו – {displayPhone}"
-                                            class="block w-full bg-white text-purple-600 font-bold py-2 rounded-lg text-center shadow-lg hover:scale-105 transition-transform text-sm"
-                                        >
-                                            📞 התקשר עכשיו
-                                        </a>
-                                        <a
-                                            href={`https://wa.me/${waDigits}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            aria-label="שלח הודעה בוואטסאפ"
-                                            class="block w-full mt-2 bg-white/10 hover:bg-white/20 text-white font-bold py-2 rounded-lg text-center transition-all border border-white/20 text-sm"
-                                        >
-                                            💬 שלח הודעה בוואטסאפ
-                                        </a>
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <a
+                                                href="tel:{displayPhone}"
+                                                aria-label="התקשר עכשיו – {displayPhone}"
+                                                class="bg-white text-purple-700 font-bold py-2 rounded-lg text-center shadow hover:scale-[1.02] active:scale-95 transition-transform text-sm"
+                                            >
+                                                📞 התקשרו
+                                            </a>
+                                            <a
+                                                href={`https://wa.me/${waDigits}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                aria-label="שלח הודעה בוואטסאפ"
+                                                class="bg-white/15 hover:bg-white/25 text-white font-bold py-2 rounded-lg text-center border border-white/25 transition-all text-sm"
+                                            >
+                                                💬 וואטסאפ
+                                            </a>
+                                        </div>
                                     {:else}
                                         <p class="text-white/80 text-xs text-center bg-white/10 rounded-lg py-2 px-2">
                                             פרטי יצירת קשר אינם זמינים לפריט זה.
