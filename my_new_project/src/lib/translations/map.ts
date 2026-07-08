@@ -117,7 +117,7 @@ export const he = {
 
         // ----- סינון קטגוריות (מובייל) -----
         open_category_filter: "פתח סינון קטגוריות",
-        choose_category: "בחר קטגוריה",
+        choose_category: "סנן קטגוריה",
         category_filter: "סינון קטגוריות",
         drag_to_close: "גרור למטה כדי לסגור",
         sheet_title: "סנן את היתרונות הדרושים לך",
@@ -337,7 +337,7 @@ export const en = {
         click_activate_map: "Click to activate the map",
 
         open_category_filter: "Open category filter",
-        choose_category: "Choose category",
+        choose_category: "Filter category",
         category_filter: "Category filter",
         drag_to_close: "Drag down to close",
         sheet_title: "Filter the benefits you need",
@@ -549,7 +549,7 @@ export const ru = {
         click_activate_map: "Нажмите, чтобы активировать карту",
 
         open_category_filter: "Открыть фильтр категорий",
-        choose_category: "Выбрать категорию",
+        choose_category: "Фильтр категорий",
         category_filter: "Фильтр категорий",
         drag_to_close: "Потяните вниз, чтобы закрыть",
         sheet_title: "Отфильтруйте нужные вам преимущества",
