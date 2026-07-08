@@ -1604,7 +1604,7 @@
                 {#if neighborhoodDbItems.length > 0}
                     {#key `${selectedCategory}-${neighborhoodState.neighborhood}-${neighborhoodDbItems.length}`}
                         <div
-                            class="neighborhood-count-fade absolute top-16 right-4 z-20 bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 text-white text-base font-black px-5 py-2.5 rounded-xl shadow-lg border border-orange-300/60"
+                            class="neighborhood-count-fade absolute top-24 right-4 z-20 bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 text-white text-lg font-black px-6 py-3 rounded-lg shadow-lg border border-orange-300/60"
                         >
                             {selectedCategory === 'giveaway'
                                 ? $t('map.giveaways_in_hood', { values: { n: neighborhoodDbItems.length } })
@@ -2319,12 +2319,12 @@
     /* ===== מספר הפריטים בשכונה - מופיע לכמה שניות ואז נעלם בהדרגה ===== */
     @keyframes neighborhoodCountFade {
         0%   { opacity: 0; transform: translateY(-6px); }
-        8%   { opacity: 1; transform: translateY(0); }
-        45%  { opacity: 1; transform: translateY(0); }
+        5%   { opacity: 1; transform: translateY(0); }
+        22%  { opacity: 1; transform: translateY(0); }
         100% { opacity: 0; transform: translateY(0); }
     }
     .neighborhood-count-fade {
-        animation: neighborhoodCountFade 14s ease-in-out forwards;
+        animation: neighborhoodCountFade 22s ease-in-out forwards;
         pointer-events: none;
     }
 
