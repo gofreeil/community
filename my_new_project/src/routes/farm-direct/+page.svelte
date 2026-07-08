@@ -1,5 +1,7 @@
 <script lang="ts">
     import { onMount } from 'svelte';
+    import { get } from 'svelte/store';
+    import { _ } from 'svelte-i18n';
     import { neighborhoodState } from '$lib/neighborhoodState.svelte';
     import {
         getProductsForNeighborhood,
@@ -46,7 +48,7 @@
     }
     function confirmOrder() {
         if (!customerName.trim() || !customerPhone.trim()) {
-            alert('נא למלא שם וטלפון ליצירת קשר');
+            alert(get(_)('extras.f_fill_contact'));
             return;
         }
         step = 'done';
@@ -79,42 +81,42 @@
         <!-- ===== כותרת ===== -->
         <div class="text-center mb-6">
             <h1 class="text-3xl md:text-4xl font-black bg-gradient-to-r from-green-400 via-emerald-400 to-lime-400 bg-clip-text text-transparent mb-3">
-                🌾 חקלאות ישירה
+                {$_('extras.f_title')}
             </h1>
             <p class="text-gray-300 text-sm md:text-base max-w-2xl mx-auto leading-relaxed">
-                פעם בשבוע - תוצרת טרייה ישירות מהחקלאים אל שכונת
+                {$_('extras.f_intro_1')}
                 <span class="text-emerald-300 font-bold">{neighborhoodState.neighborhood}</span>.
-                בחרו מראש את המוצרים, סמנו כמות, וקבלו אותם במקום ובמועד המכירה.
+                {$_('extras.f_intro_2')}
             </p>
         </div>
 
         <!-- ===== מקום ומועד המכירה ===== -->
         <div class="bg-gradient-to-br from-emerald-900/40 to-green-900/30 border border-emerald-500/30 rounded-2xl p-4 md:p-5 mb-6">
             <h2 class="text-emerald-300 font-bold text-sm mb-3 flex items-center gap-2">
-                📍 מקום ומועד המכירה
+                {$_('extras.f_sale_info')}
             </h2>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
                 <div class="bg-black/30 rounded-xl py-3 px-2">
                     <div class="text-2xl mb-1">🏠</div>
                     <div class="text-white font-bold text-sm">{saleInfo.location}</div>
-                    <div class="text-gray-500 text-[11px] mt-0.5">מקום</div>
+                    <div class="text-gray-500 text-[11px] mt-0.5">{$_('extras.f_place')}</div>
                 </div>
                 <div class="bg-black/30 rounded-xl py-3 px-2">
                     <div class="text-2xl mb-1">📅</div>
                     <div class="text-white font-bold text-sm">{saleInfo.day}</div>
-                    <div class="text-gray-500 text-[11px] mt-0.5">יום</div>
+                    <div class="text-gray-500 text-[11px] mt-0.5">{$_('extras.f_day')}</div>
                 </div>
                 <div class="bg-black/30 rounded-xl py-3 px-2">
                     <div class="text-2xl mb-1">🕓</div>
                     <div class="text-white font-bold text-sm">{saleInfo.time}</div>
-                    <div class="text-gray-500 text-[11px] mt-0.5">שעות</div>
+                    <div class="text-gray-500 text-[11px] mt-0.5">{$_('extras.f_hours')}</div>
                 </div>
             </div>
         </div>
 
         {#if isMock}
             <p class="text-center text-amber-300/80 text-xs mb-5">
-                💡 אלו מוצרי דוגמה. ברגע שחקלאי יפרסם תוצרת לשכונת {neighborhoodState.neighborhood} - הרשימה תתעדכן.
+                {$_('extras.f_mock_note', { values: { neighborhood: neighborhoodState.neighborhood } })}
             </p>
         {/if}
 
@@ -123,10 +125,10 @@
             <div class="bg-[#0f172a] border border-white/10 rounded-2xl overflow-hidden mb-6">
                 <!-- כותרת טבלה (דסקטופ) -->
                 <div class="hidden md:grid grid-cols-[2.2fr_0.9fr_2fr_1.4fr] gap-2 bg-black/40 px-4 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-wide">
-                    <div>מוצר ומספק</div>
-                    <div class="text-center">מחיר</div>
-                    <div>הערות</div>
-                    <div class="text-center">מעוניין / כמות</div>
+                    <div>{$_('extras.f_th_product')}</div>
+                    <div class="text-center">{$_('extras.f_th_price')}</div>
+                    <div>{$_('extras.f_th_notes')}</div>
+                    <div class="text-center">{$_('extras.f_th_interest')}</div>
                 </div>
 
                 {#each products as p (p.id)}
@@ -148,7 +150,7 @@
                         <!-- מחיר -->
                         <div class="mt-2 md:mt-0 text-emerald-300 font-black text-base md:text-center">
                             ₪{p.price}
-                            <span class="text-gray-500 font-normal text-[11px] md:hidden">ל{p.unit}</span>
+                            <span class="text-gray-500 font-normal text-[11px] md:hidden">{$_('extras.f_per_unit', { values: { unit: p.unit } })}</span>
                         </div>
 
                         <!-- הערות -->
@@ -162,28 +164,28 @@
                                     onclick={() => toggleInterest(p)}
                                     class="w-full md:w-auto bg-white/5 hover:bg-emerald-600 border border-emerald-500/40 text-emerald-300 hover:text-white text-sm font-bold px-4 py-2 rounded-xl transition-all cursor-pointer"
                                 >
-                                    + מעוניין
+                                    {$_('extras.f_interested')}
                                 </button>
                             {:else}
                                 <div class="flex items-center gap-1 bg-black/40 rounded-xl border border-emerald-500/40 p-1">
                                     <button
                                         type="button"
                                         onclick={() => setQty(p, qty - 1)}
-                                        aria-label="הפחת כמות"
+                                        aria-label={$_('extras.f_qty_minus')}
                                         class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white font-black text-lg leading-none cursor-pointer"
                                     >−</button>
                                     <span class="w-8 text-center text-white font-black">{qty}</span>
                                     <button
                                         type="button"
                                         onclick={() => setQty(p, qty + 1)}
-                                        aria-label="הוסף כמות"
+                                        aria-label={$_('extras.f_qty_plus')}
                                         class="w-8 h-8 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-black text-lg leading-none cursor-pointer"
                                     >+</button>
                                 </div>
                                 <button
                                     type="button"
                                     onclick={() => setQty(p, 0)}
-                                    aria-label="הסר מוצר"
+                                    aria-label={$_('extras.f_remove_product')}
                                     class="text-gray-500 hover:text-red-400 text-sm cursor-pointer"
                                 >✕</button>
                             {/if}
@@ -197,9 +199,9 @@
                 <div class="bg-[#0f172a] border border-emerald-500/40 rounded-2xl p-4 shadow-2xl flex items-center justify-between gap-4">
                     <div>
                         <div class="text-gray-400 text-xs">
-                            {selectedItems.length > 0 ? `${selectedItems.length} מוצרים נבחרו` : 'עדיין לא נבחרו מוצרים'}
+                            {selectedItems.length > 0 ? $_('extras.f_selected_count', { values: { n: selectedItems.length } }) : $_('extras.f_none_selected')}
                         </div>
-                        <div class="text-white font-black text-xl">סה"כ ₪{totalPrice}</div>
+                        <div class="text-white font-black text-xl">{$_('extras.f_total', { values: { total: totalPrice } })}</div>
                     </div>
                     <button
                         type="button"
@@ -207,7 +209,7 @@
                         disabled={!hasSelection}
                         class="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-bold px-6 py-3 rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                     >
-                        המשך לסיכום ←
+                        {$_('extras.f_continue')}
                     </button>
                 </div>
             </div>
@@ -215,7 +217,7 @@
         {:else if step === 'summary'}
             <!-- ===== סיכום הזמנה ===== -->
             <div class="bg-[#0f172a] border border-white/10 rounded-2xl p-5 md:p-6 mb-6">
-                <h2 class="text-white font-black text-xl mb-4 flex items-center gap-2">🧺 סיכום ההזמנה</h2>
+                <h2 class="text-white font-black text-xl mb-4 flex items-center gap-2">{$_('extras.f_order_summary')}</h2>
 
                 <div class="space-y-2 mb-4">
                     {#each selectedItems as row (row.product.id)}
@@ -223,7 +225,7 @@
                             <span class="text-xl">{row.product.logo}</span>
                             <div class="flex-1 min-w-0">
                                 <div class="text-white font-bold text-sm">{row.product.name}</div>
-                                <div class="text-gray-400 text-xs">{row.product.supplier} · ₪{row.product.price} ל{row.product.unit}</div>
+                                <div class="text-gray-400 text-xs">{row.product.supplier} · ₪{row.product.price} {$_('extras.f_per_unit', { values: { unit: row.product.unit } })}</div>
                             </div>
                             <div class="text-gray-300 text-sm font-bold whitespace-nowrap">× {row.qty}</div>
                             <div class="text-emerald-300 font-black text-sm whitespace-nowrap w-16 text-left">
@@ -234,23 +236,23 @@
                 </div>
 
                 <div class="flex items-center justify-between border-t border-white/10 pt-3 mb-5">
-                    <span class="text-white font-bold">סה"כ לתשלום</span>
+                    <span class="text-white font-bold">{$_('extras.f_total_pay')}</span>
                     <span class="text-emerald-300 font-black text-2xl">₪{totalPrice}</span>
                 </div>
 
                 <!-- פרטי המזמין -->
                 <div class="space-y-3 mb-5">
                     <div>
-                        <label for="cust-name" class="block text-white font-bold text-sm mb-1">שם מלא</label>
+                        <label for="cust-name" class="block text-white font-bold text-sm mb-1">{$_('extras.f_full_name')}</label>
                         <input
                             id="cust-name"
                             bind:value={customerName}
-                            placeholder="השם שלך"
+                            placeholder={$_('extras.f_name_ph')}
                             class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-4 py-2.5 focus:outline-none focus:border-emerald-500"
                         />
                     </div>
                     <div>
-                        <label for="cust-phone" class="block text-white font-bold text-sm mb-1">טלפון</label>
+                        <label for="cust-phone" class="block text-white font-bold text-sm mb-1">{$_('extras.f_phone')}</label>
                         <input
                             id="cust-phone"
                             type="tel"
@@ -263,7 +265,7 @@
 
                 <!-- תזכורת מקום ומועד -->
                 <div class="bg-emerald-900/30 border border-emerald-500/30 rounded-xl px-4 py-3 mb-5 text-sm text-emerald-100">
-                    📍 איסוף: <strong>{saleInfo.location}</strong>, {saleInfo.day}, {saleInfo.time}
+                    {$_('extras.f_pickup_label')} <strong>{saleInfo.location}</strong>, {saleInfo.day}, {saleInfo.time}
                 </div>
 
                 <div class="flex flex-col sm:flex-row gap-3">
@@ -272,14 +274,14 @@
                         onclick={() => { step = 'browse'; scrollTop(); }}
                         class="sm:flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-xl transition-all cursor-pointer"
                     >
-                        → חזרה לרשימה
+                        {$_('extras.f_back_list')}
                     </button>
                     <button
                         type="button"
                         onclick={confirmOrder}
                         class="sm:flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-bold py-3 rounded-xl transition-all cursor-pointer"
                     >
-                        אשר הזמנה ✓
+                        {$_('extras.f_confirm')}
                     </button>
                 </div>
             </div>
@@ -288,12 +290,12 @@
             <!-- ===== אישור הזמנה ===== -->
             <div class="bg-gradient-to-br from-emerald-900/40 to-green-900/30 border border-emerald-500/40 rounded-2xl p-8 text-center mb-6">
                 <div class="text-5xl mb-3">✅</div>
-                <h2 class="text-white font-black text-2xl mb-2">ההזמנה נקלטה!</h2>
+                <h2 class="text-white font-black text-2xl mb-2">{$_('extras.f_order_received')}</h2>
                 <p class="text-emerald-100 text-sm mb-4">
-                    תודה {customerName}. שריינו עבורך {selectedItems.length} מוצרים בסך ₪{totalPrice}.
+                    {$_('extras.f_thanks', { values: { name: customerName, n: selectedItems.length, total: totalPrice } })}
                 </p>
                 <div class="bg-black/30 rounded-xl px-4 py-3 inline-block text-sm text-gray-200">
-                    📍 איסוף ותשלום: <strong>{saleInfo.location}</strong><br />
+                    {$_('extras.f_pickup_pay')} <strong>{saleInfo.location}</strong><br />
                     {saleInfo.day}, {saleInfo.time}
                 </div>
                 <div class="mt-6">
@@ -302,7 +304,7 @@
                         onclick={resetOrder}
                         class="bg-gray-700 hover:bg-gray-600 text-white font-bold px-6 py-3 rounded-xl transition-all cursor-pointer"
                     >
-                        הזמנה חדשה
+                        {$_('extras.f_new_order')}
                     </button>
                 </div>
             </div>
@@ -311,7 +313,7 @@
         <!-- חזרה לדף הבית -->
         <div class="text-center mt-4">
             <a href="/" class="inline-block text-gray-500 hover:text-white text-sm transition-colors">
-                ← חזרה לדף הבית
+                {$_('extras.f_back_home')}
             </a>
         </div>
     </div>

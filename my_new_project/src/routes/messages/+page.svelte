@@ -1,5 +1,7 @@
 <script lang="ts">
     import { enhance } from '$app/forms';
+    import { get } from 'svelte/store';
+    import { _ } from 'svelte-i18n';
     import type { PageData } from './$types';
 
     let { data }: { data: PageData } = $props();
@@ -66,14 +68,15 @@
     function formatDate(iso: string): string {
         if (!iso) return '';
         const diff = Date.now() - new Date(iso).getTime();
+        const t = get(_);
         const mins = Math.floor(diff / 60000);
-        if (mins < 1)  return 'עכשיו';
-        if (mins < 60) return `לפני ${mins} דק'`;
+        if (mins < 1)  return t('extras.m_now');
+        if (mins < 60) return t('extras.m_mins_ago', { values: { n: mins } });
         const hours = Math.floor(mins / 60);
-        if (hours < 24) return `לפני ${hours} שע'`;
+        if (hours < 24) return t('extras.m_hours_ago', { values: { n: hours } });
         const days = Math.floor(hours / 24);
-        if (days === 1) return 'אתמול';
-        return `לפני ${days} ימים`;
+        if (days === 1) return t('extras.m_yesterday');
+        return t('extras.m_days_ago', { values: { n: days } });
     }
 
     function waLink(phone: string): string {
@@ -91,17 +94,16 @@
     <!-- Header -->
     <div class="mb-4">
         <h1 class="text-2xl font-black text-white flex items-center gap-2">
-            ✉️ הודעות אישיות
+            {$_('extras.m_title')}
         </h1>
-        <p class="text-gray-400 text-sm mt-0.5">{data.messages.length} הודעות</p>
+        <p class="text-gray-400 text-sm mt-0.5">{$_('extras.m_count', { values: { n: data.messages.length } })}</p>
     </div>
 
     <!-- הסבר חד-פעמי על מחיקה אוטומטית -->
     {#if data.messages.length > 0}
         <div class="mb-4 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5">
             <p class="text-gray-400 text-xs leading-relaxed text-center">
-                ℹ️ נשמרות עד <span class="font-bold text-gray-300">100 ההודעות האחרונות</span> או <span class="font-bold text-gray-300">3 חודשים</span> אחורה (המוקדם מביניהם).
-                הודעה שסומנה בכפתור <span class="font-bold text-amber-300">📌 שמור</span> נשמרת לתמיד.
+                {$_('extras.m_auto_1')} <span class="font-bold text-gray-300">{$_('extras.m_auto_days')}</span> {$_('extras.m_auto_2')} <span class="font-bold text-amber-300">{$_('extras.m_auto_save')}</span>.
             </p>
         </div>
     {/if}
@@ -114,23 +116,23 @@
                     onclick={() => view = 'all'}
                     class="px-3 py-1.5 rounded-lg text-sm font-bold transition-all cursor-pointer {view === 'all' ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-white'}"
                 >
-                    הכל
+                    {$_('extras.m_tab_all')}
                 </button>
                 <button
                     onclick={() => view = 'archive'}
                     class="px-3 py-1.5 rounded-lg text-sm font-bold transition-all cursor-pointer {view === 'archive' ? 'bg-amber-600 text-white' : 'text-gray-400 hover:text-white'}"
                 >
-                    📌 שמורות ({archiveCount})
+                    {$_('extras.m_tab_saved', { values: { n: archiveCount } })}
                 </button>
             </div>
 
             <form method="POST" action="?/deleteAll" use:enhance>
                 <button
                     type="submit"
-                    onclick={(e) => { if (!confirm('למחוק לצמיתות את כל ההודעות? פעולה זו אינה הפיכה.')) e.preventDefault(); }}
+                    onclick={(e) => { if (!confirm(get(_)('extras.m_confirm_delete_all'))) e.preventDefault(); }}
                     class="px-3 py-1.5 rounded-lg bg-red-600/15 text-red-300 border border-red-500/30 hover:bg-red-600/30 text-sm font-bold transition-all cursor-pointer"
                 >
-                    🗑 מחק הכל
+                    {$_('extras.m_delete_all')}
                 </button>
             </form>
         </div>
@@ -140,12 +142,12 @@
         <div class="text-center py-16">
             <div class="text-5xl mb-3">{view === 'archive' ? '📌' : '📭'}</div>
             <p class="font-bold text-lg text-gray-400">
-                {view === 'archive' ? 'אין הודעות שמורות' : 'אין הודעות עדיין'}
+                {view === 'archive' ? $_('extras.m_empty_saved') : $_('extras.m_empty_all')}
             </p>
             <p class="text-gray-500 text-sm mt-1">
                 {view === 'archive'
-                    ? 'הודעות שתסמן לשמירה יישמרו כאן ולא יימחקו מהתצוגה בפרופיל'
-                    : 'כשמישהו ישלח לך הודעה בנוגע למודעה שפרסמת - היא תופיע כאן'}
+                    ? $_('extras.m_empty_saved_sub')
+                    : $_('extras.m_empty_all_sub')}
             </p>
         </div>
     {:else}
@@ -163,11 +165,11 @@
                             </div>
                             <div>
                                 <p class="text-white font-bold text-sm leading-tight flex items-center gap-1">
-                                    {sender.name || 'אנונימי'}
-                                    {#if archived}<span class="text-amber-400 text-xs">📌 שמור</span>{/if}
+                                    {sender.name || $_('extras.m_anonymous')}
+                                    {#if archived}<span class="text-amber-400 text-xs">{$_('extras.m_saved_badge')}</span>{/if}
                                 </p>
                                 {#if itemLabel}
-                                    <p class="text-gray-500 text-xs">בנוגע ל: {itemLabel}</p>
+                                    <p class="text-gray-500 text-xs">{$_('extras.m_regarding', { values: { label: itemLabel } })}</p>
                                 {/if}
                             </div>
                         </div>
@@ -187,9 +189,9 @@
                                 📞 {sender.phone}
                             </a>
                             <a href={waLink(sender.phone)} target="_blank" rel="noopener noreferrer"
-                                aria-label="שלח הודעת וואטסאפ (נפתח בחלון חדש)"
+                                aria-label={$_('extras.m_wa_aria')}
                                 class="px-4 py-2 rounded-xl bg-green-600/20 hover:bg-green-600 text-green-300 hover:text-white text-sm font-bold transition-all border border-green-500/30">
-                                💬 וואטסאפ
+                                {$_('extras.m_whatsapp')}
                             </a>
                         </div>
                     {/if}
@@ -203,33 +205,33 @@
                                 type="submit"
                                 class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border {archived ? 'bg-amber-500/10 text-amber-300 border-amber-500/30 hover:bg-amber-500/20' : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10'}"
                             >
-                                {archived ? '✓ הסר מהשמורים' : '📌 שמור (ארכיון)'}
+                                {archived ? $_('extras.m_unsave') : $_('extras.m_save_archive')}
                             </button>
                         </form>
 
                         <button
                             onclick={() => markUnread(msg.id)}
                             class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer bg-blue-500/10 text-blue-300 border border-blue-500/30 hover:bg-blue-500/20"
-                            title="ההודעה תחזור כהתראה לא-נקראה בדף הפרופיל"
+                            title={$_('extras.m_mark_unread_title')}
                         >
-                            🔔 החזר ללא-נקרא
+                            {$_('extras.m_mark_unread')}
                         </button>
 
                         <form method="POST" action="?/delete" use:enhance class="ms-auto">
                             <input type="hidden" name="id" value={msg.id} />
                             <button
                                 type="submit"
-                                onclick={(e) => { if (!confirm('למחוק לצמיתות את ההודעה הזו? פעולה זו אינה הפיכה.')) e.preventDefault(); }}
+                                onclick={(e) => { if (!confirm(get(_)('extras.m_confirm_delete'))) e.preventDefault(); }}
                                 class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer bg-red-500/10 text-red-300 border border-red-500/30 hover:bg-red-500/20"
                             >
-                                🗑 מחק לצמיתות
+                                {$_('extras.m_delete')}
                             </button>
                         </form>
                     </div>
 
                     {#if archived}
                         <p class="text-amber-400/70 text-[11px] mt-2">
-                            📌 שמור - לא יימחק אוטומטית
+                            {$_('extras.m_saved_note')}
                         </p>
                     {/if}
                 </div>
@@ -240,7 +242,7 @@
     <!-- Back -->
     <div class="text-center mt-6">
         <a href="/profile" class="text-gray-500 hover:text-gray-300 text-sm transition-colors">
-            ← חזרה לפרופיל
+            {$_('extras.m_back_profile')}
         </a>
     </div>
 </div>

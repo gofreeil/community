@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { _ } from 'svelte-i18n';
 	import type { PageData } from './$types';
 	let { data }: { data: PageData } = $props();
 
@@ -6,11 +7,11 @@
 	let activeCategory = $state<TxCategory>('all');
 
 	const categories: { id: TxCategory; label: string; icon: string }[] = [
-		{ id: 'all',      label: 'הכל',    icon: '💳' },
-		{ id: 'income',   label: 'הכנסות', icon: '📈' },
-		{ id: 'transfer', label: 'העברות', icon: '🔄' },
-		{ id: 'purchase', label: 'רכישות', icon: '🛒' },
-		{ id: 'charity',  label: 'צדקה',   icon: '🤲' },
+		{ id: 'all',      label: 'r_cat_all',      icon: '💳' },
+		{ id: 'income',   label: 'r_cat_income',   icon: '📈' },
+		{ id: 'transfer', label: 'r_cat_transfer', icon: '🔄' },
+		{ id: 'purchase', label: 'r_cat_purchase', icon: '🛒' },
+		{ id: 'charity',  label: 'r_cat_charity',  icon: '🤲' },
 	];
 
 	const filteredReceipts = $derived(
@@ -31,7 +32,7 @@
 		<svg class="w-4 h-4 rotate-180 group-hover:-translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
 			<polyline points="9 18 15 12 9 6"/>
 		</svg>
-		חזרה לפרופיל
+		{$_('extras.r_back_profile')}
 	</a>
 
 	<!-- כפתור אימות דו-שלבי לאדמין (מהבהב אדום עד הפעלה, ירוק כשפעיל) -->
@@ -43,17 +44,17 @@
 					{data.user.totp_enabled
 						? 'bg-green-500/15 border-green-500/40 text-green-200 hover:bg-green-500/25'
 						: 'bg-red-500/15 border-red-500/50 text-red-200 hover:bg-red-500/25 animate-pulse'}"
-				title={data.user.totp_enabled ? 'אימות דו-שלבי פעיל' : 'הפעל אימות דו-שלבי - מומלץ!'}
+				title={data.user.totp_enabled ? $_('extras.r_2fa_active_title') : $_('extras.r_2fa_enable_title')}
 			>
-				🔐 {data.user.totp_enabled ? '2FA פעיל' : 'הפעל 2FA'}
+				🔐 {data.user.totp_enabled ? $_('extras.r_2fa_active') : $_('extras.r_2fa_enable')}
 			</a>
 		</div>
 	{/if}
 
 	<!-- כותרת דף -->
 	<div class="text-center mb-8">
-		<h1 class="text-3xl font-black text-white leading-tight">ארנק ותגמולים</h1>
-		<p class="text-purple-400 text-sm mt-1">מעקב יתרה, הוצאות ורווחים</p>
+		<h1 class="text-3xl font-black text-white leading-tight">{$_('extras.r_title')}</h1>
+		<p class="text-purple-400 text-sm mt-1">{$_('extras.r_subtitle')}</p>
 	</div>
 
 	<!-- כרטיס יתרה -->
@@ -63,7 +64,7 @@
 			style="background: radial-gradient(ellipse at 70% 30%, #7c3aed 0%, transparent 60%);">
 		</div>
 		<div class="relative p-8 flex flex-col gap-1">
-			<span class="text-purple-300 text-sm font-bold">היתרה הנוכחית שלי</span>
+			<span class="text-purple-300 text-sm font-bold">{$_('extras.r_balance')}</span>
 			<span class="text-5xl font-black text-white mt-1">{data.balance}<span class="text-2xl text-purple-300 mr-1">₪</span></span>
 			<span class="text-purple-400/70 text-xs mt-2">{data.user?.name ?? ''}</span>
 		</div>
@@ -84,7 +85,7 @@
 						: 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white border border-white/10'}"
 			>
 				<span>{cat.icon}</span>
-				{cat.label}
+				{$_(`extras.${cat.label}`)}
 			</button>
 		{/each}
 	</div>
@@ -92,14 +93,14 @@
 	<!-- כותרת רשימה -->
 	<h2 class="text-lg font-black text-white mb-4 flex items-center gap-2">
 		<span class="w-5 h-5 rounded-full bg-purple-600 text-white text-xs font-black flex items-center justify-center">₪</span>
-		פירוט תקבולים
+		{$_('extras.r_tx_list')}
 	</h2>
 
 	<!-- רשימת תקבולים -->
 	{#if filteredReceipts.length === 0}
 		<div class="text-center py-16 text-gray-500">
 			<span class="text-5xl block mb-4">📭</span>
-			<p class="text-sm">אין תקבולים להצגה</p>
+			<p class="text-sm">{$_('extras.r_empty')}</p>
 		</div>
 	{:else}
 		<div class="flex flex-col gap-3">
@@ -120,7 +121,7 @@
 	<!-- קומת שיטת התגמול -->
 	<div class="mt-8 px-2">
 		<p class="text-lg md:text-xl font-bold text-yellow-300">
-			<a href="/about/revenue#rewards" class="hover:text-yellow-200 underline underline-offset-4 decoration-yellow-400/60 hover:decoration-yellow-300 transition-colors">הכר את שיטת התגמול של הקהילה ←</a>
+			<a href="/about/revenue#rewards" class="hover:text-yellow-200 underline underline-offset-4 decoration-yellow-400/60 hover:decoration-yellow-300 transition-colors">{$_('extras.r_rewards_link')}</a>
 		</p>
 	</div>
 
