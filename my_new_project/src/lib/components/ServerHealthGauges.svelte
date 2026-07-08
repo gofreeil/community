@@ -103,13 +103,13 @@
 		if (!h) return [];
 		const m = h.metrics;
 		return [
-			{ key: 'cpu',  icon: '🔥', label: 'מעבד',     load: m.cpu.load,  util: m.cpu.util,  score: m.cpu.score,
+			{ key: 'cpu',  icon: '🔥', label: 'מעבד',     load: m.cpu.load ?? m.cpu.util,  util: m.cpu.util,  score: m.cpu.score,
 			  sub: `עומס ${m.cpu.load1} · ${m.cpu.cores} ליבות` },
-			{ key: 'ram',  icon: '🧠', label: 'זיכרון RAM', load: m.ram.load,  util: m.ram.util,  score: m.ram.score,
+			{ key: 'ram',  icon: '🧠', label: 'זיכרון RAM', load: m.ram.load ?? m.ram.util,  util: m.ram.util,  score: m.ram.score,
 			  sub: `${m.ram.usedGb} / ${m.ram.totalGb} GB` },
-			{ key: 'disk', icon: '💾', label: 'דיסק',     load: m.disk?.load ?? 0, util: m.disk?.util ?? 0, score: m.disk?.score ?? 1,
+			{ key: 'disk', icon: '💾', label: 'דיסק',     load: m.disk?.load ?? m.disk?.util ?? 0, util: m.disk?.util ?? 0, score: m.disk?.score ?? 1,
 			  sub: m.disk ? `${m.disk.usedGb} / ${m.disk.totalGb} GB` : 'לא זמין' },
-			{ key: 'resp', icon: '⚡', label: 'זמן תגובה', load: m.response.load, util: m.response.util, score: m.response.score,
+			{ key: 'resp', icon: '⚡', label: 'זמן תגובה', load: m.response.load ?? m.response.util, util: m.response.util, score: m.response.score,
 			  sub: m.response.latencyMs == null ? 'אין מדידה' : `${m.response.latencyMs} ms` },
 		];
 	});
@@ -158,7 +158,7 @@
 							<line x1={t.in[0]} y1={t.in[1]} x2={t.out[0]} y2={t.out[1]} class="tick" />
 							<text x={t.lbl[0]} y={t.lbl[1] + 3} class="tick-lbl">{t.i}</text>
 						{/each}
-						<g class="needle" style="transform:rotate({needleRot(health.load)}deg)">
+						<g class="needle" style="transform:rotate({needleRot(health.load ?? health.util)}deg)">
 							<polygon points="{CX-4},{CY} {CX+4},{CY} {CX},{CY - (R - 20)}" fill={st.tone} />
 						</g>
 						<circle cx={CX} cy={CY} r="8" class="hub" />
