@@ -1587,9 +1587,17 @@
                     </button>
                 {/if}
 
-                <!-- כפתורי זום - עובדים גם מעל שכבת ההפעלה (במיוחד בנייד שאין גלגלת) -->
-                <!-- מוסתרים במסך-מלא: שם ה-X בפינה השמאלית העליונה + זום ייעודי בפינה הימנית התחתונה -->
-                <div class="absolute top-3 left-3 z-30 flex-col gap-1.5 {isFullscreen ? 'hidden' : 'flex'}">
+                <!-- כפתורי זום + מסך-מלא - עובדים גם מעל שכבת ההפעלה (במיוחד בנייד שאין גלגלת) -->
+                <!-- ממוקמים בפינה הימנית-תחתונה (מעל הקרדיט) כדי לא להסתיר את פינת "המעבר לרשימה" השמאלית-עליונה -->
+                <!-- מוסתרים במסך-מלא: שם ה-X בראש המפה + זום ייעודי בפינה הימנית התחתונה -->
+                <div class="absolute bottom-9 right-3 z-30 flex-col gap-1.5 {isFullscreen ? 'hidden' : 'flex'}">
+                    <button
+                        type="button"
+                        onclick={(e) => { e.stopPropagation(); openFullscreen(); }}
+                        class="w-10 h-10 mb-1 rounded-lg bg-purple-600/80 hover:bg-purple-500 text-white text-xl leading-none flex items-center justify-center backdrop-blur-sm border border-white/30 shadow-lg"
+                        aria-label={$t('map.open_fullscreen')}
+                        title={$t('map.open_fullscreen_title')}
+                    >⛶</button>
                     <button
                         type="button"
                         onclick={(e) => { e.stopPropagation(); activateMap(); zoomIn(); }}
