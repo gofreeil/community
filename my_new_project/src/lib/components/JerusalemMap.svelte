@@ -1634,9 +1634,9 @@
                     </div>
                 {/if}
 
-                <!-- מספר הפריטים בשכונה - מופיע לכמה שניות בצד ימין ואז נעלם לאט -->
+                <!-- מספר הפריטים בשכונה - מופיע פעם אחת בכניסה ופעם נוספת בכל סינון קטגוריה -->
                 {#if neighborhoodDbItems.length > 0}
-                    {#key `${selectedCategory}-${neighborhoodState.neighborhood}-${neighborhoodDbItems.length}`}
+                    {#key selectedCategory}
                         <div
                             class="neighborhood-count-fade absolute top-24 right-4 z-20 bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 text-white text-lg font-black px-6 py-3 rounded-lg shadow-lg border border-orange-300/60"
                         >
