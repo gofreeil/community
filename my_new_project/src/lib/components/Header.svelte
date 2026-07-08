@@ -443,7 +443,7 @@
                             opacity:0; transform:scale(0.05);
                             transform-origin: top center;">
                     <img
-                        src="/images/community-neighborhood.png"
+                        src="/images/community-advantages.png"
                         alt={tFn("welcome")}
                         style="width:580px; border-radius:24px;
                                -webkit-mask-image: radial-gradient(ellipse 90% 90% at 50% 50%, black 55%, transparent 100%);

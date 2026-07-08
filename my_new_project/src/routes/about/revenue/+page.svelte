@@ -171,7 +171,7 @@
 			<div class="absolute inset-0 pointer-events-none"
 				style="background:radial-gradient(ellipse at 60% 20%,rgba(139,92,246,0.4) 0%,transparent 60%),radial-gradient(ellipse at 20% 80%,rgba(59,130,246,0.25) 0%,transparent 50%);"></div>
 			<div class="relative z-10">
-				<img src="/images/community-neighborhood.png" alt={$_('aboutRevenue.heroImageAlt')} class="mx-auto mb-6 w-full md:w-[40rem] lg:w-[64rem] object-contain rounded-3xl" />
+				<img src="/images/community-advantages.png" alt={$_('aboutRevenue.heroImageAlt')} class="mx-auto mb-6 w-full md:w-[40rem] lg:w-[64rem] object-contain rounded-3xl" />
 				<h1 class="text-4xl md:text-5xl font-black leading-tight mb-4" style="color:#facc15;">{$_('aboutRevenue.heroTitle')}</h1>
 				<p class="text-indigo-100 text-base md:text-lg max-w-2xl mx-auto mb-6 font-bold">
 					{$_('aboutRevenue.heroSubtitle')}

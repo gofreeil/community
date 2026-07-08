@@ -344,17 +344,18 @@
     <link rel="canonical" href={SITE_URL} />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="קהילה בשכונה" />
-    <meta property="og:title" content="קהילה בשכונה — כל יתרונות השכונה במקום אחד" />
-    <meta property="og:description" content="יד שנייה, דירות, שידוכים, חוגים, גמ״חים, בייבי סיטר, טרמפים, אבדות ומציאות ועוד — חינם, לכל שכונה ויישוב בישראל." />
-    <meta property="og:image" content="https://community.gofreeil.com/images/community-logo1.png" />
-    <meta property="og:image:width" content="1024" />
-    <meta property="og:image:height" content="1024" />
+    <meta property="og:title" content="קהילה בשכונה" />
+    <meta property="og:description" content="כל יתרונות השכונה תחת קורת גג אחת" />
+    <meta property="og:image" content="https://community.gofreeil.com/images/community-advantages.png" />
+    <meta property="og:image:width" content="2620" />
+    <meta property="og:image:height" content="1748" />
+    <meta property="og:image:alt" content="קהילה בשכונה — כל יתרונות השכונה תחת קורת גג אחת" />
     <meta property="og:url" content="https://community.gofreeil.com" />
     <meta property="og:locale" content="he_IL" />
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="קהילה בשכונה — כל יתרונות השכונה במקום אחד" />
-    <meta name="twitter:description" content="יד שנייה, דירות, שידוכים, חוגים, גמ״חים, בייבי סיטר, טרמפים ועוד — חינם, לכל שכונה בישראל." />
-    <meta name="twitter:image" content="https://community.gofreeil.com/images/community-logo1.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="קהילה בשכונה" />
+    <meta name="twitter:description" content="כל יתרונות השכונה תחת קורת גג אחת" />
+    <meta name="twitter:image" content="https://community.gofreeil.com/images/community-advantages.png" />
 </svelte:head>
 
 <JsonLd schema={[websiteSchema(), organizationSchema(), homeFaq]} />
