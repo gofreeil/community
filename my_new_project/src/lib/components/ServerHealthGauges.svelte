@@ -14,8 +14,6 @@
 	let loading = $state(false);
 	let now = $state(Date.now());
 
-	const REFRESH_MS = 15_000;
-
 	// ---------- גאומטריית המחוג (חצי-עיגול, 0 משמאל → 10 מימין) ----------
 	const CX = 100, CY = 100, R = 82;
 	const TAU = Math.PI / 180;
@@ -75,7 +73,10 @@
 	}
 	const nf = new Intl.NumberFormat('he-IL');
 
-	// ---------- רענון חי ----------
+	// ---------- רענון ----------
+	// אין פולינג אוטומטי - כדי לא להעמיס על השרת. המדד מציג את מצב השרת
+	// כפי שנמדד בטעינת הדף (כלומר: מתעדכן בכל פעם שנכנסים ל-/admin), ומעבר לכך
+	// רק בלחיצה ידנית על ↻. פותחים את הדף פעם-פעמיים ביום = מתעדכן פעם-פעמיים ביום.
 	async function refresh() {
 		loading = true;
 		try {
@@ -88,14 +89,13 @@
 		}
 	}
 
-	let poll: ReturnType<typeof setInterval>;
+	// טיימר קל (ללא רשת) לעדכון תווית "עודכן לפני X" בלבד
 	let tick: ReturnType<typeof setInterval>;
 	onMount(() => {
-		poll = setInterval(refresh, REFRESH_MS);
-		tick = setInterval(() => (now = Date.now()), 1000);
-		if (!initial) refresh();
+		tick = setInterval(() => (now = Date.now()), 30_000);
+		if (!initial) refresh(); // טעינה ראשונית נכשלה בשרת → משיכה אחת בצד-לקוח
 	});
-	onDestroy(() => { clearInterval(poll); clearInterval(tick); });
+	onDestroy(() => clearInterval(tick));
 
 	// מדים משניים נגזרים מה-health
 	const subGauges = $derived.by(() => {
@@ -121,7 +121,7 @@
 			<span class="ico">🖥️</span>
 			<div>
 				<h2>מצב השרת</h2>
-				<p>עומס הבאקאנד בזמן אמת — מתי צריך לשדרג</p>
+				<p>עומס הבאקאנד — מתי צריך לשדרג · לחץ ↻ לרענון</p>
 			</div>
 		</div>
 		<div class="live">
