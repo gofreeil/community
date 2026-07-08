@@ -118,6 +118,8 @@
     let imagesOverride = $state<string[] | null>(null);
     let activitiesOverride = $state<ScheduleRow[] | null>(null);
     let linksOverride = $state<Array<{ label: string; url: string }> | null>(null);
+    // קישורי רשתות חברתיות + אתר שנשמרו הרגע במצב בנייה - מוצגים מיד בלי רענון
+    let socialOverride = $state<Record<string, string>>({});
 
     function openLightbox() { lightboxOpen = true; }
     function closeLightbox() { lightboxOpen = false; }
@@ -170,7 +172,10 @@
     const hasSocialLinks = $derived.by(() => {
         const ef = (item as { extraFields?: Record<string, unknown> } | null)?.extraFields;
         return ['website', 'facebook', 'instagram', 'youtube', 'tiktok']
-            .some(k => typeof ef?.[k] === 'string' && (ef[k] as string).trim() !== '');
+            .some(k => {
+                const v = socialOverride[k] ?? ef?.[k];
+                return typeof v === 'string' && v.trim() !== '';
+            });
     });
 
     const nickname = $derived<string>(
@@ -455,6 +460,41 @@
                 label: l.label || 'קישור',
                 url: /^https?:\/\//i.test(l.url) ? l.url : `https://${l.url}`,
             }));
+            editingField = '';
+        }
+    }
+
+    // ---- עורך רשתות חברתיות + אתר (כל קישור הופך לכפתור מותג עם הסמל של הרשת) ----
+    const SOCIAL_FIELDS: Array<{ key: string; emoji: string; label: string; placeholder: string }> = [
+        { key: 'website',   emoji: '🌐', label: 'אתר',      placeholder: 'https://האתר-שלכם.co.il' },
+        { key: 'facebook',  emoji: '📘', label: 'פייסבוק',   placeholder: 'https://facebook.com/...' },
+        { key: 'instagram', emoji: '📷', label: 'אינסטגרם',  placeholder: 'https://instagram.com/...' },
+        { key: 'youtube',   emoji: '▶️', label: 'יוטיוב',    placeholder: 'https://youtube.com/@...' },
+        { key: 'tiktok',    emoji: '🎵', label: 'טיקטוק',    placeholder: 'https://tiktok.com/@...' },
+    ];
+    let draftSocial = $state<Record<string, string>>({});
+
+    function startEditSocial() {
+        const ef = (item?.extraFields ?? {}) as Record<string, unknown>;
+        const cur: Record<string, string> = {};
+        for (const sf of SOCIAL_FIELDS) {
+            const v = socialOverride[sf.key] ?? ef[sf.key];
+            cur[sf.key] = typeof v === 'string' ? v : '';
+        }
+        draftSocial = cur;
+        editingField = 'social';
+        builderError = '';
+    }
+    async function saveSocial() {
+        const clean: Record<string, string> = {};
+        for (const sf of SOCIAL_FIELDS) {
+            let u = (draftSocial[sf.key] ?? '').trim();
+            if (u && !/^https?:\/\//i.test(u)) u = `https://${u}`;
+            clean[sf.key] = u;
+        }
+        const ok = await saveFields(clean, 'social');
+        if (ok) {
+            socialOverride = { ...socialOverride, ...clean };
             editingField = '';
         }
     }
@@ -983,7 +1023,7 @@
 {/snippet}
 
 {#snippet socialLinksBlock()}
-    {@const ef = (item?.isUserSubmitted ? item?.extraFields : null) as Record<string, unknown> | null}
+    {@const ef = (item?.isUserSubmitted ? { ...(item?.extraFields ?? {}), ...socialOverride } : null) as Record<string, unknown> | null}
     {@const website   = typeof ef?.website   === 'string' ? ef.website   : ''}
     {@const facebook  = typeof ef?.facebook  === 'string' ? ef.facebook  : ''}
     {@const instagram = typeof ef?.instagram === 'string' ? ef.instagram : ''}
@@ -995,7 +1035,28 @@
             <h2 class="text-base font-bold text-white mb-2 flex items-center gap-1.5">
                 <span class="w-1 h-4 bg-indigo-500 rounded-full"></span>קישורים
             </h2>
-            {#if builderMode && editingField === 'links'}
+            {#if builderMode && editingField === 'social'}
+                <!-- עורך רשתות חברתיות + אתר: כל קישור הופך לכפתור מותג עם הסמל של הרשת -->
+                <div class="rounded-xl border border-indigo-500/20 bg-indigo-500/[0.03] p-2.5 space-y-2">
+                    {@render tip('הדביקו את הקישורים שלכם - כל אחד יהפוך לכפתור מותג עם הסמל של הרשת. השאירו שדה ריק כדי להסיר.')}
+                    {#each SOCIAL_FIELDS as sf}
+                        <div class="flex items-center gap-1.5 bg-[#0f172a] rounded-lg p-1.5 border border-white/10">
+                            <span class="text-base shrink-0 w-6 text-center" aria-hidden="true">{sf.emoji}</span>
+                            <span class="text-xs text-gray-300 shrink-0 w-[68px]">{sf.label}</span>
+                            <input type="url" bind:value={draftSocial[sf.key]} placeholder={sf.placeholder} dir="ltr" maxlength="300"
+                                class="bg-[#0a0f1a] border border-white/15 rounded-md text-xs text-white px-2 py-1 flex-1 min-w-[120px]" />
+                        </div>
+                    {/each}
+                    {#if builderError}<p class="text-xs text-red-400">{builderError}</p>{/if}
+                    <div class="flex items-center gap-2 pt-1">
+                        <button type="button" onclick={saveSocial} disabled={savingTag === 'social'}
+                            class="text-xs font-bold text-white bg-amber-500 hover:bg-amber-400 disabled:opacity-50 rounded-lg px-3 py-1.5 transition-all">
+                            {savingTag === 'social' ? 'שומר…' : '💾 שמור'}
+                        </button>
+                        <button type="button" onclick={cancelEditField} class="text-xs font-bold text-gray-300 hover:text-white px-2 py-1.5">ביטול</button>
+                    </div>
+                </div>
+            {:else if builderMode && editingField === 'links'}
                 <!-- עורך קישורים: כל שורה הופכת לכפתור בדף -->
                 <div class="rounded-xl border border-amber-500/20 bg-amber-500/[0.03] p-2.5 space-y-2">
                     {@render tip('כל שורה הופכת לכפתור בדף: אתר, טופס הרשמה, קבוצת וואטסאפ, תרומות... כתבו שם קצר והדביקו קישור')}
@@ -1058,9 +1119,13 @@
                     </a>
                 {/if}
                 {#if builderMode}
+                    <button type="button" onclick={startEditSocial}
+                        class="flex items-center gap-2 border-2 border-dashed border-indigo-400/40 hover:border-indigo-400/70 bg-indigo-500/5 hover:bg-indigo-500/10 text-indigo-200 font-bold px-4 py-2.5 rounded-xl transition-all text-sm">
+                        🌐 {(website || facebook || instagram || youtube || tiktok) ? 'ערוך אתר וקישורים לרשתות' : 'הוסיפו אתר וקישורים לרשתות חברתיות'}
+                    </button>
                     <button type="button" onclick={startEditLinks}
                         class="flex items-center gap-2 border-2 border-dashed border-amber-400/40 hover:border-amber-400/70 bg-amber-500/5 hover:bg-amber-500/10 text-amber-200 font-bold px-4 py-2.5 rounded-xl transition-all text-sm">
-                        ➕ {customLinks.length ? 'ערוך קישורים' : 'הוסיפו כפתור או קישור (אתר, טופס הרשמה, קבוצת וואטסאפ...)'}
+                        ➕ {customLinks.length ? 'ערוך כפתורים מותאמים' : 'כפתור מותאם (טופס הרשמה, קבוצה, תרומות...)'}
                     </button>
                 {/if}
             </div>

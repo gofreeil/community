@@ -5,6 +5,17 @@ import { isSuperAdmin, isCoordinatorOfArea } from '$lib/server/auth';
 import { PLACE_STATUS_VALUES, DELETE_RESTORE_DAYS } from '$lib/placeStatus';
 import { categoryConfig } from '$lib/categoryFields';
 
+/** קישורי רשתות חברתיות + אתר - מותר לערוך אותם מדף הפריט לכל קטגוריה (הופכים לכפתורים מותגים) */
+const SOCIAL_LINK_KEYS = new Set(['website', 'facebook', 'instagram', 'youtube', 'tiktok']);
+
+/** נרמול URL של קישור חברתי/אתר: משלים https, מאמת מבנה בסיסי, מחזיר '' לניקוי */
+function normalizeSocialUrl(raw: unknown): string {
+    let u = typeof raw === 'string' ? raw.trim().slice(0, 300) : '';
+    if (!u) return '';
+    if (!/^https?:\/\//i.test(u)) u = `https://${u}`;
+    return /^https?:\/\/\S+\.\S+/i.test(u) ? u : '';
+}
+
 /** נרמול תשובת שאלת אבטחה להשוואה סלחנית (רווחים/אותיות/סימנים) */
 function normAnswer(s: string): string {
     return String(s ?? '').trim().toLowerCase().replace(/\s+/g, ' ');
@@ -133,6 +144,12 @@ export const PATCH: RequestHandler = async (event) => {
                 extra = extra ?? loadExtra();
                 const chosen = typeof raw === 'string' ? raw.trim() : '';
                 extra.map_image = chosen && isSafeImage(chosen) ? chosen : '';
+                continue;
+            }
+            // קישורי רשתות חברתיות + אתר - מותרים תמיד (כפתורים מותגים בדף), עם נרמול URL; '' מנקה
+            if (SOCIAL_LINK_KEYS.has(key)) {
+                extra = extra ?? loadExtra();
+                extra[key] = normalizeSocialUrl(raw);
                 continue;
             }
 
