@@ -1342,6 +1342,7 @@
                          שלא יתנגש עם התוכן. גלוי לבעלים / רכז / סופר-אדמין. -->
                     {#if (item as { isOwner?: boolean } | null)?.isOwner || singlesState === 'owner' || canEditPage}
                         <div class="rounded-xl border border-white/10 bg-white/5 p-2 flex flex-wrap items-center gap-1.5 mb-1">
+                            <span class="text-amber-300 text-sm shrink-0 leading-none" aria-hidden="true">✏️</span>
                             {#if canEditPage && !builderMode}
                                 <button type="button" onclick={() => (builderMode = true)}
                                     class="text-[11px] font-bold rounded-full px-2.5 py-1 border border-amber-500/40 bg-amber-500/15 text-amber-300 hover:bg-amber-500/30 transition-all whitespace-nowrap">
