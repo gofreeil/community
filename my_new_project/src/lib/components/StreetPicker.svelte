@@ -9,6 +9,7 @@
         withHouseNumber = true,
         onValueChange,
         onResolvedChange,
+        onStreetListChange,
     }: {
         city?: string;
         value?: string;
@@ -22,6 +23,11 @@
          * להציע סימון על המפה רק כשהכתובת לא נפתרה (רחוב חסר / ללא מספר).
          */
         onResolvedChange?: (resolved: boolean) => void;
+        /**
+         * מדווח האם לעיר הנבחרת יש בכלל רשימת רחובות רשמית. כשאין (יישוב קטן כמו
+         * כפר תפוח) - אי אפשר לאמת כתובת, והטופס המארח הופך את סימון המפה לחובה.
+         */
+        onStreetListChange?: (info: { hasList: boolean; loading: boolean }) => void;
     } = $props();
 
     // פירוק ערך קיים (טיוטא/עריכה) של "רחוב מספר" לשני השדות
@@ -92,6 +98,10 @@
     // כשאין רשימת רחובות לעיר כלל - אי אפשר לאמת, ולכן נחשב לא-פתור (→ מציעים מפה).
     const resolved = $derived(withHouseNumber ? (exactInList && houseNum.trim() !== '') : exactInList);
     $effect(() => { onResolvedChange?.(resolved); });
+
+    // דיווח זמינות רשימת הרחובות לעיר (אחרי סיום הטעינה) - הטופס המארח מחליט לפי זה
+    // אם להפוך את המפה לחובה.
+    $effect(() => { onStreetListChange?.({ hasList: streets.length > 0, loading }); });
 
     function pickStreet(s: string) {
         street = s;

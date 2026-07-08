@@ -31,6 +31,10 @@
     let respondedIds = $state<string[]>([]);
     let respondingId = $state<string | null>(null);
 
+    // הודעת "נכס נמחק" - מגיעה מדף הפריט אחרי מחיקה רכה (sessionStorage).
+    // מציגה שהנכס עדיין ניתן לשחזור עד תאריך, עם קישור לנכסים של המשתמש.
+    let deletedFlash = $state<{ name: string; until: string } | null>(null);
+
     function helpAnswered(ef: string): boolean {
         try { return JSON.parse(ef || '{}')?.answered === true; }
         catch { return false; }
@@ -186,6 +190,15 @@
         // אתחל עם נתוני פרופיל מהשרת (או localStorage כ-fallback)
         neighborhoodState.init(data.userNeighborhood, data.userCity);
         loadFavorites();
+        // קרא הודעת מחיקה שנקבעה בדף הפריט וצרוך אותה (חד-פעמי)
+        try {
+            const raw = sessionStorage.getItem('itemDeletedFlash');
+            if (raw) {
+                sessionStorage.removeItem('itemDeletedFlash');
+                const parsed = JSON.parse(raw);
+                if (parsed && parsed.until) deletedFlash = parsed;
+            }
+        } catch { /* אין sessionStorage - אין הודעה */ }
     });
 
     function handleToggleMenu() {
@@ -347,6 +360,29 @@
 <JsonLd schema={[websiteSchema(), organizationSchema(), homeFaq]} />
 
 <div class="pb-0 md:pb-8 pt-4 md:pt-8" onclick={() => calMenuOpen = null}>
+    <!-- הודעת "נכס נמחק" אחרי מחיקה רכה מדף הפריט (עדיין ניתן לשחזור) -->
+    {#if deletedFlash}
+        <div class="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] w-[92%] max-w-md" dir="rtl">
+            <div class="bg-[#0f172a] border border-amber-400/40 rounded-2xl shadow-2xl p-4 flex items-start gap-3">
+                <span class="text-2xl leading-none flex-shrink-0">🗑️</span>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-bold text-amber-200">הנכס "{deletedFlash.name}" ירד מהמפה</p>
+                    <p class="text-xs text-slate-300/90 mt-1 leading-relaxed">
+                        עדיין אפשר לשחזר אותו עד <span class="font-bold text-amber-100">{deletedFlash.until}</span>. לאחר מכן לא ניתן לשחזר.
+                    </p>
+                    <a href="/profile?tab=items" class="inline-flex items-center gap-1 mt-2 text-xs font-bold text-blue-300 hover:text-blue-200 transition-colors">
+                        לצפייה בנכסים שלי ↩
+                    </a>
+                </div>
+                <button
+                    type="button"
+                    onclick={() => deletedFlash = null}
+                    class="text-slate-400 hover:text-white transition-colors text-lg leading-none flex-shrink-0"
+                    aria-label="סגירה"
+                >✕</button>
+            </div>
+        </div>
+    {/if}
     <!-- כותרת SEO ראשית (נסרקת ע"י גוגל/AI, מוסתרת ויזואלית) -->
     <h1 class="sr-only">קהילה בשכונה — יד שנייה ולמסירה, דירות ואירוח לשבת, שידוכים, חוגים, גמ״חים, בייבי סיטר, טרמפים ואבדות ומציאות בשכונה ובכל יישוב בישראל</h1>
     <!-- Title Section - centered across full width -->

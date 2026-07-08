@@ -580,7 +580,17 @@
                 builderError = d.message || 'שגיאה במחיקה';
                 deletingItem = false;
             } else {
-                await goto('/profile?tab=items');
+                // המשתמש חוזר למפה (דף הבית), עם הודעה שהנכס עדיין ניתן לשחזור עד 30 יום
+                // + קישור לנכסים שלו. ההודעה מוצגת בדף הבית דרך sessionStorage.
+                try {
+                    const until = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                        .toLocaleDateString('he-IL', { day: 'numeric', month: 'long', year: 'numeric' });
+                    sessionStorage.setItem('itemDeletedFlash', JSON.stringify({
+                        name: displayLabel || 'הנכס',
+                        until,
+                    }));
+                } catch { /* אם sessionStorage לא זמין - פשוט נחזור למפה בלי הודעה */ }
+                await goto('/');
             }
         } catch {
             builderError = 'בעיית תקשורת - נסו שוב';

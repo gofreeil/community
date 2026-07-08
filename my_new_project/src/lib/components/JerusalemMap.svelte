@@ -684,10 +684,44 @@
         `;
     }
 
+    // פיזור מרקרים חופפים: ביישוב קטן כמה פריטים יושבים באותה נקודה בדיוק (או
+    // תוך ~40 מ') ומכסים זה את זה. מקבצים כאלה בקירבה ומסדרים אותם בטבעת קטנה
+    // סביב מרכז הקבוצה, כדי שכל אחד יהיה לחיץ בנפרד במקום ערימה אחת.
+    const CLUSTER_RADIUS = 0.00035; // ~38 מ' - סף הקירבה וגם רדיוס הטבעת
+    function spreadOverlapping<T extends { lat: number; lng: number }>(markers: T[]): T[] {
+        const clusters: { lat: number; lng: number; items: T[] }[] = [];
+        for (const m of markers) {
+            const c = clusters.find(
+                (cl) => Math.abs(cl.lat - m.lat) < CLUSTER_RADIUS && Math.abs(cl.lng - m.lng) < CLUSTER_RADIUS,
+            );
+            if (c) c.items.push(m);
+            else clusters.push({ lat: m.lat, lng: m.lng, items: [m] });
+        }
+        const out: T[] = [];
+        for (const c of clusters) {
+            if (c.items.length === 1) { out.push(c.items[0]); continue; }
+            // מרכז הקבוצה + פריסה בטבעת (lng מוכפל ב-1/cos(lat) כדי שהטבעת תיראה עגולה)
+            const cx = c.items.reduce((s, m) => s + m.lat, 0) / c.items.length;
+            const cy = c.items.reduce((s, m) => s + m.lng, 0) / c.items.length;
+            const lngScale = 1 / Math.max(0.2, Math.cos((cx * Math.PI) / 180));
+            const ring = CLUSTER_RADIUS * 1.35;
+            const n = c.items.length;
+            c.items.forEach((m, i) => {
+                const ang = (2 * Math.PI * i) / n - Math.PI / 2;
+                out.push({
+                    ...m,
+                    lat: cx + ring * Math.sin(ang),
+                    lng: cy + ring * Math.cos(ang) * lngScale,
+                });
+            });
+        }
+        return out;
+    }
+
     function rebuildMarkers() {
         if (!leafletL || !leafletMap || !mapMarkerLayer) return;
         mapMarkerLayer.clearLayers();
-        for (const m of dynamicMarkers) {
+        for (const m of spreadOverlapping(dynamicMarkers)) {
             if (!isMarkerVisible(m.category)) continue;
             const html = buildIconHtml(m.icon, m.label, m.color, m.isMock, m.mapImage);
             const divIcon = leafletL.divIcon({
