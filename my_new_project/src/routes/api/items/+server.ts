@@ -209,8 +209,13 @@ export const POST: RequestHandler = async (event) => {
                     ...(MODERATED_CATEGORIES.has(category) ? { status: 'pending' } : {}),
                 });
                 if (MODERATED_CATEGORIES.has(category)) {
-                    notifySinglesReview(String(label), (extra_fields ?? {}) as Record<string, unknown>)
-                        .catch((e) => console.warn('[api/items] singles review notify failed:', e));
+                    // await חובה: ב-Vercel כל עבודה לא-מוחכה אחרי ה-return מתה, וכאן
+                    // ה-return מיד אחריו - בלי await ההתראה לסופר-אדמין לא נכתבת כלל.
+                    try {
+                        await notifySinglesReview(String(label), (extra_fields ?? {}) as Record<string, unknown>);
+                    } catch (e) {
+                        console.warn('[api/items] singles review notify failed:', e);
+                    }
                 }
                 return json({ success: true, id: existing.id, updated: true, pending: MODERATED_CATEGORIES.has(category) });
             }
@@ -251,9 +256,13 @@ export const POST: RequestHandler = async (event) => {
     }
 
     // ---- כרטיס פנויים חדש: התראה לסופר-אדמינים לבדיקת תמונות/אישור ----
+    // await חובה כדי שההודעה תיכתב ל-Strapi לפני שה-lambda ב-Vercel נסגר.
     if (MODERATED_CATEGORIES.has(category)) {
-        notifySinglesReview(String(label), (extra_fields ?? {}) as Record<string, unknown>)
-            .catch((e) => console.warn('[api/items] singles review notify failed:', e));
+        try {
+            await notifySinglesReview(String(label), (extra_fields ?? {}) as Record<string, unknown>);
+        } catch (e) {
+            console.warn('[api/items] singles review notify failed:', e);
+        }
     }
 
     // ---- התאמת אירוח לשבת ----
