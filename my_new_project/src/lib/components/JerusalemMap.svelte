@@ -2319,12 +2319,12 @@
     /* ===== מספר הפריטים בשכונה - מופיע לכמה שניות ואז נעלם בהדרגה ===== */
     @keyframes neighborhoodCountFade {
         0%   { opacity: 0; transform: translateY(-6px); }
-        5%   { opacity: 1; transform: translateY(0); }
-        22%  { opacity: 1; transform: translateY(0); }
+        6%   { opacity: 1; transform: translateY(0); }
+        14%  { opacity: 1; transform: translateY(0); }
         100% { opacity: 0; transform: translateY(0); }
     }
     .neighborhood-count-fade {
-        animation: neighborhoodCountFade 22s ease-in-out forwards;
+        animation: neighborhoodCountFade 18s ease-in-out forwards;
         pointer-events: none;
     }
 
