@@ -1235,33 +1235,42 @@
         <div class="flex flex-col gap-2">
             <!-- Buttons Container -->
             <div class="relative category-buttons-wrapper" bind:this={categoryButtonsWrapperRef}>
-                <!-- Mobile: שורה אחת קומפקטית - חיפוש + כפתור פתיחת bottom sheet -->
+                <!-- Mobile: שורה אחת קומפקטית - סינון קטגוריות (ימין, צהוב) + שדה חיפוש חופשי (שמאל, רחב) -->
                 <div class="md:hidden px-3 py-2 w-full flex items-center gap-2">
-                    <!-- כפתור חיפוש (מחליף את שבב "כל היתרונות") -->
-                    <button
-                        type="button"
-                        onclick={() => { viewMode = viewMode === 'search' ? 'map' : 'search'; searchQuery = ''; }}
-                        class="flex items-center justify-center gap-1.5 shrink-0 {viewMode === 'search'
-                            ? 'bg-gradient-to-br from-amber-400 to-orange-500 text-gray-900 border-amber-500'
-                            : 'bg-gradient-to-br from-purple-600 to-blue-600 text-white border-purple-400'}
-                            px-4 py-2 rounded-full text-xs font-bold shadow-lg active:scale-95 border"
-                        aria-label={$t('map.search')}
-                    >
-                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                            <circle cx="11" cy="11" r="7"/>
-                            <path d="m21 21-4.35-4.35"/>
-                        </svg>
-                        <span>{$t('map.search_action')}</span>
-                    </button>
-                    <!-- כפתור פתיחת חלונית סינון (בלי אימוג'י) -->
+                    <!-- כפתור פתיחת חלונית סינון - צהוב וצר (כמו שבב "כל היתרונות" שהוסר) -->
                     <button
                         type="button"
                         onclick={() => (showCategorySheet = true)}
-                        class="flex items-center justify-center gap-1.5 flex-1 min-w-0 bg-gradient-to-br from-purple-600 to-blue-600 text-white px-3 py-2 rounded-full text-xs font-bold shadow-lg active:scale-95 border border-purple-400"
+                        class="flex items-center justify-center shrink-0 bg-gradient-to-br from-yellow-400 to-orange-500 text-gray-900 border border-yellow-500 px-2.5 py-2 rounded-full text-xs font-bold shadow-lg active:scale-95 whitespace-nowrap"
                         aria-label={$t('map.open_category_filter')}
                     >
-                        <span class="truncate">{$t('map.choose_category')}</span>
+                        {$t('map.choose_category')}
                     </button>
+                    <!-- שדה חיפוש חופשי - רחב; נשען על אותה לוגיקת searchQuery/searchResults של תצוגת החיפוש -->
+                    <div class="flex items-center gap-1.5 flex-1 min-w-0 bg-gradient-to-br from-purple-600 to-blue-600 rounded-full px-3 py-2 shadow-lg border border-purple-400">
+                        <svg class="w-4 h-4 shrink-0 text-white/90" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <circle cx="11" cy="11" r="7"/>
+                            <path d="m21 21-4.35-4.35"/>
+                        </svg>
+                        <input
+                            bind:value={searchQuery}
+                            onfocus={() => (viewMode = 'search')}
+                            oninput={() => (viewMode = 'search')}
+                            type="text"
+                            placeholder={$t('map.search_placeholder')}
+                            class="flex-1 min-w-0 bg-transparent text-white placeholder:text-white/60 text-xs font-bold focus:outline-none"
+                            dir="rtl"
+                            aria-label={$t('map.search')}
+                        />
+                        {#if viewMode === 'search'}
+                            <button
+                                type="button"
+                                onclick={() => { searchQuery = ''; viewMode = 'map'; }}
+                                class="shrink-0 text-white/70 hover:text-white text-sm leading-none px-1"
+                                aria-label={$t('map.close')}
+                            >✕</button>
+                        {/if}
+                    </div>
                 </div>
 
                 <!-- Bottom Sheet: כל הקטגוריות -->
@@ -1910,8 +1919,8 @@
         {:else if viewMode === "search"}
             <!-- מצב חיפוש -->
             <div class="w-full h-[350px] md:h-[450px] flex flex-col p-3 md:p-5" style="border-radius: 20px;">
-                <!-- שדה חיפוש -->
-                <div class="flex gap-2 mb-4 mt-6 max-w-sm mx-auto w-full">
+                <!-- שדה חיפוש (דסקטופ; בנייד הקלט מגיע משדה החיפוש שבשורת הכפתורים) -->
+                <div class="hidden md:flex gap-2 mb-4 mt-6 max-w-sm mx-auto w-full">
                     <input
                         bind:value={searchQuery}
                         type="text"
@@ -1976,8 +1985,8 @@
         {/if}
 
 
-        <!-- כפתור חיפוש - פינה ימנית עליונה -->
-        <div class="absolute right-4 z-50" style="top: -14px;">
+        <!-- כפתור חיפוש - פינה ימנית עליונה (דסקטופ בלבד; בנייד יש שדה חיפוש בשורת הכפתורים) -->
+        <div class="hidden md:block absolute right-4 z-50" style="top: -14px;">
             <button
                 onclick={() => { viewMode = viewMode === 'search' ? 'list' : 'search'; searchQuery = ''; }}
                 title={$t('map.search')}
