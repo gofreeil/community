@@ -737,7 +737,9 @@
                 iconSize:   [120, 60],
                 iconAnchor: [60, 60],
             });
-            const marker = leafletL.marker([m.lat, m.lng], { icon: divIcon, riseOnHover: true, zIndexOffset: 1000 });
+            // isHelp: קריאת עזרה קריטית - fitToMarkers לעולם לא ישמיט אותה מהתצוגה
+            // ההתחלתית (בניגוד למרקר רגיל חריג), כדי שקריאת מצוקה תמיד תיראה.
+            const marker = leafletL.marker([m.lat, m.lng], { icon: divIcon, riseOnHover: true, zIndexOffset: 1000, isHelp: true });
             marker.on('click', () => {
                 if (window.innerWidth < 1024) {
                     triggerAdPopup(`/items/${m.id}`);
@@ -785,7 +787,11 @@
         const cutoff = Math.max(medDist * 4, 0.003);
         const core = pts.filter((p: any) => dist(p) <= cutoff);
 
-        const bounds = leafletL.latLngBounds(core.length ? core : pts);
+        // קריאות עזרה (isHelp) תמיד נשארות בתצוגה - גם אם הן "חריגות" מרחקית.
+        const helpPts = layers.filter((l: any) => l.options?.isHelp).map((l: any) => l.getLatLng());
+        const fitPts = [...(core.length ? core : pts), ...helpPts];
+
+        const bounds = leafletL.latLngBounds(fitPts);
         leafletMap.fitBounds(bounds, { padding: [30, 30], maxZoom: 17, animate });
         return true;
     }
