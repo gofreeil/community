@@ -119,7 +119,7 @@ export const he = {
 
         // ----- סינון קטגוריות (מובייל) -----
         open_category_filter: "פתח סינון קטגוריות",
-        choose_category: "סנן קטגוריה",
+        choose_category: "סנן / בחר קטגוריה",
         category_filter: "סינון קטגוריות",
         drag_to_close: "גרור למטה כדי לסגור",
         sheet_title: "סנן את היתרונות הדרושים לך",
@@ -153,6 +153,7 @@ export const he = {
 
         // ----- חיפוש -----
         search: "חיפוש",
+        search_action: "חפש",
         search_placeholder: 'חפש חוג, גמ"ח, שמרטפ, מניין...',
         search_type_hint: "הקלד מה אתה מחפש",
         no_results: "לא נמצאו תוצאות",
@@ -343,7 +344,7 @@ export const en = {
         click_activate_map: "Click to activate the map",
 
         open_category_filter: "Open category filter",
-        choose_category: "Filter category",
+        choose_category: "Filter / choose category",
         category_filter: "Category filter",
         drag_to_close: "Drag down to close",
         sheet_title: "Filter the benefits you need",
@@ -374,6 +375,7 @@ export const en = {
         view_details: "View details",
 
         search: "Search",
+        search_action: "Search",
         search_placeholder: "Search for a class, gemach, babysitter, minyan...",
         search_type_hint: "Type what you're looking for",
         no_results: "No results found",
@@ -559,7 +561,7 @@ export const ru = {
         click_activate_map: "Нажмите, чтобы активировать карту",
 
         open_category_filter: "Открыть фильтр категорий",
-        choose_category: "Фильтр категорий",
+        choose_category: "Фильтр / выбор категории",
         category_filter: "Фильтр категорий",
         drag_to_close: "Потяните вниз, чтобы закрыть",
         sheet_title: "Отфильтруйте нужные вам преимущества",
@@ -590,6 +592,7 @@ export const ru = {
         view_details: "Подробнее",
 
         search: "Поиск",
+        search_action: "Искать",
         search_placeholder: "Ищите кружок, гмах, няню, миньян...",
         search_type_hint: "Введите, что вы ищете",
         no_results: "Ничего не найдено",

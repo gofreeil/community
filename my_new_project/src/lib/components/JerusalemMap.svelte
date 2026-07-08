@@ -1235,35 +1235,31 @@
         <div class="flex flex-col gap-2">
             <!-- Buttons Container -->
             <div class="relative category-buttons-wrapper" bind:this={categoryButtonsWrapperRef}>
-                <!-- Mobile: שורה אחת קומפקטית - סינון פעיל + כפתור פתיחת bottom sheet -->
+                <!-- Mobile: שורה אחת קומפקטית - חיפוש + כפתור פתיחת bottom sheet -->
                 <div class="md:hidden px-3 py-2 w-full flex items-center gap-2">
-                    <!-- שבב המראה את הסינון הפעיל (מימין) -->
-                    {#each [categories.find(c => c.id === selectedCategory) ?? categories[0]] as active}
-                        <button
-                            type="button"
-                            onclick={() => (showCategorySheet = true)}
-                            class="flex items-center gap-1 shrink-0 max-w-[45%] {active.id === 'benefits'
-                                ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-gray-900 border-yellow-500'
-                                : 'bg-gradient-to-br from-purple-600 to-blue-600 text-white border-purple-500'}
-                                px-2.5 py-2 rounded-full text-xs font-bold shadow-lg active:scale-95 border whitespace-nowrap overflow-hidden"
-                        >
-                            {#if active.icon?.startsWith('/')}
-                                <img src={active.icon} class="w-5 h-5 shrink-0" alt={$t(catKey(active.id))} />
-                            {:else}
-                                <span class="text-base leading-none shrink-0">{active.icon}</span>
-                            {/if}
-                            <span class="truncate">{$t(catKey(active.id))}</span>
-                            <span class="text-[10px] opacity-75 shrink-0">▾</span>
-                        </button>
-                    {/each}
-                    <!-- כפתור פתיחת חלונית סינון (משמאל) -->
+                    <!-- כפתור חיפוש (מחליף את שבב "כל היתרונות") -->
+                    <button
+                        type="button"
+                        onclick={() => { viewMode = viewMode === 'search' ? 'map' : 'search'; searchQuery = ''; }}
+                        class="flex items-center justify-center gap-1.5 shrink-0 {viewMode === 'search'
+                            ? 'bg-gradient-to-br from-amber-400 to-orange-500 text-gray-900 border-amber-500'
+                            : 'bg-gradient-to-br from-purple-600 to-blue-600 text-white border-purple-400'}
+                            px-4 py-2 rounded-full text-xs font-bold shadow-lg active:scale-95 border"
+                        aria-label={$t('map.search')}
+                    >
+                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <circle cx="11" cy="11" r="7"/>
+                            <path d="m21 21-4.35-4.35"/>
+                        </svg>
+                        <span>{$t('map.search_action')}</span>
+                    </button>
+                    <!-- כפתור פתיחת חלונית סינון (בלי אימוג'י) -->
                     <button
                         type="button"
                         onclick={() => (showCategorySheet = true)}
                         class="flex items-center justify-center gap-1.5 flex-1 min-w-0 bg-gradient-to-br from-purple-600 to-blue-600 text-white px-3 py-2 rounded-full text-xs font-bold shadow-lg active:scale-95 border border-purple-400"
                         aria-label={$t('map.open_category_filter')}
                     >
-                        <span class="text-base leading-none shrink-0">🎛️</span>
                         <span class="truncate">{$t('map.choose_category')}</span>
                     </button>
                 </div>
