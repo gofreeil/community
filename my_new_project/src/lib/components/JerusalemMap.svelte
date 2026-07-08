@@ -1180,13 +1180,13 @@
         type="button"
         aria-label={$t('map.close_fullscreen')}
         onclick={closeFullscreen}
-        class="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm cursor-default"
+        class="fixed inset-0 z-[1190] bg-black/80 backdrop-blur-sm cursor-default"
     ></button>
 {/if}
 
 <div
     class={isFullscreen
-        ? 'jmap-fullscreen fixed inset-2 md:inset-4 z-50 flex flex-col gap-2 bg-[#070b14] rounded-2xl shadow-2xl shadow-purple-500/30 overflow-hidden p-3'
+        ? 'jmap-fullscreen fixed inset-2 md:inset-4 z-[1200] flex flex-col gap-2 bg-[#070b14] rounded-2xl shadow-2xl shadow-purple-500/30 overflow-hidden p-3'
         : 'flex flex-col gap-4'}
 >
     {#if isFullscreen}
@@ -1195,7 +1195,7 @@
             onclick={closeFullscreen}
             aria-label={$t('map.close_fullscreen')}
             title={$t('map.close_esc')}
-            class="absolute top-3 left-3 z-[60] w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white text-xl font-bold flex items-center justify-center transition-all backdrop-blur-sm border border-white/20"
+            class="absolute top-3 left-3 z-[70] w-11 h-11 rounded-full bg-red-600/90 hover:bg-red-500 text-white text-2xl leading-none font-bold flex items-center justify-center transition-all backdrop-blur-sm border-2 border-white/70 shadow-xl"
         >
             ✕
         </button>
@@ -1544,7 +1544,8 @@
                 {/if}
 
                 <!-- כפתורי זום - עובדים גם מעל שכבת ההפעלה (במיוחד בנייד שאין גלגלת) -->
-                <div class="absolute top-3 left-3 z-30 flex flex-col gap-1.5">
+                <!-- מוסתרים במסך-מלא: שם ה-X בפינה השמאלית העליונה + זום ייעודי בפינה הימנית התחתונה -->
+                <div class="absolute top-3 left-3 z-30 flex-col gap-1.5 {isFullscreen ? 'hidden' : 'flex'}">
                     <button
                         type="button"
                         onclick={(e) => { e.stopPropagation(); activateMap(); zoomIn(); }}
