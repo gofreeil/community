@@ -237,6 +237,16 @@
     const minyanActivities = $derived<ScheduleRow[]>(activities.filter(a => MINYAN_PRAYERS.includes(a.type)));
     const otherActivities  = $derived<ScheduleRow[]>(activities.filter(a => !MINYAN_PRAYERS.includes(a.type)));
 
+    // שעות פתיחה (extra_fields.hours) - מוצג תחת "לוח פעילויות ושעות" (לא תחת "פרטים נוספים")
+    const openingHoursText = $derived.by<string>(() => {
+        const raw = (item as { extraFields?: { hours?: unknown } } | null)?.extraFields?.hours;
+        if (typeof raw !== 'string' || !raw.trim()) return '';
+        return formatOpeningHours(raw, {
+            days: Array.from({ length: 7 }, (_, i) => trOr(tFn, `labels.day_short_${i}`, DAY_SHORT[i])),
+            closed: trOr(tFn, 'labels.oh_closed', 'סגור'),
+        });
+    });
+
     let editingMinyan = $state(false);
     let savingMinyan = $state(false);
     let minyanError = $state('');
@@ -1061,7 +1071,7 @@
 
 <!-- Hidden keys (rendered in dedicated sections, complex types, or internal-only) -->
 {#snippet extraFieldsBlock()}
-    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'menu_images', 'map_image', 'price', 'website', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname', 'age', 'birth_date', 'sector', 'gender', 'type', 'activities', 'links', 'gmach_type', 'gmach_types', 'place_status', 'location', 'option_id', 'last_seen'])}
+    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'menu_images', 'map_image', 'price', 'website', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname', 'age', 'birth_date', 'sector', 'gender', 'type', 'activities', 'links', 'gmach_type', 'gmach_types', 'place_status', 'location', 'option_id', 'last_seen', 'hours'])}
     {@const LABELS_HE: Record<string, string> = {
         nickname: 'שם או כינוי',
         gender: 'מין',
@@ -1373,7 +1383,8 @@
                             {/if}
                         </div>
                     {/if}
-                    {#if nickname}
+                    <!-- הכינוי מוצג ככותרת רק בפנויים; במקומות/עסקים לא מציגים את שם מי שהעלה את הפריט -->
+                    {#if nickname && isSingles}
                         <p class="text-white text-xl md:text-2xl font-bold leading-tight">{nickname}</p>
                     {/if}
                     <!-- שם המקום ככותרת הדף (לא בפנויים - שם הכינוי הוא הכותרת) -->
@@ -1587,13 +1598,13 @@
                         </section>
                     {/if}
 
-                    <!-- Activities schedule (each activity has its own time) -->
-                    {#if otherActivities.length > 0 || canEditActivities}
+                    <!-- Activities schedule (each activity has its own time) + opening hours -->
+                    {#if otherActivities.length > 0 || openingHoursText || (canEditActivities && builderMode)}
                         <section class="pt-3 border-t border-white/10">
                             <div class="flex items-center justify-between mb-2">
                                 <h2 class="text-base font-bold text-white flex items-center gap-1.5">
                                     <span class="w-1 h-4 bg-amber-400 rounded-full"></span>לוח פעילויות ושעות</h2>
-                                {#if canEditActivities && !editingSchedule}
+                                {#if canEditActivities && !editingSchedule && builderMode}
                                     <button type="button" onclick={startEditSchedule}
                                         class="text-xs font-bold text-amber-300 hover:text-amber-200 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-lg px-2.5 py-1 transition-all">
                                         ✏️ {otherActivities.length ? 'ערוך' : 'הוסף פעילויות'}
@@ -1602,6 +1613,12 @@
                             </div>
 
                             {#if !editingSchedule}
+                                {#if openingHoursText}
+                                    <div class="rounded-xl border border-white/10 bg-[#0f172a] px-3 py-2 mb-2 flex items-start gap-2 text-xs">
+                                        <span class="font-bold text-amber-200 whitespace-nowrap">שעות פתיחה</span>
+                                        <span class="text-white leading-snug">{openingHoursText}</span>
+                                    </div>
+                                {/if}
                                 {#if otherActivities.length === 0 && builderMode && canEditActivities}
                                     <button type="button" onclick={startEditSchedule}
                                         class="w-full text-right border-2 border-dashed border-amber-400/40 hover:border-amber-400/70 bg-amber-500/5 hover:bg-amber-500/10 rounded-xl px-3 py-2 text-amber-200 text-sm font-bold transition-all">
