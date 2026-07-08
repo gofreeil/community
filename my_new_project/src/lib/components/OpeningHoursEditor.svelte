@@ -1,6 +1,7 @@
 <script lang="ts">
     // עורך שעות פתיחה קומפקטי - עובד מול מחרוזת מסודרת (serializeOpeningHours).
     // בשימוש בדף הפריט (CategoryDetailsEditor). מחזיר את הערך דרך onchange.
+    import { _ } from 'svelte-i18n';
     import {
         emptyOpeningHours,
         parseOpeningHours,
@@ -9,6 +10,7 @@
         DAY_SHORT,
         type OpeningHours,
     } from '$lib/openingHours';
+    import { trOr } from '$lib/categoryFields';
 
     let { value = '', onchange }: { value?: string; onchange: (v: string) => void } = $props();
 
@@ -70,7 +72,7 @@
                 class="px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-all {oh.days[idx].open
                     ? 'bg-indigo-600 text-white border-transparent'
                     : 'bg-white/5 text-gray-400 border-white/15 border-dashed hover:bg-white/10'}">
-                {label}
+                {trOr($_, `labels.day_short_${idx}`, label)}
             </button>
         {/each}
     </div>
@@ -108,7 +110,7 @@
             {#each DAY_SHORT as label, idx}
                 {#if oh.days[idx].open}
                     <div class="bg-[#0f172a] rounded-lg p-2 border border-white/10">
-                        <p class="text-xs font-bold text-indigo-200 mb-1.5">{label}</p>
+                        <p class="text-xs font-bold text-indigo-200 mb-1.5">{trOr($_, `labels.day_short_${idx}`, label)}</p>
                         <div class="space-y-1.5">
                             {#each oh.days[idx].ranges as r, rIdx}
                                 <div class="flex items-center gap-2">

@@ -1,7 +1,9 @@
 <script lang="ts">
     import RestaurantReviewsModal from '$lib/components/RestaurantReviewsModal.svelte';
+    import { _ } from 'svelte-i18n';
     import { getRatingSummary } from '$lib/restaurantReviews';
-    import { formatOpeningHours } from '$lib/openingHours';
+    import { formatOpeningHours, DAY_SHORT } from '$lib/openingHours';
+    import { trOr } from '$lib/categoryFields';
     import type { PageData } from './$types';
 
     let { data }: { data: PageData } = $props();
@@ -28,7 +30,10 @@
     let parkingNotes = $derived(str(E.parking_notes));
     let clubDiscount = $derived(str(E.club_discount) === 'יש הנחה');
     let clubDetail  = $derived(str(E.club_discount_detail));
-    let hours       = $derived(formatOpeningHours(E.hours));
+    let hours       = $derived(formatOpeningHours(E.hours, {
+        days: Array.from({ length: 7 }, (_i, i) => trOr($_, `labels.day_short_${i}`, DAY_SHORT[i])),
+        closed: trOr($_, 'labels.oh_closed', 'סגור'),
+    }));
     let wazeLink    = $derived(str(E.waze_link));
     let gmapsLink   = $derived(str(E.gmaps_link));
     let transport   = $derived(str(E.transport));

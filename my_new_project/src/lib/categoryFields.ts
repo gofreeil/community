@@ -407,6 +407,44 @@ export function detailStepFields(cfg: CategoryConfig): FieldDef[] {
     return cfg.mapFirst ? cfg.fields.filter(f => !isMapStepField(cfg, f)) : [];
 }
 
+// ============================================================
+// ---- תרגום תוויות התצוגה (i18n) ----
+// הערכים בעברית נשארים כאן כ-fallback; הצרכנים (.svelte) פותרים את התווית
+// דרך $_ בנקודת התצוגה. המפתחות במילון labels.ts (namespace "labels").
+// ============================================================
+
+/**
+ * מחזיר את הערך המתורגם למפתח, או את ה-fallback העברי אם המפתח חסר.
+ * svelte-i18n מחזיר את שם המפתח עצמו כשאין תרגום - במקרה כזה נחזיר את ה-fallback.
+ * @param t פונקציית התרגום (הערך של ה-store $_)
+ */
+export function trOr(t: (key: string) => string, key: string, fallback: string): string {
+    const v = t(key);
+    return v === key ? fallback : v;
+}
+
+/** מפתח i18n לשם קטגוריה (config.label) */
+export function cfCatKey(cat: string): string {
+    return `labels.cf_${cat}`;
+}
+
+/** מפתח i18n לכותרת דף ההוספה (config.addPageTitle) */
+export function cfAddTitleKey(cat: string): string {
+    return `labels.cf_${cat}__title`;
+}
+
+/** מפתח i18n לתווית / placeholder / hint של שדה */
+export function cfFieldKey(cat: string, field: FieldDef, kind: 'label' | 'ph' | 'hint' = 'label'): string {
+    const suffix = kind === 'label' ? '' : `_${kind}`;
+    return `labels.cf_${cat}_${field.key}${suffix}`;
+}
+
+/** מפתח i18n לתווית אפשרות (לפי אינדקס ב-field.options) */
+export function cfOptKey(cat: string, field: FieldDef, opt: string): string {
+    const i = field.options?.indexOf(opt) ?? 0;
+    return `labels.cf_${cat}_${field.key}_o${i}`;
+}
+
 /** צבע ברירת מחדל לפי category id */
 export function getCategoryColor(categoryId: string): string {
     return categoryConfig[categoryId]?.color ?? 'purple';

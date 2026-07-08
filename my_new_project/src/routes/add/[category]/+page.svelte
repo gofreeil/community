@@ -14,8 +14,9 @@
         DAY_SHORT,
         type OpeningHours,
     } from '$lib/openingHours';
+    import { _ } from 'svelte-i18n';
     import { FREE_PROMO, FREE_PROMO_CODE_TEXT } from '$lib/freePromo';
-    import { mapStepFields } from '$lib/categoryFields';
+    import { mapStepFields, cfCatKey, cfAddTitleKey, cfFieldKey, cfOptKey, trOr } from '$lib/categoryFields';
     import { MAP_IMAGE_PRICE_YEARLY } from '$lib/mapImage';
     import { imageDrop } from '$lib/imageDrop';
     import type { PageData } from './$types';
@@ -43,10 +44,13 @@
     const isPaidFlow = config.priceRow !== null;
     const isEditMode = !!editItem;
 
+    // שם הקטגוריה וכותרת ההוספה - מתורגמים (fallback לעברית מקובץ הנתונים)
+    const catLabel = $derived(trOr($_, cfCatKey(categoryId), config.label));
+    const catAddTitle = $derived(config.addPageTitle ? trOr($_, cfAddTitleKey(categoryId), config.addPageTitle) : '');
     // כותרת הדף: קטגוריות mapFirst = "הוספת יתרון במפה" (טופס מצומצם)
-    const pageTitle = config.mapFirst
-        ? (isEditMode ? `עריכת היתרון "${config.label}" במפה` : 'הוספת יתרון במפה')
-        : (config.addPageTitle ?? `הוסף ${config.label}`);
+    const pageTitle = $derived(config.mapFirst
+        ? (isEditMode ? `עריכת היתרון "${catLabel}" במפה` : 'הוספת יתרון במפה')
+        : (catAddTitle || `הוסף ${catLabel}`));
 
     // מילוי אוטומטי של שם איש הקשר מותר רק בטפסים שבהם המפרסם הוא בדרך כלל
     // האדם עצמו (מסירה/טרמפ/פנויים/דרושים). בשאר הקטגוריות רכז עלול להעלות
@@ -804,7 +808,7 @@
                         for="field-{field.key}"
                         class="block text-[13px] md:text-sm font-bold text-gray-300 mb-1 md:mb-1.5"
                     >
-                        {field.label}
+                        {trOr($_, cfFieldKey(categoryId, field), field.label)}
                         {#if field.required}
                             <span class="text-red-400">*</span>
                         {/if}
@@ -827,7 +831,7 @@
                                             ? 'bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-lg shadow-indigo-500/30 scale-[1.02]'
                                             : 'text-gray-400 hover:text-white hover:bg-white/5'}"
                                     >
-                                        {opt}
+                                        {trOr($_, cfOptKey(categoryId, field, opt), opt)}
                                     </button>
                                 {/each}
                             </div>
@@ -835,7 +839,7 @@
                                 <span
                                     role="tooltip"
                                     class="absolute z-20 top-full left-1/2 -translate-x-1/2 mt-1.5 w-64 max-w-[90vw] p-2.5 rounded-lg bg-slate-900 border border-white/15 shadow-xl text-gray-200 text-xs font-normal leading-relaxed text-center whitespace-normal"
-                                >{field.hint}</span>
+                                >{trOr($_, cfFieldKey(categoryId, field, 'hint'), field.hint)}</span>
                             {/if}
                         </div>
 
@@ -844,7 +848,7 @@
                             id="field-{field.key}"
                             value={getFieldValue(field.key)}
                             oninput={(e) => setFieldValue(field.key, (e.target as HTMLTextAreaElement).value)}
-                            placeholder={field.placeholder ?? ''}
+                            placeholder={trOr($_, cfFieldKey(categoryId, field, 'ph'), field.placeholder ?? '')}
                             rows={field.maxLength ? 1 : 3}
                             maxlength={field.maxLength ?? undefined}
                             class="{inputClass} resize-none"
@@ -872,7 +876,7 @@
                                         ? `${colors.btn} text-white border-transparent shadow-md`
                                         : 'bg-white/5 border-white/15 text-gray-300 hover:bg-white/10 hover:border-white/30'}"
                                 >
-                                    {isOn ? '✓ ' : ''}{opt}
+                                    {isOn ? '✓ ' : ''}{trOr($_, cfOptKey(categoryId, field, opt), opt)}
                                 </button>
                             {/each}
                         </div>
@@ -932,7 +936,7 @@
                                             : 'bg-white/5 border-dashed border-white/25 text-gray-400 hover:bg-white/10 hover:border-white/50 hover:text-white'}"
                                         aria-pressed={isOpen}
                                         title={isOpen ? `${d} פתוח - לחיצה תסגור` : `${d} סגור - לחיצה תפתח`}
-                                    >{d}</button>
+                                    >{trOr($_, `labels.day_short_${dIdx}`, d)}</button>
                                 {/each}
                             </div>
 
@@ -1002,7 +1006,7 @@
                                             {#if oh.days[dIdx].open}
                                                 <div class="flex gap-2 py-2 md:justify-center md:gap-3">
                                                     <div class="w-12 shrink-0 flex flex-col items-start gap-0.5 pt-2">
-                                                        <span class="text-sm font-bold text-gray-200">{d}</span>
+                                                        <span class="text-sm font-bold text-gray-200">{trOr($_, `labels.day_short_${dIdx}`, d)}</span>
                                                         {#if openDayCount > 1}
                                                             <button
                                                                 type="button"
@@ -1144,7 +1148,7 @@
                         >
                             <option value="">-- בחר --</option>
                             {#each field.options as opt}
-                                <option value={opt}>{opt}</option>
+                                <option value={opt}>{trOr($_, cfOptKey(categoryId, field, opt), opt)}</option>
                             {/each}
                         </select>
 
@@ -1169,7 +1173,7 @@
                         <StreetPicker
                             {city}
                             value={getFieldValue(field.key)}
-                            placeholder={field.placeholder ?? 'שם הרחוב'}
+                            placeholder={trOr($_, cfFieldKey(categoryId, field, 'ph'), field.placeholder ?? 'שם הרחוב')}
                             onValueChange={(v) => setFieldValue(field.key, v)}
                             onResolvedChange={(v) => (addressResolved = v)}
                             onStreetListChange={(info) => { cityHasStreetList = info.hasList; streetListLoading = info.loading; }}
@@ -1223,7 +1227,7 @@
                             type={field.type}
                             value={getFieldValue(field.key)}
                             oninput={(e) => setFieldValue(field.key, (e.target as HTMLInputElement).value)}
-                            placeholder={field.placeholder ?? ''}
+                            placeholder={trOr($_, cfFieldKey(categoryId, field, 'ph'), field.placeholder ?? '')}
                             class="{inputClass}"
                             required={field.required}
                             dir={field.type === 'tel' || field.type === 'email' ? 'ltr' : 'rtl'}
@@ -1231,7 +1235,7 @@
                     {/if}
 
                     {#if field.hint && field.type !== 'toggle'}
-                        <p class="text-gray-400 text-xs md:text-sm mt-0.5 md:mt-1">{field.hint}</p>
+                        <p class="text-gray-400 text-xs md:text-sm mt-0.5 md:mt-1">{trOr($_, cfFieldKey(categoryId, field, 'hint'), field.hint)}</p>
                     {/if}
 
                     {#if field.key === 'club_discount' && categoryId === 'restaurants'}

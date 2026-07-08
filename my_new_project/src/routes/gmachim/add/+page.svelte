@@ -8,6 +8,7 @@
     import { citiesAndNeighborhoods, effectiveNeighborhoods, LS_KEY, DEFAULT_NEIGHBORHOOD } from '$lib/neighborhoodsData';
     import { formMemory } from '$lib/formMemory';
     import { GMACH_TYPES } from '$lib/gmachTypes';
+    import { trOr } from '$lib/categoryFields';
     import { imageDrop } from '$lib/imageDrop';
     import StreetPicker from '$lib/components/StreetPicker.svelte';
     import NeighborhoodPicker from '$lib/components/NeighborhoodPicker.svelte';
@@ -349,7 +350,7 @@
                                 class="px-3 py-1.5 rounded-full border-2 text-sm font-bold transition-all {isOn
                                     ? 'bg-amber-600 text-white border-transparent shadow-md'
                                     : 'bg-white/5 border-white/15 text-gray-300 hover:bg-white/10 hover:border-white/30'}">
-                                {isOn ? '✓ ' : ''}{t.label}
+                                {isOn ? '✓ ' : ''}{trOr($_, `labels.gmach_${t.key}`, t.label)}
                             </button>
                         {/each}
                     </div>

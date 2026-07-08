@@ -9,8 +9,9 @@
     import type { PageData } from './$types';
     import JsonLd from "$lib/components/JsonLd.svelte";
     import { productSchema, eventSchema } from "$lib/seo";
-    import { formatOpeningHours } from "$lib/openingHours";
+    import { formatOpeningHours, DAY_SHORT } from "$lib/openingHours";
     import { gmachTypeLabel } from "$lib/gmachTypes";
+    import { trOr } from "$lib/categoryFields";
     import { imageDrop } from "$lib/imageDrop";
     import CategoryDetailsEditor from "$lib/components/CategoryDetailsEditor.svelte";
     import { goto } from "$app/navigation";
@@ -1099,7 +1100,10 @@
             }
         }
         if (key === 'gender') return s === 'male' ? 'גבר' : s === 'female' ? 'אישה' : s;
-        if (key === 'hours') return formatOpeningHours(s);
+        if (key === 'hours') return formatOpeningHours(s, {
+            days: Array.from({ length: 7 }, (_, i) => trOr(tFn, `labels.day_short_${i}`, DAY_SHORT[i])),
+            closed: trOr(tFn, 'labels.oh_closed', 'סגור'),
+        });
         return s;
     }}
     {@const mergedExtra = { ...(item?.extraFields ?? {}), ...liveExtra }}
@@ -1176,7 +1180,7 @@
                 <span class="w-1 h-4 bg-amber-400 rounded-full"></span>נושאי הגמ"ח</h2>
             <div class="flex flex-wrap gap-2">
                 {#each keys as k}
-                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 border border-amber-400/40 text-amber-200">{gmachTypeLabel(k)}</span>
+                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 border border-amber-400/40 text-amber-200">{trOr(tFn, `labels.gmach_${k}`, gmachTypeLabel(k))}</span>
                 {/each}
             </div>
         </section>

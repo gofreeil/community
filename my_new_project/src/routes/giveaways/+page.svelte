@@ -3,6 +3,7 @@
     import { _ } from 'svelte-i18n';
     import type { PageData } from './$types';
     import { giveawayCategories, detectCategory, categoryByKey } from '$lib/giveawayCategories';
+    import { trOr } from '$lib/categoryFields';
     import { neighborhoodState } from '$lib/neighborhoodState.svelte';
     import { getCoordsFor, type Coord } from '$lib/neighborhoodCoords';
     import { toggleLike } from '$lib/likedItems';
@@ -10,6 +11,11 @@
     import { breadcrumbSchema, collectionSchema, canonical } from "$lib/seo";
 
     let { data }: { data: PageData } = $props();
+
+    // תווית קטגוריה מתורגמת (fallback לעברית מקובץ הנתונים)
+    const gLabel = (c: { key: string; label: string }) => trOr($_, `labels.gcat_${c.key}`, c.label);
+    const gMobile = (c: { key: string; label: string; mobileLabel?: string }) =>
+        trOr($_, `labels.gcat_${c.key}_m`, c.mobileLabel ?? c.label);
 
     onMount(() => {
         neighborhoodState.init(data.userNeighborhood, data.userCity);
@@ -354,11 +360,11 @@
                 <button
                     onclick={() => categoryFilter = cat.key}
                     class="relative group pointer-events-auto rounded-2xl overflow-hidden border-2 transition-all hover:scale-[1.01] hover:-translate-y-0.5 block w-2/5 sm:w-1/3 md:w-1/4 h-12 md:h-20 {active ? 'border-orange-400 shadow-xl shadow-orange-500/40 ring-2 ring-orange-400/50' : 'border-white/10 hover:border-orange-500/60 shadow-lg'}"
-                    title={cat.label}
+                    title={gLabel(cat)}
                 >
                     <img
                         src={cat.image}
-                        alt={cat.label}
+                        alt={gLabel(cat)}
                         loading="lazy"
                         class="absolute inset-0 w-full h-full object-cover object-[center_30%] scale-110 transition-transform duration-500 group-hover:scale-[1.15]"
                     />
@@ -367,7 +373,7 @@
 
                     <!-- Label aligned to bottom of image -->
                     <div class="absolute inset-x-0 bottom-0 flex items-end justify-center px-3 pb-1 md:pb-1.5">
-                        <span class="text-xs md:text-lg font-black text-white drop-shadow-lg leading-none">{cat.label}</span>
+                        <span class="text-xs md:text-lg font-black text-white drop-shadow-lg leading-none">{gLabel(cat)}</span>
                     </div>
 
                 </button>
@@ -389,11 +395,11 @@
                 <button
                     onclick={() => categoryFilter = cat.key}
                     class="relative group rounded-2xl overflow-hidden border-2 transition-all hover:scale-[1.03] hover:-translate-y-0.5 aspect-square {active ? 'border-orange-400 shadow-xl shadow-orange-500/40 ring-2 ring-orange-400/50' : 'border-white/10 hover:border-orange-500/60 shadow-lg'}"
-                    title={cat.label}
+                    title={gLabel(cat)}
                 >
                     <img
                         src={cat.image}
-                        alt={cat.label}
+                        alt={gLabel(cat)}
                         loading="lazy"
                         class="absolute inset-0 w-full h-full object-cover {tune.pos} {tune.zoom} transition-transform duration-500 group-hover:scale-[1.18]"
                     />
@@ -403,8 +409,8 @@
                     <!-- Label + count (count to the LEFT of the label in RTL) -->
                     <div class="absolute inset-x-0 bottom-0 p-1.5 md:p-2 flex items-baseline justify-start gap-1.5 min-w-0">
                         <span class="text-[10px] md:text-xs font-black text-white leading-tight truncate">
-                            <span class="md:hidden">{cat.mobileLabel ?? cat.label}</span>
-                            <span class="hidden md:inline">{cat.label}</span>
+                            <span class="md:hidden">{gMobile(cat)}</span>
+                            <span class="hidden md:inline">{gLabel(cat)}</span>
                         </span>
                         {#if count > 0}
                             <span class="text-[9px] md:text-[10px] text-orange-200 font-bold whitespace-nowrap">{count}</span>
@@ -527,7 +533,7 @@
                 {#if categoryFilter !== 'all'}
                     {@const cat = categoryByKey(categoryFilter)}
                     {#if cat}
-                        <span class="text-orange-400/80"> · {cat.icon} {cat.label}</span>
+                        <span class="text-orange-400/80"> · {cat.icon} {gLabel(cat)}</span>
                     {/if}
                 {/if}
                 {#if debouncedSearch}

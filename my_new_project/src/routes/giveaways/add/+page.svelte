@@ -4,7 +4,7 @@
     import { _ } from 'svelte-i18n';
     import { browser } from '$app/environment';
     import { enhance } from '$app/forms';
-    import { categoryConfig } from '$lib/categoryFields';
+    import { categoryConfig, trOr } from '$lib/categoryFields';
     import { citiesAndNeighborhoods, effectiveNeighborhoods, DEFAULT_NEIGHBORHOOD } from '$lib/neighborhoodsData';
     import { giveawayCategories } from '$lib/giveawayCategories';
     import { formMemory } from '$lib/formMemory';
@@ -239,7 +239,7 @@
                                     class="flex flex-col items-center gap-1 px-2 py-2 rounded-xl text-xs font-bold transition-all border {category === c.key ? 'bg-gradient-to-br from-orange-500/30 to-amber-500/20 border-orange-400 text-orange-200 shadow-lg' : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10 hover:border-white/20'}"
                                 >
                                     <span class="text-2xl">{c.icon}</span>
-                                    <span class="text-[10px] leading-tight text-center">{c.label}</span>
+                                    <span class="text-[10px] leading-tight text-center">{trOr($_, `labels.gcat_${c.key}`, c.label)}</span>
                                 </button>
                             {/each}
                         </div>
@@ -254,7 +254,7 @@
                                     type="button"
                                     onclick={() => condition = c}
                                     class="px-3 py-2.5 rounded-xl text-sm font-bold transition-all border {condition === c ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white border-orange-400 shadow-lg' : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10'}"
-                                >{c}</button>
+                                >{trOr($_, `labels.cf_giveaway_condition_o${conditions.indexOf(c)}`, c)}</button>
                             {/each}
                         </div>
                         <input type="hidden" name="condition" value={condition} />

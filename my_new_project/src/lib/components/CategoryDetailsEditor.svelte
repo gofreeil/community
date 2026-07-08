@@ -1,7 +1,8 @@
 <script lang="ts">
     // עורך "פרטי היתרון" בדף הפריט (מצב בנייה) - השדות שהוסרו מטופס ההוספה
     // (שעות פתיחה, מחיר, כשרות, שירותים וכו') נערכים כאן ונשמרים ב-extra_fields.
-    import { categoryConfig, detailStepFields, type FieldDef } from '$lib/categoryFields';
+    import { _ } from 'svelte-i18n';
+    import { categoryConfig, detailStepFields, cfFieldKey, cfOptKey, trOr, type FieldDef } from '$lib/categoryFields';
     import OpeningHoursEditor from './OpeningHoursEditor.svelte';
 
     let {
@@ -164,7 +165,7 @@
         {#each fields as f (f.key)}
             {#if isVisible(f)}
                 <div>
-                    <label for="det-{f.key}" class="block text-[13px] font-bold text-gray-300 mb-1">{f.label}</label>
+                    <label for="det-{f.key}" class="block text-[13px] font-bold text-gray-300 mb-1">{trOr($_, cfFieldKey(category, f), f.label)}</label>
 
                     {#if f.type === 'toggle' && f.options}
                         <div class="flex flex-wrap gap-1.5">
@@ -172,7 +173,7 @@
                                 <button type="button" onclick={() => pick(f, opt)}
                                     class="px-3 py-1.5 rounded-full text-xs font-bold border transition-all {values[f.key] === opt
                                         ? 'bg-amber-500 text-white border-transparent'
-                                        : 'bg-white/5 text-gray-300 border-white/15 hover:bg-white/10'}">{opt}</button>
+                                        : 'bg-white/5 text-gray-300 border-white/15 hover:bg-white/10'}">{trOr($_, cfOptKey(category, f, opt), opt)}</button>
                             {/each}
                         </div>
 
@@ -180,7 +181,7 @@
                         <select id="det-{f.key}" bind:value={values[f.key]} onchange={() => commitText(f)} class="{inputCls} cursor-pointer">
                             <option value="" style="background:#fff;color:#0f172a;">— בחרו —</option>
                             {#each f.options as opt}
-                                <option value={opt} style="background:#fff;color:#0f172a;">{opt}</option>
+                                <option value={opt} style="background:#fff;color:#0f172a;">{trOr($_, cfOptKey(category, f, opt), opt)}</option>
                             {/each}
                         </select>
 
@@ -190,7 +191,7 @@
                                 <button type="button" onclick={() => toggleMulti(f, opt)}
                                     class="px-3 py-1.5 rounded-full text-xs font-bold border transition-all {isOn(f, opt)
                                         ? 'bg-amber-500 text-white border-transparent'
-                                        : 'bg-white/5 text-gray-300 border-white/15 hover:bg-white/10'}">{isOn(f, opt) ? '✓ ' : ''}{opt}</button>
+                                        : 'bg-white/5 text-gray-300 border-white/15 hover:bg-white/10'}">{isOn(f, opt) ? '✓ ' : ''}{trOr($_, cfOptKey(category, f, opt), opt)}</button>
                             {/each}
                         </div>
 
@@ -199,7 +200,7 @@
                             value={values[f.key]}
                             oninput={(e) => onText(f, (e.currentTarget as HTMLTextAreaElement).value)}
                             onblur={() => commitText(f)}
-                            placeholder={f.placeholder ?? ''} class="{inputCls} resize-none"></textarea>
+                            placeholder={trOr($_, cfFieldKey(category, f, 'ph'), f.placeholder ?? '')} class="{inputCls} resize-none"></textarea>
 
                     {:else if f.type === 'opening_hours'}
                         <OpeningHoursEditor value={values[f.key]} onchange={(v) => onHours(f, v)} />
@@ -226,12 +227,12 @@
                             value={values[f.key]}
                             oninput={(e) => onText(f, (e.currentTarget as HTMLInputElement).value)}
                             onblur={() => commitText(f)}
-                            placeholder={f.placeholder ?? ''} class="{inputCls}"
+                            placeholder={trOr($_, cfFieldKey(category, f, 'ph'), f.placeholder ?? '')} class="{inputCls}"
                             dir={f.type === 'number' || f.type === 'email' ? 'ltr' : 'rtl'} />
                     {/if}
 
                     {#if f.hint}
-                        <p class="text-gray-500 text-xs mt-0.5">{f.hint}</p>
+                        <p class="text-gray-500 text-xs mt-0.5">{trOr($_, cfFieldKey(category, f, 'hint'), f.hint)}</p>
                     {/if}
                     {#if savingKey === f.key}
                         <p class="text-amber-300 text-xs mt-0.5">שומר...</p>

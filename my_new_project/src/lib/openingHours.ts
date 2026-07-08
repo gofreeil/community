@@ -112,9 +112,17 @@ function formatRanges(ranges: TimeRange[]): string {
  * דוגמה: "א׳–ה׳ 10:00–18:00 · ו׳ 09:00–13:00, 16:00–18:00 · שבת סגור"
  * אם הערך אינו מובנה (טקסט ישן) - מוחזר כמו שהוא.
  */
-export function formatOpeningHours(value: unknown): string {
+export function formatOpeningHours(
+    value: unknown,
+    // תוויות תצוגה מתורגמות (אופציונלי) - ברירת מחדל עברית כ-fallback.
+    // days = 7 שמות ימים קצרים; closed = המילה "סגור".
+    opts?: { days?: string[]; closed?: string },
+): string {
     const oh = parseOpeningHours(value);
     if (!oh) return value == null ? '' : String(value);
+
+    const dayNames = opts?.days && opts.days.length === 7 ? opts.days : DAY_SHORT;
+    const closedWord = opts?.closed ?? 'סגור';
 
     const keyOf = (d: DayHours) => (d.open ? formatRanges(d.ranges) : 'closed');
     const parts: string[] = [];
@@ -126,8 +134,8 @@ export function formatOpeningHours(value: unknown): string {
         while (j + 1 < 7 && keyOf(oh.days[j + 1]) === keyOf(d)) {
             j++;
         }
-        const label = i === j ? DAY_SHORT[i] : `${DAY_SHORT[i]}–${DAY_SHORT[j]}`;
-        parts.push(d.open ? `${label} ${formatRanges(d.ranges)}` : `${label} סגור`);
+        const label = i === j ? dayNames[i] : `${dayNames[i]}–${dayNames[j]}`;
+        parts.push(d.open ? `${label} ${formatRanges(d.ranges)}` : `${label} ${closedWord}`);
         i = j + 1;
     }
     return parts.join(' · ');
