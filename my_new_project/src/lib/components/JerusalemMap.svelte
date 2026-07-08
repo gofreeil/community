@@ -1189,17 +1189,6 @@
         ? 'jmap-fullscreen fixed inset-2 md:inset-4 z-[1200] flex flex-col gap-2 bg-[#070b14] rounded-2xl shadow-2xl shadow-purple-500/30 overflow-hidden p-3'
         : 'flex flex-col gap-4'}
 >
-    {#if isFullscreen}
-        <button
-            type="button"
-            onclick={closeFullscreen}
-            aria-label={$t('map.close_fullscreen')}
-            title={$t('map.close_esc')}
-            class="absolute top-3 left-3 z-[70] w-11 h-11 rounded-full bg-red-600/90 hover:bg-red-500 text-white text-2xl leading-none font-bold flex items-center justify-center transition-all backdrop-blur-sm border-2 border-white/70 shadow-xl"
-        >
-            ✕
-        </button>
-    {/if}
     <div class="flex flex-col gap-4">
         <!-- כותרת שכונה - הוסרה לדף הראשי -->
 
@@ -1399,6 +1388,21 @@
         onmouseenter={handleMouseEnter}
         onmouseleave={handleMouseLeave}
     >
+        <!-- כפתור סגירת מסך-מלא: ראש המפה, ממורכז, חצי-שקוף (הדרך המקובלת לסגור מסך) -->
+        {#if isFullscreen}
+            <button
+                type="button"
+                onclick={closeFullscreen}
+                aria-label={$t('map.close_fullscreen')}
+                title={$t('map.close_esc')}
+                class="absolute top-14 left-1/2 z-[500] flex items-center gap-1.5 px-4 py-2 rounded-full bg-black/45 hover:bg-black/65 text-white text-sm font-bold backdrop-blur-md border border-white/40 shadow-xl transition-all hover:scale-105"
+                style="transform: translateX(-50%);"
+            >
+                <span class="text-lg leading-none">✕</span>
+                <span>{$t('map.close_fullscreen')}</span>
+            </button>
+        {/if}
+
         <!-- כפתור מעבר תצוגה - משולש מקופל בפינה -->
         <button
             onclick={() => {
