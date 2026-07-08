@@ -1418,6 +1418,13 @@
 		(data.user as any)?.role === "neighborhood_admin",
 	);
 
+	// דרגה אפקטיבית סופית - הגבוהה מבין השלמת-הפרופיל (userLevel) לבין התפקיד שהוקצה.
+	// רכז/מנהל שאושר הוא לפחות דרגה 3 גם אם לא מילא פרופיל מלא, ולכן לעולם לא "צופה".
+	// 1=צופה, 2=משתמש, 3=רכז/מנהל-שכונה, 4=סופר-אדמין.
+	let effectiveLevel = $derived(
+		isSuperAdmin ? 4 : isCoordOrNbhAdmin ? 3 : userLevel,
+	);
+
 	// טיפ למעגל - המפתח של השדה הבא שלא מולא
 	const ringTipKeys = [
 		"tip_name",
@@ -2054,7 +2061,7 @@
 	{/if}
 
 	<!-- ===== טיפ לצופה - מעודד למלא שכונה ופרטים ===== -->
-	{#if data.user && userLevel === 1 && !viewerTipDismissed}
+	{#if data.user && effectiveLevel === 1 && !viewerTipDismissed}
 		<div
 			class="mb-4 rounded-2xl border border-purple-500/30 bg-gradient-to-r from-blue-600/15 to-purple-600/15 px-4 py-3 md:px-5 md:py-4 flex items-start gap-3 shadow-lg"
 			role="status"
@@ -3389,11 +3396,11 @@
 				<!-- דרגה 1: צופה -->
 				<div
 					class="relative rounded-2xl border-2 p-5 flex flex-col gap-3 transition-all
-			            {userLevel >= 1
+			            {effectiveLevel >= 1
 						? 'border-emerald-500 bg-emerald-500/10 shadow-lg shadow-emerald-500/10'
 						: 'border-white/10 bg-white/3 opacity-60'}"
 				>
-					{#if userLevel >= 1}
+					{#if effectiveLevel >= 1}
 						<div
 							class="absolute -top-4 -right-4 w-9 h-9 rounded-full bg-emerald-500 border-[3px] border-[#0f172a] flex items-center justify-center shadow-lg shadow-emerald-500/50 z-10"
 						>
@@ -3406,13 +3413,13 @@
 					<div class="flex items-center gap-2">
 						<span
 							class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0
-					             {userLevel >= 1
+					             {effectiveLevel >= 1
 								? 'bg-emerald-500 text-white'
 								: 'bg-white/10 text-gray-400'}">1</span
 						>
 						<span class="font-black text-white text-base">{tFn("profile.role_viewer")}</span
 						>
-						{#if userLevel === 1}
+						{#if effectiveLevel === 1}
 							<span
 								class="mr-auto text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold"
 								>{tFn("profile.your_level")}</span
@@ -3448,11 +3455,11 @@
 				<!-- דרגה 2: משתמש -->
 				<div
 					class="relative rounded-2xl border-2 p-5 flex flex-col gap-3 transition-all
-			            {userLevel >= 2
+			            {effectiveLevel >= 2
 						? 'border-purple-500 bg-purple-500/10 shadow-lg shadow-purple-500/10'
 						: 'border-white/10 bg-white/3 opacity-60'}"
 				>
-					{#if userLevel >= 2}
+					{#if effectiveLevel >= 2}
 						<div
 							class="absolute -top-4 -right-4 w-9 h-9 rounded-full bg-purple-500 border-[3px] border-[#0f172a] flex items-center justify-center shadow-lg shadow-purple-500/50 z-10"
 						>
@@ -3465,14 +3472,14 @@
 					<div class="flex items-center gap-2">
 						<span
 							class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0
-					             {userLevel >= 2
+					             {effectiveLevel >= 2
 								? 'bg-purple-500 text-white'
 								: 'bg-white/10 text-gray-400'}">2</span
 						>
 						<span class="font-black text-white text-base"
 							>{tFn("profile.role_user")}</span
 						>
-						{#if userLevel === 2}
+						{#if effectiveLevel === 2}
 							<span
 								class="mr-auto text-[10px] bg-purple-500/20 text-purple-400 border border-purple-500/30 px-2 py-0.5 rounded-full font-bold"
 								>{tFn("profile.your_level")}</span
@@ -3504,7 +3511,7 @@
 							>
 						</div>
 					</div>
-					{#if userLevel < 2}
+					{#if effectiveLevel < 2}
 						<p class="text-yellow-500/70 text-[11px]">
 							{tFn("profile.level2_req")}
 						</p>
@@ -3513,14 +3520,14 @@
 
 				<!-- דרגה 3: רכז שכונה (לא כולל סופר־אדמין) -->
 				<a
-					href={isCoordOrNbhAdmin ? "/admin" : undefined}
+					href={effectiveLevel >= 3 ? "/admin" : undefined}
 					class="relative rounded-2xl border-2 p-5 flex flex-col gap-3 transition-all no-underline
-		       {isCoordOrNbhAdmin
+		       {effectiveLevel >= 3
 							? 'border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/10 hover:bg-blue-500/20 cursor-pointer'
 							: 'border-white/10 bg-white/3 opacity-60 pointer-events-none'}"
-					title={isCoordOrNbhAdmin ? tFn("profile.coord_manage_title") : ""}
+					title={effectiveLevel >= 3 ? tFn("profile.coord_manage_title") : ""}
 				>
-					{#if isCoordOrNbhAdmin}
+					{#if effectiveLevel >= 3}
 						<div
 							class="absolute -top-4 -right-4 w-9 h-9 rounded-full bg-blue-500 border-[3px] border-[#0f172a] flex items-center justify-center shadow-lg shadow-blue-500/50 z-10"
 						>
@@ -3533,14 +3540,14 @@
 					<div class="flex items-center gap-2">
 						<span
 							class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0
-			             {isCoordOrNbhAdmin
+			             {effectiveLevel >= 3
 									? 'bg-blue-500 text-white'
 									: 'bg-white/10 text-gray-400'}">3</span
 						>
 						<span class="font-black text-white text-base"
 							>{tFn("profile.role_coordinator")}</span
 						>
-						{#if isCoordOrNbhAdmin}
+						{#if effectiveLevel === 3}
 							<span
 								class="mr-auto text-[10px] bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded-full font-bold"
 								>{tFn("profile.your_level")}</span
