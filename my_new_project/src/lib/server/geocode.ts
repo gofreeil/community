@@ -8,6 +8,47 @@
 import { getCoordsFor } from '$lib/neighborhoodCoords';
 
 const NOMINATIM = 'https://nominatim.openstreetmap.org/search';
+const NOMINATIM_REVERSE = 'https://nominatim.openstreetmap.org/reverse';
+
+// reverse geocoding: קואורדינטות (מ-GPS של הנייד) → כתובת קריאה בעברית.
+// משמש בטופס קריאת המצוקה - התושב "לוקח" את מיקומו מה-GPS ואנחנו ממלאים
+// עבורו כתובת ברורה (רחוב + שכונה + עיר) בלי שיצטרך להקליד דבר.
+// best-effort: מחזיר '' אם נכשל/אין תוצאה - הפין לבדו עדיין תקף כמיקום.
+export async function reverseGeocode(lat: number, lng: number): Promise<string> {
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return '';
+    try {
+        const url = new URL(NOMINATIM_REVERSE);
+        url.searchParams.set('lat', String(lat));
+        url.searchParams.set('lon', String(lng));
+        url.searchParams.set('format', 'json');
+        url.searchParams.set('zoom', '18');           // רמת רחוב/בית
+        url.searchParams.set('accept-language', 'he');
+
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 4000);
+        const res = await fetch(url, {
+            headers: {
+                'User-Agent': 'gofreeil-community/1.0 (https://community.gofreeil.com)',
+            },
+            signal: ctrl.signal,
+        }).finally(() => clearTimeout(timer));
+
+        if (!res.ok) return '';
+        const data = (await res.json()) as {
+            display_name?: string;
+            address?: Record<string, string>;
+        };
+        const a = data.address ?? {};
+        // בונים כתובת תמציתית: רחוב+מספר, שכונה, עיר - במקום ה-display_name הארוך
+        const street = [a.road, a.house_number].filter(Boolean).join(' ');
+        const area   = a.neighbourhood || a.suburb || a.quarter || '';
+        const town   = a.city || a.town || a.village || a.municipality || '';
+        const concise = [street, area, town].filter(Boolean).join(', ');
+        return concise || (data.display_name ?? '');
+    } catch {
+        return '';
+    }
+}
 
 // geocoding חיצוני של כתובת חופשית דרך OpenStreetMap (Nominatim).
 // best-effort: מחזיר null אם נכשל/אין תוצאה, והקורא נופל למרכז השכונה.

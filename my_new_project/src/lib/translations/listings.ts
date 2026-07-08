@@ -274,6 +274,18 @@ export const he = {
         pin_mark_precise: "📍 סמן מיקום מדויק על המפה",
         pin_hide: "הסתר מפה והסר סימון",
 
+        // ---- קליטת מיקום מ-GPS של המכשיר (raise-hand/add) ----
+        gps_use: "📍 קח מיקום מדויק מה-GPS",
+        gps_or: "או",
+        gps_hint: "הדרך המהירה — בלחיצה אחת, בלי למלא כתובת",
+        gps_locating: "מאתר את מיקומך...",
+        gps_success: "המיקום נקלט בהצלחה",
+        gps_success_hint: "אפשר לכוונן את הפין על המפה למטה",
+        gps_unsupported: "המכשיר לא תומך באיתור מיקום. סמנו ידנית על המפה.",
+        gps_denied: "ההרשאה למיקום חסומה. אפשרו גישה למיקום בהגדרות הדפדפן ונסו שוב — או סמנו ידנית על המפה.",
+        gps_timeout: "האיתור ארך זמן רב מדי. נסו שוב, או סמנו ידנית על המפה.",
+        gps_unavailable: "לא הצלחנו לאתר את מיקומך. נסו שוב, או סמנו ידנית על המפה.",
+
         // ---- פינת האבדות (תוספות) ----
         laf_national_board: "לוח ארצי",
         laf_search_ph: "חיפוש לפי תיאור, תגיות או מיקום...",
@@ -579,6 +591,18 @@ export const en = {
         pin_mark_precise: "📍 Mark exact location on the map",
         pin_hide: "Hide map and remove marker",
 
+        // ---- device GPS capture (raise-hand/add) ----
+        gps_use: "📍 Use my exact GPS location",
+        gps_or: "or",
+        gps_hint: "The fast way — one tap, no address to type",
+        gps_locating: "Locating you...",
+        gps_success: "Location captured",
+        gps_success_hint: "You can fine-tune the pin on the map below",
+        gps_unsupported: "This device can't detect location. Please mark it on the map.",
+        gps_denied: "Location permission is blocked. Allow location access in your browser settings and try again — or mark it on the map.",
+        gps_timeout: "Locating took too long. Try again, or mark it on the map.",
+        gps_unavailable: "We couldn't find your location. Try again, or mark it on the map.",
+
         // ---- Lost & Found (additions) ----
         laf_national_board: "Nationwide board",
         laf_search_ph: "Search by description, tags or location...",
@@ -883,6 +907,18 @@ export const ru = {
         pin_required_note: "📍 В этом населённом пункте нет списка улиц - отметьте точное место на карте (обязательно).",
         pin_mark_precise: "📍 Отметить точное место на карте",
         pin_hide: "Скрыть карту и убрать отметку",
+
+        // ---- получение местоположения с GPS устройства (raise-hand/add) ----
+        gps_use: "📍 Взять точное местоположение с GPS",
+        gps_or: "или",
+        gps_hint: "Быстрый способ — одно нажатие, без ввода адреса",
+        gps_locating: "Определяем ваше местоположение...",
+        gps_success: "Местоположение получено",
+        gps_success_hint: "Вы можете уточнить метку на карте ниже",
+        gps_unsupported: "Устройство не поддерживает определение местоположения. Отметьте на карте.",
+        gps_denied: "Доступ к местоположению заблокирован. Разрешите доступ в настройках браузера и повторите — или отметьте на карте.",
+        gps_timeout: "Определение заняло слишком много времени. Повторите или отметьте на карте.",
+        gps_unavailable: "Не удалось определить ваше местоположение. Повторите или отметьте на карте.",
 
         // ---- Бюро находок (дополнения) ----
         laf_national_board: "Общенациональная доска",

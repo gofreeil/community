@@ -4,6 +4,7 @@
     import { formMemory } from '$lib/formMemory';
     import StreetPicker from '$lib/components/StreetPicker.svelte';
     import NeighborhoodPicker from '$lib/components/NeighborhoodPicker.svelte';
+    import GpsLocateButton from '$lib/components/GpsLocateButton.svelte';
     import { imageDrop } from '$lib/imageDrop';
     import type { PageData, ActionData } from './$types';
 
@@ -22,8 +23,20 @@
     const forceMapPin = $derived(!streetListLoading && !cityHasStreetList);
     $effect(() => { if (forceMapPin) showMap = true; });
     let submitting   = $state(false);
+    // המשתמש קלט מיקום מה-GPS של המכשיר - הפין תקף, ומציגים את המפה לאישור/כוונון
+    let usedGps      = $state(false);
     let imageBase64  = $state('');
     let imagePreview = $state('');
+
+    // קליטת מיקום מה-GPS: מציבים פין מדויק, פותחים מפה לאימות, וממלאים כתובת
+    // קריאה (אם התקבלה מ-reverse geocoding ולא הוקלד כבר טקסט אחר).
+    function onGpsLocated({ lat, lng, address }: { lat: number; lng: number; address: string }) {
+        pinLat  = lat;
+        pinLng  = lng;
+        usedGps = true;
+        showMap = true;
+        if (address && !location.trim()) location = address;
+    }
     // מגירת "נראה לאחרונה" - פתוחה/סגורה (מוצגת רק בקריאות של אובדן: ילד/כלב)
     let lastSeenOpen = $state(false);
 
@@ -165,6 +178,16 @@
                     <label for="rh-location" class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
                         {$_('listings.location_req')}
                     </label>
+
+                    <!-- דרך מהירה בנייד: לקיחת מיקום מדויק ישירות מה-GPS של המכשיר -->
+                    <GpsLocateButton onLocated={onGpsLocated} />
+
+                    <div class="flex items-center gap-3 my-3 text-[11px] font-bold uppercase tracking-wider text-gray-600">
+                        <span class="h-px flex-1 bg-white/10"></span>
+                        {$_('listings.gps_or')}
+                        <span class="h-px flex-1 bg-white/10"></span>
+                    </div>
+
                     <!-- הצעות מרשימת הרחובות של עיר המשתמש; תיאור חופשי ("ליד הגן") עדיין אפשרי -->
                     <StreetPicker
                         city={data.userCity ?? ''}
@@ -177,8 +200,8 @@
                     />
                     <input type="hidden" name="location" value={location} />
 
-                    <!-- סימון מדויק על המפה - מוצע כשהמיקום לא מזוהה, וחובה ביישוב בלי רחובות -->
-                    {#if !locationResolved || forceMapPin}
+                    <!-- סימון מדויק על המפה - מוצע כשהמיקום לא מזוהה/נקלט מ-GPS, וחובה ביישוב בלי רחובות -->
+                    {#if !locationResolved || forceMapPin || usedGps}
                     {#if forceMapPin}
                         <p class="mt-2 mb-1 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs font-bold text-amber-200 leading-relaxed">
                             {$_('listings.pin_required_note')}
@@ -193,7 +216,7 @@
                         <div class="mt-2">
                             <NeighborhoodPicker city={data.userCity ?? ''} bind:lat={pinLat} bind:lng={pinLng} />
                             {#if !forceMapPin}
-                                <button type="button" onclick={() => { showMap = false; pinLat = null; pinLng = null; }}
+                                <button type="button" onclick={() => { showMap = false; pinLat = null; pinLng = null; usedGps = false; }}
                                     class="mt-2 text-xs text-gray-400 hover:text-gray-200 underline underline-offset-2 transition-colors">
                                     {$_('listings.pin_hide')}
                                 </button>
