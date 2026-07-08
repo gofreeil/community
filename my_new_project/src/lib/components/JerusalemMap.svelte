@@ -1399,7 +1399,7 @@
                 style="transform: translateX(-50%);"
             >
                 <span class="text-lg leading-none">✕</span>
-                <span>{$t('map.close_fullscreen')}</span>
+                <span>{$t('map.close')}</span>
             </button>
         {/if}
 
