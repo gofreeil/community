@@ -214,8 +214,8 @@
                         <div class="flex items-center gap-4">
                             <span class="text-4xl" aria-hidden="true">✨</span>
                             <div>
-                                <p class="font-bold text-xl">המשאלה נוספה בהצלחה!</p>
-                                <p class="text-sm text-green-100">המשאלה שלך נוספה לכותל</p>
+                                <p class="font-bold text-xl">{$_('community.cf_success_title')}</p>
+                                <p class="text-sm text-green-100">{$_('community.cf_success_sub')}</p>
                             </div>
                         </div>
                     </div>

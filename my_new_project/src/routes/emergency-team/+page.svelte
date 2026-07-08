@@ -1,11 +1,12 @@
 <script lang="ts">
+    import { _ } from 'svelte-i18n';
     import type { PageData } from './$types';
 
     let { data }: { data: PageData } = $props();
 
     function getRole(extraFields: string): string {
-        try { return JSON.parse(extraFields)?.role ?? 'חבר'; }
-        catch { return 'חבר'; }
+        try { return JSON.parse(extraFields)?.role ?? ''; }
+        catch { return ''; }
     }
 
     function waLink(phone: string): string {
@@ -22,18 +23,18 @@
     <div class="max-w-3xl mx-auto">
         <div class="text-center mb-6">
             <span class="text-5xl mb-3 block">🚨</span>
-            <h1 class="text-3xl font-black text-white mb-2">כיתת כוננות</h1>
+            <h1 class="text-3xl font-black text-white mb-2">{$_('community.et_heading')}</h1>
             {#if data.currentNeighborhood}
-                <p class="text-gray-400">שכונה: <strong class="text-white">{data.currentNeighborhood}</strong></p>
+                <p class="text-gray-400">{$_('community.et_neighborhood_label')} <strong class="text-white">{data.currentNeighborhood}</strong></p>
             {/if}
-            <p class="text-gray-500 text-sm mt-2">{data.members.length} חברים פעילים</p>
+            <p class="text-gray-500 text-sm mt-2">{$_('community.et_members_count', { values: { n: data.members.length } })}</p>
         </div>
 
         {#if data.members.length === 0}
             <div class="rounded-2xl bg-[#0f172a] border border-white/10 p-8 text-center">
                 <span class="text-5xl mb-3 block">🚨</span>
-                <h2 class="text-white text-lg font-bold mb-2">אין כיתת כוננות פעילה בשכונה</h2>
-                <p class="text-gray-400 text-sm">פנה לרכז השכונה כדי להקים כיתה</p>
+                <h2 class="text-white text-lg font-bold mb-2">{$_('community.et_empty_title')}</h2>
+                <p class="text-gray-400 text-sm">{$_('community.et_empty_sub')}</p>
             </div>
         {:else}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -44,7 +45,7 @@
                             <div class="w-12 h-12 rounded-full bg-gradient-to-br from-red-500/40 to-orange-500/40 flex items-center justify-center text-2xl flex-shrink-0">🚨</div>
                             <div class="flex-1 min-w-0">
                                 <h3 class="text-white font-bold truncate">{m.label}</h3>
-                                <span class="text-xs bg-red-500/20 text-red-300 px-2 py-0.5 rounded-full">{role}</span>
+                                <span class="text-xs bg-red-500/20 text-red-300 px-2 py-0.5 rounded-full">{role || $_('community.et_role_member')}</span>
                             </div>
                         </div>
                         {#if m.description}
@@ -72,7 +73,7 @@
         {/if}
 
         <div class="text-center mt-8">
-            <a href="/" class="text-gray-500 hover:text-white transition-colors text-sm">← חזרה לדף הראשי</a>
+            <a href="/" class="text-gray-500 hover:text-white transition-colors text-sm">{$_('community.et_back_home')}</a>
         </div>
     </div>
 </div>

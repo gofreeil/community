@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { _ } from 'svelte-i18n';
 	import { coinAnim } from '$lib/coinAnimationState.svelte';
 
 	// Stage: 1=burst, 2=travel, 3=fill bag, 4=summary+countdown
@@ -73,7 +74,7 @@
 </script>
 
 {#if coinAnim.active}
-<div class="overlay" role="dialog" aria-modal="true" aria-label="העברת מעשר לקופת העיר">
+<div class="overlay" role="dialog" aria-modal="true" aria-label={$_('community.ca_aria')}>
 
 	<!-- ===== STAGE 1: coins burst ===== -->
 	{#if stage === 1}
@@ -96,7 +97,7 @@
 			</svg>
 			{/each}
 		</div>
-		<p class="stage-label">מעביר מעשר לקופת העיר...</p>
+		<p class="stage-label">{$_('community.ca_transferring')}</p>
 	</div>
 	{/if}
 
@@ -106,7 +107,7 @@
 		<div class="travel-row">
 			<div class="travel-source">
 				<span class="travel-icon">📋</span>
-				<span class="travel-sub">הזמנה</span>
+				<span class="travel-sub">{$_('community.ca_order')}</span>
 			</div>
 			<div class="travel-path">
 				<svg class="path-svg" viewBox="0 0 260 60" xmlns="http://www.w3.org/2000/svg">
@@ -124,11 +125,11 @@
 				</svg>
 			</div>
 			<div class="travel-dest">
-				<img src="/images/kupat-hair.png" alt="קופת העיר" class="travel-bag"/>
-				<span class="travel-sub">קופת העיר</span>
+				<img src="/images/kupat-hair.png" alt={$_('community.ca_fund')} class="travel-bag"/>
+				<span class="travel-sub">{$_('community.ca_fund')}</span>
 			</div>
 		</div>
-		<p class="stage-amount">₪{coinAnim.amount.toLocaleString('he-IL')} מועברים לקופה</p>
+		<p class="stage-amount">{$_('community.ca_amount_moving', { values: { amount: coinAnim.amount.toLocaleString('he-IL') } })}</p>
 	</div>
 	{/if}
 
@@ -145,10 +146,10 @@
 				</svg>
 				{/each}
 			</div>
-			<img src="/images/kupat-hair.png" alt="קופת העיר" class="bag-fill"/>
+			<img src="/images/kupat-hair.png" alt={$_('community.ca_fund')} class="bag-fill"/>
 		</div>
 		<div class="counter-wrap">
-			<span class="counter-label">סכום בקופה</span>
+			<span class="counter-label">{$_('community.ca_fund_total_label')}</span>
 			<span class="counter-value">₪{displayTotal.toLocaleString('he-IL')}</span>
 		</div>
 	</div>
@@ -159,23 +160,23 @@
 	<div class="stage stage4">
 		<div class="summary-card">
 			<div class="summary-emoji">🙏</div>
-			<h2 class="summary-title">תודה שתרמת לקופת העיר!</h2>
+			<h2 class="summary-title">{$_('community.ca_thanks')}</h2>
 			<div class="summary-rows">
 				<div class="summary-row">
-					<span class="sr-label">שילמת</span>
+					<span class="sr-label">{$_('community.ca_paid')}</span>
 					<span class="sr-value">₪{coinAnim.orderTotal.toLocaleString('he-IL')}</span>
 				</div>
 				<div class="summary-row highlight">
-					<span class="sr-label">תרמת לקופה (10%)</span>
+					<span class="sr-label">{$_('community.ca_donated')}</span>
 					<span class="sr-value gold">₪{coinAnim.amount.toLocaleString('he-IL')}</span>
 				</div>
 				<div class="summary-row">
-					<span class="sr-label">סה"כ בקופה כעת</span>
+					<span class="sr-label">{$_('community.ca_total_now')}</span>
 					<span class="sr-value">₪{coinAnim.newFundTotal.toLocaleString('he-IL')}</span>
 				</div>
 			</div>
-			<p class="summary-email">📧 הפרטים והקבלה יישלחו לאימייל שלך</p>
-			<p class="summary-countdown">חוזר לדף הבית בעוד {countdown}...</p>
+			<p class="summary-email">{$_('community.ca_email')}</p>
+			<p class="summary-countdown">{$_('community.ca_countdown', { values: { n: countdown } })}</p>
 		</div>
 	</div>
 	{/if}

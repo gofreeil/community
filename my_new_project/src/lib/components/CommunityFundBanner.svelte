@@ -3,6 +3,7 @@
     import { tweened } from 'svelte/motion';
     import { cubicOut } from 'svelte/easing';
     import { goto } from '$app/navigation';
+    import { _ } from 'svelte-i18n';
 
     interface Props {
         animating?: boolean;
@@ -47,7 +48,7 @@
     onkeydown={(e) => e.key === 'Enter' && handleClick()}
     role="link"
     tabindex="0"
-    aria-label="קופת השכונה - לחץ לפרטים"
+    aria-label={$_('community.fb_aria')}
 >
     <!-- רקע גרדיאנט -->
     <div class="absolute inset-0 bg-gradient-to-br from-yellow-500/20 via-amber-600/20 to-green-600/20
@@ -67,8 +68,8 @@
         <div class="flex items-center gap-3">
             <span class="text-3xl {animating ? 'animate-bounce' : ''}">🏦</span>
             <div>
-                <p class="text-xs font-bold text-yellow-400/80 mb-0.5">קופת השכונה</p>
-                <p class="text-[10px] text-gray-400">10% מכל תשלום</p>
+                <p class="text-xs font-bold text-yellow-400/80 mb-0.5">{$_('community.fb_title')}</p>
+                <p class="text-[10px] text-gray-400">{$_('community.fb_sub')}</p>
             </div>
         </div>
 
@@ -80,14 +81,14 @@
             </p>
             {#if animating && newAmount > 0}
                 <p class="text-xs text-green-400 font-bold animate-pulse">
-                    +₪{newAmount} נוסף עכשיו! 🎉
+                    {$_('community.fb_added_now', { values: { n: newAmount } })}
                 </p>
             {/if}
         </div>
 
         <!-- צד שמאל: חץ -->
         <div class="text-gray-400 group-hover:text-yellow-400 transition-colors text-sm font-bold">
-            לפרטים ←
+            {$_('community.fb_details')}
         </div>
     </div>
 </div>
