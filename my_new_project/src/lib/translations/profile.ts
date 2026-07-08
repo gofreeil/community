@@ -354,6 +354,25 @@ export const he = {
         crop_hint: "גרור להזזה · גלגלת עכבר להגדלה/הקטנה",
         crop_alt: "חיתוך",
         crop_confirm: "אשר תמונה",
+
+        // מחיקה לצמיתות + שחזור נכס
+        item_deleted: "🗑 מחוק",
+        restore_days_left: "ניתן לשחזר עוד {n} ימים",
+        restore_window_over: "חלון השחזור חלף",
+        restore_item: "♻️ שחזר נכס",
+        restore_item_title: "שחזור הנכס - יחזור להופיע על המפה",
+        pd_title: "🗑 מחיקה לצמיתות",
+        pd_body_prefix: "הנכס",
+        pd_body_suffix: "יימחק לצמיתות ולא ניתן יהיה לשחזר אותו.",
+        pd_keep_hint:
+            'רוצים לשמור אפשרות שחזור? סגרו כאן והשתמשו ב"מחק" מתוך עריכת הכרטיס - שם המחיקה ניתנת לשחזור עד 30 יום.',
+        pd_answer_label: "לאישור, ענו על שאלת האבטחה שלכם:",
+        pd_answer_ph: "התשובה שלכם",
+        pd_no_question: "לא הוגדרה שאלת אבטחה בפרופיל. אישור המחיקה ימחק את הנכס לצמיתות.",
+        pd_answer_required: "יש להזין את תשובת שאלת האבטחה",
+        pd_cancel: "ביטול",
+        pd_deleting: "מוחק…",
+        pd_confirm: "מחק לצמיתות",
     },
 };
 
@@ -707,6 +726,25 @@ export const en = {
         crop_hint: "Drag to move · mouse wheel to zoom",
         crop_alt: "Crop",
         crop_confirm: "Confirm photo",
+
+        // Permanent deletion + item restore
+        item_deleted: "🗑 Deleted",
+        restore_days_left: "Can be restored for {n} more days",
+        restore_window_over: "The restore window has passed",
+        restore_item: "♻️ Restore listing",
+        restore_item_title: "Restore the listing - it will reappear on the map",
+        pd_title: "🗑 Permanent deletion",
+        pd_body_prefix: "The listing",
+        pd_body_suffix: "will be permanently deleted and cannot be restored.",
+        pd_keep_hint:
+            'Want to keep a restore option? Close this and use "Delete" from the card editor - there deletion can be undone for up to 30 days.',
+        pd_answer_label: "To confirm, answer your security question:",
+        pd_answer_ph: "Your answer",
+        pd_no_question: "No security question is set in your profile. Confirming will delete the listing permanently.",
+        pd_answer_required: "Please enter the answer to your security question",
+        pd_cancel: "Cancel",
+        pd_deleting: "Deleting…",
+        pd_confirm: "Delete permanently",
     },
 };
 
@@ -1060,5 +1098,24 @@ export const ru = {
         crop_hint: "Перетащите для перемещения · колесо мыши для масштаба",
         crop_alt: "Обрезка",
         crop_confirm: "Подтвердить фото",
+
+        // Окончательное удаление + восстановление объекта
+        item_deleted: "🗑 Удалено",
+        restore_days_left: "Можно восстановить ещё {n} дн.",
+        restore_window_over: "Срок восстановления истёк",
+        restore_item: "♻️ Восстановить объект",
+        restore_item_title: "Восстановить объект - он снова появится на карте",
+        pd_title: "🗑 Окончательное удаление",
+        pd_body_prefix: "Объект",
+        pd_body_suffix: "будет удалён навсегда, и восстановить его будет невозможно.",
+        pd_keep_hint:
+            "Хотите сохранить возможность восстановления? Закройте это окно и используйте «Удалить» в редакторе карточки - там удаление можно отменить в течение 30 дней.",
+        pd_answer_label: "Для подтверждения ответьте на ваш секретный вопрос:",
+        pd_answer_ph: "Ваш ответ",
+        pd_no_question: "Секретный вопрос не задан в профиле. Подтверждение удалит объект навсегда.",
+        pd_answer_required: "Введите ответ на секретный вопрос",
+        pd_cancel: "Отмена",
+        pd_deleting: "Удаление…",
+        pd_confirm: "Удалить навсегда",
     },
 };

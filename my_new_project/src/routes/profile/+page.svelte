@@ -127,7 +127,7 @@
 		if (!permDeleteTarget) return;
 		// אם הוגדרה שאלת אבטחה - חובה לענות עליה (מאומת גם בשרת)
 		if (security_question && !permDeleteAnswer.trim()) {
-			permDeleteError = "יש להזין את תשובת שאלת האבטחה";
+			permDeleteError = tFn("profile.pd_answer_required");
 			return;
 		}
 		permDeleteBusy = true;
@@ -3091,12 +3091,12 @@
 														: eff === "frozen"
 															? tFn("profile.item_inactive")
 															: eff === "deleted"
-																? "🗑 מחוק"
+																? tFn("profile.item_deleted")
 																: eff}
 												</span>
 												{#if eff === 'deleted'}
 													<span class="text-[11px] font-bold {daysLeft > 0 ? 'text-amber-300' : 'text-gray-500'}">
-														{daysLeft > 0 ? `ניתן לשחזר עוד ${daysLeft} ימים` : 'חלון השחזור חלף'}
+														{daysLeft > 0 ? tFn("profile.restore_days_left", { n: daysLeft }) : tFn("profile.restore_window_over")}
 													</span>
 												{/if}
 											</div>
@@ -3137,8 +3137,8 @@
 											onclick={() => restoreOwnItem(item.id)}
 											disabled={restoringItemId === item.id}
 											class="text-[11px] font-bold text-emerald-400/90 hover:text-emerald-300 hover:bg-emerald-500/10 px-2.5 py-1 rounded-md transition-colors disabled:opacity-50"
-											title="שחזור הנכס - יחזור להופיע על המפה"
-										>{restoringItemId === item.id ? '...' : '♻️ שחזר נכס'}</button>
+											title={tFn("profile.restore_item_title")}
+										>{restoringItemId === item.id ? '...' : tFn('profile.restore_item')}</button>
 									{:else if item.status === 'frozen' && !republishedItemIds.includes(item.id)}
 										<button
 											type="button"
@@ -5110,17 +5110,17 @@
 		<div class="w-full max-w-sm bg-[#0f172a] border border-red-500/30 rounded-2xl shadow-2xl p-5"
 			role="dialog" aria-modal="true" tabindex="-1"
 			onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.stopPropagation()}>
-			<h3 class="text-white font-black text-lg mb-1 flex items-center gap-2">🗑 מחיקה לצמיתות</h3>
+			<h3 class="text-white font-black text-lg mb-1 flex items-center gap-2">{tFn("profile.pd_title")}</h3>
 			<p class="text-gray-300 text-sm mb-1">
-				הנכס <span class="font-bold text-white">"{permDeleteTarget.label}"</span> יימחק לצמיתות ולא ניתן יהיה לשחזר אותו.
+				{tFn("profile.pd_body_prefix")} <span class="font-bold text-white">"{permDeleteTarget.label}"</span> {tFn("profile.pd_body_suffix")}
 			</p>
 			<p class="text-amber-300/80 text-xs mb-3">
-				רוצים לשמור אפשרות שחזור? סגרו כאן והשתמשו ב"מחק" מתוך עריכת הכרטיס - שם המחיקה ניתנת לשחזור עד 30 יום.
+				{tFn("profile.pd_keep_hint")}
 			</p>
 
 			{#if security_question}
 				<label class="block text-xs font-bold text-gray-300 mb-1" for="permDelAnswer">
-					לאישור, ענו על שאלת האבטחה שלכם:
+					{tFn("profile.pd_answer_label")}
 				</label>
 				<p class="text-sky-200 text-sm font-bold mb-1.5">{security_question}</p>
 				<input
@@ -5128,11 +5128,11 @@
 					type="text"
 					bind:value={permDeleteAnswer}
 					autocomplete="off"
-					placeholder="התשובה שלכם"
+					placeholder={tFn("profile.pd_answer_ph")}
 					class="w-full bg-[#0a0f1a] border border-white/15 focus:border-red-500/60 rounded-lg text-white text-sm px-3 py-2 mb-2 outline-none"
 				/>
 			{:else}
-				<p class="text-gray-400 text-xs mb-3">לא הוגדרה שאלת אבטחה בפרופיל. אישור המחיקה ימחק את הנכס לצמיתות.</p>
+				<p class="text-gray-400 text-xs mb-3">{tFn("profile.pd_no_question")}</p>
 			{/if}
 
 			{#if permDeleteError}
@@ -5141,10 +5141,10 @@
 
 			<div class="flex items-center justify-end gap-2 mt-1">
 				<button type="button" onclick={closePermDelete} disabled={permDeleteBusy}
-					class="text-sm font-bold text-gray-300 hover:text-white px-3 py-2 disabled:opacity-50">ביטול</button>
+					class="text-sm font-bold text-gray-300 hover:text-white px-3 py-2 disabled:opacity-50">{tFn("profile.pd_cancel")}</button>
 				<button type="button" onclick={confirmPermDelete} disabled={permDeleteBusy}
 					class="text-sm font-bold text-white bg-red-600 hover:bg-red-500 disabled:opacity-50 rounded-lg px-4 py-2 transition-all">
-					{permDeleteBusy ? 'מוחק…' : 'מחק לצמיתות'}
+					{permDeleteBusy ? tFn('profile.pd_deleting') : tFn('profile.pd_confirm')}
 				</button>
 			</div>
 		</div>
