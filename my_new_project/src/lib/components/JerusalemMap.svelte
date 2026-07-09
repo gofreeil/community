@@ -840,6 +840,9 @@
         leafletL.tileLayer(TILE_URL, {
             attribution: TILE_ATTR,
             maxZoom: 19,
+            maxNativeZoom: 19,        // רמת ה-zoom המקסימלית ש-OSM מגיש בפועל
+            keepBuffer: 4,            // שומר יותר אריחים מסביב לתצוגה - פחות ריבועים לבנים בגרירה/זום
+            updateWhenZooming: false, // לא לבקש אריחים חדשים באמצע אנימציית הזום - מונע את ההבזק/הריבוע הלבן
         }).addTo(leafletMap);
 
         mapMarkerLayer = leafletL.layerGroup().addTo(leafletMap);

@@ -162,7 +162,7 @@
             ...(bounds ? { maxBounds: bounds, maxBoundsViscosity: 1.0 } : {}),
         }).setView(center, lat != null && lng != null ? 15 : home.zoom);
 
-        L.tileLayer(TILE_URL, { attribution: TILE_ATTR, maxZoom: 19 }).addTo(map);
+        L.tileLayer(TILE_URL, { attribution: TILE_ATTR, maxZoom: 19, maxNativeZoom: 19, keepBuffer: 4, updateWhenZooming: false }).addTo(map);
         map.on('click', (e: any) => setPin(e.latlng));
 
         // פין קיים (עריכה/geocoding) מוצב תוכנתית - לא נחשב סימון ידני של המשתמש
