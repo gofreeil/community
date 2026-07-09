@@ -67,6 +67,10 @@
         return () => { document.body.style.overflow = ''; };
     });
 
+    // זום פנימה/החוצה דרך כפתורים מותאמים (במקום בקרת Leaflet המובנית)
+    function zoomIn()  { map?.zoomIn?.(); }
+    function zoomOut() { map?.zoomOut?.(); }
+
     function pinIcon() {
         return L.divIcon({
             html: '<div style="font-size:30px;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5));">📍</div>',
@@ -149,7 +153,9 @@
         const bounds = cityBounds();
 
         map = L.map(mapEl, {
-            zoomControl: true,
+            // בקרת הזום המובנית של Leaflet יושבת בפינה שמאל-עליון ומתנגשת בכפתור
+            // ההגדלה - לכן מכבים אותה ומשתמשים בכפתורי זום מותאמים (map-zoom).
+            zoomControl: false,
             scrollWheelZoom: true,
             minZoom: bounds ? 11 : 8,
             maxZoom: 19,
@@ -219,6 +225,24 @@
                 <span class="hidden sm:inline">{$_('components.np_expand')}</span>
             {/if}
         </button>
+
+        <!-- כפתורי זום מותאמים (פינה ימנית-עליונה, לא מתנגשים בכפתור ההגדלה) -->
+        <div class="map-zoom" aria-hidden={!ready}>
+            <button
+                type="button"
+                onclick={zoomIn}
+                class="map-btn map-zoom-btn"
+                aria-label={$_('components.np_zoom_in')}
+                title={$_('components.np_zoom_in')}
+            >+</button>
+            <button
+                type="button"
+                onclick={zoomOut}
+                class="map-btn map-zoom-btn"
+                aria-label={$_('components.np_zoom_out')}
+                title={$_('components.np_zoom_out')}
+            >−</button>
+        </div>
 
         <!-- שכבת ההדגמה המונפשת: יד גוררת פין על המפה -->
         {#if showDemo}
@@ -306,6 +330,26 @@
         padding: 0.35rem 0.6rem;
         border-radius: 0.6rem;
         font-size: 0.8rem;
+    }
+    /* כפתורי זום מוערמים בפינה ימנית-עליונה */
+    .map-zoom {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+    }
+    .map-zoom-btn {
+        position: static;
+        width: 2rem;
+        height: 2rem;
+        justify-content: center;
+        border-radius: 0.6rem;
+        font-size: 1.35rem;
+        line-height: 1;
+        padding: 0;
     }
     .map-btn--help {
         bottom: 0.5rem;

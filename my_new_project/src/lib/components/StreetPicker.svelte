@@ -77,21 +77,39 @@
             .finally(() => { if (loadedForCity === c) loading = false; });
     });
 
-    // התאמות לתפריט: קודם רחובות שמתחילים בטקסט שהוקלד, אחר כך שמכילים אותו
+    // התאמות לתפריט. המאגר הממשלתי שומר שמות בסדר "שם-משפחה שם-פרטי"
+    // (למשל "ויטל חיים"), בעוד שגולשים מקלידים בסדר הטבעי ("חיים ויטל") ולעיתים
+    // בכתיב שונה (ויטל/ויטאל). לכן ההתאמה נעשית לפי מילים בכל סדר, עם שכבת
+    // "כתיב רופף" שמתעלמת מאמות קריאה (א/ו/י) כדי לגשר על כתיב מלא/חסר.
     const normalize = (s: string) => s.replace(/["'׳״`]/g, '').replace(/\s+/g, ' ').trim();
+    const loosen = (s: string) => s.replace(/[אוי]/g, '');
+    const tokensOf = (s: string) => normalize(s).split(' ').filter(Boolean);
+    /** כל מילה שהוקלדה מופיעה כתחילת/חלק של מילה כלשהי ברחוב (סדר לא משנה) */
+    const tokensMatch = (qTokens: string[], sTokens: string[]) =>
+        qTokens.length > 0 &&
+        qTokens.every((qt) => sTokens.some((st) => st.startsWith(qt) || st.includes(qt)));
+
     const suggestions = $derived.by(() => {
         if (!streets.length) return [];
         const q = normalize(street);
         if (!q) return streets.slice(0, 80);
+        const qTokens = tokensOf(street);
+        const qLoose = qTokens.map(loosen).filter(Boolean);
         const starts: string[] = [];
         const contains: string[] = [];
+        const words: string[] = [];
+        const loose: string[] = [];
+        const seen = new Set<string>();
         for (const s of streets) {
+            if (seen.has(s)) continue;
             const ns = normalize(s);
-            if (ns.startsWith(q)) starts.push(s);
-            else if (ns.includes(q)) contains.push(s);
-            if (starts.length >= 80) break;
+            if (ns.startsWith(q)) { starts.push(s); seen.add(s); continue; }
+            if (ns.includes(q)) { contains.push(s); seen.add(s); continue; }
+            const sTokens = ns.split(' ').filter(Boolean);
+            if (tokensMatch(qTokens, sTokens)) { words.push(s); seen.add(s); continue; }
+            if (tokensMatch(qLoose, sTokens.map(loosen).filter(Boolean))) { loose.push(s); seen.add(s); }
         }
-        return [...starts, ...contains].slice(0, 80);
+        return [...starts, ...contains, ...words, ...loose].slice(0, 80);
     });
     const exactInList = $derived(streets.some((s) => normalize(s) === normalize(street)) && street.trim() !== '');
 
