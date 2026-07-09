@@ -249,6 +249,9 @@ export const he = {
         pct_done: "{n}% הושלם",
         loc_pending_title: "כבר קיבלנו את הבקשה שלך — היא בטיפול",
         loc_ok_title: "בקשתך נקלטה בהצלחה!",
+        loc_resolved_title: "השכונה שלך עודכנה",
+        loc_resolved_body:
+            'בחרת שכונה קיימת מהרשימה, אז סגרנו את בקשת המיקום הקודמת שלך ("{name}"). אפשר לשנות שכונה שוב בכל עת.',
         loc_pending_body:
             'הבקשה להוסיף את "{name}" כבר ממתינה לאישור המנהל. אין צורך לשלוח שוב — נעדכן אותך בתיבת ההודעות ברגע שהשכונה תתווסף.',
         loc_ok_body:
@@ -621,6 +624,9 @@ export const en = {
         pct_done: "{n}% completed",
         loc_pending_title: "We already received your request — it is being handled",
         loc_ok_title: "Your request was received successfully!",
+        loc_resolved_title: "Your neighborhood was updated",
+        loc_resolved_body:
+            'You chose an existing neighborhood, so we closed your earlier location request ("{name}"). You can change your neighborhood again anytime.',
         loc_pending_body:
             'The request to add "{name}" is already awaiting admin approval. No need to send again — we will update you in your inbox as soon as the neighborhood is added.',
         loc_ok_body:
@@ -993,6 +999,9 @@ export const ru = {
         pct_done: "Заполнено {n}%",
         loc_pending_title: "Мы уже получили ваш запрос — он в обработке",
         loc_ok_title: "Ваш запрос успешно получен!",
+        loc_resolved_title: "Ваш район обновлён",
+        loc_resolved_body:
+            'Вы выбрали существующий район, поэтому мы закрыли ваш предыдущий запрос на местоположение («{name}»). Вы можете снова изменить район в любое время.',
         loc_pending_body:
             'Запрос на добавление «{name}» уже ожидает одобрения администратора. Не нужно отправлять снова — мы сообщим вам в почтовом ящике, как только район будет добавлен.',
         loc_ok_body:

@@ -684,7 +684,7 @@
 	let saveSuccess = $state(_photoDone); // הצג הצלחה אם חזרנו מהעתקת תמונה
 	if (_photoDone) setTimeout(() => (saveSuccess = false), 3000);
 	// אישור מתמשך לבקשת הוספת שכונה/מיקום - לא נעלם אוטומטית, כדי שהמשתמש לא ינחש שזה נכשל וישלח שוב
-	let locationNotice = $state<{ text: string; already: boolean } | null>(null);
+	let locationNotice = $state<{ text: string; kind: "ok" | "pending" | "resolved" } | null>(null);
 	// ברירת מחדל לתמונה: avatar_url מה-DB, ואם אין - תמונת הפרופיל מגוגל (oauth_image)
 	let avatarPreview = $state<string | null>(
 		_ud?.avatar_url || (data as { oauth_image?: string | null }).oauth_image || null,
@@ -748,6 +748,14 @@
 		neighborhood = n;
 		showNbSuggestions = false;
 		locationInteracted = true;
+		// בחירת שכונה אמיתית מבטלת בקשת מיקום חופשי שהוקלדה - השתיים מוציאות זו את זו,
+		// כך שהשמירה לא תשלח בטעות בקשה ישנה ותשאיר את המשתמש "תקוע" בהודעת בטיפול.
+		customLocation = "";
+		customLat = null;
+		customLng = null;
+		// נקה פין מקומי ישן של מיקום מותאם - אחרת הוא ירשם מחדש כשכונה בטעינה הבאה
+		// למרות שהשרת דחה את הרשומה הממתינה.
+		try { localStorage.removeItem(MY_PIN_LS_KEY); } catch {}
 	}
 
 	// "לא מצאתי את השכונה שלי" → חשיפת תיבת המיקום החופשי שנשלחת למנהל
@@ -3717,14 +3725,18 @@
 				<span class="text-xl leading-none flex-shrink-0">📍</span>
 				<div class="flex-1 text-sm">
 					<p class="text-emerald-300 font-black mb-1">
-						{locationNotice.already
+						{locationNotice.kind === "pending"
 							? tFn("profile.loc_pending_title")
-							: tFn("profile.loc_ok_title")}
+							: locationNotice.kind === "resolved"
+								? tFn("profile.loc_resolved_title")
+								: tFn("profile.loc_ok_title")}
 					</p>
 					<p class="text-emerald-100/90 leading-relaxed">
-						{locationNotice.already
+						{locationNotice.kind === "pending"
 							? tFn("profile.loc_pending_body", { name: locationNotice.text })
-							: tFn("profile.loc_ok_body", { name: locationNotice.text })}
+							: locationNotice.kind === "resolved"
+								? tFn("profile.loc_resolved_body", { name: locationNotice.text })
+								: tFn("profile.loc_ok_body", { name: locationNotice.text })}
 					</p>
 				</div>
 				<button
@@ -3747,12 +3759,18 @@
 							isEditing = false;
 							saveSuccess = true;
 							// בקשת מיקום/שכונה חדשה - הצג אישור מתמשך ברור (לא הטוסט הגנרי של 3 שניות)
-							const sent    = (result.data as any)?.locationRequestSent;
-							const pending = (result.data as any)?.locationAlreadyPending;
+							const sent     = (result.data as any)?.locationRequestSent;
+							const pending  = (result.data as any)?.locationAlreadyPending;
+							const resolved = (result.data as any)?.locationResolved;
 							if (sent) {
-								locationNotice = { text: sent, already: false };
+								locationNotice = { text: sent, kind: "ok" };
 							} else if (pending) {
-								locationNotice = { text: pending, already: true };
+								locationNotice = { text: pending, kind: "pending" };
+							} else if (resolved) {
+								// המשתמש בחר שכונה קיימת - הבקשה הפתוחה שלו נסגרה מעצמה.
+								// מנקים גם את הפין המקומי הישן כדי שלא יירשם מחדש בטעינה הבאה.
+								locationNotice = { text: resolved, kind: "resolved" };
+								try { localStorage.removeItem(MY_PIN_LS_KEY); } catch {}
 							}
 							// אם המשתמש סימן פין לשכונה החדשה - תקן את המפה שלו *מיד* (מקומית),
 							// עוד לפני אישור האדמין, בדיוק כמו saveCityPin. אחרי אישור זה ממילא

@@ -129,3 +129,97 @@ export async function finalizeLocationDecision(input: LocationDecisionInput): Pr
         console.warn('[locationDecision] mark admin messages handled failed:', e);
     }
 }
+
+/**
+ * סגירת בקשות המיקום הפתוחות של המשתמש עצמו - כשהוא פתר את מיקומו לבד:
+ * בחר שכונה קיימת מהרשימה, או עדכן ("סופרסד") בקשה קודמת בבקשה חדשה ומתוקנת.
+ *
+ * זה מה שמשחרר את החסימה: בעבר בקשה פתוחה אחת חסמה כל בקשה/שינוי עתידי
+ * (dedupe "כבר בטיפול"), כך שאם המנהל לא טיפל - המשתמש נתקע. כאן אנחנו:
+ *   1. מסמנים את פריטי הבקשה שלו כ"טופל" (withdrawn) → הבדיקה כבר לא חוסמת
+ *   2. דוחים רשומות שכונה ממתינות שלו → יורדות מ"שכונות ממתינות" באדמין
+ *   3. מסמנים את הודעות הבקשה בתיבות האדמינים כ"טופל" → התור מתנקה
+ * בלי לשלוח למשתמש הודעת "נדחה" - הוא פתר בעצמו, לא נדחה.
+ *
+ * מחזיר את שם הבקשה שנסגרה (אם הייתה) כדי שאפשר יהיה להודיע למשתמש, אחרת null.
+ */
+export async function withdrawOpenLocationRequests(
+    userId: string,
+    opts: { city?: string; reason?: 'chose_existing' | 'superseded' } = {},
+): Promise<string | null> {
+    const { reason = 'chose_existing' } = opts;
+    const noteLabel = reason === 'superseded' ? 'המבקש עדכן את בקשתו' : 'המשתמש בחר שכונה קיימת';
+    let withdrawnLabel: string | null = null;
+    // שמות (מנורמלים) של הבקשות שנסגרו - כדי לדחות *רק* את רשומת הפין התואמת
+    const withdrawnNorms = new Set<string>();
+
+    // 1. סגירת פריטי הבקשה של המשתמש (מסיר את החסימה - הבדיקה מתעלמת מ-handled)
+    try {
+        const items = await getItemsByUserId(userId);
+        const open = (items ?? []).filter(it =>
+            it.category === 'location_request' &&
+            (it.status ?? 'pending') !== 'handled');
+        for (const it of open) {
+            const label = (it.label ?? '').replace(/^בקשה להוספת מיקום:\s*/, '').trim();
+            if (label) {
+                withdrawnNorms.add(normalizeLoc(label));
+                if (!withdrawnLabel) withdrawnLabel = label;
+            }
+        }
+        await Promise.all(open.map((it) => {
+            let ef: Record<string, unknown> = {};
+            try { ef = JSON.parse(it.extra_fields || '{}') ?? {}; } catch {}
+            return updateItem(it.id, {
+                status: 'handled',
+                extra_fields: { ...ef, withdrawn: true, withdrawn_reason: reason, withdrawn_at: new Date().toISOString() },
+            });
+        }));
+    } catch (e) {
+        console.warn('[locationDecision] withdraw request items failed:', e);
+    }
+
+    if (!withdrawnLabel) return null; // לא הייתה בקשה פתוחה - אין מה לנקות בהמשך
+
+    // 2. דחיית *רק* רשומת הפין של הבקשה שנסגרה - לפי שם (לא לפי עיר). כך פין
+    //    תיקון-מפה נפרד של אותו משתמש לא נדחה בטעות, ופין לא נשאר יתום אם
+    //    העיר בפרופיל השתנתה בינתיים. מסיר אותה מ"שכונות ממתינות" באדמין.
+    try {
+        const pending = await getNeighborhoods('pending');
+        const mine = pending.filter(n =>
+            (n.user_id ?? '') === userId &&
+            withdrawnNorms.has(normalizeLoc(n.name)));
+        await Promise.all(mine.map(n => rejectNeighborhood(n.id, `withdraw:${reason}`)));
+    } catch (e) {
+        console.warn('[locationDecision] withdraw neighborhood records failed:', e);
+    }
+
+    // 3. סימון הודעות הבקשה בתיבות האדמינים כ"טופל" - התור מתנקה, ההיסטוריה נשמרת
+    try {
+        const admins = await getAllSuperAdmins();
+        for (const admin of admins) {
+            let msgs;
+            try { msgs = await getMessagesByUserId(admin.id); } catch { continue; }
+            const related = (msgs ?? []).filter((m) => {
+                let ef: Record<string, unknown> = {};
+                try { ef = JSON.parse(m.extra_fields || '{}') ?? {}; } catch { return false; }
+                if (ef?.handled) return false;
+                if (String(ef?.type ?? '') !== 'location_request') return false;
+                return String(ef?.requested_by_id ?? '') === userId;
+            });
+            await Promise.all(related.map(async (m) => {
+                let ef: Record<string, unknown> = {};
+                try { ef = JSON.parse(m.extra_fields || '{}') ?? {}; } catch {}
+                await updateItem(m.id, {
+                    label: `✅ טופל (${noteLabel}) · ${(m.label ?? '').replace(/^[✅❌📍]+\s*(טופל\s*\([^)]*\)\s*·\s*)?/, '')}`,
+                    icon:  '✅',
+                    color: 'green',
+                    extra_fields: { ...ef, handled: true, decision: 'withdrawn', withdrawn_reason: reason, handled_at: new Date().toISOString() },
+                });
+            }));
+        }
+    } catch (e) {
+        console.warn('[locationDecision] mark admin messages withdrawn failed:', e);
+    }
+
+    return withdrawnLabel;
+}

@@ -1,7 +1,7 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { getUserById, getUserByEmail, updateUserProfile, getItemsByUserId, upsertUser, getMessagesByUserId, createItem, updateItem, getAllSuperAdmins, getAllUsers, getItemsByCategory, getItemsByCategoryAndStatus, createNeighborhoodRequest } from '$lib/server/db';
-import { finalizeLocationDecision } from '$lib/server/locationDecision';
+import { finalizeLocationDecision, withdrawOpenLocationRequests } from '$lib/server/locationDecision';
 import { getCachedUserById, invalidateCachedUser } from '$lib/server/userCache';
 import { citiesData } from '$lib/neighborhoodsData';
 import { cityCenters } from '$lib/neighborhoodCoords';
@@ -265,6 +265,19 @@ export const actions: Actions = {
             return fail(400, { error: 'שם חייב להכיל לפחות 2 תווים' });
         }
 
+        // מצב השכונה הקודם - כדי לזהות אם המשתמש *עכשיו* קובע/משנה שכונה
+        // (ואז בקשת מיקום פתוחה שלו נסגרת אוטומטית), להבדיל מעדכון שדה אחר
+        // (טלפון/שם) שאסור לו לגעת בבקשה הפתוחה.
+        let prevNeighborhood = '';
+        let prevRead = false;
+        try {
+            let existing = await getUserById(session.user.id, strapiJwt);
+            // חשבון ממוזג (OAuth+אימייל) לא נמצא לפי id - בדיוק כמו ב-load נופלים לאימייל.
+            // בלי זה prevNeighborhood='' ומסלול ה"פתרון" היה יורה בטעות בכל עריכה של חשבון כזה.
+            if (!existing && session.user.email) existing = await getUserByEmail(session.user.email);
+            if (existing) { prevNeighborhood = (existing.neighborhood ?? '').trim(); prevRead = true; }
+        } catch { /* קריאה נכשלה - prevRead נשאר false ומסלול הפתרון לא יורה */ }
+
         try {
             await updateUserProfile(session.user.id, {
                 name,
@@ -304,6 +317,26 @@ export const actions: Actions = {
                 }
             }
 
+            // המשתמש בחר שכונה מהרשימה (ולא מבקש הוספת מיקום חדש) → זה *פותר*
+            // בקשת מיקום פתוחה שלו: סוגרים אותה כדי שלא תמשיך לתקוע אותו
+            // (dedupe "כבר בטיפול") ולא תעמיס על תור המנהל.
+            //  • prevRead - רק כשקראנו בוודאות את הערך הקודם (אחרת לא יורים בטעות)
+            //  • neighborhood !== prevNeighborhood - רק כששכונה באמת השתנתה בשמירה זו
+            //    (עדכון טלפון/שם לבדו לא נוגע בבקשה)
+            //  • כולל 'מרכז' - ביישוב חד-שכונתי הוא הבחירה האמיתית, גם הוא פותר בקשה
+            if (prevRead && neighborhood && !customLocation && neighborhood !== prevNeighborhood) {
+                let resolvedLabel: string | null = null;
+                try {
+                    resolvedLabel = await withdrawOpenLocationRequests(session.user.id, { city, reason: 'chose_existing' });
+                } catch (e) {
+                    console.warn('[profile] withdraw on neighborhood pick failed:', e);
+                }
+                invalidateCachedUser(session.user.id);
+                return resolvedLabel
+                    ? { success: true, locationResolved: resolvedLabel }
+                    : { success: true };
+            }
+
             // אם המשתמש ביקש להוסיף מיקום חדש - שלח בקשה לסופר אדמין
             if (customLocation) {
                 const requesterEmail = email || session.user.email || '';
@@ -315,11 +348,12 @@ export const actions: Actions = {
                     s.trim().replace(/\s+/g, ' ').replace(/^(שכונת|שכונה)\s+/, '').toLowerCase();
                 const normalizedNew = normalizeLoc(customLocation);
 
-                // האם למשתמש כבר יש בקשת מיקום פתוחה (כלשהי, לא רק לאותו שם)?
-                // מגיש בקשה אחת = נסגרת לו האפשרות להגיש שוב עד שהמנהל יטפל בה,
-                // כדי שלא יוכל להציף את האדמין בבקשות רבות. מוחזר שם הבקשה הקיימת
-                // כדי שההודעה למשתמש תהיה מדויקת ("הבקשה שלך כבר בטיפול").
-                let pendingLocationLabel = '';
+                // האם למשתמש כבר יש בקשת מיקום פתוחה?
+                // כדי לא להציף את האדמין - מותר בקשה פתוחה אחת בכל רגע. אבל היא
+                // תמיד ניתנת להחלפה: אם המשתמש שולח *אותה* בקשה שוב → "כבר בטיפול".
+                // אם הוא שולח בקשה *שונה* (תיקן את עצמו) → סוגרים את הישנה ומחליפים
+                // בחדשה. כך אין הצפה, אבל גם אין חסימה: המשתמש לעולם לא נתקע.
+                let openReqLabel = '';
                 try {
                     const myItems = await getItemsByUserId(session.user.id);
                     const openReq = (myItems ?? []).find(it =>
@@ -327,16 +361,24 @@ export const actions: Actions = {
                         (it.status ?? 'pending') !== 'handled'
                     );
                     if (openReq) {
-                        pendingLocationLabel =
-                            (openReq.label ?? '').replace(/^בקשה להוספת מיקום:\s*/, '').trim() || customLocation;
+                        openReqLabel = (openReq.label ?? '').replace(/^בקשה להוספת מיקום:\s*/, '').trim();
                     }
                 } catch (e) {
                     console.warn('[profile] location_request dedupe check failed:', e);
                 }
 
-                if (pendingLocationLabel) {
-                    invalidateCachedUser(session.user.id);
-                    return { success: true, locationAlreadyPending: pendingLocationLabel };
+                if (openReqLabel) {
+                    if (normalizeLoc(openReqLabel) === normalizedNew) {
+                        // אותה בקשה בדיוק כבר ממתינה - מונע כפילות, לא חוסם תיקון
+                        invalidateCachedUser(session.user.id);
+                        return { success: true, locationAlreadyPending: openReqLabel };
+                    }
+                    // בקשה *שונה* → המשתמש מתקן את בקשתו: סוגרים את הישנה ומחליפים
+                    try {
+                        await withdrawOpenLocationRequests(session.user.id, { city, reason: 'superseded' });
+                    } catch (e) {
+                        console.warn('[profile] supersede old location_request failed:', e);
+                    }
                 }
 
                 // אם סומן פין מדויק על המפה - צור רשומת שכונה ממתינה (status=pending)
