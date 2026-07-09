@@ -2154,7 +2154,7 @@
                                 {@const waDigits = displayPhone ? String(displayPhone).replace(/\D/g, '').replace(/^0/, '972') : ''}
                                 <div class="rounded-xl border border-white/10 bg-gradient-to-br from-purple-600/90 to-blue-600/90 p-3">
                                     <h3 class="text-white font-bold text-sm mb-2 flex items-center gap-1.5">
-                                        <span aria-hidden="true">📞</span> יצירת קשר עם המפרסם
+                                        יצירת קשר עם המפרסם
                                     </h3>
                                     <div class="space-y-2">
                                         {#if displayPhone}
