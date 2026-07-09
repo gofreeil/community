@@ -2119,7 +2119,7 @@
                                             <button type="button" onclick={() => navMenuOpen = !navMenuOpen}
                                                 aria-haspopup="menu" aria-expanded={navMenuOpen}
                                                 class="w-full flex items-center justify-center gap-2 text-sm font-black text-white bg-emerald-500 hover:bg-emerald-400 rounded-lg py-2.5 shadow hover:scale-[1.02] active:scale-95 transition-all">
-                                                <span aria-hidden="true">🧭</span> נווט לכאן
+                                                <span aria-hidden="true">🚗</span> נווט לכאן
                                                 <span class="text-[11px] opacity-80">{navMenuOpen ? '▲' : '▼'}</span>
                                             </button>
                                             {#if navMenuOpen}
