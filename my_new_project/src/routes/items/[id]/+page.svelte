@@ -240,9 +240,24 @@
         nickname && age != null ? `${nickname}, ${age}` : (nickname || (age != null ? String(age) : ''))
     );
 
-    // ---- לוח פעילויות (בית כנסת + שיעור + מקווה...) ----
+    // ---- לוח פעילויות ----
+    // אפשרויות סוג הפעילות תלויות-קטגוריה: יהדות = תפילה/שיעור/מקווה,
+    // שירות ציבורי = קבלת קהל/מענה טלפוני וכו'. שאר הקטגוריות = ברירת מחדל ניטרלית.
     type ScheduleRow = { type: string; time: string; days: string; note: string };
-    const ACTIVITY_TYPES = ['תפילה / מניין', 'שיעור תורה', 'מקווה', 'שבת', 'אחר'];
+    const ACTIVITY_TYPES_BY_CATEGORY: Record<string, string[]> = {
+        minyanim:    ['תפילה / מניין', 'שיעור תורה', 'מקווה', 'שבת', 'אחר'],
+        attractions: ['שעות קבלת קהל', 'מענה טלפוני', 'קבלת קהל במחלקה', 'יום / שירות מיוחד', 'אחר'],
+    };
+    const ACTIVITY_TYPES_DEFAULT = ['שעות פעילות', 'יום פעילות', 'מפגש / אירוע', 'אחר'];
+    const activityTypes = $derived<string[]>(
+        ACTIVITY_TYPES_BY_CATEGORY[String(item?.category ?? '')] ?? ACTIVITY_TYPES_DEFAULT
+    );
+    // דוגמה מותאמת-קטגוריה לטקסטים המנחים
+    const activityExample = $derived<string>(
+        item?.category === 'minyanim'    ? 'שיעור / מקווה / שבת'
+        : item?.category === 'attractions' ? 'קבלת קהל / מענה טלפוני'
+        : 'שעות פעילות'
+    );
 
     const activities = $derived.by<ScheduleRow[]>(() => {
         if (activitiesOverride) return activitiesOverride;
@@ -1830,7 +1845,7 @@
                                 {#if otherActivities.length === 0 && builderMode && canEditActivities}
                                     <button type="button" onclick={startEditSchedule}
                                         class="w-full text-right border-2 border-dashed border-amber-400/40 hover:border-amber-400/70 bg-amber-500/5 hover:bg-amber-500/10 rounded-xl px-3 py-2 text-amber-200 text-sm font-bold transition-all">
-                                        🕒 הוסיפו לוח פעילויות - שיעור / מקווה / שבת: שורה עם שעה וימים משלה
+                                        🕒 הוסיפו לוח פעילויות - {activityExample}: שורה עם שעה וימים משלה
                                     </button>
                                 {/if}
                                 {#if otherActivities.length > 0}
@@ -1848,13 +1863,13 @@
                             {:else}
                                 <!-- Editor -->
                                 <div class="rounded-xl border border-amber-500/20 bg-amber-500/[0.03] p-2.5 space-y-2">
-                                    {@render tip('לכל פעילות שורה משלה: בחרו סוג (תפילה, שיעור, מקווה...), שעה וימים - הגולשים יראו לוח מסודר')}
+                                    {@render tip('לכל פעילות שורה משלה: בחרו סוג, שעה וימים - הגולשים יראו לוח מסודר')}
                                     {#each scheduleRows as row, i}
                                         <div class="flex flex-wrap items-center gap-1.5 bg-[#0f172a] rounded-lg p-1.5 border border-white/10">
                                             <select bind:value={row.type}
                                                 class="bg-[#0a0f1a] border border-white/15 rounded-md text-xs text-white px-2 py-1 min-w-[110px]">
                                                 <option value="">סוג...</option>
-                                                {#each ACTIVITY_TYPES as t}<option value={t}>{t}</option>{/each}
+                                                {#each activityTypes as t}<option value={t}>{t}</option>{/each}
                                             </select>
                                             <input type="time" bind:value={row.time} dir="ltr"
                                                 class="bg-[#0a0f1a] border border-white/15 rounded-md text-xs text-white px-2 py-1 w-[95px]" />
