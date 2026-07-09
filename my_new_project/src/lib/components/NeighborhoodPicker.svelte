@@ -21,8 +21,8 @@
         restrictToCity?: boolean;
         lat?: number | null;
         lng?: number | null;
-        /** נקרא כשהמשתמש עצמו הזיז/סימן פין (להבדיל מהצבה תוכנתית מבחוץ) */
-        onUserPin?: () => void;
+        /** נקרא כשהמשתמש עצמו הזיז/סימן פין (להבדיל מהצבה תוכנתית מבחוץ), עם הקואורדינטות החדשות */
+        onUserPin?: (lat: number, lng: number) => void;
     } = $props();
 
     const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
@@ -79,7 +79,7 @@
     function setPin(latlng: { lat: number; lng: number }, recenter = false, byUser = true) {
         lat = +latlng.lat.toFixed(6);
         lng = +latlng.lng.toFixed(6);
-        if (byUser) { onUserPin?.(); dismissDemo(); }
+        if (byUser) { onUserPin?.(lat, lng); dismissDemo(); }
         if (!map) return;
         if (!marker) {
             marker = L.marker([lat, lng], { draggable: true, icon: pinIcon() }).addTo(map);

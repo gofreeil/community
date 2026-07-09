@@ -211,6 +211,67 @@ export function hasPreciseCoords(neighborhood?: string, city?: string): boolean 
     return false;
 }
 
+// ---- זיהוי העיר/שכונה הקרובות ביותר לנקודה על המפה ----
+
+// מרחק בריבוע (קירוב equirectangular) - מספיק להשוואת "מי הכי קרוב".
+// אורך קו-אורך מכווץ ב-cos(lat); בישראל (~31.5°) הפקטור ≈ 0.85.
+function distSq(a: Coord, b: Coord): number {
+    const dLat = a[0] - b[0];
+    const dLng = (a[1] - b[1]) * 0.85;
+    return dLat * dLat + dLng * dLng;
+}
+
+// קואורדינטה *מדויקת* של שכונה (דינמית מאושרת → סטטית), בלי נפילה למרכז העיר.
+function preciseNeighborhoodCoord(neighborhood: string, city: string): Coord | null {
+    if (dynamicNeighborhoodCenters[dynKey(city, neighborhood)]) return dynamicNeighborhoodCenters[dynKey(city, neighborhood)];
+    if (dynamicNeighborhoodCenters[neighborhood]) return dynamicNeighborhoodCenters[neighborhood];
+    if (neighborhoodCenters[neighborhood]) return neighborhoodCenters[neighborhood];
+    return null;
+}
+
+/**
+ * מזהה את העיר+שכונה הקרובות ביותר לנקודה (פין שהמשתמש הציב על המפה). משמש
+ * כדי לגזור אוטומטית את "מיקום הפרסום" מהפין - כך שסימון על המפה מספיק,
+ * והמשתמש לא צריך גם לבחור עיר/שכונה ברשימה.
+ *
+ * המועמד הקרוב ביותר מבין כל מרכזי הערים והשכונות (עם קואורדינטה מדויקת)
+ * קובע את שניהם. כך פין בשכונה מרוחקת (למשל פסגת זאב) עדיין משויך לעיר הנכונה,
+ * ולא למרכז העיר השכן הקרוב יותר.
+ *
+ * @param cityNeighborhoods מפת עיר → רשימת שכונות (מבורר הפרסום, כולל מאושרות)
+ * @returns { city, neighborhood } או null אם הקלט לא תקין / אין נתוני מיקום
+ */
+export function nearestCityNeighborhood(
+    lat: number,
+    lng: number,
+    cityNeighborhoods: ReadonlyArray<readonly [string, readonly string[]]>,
+): { city: string; neighborhood: string } | null {
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+    const pin: Coord = [lat, lng];
+
+    let best: { city: string; neighborhood: string } | null = null;
+    let bestD = Infinity;
+
+    for (const [city, nbs] of cityNeighborhoods) {
+        // מועמד ברמת עיר (מרכז) - קובע כשאין שכונה מדויקת קרובה יותר
+        const cc = cityCenters[city];
+        if (cc) {
+            const d = distSq(pin, cc);
+            if (d < bestD) { bestD = d; best = { city, neighborhood: 'מרכז' }; }
+        }
+        // מועמדים ברמת שכונה - רק שכונות עם קואורדינטה מדויקת משלהן
+        for (const nb of nbs) {
+            if (!nb || nb === 'מרכז') continue;
+            const coord = preciseNeighborhoodCoord(nb, city);
+            if (!coord) continue;
+            const d = distSq(pin, coord);
+            if (d < bestD) { bestD = d; best = { city, neighborhood: nb }; }
+        }
+    }
+
+    return best;
+}
+
 /**
  * הוספת offset קטן (במעלות) על בסיס hash של מזהה - כך שכמה פריטים באותה שכונה
  * לא יחפפו זה את זה. המרחק כ-50 מטר.

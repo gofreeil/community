@@ -3,6 +3,7 @@
     import { browser } from '$app/environment';
     import { goto } from '$app/navigation';
     import { LS_KEY, DEFAULT_NEIGHBORHOOD, citiesAndNeighborhoods, effectiveNeighborhoods } from '$lib/neighborhoodsData';
+    import { nearestCityNeighborhood } from '$lib/neighborhoodCoords';
     import { getFormMemory, rememberFields } from '$lib/formMemory';
     import NeighborhoodPicker from '$lib/components/NeighborhoodPicker.svelte';
     import StreetPicker from '$lib/components/StreetPicker.svelte';
@@ -95,6 +96,18 @@
     function onCityChange() {
         const list = citiesWithApproved.find(([c]) => c === city)?.[1] ?? [];
         neighborhood = list.includes('מרכז') || list.length === 0 ? 'מרכז' : list[0];
+    }
+
+    // ---- הפין על המפה הוא מקור-האמת למיקום ----
+    // כשהמשתמש מזיז/מסמן פין ידני, גוזרים ממנו אוטומטית את העיר+שכונה של
+    // "מיקום הפרסום". כך סימון על המפה מספיק - אין צורך לבחור שוב ברשימת
+    // העיר/שכונה, וגם אין סכנה שהפריט יסומן על המפה במקום אחד וייכנס ללוח
+    // של שכונה ישנה שנשארה בבורר.
+    function syncLocationFromPin(la: number, ln: number) {
+        const match = nearestCityNeighborhood(la, ln, citiesWithApproved);
+        if (!match) return;
+        if (match.city && match.city !== city) city = match.city;
+        if (match.neighborhood) neighborhood = match.neighborhood;
     }
 
     // ---- פין מיקום על המפה (שדות מסוג map_pin) ----
@@ -793,7 +806,13 @@
                         </select>
                     </div>
                 </div>
-                <p class="text-gray-400 text-xs mt-1.5">מולא אוטומטית לפי הפרופיל שלך - שנו אם הפרסום נמצא במקום אחר</p>
+                <p class="text-gray-400 text-xs mt-1.5">
+                    {#if hasMapPinField}
+                        מולא אוטומטית - ואם תסמנו מיקום על המפה למטה, העיר והשכונה יתעדכנו לפיו. שנו כאן רק אם צריך.
+                    {:else}
+                        מולא אוטומטית לפי הפרופיל שלך - שנו אם הפרסום נמצא במקום אחר
+                    {/if}
+                </p>
                 <p class="text-gray-500 text-xs mt-1">
                     היישוב או השכונה חסרים ברשימה?
                     <a href="/profile" class="text-amber-300/90 hover:text-amber-200 underline underline-offset-2 transition-colors">אפשר להוסיף אותם דרך הפרופיל</a>
@@ -1202,7 +1221,7 @@
                                 restrictToCity
                                 bind:lat={pinLat}
                                 bind:lng={pinLng}
-                                onUserPin={() => (pinSource = 'manual')}
+                                onUserPin={(la, ln) => { pinSource = 'manual'; syncLocationFromPin(la, ln); }}
                             />
                             {#if pinSource === 'geo'}
                                 <p class="mt-1.5 text-xs text-cyan-300">
