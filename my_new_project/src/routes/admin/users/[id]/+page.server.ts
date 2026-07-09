@@ -100,7 +100,11 @@ export const load: PageServerLoad = async (event) => {
 
     const thread = await loadThread(admin.id, user.id);
 
-    return { profileUser: user, items, thread, adminId: admin.id };
+    // טקסט פתיחה מוכן לצ'אט - מגיע מכפתור "צ'אט פנימי" בכרטיסי הבקשות בפאנל,
+    // כדי שהאדמין ייכנס לשיחה עם משפט פתיחה מוכן על הבקשה הספציפית.
+    const draft = event.url.searchParams.get('draft') ?? '';
+
+    return { profileUser: user, items, thread, adminId: admin.id, draft };
 };
 
 export const actions: Actions = {

@@ -4,6 +4,8 @@
 	import { onMount } from 'svelte';
 	import type { DiscountCode } from '$lib/discountCodes';
 	import ServerHealthGauges from '$lib/components/ServerHealthGauges.svelte';
+	import RequesterContext from '$lib/components/RequesterContext.svelte';
+	import RequesterChatButtons from '$lib/components/RequesterChatButtons.svelte';
 
 	let { data, form } = $props();
 
@@ -23,11 +25,19 @@
 		});
 	}
 
-	// צ'אט וואטסאפ ישיר עם מבקש שכונה - עם הודעת פתיחה מוכנה על הבקשה שלו
-	function requesterChatLink(phone: string, nbName: string, city: string): string {
-		const digits = phone.replace(/\D/g, '').replace(/^0/, '972');
-		const text = `שלום, כאן הנהלת קהילה בשכונה 👋 בקשר לבקשתך להוספת השכונה "${nbName}"${city ? ` ב${city}` : ''} למפה:`;
-		return `https://wa.me/${digits}?text=${encodeURIComponent(text)}`;
+	// טקסט פתיחה מוכן לפנייה למבקש (וואטסאפ + צ'אט פנימי) - מותאם לסוג הבקשה.
+	// ההודעה נבנית פעם אחת וזורמת לשני מסלולי התקשורת דרך RequesterChatButtons.
+	function nbWaText(name: string | null | undefined, nbName: string, city: string): string {
+		return `שלום${name ? ` ${name}` : ''}, כאן הנהלת קהילה בשכונה 👋 בקשר לבקשתך להוספת "${nbName}"${city ? ` ב${city}` : ''} למפה:`;
+	}
+	function nbDraft(name: string | null | undefined, nbName: string, city: string): string {
+		return `שלום${name ? ` ${name}` : ''}, בקשר לבקשתך להוספת "${nbName}"${city ? ` (${city})` : ''} למפת השכונות: `;
+	}
+	function coordWaText(name: string | null | undefined, areas: string[]): string {
+		return `שלום${name ? ` ${name}` : ''} 👋 כאן הנהלת קהילה בשכונה, בקשר לבקשתך להיות רכז/ת שכונה${areas.length ? ` (${areas.join(', ')})` : ''}:`;
+	}
+	function coordDraft(name: string | null | undefined): string {
+		return `שלום${name ? ` ${name}` : ''}, בקשר לבקשתך להיות רכז/ת שכונה: `;
 	}
 
 	// ---- סימון ידני "כבר אישרתי" על פרסומים/הודעות (וי ירוק) ----
@@ -404,6 +414,26 @@
 										{#if req.motivation}<p><span class="text-gray-400 font-bold">מוטיבציה:</span> {req.motivation}</p>{/if}
 									</div>
 								{/if}
+
+								<!-- הקשר המבקש + שני מסלולי צ'אט (סעיפים א+ב) -->
+								<div class="flex flex-col gap-2 border-t border-blue-500/15 pt-3">
+									<RequesterContext
+										userId={req.requester?.userId ?? req.user_id}
+										name={req.requester?.name ?? req.name}
+										phone={req.requester?.phone ?? req.phone}
+										email={req.requester?.email}
+										city={req.requester?.city}
+										neighborhood={req.requester?.neighborhood}
+										business={req.requester?.business}
+										sourceLabel={`בקשה להיות רכז שכונה${req.neighborhoods.length ? ` — ${req.neighborhoods.join(', ')}` : ''}`}
+									/>
+									<RequesterChatButtons
+										userId={req.requester?.userId ?? req.user_id}
+										phone={req.requester?.phone ?? req.phone}
+										waText={coordWaText(req.requester?.name ?? req.name, req.neighborhoods)}
+										internalDraft={coordDraft(req.requester?.name ?? req.name)}
+									/>
+								</div>
 							</div>
 						{/each}
 					</div>
@@ -424,81 +454,82 @@
 
 					<div class="grid gap-2 md:gap-3">
 						{#each data.pendingNeighborhoods as nb, i (nb.id)}
-							<div class="bg-amber-500/5 rounded-2xl border border-amber-500/30 p-3 md:p-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 transition-all hover:border-amber-500/50">
-								<!-- שם השכונה והעיר -->
-								<div class="flex items-center gap-3 flex-1 min-w-0">
-									<div class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center flex-shrink-0 text-lg ring-2 ring-amber-400/40">
-										📍
-									</div>
-									<div class="min-w-0">
-										<div class="flex items-center gap-2 flex-wrap">
-											<div class="text-lg font-bold truncate text-white">{nb.name}</div>
-											{#if i === 0}
-												<span class="text-[11px] font-bold bg-green-500/20 text-green-300 border border-green-500/40 px-2 py-0.5 rounded-full whitespace-nowrap">🆕 הבקשה האחרונה</span>
-											{/if}
+							<div class="bg-amber-500/5 rounded-2xl border border-amber-500/30 p-3 md:p-4 flex flex-col gap-3 transition-all hover:border-amber-500/50">
+								<!-- שורת מידע עליונה: שם/עיר · מפה · אישור/דחייה -->
+								<div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+									<!-- שם השכונה והעיר -->
+									<div class="flex items-center gap-3 flex-1 min-w-0">
+										<div class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center flex-shrink-0 text-lg ring-2 ring-amber-400/40">
+											📍
 										</div>
-										<div class="text-base text-gray-400 truncate">🏙️ {nb.city || '—'}</div>
-										{#if nb.created_at}
-											<div class="text-xs text-amber-200/70 truncate mt-0.5" dir="ltr">🕒 {fmtDateTime(nb.created_at)}</div>
-										{/if}
-										{#if nb.requester}
-											<div class="text-sm text-amber-200/80 truncate mt-0.5">
-												👤 ביקש: <span class="font-bold">{nb.requester.name || 'תושב'}</span>
-												{#if nb.requester.email}
-													· <a href="mailto:{nb.requester.email}" class="underline hover:text-amber-100">{nb.requester.email}</a>
-												{/if}
-												{#if nb.requester.phone}
-													· <a href="tel:{nb.requester.phone}" class="underline hover:text-amber-100" dir="ltr">{nb.requester.phone}</a>
+										<div class="min-w-0">
+											<div class="flex items-center gap-2 flex-wrap">
+												<div class="text-lg font-bold truncate text-white">{nb.name}</div>
+												{#if i === 0}
+													<span class="text-[11px] font-bold bg-green-500/20 text-green-300 border border-green-500/40 px-2 py-0.5 rounded-full whitespace-nowrap">🆕 הבקשה האחרונה</span>
 												{/if}
 											</div>
-										{/if}
+											<div class="text-base text-gray-400 truncate">🏙️ {nb.city || '—'}</div>
+											{#if nb.created_at}
+												<div class="text-xs text-amber-200/70 truncate mt-0.5" dir="ltr">🕒 {fmtDateTime(nb.created_at)}</div>
+											{/if}
+										</div>
+									</div>
+
+									<!-- מיקום על המפה -->
+									<a
+										href="https://www.google.com/maps?q={nb.lat},{nb.lng}"
+										target="_blank"
+										rel="noopener noreferrer"
+										class="text-sm font-bold bg-amber-500/15 text-amber-200 border border-amber-500/40 px-3 py-1.5 rounded-lg hover:bg-amber-500/25 transition-all whitespace-nowrap"
+										title="פתח את המיקום ב-Google Maps"
+									>
+										🗺️ {nb.lat.toFixed(4)}, {nb.lng.toFixed(4)}
+									</a>
+
+									<!-- אישור/דחייה -->
+									<div class="flex gap-2 flex-shrink-0 flex-wrap">
+										<form method="POST" action="?/approveNeighborhood" use:enhance>
+											<input type="hidden" name="neighborhoodId" value={nb.id} />
+											<button
+												type="submit"
+												class="px-3 py-1.5 text-sm rounded-lg bg-green-500/15 text-green-300 border border-green-500/40 hover:bg-green-500/25 transition-all cursor-pointer font-bold"
+												title="אשר - השכונה תופיע בבוררים ובמפה לכל המשתמשים"
+											>
+												✅ אשר שכונה
+											</button>
+										</form>
+										<form method="POST" action="?/rejectNeighborhood" use:enhance>
+											<input type="hidden" name="neighborhoodId" value={nb.id} />
+											<button
+												type="submit"
+												class="px-3 py-1.5 text-sm rounded-lg bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all cursor-pointer"
+												onclick={(e) => { if (!confirm(`לדחות את השכונה "${nb.name}"?`)) e.preventDefault(); }}
+											>
+												✖️ דחה
+											</button>
+										</form>
 									</div>
 								</div>
 
-								<!-- מיקום על המפה -->
-								<a
-									href="https://www.google.com/maps?q={nb.lat},{nb.lng}"
-									target="_blank"
-									rel="noopener noreferrer"
-									class="text-sm font-bold bg-amber-500/15 text-amber-200 border border-amber-500/40 px-3 py-1.5 rounded-lg hover:bg-amber-500/25 transition-all whitespace-nowrap"
-									title="פתח את המיקום ב-Google Maps"
-								>
-									🗺️ {nb.lat.toFixed(4)}, {nb.lng.toFixed(4)}
-								</a>
-
-								<!-- פעולות -->
-								<div class="flex gap-2 flex-shrink-0 flex-wrap">
-									{#if nb.requester?.phone}
-										<a
-											href={requesterChatLink(nb.requester.phone, nb.name, nb.city)}
-											target="_blank"
-											rel="noopener noreferrer"
-											class="px-3 py-1.5 text-sm rounded-lg bg-emerald-500/15 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/25 transition-all font-bold whitespace-nowrap"
-											title="פתח צ'אט וואטסאפ עם {nb.requester.name || 'המבקש'} על הבקשה הזו"
-										>
-											💬 צ'אט עם המבקש
-										</a>
-									{/if}
-									<form method="POST" action="?/approveNeighborhood" use:enhance>
-										<input type="hidden" name="neighborhoodId" value={nb.id} />
-										<button
-											type="submit"
-											class="px-3 py-1.5 text-sm rounded-lg bg-green-500/15 text-green-300 border border-green-500/40 hover:bg-green-500/25 transition-all cursor-pointer font-bold"
-											title="אשר - השכונה תופיע בבוררים ובמפה לכל המשתמשים"
-										>
-											✅ אשר שכונה
-										</button>
-									</form>
-									<form method="POST" action="?/rejectNeighborhood" use:enhance>
-										<input type="hidden" name="neighborhoodId" value={nb.id} />
-										<button
-											type="submit"
-											class="px-3 py-1.5 text-sm rounded-lg bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all cursor-pointer"
-											onclick={(e) => { if (!confirm(`לדחות את השכונה "${nb.name}"?`)) e.preventDefault(); }}
-										>
-											✖️ דחה
-										</button>
-									</form>
+								<!-- הקשר המבקש + שני מסלולי צ'אט (סעיפים א+ב) -->
+								<div class="flex flex-col gap-2 border-t border-amber-500/15 pt-3">
+									<RequesterContext
+										userId={nb.requester?.userId}
+										name={nb.requester?.name}
+										phone={nb.requester?.phone}
+										email={nb.requester?.email}
+										city={nb.requester?.city}
+										neighborhood={nb.requester?.neighborhood}
+										business={nb.requester?.business}
+										sourceLabel={'בקשת שכונה חדשה — סומנה בפין על המפה (טופס פרופיל)'}
+									/>
+									<RequesterChatButtons
+										userId={nb.requester?.userId}
+										phone={nb.requester?.phone}
+										waText={nbWaText(nb.requester?.name, nb.name, nb.city)}
+										internalDraft={nbDraft(nb.requester?.name, nb.name, nb.city)}
+									/>
 								</div>
 							</div>
 						{/each}

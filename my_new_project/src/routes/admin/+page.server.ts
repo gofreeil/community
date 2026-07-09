@@ -95,21 +95,37 @@ export const load: PageServerLoad = async (event) => {
     // בלעדיהן מונה "פרסומים בקהילה" וטאב הפרסומים משקפים רק תוכן אמיתי בלוחות.
     items = items.filter((i) => i.category !== 'message');
 
-    // צירוף פרטי מבקש לכל שכונה ממתינה - כדי שהאדמין יראה מי ביקש להגדיר את המפה.
-    // קודם מחשבון המשתמש (אם היה מחובר), ואם לא - מהשם/טלפון שנשמרו על הבקשה עצמה
-    // (בקשת רכז נשלחת גם בלי חשבון).
+    // צירוף הקשר מלא של המבקש לכל כרטיס בקשה - כדי שהאדמין יֵדע מי המבקש,
+    // מהיכן הוא רשום (עיר/שכונה) ואיך ליצור איתו קשר - בלי לצאת מהכרטיס.
+    // קודם מחשבון המשתמש (אם קיים), ואם לא - מהשם/טלפון שנשמרו על הבקשה עצמה
+    // (בקשת רכז/פין-על-מפה נשלחות לעיתים בלי חשבון מחובר).
     const usersById = new Map(users.map((u) => [u.id, u]));
-    const pendingNeighborhoodsWithRequester = pendingNeighborhoods.map((nb) => {
-        const u = nb.user_id ? usersById.get(nb.user_id) : undefined;
-        const name  = u?.name ?? u?.nickname ?? (nb.requester_name || null);
-        const phone = u?.phone || nb.requester_phone || '';
+    const requesterContextFor = (
+        userId?: string | null,
+        fallback?: { name?: string | null; phone?: string | null; email?: string | null },
+    ) => {
+        const u = userId ? usersById.get(userId) : undefined;
         return {
-            ...nb,
-            requester: (name || phone)
-                ? { name, email: u?.email ?? null, phone }
-                : null,
+            userId:       u?.id ?? (userId || ''),
+            name:         u?.name ?? u?.nickname ?? fallback?.name ?? null,
+            phone:        u?.phone || fallback?.phone || '',
+            email:        u?.email ?? fallback?.email ?? null,
+            city:         u?.city ?? '',
+            neighborhood: u?.neighborhood ?? '',
+            business:     u?.business ?? '',
         };
-    });
+    };
+
+    const pendingNeighborhoodsWithRequester = pendingNeighborhoods.map((nb) => ({
+        ...nb,
+        requester: requesterContextFor(nb.user_id, { name: nb.requester_name, phone: nb.requester_phone }),
+    }));
+
+    // בקשות רכזות - אותו הקשר מלא (מקום מגורים רשום + פרטי קשר) לכל כרטיס
+    const coordinatorRequestsWithContext = coordinatorRequests.map((r) => ({
+        ...r,
+        requester: requesterContextFor(r.user_id, { name: r.name, phone: r.phone }),
+    }));
 
     // ---- סטטיסטיקת רכזים: לכל רכז כמה פריטים כבר יש על המפה בשכונתו וכמה תושבים רשומים ----
     // התאמה לפי שכונה + עיר, בדיוק כמו /api/coordinators. פריט "על המפה" = בעל קואורדינטות (lat/lng).
@@ -142,7 +158,7 @@ export const load: PageServerLoad = async (event) => {
     return {
         users,
         items,
-        coordinatorRequests,
+        coordinatorRequests: coordinatorRequestsWithContext,
         pendingNeighborhoods: pendingNeighborhoodsWithRequester,
         currentUserId: session?.user?.id ?? '',
         pendingAdsCount,

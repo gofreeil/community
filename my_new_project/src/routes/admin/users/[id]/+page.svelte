@@ -7,7 +7,8 @@
 	const u = $derived(data.profileUser);
 
 	// === צ'אט פנימי ===
-	let chatText = $state('');
+	// טקסט פתיחה מוכן (?draft=) מגיע מכפתור "צ'אט פנימי" בכרטיסי הבקשות בפאנל
+	let chatText = $state(data.draft ?? '');
 	let sending = $state(false);
 	let scrollBox = $state<HTMLDivElement | null>(null);
 
@@ -132,7 +133,7 @@
 		</div>
 
 		<!-- צ'אט בסגנון וואטסאפ/טלגרם -->
-		<div class="rounded-2xl border border-white/10 overflow-hidden mb-6 shadow-lg">
+		<div id="chat" class="rounded-2xl border border-white/10 overflow-hidden mb-6 shadow-lg scroll-mt-8">
 			<!-- סרגל עליון: בן-שיח -->
 			<div class="flex items-center gap-3 px-4 py-2.5 bg-[#0f172a] border-b border-black/30">
 				{#if u.avatar_url}
