@@ -119,6 +119,8 @@ export const load: PageServerLoad = async (event) => {
                 contact:     dbItem.contact,
                 phone,
                 address:     dbItem.address,
+                lat:         dbItem.lat ?? null,
+                lng:         dbItem.lng ?? null,
                 icon:        dbItem.icon,
                 color:       dbItem.color,
                 image:       galleryImages[0],

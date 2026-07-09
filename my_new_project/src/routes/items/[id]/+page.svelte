@@ -181,6 +181,26 @@
             });
     });
 
+    // ---- ניווט: וייז / גוגל מפות / מוביט (לפי קואורדינטות, ובאין - לפי כתובת) ----
+    let navMenuOpen = $state(false);
+    const navLat = $derived((item as { lat?: number | null } | null)?.lat ?? null);
+    const navLng = $derived((item as { lng?: number | null } | null)?.lng ?? null);
+    const navHasCoords = $derived(typeof navLat === 'number' && typeof navLng === 'number');
+    const navQuery = $derived.by(() => {
+        const addr = (item as { address?: string } | null)?.address ?? '';
+        const city = (item as { city?: string } | null)?.city ?? '';
+        return [addr, city].map(s => s.trim()).filter(Boolean).join(', ') || displayLabel;
+    });
+    const canNavigate = $derived(navHasCoords || !!(item as { address?: string } | null)?.address);
+    const wazeUrl = $derived(navHasCoords
+        ? `https://waze.com/ul?ll=${navLat}%2C${navLng}&navigate=yes`
+        : `https://waze.com/ul?q=${encodeURIComponent(navQuery)}&navigate=yes`);
+    const googleMapsUrl = $derived(
+        `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(navHasCoords ? `${navLat},${navLng}` : navQuery)}`);
+    const moovitUrl = $derived(navHasCoords
+        ? `https://moovit.com/?to=${encodeURIComponent(displayLabel || navQuery)}&tll=${navLat}_${navLng}&lang=he`
+        : `https://moovit.com/?to=${encodeURIComponent(navQuery)}&lang=he`);
+
     const nickname = $derived<string>(
         typeof (item as { extraFields?: { nickname?: unknown } } | null)?.extraFields?.nickname === 'string'
             ? ((item as { extraFields: { nickname: string } }).extraFields.nickname).trim()
@@ -1635,6 +1655,36 @@
                                     class="text-[11px] text-blue-300/90 hover:text-blue-200 underline underline-offset-2">שינוי כתובת / מיקום על המפה</a>
                             {/if}
                         </p>
+                    {/if}
+
+                    <!-- כפתור ניווט: בוחר אפליקציה (Waze / Google Maps / Moovit) -->
+                    {#if canNavigate && item.category !== 'singles'}
+                        <div class="relative w-fit">
+                            <button type="button" onclick={() => navMenuOpen = !navMenuOpen}
+                                aria-haspopup="menu" aria-expanded={navMenuOpen}
+                                class="inline-flex items-center gap-1.5 text-sm font-bold text-sky-100 bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/40 rounded-xl px-3 py-1.5 transition-all">
+                                <span aria-hidden="true">🧭</span> נווט לכאן
+                                <span class="text-[10px] opacity-80">{navMenuOpen ? '▲' : '▼'}</span>
+                            </button>
+                            {#if navMenuOpen}
+                                <!-- רקע לסגירה בלחיצה מחוץ לתפריט -->
+                                <button type="button" class="fixed inset-0 z-30 cursor-default" aria-label="סגור תפריט ניווט" onclick={() => navMenuOpen = false}></button>
+                                <div class="absolute z-40 mt-1 start-0 min-w-[210px] bg-[#0f172a] border border-white/15 rounded-xl shadow-xl shadow-black/50 overflow-hidden" role="menu">
+                                    <a href={wazeUrl} target="_blank" rel="noopener noreferrer" role="menuitem" onclick={() => navMenuOpen = false}
+                                        class="flex items-center gap-2.5 px-3 py-2.5 text-sm font-bold text-white hover:bg-sky-500/15 transition-colors">
+                                        <span class="text-lg" aria-hidden="true">🚗</span> Waze
+                                    </a>
+                                    <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer" role="menuitem" onclick={() => navMenuOpen = false}
+                                        class="flex items-center gap-2.5 px-3 py-2.5 text-sm font-bold text-white hover:bg-emerald-500/15 border-t border-white/10 transition-colors">
+                                        <span class="text-lg" aria-hidden="true">📍</span> Google Maps
+                                    </a>
+                                    <a href={moovitUrl} target="_blank" rel="noopener noreferrer" role="menuitem" onclick={() => navMenuOpen = false}
+                                        class="flex items-center gap-2.5 px-3 py-2.5 text-sm font-bold text-white hover:bg-orange-500/15 border-t border-white/10 transition-colors">
+                                        <span class="text-lg" aria-hidden="true">🚌</span> Moovit · תחבורה ציבורית
+                                    </a>
+                                </div>
+                            {/if}
+                        </div>
                     {/if}
 
                     <!-- Phone (non-singles or singles approved) -->
