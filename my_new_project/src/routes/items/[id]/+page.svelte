@@ -2164,7 +2164,7 @@
                                                     aria-label="התקשר עכשיו – {displayPhone}"
                                                     class="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 rounded-lg text-center shadow hover:scale-[1.02] active:scale-95 transition-all text-sm"
                                                 >
-                                                    📞 התקשרו
+                                                    📞 התקשר
                                                 </a>
                                                 <a
                                                     href={`https://wa.me/${waDigits}`}
