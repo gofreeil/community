@@ -272,13 +272,30 @@
     });
     const canEditActivities = $derived(!!(item as { canEditActivities?: boolean } | null)?.canEditActivities);
 
-    // ---- מניינים: זמני שחרית / מנחה / ערבית (בקטגוריית יהדות) ----
+    // ---- מניינים: זמני תפילות (בקטגוריית יהדות) ----
     // נשמרים באותו מערך activities עם type = שם התפילה, כדי להיות חלק מלוח הפעילויות.
+    // תפילות החול: שחרית / מנחה / ערבית. תפילות שבת: רובריקות נפרדות עם type ייחודי
+    // (כדי לא להתנגש בחול). לכל תפילה אפשר שעות וגם זמן במילים (וותיקין / לפי שקיעה,
+    // שמשתנה כל שבוע) - הטקסט החופשי נשמר בשדה note של השורה.
     const MINYAN_PRAYERS = ['שחרית', 'מנחה', 'ערבית'];
+    const SHABBAT_PRAYERS: { key: string; label: string }[] = [
+        { key: 'מנחה וקבלת שבת', label: 'מנחה וקבלת שבת' },
+        { key: 'שחרית שבת',       label: 'שחרית' },
+        { key: 'מנחה שבת',        label: 'מנחה' },
+        { key: 'ערבית מוצ״ש',     label: 'ערבית מוצאי שבת' },
+    ];
+    const SHABBAT_KEYS = SHABBAT_PRAYERS.map(p => p.key);
+    const ALL_PRAYER_KEYS = [...MINYAN_PRAYERS, ...SHABBAT_KEYS];
+    /** תווית תצוגה לפי type (שבת מקבל תווית מקוצרת תחת הכותרת "שבת") */
+    function prayerLabel(type: string): string {
+        return SHABBAT_PRAYERS.find(p => p.key === type)?.label ?? type;
+    }
     const isMinyanCategory = $derived(item?.category === 'minyanim');
-    // הפרדה: שורות התפילה מול שאר הפעילויות (שיעור/מקווה/שבת...) - כדי לא להציג פעמיים
-    const minyanActivities = $derived<ScheduleRow[]>(activities.filter(a => MINYAN_PRAYERS.includes(a.type)));
-    const otherActivities  = $derived<ScheduleRow[]>(activities.filter(a => !MINYAN_PRAYERS.includes(a.type)));
+    // הפרדה: שורות התפילה (חול + שבת) מול שאר הפעילויות - כדי לא להציג פעמיים
+    const minyanActivities = $derived<ScheduleRow[]>(activities.filter(a => ALL_PRAYER_KEYS.includes(a.type)));
+    const weekdayMinyanim  = $derived<ScheduleRow[]>(activities.filter(a => MINYAN_PRAYERS.includes(a.type)));
+    const shabbatMinyanim  = $derived<ScheduleRow[]>(activities.filter(a => SHABBAT_KEYS.includes(a.type)));
+    const otherActivities  = $derived<ScheduleRow[]>(activities.filter(a => !ALL_PRAYER_KEYS.includes(a.type)));
 
     // שעות פתיחה (extra_fields.hours) - מוצג תחת "לוח פעילויות ושעות" (לא תחת "פרטים נוספים")
     const openingHoursText = $derived.by<string>(() => {
@@ -293,21 +310,25 @@
     let editingMinyan = $state(false);
     let savingMinyan = $state(false);
     let minyanError = $state('');
-    // לכל תפילה: רשימת שעות (אפשר כמה מניינים) + סימון "אין מניין"
+    // לכל תפילה: רשימת שעות (אפשר כמה מניינים) + סימון "אין מניין" + זמן במילים
     let minyanSlots = $state<Record<string, string[]>>({});
     let minyanSkip = $state<Record<string, boolean>>({});
+    let minyanText = $state<Record<string, string>>({});
 
     function startEditMinyan() {
         const slots: Record<string, string[]> = {};
         const skip: Record<string, boolean> = {};
-        for (const p of MINYAN_PRAYERS) {
+        const text: Record<string, string> = {};
+        for (const p of ALL_PRAYER_KEYS) {
             const row = minyanActivities.find(a => a.type === p);
             const times = row ? row.time.split(',').map(t => t.trim()).filter(Boolean) : [];
             slots[p] = times.length ? times : [''];
             skip[p] = false;
+            text[p] = row?.note ?? '';
         }
         minyanSlots = slots;
         minyanSkip = skip;
+        minyanText = text;
         minyanError = '';
         editingMinyan = true;
     }
@@ -325,15 +346,15 @@
         if (!item?.id) return;
         savingMinyan = true;
         minyanError = '';
-        // בונים שורת תפילה לכל מניין שלא סומן "אין" ויש בו לפחות שעה אחת
-        const prayerRows: ScheduleRow[] = MINYAN_PRAYERS
+        // בונים שורת תפילה לכל מניין שלא סומן "אין" ויש בו שעה או זמן במילים
+        const prayerRows: ScheduleRow[] = ALL_PRAYER_KEYS
             .filter(p => !minyanSkip[p])
             .map(p => ({
                 type: p,
                 time: (minyanSlots[p] ?? []).map(t => t.trim()).filter(Boolean).join(', '),
-                days: '', note: '',
+                days: '', note: (minyanText[p] ?? '').trim(),
             }))
-            .filter(r => r.time);
+            .filter(r => r.time || r.note);
         // משמרים את שאר הפעילויות (שיעורים, מקווה...) שלא נערכו כאן
         const full = [...prayerRows, ...otherActivities.map(a => ({ ...a }))];
         try {
@@ -1067,6 +1088,50 @@
     {/if}
 {/snippet}
 
+<!-- שורת תצוגה לתפילה: שעה (מספרי) ו/או זמן במילים -->
+{#snippet prayerRowView(row: ScheduleRow)}
+    <li class="flex items-center gap-2 px-3 py-2 bg-[#0f172a] text-xs">
+        <span class="font-bold text-sky-200 whitespace-nowrap">{prayerLabel(row.type)}</span>
+        {#if row.time}<span class="text-white font-mono" dir="ltr">{row.time}</span>{/if}
+        {#if row.note}<span class="text-gray-300 leading-snug">{row.note}</span>{/if}
+    </li>
+{/snippet}
+
+<!-- בלוק עריכה לתפילה: כמה שעות + זמן במילים + "אין מניין" -->
+{#snippet prayerEditBlock(key: string, label: string)}
+    <div class="bg-[#0f172a] rounded-lg p-2 border border-white/10">
+        <div class="flex items-center justify-between mb-1.5">
+            <span class="text-sm font-bold text-sky-200">{label}</span>
+            <label class="flex items-center gap-1.5 text-xs text-gray-300 cursor-pointer select-none">
+                <input type="checkbox" checked={minyanSkip[key]} onchange={() => toggleMinyanSkip(key)}
+                    class="accent-sky-500 w-3.5 h-3.5" />
+                אין מניין
+            </label>
+        </div>
+        {#if !minyanSkip[key]}
+            <div class="flex flex-wrap items-center gap-1.5">
+                {#each minyanSlots[key] ?? [] as _, i}
+                    <div class="flex items-center gap-1">
+                        <input type="time" bind:value={minyanSlots[key][i]} dir="ltr"
+                            class="bg-[#0a0f1a] border border-white/15 rounded-md text-xs text-white px-2 py-1 w-[95px]" />
+                        {#if (minyanSlots[key] ?? []).length > 1}
+                            <button type="button" onclick={() => removeMinyanSlot(key, i)} aria-label="הסר שעה"
+                                class="text-red-400 hover:text-red-300 px-1 text-base leading-none">×</button>
+                        {/if}
+                    </div>
+                {/each}
+                <button type="button" onclick={() => addMinyanSlot(key)}
+                    class="text-xs font-bold text-sky-300 hover:text-sky-200 px-1">➕ עוד שעה</button>
+            </div>
+            <input type="text" bind:value={minyanText[key]}
+                placeholder="או זמן במילים: וותיקין / 20 דק׳ לפני השקיעה / זמן ר״ת"
+                class="mt-1.5 w-full bg-[#0a0f1a] border border-white/15 rounded-md text-xs text-white px-2 py-1 placeholder:text-gray-500" />
+        {:else}
+            <p class="text-xs text-gray-500">לא מתקיים מניין בתפילה זו</p>
+        {/if}
+    </div>
+{/snippet}
+
 {#snippet titleBlock()}
     <!-- שם המקום ככותרת הדף (מוצג מעל התמונה בעמודה הימנית) -->
     {#if builderMode && editingField === 'label'}
@@ -1754,55 +1819,38 @@
                                 {#if minyanActivities.length === 0 && builderMode && canEditActivities}
                                     <button type="button" onclick={startEditMinyan}
                                         class="w-full text-right border-2 border-dashed border-sky-400/40 hover:border-sky-400/70 bg-sky-500/5 hover:bg-sky-500/10 rounded-xl px-3 py-2 text-sky-200 text-sm font-bold transition-all">
-                                        🕒 הוסיפו זמני שחרית / מנחה / ערבית - מלאו שעה או דלגו על תפילה שאין בה מניין
+                                        🕒 הוסיפו זמני תפילות חול ושבת - שעה או זמן במילים (וותיקין / לפי שקיעה), או דלגו על תפילה שאין בה מניין
                                     </button>
                                 {/if}
-                                {#if minyanActivities.length > 0}
-                                    <ul class="rounded-xl border border-white/10 divide-y divide-white/10 overflow-hidden">
+                                {#if weekdayMinyanim.length > 0}
+                                    <p class="text-xs font-bold text-sky-300/80 mb-1">תפילות החול</p>
+                                    <ul class="rounded-xl border border-white/10 divide-y divide-white/10 overflow-hidden mb-2">
                                         {#each MINYAN_PRAYERS as p}
-                                            {@const row = minyanActivities.find(a => a.type === p)}
-                                            {#if row}
-                                                <li class="flex items-center gap-2 px-3 py-2 bg-[#0f172a] text-xs">
-                                                    <span class="font-bold text-sky-200 whitespace-nowrap w-12">{p}</span>
-                                                    <span class="text-white font-mono" dir="ltr">{row.time}</span>
-                                                </li>
-                                            {/if}
+                                            {@const row = weekdayMinyanim.find(a => a.type === p)}
+                                            {#if row}{@render prayerRowView(row)}{/if}
+                                        {/each}
+                                    </ul>
+                                {/if}
+                                {#if shabbatMinyanim.length > 0}
+                                    <p class="text-xs font-bold text-sky-300/80 mb-1">תפילות שבת</p>
+                                    <ul class="rounded-xl border border-white/10 divide-y divide-white/10 overflow-hidden">
+                                        {#each SHABBAT_PRAYERS as sp}
+                                            {@const row = shabbatMinyanim.find(a => a.type === sp.key)}
+                                            {#if row}{@render prayerRowView(row)}{/if}
                                         {/each}
                                     </ul>
                                 {/if}
                             {:else}
-                                <!-- Editor: שורה לכל תפילה, אפשר כמה שעות או "אין מניין" -->
+                                <!-- Editor: שורה לכל תפילה (חול + שבת), שעות ו/או זמן במילים או "אין מניין" -->
                                 <div class="rounded-xl border border-sky-500/20 bg-sky-500/[0.03] p-2.5 space-y-2">
-                                    {@render tip('מלאו את שעות המניין לכל תפילה. אפשר כמה מניינים לאותה תפילה. אם אין מניין בתפילה מסוימת - סמנו "אין מניין".')}
+                                    {@render tip('לכל תפילה אפשר למלא שעה, כמה מניינים, או זמן במילים (וותיקין / לפי שקיעה - שמשתנה כל שבוע). אם אין מניין - סמנו "אין מניין".')}
+                                    <p class="text-xs font-bold text-sky-300/80 pt-0.5">תפילות החול</p>
                                     {#each MINYAN_PRAYERS as p}
-                                        <div class="bg-[#0f172a] rounded-lg p-2 border border-white/10">
-                                            <div class="flex items-center justify-between mb-1.5">
-                                                <span class="text-sm font-bold text-sky-200">{p}</span>
-                                                <label class="flex items-center gap-1.5 text-xs text-gray-300 cursor-pointer select-none">
-                                                    <input type="checkbox" checked={minyanSkip[p]} onchange={() => toggleMinyanSkip(p)}
-                                                        class="accent-sky-500 w-3.5 h-3.5" />
-                                                    אין מניין
-                                                </label>
-                                            </div>
-                                            {#if !minyanSkip[p]}
-                                                <div class="flex flex-wrap items-center gap-1.5">
-                                                    {#each minyanSlots[p] ?? [] as _, i}
-                                                        <div class="flex items-center gap-1">
-                                                            <input type="time" bind:value={minyanSlots[p][i]} dir="ltr"
-                                                                class="bg-[#0a0f1a] border border-white/15 rounded-md text-xs text-white px-2 py-1 w-[95px]" />
-                                                            {#if (minyanSlots[p] ?? []).length > 1}
-                                                                <button type="button" onclick={() => removeMinyanSlot(p, i)} aria-label="הסר שעה"
-                                                                    class="text-red-400 hover:text-red-300 px-1 text-base leading-none">×</button>
-                                                            {/if}
-                                                        </div>
-                                                    {/each}
-                                                    <button type="button" onclick={() => addMinyanSlot(p)}
-                                                        class="text-xs font-bold text-sky-300 hover:text-sky-200 px-1">➕ עוד שעה</button>
-                                                </div>
-                                            {:else}
-                                                <p class="text-xs text-gray-500">לא מתקיים מניין בתפילה זו</p>
-                                            {/if}
-                                        </div>
+                                        {@render prayerEditBlock(p, p)}
+                                    {/each}
+                                    <p class="text-xs font-bold text-sky-300/80 pt-1">תפילות שבת</p>
+                                    {#each SHABBAT_PRAYERS as sp}
+                                        {@render prayerEditBlock(sp.key, sp.label)}
                                     {/each}
 
                                     {#if minyanError}
