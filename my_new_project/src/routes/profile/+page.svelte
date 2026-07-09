@@ -2404,9 +2404,9 @@
 					title={tFn("profile.manage_users_title")}
 				>
 					{tFn("profile.manage_users")}
-					{#if (data.coordinatorsCount ?? 0) > 0}
+					{#if (data.registeredUsersCount ?? 0) > 0}
 						<span class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-amber-500/30 text-amber-100 border border-amber-400/40 text-[11px] font-black">
-							{data.coordinatorsCount}
+							{data.registeredUsersCount}
 						</span>
 					{/if}
 				</a>

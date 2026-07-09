@@ -30,7 +30,7 @@ export const load: PageServerLoad = async (event) => {
             citiesData,
             oauth_image: null,
             pendingAdsCount: 0,
-            coordinatorsCount: 0,
+            registeredUsersCount: 0,
             strapiAvailable: true,
             userFromStaleCache: false,
             // כפתור "עם יוצאים לחירות" מזהה רק דרך העוגייה המשותפת gofreeil-auth
@@ -143,14 +143,14 @@ export const load: PageServerLoad = async (event) => {
 
     // ספירת פרסומות ממתינות לאישור - לבאדג' של סופר־אדמין בכותרת לוח הבקרה
     let pendingAdsCount = 0;
-    let coordinatorsCount = 0;
+    let registeredUsersCount = 0;
     // כרטיסי פנויים שממתינים לאישור - אם 0, התראות "כרטיס פנויים ממתין" מסומנות כטופלו ועוברות להיסטוריה
     let pendingSinglesCount = 0;
     if (resolvedUser?.role === 'super_admin') {
         try { pendingAdsCount = await countPending(); } catch { /* שקט */ }
         try {
             const allUsers = await getAllUsers();
-            coordinatorsCount = allUsers.filter(u => Array.isArray(u.coordinator_of) && u.coordinator_of.length > 0).length;
+            registeredUsersCount = allUsers.length;
         } catch { /* שקט */ }
         try { pendingSinglesCount = (await getItemsByCategoryAndStatus('singles', 'pending')).length; } catch { /* שקט */ }
     }
@@ -213,7 +213,7 @@ export const load: PageServerLoad = async (event) => {
         citiesData,
         oauth_image: session.user?.image ?? null,
         pendingAdsCount,
-        coordinatorsCount,
+        registeredUsersCount,
         pendingSinglesCount,
         strapiAvailable,
         userFromStaleCache,
