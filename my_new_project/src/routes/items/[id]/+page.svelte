@@ -1937,34 +1937,8 @@
                         </button>
                     {/if}
 
-                    <!-- כפתור נווט מובלט + כפתורי שיתוף, בתחתית הפאנל -->
-                    <div class="mt-auto pt-2 space-y-2">
-                        {#if canNavigate && item.category !== 'singles'}
-                            <div>
-                                <button type="button" onclick={() => navMenuOpen = !navMenuOpen}
-                                    aria-haspopup="menu" aria-expanded={navMenuOpen}
-                                    class="w-full flex items-center justify-center gap-2 text-base font-black text-white bg-gradient-to-l from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 border border-sky-400/40 rounded-xl px-4 py-3 shadow-lg shadow-sky-900/40 transition-all">
-                                    <span aria-hidden="true">🧭</span> נווט לכאן
-                                    <span class="text-[11px] opacity-80">{navMenuOpen ? '▲' : '▼'}</span>
-                                </button>
-                                {#if navMenuOpen}
-                                    <div class="mt-1.5 grid grid-cols-3 gap-1.5" role="menu">
-                                        <a href={wazeUrl} target="_blank" rel="noopener noreferrer" role="menuitem" onclick={() => navMenuOpen = false}
-                                            class="flex flex-col items-center gap-1 px-2 py-2.5 rounded-xl bg-white/5 hover:bg-sky-500/20 border border-white/10 hover:border-sky-400/50 text-white text-xs font-bold transition-all">
-                                            <span class="text-xl" aria-hidden="true">🚗</span> Waze
-                                        </a>
-                                        <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer" role="menuitem" onclick={() => navMenuOpen = false}
-                                            class="flex flex-col items-center gap-1 px-2 py-2.5 rounded-xl bg-white/5 hover:bg-emerald-500/20 border border-white/10 hover:border-emerald-400/50 text-white text-xs font-bold transition-all">
-                                            <span class="text-xl" aria-hidden="true">📍</span> Maps
-                                        </a>
-                                        <a href={moovitUrl} target="_blank" rel="noopener noreferrer" role="menuitem" onclick={() => navMenuOpen = false}
-                                            class="flex flex-col items-center gap-1 px-2 py-2.5 rounded-xl bg-white/5 hover:bg-orange-500/20 border border-white/10 hover:border-orange-400/50 text-white text-xs font-bold transition-all">
-                                            <span class="text-xl" aria-hidden="true">🚌</span> Moovit
-                                        </a>
-                                    </div>
-                                {/if}
-                            </div>
-                        {/if}
+                    <!-- Share buttons at bottom of side panel -->
+                    <div class="mt-auto pt-2">
                         {@render shareBlock()}
                     </div>
                 </div>
@@ -2138,6 +2112,33 @@
                                         <p class="text-white/80 text-xs text-center bg-white/10 rounded-lg py-2 px-2">
                                             פרטי יצירת קשר אינם זמינים לפריט זה.
                                         </p>
+                                    {/if}
+                                    <!-- כפתור ניווט (צבע נבדל מכרטיס יצירת הקשר) -->
+                                    {#if canNavigate}
+                                        <div class="mt-2">
+                                            <button type="button" onclick={() => navMenuOpen = !navMenuOpen}
+                                                aria-haspopup="menu" aria-expanded={navMenuOpen}
+                                                class="w-full flex items-center justify-center gap-2 text-sm font-black text-white bg-emerald-500 hover:bg-emerald-400 rounded-lg py-2.5 shadow hover:scale-[1.02] active:scale-95 transition-all">
+                                                <span aria-hidden="true">🧭</span> נווט לכאן
+                                                <span class="text-[11px] opacity-80">{navMenuOpen ? '▲' : '▼'}</span>
+                                            </button>
+                                            {#if navMenuOpen}
+                                                <div class="mt-1.5 grid grid-cols-3 gap-1.5" role="menu">
+                                                    <a href={wazeUrl} target="_blank" rel="noopener noreferrer" role="menuitem" onclick={() => navMenuOpen = false}
+                                                        class="flex flex-col items-center gap-1 px-2 py-2 rounded-lg bg-white/15 hover:bg-white/30 border border-white/20 text-white text-xs font-bold transition-all">
+                                                        <span class="text-lg" aria-hidden="true">🚗</span> Waze
+                                                    </a>
+                                                    <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer" role="menuitem" onclick={() => navMenuOpen = false}
+                                                        class="flex flex-col items-center gap-1 px-2 py-2 rounded-lg bg-white/15 hover:bg-white/30 border border-white/20 text-white text-xs font-bold transition-all">
+                                                        <span class="text-lg" aria-hidden="true">📍</span> Maps
+                                                    </a>
+                                                    <a href={moovitUrl} target="_blank" rel="noopener noreferrer" role="menuitem" onclick={() => navMenuOpen = false}
+                                                        class="flex flex-col items-center gap-1 px-2 py-2 rounded-lg bg-white/15 hover:bg-white/30 border border-white/20 text-white text-xs font-bold transition-all">
+                                                        <span class="text-lg" aria-hidden="true">🚌</span> Moovit
+                                                    </a>
+                                                </div>
+                                            {/if}
+                                        </div>
                                     {/if}
                                 </div>
                             {/if}
