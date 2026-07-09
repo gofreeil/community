@@ -1052,6 +1052,30 @@
     {/if}
 {/snippet}
 
+{#snippet titleBlock()}
+    <!-- שם המקום ככותרת הדף (מוצג מעל התמונה בעמודה הימנית) -->
+    {#if builderMode && editingField === 'label'}
+        <div class="space-y-1.5">
+            <input type="text" bind:value={draftText} maxlength="120" use:focusOnMount onkeydown={editorKeys}
+                class="w-full bg-[#0a0f1a] border border-amber-500/50 rounded-lg text-white text-lg font-black px-2.5 py-1.5" />
+            <div class="flex gap-2">
+                <button type="button" onclick={saveTextField} disabled={savingTag === 'label'}
+                    class="text-xs font-bold text-white bg-amber-500 hover:bg-amber-400 disabled:opacity-50 rounded-lg px-3 py-1.5">💾 שמור</button>
+                <button type="button" onclick={cancelEditField} class="text-xs font-bold text-gray-300 hover:text-white px-2 py-1.5">ביטול</button>
+            </div>
+        </div>
+    {:else}
+        <h1 class="text-white text-xl md:text-2xl font-black leading-tight flex items-start gap-2">
+            <span>{displayLabel}</span>
+            {#if builderMode}
+                <button type="button" onclick={() => startEditField('label', displayLabel)}
+                    aria-label="ערוך את שם המקום" title="ערוך את שם המקום"
+                    class="text-sm bg-amber-500/15 hover:bg-amber-500/30 border border-amber-500/40 rounded-lg px-1.5 py-0.5 transition-all shrink-0">✏️</button>
+            {/if}
+        </h1>
+    {/if}
+{/snippet}
+
 {#snippet shareBlock()}
     <div class="space-y-1.5">
     <div class="bg-white/5 px-3 py-2 rounded-xl border border-white/10 backdrop-blur-sm flex items-center gap-2">
@@ -1109,7 +1133,7 @@
     {@const tiktok    = typeof ef?.tiktok    === 'string' ? ef.tiktok    : ''}
     {@const ensureUrl = (u: string) => (/^https?:\/\//i.test(u) ? u : `https://${u}`)}
     {#if whatsapp || telegram || facebook || instagram || youtube || tiktok || customLinks.length > 0 || builderMode}
-        <section class="pt-3 border-t border-white/10">
+        <section class="px-4 md:px-5 pt-3 pb-1 border-t border-white/10">
             <h2 class="text-base font-bold text-white mb-2 flex items-center gap-1.5">
                 <span class="w-1 h-4 bg-indigo-500 rounded-full"></span>קישורים
             </h2>
@@ -1443,6 +1467,13 @@
 
                 <!-- Top: image side-by-side with description+address -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-0">
+                <!-- עמודה ימנית: כותרת מעל התמונה → תמונה → קישורים -->
+                <div class="flex flex-col">
+                {#if !isSingles && (displayLabel || builderMode)}
+                    <div class="px-4 md:px-5 pt-3 pb-1">
+                        {@render titleBlock()}
+                    </div>
+                {/if}
                 <!-- Header / Image gallery -->
                 <div use:imageDrop={handleImageDrop} class="relative bg-[#0a0f1a] flex items-center justify-center min-h-[150px]" class:h-[110px]={galleryImages.length === 0} class:md:h-[140px]={galleryImages.length === 0}>
                     {#if galleryImages.length > 0}
@@ -1523,6 +1554,9 @@
                     <input bind:this={imageInputEl} type="file" accept="image/*" multiple class="hidden" onchange={onImagesPicked} />
                     <div class="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-transparent to-transparent pointer-events-none"></div>
                 </div>
+                    <!-- קישורים: מתחת לתמונה, באותה עמודה -->
+                    {@render socialLinksBlock()}
+                </div>
 
                 <!-- Side info: nickname + description + address + contact + extra fields -->
                 <div class="px-4 md:px-5 py-3 flex flex-col gap-2">
@@ -1576,29 +1610,7 @@
                     {#if nickname && isSingles}
                         <p class="text-white text-xl md:text-2xl font-bold leading-tight">{nickname}</p>
                     {/if}
-                    <!-- שם המקום ככותרת הדף (לא בפנויים - שם הכינוי הוא הכותרת) -->
-                    {#if !isSingles && (displayLabel || builderMode)}
-                        {#if builderMode && editingField === 'label'}
-                            <div class="space-y-1.5">
-                                <input type="text" bind:value={draftText} maxlength="120" use:focusOnMount onkeydown={editorKeys}
-                                    class="w-full bg-[#0a0f1a] border border-amber-500/50 rounded-lg text-white text-lg font-black px-2.5 py-1.5" />
-                                <div class="flex gap-2">
-                                    <button type="button" onclick={saveTextField} disabled={savingTag === 'label'}
-                                        class="text-xs font-bold text-white bg-amber-500 hover:bg-amber-400 disabled:opacity-50 rounded-lg px-3 py-1.5">💾 שמור</button>
-                                    <button type="button" onclick={cancelEditField} class="text-xs font-bold text-gray-300 hover:text-white px-2 py-1.5">ביטול</button>
-                                </div>
-                            </div>
-                        {:else}
-                            <h1 class="text-white text-xl md:text-2xl font-black leading-tight flex items-start gap-2">
-                                <span>{displayLabel}</span>
-                                {#if builderMode}
-                                    <button type="button" onclick={() => startEditField('label', displayLabel)}
-                                        aria-label="ערוך את שם המקום" title="ערוך את שם המקום"
-                                        class="text-sm bg-amber-500/15 hover:bg-amber-500/30 border border-amber-500/40 rounded-lg px-1.5 py-0.5 transition-all shrink-0">✏️</button>
-                                {/if}
-                            </h1>
-                        {/if}
-                    {/if}
+                    <!-- הכותרת (שם המקום) הועברה לראש העמודה הימנית, מעל התמונה -->
                     <!-- תג סטטוס תפעולי (מוצג לכולם כשהמקום אינו "פעיל") -->
                     {#if placeStatusBadge && placeStatus !== 'active'}
                         <span class="inline-flex items-center gap-1 text-xs font-bold rounded-full px-2.5 py-0.5 border w-fit {placeStatusBadge.badge}">
@@ -1993,8 +2005,7 @@
                                     </span>
                                 </section>
                             {/if}
-
-                            {@render socialLinksBlock()}
+                            <!-- מקטע "קישורים" הועבר אל מתחת לתמונה בעמודה הימנית -->
                         </div>
 
                         <!-- Actions (compact, full width) -->
