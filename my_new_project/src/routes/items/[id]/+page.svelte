@@ -1665,7 +1665,8 @@
                     <!-- סרגל עורך: כפתורי עריכה + בורר סטטוס + מחיקה. בזרימה (לא מרחף) כדי
                          שלא יתנגש עם התוכן. גלוי לבעלים / רכז / סופר-אדמין. -->
                     {#if (item as { isOwner?: boolean } | null)?.isOwner || singlesState === 'owner' || canEditPage}
-                        <div class="rounded-xl border border-white/10 bg-white/5 p-2 flex flex-wrap items-center gap-1.5 mb-1">
+                        <!-- מוסתר בנייד לפי בקשת המשתמש; מוצג מ-md ומעלה (דסקטופ) -->
+                        <div class="rounded-xl border border-white/10 bg-white/5 p-2 hidden md:flex flex-wrap items-center gap-1.5 mb-1">
                             <span class="text-amber-300 text-sm shrink-0 leading-none" aria-hidden="true">✏️</span>
                             {#if canEditPage && !builderMode}
                                 <button type="button" onclick={() => (builderMode = true)}
