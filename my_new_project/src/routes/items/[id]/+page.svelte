@@ -2162,7 +2162,7 @@
                                                 <a
                                                     href="tel:{displayPhone}"
                                                     aria-label="התקשר עכשיו – {displayPhone}"
-                                                    class="bg-white text-purple-700 font-bold py-2 rounded-lg text-center shadow hover:scale-[1.02] active:scale-95 transition-transform text-sm"
+                                                    class="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 rounded-lg text-center shadow hover:scale-[1.02] active:scale-95 transition-all text-sm"
                                                 >
                                                     📞 התקשרו
                                                 </a>
@@ -2171,15 +2171,15 @@
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     aria-label="שלח הודעה בוואטסאפ"
-                                                    class="bg-white/15 hover:bg-white/25 text-white font-bold py-2 rounded-lg text-center border border-white/25 transition-all text-sm"
+                                                    class="bg-green-500 hover:bg-green-400 text-white font-bold py-2 rounded-lg text-center shadow hover:scale-[1.02] active:scale-95 transition-all text-sm"
                                                 >
                                                     💬 וואטסאפ
                                                 </a>
                                                 {#if canNavigate}
                                                     <button type="button" onclick={() => navMenuOpen = !navMenuOpen}
                                                         aria-haspopup="menu" aria-expanded={navMenuOpen}
-                                                        class="bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-2 rounded-lg text-center shadow hover:scale-[1.02] active:scale-95 transition-all text-sm flex items-center justify-center gap-1">
-                                                        🧭 נווט אל
+                                                        class="bg-orange-500 hover:bg-orange-400 text-white font-bold py-2 rounded-lg text-center shadow hover:scale-[1.02] active:scale-95 transition-all text-sm flex items-center justify-center gap-1">
+                                                        🚗 נווט אל
                                                         <span class="text-[10px] opacity-80">{navMenuOpen ? '▲' : '▼'}</span>
                                                     </button>
                                                 {/if}
@@ -2187,8 +2187,8 @@
                                         {:else if canNavigate}
                                             <button type="button" onclick={() => navMenuOpen = !navMenuOpen}
                                                 aria-haspopup="menu" aria-expanded={navMenuOpen}
-                                                class="w-full bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-2 rounded-lg text-center shadow hover:scale-[1.02] active:scale-95 transition-all text-sm flex items-center justify-center gap-1">
-                                                🧭 נווט אל
+                                                class="w-full bg-orange-500 hover:bg-orange-400 text-white font-bold py-2 rounded-lg text-center shadow hover:scale-[1.02] active:scale-95 transition-all text-sm flex items-center justify-center gap-1">
+                                                🚗 נווט אל
                                                 <span class="text-[10px] opacity-80">{navMenuOpen ? '▲' : '▼'}</span>
                                             </button>
                                         {:else}
