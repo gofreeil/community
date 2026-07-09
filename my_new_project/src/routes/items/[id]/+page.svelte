@@ -174,7 +174,7 @@
     });
     const hasSocialLinks = $derived.by(() => {
         const ef = (item as { extraFields?: Record<string, unknown> } | null)?.extraFields;
-        return ['whatsapp', 'telegram', 'facebook', 'instagram', 'youtube', 'tiktok']
+        return ['website', 'whatsapp', 'telegram', 'facebook', 'instagram', 'youtube', 'tiktok']
             .some(k => {
                 const v = socialOverride[k] ?? ef?.[k];
                 return typeof v === 'string' && v.trim() !== '';
@@ -1065,7 +1065,7 @@
             </div>
         </div>
     {:else}
-        <h1 class="text-white text-xl md:text-2xl font-black leading-tight flex items-start gap-2">
+        <h1 class="text-white text-xl md:text-2xl font-black leading-tight flex items-center justify-center gap-2">
             <span>{displayLabel}</span>
             {#if builderMode}
                 <button type="button" onclick={() => startEditField('label', displayLabel)}
@@ -1125,6 +1125,7 @@
 
 {#snippet socialLinksBlock()}
     {@const ef = (item?.isUserSubmitted ? { ...(item?.extraFields ?? {}), ...socialOverride } : null) as Record<string, unknown> | null}
+    {@const website   = typeof ef?.website   === 'string' ? ef.website   : ''}
     {@const whatsapp  = typeof ef?.whatsapp  === 'string' ? ef.whatsapp  : ''}
     {@const telegram  = typeof ef?.telegram  === 'string' ? ef.telegram  : ''}
     {@const facebook  = typeof ef?.facebook  === 'string' ? ef.facebook  : ''}
@@ -1132,7 +1133,7 @@
     {@const youtube   = typeof ef?.youtube   === 'string' ? ef.youtube   : ''}
     {@const tiktok    = typeof ef?.tiktok    === 'string' ? ef.tiktok    : ''}
     {@const ensureUrl = (u: string) => (/^https?:\/\//i.test(u) ? u : `https://${u}`)}
-    {#if whatsapp || telegram || facebook || instagram || youtube || tiktok || customLinks.length > 0 || builderMode}
+    {#if website || whatsapp || telegram || facebook || instagram || youtube || tiktok || customLinks.length > 0 || builderMode}
         <section class="px-4 md:px-5 pt-3 pb-1 border-t border-white/10">
             <h2 class="text-base font-bold text-white mb-2 flex items-center gap-1.5">
                 <span class="w-1 h-4 bg-indigo-500 rounded-full"></span>קישורים
@@ -1229,6 +1230,12 @@
                         {/if}
                     </div>
                 {/each}
+                {#if website}
+                    <a href={ensureUrl(website)} target="_blank" rel="noopener noreferrer"
+                        class="flex items-center gap-2 bg-white/5 hover:bg-indigo-600/20 border border-white/10 hover:border-indigo-500/50 text-white font-bold px-4 py-2.5 rounded-xl transition-all">
+                        🌐 אתר אינטרנט
+                    </a>
+                {/if}
                 {#if whatsapp}
                     <a href={ensureUrl(whatsapp)} target="_blank" rel="noopener noreferrer"
                         class="flex items-center gap-2 bg-white/5 hover:bg-green-600/20 border border-white/10 hover:border-green-500/50 text-white font-bold px-4 py-2.5 rounded-xl transition-all">
@@ -1470,7 +1477,7 @@
                 <!-- עמודה ימנית: כותרת מעל התמונה → תמונה → קישורים -->
                 <div class="flex flex-col">
                 {#if !isSingles && (displayLabel || builderMode)}
-                    <div class="px-4 md:px-5 pt-3 pb-1">
+                    <div class="px-4 md:px-5 pt-3 pb-1 text-center">
                         {@render titleBlock()}
                     </div>
                 {/if}
@@ -1675,7 +1682,7 @@
                             <button type="button" onclick={() => navMenuOpen = !navMenuOpen}
                                 aria-haspopup="menu" aria-expanded={navMenuOpen}
                                 class="inline-flex items-center gap-1.5 text-sm font-bold text-sky-100 bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/40 rounded-xl px-3 py-1.5 transition-all">
-                                <span aria-hidden="true">🧭</span> נווט לכאן
+                                <span aria-hidden="true">🚗</span> נווט לכאן
                                 <span class="text-[10px] opacity-80">{navMenuOpen ? '▲' : '▼'}</span>
                             </button>
                             {#if navMenuOpen}
