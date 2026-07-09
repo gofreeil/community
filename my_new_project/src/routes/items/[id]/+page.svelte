@@ -2090,7 +2090,7 @@
                                         <span aria-hidden="true">📞</span> יצירת קשר עם המפרסם
                                     </h3>
                                     {#if displayPhone}
-                                        <div class="grid grid-cols-2 gap-2">
+                                        <div class="grid {canNavigate ? 'grid-cols-3' : 'grid-cols-2'} gap-2">
                                             <a
                                                 href="tel:{displayPhone}"
                                                 aria-label="התקשר עכשיו – {displayPhone}"
@@ -2107,37 +2107,41 @@
                                             >
                                                 💬 וואטסאפ
                                             </a>
+                                            {#if canNavigate}
+                                                <button type="button" onclick={() => navMenuOpen = !navMenuOpen}
+                                                    aria-haspopup="menu" aria-expanded={navMenuOpen}
+                                                    class="bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-2 rounded-lg text-center shadow hover:scale-[1.02] active:scale-95 transition-all text-sm flex items-center justify-center gap-1">
+                                                    🧭 נווט
+                                                </button>
+                                            {/if}
                                         </div>
                                     {:else}
                                         <p class="text-white/80 text-xs text-center bg-white/10 rounded-lg py-2 px-2">
                                             פרטי יצירת קשר אינם זמינים לפריט זה.
                                         </p>
-                                    {/if}
-                                    <!-- כפתור ניווט (צבע נבדל מכרטיס יצירת הקשר) -->
-                                    {#if canNavigate}
-                                        <div class="mt-2">
+                                        {#if canNavigate}
                                             <button type="button" onclick={() => navMenuOpen = !navMenuOpen}
                                                 aria-haspopup="menu" aria-expanded={navMenuOpen}
-                                                class="w-full flex items-center justify-center gap-2 text-sm font-black text-white bg-emerald-500 hover:bg-emerald-400 rounded-lg py-2.5 shadow hover:scale-[1.02] active:scale-95 transition-all">
-                                                <span aria-hidden="true">🚗</span> נווט לכאן
-                                                <span class="text-[11px] opacity-80">{navMenuOpen ? '▲' : '▼'}</span>
+                                                class="w-full mt-2 bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-2 rounded-lg text-center shadow hover:scale-[1.02] active:scale-95 transition-all text-sm flex items-center justify-center gap-1">
+                                                🧭 נווט לכאן
                                             </button>
-                                            {#if navMenuOpen}
-                                                <div class="mt-1.5 grid grid-cols-3 gap-1.5" role="menu">
-                                                    <a href={wazeUrl} target="_blank" rel="noopener noreferrer" role="menuitem" onclick={() => navMenuOpen = false}
-                                                        class="flex flex-col items-center gap-1 px-2 py-2 rounded-lg bg-white/15 hover:bg-white/30 border border-white/20 text-white text-xs font-bold transition-all">
-                                                        <span class="text-lg" aria-hidden="true">🚗</span> Waze
-                                                    </a>
-                                                    <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer" role="menuitem" onclick={() => navMenuOpen = false}
-                                                        class="flex flex-col items-center gap-1 px-2 py-2 rounded-lg bg-white/15 hover:bg-white/30 border border-white/20 text-white text-xs font-bold transition-all">
-                                                        <span class="text-lg" aria-hidden="true">📍</span> Maps
-                                                    </a>
-                                                    <a href={moovitUrl} target="_blank" rel="noopener noreferrer" role="menuitem" onclick={() => navMenuOpen = false}
-                                                        class="flex flex-col items-center gap-1 px-2 py-2 rounded-lg bg-white/15 hover:bg-white/30 border border-white/20 text-white text-xs font-bold transition-all">
-                                                        <span class="text-lg" aria-hidden="true">🚌</span> Moovit
-                                                    </a>
-                                                </div>
-                                            {/if}
+                                        {/if}
+                                    {/if}
+                                    <!-- בחירת אפליקציית ניווט - נפתחת בלחיצה על "נווט", מתחת לשורת הכפתורים -->
+                                    {#if canNavigate && navMenuOpen}
+                                        <div class="mt-2 grid grid-cols-3 gap-1.5" role="menu">
+                                            <a href={wazeUrl} target="_blank" rel="noopener noreferrer" role="menuitem" onclick={() => navMenuOpen = false}
+                                                class="flex flex-col items-center gap-1 px-2 py-2 rounded-lg bg-white/15 hover:bg-white/30 border border-white/20 text-white text-xs font-bold transition-all">
+                                                <span class="text-lg" aria-hidden="true">🚗</span> Waze
+                                            </a>
+                                            <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer" role="menuitem" onclick={() => navMenuOpen = false}
+                                                class="flex flex-col items-center gap-1 px-2 py-2 rounded-lg bg-white/15 hover:bg-white/30 border border-white/20 text-white text-xs font-bold transition-all">
+                                                <span class="text-lg" aria-hidden="true">📍</span> Maps
+                                            </a>
+                                            <a href={moovitUrl} target="_blank" rel="noopener noreferrer" role="menuitem" onclick={() => navMenuOpen = false}
+                                                class="flex flex-col items-center gap-1 px-2 py-2 rounded-lg bg-white/15 hover:bg-white/30 border border-white/20 text-white text-xs font-bold transition-all">
+                                                <span class="text-lg" aria-hidden="true">🚌</span> Moovit
+                                            </a>
                                         </div>
                                     {/if}
                                 </div>
