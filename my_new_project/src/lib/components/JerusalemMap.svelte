@@ -11,6 +11,7 @@
     import { neighborhoodState } from "$lib/neighborhoodState.svelte";
     import { getCoordsFor, jitterCoord } from "$lib/neighborhoodCoords";
     import { canUseMapImage, getMapImage, isDisplayableImage } from "$lib/mapImage";
+    import { heMatches } from "$lib/search";
     import type { DbItem } from "$lib/server/db";
     import 'leaflet/dist/leaflet.css';
 
@@ -385,9 +386,7 @@
         const q = searchQuery.trim().toLowerCase();
         if (!q) return [];
         return dbItems.filter(item =>
-            item.label?.toLowerCase().includes(q) ||
-            item.description?.toLowerCase().includes(q) ||
-            item.category?.toLowerCase().includes(q)
+            heMatches(q, item.label, item.description, item.category)
         ).sort((a, b) => {
             // השכונה שלך - ראשון
             const aNeigh = a.neighborhood === neighborhoodState.neighborhood ? 0 : 1;

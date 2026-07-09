@@ -7,6 +7,7 @@
     import { neighborhoodState } from '$lib/neighborhoodState.svelte';
     import { getCoordsFor, type Coord } from '$lib/neighborhoodCoords';
     import { toggleLike } from '$lib/likedItems';
+    import { heMatches } from '$lib/search';
     import JsonLd from "$lib/components/JsonLd.svelte";
     import { breadcrumbSchema, collectionSchema, canonical } from "$lib/seo";
 
@@ -164,11 +165,7 @@
             list = list.filter(i => itemPrice(i) > 0);
         }
         if (debouncedSearch) {
-            list = list.filter(i =>
-                i.label.toLowerCase().includes(debouncedSearch) ||
-                i.description.toLowerCase().includes(debouncedSearch) ||
-                i.address.toLowerCase().includes(debouncedSearch)
-            );
+            list = list.filter(i => heMatches(debouncedSearch, i.label, i.description, i.address));
         }
         if (sortBy === 'newest') {
             list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());

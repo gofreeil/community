@@ -21,6 +21,7 @@
 	import { restoreDaysLeft } from "$lib/placeStatus";
 	import { statusLabel, type UserStatus } from "$lib/singlesMock";
 	import NeighborhoodPicker from "$lib/components/NeighborhoodPicker.svelte";
+	import { heRank } from "$lib/search";
 
 	let { data, form } = $props();
 
@@ -718,10 +719,8 @@
 	let showNbSuggestions = $state(false);
 
 	function citySuggestions(): string[] {
-		const q = cityQuery.trim().toLowerCase();
 		const all = (data.citiesData as CityEntry[]).map((c) => c.city);
-		if (!q) return all.slice(0, 50);
-		return all.filter((c) => c.toLowerCase().includes(q)).slice(0, 50);
+		return heRank(cityQuery, all, (c) => c, 50);
 	}
 
 	function pickCity(c: string) {

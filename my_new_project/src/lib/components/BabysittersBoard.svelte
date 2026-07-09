@@ -3,6 +3,7 @@
     import { neighborhoodState } from '$lib/neighborhoodState.svelte';
     import { getCoordsFor, type Coord } from '$lib/neighborhoodCoords';
     import { isLiked, toggleLike } from '$lib/likedItems';
+    import { heMatches } from '$lib/search';
     import { _ } from 'svelte-i18n';
 
     interface DbItem {
@@ -331,11 +332,7 @@
     let filtered = $derived.by(() => {
         let arr = allSitters.filter(s => {
             const q = searchQuery.trim();
-            const matchSearch = !q ||
-                s.name.includes(q) || s.bio.includes(q) ||
-                s.neighborhood.includes(q) || s.city.includes(q) ||
-                s.specialties.some(x => x.includes(q)) ||
-                s.languages.some(x => x.includes(q));
+            const matchSearch = heMatches(q, s.name, s.bio, s.neighborhood, s.city, ...s.specialties, ...s.languages);
             const matchCity   = !selectedCity || s.city === selectedCity;
             return matchSearch && matchCity;
         });

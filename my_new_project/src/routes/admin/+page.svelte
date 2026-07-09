@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import type { DiscountCode } from '$lib/discountCodes';
+	import { heMatches } from '$lib/search';
 	import ServerHealthGauges from '$lib/components/ServerHealthGauges.svelte';
 	import RequesterContext from '$lib/components/RequesterContext.svelte';
 	import RequesterChatButtons from '$lib/components/RequesterChatButtons.svelte';
@@ -148,13 +149,8 @@
 	const filteredUsers = $derived(() => {
 		let list = data.users ?? [];
 		if (searchQuery) {
-			const q = searchQuery.toLowerCase();
 			list = list.filter(u =>
-				(u.name?.toLowerCase().includes(q)) ||
-				(u.email?.toLowerCase().includes(q)) ||
-				(u.id?.toLowerCase().includes(q)) ||
-				(u.neighborhood?.toLowerCase().includes(q)) ||
-				((u as any).city?.toLowerCase().includes(q))
+				heMatches(searchQuery, u.name, u.email, u.id, u.neighborhood, (u as any).city)
 			);
 		}
 		if (roleFilter !== 'all') {
@@ -168,22 +164,16 @@
 	const coordinatorUsers = $derived(() => {
 		const list = (data.users ?? []).filter(u => Array.isArray((u as any).coordinator_of) && (u as any).coordinator_of.length > 0);
 		if (!searchQuery) return list;
-		const q = searchQuery.toLowerCase();
 		return list.filter(u =>
-			(u.name?.toLowerCase().includes(q)) ||
-			(u.email?.toLowerCase().includes(q)) ||
-			((u as any).coordinator_of as string[]).some(n => n.toLowerCase().includes(q))
+			heMatches(searchQuery, u.name, u.email, ...((u as any).coordinator_of as string[]))
 		);
 	});
 
 	// סינון פריטים
 	const filteredItems = $derived(() => {
 		if (!searchQuery) return data.items ?? [];
-		const q = searchQuery.toLowerCase();
 		return (data.items ?? []).filter(i =>
-			i.label?.toLowerCase().includes(q) ||
-			i.description?.toLowerCase().includes(q) ||
-			i.category?.toLowerCase().includes(q)
+			heMatches(searchQuery, i.label, i.description, i.category)
 		);
 	});
 

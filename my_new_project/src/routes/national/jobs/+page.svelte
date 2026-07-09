@@ -3,6 +3,7 @@
     import { _ } from 'svelte-i18n';
     import { neighborhoodState } from '$lib/neighborhoodState.svelte';
     import { getCoordsFor, type Coord } from '$lib/neighborhoodCoords';
+    import { heMatches } from '$lib/search';
 
     type TFn = (id: string, opts?: { values?: Record<string, string | number> }) => string;
 
@@ -195,15 +196,8 @@
         const now = Date.now();
         const out = baseItems.filter((item) => {
             // חיפוש משולב
-            if (q) {
-                const hay = [item.label, item.description, ef(item, 'employer'), ef(item, 'requirements')]
-                    .join(' ').toLowerCase();
-                if (!hay.includes(q)) return false;
-            }
-            if (loc) {
-                const hay = [item.city, item.neighborhood, item.address].join(' ').toLowerCase();
-                if (!hay.includes(loc)) return false;
-            }
+            if (q && !heMatches(q, item.label, item.description, ef(item, 'employer'), ef(item, 'requirements'))) return false;
+            if (loc && !heMatches(loc, item.city, item.neighborhood, item.address)) return false;
             // סוג משרה
             if (selectedTypes.size > 0) {
                 const jt = ef(item, 'job_type');

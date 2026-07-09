@@ -12,6 +12,7 @@
     import { communityHelpCount } from "$lib/communityHelpStore";
     import JsonLd from "$lib/components/JsonLd.svelte";
     import { websiteSchema, organizationSchema, faqSchema, SITE_URL } from "$lib/seo";
+    import { heMatch } from "$lib/search";
 
     // Structured data לדף הבית - WebSite+חיפוש, Organization, ושאלות נפוצות.
     // עונה ישירות על "מה זה קהילה בשכונה" עבור Google ו-AI.
@@ -136,10 +137,10 @@
         if (!q) return allCitiesMerged;
         const out: [string, string[]][] = [];
         for (const [city, ns] of allCitiesMerged) {
-            if (city.toLowerCase().includes(q)) {
+            if (heMatch(q, city)) {
                 out.push([city, ns]);
             } else {
-                const matching = ns.filter(n => n.toLowerCase().includes(q));
+                const matching = ns.filter(n => heMatch(q, n));
                 if (matching.length > 0) out.push([city, matching]);
             }
         }

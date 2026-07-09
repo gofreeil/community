@@ -5,6 +5,7 @@
 	import RestaurantReviewsModal from '$lib/components/RestaurantReviewsModal.svelte';
 	import { getRatingSummary } from '$lib/restaurantReviews';
 	import { mockRestaurants } from '$lib/restaurantsData';
+	import { heMatches } from '$lib/search';
 
 	// טיפוס מקומי - לא מייבאים מ-$lib/server (אסור בקומפוננטת client)
 	interface Item {
@@ -178,12 +179,7 @@
 	// פריטים מסוננים
 	let filteredItems = $derived.by(() => {
 		const items = effectiveItems.filter((item) => {
-			const matchSearch =
-				!searchQuery ||
-				item.label.includes(searchQuery) ||
-				(item.description ?? '').includes(searchQuery) ||
-				(item.neighborhood ?? '').includes(searchQuery) ||
-				(item.city ?? '').includes(searchQuery);
+			const matchSearch = heMatches(searchQuery, item.label, item.description, item.neighborhood, item.city);
 			const matchCity = !selectedCity || item.city === selectedCity;
 
 			// סינון מזון מהיר/מסעדה - רלוונטי רק לקטגוריית restaurants

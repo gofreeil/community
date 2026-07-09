@@ -3,6 +3,7 @@
     import { enhance } from '$app/forms';
     import { invalidateAll } from '$app/navigation';
     import { onMount, onDestroy } from 'svelte';
+    import { heMatches } from '$lib/search';
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
 
@@ -59,10 +60,7 @@
         const q = searchQuery.trim().toLowerCase();
         const filtered = q
             ? list.filter(a =>
-                (a.title ?? '').toLowerCase().includes(q) ||
-                (a.subtitle ?? '').toLowerCase().includes(q) ||
-                (a.submittedBy?.email ?? '').toLowerCase().includes(q) ||
-                (a.submittedBy?.name ?? '').toLowerCase().includes(q))
+                heMatches(q, a.title, a.subtitle, a.submittedBy?.email, a.submittedBy?.name))
             : list;
         return [...filtered].sort((x, y) => {
             const xt = new Date(x.submittedAt).getTime();

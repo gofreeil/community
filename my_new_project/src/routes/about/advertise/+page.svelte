@@ -8,6 +8,7 @@
     import { evaluateDiscount, discountAmount, type DiscountCode } from "$lib/discountCodes";
     import { FREE_PROMO, FREE_PROMO_CODE_TEXT, FREE_PROMO_DISCOUNT } from "$lib/freePromo";
     import { MAP_IMAGE_PRICE_YEARLY } from "$lib/mapImage";
+    import { heRank } from "$lib/search";
 
     // Page data - layoutUser provides the logged-in user's profile (email, phone)
     let { data } = $props<{ data: {
@@ -135,19 +136,7 @@
     let filteredCities = $derived.by(() => {
         const q = citySearchQuery.trim();
         if (!q) return [];
-        // Rank: 1) starts with query, 2) word boundary match, 3) contains
-        const matches = citiesData.filter(c => c.city.includes(q));
-        return matches
-            .map(c => {
-                const name = c.city;
-                let score = 2;
-                if (name.startsWith(q))               score = 0;
-                else if (name.includes(' ' + q))      score = 1;
-                return { c, score };
-            })
-            .sort((a, b) => a.score - b.score)
-            .map(x => x.c)
-            .slice(0, 30);
+        return heRank(q, citiesData, c => c.city, 30);
     });
 
     // Auto-focus search input whenever the picker opens

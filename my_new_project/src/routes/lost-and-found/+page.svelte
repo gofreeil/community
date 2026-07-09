@@ -4,6 +4,7 @@
     import type { PageData, ActionData } from './$types';
     import JsonLd from "$lib/components/JsonLd.svelte";
     import { breadcrumbSchema, collectionSchema, canonical } from "$lib/seo";
+    import { heMatches } from "$lib/search";
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
 
@@ -90,16 +91,7 @@
 
     // חיפוש חופשי לפי מילות תיאור, תגיות ומיקום (כותרת/תיאור/כתובת/שכונה/עיר/תגיות)
     function matchesQuery(item: typeof data.items[number], q: string): boolean {
-        if (!q) return true;
-        const hay = [
-            item.label,
-            item.description,
-            item.address,
-            item.neighborhood,
-            item.city,
-            getSearchExtras(item.extra_fields),
-        ].join(' ').toLowerCase();
-        return q.toLowerCase().split(/\s+/).filter(Boolean).every(w => hay.includes(w));
+        return heMatches(q, item.label, item.description, item.address, item.neighborhood, item.city, getSearchExtras(item.extra_fields));
     }
 
     // הרשימה אחרי סינון סוג + חיפוש + הסתרת מודעות שהוסרו. השרת כבר החזיר לפי
