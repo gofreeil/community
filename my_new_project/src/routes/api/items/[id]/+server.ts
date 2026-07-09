@@ -39,17 +39,20 @@ function isSafeImage(v: unknown): v is string {
     return v.startsWith('data:image/') || /^https?:\/\//i.test(v) || v.startsWith('/');
 }
 
-/** ניקוי קישורים מותאמים-אישית ({label, url}) שמוצגים ככפתורים בדף הפריט */
-function sanitizeLinks(raw: unknown): Array<{ label: string; url: string }> {
+/** ניקוי קישורים מותאמים-אישית ({label, url, desc}) שמוצגים ככפתורים בדף הפריט.
+ *  הסדר במערך נשמר = סדר התצוגה שהמשתמש קבע בגרירה; desc = מלל תיאור מתחת לכפתור. */
+function sanitizeLinks(raw: unknown): Array<{ label: string; url: string; desc?: string }> {
     if (!Array.isArray(raw)) return [];
     return raw
         .filter((l): l is Record<string, unknown> => !!l && typeof l === 'object')
         .map(l => {
             let url = String(l.url ?? '').trim().slice(0, 300);
             if (url && !/^https?:\/\//i.test(url)) url = `https://${url}`;
+            const desc = String(l.desc ?? '').trim().slice(0, 300);
             return {
                 label: String(l.label ?? '').trim().slice(0, 60) || 'קישור',
                 url,
+                ...(desc ? { desc } : {}),
             };
         })
         .filter(l => /^https?:\/\/\S+\.\S+/i.test(l.url))

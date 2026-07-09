@@ -117,7 +117,7 @@
     let fieldOverrides = $state<Record<string, string>>({});
     let imagesOverride = $state<string[] | null>(null);
     let activitiesOverride = $state<ScheduleRow[] | null>(null);
-    let linksOverride = $state<Array<{ label: string; url: string }> | null>(null);
+    let linksOverride = $state<Array<{ label: string; url: string; desc?: string }> | null>(null);
     // קישורי רשתות חברתיות + אתר שנשמרו הרגע במצב בנייה - מוצגים מיד בלי רענון
     let socialOverride = $state<Record<string, string>>({});
 
@@ -160,18 +160,21 @@
     const displayContact     = $derived(fieldOverrides.contact     ?? String(item?.contact ?? ''));
 
     // קישורים מותאמים-אישית (extra_fields.links) - מוצגים ככפתורים בדף
-    const customLinks = $derived.by<Array<{ label: string; url: string }>>(() => {
+    const customLinks = $derived.by<Array<{ label: string; url: string; desc?: string }>>(() => {
         if (linksOverride) return linksOverride;
         const raw = (item as { extraFields?: { links?: unknown } } | null)?.extraFields?.links;
         if (!Array.isArray(raw)) return [];
         return raw
             .filter((l): l is Record<string, unknown> => !!l && typeof l === 'object')
-            .map(l => ({ label: String(l.label ?? '').trim() || 'קישור', url: String(l.url ?? '').trim() }))
+            .map(l => {
+                const desc = String(l.desc ?? '').trim();
+                return { label: String(l.label ?? '').trim() || 'קישור', url: String(l.url ?? '').trim(), ...(desc ? { desc } : {}) };
+            })
             .filter(l => l.url);
     });
     const hasSocialLinks = $derived.by(() => {
         const ef = (item as { extraFields?: Record<string, unknown> } | null)?.extraFields;
-        return ['website', 'facebook', 'instagram', 'youtube', 'tiktok']
+        return ['website', 'whatsapp', 'telegram', 'facebook', 'instagram', 'youtube', 'tiktok']
             .some(k => {
                 const v = socialOverride[k] ?? ef?.[k];
                 return typeof v === 'string' && v.trim() !== '';
@@ -437,28 +440,59 @@
     }
 
     // ---- עורך קישורים (כפתורים בדף: אתר, טופס הרשמה, קבוצת וואטסאפ...) ----
-    let draftLinks = $state<Array<{ label: string; url: string }>>([]);
+    // desc = מלל תיאור שיוצג מתחת לכפתור; _open = מצב "מגירת" התיאור בעורך (לא נשמר)
+    type DraftLink = { label: string; url: string; desc: string; _open: boolean };
+    let draftLinks = $state<DraftLink[]>([]);
 
     function startEditLinks() {
-        draftLinks = customLinks.length ? customLinks.map(l => ({ ...l })) : [{ label: '', url: '' }];
+        draftLinks = customLinks.length
+            ? customLinks.map(l => ({ label: l.label, url: l.url, desc: l.desc ?? '', _open: !!l.desc }))
+            : [{ label: '', url: '', desc: '', _open: false }];
         editingField = 'links';
         builderError = '';
     }
     function addDraftLink() {
-        draftLinks = [...draftLinks, { label: '', url: '' }];
+        draftLinks = [...draftLinks, { label: '', url: '', desc: '', _open: false }];
     }
     function removeDraftLink(i: number) {
         draftLinks = draftLinks.filter((_, idx) => idx !== i);
     }
+    // הזזת שורה מעלה/מטה (חלופה נגישה לגרירה, עובדת גם במגע)
+    function moveDraftLink(i: number, dir: -1 | 1) {
+        const j = i + dir;
+        if (j < 0 || j >= draftLinks.length) return;
+        const arr = [...draftLinks];
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+        draftLinks = arr;
+    }
+    // ---- גרירה לשינוי סדר הכפתורים ----
+    let dragIndex = $state<number | null>(null);
+    let dragOverIndex = $state<number | null>(null);
+    function onLinkDragStart(i: number) { dragIndex = i; }
+    function onLinkDragOver(e: DragEvent, i: number) { e.preventDefault(); dragOverIndex = i; }
+    function onLinkDrop(i: number) {
+        if (dragIndex !== null && dragIndex !== i) {
+            const arr = [...draftLinks];
+            const [moved] = arr.splice(dragIndex, 1);
+            arr.splice(i, 0, moved);
+            draftLinks = arr;
+        }
+        dragIndex = null;
+        dragOverIndex = null;
+    }
+    function onLinkDragEnd() { dragIndex = null; dragOverIndex = null; }
+
     async function saveLinks() {
         const clean = draftLinks
-            .map(l => ({ label: l.label.trim(), url: l.url.trim() }))
-            .filter(l => l.url);
+            .map(l => ({ label: l.label.trim(), url: l.url.trim(), desc: l.desc.trim() }))
+            .filter(l => l.url)
+            .map(l => ({ label: l.label, url: l.url, ...(l.desc ? { desc: l.desc } : {}) }));
         const ok = await saveFields({ links: clean }, 'links');
         if (ok) {
             linksOverride = clean.map(l => ({
                 label: l.label || 'קישור',
                 url: /^https?:\/\//i.test(l.url) ? l.url : `https://${l.url}`,
+                ...(l.desc ? { desc: l.desc } : {}),
             }));
             editingField = '';
         }
@@ -503,7 +537,7 @@
         editingField = 'social';
         builderError = '';
     }
-    async function saveSocial() {
+    async function saveSocial(): Promise<boolean> {
         const clean: Record<string, string> = {};
         for (const sf of SOCIAL_FIELDS) {
             clean[sf.key] = normalizeSocialUrl(sf.key, draftSocial[sf.key] ?? '');
@@ -513,6 +547,14 @@
             socialOverride = { ...socialOverride, ...clean };
             editingField = '';
         }
+        return ok;
+    }
+    // "+" מעורך הרשתות: שומר את קישורי הרשת ואז עובר לעורך הקישורים המותאמים עם שורה ריקה חדשה
+    async function addCustomLinkFromSocial() {
+        const ok = await saveSocial();
+        if (!ok) return;
+        startEditLinks();
+        addDraftLink();
     }
 
     // עדכונים חיים של שדות הפרטים (CategoryDetailsEditor) - כדי שהתצוגה תתעדכן מיד
@@ -1064,6 +1106,11 @@
                                 class="bg-[#0a0f1a] border border-white/15 rounded-md text-xs text-white px-2 py-1 flex-1 min-w-[120px]" />
                         </div>
                     {/each}
+                    <!-- הוספת קישור/כפתור נוסף (מעבר לעורך הכפתורים המותאמים עם תיאור וסדר) -->
+                    <button type="button" onclick={addCustomLinkFromSocial} disabled={savingTag === 'social'}
+                        class="w-full flex items-center justify-center gap-1.5 border-2 border-dashed border-amber-400/40 hover:border-amber-400/70 bg-amber-500/5 hover:bg-amber-500/10 disabled:opacity-50 text-amber-200 font-bold px-3 py-2 rounded-lg transition-all text-xs">
+                        <span class="text-base leading-none">＋</span> הוסף קישור/כפתור נוסף
+                    </button>
                     {#if builderError}<p class="text-xs text-red-400">{builderError}</p>{/if}
                     <div class="flex items-center gap-2 pt-1">
                         <button type="button" onclick={saveSocial} disabled={savingTag === 'social'}
@@ -1074,17 +1121,46 @@
                     </div>
                 </div>
             {:else if builderMode && editingField === 'links'}
-                <!-- עורך קישורים: כל שורה הופכת לכפתור בדף -->
+                <!-- עורך קישורים: כל שורה הופכת לכפתור בדף. גרירה משנה סדר, מגירת תיאור מוסיפה מלל -->
                 <div class="rounded-xl border border-amber-500/20 bg-amber-500/[0.03] p-2.5 space-y-2">
-                    {@render tip('כל שורה הופכת לכפתור בדף: אתר, טופס הרשמה, קבוצת וואטסאפ, תרומות... כתבו שם קצר והדביקו קישור')}
-                    {#each draftLinks as link, i}
-                        <div class="flex flex-wrap items-center gap-1.5 bg-[#0f172a] rounded-lg p-1.5 border border-white/10">
-                            <input type="text" bind:value={link.label} placeholder="שם הכפתור (למשל: קבוצת וואטסאפ)" maxlength="60"
-                                class="bg-[#0a0f1a] border border-white/15 rounded-md text-xs text-white px-2 py-1 flex-1 min-w-[130px]" />
-                            <input type="url" bind:value={link.url} placeholder="https://..." dir="ltr" maxlength="300"
-                                class="bg-[#0a0f1a] border border-white/15 rounded-md text-xs text-white px-2 py-1 flex-1 min-w-[130px]" />
-                            <button type="button" onclick={() => removeDraftLink(i)} aria-label="הסר קישור"
-                                class="text-red-400 hover:text-red-300 px-1.5 text-lg leading-none">×</button>
+                    {@render tip('כל שורה הופכת לכפתור בדף. גררו את הידית ⠿ (או ▲▼) כדי לשנות סדר, ופתחו "תיאור" כדי להוסיף מלל מתחת לכפתור.')}
+                    {#each draftLinks as link, i (link)}
+                        <div
+                            role="group"
+                            aria-label={`קישור ${i + 1}`}
+                            draggable={draftLinks.length > 1}
+                            ondragstart={() => onLinkDragStart(i)}
+                            ondragover={(e) => onLinkDragOver(e, i)}
+                            ondrop={() => onLinkDrop(i)}
+                            ondragend={onLinkDragEnd}
+                            class="bg-[#0f172a] rounded-lg p-1.5 border transition-all {dragOverIndex === i && dragIndex !== i ? 'border-amber-400/70 ring-1 ring-amber-400/50' : 'border-white/10'} {dragIndex === i ? 'opacity-50' : ''}">
+                            <div class="flex flex-wrap items-center gap-1.5">
+                                <!-- ידית גרירה + הזזה מעלה/מטה -->
+                                <div class="flex items-center shrink-0">
+                                    <span class="cursor-grab active:cursor-grabbing text-gray-500 hover:text-gray-300 px-0.5 text-base leading-none select-none" title="גררו לשינוי סדר" aria-hidden="true">⠿</span>
+                                    <div class="flex flex-col -my-1">
+                                        <button type="button" onclick={() => moveDraftLink(i, -1)} disabled={i === 0} aria-label="העבר למעלה"
+                                            class="text-gray-400 hover:text-white disabled:opacity-25 disabled:hover:text-gray-400 leading-none text-[10px] px-0.5">▲</button>
+                                        <button type="button" onclick={() => moveDraftLink(i, 1)} disabled={i === draftLinks.length - 1} aria-label="העבר למטה"
+                                            class="text-gray-400 hover:text-white disabled:opacity-25 disabled:hover:text-gray-400 leading-none text-[10px] px-0.5">▼</button>
+                                    </div>
+                                </div>
+                                <input type="text" bind:value={link.label} placeholder="שם הכפתור (למשל: קבוצת וואטסאפ)" maxlength="60"
+                                    class="bg-[#0a0f1a] border border-white/15 rounded-md text-xs text-white px-2 py-1 flex-1 min-w-[120px]" />
+                                <input type="url" bind:value={link.url} placeholder="https://..." dir="ltr" maxlength="300"
+                                    class="bg-[#0a0f1a] border border-white/15 rounded-md text-xs text-white px-2 py-1 flex-1 min-w-[120px]" />
+                                <button type="button" onclick={() => link._open = !link._open} aria-expanded={link._open} title="תיאור מתחת לכפתור"
+                                    class="shrink-0 text-[11px] font-bold px-1.5 py-1 rounded-md border transition-all {link._open || link.desc ? 'text-amber-200 border-amber-400/40 bg-amber-500/10' : 'text-gray-400 border-white/15 hover:text-gray-200'}">
+                                    תיאור {link._open ? '▲' : '▼'}
+                                </button>
+                                <button type="button" onclick={() => removeDraftLink(i)} aria-label="הסר קישור"
+                                    class="shrink-0 text-red-400 hover:text-red-300 px-1.5 text-lg leading-none">×</button>
+                            </div>
+                            <!-- מגירת תיאור -->
+                            {#if link._open}
+                                <textarea bind:value={link.desc} rows="2" maxlength="300" placeholder="מלל תיאור שיוצג מתחת לכפתור (לא חובה)"
+                                    class="mt-1.5 w-full bg-[#0a0f1a] border border-white/15 rounded-md text-xs text-white px-2 py-1.5 resize-y"></textarea>
+                            {/if}
                         </div>
                     {/each}
                     <button type="button" onclick={addDraftLink}
@@ -1100,10 +1176,15 @@
             {:else}
             <div class="flex flex-wrap gap-2">
                 {#each customLinks as link}
-                    <a href={ensureUrl(link.url)} target="_blank" rel="noopener noreferrer"
-                        class="flex items-center gap-2 bg-white/5 hover:bg-purple-600/20 border border-white/10 hover:border-purple-500/50 text-white font-bold px-4 py-2.5 rounded-xl transition-all">
-                        🔗 {link.label}
-                    </a>
+                    <div class="flex flex-col gap-1 max-w-full">
+                        <a href={ensureUrl(link.url)} target="_blank" rel="noopener noreferrer"
+                            class="flex items-center gap-2 bg-white/5 hover:bg-purple-600/20 border border-white/10 hover:border-purple-500/50 text-white font-bold px-4 py-2.5 rounded-xl transition-all">
+                            🔗 {link.label}
+                        </a>
+                        {#if link.desc}
+                            <p class="text-xs text-gray-400 leading-snug px-1 max-w-[260px] whitespace-pre-line">{link.desc}</p>
+                        {/if}
+                    </div>
                 {/each}
                 {#if website}
                     <a href={ensureUrl(website)} target="_blank" rel="noopener noreferrer"
