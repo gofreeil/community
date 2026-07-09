@@ -466,12 +466,30 @@
 
     // ---- עורך רשתות חברתיות + אתר (כל קישור הופך לכפתור מותג עם הסמל של הרשת) ----
     const SOCIAL_FIELDS: Array<{ key: string; emoji: string; label: string; placeholder: string }> = [
-        { key: 'website',   emoji: '🌐', label: 'אתר',      placeholder: 'https://האתר-שלכם.co.il' },
+        { key: 'website',   emoji: '🌐', label: 'אתר',       placeholder: 'https://האתר-שלכם.co.il' },
+        { key: 'whatsapp',  emoji: '💬', label: 'וואטסאפ',   placeholder: 'מספר טלפון או קישור לקבוצה' },
+        { key: 'telegram',  emoji: '✈️', label: 'טלגרם',     placeholder: '@הקבוצה או https://t.me/...' },
         { key: 'facebook',  emoji: '📘', label: 'פייסבוק',   placeholder: 'https://facebook.com/...' },
         { key: 'instagram', emoji: '📷', label: 'אינסטגרם',  placeholder: 'https://instagram.com/...' },
         { key: 'youtube',   emoji: '▶️', label: 'יוטיוב',    placeholder: 'https://youtube.com/@...' },
         { key: 'tiktok',    emoji: '🎵', label: 'טיקטוק',    placeholder: 'https://tiktok.com/@...' },
     ];
+
+    // נרמול קישורי רשת: וואטסאפ מקבל מספר טלפון (→ wa.me), טלגרם מקבל @שם (→ t.me)
+    function normalizeSocialUrl(key: string, raw: string): string {
+        let u = raw.trim();
+        if (!u) return '';
+        if (key === 'whatsapp' && /^[+\d][\d\s()\-]*$/.test(u)) {
+            const digits = u.replace(/\D/g, '').replace(/^0/, '972');
+            return `https://wa.me/${digits}`;
+        }
+        if (key === 'telegram') {
+            if (u.startsWith('@')) return `https://t.me/${u.slice(1)}`;
+            if (/^[A-Za-z0-9_]{4,}$/.test(u)) return `https://t.me/${u}`;
+        }
+        if (!/^https?:\/\//i.test(u)) u = `https://${u}`;
+        return u;
+    }
     let draftSocial = $state<Record<string, string>>({});
 
     function startEditSocial() {
@@ -488,9 +506,7 @@
     async function saveSocial() {
         const clean: Record<string, string> = {};
         for (const sf of SOCIAL_FIELDS) {
-            let u = (draftSocial[sf.key] ?? '').trim();
-            if (u && !/^https?:\/\//i.test(u)) u = `https://${u}`;
-            clean[sf.key] = u;
+            clean[sf.key] = normalizeSocialUrl(sf.key, draftSocial[sf.key] ?? '');
         }
         const ok = await saveFields(clean, 'social');
         if (ok) {
@@ -976,7 +992,6 @@
 
 {#snippet shareBlock()}
     <div class="space-y-1.5">
-        {@render tip('הדף מוכן? שתפו אותו - הקישור יגיע לרשתות עם הכותרת של הדף ותת-הכותרת "קהילה בשכונה - כל יתרונות הקהילה תחת קורת גג אחת"')}
     <div class="bg-white/5 px-3 py-2 rounded-xl border border-white/10 backdrop-blur-sm flex items-center gap-2">
         <span class="text-xs font-bold text-gray-300 shrink-0">שתף:</span>
         <div class="flex gap-1.5 flex-1 justify-around">
@@ -1025,12 +1040,14 @@
 {#snippet socialLinksBlock()}
     {@const ef = (item?.isUserSubmitted ? { ...(item?.extraFields ?? {}), ...socialOverride } : null) as Record<string, unknown> | null}
     {@const website   = typeof ef?.website   === 'string' ? ef.website   : ''}
+    {@const whatsapp  = typeof ef?.whatsapp  === 'string' ? ef.whatsapp  : ''}
+    {@const telegram  = typeof ef?.telegram  === 'string' ? ef.telegram  : ''}
     {@const facebook  = typeof ef?.facebook  === 'string' ? ef.facebook  : ''}
     {@const instagram = typeof ef?.instagram === 'string' ? ef.instagram : ''}
     {@const youtube   = typeof ef?.youtube   === 'string' ? ef.youtube   : ''}
     {@const tiktok    = typeof ef?.tiktok    === 'string' ? ef.tiktok    : ''}
     {@const ensureUrl = (u: string) => (/^https?:\/\//i.test(u) ? u : `https://${u}`)}
-    {#if website || facebook || instagram || youtube || tiktok || customLinks.length > 0 || builderMode}
+    {#if website || whatsapp || telegram || facebook || instagram || youtube || tiktok || customLinks.length > 0 || builderMode}
         <section class="pt-3 border-t border-white/10">
             <h2 class="text-base font-bold text-white mb-2 flex items-center gap-1.5">
                 <span class="w-1 h-4 bg-indigo-500 rounded-full"></span>קישורים
@@ -1094,6 +1111,18 @@
                         🌐 אתר אינטרנט
                     </a>
                 {/if}
+                {#if whatsapp}
+                    <a href={ensureUrl(whatsapp)} target="_blank" rel="noopener noreferrer"
+                        class="flex items-center gap-2 bg-white/5 hover:bg-green-600/20 border border-white/10 hover:border-green-500/50 text-white font-bold px-4 py-2.5 rounded-xl transition-all">
+                        💬 וואטסאפ
+                    </a>
+                {/if}
+                {#if telegram}
+                    <a href={ensureUrl(telegram)} target="_blank" rel="noopener noreferrer"
+                        class="flex items-center gap-2 bg-white/5 hover:bg-sky-600/20 border border-white/10 hover:border-sky-500/50 text-white font-bold px-4 py-2.5 rounded-xl transition-all">
+                        ✈️ טלגרם
+                    </a>
+                {/if}
                 {#if facebook}
                     <a href={ensureUrl(facebook)} target="_blank" rel="noopener noreferrer"
                         class="flex items-center gap-2 bg-white/5 hover:bg-blue-600/20 border border-white/10 hover:border-blue-500/50 text-white font-bold px-4 py-2.5 rounded-xl transition-all">
@@ -1121,7 +1150,7 @@
                 {#if builderMode}
                     <button type="button" onclick={startEditSocial}
                         class="flex items-center gap-2 border-2 border-dashed border-indigo-400/40 hover:border-indigo-400/70 bg-indigo-500/5 hover:bg-indigo-500/10 text-indigo-200 font-bold px-4 py-2.5 rounded-xl transition-all text-sm">
-                        🌐 {(website || facebook || instagram || youtube || tiktok) ? 'ערוך אתר וקישורים לרשתות' : 'הוסיפו אתר וקישורים לרשתות חברתיות'}
+                        🌐 {(website || whatsapp || telegram || facebook || instagram || youtube || tiktok) ? 'ערוך אתר וקישורים לרשתות' : 'הוסיפו אתר, וואטסאפ, טלגרם וקישורים'}
                     </button>
                     <button type="button" onclick={startEditLinks}
                         class="flex items-center gap-2 border-2 border-dashed border-amber-400/40 hover:border-amber-400/70 bg-amber-500/5 hover:bg-amber-500/10 text-amber-200 font-bold px-4 py-2.5 rounded-xl transition-all text-sm">
@@ -1136,7 +1165,7 @@
 
 <!-- Hidden keys (rendered in dedicated sections, complex types, or internal-only) -->
 {#snippet extraFieldsBlock()}
-    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'menu_images', 'map_image', 'price', 'website', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname', 'age', 'birth_date', 'sector', 'gender', 'type', 'activities', 'links', 'gmach_type', 'gmach_types', 'place_status', 'location', 'option_id', 'last_seen', 'hours'])}
+    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'menu_images', 'map_image', 'price', 'website', 'whatsapp', 'telegram', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname', 'age', 'birth_date', 'sector', 'gender', 'type', 'activities', 'links', 'gmach_type', 'gmach_types', 'place_status', 'location', 'option_id', 'last_seen', 'hours'])}
     {@const LABELS_HE: Record<string, string> = {
         nickname: 'שם או כינוי',
         gender: 'מין',

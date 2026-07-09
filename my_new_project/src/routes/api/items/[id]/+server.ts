@@ -6,12 +6,21 @@ import { PLACE_STATUS_VALUES, DELETE_RESTORE_DAYS } from '$lib/placeStatus';
 import { categoryConfig } from '$lib/categoryFields';
 
 /** קישורי רשתות חברתיות + אתר - מותר לערוך אותם מדף הפריט לכל קטגוריה (הופכים לכפתורים מותגים) */
-const SOCIAL_LINK_KEYS = new Set(['website', 'facebook', 'instagram', 'youtube', 'tiktok']);
+const SOCIAL_LINK_KEYS = new Set(['website', 'whatsapp', 'telegram', 'facebook', 'instagram', 'youtube', 'tiktok']);
 
-/** נרמול URL של קישור חברתי/אתר: משלים https, מאמת מבנה בסיסי, מחזיר '' לניקוי */
-function normalizeSocialUrl(raw: unknown): string {
+/** נרמול URL של קישור חברתי/אתר: משלים https, מאמת מבנה בסיסי, מחזיר '' לניקוי.
+ *  וואטסאפ מקבל גם מספר טלפון (→ wa.me), טלגרם מקבל גם @שם (→ t.me). */
+function normalizeSocialUrl(raw: unknown, key = ''): string {
     let u = typeof raw === 'string' ? raw.trim().slice(0, 300) : '';
     if (!u) return '';
+    if (key === 'whatsapp' && /^[+\d][\d\s()\-]*$/.test(u)) {
+        const digits = u.replace(/\D/g, '').replace(/^0/, '972');
+        return digits ? `https://wa.me/${digits}` : '';
+    }
+    if (key === 'telegram') {
+        if (u.startsWith('@')) u = `https://t.me/${u.slice(1)}`;
+        else if (/^[A-Za-z0-9_]{4,}$/.test(u)) u = `https://t.me/${u}`;
+    }
     if (!/^https?:\/\//i.test(u)) u = `https://${u}`;
     return /^https?:\/\/\S+\.\S+/i.test(u) ? u : '';
 }
@@ -149,7 +158,7 @@ export const PATCH: RequestHandler = async (event) => {
             // קישורי רשתות חברתיות + אתר - מותרים תמיד (כפתורים מותגים בדף), עם נרמול URL; '' מנקה
             if (SOCIAL_LINK_KEYS.has(key)) {
                 extra = extra ?? loadExtra();
-                extra[key] = normalizeSocialUrl(raw);
+                extra[key] = normalizeSocialUrl(raw, key);
                 continue;
             }
 
