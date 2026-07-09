@@ -121,9 +121,13 @@ export async function resolveItemCoords(input: {
         if (hit) return hit;
     }
 
-    // 3. גיבוי (וברירת המחדל לפנויים): מרכז השכונה/העיר. getCoordsFor נופל
-    //    לירושלים כברירת מחדל, ולכן משתמשים בו רק כשבאמת יש שכונה או עיר.
-    if (neighborhood || city) {
+    // 3. גיבוי: מרכז השכונה/העיר. getCoordsFor נופל לירושלים כברירת מחדל,
+    //    ולכן משתמשים בו רק כשבאמת יש שכונה או עיר.
+    //    לקטגוריות פרטיות (neighborhoodOnly, כמו פנויים) לא מקבעים את המרכז
+    //    בתוך הפריט - משאירים lat/lng ריקים כדי שהמפה תגזור את המיקום מ-getCoordsFor
+    //    החי בזמן רינדור (+jitter). כך תיקוני קואורדינטות עתידיים חלים על פריטים
+    //    קיימים, והם לא נערמים בדיוק על אותה נקודה.
+    if ((neighborhood || city) && !input.neighborhoodOnly) {
         const [lat, lng] = getCoordsFor(neighborhood || undefined, city || undefined);
         return { lat, lng };
     }
