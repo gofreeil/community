@@ -251,7 +251,7 @@
                 {#if wazeLink}
                     <a href={wazeLink} target="_blank" rel="noopener noreferrer"
                        class="flex items-center gap-1.5 bg-cyan-600/80 hover:bg-cyan-500 text-white text-sm font-bold px-4 py-2 rounded-xl transition-colors">
-                        🧭 ניווט ב-Waze
+                        🚗 ניווט ב-Waze
                     </a>
                 {/if}
                 {#if gmapsLink}
