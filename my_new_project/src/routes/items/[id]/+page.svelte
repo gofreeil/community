@@ -174,7 +174,7 @@
     });
     const hasSocialLinks = $derived.by(() => {
         const ef = (item as { extraFields?: Record<string, unknown> } | null)?.extraFields;
-        return ['website', 'whatsapp', 'telegram', 'facebook', 'instagram', 'youtube', 'tiktok']
+        return ['whatsapp', 'telegram', 'facebook', 'instagram', 'youtube', 'tiktok']
             .some(k => {
                 const v = socialOverride[k] ?? ef?.[k];
                 return typeof v === 'string' && v.trim() !== '';
@@ -498,9 +498,9 @@
         }
     }
 
-    // ---- עורך רשתות חברתיות + אתר (כל קישור הופך לכפתור מותג עם הסמל של הרשת) ----
+    // ---- עורך רשתות חברתיות (כל קישור הופך לכפתור מותג עם הסמל של הרשת) ----
+    // "אתר אינטרנט" הוסר בכוונה - אתר מוסיפים ככפתור מותאם ב"כפתור מותאם" (לא כפילות)
     const SOCIAL_FIELDS: Array<{ key: string; emoji: string; label: string; placeholder: string }> = [
-        { key: 'website',   emoji: '🌐', label: 'אתר',       placeholder: 'https://האתר-שלכם.co.il' },
         { key: 'whatsapp',  emoji: '💬', label: 'וואטסאפ',   placeholder: 'מספר טלפון או קישור לקבוצה' },
         { key: 'telegram',  emoji: '✈️', label: 'טלגרם',     placeholder: '@הקבוצה או https://t.me/...' },
         { key: 'facebook',  emoji: '📘', label: 'פייסבוק',   placeholder: 'https://facebook.com/...' },
@@ -1081,7 +1081,6 @@
 
 {#snippet socialLinksBlock()}
     {@const ef = (item?.isUserSubmitted ? { ...(item?.extraFields ?? {}), ...socialOverride } : null) as Record<string, unknown> | null}
-    {@const website   = typeof ef?.website   === 'string' ? ef.website   : ''}
     {@const whatsapp  = typeof ef?.whatsapp  === 'string' ? ef.whatsapp  : ''}
     {@const telegram  = typeof ef?.telegram  === 'string' ? ef.telegram  : ''}
     {@const facebook  = typeof ef?.facebook  === 'string' ? ef.facebook  : ''}
@@ -1089,7 +1088,7 @@
     {@const youtube   = typeof ef?.youtube   === 'string' ? ef.youtube   : ''}
     {@const tiktok    = typeof ef?.tiktok    === 'string' ? ef.tiktok    : ''}
     {@const ensureUrl = (u: string) => (/^https?:\/\//i.test(u) ? u : `https://${u}`)}
-    {#if website || whatsapp || telegram || facebook || instagram || youtube || tiktok || customLinks.length > 0 || builderMode}
+    {#if whatsapp || telegram || facebook || instagram || youtube || tiktok || customLinks.length > 0 || builderMode}
         <section class="pt-3 border-t border-white/10">
             <h2 class="text-base font-bold text-white mb-2 flex items-center gap-1.5">
                 <span class="w-1 h-4 bg-indigo-500 rounded-full"></span>קישורים
@@ -1186,12 +1185,6 @@
                         {/if}
                     </div>
                 {/each}
-                {#if website}
-                    <a href={ensureUrl(website)} target="_blank" rel="noopener noreferrer"
-                        class="flex items-center gap-2 bg-white/5 hover:bg-indigo-600/20 border border-white/10 hover:border-indigo-500/50 text-white font-bold px-4 py-2.5 rounded-xl transition-all">
-                        🌐 אתר אינטרנט
-                    </a>
-                {/if}
                 {#if whatsapp}
                     <a href={ensureUrl(whatsapp)} target="_blank" rel="noopener noreferrer"
                         class="flex items-center gap-2 bg-white/5 hover:bg-green-600/20 border border-white/10 hover:border-green-500/50 text-white font-bold px-4 py-2.5 rounded-xl transition-all">
@@ -1231,7 +1224,7 @@
                 {#if builderMode}
                     <button type="button" onclick={startEditSocial}
                         class="flex items-center gap-2 border-2 border-dashed border-indigo-400/40 hover:border-indigo-400/70 bg-indigo-500/5 hover:bg-indigo-500/10 text-indigo-200 font-bold px-4 py-2.5 rounded-xl transition-all text-sm">
-                        🌐 {(website || whatsapp || telegram || facebook || instagram || youtube || tiktok) ? 'ערוך אתר וקישורים לרשתות' : 'הוסיפו אתר, וואטסאפ, טלגרם וקישורים'}
+                        📱 {(whatsapp || telegram || facebook || instagram || youtube || tiktok) ? 'ערוך קישורים לרשתות' : 'הוסיפו וואטסאפ, טלגרם וקישורים לרשתות'}
                     </button>
                     <button type="button" onclick={startEditLinks}
                         class="flex items-center gap-2 border-2 border-dashed border-amber-400/40 hover:border-amber-400/70 bg-amber-500/5 hover:bg-amber-500/10 text-amber-200 font-bold px-4 py-2.5 rounded-xl transition-all text-sm">
