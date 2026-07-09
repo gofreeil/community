@@ -182,6 +182,7 @@
     });
 
     // ---- ניווט: וייז / גוגל מפות / מוביט (לפי קואורדינטות, ובאין - לפי כתובת) ----
+    let navMenuOpen = $state(false);
     const navLat = $derived((item as { lat?: number | null } | null)?.lat ?? null);
     const navLng = $derived((item as { lng?: number | null } | null)?.lng ?? null);
     const navHasCoords = $derived(typeof navLat === 'number' && typeof navLng === 'number');
@@ -199,6 +200,10 @@
     const moovitUrl = $derived(navHasCoords
         ? `https://moovit.com/?to=${encodeURIComponent(displayLabel || navQuery)}&tll=${navLat}_${navLng}&lang=he`
         : `https://moovit.com/?to=${encodeURIComponent(navQuery)}&lang=he`);
+    // "אפליקציה אחרת" - קישור geo:/מפה גנרי שמערכת ההפעלה פותחת באפליקציה המועדפת של המשתמש
+    const otherAppUrl = $derived(navHasCoords
+        ? `geo:${navLat},${navLng}?q=${navLat},${navLng}(${encodeURIComponent(displayLabel || 'יעד')})`
+        : `geo:0,0?q=${encodeURIComponent(navQuery)}`);
 
     const nickname = $derived<string>(
         typeof (item as { extraFields?: { nickname?: unknown } } | null)?.extraFields?.nickname === 'string'
@@ -2153,7 +2158,7 @@
                                     </h3>
                                     <div class="space-y-2">
                                         {#if displayPhone}
-                                            <div class="grid grid-cols-2 gap-2">
+                                            <div class="grid {canNavigate ? 'grid-cols-3' : 'grid-cols-2'} gap-2">
                                                 <a
                                                     href="tel:{displayPhone}"
                                                     aria-label="התקשר עכשיו – {displayPhone}"
@@ -2170,28 +2175,47 @@
                                                 >
                                                     💬 וואטסאפ
                                                 </a>
+                                                {#if canNavigate}
+                                                    <button type="button" onclick={() => navMenuOpen = !navMenuOpen}
+                                                        aria-haspopup="menu" aria-expanded={navMenuOpen}
+                                                        class="bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-2 rounded-lg text-center shadow hover:scale-[1.02] active:scale-95 transition-all text-sm flex items-center justify-center gap-1">
+                                                        🧭 נווט אל
+                                                        <span class="text-[10px] opacity-80">{navMenuOpen ? '▲' : '▼'}</span>
+                                                    </button>
+                                                {/if}
                                             </div>
-                                        {/if}
-                                        {#if canNavigate}
-                                            <!-- ניווט: שלושה כפתורי אפליקציה ישירים בשורה אחת (בלי תפריט/קליק) -->
-                                            <div class="grid grid-cols-3 gap-2">
-                                                <a href={wazeUrl} target="_blank" rel="noopener noreferrer" aria-label="נווט עם Waze"
-                                                    class="bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-2 rounded-lg text-center shadow hover:scale-[1.02] active:scale-95 transition-all text-sm flex items-center justify-center gap-1">
-                                                    <span aria-hidden="true">🚗</span> Waze
-                                                </a>
-                                                <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer" aria-label="נווט עם Google Maps"
-                                                    class="bg-white/15 hover:bg-white/25 text-white font-bold py-2 rounded-lg text-center border border-white/25 transition-all text-sm flex items-center justify-center gap-1">
-                                                    <span aria-hidden="true">📍</span> Maps
-                                                </a>
-                                                <a href={moovitUrl} target="_blank" rel="noopener noreferrer" aria-label="נווט עם Moovit"
-                                                    class="bg-white/15 hover:bg-white/25 text-white font-bold py-2 rounded-lg text-center border border-white/25 transition-all text-sm flex items-center justify-center gap-1">
-                                                    <span aria-hidden="true">🚌</span> Moovit
-                                                </a>
-                                            </div>
-                                        {:else if !displayPhone}
+                                        {:else if canNavigate}
+                                            <button type="button" onclick={() => navMenuOpen = !navMenuOpen}
+                                                aria-haspopup="menu" aria-expanded={navMenuOpen}
+                                                class="w-full bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-2 rounded-lg text-center shadow hover:scale-[1.02] active:scale-95 transition-all text-sm flex items-center justify-center gap-1">
+                                                🧭 נווט אל
+                                                <span class="text-[10px] opacity-80">{navMenuOpen ? '▲' : '▼'}</span>
+                                            </button>
+                                        {:else}
                                             <p class="text-white/80 text-xs text-center bg-white/10 rounded-lg py-2 px-2">
                                                 פרטי יצירת קשר אינם זמינים לפריט זה.
                                             </p>
+                                        {/if}
+                                        <!-- תפריט בחירת אפליקציית ניווט - נפתח בלחיצה על "נווט אל" -->
+                                        {#if canNavigate && navMenuOpen}
+                                            <div class="grid grid-cols-2 gap-1.5" role="menu">
+                                                <a href={wazeUrl} target="_blank" rel="noopener noreferrer" role="menuitem" onclick={() => navMenuOpen = false}
+                                                    class="flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg bg-white/15 hover:bg-white/30 border border-white/20 text-white text-xs font-bold transition-all">
+                                                    <span class="text-base" aria-hidden="true">🚗</span> Waze
+                                                </a>
+                                                <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer" role="menuitem" onclick={() => navMenuOpen = false}
+                                                    class="flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg bg-white/15 hover:bg-white/30 border border-white/20 text-white text-xs font-bold transition-all">
+                                                    <span class="text-base" aria-hidden="true">📍</span> Google Maps
+                                                </a>
+                                                <a href={moovitUrl} target="_blank" rel="noopener noreferrer" role="menuitem" onclick={() => navMenuOpen = false}
+                                                    class="flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg bg-white/15 hover:bg-white/30 border border-white/20 text-white text-xs font-bold transition-all">
+                                                    <span class="text-base" aria-hidden="true">🚌</span> Moovit
+                                                </a>
+                                                <a href={otherAppUrl} role="menuitem" onclick={() => navMenuOpen = false}
+                                                    class="flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg bg-white/15 hover:bg-white/30 border border-white/20 text-white text-xs font-bold transition-all">
+                                                    <span class="text-base" aria-hidden="true">📲</span> אפליקציה אחרת
+                                                </a>
+                                            </div>
                                         {/if}
                                     </div>
                                 </div>
