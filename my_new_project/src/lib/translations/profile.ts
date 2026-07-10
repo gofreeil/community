@@ -269,8 +269,8 @@ export const he = {
         pin_mark_title: "🗺️ סמן את מיקום השכונה המדויק על המפה",
         pin_mark_hint:
             "לא חובה, אבל עוזר לנו למקם את השכונה בדיוק. אם יש לך קואורדינטות — אפשר להקליד אותן.",
-        map_fix_q: "המפה לא מדויקת? סמן את מיקום הישוב שלך",
-        map_fix_city: "המפה של {city} לא מדויקת — סמן את מיקום הישוב",
+        map_fix_q: "המפה לא מדויקת לדעתך? עזור לנו לדייק אותה",
+        map_fix_city: "המפה של {city} לא מדויקת לדעתך? עזור לנו לדייק אותה",
         pin_help_1: "לחץ על המפה במקום שבו נמצא הישוב שלך (אפשר לגרור את הסמן לדיוק). המיקום יתוקן",
         pin_help_now: "מיד אצלך",
         pin_help_2: ", ויעודכן לכל תושבי {city} לאחר אישור מנהל.",
@@ -644,8 +644,8 @@ export const en = {
         pin_mark_title: "🗺️ Mark the neighborhood's exact location on the map",
         pin_mark_hint:
             "Not mandatory, but it helps us place the neighborhood precisely. If you have coordinates — you can type them in.",
-        map_fix_q: "Map not accurate? Mark your town's location",
-        map_fix_city: "The map of {city} is not accurate — mark the town's location",
+        map_fix_q: "Think the map is off? Help us make it accurate",
+        map_fix_city: "Think the map of {city} is off? Help us make it accurate",
         pin_help_1: "Click the map where your town is located (you can drag the marker for precision). The location is fixed",
         pin_help_now: "immediately for you",
         pin_help_2: ", and will be updated for all residents of {city} after admin approval.",
@@ -1019,8 +1019,8 @@ export const ru = {
         pin_mark_title: "🗺️ Отметьте точное расположение района на карте",
         pin_mark_hint:
             "Необязательно, но помогает нам точно разместить район. Если у вас есть координаты — можно ввести их.",
-        map_fix_q: "Карта неточна? Отметьте расположение вашего населённого пункта",
-        map_fix_city: "Карта {city} неточна — отметьте расположение населённого пункта",
+        map_fix_q: "Думаете, карта неточна? Помогите нам её уточнить",
+        map_fix_city: "Думаете, карта {city} неточна? Помогите нам её уточнить",
         pin_help_1: "Нажмите на карту там, где находится ваш населённый пункт (маркер можно перетаскивать для точности). Расположение будет исправлено",
         pin_help_now: "сразу у вас",
         pin_help_2: ", и обновится для всех жителей {city} после одобрения администратора.",
