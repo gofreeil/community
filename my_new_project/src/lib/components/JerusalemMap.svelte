@@ -2584,9 +2584,9 @@
         font-family: inherit;
         background: #e6e3dd;
     }
-    /* חידוד אריחי Voyager (לא על הפינים) - saturate גבוה מבליט את ירוק הגינות/הפארקים */
+    /* חידוד אריחי Voyager (לא על הפינים) - contrast מבליט כבישים, saturate מוסיף צבע */
     :global(.leaflet-tile-pane) {
-        filter: contrast(1.06) saturate(1.45);
+        filter: contrast(1.2) saturate(1.7);
     }
     /* שורת הייחוס (חובה חוקית) - מוקטנת ודהויה כדי שלא תבלוט */
     :global(.leaflet-control-attribution) {
