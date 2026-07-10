@@ -1259,7 +1259,7 @@
         <!-- כפתור "שתף" שפותח תפריט אפשרויות השיתוף -->
         <button type="button" onclick={() => shareMenuOpen = !shareMenuOpen}
             aria-haspopup="menu" aria-expanded={shareMenuOpen}
-            class="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-3 py-2 text-sm font-bold text-gray-200 transition-all">
+            class="w-full min-h-[3.25rem] flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-3 py-2 text-sm font-bold text-gray-200 transition-all">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="w-4 h-4">
                 <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
                 <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
@@ -1825,7 +1825,7 @@
                             </div>
                         </div>
                     {:else if displayDescription.trim()}
-                        <p class="text-gray-200 text-base leading-snug whitespace-pre-line">
+                        <p class="text-gray-200 text-base leading-snug whitespace-pre-line text-center">
                             {displayDescription}
                             {#if builderMode}
                                 <button type="button" onclick={() => startEditField('description', displayDescription)}
@@ -2178,7 +2178,7 @@
                             {@const waPhone = displayPhone ? String(displayPhone).replace(/\D/g, '').replace(/^0/, '972') : ''}
                             {@const phoneVisible = displayPhone && (item.category !== 'singles' || singlesState === 'approved' || singlesState === 'owner')}
                             {@const waUrl = waPhone && phoneVisible ? `https://wa.me/${waPhone}` : null}
-                            <div class="flex-1 min-w-[150px] flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2">
+                            <div class="flex-1 min-w-[150px] min-h-[3.25rem] flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2">
                                 <span class="text-purple-400 text-lg shrink-0" aria-hidden="true">👤</span>
                                 <div class="flex flex-col leading-tight min-w-0 flex-1">
                                     <span class="text-[11px] text-gray-400">איש קשר</span>
