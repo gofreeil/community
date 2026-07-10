@@ -659,7 +659,7 @@
 
     // טיילי OSM פתוחים בחינם
     // רקע מפה בהיר מ-CARTO (Positron) - בהיר וברור. ייחוס מוקטן ב-CSS למטה.
-    const TILE_URL = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+    const TILE_URL = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
     const TILE_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> · <a href="https://carto.com/attributions">CARTO</a>';
 
     // צבע hex לפי שם צבע (כדי לא להסתמך על Tailwind dynamic classes)
@@ -2570,11 +2570,11 @@
     /* z-index לעטיפת ה-Leaflet במצב מסך מלא */
     :global(.leaflet-container) {
         font-family: inherit;
-        background: #d6d8db;
+        background: #e6e3dd;
     }
-    /* פילטר על שכבת האריחים בלבד (לא על הפינים) - פחות מסנוור + יותר ניגודיות */
+    /* חידוד קל של אריחי Voyager (לא על הפינים) - רחובות/תוויות בולטים יותר */
     :global(.leaflet-tile-pane) {
-        filter: brightness(0.85) contrast(1.2);
+        filter: contrast(1.06) saturate(1.05);
     }
     /* שורת הייחוס (חובה חוקית) - מוקטנת ודהויה כדי שלא תבלוט */
     :global(.leaflet-control-attribution) {
