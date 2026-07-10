@@ -658,8 +658,9 @@
     let mapMarkerLayer: any = null;     // L.LayerGroup לכל המרקרים
 
     // טיילי OSM פתוחים בחינם
-    const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-    const TILE_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
+    // רקע מפה כהה מ-CARTO (Dark Matter) - מתאים לעיצוב הכהה. ייחוס מוקטן ב-CSS למטה.
+    const TILE_URL = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+    const TILE_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> · <a href="https://carto.com/attributions">CARTO</a>';
 
     // צבע hex לפי שם צבע (כדי לא להסתמך על Tailwind dynamic classes)
     const colorHex: Record<string, string> = {
@@ -834,13 +835,16 @@
             maxBounds: israelBounds,
             maxBoundsViscosity: 1.0,
             minZoom: 8,  // הגבלת zoom out לרמה 8 (עם zoom out יותר מוגבל)
-            maxZoom: 19
+            maxZoom: 20
         }).setView(center, 14);
+        leafletMap.attributionControl?.setPrefix(false); // מסיר את הקישור "Leaflet" משורת הייחוס
 
         leafletL.tileLayer(TILE_URL, {
             attribution: TILE_ATTR,
-            maxZoom: 19,
-            maxNativeZoom: 19,        // רמת ה-zoom המקסימלית ש-OSM מגיש בפועל
+            subdomains: 'abcd',       // CARTO מגיש מ-4 תת-דומיינים - טעינה מקבילית מהירה יותר
+            maxZoom: 20,
+            maxNativeZoom: 20,        // רמת ה-zoom המקסימלית ש-CARTO מגיש בפועל
+            detectRetina: true,       // אריחי @2x חדים במסכי retina/נייד
             keepBuffer: 4,            // שומר יותר אריחים מסביב לתצוגה - פחות ריבועים לבנים בגרירה/זום
             updateWhenZooming: false, // לא לבקש אריחים חדשים באמצע אנימציית הזום - מונע את ההבזק/הריבוע הלבן
         }).addTo(leafletMap);
@@ -2567,6 +2571,18 @@
     :global(.leaflet-container) {
         font-family: inherit;
         background: #1a2233;
+    }
+    /* שורת הייחוס (חובה חוקית) - מוקטנת ודהויה כדי שלא תבלוט */
+    :global(.leaflet-control-attribution) {
+        font-size: 8px !important;
+        line-height: 1.4 !important;
+        padding: 0 4px !important;
+        background: rgba(15, 23, 42, 0.45) !important;
+        color: rgba(255, 255, 255, 0.4) !important;
+        border-top-left-radius: 6px;
+    }
+    :global(.leaflet-control-attribution a) {
+        color: rgba(255, 255, 255, 0.55) !important;
     }
 
     /* ----- מצב מסך מלא: כפתורי קטגוריה קומפקטיים + מפה ממלאת ----- */

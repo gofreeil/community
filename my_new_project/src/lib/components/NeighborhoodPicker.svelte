@@ -25,8 +25,9 @@
         onUserPin?: (lat: number, lng: number) => void;
     } = $props();
 
-    const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-    const TILE_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
+    // רקע מפה כהה מ-CARTO (Dark Matter) - מתאים לעיצוב הכהה. ייחוס מוקטן ב-CSS למטה.
+    const TILE_URL = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+    const TILE_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> · <a href="https://carto.com/attributions">CARTO</a>';
 
     let mapEl: HTMLDivElement;
     let L: any = null;
@@ -158,11 +159,12 @@
             zoomControl: false,
             scrollWheelZoom: true,
             minZoom: bounds ? 11 : 8,
-            maxZoom: 19,
+            maxZoom: 20,
             ...(bounds ? { maxBounds: bounds, maxBoundsViscosity: 1.0 } : {}),
         }).setView(center, lat != null && lng != null ? 15 : home.zoom);
+        map.attributionControl?.setPrefix(false); // מסיר את הקישור "Leaflet" משורת הייחוס
 
-        L.tileLayer(TILE_URL, { attribution: TILE_ATTR, maxZoom: 19, maxNativeZoom: 19, keepBuffer: 4, updateWhenZooming: false }).addTo(map);
+        L.tileLayer(TILE_URL, { attribution: TILE_ATTR, subdomains: 'abcd', maxZoom: 20, maxNativeZoom: 20, detectRetina: true, keepBuffer: 4, updateWhenZooming: false }).addTo(map);
         map.on('click', (e: any) => setPin(e.latlng));
 
         // פין קיים (עריכה/geocoding) מוצב תוכנתית - לא נחשב סימון ידני של המשתמש
@@ -286,6 +288,18 @@
 </div>
 
 <style>
+    /* שורת הייחוס (חובה חוקית) - מוקטנת ודהויה כדי שלא תבלוט */
+    :global(.leaflet-control-attribution) {
+        font-size: 8px !important;
+        line-height: 1.4 !important;
+        padding: 0 4px !important;
+        background: rgba(15, 23, 42, 0.45) !important;
+        color: rgba(255, 255, 255, 0.4) !important;
+        border-top-left-radius: 6px;
+    }
+    :global(.leaflet-control-attribution a) {
+        color: rgba(255, 255, 255, 0.55) !important;
+    }
     /* מכולת המפה */
     .map-wrap {
         position: relative;
