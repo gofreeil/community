@@ -17,6 +17,7 @@
     import CategoryDetailsEditor from "$lib/components/CategoryDetailsEditor.svelte";
     import { goto } from "$app/navigation";
     import { PLACE_STATUSES, placeStatusInfo } from "$lib/placeStatus";
+    import { logoForService, serviceLabel } from "$lib/serviceTypes";
 
     let { data }: { data: PageData } = $props();
     const item = $derived(data.item);
@@ -147,6 +148,16 @@
                 : (item?.image ? [item.image] : [])
         )
     );
+
+    // סמל "שירות ציבורי" לפי service_type - מוצג בכותרת כשאין תמונות אמיתיות
+    const serviceLogo = $derived.by<string>(() => {
+        const ef = (item as { extraFields?: Record<string, unknown> } | null)?.extraFields;
+        return logoForService(ef);
+    });
+    const serviceTypeLabel = $derived.by<string>(() => {
+        const ef = (item as { extraFields?: { service_type?: unknown } } | null)?.extraFields;
+        return serviceLabel(typeof ef?.service_type === 'string' ? ef.service_type : '');
+    });
 
     // Strip legacy "פנוי, " / "פנויה, " prefix from titles (user requested twice)
     const displayLabel = $derived.by(() => {
@@ -1275,20 +1286,18 @@
 {/snippet}
 
 {#snippet shareBlock()}
-    <div>
-        <!-- כפתור "שתף" שפותח תפריט אפשרויות השיתוף -->
+    <div class="relative">
+        <!-- כפתור שיתוף מרובע קטן שפותח תפריט אפשרויות השיתוף -->
         <button type="button" onclick={() => shareMenuOpen = !shareMenuOpen}
-            aria-haspopup="menu" aria-expanded={shareMenuOpen}
-            class="w-full min-h-[3.25rem] flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-3 py-2 text-sm font-bold text-gray-200 transition-all">
+            aria-haspopup="menu" aria-expanded={shareMenuOpen} aria-label="שתף" title="שתף"
+            class="w-9 h-9 flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-gray-200 transition-all">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="w-4 h-4">
                 <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
                 <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
             </svg>
-            שתף
-            <span class="text-[10px] opacity-70">{shareMenuOpen ? '▲' : '▼'}</span>
         </button>
         {#if shareMenuOpen}
-            <div class="mt-2 flex flex-wrap gap-1.5 justify-center bg-white/5 border border-white/10 rounded-xl px-3 py-2 backdrop-blur-sm" role="menu">
+            <div class="absolute z-30 top-full mt-1.5 end-0 flex gap-1.5 bg-[#0a0f1a] border border-white/15 rounded-xl px-2 py-2 shadow-2xl backdrop-blur-sm" role="menu">
                 {#if canNativeShare}
                     <button type="button" onclick={() => { shareNative(); shareMenuOpen = false; }} aria-label="שתף את הדף" title="שתף את הדף"
                         class="bg-gradient-to-l from-blue-600 to-purple-600 hover:opacity-90 hover:scale-110 active:scale-95 w-10 h-10 rounded-lg transition-all flex items-center justify-center text-lg">
@@ -1529,7 +1538,7 @@
 
 <!-- Hidden keys (rendered in dedicated sections, complex types, or internal-only) -->
 {#snippet extraFieldsBlock()}
-    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'menu_images', 'map_image', 'price', 'website', 'whatsapp', 'telegram', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname', 'age', 'birth_date', 'sector', 'gender', 'type', 'activities', 'links', 'gmach_type', 'gmach_types', 'place_status', 'location', 'option_id', 'last_seen', 'hours', 'phone_public', 'hours_public', 'arrival_video'])}
+    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'menu_images', 'map_image', 'service_type', 'price', 'website', 'whatsapp', 'telegram', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname', 'age', 'birth_date', 'sector', 'gender', 'type', 'activities', 'links', 'gmach_type', 'gmach_types', 'place_status', 'location', 'option_id', 'last_seen', 'hours', 'phone_public', 'hours_public', 'arrival_video'])}
     {@const LABELS_HE: Record<string, string> = {
         nickname: 'שם או כינוי',
         gender: 'מין',
@@ -1780,6 +1789,13 @@
                             <span class="text-amber-200 font-bold text-sm">{uploadingImages ? 'מעלה תמונה...' : 'הוסיפו תמונה של המקום'}</span>
                             <span class="text-[11px] text-amber-300/80 px-4 text-center">דף עם תמונה מושך הרבה יותר גולשים - אפשר עד {MAX_IMAGES} תמונות</span>
                         </button>
+                    {:else if serviceLogo}
+                        <div class="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 flex flex-col items-center justify-center gap-3">
+                            <img src={serviceLogo} alt={serviceTypeLabel} class="w-32 h-32 md:w-40 md:h-40 drop-shadow-xl" />
+                            {#if serviceTypeLabel}
+                                <span class="text-white/90 text-lg font-bold">{serviceTypeLabel}</span>
+                            {/if}
+                        </div>
                     {:else}
                         <div class="w-full h-full bg-gradient-to-br from-purple-900 to-blue-900 flex items-center justify-center">
                             <span class="text-[120px]">{item.icon}</span>
@@ -1835,34 +1851,45 @@
                         </div>
                     {/if}
 
-                    <!-- תיאור: עריכה במקום במצב בנייה -->
-                    {#if builderMode && editingField === 'description'}
-                        <div class="space-y-1.5">
-                            {@render tip('ספרו לגולשים מה מיוחד במקום, למי הוא מתאים ומה כדאי לדעת לפני שמגיעים')}
-                            <textarea bind:value={draftText} rows="4" maxlength="3000" use:focusOnMount onkeydown={editorKeys}
-                                class="w-full bg-[#0a0f1a] border border-amber-500/50 rounded-lg text-white text-sm px-2.5 py-1.5 leading-snug"
-                                placeholder="מידע על המקום, המניין או השיעור..."></textarea>
-                            <div class="flex gap-2">
-                                <button type="button" onclick={saveTextField} disabled={savingTag === 'description'}
-                                    class="text-xs font-bold text-white bg-amber-500 hover:bg-amber-400 disabled:opacity-50 rounded-lg px-3 py-1.5">💾 שמור</button>
-                                <button type="button" onclick={cancelEditField} class="text-xs font-bold text-gray-300 hover:text-white px-2 py-1.5">ביטול</button>
-                            </div>
-                        </div>
-                    {:else if displayDescription.trim()}
-                        <p class="text-gray-200 text-base leading-snug whitespace-pre-line text-center">
-                            {displayDescription}
-                            {#if builderMode}
-                                <button type="button" onclick={() => startEditField('description', displayDescription)}
-                                    aria-label="ערוך תיאור" title="ערוך תיאור"
-                                    class="text-sm bg-amber-500/15 hover:bg-amber-500/30 border border-amber-500/40 rounded-lg px-1.5 py-0.5 transition-all ms-1 align-middle">✏️</button>
+                    <!-- תת-כותרת/תיאור (מרכז) + כפתור שיתוף מרובע קטן בצד שמאל -->
+                    <div class="flex items-start gap-2">
+                        <!-- ימין (RTL): מרווח לאיזון מרכוז התת-כותרת ברוחב כפתור השיתוף -->
+                        <div class="w-9 shrink-0" aria-hidden="true"></div>
+                        <!-- מרכז: תיאור / תת-כותרת -->
+                        <div class="flex-1 min-w-0">
+                            {#if builderMode && editingField === 'description'}
+                                <div class="space-y-1.5">
+                                    {@render tip('ספרו לגולשים מה מיוחד במקום, למי הוא מתאים ומה כדאי לדעת לפני שמגיעים')}
+                                    <textarea bind:value={draftText} rows="4" maxlength="3000" use:focusOnMount onkeydown={editorKeys}
+                                        class="w-full bg-[#0a0f1a] border border-amber-500/50 rounded-lg text-white text-sm px-2.5 py-1.5 leading-snug"
+                                        placeholder="מידע על המקום, המניין או השיעור..."></textarea>
+                                    <div class="flex gap-2">
+                                        <button type="button" onclick={saveTextField} disabled={savingTag === 'description'}
+                                            class="text-xs font-bold text-white bg-amber-500 hover:bg-amber-400 disabled:opacity-50 rounded-lg px-3 py-1.5">💾 שמור</button>
+                                        <button type="button" onclick={cancelEditField} class="text-xs font-bold text-gray-300 hover:text-white px-2 py-1.5">ביטול</button>
+                                    </div>
+                                </div>
+                            {:else if displayDescription.trim()}
+                                <p class="text-gray-200 text-base leading-snug whitespace-pre-line text-center">
+                                    {displayDescription}
+                                    {#if builderMode}
+                                        <button type="button" onclick={() => startEditField('description', displayDescription)}
+                                            aria-label="ערוך תיאור" title="ערוך תיאור"
+                                            class="text-sm bg-amber-500/15 hover:bg-amber-500/30 border border-amber-500/40 rounded-lg px-1.5 py-0.5 transition-all ms-1 align-middle">✏️</button>
+                                    {/if}
+                                </p>
+                            {:else if builderMode}
+                                <button type="button" onclick={() => startEditField('description', '')}
+                                    class="w-full text-right border-2 border-dashed border-amber-400/40 hover:border-amber-400/70 bg-amber-500/5 hover:bg-amber-500/10 rounded-xl px-3 py-2 text-amber-200 text-sm font-bold transition-all">
+                                    📝 הוסיפו תיאור קצר - מה מיוחד במקום? למי הוא מיועד?
+                                </button>
                             {/if}
-                        </p>
-                    {:else if builderMode}
-                        <button type="button" onclick={() => startEditField('description', '')}
-                            class="w-full text-right border-2 border-dashed border-amber-400/40 hover:border-amber-400/70 bg-amber-500/5 hover:bg-amber-500/10 rounded-xl px-3 py-2 text-amber-200 text-sm font-bold transition-all">
-                            📝 הוסיפו תיאור קצר - מה מיוחד במקום? למי הוא מיועד?
-                        </button>
-                    {/if}
+                        </div>
+                        <!-- שמאל (RTL last child): כפתור שיתוף מרובע -->
+                        <div class="shrink-0">
+                            {@render shareBlock()}
+                        </div>
+                    </div>
 
                     <!-- טלפון (הכתובת עברה לכותרת תיבת "יצירת קשר עם המפרסם", משמאל מול שם איש הקשר) -->
                     <div class="flex flex-wrap items-center gap-x-4 gap-y-1.5">
@@ -2168,10 +2195,7 @@
                         {@render extraFieldsBlock()}
                     {/if}
 
-                    <!-- שתף (שם איש הקשר עבר לכותרת תיבת "יצירת קשר עם המפרסם" למטה) -->
-                    <div class="mt-auto pt-2">
-                        {@render shareBlock()}
-                    </div>
+                    <!-- כפתור השיתוף עבר לצד שמאל של התת-כותרת (כפתור מרובע קטן) -->
                 </div>
                 </div>
 

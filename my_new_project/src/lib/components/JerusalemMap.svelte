@@ -11,6 +11,7 @@
     import { neighborhoodState } from "$lib/neighborhoodState.svelte";
     import { getCoordsFor, jitterCoord } from "$lib/neighborhoodCoords";
     import { canUseMapImage, getMapImage, isDisplayableImage } from "$lib/mapImage";
+    import { logoForService, serviceColor } from "$lib/serviceTypes";
     import { heMatches } from "$lib/search";
     import type { DbItem } from "$lib/server/db";
     import 'leaflet/dist/leaflet.css';
@@ -567,13 +568,21 @@
                     Math.abs(center[0] - fallback[0]) < 1e-9 &&
                     Math.abs(center[1] - fallback[1]) < 1e-9;
                 const [lat, lng] = onCenter ? jitterCoord(center, id) : center;
-                // תמונה/לוגו על המפה (תוספת בתשלום) - במקום האימוג'י
+                // תמונה/לוגו על המפה - במקום האימוג'י.
+                // סדר עדיפויות: תמונה שהמשתמש העלה ידנית > סמל "שירות ציבורי"
+                // לפי service_type (אוטומטי, חינם) > אימוג'י הקטגוריה.
                 let mapImage = '';
+                let serviceHex = '';
                 if (canUseMapImage(item.category)) {
                     try {
                         const ef = item.extra_fields ? JSON.parse(item.extra_fields) : {};
                         const mi = getMapImage(ef);
-                        if (isDisplayableImage(mi)) mapImage = mi;
+                        if (isDisplayableImage(mi)) {
+                            mapImage = mi;
+                        } else {
+                            const svc = logoForService(ef);
+                            if (svc) { mapImage = svc; serviceHex = serviceColor(ef.service_type); }
+                        }
                     } catch { /* extra_fields לא תקין - נופלים לאימוג'י */ }
                 }
                 return {
@@ -585,6 +594,8 @@
                     label:    item.label || $t('map.item_fallback'),
                     color:    item.color || 'purple',
                     mapImage,
+                    // צבע מסגרת/תווית מותאם לסמל השירות (אם קיים)
+                    serviceHex,
                     isMock:   false,
                 };
             });
@@ -615,6 +626,7 @@
                 label:  $t(m.label),
                 color:  m.color,
                 mapImage: '',
+                serviceHex: '',
                 isMock: true,
             };
         });
@@ -680,8 +692,8 @@
         rose:     '#e11d48',
     };
 
-    function buildIconHtml(icon: string, label: string, color: string, isMock = false, mapImage = ''): string {
-        const hex = colorHex[color] ?? '#9333ea';
+    function buildIconHtml(icon: string, label: string, color: string, isMock = false, mapImage = '', hexOverride = ''): string {
+        const hex = hexOverride || colorHex[color] || '#9333ea';
         const safeLabel = label.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         const mockClass = isMock ? ' jmap-pin--mock' : '';
         // תמונה/לוגו על המפה (תוספת בתשלום) - עוקפת את האימוג'י
@@ -705,7 +717,7 @@
         // dynamicMarkers, בלי לגעת בפינים אמיתיים.
         for (const m of dynamicMarkers) {
             if (!isMarkerVisible(m.category)) continue;
-            const html = buildIconHtml(m.icon, m.label, m.color, m.isMock, m.mapImage);
+            const html = buildIconHtml(m.icon, m.label, m.color, m.isMock, m.mapImage, m.serviceHex);
             const divIcon = leafletL.divIcon({
                 className: 'jmap-pin-wrap',
                 html,

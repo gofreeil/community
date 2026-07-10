@@ -3,7 +3,7 @@ import { FREE_PROMO } from './freePromo';
 export interface FieldDef {
     key: string;
     label: string;
-    type: 'text' | 'tel' | 'textarea' | 'select' | 'toggle' | 'number' | 'time' | 'date' | 'email' | 'availability_grid' | 'opening_hours' | 'multi_select' | 'neighborhood_select' | 'images' | 'map_pin' | 'address';
+    type: 'text' | 'tel' | 'textarea' | 'select' | 'toggle' | 'number' | 'time' | 'date' | 'email' | 'availability_grid' | 'opening_hours' | 'multi_select' | 'neighborhood_select' | 'images' | 'map_pin' | 'address' | 'service_type';
     required: boolean;
     placeholder?: string;
     options?: string[];
@@ -326,12 +326,13 @@ export const categoryConfig: Record<string, CategoryConfig> = {
         priceRow: null,
         mapFirst: true,
         fields: [
-            { key: 'label',       label: 'שם השירות',               type: 'text',     required: true,  placeholder: 'בנק, עירייה, דואר, בית ספר...' },
+            { key: 'service_type', label: 'סוג השירות',             type: 'service_type', required: true, step: 'map', hint: 'בחרו את סוג השירות - הסמל המתאים יופיע אוטומטית על המפה' },
+            { key: 'label',       label: 'שם / כתובת הסניף',         type: 'text',     required: true,  placeholder: 'למשל: עיריית ירושלים - מוקד 106, בנק הפועלים סניף קרית משה', hint: 'שם השירות כפי שיוצג בכרטיס ובתווית על המפה' },
             { key: 'address',     label: 'כתובת מדויקת',            type: 'address',  required: true,  placeholder: 'שם הרחוב', hint: 'בחרו רחוב מהרשימה של העיר והוסיפו מספר בית' },
             { key: 'location',    label: 'סימון על המפה',           type: 'map_pin',  required: false },
-            { key: 'hours',       label: 'שעות פתיחה',              type: 'opening_hours', required: false },
+            { key: 'hours',       label: 'שעות קבלת קהל',           type: 'opening_hours', required: false, hint: 'משעת הפתיחה עד שעת הסגירה. יש קבלת קהל גם בשעות נוספות ביום (בוקר וגם אחה״צ)? הוסיפו מופע נוסף עם ＋' },
             { key: 'price',       label: 'מחיר',                    type: 'text',     required: false, placeholder: 'חינם / מחיר' },
-            { key: 'description', label: 'תיאור',                   type: 'textarea', required: true,  placeholder: 'תאר את השירות...' },
+            { key: 'description', label: 'תיאור',                   type: 'textarea', required: false, placeholder: 'מחלקות, שירותים נוספים, מידע חשוב לתושב...' },
             { key: 'phone',       label: 'טלפון',                   type: 'tel',      required: false, placeholder: '05X-XXXXXXX' },
             { key: 'contact',     label: 'שם',                      type: 'text',     required: false },
         ],

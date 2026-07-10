@@ -7,6 +7,7 @@
     import { getFormMemory, rememberFields } from '$lib/formMemory';
     import NeighborhoodPicker from '$lib/components/NeighborhoodPicker.svelte';
     import StreetPicker from '$lib/components/StreetPicker.svelte';
+    import ServiceTypePicker from '$lib/components/ServiceTypePicker.svelte';
     import {
         emptyOpeningHours,
         parseOpeningHours,
@@ -1195,6 +1196,12 @@
                             </label>
                         {/if}
 
+                    {:else if field.type === 'service_type'}
+                        <ServiceTypePicker
+                            value={getFieldValue(field.key)}
+                            onSelect={(id) => setFieldValue(field.key, id)}
+                        />
+
                     {:else if field.type === 'select' && field.options}
                         <select
                             id="field-{field.key}"
@@ -1313,10 +1320,14 @@
             {#if config.mapFirst}
                 <div class="col-span-2 rounded-xl border border-purple-500/30 bg-purple-500/10 p-3 md:p-4" style="grid-column: 1 / -1;">
                     <p class="text-[13px] md:text-sm font-bold text-purple-100 mb-1 flex items-center gap-1.5">
-                        🗺️ לוגו או תמונה שתופיע על המפה
+                        🗺️ {categoryId === 'attractions' ? 'לוגו אמיתי של הסניף (לא חובה)' : 'לוגו או תמונה שתופיע על המפה'}
                     </p>
                     <p class="text-purple-300/80 text-xs mb-2.5">
-                        במקום האייקון הרגיל, על המפה תופיע התמונה שתעלו כאן · תוספת בתשלום של {MAP_IMAGE_PRICE_YEARLY} ₪ לשנה. אפשר להוסיף או להחליף מאוחר יותר.
+                        {#if categoryId === 'attractions'}
+                            סמל השירות שבחרתם למעלה כבר יופיע על המפה - בחינם ובאופן אוטומטי. רוצים להציג במקומו לוגו אמיתי של הסניף? העלו תמונה כאן והיא תגבר על הסמל.
+                        {:else}
+                            במקום האייקון הרגיל, על המפה תופיע התמונה שתעלו כאן · תוספת בתשלום של {MAP_IMAGE_PRICE_YEARLY} ₪ לשנה. אפשר להוסיף או להחליף מאוחר יותר.
+                        {/if}
                     </p>
                     {#if logoImage}
                         <div class="flex items-center gap-3">
