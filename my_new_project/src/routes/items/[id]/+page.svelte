@@ -464,11 +464,11 @@
         phonePublicOverride ??
         ((item as { extraFields?: { phone_public?: unknown } } | null)?.extraFields?.phone_public === true)
     );
-    // בתצוגה הרגילה מציגים את הטלפון רק אם סומן "הצג" - גם לבעלים, כדי שהסימון ישפיע מיד.
-    // במצב בנייה תמיד מציגים, יחד עם מתג "הצג / אל תציג" כדי שאפשר יהיה לשנות.
+    // canSeePhone שולט רק על הצגת המספר כטקסט בראש הדף (סימון "הצג/אל תציג"); גם לבעלים
+    // כדי שהסימון ישפיע מיד. במצב בנייה תמיד מציגים יחד עם המתג.
+    // חשוב: כפתורי החיוג/וואטסאפ ("יצירת קשר עם המפרסם") עובדים תמיד עם displayPhone -
+    // "אל תציג" מסתיר רק את המספר עצמו כטקסט, לא את הכפתורים.
     const canSeePhone = $derived(phonePublic || builderMode);
-    // הטלפון שנחשף בכפתורי יצירת הקשר לציבור - ריק כשמוסתר, כדי שלא ידלוף דרך tel:/wa.me
-    const phoneForContact = $derived(canSeePhone ? displayPhone : '');
 
     async function setPhonePublic(v: boolean) {
         if (v === phonePublic) return;
@@ -489,6 +489,76 @@
         if (v === hoursPublic) return;
         const ok = await saveFields({ hours_public: v }, 'hours_public');
         if (ok) hoursPublicOverride = v;
+    }
+
+    // ---- סרטון הגעה (איך מגיעים / איפה הכניסה): העלאה ישירה או קישור YouTube/Facebook/וימאו ----
+    const MAX_VIDEO_BYTES = 8 * 1024 * 1024; // 8MB - מעבר לזה: להשתמש בקישור
+    let arrivalVideoOverride = $state<string | null>(null);
+    const arrivalVideo = $derived<string>(
+        arrivalVideoOverride ??
+        (typeof (item as { extraFields?: { arrival_video?: unknown } } | null)?.extraFields?.arrival_video === 'string'
+            ? ((item as { extraFields: { arrival_video: string } }).extraFields.arrival_video)
+            : '')
+    );
+    let editingVideo = $state(false);
+    let videoMode = $state<'link' | 'upload'>('link');
+    let videoLinkDraft = $state('');
+    let uploadingVideo = $state(false);
+
+    // המרת קישור לנגן משובץ: יוטיוב / וימאו / פייסבוק ב-iframe, קובץ ישיר/הועלה ב-<video>, אחר = קישור
+    const videoEmbed = $derived.by<{ kind: 'iframe' | 'video' | 'link'; src: string } | null>(() => {
+        const u = arrivalVideo.trim();
+        if (!u) return null;
+        if (u.startsWith('data:video/')) return { kind: 'video', src: u };
+        const yt = u.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/|live\/)|youtu\.be\/)([\w-]{6,})/i);
+        if (yt) return { kind: 'iframe', src: `https://www.youtube.com/embed/${yt[1]}` };
+        const vm = u.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
+        if (vm) return { kind: 'iframe', src: `https://player.vimeo.com/video/${vm[1]}` };
+        if (/facebook\.com|fb\.watch/i.test(u)) return { kind: 'iframe', src: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(u)}&show_text=false` };
+        if (/\.(mp4|webm|ogg|mov)(\?|$)/i.test(u)) return { kind: 'video', src: u };
+        return { kind: 'link', src: u };
+    });
+
+    function startEditVideo() {
+        videoLinkDraft = /^https?:\/\//i.test(arrivalVideo) ? arrivalVideo : '';
+        videoMode = 'link';
+        editingVideo = true;
+        builderError = '';
+    }
+    async function saveVideoLink() {
+        const raw = videoLinkDraft.trim();
+        if (!raw) { builderError = 'הדביקו קישור לסרטון'; return; }
+        const url = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+        const ok = await saveFields({ arrival_video: url }, 'arrival_video');
+        if (ok) { arrivalVideoOverride = url; editingVideo = false; }
+    }
+    async function onVideoPicked(e: Event) {
+        const input = e.currentTarget as HTMLInputElement;
+        const file = (input.files ?? [])[0];
+        input.value = '';
+        if (!file) return;
+        if (!file.type.startsWith('video/')) { builderError = 'קובץ וידאו לא נתמך'; return; }
+        if (file.size > MAX_VIDEO_BYTES) { builderError = 'הסרטון גדול מדי (מקס׳ 8MB). לסרטון ארוך השתמשו בקישור מיוטיוב/פייסבוק'; return; }
+        uploadingVideo = true;
+        builderError = '';
+        try {
+            const dataUrl = await new Promise<string>((resolve, reject) => {
+                const r = new FileReader();
+                r.onload = () => resolve(String(r.result));
+                r.onerror = () => reject(new Error('read'));
+                r.readAsDataURL(file);
+            });
+            const ok = await saveFields({ arrival_video: dataUrl }, 'arrival_video');
+            if (ok) { arrivalVideoOverride = dataUrl; editingVideo = false; }
+        } catch {
+            builderError = 'שגיאה בקריאת הסרטון';
+        } finally {
+            uploadingVideo = false;
+        }
+    }
+    async function removeVideo() {
+        const ok = await saveFields({ arrival_video: '' }, 'arrival_video');
+        if (ok) { arrivalVideoOverride = ''; editingVideo = false; }
     }
 
     // עריכת שדה טקסט בודד במקום (כותרת / תיאור / טלפון / איש קשר)
@@ -1252,7 +1322,7 @@
     {@const tiktok    = typeof ef?.tiktok    === 'string' ? ef.tiktok    : ''}
     {@const ensureUrl = (u: string) => (/^https?:\/\//i.test(u) ? u : `https://${u}`)}
     {#if website || whatsapp || telegram || facebook || instagram || youtube || tiktok || customLinks.length > 0 || builderMode}
-        <section class="px-4 md:px-5 pt-3 pb-1 border-t border-white/10">
+        <section class="pt-3 pb-1 border-t border-white/10">
             <h2 class="text-base font-bold text-white mb-2 flex items-center gap-1.5">
                 <span class="w-1 h-4 bg-indigo-500 rounded-full"></span>קישורים
             </h2>
@@ -1439,7 +1509,7 @@
 
 <!-- Hidden keys (rendered in dedicated sections, complex types, or internal-only) -->
 {#snippet extraFieldsBlock()}
-    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'menu_images', 'map_image', 'price', 'website', 'whatsapp', 'telegram', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname', 'age', 'birth_date', 'sector', 'gender', 'type', 'activities', 'links', 'gmach_type', 'gmach_types', 'place_status', 'location', 'option_id', 'last_seen', 'hours', 'phone_public', 'hours_public'])}
+    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'menu_images', 'map_image', 'price', 'website', 'whatsapp', 'telegram', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname', 'age', 'birth_date', 'sector', 'gender', 'type', 'activities', 'links', 'gmach_type', 'gmach_types', 'place_status', 'location', 'option_id', 'last_seen', 'hours', 'phone_public', 'hours_public', 'arrival_video'])}
     {@const LABELS_HE: Record<string, string> = {
         nickname: 'שם או כינוי',
         gender: 'מין',
@@ -1713,8 +1783,7 @@
                     <input bind:this={imageInputEl} type="file" accept="image/*" multiple class="hidden" onchange={onImagesPicked} />
                     <div class="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-transparent to-transparent pointer-events-none"></div>
                 </div>
-                    <!-- קישורים: מתחת לתמונה, באותה עמודה -->
-                    {@render socialLinksBlock()}
+                    <!-- מקטע הקישורים הועבר לעמודת המידע, מתחת לתיאור והכתובת -->
                 </div>
 
                 <!-- Side info: nickname + description + address + contact + extra fields -->
@@ -1820,7 +1889,7 @@
                                 {/if}
                             </p>
                             {#if builderMode && !phonePublic}
-                                <p class="basis-full text-[11px] text-gray-500 leading-snug -mt-1">🙈 המספר מוסתר מהגולשים. לחצו "הצג" כדי שיופיע בדף ובכפתורי יצירת הקשר.</p>
+                                <p class="basis-full text-[11px] text-gray-500 leading-snug -mt-1">🙈 המספר לא יוצג כטקסט לגולשים (כפתורי "התקשר" ו"וואטסאפ" עדיין עובדים). לחצו "הצג" כדי להציג גם את המספר עצמו.</p>
                             {/if}
                         {:else if builderMode}
                             <button type="button" onclick={() => startEditField('phone', '')}
@@ -1835,6 +1904,82 @@
                         </p>
                     {/if}
                     </div>
+
+                    <!-- 🎥 סרטון הגעה: איך מגיעים ואיפה הכניסה (העלאה ישירה או קישור מרשת חברתית) -->
+                    {#if arrivalVideo || (builderMode && canEditPage)}
+                        <section class="pt-3 border-t border-white/10">
+                            <div class="flex items-center justify-between mb-2">
+                                <h2 class="text-base font-bold text-white flex items-center gap-1.5">
+                                    <span class="w-1 h-4 bg-rose-400 rounded-full"></span>🎥 סרטון הגעה</h2>
+                                {#if builderMode && canEditPage && arrivalVideo && !editingVideo}
+                                    <div class="flex gap-1.5">
+                                        <button type="button" onclick={startEditVideo}
+                                            class="text-xs font-bold text-rose-300 hover:text-rose-200 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg px-2.5 py-1 transition-all">✏️ החלף</button>
+                                        <button type="button" onclick={removeVideo} disabled={savingTag === 'arrival_video'}
+                                            class="text-xs font-bold text-red-300 hover:text-red-200 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 rounded-lg px-2.5 py-1 transition-all disabled:opacity-50">🗑 הסר</button>
+                                    </div>
+                                {/if}
+                            </div>
+
+                            {#if builderMode && canEditPage && editingVideo}
+                                <!-- עורך: בחירה בין העלאה ישירה לבין קישור מרשת חברתית -->
+                                <div class="rounded-xl border border-rose-500/20 bg-rose-500/[0.03] p-2.5 space-y-2">
+                                    {@render tip('סרטון קצר שמראה איך מגיעים ואיפה הכניסה. אפשר להעלות קובץ (עד 8MB) או להדביק קישור מיוטיוב / פייסבוק / וימאו.')}
+                                    <div class="inline-flex rounded-lg border border-white/15 overflow-hidden text-xs font-bold">
+                                        <button type="button" onclick={() => (videoMode = 'link')}
+                                            class="px-3 py-1.5 transition-all {videoMode === 'link' ? 'bg-rose-500/25 text-rose-100' : 'text-gray-400 hover:text-gray-200'}">🔗 קישור</button>
+                                        <button type="button" onclick={() => (videoMode = 'upload')}
+                                            class="px-3 py-1.5 transition-all {videoMode === 'upload' ? 'bg-rose-500/25 text-rose-100' : 'text-gray-400 hover:text-gray-200'}">⬆️ העלאה</button>
+                                    </div>
+                                    {#if videoMode === 'link'}
+                                        <input type="url" bind:value={videoLinkDraft} dir="ltr" maxlength="500"
+                                            placeholder="https://youtube.com/... · פייסבוק · וימאו"
+                                            class="w-full bg-[#0a0f1a] border border-white/15 rounded-md text-sm text-white px-2.5 py-1.5 placeholder:text-gray-500" />
+                                        <div class="flex items-center gap-2">
+                                            <button type="button" onclick={saveVideoLink} disabled={savingTag === 'arrival_video'}
+                                                class="text-xs font-bold text-white bg-amber-500 hover:bg-amber-400 disabled:opacity-50 rounded-lg px-3 py-1.5 transition-all">
+                                                {savingTag === 'arrival_video' ? 'שומר…' : '💾 שמור'}
+                                            </button>
+                                            <button type="button" onclick={() => (editingVideo = false)} class="text-xs font-bold text-gray-300 hover:text-white px-2 py-1.5">ביטול</button>
+                                        </div>
+                                    {:else}
+                                        <input type="file" accept="video/*" onchange={onVideoPicked} disabled={uploadingVideo}
+                                            class="block w-full text-xs text-gray-300 file:me-2 file:rounded-md file:border-0 file:bg-rose-500/20 file:text-rose-100 file:px-3 file:py-1.5 file:font-bold file:cursor-pointer disabled:opacity-50" />
+                                        <p class="text-[11px] text-gray-500">עד 8MB. לסרטון ארוך או כבד — עדיף קישור מיוטיוב/פייסבוק.</p>
+                                        {#if uploadingVideo}<p class="text-rose-300/80 text-[11px]">מעלה סרטון…</p>{/if}
+                                        <button type="button" onclick={() => (editingVideo = false)} class="text-xs font-bold text-gray-300 hover:text-white px-2 py-1.5">ביטול</button>
+                                    {/if}
+                                    {#if builderError}<p class="text-xs text-red-400">{builderError}</p>{/if}
+                                </div>
+                            {:else if videoEmbed}
+                                {#if videoEmbed.kind === 'iframe'}
+                                    <div class="relative w-full rounded-xl overflow-hidden border border-white/10 bg-black" style="aspect-ratio:16/9">
+                                        <iframe src={videoEmbed.src} title="סרטון הגעה"
+                                            class="absolute inset-0 w-full h-full" style="border:0"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                            allowfullscreen loading="lazy"></iframe>
+                                    </div>
+                                {:else if videoEmbed.kind === 'video'}
+                                    <!-- svelte-ignore a11y_media_has_caption -->
+                                    <video src={videoEmbed.src} controls playsinline preload="metadata"
+                                        class="w-full rounded-xl border border-white/10 bg-black max-h-[70vh]"></video>
+                                {:else}
+                                    <a href={videoEmbed.src} target="_blank" rel="noopener noreferrer"
+                                        class="inline-flex items-center gap-2 bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/40 text-white font-bold px-4 py-2.5 rounded-xl transition-all">
+                                        ▶️ צפייה בסרטון ההגעה
+                                    </a>
+                                {/if}
+                            {:else if builderMode && canEditPage}
+                                <button type="button" onclick={startEditVideo}
+                                    class="w-full text-right border-2 border-dashed border-rose-400/40 hover:border-rose-400/70 bg-rose-500/5 hover:bg-rose-500/10 rounded-xl px-3 py-2 text-rose-200 text-sm font-bold transition-all">
+                                    🎥 הוסיפו סרטון הגעה — איך מגיעים ואיפה הכניסה (העלאה או קישור)
+                                </button>
+                            {/if}
+                        </section>
+                    {/if}
+
+                    <!-- קישורים: מתחת לתיאור והכתובת (הועבר לכאן מתחת לתמונה, לבקשת המשתמש) -->
+                    {@render socialLinksBlock()}
 
                     <!-- "נראה לאחרונה" - קריאות אובדן -->
                     {@render lastSeenBlock()}
@@ -2030,8 +2175,8 @@
                                 </div>
                             </div>
                         {:else if displayContact}
-                            {@const waPhone = phoneForContact ? String(phoneForContact).replace(/\D/g, '').replace(/^0/, '972') : ''}
-                            {@const phoneVisible = phoneForContact && (item.category !== 'singles' || singlesState === 'approved' || singlesState === 'owner')}
+                            {@const waPhone = displayPhone ? String(displayPhone).replace(/\D/g, '').replace(/^0/, '972') : ''}
+                            {@const phoneVisible = displayPhone && (item.category !== 'singles' || singlesState === 'approved' || singlesState === 'owner')}
                             {@const waUrl = waPhone && phoneVisible ? `https://wa.me/${waPhone}` : null}
                             <div class="flex-1 min-w-[150px] flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2">
                                 <span class="text-purple-400 text-lg shrink-0" aria-hidden="true">👤</span>
@@ -2206,17 +2351,17 @@
                                     </div>
                                 {/if}
                             {:else}
-                                {@const waDigits = phoneForContact ? String(phoneForContact).replace(/\D/g, '').replace(/^0/, '972') : ''}
+                                {@const waDigits = displayPhone ? String(displayPhone).replace(/\D/g, '').replace(/^0/, '972') : ''}
                                 <div class="rounded-xl border border-white/10 bg-gradient-to-br from-purple-600/90 to-blue-600/90 p-3">
                                     <h3 class="text-white font-bold text-sm mb-2 flex items-center gap-1.5">
                                         יצירת קשר עם המפרסם
                                     </h3>
                                     <div class="space-y-2">
-                                        {#if phoneForContact}
+                                        {#if displayPhone}
                                             <div class="grid {canNavigate ? 'grid-cols-3' : 'grid-cols-2'} gap-2">
                                                 <a
-                                                    href="tel:{phoneForContact}"
-                                                    aria-label="התקשר עכשיו – {phoneForContact}"
+                                                    href="tel:{displayPhone}"
+                                                    aria-label="התקשר עכשיו – {displayPhone}"
                                                     class="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 rounded-lg text-center shadow hover:scale-[1.02] active:scale-95 transition-all text-sm"
                                                 >
                                                     📞 התקשר

@@ -39,6 +39,13 @@ function isSafeImage(v: unknown): v is string {
     return v.startsWith('data:image/') || /^https?:\/\//i.test(v) || v.startsWith('/');
 }
 
+/** סרטון הגעה: קישור חיצוני (YouTube/Facebook/וימאו...) או קובץ שהועלה (data:video). */
+function isSafeVideo(v: unknown): v is string {
+    if (typeof v !== 'string' || !v) return false;
+    if (v.length > 12_000_000) return false; // ~8-9MB אחרי base64 (העלאה ישירה מוגבלת; לסרטון גדול - קישור)
+    return v.startsWith('data:video/') || /^https?:\/\//i.test(v);
+}
+
 /** ניקוי קישורים מותאמים-אישית ({label, url, desc}) שמוצגים ככפתורים בדף הפריט.
  *  הסדר במערך נשמר = סדר התצוגה שהמשתמש קבע בגרירה; desc = מלל תיאור מתחת לכפתור. */
 function sanitizeLinks(raw: unknown): Array<{ label: string; url: string; desc?: string }> {
@@ -168,6 +175,13 @@ export const PATCH: RequestHandler = async (event) => {
             if (key === 'hours_public') {
                 extra = extra ?? loadExtra();
                 extra.hours_public = raw === true || raw === 'true';
+                continue;
+            }
+            // סרטון הגעה: קישור חיצוני או קובץ שהועלה (data:video). '' מנקה.
+            if (key === 'arrival_video') {
+                extra = extra ?? loadExtra();
+                const v = typeof raw === 'string' ? raw.trim() : '';
+                extra.arrival_video = isSafeVideo(v) ? v : '';
                 continue;
             }
             // קישורי רשתות חברתיות + אתר - מותרים תמיד (כפתורים מותגים בדף), עם נרמול URL; '' מנקה
