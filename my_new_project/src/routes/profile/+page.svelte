@@ -4394,8 +4394,13 @@
 									name="family_status"
 									bind:value={family_status}
 									class="w-full bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl
-							       px-4 py-3 text-white text-sm transition-colors outline-none appearance-none"
+							       px-4 py-3 {family_status ? 'text-white' : 'text-gray-500'} text-sm transition-colors outline-none appearance-none"
 								>
+									<!-- אפשרות ריקה כברירת מחדל - אחרת הדפדפן מציג את "פנוי" (single_m)
+									     כאילו נבחר, ויוצר תחושה שגויה של סטטוס+מגדר שהמשתמש לא בחר -->
+									<option value="" disabled selected hidden
+										>{tFn("choose_status")}</option
+									>
 									<option value="single_m"
 										>{tFn("status_single_m")}</option
 									>
