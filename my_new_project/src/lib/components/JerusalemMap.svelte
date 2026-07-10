@@ -2570,7 +2570,11 @@
     /* z-index לעטיפת ה-Leaflet במצב מסך מלא */
     :global(.leaflet-container) {
         font-family: inherit;
-        background: #e8e8e8;
+        background: #d6d8db;
+    }
+    /* פילטר על שכבת האריחים בלבד (לא על הפינים) - פחות מסנוור + יותר ניגודיות */
+    :global(.leaflet-tile-pane) {
+        filter: brightness(0.85) contrast(1.2);
     }
     /* שורת הייחוס (חובה חוקית) - מוקטנת ודהויה כדי שלא תבלוט */
     :global(.leaflet-control-attribution) {

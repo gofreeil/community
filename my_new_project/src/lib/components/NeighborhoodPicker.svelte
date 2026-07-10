@@ -288,6 +288,13 @@
 </div>
 
 <style>
+    :global(.leaflet-container) {
+        background: #d6d8db;
+    }
+    /* פילטר על שכבת האריחים בלבד (לא על הפינים) - פחות מסנוור + יותר ניגודיות */
+    :global(.leaflet-tile-pane) {
+        filter: brightness(0.85) contrast(1.2);
+    }
     /* שורת הייחוס (חובה חוקית) - מוקטנת ודהויה כדי שלא תבלוט */
     :global(.leaflet-control-attribution) {
         font-size: 8px !important;
