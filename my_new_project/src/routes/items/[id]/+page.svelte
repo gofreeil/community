@@ -800,18 +800,8 @@
         }
     }
 
-    // ---- התקדמות בניית הדף ----
+    // שיתוף בוצע לפחות פעם אחת (שומר תאימות עם פונקציות השיתוף)
     let sharedOnce = $state(false);
-    const builderSteps = $derived([
-        { icon: '📷', label: 'תמונות',        done: galleryImages.length > 0 },
-        { icon: '📝', label: 'תיאור',          done: !!displayDescription.trim() },
-        { icon: '🕒', label: 'לוח פעילויות',   done: activities.length > 0 },
-        { icon: '📞', label: 'טלפון',          done: !!displayPhone.trim() },
-        { icon: '👤', label: 'איש קשר',        done: !!displayContact.trim() },
-        { icon: '🔗', label: 'קישורים',        done: customLinks.length > 0 || hasSocialLinks },
-        { icon: '📤', label: 'שיתוף',          done: sharedOnce },
-    ]);
-    const doneSteps = $derived(builderSteps.filter(s => s.done).length);
 
     function finishBuilder() {
         builderMode = false;
@@ -1416,6 +1406,37 @@
     {/if}
 {/snippet}
 
+<!-- בורר סטטוס המקום (פעיל / בשיפוצים / סגור...) + מחיקה. dropUp=פתיחת התפריט כלפי מעלה -->
+{#snippet statusSelector(dropUp: boolean)}
+    {#if canEditPage}
+        {@const cur = PLACE_STATUSES.find(s => s.value === placeStatus) ?? PLACE_STATUSES[0]}
+        <div class="relative">
+            <button type="button" onclick={() => (statusMenuOpen = !statusMenuOpen)} disabled={savingStatus}
+                class="text-[11px] font-bold rounded-full px-2.5 py-1 border transition-all disabled:opacity-50 flex items-center gap-1 {cur.active}">
+                {cur.emoji} {cur.label} <span class="opacity-70">▾</span>
+            </button>
+            {#if statusMenuOpen}
+                <div class="absolute z-40 {dropUp ? 'bottom-full mb-1' : 'top-full mt-1'} end-0 min-w-[170px] rounded-xl border border-white/15 bg-[#0a0f1a] shadow-2xl p-1"
+                    in:scale={{ duration: 120, start: 0.95 }}>
+                    <p class="text-[10px] text-gray-500 font-bold px-2.5 pt-1 pb-0.5">סטטוס המקום</p>
+                    {#each PLACE_STATUSES as s}
+                        <button type="button" onclick={() => changePlaceStatus(s.value)} disabled={savingStatus}
+                            class="w-full text-right text-xs font-bold rounded-lg px-2.5 py-1.5 transition-colors disabled:opacity-50 flex items-center gap-2 {placeStatus === s.value ? 'bg-white/10 text-white' : 'text-gray-300 hover:bg-white/10'}">
+                            <span aria-hidden="true">{s.emoji}</span><span class="flex-1">{s.label}</span>
+                            {#if placeStatus === s.value}<span class="text-emerald-400">✓</span>{/if}
+                        </button>
+                    {/each}
+                    <div class="my-1 border-t border-white/10"></div>
+                    <button type="button" onclick={softDeleteItem} disabled={deletingItem}
+                        class="w-full text-right text-xs font-bold text-red-300 hover:bg-red-500/15 rounded-lg px-2.5 py-1.5 transition-colors disabled:opacity-50">
+                        {deletingItem ? 'מוחק…' : '🗑 מחק את הכרטיס'}
+                    </button>
+                </div>
+            {/if}
+        </div>
+    {/if}
+{/snippet}
+
 <!-- Hidden keys (rendered in dedicated sections, complex types, or internal-only) -->
 {#snippet extraFieldsBlock()}
     {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'menu_images', 'map_image', 'price', 'website', 'whatsapp', 'telegram', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname', 'age', 'birth_date', 'sector', 'gender', 'type', 'activities', 'links', 'gmach_type', 'gmach_types', 'place_status', 'location', 'option_id', 'last_seen', 'hours', 'phone_public', 'hours_public'])}
@@ -1546,49 +1567,52 @@
 
 <div class="min-h-screen bg-[#070b14] py-2 md:py-3 px-3 md:px-6">
     <div class="max-w-4xl mx-auto">
-        <!-- Back button -->
-        <button
-            onclick={goBack}
-            aria-label="חזרה לדף הקודם"
-            class="mb-2 flex items-center gap-2 text-purple-400 hover:text-purple-300 transition-colors group text-xs"
-        >
-            <span
-                class="text-xl group-hover:-translate-x-1 transition-transform"
-                aria-hidden="true"
-                >←</span
+        <!-- Back button (בתצוגה רגילה; במצב בנייה הניווט נמצא בסרגל העליון) -->
+        {#if !builderMode}
+            <button
+                onclick={goBack}
+                aria-label="חזרה לדף הקודם"
+                class="mb-2 flex items-center gap-2 text-purple-400 hover:text-purple-300 transition-colors group text-xs"
             >
-            <span class="font-bold">{tFn("back_to_map")}</span>
-        </button>
+                <span
+                    class="text-xl group-hover:-translate-x-1 transition-transform"
+                    aria-hidden="true"
+                    >←</span
+                >
+                <span class="font-bold">{tFn("back_to_map")}</span>
+            </button>
+        {/if}
 
         {#if item}
-            <!-- מצב בנייה: ברכה + התקדמות -->
+            <!-- מצב בנייה: שורת ניווט (חזרה לתצוגה / חזרה למפה) + בורר סטטוס, במקום באנר ההדרכה -->
             {#if builderMode}
-                <div class="mb-2 rounded-2xl border border-amber-500/40 bg-gradient-to-l from-amber-900/25 to-[#0f172a] p-3 md:p-4 shadow-lg"
+                <div class="mb-2 rounded-2xl border border-amber-500/40 bg-gradient-to-l from-amber-900/20 to-[#0f172a] p-2.5 shadow-lg"
                     in:fly={{ y: -16, duration: 400 }}>
-                    {#if isNewItem}
-                        <p class="text-emerald-300 font-black text-base md:text-lg mb-0.5">🎉 מזל טוב - הפריט עלה למפה!</p>
-                    {/if}
-                    <p class="text-amber-100 font-bold text-sm mb-0.5">🎨 מצב בניית הדף</p>
-                    <p class="text-gray-300 text-xs leading-snug mb-2">
-                        זה בדיוק הדף שהגולשים רואים. לחצו על האזורים המסומנים כדי למלא אותם לפי ההדרכות הצהובות - כל שינוי נשמר מיד.
-                    </p>
-                    <div class="flex flex-wrap items-center gap-1.5">
-                        {#each builderSteps as s}
-                            <span class="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5 border {s.done ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300' : 'bg-white/5 border-white/15 text-gray-400'}">
-                                {s.done ? '✓' : s.icon} {s.label}
-                            </span>
-                        {/each}
-                        <span class="text-[11px] text-gray-400 font-bold me-auto">{doneSteps}/{builderSteps.length} הושלמו</span>
+                    <!-- מעל הסטטוס: חזרה לתצוגה (הדף הקודם) מצד אחד, חזרה למפה מצד שני -->
+                    <div class="flex items-center justify-between gap-2 mb-2">
                         <button type="button" onclick={finishBuilder}
-                            class="text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg px-2.5 py-1 transition-all whitespace-nowrap">
-                            סיימתי - הצג כמו גולש
+                            class="flex items-center gap-1.5 text-xs font-bold text-gray-200 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg px-2.5 py-1.5 transition-all whitespace-nowrap">
+                            <span aria-hidden="true">→</span> חזרה לתצוגה
                         </button>
+                        <a href="/"
+                            class="flex items-center gap-1.5 text-xs font-bold text-purple-300 hover:text-purple-200 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg px-2.5 py-1.5 transition-all whitespace-nowrap">
+                            🗺 חזרה למפה
+                        </a>
                     </div>
+                    <!-- כפתור הסטטוס (הועבר לכאן במקום הבאנר) -->
+                    {#if canEditPage}
+                        <div class="flex justify-center">
+                            {@render statusSelector(false)}
+                        </div>
+                    {/if}
+                    {#if isNewItem}
+                        <p class="text-emerald-300 font-bold text-xs mt-2 text-center">🎉 מזל טוב - הפריט עלה למפה!</p>
+                    {/if}
                     {#if builderError}
                         <p class="text-red-400 text-xs font-bold mt-1.5">⚠️ {builderError}</p>
                     {/if}
                     {#if savingTag}
-                        <p class="text-amber-300/80 text-[11px] mt-1.5">שומר...</p>
+                        <p class="text-amber-300/80 text-[11px] mt-1.5 text-center">שומר...</p>
                     {/if}
                 </div>
             {/if}
@@ -2273,31 +2297,10 @@
                             {canEditPage ? 'עריכת הפריט במפה' : 'ערוך פרופיל'}
                         </a>
                     {/if}
-                    {#if canEditPage}
-                        {@const cur = PLACE_STATUSES.find(s => s.value === placeStatus) ?? PLACE_STATUSES[0]}
-                        <div class="relative ms-auto">
-                            <button type="button" onclick={() => (statusMenuOpen = !statusMenuOpen)} disabled={savingStatus}
-                                class="text-[11px] font-bold rounded-full px-2.5 py-1 border transition-all disabled:opacity-50 flex items-center gap-1 {cur.active}">
-                                {cur.emoji} {cur.label} <span class="opacity-70">▾</span>
-                            </button>
-                            {#if statusMenuOpen}
-                                <div class="absolute z-40 bottom-full mb-1 end-0 min-w-[170px] rounded-xl border border-white/15 bg-[#0a0f1a] shadow-2xl p-1"
-                                    in:scale={{ duration: 120, start: 0.95 }}>
-                                    <p class="text-[10px] text-gray-500 font-bold px-2.5 pt-1 pb-0.5">סטטוס המקום</p>
-                                    {#each PLACE_STATUSES as s}
-                                        <button type="button" onclick={() => changePlaceStatus(s.value)} disabled={savingStatus}
-                                            class="w-full text-right text-xs font-bold rounded-lg px-2.5 py-1.5 transition-colors disabled:opacity-50 flex items-center gap-2 {placeStatus === s.value ? 'bg-white/10 text-white' : 'text-gray-300 hover:bg-white/10'}">
-                                            <span aria-hidden="true">{s.emoji}</span><span class="flex-1">{s.label}</span>
-                                            {#if placeStatus === s.value}<span class="text-emerald-400">✓</span>{/if}
-                                        </button>
-                                    {/each}
-                                    <div class="my-1 border-t border-white/10"></div>
-                                    <button type="button" onclick={softDeleteItem} disabled={deletingItem}
-                                        class="w-full text-right text-xs font-bold text-red-300 hover:bg-red-500/15 rounded-lg px-2.5 py-1.5 transition-colors disabled:opacity-50">
-                                        {deletingItem ? 'מוחק…' : '🗑 מחק את הכרטיס'}
-                                    </button>
-                                </div>
-                            {/if}
+                    <!-- בורר הסטטוס בסרגל התחתון רק בתצוגה רגילה; במצב בנייה הוא בסרגל העליון -->
+                    {#if canEditPage && !builderMode}
+                        <div class="ms-auto">
+                            {@render statusSelector(true)}
                         </div>
                     {/if}
                 </div>
