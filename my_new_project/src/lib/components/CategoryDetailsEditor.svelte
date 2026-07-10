@@ -3,7 +3,6 @@
     // (שעות פתיחה, מחיר, כשרות, שירותים וכו') נערכים כאן ונשמרים ב-extra_fields.
     import { _ } from 'svelte-i18n';
     import { categoryConfig, detailStepFields, cfFieldKey, cfOptKey, trOr, type FieldDef } from '$lib/categoryFields';
-    import OpeningHoursEditor from './OpeningHoursEditor.svelte';
     import { openCropper } from '$lib/imageCropper.svelte';
 
     let {
@@ -20,9 +19,11 @@
     } = $props();
 
     // שדות שכבר נערכים במקום אחר בדף הפריט (כותרת/תיאור/טלפון/תמונות/קישורים/שירותים)
+    // 'hours' נערך בקטע "לוח פעילויות ושעות" (OpeningHoursEditor משעה-עד-שעה + ＋), לא כאן.
     const HANDLED_ELSEWHERE = new Set([
         'label', 'description', 'phone', 'contact', 'images', 'address', 'location',
         'type', 'activities', 'links', 'website', 'facebook', 'instagram', 'youtube', 'tiktok',
+        'hours',
     ]);
 
     const cfg = categoryConfig[category];
@@ -102,11 +103,6 @@
     }
     function isOn(f: FieldDef, opt: string) {
         return (values[f.key] || '').split(',').filter(Boolean).includes(opt);
-    }
-    // ---- opening_hours ----
-    function onHours(f: FieldDef, v: string) {
-        values[f.key] = v;
-        saveField(f.key, v);
     }
     // ---- images (למשל תמונות תפריט) ----
     const MAX_IMAGES = 5;
@@ -216,9 +212,6 @@
                             oninput={(e) => onText(f, (e.currentTarget as HTMLTextAreaElement).value)}
                             onblur={() => commitText(f)}
                             placeholder={trOr($_, cfFieldKey(category, f, 'ph'), f.placeholder ?? '')} class="{inputCls} resize-none"></textarea>
-
-                    {:else if f.type === 'opening_hours'}
-                        <OpeningHoursEditor value={values[f.key]} onchange={(v) => onHours(f, v)} />
 
                     {:else if f.type === 'images'}
                         <div class="flex flex-wrap gap-2">

@@ -11,10 +11,11 @@
     import { productSchema, eventSchema } from "$lib/seo";
     import { formatOpeningHours, DAY_SHORT } from "$lib/openingHours";
     import { gmachTypeLabel } from "$lib/gmachTypes";
-    import { trOr } from "$lib/categoryFields";
+    import { trOr, categoryConfig } from "$lib/categoryFields";
     import { imageDrop } from "$lib/imageDrop";
     import { openCropper } from "$lib/imageCropper.svelte";
     import CategoryDetailsEditor from "$lib/components/CategoryDetailsEditor.svelte";
+    import OpeningHoursEditor from "$lib/components/OpeningHoursEditor.svelte";
     import { goto } from "$app/navigation";
     import { PLACE_STATUSES, placeStatusInfo } from "$lib/placeStatus";
     import { logoForService, serviceLabel } from "$lib/serviceTypes";
@@ -315,7 +316,10 @@
 
     // שעות פתיחה (extra_fields.hours) - מוצג תחת "לוח פעילויות ושעות" (לא תחת "פרטים נוספים")
     const openingHoursText = $derived.by<string>(() => {
-        const raw = (item as { extraFields?: { hours?: unknown } } | null)?.extraFields?.hours;
+        const live = liveExtra.hours;
+        const raw = typeof live === 'string'
+            ? live
+            : (item as { extraFields?: { hours?: unknown } } | null)?.extraFields?.hours;
         if (typeof raw !== 'string' || !raw.trim()) return '';
         return formatOpeningHours(raw, {
             days: Array.from({ length: 7 }, (_, i) => trOr(tFn, `labels.day_short_${i}`, DAY_SHORT[i])),
@@ -734,6 +738,35 @@
 
     // עדכונים חיים של שדות הפרטים (CategoryDetailsEditor) - כדי שהתצוגה תתעדכן מיד
     let liveExtra = $state<Record<string, unknown>>({});
+
+    // ---- שעות קבלת קהל / פתיחה (שדה hours מסוג opening_hours) ----
+    // עורך "משעה-עד-שעה" + ＋ מוצג ישירות בקטע "לוח פעילויות ושעות" במצב בנייה,
+    // בקטגוריות מקום שיש להן שדה כזה (שירות ציבורי/בנק, חנויות, מסעדות).
+    const hoursFieldLabel = $derived.by<string>(() => {
+        const f = categoryConfig[item?.category ?? '']?.fields.find(x => x.type === 'opening_hours');
+        return f ? trOr(tFn, `labels.cf_${item?.category}_${f.key}`, f.label) : 'שעות קבלת קהל';
+    });
+    const hasHoursField = $derived<boolean>(
+        !!categoryConfig[item?.category ?? '']?.fields.some(f => f.type === 'opening_hours')
+    );
+    const hoursValue = $derived<string>(
+        typeof liveExtra.hours === 'string'
+            ? (liveExtra.hours as string)
+            : (typeof (item as { extraFields?: { hours?: unknown } } | null)?.extraFields?.hours === 'string'
+                ? ((item as { extraFields?: { hours?: string } }).extraFields!.hours as string)
+                : '')
+    );
+    let hoursSaved = $state(false);
+    let hoursSavedTimer: ReturnType<typeof setTimeout> | null = null;
+    async function saveHours(v: string) {
+        const ok = await saveFields({ hours: v }, 'hours');
+        if (ok) {
+            liveExtra = { ...liveExtra, hours: v };
+            hoursSaved = true;
+            if (hoursSavedTimer) clearTimeout(hoursSavedTimer);
+            hoursSavedTimer = setTimeout(() => (hoursSaved = false), 2000);
+        }
+    }
 
     // ---- העלאת תמונות במצב בנייה (דחיסה כמו בטופס הפרסום) ----
     const MAX_IMAGES = 5;
@@ -2094,7 +2127,7 @@
                     {/if}
 
                     <!-- Activities schedule (each activity has its own time) + opening hours -->
-                    {#if otherActivities.length > 0 || (openingHoursText && canSeeHours) || (canEditActivities && builderMode)}
+                    {#if otherActivities.length > 0 || (openingHoursText && canSeeHours) || (canEditActivities && builderMode) || (builderMode && hasHoursField)}
                         <section class="pt-3 border-t border-white/10">
                             <div class="flex items-center justify-between mb-2">
                                 <h2 class="text-base font-bold text-white flex items-center gap-1.5">
@@ -2107,10 +2140,24 @@
                                 {/if}
                             </div>
 
+                            <!-- שעות קבלת קהל / פתיחה: עורך "משעה-עד-שעה" + ＋ ישירות כאן במצב בנייה -->
+                            {#if builderMode && hasHoursField}
+                                <div class="mb-3">
+                                    <p class="text-[13px] font-bold text-amber-200 mb-1 flex items-center gap-1.5">🕒 {hoursFieldLabel}</p>
+                                    <p class="text-[11px] text-gray-400 leading-snug mb-1.5">משעת הפתיחה עד שעת הסגירה. יש קבלת קהל גם בשעות נוספות ביום (בוקר וגם אחה״צ)? הוסיפו מופע נוסף עם ＋.</p>
+                                    <OpeningHoursEditor value={hoursValue} onchange={saveHours} />
+                                    {#if savingTag === 'hours'}
+                                        <p class="text-amber-300 text-xs mt-1">שומר…</p>
+                                    {:else if hoursSaved}
+                                        <p class="text-green-400 text-xs mt-1">✓ נשמר</p>
+                                    {/if}
+                                </div>
+                            {/if}
+
                             {#if !editingSchedule}
                                 {#if openingHoursText && canSeeHours}
                                     <div class="rounded-xl border border-white/10 bg-[#0f172a] px-3 py-2 mb-2 flex items-start gap-2 text-xs">
-                                        <span class="font-bold text-amber-200 whitespace-nowrap">שעות פתיחה</span>
+                                        <span class="font-bold text-amber-200 whitespace-nowrap">{hoursFieldLabel}</span>
                                         <span class="text-white leading-snug">{openingHoursText}</span>
                                         {#if builderMode}
                                             <!-- הצג / אל תציג את שעות הפתיחה לגולשים (ברירת מחדל: מוצג) -->
