@@ -13,7 +13,11 @@
 //
 // רוצים לוגו אמיתי לסניף מסוים? מעלים תמונה בשדה "לוגו על המפה" בטופס -
 // היא גוברת על סמל השירות (ראו JerusalemMap: map_image ידני > service_type).
+// רוצים לוגו רשמי לכל סניפי סוג-שירות (למשל כל סניפי הפועלים)? מגדירים
+// אותו ב-serviceLogoOverrides.ts - הוא גובר על התג האוטומטי בכל האתר.
 // ============================================================
+
+import { officialLogoFor } from './serviceLogoOverrides';
 
 export interface ServiceType {
     /** מזהה יציב הנשמר ב-extra_fields.service_type */
@@ -24,6 +28,12 @@ export interface ServiceType {
     glyph: string;
     /** צבע רקע העיגול (hex) - גם צבע מסגרת הפין על המפה */
     color: string;
+    /**
+     * מונוגרם - אות/אותיות (1-3) שיוצגו בלבן במרכז העיגול במקום ה-glyph.
+     * מיועד לבנקים וגופים מוכרים: תג צבע-מותג + ראשי-תיבות שמזהים מיד
+     * (למשל "פ" להפועלים, "ל" ללאומי). זהו תג מקורי - לא שכפול הלוגו המסחרי.
+     */
+    mono?: string;
     /** מילות חיפוש נוספות (לא חובה) */
     aliases?: string[];
 }
@@ -225,78 +235,80 @@ export const SERVICE_GROUPS: ServiceGroup[] = [
     {
         group: 'רשויות ומינהל ציבורי',
         items: [
-            { id: 'municipality',       label: 'עירייה / מועצה מקומית', glyph: 'municipality',  color: '#4f46e5', aliases: ['רשות מקומית', 'מועצה אזורית', 'מוקד 106'] },
-            { id: 'interior_ministry',  label: 'משרד הפנים / רשות האוכלוסין', glyph: 'id_card', color: '#475569', aliases: ['תעודת זהות', 'דרכון', 'לשכת מרשם'] },
-            { id: 'national_insurance', label: 'ביטוח לאומי',           glyph: 'shield_person', color: '#0d9488' },
-            { id: 'employment',         label: 'לשכת התעסוקה',          glyph: 'briefcase',     color: '#2563eb', aliases: ['שירות התעסוקה'] },
-            { id: 'tax_authority',      label: 'רשות המסים',            glyph: 'coins',         color: '#15803d', aliases: ['מס הכנסה', 'מע"מ'] },
-            { id: 'courthouse',         label: 'בית משפט',              glyph: 'courthouse',    color: '#64748b' },
+            { id: 'municipality',       label: 'עירייה / מועצה מקומית', glyph: 'municipality',  color: '#4f46e5', aliases: ['עיריית', 'עירית', 'מועצה', 'רשות מקומית', 'מועצה אזורית', 'מוקד 106'] },
+            { id: 'interior_ministry',  label: 'משרד הפנים / רשות האוכלוסין', glyph: 'id_card', color: '#475569', aliases: ['משרד פנים', 'רשות האוכלוסין', 'תעודת זהות', 'דרכון', 'לשכת מרשם'] },
+            { id: 'national_insurance', label: 'ביטוח לאומי',           glyph: 'shield_person', color: '#0d9488', aliases: ['בטוח לאומי', 'המוסד לביטוח לאומי'] },
+            { id: 'employment',         label: 'לשכת התעסוקה',          glyph: 'briefcase',     color: '#2563eb', aliases: ['שירות התעסוקה', 'לשכת עבודה', 'לשכת התעסוקה'] },
+            { id: 'tax_authority',      label: 'רשות המסים',            glyph: 'coins',         color: '#15803d', aliases: ['מס הכנסה', 'מיסים', 'מעמ', 'רשות המיסים'] },
+            { id: 'courthouse',         label: 'בית משפט',              glyph: 'courthouse',    color: '#64748b', aliases: ['בית המשפט', 'ביהמש'] },
         ],
     },
     {
         group: 'דואר ובנקאות',
+        // בנקים: תג בצבע-המותג הרשמי + מונוגרם עברי מזהה (תג מקורי, לא שכפול הלוגו).
+        // רוצים לוגו רשמי מדויק? ראו serviceLogoOverrides.ts - קובץ רשמי גובר על התג.
         items: [
-            { id: 'post',           label: 'דואר ישראל',        glyph: 'envelope', color: '#dc2626', aliases: ['סניף דואר', 'חבילה', 'דואר'] },
-            { id: 'postal_bank',    label: 'בנק הדואר',          glyph: 'bank',     color: '#b91c1c' },
+            { id: 'post',           label: 'דואר ישראל',        glyph: 'envelope', color: '#e4032e', aliases: ['דואר', 'סניף דואר', 'חבילה'] },
+            { id: 'postal_bank',    label: 'בנק הדואר',          glyph: 'bank',     color: '#e4032e', mono: 'בד', aliases: ['בנק הדואר'] },
             { id: 'bank',           label: 'בנק (כללי)',         glyph: 'bank',     color: '#166534', aliases: ['סניף בנק'] },
-            { id: 'bank_hapoalim',  label: 'בנק הפועלים',        glyph: 'bank',     color: '#e11d48' },
-            { id: 'bank_leumi',     label: 'בנק לאומי',          glyph: 'bank',     color: '#1d4ed8' },
-            { id: 'bank_discount',  label: 'בנק דיסקונט',        glyph: 'bank',     color: '#16a34a' },
-            { id: 'bank_mizrahi',   label: 'בנק מזרחי טפחות',    glyph: 'bank',     color: '#ea580c' },
-            { id: 'bank_beinleumi', label: 'הבנק הבינלאומי',     glyph: 'bank',     color: '#0284c7' },
-            { id: 'bank_mercantile',label: 'בנק מרכנתיל',        glyph: 'bank',     color: '#0d9488' },
-            { id: 'bank_yahav',     label: 'בנק יהב',            glyph: 'bank',     color: '#7c3aed' },
-            { id: 'bank_jerusalem', label: 'בנק ירושלים',        glyph: 'bank',     color: '#ca8a04' },
+            { id: 'bank_hapoalim',  label: 'בנק הפועלים',        glyph: 'bank',     color: '#e4002b', mono: 'פ', aliases: ['הפועלים', 'פועלים'] },
+            { id: 'bank_leumi',     label: 'בנק לאומי',          glyph: 'bank',     color: '#004b87', mono: 'ל', aliases: ['בנק לאומי'] },
+            { id: 'bank_discount',  label: 'בנק דיסקונט',        glyph: 'bank',     color: '#00a9ce', mono: 'ד', aliases: ['דיסקונט'] },
+            { id: 'bank_mizrahi',   label: 'בנק מזרחי טפחות',    glyph: 'bank',     color: '#f58220', mono: 'מז', aliases: ['מזרחי', 'טפחות', 'מזרחי טפחות'] },
+            { id: 'bank_beinleumi', label: 'הבנק הבינלאומי',     glyph: 'bank',     color: '#0067b1', mono: 'ב', aliases: ['בינלאומי', 'הבינלאומי'] },
+            { id: 'bank_mercantile',label: 'בנק מרכנתיל',        glyph: 'bank',     color: '#00857d', mono: 'מר', aliases: ['מרכנתיל'] },
+            { id: 'bank_yahav',     label: 'בנק יהב',            glyph: 'bank',     color: '#6d2e8a', mono: 'יה', aliases: ['בנק יהב'] },
+            { id: 'bank_jerusalem', label: 'בנק ירושלים',        glyph: 'bank',     color: '#c69214', mono: 'בי', aliases: ['בנק ירושלים'] },
             { id: 'bank_other',     label: 'בנק אחר',            glyph: 'bank',     color: '#334155' },
-            { id: 'atm',            label: 'כספומט',             glyph: 'card',     color: '#334155', aliases: ['מכשיר כספי'] },
+            { id: 'atm',            label: 'כספומט',             glyph: 'card',     color: '#334155', aliases: ['כספומט', 'מכשיר כספי', 'בנקט'] },
         ],
     },
     {
         group: 'דת ומקוואות',
         items: [
-            { id: 'mikveh',            label: 'מקווה',               glyph: 'water',   color: '#0891b2', aliases: ['מקוה', 'טבילה'] },
-            { id: 'synagogue',         label: 'בית כנסת',            glyph: 'star',    color: '#2563eb', aliases: ['בהכ"נ', 'מניין'] },
-            { id: 'religious_council', label: 'מועצה דתית / רבנות',  glyph: 'tablets', color: '#b45309', aliases: ['רבנות'] },
-            { id: 'kashrut',           label: 'השגחת כשרות',         glyph: 'tablets', color: '#a16207' },
+            { id: 'mikveh',            label: 'מקווה',               glyph: 'water',   color: '#0891b2', aliases: ['מקוה', 'מקווה', 'טבילה'] },
+            { id: 'synagogue',         label: 'בית כנסת',            glyph: 'star',    color: '#2563eb', aliases: ['בית הכנסת', 'בהכנ', 'מניין'] },
+            { id: 'religious_council', label: 'מועצה דתית / רבנות',  glyph: 'tablets', color: '#b45309', aliases: ['רבנות', 'מועצה דתית'] },
+            { id: 'kashrut',           label: 'השגחת כשרות',         glyph: 'tablets', color: '#a16207', aliases: ['כשרות', 'בד"ץ', 'בדץ'] },
         ],
     },
     {
         group: 'בריאות',
         items: [
-            { id: 'clalit',       label: 'כללית',              glyph: 'cross',   color: '#16a34a', aliases: ['קופת חולים כללית'] },
-            { id: 'maccabi',      label: 'מכבי',               glyph: 'cross',   color: '#2563eb', aliases: ['מכבי שירותי בריאות'] },
-            { id: 'meuhedet',     label: 'מאוחדת',             glyph: 'cross',   color: '#7c3aed', aliases: ['קופת חולים מאוחדת'] },
-            { id: 'leumit',       label: 'לאומית',             glyph: 'cross',   color: '#ea580c', aliases: ['לאומית שירותי בריאות'] },
-            { id: 'clinic',       label: 'מרפאה / קופת חולים', glyph: 'cross',   color: '#0ea5e9' },
-            { id: 'pharmacy',     label: 'בית מרקחת',          glyph: 'capsule', color: '#0d9488', aliases: ['סופר פארם', 'ניו פארם'] },
-            { id: 'hospital',     label: 'בית חולים',          glyph: 'hospital',color: '#dc2626' },
-            { id: 'mada',         label: 'מגן דוד אדום',       glyph: 'star',    color: '#dc2626', aliases: ['מד"א', 'אמבולנס'] },
-            { id: 'tipat_chalav', label: 'טיפת חלב',           glyph: 'bottle',  color: '#db2777' },
-            { id: 'dentist',      label: 'מרפאת שיניים',       glyph: 'tooth',   color: '#0891b2' },
+            { id: 'clalit',       label: 'כללית',              glyph: 'cross',   color: '#16a34a', aliases: ['קופת חולים כללית', 'כללית'] },
+            { id: 'maccabi',      label: 'מכבי',               glyph: 'cross',   color: '#2563eb', aliases: ['מכבי שירותי בריאות', 'מכבי'] },
+            { id: 'meuhedet',     label: 'מאוחדת',             glyph: 'cross',   color: '#7c3aed', aliases: ['קופת חולים מאוחדת', 'מאוחדת'] },
+            { id: 'leumit',       label: 'לאומית',             glyph: 'cross',   color: '#ea580c', aliases: ['לאומית שירותי בריאות', 'לאומית'] },
+            { id: 'clinic',       label: 'מרפאה / קופת חולים', glyph: 'cross',   color: '#0ea5e9', aliases: ['קופת חולים', 'מרפאה'] },
+            { id: 'pharmacy',     label: 'בית מרקחת',          glyph: 'capsule', color: '#0d9488', aliases: ['מרקחת', 'סופר פארם', 'ניו פארם', 'פארם'] },
+            { id: 'hospital',     label: 'בית חולים',          glyph: 'hospital',color: '#dc2626', aliases: ['בית חולים', 'ביח'] },
+            { id: 'mada',         label: 'מגן דוד אדום',       glyph: 'star',    color: '#dc2626', aliases: ['מדא', 'אמבולנס', 'מגן דוד אדום'] },
+            { id: 'tipat_chalav', label: 'טיפת חלב',           glyph: 'bottle',  color: '#db2777', aliases: ['טיפת חלב'] },
+            { id: 'dentist',      label: 'מרפאת שיניים',       glyph: 'tooth',   color: '#0891b2', aliases: ['שיניים', 'שיננית', 'רופא שיניים'] },
         ],
     },
     {
         group: 'חינוך',
         items: [
-            { id: 'school',       label: 'בית ספר',            glyph: 'cap',    color: '#2563eb' },
-            { id: 'kindergarten', label: 'גן ילדים',           glyph: 'blocks', color: '#ea580c', aliases: ['גן', 'מעון'] },
-            { id: 'talmud_torah', label: 'תלמוד תורה / חיידר',  glyph: 'book',   color: '#92400e' },
-            { id: 'yeshiva',      label: 'ישיבה / כולל',       glyph: 'book',   color: '#4338ca' },
-            { id: 'library',      label: 'ספרייה',             glyph: 'book',   color: '#0d9488' },
-            { id: 'college',      label: 'מכללה / אוניברסיטה', glyph: 'cap',    color: '#7c3aed' },
+            { id: 'school',       label: 'בית ספר',            glyph: 'cap',    color: '#2563eb', aliases: ['בית ספר', 'ביהס', 'יסודי', 'תיכון', 'חטיבת ביניים'] },
+            { id: 'kindergarten', label: 'גן ילדים',           glyph: 'blocks', color: '#ea580c', aliases: ['גן ילדים', 'מעון', 'פעוטון'] },
+            { id: 'talmud_torah', label: 'תלמוד תורה / חיידר',  glyph: 'book',   color: '#92400e', aliases: ['תלמוד תורה', 'חיידר', 'תת'] },
+            { id: 'yeshiva',      label: 'ישיבה / כולל',       glyph: 'book',   color: '#4338ca', aliases: ['ישיבה', 'ישיבת', 'כולל'] },
+            { id: 'library',      label: 'ספרייה',             glyph: 'book',   color: '#0d9488', aliases: ['ספריה', 'ספרייה'] },
+            { id: 'college',      label: 'מכללה / אוניברסיטה', glyph: 'cap',    color: '#7c3aed', aliases: ['מכללה', 'אוניברסיטה', 'אוניברסיטת'] },
         ],
     },
     {
         group: 'חירום, רווחה וקהילה',
         items: [
-            { id: 'police',           label: 'משטרה',              glyph: 'shield_star', color: '#1d4ed8', aliases: ['תחנת משטרה', 'מוקד 100'] },
-            { id: 'fire',             label: 'כבאות והצלה',        glyph: 'flame',       color: '#dc2626', aliases: ['מכבי אש', 'מוקד 102'] },
-            { id: 'shelter',          label: 'מקלט / מרחב מוגן',    glyph: 'shelter',     color: '#475569', aliases: ['ממ"ד', 'מקלט ציבורי'] },
-            { id: 'welfare',          label: 'לשכת רווחה',         glyph: 'heart',       color: '#db2777', aliases: ['שירותים חברתיים'] },
-            { id: 'community_center', label: 'מתנ"ס / מרכז קהילתי', glyph: 'people',      color: '#7c3aed' },
-            { id: 'park',             label: 'גן ציבורי / פארק',   glyph: 'tree',        color: '#16a34a', aliases: ['גינה'] },
-            { id: 'veterinary',       label: 'וטרינר עירוני',      glyph: 'paw',         color: '#b45309' },
-            { id: 'electric',         label: 'חברת חשמל',          glyph: 'bolt',        color: '#ca8a04', aliases: ['חשמל'] },
+            { id: 'police',           label: 'משטרה',              glyph: 'shield_star', color: '#1d4ed8', aliases: ['תחנת משטרה', 'משטרה', 'מוקד 100'] },
+            { id: 'fire',             label: 'כבאות והצלה',        glyph: 'flame',       color: '#dc2626', aliases: ['כבאות', 'מכבי אש', 'כיבוי אש', 'מוקד 102'] },
+            { id: 'shelter',          label: 'מקלט / מרחב מוגן',    glyph: 'shelter',     color: '#475569', aliases: ['מקלט', 'מרחב מוגן', 'ממד', 'מקלט ציבורי'] },
+            { id: 'welfare',          label: 'לשכת רווחה',         glyph: 'heart',       color: '#db2777', aliases: ['רווחה', 'שירותים חברתיים'] },
+            { id: 'community_center', label: 'מתנ"ס / מרכז קהילתי', glyph: 'people',      color: '#7c3aed', aliases: ['מתנס', 'מרכז קהילתי'] },
+            { id: 'park',             label: 'גן ציבורי / פארק',   glyph: 'tree',        color: '#16a34a', aliases: ['פארק', 'גן ציבורי', 'גינה', 'גן שעשועים'] },
+            { id: 'veterinary',       label: 'וטרינר עירוני',      glyph: 'paw',         color: '#b45309', aliases: ['וטרינר', 'וטרינרי', 'וטרינריה'] },
+            { id: 'electric',         label: 'חברת חשמל',          glyph: 'bolt',        color: '#ca8a04', aliases: ['חשמל', 'חברת החשמל'] },
         ],
     },
 ];
@@ -319,22 +331,34 @@ export function getServiceType(id: string | null | undefined): ServiceType | und
 // בניית ה-SVG וה-data URI (עם מטמון כדי לא לבנות מחדש בכל render)
 // ------------------------------------------------------------
 function buildSvg(item: ServiceType): string {
-    const glyph = GLYPHS[item.glyph]?.replace(/\{\{c\}\}/g, item.color) ?? '';
+    // מונוגרם (אות/אותיות) גובר על ה-glyph כשמוגדר - תג בצבע-מותג לבנקים
+    const inner = item.mono
+        ? `<text x="24" y="25.5" text-anchor="middle" dominant-baseline="central" ` +
+          `font-family="Arial, 'Segoe UI', sans-serif" font-weight="700" ` +
+          `font-size="${item.mono.length >= 3 ? 15 : item.mono.length === 2 ? 19 : 26}" ` +
+          `fill="#ffffff">${item.mono}</text>`
+        : `<g fill="#ffffff" stroke-linejoin="round" stroke-linecap="round">` +
+          `${GLYPHS[item.glyph]?.replace(/\{\{c\}\}/g, item.color) ?? ''}</g>`;
     return (
         `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">` +
         `<circle cx="24" cy="24" r="24" fill="${item.color}"/>` +
         `<circle cx="24" cy="24" r="22.5" fill="none" stroke="#ffffff" stroke-opacity="0.28" stroke-width="2"/>` +
-        `<g fill="#ffffff" stroke-linejoin="round" stroke-linecap="round">${glyph}</g>` +
+        inner +
         `</svg>`
     );
 }
 
 const URI_CACHE: Record<string, string> = {};
 
-/** מחזיר data URI (SVG) של סמל השירות, או '' אם המזהה לא מוכר */
+/**
+ * מחזיר את הלוגו של סוג-השירות: לוגו רשמי (אם הוגדר ב-serviceLogoOverrides)
+ * גובר; אחרת תג ה-SVG (מונוגרם/glyph) כ-data URI. '' אם המזהה לא מוכר.
+ */
 export function serviceLogoDataUri(id: string | null | undefined): string {
     const item = getServiceType(id);
     if (!item) return '';
+    const official = officialLogoFor(item.id);
+    if (official) return official;
     if (URI_CACHE[item.id]) return URI_CACHE[item.id];
     const uri = 'data:image/svg+xml,' + encodeURIComponent(buildSvg(item)).replace(/\s{2,}/g, ' ');
     URI_CACHE[item.id] = uri;
@@ -359,4 +383,57 @@ export function logoForService(extraOrId: Record<string, unknown> | string | nul
     if (extraOrId == null) return '';
     const id = typeof extraOrId === 'string' ? extraOrId : (extraOrId.service_type as string | undefined);
     return serviceLogoDataUri(id);
+}
+
+// ------------------------------------------------------------
+// ניחוש אוטומטי של סוג השירות מתוך שם הפריט
+// (המשתמש מקליד "עיריית ירושלים" / "בנק הפועלים סניף 12" / "מקווה נשים"
+//  ואנו בוחרים את הסמל המתאים כברירת מחדל - הוא תמיד יכול לשנות).
+// ------------------------------------------------------------
+
+/** ניקוי בסיסי תואם ל-$lib/search (אותיות קטנות, בלי גרשיים, רווח יחיד) */
+function norm(s: string): string {
+    return s.toLowerCase().replace(/["'׳״`]/g, '').replace(/\s+/g, ' ').trim();
+}
+
+/** ביטויי הזיהוי של שירות: פילוח התווית (לפי / ( )) + הכינויים */
+function phrasesFor(item: ServiceType): string[] {
+    const out: string[] = [];
+    for (const seg of item.label.split(/[\/()]/)) {
+        const s = norm(seg);
+        if (s.length >= 2) out.push(s);
+    }
+    for (const a of item.aliases ?? []) {
+        const s = norm(a);
+        if (s.length >= 2) out.push(s);
+    }
+    return out;
+}
+
+/**
+ * מחזיר את מזהה סוג השירות המתאים ביותר לשם החופשי, או '' אם אין התאמה
+ * ברורה. ההתאמה מדויקת (בלי כתיב רופף) כדי לא לנחש שגוי; ביטוי ארוך/רב-מילים
+ * גובר על ביטוי כללי (למשל "בנק הפועלים" גובר על "בנק"). תיקו → לפי סדר הקטלוג.
+ */
+export function guessServiceType(name: string | null | undefined): string {
+    const q = norm(String(name ?? ''));
+    if (q.length < 2) return '';
+    const hay = ' ' + q + ' ';
+    let bestId = '';
+    let bestScore = 0;
+    for (const item of ALL_SERVICE_TYPES) {
+        for (const phrase of phrasesFor(item)) {
+            const pTokens = phrase.split(' ').filter(Boolean);
+            // כל מילות הביטוי חייבות להופיע בשם (כמילה או כחלק ממילה)
+            const matched = pTokens.every((pt) => hay.includes(pt));
+            if (!matched) continue;
+            // מומחיות: יותר מילים > ביטוי ארוך יותר. תיקו נשמר לראשון בקטלוג.
+            const score = pTokens.length * 1000 + phrase.length;
+            if (score > bestScore) {
+                bestScore = score;
+                bestId = item.id;
+            }
+        }
+    }
+    return bestId;
 }
