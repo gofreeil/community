@@ -291,9 +291,9 @@
     :global(.leaflet-container) {
         background: #e6e3dd;
     }
-    /* חידוד קל של אריחי Voyager (לא על הפינים) - רחובות/תוויות בולטים יותר */
+    /* חידוד אריחי Voyager (לא על הפינים) - saturate גבוה מבליט את ירוק הגינות/הפארקים */
     :global(.leaflet-tile-pane) {
-        filter: contrast(1.06) saturate(1.05);
+        filter: contrast(1.06) saturate(1.45);
     }
     /* שורת הייחוס (חובה חוקית) - מוקטנת ודהויה כדי שלא תבלוט */
     :global(.leaflet-control-attribution) {
