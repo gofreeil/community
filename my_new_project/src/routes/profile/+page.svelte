@@ -47,6 +47,11 @@
 	let showLikes = $state(false);
 	let likedItems = $state<LikedItem[]>([]);
 	let userStatus = $state<UserStatus>('available');
+	// בורר "הסטטוס שלי בלוח פנויים" מוצג רק למי שכבר פרסם כרטיס פנוי/פנויה.
+	// למי שלא פתח כרטיס - הבאנר מוסתר לגמרי ולא נקבע לו סטטוס בלוח.
+	const hasSinglesCard = $derived(
+		(data.items ?? []).some((i) => i.category === 'singles' && i.status !== 'deleted')
+	);
 	let showLoginOptions = $state(false);
 	let ssoLoading = $state(false);
 	let ssoError = $state<string | null>(null);
@@ -1399,8 +1404,8 @@
 		} catch {}
 	}
 
-	// מספר מניות פלטפורמה - placeholder פרונט בלבד עד חיבור ל-backend
-	let userShares = $derived(10 + data.items.length * 5);
+	// מספר מניות פלטפורמה - ברירת מחדל 0 לכל משתמש עד להודעה חדשה
+	let userShares = $derived(0);
 
 	// טיוטות במסירה - מודעות שהמשתמש התחיל אך טרם הוסיף תמונה
 	let giveawayDrafts = $derived(
@@ -2969,8 +2974,10 @@
 
 		{#if showMyInfo}
 			<div class="flex flex-col gap-4">
-				<!-- ===== הסטטוס שלי בלוח פנויים ===== -->
-				{@render singlesStatusCard()}
+				<!-- ===== הסטטוס שלי בלוח פנויים (רק למי שיש כרטיס פנוי/פנויה) ===== -->
+				{#if hasSinglesCard}
+					{@render singlesStatusCard()}
+				{/if}
 				<!-- ===== ערבי מפגש / סעודות קהילתיות ===== -->
 				<a href="/gatherings" class="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-amber-500/15 to-rose-500/10 border border-amber-500/30 hover:border-amber-500/60 px-4 py-3.5 transition-all group">
 					<span class="text-3xl flex-shrink-0">🍽️</span>
@@ -4816,10 +4823,12 @@
 			</form>
 		{/if}
 
-		<!-- הסטטוס שלי בלוח פנויים - משובץ בתוך הפרופיל -->
-		<div class="mt-4">
-			{@render singlesStatusCard()}
-		</div>
+		<!-- הסטטוס שלי בלוח פנויים - מוצג רק למי שכבר פרסם כרטיס פנוי/פנויה -->
+		{#if hasSinglesCard}
+			<div class="mt-4">
+				{@render singlesStatusCard()}
+			</div>
+		{/if}
 	</div>
 
 	<!-- ===== קומה 6: כתוב למערכת ===== -->
