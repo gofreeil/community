@@ -13,6 +13,7 @@
     import { gmachTypeLabel } from "$lib/gmachTypes";
     import { trOr } from "$lib/categoryFields";
     import { imageDrop } from "$lib/imageDrop";
+    import { openCropper } from "$lib/imageCropper.svelte";
     import CategoryDetailsEditor from "$lib/components/CategoryDetailsEditor.svelte";
     import { goto } from "$app/navigation";
     import { PLACE_STATUSES, placeStatusInfo } from "$lib/placeStatus";
@@ -798,6 +799,25 @@
         if (ok) {
             imagesOverride = next;
             galleryIndex = 0;
+        }
+    }
+
+    // מיקום/חיתוך התמונה הנוכחית — כך שתופיע ממורכזת בכרטיס שבלוח/מפה
+    async function repositionCurrentImage() {
+        if (!galleryImages.length) return;
+        const idx = galleryIndex;
+        const cropped = await openCropper(galleryImages[idx], {
+            shape: 'rect',
+            aspect: 1,
+            title: 'מיקום התמונה',
+            hint: 'גררו למיקום הרצוי · הזיזו את המחוון להגדלה',
+        });
+        if (!cropped) return;
+        const next = galleryImages.map((s, i) => (i === idx ? cropped : s));
+        const ok = await saveFields({ images: next }, 'images');
+        if (ok) {
+            imagesOverride = next;
+            galleryIndex = idx;
         }
     }
 
@@ -1774,6 +1794,10 @@
                                     {uploadingImages ? 'מעלה...' : '📷 הוסף תמונה'}
                                 </button>
                             {/if}
+                            <button type="button" onclick={repositionCurrentImage} disabled={savingTag === 'images'}
+                                class="text-[11px] font-bold text-white bg-black/70 hover:bg-purple-700 border border-purple-400/40 rounded-lg px-2 py-1 backdrop-blur-sm transition-all disabled:opacity-60">
+                                🎯 מקם / חתוך
+                            </button>
                             <button type="button" onclick={removeCurrentImage} disabled={savingTag === 'images'}
                                 class="text-[11px] font-bold text-red-300 bg-black/70 hover:bg-black/90 border border-red-400/40 rounded-lg px-2 py-1 backdrop-blur-sm transition-all disabled:opacity-60">
                                 🗑 הסר תמונה זו
@@ -1840,24 +1864,8 @@
                         </button>
                     {/if}
 
-                    <!-- כתובת + טלפון: אחד ליד השני כדי לחסוך גלילה מטה -->
+                    <!-- טלפון (הכתובת עברה לכותרת תיבת "יצירת קשר עם המפרסם", משמאל מול שם איש הקשר) -->
                     <div class="flex flex-wrap items-center gap-x-4 gap-y-1.5">
-                    {#if item.address}
-                        {@const cityOnly = (() => {
-                            const parts = String(item.address).split(',').map(p => p.trim()).filter(Boolean);
-                            return parts[parts.length - 1] || item.address;
-                        })()}
-                        <p class="text-base text-gray-200 flex items-center gap-1.5">
-                            <span class="text-blue-400">📍</span>
-                            <span>{cityOnly}</span>
-                            {#if builderMode && (item as { isOwner?: boolean }).isOwner}
-                                <!-- רק לבעלים - טופס העריכה מזהה בעלות לפי edit_id -->
-                                <a href={`/add/${item.category}?edit=${item.id}`}
-                                    class="text-[11px] text-blue-300/90 hover:text-blue-200 underline underline-offset-2">שינוי כתובת / מיקום על המפה</a>
-                            {/if}
-                        </p>
-                    {/if}
-
                     <!-- Phone (non-singles or singles approved) -->
                     {#if item.category !== 'singles'}
                         {#if builderMode && editingField === 'phone'}
@@ -2321,21 +2329,45 @@
                                                 <button type="button" onclick={cancelEditField} class="text-xs font-bold text-white/80 hover:text-white px-2 py-1.5">ביטול</button>
                                             </div>
                                         </div>
-                                    {:else if displayContact}
-                                        <h3 class="text-white font-bold text-sm mb-2 flex items-center gap-1.5">
-                                            <span aria-hidden="true">👤</span>
-                                            <span class="truncate min-w-0">{displayContact}</span>
-                                            {#if builderMode}
-                                                <button type="button" onclick={() => startEditField('contact', displayContact)}
-                                                    aria-label="ערוך איש קשר" title="ערוך איש קשר"
-                                                    class="text-xs bg-white/15 hover:bg-white/30 rounded-lg px-1.5 py-0.5 transition-all shrink-0">✏️</button>
+                                    {:else if displayContact || item.address || builderMode}
+                                        <!-- כותרת: שם איש הקשר מימין, כתובת משמאל (מול שם איש הקשר) -->
+                                        <div class="flex items-center justify-between gap-2 mb-2">
+                                            <div class="min-w-0 flex items-center gap-1.5">
+                                                {#if displayContact}
+                                                    <h3 class="text-white font-bold text-sm flex items-center gap-1.5 min-w-0">
+                                                        <span aria-hidden="true">👤</span>
+                                                        <span class="truncate min-w-0">{displayContact}</span>
+                                                    </h3>
+                                                    {#if builderMode}
+                                                        <button type="button" onclick={() => startEditField('contact', displayContact)}
+                                                            aria-label="ערוך איש קשר" title="ערוך איש קשר"
+                                                            class="text-xs bg-white/15 hover:bg-white/30 rounded-lg px-1.5 py-0.5 transition-all shrink-0">✏️</button>
+                                                    {/if}
+                                                {:else if builderMode}
+                                                    <button type="button" onclick={() => startEditField('contact', '')}
+                                                        class="border-2 border-dashed border-white/40 hover:border-white/70 bg-white/5 hover:bg-white/10 rounded-lg px-2.5 py-1 text-white/90 text-xs font-bold transition-all">
+                                                        👤 הוסיפו שם איש קשר
+                                                    </button>
+                                                {/if}
+                                            </div>
+                                            {#if item.address}
+                                                {@const cityOnly = (() => {
+                                                    const parts = String(item.address).split(',').map(p => p.trim()).filter(Boolean);
+                                                    return parts[parts.length - 1] || item.address;
+                                                })()}
+                                                {#if builderMode && (item as { isOwner?: boolean } | null)?.isOwner}
+                                                    <a href={`/add/${item.category}?edit=${item.id}`}
+                                                        class="shrink-0 text-white/90 hover:text-white text-xs flex items-center gap-1 hover:underline underline-offset-2"
+                                                        title="שינוי כתובת / מיקום על המפה">
+                                                        <span aria-hidden="true">📍</span><span class="truncate max-w-[45vw]">{cityOnly}</span>
+                                                    </a>
+                                                {:else}
+                                                    <span class="shrink-0 text-white/90 text-xs flex items-center gap-1">
+                                                        <span aria-hidden="true">📍</span><span class="truncate max-w-[45vw]">{cityOnly}</span>
+                                                    </span>
+                                                {/if}
                                             {/if}
-                                        </h3>
-                                    {:else if builderMode}
-                                        <button type="button" onclick={() => startEditField('contact', '')}
-                                            class="w-full text-right border-2 border-dashed border-white/40 hover:border-white/70 bg-white/5 hover:bg-white/10 rounded-lg px-3 py-1.5 mb-2 text-white/90 text-xs font-bold transition-all">
-                                            👤 הוסיפו שם איש קשר (יופיע ככותרת התיבה)
-                                        </button>
+                                        </div>
                                     {/if}
                                     <div class="space-y-2">
                                         {#if displayPhone}

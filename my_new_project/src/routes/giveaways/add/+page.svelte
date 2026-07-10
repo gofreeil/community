@@ -9,6 +9,7 @@
     import { giveawayCategories } from '$lib/giveawayCategories';
     import { formMemory } from '$lib/formMemory';
     import { imageDrop } from '$lib/imageDrop';
+    import { openCropper } from '$lib/imageCropper.svelte';
     import StreetPicker from '$lib/components/StreetPicker.svelte';
     import NeighborhoodPicker from '$lib/components/NeighborhoodPicker.svelte';
 
@@ -75,6 +76,17 @@
 
     function removeImage(index: number) {
         images = images.filter((_, i) => i !== index);
+    }
+
+    async function repositionImage(index: number) {
+        if (index < 0 || index >= images.length) return;
+        const cropped = await openCropper(images[index], {
+            shape: 'rect',
+            aspect: 1,
+            title: 'מיקום התמונה',
+            hint: 'גררו למיקום הרצוי · הזיזו את המחוון להגדלה',
+        });
+        if (cropped) images = images.map((s, i) => (i === index ? cropped : s));
     }
 
     function moveImage(from: number, to: number) {
@@ -336,6 +348,13 @@
                                             class="absolute top-1 left-1 bg-black/70 hover:bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold transition-colors"
                                             aria-label={$_('listings.remove_image')}
                                         >×</button>
+                                        <button
+                                            type="button"
+                                            onclick={() => repositionImage(i)}
+                                            class="absolute bottom-1 end-1 bg-black/70 hover:bg-purple-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs transition-colors"
+                                            aria-label="מקם / חתוך"
+                                            title="מקם / חתוך"
+                                        >🎯</button>
                                         <div class="absolute top-1 end-1 flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                                             {#if i > 0}
                                                 <button

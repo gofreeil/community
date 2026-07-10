@@ -11,6 +11,7 @@
 	import CoinAnimation from "$lib/components/CoinAnimation.svelte";
 	import MobileAdsDrawer from "$lib/components/MobileAdsDrawer.svelte";
 	import MobileAdPopup from "$lib/components/MobileAdPopup.svelte";
+	import ImageCropper from "$lib/components/ImageCropper.svelte";
 	import { signOut } from "@auth/sveltekit/client";
 	import { goto, beforeNavigate } from "$app/navigation";
 	import { page } from "$app/state";
@@ -115,6 +116,7 @@
 
 <a href="#main-content" class="skip-link">{$_('chrome.skip_to_content')}</a>
 <CoinAnimation />
+<ImageCropper />
 <MobileAdsDrawer currentUser={currentUser} layoutUser={data.layoutUser} />
 <MobileAdPopup />
 <div class="min-h-screen flex flex-col bg-[#0f172a]">

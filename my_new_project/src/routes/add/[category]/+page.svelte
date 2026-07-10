@@ -20,6 +20,7 @@
     import { mapStepFields, cfCatKey, cfAddTitleKey, cfFieldKey, cfOptKey, trOr } from '$lib/categoryFields';
     import { MAP_IMAGE_PRICE_YEARLY } from '$lib/mapImage';
     import { imageDrop } from '$lib/imageDrop';
+    import { openCropper } from '$lib/imageCropper.svelte';
     import type { PageData } from './$types';
 
     let { data }: { data: PageData } = $props();
@@ -277,21 +278,36 @@
     }
 
     // ---- לוגו למפה: העלאה/גרירה/הסרה ----
+    // אחרי העלאה נותנים למשתמש למקם את התמונה בתוך העיגול שיופיע על המפה.
+    async function positionLogo(dataUrl: string): Promise<string> {
+        const cropped = await openCropper(dataUrl, {
+            shape: 'circle',
+            aspect: 1,
+            title: 'מיקום התמונה על המפה',
+            hint: 'גררו למרכוז הפנים/הלוגו · הזיזו את המחוון להגדלה',
+        });
+        return cropped ?? dataUrl;
+    }
     async function handleLogoChange(e: Event) {
         const input = e.currentTarget as HTMLInputElement;
         const file = input.files?.[0];
         input.value = '';
         if (!file || !file.type.startsWith('image/')) return;
         logoUploading = true;
-        try { logoImage = await compressImage(file); } catch { /* קובץ לא נתמך */ } finally { logoUploading = false; }
+        try { logoImage = await positionLogo(await compressImage(file)); } catch { /* קובץ לא נתמך */ } finally { logoUploading = false; }
     }
-    function handleLogoDrop(files: File[]) {
+    async function handleLogoDrop(files: File[]) {
         const file = files.find(f => f.type.startsWith('image/'));
         if (!file) return;
         logoUploading = true;
-        compressImage(file).then(d => { logoImage = d; }).catch(() => {}).finally(() => { logoUploading = false; });
+        try { logoImage = await positionLogo(await compressImage(file)); } catch {} finally { logoUploading = false; }
     }
     function removeLogo() { logoImage = ''; }
+    // מיקום מחדש של לוגו קיים (בלי להעלות מחדש)
+    async function repositionLogo() {
+        if (!logoImage || logoUploading) return;
+        logoImage = await positionLogo(logoImage);
+    }
 
     function getImages(key: string): string[] {
         try { return JSON.parse(getFieldValue(key) || '[]'); } catch { return []; }
@@ -338,6 +354,21 @@
         const [picked] = arr.splice(idx, 1);
         arr.unshift(picked);
         setImages(key, arr);
+    }
+    // מיקום/חיתוך תמונה קיימת בגלריה כך שתופיע נכון בכרטיס (object-cover ריבועי)
+    async function repositionImage(key: string, idx: number) {
+        const arr = getImages(key);
+        if (idx < 0 || idx >= arr.length) return;
+        const cropped = await openCropper(arr[idx], {
+            shape: 'rect',
+            aspect: 1,
+            title: 'מיקום התמונה',
+            hint: 'גררו למיקום הרצוי · הזיזו את המחוון להגדלה',
+        });
+        if (cropped) {
+            arr[idx] = cropped;
+            setImages(key, arr);
+        }
     }
 
     // ---- שעות פתיחה (opening_hours) ----
@@ -1121,6 +1152,13 @@
                                             class="absolute top-1 left-1 bg-black/70 hover:bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold transition-colors"
                                             aria-label="הסר תמונה"
                                         >×</button>
+                                        <button
+                                            type="button"
+                                            onclick={() => repositionImage(field.key, i)}
+                                            class="absolute top-1 right-1 bg-black/70 hover:bg-purple-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs transition-colors"
+                                            aria-label="מקם / חתוך תמונה"
+                                            title="מקם / חתוך"
+                                        >🎯</button>
                                         {#if i === 0}
                                             <span class="absolute bottom-1 right-1 bg-amber-400 text-amber-900 text-[10px] font-black px-1.5 py-0.5 rounded-full shadow">⭐ ראשית</span>
                                         {:else}
@@ -1286,7 +1324,11 @@
                                 <img src={logoImage} alt="לוגו למפה" class="w-full h-full object-cover" />
                             </div>
                             <div class="flex flex-col gap-1.5">
-                                <label class="text-xs font-bold text-white bg-purple-600 hover:bg-purple-500 rounded-lg px-3 py-1.5 cursor-pointer transition-all text-center">
+                                <button type="button" onclick={repositionLogo}
+                                    class="text-xs font-bold text-white bg-purple-600 hover:bg-purple-500 rounded-lg px-3 py-1.5 transition-all text-center flex items-center justify-center gap-1">
+                                    <span aria-hidden="true">🎯</span> מקם / חתוך
+                                </button>
+                                <label class="text-xs font-bold text-purple-100 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-400/40 rounded-lg px-3 py-1.5 cursor-pointer transition-all text-center">
                                     {logoUploading ? 'מעלה...' : 'החלף תמונה'}
                                     <input type="file" accept="image/*" class="hidden" onchange={handleLogoChange} />
                                 </label>

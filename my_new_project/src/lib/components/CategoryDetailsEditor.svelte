@@ -4,6 +4,7 @@
     import { _ } from 'svelte-i18n';
     import { categoryConfig, detailStepFields, cfFieldKey, cfOptKey, trOr, type FieldDef } from '$lib/categoryFields';
     import OpeningHoursEditor from './OpeningHoursEditor.svelte';
+    import { openCropper } from '$lib/imageCropper.svelte';
 
     let {
         itemId,
@@ -151,6 +152,20 @@
         imageValues[f.key] = next;
         saveField(f.key, next);
     }
+    async function repositionImage(f: FieldDef, idx: number) {
+        const arr = imageValues[f.key] ?? [];
+        if (idx < 0 || idx >= arr.length) return;
+        const cropped = await openCropper(arr[idx], {
+            shape: 'rect',
+            aspect: 1,
+            title: 'מיקום התמונה',
+            hint: 'גררו למיקום הרצוי · הזיזו את המחוון להגדלה',
+        });
+        if (!cropped) return;
+        const next = arr.map((s, i) => (i === idx ? cropped : s));
+        imageValues[f.key] = next;
+        await saveField(f.key, next);
+    }
 
     const inputCls = 'w-full bg-[#0a0f1a] border border-white/15 rounded-lg text-white text-sm px-2.5 py-1.5 focus:border-amber-500/60 outline-none';
 </script>
@@ -212,6 +227,8 @@
                                     <img src={src} alt="" class="w-full h-full object-cover" />
                                     <button type="button" onclick={() => removeImage(f, idx)} aria-label="הסר"
                                         class="absolute top-0.5 left-0.5 bg-black/70 hover:bg-black/90 text-red-300 text-xs w-5 h-5 rounded-full leading-none">×</button>
+                                    <button type="button" onclick={() => repositionImage(f, idx)} aria-label="מקם / חתוך" title="מקם / חתוך"
+                                        class="absolute bottom-0.5 right-0.5 bg-black/70 hover:bg-purple-600 text-white text-[10px] w-5 h-5 rounded-full leading-none flex items-center justify-center">🎯</button>
                                 </div>
                             {/each}
                             {#if (imageValues[f.key] ?? []).length < MAX_IMAGES}

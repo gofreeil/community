@@ -1,6 +1,7 @@
 <script lang="ts">
     import type { ActionData, PageData } from './$types';
     import { imageDrop } from '$lib/imageDrop';
+    import { openCropper } from '$lib/imageCropper.svelte';
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
 
@@ -51,6 +52,17 @@
 
     function removeImage(index: number) {
         images = images.filter((_, i) => i !== index);
+    }
+
+    async function repositionImage(index: number) {
+        if (index < 0 || index >= images.length) return;
+        const cropped = await openCropper(images[index], {
+            shape: 'rect',
+            aspect: 1,
+            title: 'מיקום התמונה',
+            hint: 'גררו למיקום הרצוי · הזיזו את המחוון להגדלה',
+        });
+        if (cropped) images = images.map((s, i) => (i === index ? cropped : s));
     }
 </script>
 
@@ -109,6 +121,13 @@
                                     class="absolute top-1 left-1 bg-black/70 hover:bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold transition-colors"
                                     aria-label="הסר תמונה"
                                 >×</button>
+                                <button
+                                    type="button"
+                                    onclick={() => repositionImage(i)}
+                                    class="absolute bottom-1 end-1 bg-black/70 hover:bg-purple-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs transition-colors"
+                                    aria-label="מקם / חתוך"
+                                    title="מקם / חתוך"
+                                >🎯</button>
                             </div>
                         {/each}
                         {#if images.length < MAX_IMAGES}
