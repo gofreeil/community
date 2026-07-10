@@ -2160,53 +2160,9 @@
                         {@render extraFieldsBlock()}
                     {/if}
 
-                    <!-- איש קשר + שתף: אחד ליד השני כדי לחסוך גלילה (לא מתחת זה לזה) -->
-                    <div class="mt-auto pt-2 flex flex-wrap items-start gap-2">
-                        <!-- Contact (רב/מארגן/שגריר/שדכן) -->
-                        {#if builderMode && editingField === 'contact'}
-                            <div class="basis-full space-y-1.5">
-                                {@render tip('שם איש הקשר - כדי שהגולשים יידעו למי לפנות')}
-                                <input type="text" bind:value={draftText} maxlength="120" placeholder="הרב ישראל ישראלי" use:focusOnMount onkeydown={editorKeys}
-                                    class="w-full bg-[#0a0f1a] border border-amber-500/50 rounded-lg text-white text-sm px-2.5 py-1.5" />
-                                <div class="flex gap-2">
-                                    <button type="button" onclick={saveTextField} disabled={savingTag === 'contact'}
-                                        class="text-xs font-bold text-white bg-amber-500 hover:bg-amber-400 disabled:opacity-50 rounded-lg px-3 py-1.5">💾 שמור</button>
-                                    <button type="button" onclick={cancelEditField} class="text-xs font-bold text-gray-300 hover:text-white px-2 py-1.5">ביטול</button>
-                                </div>
-                            </div>
-                        {:else if displayContact}
-                            {@const waPhone = displayPhone ? String(displayPhone).replace(/\D/g, '').replace(/^0/, '972') : ''}
-                            {@const phoneVisible = displayPhone && (item.category !== 'singles' || singlesState === 'approved' || singlesState === 'owner')}
-                            {@const waUrl = waPhone && phoneVisible ? `https://wa.me/${waPhone}` : null}
-                            <div class="flex-1 min-w-[150px] min-h-[3.25rem] flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2">
-                                <span class="text-purple-400 text-lg shrink-0" aria-hidden="true">👤</span>
-                                <div class="flex flex-col leading-tight min-w-0 flex-1">
-                                    <span class="text-[11px] text-gray-400">איש קשר</span>
-                                    {#if waUrl}
-                                        <a href={waUrl} target="_blank" rel="noopener noreferrer" class="text-emerald-300 hover:text-emerald-200 font-bold text-sm inline-flex items-center gap-1 min-w-0 max-w-full" title="פתח בוואטסאפ">
-                                            💬 <span class="truncate min-w-0">{displayContact}</span>
-                                        </a>
-                                    {:else}
-                                        <span class="font-bold text-white text-sm truncate">{displayContact}</span>
-                                    {/if}
-                                </div>
-                                {#if builderMode}
-                                    <button type="button" onclick={() => startEditField('contact', displayContact)}
-                                        aria-label="ערוך איש קשר" title="ערוך איש קשר"
-                                        class="text-sm bg-amber-500/15 hover:bg-amber-500/30 border border-amber-500/40 rounded-lg px-1.5 py-0.5 transition-all shrink-0">✏️</button>
-                                {/if}
-                            </div>
-                        {:else if builderMode}
-                            <button type="button" onclick={() => startEditField('contact', '')}
-                                class="flex-1 min-w-[150px] text-right border-2 border-dashed border-amber-400/40 hover:border-amber-400/70 bg-amber-500/5 hover:bg-amber-500/10 rounded-xl px-3 py-2 text-amber-200 text-sm font-bold transition-all">
-                                👤 הוסיפו איש קשר
-                            </button>
-                        {/if}
-
-                        <!-- שתף - ליד איש הקשר -->
-                        <div class="flex-1 min-w-[150px]">
-                            {@render shareBlock()}
-                        </div>
+                    <!-- שתף (שם איש הקשר עבר לכותרת תיבת "יצירת קשר עם המפרסם" למטה) -->
+                    <div class="mt-auto pt-2">
+                        {@render shareBlock()}
                     </div>
                 </div>
                 </div>
@@ -2353,6 +2309,34 @@
                             {:else}
                                 {@const waDigits = displayPhone ? String(displayPhone).replace(/\D/g, '').replace(/^0/, '972') : ''}
                                 <div class="rounded-xl border border-white/10 bg-gradient-to-br from-purple-600/90 to-blue-600/90 p-3">
+                                    <!-- כותרת התיבה = שם איש הקשר (נערך במצב בנייה, במקום הכותרת הגנרית שהוסרה) -->
+                                    {#if builderMode && editingField === 'contact'}
+                                        <div class="space-y-1.5 mb-2">
+                                            {@render tip('שם איש הקשר - יופיע ככותרת תיבת יצירת הקשר')}
+                                            <input type="text" bind:value={draftText} maxlength="120" placeholder="הרב ישראל ישראלי" use:focusOnMount onkeydown={editorKeys}
+                                                class="w-full bg-[#0a0f1a] border border-amber-500/50 rounded-lg text-white text-sm px-2.5 py-1.5" />
+                                            <div class="flex gap-2">
+                                                <button type="button" onclick={saveTextField} disabled={savingTag === 'contact'}
+                                                    class="text-xs font-bold text-white bg-amber-500 hover:bg-amber-400 disabled:opacity-50 rounded-lg px-3 py-1.5">💾 שמור</button>
+                                                <button type="button" onclick={cancelEditField} class="text-xs font-bold text-white/80 hover:text-white px-2 py-1.5">ביטול</button>
+                                            </div>
+                                        </div>
+                                    {:else if displayContact}
+                                        <h3 class="text-white font-bold text-sm mb-2 flex items-center gap-1.5">
+                                            <span aria-hidden="true">👤</span>
+                                            <span class="truncate min-w-0">{displayContact}</span>
+                                            {#if builderMode}
+                                                <button type="button" onclick={() => startEditField('contact', displayContact)}
+                                                    aria-label="ערוך איש קשר" title="ערוך איש קשר"
+                                                    class="text-xs bg-white/15 hover:bg-white/30 rounded-lg px-1.5 py-0.5 transition-all shrink-0">✏️</button>
+                                            {/if}
+                                        </h3>
+                                    {:else if builderMode}
+                                        <button type="button" onclick={() => startEditField('contact', '')}
+                                            class="w-full text-right border-2 border-dashed border-white/40 hover:border-white/70 bg-white/5 hover:bg-white/10 rounded-lg px-3 py-1.5 mb-2 text-white/90 text-xs font-bold transition-all">
+                                            👤 הוסיפו שם איש קשר (יופיע ככותרת התיבה)
+                                        </button>
+                                    {/if}
                                     <div class="space-y-2">
                                         {#if displayPhone}
                                             <div class="grid {canNavigate ? 'grid-cols-3' : 'grid-cols-2'} gap-2">
