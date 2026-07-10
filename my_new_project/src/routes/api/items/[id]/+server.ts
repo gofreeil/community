@@ -164,6 +164,12 @@ export const PATCH: RequestHandler = async (event) => {
                 extra.phone_public = raw === true || raw === 'true';
                 continue;
             }
+            // העדפת חשיפת שעות הפתיחה לציבור (ברירת מחדל: מוצג). נשמר כבוליאני.
+            if (key === 'hours_public') {
+                extra = extra ?? loadExtra();
+                extra.hours_public = raw === true || raw === 'true';
+                continue;
+            }
             // קישורי רשתות חברתיות + אתר - מותרים תמיד (כפתורים מותגים בדף), עם נרמול URL; '' מנקה
             if (SOCIAL_LINK_KEYS.has(key)) {
                 extra = extra ?? loadExtra();

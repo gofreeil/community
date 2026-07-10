@@ -476,6 +476,21 @@
         if (ok) phonePublicOverride = v;
     }
 
+    // ---- חשיפת שעות הפתיחה לציבור (ברירת מחדל: מוצג) ----
+    let hoursPublicOverride = $state<boolean | null>(null);
+    const hoursPublic = $derived<boolean>(
+        hoursPublicOverride ??
+        ((item as { extraFields?: { hours_public?: unknown } } | null)?.extraFields?.hours_public !== false)
+    );
+    // הבעלים / רכז / סופר-אדמין / מצב בנייה תמיד רואים; הציבור רק אם לא הוסתר
+    const canSeeHours = $derived(hoursPublic || isOwnerItem || canEditPage || builderMode);
+
+    async function setHoursPublic(v: boolean) {
+        if (v === hoursPublic) return;
+        const ok = await saveFields({ hours_public: v }, 'hours_public');
+        if (ok) hoursPublicOverride = v;
+    }
+
     // עריכת שדה טקסט בודד במקום (כותרת / תיאור / טלפון / איש קשר)
     let editingField = $state('');
     let draftText = $state('');
@@ -1921,7 +1936,7 @@
                     {/if}
 
                     <!-- Activities schedule (each activity has its own time) + opening hours -->
-                    {#if otherActivities.length > 0 || openingHoursText || (canEditActivities && builderMode)}
+                    {#if otherActivities.length > 0 || (openingHoursText && canSeeHours) || (canEditActivities && builderMode)}
                         <section class="pt-3 border-t border-white/10">
                             <div class="flex items-center justify-between mb-2">
                                 <h2 class="text-base font-bold text-white flex items-center gap-1.5">
@@ -1935,11 +1950,23 @@
                             </div>
 
                             {#if !editingSchedule}
-                                {#if openingHoursText}
+                                {#if openingHoursText && canSeeHours}
                                     <div class="rounded-xl border border-white/10 bg-[#0f172a] px-3 py-2 mb-2 flex items-start gap-2 text-xs">
                                         <span class="font-bold text-amber-200 whitespace-nowrap">שעות פתיחה</span>
                                         <span class="text-white leading-snug">{openingHoursText}</span>
+                                        {#if builderMode}
+                                            <!-- הצג / אל תציג את שעות הפתיחה לגולשים (ברירת מחדל: מוצג) -->
+                                            <span class="ms-auto shrink-0 inline-flex rounded-full border border-white/15 overflow-hidden text-[11px] font-bold">
+                                                <button type="button" onclick={() => setHoursPublic(true)} disabled={savingTag === 'hours_public'}
+                                                    class="px-2 py-0.5 transition-all {hoursPublic ? 'bg-emerald-500/25 text-emerald-200' : 'text-gray-400 hover:text-gray-200'}">הצג</button>
+                                                <button type="button" onclick={() => setHoursPublic(false)} disabled={savingTag === 'hours_public'}
+                                                    class="px-2 py-0.5 transition-all {!hoursPublic ? 'bg-white/15 text-white' : 'text-gray-400 hover:text-gray-200'}">אל תציג</button>
+                                            </span>
+                                        {/if}
                                     </div>
+                                    {#if builderMode && !hoursPublic}
+                                        <p class="text-[11px] text-gray-500 leading-snug mb-2 -mt-1">🙈 שעות הפתיחה מוסתרות מהגולשים. לחצו "הצג" כדי שיופיעו בדף.</p>
+                                    {/if}
                                 {/if}
                                 {#if otherActivities.length === 0 && builderMode && canEditActivities}
                                     <button type="button" onclick={startEditSchedule}
