@@ -1418,7 +1418,7 @@
 
 <!-- Hidden keys (rendered in dedicated sections, complex types, or internal-only) -->
 {#snippet extraFieldsBlock()}
-    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'menu_images', 'map_image', 'price', 'website', 'whatsapp', 'telegram', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname', 'age', 'birth_date', 'sector', 'gender', 'type', 'activities', 'links', 'gmach_type', 'gmach_types', 'place_status', 'location', 'option_id', 'last_seen', 'hours'])}
+    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'menu_images', 'map_image', 'price', 'website', 'whatsapp', 'telegram', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname', 'age', 'birth_date', 'sector', 'gender', 'type', 'activities', 'links', 'gmach_type', 'gmach_types', 'place_status', 'location', 'option_id', 'last_seen', 'hours', 'phone_public', 'hours_public'])}
     {@const LABELS_HE: Record<string, string> = {
         nickname: 'שם או כינוי',
         gender: 'מין',
