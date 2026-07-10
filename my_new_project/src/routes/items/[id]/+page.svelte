@@ -1208,7 +1208,7 @@
             <span class="text-[10px] opacity-70">{shareMenuOpen ? '▲' : '▼'}</span>
         </button>
         {#if shareMenuOpen}
-            <div class="mt-2 flex gap-1.5 justify-around bg-white/5 border border-white/10 rounded-xl px-3 py-2 backdrop-blur-sm" role="menu">
+            <div class="mt-2 flex flex-wrap gap-1.5 justify-center bg-white/5 border border-white/10 rounded-xl px-3 py-2 backdrop-blur-sm" role="menu">
                 {#if canNativeShare}
                     <button type="button" onclick={() => { shareNative(); shareMenuOpen = false; }} aria-label="שתף את הדף" title="שתף את הדף"
                         class="bg-gradient-to-l from-blue-600 to-purple-600 hover:opacity-90 hover:scale-110 active:scale-95 w-10 h-10 rounded-lg transition-all flex items-center justify-center text-lg">
@@ -1695,53 +1695,7 @@
 
                 <!-- Side info: nickname + description + address + contact + extra fields -->
                 <div class="px-4 md:px-5 py-3 flex flex-col gap-2">
-                    <!-- סרגל עורך: כפתורי עריכה + בורר סטטוס + מחיקה. בזרימה (לא מרחף) כדי
-                         שלא יתנגש עם התוכן. גלוי לבעלים / רכז / סופר-אדמין. -->
-                    {#if (item as { isOwner?: boolean } | null)?.isOwner || singlesState === 'owner' || canEditPage}
-                        <!-- מוסתר בנייד לפי בקשת המשתמש; מוצג מ-md ומעלה (דסקטופ) -->
-                        <div class="rounded-xl border border-white/10 bg-white/5 p-2 hidden md:flex flex-wrap items-center gap-1.5 mb-1">
-                            <span class="text-amber-300 text-sm shrink-0 leading-none" aria-hidden="true">✏️</span>
-                            {#if canEditPage && !builderMode}
-                                <button type="button" onclick={() => (builderMode = true)}
-                                    class="text-[11px] font-bold rounded-full px-2.5 py-1 border border-amber-500/40 bg-amber-500/15 text-amber-300 hover:bg-amber-500/30 transition-all whitespace-nowrap">
-                                    עריכת כרטיס הפריט
-                                </button>
-                            {/if}
-                            {#if (item as { isOwner?: boolean } | null)?.isOwner || singlesState === 'owner'}
-                                <a href={item.category === 'singles' ? `/add/singles?edit=${item.id}` : `/add/${item.category}?edit=${item.id}`}
-                                    class="text-[11px] font-bold rounded-full px-2.5 py-1 border border-white/20 bg-white/5 text-gray-300 hover:bg-white/15 transition-all whitespace-nowrap">
-                                    {canEditPage ? 'עריכת הפריט במפה' : 'ערוך פרופיל'}
-                                </a>
-                            {/if}
-                            {#if canEditPage}
-                                {@const cur = PLACE_STATUSES.find(s => s.value === placeStatus) ?? PLACE_STATUSES[0]}
-                                <div class="relative ms-auto">
-                                    <button type="button" onclick={() => (statusMenuOpen = !statusMenuOpen)} disabled={savingStatus}
-                                        class="text-[11px] font-bold rounded-full px-2.5 py-1 border transition-all disabled:opacity-50 flex items-center gap-1 {cur.active}">
-                                        {cur.emoji} {cur.label} <span class="opacity-70">▾</span>
-                                    </button>
-                                    {#if statusMenuOpen}
-                                        <div class="absolute z-40 top-full mt-1 end-0 min-w-[170px] rounded-xl border border-white/15 bg-[#0a0f1a] shadow-2xl p-1"
-                                            in:scale={{ duration: 120, start: 0.95 }}>
-                                            <p class="text-[10px] text-gray-500 font-bold px-2.5 pt-1 pb-0.5">סטטוס המקום</p>
-                                            {#each PLACE_STATUSES as s}
-                                                <button type="button" onclick={() => changePlaceStatus(s.value)} disabled={savingStatus}
-                                                    class="w-full text-right text-xs font-bold rounded-lg px-2.5 py-1.5 transition-colors disabled:opacity-50 flex items-center gap-2 {placeStatus === s.value ? 'bg-white/10 text-white' : 'text-gray-300 hover:bg-white/10'}">
-                                                    <span aria-hidden="true">{s.emoji}</span><span class="flex-1">{s.label}</span>
-                                                    {#if placeStatus === s.value}<span class="text-emerald-400">✓</span>{/if}
-                                                </button>
-                                            {/each}
-                                            <div class="my-1 border-t border-white/10"></div>
-                                            <button type="button" onclick={softDeleteItem} disabled={deletingItem}
-                                                class="w-full text-right text-xs font-bold text-red-300 hover:bg-red-500/15 rounded-lg px-2.5 py-1.5 transition-colors disabled:opacity-50">
-                                                {deletingItem ? 'מוחק…' : '🗑 מחק את הכרטיס'}
-                                            </button>
-                                        </div>
-                                    {/if}
-                                </div>
-                            {/if}
-                        </div>
-                    {/if}
+                    <!-- סרגל העורך (בעלים/רכז) הועבר לתחתית הדף לבקשת המשתמש - ראה מתחת לתוכן -->
                     <!-- הכינוי מוצג ככותרת רק בפנויים; במקומות/עסקים לא מציגים את שם מי שהעלה את הפריט -->
                     {#if nickname && isSingles}
                         <p class="text-white text-xl md:text-2xl font-bold leading-tight">{nickname}</p>
@@ -2037,50 +1991,53 @@
                         {@render extraFieldsBlock()}
                     {/if}
 
-                    <!-- Contact (רב/מארגן/שגריר/שדכן) - under פרטים נוספים -->
-                    {#if builderMode && editingField === 'contact'}
-                        <div class="space-y-1.5">
-                            {@render tip('שם איש הקשר - כדי שהגולשים יידעו למי לפנות')}
-                            <input type="text" bind:value={draftText} maxlength="120" placeholder="הרב ישראל ישראלי" use:focusOnMount onkeydown={editorKeys}
-                                class="w-full bg-[#0a0f1a] border border-amber-500/50 rounded-lg text-white text-sm px-2.5 py-1.5" />
-                            <div class="flex gap-2">
-                                <button type="button" onclick={saveTextField} disabled={savingTag === 'contact'}
-                                    class="text-xs font-bold text-white bg-amber-500 hover:bg-amber-400 disabled:opacity-50 rounded-lg px-3 py-1.5">💾 שמור</button>
-                                <button type="button" onclick={cancelEditField} class="text-xs font-bold text-gray-300 hover:text-white px-2 py-1.5">ביטול</button>
+                    <!-- איש קשר + שתף: אחד ליד השני כדי לחסוך גלילה (לא מתחת זה לזה) -->
+                    <div class="mt-auto pt-2 flex flex-wrap items-start gap-2">
+                        <!-- Contact (רב/מארגן/שגריר/שדכן) -->
+                        {#if builderMode && editingField === 'contact'}
+                            <div class="basis-full space-y-1.5">
+                                {@render tip('שם איש הקשר - כדי שהגולשים יידעו למי לפנות')}
+                                <input type="text" bind:value={draftText} maxlength="120" placeholder="הרב ישראל ישראלי" use:focusOnMount onkeydown={editorKeys}
+                                    class="w-full bg-[#0a0f1a] border border-amber-500/50 rounded-lg text-white text-sm px-2.5 py-1.5" />
+                                <div class="flex gap-2">
+                                    <button type="button" onclick={saveTextField} disabled={savingTag === 'contact'}
+                                        class="text-xs font-bold text-white bg-amber-500 hover:bg-amber-400 disabled:opacity-50 rounded-lg px-3 py-1.5">💾 שמור</button>
+                                    <button type="button" onclick={cancelEditField} class="text-xs font-bold text-gray-300 hover:text-white px-2 py-1.5">ביטול</button>
+                                </div>
                             </div>
-                        </div>
-                    {:else if displayContact}
-                        {@const waPhone = phoneForContact ? String(phoneForContact).replace(/\D/g, '').replace(/^0/, '972') : ''}
-                        {@const phoneVisible = phoneForContact && (item.category !== 'singles' || singlesState === 'approved' || singlesState === 'owner')}
-                        {@const waUrl = waPhone && phoneVisible ? `https://wa.me/${waPhone}` : null}
-                        <div class="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2">
-                            <span class="text-purple-400 text-lg shrink-0" aria-hidden="true">👤</span>
-                            <div class="flex flex-col leading-tight min-w-0 flex-1">
-                                <span class="text-[11px] text-gray-400">איש קשר</span>
-                                {#if waUrl}
-                                    <a href={waUrl} target="_blank" rel="noopener noreferrer" class="text-emerald-300 hover:text-emerald-200 font-bold text-sm inline-flex items-center gap-1 min-w-0 max-w-full" title="פתח בוואטסאפ">
-                                        💬 <span class="truncate min-w-0">{displayContact}</span>
-                                    </a>
-                                {:else}
-                                    <span class="font-bold text-white text-sm truncate">{displayContact}</span>
+                        {:else if displayContact}
+                            {@const waPhone = phoneForContact ? String(phoneForContact).replace(/\D/g, '').replace(/^0/, '972') : ''}
+                            {@const phoneVisible = phoneForContact && (item.category !== 'singles' || singlesState === 'approved' || singlesState === 'owner')}
+                            {@const waUrl = waPhone && phoneVisible ? `https://wa.me/${waPhone}` : null}
+                            <div class="flex-1 min-w-[150px] flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2">
+                                <span class="text-purple-400 text-lg shrink-0" aria-hidden="true">👤</span>
+                                <div class="flex flex-col leading-tight min-w-0 flex-1">
+                                    <span class="text-[11px] text-gray-400">איש קשר</span>
+                                    {#if waUrl}
+                                        <a href={waUrl} target="_blank" rel="noopener noreferrer" class="text-emerald-300 hover:text-emerald-200 font-bold text-sm inline-flex items-center gap-1 min-w-0 max-w-full" title="פתח בוואטסאפ">
+                                            💬 <span class="truncate min-w-0">{displayContact}</span>
+                                        </a>
+                                    {:else}
+                                        <span class="font-bold text-white text-sm truncate">{displayContact}</span>
+                                    {/if}
+                                </div>
+                                {#if builderMode}
+                                    <button type="button" onclick={() => startEditField('contact', displayContact)}
+                                        aria-label="ערוך איש קשר" title="ערוך איש קשר"
+                                        class="text-sm bg-amber-500/15 hover:bg-amber-500/30 border border-amber-500/40 rounded-lg px-1.5 py-0.5 transition-all shrink-0">✏️</button>
                                 {/if}
                             </div>
-                            {#if builderMode}
-                                <button type="button" onclick={() => startEditField('contact', displayContact)}
-                                    aria-label="ערוך איש קשר" title="ערוך איש קשר"
-                                    class="text-sm bg-amber-500/15 hover:bg-amber-500/30 border border-amber-500/40 rounded-lg px-1.5 py-0.5 transition-all shrink-0">✏️</button>
-                            {/if}
-                        </div>
-                    {:else if builderMode}
-                        <button type="button" onclick={() => startEditField('contact', '')}
-                            class="w-full text-right border-2 border-dashed border-amber-400/40 hover:border-amber-400/70 bg-amber-500/5 hover:bg-amber-500/10 rounded-xl px-3 py-2 text-amber-200 text-sm font-bold transition-all">
-                            👤 הוסיפו איש קשר
-                        </button>
-                    {/if}
+                        {:else if builderMode}
+                            <button type="button" onclick={() => startEditField('contact', '')}
+                                class="flex-1 min-w-[150px] text-right border-2 border-dashed border-amber-400/40 hover:border-amber-400/70 bg-amber-500/5 hover:bg-amber-500/10 rounded-xl px-3 py-2 text-amber-200 text-sm font-bold transition-all">
+                                👤 הוסיפו איש קשר
+                            </button>
+                        {/if}
 
-                    <!-- Share buttons at bottom of side panel -->
-                    <div class="mt-auto pt-2">
-                        {@render shareBlock()}
+                        <!-- שתף - ליד איש הקשר -->
+                        <div class="flex-1 min-w-[150px]">
+                            {@render shareBlock()}
+                        </div>
                     </div>
                 </div>
                 </div>
@@ -2299,6 +2256,52 @@
                     </div>
                 </div>
             </div>
+
+            <!-- סרגל עורך (בעלים/רכז) - ממוקם בתחתית הדף לבקשת המשתמש -->
+            {#if (item as { isOwner?: boolean } | null)?.isOwner || singlesState === 'owner' || canEditPage}
+                <div class="mt-3 rounded-2xl md:rounded-3xl border border-white/10 bg-[#0f172a] shadow-2xl p-2.5 flex flex-wrap items-center gap-1.5">
+                    <span class="text-amber-300 text-sm shrink-0 leading-none" aria-hidden="true">✏️</span>
+                    {#if canEditPage && !builderMode}
+                        <button type="button" onclick={() => (builderMode = true)}
+                            class="text-[11px] font-bold rounded-full px-2.5 py-1 border border-amber-500/40 bg-amber-500/15 text-amber-300 hover:bg-amber-500/30 transition-all whitespace-nowrap">
+                            עריכת כרטיס הפריט
+                        </button>
+                    {/if}
+                    {#if (item as { isOwner?: boolean } | null)?.isOwner || singlesState === 'owner'}
+                        <a href={item.category === 'singles' ? `/add/singles?edit=${item.id}` : `/add/${item.category}?edit=${item.id}`}
+                            class="text-[11px] font-bold rounded-full px-2.5 py-1 border border-white/20 bg-white/5 text-gray-300 hover:bg-white/15 transition-all whitespace-nowrap">
+                            {canEditPage ? 'עריכת הפריט במפה' : 'ערוך פרופיל'}
+                        </a>
+                    {/if}
+                    {#if canEditPage}
+                        {@const cur = PLACE_STATUSES.find(s => s.value === placeStatus) ?? PLACE_STATUSES[0]}
+                        <div class="relative ms-auto">
+                            <button type="button" onclick={() => (statusMenuOpen = !statusMenuOpen)} disabled={savingStatus}
+                                class="text-[11px] font-bold rounded-full px-2.5 py-1 border transition-all disabled:opacity-50 flex items-center gap-1 {cur.active}">
+                                {cur.emoji} {cur.label} <span class="opacity-70">▾</span>
+                            </button>
+                            {#if statusMenuOpen}
+                                <div class="absolute z-40 bottom-full mb-1 end-0 min-w-[170px] rounded-xl border border-white/15 bg-[#0a0f1a] shadow-2xl p-1"
+                                    in:scale={{ duration: 120, start: 0.95 }}>
+                                    <p class="text-[10px] text-gray-500 font-bold px-2.5 pt-1 pb-0.5">סטטוס המקום</p>
+                                    {#each PLACE_STATUSES as s}
+                                        <button type="button" onclick={() => changePlaceStatus(s.value)} disabled={savingStatus}
+                                            class="w-full text-right text-xs font-bold rounded-lg px-2.5 py-1.5 transition-colors disabled:opacity-50 flex items-center gap-2 {placeStatus === s.value ? 'bg-white/10 text-white' : 'text-gray-300 hover:bg-white/10'}">
+                                            <span aria-hidden="true">{s.emoji}</span><span class="flex-1">{s.label}</span>
+                                            {#if placeStatus === s.value}<span class="text-emerald-400">✓</span>{/if}
+                                        </button>
+                                    {/each}
+                                    <div class="my-1 border-t border-white/10"></div>
+                                    <button type="button" onclick={softDeleteItem} disabled={deletingItem}
+                                        class="w-full text-right text-xs font-bold text-red-300 hover:bg-red-500/15 rounded-lg px-2.5 py-1.5 transition-colors disabled:opacity-50">
+                                        {deletingItem ? 'מוחק…' : '🗑 מחק את הכרטיס'}
+                                    </button>
+                                </div>
+                            {/if}
+                        </div>
+                    {/if}
+                </div>
+            {/if}
 
             <!-- ===== תגובות ===== -->
             <section class="mt-3 bg-[#0f172a] rounded-2xl md:rounded-3xl border border-white/10 shadow-2xl overflow-hidden">
