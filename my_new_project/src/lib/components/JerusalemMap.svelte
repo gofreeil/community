@@ -658,8 +658,8 @@
     let mapMarkerLayer: any = null;     // L.LayerGroup לכל המרקרים
 
     // טיילי OSM פתוחים בחינם
-    // רקע מפה כהה מ-CARTO (Dark Matter) - מתאים לעיצוב הכהה. ייחוס מוקטן ב-CSS למטה.
-    const TILE_URL = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+    // רקע מפה בהיר מ-CARTO (Positron) - בהיר וברור. ייחוס מוקטן ב-CSS למטה.
+    const TILE_URL = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
     const TILE_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> · <a href="https://carto.com/attributions">CARTO</a>';
 
     // צבע hex לפי שם צבע (כדי לא להסתמך על Tailwind dynamic classes)
@@ -2570,19 +2570,19 @@
     /* z-index לעטיפת ה-Leaflet במצב מסך מלא */
     :global(.leaflet-container) {
         font-family: inherit;
-        background: #1a2233;
+        background: #e8e8e8;
     }
     /* שורת הייחוס (חובה חוקית) - מוקטנת ודהויה כדי שלא תבלוט */
     :global(.leaflet-control-attribution) {
         font-size: 8px !important;
         line-height: 1.4 !important;
         padding: 0 4px !important;
-        background: rgba(15, 23, 42, 0.45) !important;
-        color: rgba(255, 255, 255, 0.4) !important;
+        background: rgba(255, 255, 255, 0.7) !important;
+        color: rgba(30, 41, 59, 0.55) !important;
         border-top-left-radius: 6px;
     }
     :global(.leaflet-control-attribution a) {
-        color: rgba(255, 255, 255, 0.55) !important;
+        color: rgba(30, 41, 59, 0.8) !important;
     }
 
     /* ----- מצב מסך מלא: כפתורי קטגוריה קומפקטיים + מפה ממלאת ----- */

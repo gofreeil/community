@@ -25,8 +25,8 @@
         onUserPin?: (lat: number, lng: number) => void;
     } = $props();
 
-    // רקע מפה כהה מ-CARTO (Dark Matter) - מתאים לעיצוב הכהה. ייחוס מוקטן ב-CSS למטה.
-    const TILE_URL = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+    // רקע מפה בהיר מ-CARTO (Positron) - בהיר וברור. ייחוס מוקטן ב-CSS למטה.
+    const TILE_URL = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
     const TILE_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> · <a href="https://carto.com/attributions">CARTO</a>';
 
     let mapEl: HTMLDivElement;
@@ -293,12 +293,12 @@
         font-size: 8px !important;
         line-height: 1.4 !important;
         padding: 0 4px !important;
-        background: rgba(15, 23, 42, 0.45) !important;
-        color: rgba(255, 255, 255, 0.4) !important;
+        background: rgba(255, 255, 255, 0.7) !important;
+        color: rgba(30, 41, 59, 0.55) !important;
         border-top-left-radius: 6px;
     }
     :global(.leaflet-control-attribution a) {
-        color: rgba(255, 255, 255, 0.55) !important;
+        color: rgba(30, 41, 59, 0.8) !important;
     }
     /* מכולת המפה */
     .map-wrap {
