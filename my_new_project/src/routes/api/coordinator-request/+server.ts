@@ -1,6 +1,6 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { strapiPost } from '$lib/server/strapiClient';
-import { getAllSuperAdmins, createItem } from '$lib/server/db';
+import { getAllSuperAdmins, createItem, getUserByAnyId, coordinatorCovers } from '$lib/server/db';
 import { Resend } from 'resend';
 
 interface CoordRequestInfo {
@@ -78,6 +78,17 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
         if (!name || !phone || !neighborhoods || neighborhoods.length === 0) {
             return json({ error: 'Missing required fields' }, { status: 400 });
+        }
+
+        // מניעת בקשה כפולה: אם המשתמש כבר רכז של כל האזורים המבוקשים - אין טעם בבקשה
+        // חדשה (היא הייתה נתקעת כ-pending בפאנל האדמין). לא יוצרים רשומה ולא שולחים התראות.
+        try {
+            const me = await getUserByAnyId(String(session.user.id));
+            if (me && coordinatorCovers(me.coordinator_of, neighborhoods)) {
+                return json({ success: true, alreadyCoordinator: true });
+            }
+        } catch (e) {
+            console.warn('[coordinator-request] already-coordinator check failed:', e);
         }
 
         // שמור בקשה ב-Strapi

@@ -926,6 +926,27 @@ function coordAreaKey(entry: string): string {
 }
 
 /**
+ * האם ה-coordinator_of של המשתמש כבר מכסה את כל האזורים המבוקשים (השוואה לפי שם+עיר).
+ * משמש לסגירת בקשות רכזות מיותרות: אם המבקש כבר רכז של כל מה שביקש - אין טעם בבקשה.
+ * מחזיר false לרשימת אזורים ריקה (אין מה לכסות).
+ */
+export function coordinatorCovers(coordinatorOf: string[] | null | undefined, requested: string[]): boolean {
+    if (!requested.length) return false;
+    const have = new Set((coordinatorOf ?? []).map(coordAreaKey));
+    return requested.every((a) => have.has(coordAreaKey(a)));
+}
+
+/**
+ * סימון בקשת רכזות כ-approved בלי למנות מחדש - לניקוי רשומות שנתקעו pending אף
+ * שהמבקש כבר רכז (למשל אם שלב סימון ה-approved נכשל בעת האישור). best-effort/idempotent.
+ */
+export async function markCoordinatorRequestApproved(documentId: string, decidedBy: string): Promise<void> {
+    await strapiPut(`/api/coordinator-requests/${documentId}`, {
+        data: { status: 'approved', decided_at: new Date().toISOString(), decided_by: decidedBy },
+    });
+}
+
+/**
  * אישור בקשת רכזות: ממנה את המשתמש לרכז של השכונות שביקש (במיזוג עם הקיימות)
  * ומסמן את הבקשה כ-approved כדי שתעלם מרשימת הממתינים.
  * מדיניות "רכז אחד לשכונה": המינוי מסיר אוטומטית כל רכז קיים מאותן שכונות.
@@ -994,9 +1015,7 @@ export async function approveCoordinatorRequest(documentId: string, decidedBy: s
     await updateStrapiUpUser(targetUser.id, { coordinator_of: merged });
     invalidate('user:');
 
-    await strapiPut(`/api/coordinator-requests/${documentId}`, {
-        data: { status: 'approved', decided_at: new Date().toISOString(), decided_by: decidedBy },
-    });
+    await markCoordinatorRequestApproved(documentId, decidedBy);
 
     // שליחת הודעת אישור אוטומטית למשתמש (הודעה באתר = פריט category 'message')
     // try/catch - כשל בהודעה לא יבטל את האישור עצמו

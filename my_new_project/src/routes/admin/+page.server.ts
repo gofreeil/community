@@ -1,7 +1,7 @@
 import { redirect, fail, error } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { requireSuperAdmin, requireAdmin } from '$lib/server/auth';
-import { getAllUsers, banUser, unbanUser, setUserRole, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByEmail, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, getNeighborhoodById, approveNeighborhood, rejectNeighborhood, getDiscountCodes, saveDiscountCodes, getItemsByCategoryAndStatus, getUserTotpSecret } from '$lib/server/db';
+import { getAllUsers, banUser, unbanUser, setUserRole, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByEmail, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, getNeighborhoodById, approveNeighborhood, rejectNeighborhood, getDiscountCodes, saveDiscountCodes, getItemsByCategoryAndStatus, getUserTotpSecret, coordinatorCovers, markCoordinatorRequestApproved } from '$lib/server/db';
 import { finalizeLocationDecision } from '$lib/server/locationDecision';
 import { DEFAULT_DISCOUNT_CODES, type DiscountCode } from '$lib/discountCodes';
 import { countPending } from '$lib/server/adsStore';
@@ -121,8 +121,29 @@ export const load: PageServerLoad = async (event) => {
         requester: requesterContextFor(nb.user_id, { name: nb.requester_name, phone: nb.requester_phone }),
     }));
 
+    // ריפוי-עצמי: בקשה שכבר מומשה (המבקש כבר רכז של כל האזורים שביקש) עלולה להיתקע
+    // כ-pending — אם שלב סימון ה-approved נכשל בעת האישור, או אם מונה לרכז בדרך אחרת.
+    // מסננים אותה מהתצוגה, ומסמנים approved ברקע כדי שלא תחזור בטעינה הבאה (best-effort).
+    const usersByPhone = new Map(users.filter((u) => u.phone).map((u) => [u.phone, u]));
+    const requesterUserFor = (r: (typeof coordinatorRequests)[number]) =>
+        (r.user_id ? usersById.get(r.user_id) : undefined) ?? (r.phone ? usersByPhone.get(r.phone) : undefined);
+    const alreadyCoordinated = (r: (typeof coordinatorRequests)[number]) =>
+        coordinatorCovers((requesterUserFor(r) as any)?.coordinator_of, r.neighborhoods);
+
+    const staleResolved = coordinatorRequests.filter(alreadyCoordinated);
+    const activeCoordinatorRequests = coordinatorRequests.filter((r) => !alreadyCoordinated(r));
+    if (staleResolved.length) {
+        await Promise.allSettled(
+            staleResolved.map((r) =>
+                markCoordinatorRequestApproved(r.id, session?.user?.id ?? 'system:self-heal').catch((e) => {
+                    console.warn('[admin] self-heal coord request failed:', e instanceof Error ? e.message : e);
+                }),
+            ),
+        );
+    }
+
     // בקשות רכזות - אותו הקשר מלא (מקום מגורים רשום + פרטי קשר) לכל כרטיס
-    const coordinatorRequestsWithContext = coordinatorRequests.map((r) => ({
+    const coordinatorRequestsWithContext = activeCoordinatorRequests.map((r) => ({
         ...r,
         requester: requesterContextFor(r.user_id, { name: r.name, phone: r.phone }),
     }));
