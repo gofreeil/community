@@ -42,6 +42,17 @@
 		}
 	}
 
+	// דרגת המשתמש - נגזרת מהתפקיד + היותו רכז שכונה
+	function rankLabel(role: string, coordinatorOf: string[] | undefined): string {
+		if (role === 'super_admin') return 'מנהל ראשי';
+		if (role === 'neighborhood_admin') return 'אדמין שכונתי';
+		if (coordinatorOf && coordinatorOf.length > 0) return 'רכז';
+		return 'צופה';
+	}
+
+	// מספר מניות פלטפורמה - ברירת מחדל 0 לכל משתמש עד להודעה חדשה
+	const shares = $derived(Number((u as any).shares ?? 0));
+
 	function fmtDate(d: string | null | undefined): string {
 		if (!d) return '';
 		try {
@@ -68,7 +79,8 @@
 		{ label: 'מגדר', value: genderLabel(u.gender), icon: '👤' },
 		{ label: 'מצב משפחתי', value: u.family_status, icon: '💍' },
 		{ label: 'תאריך לידה', value: fmtDate(u.birth_date), icon: '🎂' },
-		{ label: 'ספק התחברות', value: u.provider, icon: '🔑' },
+		{ label: 'דרגה', value: rankLabel(u.role, u.coordinator_of), icon: '🎖️' },
+		{ label: 'מניות', value: `${shares}`, icon: '📈' },
 		{ label: 'הצטרף בתאריך', value: fmtDate(u.created_at), icon: '📅' },
 	].filter(f => f.value));
 </script>

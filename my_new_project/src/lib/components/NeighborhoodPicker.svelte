@@ -1,6 +1,8 @@
 <script lang="ts">
-    // בורר מיקום שכונה: התושב לוחץ/גורר פין על המפה כדי לסמן את מיקום השכונה החדשה,
-    // או מקליד קואורדינטות ידנית אם יש לו. lat/lng נחשפים ב-bind.
+    // בורר מיקום שכונה — דגם "סמן קבוע במרכז":
+    // הסמן 📍 יושב תמיד במרכז המסך. התושב גורר את המפה כך שהסמן יהיה על המיקום
+    // המבוקש, ולוחץ על כפתור "אישור המיקום". מרכז המפה = הקואורדינטה (lat/lng, bind).
+    // אין צורך "לנעוץ" או "לגרור פין" — כמו בגוגל מפות / גט / וולט.
     import { onMount } from 'svelte';
     import { _ } from 'svelte-i18n';
     import { getCoordsFor, hasPreciseCoords } from '$lib/neighborhoodCoords';
@@ -21,11 +23,10 @@
         restrictToCity?: boolean;
         lat?: number | null;
         lng?: number | null;
-        /** נקרא כשהמשתמש עצמו הזיז/סימן פין (להבדיל מהצבה תוכנתית מבחוץ), עם הקואורדינטות החדשות */
+        /** נקרא כשהמשתמש עצמו מיקם/אישר את הסמן (להבדיל מהצבה תוכנתית מבחוץ) */
         onUserPin?: (lat: number, lng: number) => void;
     } = $props();
 
-    // רקע מפה בהיר מ-CARTO (Positron) - בהיר וברור. ייחוס מוקטן ב-CSS למטה.
     // OSM הרשמי - צבעוני עם שמות רחובות בעברית. שרת יחיד (HTTP/2), בלי מפתח.
     const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
     const TILE_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
@@ -33,17 +34,26 @@
     let mapEl: HTMLDivElement;
     let L: any = null;
     let map: any = null;
-    let marker: any = null;
     let ready = $state(false);
 
-    // אנימציית הדגמה: יד שגוררת פין על המפה עם הסבר, נעלמת אחרי כמה שניות
+    // האם המשתמש כבר קבע מיקום (גרר את המפה / לחץ אישור / הוקלד ידנית)
+    let placed = $state(lat != null && lng != null);
+    // האם המפה נגררת ברגע זה (להנפשת "הרמת" הסמן)
+    let dragging = $state(false);
+    // דגל: התזוזה הבאה יזמה המשתמש (נדלק ב-dragstart בלבד). תזוזות תוכנתיות
+    // (setView / invalidateSize / zoom) לא מדליקות אותו ולכן לא נחשבות לסימון.
+    let userGesture = false;
+
+    // הצגת שדות קואורדינטות ידניים (מקופל כברירת מחדל - למתקדמים בלבד)
+    let showManual = $state(false);
+
+    // הדגמה מונפשת חד-פעמית: יד גוררת את המפה. נעלמת אחרי כמה שניות / בגרירה ראשונה
     let showDemo = $state(false);
     let demoTimer: ReturnType<typeof setTimeout> | null = null;
-
     function playDemo() {
         showDemo = true;
         if (demoTimer) clearTimeout(demoTimer);
-        demoTimer = setTimeout(() => (showDemo = false), 6500);
+        demoTimer = setTimeout(() => (showDemo = false), 6000);
     }
     function dismissDemo() {
         showDemo = false;
@@ -51,7 +61,7 @@
         demoTimer = null;
     }
 
-    // הגדלת המפה למסך מלא וסגירה חזרה
+    // הגדלה למסך מלא וסגירה חזרה
     let expanded = $state(false);
     function toggleExpand() {
         expanded = !expanded;
@@ -69,49 +79,45 @@
         return () => { document.body.style.overflow = ''; };
     });
 
-    // זום פנימה/החוצה דרך כפתורים מותאמים (במקום בקרת Leaflet המובנית)
     function zoomIn()  { map?.zoomIn?.(); }
     function zoomOut() { map?.zoomOut?.(); }
 
-    function pinIcon() {
-        return L.divIcon({
-            html: '<div style="font-size:30px;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5));">📍</div>',
-            className: '',
-            iconSize: [30, 30],
-            iconAnchor: [15, 30],
-        });
-    }
-
-    function setPin(latlng: { lat: number; lng: number }, recenter = false, byUser = true) {
-        lat = +latlng.lat.toFixed(6);
-        lng = +latlng.lng.toFixed(6);
-        if (byUser) { onUserPin?.(lat, lng); dismissDemo(); }
+    // קורא את מרכז המפה → lat/lng. fromUser=true כשזו פעולה של המשתמש.
+    function captureCenter(fromUser: boolean) {
         if (!map) return;
-        if (!marker) {
-            marker = L.marker([lat, lng], { draggable: true, icon: pinIcon() }).addTo(map);
-            marker.on('dragend', () => setPin(marker.getLatLng()));
-        } else {
-            marker.setLatLng([lat, lng]);
-        }
-        if (recenter) map.setView([lat, lng], Math.max(map.getZoom(), 15), { animate: true });
+        const c = map.getCenter();
+        lat = +c.lat.toFixed(6);
+        lng = +c.lng.toFixed(6);
+        placed = true;
+        if (fromUser) { onUserPin?.(lat, lng); dismissDemo(); }
     }
 
+    // "אישור המיקום": קובע את המרכז הנוכחי כמיקום + סוגר מסך מלא אם פתוח.
+    // זהו הכפתור הראשי — עונה על השאלה "מה עכשיו?" שהמשתמש נתקע בה.
+    function confirmLocation() {
+        captureCenter(true);
+        if (expanded) toggleExpand();
+    }
+
+    // הזנת קואורדינטות ידנית → מזיז את המפה למיקום שהוקלד
     function onManualInput() {
         if (lat != null && lng != null && Number.isFinite(lat) && Number.isFinite(lng) && map) {
-            setPin({ lat, lng }, true);
+            placed = true;
+            map.setView([lat, lng], Math.max(map.getZoom(), 16), { animate: true });
+            onUserPin?.(lat, lng);
+            dismissDemo();
         }
     }
 
-    // הצבת פין מבחוץ (geocoding של הכתובת שהוקלדה): כשה-lat/lng הכבולים משתנים
-    // שלא דרך אינטראקציה עם המפה - מזיזים את הסמן ומתמקדים עליו.
+    // הצבה מבחוץ (geocoding של הכתובת שהוקלדה): כשה-lat/lng הכבולים משתנים
+    // שלא דרך גרירת המפה - ממרכזים את המפה עליהם (לא נחשב סימון של המשתמש).
     $effect(() => {
         const la = lat, ln = lng;
         if (!map || la == null || ln == null) return;
-        if (marker) {
-            const cur = marker.getLatLng();
-            if (Math.abs(cur.lat - la) < 1e-7 && Math.abs(cur.lng - ln) < 1e-7) return;
-        }
-        setPin({ lat: la, lng: ln }, true, false);
+        const c = map.getCenter();
+        if (Math.abs(c.lat - la) < 1e-6 && Math.abs(c.lng - ln) < 1e-6) return;
+        placed = true;
+        map.setView([la, ln], Math.max(map.getZoom(), 16), { animate: true });
     });
 
     onMount(async () => {
@@ -125,7 +131,6 @@
     });
 
     // נקודת הפתיחה: שכונה מדויקת (זום קרוב) → מרכז עיר → ברירת מחדל.
-    // שכונה נחשבת מדויקת רק אם יש לה קואורדינטה משלה (שונה ממרכז העיר).
     function homeView(): { center: [number, number]; zoom: number } {
         const cityCenter = getCoordsFor(undefined, city);
         if (neighborhood) {
@@ -137,8 +142,7 @@
         return { center: cityCenter, zoom: 13 };
     }
 
-    // גבולות שוטטות סביב העיר (±~13 ק"מ) - רק כשהעיר באמת מוכרת לנו,
-    // אחרת (יישוב חדש ללא קואורדינטות) המפה נשארת חופשית.
+    // גבולות שוטטות סביב העיר (±~13 ק"מ) - רק כשהעיר באמת מוכרת לנו.
     function cityBounds(): [[number, number], [number, number]] | null {
         if (!restrictToCity || !hasPreciseCoords(undefined, city)) return null;
         const [cLat, cLng] = getCoordsFor(undefined, city);
@@ -155,37 +159,37 @@
         const bounds = cityBounds();
 
         map = L.map(mapEl, {
-            // בקרת הזום המובנית של Leaflet יושבת בפינה שמאל-עליון ומתנגשת בכפתור
-            // ההגדלה - לכן מכבים אותה ומשתמשים בכפתורי זום מותאמים (map-zoom).
             zoomControl: false,
             scrollWheelZoom: true,
             minZoom: bounds ? 11 : 8,
             maxZoom: 19,
             ...(bounds ? { maxBounds: bounds, maxBoundsViscosity: 1.0 } : {}),
-        }).setView(center, lat != null && lng != null ? 15 : home.zoom);
-        map.attributionControl?.setPrefix(false); // מסיר את הקישור "Leaflet" משורת הייחוס
+        }).setView(center, lat != null && lng != null ? 16 : home.zoom);
+        map.attributionControl?.setPrefix(false);
 
-        // בלי subdomains/detectRetina בכוונה: OSM = שרת יחיד HTTP/2, פחות בקשות = מהיר יותר
         L.tileLayer(TILE_URL, { attribution: TILE_ATTR, maxZoom: 19, maxNativeZoom: 19, keepBuffer: 4, updateWhenZooming: false }).addTo(map);
-        map.on('click', (e: any) => setPin(e.latlng));
 
-        // פין קיים (עריכה/geocoding) מוצב תוכנתית - לא נחשב סימון ידני של המשתמש
-        if (lat != null && lng != null) setPin({ lat, lng }, false, false);
+        // המשתמש גורר את המפה → הסמן (מרכז) נשאר על המיקום; ב-dragend קוראים אותו.
+        // רק גרירה יזומה נספרת: תזוזות תוכנתיות (setView/invalidateSize/zoom) מדלגות.
+        map.on('dragstart', () => { userGesture = true; dragging = true; dismissDemo(); });
+        map.on('moveend', () => {
+            dragging = false;
+            if (userGesture) { userGesture = false; captureCenter(true); }
+        });
 
         setTimeout(() => map?.invalidateSize?.(), 50);
         setTimeout(() => map?.invalidateSize?.(), 300);
 
-        // הדגמה מונפשת רק כשעדיין אין פין (המשתמש צריך לסמן)
-        if (lat == null || lng == null) setTimeout(playDemo, 400);
+        // הדגמה מונפשת רק כשעדיין לא נקבע מיקום
+        if (!placed) setTimeout(playDemo, 500);
 
         return () => {
             try { map?.remove?.(); } catch {}
             map = null;
-            marker = null;
         };
     });
 
-    // מרכוז מחדש כשאין עדיין פין והעיר/שכונה משתנות + עדכון גבולות השוטטות
+    // מרכוז מחדש כשעדיין אין מיקום והעיר/שכונה משתנות + עדכון גבולות השוטטות
     $effect(() => {
         void city; void neighborhood; // תלות מפורשת
         if (!map) return;
@@ -197,7 +201,7 @@
             map.setMaxBounds(null);
             map.setMinZoom(8);
         }
-        if (marker) return;
+        if (placed) return;
         const home = homeView();
         map.setView(home.center, home.zoom, { animate: true });
     });
@@ -206,86 +210,108 @@
 <svelte:window on:keydown={onKeydown} />
 
 <div class="space-y-2">
-    <!-- מכולת המפה: יחסית כדי לעגן את שכבת ההדגמה וכפתור ההגדלה -->
+    <!-- מכולת המפה: יחסית כדי לעגן את הסמן הקבוע, ההוראה, הכפתורים וההדגמה -->
     <div class="map-wrap {expanded ? 'map-wrap--expanded' : ''}">
         <div
             bind:this={mapEl}
-            class="map-el {expanded ? '' : 'h-56 rounded-xl'} w-full overflow-hidden border border-white/15 bg-slate-800"
+            class="map-el {expanded ? '' : 'h-64 rounded-xl'} w-full overflow-hidden border border-white/15 bg-slate-800"
         ></div>
 
-        <!-- כפתור הגדלה / סגירה -->
-        <button
-            type="button"
-            onclick={toggleExpand}
-            class="map-btn map-btn--expand"
-            aria-label={expanded ? $_('components.np_close_map_aria') : $_('components.np_expand_map_aria')}
-            title={expanded ? $_('components.np_close_map_title') : $_('components.np_expand_map_title')}
-        >
-            {#if expanded}
-                <span class="text-lg leading-none">✕</span>
-                <span class="hidden sm:inline">{$_('components.close')}</span>
-            {:else}
-                <span class="text-lg leading-none">⤢</span>
-                <span class="hidden sm:inline">{$_('components.np_expand')}</span>
-            {/if}
-        </button>
-
-        <!-- כפתורי זום מותאמים (פינה ימנית-עליונה, לא מתנגשים בכפתור ההגדלה) -->
-        <div class="map-zoom" aria-hidden={!ready}>
-            <button
-                type="button"
-                onclick={zoomIn}
-                class="map-btn map-zoom-btn"
-                aria-label={$_('components.np_zoom_in')}
-                title={$_('components.np_zoom_in')}
-            >+</button>
-            <button
-                type="button"
-                onclick={zoomOut}
-                class="map-btn map-zoom-btn"
-                aria-label={$_('components.np_zoom_out')}
-                title={$_('components.np_zoom_out')}
-            >−</button>
+        <!-- הסמן הקבוע במרכז: התושב מזיז את המפה מתחתיו. לא חוסם גרירה. -->
+        <div class="center-pin {dragging ? 'center-pin--lift' : ''}" aria-hidden="true">
+            <div class="center-pin__icon">📍</div>
+            <div class="center-pin__dot"></div>
         </div>
 
-        <!-- שכבת ההדגמה המונפשת: יד גוררת פין על המפה -->
-        {#if showDemo}
-            <div class="demo-overlay">
-                <div class="demo-banner">{$_('components.np_drag_pin')}</div>
-                <div class="demo-stage">
-                    <div class="demo-pin">📍</div>
-                    <div class="demo-hand">🖐️</div>
-                </div>
-            </div>
-            <!-- כפתור הפעלה חוזרת של ההדגמה -->
-            <button type="button" onclick={dismissDemo} class="map-btn map-btn--gotit">{$_('components.np_got_it')}</button>
-        {:else}
+        <!-- הוראה מתמדת בראש המפה: מסבירה בדיוק מה לעשות -->
+        <div class="map-hint">{$_('components.np_drag_map')}</div>
+
+        <!-- כפתורי זום (פינה ימנית-עליונה) -->
+        <div class="map-zoom" aria-hidden={!ready}>
+            <button type="button" onclick={zoomIn} class="map-btn map-zoom-btn" aria-label={$_('components.np_zoom_in')} title={$_('components.np_zoom_in')}>+</button>
+            <button type="button" onclick={zoomOut} class="map-btn map-zoom-btn" aria-label={$_('components.np_zoom_out')} title={$_('components.np_zoom_out')}>−</button>
+        </div>
+
+        {#if expanded}
+            <!-- מסך מלא: כפתור סגירה קטן למעלה + סרגל אישור גדול בתחתית -->
             <button
                 type="button"
-                onclick={playDemo}
-                class="map-btn map-btn--help"
-                aria-label={$_('components.np_how_to_mark_aria')}
-                title={$_('components.np_show_demo_title')}
-            >?</button>
+                onclick={toggleExpand}
+                class="map-btn map-btn--x"
+                aria-label={$_('components.np_close_map_aria')}
+                title={$_('components.np_close_map_title')}
+            >✕</button>
+
+            <div class="map-confirmbar">
+                <div class="map-confirmbar__text">
+                    {placed ? $_('components.np_center_here') : $_('components.np_position_then_confirm')}
+                </div>
+                <button type="button" onclick={confirmLocation} class="map-confirm-btn">
+                    ✓ {$_('components.np_confirm')}
+                </button>
+            </div>
+        {:else}
+            <!-- מוקטן: כפתור הגדלה למסך מלא -->
+            <button
+                type="button"
+                onclick={toggleExpand}
+                class="map-btn map-btn--expand"
+                aria-label={$_('components.np_expand_map_aria')}
+                title={$_('components.np_expand_map_title')}
+            >
+                <span class="text-base leading-none">⤢</span>
+                <span class="hidden sm:inline">{$_('components.np_expand')}</span>
+            </button>
+        {/if}
+
+        <!-- שכבת ההדגמה המונפשת: יד גוררת את המפה -->
+        {#if showDemo && !expanded}
+            <div class="demo-overlay">
+                <div class="demo-banner">{$_('components.np_drag_map')}</div>
+                <div class="demo-hand">🖐️</div>
+            </div>
         {/if}
     </div>
 
-    <div class="flex gap-2" dir="ltr">
-        <input
-            type="number" step="any" inputmode="decimal"
-            bind:value={lat} oninput={onManualInput}
-            placeholder={$_('components.np_lat_placeholder')}
-            class="w-1/2 rounded-lg bg-white/5 border border-white/15 px-3 py-2 text-sm text-gray-100 placeholder:text-gray-500"
-        />
-        <input
-            type="number" step="any" inputmode="decimal"
-            bind:value={lng} oninput={onManualInput}
-            placeholder={$_('components.np_lng_placeholder')}
-            class="w-1/2 rounded-lg bg-white/5 border border-white/15 px-3 py-2 text-sm text-gray-100 placeholder:text-gray-500"
-        />
-    </div>
-    {#if lat != null && lng != null}
-        <p class="text-xs text-emerald-400">{$_('components.np_location_marked', { values: { lat, lng } })}</p>
+    {#if !expanded}
+        <!-- כפתור אישור ראשי מתחת למפה המוקטנת -->
+        <button
+            type="button"
+            onclick={confirmLocation}
+            class="confirm-inline {placed ? 'confirm-inline--done' : ''}"
+        >
+            {placed ? `✓ ${$_('components.np_confirmed')}` : `📍 ${$_('components.np_confirm')}`}
+        </button>
+        <p class="text-center text-xs {placed ? 'text-emerald-400' : 'text-gray-400'}">
+            {placed ? $_('components.np_drag_to_adjust') : $_('components.np_drag_map')}
+        </p>
+
+        <!-- קואורדינטות ידניות - מקופל, למי שכבר יש לו קו רוחב/אורך -->
+        <div class="pt-0.5">
+            <button
+                type="button"
+                onclick={() => (showManual = !showManual)}
+                class="text-xs text-gray-500 hover:text-gray-300 transition-colors"
+            >
+                {showManual ? '▴' : '▾'} {$_('components.np_manual_coords')}
+            </button>
+            {#if showManual}
+                <div class="mt-1.5 flex gap-2" dir="ltr">
+                    <input
+                        type="number" step="any" inputmode="decimal"
+                        bind:value={lat} oninput={onManualInput}
+                        placeholder={$_('components.np_lat_placeholder')}
+                        class="w-1/2 rounded-lg bg-white/5 border border-white/15 px-3 py-2 text-sm text-gray-100 placeholder:text-gray-500"
+                    />
+                    <input
+                        type="number" step="any" inputmode="decimal"
+                        bind:value={lng} oninput={onManualInput}
+                        placeholder={$_('components.np_lng_placeholder')}
+                        class="w-1/2 rounded-lg bg-white/5 border border-white/15 px-3 py-2 text-sm text-gray-100 placeholder:text-gray-500"
+                    />
+                </div>
+            {/if}
+        </div>
     {/if}
 </div>
 
@@ -293,11 +319,11 @@
     :global(.leaflet-container) {
         background: #e8e6e0;
     }
-    /* OSM כבר צבעוני מטבעו - בלי פילטר שמעוות. חידוד עדין בלבד. */
+    /* OSM כבר צבעוני מטבעו - חידוד עדין בלבד. */
     :global(.leaflet-tile-pane) {
         filter: saturate(1.1);
     }
-    /* שורת הייחוס (חובה חוקית) - מוקטנת ודהויה כדי שלא תבלוט */
+    /* שורת הייחוס (חובה חוקית) - מוקטנת ודהויה */
     :global(.leaflet-control-attribution) {
         font-size: 8px !important;
         line-height: 1.4 !important;
@@ -309,7 +335,7 @@
     :global(.leaflet-control-attribution a) {
         color: rgba(30, 41, 59, 0.8) !important;
     }
-    /* מכולת המפה */
+
     .map-wrap {
         position: relative;
     }
@@ -327,7 +353,116 @@
         border: 0;
     }
 
-    /* כפתורי בקרה על המפה (מעל שכבות Leaflet) */
+    /* ===== הסמן הקבוע במרכז ===== */
+    .center-pin {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        z-index: 800;
+        pointer-events: none; /* חשוב: הגרירה עוברת דרכו אל המפה */
+        transform: translate(-50%, -100%);
+        transition: transform 0.18s ease;
+    }
+    /* בזמן גרירה הסמן "נרם" מעט כלפי מעלה - משוב מגע */
+    .center-pin--lift {
+        transform: translate(-50%, -100%) translateY(-6px);
+    }
+    .center-pin__icon {
+        font-size: 2.6rem;
+        line-height: 1;
+        filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.5));
+    }
+    /* נקודה קטנה שמסמנת את הנקודה המדויקת שעליה יושב חוד הסמן */
+    .center-pin__dot {
+        position: absolute;
+        bottom: -3px;
+        left: 50%;
+        width: 8px;
+        height: 8px;
+        margin-left: -4px;
+        border-radius: 999px;
+        background: rgba(220, 38, 38, 0.9);
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.25);
+    }
+
+    /* ===== הוראה מתמדת בראש המפה ===== */
+    .map-hint {
+        position: absolute;
+        top: 0.5rem;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1000;
+        max-width: min(90%, 22rem);
+        padding: 0.4rem 0.9rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-align: center;
+        color: #fff;
+        background: rgba(15, 23, 42, 0.82);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+        backdrop-filter: blur(2px);
+        pointer-events: none;
+    }
+
+    /* ===== סרגל האישור בתחתית (מסך מלא) ===== */
+    .map-confirmbar {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+        padding: 0.9rem 1rem calc(0.9rem + env(safe-area-inset-bottom));
+        background: linear-gradient(to top, rgba(15, 23, 42, 0.97) 65%, rgba(15, 23, 42, 0));
+    }
+    .map-confirmbar__text {
+        text-align: center;
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #e2e8f0;
+    }
+    .map-confirm-btn {
+        width: 100%;
+        padding: 0.95rem;
+        border-radius: 0.9rem;
+        border: 0;
+        font-size: 1.1rem;
+        font-weight: 900;
+        color: #fff;
+        background: linear-gradient(90deg, #059669, #10b981);
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45);
+        cursor: pointer;
+        transition: filter 0.15s, transform 0.1s;
+    }
+    .map-confirm-btn:hover { filter: brightness(1.06); }
+    .map-confirm-btn:active { transform: scale(0.98); }
+
+    /* ===== כפתור אישור מתחת למפה המוקטנת ===== */
+    .confirm-inline {
+        width: 100%;
+        padding: 0.85rem;
+        border-radius: 0.9rem;
+        border: 1px solid rgba(16, 185, 129, 0.5);
+        font-size: 1rem;
+        font-weight: 900;
+        color: #fff;
+        background: linear-gradient(90deg, #2563eb, #7c3aed);
+        box-shadow: 0 4px 16px rgba(37, 99, 235, 0.35);
+        cursor: pointer;
+        transition: filter 0.15s, transform 0.1s;
+    }
+    .confirm-inline:hover { filter: brightness(1.06); }
+    .confirm-inline:active { transform: scale(0.99); }
+    .confirm-inline--done {
+        background: linear-gradient(90deg, #059669, #10b981);
+        box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+    }
+
+    /* ===== כפתורי בקרה על המפה ===== */
     .map-btn {
         position: absolute;
         z-index: 1000;
@@ -348,11 +483,20 @@
         transform: translateY(-1px);
     }
     .map-btn--expand {
-        top: 0.5rem;
+        bottom: 0.5rem;
         left: 0.5rem;
-        padding: 0.35rem 0.6rem;
+        padding: 0.4rem 0.65rem;
         border-radius: 0.6rem;
         font-size: 0.8rem;
+    }
+    .map-btn--x {
+        top: 0.5rem;
+        left: 0.5rem;
+        width: 2.2rem;
+        height: 2.2rem;
+        justify-content: center;
+        border-radius: 0.6rem;
+        font-size: 1rem;
     }
     /* כפתורי זום מוערמים בפינה ימנית-עליונה */
     .map-zoom {
@@ -374,31 +518,8 @@
         line-height: 1;
         padding: 0;
     }
-    .map-btn--help {
-        bottom: 0.5rem;
-        right: 0.5rem;
-        width: 1.9rem;
-        height: 1.9rem;
-        justify-content: center;
-        border-radius: 999px;
-        font-size: 1.05rem;
-        color: #1e293b;
-    }
-    .map-btn--gotit {
-        bottom: 0.6rem;
-        right: 0.5rem;
-        padding: 0.4rem 0.8rem;
-        border-radius: 999px;
-        font-size: 0.85rem;
-        background: #10b981;
-        color: #fff;
-        border-color: rgba(16, 185, 129, 0.6);
-    }
-    .map-btn--gotit:hover {
-        background: #059669;
-    }
 
-    /* שכבת ההדגמה המונפשת */
+    /* ===== שכבת ההדגמה: יד גוררת את המפה ===== */
     .demo-overlay {
         position: absolute;
         inset: 0;
@@ -408,67 +529,32 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        background: rgba(2, 6, 23, 0.32);
+        background: rgba(2, 6, 23, 0.28);
         backdrop-filter: blur(1px);
         animation: demo-fade 0.4s ease;
     }
     .demo-banner {
-        margin-bottom: 1.4rem;
+        margin-bottom: 1rem;
         padding: 0.55rem 1.1rem;
         border-radius: 999px;
-        font-size: 1.05rem;
+        font-size: 0.95rem;
         font-weight: 800;
         color: #fff;
         background: linear-gradient(90deg, #2563eb, #7c3aed);
         box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-        animation: demo-pop 2.2s ease-in-out infinite;
-    }
-    /* אזור התנועה: פין קבוע + יד שנעה וגוררת אותו */
-    .demo-stage {
-        position: relative;
-        width: 160px;
-        height: 60px;
-    }
-    .demo-pin {
-        position: absolute;
-        top: 0;
-        left: 50%;
-        font-size: 2.6rem;
-        line-height: 1;
-        filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.55));
-        transform-origin: bottom center;
-        animation: demo-drag-pin 2.6s ease-in-out infinite;
     }
     .demo-hand {
-        position: absolute;
-        top: 1.4rem;
-        left: 50%;
-        font-size: 2.1rem;
+        font-size: 2.4rem;
         line-height: 1;
         filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
-        animation: demo-drag-hand 2.6s ease-in-out infinite;
+        animation: demo-swipe 2.2s ease-in-out infinite;
     }
-
-    /* הפין: נאחז (קפיצה קטנה) ואז נגרר שמאלה עם היד */
-    @keyframes demo-drag-pin {
-        0%   { transform: translateX(0) scale(1); }
-        12%  { transform: translateX(0) scale(1.18); }
-        20%  { transform: translateX(0) scale(1.12); }
-        60%  { transform: translateX(-58px) scale(1.12); }
-        72%  { transform: translateX(-58px) scale(1); }
-        100% { transform: translateX(-58px) scale(1); }
-    }
-    @keyframes demo-drag-hand {
-        0%   { transform: translateX(6px) rotate(0deg); }
-        12%  { transform: translateX(2px) rotate(-8deg); }
-        60%  { transform: translateX(-56px) rotate(-8deg); }
-        72%  { transform: translateX(-52px) rotate(0deg); }
-        100% { transform: translateX(6px) rotate(0deg); opacity: 0.9; }
-    }
-    @keyframes demo-pop {
-        0%, 100% { transform: scale(1); }
-        50%      { transform: scale(1.06); }
+    /* היד נעה שמאלה-ימינה כדי להדגים גרירת המפה */
+    @keyframes demo-swipe {
+        0%   { transform: translateX(46px) rotate(-6deg); }
+        50%  { transform: translateX(-46px) rotate(6deg); }
+        100% { transform: translateX(46px) rotate(-6deg); }
     }
     @keyframes demo-fade {
         from { opacity: 0; }
@@ -476,6 +562,6 @@
     }
 
     @media (prefers-reduced-motion: reduce) {
-        .demo-banner, .demo-pin, .demo-hand { animation: none; }
+        .demo-hand, .center-pin { animation: none; transition: none; }
     }
 </style>
