@@ -458,6 +458,24 @@
         }
     }
 
+    // ---- חשיפת מספר הטלפון לציבור (ברירת מחדל: מוסתר) ----
+    let phonePublicOverride = $state<boolean | null>(null);
+    const phonePublic = $derived<boolean>(
+        phonePublicOverride ??
+        ((item as { extraFields?: { phone_public?: unknown } } | null)?.extraFields?.phone_public === true)
+    );
+    const isOwnerItem = $derived(!!(item as { isOwner?: boolean } | null)?.isOwner);
+    // הבעלים / רכז / סופר-אדמין / מצב בנייה תמיד רואים את הטלפון; הציבור רק אם סומן "הצג"
+    const canSeePhone = $derived(phonePublic || isOwnerItem || canEditPage || builderMode);
+    // הטלפון שנחשף בכפתורי יצירת הקשר לציבור - ריק כשמוסתר, כדי שלא ידלוף דרך tel:/wa.me
+    const phoneForContact = $derived(canSeePhone ? displayPhone : '');
+
+    async function setPhonePublic(v: boolean) {
+        if (v === phonePublic) return;
+        const ok = await saveFields({ phone_public: v }, 'phone_public');
+        if (ok) phonePublicOverride = v;
+    }
+
     // עריכת שדה טקסט בודד במקום (כותרת / תיאור / טלפון / איש קשר)
     let editingField = $state('');
     let draftText = $state('');
@@ -1720,11 +1738,15 @@
                             {placeStatusBadge.emoji} {placeStatusBadge.label}
                         </span>
                     {/if}
-                    {#if age != null}
-                        <p class="text-gray-300 text-base leading-tight">גיל: {age}</p>
-                    {/if}
-                    {#if sector}
-                        <p class="text-gray-300 text-base leading-tight">{sector}</p>
+                    {#if age != null || sector}
+                        <div class="flex flex-wrap items-center gap-x-4 gap-y-0.5">
+                            {#if age != null}
+                                <p class="text-gray-300 text-base leading-tight">גיל: {age}</p>
+                            {/if}
+                            {#if sector}
+                                <p class="text-gray-300 text-base leading-tight">{sector}</p>
+                            {/if}
+                        </div>
                     {/if}
 
                     <!-- תיאור: עריכה במקום במצב בנייה -->
@@ -1756,6 +1778,8 @@
                         </button>
                     {/if}
 
+                    <!-- כתובת + טלפון: אחד ליד השני כדי לחסוך גלילה מטה -->
+                    <div class="flex flex-wrap items-center gap-x-4 gap-y-1.5">
                     {#if item.address}
                         {@const cityOnly = (() => {
                             const parts = String(item.address).split(',').map(p => p.trim()).filter(Boolean);
@@ -1775,8 +1799,8 @@
                     <!-- Phone (non-singles or singles approved) -->
                     {#if item.category !== 'singles'}
                         {#if builderMode && editingField === 'phone'}
-                            <div class="space-y-1.5">
-                                {@render tip('טלפון שיוצג לכולם בדף - אליו יתקשרו גולשים שרוצים פרטים')}
+                            <div class="space-y-1.5 basis-full">
+                                {@render tip('טלפון ליצירת קשר. בעזרת הכפתור "הצג / אל תציג" קובעים אם המספר יופיע לגולשים')}
                                 <input type="tel" dir="ltr" bind:value={draftText} maxlength="40" placeholder="05X-XXXXXXX" use:focusOnMount onkeydown={editorKeys}
                                     class="w-full bg-[#0a0f1a] border border-amber-500/50 rounded-lg text-white text-sm px-2.5 py-1.5" />
                                 <div class="flex gap-2">
@@ -1785,16 +1809,26 @@
                                     <button type="button" onclick={cancelEditField} class="text-xs font-bold text-gray-300 hover:text-white px-2 py-1.5">ביטול</button>
                                 </div>
                             </div>
-                        {:else if displayPhone}
-                            <p class="text-base text-gray-200 flex items-center gap-1.5">
+                        {:else if displayPhone && canSeePhone}
+                            <p class="text-base text-gray-200 flex flex-wrap items-center gap-1.5">
                                 <span class="text-green-400">📞</span>
                                 <a href="tel:{displayPhone}" class="hover:text-white">{displayPhone}</a>
                                 {#if builderMode}
                                     <button type="button" onclick={() => startEditField('phone', displayPhone)}
                                         aria-label="ערוך טלפון" title="ערוך טלפון"
                                         class="text-sm bg-amber-500/15 hover:bg-amber-500/30 border border-amber-500/40 rounded-lg px-1.5 py-0.5 transition-all">✏️</button>
+                                    <!-- הצג / אל תציג את המספר לגולשים (ברירת מחדל: אל תציג) -->
+                                    <span class="inline-flex rounded-full border border-white/15 overflow-hidden text-[11px] font-bold ms-1">
+                                        <button type="button" onclick={() => setPhonePublic(true)} disabled={savingTag === 'phone_public'}
+                                            class="px-2 py-0.5 transition-all {phonePublic ? 'bg-emerald-500/25 text-emerald-200' : 'text-gray-400 hover:text-gray-200'}">הצג</button>
+                                        <button type="button" onclick={() => setPhonePublic(false)} disabled={savingTag === 'phone_public'}
+                                            class="px-2 py-0.5 transition-all {!phonePublic ? 'bg-white/15 text-white' : 'text-gray-400 hover:text-gray-200'}">אל תציג</button>
+                                    </span>
                                 {/if}
                             </p>
+                            {#if builderMode && !phonePublic}
+                                <p class="basis-full text-[11px] text-gray-500 leading-snug -mt-1">🙈 המספר מוסתר מהגולשים. לחצו "הצג" כדי שיופיע בדף ובכפתורי יצירת הקשר.</p>
+                            {/if}
                         {:else if builderMode}
                             <button type="button" onclick={() => startEditField('phone', '')}
                                 class="w-full text-right border-2 border-dashed border-amber-400/40 hover:border-amber-400/70 bg-amber-500/5 hover:bg-amber-500/10 rounded-xl px-3 py-2 text-amber-200 text-sm font-bold transition-all">
@@ -1807,6 +1841,7 @@
                             <a href="tel:{item.phone}" class="hover:text-white">{item.phone}</a>
                         </p>
                     {/if}
+                    </div>
 
                     <!-- "נראה לאחרונה" - קריאות אובדן -->
                     {@render lastSeenBlock()}
@@ -1988,8 +2023,8 @@
                             </div>
                         </div>
                     {:else if displayContact}
-                        {@const waPhone = displayPhone ? String(displayPhone).replace(/\D/g, '').replace(/^0/, '972') : ''}
-                        {@const phoneVisible = displayPhone && (item.category !== 'singles' || singlesState === 'approved' || singlesState === 'owner')}
+                        {@const waPhone = phoneForContact ? String(phoneForContact).replace(/\D/g, '').replace(/^0/, '972') : ''}
+                        {@const phoneVisible = phoneForContact && (item.category !== 'singles' || singlesState === 'approved' || singlesState === 'owner')}
                         {@const waUrl = waPhone && phoneVisible ? `https://wa.me/${waPhone}` : null}
                         <div class="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2">
                             <span class="text-purple-400 text-lg shrink-0" aria-hidden="true">👤</span>
@@ -2163,17 +2198,17 @@
                                     </div>
                                 {/if}
                             {:else}
-                                {@const waDigits = displayPhone ? String(displayPhone).replace(/\D/g, '').replace(/^0/, '972') : ''}
+                                {@const waDigits = phoneForContact ? String(phoneForContact).replace(/\D/g, '').replace(/^0/, '972') : ''}
                                 <div class="rounded-xl border border-white/10 bg-gradient-to-br from-purple-600/90 to-blue-600/90 p-3">
                                     <h3 class="text-white font-bold text-sm mb-2 flex items-center gap-1.5">
                                         יצירת קשר עם המפרסם
                                     </h3>
                                     <div class="space-y-2">
-                                        {#if displayPhone}
+                                        {#if phoneForContact}
                                             <div class="grid {canNavigate ? 'grid-cols-3' : 'grid-cols-2'} gap-2">
                                                 <a
-                                                    href="tel:{displayPhone}"
-                                                    aria-label="התקשר עכשיו – {displayPhone}"
+                                                    href="tel:{phoneForContact}"
+                                                    aria-label="התקשר עכשיו – {phoneForContact}"
                                                     class="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 rounded-lg text-center shadow hover:scale-[1.02] active:scale-95 transition-all text-sm"
                                                 >
                                                     📞 התקשר

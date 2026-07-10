@@ -158,6 +158,12 @@ export const PATCH: RequestHandler = async (event) => {
                 extra.map_image = chosen && isSafeImage(chosen) ? chosen : '';
                 continue;
             }
+            // העדפת חשיפת מספר הטלפון לציבור (ברירת מחדל: מוסתר). נשמר כבוליאני.
+            if (key === 'phone_public') {
+                extra = extra ?? loadExtra();
+                extra.phone_public = raw === true || raw === 'true';
+                continue;
+            }
             // קישורי רשתות חברתיות + אתר - מותרים תמיד (כפתורים מותגים בדף), עם נרמול URL; '' מנקה
             if (SOCIAL_LINK_KEYS.has(key)) {
                 extra = extra ?? loadExtra();
