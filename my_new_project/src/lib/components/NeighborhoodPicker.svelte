@@ -25,9 +25,8 @@
         onUserPin?: (lat: number, lng: number) => void;
     } = $props();
 
-    // רקע מפה כהה מ-CARTO (Dark Matter) - CDN מהיר, מתאים לעיצוב הכהה, בלי מפתח API
-    const TILE_URL = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
-    const TILE_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>';
+    const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+    const TILE_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
 
     let mapEl: HTMLDivElement;
     let L: any = null;
@@ -159,11 +158,11 @@
             zoomControl: false,
             scrollWheelZoom: true,
             minZoom: bounds ? 11 : 8,
-            maxZoom: 20,
+            maxZoom: 19,
             ...(bounds ? { maxBounds: bounds, maxBoundsViscosity: 1.0 } : {}),
         }).setView(center, lat != null && lng != null ? 15 : home.zoom);
 
-        L.tileLayer(TILE_URL, { attribution: TILE_ATTR, subdomains: 'abcd', maxZoom: 20, maxNativeZoom: 20, detectRetina: true, keepBuffer: 4, updateWhenZooming: false }).addTo(map);
+        L.tileLayer(TILE_URL, { attribution: TILE_ATTR, maxZoom: 19, maxNativeZoom: 19, keepBuffer: 4, updateWhenZooming: false }).addTo(map);
         map.on('click', (e: any) => setPin(e.latlng));
 
         // פין קיים (עריכה/geocoding) מוצב תוכנתית - לא נחשב סימון ידני של המשתמש

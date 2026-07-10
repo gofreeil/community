@@ -658,9 +658,8 @@
     let mapMarkerLayer: any = null;     // L.LayerGroup לכל המרקרים
 
     // טיילי OSM פתוחים בחינם
-    // רקע מפה כהה מ-CARTO (Dark Matter) - CDN מהיר, מתאים לעיצוב הכהה, בלי מפתח API
-    const TILE_URL = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
-    const TILE_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>';
+    const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+    const TILE_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
 
     // צבע hex לפי שם צבע (כדי לא להסתמך על Tailwind dynamic classes)
     const colorHex: Record<string, string> = {
@@ -835,15 +834,13 @@
             maxBounds: israelBounds,
             maxBoundsViscosity: 1.0,
             minZoom: 8,  // הגבלת zoom out לרמה 8 (עם zoom out יותר מוגבל)
-            maxZoom: 20
+            maxZoom: 19
         }).setView(center, 14);
 
         leafletL.tileLayer(TILE_URL, {
             attribution: TILE_ATTR,
-            subdomains: 'abcd',       // CARTO מגיש מ-4 תת-דומיינים - טעינה מקבילית מהירה יותר
-            maxZoom: 20,
-            maxNativeZoom: 20,        // רמת ה-zoom המקסימלית ש-CARTO מגיש בפועל
-            detectRetina: true,       // אריחי @2x חדים במסכי retina/נייד
+            maxZoom: 19,
+            maxNativeZoom: 19,        // רמת ה-zoom המקסימלית ש-OSM מגיש בפועל
             keepBuffer: 4,            // שומר יותר אריחים מסביב לתצוגה - פחות ריבועים לבנים בגרירה/זום
             updateWhenZooming: false, // לא לבקש אריחים חדשים באמצע אנימציית הזום - מונע את ההבזק/הריבוע הלבן
         }).addTo(leafletMap);
