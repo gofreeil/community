@@ -1678,11 +1678,16 @@
 	}
 
 	function scrollToEditProfile() {
-		if (profileCompletion >= 100) return;
+		// בנייד מקטע עריכת הפרופיל מוסתר (hidden md:block) כל עוד הלשונית הפעילה
+		// אינה 'profile'. הכפתורים שקוראים לכאן ("השלמת הפרטים שלי", מעגל המילוי)
+		// יושבים בלשונית "main"/מעל הלשוניות, ולכן בלי החלפת לשונית היינו גוללים
+		// לאלמנט display:none והמשתמש חווה "הכפתור לא עובד".
+		mobileTab = "profile";
 		const wasEditing = isEditing;
 		if (!wasEditing) isEditing = true;
 
-		// מצא את השדה הראשון שלא מולא
+		// מצא את השדה הראשון שלא מולא. אם הפרופיל מלא (100%) - אין שדה חסר,
+		// עדיין פותחים את מצב העריכה וגוללים לראש המקטע (התגית אומרת "ערוך פרופיל").
 		const missingIdx = profileFields.findIndex((f) => !f);
 		const targetId =
 			missingIdx >= 0 ? profileFieldElementIds[missingIdx] : null;
