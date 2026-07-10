@@ -3,7 +3,7 @@
     // הסמן 📍 יושב תמיד במרכז המסך. התושב גורר את המפה כך שהסמן יהיה על המיקום
     // המבוקש, ולוחץ על כפתור "אישור המיקום". מרכז המפה = הקואורדינטה (lat/lng, bind).
     // אין צורך "לנעוץ" או "לגרור פין" — כמו בגוגל מפות / גט / וולט.
-    import { onMount } from 'svelte';
+    import { onMount, untrack } from 'svelte';
     import { _ } from 'svelte-i18n';
     import { getCoordsFor, hasPreciseCoords } from '$lib/neighborhoodCoords';
     import 'leaflet/dist/leaflet.css';
@@ -36,8 +36,9 @@
     let map: any = null;
     let ready = $state(false);
 
-    // האם המשתמש כבר קבע מיקום (גרר את המפה / לחץ אישור / הוקלד ידנית)
-    let placed = $state(lat != null && lng != null);
+    // "נקבע מיקום" נגזר ישירות מהקואורדינטות: כך שניקוי שדה קואורדינטה ידני
+    // מחזיר את המצב ל"טרם נקבע" במקום להישאר תקוע על "אושר" בלי מיקום בפועל.
+    let placed = $derived(lat != null && lng != null);
     // האם המפה נגררת ברגע זה (להנפשת "הרמת" הסמן)
     let dragging = $state(false);
     // דגל: התזוזה הבאה יזמה המשתמש (נדלק ב-dragstart בלבד). תזוזות תוכנתיות
@@ -88,7 +89,6 @@
         const c = map.getCenter();
         lat = +c.lat.toFixed(6);
         lng = +c.lng.toFixed(6);
-        placed = true;
         if (fromUser) { onUserPin?.(lat, lng); dismissDemo(); }
     }
 
@@ -102,7 +102,6 @@
     // הזנת קואורדינטות ידנית → מזיז את המפה למיקום שהוקלד
     function onManualInput() {
         if (lat != null && lng != null && Number.isFinite(lat) && Number.isFinite(lng) && map) {
-            placed = true;
             map.setView([lat, lng], Math.max(map.getZoom(), 16), { animate: true });
             onUserPin?.(lat, lng);
             dismissDemo();
@@ -116,7 +115,6 @@
         if (!map || la == null || ln == null) return;
         const c = map.getCenter();
         if (Math.abs(c.lat - la) < 1e-6 && Math.abs(c.lng - ln) < 1e-6) return;
-        placed = true;
         map.setView([la, ln], Math.max(map.getZoom(), 16), { animate: true });
     });
 
@@ -149,39 +147,44 @@
         return [[cLat - 0.12, cLng - 0.15], [cLat + 0.12, cLng + 0.15]];
     }
 
-    // אתחול המפה כשהיא מוכנה
+    // אתחול המפה — פעם אחת בלבד כשהיא מוכנה. הקריאה ל-lat/lng/city/neighborhood
+    // עטופה ב-untrack כדי שהאפקט לא יתלה בהם: אחרת כל גרירה (שמעדכנת lat/lng)
+    // הייתה מריצה מחדש את האפקט, מוחקת ובונה מחדש את כל מפת Leaflet (הבהוב + קפיצת זום).
+    // האפקט תלוי רק ב-ready. שינויי עיר/שכונה/מיקום מטופלים באפקטים הייעודיים למטה.
     $effect(() => {
         if (!ready || !L || !mapEl || map) return;
 
-        const home = homeView();
-        const center: [number, number] =
-            lat != null && lng != null ? [lat, lng] : home.center;
-        const bounds = cityBounds();
+        untrack(() => {
+            const home = homeView();
+            const center: [number, number] =
+                lat != null && lng != null ? [lat, lng] : home.center;
+            const bounds = cityBounds();
 
-        map = L.map(mapEl, {
-            zoomControl: false,
-            scrollWheelZoom: true,
-            minZoom: bounds ? 11 : 8,
-            maxZoom: 19,
-            ...(bounds ? { maxBounds: bounds, maxBoundsViscosity: 1.0 } : {}),
-        }).setView(center, lat != null && lng != null ? 16 : home.zoom);
-        map.attributionControl?.setPrefix(false);
+            map = L.map(mapEl, {
+                zoomControl: false,
+                scrollWheelZoom: true,
+                minZoom: bounds ? 11 : 8,
+                maxZoom: 19,
+                ...(bounds ? { maxBounds: bounds, maxBoundsViscosity: 1.0 } : {}),
+            }).setView(center, lat != null && lng != null ? 16 : home.zoom);
+            map.attributionControl?.setPrefix(false);
 
-        L.tileLayer(TILE_URL, { attribution: TILE_ATTR, maxZoom: 19, maxNativeZoom: 19, keepBuffer: 4, updateWhenZooming: false }).addTo(map);
+            L.tileLayer(TILE_URL, { attribution: TILE_ATTR, maxZoom: 19, maxNativeZoom: 19, keepBuffer: 4, updateWhenZooming: false }).addTo(map);
 
-        // המשתמש גורר את המפה → הסמן (מרכז) נשאר על המיקום; ב-dragend קוראים אותו.
-        // רק גרירה יזומה נספרת: תזוזות תוכנתיות (setView/invalidateSize/zoom) מדלגות.
-        map.on('dragstart', () => { userGesture = true; dragging = true; dismissDemo(); });
-        map.on('moveend', () => {
-            dragging = false;
-            if (userGesture) { userGesture = false; captureCenter(true); }
+            // המשתמש גורר את המפה → הסמן (מרכז) נשאר על המיקום; ב-dragend קוראים אותו.
+            // רק גרירה יזומה נספרת: תזוזות תוכנתיות (setView/invalidateSize/zoom) מדלגות.
+            map.on('dragstart', () => { userGesture = true; dragging = true; dismissDemo(); });
+            map.on('moveend', () => {
+                dragging = false;
+                if (userGesture) { userGesture = false; captureCenter(true); }
+            });
+
+            setTimeout(() => map?.invalidateSize?.(), 50);
+            setTimeout(() => map?.invalidateSize?.(), 300);
+
+            // הדגמה מונפשת רק כשעדיין לא נקבע מיקום
+            if (!placed) setTimeout(playDemo, 500);
         });
-
-        setTimeout(() => map?.invalidateSize?.(), 50);
-        setTimeout(() => map?.invalidateSize?.(), 300);
-
-        // הדגמה מונפשת רק כשעדיין לא נקבע מיקום
-        if (!placed) setTimeout(playDemo, 500);
 
         return () => {
             try { map?.remove?.(); } catch {}
@@ -334,6 +337,12 @@
     }
     :global(.leaflet-control-attribution a) {
         color: rgba(30, 41, 59, 0.8) !important;
+    }
+    /* במסך מלא סרגל האישור יושב בתחתית - מרימים את הייחוס (חובה חוקית) מעליו כדי
+       שלא ייחסם, ומעל ה-z-index שלו כדי שיישאר גלוי. */
+    .map-wrap--expanded :global(.leaflet-control-attribution) {
+        bottom: calc(7.5rem + env(safe-area-inset-bottom)) !important;
+        z-index: 1001 !important;
     }
 
     .map-wrap {
