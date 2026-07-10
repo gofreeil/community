@@ -359,7 +359,10 @@
 										</div>
 										<div class="min-w-0">
 											<div class="user-name text-lg font-bold truncate text-white">{req.name || 'ללא שם'}</div>
-											<div class="text-base text-gray-400 truncate">📞 {req.phone || '-'}</div>
+											<div class="text-base text-gray-400 truncate flex items-center gap-1.5">
+												<svg class="w-4 h-4 text-green-400 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79c1.44 2.83 3.76 5.15 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.32.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+												<span class="truncate">{req.phone || '-'}</span>
+											</div>
 										</div>
 									</a>
 
