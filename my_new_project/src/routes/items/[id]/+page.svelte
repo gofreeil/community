@@ -464,9 +464,9 @@
         phonePublicOverride ??
         ((item as { extraFields?: { phone_public?: unknown } } | null)?.extraFields?.phone_public === true)
     );
-    const isOwnerItem = $derived(!!(item as { isOwner?: boolean } | null)?.isOwner);
-    // הבעלים / רכז / סופר-אדמין / מצב בנייה תמיד רואים את הטלפון; הציבור רק אם סומן "הצג"
-    const canSeePhone = $derived(phonePublic || isOwnerItem || canEditPage || builderMode);
+    // בתצוגה הרגילה מציגים את הטלפון רק אם סומן "הצג" - גם לבעלים, כדי שהסימון ישפיע מיד.
+    // במצב בנייה תמיד מציגים, יחד עם מתג "הצג / אל תציג" כדי שאפשר יהיה לשנות.
+    const canSeePhone = $derived(phonePublic || builderMode);
     // הטלפון שנחשף בכפתורי יצירת הקשר לציבור - ריק כשמוסתר, כדי שלא ידלוף דרך tel:/wa.me
     const phoneForContact = $derived(canSeePhone ? displayPhone : '');
 
@@ -482,8 +482,8 @@
         hoursPublicOverride ??
         ((item as { extraFields?: { hours_public?: unknown } } | null)?.extraFields?.hours_public !== false)
     );
-    // הבעלים / רכז / סופר-אדמין / מצב בנייה תמיד רואים; הציבור רק אם לא הוסתר
-    const canSeeHours = $derived(hoursPublic || isOwnerItem || canEditPage || builderMode);
+    // בתצוגה הרגילה מציגים שעות רק אם לא הוסתרו - גם לבעלים; במצב בנייה תמיד (עם מתג "הצג / אל תציג")
+    const canSeeHours = $derived(hoursPublic || builderMode);
 
     async function setHoursPublic(v: boolean) {
         if (v === hoursPublic) return;
