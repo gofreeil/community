@@ -26,8 +26,9 @@
     } = $props();
 
     // רקע מפה בהיר מ-CARTO (Positron) - בהיר וברור. ייחוס מוקטן ב-CSS למטה.
-    const TILE_URL = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
-    const TILE_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> · <a href="https://carto.com/attributions">CARTO</a>';
+    // OSM הרשמי - צבעוני עם שמות רחובות בעברית. שרת יחיד (HTTP/2), בלי מפתח.
+    const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+    const TILE_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
 
     let mapEl: HTMLDivElement;
     let L: any = null;
@@ -159,12 +160,13 @@
             zoomControl: false,
             scrollWheelZoom: true,
             minZoom: bounds ? 11 : 8,
-            maxZoom: 20,
+            maxZoom: 19,
             ...(bounds ? { maxBounds: bounds, maxBoundsViscosity: 1.0 } : {}),
         }).setView(center, lat != null && lng != null ? 15 : home.zoom);
         map.attributionControl?.setPrefix(false); // מסיר את הקישור "Leaflet" משורת הייחוס
 
-        L.tileLayer(TILE_URL, { attribution: TILE_ATTR, subdomains: 'abcd', maxZoom: 20, maxNativeZoom: 20, detectRetina: true, keepBuffer: 4, updateWhenZooming: false }).addTo(map);
+        // בלי subdomains/detectRetina בכוונה: OSM = שרת יחיד HTTP/2, פחות בקשות = מהיר יותר
+        L.tileLayer(TILE_URL, { attribution: TILE_ATTR, maxZoom: 19, maxNativeZoom: 19, keepBuffer: 4, updateWhenZooming: false }).addTo(map);
         map.on('click', (e: any) => setPin(e.latlng));
 
         // פין קיים (עריכה/geocoding) מוצב תוכנתית - לא נחשב סימון ידני של המשתמש
@@ -289,11 +291,11 @@
 
 <style>
     :global(.leaflet-container) {
-        background: #e6e3dd;
+        background: #e8e6e0;
     }
-    /* חידוד אריחי Voyager (לא על הפינים) - contrast מבליט כבישים, saturate מוסיף צבע */
+    /* OSM כבר צבעוני מטבעו - בלי פילטר שמעוות. חידוד עדין בלבד. */
     :global(.leaflet-tile-pane) {
-        filter: contrast(1.2) saturate(1.7);
+        filter: saturate(1.1);
     }
     /* שורת הייחוס (חובה חוקית) - מוקטנת ודהויה כדי שלא תבלוט */
     :global(.leaflet-control-attribution) {

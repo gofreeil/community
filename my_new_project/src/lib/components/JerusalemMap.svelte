@@ -671,8 +671,9 @@
 
     // טיילי OSM פתוחים בחינם
     // רקע מפה בהיר מ-CARTO (Positron) - בהיר וברור. ייחוס מוקטן ב-CSS למטה.
-    const TILE_URL = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
-    const TILE_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> · <a href="https://carto.com/attributions">CARTO</a>';
+    // OSM הרשמי - צבעוני עם שמות רחובות בעברית. שרת יחיד (HTTP/2), בלי מפתח.
+    const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+    const TILE_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
 
     // צבע hex לפי שם צבע (כדי לא להסתמך על Tailwind dynamic classes)
     const colorHex: Record<string, string> = {
@@ -847,18 +848,17 @@
             maxBounds: israelBounds,
             maxBoundsViscosity: 1.0,
             minZoom: 8,  // הגבלת zoom out לרמה 8 (עם zoom out יותר מוגבל)
-            maxZoom: 20
+            maxZoom: 19
         }).setView(center, 14);
         leafletMap.attributionControl?.setPrefix(false); // מסיר את הקישור "Leaflet" משורת הייחוס
 
         leafletL.tileLayer(TILE_URL, {
             attribution: TILE_ATTR,
-            subdomains: 'abcd',       // CARTO מגיש מ-4 תת-דומיינים - טעינה מקבילית מהירה יותר
-            maxZoom: 20,
-            maxNativeZoom: 20,        // רמת ה-zoom המקסימלית ש-CARTO מגיש בפועל
-            detectRetina: true,       // אריחי @2x חדים במסכי retina/נייד
+            maxZoom: 19,
+            maxNativeZoom: 19,        // רמת ה-zoom המקסימלית ש-OSM מגיש בפועל
             keepBuffer: 4,            // שומר יותר אריחים מסביב לתצוגה - פחות ריבועים לבנים בגרירה/זום
-            updateWhenZooming: false, // לא לבקש אריחים חדשים באמצע אנימציית הזום - מונע את ההבזק/הריבוע הלבן
+            updateWhenZooming: false, // לא לבקש אריחים באמצע אנימציית הזום - זום חלק בלי הבזק לבן
+            // בלי subdomains/detectRetina בכוונה: OSM = שרת יחיד HTTP/2, פחות בקשות = מהיר יותר ופחות חסימות
         }).addTo(leafletMap);
 
         mapMarkerLayer = leafletL.layerGroup().addTo(leafletMap);
@@ -2582,11 +2582,11 @@
     /* z-index לעטיפת ה-Leaflet במצב מסך מלא */
     :global(.leaflet-container) {
         font-family: inherit;
-        background: #e6e3dd;
+        background: #e8e6e0;
     }
-    /* חידוד אריחי Voyager (לא על הפינים) - contrast מבליט כבישים, saturate מוסיף צבע */
+    /* OSM כבר צבעוני מטבעו - בלי פילטר שמעוות. חידוד עדין בלבד. */
     :global(.leaflet-tile-pane) {
-        filter: contrast(1.2) saturate(1.7);
+        filter: saturate(1.1);
     }
     /* שורת הייחוס (חובה חוקית) - מוקטנת ודהויה כדי שלא תבלוט */
     :global(.leaflet-control-attribution) {
