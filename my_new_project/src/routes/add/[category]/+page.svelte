@@ -8,6 +8,7 @@
     import NeighborhoodPicker from '$lib/components/NeighborhoodPicker.svelte';
     import StreetPicker from '$lib/components/StreetPicker.svelte';
     import ServiceTypePicker from '$lib/components/ServiceTypePicker.svelte';
+    import { guessServiceType } from '$lib/serviceTypes';
     import {
         emptyOpeningHours,
         parseOpeningHours,
@@ -530,6 +531,31 @@
     }
     function setFieldValue(key: string, value: string) {
         formValues = { ...formValues, [key]: value };
+    }
+
+    // ---- שירות ציבורי: התאמת סמל אוטומטית מתוך שם השירות ----
+    // המשתמש מקליד שם ("עיריית ירושלים", "בנק הפועלים...") ואנו בוחרים את
+    // הסמל המתאים כברירת מחדל. ברגע שהוא בוחר ידנית מהתפריט - הבחירה שלו
+    // ננעלת ולא נדרסת. בעריכת פריט קיים עם סמל שמור - מכבדים את השמור.
+    const hasServiceType = config.fields.some(f => f.type === 'service_type');
+    let serviceTypeManual = $state(
+        !!(editItem && typeof (editItem.extra_fields as Record<string, unknown> | undefined)?.service_type === 'string'
+            && (editItem.extra_fields as Record<string, string>).service_type),
+    );
+    let lastAutoLabel = $state('');
+    $effect(() => {
+        if (!hasServiceType || serviceTypeManual) return;
+        const name = (formValues.label ?? '').trim();
+        if (name === lastAutoLabel) return;
+        lastAutoLabel = name;
+        const guess = guessServiceType(name);
+        // מנחשים רק כשיש התאמה; שם ריק/לא-מזוהה משאיר את הבחירה הקודמת
+        if (guess && guess !== formValues.service_type) setFieldValue('service_type', guess);
+    });
+    // בחירה ידנית מהתפריט - ננעלת מפני הניחוש האוטומטי
+    function onServicePick(id: string) {
+        serviceTypeManual = true;
+        setFieldValue('service_type', id);
     }
 
     // ---- כשמשתמש בוחר 'מחפש להתארח' - ברירת המחדל של 'משך הפרסום' היא 'לשבת הקרובה בלבד' ----
@@ -1199,7 +1225,8 @@
                     {:else if field.type === 'service_type'}
                         <ServiceTypePicker
                             value={getFieldValue(field.key)}
-                            onSelect={(id) => setFieldValue(field.key, id)}
+                            auto={!serviceTypeManual}
+                            onSelect={onServicePick}
                         />
 
                     {:else if field.type === 'select' && field.options}

@@ -1,23 +1,27 @@
 <script lang="ts">
-    // בורר "סוג השירות" לקטגוריית שירות ציבורי. המשתמש בוחר עירייה / דואר /
-    // בנק / מקווה וכו', והסמל המתאים (data URI) יוצג על המפה. הבחירה נשמרת
-    // ב-formValues.service_type בטופס ההוספה.
+    // בורר "סמל השירות" לקטגוריית שירות ציבורי.
+    // ברירת המחדל: הסמל שהותאם אוטומטית לפי שם השירות מוצג מכווץ, עם כפתור
+    // "שנה סמל". רק בלחיצה נפתח תפריט הסמלים המלא (מחפש + רשת מקובצת).
+    // אם עדיין אין סמל - התפריט נפתח מעצמו כדי להזמין בחירה.
     import { SERVICE_GROUPS, serviceLogoDataUri, getServiceType } from '$lib/serviceTypes';
     import { heMatches } from '$lib/search';
 
     let {
         value = '',
+        auto = false,
         onSelect,
     }: {
         value?: string;
+        /** true = הסמל הנוכחי הותאם אוטומטית מהשם (מוצג תג "אוטומטי") */
+        auto?: boolean;
         onSelect: (id: string) => void;
     } = $props();
 
+    const selected = $derived(getServiceType(value));
+    // פתוח אוטומטית כשאין בחירה עדיין; אחרת מכווץ עד שהמשתמש לוחץ "שנה"
+    let expanded = $state(false);
     let query = $state('');
 
-    const selected = $derived(getServiceType(value));
-
-    // קבוצות מסוננות לפי החיפוש (שם השירות + כינויים + שם הקבוצה)
     const groups = $derived.by(() => {
         const q = query.trim();
         if (!q) return SERVICE_GROUPS;
@@ -30,70 +34,100 @@
     });
 
     const noResults = $derived(groups.length === 0);
+
+    function pick(id: string) {
+        onSelect(id);
+        expanded = false;
+        query = '';
+    }
 </script>
 
 <div class="stp">
-    <!-- תצוגת הבחירה הנוכחית -->
-    {#if selected}
-        <div class="stp-selected">
-            <img src={serviceLogoDataUri(selected.id)} alt="" class="stp-selected-icon" />
-            <div class="stp-selected-text">
-                <span class="stp-selected-label">{selected.label}</span>
-                <span class="stp-selected-hint">כך יופיע השירות על המפה · אפשר לשנות בכל רגע</span>
+    <!-- מצב מכווץ: הסמל הנבחר + כפתור שינוי -->
+    {#if selected && !expanded}
+        <div class="stp-current">
+            <img src={serviceLogoDataUri(selected.id)} alt="" class="stp-current-icon" />
+            <div class="stp-current-text">
+                <span class="stp-current-label">
+                    {selected.label}
+                    {#if auto}<span class="stp-auto">✨ הותאם אוטומטית</span>{/if}
+                </span>
+                <span class="stp-current-hint">כך יופיע השירות על המפה</span>
             </div>
+            <button type="button" class="stp-change" onclick={() => (expanded = true)}>שנה סמל</button>
+        </div>
+    {:else}
+        <!-- מצב פתוח: חיפוש + רשת בחירה -->
+        {#if selected}
+            <button type="button" class="stp-collapse" onclick={() => { expanded = false; query = ''; }}>
+                ✕ סגור בלי לשנות (נשאר: {selected.label})
+            </button>
+        {/if}
+        <input
+            type="text"
+            bind:value={query}
+            placeholder="חיפוש סוג שירות (עירייה, דואר, בנק, מקווה...)"
+            class="stp-search"
+            dir="rtl"
+        />
+        <div class="stp-scroll">
+            {#if noResults}
+                <p class="stp-empty">לא נמצא סוג שירות מתאים. נסו מילה אחרת, או בחרו "בנק אחר" / "עירייה".</p>
+            {/if}
+            {#each groups as g (g.group)}
+                <div class="stp-group">
+                    <div class="stp-group-title">{g.group}</div>
+                    <div class="stp-grid">
+                        {#each g.items as it (it.id)}
+                            <button
+                                type="button"
+                                class="stp-item {value === it.id ? 'stp-item--on' : ''}"
+                                style="--sc:{it.color}"
+                                onclick={() => pick(it.id)}
+                                title={it.label}
+                            >
+                                <img src={serviceLogoDataUri(it.id)} alt="" class="stp-item-icon" loading="lazy" />
+                                <span class="stp-item-label">{it.label}</span>
+                            </button>
+                        {/each}
+                    </div>
+                </div>
+            {/each}
         </div>
     {/if}
-
-    <!-- חיפוש -->
-    <input
-        type="text"
-        bind:value={query}
-        placeholder="חיפוש סוג שירות (עירייה, דואר, בנק, מקווה...)"
-        class="stp-search"
-        dir="rtl"
-    />
-
-    <!-- רשת הבחירה, מקובצת לפי נושא -->
-    <div class="stp-scroll">
-        {#if noResults}
-            <p class="stp-empty">לא נמצא סוג שירות מתאים. נסו מילה אחרת, או בחרו "בנק אחר" / "עירייה".</p>
-        {/if}
-        {#each groups as g (g.group)}
-            <div class="stp-group">
-                <div class="stp-group-title">{g.group}</div>
-                <div class="stp-grid">
-                    {#each g.items as it (it.id)}
-                        <button
-                            type="button"
-                            class="stp-item {value === it.id ? 'stp-item--on' : ''}"
-                            style="--sc:{it.color}"
-                            onclick={() => onSelect(it.id)}
-                            title={it.label}
-                        >
-                            <img src={serviceLogoDataUri(it.id)} alt="" class="stp-item-icon" loading="lazy" />
-                            <span class="stp-item-label">{it.label}</span>
-                        </button>
-                    {/each}
-                </div>
-            </div>
-        {/each}
-    </div>
 </div>
 
 <style>
     .stp { display: flex; flex-direction: column; gap: 10px; }
 
-    .stp-selected {
+    /* --- מצב מכווץ --- */
+    .stp-current {
         display: flex; align-items: center; gap: 12px;
-        border: 1px solid var(--sc, rgba(255,255,255,0.15));
+        border: 1px solid rgba(255,255,255,0.15);
         background: rgba(255,255,255,0.04);
         border-radius: 14px; padding: 10px 12px;
     }
-    .stp-selected-icon { width: 46px; height: 46px; border-radius: 9999px; flex-shrink: 0;
+    .stp-current-icon { width: 46px; height: 46px; border-radius: 9999px; flex-shrink: 0;
         box-shadow: 0 2px 6px rgba(0,0,0,0.4); }
-    .stp-selected-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-    .stp-selected-label { font-weight: 800; color: #fff; font-size: 0.95rem; }
-    .stp-selected-hint { font-size: 0.7rem; color: rgba(255,255,255,0.55); }
+    .stp-current-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+    .stp-current-label { font-weight: 800; color: #fff; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .stp-auto { font-size: 0.65rem; font-weight: 700; color: #a5b4fc; background: rgba(129,140,248,0.15);
+        border: 1px solid rgba(129,140,248,0.35); border-radius: 9999px; padding: 1px 8px; }
+    .stp-current-hint { font-size: 0.7rem; color: rgba(255,255,255,0.5); }
+    .stp-change {
+        flex-shrink: 0; font-size: 0.78rem; font-weight: 800; color: #fff;
+        background: rgba(129,140,248,0.25); border: 1px solid rgba(129,140,248,0.5);
+        border-radius: 10px; padding: 7px 12px; cursor: pointer; transition: background 0.12s ease;
+    }
+    .stp-change:hover { background: rgba(129,140,248,0.4); }
+
+    /* --- מצב פתוח --- */
+    .stp-collapse {
+        align-self: flex-start; font-size: 0.75rem; font-weight: 700; color: rgba(255,255,255,0.7);
+        background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 9999px; padding: 5px 12px; cursor: pointer; transition: color 0.12s ease;
+    }
+    .stp-collapse:hover { color: #fff; }
 
     .stp-search {
         width: 100%; border-radius: 12px;
@@ -130,7 +164,7 @@
     .stp-item-icon { width: 40px; height: 40px; border-radius: 9999px; box-shadow: 0 2px 5px rgba(0,0,0,0.35); }
     .stp-item-label {
         font-size: 0.7rem; font-weight: 700; color: rgba(255,255,255,0.85);
-        line-height: 1.15; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        line-height: 1.15; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
     .stp-item--on .stp-item-label { color: #fff; }
 </style>

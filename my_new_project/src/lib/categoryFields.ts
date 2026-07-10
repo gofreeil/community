@@ -326,8 +326,8 @@ export const categoryConfig: Record<string, CategoryConfig> = {
         priceRow: null,
         mapFirst: true,
         fields: [
-            { key: 'service_type', label: 'סוג השירות',             type: 'service_type', required: true, step: 'map', hint: 'בחרו את סוג השירות - הסמל המתאים יופיע אוטומטית על המפה' },
-            { key: 'label',       label: 'שם / כתובת הסניף',         type: 'text',     required: true,  placeholder: 'למשל: עיריית ירושלים - מוקד 106, בנק הפועלים סניף קרית משה', hint: 'שם השירות כפי שיוצג בכרטיס ובתווית על המפה' },
+            { key: 'label',       label: 'שם השירות',               type: 'text',     required: true,  placeholder: 'למשל: עיריית ירושלים - מוקד 106, בנק הפועלים סניף קרית משה', hint: 'הקלידו את שם השירות - נתאים לו אוטומטית את הסמל המתאים למפה' },
+            { key: 'service_type', label: 'סמל למפה',                type: 'service_type', required: true, step: 'map', hint: 'התאמנו סמל לפי השם - אפשר לשנות אותו בלחיצה, או להעלות תמונה משלכם למטה' },
             { key: 'address',     label: 'כתובת מדויקת',            type: 'address',  required: true,  placeholder: 'שם הרחוב', hint: 'בחרו רחוב מהרשימה של העיר והוסיפו מספר בית' },
             { key: 'location',    label: 'סימון על המפה',           type: 'map_pin',  required: false },
             { key: 'hours',       label: 'שעות קבלת קהל',           type: 'opening_hours', required: false, hint: 'משעת הפתיחה עד שעת הסגירה. יש קבלת קהל גם בשעות נוספות ביום (בוקר וגם אחה״צ)? הוסיפו מופע נוסף עם ＋' },
