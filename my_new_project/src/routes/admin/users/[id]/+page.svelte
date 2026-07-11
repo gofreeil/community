@@ -46,7 +46,7 @@
 	function rankLabel(role: string, coordinatorOf: string[] | undefined): string {
 		if (role === 'super_admin') return 'מנהל ראשי';
 		if (role === 'neighborhood_admin') return 'אדמין שכונתי';
-		if (coordinatorOf && coordinatorOf.length > 0) return 'רכז';
+		if (coordinatorOf && coordinatorOf.length > 0) return `רכז · ${coordinatorOf.join(', ')}`;
 		return 'צופה';
 	}
 
