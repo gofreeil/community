@@ -237,12 +237,31 @@
 			{#each years as y, yi}
 				{@const maxCount = Math.max(1, ...y.months.map((c) => c ?? 0))}
 				<div class="rounded-2xl border border-white/10 bg-white/[0.03] p-5 mb-6">
+					<!-- כותרת ממורכזת בראש הכרטיס: סיכום שנתי (כולל השנה) -->
+					{#if yi === 0}
+						<div class="mb-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-2">
+							<h2 class="flex items-center gap-1.5 text-lg font-black text-emerald-200"><span>📊</span> סיכום שנתי</h2>
+							{#each years as yy}
+								<div class="flex items-center gap-1.5 rounded-lg border border-emerald-400/20 bg-emerald-950/40 px-2.5 py-1 text-sm">
+									<span class="font-bold text-emerald-100/70">{yy.year}</span>
+									<span class="font-black text-white tabular-nums">{fmt(yy.total)}</span>
+								</div>
+							{/each}
+							{#if years.length > 1}
+								<div class="flex items-center gap-1.5 rounded-lg border border-emerald-400/40 bg-emerald-500/20 px-2.5 py-1 text-sm">
+									<span class="font-bold text-emerald-200">סה״כ</span>
+									<span class="font-black text-emerald-100 tabular-nums">{fmt(grandTotal)}</span>
+								</div>
+							{/if}
+						</div>
+					{:else}
+						<h2 class="text-lg font-black text-center mb-4">{y.year}</h2>
+					{/if}
+
 					<!-- זה-לצד-זה: גרף משמאל, פירוט חודשי מימין (בדסקטופ); נערם בנייד -->
 					<div class="flex flex-col lg:flex-row-reverse gap-4 lg:gap-4 lg:items-start">
 						<!-- גרף עמודות חודשי -->
 						<div class="lg:flex-1 min-w-0">
-						<!-- כותרת השנה — יושבת בשורת הכותרת של הפירוט (חוסך שורה נפרדת) -->
-						<div class="text-lg font-black text-right pb-1 mb-2 border-b border-white/10">{y.year}</div>
 						<div class="flex items-end gap-1 sm:gap-2 h-64 border-b border-white/10 pb-px">
 							{#each MONTH_NAMES as name, i}
 								{@const c = y.months[i]}
@@ -270,28 +289,6 @@
 								</div>
 							{/each}
 						</div>
-
-						{#if yi === 0}
-							<!-- סיכום שנתי — בתוך הכרטיס (בפנים), ממלא את החלל מתחת לגרף -->
-							<div class="mt-5 rounded-xl border border-emerald-500/30 bg-gradient-to-br from-emerald-600/15 via-emerald-500/5 to-teal-500/10 p-3.5 shadow-[0_0_20px_rgba(16,185,129,0.12)]">
-								<div class="flex flex-wrap items-center justify-end gap-x-3 gap-y-2">
-									<h3 class="flex items-center gap-1.5 text-sm font-black text-emerald-200"><span>📊</span> סיכום שנתי</h3>
-									{#each years as yy}
-										<div class="flex items-center gap-1.5 rounded-lg border border-emerald-400/20 bg-emerald-950/40 px-2.5 py-1 text-sm">
-											<span class="font-bold text-emerald-100/70">{yy.year}</span>
-											<span class="font-black text-white tabular-nums">{fmt(yy.total)}</span>
-											{#if !yy.completed}<span class="text-[10px] text-emerald-300/70">בתהליך</span>{/if}
-										</div>
-									{/each}
-									{#if years.length > 1}
-										<div class="flex items-center gap-1.5 rounded-lg border border-emerald-400/40 bg-emerald-500/20 px-2.5 py-1 text-sm">
-											<span class="font-bold text-emerald-200">סה״כ</span>
-											<span class="font-black text-emerald-100 tabular-nums">{fmt(grandTotal)}</span>
-										</div>
-									{/if}
-								</div>
-							</div>
-						{/if}
 					</div>
 						<!-- פירוט חודשי — צמוד לגרף (מימין בדסקטופ), צר כדי לפנות מקום לגרף -->
 						<div class="lg:w-40 lg:shrink-0">
