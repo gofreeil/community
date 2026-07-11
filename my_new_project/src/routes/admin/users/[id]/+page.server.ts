@@ -31,6 +31,21 @@ function parseEF(s: string | null | undefined): Record<string, unknown> {
     try { return JSON.parse(s || '{}'); } catch { return {}; }
 }
 
+// רשומות מערכת/בקשות - נשמרות טכנית כ-item אבל אינן פרסומים אמיתיים של המשתמש
+// (הודעות צ'אט, בקשות הוספת מיקום/שכונה, בקשות רכז, התראות, פניות תמיכה, אישורים).
+// הן מטופלות בצ'אט ובפאנל הניהול, ולכן מסוננות מרשימת "פרסומים".
+const NON_PUBLICATION_CATEGORIES = new Set([
+    'message',
+    'location_request',
+    'location_request_decision',
+    'location_request_ack',
+    'neighborhood_request',
+    'neighborhood',
+    'coordinator_request',
+    'admin_alert',
+    'user_feedback',
+]);
+
 /** בונה את שרשור השיחה: כל ההודעות שהמשתמש קיבל (יוצאות) + תשובות שלו לאדמין (נכנסות) */
 async function loadThread(adminId: string, userId: string) {
     try {
@@ -92,8 +107,8 @@ export const load: PageServerLoad = async (event) => {
 
     let items: Awaited<ReturnType<typeof getItemsByUserId>> = [];
     try {
-        // הודעות אישיות (category 'message') אינן פרסומים - הן מוצגות בצ'אט בלבד
-        items = (await getItemsByUserId(userId)).filter((it) => it.category !== 'message');
+        // מציגים רק תוכן שהמשתמש פרסם בפועל - לא הודעות/בקשות/רשומות מערכת
+        items = (await getItemsByUserId(userId)).filter((it) => !NON_PUBLICATION_CATEGORIES.has(it.category));
     } catch (e) {
         console.warn('[admin/users] getItemsByUserId failed:', e);
     }
