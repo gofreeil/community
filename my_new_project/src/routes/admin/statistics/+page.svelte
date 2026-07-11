@@ -40,11 +40,23 @@
 		}
 		return [...byYear.entries()]
 			.sort((a, b) => b[0] - a[0])
-			.map(([year, months]) => ({
-				year,
-				months,
-				total: months.reduce<number>((sum, c) => sum + (c ?? 0), 0),
-			}));
+			.map(([year, months]) => {
+				const total = months.reduce<number>((sum, c) => sum + (c ?? 0), 0);
+				const activeMonths = months.filter((c) => c != null).length;
+				// חודש השיא של השנה
+				let peakIdx = -1;
+				let peakCount = -1;
+				months.forEach((c, i) => {
+					if (c != null && c > peakCount) {
+						peakCount = c;
+						peakIdx = i;
+					}
+				});
+				// שנה שכבר הסתיימה לגמרי → סיכום סופי; השנה הנוכחית עדיין נצברת
+				const completed = year < currentYear;
+				const avg = activeMonths > 0 ? Math.round(total / activeMonths) : 0;
+				return { year, months, total, activeMonths, peakIdx, peakCount, completed, avg };
+			});
 	});
 
 	const grandTotal = $derived(years.reduce((sum, y) => sum + y.total, 0));
@@ -88,7 +100,14 @@
 					<tbody>
 						{#each years as y}
 							<tr class="border-b border-white/5 last:border-0">
-								<td class="py-2 font-bold">{y.year}</td>
+								<td class="py-2 font-bold">
+									{y.year}
+									{#if y.completed}
+										<span class="mr-2 align-middle text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 font-bold">✓ סוכם</span>
+									{:else}
+										<span class="mr-2 align-middle text-[10px] px-1.5 py-0.5 rounded-full bg-white/10 text-gray-300 font-bold">בתהליך</span>
+									{/if}
+								</td>
 								<td class="py-2 text-left font-black text-white">{fmt(y.total)}</td>
 							</tr>
 						{/each}
@@ -108,7 +127,24 @@
 			{#each years as y}
 				{@const maxCount = Math.max(1, ...y.months.map((c) => c ?? 0))}
 				<div class="rounded-2xl border border-white/10 bg-white/[0.03] p-5 mb-6">
-					<h2 class="text-lg font-black mb-4">{y.year}</h2>
+					<h2 class="text-lg font-black mb-3">{y.year}</h2>
+
+					<!-- סיכום סוף שנה: שנה שהסתיימה נסגרת עם סיכום סופי; הנוכחית עדיין נצברת -->
+					{#if y.completed}
+						<div class="rounded-xl border border-emerald-500/25 bg-emerald-500/[0.06] px-4 py-3 mb-4 flex flex-wrap items-center gap-x-6 gap-y-1 text-sm">
+							<span class="font-black text-emerald-200">✓ סיכום שנה שהסתיימה</span>
+							<span class="text-gray-300">סה״כ <b class="text-white">{fmt(y.total)}</b> כניסות</span>
+							<span class="text-gray-300">ממוצע חודשי <b class="text-white">{fmt(y.avg)}</b></span>
+							{#if y.peakIdx >= 0}
+								<span class="text-gray-300">חודש שיא <b class="text-white">{MONTH_NAMES[y.peakIdx]}</b> ({fmt(y.peakCount)})</span>
+							{/if}
+						</div>
+					{:else}
+						<div class="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 mb-4 text-sm text-gray-400">
+							<span class="font-bold text-emerald-300">בתהליך</span>
+							· {y.activeMonths} חודשים עד כה · סה״כ <b class="text-white">{fmt(y.total)}</b> כניסות
+						</div>
+					{/if}
 
 					<!-- גרף עמודות חודשי -->
 					<div class="mb-6">
@@ -164,7 +200,9 @@
 						</tbody>
 						<tfoot>
 							<tr class="border-t border-white/15">
-								<td class="py-2 font-black">סה״כ {y.year}</td>
+								<td class="py-2 font-black">
+									סה״כ {y.year}{#if !y.completed}<span class="text-xs text-gray-400 font-normal"> (עד כה)</span>{/if}
+								</td>
 								<td class="py-2 text-left font-black">{fmt(y.total)}</td>
 							</tr>
 						</tfoot>
