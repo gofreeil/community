@@ -94,6 +94,14 @@
 
 	const itemsSummary = $derived(data.itemsSummary ?? { total: 0, byCategory: [], byMonth: [] });
 	const maxCat = $derived(Math.max(1, ...itemsSummary.byCategory.map((c) => c.count)));
+
+	// ---- קריאות עזרה מהקהילה ("הרמת יד"), לפי שנה ----
+	const helpByYear = $derived.by(() => {
+		const m = new Map<number, { calls: number; answered: number }>();
+		for (const h of data.helpCalls?.byYear ?? []) m.set(h.year, { calls: h.calls, answered: h.answered });
+		return m;
+	});
+	const helpFor = (year: number) => helpByYear.get(year) ?? { calls: 0, answered: 0 };
 </script>
 
 <svelte:head>
@@ -146,6 +154,7 @@
 			<!-- גרף + טבלה של 12 חודשים לכל שנה -->
 			{#each years as y}
 				{@const maxCount = Math.max(1, ...y.months.map((c) => c ?? 0))}
+				{@const help = helpFor(y.year)}
 				<div class="rounded-2xl border border-white/10 bg-white/[0.03] p-5 mb-6">
 					<h2 class="text-lg font-black mb-3">{y.year}</h2>
 
@@ -196,6 +205,23 @@
 									{short}
 								</div>
 							{/each}
+						</div>
+
+						<!-- קריאות עזרה מהקהילה ("הרמת יד") — ממלא את החלל מתחת לגרף -->
+						<div class="mt-5 rounded-xl border border-amber-500/25 bg-gradient-to-br from-amber-500/[0.08] to-orange-500/[0.04] p-3.5">
+							<div class="flex items-center gap-2 mb-2">
+								<span class="text-base">🆘</span>
+								<span class="text-sm font-black text-amber-200">קריאות לעזרה מהקהילה</span>
+							</div>
+							{#if help.calls > 0}
+								<div class="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm">
+									<span class="text-gray-300">סה״כ <b class="text-white tabular-nums">{fmt(help.calls)}</b></span>
+									<span class="text-gray-300">נענו <b class="text-emerald-300 tabular-nums">{fmt(help.answered)}</b></span>
+									<span class="text-gray-300">ממתינות <b class="text-amber-300 tabular-nums">{fmt(help.calls - help.answered)}</b></span>
+								</div>
+							{:else}
+								<p class="text-sm text-gray-500">לא נרשמו קריאות לעזרה בשנה זו 🤍</p>
+							{/if}
 						</div>
 					</div>
 						<!-- פירוט חודשי — צמוד לגרף (מימין בדסקטופ), צר כדי לפנות מקום לגרף -->

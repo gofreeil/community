@@ -2,7 +2,7 @@
 // הנתונים מגיעים מ-visit-stat ב-Strapi דרך cache של יממה - מתעדכנים פעם ביום.
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { getUserById, getUserByEmail, getAllItems } from '$lib/server/db';
+import { getUserById, getUserByEmail, getAllItems, getItemsByCategory } from '$lib/server/db';
 import { getVisitStats } from '$lib/server/visitStats';
 
 // קטגוריות "מערכת" — רשומות פנימיות (הודעות, בקשות, סקרים) שאינן פריטים שהעלו גולשים.
@@ -43,6 +43,45 @@ async function buildItemsSummary(): Promise<ItemsSummary> {
     };
 }
 
+export interface HelpCallsSummary {
+    total: number;
+    answered: number;
+    byYear: { year: number; calls: number; answered: number }[];
+}
+
+/** סיכום קריאות העזרה מהקהילה ("הרמת יד"): סה״כ, כמה נענו, ופילוח לפי שנה.
+ *  קריאה "נענתה" כשמישהו לחץ "אני עוזר" → נוסף ל-extra_fields.helpers. */
+async function buildHelpCallsSummary(): Promise<HelpCallsSummary> {
+    const calls = await getItemsByCategory('raise_hand');
+    const byYear = new Map<number, { calls: number; answered: number }>();
+    let total = 0;
+    let answered = 0;
+
+    for (const it of calls) {
+        total++;
+        let helpers: unknown = [];
+        try {
+            helpers = (JSON.parse(it.extra_fields || '{}') as { helpers?: unknown }).helpers;
+        } catch { /* extra_fields לא תקין - נחשב כלא-נענתה */ }
+        const isAnswered = Array.isArray(helpers) && helpers.length > 0;
+        if (isAnswered) answered++;
+
+        const y = Number((it.created_at || '').slice(0, 4));
+        if (Number.isFinite(y) && y > 2000) {
+            if (!byYear.has(y)) byYear.set(y, { calls: 0, answered: 0 });
+            const rec = byYear.get(y)!;
+            rec.calls++;
+            if (isAnswered) rec.answered++;
+        }
+    }
+
+    return {
+        total,
+        answered,
+        byYear: [...byYear.entries()].map(([year, v]) => ({ year, calls: v.calls, answered: v.answered })),
+    };
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function ensureSuperAdmin(event: any) {
     const session = await event.locals.auth();
@@ -75,5 +114,12 @@ export const load: PageServerLoad = async (event) => {
         console.warn('[statistics] buildItemsSummary failed:', e);
     }
 
-    return { stats, itemsSummary };
+    let helpCalls: HelpCallsSummary = { total: 0, answered: 0, byYear: [] };
+    try {
+        helpCalls = await buildHelpCallsSummary();
+    } catch (e) {
+        console.warn('[statistics] buildHelpCallsSummary failed:', e);
+    }
+
+    return { stats, itemsSummary, helpCalls };
 };
