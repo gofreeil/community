@@ -146,8 +146,10 @@
 						</div>
 					{/if}
 
-					<!-- גרף עמודות חודשי -->
-					<div class="mb-6">
+					<!-- זה-לצד-זה: גרף משמאל, פירוט חודשי מימין (בדסקטופ); נערם בנייד -->
+					<div class="flex flex-col lg:flex-row-reverse gap-5 lg:gap-6 lg:items-start">
+						<!-- גרף עמודות חודשי -->
+						<div class="lg:flex-1 min-w-0">
 						<div class="flex items-end gap-1 sm:gap-2 h-52 border-b border-white/10 pb-px">
 							{#each MONTH_NAMES as name, i}
 								{@const c = y.months[i]}
@@ -176,8 +178,9 @@
 							{/each}
 						</div>
 					</div>
-
-					<table class="w-full text-sm">
+						<!-- פירוט חודשי — צמוד לגרף (מימין בדסקטופ) -->
+						<div class="lg:w-64 lg:shrink-0">
+						<table class="w-full text-sm">
 						<thead>
 							<tr class="text-gray-400 border-b border-white/10">
 								<th class="text-right py-2 font-bold">חודש</th>
@@ -207,6 +210,8 @@
 							</tr>
 						</tfoot>
 					</table>
+						</div>
+					</div>
 				</div>
 			{/each}
 		{/if}
