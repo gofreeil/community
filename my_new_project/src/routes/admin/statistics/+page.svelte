@@ -87,42 +87,6 @@
 				עדיין אין נתוני כניסות - הספירה מתחילה מהיום, והנתונים יופיעו כאן תוך יום.
 			</div>
 		{:else}
-			<!-- סיכום שנתי -->
-			<div class="rounded-2xl border border-emerald-500/25 bg-gradient-to-br from-emerald-600/10 to-emerald-500/5 p-5 mb-8">
-				<h2 class="text-lg font-black text-emerald-200 mb-3">סיכום שנתי</h2>
-				<table class="w-full text-sm">
-					<thead>
-						<tr class="text-emerald-300/70 border-b border-white/10">
-							<th class="text-right py-2 font-bold">שנה</th>
-							<th class="text-left py-2 font-bold">סה״כ כניסות</th>
-						</tr>
-					</thead>
-					<tbody>
-						{#each years as y}
-							<tr class="border-b border-white/5 last:border-0">
-								<td class="py-2 font-bold">
-									{y.year}
-									{#if y.completed}
-										<span class="mr-2 align-middle text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 font-bold">✓ סוכם</span>
-									{:else}
-										<span class="mr-2 align-middle text-[10px] px-1.5 py-0.5 rounded-full bg-white/10 text-gray-300 font-bold">בתהליך</span>
-									{/if}
-								</td>
-								<td class="py-2 text-left font-black text-white">{fmt(y.total)}</td>
-							</tr>
-						{/each}
-					</tbody>
-					{#if years.length > 1}
-						<tfoot>
-							<tr class="border-t border-emerald-500/30">
-								<td class="py-2 font-black text-emerald-200">סה״כ כללי</td>
-								<td class="py-2 text-left font-black text-emerald-200">{fmt(grandTotal)}</td>
-							</tr>
-						</tfoot>
-					{/if}
-				</table>
-			</div>
-
 			<!-- גרף + טבלה של 12 חודשים לכל שנה -->
 			{#each years as y}
 				{@const maxCount = Math.max(1, ...y.months.map((c) => c ?? 0))}
@@ -178,8 +142,8 @@
 							{/each}
 						</div>
 					</div>
-						<!-- פירוט חודשי — צמוד לגרף (מימין בדסקטופ) -->
-						<div class="lg:w-64 lg:shrink-0">
+						<!-- פירוט חודשי — צמוד לגרף (מימין בדסקטופ), צר כדי לפנות מקום לגרף -->
+						<div class="lg:w-44 lg:shrink-0">
 						<table class="w-full text-sm">
 						<thead>
 							<tr class="text-gray-400 border-b border-white/10">
@@ -214,6 +178,26 @@
 					</div>
 				</div>
 			{/each}
+
+			<!-- סיכום שנתי — מינימלי, בתחתית -->
+			<div class="mt-2 pt-5 border-t border-white/10">
+				<h2 class="text-sm font-bold text-emerald-300/80 mb-3">סיכום שנתי</h2>
+				<div class="flex flex-wrap items-center gap-2">
+					{#each years as y}
+						<div class="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-sm">
+							<span class="font-bold text-gray-300">{y.year}</span>
+							<span class="font-black text-white tabular-nums">{fmt(y.total)}</span>
+							{#if !y.completed}<span class="text-[10px] text-gray-500">בתהליך</span>{/if}
+						</div>
+					{/each}
+					{#if years.length > 1}
+						<div class="flex items-center gap-2 rounded-lg border border-emerald-500/25 bg-emerald-500/10 px-3 py-1.5 text-sm">
+							<span class="font-bold text-emerald-200">סה״כ</span>
+							<span class="font-black text-emerald-200 tabular-nums">{fmt(grandTotal)}</span>
+						</div>
+					{/if}
+				</div>
+			</div>
 		{/if}
 	</div>
 </div>
