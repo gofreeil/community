@@ -198,23 +198,6 @@
 				<div class="rounded-2xl border border-white/10 bg-white/[0.03] p-5 mb-6">
 					<h2 class="text-lg font-black mb-3">{y.year}</h2>
 
-					<!-- סיכום סוף שנה: שנה שהסתיימה נסגרת עם סיכום סופי; הנוכחית עדיין נצברת -->
-					{#if y.completed}
-						<div class="rounded-xl border border-emerald-500/25 bg-emerald-500/[0.06] px-4 py-3 mb-4 flex flex-wrap items-center gap-x-6 gap-y-1 text-sm">
-							<span class="font-black text-emerald-200">✓ סיכום שנה שהסתיימה</span>
-							<span class="text-gray-300">סה״כ <b class="text-white">{fmt(y.total)}</b> כניסות</span>
-							<span class="text-gray-300">ממוצע חודשי <b class="text-white">{fmt(y.avg)}</b></span>
-							{#if y.peakIdx >= 0}
-								<span class="text-gray-300">חודש שיא <b class="text-white">{MONTH_NAMES[y.peakIdx]}</b> ({fmt(y.peakCount)})</span>
-							{/if}
-						</div>
-					{:else}
-						<div class="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 mb-4 text-sm text-gray-400">
-							<span class="font-bold text-emerald-300">בתהליך</span>
-							· {y.activeMonths} חודשים עד כה · סה״כ <b class="text-white">{fmt(y.total)}</b> כניסות
-						</div>
-					{/if}
-
 					<!-- זה-לצד-זה: גרף משמאל, פירוט חודשי מימין (בדסקטופ); נערם בנייד -->
 					<div class="flex flex-col lg:flex-row-reverse gap-4 lg:gap-4 lg:items-start">
 						<!-- גרף עמודות חודשי -->
@@ -250,7 +233,7 @@
 						{#if yi === 0}
 							<!-- סיכום שנתי — בתוך הכרטיס (בפנים), ממלא את החלל מתחת לגרף -->
 							<div class="mt-5 rounded-xl border border-emerald-500/30 bg-gradient-to-br from-emerald-600/15 via-emerald-500/5 to-teal-500/10 p-3.5 shadow-[0_0_20px_rgba(16,185,129,0.12)]">
-								<div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+								<div class="flex flex-wrap items-center justify-end gap-x-3 gap-y-2">
 									<h3 class="flex items-center gap-1.5 text-sm font-black text-emerald-200"><span>📊</span> סיכום שנתי</h3>
 									{#each years as yy}
 										<div class="flex items-center gap-1.5 rounded-lg border border-emerald-400/20 bg-emerald-950/40 px-2.5 py-1 text-sm">
