@@ -135,6 +135,17 @@
 		return rows.sort((a, b) => b.count - a.count);
 	});
 	const maxCat = $derived(Math.max(1, ...categoryRows.map((c) => c.count)));
+
+	// פריטים שנוספו לפי חודש (השנה הנוכחית) — לגרף עמודות בכרטיס התוכן
+	const itemsByMonth = $derived.by(() => {
+		const m = new Map<string, number>();
+		for (const r of itemsSummary.byMonth) m.set(r.month, r.count);
+		return Array.from({ length: 12 }, (_, i) => {
+			const key = `${currentYear}-${String(i + 1).padStart(2, '0')}`;
+			return m.get(key) ?? 0;
+		});
+	});
+	const maxItemsMonth = $derived(Math.max(1, ...itemsByMonth));
 </script>
 
 <svelte:head>
@@ -159,7 +170,38 @@
 		<!-- סיכום התוכן שהועלה לאתר: סה״כ + פילוח לפי קטגוריה -->
 		{#if itemsSummary.total > 0}
 			<div class="rounded-2xl border border-white/10 bg-white/[0.03] p-5 mb-6">
-				<h2 class="text-lg font-black mb-4">📦 תוכן שהועלה לאתר</h2>
+				<h2 class="text-lg font-black mb-3">📦 תוכן שהועלה לאתר</h2>
+
+				<!-- גרף עמודות: פריטים שנוספו לפי חודש (השנה הנוכחית) -->
+				<div class="mb-5">
+					<p class="text-xs text-gray-500 mb-2">פריטים שנוספו לפי חודש · {currentYear}</p>
+					<div class="flex items-end gap-1 sm:gap-2 h-32 border-b border-white/10 pb-px">
+						{#each itemsByMonth as cnt, i}
+							{@const isCurrent = i === currentMonthIdx}
+							<div class="flex-1 flex flex-col items-center justify-end h-full min-w-0" title={`${MONTH_NAMES[i]}: ${fmt(cnt)} פריטים`}>
+								<div class="text-[9px] sm:text-[11px] leading-none mb-1 tabular-nums {cnt === 0 ? 'text-transparent' : isCurrent ? 'text-emerald-300 font-black' : 'text-gray-400'}">
+									{cnt === 0 ? '0' : fmt(cnt)}
+								</div>
+								<div
+									class="w-full rounded-t-md transition-all duration-500 hover:brightness-125 {cnt === 0
+										? 'bg-white/[0.04]'
+										: isCurrent
+											? 'bg-gradient-to-t from-emerald-500 to-teal-300 shadow-[0_0_14px_rgba(16,185,129,0.55)]'
+											: 'bg-gradient-to-t from-emerald-600/70 to-emerald-400/90'}"
+									style="height: {cnt === 0 ? 0 : Math.max(3, (cnt / maxItemsMonth) * 85)}%"
+								></div>
+							</div>
+						{/each}
+					</div>
+					<div class="flex gap-1 sm:gap-2 mt-2">
+						{#each MONTH_SHORT as short, i}
+							<div class="flex-1 text-center text-[9px] sm:text-[11px] leading-tight whitespace-nowrap {i === currentMonthIdx ? 'text-emerald-300 font-bold' : 'text-gray-500'}">
+								{short}
+							</div>
+						{/each}
+					</div>
+				</div>
+
 				<div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2.5">
 					{#each categoryRows as c}
 						<div class="flex items-center gap-3">
