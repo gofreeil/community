@@ -83,6 +83,7 @@
 		for_kids: 'לילדים',
 		attractions: 'שירות ציבורי',
 		halls: 'אולמות וחללים',
+		'safe-space': 'מרחב מוגן',
 		gemachim: 'גמ"חים',
 		gmach: 'גמ"חים',
 		shabbat_hosting: 'אירוח לשבת',
