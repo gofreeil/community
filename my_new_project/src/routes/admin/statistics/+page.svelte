@@ -218,10 +218,10 @@
 					{/if}
 
 					<!-- זה-לצד-זה: גרף משמאל, פירוט חודשי מימין (בדסקטופ); נערם בנייד -->
-					<div class="flex flex-col lg:flex-row-reverse gap-5 lg:gap-6 lg:items-start">
+					<div class="flex flex-col lg:flex-row-reverse gap-4 lg:gap-4 lg:items-start">
 						<!-- גרף עמודות חודשי -->
 						<div class="lg:flex-1 min-w-0">
-						<div class="flex items-end gap-1 sm:gap-2 h-52 border-b border-white/10 pb-px">
+						<div class="flex items-end gap-1 sm:gap-2 h-64 border-b border-white/10 pb-px">
 							{#each MONTH_NAMES as name, i}
 								{@const c = y.months[i]}
 								{@const isCurrent = y.year === currentYear && i === currentMonthIdx}
@@ -272,23 +272,23 @@
 						{/if}
 					</div>
 						<!-- פירוט חודשי — צמוד לגרף (מימין בדסקטופ), צר כדי לפנות מקום לגרף -->
-						<div class="lg:w-44 lg:shrink-0">
+						<div class="lg:w-40 lg:shrink-0">
 						<table class="w-full text-sm">
 						<thead>
 							<tr class="text-gray-400 border-b border-white/10">
-								<th class="text-right py-2 font-bold">חודש</th>
-								<th class="text-left py-2 font-bold">כניסות</th>
+								<th class="text-right py-1 font-bold">חודש</th>
+								<th class="text-left py-1 font-bold">כניסות</th>
 							</tr>
 						</thead>
 						<tbody>
 							{#each MONTH_NAMES as name, i}
 								{@const isCurrent = y.year === currentYear && i === currentMonthIdx}
 								<tr class="border-b border-white/5 last:border-0 {isCurrent ? 'bg-emerald-500/10' : ''}">
-									<td class="py-1.5 {isCurrent ? 'font-bold text-emerald-200' : ''}">
+									<td class="py-1 {isCurrent ? 'font-bold text-emerald-200' : ''}">
 										{name}
 										{#if isCurrent}<span class="text-xs text-emerald-400/80 mr-1">(בתהליך)</span>{/if}
 									</td>
-									<td class="py-1.5 text-left font-bold {y.months[i] == null ? 'text-gray-600' : 'text-white'}">
+									<td class="py-1 text-left font-bold {y.months[i] == null ? 'text-gray-600' : 'text-white'}">
 										{y.months[i] == null ? '—' : fmt(y.months[i]!)}
 									</td>
 								</tr>
@@ -296,10 +296,10 @@
 						</tbody>
 						<tfoot>
 							<tr class="border-t border-white/15">
-								<td class="py-2 font-black">
+								<td class="py-1.5 font-black">
 									סה״כ {y.year}{#if !y.completed}<span class="text-xs text-gray-400 font-normal"> (עד כה)</span>{/if}
 								</td>
-								<td class="py-2 text-left font-black">{fmt(y.total)}</td>
+								<td class="py-1.5 text-left font-black">{fmt(y.total)}</td>
 							</tr>
 						</tfoot>
 					</table>
