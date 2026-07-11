@@ -151,15 +151,8 @@
                 { id: "job-teen", label: "עבודה לנוער בחופש" },
             ],
         },
-        {
-            id: "singles",
-            label: "פנויים/פנויות",
-            icon: "❤️",
-            items: [
-                { id: "match-offer", label: "הצעה לשידוך איכותי" },
-                { id: "singles-meeting", label: "מפגש פנויים פנויות" },
-            ],
-        },
+        // פנויים/פנויות הוסרו מהמפה בכוונה — אנשים אינם "מקום". הגישה ללוח היא דרך
+        // התפריט/הדר (/singles), והכרטיסים אף פעם לא ננעצים על המפה (ראה dynamicMarkers).
         {
             id: "halls",
             label: "אולמות",
@@ -543,7 +536,9 @@
     let dynamicMarkers = $derived.by(() => {
         // קריאות עזרה מטופלות בשכבה נפרדת (helpCallMarkers) - לא נכללות כאן,
         // כדי שלא ידכאו את מרקרי הדמו ולא יוגבלו ע"י MAX_MARKERS / סינון קטגוריה.
-        const inHood = dbItems.filter(d => belongsToMyArea(d) && d.category !== 'raise_hand');
+        // פנויים/פנויות (וכל משפחת singles_*) לעולם לא ננעצים על המפה — הם אנשים, לא מקום.
+        const inHood = dbItems.filter(d =>
+            belongsToMyArea(d) && d.category !== 'raise_hand' && !d.category.startsWith('singles'));
 
         // יש פריט אמיתי אחד לפחות - מציגים רק את האמיתיים, בלי דמו
         if (inHood.length > 0) {

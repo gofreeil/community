@@ -2,6 +2,8 @@ import { error, redirect } from '@sveltejs/kit';
 import { getDbItemById } from '$lib/server/db';
 import { mockSingles } from '$lib/singlesMock';
 import { dbItemToProfile } from '$lib/singlesMap';
+import { getSinglesAccessStatus } from '$lib/server/singlesAccess';
+import { isSuperAdmin } from '$lib/server/auth';
 import type { PageServerLoad } from './$types';
 
 // בוטים של רשתות חברתיות וסקרפרים שצריכים לראות תגי OG בלי לוגין
@@ -21,14 +23,20 @@ export const load: PageServerLoad = async (event) => {
     const id = event.params.id;
     const origin = event.url.origin;
 
-    try {
-        const dbItem = await getDbItemById(id);
-        if (dbItem && dbItem.category === 'singles') {
-            // ממפים את הפריט האמיתי למבנה single שהדף יודע להציג
-            return { single: dbItemToProfile(dbItem), dbItem, isBot, origin };
+    // שליפת הפריט בנפרד — כדי שה-catch לא יבלע redirect של שער הגישה.
+    let dbItem = null;
+    try { dbItem = await getDbItemById(id); } catch { dbItem = null; }
+
+    if (dbItem && dbItem.category === 'singles') {
+        // שער גישה: רק בעלים / סופר-אדמין / מי שאושרה לו גישה. בוטים מקבלים OG בלבד.
+        const viewerId = session?.user?.id as string | undefined;
+        const isOwner = !!viewerId && dbItem.user_id === viewerId;
+        if (!isBot && !isOwner && !isSuperAdmin(session)) {
+            const access = await getSinglesAccessStatus(viewerId, false);
+            if (access !== 'granted') throw redirect(302, '/singles');
         }
-    } catch {
-        // ignore - ניפול ל-mock
+        // ממפים את הפריט האמיתי למבנה single שהדף יודע להציג
+        return { single: dbItemToProfile(dbItem), dbItem, isBot, origin };
     }
 
     const single = mockSingles.find((s) => s.id === id);

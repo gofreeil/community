@@ -32,6 +32,40 @@
         goto(`/items/${id}`);
     }
 
+    // ── שער גישה: הלוח סגור לצפייה. הורים/שדכנים מבקשים גישה; מפרסם כרטיס נכנס אוטומטית ──
+    type AccessRole = 'single' | 'parent' | 'matchmaker';
+    let gateRole = $state<AccessRole | null>(null);
+    let gateAgreed = $state(false);
+    let gateSubmitting = $state(false);
+    let gateSent = $state(false);
+    let gateError = $state('');
+
+    async function submitAccessRequest() {
+        gateError = '';
+        if (isGuest) { goto('/login?next=' + encodeURIComponent('/singles')); return; }
+        if (!gateRole) { gateError = $_('extras.s_gate_need_role'); return; }
+        if (!gateAgreed) { gateError = $_('extras.s_gate_need_terms'); return; }
+        gateSubmitting = true;
+        try {
+            const res = await fetch('/api/singles-access', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ role: gateRole, agreed: true }),
+            });
+            const out = await res.json().catch(() => ({}));
+            if (res.ok && out?.success) {
+                if (out.already === 'granted') { location.reload(); return; }
+                gateSent = true;
+            } else {
+                gateError = out?.message || $_('extras.s_gate_error');
+            }
+        } catch {
+            gateError = $_('extras.s_gate_error');
+        } finally {
+            gateSubmitting = false;
+        }
+    }
+
     type AgeGroup = 'all' | 'under30' | '30plus' | 'golden';
     type Religiosity = 'all' | 'haredi' | 'dl' | 'general';
     let ageFilter = $state<AgeGroup>('all');
@@ -212,6 +246,78 @@
             </a>
         </div>
 
+        {#if data.gated}
+            <!-- ── שער גישה ללוח (לוח סגור: רואים כרטיסים רק אחרי אישור) ── -->
+            <div class="mb-8 rounded-3xl bg-[#0f172a] border border-pink-500/30 shadow-2xl shadow-pink-500/10 overflow-hidden">
+                <div class="bg-gradient-to-r from-pink-600/30 to-purple-600/20 px-5 py-4 border-b border-pink-500/20 flex items-center gap-3">
+                    <span class="text-3xl">🔒</span>
+                    <div>
+                        <h2 class="text-white font-black text-lg leading-tight">{$_('extras.s_gate_title')}</h2>
+                        <p class="text-pink-200/80 text-xs mt-0.5">{$_('extras.s_gate_sub')}</p>
+                    </div>
+                </div>
+
+                <div class="p-5 space-y-5">
+                    {#if data.accessStatus === 'pending' || gateSent}
+                        <div class="rounded-2xl bg-amber-500/10 border border-amber-400/40 px-4 py-5 text-center">
+                            <div class="text-3xl mb-2">⏳</div>
+                            <p class="text-amber-200 font-bold">{$_('extras.s_gate_pending_title')}</p>
+                            <p class="text-amber-100/70 text-sm mt-1">{$_('extras.s_gate_pending_sub')}</p>
+                        </div>
+                    {:else}
+                        <!-- מסלול א: פרסום כרטיס = גישה אוטומטית עם אישורו -->
+                        <div class="rounded-2xl bg-gradient-to-r from-amber-500/15 to-yellow-500/10 border border-amber-400/40 px-4 py-4">
+                            <p class="text-amber-200 font-bold text-sm">{$_('extras.s_gate_publish_cta_title')}</p>
+                            <p class="text-amber-100/70 text-xs mt-1 mb-3">{$_('extras.s_gate_publish_cta_sub')}</p>
+                            <a href="/add/singles" class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-black font-bold py-2.5 px-5 rounded-xl transition-all text-sm shadow-lg">
+                                {$_('extras.s_gate_publish_btn')}
+                            </a>
+                        </div>
+
+                        <div class="flex items-center gap-3 text-gray-500 text-xs">
+                            <div class="flex-1 h-px bg-white/10"></div>
+                            <span>{$_('extras.s_gate_or')}</span>
+                            <div class="flex-1 h-px bg-white/10"></div>
+                        </div>
+
+                        <!-- מסלול ב: בקשת גישה (הורה / שדכן שאין לו כרטיס) -->
+                        <div>
+                            <p class="text-white font-bold text-sm mb-2">{$_('extras.s_gate_request_title')}</p>
+                            <p class="text-gray-400 text-xs mb-3">{$_('extras.s_gate_role_label')}</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                {#each [['single','s_gate_role_single'],['parent','s_gate_role_parent'],['matchmaker','s_gate_role_matchmaker']] as [role, key]}
+                                    <button type="button"
+                                        onclick={() => gateRole = role as AccessRole}
+                                        class="px-4 py-2 rounded-full text-sm font-bold border transition-colors {gateRole === role ? 'bg-pink-500/25 border-pink-400 text-pink-100' : 'bg-white/5 border-white/10 text-gray-300 hover:border-pink-400/50'}">
+                                        {$_('extras.' + key)}
+                                    </button>
+                                {/each}
+                            </div>
+
+                            <label class="flex items-start gap-2 mb-4 cursor-pointer">
+                                <input type="checkbox" bind:checked={gateAgreed} class="mt-1 accent-pink-500 w-4 h-4 flex-shrink-0" />
+                                <span class="text-gray-300 text-xs leading-snug">{$_('extras.s_gate_terms')}</span>
+                            </label>
+
+                            {#if gateError}
+                                <p class="text-red-400 text-xs mb-2">{gateError}</p>
+                            {/if}
+
+                            <button type="button" onclick={submitAccessRequest} disabled={gateSubmitting}
+                                class="w-full bg-gradient-to-r from-pink-600 to-rose-500 hover:from-pink-500 hover:to-rose-400 disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-all text-sm shadow-lg">
+                                {gateSubmitting ? $_('extras.s_gate_submitting') : $_('extras.s_gate_submit')}
+                            </button>
+                        </div>
+                    {/if}
+
+                    {#if data.selfStatus === 'pending'}
+                        <p class="text-center text-amber-200/80 text-xs">{$_('extras.s_gate_self_pending')}</p>
+                    {/if}
+                </div>
+            </div>
+        {/if}
+
+        {#if !data.gated}
         <!-- ── באנר ערבי מפגש / סעודות ── -->
         <a href="/gatherings" class="block mb-6 rounded-2xl bg-gradient-to-r from-amber-500/15 to-rose-500/10 border border-amber-500/30 px-4 py-3.5 hover:border-amber-500/60 transition">
             <div class="flex items-center gap-3">
@@ -295,6 +401,7 @@
                 <p class="text-gray-400 text-sm">{$_('extras.s_active_profiles', { values: { n: filteredProfiles.length } })}</p>
             </div>
         </div>
+        {/if}
 
         <!-- כרטיס המשתמש - במרכז מעל הרשת, להבדלה ברורה -->
         {#if data.selfProfile}
@@ -411,6 +518,7 @@
             </div>
         {/if}
 
+        {#if !data.gated}
         <!-- Cards grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             {#each filteredProfiles as person}
@@ -533,6 +641,7 @@
                 <p class="text-gray-400 text-lg">{$_('extras.s_empty_title')}</p>
                 <p class="text-gray-500 text-sm mt-2">{$_('extras.s_empty_sub')}</p>
             </div>
+        {/if}
         {/if}
 
         <!-- Back link -->

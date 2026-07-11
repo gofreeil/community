@@ -1,5 +1,7 @@
+import { redirect } from '@sveltejs/kit';
 import { getDbItemById, getItemsByCategory, getUserByAnyId } from '$lib/server/db';
 import { isSuperAdmin, isCoordinatorOfArea } from '$lib/server/auth';
+import { getSinglesAccessStatus } from '$lib/server/singlesAccess';
 import { getItemById as getStaticItemById } from '$lib/itemsData';
 import { getDemoItemById } from '$lib/demoUserItems';
 import type { PageServerLoad } from './$types';
@@ -41,6 +43,15 @@ export const load: PageServerLoad = async (event) => {
 
         if (dbItem.category === 'singles') {
             const isOwner = !!viewerId && dbItem.user_id === viewerId;
+
+            // שער גישה: כרטיס פנויים נגיש רק לבעלים / סופר-אדמין / מי שאושרה לו גישה ללוח.
+            // גולש שאין לו גישה מנותב לשער ב-/singles (או להתחברות אם אינו מחובר).
+            if (!isOwner && !isSuperAdmin(session)) {
+                const access = await getSinglesAccessStatus(viewerId, false);
+                if (access !== 'granted') {
+                    throw redirect(302, viewerId ? '/singles' : '/login?next=' + encodeURIComponent('/singles'));
+                }
+            }
 
             if (isOwner) {
                 singlesStatus = { state: 'owner' };

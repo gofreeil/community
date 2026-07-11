@@ -62,6 +62,46 @@
             </div>
         {/if}
 
+        <!-- 🔑 בקשות גישה לצפייה בלוח (הורים/שדכנים ללא כרטיס) -->
+        {#if data.accessRequests && data.accessRequests.length}
+            <div class="mb-6 rounded-2xl bg-[#0f172a] border border-pink-500/30 overflow-hidden">
+                <div class="px-4 py-3 bg-gradient-to-r from-pink-600/30 to-purple-600/20 border-b border-pink-500/20 flex items-center gap-2">
+                    <span class="text-xl">🔑</span>
+                    <h2 class="font-black text-white">בקשות גישה לצפייה בלוח ({data.accessRequests.length})</h2>
+                    <span class="text-pink-200/70 text-xs mr-1">מפרסם כרטיס נכנס אוטומטית — אלו מבקשי גישה בלבד (הורים/שדכנים)</span>
+                </div>
+                <div class="divide-y divide-white/5">
+                    {#each data.accessRequests as r (r.id)}
+                        <div class="p-4 flex items-center justify-between gap-3 flex-wrap">
+                            <div class="min-w-0">
+                                <p class="text-white font-bold text-sm">
+                                    <span class="inline-block bg-pink-500/15 text-pink-200 px-2 py-0.5 rounded-full text-[12px] font-bold ring-1 ring-pink-400/40">{r.roleLabel || r.role}</span>
+                                    <span class="mr-2">{r.nickname || '—'}</span>
+                                </p>
+                                <p class="text-gray-400 text-xs mt-1">
+                                    {#if r.city}📍 {r.city}{#if r.neighborhood} · {r.neighborhood}{/if} · {/if}
+                                    {#if r.phone}📞 {r.phone} · {/if}
+                                    {#if r.email}✉️ {r.email}{/if}
+                                </p>
+                            </div>
+                            <div class="flex gap-2 flex-shrink-0">
+                                <form method="POST" action="?/accessDecision" use:enhance>
+                                    <input type="hidden" name="id" value={r.id} />
+                                    <input type="hidden" name="decision" value="approved" />
+                                    <button class="bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-xl transition-colors text-sm">✅ אשר גישה</button>
+                                </form>
+                                <form method="POST" action="?/accessDecision" use:enhance>
+                                    <input type="hidden" name="id" value={r.id} />
+                                    <input type="hidden" name="decision" value="rejected" />
+                                    <button class="bg-white/5 hover:bg-red-600/30 text-gray-400 hover:text-red-300 font-bold py-2 px-4 rounded-xl transition-colors text-sm border border-white/10">🚫 דחה</button>
+                                </form>
+                            </div>
+                        </div>
+                    {/each}
+                </div>
+            </div>
+        {/if}
+
         <!-- טאבים -->
         <div class="flex gap-2 mb-4 flex-wrap">
             <button

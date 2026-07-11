@@ -133,13 +133,17 @@ export const POST: RequestHandler = async (event) => {
 
     // קואורדינטות: פין מפורש → geocoding של הכתובת → מרכז השכונה/עיר.
     // כך פריט עם כתובת בלבד (בלי פין) עדיין מקבל נקודה ומופיע על המפה.
-    const coords = await resolveItemCoords({
-        lat, lng,
-        address: rest.address,
-        neighborhood,
-        city,
-        neighborhoodOnly: NEIGHBORHOOD_ONLY_CATEGORIES.has(category),
-    });
+    // פנויים/פנויות (וכל משפחת singles_*) הם אנשים, לא מקום — לעולם בלי קואורדינטות,
+    // כדי שלא ייווצר פין על המפה (הלוח נגיש רק דרך /singles).
+    const coords = category.startsWith('singles')
+        ? { lat: null, lng: null }
+        : await resolveItemCoords({
+            lat, lng,
+            address: rest.address,
+            neighborhood,
+            city,
+            neighborhoodOnly: NEIGHBORHOOD_ONLY_CATEGORIES.has(category),
+        });
 
     // ---- עריכת פריט קיים (?edit= בטופס): עדכון במקום - בלי ליצור כפילות ----
     const editId = typeof (body as { edit_id?: unknown }).edit_id === 'string'
