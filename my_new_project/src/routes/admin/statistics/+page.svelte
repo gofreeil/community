@@ -8,6 +8,12 @@
 		'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר',
 	];
 
+	// שמות מקוצרים לתוויות הגרף (מתחת לעמודות)
+	const MONTH_SHORT = [
+		'ינו׳', 'פבר׳', 'מרץ', 'אפר׳', 'מאי', 'יוני',
+		'יולי', 'אוג׳', 'ספט׳', 'אוק׳', 'נוב׳', 'דצמ׳',
+	];
+
 	// "2026-07" → { year: 2026, monthIdx: 6 }
 	function parseMonth(m: string): { year: number; monthIdx: number } | null {
 		const match = m.match(/^(\d{4})-(\d{2})$/);
@@ -98,10 +104,43 @@
 				</table>
 			</div>
 
-			<!-- טבלה של 12 חודשים לכל שנה -->
+			<!-- גרף + טבלה של 12 חודשים לכל שנה -->
 			{#each years as y}
+				{@const maxCount = Math.max(1, ...y.months.map((c) => c ?? 0))}
 				<div class="rounded-2xl border border-white/10 bg-white/[0.03] p-5 mb-6">
-					<h2 class="text-lg font-black mb-3">{y.year}</h2>
+					<h2 class="text-lg font-black mb-4">{y.year}</h2>
+
+					<!-- גרף עמודות חודשי -->
+					<div class="mb-6">
+						<div class="flex items-end gap-1 sm:gap-2 h-52 border-b border-white/10 pb-px">
+							{#each MONTH_NAMES as name, i}
+								{@const c = y.months[i]}
+								{@const isCurrent = y.year === currentYear && i === currentMonthIdx}
+								<div class="flex-1 flex flex-col items-center justify-end h-full min-w-0" title={c == null ? `${name}: אין נתון` : `${name}: ${fmt(c)} כניסות`}>
+									<div class="text-[9px] sm:text-[11px] leading-none mb-1 tabular-nums whitespace-nowrap {c == null ? 'text-transparent' : isCurrent ? 'text-emerald-300 font-black' : 'text-gray-400'}">
+										{c == null ? '0' : fmt(c)}
+									</div>
+									<div
+										class="w-full rounded-t-md transition-all duration-500 hover:brightness-125 {c == null
+											? 'bg-white/[0.04]'
+											: isCurrent
+												? 'bg-gradient-to-t from-emerald-500 to-teal-300 shadow-[0_0_14px_rgba(16,185,129,0.55)]'
+												: 'bg-gradient-to-t from-emerald-600/70 to-emerald-400/90'}"
+										style="height: {c == null ? 0 : Math.max(3, (c / maxCount) * 85)}%"
+									></div>
+								</div>
+							{/each}
+						</div>
+						<div class="flex gap-1 sm:gap-2 mt-2">
+							{#each MONTH_SHORT as short, i}
+								{@const isCurrent = y.year === currentYear && i === currentMonthIdx}
+								<div class="flex-1 text-center text-[9px] sm:text-[11px] leading-tight whitespace-nowrap {isCurrent ? 'text-emerald-300 font-bold' : 'text-gray-500'}">
+									{short}
+								</div>
+							{/each}
+						</div>
+					</div>
+
 					<table class="w-full text-sm">
 						<thead>
 							<tr class="text-gray-400 border-b border-white/10">
