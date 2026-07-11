@@ -135,14 +135,6 @@
 		return rows.sort((a, b) => b.count - a.count);
 	});
 	const maxCat = $derived(Math.max(1, ...categoryRows.map((c) => c.count)));
-
-	// ---- קריאות עזרה מהקהילה ("הרמת יד"), לפי שנה ----
-	const helpByYear = $derived.by(() => {
-		const m = new Map<number, { calls: number; answered: number }>();
-		for (const h of data.helpCalls?.byYear ?? []) m.set(h.year, { calls: h.calls, answered: h.answered });
-		return m;
-	});
-	const helpFor = (year: number) => helpByYear.get(year) ?? { calls: 0, answered: 0 };
 </script>
 
 <svelte:head>
@@ -184,6 +176,16 @@
 						</div>
 					{/each}
 				</div>
+
+				<!-- קריאות עזרה מהקהילה — מצורף לרשימת התוכן, מופרד בקו ומובלט -->
+				<div class="mt-4 pt-4 border-t border-white/10">
+					<div class="flex flex-wrap items-center gap-x-5 gap-y-2 rounded-xl border border-amber-500/30 bg-gradient-to-br from-amber-500/[0.10] to-orange-500/[0.05] px-4 py-3">
+						<span class="flex items-center gap-2 text-sm font-black text-amber-200"><span class="text-base">🆘</span> קריאות לעזרה מהקהילה</span>
+						<span class="text-sm text-gray-300">סה״כ <b class="text-white tabular-nums">{fmt(data.helpCalls?.total ?? 0)}</b></span>
+						<span class="text-sm text-gray-300">נענו <b class="text-emerald-300 tabular-nums">{fmt(data.helpCalls?.answered ?? 0)}</b></span>
+						<span class="text-sm text-gray-300">ממתינות <b class="text-amber-300 tabular-nums">{fmt((data.helpCalls?.total ?? 0) - (data.helpCalls?.answered ?? 0))}</b></span>
+					</div>
+				</div>
 			</div>
 		{/if}
 
@@ -193,9 +195,8 @@
 			</div>
 		{:else}
 			<!-- גרף + טבלה של 12 חודשים לכל שנה -->
-			{#each years as y}
+			{#each years as y, yi}
 				{@const maxCount = Math.max(1, ...y.months.map((c) => c ?? 0))}
-				{@const help = helpFor(y.year)}
 				<div class="rounded-2xl border border-white/10 bg-white/[0.03] p-5 mb-6">
 					<h2 class="text-lg font-black mb-3">{y.year}</h2>
 
@@ -248,22 +249,27 @@
 							{/each}
 						</div>
 
-						<!-- קריאות עזרה מהקהילה ("הרמת יד") — ממלא את החלל מתחת לגרף -->
-						<div class="mt-5 rounded-xl border border-amber-500/25 bg-gradient-to-br from-amber-500/[0.08] to-orange-500/[0.04] p-3.5">
-							<div class="flex items-center gap-2 mb-2">
-								<span class="text-base">🆘</span>
-								<span class="text-sm font-black text-amber-200">קריאות לעזרה מהקהילה</span>
-							</div>
-							{#if help.calls > 0}
-								<div class="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm">
-									<span class="text-gray-300">סה״כ <b class="text-white tabular-nums">{fmt(help.calls)}</b></span>
-									<span class="text-gray-300">נענו <b class="text-emerald-300 tabular-nums">{fmt(help.answered)}</b></span>
-									<span class="text-gray-300">ממתינות <b class="text-amber-300 tabular-nums">{fmt(help.calls - help.answered)}</b></span>
+						{#if yi === 0}
+							<!-- סיכום שנתי — בתוך הכרטיס (בפנים), ממלא את החלל מתחת לגרף -->
+							<div class="mt-5 rounded-xl border border-emerald-500/30 bg-gradient-to-br from-emerald-600/15 via-emerald-500/5 to-teal-500/10 p-3.5 shadow-[0_0_20px_rgba(16,185,129,0.12)]">
+								<div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+									<h3 class="flex items-center gap-1.5 text-sm font-black text-emerald-200"><span>📊</span> סיכום שנתי</h3>
+									{#each years as yy}
+										<div class="flex items-center gap-1.5 rounded-lg border border-emerald-400/20 bg-emerald-950/40 px-2.5 py-1 text-sm">
+											<span class="font-bold text-emerald-100/70">{yy.year}</span>
+											<span class="font-black text-white tabular-nums">{fmt(yy.total)}</span>
+											{#if !yy.completed}<span class="text-[10px] text-emerald-300/70">בתהליך</span>{/if}
+										</div>
+									{/each}
+									{#if years.length > 1}
+										<div class="flex items-center gap-1.5 rounded-lg border border-emerald-400/40 bg-emerald-500/20 px-2.5 py-1 text-sm">
+											<span class="font-bold text-emerald-200">סה״כ</span>
+											<span class="font-black text-emerald-100 tabular-nums">{fmt(grandTotal)}</span>
+										</div>
+									{/if}
 								</div>
-							{:else}
-								<p class="text-sm text-gray-500">לא נרשמו קריאות לעזרה בשנה זו 🤍</p>
-							{/if}
-						</div>
+							</div>
+						{/if}
 					</div>
 						<!-- פירוט חודשי — צמוד לגרף (מימין בדסקטופ), צר כדי לפנות מקום לגרף -->
 						<div class="lg:w-44 lg:shrink-0">
@@ -301,30 +307,6 @@
 					</div>
 				</div>
 			{/each}
-
-			<!-- סיכום שנתי — כרטיס צבעוני קומפקטי שבולט -->
-			<div class="mt-8 rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-600/15 via-emerald-500/5 to-teal-500/10 p-4 shadow-[0_0_24px_rgba(16,185,129,0.12)]">
-				<div class="flex flex-wrap items-center gap-x-4 gap-y-2">
-					<h2 class="flex items-center gap-1.5 text-base font-black text-emerald-200">
-						<span>📊</span> סיכום שנתי
-					</h2>
-					<div class="flex flex-wrap items-center gap-2">
-						{#each years as y}
-							<div class="flex items-center gap-2 rounded-xl border border-emerald-400/20 bg-emerald-950/40 px-3 py-1.5 text-sm">
-								<span class="font-bold text-emerald-100/70">{y.year}</span>
-								<span class="font-black text-white tabular-nums">{fmt(y.total)}</span>
-								{#if !y.completed}<span class="text-[10px] text-emerald-300/70">בתהליך</span>{/if}
-							</div>
-						{/each}
-						{#if years.length > 1}
-							<div class="flex items-center gap-2 rounded-xl border border-emerald-400/40 bg-emerald-500/20 px-3 py-1.5 text-sm">
-								<span class="font-bold text-emerald-200">סה״כ</span>
-								<span class="font-black text-emerald-100 tabular-nums">{fmt(grandTotal)}</span>
-							</div>
-						{/if}
-					</div>
-				</div>
-			</div>
 		{/if}
 
 		<!-- באנר סטטוס השרת (לוח מכוונים) — תחתית הדף -->
