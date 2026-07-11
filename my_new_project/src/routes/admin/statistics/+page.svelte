@@ -61,6 +61,38 @@
 
 	const grandTotal = $derived(years.reduce((sum, y) => sum + y.total, 0));
 	const fmt = (n: number) => n.toLocaleString('he-IL');
+
+	// ---- סיכום הפריטים שהועלו לאתר ----
+	// שם עברי לכל קטגוריה (ה-slug ב-DB לא תמיד אינטואיטיבי, למשל realestate=אירוח לשבת)
+	const CATEGORY_LABELS: Record<string, string> = {
+		giveaway: 'למסירה',
+		business: 'בייבי סיטר',
+		minyanim: 'יהדות',
+		education: 'חוגים',
+		realestate: 'אירוח לשבת',
+		security: 'צימרים',
+		shops: 'חנויות',
+		restaurants: 'מזון ומסעדות',
+		rides: 'טרמפים ומסירות',
+		ride: 'טרמפים ומסירות',
+		jobs: 'דרושים',
+		job: 'דרושים',
+		singles: 'פנויים/פנויות',
+		events: 'אירועים',
+		event: 'אירועים',
+		for_kids: 'לילדים',
+		attractions: 'שירות ציבורי',
+		halls: 'אולמות וחללים',
+		gemachim: 'גמ"חים',
+		gmach: 'גמ"חים',
+		shabbat_hosting: 'אירוח לשבת',
+		lost_and_found: 'אבידות ומציאות',
+		nc_marketplace: 'לוח שכונתי',
+	};
+	const catLabel = (cat: string) => CATEGORY_LABELS[cat] ?? cat;
+
+	const itemsSummary = $derived(data.itemsSummary ?? { total: 0, byCategory: [], byMonth: [] });
+	const maxCat = $derived(Math.max(1, ...itemsSummary.byCategory.map((c) => c.count)));
 </script>
 
 <svelte:head>
@@ -81,6 +113,29 @@
 			</button>
 		</div>
 		<p class="text-gray-400 mb-8">היסטוריית כניסות חודשיות לאתר · הנתונים מתעדכנים פעם ביום</p>
+
+		<!-- סיכום התוכן שהועלה לאתר: סה״כ + פילוח לפי קטגוריה -->
+		{#if itemsSummary.total > 0}
+			<div class="rounded-2xl border border-white/10 bg-white/[0.03] p-5 mb-6">
+				<div class="flex flex-wrap items-baseline justify-between gap-2 mb-4">
+					<h2 class="text-lg font-black">📦 תוכן שהועלה לאתר</h2>
+					<div class="text-sm text-gray-400">
+						סה״כ <b class="text-emerald-300 text-base">{fmt(itemsSummary.total)}</b> פריטים פעילים
+					</div>
+				</div>
+				<div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2.5">
+					{#each itemsSummary.byCategory as c}
+						<div class="flex items-center gap-3">
+							<span class="w-24 shrink-0 truncate text-sm text-gray-300" title={catLabel(c.category)}>{catLabel(c.category)}</span>
+							<div class="flex-1 h-2.5 rounded-full bg-white/[0.06] overflow-hidden">
+								<div class="h-full rounded-full bg-gradient-to-l from-emerald-500 to-teal-400" style="width: {Math.max(4, (c.count / maxCat) * 100)}%"></div>
+							</div>
+							<span class="w-8 text-left text-sm font-bold tabular-nums text-white">{fmt(c.count)}</span>
+						</div>
+					{/each}
+				</div>
+			</div>
+		{/if}
 
 		{#if years.length === 0}
 			<div class="rounded-2xl border border-white/10 bg-white/5 p-8 text-center text-gray-400">

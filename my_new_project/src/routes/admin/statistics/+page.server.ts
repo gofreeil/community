@@ -2,8 +2,46 @@
 // הנתונים מגיעים מ-visit-stat ב-Strapi דרך cache של יממה - מתעדכנים פעם ביום.
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { getUserById, getUserByEmail } from '$lib/server/db';
+import { getUserById, getUserByEmail, getAllItems } from '$lib/server/db';
 import { getVisitStats } from '$lib/server/visitStats';
+
+// קטגוריות "מערכת" — רשומות פנימיות (הודעות, בקשות, סקרים) שאינן פריטים שהעלו גולשים.
+// לא נכללות בסיכום "תוכן שהועלה לאתר".
+const SYSTEM_CATEGORIES = new Set([
+    'message', 'admin_alert', 'poll', 'emergency_team', 'raise_hand',
+    'singles_access', 'singles_request', 'shabbat_report', 'shabbat_request',
+    'location_request', 'user_feedback', 'vaad_member',
+]);
+
+export interface ItemsSummary {
+    total: number;
+    byCategory: { category: string; count: number }[];
+    byMonth: { month: string; count: number }[];
+}
+
+/** סיכום הפריטים הפעילים שהועלו לאתר: סה״כ, פילוח לפי קטגוריה ולפי חודש. */
+async function buildItemsSummary(): Promise<ItemsSummary> {
+    const all = await getAllItems();
+    const real = all.filter((it) => !SYSTEM_CATEGORIES.has(it.category));
+
+    const byCat = new Map<string, number>();
+    const byMonth = new Map<string, number>();
+    for (const it of real) {
+        byCat.set(it.category, (byCat.get(it.category) ?? 0) + 1);
+        const m = (it.created_at || '').slice(0, 7); // YYYY-MM
+        if (/^\d{4}-\d{2}$/.test(m)) byMonth.set(m, (byMonth.get(m) ?? 0) + 1);
+    }
+
+    return {
+        total: real.length,
+        byCategory: [...byCat.entries()]
+            .map(([category, count]) => ({ category, count }))
+            .sort((a, b) => b.count - a.count),
+        byMonth: [...byMonth.entries()]
+            .map(([month, count]) => ({ month, count }))
+            .sort((a, b) => a.month.localeCompare(b.month)),
+    };
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function ensureSuperAdmin(event: any) {
@@ -30,5 +68,12 @@ export const load: PageServerLoad = async (event) => {
         console.warn('[statistics] getVisitStats failed:', e);
     }
 
-    return { stats };
+    let itemsSummary: ItemsSummary = { total: 0, byCategory: [], byMonth: [] };
+    try {
+        itemsSummary = await buildItemsSummary();
+    } catch (e) {
+        console.warn('[statistics] buildItemsSummary failed:', e);
+    }
+
+    return { stats, itemsSummary };
 };
