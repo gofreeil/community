@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import ServerHealthGauges from '$lib/components/ServerHealthGauges.svelte';
 
 	let { data } = $props();
 
@@ -93,7 +94,47 @@
 	const catLabel = (cat: string) => CATEGORY_LABELS[cat] ?? cat;
 
 	const itemsSummary = $derived(data.itemsSummary ?? { total: 0, byCategory: [], byMonth: [] });
-	const maxCat = $derived(Math.max(1, ...itemsSummary.byCategory.map((c) => c.count)));
+
+	// כל הקטגוריות הרשמיות — מוצגות תמיד, גם אם 0. aliases ממזגים slugs חלופיים.
+	const CATEGORY_DEFS: { key: string; label: string; aliases: string[] }[] = [
+		{ key: 'giveaway',       label: 'למסירה',         aliases: [] },
+		{ key: 'business',       label: 'בייבי סיטר',      aliases: [] },
+		{ key: 'minyanim',       label: 'יהדות',          aliases: [] },
+		{ key: 'education',      label: 'חוגים',          aliases: [] },
+		{ key: 'realestate',     label: 'אירוח לשבת',      aliases: ['shabbat_hosting'] },
+		{ key: 'security',       label: 'צימרים',         aliases: [] },
+		{ key: 'shops',          label: 'חנויות',         aliases: [] },
+		{ key: 'restaurants',    label: 'מזון ומסעדות',    aliases: [] },
+		{ key: 'rides',          label: 'טרמפים ומסירות',   aliases: ['ride'] },
+		{ key: 'jobs',           label: 'דרושים',         aliases: ['job'] },
+		{ key: 'singles',        label: 'פנויים/פנויות',    aliases: [] },
+		{ key: 'events',         label: 'אירועים',        aliases: ['event'] },
+		{ key: 'for_kids',       label: 'לילדים',         aliases: [] },
+		{ key: 'attractions',    label: 'שירות ציבורי',    aliases: [] },
+		{ key: 'halls',          label: 'אולמות וחללים',    aliases: [] },
+		{ key: 'safe-space',     label: 'מרחב מוגן',       aliases: [] },
+		{ key: 'gemachim',       label: 'גמ"חים',         aliases: ['gmach'] },
+		{ key: 'lost_and_found', label: 'אבידות ומציאות',   aliases: [] },
+	];
+
+	// שורות התצוגה: כל הקטגוריות (כולל 0) + קטגוריות לא-מוכרות שנמצאו בפועל, ממוין יורד.
+	const categoryRows = $derived.by(() => {
+		const counts = new Map<string, number>();
+		for (const c of itemsSummary.byCategory) counts.set(c.category, c.count);
+		const consumed = new Set<string>();
+		const rows = CATEGORY_DEFS.map((def) => {
+			let count = counts.get(def.key) ?? 0;
+			consumed.add(def.key);
+			for (const a of def.aliases) { count += counts.get(a) ?? 0; consumed.add(a); }
+			return { label: def.label, count };
+		});
+		// קטגוריות שנמצאו בפועל אך אינן ברשימה הרשמית — מתווספות בסוף
+		for (const c of itemsSummary.byCategory) {
+			if (!consumed.has(c.category)) rows.push({ label: catLabel(c.category), count: c.count });
+		}
+		return rows.sort((a, b) => b.count - a.count);
+	});
+	const maxCat = $derived(Math.max(1, ...categoryRows.map((c) => c.count)));
 
 	// ---- קריאות עזרה מהקהילה ("הרמת יד"), לפי שנה ----
 	const helpByYear = $derived.by(() => {
@@ -133,13 +174,13 @@
 					</div>
 				</div>
 				<div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2.5">
-					{#each itemsSummary.byCategory as c}
+					{#each categoryRows as c}
 						<div class="flex items-center gap-3">
-							<span class="w-24 shrink-0 truncate text-sm text-gray-300" title={catLabel(c.category)}>{catLabel(c.category)}</span>
+							<span class="w-28 shrink-0 truncate text-sm {c.count === 0 ? 'text-gray-500' : 'text-gray-300'}" title={c.label}>{c.label}</span>
 							<div class="flex-1 h-2.5 rounded-full bg-white/[0.06] overflow-hidden">
-								<div class="h-full rounded-full bg-gradient-to-l from-emerald-500 to-teal-400" style="width: {Math.max(4, (c.count / maxCat) * 100)}%"></div>
+								<div class="h-full rounded-full bg-gradient-to-l from-emerald-500 to-teal-400" style="width: {c.count === 0 ? 0 : Math.max(4, (c.count / maxCat) * 100)}%"></div>
 							</div>
-							<span class="w-8 text-left text-sm font-bold tabular-nums text-white">{fmt(c.count)}</span>
+							<span class="w-8 text-left text-sm font-bold tabular-nums {c.count === 0 ? 'text-gray-600' : 'text-white'}">{fmt(c.count)}</span>
 						</div>
 					{/each}
 				</div>
@@ -285,5 +326,10 @@
 				</div>
 			</div>
 		{/if}
+
+		<!-- באנר סטטוס השרת (לוח מכוונים) — תחתית הדף -->
+		<div class="mt-8">
+			<ServerHealthGauges initial={data.serverHealth} monthlyVisits={data.monthlyVisits} />
+		</div>
 	</div>
 </div>

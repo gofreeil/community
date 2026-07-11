@@ -3,7 +3,8 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { getUserById, getUserByEmail, getAllItems, getItemsByCategory } from '$lib/server/db';
-import { getVisitStats } from '$lib/server/visitStats';
+import { getVisitStats, getVisitsThisMonth } from '$lib/server/visitStats';
+import { getServerHealth } from '$lib/server/serverHealth';
 
 // קטגוריות "מערכת" — רשומות פנימיות (הודעות, בקשות, סקרים) שאינן פריטים שהעלו גולשים.
 // לא נכללות בסיכום "תוכן שהועלה לאתר".
@@ -121,5 +122,12 @@ export const load: PageServerLoad = async (event) => {
         console.warn('[statistics] buildHelpCallsSummary failed:', e);
     }
 
-    return { stats, itemsSummary, helpCalls };
+    // לוח מכוונים של השרת (הבאקאנד) + כניסות החודש - לבאנר בתחתית הדף
+    const serverHealth = await getServerHealth().catch((e) => {
+        console.warn('[statistics] getServerHealth failed:', e);
+        return null;
+    });
+    const monthlyVisits = await getVisitsThisMonth().catch(() => 0);
+
+    return { stats, itemsSummary, helpCalls, serverHealth, monthlyVisits };
 };
