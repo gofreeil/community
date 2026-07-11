@@ -234,23 +234,27 @@
 				</div>
 			{/each}
 
-			<!-- סיכום שנתי — מינימלי, בתחתית -->
-			<div class="mt-2 pt-5 border-t border-white/10">
-				<h2 class="text-sm font-bold text-emerald-300/80 mb-3">סיכום שנתי</h2>
-				<div class="flex flex-wrap items-center gap-2">
-					{#each years as y}
-						<div class="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-sm">
-							<span class="font-bold text-gray-300">{y.year}</span>
-							<span class="font-black text-white tabular-nums">{fmt(y.total)}</span>
-							{#if !y.completed}<span class="text-[10px] text-gray-500">בתהליך</span>{/if}
-						</div>
-					{/each}
-					{#if years.length > 1}
-						<div class="flex items-center gap-2 rounded-lg border border-emerald-500/25 bg-emerald-500/10 px-3 py-1.5 text-sm">
-							<span class="font-bold text-emerald-200">סה״כ</span>
-							<span class="font-black text-emerald-200 tabular-nums">{fmt(grandTotal)}</span>
-						</div>
-					{/if}
+			<!-- סיכום שנתי — כרטיס צבעוני קומפקטי שבולט -->
+			<div class="mt-8 rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-600/15 via-emerald-500/5 to-teal-500/10 p-4 shadow-[0_0_24px_rgba(16,185,129,0.12)]">
+				<div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+					<h2 class="flex items-center gap-1.5 text-base font-black text-emerald-200">
+						<span>📊</span> סיכום שנתי
+					</h2>
+					<div class="flex flex-wrap items-center gap-2">
+						{#each years as y}
+							<div class="flex items-center gap-2 rounded-xl border border-emerald-400/20 bg-emerald-950/40 px-3 py-1.5 text-sm">
+								<span class="font-bold text-emerald-100/70">{y.year}</span>
+								<span class="font-black text-white tabular-nums">{fmt(y.total)}</span>
+								{#if !y.completed}<span class="text-[10px] text-emerald-300/70">בתהליך</span>{/if}
+							</div>
+						{/each}
+						{#if years.length > 1}
+							<div class="flex items-center gap-2 rounded-xl border border-emerald-400/40 bg-emerald-500/20 px-3 py-1.5 text-sm">
+								<span class="font-bold text-emerald-200">סה״כ</span>
+								<span class="font-black text-emerald-100 tabular-nums">{fmt(grandTotal)}</span>
+							</div>
+						{/if}
+					</div>
 				</div>
 			</div>
 		{/if}
