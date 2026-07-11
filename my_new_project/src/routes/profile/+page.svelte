@@ -401,8 +401,15 @@
 								lr,
 								from: m.label ?? tFn("profile.from_system"),
 								text: m.description ?? "",
-								time: new Date(m.created_at).toLocaleDateString(
+								time: new Date(m.created_at).toLocaleString(
 									"he-IL",
+									{
+										day: "numeric",
+										month: "numeric",
+										year: "numeric",
+										hour: "2-digit",
+										minute: "2-digit",
+									},
 								),
 								read: false,
 								// סוג ההודעה (singles_review וכו') - משמש לזיהוי התראות שניתן לסמן כטופלו
