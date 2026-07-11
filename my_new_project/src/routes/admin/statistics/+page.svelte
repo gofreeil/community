@@ -329,7 +329,7 @@
 
 		<!-- באנר סטטוס השרת (לוח מכוונים) — תחתית הדף -->
 		<div class="mt-8">
-			<ServerHealthGauges initial={data.serverHealth} monthlyVisits={data.monthlyVisits} />
+			<ServerHealthGauges initial={data.serverHealth} monthlyVisits={data.monthlyVisits} live={false} />
 		</div>
 	</div>
 </div>

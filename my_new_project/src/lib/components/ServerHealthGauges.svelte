@@ -7,8 +7,10 @@
 	import { onMount, onDestroy } from 'svelte';
 	import type { ServerHealth } from '$lib/serverHealthTypes';
 
-	let { initial = null, monthlyVisits = 0 }:
-		{ initial?: ServerHealth | null; monthlyVisits?: number } = $props();
+	// live=true (ברירת מחדל, כמו ב-/admin): טיימר קל לתווית "עודכן לפני X" + כפתור רענון ידני.
+	// live=false (למשל דף הסטטיסטיקה): תמונת-מצב מרגע הכניסה בלבד — בלי טיימר ובלי רענון.
+	let { initial = null, monthlyVisits = 0, live = true }:
+		{ initial?: ServerHealth | null; monthlyVisits?: number; live?: boolean } = $props();
 
 	let health = $state<ServerHealth | null>(initial);
 	let loading = $state(false);
@@ -92,8 +94,8 @@
 	// טיימר קל (ללא רשת) לעדכון תווית "עודכן לפני X" בלבד
 	let tick: ReturnType<typeof setInterval>;
 	onMount(() => {
-		tick = setInterval(() => (now = Date.now()), 30_000);
-		if (!initial) refresh(); // טעינה ראשונית נכשלה בשרת → משיכה אחת בצד-לקוח
+		if (live) tick = setInterval(() => (now = Date.now()), 30_000);
+		if (!initial) refresh(); // טעינה ראשונית נכשלה בשרת → משיכה אחת בצד-לקוח (חד-פעמי בכניסה)
 	});
 	onDestroy(() => clearInterval(tick));
 
@@ -121,7 +123,7 @@
 			<span class="ico">🖥️</span>
 			<div>
 				<h2>מצב השרת</h2>
-				<p>עומס הבאקאנד — מתי צריך לשדרג · לחץ ↻ לרענון</p>
+				<p>עומס הבאקאנד — מתי צריך לשדרג{#if live} · לחץ ↻ לרענון{/if}</p>
 			</div>
 		</div>
 		<div class="live">
@@ -129,9 +131,11 @@
 				<span class="dot" class:pulsing={!loading} style="background:{STATUS[health.status].tone}"></span>
 				<span class="ago">{fmtAgo(health.timestamp)}</span>
 			{/if}
-			<button class="refresh" onclick={refresh} disabled={loading} title="רענן עכשיו">
-				{loading ? '⏳' : '↻'}
-			</button>
+			{#if live}
+				<button class="refresh" onclick={refresh} disabled={loading} title="רענן עכשיו">
+					{loading ? '⏳' : '↻'}
+				</button>
+			{/if}
 		</div>
 	</div>
 
