@@ -156,7 +156,7 @@
 	<div class="max-w-3xl mx-auto px-4 py-8">
 
 		<!-- כותרת -->
-		<div class="flex items-center justify-between mb-2">
+		<div class="flex items-center justify-between mb-8">
 			<h1 class="text-3xl font-black">📈 סטטיסטיקה</h1>
 			<button
 				onclick={() => goto('/admin')}
@@ -165,7 +165,6 @@
 				→ ללוח הניהול
 			</button>
 		</div>
-		<p class="text-gray-400 mb-8">היסטוריית כניסות חודשיות לאתר · הנתונים מתעדכנים פעם ביום</p>
 
 		<!-- סיכום התוכן שהועלה לאתר: סה״כ + פילוח לפי קטגוריה -->
 		{#if itemsSummary.total > 0}
