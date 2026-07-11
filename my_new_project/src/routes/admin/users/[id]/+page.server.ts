@@ -8,6 +8,12 @@ import {
     getMessagesByUserId,
     createItem,
 } from '$lib/server/db';
+import { categoryConfig } from '$lib/categoryFields';
+
+// פרסום = נכס של המשתמש: מודעה/מקום אמיתי מקטגוריה מוגדרת (גמ"ח, מסירה, עסק,
+// פנוי/ה וכו'). כל השאר (הודעות, בקשות מיקום/רכז, קריאות שכנים, התראות) אינם
+// נכסים ואינם נספרים כפרסומים - אותה הגדרה כמו בדף הפרופיל.
+const PUBLICATION_CATEGORIES = new Set(Object.keys(categoryConfig));
 
 /** מאמת שהמשתמש המחובר הוא סופר־אדמין (ישירות מ-DB + fallback לפי אימייל למיזוג OAuth+credentials) */
 async function requireSuperAdmin(event: RequestEvent): Promise<{ id: string; name?: string | null; email?: string | null }> {
@@ -30,21 +36,6 @@ async function requireSuperAdmin(event: RequestEvent): Promise<{ id: string; nam
 function parseEF(s: string | null | undefined): Record<string, unknown> {
     try { return JSON.parse(s || '{}'); } catch { return {}; }
 }
-
-// רשומות מערכת/בקשות - נשמרות טכנית כ-item אבל אינן פרסומים אמיתיים של המשתמש
-// (הודעות צ'אט, בקשות הוספת מיקום/שכונה, בקשות רכז, התראות, פניות תמיכה, אישורים).
-// הן מטופלות בצ'אט ובפאנל הניהול, ולכן מסוננות מרשימת "פרסומים".
-const NON_PUBLICATION_CATEGORIES = new Set([
-    'message',
-    'location_request',
-    'location_request_decision',
-    'location_request_ack',
-    'neighborhood_request',
-    'neighborhood',
-    'coordinator_request',
-    'admin_alert',
-    'user_feedback',
-]);
 
 /** בונה את שרשור השיחה: כל ההודעות שהמשתמש קיבל (יוצאות) + תשובות שלו לאדמין (נכנסות) */
 async function loadThread(adminId: string, userId: string) {
@@ -107,8 +98,8 @@ export const load: PageServerLoad = async (event) => {
 
     let items: Awaited<ReturnType<typeof getItemsByUserId>> = [];
     try {
-        // מציגים רק תוכן שהמשתמש פרסם בפועל - לא הודעות/בקשות/רשומות מערכת
-        items = (await getItemsByUserId(userId)).filter((it) => !NON_PUBLICATION_CATEGORIES.has(it.category));
+        // פרסומים = הנכסים של המשתמש - רק קטגוריות פרסום אמיתיות מ-categoryConfig
+        items = (await getItemsByUserId(userId)).filter((it) => PUBLICATION_CATEGORIES.has(it.category));
     } catch (e) {
         console.warn('[admin/users] getItemsByUserId failed:', e);
     }
