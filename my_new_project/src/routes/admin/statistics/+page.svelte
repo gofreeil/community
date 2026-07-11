@@ -159,12 +159,7 @@
 		<!-- סיכום התוכן שהועלה לאתר: סה״כ + פילוח לפי קטגוריה -->
 		{#if itemsSummary.total > 0}
 			<div class="rounded-2xl border border-white/10 bg-white/[0.03] p-5 mb-6">
-				<div class="flex flex-wrap items-baseline justify-between gap-2 mb-4">
-					<h2 class="text-lg font-black">📦 תוכן שהועלה לאתר</h2>
-					<div class="text-sm text-gray-400">
-						סה״כ <b class="text-emerald-300 text-base">{fmt(itemsSummary.total)}</b> פריטים פעילים
-					</div>
-				</div>
+				<h2 class="text-lg font-black mb-4">📦 תוכן שהועלה לאתר</h2>
 				<div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2.5">
 					{#each categoryRows as c}
 						<div class="flex items-center gap-3">
@@ -177,14 +172,17 @@
 					{/each}
 				</div>
 
-				<!-- קריאות עזרה מהקהילה — מצורף לרשימת התוכן, מופרד בקו ומובלט -->
-				<div class="mt-4 pt-4 border-t border-white/10">
-					<div class="flex flex-wrap items-center gap-x-5 gap-y-2 rounded-xl border border-amber-500/30 bg-gradient-to-br from-amber-500/[0.10] to-orange-500/[0.05] px-4 py-3">
-						<span class="flex items-center gap-2 text-sm font-black text-amber-200"><span class="text-base">🆘</span> קריאות לעזרה מהקהילה</span>
-						<span class="text-sm text-gray-300">סה״כ <b class="text-white tabular-nums">{fmt(data.helpCalls?.total ?? 0)}</b></span>
-						<span class="text-sm text-gray-300">נענו <b class="text-emerald-300 tabular-nums">{fmt(data.helpCalls?.answered ?? 0)}</b></span>
-						<span class="text-sm text-gray-300">ממתינות <b class="text-amber-300 tabular-nums">{fmt((data.helpCalls?.total ?? 0) - (data.helpCalls?.answered ?? 0))}</b></span>
-					</div>
+				<!-- קריאות עזרה מהקהילה — משולב עם הפרטים, בלי מסגרת, נבדל בצבע אמבר -->
+				<div class="mt-3 pt-3 border-t border-white/5 flex flex-wrap items-center gap-x-5 gap-y-1 text-sm">
+					<span class="flex items-center gap-1.5 font-black text-amber-300"><span>🆘</span> קריאות לעזרה מהקהילה</span>
+					<span class="text-gray-400">סה״כ <b class="text-white tabular-nums">{fmt(data.helpCalls?.total ?? 0)}</b></span>
+					<span class="text-gray-400">נענו <b class="text-emerald-300 tabular-nums">{fmt(data.helpCalls?.answered ?? 0)}</b></span>
+					<span class="text-gray-400">ממתינות <b class="text-amber-300 tabular-nums">{fmt((data.helpCalls?.total ?? 0) - (data.helpCalls?.answered ?? 0))}</b></span>
+				</div>
+
+				<!-- סה״כ פריטים — בתחתית הכרטיס -->
+				<div class="mt-3 pt-3 border-t border-white/10 text-sm text-gray-400 text-left">
+					סה״כ <b class="text-emerald-300 text-base">{fmt(itemsSummary.total)}</b> פריטים פעילים
 				</div>
 			</div>
 		{/if}
