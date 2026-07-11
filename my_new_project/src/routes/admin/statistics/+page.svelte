@@ -238,12 +238,12 @@
 			{#each years as y, yi}
 				{@const maxCount = Math.max(1, ...y.months.map((c) => c ?? 0))}
 				<div class="rounded-2xl border border-white/10 bg-white/[0.03] p-5 mb-6">
-					<h2 class="text-lg font-black mb-3">{y.year}</h2>
-
 					<!-- זה-לצד-זה: גרף משמאל, פירוט חודשי מימין (בדסקטופ); נערם בנייד -->
 					<div class="flex flex-col lg:flex-row-reverse gap-4 lg:gap-4 lg:items-start">
 						<!-- גרף עמודות חודשי -->
 						<div class="lg:flex-1 min-w-0">
+						<!-- כותרת השנה — יושבת בשורת הכותרת של הפירוט (חוסך שורה נפרדת) -->
+						<div class="text-lg font-black text-right pb-1 mb-2 border-b border-white/10">{y.year}</div>
 						<div class="flex items-end gap-1 sm:gap-2 h-64 border-b border-white/10 pb-px">
 							{#each MONTH_NAMES as name, i}
 								{@const c = y.months[i]}
@@ -317,14 +317,6 @@
 								</tr>
 							{/each}
 						</tbody>
-						<tfoot>
-							<tr class="border-t border-white/15">
-								<td class="py-1.5 font-black">
-									סה״כ {y.year}{#if !y.completed}<span class="text-xs text-gray-400 font-normal"> (עד כה)</span>{/if}
-								</td>
-								<td class="py-1.5 text-left font-black">{fmt(y.total)}</td>
-							</tr>
-						</tfoot>
 					</table>
 						</div>
 					</div>
