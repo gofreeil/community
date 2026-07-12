@@ -24,14 +24,19 @@
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 <!-- משתמשים -->
                 <div class="relative overflow-hidden rounded-2xl border border-blue-500/25 bg-gradient-to-br from-blue-600/15 to-blue-500/5 p-4">
-                    <div class="flex items-center gap-2 text-blue-200/80 text-sm font-bold mb-1">
-                        <img src="/images/60712_175258.png" alt="" class="h-7 w-12 shrink-0 rounded-lg object-cover ring-1 ring-white/15 shadow-sm" />
-                        משתמשים
+                    <!-- תמונת הקהילה בגדול, ממלאת את השטח הפנוי בצד שמאל -->
+                    <img
+                        src="/images/60712_175258.png"
+                        alt=""
+                        class="pointer-events-none absolute left-2 inset-y-0 my-auto h-[68px] w-[68px] rounded-2xl object-cover ring-1 ring-white/20 shadow-lg"
+                    />
+                    <div class="relative">
+                        <div class="text-blue-200/80 text-sm font-bold mb-1">משתמשים</div>
+                        <div class="text-4xl font-black text-white leading-none tabular-nums">{data.site.totalUsers}</div>
+                        {#if data.site.newUsersThisMonth > 0}
+                            <div class="text-xs text-blue-300/80 mt-1.5 font-bold">+{data.site.newUsersThisMonth} החודש</div>
+                        {/if}
                     </div>
-                    <div class="text-4xl font-black text-white leading-none tabular-nums">{data.site.totalUsers}</div>
-                    {#if data.site.newUsersThisMonth > 0}
-                        <div class="text-xs text-blue-300/80 mt-1.5 font-bold">+{data.site.newUsersThisMonth} החודש</div>
-                    {/if}
                 </div>
 
                 <!-- פרטים במפה -->
