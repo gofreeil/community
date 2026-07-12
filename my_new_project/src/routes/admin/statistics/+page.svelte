@@ -180,6 +180,10 @@
 
 	// כל חודשי השנה מוצגים בגרף המסכם (ינואר–דצמבר)
 	const activeMonthIdxs = Array.from({ length: 12 }, (_, i) => i);
+
+	// קנה-מידה משותף לכל שלוש הסדרות — כך שגובה כל מלבן משקף את המספר בפועל
+	// (206 גבוה, 29 ו-19 נמוכים בהתאמה), לא נורמליזציה נפרדת לכל מדד.
+	const summaryMax = $derived(Math.max(1, ...summarySeries.flatMap((s) => s.data)));
 </script>
 
 <svelte:head>
@@ -223,7 +227,7 @@
 							{@const val = s.data[mi]}
 							<div class="flex flex-col items-center justify-end h-full w-1/3">
 								<div class="mb-0.5 text-[9px] sm:text-[10px] font-black tabular-nums leading-none {s.text} {val === 0 ? 'opacity-0' : ''}">{fmt(val)}</div>
-								<div class="w-full rounded-t bg-gradient-to-t {s.bar} shadow-sm transition-all duration-500 hover:brightness-125" style="height: {val === 0 ? 0 : Math.max(3, (val / s.max) * 82)}%"></div>
+								<div class="w-full rounded-t bg-gradient-to-t {s.bar} shadow-sm transition-all duration-500 hover:brightness-125" style="height: {val === 0 ? 0 : Math.max(2, (val / summaryMax) * 82)}%"></div>
 							</div>
 						{/each}
 					</div>
