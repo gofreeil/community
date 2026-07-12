@@ -38,8 +38,7 @@
 
 	const DRAFT_KEY = "profile_draft";
 
-	const _photoDone = page.url.searchParams.get("photo_done") === "1";
-	let isEditing = $state(_photoDone);
+	let isEditing = $state(false);
 	let showLevels = $state(false);
 	let showMessages = $state(false);
 	let showMyInfo = $state(false);
@@ -694,15 +693,20 @@
 			slowScrollTo(top);
 		}, 50);
 	}
-	let saveSuccess = $state(_photoDone); // הצג הצלחה אם חזרנו מהעתקת תמונה
-	if (_photoDone) setTimeout(() => (saveSuccess = false), 3000);
+	let saveSuccess = $state(false);
 	// אישור מתמשך לבקשת הוספת שכונה/מיקום - לא נעלם אוטומטית, כדי שהמשתמש לא ינחש שזה נכשל וישלח שוב
 	let locationNotice = $state<{ text: string; kind: "ok" | "pending" | "resolved" } | null>(null);
-	// ברירת מחדל לתמונה: avatar_url מה-DB, ואם אין - תמונת הפרופיל מגוגל (oauth_image)
+	// תמונת ברירת המחדל תמיד מגוגל (oauth_image). העלאת תמונה או ייבוא מפייסבוק הם
+	// דריסה זמנית בלבד; הסרתם מחזירה אוטומטית לתמונת הגוגל.
+	const googleImage: string | null = (data as { oauth_image?: string | null }).oauth_image ?? null;
 	let avatarPreview = $state<string | null>(
-		_ud?.avatar_url || (data as { oauth_image?: string | null }).oauth_image || null,
+		_ud?.avatar_url || googleImage || null,
 	);
 	let avatarBase64 = $state("");
+	// דגל שמסמן לשרת למחוק את התמונה המותאמת (avatar_url=null) → נפילה חזרה לגוגל
+	let avatarRemove = $state(false);
+	// כפתור "הסר תמונה" מוצג רק כשמוצגת תמונה מותאמת, לא כשכבר מוצגת ברירת המחדל מגוגל
+	const canRemoveAvatar = $derived(!!avatarPreview && avatarPreview !== googleImage);
 
 	let name = $state(_ud?.name ?? "");
 	let email = $state(_ud?.email ?? "");
@@ -741,6 +745,14 @@
 		showCitySuggestions = false;
 		cityHighlightIdx = -1;
 		locationInteracted = true;
+		// עיר חדשה נבחרה → אפס את מסלול "לא מצאתי שכונה" ואת הטקסט/פין הישן שלו,
+		// והתחל geocoding של העיר ברקע כדי שהמפה (אם תיפתח) תמורכז עליה ולא על ירושלים.
+		nbNotFound = false;
+		nbMapCenter = null;
+		customLocation = "";
+		customLat = null;
+		customLng = null;
+		geocodeCityCenter(c);
 		// קביעת השכונה לפי העיר שנבחרה
 		const nbs = (data.citiesData as CityEntry[]).find((x) => x.city === c)?.neighborhoods ?? [];
 		const noReal = nbs.length === 0 || (nbs.length === 1 && nbs[0] === "מרכז");
@@ -759,6 +771,7 @@
 		neighborhood = n;
 		showNbSuggestions = false;
 		locationInteracted = true;
+		nbNotFound = false;
 		// בחירת שכונה אמיתית מבטלת בקשת מיקום חופשי שהוקלדה - השתיים מוציאות זו את זו,
 		// כך שהשמירה לא תשלח בטעות בקשה ישנה ותשאיר את המשתמש "תקוע" בהודעת בטיפול.
 		customLocation = "";
@@ -769,11 +782,14 @@
 		try { localStorage.removeItem(MY_PIN_LS_KEY); } catch {}
 	}
 
-	// "לא מצאתי את השכונה שלי" → חשיפת תיבת המיקום החופשי שנשלחת למנהל
+	// "לא מצאתי את השכונה שלי" → חשיפת תיבת שם השכונה + מפה ממורכזת על העיר הנבחרת
 	function pickNeighborhoodNotFound() {
 		neighborhood = "";
 		showNbSuggestions = false;
 		locationInteracted = true;
+		nbNotFound = true;
+		// ודא שיש מרכז מפה לעיר הזו (אם ה-geocoding מבחירת העיר עדיין לא חזר/לא רץ)
+		if (!nbMapCenter && city && !hasPreciseCoords(undefined, city)) geocodeCityCenter(city);
 		setTimeout(() => document.getElementById("p-custom-location")?.focus(), 50);
 	}
 
@@ -809,6 +825,26 @@
 	let customLat = $state<number | null>(null);
 	let customLng = $state<number | null>(null);
 	let locationInteracted = $state(false);
+	// המשתמש לחץ במפורש "לא מצאתי את השכונה שלי" → חושפים תיבת שם שכונה + מפה ממורכזת על עירו
+	let nbNotFound = $state(false);
+	// מרכז חלופי לעיר שאין לה קואורדינטה מובנית (נגזר ב-geocoding), כדי שהמפה
+	// תיפתח על העיר הנבחרת ולא על ירושלים כברירת מחדל.
+	let nbMapCenter = $state<[number, number] | null>(null);
+
+	// geocoding של שם העיר → מרכז המפה. best-effort ורק כשאין לעיר קואורדינטה מובנית.
+	// נקרא ברקע בעת בחירת עיר, כך שהמרכז מוכן עוד לפני שהמשתמש פותח את המפה.
+	async function geocodeCityCenter(c: string) {
+		if (!c || hasPreciseCoords(undefined, c)) { nbMapCenter = null; return; }
+		try {
+			const res = await fetch(`/api/geocode?q=${encodeURIComponent(c)}`);
+			if (!res.ok) return;
+			const r = await res.json();
+			// מתעלמים מתוצאה מיושנת אם המשתמש כבר עבר לעיר אחרת
+			if (c === city && typeof r?.lat === "number" && typeof r?.lng === "number") {
+				nbMapCenter = [r.lat, r.lng];
+			}
+		} catch { /* נכשל - המפה תיפול לברירת המחדל */ }
+	}
 
 	// ---- סימון עצמי של מיקום הישוב על המפה (כשהמפה לא מדויקת) ----
 	let showCityPin = $state(false);
@@ -1186,8 +1222,8 @@
 	}
 	let showTermsError = $state(false);
 
-	// ===== שליפת תמונה מגוגל/פייסבוק =====
-	let showSocialPhotoModal = $state<"google" | "facebook" | null>(null);
+	// ===== שליפת תמונה מפייסבוק =====
+	let showSocialPhotoModal = $state<"facebook" | null>(null);
 	let socialPhotoInput = $state("");
 	let socialPhotoError = $state("");
 	let socialPhotoLoading = $state(false);
@@ -1196,23 +1232,12 @@
 		socialPhotoError = "";
 		socialPhotoLoading = true;
 		try {
-			let url = "";
-			if (showSocialPhotoModal === "facebook") {
-				// חילוץ שם משתמש מ-URL או שימוש ישיר
-				const username = socialPhotoInput
-					.trim()
-					.replace(/^https?:\/\/(www\.)?facebook\.com\//, "")
-					.replace(/\/$/, "");
-				url = `https://graph.facebook.com/${username}/picture?type=large&redirect=true`;
-			} else if (showSocialPhotoModal === "google") {
-				// Google: קבלת URL ישיר של תמונת פרופיל
-				url = socialPhotoInput.trim();
-				if (!url.startsWith("http")) {
-					socialPhotoError = tFn("profile.social_url_invalid");
-					socialPhotoLoading = false;
-					return;
-				}
-			}
+			// חילוץ שם משתמש מ-URL או שימוש ישיר
+			const username = socialPhotoInput
+				.trim()
+				.replace(/^https?:\/\/(www\.)?facebook\.com\//, "")
+				.replace(/\/$/, "");
+			const url = `https://graph.facebook.com/${username}/picture?type=large&redirect=true`;
 			// טעינת התמונה כ-base64
 			const res = await fetch(url);
 			if (!res.ok) throw new Error("image load failed");
@@ -1221,6 +1246,7 @@
 			reader.onload = (e) => {
 				avatarPreview = e.target?.result as string;
 				avatarBase64 = e.target?.result as string;
+				avatarRemove = false;
 				showSocialPhotoModal = null;
 				socialPhotoInput = "";
 			};
@@ -1848,6 +1874,7 @@
 		const result = canvas.toDataURL("image/jpeg", 0.92);
 		avatarPreview = result;
 		avatarBase64 = result;
+		avatarRemove = false;
 		showCrop = false;
 	}
 </script>
@@ -3830,6 +3857,7 @@
 							initialSnapshot.security_answer_2   = security_answer_2;
 							initialSnapshot.status              = status;
 							avatarBase64 = "";
+							avatarRemove = false;
 							// עדכן ערכי תצוגה בלוח המכוונים
 							savedCity         = city;
 							savedNeighborhood = neighborhood;
@@ -3851,6 +3879,12 @@
 					type="hidden"
 					name="avatar_base64"
 					value={avatarBase64}
+				/>
+				<!-- דגל למחיקת התמונה המותאמת (חזרה אוטומטית לברירת המחדל מגוגל) -->
+				<input
+					type="hidden"
+					name="avatar_remove"
+					value={avatarRemove ? "1" : ""}
 				/>
 
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -3978,6 +4012,22 @@
 										/>
 										{tFn("profile.copy_facebook")}
 									</button>
+									<!-- הסרת תמונה מותאמת → חזרה אוטומטית לתמונת ברירת המחדל מגוגל -->
+									{#if canRemoveAvatar}
+										<button
+											type="button"
+											onclick={(e) => {
+												e.stopPropagation();
+												avatarPreview = googleImage;
+												avatarBase64 = "";
+												avatarRemove = true;
+											}}
+											class="cursor-pointer bg-white/5 hover:bg-white/10 border border-white/15 hover:border-red-400/50 rounded-xl px-3 py-2 text-sm text-gray-300 hover:text-white transition-all inline-flex items-center gap-1.5"
+										>
+											<span class="text-base leading-none">🗑️</span>
+											{tFn("profile.remove_photo")}
+										</button>
+									{/if}
 								</div>
 							</div>
 						</div>
@@ -4181,11 +4231,23 @@
 									       px-4 py-3 text-white text-sm transition-colors outline-none flex items-center justify-between gap-2"
 									>
 										<span>מרכז</span>
-										<span class="text-green-400 text-xs">{tFn("profile.selected")}</span>
+										{#if !nbNotFound}
+											<span class="text-green-400 text-xs">{tFn("profile.selected")}</span>
+										{/if}
 									</button>
 									<p class="text-gray-400 text-xs leading-relaxed mt-1.5">
 										{tFn("profile.city_no_nb_note")}
 									</p>
+									<!-- גם ביישוב חד-שכונתי אפשר לבקש הוספת שכונה אמיתית שלא ברשימה -->
+									{#if !nbNotFound}
+										<button
+											type="button"
+											onclick={() => pickNeighborhoodNotFound()}
+											class="mt-1.5 text-xs text-yellow-300/90 hover:text-yellow-200 font-bold transition-colors"
+										>
+											{tFn("profile.nb_not_found")}
+										</button>
+									{/if}
 								{:else}
 									<div class="relative">
 										<input type="hidden" name="neighborhood" value={neighborhood} />
@@ -4241,8 +4303,12 @@
 							{/if}
 						</div>
 
-						<!-- מיקום שאינו מופיע ברשימה - בתוך אותה מסגרת -->
+						<!-- מיקום שאינו מופיע ברשימה - בתוך אותה מסגרת.
+						     מוצג רק לפני בחירת עיר (מסלול "לא מצאתי עיר"), או כשהמשתמש לחץ
+						     במפורש "לא מצאתי את השכונה שלי". ברגע שנבחרה עיר הוא נעלם -
+						     כדי לא להציג שוב "לא מצאת את העיר שלך". -->
 						{#if isEditing}
+							{#if !city || nbNotFound}
 							<div
 								class="col-span-2 border-t border-purple-500/15 pt-3 mt-1 transition-all duration-500"
 							>
@@ -4261,25 +4327,29 @@
 											></span>
 										</span>
 									{/if}
-									📍 {locationInteracted ? tFn('profile.custom_loc_q') : tFn('profile.custom_loc_label')}
+									📍 {nbNotFound
+										? tFn('profile.nb_custom_q')
+										: (locationInteracted ? tFn('profile.custom_loc_q') : tFn('profile.custom_loc_label'))}
 								</label>
 								<p class="text-gray-500 text-xs mb-2 leading-relaxed">
-									{tFn("profile.custom_loc_hint")}
+									{nbNotFound ? tFn('profile.nb_custom_hint') : tFn('profile.custom_loc_hint')}
 								</p>
 								<input
 									id="p-custom-location"
 									name="custom_location"
 									type="text"
 									bind:value={customLocation}
-									placeholder={tFn("profile.custom_loc_placeholder")}
+									placeholder={nbNotFound ? tFn('profile.nb_custom_placeholder') : tFn('profile.custom_loc_placeholder')}
 									class="w-full bg-[#070b14] border rounded-xl px-4 py-3 text-white text-sm
 							       transition-all duration-500 outline-none placeholder:text-white/20
 							       focus:border-yellow-500/70 focus:shadow-[0_0_18px_2px_rgba(250,204,21,0.25)]
 							       {locationInteracted ? 'border-yellow-500/40 custom-loc-glow' : 'border-white/10'}"
 								/>
 
-								<!-- סימון מיקום מדויק על המפה - מאפשר למנהל להציב את השכונה במקום הנכון -->
-								{#if customLocation.trim()}
+								<!-- סימון מיקום מדויק על המפה - מאפשר למנהל להציב את השכונה במקום הנכון.
+								     במסלול "לא מצאתי שכונה" המפה נפתחת מיד וממורכזת על העיר הנבחרת
+								     (fallbackCenter מ-geocoding); אחרת רק אחרי שהוקלד טקסט. -->
+								{#if nbNotFound || customLocation.trim()}
 									<div class="mt-3">
 										<p class="text-yellow-300 text-xs font-bold mb-1.5">
 											{tFn("profile.pin_mark_title")}
@@ -4287,7 +4357,7 @@
 										<p class="text-gray-500 text-xs mb-2 leading-relaxed">
 											{tFn("profile.pin_mark_hint")}
 										</p>
-										<NeighborhoodPicker {city} bind:lat={customLat} bind:lng={customLng} />
+										<NeighborhoodPicker {city} fallbackCenter={nbMapCenter} bind:lat={customLat} bind:lng={customLng} />
 									</div>
 								{/if}
 
@@ -4295,6 +4365,7 @@
 								<input type="hidden" name="custom_lat" value={customLat ?? ''} />
 								<input type="hidden" name="custom_lng" value={customLng ?? ''} />
 							</div>
+							{/if}
 
 							<!-- סימון עצמי של מיקום הישוב על המפה (כשהמפה לא מדויקת) -->
 							{#if city}
@@ -4318,7 +4389,7 @@
 											<p class="text-gray-400 text-xs leading-relaxed">
 												{tFn("profile.pin_help_1")} <span class="text-emerald-300 font-bold">{tFn("profile.pin_help_now")}</span>{tFn("profile.pin_help_2", { city })}
 											</p>
-											<NeighborhoodPicker {city} bind:lat={cityPinLat} bind:lng={cityPinLng} />
+											<NeighborhoodPicker {city} fallbackCenter={nbMapCenter} bind:lat={cityPinLat} bind:lng={cityPinLng} />
 
 											{#if cityPinError}
 												<p class="text-red-400 text-sm">{cityPinError}</p>
@@ -4989,7 +5060,7 @@
 	</div>
 {/if}
 
-<!-- מודל שליפת תמונה מגוגל/פייסבוק -->
+<!-- מודל שליפת תמונה מפייסבוק -->
 {#if showSocialPhotoModal}
 	<div
 		class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm"
@@ -5002,39 +5073,24 @@
 			role="presentation"
 		>
 			<div class="flex items-center gap-3 mb-4">
-				{#if showSocialPhotoModal === "google"}
-					<img
-						src="https://www.google.com/favicon.ico"
-						class="w-6 h-6"
-						alt="Google"
-					/>
-					<h3 class="text-white font-bold text-lg">{tFn("profile.google_photo_title")}</h3>
-				{:else}
-					<img
-						src="https://www.facebook.com/favicon.ico"
-						class="w-6 h-6"
-						alt="Facebook"
-					/>
-					<h3 class="text-white font-bold text-lg">
-						{tFn("profile.fb_photo_title")}
-					</h3>
-				{/if}
+				<img
+					src="https://www.facebook.com/favicon.ico"
+					class="w-6 h-6"
+					alt="Facebook"
+				/>
+				<h3 class="text-white font-bold text-lg">
+					{tFn("profile.fb_photo_title")}
+				</h3>
 			</div>
 
 			<p class="text-gray-400 text-sm mb-4">
-				{#if showSocialPhotoModal === "google"}
-					{tFn("profile.google_photo_hint")}
-				{:else}
-					{tFn("profile.fb_photo_hint")}
-				{/if}
+				{tFn("profile.fb_photo_hint")}
 			</p>
 
 			<input
 				type="text"
 				bind:value={socialPhotoInput}
-				placeholder={showSocialPhotoModal === "google"
-					? "https://lh3.googleusercontent.com/..."
-					: tFn("profile.fb_photo_placeholder")}
+				placeholder={tFn("profile.fb_photo_placeholder")}
 				class="w-full bg-white/5 border border-white/10 focus:border-purple-500/50 rounded-xl
 				       px-4 py-3 text-white text-sm placeholder-gray-500 outline-none transition-colors mb-3"
 				onkeydown={(e) => e.key === "Enter" && fetchSocialPhoto()}

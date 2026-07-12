@@ -12,6 +12,7 @@
         city = '',
         neighborhood = '',
         restrictToCity = false,
+        fallbackCenter = null,
         lat = $bindable<number | null>(null),
         lng = $bindable<number | null>(null),
         onUserPin,
@@ -21,6 +22,9 @@
         neighborhood?: string;
         /** נועל את הגלילה לסביבת העיר - שהמשתמש לא ישוטט בטעות בכל הארץ */
         restrictToCity?: boolean;
+        /** מרכז חלופי (lat/lng) לעיר שאין לה קואורדינטה מובנית - למשל תוצאת geocoding.
+         *  מבטיח שהמפה נפתחת על העיר הנבחרת ולא על ברירת המחדל (ירושלים). */
+        fallbackCenter?: [number, number] | null;
         lat?: number | null;
         lng?: number | null;
         /** נקרא כשהמשתמש עצמו מיקם/אישר את הסמן (להבדיל מהצבה תוכנתית מבחוץ) */
@@ -130,7 +134,11 @@
 
     // נקודת הפתיחה: שכונה מדויקת (זום קרוב) → מרכז עיר → ברירת מחדל.
     function homeView(): { center: [number, number]; zoom: number } {
-        const cityCenter = getCoordsFor(undefined, city);
+        // עיר מוכרת → מרכזה המדויק. עיר שאינה בטבלה → מרכז חלופי מ-geocoding אם
+        // הועבר (fallbackCenter), אחרת ברירת המחדל (ירושלים) - כדי לא לפתוח על עיר אחרת.
+        const cityCenter: [number, number] = hasPreciseCoords(undefined, city)
+            ? getCoordsFor(undefined, city)
+            : (fallbackCenter ?? getCoordsFor(undefined, city));
         if (neighborhood) {
             const nb = getCoordsFor(neighborhood, city);
             if (nb[0] !== cityCenter[0] || nb[1] !== cityCenter[1]) {
@@ -192,9 +200,10 @@
         };
     });
 
-    // מרכוז מחדש כשעדיין אין מיקום והעיר/שכונה משתנות + עדכון גבולות השוטטות
+    // מרכוז מחדש כשעדיין אין מיקום והעיר/שכונה משתנות + עדכון גבולות השוטטות.
+    // תלוי גם ב-fallbackCenter כדי שכשה-geocoding של העיר מסתיים - המפה תזוז אליה.
     $effect(() => {
-        void city; void neighborhood; // תלות מפורשת
+        void city; void neighborhood; void fallbackCenter; // תלות מפורשת
         if (!map) return;
         const bounds = cityBounds();
         if (bounds) {

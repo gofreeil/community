@@ -267,6 +267,10 @@ export const he = {
         custom_loc_label: "מיקום שאינו מופיע ברשימה?",
         custom_loc_hint: "כתוב כאן את העיר והשכונה שלך - הבקשה תישלח מיד למנהל האתר ותתווסף לרשימה.",
         custom_loc_placeholder: "לדוגמה: רמת השרון, שכונת הצפון...",
+        // מסלול "לא מצאתי את השכונה שלי" - העיר כבר נבחרה, נותר רק שם השכונה + מפה
+        nb_custom_q: "לא מצאת את השכונה שלך ברשימה?",
+        nb_custom_hint: "כתוב כאן את שם השכונה שלך וסמן אותה על מפת העיר - הבקשה תישלח למנהל האתר ותתווסף לרשימה.",
+        nb_custom_placeholder: "שם השכונה שלך...",
         pin_mark_title: "🗺️ סמן את מיקום השכונה המדויק על המפה",
         pin_mark_hint:
             "לא חובה, אבל עוזר לנו למקם את השכונה בדיוק. אם יש לך קואורדינטות — אפשר להקליד אותן.",
@@ -344,13 +348,11 @@ export const he = {
         scroll_down: "גלול מטה לפרטים",
 
         // מודל תמונה חברתית
-        google_photo_title: "קח תמונה מגוגל",
+        remove_photo: "הסר תמונה",
         fb_photo_title: "קח תמונה מפייסבוק",
-        google_photo_hint: "הכנס את ה-URL של תמונת הפרופיל שלך בגוגל",
         fb_photo_hint: "הכנס את שם המשתמש שלך בפייסבוק או קישור לפרופיל",
         fb_photo_placeholder: "שם משתמש או קישור לפרופיל",
         load_photo: "טען תמונה",
-        social_url_invalid: "הכנס URL תקין של תמונת הפרופיל",
         social_load_failed: "לא הצלחנו לטעון את התמונה. נסה שנית.",
 
         // מודל חיתוך
@@ -643,6 +645,9 @@ export const en = {
         custom_loc_label: "Location not in the list?",
         custom_loc_hint: "Write your city and neighborhood here - the request is sent straight to the site admin and will be added to the list.",
         custom_loc_placeholder: "For example: Ramat Hasharon, North neighborhood...",
+        nb_custom_q: "Couldn't find your neighborhood in the list?",
+        nb_custom_hint: "Write your neighborhood name here and mark it on your city's map - the request is sent to the site admin and will be added to the list.",
+        nb_custom_placeholder: "Your neighborhood name...",
         pin_mark_title: "🗺️ Mark the neighborhood's exact location on the map",
         pin_mark_hint:
             "Not mandatory, but it helps us place the neighborhood precisely. If you have coordinates — you can type them in.",
@@ -720,13 +725,11 @@ export const en = {
         scroll_down: "Scroll down for details",
 
         // Social photo modal
-        google_photo_title: "Take a photo from Google",
+        remove_photo: "Remove photo",
         fb_photo_title: "Take a photo from Facebook",
-        google_photo_hint: "Enter the URL of your Google profile photo",
         fb_photo_hint: "Enter your Facebook username or a profile link",
         fb_photo_placeholder: "Username or profile link",
         load_photo: "Load photo",
-        social_url_invalid: "Enter a valid profile photo URL",
         social_load_failed: "We couldn't load the photo. Please try again.",
 
         // Crop modal
@@ -1019,6 +1022,9 @@ export const ru = {
         custom_loc_label: "Места нет в списке?",
         custom_loc_hint: "Напишите здесь свой город и район - запрос сразу отправится администратору сайта и будет добавлен в список.",
         custom_loc_placeholder: "Например: Рамат-ха-Шарон, северный район...",
+        nb_custom_q: "Не нашли свой район в списке?",
+        nb_custom_hint: "Напишите название своего района и отметьте его на карте города - запрос отправится администратору сайта и будет добавлен в список.",
+        nb_custom_placeholder: "Название вашего района...",
         pin_mark_title: "🗺️ Отметьте точное расположение района на карте",
         pin_mark_hint:
             "Необязательно, но помогает нам точно разместить район. Если у вас есть координаты — можно ввести их.",
@@ -1096,13 +1102,11 @@ export const ru = {
         scroll_down: "Прокрутите вниз для подробностей",
 
         // Модальное окно фото из соцсетей
-        google_photo_title: "Взять фото из Google",
+        remove_photo: "Удалить фото",
         fb_photo_title: "Взять фото из Facebook",
-        google_photo_hint: "Введите URL вашего фото профиля в Google",
         fb_photo_hint: "Введите ваше имя пользователя в Facebook или ссылку на профиль",
         fb_photo_placeholder: "Имя пользователя или ссылка на профиль",
         load_photo: "Загрузить фото",
-        social_url_invalid: "Введите корректный URL фото профиля",
         social_load_failed: "Не удалось загрузить фото. Попробуйте ещё раз.",
 
         // Модальное окно обрезки
