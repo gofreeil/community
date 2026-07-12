@@ -111,7 +111,7 @@ export interface UpdateProfileData {
     notifications?: number;
     family_status?: string;
     gender?: string;
-    avatar_url?: string;
+    avatar_url?: string | null;   // null = מחיקת התמונה המותאמת (חזרה לברירת המחדל מגוגל)
     birth_date?: string;
     security_question?: string;
     security_answer?: string;

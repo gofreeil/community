@@ -40,20 +40,6 @@ export const load: PageServerLoad = async (event) => {
         };
     }
 
-    // העתקת תמונה מגוגל - המשתמש לחץ "העתק מחשבון גוגל" וחזר עם ?copy_photo=1
-    const copyPhoto = event.url.searchParams.get('copy_photo') === '1';
-    if (copyPhoto && session.user?.image) {
-        try {
-            const jwt = event.cookies.get('strapi_jwt')
-                ?? (session.user as { strapiJwt?: string }).strapiJwt
-                ?? undefined;
-            await updateUserProfile(session.user.id, { avatar_url: session.user.image }, jwt);
-        } catch (e) {
-            console.warn('[profile] copy_photo update failed:', e);
-        }
-        throw redirect(302, '/profile?photo_done=1');
-    }
-
     let user: Awaited<ReturnType<typeof getUserById>>;
     let items: Awaited<ReturnType<typeof getItemsByUserId>> = [];
     let strapiAvailable = true;
@@ -254,6 +240,7 @@ export const actions: Actions = {
         const security_answer_2    = formData.get('security_answer_2')?.toString().trim()    ?? '';
         const status             = formData.get('status')?.toString().trim()             ?? 'active';
         const avatarBase64     = formData.get('avatar_base64')?.toString()     ?? '';
+        const avatarRemove     = formData.get('avatar_remove')?.toString()     === '1';
         const customLocation   = formData.get('custom_location')?.toString().trim() ?? '';
         const customLatRaw     = formData.get('custom_lat')?.toString().trim() ?? '';
         const customLngRaw     = formData.get('custom_lng')?.toString().trim() ?? '';
@@ -291,7 +278,7 @@ export const actions: Actions = {
                 birth_date,
                 gender,
                 notifications,
-                ...(avatarBase64 ? { avatar_url: avatarBase64 } : {}),
+                ...(avatarBase64 ? { avatar_url: avatarBase64 } : avatarRemove ? { avatar_url: null } : {}),
                 ...(security_question ? { security_question, security_answer } : {}),
                 ...(security_question_2 ? { security_question_2, security_answer_2 } : {}),
                 status,
