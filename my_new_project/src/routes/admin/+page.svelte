@@ -194,6 +194,9 @@
 <div class="min-h-screen bg-[#070b14] text-white" dir="rtl">
 	<div class="max-w-6xl mx-auto px-4 py-8">
 
+		<!-- חזרה לפרופיל -->
+		<a href="/profile" class="inline-block text-gray-500 hover:text-white transition-colors text-sm mb-3">← חזרה לדף הפרופיל</a>
+
 		<!-- כותרת -->
 		<div class="flex items-center justify-between mb-8">
 			<div>
