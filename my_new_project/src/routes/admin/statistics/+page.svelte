@@ -352,7 +352,7 @@
 						<div class="lg:flex-1 min-w-0">
 						<!-- כותרת "כניסות לאתר" מעל הגרף, במקביל לראש החודשים -->
 						<div class="text-lg font-black text-center mb-2">כניסות לאתר</div>
-						<div class="flex items-end gap-1 sm:gap-2 h-64 border-b border-white/10 pb-px">
+						<div class="flex items-end gap-1 sm:gap-2 h-56 border-b border-white/10 pb-px">
 							{#each MONTH_NAMES as name, i}
 								{@const c = y.months[i]}
 								{@const isCurrent = y.year === currentYear && i === currentMonthIdx}
@@ -379,6 +379,16 @@
 								</div>
 							{/each}
 						</div>
+
+						{#if yi === 0}
+							<!-- סיכום שנתי — בתוך עמודת הגרף, כדי שהכל יתאים לגובה הטבלה -->
+							<div class="mt-3 flex justify-end">
+								<div class="flex items-center gap-2 rounded-lg border border-sky-500/25 bg-sky-500/10 px-3 py-1.5 text-sm">
+									<span class="flex items-center gap-1.5 font-black text-sky-200"><span>📊</span> סיכום שנתי</span>
+									<span class="font-black text-white tabular-nums">{fmt(grandTotal)}</span>
+								</div>
+							</div>
+						{/if}
 					</div>
 						<!-- פירוט חודשי — צמוד לגרף (מימין בדסקטופ), צר כדי לפנות מקום לגרף -->
 						<div class="lg:w-40 lg:shrink-0">
@@ -400,16 +410,6 @@
 					</table>
 						</div>
 					</div>
-
-					{#if yi === 0}
-						<!-- סיכום שנתי — בתחתית משמאל, בלי השנה -->
-						<div class="mt-4 flex justify-end">
-							<div class="flex items-center gap-2 rounded-lg border border-sky-500/25 bg-sky-500/10 px-3 py-1.5 text-sm">
-								<span class="flex items-center gap-1.5 font-black text-sky-200"><span>📊</span> סיכום שנתי</span>
-								<span class="font-black text-white tabular-nums">{fmt(grandTotal)}</span>
-							</div>
-						</div>
-					{/if}
 				</div>
 			{/each}
 		{/if}
