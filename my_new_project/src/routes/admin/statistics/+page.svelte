@@ -146,6 +146,30 @@
 		});
 	});
 	const maxItemsMonth = $derived(Math.max(1, ...itemsByMonth));
+
+	// ---- סדרות חודשיות של השנה הנוכחית (לגרף המסכם + הגרפים המפורטים) ----
+	const monthsOfYear = (byMonth: { month: string; count: number }[]): number[] => {
+		const m = new Map(byMonth.map((r) => [r.month, r.count]));
+		return Array.from({ length: 12 }, (_, i) => m.get(`${currentYear}-${String(i + 1).padStart(2, '0')}`) ?? 0);
+	};
+
+	// כניסות של השנה הנוכחית (12 חודשים)
+	const visitsSeries = $derived.by(() => {
+		const cy = years.find((y) => y.year === currentYear);
+		return Array.from({ length: 12 }, (_, i) => cy?.months[i] ?? 0);
+	});
+	const regSeries = $derived(monthsOfYear(data.registrations?.byMonth ?? []));
+
+	const maxVisits = $derived(Math.max(1, ...visitsSeries));
+	const maxReg = $derived(Math.max(1, ...regSeries));
+
+	// שלוש הסדרות לגרף המסכם — כל אחת בצבע משלה, בקנה-מידה יחסי לעצמה,
+	// עם קישור לגרף המפורט שמתחת.
+	const summarySeries = $derived([
+		{ key: 'visits', label: 'כניסות',        href: '#visits',        data: visitsSeries, max: maxVisits,     bar: 'from-sky-600 to-sky-400',        dot: 'bg-sky-400' },
+		{ key: 'items',  label: 'פריטים שהועלו', href: '#items',         data: itemsByMonth, max: maxItemsMonth, bar: 'from-emerald-600 to-emerald-400', dot: 'bg-emerald-400' },
+		{ key: 'reg',    label: 'נרשמים',        href: '#registrations', data: regSeries,    max: maxReg,        bar: 'from-violet-600 to-fuchsia-400',  dot: 'bg-violet-400' },
+	]);
 </script>
 
 <svelte:head>
@@ -166,9 +190,42 @@
 			</button>
 		</div>
 
+		<!-- גרף מסכם: כניסות + פריטים + נרשמים, עם קישורים לפירוט -->
+		<div class="rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.05] to-white/[0.02] p-5 mb-6">
+			<div class="flex flex-wrap items-baseline justify-between gap-2 mb-3">
+				<h2 class="text-lg font-black">📊 סקירה כללית · {currentYear}</h2>
+				<span class="text-xs text-gray-500">גובה יחסי לכל מדד · לחצו על מדד לפירוט</span>
+			</div>
+			<!-- מקרא עם קישורים לגרפים המפורטים שמתחת -->
+			<div class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 mb-4">
+				{#each summarySeries as s}
+					<a href={s.href} class="flex items-center gap-1.5 text-sm text-gray-300 hover:text-white transition-colors">
+						<span class="w-2.5 h-2.5 rounded-sm {s.dot}"></span>
+						<span class="font-bold">{s.label}</span>
+						<span class="text-gray-500">↓</span>
+					</a>
+				{/each}
+			</div>
+			<!-- עמודות מקובצות: 3 סדרות לכל חודש -->
+			<div class="flex items-end gap-1 sm:gap-2 h-56 border-b border-white/10 pb-px">
+				{#each MONTH_NAMES as name, i}
+					<div class="flex-1 flex items-end justify-center gap-0.5 h-full min-w-0" title={`${name} · כניסות ${fmt(visitsSeries[i])} · פריטים ${fmt(itemsByMonth[i])} · נרשמים ${fmt(regSeries[i])}`}>
+						{#each summarySeries as s}
+							<div class="w-1/3 rounded-t bg-gradient-to-t {s.bar} transition-all duration-500 hover:brightness-125" style="height: {s.data[i] === 0 ? 0 : Math.max(2, (s.data[i] / s.max) * 90)}%"></div>
+						{/each}
+					</div>
+				{/each}
+			</div>
+			<div class="flex gap-1 sm:gap-2 mt-2">
+				{#each MONTH_SHORT as short, i}
+					<div class="flex-1 text-center text-[9px] sm:text-[11px] leading-tight whitespace-nowrap {i === currentMonthIdx ? 'text-white font-bold' : 'text-gray-500'}">{short}</div>
+				{/each}
+			</div>
+		</div>
+
 		<!-- סיכום התוכן שהועלה לאתר: סה״כ + פילוח לפי קטגוריה -->
 		{#if itemsSummary.total > 0}
-			<div class="rounded-2xl border border-white/10 bg-white/[0.03] p-5 mb-6">
+			<div id="items" class="scroll-mt-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5 mb-6">
 				<h2 class="text-lg font-black mb-3">📦 תוכן שהועלה לאתר</h2>
 
 				<!-- גרף עמודות: פריטים שנוספו לפי חודש (השנה הנוכחית) -->
@@ -228,6 +285,38 @@
 			</div>
 		{/if}
 
+		<!-- נרשמים חדשים לפי חודש (גרף מפורט, צבע סגול) -->
+		<div id="registrations" class="scroll-mt-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5 mb-6">
+			<div class="flex flex-wrap items-baseline justify-between gap-2 mb-3">
+				<h2 class="text-lg font-black">🧑‍🤝‍🧑 נרשמים חדשים</h2>
+				<div class="text-sm text-gray-400">סה״כ <b class="text-violet-300 text-base">{fmt(data.registrations?.total ?? 0)}</b> משתמשים</div>
+			</div>
+			<p class="text-xs text-gray-500 mb-2">נרשמים לפי חודש · {currentYear}</p>
+			<div class="flex items-end gap-1 sm:gap-2 h-32 border-b border-white/10 pb-px">
+				{#each regSeries as cnt, i}
+					{@const isCurrent = i === currentMonthIdx}
+					<div class="flex-1 flex flex-col items-center justify-end h-full min-w-0" title={`${MONTH_NAMES[i]}: ${fmt(cnt)} נרשמים`}>
+						<div class="text-[9px] sm:text-[11px] leading-none mb-1 tabular-nums {cnt === 0 ? 'text-transparent' : isCurrent ? 'text-violet-300 font-black' : 'text-gray-400'}">
+							{cnt === 0 ? '0' : fmt(cnt)}
+						</div>
+						<div
+							class="w-full rounded-t-md transition-all duration-500 hover:brightness-125 {cnt === 0
+								? 'bg-white/[0.04]'
+								: isCurrent
+									? 'bg-gradient-to-t from-violet-500 to-fuchsia-300 shadow-[0_0_14px_rgba(167,139,250,0.55)]'
+									: 'bg-gradient-to-t from-violet-600/70 to-fuchsia-400/90'}"
+							style="height: {cnt === 0 ? 0 : Math.max(3, (cnt / maxReg) * 85)}%"
+						></div>
+					</div>
+				{/each}
+			</div>
+			<div class="flex gap-1 sm:gap-2 mt-2">
+				{#each MONTH_SHORT as short, i}
+					<div class="flex-1 text-center text-[9px] sm:text-[11px] leading-tight whitespace-nowrap {i === currentMonthIdx ? 'text-violet-300 font-bold' : 'text-gray-500'}">{short}</div>
+				{/each}
+			</div>
+		</div>
+
 		{#if years.length === 0}
 			<div class="rounded-2xl border border-white/10 bg-white/5 p-8 text-center text-gray-400">
 				עדיין אין נתוני כניסות - הספירה מתחילה מהיום, והנתונים יופיעו כאן תוך יום.
@@ -236,7 +325,7 @@
 			<!-- גרף + טבלה של 12 חודשים לכל שנה -->
 			{#each years as y, yi}
 				{@const maxCount = Math.max(1, ...y.months.map((c) => c ?? 0))}
-				<div class="rounded-2xl border border-white/10 bg-white/[0.03] p-5 mb-6">
+				<div id={yi === 0 ? 'visits' : undefined} class="scroll-mt-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5 mb-6">
 					<!-- כותרת ממורכזת בראש הכרטיס: סיכום שנתי (כולל השנה) -->
 					{#if yi === 0}
 						<div class="mb-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-2">
@@ -267,15 +356,15 @@
 								{@const c = y.months[i]}
 								{@const isCurrent = y.year === currentYear && i === currentMonthIdx}
 								<div class="flex-1 flex flex-col items-center justify-end h-full min-w-0" title={c == null ? `${name}: אין נתון` : `${name}: ${fmt(c)} כניסות`}>
-									<div class="text-[9px] sm:text-[11px] leading-none mb-1 tabular-nums whitespace-nowrap {c == null ? 'text-transparent' : isCurrent ? 'text-emerald-300 font-black' : 'text-gray-400'}">
+									<div class="text-[9px] sm:text-[11px] leading-none mb-1 tabular-nums whitespace-nowrap {c == null ? 'text-transparent' : isCurrent ? 'text-sky-300 font-black' : 'text-gray-400'}">
 										{c == null ? '0' : fmt(c)}
 									</div>
 									<div
 										class="w-full rounded-t-md transition-all duration-500 hover:brightness-125 {c == null
 											? 'bg-white/[0.04]'
 											: isCurrent
-												? 'bg-gradient-to-t from-emerald-500 to-teal-300 shadow-[0_0_14px_rgba(16,185,129,0.55)]'
-												: 'bg-gradient-to-t from-emerald-600/70 to-emerald-400/90'}"
+												? 'bg-gradient-to-t from-sky-500 to-cyan-300 shadow-[0_0_14px_rgba(56,189,248,0.55)]'
+												: 'bg-gradient-to-t from-sky-600/70 to-sky-400/90'}"
 										style="height: {c == null ? 0 : Math.max(3, (c / maxCount) * 85)}%"
 									></div>
 								</div>
@@ -284,7 +373,7 @@
 						<div class="flex gap-1 sm:gap-2 mt-2">
 							{#each MONTH_SHORT as short, i}
 								{@const isCurrent = y.year === currentYear && i === currentMonthIdx}
-								<div class="flex-1 text-center text-[9px] sm:text-[11px] leading-tight whitespace-nowrap {isCurrent ? 'text-emerald-300 font-bold' : 'text-gray-500'}">
+								<div class="flex-1 text-center text-[9px] sm:text-[11px] leading-tight whitespace-nowrap {isCurrent ? 'text-sky-300 font-bold' : 'text-gray-500'}">
 									{short}
 								</div>
 							{/each}
@@ -302,10 +391,10 @@
 						<tbody>
 							{#each MONTH_NAMES as name, i}
 								{@const isCurrent = y.year === currentYear && i === currentMonthIdx}
-								<tr class="border-b border-white/5 last:border-0 {isCurrent ? 'bg-emerald-500/10' : ''}">
-									<td class="py-1 {isCurrent ? 'font-bold text-emerald-200' : ''}">
+								<tr class="border-b border-white/5 last:border-0 {isCurrent ? 'bg-sky-500/10' : ''}">
+									<td class="py-1 {isCurrent ? 'font-bold text-sky-200' : ''}">
 										{name}
-										{#if isCurrent}<span class="text-xs text-emerald-400/80 mr-1">(בתהליך)</span>{/if}
+										{#if isCurrent}<span class="text-xs text-sky-400/80 mr-1">(בתהליך)</span>{/if}
 									</td>
 									<td class="py-1 text-left font-bold {y.months[i] == null ? 'text-gray-600' : 'text-white'}">
 										{y.months[i] == null ? '—' : fmt(y.months[i]!)}

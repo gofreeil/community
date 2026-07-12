@@ -2,7 +2,7 @@
 // הנתונים מגיעים מ-visit-stat ב-Strapi דרך cache של יממה - מתעדכנים פעם ביום.
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { getUserById, getUserByEmail, getAllItems, getItemsByCategory } from '$lib/server/db';
+import { getUserById, getUserByEmail, getAllItems, getItemsByCategory, getAllUsers } from '$lib/server/db';
 import { getVisitStats, getVisitsThisMonth } from '$lib/server/visitStats';
 import { getServerHealth } from '$lib/server/serverHealth';
 
@@ -38,6 +38,27 @@ async function buildItemsSummary(): Promise<ItemsSummary> {
         byCategory: [...byCat.entries()]
             .map(([category, count]) => ({ category, count }))
             .sort((a, b) => b.count - a.count),
+        byMonth: [...byMonth.entries()]
+            .map(([month, count]) => ({ month, count }))
+            .sort((a, b) => a.month.localeCompare(b.month)),
+    };
+}
+
+export interface RegistrationsSummary {
+    total: number;
+    byMonth: { month: string; count: number }[];
+}
+
+/** נרשמים חדשים לפי חודש (לפי created_at של המשתמשים המאוחדים). */
+async function buildRegistrationsSummary(): Promise<RegistrationsSummary> {
+    const users = await getAllUsers();
+    const byMonth = new Map<string, number>();
+    for (const u of users) {
+        const m = (u.created_at || '').slice(0, 7); // YYYY-MM
+        if (/^\d{4}-\d{2}$/.test(m)) byMonth.set(m, (byMonth.get(m) ?? 0) + 1);
+    }
+    return {
+        total: users.length,
         byMonth: [...byMonth.entries()]
             .map(([month, count]) => ({ month, count }))
             .sort((a, b) => a.month.localeCompare(b.month)),
@@ -122,6 +143,13 @@ export const load: PageServerLoad = async (event) => {
         console.warn('[statistics] buildHelpCallsSummary failed:', e);
     }
 
+    let registrations: RegistrationsSummary = { total: 0, byMonth: [] };
+    try {
+        registrations = await buildRegistrationsSummary();
+    } catch (e) {
+        console.warn('[statistics] buildRegistrationsSummary failed:', e);
+    }
+
     // לוח מכוונים של השרת (הבאקאנד) + כניסות החודש - לבאנר בתחתית הדף
     const serverHealth = await getServerHealth().catch((e) => {
         console.warn('[statistics] getServerHealth failed:', e);
@@ -129,5 +157,5 @@ export const load: PageServerLoad = async (event) => {
     });
     const monthlyVisits = await getVisitsThisMonth().catch(() => 0);
 
-    return { stats, itemsSummary, helpCalls, serverHealth, monthlyVisits };
+    return { stats, itemsSummary, helpCalls, registrations, serverHealth, monthlyVisits };
 };
