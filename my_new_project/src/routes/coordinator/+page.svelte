@@ -177,18 +177,16 @@
             </a>
         </div>
 
-        <!-- כלים נוספים לרכז: סטטיסטיקה (סופר-אדמין), ועדי שכונות הארצי, אבטחה -->
+        <!-- כלים נוספים לרכז: סטטיסטיקת השכונה, ועדי שכונות הארצי, אבטחה -->
         <div class="mt-6 flex flex-wrap gap-3">
-            {#if data.user?.role === 'super_admin'}
-                <!-- סטטיסטיקה - סופר-אדמין בלבד (הדף חסום להרשאה זו) -->
-                <a
-                    href="/admin/statistics"
-                    class="group flex items-center gap-2.5 rounded-xl bg-[#0f172a] border border-emerald-500/30 px-4 py-2.5 hover:border-emerald-400/60 transition-all"
-                >
-                    <span class="text-2xl">📊</span>
-                    <span class="text-white text-sm font-black">סטטיסטיקה</span>
-                </a>
-            {/if}
+            <!-- סטטיסטיקת השכונה של הרכז (מסונן לשכונתו בלבד) -->
+            <a
+                href="/coordinator/statistics"
+                class="group flex items-center gap-2.5 rounded-xl bg-[#0f172a] border border-emerald-500/30 px-4 py-2.5 hover:border-emerald-400/60 transition-all"
+            >
+                <span class="text-2xl">📊</span>
+                <span class="text-white text-sm font-black">סטטיסטיקת השכונה</span>
+            </a>
 
             <!-- אתר ועדי השכונות הארצי -->
             <a

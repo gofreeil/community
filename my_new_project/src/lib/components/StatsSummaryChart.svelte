@@ -9,12 +9,15 @@
 
 	// hrefPrefix: '' בדף הסטטיסטיקה (עוגנים באותו דף), '/admin/statistics' בלוח הניהול
 	// (המקרא מפנה לגרפים המפורטים שבדף הסטטיסטיקה).
-	let { stats = [], itemsSummary, registrations, hrefPrefix = '' }:
+	// hideVisits: מסתיר את סדרת "כניסות" — לדף הרכז, שם הכניסות נמדדות
+	// ברמת האתר כולו ואי-אפשר לפלח אותן לשכונה בודדת.
+	let { stats = [], itemsSummary, registrations, hrefPrefix = '', hideVisits = false }:
 		{
 			stats?: MonthCount[];
 			itemsSummary: { byMonth: MonthCount[] };
 			registrations: { byMonth: MonthCount[] };
 			hrefPrefix?: string;
+			hideVisits?: boolean;
 		} = $props();
 
 	const MONTH_NAMES = [
@@ -53,7 +56,7 @@
 			{ key: 'visits', label: 'כניסות',        anchor: '#visits',        base: visitsSeries, bar: 'from-sky-600 to-sky-400',        dot: 'bg-sky-400',     text: 'text-sky-300' },
 			{ key: 'items',  label: 'פריטים שהועלו', anchor: '#items',         base: itemsByMonth, bar: 'from-emerald-600 to-emerald-400', dot: 'bg-emerald-400', text: 'text-emerald-300' },
 			{ key: 'reg',    label: 'נרשמים',        anchor: '#registrations', base: regSeries,    bar: 'from-violet-600 to-fuchsia-400',  dot: 'bg-violet-400',  text: 'text-violet-300' },
-		].map((s) => {
+		].filter((s) => !(hideVisits && s.key === 'visits')).map((s) => {
 			const data = s.base.map((v, i) => {
 				if (i === SUMMARY_MERGE_FROM) return 0;                          // יוני מתאפס
 				if (i === SUMMARY_MERGE_INTO) return v + s.base[SUMMARY_MERGE_FROM]; // יולי סופג את יוני
@@ -89,7 +92,7 @@
 	<!-- עמודות לכל חודש: 3 מלבנים חופפים חלקית (הנמוך מקדימה) עם מספר מעל כל אחד -->
 	<div class="flex items-end gap-1 sm:gap-2 h-56 border-b border-white/10 pb-px">
 		{#each activeMonthIdxs as mi}
-			<div class="flex-1 isolate flex items-end justify-center h-full min-w-0" title={`${MONTH_NAMES[mi]} · כניסות ${fmt(summarySeries[0].data[mi])} · פריטים ${fmt(summarySeries[1].data[mi])} · נרשמים ${fmt(summarySeries[2].data[mi])}`}>
+			<div class="flex-1 isolate flex items-end justify-center h-full min-w-0" title={`${MONTH_NAMES[mi]} · ${summarySeries.map((s) => `${s.label} ${fmt(s.data[mi])}`).join(' · ')}`}>
 				{#each summarySeries as s, si}
 					{@const val = s.data[mi]}
 					<div class="relative flex flex-col items-center justify-end h-full w-[46%]" style="z-index: {Math.round(999 - val)}; margin-inline-start: {si === 0 ? '0' : '-0.6rem'}">
