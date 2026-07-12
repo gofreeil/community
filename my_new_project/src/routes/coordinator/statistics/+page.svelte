@@ -21,7 +21,9 @@
 	const currentMonthIdx = now.getMonth();
 
 	const fmt = (n: number) => n.toLocaleString('he-IL');
-	const neighborhoodLabel = $derived((data.neighborhoods ?? []).join(', ') || 'השכונה שלי');
+	const neighborhoodLabel = $derived(
+		((data.neighborhoods ?? []).join(', ') || 'השכונה שלי').replace(/\s*[()]\s*/g, ' ').trim()
+	);
 
 	// ---- סיכום הפריטים שהועלו בשכונה ----
 	// שם עברי לכל קטגוריה (ה-slug ב-DB לא תמיד אינטואיטיבי)
@@ -135,7 +137,7 @@
 			</button>
 		</div>
 		<p class="text-gray-400 mb-8">
-			נתוני <strong class="text-white">{neighborhoodLabel}</strong> בלבד
+			נתוני <strong class="text-white">{neighborhoodLabel}</strong>
 			{#if data.isPreview}<span class="mr-2 text-xs font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded-full">תצוגת סופר-אדמין</span>{/if}
 		</p>
 
