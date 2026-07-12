@@ -10,7 +10,11 @@
 <div class="min-h-screen bg-[#070b14] pt-6 pb-20 px-4" dir="rtl">
     <div class="max-w-5xl mx-auto">
         <div class="text-center mb-8">
-            <span class="text-5xl mb-3 block">🛠️</span>
+            <img
+                src="/images/rakaz-shchuna.png"
+                alt="רכז שכונה"
+                class="mx-auto mb-3 h-28 w-28 rounded-full object-cover object-top ring-2 ring-white/20 shadow-lg"
+            />
             <h1 class="text-3xl font-black text-white mb-2">פאנל רכז שכונה</h1>
             <p class="text-gray-400">ניהול תוכן עבור: <strong class="text-white">{data.neighborhoods.join(', ') || '-'}</strong></p>
         </div>
