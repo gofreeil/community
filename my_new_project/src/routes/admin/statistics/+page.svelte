@@ -204,7 +204,6 @@
 		<div class="rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.05] to-white/[0.02] p-5 mb-6">
 			<div class="flex flex-wrap items-baseline justify-between gap-2 mb-3">
 				<h2 class="text-lg font-black">📊 סקירה כללית · {currentYear}</h2>
-				<span class="text-xs text-gray-500">גובה יחסי לכל מדד · לחצו על מדד לפירוט</span>
 			</div>
 			<!-- מקרא עם קישורים לגרפים המפורטים שמתחת -->
 			<div class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 mb-4">
