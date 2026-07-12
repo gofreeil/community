@@ -222,6 +222,7 @@ export const he = {
 
         // ===== הסטטוס שלי בלוח פנויים =====
         ss_title: "💜 הסטטוס שלי בלוח פנויים",
+        ss_short: "סטטוס בלוח פנויים",
         ss_sub: "בחר את הסטטוס שלך - אחרים יראו זאת בפרופיל שלך בלוח הפנויים",
         ss_available: "זמין/ה",
         ss_not_available: "לא זמין/ה",
@@ -600,6 +601,7 @@ export const en = {
 
         // ===== My singles-board status =====
         ss_title: "💜 My status on the singles board",
+        ss_short: "Singles-board status",
         ss_sub: "Choose your status - others will see it on your singles-board profile",
         ss_available: "Available",
         ss_not_available: "Not available",
@@ -977,6 +979,7 @@ export const ru = {
 
         // ===== Мой статус на доске знакомств =====
         ss_title: "💜 Мой статус на доске знакомств",
+        ss_short: "Статус на доске",
         ss_sub: "Выберите свой статус - другие увидят его в вашем профиле на доске знакомств",
         ss_available: "Свободен/на",
         ss_not_available: "Недоступен/на",

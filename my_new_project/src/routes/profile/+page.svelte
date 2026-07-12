@@ -46,6 +46,15 @@
 	let showLikes = $state(false);
 	let likedItems = $state<LikedItem[]>([]);
 	let userStatus = $state<UserStatus>('available');
+	// איזה מופע של בורר הסטטוס פתוח כרגע (הסניפט מוצג בשני מקומות בו-זמנית בדסקטופ)
+	let openStatusMenu = $state<string | null>(null);
+	// אפשרויות בורר "הסטטוס שלי בלוח פנויים" - כפתור קומפקטי עם תפריט נפתח
+	const SINGLES_STATUS_OPTIONS: { id: UserStatus; emoji: string; labelKey: string; active: string }[] = [
+		{ id: 'available',       emoji: '✅', labelKey: 'profile.ss_available',       active: 'bg-green-500/20 border-green-500/50' },
+		{ id: 'not_available',   emoji: '🔴', labelKey: 'profile.ss_not_available',   active: 'bg-red-500/20 border-red-500/50' },
+		{ id: 'in_relationship', emoji: '💑', labelKey: 'profile.ss_in_relationship', active: 'bg-pink-500/20 border-pink-500/50' },
+		{ id: 'taking_break',    emoji: '⏸️', labelKey: 'profile.ss_break',           active: 'bg-blue-500/20 border-blue-500/50' },
+	];
 	// בורר "הסטטוס שלי בלוח פנויים" מוצג רק למי שכבר פרסם כרטיס פנוי/פנויה.
 	// למי שלא פתח כרטיס - הבאנר מוסתר לגמרי ולא נקבע לו סטטוס בלוח.
 	const hasSinglesCard = $derived(
@@ -844,6 +853,25 @@
 				nbMapCenter = [r.lat, r.lng];
 			}
 		} catch { /* נכשל - המפה תיפול לברירת המחדל */ }
+	}
+
+	// המשתמש אישר מיקום שכונה על המפה (לחץ "אישור המיקום"):
+	// 1) אם עדיין לא הוקלד שם שכונה - ננסה למלא אותו אוטומטית מ-reverse geocoding.
+	// 2) נגלול מעט למטה כדי שימשיך למלא את שאר הפרטים (המפה כבר מוקפאת בתוך הרכיב).
+	async function handleNbConfirm(la: number, ln: number) {
+		if (!customLocation.trim()) {
+			try {
+				const res = await fetch(`/api/reverse-geocode?lat=${la}&lng=${ln}`);
+				if (res.ok) {
+					const j = await res.json();
+					const nb = (j?.neighborhood ?? "").toString().trim();
+					// ממלאים רק אם המשתמש עדיין לא הקליד בעצמו בינתיים
+					if (nb && !customLocation.trim()) customLocation = nb;
+				}
+			} catch { /* best effort - נשאיר למשתמש להקליד */ }
+		}
+		// גלילה עדינה קדימה כדי לחשוף את שדות ההמשך
+		setTimeout(() => slowScrollTo(window.scrollY + 320, 700), 150);
 	}
 
 	// ---- סימון עצמי של מיקום הישוב על המפה (כשהמפה לא מדויקת) ----
@@ -1883,57 +1911,54 @@
 	<title>{tFn("profile_title")}</title>
 </svelte:head>
 
-<!-- בורר "הסטטוס שלי בלוח פנויים" - משובץ גם בפרופיל וגם בנכסים שלי (לא קומה נפרדת) -->
-{#snippet singlesStatusCard()}
-	<div class="rounded-2xl bg-white/5 border border-white/10 p-4">
-		<p class="text-white font-bold text-sm mb-1 flex items-center gap-2">
-			{tFn("profile.ss_title")}
-		</p>
-		<p class="text-gray-400 text-xs mb-3">
-			{tFn("profile.ss_sub")}
-		</p>
-		<div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+<!-- בורר "הסטטוס שלי בלוח פנויים" - כפתור קומפקטי עם תפריט נפתח (משובץ גם בפרופיל וגם בנכסים שלי) -->
+{#snippet singlesStatusCard(id: string)}
+	{@const cur = SINGLES_STATUS_OPTIONS.find((s) => s.id === userStatus) ?? SINGLES_STATUS_OPTIONS[0]}
+	<div class="relative flex items-center gap-2 flex-wrap">
+		<span class="text-gray-300 text-xs font-bold flex items-center gap-1.5">
+			<span class="text-sm">💜</span>{tFn("profile.ss_short")}
+		</span>
+		<button
+			type="button"
+			onclick={() => (openStatusMenu = openStatusMenu === id ? null : id)}
+			aria-expanded={openStatusMenu === id}
+			aria-haspopup="listbox"
+			class="flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-bold text-white transition-all {cur.active}"
+		>
+			<span class="text-base leading-none">{cur.emoji}</span>
+			<span>{tFn(cur.labelKey)}</span>
+			<svg
+				class="w-3.5 h-3.5 transition-transform duration-200 {openStatusMenu === id ? 'rotate-180' : ''}"
+				viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+				stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9" /></svg>
+		</button>
+
+		{#if openStatusMenu === id}
+			<!-- שכבת סגירה בלחיצה בחוץ -->
 			<button
-				type="button"
-				onclick={() => { userStatus = 'available'; }}
-				class="flex flex-col items-center gap-2 p-3 rounded-xl border transition-all {userStatus === 'available'
-					? 'bg-green-500/20 border-green-500/50'
-					: 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-green-500/30'}"
+				type="button" tabindex={-1} aria-hidden="true"
+				class="fixed inset-0 z-40 cursor-default"
+				onclick={() => (openStatusMenu = null)}
+			></button>
+			<div
+				role="listbox" aria-label={tFn("profile.ss_short")}
+				class="absolute top-full right-0 mt-2 z-50 w-56 rounded-xl bg-[#0f172a] border border-white/15 shadow-2xl p-1.5 flex flex-col gap-1"
 			>
-				<span class="text-2xl">✅</span>
-				<span class="text-xs font-bold text-white text-center">{tFn("profile.ss_available")}</span>
-			</button>
-			<button
-				type="button"
-				onclick={() => { userStatus = 'not_available'; }}
-				class="flex flex-col items-center gap-2 p-3 rounded-xl border transition-all {userStatus === 'not_available'
-					? 'bg-red-500/20 border-red-500/50'
-					: 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-red-500/30'}"
-			>
-				<span class="text-2xl">🔴</span>
-				<span class="text-xs font-bold text-white text-center">{tFn("profile.ss_not_available")}</span>
-			</button>
-			<button
-				type="button"
-				onclick={() => { userStatus = 'in_relationship'; }}
-				class="flex flex-col items-center gap-2 p-3 rounded-xl border transition-all {userStatus === 'in_relationship'
-					? 'bg-pink-500/20 border-pink-500/50'
-					: 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-pink-500/30'}"
-			>
-				<span class="text-2xl">💑</span>
-				<span class="text-xs font-bold text-white text-center">{tFn("profile.ss_in_relationship")}</span>
-			</button>
-			<button
-				type="button"
-				onclick={() => { userStatus = 'taking_break'; }}
-				class="flex flex-col items-center gap-2 p-3 rounded-xl border transition-all {userStatus === 'taking_break'
-					? 'bg-blue-500/20 border-blue-500/50'
-					: 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-blue-500/30'}"
-			>
-				<span class="text-2xl">⏸️</span>
-				<span class="text-xs font-bold text-white text-center">{tFn("profile.ss_break")}</span>
-			</button>
-		</div>
+				{#each SINGLES_STATUS_OPTIONS as opt}
+					<button
+						type="button" role="option" aria-selected={userStatus === opt.id}
+						onclick={() => { userStatus = opt.id; openStatusMenu = null; }}
+						class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-bold text-white transition-all border {userStatus === opt.id
+							? opt.active
+							: 'border-transparent hover:bg-white/10'}"
+					>
+						<span class="text-lg leading-none">{opt.emoji}</span>
+						<span class="flex-1 text-right">{tFn(opt.labelKey)}</span>
+						{#if userStatus === opt.id}<span class="text-green-400">✓</span>{/if}
+					</button>
+				{/each}
+			</div>
+		{/if}
 	</div>
 {/snippet}
 
@@ -3019,7 +3044,7 @@
 			<div class="flex flex-col gap-4">
 				<!-- ===== הסטטוס שלי בלוח פנויים (רק למי שיש כרטיס פנוי/פנויה) ===== -->
 				{#if hasSinglesCard}
-					{@render singlesStatusCard()}
+					{@render singlesStatusCard('assets')}
 				{/if}
 				<!-- ===== ערבי מפגש / סעודות קהילתיות ===== -->
 				<a href="/gatherings" class="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-amber-500/15 to-rose-500/10 border border-amber-500/30 hover:border-amber-500/60 px-4 py-3.5 transition-all group">
@@ -4357,7 +4382,7 @@
 										<p class="text-gray-500 text-xs mb-2 leading-relaxed">
 											{tFn("profile.pin_mark_hint")}
 										</p>
-										<NeighborhoodPicker {city} fallbackCenter={nbMapCenter} bind:lat={customLat} bind:lng={customLng} />
+										<NeighborhoodPicker {city} fallbackCenter={nbMapCenter} onConfirm={handleNbConfirm} bind:lat={customLat} bind:lng={customLng} />
 									</div>
 								{/if}
 
@@ -4918,7 +4943,7 @@
 		<!-- הסטטוס שלי בלוח פנויים - מוצג רק למי שכבר פרסם כרטיס פנוי/פנויה -->
 		{#if hasSinglesCard}
 			<div class="mt-4">
-				{@render singlesStatusCard()}
+				{@render singlesStatusCard('profile')}
 			</div>
 		{/if}
 	</div>
