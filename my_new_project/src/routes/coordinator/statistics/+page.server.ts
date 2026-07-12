@@ -34,10 +34,16 @@ export const load: PageServerLoad = async (event) => {
         throw error(403, 'דף זה זמין רק לרכזי שכונות');
     }
 
-    // השכונות שהרכז מנהל (סופר־אדמין רואה את שכונתו כברירת מחדל) — זהה ל-/coordinator
-    const neighborhoods = isAdmin && user.role === 'super_admin'
-        ? (user.coordinator_of?.length ? user.coordinator_of : [user.neighborhood].filter(Boolean))
-        : (user.coordinator_of ?? []);
+    // השכונות שהרכז מנהל (סופר־אדמין רואה את שכונתו כברירת מחדל) — זהה ל-/coordinator.
+    // סופר-אדמין יכול לצפות בכל שכונה דרך ?neighborhood=<שם> (לתצוגה מקדימה/דוגמה).
+    const isSuper = user.role === 'super_admin';
+    const previewParam = event.url.searchParams.get('neighborhood')?.trim();
+    const isPreview = isSuper && !!previewParam;
+    const neighborhoods = isPreview
+        ? [previewParam!]
+        : isSuper
+            ? (user.coordinator_of?.length ? user.coordinator_of : [user.neighborhood].filter(Boolean))
+            : (user.coordinator_of ?? []);
 
     // התאמה לפי שכונה + עיר (זהה ל-/coordinator ו-/api/coordinators)
     const areas = neighborhoods.map(parseArea);
@@ -91,5 +97,5 @@ export const load: PageServerLoad = async (event) => {
     }
     const helpCalls: HelpCallsSummary = { total: myHelp.length, answered };
 
-    return { neighborhoods, itemsSummary, registrations, helpCalls };
+    return { neighborhoods, itemsSummary, registrations, helpCalls, isPreview };
 };

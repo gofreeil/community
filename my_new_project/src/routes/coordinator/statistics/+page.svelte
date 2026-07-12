@@ -134,7 +134,10 @@
 				→ לפאנל הרכז
 			</button>
 		</div>
-		<p class="text-gray-400 mb-8">נתוני <strong class="text-white">{neighborhoodLabel}</strong> בלבד</p>
+		<p class="text-gray-400 mb-8">
+			נתוני <strong class="text-white">{neighborhoodLabel}</strong> בלבד
+			{#if data.isPreview}<span class="mr-2 text-xs font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded-full">תצוגת סופר-אדמין</span>{/if}
+		</p>
 
 		<!-- גרף מסכם: פריטים + נרשמים בשכונה (כניסות נמדדות ברמת האתר בלבד ולכן מוסתרות) -->
 		<div class="mb-6">
@@ -240,9 +243,5 @@
 				עדיין אין נתונים לשכונה זו — פרסומים ותושבים חדשים יופיעו כאן ברגע שיתווספו.
 			</div>
 		{/if}
-
-		<p class="text-center text-xs text-gray-600 mt-6">
-			כניסות הגולשים וסטטוס השרת נמדדים ברמת האתר כולו ואינם ניתנים לפילוח לשכונה בודדת.
-		</p>
 	</div>
 </div>
