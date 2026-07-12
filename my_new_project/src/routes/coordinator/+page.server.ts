@@ -1,6 +1,6 @@
 import { redirect, error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { getUserById, getItemsByCategory, getPendingEvents, getAllUsers, getAllItems } from '$lib/server/db';
+import { getUserById, getItemsByCategory, getPendingEvents, getAllUsers, getAllItems, getEvents } from '$lib/server/db';
 import { getVisitsThisMonth } from '$lib/server/visitStats';
 
 // "אושיות (רחובות)" → { name: "אושיות", city: "רחובות" }
@@ -16,7 +16,14 @@ export const load: PageServerLoad = async (event) => {
     if (!session?.user?.id) throw redirect(302, '/login?redirect=/coordinator');
 
     const jwt = event.cookies.get('strapi_jwt');
-    const user = await getUserById(session.user.id, jwt ?? undefined);
+    // תקלת Strapi זמנית (throw) = 503 "נסה שוב" - לא 403 שמרגיש כמו גירוש
+    let user;
+    try {
+        user = await getUserById(session.user.id, jwt ?? undefined);
+    } catch (e) {
+        console.warn('[coordinator] getUserById failed:', e instanceof Error ? e.message : e);
+        throw error(503, 'תקלה זמנית בשרת - נסה שוב בעוד רגע');
+    }
     if (!user) throw error(403, 'משתמש לא נמצא');
 
     const isCoordinator = (user.coordinator_of?.length ?? 0) > 0;
@@ -52,9 +59,11 @@ export const load: PageServerLoad = async (event) => {
     let itemsCount = 0, itemsOnMap = 0, newItemsThisMonth = 0, newResidentsThisMonth = 0;
     // נתוני האתר הכלליים - אותו פאנל כמו בלוח הניהול, גלוי לכל רכז מאושר
     const site = { totalUsers: 0, totalItems: 0, totalCoordinators: 0, newUsersThisMonth: 0, newItemsThisMonth: 0, monthlyVisits: 0 };
+    // אירועי העיר של הרכז - לתצוגה מקדימה של "לוח האירועים" כפי שנראה לתושבים בדף הבית
+    let events: Awaited<ReturnType<typeof getEvents>> = [];
     try {
         // הכל במקביל - כולל אירועים ממתינים וספירת הכניסות - כדי שהדף לא יחכה לאף שליפה בטור
-        const [emergency, vaad, polls, allUsers, allItems, pending, visits] = await Promise.all([
+        const [emergency, vaad, polls, allUsers, allItems, pending, visits, evts] = await Promise.all([
             getItemsByCategory('emergency_team'),
             getItemsByCategory('vaad_member'),
             getItemsByCategory('poll'),
@@ -62,7 +71,9 @@ export const load: PageServerLoad = async (event) => {
             getAllItems().catch(() => []),
             user.city ? getPendingEvents(user.city).catch(() => []) : Promise.resolve([]),
             getVisitsThisMonth().catch(() => 0),
+            getEvents(user.city || undefined).catch(() => []),
         ]);
+        events = evts;
         emergencyCount   = emergency.filter(inMyNeighborhoods).length;
         vaadCount        = vaad.filter(inMyNeighborhoods).length;
         activePollsCount = polls.filter(inMyNeighborhoods).filter(p => p.status === 'active').length;
@@ -106,5 +117,6 @@ export const load: PageServerLoad = async (event) => {
         newItemsThisMonth,
         newResidentsThisMonth,
         site,
+        events,
     };
 };

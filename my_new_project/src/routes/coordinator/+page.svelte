@@ -1,5 +1,6 @@
 <script lang="ts">
     import type { PageData } from './$types';
+    import EventsBoard from '$lib/components/EventsBoard.svelte';
     let { data }: { data: PageData } = $props();
 </script>
 
@@ -197,6 +198,18 @@
                     </div>
                 </div>
             </a>
+        </div>
+
+        <!-- תצוגה מקדימה: לוח האירועים כפי שהתושבים רואים אותו בדף הבית -->
+        <div class="mt-8">
+            <div class="flex items-center gap-2 mb-1">
+                <span class="text-xl">👁️</span>
+                <h2 class="text-white text-lg font-black">כך נראה לוח האירועים לתושבים</h2>
+            </div>
+            <p class="text-gray-500 text-sm mb-3">תצוגה מקדימה זהה לכרטיס בדף הבית — כדי שתראה את הנראות הסופית של האירועים שאתה מאשר</p>
+            <div class="flex h-[420px] w-full max-w-xs flex-col">
+                <EventsBoard rawEvents={data.events} />
+            </div>
         </div>
 
         <!-- כלים נוספים לרכז: סטטיסטיקת השכונה, ועדי שכונות הארצי, אבטחה -->
