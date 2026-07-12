@@ -177,47 +177,45 @@
             </a>
         </div>
 
-        <!-- באנר קישור לאתר ועדי שכונות הארצי -->
-        <a
-            href="https://neighborhoods.gofreeil.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="group mt-6 block rounded-2xl bg-gradient-to-l from-indigo-600/20 via-purple-600/15 to-pink-600/20 border border-indigo-500/40 p-5 hover:border-indigo-400/70 transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-indigo-500/10"
-        >
-            <div class="flex items-center gap-4">
-                <div class="text-4xl">🏘️</div>
-                <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2">
-                        <h3 class="text-white text-lg font-black">אתר ועדי השכונות הארצי</h3>
-                        <span class="text-indigo-300 text-xs font-bold bg-indigo-500/20 border border-indigo-500/30 px-2 py-0.5 rounded-full">קישור חיצוני ↗</span>
-                    </div>
-                    <p class="text-gray-300 text-sm mt-1">שיתופי פעולה בין שכונות וערים, מעגלי שיח, הצבעות ומיצוי זכויות משותפות</p>
-                </div>
-                <svg class="w-6 h-6 text-indigo-300 flex-shrink-0 transition-transform group-hover:-translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
-            </div>
-        </a>
+        <!-- כלים נוספים לרכז: סטטיסטיקה (סופר-אדמין), ועדי שכונות הארצי, אבטחה -->
+        <div class="mt-6 flex flex-wrap gap-3">
+            {#if data.user?.role === 'super_admin'}
+                <!-- סטטיסטיקה - סופר-אדמין בלבד (הדף חסום להרשאה זו) -->
+                <a
+                    href="/admin/statistics"
+                    class="group flex items-center gap-2.5 rounded-xl bg-[#0f172a] border border-emerald-500/30 px-4 py-2.5 hover:border-emerald-400/60 transition-all"
+                >
+                    <span class="text-2xl">📊</span>
+                    <span class="text-white text-sm font-black">סטטיסטיקה</span>
+                </a>
+            {/if}
 
-        <!-- אבטחה: אימות דו-שלבי לרכז -->
-        <a
-            href="/coordinator/2fa-setup"
-            class="group mt-6 block rounded-2xl bg-[#0f172a] border border-white/10 p-5 hover:border-cyan-400/60 transition-all hover:-translate-y-1"
-        >
-            <div class="flex items-center gap-4">
-                <div class="text-4xl">🔐</div>
-                <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2 flex-wrap">
-                        <h3 class="text-white text-lg font-black">אימות דו-שלבי (2FA)</h3>
-                        {#if data.user?.totp_enabled}
-                            <span class="text-green-300 text-xs font-bold bg-green-500/20 border border-green-500/30 px-2 py-0.5 rounded-full">✅ פעיל</span>
-                        {:else}
-                            <span class="text-amber-300 text-xs font-bold bg-amber-500/20 border border-amber-500/30 px-2 py-0.5 rounded-full">מומלץ להפעיל</span>
-                        {/if}
-                    </div>
-                    <p class="text-gray-400 text-sm mt-1">הגנה נוספת על פאנל הרכז — קוד חד-פעמי מהטלפון בכל כניסה ממכשיר חדש</p>
-                </div>
-                <svg class="w-6 h-6 text-cyan-300 flex-shrink-0 transition-transform group-hover:-translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
-            </div>
-        </a>
+            <!-- אתר ועדי השכונות הארצי -->
+            <a
+                href="https://neighborhoods.gofreeil.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="group flex items-center gap-2.5 rounded-xl bg-[#0f172a] border border-indigo-500/30 px-4 py-2.5 hover:border-indigo-400/60 transition-all"
+            >
+                <span class="text-2xl">🏘️</span>
+                <span class="text-white text-sm font-black">ועדי שכונות</span>
+                <span class="text-indigo-300 text-[10px] font-bold bg-indigo-500/20 border border-indigo-500/30 px-1.5 py-0.5 rounded-full">↗</span>
+            </a>
+
+            <!-- אבטחה: אימות דו-שלבי לרכז -->
+            <a
+                href="/coordinator/2fa-setup"
+                class="group flex items-center gap-2.5 rounded-xl bg-[#0f172a] border border-white/10 px-4 py-2.5 hover:border-cyan-400/60 transition-all"
+            >
+                <span class="text-2xl">🔐</span>
+                <span class="text-white text-sm font-black">אימות דו-שלבי</span>
+                {#if data.user?.totp_enabled}
+                    <span class="text-green-300 text-[10px] font-bold bg-green-500/20 border border-green-500/30 px-1.5 py-0.5 rounded-full">✅ פעיל</span>
+                {:else}
+                    <span class="text-amber-300 text-[10px] font-bold bg-amber-500/20 border border-amber-500/30 px-1.5 py-0.5 rounded-full">מומלץ</span>
+                {/if}
+            </a>
+        </div>
 
         <div class="text-center mt-8">
             <a href="/" class="text-gray-500 hover:text-white transition-colors text-sm">← חזרה לדף הראשי</a>
