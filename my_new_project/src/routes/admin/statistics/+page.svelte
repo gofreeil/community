@@ -160,32 +160,26 @@
 	});
 	const regSeries = $derived(monthsOfYear(data.registrations?.byMonth ?? []));
 
-	const maxVisits = $derived(Math.max(1, ...visitsSeries));
 	const maxReg = $derived(Math.max(1, ...regSeries));
 
-	// שלוש הסדרות לגרף המסכם — כל אחת בצבע משלה, בקנה-מידה יחסי לעצמה,
-	// עם קישור לגרף המפורט שמתחת.
-	const summarySeries = $derived([
-		{ key: 'visits', label: 'כניסות',        href: '#visits',        data: visitsSeries, max: maxVisits,     bar: 'from-sky-600 to-sky-400',        dot: 'bg-sky-400',     text: 'text-sky-300' },
-		{ key: 'items',  label: 'פריטים שהועלו', href: '#items',         data: itemsByMonth, max: maxItemsMonth, bar: 'from-emerald-600 to-emerald-400', dot: 'bg-emerald-400', text: 'text-emerald-300' },
-		{ key: 'reg',    label: 'נרשמים',        href: '#registrations', data: regSeries,    max: maxReg,        bar: 'from-violet-600 to-fuchsia-400',  dot: 'bg-violet-400',  text: 'text-violet-300' },
-	]);
+	// יוני לא נכלל בגרף המסכם: היו בו הרשמות מוקדמות אך זו לא ההתחלה האמיתית (=יולי).
+	const SUMMARY_EXCLUDE_MONTH = 5; // יוני (0=ינואר)
 
-	// חודשים להצגה בגרף המסכם: רק מהחודש הראשון עם נתונים ועד החודש הנוכחי
-	// (מדלגים על חודשים ריקים בתחילת/סוף השנה).
-	const activeMonthIdxs = $derived.by(() => {
-		let min = 12;
-		let max = -1;
-		for (let i = 0; i < 12; i++) {
-			if (visitsSeries[i] > 0 || itemsByMonth[i] > 0 || regSeries[i] > 0) {
-				if (i < min) min = i;
-				if (i > max) max = i;
-			}
-		}
-		if (max < 0) return [currentMonthIdx]; // אין נתונים כלל → החודש הנוכחי בלבד
-		max = Math.max(max, currentMonthIdx);
-		return Array.from({ length: max - min + 1 }, (_, k) => min + k);
-	});
+	// שלוש הסדרות לגרף המסכם — כל אחת בצבע משלה, בקנה-מידה יחסי לעצמה,
+	// עם קישור לגרף המפורט שמתחת. הנתונים של יוני מאופסים והמקסימום מחושב מחדש.
+	const summarySeries = $derived(
+		[
+			{ key: 'visits', label: 'כניסות',        href: '#visits',        base: visitsSeries, bar: 'from-sky-600 to-sky-400',        dot: 'bg-sky-400',     text: 'text-sky-300' },
+			{ key: 'items',  label: 'פריטים שהועלו', href: '#items',         base: itemsByMonth, bar: 'from-emerald-600 to-emerald-400', dot: 'bg-emerald-400', text: 'text-emerald-300' },
+			{ key: 'reg',    label: 'נרשמים',        href: '#registrations', base: regSeries,    bar: 'from-violet-600 to-fuchsia-400',  dot: 'bg-violet-400',  text: 'text-violet-300' },
+		].map((s) => {
+			const data = s.base.map((v, i) => (i === SUMMARY_EXCLUDE_MONTH ? 0 : v));
+			return { key: s.key, label: s.label, href: s.href, bar: s.bar, dot: s.dot, text: s.text, data, max: Math.max(1, ...data) };
+		})
+	);
+
+	// כל חודשי השנה מוצגים בגרף המסכם (ינואר–דצמבר)
+	const activeMonthIdxs = Array.from({ length: 12 }, (_, i) => i);
 </script>
 
 <svelte:head>
@@ -222,23 +216,23 @@
 					</a>
 				{/each}
 			</div>
-			<!-- עמודות לכל חודש: 3 מלבנים חופפים קלות (בליטה הצידה) עם מספר מעל כל אחד -->
-			<div class="flex items-end justify-center gap-6 sm:gap-10 h-56 border-b border-white/10 pb-px">
+			<!-- עמודות לכל חודש: 3 מלבנים זה-לצד-זה עם מספר מעל כל אחד (יוני מאופס) -->
+			<div class="flex items-end gap-1 sm:gap-2 h-56 border-b border-white/10 pb-px">
 				{#each activeMonthIdxs as mi}
-					<div class="flex-1 max-w-[9rem] flex items-end justify-center h-full min-w-0" title={`${MONTH_NAMES[mi]} · כניסות ${fmt(visitsSeries[mi])} · פריטים ${fmt(itemsByMonth[mi])} · נרשמים ${fmt(regSeries[mi])}`}>
-						{#each summarySeries as s, si}
+					<div class="flex-1 flex items-end justify-center gap-px h-full min-w-0" title={`${MONTH_NAMES[mi]} · כניסות ${fmt(summarySeries[0].data[mi])} · פריטים ${fmt(summarySeries[1].data[mi])} · נרשמים ${fmt(summarySeries[2].data[mi])}`}>
+						{#each summarySeries as s}
 							{@const val = s.data[mi]}
-							<div class="relative flex flex-col items-center justify-end h-full w-1/3" style="z-index: {si + 1}; margin-inline-start: {si === 0 ? '0' : '-0.3rem'}">
-								<div class="mb-1 text-[10px] sm:text-xs font-black tabular-nums leading-none {s.text} {val === 0 ? 'opacity-0' : ''}">{fmt(val)}</div>
-								<div class="w-full rounded-t-md bg-gradient-to-t {s.bar} shadow-md transition-all duration-500 hover:brightness-125" style="height: {val === 0 ? 0 : Math.max(3, (val / s.max) * 82)}%"></div>
+							<div class="flex flex-col items-center justify-end h-full w-1/3">
+								<div class="mb-0.5 text-[9px] sm:text-[10px] font-black tabular-nums leading-none {s.text} {val === 0 ? 'opacity-0' : ''}">{fmt(val)}</div>
+								<div class="w-full rounded-t bg-gradient-to-t {s.bar} shadow-sm transition-all duration-500 hover:brightness-125" style="height: {val === 0 ? 0 : Math.max(3, (val / s.max) * 82)}%"></div>
 							</div>
 						{/each}
 					</div>
 				{/each}
 			</div>
-			<div class="flex justify-center gap-6 sm:gap-10 mt-2">
+			<div class="flex gap-1 sm:gap-2 mt-2">
 				{#each activeMonthIdxs as mi}
-					<div class="flex-1 max-w-[9rem] text-center text-[10px] sm:text-xs font-bold {mi === currentMonthIdx ? 'text-white' : 'text-gray-400'}">{MONTH_SHORT[mi]}</div>
+					<div class="flex-1 text-center text-[9px] sm:text-[11px] font-bold {mi === currentMonthIdx ? 'text-white' : 'text-gray-400'}">{MONTH_SHORT[mi]}</div>
 				{/each}
 			</div>
 		</div>
