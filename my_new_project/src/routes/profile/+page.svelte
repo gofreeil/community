@@ -21,6 +21,7 @@
 	import { restoreDaysLeft } from "$lib/placeStatus";
 	import { statusLabel, type UserStatus } from "$lib/singlesMock";
 	import NeighborhoodPicker from "$lib/components/NeighborhoodPicker.svelte";
+	import TierBanner from "$lib/components/TierBanner.svelte";
 	import { heRank } from "$lib/search";
 
 	let { data, form } = $props();
@@ -1963,6 +1964,19 @@
 {/snippet}
 
 <div class="max-w-3xl mx-auto px-4 py-8 overflow-x-hidden" dir="rtl">
+	<!-- באנר דרגת הרשמה: סטטוס + השלמה במקום לדרגה הבאה.
+	     לא מציגים כש-Strapi לא זמין (משתמש-fallback ריק ייראה כאילו הפרופיל חסר) -->
+	{#if data.user && data.strapiAvailable !== false}
+		<TierBanner user={{
+			name: data.user.name, email: data.user.email,
+			email_confirmed: (data.user as { email_confirmed?: boolean }).email_confirmed,
+			phone: (data.user as { phone?: string }).phone,
+			city: (data.user as { city?: string }).city,
+			neighborhood: data.user.neighborhood,
+			gender: (data.user as { gender?: string }).gender,
+			birth_date: (data.user as { birth_date?: string }).birth_date,
+		}} />
+	{/if}
 	<!-- כפתור התחברות/הרשמה לאורחים בלבד -->
 	{#if !data.user}
 		<div class="mb-4 p-4 bg-[#0f172a] rounded-2xl border border-white/10">

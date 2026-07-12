@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
-import { createItem, getAllItems, getDbItemByIdFresh, incrementItemViewCount, getItemsByCategory, getItemsByUserId, updateItem, getAllSuperAdmins } from '$lib/server/db';
+import { createItem, getAllItems, getDbItemByIdFresh, incrementItemViewCount, getItemsByCategory, getItemsByUserId, updateItem, getAllSuperAdmins, getUserById } from '$lib/server/db';
 import { categoryConfig, getCategoryIcon, getCategoryColor } from '$lib/categoryFields';
+import { categoryTier, tierMet } from '$lib/tiers';
 import { resolveItemCoords } from '$lib/server/geocode';
 import { Resend } from 'resend';
 import type { RequestHandler } from './$types';
@@ -226,6 +227,27 @@ export const POST: RequestHandler = async (event) => {
         } catch (e) {
             // אם בדיקת/עדכון הכרטיס הקיים נכשלה - לא נכשיל את המשתמש, ניפול ליצירה רגילה
             console.warn('[api/items] one-per-user upsert failed, falling back to create:', e);
+        }
+    }
+
+    // ---- אכיפת שער דרגה בצד שרת (לא רק ב-UI) ----
+    // יצירת פריט חדש בקטגוריה שדורשת דרגה 2/3 מחייבת פרופיל מתאים. עריכה
+    // וכרטיס-אחד-למשתמש כבר חזרו למעלה, אז כאן זה תמיד יצירה אמיתית.
+    // fail-open על תקלת lookup: לא חוסמים משתמש לגיטימי על בליפ רגעי של Strapi.
+    if (userId) {
+        const requiredTier = categoryTier(category);
+        if (requiredTier > 1) {
+            try {
+                const u = await getUserById(String(userId), event.cookies.get('strapi_jwt'));
+                if (u && !tierMet(u, requiredTier)) {
+                    return json({
+                        success: false,
+                        message: 'יש להשלים את פרטי הפרופיל לפני פרסום',
+                        needsUpgrade: true,
+                        requiredTier,
+                    }, { status: 403 });
+                }
+            } catch { /* fail-open — תקלת Strapi לא חוסמת פרסום */ }
         }
     }
 

@@ -3,7 +3,8 @@
     import { get } from 'svelte/store';
     import { _ } from 'svelte-i18n';
     import { browser } from '$app/environment';
-    import { goto } from '$app/navigation';
+    import { goto, invalidateAll } from '$app/navigation';
+    import LevelUpCard from '$lib/components/LevelUpCard.svelte';
     import { citiesAndNeighborhoods, effectiveNeighborhoods, LS_KEY, DEFAULT_NEIGHBORHOOD } from '$lib/neighborhoodsData';
     import { GMACH_TYPES } from '$lib/gmachTypes';
     import { trOr } from '$lib/categoryFields';
@@ -256,6 +257,13 @@
     </div>
 {/if}
 
+{#if data.needsUpgrade && data.tierUser}
+<div class="min-h-screen bg-[#070b14] pt-10 pb-20 px-4" dir="rtl">
+    <div class="max-w-2xl mx-auto">
+        <LevelUpCard user={data.tierUser} target={data.requiredTier} reason={$_('tiers.reason_publish')} onDone={() => invalidateAll()} />
+    </div>
+</div>
+{:else}
 <div class="min-h-screen bg-[#070b14] pt-6 pb-20 px-4" dir="rtl">
     <div class="max-w-2xl mx-auto">
         <div class="text-center mb-5">
@@ -419,6 +427,7 @@
         </div>
     </div>
 </div>
+{/if}
 
 <style>
     /* הבהוב אדום קצר על השדה החסר כדי להדגיש בדיוק מה צריך למלא */

@@ -1,11 +1,12 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { createItem } from '$lib/server/db';
+import { loadTierGate } from '$lib/server/tierGate';
 
 export const load: PageServerLoad = async (event) => {
     let session = null;
     try { session = await event.locals.auth(); } catch {}
-    return { userId: session?.user?.id ?? null };
+    return { userId: session?.user?.id ?? null, ...(await loadTierGate(event, 'rides')) };
 };
 
 export const actions: Actions = {

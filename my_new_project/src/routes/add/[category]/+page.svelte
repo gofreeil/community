@@ -1,7 +1,8 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import { browser } from '$app/environment';
-    import { goto } from '$app/navigation';
+    import { goto, invalidateAll } from '$app/navigation';
+    import LevelUpCard from '$lib/components/LevelUpCard.svelte';
     import { LS_KEY, DEFAULT_NEIGHBORHOOD, citiesAndNeighborhoods, effectiveNeighborhoods } from '$lib/neighborhoodsData';
     import { nearestCityNeighborhood } from '$lib/neighborhoodCoords';
     import { getFormMemory, rememberFields } from '$lib/formMemory';
@@ -800,7 +801,15 @@
         {/if}
     </div>
 
-    {#if redirectingMsg}
+    {#if data.needsUpgrade && data.tierUser}
+        <!-- שער דרגה: המשתמש מחובר אך חסרים פרטים לפרסום — משלימים במקום -->
+        <LevelUpCard
+            user={data.tierUser}
+            target={data.requiredTier}
+            reason={data.requiredTier >= 3 ? $_('tiers.reason_singles') : $_('tiers.reason_publish')}
+            onDone={() => invalidateAll()}
+        />
+    {:else if redirectingMsg}
         <!-- הודעת מעבר להרשמה -->
         <div class="rounded-2xl border-2 border-blue-500/40 bg-blue-900/20 p-8 text-center"
              style="animation: fadeIn 0.4s ease-out;">

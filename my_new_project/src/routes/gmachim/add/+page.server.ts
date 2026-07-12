@@ -1,5 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { getUserById } from '$lib/server/db';
+import { loadTierGate } from '$lib/server/tierGate';
 
 // פרסום גמ"ח דו-שלבי (כמו קטגוריות המפה): הטופס כאן אוסף את שלב-המפה בלבד
 // ושומר דרך /api/items (category 'gemachim'), ואז מפנה ל-/items/[id]?builder=1
@@ -25,5 +26,6 @@ export const load: PageServerLoad = async (event) => {
         userCity,
         userNeighborhood,
         userPhone,
+        ...(await loadTierGate(event, 'gemachim')),
     };
 };

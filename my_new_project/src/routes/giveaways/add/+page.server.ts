@@ -2,15 +2,19 @@ import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { createItem, getUserById } from '$lib/server/db';
 import { categoryConfig } from '$lib/categoryFields';
+import { loadTierGate } from '$lib/server/tierGate';
 
 export const load: PageServerLoad = async (event) => {
     let session = null;
     try { session = await event.locals.auth(); } catch {}
 
+    const gate = await loadTierGate(event, 'giveaway');
+
     if (!session?.user?.id) {
         return {
             userId: null,
             defaults: { name: '', phone: '', neighborhood: '', city: '' },
+            ...gate,
         };
     }
 
@@ -30,7 +34,7 @@ export const load: PageServerLoad = async (event) => {
         console.warn('[giveaways/add] failed to load user defaults:', e instanceof Error ? e.message : e);
     }
 
-    return { userId: session.user.id, defaults };
+    return { userId: session.user.id, defaults, ...gate };
 };
 
 export const actions: Actions = {

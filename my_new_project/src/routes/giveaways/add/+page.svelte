@@ -2,6 +2,8 @@
     import type { ActionData, PageData } from './$types';
     import { onMount } from 'svelte';
     import { _ } from 'svelte-i18n';
+    import { invalidateAll } from '$app/navigation';
+    import LevelUpCard from '$lib/components/LevelUpCard.svelte';
     import { browser } from '$app/environment';
     import { enhance } from '$app/forms';
     import { categoryConfig, trOr } from '$lib/categoryFields';
@@ -181,6 +183,13 @@
     <title>פרסום פריט למסירה | קהילה בשכונה</title>
 </svelte:head>
 
+{#if data.needsUpgrade && data.tierUser}
+<div class="min-h-screen bg-[#070b14] pt-10 pb-20 px-4" dir="rtl">
+    <div class="max-w-2xl mx-auto">
+        <LevelUpCard user={data.tierUser} target={data.requiredTier} reason={$_('tiers.reason_publish')} onDone={() => invalidateAll()} />
+    </div>
+</div>
+{:else}
 <div class="min-h-screen bg-[#070b14] pt-6 pb-20 px-4" dir="rtl">
     <div class="max-w-2xl mx-auto">
         <div class="text-center mb-6">
@@ -610,3 +619,5 @@
         </div>
     </div>
 </div>
+
+{/if}

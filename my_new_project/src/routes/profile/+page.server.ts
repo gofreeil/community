@@ -111,6 +111,7 @@ export const load: PageServerLoad = async (event) => {
             // משמר את התפקיד מהסשן כשה-DB לא זמין - אחרת סופר־אדמין יוצג כ"צופה"
             role: ((session.user as { role?: string })?.role ?? 'user') as 'user' | 'neighborhood_admin' | 'super_admin',
             banned: false,
+            email_confirmed: true,
             coordinator_of: ((session.user as { coordinator_of?: string[] })?.coordinator_of) ?? [],
             security_question: '', security_answer: '', security_question_2: '', security_answer_2: '', status: 'active',
           };

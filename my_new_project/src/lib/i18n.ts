@@ -14,6 +14,7 @@ import * as listings from './translations/listings';
 import * as map from './translations/map';
 import * as components from './translations/components';
 import * as labels from './translations/labels';
+import * as tiers from './translations/tiers';
 
 register('he', () => Promise.resolve({
     welcome: "קהילה בשכונה",
@@ -716,7 +717,7 @@ register('ru', () => Promise.resolve({
 }));
 
 // מילונים מודולריים לפי אזור באתר - מתמזגים לתוך המילון הראשי
-for (const mod of [chrome, home, aboutRevenue, account, profile, aboutPages, advertise, boards, communityDict, extras, jobs, listings, map, components, labels]) {
+for (const mod of [chrome, home, aboutRevenue, account, profile, aboutPages, advertise, boards, communityDict, extras, jobs, listings, map, components, labels, tiers]) {
     addMessages('he', mod.he);
     addMessages('en', mod.en);
     addMessages('ru', mod.ru);

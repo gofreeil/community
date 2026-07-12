@@ -77,6 +77,8 @@ export interface DbUser {
     balance: number;
     role: 'user' | 'neighborhood_admin' | 'super_admin';
     banned: boolean;
+    /** האם האימייל אומת (Strapi confirmed). כבוי-אישור-מייל → true לכולם */
+    email_confirmed: boolean;
     created_at: string;
     security_question: string;
     security_answer: string;
@@ -234,6 +236,7 @@ function mapUpUser(u: StrapiUpUser): DbUser {
         balance:       u.balance       ?? 0,
         role:              (u.app_role as DbUser['role']) ?? 'user',
         banned:            u.blocked           ?? false,
+        email_confirmed:   u.confirmed         ?? true,
         created_at:        u.createdAt         ?? '',
         security_question:   u.security_question   ?? '',
         security_answer:     u.security_answer     ?? '',
