@@ -25,7 +25,8 @@
                 <!-- משתמשים -->
                 <div class="relative overflow-hidden rounded-2xl border border-blue-500/25 bg-gradient-to-br from-blue-600/15 to-blue-500/5 p-4">
                     <div class="flex items-center gap-2 text-blue-200/80 text-sm font-bold mb-1">
-                        <span class="text-lg">👥</span> משתמשים
+                        <img src="/images/60712_175258.png" alt="" class="h-7 w-12 shrink-0 rounded-lg object-cover ring-1 ring-white/15 shadow-sm" />
+                        משתמשים
                     </div>
                     <div class="text-4xl font-black text-white leading-none tabular-nums">{data.site.totalUsers}</div>
                     {#if data.site.newUsersThisMonth > 0}
