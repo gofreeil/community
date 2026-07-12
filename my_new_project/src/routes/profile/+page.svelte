@@ -1914,6 +1914,10 @@
 	<!-- כפתור התחברות/הרשמה לאורחים בלבד -->
 	{#if !data.user}
 		<div class="mb-4 p-4 bg-[#0f172a] rounded-2xl border border-white/10">
+			<!-- הודעה ברורה למשתמש חדש: בפעם הראשונה יש להירשם תחילה -->
+			<p class="mb-3 text-center text-amber-200 text-[13px] sm:text-sm font-bold leading-relaxed">
+				{tFn("profile.first_time_register")}
+			</p>
 			<!-- שני כפתורים ראשיים: התחבר / הירשם -->
 			<div class="flex flex-wrap justify-center gap-2">
 				<button
@@ -1932,7 +1936,7 @@
 				</button>
 				<a
 					href="/register"
-					class="group relative px-6 py-2.5 rounded-xl border border-white/15 hover:border-purple-500/50
+					class="register-glow group relative px-6 py-2.5 rounded-xl border border-white/15 hover:border-purple-500/50
 				          text-gray-300 hover:text-white text-sm font-bold transition-all hover:bg-white/5"
 				>
 					{tFn("profile.register")}
@@ -5260,5 +5264,22 @@
 	:global(.section-flash) {
 		animation: sectionFlash 1.5s ease-out;
 		scroll-margin-top: 130px;
+	}
+
+	/* כפתור "הירשם" — זוהר קצר למשיכת עין בפעם הראשונה, ואז נרגע */
+	@keyframes registerGlow {
+		0%, 100% {
+			box-shadow: 0 0 0 0 rgba(168, 85, 247, 0);
+			border-color: rgba(255, 255, 255, 0.15);
+		}
+		50% {
+			box-shadow:
+				0 0 0 3px rgba(168, 85, 247, 0.45),
+				0 0 24px 6px rgba(168, 85, 247, 0.6);
+			border-color: rgba(168, 85, 247, 0.9);
+		}
+	}
+	.register-glow:not(:hover) {
+		animation: registerGlow 1.5s ease-in-out 3;
 	}
 </style>
