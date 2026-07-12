@@ -166,10 +166,26 @@
 	// שלוש הסדרות לגרף המסכם — כל אחת בצבע משלה, בקנה-מידה יחסי לעצמה,
 	// עם קישור לגרף המפורט שמתחת.
 	const summarySeries = $derived([
-		{ key: 'visits', label: 'כניסות',        href: '#visits',        data: visitsSeries, max: maxVisits,     bar: 'from-sky-600 to-sky-400',        dot: 'bg-sky-400' },
-		{ key: 'items',  label: 'פריטים שהועלו', href: '#items',         data: itemsByMonth, max: maxItemsMonth, bar: 'from-emerald-600 to-emerald-400', dot: 'bg-emerald-400' },
-		{ key: 'reg',    label: 'נרשמים',        href: '#registrations', data: regSeries,    max: maxReg,        bar: 'from-violet-600 to-fuchsia-400',  dot: 'bg-violet-400' },
+		{ key: 'visits', label: 'כניסות',        href: '#visits',        data: visitsSeries, max: maxVisits,     bar: 'from-sky-600 to-sky-400',        dot: 'bg-sky-400',     text: 'text-sky-300' },
+		{ key: 'items',  label: 'פריטים שהועלו', href: '#items',         data: itemsByMonth, max: maxItemsMonth, bar: 'from-emerald-600 to-emerald-400', dot: 'bg-emerald-400', text: 'text-emerald-300' },
+		{ key: 'reg',    label: 'נרשמים',        href: '#registrations', data: regSeries,    max: maxReg,        bar: 'from-violet-600 to-fuchsia-400',  dot: 'bg-violet-400',  text: 'text-violet-300' },
 	]);
+
+	// חודשים להצגה בגרף המסכם: רק מהחודש הראשון עם נתונים ועד החודש הנוכחי
+	// (מדלגים על חודשים ריקים בתחילת/סוף השנה).
+	const activeMonthIdxs = $derived.by(() => {
+		let min = 12;
+		let max = -1;
+		for (let i = 0; i < 12; i++) {
+			if (visitsSeries[i] > 0 || itemsByMonth[i] > 0 || regSeries[i] > 0) {
+				if (i < min) min = i;
+				if (i > max) max = i;
+			}
+		}
+		if (max < 0) return [currentMonthIdx]; // אין נתונים כלל → החודש הנוכחי בלבד
+		max = Math.max(max, currentMonthIdx);
+		return Array.from({ length: max - min + 1 }, (_, k) => min + k);
+	});
 </script>
 
 <svelte:head>
@@ -206,19 +222,23 @@
 					</a>
 				{/each}
 			</div>
-			<!-- עמודות מקובצות: 3 סדרות לכל חודש -->
-			<div class="flex items-end gap-1 sm:gap-2 h-56 border-b border-white/10 pb-px">
-				{#each MONTH_NAMES as name, i}
-					<div class="flex-1 flex items-end justify-center gap-0.5 h-full min-w-0" title={`${name} · כניסות ${fmt(visitsSeries[i])} · פריטים ${fmt(itemsByMonth[i])} · נרשמים ${fmt(regSeries[i])}`}>
-						{#each summarySeries as s}
-							<div class="w-1/3 rounded-t bg-gradient-to-t {s.bar} transition-all duration-500 hover:brightness-125" style="height: {s.data[i] === 0 ? 0 : Math.max(2, (s.data[i] / s.max) * 90)}%"></div>
+			<!-- עמודות לכל חודש: 3 מלבנים חופפים קלות (בליטה הצידה) עם מספר מעל כל אחד -->
+			<div class="flex items-end justify-center gap-6 sm:gap-10 h-56 border-b border-white/10 pb-px">
+				{#each activeMonthIdxs as mi}
+					<div class="flex-1 max-w-[9rem] flex items-end justify-center h-full min-w-0" title={`${MONTH_NAMES[mi]} · כניסות ${fmt(visitsSeries[mi])} · פריטים ${fmt(itemsByMonth[mi])} · נרשמים ${fmt(regSeries[mi])}`}>
+						{#each summarySeries as s, si}
+							{@const val = s.data[mi]}
+							<div class="relative flex flex-col items-center justify-end h-full w-1/3" style="z-index: {si + 1}; margin-inline-start: {si === 0 ? '0' : '-0.3rem'}">
+								<div class="mb-1 text-[10px] sm:text-xs font-black tabular-nums leading-none {s.text} {val === 0 ? 'opacity-0' : ''}">{fmt(val)}</div>
+								<div class="w-full rounded-t-md bg-gradient-to-t {s.bar} shadow-md transition-all duration-500 hover:brightness-125" style="height: {val === 0 ? 0 : Math.max(3, (val / s.max) * 82)}%"></div>
+							</div>
 						{/each}
 					</div>
 				{/each}
 			</div>
-			<div class="flex gap-1 sm:gap-2 mt-2">
-				{#each MONTH_SHORT as short, i}
-					<div class="flex-1 text-center text-[9px] sm:text-[11px] leading-tight whitespace-nowrap {i === currentMonthIdx ? 'text-white font-bold' : 'text-gray-500'}">{short}</div>
+			<div class="flex justify-center gap-6 sm:gap-10 mt-2">
+				{#each activeMonthIdxs as mi}
+					<div class="flex-1 max-w-[9rem] text-center text-[10px] sm:text-xs font-bold {mi === currentMonthIdx ? 'text-white' : 'text-gray-400'}">{MONTH_SHORT[mi]}</div>
 				{/each}
 			</div>
 		</div>
