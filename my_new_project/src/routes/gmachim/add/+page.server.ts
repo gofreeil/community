@@ -1,18 +1,22 @@
-import { redirect, fail } from '@sveltejs/kit';
-import type { Actions, PageServerLoad } from './$types';
-import { createItem, getUserById } from '$lib/server/db';
+import type { PageServerLoad } from './$types';
+import { getUserById } from '$lib/server/db';
 
+// פרסום גמ"ח דו-שלבי (כמו קטגוריות המפה): הטופס כאן אוסף את שלב-המפה בלבד
+// ושומר דרך /api/items (category 'gemachim'), ואז מפנה ל-/items/[id]?builder=1
+// להשלמת הפרטים בדף הגמ"ח. אין כאן form action - השמירה נעשית מהלקוח.
 export const load: PageServerLoad = async (event) => {
     let session = null;
     try { session = await event.locals.auth(); } catch {}
 
     let userCity: string | null = null;
     let userNeighborhood: string | null = null;
+    let userPhone: string | null = null;
     if (session?.user?.id) {
         try {
             const user = await getUserById(session.user.id);
             userCity         = user?.city         || null;
             userNeighborhood = user?.neighborhood || null;
+            userPhone        = user?.phone        || null;
         } catch {}
     }
 
@@ -20,114 +24,6 @@ export const load: PageServerLoad = async (event) => {
         userId: session?.user?.id ?? null,
         userCity,
         userNeighborhood,
+        userPhone,
     };
-};
-
-export const actions: Actions = {
-    default: async (event) => {
-        let session = null;
-        try { session = await event.locals.auth(); } catch {}
-        if (!session?.user?.id) throw redirect(302, '/login?redirect=/gmachim/add');
-
-        const fd           = await event.request.formData();
-        const title        = fd.get('title')?.toString().trim()        ?? '';
-        const headline     = fd.get('headline')?.toString().trim()     ?? '';
-        const summary      = fd.get('summary')?.toString().trim()      ?? '';
-        const description  = fd.get('description')?.toString().trim()  ?? '';
-        // Address arrives as separate parts from the form (street / building / floor / apt),
-        // not as a single "address" field. Build the display address from them.
-        const street       = fd.get('street')?.toString().trim()       ?? '';
-        const buildingNum  = fd.get('buildingNum')?.toString().trim()  ?? '';
-        const floor        = fd.get('floor')?.toString().trim()        ?? '';
-        const apartment    = fd.get('apartment')?.toString().trim()    ?? '';
-        const arrivalNotes = fd.get('arrivalNotes')?.toString().trim() ?? '';
-        const hours        = fd.get('hours')?.toString().trim()        ?? '';
-        const contact      = fd.get('contact')?.toString().trim()      ?? '';
-        const phone        = fd.get('phone')?.toString().trim()        ?? '';
-        const icon         = fd.get('icon')?.toString().trim()         || '🤝';
-        const city         = fd.get('city')?.toString().trim()         ?? '';
-        const neighborhood = fd.get('neighborhood')?.toString().trim() ?? '';
-        const latRaw       = fd.get('lat')?.toString().trim()          ?? '';
-        const lngRaw       = fd.get('lng')?.toString().trim()          ?? '';
-        const lat          = latRaw !== '' && Number.isFinite(+latRaw) ? +latRaw : null;
-        const lng          = lngRaw !== '' && Number.isFinite(+lngRaw) ? +lngRaw : null;
-        const gmachType    = fd.get('gmach_type')?.toString().trim()   ?? '';
-        const gmachTypesJson = fd.get('gmach_types_json')?.toString()  ?? '';
-        const logoBase64   = fd.get('logo_base64')?.toString()         ?? '';
-        const imagesJson   = fd.get('images_json')?.toString()         ?? '';
-        const tagsJson     = fd.get('tags_json')?.toString()           ?? '';
-
-        // נושאים מרובים; gmach_type הראשי נשמר לתאימות עם האתר הארצי (מסנן לפי ערך יחיד)
-        let gmachTypes: string[] = [];
-        try {
-            const parsed = JSON.parse(gmachTypesJson || '[]');
-            if (Array.isArray(parsed)) gmachTypes = parsed.filter(s => typeof s === 'string' && s.trim().length > 0);
-        } catch {}
-        if (gmachTypes.length === 0 && gmachType) gmachTypes = [gmachType];
-        const primaryGmachType = gmachTypes[0] ?? '';
-
-        let images: string[] = [];
-        try {
-            const parsed = JSON.parse(imagesJson || '[]');
-            if (Array.isArray(parsed)) images = parsed.filter(s => typeof s === 'string');
-        } catch {}
-
-        let tags: string[] = [];
-        try {
-            const parsed = JSON.parse(tagsJson || '[]');
-            if (Array.isArray(parsed)) tags = parsed.filter(s => typeof s === 'string' && s.trim().length > 0);
-        } catch {}
-
-        // סימון פין על המפה נחשב מיקום תקין - מחליף את הרחוב+מספר הבית
-        const hasPin = lat != null && lng != null;
-
-        if (!title)                  return fail(400, { error: 'יש למלא שם הגמ"ח' });
-        if (!phone)                  return fail(400, { error: 'יש למלא טלפון ליצירת קשר' });
-        if (!street && !hasPin)      return fail(400, { error: 'יש למלא רחוב או לסמן מיקום על המפה' });
-        if (!buildingNum && !hasPin) return fail(400, { error: 'יש למלא מספר בניין או לסמן מיקום על המפה' });
-        if (!city)                   return fail(400, { error: 'יש לבחור עיר (חובה לאתר הארצי)' });
-        if (!neighborhood)           return fail(400, { error: 'יש לבחור שכונה (חובה לאתר הארצי)' });
-
-        // כתובת לתצוגה: רחוב+מספר אם הוזנו, אחרת שכונה/עיר, אחרת ציון שסומן במפה
-        const address = [street, buildingNum].filter(Boolean).join(' ')
-            || [neighborhood, city].filter(Boolean).join(', ')
-            || 'מיקום מסומן על המפה';
-
-        try {
-            await createItem({
-                category:     'gemachim',
-                label:        title,
-                description,
-                contact,
-                phone,
-                address,
-                icon,
-                color:        'amber',
-                city,
-                neighborhood,
-                ...(lat != null && lng != null ? { lat, lng } : {}),
-                extra_fields: {
-                    hours,
-                    gmach_type: primaryGmachType,
-                    ...(gmachTypes.length > 0 ? { gmach_types: gmachTypes } : {}),
-                    ...(street       ? { street }       : {}),
-                    ...(buildingNum  ? { building_num: buildingNum } : {}),
-                    ...(floor        ? { floor }        : {}),
-                    ...(apartment    ? { apartment }    : {}),
-                    ...(arrivalNotes ? { arrival_notes: arrivalNotes } : {}),
-                    ...(headline ? { headline } : {}),
-                    ...(summary  ? { summary }  : {}),
-                    ...(logoBase64 ? { logo: logoBase64 } : {}),
-                    ...(images.length > 0 ? { images } : {}),
-                    ...(tags.length > 0 ? { tags } : {}),
-                },
-                user_id:      session.user.id,
-            });
-        } catch (e) {
-            console.error('[gmachim] createItem failed:', e);
-            return fail(500, { error: 'שגיאה בשמירת המודעה, נסה שוב' });
-        }
-
-        throw redirect(303, '/?added=gmach');
-    },
 };

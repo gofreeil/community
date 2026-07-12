@@ -101,6 +101,32 @@ export const categoryConfig: Record<string, CategoryConfig> = {
         ],
     },
 
+    gemachim: {
+        label: 'גמ"ח',
+        icon: '🤝',
+        color: 'amber',
+        priceRow: null,
+        addPageTitle: 'הוספת גמ"ח',
+        // פרסום דו-שלבי כמו שאר קטגוריות המפה: שלב-המפה (שם, נושאים, כתובת, סימון,
+        // טלפון) נאסף בטופס הייעודי /gmachim/add, והשאר (תיאור, שעות, קומה/דירה,
+        // הוראות הגעה, תמונות) מושלם בדף הגמ"ח עצמו במצב בנייה.
+        // נושאי הגמ"ח (gmach_type / gmach_types) נשמרים ישירות ע"י הטופס לתאימות
+        // עם האתר הארצי, ולכן אינם מוגדרים כאן כשדות טופס גנריים.
+        mapFirst: true,
+        fields: [
+            { key: 'label',    label: 'שם הגמ"ח',       type: 'text',    required: true,  step: 'map', placeholder: 'לדוגמה: גמ"ח כיסאות' },
+            { key: 'address',  label: 'כתובת',          type: 'address', required: true,  step: 'map', placeholder: 'שם הרחוב' },
+            { key: 'location', label: 'סימון על המפה',  type: 'map_pin', required: false, step: 'map' },
+            { key: 'phone',    label: 'טלפון',          type: 'tel',     required: true,  step: 'map', placeholder: '05X-XXXXXXX' },
+            // ---- שלב הפרטים: נערך בדף הגמ"ח (מצב בנייה) ----
+            { key: 'headline',      label: 'משפט פתיחה',   type: 'text',          required: false, step: 'details', placeholder: 'משפט קצר שמסביר מה הגמ"ח נותן' },
+            { key: 'hours',         label: 'שעות פעילות',  type: 'opening_hours', required: false, step: 'details' },
+            { key: 'floor',         label: 'קומה',         type: 'text',          required: false, step: 'details', half: true, placeholder: 'לדוגמה: 3' },
+            { key: 'apartment',     label: 'מספר דירה',    type: 'text',          required: false, step: 'details', half: true, placeholder: 'לדוגמה: 5' },
+            { key: 'arrival_notes', label: 'הוראות הגעה',  type: 'textarea',      required: false, step: 'details', placeholder: 'לדוגמה: כניסה מהחצר האחורית, קוד בשער...' },
+        ],
+    },
+
     education: {
         label: 'חוגים',
         icon: '🎨',

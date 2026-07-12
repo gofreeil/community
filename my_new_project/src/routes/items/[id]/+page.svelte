@@ -1595,6 +1595,13 @@
         hours: 'שעות פתיחה',
         time: 'שעה עיקרית',
         days: 'ימים',
+        headline: 'משפט פתיחה',
+        summary: 'תיאור',
+        floor: 'קומה',
+        apartment: 'מספר דירה',
+        arrival_notes: 'הוראות הגעה',
+        street: 'רחוב',
+        building_num: 'מספר בניין',
     }}
     {@const formatValue = (key: string, val: unknown): string => {
         if (val == null || val === '') return '';
