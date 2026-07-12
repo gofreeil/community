@@ -41,13 +41,19 @@
 
                 <!-- פרטים במפה -->
                 <div class="relative overflow-hidden rounded-2xl border border-purple-500/25 bg-gradient-to-br from-purple-600/15 to-purple-500/5 p-4">
-                    <div class="flex items-center gap-2 text-purple-200/80 text-sm font-bold mb-1">
-                        <span class="text-lg">📋</span> פרטים במפה
+                    <!-- תמונת מפת הקהילה בגדול בשטח הפנוי בצד שמאל -->
+                    <img
+                        src="/images/Co260712_181739.png"
+                        alt=""
+                        class="pointer-events-none absolute left-2 inset-y-0 my-auto h-[68px] w-[68px] rounded-2xl object-cover ring-1 ring-white/20 shadow-lg"
+                    />
+                    <div class="relative">
+                        <div class="text-purple-200/80 text-sm font-bold mb-1">פרטים במפה</div>
+                        <div class="text-4xl font-black text-white leading-none tabular-nums">{data.site.totalItems}</div>
+                        {#if data.site.newItemsThisMonth > 0}
+                            <div class="text-xs text-purple-300/80 mt-1.5 font-bold">+{data.site.newItemsThisMonth} החודש</div>
+                        {/if}
                     </div>
-                    <div class="text-4xl font-black text-white leading-none tabular-nums">{data.site.totalItems}</div>
-                    {#if data.site.newItemsThisMonth > 0}
-                        <div class="text-xs text-purple-300/80 mt-1.5 font-bold">+{data.site.newItemsThisMonth} החודש</div>
-                    {/if}
                 </div>
 
                 <!-- רכזים -->
