@@ -67,11 +67,17 @@
 
                 <!-- כניסות החודש - מתעדכן פעם ביום -->
                 <div class="relative overflow-hidden rounded-2xl border border-emerald-500/25 bg-gradient-to-br from-emerald-600/15 to-emerald-500/5 p-4">
-                    <div class="flex items-center gap-2 text-emerald-200/80 text-sm font-bold mb-1">
-                        <span class="text-lg">📈</span> כניסות
+                    <!-- תמונת "כניסות לאתר" בגדול בשטח הפנוי בצד שמאל -->
+                    <img
+                        src="/images/60712_183146.png"
+                        alt=""
+                        class="pointer-events-none absolute left-2 inset-y-0 my-auto h-[68px] w-[68px] rounded-2xl object-cover ring-1 ring-white/20 shadow-lg"
+                    />
+                    <div class="relative">
+                        <div class="text-emerald-200/80 text-sm font-bold mb-1">כניסות</div>
+                        <div class="text-4xl font-black text-white leading-none tabular-nums">{data.site.monthlyVisits}</div>
+                        <div class="text-xs text-emerald-300/70 mt-1.5 font-bold">החודש</div>
                     </div>
-                    <div class="text-4xl font-black text-white leading-none tabular-nums">{data.site.monthlyVisits}</div>
-                    <div class="text-xs text-emerald-300/70 mt-1.5 font-bold">החודש</div>
                 </div>
             </div>
         </div>
