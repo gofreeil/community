@@ -5,6 +5,7 @@
 	import type { DiscountCode } from '$lib/discountCodes';
 	import { heMatches } from '$lib/search';
 	import ServerHealthGauges from '$lib/components/ServerHealthGauges.svelte';
+	import StatsSummaryChart from '$lib/components/StatsSummaryChart.svelte';
 	import RequesterContext from '$lib/components/RequesterContext.svelte';
 	import RequesterChatButtons from '$lib/components/RequesterChatButtons.svelte';
 
@@ -296,8 +297,12 @@
 			</a>
 		</div>
 
-		<!-- לוח מכוונים: מצב/עומס השרת (הבאקאנד) - מתרענן חי -->
-		<ServerHealthGauges initial={data.serverHealth} monthlyVisits={dash.monthlyVisits} />
+		<!-- מחוג מצב השרת (הקיצור של כל המדים) בצד ימין + "הגרף הראשי" (סקירה כללית) לצידו.
+		     שניהם תמונת-מצב מרגע הכניסה: מתרעננים רק כשנכנסים לדף זה או לדף הסטטיסטיקה (בלי פולינג). -->
+		<div class="mb-8 grid gap-4 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] items-stretch">
+			<ServerHealthGauges initial={data.serverHealth} monthlyVisits={dash.monthlyVisits} summaryOnly live={false} />
+			<StatsSummaryChart stats={data.stats} itemsSummary={data.itemsSummary} registrations={data.registrations} hrefPrefix="/admin/statistics" />
+		</div>
 
 		<!-- הודעת הצלחה/שגיאה -->
 		{#if form?.success}

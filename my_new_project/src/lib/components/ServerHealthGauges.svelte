@@ -7,10 +7,11 @@
 	import { onMount, onDestroy } from 'svelte';
 	import type { ServerHealth } from '$lib/serverHealthTypes';
 
-	// live=true (ברירת מחדל, כמו ב-/admin): טיימר קל לתווית "עודכן לפני X" + כפתור רענון ידני.
-	// live=false (למשל דף הסטטיסטיקה): תמונת-מצב מרגע הכניסה בלבד — בלי טיימר ובלי רענון.
-	let { initial = null, monthlyVisits = 0, live = true }:
-		{ initial?: ServerHealth | null; monthlyVisits?: number; live?: boolean } = $props();
+	// live=true: טיימר קל לתווית "עודכן לפני X" + כפתור רענון ידני.
+	// live=false (דף הסטטיסטיקה + לוח הניהול): תמונת-מצב מרגע הכניסה בלבד — בלי טיימר ובלי רענון.
+	// summaryOnly=true (לוח הניהול): רק המחוג הראשי (הקיצור של כולם), בלי המדים המשניים.
+	let { initial = null, monthlyVisits = 0, live = true, summaryOnly = false }:
+		{ initial?: ServerHealth | null; monthlyVisits?: number; live?: boolean; summaryOnly?: boolean } = $props();
 
 	let health = $state<ServerHealth | null>(initial);
 	let loading = $state(false);
@@ -150,7 +151,7 @@
 		</div>
 	{:else}
 		{@const st = STATUS[health.status]}
-		<div class="grid">
+		<div class="grid" class:solo={summaryOnly}>
 			<!-- מד ראשי -->
 			<div class="main-card" style="--tone:{st.tone}">
 				<div class="dial big">
@@ -182,7 +183,8 @@
 				{/if}
 			</div>
 
-			<!-- מדים משניים -->
+			<!-- מדים משניים (מוסתרים כשמוצג רק המחוג הראשי) -->
+			{#if !summaryOnly}
 			<div class="mini-grid">
 				{#each subGauges as g (g.key)}
 					{@const c = zoneColor(g.load)}
@@ -207,6 +209,7 @@
 					</div>
 				{/each}
 			</div>
+			{/if}
 		</div>
 
 		<!-- שורת מידע -->
@@ -227,7 +230,6 @@
 		border: 1px solid rgba(255,255,255,0.08);
 		border-radius: 1.25rem;
 		padding: 1.25rem 1.25rem 1rem;
-		margin-bottom: 2rem;
 	}
 	.panel-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
 	.title { display: flex; align-items: center; gap: 0.7rem; }
@@ -249,6 +251,9 @@
 
 	.grid { display: grid; grid-template-columns: minmax(240px, 1fr) 2fr; gap: 1rem; }
 	@media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+	/* summaryOnly: רק המחוג הראשי, טור יחיד */
+	.grid.solo { grid-template-columns: 1fr; }
+	.grid.solo .main-card { max-width: 340px; margin-inline: auto; }
 
 	.main-card {
 		background: rgba(255,255,255,0.03); border: 1px solid var(--tone);

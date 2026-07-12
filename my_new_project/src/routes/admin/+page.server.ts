@@ -5,8 +5,9 @@ import { getAllUsers, banUser, unbanUser, setUserRole, setCoordinatorOf, getAllI
 import { finalizeLocationDecision } from '$lib/server/locationDecision';
 import { DEFAULT_DISCOUNT_CODES, type DiscountCode } from '$lib/discountCodes';
 import { countPending } from '$lib/server/adsStore';
-import { getVisitsThisMonth } from '$lib/server/visitStats';
+import { getVisitsThisMonth, getVisitStats } from '$lib/server/visitStats';
 import { getServerHealth } from '$lib/server/serverHealth';
+import { buildItemsSummary, buildRegistrationsSummary, type ItemsSummary, type RegistrationsSummary } from '$lib/server/statsSummary';
 
 // "אושיות (רחובות)" → { name: "אושיות", city: "רחובות" }
 function parseArea(entry: string): { name: string; city: string } {
@@ -82,6 +83,12 @@ export const load: PageServerLoad = async (event) => {
     const pendingSinglesPromise = getItemsByCategoryAndStatus('singles', 'pending').then((l) => l.length).catch(() => 0);
     const discountCodesPromise  = getDiscountCodes().catch((e) => { console.warn('[admin] getDiscountCodes failed:', e); return DEFAULT_DISCOUNT_CODES; });
     const totpPromise           = session?.user?.id ? getUserTotpSecret(session.user.id).catch(() => null) : Promise.resolve(null);
+
+    // נתוני "הגרף הראשי" (סקירה כללית) — אותו גרף מסכם שבדף הסטטיסטיקה, מוטמע בלוח הניהול.
+    // מתרעננים בכל כניסה לדף (getVisitStats מוגן ב-cache יומי, כמו בדף הסטטיסטיקה).
+    const statsPromise          = getVisitStats().catch((e) => { console.warn('[admin] getVisitStats failed:', e); return [] as Awaited<ReturnType<typeof getVisitStats>>; });
+    const itemsSummaryPromise   = buildItemsSummary().catch((e) => { console.warn('[admin] buildItemsSummary failed:', e); return { total: 0, byCategory: [], byMonth: [] } as ItemsSummary; });
+    const registrationsPromise  = buildRegistrationsSummary().catch((e) => { console.warn('[admin] buildRegistrationsSummary failed:', e); return { total: 0, byMonth: [] } as RegistrationsSummary; });
 
     const [users, items0, coordinatorRequests, pendingNeighborhoods] = await Promise.all([
         getAllUsers(jwt).catch((e) => { console.warn('[admin] getAllUsers failed:', e); return [] as Awaited<ReturnType<typeof getAllUsers>>; }),
@@ -173,8 +180,8 @@ export const load: PageServerLoad = async (event) => {
         monthlyVisits,
     };
 
-    const [pendingAdsCount, pendingSinglesCount, discountCodes, totpSecret, serverHealth] =
-        await Promise.all([pendingAdsPromise, pendingSinglesPromise, discountCodesPromise, totpPromise, serverHealthPromise]);
+    const [pendingAdsCount, pendingSinglesCount, discountCodes, totpSecret, serverHealth, stats, itemsSummary, registrations] =
+        await Promise.all([pendingAdsPromise, pendingSinglesPromise, discountCodesPromise, totpPromise, serverHealthPromise, statsPromise, itemsSummaryPromise, registrationsPromise]);
 
     return {
         users,
@@ -189,6 +196,10 @@ export const load: PageServerLoad = async (event) => {
         discountCodes,
         twoFAConfigured: !!totpSecret,
         serverHealth,
+        // "הגרף הראשי" (סקירה כללית) — נתונים לגרף המסכם המוטמע ליד מחוג מצב השרת
+        stats,
+        itemsSummary,
+        registrations,
     };
 };
 
