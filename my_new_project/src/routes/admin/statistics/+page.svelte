@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import ServerHealthGauges from '$lib/components/ServerHealthGauges.svelte';
 	import StatsSummaryChart from '$lib/components/StatsSummaryChart.svelte';
+	import { mergeJuneIntoJuly } from '$lib/statsMonthMerge';
 
 	let { data } = $props();
 
@@ -137,14 +138,16 @@
 	});
 	const maxCat = $derived(Math.max(1, ...categoryRows.map((c) => c.count)));
 
-	// פריטים שנוספו לפי חודש (השנה הנוכחית) — לגרף עמודות בכרטיס התוכן
+	// פריטים שנוספו לפי חודש (השנה הנוכחית) — לגרף עמודות בכרטיס התוכן.
+	// נתוני יוני מצורפים ליולי (טרום-השקה) כמו בגרף המסכם.
 	const itemsByMonth = $derived.by(() => {
 		const m = new Map<string, number>();
 		for (const r of itemsSummary.byMonth) m.set(r.month, r.count);
-		return Array.from({ length: 12 }, (_, i) => {
+		const series = Array.from({ length: 12 }, (_, i) => {
 			const key = `${currentYear}-${String(i + 1).padStart(2, '0')}`;
 			return m.get(key) ?? 0;
 		});
+		return mergeJuneIntoJuly(series);
 	});
 	const maxItemsMonth = $derived(Math.max(1, ...itemsByMonth));
 
@@ -155,7 +158,8 @@
 		return Array.from({ length: 12 }, (_, i) => m.get(`${currentYear}-${String(i + 1).padStart(2, '0')}`) ?? 0);
 	};
 
-	const regSeries = $derived(monthsOfYear(data.registrations?.byMonth ?? []));
+	// נתוני יוני מצורפים ליולי (טרום-השקה) כמו בגרף המסכם.
+	const regSeries = $derived(mergeJuneIntoJuly(monthsOfYear(data.registrations?.byMonth ?? [])));
 	const maxReg = $derived(Math.max(1, ...regSeries));
 </script>
 

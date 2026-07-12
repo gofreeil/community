@@ -14,8 +14,12 @@ const NOMINATIM_REVERSE = 'https://nominatim.openstreetmap.org/reverse';
 // משמש בטופס קריאת המצוקה - התושב "לוקח" את מיקומו מה-GPS ואנחנו ממלאים
 // עבורו כתובת ברורה (רחוב + שכונה + עיר) בלי שיצטרך להקליד דבר.
 // best-effort: מחזיר '' אם נכשל/אין תוצאה - הפין לבדו עדיין תקף כמיקום.
-export async function reverseGeocode(lat: number, lng: number): Promise<string> {
-    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return '';
+export async function reverseGeocodeParts(
+    lat: number,
+    lng: number,
+): Promise<{ address: string; neighborhood: string; city: string }> {
+    const empty = { address: '', neighborhood: '', city: '' };
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return empty;
     try {
         const url = new URL(NOMINATIM_REVERSE);
         url.searchParams.set('lat', String(lat));
@@ -33,21 +37,27 @@ export async function reverseGeocode(lat: number, lng: number): Promise<string> 
             signal: ctrl.signal,
         }).finally(() => clearTimeout(timer));
 
-        if (!res.ok) return '';
+        if (!res.ok) return empty;
         const data = (await res.json()) as {
             display_name?: string;
             address?: Record<string, string>;
         };
         const a = data.address ?? {};
+        // שם השכונה (לפי הזמינות ב-OSM): שכונה → פרבר → רובע → רובע-עיר → אזור מגורים
+        const neighborhood = a.neighbourhood || a.suburb || a.quarter || a.city_district || a.residential || '';
+        const town   = a.city || a.town || a.village || a.municipality || '';
         // בונים כתובת תמציתית: רחוב+מספר, שכונה, עיר - במקום ה-display_name הארוך
         const street = [a.road, a.house_number].filter(Boolean).join(' ');
-        const area   = a.neighbourhood || a.suburb || a.quarter || '';
-        const town   = a.city || a.town || a.village || a.municipality || '';
-        const concise = [street, area, town].filter(Boolean).join(', ');
-        return concise || (data.display_name ?? '');
+        const concise = [street, neighborhood, town].filter(Boolean).join(', ');
+        return { address: concise || (data.display_name ?? ''), neighborhood, city: town };
     } catch {
-        return '';
+        return empty;
     }
+}
+
+// תאימות לאחור: מחזיר רק את הכתובת התמציתית (משמש את קליטת ה-GPS בטופס המצוקה).
+export async function reverseGeocode(lat: number, lng: number): Promise<string> {
+    return (await reverseGeocodeParts(lat, lng)).address;
 }
 
 // geocoding חיצוני של כתובת חופשית דרך OpenStreetMap (Nominatim).

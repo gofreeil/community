@@ -6,6 +6,7 @@
 	// ============================================================
 	// טיפוסים מוגדרים מקומית (לא מיובאים מ-$lib/server — אסור בקוד צד-לקוח)
 	type MonthCount = { month: string; count: number };
+	import { mergeJuneIntoJuly } from '$lib/statsMonthMerge';
 
 	// hrefPrefix: '' בדף הסטטיסטיקה (עוגנים באותו דף), '/admin/statistics' בלוח הניהול
 	// (המקרא מפנה לגרפים המפורטים שבדף הסטטיסטיקה).
@@ -44,24 +45,15 @@
 	const itemsByMonth = $derived(monthsOfYear(itemsSummary?.byMonth ?? []));
 	const regSeries = $derived(monthsOfYear(registrations?.byMonth ?? []));
 
-	// יוני לא נכלל בגרף המסכם: היו בו הרשמות מוקדמות אך זו לא ההתחלה האמיתית (=יולי).
-	// ההתחלה האמיתית היא יולי; תוכן יוני מצורף ליולי (כאילו הועלה ביולי).
-	const SUMMARY_MERGE_FROM = 5; // יוני (0=ינואר)
-	const SUMMARY_MERGE_INTO = 6; // יולי — סופג את נתוני יוני
-
-	// שלוש הסדרות לגרף המסכם — כל אחת בצבע משלה. נתוני יוני נבלעים ביולי,
-	// ויוני עצמו מתאפס.
+	// שלוש הסדרות לגרף המסכם — כל אחת בצבע משלה. נתוני יוני נבלעים ביולי
+	// דרך mergeJuneIntoJuly (אותו מיזוג שמופעל גם בגרפים המפורטים).
 	const summarySeries = $derived(
 		[
 			{ key: 'visits', label: 'כניסות',        anchor: '#visits',        base: visitsSeries, bar: 'from-sky-600 to-sky-400',        dot: 'bg-sky-400',     text: 'text-sky-300' },
 			{ key: 'items',  label: 'פריטים שהועלו', anchor: '#items',         base: itemsByMonth, bar: 'from-emerald-600 to-emerald-400', dot: 'bg-emerald-400', text: 'text-emerald-300' },
 			{ key: 'reg',    label: 'נרשמים',        anchor: '#registrations', base: regSeries,    bar: 'from-violet-600 to-fuchsia-400',  dot: 'bg-violet-400',  text: 'text-violet-300' },
 		].filter((s) => !(hideVisits && s.key === 'visits')).map((s) => {
-			const data = s.base.map((v, i) => {
-				if (i === SUMMARY_MERGE_FROM) return 0;                          // יוני מתאפס
-				if (i === SUMMARY_MERGE_INTO) return v + s.base[SUMMARY_MERGE_FROM]; // יולי סופג את יוני
-				return v;
-			});
+			const data = mergeJuneIntoJuly(s.base);
 			return { key: s.key, label: s.label, href: `${hrefPrefix}${s.anchor}`, bar: s.bar, dot: s.dot, text: s.text, data, max: Math.max(1, ...data) };
 		})
 	);

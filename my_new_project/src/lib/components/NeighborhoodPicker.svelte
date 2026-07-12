@@ -16,6 +16,7 @@
         lat = $bindable<number | null>(null),
         lng = $bindable<number | null>(null),
         onUserPin,
+        onConfirm,
     }: {
         city?: string;
         /** כשידועה - המפה נפתחת ממוקדת על השכונה (זום קרוב) במקום על מרכז העיר */
@@ -29,6 +30,9 @@
         lng?: number | null;
         /** נקרא כשהמשתמש עצמו מיקם/אישר את הסמן (להבדיל מהצבה תוכנתית מבחוץ) */
         onUserPin?: (lat: number, lng: number) => void;
+        /** נקרא כשהמשתמש לחץ "אישור המיקום" (להבדיל מכל גרירה). מקבל את הקואורדינטה הסופית -
+         *  ההורה משתמש בזה כדי למלא שם שכונה (reverse-geocode) ולגלול הלאה. */
+        onConfirm?: (lat: number, lng: number) => void;
     } = $props();
 
     // OSM הרשמי - צבעוני עם שמות רחובות בעברית. שרת יחיד (HTTP/2), בלי מפתח.
@@ -43,6 +47,8 @@
     // "נקבע מיקום" נגזר ישירות מהקואורדינטות: כך שניקוי שדה קואורדינטה ידני
     // מחזיר את המצב ל"טרם נקבע" במקום להישאר תקוע על "אושר" בלי מיקום בפועל.
     let placed = $derived(lat != null && lng != null);
+    // המשתמש לחץ "אישור המיקום" → המפה מוקפאת (אי אפשר לגרור עד "שינוי מיקום").
+    let locked = $state(false);
     // האם המפה נגררת ברגע זה (להנפשת "הרמת" הסמן)
     let dragging = $state(false);
     // דגל: התזוזה הבאה יזמה המשתמש (נדלק ב-dragstart בלבד). תזוזות תוכנתיות
@@ -96,11 +102,30 @@
         if (fromUser) { onUserPin?.(lat, lng); dismissDemo(); }
     }
 
-    // "אישור המיקום": קובע את המרכז הנוכחי כמיקום + סוגר מסך מלא אם פתוח.
-    // זהו הכפתור הראשי — עונה על השאלה "מה עכשיו?" שהמשתמש נתקע בה.
+    // הפעלה/כיבוי של אינטראקציות המפה (גרירה + זום). משמש להקפאה אחרי אישור.
+    function setInteractive(on: boolean) {
+        if (!map) return;
+        for (const k of ['dragging', 'touchZoom', 'doubleClickZoom', 'scrollWheelZoom', 'boxZoom', 'keyboard', 'tap']) {
+            try { on ? map[k]?.enable?.() : map[k]?.disable?.(); } catch { /* handler חסר */ }
+        }
+    }
+
+    // "אישור המיקום": קובע את המרכז הנוכחי כמיקום, סוגר מסך מלא אם פתוח, ומקפיא
+    // את המפה. זהו הכפתור הראשי — עונה על השאלה "מה עכשיו?" שהמשתמש נתקע בה.
     function confirmLocation() {
+        if (locked) return;
         captureCenter(true);
         if (expanded) toggleExpand();
+        locked = true;
+        setInteractive(false);
+        dismissDemo();
+        if (lat != null && lng != null) onConfirm?.(lat, lng);
+    }
+
+    // "שינוי מיקום": משחרר את ההקפאה כדי לאפשר גרירה מחדש.
+    function unlockMap() {
+        locked = false;
+        setInteractive(true);
     }
 
     // הזנת קואורדינטות ידנית → מזיז את המפה למיקום שהוקלד
@@ -235,14 +260,23 @@
             <div class="center-pin__dot"></div>
         </div>
 
-        <!-- הוראה מתמדת בראש המפה: מסבירה בדיוק מה לעשות -->
-        <div class="map-hint">{$_('components.np_drag_map')}</div>
+        <!-- הוראה מתמדת בראש המפה: מסבירה בדיוק מה לעשות. נעלמת כשהמפה מוקפאת. -->
+        {#if !locked}
+            <div class="map-hint">{$_('components.np_drag_map')}</div>
+        {/if}
 
-        <!-- כפתורי זום (פינה ימנית-עליונה) -->
-        <div class="map-zoom" aria-hidden={!ready}>
-            <button type="button" onclick={zoomIn} class="map-btn map-zoom-btn" aria-label={$_('components.np_zoom_in')} title={$_('components.np_zoom_in')}>+</button>
-            <button type="button" onclick={zoomOut} class="map-btn map-zoom-btn" aria-label={$_('components.np_zoom_out')} title={$_('components.np_zoom_out')}>−</button>
-        </div>
+        <!-- באנר "מוקפא" קטן כשהמיקום נקבע -->
+        {#if locked}
+            <div class="map-hint map-hint--locked">✓ {$_('components.np_location_set')}</div>
+        {/if}
+
+        <!-- כפתורי זום (פינה ימנית-עליונה) - מוסתרים כשהמפה מוקפאת -->
+        {#if !locked}
+            <div class="map-zoom" aria-hidden={!ready}>
+                <button type="button" onclick={zoomIn} class="map-btn map-zoom-btn" aria-label={$_('components.np_zoom_in')} title={$_('components.np_zoom_in')}>+</button>
+                <button type="button" onclick={zoomOut} class="map-btn map-zoom-btn" aria-label={$_('components.np_zoom_out')} title={$_('components.np_zoom_out')}>−</button>
+            </div>
+        {/if}
 
         {#if expanded}
             <!-- מסך מלא: כפתור סגירה קטן למעלה + סרגל אישור גדול בתחתית -->
@@ -262,8 +296,8 @@
                     ✓ {$_('components.np_confirm')}
                 </button>
             </div>
-        {:else}
-            <!-- מוקטן: כפתור הגדלה למסך מלא -->
+        {:else if !locked}
+            <!-- מוקטן: כפתור הגדלה למסך מלא (מוסתר כשהמפה מוקפאת) -->
             <button
                 type="button"
                 onclick={toggleExpand}
@@ -277,7 +311,7 @@
         {/if}
 
         <!-- שכבת ההדגמה המונפשת: יד גוררת את המפה -->
-        {#if showDemo && !expanded}
+        {#if showDemo && !expanded && !locked}
             <div class="demo-overlay">
                 <div class="demo-banner">{$_('components.np_drag_map')}</div>
                 <div class="demo-hand">🖐️</div>
@@ -286,19 +320,30 @@
     </div>
 
     {#if !expanded}
-        <!-- כפתור אישור ראשי מתחת למפה המוקטנת -->
-        <button
-            type="button"
-            onclick={confirmLocation}
-            class="confirm-inline {placed ? 'confirm-inline--done' : ''}"
-        >
-            {placed ? `✓ ${$_('components.np_confirmed')}` : `📍 ${$_('components.np_confirm')}`}
-        </button>
-        <p class="text-center text-xs {placed ? 'text-emerald-400' : 'text-gray-400'}">
-            {placed ? $_('components.np_drag_to_adjust') : $_('components.np_drag_map')}
-        </p>
+        {#if locked}
+            <!-- אחרי אישור: המיקום נקבע! המפה מוקפאת. אפשר לשחרר ל"שינוי מיקום". -->
+            <div class="confirm-inline confirm-inline--done confirm-inline--locked">
+                ✓ {$_('components.np_location_set')}
+            </div>
+            <button type="button" onclick={unlockMap} class="np-unlock">
+                {$_('components.np_change_location')}
+            </button>
+        {:else}
+            <!-- כפתור אישור ראשי מתחת למפה המוקטנת -->
+            <button
+                type="button"
+                onclick={confirmLocation}
+                class="confirm-inline"
+            >
+                📍 {$_('components.np_confirm')}
+            </button>
+            <p class="text-center text-xs text-gray-400">
+                {$_('components.np_drag_map')}
+            </p>
+        {/if}
 
-        <!-- קואורדינטות ידניות - מקופל, למי שכבר יש לו קו רוחב/אורך -->
+        <!-- קואורדינטות ידניות - מקופל, למי שכבר יש לו קו רוחב/אורך. מוסתר כשמוקפא. -->
+        {#if !locked}
         <div class="pt-0.5">
             <button
                 type="button"
@@ -324,6 +369,7 @@
                 </div>
             {/if}
         </div>
+        {/if}
     {/if}
 </div>
 
@@ -478,6 +524,32 @@
     .confirm-inline--done {
         background: linear-gradient(90deg, #059669, #10b981);
         box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+    }
+    /* מצב מוקפא: תג "המיקום נקבע!" לא-אינטראקטיבי (div, לא כפתור) */
+    .confirm-inline--locked {
+        display: block;
+        text-align: center;
+        cursor: default;
+    }
+    /* קישור עדין "שינוי מיקום" מתחת לתג */
+    .np-unlock {
+        display: block;
+        width: 100%;
+        margin-top: 0.4rem;
+        padding: 0.2rem;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #94a3b8;
+        background: none;
+        border: 0;
+        cursor: pointer;
+        transition: color 0.15s;
+    }
+    .np-unlock:hover { color: #e2e8f0; text-decoration: underline; }
+
+    /* באנר "מוקפא" בראש המפה (במקום הוראת הגרירה) */
+    .map-hint--locked {
+        background: rgba(5, 150, 105, 0.92);
     }
 
     /* ===== כפתורי בקרה על המפה ===== */

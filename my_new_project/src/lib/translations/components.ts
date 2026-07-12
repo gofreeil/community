@@ -77,6 +77,8 @@ export const he = {
         np_center_here: "הסמן נמצא על המיקום? לחצו אישור",
         np_drag_to_adjust: "אפשר להמשיך לגרור את המפה לכוונון מדויק",
         np_manual_coords: "הזנת קואורדינטות ידנית",
+        np_location_set: "המיקום נקבע!",
+        np_change_location: "שינוי מיקום",
         np_lat_placeholder: "lat (קו רוחב)",
         np_lng_placeholder: "lng (קו אורך)",
 
@@ -205,6 +207,8 @@ export const en = {
         np_center_here: "Is the pin on your spot? Tap confirm",
         np_drag_to_adjust: "You can keep dragging the map to fine-tune",
         np_manual_coords: "Enter coordinates manually",
+        np_location_set: "Location set!",
+        np_change_location: "Change location",
         np_lat_placeholder: "lat (latitude)",
         np_lng_placeholder: "lng (longitude)",
 
@@ -333,6 +337,8 @@ export const ru = {
         np_center_here: "Метка на месте? Нажмите подтвердить",
         np_drag_to_adjust: "Можно двигать карту дальше для точности",
         np_manual_coords: "Ввести координаты вручную",
+        np_location_set: "Местоположение задано!",
+        np_change_location: "Изменить место",
         np_lat_placeholder: "lat (широта)",
         np_lng_placeholder: "lng (долгота)",
 
