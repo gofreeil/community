@@ -1,11 +1,26 @@
 <script lang="ts">
     import { enhance } from '$app/forms';
+    import { signIn } from '@auth/sveltekit/client';
     import { _ } from 'svelte-i18n';
     import type { ActionData, PageData } from './$types';
 
     let { form, data }: { form: ActionData; data: PageData } = $props();
     let loading = $state(false);
     let showPassword = $state(false);
+
+    // חיבור אוטומטי אחרי איפוס מוצלח: עוגיית strapi_handoff כבר נשתלה בשרת -
+    // signIn בלי פרטים מרים סשן ממנה (handoff). אין צורך בלוגין ידני נוסף.
+    let autoLoginStarted = $state(false);
+    let autoLoginFailed  = $state(false);
+    $effect(() => {
+        if (form?.success && form?.autoLogin && !autoLoginStarted) {
+            autoLoginStarted = true;
+            // לא מאפסים את הדגל בכשל (מונע לולאת signIn אינסופית)
+            signIn('credentials', { callbackUrl: '/profile' }).catch(() => {
+                autoLoginFailed = true;
+            });
+        }
+    });
 </script>
 
 <svelte:head>
@@ -22,7 +37,21 @@
                 <p class="text-white/50 text-sm mt-1">{$_('account.reset_subtitle')}</p>
             </div>
 
-            {#if form?.success}
+            {#if form?.success && form?.autoLogin}
+                <div class="text-center">
+                    <div class="text-5xl mb-4">✅</div>
+                    <p class="text-green-400 font-semibold mb-2">{$_('account.password_updated')}</p>
+                    {#if autoLoginFailed}
+                        <p class="text-white/60 text-sm mb-4">{$_('account.password_updated_note')}</p>
+                        <a href="/login" class="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold hover:opacity-90 transition">
+                            {$_('account.login_to_account')}
+                        </a>
+                    {:else}
+                        <p class="text-white/60 text-sm mb-4">{$_('account.password_updated_connecting')}</p>
+                        <span class="inline-block w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                    {/if}
+                </div>
+            {:else if form?.success}
                 <div class="text-center">
                     <div class="text-5xl mb-4">✅</div>
                     <p class="text-green-400 font-semibold mb-2">{$_('account.password_updated')}</p>

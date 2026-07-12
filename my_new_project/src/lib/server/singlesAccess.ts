@@ -7,13 +7,17 @@
 
 import { getItemsByUserId, getItemsByCategory } from './db';
 
-export type SinglesAccessStatus = 'granted' | 'pending' | 'none';
+export type SinglesAccessStatus = 'granted' | 'pending' | 'none' | 'unavailable';
 
 function reqStatus(extra_fields: string | null | undefined): string {
     try { return String(JSON.parse(extra_fields || '{}').status || 'pending'); } catch { return 'pending'; }
 }
 
-/** מחזיר את מצב הגישה של המשתמש ללוח הפנויים. */
+/**
+ * מחזיר את מצב הגישה של המשתמש ללוח הפנויים.
+ * 'unavailable' = תקלת Strapi זמנית — אי-אפשר לקבוע גישה. הקוראים חייבים
+ * להציג "נסה שוב" ולא לזרוק משתמש מאושר החוצה כאילו אין לו גישה.
+ */
 export async function getSinglesAccessStatus(
     userId: string | null | undefined,
     isSuperAdmin = false,
@@ -21,12 +25,13 @@ export async function getSinglesAccessStatus(
     if (isSuperAdmin) return 'granted';
     if (!userId) return 'none';
     const uid = String(userId);
+    let hadError = false;
 
     // 1) בעל כרטיס פנויים מאושר (active) — גישה אוטומטית.
     try {
         const own = await getItemsByUserId(uid);
         if (own.some((i) => i.category === 'singles' && i.status === 'active')) return 'granted';
-    } catch { /* ממשיכים לבדיקת בקשת הגישה */ }
+    } catch { hadError = true; /* ממשיכים לבדיקת בקשת הגישה */ }
 
     // 2) בקשת גישה מפורשת (הורה/שדכן).
     try {
@@ -34,9 +39,10 @@ export async function getSinglesAccessStatus(
         const mine = reqs.filter((r) => r.user_id === uid);
         if (mine.some((r) => reqStatus(r.extra_fields) === 'approved')) return 'granted';
         if (mine.some((r) => reqStatus(r.extra_fields) === 'pending')) return 'pending';
-    } catch { /* אין קטגוריה עדיין = אין בקשות */ }
+    } catch { hadError = true; /* אין קטגוריה עדיין = אין בקשות */ }
 
-    return 'none';
+    // שתי הבדיקות לא הניבו תשובה חיובית ולפחות אחת נכשלה — אין ודאות
+    return hadError ? 'unavailable' : 'none';
 }
 
 export const SINGLES_ACCESS_ROLES = ['single', 'parent', 'matchmaker'] as const;

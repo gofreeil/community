@@ -1,3 +1,4 @@
+import { error } from '@sveltejs/kit';
 import { getItemsByCategory, getUserById, getUserByEmail, getItemsByUserId } from '$lib/server/db';
 import { dbItemToProfile } from '$lib/singlesMap';
 import { getSinglesAccessStatus } from '$lib/server/singlesAccess';
@@ -62,6 +63,10 @@ export const load: PageServerLoad = async (event) => {
 
     // ── שער גישה: לוח סגור. רואים את הכרטיסים רק אם אושרה גישה ──
     const access = await getSinglesAccessStatus(session?.user?.id, isSuperAdmin);
+    // תקלת Strapi זמנית ≠ אין גישה: לא מציגים למשתמש מאושר את שער "אין לך גישה"
+    if (access === 'unavailable') {
+        throw error(503, 'תקלה זמנית בטעינת ההרשאות - נסה שוב בעוד רגע');
+    }
     const base = {
         selfProfile,
         selfStatus,

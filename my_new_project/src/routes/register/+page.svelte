@@ -13,6 +13,20 @@
 	$effect(() => locale.subscribe(l => (_loc = l)));
 	const tFn = (k: string) => { void _loc; return get(t)(k); };
 
+	// חיבור אוטומטי אחרי הרשמה (כשאין צורך באישור מייל): עוגיית strapi_handoff
+	// כבר נשתלה בשרת - signIn בלי פרטים מרים סשן ממנה (handoff)
+	let autoLoginStarted = $state(false);
+	let autoLoginFailed  = $state(false);
+	$effect(() => {
+		if (form?.autoLogin && !autoLoginStarted) {
+			autoLoginStarted = true;
+			// לא מאפסים את הדגל בכשל (היה יוצר לולאת signIn אינסופית כי הדגל
+			// הוא dependency של ה-effect); במקום זה מציגים קישור ידני
+			signIn('credentials', { callbackUrl: '/profile?welcome=1' }).catch(() => {
+				autoLoginFailed = true;
+			});
+		}
+	});
 </script>
 
 <svelte:head>
@@ -41,17 +55,58 @@
 					<p class="text-gray-400 text-sm">{tFn("create_account")}</p>
 				</div>
 
-				<!-- הרשמה הצליחה - בדוק אימייל -->
-				{#if form?.success}
+				<!-- הרשמה הצליחה + חיבור אוטומטי (אין צורך באישור מייל) -->
+				{#if form?.autoLogin}
+					<div class="text-center py-8">
+						<div class="text-5xl mb-4">🎉</div>
+						<h2 class="text-xl font-bold text-white mb-3">{tFn('account.register_success_connecting')}</h2>
+						{#if autoLoginFailed}
+							<p class="text-white/60 text-sm mb-5">{tFn('account.err_signin_finalize')}</p>
+							<a href="/login" class="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold hover:opacity-90 transition text-sm">
+								{tFn('account.go_to_login')}
+							</a>
+						{:else}
+							<span class="inline-block w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+						{/if}
+					</div>
+				<!-- הרשמה הצליחה - נדרש אישור מייל: הדרכה צעד-אחר-צעד -->
+				{:else if form?.needsConfirm}
 					<div class="text-center py-4">
 						<div class="text-5xl mb-4">📧</div>
 						<h2 class="text-xl font-bold text-white mb-2">{tFn('account.email_sent_title')}</h2>
 						<p class="text-white/60 text-sm mb-1">{tFn('account.email_sent_to')}</p>
-						<p class="text-purple-400 font-semibold mb-4">{form.email}</p>
-						<p class="text-white/50 text-sm mb-6">{tFn('account.email_sent_instructions')}</p>
-						<a href="/login" class="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold hover:opacity-90 transition text-sm">
-							{tFn('account.go_to_login')}
-						</a>
+						<p class="text-purple-400 font-semibold mb-5">{form.email}</p>
+
+						<!-- שלבים ברורים - במיוחד למשתמשים פחות טכניים -->
+						<ol class="text-right mx-auto max-w-xs space-y-3 mb-6">
+							<li class="flex items-start gap-3">
+								<span class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-600 text-white text-sm font-bold flex items-center justify-center">1</span>
+								<span class="text-white/80 text-sm">{tFn('account.confirm_step_1')}</span>
+							</li>
+							<li class="flex items-start gap-3">
+								<span class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-600 text-white text-sm font-bold flex items-center justify-center">2</span>
+								<span class="text-white/80 text-sm">{tFn('account.confirm_step_2')}</span>
+							</li>
+							<li class="flex items-start gap-3">
+								<span class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-600 text-white text-sm font-bold flex items-center justify-center">3</span>
+								<span class="text-white/80 text-sm">{tFn('account.confirm_step_3')}</span>
+							</li>
+						</ol>
+						<p class="text-white/50 text-xs mb-4">{tFn('account.confirm_spam_note')}</p>
+
+						{#if form?.resent}
+							<p class="text-green-400 text-sm font-medium mb-4">{tFn('account.resend_sent')}</p>
+						{:else}
+							{#if form?.resendFailed}
+								<p class="text-red-400 text-sm font-medium mb-2">{tFn('account.resend_failed')}</p>
+							{/if}
+							<form method="POST" action="?/resendConfirmation" use:enhance class="mb-2">
+								<input type="hidden" name="email" value={form.email} />
+								<button type="submit" class="px-5 py-2.5 rounded-xl bg-white/5 border border-white/15 text-white/80 text-sm font-semibold hover:bg-white/10 transition cursor-pointer">
+									{tFn('account.resend_confirmation_btn')}
+								</button>
+							</form>
+						{/if}
 					</div>
 				{:else}
 
@@ -65,6 +120,7 @@
 				<!-- טופס הרשמה -->
 				<form
 					method="POST"
+					action="?/register"
 					use:enhance={() => {
 						isLoading = true;
 						return async ({ update }) => {

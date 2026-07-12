@@ -127,8 +127,33 @@ export const { handle, signIn, signOut } = !AUTH_SECRET
                 email:    { label: 'Email',    type: 'email'    },
                 password: { label: 'Password', type: 'password' },
             },
-            async authorize(credentials) {
-                if (!credentials?.email || !credentials?.password) return null;
+            async authorize(credentials, request) {
+                // ============================================================
+                // מסלול handoff בעוגייה: כשקוראים ל-signIn('credentials') *בלי*
+                // אימייל/סיסמה, מזהים לפי עוגיית strapi_handoff ייעודית שהשרת שתל
+                // זה עתה (login action / הרשמה בלי אישור מייל / אישור מייל / איפוס
+                // סיסמה). כך הסיסמה נבדקת מול Strapi פעם אחת בלבד.
+                //
+                // חשוב: קוראים דווקא את strapi_handoff ולא את strapi_jwt. במחשב
+                // משותף, אם משתמש א' מחובר ומשתמש ב' מבצע איפוס, ה-hook
+                // setStrApiCookie היה משכתב את strapi_jwt בחזרה לטוקן של א' באמצע
+                // ה-handoff (invalidateAll רץ לפני applyAction) — וב' היה מתחבר
+                // בטעות לחשבון של א'. setStrApiCookie לא נוגע ב-strapi_handoff.
+                // ============================================================
+                if (!credentials?.email || !credentials?.password) {
+                    const jwt = readCookie(request?.headers?.get('cookie'), 'strapi_handoff');
+                    if (!jwt) return null;
+                    const me = await getStrapiMe(jwt);
+                    if (!me?.email) return null;
+                    const emailLc = me.email.trim().toLowerCase();
+                    const communityUser = await getUserByEmail(emailLc, jwt).catch(() => null);
+                    return {
+                        id:        communityUser?.id ?? `credentials_${emailLc}`,
+                        name:      communityUser?.name  ?? me.username ?? '',
+                        email:     communityUser?.email ?? emailLc,
+                        strapiJwt: jwt,
+                    } as { id: string; name: string; email: string; strapiJwt: string };
+                }
                 // נרמול אימייל לאותיות קטנות - מונע מזהי credentials_<EMAIL> ברישיות שונה
                 // שגורמים לכפילות משתמשים ולכשל באיתור ("משתמש לא נמצא")
                 const emailLc = (credentials.email as string).trim().toLowerCase();

@@ -25,7 +25,14 @@ export const load: PageServerLoad = async (event) => {
     if (!session?.user?.id) throw redirect(302, '/login?redirect=/coordinator/statistics');
 
     const jwt = event.cookies.get('strapi_jwt');
-    const user = await getUserById(session.user.id, jwt ?? undefined);
+    // תקלת Strapi זמנית (throw) = 503 "נסה שוב" - לא 403 שמרגיש כמו גירוש
+    let user;
+    try {
+        user = await getUserById(session.user.id, jwt ?? undefined);
+    } catch (e) {
+        console.warn('[coordinator] getUserById failed:', e instanceof Error ? e.message : e);
+        throw error(503, 'תקלה זמנית בשרת - נסה שוב בעוד רגע');
+    }
     if (!user) throw error(403, 'משתמש לא נמצא');
 
     const isCoordinator = (user.coordinator_of?.length ?? 0) > 0;

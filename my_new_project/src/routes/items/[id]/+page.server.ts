@@ -1,4 +1,4 @@
-import { redirect } from '@sveltejs/kit';
+import { redirect, error } from '@sveltejs/kit';
 import { getDbItemById, getItemsByCategory, getUserByAnyId } from '$lib/server/db';
 import { isSuperAdmin, isCoordinatorOfArea } from '$lib/server/auth';
 import { getSinglesAccessStatus } from '$lib/server/singlesAccess';
@@ -48,8 +48,12 @@ export const load: PageServerLoad = async (event) => {
             // גולש שאין לו גישה מנותב לשער ב-/singles (או להתחברות אם אינו מחובר).
             if (!isOwner && !isSuperAdmin(session)) {
                 const access = await getSinglesAccessStatus(viewerId, false);
+                // תקלת Strapi זמנית ≠ אין גישה: לא זורקים משתמש מאושר מהלוח
+                if (access === 'unavailable') {
+                    throw error(503, 'תקלה זמנית בטעינת ההרשאות - נסה שוב בעוד רגע');
+                }
                 if (access !== 'granted') {
-                    throw redirect(302, viewerId ? '/singles' : '/login?next=' + encodeURIComponent('/singles'));
+                    throw redirect(302, viewerId ? '/singles' : '/login?redirect=' + encodeURIComponent('/singles'));
                 }
             }
 
@@ -107,8 +111,14 @@ export const load: PageServerLoad = async (event) => {
         // האם המשתמש רשאי לערוך את לוח הפעילויות: בעלים / רכז השכונה / סופר-אדמין
         let canEditActivities = isOwner || isSuperAdmin(session);
         if (!canEditActivities && viewerId) {
-            const u = await getUserByAnyId(viewerId);
-            canEditActivities = isCoordinatorOfArea(u?.coordinator_of, dbItem.neighborhood, dbItem.city);
+            // תקלת Strapi זמנית ב-getUserByAnyId (401/403/timeout) לא תפיל את כל
+            // דף הפריט ב-500; פשוט לא נציג כפתורי עריכת-רכז עד שה-DB יחזור
+            try {
+                const u = await getUserByAnyId(viewerId);
+                canEditActivities = isCoordinatorOfArea(u?.coordinator_of, dbItem.neighborhood, dbItem.city);
+            } catch (e) {
+                console.warn('[items/[id]] getUserByAnyId failed:', e instanceof Error ? e.message : e);
+            }
         }
         // מצב בניית הדף (עריכה במקום): אותה הרשאה, אבל לא לפנויים - שם יש טופס ייעודי
         const canEditPage = canEditActivities && dbItem.category !== 'singles';

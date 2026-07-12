@@ -1513,10 +1513,14 @@ export async function upsertUser(data: UpsertUserData, _jwt?: string): Promise<v
 }
 
 export async function getUserById(id: string, _jwt?: string): Promise<DbUser | undefined> {
-    return cached(`user:${id}`, TTL_USER, async () => {
+    const user = await cached(`user:${id}`, TTL_USER, async () => {
         const u = await findUpUser(id);
         return u ? mapUpUser(u) : undefined;
     });
+    // לא משאירים "לא קיים" ב-cache ל-15 שניות: ייתכן שזה כשל הרשאה/רשת רגעי
+    // (למשל STRAPI_TOKEN לא תקף שניות אחרי restart) — הקריאה הבאה תנסה שוב מיד
+    if (user === undefined) invalidate(`user:${id}`);
+    return user;
 }
 
 /**

@@ -3,7 +3,7 @@
 	import { get } from 'svelte/store';
 	import { t, locale } from 'svelte-i18n';
 	import { enhance } from '$app/forms';
-	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
 
 	let { data, form } = $props();
 
@@ -13,6 +13,10 @@
 	let credError       = $state<string | null>(null);
 	let emailValue      = $state('');
 	let passwordValue   = $state('');
+	let emailInput      = $state<HTMLInputElement | null>(null);
+
+	// פוקוס אוטומטי על שדה האימייל - פחות קליקים, פחות בלבול
+	onMount(() => emailInput?.focus());
 
 	async function loginWith(provider: 'google' | 'facebook') {
 		isLoading = true;
@@ -45,21 +49,21 @@
 	$effect(() => locale.subscribe(l => (_loc = l)));
 	const tFn = (k: string) => { void _loc; return get(t)(k); };
 
+	// הודעת שגיאה אחת מאוחדת (קוד מה-URL / שגיאת טופס / שגיאת קליינט)
+	const displayError = $derived(
+		credError
+		?? (form?.errorKey ? tFn(form.errorKey as string) : null)
+		?? (form?.error as string | undefined)
+		?? (data.error ? errorMessage(data.error) : null)
+	);
 </script>
 
 <svelte:head>
 	<title>{tFn("login_title")}</title>
 </svelte:head>
 
-<div
-	class="min-h-[80vh] flex items-center justify-center px-4 py-12"
-	dir="rtl"
-	role="button"
-	tabindex="0"
-	onclick={() => goto('/')}
-	onkeydown={(e) => e.key === 'Escape' && goto('/')}
->
-	<div class="w-full max-w-md" onclick={(e) => e.stopPropagation()}>
+<div class="min-h-[80vh] flex items-center justify-center px-4 py-12" dir="rtl">
+	<div class="w-full max-w-md">
 
 		<!-- כרטיס -->
 		<div class="bg-[#0f172a] rounded-3xl border border-white/10 shadow-2xl overflow-hidden">
@@ -81,14 +85,31 @@
 				</div>
 
 				<!-- הודעות שגיאה / הצלחה -->
-				{#if data.error}
-					<div id="login-error" role="alert" class="mb-6 rounded-xl bg-red-500/10 border border-red-500/30 px-4 py-3 text-center">
-						<p class="text-red-400 text-sm font-medium">{errorMessage(data.error)}</p>
+				{#if form?.unconfirmed}
+					<div id="login-error" role="alert" class="mb-6 rounded-xl bg-amber-500/10 border border-amber-500/30 px-4 py-3 text-center">
+						<p class="text-amber-300 text-sm font-medium mb-3">{tFn('account.err_unconfirmed')}</p>
+						{#if form?.resent}
+							<p class="text-green-400 text-sm font-medium">{tFn('account.resend_sent')}</p>
+						{:else}
+							<form method="POST" action="?/resendConfirmation" use:enhance>
+								<input type="hidden" name="email" value={form.email ?? emailValue} />
+								<button type="submit" class="px-4 py-2 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-200 text-sm font-semibold hover:bg-amber-500/30 transition cursor-pointer">
+									{tFn('account.resend_confirmation_btn')}
+								</button>
+							</form>
+						{/if}
 					</div>
-				{/if}
-				{#if form?.error || credError}
+				{:else if form?.resent}
+					<div role="status" class="mb-6 rounded-xl bg-green-500/10 border border-green-500/30 px-4 py-3 text-center">
+						<p class="text-green-400 text-sm font-medium">{tFn('account.resend_sent')}</p>
+					</div>
+				{:else if form?.resendFailed}
+					<div role="alert" class="mb-6 rounded-xl bg-red-500/10 border border-red-500/30 px-4 py-3 text-center">
+						<p class="text-red-400 text-sm font-medium">{tFn('account.resend_failed')}</p>
+					</div>
+				{:else if displayError}
 					<div id="login-error" role="alert" class="mb-6 rounded-xl bg-red-500/10 border border-red-500/30 px-4 py-3 text-center">
-						<p class="text-red-400 text-sm font-medium">{credError ?? form?.error}</p>
+						<p class="text-red-400 text-sm font-medium">{displayError}</p>
 					</div>
 				{/if}
 				{#if data.registered}
@@ -102,28 +123,28 @@
 					isLoading = true;
 					loadingProvider = 'credentials';
 					credError = null;
-					return async ({ result }) => {
+					return async ({ result, update }) => {
 						if (result.type === 'success') {
-							const formEl = document.querySelector('form[action="?/credentials"]') as HTMLFormElement;
-							const email = (formEl?.querySelector('#email') as HTMLInputElement)?.value;
-							const password = (formEl?.querySelector('#password') as HTMLInputElement)?.value;
-							await signIn('credentials', {
-								email,
-								password,
-								callbackUrl: data.redirectTo || '/profile',
-							});
-						} else if (result.type === 'failure') {
-							credError = (result.data as { error?: string })?.error ?? tFn('account.err_unknown');
-							isLoading = false;
-							loadingProvider = null;
+							// הסיסמה כבר אומתה בשרת ועוגיית strapi_jwt נשתלה -
+							// signIn בלי פרטים מרים סשן מהעוגייה (handoff, בדיקה אחת בלבד)
+							try {
+								await signIn('credentials', {
+									callbackUrl: data.redirectTo || '/profile',
+								});
+								// אם הניווט לא קרה (נחסם/אופליין) - משחררים את הכפתור
+								setTimeout(() => { isLoading = false; loadingProvider = null; }, 4000);
+							} catch {
+								credError = tFn('account.err_signin_finalize');
+								isLoading = false;
+								loadingProvider = null;
+							}
 						} else {
 							isLoading = false;
 							loadingProvider = null;
+							await update();
 						}
 					};
 				}}>
-					<input type="hidden" name="redirectTo" value={data.redirectTo} />
-
 					<div class="mb-4">
 						<label for="email" class="block text-sm font-medium text-gray-400 mb-2">{tFn("email")}</label>
 						<input
@@ -133,7 +154,8 @@
 							required
 							autocomplete="email"
 							bind:value={emailValue}
-							aria-describedby={data.error || credError || form?.error ? 'login-error' : undefined}
+							bind:this={emailInput}
+							aria-describedby={displayError || form?.unconfirmed ? 'login-error' : undefined}
 							class="w-full bg-[#1e293b] border border-white/10 rounded-xl px-4 py-3
 							       text-white placeholder-gray-500 focus:outline-none focus:border-purple-500
 							       focus:ring-1 focus:ring-purple-500 transition-colors"
@@ -185,7 +207,7 @@
 
 					<button
 						type="submit"
-						disabled={isLoading && loadingProvider === 'credentials'}
+						disabled={isLoading}
 						class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600
 						       hover:from-blue-500 hover:to-purple-500 text-white font-bold shadow-lg
 						       transition-all duration-200 hover:-translate-y-0.5 cursor-pointer mb-6
@@ -196,8 +218,6 @@
 								<span class="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>
 								{tFn('account.logging_in')}
 							</span>
-						{:else if emailValue && passwordValue}
-							{tFn('account.login_submit')}
 						{:else}
 							{tFn('account.login_submit_email')}
 						{/if}

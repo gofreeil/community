@@ -9,10 +9,20 @@ import {
 import { getUserTotpSecret } from '$lib/server/db';
 
 /**
- * אחרי auth - אם המשתמש מחובר ויש לו strapiJwt בסשן אך אין cookie,
- * נשמור את ה-JWT ב-HttpOnly cookie (ל-7 ימים).
- * מאפשר לכל שרת-אקשן לקרוא את הטוקן מה-cookie ולשלוח ל-Strapi.
+ * memoization ל-event.locals.auth: ה-jwt callback (כולל קריאת DB) רץ בכל
+ * קריאת auth(), ויש עד 5-6 קריאות כאלה פר בקשה (hooks + layout + page loads).
+ * עוטפים פעם אחת אחרי authHandle כך שהתוצאה מחושבת פעם אחת לבקשה —
+ * מוריד דרמטית עומס וזמן תגובה, במיוחד כש-Strapi איטי.
  */
+const memoizeAuth: Handle = async ({ event, resolve }) => {
+    const original = event.locals.auth;
+    if (typeof original === 'function') {
+        let memo: ReturnType<typeof original> | null = null;
+        event.locals.auth = (() => (memo ??= original())) as typeof original;
+    }
+    return resolve(event);
+};
+
 /** בדיקת חסימה - אם המשתמש banned מפנים לדף חסימה */
 const checkBanned: Handle = async ({ event, resolve }) => {
     // לא חוסם את דף החסימה עצמו, login, ו-API של auth
@@ -158,39 +168,39 @@ const setStrApiCookie: Handle = async ({ event, resolve }) => {
     // עוגייה משותפת לכל 13 אתרי gofreeil.com: זיהוי מאוחד מול רשימת המשתמשים
     // האחת ב-Strapi המשותף. כל אתר תחת .gofreeil.com קורא אותה ומזהה את המשתמש
     // ישירות — בלי redirect ובלי הקלדת פרטים.
-    const needsLocal  = !event.cookies.get('strapi_jwt');
-    const needsShared = isProd && !event.cookies.get('gofreeil-auth');
-    if (needsLocal || needsShared) {
-        try {
-            const session = await event.locals.auth();
-            const jwt = (session?.user as { strapiJwt?: string } | undefined)?.strapiJwt;
-            if (jwt) {
-                // יש סשן תקין → מנקים את דגל ניסיון ה-SSO כדי שמחזור logout/login הבא יעבוד
-                if (event.cookies.get('sso_adopt_tried')) {
-                    event.cookies.delete('sso_adopt_tried', { path: '/' });
-                }
-                if (needsLocal) {
-                    event.cookies.set('strapi_jwt', jwt, {
-                        httpOnly: true,
-                        secure:   isProd,
-                        sameSite: 'strict',
-                        path:     '/',
-                        maxAge:   60 * 60 * 24 * 365,
-                    });
-                }
-                if (needsShared) {
-                    event.cookies.set('gofreeil-auth', jwt, {
-                        httpOnly: true,
-                        secure:   true,
-                        sameSite: 'lax',
-                        path:     '/',
-                        domain:   '.gofreeil.com',
-                        maxAge:   60 * 60 * 24 * 90,
-                    });
-                }
+    //
+    // רענון ולא רק יצירה: ה-jwt callback מרענן strapiJwt פג בסשן, אבל בעבר
+    // העוגיות נכתבו רק כשהיו חסרות — ונשארו עם טוקן מת עד פקיעתן (90/365 יום).
+    // לכן משווים את ערך העוגייה לטוקן שבסשן ומעדכנים בכל אי-התאמה.
+    try {
+        const session = await event.locals.auth();
+        const jwt = (session?.user as { strapiJwt?: string } | undefined)?.strapiJwt;
+        if (jwt) {
+            // יש סשן תקין → מנקים את דגל ניסיון ה-SSO כדי שמחזור logout/login הבא יעבוד
+            if (event.cookies.get('sso_adopt_tried')) {
+                event.cookies.delete('sso_adopt_tried', { path: '/' });
             }
-        } catch { /* ignore - session unavailable */ }
-    }
+            if (event.cookies.get('strapi_jwt') !== jwt) {
+                event.cookies.set('strapi_jwt', jwt, {
+                    httpOnly: true,
+                    secure:   isProd,
+                    sameSite: 'strict',
+                    path:     '/',
+                    maxAge:   60 * 60 * 24 * 365,
+                });
+            }
+            if (isProd && event.cookies.get('gofreeil-auth') !== jwt) {
+                event.cookies.set('gofreeil-auth', jwt, {
+                    httpOnly: true,
+                    secure:   true,
+                    sameSite: 'lax',
+                    path:     '/',
+                    domain:   '.gofreeil.com',
+                    maxAge:   60 * 60 * 24 * 90,
+                });
+            }
+        }
+    } catch { /* ignore - session unavailable */ }
     return resolve(event);
 };
 
@@ -210,7 +220,7 @@ export const handle: Handle = async ({ event, resolve }) => {
     }
 
     try {
-        return await sequence(authHandle, ssoAutoAdopt, adminGate, coordinatorGate, checkBanned, setStrApiCookie)({ event, resolve });
+        return await sequence(authHandle, memoizeAuth, ssoAutoAdopt, adminGate, coordinatorGate, checkBanned, setStrApiCookie)({ event, resolve });
     } catch (err) {
         console.warn('[hooks] auth handle threw - continuing anonymously:', err);
         // fallback: מגדיר auth בטוח כדי שקוד downstream לא יזרוק TypeError

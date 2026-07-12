@@ -2195,7 +2195,11 @@
 
 				{#if data.user}
 					<button
-						onclick={() => signOut({ callbackUrl: "/" })}
+						onclick={async () => {
+							// מחיקת עוגיות ה-JWT לפני signOut - אחרת ssoAutoAdopt מחבר מחדש אוטומטית
+							try { await fetch('/api/logout', { method: 'POST' }); } catch { /* ממשיכים */ }
+							signOut({ callbackUrl: "/" });
+						}}
 						class="text-sm font-bold text-gray-400 hover:text-red-400 transition-colors cursor-pointer px-4 py-2 rounded-xl hover:bg-red-500/10 border border-white/10 hover:border-red-500/30"
 						title={tFn("logout_btn")}
 					>

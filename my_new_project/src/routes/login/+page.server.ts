@@ -1,17 +1,28 @@
 import { redirect, fail } from '@sveltejs/kit';
-import { strapiLogin } from '$lib/server/strapiClient';
+import { strapiLogin, resendConfirmation, StrapiAuthError } from '$lib/server/strapiClient';
+import { setHandoffCookies } from '$lib/server/authHandoff';
 import type { PageServerLoad, Actions } from './$types';
 
+/**
+ * הגנה מ-open-redirect: רק נתיב פנימי. חייב להתחיל ב-'/' אך לא בתו נוסף מסוג
+ * '/' או '\' — כי בדפדפן, ב-URL עם סכמה מיוחדת (http/https), '\' מתפרש כמו '/',
+ * כך ש-'/\evil.com' נפתר ל-https://evil.com. הרגקס חוסם את שני התווים.
+ */
+function safeRedirect(raw: string | null): string {
+    if (raw && /^\/(?![/\\])/.test(raw)) return raw;
+    return '/profile';
+}
+
 export const load: PageServerLoad = async (event) => {
-    const session = await event.locals.auth();
+    let session = null;
+    try { session = await event.locals.auth(); } catch { /* עוגייה פגומה - מציגים לוגין */ }
 
     if (session?.user) {
-        const redirectTo = event.url.searchParams.get('redirect') ?? '/profile';
-        throw redirect(302, redirectTo);
+        throw redirect(302, safeRedirect(event.url.searchParams.get('redirect')));
     }
 
     return {
-        redirectTo:  event.url.searchParams.get('redirect') ?? '/profile',
+        redirectTo:  safeRedirect(event.url.searchParams.get('redirect')),
         error:       event.url.searchParams.get('error') ?? null,
         registered:  event.url.searchParams.get('registered') === '1',
     };
@@ -19,9 +30,11 @@ export const load: PageServerLoad = async (event) => {
 
 export const actions: Actions = {
     /**
-     * שלב 1: בדיקת אימייל+סיסמה בשרת (validation + Strapi JWT cookie).
-     * אם הכל תקין, מחזיר { success: true } -
-     * ואז הקליינט קורא ל-signIn('credentials') של Auth.js.
+     * שלב 1: בדיקת אימייל+סיסמה בשרת - פעם אחת בלבד.
+     * בהצלחה שותלים strapi_jwt בעוגייה ומחזירים { success } - ואז הקליינט
+     * קורא ל-signIn('credentials') *בלי פרטים*, שמרים סשן מהעוגייה (handoff).
+     * בכישלון מחזירים שגיאה מובחנת: סיסמה שגויה / אימייל לא מאומת /
+     * יותר מדי ניסיונות / תקלת שרת - כדי שהמשתמש יידע מה באמת קרה.
      */
     credentials: async (event) => {
         const { cookies } = event;
@@ -33,20 +46,41 @@ export const actions: Actions = {
             return fail(400, { error: 'יש למלא אימייל וסיסמה' });
         }
 
-        // התחברות ישירה דרך Strapi
         try {
             const { jwt } = await strapiLogin(email, password);
-            cookies.set('strapi_jwt', jwt, {
-                httpOnly: true,
-                secure:   process.env.NODE_ENV === 'production',
-                sameSite: 'strict',
-                path:     '/',
-                maxAge:   60 * 60 * 24 * 365,
-            });
-        } catch {
-            return fail(401, { error: 'אימייל או סיסמה שגויים.' });
+            setHandoffCookies(cookies, jwt);
+        } catch (e) {
+            if (e instanceof StrapiAuthError) {
+                if (e.isUnconfirmed) {
+                    return fail(403, { unconfirmed: true, email });
+                }
+                if (e.isRateLimited) {
+                    return fail(429, { errorKey: 'account.err_too_many' });
+                }
+                if (e.isServerIssue) {
+                    console.error('[login] strapi unavailable:', e.message);
+                    return fail(503, { errorKey: 'account.err_server_temp' });
+                }
+            }
+            return fail(401, { errorKey: 'account.err_credentials' });
         }
 
         return { success: true };
+    },
+
+    /** שליחה חוזרת של מייל האישור - למי שנתקע בלי המייל */
+    resendConfirmation: async ({ request }) => {
+        const formData = await request.formData();
+        const email = (formData.get('email') as string)?.trim().toLowerCase();
+        if (!email || !email.includes('@')) {
+            return fail(400, { errorKey: 'account.err_unknown' });
+        }
+        try {
+            await resendConfirmation(email);
+            return { resent: true, email };
+        } catch (e) {
+            console.warn('[login] resendConfirmation failed:', e);
+            return fail(503, { resendFailed: true, email });
+        }
     },
 };

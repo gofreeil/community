@@ -84,7 +84,7 @@
                 localComments = [...localComments, result.comment as ItemComment];
                 newComment = '';
             } else if (res.status === 401) {
-                window.location.href = '/login';
+                window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
             } else {
                 commentError = result?.message || 'שגיאה בשליחת התגובה';
             }

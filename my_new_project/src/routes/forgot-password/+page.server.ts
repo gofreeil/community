@@ -1,6 +1,6 @@
 import { fail } from '@sveltejs/kit';
 import { forgotPassword } from '$lib/server/strapiClient';
-import { getUserByEmail, banUser, createItem, findAdminForNeighborhood } from '$lib/server/db';
+import { getUserByEmail, createItem, findAdminForNeighborhood } from '$lib/server/db';
 import type { Actions, PageServerLoad } from './$types';
 
 const MAX_ATTEMPTS = 3;
@@ -73,8 +73,10 @@ export const actions: Actions = {
             await forgotPassword(email);
             clearAttempts(cookies);
             return { success: true };
-        } catch {
-            return { success: true };
+        } catch (e) {
+            // תקלה תשתיתית - לא משקרים "נשלח" על מייל שלא נשלח
+            console.warn('[forgot-password] checkEmail error:', e);
+            return fail(503, { error: 'תקלה זמנית - נסה שוב בעוד רגע.' });
         }
     },
 
@@ -110,24 +112,20 @@ export const actions: Actions = {
                 const remaining = MAX_ATTEMPTS - newCount;
 
                 if (newCount >= MAX_ATTEMPTS) {
-                    // נועלים את המשתמש
+                    // נעילה זמנית בלבד (עוגיית fp_attempts, שעה) - לא ban קבוע ב-DB.
+                    // ה-ban הקודם נעל לצמיתות משתמש לגיטימי ששכח את תשובתו (ודרש
+                    // שחרור ידני של אדמין), בזמן שתוקף בדפדפן אחר כלל לא נעצר בו.
                     saveAttempts(cookies, { email, count: newCount, locked: true });
 
-                    try {
-                        await banUser(user.id);
-                    } catch (e) {
-                        console.warn('[forgot-password] banUser failed:', e);
-                    }
-
-                    // שולחים הודעה לרכז השכונה / סופר אדמין
+                    // שולחים הודעה לרכז השכונה / סופר אדמין - סימן אזהרה, לא נעילה
                     try {
                         const admin = await findAdminForNeighborhood(user.neighborhood ?? '');
                         if (admin?.id) {
                             const isNeighborhoodAdmin = admin.role === 'neighborhood_admin';
                             await createItem({
                                 category:    'admin_alert',
-                                label:       `חשבון ננעל - ${user.name ?? user.email}`,
-                                description: `המשתמש ${user.name ?? ''} (${user.email}) ניסה ${MAX_ATTEMPTS} פעמים לאמת שאלת ביטחון ונכשל.\nהחשבון ננעל אוטומטית.\n\nשכונה: ${user.neighborhood ?? '-'}\n\nנדרש בירור ידני לפתיחת החשבון.`,
+                                label:       `ניסיונות שחזור כושלים - ${user.name ?? user.email}`,
+                                description: `המשתמש ${user.name ?? ''} (${user.email}) ניסה ${MAX_ATTEMPTS} פעמים לאמת שאלת ביטחון ונכשל.\nשחזור הסיסמה נחסם לו זמנית לשעה.\n\nשכונה: ${user.neighborhood ?? '-'}\n\nאם זה המשתמש עצמו - כדאי ליצור קשר ולעזור.`,
                                 icon:        '🔒',
                                 color:       'red',
                                 user_id:     admin.id,
@@ -162,8 +160,10 @@ export const actions: Actions = {
             return { success: true };
 
         } catch (e) {
+            // תקלה אמיתית (Strapi למטה / שליחת מייל נכשלה) - לא משקרים "נשלח":
+            // המשתמש היה מחכה למייל שלא יגיע. מדווחים ומבקשים לנסות שוב.
             console.warn('[forgot-password] verifyAnswer error:', e);
-            return { success: true };
+            return fail(503, { error: 'תקלה זמנית - נסה שוב בעוד רגע.', hasQuestion: true, email });
         }
     },
 };

@@ -73,6 +73,9 @@
 	);
 
 	async function handleLogout() {
+		// מוחק גם את עוגיות strapi_jwt/gofreeil-auth - אחרת ssoAutoAdopt
+		// מחבר מחדש אוטומטית בניווט הבא ("אי-אפשר להתנתק")
+		try { await fetch('/api/logout', { method: 'POST' }); } catch { /* ממשיכים לניתוק הסשן */ }
 		await signOut({ redirectTo: '/' });
 	}
 

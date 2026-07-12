@@ -23,6 +23,31 @@ export class StrapiContentTypeError extends Error {
     }
 }
 
+/**
+ * שגיאת auth מובחנת (login/register): נושאת את הסטטוס ואת הודעת Strapi המקורית
+ * כדי שדפי login/register יבחינו בין "סיסמה שגויה", "אימייל לא מאומת",
+ * "יותר מדי ניסיונות" ותקלת שרת — במקום הודעה גנרית אחת.
+ * status=0 פירושו כשל רשת/timeout (Strapi לא נגיש).
+ */
+export class StrapiAuthError extends Error {
+    status: number;
+    strapiMessage: string;
+    constructor(op: string, status: number, bodyText: string) {
+        let msg = '';
+        try { msg = JSON.parse(bodyText)?.error?.message ?? ''; } catch { msg = bodyText.slice(0, 200); }
+        super(`[Strapi] ${op} → ${status}: ${msg || bodyText.slice(0, 200)}`);
+        this.name = 'StrapiAuthError';
+        this.status = status;
+        this.strapiMessage = msg;
+    }
+    get isUnconfirmed()  { return /not confirmed/i.test(this.strapiMessage); }
+    get isBadCredentials() { return /invalid identifier or password/i.test(this.strapiMessage); }
+    get isRateLimited()  { return this.status === 429; }
+    get isTaken()        { return /already taken/i.test(this.strapiMessage); }
+    /** תקלה תשתיתית (רשת/5xx) — לא אשמת המשתמש */
+    get isServerIssue()  { return this.status === 0 || this.status >= 500; }
+}
+
 function getHeaders(jwt?: string): HeadersInit {
     // עדיפות: user JWT → STRAPI_TOKEN (admin fallback) → ללא auth
     const token = jwt || STRAPI_TOKEN || undefined;
@@ -102,6 +127,7 @@ export async function strapiPost<T = unknown>(path: string, body: unknown, jwt?:
         method:  'POST',
         headers: getHeaders(jwt),
         body:    JSON.stringify(body),
+        signal:  AbortSignal.timeout(FETCH_TIMEOUT_MS),
     });
     if (!res.ok) {
         const text = await res.text();
@@ -115,6 +141,7 @@ export async function strapiDelete(path: string, jwt?: string): Promise<void> {
     const res = await fetch(STRAPI_URL + path, {
         method:  'DELETE',
         headers: getHeaders(jwt),
+        signal:  AbortSignal.timeout(FETCH_TIMEOUT_MS),
     });
     if (!res.ok) {
         const text = await res.text();
@@ -127,6 +154,7 @@ export async function strapiPut<T = unknown>(path: string, body: unknown, jwt?: 
         method:  'PUT',
         headers: getHeaders(jwt),
         body:    JSON.stringify(body),
+        signal:  AbortSignal.timeout(FETCH_TIMEOUT_MS),
     });
     if (!res.ok) {
         const text = await res.text();
@@ -153,40 +181,60 @@ export interface StrapiAuthResponse {
 
 /** שליחת מייל לאיפוס סיסמה */
 export async function forgotPassword(email: string): Promise<void> {
-    const res = await fetch(STRAPI_URL + '/api/auth/forgot-password', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ email }),
-    });
+    let res: Response;
+    try {
+        res = await fetch(STRAPI_URL + '/api/auth/forgot-password', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ email }),
+            signal:  AbortSignal.timeout(FETCH_TIMEOUT_MS),
+        });
+    } catch (e) {
+        throw new StrapiAuthError('FORGOT_PASSWORD', 0, e instanceof Error ? e.message : String(e));
+    }
     if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`[Strapi] FORGOT_PASSWORD → ${res.status}: ${text}`);
+        throw new StrapiAuthError('FORGOT_PASSWORD', res.status, await res.text());
     }
 }
 
-/** איפוס סיסמה עם קוד מהמייל */
-export async function resetPassword(code: string, password: string, passwordConfirmation: string): Promise<void> {
-    const res = await fetch(STRAPI_URL + '/api/auth/reset-password', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ code, password, passwordConfirmation }),
-    });
-    if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`[Strapi] RESET_PASSWORD → ${res.status}: ${text}`);
+/**
+ * איפוס סיסמה עם קוד מהמייל.
+ * מחזיר את תשובת Strapi המלאה (jwt+user) כדי שהמשתמש יחובר אוטומטית
+ * מיד אחרי האיפוס — בלי לוגין ידני נוסף.
+ */
+export async function resetPassword(code: string, password: string, passwordConfirmation: string): Promise<StrapiAuthResponse> {
+    let res: Response;
+    try {
+        res = await fetch(STRAPI_URL + '/api/auth/reset-password', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ code, password, passwordConfirmation }),
+            signal:  AbortSignal.timeout(FETCH_TIMEOUT_MS),
+        });
+    } catch (e) {
+        throw new StrapiAuthError('RESET_PASSWORD', 0, e instanceof Error ? e.message : String(e));
     }
+    if (!res.ok) {
+        throw new StrapiAuthError('RESET_PASSWORD', res.status, await res.text());
+    }
+    return res.json() as Promise<StrapiAuthResponse>;
 }
 
 /** שליחת מייל אישור מחדש */
 export async function resendConfirmation(email: string): Promise<void> {
-    const res = await fetch(STRAPI_URL + '/api/auth/send-email-confirmation', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ email }),
-    });
+    let res: Response;
+    try {
+        res = await fetch(STRAPI_URL + '/api/auth/send-email-confirmation', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ email }),
+            signal:  AbortSignal.timeout(FETCH_TIMEOUT_MS),
+        });
+    } catch (e) {
+        throw new StrapiAuthError('RESEND_CONFIRMATION', 0, e instanceof Error ? e.message : String(e));
+    }
     if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`[Strapi] RESEND_CONFIRMATION → ${res.status}: ${text}`);
+        throw new StrapiAuthError('RESEND_CONFIRMATION', res.status, await res.text());
     }
 }
 
@@ -201,11 +249,32 @@ export async function getStrapiMe(jwt: string): Promise<StrapiUser | null> {
     try {
         const res = await fetch(STRAPI_URL + '/api/users/me', {
             headers: { Authorization: `Bearer ${jwt}` },
+            signal:  AbortSignal.timeout(FETCH_TIMEOUT_MS),
         });
         if (!res.ok) return null;
         return (await res.json()) as StrapiUser;
     } catch {
         return null;
+    }
+}
+
+/**
+ * כמו getStrapiMe אך מבחין בין דחייה ודאית לתקלה זמנית:
+ * definitive=true  → Strapi ענה (טוקן פסול ב-401/403, או משתמש תקף).
+ * definitive=false → תקלת רשת/5xx — אסור להסיק שהטוקן מת.
+ * משמש את sso-adopt כדי למחוק עוגיית SSO מתה בלי למחוק עוגייה חיה בזמן תקלה.
+ */
+export async function getStrapiMeVerdict(jwt: string): Promise<{ user: StrapiUser | null; definitive: boolean }> {
+    if (!jwt) return { user: null, definitive: true };
+    try {
+        const res = await fetch(STRAPI_URL + '/api/users/me', {
+            headers: { Authorization: `Bearer ${jwt}` },
+            signal:  AbortSignal.timeout(FETCH_TIMEOUT_MS),
+        });
+        if (res.ok) return { user: (await res.json()) as StrapiUser, definitive: true };
+        return { user: null, definitive: res.status === 401 || res.status === 403 };
+    } catch {
+        return { user: null, definitive: false };
     }
 }
 
@@ -221,6 +290,7 @@ export async function issueSsoJwtViaBackend(email: string): Promise<string | nul
             method:  'POST',
             headers: getHeaders(), // STRAPI_TOKEN (Full Access)
             body:    JSON.stringify({ email }),
+            signal:  AbortSignal.timeout(FETCH_TIMEOUT_MS),
         });
         if (!res.ok) return null;
         const data = (await res.json()) as { jwt?: string };
@@ -230,16 +300,21 @@ export async function issueSsoJwtViaBackend(email: string): Promise<string | nul
     }
 }
 
-/** לוגין עם אימייל + סיסמה */
+/** לוגין עם אימייל + סיסמה. זורק StrapiAuthError מובחן (סיסמה/לא-מאומת/rate-limit/שרת) */
 export async function strapiLogin(identifier: string, password: string): Promise<StrapiAuthResponse> {
-    const res = await fetch(STRAPI_URL + '/api/auth/local', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ identifier, password }),
-    });
+    let res: Response;
+    try {
+        res = await fetch(STRAPI_URL + '/api/auth/local', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ identifier, password }),
+            signal:  AbortSignal.timeout(FETCH_TIMEOUT_MS),
+        });
+    } catch (e) {
+        throw new StrapiAuthError('LOGIN', 0, e instanceof Error ? e.message : String(e));
+    }
     if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`[Strapi] LOGIN → ${res.status}: ${text}`);
+        throw new StrapiAuthError('LOGIN', res.status, await res.text());
     }
     return res.json() as Promise<StrapiAuthResponse>;
 }
@@ -255,8 +330,15 @@ export async function strapiLogin(identifier: string, password: string): Promise
 export async function findStrapiUpUsers(params: Record<string, string>, jwt?: string): Promise<unknown[]> {
     const url = new URL(STRAPI_URL + '/api/users');
     Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
-    const res = await fetch(url.toString(), { headers: getHeaders(jwt) });
+    const res = await fetch(url.toString(), {
+        headers: getHeaders(jwt),
+        signal:  AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    });
     if (!res.ok) {
+        // 401/403 → [] (התנהגות מקורית): עשרות קוראים (getUserByEmail/AnyId/
+        // getAllUsers כ-fallback) מסתמכים על "ריק"=לא-נמצא ואינם עטופים ב-try/catch;
+        // זריקה כאן הייתה מפילה אותם ב-500 על תקלת הרשאה רגעית. את התקיעה הדביקה
+        // (15 שניות) פותר getUserById שכבר לא שומר undefined ב-cache.
         if (res.status === 401 || res.status === 403) return [];
         const text = await res.text();
         throw new Error(`[Strapi] GET /api/users → ${res.status}: ${text}`);
@@ -274,6 +356,7 @@ export async function updateStrapiUpUser(id: number, data: Record<string, unknow
         method:  'PUT',
         headers: getHeaders(jwt),
         body:    JSON.stringify(data),
+        signal:  AbortSignal.timeout(FETCH_TIMEOUT_MS),
     });
     if (!res.ok) {
         const text = await res.text();
@@ -282,16 +365,25 @@ export async function updateStrapiUpUser(id: number, data: Record<string, unknow
     return res.json();
 }
 
-/** הרשמה עם שם משתמש, אימייל + סיסמה */
-export async function strapiRegister(username: string, email: string, password: string): Promise<StrapiAuthResponse> {
-    const res = await fetch(STRAPI_URL + '/api/auth/local/register', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ username, email, password }),
-    });
-    if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`[Strapi] REGISTER → ${res.status}: ${text}`);
+/**
+ * הרשמה עם שם משתמש, אימייל + סיסמה. זורק StrapiAuthError מובחן.
+ * כש-email confirmation מופעל בבאקאנד — התשובה חוזרת בלי jwt (המשתמש יאשר במייל);
+ * כשהוא כבוי — jwt חוזר מיד וניתן לחבר את המשתמש אוטומטית.
+ */
+export async function strapiRegister(username: string, email: string, password: string): Promise<Partial<StrapiAuthResponse>> {
+    let res: Response;
+    try {
+        res = await fetch(STRAPI_URL + '/api/auth/local/register', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ username, email, password }),
+            signal:  AbortSignal.timeout(FETCH_TIMEOUT_MS),
+        });
+    } catch (e) {
+        throw new StrapiAuthError('REGISTER', 0, e instanceof Error ? e.message : String(e));
     }
-    return res.json() as Promise<StrapiAuthResponse>;
+    if (!res.ok) {
+        throw new StrapiAuthError('REGISTER', res.status, await res.text());
+    }
+    return res.json() as Promise<Partial<StrapiAuthResponse>>;
 }

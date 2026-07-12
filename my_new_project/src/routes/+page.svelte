@@ -58,7 +58,7 @@
             if (res.ok) {
                 respondedIds = [...respondedIds, id];
             } else if (res.status === 401) {
-                window.location.href = '/login';
+                window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
             }
         } catch { /* שקט - נשאר בטבלה */ }
         finally { respondingId = null; }

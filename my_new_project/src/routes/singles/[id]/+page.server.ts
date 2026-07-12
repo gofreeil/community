@@ -17,7 +17,7 @@ export const load: PageServerLoad = async (event) => {
     let session = null;
     try { session = await event.locals.auth(); } catch {}
     if (!session?.user?.id && !isBot) {
-        throw redirect(302, '/login?next=' + encodeURIComponent(event.url.pathname));
+        throw redirect(302, '/login?redirect=' + encodeURIComponent(event.url.pathname));
     }
 
     const id = event.params.id;
@@ -33,6 +33,8 @@ export const load: PageServerLoad = async (event) => {
         const isOwner = !!viewerId && dbItem.user_id === viewerId;
         if (!isBot && !isOwner && !isSuperAdmin(session)) {
             const access = await getSinglesAccessStatus(viewerId, false);
+            // תקלת Strapi זמנית ≠ אין גישה: לא זורקים משתמש מאושר מהלוח
+            if (access === 'unavailable') throw error(503, 'תקלה זמנית בטעינת ההרשאות - נסה שוב בעוד רגע');
             if (access !== 'granted') throw redirect(302, '/singles');
         }
         // ממפים את הפריט האמיתי למבנה single שהדף יודע להציג
