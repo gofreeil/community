@@ -225,15 +225,15 @@
 					</a>
 				{/each}
 			</div>
-			<!-- עמודות לכל חודש: 3 מלבנים זה-לצד-זה עם מספר מעל כל אחד (יוני מאופס) -->
+			<!-- עמודות לכל חודש: 3 מלבנים חופפים חלקית (הנמוך מקדימה) עם מספר מעל כל אחד -->
 			<div class="flex items-end gap-1 sm:gap-2 h-56 border-b border-white/10 pb-px">
 				{#each activeMonthIdxs as mi}
-					<div class="flex-1 flex items-end justify-center gap-px h-full min-w-0" title={`${MONTH_NAMES[mi]} · כניסות ${fmt(summarySeries[0].data[mi])} · פריטים ${fmt(summarySeries[1].data[mi])} · נרשמים ${fmt(summarySeries[2].data[mi])}`}>
-						{#each summarySeries as s}
+					<div class="flex-1 isolate flex items-end justify-center h-full min-w-0" title={`${MONTH_NAMES[mi]} · כניסות ${fmt(summarySeries[0].data[mi])} · פריטים ${fmt(summarySeries[1].data[mi])} · נרשמים ${fmt(summarySeries[2].data[mi])}`}>
+						{#each summarySeries as s, si}
 							{@const val = s.data[mi]}
-							<div class="flex flex-col items-center justify-end h-full w-1/3">
+							<div class="relative flex flex-col items-center justify-end h-full w-[46%]" style="z-index: {Math.round(999 - val)}; margin-inline-start: {si === 0 ? '0' : '-0.6rem'}">
 								<div class="mb-0.5 text-[9px] sm:text-[10px] font-black tabular-nums leading-none {s.text} {val === 0 ? 'opacity-0' : ''}">{fmt(val)}</div>
-								<div class="w-full rounded-t bg-gradient-to-t {s.bar} shadow-sm transition-all duration-500 hover:brightness-125" style="height: {val === 0 ? 0 : Math.max(2, (val / summaryMax) * 82)}%"></div>
+								<div class="w-full rounded-t bg-gradient-to-t {s.bar} shadow-md ring-1 ring-black/25 transition-all duration-500 hover:brightness-125" style="height: {val === 0 ? 0 : Math.max(2, (val / summaryMax) * 82)}%"></div>
 							</div>
 						{/each}
 					</div>
