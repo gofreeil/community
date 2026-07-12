@@ -326,31 +326,12 @@
 			{#each years as y, yi}
 				{@const maxCount = Math.max(1, ...y.months.map((c) => c ?? 0))}
 				<div id={yi === 0 ? 'visits' : undefined} class="scroll-mt-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5 mb-6">
-					<!-- כותרת ממורכזת בראש הכרטיס: סיכום שנתי (כולל השנה) -->
-					{#if yi === 0}
-						<div class="mb-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-2">
-							<h2 class="flex items-center gap-1.5 text-lg font-black text-emerald-200"><span>📊</span> סיכום שנתי</h2>
-							{#each years as yy}
-								<div class="flex items-center gap-1.5 rounded-lg border border-emerald-400/20 bg-emerald-950/40 px-2.5 py-1 text-sm">
-									<span class="font-bold text-emerald-100/70">{yy.year}</span>
-									<span class="font-black text-white tabular-nums">{fmt(yy.total)}</span>
-								</div>
-							{/each}
-							{#if years.length > 1}
-								<div class="flex items-center gap-1.5 rounded-lg border border-emerald-400/40 bg-emerald-500/20 px-2.5 py-1 text-sm">
-									<span class="font-bold text-emerald-200">סה״כ</span>
-									<span class="font-black text-emerald-100 tabular-nums">{fmt(grandTotal)}</span>
-								</div>
-							{/if}
-						</div>
-					{:else}
-						<h2 class="text-lg font-black text-center mb-4">{y.year}</h2>
-					{/if}
-
 					<!-- זה-לצד-זה: גרף משמאל, פירוט חודשי מימין (בדסקטופ); נערם בנייד -->
 					<div class="flex flex-col lg:flex-row-reverse gap-4 lg:gap-4 lg:items-start">
 						<!-- גרף עמודות חודשי -->
 						<div class="lg:flex-1 min-w-0">
+						<!-- כותרת "כניסות לאתר" מעל הגרף, במקביל לראש החודשים -->
+						<div class="text-lg font-black text-center mb-2">כניסות לאתר</div>
 						<div class="flex items-end gap-1 sm:gap-2 h-64 border-b border-white/10 pb-px">
 							{#each MONTH_NAMES as name, i}
 								{@const c = y.months[i]}
@@ -382,12 +363,6 @@
 						<!-- פירוט חודשי — צמוד לגרף (מימין בדסקטופ), צר כדי לפנות מקום לגרף -->
 						<div class="lg:w-40 lg:shrink-0">
 						<table class="w-full text-sm">
-						<thead>
-							<tr class="text-gray-400 border-b border-white/10">
-								<th class="text-right py-1 font-bold">חודש</th>
-								<th class="text-left py-1 font-bold">כניסות</th>
-							</tr>
-						</thead>
 						<tbody>
 							{#each MONTH_NAMES as name, i}
 								{@const isCurrent = y.year === currentYear && i === currentMonthIdx}
@@ -405,6 +380,16 @@
 					</table>
 						</div>
 					</div>
+
+					{#if yi === 0}
+						<!-- סיכום שנתי — בתחתית משמאל, בלי השנה -->
+						<div class="mt-4 flex justify-end">
+							<div class="flex items-center gap-2 rounded-lg border border-sky-500/25 bg-sky-500/10 px-3 py-1.5 text-sm">
+								<span class="flex items-center gap-1.5 font-black text-sky-200"><span>📊</span> סיכום שנתי</span>
+								<span class="font-black text-white tabular-nums">{fmt(grandTotal)}</span>
+							</div>
+						</div>
+					{/if}
 				</div>
 			{/each}
 		{/if}
