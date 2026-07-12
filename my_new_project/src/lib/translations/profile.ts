@@ -257,7 +257,7 @@ export const he = {
             'הבקשה להוסיף את "{name}" כבר ממתינה לאישור המנהל. אין צורך לשלוח שוב — נעדכן אותך בתיבת ההודעות ברגע שהשכונה תתווסף.',
         loc_ok_body:
             'הבקשה להוסיף את "{name}" נשלחה למנהל וממתינה לאישור. שלחנו לך אישור לתיבת ההודעות, ונעדכן אותך שם ברגע שהשכונה תתווסף. אין צורך לשלוח שוב 🙏',
-        copy_facebook: "העתק מחשבון פייסבוק",
+        copy_facebook: "ייבא מחשבון הפייסבוק שלי",
         city_search_suffix: " - הקלד לחיפוש...",
         no_cities_found: 'לא נמצאו ערים תואמות. מלא ב"לא מצאת את העיר?" למטה.',
         selected: "✓ נבחר",
@@ -633,7 +633,7 @@ export const en = {
             'The request to add "{name}" is already awaiting admin approval. No need to send again — we will update you in your inbox as soon as the neighborhood is added.',
         loc_ok_body:
             'The request to add "{name}" was sent to the admin and is awaiting approval. We sent a confirmation to your inbox and will update you there as soon as the neighborhood is added. No need to send again 🙏',
-        copy_facebook: "Copy from Facebook account",
+        copy_facebook: "Import from my Facebook account",
         city_search_suffix: " - type to search...",
         no_cities_found: 'No matching cities found. Fill in "Couldn\'t find your city?" below.',
         selected: "✓ Selected",
@@ -1009,7 +1009,7 @@ export const ru = {
             'Запрос на добавление «{name}» уже ожидает одобрения администратора. Не нужно отправлять снова — мы сообщим вам в почтовом ящике, как только район будет добавлен.',
         loc_ok_body:
             'Запрос на добавление «{name}» отправлен администратору и ожидает одобрения. Мы отправили подтверждение в ваш почтовый ящик и сообщим там, как только район будет добавлен. Не нужно отправлять снова 🙏',
-        copy_facebook: "Скопировать из аккаунта Facebook",
+        copy_facebook: "Импортировать из моего аккаунта Facebook",
         city_search_suffix: " - введите для поиска...",
         no_cities_found: 'Совпадающих городов не найдено. Заполните «Не нашли свой город?» ниже.',
         selected: "✓ Выбрано",
