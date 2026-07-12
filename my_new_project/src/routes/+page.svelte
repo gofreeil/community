@@ -345,7 +345,7 @@
     <link rel="canonical" href={SITE_URL} />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="קהילה בשכונה" />
-    <meta property="og:title" content="קהילה בשכונה" />
+    <meta property="og:title" content="קהילה בשכונה - מתלכדים לעולם יותר סולידרי ואחראי" />
     <meta property="og:description" content="כל יתרונות השכונה תחת קורת גג אחת" />
     <meta property="og:image" content="https://community.gofreeil.com/images/community-advantages-share.jpg" />
     <meta property="og:image:type" content="image/jpeg" />
@@ -355,7 +355,7 @@
     <meta property="og:url" content="https://community.gofreeil.com" />
     <meta property="og:locale" content="he_IL" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="קהילה בשכונה" />
+    <meta name="twitter:title" content="קהילה בשכונה - מתלכדים לעולם יותר סולידרי ואחראי" />
     <meta name="twitter:description" content="כל יתרונות השכונה תחת קורת גג אחת" />
     <meta name="twitter:image" content="https://community.gofreeil.com/images/community-advantages-share.jpg" />
 </svelte:head>
