@@ -1686,8 +1686,18 @@
             </div>
         {:else if viewMode === "list"}
             <!-- תצוגת רשימה -->
+            <!-- כפתור מסך-מלא לרשימה - פינה ימנית-תחתונה (מוסתר במסך-מלא; שם יש כפתור סגירה מרכזי) -->
+            <button
+                type="button"
+                onclick={openFullscreen}
+                class="absolute bottom-3 right-3 z-40 w-10 h-10 rounded-lg bg-purple-600/80 hover:bg-purple-500 text-white text-xl leading-none flex items-center justify-center backdrop-blur-sm border border-white/30 shadow-lg {isFullscreen ? 'hidden' : ''}"
+                aria-label={$t('map.open_fullscreen')}
+                title={$t('map.open_fullscreen')}
+            >⛶</button>
             <div
-                class="w-full h-[350px] md:h-[450px] overflow-y-auto p-3 md:p-6 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900/20"
+                class={isFullscreen
+                    ? 'jmap-list-fullscreen w-full flex-1 min-h-0 overflow-y-auto px-3 md:px-6 pb-4 md:pb-6 pt-24 md:pt-24 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900/20'
+                    : 'w-full h-[350px] md:h-[450px] overflow-y-auto p-3 md:p-6 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900/20'}
                 style="border-radius: 20px;"
             >
                 <div class="space-y-2 md:space-y-3">
