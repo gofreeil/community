@@ -3,8 +3,8 @@
 export const he = {
 	aboutRevenue: {
 		// Tab bar
-		tabAbout: 'אודותינו',
-		tabRewards: 'שיטת התגמול',
+		tabAbout: 'החזון',
+		tabRewards: 'המודל הכלכלי',
 		tabOwners: 'היה מהבעלים',
 		tabCoordinator: 'היה רכז',
 
@@ -50,7 +50,7 @@ export const he = {
 		value4Title: 'העצמה קהילתית', value4Desc: 'מאפשרים שיח נגיש, קבלת החלטות משותפות, מקדמים חברה שמחה וסולידרית',
 		value5Title: 'עצמאות', value5Desc: 'מפעילים מיזמים המקדמים אותנו לעצמאות חברתית ואף לשליטה על מוסדות המדינה',
 		modelIntro: 'מיזם פועל לפי מודל כלכלי / חברתי ייחודי שבו חצי מהרווחים משותפים חזרה אל הקהילה!',
-		modelIntroCta: 'הכר את שיטת התגמול ←',
+		modelIntroCta: 'הכר את המודל הכלכלי ←',
 
 		// Rewards tab
 		rewardsHeroTitle: 'שיטת התגמול של קהילה בשכונה',
@@ -221,8 +221,8 @@ export const he = {
 export const en = {
 	aboutRevenue: {
 		// Tab bar
-		tabAbout: 'About Us',
-		tabRewards: 'Reward System',
+		tabAbout: 'The Vision',
+		tabRewards: 'The Economic Model',
 		tabOwners: 'Become an Owner',
 		tabCoordinator: 'Become a Coordinator',
 
@@ -268,7 +268,7 @@ export const en = {
 		value4Title: 'Community Empowerment', value4Desc: 'Enabling open dialogue and shared decision-making, promoting a happy, solidary society',
 		value5Title: 'Independence', value5Desc: 'Running ventures that advance us toward social independence and even influence over state institutions',
 		modelIntro: 'The venture runs on a unique economic and social model in which half of the profits are shared back with the community!',
-		modelIntroCta: 'Discover the reward system ←',
+		modelIntroCta: 'Discover the economic model ←',
 
 		// Rewards tab
 		rewardsHeroTitle: 'The Community in the Neighborhood Reward System',
@@ -439,8 +439,8 @@ export const en = {
 export const ru = {
 	aboutRevenue: {
 		// Tab bar
-		tabAbout: 'О нас',
-		tabRewards: 'Система вознаграждений',
+		tabAbout: 'Наше видение',
+		tabRewards: 'Экономическая модель',
 		tabOwners: 'Станьте совладельцем',
 		tabCoordinator: 'Станьте координатором',
 
@@ -486,7 +486,7 @@ export const ru = {
 		value4Title: 'Укрепление общины', value4Desc: 'Открытый диалог, совместные решения, счастливое и солидарное общество',
 		value5Title: 'Независимость', value5Desc: 'Мы развиваем проекты, ведущие к общественной независимости и даже к влиянию на государственные институты',
 		modelIntro: 'Проект работает по уникальной экономико-социальной модели, в которой половина прибыли возвращается общине!',
-		modelIntroCta: 'Узнайте о системе вознаграждений ←',
+		modelIntroCta: 'Узнайте об экономической модели ←',
 
 		// Rewards tab
 		rewardsHeroTitle: 'Система вознаграждений «Общины в районе»',

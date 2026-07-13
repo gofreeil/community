@@ -7,6 +7,16 @@
 	type TabId = 'about' | 'rewards' | 'owners' | 'coordinator';
 	let activeTab = $state<TabId>('about');
 
+	// שורת הלשוניות דביקה מתחת להדר; גובה ההדר משתנה בין מובייל לדסקטופ
+	let stickyTop = $state(0);
+	onMount(() => {
+		const header = document.querySelector('header');
+		const updateStickyTop = () => { stickyTop = header ? (header as HTMLElement).offsetHeight : 0; };
+		updateStickyTop();
+		window.addEventListener('resize', updateStickyTop);
+		return () => window.removeEventListener('resize', updateStickyTop);
+	});
+
 	function setTab(id: TabId) {
 		activeTab = id;
 		if (typeof window !== 'undefined') {
@@ -147,9 +157,9 @@
 
 <div class="text-white" dir="rtl">
 
-	<!-- TAB BAR -->
-	<div class="flex gap-2 mb-6 p-1.5 rounded-2xl backdrop-blur-lg"
-		style="background: rgba(7,11,20,0.85); border: 1px solid rgba(255,255,255,0.1);">
+	<!-- TAB BAR (דביק: נשאר על המסך בגלילה, מתחת להדר) -->
+	<div class="sticky z-[1000] flex gap-2 mb-6 p-1.5 rounded-2xl backdrop-blur-lg"
+		style="top:{stickyTop}px; background: rgba(7,11,20,0.85); border: 1px solid rgba(255,255,255,0.1);">
 		{#each ([['about','🏘️','aboutRevenue.tabAbout'],['rewards','💰','aboutRevenue.tabRewards'],['owners','🏛️','aboutRevenue.tabOwners'],['coordinator','👥','aboutRevenue.tabCoordinator']] as const) as [id, icon, label]}
 			<button
 				onclick={() => setTab(id as TabId)}

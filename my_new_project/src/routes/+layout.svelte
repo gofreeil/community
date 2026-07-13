@@ -262,11 +262,12 @@
 			gap: 0;
 			flex-direction: column;
 			max-width: 100vw;
-			overflow-x: hidden;
+			/* clip ולא hidden: hidden הופך את האלמנט ל-scroll container ושובר position:sticky של צאצאים */
+			overflow-x: clip;
 		}
 		.main-content {
 			max-width: 100vw;
-			overflow-x: hidden;
+			overflow-x: clip;
 		}
 	}
 </style>
