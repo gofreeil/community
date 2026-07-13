@@ -2,7 +2,7 @@
     import RestaurantReviewsModal from '$lib/components/RestaurantReviewsModal.svelte';
     import { _ } from 'svelte-i18n';
     import { getRatingSummary } from '$lib/restaurantReviews';
-    import { formatOpeningHours, DAY_SHORT } from '$lib/openingHours';
+    import { formatOpeningHoursLines, DAY_SHORT } from '$lib/openingHours';
     import { trOr } from '$lib/categoryFields';
     import type { PageData } from './$types';
 
@@ -30,7 +30,8 @@
     let parkingNotes = $derived(str(E.parking_notes));
     let clubDiscount = $derived(str(E.club_discount) === 'יש הנחה');
     let clubDetail  = $derived(str(E.club_discount_detail));
-    let hours       = $derived(formatOpeningHours(E.hours, {
+    // כל קבוצת ימים בשורה נפרדת - לקריאות בתצוגה
+    let hoursLines  = $derived(formatOpeningHoursLines(E.hours, {
         days: Array.from({ length: 7 }, (_i, i) => trOr($_, `labels.day_short_${i}`, DAY_SHORT[i])),
         closed: trOr($_, 'labels.oh_closed', 'סגור'),
     }));
@@ -225,12 +226,14 @@
                 </div>
             {/if}
 
-            {#if hours}
+            {#if hoursLines.length > 0}
                 <div class="flex items-start gap-3">
                     <span class="text-lg">🕒</span>
                     <div>
                         <div class="text-gray-400 text-xs">שעות פתיחה</div>
-                        <div class="text-white text-sm">{hours}</div>
+                        <div class="text-white text-sm">
+                            {#each hoursLines as line}<div>{line}</div>{/each}
+                        </div>
                     </div>
                 </div>
             {/if}

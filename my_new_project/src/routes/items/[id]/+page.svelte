@@ -9,7 +9,7 @@
     import type { PageData } from './$types';
     import JsonLd from "$lib/components/JsonLd.svelte";
     import { productSchema, eventSchema } from "$lib/seo";
-    import { formatOpeningHours, DAY_SHORT } from "$lib/openingHours";
+    import { formatOpeningHours, formatOpeningHoursLines, DAY_SHORT } from "$lib/openingHours";
     import { gmachTypeLabel } from "$lib/gmachTypes";
     import { trOr, categoryConfig } from "$lib/categoryFields";
     import { imageDrop } from "$lib/imageDrop";
@@ -314,14 +314,15 @@
     const shabbatMinyanim  = $derived<ScheduleRow[]>(activities.filter(a => SHABBAT_KEYS.includes(a.type)));
     const otherActivities  = $derived<ScheduleRow[]>(activities.filter(a => !ALL_PRAYER_KEYS.includes(a.type)));
 
-    // שעות פתיחה (extra_fields.hours) - מוצג תחת "לוח פעילויות ושעות" (לא תחת "פרטים נוספים")
-    const openingHoursText = $derived.by<string>(() => {
+    // שעות פתיחה (extra_fields.hours) - מוצג תחת "לוח פעילויות ושעות" (לא תחת "פרטים נוספים").
+    // כל קבוצת ימים בשורה נפרדת - לקריאות בתצוגה הסופית.
+    const openingHoursLines = $derived.by<string[]>(() => {
         const live = liveExtra.hours;
         const raw = typeof live === 'string'
             ? live
             : (item as { extraFields?: { hours?: unknown } } | null)?.extraFields?.hours;
-        if (typeof raw !== 'string' || !raw.trim()) return '';
-        return formatOpeningHours(raw, {
+        if (typeof raw !== 'string' || !raw.trim()) return [];
+        return formatOpeningHoursLines(raw, {
             days: Array.from({ length: 7 }, (_, i) => trOr(tFn, `labels.day_short_${i}`, DAY_SHORT[i])),
             closed: trOr(tFn, 'labels.oh_closed', 'סגור'),
         });
@@ -2134,7 +2135,7 @@
                     {/if}
 
                     <!-- Activities schedule (each activity has its own time) + opening hours -->
-                    {#if otherActivities.length > 0 || (openingHoursText && canSeeHours) || (canEditActivities && builderMode) || (builderMode && hasHoursField)}
+                    {#if otherActivities.length > 0 || (openingHoursLines.length > 0 && canSeeHours) || (canEditActivities && builderMode) || (builderMode && hasHoursField)}
                         <section class="pt-3 border-t border-white/10">
                             <div class="flex items-center justify-between mb-2">
                                 <h2 class="text-base font-bold text-white flex items-center gap-1.5">
@@ -2162,10 +2163,12 @@
                             {/if}
 
                             {#if !editingSchedule}
-                                {#if openingHoursText && canSeeHours}
+                                {#if openingHoursLines.length > 0 && canSeeHours}
                                     <div class="rounded-xl border border-white/10 bg-[#0f172a] px-3 py-2 mb-2 flex items-start gap-2 text-xs">
                                         <span class="font-bold text-amber-200 whitespace-nowrap">{hoursFieldLabel}</span>
-                                        <span class="text-white leading-snug">{openingHoursText}</span>
+                                        <span class="text-white leading-snug">
+                                            {#each openingHoursLines as line}<span class="block">{line}</span>{/each}
+                                        </span>
                                         {#if builderMode}
                                             <!-- הצג / אל תציג את שעות הפתיחה לגולשים (ברירת מחדל: מוצג) -->
                                             <span class="ms-auto shrink-0 inline-flex rounded-full border border-white/15 overflow-hidden text-[11px] font-bold">

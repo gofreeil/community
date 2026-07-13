@@ -108,18 +108,21 @@ function formatRanges(ranges: TimeRange[]): string {
 }
 
 /**
- * מחרוזת קריאה בעברית, מקבצת ימים רצופים בעלי שעות זהות לטווח.
- * דוגמה: "א׳–ה׳ 10:00–18:00 · ו׳ 09:00–13:00, 16:00–18:00 · שבת סגור"
- * אם הערך אינו מובנה (טקסט ישן) - מוחזר כמו שהוא.
+ * שורות תצוגה קריאות, מקבצות ימים רצופים בעלי שעות זהות לטווח - שורה לכל קבוצה.
+ * דוגמה: ["א׳–ה׳ 10:00–18:00", "ו׳ 09:00–13:00, 16:00–18:00", "שבת סגור"]
+ * אם הערך אינו מובנה (טקסט ישן) - מוחזר כשורה אחת כמו שהוא.
  */
-export function formatOpeningHours(
+export function formatOpeningHoursLines(
     value: unknown,
     // תוויות תצוגה מתורגמות (אופציונלי) - ברירת מחדל עברית כ-fallback.
     // days = 7 שמות ימים קצרים; closed = המילה "סגור".
     opts?: { days?: string[]; closed?: string },
-): string {
+): string[] {
     const oh = parseOpeningHours(value);
-    if (!oh) return value == null ? '' : String(value);
+    if (!oh) {
+        const s = value == null ? '' : String(value);
+        return s.trim() ? [s] : [];
+    }
 
     const dayNames = opts?.days && opts.days.length === 7 ? opts.days : DAY_SHORT;
     const closedWord = opts?.closed ?? 'סגור';
@@ -138,5 +141,13 @@ export function formatOpeningHours(
         parts.push(d.open ? `${label} ${formatRanges(d.ranges)}` : `${label} ${closedWord}`);
         i = j + 1;
     }
-    return parts.join(' · ');
+    return parts;
+}
+
+/** גרסת שורה-אחת (מופרדת ב-·) - לתצוגות צפופות ולתאימות לאחור */
+export function formatOpeningHours(
+    value: unknown,
+    opts?: { days?: string[]; closed?: string },
+): string {
+    return formatOpeningHoursLines(value, opts).join(' · ');
 }
