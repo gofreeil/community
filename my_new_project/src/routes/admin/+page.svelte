@@ -285,9 +285,10 @@
 		</div>
 
 		<!-- מחוג מצב השרת (הקיצור של כל המדים) בצד ימין + "הגרף הראשי" (סקירה כללית) לצידו.
-		     שניהם תמונת-מצב מרגע הכניסה: מתרעננים רק כשנכנסים לדף זה או לדף הסטטיסטיקה (בלי פולינג). -->
+		     שניהם תמונת-מצב מרגע הכניסה: מתרעננים רק כשנכנסים לדף זה או לדף הסטטיסטיקה (בלי פולינג).
+		     לחיצה על המחוג → דף הסטטיסטיקה, עם גלילה איטית אל באנר השעונים המלא. -->
 		<div class="mb-8 grid gap-4 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] items-stretch">
-			<ServerHealthGauges initial={data.serverHealth} monthlyVisits={dash.monthlyVisits} summaryOnly live={false} />
+			<ServerHealthGauges initial={data.serverHealth} monthlyVisits={dash.monthlyVisits} summaryOnly live={false} mainHref="/admin/statistics?focus=gauges" />
 			<StatsSummaryChart stats={data.stats} itemsSummary={data.itemsSummary} registrations={data.registrations} hrefPrefix="/admin/statistics" />
 		</div>
 

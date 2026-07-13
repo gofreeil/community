@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
+	import { goto, replaceState } from '$app/navigation';
 	import ServerHealthGauges from '$lib/components/ServerHealthGauges.svelte';
 	import StatsSummaryChart from '$lib/components/StatsSummaryChart.svelte';
 	import { mergeJuneIntoJuly } from '$lib/statsMonthMerge';
@@ -161,6 +162,35 @@
 	// נתוני יוני מצורפים ליולי (טרום-השקה) כמו בגרף המסכם.
 	const regSeries = $derived(mergeJuneIntoJuly(monthsOfYear(data.registrations?.byMonth ?? [])));
 	const maxReg = $derived(Math.max(1, ...regSeries));
+
+	// ?focus=gauges (לחיצה על מחוג מצב-השרת בלוח הניהול) → גלילה איטית מראש הדף
+	// אל באנר השעונים שבתחתית. משך קבוע, לא scrollIntoView — שם אין שליטה על המהירות.
+	onMount(() => {
+		if (new URLSearchParams(window.location.search).get('focus') !== 'gauges') return;
+		const el = document.getElementById('server-gauges');
+		if (!el) return;
+		window.scrollTo(0, 0);
+		// השהיה קצרה: נותנת ל-SvelteKit לסיים את איפוס הגלילה של הניווט ולעמוד להצטייר
+		setTimeout(() => {
+			replaceState(window.location.pathname, {}); // ניקוי הפרמטר — רענון לא יגלול שוב
+			if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+				el.scrollIntoView();
+				return;
+			}
+			const DURATION = 2800;
+			const ease = (t: number) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
+			let start: number | null = null;
+			const step = (ts: number) => {
+				if (start === null) start = ts;
+				const t = Math.min(1, (ts - start) / DURATION);
+				// היעד מחושב בכל פריים — עמיד לתזוזות פריסה תוך כדי הגלילה
+				const target = el.getBoundingClientRect().top + window.scrollY - 12;
+				window.scrollTo(0, target * ease(t));
+				if (t < 1) requestAnimationFrame(step);
+			};
+			requestAnimationFrame(step);
+		}, 350);
+	});
 </script>
 
 <svelte:head>
@@ -358,8 +388,8 @@
 			{/each}
 		{/if}
 
-		<!-- באנר סטטוס השרת (לוח מכוונים) — תחתית הדף -->
-		<div class="mt-8">
+		<!-- באנר סטטוס השרת (לוח מכוונים) — תחתית הדף. יעד הגלילה האיטית מ-?focus=gauges -->
+		<div class="mt-8" id="server-gauges">
 			<ServerHealthGauges initial={data.serverHealth} monthlyVisits={data.monthlyVisits} live={false} />
 		</div>
 	</div>

@@ -10,8 +10,9 @@
 	// live=true: טיימר קל לתווית "עודכן לפני X" + כפתור רענון ידני.
 	// live=false (דף הסטטיסטיקה + לוח הניהול): תמונת-מצב מרגע הכניסה בלבד — בלי טיימר ובלי רענון.
 	// summaryOnly=true (לוח הניהול): רק המחוג הראשי (הקיצור של כולם), בלי המדים המשניים.
-	let { initial = null, monthlyVisits = 0, live = true, summaryOnly = false }:
-		{ initial?: ServerHealth | null; monthlyVisits?: number; live?: boolean; summaryOnly?: boolean } = $props();
+	// mainHref: הופך את כרטיס המחוג הראשי לקישור (לוח הניהול → באנר השעונים בדף הסטטיסטיקה).
+	let { initial = null, monthlyVisits = 0, live = true, summaryOnly = false, mainHref = null }:
+		{ initial?: ServerHealth | null; monthlyVisits?: number; live?: boolean; summaryOnly?: boolean; mainHref?: string | null } = $props();
 
 	let health = $state<ServerHealth | null>(initial);
 	let loading = $state(false);
@@ -152,8 +153,15 @@
 	{:else}
 		{@const st = STATUS[health.status]}
 		<div class="grid" class:solo={summaryOnly}>
-			<!-- מד ראשי -->
-			<div class="main-card" style="--tone:{st.tone}">
+			<!-- מד ראשי (כש-mainHref מוגדר — קישור לבאנר השעונים המלא) -->
+			<svelte:element
+				this={mainHref ? 'a' : 'div'}
+				href={mainHref ?? undefined}
+				title={mainHref ? 'לכל שעוני השרת — דף הסטטיסטיקה' : undefined}
+				class="main-card"
+				class:clickable={!!mainHref}
+				style="--tone:{st.tone}"
+			>
 				<div class="dial big">
 					<svg viewBox="0 0 200 118" role="img" aria-label="עומס כללי {health.score} מתוך 10">
 						<path d={ZONE_GREEN} class="track" stroke="#22c55e" />
@@ -181,7 +189,7 @@
 				{:else}
 					<div class="bottleneck subtle">המשאב העמוס ביותר: <b>{health.bottleneck.label}</b> ({health.util}%)</div>
 				{/if}
-			</div>
+			</svelte:element>
 
 			<!-- מדים משניים (מוסתרים כשמוצג רק המחוג הראשי) -->
 			{#if !summaryOnly}
@@ -261,6 +269,8 @@
 		box-shadow: 0 0 24px -12px var(--tone);
 		display: flex; flex-direction: column; align-items: center;
 	}
+	.main-card.clickable { cursor: pointer; text-decoration: none; color: inherit; transition: transform .2s, box-shadow .2s; }
+	.main-card.clickable:hover { transform: translateY(-2px); box-shadow: 0 0 30px -8px var(--tone); }
 	.dial { position: relative; width: 100%; }
 	.dial.big { max-width: 300px; }
 	.dial.mini { max-width: 190px; }
