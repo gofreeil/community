@@ -481,6 +481,8 @@ export interface UpdateItemData {
     status?: string;
     icon?: string;
     color?: string;
+    /** שינוי קטגוריה (תיקון סיווג שגוי) — יחד עם icon/color נגזרים מחדש */
+    category?: string;
 }
 
 export async function updateItem(documentId: string, data: UpdateItemData): Promise<void> {
@@ -498,6 +500,7 @@ export async function updateItem(documentId: string, data: UpdateItemData): Prom
     if (data.status       !== undefined) payload.status1      = data.status;
     if (data.icon         !== undefined) payload.icon         = data.icon;
     if (data.color        !== undefined) payload.color        = data.color;
+    if (data.category     !== undefined) payload.category     = data.category;
     await strapiPut(`/api/items/${documentId}`, { data: payload });
     invalidate('items:');
 }

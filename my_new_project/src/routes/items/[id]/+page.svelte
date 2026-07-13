@@ -11,7 +11,7 @@
     import { productSchema, eventSchema } from "$lib/seo";
     import { formatOpeningHours, formatOpeningHoursLines, DAY_SHORT } from "$lib/openingHours";
     import { gmachTypeLabel } from "$lib/gmachTypes";
-    import { trOr, categoryConfig } from "$lib/categoryFields";
+    import { trOr, cfCatKey, categoryConfig } from "$lib/categoryFields";
     import { imageDrop } from "$lib/imageDrop";
     import { openCropper } from "$lib/imageCropper.svelte";
     import CategoryDetailsEditor from "$lib/components/CategoryDetailsEditor.svelte";
@@ -472,6 +472,34 @@
             return false;
         } finally {
             savingTag = null;
+        }
+    }
+
+    // ---- שינוי קטגוריה: תיקון סיווג שגוי בלי למחוק ולפרסם מחדש ----
+    let changingCategory = $state(false);
+    let categoryChangeError = $state('');
+
+    async function changeCategory(newCategory: string) {
+        if (!item?.id || !newCategory || newCategory === item.category) return;
+        changingCategory = true;
+        categoryChangeError = '';
+        try {
+            const res = await fetch(`/api/items/${item.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'change_category', category: newCategory }),
+            });
+            const d = await res.json().catch(() => ({}));
+            if (!res.ok || !d.success) {
+                categoryChangeError = d.message || 'שגיאה בשינוי הקטגוריה - נסו שוב';
+                changingCategory = false;
+                return;
+            }
+            // הגדרות השדות והעורך תלויים בקטגוריה - טעינה מחדש והישארות במצב עריכה
+            window.location.href = `/items/${item.id}?builder=1`;
+        } catch {
+            categoryChangeError = 'בעיית תקשורת - נסו שוב';
+            changingCategory = false;
         }
     }
 
@@ -2243,6 +2271,47 @@
 
                     <!-- Extra fields: עריכה במצב בנייה (שעות, מחיר, כשרות...) או תצוגה קומפקטית -->
                     {#if builderMode && canEditPage && item?.isUserSubmitted}
+                        <!-- שינוי קטגוריה: טעיתם בסיווג? עוברים קטגוריה בלי למחוק ולפרסם מחדש -->
+                        <section class="mb-3 rounded-xl border border-amber-400/25 bg-amber-500/5 p-3">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <label for="category-switch" class="text-sm font-bold text-amber-300 whitespace-nowrap">
+                                    📂 קטגוריית הפריט
+                                </label>
+                                <select
+                                    id="category-switch"
+                                    value={item.category}
+                                    disabled={changingCategory}
+                                    onchange={(e) => {
+                                        const el = e.currentTarget;
+                                        const next = el.value;
+                                        if (next === item?.category) return;
+                                        const label = trOr(tFn, cfCatKey(next), categoryConfig[next]?.label ?? next);
+                                        if (confirm(`להעביר את הפריט לקטגוריה "${label}"?`)) {
+                                            changeCategory(next);
+                                        } else {
+                                            el.value = item?.category ?? '';
+                                        }
+                                    }}
+                                    class="rounded-lg border border-white/15 bg-[#0f172a] px-3 py-1.5 text-sm text-white focus:border-amber-400/60 focus:outline-none disabled:opacity-50"
+                                >
+                                    {#each Object.entries(categoryConfig) as [catId, cfg] (catId)}
+                                        {#if catId !== 'singles'}
+                                            <option value={catId}>
+                                                {cfg.icon.startsWith('/') ? '' : cfg.icon} {trOr(tFn, cfCatKey(catId), cfg.label)}
+                                            </option>
+                                        {/if}
+                                    {/each}
+                                </select>
+                                {#if changingCategory}
+                                    <span class="text-xs text-gray-400">מעביר קטגוריה...</span>
+                                {:else}
+                                    <span class="text-xs text-gray-500">טעיתם בסיווג? בחרו קטגוריה נכונה — בלי למחוק ולפרסם מחדש</span>
+                                {/if}
+                            </div>
+                            {#if categoryChangeError}
+                                <p class="mt-2 text-xs text-red-400">{categoryChangeError}</p>
+                            {/if}
+                        </section>
                         <CategoryDetailsEditor
                             itemId={item.id}
                             category={item.category}

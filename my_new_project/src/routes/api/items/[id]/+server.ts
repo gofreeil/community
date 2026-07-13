@@ -3,7 +3,7 @@ import type { RequestHandler } from './$types';
 import { getDbItemByIdFresh, updateItem, deleteItem, getUserByAnyId, createItem } from '$lib/server/db';
 import { isSuperAdmin, isCoordinatorOfArea } from '$lib/server/auth';
 import { PLACE_STATUS_VALUES, DELETE_RESTORE_DAYS } from '$lib/placeStatus';
-import { categoryConfig } from '$lib/categoryFields';
+import { categoryConfig, getCategoryIcon, getCategoryColor } from '$lib/categoryFields';
 
 /** קישורי רשתות חברתיות + אתר - מותר לערוך אותם מדף הפריט לכל קטגוריה (הופכים לכפתורים מותגים) */
 const SOCIAL_LINK_KEYS = new Set(['website', 'whatsapp', 'telegram', 'facebook', 'instagram', 'youtube', 'tiktok']);
@@ -112,6 +112,31 @@ export const PATCH: RequestHandler = async (event) => {
         if (isOwner || isSuperAdmin(session)) return true;
         const user = await getUserByAnyId(String(userId));
         return isCoordinatorOfArea(user?.coordinator_of, item!.neighborhood, item!.city);
+    }
+
+    // ---- שינוי קטגוריה: תיקון סיווג שגוי בלי למחוק ולפרסם מחדש ----
+    if (action === 'change_category') {
+        if (!(await canEditPage())) return json({ success: false, message: 'אין הרשאה' }, { status: 403 });
+
+        const newCategory = String(body.category ?? '').trim();
+        if (!categoryConfig[newCategory]) {
+            return json({ success: false, message: 'קטגוריה לא מוכרת' }, { status: 400 });
+        }
+        // פנויים = מסלול ייעודי עם אישור אדמין - לא נכנסים ולא יוצאים דרך שינוי קטגוריה
+        if (item.category === 'singles' || newCategory === 'singles') {
+            return json({ success: false, message: 'כרטיסי פנויים מנוהלים רק דרך הטופס הייעודי' }, { status: 403 });
+        }
+        if (newCategory === item.category) {
+            return json({ success: true, category: newCategory });
+        }
+
+        // אייקון וצבע נגזרים מהקטגוריה - חייבים להתעדכן יחד איתה (מפה + כרטיסים)
+        await updateItem(id, {
+            category: newCategory,
+            icon: getCategoryIcon(newCategory),
+            color: getCategoryColor(newCategory),
+        });
+        return json({ success: true, category: newCategory });
     }
 
     // ---- מצב בניית הדף: עדכון שדות תוכן ישירות מדף הפריט ----
