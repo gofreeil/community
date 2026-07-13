@@ -57,7 +57,7 @@ export const he = {
         day_short_3: 'ד׳',
         day_short_4: 'ה׳',
         day_short_5: 'ו׳',
-        day_short_6: 'מוצ״ש',
+        day_short_6: 'שבת',
         oh_closed: 'סגור',
 
         // ===== categoryConfig: giveaway =====

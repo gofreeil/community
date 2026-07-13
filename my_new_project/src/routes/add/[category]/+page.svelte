@@ -1010,7 +1010,7 @@
                         {@const timeInput = 'rounded-lg border border-white/15 bg-white/10 px-2.5 py-2 text-white text-sm text-center focus:outline-none focus:border-amber-500/60'}
                         <div class="rounded-xl border border-white/15 bg-white/5 p-3 md:p-4 space-y-3">
                             <!-- בחירת ימים פתוחים -->
-                            <p class="text-xs text-gray-400">אילו ימים פתוח? <span class="text-gray-500">לחצו על יום כדי לפתוח או לסגור אותו — גם ו׳ ומוצ״ש</span></p>
+                            <p class="text-xs text-gray-400">אילו ימים פתוח? <span class="text-gray-500">לחצו על יום כדי לפתוח או לסגור אותו — גם ו׳ ושבת</span></p>
                             <div class="grid grid-cols-7 gap-1.5">
                                 {#each DAY_SHORT as d, dIdx}
                                     {@const isOpen = oh.days[dIdx].open}
