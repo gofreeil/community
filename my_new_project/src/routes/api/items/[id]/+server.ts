@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { getDbItemByIdFresh, updateItem, deleteItem, getUserByAnyId, createItem } from '$lib/server/db';
+import { getDbItemByIdFresh, updateItem, deleteItem, getUserByAnyId, getUserByEmail, getUserByPhone, createItem } from '$lib/server/db';
 import { isSuperAdmin, isCoordinatorOfArea } from '$lib/server/auth';
 import { PLACE_STATUS_VALUES, DELETE_RESTORE_DAYS } from '$lib/placeStatus';
 import { categoryConfig, getCategoryIcon, getCategoryColor } from '$lib/categoryFields';
@@ -348,6 +348,79 @@ export const PATCH: RequestHandler = async (event) => {
             console.error('[items/:id PATCH restore] failed:', e);
             return json({ success: false, message: 'שגיאה בשחזור' }, { status: 500 });
         }
+    }
+
+    // ---- העברת נכס במתנה למשתמש אחר: הבעלים (או סופר-אדמין) בלבד ----
+    // הבעלות (user_id) עוברת למקבל, הנכס נשאר כמו שהוא, והמקבל מקבל הודעה.
+    if (action === 'transfer_owner') {
+        if (!isOwner && !isSuperAdmin(session)) {
+            return json({ success: false, message: 'אין הרשאה' }, { status: 403 });
+        }
+        // כרטיסי פנויים אישיים ומבוקרים - לא ניתנים להעברה; הודעות מערכת גם לא
+        if (item.category === 'singles' || item.category === 'message') {
+            return json({ success: false, message: 'סוג נכס זה אינו ניתן להעברה' }, { status: 403 });
+        }
+        if (item.status === 'deleted') {
+            return json({ success: false, message: 'לא ניתן להעביר נכס מחוק - יש לשחזר אותו קודם' }, { status: 400 });
+        }
+
+        const recipientRaw = String(body.recipient ?? '').trim();
+        if (!recipientRaw) {
+            return json({ success: false, message: 'יש להזין אימייל או טלפון של המקבל' }, { status: 400 });
+        }
+        const recipient = recipientRaw.includes('@')
+            ? await getUserByEmail(recipientRaw)
+            : await getUserByPhone(recipientRaw);
+        if (!recipient) {
+            return json({ success: false, message: 'לא נמצא משתמש רשום עם הפרטים האלה. ודאו שהמקבל רשום לאתר.' }, { status: 404 });
+        }
+        if (String(recipient.id) === String(userId)) {
+            return json({ success: false, message: 'הנכס כבר שלך - אי אפשר להעביר לעצמך' }, { status: 400 });
+        }
+        if (recipient.banned) {
+            return json({ success: false, message: 'לא ניתן להעביר למשתמש הזה' }, { status: 403 });
+        }
+
+        const giver = await getUserByAnyId(String(userId));
+        const giverName = giver?.name || giver?.nickname || 'משתמש/ת';
+        const recipientName = recipient.name || recipient.nickname || 'משתמש/ת';
+
+        // תיעוד ההעברה על הנכס עצמו - שקיפות למקבל ולמנהלים
+        let extra: Record<string, unknown> = {};
+        try { extra = item.extra_fields ? JSON.parse(item.extra_fields) : {}; } catch { extra = {}; }
+        extra.transferred_from = giverName;
+        extra.transferred_at = new Date().toISOString();
+
+        try {
+            await updateItem(id, { user_id: String(recipient.id), extra_fields: extra });
+        } catch (e) {
+            console.error('[items/:id PATCH transfer_owner] failed:', e);
+            return json({ success: false, message: 'שגיאה בהעברת הנכס' }, { status: 500 });
+        }
+
+        // הודעה למקבל: קיבלת נכס במתנה
+        try {
+            await createItem({
+                category: 'message',
+                label: '🎁 קיבלת נכס במתנה',
+                description: `${giverName} העביר/ה אליך את הנכס "${item.label}".\n\nהנכס מופיע עכשיו ב"הנכסים שלי" בפרופיל שלך, ואת/ה יכול/ה לערוך אותו, להקפיא אותו או להסיר אותו - כמו כל נכס שפרסמת בעצמך.`,
+                contact: giverName,
+                user_id: String(recipient.id),
+                icon: '🎁',
+                color: 'purple',
+                extra_fields: {
+                    type: 'item_transferred',
+                    sender_name: giverName,
+                    item_label: item.label,
+                    item_id: item.id,
+                    read: false,
+                },
+            });
+        } catch (e) {
+            console.warn('[items/:id transfer_owner] notify failed:', e instanceof Error ? e.message : e);
+        }
+
+        return json({ success: true, recipientName });
     }
 
     // ---- "אני עוזר/בדרך": כל תושב מחובר יכול להיענות לקריאת עזרה ----

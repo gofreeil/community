@@ -380,6 +380,27 @@ export const he = {
         pd_cancel: "ביטול",
         pd_deleting: "מוחק…",
         pd_confirm: "מחק לצמיתות",
+
+        // העברת נכס במתנה למשתמש אחר
+        transfer_item: "🎁 העבר נכס",
+        transfer_item_title: "העברת הנכס במתנה למשתמש רשום אחר",
+        transfer_title: "העברת נכס למשתמש אחר",
+        transfer_body_prefix: "הנכס",
+        transfer_body_suffix:
+            'יעבור לבעלות המשתמש שתבחרו ויופיע אצלו ב"הנכסים שלי". הוא יקבל על כך הודעה.',
+        transfer_hint:
+            "שימו לב: הפעולה אינה הפיכה מצדכם - רק המקבל יוכל להעביר את הנכס חזרה.",
+        transfer_recipient_label: "למי מעבירים?",
+        transfer_recipient_ph: "אימייל או טלפון של משתמש רשום",
+        transfer_recipient_required: "יש להזין אימייל או טלפון של המקבל",
+        transfer_cancel: "ביטול",
+        transfer_sending: "מעביר…",
+        transfer_confirm: "העבר במתנה",
+        transfer_done_title: "הנכס הועבר!",
+        transfer_done_prefix: "הנכס",
+        transfer_done_to: "הועבר במתנה אל",
+        transfer_done_fallback_name: "המשתמש שבחרתם",
+        transfer_close: "סגירה",
     },
 };
 
@@ -758,6 +779,27 @@ export const en = {
         pd_cancel: "Cancel",
         pd_deleting: "Deleting…",
         pd_confirm: "Delete permanently",
+
+        // Gift a listing to another user
+        transfer_item: "🎁 Transfer",
+        transfer_item_title: "Gift this listing to another registered user",
+        transfer_title: "Transfer listing to another user",
+        transfer_body_prefix: "The listing",
+        transfer_body_suffix:
+            'will become the property of the user you choose and appear under their "My listings". They will be notified.',
+        transfer_hint:
+            "Note: this cannot be undone from your side - only the recipient can transfer it back.",
+        transfer_recipient_label: "Who is the recipient?",
+        transfer_recipient_ph: "Email or phone of a registered user",
+        transfer_recipient_required: "Enter the recipient's email or phone",
+        transfer_cancel: "Cancel",
+        transfer_sending: "Transferring…",
+        transfer_confirm: "Gift it",
+        transfer_done_title: "Listing transferred!",
+        transfer_done_prefix: "The listing",
+        transfer_done_to: "was gifted to",
+        transfer_done_fallback_name: "the user you chose",
+        transfer_close: "Close",
     },
 };
 
@@ -1136,5 +1178,26 @@ export const ru = {
         pd_cancel: "Отмена",
         pd_deleting: "Удаление…",
         pd_confirm: "Удалить навсегда",
+
+        // Передача объекта в подарок другому пользователю
+        transfer_item: "🎁 Передать",
+        transfer_item_title: "Подарить объект другому зарегистрированному пользователю",
+        transfer_title: "Передача объекта другому пользователю",
+        transfer_body_prefix: "Объект",
+        transfer_body_suffix:
+            'перейдёт в собственность выбранного пользователя и появится у него в разделе "Мои объекты". Он получит уведомление.',
+        transfer_hint:
+            "Внимание: действие необратимо с вашей стороны - вернуть объект сможет только получатель.",
+        transfer_recipient_label: "Кому передать?",
+        transfer_recipient_ph: "Email или телефон зарегистрированного пользователя",
+        transfer_recipient_required: "Укажите email или телефон получателя",
+        transfer_cancel: "Отмена",
+        transfer_sending: "Передача…",
+        transfer_confirm: "Подарить",
+        transfer_done_title: "Объект передан!",
+        transfer_done_prefix: "Объект",
+        transfer_done_to: "подарен пользователю",
+        transfer_done_fallback_name: "выбранному пользователю",
+        transfer_close: "Закрыть",
     },
 };

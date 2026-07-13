@@ -197,6 +197,53 @@
 		republishingItemId = null;
 	}
 
+	// --- העברת נכס במתנה למשתמש אחר (לפי אימייל/טלפון של משתמש רשום) ---
+	let transferTarget = $state<{ id: string; label: string } | null>(null);
+	let transferRecipient = $state("");
+	let transferError = $state("");
+	let transferBusy = $state(false);
+	let transferSuccessName = $state("");
+	let transferredItemIds = $state<string[]>([]);
+	function openTransfer(id: string, label: string) {
+		transferTarget = { id, label };
+		transferRecipient = "";
+		transferError = "";
+		transferSuccessName = "";
+	}
+	function closeTransfer() {
+		if (transferBusy) return;
+		transferTarget = null;
+	}
+	async function confirmTransfer() {
+		if (!transferTarget || transferBusy) return;
+		if (!transferRecipient.trim()) {
+			transferError = tFn("profile.transfer_recipient_required");
+			return;
+		}
+		transferBusy = true;
+		transferError = "";
+		try {
+			const res = await fetch(`/api/items/${transferTarget.id}`, {
+				method: "PATCH",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					action: "transfer_owner",
+					recipient: transferRecipient.trim(),
+				}),
+			});
+			const data = await res.json();
+			if (data.success) {
+				transferredItemIds = [...transferredItemIds, transferTarget.id];
+				transferSuccessName = data.recipientName || tFn("profile.transfer_done_fallback_name");
+			} else {
+				transferError = data.message ?? tFn("profile.network_error");
+			}
+		} catch {
+			transferError = tFn("profile.network_error");
+		}
+		transferBusy = false;
+	}
+
 	function unlike(item: LikedItem) {
 		removeLike(item.type, item.id);
 		refreshLikes();
@@ -3148,7 +3195,7 @@
 						</div>
 					{:else}
 						<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-							{#each data.items.filter(i => !deletedItemIds.includes(i.id)) as item}
+							{#each data.items.filter(i => !deletedItemIds.includes(i.id) && !transferredItemIds.includes(i.id)) as item}
 								{@const eff = restoredItemIds.includes(item.id) ? 'active' : item.status}
 								{@const daysLeft = eff === 'deleted' ? itemRestoreDaysLeft(item) : 0}
 								<div class="bg-white/5 rounded-2xl border border-white/10 p-4 hover:border-purple-500/30 hover:bg-white/8 transition-all group {eff === 'deleted' ? 'opacity-75' : ''}">
@@ -3242,6 +3289,14 @@
 										>{republishingItemId === item.id ? '...' : tFn('profile.republish')}</button>
 									{:else if republishedItemIds.includes(item.id)}
 										<span class="text-[11px] font-bold text-green-300 px-2.5 py-1">{tFn("profile.republished")}</span>
+									{/if}
+									{#if eff !== 'deleted' && item.category !== 'singles'}
+										<button
+											type="button"
+											onclick={() => openTransfer(item.id, item.label)}
+											class="text-[11px] font-bold text-purple-300/90 hover:text-purple-200 hover:bg-purple-500/10 px-2.5 py-1 rounded-md transition-colors"
+											title={tFn("profile.transfer_item_title")}
+										>{tFn('profile.transfer_item')}</button>
 									{/if}
 									<button
 										type="button"
@@ -5286,6 +5341,59 @@
 					{permDeleteBusy ? tFn('profile.pd_deleting') : tFn('profile.pd_confirm')}
 				</button>
 			</div>
+		</div>
+	</div>
+{/if}
+
+<!-- מודל העברת נכס במתנה למשתמש אחר (לפי אימייל/טלפון של משתמש רשום) -->
+{#if transferTarget}
+	<div class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+		role="button" tabindex="-1" onclick={closeTransfer} onkeydown={(e) => e.key === 'Escape' && closeTransfer()}>
+		<div class="w-full max-w-sm bg-[#0f172a] border border-purple-500/30 rounded-2xl shadow-2xl p-5"
+			role="dialog" aria-modal="true" tabindex="-1"
+			onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.stopPropagation()}>
+			{#if transferSuccessName}
+				<h3 class="text-white font-black text-lg mb-2 flex items-center gap-2">🎁 {tFn("profile.transfer_done_title")}</h3>
+				<p class="text-gray-300 text-sm mb-4">
+					{tFn("profile.transfer_done_prefix")} <span class="font-bold text-white">"{transferTarget.label}"</span> {tFn("profile.transfer_done_to")} <span class="font-bold text-purple-300">{transferSuccessName}</span>.
+				</p>
+				<div class="flex justify-end">
+					<button type="button" onclick={() => (transferTarget = null)}
+						class="text-sm font-bold text-white bg-purple-600 hover:bg-purple-500 rounded-lg px-4 py-2 transition-all">{tFn("profile.transfer_close")}</button>
+				</div>
+			{:else}
+				<h3 class="text-white font-black text-lg mb-1 flex items-center gap-2">🎁 {tFn("profile.transfer_title")}</h3>
+				<p class="text-gray-300 text-sm mb-1">
+					{tFn("profile.transfer_body_prefix")} <span class="font-bold text-white">"{transferTarget.label}"</span> {tFn("profile.transfer_body_suffix")}
+				</p>
+				<p class="text-amber-300/80 text-xs mb-3">{tFn("profile.transfer_hint")}</p>
+
+				<label class="block text-xs font-bold text-gray-300 mb-1" for="transferRecipient">
+					{tFn("profile.transfer_recipient_label")}
+				</label>
+				<input
+					id="transferRecipient"
+					type="text"
+					bind:value={transferRecipient}
+					autocomplete="off"
+					placeholder={tFn("profile.transfer_recipient_ph")}
+					class="w-full bg-[#0a0f1a] border border-white/15 focus:border-purple-500/60 rounded-lg text-white text-sm px-3 py-2 mb-2 outline-none"
+					onkeydown={(e) => e.key === 'Enter' && confirmTransfer()}
+				/>
+
+				{#if transferError}
+					<p class="text-red-400 text-xs font-bold mb-2">⚠️ {transferError}</p>
+				{/if}
+
+				<div class="flex items-center justify-end gap-2 mt-1">
+					<button type="button" onclick={closeTransfer} disabled={transferBusy}
+						class="text-sm font-bold text-gray-300 hover:text-white px-3 py-2 disabled:opacity-50">{tFn("profile.transfer_cancel")}</button>
+					<button type="button" onclick={confirmTransfer} disabled={transferBusy}
+						class="text-sm font-bold text-white bg-purple-600 hover:bg-purple-500 disabled:opacity-50 rounded-lg px-4 py-2 transition-all">
+						{transferBusy ? tFn('profile.transfer_sending') : tFn('profile.transfer_confirm')}
+					</button>
+				</div>
+			{/if}
 		</div>
 	</div>
 {/if}

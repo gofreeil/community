@@ -483,6 +483,8 @@ export interface UpdateItemData {
     color?: string;
     /** שינוי קטגוריה (תיקון סיווג שגוי) — יחד עם icon/color נגזרים מחדש */
     category?: string;
+    /** העברת בעלות על הנכס למשתמש אחר (מתנה) — מזהה המשתמש המקבל */
+    user_id?: string;
 }
 
 export async function updateItem(documentId: string, data: UpdateItemData): Promise<void> {
@@ -501,6 +503,7 @@ export async function updateItem(documentId: string, data: UpdateItemData): Prom
     if (data.icon         !== undefined) payload.icon         = data.icon;
     if (data.color        !== undefined) payload.color        = data.color;
     if (data.category     !== undefined) payload.category     = data.category;
+    if (data.user_id      !== undefined) payload.user_id      = data.user_id;
     await strapiPut(`/api/items/${documentId}`, { data: payload });
     invalidate('items:');
 }
@@ -1640,6 +1643,11 @@ export async function getUserByAnyId(id: string, _jwt?: string): Promise<DbUser 
 
 export async function getUserByEmail(email: string, _jwt?: string): Promise<DbUser | undefined> {
     const u = await findUpUserByEmail(email);
+    return u ? mapUpUser(u) : undefined;
+}
+
+export async function getUserByPhone(phone: string, _jwt?: string): Promise<DbUser | undefined> {
+    const u = await findUpUserByPhone(phone);
     return u ? mapUpUser(u) : undefined;
 }
 
