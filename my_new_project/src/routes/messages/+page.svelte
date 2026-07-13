@@ -65,6 +65,12 @@
         catch { return ''; }
     }
 
+    // הודעת השלמת-פרופיל (דרגות) מקבלת כפתור קיצור לדף הפרופיל
+    function isTierUpgrade(extraFields: string): boolean {
+        try { return JSON.parse(extraFields)?.type === 'tier_upgrade'; }
+        catch { return false; }
+    }
+
     function formatDate(iso: string): string {
         if (!iso) return '';
         const diff = Date.now() - new Date(iso).getTime();
@@ -180,6 +186,14 @@
                     <p class="text-gray-300 text-sm leading-relaxed bg-white/5 rounded-xl px-4 py-3 mb-3">
                         {msg.description}
                     </p>
+
+                    <!-- קיצור להשלמת הפרופיל בהודעת דרגות -->
+                    {#if isTierUpgrade(msg.extra_fields)}
+                        <a href="/profile"
+                            class="block text-center py-2 rounded-xl mb-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:opacity-90 text-white text-sm font-bold transition-all">
+                            {$_('extras.m_complete_profile')}
+                        </a>
+                    {/if}
 
                     <!-- Reply buttons -->
                     {#if sender.phone}

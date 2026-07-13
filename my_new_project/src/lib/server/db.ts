@@ -6,6 +6,7 @@
 
 import { strapiGet, strapiPost, strapiPut, strapiDelete, StrapiContentTypeError, findStrapiUpUsers, updateStrapiUpUser } from './strapiClient.js';
 import { DEFAULT_DISCOUNT_CODES, type DiscountCode } from '$lib/discountCodes';
+import { userTier } from '$lib/tiers';
 import { cached, invalidate } from './cache.js';
 
 // TTL לערכי ה-cache (במילישניות). קצר מספיק שעדכונים נראים מהר,
@@ -86,6 +87,8 @@ export interface DbUser {
     security_answer_2: string;
     status: string;
     coordinator_of: string[];
+    /** דרגות-יעד שכבר נשלחה עליהן הודעת השלמת-פרופיל ב"הודעות" */
+    tier_prompted: number[];
     /** האם לרכז/מנהל מוגדר אימות דו-שלבי (TOTP) — בוליאני בלבד, הסוד עצמו לא נחשף */
     totp_enabled: boolean;
     /** כל מזהי החשבונות האמיתיים שאוחדו לכרטיס זה (כולל ה-id הראשי) */
@@ -184,6 +187,8 @@ interface StrapiUpUser {
     status: string | null;
     coordinator_of: string[] | null;
     totp_secret: string | null;
+    /** דרגות-יעד שכבר נשלחה עליהן הודעת השלמת-פרופיל (למניעת שליחה חוזרת) */
+    tier_prompted: number[] | null;
     createdAt: string;
 }
 
@@ -244,6 +249,7 @@ function mapUpUser(u: StrapiUpUser): DbUser {
         security_answer_2:   u.security_answer_2   ?? '',
         status:              u.status              ?? 'active',
         coordinator_of: Array.isArray(u.coordinator_of) ? u.coordinator_of : [],
+        tier_prompted:  Array.isArray(u.tier_prompted)  ? u.tier_prompted  : [],
         // חושפים רק בוליאני — הסוד עצמו (u.totp_secret) לעולם לא יוצא ל-DbUser/דפים
         totp_enabled: !!(u.totp_secret && u.totp_secret.trim()),
     };
@@ -1433,6 +1439,72 @@ export async function getMessagesByUserId(userId: string): Promise<DbItem[]> {
         'pagination[limit]':      '200',
     });
     return (res.data ?? []).map(mapStrapiItem);
+}
+
+// ============================================================
+// ---- הודעת השלמת-פרופיל (דרגות הרשמה) ----
+// ------------------------------------------------------------
+// במקום באנר קבוע בפרופיל, משתמש עם פרופיל חסר מקבל הודעה רגילה
+// ב"הודעות" — שם אפשר לארכב או למחוק אותה. דגל tier_prompted על
+// המשתמש מבטיח שההודעה לא תישלח שוב גם אחרי מחיקה סופית.
+// סדר הפעולות: קודם כתיבת הדגל, רק אחר-כך ההודעה — כך כשל בכתיבה
+// (למשל לפני שהשדה נפרס בבאקאנד) מדלג על השליחה במקום להציף בהודעות.
+// ============================================================
+
+const TIER_PROMPT_CONTENT: Record<2 | 3, { label: string; icon: string; body: (name: string) => string }> = {
+    2: {
+        label: '🏘️ צעד אחד מפרסום בלוח',
+        icon:  '🏘️',
+        body:  (name) => `שלום ${name}! 👋\n\nשמחים שהצטרפת לקהילה. כדי לפרסם מודעות בלוח הקהילתי (מסירות, גמ"חים, אירועים ועוד) נשאר רק להשלים בפרופיל: עיר, שכונה וטלפון — כך המודעות ישויכו לשכונה הנכונה ושכנים יוכלו ליצור איתך קשר.\n\nאפשר להשלים בדף הפרופיל בכל רגע.\n\n— הנהלת קהילה בשכונה`,
+    },
+    3: {
+        label: '⭐ הפרופיל שלך כמעט מלא',
+        icon:  '⭐',
+        body:  (name) => `שלום ${name}! 👋\n\nנשארו רק שני פרטים לפרופיל מלא: מין ותאריך לידה. פרופיל מלא פותח גם את לוח הפנויים/פנויות.\n\nאפשר להשלים בדף הפרופיל בכל רגע.\n\n— הנהלת קהילה בשכונה`,
+    },
+};
+
+// מניעת שליחה כפולה מבקשות מקבילות; רשומה נשארת גם אחרי כשל כדי
+// שאינסטנס לא יחזור ויכה ב-Strapi בכל ניווט (יתאושש באינסטנס/פריסה הבאה)
+const tierPromptAttempted = new Set<string>();
+
+/** שולח פעם אחת (לכל דרגת-יעד) הודעת השלמת-פרופיל למשתמש שטרם השלים */
+export async function maybeSendTierUpgradeMessage(sessionUserId: string, user: DbUser): Promise<void> {
+    const tier = userTier(user);
+    if (tier >= 3) return;
+    const next = (tier + 1) as 2 | 3;
+    if (user.tier_prompted.includes(next)) return;
+
+    const key = `${sessionUserId}:${next}`;
+    if (tierPromptAttempted.has(key)) return;
+    tierPromptAttempted.add(key);
+
+    // בדיקה טרייה מול Strapi (ה-cache עלול לפגר) — אינסטנס אחר אולי כבר שלח
+    const raw = await findUpUser(sessionUserId);
+    if (!raw) return;
+    const prompted = Array.isArray(raw.tier_prompted) ? raw.tier_prompted : [];
+    if (prompted.includes(next)) return;
+
+    await updateStrapiUpUser(raw.id, { tier_prompted: [...prompted, next] });
+    invalidate('user:');
+
+    const content = TIER_PROMPT_CONTENT[next];
+    await createItem({
+        category:    'message',
+        label:       content.label,
+        description: content.body(user.name || ''),
+        contact:     'הנהלת קהילה בשכונה',
+        user_id:     sessionUserId,
+        icon:        content.icon,
+        color:       'purple',
+        extra_fields: {
+            type: 'tier_upgrade',
+            tier: next,
+            sender_name: 'הנהלת קהילה בשכונה',
+            item_label: 'השלמת פרופיל',
+            read: false,
+        },
+    });
 }
 
 // ============================================================

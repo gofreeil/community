@@ -1,5 +1,5 @@
 import type { LayoutServerLoad } from './$types';
-import { getUserById, getNeighborhoods } from '$lib/server/db';
+import { getUserById, getNeighborhoods, maybeSendTierUpgradeMessage } from '$lib/server/db';
 import { listApproved } from '$lib/server/adsStore';
 
 export const load: LayoutServerLoad = async (event) => {
@@ -21,6 +21,16 @@ export const load: LayoutServerLoad = async (event) => {
 
     // פרטי משתמש מלאים לתצוגה בדרואר
     const layoutUser = userRes.status === 'fulfilled' ? userRes.value : null;
+
+    // הודעת השלמת-פרופיל חד-פעמית ב"הודעות" (הבאנר הקבוע הוסר מהפרופיל).
+    // no-op מיידי כשכבר נשלחה (דגל על המשתמש); כשל כאן לעולם לא מפיל את הדף.
+    if (layoutUser && !layoutUser.banned && session?.user?.id) {
+        try {
+            await maybeSendTierUpgradeMessage(session.user.id as string, layoutUser);
+        } catch (e) {
+            console.warn('[layout] tier prompt failed:', e instanceof Error ? e.message : e);
+        }
+    }
 
     // פרסומות מאושרות - לשתילה ב-AdsSidebar לצד הסטטיות
     const approvedAds = adsRes.status === 'fulfilled'
