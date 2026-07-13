@@ -1,7 +1,7 @@
 import { redirect, fail, error } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { requireSuperAdmin, requireAdmin } from '$lib/server/auth';
-import { getAllUsers, banUser, unbanUser, deleteUserAccounts, setUserRole, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByEmail, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, getNeighborhoodById, approveNeighborhood, rejectNeighborhood, getDiscountCodes, saveDiscountCodes, getItemsByCategoryAndStatus, getUserTotpSecret, coordinatorCovers, markCoordinatorRequestApproved } from '$lib/server/db';
+import { getAllUsers, banUser, unbanUser, deleteUserAccounts, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByAnyId, getUserByEmail, createItem, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, getNeighborhoodById, approveNeighborhood, rejectNeighborhood, getDiscountCodes, saveDiscountCodes, getItemsByCategoryAndStatus, getUserTotpSecret, coordinatorCovers, markCoordinatorRequestApproved } from '$lib/server/db';
 import { finalizeLocationDecision } from '$lib/server/locationDecision';
 import { DEFAULT_DISCOUNT_CODES, type DiscountCode } from '$lib/discountCodes';
 import { countPending } from '$lib/server/adsStore';
@@ -262,25 +262,6 @@ export const actions: Actions = {
         }
     },
 
-    setRole: async (event) => {
-        const session = await event.locals.auth();
-        requireSuperAdmin(session);
-
-        const formData = await event.request.formData();
-        const userId = formData.get('userId') as string;
-        const role = formData.get('role') as string;
-        const neighborhood = formData.get('neighborhood') as string || undefined;
-
-        if (!userId || !role) return fail(400, { error: 'חסרים פרטים' });
-
-        try {
-            await setUserRole(userId, role, neighborhood);
-            return { success: true, message: `תפקיד עודכן ל-${role}` };
-        } catch (e) {
-            return fail(500, { error: `שגיאה בעדכון תפקיד: ${e instanceof Error ? e.message : e}` });
-        }
-    },
-
     setCoordinator: async (event) => {
         const session = await event.locals.auth();
         requireSuperAdmin(session);
@@ -295,10 +276,40 @@ export const actions: Actions = {
         if (!userId) return fail(400, { error: 'חסר מזהה משתמש' });
 
         try {
+            // אזורים שנגרעו בפעולה זו - מרגע העדכון הם נגזרים כ"פנויים" ב-takenAreas
+            // של טופס הבקשה, ורכז חדש יכול להתמנות אליהם מיד
+            const prior   = await getUserByAnyId(userId).catch(() => undefined);
+            const kept    = new Set(neighborhoods);
+            const removed = (prior?.coordinator_of ?? []).filter((a) => !kept.has(a.trim()));
+
             await setCoordinatorOf(userId, neighborhoods);
+
+            // הודעה לרכז ששוחרר - best-effort, כשל בהודעה לא מבטל את ההסרה
+            if (removed.length > 0) {
+                try {
+                    await createItem({
+                        category: 'message',
+                        label: 'ℹ️ עדכון בתפקיד הרכזות',
+                        description: `שלום ${prior?.name || ''},\n\nהוסרת מתפקיד רכז ב${removed.join(', ')}. תודה רבה על תרומתך לקהילה 🙏\n\n— הנהלת קהילה בשכונה`,
+                        contact: 'הנהלת קהילה בשכונה',
+                        user_id: userId,
+                        icon: 'ℹ️',
+                        color: 'blue',
+                        extra_fields: {
+                            type: 'coordinator_removed',
+                            sender_name: 'הנהלת קהילה בשכונה',
+                            item_label: `סיום רכזות – ${removed.join(', ')}`,
+                            read: false,
+                        },
+                    });
+                } catch (e) {
+                    console.warn('[admin/setCoordinator] notify removed failed:', e instanceof Error ? e.message : e);
+                }
+            }
+
             const msg = neighborhoods.length > 0
                 ? `המשתמש מונה לרכז של: ${neighborhoods.join(', ')}`
-                : 'הרכזות הוסרה מהמשתמש';
+                : 'הרכזות הוסרה - השכונות התפנו ורכז חדש יכול להתמנות אליהן';
             return { success: true, message: msg };
         } catch (e) {
             return fail(500, { error: `שגיאה: ${e instanceof Error ? e.message : e}` });

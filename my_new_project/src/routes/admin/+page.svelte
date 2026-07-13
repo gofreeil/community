@@ -89,19 +89,10 @@
 	let searchQuery = $state('');
 	let roleFilter = $state<'all' | 'user' | 'neighborhood_admin' | 'super_admin'>('all');
 
-	// מינוי אדמין - מודל
-	let showRoleModal = $state(false);
-	let roleModalUser = $state<{ id: string; name: string | null; role: string; neighborhood: string } | null>(null);
-	let newRole = $state('user');
-	let newNeighborhood = $state('');
-
 	// מינוי רכז - מודל
 	let showCoordModal  = $state(false);
 	let coordModalUser  = $state<{ id: string; name: string | null; coordinator_of: string[]; neighborhood?: string | null; city?: string | null } | null>(null);
 	let coordNeighborhoods = $state(''); // שכונות מופרדות בשורות
-
-	// תפריט "עוד" בכרטיס רכז - מחזיק את ה-id של הכרטיס הפתוח (כדי להסתיר פעולות מסוכנות מלחיצה בטעות)
-	let openCoordMenuId = $state<string | null>(null);
 
 	// מקום המגורים להצגה: השכונה שסומנה, אך אם סומן "מרכז" או שאין שכונה - העיר שסומנה
 	function residenceLabel(neighborhood?: string | null, city?: string | null): string {
@@ -138,13 +129,6 @@
 
 	// מקום המגורים להצגה במודל הרכז
 	const coordResidence = $derived(coordModalUser ? residenceLabel(coordModalUser.neighborhood, coordModalUser.city) : '');
-
-	function openRoleModal(user: typeof roleModalUser) {
-		roleModalUser = user;
-		newRole = user?.role ?? 'user';
-		newNeighborhood = user?.neighborhood ?? '';
-		showRoleModal = true;
-	}
 
 	// סינון משתמשים
 	const filteredUsers = $derived(() => {
@@ -605,40 +589,28 @@
 									</div>
 								</div>
 
-								<!-- פעולות מוסתרות תחת "עוד" כדי למנוע לחיצות בטעות -->
-								<div class="relative flex-shrink-0">
+								<!-- פעולות: עריכת שכונות והסרה מרכזות (ההסרה מפנה את השכונה לרכז חדש) -->
+								<div class="flex gap-2 flex-shrink-0">
 									<button
 										type="button"
-										onclick={() => openCoordMenuId = openCoordMenuId === user.id ? null : user.id}
-										class="px-3 py-1.5 text-sm rounded-lg bg-white/5 text-gray-300 border border-white/15 hover:bg-white/10 transition-all cursor-pointer font-bold"
-										title="פעולות נוספות"
+										onclick={() => openCoordModal({ id: user.id, name: user.name, coordinator_of: coordList, neighborhood: user.neighborhood, city: (user as any).city })}
+										class="px-3 py-1.5 text-sm rounded-lg bg-amber-500/10 text-amber-300 border border-amber-500/30 hover:bg-amber-500/20 transition-all cursor-pointer font-bold"
+										title="עריכת השכונות שהרכז מנהל"
 									>
-										⋯ עוד
+										✏️ ערוך
 									</button>
-									{#if openCoordMenuId === user.id}
-										<!-- שכבת רקע לסגירת התפריט בלחיצה בחוץ -->
-										<button type="button" class="fixed inset-0 z-10 cursor-default" onclick={() => openCoordMenuId = null} aria-label="סגור תפריט"></button>
-										<div class="absolute z-20 mt-1 end-0 min-w-[180px] rounded-xl border border-white/15 bg-[#0f172a] shadow-xl p-1.5 flex flex-col gap-1">
-											<button
-												type="button"
-												onclick={() => { openCoordMenuId = null; openCoordModal({ id: user.id, name: user.name, coordinator_of: coordList, neighborhood: user.neighborhood, city: (user as any).city }); }}
-												class="w-full text-right px-3 py-2 text-sm rounded-lg bg-amber-500/10 text-amber-300 border border-amber-500/30 hover:bg-amber-500/20 transition-all cursor-pointer font-bold"
-											>
-												✏️ ערוך שכונות
-											</button>
-											<form method="POST" action="?/setCoordinator" use:enhance>
-												<input type="hidden" name="userId" value={user.id} />
-												<input type="hidden" name="neighborhoods" value="" />
-												<button
-													type="submit"
-													class="w-full text-right px-3 py-2 text-sm rounded-lg bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all cursor-pointer font-bold"
-													onclick={(e) => { if (!confirm(`להסיר את הרכזות מ-${user.name ?? user.id}?`)) { e.preventDefault(); } else { openCoordMenuId = null; } }}
-												>
-													🗑 הסר רכזות
-												</button>
-											</form>
-										</div>
-									{/if}
+									<form method="POST" action="?/setCoordinator" use:enhance>
+										<input type="hidden" name="userId" value={user.id} />
+										<input type="hidden" name="neighborhoods" value="" />
+										<button
+											type="submit"
+											class="px-3 py-1.5 text-sm rounded-lg bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all cursor-pointer font-bold"
+											title="השכונות שלו יתפנו ויוכלו לקבל רכז חדש"
+											onclick={(e) => { if (!confirm(`להסיר את ${user.name ?? user.id} מרכזות?\nהשכונות שלו יתפנו ויוכלו לקבל רכז חדש.`)) e.preventDefault(); }}
+										>
+											🗑 הסר רכזות
+										</button>
+									</form>
 								</div>
 							</div>
 						{/each}
@@ -707,16 +679,6 @@
 
 						<!-- פעולות -->
 						<div class="flex gap-2 flex-shrink-0 flex-wrap">
-							<!-- שינוי תפקיד -->
-							<button
-								onclick={() => openRoleModal({ id: user.id, name: user.name, role: user.role, neighborhood: user.neighborhood })}
-								class="px-3 py-1.5 text-sm rounded-lg bg-white/5 text-gray-300 border border-white/10
-								       hover:bg-white/10 transition-all cursor-pointer"
-								title="שנה תפקיד"
-							>
-								🛡️ תפקיד
-							</button>
-
 							<!-- חסימה/ביטול חסימה -->
 							{#if user.id !== data.currentUserId}
 								{#if user.banned}
@@ -996,77 +958,6 @@
 					<button
 						type="button"
 						onclick={() => (showCoordModal = false)}
-						class="flex-1 py-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-300
-						       hover:bg-white/10 transition-all cursor-pointer"
-					>
-						ביטול
-					</button>
-				</div>
-			</form>
-		</div>
-	</div>
-{/if}
-
-<!-- מודל שינוי תפקיד -->
-{#if showRoleModal && roleModalUser}
-	<div
-		class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center px-4"
-		onclick={() => (showRoleModal = false)}
-		role="presentation"
-	>
-		<div
-			class="bg-[#0f172a] rounded-2xl border border-white/10 shadow-2xl w-full max-w-md p-6"
-			onclick={(e) => e.stopPropagation()}
-			role="dialog"
-		>
-			<h2 class="text-xl font-bold mb-4">🛡️ שינוי תפקיד</h2>
-			<p class="text-gray-400 mb-4">
-				משתמש: <span class="text-white font-bold">{roleModalUser.name ?? roleModalUser.id}</span>
-			</p>
-
-			<form method="POST" action="?/setRole" use:enhance={() => {
-				return async ({ result, update }) => {
-					showRoleModal = false;
-					await update();
-				};
-			}}>
-				<input type="hidden" name="userId" value={roleModalUser.id} />
-
-				<label class="block text-sm font-medium text-gray-400 mb-2">תפקיד</label>
-				<select
-					name="role"
-					bind:value={newRole}
-					class="w-full bg-[#1e293b] border border-white/10 rounded-xl px-4 py-2.5 text-white mb-4
-					       focus:outline-none focus:border-purple-500 transition-colors cursor-pointer"
-				>
-					<option value="user">משתמש רגיל</option>
-					<option value="neighborhood_admin">אדמין שכונתי</option>
-					<option value="super_admin">מנהל ראשי</option>
-				</select>
-
-				{#if newRole === 'neighborhood_admin'}
-					<label class="block text-sm font-medium text-gray-400 mb-2">שכונה</label>
-					<input
-						name="neighborhood"
-						type="text"
-						bind:value={newNeighborhood}
-						placeholder="שם השכונה..."
-						class="w-full bg-[#1e293b] border border-white/10 rounded-xl px-4 py-2.5 text-white mb-4
-						       placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
-					/>
-				{/if}
-
-				<div class="flex gap-3 mt-4">
-					<button
-						type="submit"
-						class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold
-						       hover:from-blue-500 hover:to-purple-500 transition-all cursor-pointer"
-					>
-						שמור
-					</button>
-					<button
-						type="button"
-						onclick={() => (showRoleModal = false)}
 						class="flex-1 py-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-300
 						       hover:bg-white/10 transition-all cursor-pointer"
 					>
