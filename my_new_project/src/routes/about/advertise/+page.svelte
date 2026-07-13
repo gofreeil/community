@@ -26,7 +26,7 @@
             border: "border-blue-500/40",
             bg: "bg-blue-900/10",
             featureKeys: ["pkg1_f1", "pkg1_f2", "pkg1_f3"],
-            image: "/images/advertisement-page/Desktop-advertisement.png",
+            image: "/images/advertisement-page/Desktop-advertisement.webp",
         },
         {
             nameKey: "pkg2_name",
@@ -36,7 +36,7 @@
             border: "border-purple-500/40",
             bg: "bg-purple-900/10",
             featureKeys: ["pkg2_f1", "pkg2_f2", "pkg2_f3"],
-            image: "/images/advertisement-page/neighborhood-map.png",
+            image: "/images/advertisement-page/neighborhood-map.webp",
         },
         {
             nameKey: "pkg3_name",
@@ -46,7 +46,7 @@
             border: "border-green-500/40",
             bg: "bg-green-900/10",
             featureKeys: ["pkg3_f1", "pkg3_f2", "pkg3_f3"],
-            image: "/images/advertisement-page/mobile.png",
+            image: "/images/advertisement-page/mobile.webp",
             imageScale: 1.45,
             imageOrigin: "65% 0%",
         },
@@ -515,29 +515,29 @@
     // תמונת רקע לכל שכונה - מוצגת בכפתור הבחירה כשבוחרים שכונה בודדת
     const neighborhoodImages: Record<string, string> = {
         'קרית משה':    '/images/kiryat-moshe-vaad.jfif',
-        'רחביה':       '/images/neighborhoods/rehavia.jpg',
-        'גבעת שאול':   '/images/neighborhoods/givat-shaul.jpg',
-        'רמות':        '/images/neighborhoods/ramot.jpg',
-        'גילה':        '/images/neighborhoods/gilo.jpg',
-        'קטמון':       '/images/neighborhoods/katamon.jpg',
-        'בקעה':        '/images/neighborhoods/baka.jpg',
-        'מעלות דפנה':  '/images/neighborhoods/maalot-dafna.jpg',
-        'רמת אביב':    '/images/neighborhoods/ramat-aviv.jpg',
-        'פלורנטין':    '/images/neighborhoods/florentin.jpg',
-        'נווה צדק':    '/images/neighborhoods/neve-tzedek.jpg',
-        'יפו העתיקה':  '/images/neighborhoods/jaffa.jpg',
-        'רמת החייל':   '/images/neighborhoods/ramat-hahail.jpg',
-        'כרמל צרפתי':  '/images/neighborhoods/french-carmel.jpg',
-        'נווה שאנן':   '/images/neighborhoods/neve-shaanan.jpg',
-        'בת גלים':     '/images/neighborhoods/bat-galim.jpg',
+        'רחביה':       '/images/neighborhoods/rehavia.webp',
+        'גבעת שאול':   '/images/neighborhoods/givat-shaul.webp',
+        'רמות':        '/images/neighborhoods/ramot.webp',
+        'גילה':        '/images/neighborhoods/gilo.webp',
+        'קטמון':       '/images/neighborhoods/katamon.webp',
+        'בקעה':        '/images/neighborhoods/baka.webp',
+        'מעלות דפנה':  '/images/neighborhoods/maalot-dafna.webp',
+        'רמת אביב':    '/images/neighborhoods/ramat-aviv.webp',
+        'פלורנטין':    '/images/neighborhoods/florentin.webp',
+        'נווה צדק':    '/images/neighborhoods/neve-tzedek.webp',
+        'יפו העתיקה':  '/images/neighborhoods/jaffa.webp',
+        'רמת החייל':   '/images/neighborhoods/ramat-hahail.webp',
+        'כרמל צרפתי':  '/images/neighborhoods/french-carmel.webp',
+        'נווה שאנן':   '/images/neighborhoods/neve-shaanan.webp',
+        'בת גלים':     '/images/neighborhoods/bat-galim.webp',
         'חשמונאים':    '/images/kiryat-moshe-vaad.jfif',
     };
 
     // City images - keyed by city name
     const cityImages: Record<string, string> = {
         'ירושלים':       '/images/kiryat-moshe-vaad.jfif',
-        'תל אביב':       '/images/neighborhoods/florentin.jpg',
-        'חיפה':          '/images/neighborhoods/french-carmel.jpg',
+        'תל אביב':       '/images/neighborhoods/florentin.webp',
+        'חיפה':          '/images/neighborhoods/french-carmel.webp',
     };
 
     let neighborhoodImage = $derived(

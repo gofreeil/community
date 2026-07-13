@@ -372,7 +372,7 @@
     <!-- Header -->
     <div class="max-w-4xl mx-auto px-4 text-center mb-6">
         <div class="relative mx-auto mb-3 inline-block" style="mask-image: radial-gradient(ellipse 90% 85% at center, black 55%, transparent 88%); -webkit-mask-image: radial-gradient(ellipse 90% 85% at center, black 55%, transparent 88%);">
-            <img src="/images/shabat.png" alt={$_('boards.shabbat.alt_shabbat')} class="h-48 object-contain" />
+            <img src="/images/shabat.webp" alt={$_('boards.shabbat.alt_shabbat')} class="h-48 object-contain" />
         </div>
         <h1 class="text-3xl font-black text-white mb-2">
             {city ? $_('boards.shabbat.title_city', { values: { city } }) : $_('boards.shabbat.title_national')}

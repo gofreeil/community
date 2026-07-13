@@ -500,7 +500,7 @@
     <div class="max-w-6xl mx-auto px-4 mb-6">
         <div class="relative overflow-hidden rounded-3xl p-6 md:p-12 text-center min-h-[260px] md:min-h-[340px] flex items-center justify-center">
             <!-- תמונת רקע -->
-            <img src="/images/babysitter.png" alt="" class="absolute inset-0 w-full h-full object-cover" />
+            <img src="/images/babysitter.webp" alt="" class="absolute inset-0 w-full h-full object-cover" />
             <!-- שכבת כהות מעל התמונה כדי שהטקסט יבלוט -->
             <div class="absolute inset-0 bg-black/55"></div>
             <!-- תוכן -->

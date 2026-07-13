@@ -181,7 +181,7 @@
 			<div class="absolute inset-0 pointer-events-none"
 				style="background:radial-gradient(ellipse at 60% 20%,rgba(139,92,246,0.4) 0%,transparent 60%),radial-gradient(ellipse at 20% 80%,rgba(59,130,246,0.25) 0%,transparent 50%);"></div>
 			<div class="relative z-10">
-				<img src="/images/community-advantages.png" alt={$_('aboutRevenue.heroImageAlt')} class="mx-auto mb-6 w-full md:w-[40rem] lg:w-[64rem] object-contain rounded-3xl" />
+				<img src="/images/community-advantages.webp" alt={$_('aboutRevenue.heroImageAlt')} class="mx-auto mb-6 w-full md:w-[40rem] lg:w-[64rem] object-contain rounded-3xl" />
 				<h1 class="text-4xl md:text-5xl font-black leading-tight mb-4" style="color:#facc15;">{$_('aboutRevenue.heroTitle')}</h1>
 				<p class="text-indigo-100 text-base md:text-lg max-w-2xl mx-auto mb-6 font-bold">
 					{$_('aboutRevenue.heroSubtitle')}
@@ -837,7 +837,7 @@
 			<div class="absolute inset-0 pointer-events-none"
 				style="background:radial-gradient(ellipse at 50% 30%,rgba(245,158,11,0.35) 0%,transparent 60%);"></div>
 			<div class="relative z-10">
-				<img src="/images/committee.png" alt={$_('aboutRevenue.coordHeroAlt')} class="mx-auto mb-6 w-full max-w-md md:max-w-2xl lg:max-w-4xl object-contain rounded-3xl" style="box-shadow: 0 0 60px 15px rgba(251,191,36,0.35), 0 0 120px 30px rgba(245,158,11,0.2); border: 1px solid rgba(251,191,36,0.3);" />
+				<img src="/images/committee.webp" alt={$_('aboutRevenue.coordHeroAlt')} class="mx-auto mb-6 w-full max-w-md md:max-w-2xl lg:max-w-4xl object-contain rounded-3xl" style="box-shadow: 0 0 60px 15px rgba(251,191,36,0.35), 0 0 120px 30px rgba(245,158,11,0.2); border: 1px solid rgba(251,191,36,0.3);" />
 				<h1 class="text-3xl md:text-5xl font-black leading-tight mb-4" style="color:#fbbf24;">
 					{$_('aboutRevenue.coordHeroTitle')}
 				</h1>

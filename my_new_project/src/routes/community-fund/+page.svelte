@@ -120,7 +120,7 @@
 				-->
 
 				<img
-					src="/images/kupat-hair.png"
+					src="/images/kupat-hair.webp"
 					alt={$_('community.cf_bag_alt')}
 					class="bag-img"
 				/>

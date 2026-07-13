@@ -2373,7 +2373,7 @@
 					style="-webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 80%); mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 80%);"
 				>
 					<img
-						src="/images/wallet.png"
+						src="/images/wallet.webp"
 						alt={tFn("profile.wallet_alt")}
 						class="w-full h-auto block"
 					/>

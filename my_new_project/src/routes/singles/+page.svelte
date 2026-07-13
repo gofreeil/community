@@ -232,7 +232,7 @@
         <div class="text-center mb-6">
             <div class="inline-block p-[3px] rounded-3xl bg-gradient-to-br from-pink-500 via-rose-400 to-purple-600 shadow-2xl shadow-pink-500/30 mb-4">
                 <div class="rounded-[1.3rem] bg-[#0f172a] p-2">
-                    <img src="/images/Available.png" alt={$_('extras.s_board_img_alt')} class="h-48 md:h-64 rounded-2xl mx-auto block" />
+                    <img src="/images/Available.webp" alt={$_('extras.s_board_img_alt')} class="h-48 md:h-64 rounded-2xl mx-auto block" />
                 </div>
             </div>
             <h1 class="text-3xl font-black text-white mb-2">{$_('extras.s_title')}</h1>

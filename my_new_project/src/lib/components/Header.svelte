@@ -260,7 +260,7 @@
                         <div class="relative">
                             <div class="h-12 w-12 rounded-full overflow-hidden flex-shrink-0">
                                 <img
-                                    src="/images/community-logo1.png"
+                                    src="/images/community-logo1.webp"
                                     alt=""
                                     class="w-full h-full object-cover scale-[1.2]"
                                 />
@@ -394,7 +394,7 @@
                     >
                         <div class="h-16 w-16 rounded-full overflow-hidden shadow-lg">
                             <img
-                                src="/images/community-logo1.png"
+                                src="/images/community-logo1.webp"
                                 alt=""
                                 class="w-full h-full object-cover scale-[1.2]"
                             />
@@ -443,7 +443,7 @@
                             opacity:0; transform:scale(0.05);
                             transform-origin: top center;">
                     <img
-                        src="/images/community-advantages.png"
+                        src="/images/community-advantages.webp"
                         alt={tFn("welcome")}
                         style="width:580px; border-radius:24px;
                                -webkit-mask-image: radial-gradient(ellipse 90% 90% at 50% 50%, black 55%, transparent 100%);

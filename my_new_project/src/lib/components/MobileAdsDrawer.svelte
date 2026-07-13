@@ -305,7 +305,7 @@
 
 					<!-- יתרה -->
 					<div class="flex-shrink-0 flex flex-col items-center gap-1 mr-auto">
-						<img src="/images/wallet.png" alt={$_('components.mad_wallet_alt')} class="w-10 h-10 object-contain" />
+						<img src="/images/wallet.webp" alt={$_('components.mad_wallet_alt')} class="w-10 h-10 object-contain" />
 						<span class="text-green-400 text-xs font-black">{layoutUser.balance ?? 0}₪</span>
 					</div>
 
@@ -360,6 +360,7 @@
 						src={ad.image}
 						alt={ad.title}
 						class="ad-img"
+						loading="lazy"
 						decoding="async"
 					/>
 				</div>

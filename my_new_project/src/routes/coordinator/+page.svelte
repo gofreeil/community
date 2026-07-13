@@ -12,7 +12,7 @@
     <div class="max-w-5xl mx-auto">
         <div class="text-center mb-8">
             <img
-                src="/images/rakaz-shchuna.png"
+                src="/images/rakaz-shchuna.webp"
                 alt="רכז שכונה"
                 class="mx-auto mb-3 h-28 w-28 rounded-full object-cover object-top ring-2 ring-white/20 shadow-lg"
             />
@@ -31,7 +31,7 @@
                 <div class="relative overflow-hidden rounded-2xl border border-blue-500/25 bg-gradient-to-br from-blue-600/15 to-blue-500/5 p-4">
                     <!-- תמונת הקהילה בגדול, ממלאת את השטח הפנוי בצד שמאל -->
                     <img
-                        src="/images/60712_175258.png"
+                        src="/images/60712_175258.webp"
                         alt=""
                         class="pointer-events-none absolute left-2 inset-y-0 my-auto h-[68px] w-[68px] rounded-2xl object-cover ring-1 ring-white/20 shadow-lg"
                     />
@@ -48,7 +48,7 @@
                 <div class="relative overflow-hidden rounded-2xl border border-purple-500/25 bg-gradient-to-br from-purple-600/15 to-purple-500/5 p-4">
                     <!-- תמונת מפת הקהילה בגדול בשטח הפנוי בצד שמאל -->
                     <img
-                        src="/images/Co260712_181739.png"
+                        src="/images/Co260712_181739.webp"
                         alt=""
                         class="pointer-events-none absolute left-2 inset-y-0 my-auto h-[68px] w-[68px] rounded-2xl object-cover ring-1 ring-white/20 shadow-lg"
                     />
@@ -74,7 +74,7 @@
                 <div class="relative overflow-hidden rounded-2xl border border-emerald-500/25 bg-gradient-to-br from-emerald-600/15 to-emerald-500/5 p-4">
                     <!-- תמונת "כניסות לאתר" בגדול בשטח הפנוי בצד שמאל -->
                     <img
-                        src="/images/60712_183146.png"
+                        src="/images/60712_183146.webp"
                         alt=""
                         class="pointer-events-none absolute left-2 inset-y-0 my-auto h-[68px] w-[68px] rounded-2xl object-cover ring-1 ring-white/20 shadow-lg"
                     />

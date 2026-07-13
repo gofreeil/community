@@ -312,7 +312,7 @@
             <div class="relative w-[32rem] md:w-[40rem] max-w-full mx-auto">
                 <div class="relative aspect-[1330/441] rounded-2xl overflow-hidden bg-gradient-to-br from-orange-900/20 to-amber-900/10">
                     <img
-                        src="/images/delivery.png"
+                        src="/images/delivery.webp"
                         alt=""
                         width="1330"
                         height="882"

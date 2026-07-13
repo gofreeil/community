@@ -1,6 +1,20 @@
-import { getAllItems, getUserById, getEvents } from '$lib/server/db';
+import { getAllItems, getUserById, getEvents, type DbItem } from '$lib/server/db';
 import { isAdmin } from '$lib/server/auth';
 import type { PageServerLoad } from './$types';
+
+// extra_fields מלא מכיל תמונות base64 (גלריות פנויים, שעות פתיחה, תגובות...)
+// ששקלו ~1MB בכל טעינת דף בית. דף הבית קורא משם רק את המפתחות האלה:
+// map_image/service_type (פין על המפה), type (אבידה/מציאה), answered (הרמת יד).
+const HOME_EXTRA_KEYS = ['map_image', 'service_type', 'type', 'answered'] as const;
+
+function slimForHome(i: DbItem): DbItem {
+    if (!i.extra_fields || i.extra_fields === '{}') return i;
+    let extra: Record<string, unknown> = {};
+    try { extra = JSON.parse(i.extra_fields); } catch { return { ...i, extra_fields: '{}' }; }
+    const slim: Record<string, unknown> = {};
+    for (const k of HOME_EXTRA_KEYS) if (extra[k] !== undefined) slim[k] = extra[k];
+    return { ...i, extra_fields: JSON.stringify(slim) };
+}
 
 export const load: PageServerLoad = async (event) => {
     const session = await event.locals.auth();
@@ -40,7 +54,7 @@ export const load: PageServerLoad = async (event) => {
     const vaadMembersCount   = dbItems.filter(i => i.category === 'vaad_member'   && inMyNeighborhood(i)).length;
 
     return {
-        dbItems,
+        dbItems: dbItems.map(slimForHome),
         events,
         userNeighborhood,
         userCity,

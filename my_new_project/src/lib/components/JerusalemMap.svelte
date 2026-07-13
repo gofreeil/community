@@ -1649,7 +1649,7 @@
                         title={$t('map.national_board_giveaway_title')}
                     >
                         <span class="text-lg">{$t('map.to_national_board')}</span>
-                        <img src="/images/delivery.png" alt="" class="w-7 h-7 object-contain" />
+                        <img src="/images/delivery.webp" alt="" class="w-7 h-7 object-contain" />
                     </button>
                 {:else if nationalBoardUrl}
                     <div class="absolute bottom-4 left-4 z-20 flex flex-wrap items-center gap-2">
@@ -1724,7 +1724,7 @@
                                     >
                                         {#if category.id === 'giveaway'}
                                             <img
-                                                src="/images/delivery.png"
+                                                src="/images/delivery.webp"
                                                 alt=""
                                                 class="w-7 h-7 md:w-8 md:h-8 object-contain"
                                             />
@@ -1969,7 +1969,7 @@
                         <p class="text-sm">{$t('map.search_type_hint')}</p>
                     </div>
                     <div class="flex justify-center mt-3">
-                        <img src="/images/vaadei-search.png" alt="" class="max-w-[320px] w-full rounded-xl opacity-80" />
+                        <img src="/images/vaadei-search.webp" alt="" class="max-w-[320px] w-full rounded-xl opacity-80" />
                     </div>
                 {:else}
                 <!-- תוצאות -->

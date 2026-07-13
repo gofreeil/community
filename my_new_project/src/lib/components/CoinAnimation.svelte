@@ -125,7 +125,7 @@
 				</svg>
 			</div>
 			<div class="travel-dest">
-				<img src="/images/kupat-hair.png" alt={$_('community.ca_fund')} class="travel-bag"/>
+				<img src="/images/kupat-hair.webp" alt={$_('community.ca_fund')} class="travel-bag"/>
 				<span class="travel-sub">{$_('community.ca_fund')}</span>
 			</div>
 		</div>
@@ -146,7 +146,7 @@
 				</svg>
 				{/each}
 			</div>
-			<img src="/images/kupat-hair.png" alt={$_('community.ca_fund')} class="bag-fill"/>
+			<img src="/images/kupat-hair.webp" alt={$_('community.ca_fund')} class="bag-fill"/>
 		</div>
 		<div class="counter-wrap">
 			<span class="counter-label">{$_('community.ca_fund_total_label')}</span>

@@ -819,7 +819,7 @@
                 <!-- Background image -->
                 <div
                     class="em-zoom absolute inset-0 bg-cover bg-center transition-transform duration-300"
-                    style="background-image: url('/images/2.png');"
+                    style="background-image: url('/images/2.webp');"
                 ></div>
                 <!-- Dark gradient overlay -->
                 <div
@@ -855,7 +855,7 @@
                 <!-- Background image -->
                 <div
                     class="em-zoom absolute inset-0 bg-cover bg-center transition-transform duration-300"
-                    style="background-image: url('/images/vaad-shchuna.png');"
+                    style="background-image: url('/images/vaad-shchuna.webp');"
                 ></div>
                 <!-- Dark gradient overlay -->
                 <div
@@ -896,7 +896,7 @@
                 <!-- Background image -->
                 <div
                     class="em-zoom absolute inset-0 bg-cover bg-center transition-transform duration-300"
-                    style="background-image: url('/images/konanut.png');"
+                    style="background-image: url('/images/konanut.webp');"
                 ></div>
                 <!-- Dark gradient overlay -->
                 <div
@@ -942,7 +942,7 @@
                     <!-- Background image -->
                     <div
                         class="absolute inset-0 bg-cover bg-center"
-                        style="background-image: url('/images/2.png');"
+                        style="background-image: url('/images/2.webp');"
                     ></div>
                     <!-- Dark gradient overlay -->
                     <div
@@ -966,7 +966,7 @@
                     <!-- Background image -->
                     <div
                         class="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110"
-                        style="background-image: url('/images/vaad-shchuna.png');"
+                        style="background-image: url('/images/vaad-shchuna.webp');"
                     ></div>
                     <!-- Dark gradient overlay -->
                     <div
@@ -990,7 +990,7 @@
                     <!-- Background image -->
                     <div
                         class="absolute inset-0 bg-cover bg-center"
-                        style="background-image: url('/images/konanut.png');"
+                        style="background-image: url('/images/konanut.webp');"
                     ></div>
                     <!-- Dark gradient overlay -->
                     <div
@@ -1025,7 +1025,7 @@
             <!-- Image (extends slightly into text area - only small overlap) -->
             <div
                 class="absolute inset-y-0 left-0 w-3/4 md:w-2/3 z-10 bg-cover bg-center transition-transform duration-300 group-hover:scale-105 farm-image-fade"
-                style="background-image: url('/images/Copilot_20260514_012104.png');"
+                style="background-image: url('/images/Copilot_20260514_012104.webp');"
             ></div>
 
             <!-- Content (right side in RTL, floats over image) -->

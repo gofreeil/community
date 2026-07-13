@@ -55,7 +55,7 @@ const DEMO_SPECS: DemoItemSpec[] = [
         category: 'electronics',
         price: 120,
         images: [
-            '/images/categories/electronics.jpg',
+            '/images/categories/electronics.webp',
         ],
         tags: ['מקרר', 'מטבח', 'חשמל'],
         daysAgo: 3,
@@ -73,7 +73,7 @@ const DEMO_SPECS: DemoItemSpec[] = [
         category: 'baby',
         price: 250,
         images: [
-            '/images/categories/baby.jpg',
+            '/images/categories/baby.webp',
         ],
         tags: ['עגלה', 'תינוק', 'טיולון'],
         daysAgo: 5,
