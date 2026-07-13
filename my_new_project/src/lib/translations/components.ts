@@ -81,6 +81,15 @@ export const he = {
         np_change_location: "שינוי מיקום",
         np_lat_placeholder: "lat (קו רוחב)",
         np_lng_placeholder: "lng (קו אורך)",
+        np_gps: "המיקום שלי",
+        np_gps_title: "שיתוף המיקום הנוכחי מהמכשיר (GPS)",
+        np_gps_locating: "מאתר…",
+        np_gps_denied: "הגישה למיקום נחסמה - אפשרו מיקום בהגדרות הדפדפן ונסו שוב",
+        np_gps_timeout: "לא נקלט מיקום - נסו שוב",
+        np_gps_unavailable: "המיקום אינו זמין כרגע - נסו שוב",
+        np_gps_unsupported: "הדפדפן לא תומך בשיתוף מיקום",
+        np_gps_insecure: "שיתוף מיקום עובד רק בחיבור מאובטח (https)",
+        np_gps_out_of_area: "המיקום הנוכחי שלכם מחוץ לתחום העיר שנבחרה",
 
         // ===== RestaurantReviewsModal =====
         rr_choose_rating: "בחרו דירוג בכוכבים",
@@ -211,6 +220,15 @@ export const en = {
         np_change_location: "Change location",
         np_lat_placeholder: "lat (latitude)",
         np_lng_placeholder: "lng (longitude)",
+        np_gps: "My location",
+        np_gps_title: "Share your current location from the device (GPS)",
+        np_gps_locating: "Locating…",
+        np_gps_denied: "Location access is blocked - allow location in your browser settings and try again",
+        np_gps_timeout: "Couldn't get a location fix - try again",
+        np_gps_unavailable: "Location is unavailable right now - try again",
+        np_gps_unsupported: "This browser doesn't support location sharing",
+        np_gps_insecure: "Location sharing only works over a secure (https) connection",
+        np_gps_out_of_area: "Your current location is outside the selected city area",
 
         // ===== RestaurantReviewsModal =====
         rr_choose_rating: "Choose a star rating",
@@ -341,6 +359,15 @@ export const ru = {
         np_change_location: "Изменить место",
         np_lat_placeholder: "lat (широта)",
         np_lng_placeholder: "lng (долгота)",
+        np_gps: "Моё местоположение",
+        np_gps_title: "Поделиться текущим местоположением устройства (GPS)",
+        np_gps_locating: "Поиск…",
+        np_gps_denied: "Доступ к геолокации заблокирован - разрешите её в настройках браузера и попробуйте снова",
+        np_gps_timeout: "Не удалось определить местоположение - попробуйте ещё раз",
+        np_gps_unavailable: "Геолокация сейчас недоступна - попробуйте ещё раз",
+        np_gps_unsupported: "Браузер не поддерживает геолокацию",
+        np_gps_insecure: "Геолокация работает только по защищённому соединению (https)",
+        np_gps_out_of_area: "Ваше текущее местоположение вне выбранного города",
 
         // ===== RestaurantReviewsModal =====
         rr_choose_rating: "Выберите оценку в звёздах",

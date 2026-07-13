@@ -137,6 +137,59 @@
         }
     }
 
+    // ===== שיתוף מיקום (GPS): קליטת המיקום הנוכחי מהמכשיר ומרכוז הסמן עליו =====
+    // אותה זרימה כמו בקריאות לעזרה: לחיצה → בקשת הרשאה → הסמן קופץ למיקום הנוכחי.
+    // המשתמש עדיין מכוונן בגרירה ולוחץ "אישור המיקום" - ה-GPS רק ממקם, לא מאשר.
+    let gpsLocating = $state(false);
+    let gpsError = $state('');   // מפתח i18n של הודעת השגיאה; ריק = אין שגיאה
+    let gpsErrTimer: ReturnType<typeof setTimeout> | null = null;
+
+    function showGpsError(key: string) {
+        gpsError = key;
+        if (gpsErrTimer) clearTimeout(gpsErrTimer);
+        gpsErrTimer = setTimeout(() => (gpsError = ''), 6000);
+    }
+
+    function locateMe() {
+        if (gpsLocating || locked) return;
+        gpsError = '';
+        dismissDemo();
+        // חיבור לא-מאובטח (לא https) - הדפדפן חוסם גישה למיקום
+        if (typeof window !== 'undefined' && window.isSecureContext === false) {
+            showGpsError('components.np_gps_insecure'); return;
+        }
+        if (typeof navigator === 'undefined' || !navigator.geolocation) {
+            showGpsError('components.np_gps_unsupported'); return;
+        }
+        gpsLocating = true;
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                gpsLocating = false;
+                if (locked) return; // המשתמש כבר אישר מיקום בזמן האיתור - לא דורסים
+                const la = +pos.coords.latitude.toFixed(6);
+                const ln = +pos.coords.longitude.toFixed(6);
+                // בגבולות עיר נעולים: קיבוע מחוץ לתחום היה נחתך ע"י maxBounds ונוחת
+                // על שפת המפה במקום על המיקום האמיתי - עדיף שגיאה ברורה.
+                const b = cityBounds();
+                if (b && (la < b[0][0] || la > b[1][0] || ln < b[0][1] || ln > b[1][1])) {
+                    showGpsError('components.np_gps_out_of_area'); return;
+                }
+                // ההצבה ממרכזת את המפה דרך האפקט של lat/lng (אותו מסלול כמו geocoding)
+                lat = la; lng = ln;
+                onUserPin?.(la, ln);
+            },
+            (err) => {
+                gpsLocating = false;
+                showGpsError(
+                    err.code === err.PERMISSION_DENIED ? 'components.np_gps_denied'
+                    : err.code === err.TIMEOUT ? 'components.np_gps_timeout'
+                    : 'components.np_gps_unavailable',
+                );
+            },
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 15000 },
+        );
+    }
+
     // הצבה מבחוץ (geocoding של הכתובת שהוקלדה): כשה-lat/lng הכבולים משתנים
     // שלא דרך גרירת המפה - ממרכזים את המפה עליהם (לא נחשב סימון של המשתמש).
     $effect(() => {
@@ -260,9 +313,12 @@
             <div class="center-pin__dot"></div>
         </div>
 
-        <!-- הוראה מתמדת בראש המפה: מסבירה בדיוק מה לעשות. נעלמת כשהמפה מוקפאת. -->
+        <!-- הוראה מתמדת בראש המפה: מסבירה בדיוק מה לעשות. נעלמת כשהמפה מוקפאת.
+             כשיש שגיאת GPS - היא מוצגת כאן במקום ההוראה (ונעלמת לבד אחרי כמה שניות). -->
         {#if !locked}
-            <div class="map-hint">{$_('components.np_drag_map')}</div>
+            <div class="map-hint {gpsError ? 'map-hint--error' : ''}">
+                {gpsError ? $_(gpsError) : $_('components.np_drag_map')}
+            </div>
         {/if}
 
         <!-- באנר "מוקפא" קטן כשהמיקום נקבע -->
@@ -292,22 +348,36 @@
                 <div class="map-confirmbar__text">
                     {placed ? $_('components.np_center_here') : $_('components.np_position_then_confirm')}
                 </div>
+                <button type="button" onclick={locateMe} disabled={gpsLocating} class="map-gps-pill">
+                    {#if gpsLocating}<span class="gps-spin">🛰️</span> {$_('components.np_gps_locating')}{:else}📡 {$_('components.np_gps')}{/if}
+                </button>
                 <button type="button" onclick={confirmLocation} class="map-confirm-btn">
                     ✓ {$_('components.np_confirm')}
                 </button>
             </div>
         {:else if !locked}
-            <!-- מוקטן: כפתור הגדלה למסך מלא (מוסתר כשהמפה מוקפאת) -->
-            <button
-                type="button"
-                onclick={toggleExpand}
-                class="map-btn map-btn--expand"
-                aria-label={$_('components.np_expand_map_aria')}
-                title={$_('components.np_expand_map_title')}
-            >
-                <span class="text-base leading-none">⤢</span>
-                <span class="hidden sm:inline">{$_('components.np_expand')}</span>
-            </button>
+            <!-- מוקטן: הגדלה למסך מלא + שיתוף המיקום הנוכחי (GPS), זה לצד זה -->
+            <div class="map-actions">
+                <button
+                    type="button"
+                    onclick={toggleExpand}
+                    class="map-btn map-btn--inline"
+                    aria-label={$_('components.np_expand_map_aria')}
+                    title={$_('components.np_expand_map_title')}
+                >
+                    <span class="text-base leading-none">⤢</span>
+                    <span class="hidden sm:inline">{$_('components.np_expand')}</span>
+                </button>
+                <button
+                    type="button"
+                    onclick={locateMe}
+                    disabled={gpsLocating}
+                    class="map-btn map-btn--inline map-btn--gps"
+                    title={$_('components.np_gps_title')}
+                >
+                    {#if gpsLocating}<span class="gps-spin">🛰️</span> {$_('components.np_gps_locating')}{:else}📡 {$_('components.np_gps')}{/if}
+                </button>
+            </div>
         {/if}
 
         <!-- שכבת ההדגמה המונפשת: יד גוררת את המפה -->
@@ -551,6 +621,35 @@
     .map-hint--locked {
         background: rgba(5, 150, 105, 0.92);
     }
+    /* שגיאת GPS - מוצגת בבאנר ההוראה בגוון אזהרה */
+    .map-hint--error {
+        background: rgba(180, 83, 9, 0.94);
+    }
+
+    /* כפתור "המיקום שלי" במסך מלא - גלולה משנית מעל כפתור האישור */
+    .map-gps-pill {
+        align-self: center;
+        padding: 0.45rem 1.1rem;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #e2e8f0;
+        background: rgba(255, 255, 255, 0.08);
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+    .map-gps-pill:hover { background: rgba(255, 255, 255, 0.16); }
+    .map-gps-pill:disabled { opacity: 0.75; cursor: default; }
+
+    /* אנימציית לוויין מסתובב בזמן איתור */
+    .gps-spin {
+        display: inline-block;
+        animation: np-gps-spin 1.1s linear infinite;
+    }
+    @keyframes np-gps-spin {
+        to { transform: rotate(360deg); }
+    }
 
     /* ===== כפתורי בקרה על המפה ===== */
     .map-btn {
@@ -572,12 +671,30 @@
         background: #fff;
         transform: translateY(-1px);
     }
-    .map-btn--expand {
+    /* שורת פעולות בפינה השמאלית-תחתונה: הגדלה + שיתוף מיקום, זה לצד זה */
+    .map-actions {
+        position: absolute;
         bottom: 0.5rem;
         left: 0.5rem;
+        z-index: 1000;
+        display: flex;
+        gap: 0.4rem;
+    }
+    .map-btn--inline {
+        position: static;
         padding: 0.4rem 0.65rem;
         border-radius: 0.6rem;
         font-size: 0.8rem;
+        white-space: nowrap;
+    }
+    .map-btn--gps {
+        color: #065f46;
+        border-color: rgba(5, 150, 105, 0.4);
+    }
+    .map-btn:disabled {
+        opacity: 0.75;
+        cursor: default;
+        transform: none;
     }
     .map-btn--x {
         top: 0.5rem;
@@ -652,6 +769,6 @@
     }
 
     @media (prefers-reduced-motion: reduce) {
-        .demo-hand, .center-pin { animation: none; transition: none; }
+        .demo-hand, .center-pin, .gps-spin { animation: none; transition: none; }
     }
 </style>
