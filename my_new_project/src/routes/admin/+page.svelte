@@ -743,6 +743,21 @@
 										</button>
 									</form>
 								{/if}
+
+								<!-- מחיקה לצמיתות - כולל כל החשבונות שאוחדו לכרטיס -->
+								<form method="POST" action="?/deleteUser" use:enhance>
+									<input type="hidden" name="userId" value={user.id} />
+									<input type="hidden" name="mergedIds" value={((user as any).merged_ids ?? [user.id]).join(',')} />
+									<button
+										type="submit"
+										class="px-3 py-1.5 text-sm rounded-lg bg-red-500/10 text-red-400 border border-red-500/30
+										       hover:bg-red-500/20 transition-all cursor-pointer"
+										title="מחיקה לצמיתות - אי אפשר לשחזר"
+										onclick={(e) => { if (!confirm(`למחוק את ${user.name ?? user.id} לצמיתות?\nהחשבון יימחק מהמערכת ואי אפשר לשחזר.`)) e.preventDefault(); }}
+									>
+										🗑️ מחק
+									</button>
+								</form>
 							{/if}
 						</div>
 					</div>

@@ -1408,6 +1408,23 @@ export async function unbanUser(externalId: string, _jwt?: string): Promise<void
     invalidate('user:');
 }
 
+/**
+ * מחיקת משתמש לצמיתות (סופר-אדמין בלבד).
+ * מקבל את כל המזהים של הכרטיס (merged_ids) כדי שגם חשבונות שאוחדו לפי
+ * אימייל/טלפון יימחקו יחד - אחרת הכרטיס "חוזר" מהחשבון הכפול שנשאר.
+ */
+export async function deleteUserAccounts(ids: string[]): Promise<number> {
+    let deleted = 0;
+    for (const id of ids) {
+        const user = await findUpUserAny(id);
+        if (!user) continue;
+        await strapiDelete(`/api/users/${user.id}`);
+        deleted++;
+    }
+    invalidate('user:');
+    return deleted;
+}
+
 export async function getMessagesByUserId(userId: string): Promise<DbItem[]> {
     const res = await strapiGet<{ data: StrapiItem[] }>('/api/items', {
         'filters[category][$eq]': 'message',

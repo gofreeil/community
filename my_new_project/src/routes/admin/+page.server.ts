@@ -1,7 +1,7 @@
 import { redirect, fail, error } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { requireSuperAdmin, requireAdmin } from '$lib/server/auth';
-import { getAllUsers, banUser, unbanUser, setUserRole, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByEmail, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, getNeighborhoodById, approveNeighborhood, rejectNeighborhood, getDiscountCodes, saveDiscountCodes, getItemsByCategoryAndStatus, getUserTotpSecret, coordinatorCovers, markCoordinatorRequestApproved } from '$lib/server/db';
+import { getAllUsers, banUser, unbanUser, deleteUserAccounts, setUserRole, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByEmail, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, getNeighborhoodById, approveNeighborhood, rejectNeighborhood, getDiscountCodes, saveDiscountCodes, getItemsByCategoryAndStatus, getUserTotpSecret, coordinatorCovers, markCoordinatorRequestApproved } from '$lib/server/db';
 import { finalizeLocationDecision } from '$lib/server/locationDecision';
 import { DEFAULT_DISCOUNT_CODES, type DiscountCode } from '$lib/discountCodes';
 import { countPending } from '$lib/server/adsStore';
@@ -233,6 +233,32 @@ export const actions: Actions = {
             return { success: true, message: `חסימת ${userId} בוטלה` };
         } catch (e) {
             return fail(500, { error: `שגיאה בביטול חסימה: ${e instanceof Error ? e.message : e}` });
+        }
+    },
+
+    deleteUser: async (event) => {
+        const session = await event.locals.auth();
+        requireSuperAdmin(session);
+
+        const formData = await event.request.formData();
+        const userId = formData.get('userId') as string;
+        if (!userId) return fail(400, { error: 'חסר מזהה משתמש' });
+        // המזהה של המחובר לא נמחק - שלא ינעל את עצמו בחוץ
+        if (userId === session?.user?.id) return fail(400, { error: 'אי אפשר למחוק את עצמך' });
+
+        // כל החשבונות שאוחדו לכרטיס הזה (אימייל/טלפון משותפים) נמחקים יחד
+        const mergedIds = (formData.get('mergedIds') as string ?? '')
+            .split(',')
+            .map(s => s.trim())
+            .filter(Boolean);
+        const ids = mergedIds.length > 0 ? mergedIds : [userId];
+
+        try {
+            const deleted = await deleteUserAccounts(ids);
+            if (deleted === 0) return fail(404, { error: 'משתמש לא נמצא' });
+            return { success: true, message: `המשתמש נמחק לצמיתות (${deleted} חשבונות)` };
+        } catch (e) {
+            return fail(500, { error: `שגיאה במחיקה: ${e instanceof Error ? e.message : e}` });
         }
     },
 
