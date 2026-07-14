@@ -245,43 +245,65 @@
 		<div class="mb-8 grid grid-cols-2 lg:grid-cols-4 gap-3">
 			<!-- משתמשים — סגול, זהה לסדרת "נרשמים" בגרף ובדף הסטטיסטיקה -->
 			<div class="relative overflow-hidden rounded-2xl border border-violet-500/25 bg-gradient-to-br from-violet-600/15 to-violet-500/5 p-4">
-				<div class="flex items-center gap-2 text-violet-200/80 text-sm font-bold mb-1">
-					<span class="text-lg">👥</span> משתמשים
+				<img
+					src="/images/60712_175258.webp"
+					alt=""
+					class="pointer-events-none absolute left-2 inset-y-0 my-auto h-[68px] w-[68px] rounded-2xl object-cover ring-1 ring-white/20 shadow-lg"
+				/>
+				<div class="relative">
+					<div class="text-violet-200/80 text-sm font-bold mb-1">משתמשים</div>
+					<div class="text-4xl font-black text-white leading-none">{dash.totalUsers}</div>
+					{#if dash.newUsersThisMonth > 0}
+						<div class="text-xs text-violet-300/80 mt-1.5 font-bold">+{dash.newUsersThisMonth} החודש</div>
+					{/if}
 				</div>
-				<div class="text-4xl font-black text-white leading-none">{dash.totalUsers}</div>
-				{#if dash.newUsersThisMonth > 0}
-					<div class="text-xs text-violet-300/80 mt-1.5 font-bold">+{dash.newUsersThisMonth} החודש</div>
-				{/if}
 			</div>
 
 			<!-- פרטים במפה — ירוק, זהה לסדרת "פריטים שהועלו" בגרף ובדף הסטטיסטיקה -->
 			<div class="relative overflow-hidden rounded-2xl border border-emerald-500/25 bg-gradient-to-br from-emerald-600/15 to-emerald-500/5 p-4">
-				<div class="flex items-center gap-2 text-emerald-200/80 text-sm font-bold mb-1">
-					<span class="text-lg">📋</span> פרטים במפה
+				<img
+					src="/images/Co260712_181739.webp"
+					alt=""
+					class="pointer-events-none absolute left-2 inset-y-0 my-auto h-[68px] w-[68px] rounded-2xl object-cover ring-1 ring-white/20 shadow-lg"
+				/>
+				<div class="relative">
+					<div class="text-emerald-200/80 text-sm font-bold mb-1">פרטים במפה</div>
+					<div class="text-4xl font-black text-white leading-none">{dash.totalItems}</div>
+					{#if dash.newItemsThisMonth > 0}
+						<div class="text-xs text-emerald-300/80 mt-1.5 font-bold">+{dash.newItemsThisMonth} החודש</div>
+					{/if}
 				</div>
-				<div class="text-4xl font-black text-white leading-none">{dash.totalItems}</div>
-				{#if dash.newItemsThisMonth > 0}
-					<div class="text-xs text-emerald-300/80 mt-1.5 font-bold">+{dash.newItemsThisMonth} החודש</div>
-				{/if}
 			</div>
 
 			<!-- רכזים -->
 			<div class="relative overflow-hidden rounded-2xl border border-amber-500/25 bg-gradient-to-br from-amber-600/15 to-amber-500/5 p-4">
-				<div class="flex items-center gap-2 text-amber-200/80 text-sm font-bold mb-1">
-					<span class="text-lg">🏘️</span> רכזי שכונות
+				<img
+					src="/images/rakaz-shchuna.webp"
+					alt=""
+					class="pointer-events-none absolute left-2 inset-y-0 my-auto h-[68px] w-[68px] rounded-2xl object-cover object-top ring-1 ring-white/20 shadow-lg"
+				/>
+				<div class="relative">
+					<div class="flex items-center gap-2 text-amber-200/80 text-sm font-bold mb-1">
+						<span class="text-lg">🏘️</span> רכזי שכונות
+					</div>
+					<div class="text-4xl font-black text-white leading-none">{dash.totalCoordinators}</div>
+					<div class="text-xs text-amber-300/70 mt-1.5 font-bold">מנהלי תוכן פעילים</div>
 				</div>
-				<div class="text-4xl font-black text-white leading-none">{dash.totalCoordinators}</div>
-				<div class="text-xs text-amber-300/70 mt-1.5 font-bold">מנהלי תוכן פעילים</div>
 			</div>
 
 			<!-- כניסות החודש — כחול, זהה לסדרת "כניסות" בגרף ובדף הסטטיסטיקה.
 			     מונה מ-visit-stat, מתעדכן פעם ביום. לחיצה = דף סטטיסטיקה -->
 			<a href="/admin/statistics" class="relative overflow-hidden rounded-2xl border border-sky-500/25 bg-gradient-to-br from-sky-600/15 to-sky-500/5 p-4 block hover:border-sky-400/50 transition-all">
-				<div class="flex items-center gap-2 text-sky-200/80 text-sm font-bold mb-1">
-					<span class="text-lg">📈</span> כניסות
+				<img
+					src="/images/60712_183146.webp"
+					alt=""
+					class="pointer-events-none absolute left-2 inset-y-0 my-auto h-[68px] w-[68px] rounded-2xl object-cover ring-1 ring-white/20 shadow-lg"
+				/>
+				<div class="relative">
+					<div class="text-sky-200/80 text-sm font-bold mb-1">כניסות</div>
+					<div class="text-4xl font-black text-white leading-none">{dash.monthlyVisits}</div>
+					<div class="text-xs text-sky-300/70 mt-1.5 font-bold">החודש · להיסטוריה המלאה ←</div>
 				</div>
-				<div class="text-4xl font-black text-white leading-none">{dash.monthlyVisits}</div>
-				<div class="text-xs text-sky-300/70 mt-1.5 font-bold">החודש · להיסטוריה המלאה ←</div>
 			</a>
 		</div>
 
