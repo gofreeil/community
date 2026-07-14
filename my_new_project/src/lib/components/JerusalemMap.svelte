@@ -101,7 +101,7 @@
         },
         {
             id: "shops",
-            label: "חנויות",
+            label: "חנויות ועסקים",
             icon: "🏪",
             items: [
                 { id: "shop-makolet", label: "מכולת השכונה 24/7" },
@@ -400,6 +400,39 @@
         return d.neighborhood === neighborhoodState.neighborhood || !d.neighborhood;
     }
 
+    // ---- עסקים מאתר האינדקס (index.gofreeil.com) ----
+    // עסקים ארציים/אונליין שחתמו על התנאים ומעניקים הנחה לחברי "יוצאים לחירות".
+    // אין להם כתובת ולכן אין להם פין — הם מוצגים ברשימה בלבד, ובכל עיר (ארציים).
+    function isIndexItem(d: { extra_fields?: string }): boolean {
+        if (!d.extra_fields) return false;
+        try {
+            return JSON.parse(d.extra_fields)?.source === 'index';
+        } catch {
+            return false;
+        }
+    }
+
+    /** קישור הכרטיס: פריט אינדקס אינו ב-Strapi שלנו — מקשר לאתר האינדקס. */
+    function itemHref(d: { id: string; extra_fields?: string }): string {
+        if (!d.extra_fields) return `/items/${d.id}`;
+        try {
+            const url = JSON.parse(d.extra_fields)?.external_url;
+            if (typeof url === 'string' && url) return url;
+        } catch { /* ignore */ }
+        return `/items/${d.id}`;
+    }
+
+    /** ההנחה הבלעדית שהעסק מעניק לחברי התנועה (לתג על הכרטיס). */
+    function itemDiscount(d: { extra_fields?: string }): string {
+        if (!d.extra_fields) return '';
+        try {
+            const v = JSON.parse(d.extra_fields)?.discount;
+            return typeof v === 'string' ? v : '';
+        } catch {
+            return '';
+        }
+    }
+
     // ---- קריאות עזרה (הרמת יד) ----
     // מוצגות על המפה במשך יממה מרגע הפרסום, כל עוד לא נענו. אחרי יממה / לאחר
     // שנענו הן יורדות מהמפה ועוברות לטבלת "קריאות שלא נענו" בדף הבית.
@@ -439,6 +472,7 @@
     // מיפוי קטגוריה → URL של הלוח הארצי שלה (אם קיים)
     const nationalBoardUrls: Record<string, string> = {
         gemachim:    'https://gemach.gofreeil.com/',
+        shops:       'https://index.gofreeil.com/',
         singles:     '/singles',
         security:    '/national/security',
         attractions: '/national/attractions',
@@ -537,8 +571,11 @@
         // קריאות עזרה מטופלות בשכבה נפרדת (helpCallMarkers) - לא נכללות כאן,
         // כדי שלא ידכאו את מרקרי הדמו ולא יוגבלו ע"י MAX_MARKERS / סינון קטגוריה.
         // פנויים/פנויות (וכל משפחת singles_*) לעולם לא ננעצים על המפה — הם אנשים, לא מקום.
+        // עסקי האינדקס מוחרגים: הם ארציים/אונליין ואין להם כתובת, ולכן היו נופלים
+        // כולם על נקודת-המרכז של ברירת המחדל וערמים שם ערימת פינים מזויפת.
         const inHood = dbItems.filter(d =>
-            belongsToMyArea(d) && d.category !== 'raise_hand' && !d.category.startsWith('singles'));
+            belongsToMyArea(d) && d.category !== 'raise_hand' && !d.category.startsWith('singles')
+            && !isIndexItem(d));
 
         // יש פריט אמיתי אחד לפחות - מציגים רק את האמיתיים, בלי דמו
         if (inHood.length > 0) {
@@ -1704,8 +1741,9 @@
             >
                 <div class="space-y-2 md:space-y-3">
                     {#each categories.filter((cat) => cat.id !== "benefits" && (selectedCategory === "benefits" || cat.id === selectedCategory)) as category}
+                        <!-- עסקי האינדקס ארציים — מוצגים בכל עיר, לא רק בשכונה הנבחרת -->
                         {@const categoryDbItems = dbItems.filter(d =>
-                            d.category === category.id && belongsToMyArea(d)
+                            d.category === category.id && (isIndexItem(d) || belongsToMyArea(d))
                         )}
                         {@const totalItems = (category.items?.length || 0) + categoryDbItems.length}
                         {@const hasNationalPage = ['singles','security','attractions','jobs'].includes(category.id)}
@@ -1876,19 +1914,29 @@
 
                                     <!-- פריטים מה-DB (חדשים) -->
                                     {#each categoryDbItems as dbItem}
+                                        {@const isIdx = isIndexItem(dbItem)}
+                                        {@const discount = itemDiscount(dbItem)}
                                         <a
-                                            href="/items/{dbItem.id}"
+                                            href={itemHref(dbItem)}
+                                            target={isIdx ? '_blank' : null}
+                                            rel={isIdx ? 'noopener noreferrer' : null}
                                             class="bg-green-900/15 border border-green-500/25 rounded-lg p-3 hover:bg-green-900/25 hover:border-green-500/40 transition-all cursor-pointer flex items-center justify-between group/item"
                                         >
                                             <div class="flex items-center gap-2 min-w-0">
                                                 <span class="text-lg flex-shrink-0">{dbItem.icon}</span>
                                                 <div class="min-w-0">
                                                     <span class="text-white text-sm block truncate">• {dbItem.label}</span>
-                                                    {#if dbItem.neighborhood}
+                                                    {#if isIdx && discount}
+                                                        <span class="text-amber-300 text-xs block truncate" title={discount}>🎁 {discount}</span>
+                                                    {:else if dbItem.neighborhood}
                                                         <span class="text-gray-500 text-xs">{dbItem.neighborhood}</span>
                                                     {/if}
                                                 </div>
-                                                <span class="bg-green-500/20 text-green-400 text-[10px] font-black px-1.5 py-0.5 rounded flex-shrink-0">{$t('map.new_badge')}</span>
+                                                {#if isIdx}
+                                                    <span class="bg-amber-500/20 text-amber-300 text-[10px] font-black px-1.5 py-0.5 rounded flex-shrink-0">הטבה</span>
+                                                {:else}
+                                                    <span class="bg-green-500/20 text-green-400 text-[10px] font-black px-1.5 py-0.5 rounded flex-shrink-0">{$t('map.new_badge')}</span>
+                                                {/if}
                                             </div>
                                             <div
                                                 class="bg-green-700 group-hover/item:bg-green-600 text-white px-3 py-1 rounded text-xs font-bold transition-colors flex-shrink-0 mr-2"

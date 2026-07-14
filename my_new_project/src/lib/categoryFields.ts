@@ -190,7 +190,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
     },
 
     shops: {
-        label: 'חנויות',
+        label: 'חנויות ועסקים',
         icon: '🏪',
         color: 'green',
         priceRow: 2,

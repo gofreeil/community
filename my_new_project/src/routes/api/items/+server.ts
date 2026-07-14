@@ -63,6 +63,34 @@ async function notifyShabbatMatches(
     }));
 }
 
+// ---- המלצה להצטרף לאינדקס בעלי העסקים (index.gofreeil.com) ----
+// באינדקס מופיעים רק עסקים שחתמו על תנאי השימוש שם (ובתוכם אמנת המוסר העולמית)
+// והתחייבו להנחה בלעדית לחברי תנועת "יוצאים לחירות". לכן אי-אפשר לרשום אותם
+// אוטומטית מכאן — הם חייבים לחתום שם בעצמם. במקום זה שולחים למפרסם הודעה
+// אישית עם ההמלצה והתנאים. (הכיוון ההפוך אוטומטי: כל מי שמופיע באינדקס
+// מיובא אלינו — ראה src/lib/server/indexBusinesses.ts)
+const INDEX_URL = 'https://index.gofreeil.com';
+
+async function notifyIndexInvite(userId: string, bizLabel: string) {
+    await createItem({
+        category: 'message',
+        label:    '🎁 רוצה שהעסק שלך יופיע גם באינדקס הארצי?',
+        description:
+            `פרסמת את "${bizLabel}" בקהילה בשכונה — כל הכבוד!\n\n` +
+            `אתה מוזמן להופיע גם באינדקס בעלי העסקים הארצי של יוצאים לחירות, ` +
+            `שנחשף לכל חברי התנועה בארץ. עסק שמופיע שם מיובא אוטומטית גם למפה שלנו.\n\n` +
+            `כדי להופיע באינדקס יש לעמוד בשני תנאים:\n` +
+            `1. חתימה על תנאי השימוש באתר האינדקס — ובתוכם אמנת המוסר העולמית.\n` +
+            `2. מתן הנחה בלעדית לחברי תנועת "יוצאים לחירות" (הנחה ייעודית, לא הנחת VIP רגילה).\n\n` +
+            `להרשמה: ${INDEX_URL}`,
+        contact:  '',
+        user_id:  userId,
+        icon:     '🏪',
+        color:    'amber',
+        extra_fields: { type: 'index_invite', read: false, link: INDEX_URL },
+    });
+}
+
 // קטגוריות שדורשות אישור אדמין לפני שעולות לאתר (בדיקת תמונות צניעות וכו').
 const MODERATED_CATEGORIES = new Set(['singles']);
 
@@ -288,6 +316,16 @@ export const POST: RequestHandler = async (event) => {
             await notifySinglesReview(String(label), (extra_fields ?? {}) as Record<string, unknown>);
         } catch (e) {
             console.warn('[api/items] singles review notify failed:', e);
+        }
+    }
+
+    // ---- פרסם עסק? המלץ לו להופיע גם באינדקס הארצי ----
+    // await חובה: ב-Vercel עבודה לא-מוחכה אחרי ה-return מתה, וההודעה לא תיכתב.
+    if (category === 'shops' && userId) {
+        try {
+            await notifyIndexInvite(String(userId), String(label));
+        } catch (e) {
+            console.warn('[api/items] index invite notify failed:', e);
         }
     }
 

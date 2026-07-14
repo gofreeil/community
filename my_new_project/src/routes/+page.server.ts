@@ -1,4 +1,5 @@
 import { getAllItems, getUserById, getEvents, type DbItem } from '$lib/server/db';
+import { getIndexBusinesses } from '$lib/server/indexBusinesses';
 import { isAdmin } from '$lib/server/auth';
 import type { PageServerLoad } from './$types';
 
@@ -32,13 +33,20 @@ export const load: PageServerLoad = async (event) => {
         } catch {}
     }
 
-    const [dbItemsRes, eventsRes] = await Promise.allSettled([
+    const [dbItemsRes, eventsRes, indexRes] = await Promise.allSettled([
         getAllItems(),
         getEvents(userCity ?? undefined),
+        getIndexBusinesses(),
     ]);
 
     const dbItems = dbItemsRes.status === 'fulfilled' ? dbItemsRes.value : [];
     const events  = eventsRes.status === 'fulfilled'  ? eventsRes.value  : [];
+
+    // עסקי האינדקס (index.gofreeil.com) — כולם חתמו על התנאים ומעניקים הנחה
+    // לחברי "יוצאים לחירות", ולכן מיובאים אוטומטית ומוצגים תחת "חנויות ועסקים".
+    // הם נקראים דרך cache ואינם פריטי Strapi — ולכן לא נספרים בספירות השכונה
+    // שלמטה ולא במונה "פרטים במפה" בלוח הניהול.
+    const indexItems = indexRes.status === 'fulfilled' ? indexRes.value : [];
 
     if (dbItemsRes.status === 'rejected') {
         console.warn('[home] getAllItems failed:', dbItemsRes.reason instanceof Error ? dbItemsRes.reason.message : dbItemsRes.reason);
@@ -54,7 +62,8 @@ export const load: PageServerLoad = async (event) => {
     const vaadMembersCount   = dbItems.filter(i => i.category === 'vaad_member'   && inMyNeighborhood(i)).length;
 
     return {
-        dbItems: dbItems.map(slimForHome),
+        // עסקי האינדקס כבר "רזים" (אין להם extra_fields כבד) — מצורפים אחרי הדילול
+        dbItems: [...dbItems.map(slimForHome), ...indexItems],
         events,
         userNeighborhood,
         userCity,

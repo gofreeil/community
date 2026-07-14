@@ -236,7 +236,7 @@ export const he = {
         cf_security_phone_ph: '05X-XXXXXXX',
 
         // ===== categoryConfig: shops =====
-        cf_shops: 'חנויות',
+        cf_shops: 'חנויות ועסקים',
         cf_shops_label: 'שם העסק',
         cf_shops_label_ph: 'מכולת השכונה',
         cf_shops_biz_type: 'סוג עסק',
