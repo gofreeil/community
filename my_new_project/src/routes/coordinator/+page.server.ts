@@ -1,6 +1,7 @@
 import { redirect, error, fail } from '@sveltejs/kit';
-import type { PageServerLoad, Actions } from './$types';
-import { getUserById, getUserByAnyId, getItemsByCategory, getPendingEvents, getAllUsers, getAllItems, getEvents, createItem } from '$lib/server/db';
+import type { PageServerLoad, Actions, RequestEvent } from './$types';
+import { getUserById, getUserByAnyId, getItemsByCategory, getPendingEvents, getAllUsers, getAllItems, getEvents, createItem, updateEventStatus, updateEvent, deleteEvent, getEventById } from '$lib/server/db';
+import type { DbEvent, DbUser } from '$lib/server/db';
 import { getVisitsThisMonth } from '$lib/server/visitStats';
 
 // "אושיות (רחובות)" → { name: "אושיות", city: "רחובות" }
@@ -38,6 +39,7 @@ export const load: PageServerLoad = async (event) => {
 
     const isCoordinator = (user.coordinator_of?.length ?? 0) > 0;
     const isAdmin       = user.role === 'neighborhood_admin' || user.role === 'super_admin';
+    const isSuper       = user.role === 'super_admin';
     if (!isCoordinator && !isAdmin) {
         throw error(403, 'דף זה זמין רק לרכזי שכונות');
     }
@@ -69,6 +71,8 @@ export const load: PageServerLoad = async (event) => {
     const site = { totalUsers: 0, totalItems: 0, totalCoordinators: 0, newUsersThisMonth: 0, newItemsThisMonth: 0, monthlyVisits: 0 };
     // אירועי העיר של הרכז - לתצוגה מקדימה של "לוח האירועים" כפי שנראה לתושבים בדף הבית
     let events: Awaited<ReturnType<typeof getEvents>> = [];
+    // אירועים ממתינים לאישור המשויכים לרכז (או "יתומים" לסופר-אדמין)
+    let pendingEvents: Awaited<ReturnType<typeof getPendingEvents>> = [];
     try {
         // הכל במקביל - כולל אירועים ממתינים וספירת הכניסות - כדי שהדף לא יחכה לאף שליפה בטור
         const [emergency, vaad, polls, allUsers, allItems, pending, visits, evts] = await Promise.all([
@@ -77,7 +81,7 @@ export const load: PageServerLoad = async (event) => {
             getItemsByCategory('poll'),
             getAllUsers().catch(() => []),
             getAllItems().catch(() => []),
-            user.city ? getPendingEvents(user.city).catch(() => []) : Promise.resolve([]),
+            (isSuper || user.city) ? getPendingEvents(isSuper ? undefined : user.city).catch(() => []) : Promise.resolve([]),
             getVisitsThisMonth().catch(() => 0),
             getEvents(user.city || undefined).catch(() => []),
         ]);
@@ -106,8 +110,12 @@ export const load: PageServerLoad = async (event) => {
         itemsOnMap        = myItems.filter(it => it.lat != null && it.lng != null).length;
         newItemsThisMonth = myItems.filter(it => inThisMonth((it as any).created_at)).length;
 
-        // לוח האירועים מחולק לפי עיר - סופרים אירועים ממתינים בעיר של הרכז.
-        pendingEventsCount = pending.length;
+        // אירועים ממתינים המשויכים לרכז: לפי השכונות שהוא מנהל. סופר-אדמין רואה בנוסף
+        // אירועים "יתומים" - שכונות שאין להן רכז כלל (ה-fallback שאליו הם מנותבים).
+        const allCoordAreas = allUsers.flatMap((u) => (((u as any).coordinator_of) ?? []) as string[]);
+        const coveredBySomeone = makeNeighborhoodMatcher(allCoordAreas);
+        pendingEvents = pending.filter((ev) => inMyNeighborhoods(ev) || (isSuper && !coveredBySomeone(ev)));
+        pendingEventsCount = pendingEvents.length;
 
         // נתוני האתר הכלליים (זהה לחישוב בלוח הניהול: הודעות מערכת לא נספרות כפריטים)
         const publicItems = allItems.filter((i) => i.category !== 'message');
@@ -136,8 +144,48 @@ export const load: PageServerLoad = async (event) => {
         newResidentsThisMonth,
         site,
         events,
+        pendingEvents,
     };
 };
+
+// ── עזרי פעולות ניהול אירועים ──
+
+/** מאמת שהמשתמש מחובר והוא רכז/מנהל. מחזיר את המשתמש או null. */
+async function getEventManager(event: RequestEvent): Promise<DbUser | null> {
+    let session = null;
+    try { session = await event.locals.auth(); } catch {}
+    if (!session?.user?.id) return null;
+    let user: DbUser | undefined;
+    try { user = await getUserById(session.user.id); } catch { user = undefined; }
+    if (!user) return null;
+    const isCoordinator = (user.coordinator_of?.length ?? 0) > 0;
+    const isAdmin = user.role === 'neighborhood_admin' || user.role === 'super_admin';
+    return (isCoordinator || isAdmin) ? user : null;
+}
+
+/** האם הרכז רשאי לנהל את האירוע: מנהל/סופר-אדמין - הכל; רכז - רק בשכונות שלו. */
+function canManageEvent(user: DbUser, ev: DbEvent): boolean {
+    if (user.role === 'super_admin' || user.role === 'neighborhood_admin') return true;
+    return makeNeighborhoodMatcher(user.coordinator_of ?? [])(ev);
+}
+
+/** התראה למציע האירוע על ההחלטה (אושר/נדחה) - best-effort. */
+async function notifyEventCreator(ev: DbEvent, label: string, color: string): Promise<void> {
+    if (!ev.creator_id) return;
+    try {
+        await createItem({
+            category: 'message',
+            label,
+            description: `${ev.title} · ${ev.date}${ev.time ? ` ${ev.time}` : ''}${ev.location ? ` · ${ev.location}` : ''}`,
+            icon: ev.icon || '🗓️',
+            color,
+            user_id: ev.creator_id,
+            extra_fields: { type: 'event_decision', event_id: ev.id, read: false },
+        });
+    } catch (e) {
+        console.warn('[coordinator] notifyEventCreator failed:', e instanceof Error ? e.message : e);
+    }
+}
 
 export const actions: Actions = {
     // שליחת הודעה אישית פנימית מהרכז לתושב רשום בשכונתו - נשמרת כפריט category 'message'
@@ -199,5 +247,107 @@ export const actions: Actions = {
             console.warn('[coordinator] sendMessage failed:', e);
             return fail(500, { chatError: 'שגיאה בשליחת ההודעה, נסה שוב' });
         }
+    },
+
+    // ── אישור אירוע ממתין (אפשר לקבוע מחיר) ──
+    approveEvent: async (event) => {
+        const user = await getEventManager(event);
+        if (!user) return fail(403, { eventError: 'אין הרשאה' });
+
+        const fd = await event.request.formData();
+        const id = fd.get('id')?.toString().trim() ?? '';
+        const price = parseInt(fd.get('price')?.toString() ?? '0') || 0;
+        const price_description = fd.get('price_description')?.toString().trim() ?? '';
+        if (!id) return fail(400, { eventError: 'מזהה חסר' });
+
+        const ev = await getEventById(id);
+        if (!ev) return fail(404, { eventError: 'האירוע לא נמצא' });
+        if (!canManageEvent(user, ev)) return fail(403, { eventError: 'האירוע אינו בשכונה שלך' });
+
+        try {
+            await updateEventStatus(id, 'approved');
+            if (price > 0 || price_description) await updateEvent(id, { price, price_description });
+        } catch (e) {
+            console.warn('[coordinator] approveEvent failed:', e);
+            return fail(500, { eventError: 'שגיאה באישור האירוע' });
+        }
+        await notifyEventCreator(ev, `🎉 האירוע שהצעת "${ev.title}" אושר ופורסם בלוח האירועים`, 'green');
+        return { eventSuccess: 'approved' };
+    },
+
+    // ── דחיית אירוע ממתין ──
+    rejectEvent: async (event) => {
+        const user = await getEventManager(event);
+        if (!user) return fail(403, { eventError: 'אין הרשאה' });
+
+        const fd = await event.request.formData();
+        const id = fd.get('id')?.toString().trim() ?? '';
+        if (!id) return fail(400, { eventError: 'מזהה חסר' });
+
+        const ev = await getEventById(id);
+        if (!ev) return fail(404, { eventError: 'האירוע לא נמצא' });
+        if (!canManageEvent(user, ev)) return fail(403, { eventError: 'האירוע אינו בשכונה שלך' });
+
+        try {
+            await updateEventStatus(id, 'rejected');
+        } catch (e) {
+            console.warn('[coordinator] rejectEvent failed:', e);
+            return fail(500, { eventError: 'שגיאה בדחיית האירוע' });
+        }
+        await notifyEventCreator(ev, `האירוע שהצעת "${ev.title}" לא אושר לפרסום`, 'red');
+        return { eventSuccess: 'rejected' };
+    },
+
+    // ── עריכת פרטי אירוע ממתין ──
+    editEvent: async (event) => {
+        const user = await getEventManager(event);
+        if (!user) return fail(403, { eventError: 'אין הרשאה' });
+
+        const fd = await event.request.formData();
+        const id = fd.get('id')?.toString().trim() ?? '';
+        if (!id) return fail(400, { eventError: 'מזהה חסר' });
+
+        const ev = await getEventById(id);
+        if (!ev) return fail(404, { eventError: 'האירוע לא נמצא' });
+        if (!canManageEvent(user, ev)) return fail(403, { eventError: 'האירוע אינו בשכונה שלך' });
+
+        const title = fd.get('title')?.toString().trim() ?? '';
+        const date  = fd.get('date')?.toString().trim() ?? '';
+        if (!title || !date) return fail(400, { eventError: 'כותרת ותאריך חובה' });
+
+        try {
+            await updateEvent(id, {
+                title, date,
+                time:        fd.get('time')?.toString().trim() ?? '',
+                location:    fd.get('location')?.toString().trim() ?? '',
+                description: fd.get('description')?.toString().trim() ?? '',
+                price:       parseInt(fd.get('price')?.toString() ?? '0') || 0,
+            });
+        } catch (e) {
+            console.warn('[coordinator] editEvent failed:', e);
+            return fail(500, { eventError: 'שגיאה בשמירת האירוע' });
+        }
+        return { eventSuccess: 'edited' };
+    },
+
+    // ── מחיקת אירוע ──
+    deleteEvent: async (event) => {
+        const user = await getEventManager(event);
+        if (!user) return fail(403, { eventError: 'אין הרשאה' });
+
+        const fd = await event.request.formData();
+        const id = fd.get('id')?.toString().trim() ?? '';
+        if (!id) return fail(400, { eventError: 'מזהה חסר' });
+
+        const ev = await getEventById(id);
+        if (ev && !canManageEvent(user, ev)) return fail(403, { eventError: 'האירוע אינו בשכונה שלך' });
+
+        try {
+            await deleteEvent(id);
+        } catch (e) {
+            console.warn('[coordinator] deleteEvent failed:', e);
+            return fail(500, { eventError: 'שגיאה במחיקת האירוע' });
+        }
+        return { eventSuccess: 'deleted' };
     },
 };

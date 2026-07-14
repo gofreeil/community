@@ -1,8 +1,8 @@
 <script lang="ts">
-    import type { PageData } from './$types';
+    import type { PageData, ActionData } from './$types';
     import { enhance } from '$app/forms';
     import EventsBoard from '$lib/components/EventsBoard.svelte';
-    let { data }: { data: PageData } = $props();
+    let { data, form }: { data: PageData; form: ActionData } = $props();
 
     // תאריך הצטרפות בפורמט עברי קריא (23.5.2026)
     const fmtDate = (iso: string) => {
@@ -22,6 +22,49 @@
         msgText = '';
         msgError = '';
     }
+
+    // ── ניהול אירועים ממתינים לאישור ──
+    type PendingEvent = PageData['pendingEvents'][number];
+    // form הוא איחוד תוצאות כל הפעולות; ממירים בבטחה לשליפת שגיאת-אירוע בלבד
+    const eventErr = $derived((form as any)?.eventError as string | undefined);
+    let eventNotice = $state('');
+    let editingEventId = $state<string | null>(null);
+    let evTitle = $state(''), evDate = $state(''), evTime = $state('');
+    let evLocation = $state(''), evDescription = $state(''), evPrice = $state(0);
+
+    function startEditEvent(ev: PendingEvent) {
+        editingEventId = ev.id;
+        evTitle = ev.title;
+        evDate = ev.date;
+        evTime = ev.time;
+        evLocation = ev.location;
+        evDescription = ev.description;
+        evPrice = ev.price;
+    }
+    function cancelEditEvent() { editingEventId = null; }
+
+    function confirmDelete(e: SubmitEvent) {
+        if (!confirm('למחוק את האירוע לצמיתות?')) e.preventDefault();
+    }
+
+    // enhance משותף לפעולות האירועים: מציג חיווי, סוגר עריכה ומרענן את הרשימה
+    const eventEnhance = () => {
+        return async ({ result, update }: any) => {
+            if (result.type === 'success') {
+                const action = result.data?.eventSuccess;
+                eventNotice =
+                    action === 'approved' ? '✅ האירוע אושר ופורסם בלוח האירועים' :
+                    action === 'rejected' ? '✅ האירוע נדחה' :
+                    action === 'edited'   ? '✅ פרטי האירוע נשמרו' :
+                    action === 'deleted'  ? '✅ האירוע נמחק' : '';
+                editingEventId = null;
+                await update();
+                if (eventNotice) setTimeout(() => (eventNotice = ''), 5000);
+            } else {
+                await update();
+            }
+        };
+    };
 </script>
 
 <svelte:head>
@@ -158,14 +201,107 @@
                 </div>
 
                 <!-- אירועים ממתינים -->
-                <div class="rounded-2xl border border-amber-500/25 bg-gradient-to-br from-amber-600/15 to-amber-500/5 p-4">
+                <a href="#pending-events" class="block rounded-2xl border border-amber-500/25 bg-gradient-to-br from-amber-600/15 to-amber-500/5 p-4 hover:border-amber-400/60 transition-colors">
                     <div class="flex items-center gap-2 text-amber-200/80 text-sm font-bold mb-1">
                         <span class="text-lg">🗓️</span> אירועים ממתינים
                     </div>
                     <div class="text-4xl font-black text-white leading-none tabular-nums">{data.pendingEventsCount}</div>
-                    <div class="text-xs text-amber-300/70 mt-1.5 font-bold">לאישורך</div>
-                </div>
+                    <div class="text-xs text-amber-300/70 mt-1.5 font-bold">לאישורך ↓</div>
+                </a>
             </div>
+        </div>
+
+        <!-- ניהול אירועים ממתינים לאישור - התושבים מציעים, הרכז מאשר/עורך/דוחה -->
+        <div class="mb-6" id="pending-events">
+            <div class="flex items-center gap-2 mb-1">
+                <span class="text-xl">🗓️</span>
+                <h2 class="text-white text-lg font-black">אירועים ממתינים לאישור ({data.pendingEvents.length})</h2>
+            </div>
+            <p class="text-gray-500 text-sm mb-3">אירועים שתושבים הציעו בשכונה שלך. אפשר לאשר (ולקבוע מחיר), לערוך פרטים או לדחות. אירוע מאושר מופיע מיד בלוח האירועים בדף הבית, והמציע מקבל הודעה על ההחלטה.</p>
+
+            {#if eventNotice}
+                <p class="mb-3 rounded-xl bg-green-500/15 border border-green-500/30 px-3 py-2 text-green-300 text-sm font-bold">{eventNotice}</p>
+            {/if}
+            {#if eventErr}
+                <p class="mb-3 rounded-xl bg-red-500/15 border border-red-500/30 px-3 py-2 text-red-300 text-sm font-bold">⚠️ {eventErr}</p>
+            {/if}
+
+            {#if data.pendingEvents.length === 0}
+                <div class="rounded-2xl bg-[#0f172a] border border-white/10 p-6 text-center text-gray-400 text-sm">
+                    אין אירועים הממתינים לאישור כרגע 🎉
+                </div>
+            {:else}
+                <div class="space-y-3">
+                    {#each data.pendingEvents as ev (ev.id)}
+                        <div class="rounded-2xl bg-[#0f172a] border border-amber-500/25 p-4">
+                            {#if editingEventId === ev.id}
+                                <!-- טופס עריכת פרטי האירוע -->
+                                <form method="POST" action="?/editEvent" use:enhance={eventEnhance}>
+                                    <input type="hidden" name="id" value={ev.id} />
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                        <label class="text-xs text-gray-400 font-bold">כותרת
+                                            <input name="title" bind:value={evTitle} required class="mt-1 w-full rounded-lg bg-white/5 border border-white/15 px-2.5 py-1.5 text-white text-sm" />
+                                        </label>
+                                        <label class="text-xs text-gray-400 font-bold">תאריך
+                                            <input name="date" bind:value={evDate} required class="mt-1 w-full rounded-lg bg-white/5 border border-white/15 px-2.5 py-1.5 text-white text-sm" />
+                                        </label>
+                                        <label class="text-xs text-gray-400 font-bold">שעה
+                                            <input name="time" bind:value={evTime} class="mt-1 w-full rounded-lg bg-white/5 border border-white/15 px-2.5 py-1.5 text-white text-sm" />
+                                        </label>
+                                        <label class="text-xs text-gray-400 font-bold">מיקום
+                                            <input name="location" bind:value={evLocation} class="mt-1 w-full rounded-lg bg-white/5 border border-white/15 px-2.5 py-1.5 text-white text-sm" />
+                                        </label>
+                                        <label class="text-xs text-gray-400 font-bold sm:col-span-2">תיאור
+                                            <textarea name="description" bind:value={evDescription} rows="2" class="mt-1 w-full rounded-lg bg-white/5 border border-white/15 px-2.5 py-1.5 text-white text-sm resize-y"></textarea>
+                                        </label>
+                                        <label class="text-xs text-gray-400 font-bold">מחיר בש״ח (0 = חינם)
+                                            <input name="price" type="number" min="0" bind:value={evPrice} class="mt-1 w-full rounded-lg bg-white/5 border border-white/15 px-2.5 py-1.5 text-white text-sm" />
+                                        </label>
+                                    </div>
+                                    <div class="mt-3 flex gap-2">
+                                        <button type="submit" class="rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm px-4 py-2 transition-colors">💾 שמור</button>
+                                        <button type="button" onclick={cancelEditEvent} class="rounded-lg border border-white/15 text-gray-300 hover:bg-white/10 font-bold text-sm px-4 py-2 transition-colors">ביטול</button>
+                                    </div>
+                                </form>
+                            {:else}
+                                <div class="flex items-start gap-3">
+                                    <div class="text-3xl shrink-0">{ev.icon || '🗓️'}</div>
+                                    <div class="min-w-0 flex-1">
+                                        <div class="text-white font-black">{ev.title}</div>
+                                        <div class="text-gray-400 text-sm mt-0.5">
+                                            📅 {ev.date}{ev.time ? ` · ${ev.time}` : ''}{ev.location ? ` · 📍 ${ev.location}` : ''}
+                                        </div>
+                                        {#if ev.neighborhood}
+                                            <div class="text-gray-500 text-xs mt-0.5">שכונה: {ev.neighborhood}{ev.city && !ev.neighborhood.includes('(') ? ` (${ev.city})` : ''}</div>
+                                        {/if}
+                                        {#if ev.description}
+                                            <p class="text-gray-300 text-sm mt-1.5 whitespace-pre-line">{ev.description}</p>
+                                        {/if}
+
+                                        <div class="mt-3 flex flex-wrap items-center gap-2">
+                                            <!-- אישור, עם מחיר אופציונלי -->
+                                            <form method="POST" action="?/approveEvent" use:enhance={eventEnhance} class="flex items-center gap-1.5">
+                                                <input type="hidden" name="id" value={ev.id} />
+                                                <input name="price" type="number" min="0" placeholder="מחיר" title="מחיר האירוע (ריק/0 = חינם)" class="w-20 rounded-lg bg-white/5 border border-white/15 px-2 py-1.5 text-white text-sm" />
+                                                <button type="submit" class="rounded-lg bg-green-600 hover:bg-green-500 text-white font-bold text-sm px-3 py-1.5 transition-colors">✓ אשר ופרסם</button>
+                                            </form>
+                                            <button type="button" onclick={() => startEditEvent(ev)} class="rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-blue-200 font-bold text-sm px-3 py-1.5 transition-colors">✏️ ערוך</button>
+                                            <form method="POST" action="?/rejectEvent" use:enhance={eventEnhance}>
+                                                <input type="hidden" name="id" value={ev.id} />
+                                                <button type="submit" class="rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 font-bold text-sm px-3 py-1.5 transition-colors">✕ דחה</button>
+                                            </form>
+                                            <form method="POST" action="?/deleteEvent" use:enhance={eventEnhance} onsubmit={confirmDelete}>
+                                                <input type="hidden" name="id" value={ev.id} />
+                                                <button type="submit" class="rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-200 font-bold text-sm px-3 py-1.5 transition-colors">🗑️ מחק</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            {/if}
+                        </div>
+                    {/each}
+                </div>
+            {/if}
         </div>
 
         <!-- רשימת הרשומים של הרכז - שמות בלבד, בלי טלפונים ואימיילים (פרטיות התושבים) -->

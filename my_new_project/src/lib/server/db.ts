@@ -630,18 +630,30 @@ export async function getEvents(city?: string): Promise<DbEvent[]> {
     });
 }
 
-/** מחזיר אירועים ממתינים לאישור בעיר (לרכז/מנהל בלבד) */
-export async function getPendingEvents(city: string): Promise<DbEvent[]> {
+/** מחזיר אירועים ממתינים לאישור (לרכז/מנהל בלבד). city ריק/undefined = כל הערים (לסופר-אדמין) */
+export async function getPendingEvents(city?: string): Promise<DbEvent[]> {
     try {
-        const res = await strapiGet<{ data: StrapiEvent[] }>('/api/events', {
-            'filters[city][$eq]':   city,
+        const params: Record<string, string> = {
             'filters[status][$eq]': 'pending',
             'sort':                 'createdAt:desc',
             'pagination[limit]':    '100',
-        });
+        };
+        if (city) params['filters[city][$eq]'] = city;
+        const res = await strapiGet<{ data: StrapiEvent[] }>('/api/events', params);
         return (res.data ?? []).map(mapStrapiEvent);
     } catch (e) {
         if (e instanceof StrapiContentTypeError) return [];
+        throw e;
+    }
+}
+
+/** אירוע בודד לפי documentId (לאכיפת שיוך-אזור בפעולות הרכז) */
+export async function getEventById(documentId: string): Promise<DbEvent | undefined> {
+    try {
+        const res = await strapiGet<{ data: StrapiEvent | null }>(`/api/events/${documentId}`, {});
+        return res.data ? mapStrapiEvent(res.data) : undefined;
+    } catch (e) {
+        if (e instanceof StrapiContentTypeError) return undefined;
         throw e;
     }
 }
@@ -673,6 +685,19 @@ export async function createEvent(data: CreateEventData): Promise<DbEvent> {
 
 export async function updateEventStatus(documentId: string, status: EventStatus): Promise<void> {
     await strapiPut(`/api/events/${documentId}`, { data: { status } });
+    invalidate('events:');
+}
+
+/** עריכת פרטי אירוע (רכז/מנהל). שולח רק שדות שהוגדרו. */
+export async function updateEvent(
+    documentId: string,
+    fields: Partial<Pick<DbEvent,
+        'title' | 'date' | 'time' | 'location' | 'description' | 'icon' | 'color' | 'price' | 'price_description' | 'neighborhood'>>,
+): Promise<void> {
+    const data: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(fields)) if (v !== undefined) data[k] = v;
+    if (Object.keys(data).length === 0) return;
+    await strapiPut(`/api/events/${documentId}`, { data });
     invalidate('events:');
 }
 
@@ -1243,6 +1268,26 @@ export async function findAdminForNeighborhood(neighborhood: string): Promise<Db
         'pagination[limit]':      '1',
     });
     return arr.length > 0 ? mapUpUser(arr[0] as StrapiUpUser) : undefined;
+}
+
+/** מוצא את רכז השכונה של אזור (שם שכונה + עיר). התאמה גמישה: אם ל-coordinator_of של
+ *  הרכז לא צוינה עיר בסוגריים - מתאימים לפי שם השכונה בלבד. undefined אם אין רכז לאזור. */
+export async function findCoordinatorForArea(neighborhood: string, city: string): Promise<DbUser | undefined> {
+    if (!neighborhood) return undefined;
+    const name = neighborhood.replace(/\s*\([^)]*\)\s*$/, '').trim().toLowerCase();
+    const cty  = (city ?? '').trim().toLowerCase();
+    const users = await getAllUsersRaw();
+    return users.find((u) => (u.coordinator_of ?? []).some((area) => {
+        const [aName, aCity] = coordAreaKey(area).split('|');
+        return aName === name && (aCity ? aCity === cty : true);
+    }));
+}
+
+/** נמעני התראה על אירוע חדש הממתין לאישור: רכז האזור; ואם אין רכז - כל הסופר-אדמינים. */
+export async function getEventApprovers(neighborhood: string, city: string): Promise<DbUser[]> {
+    const coord = await findCoordinatorForArea(neighborhood, city);
+    if (coord) return [coord];
+    return getAllSuperAdmins();
 }
 
 // ============================================================

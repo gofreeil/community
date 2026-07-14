@@ -1,6 +1,6 @@
 import type { PageServerLoad, Actions } from './$types';
 import { fail } from '@sveltejs/kit';
-import { getEvents, getPendingEvents, createEvent, updateEventStatus, deleteEvent, getUserById } from '$lib/server/db';
+import { getEvents, getPendingEvents, createEvent, updateEventStatus, deleteEvent, getUserById, getEventApprovers, createItem } from '$lib/server/db';
 import { strapiPut } from '$lib/server/strapiClient.js';
 
 export const load: PageServerLoad = async (event) => {
@@ -59,7 +59,7 @@ export const actions: Actions = {
 
         if (!title || !date) return fail(400, { error: 'כותרת ותאריך חובה' });
 
-        await createEvent({
+        const created = await createEvent({
             title, date, time, location, description, icon, image,
             neighborhood:    user.neighborhood,
             city:            user.city,
@@ -68,6 +68,34 @@ export const actions: Actions = {
             status:          'pending',
             price:           0,
         });
+
+        // התראה לרכז השכונה (ואם אין רכז לאזור - לסופר-אדמין) שתופיע לו בתיבת ההודעות.
+        // best-effort: כשל בהתראה לא מפיל את הצעת האירוע.
+        try {
+            const approvers = await getEventApprovers(user.neighborhood, user.city);
+            const who = user.name?.trim() || user.nickname?.trim() || 'תושב/ת';
+            const area = user.neighborhood
+                ? `${user.neighborhood}${user.city && !user.neighborhood.includes('(') ? ` (${user.city})` : ''}`
+                : (user.city || '');
+            await Promise.all(approvers.map((a) => createItem({
+                category: 'message',
+                label: `🗓️ אירוע חדש ממתין לאישור: ${title}`,
+                description: `${who} הציע/ה אירוע חדש${area ? ` בשכונת ${area}` : ''}. אפשר לאשר, לערוך או לדחות מדף רכז השכונה.`,
+                icon: '🗓️',
+                color: 'amber',
+                user_id: a.id,
+                extra_fields: {
+                    type: 'event_pending',
+                    event_id: created.id,
+                    neighborhood: user.neighborhood || '',
+                    city: user.city || '',
+                    read: false,
+                },
+            })));
+        } catch (e) {
+            console.warn('[events] suggestEvent notify failed:', e instanceof Error ? e.message : e);
+        }
+
         return { success: true, action: 'suggested' };
     },
 
