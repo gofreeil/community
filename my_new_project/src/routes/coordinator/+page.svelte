@@ -32,8 +32,8 @@
     <div class="max-w-5xl mx-auto">
         <div class="text-center mb-8">
             <img
-                src="/images/rakaz-shchuna.webp"
-                alt="רכז שכונה"
+                src={data.user?.avatar_url || '/images/rakaz-shchuna.webp'}
+                alt={data.user?.name?.trim() || 'רכז שכונה'}
                 class="mx-auto mb-3 h-28 w-28 rounded-full object-cover object-top ring-2 ring-white/20 shadow-lg"
             />
             <h1 class="text-3xl font-black text-white mb-2">פאנל רכז שכונה</h1>
@@ -83,11 +83,19 @@
 
                 <!-- רכזים -->
                 <div class="relative overflow-hidden rounded-2xl border border-amber-500/25 bg-gradient-to-br from-amber-600/15 to-amber-500/5 p-4">
-                    <div class="flex items-center gap-2 text-amber-200/80 text-sm font-bold mb-1">
-                        <span class="text-lg">🏘️</span> רכזי שכונות
+                    <!-- תמונת רכז השכונה בגדול בשטח הפנוי בצד שמאל -->
+                    <img
+                        src="/images/rakaz-shchuna.webp"
+                        alt=""
+                        class="pointer-events-none absolute left-2 inset-y-0 my-auto h-[68px] w-[68px] rounded-2xl object-cover object-top ring-1 ring-white/20 shadow-lg"
+                    />
+                    <div class="relative">
+                        <div class="flex items-center gap-2 text-amber-200/80 text-sm font-bold mb-1">
+                            <span class="text-lg">🏘️</span> רכזי שכונות
+                        </div>
+                        <div class="text-4xl font-black text-white leading-none tabular-nums">{data.site.totalCoordinators}</div>
+                        <div class="text-xs text-amber-300/70 mt-1.5 font-bold">מנהלי תוכן פעילים</div>
                     </div>
-                    <div class="text-4xl font-black text-white leading-none tabular-nums">{data.site.totalCoordinators}</div>
-                    <div class="text-xs text-amber-300/70 mt-1.5 font-bold">מנהלי תוכן פעילים</div>
                 </div>
 
                 <!-- כניסות החודש - מתעדכן פעם ביום -->
