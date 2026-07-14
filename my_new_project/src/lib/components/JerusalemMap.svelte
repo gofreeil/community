@@ -64,7 +64,7 @@
         {
             id: "minyanim",
             label: "יהדות",
-            icon: "✡️",
+            icon: "/icons/menorah.svg",
             items: [
                 { id: "minyan-shacharit", label: "מניין שחרית מרכזי" },
                 { id: "torah-class", label: "שיעור דף היומי" },
@@ -527,7 +527,7 @@
         { suffix: 'gemach-books', category: 'gemachim',    icon: '📚', label: 'map.mock_gemach_books', color: 'rose' },
         { suffix: 'gemach-tools', category: 'gemachim',    icon: '🔨', label: 'map.mock_gemach_tools', color: 'amber' },
         { suffix: 'babysitter',   category: 'business',    icon: '👶', label: 'map.mock_babysitter',   color: 'pink' },
-        { suffix: 'minyan',       category: 'minyanim',    icon: '✡️', label: 'map.mock_minyan',       color: 'blue' },
+        { suffix: 'minyan',       category: 'minyanim',    icon: '/icons/menorah.svg', label: 'map.mock_minyan',       color: 'blue' },
         { suffix: 'art-class',    category: 'education',   icon: '🎨', label: 'map.mock_art_class',    color: 'purple' },
         { suffix: 'giveaway',     category: 'giveaway',    icon: '🛋️', label: 'map.mock_giveaway',     color: 'teal' },
         { suffix: 'attraction',   category: 'attractions', icon: '🏛️', label: 'map.mock_attraction',   color: 'green' },
@@ -695,6 +695,8 @@
         // תמונה/לוגו על המפה (תוספת בתשלום) - עוקפת את האימוג'י
         const iconInner = mapImage
             ? `<div class="jmap-pin-icon jmap-pin-img" style="border-color:${hex}"><img src="${mapImage.replace(/"/g, '&quot;')}" alt="" loading="lazy" /></div>`
+            : icon.startsWith('/')
+            ? `<div class="jmap-pin-icon jmap-pin-img" style="border-color:${hex}"><img src="${icon.replace(/"/g, '&quot;')}" alt="" loading="lazy" /></div>`
             : `<div class="jmap-pin-icon">${icon}</div>`;
         return `
             <div class="jmap-pin${mockClass}">

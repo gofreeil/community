@@ -85,7 +85,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
 
     minyanim: {
         label: 'יהדות',
-        icon: '✡️',
+        icon: '/icons/menorah.svg',
         color: 'blue',
         priceRow: null,
         mapFirst: true,

@@ -1867,7 +1867,7 @@
                         </div>
                     {:else}
                         <div class="w-full h-full bg-gradient-to-br from-purple-900 to-blue-900 flex items-center justify-center">
-                            <span class="text-[120px]">{item.icon}</span>
+                            {#if item.icon?.startsWith('/')}<img src={item.icon} alt="" class="w-40 h-40 md:w-48 md:h-48 object-contain drop-shadow-xl" />{:else}<span class="text-[120px]">{item.icon}</span>{/if}
                         </div>
                     {/if}
                     {#if builderMode && galleryImages.length > 0}
@@ -2099,7 +2099,7 @@
                         <section class="pt-3 border-t border-white/10">
                             <div class="flex items-center justify-between mb-2">
                                 <h2 class="text-base font-bold text-white flex items-center gap-1.5">
-                                    <span class="w-1 h-4 bg-sky-400 rounded-full"></span>✡️ זמני מניינים</h2>
+                                    <span class="w-1 h-4 bg-sky-400 rounded-full"></span><img src="/icons/menorah.svg" alt="" class="inline-block h-[1.1em] w-auto align-[-0.15em]" /> זמני מניינים</h2>
                                 {#if canEditActivities && !editingMinyan}
                                     <button type="button" onclick={startEditMinyan}
                                         class="text-xs font-bold text-sky-300 hover:text-sky-200 bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 rounded-lg px-2.5 py-1 transition-all">

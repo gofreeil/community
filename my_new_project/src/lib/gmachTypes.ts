@@ -9,7 +9,7 @@ export const GMACH_TYPES: { key: string; label: string }[] = [
     { key: 'food',        label: '🥫 מזון' },
     { key: 'tools',       label: '🔧 כלים' },
     { key: 'wedding',     label: '💍 חתונה' },
-    { key: 'judaism',     label: '✡️ יהדות' },
+    { key: 'judaism',     label: 'יהדות' },
     { key: 'initiatives', label: '🌟 מיזמים חשובים לציבור' },
     { key: 'other',       label: '📦 אחר' },
 ];

@@ -45,7 +45,7 @@ export const items: Item[] = [
         category: "minyanim",
         description: "מניין שחרית יומיומי בשעה 7:00 - חינם! אווירה נעימה ומכובדת.",
         address: "בית הכנסת האזורי, קרית משה",
-        icon: "✡️",
+        icon: "/icons/menorah.svg",
         color: "blue",
         image: "https://images.unsplash.com/photo-1542810634-71277d95dcbb?w=800&auto=format&fit=crop&q=60"
     },

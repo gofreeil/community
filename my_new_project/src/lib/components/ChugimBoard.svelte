@@ -95,7 +95,7 @@
         'בישול':              { icon: '🍳', gradient: 'from-amber-500 to-orange-600' },
         'דרמה':               { icon: '🎭', gradient: 'from-purple-500 to-fuchsia-600' },
         'שחייה':              { icon: '🏊', gradient: 'from-sky-500 to-cyan-600' },
-        'יהדות':              { icon: '✡️', gradient: 'from-blue-500 to-indigo-600' },
+        'יהדות':              { icon: '🕎', gradient: 'from-blue-500 to-indigo-600' },
         'שפות':               { icon: '🗣️', gradient: 'from-yellow-500 to-amber-600' },
         'אחר':                { icon: '🎯', gradient: 'from-slate-500 to-gray-600' },
     };
@@ -578,7 +578,7 @@
                         {selectedCat === cat
                             ? `bg-gradient-to-r ${meta.gradient} text-white shadow-lg`
                             : 'bg-[#0f172a] border border-white/10 text-gray-300 hover:border-white/30'}"
-                >{meta.icon} {$_(`boards.chugim.${CAT_KEY[cat]}`)}</button>
+                >{#if cat === 'יהדות'}<img src="/icons/menorah.svg" alt="" class="inline-block h-[1.15em] w-auto align-[-0.2em]" />{:else}{meta.icon}{/if} {$_(`boards.chugim.${CAT_KEY[cat]}`)}</button>
             {/each}
         </div>
     </div>
@@ -667,6 +667,8 @@
                             {#if k.mainImage}
                                 <img src={k.mainImage} alt={k.label} class="absolute inset-0 w-full h-full object-cover" loading="lazy" />
                                 <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+                            {:else if k.category === 'יהדות'}
+                                <img src="/icons/menorah.svg" alt="" class="h-16 w-auto drop-shadow-lg" />
                             {:else}
                                 <span class="text-6xl drop-shadow-lg">{meta.icon}</span>
                             {/if}

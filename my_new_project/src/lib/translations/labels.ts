@@ -46,7 +46,7 @@ export const he = {
         gmach_food: '🥫 מזון',
         gmach_tools: '🔧 כלים',
         gmach_wedding: '💍 חתונה',
-        gmach_judaism: '✡️ יהדות',
+        gmach_judaism: 'יהדות',
         gmach_initiatives: '🌟 מיזמים חשובים לציבור',
         gmach_other: '📦 אחר',
 
@@ -589,7 +589,7 @@ export const en = {
         gmach_food: '🥫 Food',
         gmach_tools: '🔧 Tools',
         gmach_wedding: '💍 Wedding',
-        gmach_judaism: '✡️ Judaism',
+        gmach_judaism: 'Judaism',
         gmach_initiatives: '🌟 Important public initiatives',
         gmach_other: '📦 Other',
 
@@ -1132,7 +1132,7 @@ export const ru = {
         gmach_food: '🥫 Продукты',
         gmach_tools: '🔧 Инструменты',
         gmach_wedding: '💍 Свадьба',
-        gmach_judaism: '✡️ Иудаизм',
+        gmach_judaism: 'Иудаизм',
         gmach_initiatives: '🌟 Важные общественные инициативы',
         gmach_other: '📦 Другое',
 

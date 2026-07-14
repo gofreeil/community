@@ -221,7 +221,7 @@
 					['🎁','aboutRevenue.svc1Title','aboutRevenue.svc1Desc'],
 					['📦','aboutRevenue.svc2Title','aboutRevenue.svc2Desc'],
 					['👶','aboutRevenue.svc3Title','aboutRevenue.svc3Desc'],
-					['✡️','aboutRevenue.svc4Title','aboutRevenue.svc4Desc'],
+					['/icons/menorah.svg','aboutRevenue.svc4Title','aboutRevenue.svc4Desc'],
 					['🏪','aboutRevenue.svc5Title','aboutRevenue.svc5Desc'],
 					['🎨','aboutRevenue.svc6Title','aboutRevenue.svc6Desc'],
 					['🏠','aboutRevenue.svc7Title','aboutRevenue.svc7Desc'],
@@ -232,7 +232,7 @@
 					['💼','aboutRevenue.svc12Title','aboutRevenue.svc12Desc']
 				] as [ico,title,desc]}
 					<div class="service-cell p-4 flex flex-col gap-1.5 transition-all hover:bg-white/5">
-						<span class="text-2xl">{ico}</span>
+						{#if ico.startsWith('/')}<img src={ico} alt="" class="w-7 h-7 object-contain" />{:else}<span class="text-2xl">{ico}</span>{/if}
 						<div class="font-black text-sm md:text-base text-indigo-200">{$_(title)}</div>
 						<p class="text-gray-400 text-xs md:text-sm leading-relaxed">{$_(desc)}</p>
 					</div>
@@ -718,7 +718,7 @@
 						{#if i % 3 !== 2}
 							<div class="absolute top-[10%] bottom-[10%] left-0 w-px bg-white/10 hidden sm:block"></div>
 						{/if}
-						<span class="text-2xl">{ico}</span>
+						{#if ico.startsWith('/')}<img src={ico} alt="" class="w-7 h-7 object-contain" />{:else}<span class="text-2xl">{ico}</span>{/if}
 						<span class="font-bold text-lg text-blue-100">{$_(lbl)}</span>
 					</div>
 				{/each}
