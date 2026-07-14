@@ -7,7 +7,8 @@ import { DEFAULT_DISCOUNT_CODES, type DiscountCode } from '$lib/discountCodes';
 import { countPending } from '$lib/server/adsStore';
 import { getVisitsThisMonth, getVisitStats } from '$lib/server/visitStats';
 import { getServerHealth } from '$lib/server/serverHealth';
-import { buildItemsSummary, buildRegistrationsSummary, type ItemsSummary, type RegistrationsSummary } from '$lib/server/statsSummary';
+import { buildItemsSummary, buildRegistrationsSummary } from '$lib/server/statsSummary';
+import { isFamilyItem } from '$lib/itemCategories';
 
 // "אושיות (רחובות)" → { name: "אושיות", city: "רחובות" }
 function parseArea(entry: string): { name: string; city: string } {
@@ -87,8 +88,8 @@ export const load: PageServerLoad = async (event) => {
     // נתוני "הגרף הראשי" (סקירה כללית) — אותו גרף מסכם שבדף הסטטיסטיקה, מוטמע בלוח הניהול.
     // מתרעננים בכל כניסה לדף (getVisitStats מוגן ב-cache יומי, כמו בדף הסטטיסטיקה).
     const statsPromise          = getVisitStats().catch((e) => { console.warn('[admin] getVisitStats failed:', e); return [] as Awaited<ReturnType<typeof getVisitStats>>; });
-    const itemsSummaryPromise   = buildItemsSummary().catch((e) => { console.warn('[admin] buildItemsSummary failed:', e); return { total: 0, byCategory: [], byMonth: [] } as ItemsSummary; });
-    const registrationsPromise  = buildRegistrationsSummary().catch((e) => { console.warn('[admin] buildRegistrationsSummary failed:', e); return { total: 0, byMonth: [] } as RegistrationsSummary; });
+    // סיכומי "הגרף הראשי" (פריטים/נרשמים) נבנים אחרי טעינת users/items מאותם
+    // מערכים — בלי שליפה כפולה מ-Strapi ובאותה הגדרת "פריט קהילה" כמו המונה.
 
     const [users, items0, coordinatorRequests, pendingNeighborhoods] = await Promise.all([
         getAllUsers(jwt).catch((e) => { console.warn('[admin] getAllUsers failed:', e); return [] as Awaited<ReturnType<typeof getAllUsers>>; }),
@@ -96,11 +97,11 @@ export const load: PageServerLoad = async (event) => {
         getCoordinatorRequests('pending').catch((e) => { console.warn('[admin] getCoordinatorRequests failed:', e); return [] as Awaited<ReturnType<typeof getCoordinatorRequests>>; }),
         getNeighborhoods('pending').catch((e) => { console.warn('[admin] getNeighborhoods failed:', e); return [] as Awaited<ReturnType<typeof getNeighborhoods>>; }),
     ]);
-    let items = items0;
-
-    // הודעות מערכת (category='message') הן התראות אישיות למשתמש, לא פרסומים -
-    // בלעדיהן מונה "פרסומים בקהילה" וטאב הפרסומים משקפים רק תוכן אמיתי בלוחות.
-    items = items.filter((i) => i.category !== 'message');
+    // פריטי תוכן אמיתיים של משפחת האתרים המסונכרנים (קהילה + גמ"ח ארצי +
+    // אבידות + בעלי מקצוע...) — כולל קטגוריות של אתרי-אחות כמו 'lost_and_found'.
+    // מסוננות רק רשומות מערכת ותוכן של מוצר זר. כך המונה, הגרף המסכם וטאב
+    // הפריטים משקפים בדיוק את אותו תוכן.
+    const items = items0.filter((i) => isFamilyItem(i.category));
 
     // צירוף הקשר מלא של המבקש לכל כרטיס בקשה - כדי שהאדמין יֵדע מי המבקש,
     // מהיכן הוא רשום (עיר/שכונה) ואיך ליצור איתו קשר - בלי לצאת מהכרטיס.
@@ -180,8 +181,13 @@ export const load: PageServerLoad = async (event) => {
         monthlyVisits,
     };
 
-    const [pendingAdsCount, pendingSinglesCount, discountCodes, totpSecret, serverHealth, stats, itemsSummary, registrations] =
-        await Promise.all([pendingAdsPromise, pendingSinglesPromise, discountCodesPromise, totpPromise, serverHealthPromise, statsPromise, itemsSummaryPromise, registrationsPromise]);
+    // סיכומי הגרף המסכם — מאותם users/items שכבר נטענו, בלי שליפה נוספת מ-Strapi
+    // ובאותה הגדרת "פריט קהילה", כדי שהמספר בגרף יהיה זהה בדיוק למונה שבבאנר.
+    const itemsSummary  = await buildItemsSummary(items);
+    const registrations = await buildRegistrationsSummary(users);
+
+    const [pendingAdsCount, pendingSinglesCount, discountCodes, totpSecret, serverHealth, stats] =
+        await Promise.all([pendingAdsPromise, pendingSinglesPromise, discountCodesPromise, totpPromise, serverHealthPromise, statsPromise]);
 
     return {
         users,

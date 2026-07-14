@@ -5,7 +5,8 @@
 import { redirect, error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { getUserById, getAllItems, getAllUsers, getItemsByCategory } from '$lib/server/db';
-import { SYSTEM_CATEGORIES, type ItemsSummary, type RegistrationsSummary } from '$lib/server/statsSummary';
+import { type ItemsSummary, type RegistrationsSummary } from '$lib/server/statsSummary';
+import { isFamilyItem } from '$lib/itemCategories';
 
 // "אושיות (רחובות)" → { name: "אושיות", city: "רחובות" }  (זהה ל-/coordinator)
 function parseArea(entry: string): { name: string; city: string } {
@@ -68,7 +69,7 @@ export const load: PageServerLoad = async (event) => {
     ]);
 
     // ---- סיכום התוכן שהועלה בשכונה (זהה ל-buildItemsSummary אך מסונן לשכונה) ----
-    const myRealItems = allItems.filter(inMyNeighborhoods).filter((it) => !SYSTEM_CATEGORIES.has(it.category));
+    const myRealItems = allItems.filter(inMyNeighborhoods).filter((it) => isFamilyItem(it.category));
     const byCat = new Map<string, number>();
     const byMonthItems = new Map<string, number>();
     for (const it of myRealItems) {
