@@ -2,7 +2,12 @@
 	// ============================================================
 	// ServerHealthGauges - "לוח מכוונים" למצב שרת ה-VPS (הבאקאנד).
 	// מד עומס ראשי 1-10 (ספידומטר) + מדים משניים: מעבד/זיכרון/דיסק/זמן-תגובה,
-	// כמו בלוח מכוונים ברכב. מתרענן חי כל 15 שניות מ-/api/server-health.
+	// כמו בלוח מכוונים ברכב. הנתונים מגיעים מ-/api/server-health.
+	// אין פולינג אוטומטי — ראה ההערה אצל refresh() למטה.
+	//
+	// המד הראשי משקף את המשאבים בלבד (מעבד/זיכרון/דיסק). זמן התגובה מוצג כמד לעצמו
+	// ולא נכנס לציון הכולל: הוא סימפטום של משאב חנוק, לא משאב רביעי. כשהוא איטי
+	// באמת מגיע responseAlert מהשרת ומוצגת שורת התרעה נפרדת.
 	// ============================================================
 	import { onMount, onDestroy } from 'svelte';
 	import type { ServerHealth } from '$lib/serverHealthTypes';
@@ -76,6 +81,24 @@
 		return `לפני ${Math.floor(s / 60)} דק'`;
 	}
 	const nf = new Intl.NumberFormat('he-IL');
+
+	// מגמת העומס: ממוצע-הדקה מול ממוצע-רבע-השעה. תמונת-מצב רגעית לא מבחינה בין
+	// קפיצה חולפת לעומס מתמשך, וזו בדיוק ההבחנה שקובעת אם צריך לשדרג או להתעלם.
+	const TREND: Record<string, { icon: string; label: string }> = {
+		rising:  { icon: '🔺', label: 'עולה' },
+		falling: { icon: '🔻', label: 'יורדת' },
+		steady:  { icon: '➖', label: 'יציבה' },
+	};
+	const loadTrend = $derived.by(() => {
+		const c = health?.metrics.cpu;
+		if (!c) return 'steady';
+		const diff = c.load1 - c.load15;
+		// שינוי יחסי מול רבע השעה; בעומס אפסי היחס מתפוצץ, ולכן שם נשען על הפרש מוחלט
+		const rel = c.load15 > 0.05 ? diff / c.load15 : (Math.abs(diff) > 0.2 ? Math.sign(diff) : 0);
+		if (rel > 0.25) return 'rising';
+		if (rel < -0.25) return 'falling';
+		return 'steady';
+	});
 
 	// ---------- רענון ----------
 	// אין פולינג אוטומטי - כדי לא להעמיס על השרת. המדד מציג את מצב השרת
@@ -189,6 +212,13 @@
 				{:else}
 					<div class="bottleneck subtle">המשאב העמוס ביותר: <b>{health.bottleneck.label}</b> ({health.util}%)</div>
 				{/if}
+				<!-- התרעה עצמאית: DB איטי. לא מנפחת את הציון הכולל, אבל גם לא נבלעת בו -->
+				{#if health.responseAlert}
+					<div class="resp-alert">
+						⚡ הדאטהבייס מגיב לאט (<b>{health.metrics.response.latencyMs} ms</b>)
+						<span class="hint">שאילתת בדיקה ריקה לא אמורה לקחת יותר מכמה מילישניות. לרוב זה סימפטום של משאב חנוק ולא תקלה בדאטהבייס עצמו.</span>
+					</div>
+				{/if}
 			</svelte:element>
 
 			<!-- מדים משניים (מוסתרים כשמוצג רק המחוג הראשי) -->
@@ -225,7 +255,14 @@
 			<div class="chip"><span>⏱️</span> פעילות: <b>{fmtUptime(health.uptimeSec)}</b></div>
 			<div class="chip"><span>🧩</span> ליבות: <b>{health.metrics.cpu.cores}</b></div>
 			<div class="chip"><span>📈</span> כניסות החודש: <b>{nf.format(monthlyVisits)}</b></div>
-			{#if health.metrics.response.latencyMs != null}
+			<!-- מגמת העומס (1 / 5 / 15 דק') — עונה על מה שתמונת-מצב רגעית לא יכולה -->
+			<div class="chip" title="ממוצע עומס המעבד ב-1 / 5 / 15 הדקות האחרונות">
+				<span>{TREND[loadTrend].icon}</span> מגמת עומס:
+				<b dir="ltr">{health.metrics.cpu.load1} · {health.metrics.cpu.load5} · {health.metrics.cpu.load15}</b>
+				<span class="trend-lbl">{TREND[loadTrend].label}</span>
+			</div>
+			<!-- תגובת DB רק כשהמדים המשניים מוסתרים; אחרת זו כפילות של מד "זמן תגובה" שלצידו -->
+			{#if summaryOnly && health.metrics.response.latencyMs != null}
 				<div class="chip"><span>⚡</span> תגובת DB: <b>{health.metrics.response.latencyMs} ms</b></div>
 			{/if}
 		</div>
@@ -298,6 +335,17 @@
 	.bottleneck { font-size: 0.8rem; color: #cbd5e1; margin-top: 0.35rem; }
 	.bottleneck.subtle { color: #94a3b8; }
 	.bottleneck b { color: #fff; }
+
+	/* התרעת DB איטי - נבדלת ויזואלית מצוואר הבקבוק, כי היא סימפטום ולא משאב */
+	.resp-alert {
+		font-size: 0.78rem; color: #fcd34d; margin-top: 0.5rem;
+		background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.3);
+		border-radius: 0.6rem; padding: 0.4rem 0.55rem; text-align: start;
+	}
+	.resp-alert b { color: #fff; font-weight: 800; }
+	.resp-alert .hint { display: block; color: #94a3b8; font-size: 0.7rem; margin-top: 2px; font-weight: 600; line-height: 1.35; }
+
+	.trend-lbl { color: #94a3b8; font-size: 0.72rem; }
 
 	.mini-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; }
 	@media (max-width: 640px) { .mini-grid { grid-template-columns: repeat(2, 1fr); } }
