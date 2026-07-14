@@ -1,7 +1,27 @@
 <script lang="ts">
     import type { PageData } from './$types';
+    import { enhance } from '$app/forms';
     import EventsBoard from '$lib/components/EventsBoard.svelte';
     let { data }: { data: PageData } = $props();
+
+    // תאריך הצטרפות בפורמט עברי קריא (23.5.2026)
+    const fmtDate = (iso: string) => {
+        const d = new Date(iso);
+        return isNaN(d.getTime()) ? '' : d.toLocaleDateString('he-IL');
+    };
+
+    // הודעה אישית לתושב - מודל שליחה דרך פעולת sendMessage בשרת
+    let msgTarget = $state<{ id: string; name: string } | null>(null);
+    let msgText = $state('');
+    let msgSending = $state(false);
+    let msgError = $state('');
+    let msgSentTo = $state(''); // שם הנמען האחרון שנשלחה אליו הודעה - לחיווי הצלחה
+
+    function openMessage(r: { id: string; name: string }) {
+        msgTarget = { id: r.id, name: r.name };
+        msgText = '';
+        msgError = '';
+    }
 </script>
 
 <svelte:head>
@@ -140,6 +160,55 @@
             </div>
         </div>
 
+        <!-- רשימת הרשומים של הרכז - שמות בלבד, בלי טלפונים ואימיילים (פרטיות התושבים) -->
+        <div class="mb-6">
+            <div class="flex items-center gap-2 mb-1">
+                <span class="text-xl">👥</span>
+                <h2 class="text-white text-lg font-black">הרשומים בשכונה שלך ({data.residents.length})</h2>
+            </div>
+            <p class="text-gray-500 text-sm mb-3">שמות ותאריכי הצטרפות בלבד — טלפונים ואימיילים אינם מוצגים, לשמירה על פרטיות התושבים. אפשר לשלוח לכל תושב הודעה אישית דרך האתר 💬</p>
+            {#if msgSentTo}
+                <p class="mb-3 rounded-xl bg-green-500/15 border border-green-500/30 px-3 py-2 text-green-300 text-sm font-bold">✅ ההודעה נשלחה ל{msgSentTo} - תופיע אצלו בתיבת ההודעות באתר</p>
+            {/if}
+            {#if data.residents.length === 0}
+                <div class="rounded-2xl bg-[#0f172a] border border-white/10 p-6 text-center text-gray-400 text-sm">
+                    אין עדיין תושבים רשומים בשכונה שלך
+                </div>
+            {:else}
+                <div class="rounded-2xl bg-[#0f172a] border border-cyan-500/25 p-3 max-h-80 overflow-y-auto">
+                    <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {#each data.residents as r (r.id)}
+                            <li class="flex items-center gap-3 rounded-xl bg-white/5 border border-white/10 px-3 py-2">
+                                {#if r.avatarUrl}
+                                    <img src={r.avatarUrl} alt="" class="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-white/20" />
+                                {:else}
+                                    <div class="h-9 w-9 shrink-0 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white text-sm font-bold">
+                                        {r.name.charAt(0)}
+                                    </div>
+                                {/if}
+                                <div class="min-w-0 flex-1">
+                                    <div class="text-white text-sm font-bold truncate">{r.name}</div>
+                                    {#if r.neighborhood}
+                                        <div class="text-gray-400 text-xs truncate">{r.neighborhood}{r.city && !r.neighborhood.includes('(') ? ` (${r.city})` : ''}</div>
+                                    {/if}
+                                </div>
+                                {#if r.joinedAt}
+                                    <div class="text-[10px] text-gray-500 font-bold shrink-0" title="תאריך הצטרפות">{fmtDate(r.joinedAt)}</div>
+                                {/if}
+                                <button
+                                    type="button"
+                                    onclick={() => openMessage(r)}
+                                    title="שלח הודעה אישית ל{r.name}"
+                                    aria-label="שלח הודעה אישית ל{r.name}"
+                                    class="h-8 w-8 shrink-0 rounded-full border border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/25 flex items-center justify-center text-sm transition-colors"
+                                >💬</button>
+                            </li>
+                        {/each}
+                    </ul>
+                </div>
+            {/if}
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!-- Events -->
             <a href="/events" class="group rounded-2xl bg-[#0f172a] border border-green-500/30 p-5 hover:border-green-400/60 transition-all hover:-translate-y-1">
@@ -255,3 +324,73 @@
         </div>
     </div>
 </div>
+
+<!-- מודל שליחת הודעה אישית לתושב -->
+{#if msgTarget}
+    <div
+        class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+        onclick={(ev) => { if (ev.target === ev.currentTarget && !msgSending) msgTarget = null; }}
+        onkeydown={(ev) => { if (ev.key === 'Escape' && !msgSending) msgTarget = null; }}
+        role="dialog"
+        aria-modal="true"
+        tabindex="-1"
+        dir="rtl"
+    >
+        <div class="w-full max-w-md rounded-2xl bg-[#0f172a] border border-cyan-500/30 shadow-2xl p-5">
+            <h3 class="text-white text-lg font-black mb-1">💬 הודעה אישית ל{msgTarget.name}</h3>
+            <p class="text-gray-400 text-sm mb-4">ההודעה תופיע אצלו בתיבת "הודעות" באתר. פרטי הקשר שלו לא נחשפים.</p>
+            <form
+                method="POST"
+                action="?/sendMessage"
+                use:enhance={() => {
+                    msgSending = true;
+                    msgError = '';
+                    return async ({ result }) => {
+                        msgSending = false;
+                        if (result.type === 'success') {
+                            msgSentTo = msgTarget?.name ?? '';
+                            msgTarget = null;
+                            msgText = '';
+                            setTimeout(() => (msgSentTo = ''), 5000);
+                        } else if (result.type === 'failure') {
+                            msgError = String(result.data?.chatError ?? 'שגיאה בשליחת ההודעה');
+                        } else {
+                            msgError = 'שגיאה בשליחת ההודעה, נסה שוב';
+                        }
+                    };
+                }}
+            >
+                <input type="hidden" name="residentId" value={msgTarget.id} />
+                <textarea
+                    name="text"
+                    bind:value={msgText}
+                    rows="4"
+                    maxlength="4000"
+                    required
+                    placeholder="כתוב כאן את ההודעה..."
+                    class="w-full rounded-xl bg-white/5 border border-white/15 px-3 py-2.5 text-white text-sm placeholder-gray-500 focus:border-cyan-400/60 focus:outline-none resize-y"
+                ></textarea>
+                {#if msgError}
+                    <p class="mt-2 text-red-400 text-sm font-bold">⚠️ {msgError}</p>
+                {/if}
+                <div class="mt-3 flex gap-2">
+                    <button
+                        type="submit"
+                        disabled={msgSending || !msgText.trim()}
+                        class="flex-1 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-black text-sm px-4 py-2.5 transition-colors disabled:opacity-50"
+                    >
+                        {msgSending ? '⏳ שולח...' : '📤 שלח הודעה'}
+                    </button>
+                    <button
+                        type="button"
+                        onclick={() => (msgTarget = null)}
+                        disabled={msgSending}
+                        class="rounded-xl border border-white/15 text-gray-300 hover:text-white hover:bg-white/10 font-bold text-sm px-4 py-2.5 transition-colors disabled:opacity-50"
+                    >
+                        ביטול
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+{/if}
