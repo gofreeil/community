@@ -15,6 +15,7 @@ export const load: PageServerLoad = async ({ locals }) => {
         if (!session?.user?.id) {
             return {
                 user: null,
+                loggedIn: false,
                 takenAreas: {} as Record<string, string>,
             };
         }
@@ -46,12 +47,14 @@ export const load: PageServerLoad = async ({ locals }) => {
                 neighborhood: user.neighborhood,
                 city: user.city,
             } : null,
+            loggedIn: true,
             takenAreas,
         };
     } catch (error) {
         console.error('Error loading coordinator apply page:', error);
         return {
             user: null,
+            loggedIn: false,
             takenAreas: {} as Record<string, string>,
         };
     }

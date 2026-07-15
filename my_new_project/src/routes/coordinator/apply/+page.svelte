@@ -5,10 +5,17 @@
 
     interface PageData {
         user: { name: string; phone: string; neighborhood?: string; city?: string } | null;
+        loggedIn?: boolean;
         takenAreas?: Record<string, string>;
     }
 
     let { data }: { data: PageData } = $props();
+
+    // האם המשתמש מחובר (נקבע בשרת). אם לא — מציגים הכוונה בעברית במקום הטופס,
+    // כי ה-API של בקשת רכז דורש התחברות ואחרת מחזיר 401.
+    const isLoggedIn = $derived(data.loggedIn ?? (data.user !== null));
+    const loginUrl = '/login?redirect=/coordinator/apply';   // חוזר לעמוד אחרי כניסה
+    const registerUrl = '/register';
 
     /** מפתח השוואה אחיד לאזור: שם|עיר באותיות קטנות, תואם לצד השרת */
     const areaMatchKey = (name: string, cityName: string) =>
@@ -23,6 +30,7 @@
     let motivation = $state('');
     let isLoading = $state(false);
     let error = $state<string | null>(null);
+    let authError = $state(false); // השגיאה היא חסימת התחברות → מציגים כפתורי הרשמה/כניסה
     let success = $state(false);
 
     // רשימת ערים/יישובים
@@ -98,6 +106,7 @@
             return;
         }
         error = null;
+        authError = false;
         isLoading = true;
 
         try {
@@ -120,15 +129,23 @@
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || $_('coordinator_error'));
+                // תרגום חסימות השרת לעברית + הכוונה, במקום מחרוזת אנגלית גולמית ("Unauthorized")
+                if (response.status === 401) {
+                    authError = true;
+                    error = $_('coordinator_unauthorized');
+                } else if (response.status === 400) {
+                    error = $_('coordinator_missing_fields');
+                } else {
+                    error = $_('coordinator_error');
+                }
+                return;
             }
 
             success = true;
             experience = '';
             motivation = '';
-        } catch (err) {
-            error = err instanceof Error ? err.message : $_('coordinator_error');
+        } catch {
+            error = $_('coordinator_error');
         } finally {
             isLoading = false;
         }
@@ -152,6 +169,21 @@
             <div class="bg-green-900 border border-green-500 rounded-lg p-6 mb-6">
                 <p class="text-green-200 text-center">{$_('coordinator_success')}</p>
             </div>
+        {:else if !isLoggedIn}
+            <!-- לא מחובר → הכוונה בעברית לפי הסדר (הרשמה/כניסה), במקום טופס שיוחזר מ-401 -->
+            <div class="bg-blue-900/30 border border-blue-500/40 rounded-lg p-6 mb-6">
+                <p class="text-blue-100 font-bold text-lg mb-3">🔒 {$_('coordinator_login_required_title')}</p>
+                <p class="text-slate-300 text-sm mb-4">{$_('coordinator_login_required_intro')}</p>
+                <ol class="text-slate-200 text-sm list-decimal pr-5 space-y-1.5 mb-5">
+                    <li>{$_('coordinator_login_step1')}</li>
+                    <li>{$_('coordinator_login_step2')}</li>
+                    <li>{$_('coordinator_login_step3')}</li>
+                </ol>
+                <div class="flex flex-wrap gap-3">
+                    <a href={registerUrl} class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded transition-colors">{$_('coordinator_go_register')}</a>
+                    <a href={loginUrl} class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-2.5 px-6 rounded transition-colors">{$_('coordinator_go_login')}</a>
+                </div>
+            </div>
         {:else}
             <form
                 onsubmit={handleSubmit}
@@ -160,6 +192,12 @@
                 {#if error}
                     <div class="bg-red-900 border border-red-500 rounded-lg p-4 mb-6">
                         <p class="text-red-200">{error}</p>
+                        {#if authError}
+                            <div class="flex flex-wrap gap-3 mt-3">
+                                <a href={loginUrl} class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-5 rounded transition-colors">{$_('coordinator_go_login')}</a>
+                                <a href={registerUrl} class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 px-5 rounded transition-colors">{$_('coordinator_go_register')}</a>
+                            </div>
+                        {/if}
                     </div>
                 {/if}
 

@@ -256,6 +256,15 @@ register('he', () => Promise.resolve({
     coordinator_already_has: "⚠️ לאזור זה כבר יש רכז: {name}. ניתן להגיש בקשה — אם תאושר, המינוי שלך יחליף את הרכז הנוכחי.",
     coordinator_area_city: "רכז/ת היישוב",
     coordinator_area_neighborhood: "רכז/ת השכונה",
+    coordinator_login_required_title: "צריך להתחבר כדי להגיש בקשת רכז",
+    coordinator_login_required_intro: "הגשת בקשה להיות רכז/ת שכונה זמינה רק למשתמשים מחוברים. כך ממשיכים לפי הסדר:",
+    coordinator_login_step1: "נרשמים (אם עדיין אין לכם חשבון) או מתחברים",
+    coordinator_login_step2: "חוזרים לעמוד הזה",
+    coordinator_login_step3: "ממלאים את הטופס ושולחים את הבקשה",
+    coordinator_go_register: "הרשמה",
+    coordinator_go_login: "התחברות",
+    coordinator_unauthorized: "צריך להיות מחוברים כדי להגיש בקשת רכז. הירשמו או התחברו — ואז חזרו לעמוד ונסו שוב.",
+    coordinator_missing_fields: "חסרים פרטים חובה. מלאו שם, טלפון ובחרו עיר/שכונה, ונסו שוב.",
 }));
 
 register('en', () => Promise.resolve({
@@ -485,6 +494,15 @@ register('en', () => Promise.resolve({
     coordinator_already_has: "⚠️ This area already has a coordinator: {name}. You can still apply — if approved, your appointment will replace the current coordinator.",
     coordinator_area_city: "Town coordinator",
     coordinator_area_neighborhood: "Neighborhood coordinator",
+    coordinator_login_required_title: "You must be signed in to apply as a coordinator",
+    coordinator_login_required_intro: "Applying to be a neighborhood coordinator is available only to signed-in users. Here's how to continue:",
+    coordinator_login_step1: "Register (if you don't have an account yet) or sign in",
+    coordinator_login_step2: "Come back to this page",
+    coordinator_login_step3: "Fill in the form and send your request",
+    coordinator_go_register: "Register",
+    coordinator_go_login: "Sign in",
+    coordinator_unauthorized: "You must be signed in to submit a coordinator request. Please register or sign in, then come back and try again.",
+    coordinator_missing_fields: "Missing required details. Fill in name, phone and choose a city/neighborhood, then try again.",
 }));
 
 register('ru', () => Promise.resolve({
@@ -714,6 +732,15 @@ register('ru', () => Promise.resolve({
     coordinator_already_has: "⚠️ В этом районе уже есть координатор: {name}. Вы можете подать заявку — если её одобрят, вы замените текущего координатора.",
     coordinator_area_city: "Координатор посёлка",
     coordinator_area_neighborhood: "Координатор района",
+    coordinator_login_required_title: "Чтобы подать заявку координатора, нужно войти в систему",
+    coordinator_login_required_intro: "Подача заявки на координатора района доступна только авторизованным пользователям. Как продолжить по порядку:",
+    coordinator_login_step1: "Зарегистрируйтесь (если у вас ещё нет аккаунта) или войдите",
+    coordinator_login_step2: "Вернитесь на эту страницу",
+    coordinator_login_step3: "Заполните форму и отправьте заявку",
+    coordinator_go_register: "Регистрация",
+    coordinator_go_login: "Вход",
+    coordinator_unauthorized: "Чтобы отправить заявку координатора, нужно войти. Зарегистрируйтесь или войдите, затем вернитесь и попробуйте снова.",
+    coordinator_missing_fields: "Не заполнены обязательные поля. Укажите имя, телефон и выберите город/район, затем попробуйте снова.",
 }));
 
 // מילונים מודולריים לפי אזור באתר - מתמזגים לתוך המילון הראשי
