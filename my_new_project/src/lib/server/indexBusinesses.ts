@@ -13,10 +13,12 @@
 // מיד, ואין לנו נתונים כפולים לתחזק. הם נספרים במונה "פרטים במפה" ובפילוח
 // הקטגוריות דרך buildItemsSummary — בלי להיות מאוחסנים אצלנו.
 //
-// לרוב העסקים אין כתובת (הם ארציים/אונליין) ולכן אין להם lat/lng — הם מופיעים
-// ברשימה ובלוח, לא כפינים על המפה. זה מכוון.
+// עסק עם כתובת ("מיקום המפעל") עובר geocoding ומקבל פין על המפה בעיר שנגזרת
+// מהכתובת. עסק בלי כתובת (ארצי/אונליין) נשאר ברשימה ובלוח בלבד, בלי פין.
+// ה-geocoding מדורג — כמה כתובות בכל טעינה, עם cache קבוע (ראו getIndexBusinesses).
 // ============================================================
 import type { DbItem } from '$lib/server/db';
+import { geocodeAddressDetailed } from '$lib/server/geocode';
 
 const INDEX_URL = 'https://index.gofreeil.com';
 const TTL_MS = 15 * 60 * 1000; // ריענון עצל — כמו ה-cache של האינדקס עצמו
@@ -108,7 +110,7 @@ function mapRow(row: Row): DbItem | null {
 		color:        'green',
 		neighborhood: '',
 		city:         '',
-		lat:          null,   // ארציים/אונליין — אין פין על המפה
+		lat:          null,   // ימולא ב-getIndexBusinesses מ-geocoding אם יש כתובת
 		lng:          null,
 		extra_fields: JSON.stringify(extra),
 		status:       'active',
@@ -120,13 +122,58 @@ function mapRow(row: Row): DbItem | null {
 
 let cache: { at: number; items: DbItem[] } | null = null;
 
+// ---- geocoding של כתובות עסקים → פין על המפה ----
+// כתובת → מיקום. נשמר לכל חיי התהליך (שורד את רענון ה-15 דק' של רשימת העסקים),
+// כדי שכל כתובת תיפתר פעם אחת בלבד. גם כישלון/כתובת-לא-תקינה נשמר (null) כדי לא
+// לנסות שוב-ושוב; אם בעל העסק יתקן את הכתובת באינדקס — זו מחרוזת חדשה, מפתח חדש,
+// וניסיון חדש ממילא.
+type Geo = { lat: number; lng: number; city: string; neighborhood: string };
+const geoCache = new Map<string, Geo | null>();
+// כמה כתובות *חדשות* לפתור בכל קריאה. יש ~14 כתובות, ולכן מתכנס תוך כמה טעינות-דף
+// בלי להשהות טעינה בודדת יותר מדי. אחרי שכולן ב-cache — עלות אפס.
+const GEO_BATCH = 4;
+
+/** פותר עד GEO_BATCH כתובות שעדיין לא נוסו ושומר ל-geoCache (הצלחה או null). */
+async function resolveSomeAddresses(addresses: string[]): Promise<void> {
+	const todo = [...new Set(addresses)].filter((a) => a && !geoCache.has(a)).slice(0, GEO_BATCH);
+	if (!todo.length) return;
+	await Promise.all(
+		todo.map(async (addr) => {
+			// תיאור שנדחף לשדה הכתובת אחרי "/" או שורה חדשה — משאירים את חלק הכתובת
+			// בלבד, אחרת Nominatim לא מזהה ("רמת גן /מכשור לשימוש ביתי" → "רמת גן").
+			const clean = addr.split(/[/\n]/)[0].trim();
+			// רק כתובת "מספיק ספציפית" עוברת geocoding: מספר בית, או לפחות שתי מילים
+			// (שם ישוב/רחוב). מילה גנרית בודדת ("בית", "משרד", "ארה״ב") מחזירה פין
+			// שגוי ב-Nominatim (למשל "ארה״ב" → באר שבע) — לכן נשארת רשימה בלבד.
+			const specific = /\d/.test(clean) || clean.split(/\s+/).filter(Boolean).length >= 2;
+			geoCache.set(addr, specific ? await geocodeAddressDetailed(`${clean}, ישראל`) : null);
+		}),
+	);
+}
+
+/** מצמיד קואורדינטות+עיר שנפתרו (מ-geoCache) לכל עסק שיש לו כתובת. */
+function withCoords(items: DbItem[]): DbItem[] {
+	return items.map((it) => {
+		const geo = it.address ? geoCache.get(it.address) : undefined;
+		// שכונה לא נקבעת בכוונה — כדי שהעסק יופיע במפת כל שכונות העיר שלו,
+		// ולא ייפסל בגלל אי-התאמת-שם-שכונה מול הבורר.
+		return geo ? { ...it, lat: geo.lat, lng: geo.lng, city: geo.city || it.city } : it;
+	});
+}
+
 /**
  * העסקים המאושרים מאתר האינדקס, כפריטים בצורת DbItem.
+ * עסק עם כתובת מקבל פין על המפה: ה-geocoding מדורג (כמה כתובות בכל קריאה, cache
+ * קבוע), והצמדת הקואורדינטות נעשית בכל קריאה מ-geoCache — כך הפין מופיע ברגע
+ * שהכתובת נפתרה, בלי להשהות טעינת דף בודדת.
  * נכשל ברכות: תקלה באינדקס לא מפילה את דף הבית — פשוט מחזיר את ה-cache הישן
  * (או רשימה ריקה), כי אלו נתוני-בונוס ולא ליבת האתר.
  */
 export async function getIndexBusinesses(): Promise<DbItem[]> {
-	if (cache && Date.now() - cache.at < TTL_MS) return cache.items;
+	if (cache && Date.now() - cache.at < TTL_MS) {
+		await resolveSomeAddresses(cache.items.map((i) => i.address));
+		return withCoords(cache.items);
+	}
 	try {
 		const res = await fetch(`${INDEX_URL}/api/businesses`, {
 			signal: AbortSignal.timeout(8000),
@@ -137,9 +184,10 @@ export async function getIndexBusinesses(): Promise<DbItem[]> {
 
 		const items = rows.map(mapRow).filter((x): x is DbItem => x !== null);
 		cache = { at: Date.now(), items };
-		return items;
+		await resolveSomeAddresses(items.map((i) => i.address));
+		return withCoords(items);
 	} catch (e) {
 		console.warn('[indexBusinesses] שליפה נכשלה:', e instanceof Error ? e.message : e);
-		return cache?.items ?? [];
+		return withCoords(cache?.items ?? []);
 	}
 }

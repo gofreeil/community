@@ -95,6 +95,52 @@ export async function geocodeAddress(query: string): Promise<{ lat: number; lng:
 }
 
 /**
+ * כמו geocodeAddress, אך מחזיר גם עיר ושכונה (addressdetails) בקריאה אחת -
+ * בלי קריאת reverse נוספת. משמש את ייבוא עסקי האינדקס: כתובת חופשית → פין +
+ * שיוך לעיר, כדי שהעסק יופיע על המפה בעיר הנכונה.
+ * best-effort: מחזיר null אם נכשל/אין תוצאה.
+ */
+export async function geocodeAddressDetailed(
+    query: string,
+): Promise<{ lat: number; lng: number; city: string; neighborhood: string } | null> {
+    try {
+        const url = new URL(NOMINATIM);
+        url.searchParams.set('q', query);
+        url.searchParams.set('format', 'json');
+        url.searchParams.set('limit', '1');
+        url.searchParams.set('countrycodes', 'il');
+        url.searchParams.set('addressdetails', '1');
+        url.searchParams.set('accept-language', 'he');
+
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 4000);
+        const res = await fetch(url, {
+            headers: {
+                'User-Agent': 'gofreeil-community/1.0 (https://community.gofreeil.com)',
+            },
+            signal: ctrl.signal,
+        }).finally(() => clearTimeout(timer));
+
+        if (!res.ok) return null;
+        const arr = (await res.json()) as Array<{
+            lat: string;
+            lon: string;
+            address?: Record<string, string>;
+        }>;
+        if (!Array.isArray(arr) || arr.length === 0) return null;
+        const lat = Number(arr[0].lat);
+        const lng = Number(arr[0].lon);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+        const a = arr[0].address ?? {};
+        const neighborhood = a.neighbourhood || a.suburb || a.quarter || a.city_district || a.residential || '';
+        const city = a.city || a.town || a.village || a.municipality || '';
+        return { lat, lng, city, neighborhood };
+    } catch {
+        return null;
+    }
+}
+
+/**
  * מבטיח קואורדינטות לפריט לפי סדר עדיפויות:
  *   1. פין מפורש שהמשתמש סימן (lat/lng שהגיעו מהטופס)
  *   2. geocoding של הכתובת החופשית (מדויק לרחוב/מספר)
