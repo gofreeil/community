@@ -172,19 +172,21 @@ export const load: PageServerLoad = async (event) => {
     // ה-promise יצא לדרך בתחילת ה-load, כאן רק אוספים את התוצאה.
     const monthlyVisits = await monthlyVisitsPromise;
 
+    // סיכומי הגרף המסכם — מאותם users/items שכבר נטענו, בלי שליפה נוספת מ-Strapi
+    // ובאותה הגדרת "פריט קהילה". buildItemsSummary מוסיף גם את עסקי האינדקס,
+    // כך שהמונה "פרטים במפה" בבאנר, הגרף המסכם ודף הסטטיסטיקה מציגים בדיוק את
+    // אותו מספר (פריטי הקהילה + עסקי האינדקס).
+    const itemsSummary  = await buildItemsSummary(items);
+    const registrations = await buildRegistrationsSummary(users);
+
     const dashboard = {
         totalUsers:        users.length,
-        totalItems:        items.length,
+        totalItems:        itemsSummary.total,
         totalCoordinators: users.filter(u => ((u as any).coordinator_of?.length ?? 0) > 0).length,
         newUsersThisMonth: users.filter(u => inThisMonth((u as any).created_at)).length,
         newItemsThisMonth: items.filter(i => inThisMonth((i as any).created_at)).length,
         monthlyVisits,
     };
-
-    // סיכומי הגרף המסכם — מאותם users/items שכבר נטענו, בלי שליפה נוספת מ-Strapi
-    // ובאותה הגדרת "פריט קהילה", כדי שהמספר בגרף יהיה זהה בדיוק למונה שבבאנר.
-    const itemsSummary  = await buildItemsSummary(items);
-    const registrations = await buildRegistrationsSummary(users);
 
     const [pendingAdsCount, pendingSinglesCount, discountCodes, totpSecret, serverHealth, stats] =
         await Promise.all([pendingAdsPromise, pendingSinglesPromise, discountCodesPromise, totpPromise, serverHealthPromise, statsPromise]);

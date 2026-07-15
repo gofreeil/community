@@ -5,6 +5,7 @@
 // ============================================================
 import { getAllItems, getAllUsers, type DbItem, type DbUser } from '$lib/server/db';
 import { isFamilyItem } from '$lib/itemCategories';
+import { getIndexBusinesses } from '$lib/server/indexBusinesses';
 
 export interface ItemsSummary {
     total: number;
@@ -21,16 +22,25 @@ export async function buildItemsSummary(preItems?: DbItem[]): Promise<ItemsSumma
     const all = preItems ?? await getAllItems();
     const real = all.filter((it) => isFamilyItem(it.category));
 
+    // עסקי האינדקס (index.gofreeil.com) — מיובאים בקריאה-דרך ומוצגים תחת
+    // "חנויות ועסקים". הם נספרים יחד עם פריטי הקהילה במונה "פרטים במפה"
+    // ובפילוח הקטגוריות (shops). אין להם created_at תקני (חותמת גיליון), ולכן
+    // הם מגדילים את הסה״כ והקטגוריה אך לא את הפילוח החודשי — וזה תקין, כי הם
+    // יובאו בבת-אחת ולא "נוספו" חודש-אחר-חודש אצלנו. נכשל ברכות ל-[] אם האינדקס
+    // לא זמין, כדי שהסטטיסטיקה לא תיפול בגללו.
+    const businesses = await getIndexBusinesses().catch(() => [] as DbItem[]);
+    const counted = [...real, ...businesses];
+
     const byCat = new Map<string, number>();
     const byMonth = new Map<string, number>();
-    for (const it of real) {
+    for (const it of counted) {
         byCat.set(it.category, (byCat.get(it.category) ?? 0) + 1);
         const m = (it.created_at || '').slice(0, 7); // YYYY-MM
         if (/^\d{4}-\d{2}$/.test(m)) byMonth.set(m, (byMonth.get(m) ?? 0) + 1);
     }
 
     return {
-        total: real.length,
+        total: counted.length,
         byCategory: [...byCat.entries()]
             .map(([category, count]) => ({ category, count }))
             .sort((a, b) => b.count - a.count),

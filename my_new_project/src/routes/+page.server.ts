@@ -44,8 +44,9 @@ export const load: PageServerLoad = async (event) => {
 
     // עסקי האינדקס (index.gofreeil.com) — כולם חתמו על התנאים ומעניקים הנחה
     // לחברי "יוצאים לחירות", ולכן מיובאים אוטומטית ומוצגים תחת "חנויות ועסקים".
-    // הם נקראים דרך cache ואינם פריטי Strapi — ולכן לא נספרים בספירות השכונה
-    // שלמטה ולא במונה "פרטים במפה" בלוח הניהול.
+    // הם נקראים דרך cache ואינם פריטי Strapi, ולכן אינם משתתפים בספירות
+    // השכונתיות כאן (emergencyTeamCount/vaadMembersCount). את המונה הארצי
+    // "פרטים במפה" שבלוח הניהול הם כן מגדילים — buildItemsSummary מוסיף אותם.
     const indexItems = indexRes.status === 'fulfilled' ? indexRes.value : [];
 
     if (dbItemsRes.status === 'rejected') {
