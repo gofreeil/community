@@ -7,7 +7,7 @@ import { DEFAULT_DISCOUNT_CODES, type DiscountCode } from '$lib/discountCodes';
 import { countPending } from '$lib/server/adsStore';
 import { getVisitsThisMonth, getVisitStats } from '$lib/server/visitStats';
 import { getServerHealth } from '$lib/server/serverHealth';
-import { buildItemsSummary, buildRegistrationsSummary } from '$lib/server/statsSummary';
+import { buildItemsSummary, buildRegistrationsSummary, buildSiteOverview } from '$lib/server/statsSummary';
 import { isFamilyItem } from '$lib/itemCategories';
 
 // "אושיות (רחובות)" → { name: "אושיות", city: "רחובות" }
@@ -161,13 +161,6 @@ export const load: PageServerLoad = async (event) => {
     const coordinatorStats = buildCoordinatorStats(users, items);
 
     // ---- סיכום ללוח הבקרה (באנר עליון) ----
-    const now = new Date();
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-    const inThisMonth = (iso?: string | null) => {
-        if (!iso) return false;
-        const t = new Date(iso).getTime();
-        return !isNaN(t) && t >= monthStart;
-    };
     // כניסות החודש - נספר ב-visit-stat, מוצג עם רענון של פעם ביום (cache בשכבת visitStats).
     // ה-promise יצא לדרך בתחילת ה-load, כאן רק אוספים את התוצאה.
     const monthlyVisits = await monthlyVisitsPromise;
@@ -179,14 +172,10 @@ export const load: PageServerLoad = async (event) => {
     const itemsSummary  = await buildItemsSummary(items);
     const registrations = await buildRegistrationsSummary(users);
 
-    const dashboard = {
-        totalUsers:        users.length,
-        totalItems:        itemsSummary.total,
-        totalCoordinators: users.filter(u => ((u as any).coordinator_of?.length ?? 0) > 0).length,
-        newUsersThisMonth: users.filter(u => inThisMonth((u as any).created_at)).length,
-        newItemsThisMonth: items.filter(i => inThisMonth((i as any).created_at)).length,
-        monthlyVisits,
-    };
+    // באנר הסקירה — buildSiteOverview הוא החישוב היחיד, המשותף גם ללוח הרכז,
+    // כך ששני הלוחות מציגים בדיוק אותם מספרים. itemsSummary כבר נבנה למעלה
+    // ומועבר כדי לא לבנותו פעמיים.
+    const dashboard = await buildSiteOverview(users, items, monthlyVisits, itemsSummary);
 
     const [pendingAdsCount, pendingSinglesCount, discountCodes, totpSecret, serverHealth, stats] =
         await Promise.all([pendingAdsPromise, pendingSinglesPromise, discountCodesPromise, totpPromise, serverHealthPromise, statsPromise]);

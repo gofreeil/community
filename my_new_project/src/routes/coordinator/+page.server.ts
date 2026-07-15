@@ -3,6 +3,7 @@ import type { PageServerLoad, Actions, RequestEvent } from './$types';
 import { getUserById, getUserByAnyId, getItemsByCategory, getPendingEvents, getAllUsers, getAllItems, getEvents, createItem, updateEventStatus, updateEvent, deleteEvent, getEventById } from '$lib/server/db';
 import type { DbEvent, DbUser } from '$lib/server/db';
 import { getVisitsThisMonth } from '$lib/server/visitStats';
+import { buildSiteOverview, type SiteOverview } from '$lib/server/statsSummary';
 
 // "אושיות (רחובות)" → { name: "אושיות", city: "רחובות" }
 function parseArea(entry: string): { name: string; city: string } {
@@ -68,7 +69,7 @@ export const load: PageServerLoad = async (event) => {
     // ה-id נדרש למיעון הודעה אישית דרך האתר ואינו חושף פרטי קשר.
     let residents: Array<{ id: string; name: string; neighborhood: string; city: string; joinedAt: string; avatarUrl: string | null }> = [];
     // נתוני האתר הכלליים - אותו פאנל כמו בלוח הניהול, גלוי לכל רכז מאושר
-    const site = { totalUsers: 0, totalItems: 0, totalCoordinators: 0, newUsersThisMonth: 0, newItemsThisMonth: 0, monthlyVisits: 0 };
+    let site: SiteOverview = { totalUsers: 0, totalItems: 0, totalCoordinators: 0, newUsersThisMonth: 0, newItemsThisMonth: 0, monthlyVisits: 0 };
     // אירועי העיר של הרכז - לתצוגה מקדימה של "לוח האירועים" כפי שנראה לתושבים בדף הבית
     let events: Awaited<ReturnType<typeof getEvents>> = [];
     // אירועים ממתינים לאישור המשויכים לרכז (או "יתומים" לסופר-אדמין)
@@ -117,14 +118,9 @@ export const load: PageServerLoad = async (event) => {
         pendingEvents = pending.filter((ev) => inMyNeighborhoods(ev) || (isSuper && !coveredBySomeone(ev)));
         pendingEventsCount = pendingEvents.length;
 
-        // נתוני האתר הכלליים (זהה לחישוב בלוח הניהול: הודעות מערכת לא נספרות כפריטים)
-        const publicItems = allItems.filter((i) => i.category !== 'message');
-        site.totalUsers        = allUsers.length;
-        site.totalItems        = publicItems.length;
-        site.totalCoordinators = allUsers.filter(u => (((u as any).coordinator_of)?.length ?? 0) > 0).length;
-        site.newUsersThisMonth = allUsers.filter(u => inThisMonth((u as any).created_at)).length;
-        site.newItemsThisMonth = publicItems.filter(i => inThisMonth((i as any).created_at)).length;
-        site.monthlyVisits     = visits;
+        // נתוני האתר הכלליים — אותו חישוב יחיד כמו בלוח הניהול (buildSiteOverview),
+        // כולל את עסקי האינדקס במונה "פרטים במפה". שני הלוחות מציגים אותם מספרים.
+        site = await buildSiteOverview(allUsers, allItems, visits);
     } catch (e) {
         console.warn('[coordinator] dashboard counts failed:', e);
     }

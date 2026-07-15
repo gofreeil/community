@@ -73,3 +73,45 @@ export async function buildRegistrationsSummary(preUsers?: DbUser[]): Promise<Re
             .sort((a, b) => a.month.localeCompare(b.month)),
     };
 }
+
+export interface SiteOverview {
+    totalUsers: number;
+    totalItems: number;
+    totalCoordinators: number;
+    newUsersThisMonth: number;
+    newItemsThisMonth: number;
+    monthlyVisits: number;
+}
+
+/**
+ * סקירת האתר לבאנר לוח הבקרה — חישוב יחיד המשותף ללוח הניהול (/admin)
+ * וללוח הרכז (/coordinator), כך ששני הפאנלים מציגים בדיוק אותם מספרים
+ * (ובראשם "פרטים במפה" = פריטי הקהילה + עסקי האינדקס, דרך buildItemsSummary).
+ * מקבל את אותם users/items שכבר נטענו בדף. אפשר להעביר itemsSummary מוכן כדי
+ * לא לבנות אותו פעמיים כשהקורא כבר בנה אותו לגרף המסכם.
+ */
+export async function buildSiteOverview(
+    users: DbUser[],
+    items: DbItem[],
+    monthlyVisits: number,
+    itemsSummary?: ItemsSummary,
+): Promise<SiteOverview> {
+    const summary = itemsSummary ?? await buildItemsSummary(items);
+
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+    const inThisMonth = (iso?: string | null) => {
+        if (!iso) return false;
+        const t = new Date(iso).getTime();
+        return !isNaN(t) && t >= monthStart;
+    };
+
+    return {
+        totalUsers:        users.length,
+        totalItems:        summary.total,
+        totalCoordinators: users.filter((u) => (u.coordinator_of?.length ?? 0) > 0).length,
+        newUsersThisMonth: users.filter((u) => inThisMonth(u.created_at)).length,
+        newItemsThisMonth: items.filter((i) => isFamilyItem(i.category) && inThisMonth(i.created_at)).length,
+        monthlyVisits,
+    };
+}
