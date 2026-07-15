@@ -324,7 +324,8 @@
 	}
 
 	.readout { position: absolute; left: 0; right: 0; bottom: 2px; text-align: center; }
-	.score { font-size: 2.6rem; font-weight: 900; line-height: 1; }
+	/* הזזה קלה שמאלה כדי שהמספר לא יישב על בסיס המחוג כשהוא עומד כמעט זקוף */
+	.score { font-size: 2.6rem; font-weight: 900; line-height: 1; transform: translateX(-7px); }
 	.mscore { font-size: 1.5rem; font-weight: 900; line-height: 1; }
 	.max { font-size: 0.9rem; font-weight: 700; color: #64748b; }
 	.mscore .max { font-size: 0.7rem; }
