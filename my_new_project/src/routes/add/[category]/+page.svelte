@@ -6,6 +6,7 @@
     import { LS_KEY, DEFAULT_NEIGHBORHOOD, citiesAndNeighborhoods, effectiveNeighborhoods } from '$lib/neighborhoodsData';
     import { nearestCityNeighborhood } from '$lib/neighborhoodCoords';
     import { getFormMemory, rememberFields } from '$lib/formMemory';
+    import { saveDraftBackup, loadDraftBackup, clearDraftBackup } from '$lib/draftBackup';
     import NeighborhoodPicker from '$lib/components/NeighborhoodPicker.svelte';
     import StreetPicker from '$lib/components/StreetPicker.svelte';
     import ServiceTypePicker from '$lib/components/ServiceTypePicker.svelte';
@@ -64,6 +65,8 @@
     const autofillName = NAME_AUTOFILL_CATEGORIES.has(categoryId);
 
     const DRAFT_KEY = `add_draft_${categoryId}`;
+    // שדות תמונות (base64) - הכבדים בטיוטה; בחריגת מכסת localStorage נשמרים בלעדיהם
+    const IMAGE_FIELD_KEYS = new Set(config.fields.filter(f => f.type === 'images').map(f => f.key));
 
     // Helper: מחזיר HTML לאיקון - תמונה אם src, אמוגי אם לא
     const iconHtml = (size: 'lg' | 'sm' = 'sm') =>
@@ -79,6 +82,14 @@
         editItem?.neighborhood || userProfile?.neighborhood || (userProfile?.city ? 'מרכז' : DEFAULT_NEIGHBORHOOD),
     );
     let city         = $state(editItem?.city || userProfile?.city || 'ירושלים');
+
+    // המשתמש בחר עיר/שכונה במפורש (בורר או פין ידני)? רק אז מיקום מטיוטה גובר על
+    // הפרופיל בשחזור. בלי הדגל, ברירת מחדל שגויה שנשמרה פעם בטיוטה (ירושלים אצל
+    // רכז מבת ים) הייתה חוזרת ודורסת את המיקום הנכון מהפרופיל בכל פתיחה.
+    let locationTouched = $state(false);
+    // חוסם את השמירה האוטומטית עד שהשחזור ב-onMount הסתיים - שטיוטה קיימת
+    // לא תידרס בערכים ריקים של טופס שרק נטען.
+    let draftRestored = $state(false);
 
     // ערים+שכונות לבורר, כולל שכונות שאושרו ע"י אדמין (מקור-אמת אחד לכל האתר)
     let citiesWithApproved = $derived(
@@ -98,6 +109,7 @@
         return list.includes(neighborhood) ? list : [neighborhood, ...list].filter(Boolean);
     });
     function onCityChange() {
+        locationTouched = true;
         const list = citiesWithApproved.find(([c]) => c === city)?.[1] ?? [];
         neighborhood = list.includes('מרכז') || list.length === 0 ? 'מרכז' : list[0];
     }
@@ -474,8 +486,11 @@
             }
         } catch {}
 
-        // שחזר שכונה מ-localStorage (גובר על פרופיל)
-        try {
+        // שחזר עיר+שכונה מ-localStorage - רק כשאין עיר בפרופיל, ולעולם לא במצב
+        // עריכה (שם המיקום של הפריט הקיים קובע). הפרופיל גובר: רכז/תושב מבת ים
+        // לא אמור לקבל את שכונת-הגלישה האחרונה שלו (ירושלים/גילה) רק כי פעם עיין
+        // בשכונה אחרת באתר.
+        if (!isEditMode && !userProfile?.city) try {
             const saved = localStorage.getItem(LS_KEY);
             if (saved) {
                 const parsed = JSON.parse(saved);
@@ -489,25 +504,54 @@
             }
         } catch {}
 
-        // שחזר טיוטא אם קיימת (גובר על הכל). הטיוטא משמרת את עצמה עד שליחה מוצלחת,
+        // שחזר טיוטא אם קיימת. הטיוטא משמרת את עצמה עד שליחה מוצלחת,
         // כך שרענון/קריסה/באג בפרסום לא מאבדים שום דבר שהוקלד.
         // במצב עריכה מדלגים - הערכים מגיעים מהפריט הקיים ואסור שטיוטת הוספה ישנה תדרוס אותם.
-        if (!isEditMode) try {
-            const draft = localStorage.getItem(DRAFT_KEY);
-            if (draft) {
-                const parsed = JSON.parse(draft);
-                if (parsed.formValues)   formValues   = { ...formValues, ...parsed.formValues };
-                if (parsed.neighborhood) neighborhood = parsed.neighborhood;
-                if (parsed.city)         city         = parsed.city;
+        if (!isEditMode) {
+            let parsed: Record<string, any> | null = null;
+            try {
+                const draft = localStorage.getItem(DRAFT_KEY);
+                if (draft) parsed = JSON.parse(draft);
+            } catch {}
+            // גיבוי-עוגייה: נכתב רק כששמירת ה-localStorage נכשלה (מכסה מלאה/אחסון
+            // חסום). אם הוא חדש יותר מהטיוטה ב-localStorage - הוא המצב העדכני
+            // (ההקלדות האחרונות שלא הצליחו להיכנס ל-localStorage) והוא שגובר.
+            const backup = loadDraftBackup(DRAFT_KEY) as Record<string, any> | null;
+            if (backup && (!parsed || Number(backup.savedAt ?? 0) > Number(parsed.savedAt ?? 0))) parsed = backup;
+            if (parsed) try {
+                if (parsed.formValues) formValues = { ...formValues, ...parsed.formValues };
+                if (typeof parsed.logoImage === 'string' && parsed.logoImage) logoImage = parsed.logoImage;
+                // מיקום מהטיוטה משוחזר רק אם המשתמש בחר אותו במפורש (locationTouched).
+                // אחרת הפרופיל גובר - שברירת מחדל שגויה שנשמרה בעבר לא תרדוף את המשתמש.
+                if (parsed.locationTouched === true) {
+                    locationTouched = true;
+                    if (parsed.neighborhood) neighborhood = parsed.neighborhood;
+                    if (parsed.city)         city         = parsed.city;
+                }
                 if (parsed.pinLat != null && parsed.pinLng != null) {
                     pinLat = parsed.pinLat;
                     pinLng = parsed.pinLng;
                     // פין משוחזר מטיוטא נחשב ידני - שה-geocoding לא יזיז אותו
                     pinSource = 'manual';
                     showMap = true;
+                    // הפין הוא מקור-האמת: טיוטה בלי בחירת מיקום מפורשת מקבלת עיר+שכונה מהפין
+                    if (parsed.locationTouched !== true) syncLocationFromPin(parsed.pinLat, parsed.pinLng);
+                    // פין שמור = מיקום מפורש: אפקט יישור-הפרופיל לא ידרוס את מה שנגזר ממנו,
+                    // אחרת הפריט היה נשלח עם lat/lng בעיר אחת ועיר/שכונה של עיר אחרת
+                    locationTouched = true;
                 }
-            }
-        } catch {}
+            } catch {}
+        }
+
+        // מעכשיו מותר לשמור - הטיוטה הקיימת כבר שוחזרה ולא תידרס.
+        // ה-baseline מקבע את מצב הטופס אחרי השחזור: טופס שלא השתנה ממנו לא נשמר,
+        // כדי שביקור-בעלמא לא ייצור טיוטת-רפאים ולא ידרוס טיוטה/גיבוי של טאב אחר.
+        draftBaseline = JSON.stringify(draftPayload());
+        draftRestored = true;
+
+        // רשת ביטחון: שמירה גם ברגע עזיבת העמוד (במובייל הדפדפן עשוי להרוג את הטאב בלי flush)
+        window.addEventListener('pagehide', persistDraft);
+        return () => window.removeEventListener('pagehide', persistDraft);
     });
 
     // ---- שמירה אוטומטית של טיוטא בכל שינוי (נשמר גם אם המשתמש לא שילם) ----
@@ -518,13 +562,26 @@
         void city;
         void pinLat;
         void pinLng;
-        if (!isEditMode) {
-            try {
-                localStorage.setItem(DRAFT_KEY, JSON.stringify({ formValues, neighborhood, city, pinLat, pinLng }));
-            } catch {}
-        }
+        void logoImage;
+        void locationTouched;
+        // לא שומרים לפני שהשחזור ב-onMount הסתיים - שטיוטה קיימת לא תידרס
+        if (!draftRestored) return;
+        if (!isEditMode) persistDraft();
         // שמור את השדות האישיים גם בעוגייה חוצת-טפסים (שם/טלפון/איש קשר/קישורים)
         rememberFields(formValues);
+    });
+
+    // ---- השלמת פרופיל בשער-הדרגה (LevelUpCard → invalidateAll) מגיעה בלי remount ----
+    // המשתמש שהרגע הזין "בת ים" בכרטיס ההשלמה היה מקבל טופס שעדיין פתוח על ירושלים,
+    // כי city/neighborhood אותחלו פעם אחת. כל עוד הוא לא בחר מיקום בעצמו - מיישרים
+    // את מיקום-הפרסום לפרופיל הטרי שחוזר מהשרת.
+    $effect(() => {
+        const p = data.userProfile;
+        if (!p?.city || locationTouched || isEditMode || !draftRestored) return;
+        if (city !== p.city) {
+            city         = p.city;
+            neighborhood = p.neighborhood?.trim() || 'מרכז';
+        }
     });
 
     function getFieldValue(key: string): string {
@@ -624,10 +681,33 @@
         return null;
     }
 
-    // ---- שמירת טיוטא ל-localStorage ----
-    function saveDraft() {
-        if (!browser) return;
-        localStorage.setItem(DRAFT_KEY, JSON.stringify({ formValues, neighborhood, city, pinLat, pinLng }));
+    // ---- שמירת טיוטא עמידה: מלא → בלי תמונות → גיבוי-עוגייה ----
+    // חריגת מכסה ב-localStorage (תמונות base64, או מכסה שכבר מלאה מטיוטות אחרות)
+    // לא מפילה את הכל בשקט: קודם מנסים לשמור בלי התמונות, ואם גם זה נכשל -
+    // הטקסט נשמר בעוגייה. כך מה שהוקלד לא הולך לאיבוד ביציאה מהעמוד.
+    let draftBaseline = ''; // מצב הטופס אחרי השחזור - טופס שלא השתנה ממנו לא נשמר
+    function draftPayload() {
+        return { neighborhood, city, pinLat, pinLng, locationTouched, formValues, logoImage };
+    }
+    function persistDraft() {
+        if (!browser || isEditMode || !draftRestored) return;
+        const payload = draftPayload();
+        // בלי שינוי אמיתי אין מה לשמור - וכך ביקור-בעלמא לא דורס טיוטה קיימת
+        if (JSON.stringify(payload) === draftBaseline) return;
+        const full = { ...payload, savedAt: Date.now() };
+        try {
+            localStorage.setItem(DRAFT_KEY, JSON.stringify(full));
+            return;
+        } catch {}
+        const textValues = Object.fromEntries(
+            Object.entries(formValues).map(([k, v]) => [k, IMAGE_FIELD_KEYS.has(k) ? '[]' : v]),
+        );
+        const textOnly = { ...full, formValues: textValues, logoImage: '' };
+        try {
+            localStorage.setItem(DRAFT_KEY, JSON.stringify(textOnly));
+            return;
+        } catch {}
+        saveDraftBackup(DRAFT_KEY, textOnly);
     }
 
     // ---- Submit ----
@@ -640,7 +720,7 @@
 
         // אם לא מחובר - שמור טיוטא והפנה להרשמה
         if (!userId) {
-            saveDraft();
+            persistDraft();
             redirectingMsg = 'הטיוטה שלך נשמרה ✓\nאתה מועבר להרשמה - הפרסום יושלם מיד לאחריה.';
             setTimeout(() => {
                 goto(`/login?redirect=/add/${categoryId}`);
@@ -653,7 +733,7 @@
         const topLevelKeys = ['label', 'description', 'contact', 'phone', 'address'];
         const topLevel: Record<string, string> = {};
         const extra: Record<string, unknown> = {};
-        const imageKeys = new Set(config.fields.filter(f => f.type === 'images').map(f => f.key));
+        const imageKeys = IMAGE_FIELD_KEYS;
         // שדות map_pin אינם ערך טקסט - הם נשמרים כ-lat/lng ברמה העליונה, לא ב-extra_fields
         const mapPinKeys = new Set(config.fields.filter(f => f.type === 'map_pin').map(f => f.key));
 
@@ -726,16 +806,21 @@
             // צצים שוב בפעם הבאה שפותחים את הטופס באותה קטגוריה.
             if (browser && !isEditMode) {
                 try { localStorage.removeItem(DRAFT_KEY); } catch {}
+                clearDraftBackup(DRAFT_KEY);
             }
 
             if (isPaidFlow) {
                 if (browser) {
-                    localStorage.setItem('pending_ad', JSON.stringify({
-                        priceRow:      effectivePriceRow,
-                        categoryLabel: config.label,
-                        itemLabel:     topLevel.label,
-                        itemId:        result.id,
-                    }));
+                    // מוגן בנפרד: מכסת localStorage מלאה לא תעצור את המעבר לדף התשלום
+                    // אחרי שהפריט כבר נשמר בשרת (דף התשלום יסתדר גם בלי הבחירה המוקדמת)
+                    try {
+                        localStorage.setItem('pending_ad', JSON.stringify({
+                            priceRow:      effectivePriceRow,
+                            categoryLabel: config.label,
+                            itemLabel:     topLevel.label,
+                            itemId:        result.id,
+                        }));
+                    } catch {}
                 }
                 setTimeout(() => goto('/about/advertise'), 1500);
             } else if (result.id) {
@@ -866,7 +951,7 @@
                     </div>
                     <div>
                         <label for="pub-neighborhood" class="block text-xs text-gray-400 mb-1">שכונה</label>
-                        <select id="pub-neighborhood" bind:value={neighborhood} class="{inputClass} cursor-pointer">
+                        <select id="pub-neighborhood" bind:value={neighborhood} onchange={() => (locationTouched = true)} class="{inputClass} cursor-pointer">
                             {#each cityNeighborhoods as nb}
                                 <option value={nb} style="background:#fff;color:#0f172a;">{nb}</option>
                             {/each}
@@ -1302,7 +1387,7 @@
                                 restrictToCity
                                 bind:lat={pinLat}
                                 bind:lng={pinLng}
-                                onUserPin={(la, ln) => { pinSource = 'manual'; syncLocationFromPin(la, ln); }}
+                                onUserPin={(la, ln) => { pinSource = 'manual'; locationTouched = true; syncLocationFromPin(la, ln); }}
                             />
                             {#if pinSource === 'geo'}
                                 <p class="mt-1.5 text-xs text-cyan-300">

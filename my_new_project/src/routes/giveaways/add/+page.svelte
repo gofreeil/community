@@ -14,6 +14,7 @@
     import { openCropper } from '$lib/imageCropper.svelte';
     import StreetPicker from '$lib/components/StreetPicker.svelte';
     import NeighborhoodPicker from '$lib/components/NeighborhoodPicker.svelte';
+    import { saveDraftBackup, loadDraftBackup, clearDraftBackup } from '$lib/draftBackup';
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
 
@@ -146,36 +147,81 @@
     // שליחה דרך use:enhance - שגיאה לא מרעננת את הדף ולא מאבדת את התמונות שהועלו.
     let submitting = $state(false);
 
+    // חוסם את השמירה האוטומטית עד שהשחזור ב-onMount הסתיים - שטיוטה קיימת
+    // לא תידרס בערכים ריקים של טופס שרק נטען.
+    let draftRestored = $state(false);
+
     // ---- שחזור טיוטא (אחרי רענון/קריסה/יציאה באמצע) ----
     onMount(() => {
+        let d: Record<string, any> | null = null;
         try {
             const raw = localStorage.getItem(DRAFT_KEY);
-            if (!raw) return;
-            const d = JSON.parse(raw);
+            if (raw) d = JSON.parse(raw);
+        } catch {}
+        // גיבוי-עוגייה: נכתב רק כששמירת ה-localStorage נכשלה. אם הוא חדש יותר -
+        // הוא המצב העדכני (ההקלדות שלא הצליחו להיכנס ל-localStorage) והוא שגובר.
+        const backup = loadDraftBackup(DRAFT_KEY) as Record<string, any> | null;
+        if (backup && (!d || Number(backup.savedAt ?? 0) > Number(d.savedAt ?? 0))) d = backup;
+        if (d) try {
             if (d.label)        label     = d.label;
             if (d.description)  description = d.description;
             if (d.category)     category  = d.category;
             if (d.condition)    condition = d.condition;
             if (d.priceMode)    priceMode = d.priceMode;
             if (d.price)        price     = d.price;
-            if (d.city)         city      = d.city;
-            if (d.neighborhood) neighborhood = d.neighborhood;
+            // מיקום מטיוטה משוחזר רק כשיש בה תוכן אמיתי - טיוטת-רפאים ישנה (ביקור
+            // בעלמא שנשמר בעבר) לא תדרוס את עיר הפרופיל העדכנית.
+            if (d.label || d.description || (Array.isArray(d.images) && d.images.length)) {
+                if (d.city)         city      = d.city;
+                if (d.neighborhood) neighborhood = d.neighborhood;
+            }
             if (d.contact)      contact   = d.contact;
             if (d.phone)        phone     = d.phone;
             if (Array.isArray(d.images) && d.images.length) images = d.images;
         } catch {}
+
+        // מעכשיו מותר לשמור - הטיוטה הקיימת כבר שוחזרה ולא תידרס.
+        // ה-baseline מקבע את מצב הטופס אחרי השחזור: טופס שלא השתנה ממנו לא נשמר.
+        draftBaseline = JSON.stringify(draftPayload());
+        draftRestored = true;
+
+        // רשת ביטחון: שמירה גם ברגע עזיבת העמוד (במובייל הדפדפן עשוי להרוג את הטאב בלי flush)
+        window.addEventListener('pagehide', persistDraft);
+        return () => window.removeEventListener('pagehide', persistDraft);
     });
+
+    // ---- שמירת טיוטא עמידה: מלא → בלי תמונות → גיבוי-עוגייה ----
+    let draftBaseline = ''; // מצב הטופס אחרי השחזור - טופס שלא השתנה ממנו לא נשמר
+    function draftPayload() {
+        return { label, description, category, condition, priceMode, price, city, neighborhood, contact, phone, images };
+    }
+    function persistDraft() {
+        if (!browser || !draftRestored) return;
+        // ביקור-בעלמא (שום תוכן שהוקלד) - לא שומרים כלל: לא נוצרת טיוטת-רפאים
+        // גם אם אפקט התאמת-השכונה שינה ערך אחרי קביעת ה-baseline
+        const hasContent = !!(label.trim() || description.trim() || images.length || category || condition);
+        if (!hasContent) return;
+        const draft = draftPayload();
+        // בלי שינוי אמיתי אין מה לשמור - לא דורסים טיוטה/גיבוי של טאב אחר
+        if (JSON.stringify(draft) === draftBaseline) return;
+        const full = { ...draft, savedAt: Date.now() };
+        try {
+            localStorage.setItem(DRAFT_KEY, JSON.stringify(full));
+        } catch {
+            // התמונות (base64) עלולות לחרוג ממכסת ה-localStorage - נשמור לפחות את הטקסט
+            try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ ...full, images: [] })); }
+            // גם זה נכשל (המכסה מלאה מטיוטות אחרות) - הטקסט נשמר בעוגייה
+            catch { saveDraftBackup(DRAFT_KEY, { ...full, images: [] }); }
+        }
+    }
 
     // ---- שמירה אוטומטית של טיוטא בכל שינוי ----
     $effect(() => {
         if (!browser) return;
-        const draft = { label, description, category, condition, priceMode, price, city, neighborhood, contact, phone, images };
-        try {
-            localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-        } catch {
-            // התמונות (base64) עלולות לחרוג ממכסת ה-localStorage - נשמור לפחות את הטקסט
-            try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ ...draft, images: [] })); } catch {}
-        }
+        void label; void description; void category; void condition; void priceMode;
+        void price; void city; void neighborhood; void contact; void phone; void images;
+        if (!draftRestored) return;
+        persistDraft();
     });
 </script>
 
@@ -219,6 +265,7 @@
                         // פרסום מוצלח מסתיים ב-redirect - הטיוטא סיימה את תפקידה
                         if (result.type === 'redirect') {
                             try { localStorage.removeItem(DRAFT_KEY); } catch {}
+                            clearDraftBackup(DRAFT_KEY);
                         }
                         await update({ reset: false });
                         submitting = false;

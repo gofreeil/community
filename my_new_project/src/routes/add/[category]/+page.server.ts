@@ -1,6 +1,7 @@
 import { error, redirect } from '@sveltejs/kit';
 import { categoryConfig } from '$lib/categoryFields';
-import { getUserById, getDbItemById, getItemsByUserId } from '$lib/server/db';
+import { getDbItemById, getItemsByUserId } from '$lib/server/db';
+import { getUserByIdRetry, effectiveUserLocation } from '$lib/server/userLocation';
 import { categoryTier, tierMet, type TierUserFields } from '$lib/tiers';
 import type { PageServerLoad } from './$types';
 
@@ -30,26 +31,27 @@ export const load: PageServerLoad = async (event) => {
     let tierUser: TierUserFields | null = null;
     let needsUpgrade = false;
     if (session?.user?.id) {
-        try {
-            const jwt = event.cookies.get('strapi_jwt');
-            const u = await getUserById(session.user.id as string, jwt);
-            if (u) {
-                userProfile = {
-                    nickname:      (u.nickname || u.name || '') as string,
-                    phone:         u.phone         ?? '',
-                    neighborhood:  u.neighborhood  ?? '',
-                    city:          u.city          ?? '',
-                    family_status: u.family_status ?? '',
-                };
-                tierUser = {
-                    name: u.name, email: u.email, email_confirmed: u.email_confirmed,
-                    phone: u.phone, city: u.city, neighborhood: u.neighborhood,
-                    gender: u.gender, birth_date: u.birth_date,
-                };
-                // עריכת פריט קיים (?edit=) לא נחסמת מאחורי שער דרגה
-                needsUpgrade = !event.url.searchParams.get('edit') && !tierMet(u, requiredTier);
-            }
-        } catch { /* שקט */ }
+        const jwt = event.cookies.get('strapi_jwt');
+        // getUserByIdRetry: כשל רגעי של Strapi לא מפיל את הפרופיל לברירת המחדל (ירושלים)
+        const u = await getUserByIdRetry(session.user.id as string, jwt);
+        if (u) {
+            // עיר+שכונה אפקטיביות: פרופיל, ולרכז בלי עיר - מהשכונה שהוא מרכז ("שכונה (עיר)")
+            const loc = effectiveUserLocation(u);
+            userProfile = {
+                nickname:      (u.nickname || u.name || '') as string,
+                phone:         u.phone ?? '',
+                neighborhood:  loc.neighborhood,
+                city:          loc.city,
+                family_status: u.family_status ?? '',
+            };
+            tierUser = {
+                name: u.name, email: u.email, email_confirmed: u.email_confirmed,
+                phone: u.phone, city: u.city, neighborhood: u.neighborhood,
+                gender: u.gender, birth_date: u.birth_date,
+            };
+            // עריכת פריט קיים (?edit=) לא נחסמת מאחורי שער דרגה
+            needsUpgrade = !event.url.searchParams.get('edit') && !tierMet(u, requiredTier);
+        }
     }
 
     // ---- Edit mode: ?edit=<id> טוען את הפריט הקיים לעריכה ----

@@ -1,6 +1,7 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { createItem, getUserById } from '$lib/server/db';
+import { createItem } from '$lib/server/db';
+import { getUserByIdRetry, effectiveUserLocation } from '$lib/server/userLocation';
 import { categoryConfig } from '$lib/categoryFields';
 import { loadTierGate } from '$lib/server/tierGate';
 
@@ -21,13 +22,16 @@ export const load: PageServerLoad = async (event) => {
     let defaults = { name: '', phone: '', neighborhood: '', city: '' };
     try {
         const jwt = event.cookies.get('strapi_jwt');
-        const user = await getUserById(session.user.id, jwt);
+        // getUserByIdRetry + effectiveUserLocation: כשל Strapi רגעי לא מאפס את הפרופיל,
+        // ורכז שכונה בלי עיר בפרופיל מקבל את האזור שהוא מרכז
+        const user = await getUserByIdRetry(session.user.id, jwt);
         if (user) {
+            const loc = effectiveUserLocation(user);
             defaults = {
                 name:         user.name ?? user.nickname ?? '',
                 phone:        user.phone ?? '',
-                neighborhood: user.neighborhood ?? '',
-                city:         user.city ?? '',
+                neighborhood: loc.neighborhood,
+                city:         loc.city,
             };
         }
     } catch (e) {

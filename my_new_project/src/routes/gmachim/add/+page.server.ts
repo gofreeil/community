@@ -1,5 +1,5 @@
 import type { PageServerLoad } from './$types';
-import { getUserById } from '$lib/server/db';
+import { getUserByIdRetry, effectiveUserLocation } from '$lib/server/userLocation';
 import { loadTierGate } from '$lib/server/tierGate';
 
 // פרסום גמ"ח דו-שלבי (כמו קטגוריות המפה): הטופס כאן אוסף את שלב-המפה בלבד
@@ -13,12 +13,15 @@ export const load: PageServerLoad = async (event) => {
     let userNeighborhood: string | null = null;
     let userPhone: string | null = null;
     if (session?.user?.id) {
-        try {
-            const user = await getUserById(session.user.id);
-            userCity         = user?.city         || null;
-            userNeighborhood = user?.neighborhood || null;
-            userPhone        = user?.phone        || null;
-        } catch {}
+        // getUserByIdRetry + effectiveUserLocation: כשל Strapi רגעי לא מאפס את הפרופיל,
+        // ורכז שכונה בלי עיר בפרופיל מקבל את האזור שהוא מרכז - לא את ברירת המחדל (ירושלים)
+        const user = await getUserByIdRetry(session.user.id, event.cookies.get('strapi_jwt'));
+        if (user) {
+            const loc = effectiveUserLocation(user);
+            userCity         = loc.city         || null;
+            userNeighborhood = loc.neighborhood || null;
+            userPhone        = user.phone       || null;
+        }
     }
 
     return {
