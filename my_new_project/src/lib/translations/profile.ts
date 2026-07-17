@@ -282,6 +282,8 @@ export const he = {
         pin_help_2: ", ויעודכן לכל תושבי {city} לאחר אישור מנהל.",
         pin_already_pending:
             "✓ הבקשה שלך כבר התקבלה וממתינה לאישור מנהל — אין צורך לשלוח שוב. המפה שלך כבר מתוקנת.",
+        pin_already_approved:
+            "✓ השכונה הזו כבר קיימת ומאושרת — היא כבר מופיעה במפה לכל תושבי {city}. אין צורך בבקשה.",
         pin_saved:
             "✓ המיקום נשמר! המפה שלך כבר מתוקנת. הוא יופיע לכל תושבי {city} לאחר אישור מנהל — תשובה תישלח אליך לתיבת ההודעות 📬",
         pin_saving: "⏳ שומר…",
@@ -681,6 +683,8 @@ export const en = {
         pin_help_2: ", and will be updated for all residents of {city} after admin approval.",
         pin_already_pending:
             "✓ Your request was already received and is awaiting admin approval — no need to send again. Your map is already fixed.",
+        pin_already_approved:
+            "✓ This neighborhood already exists and is approved — it's already shown on the map for everyone in {city}. No request needed.",
         pin_saved:
             "✓ Location saved! Your map is already fixed. It will appear for all residents of {city} after admin approval — a reply will be sent to your inbox 📬",
         pin_saving: "⏳ Saving…",
@@ -1080,6 +1084,8 @@ export const ru = {
         pin_help_2: ", и обновится для всех жителей {city} после одобрения администратора.",
         pin_already_pending:
             "✓ Ваш запрос уже получен и ожидает одобрения администратора — не нужно отправлять снова. Ваша карта уже исправлена.",
+        pin_already_approved:
+            "✓ Этот район уже существует и одобрен — он уже отображается на карте для всех в {city}. Заявка не нужна.",
         pin_saved:
             "✓ Расположение сохранено! Ваша карта уже исправлена. Оно появится у всех жителей {city} после одобрения администратора — ответ придёт в ваш почтовый ящик 📬",
         pin_saving: "⏳ Сохраняем…",

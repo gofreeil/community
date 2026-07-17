@@ -930,6 +930,8 @@
 	let savingCityPin = $state(false);
 	let cityPinSaved = $state(false);
 	let cityPinAlreadyPending = $state(false);
+	// השכונה כבר קיימת ומאושרת → הודעה כנה ("כבר מופיעה"), לא "ממתין לאישור"
+	let cityPinAlreadyApproved = $state(false);
 	let cityPinError = $state("");
 	// המפה כבר מדויקת לישוב? (אם לא - נציע למשתמש לסמן בעצמו)
 	let cityHasCoords = $derived(hasPreciseCoords(neighborhood, city));
@@ -965,6 +967,7 @@
 			try { localStorage.setItem(MY_PIN_LS_KEY, JSON.stringify(pin)); } catch {}
 			cityPinSaved = true;
 			cityPinAlreadyPending = !!r.alreadyPending;
+			cityPinAlreadyApproved = !!r.alreadyApproved;
 		} catch {
 			cityPinError = tFn("profile.pin_save_error");
 		}
@@ -4484,7 +4487,9 @@
 
 											{#if cityPinSaved}
 												<p class="text-emerald-400 text-sm font-bold bg-emerald-900/20 border border-emerald-500/30 rounded-lg py-2 px-3">
-													{#if cityPinAlreadyPending}
+													{#if cityPinAlreadyApproved}
+														{tFn("profile.pin_already_approved", { city })}
+													{:else if cityPinAlreadyPending}
 														{tFn("profile.pin_already_pending")}
 													{:else}
 														{tFn("profile.pin_saved", { city })}
