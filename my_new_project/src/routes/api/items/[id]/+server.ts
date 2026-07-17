@@ -341,9 +341,12 @@ export const PATCH: RequestHandler = async (event) => {
         }
         delete extra.deleted_at;
         delete extra.deletion_warned;
+        // פריט בקטגוריה מבוקרת (פנויים) לא חוזר לאוויר ישירות בשחזור - אלא לאישור מחדש,
+        // בדיוק כמו ב-unfreeze. אחרת אפשר לעקוף את ה-review: יצירה→מחיקה-רכה→שחזור=פעיל.
+        const restoredStatus = item.category === 'singles' && !isSuperAdmin(session) ? 'pending' : 'active';
         try {
-            await updateItem(id, { status: 'active', extra_fields: extra });
-            return json({ success: true });
+            await updateItem(id, { status: restoredStatus, extra_fields: extra });
+            return json({ success: true, status: restoredStatus });
         } catch (e) {
             console.error('[items/:id PATCH restore] failed:', e);
             return json({ success: false, message: 'שגיאה בשחזור' }, { status: 500 });

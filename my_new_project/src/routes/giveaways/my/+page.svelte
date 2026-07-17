@@ -12,6 +12,8 @@
         : 'active';
     let tab = $state<Tab>(initialTab);
     let showDraftSavedMsg = $state(page.url.searchParams.get('draft') === 'saved');
+    // אישור "פורסם" אחרי שהמשתמש צירף תמונה לטיוטה והיא עלתה לאוויר (?published=1)
+    let showPublishedMsg = $state(page.url.searchParams.get('published') === '1');
 
     function getField(extraFields: string, key: string): string {
         try { return JSON.parse(extraFields)?.[key] ?? ''; }
@@ -81,6 +83,22 @@
                     type="button"
                     onclick={() => showDraftSavedMsg = false}
                     class="text-yellow-400 hover:text-white text-lg leading-none"
+                    aria-label={$_('listings.close')}
+                >×</button>
+            </div>
+        {/if}
+
+        {#if showPublishedMsg}
+            <div class="rounded-xl bg-emerald-900/20 border border-emerald-500/30 px-4 py-3 mb-4 flex items-start gap-3">
+                <span class="text-2xl flex-shrink-0">✅</span>
+                <div class="flex-1 text-sm">
+                    <p class="text-emerald-200 font-bold mb-1">{$_('listings.gvmy_published')}</p>
+                    <p class="text-emerald-300/80">{$_('listings.gvmy_published_sub')}</p>
+                </div>
+                <button
+                    type="button"
+                    onclick={() => showPublishedMsg = false}
+                    class="text-emerald-400 hover:text-white text-lg leading-none"
                     aria-label={$_('listings.close')}
                 >×</button>
             </div>

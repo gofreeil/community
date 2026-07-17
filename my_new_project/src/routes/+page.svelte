@@ -36,6 +36,10 @@
     // מציגה שהנכס עדיין ניתן לשחזור עד תאריך, עם קישור לנכסים של המשתמש.
     let deletedFlash = $state<{ name: string; until: string } | null>(null);
 
+    // אישור חולף אחרי שליחת קריאת עזרה מ-/raise-hand/add (redirect ל-?help_sent=1).
+    // בלי זה המשתמש שולח קריאת מצוקה ולא רואה שום אישור - פעולה שקטה.
+    let helpSentFlash = $state(false);
+
     function helpAnswered(ef: string): boolean {
         try { return JSON.parse(ef || '{}')?.answered === true; }
         catch { return false; }
@@ -200,6 +204,18 @@
                 if (parsed && parsed.until) deletedFlash = parsed;
             }
         } catch { /* אין sessionStorage - אין הודעה */ }
+        // אישור שליחת קריאת עזרה (?help_sent=1) - מציגים טוסט ומנקים את ה-URL
+        // כדי שרענון לא יראה אותו שוב.
+        try {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('help_sent') === '1') {
+                helpSentFlash = true;
+                params.delete('help_sent');
+                const qs = params.toString();
+                history.replaceState(null, '', location.pathname + (qs ? `?${qs}` : '') + location.hash);
+                setTimeout(() => { helpSentFlash = false; }, 6000);
+            }
+        } catch { /* אין window/URL - אין הודעה */ }
     });
 
     function handleToggleMenu() {
@@ -380,6 +396,24 @@
                 <button
                     type="button"
                     onclick={() => deletedFlash = null}
+                    class="text-slate-400 hover:text-white transition-colors text-lg leading-none flex-shrink-0"
+                    aria-label="סגירה"
+                >✕</button>
+            </div>
+        </div>
+    {/if}
+    <!-- אישור חולף: קריאת עזרה נשלחה (מ-/raise-hand/add) -->
+    {#if helpSentFlash}
+        <div class="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] w-[92%] max-w-md" dir="rtl">
+            <div class="bg-[#0f172a] border border-green-400/40 rounded-2xl shadow-2xl p-4 flex items-start gap-3">
+                <span class="text-2xl leading-none flex-shrink-0">✅</span>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-bold text-green-200">{$t('help_sent')}</p>
+                    <p class="text-xs text-slate-300/90 mt-1 leading-relaxed">{$t('call_sent_success')}</p>
+                </div>
+                <button
+                    type="button"
+                    onclick={() => helpSentFlash = false}
                     class="text-slate-400 hover:text-white transition-colors text-lg leading-none flex-shrink-0"
                     aria-label="סגירה"
                 >✕</button>
