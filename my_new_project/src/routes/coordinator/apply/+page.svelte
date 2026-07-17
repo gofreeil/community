@@ -32,6 +32,9 @@
     let error = $state<string | null>(null);
     let authError = $state(false); // השגיאה היא חסימת התחברות → מציגים כפתורי הרשמה/כניסה
     let success = $state(false);
+    // המבקש כבר רכז של האזור שביקש → אין בקשה חוזרת; מציגים הודעה כנה (לא "נשלח בהצלחה")
+    let alreadyCoordinator = $state(false);
+    let alreadyArea = $state('');
 
     // רשימת ערים/יישובים
     const allCities = Object.keys(citiesAndNeighborhoods).sort((a, b) => a.localeCompare(b, 'he'));
@@ -107,6 +110,7 @@
         }
         error = null;
         authError = false;
+        alreadyCoordinator = false;
         isLoading = true;
 
         try {
@@ -141,6 +145,15 @@
                 return;
             }
 
+            // כבר רכז של האזור המבוקש → השרת מחזיר alreadyCoordinator בלי ליצור בקשה.
+            // חובה להבחין מ"נשלח בהצלחה" - אחרת המשתמש חושב שהגיש והאדמין לא רואה כלום.
+            const result = await response.json().catch(() => ({} as Record<string, unknown>));
+            if (result?.alreadyCoordinator) {
+                alreadyArea = area.label;
+                alreadyCoordinator = true;
+                return;
+            }
+
             success = true;
             experience = '';
             motivation = '';
@@ -168,6 +181,11 @@
         {#if success}
             <div class="bg-green-900 border border-green-500 rounded-lg p-6 mb-6">
                 <p class="text-green-200 text-center">{$_('coordinator_success')}</p>
+            </div>
+        {:else if alreadyCoordinator}
+            <!-- כבר רכז של האזור המבוקש → הודעה כנה, לא "נשלח בהצלחה" -->
+            <div class="bg-blue-900/30 border border-blue-500/40 rounded-lg p-6 mb-6">
+                <p class="text-blue-100 text-center">{$_('coordinator_already_self', { values: { area: alreadyArea } })}</p>
             </div>
         {:else if !isLoggedIn}
             <!-- לא מחובר → הכוונה בעברית לפי הסדר (הרשמה/כניסה), במקום טופס שיוחזר מ-401 -->
