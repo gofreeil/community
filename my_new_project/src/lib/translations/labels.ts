@@ -432,6 +432,8 @@ export const he = {
         cf_singles_phone: 'טלפון (לא מוצג)',
         cf_singles_phone_ph: '05X-XXXXXXX',
         cf_singles_phone_hint: 'הטלפון יישמר פנימית ולא יוצג לציבור',
+        cf_singles_match_partner_character: 'מהו אופי בן הזוג שאתה מחפש',
+        cf_singles_match_self_advantage: 'מהו היתרון שאתה מביא אל הזוגיות ?',
 
         // ===== categoryConfig: events =====
         cf_events: 'אירועים',
@@ -975,6 +977,8 @@ export const en = {
         cf_singles_phone: 'Phone (not shown)',
         cf_singles_phone_ph: '05X-XXXXXXX',
         cf_singles_phone_hint: 'The phone is stored internally and not shown to the public',
+        cf_singles_match_partner_character: 'What kind of character are you looking for in a partner?',
+        cf_singles_match_self_advantage: 'What strength do you bring to the relationship?',
 
         // ===== categoryConfig: events =====
         cf_events: 'Events',
@@ -1518,6 +1522,8 @@ export const ru = {
         cf_singles_phone: 'Телефон (не показывается)',
         cf_singles_phone_ph: '05X-XXXXXXX',
         cf_singles_phone_hint: 'Телефон хранится внутри и не показывается публично',
+        cf_singles_match_partner_character: 'Какой характер партнёра вы ищете?',
+        cf_singles_match_self_advantage: 'В чём ваше преимущество, которое вы привносите в отношения?',
 
         // ===== categoryConfig: events =====
         cf_events: 'Мероприятия',

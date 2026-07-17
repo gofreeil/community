@@ -27,6 +27,9 @@ export interface SingleProfile {
     status?: UserStatus;
     /** 'public' = מוצג בלוח הפומבי; 'matchmakers' = גלוי רק לצוות השדכנים */
     visibility?: 'public' | 'matchmakers';
+    /** מידע לשדכנים בלבד - נאסף בטופס ולא מוצג בכרטיס/בדף הפומבי */
+    matchPartnerCharacter?: string;
+    matchSelfAdvantage?: string;
 }
 
 // תצוגת רמה דתית - מותאם למגדר

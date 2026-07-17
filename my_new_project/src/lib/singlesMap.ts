@@ -94,5 +94,8 @@ export function dbItemToProfile(item: DbItem): SingleProfile {
         images,
         status: 'available',
         visibility,
+        // מידע לשדכנים בלבד - לא מוצג בכרטיס/בדף הפומבי, רק בעמוד סקירת השדכנים
+        matchPartnerCharacter: String(ef.match_partner_character ?? '').trim(),
+        matchSelfAdvantage: String(ef.match_self_advantage ?? '').trim(),
     };
 }

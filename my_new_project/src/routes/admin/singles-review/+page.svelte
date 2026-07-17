@@ -183,6 +183,25 @@
                                 <p class="text-gray-300 text-sm leading-relaxed mb-3">{c.description}</p>
                             {/if}
 
+                            <!-- מידע לשדכנים בלבד (נאסף בטופס, לא מוצג בלוח הפומבי) -->
+                            {#if c.matchPartnerCharacter || c.matchSelfAdvantage}
+                                <div class="mb-3 rounded-xl border border-purple-500/30 bg-purple-500/10 p-3">
+                                    <p class="text-[11px] font-bold text-purple-200 mb-2 flex items-center gap-1.5">🔒 מידע לשדכנים · לא בלוח הפומבי</p>
+                                    {#if c.matchPartnerCharacter}
+                                        <div class="mb-2">
+                                            <p class="text-purple-300/80 text-[11px] font-bold">מהו אופי בן הזוג שהוא/היא מחפש/ת</p>
+                                            <p class="text-gray-200 text-sm leading-relaxed">{c.matchPartnerCharacter}</p>
+                                        </div>
+                                    {/if}
+                                    {#if c.matchSelfAdvantage}
+                                        <div>
+                                            <p class="text-purple-300/80 text-[11px] font-bold">היתרון שהוא/היא מביא/ה אל הזוגיות</p>
+                                            <p class="text-gray-200 text-sm leading-relaxed">{c.matchSelfAdvantage}</p>
+                                        </div>
+                                    {/if}
+                                </div>
+                            {/if}
+
                             <!-- פעולות -->
                             <div class="flex gap-2 flex-wrap">
                                 {#if tab === 'pending'}

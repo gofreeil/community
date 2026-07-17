@@ -18,6 +18,11 @@ export interface FieldDef {
      * 'details' = נערך בדף הפריט. ברירת מחדל נקבעת לפי MAP_STEP_KEYS.
      */
     step?: 'map' | 'details';
+    /**
+     * שיוך השדה לקבוצה מרוכזת בטופס. 'matchmakers' = נאסף בתא נפרד "מידע לשדכנים"
+     * בתחתית הטופס, נשמר ל-extra_fields אך אינו מוצג בכרטיס/בדף הפומבי.
+     */
+    group?: 'matchmakers';
 }
 
 export interface CategoryConfig {
@@ -304,6 +309,9 @@ export const categoryConfig: Record<string, CategoryConfig> = {
             { key: 'visibility',  label: 'מי יראה את הכרטיס?',      type: 'toggle',   required: false, options: ['גלוי לכולם', 'רק לשדכנים שלנו'], default: 'גלוי לכולם', hint: '“גלוי לכולם” — הכרטיס מופיע בלוח הפומבי לכל המשתמשים. “רק לשדכנים שלנו” — הכרטיס לא מופיע בלוח; רק צוות השדכנים שלנו רואה אותו, ומפנה אותו בדיסקרטיות רק להצעות רלוונטיות.' },
             { key: 'matchmaker',  label: 'שדכן או חבר (אופציונלי)',    type: 'text',     required: false, placeholder: 'שם וטלפון', hint: '⚠️ הטלפון שתזין כאן יוצג בגלוי בכרטיס שלך ובדף הפרופיל - זוהי דרך הקשר היחידה שתוצג לציבור.' },
             { key: 'phone',       label: 'טלפון (לא מוצג)',           type: 'tel',      required: true,  placeholder: '05X-XXXXXXX', hint: 'הטלפון יישמר פנימית ולא יוצג לציבור' },
+            // ---- תא "מידע לשדכנים" (group=matchmakers) - נאסף בתחתית הטופס, לא מוצג ברבים ----
+            { key: 'match_partner_character', label: 'מהו אופי בן הזוג שאתה מחפש',      type: 'textarea', required: false, group: 'matchmakers' },
+            { key: 'match_self_advantage',    label: 'מהו היתרון שאתה מביא אל הזוגיות ?', type: 'textarea', required: false, group: 'matchmakers' },
         ],
     },
 

@@ -36,6 +36,11 @@
     const activeFields = mapStepFields(config);
     const activeKeys = new Set(activeFields.map(f => f.key));
 
+    // שדות "מידע לשדכנים" (group=matchmakers) מרוכזים בתא נפרד בתחתית הטופס
+    // ואינם חלק מהזרימה הרגילה של השדות.
+    const inlineFields = activeFields.filter(f => !f.group);
+    const matchmakerFields = activeFields.filter(f => f.group === 'matchmakers');
+
     // ---- לוגו/תמונה שתופיע על המפה (רק בקטגוריות mapFirst) ----
     const initialLogo = (() => {
         if (!config.mapFirst || !editItem) return '';
@@ -972,7 +977,7 @@
                 </p>
             </div>
 
-            {#each activeFields as field}
+            {#each inlineFields as field}
                 {#if isFieldVisible(field)}
                 <div class="{field.half ? 'col-span-1' : 'col-span-2'}">
                     <label
@@ -1436,6 +1441,38 @@
                 </div>
                 {/if}
             {/each}
+
+            <!-- תא "מידע לשדכנים": נשמר לצוות בלבד, אינו מוצג בכרטיס/בדף הפומבי -->
+            {#if matchmakerFields.length}
+                <div class="col-span-2 rounded-xl border border-purple-500/30 bg-purple-500/10 p-3 md:p-4" style="grid-column: 1 / -1;">
+                    <p class="text-[13px] md:text-sm font-bold text-purple-100 mb-1 flex items-center gap-1.5">
+                        🔒 מידע עבור השדכנים של המערכת - לא מוצג ברבים
+                    </p>
+                    <p class="text-purple-300/80 text-xs mb-3">
+                        הפרטים כאן נשמרים לצוות השדכנים בלבד ואינם מופיעים בכרטיס הפומבי.
+                    </p>
+                    <div class="space-y-3">
+                        {#each matchmakerFields as field}
+                            <div>
+                                <label
+                                    for="field-{field.key}"
+                                    class="block text-[13px] md:text-sm font-bold text-gray-300 mb-1 md:mb-1.5"
+                                >
+                                    {trOr($_, cfFieldKey(categoryId, field), field.label)}
+                                </label>
+                                <textarea
+                                    id="field-{field.key}"
+                                    value={getFieldValue(field.key)}
+                                    oninput={(e) => setFieldValue(field.key, (e.target as HTMLTextAreaElement).value)}
+                                    placeholder={trOr($_, cfFieldKey(categoryId, field, 'ph'), field.placeholder ?? '')}
+                                    rows="2"
+                                    class="{inputClass} resize-none"
+                                ></textarea>
+                            </div>
+                        {/each}
+                    </div>
+                </div>
+            {/if}
 
             <!-- לוגו / תמונה שתופיע על המפה (mapFirst) -->
             {#if config.mapFirst}
