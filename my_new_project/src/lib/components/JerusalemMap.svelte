@@ -151,8 +151,18 @@
                 { id: "job-teen", label: "עבודה לנוער בחופש" },
             ],
         },
-        // פנויים/פנויות הוסרו מהמפה בכוונה — אנשים אינם "מקום". הגישה ללוח היא דרך
-        // התפריט/הדר (/singles), והכרטיסים אף פעם לא ננעצים על המפה (ראה dynamicMarkers).
+        // פנויים/פנויות: אריח קיים בסרגל — אך אנשים אינם "מקום" ולעולם לא ננעצים על
+        // המפה (ראו dynamicMarkers). לכן לחיצה על האריח פותחת ישירות את לוח הרשימה
+        // המגודר (/singles) במקום לסנן את המפה — ראו handleCategoryClick / handleMobileCategoryTap.
+        {
+            id: "singles",
+            label: "פנויים/פנויות",
+            icon: "❤️",
+            items: [
+                { id: "match-offer", label: "הצעה לשידוך איכותי" },
+                { id: "singles-meeting", label: "מפגש פנויים פנויות" },
+            ],
+        },
         {
             id: "halls",
             label: "אולמות",
@@ -195,6 +205,9 @@
     const MOBILE_TOOLTIP_MS = 3000;
 
     function handleMobileCategoryTap(categoryId: string) {
+        // פנויים/פנויות — קפיצה ישירה ללוח הרשימה המגודר (/singles), בלי טולטיפ־המתנה
+        // ובלי סינון מפה, כי הכרטיסים לעולם לא ננעצים על המפה.
+        if (categoryId === 'singles') { cancelMobileTooltip(); showCategorySheet = false; goto('/singles'); return; }
         // בטל תזמון קודם אם המשתמש לחץ שוב לפני שנגמרה הספירה
         if (mobileTooltipTimer) clearTimeout(mobileTooltipTimer);
         mobileTooltipFor = categoryId;
@@ -449,10 +462,12 @@
         return (Date.now() - ts) < HELP_CALL_WINDOW_MS;
     }
 
-    // פריטים מהשכונה הנוכחית - ריאקטיבי לשינויי neighborhoodState ול-selectedCategory
+    // פריטים מהשכונה הנוכחית - ריאקטיבי לשינויי neighborhoodState ול-selectedCategory.
+    // פנויים/פנויות מוחרגים: הם לעולם לא על המפה, ולכן גם לא נספרים בתג "X פריטים בשכונה".
     let neighborhoodDbItems = $derived(
         dbItems.filter(d =>
             belongsToMyArea(d) &&
+            !d.category.startsWith('singles') &&
             (selectedCategory === "benefits" || d.category === selectedCategory)
         )
     );
@@ -942,6 +957,9 @@
     let categoryButtonsWrapperRef: HTMLElement;
 
     function handleCategoryClick(categoryId: string) {
+        // פנויים/פנויות אינם ננעצים על המפה (צנעת הפרט) — הכפתור פותח ישירות את
+        // לוח הרשימה המגודר במקום לסנן את המפה לתצוגה ריקה.
+        if (categoryId === 'singles') { goto('/singles'); return; }
         selectedCategory = categoryId;
         // בתצוגת רשימה - פתח אוטומטית את הקטגוריה הנבחרת
         if (categoryId !== "benefits") {
@@ -1741,7 +1759,7 @@
                 style="border-radius: 20px;"
             >
                 <div class="space-y-2 md:space-y-3">
-                    {#each categories.filter((cat) => cat.id !== "benefits" && (selectedCategory === "benefits" || cat.id === selectedCategory)) as category}
+                    {#each categories.filter((cat) => cat.id !== "benefits" && cat.id !== "singles" && (selectedCategory === "benefits" || cat.id === selectedCategory)) as category}
                         <!-- עסקי האינדקס ארציים — מוצגים בכל עיר, לא רק בשכונה הנבחרת -->
                         {@const categoryDbItems = dbItems.filter(d =>
                             d.category === category.id && (isIndexItem(d) || belongsToMyArea(d))
