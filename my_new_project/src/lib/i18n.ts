@@ -84,6 +84,8 @@ register('he', () => Promise.resolve({
     // הודעות מערכת
     login_required: "יש להירשם כדי להוסיף פריטים. מעבר לדף הרשמה...",
     help_sent: "בקשת עזרה נשלחה",
+    help_responding: "אתה בדרך לעזור 🤝 השכן קיבל הודעה שאתה מגיע",
+    help_responding_error: "לא הצלחנו לעדכן. נסו שוב.",
     call_sent_success: "הקריאה נשלחה בהצלחה!",
     community_helped: "הקהילה עזרה לי",
     problem_solved_other: "הבעיה נפתרה אחרת",
@@ -330,6 +332,8 @@ register('en', () => Promise.resolve({
 
     login_required: "Please register to add items. Redirecting to the registration page...",
     help_sent: "Help request sent",
+    help_responding: "You're on the way 🤝 your neighbor was notified",
+    help_responding_error: "Couldn't update. Please try again.",
     call_sent_success: "Request sent successfully!",
     community_helped: "The community helped me",
     problem_solved_other: "Problem solved another way",
@@ -569,6 +573,8 @@ register('ru', () => Promise.resolve({
 
     login_required: "Пожалуйста, зарегистрируйтесь, чтобы добавлять объявления. Переходим на страницу регистрации...",
     help_sent: "Запрос о помощи отправлен",
+    help_responding: "Вы уже в пути 🤝 сосед получил уведомление",
+    help_responding_error: "Не удалось обновить. Попробуйте ещё раз.",
     call_sent_success: "Запрос успешно отправлен!",
     community_helped: "Сообщество помогло мне",
     problem_solved_other: "Проблема решена другим способом",

@@ -712,16 +712,26 @@
 	});
 	let secTipShow = $state(false);
 	let showStatusMenu = $state(false);
+	// שגיאת שמירת סטטוס - טוסט חולף, כדי שכשל בשמירה לא יהיה בלתי-נראה
+	let statusSaveError = $state(false);
+	let statusSaveErrTimer: ReturnType<typeof setTimeout> | undefined;
 
 	async function updateStatus(newStatus: string) {
-		status = newStatus;
+		const prevStatus = status;
+		status = newStatus; // עדכון אופטימי
 		showStatusMenu = false;
-		// שמירה מיידית ב-Strapi
+		// שמירה מיידית ב-Strapi; בכשל - מחזירים את הסטטוס הקודם ומראים שגיאה
 		try {
 			const formData = new FormData();
 			formData.set("status", newStatus);
-			await fetch("?/updateStatus", { method: "POST", body: formData });
-		} catch {}
+			const res = await fetch("?/updateStatus", { method: "POST", body: formData });
+			if (!res.ok) throw new Error("save failed");
+		} catch {
+			status = prevStatus;
+			statusSaveError = true;
+			clearTimeout(statusSaveErrTimer);
+			statusSaveErrTimer = setTimeout(() => (statusSaveError = false), 5000);
+		}
 	}
 	let secTipX = $state(0);
 	let secTipY = $state(0);
@@ -5402,6 +5412,16 @@
 					</button>
 				</div>
 			{/if}
+		</div>
+	</div>
+{/if}
+
+<!-- שגיאת שמירת סטטוס זמינות - כשל בשמירה לא נשאר בלתי-נראה -->
+{#if statusSaveError}
+	<div class="fixed bottom-6 left-1/2 z-[100] w-max max-w-xs md:max-w-sm loc-toast" role="status" aria-live="polite">
+		<div class="rounded-2xl bg-gray-900 border border-red-500/50 shadow-2xl px-5 py-3.5 flex items-center gap-3">
+			<span class="text-xl leading-none flex-shrink-0">⚠️</span>
+			<p class="flex-1 min-w-0 text-sm text-red-200 font-bold leading-snug">{tFn("profile.status_save_error")}</p>
 		</div>
 	</div>
 {/if}

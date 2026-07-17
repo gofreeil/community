@@ -287,6 +287,7 @@ export const he = {
         pin_saved:
             "✓ המיקום נשמר! המפה שלך כבר מתוקנת. הוא יופיע לכל תושבי {city} לאחר אישור מנהל — תשובה תישלח אליך לתיבת ההודעות 📬",
         pin_saving: "⏳ שומר…",
+        status_save_error: "לא הצלחנו לעדכן את הסטטוס. נסו שוב.",
         pin_save_btn: "📍 שמור את מיקום הישוב",
         pin_error_mark: "נא לסמן את המיקום על המפה",
         pin_error_city: "יש לבחור עיר תחילה",
@@ -688,6 +689,7 @@ export const en = {
         pin_saved:
             "✓ Location saved! Your map is already fixed. It will appear for all residents of {city} after admin approval — a reply will be sent to your inbox 📬",
         pin_saving: "⏳ Saving…",
+        status_save_error: "Couldn't update your status. Please try again.",
         pin_save_btn: "📍 Save the town's location",
         pin_error_mark: "Please mark the location on the map",
         pin_error_city: "Please choose a city first",
@@ -1089,6 +1091,7 @@ export const ru = {
         pin_saved:
             "✓ Расположение сохранено! Ваша карта уже исправлена. Оно появится у всех жителей {city} после одобрения администратора — ответ придёт в ваш почтовый ящик 📬",
         pin_saving: "⏳ Сохраняем…",
+        status_save_error: "Не удалось обновить статус. Попробуйте ещё раз.",
         pin_save_btn: "📍 Сохранить расположение населённого пункта",
         pin_error_mark: "Пожалуйста, отметьте место на карте",
         pin_error_city: "Сначала выберите город",

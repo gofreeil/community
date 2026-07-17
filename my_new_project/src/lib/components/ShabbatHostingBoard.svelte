@@ -247,6 +247,14 @@
 
     // --- אישור/דחיית בקשה (מארח) ---
     let approvingRequestId = $state<string | null>(null);
+    // משוב חולף למארח - אחרת השורה נעלמת בלי אישור, וכשל היה שקט לגמרי
+    let hostActionNotice = $state<{ kind: 'success' | 'error'; text: string } | null>(null);
+    let hostActionTimer: ReturnType<typeof setTimeout> | undefined;
+    function showHostNotice(kind: 'success' | 'error', text: string) {
+        hostActionNotice = { kind, text };
+        clearTimeout(hostActionTimer);
+        hostActionTimer = setTimeout(() => (hostActionNotice = null), 6000);
+    }
 
     async function handleApprove(req: PendingRequest, action: 'approved' | 'rejected') {
         approvingRequestId = req.requestItemId;
@@ -256,14 +264,21 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ request_item_id: req.requestItemId, action }),
             });
-            const data = await res.json();
-            if (data.success) {
+            const data = await res.json().catch(() => ({}));
+            if (res.ok && data.success) {
                 localPendingForHost = localPendingForHost.filter(r => r.requestItemId !== req.requestItemId);
                 if (action === 'approved' && req.guestPhone) {
                     localApprovedGuestPhones = [...localApprovedGuestPhones, req.guestPhone.trim()];
                 }
+                showHostNotice('success', action === 'approved'
+                    ? $_('boards.shabbat.host_approved')
+                    : $_('boards.shabbat.host_rejected'));
+            } else {
+                showHostNotice('error', $_('boards.shabbat.host_action_error'));
             }
-        } catch { /* silent */ }
+        } catch {
+            showHostNotice('error', $_('boards.shabbat.host_action_error'));
+        }
         approvingRequestId = null;
     }
 
@@ -830,6 +845,17 @@
                     {$_('boards.close')}
                 </button>
             </div>
+        </div>
+    </div>
+{/if}
+
+<!-- משוב חולף למארח: אישור/דחיית בקשת אורח (הצלחה/שגיאה) -->
+{#if hostActionNotice}
+    <div class="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] w-[92%] max-w-md" dir="rtl" role="status" aria-live="polite">
+        <div class="rounded-2xl bg-[#0f172a] border shadow-2xl px-5 py-3.5 flex items-center gap-3 {hostActionNotice.kind === 'success' ? 'border-green-500/50' : 'border-red-500/50'}">
+            <span class="text-xl leading-none flex-shrink-0">{hostActionNotice.kind === 'success' ? '✅' : '⚠️'}</span>
+            <p class="flex-1 min-w-0 text-sm font-bold leading-snug {hostActionNotice.kind === 'success' ? 'text-green-200' : 'text-red-200'}">{hostActionNotice.text}</p>
+            <button type="button" onclick={() => hostActionNotice = null} class="text-gray-400 hover:text-white text-lg leading-none flex-shrink-0" aria-label={$_('boards.close')}>✕</button>
         </div>
     </div>
 {/if}

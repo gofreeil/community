@@ -31,6 +31,14 @@
     const HELP_CALL_WINDOW_MS = 24 * 60 * 60 * 1000;
     let respondedIds = $state<string[]>([]);
     let respondingId = $state<string | null>(null);
+    // משוב חולף אחרי "אני עוזר" - אחרת הכרטיס פשוט נעלם בלי אישור/שגיאה
+    let helpRespondNotice = $state<{ kind: 'success' | 'error'; text: string } | null>(null);
+    let helpRespondTimer: ReturnType<typeof setTimeout> | undefined;
+    function showHelpRespondNotice(kind: 'success' | 'error', text: string) {
+        helpRespondNotice = { kind, text };
+        clearTimeout(helpRespondTimer);
+        helpRespondTimer = setTimeout(() => (helpRespondNotice = null), 6000);
+    }
 
     // הודעת "נכס נמחק" - מגיעה מדף הפריט אחרי מחיקה רכה (sessionStorage).
     // מציגה שהנכס עדיין ניתן לשחזור עד תאריך, עם קישור לנכסים של המשתמש.
@@ -61,10 +69,15 @@
             });
             if (res.ok) {
                 respondedIds = [...respondedIds, id];
+                showHelpRespondNotice('success', $t('help_responding'));
             } else if (res.status === 401) {
                 window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
+            } else {
+                showHelpRespondNotice('error', $t('help_responding_error'));
             }
-        } catch { /* שקט - נשאר בטבלה */ }
+        } catch {
+            showHelpRespondNotice('error', $t('help_responding_error'));
+        }
         finally { respondingId = null; }
     }
 
@@ -414,6 +427,21 @@
                 <button
                     type="button"
                     onclick={() => helpSentFlash = false}
+                    class="text-slate-400 hover:text-white transition-colors text-lg leading-none flex-shrink-0"
+                    aria-label="סגירה"
+                >✕</button>
+            </div>
+        </div>
+    {/if}
+    <!-- משוב חולף אחרי "אני עוזר" (הצלחה/שגיאה) -->
+    {#if helpRespondNotice}
+        <div class="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] w-[92%] max-w-md" dir="rtl" role="status" aria-live="polite">
+            <div class="bg-[#0f172a] border rounded-2xl shadow-2xl p-4 flex items-start gap-3 {helpRespondNotice.kind === 'success' ? 'border-green-400/40' : 'border-red-400/40'}">
+                <span class="text-2xl leading-none flex-shrink-0">{helpRespondNotice.kind === 'success' ? '🤝' : '⚠️'}</span>
+                <p class="flex-1 min-w-0 text-sm font-bold {helpRespondNotice.kind === 'success' ? 'text-green-200' : 'text-red-200'}">{helpRespondNotice.text}</p>
+                <button
+                    type="button"
+                    onclick={() => helpRespondNotice = null}
                     class="text-slate-400 hover:text-white transition-colors text-lg leading-none flex-shrink-0"
                     aria-label="סגירה"
                 >✕</button>
