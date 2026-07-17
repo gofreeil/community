@@ -13,6 +13,10 @@
 
 	let activeTab = $state<'users' | 'items' | 'discounts'>('users');
 
+	// רשימת "כל המשתמשים" מתקפלת - סגורה כברירת מחדל להפחתת עומס על הדף.
+	// חיפוש פותח אותה אוטומטית כדי שהתוצאות יופיעו.
+	let usersListOpen = $state(false);
+
 	// סיכום ללוח הבקרה (באנר עליון)
 	const dash = $derived(data.dashboard ?? { totalUsers: 0, totalItems: 0, totalCoordinators: 0, newUsersThisMonth: 0, newItemsThisMonth: 0, monthlyVisits: 0 });
 
@@ -634,15 +638,22 @@
 				{/if}
 			</section>
 
-			<!-- כותרת לרשימה הראשית -->
-			<div class="flex items-center gap-2 mb-3 mt-2">
+			<!-- כותרת לרשימה הראשית - לחיצה פותחת/סוגרת (סגור כברירת מחדל להפחתת עומס) -->
+			<button
+				type="button"
+				onclick={() => (usersListOpen = !usersListOpen)}
+				class="w-full flex items-center gap-2 mb-3 mt-2 cursor-pointer text-right hover:opacity-90 transition-opacity"
+				aria-expanded={usersListOpen || !!searchQuery}
+			>
 				<span class="text-xl">👥</span>
 				<h2 class="text-lg font-black text-white">כל המשתמשים</h2>
 				<span class="text-xs font-bold bg-white/10 text-gray-300 border border-white/20 px-2 py-0.5 rounded-full">
 					{filteredUsers().length}
 				</span>
-			</div>
+				<span class="ms-auto text-gray-400 text-sm transition-transform {usersListOpen || searchQuery ? 'rotate-180' : ''}">▼</span>
+			</button>
 
+			{#if usersListOpen || searchQuery}
 			<div class="space-y-1.5 md:space-y-2">
 				{#each filteredUsers() as user (user.id)}
 					{@const badge = roleBadge(user.role)}
@@ -745,6 +756,7 @@
 					</div>
 				{/each}
 			</div>
+			{/if}
 		{/if}
 
 		<!-- טאב פרסומים -->
