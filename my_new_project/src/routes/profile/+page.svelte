@@ -750,8 +750,10 @@
 		}, 50);
 	}
 	let saveSuccess = $state(false);
-	// אישור מתמשך לבקשת הוספת שכונה/מיקום - לא נעלם אוטומטית, כדי שהמשתמש לא ינחש שזה נכשל וישלח שוב
+	// משוב לבקשת הוספת שכונה/מיקום: "ok" מוצג כטוסט קטן שנעלם לבד אחרי 4 שניות;
+	// "pending"/"resolved" נשארים באנר מתמשך עד סגירה, כי הם דורשים מהמשתמש להבין מצב
 	let locationNotice = $state<{ text: string; kind: "ok" | "pending" | "resolved" } | null>(null);
+	let locationNoticeTimer: ReturnType<typeof setTimeout> | undefined;
 	// תמונת ברירת המחדל תמיד מגוגל (oauth_image). העלאת תמונה או ייבוא מפייסבוק הם
 	// דריסה זמנית בלבד; הסרתם מחזירה אוטומטית לתמונת הגוגל.
 	const googleImage: string | null = (data as { oauth_image?: string | null }).oauth_image ?? null;
@@ -3852,24 +3854,21 @@
 			</div>
 		</div>
 
-		<!-- אישור מתמשך לבקשת הוספת שכונה/מיקום - נשאר גלוי עד שהמשתמש סוגר, כדי שלא ינחש שנכשל וישלח שוב -->
-		{#if locationNotice}
+		<!-- מצבי pending/resolved - באנר מתמשך שנשאר עד שהמשתמש סוגר, כדי שיבין את המצב
+		     (מצב "ok" מוצג כטוסט צף וחולף - בתחתית הקובץ, מחוץ למקטע) -->
+		{#if locationNotice && locationNotice.kind !== "ok"}
 			<div class="relative bg-emerald-500/10 border border-emerald-500/40 rounded-2xl p-4 mb-4 flex items-start gap-3">
 				<span class="text-xl leading-none flex-shrink-0">📍</span>
 				<div class="flex-1 text-sm">
 					<p class="text-emerald-300 font-black mb-1">
 						{locationNotice.kind === "pending"
 							? tFn("profile.loc_pending_title")
-							: locationNotice.kind === "resolved"
-								? tFn("profile.loc_resolved_title")
-								: tFn("profile.loc_ok_title")}
+							: tFn("profile.loc_resolved_title")}
 					</p>
 					<p class="text-emerald-100/90 leading-relaxed">
 						{locationNotice.kind === "pending"
 							? tFn("profile.loc_pending_body", { name: locationNotice.text })
-							: locationNotice.kind === "resolved"
-								? tFn("profile.loc_resolved_body", { name: locationNotice.text })
-								: tFn("profile.loc_ok_body", { name: locationNotice.text })}
+							: tFn("profile.loc_resolved_body", { name: locationNotice.text })}
 					</p>
 				</div>
 				<button
@@ -3891,12 +3890,16 @@
 						if (result.type === "success") {
 							isEditing = false;
 							saveSuccess = true;
-							// בקשת מיקום/שכונה חדשה - הצג אישור מתמשך ברור (לא הטוסט הגנרי של 3 שניות)
 							const sent     = (result.data as any)?.locationRequestSent;
 							const pending  = (result.data as any)?.locationAlreadyPending;
 							const resolved = (result.data as any)?.locationResolved;
+							clearTimeout(locationNoticeTimer);
 							if (sent) {
+								// בקשה נקלטה - טוסט קטן שנעלם לבד, בלי הודעה בתיבת ההודעות
 								locationNotice = { text: sent, kind: "ok" };
+								locationNoticeTimer = setTimeout(() => {
+									if (locationNotice?.kind === "ok") locationNotice = null;
+								}, 4000);
 							} else if (pending) {
 								locationNotice = { text: pending, kind: "pending" };
 							} else if (resolved) {
@@ -5398,7 +5401,45 @@
 	</div>
 {/if}
 
+<!-- בקשת מיקום נקלטה - טוסט קטן שנעלם לבד אחרי 4 שניות (במקום הודעה בתיבת ההודעות) -->
+{#if locationNotice?.kind === "ok"}
+	<div
+		class="fixed bottom-6 left-1/2 z-[100] w-max max-w-xs md:max-w-sm loc-toast"
+		role="status"
+		aria-live="polite"
+	>
+		<div class="rounded-2xl bg-gray-900 border border-emerald-500/50 shadow-2xl px-5 py-3.5 flex items-start gap-3">
+			<span class="text-xl leading-none flex-shrink-0">📍</span>
+			<div class="flex-1 min-w-0 text-sm">
+				<p class="text-emerald-300 font-black leading-snug">{tFn("profile.loc_ok_title")}</p>
+				<p class="text-gray-300 text-xs mt-0.5 leading-relaxed">
+					{tFn("profile.loc_ok_body", { name: locationNotice.text })}
+				</p>
+			</div>
+		</div>
+	</div>
+{/if}
+
 <style>
+	/* טוסט "בקשתך נקלטה" - עולה מלמטה, ונמוג לקראת ההיעלמות האוטומטית (4 שניות) */
+	@keyframes locToastInOut {
+		0% {
+			opacity: 0;
+			transform: translate(-50%, 12px);
+		}
+		8%, 88% {
+			opacity: 1;
+			transform: translate(-50%, 0);
+		}
+		100% {
+			opacity: 0;
+			transform: translate(-50%, 6px);
+		}
+	}
+	.loc-toast {
+		animation: locToastInOut 4s ease-out forwards;
+	}
+
 	@keyframes customLocGlow {
 		0%, 100% {
 			box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.0);

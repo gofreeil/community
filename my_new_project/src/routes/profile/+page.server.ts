@@ -450,27 +450,8 @@ export const actions: Actions = {
                     console.warn('[profile] notify super_admins failed:', e);
                 }
 
-                // הודעת אישור לצרכן עצמו - מופיעה מיד ב-/messages ומהווה הוכחה שהבקשה נקלטה.
-                // בלי זה המשתמש לא מקבל שום סימן שהבקשה עברה, מניח שנכשל, ושולח שוב ושוב.
-                try {
-                    await createItem({
-                        category:    'message',
-                        label:       `📍 בקשתך להוספת "${customLocation}" התקבלה`,
-                        description:
-                            `קיבלנו את בקשתך להוסיף את "${customLocation}"${city ? ` (${city})` : ''} לרשימת השכונות.\n` +
-                            `הבקשה ממתינה לאישור מנהל — נעדכן אותך כאן ברגע שהשכונה תתווסף. אין צורך לשלוח שוב 🙏`,
-                        icon:        '📍',
-                        color:       'green',
-                        user_id:     session.user.id,
-                        extra_fields: {
-                            type:               'location_request_ack',
-                            requested_location: customLocation,
-                            requested_at:       new Date().toISOString(),
-                        },
-                    });
-                } catch (e) {
-                    console.warn('[profile] user ack message failed:', e);
-                }
+                // אישור הקליטה למבקש מוצג כטוסט חולף בפרופיל (locationRequestSent) -
+                // בלי הודעה בתיבת ההודעות, כדי לא להציף אותה. לתיבה מגיעה רק הודעת ההחלטה.
 
                 invalidateCachedUser(session.user.id);
                 return { success: true, locationRequestSent: customLocation };

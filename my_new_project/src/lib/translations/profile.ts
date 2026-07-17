@@ -257,7 +257,7 @@ export const he = {
         loc_pending_body:
             'הבקשה להוסיף את "{name}" כבר ממתינה לאישור המנהל. אין צורך לשלוח שוב — נעדכן אותך בתיבת ההודעות ברגע שהשכונה תתווסף.',
         loc_ok_body:
-            'הבקשה להוסיף את "{name}" נשלחה למנהל וממתינה לאישור. שלחנו לך אישור לתיבת ההודעות, ונעדכן אותך שם ברגע שהשכונה תתווסף. אין צורך לשלוח שוב 🙏',
+            'הבקשה להוסיף את "{name}" נשלחה למנהל — תשובה תישלח אליך לתיבת ההודעות 📬',
         copy_facebook: "ייבא מחשבון הפייסבוק שלי",
         city_search_suffix: " - הקלד לחיפוש...",
         no_cities_found: 'לא נמצאו ערים תואמות. מלא ב"לא מצאת את העיר?" למטה.',
@@ -283,7 +283,7 @@ export const he = {
         pin_already_pending:
             "✓ הבקשה שלך כבר התקבלה וממתינה לאישור מנהל — אין צורך לשלוח שוב. המפה שלך כבר מתוקנת.",
         pin_saved:
-            "✓ המיקום נשמר! המפה שלך כבר מתוקנת. הוא יופיע לכל תושבי {city} לאחר אישור מנהל. שלחנו לך אישור לתיבת ההודעות.",
+            "✓ המיקום נשמר! המפה שלך כבר מתוקנת. הוא יופיע לכל תושבי {city} לאחר אישור מנהל — תשובה תישלח אליך לתיבת ההודעות 📬",
         pin_saving: "⏳ שומר…",
         pin_save_btn: "📍 שמור את מיקום הישוב",
         pin_error_mark: "נא לסמן את המיקום על המפה",
@@ -657,7 +657,7 @@ export const en = {
         loc_pending_body:
             'The request to add "{name}" is already awaiting admin approval. No need to send again — we will update you in your inbox as soon as the neighborhood is added.',
         loc_ok_body:
-            'The request to add "{name}" was sent to the admin and is awaiting approval. We sent a confirmation to your inbox and will update you there as soon as the neighborhood is added. No need to send again 🙏',
+            'The request to add "{name}" was sent to the admin — a reply will be sent to your inbox 📬',
         copy_facebook: "Import from my Facebook account",
         city_search_suffix: " - type to search...",
         no_cities_found: 'No matching cities found. Fill in "Couldn\'t find your city?" below.',
@@ -682,7 +682,7 @@ export const en = {
         pin_already_pending:
             "✓ Your request was already received and is awaiting admin approval — no need to send again. Your map is already fixed.",
         pin_saved:
-            "✓ Location saved! Your map is already fixed. It will appear for all residents of {city} after admin approval. We sent a confirmation to your inbox.",
+            "✓ Location saved! Your map is already fixed. It will appear for all residents of {city} after admin approval — a reply will be sent to your inbox 📬",
         pin_saving: "⏳ Saving…",
         pin_save_btn: "📍 Save the town's location",
         pin_error_mark: "Please mark the location on the map",
@@ -1056,7 +1056,7 @@ export const ru = {
         loc_pending_body:
             'Запрос на добавление «{name}» уже ожидает одобрения администратора. Не нужно отправлять снова — мы сообщим вам в почтовом ящике, как только район будет добавлен.',
         loc_ok_body:
-            'Запрос на добавление «{name}» отправлен администратору и ожидает одобрения. Мы отправили подтверждение в ваш почтовый ящик и сообщим там, как только район будет добавлен. Не нужно отправлять снова 🙏',
+            'Запрос на добавление «{name}» отправлен администратору — ответ придёт в ваш почтовый ящик 📬',
         copy_facebook: "Импортировать из моего аккаунта Facebook",
         city_search_suffix: " - введите для поиска...",
         no_cities_found: 'Совпадающих городов не найдено. Заполните «Не нашли свой город?» ниже.',
@@ -1081,7 +1081,7 @@ export const ru = {
         pin_already_pending:
             "✓ Ваш запрос уже получен и ожидает одобрения администратора — не нужно отправлять снова. Ваша карта уже исправлена.",
         pin_saved:
-            "✓ Расположение сохранено! Ваша карта уже исправлена. Оно появится у всех жителей {city} после одобрения администратора. Мы отправили подтверждение в ваш почтовый ящик.",
+            "✓ Расположение сохранено! Ваша карта уже исправлена. Оно появится у всех жителей {city} после одобрения администратора — ответ придёт в ваш почтовый ящик 📬",
         pin_saving: "⏳ Сохраняем…",
         pin_save_btn: "📍 Сохранить расположение населённого пункта",
         pin_error_mark: "Пожалуйста, отметьте место на карте",
