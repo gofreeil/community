@@ -102,6 +102,46 @@
             </div>
         {/if}
 
+        <!-- 💘 בקשות להיות שדכן מערכת -->
+        {#if data.matchmakerRequests && data.matchmakerRequests.length}
+            <div class="mb-6 rounded-2xl bg-[#0f172a] border border-rose-500/30 overflow-hidden">
+                <div class="px-4 py-3 bg-gradient-to-r from-rose-600/30 to-pink-600/20 border-b border-rose-500/20 flex items-center gap-2">
+                    <span class="text-xl">💘</span>
+                    <h2 class="font-black text-white">בקשות להיות שדכן מערכת ({data.matchmakerRequests.length})</h2>
+                    <span class="text-rose-200/70 text-xs mr-1">אישור נותן הרשאת שידוכים — כלי המלצות והפניית כרטיסים</span>
+                </div>
+                <div class="divide-y divide-white/5">
+                    {#each data.matchmakerRequests as r (r.id)}
+                        <div class="p-4 flex items-center justify-between gap-3 flex-wrap">
+                            <div class="min-w-0">
+                                <p class="text-white font-bold text-sm">
+                                    {#if r.genderLabel}<span class="inline-block bg-rose-500/15 text-rose-200 px-2 py-0.5 rounded-full text-[12px] font-bold ring-1 ring-rose-400/40">{r.genderLabel}</span>{/if}
+                                    <span class="mr-2">{r.nickname || '—'}</span>
+                                </p>
+                                <p class="text-gray-400 text-xs mt-1">
+                                    {#if r.city}📍 {r.city}{#if r.neighborhood} · {r.neighborhood}{/if} · {/if}
+                                    {#if r.phone}📞 {r.phone} · {/if}
+                                    {#if r.email}✉️ {r.email}{/if}
+                                </p>
+                            </div>
+                            <div class="flex gap-2 flex-shrink-0">
+                                <form method="POST" action="?/matchmakerDecision" use:enhance>
+                                    <input type="hidden" name="id" value={r.id} />
+                                    <input type="hidden" name="decision" value="approved" />
+                                    <button class="bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-xl transition-colors text-sm">💘 אשר שדכן</button>
+                                </form>
+                                <form method="POST" action="?/matchmakerDecision" use:enhance>
+                                    <input type="hidden" name="id" value={r.id} />
+                                    <input type="hidden" name="decision" value="rejected" />
+                                    <button class="bg-white/5 hover:bg-red-600/30 text-gray-400 hover:text-red-300 font-bold py-2 px-4 rounded-xl transition-colors text-sm border border-white/10">🚫 דחה</button>
+                                </form>
+                            </div>
+                        </div>
+                    {/each}
+                </div>
+            </div>
+        {/if}
+
         <!-- טאבים -->
         <div class="flex gap-2 mb-4 flex-wrap">
             <button

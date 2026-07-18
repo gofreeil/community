@@ -29,10 +29,11 @@ async function ensureSuperAdmin(event: any) {
 export const load: PageServerLoad = async (event) => {
     await ensureSuperAdmin(event);
 
-    const [pendingItems, activeItems, accessItems] = await Promise.all([
+    const [pendingItems, activeItems, accessItems, matchmakerItems] = await Promise.all([
         getItemsByCategoryAndStatus('singles', 'pending').catch(() => []),
         getItemsByCategoryAndStatus('singles', 'active').catch(() => []),
         getItemsByCategory('singles_access').catch(() => []),
+        getItemsByCategory('matchmaker_request').catch(() => []),
     ]);
 
     // ממפה לפרופיל (שם, גיל, עיר, מגדר, תמונות) ומשאיר את התמונות הגולמיות לבדיקה
@@ -61,7 +62,30 @@ export const load: PageServerLoad = async (event) => {
         .filter((r) => r.status === 'pending')
         .sort((a, b) => (b.requestedAt || '').localeCompare(a.requestedAt || ''));
 
-    return { pending, active, accessRequests };
+    // בקשות להיות "שדכן מערכת" שממתינות לאישור
+    const matchmakerRequests = matchmakerItems
+        .map((it) => {
+            let ef: Record<string, unknown> = {};
+            try { ef = it.extra_fields ? JSON.parse(it.extra_fields) : {}; } catch { ef = {}; }
+            const snap = (ef.requester_snapshot ?? {}) as Record<string, unknown>;
+            const gender = String(snap.gender ?? '');
+            return {
+                id: it.id,
+                status: String(ef.status ?? 'pending'),
+                nickname: String(snap.nickname ?? it.contact ?? ''),
+                gender,
+                genderLabel: gender === 'female' ? '👩 אישה' : gender === 'male' ? '👨 גבר' : '',
+                city: String(snap.city ?? ''),
+                neighborhood: String(snap.neighborhood ?? ''),
+                email: String(snap.email ?? ''),
+                phone: it.phone ?? '',
+                requestedAt: String(ef.requested_at ?? it.created_at ?? ''),
+            };
+        })
+        .filter((r) => r.status === 'pending')
+        .sort((a, b) => (b.requestedAt || '').localeCompare(a.requestedAt || ''));
+
+    return { pending, active, accessRequests, matchmakerRequests };
 };
 
 export const actions: Actions = {
@@ -158,6 +182,60 @@ export const actions: Actions = {
             return {
                 success: true,
                 message: decision === 'approved' ? 'הגישה אושרה ✅' : 'הבקשה נדחתה 🚫',
+            };
+        } catch (e) {
+            return fail(500, { error: `שגיאה: ${e instanceof Error ? e.message : e}` });
+        }
+    },
+
+    // ── בקשות להיות "שדכן מערכת" ──
+    matchmakerDecision: async (event) => {
+        await ensureSuperAdmin(event);
+        const fd = await event.request.formData();
+        const id = fd.get('id') as string;
+        const decision = fd.get('decision') as string;
+        if (!id || !['approved', 'rejected'].includes(decision)) {
+            return fail(400, { error: 'פרמטרים שגויים' });
+        }
+        try {
+            const req = (await getItemsByCategory('matchmaker_request')).find((r) => r.id === id);
+            if (!req) return fail(404, { error: 'הבקשה לא נמצאה' });
+            let ef: Record<string, unknown> = {};
+            try { ef = req.extra_fields ? JSON.parse(req.extra_fields) : {}; } catch { ef = {}; }
+
+            await updateItem(id, {
+                extra_fields: { ...ef, status: decision, decided_at: new Date().toISOString() },
+            });
+
+            // עדכון למבקש (הודעה בתוך האתר)
+            if (req.user_id) {
+                try {
+                    await createItem({
+                        category: 'message',
+                        label: decision === 'approved'
+                            ? '💘 אושרת כשדכן/ית מערכת'
+                            : 'לגבי בקשת השדכנות',
+                        description: decision === 'approved'
+                            ? 'הבקשה שלך אושרה — קיבלת הרשאת שדכן/ית מערכת. נכנסים לכלי השדכנות דרך "כלים לשדכן" בלוח הפנויים/פנויות: /singles/matchmaker'
+                            : 'לאחר בדיקה, בקשת השדכנות לא אושרה כרגע. אפשר לפנות אלינו דרך "כתוב למערכת" בדף הפרופיל.',
+                        contact: '',
+                        user_id: req.user_id,
+                        icon: decision === 'approved' ? '💘' : '💬',
+                        color: 'pink',
+                        extra_fields: {
+                            type: 'matchmaker_decision',
+                            read: false,
+                            link: decision === 'approved' ? '/singles/matchmaker' : '/singles',
+                        },
+                    });
+                } catch (e) {
+                    console.warn('[singles-review] notify matchmaker failed:', e instanceof Error ? e.message : e);
+                }
+            }
+
+            return {
+                success: true,
+                message: decision === 'approved' ? 'השדכן/ית אושר/ה 💘' : 'הבקשה נדחתה 🚫',
             };
         } catch (e) {
             return fail(500, { error: `שגיאה: ${e instanceof Error ? e.message : e}` });

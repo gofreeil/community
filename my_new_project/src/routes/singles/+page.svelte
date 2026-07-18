@@ -216,6 +216,34 @@
             phone: u.phone,
         };
     })();
+
+    // ── שדכן מערכת: בקשה / סטטוס ──
+    let mmStatus = $state<string>(data.matchmakerStatus ?? 'none');
+    let mmSubmitting = $state(false);
+    let mmError = $state('');
+
+    async function requestMatchmaker() {
+        if (isGuest) { goto('/login?next=' + encodeURIComponent('/singles')); return; }
+        mmError = '';
+        mmSubmitting = true;
+        try {
+            const res = await fetch('/api/matchmaker-request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: '{}',
+            });
+            const out = await res.json().catch(() => ({}));
+            if (res.ok && out?.success) {
+                mmStatus = out.already === 'approved' ? 'approved' : 'pending';
+            } else {
+                mmError = out?.message || $_('extras.s_mm_error');
+            }
+        } catch {
+            mmError = $_('extras.s_mm_error');
+        } finally {
+            mmSubmitting = false;
+        }
+    }
 </script>
 
 <svelte:head>
@@ -328,6 +356,43 @@
                 </div>
             </div>
         </a>
+
+        <!-- ── שדכן מערכת: בקשה / סטטוס (מוצג לגברים ולנשים כאחד) ── -->
+        {#if mmStatus === 'approved'}
+            <a href="/singles/matchmaker" class="block mb-6 rounded-2xl bg-gradient-to-r from-rose-500/15 to-pink-500/10 border border-rose-500/40 px-4 py-3.5 hover:border-rose-500/70 transition">
+                <div class="flex items-center gap-3">
+                    <div class="text-2xl">💘</div>
+                    <div class="flex-1 text-right">
+                        <p class="text-white font-bold text-sm">{$_('extras.s_mm_approved')}</p>
+                        <p class="text-rose-200/80 text-xs mt-0.5">{$_('extras.s_mm_tools_hint')}</p>
+                    </div>
+                    <span class="shrink-0 bg-rose-500/20 text-rose-100 text-xs font-bold px-3 py-1.5 rounded-full border border-rose-400/40">{$_('extras.s_mm_tools_btn')} ←</span>
+                </div>
+            </a>
+        {:else if mmStatus === 'pending'}
+            <div class="mb-6 rounded-2xl bg-amber-500/10 border border-amber-400/30 px-4 py-3.5 text-center">
+                <p class="text-amber-200 text-sm font-bold">⏳ {$_('extras.s_mm_pending')}</p>
+            </div>
+        {:else}
+            <div class="mb-6 rounded-2xl bg-gradient-to-r from-rose-500/12 to-purple-500/8 border border-rose-500/30 px-4 py-4">
+                <div class="flex items-start gap-3">
+                    <div class="text-2xl">💘</div>
+                    <div class="flex-1 text-right">
+                        <p class="text-white font-bold text-sm">{$_('extras.s_mm_cta_title')}</p>
+                        <p class="text-rose-200/80 text-xs mt-0.5 mb-3">{$_('extras.s_mm_cta_desc')}</p>
+                        {#if mmError}<p class="text-red-400 text-xs mb-2">{mmError}</p>{/if}
+                        <button
+                            type="button"
+                            onclick={requestMatchmaker}
+                            disabled={mmSubmitting}
+                            class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-rose-600 to-pink-500 hover:from-rose-500 hover:to-pink-400 disabled:opacity-50 text-white font-bold py-2 px-5 rounded-full transition-all text-sm shadow-lg shadow-rose-500/30"
+                        >
+                            {mmSubmitting ? $_('extras.s_mm_submitting') : $_('extras.s_mm_cta_btn')}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        {/if}
 
         <!-- Filters: chips מינימליסטיים בשורה זורמת -->
         <div class="mb-6">

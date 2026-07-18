@@ -6,6 +6,7 @@
 // הסטטוס נשמר ב-extra_fields.status ('pending' | 'approved' | 'rejected') — בדיוק כמו singles_request.
 
 import { getItemsByUserId, getItemsByCategory } from './db';
+import { getMatchmakerStatus } from './matchmaker';
 
 export type SinglesAccessStatus = 'granted' | 'pending' | 'none' | 'unavailable';
 
@@ -33,7 +34,12 @@ export async function getSinglesAccessStatus(
         if (own.some((i) => i.category === 'singles' && i.status === 'active')) return 'granted';
     } catch { hadError = true; /* ממשיכים לבדיקת בקשת הגישה */ }
 
-    // 2) בקשת גישה מפורשת (הורה/שדכן).
+    // 2) שדכן מערכת מאושר — גישה אוטומטית ללוח (חייב לראות כרטיסים כדי לשדך).
+    try {
+        if ((await getMatchmakerStatus(uid, false)) === 'approved') return 'granted';
+    } catch { hadError = true; /* ממשיכים לבדיקת בקשת הגישה */ }
+
+    // 3) בקשת גישה מפורשת (הורה/שדכן).
     try {
         const reqs = await getItemsByCategory('singles_access');
         const mine = reqs.filter((r) => r.user_id === uid);
@@ -41,7 +47,7 @@ export async function getSinglesAccessStatus(
         if (mine.some((r) => reqStatus(r.extra_fields) === 'pending')) return 'pending';
     } catch { hadError = true; /* אין קטגוריה עדיין = אין בקשות */ }
 
-    // שתי הבדיקות לא הניבו תשובה חיובית ולפחות אחת נכשלה — אין ודאות
+    // הבדיקות לא הניבו תשובה חיובית ולפחות אחת נכשלה — אין ודאות
     return hadError ? 'unavailable' : 'none';
 }
 

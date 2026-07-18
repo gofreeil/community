@@ -2,6 +2,7 @@ import { error } from '@sveltejs/kit';
 import { getItemsByCategory, getUserById, getUserByEmail, getItemsByUserId } from '$lib/server/db';
 import { dbItemToProfile } from '$lib/singlesMap';
 import { getSinglesAccessStatus } from '$lib/server/singlesAccess';
+import { getMatchmakerStatus } from '$lib/server/matchmaker';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
@@ -61,6 +62,9 @@ export const load: PageServerLoad = async (event) => {
         }
     }
 
+    // מצב בקשת "שדכן מערכת" — מזין את ה-CTA/סטטוס בלוח (סופר-אדמין = מאושר תמיד)
+    const matchmakerStatus = await getMatchmakerStatus(session?.user?.id, isSuperAdmin);
+
     // ── שער גישה: לוח סגור. רואים את הכרטיסים רק אם אושרה גישה ──
     const access = await getSinglesAccessStatus(session?.user?.id, isSuperAdmin);
     // תקלת Strapi זמנית ≠ אין גישה: לא מציגים למשתמש מאושר את שער "אין לך גישה"
@@ -74,6 +78,7 @@ export const load: PageServerLoad = async (event) => {
         currentUserId: session?.user?.id ?? null,
         currentUserGender,
         currentUser,
+        matchmakerStatus,
     };
     if (access !== 'granted') {
         // לא טוענים את הכרטיסים כלל — לא מדליפים מידע למי שלא אושר.
