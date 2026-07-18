@@ -3,7 +3,11 @@ import type { DefaultSession } from '@auth/sveltekit';
 
 declare global {
     namespace App {
-        // interface Error {}
+        interface Error {
+            message: string;
+            // מזהה תקלה קצר שמוצג למשתמש בדף השגיאה וגם נרשם בלוג — לשיוך תלונה מול הסטאק
+            ref?: string;
+        }
         interface Locals {
             auth: () => Promise<import('@auth/sveltekit').Session | null>;
         }

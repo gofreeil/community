@@ -1,12 +1,33 @@
 import { handle as authHandle } from './auth';
 import { sequence } from '@sveltejs/kit/hooks';
-import type { Handle } from '@sveltejs/kit';
+import type { Handle, HandleServerError } from '@sveltejs/kit';
 import {
     verifyTrustToken,
     TRUST_COOKIE_NAME,
     COORD_TRUST_COOKIE_NAME,
 } from '$lib/server/totp';
 import { getUserTotpSecret } from '$lib/server/db';
+
+/**
+ * לוכד כל שגיאה לא-מטופלת בצד השרת (load/render/actions) *לפני* ש-SvelteKit
+ * מציג את עמוד השגיאה. עד היום קריסות כאלה יצאו כ-"500 Internal Error" גולמי
+ * בלי שום תיעוד — ואי-אפשר היה לדעת מה נפל (למשל בעמוד "הנכסים שלי"/פרופיל).
+ *
+ * כאן אנחנו: (1) מדפיסים ללוג את הסטטוס, ה-URL והסטאק המלא כדי לאתר את השורש,
+ * (2) מחזירים למשתמש הודעה גנרית (בלי לדלוף פרטים פנימיים) + מזהה תקלה קצר
+ * שמוצג גם ב-+error.svelte, כך שתלונת משתמש ניתנת לשיוך מול השורה בלוג.
+ */
+export const handleError: HandleServerError = ({ error, event, status, message }) => {
+    const ref = Math.random().toString(36).slice(2, 8).toUpperCase();
+    // 404 אינו תקלת-אמת — לא מרעישים את הלוג בשבילו
+    if (status !== 404) {
+        console.error(
+            `[error ${ref}] ${status} "${message}" @ ${event.request.method} ${event.url.pathname}${event.url.search}`,
+        );
+        console.error(error instanceof Error ? (error.stack ?? error.message) : error);
+    }
+    return { message: message ?? 'Internal Error', ref };
+};
 
 /**
  * memoization ל-event.locals.auth: ה-jwt callback (כולל קריאת DB) רץ בכל
