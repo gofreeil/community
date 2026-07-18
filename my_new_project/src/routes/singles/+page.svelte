@@ -449,6 +449,11 @@
 
                     <!-- Card body - תוכן אמיתי -->
                     <div class="p-4">
+                        {#if me.unvaccinated}
+                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-200 border border-amber-400/40 text-xs font-bold mb-2.5">
+                                {$_('extras.s_tag_unvaccinated')}
+                            </span>
+                        {/if}
                         {#if me.description}
                             <p class="text-gray-300 text-sm leading-relaxed mb-3">{me.description}</p>
                         {/if}
@@ -560,6 +565,11 @@
 
                     <!-- Card body -->
                     <div class="p-4">
+                        {#if person.unvaccinated}
+                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-200 border border-amber-400/40 text-xs font-bold mb-2.5">
+                                {$_('extras.s_tag_unvaccinated')}
+                            </span>
+                        {/if}
                         <p class="text-gray-300 text-sm leading-relaxed mb-3">{person.description}</p>
 
                         {#if person.lookingFor}

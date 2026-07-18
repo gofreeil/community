@@ -230,6 +230,13 @@
             : ''
     );
 
+    // תווית "לא מחוסן" - מוצגת רק אם המפרסם סימן אותה (checkbox נשמר כ-'1')
+    const unvaccinated = $derived.by<boolean>(() => {
+        const v = (item as { extraFields?: { unvaccinated?: unknown } } | null)?.extraFields?.unvaccinated;
+        const s = v == null ? '' : String(v).trim();
+        return s !== '' && s !== '0';
+    });
+
     const age = $derived.by<number | null>(() => {
         const ef = (item as { extraFields?: Record<string, unknown> } | null)?.extraFields;
         if (!ef) return null;
@@ -1600,7 +1607,7 @@
 
 <!-- Hidden keys (rendered in dedicated sections, complex types, or internal-only) -->
 {#snippet extraFieldsBlock()}
-    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'menu_images', 'map_image', 'service_type', 'price', 'website', 'whatsapp', 'telegram', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname', 'age', 'birth_date', 'sector', 'gender', 'type', 'activities', 'links', 'gmach_type', 'gmach_types', 'place_status', 'location', 'option_id', 'last_seen', 'hours', 'phone_public', 'hours_public', 'arrival_video'])}
+    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'menu_images', 'map_image', 'service_type', 'price', 'website', 'whatsapp', 'telegram', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname', 'age', 'birth_date', 'sector', 'gender', 'type', 'activities', 'links', 'gmach_type', 'gmach_types', 'place_status', 'location', 'option_id', 'last_seen', 'hours', 'phone_public', 'hours_public', 'arrival_video', 'unvaccinated'])}
     {@const LABELS_HE: Record<string, string> = {
         nickname: 'שם או כינוי',
         gender: 'מין',
@@ -1918,6 +1925,11 @@
                                 <p class="text-gray-300 text-base leading-tight">{sector}</p>
                             {/if}
                         </div>
+                    {/if}
+                    {#if isSingles && unvaccinated}
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-200 border border-amber-400/40 text-xs font-bold w-fit">
+                            לא מחוסן
+                        </span>
                     {/if}
 
                     <!-- תת-כותרת/תיאור (מרכז) + כפתור שיתוף מרובע קטן בצד שמאל -->

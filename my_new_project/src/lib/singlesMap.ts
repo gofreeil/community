@@ -72,6 +72,10 @@ export function dbItemToProfile(item: DbItem): SingleProfile {
     const visibility: 'public' | 'matchmakers' =
         String(ef.visibility ?? '').includes('שדכ') ? 'matchmakers' : 'public';
 
+    // תווית "לא מחוסן": מוצגת רק אם המפרסם סימן במפורש (checkbox נשמר כ-'1').
+    // כרטיסים ישנים / מי שלא סימן — הערך ריק, ולכן לא מוצג דבר.
+    const unvaccinated = String(ef.unvaccinated ?? '').trim() !== '' && String(ef.unvaccinated) !== '0';
+
     return {
         id: String(item.id),
         nickname,
@@ -97,5 +101,6 @@ export function dbItemToProfile(item: DbItem): SingleProfile {
         // מידע לשדכנים בלבד - לא מוצג בכרטיס/בדף הפומבי, רק בעמוד סקירת השדכנים
         matchPartnerCharacter: String(ef.match_partner_character ?? '').trim(),
         matchSelfAdvantage: String(ef.match_self_advantage ?? '').trim(),
+        unvaccinated,
     };
 }

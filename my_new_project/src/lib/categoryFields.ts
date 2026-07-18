@@ -3,7 +3,7 @@ import { FREE_PROMO } from './freePromo';
 export interface FieldDef {
     key: string;
     label: string;
-    type: 'text' | 'tel' | 'textarea' | 'select' | 'toggle' | 'number' | 'time' | 'date' | 'email' | 'availability_grid' | 'opening_hours' | 'multi_select' | 'neighborhood_select' | 'images' | 'map_pin' | 'address' | 'service_type';
+    type: 'text' | 'tel' | 'textarea' | 'select' | 'toggle' | 'checkbox' | 'number' | 'time' | 'date' | 'email' | 'availability_grid' | 'opening_hours' | 'multi_select' | 'neighborhood_select' | 'images' | 'map_pin' | 'address' | 'service_type';
     required: boolean;
     placeholder?: string;
     options?: string[];
@@ -299,6 +299,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
             { key: 'birth_date',  label: 'תאריך לידה',                type: 'date',     required: true,  hint: 'הגיל יחושב אוטומטית' },
             { key: 'sector',      label: 'מגזר / רקע',              type: 'select',   required: false, options: ['דתי', 'דתי-לאומי', 'חרדי', 'מסורתי', 'חילוני'] },
             { key: 'marital_status', label: 'מצב משפחתי',           type: 'select',   required: false, options: ['רווק/ה', 'גרוש/ה', 'אלמן/ה', 'פרוד/ה'], default: 'רווק/ה' },
+            { key: 'unvaccinated', label: 'תווית לכרטיס (לא חובה)',   type: 'checkbox', required: false, placeholder: 'הצג תווית "לא מחוסן" על הכרטיס', hint: 'סמנו רק אם תרצו — התווית "לא מחוסן" תופיע על הכרטיס. אם לא תסמנו, לא יוצג דבר.' },
             { key: 'education',   label: 'מקצוע / תעסוקה / השכלה',  type: 'text',     required: false, placeholder: 'תואר / ישיבה / מקצוע...' },
             { key: 'interests',   label: 'תחומי עניין',              type: 'textarea', required: false, placeholder: 'ספורט, מוזיקה, בישול...' },
             { key: 'description', label: 'קצת עליי',                type: 'textarea', required: true,  placeholder: 'כמה מילים על עצמך (לא יוצג שם)' },

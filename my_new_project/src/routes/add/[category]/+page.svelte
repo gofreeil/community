@@ -990,7 +990,21 @@
                         {/if}
                     </label>
 
-                    {#if field.type === 'toggle' && field.options}
+                    {#if field.type === 'checkbox'}
+                        <label class="flex items-center gap-2.5 cursor-pointer select-none rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 px-3 py-2.5 md:px-4 md:py-3 transition-colors">
+                            <input
+                                id="field-{field.key}"
+                                type="checkbox"
+                                checked={getFieldValue(field.key) === '1'}
+                                onchange={(e) => setFieldValue(field.key, (e.target as HTMLInputElement).checked ? '1' : '')}
+                                class="accent-amber-500 w-5 h-5 flex-shrink-0"
+                            />
+                            <span class="text-sm font-bold text-gray-200">
+                                {trOr($_, cfFieldKey(categoryId, field, 'ph'), field.placeholder ?? '')}
+                            </span>
+                        </label>
+
+                    {:else if field.type === 'toggle' && field.options}
                         <div class="relative mx-auto w-full max-w-[280px]">
                             <div class="flex p-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm gap-1">
                                 {#each field.options as opt}

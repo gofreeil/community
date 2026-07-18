@@ -30,6 +30,8 @@ export interface SingleProfile {
     /** מידע לשדכנים בלבד - נאסף בטופס ולא מוצג בכרטיס/בדף הפומבי */
     matchPartnerCharacter?: string;
     matchSelfAdvantage?: string;
+    /** תווית "לא מחוסן" - מוצגת על הכרטיס רק אם המפרסם סימן אותה במפורש */
+    unvaccinated?: boolean;
 }
 
 // תצוגת רמה דתית - מותאם למגדר
