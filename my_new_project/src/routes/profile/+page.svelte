@@ -4294,7 +4294,7 @@
 							if (neighborhood && city) {
 								neighborhoodState.select(neighborhood, city);
 							}
-							setTimeout(() => (saveSuccess = false), 3000);
+							setTimeout(() => (saveSuccess = false), 4000);
 							// גלול למעלה לאט כדי שהמשתמש יראה את עדכון האחוזים במעגל
 							setTimeout(() => slowScrollTo(0, 1400), 150);
 						} else {
@@ -5315,7 +5315,7 @@
 							</p>
 						{/if}
 						{#if form?.error}
-							<p class="text-red-400 text-xs font-bold">
+							<p class="text-red-400 text-sm font-bold">
 								{form.error}
 							</p>
 						{/if}
@@ -5776,6 +5776,22 @@
 					{tFn("profile.loc_ok_body", { name: locationNotice.text })}
 				</p>
 			</div>
+		</div>
+	</div>
+{/if}
+
+<!-- אישור שמירת פרופיל - טוסט צף, כי ההודעה שבתוך הטופס נעלמת יחד איתו כשהעריכה נסגרת -->
+{#if saveSuccess}
+	<div
+		class="fixed bottom-6 left-1/2 z-[100] w-max max-w-xs md:max-w-sm loc-toast"
+		role="status"
+		aria-live="polite"
+	>
+		<div class="rounded-2xl bg-gray-900 border border-emerald-500/50 shadow-2xl px-5 py-3.5 flex items-center gap-3">
+			<span class="text-xl leading-none flex-shrink-0">✅</span>
+			<p class="text-emerald-300 font-black leading-snug text-sm">
+				{tFn("profile_updated")}
+			</p>
 		</div>
 	</div>
 {/if}

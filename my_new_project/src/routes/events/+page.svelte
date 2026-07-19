@@ -101,8 +101,18 @@
     let showAddForm       = $state(false);
     let submitting        = $state(false);
     let successMsg        = $state('');
+    let errorMsg          = $state('');
     let approvePrice: Record<string, number>  = $state({});
     let approveDesc:  Record<string, string>  = $state({});
+
+    // ── טוסט צף - פידבק הצלחה/כשל שנראה בכל מיקום גלילה (עותק מקומי של דפוס loc-toast מדף הפרופיל) ──
+    let toast = $state<{ kind: 'success' | 'error'; text: string } | null>(null);
+    let toastTimer: ReturnType<typeof setTimeout> | undefined;
+    function showToast(kind: 'success' | 'error', text: string) {
+        clearTimeout(toastTimer);
+        toast = { kind, text };
+        toastTimer = setTimeout(() => toast = null, 4300);
+    }
 
     // icon picker
     const iconOptions = ['📅','🎤','🎉','🏃','🌱','🧹','🛍️','🎓','🍕','🏋️','🎨','🎵','👨‍👩‍👧','📚','🙏'];
@@ -238,7 +248,22 @@
                                         <!-- Approve -->
                                         <form method="POST" action="?/approveEvent" use:enhance={() => {
                                             submitting = true;
-                                            return async ({ update }) => { await update(); submitting = false; successMsg = $_('community.ev_approved_msg'); setTimeout(() => successMsg = '', 3000); };
+                                            errorMsg = '';
+                                            return async ({ result, update }) => {
+                                                await update();
+                                                submitting = false;
+                                                if (result.type === 'success') {
+                                                    successMsg = $_('community.ev_approved_msg');
+                                                    setTimeout(() => successMsg = '', 3000);
+                                                    showToast('success', $_('community.ev_approved_msg'));
+                                                } else if (result.type === 'failure') {
+                                                    errorMsg = (result.data as any)?.error ?? $_('community.ev_generic_error');
+                                                    showToast('error', errorMsg);
+                                                } else if (result.type === 'error') {
+                                                    errorMsg = $_('community.ev_generic_error');
+                                                    showToast('error', errorMsg);
+                                                }
+                                            };
                                         }}>
                                             <input type="hidden" name="id" value={pev.id} />
                                             <input type="hidden" name="price" value={approvePrice[pev.id] ?? 0} />
@@ -250,7 +275,22 @@
                                         <!-- Reject -->
                                         <form method="POST" action="?/rejectEvent" use:enhance={() => {
                                             submitting = true;
-                                            return async ({ update }) => { await update(); submitting = false; successMsg = $_('community.ev_rejected_msg'); setTimeout(() => successMsg = '', 3000); };
+                                            errorMsg = '';
+                                            return async ({ result, update }) => {
+                                                await update();
+                                                submitting = false;
+                                                if (result.type === 'success') {
+                                                    successMsg = $_('community.ev_rejected_msg');
+                                                    setTimeout(() => successMsg = '', 3000);
+                                                    showToast('success', $_('community.ev_rejected_msg'));
+                                                } else if (result.type === 'failure') {
+                                                    errorMsg = (result.data as any)?.error ?? $_('community.ev_generic_error');
+                                                    showToast('error', errorMsg);
+                                                } else if (result.type === 'error') {
+                                                    errorMsg = $_('community.ev_generic_error');
+                                                    showToast('error', errorMsg);
+                                                }
+                                            };
                                         }}>
                                             <input type="hidden" name="id" value={pev.id} />
                                             <button type="submit" class="bg-red-700 hover:bg-red-600 text-white font-bold px-4 py-1.5 rounded-lg text-sm transition-all">
@@ -270,6 +310,13 @@
         {#if successMsg}
             <div class="mb-4 bg-green-600/20 border border-green-500/40 text-green-300 rounded-xl px-4 py-3 text-center font-bold">
                 {successMsg}
+            </div>
+        {/if}
+
+        <!-- ── Error message (כשטופס פתוח - השגיאה מוצגת בתוכו, ליד כפתור השליחה) ── -->
+        {#if errorMsg && !showAddForm && !showSuggestForm}
+            <div class="mb-4 bg-red-600/20 border border-red-500/40 text-red-300 rounded-xl px-4 py-3 text-center font-bold">
+                {errorMsg}
             </div>
         {/if}
 
@@ -374,7 +421,7 @@
                         <p class="text-white font-bold text-sm mb-1">{$_('community.ev_coord_role')}</p>
                         <p class="text-gray-400 text-xs mb-3">{$_('community.ev_coord_hint')}</p>
                         <button
-                            onclick={() => { showAddForm = !showAddForm; showSuggestForm = false; }}
+                            onclick={() => { showAddForm = !showAddForm; showSuggestForm = false; errorMsg = ''; }}
                             class="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-500 hover:to-teal-500 text-white font-bold px-6 py-2 rounded-full text-sm transition-all hover:scale-105 shadow-lg"
                         >
                             {showAddForm ? $_('community.ev_close') : $_('community.ev_publish')}
@@ -383,7 +430,7 @@
                         <p class="text-white font-bold text-sm mb-1">{$_('community.ev_want_add')}</p>
                         <p class="text-gray-400 text-xs mb-3">{$_('community.ev_suggest_hint')}</p>
                         <button
-                            onclick={() => { showSuggestForm = !showSuggestForm; showAddForm = false; }}
+                            onclick={() => { showSuggestForm = !showSuggestForm; showAddForm = false; errorMsg = ''; }}
                             class="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-500 hover:to-teal-500 text-white font-bold px-6 py-2 rounded-full text-sm transition-all hover:scale-105 shadow-lg"
                         >
                             {showSuggestForm ? $_('community.ev_close') : $_('community.ev_suggest')}
@@ -405,12 +452,23 @@
                 <h2 class="text-white font-black text-xl mb-5 flex items-center gap-2">{$_('community.ev_add_title')}</h2>
                 <form method="POST" action="?/addEvent" use:enhance={() => {
                     submitting = true;
-                    return async ({ update }) => {
+                    errorMsg = '';
+                    return async ({ result, update }) => {
                         await update();
                         submitting = false;
-                        showAddForm = false;
-                        successMsg = $_('community.ev_published_msg');
-                        setTimeout(() => successMsg = '', 3000);
+                        if (result.type === 'success') {
+                            showAddForm = false;
+                            successMsg = $_('community.ev_published_msg');
+                            setTimeout(() => successMsg = '', 3000);
+                            showToast('success', $_('community.ev_published_msg'));
+                        } else if (result.type === 'failure') {
+                            // הטופס נשאר פתוח עם הנתונים - השגיאה מהשרת מוצגת ליד כפתור השליחה ובטוסט
+                            errorMsg = (result.data as any)?.error ?? $_('community.ev_generic_error');
+                            showToast('error', errorMsg);
+                        } else if (result.type === 'error') {
+                            errorMsg = $_('community.ev_generic_error');
+                            showToast('error', errorMsg);
+                        }
                     };
                 }}>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -520,12 +578,18 @@
                                 class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-green-400/60 resize-none"></textarea>
                         </div>
                     </div>
+                    <!-- שגיאה מהשרת - מוצגת ליד כפתור השליחה, במקום שבו המשתמש מסתכל -->
+                    {#if errorMsg}
+                        <div class="mt-4 bg-red-600/20 border border-red-500/40 text-red-300 rounded-xl px-4 py-3 text-center font-bold text-sm">
+                            {errorMsg}
+                        </div>
+                    {/if}
                     <div class="mt-5 flex gap-3">
                         <button type="submit" disabled={submitting}
                             class="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-500 hover:to-teal-500 text-white font-bold px-8 py-2.5 rounded-xl text-sm transition-all hover:scale-105 shadow-lg disabled:opacity-50">
                             {submitting ? $_('community.ev_publishing') : $_('community.ev_publish_submit')}
                         </button>
-                        <button type="button" onclick={() => showAddForm = false}
+                        <button type="button" onclick={() => { showAddForm = false; errorMsg = ''; }}
                             class="bg-white/10 hover:bg-white/20 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition-all border border-white/20">
                             {$_('community.ev_cancel')}
                         </button>
@@ -541,12 +605,23 @@
                 <p class="text-gray-400 text-sm mb-5">{$_('community.ev_suggest_sub')}</p>
                 <form method="POST" action="?/suggestEvent" use:enhance={() => {
                     submitting = true;
-                    return async ({ update }) => {
+                    errorMsg = '';
+                    return async ({ result, update }) => {
                         await update();
                         submitting = false;
-                        showSuggestForm = false;
-                        successMsg = $_('community.ev_suggestion_sent');
-                        setTimeout(() => successMsg = '', 4000);
+                        if (result.type === 'success') {
+                            showSuggestForm = false;
+                            successMsg = $_('community.ev_suggestion_sent');
+                            setTimeout(() => successMsg = '', 4000);
+                            showToast('success', $_('community.ev_suggestion_sent'));
+                        } else if (result.type === 'failure') {
+                            // הטופס נשאר פתוח עם הנתונים - השגיאה מהשרת מוצגת ליד כפתור השליחה ובטוסט
+                            errorMsg = (result.data as any)?.error ?? $_('community.ev_generic_error');
+                            showToast('error', errorMsg);
+                        } else if (result.type === 'error') {
+                            errorMsg = $_('community.ev_generic_error');
+                            showToast('error', errorMsg);
+                        }
                     };
                 }}>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -603,12 +678,18 @@
                                 class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-teal-400/60 resize-none"></textarea>
                         </div>
                     </div>
+                    <!-- שגיאה מהשרת - מוצגת ליד כפתור השליחה, במקום שבו המשתמש מסתכל -->
+                    {#if errorMsg}
+                        <div class="mt-4 bg-red-600/20 border border-red-500/40 text-red-300 rounded-xl px-4 py-3 text-center font-bold text-sm">
+                            {errorMsg}
+                        </div>
+                    {/if}
                     <div class="mt-5 flex gap-3">
                         <button type="submit" disabled={submitting}
                             class="bg-gradient-to-r from-teal-600 to-green-600 hover:from-teal-500 hover:to-green-500 text-white font-bold px-8 py-2.5 rounded-xl text-sm transition-all hover:scale-105 shadow-lg disabled:opacity-50">
                             {submitting ? $_('community.ev_sending') : $_('community.ev_send_suggestion')}
                         </button>
-                        <button type="button" onclick={() => showSuggestForm = false}
+                        <button type="button" onclick={() => { showSuggestForm = false; errorMsg = ''; }}
                             class="bg-white/10 hover:bg-white/20 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition-all border border-white/20">
                             {$_('community.ev_cancel')}
                         </button>
@@ -670,11 +751,21 @@
                         <!-- Delete button for coordinator / admin -->
                         {#if data.isCoordinator || data.isAdmin}
                             <form method="POST" action="?/deleteEvent" use:enhance={() => {
-                                return async ({ update }) => {
+                                errorMsg = '';
+                                return async ({ result, update }) => {
                                     await update();
-                                    selectedEvent = null;
-                                    successMsg = $_('community.ev_deleted_msg');
-                                    setTimeout(() => successMsg = '', 3000);
+                                    if (result.type === 'success') {
+                                        selectedEvent = null;
+                                        successMsg = $_('community.ev_deleted_msg');
+                                        setTimeout(() => successMsg = '', 3000);
+                                        showToast('success', $_('community.ev_deleted_msg'));
+                                    } else if (result.type === 'failure') {
+                                        errorMsg = (result.data as any)?.error ?? $_('community.ev_generic_error');
+                                        showToast('error', errorMsg);
+                                    } else if (result.type === 'error') {
+                                        errorMsg = $_('community.ev_generic_error');
+                                        showToast('error', errorMsg);
+                                    }
                                 };
                             }}>
                                 <input type="hidden" name="id" value={selectedEvent.id} />
@@ -691,3 +782,36 @@
 
     </div>
 </div>
+
+<!-- ── טוסט צף - פידבק הצלחה/כשל שרואים בכל גלילה, גם כשהטופס בתחתית עמוד ארוך בנייד ── -->
+{#if toast}
+    {#key toast}
+        <div class="fixed bottom-6 left-1/2 z-[100] w-max max-w-xs md:max-w-sm ev-toast" role="status" aria-live="polite" dir="rtl">
+            <div class="rounded-2xl bg-gray-900 border {toast.kind === 'success' ? 'border-emerald-500/50' : 'border-red-500/50'} shadow-2xl px-5 py-3.5 flex items-center gap-3">
+                <span class="text-xl leading-none flex-shrink-0">{toast.kind === 'success' ? '✅' : '⚠️'}</span>
+                <p class="flex-1 min-w-0 text-sm font-bold leading-snug {toast.kind === 'success' ? 'text-emerald-300' : 'text-red-200'}">{toast.text}</p>
+            </div>
+        </div>
+    {/key}
+{/if}
+
+<style>
+    /* אנימציית הטוסט הצף - עותק מקומי של דפוס loc-toast מדף הפרופיל */
+    @keyframes evToastInOut {
+        0% {
+            opacity: 0;
+            transform: translate(-50%, 12px);
+        }
+        8%, 88% {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+        100% {
+            opacity: 0;
+            transform: translate(-50%, 6px);
+        }
+    }
+    .ev-toast {
+        animation: evToastInOut 4.2s ease-out forwards;
+    }
+</style>

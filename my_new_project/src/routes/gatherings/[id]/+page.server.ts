@@ -52,9 +52,14 @@ export const actions: Actions = {
 
         const fd = await event.request.formData();
         const foodId = fd.get('food_id')?.toString() ?? '';
+        // אם מישהו אחר כבר תפס את המאכל (למשל בין טעינת הדף ללחיצה) — שגיאה ברורה במקום הצלחה שקטה.
+        // לחיצה חוזרת של אותו משתמש נשארת אידמפוטנטית (לא שגיאה).
+        const target = gathering.food_items.find((f) => f.id === foodId);
+        if (target?.claimed_by_id && target.claimed_by_id !== user.id) {
+            return fail(409, { error: 'המאכל הזה כבר נתפס על ידי מישהו אחר' });
+        }
         const food_items = gathering.food_items.map((f) => {
             if (f.id !== foodId) return f;
-            if (f.claimed_by_id && f.claimed_by_id !== user.id) return f; // כבר תפוס
             return { ...f, claimed_by_id: user.id, claimed_by_name: user.name || user.nickname || 'חבר' };
         });
         await updateGathering(gathering.id, { food_items });

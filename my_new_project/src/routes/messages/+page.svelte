@@ -26,6 +26,15 @@
 
     let view = $state<'all' | 'archive'>('all');
 
+    // === טוסט צף בתחתית המסך (דפוס loc-toast מדף הפרופיל) - משוב נראה לפעולות שאין להן ביטוי מיידי בכרטיס ===
+    let toast = $state<{ kind: 'ok' | 'error'; text: string; key: number } | null>(null);
+    let toastTimer: ReturnType<typeof setTimeout> | undefined;
+    function showToast(kind: 'ok' | 'error', text: string) {
+        if (toastTimer) clearTimeout(toastTimer);
+        toast = { kind, text, key: Date.now() }; // key ייחודי מפעיל את האנימציה מחדש גם כשטוסט כבר מוצג
+        toastTimer = setTimeout(() => (toast = null), 4000); // תואם את משך אנימציית msgToastInOut
+    }
+
     const localId = (id: string) => `db-${id}`;
 
     // מקור האמת לסטטוס "שמור" הוא השרת (status='archived') כדי שהמחיקה האוטומטית (100 הודעות/3 חודשים) תדלג עליו
@@ -39,31 +48,49 @@
         saveSet(MSG_ARCHIVED_KEY, set);
     }
 
-    // שמירת מצב ההודעה בשרת (חוצה-מכשירים) - fire-and-forget
-    function persistMsgState(id: string, patch: Record<string, unknown>) {
-        fetch('/api/messages/state', {
+    // שמירת מצב ההודעה בשרת (חוצה-מכשירים) - מחזיר את ה-Response כדי שהקורא יוכל לוודא הצלחה
+    function persistMsgState(id: string, patch: Record<string, unknown>): Promise<Response> {
+        return fetch('/api/messages/state', {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify({ id, ...patch }),
-        }).catch(() => {});
+        });
     }
 
     // החזרת הודעה לסטטוס "לא נקרא" → תחזור לדף הפרופיל כהתראה פעילה.
     // מסירים אותה מ"נמחקו/נקראו" וגם מהארכיון ב-localStorage של הפרופיל, וגם מאפסים
     // את המצב בשרת (read/dismissed/snooze/archived) כדי שתחזור כפעילה בכל המכשירים.
-    function markUnread(id: string) {
+    async function markUnread(id: string) {
         const lid = localId(id);
-        const nd = loadIdSet(MSG_DELETED_KEY);  nd.delete(lid); saveSet(MSG_DELETED_KEY, nd);
-        const na = loadIdSet(MSG_ARCHIVED_KEY); na.delete(lid); saveSet(MSG_ARCHIVED_KEY, na);
+        // שומרים מה השתנה מקומית כדי שנוכל לשחזר אם השמירה בשרת תיכשל
+        const nd = loadIdSet(MSG_DELETED_KEY);  const wasDeleted = nd.delete(lid);  saveSet(MSG_DELETED_KEY, nd);
+        const na = loadIdSet(MSG_ARCHIVED_KEY); const wasArchived = na.delete(lid); saveSet(MSG_ARCHIVED_KEY, na);
         // גם מפת הנודניק המקומית - אחרת "נודניק" קודם בפרופיל היה משאיר את ההודעה
         // מוסתרת במכשיר הזה עד יומיים למרות שביקשנו להחזירה כלא-נקראה
+        let prevSnooze: number | undefined;
         if (typeof localStorage !== 'undefined') {
             try {
                 const sn = JSON.parse(localStorage.getItem(MSG_SNOOZED_KEY) ?? '{}') ?? {};
-                if (lid in sn) { delete sn[lid]; localStorage.setItem(MSG_SNOOZED_KEY, JSON.stringify(sn)); }
+                if (lid in sn) { prevSnooze = sn[lid]; delete sn[lid]; localStorage.setItem(MSG_SNOOZED_KEY, JSON.stringify(sn)); }
             } catch { /* ignore */ }
         }
-        persistMsgState(id, { read: false, dismissed: false, snooze_until: 0, archived: false });
+        // ממתינים לשמירה בשרת - כשל שקט היה משאיר את ההודעה "נקראה" לתמיד בכל שאר המכשירים
+        try {
+            const res = await persistMsgState(id, { read: false, dismissed: false, snooze_until: 0, archived: false });
+            if (!res.ok) throw new Error(`state save failed: ${res.status}`);
+            showToast('ok', get(_)('extras.m_unread_ok'));
+        } catch {
+            // משחזרים את המצב המקומי כדי שיישאר עקבי עם השרת
+            const rd = loadIdSet(MSG_DELETED_KEY);  if (wasDeleted)  rd.add(lid); saveSet(MSG_DELETED_KEY, rd);
+            const ra = loadIdSet(MSG_ARCHIVED_KEY); if (wasArchived) ra.add(lid); saveSet(MSG_ARCHIVED_KEY, ra);
+            if (prevSnooze !== undefined && typeof localStorage !== 'undefined') {
+                try {
+                    const sn = JSON.parse(localStorage.getItem(MSG_SNOOZED_KEY) ?? '{}') ?? {};
+                    sn[lid] = prevSnooze; localStorage.setItem(MSG_SNOOZED_KEY, JSON.stringify(sn));
+                } catch { /* ignore */ }
+            }
+            showToast('error', get(_)('extras.m_unread_error'));
+        }
     }
 
     let archiveCount = $derived((data.messages ?? []).filter(isArchived).length);
@@ -154,7 +181,20 @@
                 </button>
             </div>
 
-            <form method="POST" action="?/deleteAll" use:enhance>
+            <form method="POST" action="?/deleteAll" use:enhance={() => {
+                // משוב נראה גם כשהמחיקה נכשלת - אחרת ההודעות פשוט חוזרות בלי הסבר
+                return async ({ result, update }) => {
+                    if (result.type === 'failure') {
+                        const err = (result.data as { error?: string } | undefined)?.error;
+                        showToast('error', err || get(_)('extras.m_delete_all_error'));
+                    } else if (result.type === 'error') {
+                        showToast('error', get(_)('extras.m_delete_all_error'));
+                    } else if (result.type === 'success') {
+                        showToast('ok', get(_)('extras.m_delete_all_ok'));
+                    }
+                    await update();
+                };
+            }}>
                 <button
                     type="submit"
                     onclick={(e) => { if (!confirm(get(_)('extras.m_confirm_delete_all'))) e.preventDefault(); }}
@@ -282,3 +322,36 @@
         </a>
     </div>
 </div>
+
+<!-- טוסט משוב צף (הצלחה/שגיאה) - נעלם לבד אחרי 4 שניות; דפוס loc-toast מדף הפרופיל -->
+{#if toast}
+    {#key toast.key}
+        <div class="fixed bottom-6 left-1/2 z-[100] w-max max-w-xs md:max-w-sm msg-toast" role="status" aria-live="polite">
+            <div class="rounded-2xl bg-gray-900 border shadow-2xl px-5 py-3.5 flex items-center gap-3 {toast.kind === 'ok' ? 'border-emerald-500/50' : 'border-red-500/50'}">
+                <span class="text-xl leading-none flex-shrink-0">{toast.kind === 'ok' ? '✅' : '⚠️'}</span>
+                <p class="flex-1 min-w-0 text-sm font-bold leading-snug {toast.kind === 'ok' ? 'text-emerald-300' : 'text-red-200'}">{toast.text}</p>
+            </div>
+        </div>
+    {/key}
+{/if}
+
+<style>
+    /* טוסט המשוב - עולה מלמטה ונמוג לקראת ההיעלמות האוטומטית (4 שניות) */
+    @keyframes msgToastInOut {
+        0% {
+            opacity: 0;
+            transform: translate(-50%, 12px);
+        }
+        8%, 88% {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+        100% {
+            opacity: 0;
+            transform: translate(-50%, 6px);
+        }
+    }
+    .msg-toast {
+        animation: msgToastInOut 4s ease-out forwards;
+    }
+</style>

@@ -99,15 +99,26 @@
         if (!item) return;
         const prev = localComments;
         localComments = localComments.filter(c => c.id !== commentId); // אופטימי
+        commentError = '';
         try {
             const res = await fetch(`/api/items/${item.id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'delete_comment', comment_id: commentId }),
             });
-            if (!res.ok) localComments = prev; // כשל - החזרה
+            if (!res.ok) {
+                localComments = prev; // כשל - החזרה
+                if (res.status === 401) {
+                    window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
+                    return;
+                }
+                // בלי הודעה - התגובה "קופצת חזרה" ונראית כמו באג
+                const result = await res.json().catch(() => ({}));
+                commentError = result?.message || 'שגיאה במחיקת התגובה';
+            }
         } catch {
             localComments = prev;
+            commentError = 'שגיאה במחיקת התגובה';
         }
     }
 
@@ -2752,9 +2763,39 @@
     </div>
 {/if}
 
+<!-- שגיאת שמירה במצב בנייה - טוסט צף שנמוג אחרי ~4 שניות, כי הבאנר העליון עלול להיות מחוץ למסך בגלילה (דפוס loc-toast מדף הפרופיל) -->
+{#if builderError}
+    {#key builderError}
+        <div class="fixed bottom-6 left-1/2 z-[100] w-max max-w-xs md:max-w-sm pointer-events-none builder-error-toast" role="status" aria-live="polite">
+            <div class="rounded-2xl bg-gray-900 border border-red-500/50 shadow-2xl px-5 py-3.5 flex items-center gap-3">
+                <span class="text-xl leading-none flex-shrink-0">⚠️</span>
+                <p class="flex-1 min-w-0 text-sm text-red-200 font-bold leading-snug">{builderError}</p>
+            </div>
+        </div>
+    {/key}
+{/if}
+
 <style>
     :global(body) {
         background-color: #070b14;
+    }
+    /* טוסט שגיאת שמירה במצב בנייה - עולה מלמטה ונמוג לקראת ההיעלמות (4 שניות) */
+    @keyframes builderToastInOut {
+        0% {
+            opacity: 0;
+            transform: translate(-50%, 12px);
+        }
+        8%, 88% {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+        100% {
+            opacity: 0;
+            transform: translate(-50%, 6px);
+        }
+    }
+    .builder-error-toast {
+        animation: builderToastInOut 4s ease-out forwards;
     }
     .hide-scrollbar {
         scrollbar-width: none;

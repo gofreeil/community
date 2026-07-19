@@ -66,7 +66,11 @@ export const actions: Actions = {
         const msgs = await getMessagesByUserId(session.user.id);
         const results = await Promise.allSettled(msgs.map((m) => deleteItem(m.id)));
         const failed = results.filter((r) => r.status === 'rejected').length;
-        if (failed > 0) console.warn(`[messages] deleteAll: ${failed}/${msgs.length} failed`);
+        if (failed > 0) {
+            console.warn(`[messages] deleteAll: ${failed}/${msgs.length} failed`);
+            // לא מחזירים הצלחה כשחלק מההודעות נשארו - הקליינט מציג את השגיאה בטוסט
+            return fail(500, { error: `מחיקת ${failed} מתוך ${msgs.length} הודעות נכשלה - הן עדיין מוצגות ברשימה. נסו שוב.` });
+        }
         return { success: true, deletedAll: true };
     },
 };

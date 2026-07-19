@@ -59,6 +59,9 @@
         return missing.some((m) => m.key === key);
     }
 
+    // טלפון שהוקלד אך קצר מדי — מציגים רמז מתחת לשדה, אחרת המשתמש רואה כפתור אפור בלי הסבר
+    const phoneTooShort = $derived(phone.trim() !== '' && phone.replace(/\D/g, '').length < 9);
+
     // האם אפשר לשמור: כל השדות החסרים (מלבד אימות-מייל, שנפרד) מולאו
     const canSave = $derived.by(() => {
         for (const f of missing) {
@@ -159,6 +162,9 @@
                     <input id="lu-phone" type="tel" inputmode="tel" bind:value={phone} placeholder="050-0000000"
                         class="w-full bg-[#1e293b] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition" />
                     <p class="text-white/40 text-xs mt-1">{tFn(f.hintKey)}</p>
+                    {#if phoneTooShort}
+                        <p class="text-amber-400 text-xs mt-1">{tFn('hint_phone_short')}</p>
+                    {/if}
                 </div>
             {:else if f.key === 'gender'}
                 <div>

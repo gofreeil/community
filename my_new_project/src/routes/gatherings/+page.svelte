@@ -22,6 +22,17 @@
     let submitting = $state(false);
     let createIcon = $state('🍽️');
 
+    // ── טוסט שגיאה צף — כשל בהקמת סעודה לא נשאר בלתי-נראה (דוגמת loc-toast בפרופיל) ──
+    let errorToast = $state('');
+    let errorToastId = $state(0); // מפתח שמאתחל את האנימציה גם כשאותה הודעה חוזרת
+    let errorToastTimer: ReturnType<typeof setTimeout> | undefined;
+    function showError(msg: string) {
+        errorToast = msg;
+        errorToastId++;
+        clearTimeout(errorToastTimer);
+        errorToastTimer = setTimeout(() => (errorToast = ''), 4100);
+    }
+
     // ── תמונת שער ──
     let coverImage = $state('');
     function compressImage(file: File): Promise<string> {
@@ -139,7 +150,13 @@
                     action="?/create"
                     use:enhance={() => {
                         submitting = true;
-                        return async ({ update }) => { await update(); submitting = false; };
+                        return async ({ result, update }) => {
+                            // fail() מהשרת מוצג בטוסט — במקום כפתור ש"לא עושה כלום"
+                            if (result.type === 'failure') showError(String((result.data as any)?.error ?? $_('community.ga_action_failed')));
+                            else if (result.type === 'error') showError($_('community.ga_action_error'));
+                            await update();
+                            submitting = false;
+                        };
                     }}
                     class="bg-[#0f172a] border border-amber-500/20 rounded-2xl p-6 mb-10 space-y-4"
                 >
@@ -253,6 +270,18 @@
     </div>
 </div>
 
+<!-- ── טוסט שגיאה צף — מציג את הודעת השרת ליד כפתור השליחה, נעלם לבד אחרי ~4 שניות ── -->
+{#if errorToast}
+    {#key errorToastId}
+        <div class="fixed bottom-6 left-1/2 z-[100] w-max max-w-xs md:max-w-sm ga-toast" role="alert" dir="rtl">
+            <div class="rounded-2xl bg-gray-900 border border-red-500/50 shadow-2xl px-5 py-3.5 flex items-center gap-3">
+                <span class="text-xl leading-none flex-shrink-0">⚠️</span>
+                <p class="flex-1 min-w-0 text-sm text-red-200 font-bold leading-snug">{errorToast}</p>
+            </div>
+        </div>
+    {/key}
+{/if}
+
 {#snippet card(g: any)}
     <a href={`/gatherings/${g.id}`}
         class="block bg-[#0f172a] border border-white/10 rounded-2xl overflow-hidden hover:border-amber-500/40 transition group">
@@ -275,3 +304,24 @@
         </div>
     </a>
 {/snippet}
+
+<style>
+    /* טוסט צף שמופיע ונעלם לבד (אותו דפוס כמו loc-toast בדף הפרופיל) */
+    @keyframes gaToastInOut {
+        0% {
+            opacity: 0;
+            transform: translate(-50%, 12px);
+        }
+        8%, 88% {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+        100% {
+            opacity: 0;
+            transform: translate(-50%, 6px);
+        }
+    }
+    .ga-toast {
+        animation: gaToastInOut 4s ease-out forwards;
+    }
+</style>

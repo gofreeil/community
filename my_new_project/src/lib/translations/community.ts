@@ -88,6 +88,7 @@ export const he = {
         ev_share: "שתף",
         ev_deleted_msg: "האירוע נמחק",
         ev_delete: "🗑️ מחק אירוע",
+        ev_generic_error: "משהו השתבש, נסו שוב בעוד רגע",
 
         // אירועי דוגמה
         mock_ev1_title: "הרצאה בנושא חינוך ילדים",
@@ -138,6 +139,8 @@ export const he = {
         ga_past: "סעודות שהיו",
         ga_attendees: "👥 {n} מגיעים",
         ga_foods_assigned: "🍴 {claimed}/{total} מאכלים שובצו",
+        ga_action_failed: "הפעולה נכשלה, נסו שוב",
+        ga_action_error: "אירעה שגיאה, נסו שוב מאוחר יותר",
 
         // ── קופת השכונה / כותל המשאלות ──
         cf_wish_required: "נא לכתוב את המשאלה שלך",
@@ -286,6 +289,7 @@ export const en = {
         ev_share: "Share",
         ev_deleted_msg: "Event deleted",
         ev_delete: "🗑️ Delete event",
+        ev_generic_error: "Something went wrong, please try again in a moment",
 
         // Demo events
         mock_ev1_title: "Lecture on raising children",
@@ -336,6 +340,8 @@ export const en = {
         ga_past: "Past meals",
         ga_attendees: "👥 {n} coming",
         ga_foods_assigned: "🍴 {claimed}/{total} dishes assigned",
+        ga_action_failed: "The action failed, please try again",
+        ga_action_error: "Something went wrong, please try again later",
 
         // ── Community fund / wish wall ──
         cf_wish_required: "Please write your wish",
@@ -484,6 +490,7 @@ export const ru = {
         ev_share: "Поделиться",
         ev_deleted_msg: "Событие удалено",
         ev_delete: "🗑️ Удалить событие",
+        ev_generic_error: "Что-то пошло не так, попробуйте ещё раз через минуту",
 
         // Демо-события
         mock_ev1_title: "Лекция о воспитании детей",
@@ -534,6 +541,8 @@ export const ru = {
         ga_past: "Прошедшие трапезы",
         ga_attendees: "👥 придут: {n}",
         ga_foods_assigned: "🍴 {claimed}/{total} блюд распределено",
+        ga_action_failed: "Действие не удалось, попробуйте ещё раз",
+        ga_action_error: "Произошла ошибка, попробуйте позже",
 
         // ── Касса района / стена желаний ──
         cf_wish_required: "Пожалуйста, напишите ваше желание",

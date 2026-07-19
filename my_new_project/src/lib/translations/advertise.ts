@@ -505,6 +505,8 @@ export const he = {
         l_home: "חזרה לעמוד הבית",
         l_my_profile: "לפרופיל שלי",
         l_err_status: "שגיאה {n}",
+        l_err_generic: "נסה שוב בעוד רגע",
+        l_err_network: "בעיית תקשורת — בדוק את חיבור האינטרנט ונסה שוב",
     },
 };
 
@@ -1011,6 +1013,8 @@ export const en = {
         l_home: "Back to home page",
         l_my_profile: "To my profile",
         l_err_status: "Error {n}",
+        l_err_generic: "Please try again in a moment",
+        l_err_network: "Connection problem — check your internet connection and try again",
     },
 };
 
@@ -1517,5 +1521,7 @@ export const ru = {
         l_home: "На главную страницу",
         l_my_profile: "В мой профиль",
         l_err_status: "Ошибка {n}",
+        l_err_generic: "Попробуйте ещё раз чуть позже",
+        l_err_network: "Проблема со связью — проверьте подключение к интернету и попробуйте снова",
     },
 };

@@ -274,6 +274,26 @@
     let submitted  = $state(false);
 
     let submitError = $state<string>("");
+
+    // Extract a user-facing message from a failed server response. Server errors
+    // in this project are Hebrew strings inside a JSON body ({ message } from
+    // SvelteKit error(), sometimes { error }). Anything else - raw JSON, English
+    // text like "Internal Error", or an unparseable body - must never reach the
+    // user, so we fall back to a friendly Hebrew message instead.
+    async function extractServerError(res: Response): Promise<string> {
+        let serverMsg = "";
+        try {
+            const body = await res.json();
+            if (typeof body?.message === "string") serverMsg = body.message;
+            else if (typeof body?.error === "string") serverMsg = body.error;
+        } catch {}
+        serverMsg = serverMsg.trim();
+        // Only show it if it looks like a deliberate Hebrew message (contains
+        // Hebrew letters); otherwise it's technical/English - use the generic text.
+        if (serverMsg && /[\u0590-\u05FF]/.test(serverMsg)) return serverMsg;
+        return $_("advertise.l_err_generic");
+    }
+
     async function submitAd() {
         if (!canSubmit || submitting) return;
         submitting = true;
@@ -290,12 +310,19 @@
                 body: JSON.stringify(payload),
             });
             if (!res.ok) {
-                const txt = await res.text().catch(() => "");
-                throw new Error(txt || $_("advertise.l_err_status", { values: { n: res.status } }));
+                throw new Error(await extractServerError(res));
             }
             submitted = true;
         } catch (e) {
-            submitError = e instanceof Error ? e.message : String(e);
+            // fetch rejects with a TypeError ("Failed to fetch") on a network
+            // failure - show a Hebrew connectivity message instead of English.
+            if (e instanceof TypeError) {
+                submitError = $_("advertise.l_err_network");
+            } else if (e instanceof Error && e.message) {
+                submitError = e.message;
+            } else {
+                submitError = $_("advertise.l_err_generic");
+            }
         } finally {
             submitting = false;
         }

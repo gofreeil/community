@@ -268,6 +268,18 @@
 
     const MAX_IMAGES = 5;
 
+    // שגיאת העלאת תמונה (קובץ לא נתמך/פגום) - טוסט צף שנעלם לבד אחרי ~4 שניות,
+    // כדי שהמשתמש יראה משוב גם כשאזור ההעלאה רחוק מהעין (טופס ארוך במובייל).
+    let uploadErrorMsg = $state('');
+    let uploadErrorTimer: ReturnType<typeof setTimeout> | null = null;
+    function showUploadError(msg: string) {
+        if (uploadErrorTimer) clearTimeout(uploadErrorTimer);
+        // איפוס קצר לפני הצגה - שהטוסט ייבנה מחדש והאנימציה תרוץ שוב גם בשגיאה חוזרת
+        uploadErrorMsg = '';
+        setTimeout(() => { uploadErrorMsg = msg; }, 30);
+        uploadErrorTimer = setTimeout(() => { uploadErrorMsg = ''; }, 4300);
+    }
+
     function compressImage(file: File): Promise<string> {
         return new Promise((resolve, reject) => {
             const MAX = 1000;
@@ -312,15 +324,16 @@
         const input = e.currentTarget as HTMLInputElement;
         const file = input.files?.[0];
         input.value = '';
-        if (!file || !file.type.startsWith('image/')) return;
+        if (!file) return;
+        if (!file.type.startsWith('image/')) { showUploadError('קובץ תמונה לא נתמך'); return; }
         logoUploading = true;
-        try { logoImage = await positionLogo(await compressImage(file)); } catch { /* קובץ לא נתמך */ } finally { logoUploading = false; }
+        try { logoImage = await positionLogo(await compressImage(file)); } catch { showUploadError('קובץ תמונה לא נתמך'); } finally { logoUploading = false; }
     }
     async function handleLogoDrop(files: File[]) {
         const file = files.find(f => f.type.startsWith('image/'));
-        if (!file) return;
+        if (!file) { if (files.length) showUploadError('קובץ תמונה לא נתמך'); return; }
         logoUploading = true;
-        try { logoImage = await positionLogo(await compressImage(file)); } catch {} finally { logoUploading = false; }
+        try { logoImage = await positionLogo(await compressImage(file)); } catch { showUploadError('קובץ תמונה לא נתמך'); } finally { logoUploading = false; }
     }
     function removeLogo() { logoImage = ''; }
     // מיקום מחדש של לוגו קיים (בלי להעלות מחדש)
@@ -337,17 +350,31 @@
     }
     async function addFilesToField(key: string, files: File[]) {
         const onlyImages = files.filter((f) => f.type.startsWith('image/'));
-        if (!onlyImages.length) return;
+        if (!onlyImages.length) {
+            // נגררו רק קבצים שאינם תמונה - לא נעלמים בשקט
+            if (files.length) showUploadError('קובץ תמונה לא נתמך');
+            return;
+        }
         const current = getImages(key);
         const slots = MAX_IMAGES - current.length;
-        if (slots <= 0) return;
-        const compressed = await Promise.all(onlyImages.slice(0, slots).map(compressImage));
-        setImages(key, [...current, ...compressed]);
+        if (slots <= 0) { showUploadError(`אפשר עד ${MAX_IMAGES} תמונות`); return; }
+        // כל קובץ נדחס בנפרד (allSettled) - קובץ פגום/לא נתמך אחד לא מפיל את כל הבאץ'
+        const results = await Promise.allSettled(onlyImages.slice(0, slots).map(compressImage));
+        const compressed = results
+            .filter((r): r is PromiseFulfilledResult<string> => r.status === 'fulfilled')
+            .map((r) => r.value);
+        if (compressed.length) setImages(key, [...current, ...compressed]);
+        const failed = results.length - compressed.length;
+        if (failed > 0) {
+            showUploadError(failed === 1 ? 'קובץ תמונה לא נתמך' : `${failed} קבצים לא נתמכים - נוספו רק התקינים`);
+        }
     }
     async function handleImagesChange(key: string, e: Event) {
         const input = e.target as HTMLInputElement;
-        await addFilesToField(key, Array.from(input.files ?? []));
+        const files = Array.from(input.files ?? []);
+        // איפוס מיד (לפני ה-await) - שבחירה חוזרת של אותו קובץ תפעיל שוב את change גם אחרי כשל
         input.value = '';
+        await addFilesToField(key, files);
     }
     let draggingKey = $state<string | null>(null);
     function onDragOver(key: string, e: DragEvent) {
@@ -1580,6 +1607,16 @@
     {/if}
 </div>
 
+<!-- שגיאת העלאת תמונה - טוסט צף בתחתית המסך (כמו loc-toast בפרופיל), נראה גם כשאזור ההעלאה מחוץ למסך -->
+{#if uploadErrorMsg}
+    <div class="fixed bottom-6 left-1/2 z-[100] w-max max-w-xs md:max-w-sm upload-toast" role="status" aria-live="polite">
+        <div class="rounded-2xl bg-gray-900 border border-red-500/50 shadow-2xl px-5 py-3.5 flex items-center gap-3">
+            <span class="text-xl leading-none flex-shrink-0">⚠️</span>
+            <p class="flex-1 min-w-0 text-sm text-red-200 font-bold leading-snug">{uploadErrorMsg}</p>
+        </div>
+    </div>
+{/if}
+
 <style>
     @keyframes fadeIn {
         from { opacity: 0; transform: scale(0.97); }
@@ -1587,5 +1624,23 @@
     }
     @keyframes spin {
         to { transform: rotate(360deg); }
+    }
+    /* טוסט שגיאת העלאה - נכנס, נשאר ~3.5 שניות ודועך (העתק מקומי של דפוס loc-toast בפרופיל) */
+    @keyframes uploadToastInOut {
+        0% {
+            opacity: 0;
+            transform: translate(-50%, 12px);
+        }
+        8%, 88% {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+        100% {
+            opacity: 0;
+            transform: translate(-50%, 6px);
+        }
+    }
+    .upload-toast {
+        animation: uploadToastInOut 4s ease-out forwards;
     }
 </style>

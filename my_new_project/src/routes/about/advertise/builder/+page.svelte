@@ -539,9 +539,13 @@
         // Tick every minute to update the free-edit countdown.
         const tickId = window.setInterval(() => { now = new Date(); }, 60_000);
 
-        // beforeunload - warn the user that their free editing day is running out
+        // beforeunload - warn the user that their free editing day is running out.
+        // Only when it actually matters: the builder is accessible, nothing was
+        // submitted yet, the free-edit window is still open, AND the user really
+        // changed something this session (the draft autosaves to localStorage on
+        // every change, so an untouched form has nothing to lose).
         const beforeUnload = (e: BeforeUnloadEvent) => {
-            if (!submitted && !freeEditExpired) {
+            if (accessGranted && formDirty && !submitted && !freeEditExpired) {
                 e.preventDefault();
                 e.returnValue = "";
             }
@@ -616,6 +620,12 @@
         if (logoPosition !== next) logoPosition = next;
     });
 
+    // Dirty flag for the beforeunload warning: set only on a real user edit in
+    // this session. The autosave effect's first run is the initial load/restore
+    // of the draft (not an edit), so it is skipped via autosaveRanOnce.
+    let formDirty = $state(false);
+    let autosaveRanOnce = false;
+
     $effect(() => {
         if (!browser) return;
         const snapshot = {
@@ -624,6 +634,11 @@
             email, address, hours, products,
         };
         try { localStorage.setItem(LS_KEY, JSON.stringify(snapshot)); } catch {}
+        if (autosaveRanOnce) {
+            formDirty = true;
+        } else {
+            autosaveRanOnce = true;
+        }
     });
 
     // ===== Validation =====

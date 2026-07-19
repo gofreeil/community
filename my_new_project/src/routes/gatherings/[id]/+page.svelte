@@ -1,10 +1,39 @@
 <script lang="ts">
     import { enhance } from '$app/forms';
+    import type { SubmitFunction } from '@sveltejs/kit';
     import type { PageData } from './$types';
     import { canonical } from '$lib/seo';
     import { imageDrop } from '$lib/imageDrop';
 
     let { data }: { data: PageData } = $props();
+
+    // ── טוסט שגיאה צף — כשל בפעולה לא נשאר בלתי-נראה (דוגמת loc-toast בפרופיל) ──
+    let errorToast = $state('');
+    let errorToastId = $state(0); // מפתח שמאתחל את האנימציה גם כשאותה הודעה חוזרת
+    let errorToastTimer: ReturnType<typeof setTimeout> | undefined;
+    function showError(msg: string) {
+        errorToast = msg;
+        errorToastId++;
+        clearTimeout(errorToastTimer);
+        errorToastTimer = setTimeout(() => (errorToast = ''), 4100);
+    }
+    /** מציג טוסט אם השרת החזיר fail()/שגיאה; מחזיר true אם הפעולה נכשלה. */
+    function reportFailure(result: { type: string; data?: Record<string, any> }): boolean {
+        if (result.type === 'failure') {
+            showError(String(result.data?.error ?? 'הפעולה נכשלה, נסו שוב'));
+            return true;
+        }
+        if (result.type === 'error') {
+            showError('אירעה שגיאה, נסו שוב מאוחר יותר');
+            return true;
+        }
+        return false;
+    }
+    // callback משותף לכל הטפסים: מציג את הודעת השגיאה של השרת במקום כפתור ש"לא עושה כלום"
+    const withErrorToast: SubmitFunction = () => async ({ result, update }) => {
+        reportFailure(result);
+        await update();
+    };
 
     let g = $derived(data.gathering as any);
     let isManager = $derived(data.isManager as boolean);
@@ -159,7 +188,7 @@
                     <button onclick={() => (editing = !editing)} class="text-xs px-3 py-1.5 rounded-lg bg-white/10 text-white hover:bg-white/20 transition">✏️ עריכת פרטים</button>
                     <button onclick={() => (showManagers = !showManagers)} class="text-xs px-3 py-1.5 rounded-lg bg-white/10 text-white hover:bg-white/20 transition">👤 ניהול מנהלים</button>
                     {#if g.creator_id === myId || (data.user as any)?.role === 'super_admin'}
-                        <form method="POST" action="?/deleteGathering" use:enhance class="inline">
+                        <form method="POST" action="?/deleteGathering" use:enhance={withErrorToast} class="inline">
                             <button type="submit" onclick={(e) => { if (!confirm('למחוק את הסעודה?')) e.preventDefault(); }}
                                 class="text-xs px-3 py-1.5 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 transition">🗑️ מחיקה</button>
                         </form>
@@ -203,7 +232,7 @@
 
         <!-- ── עריכת פרטים (מנהל) ── -->
         {#if isManager && editing}
-            <form method="POST" action="?/updateDetails" use:enhance={() => async ({ update }) => { await update(); editing = false; }}
+            <form method="POST" action="?/updateDetails" use:enhance={() => async ({ result, update }) => { await update(); if (!reportFailure(result)) editing = false; }}
                 class="bg-[#0f172a] border border-white/10 rounded-2xl p-5 mb-6 space-y-3">
                 <h3 class="font-bold text-amber-300">עריכת פרטי הסעודה</h3>
                 <input name="title" value={g.title} required class="w-full bg-[#070b14] border border-white/10 rounded-lg px-3 py-2 text-white" />
@@ -252,12 +281,12 @@
                             {#if a.user_id === g.creator_id}
                                 <span class="text-xs text-gray-500">מנהל קבוע</span>
                             {:else if isMgr}
-                                <form method="POST" action="?/removeManager" use:enhance class="inline">
+                                <form method="POST" action="?/removeManager" use:enhance={withErrorToast} class="inline">
                                     <input type="hidden" name="user_id" value={a.user_id} />
                                     <button class="text-xs px-2 py-1 rounded bg-rose-500/20 text-rose-300">הסרת ניהול</button>
                                 </form>
                             {:else}
-                                <form method="POST" action="?/addManager" use:enhance class="inline">
+                                <form method="POST" action="?/addManager" use:enhance={withErrorToast} class="inline">
                                     <input type="hidden" name="user_id" value={a.user_id} />
                                     <button class="text-xs px-2 py-1 rounded bg-emerald-500/20 text-emerald-300">מינוי כמנהל</button>
                                 </form>
@@ -295,17 +324,17 @@
 
                             <!-- שיבוץ עצמי -->
                             {#if !f.claimed_by_id}
-                                <form method="POST" action="?/claimFood" use:enhance class="inline">
+                                <form method="POST" action="?/claimFood" use:enhance={withErrorToast} class="inline">
                                     <input type="hidden" name="food_id" value={f.id} />
                                     <button class="text-xs px-3 py-1.5 rounded-lg bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 transition whitespace-nowrap">אני אביא 🙋</button>
                                 </form>
                             {:else if f.claimed_by_id === myId}
-                                <form method="POST" action="?/unclaimFood" use:enhance class="inline">
+                                <form method="POST" action="?/unclaimFood" use:enhance={withErrorToast} class="inline">
                                     <input type="hidden" name="food_id" value={f.id} />
                                     <button class="text-xs px-3 py-1.5 rounded-lg bg-white/10 text-gray-300 hover:bg-white/20 transition whitespace-nowrap">ביטול</button>
                                 </form>
                             {:else if isManager}
-                                <form method="POST" action="?/unclaimFood" use:enhance class="inline">
+                                <form method="POST" action="?/unclaimFood" use:enhance={withErrorToast} class="inline">
                                     <input type="hidden" name="food_id" value={f.id} />
                                     <button class="text-xs px-2 py-1.5 rounded-lg bg-white/5 text-gray-400 hover:bg-white/10 transition" title="שחרור שיבוץ">↺</button>
                                 </form>
@@ -313,7 +342,7 @@
 
                             <!-- מחיקת מאכל (מנהל) -->
                             {#if isManager}
-                                <form method="POST" action="?/removeFood" use:enhance class="inline">
+                                <form method="POST" action="?/removeFood" use:enhance={withErrorToast} class="inline">
                                     <input type="hidden" name="food_id" value={f.id} />
                                     <button class="text-xs px-2 py-1.5 rounded-lg text-rose-400 hover:bg-rose-500/10 transition" title="מחיקת מאכל">✕</button>
                                 </form>
@@ -325,7 +354,7 @@
 
             <!-- הוספת מאכל (מנהל) -->
             {#if isManager}
-                <form method="POST" action="?/addFood" use:enhance={() => async ({ update }) => { await update({ reset: true }); }}
+                <form method="POST" action="?/addFood" use:enhance={() => async ({ result, update }) => { reportFailure(result); await update({ reset: true }); }}
                     class="flex gap-2 mt-4 pt-4 border-t border-white/10">
                     <input name="name" placeholder="מאכל / מוצר" required class="flex-1 bg-[#070b14] border border-white/10 rounded-lg px-3 py-2 text-white text-sm" />
                     <input name="qty" placeholder="כמות" class="w-24 bg-[#070b14] border border-white/10 rounded-lg px-3 py-2 text-white text-sm" />
@@ -339,12 +368,12 @@
             {#if myAttendance}
                 <div class="flex items-center justify-between flex-wrap gap-3">
                     <div class="text-emerald-400 font-bold">✓ אישרת הגעה ({myAttendance.count} {myAttendance.count > 1 ? 'אנשים' : 'איש'})</div>
-                    <form method="POST" action="?/cancelRsvp" use:enhance class="inline">
+                    <form method="POST" action="?/cancelRsvp" use:enhance={withErrorToast} class="inline">
                         <button class="text-xs px-3 py-1.5 rounded-lg bg-white/10 text-gray-300 hover:bg-white/20 transition">ביטול הגעה</button>
                     </form>
                 </div>
             {/if}
-            <form method="POST" action="?/rsvp" use:enhance class="flex items-end gap-3 flex-wrap {myAttendance ? 'mt-4 pt-4 border-t border-white/10' : ''}">
+            <form method="POST" action="?/rsvp" use:enhance={withErrorToast} class="flex items-end gap-3 flex-wrap {myAttendance ? 'mt-4 pt-4 border-t border-white/10' : ''}">
                 <div>
                     <label class="block text-xs text-gray-400 mb-1">כמה אתם מגיעים?</label>
                     <input type="number" name="count" min="1" bind:value={rsvpCount} class="w-20 bg-[#070b14] border border-white/10 rounded-lg px-3 py-2 text-white" />
@@ -393,3 +422,36 @@
         {/if}
     </div>
 </div>
+
+<!-- ── טוסט שגיאה צף — מציג את הודעת השרת ליד המקום שבו המשתמש נמצא, נעלם לבד אחרי ~4 שניות ── -->
+{#if errorToast}
+    {#key errorToastId}
+        <div class="fixed bottom-6 left-1/2 z-[100] w-max max-w-xs md:max-w-sm ga-toast" role="alert" dir="rtl">
+            <div class="rounded-2xl bg-gray-900 border border-red-500/50 shadow-2xl px-5 py-3.5 flex items-center gap-3">
+                <span class="text-xl leading-none flex-shrink-0">⚠️</span>
+                <p class="flex-1 min-w-0 text-sm text-red-200 font-bold leading-snug">{errorToast}</p>
+            </div>
+        </div>
+    {/key}
+{/if}
+
+<style>
+    /* טוסט צף שמופיע ונעלם לבד (אותו דפוס כמו loc-toast בדף הפרופיל) */
+    @keyframes gaToastInOut {
+        0% {
+            opacity: 0;
+            transform: translate(-50%, 12px);
+        }
+        8%, 88% {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+        100% {
+            opacity: 0;
+            transform: translate(-50%, 6px);
+        }
+    }
+    .ga-toast {
+        animation: gaToastInOut 4s ease-out forwards;
+    }
+</style>
