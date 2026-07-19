@@ -118,6 +118,10 @@ export const he = {
         lr_approve_title: "הוסף לרשימת הערים/השכונות ועדכן את המבקש",
         lr_reject: "✖️ דחה",
         lr_reject_title: "דחה את הבקשה ועדכן את המבקש",
+        lr_undo_approve: "↩️ בטל אישור",
+        lr_undo_reject: "↩️ בטל דחייה",
+        lr_undo_title: "מבטל את ההחלטה - הבקשה חוזרת לממתינות וההודעה שנשלחה למבקש נמחקת",
+        lr_undone: '↩️ ההחלטה על "{location}" בוטלה - הבקשה חזרה להמתנה ואפשר להחליט מחדש. ההודעה למבקש נמחקה.',
 
         // קריאות שכונה + וואטסאפ + המלצות
         community_requests: "קריאות שכונה שפרסמתי",
@@ -521,6 +525,10 @@ export const en = {
         lr_approve_title: "Add to the city/neighborhood list and notify the requester",
         lr_reject: "✖️ Reject",
         lr_reject_title: "Reject the request and notify the requester",
+        lr_undo_approve: "↩️ Undo approval",
+        lr_undo_reject: "↩️ Undo rejection",
+        lr_undo_title: "Reverts the decision - the request returns to pending and the notification sent to the requester is deleted",
+        lr_undone: '↩️ The decision on "{location}" was reverted - the request is pending again and can be re-decided. The requester\'s notification was deleted.',
 
         // Neighborhood calls + WhatsApp + recommendation
         community_requests: "Neighborhood calls I published",
@@ -923,6 +931,10 @@ export const ru = {
         lr_approve_title: "Добавить в список городов/районов и уведомить заявителя",
         lr_reject: "✖️ Отклонить",
         lr_reject_title: "Отклонить запрос и уведомить заявителя",
+        lr_undo_approve: "↩️ Отменить одобрение",
+        lr_undo_reject: "↩️ Отменить отклонение",
+        lr_undo_title: "Отменяет решение - запрос возвращается в ожидание, а уведомление заявителю удаляется",
+        lr_undone: '↩️ Решение по «{location}» отменено - запрос снова в ожидании, можно решить заново. Уведомление заявителю удалено.',
 
         // Районные вызовы + WhatsApp + рекомендация
         community_requests: "Опубликованные мной районные вызовы",

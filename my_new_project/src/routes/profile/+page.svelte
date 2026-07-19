@@ -470,33 +470,47 @@
 							} catch {}
 							// נתוני בקשת מיקום לכפתורי אשר/דחה על הכרטיס.
 							// הודעות ישנות לא שמרו city ב-extra_fields - נחלץ מטקסט ההודעה.
-							// בקשה שכבר טופלה (handled) נשארת בהיסטוריה כהודעה רגילה - בלי כפתורים.
-							const lr =
-								(efType === "location_request" || efType === "neighborhood_request") && !ef?.handled
-									? {
-											location:
-												String(ef?.requested_location ?? "") ||
-												(m.label ?? "").replace(/^📍?\s*בקשת מיקום חדש:\s*/, "").trim(),
-											city:
-												String(ef?.requested_city ?? "") ||
-												((m.description ?? "").match(/\(עיר:\s*([^)]+)\)/)?.[1] ?? "").trim(),
-											lat: efHasPin ? Number(ef?.requested_lat) : null,
-											lng: efHasPin ? Number(ef?.requested_lng) : null,
-											requesterId: efRequesterId,
-										}
+							const isLocReq = efType === "location_request" || efType === "neighborhood_request";
+							const lrData = isLocReq
+								? {
+										location:
+											String(ef?.requested_location ?? "") ||
+											(m.label ?? "")
+												.replace(/^[✅❌📍]+\s*(טופל\s*\([^)]*\)\s*·\s*)?/, "")
+												.replace(/^בקשת מיקום חדש:\s*/, "")
+												.trim(),
+										city:
+											String(ef?.requested_city ?? "") ||
+											((m.description ?? "").match(/\(עיר:\s*([^)]+)\)/)?.[1] ?? "").trim(),
+										lat: efHasPin ? Number(ef?.requested_lat) : null,
+										lng: efHasPin ? Number(ef?.requested_lng) : null,
+										requesterId: efRequesterId,
+									}
+								: undefined;
+							// בקשה שכבר טופלה (handled) נשארת בהיסטוריה - בלי כפתורי אשר/דחה
+							const lr = lrData && !ef?.handled ? lrData : undefined;
+							// החלטת מנהל שאפשר לבטל ("לחצתי אישור בטעות") - רק אישור/דחייה,
+							// לא בקשה שהמבקש משך בעצמו (withdrawn)
+							const efDecision = String(ef?.decision ?? "");
+							const lrUndo =
+								lrData && ef?.handled && (efDecision === "approve" || efDecision === "reject")
+									? { ...lrData, decision: efDecision as "approve" | "reject" }
 									: undefined;
 							// בקשת מיקום בלי פין: לא נוצרה רשומת שכונה לאישור, ולכן העוגן
 							// #pending-neighborhoods לא קיים בעמוד הניהול והלחיצה נחתה על ראש
 							// הדף (בקשות רכזים). במקום זה - ישר לעמוד המשתמש המבקש: פרופיל,
 							// צ'אט, והפריטים שלו עם הקטגוריות.
+							// בקשה שכבר טופלה: גם היא כבר לא ב"שכונות ממתינות" - הלחיצה
+							// מובילה לעמוד המבקש, שם רואים מי שלח את הבקשה ומה ביקש.
 							const typeLink =
-								efType === "location_request" && !efHasPin && efRequesterId
+								isLocReq && efRequesterId && (ef?.handled || (efType === "location_request" && !efHasPin))
 									? `/admin/users/${efRequesterId}`
 									: MSG_TYPE_LINKS[efType];
 							return {
 								id: `db-${m.id}`,
 								dbId: m.id,
 								lr,
+								lrUndo,
 								from: m.label ?? tFn("profile.from_system"),
 								text: m.description ?? "",
 								time: new Date(m.created_at).toLocaleString(
@@ -668,10 +682,14 @@
 	}
 
 	// === אישור/דחיית בקשת מיקום ישירות מכרטיס ההודעה (סופר-אדמין) ===
+	type LrData = { location: string; city: string; lat: number | null; lng: number | null; requesterId: string };
 	type LrMsg = {
 		id: string;
 		dbId?: string;
-		lr?: { location: string; city: string; lat: number | null; lng: number | null; requesterId: string };
+		from?: string;
+		handled?: boolean;
+		lr?: LrData;
+		lrUndo?: LrData & { decision: "approve" | "reject" };
 	};
 	let lrBusyId = $state("");
 	// אישור דחייה בתוך הכרטיס (לא confirm של הדפדפן שמציג "האתר אומר")
@@ -713,6 +731,52 @@
 						? tFn("profile.lr_approved", { location })
 						: tFn("profile.lr_rejected", { location }),
 				);
+			} else {
+				const errMsg =
+					result.type === "failure"
+						? String((result.data as { lrError?: string })?.lrError ?? tFn("profile.lr_error"))
+						: tFn("profile.lr_error");
+				showLrNotice("error", errMsg);
+			}
+		} catch {
+			showLrNotice("error", tFn("profile.lr_network"));
+		} finally {
+			lrBusyId = "";
+		}
+	}
+	// ביטול החלטה שכבר התקבלה ("לחצתי אישור בטעות") - מהיסטוריית ההודעות שטופלו.
+	// השרת מחזיר את הבקשה לממתינות ומוחק את הודעת ההחלטה מהמבקש; כאן משקפים
+	// מקומית: ההודעה חוזרת לרשימה הפעילה עם כפתורי אשר/דחה.
+	async function undoLocationRequest(msg: LrMsg) {
+		if (!msg.lrUndo || lrBusyId) return;
+		const { location, city, lat, lng, requesterId, decision } = msg.lrUndo;
+		lrBusyId = msg.id;
+		try {
+			const fd = new FormData();
+			fd.set("msgId", msg.dbId ?? "");
+			fd.set("location", location);
+			fd.set("city", city);
+			fd.set("requesterId", requesterId);
+			fd.set("decision", decision);
+			const res = await fetch("?/undoLocationRequest", {
+				method: "POST",
+				body: fd,
+				headers: { "x-sveltekit-action": "true" },
+			});
+			const result = deserialize(await res.text());
+			if (result.type === "success") {
+				messages = messages.map((m) =>
+					m.id === msg.id
+						? {
+								...m,
+								handled: false,
+								lr: { location, city, lat, lng, requesterId },
+								lrUndo: undefined,
+								from: `📍 ${((m as LrMsg).from ?? "").replace(/^[✅❌📍]+\s*(טופל\s*\([^)]*\)\s*·\s*)?/, "")}`,
+							}
+						: m,
+				);
+				showLrNotice("success", tFn("profile.lr_undone", { location }));
 			} else {
 				const errMsg =
 					result.type === "failure"
@@ -3146,7 +3210,18 @@
 						<div class="flex flex-col gap-2 mt-1">
 							<p class="text-[11px] text-gray-500 px-1">{tFn("profile.handled_hint")}</p>
 							{#each handledList as msg}
-								<div class="flex items-start gap-3 rounded-2xl border border-green-500/20 bg-green-500/[0.04] px-4 py-3">
+								{@const handledLink = (msg as { link?: string }).link}
+								{@const handledUndo = (msg as LrMsg).lrUndo}
+								<!-- לחיצה על הכרטיס פותחת את עמוד המשתמש המבקש בניהול - מי שלח ומה ביקש -->
+								<div
+									role={handledLink ? "link" : undefined}
+									tabindex={handledLink ? 0 : undefined}
+									aria-label={handledLink ? tFn("profile.open_admin_msg") : undefined}
+									onclick={handledLink ? () => goto(handledLink) : undefined}
+									onkeydown={handledLink ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); goto(handledLink); } } : undefined}
+									class="flex items-start gap-3 rounded-2xl border border-green-500/20 bg-green-500/[0.04] px-4 py-3 transition-all
+										{handledLink ? 'cursor-pointer hover:border-green-400/40 hover:shadow-lg hover:shadow-green-500/10 focus:outline-none focus:ring-2 focus:ring-green-400/60' : ''}"
+								>
 									<div class="w-5 h-5 rounded-full mt-0.5 flex-shrink-0 bg-green-500/20 border border-green-500/40 flex items-center justify-center">
 										<span class="text-green-400 text-xs font-black leading-none">✓</span>
 									</div>
@@ -3156,18 +3231,39 @@
 											<span class="text-gray-600 text-[10px] flex-shrink-0">{msg.time}</span>
 										</div>
 										<p class="text-gray-400 text-xs leading-relaxed">{msg.text}</p>
-										<div class="flex items-center gap-1.5 justify-between mt-2 pt-2 border-t border-white/8 flex-wrap">
+										<div
+											class="flex items-center gap-1.5 justify-between mt-2 pt-2 border-t border-white/8 flex-wrap"
+											onclick={(e) => e.stopPropagation()}
+											onkeydown={(e) => e.stopPropagation()}
+											role="group"
+										>
 											<span class="inline-flex items-center gap-1 text-[10px] font-bold text-green-300 bg-green-500/15 border border-green-500/30 px-2 py-0.5 rounded-full">
 												{tFn("profile.handled_badge")}
 											</span>
-											<button
-												type="button"
-												onclick={() => dismissMsg(msg.id)}
-												class="text-[11px] text-gray-400 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10"
-												title={tFn("profile.delete_forever_title")}
-											>
-												{tFn("profile.delete")}
-											</button>
+											<div class="flex items-center gap-1.5 flex-wrap">
+												{#if handledUndo}
+													<!-- ביטול ההחלטה - "לחצתי אישור בטעות": הבקשה חוזרת לממתינות -->
+													<button
+														type="button"
+														disabled={lrBusyId === msg.id}
+														onclick={() => undoLocationRequest(msg as LrMsg)}
+														class="text-xs font-black bg-amber-500/15 text-amber-300 border border-amber-500/40 hover:bg-amber-500/25 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
+														title={tFn("profile.lr_undo_title")}
+													>
+														{lrBusyId === msg.id
+															? tFn("profile.lr_processing")
+															: tFn(handledUndo.decision === "approve" ? "profile.lr_undo_approve" : "profile.lr_undo_reject")}
+													</button>
+												{/if}
+												<button
+													type="button"
+													onclick={() => dismissMsg(msg.id)}
+													class="text-[11px] text-gray-400 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10"
+													title={tFn("profile.delete_forever_title")}
+												>
+													{tFn("profile.delete")}
+												</button>
+											</div>
 										</div>
 									</div>
 								</div>

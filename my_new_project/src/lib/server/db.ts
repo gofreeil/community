@@ -1222,6 +1222,14 @@ export async function rejectNeighborhood(documentId: string, decidedBy: string):
     invalidate('neighborhoods:');
 }
 
+/** החזרת שכונה לסטטוס ממתין - ביטול אישור/דחייה שנעשו בטעות (חוזרת לתור באדמין) */
+export async function reopenNeighborhood(documentId: string, decidedBy: string): Promise<void> {
+    await strapiPut(`/api/neighborhoods/${documentId}`, {
+        data: { status: 'pending', decided_at: new Date().toISOString(), decided_by: decidedBy },
+    });
+    invalidate('neighborhoods:');
+}
+
 // ============================================================
 // ---- Admin actions ----
 // ============================================================

@@ -1,4 +1,4 @@
-import { createItem, updateItem, getItemsByUserId, getMessagesByUserId, getAllSuperAdmins, getNeighborhoods, approveNeighborhood, rejectNeighborhood } from './db';
+import { createItem, updateItem, deleteItem, getItemsByUserId, getMessagesByUserId, getAllSuperAdmins, getNeighborhoods, approveNeighborhood, rejectNeighborhood, reopenNeighborhood } from './db';
 
 /** נרמול שם מיקום לזיהוי התאמה - מסיר "שכונת"/"שכונה" מובילה ורווחים כפולים */
 function normalizeLoc(s: string): string {
@@ -127,6 +127,111 @@ export async function finalizeLocationDecision(input: LocationDecisionInput): Pr
         }
     } catch (e) {
         console.warn('[locationDecision] mark admin messages handled failed:', e);
+    }
+}
+
+export interface LocationUndoInput {
+    /** ההחלטה שמבטלים - כפי שנשמרה על הודעת האדמין (extra_fields.decision) */
+    decision: 'approve' | 'reject';
+    location: string;
+    city?: string;
+    requesterId?: string | null;
+    /** הודעת האדמין שממנה בוצע הביטול - תשוחזר גם אם ההתאמה בשם נכשלת */
+    adminMsgId?: string;
+    /** מזהה האדמין המבטל - נשמר על רשומת השכונה לתיעוד */
+    undoneBy: string;
+}
+
+/**
+ * ביטול החלטה על בקשת מיקום/שכונה - "לחצתי אישור בטעות". מחזיר את המצב לרגע
+ * שלפני ההחלטה, בסדר הפוך ל-finalizeLocationDecision:
+ * 1. רשומת השכונה חוזרת ל-pending (יורדת מהבורר/המפה, חוזרת ל"שכונות ממתינות" באדמין)
+ * 2. הודעת ההחלטה ("בקשתך אושרה/נדחתה") נמחקת מתיבת המבקש - שלא יסתמך על מידע שגוי
+ * 3. פריטי הבקשה של המבקש חוזרים ל-pending (הבקשה שוב "בטיפול")
+ * 4. הודעות "טופל" בתיבות הסופר-אדמינים חוזרות למצב פעיל - עם כפתורי אשר/דחה
+ */
+export async function undoLocationDecision(input: LocationUndoInput): Promise<void> {
+    const { decision, location, city, requesterId, adminMsgId, undoneBy } = input;
+    const normalized = normalizeLoc(location);
+
+    // 1. רשומת השכונה: אושרה → מאושרת, נדחתה → דחויה. מחזירים את התואמת ל-pending.
+    try {
+        const decided = await getNeighborhoods(decision === 'approve' ? 'approved' : 'rejected');
+        const matches = decided.filter(n =>
+            normalizeLoc(n.name) === normalized &&
+            (!city || !n.city || n.city.trim() === city.trim()));
+        await Promise.all(matches.map(n => reopenNeighborhood(n.id, `undo:${undoneBy}`)));
+    } catch (e) {
+        console.warn('[locationDecision] undo reopen neighborhood failed:', e);
+    }
+
+    if (requesterId) {
+        // 2. מחיקת הודעת ההחלטה מתיבת המבקש (נוצרה ב-finalize; אם המנהל יחליט שוב - תישלח חדשה)
+        try {
+            const msgs = await getMessagesByUserId(requesterId);
+            const decisionMsgs = (msgs ?? []).filter((m) => {
+                try {
+                    const ef = JSON.parse(m.extra_fields || '{}') ?? {};
+                    return ef?.type === 'location_request_decision' &&
+                        String(ef?.decision ?? '') === decision &&
+                        normalizeLoc(String(ef?.requested_location ?? '')) === normalized;
+                } catch { return false; }
+            });
+            await Promise.all(decisionMsgs.map(m => deleteItem(m.id)));
+        } catch (e) {
+            console.warn('[locationDecision] undo delete requester notice failed:', e);
+        }
+
+        // 3. פתיחת פריטי הבקשה של המבקש מחדש (רק כאלה שנסגרו ע"י החלטה - לא withdrawn)
+        try {
+            const reqItems = await getItemsByUserId(requesterId);
+            const closed = (reqItems ?? []).filter((it) => {
+                if (it.category !== 'location_request') return false;
+                if ((it.status ?? 'pending') !== 'handled') return false;
+                if (!normalizeLoc(it.label ?? '').includes(normalized)) return false;
+                try { return !(JSON.parse(it.extra_fields || '{}') ?? {})?.withdrawn; } catch { return true; }
+            });
+            await Promise.all(closed.map(it => updateItem(it.id, { status: 'pending' })));
+        } catch (e) {
+            console.warn('[locationDecision] undo reopen request items failed:', e);
+        }
+    }
+
+    // 4. שחזור הודעות "טופל" בתיבות הסופר-אדמינים - חוזרות לפעילות עם כפתורי אשר/דחה
+    try {
+        const admins = await getAllSuperAdmins();
+        for (const admin of admins) {
+            let msgs;
+            try { msgs = await getMessagesByUserId(admin.id); } catch { continue; }
+            const related = (msgs ?? []).filter((m) => {
+                let ef: Record<string, unknown> = {};
+                try { ef = JSON.parse(m.extra_fields || '{}') ?? {}; } catch { /* הודעה ישנה */ }
+                if (!ef?.handled) return false;
+                if (adminMsgId && m.id === adminMsgId) return true;
+                const t = String(ef?.type ?? '');
+                if (t !== 'location_request' && t !== 'neighborhood_request') return false;
+                return normalizeLoc(String(ef?.requested_location ?? '')) === normalized;
+            });
+            await Promise.all(related.map(async (m) => {
+                let ef: Record<string, unknown> = {};
+                try { ef = JSON.parse(m.extra_fields || '{}') ?? {}; } catch {}
+                const { handled, decision: _d, handled_at, ...rest } = ef;
+                void handled; void _d; void handled_at;
+                await updateItem(m.id, {
+                    // אותו regex שמסיר את הקידומת בעת הסימון "טופל" - משחזר את התווית המקורית
+                    label: `📍 ${(m.label ?? '').replace(/^[✅❌📍]+\s*(טופל\s*\([^)]*\)\s*·\s*)?/, '')}`,
+                    icon:  '📍',
+                    color: 'yellow',
+                    extra_fields: {
+                        ...rest,
+                        undone_at: new Date().toISOString(),
+                        undone_by: undoneBy,
+                    },
+                });
+            }));
+        }
+    } catch (e) {
+        console.warn('[locationDecision] undo restore admin messages failed:', e);
     }
 }
 

@@ -1,7 +1,7 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { getUserById, getUserByEmail, updateUserProfile, getItemsByUserId, upsertUser, getMessagesByUserId, createItem, updateItem, getAllSuperAdmins, getAllUsers, getItemsByCategory, getItemsByCategoryAndStatus, createNeighborhoodRequest } from '$lib/server/db';
-import { finalizeLocationDecision, withdrawOpenLocationRequests } from '$lib/server/locationDecision';
+import { finalizeLocationDecision, undoLocationDecision, withdrawOpenLocationRequests } from '$lib/server/locationDecision';
 import { getCachedUserById, invalidateCachedUser } from '$lib/server/userCache';
 import { citiesData } from '$lib/neighborhoodsData';
 import { cityCenters } from '$lib/neighborhoodCoords';
@@ -530,6 +530,37 @@ export const actions: Actions = {
 
     // דחיית בקשת מיקום מתוך כרטיס ההודעה (סופר-אדמין בלבד)
     rejectLocationRequest: (event) => handleLocationRequest(event, 'reject'),
+
+    // ביטול החלטה על בקשת מיקום ("לחצתי אישור בטעות") - סופר-אדמין בלבד.
+    // מחזיר את הבקשה לממתינות, מוחק את הודעת ההחלטה מהמבקש, ומחזיר את
+    // הודעת האדמין למצב פעיל עם כפתורי אשר/דחה
+    undoLocationRequest: async (event) => {
+        const adminId = await requireSuperAdminId(event);
+        if (!adminId) return fail(403, { lrError: 'נדרשת הרשאת מנהל ראשי' });
+
+        const form = await event.request.formData();
+        const msgId       = form.get('msgId')?.toString() ?? '';
+        const location    = form.get('location')?.toString().trim() ?? '';
+        const city        = form.get('city')?.toString().trim() ?? '';
+        const requesterId = form.get('requesterId')?.toString() ?? '';
+        const decision    = form.get('decision')?.toString() === 'reject' ? 'reject' : 'approve';
+        if (!location) return fail(400, { lrError: 'חסר שם המיקום בבקשה' });
+
+        try {
+            await undoLocationDecision({
+                decision,
+                location,
+                city,
+                requesterId: requesterId || undefined,
+                adminMsgId:  msgId || undefined,
+                undoneBy:    adminId,
+            });
+            return { lrUndoSuccess: true, lrLocation: location };
+        } catch (e) {
+            console.warn('[profile] undoLocationRequest failed:', e);
+            return fail(500, { lrError: 'שגיאה בביטול ההחלטה, נסה שוב' });
+        }
+    },
 };
 
 /** מוודא שהמשתמש המחובר הוא סופר-אדמין (כולל fallback לפי אימייל למיזוג OAuth+credentials) */
