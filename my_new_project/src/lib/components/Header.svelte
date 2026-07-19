@@ -1,7 +1,7 @@
 <script lang="ts">
     import { t, locale } from 'svelte-i18n';
 	import { get } from 'svelte/store';
-    import { goto, beforeNavigate } from "$app/navigation";
+    import { goto, beforeNavigate, afterNavigate } from "$app/navigation";
     import { onMount } from "svelte";
     import { page } from '$app/state';
 
@@ -40,27 +40,44 @@
         try { return JSON.parse(localStorage.getItem(key) ?? '{}') ?? {}; } catch { return {}; }
     }
 
+    // ההודעות שנשלפו לאחרונה מהשרת - נשמרות כדי לחשב מחדש את המונה מיידית (ללא רשת)
+    // כשהמשתמש קורא/מטפל בהודעה בדף הפרופיל/הודעות ומשדר את האירוע 'msgs:changed'.
+    let lastMsgs: any[] = [];
+
+    // חישוב מונה שלא-נקראו מתוך רשימה נתונה מול מצב ה-localStorage העדכני.
+    // מחריגים הודעות שהמשתמש מחק / העביר לארכיון / דחה - בדיוק כמו בדף הפרופיל.
+    function computeUnread(msgs: any[]) {
+        const deleted  = loadMsgSet('msgs_deleted_v1');
+        const archived = loadMsgSet('msgs_archived_v1');
+        const snoozed  = loadMsgMap('msgs_snoozed_v1');
+        const now = Date.now();
+        unreadMessages = msgs.filter((m: any) => {
+            const id = `db-${m.id}`;
+            if (deleted.has(id) || archived.has(id)) return false;
+            const sn = snoozed[id];
+            if (sn && sn > now) return false;
+            return true;
+        }).length;
+    }
+
     async function fetchUnreadMessages() {
-        if (!currentUser) { unreadMessages = 0; return; }
+        if (!currentUser) { unreadMessages = 0; lastMsgs = []; return; }
         try {
             // /api/my-messages = הודעות חיות (category='message'); הישן /api/messages הוא collection מת
             const res = await fetch('/api/my-messages');
             if (!res.ok) { unreadMessages = 0; return; }
             const msgs = await res.json();
             if (!Array.isArray(msgs)) { unreadMessages = 0; return; }
-            // מחריגים הודעות שהמשתמש מחק / העביר לארכיון / דחה - בדיוק כמו בדף הפרופיל
-            const deleted  = loadMsgSet('msgs_deleted_v1');
-            const archived = loadMsgSet('msgs_archived_v1');
-            const snoozed  = loadMsgMap('msgs_snoozed_v1');
-            const now = Date.now();
-            unreadMessages = msgs.filter((m: any) => {
-                const id = `db-${m.id}`;
-                if (deleted.has(id) || archived.has(id)) return false;
-                const sn = snoozed[id];
-                if (sn && sn > now) return false;
-                return true;
-            }).length;
+            lastMsgs = msgs;
+            computeUnread(msgs);
         } catch { /* ignore */ }
+    }
+
+    // חישוב מיידי מתוך המטמון - נקרא כשהמשתמש קורא/מטפל בהודעה (אירוע 'msgs:changed'),
+    // כדי שהעיגול ייעלם מיד במקום להמתין עד 30 שנ' לפול הבא של fetchUnreadMessages.
+    function recomputeUnread() {
+        if (!currentUser) { unreadMessages = 0; return; }
+        computeUnread(lastMsgs);
     }
 
     async function pingServer() {
@@ -144,6 +161,13 @@
         fetchUnreadMessages();
         const msgsInterval = setInterval(fetchUnreadMessages, 30000);
 
+        // עדכון מיידי של העיגול כשהמשתמש קורא/מטפל בהודעה בדף הפרופיל/הודעות (אירוע מקומי),
+        // וכשחוזרים ללשונית - בלי להמתין לפול ה-30 שנ'.
+        const onMsgsChanged = () => recomputeUnread();
+        const onVisible = () => { if (document.visibilityState === 'visible') fetchUnreadMessages(); };
+        window.addEventListener('msgs:changed', onMsgsChanged);
+        document.addEventListener('visibilitychange', onVisible);
+
         // hover על כפתור אודות - תמונה ב-fixed position
         const preview = document.getElementById('about-preview') as HTMLElement | null;
         const btnWrapper = document.getElementById('about-btn-wrapper');
@@ -170,7 +194,16 @@
             clearInterval(usersInterval);
             clearInterval(msgsInterval);
             document.removeEventListener("click", handleClickOutside);
+            window.removeEventListener('msgs:changed', onMsgsChanged);
+            document.removeEventListener('visibilitychange', onVisible);
         };
+    });
+
+    // אחרי ניווט (למשל חזרה מדף ההודעות אחרי מחיקה בשרת) - רענון מלא.
+    // מדלגים על הטעינה הראשונית ('enter') כי היא כבר מטופלת ב-onMount.
+    afterNavigate((nav) => {
+        if (nav.type === 'enter') return;
+        fetchUnreadMessages();
     });
 
     function handleClickOutside(event: MouseEvent) {

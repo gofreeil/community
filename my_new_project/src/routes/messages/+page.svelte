@@ -20,6 +20,8 @@
     function saveSet(key: string, set: Set<string>) {
         if (typeof localStorage === 'undefined') return;
         localStorage.setItem(key, JSON.stringify([...set]));
+        // מעדכן את עיגול ההודעות בהדר מיד (ארכוב/החזרה-ללא-נקרא) במקום להמתין לפול ה-30 שנ'
+        if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('msgs:changed'));
     }
 
     let view = $state<'all' | 'archive'>('all');

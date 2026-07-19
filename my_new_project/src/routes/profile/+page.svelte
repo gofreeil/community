@@ -575,9 +575,15 @@
 			return {};
 		}
 	}
+	// מפתחות מצב-ההודעות המשותפים עם ה-Header; כתיבה אליהם משדרת אירוע כדי שהעיגול
+	// בהדר יתעדכן מיד (אחרת קוראים הודעה והמספר נשאר עד הפול הבא של ההדר, ~30 שנ').
+	const MSG_STATE_KEYS = new Set([MSG_DELETED_KEY, MSG_ARCHIVED_KEY, MSG_SNOOZED_KEY]);
 	function saveJSON(key: string, value: unknown) {
 		if (typeof localStorage === "undefined") return;
 		localStorage.setItem(key, JSON.stringify(value));
+		if (MSG_STATE_KEYS.has(key) && typeof window !== "undefined") {
+			window.dispatchEvent(new CustomEvent("msgs:changed"));
+		}
 	}
 
 	let deletedMsgs = $state<Set<string>>(loadIdSet(MSG_DELETED_KEY));
