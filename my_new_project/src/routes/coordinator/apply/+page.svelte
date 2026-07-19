@@ -31,6 +31,15 @@
     let isLoading = $state(false);
     let error = $state<string | null>(null);
     let authError = $state(false); // השגיאה היא חסימת התחברות → מציגים כפתורי הרשמה/כניסה
+    let errorBoxEl = $state<HTMLElement | undefined>(undefined);
+
+    // תיבת השגיאה מרונדרת בראש הטופס בעוד כפתור השליחה בתחתיתו - בנייד היא
+    // מחוץ למסך ברגע הכישלון, לכן גוללים אליה בכל פעם שמופיעה שגיאה
+    $effect(() => {
+        if (error) {
+            errorBoxEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    });
     let success = $state(false);
     // המבקש כבר רכז של האזור שביקש → אין בקשה חוזרת; מציגים הודעה כנה (לא "נשלח בהצלחה")
     let alreadyCoordinator = $state(false);
@@ -208,7 +217,7 @@
                 class="bg-slate-800 rounded-lg p-8 border border-slate-700"
             >
                 {#if error}
-                    <div class="bg-red-900 border border-red-500 rounded-lg p-4 mb-6">
+                    <div bind:this={errorBoxEl} class="bg-red-900 border border-red-500 rounded-lg p-4 mb-6">
                         <p class="text-red-200">{error}</p>
                         {#if authError}
                             <div class="flex flex-wrap gap-3 mt-3">
