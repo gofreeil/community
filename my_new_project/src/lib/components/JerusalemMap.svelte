@@ -13,6 +13,7 @@
     import { canUseMapImage, getMapImage, isDisplayableImage } from "$lib/mapImage";
     import { logoForService, serviceColor } from "$lib/serviceTypes";
     import { heMatches } from "$lib/search";
+    import { isFamilyItem } from "$lib/itemCategories";
     import type { DbItem } from "$lib/server/db";
     import 'leaflet/dist/leaflet.css';
 
@@ -463,11 +464,15 @@
     }
 
     // פריטים מהשכונה הנוכחית - ריאקטיבי לשינויי neighborhoodState ול-selectedCategory.
-    // פנויים/פנויות מוחרגים: הם לעולם לא על המפה, ולכן גם לא נספרים בתג "X פריטים בשכונה".
+    // נספרים כל פריטי-התוכן האמיתיים (isFamilyItem) — כולל פנויים/פנויות: הכרטיסים
+    // אמנם לעולם לא ננעצים על המפה (צנעת הפרט, ראו dynamicMarkers), אך כן נספרים בתג
+    // "X פריטים בשכונה" ככל פריט, בעקביות עם המונה הארצי "פרטים במפה".
+    // isFamilyItem גם מחריג רשומות מערכת (הודעות, קריאות עזרה, singles_request/access)
+    // שאין להן מקום בספירת "פריטים בשכונה".
     let neighborhoodDbItems = $derived(
         dbItems.filter(d =>
             belongsToMyArea(d) &&
-            !d.category.startsWith('singles') &&
+            isFamilyItem(d.category) &&
             (selectedCategory === "benefits" || d.category === selectedCategory)
         )
     );
