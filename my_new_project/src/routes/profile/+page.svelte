@@ -2246,6 +2246,21 @@
 		</div>
 	{/if}
 
+	<!-- ===== ברוכים השבים - משתמש חוזר (התחברות) ===== -->
+	{#if page.url.searchParams.get("welcome") === "back"}
+		<div
+			class="mb-6 rounded-2xl bg-gradient-to-br from-emerald-600/20 to-blue-600/20 border border-emerald-500/30 px-5 py-6 text-center shadow-lg"
+		>
+			<p class="text-4xl mb-2">👋</p>
+			<h2 class="text-white font-black text-2xl mb-2">
+				{tFn("welcome_back_title", { name: data.user?.name?.trim() || tFn("default_user") })}
+			</h2>
+			<p class="text-gray-200 text-base leading-relaxed max-w-xl mx-auto">
+				{tFn("welcome_back_body")}
+			</p>
+		</div>
+	{/if}
+
 	<!-- ===== לשוניות ניווט - נייד בלבד ===== -->
 	<div class="md:hidden flex gap-1 mb-3">
 		{#each [{ id: "main", icon: "🎛️", label: tFn("profile.tab_main") }, { id: "profile", icon: "👤", label: tFn("profile.tab_profile") }, { id: "messages", icon: "💬", label: tFn("profile.tab_messages") }, { id: "items", icon: "💼", label: tFn("profile.tab_items") }, { id: "levels", icon: "🔑", label: tFn("profile.tab_levels") }, { id: "feedback", icon: "✉️", label: tFn("profile.tab_feedback") }] as tab}

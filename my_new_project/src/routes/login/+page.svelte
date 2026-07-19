@@ -23,7 +23,7 @@
 		loadingProvider = provider;
 		try {
 			await signIn(provider, {
-				callbackUrl: data.redirectTo || '/profile',
+				callbackUrl: data.redirectTo || '/profile?welcome=back',
 			});
 		} catch {
 			isLoading = false;
@@ -129,7 +129,7 @@
 							// signIn בלי פרטים מרים סשן מהעוגייה (handoff, בדיקה אחת בלבד)
 							try {
 								await signIn('credentials', {
-									callbackUrl: data.redirectTo || '/profile',
+									callbackUrl: data.redirectTo || '/profile?welcome=back',
 								});
 								// אם הניווט לא קרה (נחסם/אופליין) - משחררים את הכפתור
 								setTimeout(() => { isLoading = false; loadingProvider = null; }, 4000);
