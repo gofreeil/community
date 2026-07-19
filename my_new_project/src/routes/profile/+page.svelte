@@ -2145,13 +2145,18 @@
 			<button
 				type="button"
 				onclick={() => selectTab(tab.id as typeof mobileTab)}
-				class="flex-1 min-w-0 flex flex-col items-center justify-center gap-1 px-1 py-2.5 rounded-2xl text-[13px] leading-tight font-bold transition-all
+				class="relative flex-1 min-w-0 flex flex-col items-center justify-center gap-1 px-1 py-2.5 rounded-2xl text-[13px] leading-tight font-bold transition-all
 					{mobileTab === tab.id
 					? 'bg-purple-600/30 border border-purple-500/50 text-white'
 					: 'bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10'}"
 			>
 				<span class="text-xl leading-none">{tab.icon}</span>
 				<span class="text-center">{tab.label}</span>
+				{#if tab.id === "messages" && finalUnreadCount > 0}
+					<span class="absolute top-1 left-1 min-w-[16px] h-[16px] px-1 rounded-full bg-orange-500 border border-[#0f172a] text-white text-[9px] font-black leading-none flex items-center justify-center">{finalUnreadCount}</span>
+				{:else if tab.id === "items" && data.items.length > 0}
+					<span class="absolute top-1 left-1 min-w-[16px] h-[16px] px-1 rounded-full bg-purple-500 border border-[#0f172a] text-white text-[9px] font-black leading-none flex items-center justify-center">{data.items.length}</span>
+				{/if}
 			</button>
 		{/each}
 	</div>
@@ -2169,6 +2174,11 @@
 			>
 				<span class="text-base leading-none">{sc.icon}</span>
 				<span>{sc.label}</span>
+				{#if sc.id === "messages" && finalUnreadCount > 0}
+					<span class="flex-shrink-0 min-w-[18px] h-[18px] px-1 rounded-full bg-orange-500 text-white text-[10px] font-black leading-none flex items-center justify-center">{finalUnreadCount}</span>
+				{:else if sc.id === "items" && data.items.length > 0}
+					<span class="flex-shrink-0 min-w-[18px] h-[18px] px-1 rounded-full bg-purple-500 text-white text-[10px] font-black leading-none flex items-center justify-center">{data.items.length}</span>
+				{/if}
 			</button>
 		{/each}
 	</div>
@@ -3113,7 +3123,7 @@
 					{@render singlesStatusCard('assets')}
 				{/if}
 				<!-- ===== ערבי מפגש / סעודות קהילתיות ===== -->
-				<a href="/gatherings" class="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-amber-500/15 to-rose-500/10 border border-amber-500/30 hover:border-amber-500/60 px-4 py-3.5 transition-all group">
+				<a href="/gatherings" class="inline-flex self-start max-w-[18rem] items-center gap-3 rounded-2xl bg-gradient-to-r from-amber-500/15 to-rose-500/10 border border-amber-500/30 hover:border-amber-500/60 px-4 py-3.5 transition-all group">
 					<span class="text-3xl flex-shrink-0">🍽️</span>
 					<div class="flex-1 min-w-0">
 						<p class="text-white font-bold text-sm">{tFn("profile.gatherings_title")}</p>
