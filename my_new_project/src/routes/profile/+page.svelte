@@ -22,6 +22,7 @@
 	import { statusLabel, type UserStatus } from "$lib/singlesMock";
 	import NeighborhoodPicker from "$lib/components/NeighborhoodPicker.svelte";
 	import { heRank } from "$lib/search";
+	import { ads } from "$lib/adsData";
 
 	let { data, form } = $props();
 
@@ -472,6 +473,17 @@
 								// בקשת מיקום/שכונה שכבר אושרה/נדחתה בעמוד הניהול - כבר טופלה,
 								// לכן יורדת מספירת "שלא נקראו" ועוברת להיסטוריה
 								handled: !!ef?.handled,
+								// מצב שנשמר בשרת (חוצה-מכשירים): נקרא/הוסתר, ארכיון, נודניק.
+								// ממוזג עם ה-localStorage המקומי כדי שפעולה בנייח תשתקף בנייד ולהפך.
+								srvRead: !!ef?.read || !!ef?.dismissed,
+								srvArchived: m.status === "archived",
+								srvSnooze: Number(ef?.snooze_until) || 0,
+								// "פעיל במפורש בשרת": השדה read/dismissed קיים אבל false — כלומר מישהו
+								// החזיר את ההודעה ללא-נקראה במכשיר אחר. שונה מהודעה שמעולם לא נשמר לה
+								// מצב שרת (אין מפתח read) — שם משאירים הסתרה מקומית ישנה כמות שהיא.
+								// משמש לגיזום ה-localStorage המיושן כדי שה-"החזרה" תסתנכרן חוצה-מכשירים.
+								srvActive:
+									("read" in ef || "dismissed" in ef) && !ef?.read && !ef?.dismissed,
 								// לחיצה על כל הכרטיס פותחת את עמוד הניהול במקום הרלוונטי לטיפול בבקשה
 								link:
 									efLink ??
@@ -539,27 +551,72 @@
 		return () => clearInterval(i);
 	});
 
+	// גיזום מצב מקומי מיושן מול השרת (סנכרון כיוון ה"החזרה ללא-נקרא"): ה-localStorage
+	// מצטבר ולעולם לא נגזם, ולכן "החזרה ללא-נקרא" ממכשיר אחר לא הצליחה לחשוף מחדש הודעה
+	// שהמכשיר הזה הסתיר מקומית. כאן, בטעינה, אם השרת אומר במפורש שההודעה שוב פעילה
+	// (srvActive) — מסירים את הרישום המקומי כדי שתחזור להופיע גם כאן. מסתמכים על נוכחות
+	// השדה (ולא רק על ערך שקרי) כדי לא לגזום הסתרות ישנות שמעולם לא נשמרו בשרת.
+	let _reconciledLocal = false;
+	$effect(() => {
+		if (_reconciledLocal || typeof window === "undefined") return;
+		_reconciledLocal = true;
+		let del = deletedMsgs;
+		let changed = false;
+		for (const m of messages) {
+			const mm = m as { id?: string; srvActive?: boolean };
+			if (!mm.id?.startsWith("db-")) continue;
+			if (mm.srvActive && del.has(mm.id)) {
+				if (!changed) { del = new Set(del); changed = true; }
+				del.delete(mm.id);
+			}
+		}
+		if (changed) { deletedMsgs = del; saveJSON(MSG_DELETED_KEY, [...del]); }
+	});
+
+	// שמירת מצב ההודעה גם בשרת (חוצה-מכשירים). ה-localStorage כבר עודכן אופטימית,
+	// אז זה fire-and-forget: כישלון רשת לא חוסם את ה-UI, והמצב יסתנכרן בפעולה הבאה.
+	// הודעות שאינן רשומת שרת (draft/singles-match/mock) מדולגות - אין להן id של DB.
+	function persistMsgState(localId: string, patch: Record<string, unknown>) {
+		if (!localId.startsWith("db-")) return;
+		const dbId = localId.slice(3);
+		fetch("/api/messages/state", {
+			method: "POST",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify({ id: dbId, ...patch }),
+		}).catch(() => {});
+	}
 	function deleteMsg(id: string) {
 		deletedMsgs = new Set([...deletedMsgs, id]);
 		saveJSON(MSG_DELETED_KEY, [...deletedMsgs]);
 	}
+	// "מחק" בפרופיל אינו מחיקה קשיחה (ההודעה נשארת בהיסטוריה ב-/messages), אבל
+	// מסתיר אותה בכל המכשירים דרך extra_fields.dismissed
+	function dismissMsg(id: string) {
+		deleteMsg(id);
+		persistMsgState(id, { read: true, dismissed: true });
+	}
 	function archiveMsg(id: string) {
 		archivedMsgs = new Set([...archivedMsgs, id]);
 		saveJSON(MSG_ARCHIVED_KEY, [...archivedMsgs]);
+		persistMsgState(id, { archived: true });
 	}
 	function unarchiveMsg(id: string) {
 		const next = new Set(archivedMsgs);
 		next.delete(id);
 		archivedMsgs = next;
 		saveJSON(MSG_ARCHIVED_KEY, [...archivedMsgs]);
+		persistMsgState(id, { archived: false });
 	}
 	function snoozeMsg(id: string) {
-		snoozedMsgs = { ...snoozedMsgs, [id]: Date.now() + SNOOZE_MS };
+		const until = Date.now() + SNOOZE_MS;
+		snoozedMsgs = { ...snoozedMsgs, [id]: until };
 		saveJSON(MSG_SNOOZED_KEY, snoozedMsgs);
+		persistMsgState(id, { snooze_until: until });
 	}
 	function markRead(id: string) {
 		// "אם הוא קרא - מחוק את ההתראות מהפרופיל שלו"
 		deleteMsg(id);
+		persistMsgState(id, { read: true });
 	}
 
 	// === אישור/דחיית בקשת מיקום ישירות מכרטיס ההודעה (סופר-אדמין) ===
@@ -650,15 +707,25 @@
 	let visibleMessages = $derived.by(() => {
 		void nowTs;
 		return messages.filter((m) => {
-			if (deletedMsgs.has(m.id)) return false;
-			if (archivedMsgs.has(m.id)) return false;
+			// מצב מקומי (localStorage) או מצב מהשרת (חוצה-מכשירים) - איחוד: מספיק שאחד מהם מסתיר
+			if (deletedMsgs.has(m.id) || (m as { srvRead?: boolean }).srvRead) return false;
+			if (archivedMsgs.has(m.id) || (m as { srvArchived?: boolean }).srvArchived) return false;
 			if (isHandledMsg(m)) return false; // טופלה → להיסטוריה
 			const sn = snoozedMsgs[m.id];
 			if (sn && sn > nowTs) return false;
+			const srvSn = (m as { srvSnooze?: number }).srvSnooze ?? 0;
+			if (srvSn && srvSn > nowTs) return false;
 			return true;
 		});
 	});
-	let archivedList = $derived(messages.filter((m) => archivedMsgs.has(m.id)));
+	let archivedList = $derived(
+		messages.filter(
+			(m) =>
+				(archivedMsgs.has(m.id) || (m as { srvArchived?: boolean }).srvArchived) &&
+				!deletedMsgs.has(m.id) &&
+				!(m as { srvRead?: boolean }).srvRead,
+		),
+	);
 	// הודעות שטופלו (התראות פנויים אחרי שכל הממתינים אושרו/נדחו) - לא מחוקות, מוצגות בהיסטוריה
 	let handledList = $derived(
 		messages.filter((m) => isHandledMsg(m) && !deletedMsgs.has(m.id)),
@@ -2132,16 +2199,44 @@
 		</div>
 	{/if}
 
-	<!-- ===== ברוך הבא - הרשמה חדשה ===== -->
-	{#if page.url.searchParams.get("new") === "1"}
+	<!-- ===== ברוכים המצטרפים - הרשמה חדשה ===== -->
+	{#if page.url.searchParams.get("welcome") === "1" || page.url.searchParams.get("new") === "1"}
 		<div
-			class="mb-6 rounded-2xl bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-purple-500/30 px-6 py-5 text-center shadow-lg"
+			class="mb-6 rounded-2xl bg-gradient-to-br from-blue-600/20 to-purple-600/20 border border-purple-500/30 px-5 py-6 text-center shadow-lg"
 		>
-			<p class="text-2xl mb-1">🎉</p>
-			<h2 class="text-white font-black text-lg mb-1">
-				{tFn("welcome_community")}
+			<p class="text-4xl mb-2">🎉</p>
+			<h2 class="text-white font-black text-2xl mb-2">
+				{tFn("welcome_joiners_title")}
 			</h2>
-			<p class="text-gray-300 text-sm">{tFn("registration_complete")}</p>
+			<p class="text-gray-200 text-base leading-relaxed max-w-xl mx-auto mb-5">
+				{tFn("welcome_joiners_body")}
+			</p>
+
+			<!-- לוגואים של כל האתרים ברשת -->
+			<p class="text-purple-300/90 text-xs font-bold tracking-wide mb-3">
+				{tFn("welcome_platforms_label")}
+			</p>
+			<div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2.5">
+				{#each ads as site (site.id)}
+					<a
+						href={site.href}
+						target="_blank"
+						rel="noopener noreferrer"
+						title={site.title}
+						class="group flex flex-col items-center gap-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-400/40 p-2 transition-all hover:-translate-y-0.5"
+					>
+						<div class="w-full aspect-[4/3] overflow-hidden rounded-lg bg-gradient-to-br {site.color}">
+							<img
+								src={site.image}
+								alt={site.title}
+								loading="lazy"
+								class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+							/>
+						</div>
+						<span class="text-[11px] leading-tight font-semibold text-gray-200 line-clamp-2 text-center">{site.title}</span>
+					</a>
+				{/each}
+			</div>
 		</div>
 	{/if}
 
@@ -2859,7 +2954,7 @@
 									</button>
 									<button
 										type="button"
-										onclick={(e) => { e.stopPropagation(); deleteMsg(msg.id); }}
+										onclick={(e) => { e.stopPropagation(); dismissMsg(msg.id); }}
 										class="text-[11px] text-gray-400 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10"
 										title={tFn("profile.delete_forever_title")}
 									>
@@ -2920,7 +3015,7 @@
 											</button>
 											<button
 												type="button"
-												onclick={() => { unarchiveMsg(msg.id); deleteMsg(msg.id); }}
+												onclick={() => { unarchiveMsg(msg.id); dismissMsg(msg.id); }}
 												class="text-[11px] text-gray-400 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10"
 												title={tFn("profile.delete_forever_title")}
 											>
@@ -2966,7 +3061,7 @@
 											</span>
 											<button
 												type="button"
-												onclick={() => deleteMsg(msg.id)}
+												onclick={() => dismissMsg(msg.id)}
 												class="text-[11px] text-gray-400 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10"
 												title={tFn("profile.delete_forever_title")}
 											>
