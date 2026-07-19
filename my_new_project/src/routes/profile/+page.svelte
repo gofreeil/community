@@ -469,6 +469,9 @@
 								read: false,
 								// סוג ההודעה (singles_review וכו') - משמש לזיהוי התראות שניתן לסמן כטופלו
 								kind: efType,
+								// בקשת מיקום/שכונה שכבר אושרה/נדחתה בעמוד הניהול - כבר טופלה,
+								// לכן יורדת מספירת "שלא נקראו" ועוברת להיסטוריה
+								handled: !!ef?.handled,
 								// לחיצה על כל הכרטיס פותחת את עמוד הניהול במקום הרלוונטי לטיפול בבקשה
 								link:
 									efLink ??
@@ -637,7 +640,10 @@
 	// התראות "כרטיס פנויים ממתין לאישור" נחשבות טופלו ברגע שאין יותר כרטיסים ממתינים.
 	// אז הן יורדות מההתראות הפעילות (ומספירת שלא-נקראו) ועוברות להיסטוריית ההודעות עם וי ירוק.
 	let pendingSinglesCount = $derived(data.pendingSinglesCount ?? 0);
-	function isHandledMsg(m: { id: string; kind?: string }): boolean {
+	function isHandledMsg(m: { id: string; kind?: string; handled?: boolean }): boolean {
+		// בקשת מיקום/שכונה שכבר אושרה/נדחתה (extra_fields.handled) - יורדת מההתראות
+		// הפעילות (ומספירת "שלא נקראו") ועוברת להיסטוריית ההודעות שטופלו
+		if (m.handled) return true;
 		return m.kind === "singles_review" && pendingSinglesCount === 0;
 	}
 
