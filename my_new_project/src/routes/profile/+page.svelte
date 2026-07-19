@@ -2218,10 +2218,17 @@
 				{tFn("welcome_joiners_body")}
 			</p>
 
-			<!-- לוגואים של כל האתרים ברשת -->
-			<p class="text-purple-300/90 text-xs font-bold tracking-wide mb-3">
+			<!-- סלוגן + לוגו עגול של הקהילה -->
+			<p class="text-purple-200 text-sm md:text-base font-bold tracking-wide mb-3">
 				{tFn("welcome_platforms_label")}
 			</p>
+			<img
+				src="/images/ad_neighborhoods.png"
+				alt="יוצאים לחירות"
+				class="mx-auto w-24 h-24 rounded-full object-cover ring-2 ring-purple-400/40 shadow-lg mb-5"
+			/>
+
+			<!-- לוגואים של כל האתרים ברשת -->
 			<div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2.5">
 				{#each ads as site (site.id)}
 					<a
