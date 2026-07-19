@@ -374,13 +374,15 @@
 		</div>
 	</div>
 
-	<!-- לשונית מחוברת לקצה הימני של הבאנר -->
-	{#if tabY > 0 && !isAuthPage}
+	<!-- לשונית מחוברת לקצה הימני של הבאנר.
+	     מרונדרת כבר בשרת (SSR) עם מיקום ברירת-מחדל ב-CSS — כך שהיא מופיעה מיד,
+	     גם בחיבור איטי שבו ה-JS עוד לא נטען. tabY מחליף את המיקום ברגע שה-JS רץ. -->
+	{#if !isAuthPage}
 	<button
 		class="tab"
 		class:tab-dragging={tabDragging}
 		class:tab-collapsed={collapsed && !open}
-		style="top: {tabY}px; transform: translateY(-50%);"
+		style="top: {tabY > 0 ? `${tabY}px` : '80%'}; transform: translateY(-50%);"
 		onclick={onTabClick}
 		use:nonPassiveTouch
 		aria-label={$_('components.mad_open_benefits_aria')}
