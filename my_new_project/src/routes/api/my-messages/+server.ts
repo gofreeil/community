@@ -20,10 +20,19 @@ export const GET: RequestHandler = async ({ locals }) => {
             try { pendingSingles = (await getItemsByCategoryAndStatus('singles', 'pending')).length; } catch { /* שקט */ }
         }
 
+        const now = Date.now();
         const visible = msgs.filter((m) => {
-            if (pendingSingles === 0) {
-                try { if (JSON.parse(m.extra_fields || '{}')?.type === 'singles_review') return false; } catch { /* keep */ }
-            }
+            // מצב שנשמר חוצה-מכשירים (extra_fields/status) — כדי שהבאדג' יהיה זהה בכל מכשיר:
+            // הודעה שנקראה/הוסתרה/בארכיון/בנודניק לא נספרת.
+            if (m.status === 'archived') return false;
+            let ef: Record<string, unknown> = {};
+            try { ef = JSON.parse(m.extra_fields || '{}') ?? {}; } catch { /* הודעה ישנה */ }
+            if (ef?.read || ef?.dismissed) return false;
+            // בקשת מיקום/שכונה שכבר טופלה (אושרה/נדחתה) - כמו בדף הפרופיל, לא נספרת בבאדג'
+            if (ef?.handled) return false;
+            const sn = Number(ef?.snooze_until);
+            if (Number.isFinite(sn) && sn > now) return false;
+            if (pendingSingles === 0 && ef?.type === 'singles_review') return false;
             return true;
         });
 

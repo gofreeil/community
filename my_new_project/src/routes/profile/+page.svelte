@@ -726,9 +726,15 @@
 				!(m as { srvRead?: boolean }).srvRead,
 		),
 	);
-	// הודעות שטופלו (התראות פנויים אחרי שכל הממתינים אושרו/נדחו) - לא מחוקות, מוצגות בהיסטוריה
+	// הודעות שטופלו (התראות פנויים אחרי שכל הממתינים אושרו/נדחו) - לא מחוקות, מוצגות בהיסטוריה.
+	// srvRead: הודעה שנמחקה/נקראה בשרת (חוצה-מכשירים) לא תופיע כאן במכשיר אחר.
 	let handledList = $derived(
-		messages.filter((m) => isHandledMsg(m) && !deletedMsgs.has(m.id)),
+		messages.filter(
+			(m) =>
+				isHandledMsg(m) &&
+				!deletedMsgs.has(m.id) &&
+				!(m as { srvRead?: boolean }).srvRead,
+		),
 	);
 	let displayedMessages = $derived.by(() => {
 		void nowTs;

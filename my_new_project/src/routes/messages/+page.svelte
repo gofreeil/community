@@ -10,6 +10,7 @@
     // ה-IDs בפרופיל בפורמט `db-${documentId}`; שומרים על אותו פורמט כדי שהפעולות יסונכרנו.
     const MSG_DELETED_KEY = 'msgs_deleted_v1';   // נקראו/הוסרו מהפרופיל
     const MSG_ARCHIVED_KEY = 'msgs_archived_v1'; // נשמרו לארכיון
+    const MSG_SNOOZED_KEY = 'msgs_snoozed_v1';   // נודניק (מפה id→תפוגה) — משותף עם הפרופיל וה-Header
 
     function loadIdSet(key: string): Set<string> {
         if (typeof localStorage === 'undefined') return new Set();
@@ -36,12 +37,31 @@
         saveSet(MSG_ARCHIVED_KEY, set);
     }
 
+    // שמירת מצב ההודעה בשרת (חוצה-מכשירים) - fire-and-forget
+    function persistMsgState(id: string, patch: Record<string, unknown>) {
+        fetch('/api/messages/state', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ id, ...patch }),
+        }).catch(() => {});
+    }
+
     // החזרת הודעה לסטטוס "לא נקרא" → תחזור לדף הפרופיל כהתראה פעילה.
-    // מסירים אותה מ"נמחקו/נקראו" וגם מהארכיון ב-localStorage של הפרופיל.
+    // מסירים אותה מ"נמחקו/נקראו" וגם מהארכיון ב-localStorage של הפרופיל, וגם מאפסים
+    // את המצב בשרת (read/dismissed/snooze/archived) כדי שתחזור כפעילה בכל המכשירים.
     function markUnread(id: string) {
         const lid = localId(id);
         const nd = loadIdSet(MSG_DELETED_KEY);  nd.delete(lid); saveSet(MSG_DELETED_KEY, nd);
         const na = loadIdSet(MSG_ARCHIVED_KEY); na.delete(lid); saveSet(MSG_ARCHIVED_KEY, na);
+        // גם מפת הנודניק המקומית - אחרת "נודניק" קודם בפרופיל היה משאיר את ההודעה
+        // מוסתרת במכשיר הזה עד יומיים למרות שביקשנו להחזירה כלא-נקראה
+        if (typeof localStorage !== 'undefined') {
+            try {
+                const sn = JSON.parse(localStorage.getItem(MSG_SNOOZED_KEY) ?? '{}') ?? {};
+                if (lid in sn) { delete sn[lid]; localStorage.setItem(MSG_SNOOZED_KEY, JSON.stringify(sn)); }
+            } catch { /* ignore */ }
+        }
+        persistMsgState(id, { read: false, dismissed: false, snooze_until: 0, archived: false });
     }
 
     let archiveCount = $derived((data.messages ?? []).filter(isArchived).length);
