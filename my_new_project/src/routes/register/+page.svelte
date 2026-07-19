@@ -45,7 +45,7 @@
 	<title>{tFn("register_title")}</title>
 </svelte:head>
 
-<div class="min-h-[80vh] flex items-center justify-center px-4 py-12" dir="rtl">
+<div class="min-h-[80vh] flex items-center justify-center px-4 py-6" dir="rtl">
 	<div class="w-full max-w-md">
 
 		<!-- כרטיס -->
@@ -54,17 +54,17 @@
 			<!-- פס עליון גרדיאנט -->
 			<div class="h-1.5 bg-gradient-to-r from-green-500 via-blue-600 to-purple-600"></div>
 
-			<div class="p-8 md:p-10">
+			<div class="p-6 md:p-8">
 
 				<!-- לוגו + כותרת -->
-				<div class="text-center mb-8">
-					<div class="flex justify-center mb-4">
-						<div class="h-16 w-16 rounded-2xl bg-gradient-to-br from-green-600 to-blue-700 flex items-center justify-center shadow-xl">
-							<span class="text-3xl">🏘️</span>
+				<div class="text-center mb-5">
+					<div class="flex justify-center mb-3">
+						<div class="h-14 w-14 rounded-2xl bg-gradient-to-br from-green-600 to-blue-700 flex items-center justify-center shadow-xl">
+							<span class="text-2xl">🏘️</span>
 						</div>
 					</div>
-					<h1 class="text-2xl font-black text-white mb-2">{tFn("join_community")}</h1>
-					<p class="text-gray-400 text-sm">{tFn("create_account")}</p>
+					<h1 class="text-3xl font-black text-white mb-1">{tFn("join_community")}</h1>
+					<p class="text-gray-400 text-base">{tFn("create_account")}</p>
 				</div>
 
 				<!-- הרשמה הצליחה + חיבור אוטומטי (אין צורך באישור מייל) -->
@@ -136,7 +136,7 @@
 					disabled={isLoading || loadingProvider !== null}
 					class="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-50 active:bg-gray-100
 					       text-gray-900 font-bold py-3.5 px-6 rounded-2xl shadow-lg transition-all duration-200
-					       hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed mb-4
+					       hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed mb-3
 					       cursor-pointer"
 				>
 					{#if loadingProvider === 'google'}
@@ -173,9 +173,9 @@
 				</button>
 
 				<!-- מפריד -->
-				<div class="flex items-center gap-3 my-6">
+				<div class="flex items-center gap-3 my-4">
 					<div class="flex-1 h-px bg-white/10"></div>
-					<span class="text-xs text-gray-500">{tFn("or")}</span>
+					<span class="text-base text-gray-400 font-medium">{tFn("or")}</span>
 					<div class="flex-1 h-px bg-white/10"></div>
 				</div>
 
@@ -191,8 +191,8 @@
 						};
 					}}
 				>
-					<div class="mb-4">
-						<label for="username" class="block text-sm font-medium text-gray-400 mb-2">{tFn("username_label")}</label>
+					<div class="mb-3">
+						<label for="username" class="block text-base font-medium text-gray-400 mb-2">{tFn("username_label")}</label>
 						<input
 							id="username"
 							name="username"
@@ -207,8 +207,8 @@
 						/>
 					</div>
 
-					<div class="mb-4">
-						<label for="email" class="block text-sm font-medium text-gray-400 mb-2">{tFn("email")}</label>
+					<div class="mb-3">
+						<label for="email" class="block text-base font-medium text-gray-400 mb-2">{tFn("email")}</label>
 						<input
 							id="email"
 							name="email"
@@ -223,8 +223,8 @@
 						/>
 					</div>
 
-					<div class="mb-4">
-						<label for="password" class="block text-sm font-medium text-gray-400 mb-2">{tFn("password_label")}</label>
+					<div class="mb-3">
+						<label for="password" class="block text-base font-medium text-gray-400 mb-2">{tFn("password_label")}</label>
 						<div class="relative">
 							<input
 								id="password"
@@ -258,8 +258,8 @@
 						</div>
 					</div>
 
-					<div class="mb-6">
-						<label for="confirmPassword" class="block text-sm font-medium text-gray-400 mb-2">{tFn("confirm_password_label")}</label>
+					<div class="mb-4">
+						<label for="confirmPassword" class="block text-base font-medium text-gray-400 mb-2">{tFn("confirm_password_label")}</label>
 						<div class="relative">
 							<input
 								id="confirmPassword"
@@ -312,7 +312,7 @@
 				</form>
 
 				<!-- לינק ללוגין -->
-				<p class="mt-6 text-center text-sm text-gray-500">
+				<p class="mt-4 text-center text-base text-gray-500">
 					{tFn("already_registered")}
 					<a href="/login" class="text-purple-400 hover:text-purple-300 font-medium transition-colors">
 						{tFn("login_here")}
@@ -325,8 +325,8 @@
 		</div>
 
 		<!-- קישור חזרה -->
-		<div class="text-center mt-6">
-			<a href="/" class="text-gray-500 hover:text-gray-400 text-sm transition-colors">
+		<div class="text-center mt-4">
+			<a href="/" class="text-gray-500 hover:text-gray-400 text-base transition-colors">
 				{tFn("back_home_arrow")}
 			</a>
 		</div>
