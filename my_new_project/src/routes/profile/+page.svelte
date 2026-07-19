@@ -1502,6 +1502,27 @@
 		}
 	}
 	let showTermsError = $state(false);
+	let termsAttention = $state(false);
+	let termsLabelEl = $state<HTMLElement | undefined>(undefined);
+	let termsAttentionTimer: ReturnType<typeof setTimeout> | undefined;
+
+	// ניסיון שמירה בלי לסמן את תנאי השימוש - גוללים אל התיבה ומדגישים אותה
+	// לכ-2 שניות (גדילה הלוך ושוב + זוהר על הכיתוב), כדי שיהיה ברור מה חוסם
+	function flashTermsAttention() {
+		termsLabelEl?.scrollIntoView({ behavior: "smooth", block: "center" });
+		clearTimeout(termsAttentionTimer);
+		termsAttention = false;
+		// שתי פריימים כדי שהסרת המחלקה תיצבע לפני ההוספה מחדש - אחרת האנימציה לא תתאפס בלחיצה חוזרת
+		requestAnimationFrame(() => {
+			requestAnimationFrame(() => {
+				termsAttention = true;
+				termsAttentionTimer = setTimeout(
+					() => (termsAttention = false),
+					2100,
+				);
+			});
+		});
+	}
 
 	// ===== שליפת תמונה מפייסבוק =====
 	let showSocialPhotoModal = $state<"facebook" | null>(null);
@@ -5255,7 +5276,12 @@
 
 				{#if isEditing}
 					<div class="mt-2 flex flex-col gap-3 items-end">
-						<label class="flex items-center gap-3 cursor-pointer">
+						<label
+							bind:this={termsLabelEl}
+							class="flex items-center gap-3 cursor-pointer {termsAttention
+								? 'terms-attention'
+								: ''}"
+						>
 							<input
 								type="checkbox"
 								bind:checked={termsAccepted}
@@ -5284,7 +5310,7 @@
 							</span>
 						</label>
 						{#if showTermsError}
-							<p class="text-red-400 text-xs font-bold">
+							<p class="text-red-400 text-sm font-bold">
 								{tFn("profile.terms_error")}
 							</p>
 						{/if}
@@ -5299,6 +5325,7 @@
 								if (!termsAccepted) {
 									e.preventDefault();
 									showTermsError = true;
+									flashTermsAttention();
 									return;
 								}
 								if (!city) {
@@ -5783,6 +5810,43 @@
 	}
 	.custom-loc-glow:not(:focus) {
 		animation: customLocGlow 2.8s ease-in-out infinite;
+	}
+
+	/* הדגשת שורת תנאי השימוש כשמנסים לשמור בלי לסמן - גדלה הלוך ושוב פעמיים (2 שניות) */
+	@keyframes termsAttentionScale {
+		0%,
+		100% {
+			transform: scale(1);
+		}
+		25%,
+		75% {
+			transform: scale(1.14);
+		}
+		50% {
+			transform: scale(1.03);
+		}
+	}
+	/* זוהר צהוב על הכיתוב - text-shadow עובר בירושה גם לקישור שבפנים */
+	@keyframes termsTextGlow {
+		0%,
+		100% {
+			text-shadow: 0 0 0 rgba(253, 224, 71, 0);
+		}
+		25%,
+		75% {
+			text-shadow:
+				0 0 14px rgba(253, 224, 71, 0.95),
+				0 0 4px rgba(253, 224, 71, 0.7);
+		}
+	}
+	.terms-attention {
+		animation: termsAttentionScale 1s ease-in-out 2;
+		transform-origin: center;
+		scroll-margin-top: 120px;
+	}
+	.terms-attention span {
+		animation: termsTextGlow 1s ease-in-out 2;
+		color: #fde047;
 	}
 
 	/* היבהוב קצר לשדה שצריך השלמה - מופעל כשהמשתמש לוחץ על מעגל הפרופיל */

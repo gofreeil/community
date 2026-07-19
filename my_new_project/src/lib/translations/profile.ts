@@ -335,7 +335,7 @@ export const he = {
 
         // תנאים + ולידציה
         terms_link: "תנאי השימוש ומדיניות הפרטיות",
-        terms_error: "יש לאשר את תנאי השימוש ומדיניות הפרטיות לפני השמירה",
+        terms_error: "עליך לאשר את תנאי השימוש כדי לשמור",
         alert_city: "יש לבחור עיר לפני השמירה",
         alert_neighborhood:
             "יש לבחור שכונה, או — אם השכונה שלך לא מופיעה — למלא אותה בשדה 'לא מצאת את העיר או השכונה שלך?'",
@@ -741,7 +741,7 @@ export const en = {
 
         // Terms + validation
         terms_link: "Terms of use and privacy policy",
-        terms_error: "You must accept the terms of use and privacy policy before saving",
+        terms_error: "You must accept the terms of use to save",
         alert_city: "Please choose a city before saving",
         alert_neighborhood:
             "Please choose a neighborhood, or — if your neighborhood is not listed — fill it in under 'Couldn't find your city or neighborhood?'",
@@ -1147,7 +1147,7 @@ export const ru = {
 
         // Условия + валидация
         terms_link: "Условия использования и политику конфиденциальности",
-        terms_error: "Перед сохранением нужно принять условия использования и политику конфиденциальности",
+        terms_error: "Чтобы сохранить, нужно принять условия использования",
         alert_city: "Перед сохранением нужно выбрать город",
         alert_neighborhood:
             "Выберите район, или — если вашего района нет в списке — заполните его в поле «Не нашли свой город или район?»",
