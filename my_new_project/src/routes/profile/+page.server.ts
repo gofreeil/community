@@ -42,24 +42,32 @@ export const load: PageServerLoad = async (event) => {
 
     let user: Awaited<ReturnType<typeof getUserById>>;
     let items: Awaited<ReturnType<typeof getItemsByUserId>> = [];
+    let messages: Awaited<ReturnType<typeof getMessagesByUserId>> = [];
     let strapiAvailable = true;
     let userFromStaleCache = false;
-    try {
-        const jwt = event.cookies.get('strapi_jwt');
-        const cached = await getCachedUserById(session.user.id, jwt);
-        user = cached.user ?? undefined;
-        strapiAvailable = cached.strapiAvailable;
-        userFromStaleCache = cached.stale;
-    } catch (e) {
-        console.warn('[profile] getCachedUserById failed:', e);
+
+    // שלוש השליפות הראשוניות תלויות רק ב-session.user.id → רצות במקביל (allSettled).
+    // בעבר הן רצו בטור, וכש-Strapi איטי/מהבהב הזמן המצטבר (× retries של 6ש') חרג
+    // מה-timeout של השרת/שער וכל הדף החזיר 500 למשתמשים מחוברים (בעיקר אדמינים,
+    // שמוסיפים עוד קריאות). הרצה במקבילה חותכת את הזמן לזמן הקריאה האיטית בלבד.
+    const jwt = event.cookies.get('strapi_jwt');
+    const [cachedRes, itemsRes, messagesRes] = await Promise.allSettled([
+        getCachedUserById(session.user.id, jwt),
+        getItemsByUserId(session.user.id),
+        getMessagesByUserId(session.user.id),
+    ]);
+    if (cachedRes.status === 'fulfilled') {
+        user = cachedRes.value.user ?? undefined;
+        strapiAvailable = cachedRes.value.strapiAvailable;
+        userFromStaleCache = cachedRes.value.stale;
+    } else {
+        console.warn('[profile] getCachedUserById failed:', cachedRes.reason);
         strapiAvailable = false;
     }
-    try {
-        items = await getItemsByUserId(session.user.id);
-    } catch (e) {
-        console.warn('[profile] getItemsByUserId failed:', e);
-        items = [];
-    }
+    if (itemsRes.status === 'fulfilled') items = itemsRes.value;
+    else console.warn('[profile] getItemsByUserId failed:', itemsRes.reason);
+    if (messagesRes.status === 'fulfilled') messages = messagesRes.value;
+    else console.warn('[profile] getMessagesByUserId failed:', messagesRes.reason);
 
     // אם המשתמש לא נמצא לפי ID - נסה לפי אימייל (מיזוג OAuth+credentials)
     if (!user && session.user?.email) {
@@ -116,13 +124,6 @@ export const load: PageServerLoad = async (event) => {
             security_question: '', security_answer: '', security_question_2: '', security_answer_2: '', status: 'active',
           };
 
-    let messages: Awaited<ReturnType<typeof getMessagesByUserId>> = [];
-    try {
-        messages = await getMessagesByUserId(session.user.id);
-    } catch (e) {
-        console.warn('[profile] getMessagesByUserId failed:', e);
-    }
-
     // פרסומים אמיתיים - רק קטגוריות מ-categoryConfig
     const publicationItems = (items ?? []).filter(i => PUBLICATION_CATEGORIES.has(i.category));
     // קריאות קהילתיות - יוצגו בהודעות
@@ -134,12 +135,16 @@ export const load: PageServerLoad = async (event) => {
     // כרטיסי פנויים שממתינים לאישור - אם 0, התראות "כרטיס פנויים ממתין" מסומנות כטופלו ועוברות להיסטוריה
     let pendingSinglesCount = 0;
     if (resolvedUser?.role === 'super_admin') {
-        try { pendingAdsCount = await countPending(); } catch { /* שקט */ }
-        try {
-            const allUsers = await getAllUsers();
-            registeredUsersCount = allUsers.length;
-        } catch { /* שקט */ }
-        try { pendingSinglesCount = (await getItemsByCategoryAndStatus('singles', 'pending')).length; } catch { /* שקט */ }
+        // שלוש ספירות סופר-אדמין בלתי-תלויות → במקביל (allSettled), כדי לא להוסיף
+        // עוד שלושה round-trips סדרתיים לזמן הטעינה. כישלון בכל אחת → נשאר 0 (שקט).
+        const [adsRes, usersRes, singlesPendRes] = await Promise.allSettled([
+            countPending(),
+            getAllUsers(),
+            getItemsByCategoryAndStatus('singles', 'pending'),
+        ]);
+        if (adsRes.status === 'fulfilled') pendingAdsCount = adsRes.value;
+        if (usersRes.status === 'fulfilled') registeredUsersCount = usersRes.value.length;
+        if (singlesPendRes.status === 'fulfilled') pendingSinglesCount = singlesPendRes.value.length;
     }
 
     // ספירת פנויים/פנויות במגדר הנגדי + קבוצת הגיל של המשתמש
