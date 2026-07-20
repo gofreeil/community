@@ -15,6 +15,13 @@ function parseArea(entry: string): { name: string; city: string } {
 }
 const stripCity = (s: string) => s.replace(/\s*\([^)]*\)\s*$/, '').trim();
 
+// טלפון חסר בפרופיל: חילוץ מספר נייד ישראלי המוטמע בכתובת המייל
+// (למשל a0504510011@gmail.com → 050-4510011). האימייל עצמו לא נחשף.
+function phoneFromEmail(email: string | null | undefined): string {
+    const m = (email ?? '').split('@')[0].match(/05\d{8}/);
+    return m ? `${m[0].slice(0, 3)}-${m[0].slice(3)}` : '';
+}
+
 export const GET: RequestHandler = async () => {
     let coordinators: unknown[] = [];
     try {
@@ -49,7 +56,7 @@ export const GET: RequestHandler = async () => {
                 return {
                     id:             u.id,
                     name:           u.name || u.nickname || 'רכז/ת',
-                    phone:          u.phone ?? '',
+                    phone:          u.phone || phoneFromEmail(u.email),
                     avatar_url:     u.avatar_url ?? null,
                     city:           u.city ?? '',
                     neighborhoods:  (u.coordinator_of ?? []).map(stripCity),
