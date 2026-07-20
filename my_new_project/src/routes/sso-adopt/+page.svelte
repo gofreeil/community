@@ -1,9 +1,11 @@
 <script lang="ts">
-	import { signIn } from '@auth/sveltekit/client';
 	import { _ } from 'svelte-i18n';
 	import { onMount } from 'svelte';
 
 	let { data } = $props();
+
+	let formEl: HTMLFormElement | undefined = $state();
+	let redirectInput: HTMLInputElement | undefined = $state();
 
 	// מצמיד את סימון מסך הפתיחה ליעד הנחיתה (new = מצטרף חדש, back = חוזר)
 	function withWelcome(dest: string, kind: string): string {
@@ -17,11 +19,13 @@
 	}
 
 	onMount(() => {
-		// מקים סשן קהילה מתוך העוגייה המשותפת gofreeil-auth. אם אין סשן משותף
-		// תקף — Auth.js יפנה לעמוד השגיאה (/login) ולא ינסה שוב (sso_adopt_tried).
-		signIn('gofreeil-sso', {
-			callbackUrl: withWelcome(data.redirect || '/', data.welcome ?? 'back'),
-		});
+		// מקים סשן קהילה מתוך העוגייה המשותפת gofreeil-auth — דרך action שרתי,
+		// כי ה-signIn של @auth/sveltekit/client שבור לספק credentials עם id מותאם.
+		// אם אין סשן משותף תקף — ה-action מפנה ל-/login ולא ננסה שוב (sso_adopt_tried).
+		if (redirectInput) {
+			redirectInput.value = withWelcome(data.redirect || '/', data.welcome ?? 'back');
+		}
+		formEl?.requestSubmit();
 	});
 </script>
 
@@ -36,4 +40,12 @@
 	</div>
 	<p class="text-white font-bold text-lg">{$_('account.sso_identifying')}</p>
 	<span class="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+	<!-- ההתחברות עצמה: POST ל-action השרתי -->
+	<form bind:this={formEl} method="POST">
+		<input type="hidden" name="providerId" value="gofreeil-sso" />
+		<input bind:this={redirectInput} type="hidden" name="redirectTo" value={data.redirect || '/'} />
+		<button type="submit" class="text-xs text-gray-500 underline hover:text-gray-300">
+			{$_('account.sso_continue_manual', { default: 'לא הועברת? לחץ כאן להמשך' })}
+		</button>
+	</form>
 </div>

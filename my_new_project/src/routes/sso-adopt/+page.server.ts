@@ -1,7 +1,8 @@
-import { redirect } from '@sveltejs/kit';
+import { redirect, isRedirect } from '@sveltejs/kit';
 import { getStrapiMeVerdict } from '$lib/server/strapiClient';
 import { getUserByEmail } from '$lib/server/db';
-import type { PageServerLoad } from './$types';
+import { signIn } from '../../auth';
+import type { PageServerLoad, Actions } from './$types';
 
 /**
  * דף-ביניים לזיהוי SSO אוטומטי. ה-hook הפנה לכאן כי קיימת עוגיית gofreeil-auth
@@ -45,4 +46,21 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
     }
 
     return { redirect: redirectTo, welcome };
+};
+
+// כניסת ה-SSO חייבת לרוץ בצד שרת: ה-signIn של @auth/sveltekit/client שולח
+// ספק credentials עם id מותאם (gofreeil-sso) לנקודת הקצה של OAuth במקום
+// ל-callback, ולכן authorize() לא רץ כלל והמשתמש הוחזר ל-/login בלי שגיאה.
+// ה-signIn השרתי מזהה את סוג הספק ומנתב נכון.
+export const actions: Actions = {
+	default: async (event) => {
+		try {
+			await signIn(event);
+		} catch (err) {
+			// הצלחה נזרקת כ-redirect של SvelteKit — מעבירים הלאה
+			if (isRedirect(err)) throw err;
+			// כישלון אימות — ל-login עם קוד שגיאה (יוצג כהודעה כללית)
+			throw redirect(303, '/login?error=sso_failed');
+		}
+	}
 };
