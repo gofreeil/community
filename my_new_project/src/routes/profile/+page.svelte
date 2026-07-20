@@ -66,17 +66,27 @@
 
 	// התחברות "עם יוצאים לחירות": זיהוי דרך העוגייה המשותפת gofreeil-auth בלבד
 	// (SSO פר-דפדפן, לא חוצה-מכשירים). אם אין עוגייה בדפדפן הזה - הזיהוי לא יכול
-	// להצליח, אז מציגים מיד עצה במקום סיבוב-שרת מיותר. אם יש עוגייה אך פגה/לא
-	// תקפה - signIn מחזיר error (redirect:false) ואנחנו מציגים אותה עצה.
+	// להצליח, אז מציגים מיד עצה במקום סיבוב-שרת מיותר.
+	// POST ישיר ל-callback של הספק: ה-signIn של @auth/sveltekit/client שולח ספק
+	// credentials עם id מותאם לנקודת הקצה של OAuth (/auth/signin/<id>) — הזיהוי
+	// לא רץ והמשתמש היה נזרק ל-/login. עושים כאן את מה שהוא היה אמור לעשות;
+	// כישלון אימות חוזר כ-url עם error= ואנחנו מציגים את העצה.
 	async function loginWithGofreeil() {
 		ssoError = null;
 		const advice = tFn('profile.sso_advice');
 		if (!data.hasSharedSso) { ssoError = advice; return; }
 		ssoLoading = true;
 		try {
-			const res = await signIn('gofreeil-sso', { callbackUrl: '/profile', redirect: false });
-			if (res?.error) { ssoError = advice; }
-			else if (res?.url) { window.location.href = res.url; }
+			const res = await fetch('/auth/callback/gofreeil-sso', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/x-www-form-urlencoded',
+					'X-Auth-Return-Redirect': '1'
+				},
+				body: new URLSearchParams({ callbackUrl: '/profile' })
+			});
+			const json: { url?: string } = await res.json();
+			if (json?.url && !json.url.includes('error=')) { window.location.href = json.url; }
 			else { ssoError = advice; }
 		} catch {
 			ssoError = tFn('profile.sso_error');
