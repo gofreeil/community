@@ -124,7 +124,9 @@ export const load: PageServerLoad = async (event) => {
         const canEditPage = canEditActivities && dbItem.category !== 'singles';
 
         // נכס שנמחק (מחיקה רכה) גלוי רק לבעלים/רכז/סופר-אדמין - כדי לשחזר. לגולש רגיל = לא נמצא.
-        if (dbItem.status === 'deleted' && !canEditActivities) {
+        // משאלה (wish) לעולם אינה דף פריט ציבורי - היא מוצגת רק ככרטיס טקסט בכותל המשאלות,
+        // ודף הפריט שלה היה חושף user_id ו-extra_fields לכל גולש.
+        if ((dbItem.status === 'deleted' || dbItem.category === 'wish') && !canEditActivities) {
             return { origin, item: null };
         }
 

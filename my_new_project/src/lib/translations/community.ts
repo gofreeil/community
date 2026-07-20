@@ -168,6 +168,10 @@ export const he = {
         cf_submit: "🙏 הוסף משאלה לכותל",
         cf_success_title: "המשאלה נוספה בהצלחה!",
         cf_success_sub: "המשאלה שלך נוספה לכותל",
+        cf_success_pending_sub: "המשאלה נשלחה! לאחר אישור מנהל היא תוצג בכותל",
+        cf_submit_error: "שליחת המשאלה נכשלה — נסו שוב בעוד רגע",
+        cf_submitting: "שולח…",
+        cf_wall_title: "🙏 משאלות הקהילה",
         cf_back_home: "← חזרה לדף הבית",
 
         // ── כיתת כוננות ──
@@ -369,6 +373,10 @@ export const en = {
         cf_submit: "🙏 Add a wish to the wall",
         cf_success_title: "Your wish was added successfully!",
         cf_success_sub: "Your wish was added to the wall",
+        cf_success_pending_sub: "Your wish was sent! It will appear on the wall after admin approval",
+        cf_submit_error: "Sending the wish failed — please try again in a moment",
+        cf_submitting: "Sending…",
+        cf_wall_title: "🙏 Community wishes",
         cf_back_home: "← Back to the home page",
 
         // ── Emergency team ──
@@ -570,6 +578,10 @@ export const ru = {
         cf_submit: "🙏 Добавить желание на стену",
         cf_success_title: "Желание успешно добавлено!",
         cf_success_sub: "Ваше желание добавлено на стену",
+        cf_success_pending_sub: "Желание отправлено! Оно появится на стене после одобрения администратора",
+        cf_submit_error: "Не удалось отправить желание — попробуйте ещё раз через минуту",
+        cf_submitting: "Отправка…",
+        cf_wall_title: "🙏 Желания сообщества",
         cf_back_home: "← Назад на главную",
 
         // ── Дежурная команда ──

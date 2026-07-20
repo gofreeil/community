@@ -2,8 +2,12 @@
 	import { onMount } from 'svelte';
 	import { _ } from 'svelte-i18n';
 
+	let { data } = $props();
+
 	let wishText = $state('');
 	let showSuccess = $state(false);
+	let submitting = $state(false);
+	let errorMsg = $state('');
 
 	let totalDonated     = $state(0);
 	let totalDistributed = $state(0);
@@ -14,9 +18,9 @@
 		try {
 			const res = await fetch('/api/community-fund');
 			if (res.ok) {
-				const data = await res.json();
-				totalDonated     = data.totalDonated     ?? 0;
-				totalDistributed = data.totalDistributed ?? 0;
+				const fund = await res.json();
+				totalDonated     = fund.totalDonated     ?? 0;
+				totalDistributed = fund.totalDistributed ?? 0;
 			}
 		} catch {
 			// אם ה-API לא זמין - נשאר 0
@@ -51,16 +55,41 @@
 		};
 	});
 
-	function handleSubmit() {
+	// תאריך קצר לכרטיס משאלה בכותל
+	function fmtWishDate(iso: string): string {
+		if (!iso) return '';
+		const d = new Date(iso);
+		if (isNaN(d.getTime())) return '';
+		return d.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+	}
+
+	// שליחה אמיתית לשרת: המשאלה נשמרת כ-pending וממתינה לאישור מנהל
+	async function handleSubmit() {
+		errorMsg = '';
 		if (!wishText.trim()) {
-			alert($_('community.cf_wish_required'));
+			errorMsg = $_('community.cf_wish_required');
 			return;
 		}
-		showSuccess = true;
-		setTimeout(() => {
-			showSuccess = false;
-			wishText = '';
-		}, 3000);
+		submitting = true;
+		try {
+			const res = await fetch('/api/wishes', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ text: wishText.trim() }),
+			});
+			const result = await res.json().catch(() => ({}));
+			if (res.ok && result?.success) {
+				wishText = '';
+				showSuccess = true;
+				setTimeout(() => { showSuccess = false; }, 5000);
+			} else {
+				errorMsg = result?.error || $_('community.cf_submit_error');
+			}
+		} catch {
+			errorMsg = $_('community.cf_submit_error');
+		} finally {
+			submitting = false;
+		}
 	}
 </script>
 
@@ -171,6 +200,26 @@
 			</div>
 		</div>
 
+		<!-- כותל המשאלות - משאלות שאושרו ע"י המנהל (מוצג רק כשיש לפחות אחת) -->
+		{#if (data.wishes ?? []).length > 0}
+			<div class="bg-gradient-to-br from-indigo-900/30 to-blue-900/30 border border-indigo-500/30 rounded-2xl p-6 mb-8 backdrop-blur-sm">
+				<h3 class="text-2xl font-bold text-white mb-6">{$_('community.cf_wall_title')}</h3>
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+					{#each data.wishes as wish}
+						<div class="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col gap-2">
+							<p class="text-gray-200 leading-relaxed whitespace-pre-line break-words">
+								<span aria-hidden="true">🙏</span>
+								{wish.text}
+							</p>
+							{#if wish.createdAt}
+								<p class="text-xs text-gray-500">{fmtWishDate(wish.createdAt)}</p>
+							{/if}
+						</div>
+					{/each}
+				</div>
+			</div>
+		{/if}
+
 		<!-- טופס הוספת משאלה -->
 		<div class="bg-gradient-to-br from-purple-900/30 to-pink-900/30 border border-purple-500/30 rounded-2xl p-8 backdrop-blur-sm">
 			<h3 class="text-2xl font-bold text-white mb-6">{$_('community.cf_add_wish_title')}</h3>
@@ -195,10 +244,17 @@
 				</div>
 				<button
 					type="submit"
-					class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold py-4 rounded-lg transition-all hover:scale-105 shadow-lg"
+					disabled={submitting}
+					class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold py-4 rounded-lg transition-all hover:scale-105 shadow-lg disabled:opacity-60 disabled:cursor-wait disabled:hover:scale-100"
 				>
-					{$_('community.cf_submit')}
+					{submitting ? $_('community.cf_submitting') : $_('community.cf_submit')}
 				</button>
+				<!-- שגיאת שליחה - מוצגת צמוד לכפתור, בלי alert -->
+				{#if errorMsg}
+					<p class="text-red-400 text-sm font-bold text-center" role="alert" aria-live="assertive">
+						⚠️ {errorMsg}
+					</p>
+				{/if}
 			</form>
 		</div>
 
@@ -215,7 +271,7 @@
                             <span class="text-4xl" aria-hidden="true">✨</span>
                             <div>
                                 <p class="font-bold text-xl">{$_('community.cf_success_title')}</p>
-                                <p class="text-sm text-green-100">{$_('community.cf_success_sub')}</p>
+                                <p class="text-sm text-green-100">{$_('community.cf_success_pending_sub')}</p>
                             </div>
                         </div>
                     </div>

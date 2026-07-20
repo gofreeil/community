@@ -1,5 +1,6 @@
 <script lang="ts">
     import { enhance } from '$app/forms';
+    import { tick } from 'svelte';
     import { _ } from 'svelte-i18n';
     import { formMemory } from '$lib/formMemory';
     import StreetPicker from '$lib/components/StreetPicker.svelte';
@@ -28,6 +29,9 @@
     let gpsActive    = $state(false);
     let imageBase64  = $state('');
     let imagePreview = $state('');
+    // תיבת השגיאה שליד כפתור השליחה - בטופס ארוך בנייד תיבת השגיאה העליונה מחוץ למסך,
+    // אז אחרי כישלון שרת גוללים אל התיבה התחתונה כדי שהמשוב יהיה מול העיניים
+    let bottomErrorEl = $state<HTMLDivElement | null>(null);
 
     // כתובת מ-reverse geocoding של קליטת ה-GPS ממלאת את שדה הטקסט (אם ריק) —
     // כדי שמי שבא לעזור יראה כתובת קריאה, בלי שהמבקש יקליד דבר.
@@ -148,7 +152,15 @@
                         return;
                     }
                     submitting = true;
-                    return async ({ update }) => { await update(); submitting = false; };
+                    return async ({ update }) => {
+                        await update();
+                        submitting = false;
+                        // שגיאת שרת: לגלול אל תיבת השגיאה שליד הכפתור כדי שתהיה גלויה
+                        if (form?.error) {
+                            await tick();
+                            bottomErrorEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    };
                 }}
                 use:formMemory
                 class="space-y-5">
@@ -314,6 +326,14 @@
                             class="w-full bg-white/5 border border-white/10 focus:border-red-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none transition-colors placeholder:text-gray-600" />
                     </div>
                 </div>
+
+                <!-- שגיאת שרת ליד כפתור השליחה - נראית גם כשהתיבה העליונה מחוץ למסך -->
+                {#if form?.error}
+                    <div bind:this={bottomErrorEl} role="alert"
+                        class="px-4 py-3 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 text-sm font-bold">
+                        ⚠️ {form.error}
+                    </div>
+                {/if}
 
                 <!-- Submit -->
                 <button type="submit" disabled={submitting}

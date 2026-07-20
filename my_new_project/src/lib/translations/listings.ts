@@ -212,6 +212,7 @@ export const he = {
         lafadd_location_ph: "רחוב, שכונה או מקום...",
         lafadd_expiry_pre: "המודעה תימחק אוטומטית לאחר",
         lafadd_expiry_days: "30 יום",
+        lafadd_pick_type_hint: "יש לבחור למעלה: אבד או נמצא",
         lafadd_submit: "🔍 פרסם מודעה",
 
         // ---- הרמת יד (raise-hand/add) ----
@@ -541,6 +542,7 @@ export const en = {
         lafadd_location_ph: "Street, neighborhood or place...",
         lafadd_expiry_pre: "The listing will be deleted automatically after",
         lafadd_expiry_days: "30 days",
+        lafadd_pick_type_hint: "Please choose above: lost or found",
         lafadd_submit: "🔍 Publish listing",
 
         // ---- Raise hand (raise-hand/add) ----
@@ -870,6 +872,7 @@ export const ru = {
         lafadd_location_ph: "Улица, район или место...",
         lafadd_expiry_pre: "Объявление будет автоматически удалено через",
         lafadd_expiry_days: "30 дней",
+        lafadd_pick_type_hint: "Выберите выше: потеряно или найдено",
         lafadd_submit: "🔍 Опубликовать объявление",
 
         // ---- Поднять руку (raise-hand/add) ----

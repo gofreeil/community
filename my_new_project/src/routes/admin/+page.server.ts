@@ -1,7 +1,7 @@
 import { redirect, fail, error } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { requireSuperAdmin, requireAdmin } from '$lib/server/auth';
-import { getAllUsers, banUser, unbanUser, deleteUserAccounts, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByAnyId, getUserByEmail, createItem, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, getNeighborhoodById, approveNeighborhood, rejectNeighborhood, getDiscountCodes, saveDiscountCodes, getItemsByCategoryAndStatus, getUserTotpSecret, coordinatorCovers } from '$lib/server/db';
+import { getAllUsers, banUser, unbanUser, deleteUserAccounts, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByAnyId, getUserByEmail, createItem, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, getNeighborhoodById, approveNeighborhood, rejectNeighborhood, getDiscountCodes, saveDiscountCodes, getItemsByCategoryAndStatus, getUserTotpSecret, coordinatorCovers, updateItem, getDbItemByIdFresh, getAllSuperAdmins, getMessagesByUserId, type DbItem } from '$lib/server/db';
 import { finalizeLocationDecision } from '$lib/server/locationDecision';
 import { DEFAULT_DISCOUNT_CODES, type DiscountCode } from '$lib/discountCodes';
 import { countPending } from '$lib/server/adsStore';
@@ -91,11 +91,12 @@ export const load: PageServerLoad = async (event) => {
     // סיכומי "הגרף הראשי" (פריטים/נרשמים) נבנים אחרי טעינת users/items מאותם
     // מערכים — בלי שליפה כפולה מ-Strapi ובאותה הגדרת "פריט קהילה" כמו המונה.
 
-    const [users, items0, coordinatorRequests, pendingNeighborhoods] = await Promise.all([
+    const [users, items0, coordinatorRequests, pendingNeighborhoods, pendingWishes0] = await Promise.all([
         getAllUsers(jwt).catch((e) => { console.warn('[admin] getAllUsers failed:', e); return [] as Awaited<ReturnType<typeof getAllUsers>>; }),
         getAllItems().catch((e) => { console.warn('[admin] getAllItems failed:', e); return [] as Awaited<ReturnType<typeof getAllItems>>; }),
         getCoordinatorRequests('pending').catch((e) => { console.warn('[admin] getCoordinatorRequests failed:', e); return [] as Awaited<ReturnType<typeof getCoordinatorRequests>>; }),
         getNeighborhoods('pending').catch((e) => { console.warn('[admin] getNeighborhoods failed:', e); return [] as Awaited<ReturnType<typeof getNeighborhoods>>; }),
+        getItemsByCategoryAndStatus('wish', 'pending').catch((e) => { console.warn('[admin] pending wishes failed:', e); return [] as Awaited<ReturnType<typeof getItemsByCategoryAndStatus>>; }),
     ]);
     // פריטי תוכן אמיתיים של משפחת האתרים המסונכרנים (קהילה + גמ"ח ארצי +
     // אבידות + בעלי מקצוע...) — כולל קטגוריות של אתרי-אחות כמו 'lost_and_found'.
@@ -128,6 +129,20 @@ export const load: PageServerLoad = async (event) => {
         ...nb,
         requester: requesterContextFor(nb.user_id, { name: nb.requester_name, phone: nb.requester_phone }),
     }));
+
+    // משאלות שממתינות לאישור בכותל המשאלות - עם הקשר המבקש (אם היה מחובר).
+    // מי שלא היה מחובר: מוצג רק השם שנשמר על המשאלה עצמה (אם קיים).
+    const pendingWishes = pendingWishes0.map((w) => {
+        let ef: Record<string, unknown> = {};
+        try { ef = w.extra_fields ? JSON.parse(w.extra_fields) : {}; } catch { ef = {}; }
+        return {
+            id:         w.id,
+            text:       w.description || w.label,
+            created_at: w.created_at,
+            user_id:    w.user_id,
+            requester:  requesterContextFor(w.user_id, { name: String(ef.requester_name ?? '') || null }),
+        };
+    });
 
     // בקשה שכבר מומשה (המבקש כבר רכז של כל האזורים שביקש) עלולה להיתקע כ-pending.
     // מסתירים אותה מהתצוגה *בלבד* — בלי לגעת בסטטוס במסד. אישור בקשת רכז הוא ידני-
@@ -175,6 +190,7 @@ export const load: PageServerLoad = async (event) => {
         items,
         coordinatorRequests: coordinatorRequestsWithContext,
         pendingNeighborhoods: pendingNeighborhoodsWithRequester,
+        pendingWishes,
         currentUserId: session?.user?.id ?? '',
         pendingAdsCount,
         pendingSinglesCount,
@@ -189,6 +205,72 @@ export const load: PageServerLoad = async (event) => {
         registrations,
     };
 };
+
+// סגירה אחידה של החלטה על משאלה (אישור/דחייה) - best-effort, באותה תבנית של
+// finalizeLocationDecision: 1) הודעת החלטה למבקש (אם היה מחובר) 2) סימון הודעות
+// "משאלה חדשה" בתיבות הסופר-אדמינים כ"טופל" - נשארות כהיסטוריה, לא נמחקות.
+// כשל בכל אחד מהשלבים לא מבטל את האישור/הדחייה עצמם.
+async function finalizeWishDecision(wish: DbItem | undefined, decision: 'approve' | 'reject'): Promise<void> {
+    if (!wish) return;
+    const wishText = wish.description || wish.label;
+
+    // 1. הודעת החלטה למבקש
+    if (wish.user_id) {
+        try {
+            await createItem({
+                category: 'message',
+                label: decision === 'approve'
+                    ? '✅ המשאלה שלך אושרה ומוצגת בכותל המשאלות'
+                    : 'לגבי המשאלה ששלחת לכותל המשאלות',
+                description: decision === 'approve'
+                    ? `המנהל אישר את המשאלה ששלחת:\n\n"${wishText}"\n\nהיא מוצגת עכשיו בכותל המשאלות 🙏\n/community-fund`
+                    : `לאחר בדיקה, המשאלה ששלחת:\n\n"${wishText}"\n\nלא אושרה לפרסום בכותל המשאלות כרגע. אפשר לנסח משאלה חדשה או לפנות אלינו דרך "כתוב למערכת" בפרופיל.`,
+                icon:    decision === 'approve' ? '✅' : '💬',
+                color:   decision === 'approve' ? 'green' : 'red',
+                user_id: wish.user_id,
+                extra_fields: {
+                    type:       'wish_decision',
+                    decision,
+                    read:       false,
+                    link:       '/community-fund',
+                    decided_at: new Date().toISOString(),
+                },
+            });
+        } catch (e) {
+            console.warn('[admin/wish] notify requester failed:', e instanceof Error ? e.message : e);
+        }
+    }
+
+    // 2. סימון הודעות "משאלה חדשה" בתיבות הסופר-אדמינים כ"טופל"
+    try {
+        const admins = await getAllSuperAdmins();
+        const decisionWord = decision === 'approve' ? 'אושרה' : 'נדחתה';
+        for (const admin of admins) {
+            let msgs;
+            try { msgs = await getMessagesByUserId(admin.id); } catch { continue; }
+            const related = (msgs ?? []).filter((m) => {
+                let ef: Record<string, unknown> = {};
+                try { ef = JSON.parse(m.extra_fields || '{}') ?? {}; } catch { return false; }
+                if (ef?.handled) return false;
+                if (String(ef?.type ?? '') !== 'wish_request') return false;
+                return String(ef?.wish_item_id ?? '') === wish.id ||
+                    String(ef?.wish_text ?? '').trim() === wishText.trim();
+            });
+            await Promise.all(related.map(async (m) => {
+                let ef: Record<string, unknown> = {};
+                try { ef = JSON.parse(m.extra_fields || '{}') ?? {}; } catch {}
+                await updateItem(m.id, {
+                    label: `${decision === 'approve' ? '✅' : '❌'} טופל (${decisionWord}) · ${(m.label ?? '').replace(/^[✅❌🙏]+\s*(טופל\s*\([^)]*\)\s*·\s*)?/, '')}`,
+                    icon:  decision === 'approve' ? '✅' : '❌',
+                    color: decision === 'approve' ? 'green' : 'red',
+                    extra_fields: { ...ef, handled: true, decision, handled_at: new Date().toISOString() },
+                });
+            }));
+        }
+    } catch (e) {
+        console.warn('[admin/wish] mark admin messages handled failed:', e instanceof Error ? e.message : e);
+    }
+}
 
 export const actions: Actions = {
     ban: async (event) => {
@@ -383,6 +465,43 @@ export const actions: Actions = {
                 });
             }
             return { success: true, message: 'השכונה נדחתה' };
+        } catch (e) {
+            return fail(500, { error: `שגיאה בדחייה: ${e instanceof Error ? e.message : e}` });
+        }
+    },
+
+    approveWish: async (event) => {
+        const session = await event.locals.auth();
+        requireSuperAdmin(session);
+
+        const formData = await event.request.formData();
+        const wishId = formData.get('wishId') as string;
+        if (!wishId) return fail(400, { error: 'חסר מזהה משאלה' });
+
+        try {
+            // שולפים לפני שינוי הסטטוס - לנתוני המבקש להודעת ההחלטה
+            const wish = await getDbItemByIdFresh(wishId);
+            await updateItem(wishId, { status: 'active' });
+            await finalizeWishDecision(wish, 'approve');
+            return { success: true, message: 'המשאלה אושרה - מעכשיו תוצג בכותל המשאלות' };
+        } catch (e) {
+            return fail(500, { error: `שגיאה באישור: ${e instanceof Error ? e.message : e}` });
+        }
+    },
+
+    rejectWish: async (event) => {
+        const session = await event.locals.auth();
+        requireSuperAdmin(session);
+
+        const formData = await event.request.formData();
+        const wishId = formData.get('wishId') as string;
+        if (!wishId) return fail(400, { error: 'חסר מזהה משאלה' });
+
+        try {
+            const wish = await getDbItemByIdFresh(wishId);
+            await updateItem(wishId, { status: 'rejected' });
+            await finalizeWishDecision(wish, 'reject');
+            return { success: true, message: 'המשאלה נדחתה - לא תוצג בכותל' };
         } catch (e) {
             return fail(500, { error: `שגיאה בדחייה: ${e instanceof Error ? e.message : e}` });
         }

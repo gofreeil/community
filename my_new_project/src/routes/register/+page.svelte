@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { signIn } from '@auth/sveltekit/client';
+	import { tick } from 'svelte';
 	import { get } from 'svelte/store';
 	import { t, locale } from 'svelte-i18n';
 
@@ -9,6 +10,13 @@
 	let showPassword = $state(false);
 	let showConfirm  = $state(false);
 	let loadingProvider = $state<'google' | 'facebook' | null>(null);
+
+	// בדיקת התאמת סיסמאות בצד לקוח + שגיאה צמודה לכפתור השליחה
+	// (תיבת השגיאה העליונה נשארת - אבל בטופס נייד ארוך היא מחוץ למסך)
+	let password        = $state('');
+	let confirmPassword = $state('');
+	let clientError     = $state('');
+	let nearBtnErrorEl  = $state<HTMLElement | null>(null);
 
 	// הרשמה דרך OAuth: בגוגל/פייסבוק הפעם הראשונה *היא* ההרשמה - אותה פעולה
 	// כמו בלוגין. callbackUrl עם welcome=1 כדי להציג את מסך הפתיחה למשתמש חדש.
@@ -183,11 +191,24 @@
 				<form
 					method="POST"
 					action="?/register"
-					use:enhance={() => {
+					use:enhance={({ cancel }) => {
+						clientError = '';
+						// אימות התאמת סיסמאות בצד לקוח - בלי סיבוב שרת מיותר
+						if (password !== confirmPassword) {
+							clientError = tFn('passwords_no_match');
+							cancel();
+							return;
+						}
 						isLoading = true;
 						return async ({ update }) => {
 							isLoading = false;
 							await update();
+							// שגיאת שרת: לוודא שהשגיאה שליד הכפתור נראית
+							// (במקלדת פתוחה בנייד היא עלולה להיות מחוץ למסך)
+							if (form?.error) {
+								await tick();
+								nearBtnErrorEl?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+							}
 						};
 					}}
 				>
@@ -232,6 +253,8 @@
 								type={showPassword ? 'text' : 'password'}
 								required
 								autocomplete="new-password"
+								bind:value={password}
+								oninput={() => (clientError = '')}
 								class="w-full bg-[#1e293b] border border-white/10 rounded-xl px-4 py-3 pl-11
 								       text-white placeholder-gray-500 focus:outline-none focus:border-purple-500
 								       focus:ring-1 focus:ring-purple-500 transition-colors"
@@ -267,6 +290,8 @@
 								type={showConfirm ? 'text' : 'password'}
 								required
 								autocomplete="new-password"
+								bind:value={confirmPassword}
+								oninput={() => (clientError = '')}
 								class="w-full bg-[#1e293b] border border-white/10 rounded-xl px-4 py-3 pl-11
 								       text-white placeholder-gray-500 focus:outline-none focus:border-purple-500
 								       focus:ring-1 focus:ring-purple-500 transition-colors"
@@ -291,6 +316,17 @@
 							</button>
 						</div>
 					</div>
+
+					<!-- שגיאה צמודה לכפתור: נראית גם כשראש הטופס מחוץ למסך (נייד) -->
+					{#if clientError || form?.error}
+						<p
+							bind:this={nearBtnErrorEl}
+							role="alert"
+							class="mb-3 text-center text-red-400 text-sm font-bold"
+						>
+							{clientError || form?.error}
+						</p>
+					{/if}
 
 					<button
 						type="submit"

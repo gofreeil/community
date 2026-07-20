@@ -63,8 +63,10 @@ export const load: PageServerLoad = async (event) => {
     const vaadMembersCount   = dbItems.filter(i => i.category === 'vaad_member'   && inMyNeighborhood(i)).length;
 
     return {
-        // עסקי האינדקס כבר "רזים" (אין להם extra_fields כבד) — מצורפים אחרי הדילול
-        dbItems: [...dbItems.map(slimForHome), ...indexItems],
+        // עסקי האינדקס כבר "רזים" (אין להם extra_fields כבד) — מצורפים אחרי הדילול.
+        // משאלות (wish) מוחרגות: הן מוצגות רק בכותל המשאלות, ושליחתן לדף הבית
+        // הייתה חושפת user_id של המבקש לכל גולש.
+        dbItems: [...dbItems.filter((i) => i.category !== 'wish').map(slimForHome), ...indexItems],
         events,
         userNeighborhood,
         userCity,

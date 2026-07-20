@@ -1,5 +1,6 @@
 <script lang="ts">
     import { enhance } from '$app/forms';
+    import { tick } from 'svelte';
     import { _ } from 'svelte-i18n';
     import { formMemory } from '$lib/formMemory';
     import { imageDrop } from '$lib/imageDrop';
@@ -27,6 +28,9 @@
     let submitting  = $state(false);
     let imageBase64 = $state('');
     let imagePreview = $state('');
+    // תיבת השגיאה שליד כפתור השליחה - בטופס ארוך בנייד תיבת השגיאה העליונה מחוץ למסך,
+    // אז אחרי כישלון שרת גוללים אל התיבה התחתונה כדי שהמשוב יהיה מול העיניים
+    let bottomErrorEl = $state<HTMLDivElement | null>(null);
 
     // מגירת תגים - המפרסם מסמן מאפיינים כדי שמי שאיבד יאתר את הפריט מהר בחיפוש
     const LAF_TAGS = [
@@ -147,6 +151,11 @@
                     return async ({ update }) => {
                         await update();
                         submitting = false;
+                        // שגיאת שרת: לגלול אל תיבת השגיאה שליד הכפתור כדי שתהיה גלויה
+                        if (form?.error) {
+                            await tick();
+                            bottomErrorEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
                     };
                 }}
                 use:formMemory
@@ -355,6 +364,21 @@
                     <span class="flex-shrink-0 mt-0.5">⏳</span>
                     <span>{$_('listings.lafadd_expiry_pre')} <strong>{$_('listings.lafadd_expiry_days')}</strong></span>
                 </div>
+
+                <!-- שגיאת שרת ליד כפתור השליחה - נראית גם כשהתיבה העליונה מחוץ למסך -->
+                {#if form?.error}
+                    <div bind:this={bottomErrorEl} role="alert"
+                        class="px-4 py-3 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 text-sm font-bold">
+                        ⚠️ {form.error}
+                    </div>
+                {/if}
+
+                <!-- הכפתור נעול עד בחירת סוג (אבד/נמצא) - רמז קטן שמסביר למה -->
+                {#if !type && !submitting}
+                    <p class="text-center text-gray-400 text-xs font-bold">
+                        ☝️ {$_('listings.lafadd_pick_type_hint')}
+                    </p>
+                {/if}
 
                 <!-- Submit -->
                 <button

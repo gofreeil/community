@@ -21,7 +21,7 @@
 export const SYSTEM_CATEGORIES: ReadonlySet<string> = new Set([
 	'message', 'admin_alert', 'poll', 'emergency_team', 'raise_hand',
 	'singles_access', 'singles_request', 'shabbat_report', 'shabbat_request',
-	'location_request', 'user_feedback', 'vaad_member',
+	'location_request', 'user_feedback', 'vaad_member', 'wish',
 ]);
 
 /**

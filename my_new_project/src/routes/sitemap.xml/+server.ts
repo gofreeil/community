@@ -1,5 +1,6 @@
 import type { RequestHandler } from './$types';
 import { getAllItems } from '$lib/server/db';
+import { isFamilyItem } from '$lib/itemCategories';
 import { SITE_URL } from '$lib/seo';
 
 // דפי לוח ציבוריים קבועים - עדיפות גבוהה, מתעדכנים תכופות
@@ -39,10 +40,12 @@ export const GET: RequestHandler = async ({ setHeaders }) => {
     const urls: string[] = STATIC_PAGES.map((p) => urlEntry(p.path, { priority: p.priority, changefreq: p.changefreq }));
 
     // פריטים פעילים → דף הפרט הקנוני /items/[id]
+    // רק פריטי תוכן אמיתיים: רשומות מערכת (הודעות, משאלות, בקשות) אינן דפים
+    // ציבוריים ואסור לפרסם אליהן קישורים ב-sitemap
     try {
         const items = await getAllItems();
         for (const it of items) {
-            if (!it.id) continue;
+            if (!it.id || !isFamilyItem(it.category)) continue;
             urls.push(urlEntry(`/items/${it.id}`, { lastmod: it.created_at, priority: 0.6, changefreq: 'weekly' }));
         }
     } catch { /* אם Strapi נופל - מחזירים לפחות את הדפים הקבועים */ }

@@ -45,6 +45,13 @@
 	function coordDraft(name: string | null | undefined): string {
 		return `שלום${name ? ` ${name}` : ''}, בקשר לבקשתך להיות רכז/ת שכונה: `;
 	}
+	function wishWaText(name: string | null | undefined, text: string): string {
+		const short = text.length > 60 ? `${text.slice(0, 57)}…` : text;
+		return `שלום${name ? ` ${name}` : ''}, כאן הנהלת קהילה בשכונה 👋 בקשר למשאלה ששלחת לכותל המשאלות ("${short}"):`;
+	}
+	function wishDraft(name: string | null | undefined): string {
+		return `שלום${name ? ` ${name}` : ''}, בקשר למשאלה ששלחת לכותל המשאלות: `;
+	}
 
 	// ---- סימון ידני "כבר אישרתי" על פרסומים/הודעות (וי ירוק) ----
 	// נשמר ב-localStorage של הדפדפן (זיכרון אישי לאדמין, ללא צורך בבאקאנד)
@@ -536,6 +543,90 @@
 										internalDraft={nbDraft(nb.requester?.name, nb.name, nb.city)}
 									/>
 								</div>
+							</div>
+						{/each}
+					</div>
+				</section>
+			{/if}
+
+			<!-- סקציית משאלות לכותל המשאלות - ממתינות לאישור -->
+			{#if (data.pendingWishes ?? []).length > 0}
+				<section id="pending-wishes" class="mb-6 scroll-mt-8 md:scroll-mt-32">
+					<div class="flex items-center gap-2 mb-3">
+						<span class="text-2xl">🙏</span>
+						<h2 class="text-lg font-black text-purple-300">משאלות ממתינות לאישור</h2>
+						<span class="text-xs font-bold bg-purple-500/15 text-purple-200 border border-purple-500/30 px-2 py-0.5 rounded-full">
+							{data.pendingWishes.length}
+						</span>
+						<p class="text-xs text-gray-500 hidden md:block mr-2">משאלות שנשלחו לכותל המשאלות - יוצגו לציבור רק אחרי אישורך</p>
+					</div>
+
+					<div class="grid gap-2 md:gap-3">
+						{#each data.pendingWishes as wish, i (wish.id)}
+							<div class="bg-purple-500/5 rounded-2xl border border-purple-500/30 p-3 md:p-4 flex flex-col gap-3 transition-all hover:border-purple-500/50">
+								<!-- שורת מידע עליונה: טקסט המשאלה · אישור/דחייה -->
+								<div class="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
+									<div class="flex items-start gap-3 flex-1 min-w-0">
+										<div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center flex-shrink-0 text-lg ring-2 ring-purple-400/40">
+											🙏
+										</div>
+										<div class="min-w-0">
+											{#if i === 0}
+												<span class="text-[11px] font-bold bg-green-500/20 text-green-300 border border-green-500/40 px-2 py-0.5 rounded-full whitespace-nowrap">🆕 המשאלה האחרונה</span>
+											{/if}
+											<p class="text-base md:text-lg text-gray-100 leading-relaxed whitespace-pre-line break-words">{wish.text}</p>
+											{#if wish.created_at}
+												<div class="text-xs text-purple-200/70 mt-0.5" dir="ltr">🕒 {fmtDateTime(wish.created_at)}</div>
+											{/if}
+										</div>
+									</div>
+
+									<!-- אישור/דחייה -->
+									<div class="flex gap-2 flex-shrink-0 flex-wrap">
+										<form method="POST" action="?/approveWish" use:enhance>
+											<input type="hidden" name="wishId" value={wish.id} />
+											<button
+												type="submit"
+												class="px-3 py-1.5 text-sm rounded-lg bg-green-500/15 text-green-300 border border-green-500/40 hover:bg-green-500/25 transition-all cursor-pointer font-bold"
+												title="אשר - המשאלה תוצג בכותל המשאלות לכל הגולשים"
+											>
+												✅ אשר משאלה
+											</button>
+										</form>
+										<form method="POST" action="?/rejectWish" use:enhance>
+											<input type="hidden" name="wishId" value={wish.id} />
+											<button
+												type="submit"
+												class="px-3 py-1.5 text-sm rounded-lg bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all cursor-pointer"
+												onclick={(e) => { if (!confirm('לדחות את המשאלה? היא לא תוצג בכותל.')) e.preventDefault(); }}
+											>
+												✖️ דחה
+											</button>
+										</form>
+									</div>
+								</div>
+
+								<!-- הקשר המבקש + שני מסלולי צ'אט - מוצג כשידוע מי שלח -->
+								{#if wish.requester?.userId || wish.requester?.name || wish.requester?.phone}
+									<div class="flex flex-col gap-2 border-t border-purple-500/15 pt-3">
+										<RequesterContext
+											userId={wish.requester?.userId}
+											name={wish.requester?.name}
+											phone={wish.requester?.phone}
+											email={wish.requester?.email}
+											city={wish.requester?.city}
+											neighborhood={wish.requester?.neighborhood}
+											business={wish.requester?.business}
+											sourceLabel={'משאלה לכותל המשאלות (דף קופת השכונה)'}
+										/>
+										<RequesterChatButtons
+											userId={wish.requester?.userId}
+											phone={wish.requester?.phone}
+											waText={wishWaText(wish.requester?.name, wish.text)}
+											internalDraft={wishDraft(wish.requester?.name)}
+										/>
+									</div>
+								{/if}
 							</div>
 						{/each}
 					</div>
