@@ -6,6 +6,7 @@
 
 import { strapiGet, strapiPost, strapiPut, strapiDelete, StrapiContentTypeError, findStrapiUpUsers, updateStrapiUpUser } from './strapiClient.js';
 import { DEFAULT_DISCOUNT_CODES, type DiscountCode } from '$lib/discountCodes';
+import { PRIVATE_CATEGORIES } from '$lib/itemCategories';
 import { userTier } from '$lib/tiers';
 import { cached, invalidate } from './cache.js';
 
@@ -424,7 +425,9 @@ export async function searchItems(query: string): Promise<DbItem[]> {
             'sort':                                     'createdAt:desc',
             'pagination[limit]':                        '500',
         });
-        return (res.data ?? []).map(mapStrapiItem);
+        // חיפוש הוא ציבורי - רשומות פרטיות (הודעות, משוב, בקשות, משאלות) לא
+        // נחשפות בו, אחרת חיפוש שם של אדם היה מציג הודעות פרטיות עליו
+        return (res.data ?? []).map(mapStrapiItem).filter((i) => !PRIVATE_CATEGORIES.has(i.category));
     } catch (e) {
         if (e instanceof StrapiContentTypeError) return [];
         throw e;

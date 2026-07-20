@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { createItem, getAllItems, getDbItemByIdFresh, incrementItemViewCount, getItemsByCategory, getItemsByUserId, updateItem, getAllSuperAdmins, getUserById } from '$lib/server/db';
 import { categoryConfig, getCategoryIcon, getCategoryColor } from '$lib/categoryFields';
+import { PRIVATE_CATEGORIES } from '$lib/itemCategories';
 import { categoryTier, tierMet } from '$lib/tiers';
 import { resolveItemCoords } from '$lib/server/geocode';
 import { Resend } from 'resend';
@@ -118,8 +119,10 @@ async function notifySinglesReview(itemLabel: string, ef: Record<string, unknown
 
 // ---- GET: list all active items ----
 export const GET: RequestHandler = async () => {
+    // endpoint ציבורי - מסננים רשומות פרטיות (הודעות, משוב, בקשות, משאלות),
+    // אחרת כל גולש היה מקבל אותן עם extra_fields מלא
     const items = await getAllItems();
-    return json(items);
+    return json(items.filter((i) => !PRIVATE_CATEGORIES.has(i.category)));
 };
 
 // ---- POST: create a new item ----

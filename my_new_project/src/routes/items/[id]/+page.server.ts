@@ -3,6 +3,7 @@ import { getDbItemById, getItemsByCategory, getUserByAnyId } from '$lib/server/d
 import { isSuperAdmin, isCoordinatorOfArea } from '$lib/server/auth';
 import { getSinglesAccessStatus } from '$lib/server/singlesAccess';
 import { getItemById as getStaticItemById } from '$lib/itemsData';
+import { PRIVATE_CATEGORIES } from '$lib/itemCategories';
 import { getDemoItemById } from '$lib/demoUserItems';
 import type { PageServerLoad } from './$types';
 
@@ -124,9 +125,9 @@ export const load: PageServerLoad = async (event) => {
         const canEditPage = canEditActivities && dbItem.category !== 'singles';
 
         // נכס שנמחק (מחיקה רכה) גלוי רק לבעלים/רכז/סופר-אדמין - כדי לשחזר. לגולש רגיל = לא נמצא.
-        // משאלה (wish) לעולם אינה דף פריט ציבורי - היא מוצגת רק ככרטיס טקסט בכותל המשאלות,
-        // ודף הפריט שלה היה חושף user_id ו-extra_fields לכל גולש.
-        if ((dbItem.status === 'deleted' || dbItem.category === 'wish') && !canEditActivities) {
+        // רשומות פרטיות (הודעות, משוב, בקשות, משאלות) לעולם אינן דף פריט ציבורי -
+        // דף הפריט היה חושף label/description/extra_fields/user_id לכל גולש שמנחש id.
+        if ((dbItem.status === 'deleted' || PRIVATE_CATEGORIES.has(dbItem.category)) && !canEditActivities) {
             return { origin, item: null };
         }
 

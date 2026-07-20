@@ -1,5 +1,6 @@
 import { getAllItems, getUserById, getEvents, type DbItem } from '$lib/server/db';
 import { getIndexBusinesses } from '$lib/server/indexBusinesses';
+import { PRIVATE_CATEGORIES } from '$lib/itemCategories';
 import { isAdmin } from '$lib/server/auth';
 import type { PageServerLoad } from './$types';
 
@@ -64,9 +65,10 @@ export const load: PageServerLoad = async (event) => {
 
     return {
         // עסקי האינדקס כבר "רזים" (אין להם extra_fields כבד) — מצורפים אחרי הדילול.
-        // משאלות (wish) מוחרגות: הן מוצגות רק בכותל המשאלות, ושליחתן לדף הבית
-        // הייתה חושפת user_id של המבקש לכל גולש.
-        dbItems: [...dbItems.filter((i) => i.category !== 'wish').map(slimForHome), ...indexItems],
+        // רשומות פרטיות (הודעות, משוב, בקשות, משאלות) מוחרגות: שליחתן לדפדפן
+        // הייתה חושפת טקסטים פרטיים ו-user_id לכל גולש. raise_hand/emergency_team/
+        // vaad_member נשארים - דף הבית והמפה משתמשים בהם.
+        dbItems: [...dbItems.filter((i) => !PRIVATE_CATEGORIES.has(i.category)).map(slimForHome), ...indexItems],
         events,
         userNeighborhood,
         userCity,

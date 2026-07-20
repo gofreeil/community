@@ -25,6 +25,19 @@ export const SYSTEM_CATEGORIES: ReadonlySet<string> = new Set([
 ]);
 
 /**
+ * תקשורת פרטית ורשומות בקשה אישיות — אסור שיוגשו במסלולים ציבוריים:
+ * דף פריט, payload של דף הבית, חיפוש, GET /api/items ו-sitemap.
+ * תת-קבוצה של SYSTEM_CATEGORIES (+ wish, שמוצג רק ככרטיס טקסט בכותל המשאלות).
+ * בכוונה *לא* כאן: raise_hand (פין במפה שמנווט לדף הפריט), emergency_team
+ * ו-vaad_member (רשימות שכונתיות גלויות), poll (סקרים ציבוריים).
+ */
+export const PRIVATE_CATEGORIES: ReadonlySet<string> = new Set([
+	'message', 'admin_alert', 'user_feedback', 'location_request',
+	'singles_request', 'singles_access', 'shabbat_report', 'shabbat_request',
+	'wish',
+]);
+
+/**
  * קטגוריות של אתרים שאינם חלק מהמשפחה המסונכרנת.
  * 'pr_official' = אתר הדירוג הציבורי (public-rating-il) — מוצר נפרד לגמרי
  * שחלק בטעות את אוסף ה-items. הוא מבודד ל-collection `pr-item` בבאקאנד;
