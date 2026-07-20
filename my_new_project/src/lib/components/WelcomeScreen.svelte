@@ -109,15 +109,16 @@
 						{tFn("welcome_platforms_label")}
 					</p>
 
-					<!-- לוגואים של כל האתרים ברשת -->
-					<div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2.5">
+					<!-- לוגואים של כל האתרים ברשת — flex-wrap עם מרכוז כדי שהשורה
+					     האחרונה (חלקית) תתמרכז ולא תישאר צמודה לצד עם חלל ריק -->
+					<div class="flex flex-wrap justify-center gap-2.5">
 						{#each ads as site (site.id)}
 							<a
 								href={site.href}
 								target="_blank"
 								rel="noopener noreferrer"
 								title={site.title}
-								class="group flex flex-col items-center gap-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-400/40 p-2 transition-all hover:-translate-y-0.5"
+								class="group flex flex-col items-center gap-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-400/40 p-2 transition-all hover:-translate-y-0.5 grow-0 basis-[calc(33.333%-0.47rem)] sm:basis-[calc(25%-0.52rem)] md:basis-[calc(20%-0.55rem)]"
 							>
 								<div class="w-full aspect-[4/3] overflow-hidden rounded-lg bg-gradient-to-br {site.color}">
 									<img
