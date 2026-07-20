@@ -18,12 +18,26 @@
 	// פוקוס אוטומטי על שדה האימייל - פחות קליקים, פחות בלבול
 	onMount(() => emailInput?.focus());
 
+	// מצמיד סימון "ברוכים השבים" ליעד הנחיתה, יהיה אשר יהיה — כדי שמסך הפתיחה
+	// יופיע בכל התחברות ולא רק כשנוחתים על /profile.
+	// חשוב: safeRedirect בשרת *תמיד* מחזיר נתיב (ברירת מחדל '/profile'), ולכן
+	// data.redirectTo לעולם אינו ריק ואי אפשר להסתמך על `||` כ-fallback.
+	function withWelcome(dest: string): string {
+		try {
+			const u = new URL(dest, window.location.origin);
+			u.searchParams.set('welcome', 'back');
+			return `${u.pathname}${u.search}${u.hash}`;
+		} catch {
+			return '/profile?welcome=back';
+		}
+	}
+
 	async function loginWith(provider: 'google' | 'facebook') {
 		isLoading = true;
 		loadingProvider = provider;
 		try {
 			await signIn(provider, {
-				callbackUrl: data.redirectTo || '/profile?welcome=back',
+				callbackUrl: withWelcome(data.redirectTo || '/profile'),
 			});
 		} catch {
 			isLoading = false;
@@ -129,7 +143,7 @@
 							// signIn בלי פרטים מרים סשן מהעוגייה (handoff, בדיקה אחת בלבד)
 							try {
 								await signIn('credentials', {
-									callbackUrl: data.redirectTo || '/profile?welcome=back',
+									callbackUrl: withWelcome(data.redirectTo || '/profile'),
 								});
 								// אם הניווט לא קרה (נחסם/אופליין) - משחררים את הכפתור
 								setTimeout(() => { isLoading = false; loadingProvider = null; }, 4000);

@@ -1,5 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 import { getStrapiMeVerdict } from '$lib/server/strapiClient';
+import { getUserByEmail } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
 /**
@@ -32,5 +33,16 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
         throw redirect(302, redirectTo);
     }
 
-    return { redirect: redirectTo };
+    // מסך פתיחה: מי שמגיע דרך אתר אחר ואין לו עדיין כרטיס קהילה הוא מצטרף חדש
+    // ("ברוכים המצטרפים"); מי שכבר קיים אצלנו הוא חוזר ("ברוכים השבים").
+    // בכשל בזיהוי נוטים ל-'back' — פחות מטעה מלברך ותיק כאילו הוא חדש.
+    let welcome: 'new' | 'back' = 'back';
+    try {
+        const existing = await getUserByEmail(user.email.trim().toLowerCase(), jwt);
+        if (!existing) welcome = 'new';
+    } catch {
+        /* ignore — נשאר 'back' */
+    }
+
+    return { redirect: redirectTo, welcome };
 };

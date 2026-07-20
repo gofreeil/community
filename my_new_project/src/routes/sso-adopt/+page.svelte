@@ -5,10 +5,23 @@
 
 	let { data } = $props();
 
+	// מצמיד את סימון מסך הפתיחה ליעד הנחיתה (new = מצטרף חדש, back = חוזר)
+	function withWelcome(dest: string, kind: string): string {
+		try {
+			const u = new URL(dest, window.location.origin);
+			u.searchParams.set('welcome', kind);
+			return `${u.pathname}${u.search}${u.hash}`;
+		} catch {
+			return `/?welcome=${kind}`;
+		}
+	}
+
 	onMount(() => {
 		// מקים סשן קהילה מתוך העוגייה המשותפת gofreeil-auth. אם אין סשן משותף
 		// תקף — Auth.js יפנה לעמוד השגיאה (/login) ולא ינסה שוב (sso_adopt_tried).
-		signIn('gofreeil-sso', { callbackUrl: data.redirect || '/' });
+		signIn('gofreeil-sso', {
+			callbackUrl: withWelcome(data.redirect || '/', data.welcome ?? 'back'),
+		});
 	});
 </script>
 
