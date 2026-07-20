@@ -114,7 +114,7 @@
 		tabSwipeHandled       = false;
 		tabAxis               = null;
 		isDraggingH           = false;
-		dragStartLeftPx       = open ? 0 : -DRAWER_WIDTH;
+		dragStartLeftPx       = open ? 0 : -(drawerSystemEl?.offsetWidth ?? DRAWER_WIDTH);
 	}
 
 	function onTabTouchMove(e: TouchEvent) {
@@ -132,9 +132,10 @@
 
 		if (tabAxis === 'h' && drawerSystemEl) {
 			isDraggingH = true;
+			const w = drawerSystemEl.offsetWidth || DRAWER_WIDTH;
 			let newLeft = dragStartLeftPx + dx;
 			if (newLeft > 0) newLeft = 0;
-			if (newLeft < -DRAWER_WIDTH - 20) newLeft = -DRAWER_WIDTH - 20;
+			if (newLeft < -w - 20) newLeft = -w - 20;
 			drawerSystemEl.style.transition = 'none';
 			drawerSystemEl.style.left = newLeft + 'px';
 
@@ -413,7 +414,10 @@
 	.drawer-system {
 		position: fixed;
 		top: 0;
-		left: -340px;
+		left: -340px; /* fallback לדפדפנים בלי min() */
+		/* במסכים צרים (הגדלת תצוגה במכשיר) הרוחב מוגבל ל-92vw; ההיסט חייב
+		   להתאים לרוחב בפועל — אחרת הלשונית גולשת אל מחוץ למסך משמאל */
+		left: calc(-1 * min(340px, 92vw));
 		height: 100vh; /* fallback לדפדפנים בלי תמיכה ב-dvh */
 		height: 100dvh;
 		width: 340px;
