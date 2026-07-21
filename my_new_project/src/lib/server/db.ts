@@ -4,7 +4,7 @@
 // פריטים + קופת קהילה + משתמשים → Strapi 5 (async, cloud-persistent)
 // ============================================================
 
-import { strapiGet, strapiPost, strapiPut, strapiDelete, StrapiContentTypeError, findStrapiUpUsers, updateStrapiUpUser } from './strapiClient.js';
+import { strapiGet, strapiGetAll, strapiPost, strapiPut, strapiDelete, StrapiContentTypeError, findStrapiUpUsers, updateStrapiUpUser } from './strapiClient.js';
 import { DEFAULT_DISCOUNT_CODES, type DiscountCode } from '$lib/discountCodes';
 import { PRIVATE_CATEGORIES } from '$lib/itemCategories';
 import { userTier } from '$lib/tiers';
@@ -260,15 +260,16 @@ function mapUpUser(u: StrapiUpUser): DbUser {
 // ---- Items (Strapi) ----
 // ============================================================
 
+/** כל הפריטים הפעילים של האוסף המשותף — ללא תקרה (מדפדף עמוד-אחר-עמוד),
+ *  כך שפריטים ישנים לא נושרים מהמפה ומהמונים כשהאוסף גדל. */
 export async function getAllItems(): Promise<DbItem[]> {
     return cached('items:all', TTL_ITEMS, async () => {
         try {
-            const res = await strapiGet<{ data: StrapiItem[] }>('/api/items', {
+            const data = await strapiGetAll<StrapiItem>('/api/items', {
                 'filters[status1][$eq]': 'active',
                 'sort':                  'createdAt:desc',
-                'pagination[limit]':     '1000',
             });
-            return (res.data ?? []).map(mapStrapiItem);
+            return data.map(mapStrapiItem);
         } catch (e) {
             if (e instanceof StrapiContentTypeError) {
                 console.warn('[db] getAllItems: content type not registered, returning []');
@@ -335,13 +336,12 @@ export async function getDbItemById(id: string): Promise<DbItem | undefined> {
 export async function getItemsByCategory(category: string): Promise<DbItem[]> {
     return cached(`items:cat:${category}`, TTL_ITEMS, async () => {
         try {
-            const res = await strapiGet<{ data: StrapiItem[] }>('/api/items', {
+            const data = await strapiGetAll<StrapiItem>('/api/items', {
                 'filters[category][$eq]':  category,
                 'filters[status1][$eq]':   'active',
                 'sort':                    'createdAt:desc',
-                'pagination[limit]':       '1000',
             });
-            const items = (res.data ?? []).map(mapStrapiItem);
+            const items = data.map(mapStrapiItem);
             // אירוח לשבת: מודעה חד-פעמית > 3 ימים → freeze אוטומטי (lazy, fire-and-forget)
             if (category === 'realestate') {
                 return autoFreezeExpiredOneTimeAds(items);

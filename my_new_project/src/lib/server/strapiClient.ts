@@ -122,6 +122,41 @@ export async function strapiGet<T = unknown>(
     throw lastError!;
 }
 
+// גודל עמוד לשליפות "הכל" — תואם ל-maxLimit של השרת (config/api.ts),
+// כלומר מספר הבקשות המינימלי האפשרי.
+const ALL_PAGE_SIZE = 1000;
+// גבול-בטיחות נגד לולאה אינסופית אם השרת מתעלם מ-start (5M רשומות).
+const ALL_MAX_PAGES = 5000;
+
+/**
+ * שולף את *כל* התוצאות מ-Strapi ללא שום תקרה, ע"י מעבר עמוד-אחר-עמוד.
+ *
+ * למה: Strapi חוסם כל שאילתה בודדת ב-maxLimit (config/api.ts = 1000). בקשה עם
+ * limit גדול יותר לא נכשלת — היא **נחתכת בשקט**, וכל מה שמעבר נעלם בלי שגיאה.
+ * כאן מדפדפים עם start/limit עד שנגמרות התוצאות, כך שהאוסף המשותף יכול לגדול
+ * ללא הגבלה בלי שפריטים ישנים ייעלמו מהמפה או מהמונים.
+ */
+export async function strapiGetAll<T = unknown>(
+    path: string,
+    params: Record<string, string> = {},
+    jwt?: string,
+): Promise<T[]> {
+    const out: T[] = [];
+    for (let page = 0; page < ALL_MAX_PAGES; page++) {
+        const res = await strapiGet<{ data: T[] }>(path, {
+            ...params,
+            'pagination[start]': String(page * ALL_PAGE_SIZE),
+            'pagination[limit]': String(ALL_PAGE_SIZE),
+        }, jwt);
+        const batch = res.data ?? [];
+        out.push(...batch);
+        // עמוד חלקי = הגענו לסוף
+        if (batch.length < ALL_PAGE_SIZE) return out;
+    }
+    console.warn(`[Strapi] strapiGetAll ${path} hit the ${ALL_MAX_PAGES}-page safety bound`);
+    return out;
+}
+
 export async function strapiPost<T = unknown>(path: string, body: unknown, jwt?: string): Promise<T> {
     const res = await fetch(STRAPI_URL + path, {
         method:  'POST',
