@@ -183,6 +183,16 @@
                 { id: "safe-2", label: "מרחב מוגן קהילתי" },
             ],
         },
+        {
+            id: "natural-health",
+            label: "מטפלי בריאות טבעיים",
+            icon: "🌿",
+            items: [
+                { id: "natural-reflexology", label: "רפלקסולוגיה" },
+                { id: "natural-naturopathy", label: "נטורופתיה ותזונה טבעית" },
+                { id: "natural-massage", label: "עיסוי רפואי" },
+            ],
+        },
     ];
 
     let viewMode = $state<"map" | "list" | "search">("map");
@@ -251,6 +261,57 @@
     const benefitsCat = categories.find(c => c.id === 'benefits') ?? categories[0];
     const otherCats = categories.filter(c => c.id !== 'benefits');
 
+    // ----- כפתור "עוד" + התאמה אישית של סרגל הקטגוריות -----
+    // הכפתור האחרון בסרגל אינו קטגוריה אלא "עוד" — פותח תפריט עם הקטגוריות שאינן
+    // בסרגל הגלוי (ברירת מחדל: מרחב מוגן, מטפלי בריאות טבעיים; אפשר להוסיף עוד בהמשך).
+    // המשתמש יכול להעביר קטגוריה מהתפריט אל הסרגל הגלוי ולהיפך — ההעדפה נשמרת מקומית.
+    const DEFAULT_MORE_IDS = ['safe-space', 'natural-health'];
+    const MORE_STORAGE_KEY = 'map_more_cats_v1';
+
+    let moreIds = $state<string[]>([...DEFAULT_MORE_IDS]);
+    let showMorePanel = $state(false);
+    let editingBar = $state(false);
+
+    let barCats = $derived(otherCats.filter((c) => !moreIds.includes(c.id)));
+    let moreCats = $derived(otherCats.filter((c) => moreIds.includes(c.id)));
+
+    function persistMoreIds() {
+        try { localStorage.setItem(MORE_STORAGE_KEY, JSON.stringify(moreIds)); } catch {}
+    }
+
+    function loadMoreIds() {
+        try {
+            const raw = localStorage.getItem(MORE_STORAGE_KEY);
+            if (!raw) return;
+            const parsed = JSON.parse(raw);
+            if (!Array.isArray(parsed)) return;
+            const valid = parsed.filter(
+                (id: unknown) => typeof id === 'string' && otherCats.some((c) => c.id === id),
+            ) as string[];
+            // תמיד להשאיר לפחות כפתור אחד גלוי בסרגל
+            if (valid.length >= otherCats.length) return;
+            moreIds = valid;
+        } catch {}
+    }
+
+    // העברה לתפריט "עוד" — משאירה תמיד לפחות כפתור אחד גלוי
+    function moveToMore(id: string) {
+        if (moreIds.includes(id) || barCats.length <= 1) return;
+        moreIds = [...moreIds, id];
+        persistMoreIds();
+    }
+
+    // העברה אל הסרגל הגלוי
+    function moveToBar(id: string) {
+        moreIds = moreIds.filter((m) => m !== id);
+        persistMoreIds();
+    }
+
+    function resetBar() {
+        moreIds = [...DEFAULT_MORE_IDS];
+        persistMoreIds();
+    }
+
     // מפתח תרגום לתווית קטגוריה - ה-id נשאר מזהה לוגי (השוואות/ניווט), התרגום רק בתצוגה
     const catKey = (id: string) => 'map.cat_' + id.replace(/-/g, '_');
     // מפתח תרגום לפריט סטטי לדוגמה בקטגוריה - ה-label בדאטה נשאר, התצוגה דרך המפתח
@@ -275,6 +336,7 @@
         'singles':     'map.tip_singles',
         'halls':       'map.tip_halls',
         'safe-space':  'map.tip_safe_space',
+        'natural-health': 'map.tip_natural_health',
     };
 
     // ----- מצב מסך מלא לדסקטופ -----
@@ -1045,6 +1107,9 @@
         // אתחל שכונה מ-localStorage (אם הדף הראשי לא אתחל כבר)
         neighborhoodState.init();
 
+        // העדפת המשתמש: אילו קטגוריות יושבות מתחת לכפתור "עוד"
+        loadMoreIds();
+
         // אנימציה של רשימה פעם אחת בלבד! מצוין כמשיכת תשומת לב
         listAnimationTimeout = setTimeout(() => {
             // בצע רק אם המשתמש לא לחץ או שינה לפני כן, והעכבר לא על המפה, והמפה לא במסך מלא
@@ -1112,6 +1177,10 @@
             ) {
                 showNeighborhoodsMenu = false;
                 selectedCity = "";
+            }
+            if (showMorePanel && !target.closest(".more-cats-container")) {
+                showMorePanel = false;
+                editingBar = false;
             }
         };
 
@@ -1290,6 +1359,117 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
+<!-- אייקון קטגוריה (אמוג'י או קובץ) - משותף לסרגל, לתפריט "עוד" ולמצב העריכה -->
+{#snippet catIcon(category: { id: string; icon: string }, sizeClass: string, imgClass: string)}
+    {#if category.icon?.startsWith('/')}
+        <img src={category.icon} class={imgClass} alt={$t(catKey(category.id))} />
+    {:else}
+        <span
+            class="{sizeClass} leading-none"
+            style={category.id === "realestate"
+                ? "letter-spacing: -0.25em; margin-left: 0.15em; display: inline-block;"
+                : ""}>{category.icon}</span
+        >
+    {/if}
+{/snippet}
+
+<!-- תוכן תפריט "עוד": קטגוריות נוספות + מצב עריכה להחלפת כפתורים מול הסרגל הגלוי -->
+{#snippet morePanel(mobile: boolean)}
+    <div class="flex items-center justify-between gap-2 mb-2">
+        <h4 class="text-white font-bold text-sm">{$t('map.more_categories_title')}</h4>
+        <button
+            type="button"
+            onclick={() => (editingBar = !editingBar)}
+            class="text-[11px] font-bold px-2.5 py-1 rounded-full border transition-colors shrink-0 {editingBar
+                ? 'bg-yellow-400 text-gray-900 border-yellow-500'
+                : 'bg-white/10 text-yellow-300 border-yellow-400/40 hover:bg-white/20'}"
+        >
+            {editingBar ? $t('map.done_editing') : '✎ ' + $t('map.customize_bar')}
+        </button>
+    </div>
+
+    {#if !editingBar}
+        {#if moreCats.length === 0}
+            <p class="text-slate-400 text-xs text-center py-3">{$t('map.more_empty')}</p>
+        {:else}
+            <div class="grid grid-cols-2 gap-2">
+                {#each moreCats as category (category.id)}
+                    <button
+                        type="button"
+                        onclick={() => {
+                            if (mobile) {
+                                handleMobileCategoryTap(category.id);
+                            } else {
+                                showMorePanel = false;
+                                handleCategoryClick(category.id);
+                            }
+                        }}
+                        class="flex flex-col items-center justify-center gap-1 {selectedCategory === category.id
+                            ? 'bg-gradient-to-br from-purple-600 to-blue-600 text-white border-purple-500 ring-2 ring-purple-300'
+                            : 'bg-gradient-to-br from-white to-gray-200 hover:from-blue-100 hover:to-white text-gray-900 border-purple-300'} px-2 py-2.5 rounded-xl text-xs font-bold shadow-md active:scale-95 transition-all border map-category-button min-h-[68px]"
+                    >
+                        {@render catIcon(category, 'text-2xl', 'w-7 h-7')}
+                        <span class="leading-tight text-center">{$t(catKey(category.id))}</span>
+                    </button>
+                {/each}
+            </div>
+        {/if}
+        <p class="text-[11px] text-slate-400 mt-2.5 text-center leading-snug">{$t('map.customize_hint')}</p>
+    {:else}
+        <div class="flex flex-col gap-3">
+            <div>
+                <p class="text-[11px] font-bold text-emerald-300 mb-1.5">
+                    ⬆ {$t('map.shown_on_bar')}
+                </p>
+                <div class="flex flex-wrap gap-1.5">
+                    {#each barCats as category (category.id)}
+                        <button
+                            type="button"
+                            onclick={() => moveToMore(category.id)}
+                            title={$t('map.move_to_more')}
+                            aria-label="{$t(catKey(category.id))} — {$t('map.move_to_more')}"
+                            class="inline-flex items-center gap-1 bg-white/10 hover:bg-red-500/25 border border-white/20 text-white text-[11px] font-bold px-2 py-1 rounded-full transition-colors"
+                        >
+                            {@render catIcon(category, 'text-sm', 'w-4 h-4')}
+                            <span>{$t(catKey(category.id))}</span>
+                            <span class="text-red-300 leading-none">↓</span>
+                        </button>
+                    {/each}
+                </div>
+            </div>
+            <div>
+                <p class="text-[11px] font-bold text-yellow-300 mb-1.5">
+                    ⬇ {$t('map.in_more_menu')}
+                </p>
+                <div class="flex flex-wrap gap-1.5">
+                    {#each moreCats as category (category.id)}
+                        <button
+                            type="button"
+                            onclick={() => moveToBar(category.id)}
+                            title={$t('map.move_to_bar')}
+                            aria-label="{$t(catKey(category.id))} — {$t('map.move_to_bar')}"
+                            class="inline-flex items-center gap-1 bg-yellow-400/15 hover:bg-emerald-500/30 border border-yellow-400/40 text-white text-[11px] font-bold px-2 py-1 rounded-full transition-colors"
+                        >
+                            {@render catIcon(category, 'text-sm', 'w-4 h-4')}
+                            <span>{$t(catKey(category.id))}</span>
+                            <span class="text-emerald-300 leading-none">↑</span>
+                        </button>
+                    {:else}
+                        <span class="text-slate-400 text-[11px]">{$t('map.more_empty')}</span>
+                    {/each}
+                </div>
+            </div>
+            <button
+                type="button"
+                onclick={resetBar}
+                class="self-center text-[11px] text-slate-300 hover:text-white underline underline-offset-2"
+            >
+                {$t('map.reset_bar')}
+            </button>
+        </div>
+    {/if}
+{/snippet}
+
 {#if isFullscreen}
     <!-- שכבה כהה מאחורי המסך המלא -->
     <button
@@ -1394,29 +1574,42 @@
                                     <span class="leading-tight text-center">{$t(catKey(benefitsCat.id))}</span>
                                 </button>
                             </div>
-                            <!-- שורה 2+: 16 קטגוריות בגריד 4×4 סימטרי -->
+                            <!-- שורה 2+: הקטגוריות בגריד 4 בשורה; האריח האחרון = "עוד" -->
                             <div class="grid grid-cols-4 gap-1.5">
-                                {#each otherCats as category}
+                                {#each barCats as category (category.id)}
                                     <button
                                         onclick={() => handleMobileCategoryTap(category.id)}
                                         class="flex flex-col items-center justify-center gap-1 {selectedCategory === category.id
                                             ? 'bg-gradient-to-br from-purple-600 to-blue-600 text-white border-purple-500 ring-2 ring-purple-300'
                                             : 'bg-gradient-to-br from-white to-gray-200 text-gray-900 border-purple-300'} px-1 py-2.5 rounded-xl text-xs font-bold shadow-md active:scale-95 border map-category-button min-h-[70px]"
                                     >
-                                        {#if category.icon?.startsWith('/')}
-                                            <img src={category.icon} class="w-7 h-7" alt={$t(catKey(category.id))} />
-                                        {:else}
-                                            <span
-                                                class="text-2xl leading-none"
-                                                style={category.id === "realestate"
-                                                    ? "letter-spacing: -0.25em; margin-left: 0.15em; display: inline-block;"
-                                                    : ""}>{category.icon}</span
-                                            >
-                                        {/if}
+                                        {@render catIcon(category, 'text-2xl', 'w-7 h-7')}
                                         <span class="leading-tight text-center">{$t(catKey(category.id))}</span>
                                     </button>
                                 {/each}
+                                <!-- אריח "עוד" - פותח את הקטגוריות הנוספות ואת ההתאמה האישית -->
+                                <button
+                                    type="button"
+                                    onclick={() => (showMorePanel = !showMorePanel)}
+                                    aria-expanded={showMorePanel}
+                                    class="flex flex-col items-center justify-center gap-1 {showMorePanel
+                                        ? 'bg-gradient-to-br from-purple-600 to-blue-600 text-white border-purple-500 ring-2 ring-purple-300'
+                                        : 'bg-gradient-to-br from-yellow-400 to-orange-500 text-gray-900 border-yellow-500'} px-1 py-2.5 rounded-xl text-xs font-bold shadow-md active:scale-95 border map-category-button min-h-[70px]"
+                                >
+                                    <span class="text-2xl leading-none">{showMorePanel ? '✕' : '➕'}</span>
+                                    <span class="leading-tight text-center">{$t('map.more_categories')}</span>
+                                </button>
                             </div>
+
+                            <!-- פאנל "עוד" נפתח בתוך החלונית, מתחת לגריד -->
+                            {#if showMorePanel}
+                                <div
+                                    class="mt-2 rounded-xl border-2 border-yellow-400/50 bg-black/30 p-2.5"
+                                    style="animation: sheetFadeIn 0.2s ease-out;"
+                                >
+                                    {@render morePanel(true)}
+                                </div>
+                            {/if}
                         </div>
 
                         <!-- שכבת המתנה: תיאור הקטגוריה למשך זמן הטעינה -->
@@ -1460,7 +1653,7 @@
                 <div
                     class="hidden md:flex category-buttons-container flex-wrap justify-between gap-x-2 gap-y-3 p-2 w-full"
                 >
-                    {#each categories as category, index}
+                    {#each [benefitsCat, ...barCats] as category (category.id)}
                         <button
                             onclick={() => handleCategoryClick(category.id)}
                             class="relative flex items-center justify-center flex-1 {category.id === 'rides' ? 'gap-1 px-2 min-w-[19%]' : category.id === 'education' ? 'gap-1.5 px-3 min-w-[11%]' : 'gap-1.5 px-3 min-w-[15%]'} {selectedCategory === category.id
@@ -1490,6 +1683,30 @@
                             {/if}
                         </button>
                     {/each}
+
+                    <!-- הכפתור האחרון: "עוד" - תפריט קטגוריות נוספות + התאמה אישית של הסרגל -->
+                    <div class="relative flex-1 min-w-[15%] flex more-cats-container">
+                        <button
+                            type="button"
+                            onclick={() => (showMorePanel = !showMorePanel)}
+                            aria-expanded={showMorePanel}
+                            class="w-full relative flex items-center justify-center gap-1.5 px-3 {showMorePanel
+                                ? 'bg-gradient-to-br from-purple-600 to-blue-600 text-white border-purple-500 ring-2 ring-purple-300'
+                                : 'bg-gradient-to-br from-white to-gray-200 hover:from-blue-100 hover:to-white text-gray-900 border-purple-300'} py-1.5 rounded-lg text-xs font-bold shadow-lg transition-all hover:scale-105 border whitespace-nowrap map-category-button"
+                        >
+                            <span class="text-base icon">{showMorePanel ? '✕' : '➕'}</span>
+                            {$t('map.more_categories')}
+                        </button>
+                        {#if showMorePanel}
+                            <div
+                                class="absolute top-full mt-2 left-0 z-[900] w-[340px] max-w-[90vw] bg-[#0f172a] border-2 border-purple-500 rounded-xl shadow-2xl p-3 text-right"
+                                style="animation: sheetFadeIn 0.18s ease-out;"
+                                dir="rtl"
+                            >
+                                {@render morePanel(false)}
+                            </div>
+                        {/if}
+                    </div>
                 </div>
             </div><!-- /relative wrapper -->
         </div>

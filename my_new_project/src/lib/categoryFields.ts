@@ -416,6 +416,40 @@ export const categoryConfig: Record<string, CategoryConfig> = {
             { key: 'contact',     label: 'טלפון אחראי',             type: 'tel',      required: false, placeholder: '05X-XXXXXXX' },
         ],
     },
+
+    'natural-health': {
+        label: 'מטפלי בריאות טבעיים',
+        icon: '🌿',
+        color: 'green',
+        priceRow: 2,
+        addPageTitle: 'הוספת כרטיס מטפל/ת בריאות טבעית',
+        fields: [
+            { key: 'label',        label: 'שם המטפל/ת',            type: 'text',     required: true,  placeholder: 'שם פרטי ומשפחה' },
+            { key: 'service_type', label: 'תחום הטיפול',            type: 'multi_select', required: true, options: [
+                'רפלקסולוגיה',
+                'נטורופתיה',
+                'תזונה טבעית',
+                'עיסוי רפואי',
+                'שיאצו',
+                'רפואה סינית ודיקור',
+                'הומיאופתיה',
+                'צמחי מרפא',
+                'פרחי באך',
+                'טיפול בתנועה ובנשימה',
+            ], hint: 'אפשר לבחור כמה' },
+            { key: 'certification',label: 'הסמכה / לימודים',        type: 'text',     required: false, placeholder: 'בוגר/ת מכללת... , תעודה מטעם...' },
+            { key: 'experience',   label: 'ניסיון',                 type: 'select',   required: false, options: ['עד שנה', '1-3 שנים', '4-9 שנים', '10+ שנים'] },
+            { key: 'audience',     label: 'קהל יעד',                type: 'multi_select', required: false, options: ['נשים', 'גברים', 'ילדים', 'נשים בהריון', 'קשישים'] },
+            { key: 'price_session',label: 'מחיר לטיפול (₪)',        type: 'number',   required: false, placeholder: '250', half: true },
+            { key: 'home_visits',  label: 'מגיע/ה גם לבית הלקוח',   type: 'checkbox', required: false, half: true },
+            { key: 'address',      label: 'כתובת הקליניקה',         type: 'address',  required: false, placeholder: 'שם הרחוב' },
+            { key: 'location',     label: 'סימון על המפה',          type: 'map_pin',  required: false },
+            { key: 'description',  label: 'תיאור',                  type: 'textarea', required: true,  placeholder: 'ספרו על שיטת הטיפול ועל מי שמתאים לו...' },
+            { key: 'images',       label: 'תמונות (עד 5)',          type: 'images',   required: false },
+            { key: 'website',      label: 'אתר אינטרנט',            type: 'text',     required: false, placeholder: 'https://example.com', hint: 'יוצג רק בדף המורחב' },
+            { key: 'phone',        label: 'טלפון',                  type: 'tel',      required: true,  placeholder: '05X-XXXXXXX' },
+        ],
+    },
 };
 
 // ============================================================

@@ -22,6 +22,7 @@ export const he = {
         cat_singles: "פנויים/פנויות",
         cat_halls: "אולמות",
         cat_safe_space: "מרחב מוגן",
+        cat_natural_health: "מטפלי בריאות טבעיים",
 
         // ----- תיאורי טולטיפ לקטגוריות -----
         tip_benefits: "כל השירותים והיתרונות שיש בשכונה",
@@ -41,6 +42,7 @@ export const he = {
         tip_singles: "מכירים את הפנויים והפנויות לגילאים המתאימים לך לקשר כן",
         tip_halls: "לאירועים חד פעמיים או לחוגים קבועים",
         tip_safe_space: "ציבורי רשמי או פרטי פתוח לקהל",
+        tip_natural_health: "רפלקסולוגיה, נטורופתיה, עיסוי ורפואה משלימה",
 
         // ----- תוויות פינים לדוגמה (mock) על המפה -----
         mock_gemach_books: "גמ״ח ספרים",
@@ -99,6 +101,9 @@ export const he = {
         item_hall_wedding: "אולם שמחות",
         item_safe_1: "מקלט ציבורי מרכזי",
         item_safe_2: "מרחב מוגן קהילתי",
+        item_natural_reflexology: "רפלקסולוגיה",
+        item_natural_naturopathy: "נטורופתיה ותזונה טבעית",
+        item_natural_massage: "עיסוי רפואי",
 
         // ----- מסך מלא / זום -----
         close_fullscreen: "סגור מסך מלא",
@@ -124,6 +129,19 @@ export const he = {
         drag_to_close: "גרור למטה כדי לסגור",
         sheet_title: "סנן את היתרונות הדרושים לך",
         loading_data: "טוען נתונים...",
+
+        // ----- כפתור "עוד" והתאמה אישית של סרגל הקטגוריות -----
+        more_categories: "עוד",
+        more_categories_title: "קטגוריות נוספות",
+        customize_bar: "התאמה אישית",
+        done_editing: "סיום",
+        customize_hint: 'אפשר להעביר קטגוריה מכאן אל הכפתורים שמעל המפה — בלחיצה על "התאמה אישית"',
+        shown_on_bar: 'מוצג מעל המפה — לחיצה מעבירה לתפריט "עוד"',
+        in_more_menu: 'בתפריט "עוד" — לחיצה מעבירה אל הכפתורים שמעל המפה',
+        move_to_more: 'העבר לתפריט "עוד"',
+        move_to_bar: "העבר לכפתורים שמעל המפה",
+        reset_bar: "איפוס לברירת מחדל",
+        more_empty: "אין כרגע קטגוריות נוספות",
 
         // ----- החלפת תצוגה מפה/רשימה -----
         to_list_view: "עבור לתצוגת רשימה",
@@ -252,6 +270,7 @@ export const en = {
         cat_singles: "Singles",
         cat_halls: "Event Halls",
         cat_safe_space: "Safe Space",
+        cat_natural_health: "Natural Health",
 
         tip_benefits: "All the services and benefits in the neighborhood",
         tip_gemachim: "The neighborhood's free-loan (gemach) initiatives",
@@ -270,6 +289,7 @@ export const en = {
         tip_singles: "Meet the singles in the age range that suits you, for a genuine connection",
         tip_halls: "For one-time events or regular classes",
         tip_safe_space: "Official public shelters or private ones open to the public",
+        tip_natural_health: "Reflexology, naturopathy, massage and complementary medicine",
 
         mock_gemach_books: "Book Gemach",
         mock_gemach_tools: "Tool Gemach",
@@ -326,6 +346,9 @@ export const en = {
         item_hall_wedding: "Celebration hall",
         item_safe_1: "Central public shelter",
         item_safe_2: "Community safe space",
+        item_natural_reflexology: "Reflexology",
+        item_natural_naturopathy: "Naturopathy and natural nutrition",
+        item_natural_massage: "Therapeutic massage",
 
         close_fullscreen: "Close fullscreen",
         close_esc: "Close (Esc)",
@@ -349,6 +372,18 @@ export const en = {
         drag_to_close: "Drag down to close",
         sheet_title: "Filter the benefits you need",
         loading_data: "Loading data...",
+
+        more_categories: "More",
+        more_categories_title: "More categories",
+        customize_bar: "Customize",
+        done_editing: "Done",
+        customize_hint: 'Tap "Customize" to move a category from here up to the buttons above the map',
+        shown_on_bar: 'Shown above the map — tap to move it into the "More" menu',
+        in_more_menu: 'In the "More" menu — tap to move it up to the buttons above the map',
+        move_to_more: 'Move to the "More" menu',
+        move_to_bar: "Move to the buttons above the map",
+        reset_bar: "Reset to default",
+        more_empty: "No extra categories right now",
 
         to_list_view: "Switch to list view",
         to_map_view: "Switch to map view",
@@ -469,6 +504,7 @@ export const ru = {
         cat_singles: "Знакомства",
         cat_halls: "Залы",
         cat_safe_space: "Убежище",
+        cat_natural_health: "Натуральная медицина",
 
         tip_benefits: "Все услуги и преимущества района",
         tip_gemachim: "Гмахи взаимопомощи в районе",
@@ -487,6 +523,7 @@ export const ru = {
         tip_singles: "Знакомьтесь с одинокими подходящего возраста для серьёзных отношений",
         tip_halls: "Для разовых мероприятий или постоянных занятий",
         tip_safe_space: "Официальные общественные или частные, открытые для всех",
+        tip_natural_health: "Рефлексология, натуропатия, массаж и комплементарная медицина",
 
         mock_gemach_books: "Гмах книг",
         mock_gemach_tools: "Гмах инструментов",
@@ -543,6 +580,9 @@ export const ru = {
         item_hall_wedding: "Зал торжеств",
         item_safe_1: "Центральное общественное убежище",
         item_safe_2: "Общинное защищённое пространство",
+        item_natural_reflexology: "Рефлексология",
+        item_natural_naturopathy: "Натуропатия и натуральное питание",
+        item_natural_massage: "Лечебный массаж",
 
         close_fullscreen: "Закрыть полноэкранный режим",
         close_esc: "Закрыть (Esc)",
@@ -566,6 +606,18 @@ export const ru = {
         drag_to_close: "Потяните вниз, чтобы закрыть",
         sheet_title: "Отфильтруйте нужные вам преимущества",
         loading_data: "Загрузка данных...",
+
+        more_categories: "Ещё",
+        more_categories_title: "Дополнительные категории",
+        customize_bar: "Настроить",
+        done_editing: "Готово",
+        customize_hint: 'Нажмите "Настроить", чтобы перенести категорию отсюда на кнопки над картой',
+        shown_on_bar: 'Показано над картой — нажмите, чтобы перенести в меню "Ещё"',
+        in_more_menu: 'В меню "Ещё" — нажмите, чтобы перенести на кнопки над картой',
+        move_to_more: 'Перенести в меню "Ещё"',
+        move_to_bar: "Перенести на кнопки над картой",
+        reset_bar: "Сбросить по умолчанию",
+        more_empty: "Пока нет дополнительных категорий",
 
         to_list_view: "Перейти к списку",
         to_map_view: "Перейти к карте",
