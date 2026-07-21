@@ -4,7 +4,7 @@
 // פריטים + קופת קהילה + משתמשים → Strapi 5 (async, cloud-persistent)
 // ============================================================
 
-import { strapiGet, strapiGetAll, strapiPost, strapiPut, strapiDelete, StrapiContentTypeError, findStrapiUpUsers, updateStrapiUpUser } from './strapiClient.js';
+import { strapiGet, strapiGetAll, strapiPost, strapiPut, strapiDelete, StrapiContentTypeError, findStrapiUpUsers, findStrapiUpUsersAll, updateStrapiUpUser } from './strapiClient.js';
 import { DEFAULT_DISCOUNT_CODES, type DiscountCode } from '$lib/discountCodes';
 import { PRIVATE_CATEGORIES } from '$lib/itemCategories';
 import { userTier } from '$lib/tiers';
@@ -359,14 +359,13 @@ export async function getItemsByCategory(category: string): Promise<DbItem[]> {
 export async function getItemsByCategoryAndCity(category: string, city: string): Promise<DbItem[]> {
     return cached(`items:cat:${category}:city:${city}`, TTL_ITEMS, async () => {
         try {
-            const res = await strapiGet<{ data: StrapiItem[] }>('/api/items', {
+            const data = await strapiGetAll<StrapiItem>('/api/items', {
                 'filters[category][$eq]': category,
                 'filters[status1][$eq]':  'active',
                 'filters[city][$eq]':     city,
                 'sort':                   'createdAt:desc',
-                'pagination[limit]':      '1000',
             });
-            return (res.data ?? []).map(mapStrapiItem);
+            return data.map(mapStrapiItem);
         } catch (e) {
             if (e instanceof StrapiContentTypeError) return [];
             throw e;
@@ -377,13 +376,12 @@ export async function getItemsByCategoryAndCity(category: string, city: string):
 /** שליפת פריטים לפי קטגוריה + סטטוס (למשל פנויים שממתינים לאישור: 'singles','pending') */
 export async function getItemsByCategoryAndStatus(category: string, status: string): Promise<DbItem[]> {
     try {
-        const res = await strapiGet<{ data: StrapiItem[] }>('/api/items', {
+        const data = await strapiGetAll<StrapiItem>('/api/items', {
             'filters[category][$eq]':  category,
             'filters[status1][$eq]':   status,
             'sort':                    'createdAt:desc',
-            'pagination[limit]':       '1000',
         });
-        return (res.data ?? []).map(mapStrapiItem);
+        return data.map(mapStrapiItem);
     } catch (e) {
         if (e instanceof StrapiContentTypeError) return [];
         throw e;
@@ -435,12 +433,11 @@ export async function searchItems(query: string): Promise<DbItem[]> {
 }
 
 export async function getItemsByUserId(userId: string): Promise<DbItem[]> {
-    const res = await strapiGet<{ data: StrapiItem[] }>('/api/items', {
+    const data = await strapiGetAll<StrapiItem>('/api/items', {
         'filters[user_id][$eq]': userId,
         'sort':                  'createdAt:desc',
-        'pagination[limit]':     '1000',
     });
-    return (res.data ?? []).map(mapStrapiItem);
+    return data.map(mapStrapiItem);
 }
 
 export async function resolveItem(documentId: string, resolverPhone: string): Promise<void> {
@@ -621,11 +618,10 @@ export async function getEvents(city?: string): Promise<DbEvent[]> {
             const params: Record<string,string> = {
                 'filters[status][$eq]': 'approved',
                 'sort':                 'date:asc',
-                'pagination[limit]':    '500',
             };
             if (city) params['filters[city][$eq]'] = city;
-            const res = await strapiGet<{ data: StrapiEvent[] }>('/api/events', params);
-            return (res.data ?? []).map(mapStrapiEvent);
+            const data = await strapiGetAll<StrapiEvent>('/api/events', params);
+            return data.map(mapStrapiEvent);
         } catch (e) {
             if (e instanceof StrapiContentTypeError) return [];
             throw e;
@@ -639,11 +635,10 @@ export async function getPendingEvents(city?: string): Promise<DbEvent[]> {
         const params: Record<string, string> = {
             'filters[status][$eq]': 'pending',
             'sort':                 'createdAt:desc',
-            'pagination[limit]':    '100',
         };
         if (city) params['filters[city][$eq]'] = city;
-        const res = await strapiGet<{ data: StrapiEvent[] }>('/api/events', params);
-        return (res.data ?? []).map(mapStrapiEvent);
+        const data = await strapiGetAll<StrapiEvent>('/api/events', params);
+        return data.map(mapStrapiEvent);
     } catch (e) {
         if (e instanceof StrapiContentTypeError) return [];
         throw e;
@@ -831,11 +826,10 @@ export async function getGatherings(city?: string): Promise<DbGathering[]> {
             const params: Record<string, string> = {
                 'filters[status][$eq]': 'approved',
                 'sort':                 'date:asc',
-                'pagination[limit]':    '300',
             };
             if (city) params['filters[city][$eq]'] = city;
-            const res = await strapiGet<{ data: StrapiGathering[] }>('/api/gatherings', params);
-            return (res.data ?? []).map(mapStrapiGathering);
+            const data = await strapiGetAll<StrapiGathering>('/api/gatherings', params);
+            return data.map(mapStrapiGathering);
         } catch (e) {
             if (e instanceof StrapiContentTypeError) return [];
             throw e;
@@ -943,12 +937,11 @@ function mapCoordinatorRequest(r: StrapiCoordinatorRequest): DbCoordinatorReques
 /** כל בקשות הרכזות הממתינות (pending) - לטיפול סופר-אדמין */
 export async function getCoordinatorRequests(status: CoordinatorRequestStatus = 'pending'): Promise<DbCoordinatorRequest[]> {
     try {
-        const res = await strapiGet<{ data: StrapiCoordinatorRequest[] }>('/api/coordinator-requests', {
+        const data = await strapiGetAll<StrapiCoordinatorRequest>('/api/coordinator-requests', {
             'filters[status][$eq]': status,
             'sort':                 'createdAt:desc',
-            'pagination[limit]':    '200',
         });
-        return (res.data ?? []).map(mapCoordinatorRequest);
+        return data.map(mapCoordinatorRequest);
     } catch (e) {
         if (e instanceof StrapiContentTypeError) return [];
         throw e;
@@ -1145,12 +1138,11 @@ function mapNeighborhood(n: StrapiNeighborhood): DbNeighborhood {
 export async function getNeighborhoods(status: NeighborhoodStatus = 'approved'): Promise<DbNeighborhood[]> {
     return cached(`neighborhoods:${status}`, TTL_NEIGHBORHOODS, async () => {
         try {
-            const res = await strapiGet<{ data: StrapiNeighborhood[] }>('/api/neighborhoods', {
+            const data = await strapiGetAll<StrapiNeighborhood>('/api/neighborhoods', {
                 'filters[status][$eq]': status,
                 'sort':                 'createdAt:desc',
-                'pagination[limit]':    '500',
             });
-            return (res.data ?? []).map(mapNeighborhood);
+            return data.map(mapNeighborhood);
         } catch (e) {
             if (e instanceof StrapiContentTypeError) return [];
             throw e;
@@ -1417,9 +1409,8 @@ export function mergeDuplicateUsers(users: DbUser[]): DbUser[] {
 /** שליפת כל המשתמשים הגולמיים (ללא איחוד) - לשימוש פנימי שצריך לגעת בכל רשומה אמיתית */
 export async function getAllUsersRaw(_jwt?: string): Promise<DbUser[]> {
     try {
-        const arr = await findStrapiUpUsers({
-            'pagination[limit]': '1000',
-            'sort':              'createdAt:desc',
+        const arr = await findStrapiUpUsersAll({
+            'sort': 'createdAt:desc',
         });
         return (arr as StrapiUpUser[]).map(mapUpUser);
     } catch (e) {
@@ -1494,13 +1485,12 @@ export async function deleteUserAccounts(ids: string[]): Promise<number> {
 }
 
 export async function getMessagesByUserId(userId: string): Promise<DbItem[]> {
-    const res = await strapiGet<{ data: StrapiItem[] }>('/api/items', {
+    const data = await strapiGetAll<StrapiItem>('/api/items', {
         'filters[category][$eq]': 'message',
         'filters[user_id][$eq]':  userId,
         'sort':                   'createdAt:desc',
-        'pagination[limit]':      '200',
     });
-    return (res.data ?? []).map(mapStrapiItem);
+    return data.map(mapStrapiItem);
 }
 
 // ============================================================
@@ -1575,10 +1565,9 @@ export async function maybeSendTierUpgradeMessage(sessionUserId: string, user: D
 
 export async function getFundTotal(): Promise<number> {
     try {
-        const res = await strapiGet<{ data: StrapiFundEntry[] }>('/api/community-funds', {
-            'pagination[limit]': '1000',
-        });
-        return (res.data ?? []).reduce((sum, entry) => sum + (entry.amount ?? 0), 0);
+        // ללא תקרה — חיתוך כאן היה מחזיר סכום שגוי (חלקי) של קופת הקהילה
+        const data = await strapiGetAll<StrapiFundEntry>('/api/community-funds');
+        return data.reduce((sum, entry) => sum + (entry.amount ?? 0), 0);
     } catch (e) {
         if (e instanceof StrapiContentTypeError) return 0;
         throw e;
@@ -1633,7 +1622,8 @@ async function findUpUserByEmail(email: string): Promise<StrapiUpUser | undefine
 async function findUpUserByPhone(phone: string): Promise<StrapiUpUser | undefined> {
     const target = normPhone(phone);
     if (!target) return undefined;
-    const arr = await findStrapiUpUsers({ 'pagination[limit]': '1000' });
+    // ללא תקרה — סורק את כל המשתמשים, אחרת משתמש "ישן" מעבר ל-1000 לא היה נמצא
+    const arr = await findStrapiUpUsersAll();
     return (arr as StrapiUpUser[]).find(u => normPhone(u.phone) === target);
 }
 

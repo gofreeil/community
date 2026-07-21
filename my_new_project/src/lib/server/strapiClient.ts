@@ -362,6 +362,29 @@ export async function strapiLogin(identifier: string, password: string): Promise
  * GET /api/users (users-permissions) - returns array directly (no {data} wrapper)
  * Uses STRAPI_TOKEN for admin access by default
  */
+/**
+ * כמו findStrapiUpUsers, אך ללא תקרה — מדפדף עמוד-אחר-עמוד עד סוף התוצאות.
+ * חשוב לשליפות "כל המשתמשים": ברגע שיעברו 1000 משתמשים, בקשה יחידה הייתה
+ * נחתכת בשקט והמונים/רשימות היו מציגים חלק בלבד.
+ */
+export async function findStrapiUpUsersAll(
+    params: Record<string, string> = {},
+    jwt?: string,
+): Promise<unknown[]> {
+    const out: unknown[] = [];
+    for (let page = 0; page < ALL_MAX_PAGES; page++) {
+        const batch = await findStrapiUpUsers({
+            ...params,
+            'pagination[start]': String(page * ALL_PAGE_SIZE),
+            'pagination[limit]': String(ALL_PAGE_SIZE),
+        }, jwt);
+        out.push(...batch);
+        if (batch.length < ALL_PAGE_SIZE) return out;
+    }
+    console.warn(`[Strapi] findStrapiUpUsersAll hit the ${ALL_MAX_PAGES}-page safety bound`);
+    return out;
+}
+
 export async function findStrapiUpUsers(params: Record<string, string>, jwt?: string): Promise<unknown[]> {
     const url = new URL(STRAPI_URL + '/api/users');
     Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));

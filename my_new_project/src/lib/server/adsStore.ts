@@ -4,7 +4,7 @@
 // API ציבורי זהה לגרסה הקודמת (JSON-on-disk) כדי שלא ישבר קוד קורא.
 // ============================================================
 
-import { strapiGet, strapiPost, strapiPut, strapiDelete, StrapiContentTypeError } from './strapiClient.js';
+import { strapiGet, strapiGetAll, strapiPost, strapiPut, strapiDelete, StrapiContentTypeError } from './strapiClient.js';
 import { createItem } from './db.js';
 import { cached, invalidate } from './cache.js';
 
@@ -137,12 +137,11 @@ function fromStrapi(s: StrapiAd): SubmittedAd {
 
 async function listByStatus(status: AdStatus): Promise<SubmittedAd[]> {
     try {
-        const res = await strapiGet<{ data: StrapiAd[] }>(ENDPOINT, {
+        const data = await strapiGetAll<StrapiAd>(ENDPOINT, {
             'filters[ad_status][$eq]': status,
             'sort':                    'submitted_at:desc',
-            'pagination[limit]':       '1000',
         });
-        return (res.data ?? []).map(fromStrapi);
+        return data.map(fromStrapi);
     } catch (e) {
         if (e instanceof StrapiContentTypeError) {
             console.warn('[adsStore] submitted-ad content type לא רשום ב-Strapi - מחזיר []');
