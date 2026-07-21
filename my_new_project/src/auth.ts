@@ -87,6 +87,9 @@ export const { handle, signIn, signOut } = !AUTH_SECRET
         Google({
             clientId:     AUTH_GOOGLE_ID,
             clientSecret: AUTH_GOOGLE_SECRET,
+            // בלי select_account גוגל מדלגת על בורר החשבונות כשמחובר חשבון יחיד
+            // בדפדפן, ומחברת אותו אוטומטית. הפרמטר מכריח אותה תמיד לשאול.
+            authorization: { params: { prompt: 'select_account' } },
         }),
         Facebook({
             clientId:     AUTH_FACEBOOK_ID,
