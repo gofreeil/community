@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from 'svelte';
+    import CameraCapture from '$lib/components/CameraCapture.svelte';
     import { browser } from '$app/environment';
     import { goto, invalidateAll } from '$app/navigation';
     import LevelUpCard from '$lib/components/LevelUpCard.svelte';
@@ -1344,6 +1345,7 @@
                                         <span class="text-gray-500 text-[10px]">עוד</span>
                                         <input type="file" accept="image/*" multiple class="hidden" onchange={(e) => handleImagesChange(field.key, e)} />
                                     </label>
+                                    <CameraCapture onfiles={(files) => addFilesToField(field.key, files)} compact class="flex items-center justify-center aspect-square rounded-xl border-2 border-dashed border-white/15 hover:border-amber-500/50 bg-white/5 hover:bg-amber-900/10 text-gray-400 hover:text-amber-300 cursor-pointer transition-all" />
                                 {/if}
                             </div>
                         {:else}
@@ -1360,6 +1362,9 @@
                                 <span class="text-gray-500 text-xs">JPG, PNG · עד {MAX_IMAGES}</span>
                                 <input type="file" accept="image/*" multiple class="hidden" onchange={(e) => handleImagesChange(field.key, e)} />
                             </label>
+                            <div class="mt-2">
+                                <CameraCapture onfiles={(files) => addFilesToField(field.key, files)} class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-white/15 hover:border-amber-500/50 bg-white/5 hover:bg-amber-900/15 text-gray-300 hover:text-amber-300 text-sm font-bold transition-all cursor-pointer" />
+                            </div>
                         {/if}
 
                     {:else if field.type === 'service_type'}
@@ -1554,6 +1559,9 @@
                             <span class="text-purple-300/70 text-[11px]">לא חובה - אפשר להשאיר את האייקון הרגיל</span>
                             <input type="file" accept="image/*" class="hidden" onchange={handleLogoChange} />
                         </label>
+                        <div class="mt-2">
+                            <CameraCapture onfiles={handleLogoDrop} class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-purple-400/40 hover:border-purple-400/70 bg-purple-500/5 hover:bg-purple-500/15 text-purple-200 text-sm font-bold transition-all cursor-pointer" />
+                        </div>
                     {/if}
                 </div>
             {/if}

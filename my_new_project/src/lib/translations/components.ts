@@ -10,6 +10,17 @@ export const he = {
         close_ad_aria: "סגור פרסומת",
         opens_new_window_suffix: " (נפתח בחלון חדש)",
 
+        // ===== CameraCapture =====
+        cam_take_photo: "צלם עכשיו",
+        cam_open_aria: "צילום תמונה במצלמה",
+        cam_title: "צילום תמונה",
+        cam_shutter: "צלם",
+        cam_shutter_aria: "לחץ לצילום",
+        cam_switch: "החלף מצלמה",
+        cam_cancel: "ביטול",
+        cam_starting: "מפעיל מצלמה...",
+        cam_no_access: "אין גישה למצלמה. יש לאשר הרשאה בדפדפן או להעלות תמונה מהמכשיר.",
+
         // ===== MobileAdsDrawer =====
         mad_drawer_aria: "האזור האישי וההטבות מהקהילה הארצית",
         mad_personal_area: "האזור האישי",
@@ -149,6 +160,17 @@ export const en = {
         close_ad_aria: "Close ad",
         opens_new_window_suffix: " (opens in a new window)",
 
+        // ===== CameraCapture =====
+        cam_take_photo: "Take a photo",
+        cam_open_aria: "Take a photo with the camera",
+        cam_title: "Take a photo",
+        cam_shutter: "Capture",
+        cam_shutter_aria: "Press to capture",
+        cam_switch: "Switch camera",
+        cam_cancel: "Cancel",
+        cam_starting: "Starting camera...",
+        cam_no_access: "No camera access. Allow the permission in your browser, or upload a photo from your device.",
+
         // ===== MobileAdsDrawer =====
         mad_drawer_aria: "Personal area and benefits from the national community",
         mad_personal_area: "Personal Area",
@@ -287,6 +309,17 @@ export const ru = {
         close_ads_aria: "Закрыть рекламу",
         close_ad_aria: "Закрыть рекламу",
         opens_new_window_suffix: " (открывается в новом окне)",
+
+        // ===== CameraCapture =====
+        cam_take_photo: "Сделать фото",
+        cam_open_aria: "Сделать фото камерой",
+        cam_title: "Съёмка фото",
+        cam_shutter: "Снять",
+        cam_shutter_aria: "Нажмите, чтобы снять",
+        cam_switch: "Сменить камеру",
+        cam_cancel: "Отмена",
+        cam_starting: "Запуск камеры...",
+        cam_no_access: "Нет доступа к камере. Разрешите доступ в браузере или загрузите фото с устройства.",
 
         // ===== MobileAdsDrawer =====
         mad_drawer_aria: "Личный кабинет и льготы от национального сообщества",

@@ -1,5 +1,6 @@
 <script lang="ts">
     import { enhance } from '$app/forms';
+    import CameraCapture from '$lib/components/CameraCapture.svelte';
     import type { SubmitFunction } from '@sveltejs/kit';
     import type { PageData } from './$types';
     import { canonical } from '$lib/seo';
@@ -257,6 +258,9 @@
                             <span class="text-xs">העלאת תמונה</span>
                             <input type="file" accept="image/*" class="hidden" onchange={handleEditImage} />
                         </label>
+                        <div class="mt-2">
+                            <CameraCapture onfiles={processFile} class="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-white/15 hover:border-amber-500/50 bg-white/5 hover:bg-amber-900/15 text-gray-300 hover:text-amber-300 text-sm font-bold transition-all cursor-pointer" />
+                        </div>
                     {/if}
                     <input type="hidden" name="image" value={editImage} />
                 </div>

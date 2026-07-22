@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance, deserialize } from "$app/forms";
+	import CameraCapture from "$lib/components/CameraCapture.svelte";
 	import { beforeNavigate, goto } from "$app/navigation";
 	import { signOut, signIn } from "@auth/sveltekit/client";
 	import {
@@ -4302,6 +4303,10 @@
 											onchange={handleImageChange}
 										/>
 									</label>
+									<CameraCapture
+										onfiles={processProfileImage}
+										class="cursor-pointer bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-500/40 rounded-xl px-4 py-2 text-sm text-gray-300 transition-all inline-flex items-center gap-2"
+									/>
 									<!-- כפתור פייסבוק - תמיד פעיל -->
 									<button
 										type="button"

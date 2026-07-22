@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
+    import CameraCapture from "$lib/components/CameraCapture.svelte";
     import { locale, t } from "svelte-i18n";
     import { get } from "svelte/store";
     let _loc = $state(get(locale));
@@ -1871,6 +1872,9 @@
                             <span class="text-amber-200 font-bold text-sm">{uploadingImages ? 'מעלה תמונה...' : 'הוסיפו תמונה של המקום'}</span>
                             <span class="text-[11px] text-amber-300/80 px-4 text-center">דף עם תמונה מושך הרבה יותר גולשים - אפשר עד {MAX_IMAGES} תמונות</span>
                         </button>
+                        <div class="absolute bottom-2 right-2 z-20">
+                            <CameraCapture onfiles={processImageFiles} class="inline-flex items-center gap-1.5 text-[11px] font-bold text-white bg-black/70 hover:bg-black/90 border border-amber-400/40 rounded-lg px-2 py-1 backdrop-blur-sm transition-all cursor-pointer" />
+                        </div>
                     {:else if serviceLogo}
                         <div class="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 flex flex-col items-center justify-center gap-3">
                             <img src={serviceLogo} alt={serviceTypeLabel} class="w-32 h-32 md:w-40 md:h-40 drop-shadow-xl" />
@@ -1891,6 +1895,7 @@
                                     class="text-[11px] font-bold text-white bg-black/70 hover:bg-black/90 border border-amber-400/40 rounded-lg px-2 py-1 backdrop-blur-sm transition-all disabled:opacity-60">
                                     {uploadingImages ? 'מעלה...' : '📷 הוסף תמונה'}
                                 </button>
+                                <CameraCapture onfiles={processImageFiles} class="inline-flex items-center gap-1.5 text-[11px] font-bold text-white bg-black/70 hover:bg-black/90 border border-amber-400/40 rounded-lg px-2 py-1 backdrop-blur-sm transition-all cursor-pointer" />
                             {/if}
                             <button type="button" onclick={repositionCurrentImage} disabled={savingTag === 'images'}
                                 class="text-[11px] font-bold text-white bg-black/70 hover:bg-purple-700 border border-purple-400/40 rounded-lg px-2 py-1 backdrop-blur-sm transition-all disabled:opacity-60">

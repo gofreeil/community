@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
+    import CameraCapture from "$lib/components/CameraCapture.svelte";
     import { _ } from "svelte-i18n";
     import { browser } from "$app/environment";
     import { goto } from "$app/navigation";
@@ -442,6 +443,7 @@
                         {/if}
                         <input type="file" accept="image/*" onchange={handleLandingImage} class="hidden" />
                     </label>
+                    <CameraCapture onfiles={(files) => processImageFile(files[0], "landing")} class="mt-2 w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-white/15 hover:border-amber-400/60 bg-white/5 hover:bg-amber-500/10 text-gray-200 hover:text-white text-sm font-bold transition-all cursor-pointer" />
                 </div>
 
                 <div class="md:col-span-2">
@@ -487,6 +489,7 @@
                             {/if}
                             <input type="file" accept="image/*" onchange={(e) => handleProductImage(e, p.id)} class="hidden" />
                         </label>
+                        <CameraCapture onfiles={(files) => processImageFile(files[0], { kind: 'product', id: p.id })} compact class="shrink-0 inline-flex items-center justify-center px-2.5 py-2 rounded-lg border border-white/15 hover:border-amber-400/60 bg-white/5 hover:bg-amber-500/10 text-gray-300 hover:text-white transition-all cursor-pointer" />
                         <div class="grow grid grid-cols-1 md:grid-cols-3 gap-2">
                             <input type="text" bind:value={products[idx].name} placeholder={$_("advertise.l_product_name_ph")} class="text-input small" />
                             <input type="text" bind:value={products[idx].price} placeholder={$_("advertise.l_price_ph")} class="text-input small" />

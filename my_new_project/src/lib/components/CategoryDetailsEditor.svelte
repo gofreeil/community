@@ -4,6 +4,7 @@
     import { _ } from 'svelte-i18n';
     import { categoryConfig, detailStepFields, cfFieldKey, cfOptKey, trOr, type FieldDef } from '$lib/categoryFields';
     import { openCropper } from '$lib/imageCropper.svelte';
+    import CameraCapture from '$lib/components/CameraCapture.svelte';
 
     let {
         itemId,
@@ -131,6 +132,10 @@
         const input = e.currentTarget as HTMLInputElement;
         const files = Array.from(input.files ?? []).filter(fl => fl.type.startsWith('image/'));
         input.value = '';
+        await addImageFiles(f, files);
+    }
+    // מקבל File[] כדי לשרת גם בחירת קובץ וגם צילום במצלמה (CameraCapture)
+    async function addImageFiles(f: FieldDef, files: File[]) {
         if (!files.length) return;
         const cur = [...(imageValues[f.key] ?? [])];
         const slots = MAX_IMAGES - cur.length;
@@ -229,6 +234,7 @@
                                     ＋
                                     <input type="file" accept="image/*" multiple class="hidden" onchange={(e) => addImages(f, e)} />
                                 </label>
+                                <CameraCapture onfiles={(files) => addImageFiles(f, files)} compact class="w-16 h-16 rounded-lg border-2 border-dashed border-white/20 hover:border-white/40 bg-white/5 flex items-center justify-center cursor-pointer text-gray-400 hover:text-white transition-colors" />
                             {/if}
                         </div>
 

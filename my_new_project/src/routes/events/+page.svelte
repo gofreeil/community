@@ -1,5 +1,6 @@
 <script lang="ts">
     import { enhance } from '$app/forms';
+    import CameraCapture from '$lib/components/CameraCapture.svelte';
     import { _ } from 'svelte-i18n';
     import type { PageData } from './$types';
     import JsonLd from "$lib/components/JsonLd.svelte";
@@ -544,6 +545,7 @@
                                         📷 <span>{$_('community.ev_upload_image')}</span>
                                         <input type="file" accept="image/*" class="hidden" onchange={(e) => pickImage(e, (v) => addImage = v)} />
                                     </label>
+                                    <CameraCapture onfiles={(files) => dropImage(files, (v) => addImage = v)} class="cursor-pointer flex items-center gap-1.5 px-3 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 border border-dashed border-green-400/40 text-gray-200 text-sm font-semibold transition-all" />
                                 {/if}
                                 <span class="text-gray-500 text-xs px-1">{$_('community.ev_or_icon')}</span>
                                 {#each iconOptions as ic}
@@ -663,6 +665,7 @@
                                         📷 <span>{$_('community.ev_image_word')}</span>
                                         <input type="file" accept="image/*" class="hidden" onchange={(e) => pickImage(e, (v) => suggestImage = v)} />
                                     </label>
+                                    <CameraCapture onfiles={(files) => dropImage(files, (v) => suggestImage = v)} class="cursor-pointer flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-dashed border-teal-400/40 text-gray-200 text-sm font-semibold transition-all" />
                                 {/if}
                                 {#each iconOptions as ic}
                                     <button type="button" onclick={() => { suggestIcon = ic; suggestImage = ''; }}

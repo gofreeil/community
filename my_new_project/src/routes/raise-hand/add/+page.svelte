@@ -7,6 +7,7 @@
     import NeighborhoodPicker from '$lib/components/NeighborhoodPicker.svelte';
     import GpsLocateButton from '$lib/components/GpsLocateButton.svelte';
     import { imageDrop } from '$lib/imageDrop';
+    import CameraCapture from '$lib/components/CameraCapture.svelte';
     import type { PageData, ActionData } from './$types';
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -305,6 +306,9 @@
                             <span class="text-gray-400 text-sm font-bold">{$_('listings.upload_click_one')}</span>
                             <input type="file" accept="image/*" class="hidden" onchange={handleImageChange} />
                         </label>
+                        <div class="mt-2">
+                            <CameraCapture onfiles={processFile} class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-white/15 hover:border-red-500/50 bg-white/5 hover:bg-red-900/15 text-gray-300 hover:text-white text-sm font-bold transition-all cursor-pointer" />
+                        </div>
                     {/if}
                     <input type="hidden" name="image_base64" value={imageBase64} />
                 </div>

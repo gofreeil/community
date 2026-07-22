@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
+    import CameraCapture from "$lib/components/CameraCapture.svelte";
     import { browser } from "$app/environment";
     import { goto } from "$app/navigation";
     import { _ } from "svelte-i18n";
@@ -961,6 +962,9 @@
                 {/if}
                 <input type="file" accept="image/*" onchange={(e) => handleImage(e, "main")} class="hidden" />
             </label>
+            <div class="mt-2">
+                <CameraCapture onfiles={(files) => processImageFile(files[0], "main")} class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-white/15 hover:border-amber-400/60 bg-white/5 hover:bg-amber-500/10 text-gray-200 hover:text-white text-sm font-bold transition-all cursor-pointer" />
+            </div>
         </div>
         {#if mainImage}
             <p class="crop-hint">{$_('advertise.b_crop_hint')}</p>
@@ -1002,6 +1006,7 @@
                     {/if}
                     <input type="file" accept="image/*" onchange={(e) => handleImage(e, "logo")} class="hidden" />
                 </label>
+                <CameraCapture onfiles={(files) => processImageFile(files[0], "logo")} compact class="inline-flex items-center justify-center px-3 py-1.5 rounded-lg border border-white/15 hover:border-amber-400/60 bg-white/5 hover:bg-amber-500/10 text-gray-300 hover:text-white transition-all cursor-pointer" />
                 {#if logo && logoShape === 'circle' && hasCircleCrop}
                     <button type="button" onclick={openCropper}
                         class="text-[10px] text-amber-300 hover:text-amber-200 underline">

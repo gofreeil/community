@@ -1,6 +1,7 @@
 <script lang="ts">
     import type { ActionData, PageData } from './$types';
     import { onMount } from 'svelte';
+    import CameraCapture from '$lib/components/CameraCapture.svelte';
     import { _ } from 'svelte-i18n';
     import { invalidateAll } from '$app/navigation';
     import LevelUpCard from '$lib/components/LevelUpCard.svelte';
@@ -437,6 +438,7 @@
                                         <span class="text-gray-500 text-[10px]">{$_('listings.gvadd_more')}</span>
                                         <input type="file" accept="image/*" multiple class="hidden" onchange={handleImagesChange} />
                                     </label>
+                                    <CameraCapture onfiles={processFiles} compact class="flex items-center justify-center aspect-square rounded-xl border-2 border-dashed border-white/15 hover:border-orange-500/50 bg-white/3 hover:bg-orange-900/10 text-gray-400 hover:text-orange-300 cursor-pointer transition-all" />
                                 {/if}
                             </div>
                         {:else}
@@ -446,6 +448,9 @@
                                 <span class="text-gray-600 text-xs">{$_('listings.gvadd_upload_hint', { values: { n: MAX_IMAGES } })}</span>
                                 <input type="file" accept="image/*" multiple class="hidden" onchange={handleImagesChange} />
                             </label>
+                            <div class="mt-2">
+                                <CameraCapture onfiles={processFiles} class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-white/15 hover:border-orange-500/50 bg-white/5 hover:bg-orange-900/15 text-gray-300 hover:text-white text-sm font-bold transition-all cursor-pointer" />
+                            </div>
                         {/if}
                         <input type="hidden" name="images_json" value={JSON.stringify(images)} />
 

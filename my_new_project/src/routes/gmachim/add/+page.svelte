@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from 'svelte';
+    import CameraCapture from '$lib/components/CameraCapture.svelte';
     import { get } from 'svelte/store';
     import { _ } from 'svelte-i18n';
     import { browser } from '$app/environment';
@@ -479,6 +480,7 @@
                                 <span class="text-gray-400 text-[10px] font-bold">{$_('extras.g_logo_upload')}</span>
                                 <input type="file" accept="image/*" class="hidden" onchange={handleLogoChange} />
                             </label>
+                            <CameraCapture onfiles={processLogoFile} compact class="mt-1.5 flex items-center justify-center w-24 h-9 rounded-xl border-2 border-dashed border-white/15 hover:border-amber-500/50 bg-white/3 hover:bg-amber-900/10 text-gray-400 hover:text-amber-300 cursor-pointer transition-all" />
                         {/if}
                     </div>
                 </div>

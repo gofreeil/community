@@ -1,5 +1,6 @@
 <script lang="ts">
     import { enhance } from '$app/forms';
+    import CameraCapture from '$lib/components/CameraCapture.svelte';
     import { _ } from 'svelte-i18n';
     import type { PageData } from './$types';
     import { canonical } from '$lib/seo';
@@ -191,6 +192,9 @@
                                 <span class="text-xs">{$_('community.ga_upload_hint')}</span>
                                 <input type="file" accept="image/*" class="hidden" onchange={handleCoverChange} />
                             </label>
+                            <div class="mt-2">
+                                <CameraCapture onfiles={processFile} class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-white/15 hover:border-amber-500/50 bg-white/5 hover:bg-amber-900/15 text-gray-300 hover:text-amber-300 text-sm font-bold transition-all cursor-pointer" />
+                            </div>
                         {/if}
                         <input type="hidden" name="image" value={coverImage} />
                     </div>
