@@ -330,7 +330,13 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     email:             userEmail,
-                    selectedItems,
+                    // המייל לא מחשב מחדש - שולחים לו את השורות בדיוק כפי שהן
+                    // מוצגות במחשבון: שם מתורגם והסכום הסופי של אותה שורה.
+                    selectedItems: selectedItems.map(r => ({
+                        type:  $_(`advertise.${r.typeKey}`),
+                        plan:  r.plan,
+                        price: r.eTotal * r.multiplier,
+                    })),
                     neighborhoodLabel,
                     neighborhoodCount,
                     totalPayment:      effectiveTotal,

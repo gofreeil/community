@@ -3,15 +3,12 @@ import { Resend } from 'resend';
 import { addFundContribution, getFundTotal } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
+// המייל לא מחשב מחירים - הוא מציג את מה שהמחשבון בדף כבר חישב.
+// הלקוח שולח שורות מוכנות: שם מתורגם + הסכום הסופי של אותה שורה.
 interface OrderItem {
     type: string;
     plan: 'half' | 'single';
-    half: number;
-    total: number;
-    single: number;
-    reach: string;
-    details: string;
-    num: number;
+    price: number;
 }
 
 interface OrderPayload {
@@ -23,6 +20,8 @@ interface OrderPayload {
     totalMonthly: number;
     discountLabel?: string;
     discountValue?: number;
+    mapImageAddon?: boolean;
+    mapImageAddonPrice?: number;
 }
 
 function buildEmailHtml(payload: OrderPayload): string {
@@ -34,9 +33,7 @@ function buildEmailHtml(payload: OrderPayload): string {
     const singleItems = selectedItems.filter(r => r.plan === 'single');
 
     const itemsRows = selectedItems.map(item => {
-        const price = item.plan === 'half'
-            ? item.total * neighborhoodCount
-            : item.single * neighborhoodCount;
+        const price = item.price ?? 0;
         const planLabel = item.plan === 'half' ? 'חצי שנה' : 'חודש בודד';
         const color = item.plan === 'half' ? '#f59e0b' : '#3b82f6';
         return `
@@ -115,7 +112,15 @@ function buildEmailHtml(payload: OrderPayload): string {
                     <th style="padding:10px 16px; color:#64748b; font-size:12px; font-weight:700; text-align:left; border-bottom:1px solid #1e2a3a;">מחיר</th>
                   </tr>
                 </thead>
-                <tbody>${itemsRows}</tbody>
+                <tbody>${itemsRows}${payload.mapImageAddon ? `
+                <tr>
+                  <td style="padding:12px 16px; border-bottom:1px solid #1e2a3a; color:#e2e8f0; font-size:15px;">🗺️ תמונה או לוגו על המפה</td>
+                  <td style="padding:12px 16px; border-bottom:1px solid #1e2a3a; text-align:center;">
+                    <span style="background:#a855f722; color:#a855f7; border:1px solid #a855f744;
+                                 border-radius:20px; padding:3px 10px; font-size:12px; font-weight:700;">לשנה</span>
+                  </td>
+                  <td style="padding:12px 16px; border-bottom:1px solid #1e2a3a; text-align:left; color:#a855f7; font-weight:700; font-size:15px;">₪${payload.mapImageAddonPrice ?? 0}</td>
+                </tr>` : ''}</tbody>
               </table>
 
               <!-- Neighborhood row -->
@@ -132,7 +137,6 @@ function buildEmailHtml(payload: OrderPayload): string {
                          border:2px solid #334155; border-radius:14px; padding:24px; text-align:center; margin-bottom:28px;">
               <p style="margin:0 0 4px; color:#64748b; font-size:13px; font-weight:700;">סה"כ לתשלום</p>
               ${discountValue > 0 ? `<p style="margin:0 0 8px; color:#22c55e; font-size:13px; font-weight:700;">🎟️ הנחה (${discountLabel}): -₪${discountValue}</p>` : ''}
-              ${neighborhoodCount > 1 ? `<p style="margin:0 0 8px; color:#475569; font-size:12px;">₪${Math.round(totalPayment / neighborhoodCount)} × ${neighborhoodCount} שכונות</p>` : ''}
               <p style="margin:0 0 6px; color:#ffffff; font-size:48px; font-weight:900; line-height:1;">₪${totalPayment}</p>
               ${summaryLine}
             </div>
