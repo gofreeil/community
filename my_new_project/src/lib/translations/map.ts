@@ -23,7 +23,7 @@ export const he = {
         cat_halls: "אולמות",
         cat_safe_space: "מרחב מוגן",
         cat_natural_health: "מטפלי בריאות טבעיים",
-        cat_business_owners: "בעלי עסקים",
+        cat_business_owners: "בעלי מקצוע",
 
         // ----- תיאורי טולטיפ לקטגוריות -----
         tip_benefits: "כל השירותים והיתרונות שיש בשכונה",
@@ -273,7 +273,7 @@ export const en = {
         cat_halls: "Event Halls",
         cat_safe_space: "Safe Space",
         cat_natural_health: "Natural Health",
-        cat_business_owners: "Business Owners",
+        cat_business_owners: "Professionals",
 
         tip_benefits: "All the services and benefits in the neighborhood",
         tip_gemachim: "The neighborhood's free-loan (gemach) initiatives",
@@ -509,7 +509,7 @@ export const ru = {
         cat_halls: "Залы",
         cat_safe_space: "Убежище",
         cat_natural_health: "Натуральная медицина",
-        cat_business_owners: "Владельцы бизнеса",
+        cat_business_owners: "Специалисты",
 
         tip_benefits: "Все услуги и преимущества района",
         tip_gemachim: "Гмахи взаимопомощи в районе",

@@ -88,7 +88,7 @@
 		attractions: 'שירות ציבורי',
 		halls: 'אולמות וחללים',
 		'safe-space': 'מרחב מוגן',
-		'business-owners': 'בעלי עסקים',
+		'business-owners': 'בעלי מקצוע',
 		gemachim: 'גמ"חים',
 		gmach: 'גמ"חים',
 		shabbat_hosting: 'אירוח לשבת',
@@ -117,7 +117,7 @@
 		{ key: 'attractions',    label: 'שירות ציבורי',    aliases: [] },
 		{ key: 'halls',          label: 'אולמות וחללים',    aliases: [] },
 		{ key: 'safe-space',     label: 'מרחב מוגן',       aliases: [] },
-		{ key: 'business-owners', label: 'בעלי עסקים',    aliases: [] },
+		{ key: 'business-owners', label: 'בעלי מקצוע',    aliases: [] },
 		{ key: 'gemachim',       label: 'גמ"חים',         aliases: ['gmach'] },
 		{ key: 'lost_and_found', label: 'אבידות ומציאות',   aliases: [] },
 	];
