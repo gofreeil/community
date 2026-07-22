@@ -14,6 +14,7 @@
     import { logoForService, serviceColor } from "$lib/serviceTypes";
     import { heMatches } from "$lib/search";
     import { isFamilyItem } from "$lib/itemCategories";
+    import CameraCapture from "$lib/components/CameraCapture.svelte";
     import type { DbItem } from "$lib/server/db";
     import 'leaflet/dist/leaflet.css';
 
@@ -193,6 +194,15 @@
                 { id: "natural-massage", label: "עיסוי רפואי" },
             ],
         },
+        // בעלי עסקים — בעלי המקצוע מאתר האינדקס הארצי (index.gofreeil.com), כולם
+        // חתומים על אמנת המוסר ומעניקים הנחה בלעדית לחברי התנועה. מסונכרנים
+        // אוטומטית (src/lib/server/indexBusinesses.ts) ולכן אין כאן items סטטיים.
+        {
+            id: "business-owners",
+            label: "בעלי עסקים",
+            icon: "🧑‍💼",
+            items: [],
+        },
     ];
 
     let viewMode = $state<"map" | "list" | "search">("map");
@@ -265,8 +275,13 @@
     // הכפתור האחרון בסרגל אינו קטגוריה אלא "עוד" — פותח תפריט עם הקטגוריות שאינן
     // בסרגל הגלוי (ברירת מחדל: מרחב מוגן, מטפלי בריאות טבעיים; אפשר להוסיף עוד בהמשך).
     // המשתמש יכול להעביר קטגוריה מהתפריט אל הסרגל הגלוי ולהיפך — ההעדפה נשמרת מקומית.
-    const DEFAULT_MORE_IDS = ['safe-space', 'natural-health'];
-    const MORE_STORAGE_KEY = 'map_more_cats_v1';
+    const DEFAULT_MORE_IDS = ['safe-space', 'natural-health', 'business-owners'];
+    const MORE_STORAGE_KEY = 'map_more_cats_v2';
+    // מפתח קודם + הקטגוריות שנוספו אחריו. משתמש ששמר העדפה בגרסה הקודמת מקבל
+    // אותה בחזרה, בתוספת הקטגוריות החדשות בתפריט "עוד" (הן לא היו קיימות כששמר,
+    // ולכן העדרן מהרשימה השמורה אינו "בחירה" שלו להצמיד אותן לסרגל).
+    const LEGACY_MORE_KEY = 'map_more_cats_v1';
+    const ADDED_SINCE_V1 = ['business-owners'];
 
     let moreIds = $state<string[]>([...DEFAULT_MORE_IDS]);
     let showMorePanel = $state(false);
@@ -281,16 +296,24 @@
 
     function loadMoreIds() {
         try {
-            const raw = localStorage.getItem(MORE_STORAGE_KEY);
-            if (!raw) return;
+            let migrated = false;
+            let raw = localStorage.getItem(MORE_STORAGE_KEY);
+            if (!raw) {
+                // מיגרציה חד-פעמית מהמפתח הקודם
+                raw = localStorage.getItem(LEGACY_MORE_KEY);
+                if (!raw) return;
+                migrated = true;
+            }
             const parsed = JSON.parse(raw);
             if (!Array.isArray(parsed)) return;
+            if (migrated) parsed.push(...ADDED_SINCE_V1.filter((id) => !parsed.includes(id)));
             const valid = parsed.filter(
                 (id: unknown) => typeof id === 'string' && otherCats.some((c) => c.id === id),
             ) as string[];
             // תמיד להשאיר לפחות כפתור אחד גלוי בסרגל
             if (valid.length >= otherCats.length) return;
             moreIds = valid;
+            if (migrated) persistMoreIds();
         } catch {}
     }
 
@@ -337,6 +360,7 @@
         'halls':       'map.tip_halls',
         'safe-space':  'map.tip_safe_space',
         'natural-health': 'map.tip_natural_health',
+        'business-owners': 'map.tip_business_owners',
     };
 
     // ----- מצב מסך מלא לדסקטופ -----
@@ -425,8 +449,9 @@
         5: { descLabel: 'map.f5_desc_label', descPlaceholder: 'map.f5_desc_ph', locationPlaceholder: 'map.f5_loc_ph', hasLastSeen: true },
     };
 
-    function handleModalImageChange(e: Event) {
-        const file = (e.target as HTMLInputElement).files?.[0];
+    // מקבל File[] כדי לשרת גם את בחירת הקובץ וגם את הצילום במצלמה (CameraCapture)
+    function processModalFile(files: File[]) {
+        const file = files[0];
         if (!file) return;
         const MAX = 900;
         const reader = new FileReader();
@@ -448,6 +473,12 @@
             img.src = src;
         };
         reader.readAsDataURL(file);
+    }
+
+    function handleModalImageChange(e: Event) {
+        const input = e.target as HTMLInputElement;
+        processModalFile(Array.from(input.files ?? []));
+        input.value = '';
     }
 
     // מצב חיפוש
@@ -531,9 +562,11 @@
     // "X פריטים בשכונה" ככל פריט, בעקביות עם המונה הארצי "פרטים במפה".
     // isFamilyItem גם מחריג רשומות מערכת (הודעות, קריאות עזרה, singles_request/access)
     // שאין להן מקום בספירת "פריטים בשכונה".
+    // עסקי האינדקס (בעלי עסקים) הם ארציים ומוצעים לכל חבר תנועה בכל שכונה, ולכן
+    // נספרים בכל אזור — בעקביות עם תצוגת הרשימה, שמציגה אותם בכל עיר.
     let neighborhoodDbItems = $derived(
         dbItems.filter(d =>
-            belongsToMyArea(d) &&
+            (isIndexItem(d) || belongsToMyArea(d)) &&
             isFamilyItem(d.category) &&
             (selectedCategory === "benefits" || d.category === selectedCategory)
         )
@@ -555,6 +588,7 @@
     const nationalBoardUrls: Record<string, string> = {
         gemachim:    'https://gemach.gofreeil.com/',
         shops:       'https://index.gofreeil.com/',
+        'business-owners': 'https://index.gofreeil.com/',
         singles:     '/singles',
         security:    '/national/security',
         attractions: '/national/attractions',
@@ -1245,6 +1279,13 @@
 
     function handleAddItem(categoryId: string) {
         showAddMenu = false;
+        // בעלי עסקים אינם נרשמים אצלנו: ההופעה באינדקס מותנית בחתימה על אמנת
+        // המוסר ובהתחייבות להנחה בלעדית — ולכן ההרשמה נעשית באתר האינדקס עצמו,
+        // ומשם הם מסונכרנים אלינו אוטומטית. אין /add/business-owners.
+        if (categoryId === 'business-owners') {
+            window.open('https://index.gofreeil.com/', '_blank', 'noopener');
+            return;
+        }
         goto(`/add/${categoryId}`);
     }
 
@@ -2622,6 +2663,9 @@
                                     <span class="text-gray-400 text-sm font-bold">{$t('map.upload_photo')}</span>
                                     <input type="file" accept="image/*" class="hidden" onchange={handleModalImageChange} />
                                 </label>
+                                <div class="mt-2">
+                                    <CameraCapture onfiles={processModalFile} class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-white/15 hover:border-red-500/50 bg-white/5 hover:bg-red-900/15 text-gray-300 hover:text-white text-sm font-bold transition-all cursor-pointer" />
+                                </div>
                             {/if}
                             <input type="hidden" name="image_base64" value={modalImageBase64} />
                         </div>

@@ -44,7 +44,7 @@ export const load: PageServerLoad = async (event) => {
     const events  = eventsRes.status === 'fulfilled'  ? eventsRes.value  : [];
 
     // עסקי האינדקס (index.gofreeil.com) — כולם חתמו על התנאים ומעניקים הנחה
-    // לחברי "יוצאים לחירות", ולכן מיובאים אוטומטית ומוצגים תחת "חנויות ועסקים".
+    // לחברי "יוצאים לחירות", ולכן מיובאים אוטומטית ומוצגים תחת "בעלי עסקים".
     // הם נקראים דרך cache ואינם פריטי Strapi, ולכן אינם משתתפים בספירות
     // השכונתיות כאן (emergencyTeamCount/vaadMembersCount). את המונה הארצי
     // "פרטים במפה" שבלוח הניהול הם כן מגדילים — buildItemsSummary מוסיף אותם.

@@ -23,6 +23,7 @@ export const he = {
         cat_halls: "אולמות",
         cat_safe_space: "מרחב מוגן",
         cat_natural_health: "מטפלי בריאות טבעיים",
+        cat_business_owners: "בעלי עסקים",
 
         // ----- תיאורי טולטיפ לקטגוריות -----
         tip_benefits: "כל השירותים והיתרונות שיש בשכונה",
@@ -43,6 +44,7 @@ export const he = {
         tip_halls: "לאירועים חד פעמיים או לחוגים קבועים",
         tip_safe_space: "ציבורי רשמי או פרטי פתוח לקהל",
         tip_natural_health: "רפלקסולוגיה, נטורופתיה, עיסוי ורפואה משלימה",
+        tip_business_owners: "בעלי מקצוע מהאינדקס הארצי — עם הנחה בלעדית לחברי התנועה",
 
         // ----- תוויות פינים לדוגמה (mock) על המפה -----
         mock_gemach_books: "גמ״ח ספרים",
@@ -271,6 +273,7 @@ export const en = {
         cat_halls: "Event Halls",
         cat_safe_space: "Safe Space",
         cat_natural_health: "Natural Health",
+        cat_business_owners: "Business Owners",
 
         tip_benefits: "All the services and benefits in the neighborhood",
         tip_gemachim: "The neighborhood's free-loan (gemach) initiatives",
@@ -290,6 +293,7 @@ export const en = {
         tip_halls: "For one-time events or regular classes",
         tip_safe_space: "Official public shelters or private ones open to the public",
         tip_natural_health: "Reflexology, naturopathy, massage and complementary medicine",
+        tip_business_owners: "Professionals from the national index — with an exclusive discount for members",
 
         mock_gemach_books: "Book Gemach",
         mock_gemach_tools: "Tool Gemach",
@@ -505,6 +509,7 @@ export const ru = {
         cat_halls: "Залы",
         cat_safe_space: "Убежище",
         cat_natural_health: "Натуральная медицина",
+        cat_business_owners: "Владельцы бизнеса",
 
         tip_benefits: "Все услуги и преимущества района",
         tip_gemachim: "Гмахи взаимопомощи в районе",
@@ -524,6 +529,7 @@ export const ru = {
         tip_halls: "Для разовых мероприятий или постоянных занятий",
         tip_safe_space: "Официальные общественные или частные, открытые для всех",
         tip_natural_health: "Рефлексология, натуропатия, массаж и комплементарная медицина",
+        tip_business_owners: "Специалисты из национального индекса — с эксклюзивной скидкой для участников движения",
 
         mock_gemach_books: "Гмах книг",
         mock_gemach_tools: "Гмах инструментов",

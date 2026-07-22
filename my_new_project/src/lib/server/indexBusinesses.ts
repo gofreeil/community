@@ -13,18 +13,47 @@
 // מיד, ואין לנו נתונים כפולים לתחזק. הם נספרים במונה "פרטים במפה" ובפילוח
 // הקטגוריות דרך buildItemsSummary — בלי להיות מאוחסנים אצלנו.
 //
-// עסק עם כתובת ("מיקום המפעל") עובר geocoding ומקבל פין על המפה בעיר שנגזרת
-// מהכתובת. עסק בלי כתובת (ארצי/אונליין) נשאר ברשימה ובלוח בלבד, בלי פין.
+// עסק עם כתובת ("מיקום המפעל") מקבל פין על המפה בעיר שנגזרת מהכתובת: אם האינדקס
+// כבר החזיר lat/lng — משתמשים בהם; אחרת נפתרים ב-geocoding אצלנו. עסק בלי כתובת
+// (ארצי/אונליין) נשאר ברשימה ובלוח בלבד, בלי פין — אך *נספר* ככל פריט אחר.
 // ה-geocoding מדורג — כמה כתובות בכל טעינה, עם cache קבוע (ראו getIndexBusinesses).
 // ============================================================
 import type { DbItem } from '$lib/server/db';
 import { geocodeAddressDetailed } from '$lib/server/geocode';
+import { citiesData } from '$lib/neighborhoodsData';
+
+/** שמות היישובים המוכרים — כתובת בת מילה אחת תקפה רק אם היא שם יישוב. */
+const KNOWN_CITIES = new Set(citiesData.map((c) => c.city));
+
+/** חלק-הכתובת בלבד: תיאור שנדחף אחרי "/" או שורה חדשה נחתך. */
+function cleanAddress(addr: string): string {
+	return addr.split(/[/\n]/)[0].trim();
+}
+
+/**
+ * האם הכתובת "מספיק ספציפית" כדי לסמוך על פין שנגזר ממנה: מספר בית, שתי מילים
+ * לפחות, או שם יישוב מוכר. מילה גנרית בודדת ("בית", "משרד", "ארה״ב") מייצרת פין
+ * שגוי — גם ב-Nominatim אצלנו ("ארה״ב" → באר שבע) וגם ב-geocoding של האינדקס
+ * עצמו, שמיקם "בית" ו"משרד" במרכז ירושלים ו"ארה״ב" בבאר שבע. עסק כזה נשאר
+ * ברשימה בלבד, בלי פין.
+ */
+function isSpecificAddress(addr: string): boolean {
+	const clean = cleanAddress(addr);
+	if (!clean) return false;
+	return /\d/.test(clean)
+		|| clean.split(/\s+/).filter(Boolean).length >= 2
+		|| KNOWN_CITIES.has(clean);
+}
 
 const INDEX_URL = 'https://index.gofreeil.com';
 const TTL_MS = 15 * 60 * 1000; // ריענון עצל — כמו ה-cache של האינדקס עצמו
 
-/** הקטגוריה שתחתיה הם מוצגים אצלנו: "חנויות ועסקים". */
-export const INDEX_CATEGORY = 'shops';
+/**
+ * הקטגוריה שתחתיה הם מוצגים אצלנו: אריח ייעודי "בעלי עסקים" בסרגל הקטגוריות
+ * של המפה (ולא "חנויות ועסקים", שנשארה לחנויות השכונתיות שנרשמו אצלנו).
+ * הפרדה זו מאפשרת לסנן את המפה/הרשימה לבעלי המקצוע של האינדקס בלבד.
+ */
+export const INDEX_CATEGORY = 'business-owners';
 
 // עמודות הגיליון הן נוסח שאלות הטופס — מתאימים לפי תת-מחרוזת, לא לפי טקסט מדויק,
 // כדי ששינוי ניסוח קל בטופס לא ישבור את הייבוא.
@@ -48,6 +77,17 @@ const COL = {
 
 type Row = Record<string, unknown>;
 
+/** מחרוזת מנוקה משדה ישיר של ה-API (או '' אם אינו מחרוזת/ריק). */
+function str(v: unknown): string {
+	return typeof v === 'string' && v.trim() ? v.trim() : '';
+}
+
+/** מספר תקין משדה ישיר של ה-API (או null). */
+function num(v: unknown): number | null {
+	const n = typeof v === 'number' ? v : typeof v === 'string' ? Number(v) : NaN;
+	return Number.isFinite(n) && n !== 0 ? n : null;
+}
+
 /** ערך העמודה הראשונה ששמה מכיל את the-needle. */
 function col(row: Row, needle: string): string {
 	for (const k of Object.keys(row)) {
@@ -68,54 +108,65 @@ function stableId(name: string, phone: string): string {
 	return `index-${slug}`;
 }
 
+// האינדקס עבר לבאקאנד Strapi ומחזיר היום שדות מפורשים (name/discount/lat/slug...)
+// לצד עמודות הגיליון הישנות, שנשמרו לתאימות. מעדיפים תמיד את השדה המפורש ונופלים
+// לעמודת הגיליון רק כשהוא חסר — כך הייבוא עובד בשני העולמות.
 function mapRow(row: Row): DbItem | null {
-	const label    = col(row, COL.name);
-	const discount = col(row, COL.discount);
-	const terms    = col(row, COL.terms);
+	const label    = str(row.name)     || col(row, COL.name);
+	const discount = str(row.discount) || col(row, COL.discount);
+	const terms    = row.accepted_terms === true || !!col(row, COL.terms);
 
 	// שני התנאים שמזכים הופעה — ללא אחד מהם העסק לא מיובא.
 	if (!label || !discount || !terms) return null;
 
-	const phone   = col(row, COL.phone);
-	const address = col(row, COL.location);
+	const phone   = str(row.phone)   || col(row, COL.phone);
+	const address = str(row.address) || col(row, COL.location);
+	// מזהה העסק באינדקס — יציב לאורך זמן ומאפשר קישור לעמוד העסק שלו שם.
+	const slug    = str(row.slug) || str(row.documentId);
 
 	const extra: Record<string, unknown> = {
 		source:       'index',
 		discount,                       // ההנחה הבלעדית לחברי יוצאים לחירות
 		terms_signed: true,             // חתם על התנאים + אמנת המוסר
-		area:         col(row, COL.area),
-		biz_type:     col(row, COL.category),
-		// לחיצה על הכרטיס מובילה לאתר האינדקס — הפריט לא קיים ב-Strapi שלנו
-		external_url: `${INDEX_URL}/`,
+		area:         str(row.sales_area) || col(row, COL.area),
+		biz_type:     str(row.category)   || col(row, COL.category),
+		// לחיצה על הכרטיס מובילה לעמוד העסק באינדקס — הפריט לא קיים ב-Strapi שלנו.
+		// בלי slug (שורת גיליון ישנה) נופלים לדף הבית של האינדקס.
+		external_url: slug ? `${INDEX_URL}/business/${slug}` : `${INDEX_URL}/`,
 	};
+	if (str(row.subcategory)) extra.biz_subtype = str(row.subcategory);
 	for (const [k, needle] of [
 		['whatsapp', COL.whatsapp], ['facebook', COL.facebook],
 		['website', COL.website], ['instagram', COL.instagram],
 	] as const) {
-		const v = col(row, needle);
+		const v = str(row[k]) || col(row, needle);
 		if (v) extra[k] = v;
 	}
-	const logo = typeof row.logoFromColumnJ === 'string' ? row.logoFromColumnJ.trim() : '';
+	const logo = str(row.logo) || str(row.logoFromColumnJ);
 	if (logo) extra.logo = logo;
 
 	return {
-		id:           stableId(label, phone),
+		// מזהה מהאינדקס כשיש; אחרת שם+טלפון (לא תלוי במספר השורה בגיליון, שזז).
+		id:           slug ? `index-${slug}` : stableId(label, phone),
 		category:     INDEX_CATEGORY,
 		label,
-		description:  col(row, COL.unique) || col(row, COL.desc),
-		contact:      col(row, COL.contact),
+		description:  str(row.unique_content) || str(row.description)
+		              || col(row, COL.unique) || col(row, COL.desc),
+		contact:      str(row.contact_name) || col(row, COL.contact),
 		phone,
 		address,
-		icon:         '🏪',
+		icon:         '🧑‍💼',
 		color:        'green',
 		neighborhood: '',
 		city:         '',
-		lat:          null,   // ימולא ב-getIndexBusinesses מ-geocoding אם יש כתובת
-		lng:          null,
+		// קואורדינטות שהאינדקס עצמו כבר פתר — מתקבלות רק מכתובת ספציפית (ראו
+		// isSpecificAddress). חסרות? יושלמו ב-getIndexBusinesses מ-geocoding.
+		lat:          isSpecificAddress(address) ? num(row.lat) : null,
+		lng:          isSpecificAddress(address) ? num(row.lng) : null,
 		extra_fields: JSON.stringify(extra),
 		status:       'active',
 		user_id:      null,
-		created_at:   col(row, COL.stamp),
+		created_at:   str(row.created_at) || col(row, COL.stamp),
 		view_count:   0,
 	};
 }
@@ -141,12 +192,13 @@ async function resolveSomeAddresses(addresses: string[]): Promise<void> {
 		todo.map(async (addr) => {
 			// תיאור שנדחף לשדה הכתובת אחרי "/" או שורה חדשה — משאירים את חלק הכתובת
 			// בלבד, אחרת Nominatim לא מזהה ("רמת גן /מכשור לשימוש ביתי" → "רמת גן").
-			const clean = addr.split(/[/\n]/)[0].trim();
-			// רק כתובת "מספיק ספציפית" עוברת geocoding: מספר בית, או לפחות שתי מילים
-			// (שם ישוב/רחוב). מילה גנרית בודדת ("בית", "משרד", "ארה״ב") מחזירה פין
-			// שגוי ב-Nominatim (למשל "ארה״ב" → באר שבע) — לכן נשארת רשימה בלבד.
-			const specific = /\d/.test(clean) || clean.split(/\s+/).filter(Boolean).length >= 2;
-			geoCache.set(addr, specific ? await geocodeAddressDetailed(`${clean}, ישראל`) : null);
+			// רק כתובת "מספיק ספציפית" עוברת geocoding (ראו isSpecificAddress).
+			geoCache.set(
+				addr,
+				isSpecificAddress(addr)
+					? await geocodeAddressDetailed(`${cleanAddress(addr)}, ישראל`)
+					: null,
+			);
 		}),
 	);
 }
@@ -155,9 +207,17 @@ async function resolveSomeAddresses(addresses: string[]): Promise<void> {
 function withCoords(items: DbItem[]): DbItem[] {
 	return items.map((it) => {
 		const geo = it.address ? geoCache.get(it.address) : undefined;
+		if (!geo) return it;
 		// שכונה לא נקבעת בכוונה — כדי שהעסק יופיע במפת כל שכונות העיר שלו,
 		// ולא ייפסל בגלל אי-התאמת-שם-שכונה מול הבורר.
-		return geo ? { ...it, lat: geo.lat, lng: geo.lng, city: geo.city || it.city } : it;
+		// קואורדינטות שהאינדקס עצמו סיפק מדויקות יותר מ-Nominatim ולכן גוברות;
+		// ה-geocoding משמש להשלמת חסר ולגזירת העיר (שהאינדקס לא מחזיר).
+		return {
+			...it,
+			lat:  it.lat ?? geo.lat,
+			lng:  it.lng ?? geo.lng,
+			city: geo.city || it.city,
+		};
 	});
 }
 
