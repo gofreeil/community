@@ -55,6 +55,17 @@
     let submitting     = $state(false);
     let redirectingMsg = $state('');
 
+    // ---- רקע: הדף הקודם, מטושטש ----
+    // הטופס "צף" כמו מודאל מעל הדף שממנו הגיעו. את אותו-מקור מציגים ממש (iframe
+    // בלי סקריפטים - רק תצוגת ה-SSR, בלי תופעות-לוואי ובלי framebusting). דף
+    // חוצה-מקור (למשל האתר הארצי) נחסם למסגור, ואז נשארים על טשטוש כהה מעוצב.
+    let bgUrl = $state('');
+    function goBack() {
+        if (!browser) return;
+        if (window.history.length > 1) window.history.back();
+        else goto('/');
+    }
+
     // ---- לוגו למפה (אופציונלי) ----
     function fileToResizedBase64(file: File, maxDim: number, quality = 0.85): Promise<string> {
         return new Promise((resolve, reject) => {
@@ -110,6 +121,17 @@
     // ---- שחזור טיוטה + שכונה מ-localStorage ----
     onMount(() => {
         if (!browser) return;
+
+        // רקע מטושטש של הדף הקודם - רק כשהוא מאותו-מקור (מסגור חוצה-מקור נחסם),
+        // ורק כשאיננו עצמנו (מניעת קינון) וכשאיננו כבר בתוך iframe.
+        if (window.self === window.top) {
+            try {
+                const u = new URL(document.referrer);
+                if (u.origin === location.origin && u.pathname !== location.pathname) {
+                    bgUrl = u.href;
+                }
+            } catch { /* אין referrer / כתובת לא תקינה - נשארים על טשטוש כהה */ }
+        }
 
         // שחזור שכונת-הגלישה רק כשאין עיר בפרופיל - הפרופיל גובר, ששכונה שנצפתה
         // פעם באתר (למשל ירושלים) לא תדרוס את המיקום האמיתי של המשתמש.
@@ -339,8 +361,23 @@
     </div>
 </div>
 {:else}
-<div class="min-h-screen bg-[#070b14] pt-6 pb-20 px-4" dir="rtl">
-    <div class="max-w-2xl mx-auto">
+<div class="relative min-h-screen" dir="rtl">
+    <!-- רקע: הדף הקודם מטושטש (אותו-מקור), אחרת טשטוש כהה מעוצב.
+         absolute (לא fixed) - כך הוא כלוא בתוך תיבת-התוכן ולא מכסה את ה-Header/Footer/סרגל של ה-layout -->
+    <div class="add-bg" aria-hidden="true">
+        {#if bgUrl}
+            <iframe class="add-bg__frame" src={bgUrl} title="background" tabindex="-1" scrolling="no" sandbox="allow-same-origin" referrerpolicy="no-referrer"></iframe>
+        {/if}
+        <div class="add-bg__scrim"></div>
+    </div>
+
+    <div class="relative z-10 max-w-2xl mx-auto pt-6 pb-20 px-4">
+        <div class="mb-3">
+            <button type="button" onclick={goBack}
+                class="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 text-sm font-bold text-gray-200 backdrop-blur transition-all hover:border-white/30 hover:bg-white/10">
+                <span aria-hidden="true">→</span>{$_('extras.g_back')}
+            </button>
+        </div>
         <div class="text-center mb-5">
             <span class="text-5xl mb-2 block">🤝</span>
             <h1 class="text-3xl font-black text-white mb-2">{$_('extras.g_title')}</h1>
@@ -364,7 +401,7 @@
                 </div>
             </div>
         {:else}
-            <form onsubmit={handleSubmit} class="rounded-2xl bg-[#0f172a] border border-white/10 p-6 space-y-4">
+            <form onsubmit={handleSubmit} class="rounded-2xl bg-[#0f172a]/90 backdrop-blur-md border border-white/10 p-6 space-y-4 shadow-2xl shadow-black/50 ring-1 ring-white/5">
                 <!-- נושאי הגמ"ח -->
                 <div id="gmach_type" role="group" aria-label={$_('extras.g_topics_aria')}>
                     <p class="text-white text-sm font-bold mb-1">{$_('extras.g_topics_label')} <span class="text-gray-400 font-normal text-xs">{$_('extras.g_topics_multi')}</span></p>
@@ -514,5 +551,40 @@
     @keyframes field-error-flash {
         0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); border-color: rgba(255, 255, 255, 0.1); }
         15%      { box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.35); border-color: rgba(239, 68, 68, 0.9); }
+    }
+
+    /* ═══ רקע מטושטש של הדף הקודם ═══ */
+    /* בסיס: גם כשאין iframe (דף חוצה-מקור) נשאר טשטוש כהה מעוצב עם הילות צבע רכות */
+    .add-bg {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        overflow: hidden;
+        background:
+            radial-gradient(38rem 38rem at 82% -12%, rgba(245, 158, 11, 0.18), transparent 60%),
+            radial-gradient(42rem 42rem at 10% 6%,  rgba(37, 99, 235, 0.20), transparent 60%),
+            radial-gradient(50rem 50rem at 50% 120%, rgba(126, 34, 206, 0.16), transparent 60%),
+            #070b14;
+    }
+    /* הדף הקודם עצמו — מטושטש, מוגדל מעט כדי לכסות את שולי-הטשטוש השקופים, לא-אינטראקטיבי */
+    .add-bg__frame {
+        position: absolute;
+        inset: -6%;
+        width: 112%;
+        height: 112%;
+        border: 0;
+        filter: blur(10px) saturate(1.05) brightness(0.9);
+        transform: scale(1.06);
+        transform-origin: center;
+        pointer-events: none;
+        opacity: 0.9;
+    }
+    /* צעיף להעמקת הניגודיות של הטופס מעל הרקע + נגיעת טשטוש נוספת */
+    .add-bg__scrim {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(120% 90% at 50% 18%, rgba(7, 11, 20, 0.35), rgba(7, 11, 20, 0.78) 78%);
+        -webkit-backdrop-filter: blur(2px);
+        backdrop-filter: blur(2px);
     }
 </style>
