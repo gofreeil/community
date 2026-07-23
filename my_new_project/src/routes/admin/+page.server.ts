@@ -1,8 +1,9 @@
 import { redirect, fail, error } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { requireSuperAdmin, requireAdmin } from '$lib/server/auth';
-import { getAllUsers, banUser, unbanUser, deleteUserAccounts, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByAnyId, getUserByEmail, createItem, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, getNeighborhoodById, approveNeighborhood, rejectNeighborhood, getDiscountCodes, saveDiscountCodes, getItemsByCategoryAndStatus, getUserTotpSecret, coordinatorCovers, updateItem, getDbItemByIdFresh, getAllSuperAdmins, getMessagesByUserId, type DbItem } from '$lib/server/db';
+import { getAllUsers, banUser, unbanUser, deleteUserAccounts, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByAnyId, getUserByEmail, createItem, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, getNeighborhoodById, approveNeighborhood, rejectNeighborhood, createNeighborhoodRequest, getDiscountCodes, saveDiscountCodes, getItemsByCategoryAndStatus, getUserTotpSecret, coordinatorCovers, updateItem, getDbItemByIdFresh, getAllSuperAdmins, getMessagesByUserId, type DbItem } from '$lib/server/db';
 import { finalizeLocationDecision } from '$lib/server/locationDecision';
+import { cityCenters } from '$lib/neighborhoodCoords';
 import { DEFAULT_DISCOUNT_CODES, type DiscountCode } from '$lib/discountCodes';
 import { countPending } from '$lib/server/adsStore';
 import { getVisitsThisMonth, getVisitStats } from '$lib/server/visitStats';
@@ -467,6 +468,40 @@ export const actions: Actions = {
             return { success: true, message: 'השכונה נדחתה' };
         } catch (e) {
             return fail(500, { error: `שגיאה בדחייה: ${e instanceof Error ? e.message : e}` });
+        }
+    },
+
+    // הוספת שכונה ידנית ע"י הסופר-אדמין - בלי להמתין לבקשת תושב. יוצרת רשומת שכונה
+    // (או מאתרת קיימת) ומאשרת אותה מיד, כך שתופיע בכל הבוררים והמפה. ברירת המחדל
+    // לקואורדינטות היא מרכז העיר (אם ידוע), אלא אם הועבר פין מדויק מהטופס.
+    addNeighborhood: async (event) => {
+        const session = await event.locals.auth();
+        requireSuperAdmin(session);
+
+        const formData = await event.request.formData();
+        const name = (formData.get('name') as string ?? '').trim();
+        const city = (formData.get('city') as string ?? '').trim();
+        const latRaw = parseFloat(formData.get('lat') as string ?? '');
+        const lngRaw = parseFloat(formData.get('lng') as string ?? '');
+        if (!name || !city) return fail(400, { error: 'יש למלא גם שם שכונה וגם עיר' });
+
+        try {
+            const hasPin   = Number.isFinite(latRaw) && Number.isFinite(lngRaw);
+            const fallback = cityCenters[city] ?? cityCenters[name] ?? cityCenters['ירושלים'];
+            const created  = await createNeighborhoodRequest({
+                name,
+                city,
+                lat: hasPin ? latRaw : fallback[0],
+                lng: hasPin ? lngRaw : fallback[1],
+            });
+
+            if (created.status === 'approved') {
+                return { success: true, message: `השכונה "${name}" (${city}) כבר קיימת ומאושרת` };
+            }
+            await approveNeighborhood(created.id, session?.user?.id ?? 'admin');
+            return { success: true, message: `השכונה "${name}" (${city}) נוספה ואושרה — מעכשיו תופיע בבוררים ובמפה` };
+        } catch (e) {
+            return fail(500, { error: `שגיאה בהוספת שכונה: ${e instanceof Error ? e.message : e}` });
         }
     },
 

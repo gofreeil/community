@@ -21,11 +21,20 @@
     const areaMatchKey = (name: string, cityName: string) =>
         `${name.trim().toLowerCase()}|${(cityName || '').trim().toLowerCase()}`;
 
+    // אם השכונה השמורה בפרופיל אינה ברשימת השכונות המוכרות של העיר (למשל שכונה חדשה
+    // שהמשתמש הוסיף בפרופיל וממתינה לאישור) - נפתח כאן מראש את מסלול "השכונה שלי לא ברשימה"
+    // עם שמה, כדי שהיא תופיע כברירת מחדל גם בטופס הזה (ולא "תיעלם" כי אינה ברשימה עדיין).
+    const _profileNb   = (data.user?.neighborhood || '').trim();
+    const _profileCity = data.user?.city || '';
+    const _profileCityNbs = effectiveNeighborhoods(_profileCity, (data as any).approvedNeighborhoods)
+        .filter((n) => n && n !== 'מרכז');
+    const _profileNbIsCustom = !!_profileNb && _profileNb !== 'מרכז' && !_profileCityNbs.includes(_profileNb);
+
     let name = $state(data.user?.name || '');
     let phone = $state(data.user?.phone || '');
     // ברירת מחדל: לוקחים עיר ושכונה מהפרופיל, אך ניתן לערוך כאן
     let city = $state(data.user?.city || '');
-    let neighborhood = $state(data.user?.neighborhood || '');
+    let neighborhood = $state(_profileNbIsCustom ? '' : (data.user?.neighborhood || ''));
     let experience = $state('');
     let motivation = $state('');
     let isLoading = $state(false);
@@ -55,9 +64,10 @@
     // יודעים בוודאות שיש לעיר שכונות? רק אז דורשים בחירת שכונה
     const cityHasNeighborhoods = $derived(cityNeighborhoods.length > 0);
 
-    // השכונה שלי לא ברשימה → מאפשרים לסמן שכונה חדשה על המפה
-    let nbNotListed = $state(false);
-    let newNbName = $state('');
+    // השכונה שלי לא ברשימה → מאפשרים לסמן שכונה חדשה על המפה.
+    // כשהשכונה מהפרופיל היא שכונה חדשה (טרם אושרה) - נפתח מראש במצב זה עם שמה.
+    let nbNotListed = $state(_profileNbIsCustom);
+    let newNbName = $state(_profileNbIsCustom ? _profileNb : '');
     // פין על המפה לאימות מיקום (גם לשכונה חדשה וגם לאימות יישוב)
     let pinLat = $state<number | null>(null);
     let pinLng = $state<number | null>(null);

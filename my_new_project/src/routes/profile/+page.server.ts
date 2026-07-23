@@ -254,6 +254,11 @@ export const actions: Actions = {
         const customLng        = Number(customLngRaw);
         const hasPin           = !!customLocation && Number.isFinite(customLat) && Number.isFinite(customLng) && customLatRaw !== '' && customLngRaw !== '';
 
+        // שכונה חדשה שהמשתמש הוסיף (custom_location) נשמרת על הפרופיל *מיד* - עוד לפני
+        // אישור המנהל - כדי שתופיע לו כברירת מחדל בטפסים אחרים (בעיקר "הצטרפות לצוות הרכזים").
+        // בחירת שכונה קיימת מהרשימה גוברת; רק כשלא נבחרה שכונה מהרשימה משתמשים בשם החדש שהוקלד.
+        const neighborhoodToSave = neighborhood || customLocation;
+
         if (!name || name.length < 2) {
             return fail(400, { error: 'שם חייב להכיל לפחות 2 תווים' });
         }
@@ -278,7 +283,7 @@ export const actions: Actions = {
                 nickname,
                 phone,
                 city,
-                neighborhood,
+                neighborhood: neighborhoodToSave,
                 business,
                 family_status,
                 birth_date,
@@ -294,7 +299,7 @@ export const actions: Actions = {
             // (ברירת מחדל כשאין שכונה). ברגע שהמשתמש ממלא שכונה אמיתית - נצמיד
             // אליה את פריטיו שנשארו ב"מרכז"/ריק (בעיקר כרטיס הפנויים האישי),
             // אחרת הם לא נספרים ולא מוצגים תחת השכונה הנכונה (ולרכז מראים 0).
-            if (neighborhood && neighborhood !== 'מרכז') {
+            if (neighborhoodToSave && neighborhoodToSave !== 'מרכז') {
                 try {
                     const myItems = await getItemsByUserId(session.user.id);
                     await Promise.all((myItems ?? [])
@@ -304,7 +309,7 @@ export const actions: Actions = {
                                 && it.category !== 'message'
                                 && it.category !== 'location_request';
                         })
-                        .map((it) => updateItem(it.id, { neighborhood, city })));
+                        .map((it) => updateItem(it.id, { neighborhood: neighborhoodToSave, city })));
                 } catch (e) {
                     console.warn('[profile] sync items neighborhood failed:', e);
                 }

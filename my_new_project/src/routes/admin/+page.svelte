@@ -4,6 +4,7 @@
 	import { onMount } from 'svelte';
 	import type { DiscountCode } from '$lib/discountCodes';
 	import { heMatches } from '$lib/search';
+	import { citiesData, citiesAndNeighborhoods } from '$lib/neighborhoodsData';
 	import ServerHealthGauges from '$lib/components/ServerHealthGauges.svelte';
 	import StatsSummaryChart from '$lib/components/StatsSummaryChart.svelte';
 	import RequesterContext from '$lib/components/RequesterContext.svelte';
@@ -100,10 +101,41 @@
 	let searchQuery = $state('');
 	let roleFilter = $state<'all' | 'user' | 'neighborhood_admin' | 'super_admin'>('all');
 
+	// רשימת שמות הערים - ל-datalist של הוספת שכונה ובורר החלפת שכונה לרכז
+	const adminCityNames = citiesData.map((c) => c.city);
+
+	// הוספת שכונה ידנית ע"י סופר-אדמין (טופס "הוספת שכונה לעיר")
+	let addNbCity = $state('');
+	let addNbName = $state('');
+
 	// מינוי רכז - מודל
 	let showCoordModal  = $state(false);
 	let coordModalUser  = $state<{ id: string; name: string | null; coordinator_of: string[]; neighborhood?: string | null; city?: string | null } | null>(null);
 	let coordNeighborhoods = $state(''); // שכונות מופרדות בשורות
+	// בורר מובנה במודל הרכז: החלפת/הוספת שכונה מהרשימה הרשמית (מונע שגיאות פורמט "שכונה (עיר)")
+	let coordPickCity = $state('');
+	let coordPickNb   = $state('');
+	const coordPickNbOptions = $derived((citiesAndNeighborhoods[coordPickCity] ?? []).filter((n) => n !== 'מרכז'));
+	// בונה את מחרוזת האזור בפורמט האחיד: "שכונה (עיר)", או שם העיר בלבד לרכז-עיר
+	function coordAreaStr(): string {
+		const c = coordPickCity.trim();
+		const n = coordPickNb.trim();
+		if (!c) return '';
+		if (!n || n === 'מרכז') return c;
+		return `${n} (${c})`;
+	}
+	// "החלף" - מגדיר את האזור היחיד (דורס את הקיים). "הוסף" - מוסיף שורה בלי לדרוס.
+	function coordReplaceArea() {
+		const a = coordAreaStr();
+		if (a) coordNeighborhoods = a;
+	}
+	function coordAddArea() {
+		const a = coordAreaStr();
+		if (!a) return;
+		const lines = coordNeighborhoods.split('\n').map((s) => s.trim()).filter(Boolean);
+		if (!lines.includes(a)) lines.push(a);
+		coordNeighborhoods = lines.join('\n');
+	}
 
 	// מקום המגורים להצגה: השכונה שסומנה, אך אם סומן "מרכז" או שאין שכונה - העיר שסומנה
 	function residenceLabel(neighborhood?: string | null, city?: string | null): string {
@@ -135,6 +167,9 @@
 		coordNeighborhoods = user.coordinator_of.length > 0
 			? user.coordinator_of.join('\n')
 			: defaultCoordArea(user.neighborhood, user.city);
+		// ברירת מחדל לבורר המובנה: עיר המשתמש מהפרופיל (השכונה נבחרת ידנית)
+		coordPickCity = (user.city ?? '').trim();
+		coordPickNb   = '';
 		showCoordModal = true;
 	}
 
@@ -451,6 +486,60 @@
 					</div>
 				</section>
 			{/if}
+
+			<!-- הוספת שכונה ידנית ע"י הסופר-אדמין - בלי להמתין לבקשת תושב -->
+			<section id="add-neighborhood" class="mb-6 scroll-mt-8 md:scroll-mt-32">
+				<div class="flex items-center gap-2 mb-3">
+					<span class="text-2xl">➕</span>
+					<h2 class="text-lg font-black text-emerald-300">הוספת שכונה לעיר</h2>
+					<p class="text-xs text-gray-500 hidden md:block mr-2">מוסיפה שכונה מאושרת מיד לבוררים ולמפה</p>
+				</div>
+				<form
+					method="POST"
+					action="?/addNeighborhood"
+					use:enhance={() => {
+						return async ({ result, update }) => {
+							await update();
+							if (result.type === 'success') { addNbName = ''; addNbCity = ''; }
+						};
+					}}
+					class="bg-emerald-500/5 rounded-2xl border border-emerald-500/30 p-3 md:p-4 flex flex-col sm:flex-row gap-2 sm:items-end"
+				>
+					<div class="flex-1">
+						<label for="add-nb-city" class="block text-xs text-gray-400 mb-1">עיר</label>
+						<input
+							id="add-nb-city"
+							name="city"
+							list="admin-cities-list"
+							bind:value={addNbCity}
+							required
+							placeholder="בחר/י עיר"
+							class="w-full bg-[#1e293b] border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-colors"
+						/>
+						<datalist id="admin-cities-list">
+							{#each adminCityNames as c}<option value={c}></option>{/each}
+						</datalist>
+					</div>
+					<div class="flex-1">
+						<label for="add-nb-name" class="block text-xs text-gray-400 mb-1">שם השכונה</label>
+						<input
+							id="add-nb-name"
+							name="name"
+							bind:value={addNbName}
+							required
+							placeholder="שם השכונה החדשה"
+							class="w-full bg-[#1e293b] border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-colors"
+						/>
+					</div>
+					<button
+						type="submit"
+						disabled={!addNbCity.trim() || !addNbName.trim()}
+						class="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 text-white font-bold hover:from-emerald-500 hover:to-green-500 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer whitespace-nowrap"
+					>
+						➕ הוסף שכונה
+					</button>
+				</form>
+			</section>
 
 			<!-- סקציית שכונות חדשות שהוצעו ע"י תושבים (עם פין על המפה) - ממתינות לאישור -->
 			{#if (data.pendingNeighborhoods ?? []).length > 0}
@@ -1065,6 +1154,49 @@
 						<p class="text-red-400 text-sm">⚠️ שמירה ריקה תסיר את הרכזות מהמשתמש</p>
 					</div>
 				{/if}
+
+				<!-- בורר מובנה: החלפת/הוספת שכונה מהרשימה הרשמית (מונע שגיאות פורמט) -->
+				<div class="mb-4 rounded-xl bg-white/5 border border-white/10 p-3">
+					<p class="text-sm text-gray-300 font-semibold mb-2">🔄 בחירת שכונה מהרשימה</p>
+					<div class="flex flex-col sm:flex-row gap-2">
+						<input
+							list="coord-cities-list"
+							bind:value={coordPickCity}
+							placeholder="עיר"
+							class="flex-1 bg-[#1e293b] border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 transition-colors"
+						/>
+						<datalist id="coord-cities-list">
+							{#each adminCityNames as c}<option value={c}></option>{/each}
+						</datalist>
+						<select
+							bind:value={coordPickNb}
+							class="flex-1 bg-[#1e293b] border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500 transition-colors"
+						>
+							<option value="">{coordPickNbOptions.length ? 'בחר/י שכונה' : 'רכז/ת של כל העיר'}</option>
+							{#each coordPickNbOptions as n}<option value={n}>{n}</option>{/each}
+						</select>
+					</div>
+					<div class="flex gap-2 mt-2">
+						<button
+							type="button"
+							onclick={coordReplaceArea}
+							disabled={!coordPickCity.trim()}
+							class="flex-1 py-2 rounded-lg bg-amber-500/15 text-amber-200 border border-amber-500/40 text-sm font-bold hover:bg-amber-500/25 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+							title="הגדר את השכונה הזו כאזור היחיד של הרכז (דורס את הקיים)"
+						>
+							🔄 החלף לשכונה זו
+						</button>
+						<button
+							type="button"
+							onclick={coordAddArea}
+							disabled={!coordPickCity.trim()}
+							class="flex-1 py-2 rounded-lg bg-white/5 text-gray-200 border border-white/15 text-sm font-bold hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+							title="הוסף את השכונה הזו לרשימת השכונות של הרכז"
+						>
+							➕ הוסף שכונה
+						</button>
+					</div>
+				</div>
 
 				<div class="flex gap-3">
 					<button
