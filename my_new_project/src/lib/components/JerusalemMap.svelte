@@ -818,6 +818,11 @@
     let leafletMap: any = null;
     let leafletL: any = null;          // יבוא דינמי של leaflet ב-onMount
     let mapMarkerLayer: any = null;     // L.LayerGroup לכל המרקרים
+    // ?item=<id> deep-link (קישור מהאתר הארצי gemach.gofreeil.com): הקואורדינטה שיש
+    // למרכז עליה. כל עוד מוגדרת, כל מרכוז-אוטומטי (fitToMarkers) מתמקד בה במקום
+    // להתאים לכל המרקרים — כך הפין המבוקש נשאר במרכז עד שהמשתמש מזיז את המפה.
+    let focusPending: [number, number] | null = null;
+    let focusConsumed = false;   // ?item= מטופל פעם אחת בלבד לכל טעינת דף
 
     // טיילי OSM פתוחים בחינם
     // רקע מפה בהיר מ-CARTO (Positron) - בהיר וברור. ייחוס מוקטן ב-CSS למטה.
@@ -932,6 +937,11 @@
     // כך שרואים את הפרטים. המשתמש יכול להתקרב/להתרחק יותר ידנית.
     function fitToMarkers(animate = true): boolean {
         if (!leafletL || !leafletMap || !mapMarkerLayer) return false;
+        // deep-link focus (?item=): להשאיר את הפין המבוקש במרכז עד שהמשתמש יזיז את המפה
+        if (focusPending) {
+            leafletMap.setView(focusPending, 17, { animate });
+            return true;
+        }
         const layers = mapMarkerLayer.getLayers();
         if (!layers.length) return false;
         const pts = layers.map((l: any) => l.getLatLng());
@@ -1023,6 +1033,31 @@
 
         setTimeout(() => { leafletMap?.invalidateSize?.(); fitToMarkers(false); }, 0);
         setTimeout(() => { leafletMap?.invalidateSize?.(); fitToMarkers(false); }, 250);
+
+        // ---- deep-link ?item=<id>: מרכוז המפה על פריט ספציפי (קישור מהאתר הארצי) ----
+        try {
+            const focusId = new URLSearchParams(window.location.search).get('item');
+            if (focusId && !focusConsumed) {
+                focusConsumed = true;
+                const target = dbItems.find((d) => String(d.id) === focusId);
+                if (target) {
+                    // עוברים לאזור של הפריט כדי שהפין ייכלל בשכבת המרקרים והתצוגה תתאים אליו
+                    if (target.city) neighborhoodState.city = target.city;
+                    neighborhoodState.neighborhood = target.neighborhood || 'מרכז';
+                    const coords: [number, number] =
+                        (typeof target.lat === 'number' && typeof target.lng === 'number')
+                            ? [target.lat, target.lng]
+                            : getCoordsFor(target.neighborhood, target.city);
+                    focusPending = coords;
+                    isMapInteractive = true;
+                    rebuildMarkers();
+                    leafletMap.setView(coords, 17, { animate: false });
+                    // שחרור הנעילה ברגע שהמשתמש גורר את המפה, וגם רשת-ביטחון אחרי 6 שניות
+                    leafletMap.once('dragstart', () => { focusPending = null; });
+                    setTimeout(() => { focusPending = null; }, 6000);
+                }
+            }
+        } catch { /* window/URL לא זמינים — מתעלמים */ }
 
         // ניקוי כשה-element מנותק
         return () => {

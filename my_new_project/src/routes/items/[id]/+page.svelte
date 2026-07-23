@@ -2632,6 +2632,25 @@
                 </div>
             {/if}
 
+            <!-- הגמ"ח מנוהל גם במאגר הארצי — נודג' לבעלים המחובר (חשיפה ארצית + עמוד ייעודי) -->
+            {#if item.category === 'gemachim' && (item as { isOwner?: boolean } | null)?.isOwner}
+                <div class="mt-3 rounded-2xl md:rounded-3xl border border-emerald-400/30 bg-gradient-to-br from-emerald-500/10 to-teal-500/5 shadow-2xl p-3.5">
+                    <div class="flex items-start gap-2.5">
+                        <span class="text-xl leading-none" aria-hidden="true">🇮🇱</span>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-emerald-100 font-black text-sm">הגמ"ח שלך גם במאגר הארצי</p>
+                            <p class="text-emerald-200/70 text-xs mt-0.5 leading-relaxed">
+                                מלבד השכנים כאן על המפה — קבל חשיפה ארצית ועמוד ייעודי לגמ"ח באתר הגמ"חים הארצי. אותו רישום, קהל גדול יותר.
+                            </p>
+                            <a href="https://gemach.gofreeil.com/gemach/{item.id}" target="_blank" rel="noopener noreferrer"
+                                class="mt-2 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 px-3.5 py-1.5 text-xs font-bold text-white hover:opacity-90 transition-opacity">
+                                לעמוד הגמ"ח הארצי ←
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {/if}
+
             <!-- ===== תגובות ===== -->
             <section class="mt-3 bg-[#0f172a] rounded-2xl md:rounded-3xl border border-white/10 shadow-2xl overflow-hidden">
                 <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-3 md:px-4 py-2.5 flex items-center gap-2">
