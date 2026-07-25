@@ -132,6 +132,19 @@ export const neighborhoodCenters: Record<string, Coord> = {
     'נווה גנים':   [32.3056, 34.8617],
     'עיר ימים':    [32.27854, 34.84337],
     'צוקי ים':     [32.36135, 34.85868],
+    'נאות הרצל':   [32.3160, 34.8630],
+    // שמות שקיימים גם בערים אחרות (כוכב הצפון בת"א; קריית צאנז בירושלים/טבריה/עפולה) -
+    // ממופתחים כ"עיר|שכונה" כדי לא לחטוף פריטים של הערים האחרות לנתניה
+    'נתניה|כוכב הצפון':  [32.3450, 34.8570],
+    'עין התכלת':   [32.3521, 34.8556],
+    'פרדס הגדוד':  [32.3400, 34.8650],
+    'נתניה|קריית צאנז':  [32.3430, 34.8489],
+    'נווה איתמר':  [32.3355, 34.8710],
+    'מרכז העיר – צפון':      [32.3340, 34.8535],
+    'מרכז העיר צפון-מערב':   [32.3315, 34.8505],
+    'מרכז העיר צפון-מזרח':   [32.3315, 34.8575],
+    'מרכז העיר דרום-מערב':   [32.3245, 34.8505],
+    'מרכז העיר דרום-מזרח':   [32.3245, 34.8575],
 
     // ---- ראשון לציון ----
     'נווה דקלים':  [31.98177, 34.762],
@@ -189,6 +202,9 @@ export function getCoordsFor(neighborhood?: string, city?: string): Coord {
     if (neighborhood && dynamicNeighborhoodCenters[neighborhood]) {
         return dynamicNeighborhoodCenters[neighborhood];
     }
+    if (neighborhood && city && neighborhoodCenters[dynKey(city, neighborhood)]) {
+        return neighborhoodCenters[dynKey(city, neighborhood)];
+    }
     if (neighborhood && neighborhoodCenters[neighborhood]) {
         return neighborhoodCenters[neighborhood];
     }
@@ -206,6 +222,7 @@ export function getCoordsFor(neighborhood?: string, city?: string): Coord {
 export function hasPreciseCoords(neighborhood?: string, city?: string): boolean {
     if (neighborhood && city && dynamicNeighborhoodCenters[dynKey(city, neighborhood)]) return true;
     if (neighborhood && dynamicNeighborhoodCenters[neighborhood]) return true;
+    if (neighborhood && city && neighborhoodCenters[dynKey(city, neighborhood)]) return true;
     if (neighborhood && neighborhoodCenters[neighborhood]) return true;
     if (city && cityCenters[city]) return true;
     return false;
@@ -225,6 +242,7 @@ function distSq(a: Coord, b: Coord): number {
 function preciseNeighborhoodCoord(neighborhood: string, city: string): Coord | null {
     if (dynamicNeighborhoodCenters[dynKey(city, neighborhood)]) return dynamicNeighborhoodCenters[dynKey(city, neighborhood)];
     if (dynamicNeighborhoodCenters[neighborhood]) return dynamicNeighborhoodCenters[neighborhood];
+    if (neighborhoodCenters[dynKey(city, neighborhood)]) return neighborhoodCenters[dynKey(city, neighborhood)];
     if (neighborhoodCenters[neighborhood]) return neighborhoodCenters[neighborhood];
     return null;
 }
