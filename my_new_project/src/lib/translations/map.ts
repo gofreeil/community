@@ -55,6 +55,7 @@ export const he = {
         mock_giveaway: "מסירת ספה",
         mock_attraction: "עירייה",
         item_fallback: "פריט",
+        closed_now: "סגור עכשיו",
 
         // ----- פריטים סטטיים לדוגמה בתצוגת הרשימה (item_<id>) -----
         item_gemach_books: 'גמ"ח ספרים',
@@ -303,6 +304,7 @@ export const en = {
         mock_giveaway: "Sofa Giveaway",
         mock_attraction: "Municipality",
         item_fallback: "Item",
+        closed_now: "Currently closed",
 
         item_gemach_books: "Book Gemach",
         item_gemach_tools: "Tool Gemach",
@@ -539,6 +541,7 @@ export const ru = {
         mock_giveaway: "Диван даром",
         mock_attraction: "Мэрия",
         item_fallback: "Объявление",
+        closed_now: "Сейчас закрыто",
 
         item_gemach_books: "Гмах книг",
         item_gemach_tools: "Гмах инструментов",

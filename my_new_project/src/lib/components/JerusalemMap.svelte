@@ -11,6 +11,7 @@
     import { neighborhoodState } from "$lib/neighborhoodState.svelte";
     import { getCoordsFor, jitterCoord } from "$lib/neighborhoodCoords";
     import { canUseMapImage, getMapImage, isDisplayableImage } from "$lib/mapImage";
+    import { isOpenNow } from "$lib/openingHours";
     import { logoForService, serviceColor } from "$lib/serviceTypes";
     import { heMatches } from "$lib/search";
     import { isFamilyItem } from "$lib/itemCategories";
@@ -671,6 +672,15 @@
     // ---- מרקרים דינמיים נטועים במפה (lat/lng אמיתי) ----
     const MAX_MARKERS = 30;
 
+    // "עכשיו" שמתעדכן כל דקה — כדי שהאפרת סמל של נכס שסגור-לפי-שעות תתעדכן חיה בלי רענון דף.
+    let nowTick = $state(Date.now());
+    // טקסט הטולטיפ "סגור עכשיו" (נקרא בתוך buildIconHtml, שהיא פונקציה רגילה ולא reactive scope)
+    let closedNowText = $derived($t('map.closed_now'));
+    $effect(() => {
+        const timer = setInterval(() => { nowTick = Date.now(); }, 60_000);
+        return () => clearInterval(timer);
+    });
+
     // דוגמאות mock - מוצגות בכל שכונה כל עוד אין באותה שכונה ולו פריט אמיתי אחד.
     // לחיצה על מרקר דמו מובילה אל /add/{category} כדי לעודד הוספת פריט אמיתי.
     // label = מפתח תרגום (נפתר עם $t בבניית המרקרים)
@@ -735,6 +745,13 @@
                         }
                     } catch { /* extra_fields לא תקין - נופלים לאימוג'י */ }
                 }
+                // פתוח/סגור לפי שעות הפתיחה (extra_fields.hours). null = אין שעות מובנות
+                // או שהבעלים הסתיר אותן (hours_public=false) → הסמל נשאר צבעוני.
+                let openNow: boolean | null = null;
+                try {
+                    const ef = item.extra_fields ? JSON.parse(item.extra_fields) : {};
+                    if (ef.hours_public !== false) openNow = isOpenNow(ef.hours, new Date(nowTick));
+                } catch { /* extra_fields לא תקין - נשאר null */ }
                 return {
                     id,
                     category: item.category,
@@ -746,6 +763,7 @@
                     mapImage,
                     // צבע מסגרת/תווית מותאם לסמל השירות (אם קיים)
                     serviceHex,
+                    openNow,
                     isMock:   false,
                 };
             });
@@ -777,6 +795,7 @@
                 color:  m.color,
                 mapImage: '',
                 serviceHex: '',
+                openNow: null,
                 isMock: true,
             };
         });
@@ -848,10 +867,15 @@
         rose:     '#e11d48',
     };
 
-    function buildIconHtml(icon: string, label: string, color: string, isMock = false, mapImage = '', hexOverride = ''): string {
+    function buildIconHtml(icon: string, label: string, color: string, isMock = false, mapImage = '', hexOverride = '', openNow: boolean | null = null): string {
         const hex = hexOverride || colorHex[color] || '#9333ea';
         const safeLabel = label.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         const mockClass = isMock ? ' jmap-pin--mock' : '';
+        // נכס סגור-לפי-שעות: מחלקה שמאפירה את הסמל (grayscale) + הודעת hover "סגור עכשיו"
+        const closedClass = openNow === false ? ' jmap-pin--closed' : '';
+        const closedNote = openNow === false
+            ? `<div class="jmap-pin-closed-note">${closedNowText}</div>`
+            : '';
         // תמונה/לוגו על המפה (תוספת בתשלום) - עוקפת את האימוג'י
         const iconInner = mapImage
             ? `<div class="jmap-pin-icon jmap-pin-img" style="border-color:${hex}"><img src="${mapImage.replace(/"/g, '&quot;')}" alt="" loading="lazy" /></div>`
@@ -859,9 +883,10 @@
             ? `<div class="jmap-pin-icon jmap-pin-img" style="border-color:${hex}"><img src="${icon.replace(/"/g, '&quot;')}" alt="" loading="lazy" /></div>`
             : `<div class="jmap-pin-icon">${icon}</div>`;
         return `
-            <div class="jmap-pin${mockClass}">
+            <div class="jmap-pin${mockClass}${closedClass}">
                 ${iconInner}
                 <div class="jmap-pin-label" style="background:${hex}">${safeLabel}</div>
+                ${closedNote}
             </div>
         `;
     }
@@ -875,7 +900,7 @@
         // dynamicMarkers, בלי לגעת בפינים אמיתיים.
         for (const m of dynamicMarkers) {
             if (!isMarkerVisible(m.category)) continue;
-            const html = buildIconHtml(m.icon, m.label, m.color, m.isMock, m.mapImage, m.serviceHex);
+            const html = buildIconHtml(m.icon, m.label, m.color, m.isMock, m.mapImage, m.serviceHex, m.openNow);
             const divIcon = leafletL.divIcon({
                 className: 'jmap-pin-wrap',
                 html,
@@ -2954,6 +2979,35 @@
     }
     :global(.jmap-pin--mock:hover .jmap-pin-label) {
         opacity: 1;
+    }
+    /* נכס סגור כרגע (לפי שעות הפתיחה) — הסמל/הלוגו בשחור-לבן, נהיה צבעוני שוב כשפתוח */
+    :global(.jmap-pin--closed .jmap-pin-icon) {
+        filter: grayscale(1) drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+        opacity: 0.8;
+    }
+    :global(.jmap-pin--closed .jmap-pin-img) {
+        filter: grayscale(1);
+        opacity: 0.85;
+    }
+    :global(.jmap-pin--closed .jmap-pin-label) {
+        filter: grayscale(0.9);
+        opacity: 0.8;
+    }
+    /* הודעת "סגור עכשיו" — מוצגת רק במעבר עכבר על פין סגור */
+    :global(.jmap-pin-closed-note) {
+        display: none;
+        margin: 3px auto 0;
+        padding: 2px 8px;
+        background: rgba(17,24,39,0.95);
+        color: #fca5a5;
+        font-size: 0.7rem;
+        font-weight: 700;
+        border-radius: 6px;
+        white-space: nowrap;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.35);
+    }
+    :global(.jmap-pin--closed:hover .jmap-pin-closed-note) {
+        display: inline-block;
     }
     /* z-index לעטיפת ה-Leaflet במצב מסך מלא */
     :global(.leaflet-container) {

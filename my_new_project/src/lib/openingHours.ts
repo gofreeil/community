@@ -151,3 +151,47 @@ export function formatOpeningHours(
 ): string {
     return formatOpeningHoursLines(value, opts).join(' · ');
 }
+
+/** מספר דקות מחצות עבור "HH:MM" (חסין לערכים לא-תקינים) */
+function hhmmToMinutes(s: string): number {
+    const [h, m] = String(s).split(':').map(Number);
+    return (Number.isFinite(h) ? h : 0) * 60 + (Number.isFinite(m) ? m : 0);
+}
+
+/**
+ * האם הנכס פתוח כרגע לפי שעות הפתיחה המובנות.
+ * מחזיר:
+ *   null  – אין שעות מובנות (טקסט חופשי ישן / ריק) → אין להסיק פתוח/סגור
+ *   true  – פתוח כרגע
+ *   false – סגור כרגע
+ * תומך בטווח שחוצה חצות (למשל 22:00–02:00): החלק שלפני חצות מיוחס ליום ההתחלה,
+ * וההמשך שאחרי חצות נבדק גם מול היום הקודם.
+ * @param now לבדיקות/דטרמיניזם – ברירת מחדל הזמן הנוכחי.
+ */
+export function isOpenNow(value: unknown, now: Date = new Date()): boolean | null {
+    const oh = parseOpeningHours(value);
+    if (!oh) return null;
+
+    const day = now.getDay();                          // 0=ראשון ... 6=שבת — תואם ל-days[]
+    const mins = now.getHours() * 60 + now.getMinutes();
+
+    // טווח רגיל (to>from): [from,to). טווח שחוצה חצות (to<=from): מ-from עד חצות.
+    const openTodayIn = (d: DayHours | undefined): boolean =>
+        !!d?.open && d.ranges.some((r) => {
+            const from = hhmmToMinutes(r.from);
+            const to = hhmmToMinutes(r.to);
+            return to > from ? mins >= from && mins < to : mins >= from;
+        });
+
+    if (openTodayIn(oh.days[day])) return true;
+
+    // המשך טווח-לילה שהתחיל אתמול (22:00–02:00 → פתוח גם ב-01:00 של היום הבא)
+    const prev = oh.days[(day + 6) % 7];
+    if (prev?.open && prev.ranges.some((r) => {
+        const from = hhmmToMinutes(r.from);
+        const to = hhmmToMinutes(r.to);
+        return to <= from && mins < to;
+    })) return true;
+
+    return false;
+}
