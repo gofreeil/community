@@ -227,11 +227,15 @@ export const { handle, signIn, signOut } = !AUTH_SECRET
                     const existingById = await getUserById(credentialsId, strapiJwt ?? undefined);
                     if (existingById) {
                         stableId = credentialsId;
+                        // מסמן משתמש חוזר - כדי שמסך הפתיחה יברך "ברוכים השבים"
+                        // ולא "ברוכים המצטרפים" גם כשהגיע דרך דף ההרשמה
+                        (user as { isExisting?: boolean }).isExisting = true;
                         console.log('[auth] merged OAuth → credentials user:', credentialsId);
                     } else {
                         const existingByEmail = await getUserByEmail(user.email, strapiJwt ?? undefined).catch(() => null);
                         if (existingByEmail) {
                             stableId = existingByEmail.id;
+                            (user as { isExisting?: boolean }).isExisting = true;
                             console.log('[auth] merged OAuth → user by email:', existingByEmail.id);
                         }
                     }
@@ -268,6 +272,8 @@ export const { handle, signIn, signOut } = !AUTH_SECRET
                 token.dbUserId = user.id;
                 token.provider = account.provider;
                 if (user.email) token.email = user.email;
+                // משתמש חוזר (זוהה במיזוג ב-signIn) - נשמר לכל חיי הסשן
+                if ((user as { isExisting?: boolean }).isExisting) token.isExisting = true;
             }
             // שמור Strapi JWT (רק ב-credentials login)
             if (user && (user as { strapiJwt?: string }).strapiJwt) {
@@ -320,6 +326,9 @@ export const { handle, signIn, signOut } = !AUTH_SECRET
             }
             if (token.strapiJwt) {
                 (session.user as { strapiJwt?: string }).strapiJwt = token.strapiJwt as string;
+            }
+            if (token.isExisting) {
+                (session.user as { isExisting?: boolean }).isExisting = true;
             }
             // העבר role, neighborhood, banned לסשן
             session.user.role = (token.role as typeof session.user.role) ?? 'user';

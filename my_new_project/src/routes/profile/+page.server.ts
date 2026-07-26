@@ -40,6 +40,18 @@ export const load: PageServerLoad = async (event) => {
         };
     }
 
+    // משתמש קיים שהגיע מדף ההרשמה עם welcome=1 (ברכת מצטרף חדש) - מפנים
+    // לברכת "ברוכים השבים". הדגל isExisting נקבע ב-signIn callback רק כשהמיזוג
+    // מצא חשבון קיים בפועל, ולכן מצטרף חדש אמיתי ימשיך לקבל welcome=1 כרגיל.
+    if (
+        event.url.searchParams.get('welcome') === '1' &&
+        (session.user as { isExisting?: boolean }).isExisting
+    ) {
+        const params = new URLSearchParams(event.url.searchParams);
+        params.set('welcome', 'back');
+        redirect(303, `/profile?${params.toString()}`);
+    }
+
     let user: Awaited<ReturnType<typeof getUserById>>;
     let items: Awaited<ReturnType<typeof getItemsByUserId>> = [];
     let messages: Awaited<ReturnType<typeof getMessagesByUserId>> = [];
