@@ -1675,6 +1675,28 @@
 	// שדה החיפוש מוצג רק כשהרשימה ארוכה מספיק כדי להצדיק אותו
 	let nbSearchable = $derived(availableNeighborhoods.length > 10);
 
+	// אותו עיקרון כמו resolveTypedCity: הוקלד שם שכונה מלא בשדה החיפוש בלי
+	// לחיצה על הרשימה? נבחר אותה אוטומטית ביציאה מהשדה - כולל כתיב שונה
+	// ("קריית משה" → "קרית משה") וקידומת "שכונת". בכוונה *לא* רץ תוך כדי
+	// הקלדה: "רמות" היא גם שכונה שלמה וגם תחילת "רמות אלון" - בחירה מוקדמת
+	// הייתה סוגרת את הרשימה באמצע ההקלדה.
+	function resolveTypedNeighborhood(): boolean {
+		if (neighborhood) return true;
+		const q = normalizeHe(nbQuery.replace(/^שכונת\s+/, ""));
+		if (!q) return false;
+		const exact = availableNeighborhoods.find((n) => normalizeHe(n) === q);
+		if (exact) {
+			pickNeighborhood(exact);
+			return true;
+		}
+		const loose = availableNeighborhoods.filter((n) => loosenHe(normalizeHe(n)) === loosenHe(q));
+		if (loose.length === 1) {
+			pickNeighborhood(loose[0]);
+			return true;
+		}
+		return false;
+	}
+
 	// עיר נבחרה אך אין לה שכונות אמיתיות (לדוגמה: כפר תפוח - רק "מרכז") →
 	// אין לחייב בחירת שכונה, אפשר לשמור עם העיר בלבד
 	let cityWithoutNeighborhoods = $derived(
@@ -4655,6 +4677,8 @@
 											// סוגר רק כשהפוקוס עוזב את כל האזור - מעבר לשדה החיפוש הפנימי לא סוגר
 											const next = e.relatedTarget as Node | null;
 											if (!next || !e.currentTarget.contains(next)) {
+												// הוקלד שם שכונה מלא בלי בחירה מהרשימה? נאמץ אותו אוטומטית
+												resolveTypedNeighborhood();
 												setTimeout(() => (showNbSuggestions = false), 150);
 											}
 										}}
