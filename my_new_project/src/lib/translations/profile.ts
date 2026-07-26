@@ -265,6 +265,9 @@ export const he = {
         copy_facebook: "ייבא מחשבון הפייסבוק שלי",
         city_search_suffix: " - הקלד לחיפוש...",
         no_cities_found: 'לא נמצאו ערים תואמות. מלא ב"לא מצאת את העיר?" למטה.',
+        city_typed_not_picked:
+            'העיר שהקלדת לא זוהתה ברשימה, ולכן עוד לא נבחרה עיר. בחר מההצעות כאן, או מלא ב"לא מצאת את העיר?" למטה.',
+        city_did_you_mean: "אולי התכוונת:",
         selected: "✓ נבחר",
         city_no_nb_note: "בעיר זו לא קיימת שכונה, רק מרכז — אפשר לשמור עם העיר בלבד.",
         nb_not_found: "📍 לא מצאתי את השכונה שלי",
@@ -672,6 +675,9 @@ export const en = {
         copy_facebook: "Import from my Facebook account",
         city_search_suffix: " - type to search...",
         no_cities_found: 'No matching cities found. Fill in "Couldn\'t find your city?" below.',
+        city_typed_not_picked:
+            'The city you typed wasn\'t recognized in the list, so no city is selected yet. Pick one of the suggestions here, or fill in "Couldn\'t find your city?" below.',
+        city_did_you_mean: "Did you mean:",
         selected: "✓ Selected",
         city_no_nb_note: "This city has no neighborhoods, only a center — you can save with the city alone.",
         nb_not_found: "📍 I couldn't find my neighborhood",
@@ -1078,6 +1084,9 @@ export const ru = {
         copy_facebook: "Импортировать из моего аккаунта Facebook",
         city_search_suffix: " - введите для поиска...",
         no_cities_found: 'Совпадающих городов не найдено. Заполните «Не нашли свой город?» ниже.',
+        city_typed_not_picked:
+            "Введённый город не найден в списке, поэтому город ещё не выбран. Выберите один из вариантов здесь или заполните «Не нашли свой город?» ниже.",
+        city_did_you_mean: "Возможно, вы имели в виду:",
         selected: "✓ Выбрано",
         city_no_nb_note: "В этом городе нет районов, только центр — можно сохранить только с городом.",
         nb_not_found: "📍 Я не нашёл свой район",

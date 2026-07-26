@@ -22,7 +22,7 @@
 	import { restoreDaysLeft } from "$lib/placeStatus";
 	import { statusLabel, type UserStatus } from "$lib/singlesMock";
 	import NeighborhoodPicker from "$lib/components/NeighborhoodPicker.svelte";
-	import { heRank } from "$lib/search";
+	import { heRank, normalizeHe, loosenHe } from "$lib/search";
 
 	let { data, form } = $props();
 
@@ -958,6 +958,8 @@
 	let cityQuery = $state(_ud?.city ?? "");
 	let showCitySuggestions = $state(false);
 	let cityHighlightIdx = $state(-1);
+	// הוקלד טקסט בשדה העיר אבל לא נבחרה עיר (וגם לא זוהתה אוטומטית) → מציגים הסבר והצעות
+	let cityUnresolved = $state(false);
 	// רשימת שכונות נפתחת (dropdown מותאם)
 	let showNbSuggestions = $state(false);
 
@@ -966,11 +968,35 @@
 		return heRank(cityQuery, all, (c) => c, 50);
 	}
 
+	// משתמשים שמקלידים את שם העיר במלואה (במקום לבחור מהרשימה) לא אמורים להיתקע:
+	// התאמה מדויקת (אחרי נרמול גרשיים/רווחים) נבחרת אוטומטית, וכך גם כתיב
+	// מלא/חסר (נתנייה↔נתניה) כשההתאמה חד-משמעית. מחזירה true אם יש עיר נבחרת.
+	function resolveTypedCity(allowLoose = true): boolean {
+		if (city) return true;
+		const q = normalizeHe(cityQuery);
+		if (!q) return false;
+		const all = (data.citiesData as CityEntry[]).map((c) => c.city);
+		const exact = all.find((c) => normalizeHe(c) === q);
+		if (exact) {
+			pickCity(exact);
+			return true;
+		}
+		if (allowLoose) {
+			const loose = all.filter((c) => loosenHe(normalizeHe(c)) === loosenHe(q));
+			if (loose.length === 1) {
+				pickCity(loose[0]);
+				return true;
+			}
+		}
+		return false;
+	}
+
 	function pickCity(c: string) {
 		city = c;
 		cityQuery = c;
 		showCitySuggestions = false;
 		cityHighlightIdx = -1;
+		cityUnresolved = false;
 		locationInteracted = true;
 		// עיר חדשה נבחרה → אפס את מסלול "לא מצאתי שכונה" ואת הטקסט/פין הישן שלו,
 		// והתחל geocoding של העיר ברקע כדי שהמפה (אם תיפתח) תמורכז עליה ולא על ירושלים.
@@ -4472,13 +4498,23 @@
 											showCitySuggestions = true;
 											cityHighlightIdx = -1;
 											locationInteracted = true;
+											cityUnresolved = false;
 											if (cityQuery !== city) city = "";
+											// הוקלד שם עיר מלא ומדויק? נבחר אותה מיד - בלי לחייב לחיצה על הרשימה
+											if (!city) resolveTypedCity(false);
 										}}
 										onfocus={() => {
 											showCitySuggestions = true;
+											cityUnresolved = false;
 											locationInteracted = true;
 										}}
-										onblur={() => setTimeout(() => (showCitySuggestions = false), 150)}
+										onblur={() =>
+											setTimeout(() => {
+												showCitySuggestions = false;
+												// יצאו מהשדה עם טקסט שלא נבחר? ננסה לזהות את העיר בעצמנו,
+												// ואם אין התאמה - נסביר מה לעשות במקום להשאיר שדה אדום סתום
+												if (!resolveTypedCity() && cityQuery.trim()) cityUnresolved = true;
+											}, 150)}
 										onkeydown={onCityInputKey}
 										placeholder={tFn("choose_city") + tFn("profile.city_search_suffix")}
 										class="w-full bg-[#070b14] border {!city
@@ -4516,6 +4552,29 @@
 										</ul>
 									{/if}
 								</div>
+								<!-- הוקלד טקסט שלא זוהה כעיר → הסבר ברור + הצעות בלחיצה אחת,
+								     כדי שלא יישאר רק שדה אדום בלי שום הכוונה -->
+								{#if cityUnresolved && !city}
+									<p class="text-xs text-red-300 font-bold mt-1.5 leading-relaxed">
+										{tFn("profile.city_typed_not_picked")}
+									</p>
+									{@const nearCities = citySuggestions().slice(0, 3)}
+									{#if nearCities.length > 0}
+										<div class="flex flex-wrap items-center gap-1.5 mt-1.5">
+											<span class="text-xs text-gray-400">{tFn("profile.city_did_you_mean")}</span>
+											{#each nearCities as c}
+												<button
+													type="button"
+													onclick={() => pickCity(c)}
+													class="text-xs font-bold text-purple-200 bg-purple-500/15 border border-purple-500/40
+													       hover:bg-purple-500/30 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+												>
+													{c}
+												</button>
+											{/each}
+										</div>
+									{/if}
+								{/if}
 							{:else}
 								<p class="text-white font-medium py-3 px-1">
 									{city || "-"}
