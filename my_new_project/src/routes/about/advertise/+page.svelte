@@ -605,21 +605,6 @@
         </p>
     </div>
 
-    {#if FREE_PROMO}
-        <!-- מבצע השקה: פרסום חינם באמצעות קוד בשדה ההנחה -->
-        <div class="mb-10 rounded-2xl border-2 border-green-500/60 bg-gradient-to-br from-green-900/30 to-emerald-900/20 p-6 text-center shadow-lg shadow-green-500/10"
-             style="animation: slideDown 0.4s ease-out;">
-            <div class="text-4xl mb-2">🎉</div>
-            <h2 class="text-2xl md:text-3xl font-black text-green-300 mb-2">{$_('advertise.promo_banner_title')}</h2>
-            <p class="text-gray-200 text-base md:text-lg leading-relaxed">
-                {$_('advertise.promo_banner_p1')}
-                <span class="inline-block bg-green-500/20 border border-green-400/50 rounded-lg px-3 py-0.5 text-green-200 font-black whitespace-nowrap">"{FREE_PROMO_CODE_TEXT}"</span>
-                <br class="hidden md:block" />
-                {$_('advertise.promo_banner_p2')} <span class="text-green-300 font-black">{$_('advertise.promo_banner_free')}</span>.
-            </p>
-        </div>
-    {/if}
-
     <!-- Packages -->
     <h2 class="text-xl md:text-2xl font-black text-white mb-4 text-center">{$_('advertise.packages_title')}</h2>
     <div class="grid grid-cols-3 gap-2 md:gap-4 mb-12">
