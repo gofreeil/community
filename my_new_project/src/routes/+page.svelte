@@ -152,16 +152,24 @@
     const filteredCities = $derived.by(() => {
         const q = searchQuery.trim().toLowerCase();
         if (!q) return allCitiesMerged;
-        const out: [string, string[]][] = [];
-        for (const [city, ns] of allCitiesMerged) {
-            if (heMatch(q, city)) {
-                out.push([city, ns]);
-            } else {
-                const matching = ns.filter(n => heMatch(q, n));
-                if (matching.length > 0) out.push([city, matching]);
+        const matchFor = (query: string): [string, string[]][] => {
+            const out: [string, string[]][] = [];
+            for (const [city, ns] of allCitiesMerged) {
+                if (heMatch(query, city)) {
+                    out.push([city, ns]);
+                } else {
+                    const matching = ns.filter(n => heMatch(query, n));
+                    if (matching.length > 0) out.push([city, matching]);
+                }
             }
-        }
-        return out;
+            return out;
+        };
+        const out = matchFor(q);
+        if (out.length > 0) return out;
+        // אין תוצאות והשאילתה מתחילה ב"שכונת"? מנסים בלעדיה ("שכונת פת" → "פת") -
+        // אנשים מקלידים את השם עם הקידומת אבל ברשימה הוא שמור נקי. זהה לפרופיל.
+        const stripped = q.replace(/^שכונת\s+/, '');
+        return stripped !== q ? matchFor(stripped) : out;
     });
 
     // ספירת ערים ושכונות לתצוגה ב-placeholder
