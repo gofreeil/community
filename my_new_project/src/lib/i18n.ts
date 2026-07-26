@@ -275,6 +275,12 @@ register('he', () => Promise.resolve({
     coordinator_go_login: "התחברות",
     coordinator_unauthorized: "צריך להיות מחוברים כדי להגיש בקשת רכז. הירשמו או התחברו — ואז חזרו לעמוד ונסו שוב.",
     coordinator_missing_fields: "חסרים פרטים חובה. מלאו שם, טלפון ובחרו עיר/שכונה, ונסו שוב.",
+    coordinator_profile_sync_q: "שמתי לב שהפרטים שלך בפרופיל לא מלאים — האם להעתיק ולעדכן אותם שם?",
+    coordinator_profile_sync_yes: "כן",
+    coordinator_profile_sync_no: "לא",
+    coordinator_profile_sync_saving: "מעדכן את הפרופיל...",
+    coordinator_profile_sync_done: "✅ הפרטים עודכנו! מעביר אותך לדף הפרופיל...",
+    coordinator_profile_sync_err: "עדכון הפרופיל נכשל — אפשר לנסות שוב או לעדכן ידנית בדף הפרופיל.",
 }));
 
 register('en', () => Promise.resolve({
@@ -522,6 +528,12 @@ register('en', () => Promise.resolve({
     coordinator_go_login: "Sign in",
     coordinator_unauthorized: "You must be signed in to submit a coordinator request. Please register or sign in, then come back and try again.",
     coordinator_missing_fields: "Missing required details. Fill in name, phone and choose a city/neighborhood, then try again.",
+    coordinator_profile_sync_q: "I noticed your profile details are incomplete — copy and update them there?",
+    coordinator_profile_sync_yes: "Yes",
+    coordinator_profile_sync_no: "No",
+    coordinator_profile_sync_saving: "Updating your profile...",
+    coordinator_profile_sync_done: "✅ Details updated! Taking you to your profile...",
+    coordinator_profile_sync_err: "Profile update failed — try again or update manually on your profile page.",
 }));
 
 register('ru', () => Promise.resolve({
@@ -769,6 +781,12 @@ register('ru', () => Promise.resolve({
     coordinator_go_login: "Вход",
     coordinator_unauthorized: "Чтобы отправить заявку координатора, нужно войти. Зарегистрируйтесь или войдите, затем вернитесь и попробуйте снова.",
     coordinator_missing_fields: "Не заполнены обязательные поля. Укажите имя, телефон и выберите город/район, затем попробуйте снова.",
+    coordinator_profile_sync_q: "Мы заметили, что данные в вашем профиле заполнены не полностью — скопировать и обновить их там?",
+    coordinator_profile_sync_yes: "Да",
+    coordinator_profile_sync_no: "Нет",
+    coordinator_profile_sync_saving: "Обновляем профиль...",
+    coordinator_profile_sync_done: "✅ Данные обновлены! Переходим в ваш профиль...",
+    coordinator_profile_sync_err: "Не удалось обновить профиль — попробуйте ещё раз или обновите вручную на странице профиля.",
 }));
 
 // מילונים מודולריים לפי אזור באתר - מתמזגים לתוך המילון הראשי

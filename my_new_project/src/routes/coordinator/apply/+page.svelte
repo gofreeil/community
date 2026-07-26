@@ -1,5 +1,6 @@
 <script lang="ts">
     import { _ } from 'svelte-i18n';
+    import { goto } from '$app/navigation';
     import { citiesAndNeighborhoods, effectiveNeighborhoods } from '$lib/neighborhoodsData';
     import NeighborhoodPicker from '$lib/components/NeighborhoodPicker.svelte';
 
@@ -53,6 +54,36 @@
     // המבקש כבר רכז של האזור שביקש → אין בקשה חוזרת; מציגים הודעה כנה (לא "נשלח בהצלחה")
     let alreadyCoordinator = $state(false);
     let alreadyArea = $state('');
+
+    // הפרופיל חסר עיר/שכונה? אחרי הגשה מוצלחת מציעים להעתיק את הפרטים מהטופס
+    // לפרופיל (ההצעה נבנית מהערכים שהוגשו - נשמרים בצד כי הטופס מתאפס אחרי שליחה)
+    const profileIncomplete = !_profileCity || !_profileNb;
+    let showProfileSync = $state(false);
+    let syncState = $state<'idle' | 'saving' | 'done' | 'error'>('idle');
+    let syncCity = '';
+    let syncNb = '';
+    let syncPhone = '';
+
+    async function syncProfile() {
+        syncState = 'saving';
+        try {
+            const res = await fetch('/api/profile/upgrade', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    city: syncCity,
+                    neighborhood: syncNb,
+                    ...(syncPhone ? { phone: syncPhone } : {}),
+                }),
+            });
+            if (!res.ok) throw new Error('profile sync failed');
+            syncState = 'done';
+            // מעבר לדף הפרופיל - שם המשתמש רואה את הפרטים שמורים
+            setTimeout(() => goto('/profile'), 1400);
+        } catch {
+            syncState = 'error';
+        }
+    }
 
     // רשימת ערים/יישובים
     const allCities = Object.keys(citiesAndNeighborhoods).sort((a, b) => a.localeCompare(b, 'he'));
@@ -173,6 +204,14 @@
                 return;
             }
 
+            // לפני איפוס הטופס: אם הפרופיל חסר - שומרים את הפרטים שהוגשו להצעת ההעתקה
+            if (profileIncomplete) {
+                syncCity  = city.trim();
+                syncNb    = nbNotListed ? newNbName.trim() : (neighborhood || 'מרכז');
+                syncPhone = !data.user?.phone && phone.trim() ? phone.trim() : '';
+                showProfileSync = true;
+            }
+
             success = true;
             experience = '';
             motivation = '';
@@ -201,6 +240,38 @@
             <div class="bg-green-900 border border-green-500 rounded-lg p-6 mb-6">
                 <p class="text-green-200 text-center">{$_('coordinator_success')}</p>
             </div>
+
+            <!-- הפרופיל לא מלא → מציעים להעתיק את העיר/שכונה שהוגשו גם לפרופיל -->
+            {#if showProfileSync}
+                <div class="bg-blue-900/30 border border-blue-500/40 rounded-lg p-6 mb-6">
+                    {#if syncState === 'done'}
+                        <p class="text-green-200 text-center font-medium">{$_('coordinator_profile_sync_done')}</p>
+                    {:else}
+                        <p class="text-blue-100 text-center mb-4">{$_('coordinator_profile_sync_q')}</p>
+                        {#if syncState === 'error'}
+                            <p class="text-red-300 text-sm text-center mb-3">{$_('coordinator_profile_sync_err')}</p>
+                        {/if}
+                        <div class="flex justify-center gap-3">
+                            <button
+                                type="button"
+                                onclick={syncProfile}
+                                disabled={syncState === 'saving'}
+                                class="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-bold py-2.5 px-10 rounded transition-colors cursor-pointer"
+                            >
+                                {syncState === 'saving' ? $_('coordinator_profile_sync_saving') : $_('coordinator_profile_sync_yes')}
+                            </button>
+                            <button
+                                type="button"
+                                onclick={() => (showProfileSync = false)}
+                                disabled={syncState === 'saving'}
+                                class="bg-slate-700 hover:bg-slate-600 disabled:cursor-not-allowed text-white font-bold py-2.5 px-10 rounded transition-colors cursor-pointer"
+                            >
+                                {$_('coordinator_profile_sync_no')}
+                            </button>
+                        </div>
+                    {/if}
+                </div>
+            {/if}
         {:else if alreadyCoordinator}
             <!-- כבר רכז של האזור המבוקש → הודעה כנה, לא "נשלח בהצלחה" -->
             <div class="bg-blue-900/30 border border-blue-500/40 rounded-lg p-6 mb-6">
