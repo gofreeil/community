@@ -3,6 +3,7 @@
     import { goto } from '$app/navigation';
     import { citiesAndNeighborhoods, effectiveNeighborhoods } from '$lib/neighborhoodsData';
     import NeighborhoodPicker from '$lib/components/NeighborhoodPicker.svelte';
+    import NeighborhoodSelect from '$lib/components/NeighborhoodSelect.svelte';
 
     interface PageData {
         user: { name: string; phone: string; neighborhood?: string; city?: string } | null;
@@ -356,26 +357,18 @@
                     <div class="mb-6">
                         <label for="c-neighborhood" class="block text-sm font-medium mb-2">{$_('coordinator_neighborhood')}</label>
                         {#if !nbNotListed}
-                            <select
+                            <NeighborhoodSelect
                                 id="c-neighborhood"
-                                value={neighborhood}
-                                onchange={(e) => {
-                                    const v = e.currentTarget.value;
-                                    if (v === '__not_listed__') {
-                                        nbNotListed = true;
-                                        neighborhood = '';
-                                    } else {
-                                        neighborhood = v;
-                                    }
+                                bind:value={neighborhood}
+                                neighborhoods={cityNeighborhoods}
+                                placeholder={$_('coordinator_choose_neighborhood')}
+                                extraOptionLabel={$_('coordinator_nb_not_listed')}
+                                onextra={() => {
+                                    nbNotListed = true;
+                                    neighborhood = '';
                                 }}
-                                class="w-full bg-slate-900 border border-slate-600 rounded px-4 py-2 text-white focus:outline-none focus:border-blue-500"
-                            >
-                                <option value="">{$_('coordinator_choose_neighborhood')}</option>
-                                <option value="__not_listed__">{$_('coordinator_nb_not_listed')}</option>
-                                {#each cityNeighborhoods as nb}
-                                    <option value={nb}>{nb}</option>
-                                {/each}
-                            </select>
+                                buttonClass="w-full bg-slate-900 border border-slate-600 rounded px-4 py-2 text-white focus:outline-none focus:border-blue-500 text-right flex items-center justify-between gap-2 cursor-pointer"
+                            />
                         {/if}
 
                         <label class="flex items-center gap-2 mt-3 text-sm text-slate-300 cursor-pointer">

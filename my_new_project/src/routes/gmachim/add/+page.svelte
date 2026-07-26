@@ -1,6 +1,7 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import CameraCapture from '$lib/components/CameraCapture.svelte';
+    import NeighborhoodSelect from '$lib/components/NeighborhoodSelect.svelte';
     import { get } from 'svelte/store';
     import { _ } from 'svelte-i18n';
     import { browser } from '$app/environment';
@@ -436,11 +437,14 @@
                     </div>
                     <div>
                         <label for="neighborhood" class="text-white text-sm font-bold mb-1 block">{$_('extras.g_neighborhood_label')}</label>
-                        <select id="neighborhood" name="neighborhood" bind:value={neighborhood} onchange={() => (locationTouched = true)} required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white" style="color-scheme: dark;">
-                            {#each neighborhoodsForCity as n}
-                                <option value={n}>{n}</option>
-                            {/each}
-                        </select>
+                        <NeighborhoodSelect
+                            id="neighborhood"
+                            name="neighborhood"
+                            bind:value={neighborhood}
+                            neighborhoods={neighborhoodsForCity}
+                            onpick={() => (locationTouched = true)}
+                            buttonClass="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-right flex items-center justify-between gap-2 cursor-pointer"
+                        />
                     </div>
                 </div>
 

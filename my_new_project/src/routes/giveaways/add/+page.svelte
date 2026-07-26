@@ -9,6 +9,7 @@
     import { enhance } from '$app/forms';
     import { categoryConfig, trOr } from '$lib/categoryFields';
     import { citiesAndNeighborhoods, effectiveNeighborhoods, DEFAULT_NEIGHBORHOOD } from '$lib/neighborhoodsData';
+    import NeighborhoodSelect from '$lib/components/NeighborhoodSelect.svelte';
     import { giveawayCategories } from '$lib/giveawayCategories';
     import { formMemory } from '$lib/formMemory';
     import { imageDrop } from '$lib/imageDrop';
@@ -253,6 +254,13 @@
             <form
                 method="POST"
                 use:enhance={({ cancel }) => {
+                    // שכונה חובה - הבורר המותאם (חיפוש בהקלדה) אינו select נטיבי,
+                    // ולכן required של הדפדפן לא חל עליו; בודקים כאן במקומו
+                    if (city && !neighborhood) {
+                        alert($_('listings.gvadd_choose_neighborhood'));
+                        cancel();
+                        return;
+                    }
                     // ביישוב בלי רחובות/שכונות - חובה פין, אחרת הפריט ייעֶרם על מרכז היישוב
                     if (forceMapPin && !(pinLat != null && pinLng != null)) {
                         showMap = true;
@@ -510,19 +518,15 @@
                         </div>
                         <div>
                             <label for="neighborhood" class="text-white text-sm font-bold mb-1 block">{$_('listings.gvadd_neighborhood')}</label>
-                            <select
+                            <NeighborhoodSelect
                                 id="neighborhood"
                                 name="neighborhood"
-                                required
                                 bind:value={neighborhood}
+                                neighborhoods={neighborhoodOptions}
                                 disabled={!city}
-                                class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-orange-500/50 focus:outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                <option value="">{city ? $_('listings.gvadd_choose_neighborhood') : $_('listings.gvadd_choose_city_first')}</option>
-                                {#each neighborhoodOptions as n}
-                                    <option value={n}>{n}</option>
-                                {/each}
-                            </select>
+                                placeholder={city ? $_('listings.gvadd_choose_neighborhood') : $_('listings.gvadd_choose_city_first')}
+                                buttonClass="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-orange-500/50 focus:outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-right flex items-center justify-between gap-2 cursor-pointer"
+                            />
                         </div>
                     </div>
 

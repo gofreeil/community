@@ -9,6 +9,7 @@
     import { getFormMemory, rememberFields } from '$lib/formMemory';
     import { saveDraftBackup, loadDraftBackup, clearDraftBackup } from '$lib/draftBackup';
     import NeighborhoodPicker from '$lib/components/NeighborhoodPicker.svelte';
+    import NeighborhoodSelect from '$lib/components/NeighborhoodSelect.svelte';
     import StreetPicker from '$lib/components/StreetPicker.svelte';
     import ServiceTypePicker from '$lib/components/ServiceTypePicker.svelte';
     import { guessServiceType } from '$lib/serviceTypes';
@@ -984,11 +985,13 @@
                     </div>
                     <div>
                         <label for="pub-neighborhood" class="block text-xs text-gray-400 mb-1">שכונה</label>
-                        <select id="pub-neighborhood" bind:value={neighborhood} onchange={() => (locationTouched = true)} class="{inputClass} cursor-pointer">
-                            {#each cityNeighborhoods as nb}
-                                <option value={nb} style="background:#fff;color:#0f172a;">{nb}</option>
-                            {/each}
-                        </select>
+                        <NeighborhoodSelect
+                            id="pub-neighborhood"
+                            bind:value={neighborhood}
+                            neighborhoods={cityNeighborhoods}
+                            onpick={() => (locationTouched = true)}
+                            buttonClass="{inputClass} cursor-pointer text-right flex items-center justify-between gap-2"
+                        />
                     </div>
                 </div>
                 <p class="text-gray-400 text-xs mt-1.5">
