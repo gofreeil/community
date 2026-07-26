@@ -4,6 +4,7 @@
 	import { t, locale } from 'svelte-i18n';
 	import { enhance } from '$app/forms';
 	import { onMount } from 'svelte';
+	import InAppBrowserNotice from '$lib/components/InAppBrowserNotice.svelte';
 
 	let { data, form } = $props();
 
@@ -32,13 +33,17 @@
 		}
 	}
 
-	async function loginWith(provider: 'google' | 'facebook') {
+	// forceChooser: מחזיר את בורר החשבונות של גוגל לפי דרישה בלבד (מחשב משותף).
+	// ברירת המחדל - חיבור אוטומטי לחשבון היחיד המחובר בדפדפן, בלי דף ביניים.
+	async function loginWith(provider: 'google' | 'facebook', forceChooser = false) {
 		isLoading = true;
 		loadingProvider = provider;
 		try {
-			await signIn(provider, {
-				callbackUrl: withWelcome(data.redirectTo || '/profile'),
-			});
+			await signIn(
+				provider,
+				{ callbackUrl: withWelcome(data.redirectTo || '/profile') },
+				forceChooser ? { prompt: 'select_account' } : undefined
+			);
 		} catch {
 			isLoading = false;
 			loadingProvider = null;
@@ -245,6 +250,9 @@
 					<div class="flex-1 h-px bg-white/10"></div>
 				</div>
 
+				<!-- אזהרה כשהדף נפתח בתוך אפליקציה (WebView) - גוגל חוסמת שם OAuth -->
+				<InAppBrowserNotice />
+
 				<!-- 2. כפתור Google -->
 				<button
 					type="button"
@@ -266,6 +274,17 @@
 						</svg>
 					{/if}
 					<span>{tFn("continue_google")}</span>
+				</button>
+
+				<!-- מחשב משותף? בורר החשבונות של גוגל - רק למי שמבקש -->
+				<button
+					type="button"
+					onclick={() => loginWith('google', true)}
+					disabled={isLoading}
+					class="block w-full text-center text-xs text-gray-500 hover:text-gray-300 transition-colors
+					       -mt-2 mb-4 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+				>
+					{tFn('account.google_other_account')}
 				</button>
 
 				<!-- 3. כפתור Facebook -->

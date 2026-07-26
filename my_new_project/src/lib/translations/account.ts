@@ -93,6 +93,16 @@ export const he = {
 
         // sso-adopt
         sso_identifying: 'מזהה אותך דרך "יוצאים לחירות"…',
+
+        // דפדפן בתוך אפליקציה (WebView) — אזהרה לפני התחברות עם גוגל
+        inapp_title: "נפתח בתוך אפליקציה?",
+        inapp_warning: "נראה שהדף נפתח בתוך אפליקציה (וואטסאפ, פייסבוק וכד'). התחברות עם Google לא עובדת שם — פתח את האתר בדפדפן רגיל (Chrome או Safari) דרך תפריט ⋮ ואז \"פתיחה בדפדפן\".",
+        inapp_copy_link: "העתקת קישור לפתיחה בדפדפן",
+        inapp_copied: "הקישור הועתק ✓",
+        inapp_copy_manual: "העתק את הקישור:",
+
+        // בורר חשבונות גוגל לפי דרישה (ברירת המחדל: חיבור אוטומטי לחשבון היחיד)
+        google_other_account: "להתחבר עם חשבון גוגל אחר",
     },
 };
 
@@ -187,6 +197,16 @@ export const en = {
 
         // sso-adopt
         sso_identifying: 'Identifying you via "Out to Freedom"…',
+
+        // in-app browser (WebView) — warning before Google sign-in
+        inapp_title: "Opened inside an app?",
+        inapp_warning: "It looks like this page was opened inside an app (WhatsApp, Facebook, etc.). Google sign-in doesn't work there — open the site in a regular browser (Chrome or Safari) via the ⋮ menu and \"Open in browser\".",
+        inapp_copy_link: "Copy link to open in a browser",
+        inapp_copied: "Link copied ✓",
+        inapp_copy_manual: "Copy the link:",
+
+        // Google account chooser on demand (default: auto-connect the single account)
+        google_other_account: "Use another Google account",
     },
 };
 
@@ -281,5 +301,15 @@ export const ru = {
 
         // sso-adopt
         sso_identifying: "Идентифицируем вас через «Навстречу свободе»…",
+
+        // встроенный браузер (WebView) — предупреждение перед входом через Google
+        inapp_title: "Открыто внутри приложения?",
+        inapp_warning: "Похоже, страница открыта внутри приложения (WhatsApp, Facebook и т.п.). Вход через Google там не работает — откройте сайт в обычном браузере (Chrome или Safari) через меню ⋮ и «Открыть в браузере».",
+        inapp_copy_link: "Скопировать ссылку для открытия в браузере",
+        inapp_copied: "Ссылка скопирована ✓",
+        inapp_copy_manual: "Скопируйте ссылку:",
+
+        // выбор аккаунта Google по запросу (по умолчанию: автоматический вход)
+        google_other_account: "Войти с другим аккаунтом Google",
     },
 };
