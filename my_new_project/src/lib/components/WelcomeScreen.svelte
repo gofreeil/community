@@ -5,6 +5,7 @@
 	 * בזרימות ההרשמה / ההתחברות / ה-SSO:
 	 *   welcome=1 | welcome=new  → "ברוכים המצטרפים" (משתמש חדש לאתר)
 	 *   welcome=back             → "ברוכים השבים"    (משתמש שהיה מנותק וחזר)
+	 * בשני המצבים מוצגת רשת הלוגואים של כל אתרי הרשת (networkSites).
 	 *
 	 * נסגר אוטומטית אחרי 7 שניות (פס-זמן מתמלא בתחתית) או ידנית ב-✕. עם הסגירה
 	 * מוסר הפרמטר מה-URL, כך שרענון או גלישה רגילה לא יציגו שוב — רק זיהוי חדש
@@ -15,7 +16,7 @@
 	import { replaceState } from "$app/navigation";
 	import { t, locale } from "svelte-i18n";
 	import { get } from "svelte/store";
-	import { ads } from "$lib/adsData";
+	import { networkSites } from "$lib/networkSites";
 
 	let { userName = "" }: { userName?: string } = $props();
 
@@ -108,39 +109,39 @@
 					<p class="text-purple-200 text-sm md:text-base font-bold tracking-wide mb-4">
 						{tFn("welcome_platforms_label")}
 					</p>
-
-					<!-- לוגואים של כל האתרים ברשת — flex-wrap עם מרכוז כדי שהשורה
-					     האחרונה (חלקית) תתמרכז ולא תישאר צמודה לצד עם חלל ריק -->
-					<div class="flex flex-wrap justify-center gap-2.5">
-						{#each ads as site (site.id)}
-							<a
-								href={site.href}
-								target="_blank"
-								rel="noopener noreferrer"
-								title={site.title}
-								class="group flex flex-col items-center gap-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-400/40 p-2 transition-all hover:-translate-y-0.5 grow-0 basis-[calc(33.333%-0.47rem)] sm:basis-[calc(25%-0.52rem)] md:basis-[calc(20%-0.55rem)]"
-							>
-								<div class="w-full aspect-[4/3] overflow-hidden rounded-lg bg-gradient-to-br {site.color}">
-									<img
-										src={site.image}
-										alt={site.title}
-										loading="lazy"
-										class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-									/>
-								</div>
-								<span class="text-[11px] leading-tight font-semibold text-gray-200 line-clamp-2 text-center">{site.title}</span>
-							</a>
-						{/each}
-					</div>
 				{:else}
 					<div class="text-6xl mb-4">👋</div>
 					<h2 class="text-white font-black text-2xl mb-3">
 						{tFn("welcome_back_title", { name: userName.trim() || tFn("default_user") })}
 					</h2>
-					<p class="text-gray-200 text-base leading-relaxed max-w-xl mx-auto">
+					<p class="text-gray-200 text-base leading-relaxed max-w-xl mx-auto mb-5">
 						{tFn("welcome_back_body")}
 					</p>
 				{/if}
+				<!-- לוגואים של כל האתרים ברשת (הרשימה הקנונית המלאה, כולל האתר
+				     הנוכחי) — מוצגים בשני המצבים (מצטרפים + שבים). flex-wrap עם
+				     מרכוז כדי שהשורה האחרונה (חלקית) תתמרכז ולא תישאר צמודה לצד -->
+				<div class="flex flex-wrap justify-center gap-2.5">
+					{#each networkSites as site (site.id)}
+						<a
+							href={site.href}
+							target="_blank"
+							rel="noopener noreferrer"
+							title={site.title}
+							class="group flex flex-col items-center gap-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 {kind === 'new' ? 'hover:border-purple-400/40' : 'hover:border-emerald-400/40'} p-2 transition-all hover:-translate-y-0.5 grow-0 basis-[calc(33.333%-0.47rem)] sm:basis-[calc(25%-0.52rem)] md:basis-[calc(20%-0.55rem)]"
+						>
+							<div class="w-full aspect-[4/3] overflow-hidden rounded-lg bg-gradient-to-br {site.color}">
+								<img
+									src={site.image}
+									alt={site.title}
+									loading="lazy"
+									class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+								/>
+							</div>
+							<span class="text-[11px] leading-tight font-semibold text-gray-200 line-clamp-2 text-center">{site.title}</span>
+						</a>
+					{/each}
+				</div>
 			</div>
 		</div>
 
