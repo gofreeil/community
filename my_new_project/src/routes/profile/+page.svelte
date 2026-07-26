@@ -962,6 +962,17 @@
 	let cityUnresolved = $state(false);
 	// רשימת שכונות נפתחת (dropdown מותאם)
 	let showNbSuggestions = $state(false);
+	// חיפוש בתוך רשימת השכונות - בערים גדולות (ירושלים ~140 שכונות) גלילה
+	// ידנית עד שכונה כמו "פת" לוקחת דקות ארוכות; הקלדה מוצאת מיד
+	let nbQuery = $state("");
+
+	// פוקוס אוטומטי לשדה חיפוש השכונה כשהרשימה נפתחת. רק בדסקטופ - בנייד
+	// פוקוס מקפיץ מקלדת שמסתירה את רוב הרשימה למי שרק רוצה לגלול ולבחור
+	function focusOnMount(node: HTMLElement) {
+		try {
+			if (window.matchMedia("(pointer: fine)").matches) setTimeout(() => node.focus(), 0);
+		} catch { /* noop */ }
+	}
 
 	function citySuggestions(): string[] {
 		const all = (data.citiesData as CityEntry[]).map((c) => c.city);
@@ -1016,6 +1027,7 @@
 		} else {
 			// יש שכונות → פתח מיד את הרשימה כדי שהמשתמש יבחר
 			neighborhood = "";
+			nbQuery = "";
 			showNbSuggestions = true;
 		}
 	}
@@ -1023,6 +1035,7 @@
 	function pickNeighborhood(n: string) {
 		neighborhood = n;
 		showNbSuggestions = false;
+		nbQuery = "";
 		locationInteracted = true;
 		nbNotFound = false;
 		// בחירת שכונה אמיתית מבטלת בקשת מיקום חופשי שהוקלדה - השתיים מוציאות זו את זו,
@@ -1647,6 +1660,20 @@
 			(n) => !((data.citiesData as CityEntry[]).find((c) => c.city === city)?.neighborhoods ?? []).includes(n),
 		),
 	]);
+
+	// סינון רשימת השכונות לפי ההקלדה. heRank סלחני (סדר מילים, כתיב מלא/חסר),
+	// ובנוסף: אם אין תוצאות והשאילתה מתחילה ב"שכונת" - מנסים בלעדיה
+	// ("שכונת פת" → "פת"), כי אנשים מקלידים את השם עם הקידומת אבל ברשימה הוא נקי
+	let filteredNeighborhoods = $derived.by(() => {
+		const q = nbQuery.trim();
+		if (!q) return availableNeighborhoods;
+		const ranked = heRank(q, availableNeighborhoods, (n) => n, 200);
+		if (ranked.length > 0) return ranked;
+		const stripped = q.replace(/^שכונת\s+/, "");
+		return stripped !== q ? heRank(stripped, availableNeighborhoods, (n) => n, 200) : [];
+	});
+	// שדה החיפוש מוצג רק כשהרשימה ארוכה מספיק כדי להצדיק אותו
+	let nbSearchable = $derived(availableNeighborhoods.length > 10);
 
 	// עיר נבחרה אך אין לה שכונות אמיתיות (לדוגמה: כפר תפוח - רק "מרכז") →
 	// אין לחייב בחירת שכונה, אפשר לשמור עם העיר בלבד
@@ -4621,13 +4648,22 @@
 										</button>
 									{/if}
 								{:else}
-									<div class="relative">
+									<!-- svelte-ignore a11y_no_static_element_interactions -->
+									<div
+										class="relative"
+										onfocusout={(e) => {
+											// סוגר רק כשהפוקוס עוזב את כל האזור - מעבר לשדה החיפוש הפנימי לא סוגר
+											const next = e.relatedTarget as Node | null;
+											if (!next || !e.currentTarget.contains(next)) {
+												setTimeout(() => (showNbSuggestions = false), 150);
+											}
+										}}
+									>
 										<input type="hidden" name="neighborhood" value={neighborhood} />
 										<button
 											id="p-neighborhood"
 											type="button"
-											onclick={() => { if (city) showNbSuggestions = !showNbSuggestions; locationInteracted = true; }}
-											onblur={() => setTimeout(() => (showNbSuggestions = false), 150)}
+											onclick={() => { if (city) { showNbSuggestions = !showNbSuggestions; nbQuery = ""; } locationInteracted = true; }}
 											disabled={!city}
 											class="w-full text-right bg-[#070b14] border {!neighborhood
 												? 'border-red-500/50'
@@ -4644,7 +4680,33 @@
 												       bg-[#0f172a] border border-purple-500/30 shadow-2xl"
 												role="listbox"
 											>
-												{#each availableNeighborhoods as n}
+												{#if nbSearchable}
+													<!-- רשימה ארוכה (ירושלים ~140) → חיפוש בהקלדה במקום גלילה של דקות -->
+													<li role="presentation" class="sticky top-0 bg-[#0f172a] p-2 border-b border-white/10">
+														<input
+															type="text"
+															use:focusOnMount
+															bind:value={nbQuery}
+															placeholder={tFn("profile.nb_search_placeholder")}
+															onkeydown={(e) => {
+																if (e.key === "Enter") {
+																	e.preventDefault();
+																	if (filteredNeighborhoods.length > 0) pickNeighborhood(filteredNeighborhoods[0]);
+																} else if (e.key === "Escape") {
+																	showNbSuggestions = false;
+																}
+															}}
+															class="w-full bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-lg
+															       px-3 py-2 text-sm text-white placeholder-white/30 outline-none transition-colors"
+														/>
+													</li>
+												{/if}
+												{#if nbSearchable && nbQuery.trim() && filteredNeighborhoods.length === 0}
+													<li role="presentation" class="px-4 py-2 text-sm text-white/40">
+														{tFn("profile.nb_search_no_results")}
+													</li>
+												{/if}
+												{#each filteredNeighborhoods as n}
 													<li
 														role="option"
 														aria-selected={n === neighborhood}
