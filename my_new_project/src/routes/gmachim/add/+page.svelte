@@ -358,7 +358,7 @@
 {#if data.needsUpgrade && data.tierUser}
 <div class="min-h-screen bg-[#070b14] pt-10 pb-20 px-4" dir="rtl">
     <div class="max-w-2xl mx-auto">
-        <LevelUpCard user={data.tierUser} target={data.requiredTier} reason={$_('tiers.reason_publish')} onDone={() => invalidateAll()} />
+        <LevelUpCard user={data.tierUser} target={data.requiredTier} reason={$_('tiers.reason_publish')} approved={(data as any).approvedNeighborhoods ?? []} onDone={() => invalidateAll()} />
     </div>
 </div>
 {:else}

@@ -926,6 +926,7 @@
             user={data.tierUser}
             target={data.requiredTier}
             reason={data.requiredTier >= 3 ? $_('tiers.reason_singles') : $_('tiers.reason_publish')}
+            approved={(data as any).approvedNeighborhoods ?? []}
             onDone={() => invalidateAll()}
         />
     {:else if redirectingMsg}

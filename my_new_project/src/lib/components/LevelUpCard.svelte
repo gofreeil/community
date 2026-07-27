@@ -1,27 +1,30 @@
 <script lang="ts">
     import { get } from 'svelte/store';
     import { t, locale } from 'svelte-i18n';
-    import { citiesAndNeighborhoods } from '$lib/neighborhoodsData';
+    import { citiesAndNeighborhoods, effectiveNeighborhoods } from '$lib/neighborhoodsData';
     import {
         missingForTier, TIER_META, type Tier, type TierField, type TierUserFields,
     } from '$lib/tiers';
 
-    // user   — פרטי המשתמש הנוכחיים (מחושב מהם מה חסר)
-    // target — דרגת היעד הנדרשת לפעולה
-    // reason — מפתח i18n שמסביר *למה* צריך להשלים (למשל "כדי לפרסם מודעה")
-    // onDone — נקרא כשההשלמה הצליחה (ההורה ממשיך בפעולה / מרענן)
+    // user     — פרטי המשתמש הנוכחיים (מחושב מהם מה חסר)
+    // target   — דרגת היעד הנדרשת לפעולה
+    // reason   — מפתח i18n שמסביר *למה* צריך להשלים (למשל "כדי לפרסם מודעה")
+    // onDone   — נקרא כשההשלמה הצליחה (ההורה ממשיך בפעולה / מרענן)
+    // approved — שכונות שאושרו באדמין (data.approvedNeighborhoods), כדי שיופיעו בבורר
     let {
         user,
         target,
         reason = '',
         onDone = () => {},
         compact = false,
+        approved = [],
     }: {
         user: TierUserFields;
         target: Tier;
         reason?: string;
         onDone?: () => void;
         compact?: boolean;
+        approved?: ReadonlyArray<{ name: string; city: string }>;
     } = $props();
 
     // tFn ריאקטיבי (כמו בשאר האתר) — נענה לשינוי שפה
@@ -47,7 +50,7 @@
 
     const cityList = Object.keys(citiesAndNeighborhoods).sort((a, b) => a.localeCompare(b, 'he'));
     const hoods = $derived.by(() => {
-        const list = citiesAndNeighborhoods[city] ?? [];
+        const list = effectiveNeighborhoods(city, approved);
         return list.includes('מרכז') ? list : ['מרכז', ...list];
     });
     // כשמשנים עיר — אם השכונה הנוכחית לא שייכת לה, מאפסים ל"מרכז"

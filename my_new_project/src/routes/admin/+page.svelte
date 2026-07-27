@@ -4,7 +4,7 @@
 	import { onMount } from 'svelte';
 	import type { DiscountCode } from '$lib/discountCodes';
 	import { heMatches } from '$lib/search';
-	import { citiesData, citiesAndNeighborhoods } from '$lib/neighborhoodsData';
+	import { citiesData, effectiveNeighborhoods } from '$lib/neighborhoodsData';
 	import ServerHealthGauges from '$lib/components/ServerHealthGauges.svelte';
 	import StatsSummaryChart from '$lib/components/StatsSummaryChart.svelte';
 	import RequesterContext from '$lib/components/RequesterContext.svelte';
@@ -101,8 +101,15 @@
 	let searchQuery = $state('');
 	let roleFilter = $state<'all' | 'user' | 'neighborhood_admin' | 'super_admin'>('all');
 
-	// רשימת שמות הערים - ל-datalist של הוספת שכונה ובורר החלפת שכונה לרכז
-	const adminCityNames = citiesData.map((c) => c.city);
+	// רשימת שמות הערים - ל-datalist של הוספת שכונה ובורר החלפת שכונה לרכז.
+	// כולל ערים שהגיעו רק דרך שכונה שאושרה (עיר שלא ברשימה הסטטית).
+	const adminCityNames = $derived.by(() => {
+		const base = citiesData.map((c) => c.city);
+		const extra = ((data as any).approvedNeighborhoods as Array<{ city: string }> | undefined ?? [])
+			.map((n) => n.city)
+			.filter((c) => c && !base.includes(c));
+		return extra.length ? [...base, ...new Set(extra)] : base;
+	});
 
 	// הוספת שכונה ידנית ע"י סופר-אדמין (טופס "הוספת שכונה לעיר")
 	let addNbCity = $state('');
@@ -115,7 +122,11 @@
 	// בורר מובנה במודל הרכז: החלפת/הוספת שכונה מהרשימה הרשמית (מונע שגיאות פורמט "שכונה (עיר)")
 	let coordPickCity = $state('');
 	let coordPickNb   = $state('');
-	const coordPickNbOptions = $derived((citiesAndNeighborhoods[coordPickCity] ?? []).filter((n) => n !== 'מרכז'));
+	// מקור-אמת יחיד: הרשימה הסטטית + שכונות שאושרו באדמין, כדי ששכונה שנוספה זה עתה
+	// תופיע כאן מיד ולא רק בבוררים שבשאר האתר.
+	const coordPickNbOptions = $derived(
+		effectiveNeighborhoods(coordPickCity, (data as any).approvedNeighborhoods).filter((n) => n !== 'מרכז'),
+	);
 	// בונה את מחרוזת האזור בפורמט האחיד: "שכונה (עיר)", או שם העיר בלבד לרכז-עיר
 	function coordAreaStr(): string {
 		const c = coordPickCity.trim();
