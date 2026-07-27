@@ -896,8 +896,9 @@
             : icon.startsWith('/')
             ? `<div class="jmap-pin-icon jmap-pin-img" style="border-color:${hex}"><img src="${icon.replace(/"/g, '&quot;')}" alt="" loading="lazy" /></div>`
             : `<div class="jmap-pin-icon">${icon}</div>`;
+        // ‎--jmap-pin-hex‎ - צבע הפריט זמין ל-CSS, משמש את הנקודה שמחליפה את הפין בזום ארצי
         return `
-            <div class="jmap-pin${mockClass}${closedClass}">
+            <div class="jmap-pin${mockClass}${closedClass}" style="--jmap-pin-hex:${hex}">
                 ${iconInner}
                 <div class="jmap-pin-label" style="background:${hex}">${safeLabel}</div>
                 ${closedNote}
@@ -1012,7 +1013,7 @@
                 ? `<div class="jmap-pin-icon jmap-pin-img" style="border-color:#d97706"><img src="${img.replace(/"/g, '&quot;')}" alt="" loading="lazy" /></div>`
                 : `<div class="jmap-pin-icon">${first.icon}</div>`;
             const html = `
-                <div class="jmap-pin">
+                <div class="jmap-pin" style="--jmap-pin-hex:#d97706">
                     <div class="jmap-pin-cluster-stack">
                         ${iconInner}
                         <div class="jmap-pin-cluster-badge">${group.length}</div>
@@ -1059,6 +1060,14 @@
     // הקטנת האמוג'ים בזום קרוב כדי שלא יסתירו את המפה.
     // Leaflet שומר על divIcon בגודל פיקסלים קבוע בכל זום, לכן צריך לשנות ידנית
     // לפי רמת הזום דרך CSS variable שהמרקרים יורשים.
+    //
+    // בנוסף - תצוגה מדורגת לפי מרחק (מחלקות על מיכל המפה, ה-CSS עושה את השאר):
+    //   זום 13 ומעלה (שכונה)  - אימוג'י + שם מלא
+    //   זום 10-12 (עיר)        - אימוג'י בלבד, השמות נעלמים
+    //   זום 8-9 (רמה ארצית)    - נקודות צבעוניות בלבד במקום האימוג'ים
+    // קריאות עזרה ומניפת "אותו בניין" פתוחה מוחרגות - תמיד מוצגות במלואן.
+    const LABELS_MIN_ZOOM = 13; // מתחת לזה השמות נעלמים
+    const ICONS_MIN_ZOOM = 10;  // מתחת לזה גם האימוג'ים מתחלפים בנקודות
     function applyPinScale() {
         if (!leafletMap || !mapEl) return;
         const z = leafletMap.getZoom();
@@ -1066,6 +1075,8 @@
         // מזום 14 ומעלה (התקרבות) - מקטינים בהדרגה עד 0.55.
         const scale = z <= 14 ? 1 : Math.max(0.55, 1 - (z - 14) * 0.09);
         mapEl.style.setProperty('--jmap-pin-scale', String(scale));
+        mapEl.classList.toggle('jmap-zoom-icons', z < LABELS_MIN_ZOOM && z >= ICONS_MIN_ZOOM);
+        mapEl.classList.toggle('jmap-zoom-dots', z < ICONS_MIN_ZOOM);
     }
 
     // ברירת מחדל: התקרבות שממלאת את המסך עם השכונה/הישוב (לפי המרקרים),
@@ -3160,6 +3171,35 @@
     }
     :global(.jmap-pin--closed:hover .jmap-pin-closed-note) {
         display: inline-block;
+    }
+    /* ----- תצוגה תלוית-זום (המחלקות מוחלפות ב-applyPinScale) -----
+       jmap-zoom-icons (זום עיר): רק אימוג'ים, בלי שמות.
+       jmap-zoom-dots (זום ארצי): נקודות צבעוניות במקום האימוג'ים.
+       קריאות עזרה (--help) ומניפה פתוחה (--fan) מוחרגות - תמיד מלאות. */
+    :global(.jmap-zoom-icons .jmap-pin-wrap:not(.jmap-pin-wrap--help):not(.jmap-pin-wrap--fan) .jmap-pin-label),
+    :global(.jmap-zoom-icons .jmap-pin-wrap:not(.jmap-pin-wrap--help):not(.jmap-pin-wrap--fan) .jmap-pin-closed-note) {
+        display: none;
+    }
+    :global(.jmap-zoom-dots .jmap-pin-wrap:not(.jmap-pin-wrap--help):not(.jmap-pin-wrap--fan) .jmap-pin > *) {
+        display: none;
+    }
+    :global(.jmap-zoom-dots .jmap-pin-wrap:not(.jmap-pin-wrap--help):not(.jmap-pin-wrap--fan) .jmap-pin) {
+        position: relative;
+        height: 100%;
+    }
+    /* הנקודה ממורכזת בדיוק על הקואורדינטה (עוגן המרקר = תחתית-מרכז התיבה) */
+    :global(.jmap-zoom-dots .jmap-pin-wrap:not(.jmap-pin-wrap--help):not(.jmap-pin-wrap--fan) .jmap-pin)::after {
+        content: '';
+        position: absolute;
+        left: 50%;
+        bottom: 0;
+        transform: translate(-50%, 50%);
+        width: 11px;
+        height: 11px;
+        border-radius: 9999px;
+        background: var(--jmap-pin-hex, #9333ea);
+        border: 2px solid #fff;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.55);
     }
     /* z-index לעטיפת ה-Leaflet במצב מסך מלא */
     :global(.leaflet-container) {
