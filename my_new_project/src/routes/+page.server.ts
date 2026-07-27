@@ -1,6 +1,6 @@
 import { getAllItems, getUserById, getEvents, type DbItem } from '$lib/server/db';
 import { getIndexBusinesses } from '$lib/server/indexBusinesses';
-import { PRIVATE_CATEGORIES } from '$lib/itemCategories';
+import { isPrivateCategory } from '$lib/itemCategories';
 import { isAdmin } from '$lib/server/auth';
 import type { PageServerLoad } from './$types';
 
@@ -68,7 +68,7 @@ export const load: PageServerLoad = async (event) => {
         // רשומות פרטיות (הודעות, משוב, בקשות, משאלות) מוחרגות: שליחתן לדפדפן
         // הייתה חושפת טקסטים פרטיים ו-user_id לכל גולש. raise_hand/emergency_team/
         // vaad_member נשארים - דף הבית והמפה משתמשים בהם.
-        dbItems: [...dbItems.filter((i) => !PRIVATE_CATEGORIES.has(i.category)).map(slimForHome), ...indexItems],
+        dbItems: [...dbItems.filter((i) => !isPrivateCategory(i.category)).map(slimForHome), ...indexItems],
         events,
         userNeighborhood,
         userCity,

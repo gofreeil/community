@@ -15,6 +15,7 @@
 // לכן הסינון הוא רשימת-חסימה בלבד:
 //   1. קטגוריות מערכת — רשומות פנימיות (הודעות, בקשות, סקרים), לא תוכן.
 //   2. קטגוריות של מוצר זר שחלק בטעות את אותו אוסף.
+//   3. רשומות תשתית של אתר-אחות, בקידומת '__' (קונפיגורציה/מונים, לא תוכן).
 // ============================================================
 
 /** רשומות מערכת — התראות/בקשות/סקרים פנימיים, לא תוכן שהעלה משתמש. */
@@ -38,6 +39,24 @@ export const PRIVATE_CATEGORIES: ReadonlySet<string> = new Set([
 ]);
 
 /**
+ * קידומת namespace לרשומות תשתית של אתרי המשפחה — קונפיגורציה/מונים ששמורים
+ * באוסף המשותף ואינם תוכן (למשל '__ng_admin', '__ng_stats' של הגמ"ח הארצי).
+ * חסימה לפי קידומת ולא לפי רשימה: כל רשומה כזו שאתר-אחות יוסיף בעתיד נחסמת
+ * מאליה, בלי לעדכן כאן דבר.
+ */
+const INTERNAL_PREFIX = '__';
+
+/** רשומת תשתית פנימית של אתר-אחות — לא תוכן ולא מוצגת בשום מסלול ציבורי. */
+export function isInternalCategory(category: string | null | undefined): boolean {
+	return !!category && category.startsWith(INTERNAL_PREFIX);
+}
+
+/** אסור להגיש במסלולים ציבוריים — תקשורת פרטית או רשומת תשתית. */
+export function isPrivateCategory(category: string | null | undefined): boolean {
+	return !!category && (PRIVATE_CATEGORIES.has(category) || isInternalCategory(category));
+}
+
+/**
  * קטגוריות של אתרים שאינם חלק מהמשפחה המסונכרנת.
  * 'pr_official' = אתר הדירוג הציבורי (public-rating-il) — מוצר נפרד לגמרי
  * שחלק בטעות את אוסף ה-items. הוא מבודד ל-collection `pr-item` בבאקאנד;
@@ -54,5 +73,6 @@ export const FOREIGN_CATEGORIES: ReadonlySet<string> = new Set([
  * כל מה שאינו רשומת מערכת ואינו של מוצר זר.
  */
 export function isFamilyItem(category: string | null | undefined): boolean {
-	return !!category && !SYSTEM_CATEGORIES.has(category) && !FOREIGN_CATEGORIES.has(category);
+	return !!category && !SYSTEM_CATEGORIES.has(category) && !FOREIGN_CATEGORIES.has(category)
+		&& !isInternalCategory(category);
 }
