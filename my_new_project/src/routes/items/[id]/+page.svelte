@@ -1816,7 +1816,9 @@
                     </div>
                 {/if}
                 <!-- Header / Image gallery -->
-                <div use:imageDrop={handleImageDrop} class="relative bg-[#0a0f1a] flex items-center justify-center min-h-[150px]" class:h-[110px]={galleryImages.length === 0} class:md:h-[140px]={galleryImages.length === 0}>
+                <!-- בלי גובה קבוע: הקופסה גדלה לפי התוכן (min-h בלבד), אחרת לוגו השירות
+                     גולש החוצה כלפי מעלה ומכסה את כותרת שם המקום שמעליו -->
+                <div use:imageDrop={handleImageDrop} class="relative bg-[#0a0f1a] flex items-center justify-center min-h-[150px]">
                     {#if galleryImages.length > 0}
                         {#key galleryIndex}
                             <button
@@ -1876,15 +1878,15 @@
                             <CameraCapture onfiles={processImageFiles} class="inline-flex items-center gap-1.5 text-[11px] font-bold text-white bg-black/70 hover:bg-black/90 border border-amber-400/40 rounded-lg px-2 py-1 backdrop-blur-sm transition-all cursor-pointer" />
                         </div>
                     {:else if serviceLogo}
-                        <div class="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 flex flex-col items-center justify-center gap-3">
+                        <div class="w-full self-stretch py-4 bg-gradient-to-br from-slate-800 to-slate-900 flex flex-col items-center justify-center gap-3">
                             <img src={serviceLogo} alt={serviceTypeLabel} class="w-32 h-32 md:w-40 md:h-40 drop-shadow-xl" />
                             {#if serviceTypeLabel}
                                 <span class="text-white/90 text-lg font-bold">{serviceTypeLabel}</span>
                             {/if}
                         </div>
                     {:else}
-                        <div class="w-full h-full bg-gradient-to-br from-purple-900 to-blue-900 flex items-center justify-center">
-                            {#if item.icon?.startsWith('/')}<img src={item.icon} alt="" class="w-40 h-40 md:w-48 md:h-48 object-contain drop-shadow-xl" />{:else}<span class="text-[120px]">{item.icon}</span>{/if}
+                        <div class="w-full self-stretch py-4 bg-gradient-to-br from-purple-900 to-blue-900 flex items-center justify-center">
+                            {#if item.icon?.startsWith('/')}<img src={item.icon} alt="" class="w-40 h-40 md:w-48 md:h-48 object-contain drop-shadow-xl" />{:else}<span class="text-[120px] leading-none">{item.icon}</span>{/if}
                         </div>
                     {/if}
                     {#if builderMode && galleryImages.length > 0}
