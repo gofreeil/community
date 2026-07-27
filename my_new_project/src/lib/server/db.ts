@@ -983,6 +983,49 @@ export async function markCoordinatorRequestApproved(documentId: string, decided
 }
 
 /**
+ * סוגר בקשות רכזות ממתינות שכבר מומשו בפועל - המבקש מונה לאזורים שביקש דרך מודל
+ * הרכז ולא דרך כפתור האישור שבכרטיס, ולכן הרשומה נותרה pending לנצח. הפאנל רק
+ * *מסתיר* רשומה כזו כל עוד המבקש עדיין רכז של מה שביקש, ולכן היא צפה מחדש כ"בקשה
+ * חדשה" ברגע שמחליפים לו שכונה. הסגירה כאן הופכת את ההסתרה הזמנית לקבועה.
+ *
+ * נקרא אך ורק מתוך פעולת אדמין מפורשת (מינוי/עדכון רכז) ולעולם לא ברקע בטעינת דף,
+ * כדי לא לחזור ל"אושר בלי שאישרתי". נסגרות רק בקשות שכל האזורים שבהן מכוסים ע"י
+ * האזורים שהוענקו בפועל - בקשה לאזור שלא הוענק נשארת ממתינה וגלויה.
+ *
+ * מחזיר את הבקשות שנסגרו. best-effort/idempotent.
+ */
+export async function closeFulfilledCoordinatorRequests(
+    user: { id: string; phone?: string | null; email?: string | null },
+    grantedAreas: string[],
+    decidedBy: string,
+    skipRequestId?: string,
+): Promise<DbCoordinatorRequest[]> {
+    if (!grantedAreas.length) return [];
+
+    const idKey    = String(user.id ?? '').trim().toLowerCase();
+    const phoneKey = normPhone(user.phone);
+    const emailKey = (user.email ?? '').trim().toLowerCase();
+
+    // התאמת בקשה למשתמש באותה סובלנות כמו באישור הידני: מזהה, "credentials_<email>"
+    // (שעלול להישמר ברישיות אחרת) וטלפון מנורמל - חשבונות שמוזגו מחליפים external_id.
+    const isSameUser = (r: DbCoordinatorRequest) => {
+        const rid = String(r.user_id ?? '').trim().toLowerCase();
+        if (idKey && rid === idKey) return true;
+        if (emailKey && rid === `credentials_${emailKey}`) return true;
+        return !!phoneKey && normPhone(r.phone) === phoneKey;
+    };
+
+    const pending = await getCoordinatorRequests('pending');
+    const fulfilled = pending.filter(
+        (r) => r.id !== skipRequestId && isSameUser(r) && coordinatorCovers(grantedAreas, r.neighborhoods),
+    );
+    for (const r of fulfilled) {
+        await markCoordinatorRequestApproved(r.id, decidedBy);
+    }
+    return fulfilled;
+}
+
+/**
  * אישור בקשת רכזות: ממנה את המשתמש לרכז של השכונות שביקש (במיזוג עם הקיימות)
  * ומסמן את הבקשה כ-approved כדי שתעלם מרשימת הממתינים.
  * מדיניות "רכז אחד לשכונה": המינוי מסיר אוטומטית כל רכז קיים מאותן שכונות.
@@ -1005,9 +1048,10 @@ export async function approveCoordinatorRequest(documentId: string, decidedBy: s
     if (!targetUser) {
         throw new Error(`משתמש לא נמצא (מזהה: ${req.user_id}${req.phone ? `, טלפון: ${req.phone}` : ''})`);
     }
-    const targetMappedId = mapUpUser(targetUser).id; // external_id ?? id מספרי
+    const targetMapped   = mapUpUser(targetUser);
+    const targetMappedId = targetMapped.id; // external_id ?? id מספרי
 
-    const existing = mapUpUser(targetUser).coordinator_of ?? [];
+    const existing = targetMapped.coordinator_of ?? [];
     const merged = Array.from(new Set([...existing, ...req.neighborhoods].map(s => s.trim()).filter(Boolean)));
 
     // אכיפת רכז אחד לשכונה: הסרת השכונות המאושרות מכל רכז אחר שמחזיק אותן
@@ -1052,6 +1096,19 @@ export async function approveCoordinatorRequest(documentId: string, decidedBy: s
     invalidate('user:');
 
     await markCoordinatorRequestApproved(documentId, decidedBy);
+
+    // הגשות כפולות של אותו מבקש נסגרות יחד עם הבקשה שאושרה - אחרת הן נשארות
+    // pending וצפות מאוחר יותר ככרטיס "בקשה חדשה" מיותר. best-effort.
+    try {
+        await closeFulfilledCoordinatorRequests(
+            { id: targetMappedId, phone: targetMapped.phone, email: targetMapped.email },
+            merged,
+            decidedBy,
+            documentId,
+        );
+    } catch (e) {
+        console.warn('[approveCoordinatorRequest] close duplicates failed:', e instanceof Error ? e.message : e);
+    }
 
     // שליחת הודעת אישור אוטומטית למשתמש (הודעה באתר = פריט category 'message')
     // try/catch - כשל בהודעה לא יבטל את האישור עצמו

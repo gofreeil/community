@@ -1,7 +1,7 @@
 import { redirect, fail, error } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { requireSuperAdmin, requireAdmin } from '$lib/server/auth';
-import { getAllUsers, banUser, unbanUser, deleteUserAccounts, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByAnyId, getUserByEmail, createItem, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, getNeighborhoodById, approveNeighborhood, rejectNeighborhood, createNeighborhoodRequest, getDiscountCodes, saveDiscountCodes, getItemsByCategoryAndStatus, getUserTotpSecret, coordinatorCovers, updateItem, getDbItemByIdFresh, getAllSuperAdmins, getMessagesByUserId, type DbItem } from '$lib/server/db';
+import { getAllUsers, banUser, unbanUser, deleteUserAccounts, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByAnyId, getUserByEmail, createItem, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, getNeighborhoodById, approveNeighborhood, rejectNeighborhood, createNeighborhoodRequest, getDiscountCodes, saveDiscountCodes, getItemsByCategoryAndStatus, getUserTotpSecret, coordinatorCovers, closeFulfilledCoordinatorRequests, updateItem, getDbItemByIdFresh, getAllSuperAdmins, getMessagesByUserId, type DbItem } from '$lib/server/db';
 import { finalizeLocationDecision } from '$lib/server/locationDecision';
 import { cityCenters } from '$lib/neighborhoodCoords';
 import { DEFAULT_DISCOUNT_CODES, type DiscountCode } from '$lib/discountCodes';
@@ -354,6 +354,22 @@ export const actions: Actions = {
 
             await setCoordinatorOf(userId, neighborhoods);
 
+            // סגירת בקשות רכזות ממתינות שהמינוי הידני כבר מימש. בלי זה הבקשה נשארת
+            // pending ורק *מוסתרת* כל עוד האזורים תואמים - ולכן צצה מחדש ככרטיס
+            // "בקשה חדשה" בכל החלפת שכונה. כולל את האזורים הקודמים, כדי לסגור גם
+            // בקשה שמומשה בעבר ושהאזור שלה מוחלף דווקא עכשיו.
+            let closedRequests: string[] = [];
+            try {
+                const closed = await closeFulfilledCoordinatorRequests(
+                    { id: userId, phone: prior?.phone, email: prior?.email },
+                    [...(prior?.coordinator_of ?? []), ...neighborhoods],
+                    session?.user?.id ?? 'admin',
+                );
+                closedRequests = closed.map((r) => r.neighborhoods.join(', ') || r.name || r.id);
+            } catch (e) {
+                console.warn('[admin/setCoordinator] close fulfilled requests failed:', e instanceof Error ? e.message : e);
+            }
+
             // הודעה לרכז ששוחרר - best-effort, כשל בהודעה לא מבטל את ההסרה
             if (removed.length > 0) {
                 try {
@@ -380,7 +396,13 @@ export const actions: Actions = {
             const msg = neighborhoods.length > 0
                 ? `המשתמש מונה לרכז של: ${neighborhoods.join(', ')}`
                 : 'הרכזות הוסרה - השכונות התפנו ורכז חדש יכול להתמנות אליהן';
-            return { success: true, message: msg };
+            // הסגירה השקטה של בקשות ישנות תמיד מדווחת - אין פעולה שקטה בפאנל
+            const closedMsg = closedRequests.length === 1
+                ? ` · נסגרה בקשת רכזות ישנה שכבר מומשה (${closedRequests[0]})`
+                : closedRequests.length > 1
+                    ? ` · נסגרו ${closedRequests.length} בקשות רכזות ישנות שכבר מומשו (${closedRequests.join(' | ')})`
+                    : '';
+            return { success: true, message: msg + closedMsg };
         } catch (e) {
             return fail(500, { error: `שגיאה: ${e instanceof Error ? e.message : e}` });
         }
