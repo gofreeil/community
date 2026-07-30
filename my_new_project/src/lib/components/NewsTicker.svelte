@@ -2,10 +2,22 @@
     import { onMount } from 'svelte';
     import { _ } from 'svelte-i18n';
 
+    // חדשות הקהילה שלנו (נערכות ב-/admin/news) + החדשות הארציות מאתר הביקורת
+    const COMMUNITY_NEWS_API = '/api/community-news';
     const NATIONAL_NEWS_API = 'https://criticism.gofreeil.com/api/national-news';
 
     // חדשות ברירת מחדל אם ה-API לא זמין (הטקסטים במילון home)
     type NewsItem = { line1: string; line2: string; sourceUrl?: string | null; documentId?: string };
+
+    // items  - עוקף את השליפה ומציג רשימה נתונה (תצוגה מקדימה בפאנל הניהול)
+    // layout - כפיית מראה נייד/נייח לתצוגה המקדימה; 'auto' = לפי רוחב המסך
+    let {
+        items = null,
+        layout = 'auto'
+    }: {
+        items?: NewsItem[] | null;
+        layout?: 'auto' | 'desktop' | 'mobile';
+    } = $props();
 
     const fallbackItems: NewsItem[] = $derived(
         [1, 2, 3, 4, 5, 6].map((k) => ({
@@ -16,25 +28,52 @@
 
     let paused = $state(false);
     let fetchedItems = $state<NewsItem[] | null>(null);
-    const newsItems = $derived(fetchedItems ?? fallbackItems);
+    const newsItems = $derived(items?.length ? items : (fetchedItems ?? fallbackItems));
+
+    // תווית "חדשות" האדומה מוצגת רק בדסקטופ. בתצוגה מקדימה כופים את הצד הנכון,
+    // כי מסגרת צרה בתוך מסך רחב עדיין נחשבת lg: בעיני Tailwind.
+    const labelClass = $derived(
+        layout === 'desktop' ? 'flex' : layout === 'mobile' ? 'hidden' : 'lg:flex hidden'
+    );
+
+    const toItem = (p: any): NewsItem => ({
+        line1: p.title,
+        line2: p.summary || p.category || '',
+        sourceUrl: p.sourceUrl || null,
+        documentId: p.documentId
+    });
+
+    async function loadFeed(url: string): Promise<NewsItem[]> {
+        try {
+            const res = await fetch(url);
+            if (!res.ok) return [];
+            const data = await res.json();
+            return (data?.posts ?? []).filter((p: any) => p?.title).map(toItem);
+        } catch {
+            return [];
+        }
+    }
 
     onMount(async () => {
-        try {
-            const res = await fetch(NATIONAL_NEWS_API);
-            if (res.ok) {
-                const data = await res.json();
-                if (data.posts && data.posts.length > 0) {
-                    fetchedItems = data.posts.map((p: any) => ({
-                        line1: p.title,
-                        line2: p.summary || p.category || '',
-                        sourceUrl: p.sourceUrl || null,
-                        documentId: p.documentId
-                    }));
-                }
-            }
-        } catch {
-            // שמירה על fallback items
-        }
+        // בתצוגה מקדימה הרשימה מגיעה מבחוץ - אין שליפה
+        if (items) return;
+
+        // שתי הזנות במקביל: חדשות הקהילה שלנו קודם, ואחריהן הארציות.
+        const [community, national] = await Promise.all([
+            loadFeed(COMMUNITY_NEWS_API),
+            loadFeed(NATIONAL_NEWS_API)
+        ]);
+
+        const seen = new Set<string>();
+        const merged = [...community, ...national].filter((it) => {
+            const key = it.line1.trim();
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
+
+        if (merged.length > 0) fetchedItems = merged;
+        // אחרת - נשארים על fallback items
     });
 </script>
 
@@ -61,7 +100,7 @@
     <div class="mx-auto max-w-7xl flex items-center px-4" aria-hidden="true">
         <!-- Ticker Label -->
         <div
-            class="z-10 bg-red-600 px-6 py-4 rounded-lg text-lg font-black text-white shadow-xl flex-shrink-0 ml-6 flex-col items-center justify-center border border-red-400 lg:flex hidden"
+            class="z-10 bg-red-600 px-6 py-4 rounded-lg text-lg font-black text-white shadow-xl flex-shrink-0 ml-6 flex-col items-center justify-center border border-red-400 {labelClass}"
         >
             <span>{$_('home.news_label_line1')}</span>
             <span>{$_('home.news_label_line2')}</span>

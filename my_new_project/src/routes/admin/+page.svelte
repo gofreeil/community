@@ -286,6 +286,13 @@
 					📈 סטטיסטיקה
 				</button>
 				<button
+					onclick={() => goto('/admin/news')}
+					class="relative px-4 py-2 rounded-xl bg-blue-500/15 border border-blue-500/40 text-blue-200 hover:bg-blue-500/25 transition-all cursor-pointer font-bold flex items-center gap-1.5"
+					title="עריכת הכותרות שרצות בטיקר בדף הבית"
+				>
+					📰 חדשות הטיקר
+				</button>
+				<button
 					onclick={() => (activeTab = activeTab === 'discounts' ? 'users' : 'discounts')}
 					class="relative px-4 py-2 rounded-xl border transition-all cursor-pointer font-bold flex items-center gap-1.5
 						{activeTab === 'discounts'

@@ -1,11 +1,13 @@
 // ============================================================
-// /api/community-news - חדשות קהילה עבור אתרים חיצוניים
-// מחזיר את הפוסטים האחרונים מ-Strapi עם CORS פתוח
+// /api/community-news - חדשות קהילה עבור הטיקר ולאתרים חיצוניים
+// מחזיר את הידיעות הפעילות (לא בארכיון) עם CORS פתוח.
+// המקור: Content Type "post" ב-Strapi, נערך מ-/admin/news.
 // ============================================================
 
 import { json } from '@sveltejs/kit';
+import { listActiveNews } from '$lib/server/newsStore';
 
-const STRAPI_URL = process.env.STRAPI_URL ?? 'http://localhost:1337';
+const MAX_ITEMS = 20;
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -16,25 +18,14 @@ const corsHeaders = {
 
 export async function GET() {
     try {
-        const url = new URL(STRAPI_URL + '/api/posts');
-        url.searchParams.set('sort[0]', 'publishedAt:desc');
-        url.searchParams.set('pagination[limit]', '20');
-        url.searchParams.set('filters[archived][$ne]', 'true');
-        url.searchParams.set('populate[imageUrl][fields][0]', 'url');
-
-        const res = await fetch(url.toString());
-        if (!res.ok) return json({ posts: [] }, { headers: corsHeaders });
-
-        const data = await res.json();
-
-        const posts = (data?.data ?? []).map((p: any) => ({
-            documentId: p.documentId,
+        const posts = (await listActiveNews()).slice(0, MAX_ITEMS).map((p) => ({
+            documentId: p.id,
             title: p.title,
-            summary: p.summary || '',
+            summary: p.summary,
             publishedAt: p.publishedAt,
-            category: p.category || '',
-            imageUrl: p.imageUrl?.url || null,
-            sourceUrl: p.sourceUrl || null
+            category: p.category,
+            imageUrl: p.imageUrl,
+            sourceUrl: p.sourceUrl
         }));
 
         return json({ posts }, { headers: corsHeaders });
