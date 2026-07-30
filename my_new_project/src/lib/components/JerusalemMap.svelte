@@ -7,10 +7,16 @@
     import { enhance } from '$app/forms';
     import { triggerAdPopup } from "$lib/adPopupStore";
     import { items as itemsData } from "$lib/itemsData";
-    import { citiesAndNeighborhoods, isKnownNeighborhood } from "$lib/neighborhoodsData";
+    import {
+        citiesAndNeighborhoods,
+        isKnownNeighborhood,
+        effectiveNeighborhoods,
+        sameCity,
+        sameNeighborhood,
+    } from "$lib/neighborhoodsData";
     import { page } from "$app/state";
     import { neighborhoodState } from "$lib/neighborhoodState.svelte";
-    import { getCoordsFor, jitterCoord } from "$lib/neighborhoodCoords";
+    import { getCoordsFor, jitterCoord, areaForPin } from "$lib/neighborhoodCoords";
     import { canUseMapImage, getMapImage, isDisplayableImage } from "$lib/mapImage";
     import { isOpenNow } from "$lib/openingHours";
     import { logoForService, serviceColor } from "$lib/serviceTypes";
@@ -503,22 +509,45 @@
         });
     });
 
-    // פריט שייך לאזור הנוכחי רק אם *העיר* תואמת - כך "מרכז" של עיר אחת (למשל אפרת)
-    // לא גולש לעיר אחרת (כפר תפוח). בתוך העיר: אותה שכונה, או פריט ללא שכונה ספציפית.
+    const approvedNbs = $derived(
+        (page.data as { approvedNeighborhoods?: { name: string; city: string }[] }).approvedNeighborhoods ?? [],
+    );
+    // כל הערים והשכונות שלהן, כולל מאושרות - הרשימה שלפיה מזהים לאיזה אזור
+    // שייך פין על המפה.
+    const cityNbPairs = $derived(
+        Object.keys(citiesAndNeighborhoods).map(
+            (c) => [c, effectiveNeighborhoods(c, approvedNbs)] as [string, string[]],
+        ),
+    );
+
+    // ---- לאיזה אזור שייך פריט ----
+    // מפרסם שסימן פין על המפה התכוון למקום שסימן, ולכן הפין קובע - לא תווית
+    // השכונה שנשמרה לידו. התווית עלולה להיות שגויה ("מרכז" שנגזר בעיר
+    // רבת-שכונות), לא מזוהה (יבוא שבו שדה השכונה הוא כתובת רחוב) או להצביע על
+    // עיר בכתיב אחר ("תל אביב" מול "תל אביב יפו") - ובכל אחד מהמקרים האלה
+    // הפריט נעלם מהמפה למרות שידוע בדיוק איפה הוא. הפין הוא הראיה החזקה יותר.
     //
-    // רשת ביטחון: שם שכונה שאינו קיים ברשימת השכונות של העיר אינו ניתן לבחירה
-    // באף בורר, ולכן פריט שנשמר איתו לא היה מוצג באף שכונה - הוא פשוט נעלם
-    // מהמפה, מהרשימה ומהמונה. זה קרה ביבוא שבו שדה השכונה הוא כתובת רחוב,
-    // בשינוי שם שכונה, וב"מרכז" שנגזר מפין בעיר רבת-שכונות. במקום להעלים,
-    // מציגים פריט כזה בכל שכונות העיר - בדיוק כמו פריט בלי שכונה.
-    function belongsToMyArea(d: { neighborhood?: string; city?: string }): boolean {
-        if ((d.city ?? '') !== neighborhoodState.city) return false;
-        if (!d.neighborhood || d.neighborhood === neighborhoodState.neighborhood) return true;
-        return !isKnownNeighborhood(
-            d.city ?? '',
-            d.neighborhood,
-            (page.data as { approvedNeighborhoods?: { name: string; city: string }[] }).approvedNeighborhoods,
-        );
+    // התווית עדיין מזכה בהצגה בפני עצמה (בדיקה שנייה למטה): לפריט בלי פין היא
+    // כל מה שיש, ופריט עם תווית תקינה ממשיך להופיע בלוח שלה כמו קודם.
+    function belongsToMyArea(d: { neighborhood?: string; city?: string; lat?: number | null; lng?: number | null }): boolean {
+        // 1. הפין - המקום שהמפרסם באמת סימן
+        if (d.lat != null && d.lng != null) {
+            const area = areaForPin(d.lat, d.lng, cityNbPairs);
+            if (area && sameCity(area.city, neighborhoodState.city)) {
+                // שכונה ריקה = הפין זוהה ברמת העיר בלבד (אין שכונה עם קואורדינטה
+                // קרובה יותר ממרכז העיר) → מוצג בכל שכונות העיר.
+                if (!area.neighborhood || sameNeighborhood(area.neighborhood, neighborhoodState.neighborhood)) {
+                    return true;
+                }
+            }
+        }
+
+        // 2. התווית שנשמרה עם הפריט
+        if (!sameCity(d.city, neighborhoodState.city)) return false;
+        if (!d.neighborhood || sameNeighborhood(d.neighborhood, neighborhoodState.neighborhood)) return true;
+        // שם שכונה שאינו ברשימת העיר אינו ניתן לבחירה באף בורר, ולכן פריט
+        // שנשמר איתו לא היה מוצג באף שכונה. מציגים אותו ברמת העיר.
+        return !isKnownNeighborhood(d.city ?? '', d.neighborhood, approvedNbs);
     }
 
     // ---- עסקים מאתר האינדקס (index.gofreeil.com) ----

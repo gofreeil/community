@@ -4,6 +4,8 @@
 // פילוסופיה: שכונות נפוצות בערים גדולות מקבלות נקודה מדויקת.
 // אם פריט בשכונה שלא מופיעה כאן - נחזור לעיר. אם גם זה לא - לירושלים כברירת מחדל.
 
+import { citiesAndNeighborhoods, canonicalCity, normalizeNeighborhoodName } from './neighborhoodsData';
+
 export type Coord = [number, number]; // [lat, lng]
 
 // ---- מרכזי ערים (fallback אם השכונה לא ידועה) ----
@@ -48,7 +50,7 @@ export const cityCenters: Record<string, Coord> = {
     'נהריה':             [33.0089, 35.0978],
     'נס ציונה':         [31.9303, 34.7956],
     'נצרת':              [32.7022, 35.2978],
-    'נצרת עילית':       [32.7022, 35.3206],
+    'נוף הגליל':        [32.7022, 35.3206], // לשעבר נצרת עילית (ראה CITY_ALIASES)
     'נתיבות':            [31.4203, 34.5908],
     'נתניה':             [32.3215, 34.8533],
     'עכו':               [32.9281, 35.0822],
@@ -70,7 +72,9 @@ export const cityCenters: Record<string, Coord> = {
     'רמת השרון':        [32.1467, 34.8456],
     'רעננה':             [32.1808, 34.8708],
     'שדרות':             [31.5253, 34.5953],
-    'תל אביב':           [32.0853, 34.7818],
+    // מפתחות הטבלה חייבים להיות שם העיר הקנוני מ-citiesData, אחרת החיפוש
+    // (שמנרמל דרך canonicalCity) מחמיץ אותם ונופל לברירת המחדל בירושלים.
+    'תל אביב יפו':       [32.0853, 34.7818],
     'תל מונד':           [32.2536, 34.9197],
 };
 
@@ -90,7 +94,9 @@ export const neighborhoodCenters: Record<string, Coord> = {
     'קרית משה':    [31.7851, 35.1944],
     'רחביה':        [31.7748, 35.21208],
     'גבעת שאול':   [31.79112, 35.1931],
-    'רמות':         [31.81561, 35.19549],
+    // שם שקיים גם בעיר אחרת (רמות גם בבאר שבע) חייב מפתח "עיר|שכונה", אחרת
+    // חיפוש לפי שם בלבד היה מציב פריט מבאר שבע על המפה בירושלים.
+    'ירושלים|רמות': [31.81561, 35.19549],
     'גילה':         [31.7300, 35.1858],
     'קטמון':        [31.76602, 35.20933],
     'בקעה':         [31.75955, 35.21967],
@@ -119,7 +125,7 @@ export const neighborhoodCenters: Record<string, Coord> = {
 
     // ---- חיפה ----
     'כרמל צרפתי': [32.81779, 34.97828],
-    'נווה שאנן':   [32.7874, 35.0189],
+    'חיפה|נווה שאנן': [32.7874, 35.0189], // קיים גם בירושלים ובתל אביב יפו
     'רמת אלמוגי':  [32.77654, 35.0023],
     'בת גלים':     [32.83299, 34.97933],
     'הדר הכרמל':   [32.8089, 34.9992],
@@ -130,7 +136,7 @@ export const neighborhoodCenters: Record<string, Coord> = {
     'קרית השרון':  [32.30442, 34.87323],
     'רמת פולג':    [32.27066, 34.84047],
     'נווה גנים':   [32.3056, 34.8617],
-    'עיר ימים':    [32.27854, 34.84337],
+    'נתניה|עיר ימים': [32.27854, 34.84337], // קיים גם באשדוד
     'צוקי ים':     [32.36135, 34.85868],
     'נאות הרצל':   [32.3160, 34.8630],
     // שמות שקיימים גם בערים אחרות (כוכב הצפון בת"א; קריית צאנז בירושלים/טבריה/עפולה) -
@@ -171,7 +177,37 @@ export const MY_PIN_LS_KEY = 'gofreeil_my_location_pin';
 // ממופות לפי שם וגם לפי "עיר|שכונה" כדי למנוע התנגשות שמות בין ערים.
 const dynamicNeighborhoodCenters: Record<string, Coord> = {};
 
-const dynKey = (city: string, neighborhood: string) => `${city}|${neighborhood}`;
+const dynKey = (city: string, neighborhood: string) =>
+    `${canonicalCity(city)}|${normalizeNeighborhoodName(neighborhood)}`;
+
+// ---- אילו ערים תובעות כל שם שכונה ----
+// 'רמות' קיימת גם בירושלים וגם בבאר שבע, 'נווה שאנן' בשלוש ערים. חיפוש לפי
+// שם בלבד היה מחזיר את הקואורדינטה של העיר הראשונה שנרשמה, ומציב פריט מבאר
+// שבע על המפה בירושלים. לכן שם שנתבע ע"י יותר מעיר אחת מחייב מפתח "עיר|שכונה".
+const nbOwners: Map<string, Set<string>> = (() => {
+    const m = new Map<string, Set<string>>();
+    for (const [city, list] of Object.entries(citiesAndNeighborhoods)) {
+        for (const nb of list) {
+            const key = normalizeNeighborhoodName(nb);
+            if (!key) continue;
+            const set = m.get(key) ?? new Set<string>();
+            set.add(city);
+            m.set(key, set);
+        }
+    }
+    return m;
+})();
+
+/**
+ * האם מותר להסתמך על מפתח לפי-שם-בלבד עבור העיר הזו? לא, אם השם נתבע ע"י
+ * עיר אחרת - עדיף ליפול למרכז העיר הנכונה מלהציב את הפריט בעיר אחרת לגמרי.
+ */
+function bareKeyAllowed(neighborhood: string, city?: string): boolean {
+    if (!city) return true; // נקרא בלי עיר - אין דרך טובה יותר
+    const owners = nbOwners.get(normalizeNeighborhoodName(neighborhood));
+    if (!owners || owners.size <= 1) return true;
+    return false;
+}
 
 /**
  * רישום שכונות מאושרות (עם פין מדויק) שנטענו מהשרת.
@@ -184,32 +220,52 @@ export function registerDynamicNeighborhoods(
         if (!n?.name || !Number.isFinite(n.lat) || !Number.isFinite(n.lng)) continue;
         const coord: Coord = [n.lat, n.lng];
         dynamicNeighborhoodCenters[dynKey(n.city ?? '', n.name)] = coord;
-        // גיבוי לפי שם בלבד (אם לא הועברה עיר בקריאה ל-getCoordsFor)
-        if (!(n.name in neighborhoodCenters)) {
-            dynamicNeighborhoodCenters[n.name] = coord;
+        // גיבוי לפי שם בלבד (אם לא הועברה עיר בקריאה ל-getCoordsFor), רק אם
+        // השם אינו נתבע ע"י עיר נוספת - אחרת היינו מציבים פריט בעיר הלא נכונה.
+        const bare = normalizeNeighborhoodName(n.name);
+        if (!staticNbIndex.has(bare) && (nbOwners.get(bare)?.size ?? 0) <= 1) {
+            dynamicNeighborhoodCenters[bare] = coord;
         }
     }
+    // שכונה מאושרת חדשה משנה את שיוך הפינים - התוצאות שנשמרו ב-cache לא תקפות.
+    clearPinAreaCache();
 }
+
+// ---- אינדקס מנורמל של הקואורדינטות הסטטיות ----
+// המפתחות בטבלה נכתבים בכתיב חופשי ("שכונת X" / "X", "עיר|שכונה"); כאן הם
+// מיושרים לאותה צורה שבה מחפשים, כדי שהחיפוש לא יחמיץ בגלל תחילית.
+const staticNbIndex: Map<string, Coord> = (() => {
+    const m = new Map<string, Coord>();
+    for (const [k, v] of Object.entries(neighborhoodCenters)) {
+        if (k.includes('|')) {
+            const [c, n] = k.split('|');
+            m.set(dynKey(c, n), v);
+        } else {
+            m.set(normalizeNeighborhoodName(k), v);
+        }
+    }
+    return m;
+})();
 
 /**
  * החזרת קואורדינטות לפריט לפי שכונה ועיר.
  * סדר עדיפויות: שכונה מאושרת (דינמי) → שכונה סטטית → מרכז עיר → ירושלים.
  */
 export function getCoordsFor(neighborhood?: string, city?: string): Coord {
-    if (neighborhood && city && dynamicNeighborhoodCenters[dynKey(city, neighborhood)]) {
-        return dynamicNeighborhoodCenters[dynKey(city, neighborhood)];
+    const nb    = normalizeNeighborhoodName(neighborhood);
+    const canon = canonicalCity(city);
+    if (nb && canon && dynamicNeighborhoodCenters[dynKey(canon, nb)]) {
+        return dynamicNeighborhoodCenters[dynKey(canon, nb)];
     }
-    if (neighborhood && dynamicNeighborhoodCenters[neighborhood]) {
-        return dynamicNeighborhoodCenters[neighborhood];
+    if (nb && canon && staticNbIndex.has(dynKey(canon, nb))) {
+        return staticNbIndex.get(dynKey(canon, nb))!;
     }
-    if (neighborhood && city && neighborhoodCenters[dynKey(city, neighborhood)]) {
-        return neighborhoodCenters[dynKey(city, neighborhood)];
+    if (nb && bareKeyAllowed(nb, canon)) {
+        if (dynamicNeighborhoodCenters[nb]) return dynamicNeighborhoodCenters[nb];
+        if (staticNbIndex.has(nb))          return staticNbIndex.get(nb)!;
     }
-    if (neighborhood && neighborhoodCenters[neighborhood]) {
-        return neighborhoodCenters[neighborhood];
-    }
-    if (city && cityCenters[city]) {
-        return cityCenters[city];
+    if (canon && cityCenters[canon]) {
+        return cityCenters[canon];
     }
     return DEFAULT_COORD;
 }
@@ -220,11 +276,15 @@ export function getCoordsFor(neighborhood?: string, city?: string): Coord {
  * את מיקום הישוב שלו רק כשהמפה באמת לא מדויקת.
  */
 export function hasPreciseCoords(neighborhood?: string, city?: string): boolean {
-    if (neighborhood && city && dynamicNeighborhoodCenters[dynKey(city, neighborhood)]) return true;
-    if (neighborhood && dynamicNeighborhoodCenters[neighborhood]) return true;
-    if (neighborhood && city && neighborhoodCenters[dynKey(city, neighborhood)]) return true;
-    if (neighborhood && neighborhoodCenters[neighborhood]) return true;
-    if (city && cityCenters[city]) return true;
+    const nb    = normalizeNeighborhoodName(neighborhood);
+    const canon = canonicalCity(city);
+    if (nb && canon && dynamicNeighborhoodCenters[dynKey(canon, nb)]) return true;
+    if (nb && canon && staticNbIndex.has(dynKey(canon, nb)))          return true;
+    if (nb && bareKeyAllowed(nb, canon)) {
+        if (dynamicNeighborhoodCenters[nb]) return true;
+        if (staticNbIndex.has(nb))          return true;
+    }
+    if (canon && cityCenters[canon]) return true;
     return false;
 }
 
@@ -240,10 +300,16 @@ function distSq(a: Coord, b: Coord): number {
 
 // קואורדינטה *מדויקת* של שכונה (דינמית מאושרת → סטטית), בלי נפילה למרכז העיר.
 function preciseNeighborhoodCoord(neighborhood: string, city: string): Coord | null {
-    if (dynamicNeighborhoodCenters[dynKey(city, neighborhood)]) return dynamicNeighborhoodCenters[dynKey(city, neighborhood)];
-    if (dynamicNeighborhoodCenters[neighborhood]) return dynamicNeighborhoodCenters[neighborhood];
-    if (neighborhoodCenters[dynKey(city, neighborhood)]) return neighborhoodCenters[dynKey(city, neighborhood)];
-    if (neighborhoodCenters[neighborhood]) return neighborhoodCenters[neighborhood];
+    const nb    = normalizeNeighborhoodName(neighborhood);
+    const canon = canonicalCity(city);
+    if (!nb) return null;
+    if (dynamicNeighborhoodCenters[dynKey(canon, nb)]) return dynamicNeighborhoodCenters[dynKey(canon, nb)];
+    if (staticNbIndex.has(dynKey(canon, nb)))          return staticNbIndex.get(dynKey(canon, nb))!;
+    // שם שנתבע ע"י יותר מעיר אחת ('רמות' בירושלים ובבאר שבע) אינו מזוהה לפי
+    // שם בלבד - אחרת היינו מייחסים לו את הקואורדינטה של העיר האחרת.
+    if (!bareKeyAllowed(nb, canon)) return null;
+    if (dynamicNeighborhoodCenters[nb]) return dynamicNeighborhoodCenters[nb];
+    if (staticNbIndex.has(nb))          return staticNbIndex.get(nb)!;
     return null;
 }
 
@@ -297,6 +363,41 @@ export function nearestCityNeighborhood(
     }
 
     return best;
+}
+
+// ---- האזור שאליו הפין באמת שייך ----
+// זהה ל-nearestCityNeighborhood, עם memoization לפי הקואורדינטה. הסינון על
+// המפה קורא לזה עבור כל פריט בכל שינוי מצב (חיפוש, קטגוריה, מעבר שכונה),
+// ובלי cache היו כאן עשרות אלפי חישובי מרחק על כל הקשה.
+const pinAreaCache = new Map<string, { city: string; neighborhood: string } | null>();
+
+/**
+ * לאיזה אזור שייכת נקודה על המפה, לפי הגאוגרפיה בלבד.
+ *
+ * זה מקור-האמת לשאלה "איפה הפריט נמצא": מפרסם שסימן פין התכוון למקום שסימן,
+ * ותווית השכונה שנשמרה איתו היא לכל היותר עדות משנית - היא עלולה להיות שגויה,
+ * לא מזוהה, או לא להיכתב בכלל. לכן מי שמסנן לפי אזור חייב לתת לפין לקבוע.
+ *
+ * @returns neighborhood ריק = הפין זוהה ברמת העיר בלבד (אין באותה עיר שכונה
+ *          עם קואורדינטה קרובה יותר ממרכז העיר) - כלומר "בכל שכונות העיר".
+ */
+export function areaForPin(
+    lat: number,
+    lng: number,
+    cityNeighborhoods: ReadonlyArray<readonly [string, readonly string[]]>,
+): { city: string; neighborhood: string } | null {
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+    const key = `${lat.toFixed(5)},${lng.toFixed(5)}`;
+    const hit = pinAreaCache.get(key);
+    if (hit !== undefined) return hit;
+    const area = nearestCityNeighborhood(lat, lng, cityNeighborhoods);
+    pinAreaCache.set(key, area);
+    return area;
+}
+
+/** ניקוי ה-cache אחרי רישום שכונות מאושרות חדשות (הן משנות את התוצאה). */
+export function clearPinAreaCache(): void {
+    pinAreaCache.clear();
 }
 
 /**

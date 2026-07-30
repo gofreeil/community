@@ -1275,20 +1275,86 @@ export const citiesAndNeighborhoods: Record<string, string[]> = (() => {
 export const DEFAULT_NEIGHBORHOOD = "קרית משה";
 export const LS_KEY = "shchuna_selected_neighborhood"; // localStorage key
 
+// ---- שמות ערים נרדפים ----
+// שם עיר שאינו הצורה הקנונית שברשימה: פריט שנשמר איתו (יבוא מקובץ, הקלדה
+// חופשית) לא נמצא באף השוואת עיר, ולכן לא הופיע בשום לוח ולא קיבל קואורדינטות.
+// מנרמלים בהשוואה בלבד - הטקסט שנשמר ומוצג נשאר כפי שהמפרסם כתב אותו.
+const CITY_ALIASES: Record<string, string> = {
+    'תל אביב':          'תל אביב יפו',
+    'תל-אביב':          'תל אביב יפו',
+    'תל אביב-יפו':      'תל אביב יפו',
+    'ת"א':              'תל אביב יפו',
+    'איזור י-ם':        'ירושלים',
+    'אזור י-ם':         'ירושלים',
+    'איזור ירושלים':    'ירושלים',
+    'אזור ירושלים':     'ירושלים',
+    'ירושלים והסביבה':  'ירושלים',
+    'י-ם':              'ירושלים',
+    'תל השומר':         'רמת גן',
+    'מודיעין':          'מודיעין-מכבים-רעות',
+    'מודיעין מכבים רעות': 'מודיעין-מכבים-רעות',
+    'נצרת עילית':       'נוף הגליל',
+};
+
+/** הצורה הקנונית של שם עיר, לצורכי השוואה וחיפוש קואורדינטות. */
+export function canonicalCity(city?: string | null): string {
+    const c = (city ?? '').trim().replace(/\s+/g, ' ');
+    if (!c) return '';
+    if (citiesAndNeighborhoods[c]) return c;
+    return CITY_ALIASES[c] ?? c;
+}
+
+/** האם שתי מחרוזות מתייחסות לאותה עיר (כולל שמות נרדפים). */
+export function sameCity(a?: string | null, b?: string | null): boolean {
+    return canonicalCity(a) === canonicalCity(b);
+}
+
+/**
+ * צורה מנורמלת של שם שכונה להשוואה: התחילית "שכונת "/"שכונה " נשמטת, כדי
+ * ש"שכונת פארק הנחל" (שכונה שאושרה) ו"פארק הנחל" (הרשימה הסטטית) ייחשבו
+ * לאותה שכונה ולא יפצלו את הפריטים שלה לשני לוחות נפרדים.
+ *
+ * בטוח: אין עיר שבה שני שמות שכונה שונים מתנרמלים לאותו מפתח (נבדק על כל
+ * 1173 היישובים ברשימה), כך שהנרמול לא ממזג שכונות שונות באמת.
+ */
+export function normalizeNeighborhoodName(name?: string | null): string {
+    return (name ?? '')
+        .trim()
+        .replace(/\s+/g, ' ')
+        .replace(/^שכונת\s+/, '')
+        .replace(/^שכונה\s+/, '');
+}
+
+/** האם שתי מחרוזות מתייחסות לאותה שכונה (מתעלם מהתחילית "שכונת"). */
+export function sameNeighborhood(a?: string | null, b?: string | null): boolean {
+    return normalizeNeighborhoodName(a) === normalizeNeighborhoodName(b);
+}
+
 /**
  * מקור-אמת יחיד לשכונות של עיר: הרשימה הסטטית + שכונות שאושרו ע"י אדמין
  * (`data.approvedNeighborhoods` מה-layout). כל בורר/מחירון באתר צריך לצרוך את זה,
  * כדי ששכונה מאושרת חדשה תופיע בכל האתר - כולל חישוב המחיר לפי מספר השכונות.
+ *
+ * שכונה מאושרת שהיא כפילות-בשם-אחר של שכונה סטטית ("שכונת פארק הנחל" מול
+ * "פארק הנחל") אינה נוספת - שתי רשומות זהות בבורר מפצלות את הפריטים של אותה
+ * שכונה בין שני לוחות, ותושב שבחר באחת לא רואה את מי שבחר בשנייה.
  */
 export function effectiveNeighborhoods(
     city: string,
     approved?: ReadonlyArray<{ name: string; city: string }> | null,
 ): string[] {
-    const base = citiesAndNeighborhoods[city] ?? [];
+    const canon = canonicalCity(city);
+    const base = citiesAndNeighborhoods[canon] ?? [];
     if (!approved?.length) return base;
-    const extra = approved
-        .filter((n) => n.city === city && n.name && !base.includes(n.name))
-        .map((n) => n.name);
+    const seen = new Set(base.map(normalizeNeighborhoodName));
+    const extra: string[] = [];
+    for (const n of approved) {
+        if (!n.name || !sameCity(n.city, canon)) continue;
+        const key = normalizeNeighborhoodName(n.name);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        extra.push(n.name);
+    }
     return extra.length ? [...base, ...extra] : base;
 }
 
@@ -1307,9 +1373,9 @@ export function isKnownNeighborhood(
     neighborhood: string,
     approved?: ReadonlyArray<{ name: string; city: string }> | null,
 ): boolean {
-    const nb = neighborhood?.trim();
+    const nb = normalizeNeighborhoodName(neighborhood);
     if (!nb) return true;
-    return effectiveNeighborhoods(city, approved).includes(nb);
+    return effectiveNeighborhoods(city, approved).some((n) => normalizeNeighborhoodName(n) === nb);
 }
 
 /**
