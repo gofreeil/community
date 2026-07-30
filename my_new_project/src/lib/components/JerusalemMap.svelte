@@ -547,9 +547,11 @@
     // התווית עדיין מזכה בהצגה בפני עצמה (בדיקה שנייה למטה): לפריט בלי פין היא
     // כל מה שיש, ופריט עם תווית תקינה ממשיך להופיע בלוח שלה כמו קודם.
     function belongsToMyArea(d: { neighborhood?: string; city?: string; lat?: number | null; lng?: number | null }): boolean {
-        // 1. הפין - המקום שהמפרסם באמת סימן
+        // 1. הפין - המקום שהמפרסם באמת סימן. העיר שנשמרה מגבילה אותו: הפין
+        //    מדייק את השכונה בתוך העיר, ולא מעביר את הפריט לעיר שכנה בגלל
+        //    שהמרכז הרשום הקרוב ביותר שייך לה.
         if (d.lat != null && d.lng != null) {
-            const area = areaForPin(d.lat, d.lng, cityNbPairs);
+            const area = areaForPin(d.lat, d.lng, cityNbPairs, d.city);
             if (area && sameCity(area.city, neighborhoodState.city)) {
                 // שכונה ריקה = הפין זוהה ברמת העיר בלבד (אין שכונה עם קואורדינטה
                 // קרובה יותר ממרכז העיר) → מוצג בכל שכונות העיר.

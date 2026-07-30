@@ -331,14 +331,35 @@ export function nearestCityNeighborhood(
     lat: number,
     lng: number,
     cityNeighborhoods: ReadonlyArray<readonly [string, readonly string[]]>,
+    opts?: {
+        /**
+         * הגבלה לעיר אחת: הפין מדייק את השכונה *בתוך* העיר ולא מעביר את הפריט
+         * לעיר אחרת. נחוץ כי רק חלק קטן מהשכונות בארץ יש להן מרכז רשום, וללא
+         * ההגבלה "המרכז הרשום הקרוב" לפין בבני ברק עלול להיות בגבעת שמואל.
+         */
+        withinCity?: string;
+        /**
+         * מרחק מקסימלי (ק"מ) שבו מותר לשייך פין לשכונה. רחוק מזה - אין באמת
+         * ידיעה באיזו שכונה הפין נמצא, ועדיף להחזיר "ברמת העיר" מלנחש שכונה
+         * שהיא רק המרכז הרשום הקרוב מבין מעטים.
+         */
+        maxNbKm?: number;
+    },
 ): { city: string; neighborhood: string } | null {
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
     const pin: Coord = [lat, lng];
 
+    const only = opts?.withinCity ? canonicalCity(opts.withinCity) : '';
+    const scoped = only && cityNeighborhoods.some(([c]) => c === only)
+        ? cityNeighborhoods.filter(([c]) => c === only)
+        : cityNeighborhoods;
+    // ההשוואה היא במעלות בריבוע (distSq); מעלת רוחב ≈ 111 ק"מ.
+    const maxNbD = opts?.maxNbKm ? (opts.maxNbKm / 111) ** 2 : Infinity;
+
     let best: { city: string; neighborhood: string } | null = null;
     let bestD = Infinity;
 
-    for (const [city, nbs] of cityNeighborhoods) {
+    for (const [city, nbs] of scoped) {
         // מועמד ברמת עיר - קובע כשאין שכונה מדויקת קרובה יותר.
         // "מרכז" מוחזר רק אם הוא באמת שכונה בעיר הזו (יישוב חד-שכונתי). בעיר
         // רבת-שכונות אין "מרכז" באף בורר, ושיוך אליו היה מוציא את הפריט מכל
@@ -358,6 +379,7 @@ export function nearestCityNeighborhood(
             const coord = preciseNeighborhoodCoord(nb, city);
             if (!coord) continue;
             const d = distSq(pin, coord);
+            if (d > maxNbD) continue;
             if (d < bestD) { bestD = d; best = { city, neighborhood: nb }; }
         }
     }
@@ -370,6 +392,11 @@ export function nearestCityNeighborhood(
 // המפה קורא לזה עבור כל פריט בכל שינוי מצב (חיפוש, קטגוריה, מעבר שכונה),
 // ובלי cache היו כאן עשרות אלפי חישובי מרחק על כל הקשה.
 const pinAreaCache = new Map<string, { city: string; neighborhood: string } | null>();
+
+// שיוך פין לשכונה מותר עד המרחק הזה ממרכז השכונה. רחוק מזה מחזירים "ברמת
+// העיר" במקום לנחש: רק 63 שכונות בארץ יש להן מרכז רשום, ובלי הרדיוס פין
+// בכרם אברהם היה מקבל את השם של השכונה הרשומה הקרובה ביותר, שני ק"מ משם.
+const PIN_NB_RADIUS_KM = 2;
 
 /**
  * לאיזה אזור שייכת נקודה על המפה, לפי הגאוגרפיה בלבד.
@@ -385,12 +412,22 @@ export function areaForPin(
     lat: number,
     lng: number,
     cityNeighborhoods: ReadonlyArray<readonly [string, readonly string[]]>,
+    /**
+     * העיר שנשמרה עם הפריט. כשהיא עיר מזוהה, הפין מדייק את השכונה בתוכה בלבד
+     * ולא מעביר את הפריט לעיר שכנה. כשהיא לא מזוהה ("מרכז", "כל הארץ") - הפין
+     * הוא המידע הטוב ביותר שיש, ומותר לו לקבוע גם את העיר.
+     */
+    withinCity?: string | null,
 ): { city: string; neighborhood: string } | null {
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
-    const key = `${lat.toFixed(5)},${lng.toFixed(5)}`;
+    const scope = canonicalCity(withinCity);
+    const key = `${lat.toFixed(5)},${lng.toFixed(5)}|${scope}`;
     const hit = pinAreaCache.get(key);
     if (hit !== undefined) return hit;
-    const area = nearestCityNeighborhood(lat, lng, cityNeighborhoods);
+    const area = nearestCityNeighborhood(lat, lng, cityNeighborhoods, {
+        withinCity: scope,
+        maxNbKm: PIN_NB_RADIUS_KM,
+    });
     pinAreaCache.set(key, area);
     return area;
 }
