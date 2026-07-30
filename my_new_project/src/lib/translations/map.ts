@@ -23,6 +23,7 @@ export const he = {
         cat_halls: "אולמות",
         cat_safe_space: "מרחב מוגן",
         cat_natural_health: "מטפלי בריאות טבעיים",
+        cat_couples_therapy: "מטפלים ויועצים לזוגיות",
         cat_business_owners: "בעלי מקצוע",
 
         // ----- תיאורי טולטיפ לקטגוריות -----
@@ -44,6 +45,7 @@ export const he = {
         tip_halls: "לאירועים חד פעמיים או לחוגים קבועים",
         tip_safe_space: "ציבורי רשמי או פרטי פתוח לקהל",
         tip_natural_health: "רפלקסולוגיה, נטורופתיה, עיסוי ורפואה משלימה",
+        tip_couples_therapy: "ייעוץ וטיפול זוגי, הדרכת חתנים וכלות וסדנאות זוגיות",
         tip_business_owners: "בעלי מקצוע מהאינדקס הארצי — עם הנחה בלעדית לחברי התנועה",
 
         // ----- תוויות פינים לדוגמה (mock) על המפה -----
@@ -107,6 +109,9 @@ export const he = {
         item_natural_reflexology: "רפלקסולוגיה",
         item_natural_naturopathy: "נטורופתיה ותזונה טבעית",
         item_natural_massage: "עיסוי רפואי",
+        item_couples_counseling: "ייעוץ זוגי",
+        item_couples_therapist: "טיפול זוגי מוסמך",
+        item_couples_workshop: "סדנת זוגיות",
 
         // ----- מסך מלא / זום -----
         close_fullscreen: "סגור מסך מלא",
@@ -275,6 +280,7 @@ export const en = {
         cat_halls: "Event Halls",
         cat_safe_space: "Safe Space",
         cat_natural_health: "Natural Health",
+        cat_couples_therapy: "Couples Therapists & Counselors",
         cat_business_owners: "Professionals",
 
         tip_benefits: "All the services and benefits in the neighborhood",
@@ -295,6 +301,7 @@ export const en = {
         tip_halls: "For one-time events or regular classes",
         tip_safe_space: "Official public shelters or private ones open to the public",
         tip_natural_health: "Reflexology, naturopathy, massage and complementary medicine",
+        tip_couples_therapy: "Couples counseling and therapy, pre-marriage guidance and relationship workshops",
         tip_business_owners: "Professionals from the national index — with an exclusive discount for members",
 
         mock_gemach_books: "Book Gemach",
@@ -356,6 +363,9 @@ export const en = {
         item_natural_reflexology: "Reflexology",
         item_natural_naturopathy: "Naturopathy and natural nutrition",
         item_natural_massage: "Therapeutic massage",
+        item_couples_counseling: "Couples counseling",
+        item_couples_therapist: "Certified couples therapy",
+        item_couples_workshop: "Relationship workshop",
 
         close_fullscreen: "Close fullscreen",
         close_esc: "Close (Esc)",
@@ -513,6 +523,7 @@ export const ru = {
         cat_halls: "Залы",
         cat_safe_space: "Убежище",
         cat_natural_health: "Натуральная медицина",
+        cat_couples_therapy: "Семейные терапевты и консультанты",
         cat_business_owners: "Специалисты",
 
         tip_benefits: "Все услуги и преимущества района",
@@ -533,6 +544,7 @@ export const ru = {
         tip_halls: "Для разовых мероприятий или постоянных занятий",
         tip_safe_space: "Официальные общественные или частные, открытые для всех",
         tip_natural_health: "Рефлексология, натуропатия, массаж и комплементарная медицина",
+        tip_couples_therapy: "Семейное консультирование и терапия, подготовка к браку и семейные семинары",
         tip_business_owners: "Специалисты из национального индекса — с эксклюзивной скидкой для участников движения",
 
         mock_gemach_books: "Гмах книг",
@@ -594,6 +606,9 @@ export const ru = {
         item_natural_reflexology: "Рефлексология",
         item_natural_naturopathy: "Натуропатия и натуральное питание",
         item_natural_massage: "Лечебный массаж",
+        item_couples_counseling: "Семейное консультирование",
+        item_couples_therapist: "Сертифицированная семейная терапия",
+        item_couples_workshop: "Семинар для пар",
 
         close_fullscreen: "Закрыть полноэкранный режим",
         close_esc: "Закрыть (Esc)",

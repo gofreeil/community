@@ -202,6 +202,16 @@
                 { id: "natural-massage", label: "עיסוי רפואי" },
             ],
         },
+        {
+            id: "couples-therapy",
+            label: "מטפלים ויועצים לזוגיות",
+            icon: "💞",
+            items: [
+                { id: "couples-counseling", label: "ייעוץ זוגי" },
+                { id: "couples-therapist", label: "טיפול זוגי מוסמך" },
+                { id: "couples-workshop", label: "סדנת זוגיות" },
+            ],
+        },
         // בעלי מקצוע — מאתר האינדקס הארצי (index.gofreeil.com), כולם חתומים על
         // אמנת המוסר ומעניקים הנחה בלעדית לחברי התנועה. מסונכרנים אוטומטית
         // (src/lib/server/indexBusinesses.ts) ולכן אין כאן items סטטיים.
@@ -284,13 +294,16 @@
     // הכפתור האחרון בסרגל אינו קטגוריה אלא "עוד" — פותח תפריט עם הקטגוריות שאינן
     // בסרגל הגלוי (ברירת מחדל: מרחב מוגן, מטפלי בריאות טבעיים; אפשר להוסיף עוד בהמשך).
     // המשתמש יכול להעביר קטגוריה מהתפריט אל הסרגל הגלוי ולהיפך — ההעדפה נשמרת מקומית.
-    const DEFAULT_MORE_IDS = ['safe-space', 'natural-health', 'business-owners'];
-    const MORE_STORAGE_KEY = 'map_more_cats_v2';
-    // מפתח קודם + הקטגוריות שנוספו אחריו. משתמש ששמר העדפה בגרסה הקודמת מקבל
-    // אותה בחזרה, בתוספת הקטגוריות החדשות בתפריט "עוד" (הן לא היו קיימות כששמר,
-    // ולכן העדרן מהרשימה השמורה אינו "בחירה" שלו להצמיד אותן לסרגל).
-    const LEGACY_MORE_KEY = 'map_more_cats_v1';
-    const ADDED_SINCE_V1 = ['business-owners'];
+    const DEFAULT_MORE_IDS = ['safe-space', 'natural-health', 'business-owners', 'couples-therapy'];
+    const MORE_STORAGE_KEY = 'map_more_cats_v3';
+    // מפתחות קודמים (מהחדש לישן) + הקטגוריות שנוספו לתפריט "עוד" אחרי כל אחד מהם.
+    // משתמש ששמר העדפה בגרסה קודמת מקבל אותה בחזרה, בתוספת הקטגוריות החדשות
+    // בתפריט "עוד" (הן לא היו קיימות כששמר, ולכן העדרן מהרשימה השמורה אינו
+    // "בחירה" שלו להצמיד אותן לסרגל).
+    const LEGACY_MORE_KEYS: { key: string; added: string[] }[] = [
+        { key: 'map_more_cats_v2', added: ['couples-therapy'] },
+        { key: 'map_more_cats_v1', added: ['business-owners', 'couples-therapy'] },
+    ];
 
     let moreIds = $state<string[]>([...DEFAULT_MORE_IDS]);
     let showMorePanel = $state(false);
@@ -306,16 +319,19 @@
     function loadMoreIds() {
         try {
             let migrated = false;
+            let added: string[] = [];
             let raw = localStorage.getItem(MORE_STORAGE_KEY);
             if (!raw) {
-                // מיגרציה חד-פעמית מהמפתח הקודם
-                raw = localStorage.getItem(LEGACY_MORE_KEY);
+                // מיגרציה חד-פעמית מהמפתח הקודם ביותר שנמצא
+                for (const legacy of LEGACY_MORE_KEYS) {
+                    const legacyRaw = localStorage.getItem(legacy.key);
+                    if (legacyRaw) { raw = legacyRaw; added = legacy.added; migrated = true; break; }
+                }
                 if (!raw) return;
-                migrated = true;
             }
             const parsed = JSON.parse(raw);
             if (!Array.isArray(parsed)) return;
-            if (migrated) parsed.push(...ADDED_SINCE_V1.filter((id) => !parsed.includes(id)));
+            if (migrated) parsed.push(...added.filter((id) => !parsed.includes(id)));
             const valid = parsed.filter(
                 (id: unknown) => typeof id === 'string' && otherCats.some((c) => c.id === id),
             ) as string[];
@@ -369,6 +385,7 @@
         'halls':       'map.tip_halls',
         'safe-space':  'map.tip_safe_space',
         'natural-health': 'map.tip_natural_health',
+        'couples-therapy': 'map.tip_couples_therapy',
         'business-owners': 'map.tip_business_owners',
     };
 

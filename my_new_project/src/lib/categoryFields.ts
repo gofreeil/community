@@ -450,6 +450,40 @@ export const categoryConfig: Record<string, CategoryConfig> = {
             { key: 'phone',        label: 'טלפון',                  type: 'tel',      required: true,  placeholder: '05X-XXXXXXX' },
         ],
     },
+
+    'couples-therapy': {
+        label: 'מטפלים ויועצים לזוגיות',
+        icon: '💞',
+        color: 'pink',
+        priceRow: 2,
+        addPageTitle: 'הוספת כרטיס מטפל/ת או יועץ/ת לזוגיות',
+        fields: [
+            { key: 'label',        label: 'שם המטפל/ת או היועץ/ת',  type: 'text',     required: true,  placeholder: 'שם פרטי ומשפחה' },
+            { key: 'service_type', label: 'תחום הטיפול',            type: 'multi_select', required: true, options: [
+                'ייעוץ זוגי',
+                'טיפול זוגי',
+                'הדרכת חתנים',
+                'הדרכת כלות',
+                'ליווי לפני חתונה',
+                'טיפול משפחתי',
+                'גישור וגירושין',
+                'סדנאות זוגיות',
+                'ייעוץ בטהרת המשפחה',
+            ], hint: 'אפשר לבחור כמה' },
+            { key: 'certification',label: 'הסמכה / לימודים',        type: 'text',     required: false, placeholder: 'מטפל/ת מוסמך/ת, MA בפסיכולוגיה, בוגר/ת מכון...' },
+            { key: 'experience',   label: 'ניסיון',                 type: 'select',   required: false, options: ['עד שנה', '1-3 שנים', '4-9 שנים', '10+ שנים'] },
+            { key: 'audience',     label: 'קהל יעד',                type: 'multi_select', required: false, options: ['זוגות', 'נשים', 'גברים', 'זוגות צעירים', 'לפני חתונה', 'משפחות'] },
+            { key: 'sector',       label: 'מגזר / אורח חיים',        type: 'select',   required: false, options: ['לא רלוונטי', 'חרדי', 'דתי-לאומי', 'מסורתי', 'חילוני', 'הכל'] },
+            { key: 'price_session',label: 'מחיר לפגישה (₪)',        type: 'number',   required: false, placeholder: '300', half: true },
+            { key: 'remote',       label: 'גם בזום / בטלפון',        type: 'checkbox', required: false, half: true },
+            { key: 'address',      label: 'כתובת הקליניקה',         type: 'address',  required: false, placeholder: 'שם הרחוב' },
+            { key: 'location',     label: 'סימון על המפה',          type: 'map_pin',  required: false },
+            { key: 'description',  label: 'תיאור',                  type: 'textarea', required: true,  placeholder: 'ספרו על שיטת העבודה ועל מי שמתאים לה...' },
+            { key: 'images',       label: 'תמונות (עד 5)',          type: 'images',   required: false },
+            { key: 'website',      label: 'אתר אינטרנט',            type: 'text',     required: false, placeholder: 'https://example.com', hint: 'יוצג רק בדף המורחב' },
+            { key: 'phone',        label: 'טלפון',                  type: 'tel',      required: true,  placeholder: '05X-XXXXXXX' },
+        ],
+    },
 };
 
 // ============================================================
