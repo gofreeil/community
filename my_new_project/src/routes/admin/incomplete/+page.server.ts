@@ -7,28 +7,45 @@ import {
 } from '$lib/server/db';
 import { isFamilyItem } from '$lib/itemCategories';
 import { canonicalCity, citiesAndNeighborhoods } from '$lib/neighborhoodsData';
-import { locationProblems, needsCompletion, locationAssignee, isLocationApproved } from '$lib/incompleteItems';
+import { locationProblems, needsCompletion, locationAssignee, isLocationApproved, PROBLEM_LABELS } from '$lib/incompleteItems';
+
+/** "שכונה (עיר)" → { name, city }. זה הפורמט שבו נשמר coordinator_of. */
+function parseCoordArea(entry: string): { name: string; city: string } {
+    const m = entry.match(/^(.*?)\s*\(([^)]*)\)\s*$/);
+    return { name: (m ? m[1] : entry).trim(), city: (m ? m[2] : '').trim() };
+}
 
 /**
- * הרשאה: סופר-אדמין רואה את כל הפריטים להשלמה; אדמין שכונה רואה רק את מה
- * שהועבר אליו. כך אפשר להעביר משימה הלאה בלי לפתוח את כל לוח הניהול.
+ * הרשאה: סופר-אדמין רואה את כל הפריטים להשלמה; אדמין שכונה ורכז שכונה רואים
+ * רק את מה שהועבר אליהם. כך אפשר לחלק את העבודה בלי לפתוח לאף אחד מהם את
+ * לוח הניהול עצמו.
  */
 async function resolveRole(event: Parameters<PageServerLoad>[0]) {
     const session = await event.locals.auth();
     let superAdmin = isSuperAdmin(session);
-    if (!superAdmin && session?.user?.id) {
+    let coordinatorOf: string[] = [];
+    if (session?.user?.id) {
         try {
             let u = await getUserById(session.user.id);
             if (!u && session.user.email) u = await getUserByEmail(session.user.email);
-            superAdmin = u?.role === 'super_admin';
+            if (u?.role === 'super_admin') superAdmin = true;
+            coordinatorOf = Array.isArray(u?.coordinator_of) ? u.coordinator_of : [];
         } catch { /* נשארים עם מה שיש בסשן */ }
     }
-    return { session, superAdmin, admin: superAdmin || isAdmin(session) };
+    const coordinator = coordinatorOf.length > 0;
+    return {
+        session,
+        superAdmin,
+        coordinator,
+        coordinatorOf,
+        // מי בכלל רשאי לפתוח את המסך (התוכן עצמו מסונן בהמשך לפי השיוך)
+        canView: superAdmin || isAdmin(session) || coordinator,
+    };
 }
 
 export const load: PageServerLoad = async (event) => {
-    const { session, superAdmin, admin } = await resolveRole(event);
-    if (!admin) throw error(403, 'נדרשת הרשאת ניהול');
+    const { session, superAdmin, canView } = await resolveRole(event);
+    if (!canView) throw error(403, 'נדרשת הרשאת ניהול או רכזות שכונה');
 
     const myId = session?.user?.id ?? '';
 
@@ -67,7 +84,7 @@ export const load: PageServerLoad = async (event) => {
                 assignee,
             };
         })
-        // אדמין שכונה רואה רק את מה שהועבר אליו
+        // אדמין שכונה / רכז רואה רק את מה שהועבר אליו
         .filter((r) => superAdmin || r.assignee?.id === myId)
         .sort((a, b) => {
             // הכי חמור קודם, ובתוך אותה חומרה - החדש קודם
@@ -76,22 +93,38 @@ export const load: PageServerLoad = async (event) => {
             return (b.created_at || '').localeCompare(a.created_at || '');
         });
 
-    // יעדי העברה: סופר-אדמינים ואדמיני שכונה (לא כולל אני עצמי)
-    const assignableAdmins = users
-        .filter((u) => (u.role === 'super_admin' || u.role === 'neighborhood_admin') && u.id !== myId)
-        .map((u) => ({
-            id:   u.id,
-            name: u.name || u.nickname || u.email || u.id,
-            role: u.role,
-            area: [u.neighborhood, u.city].filter(Boolean).join(', '),
-        }))
+    // יעדי העברה: סופר-אדמינים, אדמיני שכונה ורכזי שכונות (לא כולל אני עצמי).
+    // רכז הוא לרוב הכתובת הנכונה - הוא מכיר את השטח ויודע לאיזו שכונה הפריט
+    // באמת שייך, מה שאדמין מרוחק לא יכול לדעת.
+    type AssigneeKind = 'super_admin' | 'neighborhood_admin' | 'coordinator';
+    const assignees = users
+        .filter((u) => u.id !== myId)
+        .map((u) => {
+            const areas = (Array.isArray(u.coordinator_of) ? u.coordinator_of : []).map(parseCoordArea);
+            const kind: AssigneeKind | null =
+                u.role === 'super_admin'        ? 'super_admin'
+              : u.role === 'neighborhood_admin' ? 'neighborhood_admin'
+              : areas.length                    ? 'coordinator'
+              :                                   null;
+            return {
+                id:   u.id,
+                name: u.name || u.nickname || u.email || u.id,
+                kind,
+                // הערים שהרכז אחראי עליהן - לפיהן ממיינים את הבורר בכל שורה
+                cities: Array.from(new Set(areas.map((a) => canonicalCity(a.city)).filter(Boolean))),
+                area: areas.length
+                    ? areas.map((a) => [a.name, a.city].filter(Boolean).join(', ')).join(' · ')
+                    : [u.neighborhood, u.city].filter(Boolean).join(', '),
+            };
+        })
+        .filter((u): u is typeof u & { kind: AssigneeKind } => u.kind !== null)
         .sort((a, b) => a.name.localeCompare(b.name, 'he'));
 
     return {
         rows,
         superAdmin,
         myId,
-        assignableAdmins,
+        assignees,
         cities: Object.keys(citiesAndNeighborhoods).sort((a, b) => a.localeCompare(b, 'he')),
         approvedNeighborhoods,
         // כמה כבר סומנו "תקין כמו שהוא" - כדי להראות התקדמות אמיתית
@@ -101,8 +134,8 @@ export const load: PageServerLoad = async (event) => {
 
 /** בדיקת הרשאה לפעולה על פריט ספציפי: סופר-אדמין, או האדמין שהמשימה הועברה אליו. */
 async function guardItem(event: Parameters<Actions[string]>[0], itemId: string) {
-    const { session, superAdmin, admin } = await resolveRole(event as Parameters<PageServerLoad>[0]);
-    if (!admin) throw error(403, 'נדרשת הרשאת ניהול');
+    const { session, superAdmin, canView } = await resolveRole(event as Parameters<PageServerLoad>[0]);
+    if (!canView) throw error(403, 'נדרשת הרשאת ניהול או רכזות שכונה');
     const item = await getDbItemByIdFresh(itemId);
     if (!item) return { error: fail(404, { error: 'הפריט לא נמצא' }) };
     if (!superAdmin && locationAssignee(item)?.id !== (session?.user?.id ?? '')) {
@@ -220,13 +253,14 @@ export const actions: Actions = {
 
             // הודעה פנימית לאדמין שקיבל את המשימה. await חובה - ב-Vercel עבודה
             // לא-מוחכה אחרי ה-return מתה וההודעה לא הייתה נכתבת.
-            const problems = locationProblems(item).map((p) => p).join(', ');
+            const problems = locationProblems(item).map((p) => PROBLEM_LABELS[p]).join(', ');
             await createItem({
                 category: 'message',
                 label: '📍 הועברה אליך השלמת מיקום של פריט',
                 description:
                     `הפריט "${item.label}" צריך השלמת מיקום (${problems}).\n` +
                     `כרגע רשום: ${[item.neighborhood, item.city].filter(Boolean).join(', ') || 'ללא מיקום'}.\n\n` +
+                    `אתה מכיר את השטח - בחר את העיר והשכונה הנכונות ושמור, והפריט יופיע בלוח השכונתי הנכון.\n` +
                     `להשלמה: /admin/incomplete`,
                 contact: '',
                 user_id: adminId,

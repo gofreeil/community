@@ -1,6 +1,6 @@
 <script lang="ts">
     import { enhance } from '$app/forms';
-    import { effectiveNeighborhoods } from '$lib/neighborhoodsData';
+    import { effectiveNeighborhoods, canonicalCity } from '$lib/neighborhoodsData';
     import { PROBLEM_LABELS, PROBLEM_HINTS, type LocationProblem } from '$lib/incompleteItems';
     import type { PageData, ActionData } from './$types';
 
@@ -48,6 +48,22 @@
     const nbOptions = (city: string) =>
         city ? effectiveNeighborhoods(city, data.approvedNeighborhoods) : [];
 
+    // ---- יעדי ההעברה, ממוינים לכל שורה ----
+    // רכז שאחראי על העיר של הפריט הוא הכתובת הנכונה - הוא מכיר את השטח ויודע
+    // לאיזו שכונה הפריט שייך. לכן הוא עולה לראש הרשימה ומסומן.
+    const KIND_LABEL = {
+        super_admin:        'מנהל ראשי',
+        neighborhood_admin: 'אדמין שכונה',
+        coordinator:        'רכז/ת שכונה',
+    } as const;
+
+    function assigneesFor(rowCity: string) {
+        const city = canonicalCity(rowCity);
+        return [...data.assignees]
+            .map((a) => ({ ...a, covers: !!city && a.cities.includes(city) }))
+            .sort((a, b) => (a.covers === b.covers ? 0 : a.covers ? -1 : 1));
+    }
+
     const badgeClass = (p: LocationProblem) =>
         p === 'city_unknown'         ? 'bg-red-500/15 text-red-300 border-red-500/40'
       : p === 'neighborhood_unknown' ? 'bg-amber-500/15 text-amber-300 border-amber-500/40'
@@ -94,7 +110,7 @@
                 <div class="text-5xl mb-3">🎉</div>
                 <div class="text-xl font-bold text-emerald-300">אין נכסים להשלמה</div>
                 <p class="text-gray-400 text-sm mt-2">
-                    {data.superAdmin ? 'כל הפריטים משויכים לעיר ולשכונה מזוהות.' : 'לא הועברו אליך משימות השלמה.'}
+                    {data.superAdmin ? 'כל הפריטים משויכים לעיר ולשכונה מזוהות.' : 'לא הועברו אליך משימות השלמה כרגע.'}
                 </p>
             </div>
         {:else}
@@ -210,23 +226,23 @@
                             </button>
                         </form>
 
-                        <!-- העברה לאדמין אחר -->
-                        {#if data.superAdmin && data.assignableAdmins.length}
+                        <!-- העברה לרכז שכונה / אדמין -->
+                        {#if data.superAdmin && data.assignees.length}
                             <form method="POST" action="?/assign" use:enhance
                                   class="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-white/5">
                                 <input type="hidden" name="itemId" value={row.id} />
-                                <span class="text-[11px] text-gray-500">העבר לאדמין:</span>
+                                <span class="text-[11px] text-gray-500">העבר ל:</span>
                                 <select name="adminId"
                                     onchange={(e) => {
                                         const opt = e.currentTarget.selectedOptions[0];
                                         const hidden = e.currentTarget.form?.querySelector('input[name=adminName]') as HTMLInputElement | null;
                                         if (hidden) hidden.value = opt?.dataset.name ?? '';
                                     }}
-                                    class="bg-white text-gray-900 border border-white/20 rounded-lg px-3 py-1.5 text-sm min-w-[200px]">
+                                    class="bg-white text-gray-900 border border-white/20 rounded-lg px-3 py-1.5 text-sm min-w-[260px]">
                                     <option value="" data-name="">— ללא / בטל העברה —</option>
-                                    {#each data.assignableAdmins as a (a.id)}
+                                    {#each assigneesFor(row.city) as a (a.id)}
                                         <option value={a.id} data-name={a.name} selected={row.assignee?.id === a.id}>
-                                            {a.name}{a.area ? ` · ${a.area}` : ''}{a.role === 'super_admin' ? ' · מנהל ראשי' : ''}
+                                            {a.covers ? '★ ' : ''}{a.name} · {KIND_LABEL[a.kind]}{a.area ? ` · ${a.area}` : ''}
                                         </option>
                                     {/each}
                                 </select>
@@ -236,7 +252,7 @@
                                            hover:bg-purple-500/25 transition-all cursor-pointer font-bold">
                                     ↗ העבר משימה
                                 </button>
-                                <span class="text-[11px] text-gray-600">האדמין יקבל הודעה עם קישור ישיר לכאן</span>
+                                <span class="text-[11px] text-gray-600">★ = רכז/ת האזור של הפריט · מקבל/ת הודעה עם קישור ישיר לכאן</span>
                             </form>
                         {/if}
                     </div>
