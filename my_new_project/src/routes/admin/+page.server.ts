@@ -10,6 +10,7 @@ import { getVisitsThisMonth, getVisitStats } from '$lib/server/visitStats';
 import { getServerHealth } from '$lib/server/serverHealth';
 import { buildItemsSummary, buildRegistrationsSummary, buildSiteOverview } from '$lib/server/statsSummary';
 import { isFamilyItem } from '$lib/itemCategories';
+import { needsCompletion } from '$lib/incompleteItems';
 
 // "אושיות (רחובות)" → { name: "אושיות", city: "רחובות" }
 function parseArea(entry: string): { name: string; city: string } {
@@ -105,6 +106,11 @@ export const load: PageServerLoad = async (event) => {
     // הפריטים משקפים בדיוק את אותו תוכן.
     const items = items0.filter((i) => isFamilyItem(i.category));
 
+    // כמה פריטים ממתינים להשלמת מיקום (מסך /admin/incomplete). רשימת השכונות
+    // המאושרות כבר נטענה ב-layout - נקראת משם ולא בשליפה נוספת מ-Strapi.
+    const { approvedNeighborhoods } = await event.parent();
+    const incompleteCount = items.filter((i) => needsCompletion(i, approvedNeighborhoods, true)).length;
+
     // צירוף הקשר מלא של המבקש לכל כרטיס בקשה - כדי שהאדמין יֵדע מי המבקש,
     // מהיכן הוא רשום (עיר/שכונה) ואיך ליצור איתו קשר - בלי לצאת מהכרטיס.
     // קודם מחשבון המשתמש (אם קיים), ואם לא - מהשם/טלפון שנשמרו על הבקשה עצמה
@@ -195,6 +201,7 @@ export const load: PageServerLoad = async (event) => {
         currentUserId: session?.user?.id ?? '',
         pendingAdsCount,
         pendingSinglesCount,
+        incompleteCount,
         coordinatorStats,
         dashboard,
         discountCodes,
