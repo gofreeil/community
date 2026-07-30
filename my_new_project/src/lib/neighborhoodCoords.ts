@@ -257,7 +257,9 @@ function preciseNeighborhoodCoord(neighborhood: string, city: string): Coord | n
  * ולא למרכז העיר השכן הקרוב יותר.
  *
  * @param cityNeighborhoods מפת עיר → רשימת שכונות (מבורר הפרסום, כולל מאושרות)
- * @returns { city, neighborhood } או null אם הקלט לא תקין / אין נתוני מיקום
+ * @returns { city, neighborhood } או null אם הקלט לא תקין / אין נתוני מיקום.
+ *          neighborhood ריק = הפין זוהה ברמת העיר בלבד (אין שכונה מתאימה
+ *          עם קואורדינטה, ולעיר אין "מרכז" בבורר).
  */
 export function nearestCityNeighborhood(
     lat: number,
@@ -271,11 +273,18 @@ export function nearestCityNeighborhood(
     let bestD = Infinity;
 
     for (const [city, nbs] of cityNeighborhoods) {
-        // מועמד ברמת עיר (מרכז) - קובע כשאין שכונה מדויקת קרובה יותר
+        // מועמד ברמת עיר - קובע כשאין שכונה מדויקת קרובה יותר.
+        // "מרכז" מוחזר רק אם הוא באמת שכונה בעיר הזו (יישוב חד-שכונתי). בעיר
+        // רבת-שכונות אין "מרכז" באף בורר, ושיוך אליו היה מוציא את הפריט מכל
+        // לוח שכונתי - שם מחזירים שכונה ריקה, כלומר "ברמת העיר", והקורא מחליט
+        // אם להשאיר את השכונה שכבר נבחרה.
         const cc = cityCenters[city];
         if (cc) {
             const d = distSq(pin, cc);
-            if (d < bestD) { bestD = d; best = { city, neighborhood: 'מרכז' }; }
+            if (d < bestD) {
+                bestD = d;
+                best = { city, neighborhood: nbs.length === 0 || nbs.includes('מרכז') ? 'מרכז' : '' };
+            }
         }
         // מועמדים ברמת שכונה - רק שכונות עם קואורדינטה מדויקת משלהן
         for (const nb of nbs) {

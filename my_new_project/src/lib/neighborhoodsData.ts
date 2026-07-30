@@ -1291,3 +1291,37 @@ export function effectiveNeighborhoods(
         .map((n) => n.name);
     return extra.length ? [...base, ...extra] : base;
 }
+
+/**
+ * האם שם השכונה קיים בכלל ברשימת השכונות של העיר (סטטית + מאושרות)?
+ * שכונה ריקה נחשבת "ידועה" - פריט בלי שכונה הוא פריט עירוני לגיטימי.
+ *
+ * נחוץ כי הלוח השכונתי מסנן בהתאמת-מחרוזת מדויקת, ושם שאינו ברשימה אינו
+ * ניתן לבחירה באף בורר - כך שפריט שנשמר איתו נעלם מכל שכונה. זה קורה
+ * ביבוא מקובץ שבו שדה השכונה הוא כתובת רחוב, בשינוי שם שכונה, וב"מרכז"
+ * שנגזר מפין בעיר רבת-שכונות. מי שמסנן צריך להציג פריט כזה ברמת העיר
+ * במקום להסתיר אותו לגמרי.
+ */
+export function isKnownNeighborhood(
+    city: string,
+    neighborhood: string,
+    approved?: ReadonlyArray<{ name: string; city: string }> | null,
+): boolean {
+    const nb = neighborhood?.trim();
+    if (!nb) return true;
+    return effectiveNeighborhoods(city, approved).includes(nb);
+}
+
+/**
+ * ברירת המחדל לשכונה בעיר נתונה: "מרכז" רק ביישוב חד-שכונתי שבאמת יש לו
+ * אותו, אחרת השכונה הראשונה ברשימה. שמירת "מרכז" בעיר רבת-שכונות מוציאה
+ * את הפריט מכל לוח שכונתי (ראה isKnownNeighborhood).
+ */
+export function defaultNeighborhoodFor(
+    city: string,
+    approved?: ReadonlyArray<{ name: string; city: string }> | null,
+): string {
+    const list = effectiveNeighborhoods(city, approved);
+    if (!list.length || list.includes('מרכז')) return 'מרכז';
+    return list[0];
+}

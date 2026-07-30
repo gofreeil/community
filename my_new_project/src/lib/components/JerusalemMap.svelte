@@ -7,7 +7,8 @@
     import { enhance } from '$app/forms';
     import { triggerAdPopup } from "$lib/adPopupStore";
     import { items as itemsData } from "$lib/itemsData";
-    import { citiesAndNeighborhoods } from "$lib/neighborhoodsData";
+    import { citiesAndNeighborhoods, isKnownNeighborhood } from "$lib/neighborhoodsData";
+    import { page } from "$app/state";
     import { neighborhoodState } from "$lib/neighborhoodState.svelte";
     import { getCoordsFor, jitterCoord } from "$lib/neighborhoodCoords";
     import { canUseMapImage, getMapImage, isDisplayableImage } from "$lib/mapImage";
@@ -504,9 +505,20 @@
 
     // פריט שייך לאזור הנוכחי רק אם *העיר* תואמת - כך "מרכז" של עיר אחת (למשל אפרת)
     // לא גולש לעיר אחרת (כפר תפוח). בתוך העיר: אותה שכונה, או פריט ללא שכונה ספציפית.
+    //
+    // רשת ביטחון: שם שכונה שאינו קיים ברשימת השכונות של העיר אינו ניתן לבחירה
+    // באף בורר, ולכן פריט שנשמר איתו לא היה מוצג באף שכונה - הוא פשוט נעלם
+    // מהמפה, מהרשימה ומהמונה. זה קרה ביבוא שבו שדה השכונה הוא כתובת רחוב,
+    // בשינוי שם שכונה, וב"מרכז" שנגזר מפין בעיר רבת-שכונות. במקום להעלים,
+    // מציגים פריט כזה בכל שכונות העיר - בדיוק כמו פריט בלי שכונה.
     function belongsToMyArea(d: { neighborhood?: string; city?: string }): boolean {
         if ((d.city ?? '') !== neighborhoodState.city) return false;
-        return d.neighborhood === neighborhoodState.neighborhood || !d.neighborhood;
+        if (!d.neighborhood || d.neighborhood === neighborhoodState.neighborhood) return true;
+        return !isKnownNeighborhood(
+            d.city ?? '',
+            d.neighborhood,
+            (page.data as { approvedNeighborhoods?: { name: string; city: string }[] }).approvedNeighborhoods,
+        );
     }
 
     // ---- עסקים מאתר האינדקס (index.gofreeil.com) ----

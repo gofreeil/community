@@ -4,7 +4,7 @@
     import { browser } from '$app/environment';
     import { goto, invalidateAll } from '$app/navigation';
     import LevelUpCard from '$lib/components/LevelUpCard.svelte';
-    import { LS_KEY, DEFAULT_NEIGHBORHOOD, citiesAndNeighborhoods, effectiveNeighborhoods } from '$lib/neighborhoodsData';
+    import { LS_KEY, DEFAULT_NEIGHBORHOOD, citiesAndNeighborhoods, effectiveNeighborhoods, defaultNeighborhoodFor } from '$lib/neighborhoodsData';
     import { nearestCityNeighborhood } from '$lib/neighborhoodCoords';
     import { getFormMemory, rememberFields } from '$lib/formMemory';
     import { saveDraftBackup, loadDraftBackup, clearDraftBackup } from '$lib/draftBackup';
@@ -82,11 +82,16 @@
             : config.icon ?? '';
 
     // ---- Neighborhood - מתמלא מיד מהפרופיל ----
-    // אם למשתמש יש עיר אבל אין שכונה (יישוב חד-שכונתי כמו כפר תפוח) - "מרכז",
-    // ולא ברירת המחדל הגלובלית (קרית משה) שתשמור את הפריט באזור הלא נכון.
+    // אם למשתמש יש עיר אבל אין שכונה (יישוב חד-שכונתי כמו כפר תפוח) - ברירת
+    // המחדל של אותה עיר, ולא ברירת המחדל הגלובלית (קרית משה) שתשמור את הפריט
+    // באזור הלא נכון. defaultNeighborhoodFor מחזיר "מרכז" רק אם הוא באמת בבורר
+    // של העיר - אחרת השכונה הראשונה, כדי שהפריט לא ייעלם מהלוח השכונתי.
     // במצב עריכה - המיקום של הפריט הקיים גובר על הפרופיל
+    const nbDefaultFor = (cityName: string) =>
+        defaultNeighborhoodFor(cityName, (data as any).approvedNeighborhoods);
     let neighborhood = $state(
-        editItem?.neighborhood || userProfile?.neighborhood || (userProfile?.city ? 'מרכז' : DEFAULT_NEIGHBORHOOD),
+        editItem?.neighborhood || userProfile?.neighborhood
+            || (userProfile?.city ? nbDefaultFor(userProfile.city) : DEFAULT_NEIGHBORHOOD),
     );
     let city         = $state(editItem?.city || userProfile?.city || 'ירושלים');
 
@@ -117,8 +122,7 @@
     });
     function onCityChange() {
         locationTouched = true;
-        const list = citiesWithApproved.find(([c]) => c === city)?.[1] ?? [];
-        neighborhood = list.includes('מרכז') || list.length === 0 ? 'מרכז' : list[0];
+        neighborhood = nbDefaultFor(city);
     }
 
     // ---- הפין על המפה הוא מקור-האמת למיקום ----
@@ -130,7 +134,16 @@
         const match = nearestCityNeighborhood(la, ln, citiesWithApproved);
         if (!match) return;
         if (match.city && match.city !== city) city = match.city;
-        if (match.neighborhood) neighborhood = match.neighborhood;
+        if (match.neighborhood) {
+            neighborhood = match.neighborhood;
+            return;
+        }
+        // הפין זוהה ברמת העיר בלבד (אין שכונה מתאימה עם קואורדינטה). השכונה
+        // שכבר נבחרה מדויקת יותר מכל ניחוש - לא דורסים אותה, ובוודאי לא ב"מרכז"
+        // שאינו קיים בבורר של העיר ומוציא את הפריט מהלוח השכונתי. מתקנים רק אם
+        // היא בכלל לא שייכת לעיר שנגזרה מהפין.
+        const list = citiesWithApproved.find(([c]) => c === match.city)?.[1] ?? [];
+        if (list.length && !list.includes(neighborhood)) neighborhood = list[0];
     }
 
     // ---- פין מיקום על המפה (שדות מסוג map_pin) ----
@@ -221,7 +234,8 @@
         if (key === 'nickname' && autofillName && userProfile?.nickname) return userProfile.nickname;
         if (key === 'phone'    && userProfile?.phone)    return userProfile.phone;
         if (key === 'address' && type === 'neighborhood_select') {
-            return userProfile?.neighborhood || (userProfile?.city ? 'מרכז' : DEFAULT_NEIGHBORHOOD);
+            return userProfile?.neighborhood
+                || (userProfile?.city ? nbDefaultFor(userProfile.city) : DEFAULT_NEIGHBORHOOD);
         }
         if (key === 'address') {
             const parts = [userProfile?.neighborhood, userProfile?.city].filter(Boolean);
@@ -614,7 +628,7 @@
         if (!p?.city || locationTouched || isEditMode || !draftRestored) return;
         if (city !== p.city) {
             city         = p.city;
-            neighborhood = p.neighborhood?.trim() || 'מרכז';
+            neighborhood = p.neighborhood?.trim() || nbDefaultFor(p.city);
         }
     });
 
