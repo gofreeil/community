@@ -453,7 +453,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
 
     'couples-therapy': {
         label: 'מטפלים ויועצים לזוגיות',
-        icon: '💞',
+        icon: '💑',
         color: 'pink',
         priceRow: 2,
         addPageTitle: 'הוספת כרטיס מטפל/ת או יועץ/ת לזוגיות',

@@ -205,7 +205,7 @@
         {
             id: "couples-therapy",
             label: "מטפלים ויועצים לזוגיות",
-            icon: "💞",
+            icon: "💑",
             items: [
                 { id: "couples-counseling", label: "ייעוץ זוגי" },
                 { id: "couples-therapist", label: "טיפול זוגי מוסמך" },
