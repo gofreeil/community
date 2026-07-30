@@ -10,6 +10,8 @@
     import { saveDraftBackup, loadDraftBackup, clearDraftBackup } from '$lib/draftBackup';
     import NeighborhoodPicker from '$lib/components/NeighborhoodPicker.svelte';
     import NeighborhoodSelect from '$lib/components/NeighborhoodSelect.svelte';
+    import NeighborhoodFallback from '$lib/components/NeighborhoodFallback.svelte';
+    import { submitNeighborhoodRequest } from '$lib/neighborhoodRequest';
     import StreetPicker from '$lib/components/StreetPicker.svelte';
     import ServiceTypePicker from '$lib/components/ServiceTypePicker.svelte';
     import { guessServiceType } from '$lib/serviceTypes';
@@ -122,8 +124,66 @@
     });
     function onCityChange() {
         locationTouched = true;
+        // עיר חדשה מבטלת מוצא שנפתח לעיר הקודמת
+        if (nbNotFound) closeNbFallback();
         neighborhood = nbDefaultFor(city);
     }
+
+    // ---- מוצא: השכונה/האזור לא ברשימה ----
+    // אזור תעשייה בראשון לציון, שכונה חדשה שטרם מופתה, מתחם שאין לו שם רשמי -
+    // עד עכשיו הבורר הציע רשימה סגורה והמפרסם פשוט נתקע. עכשיו הוא כותב את שם
+    // המקום, מסמן פין, ומפרסם *מיד*: הפין נשמר עם הפריט ולכן הוא נוחת במקום
+    // הנכון על המפה, והשם מוצג ברמת העיר עד שהמנהל מאשר אותו כשכונה.
+    let nbNotFound = $state(false);
+    let customNb   = $state('');
+    let customLat  = $state<number | null>(null);
+    let customLng  = $state<number | null>(null);
+    // פין הפריט הועתק מפין האזור - מותר לעדכן אותו כשהמשתמש מזיז את פין האזור,
+    // ואסור לגעת בפין שהמשתמש סימן בנפרד לפריט עצמו (כתובת מדויקת גוברת).
+    let pinFromNbFallback = $state(false);
+
+    function openNbFallback() {
+        nbNotFound = true;
+        locationTouched = true;
+        // כבר יש פין לפריט? המפה תיפתח עליו במקום לשלוח את המשתמש לסמן מחדש
+        if (customLat == null && pinLat != null && pinLng != null) {
+            customLat = pinLat;
+            customLng = pinLng;
+        }
+    }
+    function closeNbFallback() {
+        nbNotFound = false;
+        customNb = '';
+        customLat = null;
+        customLng = null;
+        // פין שהגיע מהמוצא בלבד יורד איתו; פין שהמשתמש סימן לפריט נשאר
+        if (pinFromNbFallback) {
+            pinLat = null;
+            pinLng = null;
+            pinSource = null;
+            pinFromNbFallback = false;
+        }
+        if (!cityNeighborhoods.includes(neighborhood)) neighborhood = nbDefaultFor(city);
+    }
+
+    // השם החופשי הופך לשכונת הפריט
+    $effect(() => {
+        if (!nbNotFound) return;
+        const n = customNb.trim();
+        if (n && n !== neighborhood) neighborhood = n;
+    });
+
+    // פין האזור ממלא את פין הפריט כשאין לפריט פין משלו. בלי זה הפריט היה נשמר
+    // עם שם שאינו ברשימה ומוצג ברמת העיר בלבד - עם הפין הוא נוחת בדיוק במקום
+    // שסומן, וזה כל ההבדל בין "איפשהו בעיר" לבין המיקום האמיתי.
+    $effect(() => {
+        if (!nbNotFound || customLat == null || customLng == null) return;
+        if (pinSource != null && !pinFromNbFallback) return;
+        pinLat = customLat;
+        pinLng = customLng;
+        pinSource = 'manual';
+        pinFromNbFallback = true;
+    });
 
     // ---- הפין על המפה הוא מקור-האמת למיקום ----
     // כשהמשתמש מזיז/מסמן פין ידני, גוזרים ממנו אוטומטית את העיר+שכונה של
@@ -134,6 +194,9 @@
         const match = nearestCityNeighborhood(la, ln, citiesWithApproved);
         if (!match) return;
         if (match.city && match.city !== city) city = match.city;
+        // המשתמש הצהיר במפורש שהאזור שלו אינו ברשימה - השם שהוא כתב מדויק יותר
+        // מכל שכונה רשומה שנמצאה בסביבה, ואסור לדרוס אותו.
+        if (nbNotFound) return;
         if (match.neighborhood) {
             neighborhood = match.neighborhood;
             return;
@@ -725,6 +788,12 @@
                 }
             }
         }
+        // מוצא "השכונה שלי לא ברשימה" פתוח אך לא מולא - בלי שם ובלי פין המודעה
+        // הייתה מתפרסמת בשקט עם השכונה הקודמת, ולא מופיעה במקום שהמפרסם התכוון אליו
+        if (nbNotFound) {
+            if (!customNb.trim())                       return $_('components.nf_need_name');
+            if (customLat == null || customLng == null) return $_('components.nf_need_pin');
+        }
         if (!neighborhood) return 'נא לבחור שכונה';
         return null;
     }
@@ -849,6 +918,14 @@
             }
 
             submitted = true;
+
+            // האזור החדש נרשם אצל המנהל כדי שיתווסף לרשימה לכולם. best-effort,
+            // ואחרי שהפריט כבר נשמר: תקלת רשת כאן לא נוגעת בפרסום שהצליח.
+            if (nbNotFound && customNb.trim()) {
+                await submitNeighborhoodRequest({
+                    name: customNb, city, lat: customLat ?? pinLat, lng: customLng ?? pinLng,
+                });
+            }
 
             // הפרסום הצליח - הטיוטא סיימה את תפקידה. בלי זה נתונים ישנים
             // צצים שוב בפעם הבאה שפותחים את הטופס באותה קטגוריה.
@@ -1005,10 +1082,26 @@
                             bind:value={neighborhood}
                             neighborhoods={cityNeighborhoods}
                             onpick={() => (locationTouched = true)}
+                            extraOptionLabel={$_('components.nf_not_in_list')}
+                            onextra={openNbFallback}
                             buttonClass="{inputClass} cursor-pointer text-right flex items-center justify-between gap-2"
                         />
                     </div>
                 </div>
+
+                <!-- מוצא לשכונה/אזור שאינם ברשימה: שם חופשי + פין. הפרסום ממשיך
+                     מיד - אין המתנה לאישור מנהל. -->
+                {#if nbNotFound}
+                    <div class="mt-3">
+                        <NeighborhoodFallback
+                            {city}
+                            bind:name={customNb}
+                            bind:lat={customLat}
+                            bind:lng={customLng}
+                            onback={closeNbFallback}
+                        />
+                    </div>
+                {/if}
                 <p class="text-gray-400 text-xs mt-1.5">
                     {#if hasMapPinField}
                         מולא אוטומטית - ואם תסמנו מיקום על המפה למטה, העיר והשכונה יתעדכנו לפיו. שנו כאן רק אם צריך.

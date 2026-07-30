@@ -2,6 +2,9 @@
     import { get } from 'svelte/store';
     import { t, locale } from 'svelte-i18n';
     import { citiesAndNeighborhoods, effectiveNeighborhoods } from '$lib/neighborhoodsData';
+    import NeighborhoodSelect from './NeighborhoodSelect.svelte';
+    import NeighborhoodFallback from './NeighborhoodFallback.svelte';
+    import { submitNeighborhoodRequest } from '$lib/neighborhoodRequest';
     import {
         missingForTier, TIER_META, type Tier, type TierField, type TierUserFields,
     } from '$lib/tiers';
@@ -34,6 +37,9 @@
         void _loc;
         return get(t)(`tiers.${k}`, values ? { values } : undefined);
     };
+    // מפתח ממרחב-שמות אחר (components/profile) - הפאנל משתמש בטקסטים המשותפים
+    // של "השכונה שלי לא ברשימה" במקום לשכפל אותם למילון הדרגות
+    const tRaw = (k: string) => { void _loc; return get(t)(k); };
 
     const missing = $derived(missingForTier(user, target));
 
@@ -53,10 +59,30 @@
         const list = effectiveNeighborhoods(city, approved);
         return list.includes('מרכז') ? list : ['מרכז', ...list];
     });
-    // כשמשנים עיר — אם השכונה הנוכחית לא שייכת לה, מאפסים ל"מרכז"
+    // כשמשנים עיר — אם השכונה הנוכחית לא שייכת לה, מאפסים ל"מרכז".
+    // במסלול "השכונה שלי לא ברשימה" הערך נשמר ב-customNb ולכן לא נדרס כאן.
     $effect(() => {
         if (city && !hoods.includes(neighborhood)) neighborhood = hoods.includes('מרכז') ? 'מרכז' : (hoods[0] ?? '');
     });
+
+    // ---- מוצא: השכונה/האזור לא ברשימה ----
+    // בלי זה תושב באזור שאין לו שכונת מגורים (אזור תעשייה, שכונה חדשה) נתקע
+    // כאן ולא יכול לפרסם בכלל. עכשיו הוא כותב את שם המקום, מסמן פין, וממשיך
+    // מיד - בלי להמתין לאישור מנהל.
+    let nbNotFound = $state(false);
+    let customNb   = $state('');
+    let customLat  = $state<number | null>(null);
+    let customLng  = $state<number | null>(null);
+    // מעבר לעיר אחרת מבטל מוצא שנפתח לעיר הקודמת
+    let lastCityForFallback = '';
+    $effect(() => {
+        if (city === lastCityForFallback) return;
+        lastCityForFallback = city;
+        if (nbNotFound) { nbNotFound = false; customNb = ''; customLat = null; customLng = null; }
+    });
+
+    // השכונה שתישמר בפועל: השם החופשי כשנבחר המוצא, אחרת הבחירה מהרשימה
+    const effectiveNb = $derived(nbNotFound ? customNb.trim() : neighborhood.trim());
 
     function has(key: TierField['key']): boolean {
         return missing.some((m) => m.key === key);
@@ -70,7 +96,12 @@
         for (const f of missing) {
             if (f.key === 'email_confirmed') continue;
             if (f.key === 'city'         && !city.trim())         return false;
-            if (f.key === 'neighborhood' && !neighborhood.trim()) return false;
+            // במוצא "השכונה שלי לא ברשימה" נדרש גם פין: בלעדיו אין מה לשלוח למנהל
+            // והאזור לעולם לא יתווסף לרשימה
+            if (f.key === 'neighborhood') {
+                if (!effectiveNb) return false;
+                if (nbNotFound && (customLat == null || customLng == null)) return false;
+            }
             if (f.key === 'phone'        && phone.replace(/\D/g, '').length < 9) return false;
             if (f.key === 'gender'       && !gender.trim())       return false;
             if (f.key === 'birth_date'   && !birthDate.trim())    return false;
@@ -97,7 +128,7 @@
         errorKey = null;
         const payload: Record<string, string> = {};
         if (has('city'))         payload.city         = city.trim();
-        if (has('neighborhood')) payload.neighborhood = neighborhood.trim();
+        if (has('neighborhood')) payload.neighborhood = effectiveNb;
         if (has('phone'))        payload.phone        = phone.trim();
         if (has('gender'))       payload.gender       = gender.trim();
         if (has('birth_date'))   payload.birth_date   = birthDate.trim();
@@ -109,6 +140,13 @@
             });
             const data = await res.json().catch(() => ({}));
             if (res.ok && data?.ok) {
+                // האזור החדש נרשם אצל המנהל כדי שיתווסף לרשימה לכולם. best-effort:
+                // הפרופיל כבר נשמר והמשתמש ממשיך לפרסם גם אם השליחה נכשלה.
+                if (nbNotFound && customNb.trim()) {
+                    await submitNeighborhoodRequest({
+                        name: customNb, city: city.trim(), lat: customLat, lng: customLng,
+                    });
+                }
                 onDone();
             } else {
                 errorKey = data?.error === 'invalid_phone' ? 'err_phone' : 'err_save';
@@ -153,10 +191,37 @@
             {:else if f.key === 'neighborhood'}
                 <div>
                     <label for="lu-hood" class="block text-sm font-medium text-gray-300 mb-1">{tFn(f.labelKey)}</label>
-                    <select id="lu-hood" bind:value={neighborhood} disabled={!city}
-                        class="w-full bg-[#1e293b] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 transition disabled:opacity-50">
-                        {#each hoods as h}<option value={h}>{h}</option>{/each}
-                    </select>
+                    {#if nbNotFound}
+                        <!-- מוצא: שם חופשי + פין. המשתמש ממשיך לפרסם מיד. -->
+                        <NeighborhoodFallback
+                            {city}
+                            bind:name={customNb}
+                            bind:lat={customLat}
+                            bind:lng={customLng}
+                            onback={() => { nbNotFound = false; customNb = ''; customLat = null; customLng = null; }}
+                        />
+                        <!-- כפתור אפור בלי הסבר הוא בדיוק המבוי הסתום שהמסך הזה סבל
+                             ממנו - אומרים במפורש מה עוד חסר -->
+                        {#if !customNb.trim()}
+                            <p class="text-amber-400 text-xs mt-1.5">{tRaw('components.nf_need_name')}</p>
+                        {:else if customLat == null || customLng == null}
+                            <p class="text-amber-400 text-xs mt-1.5">{tRaw('components.nf_need_pin')}</p>
+                        {/if}
+                    {:else}
+                        <!-- בורר עם חיפוש בהקלדה (ירושלים ~140 שכונות) ועם מוצא בתחתית
+                             הרשימה, במקום <select> סגור שאין ממנו דרך החוצה -->
+                        <NeighborhoodSelect
+                            id="lu-hood"
+                            bind:value={neighborhood}
+                            neighborhoods={hoods}
+                            disabled={!city}
+                            extraOptionLabel={tRaw('components.nf_not_in_list')}
+                            onextra={() => (nbNotFound = true)}
+                            buttonClass="w-full text-right bg-[#1e293b] border border-white/10 rounded-xl px-4 py-3 text-white
+                                         focus:outline-none focus:border-purple-500 transition disabled:opacity-50
+                                         flex items-center justify-between gap-2 cursor-pointer"
+                        />
+                    {/if}
                     <p class="text-white/40 text-xs mt-1">{tFn(f.hintKey)}</p>
                 </div>
             {:else if f.key === 'phone'}

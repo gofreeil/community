@@ -102,6 +102,19 @@ export const he = {
         np_gps_insecure: "שיתוף מיקום עובד רק בחיבור מאובטח (https)",
         np_gps_out_of_area: "המיקום הנוכחי שלכם מחוץ לתחום העיר שנבחרה",
 
+        // ===== NeighborhoodFallback (השכונה שלי לא ברשימה) =====
+        nf_title: "📍 השכונה או האזור שלכם לא ברשימה?",
+        nf_hint: "כתבו את שם המקום וסמנו אותו על המפה - אפשר להמשיך ולפרסם מיד, בלי להמתין לאישור. המנהל יוסיף אותו לרשימה כדי שגם השכנים ימצאו אותו.",
+        nf_name_label: "שם השכונה או האזור",
+        nf_name_placeholder: "לדוגמה: אזור התעשייה",
+        nf_map_title: "🗺️ סמנו את המיקום המדויק",
+        nf_map_hint: "גררו את המפה עד שהסמן 📍 יהיה על המקום, או לחצו \"המיקום שלי\". הפין הוא מה שממקם את המודעה על המפה.",
+        nf_ready: "המיקום מוכן - \"{name}\" יישמר כמיקום המודעה",
+        nf_back: "↩ חזרה לרשימת השכונות",
+        nf_need_name: "נא לכתוב את שם השכונה או האזור",
+        nf_need_pin: "נא לסמן את המיקום על המפה וללחוץ \"אישור המיקום\" - בלי זה המודעה לא תופיע במקום הנכון",
+        nf_not_in_list: "📍 השכונה שלי לא ברשימה",
+
         // ===== RestaurantReviewsModal =====
         rr_choose_rating: "בחרו דירוג בכוכבים",
         rr_write_experience: "כתבו כמה מילים על החוויה",
@@ -252,6 +265,19 @@ export const en = {
         np_gps_insecure: "Location sharing only works over a secure (https) connection",
         np_gps_out_of_area: "Your current location is outside the selected city area",
 
+        // ===== NeighborhoodFallback =====
+        nf_title: "📍 Your neighborhood or area isn't on the list?",
+        nf_hint: "Type the name of the place and mark it on the map - you can go on and publish right away, no need to wait for approval. The admin will add it to the list so your neighbors can find it too.",
+        nf_name_label: "Neighborhood or area name",
+        nf_name_placeholder: "For example: the industrial zone",
+        nf_map_title: "🗺️ Mark the exact location",
+        nf_map_hint: "Drag the map until the 📍 marker is on the spot, or tap \"My location\". The pin is what places your listing on the map.",
+        nf_ready: "Location ready - \"{name}\" will be saved as the listing's location",
+        nf_back: "↩ Back to the neighborhood list",
+        nf_need_name: "Please write the neighborhood or area name",
+        nf_need_pin: "Please mark the location on the map and tap \"Confirm location\" - without it your listing won't show in the right place",
+        nf_not_in_list: "📍 My neighborhood isn't on the list",
+
         // ===== RestaurantReviewsModal =====
         rr_choose_rating: "Choose a star rating",
         rr_write_experience: "Write a few words about your experience",
@@ -401,6 +427,19 @@ export const ru = {
         np_gps_unsupported: "Браузер не поддерживает геолокацию",
         np_gps_insecure: "Геолокация работает только по защищённому соединению (https)",
         np_gps_out_of_area: "Ваше текущее местоположение вне выбранного города",
+
+        // ===== NeighborhoodFallback =====
+        nf_title: "📍 Вашего района или места нет в списке?",
+        nf_hint: "Напишите название места и отметьте его на карте - можно сразу продолжить и опубликовать, не дожидаясь подтверждения. Администратор добавит его в список, чтобы соседи тоже нашли.",
+        nf_name_label: "Название района или места",
+        nf_name_placeholder: "Например: промышленная зона",
+        nf_map_title: "🗺️ Отметьте точное место",
+        nf_map_hint: "Перетащите карту так, чтобы маркер 📍 оказался на нужном месте, или нажмите «Моё местоположение». Именно метка размещает объявление на карте.",
+        nf_ready: "Место готово - «{name}» будет сохранено как местоположение объявления",
+        nf_back: "↩ Назад к списку районов",
+        nf_need_name: "Напишите название района или места",
+        nf_need_pin: "Отметьте место на карте и нажмите «Подтвердить» - без этого объявление не появится в нужном месте",
+        nf_not_in_list: "📍 Моего района нет в списке",
 
         // ===== RestaurantReviewsModal =====
         rr_choose_rating: "Выберите оценку в звёздах",

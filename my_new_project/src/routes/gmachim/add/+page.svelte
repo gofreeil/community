@@ -14,6 +14,8 @@
     import { imageDrop } from '$lib/imageDrop';
     import StreetPicker from '$lib/components/StreetPicker.svelte';
     import NeighborhoodPicker from '$lib/components/NeighborhoodPicker.svelte';
+    import NeighborhoodFallback from '$lib/components/NeighborhoodFallback.svelte';
+    import { submitNeighborhoodRequest } from '$lib/neighborhoodRequest';
     import type { PageData } from './$types';
 
     let { data }: { data: PageData } = $props();
@@ -222,11 +224,63 @@
     const forceMapPin = $derived(!streetListLoading && !cityHasStreetList && !cityHasNeighborhoods);
     $effect(() => { if (forceMapPin) showMap = true; });
 
-    // אם משתנה עיר - איפוס לשכונה הראשונה אם הקיימת לא תואמת
+    // אם משתנה עיר - איפוס לשכונה הראשונה אם הקיימת לא תואמת.
+    // במסלול "השכונה שלי לא ברשימה" השם החופשי הוא בדיוק שם שאינו ברשימה,
+    // ולכן האפקט הזה היה מוחק אותו מיד - מדלגים עליו שם.
     $effect(() => {
+        if (nbNotFound) return;
         if (neighborhoodsForCity.length > 0 && !neighborhoodsForCity.includes(neighborhood)) {
             neighborhood = neighborhoodsForCity[0];
         }
+    });
+
+    // ---- מוצא: השכונה/האזור לא ברשימה ----
+    // בלי זה גמ"ח באזור שאין לו שכונת מגורים ברשימה פשוט לא ניתן לפרסום.
+    let nbNotFound = $state(false);
+    let customNb   = $state('');
+    let customLat  = $state<number | null>(null);
+    let customLng  = $state<number | null>(null);
+    let pinFromNbFallback = $state(false);
+
+    function openNbFallback() {
+        nbNotFound = true;
+        locationTouched = true;
+        if (customLat == null && pinLat != null && pinLng != null) {
+            customLat = pinLat;
+            customLng = pinLng;
+        }
+    }
+    function closeNbFallback() {
+        nbNotFound = false;
+        customNb = '';
+        customLat = null;
+        customLng = null;
+        if (pinFromNbFallback) {
+            pinLat = null; pinLng = null; pinFromNbFallback = false;
+        }
+        if (neighborhoodsForCity.length > 0 && !neighborhoodsForCity.includes(neighborhood)) {
+            neighborhood = neighborhoodsForCity[0];
+        }
+    }
+    // עיר חדשה מבטלת מוצא שנפתח לעיר הקודמת
+    let lastCityForFallback = '';
+    $effect(() => {
+        if (city === lastCityForFallback) return;
+        lastCityForFallback = city;
+        if (nbNotFound) closeNbFallback();
+    });
+    // השם החופשי הופך לשכונת הגמ"ח, והפין שסומן ממלא את פין הפריט כשאין אחר
+    $effect(() => {
+        if (!nbNotFound) return;
+        const n = customNb.trim();
+        if (n && n !== neighborhood) neighborhood = n;
+    });
+    $effect(() => {
+        if (!nbNotFound || customLat == null || customLng == null) return;
+        if (pinLat != null && !pinFromNbFallback) return;
+        pinLat = customLat;
+        pinLng = customLng;
+        pinFromNbFallback = true;
     });
 
     // כל שגיאה מצביעה על השדה המדויק שחסר, כדי שנוכל להאיר ולגלול אליו
@@ -236,6 +290,14 @@
         if (!street.trim())       return { field: 'street',       message: t('extras.g_v_street') };
         if (!buildingNum.trim())  return { field: 'buildingNum',  message: t('extras.g_v_building') };
         if (!city.trim())         return { field: 'city',         message: t('extras.g_v_city') };
+        // מוצא "השכונה שלי לא ברשימה" פתוח אך לא מולא - בלי שם ובלי פין הגמ"ח
+        // היה נשמר בשקט עם השכונה הקודמת ולא מופיע במקום הנכון על המפה
+        if (nbNotFound) {
+            if (!customNb.trim())
+                return { field: 'nf-name', message: t('components.nf_need_name') };
+            if (customLat == null || customLng == null)
+                return { field: 'nf-name', message: t('components.nf_need_pin') };
+        }
         if (!neighborhood.trim()) return { field: 'neighborhood', message: t('extras.g_v_neighborhood') };
         if (forceMapPin && !(pinLat != null && pinLng != null)) {
             showMap = true;
@@ -327,6 +389,13 @@
                 clientError = result.message || 'שגיאה בשמירת הגמ"ח, נסו שוב בעוד רגע';
                 submitting = false;
                 return;
+            }
+            // האזור החדש נרשם אצל המנהל כדי שיתווסף לרשימה לכולם. best-effort,
+            // אחרי שהגמ"ח כבר נשמר - תקלה כאן לא נוגעת בפרסום שהצליח.
+            if (nbNotFound && customNb.trim()) {
+                await submitNeighborhoodRequest({
+                    name: customNb, city, lat: customLat ?? pinLat, lng: customLng ?? pinLng,
+                });
             }
             if (browser) {
                 try { localStorage.removeItem(DRAFT_KEY); } catch {}
@@ -437,16 +506,42 @@
                     </div>
                     <div>
                         <label for="neighborhood" class="text-white text-sm font-bold mb-1 block">{$_('extras.g_neighborhood_label')}</label>
-                        <NeighborhoodSelect
-                            id="neighborhood"
-                            name="neighborhood"
-                            bind:value={neighborhood}
-                            neighborhoods={neighborhoodsForCity}
-                            onpick={() => (locationTouched = true)}
-                            buttonClass="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-right flex items-center justify-between gap-2 cursor-pointer"
-                        />
+                        {#if nbNotFound}
+                            <!-- שם האזור נשמר כשכונת הגמ"ח; השדה החבוי נשאר כדי
+                                 שהערך יישלח בדיוק כמו מהבורר הרגיל -->
+                            <input type="hidden" name="neighborhood" value={neighborhood} />
+                            <button
+                                type="button"
+                                onclick={closeNbFallback}
+                                class="w-full bg-yellow-500/10 border border-yellow-500/40 rounded-lg px-3 py-2 text-yellow-200 text-right text-sm flex items-center justify-between gap-2 cursor-pointer"
+                            >
+                                <span class="truncate">{customNb.trim() || $_('components.nf_name_placeholder')}</span>
+                                <span class="opacity-60 text-xs">✕</span>
+                            </button>
+                        {:else}
+                            <NeighborhoodSelect
+                                id="neighborhood"
+                                name="neighborhood"
+                                bind:value={neighborhood}
+                                neighborhoods={neighborhoodsForCity}
+                                onpick={() => (locationTouched = true)}
+                                extraOptionLabel={$_('components.nf_not_in_list')}
+                                onextra={openNbFallback}
+                                buttonClass="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-right flex items-center justify-between gap-2 cursor-pointer"
+                            />
+                        {/if}
                     </div>
                 </div>
+
+                {#if nbNotFound}
+                    <NeighborhoodFallback
+                        {city}
+                        bind:name={customNb}
+                        bind:lat={customLat}
+                        bind:lng={customLng}
+                        onback={closeNbFallback}
+                    />
+                {/if}
 
                 <!-- כתובת: רחוב + מספר בניין -->
                 <div class="grid grid-cols-2 gap-3">
