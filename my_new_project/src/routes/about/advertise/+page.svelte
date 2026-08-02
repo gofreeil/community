@@ -277,14 +277,15 @@
 
     // ---- Free editing day + ad-period expiration ----
     // The user gets the day of payment as a FREE editing day (until 23:59).
-    // Their ad runs for one calendar month - same date next month inclusive.
+    // The ad runs for the chosen plan's period - single month or half a year (6 months),
+    // same date that many months ahead, inclusive.
     let confirmedPeriod = $state(false);
     let today           = new Date();
-    function addOneMonthSameDate(d: Date) {
+    function addMonthsSameDate(d: Date, months: number) {
         const r = new Date(d);
-        r.setMonth(r.getMonth() + 1);
-        // If the original day doesn't exist in the next month (e.g. 31 → 30/28), JS rolls over.
-        // We accept the rollover behavior - last day of the next month is fine.
+        r.setMonth(r.getMonth() + months);
+        // If the original day doesn't exist in the target month (e.g. 31 → 30/28), JS rolls over.
+        // We accept the rollover behavior - last day of the target month is fine.
         return r;
     }
     function endOfToday(d: Date) {
@@ -292,8 +293,9 @@
         r.setHours(23, 59, 59, 999);
         return r;
     }
-    let expirationDate = $derived(addOneMonthSameDate(today));
-    let editFreeUntil  = $derived(endOfToday(today));
+    let monthExpiration = $derived(addMonthsSameDate(today, 1));
+    let halfExpiration  = $derived(addMonthsSameDate(today, 6));
+    let editFreeUntil   = $derived(endOfToday(today));
     function fmtDate(d: Date) {
         return d.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
     }
@@ -487,6 +489,12 @@
     let halfItems        = $derived(selectedItems.filter(r => r.plan === 'half'));
     let singleItems      = $derived(selectedItems.filter(r => r.plan === 'single'));
     let hasSelection     = $derived(planMap.size > 0);
+
+    // תאריכי התפוגה של שלב 5 נגזרים מהמסלולים שנבחרו בפועל - חודש בודד ו/או חצי שנה
+    let expirationInfos  = $derived([
+        ...(singleItems.length > 0 ? [{ date: monthExpiration, periodKey: 'gift_li2_month', labelKey: 'single_month' }] : []),
+        ...(halfItems.length > 0   ? [{ date: halfExpiration,  periodKey: 'gift_li2_half',  labelKey: 'half_year' }]   : []),
+    ]);
 
     // ---- Discount code ("מגירת" הנחת רכז / בעלים / פטור) ----
     // בזמן מבצע ההשקה מוזרק קוד "יוצאים לחירות" (פטור מלא) לרשימת הקודים
@@ -1397,14 +1405,16 @@
             </p>
             <ul class="text-gray-200 text-xs md:text-sm leading-relaxed space-y-1.5 pr-6 list-disc list-outside">
                 <li>{$_('advertise.gift_li1_pre')} <strong class="text-amber-200">{fmtDate(today)}</strong>, {$_('advertise.gift_li1_post')}</li>
-                <li>{$_('advertise.gift_li2_pre')} <strong class="text-amber-200">{$_('advertise.gift_li2_month')}</strong> {$_('advertise.gift_li2_until')} <strong class="text-amber-200">{fmtDate(expirationDate)} {$_('advertise.incl')}</strong>.</li>
+                {#each expirationInfos as info}
+                    <li>{$_('advertise.gift_li2_pre')} <strong class="text-amber-200">{$_(`advertise.${info.periodKey}`)}</strong> {$_('advertise.gift_li2_until')} <strong class="text-amber-200">{fmtDate(info.date)} {$_('advertise.incl')}</strong>.</li>
+                {/each}
                 <li>{$_('advertise.gift_li3_pre')}<strong class="text-amber-200">23:59</strong>{$_('advertise.gift_li3_post')}</li>
             </ul>
         </div>
 
         <!-- Two-month calendar with markers -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-            {#each [today, expirationDate] as anchor}
+            {#each [today, ...expirationInfos.map(i => i.date)] as anchor}
                 {@const cells = buildCalendar(anchor)}
                 <div class="rounded-xl bg-black/30 border border-white/10 p-3">
                     <p class="text-center text-amber-300 font-black text-sm mb-2">{fmtMonthName(anchor)}</p>
@@ -1417,7 +1427,7 @@
                         {#each cells as cell}
                             {@const inMonth = cell.getMonth() === anchor.getMonth()}
                             {@const isToday = sameDay(cell, today)}
-                            {@const isExpiry = sameDay(cell, expirationDate)}
+                            {@const isExpiry = expirationInfos.some(i => sameDay(cell, i.date))}
                             <div class="aspect-square flex items-center justify-center text-xs font-bold rounded
                                 {!inMonth ? 'text-gray-700' : 'text-gray-300'}
                                 {isToday ? 'bg-amber-500 text-black ring-2 ring-amber-300' : ''}
@@ -1446,7 +1456,8 @@
                 </p>
                 <p class="text-gray-400 text-xs md:text-sm leading-relaxed">
                     {$_('advertise.confirm_period_sub1', { values: { date: fmtDate(today) } })}
-                    {$_('advertise.confirm_period_sub2')} <span class="text-amber-300 font-bold">{fmtDate(expirationDate)} {$_('advertise.incl')}</span>.
+                    {$_('advertise.confirm_period_sub2')}
+                    {#each expirationInfos as info, i}{#if i > 0} · {/if}<span class="text-amber-300 font-bold">{fmtDate(info.date)} {$_('advertise.incl')}</span>{#if expirationInfos.length > 1}&nbsp;({$_(`advertise.${info.labelKey}`)}){/if}{/each}.
                 </p>
             </div>
         </label>
