@@ -736,9 +736,6 @@
     let nowTick = $state(Date.now());
     // טקסט הטולטיפ "סגור עכשיו" (נקרא בתוך buildIconHtml, שהיא פונקציה רגילה ולא reactive scope)
     let closedNowText = $derived($t('map.closed_now'));
-    // פונקציית התרגום עצמה כערך ריאקטיבי — לקריאה עם פרמטרים בתוך rebuildMarkers
-    // (פונקציה רגילה, לא reactive scope), למשל תווית "X פריטים כאן" של אשכול.
-    let translateNow = $derived($t);
     $effect(() => {
         const timer = setInterval(() => { nowTick = Date.now(); }, 60_000);
         return () => clearInterval(timer);
@@ -900,17 +897,15 @@
     let leafletMap: any = null;
     let leafletL: any = null;          // יבוא דינמי של leaflet ב-onMount
     let mapMarkerLayer: any = null;     // L.LayerGroup לכל המרקרים
-    // ---- מניפת "אותו בניין" (spiderfy) ----
+    // ---- פיזור קבוע של פריטים על אותה נקודה ----
     // כמה פריטים על אותה נקודה ממש (אותה כתובת → אותו geocode, או שני פינים
-    // שסומנו על אותו מבנה) נערמים בדיוק זה על זה ורק העליון לחיץ. הם מקובצים
-    // למרקר מאוחד עם תג מונה, ולחיצה פורסת אותם במעגל סביב הבניין עם קווי
-    // חיבור — כמו בגוגל מפות.
-    let spiderLayer: any = null;   // שכבת המניפה הפתוחה: קווים, פינים ונקודת עיגון
-    let spiderSource: any = null;  // מרקר האשכול שהוסתר כל עוד המניפה פתוחה
-    // מפתח הקבוצה שהמניפה שלה פתוחה — כדי לפתוח אותה מחדש אחרי rebuildMarkers
-    // (הטיק הדקתי של nowTick בונה את המרקרים מחדש כל דקה, ובלי זה המניפה
-    // הייתה נסגרת לבד מתחת לידיים של המשתמש).
-    let spiderKey: string | null = null;
+    // שסומנו על אותו מבנה) נערמים בדיוק זה על זה, ורק העליון נראה ולחיץ —
+    // תמונה מסתירה תמונה. במקום מרקר מאוחד שצריך ללחוץ עליו כדי להיפרס, כל
+    // הפריטים מוצגים תמיד, פרוסים בטבעת קטנה סביב הנקודה המשותפת: בלי מונה,
+    // בלי קווי חיבור ובלי לחיצה מקדימה.
+    // ההיסט מחושב בפיקסלים (לא במעלות) כדי שהמרווח ייראה זהה בכל רמת זום,
+    // ולכן המיקומים מחושבים מחדש בכל שינוי זום — ראו applySpreadPositions.
+    let spreadMarkers: { marker: any; anchor: [number, number]; i: number; n: number }[] = [];
     // ?item=<id> deep-link (קישור מהאתר הארצי gemach.gofreeil.com): הקואורדינטה שיש
     // למרכז עליה. כל עוד מוגדרת, כל מרכוז-אוטומטי (fitToMarkers) מתמקד בה במקום
     // להתאים לכל המרקרים — כך הפין המבוקש נשאר במרכז עד שהמשתמש מזיז את המפה.
@@ -966,8 +961,8 @@
         `;
     }
 
-    // בניית מרקר לפריט בודד. משמש גם לפין רגיל וגם לפינים בתוך מניפה פתוחה,
-    // ולכן מקבל קואורדינטות בנפרד (במניפה הפין מוצג במיקום הפרוס, לא המקורי).
+    // בניית מרקר לפריט בודד. משמש גם לפין בודד וגם לפינים שפרוסים סביב נקודה
+    // משותפת, ולכן מקבל קואורדינטות בנפרד (בפיזור מוצג המיקום הפרוס, לא המקורי).
     // שכבוב (z-order) נעשה במחלקות CSS ולא ב-zIndexOffset של Leaflet, כי הכלל
     // הקיים ‎.jmap-pin-wrap { z-index !important }‎ דורס כל ערך inline.
     // "רמת הדגשה" בלחיצה: לחיצה בודדת על פריט מבליטה אותו (כיתוב גדול מעט,
@@ -985,13 +980,13 @@
         marker.getElement?.()?.classList.add('jmap-pin-wrap--active');
     }
 
-    function makeItemMarker(m: any, lat: number, lng: number, inFan = false): any {
+    function makeItemMarker(m: any, lat: number, lng: number, spread = false): any {
         const html = buildIconHtml(m.icon, m.label, m.color, m.isMock, m.mapImage, m.serviceHex, m.openNow);
         const pinKey = String(m.id ?? m.label);
         // מחלקת ההדגשה נאפית לתוך המרקר כדי שפריט מודגש ישרוד בנייה-מחדש (רענון נתונים)
         const activeClass = pinKey === activePinKey ? ' jmap-pin-wrap--active' : '';
         const divIcon = leafletL.divIcon({
-            className: (inFan ? 'jmap-pin-wrap jmap-pin-wrap--fan' : 'jmap-pin-wrap') + activeClass,
+            className: (spread ? 'jmap-pin-wrap jmap-pin-wrap--spread' : 'jmap-pin-wrap') + activeClass,
             html,
             iconSize:   [120, 60],
             iconAnchor: [60, 60],
@@ -1017,62 +1012,47 @@
         return marker;
     }
 
-    // סגירת המניפה: מסירים את שכבת הפריסה ומחזירים את מרקר האשכול למקומו.
-    function unspiderfy() {
-        if (spiderLayer) { try { leafletMap?.removeLayer(spiderLayer); } catch {} }
-        spiderLayer = null;
-        if (spiderSource && mapMarkerLayer) mapMarkerLayer.addLayer(spiderSource);
-        spiderSource = null;
-        spiderKey = null;
+    // רדיוס הפיזור בפיקסלים. מתכווץ עם הפינים עצמם (pinScaleFor) כדי שהמרווח
+    // ביניהם ייראה קבוע בכל זום, ומתהדק מאוד בזום רחוק: שם היסט של עשרות
+    // פיקסלים שווה קילומטרים בשטח, והפין היה נוחת בשכונה אחרת.
+    function spreadRadiusPx(n: number, z: number): number {
+        if (z < ICONS_MIN_ZOOM) return 9;    // זום ארצי - נקודות צבעוניות בלבד
+        if (z < LABELS_MIN_ZOOM) return 26;  // זום עיר - אימוג'ים בלי שמות
+        // מספיק לזוג פינים (גובה פין ≈ 60px), וגדל כשיש יותר פריטים על הטבעת
+        return Math.max(42, (n * 54) / (2 * Math.PI)) * pinScaleFor(z);
     }
 
-    // פריסת קבוצת פריטים מאותו בניין במעגל סביב נקודת העיגון, עם קווי חיבור.
-    // הפריסה מחושבת בפיקסלים (לא במעלות) כדי שהמרחק ייראה זהה בכל רמת זום;
-    // בגלל זה שינוי זום סוגר את המניפה (המיקומים כבר לא נכונים) — ראו zoomstart.
-    function spiderfy(key: string, group: any[], anchor: [number, number], clusterMarker: any) {
-        unspiderfy();
-        mapMarkerLayer.removeLayer(clusterMarker);
-        spiderSource = clusterMarker;
-        spiderKey = key;
-        spiderLayer = leafletL.layerGroup().addTo(leafletMap);
+    // מיקומו של הפין ה-i מתוך n סביב הנקודה המשותפת. הראשון למעלה, השאר בכיוון השעון.
+    function spreadLatLng(anchor: [number, number], i: number, n: number): [number, number] {
         const centerPt = leafletMap.latLngToLayerPoint(anchor);
-        // הרדיוס גדל עם מספר הפריטים כדי שהפינים והתוויות לא ידרסו זה את זה
-        const radius = 70 + Math.max(0, group.length - 4) * 14;
-        group.forEach((m, i) => {
-            const angle = -Math.PI / 2 + (i / group.length) * 2 * Math.PI;
-            const pt = leafletL.point(
-                centerPt.x + radius * Math.cos(angle),
-                centerPt.y + radius * Math.sin(angle),
-            );
-            const ll = leafletMap.layerPointToLatLng(pt);
-            spiderLayer.addLayer(leafletL.polyline([anchor, [ll.lat, ll.lng]], {
-                color: '#d97706', weight: 2, opacity: 0.85, dashArray: '4 3',
-            }));
-            spiderLayer.addLayer(makeItemMarker(m, ll.lat, ll.lng, true));
-        });
-        // נקודת עיגון על הבניין עצמו — לחיצה עליה (או על רקע המפה) סוגרת את המניפה
-        const dot = leafletL.circleMarker(anchor, {
-            radius: 6, color: '#d97706', fillColor: '#fbbf24', fillOpacity: 1, weight: 2,
-        });
-        dot.on('click', unspiderfy);
-        spiderLayer.addLayer(dot);
+        const radius = spreadRadiusPx(n, leafletMap.getZoom());
+        const angle = -Math.PI / 2 + (i / n) * 2 * Math.PI;
+        const ll = leafletMap.layerPointToLatLng(leafletL.point(
+            centerPt.x + radius * Math.cos(angle),
+            centerPt.y + radius * Math.sin(angle),
+        ));
+        return [ll.lat, ll.lng];
+    }
+
+    // ההיסט הוא בפיקסלים, ולכן אחרי כל שינוי זום המיקומים נדרסים מחדש
+    // (במקום לבנות את כל המרקרים מחדש - רק setLatLng, בלי הבהוב).
+    function applySpreadPositions() {
+        if (!leafletMap || !leafletL) return;
+        for (const s of spreadMarkers) s.marker.setLatLng(spreadLatLng(s.anchor, s.i, s.n));
     }
 
     function rebuildMarkers() {
         if (!leafletL || !leafletMap || !mapMarkerLayer) return;
-        // מניפה פתוחה שורדת בנייה-מחדש (הטיק הדקתי / רענון נתונים): זוכרים את
-        // מפתח הקבוצה, סוגרים, ופותחים מחדש אחרי שהאשכול נבנה שוב למטה.
-        const reopenKey = spiderKey;
-        unspiderfy();
+        spreadMarkers = [];
         mapMarkerLayer.clearLayers();
         // מרקרים מוצגים בדיוק במיקומם. פריט עם פין שהמשתמש סימן = מיקום אמיתי, ואסור
         // להזיז אותו (זה נראה כמו באג "הפין קפץ ממקומו"). פיזור קל למניעת חפיפה קורה רק
         // לפריטים בלי פין שנופלים למרכז היישוב - וזה כבר מטופל ב-jitterCoord בבניית
         // dynamicMarkers, בלי לגעת בפינים אמיתיים.
         //
-        // קיבוץ "אותו בניין": פריטים שנוחתים על אותה נקודה מעוגלת (~10 מ') היו
-        // נערמים בדיוק זה על זה, לכן הם מוצגים כמרקר מאוחד עם תג מונה, ולחיצה
-        // פורסת אותם במניפה (spiderfy) כך שכולם נראים ולחיצים.
+        // "אותו בניין": פריטים שנוחתים על אותה נקודה מעוגלת (~10 מ') היו נערמים
+        // בדיוק זה על זה, לכן הם נפרסים בטבעת קטנה סביבה - כולם נראים ולחיצים
+        // תמיד, בלי מרקר מאוחד ובלי לחיצה מקדימה.
         const groups = new Map<string, any[]>();
         for (const m of dynamicMarkers) {
             if (!isMarkerVisible(m.category)) continue;
@@ -1080,41 +1060,21 @@
             const g = groups.get(key);
             if (g) g.push(m); else groups.set(key, [m]);
         }
-        for (const [key, group] of groups) {
+        for (const group of groups.values()) {
             if (group.length === 1) {
                 const m = group[0];
                 mapMarkerLayer.addLayer(makeItemMarker(m, m.lat, m.lng));
                 continue;
             }
-            // מרקר מאוחד: הסמל של הפריט הראשון + תג מונה + תווית "X פריטים כאן"
-            const first = group[0];
-            const anchor: [number, number] = [first.lat, first.lng];
-            const label = translateNow('map.cluster_here', { values: { n: group.length } })
-                .replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            const img = first.mapImage || (first.icon.startsWith('/') ? first.icon : '');
-            const iconInner = img
-                ? `<div class="jmap-pin-icon jmap-pin-img" style="border-color:#d97706"><img src="${img.replace(/"/g, '&quot;')}" alt="" loading="lazy" /></div>`
-                : `<div class="jmap-pin-icon">${first.icon}</div>`;
-            const html = `
-                <div class="jmap-pin" style="--jmap-pin-hex:#d97706">
-                    <div class="jmap-pin-cluster-stack">
-                        ${iconInner}
-                        <div class="jmap-pin-cluster-badge">${group.length}</div>
-                    </div>
-                    <div class="jmap-pin-label" style="background:#d97706">${label}</div>
-                </div>
-            `;
-            const divIcon = leafletL.divIcon({
-                className: 'jmap-pin-wrap jmap-pin-wrap--cluster',
-                html,
-                iconSize:   [120, 60],
-                iconAnchor: [60, 60],
+            // כמה פריטים על אותה נקודה - פרוסים בטבעת סביבה, כל אחד עם הסמל,
+            // השם והלחיצה שלו. spreadMarkers שומר את העוגן כדי לחשב מחדש בזום.
+            const anchor: [number, number] = [group[0].lat, group[0].lng];
+            group.forEach((m, i) => {
+                const [lat, lng] = spreadLatLng(anchor, i, group.length);
+                const marker = makeItemMarker(m, lat, lng, true);
+                mapMarkerLayer.addLayer(marker);
+                spreadMarkers.push({ marker, anchor, i, n: group.length });
             });
-            const marker = leafletL.marker(anchor, { icon: divIcon, riseOnHover: true });
-            marker.on('click', () => spiderfy(key, group, anchor, marker));
-            mapMarkerLayer.addLayer(marker);
-            // המניפה הייתה פתוחה על הקבוצה הזו לפני הבנייה-מחדש — פותחים שוב
-            if (key === reopenKey) spiderfy(key, group, anchor, marker);
         }
 
         // שכבת קריאות עזרה - תמיד מוצגת (מעל השאר), עם הבהוב אדום להדגשה
@@ -1149,24 +1109,28 @@
     //   זום 13-17 (שכונה)      - אימוג'י + שם מלא
     //   זום 10-12 (עיר)        - אימוג'י בלבד, השמות נעלמים
     //   זום 8-9 (רמה ארצית)    - נקודות צבעוניות בלבד במקום האימוג'ים
-    // קריאות עזרה ומניפת "אותו בניין" פתוחה מוחרגות - תמיד מוצגות במלואן.
+    // קריאות עזרה מוחרגות - תמיד מוצגות במלואן.
     const LABELS_MIN_ZOOM = 13;   // מתחת לזה השמות נעלמים
     const ICONS_MIN_ZOOM = 10;    // מתחת לזה גם האימוג'ים מתחלפים בנקודות
     const MAX_EMPHASIS_ZOOM = 18; // מכאן ומעלה (זום מקסימלי) - רמת ההדגשה
+    // עד זום 14 (תצוגת שכונה) - גודל מלא לקריאוּת;
+    // מזום 14 ומעלה (התקרבות) - מקטינים בהדרגה עד 0.55;
+    // בזום מקסימלי (18+) - דווקא מגדילים מעט בחזרה: המשתמש בוחן פריט מקרוב,
+    // וה-CSS (jmap-zoom-max) מוסיף הגדלה קלה לכיתוב והבלטה ללוגו.
+    function pinScaleFor(z: number): number {
+        return z >= MAX_EMPHASIS_ZOOM ? 0.85
+            : z <= 14 ? 1
+            : Math.max(0.55, 1 - (z - 14) * 0.09);
+    }
     function applyPinScale() {
         if (!leafletMap || !mapEl) return;
         const z = leafletMap.getZoom();
-        // עד זום 14 (תצוגת שכונה) - גודל מלא לקריאוּת;
-        // מזום 14 ומעלה (התקרבות) - מקטינים בהדרגה עד 0.55;
-        // בזום מקסימלי (18+) - דווקא מגדילים מעט בחזרה: המשתמש בוחן פריט מקרוב,
-        // וה-CSS (jmap-zoom-max) מוסיף הגדלה קלה לכיתוב והבלטה ללוגו.
-        const scale = z >= MAX_EMPHASIS_ZOOM ? 0.85
-            : z <= 14 ? 1
-            : Math.max(0.55, 1 - (z - 14) * 0.09);
-        mapEl.style.setProperty('--jmap-pin-scale', String(scale));
+        mapEl.style.setProperty('--jmap-pin-scale', String(pinScaleFor(z)));
         mapEl.classList.toggle('jmap-zoom-icons', z < LABELS_MIN_ZOOM && z >= ICONS_MIN_ZOOM);
         mapEl.classList.toggle('jmap-zoom-dots', z < ICONS_MIN_ZOOM);
         mapEl.classList.toggle('jmap-zoom-max', z >= MAX_EMPHASIS_ZOOM);
+        // הפיזור מחושב בפיקסלים ותלוי גם בזום וגם בגודל הפין - לעדכן יחד
+        applySpreadPositions();
     }
 
     // ברירת מחדל: התקרבות שממלאת את המסך עם השכונה/הישוב (לפי המרקרים),
@@ -1179,10 +1143,6 @@
             return true;
         }
         const layers = mapMarkerLayer.getLayers();
-        // כשמניפת "אותו בניין" פתוחה, מרקר האשכול מוסר זמנית מהשכבה (spiderfy) —
-        // מצרפים אותו כדי שהבניין שהמשתמש בוחן לא יוחרג מחישוב הגבולות (וכדי
-        // שאשכול שהוא המרקר היחיד בשכונה לא ישאיר את הרשימה ריקה).
-        if (spiderSource) layers.push(spiderSource);
         if (!layers.length) return false;
         const pts = layers.map((l: any) => l.getLatLng());
 
@@ -1264,11 +1224,7 @@
         }).addTo(leafletMap);
 
         mapMarkerLayer = leafletL.layerGroup().addTo(leafletMap);
-        // מניפת "אותו בניין" נסגרת בלחיצה על רקע המפה, ובשינוי זום — כי מיקומי
-        // הפריסה חושבו בפיקסלים ברמת הזום הקודמת.
-        leafletMap.on('click', unspiderfy);
-        leafletMap.on('zoomstart', unspiderfy);
-        // לחיצה על רקע המפה מבטלת גם את הדגשת הפריט (רמת ההדגשה של לחיצה בודדת)
+        // לחיצה על רקע המפה מבטלת את הדגשת הפריט (רמת ההדגשה של לחיצה בודדת)
         leafletMap.on('click', clearActivePin);
         rebuildMarkers();
         // ברירת מחדל: למלא את המסך עם הישוב/השכונה (במקום זום קבוע רחוק)
@@ -1310,8 +1266,7 @@
             try { leafletMap?.remove?.(); } catch {}
             leafletMap = null;
             mapMarkerLayer = null;
-            spiderLayer = null;
-            spiderSource = null;
+            spreadMarkers = [];
         };
     });
 
@@ -3142,14 +3097,10 @@
     }
     /* שכבוב מרקרים במחלקות CSS: הכלל הבסיסי למעלה קובע z-index עם !important,
        ולכן zIndexOffset של Leaflet (ערך inline) לא משפיע — השכבוב חייב לקרות כאן.
-       מרקר אשכול — מעל פינים רגילים (20), מתחת לקריאות עזרה (1000). */
-    :global(.jmap-pin-wrap--cluster) {
+       פין מפוזר (כמה פריטים על אותה נקודה) — מעל פינים רגילים (20), אחרת תיבת
+       ההקלקה השקופה (120×60) של מרקר סמוך בולעת את ההקשה עליו. */
+    :global(.jmap-pin-wrap--spread) {
         z-index: 30 !important;
-    }
-    /* פין בתוך מניפה פתוחה — מעל הכול, כולל קריאות עזרה, אחרת תיבת ההקלקה
-       השקופה (120×60) של מרקר סמוך בולעת את ההקשה על הפין שהמשתמש פרס. */
-    :global(.jmap-pin-wrap--fan) {
-        z-index: 1100 !important;
     }
     @keyframes helpPinPulse {
         0%, 100% { transform: scale(1); }
@@ -3200,27 +3151,6 @@
         text-overflow: ellipsis;
         box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     }
-    /* אשכול "אותו בניין" — תג מונה עגול בפינת הסמל של המרקר המאוחד */
-    :global(.jmap-pin-cluster-stack) {
-        position: relative;
-        display: inline-block;
-    }
-    :global(.jmap-pin-cluster-badge) {
-        position: absolute;
-        top: -7px;
-        right: -11px;
-        min-width: 19px;
-        height: 19px;
-        padding: 0 4px;
-        background: #d97706;
-        color: #fff;
-        font-size: 0.72rem;
-        font-weight: 800;
-        line-height: 15px; /* 19px פחות 2px מסגרת מכל צד */
-        border-radius: 9999px;
-        border: 2px solid #fff;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.4);
-    }
     /* מרקרי דוגמה - האייקון נשאר ברור, רק התווית הטקסטואלית מקבלת שקיפות + מסגרת מקווקווית */
     :global(.jmap-pin--mock .jmap-pin-icon) {
         opacity: 1;
@@ -3267,21 +3197,21 @@
     /* ----- תצוגה תלוית-זום (המחלקות מוחלפות ב-applyPinScale) -----
        jmap-zoom-icons (זום עיר): רק אימוג'ים, בלי שמות.
        jmap-zoom-dots (זום ארצי): נקודות צבעוניות במקום האימוג'ים.
-       מוחרגים - תמיד מוצגים במלואם: קריאות עזרה (--help), מניפה פתוחה (--fan),
+       מוחרגים - תמיד מוצגים במלואם: קריאות עזרה (--help)
        ופריט שהודגש בלחיצה בודדת (--active). */
-    :global(.jmap-zoom-icons .jmap-pin-wrap:not(.jmap-pin-wrap--help):not(.jmap-pin-wrap--fan):not(.jmap-pin-wrap--active) .jmap-pin-label),
-    :global(.jmap-zoom-icons .jmap-pin-wrap:not(.jmap-pin-wrap--help):not(.jmap-pin-wrap--fan):not(.jmap-pin-wrap--active) .jmap-pin-closed-note) {
+    :global(.jmap-zoom-icons .jmap-pin-wrap:not(.jmap-pin-wrap--help):not(.jmap-pin-wrap--active) .jmap-pin-label),
+    :global(.jmap-zoom-icons .jmap-pin-wrap:not(.jmap-pin-wrap--help):not(.jmap-pin-wrap--active) .jmap-pin-closed-note) {
         display: none;
     }
-    :global(.jmap-zoom-dots .jmap-pin-wrap:not(.jmap-pin-wrap--help):not(.jmap-pin-wrap--fan):not(.jmap-pin-wrap--active) .jmap-pin > *) {
+    :global(.jmap-zoom-dots .jmap-pin-wrap:not(.jmap-pin-wrap--help):not(.jmap-pin-wrap--active) .jmap-pin > *) {
         display: none;
     }
-    :global(.jmap-zoom-dots .jmap-pin-wrap:not(.jmap-pin-wrap--help):not(.jmap-pin-wrap--fan):not(.jmap-pin-wrap--active) .jmap-pin) {
+    :global(.jmap-zoom-dots .jmap-pin-wrap:not(.jmap-pin-wrap--help):not(.jmap-pin-wrap--active) .jmap-pin) {
         position: relative;
         height: 100%;
     }
     /* הנקודה ממורכזת בדיוק על הקואורדינטה (עוגן המרקר = תחתית-מרכז התיבה) */
-    :global(.jmap-zoom-dots .jmap-pin-wrap:not(.jmap-pin-wrap--help):not(.jmap-pin-wrap--fan):not(.jmap-pin-wrap--active) .jmap-pin)::after {
+    :global(.jmap-zoom-dots .jmap-pin-wrap:not(.jmap-pin-wrap--help):not(.jmap-pin-wrap--active) .jmap-pin)::after {
         content: '';
         position: absolute;
         left: 50%;
