@@ -34,6 +34,18 @@
     });
     let freeMsRemaining = $derived(freeEditUntil ? Math.max(0, freeEditUntil.getTime() - now.getTime()) : 0);
     let freeEditExpired = $derived(Boolean(freeEditUntil) && freeMsRemaining === 0);
+
+    // ===== Purchased plan period =====
+    // נשמר בדף המחירון ברגע שחרור הגישה - 6 (חצי שנה) או 1 (חודש בודד).
+    // בלי ערך שמור נשארים על חודש - הערך היחיד שאפשר להניח.
+    const PLAN_MONTHS_KEY = "ad_plan_months";
+    let planMonths = $state(1);
+    // אותה אריתמטיקת "אותו יום בחודש היעד" כמו בלוח של שלב 5 בדף המחירון
+    function addMonthsSameDate(d: Date, months: number) {
+        const r = new Date(d);
+        r.setMonth(r.getMonth() + months);
+        return r;
+    }
     function fmtCountdown(ms: number) {
         const totalMin = Math.floor(ms / 60000);
         const h = Math.floor(totalMin / 60);
@@ -537,6 +549,11 @@
             if (!isNaN(d.getTime())) paidAt = d;
         }
 
+        // The purchased plan period, persisted by the pricing page. Only the
+        // two real plans are accepted - anything else falls back to a month.
+        const storedMonths = Number(localStorage.getItem(PLAN_MONTHS_KEY));
+        if (storedMonths === 6) planMonths = 6;
+
         // Tick every minute to update the free-edit countdown.
         const tickId = window.setInterval(() => { now = new Date(); }, 60_000);
 
@@ -858,7 +875,7 @@
                         <p class="text-gray-200 text-xs md:text-sm leading-relaxed mb-2">
                             {$_('advertise.b_cd_left')} <strong class="text-amber-200 text-base">{fmtCountdown(freeMsRemaining)}</strong>
                             {$_('advertise.b_cd_mid')} <strong class="text-amber-200">{$_('advertise.b_cd_finish')}</strong>
-                            {$_('advertise.b_cd_end', { values: { date: fmtDateShort(new Date(paidAt.getTime() + 30*24*60*60*1000)) } })}
+                            {$_('advertise.b_cd_end', { values: { date: fmtDateShort(addMonthsSameDate(paidAt, planMonths)) } })}
                         </p>
                     </div>
                 </div>

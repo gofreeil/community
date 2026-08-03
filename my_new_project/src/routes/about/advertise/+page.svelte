@@ -522,6 +522,9 @@
         try {
             localStorage.setItem('ad_paid', '1');
             localStorage.setItem('ad_paid_at', new Date().toISOString());
+            // המסלול שנרכש - הבילדר קורא את זה כדי להציג "תרוץ עד" נכון
+            const months = selectedItems.some(r => r.plan === 'half') ? 6 : 1;
+            localStorage.setItem('ad_plan_months', String(months));
         } catch { /* ignore */ }
         goto('/about/advertise/builder');
     }
