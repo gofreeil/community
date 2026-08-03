@@ -1,12 +1,12 @@
 import { handle as authHandle } from './auth';
 import { sequence } from '@sveltejs/kit/hooks';
-import type { Handle, HandleServerError } from '@sveltejs/kit';
+import type { Handle, HandleServerError, RequestEvent } from '@sveltejs/kit';
 import {
     verifyTrustToken,
     TRUST_COOKIE_NAME,
     COORD_TRUST_COOKIE_NAME,
 } from '$lib/server/totp';
-import { getUserTotpSecret } from '$lib/server/db';
+import { getUserTotpSecret, getAllSuperAdmins, createItem } from '$lib/server/db';
 
 /**
  * לוכד כל שגיאה לא-מטופלת בצד השרת (load/render/actions) *לפני* ש-SvelteKit
@@ -17,7 +17,65 @@ import { getUserTotpSecret } from '$lib/server/db';
  * (2) מחזירים למשתמש הודעה גנרית (בלי לדלוף פרטים פנימיים) + מזהה תקלה קצר
  * שמוצג גם ב-+error.svelte, כך שתלונת משתמש ניתנת לשיוך מול השורה בלוג.
  */
-export const handleError: HandleServerError = ({ error, event, status, message }) => {
+/**
+ * התראת תקלה לסופר-אדמינים ("הצוות שלנו קיבל על כך התראה" בעמוד השגיאה — באמת):
+ * כל שגיאת שרת לא-מטופלת שולחת admin_alert לתיבת ההודעות של כל סופר-אדמין, עם
+ * מזהה התקלה שהמשתמש רואה — כך תלונה ("קיבלתי 9R8B08") ניתנת לשיוך מיידי.
+ *
+ * ריסון: פעם ב-15 דק' לכל חתימת (סטטוס+מסלול+שגיאה) ולכל היותר 8 התראות
+ * לאינסטנס — כדי שבאג בדף פופולרי לא יציף את התיבה בעשרות הודעות זהות.
+ * fire-and-forget: כשל בשליחה (למשל Strapi עצמו נפל) לעולם לא מפיל את עמוד
+ * השגיאה עצמו; הלוג עם ה-ref נשאר תמיד כגיבוי.
+ */
+const ERROR_ALERT_COOLDOWN_MS = 15 * 60 * 1000;
+const ERROR_ALERT_MAX_PER_INSTANCE = 8;
+const errorAlertLastSent = new Map<string, number>();
+let errorAlertsSent = 0;
+
+async function notifySuperAdminsOfError(ref: string, status: number, event: RequestEvent, err: unknown): Promise<void> {
+    try {
+        const routeId = event.route?.id ?? event.url.pathname;
+        const errMsg = err instanceof Error ? err.message : String(err);
+        const sig = `${status}:${routeId}:${errMsg.slice(0, 80)}`;
+        const now = Date.now();
+        if (now - (errorAlertLastSent.get(sig) ?? 0) < ERROR_ALERT_COOLDOWN_MS) return;
+        if (errorAlertsSent >= ERROR_ALERT_MAX_PER_INSTANCE) return;
+        errorAlertLastSent.set(sig, now);
+        errorAlertsSent++;
+
+        const stackHead = err instanceof Error && err.stack
+            ? err.stack.split('\n').slice(0, 8).join('\n').slice(0, 1200)
+            : '';
+        const url = `${event.request.method} ${event.url.pathname}${event.url.search}`;
+        const admins = await getAllSuperAdmins();
+        await Promise.allSettled(admins.map((a) => createItem({
+            category:    'admin_alert',
+            label:       `🌩️ תקלת שרת ${status} - ${routeId}`,
+            description:
+                `תקלה לא-מטופלת הפילה עמוד באתר, והגולש קיבל את עמוד השגיאה.\n\n` +
+                `מזהה תקלה: ${ref} (מוצג לגולש בתחתית עמוד השגיאה)\n` +
+                `כתובת: ${url}\n` +
+                `שגיאה: ${errMsg.slice(0, 300)}\n` +
+                (stackHead ? `\nתחילת ה-stack:\n${stackHead}\n` : '') +
+                `\nהפרטים המלאים בלוג השרת תחת [error ${ref}].`,
+            icon:        '🌩️',
+            color:       'red',
+            user_id:     a.id,
+            extra_fields: {
+                type:          'server_error',
+                ref,
+                status,
+                url:           event.url.pathname + event.url.search,
+                method:        event.request.method,
+                error_message: errMsg.slice(0, 300),
+            },
+        })));
+    } catch (e) {
+        console.warn('[hooks] error alert to admins failed:', e instanceof Error ? e.message : e);
+    }
+}
+
+export const handleError: HandleServerError = async ({ error, event, status, message }) => {
     const ref = Math.random().toString(36).slice(2, 8).toUpperCase();
     // 404 אינו תקלת-אמת — לא מרעישים את הלוג בשבילו
     if (status !== 404) {
@@ -25,6 +83,15 @@ export const handleError: HandleServerError = ({ error, event, status, message }
             `[error ${ref}] ${status} "${message}" @ ${event.request.method} ${event.url.pathname}${event.url.search}`,
         );
         console.error(error instanceof Error ? (error.stack ?? error.message) : error);
+        // בפיתוח לא שולחים — ה-.env המקומי מדבר עם ה-Strapi הייצורי והתיבה תוצף בכל באג.
+        // await (ולא fire-and-forget): על Vercel ה-lambda קופא אחרי שליחת התשובה,
+        // ועבודה תלויה באוויר עלולה להיקטע. תקרת 2.5ש כדי לא לתקוע את עמוד השגיאה.
+        if (process.env.NODE_ENV === 'production') {
+            await Promise.race([
+                notifySuperAdminsOfError(ref, status, event, error),
+                new Promise<void>((resolve) => setTimeout(resolve, 2500)),
+            ]);
+        }
     }
     return { message: message ?? 'Internal Error', ref };
 };
