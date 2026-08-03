@@ -153,6 +153,16 @@
             ],
         },
         {
+            id: "sport",
+            label: "ספורט ופנאי",
+            icon: "🏊",
+            items: [
+                { id: "sport-pool", label: "בריכה שכונתית" },
+                { id: "sport-country", label: "קאנטרי קלאב" },
+                { id: "sport-gym", label: "חדר כושר" },
+            ],
+        },
+        {
             id: "jobs",
             label: "דרושים עובדים",
             icon: "💼",
@@ -380,6 +390,7 @@
         'restaurants': 'map.tip_restaurants',
         'rides':       'map.tip_rides',
         'for_kids':    'map.tip_for_kids',
+        'sport':       'map.tip_sport',
         'jobs':        'map.tip_jobs',
         'singles':     'map.tip_singles',
         'halls':       'map.tip_halls',
@@ -752,6 +763,7 @@
         { suffix: 'art-class',    category: 'education',   icon: '🎨', label: 'map.mock_art_class',    color: 'purple' },
         { suffix: 'giveaway',     category: 'giveaway',    icon: '🛋️', label: 'map.mock_giveaway',     color: 'teal' },
         { suffix: 'attraction',   category: 'attractions', icon: '🏛️', label: 'map.mock_attraction',   color: 'green' },
+        { suffix: 'sport-pool',   category: 'sport',       icon: '🏊', label: 'map.mock_pool',         color: 'sky' },
     ];
 
     let dynamicMarkers = $derived.by(() => {

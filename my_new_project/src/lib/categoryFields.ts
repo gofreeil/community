@@ -401,6 +401,33 @@ export const categoryConfig: Record<string, CategoryConfig> = {
         ],
     },
 
+    sport: {
+        label: 'ספורט ופנאי',
+        icon: '🏊',
+        color: 'sky',
+        priceRow: 2,
+        addPageTitle: 'הוספת מקום ספורט ופנאי',
+        // פרסום דו-שלבי כמו שאר קטגוריות המפה: שלב-המפה (שם, סוג, כתובת, סימון)
+        // נאסף בטופס ההוספה, והשאר (שעות, הפרדה, מחירים, תמונות...) מושלם בדף הפריט.
+        mapFirst: true,
+        fields: [
+            { key: 'label',       label: 'שם המקום',                 type: 'text',     required: true,  placeholder: 'בריכת השכונה, קאנטרי קלאב...' },
+            { key: 'type',        label: 'סוג המקום (אפשר לבחור כמה)', type: 'multi_select', required: true, options: ['בריכה', 'קאנטרי קלאב', 'חדר כושר', 'מגרש ספורט', 'סטודיו', 'אחר'] },
+            { key: 'address',     label: 'כתובת',                    type: 'address',  required: true,  placeholder: 'שם הרחוב' },
+            { key: 'location',    label: 'סימון על המפה',            type: 'map_pin',  required: false },
+            { key: 'phone',       label: 'טלפון',                    type: 'tel',      required: true,  placeholder: '05X-XXXXXXX' },
+            { key: 'hours',       label: 'שעות פעילות',              type: 'opening_hours', required: false },
+            { key: 'separation',  label: 'הפרדה',                    type: 'select',   required: false, options: ['ללא הפרדה', 'הפרדה מלאה', 'שעות נפרדות לנשים ולגברים'], hint: 'אם יש שעות הפרדה - פרטו אותן בתיאור' },
+            { key: 'price_entry', label: 'מחיר כניסה (₪)',           type: 'number',   required: false, placeholder: '35', half: true },
+            { key: 'price_month', label: 'מנוי חודשי (₪)',            type: 'number',   required: false, placeholder: '250', half: true },
+            { key: 'amenities',   label: 'מתקנים ושירותים',           type: 'textarea', required: false, placeholder: 'בריכה מקורה, ג׳קוזי, סאונה, חוגי שחייה, מגרש כדורסל...' },
+            { key: 'description', label: 'תיאור',                    type: 'textarea', required: false, placeholder: 'ספרו על המקום, על המתקנים ועל קהל היעד...' },
+            { key: 'images',      label: 'תמונות (עד 5)',             type: 'images',   required: false, hint: 'הוסיפו תמונות של המקום. סמנו אחת כתמונה ראשית.' },
+            { key: 'website',     label: 'אתר אינטרנט',               type: 'text',     required: false, placeholder: 'https://example.com', hint: 'יוצג רק בדף המורחב' },
+            { key: 'contact',     label: 'שם איש קשר',                type: 'text',     required: false, placeholder: 'שם מלא' },
+        ],
+    },
+
     'safe-space': {
         label: 'מרחב מוגן',
         icon: '🛡️',
