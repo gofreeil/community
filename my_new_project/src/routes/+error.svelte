@@ -7,7 +7,6 @@
 	// 404 = עמוד לא נמצא, 403 = אין הרשאה, כל השאר = תקלת שרת (500)
 	let status = $derived(page.status ?? 500);
 	let kind = $derived(status === 404 ? "404" : status === 403 ? "403" : "500");
-	let emoji = $derived(status === 404 ? "🧭" : status === 403 ? "🔒" : "🌩️");
 
 	// מזהה תקלה שהוחזר מ-handleError (אם קיים) — לשיוך מול לוג התמיכה
 	let ref = $derived((page.error as { ref?: string } | null)?.ref ?? "");
@@ -22,7 +21,17 @@
 </svelte:head>
 
 <div class="min-h-[60vh] flex flex-col items-center justify-center text-center px-6 py-16">
-	<div class="text-7xl md:text-8xl mb-6 select-none" aria-hidden="true">{emoji}</div>
+	<!-- מיתוג: לוגו + שם האתר במקום אימוג'י — שהעמוד לא ייקרא כהודעת מערכת של הדפדפן/גוגל -->
+	<a href="/" class="flex flex-col items-center gap-3 mb-7 select-none transition-transform hover:scale-105">
+		<div class="h-20 w-20 md:h-24 md:w-24 rounded-full overflow-hidden shadow-lg">
+			<img
+				src="/images/community-logo1.webp"
+				alt=""
+				class="w-full h-full object-cover scale-[1.2]"
+			/>
+		</div>
+		<span class="text-lg md:text-xl font-black text-white">{$_("welcome")}</span>
+	</a>
 
 	<p class="text-xs font-bold tracking-[0.3em] text-purple-400/80 mb-3 uppercase">
 		{$_("errors.code_label")} · {status}
