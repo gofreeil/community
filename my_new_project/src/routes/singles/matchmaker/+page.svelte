@@ -234,7 +234,7 @@
                         <!-- פעולת ההמלצה -->
                         <div class="px-3 py-2.5 border-t border-white/10 bg-white/[0.02]">
                             {#if st === 'done'}
-                                <p class="text-center text-emerald-300 text-sm font-bold">✓ נשלחה המלצה לשני הצדדים</p>
+                                <p class="text-center text-emerald-300 text-sm font-bold">✓ השידוך נוצר — שני הצדדים קיבלו התראה להחליט</p>
                             {:else}
                                 <button
                                     type="button"
@@ -242,7 +242,7 @@
                                     disabled={st === 'sending'}
                                     class="w-full bg-gradient-to-r from-rose-600 to-pink-500 hover:from-rose-500 hover:to-pink-400 disabled:opacity-50 text-white font-bold py-2.5 rounded-xl transition-all text-sm shadow-lg shadow-rose-500/20"
                                 >
-                                    {st === 'sending' ? 'שולח...' : '💌 המלץ להם לראות זה את זה'}
+                                    {st === 'sending' ? 'משדך...' : '💘 חבר כרטיסים ושלח לשניהם'}
                                 </button>
                                 {#if st === 'error'}
                                     <p class="text-center text-red-400 text-xs mt-1.5">שגיאה בשליחה — נסו שוב</p>
