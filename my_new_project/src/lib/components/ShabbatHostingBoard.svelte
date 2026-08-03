@@ -184,6 +184,11 @@
         return [...arr].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     }
 
+    // מזהי מודעות שהוסרו הרגע ע"י הבעלים (freeze) - מוסתרות מיידית בלי רענון.
+    // מוכרז לפני filteredHosts שקורא אותו: ב-SSR ה-$derived מחושב מיידית לפי סדר
+    // הקוד, והפניה לפני ההכרזה מפילה את הדף ב-ReferenceError (500).
+    let removedItemIds = $state<string[]>([]);
+
     let viewerIsHost = $derived(userId ? items.some(i => i.user_id === userId && isHost(i)) : false);
     let filteredGuests = $derived(sortByNewest(items.filter(i => !isHost(i) && !isExpired(i.created_at))));
     let filteredHosts = $derived(
@@ -284,7 +289,6 @@
 
     // --- הסרת מודעה (freeze) על ידי הבעלים מהלוח הציבורי ---
     let removingItemId = $state<string | null>(null);
-    let removedItemIds = $state<string[]>([]);
     let showFrozenInfoModal = $state(false);
 
     async function removeOwnAd(item: DbItem) {

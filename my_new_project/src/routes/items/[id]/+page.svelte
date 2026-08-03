@@ -326,6 +326,11 @@
     const shabbatMinyanim  = $derived<ScheduleRow[]>(activities.filter(a => SHABBAT_KEYS.includes(a.type)));
     const otherActivities  = $derived<ScheduleRow[]>(activities.filter(a => !ALL_PRAYER_KEYS.includes(a.type)));
 
+    // עדכונים חיים של שדות הפרטים (CategoryDetailsEditor) - כדי שהתצוגה תתעדכן מיד.
+    // חייב להיות מוכרז לפני כל $derived שקורא אותו: ב-SSR ה-$derived מחושב מיידית
+    // לפי סדר הקוד, והפניה לפני ההכרזה מפילה את כל הדף ב-ReferenceError (500).
+    let liveExtra = $state<Record<string, unknown>>({});
+
     // שעות פתיחה (extra_fields.hours) - מוצג תחת "לוח פעילויות ושעות" (לא תחת "פרטים נוספים").
     // כל קבוצת ימים בשורה נפרדת - לקריאות בתצוגה הסופית.
     const openingHoursLines = $derived.by<string[]>(() => {
@@ -776,9 +781,6 @@
         startEditLinks();
         addDraftLink();
     }
-
-    // עדכונים חיים של שדות הפרטים (CategoryDetailsEditor) - כדי שהתצוגה תתעדכן מיד
-    let liveExtra = $state<Record<string, unknown>>({});
 
     // ---- שעות קבלת קהל / פתיחה (שדה hours מסוג opening_hours) ----
     // עורך "משעה-עד-שעה" + ＋ מוצג ישירות בקטע "לוח פעילויות ושעות" במצב בנייה,
