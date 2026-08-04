@@ -7,9 +7,11 @@
 
     type MiniCard = {
         id: string; nickname: string; gender: Gender; age: string; city: string;
-        religiosity: string; maritalStatus: string; education: string; interests: string;
+        // maritalStatus/education/interests/images אופציונליים גם ב-SingleProfile —
+        // הכרטיס מהשרת מגיע איתם כ-undefined אפשרי, והתבנית ממילא עטופה ב-{#if}
+        religiosity: string; maritalStatus?: string; education?: string; interests?: string;
         description: string; lookingFor: string; inspiration: string;
-        images: string[]; avatar: string;
+        images?: string[]; avatar: string;
     };
 
     // מצב מקומי לצד "פנוי/ה" — מתעדכן אחרי החלטה בלי רענון.
