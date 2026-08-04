@@ -368,12 +368,14 @@
 				{data.incompleteCount
 					? 'border-orange-500/30 bg-gradient-to-br from-orange-600/15 to-orange-500/5 hover:border-orange-400/60'
 					: 'border-emerald-500/25 bg-gradient-to-br from-emerald-600/15 to-emerald-500/5 hover:border-emerald-400/50'}">
+				<!-- הכרטיס היחיד עם שורה שלישית - לכן הכיתובים והאימוג'י צמודים
+				     יותר, כדי שגובהו יישאר זהה לשאר כרטיסי הבאנר -->
 				<div class="relative">
-					<div class="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-bold mb-1 {data.incompleteCount ? 'text-orange-200/80' : 'text-emerald-200/80'}">
-						<span class="text-base sm:text-lg">🧩</span> נכסים להשלמה
+					<div class="flex items-center gap-1.5 text-xs sm:text-sm font-bold leading-tight mb-0.5 {data.incompleteCount ? 'text-orange-200/80' : 'text-emerald-200/80'}">
+						<span class="text-xs sm:text-sm">🧩</span> נכסים להשלמה
 					</div>
 					<div class="text-3xl sm:text-4xl font-black text-white leading-none">{data.incompleteCount}</div>
-					<div class="text-[11px] text-gray-400 mt-1">
+					<div class="text-[10px] sm:text-[11px] text-gray-400 leading-tight mt-0.5">
 						{data.incompleteCount ? 'מיקום חסר או לא מזוהה' : 'כל הפריטים משויכים'}
 					</div>
 				</div>
