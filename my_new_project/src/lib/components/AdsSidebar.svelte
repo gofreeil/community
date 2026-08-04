@@ -1,6 +1,7 @@
 <script lang="ts">
     import { ads, type Ad } from '$lib/adsData';
     import { _ } from 'svelte-i18n';
+    import { adImgFit, parseAdImageFit, type AdImageFit } from '$lib/adImageFit';
 
     type ApprovedAd = {
         id: string;
@@ -10,6 +11,8 @@
         hover: string;
         gradient: string;
         mainImage: string;
+        /** מיקום+זום מהבילדר; אופציונלי — מודעות ישנות נשמרו בלעדיו */
+        mainImageFit?: AdImageFit;
     };
 
     let { approvedAds = [] }: { approvedAds?: ApprovedAd[] } = $props();
@@ -27,6 +30,7 @@
             image: a.mainImage,
             color: a.gradient,
             imageHeight: undefined as string | undefined,
+            fit: a.mainImageFit as AdImageFit | undefined,
         })),
         ...ads.map(a => ({
             id: String(a.id),
@@ -39,6 +43,7 @@
             image: a.image,
             color: a.color,
             imageHeight: a.imageHeight,
+            fit: undefined as AdImageFit | undefined,
         })),
     ]);
 </script>
@@ -61,12 +66,14 @@
             >
                 <div class="relative overflow-hidden" style="height: {ad.imageHeight ?? '160px'}">
                     <div class="absolute inset-0 overflow-hidden">
+                        <!-- המיקום/זום שנבחרו בבילדר מוחלים גם כאן — הדמו הוא מה שרואים -->
                         <img
                             src={ad.image}
                             alt={ad.title}
                             loading="lazy"
                             decoding="async"
                             class="w-full h-full object-cover transition-opacity duration-[1500ms] group-hover:opacity-0"
+                            use:adImgFit={parseAdImageFit(ad.fit)}
                         />
                     </div>
                     <div

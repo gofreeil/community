@@ -13,6 +13,7 @@ export const GET: RequestHandler = async () => {
         hover: a.hoverText,
         gradient: a.gradient,
         mainImage: a.mainImage,
+        mainImageFit: a.mainImageFit,
     }));
     return json(slim);
 };

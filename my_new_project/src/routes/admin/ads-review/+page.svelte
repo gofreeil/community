@@ -4,6 +4,7 @@
     import { invalidateAll } from '$app/navigation';
     import { onMount, onDestroy } from 'svelte';
     import { heMatches } from '$lib/search';
+    import { adImgFit, parseAdImageFit } from '$lib/adImageFit';
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
 
@@ -254,8 +255,12 @@
                         {/if}
 
                         {#if ad.mainImage}
-                            <img src={ad.mainImage} alt={ad.title}
-                                 class="w-full md:w-40 h-32 md:h-40 object-cover rounded-xl border border-white/10 flex-shrink-0" />
+                            <!-- אותו מיקום/זום שהמפרסם קבע בבילדר — המנהל מאשר את מה שבאמת יוצג -->
+                            <div class="relative overflow-hidden w-full md:w-40 h-32 md:h-40 rounded-xl border border-white/10 flex-shrink-0">
+                                <img src={ad.mainImage} alt={ad.title}
+                                     class="w-full h-full object-cover"
+                                     use:adImgFit={parseAdImageFit(ad.mainImageFit)} />
+                            </div>
                         {/if}
 
                         <div class="flex-1 min-w-0">

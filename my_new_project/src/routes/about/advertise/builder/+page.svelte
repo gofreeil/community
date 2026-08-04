@@ -4,6 +4,7 @@
     import { browser } from "$app/environment";
     import { goto } from "$app/navigation";
     import { _ } from "svelte-i18n";
+    import { adImgFit, AD_ZOOM_MIN, AD_ZOOM_MAX } from "$lib/adImageFit";
 
     // ===== Page payload (logged-in user prefill + admin status) =====
     let { data } = $props<{
@@ -149,6 +150,9 @@
     let mainImage       = $state<string>("");                  // base64 data url
     let mainImageObjectX = $state<number>(50);                  // object-position X (0-100) for cropping
     let mainImageObjectY = $state<number>(50);                  // object-position Y (0-100) for cropping
+    let mainImageZoom    = $state<number>(1);                   // 1 = cover; >1 תקריב, <1 התרחקות
+    // ה-fit המאוחד שמוזרם לכל התצוגות (וגם נשמר עם המודעה בשליחה)
+    let mainImageFit = $derived({ x: mainImageObjectX, y: mainImageObjectY, z: mainImageZoom });
     let title           = $state<string>("");
     let titleColor      = $state<string>("#ffffff");
     let titleOffsetY    = $state<number>(0);                    // vertical offset for title on banner (-20..+60 px)
@@ -391,13 +395,17 @@
             alert($_('advertise.b_upload_image_file'));
             return;
         }
-        const MAX_BYTES = 5 * 1024 * 1024;
+        // המודעה כולה (כל התמונות כ-data-URI) נשלחת ל-Strapi בבקשת JSON אחת
+        // שמוגבלת ל-~1MB (koa-body) — לכן כל תמונה מכווצת כבר כאן להרבה
+        // פחות מזה, ולא ל-5MB כפי שהיה (מה שהפיל את השליחה ב-413).
+        const MAX_BYTES = 450 * 1024;
         const { dataUrl: url, wasCompressed, originalMB, finalMB } = await compressImageToFit(file, MAX_BYTES);
         if (wasCompressed) showCompressNotice(originalMB, finalMB);
         if (target === "main") {
             mainImage = url;
             mainImageObjectX = 50;       // reset position on new upload
             mainImageObjectY = 50;
+            mainImageZoom = 1;
             // Don't auto-advance - let the user crop/position the image with the arrows
             // and click the explicit "next step" button when ready.
         } else if (target === "logo") {
@@ -424,7 +432,7 @@
     }
 
     function clearImage(target: "main" | "logo" | "landingImage") {
-        if (target === "main") { mainImage = ""; mainImageObjectX = 50; mainImageObjectY = 50; }
+        if (target === "main") { mainImage = ""; mainImageObjectX = 50; mainImageObjectY = 50; mainImageZoom = 1; }
         else if (target === "landingImage") landingImage = "";
         else { logo = ""; logoOriginal = ""; hasCircleCrop = false; }
     }
@@ -434,6 +442,12 @@
         if (dir === "down")  mainImageObjectY = Math.min(100, mainImageObjectY + STEP);
         if (dir === "left")  mainImageObjectX = Math.max(0, mainImageObjectX - STEP);
         if (dir === "right") mainImageObjectX = Math.min(100, mainImageObjectX + STEP);
+    }
+    /** זום פנימה/החוצה בצעדים יחסיים; 1 = מילוי המשבצת (cover) */
+    function zoomMainImage(dir: "in" | "out") {
+        const FACTOR = 1.15;
+        const next = dir === "in" ? mainImageZoom * FACTOR : mainImageZoom / FACTOR;
+        mainImageZoom = Math.round(Math.min(AD_ZOOM_MAX, Math.max(AD_ZOOM_MIN, next)) * 100) / 100;
     }
 
     async function handleProductImage(e: Event, id: number) {
@@ -591,6 +605,7 @@
                 mainImage       = d.mainImage ?? "";
                 mainImageObjectX = typeof d.mainImageObjectX === 'number' ? d.mainImageObjectX : 50;
                 mainImageObjectY = typeof d.mainImageObjectY === 'number' ? d.mainImageObjectY : 50;
+                mainImageZoom    = typeof d.mainImageZoom === 'number' ? d.mainImageZoom : 1;
                 title           = d.title ?? "";
                 titleOffsetY    = typeof d.titleOffsetY === 'number' ? d.titleOffsetY : 0;
                 subtitle        = d.subtitle ?? "";
@@ -647,7 +662,7 @@
     $effect(() => {
         if (!browser) return;
         const snapshot = {
-            logo, logoOriginal, hasCircleCrop, logoShape, logoPosition, logoPositionExplicit, mainImage, mainImageObjectX, mainImageObjectY, title, titleOffsetY, subtitle, hoverText, cta, gradient, diagHeight,
+            logo, logoOriginal, hasCircleCrop, logoShape, logoPosition, logoPositionExplicit, mainImage, mainImageObjectX, mainImageObjectY, mainImageZoom, title, titleOffsetY, subtitle, hoverText, cta, gradient, diagHeight,
             landingHeadline, landingPitch, landingExtended, landingImage, landingAdvantages, uniqueness, phone, whatsapp, website,
             email, address, hours, products,
         };
@@ -841,7 +856,7 @@
                         {$_('advertise.b_ct_title')}
                     </p>
                     <p class="text-gray-100 text-xs md:text-sm leading-relaxed">
-                        {$_('advertise.b_ct_p1')}<strong class="text-amber-200">{$_('advertise.b_mb', { values: { n: 5 } })}</strong>.
+                        {$_('advertise.b_ct_p1')}<strong class="text-amber-200">{$_('advertise.b_mb', { values: { n: 0.45 } })}</strong>.
                         {$_('advertise.b_ct_p2')} <strong class="text-amber-200">{$_('advertise.b_mb', { values: { n: compressNotice.originalMB.toFixed(1) } })}</strong>
                         {$_('advertise.b_ct_p3')}<strong class="text-amber-200">{$_('advertise.b_mb', { values: { n: compressNotice.finalMB.toFixed(1) } })}</strong>.
                         <br/>
@@ -960,14 +975,17 @@
                 {#if mainImage}
                     <img src={mainImage} alt={$_('advertise.b_main_image_alt')}
                          style:object-fit="cover"
-                         style:object-position="{mainImageObjectX}% {mainImageObjectY}%" />
+                         style:object-position="{mainImageObjectX}% {mainImageObjectY}%"
+                         use:adImgFit={mainImageFit} />
                     <button type="button" class="remove-x" onclick={(e) => { e.preventDefault(); clearImage("main"); }} aria-label={$_('advertise.b_remove_image')}>✕</button>
                     <!-- Directional crop nudges - let user position the image inside the demo frame -->
                     <button type="button" class="crop-arrow crop-arrow-up"    onclick={(e) => { e.preventDefault(); nudgeMainImage("up"); }}    aria-label={$_('advertise.b_nudge_up')}>▲</button>
                     <button type="button" class="crop-arrow crop-arrow-down"  onclick={(e) => { e.preventDefault(); nudgeMainImage("down"); }}  aria-label={$_('advertise.b_nudge_down')}>▼</button>
                     <button type="button" class="crop-arrow crop-arrow-left"  onclick={(e) => { e.preventDefault(); nudgeMainImage("left"); }}  aria-label={$_('advertise.b_nudge_left')}>◀</button>
                     <button type="button" class="crop-arrow crop-arrow-right" onclick={(e) => { e.preventDefault(); nudgeMainImage("right"); }} aria-label={$_('advertise.b_nudge_right')}>▶</button>
-                    <button type="button" class="crop-reset" onclick={(e) => { e.preventDefault(); mainImageObjectX = 50; mainImageObjectY = 50; }} aria-label={$_('advertise.b_reset_pos')}>⊙</button>
+                    <button type="button" class="crop-reset" onclick={(e) => { e.preventDefault(); mainImageObjectX = 50; mainImageObjectY = 50; mainImageZoom = 1; }} aria-label={$_('advertise.b_reset_pos')}>⊙</button>
+                    <button type="button" class="crop-zoom zoom-in"  onclick={(e) => { e.preventDefault(); zoomMainImage("in"); }}  aria-label={$_('advertise.b_zoom_in')}>＋</button>
+                    <button type="button" class="crop-zoom zoom-out" onclick={(e) => { e.preventDefault(); zoomMainImage("out"); }} aria-label={$_('advertise.b_zoom_out')}>－</button>
                 {:else}
                     <div class="upload-empty">
                         <div class="text-4xl mb-2">📸</div>
@@ -1361,7 +1379,7 @@
                             </div>
                             <div class="popup-img pro-img-wrap">
                                 {#if mainImage}
-                                    <img src={mainImage} alt={title} />
+                                    <img src={mainImage} alt={title} use:adImgFit={mainImageFit} />
                                 {:else}
                                     <div class="img-placeholder">{$_('advertise.b_main_image_alt')}</div>
                                 {/if}
@@ -1406,7 +1424,7 @@
                         >
                             <div class="ad-img-wrap pro-img-wrap clean-card-img">
                                 {#if mainImage}
-                                    <img src={mainImage} alt={title} class="ad-img" style:opacity={showHover ? 0 : 1} />
+                                    <img src={mainImage} alt={title} class="ad-img" style:opacity={showHover ? 0 : 1} style:object-position="{mainImageObjectX}% {mainImageObjectY}%" use:adImgFit={mainImageFit} />
                                 {:else}
                                     <div class="img-placeholder">{$_('advertise.b_img_placeholder')}</div>
                                 {/if}
@@ -1486,7 +1504,8 @@
                     {#if mainImage}
                         <img src={mainImage} alt={title} class="ad-img"
                              style:object-position="{mainImageObjectX}% {mainImageObjectY}%"
-                             style:opacity={activeStep === "hover" ? 0 : 1} />
+                             style:opacity={activeStep === "hover" ? 0 : 1}
+                             use:adImgFit={mainImageFit} />
                     {:else}
                         <div class="placeholder-dashed placeholder-img" style:opacity={activeStep === "hover" ? 0 : 1}>
                             <div class="placeholder-icon">📸</div>
@@ -1793,7 +1812,9 @@
         overflow: hidden;
     }
     :global(.upload-zone:hover) { border-color: rgba(245, 158, 11, 0.7); background: rgba(245, 158, 11, 0.08); }
-    :global(.upload-zone.has-image) { border-style: solid; padding: 0; }
+    /* גובה קבוע כשיש תמונה: התמונה ממוקמת אבסולוטית (adImgFit) ולא
+       קובעת יותר את גובה האזור בעצמה */
+    :global(.upload-zone.has-image) { border-style: solid; padding: 0; height: 280px; }
     :global(.upload-zone img) { width: 100%; height: 100%; min-height: 200px; max-height: 280px; object-fit: cover; }
     :global(.upload-empty) { text-align: center; padding: 1rem; }
     :global(.upload-zone.dragging) {
@@ -2182,6 +2203,26 @@
         transition: background 150ms, transform 150ms;
     }
     :global(.crop-reset:hover) { background: rgba(245,158,11,0.85); color: black; transform: translate(-50%, -50%) scale(1.12); }
+    :global(.crop-zoom) {
+        position: absolute;
+        background: rgba(0,0,0,0.5);
+        border: 1px solid rgba(255,255,255,0.5);
+        color: white;
+        width: 32px; height: 32px;
+        border-radius: 50%;
+        font-size: 1.05rem;
+        font-weight: 700;
+        line-height: 1;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+        z-index: 4;
+        backdrop-filter: blur(4px);
+        transition: background 150ms, transform 150ms;
+        padding: 0;
+    }
+    :global(.crop-zoom:hover) { background: rgba(245,158,11,0.85); color: black; transform: scale(1.12); }
+    :global(.crop-zoom.zoom-in)  { bottom: 8px; right: 8px; }
+    :global(.crop-zoom.zoom-out) { bottom: 8px; left: 8px; }
     :global(.crop-hint) {
         font-size: 0.75rem;
         color: rgb(156,163,175);
@@ -2736,11 +2777,15 @@
         border-color: white;
         box-shadow: 0 0 0 3px rgba(255,255,255,0.22), 0 4px 12px rgba(0,0,0,0.45);
     }
-    /* On narrow screens - flatten into a 9×2 horizontal strip */
+    /* בנייד הרוחב נגזר מהמסך ולא ממספר עמודות קבוע — פלטה רחבה מדי
+       גלשה אל מחוץ לכרטיס במסכים צרים */
     @media (max-width: 640px) {
         :global(.color-rail) {
-            grid-template-columns: repeat(9, 28px);
+            grid-template-columns: repeat(auto-fit, 28px);
             grid-auto-rows: 28px;
+            width: 100%;
+            max-width: 100%;
+            justify-content: center;
         }
     }
 

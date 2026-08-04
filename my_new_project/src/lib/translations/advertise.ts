@@ -273,11 +273,13 @@ export const he = {
         b_nudge_down: "הזז למטה",
         b_nudge_left: "הזז שמאלה",
         b_nudge_right: "הזז ימינה",
-        b_reset_pos: "אפס מיקום",
+        b_reset_pos: "אפס מיקום וזום",
+        b_zoom_in: "זום פנימה",
+        b_zoom_out: "זום החוצה",
         b_drop_here: "✨ שחרר כאן",
         b_click_or_drag: "לחץ או גרור תמונה לכאן",
-        b_upload_note: "כל סוגי התמונה - עד 5 מגה (גדול יותר → נקטין אוטומטית)",
-        b_crop_hint: "השתמש בחיצים השקופים שעל התמונה כדי להזיז את התוכן בתוך מסגרת הדמו (חצים ←↑↓→). לאיפוס לחץ ⊙.",
+        b_upload_note: "כל סוגי התמונה (תמונה גדולה → נקטין אוטומטית)",
+        b_crop_hint: "השתמש בחיצים השקופים שעל התמונה כדי להזיז את התוכן בתוך מסגרת הדמו (חצים ←↑↓→), וב-＋/－ כדי להתקרב או להתרחק. לאיפוס לחץ ⊙.",
         b_done_centering: "סיימתי למרכז - המשך לשלב הבא ←",
 
         // ===== builder — שלב 2: לוגו =====
@@ -508,6 +510,7 @@ export const he = {
         l_err_status: "שגיאה {n}",
         l_err_generic: "נסה שוב בעוד רגע",
         l_err_network: "בעיית תקשורת — בדוק את חיבור האינטרנט ונסה שוב",
+        l_err_too_heavy: "התמונות כבדות מדי לשליחה אחת - הקטינו את התמונה הראשית או תמונות המוצרים ונסו שוב",
     },
 };
 
@@ -782,11 +785,13 @@ export const en = {
         b_nudge_down: "Move down",
         b_nudge_left: "Move left",
         b_nudge_right: "Move right",
-        b_reset_pos: "Reset position",
+        b_reset_pos: "Reset position and zoom",
+        b_zoom_in: "Zoom in",
+        b_zoom_out: "Zoom out",
         b_drop_here: "✨ Drop it here",
         b_click_or_drag: "Click or drag an image here",
-        b_upload_note: "Any image type - up to 5 MB (larger → shrunk automatically)",
-        b_crop_hint: "Use the transparent arrows on the image to move the content within the demo frame (←↑↓→). Click ⊙ to reset.",
+        b_upload_note: "Any image type (larger images → shrunk automatically)",
+        b_crop_hint: "Use the transparent arrows on the image to move the content within the demo frame (←↑↓→), and ＋/－ to zoom in or out. Click ⊙ to reset.",
         b_done_centering: "Done centering - continue to the next step ←",
 
         // ===== builder — step 2: logo =====
@@ -1017,6 +1022,7 @@ export const en = {
         l_err_status: "Error {n}",
         l_err_generic: "Please try again in a moment",
         l_err_network: "Connection problem — check your internet connection and try again",
+        l_err_too_heavy: "The images are too heavy for a single submission - reduce the main image or product images and try again",
     },
 };
 
@@ -1291,11 +1297,13 @@ export const ru = {
         b_nudge_down: "Сдвинуть вниз",
         b_nudge_left: "Сдвинуть влево",
         b_nudge_right: "Сдвинуть вправо",
-        b_reset_pos: "Сбросить позицию",
+        b_reset_pos: "Сбросить позицию и зум",
+        b_zoom_in: "Приблизить",
+        b_zoom_out: "Отдалить",
         b_drop_here: "✨ Отпустите здесь",
         b_click_or_drag: "Нажмите или перетащите изображение сюда",
-        b_upload_note: "Любые форматы изображений - до 5 МБ (больше → уменьшим автоматически)",
-        b_crop_hint: "Используйте прозрачные стрелки на изображении, чтобы сдвинуть содержимое в рамке демо (←↑↓→). Для сброса нажмите ⊙.",
+        b_upload_note: "Любые форматы изображений (большие → уменьшим автоматически)",
+        b_crop_hint: "Используйте прозрачные стрелки на изображении, чтобы сдвинуть содержимое в рамке демо (←↑↓→), и ＋/－ для приближения или отдаления. Для сброса нажмите ⊙.",
         b_done_centering: "Закончил центрировать - к следующему шагу ←",
 
         // ===== builder — шаг 2: логотип =====
@@ -1526,5 +1534,6 @@ export const ru = {
         l_err_status: "Ошибка {n}",
         l_err_generic: "Попробуйте ещё раз чуть позже",
         l_err_network: "Проблема со связью — проверьте подключение к интернету и попробуйте снова",
+        l_err_too_heavy: "Изображения слишком тяжёлые для одной отправки - уменьшите главное изображение или фото товаров и попробуйте снова",
     },
 };

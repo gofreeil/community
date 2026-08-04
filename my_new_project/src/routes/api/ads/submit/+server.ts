@@ -1,6 +1,7 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { submitAd } from '$lib/server/adsStore';
+import { parseAdImageFit } from '$lib/adImageFit';
 
 export const POST: RequestHandler = async (event) => {
     const session = await event.locals.auth().catch(() => null);
@@ -22,7 +23,9 @@ export const POST: RequestHandler = async (event) => {
         throw error(400, 'חסר אובייקט landing');
     }
 
-    const ad = await submitAd({
+    let ad;
+    try {
+        ad = await submitAd({
         submittedBy: session?.user
             ? { id: session.user.id, email: session.user.email ?? undefined, name: session.user.name ?? undefined }
             : undefined,
@@ -33,6 +36,8 @@ export const POST: RequestHandler = async (event) => {
         gradient: payload.gradient,
         logo: payload.logo ?? '',
         mainImage: payload.mainImage,
+        // מיקום+זום שנבחרו בבילדר — מנורמלים כאן, קלט דפדפן הוא לא-אמין
+        mainImageFit: parseAdImageFit(payload.mainImageFit),
         landing: {
             headline: payload.landing.headline ?? '',
             pitch: payload.landing.pitch ?? '',
@@ -52,7 +57,15 @@ export const POST: RequestHandler = async (event) => {
             hours: payload.landing.hours ?? '',
             products: Array.isArray(payload.landing.products) ? payload.landing.products : [],
         },
-    });
+        });
+    } catch (err) {
+        console.error('ads/submit failed:', err);
+        // תקרת koa-body של Strapi (~1MB) — שגיאה שהמפרסם יכול לתקן בעצמו
+        if (err instanceof Error && err.message.includes('→ 413')) {
+            throw error(413, 'התמונות כבדות מדי — הקטינו תמונה ונסו שוב');
+        }
+        throw error(502, 'השליחה נכשלה — נסו שוב בעוד רגע');
+    }
 
     return json({ ok: true, id: ad.id, status: ad.status });
 };
