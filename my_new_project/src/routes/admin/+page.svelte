@@ -333,24 +333,8 @@
 				</div>
 			</a>
 
-			<!-- נכסים להשלמה — פריטים שהמיקום שלהם חסר/לא מזוהה ולכן אינם
-			     מופיעים בלוח השכונתי הנכון. אפס = הכל מושלם. -->
-			<a href="/admin/incomplete" class="relative overflow-hidden rounded-2xl border p-3 sm:p-4 block transition-all
-				{data.incompleteCount
-					? 'border-orange-500/30 bg-gradient-to-br from-orange-600/15 to-orange-500/5 hover:border-orange-400/60'
-					: 'border-emerald-500/25 bg-gradient-to-br from-emerald-600/15 to-emerald-500/5 hover:border-emerald-400/50'}">
-				<div class="relative">
-					<div class="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-bold mb-1 {data.incompleteCount ? 'text-orange-200/80' : 'text-emerald-200/80'}">
-						<span class="text-base sm:text-lg">📍</span> נכסים להשלמה
-					</div>
-					<div class="text-3xl sm:text-4xl font-black text-white leading-none">{data.incompleteCount}</div>
-					<div class="text-[11px] text-gray-400 mt-1">
-						{data.incompleteCount ? 'מיקום חסר או לא מזוהה' : 'כל הפריטים משויכים'}
-					</div>
-				</div>
-			</a>
-
-			<!-- רכזים — כל הכרטיס כפתור לסקציית רכזי השכונות באותו דף -->
+			<!-- רכזים — כל הכרטיס כפתור לסקציית רכזי השכונות באותו דף.
+			     בלי אימוג'י בכותרת: לכרטיס כבר יש תמונה משלו. -->
 			<a href="#coordinators" onclick={() => (activeTab = 'users')} class="relative overflow-hidden rounded-2xl border border-amber-500/25 bg-gradient-to-br from-amber-600/15 to-amber-500/5 p-3 sm:p-4 block hover:border-amber-400/50 transition-all">
 				<img
 					src="/images/rakaz-shchuna.webp"
@@ -358,9 +342,7 @@
 					class="pointer-events-none absolute left-1.5 sm:left-2 inset-y-0 my-auto h-12 w-12 sm:h-[84px] sm:w-[84px] rounded-xl sm:rounded-2xl object-cover object-top ring-1 ring-white/20 shadow-lg"
 				/>
 				<div class="relative pe-[54px] sm:pe-[92px]">
-					<div class="flex items-center gap-1.5 sm:gap-2 text-amber-200/80 text-xs sm:text-sm font-bold mb-1">
-						<span class="text-base sm:text-lg">🏘️</span> רכזי שכונות
-					</div>
+					<div class="text-amber-200/80 text-xs sm:text-sm font-bold mb-1">רכזי שכונות</div>
 					<div class="text-3xl sm:text-4xl font-black text-white leading-none">{dash.totalCoordinators}</div>
 				</div>
 			</a>
@@ -376,6 +358,24 @@
 				<div class="relative pe-[54px] sm:pe-[92px]">
 					<div class="text-sky-200/80 text-xs sm:text-sm font-bold mb-1">כניסות</div>
 					<div class="text-3xl sm:text-4xl font-black text-white leading-none">{dash.monthlyVisits}</div>
+				</div>
+			</a>
+
+			<!-- נכסים להשלמה — פריטים שהמיקום שלהם חסר/לא מזוהה ולכן אינם
+			     מופיעים בלוח השכונתי הנכון. אפס = הכל מושלם.
+			     אחרון בשורה: זה כרטיס "מה נשאר לעשות", לא מונה סטטיסטי. -->
+			<a href="/admin/incomplete" class="relative overflow-hidden rounded-2xl border p-3 sm:p-4 block transition-all
+				{data.incompleteCount
+					? 'border-orange-500/30 bg-gradient-to-br from-orange-600/15 to-orange-500/5 hover:border-orange-400/60'
+					: 'border-emerald-500/25 bg-gradient-to-br from-emerald-600/15 to-emerald-500/5 hover:border-emerald-400/50'}">
+				<div class="relative">
+					<div class="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-bold mb-1 {data.incompleteCount ? 'text-orange-200/80' : 'text-emerald-200/80'}">
+						<span class="text-base sm:text-lg">🧩</span> נכסים להשלמה
+					</div>
+					<div class="text-3xl sm:text-4xl font-black text-white leading-none">{data.incompleteCount}</div>
+					<div class="text-[11px] text-gray-400 mt-1">
+						{data.incompleteCount ? 'מיקום חסר או לא מזוהה' : 'כל הפריטים משויכים'}
+					</div>
 				</div>
 			</a>
 		</div>
