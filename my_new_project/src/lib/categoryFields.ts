@@ -1,4 +1,4 @@
-import { FREE_PROMO } from './freePromo';
+import { FREE_PROMO_PUBLIC } from './freePromo';
 
 export interface FieldDef {
     key: string;
@@ -222,7 +222,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
         mapFirst: true,
         fields: [
             { key: 'label',       label: 'שם העסק',               type: 'text',     required: true,  placeholder: 'פיצה השכונה' },
-            { key: 'venue_type',  label: 'סוג העסק',              type: 'toggle',   required: true,  step: 'map', options: ['מסעדה', 'מזון מהיר'], default: 'מסעדה', hint: FREE_PROMO ? '🎉 בתקופה הראשונית הפרסום חינם - עם הקוד "יוצאים לחירות" בדף התשלום' : 'מסעדה - 45 ₪ לחודש · מזון מהיר (פלאפל, שווארמה, פיצה, גלידה) - 30 ₪ לחודש' },
+            { key: 'venue_type',  label: 'סוג העסק',              type: 'toggle',   required: true,  step: 'map', options: ['מסעדה', 'מזון מהיר'], default: 'מסעדה', hint: FREE_PROMO_PUBLIC ? '🎉 בתקופה הראשונית הפרסום חינם - עם הקוד "יוצאים לחירות" בדף התשלום' : 'מסעדה - 45 ₪ לחודש · מזון מהיר (פלאפל, שווארמה, פיצה, גלידה) - 30 ₪ לחודש' },
             { key: 'food_type',   label: 'סוג מטבח / מזון',         type: 'text',     required: true,  placeholder: 'פיצה, פלאפל, סושי, איטלקי...', half: true },
             { key: 'price_range', label: 'טווח מחירים',            type: 'select',   required: false, half: true, options: ['זול', 'בינוני', 'יקר'] },
             { key: 'kosher',      label: 'כשרות',                  type: 'select',   required: false, half: true, options: ['ללא', 'כשר רבנות', 'למהדרין', 'אחר'] },

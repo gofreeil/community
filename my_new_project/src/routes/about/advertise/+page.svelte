@@ -6,7 +6,7 @@
     import { citiesData, citiesAndNeighborhoods, effectiveNeighborhoods, LS_KEY, DEFAULT_NEIGHBORHOOD } from "$lib/neighborhoodsData";
     import { coinAnim } from "$lib/coinAnimationState.svelte";
     import { evaluateDiscount, discountAmount, type DiscountCode } from "$lib/discountCodes";
-    import { FREE_PROMO, FREE_PROMO_CODE_TEXT, FREE_PROMO_DISCOUNT } from "$lib/freePromo";
+    import { FREE_PROMO, FREE_PROMO_PUBLIC, FREE_PROMO_CODE_TEXT, FREE_PROMO_DISCOUNT } from "$lib/freePromo";
     import { MAP_IMAGE_PRICE_YEARLY } from "$lib/mapImage";
     import { heRank } from "$lib/search";
 
@@ -1492,7 +1492,8 @@
             <label for="discount-code" class="block text-amber-200 font-black text-sm md:text-base mb-1.5 text-right">
                 {$_('advertise.discount_code')}
             </label>
-            {#if FREE_PROMO}
+            <!-- הקוד של מבצע ההשקה אינו מוצג באתר - סוד. ראה FREE_PROMO_PUBLIC ב-freePromo.ts -->
+            {#if FREE_PROMO_PUBLIC}
                 <p class="text-green-300 text-xs md:text-sm font-bold mb-2.5 text-right">
                     {$_('advertise.promo_type_here', { values: { code: FREE_PROMO_CODE_TEXT } })}
                 </p>

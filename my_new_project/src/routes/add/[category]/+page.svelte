@@ -24,7 +24,7 @@
         type OpeningHours,
     } from '$lib/openingHours';
     import { _ } from 'svelte-i18n';
-    import { FREE_PROMO, FREE_PROMO_CODE_TEXT } from '$lib/freePromo';
+    import { FREE_PROMO_PUBLIC, FREE_PROMO_CODE_TEXT } from '$lib/freePromo';
     import { mapStepFields, cfCatKey, cfAddTitleKey, cfFieldKey, cfOptKey, trOr } from '$lib/categoryFields';
     import { MAP_IMAGE_PRICE_YEARLY } from '$lib/mapImage';
     import { imageDrop } from '$lib/imageDrop';
@@ -1041,7 +1041,7 @@
             <div class="text-4xl mb-3">✅</div>
             <h2 class="text-xl font-black text-green-300 mb-2">המודעה שלך נשמרה</h2>
             {#if isPaidFlow}
-                {#if FREE_PROMO}
+                {#if FREE_PROMO_PUBLIC}
                     <p class="text-green-300 text-base font-black mb-1">🎉 בתקופה הראשונית הפרסום חינם - עם הקוד "{FREE_PROMO_CODE_TEXT}" בדף הבא</p>
                 {:else}
                     <p class="text-amber-200 text-base font-bold mb-1">שלם {monthlyPrice} ש"ח בחודש על מנת להופיע</p>
@@ -1712,7 +1712,7 @@
                 </button>
                 <p class="text-gray-300 text-sm text-center">
                     {#if isPaidFlow}
-                        {#if FREE_PROMO}
+                        {#if FREE_PROMO_PUBLIC}
                             <span class="text-green-300 font-black">🎉 בתקופה הראשונית - חינם עם הקוד "{FREE_PROMO_CODE_TEXT}" בשלב הבא</span>
                         {:else}
                             {monthlyPrice} ₪ בחודש · התשלום בשלב הבא
