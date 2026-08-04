@@ -68,10 +68,12 @@
 		return g || '';
 	}
 
-	// שדות הפרופיל להצגה - רק מה שיש בו ערך
+	// שדות הפרופיל להצגה - רק מה שיש בו ערך.
+	// יוצא דופן: הטלפון מוצג תמיד (גם כשחסר) - לאדמין חשוב לדעת שאין טלפון,
+	// ולא שהשורה פשוט תיעלם ויֵראה כאילו לא נטענה.
 	const fields = $derived([
-		{ label: 'אימייל', value: u.email, icon: '✉️' },
-		{ label: 'טלפון', value: u.phone, icon: '📞' },
+		{ label: 'אימייל', value: u.email, icon: '✉️', href: u.email ? `mailto:${u.email}` : '' },
+		{ label: 'טלפון', value: u.phone || 'לא צוין', icon: '📞', href: u.phone ? `tel:${u.phone}` : '', ltr: !!u.phone, muted: !u.phone },
 		{ label: 'כינוי', value: u.nickname, icon: '🏷️' },
 		{ label: 'עיר', value: u.city, icon: '🏙️' },
 		{ label: 'שכונה', value: u.neighborhood, icon: '📍' },
@@ -123,7 +125,16 @@
 							</span>
 						{/if}
 					</div>
-					<p class="text-xs text-gray-500 mt-3 break-all">מזהה: {u.id}</p>
+					<p class="text-xs text-gray-500 mt-3 break-all">
+						מזהה: {u.id}
+						{#if ((u as any).merged_count ?? 1) > 1}
+							<!-- מסביר מאיפה הגיעו שדות שלא יושבים על החשבון הזה עצמו -->
+							<span
+								class="inline-block align-middle ms-2 text-[11px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2 py-0.5 rounded-full whitespace-nowrap"
+								title="הפרטים מוצגים מאוחדים מכל החשבונות שחולקים אימייל/טלפון"
+							>🔗 מאוחד · {(u as any).merged_count} חשבונות</span>
+						{/if}
+					</p>
 				</div>
 			</div>
 		</div>
@@ -137,7 +148,16 @@
 						<span class="text-xl flex-shrink-0 leading-tight">{f.icon}</span>
 						<div class="min-w-0">
 							<div class="text-xs text-gray-500 leading-tight">{f.label}</div>
-							<div class="text-base font-bold break-words leading-tight">{f.value}</div>
+							{#if f.href}
+								<!-- טלפון/אימייל לחיצים - חיוג או פתיחת דואר ישירות מהפרופיל -->
+								<a
+									href={f.href}
+									dir={f.ltr ? 'ltr' : undefined}
+									class="block text-base font-bold break-words leading-tight text-white hover:text-purple-300 transition-colors underline decoration-white/20 underline-offset-2 {f.ltr ? 'text-right' : ''}"
+								>{f.value}</a>
+							{:else}
+								<div class="text-base font-bold break-words leading-tight {f.muted ? 'text-gray-500 font-medium' : ''}">{f.value}</div>
+							{/if}
 						</div>
 					</div>
 				{/each}

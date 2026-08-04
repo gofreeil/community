@@ -1744,6 +1744,29 @@ export async function getUserByAnyId(id: string, _jwt?: string): Promise<DbUser 
     return u ? mapUpUser(u) : undefined;
 }
 
+/**
+ * כרטיס משתמש מאוחד לפי מזהה כלשהו - בדיוק מה שרשימת /admin מציגה.
+ *
+ * רשימת המשתמשים מאחדת חשבונות כפולים (אותו אימייל/טלפון) לכרטיס אחד, ולכן
+ * שדות כמו טלפון/עיר/שכונה יכולים לשבת דווקא על חשבון-אח (למשל: נרשם עם
+ * טלפון ב-credentials ואחר כך נכנס עם גוגל). שליפה של רשומה בודדת החזירה
+ * כרטיס חסר - ולכן הטלפון "נעלם" בכניסה לפרופיל המלא.
+ *
+ * ה-id נשאר זה שהתבקש (ולא של הכרטיס הראשי) כדי שפעולות, צ'אט וקישורים
+ * ימשיכו להצביע על אותו חשבון.
+ */
+export async function getMergedUserByAnyId(id: string, _jwt?: string): Promise<DbUser | undefined> {
+    const [base, all] = await Promise.all([
+        getUserByAnyId(id),
+        getAllUsersRaw().catch(() => [] as DbUser[]),
+    ]);
+    if (!base) return undefined;
+    if (all.length === 0) return base;
+
+    const card = mergeDuplicateUsers(all).find((u) => (u.merged_ids ?? [u.id]).includes(base.id));
+    return card ? { ...card, id: base.id } : base;
+}
+
 export async function getUserByEmail(email: string, _jwt?: string): Promise<DbUser | undefined> {
     const u = await findUpUserByEmail(email);
     return u ? mapUpUser(u) : undefined;

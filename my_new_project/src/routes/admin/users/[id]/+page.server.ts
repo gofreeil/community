@@ -4,6 +4,7 @@ import {
     getUserById,
     getUserByEmail,
     getUserByAnyId,
+    getMergedUserByAnyId,
     getItemsByUserId,
     getMessagesByUserId,
     createItem,
@@ -93,18 +94,26 @@ export const load: PageServerLoad = async (event) => {
     const admin = await requireSuperAdmin(event);
 
     const userId = event.params.id;
-    const user = await getUserByAnyId(userId);
+    // כרטיס מאוחד - כמו ברשימת /admin. בלי זה, שדות שיושבים על חשבון-אח
+    // (טלפון/עיר/שכונה) לא היו מוצגים כאן כלל.
+    const user = await getMergedUserByAnyId(userId);
     if (!user) throw error(404, 'המשתמש לא נמצא');
 
+    // שתי השליפות במקביל - סדרתי מסתכן ב-timeout של הדף כולו
+    const [itemsRes, threadRes] = await Promise.allSettled([
+        getItemsByUserId(userId),
+        loadThread(admin.id, user.id),
+    ]);
+
+    // פרסומים = הנכסים של המשתמש - רק קטגוריות פרסום אמיתיות מ-categoryConfig
     let items: Awaited<ReturnType<typeof getItemsByUserId>> = [];
-    try {
-        // פרסומים = הנכסים של המשתמש - רק קטגוריות פרסום אמיתיות מ-categoryConfig
-        items = (await getItemsByUserId(userId)).filter((it) => PUBLICATION_CATEGORIES.has(it.category));
-    } catch (e) {
-        console.warn('[admin/users] getItemsByUserId failed:', e);
+    if (itemsRes.status === 'fulfilled') {
+        items = itemsRes.value.filter((it) => PUBLICATION_CATEGORIES.has(it.category));
+    } else {
+        console.warn('[admin/users] getItemsByUserId failed:', itemsRes.reason);
     }
 
-    const thread = await loadThread(admin.id, user.id);
+    const thread = threadRes.status === 'fulfilled' ? threadRes.value : [];
 
     // טקסט פתיחה מוכן לצ'אט - מגיע מכפתור "צ'אט פנימי" בכרטיסי הבקשות בפאנל,
     // כדי שהאדמין ייכנס לשיחה עם משפט פתיחה מוכן על הבקשה הספציפית.

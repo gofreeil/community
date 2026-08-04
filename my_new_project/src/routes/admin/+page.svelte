@@ -233,23 +233,23 @@
 </svelte:head>
 
 <div class="min-h-screen bg-[#070b14] text-white" dir="rtl">
-	<div class="max-w-6xl mx-auto px-4 py-8">
+	<div class="max-w-6xl mx-auto px-3 sm:px-4 py-6 md:py-8">
 
 		<!-- חזרה לפרופיל -->
 		<a href="/profile" class="inline-block text-gray-500 hover:text-white transition-colors text-sm mb-3">← חזרה לדף הפרופיל</a>
 
-		<!-- כותרת -->
-		<div class="flex items-center justify-between mb-8">
+		<!-- כותרת. בנייד: הכותרת בשורה מלאה מעל, והכפתורים כרשת 2 עמודות שוות -->
+		<div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6 md:mb-8">
 			<div>
 				<h1 class="text-3xl font-black">
 					לוח ניהול
 				</h1>
-				<p class="text-gray-400 mt-1">ניהול משתמשים, תוכן והרשאות</p>
+				<p class="text-gray-400 text-sm md:text-base mt-1">ניהול משתמשים, תוכן והרשאות</p>
 			</div>
-			<div class="flex gap-2 flex-wrap">
+			<div class="grid grid-cols-2 gap-2 md:flex md:flex-wrap">
 				<button
 					onclick={() => goto('/admin/2fa-setup')}
-					class="relative px-4 py-2 rounded-xl border transition-all cursor-pointer font-bold flex items-center gap-1.5
+					class="relative px-3 md:px-4 py-2.5 md:py-2 rounded-xl border transition-all cursor-pointer font-bold text-sm md:text-base flex items-center justify-center md:justify-start gap-1.5 whitespace-nowrap
 						{data.twoFAConfigured
 							? 'bg-green-500/15 border-green-500/40 text-green-200 hover:bg-green-500/25'
 							: 'bg-red-500/15 border-red-500/50 text-red-200 hover:bg-red-500/25 animate-pulse'}"
@@ -259,7 +259,7 @@
 				</button>
 				<button
 					onclick={() => goto('/admin/singles-review')}
-					class="relative px-4 py-2 rounded-xl bg-pink-500/15 border border-pink-500/40 text-pink-200 hover:bg-pink-500/25 transition-all cursor-pointer font-bold flex items-center gap-1.5"
+					class="relative px-3 md:px-4 py-2.5 md:py-2 rounded-xl bg-pink-500/15 border border-pink-500/40 text-pink-200 hover:bg-pink-500/25 transition-all cursor-pointer font-bold text-sm md:text-base flex items-center justify-center md:justify-start gap-1.5 whitespace-nowrap"
 				>
 					💑 אישור פנויים
 					{#if (data.pendingSinglesCount ?? 0) > 0}
@@ -270,7 +270,7 @@
 				</button>
 				<button
 					onclick={() => goto('/admin/ads-review')}
-					class="relative px-4 py-2 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-200 hover:bg-amber-500/25 transition-all cursor-pointer font-bold flex items-center gap-1.5"
+					class="relative px-3 md:px-4 py-2.5 md:py-2 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-200 hover:bg-amber-500/25 transition-all cursor-pointer font-bold text-sm md:text-base flex items-center justify-center md:justify-start gap-1.5 whitespace-nowrap"
 				>
 					📢 אישור פרסומות
 					{#if (data.pendingAdsCount ?? 0) > 0}
@@ -281,20 +281,20 @@
 				</button>
 				<button
 					onclick={() => goto('/admin/statistics')}
-					class="relative px-4 py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-200 hover:bg-emerald-500/25 transition-all cursor-pointer font-bold flex items-center gap-1.5"
+					class="relative px-3 md:px-4 py-2.5 md:py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-200 hover:bg-emerald-500/25 transition-all cursor-pointer font-bold text-sm md:text-base flex items-center justify-center md:justify-start gap-1.5 whitespace-nowrap"
 				>
 					📈 סטטיסטיקה
 				</button>
 				<button
 					onclick={() => goto('/admin/news')}
-					class="relative px-4 py-2 rounded-xl bg-blue-500/15 border border-blue-500/40 text-blue-200 hover:bg-blue-500/25 transition-all cursor-pointer font-bold flex items-center gap-1.5"
+					class="relative px-3 md:px-4 py-2.5 md:py-2 rounded-xl bg-blue-500/15 border border-blue-500/40 text-blue-200 hover:bg-blue-500/25 transition-all cursor-pointer font-bold text-sm md:text-base flex items-center justify-center md:justify-start gap-1.5 whitespace-nowrap"
 					title="עריכת הכותרות שרצות בטיקר בדף הבית"
 				>
 					📰 חדשות הטיקר
 				</button>
 				<button
 					onclick={() => (activeTab = activeTab === 'discounts' ? 'users' : 'discounts')}
-					class="relative px-4 py-2 rounded-xl border transition-all cursor-pointer font-bold flex items-center gap-1.5
+					class="relative px-3 md:px-4 py-2.5 md:py-2 rounded-xl border transition-all cursor-pointer font-bold text-sm md:text-base flex items-center justify-center md:justify-start gap-1.5 whitespace-nowrap
 						{activeTab === 'discounts'
 							? 'bg-purple-500/30 border-purple-400/60 text-white shadow-lg'
 							: 'bg-purple-500/15 border-purple-500/40 text-purple-200 hover:bg-purple-500/25'}"
@@ -308,42 +308,42 @@
 		<!-- באנר לוח בקרה - סיכום מהיר של הקהילה -->
 		<div class="mb-8 grid grid-cols-2 lg:grid-cols-4 gap-3">
 			<!-- משתמשים — סגול, זהה לסדרת "נרשמים" בגרף ובדף הסטטיסטיקה. כל הכרטיס כפתור לדף הפירוט -->
-			<a href="/admin/statistics#registrations" class="relative overflow-hidden rounded-2xl border border-violet-500/25 bg-gradient-to-br from-violet-600/15 to-violet-500/5 p-4 block hover:border-violet-400/50 transition-all">
+			<a href="/admin/statistics#registrations" class="relative overflow-hidden rounded-2xl border border-violet-500/25 bg-gradient-to-br from-violet-600/15 to-violet-500/5 p-3 sm:p-4 block hover:border-violet-400/50 transition-all">
 				<img
 					src="/images/60712_175258.webp"
 					alt=""
-					class="pointer-events-none absolute left-2 inset-y-0 my-auto h-[84px] w-[84px] rounded-2xl object-cover ring-1 ring-white/20 shadow-lg"
+					class="pointer-events-none absolute left-1.5 sm:left-2 inset-y-0 my-auto h-12 w-12 sm:h-[84px] sm:w-[84px] rounded-xl sm:rounded-2xl object-cover ring-1 ring-white/20 shadow-lg"
 				/>
-				<div class="relative">
-					<div class="text-violet-200/80 text-sm font-bold mb-1">משתמשים</div>
-					<div class="text-4xl font-black text-white leading-none">{dash.totalUsers}</div>
+				<div class="relative pe-[54px] sm:pe-[92px]">
+					<div class="text-violet-200/80 text-xs sm:text-sm font-bold mb-1">משתמשים</div>
+					<div class="text-3xl sm:text-4xl font-black text-white leading-none">{dash.totalUsers}</div>
 				</div>
 			</a>
 
 			<!-- פרטים במפה — ירוק, זהה לסדרת "פריטים שהועלו" בגרף ובדף הסטטיסטיקה. כל הכרטיס כפתור לדף הפירוט -->
-			<a href="/admin/statistics#items" class="relative overflow-hidden rounded-2xl border border-emerald-500/25 bg-gradient-to-br from-emerald-600/15 to-emerald-500/5 p-4 block hover:border-emerald-400/50 transition-all">
+			<a href="/admin/statistics#items" class="relative overflow-hidden rounded-2xl border border-emerald-500/25 bg-gradient-to-br from-emerald-600/15 to-emerald-500/5 p-3 sm:p-4 block hover:border-emerald-400/50 transition-all">
 				<img
 					src="/images/Co260712_181739.webp"
 					alt=""
-					class="pointer-events-none absolute left-2 inset-y-0 my-auto h-[84px] w-[84px] rounded-2xl object-cover ring-1 ring-white/20 shadow-lg"
+					class="pointer-events-none absolute left-1.5 sm:left-2 inset-y-0 my-auto h-12 w-12 sm:h-[84px] sm:w-[84px] rounded-xl sm:rounded-2xl object-cover ring-1 ring-white/20 shadow-lg"
 				/>
-				<div class="relative">
-					<div class="text-emerald-200/80 text-sm font-bold mb-1">פרטים במפה</div>
-					<div class="text-4xl font-black text-white leading-none">{dash.totalItems}</div>
+				<div class="relative pe-[54px] sm:pe-[92px]">
+					<div class="text-emerald-200/80 text-xs sm:text-sm font-bold mb-1">פרטים במפה</div>
+					<div class="text-3xl sm:text-4xl font-black text-white leading-none">{dash.totalItems}</div>
 				</div>
 			</a>
 
 			<!-- נכסים להשלמה — פריטים שהמיקום שלהם חסר/לא מזוהה ולכן אינם
 			     מופיעים בלוח השכונתי הנכון. אפס = הכל מושלם. -->
-			<a href="/admin/incomplete" class="relative overflow-hidden rounded-2xl border p-4 block transition-all
+			<a href="/admin/incomplete" class="relative overflow-hidden rounded-2xl border p-3 sm:p-4 block transition-all
 				{data.incompleteCount
 					? 'border-orange-500/30 bg-gradient-to-br from-orange-600/15 to-orange-500/5 hover:border-orange-400/60'
 					: 'border-emerald-500/25 bg-gradient-to-br from-emerald-600/15 to-emerald-500/5 hover:border-emerald-400/50'}">
 				<div class="relative">
-					<div class="flex items-center gap-2 text-sm font-bold mb-1 {data.incompleteCount ? 'text-orange-200/80' : 'text-emerald-200/80'}">
-						<span class="text-lg">📍</span> נכסים להשלמה
+					<div class="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-bold mb-1 {data.incompleteCount ? 'text-orange-200/80' : 'text-emerald-200/80'}">
+						<span class="text-base sm:text-lg">📍</span> נכסים להשלמה
 					</div>
-					<div class="text-4xl font-black text-white leading-none">{data.incompleteCount}</div>
+					<div class="text-3xl sm:text-4xl font-black text-white leading-none">{data.incompleteCount}</div>
 					<div class="text-[11px] text-gray-400 mt-1">
 						{data.incompleteCount ? 'מיקום חסר או לא מזוהה' : 'כל הפריטים משויכים'}
 					</div>
@@ -351,31 +351,31 @@
 			</a>
 
 			<!-- רכזים — כל הכרטיס כפתור לסקציית רכזי השכונות באותו דף -->
-			<a href="#coordinators" onclick={() => (activeTab = 'users')} class="relative overflow-hidden rounded-2xl border border-amber-500/25 bg-gradient-to-br from-amber-600/15 to-amber-500/5 p-4 block hover:border-amber-400/50 transition-all">
+			<a href="#coordinators" onclick={() => (activeTab = 'users')} class="relative overflow-hidden rounded-2xl border border-amber-500/25 bg-gradient-to-br from-amber-600/15 to-amber-500/5 p-3 sm:p-4 block hover:border-amber-400/50 transition-all">
 				<img
 					src="/images/rakaz-shchuna.webp"
 					alt=""
-					class="pointer-events-none absolute left-2 inset-y-0 my-auto h-[84px] w-[84px] rounded-2xl object-cover object-top ring-1 ring-white/20 shadow-lg"
+					class="pointer-events-none absolute left-1.5 sm:left-2 inset-y-0 my-auto h-12 w-12 sm:h-[84px] sm:w-[84px] rounded-xl sm:rounded-2xl object-cover object-top ring-1 ring-white/20 shadow-lg"
 				/>
-				<div class="relative">
-					<div class="flex items-center gap-2 text-amber-200/80 text-sm font-bold mb-1">
-						<span class="text-lg">🏘️</span> רכזי שכונות
+				<div class="relative pe-[54px] sm:pe-[92px]">
+					<div class="flex items-center gap-1.5 sm:gap-2 text-amber-200/80 text-xs sm:text-sm font-bold mb-1">
+						<span class="text-base sm:text-lg">🏘️</span> רכזי שכונות
 					</div>
-					<div class="text-4xl font-black text-white leading-none">{dash.totalCoordinators}</div>
+					<div class="text-3xl sm:text-4xl font-black text-white leading-none">{dash.totalCoordinators}</div>
 				</div>
 			</a>
 
 			<!-- כניסות החודש — כחול, זהה לסדרת "כניסות" בגרף ובדף הסטטיסטיקה.
 			     מונה מ-visit-stat, מתעדכן פעם ביום. לחיצה = דף סטטיסטיקה -->
-			<a href="/admin/statistics#visits" class="relative overflow-hidden rounded-2xl border border-sky-500/25 bg-gradient-to-br from-sky-600/15 to-sky-500/5 p-4 block hover:border-sky-400/50 transition-all">
+			<a href="/admin/statistics#visits" class="relative overflow-hidden rounded-2xl border border-sky-500/25 bg-gradient-to-br from-sky-600/15 to-sky-500/5 p-3 sm:p-4 block hover:border-sky-400/50 transition-all">
 				<img
 					src="/images/60712_183146.webp"
 					alt=""
-					class="pointer-events-none absolute left-2 inset-y-0 my-auto h-[84px] w-[84px] rounded-2xl object-cover ring-1 ring-white/20 shadow-lg"
+					class="pointer-events-none absolute left-1.5 sm:left-2 inset-y-0 my-auto h-12 w-12 sm:h-[84px] sm:w-[84px] rounded-xl sm:rounded-2xl object-cover ring-1 ring-white/20 shadow-lg"
 				/>
-				<div class="relative">
-					<div class="text-sky-200/80 text-sm font-bold mb-1">כניסות</div>
-					<div class="text-4xl font-black text-white leading-none">{dash.monthlyVisits}</div>
+				<div class="relative pe-[54px] sm:pe-[92px]">
+					<div class="text-sky-200/80 text-xs sm:text-sm font-bold mb-1">כניסות</div>
+					<div class="text-3xl sm:text-4xl font-black text-white leading-none">{dash.monthlyVisits}</div>
 				</div>
 			</a>
 		</div>
@@ -401,18 +401,18 @@
 		{/if}
 
 		<!-- חיפוש -->
-		<div class="mb-6 flex gap-3 flex-wrap">
+		<div class="mb-6 flex gap-2 sm:gap-3 flex-wrap">
 			<input
 				type="text"
 				placeholder="חיפוש..."
 				bind:value={searchQuery}
-				class="flex-1 min-w-[200px] bg-[#1e293b] border border-white/10 rounded-xl px-4 py-2.5 text-white
+				class="w-full sm:w-auto sm:flex-1 sm:min-w-[200px] bg-[#1e293b] border border-white/10 rounded-xl px-4 py-2.5 text-white
 				       placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
 			/>
 			{#if activeTab === 'users'}
 				<select
 					bind:value={roleFilter}
-					class="bg-[#1e293b] border border-white/10 rounded-xl px-4 py-2.5 text-white cursor-pointer
+					class="w-full sm:w-auto bg-[#1e293b] border border-white/10 rounded-xl px-4 py-2.5 text-white cursor-pointer
 					       focus:outline-none focus:border-purple-500 transition-colors"
 				>
 					<option value="all">כל התפקידים</option>
