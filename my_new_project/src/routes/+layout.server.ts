@@ -42,6 +42,7 @@ export const load: LayoutServerLoad = async (event) => {
             cta: a.cta,
             hover: a.hoverText,
             gradient: a.gradient,
+            logo: a.logo,
             mainImage: a.mainImage,
             mainImageFit: a.mainImageFit,
         }))

@@ -12,6 +12,7 @@ export const GET: RequestHandler = async () => {
         cta: a.cta,
         hover: a.hoverText,
         gradient: a.gradient,
+        logo: a.logo,
         mainImage: a.mainImage,
         mainImageFit: a.mainImageFit,
     }));

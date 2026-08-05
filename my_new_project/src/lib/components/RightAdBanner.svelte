@@ -11,12 +11,22 @@
         cta: string;
         hover: string;
         gradient: string;
+        /** לוגו המפרסם (data-url); ריק כשלא הועלה לוגו בבילדר */
+        logo?: string;
         mainImage: string;
         /** מיקום+זום מהבילדר; אופציונלי — מודעות ישנות נשמרו בלעדיו */
         mainImageFit?: AdImageFit;
     };
 
     let { approvedAds = [] }: { approvedAds?: ApprovedAd[] } = $props();
+
+    // אותו כלל בדיוק כמו ברירת המחדל בבילדר (builder/+page.svelte): כותרת ארוכה
+    // לא משאירה מקום ללוגו בפינה שלידה, ולכן הוא יורד לפינה שמעל רצועת ה-CTA.
+    // מיקום הלוגו לא נשמר בשרת, ולכן הכלל מחושב כאן מחדש - כך שמה שהמפרסם
+    // ראה בתצוגה החיה הוא מה שמוצג בפועל.
+    function logoAtCta(title: string): boolean {
+        return (title ?? '').trim().length > 20;
+    }
 
     // הפרסומות המשולמות קבועות בראש הטור ולא משתתפות בסבב המשבצות הפנויות -
     // מפרסם ששילם לא אמור להיעלם מהמסך אחרי 14 שניות.
@@ -235,6 +245,25 @@
                                 use:adImgFit={parseAdImageFit(ad.mainImageFit)}
                             />
                         </div>
+                        <!-- כותרת ולוגו גלויים תמיד - בדיוק כמו בתצוגה החיה של הבילדר.
+                             בלעדיהם הכרטיס היה תמונה חשופה, והמפרסם לא רואה את השם
+                             שלו על המסך אלא רק בריחוף (ובנייד - אף פעם). -->
+                        <div
+                            class="ad-title-top transition-opacity duration-[1500ms] group-hover:opacity-0"
+                            class:has-corner-logo={ad.logo && !logoAtCta(ad.title)}
+                        >
+                            <h3 class="ad-title">{ad.title}</h3>
+                        </div>
+                        {#if ad.logo}
+                            <img
+                                src={ad.logo}
+                                alt=""
+                                loading="lazy"
+                                decoding="async"
+                                class="ad-logo {logoAtCta(ad.title) ? 'ad-logo-cta' : 'ad-logo-right'}
+                                       transition-opacity duration-[1500ms] group-hover:opacity-0"
+                            />
+                        {/if}
                         <div
                             class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-[1500ms] flex items-center justify-center bg-black/60 backdrop-blur-sm"
                         >
@@ -326,5 +355,57 @@
         .ads-track {
             transition-duration: 1ms;
         }
+    }
+
+    /* כותרת ולוגו של פרסומת מאושרת — הערכים זהים ל-.pro-title-top/.pro-title/.ad-logo
+       שבבילדר, כי מסגרת התצוגה החיה שם רחבה 140px והמשבצת כאן 144px. */
+    .ad-title-top {
+        position: absolute;
+        inset-inline: 0;
+        top: 0;
+        z-index: 5;
+        padding: 0.55rem 0.7rem 0.85rem;
+        text-align: center;
+        background: linear-gradient(
+            180deg,
+            rgba(0, 0, 0, 0.78) 0%,
+            rgba(0, 0, 0, 0.45) 55%,
+            rgba(0, 0, 0, 0) 100%
+        );
+        pointer-events: none;
+    }
+    /* לוגו בפינה העליונה יושב באותו גובה של הכותרת. בלי שמירת המקום הזאת
+       הוא היה מכסה את המילה האחרונה - המשבצת רחבה 144px בלבד. */
+    .ad-title-top.has-corner-logo {
+        padding-inline-end: 46px;
+    }
+    .ad-title {
+        margin: 0;
+        color: white;
+        font-weight: 900;
+        font-size: 1.15rem;
+        line-height: 1.15;
+        letter-spacing: 0.005em;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85), 0 1px 2px rgba(0, 0, 0, 0.95);
+    }
+    .ad-logo {
+        position: absolute;
+        z-index: 6;
+        width: 36px;
+        height: 36px;
+        border-radius: 6px;
+        background: white;
+        padding: 3px;
+        object-fit: contain;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+    }
+    .ad-logo-right {
+        top: 6px;
+        inset-inline-end: 6px;
+    }
+    /* כותרת ארוכה: הלוגו יורד לפינה התחתונה, מעל רצועת ה-CTA */
+    .ad-logo-cta {
+        bottom: 6px;
+        inset-inline-end: 6px;
     }
 </style>
