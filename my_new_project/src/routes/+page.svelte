@@ -172,9 +172,10 @@
         return stripped !== q ? matchFor(stripped) : out;
     });
 
-    // ספירת ערים ושכונות לתצוגה ב-placeholder
-    const totalCities = allCitiesMerged.length;
-    const totalNeighborhoods = allCitiesMerged.reduce((sum, [, n]) => sum + n.length, 0);
+    // ספירת ערים ושכונות לתצוגה ב-placeholder.
+    // $derived: הרשימה גדלה כששכונה חדשה מאושרת, והמספרים צריכים לעקוב.
+    const totalCities = $derived(allCitiesMerged.length);
+    const totalNeighborhoods = $derived(allCitiesMerged.reduce((sum, [, n]) => sum + n.length, 0));
 
     // ===== מועדפות שכונה (localStorage) =====
     const FAV_KEY = 'favorite_neighborhoods_v1';
@@ -399,7 +400,9 @@
 
 <JsonLd schema={[websiteSchema(), organizationSchema(), homeFaq]} />
 
-<div class="pb-0 md:pb-8 pt-4 md:pt-8" onclick={() => calMenuOpen = null}>
+<!-- העטיפה משמשת רק לסגירת תפריט הלוח בלחיצה בחוץ; היא אינה פקד בפני עצמה.
+     סגירה במקלדת נעשית ב-Escape (onkeydown) - ולכן presentation -->
+<div class="pb-0 md:pb-8 pt-4 md:pt-8" role="presentation" onclick={() => calMenuOpen = null} onkeydown={(e) => { if (e.key === 'Escape') calMenuOpen = null; }}>
     <!-- הודעת "נכס נמחק" אחרי מחיקה רכה מדף הפריט (עדיין ניתן לשחזור) -->
     {#if deletedFlash}
         <div class="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] w-[92%] max-w-md" dir="rtl">

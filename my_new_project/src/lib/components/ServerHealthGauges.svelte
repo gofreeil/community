@@ -9,7 +9,7 @@
 	// ולא נכנס לציון הכולל: הוא סימפטום של משאב חנוק, לא משאב רביעי. כשהוא איטי
 	// באמת מגיע responseAlert מהשרת ומוצגת שורת התרעה נפרדת.
 	// ============================================================
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount, onDestroy, untrack } from 'svelte';
 	import type { ServerHealth } from '$lib/serverHealthTypes';
 
 	// live=true: טיימר קל לתווית "עודכן לפני X" + כפתור רענון ידני.
@@ -19,7 +19,8 @@
 	let { initial = null, monthlyVisits = 0, live = true, summaryOnly = false, mainHref = null }:
 		{ initial?: ServerHealth | null; monthlyVisits?: number; live?: boolean; summaryOnly?: boolean; mainHref?: string | null } = $props();
 
-	let health = $state<ServerHealth | null>(initial);
+	// untrack: תמונת-מצב פותחת מהשרת; מכאן והלאה המדידות מגיעות מהרענון הפנימי
+	let health = $state<ServerHealth | null>(untrack(() => initial));
 	let loading = $state(false);
 	let now = $state(Date.now());
 

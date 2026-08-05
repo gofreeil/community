@@ -76,9 +76,10 @@
                     {/if}
 
                     <div class="mb-4">
-                        <label class="block text-white/70 text-sm mb-1">{$_('account.new_password_label')}</label>
+                        <label for="rp-password" class="block text-white/70 text-sm mb-1">{$_('account.new_password_label')}</label>
                         <div class="relative">
                             <input
+                                id="rp-password"
                                 type={showPassword ? 'text' : 'password'}
                                 name="password"
                                 required
@@ -94,8 +95,9 @@
                     </div>
 
                     <div class="mb-6">
-                        <label class="block text-white/70 text-sm mb-1">{$_('account.confirm_password')}</label>
+                        <label for="rp-password-confirm" class="block text-white/70 text-sm mb-1">{$_('account.confirm_password')}</label>
                         <input
+                            id="rp-password-confirm"
                             type={showPassword ? 'text' : 'password'}
                             name="passwordConfirm"
                             required

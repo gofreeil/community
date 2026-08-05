@@ -1,6 +1,6 @@
 <script lang="ts">
     import type { ActionData, PageData } from './$types';
-    import { onMount } from 'svelte';
+    import { onMount, untrack } from 'svelte';
     import CameraCapture from '$lib/components/CameraCapture.svelte';
     import { _ } from 'svelte-i18n';
     import { invalidateAll } from '$app/navigation';
@@ -105,7 +105,8 @@
     }
 
     // הערכים ההתחלתיים נטענים פעם אחת מ-data.defaults; המשתמש יכול לערוך
-    const { name: defName, phone: defPhone, neighborhood: defNeighborhood, city: defCity } = data.defaults;
+    // (untrack מסמן במפורש שזו קריאה חד-פעמית ולא מעקב)
+    const { name: defName, phone: defPhone, neighborhood: defNeighborhood, city: defCity } = untrack(() => data.defaults);
     let city         = $state(defCity);
     // תמיד מסומן מראש: שכונת הפרופיל, או "מרכז" ביישוב חד-שכונתי שבו יש עיר אך אין שכונה
     let neighborhood = $state(defNeighborhood || (defCity ? 'מרכז' : ''));

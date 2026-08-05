@@ -98,9 +98,15 @@
                             {#if item.created_at}<span>•</span><span>🕒 {formatDate(item.created_at)}</span>{/if}
                         </div>
                         {#if !isMock && item.phone}
-                            <a href="tel:{item.phone}" class="mt-1.5 flex items-center gap-1 text-[10px] text-blue-400 font-bold" onclick={(e) => e.stopPropagation()}>
+                            <!-- כפתור ולא <a>: הכרטיס כולו כבר עטוף ב-<a>, וקישור
+                                 בתוך קישור נשבר ע"י הדפדפן וגורם ל-hydration mismatch -->
+                            <button
+                                type="button"
+                                onclick={(e) => { e.preventDefault(); e.stopPropagation(); window.location.href = `tel:${item.phone}`; }}
+                                class="mt-1.5 flex items-center gap-1 text-[10px] text-blue-400 font-bold cursor-pointer"
+                            >
                                 📞 {item.phone}
-                            </a>
+                            </button>
                         {/if}
                     </div>
                 </a>

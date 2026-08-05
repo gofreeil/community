@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
+    import { onMount, untrack } from 'svelte';
     import { neighborhoodState } from '$lib/neighborhoodState.svelte';
     import { getCoordsFor, type Coord } from '$lib/neighborhoodCoords';
     import { _ } from 'svelte-i18n';
@@ -214,11 +214,13 @@
     let hostPageGroups  = $derived(groupBySection(hostPageItems));
 
     // --- מצב אישורים (עדכוני אופטימיסטי) ---
-    let localApprovedHostItemIds    = $state([...approvedHostItemIds]);
-    let localPendingGuestItemIds    = $state([...pendingGuestRequestItemIds]);
-    let localRejectedHostItemIds    = $state([...rejectedGuestRequestItemIds]);
-    let localPendingForHost         = $state([...pendingRequestsForHost]);
-    let localApprovedGuestPhones    = $state([...approvedGuestPhonesForHost]);
+    // untrack: העתק מקומי שמתעדכן מיד בלחיצה (לפני תשובת השרת). קריאה עוקבת
+    // הייתה מאפסת את העדכון האופטימיסטי ברגע שה-props מתרעננים.
+    let localApprovedHostItemIds    = $state(untrack(() => [...approvedHostItemIds]));
+    let localPendingGuestItemIds    = $state(untrack(() => [...pendingGuestRequestItemIds]));
+    let localRejectedHostItemIds    = $state(untrack(() => [...rejectedGuestRequestItemIds]));
+    let localPendingForHost         = $state(untrack(() => [...pendingRequestsForHost]));
+    let localApprovedGuestPhones    = $state(untrack(() => [...approvedGuestPhonesForHost]));
 
     // --- בקשת אירוח ---
     let requestingItemId  = $state<string | null>(null);
@@ -818,15 +820,19 @@
 </div>
 
 {#if showFrozenInfoModal}
+    <!-- סגירה בלחיצה על הרקע נבדקת לפי היעד, ולכן אין צורך ב-stopPropagation
+         על תיבת התוכן; Escape סוגר במקלדת -->
     <div
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
-        onclick={() => (showFrozenInfoModal = false)}
+        onclick={(e) => { if (e.target === e.currentTarget) showFrozenInfoModal = false; }}
+        onkeydown={(e) => { if (e.key === 'Escape') showFrozenInfoModal = false; }}
         role="dialog"
         aria-modal="true"
+        aria-label={$_('boards.shabbat.frozen_title')}
+        tabindex="-1"
     >
         <div
             class="max-w-md w-full rounded-2xl border-2 border-blue-500/40 bg-[#0f172a] shadow-2xl p-6 text-center"
-            onclick={(e) => e.stopPropagation()}
             role="document"
         >
             <div class="text-5xl mb-3">❄️</div>

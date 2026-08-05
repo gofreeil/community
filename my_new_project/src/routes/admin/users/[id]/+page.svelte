@@ -1,14 +1,15 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { tick } from 'svelte';
+	import { tick, untrack } from 'svelte';
 
 	let { data, form } = $props();
 
 	const u = $derived(data.profileUser);
 
 	// === צ'אט פנימי ===
-	// טקסט פתיחה מוכן (?draft=) מגיע מכפתור "צ'אט פנימי" בכרטיסי הבקשות בפאנל
-	let chatText = $state(data.draft ?? '');
+	// טקסט פתיחה מוכן (?draft=) מגיע מכפתור "צ'אט פנימי" בכרטיסי הבקשות בפאנל.
+	// untrack: תמונת-מצב חד-פעמית - רענון data לא ידרוס טיוטה שהאדמין כותב.
+	let chatText = $state(untrack(() => data.draft) ?? '');
 	let sending = $state(false);
 	let scrollBox = $state<HTMLDivElement | null>(null);
 

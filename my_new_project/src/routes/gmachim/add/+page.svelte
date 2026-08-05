@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
+    import { onMount, untrack } from 'svelte';
     import CameraCapture from '$lib/components/CameraCapture.svelte';
     import NeighborhoodSelect from '$lib/components/NeighborhoodSelect.svelte';
     import { get } from 'svelte/store';
@@ -28,12 +28,13 @@
     let title       = $state('');
     let street      = $state('');
     let buildingNum = $state('');
-    let phone       = $state(data.userPhone || '');
+    // untrack: ערכי פתיחה מהפרופיל - הטופס בשליטת המשתמש מכאן
+    let phone       = $state(untrack(() => data.userPhone) || '');
     let gmachTypes  = $state<string[]>([]);
-    let city        = $state(data.userCity || 'ירושלים');
+    let city        = $state(untrack(() => data.userCity) || 'ירושלים');
     // עיר בפרופיל בלי שכונה (יישוב חד-שכונתי) → "מרכז", לא ברירת המחדל הגלובלית
     // (קרית משה) ששייכת לירושלים - כמו ב-/add/[category]
-    let neighborhood = $state(data.userNeighborhood || (data.userCity ? 'מרכז' : DEFAULT_NEIGHBORHOOD));
+    let neighborhood = $state(untrack(() => data.userNeighborhood || (data.userCity ? 'מרכז' : DEFAULT_NEIGHBORHOOD)));
     let logoBase64  = $state('');
     // סימון מיקום הגמ"ח על המפה (אופציונלי) - נשמר כ-lat/lng ברמה העליונה של הפריט
     let pinLat      = $state<number | null>(null);

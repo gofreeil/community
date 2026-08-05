@@ -307,7 +307,9 @@
                 <span class="hidden sm:inline">{$_('listings.gv_back')}</span>
                 <span aria-hidden="true">→</span>
             </a>
-            <h1 class="absolute top-0 start-0 -z-10 text-base font-bold text-transparent pointer-events-none select-none" aria-hidden="true">למסירה</h1>
+            <!-- כותרת H1 מוסתרת ויזואלית (לא aria-hidden): קורא מסך ומנועי חיפוש
+                 אמורים לקבל את כותרת הדף, רק העין לא -->
+            <h1 class="absolute top-0 start-0 -z-10 text-base font-bold text-transparent pointer-events-none select-none">למסירה</h1>
             <!-- Banner image (cropped to top half) with overlaid action buttons -->
             <div class="relative w-[32rem] md:w-[40rem] max-w-full mx-auto">
                 <div class="relative aspect-[1330/441] rounded-2xl overflow-hidden bg-gradient-to-br from-orange-900/20 to-amber-900/10">

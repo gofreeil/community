@@ -1,10 +1,12 @@
 <script lang="ts">
+    import { untrack } from 'svelte';
     import { goto } from '$app/navigation';
     import { _ } from 'svelte-i18n';
 
     let { data } = $props();
 
-    let query = $state(data.query);
+    // untrack: ערך פתיחה מה-URL; מכאן והלאה זה מה שהמשתמש מקליד בתיבה
+    let query = $state(untrack(() => data.query));
 
     function doSearch() {
         const q = query.trim();

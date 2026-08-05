@@ -1,6 +1,7 @@
 <script lang="ts">
     // עורך שעות פתיחה קומפקטי - עובד מול מחרוזת מסודרת (serializeOpeningHours).
     // בשימוש בדף הפריט (CategoryDetailsEditor). מחזיר את הערך דרך onchange.
+    import { untrack } from 'svelte';
     import { _ } from 'svelte-i18n';
     import {
         emptyOpeningHours,
@@ -14,8 +15,9 @@
 
     let { value = '', onchange }: { value?: string; onchange: (v: string) => void } = $props();
 
-    // אובייקט העבודה - מאותחל מהערך הנכנס פעם אחת
-    let oh = $state<OpeningHours>(parseOpeningHours(value) ?? emptyOpeningHours());
+    // אובייקט העבודה - מאותחל מהערך הנכנס פעם אחת (untrack: מכאן והלאה
+    // העריכה מקומית, והערך חוזר החוצה דרך onchange)
+    let oh = $state<OpeningHours>(untrack(() => parseOpeningHours(value)) ?? emptyOpeningHours());
 
     function commit() {
         onchange(serializeOpeningHours(oh));

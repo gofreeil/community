@@ -162,8 +162,8 @@
         await processImageFile(files[0], set);
     }
 
-    // coordinator neighborhoods
-    const coordNeighborhoods: string[] = (data.user as any)?.coordinator_of ?? [];
+    // coordinator neighborhoods - $derived כדי שהרשימה תתעדכן אם data מתרענן
+    const coordNeighborhoods: string[] = $derived((data.user as any)?.coordinator_of ?? []);
 </script>
 
 <svelte:head>
@@ -475,61 +475,63 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <!-- Title -->
                         <div class="md:col-span-2">
-                            <label class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_title_label')}</label>
-                            <input type="text" name="title" required placeholder={$_('community.ev_form_title_ph')}
+                            <label for="ev-add-title" class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_title_label')}</label>
+                            <input id="ev-add-title" type="text" name="title" required placeholder={$_('community.ev_form_title_ph')}
                                 class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-green-400/60" />
                         </div>
                         <!-- Date + Time -->
                         <div>
-                            <label class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_date')}</label>
-                            <input type="date" name="date" required
+                            <label for="ev-add-date" class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_date')}</label>
+                            <input id="ev-add-date" type="date" name="date" required
                                 class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-green-400/60" />
                         </div>
                         <div>
-                            <label class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_time')}</label>
-                            <input type="time" name="time"
+                            <label for="ev-add-time" class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_time')}</label>
+                            <input id="ev-add-time" type="time" name="time"
                                 class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-green-400/60" />
                         </div>
                         <!-- Location -->
                         <div>
-                            <label class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_location')}</label>
-                            <input type="text" name="location" placeholder={$_('community.ev_form_location_ph')}
+                            <label for="ev-add-location" class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_location')}</label>
+                            <input id="ev-add-location" type="text" name="location" placeholder={$_('community.ev_form_location_ph')}
                                 class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-green-400/60" />
                         </div>
-                        <!-- Neighborhood (coordinator may manage multiple) -->
+                        <!-- Neighborhood (coordinator may manage multiple).
+                             אותו id בכל הענפים - רק אחד מהם מרונדר בכל רגע -->
                         <div>
-                            <label class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_neighborhood')}</label>
+                            <label for="ev-add-neighborhood" class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_neighborhood')}</label>
                             {#if data.isAdmin}
-                                <input type="text" name="neighborhood" placeholder={$_('community.ev_form_neighborhood')}
+                                <input id="ev-add-neighborhood" type="text" name="neighborhood" placeholder={$_('community.ev_form_neighborhood')}
                                     value={(data.user as any)?.neighborhood ?? ''}
                                     class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-green-400/60" />
                             {:else if coordNeighborhoods.length > 1}
-                                <select name="neighborhood"
+                                <select id="ev-add-neighborhood" name="neighborhood"
                                     class="w-full bg-[#0f172a] border border-white/20 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-green-400/60">
                                     {#each coordNeighborhoods as n}
                                         <option value={n}>{n}</option>
                                     {/each}
                                 </select>
                             {:else}
-                                <input type="text" name="neighborhood" readonly
+                                <input id="ev-add-neighborhood" type="text" name="neighborhood" readonly
                                     value={coordNeighborhoods[0] ?? (data.user as any)?.neighborhood ?? ''}
                                     class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-gray-400 cursor-not-allowed" />
                             {/if}
                         </div>
                         <!-- Price -->
                         <div>
-                            <label class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_price')}</label>
-                            <input type="number" name="price" min="0" value="0"
+                            <label for="ev-add-price" class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_price')}</label>
+                            <input id="ev-add-price" type="number" name="price" min="0" value="0"
                                 class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-green-400/60" />
                         </div>
                         <div>
-                            <label class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_price_desc')}</label>
-                            <input type="text" name="price_description" placeholder={$_('community.ev_form_price_desc_ph')}
+                            <label for="ev-add-price-desc" class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_price_desc')}</label>
+                            <input id="ev-add-price-desc" type="text" name="price_description" placeholder={$_('community.ev_form_price_desc_ph')}
                                 class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-green-400/60" />
                         </div>
                         <!-- Icon / Image -->
                         <div class="md:col-span-2">
-                            <label class="block text-gray-300 text-sm font-semibold mb-2">{$_('community.ev_form_icon')}</label>
+                            <!-- כותרת לקבוצת בחירה (תמונה או אימוג'י), לא לשדה יחיד -->
+                            <span class="block text-gray-300 text-sm font-semibold mb-2">{$_('community.ev_form_icon')}</span>
                             <input type="hidden" name="icon" value={addImage ? '' : addIcon} />
                             <input type="hidden" name="image" value={addImage} />
                             <div class="flex flex-wrap items-center gap-2">
@@ -561,8 +563,8 @@
                         </div>
                         <!-- Color -->
                         <div>
-                            <label class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_color')}</label>
-                            <select name="color"
+                            <label for="ev-add-color" class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_color')}</label>
+                            <select id="ev-add-color" name="color"
                                 class="w-full bg-[#0f172a] border border-white/20 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-green-400/60">
                                 <option value="green">{$_('community.color_green')}</option>
                                 <option value="blue">{$_('community.color_blue')}</option>
@@ -575,8 +577,8 @@
                         </div>
                         <!-- Description -->
                         <div class="md:col-span-2">
-                            <label class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_desc')}</label>
-                            <textarea name="description" rows="3" placeholder={$_('community.ev_form_desc_ph')}
+                            <label for="ev-add-desc" class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_desc')}</label>
+                            <textarea id="ev-add-desc" name="description" rows="3" placeholder={$_('community.ev_form_desc_ph')}
                                 class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-green-400/60 resize-none"></textarea>
                         </div>
                     </div>
@@ -628,28 +630,29 @@
                 }}>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="md:col-span-2">
-                            <label class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_title_label')}</label>
-                            <input type="text" name="title" required placeholder={$_('community.ev_form_title_ph')}
+                            <label for="ev-sg-title" class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_title_label')}</label>
+                            <input id="ev-sg-title" type="text" name="title" required placeholder={$_('community.ev_form_title_ph')}
                                 class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-teal-400/60" />
                         </div>
                         <div>
-                            <label class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_date')}</label>
-                            <input type="date" name="date" required
+                            <label for="ev-sg-date" class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_date')}</label>
+                            <input id="ev-sg-date" type="date" name="date" required
                                 class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-teal-400/60" />
                         </div>
                         <div>
-                            <label class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_time')}</label>
-                            <input type="time" name="time"
+                            <label for="ev-sg-time" class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_time')}</label>
+                            <input id="ev-sg-time" type="time" name="time"
                                 class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-teal-400/60" />
                         </div>
                         <div>
-                            <label class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_location')}</label>
-                            <input type="text" name="location" placeholder={$_('community.ev_form_location_ph')}
+                            <label for="ev-sg-location" class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_location')}</label>
+                            <input id="ev-sg-location" type="text" name="location" placeholder={$_('community.ev_form_location_ph')}
                                 class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-teal-400/60" />
                         </div>
                         <!-- Icon / Image -->
                         <div>
-                            <label class="block text-gray-300 text-sm font-semibold mb-2">{$_('community.ev_form_icon')}</label>
+                            <!-- כותרת לקבוצת בחירה (תמונה או אימוג'י), לא לשדה יחיד -->
+                            <span class="block text-gray-300 text-sm font-semibold mb-2">{$_('community.ev_form_icon')}</span>
                             <input type="hidden" name="icon" value={suggestImage ? '' : suggestIcon} />
                             <input type="hidden" name="image" value={suggestImage} />
                             <div class="flex flex-wrap items-center gap-1.5">
@@ -676,8 +679,8 @@
                             </div>
                         </div>
                         <div class="md:col-span-2">
-                            <label class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_desc')}</label>
-                            <textarea name="description" rows="3" placeholder={$_('community.ev_suggest_desc_ph')}
+                            <label for="ev-sg-desc" class="block text-gray-300 text-sm font-semibold mb-1">{$_('community.ev_form_desc')}</label>
+                            <textarea id="ev-sg-desc" name="description" rows="3" placeholder={$_('community.ev_suggest_desc_ph')}
                                 class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-teal-400/60 resize-none"></textarea>
                         </div>
                     </div>

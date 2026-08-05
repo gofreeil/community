@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onMount } from "svelte";
+    import { onMount, untrack } from "svelte";
     import CameraCapture from "$lib/components/CameraCapture.svelte";
     import { locale, t } from "svelte-i18n";
     import { get } from "svelte/store";
@@ -1055,8 +1055,9 @@
     let copied = $state(false);
 
     // ---- Singles phone-request flow ----
+    // untrack: ערך פתיחה בלבד - $effect שמתחתיו מסנכרן אותו כשהנתונים מתרעננים
     let singlesState = $state(
-        (item as unknown as { singlesStatus?: { state: string; requestItemId?: string } })?.singlesStatus?.state ?? null
+        untrack(() => (item as unknown as { singlesStatus?: { state: string; requestItemId?: string } })?.singlesStatus?.state) ?? null
     );
     $effect(() => {
         const s = (item as unknown as { singlesStatus?: { state: string } })?.singlesStatus?.state;
@@ -1090,8 +1091,9 @@
 
     let approving = $state<string | null>(null);
     let approveError = $state('');
+    // untrack: כמו singlesState - ערך פתיחה, וה-$effect שמתחת מסנכרן ברענון
     let incoming = $state(
-        ((item as unknown as { incomingRequests?: Array<{ id: string; requester_snapshot: Record<string, unknown>; requested_at: string; status: string }> })?.incomingRequests) ?? []
+        untrack(() => (item as unknown as { incomingRequests?: Array<{ id: string; requester_snapshot: Record<string, unknown>; requested_at: string; status: string }> })?.incomingRequests) ?? []
     );
     $effect(() => {
         const i = (item as unknown as { incomingRequests?: typeof incoming })?.incomingRequests;
@@ -2753,8 +2755,10 @@
         role="dialog"
         aria-modal="true"
         aria-label="תצוגת תמונה מוגדלת"
+        tabindex="-1"
         class="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-sm flex items-center justify-center p-4"
-        onclick={closeLightbox}
+        onclick={(e) => { if (e.target === e.currentTarget) closeLightbox(); }}
+        onkeydown={(e) => { if (e.key === 'Escape') closeLightbox(); }}
     >
         <button
             type="button"
@@ -2780,10 +2784,11 @@
             </span>
         {/if}
         {#key galleryIndex}
+            <!-- אין צורך ב-stopPropagation: הרקע נסגר רק בלחיצה עליו עצמו
+                 (e.target === e.currentTarget), ולכן לחיצה על התמונה לא סוגרת -->
             <img
                 src={galleryImages[galleryIndex]}
                 alt={item.label}
-                onclick={(e) => e.stopPropagation()}
                 class="max-w-[95vw] max-h-[90vh] w-auto h-auto object-contain rounded-lg shadow-2xl"
                 in:fade={{ duration: 200 }}
             />

@@ -170,6 +170,9 @@
             <h3 class="cropper-title">{cropperState.title}</h3>
             <p class="cropper-hint">{cropperState.hint}</p>
 
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
+            <!-- משטח גרירה לחיתוך התמונה. אין לו מקבילת מקלדת ישירה, אבל אותה
+                 תוצאה מושגת במחוון ההגדלה ובכפתורי האישור/ביטול שבדיאלוג -->
             <div
                 class="cropper-frame"
                 class:is-circle={cropperState.shape === 'circle'}

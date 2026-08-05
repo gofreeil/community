@@ -427,7 +427,10 @@
                     {#if item.created_at}<span>🕒 {formatDate(item.created_at)}</span>{/if}
                 </div>
 
-                <div class="flex flex-col gap-2" onclick={(e) => e.stopPropagation()}>
+                <!-- מיכל פריסה בלבד; ה-stopPropagation מונע מלחיצה על הכפתורים
+                     להפעיל גם את לחיצת הכרטיס. role="presentation" - הכפתורים
+                     שבתוכו הם אלה שנגישים, לא ה-div עצמו -->
+                <div class="flex flex-col gap-2" role="presentation" onclick={(e) => e.stopPropagation()}>
                     {#if item.phone}
                         <div class="flex gap-2">
                             <button type="button"

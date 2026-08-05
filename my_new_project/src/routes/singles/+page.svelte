@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { untrack } from 'svelte';
     import type { PageData } from './$types';
     import { _ } from 'svelte-i18n';
     import { goto } from '$app/navigation';
@@ -13,16 +14,16 @@
     type Gender = 'all' | 'male' | 'female';
     // גבר רואה רק נקבות, אישה רואה רק גברים — נעול לחלוטין, אין ממשק שינוי.
     // אם אין מגדר משתמש (אורח/לא מולא בפרופיל) — מציגים הכל.
-    const lockedFilter: Gender | null =
+    const lockedFilter: Gender | null = $derived(
         data.currentUserGender === 'male' ? 'female'
         : data.currentUserGender === 'female' ? 'male'
-        : null;
+        : null);
     // סופר-אדמין יכול לעקוף את הנעילה ולבחון את לוח הגברים/הנשים.
     let adminGender = $state<Gender>('all');
     const filter = $derived<Gender>(data.isSuperAdmin ? adminGender : (lockedFilter ?? 'all'));
 
     // אורח (לא מחובר) - טשטוש תמונות + חסימת כניסה לדף פרופיל
-    const isGuest: boolean = !data.currentUserId;
+    const isGuest: boolean = $derived(!data.currentUserId);
     function openProfile(id: string) {
         // פתיחת הדף המלא בעיצוב העשיר (/items/[id]) - לבקשת המשתמש
         if (isGuest) {
@@ -218,7 +219,8 @@
     })();
 
     // ── שדכן מערכת: בקשה / סטטוס ──
-    let mmStatus = $state<string>(data.matchmakerStatus ?? 'none');
+    // untrack: מצב מקומי שמתעדכן מיד אחרי שליחת בקשה, בלי להמתין לרענון
+    let mmStatus = $state<string>(untrack(() => data.matchmakerStatus) ?? 'none');
     let mmSubmitting = $state(false);
     let mmError = $state('');
 
@@ -650,7 +652,9 @@
                             </p>
                         {/if}
 
-                        <div class="flex gap-2" onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.stopPropagation()} role="group">
+                        <!-- מיכל פריסה בלבד; הכפתורים שבתוכו הם הנגישים, ולכן
+                             presentation ולא group (שהוא תפקיד לא-אינטראקטיבי) -->
+                        <div class="flex gap-2" onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.stopPropagation()} role="presentation">
                             <div class="relative flex-shrink-0">
                                 <button
                                     type="button"

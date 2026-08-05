@@ -1,8 +1,9 @@
 <script lang="ts">
     import type { PageData } from './$types';
     let { data }: { data: PageData } = $props();
-    const ad = data.ad;
-    const lp = ad.landing;
+    // $derived: מעבר בין מודעות בניווט צד-לקוח משתמש באותה קומפוננטה
+    const ad = $derived(data.ad);
+    const lp = $derived(ad.landing);
 </script>
 
 <svelte:head>

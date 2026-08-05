@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onMount } from "svelte";
+    import { onMount, untrack } from "svelte";
     import { _ } from "svelte-i18n";
     import { browser } from "$app/environment";
     import { goto } from "$app/navigation";
@@ -268,9 +268,10 @@
     }
 
     // ---- Email + WhatsApp confirmation ----
-    // Defaults pre-filled from the user's profile (data.layoutUser) if logged in
-    let userEmail      = $state(data?.layoutUser?.email ?? '');
-    let userPhone      = $state(data?.layoutUser?.phone ?? '');
+    // Defaults pre-filled from the user's profile (data.layoutUser) if logged in.
+    // untrack: ערך פתיחה בלבד - המשתמש עורך את השדות האלה.
+    let userEmail      = $state(untrack(() => data?.layoutUser?.email) ?? '');
+    let userPhone      = $state(untrack(() => data?.layoutUser?.phone) ?? '');
     let emailSending   = $state(false);
     let emailSent      = $state(false);
     let emailError     = $state('');
@@ -436,13 +437,13 @@
 
     // מספר השכונות בעיר = הרשימה הסטטית + שכונות שאושרו ע"י אדמין. כך שכונה מאושרת
     // חדשה מעלה מיד את המחיר של אותה עיר (המחיר מוכפל במספר השכונות).
-    const approvedNbs = ((data as any).approvedNeighborhoods ?? []) as Array<{ name: string; city: string }>;
+    const approvedNbs = $derived(((data as any).approvedNeighborhoods ?? []) as Array<{ name: string; city: string }>);
     const nbCount = (city: string) => effectiveNeighborhoods(city, approvedNbs).length;
 
     // Price multiplier = total neighborhoods in selected cities (כולל שכונות מאושרות)
-    const totalNeighborhoodsCount =
+    const totalNeighborhoodsCount = $derived(
         citiesData.reduce((s, c) => s + c.neighborhoods.length, 0) +
-        approvedNbs.filter(n => n.name && !(citiesAndNeighborhoods[n.city] ?? []).includes(n.name)).length;
+        approvedNbs.filter(n => n.name && !(citiesAndNeighborhoods[n.city] ?? []).includes(n.name)).length);
     let neighborhoodCount = $derived(
         isNational
             ? totalNeighborhoodsCount
@@ -498,11 +499,11 @@
 
     // ---- Discount code ("מגירת" הנחת רכז / בעלים / פטור) ----
     // בזמן מבצע ההשקה מוזרק קוד "יוצאים לחירות" (פטור מלא) לרשימת הקודים
-    const discountCodes   = [
+    const discountCodes   = $derived([
         ...((data?.discountCodes ?? []) as DiscountCode[]),
         ...(FREE_PROMO ? [FREE_PROMO_DISCOUNT] : []),
-    ];
-    const isCoordinator   = Boolean(data?.isCoordinator);
+    ]);
+    const isCoordinator   = $derived(Boolean(data?.isCoordinator));
     let   discountInput   = $state('');
 
     let discountEval  = $derived(evaluateDiscount(discountInput, discountCodes, isCoordinator));

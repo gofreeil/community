@@ -69,8 +69,12 @@
                     </div>
 
                     <div class="mb-6">
-                        <label class="block text-white/70 text-sm mb-1">{$_('account.answer_label')}</label>
+                        <label for="fp-answer" class="block text-white/70 text-sm mb-1">{$_('account.answer_label')}</label>
+                        <!-- svelte-ignore a11y_autofocus -->
+                        <!-- autofocus מכוון: זה השדה היחיד בשלב הזה, והמשתמש הגיע לכאן
+                             במפורש כדי לענות על שאלת האבטחה -->
                         <input
+                            id="fp-answer"
                             type="text"
                             name="answer"
                             required
@@ -104,8 +108,9 @@
                     {/if}
 
                     <div class="mb-4">
-                        <label class="block text-white/70 text-sm mb-1">{$_('account.email_address_label')}</label>
+                        <label for="fp-email" class="block text-white/70 text-sm mb-1">{$_('account.email_address_label')}</label>
                         <input
+                            id="fp-email"
                             type="email"
                             name="email"
                             required

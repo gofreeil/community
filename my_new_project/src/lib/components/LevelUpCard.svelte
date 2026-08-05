@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { untrack } from 'svelte';
     import { get } from 'svelte/store';
     import { t, locale } from 'svelte-i18n';
     import { citiesAndNeighborhoods, effectiveNeighborhoods } from '$lib/neighborhoodsData';
@@ -44,11 +45,12 @@
     const missing = $derived(missingForTier(user, target));
 
     // ערכי הטופס (מאותחלים מהמשתמש הקיים)
-    let city         = $state(user.city ?? '');
-    let neighborhood = $state(user.neighborhood ?? '');
-    let phone        = $state(user.phone ?? '');
-    let gender       = $state(user.gender ?? '');
-    let birthDate    = $state(user.birth_date ?? '');
+    // untrack: ערכי פתיחה מהמשתמש הקיים - מכאן הטופס בשליטת הגולש
+    let city         = $state(untrack(() => user.city) ?? '');
+    let neighborhood = $state(untrack(() => user.neighborhood) ?? '');
+    let phone        = $state(untrack(() => user.phone) ?? '');
+    let gender       = $state(untrack(() => user.gender) ?? '');
+    let birthDate    = $state(untrack(() => user.birth_date) ?? '');
 
     let saving      = $state(false);
     let errorKey    = $state<string | null>(null);

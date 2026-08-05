@@ -3,7 +3,9 @@
     import type { PageData, ActionData } from './$types';
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
-    let { item } = data;
+    // $derived: מעבר בין פריטים בניווט צד-לקוח מחזיר את אותה קומפוננטה,
+    // ובלי זה היא הייתה נשארת עם הפריט הראשון שנטען
+    const item = $derived(data.item);
 
     const isOwner = $derived(!!data.currentUserId && item.user_id === data.currentUserId);
 

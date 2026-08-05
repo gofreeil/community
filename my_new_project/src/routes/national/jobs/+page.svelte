@@ -136,7 +136,7 @@
         ];
     }
 
-    const realItems = (data.items as Item[]) ?? [];
+    const realItems = $derived((data.items as Item[]) ?? []);
     let baseItems = $derived<Item[]>(realItems.length > 0 ? realItems : buildMockItems($_));
 
     // ====== State ======

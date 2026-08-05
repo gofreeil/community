@@ -10,7 +10,7 @@
 		deleteSubscription,
 	} from "$lib/push.js";
 	import { page } from "$app/state";
-	import { onMount } from "svelte";
+	import { onMount, untrack } from "svelte";
 	import type { CityEntry } from "$lib/neighborhoodsData";
 	import { t, locale } from "svelte-i18n";
 	import { get } from "svelte/store";
@@ -27,7 +27,7 @@
 	let { data, form } = $props();
 
 	// snapshot ראשוני של נתוני המשתמש לאתחול שדות הטופס (intentional - form manages its own state)
-	const _ud = data.user;
+	const _ud = untrack(() => data.user);
 
 	// tFn: פונקציית תרגום reactive - לא משתמשים ב-$t ישירות כי Prettier מוחק אותו
 	let _loc = $state(get(locale));
@@ -407,8 +407,9 @@
 		singles_review: "/admin/singles-review",
 	};
 
-	// הודעת התאמה לדף פנויים/פנויות - לפי קבוצת הגיל והמגדר של המשתמש
-	const singlesMatchMessage = (data as { singlesMatchInfo?: { count: number; ageGroupLabel: string; oppositeGenderLabel: string } | null }).singlesMatchInfo
+	// הודעת התאמה לדף פנויים/פנויות - לפי קבוצת הגיל והמגדר של המשתמש.
+	// untrack: ההודעה נבנית פעם אחת ומוזרקת לרשימת ההודעות המקומית שמתחת.
+	const singlesMatchMessage = untrack(() => (data as { singlesMatchInfo?: { count: number; ageGroupLabel: string; oppositeGenderLabel: string } | null }).singlesMatchInfo
 		? {
 				id: "singles-match",
 				from: tFn("profile.singles_match_from"),
@@ -416,10 +417,12 @@
 				time: tFn("profile.now"),
 				read: false,
 			}
-		: null;
+		: null);
 
+	// untrack: רשימת ההודעות מנוהלת מקומית (נקרא/ארכיון/הוסתר) - רענון data
+	// לא אמור לדרוס את מצב הקריאה שהמשתמש כרגע משנה
 	let messages = $state(
-		[
+		untrack(() => [
 			...(singlesMatchMessage ? [singlesMatchMessage] : []),
 			...((data.messages ?? []).length > 0
 				? (data.messages ?? []).map(
@@ -532,7 +535,7 @@
 							read: false,
 						},
 					]),
-		],
+		]),
 	);
 
 	// === ניהול מצב הודעות (מחיקה / ארכיון / תזכורת) - נשמר ב-localStorage ===
@@ -925,7 +928,7 @@
 	let locationNoticeTimer: ReturnType<typeof setTimeout> | undefined;
 	// תמונת ברירת המחדל תמיד מגוגל (oauth_image). העלאת תמונה או ייבוא מפייסבוק הם
 	// דריסה זמנית בלבד; הסרתם מחזירה אוטומטית לתמונת הגוגל.
-	const googleImage: string | null = (data as { oauth_image?: string | null }).oauth_image ?? null;
+	const googleImage: string | null = untrack(() => (data as { oauth_image?: string | null }).oauth_image) ?? null;
 	let avatarPreview = $state<string | null>(
 		_ud?.avatar_url || googleImage || null,
 	);
@@ -2868,6 +2871,7 @@
 	            hover:before:from-white/18 {!showMessages
 			? 'cursor-pointer'
 			: ''} {mobileTab !== 'messages' ? 'hidden md:block' : ''}"
+		role="presentation"
 		onclick={() => {
 			if (!showMessages) showMessages = true;
 		}}
@@ -2926,6 +2930,7 @@
 		{#if showMessages}
 			<div
 				class="flex flex-col gap-3"
+				role="presentation"
 				onclick={(e) => e.stopPropagation()}
 			>
 				{#if lrNotice}
@@ -2953,6 +2958,10 @@
 					{@const msgLink = (msg as { link?: string }).link}
 					{@const navTarget = isSinglesMatch ? '/singles' : msgLink}
 					{@const isClickable = !!navTarget}
+					<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+					<!-- role/tabindex/onkeydown נקבעים יחד באותו תנאי: כשהכרטיס
+					     לחיץ הוא role="link" עם tabindex, וכשלא - אין אף אחד מהם.
+					     המנתח לא יכול להוכיח את הקשר הזה סטטית -->
 					<div
 						role={isClickable ? 'link' : undefined}
 						tabindex={isClickable ? 0 : undefined}
@@ -3025,7 +3034,7 @@
 									class="flex items-center gap-1.5 justify-end mt-2 pt-2 border-t border-white/8 flex-wrap"
 									onclick={(e) => e.stopPropagation()}
 									onkeydown={(e) => e.stopPropagation()}
-									role="group"
+									role="presentation"
 								>
 									{#if msgLr}
 										<!-- אשר/דחה בקשת מיקום - ישירות מהכרטיס, בלי לחפש בעמוד הניהול -->
@@ -3189,6 +3198,8 @@
 								{@const handledLink = (msg as { link?: string }).link}
 								{@const handledUndo = (msg as LrMsg).lrUndo}
 								<!-- לחיצה על הכרטיס פותחת את עמוד המשתמש המבקש בניהול - מי שלח ומה ביקש -->
+								<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+								<!-- כמו למעלה: role/tabindex/onkeydown תמיד יחד -->
 								<div
 									role={handledLink ? "link" : undefined}
 									tabindex={handledLink ? 0 : undefined}
@@ -3211,7 +3222,7 @@
 											class="flex items-center gap-1.5 justify-between mt-2 pt-2 border-t border-white/8 flex-wrap"
 											onclick={(e) => e.stopPropagation()}
 											onkeydown={(e) => e.stopPropagation()}
-											role="group"
+											role="presentation"
 										>
 											<span class="inline-flex items-center gap-1 text-[10px] font-bold text-green-300 bg-green-500/15 border border-green-500/30 px-2 py-0.5 rounded-full">
 												{tFn("profile.handled_badge")}
@@ -5048,14 +5059,15 @@
 
 					<!-- סטטוס - מוצג לקהילה -->
 					<div class="md:col-span-2">
-						<label
+						<!-- כותרת לקבוצת כפתורי סטטוס, לא לשדה יחיד - ולכן span -->
+						<span
 							class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2"
 						>
 							🟢 {tFn("profile.status")} <span
 								class="text-purple-400 text-xs font-normal normal-case"
 								>{tFn("profile.status_public_note")}</span
 							>
-						</label>
+						</span>
 						{#if isEditing}
 							<div class="flex flex-wrap gap-2">
 								{#each statusOptions() as opt}
@@ -5090,6 +5102,7 @@
 						<!-- שאלת ביטחון - אופציונלי -->
 						<div id="p-security">
 							<label
+								for="profile-security-q"
 								class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2"
 							>
 								🛡️ {tFn("profile.security_q_label")} <span
@@ -5099,6 +5112,7 @@
 							</label>
 							{#if isEditing}
 								<select
+									id="profile-security-q"
 									name="security_question"
 									bind:value={security_question}
 									class="w-full bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none mb-2"
@@ -5162,6 +5176,7 @@
 										<!-- שאלת ביטחון שנייה (אבטחה כפולה) -->
 										<div class="mt-3">
 											<label
+												for="profile-security-q2"
 												class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2"
 											>
 												🛡️ {tFn("profile.security_q2_label")} <span
@@ -5170,6 +5185,7 @@
 												>
 											</label>
 											<select
+												id="profile-security-q2"
 												name="security_question_2"
 												bind:value={security_question_2}
 												class="w-full bg-[#070b14] border border-white/10 focus:border-purple-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none mb-2"

@@ -247,7 +247,9 @@
     let showCategorySheet = $state(false);
     let sheetDragY = $state(0);
     let sheetDragStartY = 0;
-    let sheetDragging = false;
+    // $state: נקרא ב-style של הגיליון כדי לבטל את ה-transition בזמן גרירה.
+    // בלי זה הגרירה נשארה עם אנימציה של 0.2s והרגישה דביקה בנייד.
+    let sheetDragging = $state(false);
 
     // מובייל: טולטיפ-המתנה - מציג תיאור הקטגוריה במשך זמן הטעינה
     let mobileTooltipFor = $state<string | null>(null);
@@ -2156,6 +2158,9 @@
                 {/if}
 
                 <!-- מפת Leaflet - מרקרים אמיתיים שזזים יחד עם המפה -->
+                <!-- svelte-ignore a11y_no_static_element_interactions -->
+                <!-- mouseleave בלבד (משחרר את גלגלת הזום כשהעכבר יוצא מהמפה) -
+                     אין כאן פעולה שמשתמש מקלדת יכול או צריך להפעיל -->
                 <div
                     bind:this={mapEl}
                     onmouseleave={deactivateMap}
@@ -2527,6 +2532,8 @@
             <div class="w-full h-[350px] md:h-[450px] flex flex-col p-3 md:p-5" style="border-radius: 20px;">
                 <!-- שדה חיפוש (דסקטופ; בנייד הקלט מגיע משדה החיפוש שבשורת הכפתורים) -->
                 <div class="hidden md:flex gap-2 mb-4 mt-6 max-w-sm mx-auto w-full">
+                    <!-- svelte-ignore a11y_autofocus -->
+                    <!-- autofocus מכוון: השדה נפתח בתוך חלון החיפוש שהמשתמש בחר לפתוח -->
                     <input
                         bind:value={searchQuery}
                         type="text"
@@ -2557,8 +2564,7 @@
                 {:else}
                 <!-- תוצאות -->
                 <div class="flex-1 overflow-y-auto space-y-2 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-transparent">
-                    {#if false}
-                    {:else if searchResults().length === 0}
+                    {#if searchResults().length === 0}
                         <div class="text-center py-12 text-gray-500">
                             <div class="text-4xl mb-3">😕</div>
                             <p class="text-sm">{$t('map.no_results')}</p>
@@ -2709,11 +2715,13 @@
         role="dialog"
         aria-modal="true"
         onclick={(e) => { if (e.target === e.currentTarget) showHelpMenu = false; }}
+        onkeydown={(e) => { if (e.key === "Escape") showHelpMenu = false; }}
+        aria-label={$t("map.open_call")}
+        tabindex="-1"
     >
         <div
             class="w-80 max-w-[90vw] bg-white rounded-xl shadow-2xl border-2 border-purple-600 overflow-hidden animate-slideDown"
             dir="rtl"
-            onclick={(e) => e.stopPropagation()}
         >
             <div class="bg-gradient-to-r from-red-500 to-pink-500 p-3 text-center">
                 <h3 class="text-white font-bold text-lg">{$t('map.open_call')}</h3>
@@ -2746,11 +2754,13 @@
         role="dialog"
         aria-modal="true"
         onclick={(e) => { if (e.target === e.currentTarget) showSurvey = false; }}
+        onkeydown={(e) => { if (e.key === "Escape") showSurvey = false; }}
+        aria-label={$t("map.survey_title")}
+        tabindex="-1"
     >
         <div
             class="w-80 max-w-[90vw] bg-white rounded-xl shadow-2xl border-2 border-yellow-600 overflow-hidden animate-slideDown"
             dir="rtl"
-            onclick={(e) => e.stopPropagation()}
         >
             <div class="bg-gradient-to-r from-yellow-500 to-orange-500 p-3 text-center">
                 <h3 class="text-white font-bold text-lg">{$t('map.survey_title')}</h3>
@@ -2794,8 +2804,12 @@
         role="dialog"
         aria-modal="true"
         onclick={(e) => { if (e.target === e.currentTarget) showRaiseHandModal = false; }}
+        onkeydown={(e) => { if (e.key === "Escape") showRaiseHandModal = false; }}
+        aria-label={$t("map.raise_hand")}
+        tabindex="-1"
     >
-        <div class="w-full max-w-lg" onclick={(e) => e.stopPropagation()} dir="rtl">
+        <!-- הרקע נסגר רק בלחיצה עליו עצמו, ולכן אין צורך ב-stopPropagation -->
+        <div class="w-full max-w-lg" dir="rtl">
 
             {#if modalSubmitted}
                 <!-- מסך הצלחה -->
@@ -3598,14 +3612,8 @@
         animation: slideDown 0.3s ease-out;
     }
 
-    iframe {
-        filter: contrast(1.1);
-    }
-
-    /* Hide Google Maps controls */
-    iframe {
-        pointer-events: auto;
-    }
+    /* היו כאן שני כללי iframe מימי ההטמעה של Google Maps. המפה עברה
+       ל-Leaflet ואין יותר iframe ברכיב, ולכן הכללים היו קוד מת. */
 
     /* Custom scrollbar styling */
     :global(.scrollbar-thin::-webkit-scrollbar) {

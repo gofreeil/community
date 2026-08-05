@@ -1,6 +1,7 @@
 <script lang="ts">
     // עורך "פרטי היתרון" בדף הפריט (מצב בנייה) - השדות שהוסרו מטופס ההוספה
     // (שעות פתיחה, מחיר, כשרות, שירותים וכו') נערכים כאן ונשמרים ב-extra_fields.
+    import { untrack } from 'svelte';
     import { _ } from 'svelte-i18n';
     import { categoryConfig, detailStepFields, cfFieldKey, cfOptKey, trOr, type FieldDef } from '$lib/categoryFields';
     import { openCropper } from '$lib/imageCropper.svelte';
@@ -27,7 +28,8 @@
         'hours',
     ]);
 
-    const cfg = categoryConfig[category];
+    // untrack: הקטגוריה של הפריט לא משתנה בזמן חיי הרכיב
+    const cfg = categoryConfig[untrack(() => category)];
     const fields: FieldDef[] = cfg
         ? detailStepFields(cfg).filter(f => !HANDLED_ELSEWHERE.has(f.key) && f.type !== 'map_pin')
         : [];

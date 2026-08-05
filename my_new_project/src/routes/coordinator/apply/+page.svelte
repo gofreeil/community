@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { untrack } from 'svelte';
     import { _ } from 'svelte-i18n';
     import { goto } from '$app/navigation';
     import { citiesAndNeighborhoods, effectiveNeighborhoods } from '$lib/neighborhoodsData';
@@ -26,17 +27,19 @@
     // אם השכונה השמורה בפרופיל אינה ברשימת השכונות המוכרות של העיר (למשל שכונה חדשה
     // שהמשתמש הוסיף בפרופיל וממתינה לאישור) - נפתח כאן מראש את מסלול "השכונה שלי לא ברשימה"
     // עם שמה, כדי שהיא תופיע כברירת מחדל גם בטופס הזה (ולא "תיעלם" כי אינה ברשימה עדיין).
-    const _profileNb   = (data.user?.neighborhood || '').trim();
-    const _profileCity = data.user?.city || '';
-    const _profileCityNbs = effectiveNeighborhoods(_profileCity, (data as any).approvedNeighborhoods)
+    // untrack: כל הבלוק הזה הוא ערכי-פתיחה לטופס. הם נקראים פעם אחת בטעינה,
+    // והמשתמש עורך אותם - רענון של data לא אמור לדרוס לו את מה שהקליד.
+    const _profileNb   = untrack(() => (data.user?.neighborhood || '').trim());
+    const _profileCity = untrack(() => data.user?.city || '');
+    const _profileCityNbs = effectiveNeighborhoods(_profileCity, untrack(() => (data as any).approvedNeighborhoods))
         .filter((n) => n && n !== 'מרכז');
     const _profileNbIsCustom = !!_profileNb && _profileNb !== 'מרכז' && !_profileCityNbs.includes(_profileNb);
 
-    let name = $state(data.user?.name || '');
-    let phone = $state(data.user?.phone || '');
+    let name = $state(untrack(() => data.user?.name) || '');
+    let phone = $state(untrack(() => data.user?.phone) || '');
     // ברירת מחדל: לוקחים עיר ושכונה מהפרופיל, אך ניתן לערוך כאן
-    let city = $state(data.user?.city || '');
-    let neighborhood = $state(_profileNbIsCustom ? '' : (data.user?.neighborhood || ''));
+    let city = $state(untrack(() => data.user?.city) || '');
+    let neighborhood = $state(_profileNbIsCustom ? '' : (untrack(() => data.user?.neighborhood) || ''));
     let experience = $state('');
     let motivation = $state('');
     let isLoading = $state(false);

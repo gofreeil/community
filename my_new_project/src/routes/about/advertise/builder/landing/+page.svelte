@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onMount } from "svelte";
+    import { onMount, untrack } from "svelte";
     import CameraCapture from "$lib/components/CameraCapture.svelte";
     import { _ } from "svelte-i18n";
     import { browser } from "$app/environment";
@@ -29,10 +29,12 @@
     let landingExtended   = $state<string>("");
     let landingImage      = $state<string>("");
     let landingAdvantages = $state<[string, string, string]>(["", "", ""]);
-    let phone             = $state<string>(data?.layoutUser?.phone ?? "");
-    let whatsapp          = $state<string>(data?.layoutUser?.phone ?? "");
+    // untrack: ערך פתיחה מהפרופיל בלבד. אלה שדות שהמפרסם עורך, ורענון של
+    // data לא אמור לדרוס לו את מה שהקליד.
+    let phone             = $state<string>(untrack(() => data?.layoutUser?.phone) ?? "");
+    let whatsapp          = $state<string>(untrack(() => data?.layoutUser?.phone) ?? "");
     let website           = $state<string>("");
-    let email             = $state<string>(data?.layoutUser?.email ?? "");
+    let email             = $state<string>(untrack(() => data?.layoutUser?.email) ?? "");
     let products          = $state<ProductRow[]>([]);
     let uniqueness        = $state<string>("");
     let address           = $state<string>("");
@@ -465,42 +467,42 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="field-label">{$_("advertise.l_phone")}</label>
-                    <input type="tel" bind:value={phone} placeholder="050-1234567" class="text-input" />
+                    <label for="lp-phone" class="field-label">{$_("advertise.l_phone")}</label>
+                    <input id="lp-phone" type="tel" bind:value={phone} placeholder="050-1234567" class="text-input" />
                 </div>
                 <div>
-                    <label class="field-label">{$_("advertise.l_whatsapp")}</label>
-                    <input type="tel" bind:value={whatsapp} placeholder="050-1234567" class="text-input" />
+                    <label for="lp-whatsapp" class="field-label">{$_("advertise.l_whatsapp")}</label>
+                    <input id="lp-whatsapp" type="tel" bind:value={whatsapp} placeholder="050-1234567" class="text-input" />
                 </div>
                 <div>
-                    <label class="field-label">{$_("advertise.l_website")}</label>
-                    <input type="url" bind:value={website} placeholder="https://my-site.co.il" class="text-input" />
+                    <label for="lp-website" class="field-label">{$_("advertise.l_website")}</label>
+                    <input id="lp-website" type="url" bind:value={website} placeholder="https://my-site.co.il" class="text-input" />
                 </div>
                 <div>
-                    <label class="field-label">{$_("advertise.l_email")}</label>
-                    <input type="email" bind:value={email} placeholder="me@example.com" class="text-input" />
+                    <label for="lp-email" class="field-label">{$_("advertise.l_email")}</label>
+                    <input id="lp-email" type="email" bind:value={email} placeholder="me@example.com" class="text-input" />
                 </div>
 
                 <div class="md:col-span-2">
-                    <label class="field-label">{$_("advertise.l_headline_label")}</label>
-                    <input type="text" bind:value={landingHeadline} placeholder={$_("advertise.l_headline_ph")} class="text-input" />
+                    <label for="lp-headline" class="field-label">{$_("advertise.l_headline_label")}</label>
+                    <input id="lp-headline" type="text" bind:value={landingHeadline} placeholder={$_("advertise.l_headline_ph")} class="text-input" />
                 </div>
                 <div class="md:col-span-2">
-                    <label class="field-label">{$_("advertise.l_pitch_label")}</label>
-                    <textarea bind:value={landingPitch} rows="3" placeholder={$_("advertise.l_pitch_ph")} class="text-input"></textarea>
+                    <label for="lp-pitch" class="field-label">{$_("advertise.l_pitch_label")}</label>
+                    <textarea id="lp-pitch" bind:value={landingPitch} rows="3" placeholder={$_("advertise.l_pitch_ph")} class="text-input"></textarea>
                 </div>
                 <div class="md:col-span-2">
-                    <label class="field-label">{$_("advertise.l_extended_label")}</label>
+                    <label for="lp-extended" class="field-label">{$_("advertise.l_extended_label")}</label>
                     <p class="text-xs text-gray-400 mb-1.5 leading-relaxed">
                         {$_("advertise.l_extended_help")}
                     </p>
-                    <textarea bind:value={landingExtended} rows="8"
+                    <textarea id="lp-extended" bind:value={landingExtended} rows="8"
                               placeholder={$_("advertise.l_extended_ph")}
                               class="text-input"></textarea>
                 </div>
 
                 <div class="md:col-span-2">
-                    <label class="field-label">{$_("advertise.l_image_label")}</label>
+                    <span class="field-label">{$_("advertise.l_image_label")}</span>
                     <p class="text-xs text-gray-400 mb-2 leading-relaxed">
                         {$_("advertise.l_image_help")}
                     </p>
@@ -525,7 +527,7 @@
                 </div>
 
                 <div class="md:col-span-2">
-                    <label class="field-label">{$_("advertise.l_adv_label")}</label>
+                    <span class="field-label">{$_("advertise.l_adv_label")}</span>
                     <p class="text-xs text-gray-400 mb-2 leading-relaxed">
                         {$_("advertise.l_adv_help_pre")} <strong class="text-amber-300">{$_("advertise.l_adv_help_strong")}</strong> {$_("advertise.l_adv_help_post")}
                     </p>
@@ -612,13 +614,13 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="md:col-span-2">
-                    <label class="field-label">{$_("advertise.l_address_label")}</label>
-                    <input type="text" bind:value={address}
+                    <label for="lp-address" class="field-label">{$_("advertise.l_address_label")}</label>
+                    <input id="lp-address" type="text" bind:value={address}
                            placeholder={$_("advertise.l_address_ph")} class="text-input" />
                 </div>
                 <div class="md:col-span-2">
-                    <label class="field-label">{$_("advertise.l_hours_label")}</label>
-                    <input type="text" bind:value={hours}
+                    <label for="lp-hours" class="field-label">{$_("advertise.l_hours_label")}</label>
+                    <input id="lp-hours" type="text" bind:value={hours}
                            placeholder={$_("advertise.l_hours_ph")} class="text-input" />
                 </div>
             </div>

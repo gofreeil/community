@@ -165,7 +165,8 @@
 
                     <!-- icon -->
                     <div>
-                        <label class="block text-sm text-gray-300 mb-2">{$_('community.ga_icon_label')}</label>
+                        <!-- כותרת לקבוצת כפתורים, לא לשדה יחיד - ולכן span ולא label -->
+                        <span class="block text-sm text-gray-300 mb-2">{$_('community.ga_icon_label')}</span>
                         <div class="flex flex-wrap gap-2">
                             {#each iconOptions as ic}
                                 <button type="button" onclick={() => (createIcon = ic)}
@@ -179,7 +180,8 @@
 
                     <!-- תמונת שער -->
                     <div>
-                        <label class="block text-sm text-gray-300 mb-2">{$_('community.ga_cover_label')}</label>
+                        <!-- כותרת לאזור העלאת תמונה, לא לשדה יחיד -->
+                        <span class="block text-sm text-gray-300 mb-2">{$_('community.ga_cover_label')}</span>
                         {#if coverImage}
                             <div class="relative inline-block">
                                 <img src={coverImage} alt={$_('community.ga_preview_alt')} class="h-32 rounded-xl object-cover border border-white/10" />
@@ -201,31 +203,32 @@
 
                     <div class="grid md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm text-gray-300 mb-1">{$_('community.ga_name_label')}</label>
-                            <input name="title" required placeholder={$_('community.ga_name_ph')} class="w-full bg-[#070b14] border border-white/10 rounded-lg px-3 py-2 text-white" />
+                            <label for="ga-title" class="block text-sm text-gray-300 mb-1">{$_('community.ga_name_label')}</label>
+                            <input id="ga-title" name="title" required placeholder={$_('community.ga_name_ph')} class="w-full bg-[#070b14] border border-white/10 rounded-lg px-3 py-2 text-white" />
                         </div>
                         <div>
-                            <label class="block text-sm text-gray-300 mb-1">{$_('community.ga_location_label')}</label>
-                            <input name="location" placeholder={$_('community.ga_location_ph')} class="w-full bg-[#070b14] border border-white/10 rounded-lg px-3 py-2 text-white" />
+                            <label for="ga-location" class="block text-sm text-gray-300 mb-1">{$_('community.ga_location_label')}</label>
+                            <input id="ga-location" name="location" placeholder={$_('community.ga_location_ph')} class="w-full bg-[#070b14] border border-white/10 rounded-lg px-3 py-2 text-white" />
                         </div>
                         <div>
-                            <label class="block text-sm text-gray-300 mb-1">{$_('community.ga_date_label')}</label>
-                            <input type="date" name="date" required class="w-full bg-[#070b14] border border-white/10 rounded-lg px-3 py-2 text-white" />
+                            <label for="ga-date" class="block text-sm text-gray-300 mb-1">{$_('community.ga_date_label')}</label>
+                            <input id="ga-date" type="date" name="date" required class="w-full bg-[#070b14] border border-white/10 rounded-lg px-3 py-2 text-white" />
                         </div>
                         <div>
-                            <label class="block text-sm text-gray-300 mb-1">{$_('community.ga_time_label')}</label>
-                            <input type="time" name="time" class="w-full bg-[#070b14] border border-white/10 rounded-lg px-3 py-2 text-white" />
+                            <label for="ga-time" class="block text-sm text-gray-300 mb-1">{$_('community.ga_time_label')}</label>
+                            <input id="ga-time" type="time" name="time" class="w-full bg-[#070b14] border border-white/10 rounded-lg px-3 py-2 text-white" />
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-sm text-gray-300 mb-1">{$_('community.ga_desc_label')}</label>
-                        <textarea name="description" rows="2" placeholder={$_('community.ga_desc_ph')} class="w-full bg-[#070b14] border border-white/10 rounded-lg px-3 py-2 text-white"></textarea>
+                        <label for="ga-description" class="block text-sm text-gray-300 mb-1">{$_('community.ga_desc_label')}</label>
+                        <textarea id="ga-description" name="description" rows="2" placeholder={$_('community.ga_desc_ph')} class="w-full bg-[#070b14] border border-white/10 rounded-lg px-3 py-2 text-white"></textarea>
                     </div>
 
                     <!-- food list -->
                     <div>
-                        <label class="block text-sm text-gray-300 mb-2">{$_('community.ga_food_label')}</label>
+                        <!-- כותרת לרשימת שורות, לא לשדה יחיד -->
+                        <span class="block text-sm text-gray-300 mb-2">{$_('community.ga_food_label')}</span>
                         <div class="space-y-2">
                             {#each foodDraft as f, i}
                                 <div class="flex gap-2">

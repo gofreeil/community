@@ -151,6 +151,8 @@
     </div>
 
     <!-- 3D stack container -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <!-- החלקה במגע להחלפת כרטיס; הניווט הנגיש הוא הכפתורים/הנקודות שמתחת -->
     <div
         bind:this={stackEl}
         class="stack-inner relative h-[520px] md:h-[670px] {isDragging ? 'dragging' : ''}"

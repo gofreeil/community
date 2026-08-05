@@ -32,6 +32,8 @@
 
 			<form method="POST" use:enhance={() => { loading = true; return async ({ update }) => { await update(); loading = false; }; }}>
 				<input type="hidden" name="redirect" value={data.redirect} />
+				<!-- svelte-ignore a11y_autofocus -->
+				<!-- autofocus מכוון: השדה היחיד בדף, והמשתמש הגיע במפורש להקליד קוד -->
 				<input
 					name="code"
 					inputmode="numeric"

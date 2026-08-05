@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { untrack } from 'svelte';
     import { _ } from 'svelte-i18n';
     import { heRank, normalizeHe } from '$lib/search';
     // בורר רחוב + מספר בית: הרחובות נטענים מהרשימה הרשמית של העיר הנבחרת
@@ -32,11 +33,12 @@
         onStreetListChange?: (info: { hasList: boolean; loading: boolean }) => void;
     } = $props();
 
-    // פירוק ערך קיים (טיוטא/עריכה) של "רחוב מספר" לשני השדות
-    const initialMatch = withHouseNumber
+    // פירוק ערך קיים (טיוטא/עריכה) של "רחוב מספר" לשני השדות.
+    // untrack: פיצול חד-פעמי של הערך הנכנס - מכאן והלאה השדות בשליטת המשתמש.
+    const initialMatch = untrack(() => withHouseNumber
         ? (value ?? '').trim().match(/^(.*?)\s+(\d+[^\s]*)$/)
-        : null;
-    let street   = $state(initialMatch ? initialMatch[1] : (value ?? '').trim());
+        : null);
+    let street   = $state(initialMatch ? initialMatch[1] : untrack(() => (value ?? '').trim()));
     let houseNum = $state(initialMatch ? initialMatch[2] : '');
 
     let streets       = $state<string[]>([]);

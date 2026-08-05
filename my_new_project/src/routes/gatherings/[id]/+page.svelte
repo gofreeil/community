@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { untrack } from 'svelte';
     import { enhance } from '$app/forms';
     import CameraCapture from '$lib/components/CameraCapture.svelte';
     import type { SubmitFunction } from '@sveltejs/kit';
@@ -65,11 +66,12 @@
     // ── UI state ──
     let editing = $state(false);
     let showManagers = $state(false);
-    let rsvpCount = $state(myAttendance?.count ?? 1);
-    let rsvpNote  = $state(myAttendance?.note ?? '');
+    // untrack: ערכי פתיחה לטופס ההרשמה - מכאן והלאה בשליטת המשתמש
+    let rsvpCount = $state(untrack(() => myAttendance?.count) ?? 1);
+    let rsvpNote  = $state(untrack(() => myAttendance?.note) ?? '');
 
     // ── תמונת שער (עריכה למנהל) ──
-    let editImage = $state(g.image ?? '');
+    let editImage = $state(untrack(() => g.image) ?? '');
     function compressImage(file: File): Promise<string> {
         return new Promise((resolve, reject) => {
             const MAX = 1200;
@@ -379,12 +381,12 @@
             {/if}
             <form method="POST" action="?/rsvp" use:enhance={withErrorToast} class="flex items-end gap-3 flex-wrap {myAttendance ? 'mt-4 pt-4 border-t border-white/10' : ''}">
                 <div>
-                    <label class="block text-xs text-gray-400 mb-1">כמה אתם מגיעים?</label>
-                    <input type="number" name="count" min="1" bind:value={rsvpCount} class="w-20 bg-[#070b14] border border-white/10 rounded-lg px-3 py-2 text-white" />
+                    <label for="rsvp-count" class="block text-xs text-gray-400 mb-1">כמה אתם מגיעים?</label>
+                    <input id="rsvp-count" type="number" name="count" min="1" bind:value={rsvpCount} class="w-20 bg-[#070b14] border border-white/10 rounded-lg px-3 py-2 text-white" />
                 </div>
                 <div class="flex-1 min-w-[140px]">
-                    <label class="block text-xs text-gray-400 mb-1">הערה (לא חובה)</label>
-                    <input name="note" bind:value={rsvpNote} placeholder="מגיע עם הילדים..." class="w-full bg-[#070b14] border border-white/10 rounded-lg px-3 py-2 text-white text-sm" />
+                    <label for="rsvp-note" class="block text-xs text-gray-400 mb-1">הערה (לא חובה)</label>
+                    <input id="rsvp-note" name="note" bind:value={rsvpNote} placeholder="מגיע עם הילדים..." class="w-full bg-[#070b14] border border-white/10 rounded-lg px-3 py-2 text-white text-sm" />
                 </div>
                 <button class="px-5 py-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold whitespace-nowrap">
                     {myAttendance ? 'עדכון' : '✋ אני מגיע/ה'}

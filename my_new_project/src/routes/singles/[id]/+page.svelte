@@ -3,8 +3,9 @@
     import { religiosityLabel, statusLabel } from '$lib/singlesMock';
     let { data }: { data: PageData } = $props();
 
-    const s = data.single!;
-    const isMale = s.gender === 'male';
+    // $derived: מעבר בין כרטיסים בניווט צד-לקוח משתמש באותה קומפוננטה
+    const s = $derived(data.single!);
+    const isMale = $derived(s.gender === 'male');
 
     let contactMenuOpen = $state(false);
     let selectedContact: 'request' | 'exchange' | 'message' | null = $state(null);
@@ -147,15 +148,17 @@
         }
         return avatar;
     }
-    const origin = data.origin || (typeof window !== 'undefined' ? window.location.origin : 'https://community.gofreeil.com');
-    const canonicalUrl = `${origin}/singles/${s.id}`;
-    const ogTitle = `${s.nickname} · ${[s.age, s.city].filter(Boolean).join(', ')} | ${isMale ? 'פנוי' : 'פנויה'} מקהילה בשכונה`;
-    const ogDescBits = [
+    const origin = $derived(data.origin || (typeof window !== 'undefined' ? window.location.origin : 'https://community.gofreeil.com'));
+    // כל תגי ה-SEO נגזרים מ-s/origin, ולכן גם הם $derived - אחרת הם היו
+    // נתקעים על הכרטיס הראשון שנטען
+    const canonicalUrl = $derived(`${origin}/singles/${s.id}`);
+    const ogTitle = $derived(`${s.nickname} · ${[s.age, s.city].filter(Boolean).join(', ')} | ${isMale ? 'פנוי' : 'פנויה'} מקהילה בשכונה`);
+    const ogDescBits = $derived([
         s.description,
         s.lookingFor ? `${isMale ? 'מחפש' : 'מחפשת'}: ${s.lookingFor}` : '',
-    ].filter(Boolean);
-    const ogDescription = (ogDescBits.join(' · ') || `הכירו את ${s.nickname}, ${s.label}`) + ' — לדף המלא:';
-    const ogImg = ogImage(s.avatar);
+    ].filter(Boolean));
+    const ogDescription = $derived((ogDescBits.join(' · ') || `הכירו את ${s.nickname}, ${s.label}`) + ' — לדף המלא:');
+    const ogImg = $derived(ogImage(s.avatar));
 </script>
 
 <svelte:head>

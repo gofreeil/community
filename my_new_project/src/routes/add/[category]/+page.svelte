@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
+    import { onMount, untrack } from 'svelte';
     import CameraCapture from '$lib/components/CameraCapture.svelte';
     import { browser } from '$app/environment';
     import { goto, invalidateAll } from '$app/navigation';
@@ -33,7 +33,8 @@
 
     let { data }: { data: PageData } = $props();
 
-    const { categoryId, config, userId, userProfile, editItem } = data;
+    // untrack: הקטגוריה והפרופיל נקבעים בטעינת הדף; הטופס עצמו מנוהל מקומית
+    const { categoryId, config, userId, userProfile, editItem } = untrack(() => data);
 
     // קטגוריית "מקום": הטופס מצומצם ל"הוספת יתרון במפה" - רק שדות שלב-המפה מוצגים,
     // ושאר הפרטים מושלמים בדף הפריט. activeFields = מה שבאמת מוצג/נשמר בטופס.
@@ -728,7 +729,8 @@
     }
 
     // ---- כשמשתמש בוחר 'מחפש להתארח' - ברירת המחדל של 'משך הפרסום' היא 'לשבת הקרובה בלבד' ----
-    let prevOfferType = $state(formValues.offer_type ?? '');
+    // untrack: זהו "הערך הקודם" למעקב שינוי ב-$effect שמתחת, לא ערך נגזר
+    let prevOfferType = $state(untrack(() => formValues.offer_type) ?? '');
     $effect(() => {
         const ot = formValues.offer_type;
         if (ot !== prevOfferType) {
@@ -1416,7 +1418,10 @@
                             {/if}
                         </div>
                         {#if imgs.length > 0}
+                            <!-- גרירת תמונות לשינוי סדר; presentation - הכפתורים
+                                 שבתוך כל תמונה הם הדרך הנגישה לאותה פעולה -->
                             <div
+                                role="presentation"
                                 ondragover={(e) => onDragOver(field.key, e)}
                                 ondragleave={(e) => onDragLeave(field.key, e)}
                                 ondrop={(e) => onDrop(field.key, e)}

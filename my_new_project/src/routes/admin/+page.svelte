@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import type { DiscountCode } from '$lib/discountCodes';
 	import { heMatches } from '$lib/search';
 	import { citiesData, effectiveNeighborhoods } from '$lib/neighborhoodsData';
@@ -77,9 +77,11 @@
 	}
 
 	// ---- עורך קודי הנחה (סופר-אדמין) ----
-	// עותק מקומי הניתן לעריכה; נשמר ל-Strapi דרך action saveDiscounts
+	// עותק מקומי הניתן לעריכה; נשמר ל-Strapi דרך action saveDiscounts.
+	// untrack במכוון: זו תמונת-מצב חד-פעמית שהאדמין עורך, ואסור שטעינה
+	// מחדש של data תדרוס לו את העריכה באמצע.
 	let discountCodes = $state<DiscountCode[]>(
-		(data.discountCodes ?? []).map((c: DiscountCode) => ({ ...c }))
+		untrack(() => (data.discountCodes ?? []).map((c: DiscountCode) => ({ ...c })))
 	);
 
 	function addDiscountCode() {
@@ -1064,26 +1066,26 @@
 
 								<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
 									<div>
-										<label class="block text-xs text-gray-400 mb-1">שם תצוגה</label>
-										<input bind:value={code.label} placeholder="הנחת רכז"
+										<label for="dc-{code.id}-label" class="block text-xs text-gray-400 mb-1">שם תצוגה</label>
+										<input id="dc-{code.id}-label" bind:value={code.label} placeholder="הנחת רכז"
 											class="w-full bg-[#1e293b] border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500" />
 									</div>
 									<div>
-										<label class="block text-xs text-gray-400 mb-1">מילות הקוד (מה שמקלידים)</label>
-										<input bind:value={code.code} placeholder="רכז יוצאים לחירות"
+										<label for="dc-{code.id}-code" class="block text-xs text-gray-400 mb-1">מילות הקוד (מה שמקלידים)</label>
+										<input id="dc-{code.id}-code" bind:value={code.code} placeholder="רכז יוצאים לחירות"
 											class="w-full bg-[#1e293b] border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500" />
 									</div>
 									<div>
-										<label class="block text-xs text-gray-400 mb-1">סוג</label>
-										<select bind:value={code.kind}
+										<label for="dc-{code.id}-kind" class="block text-xs text-gray-400 mb-1">סוג</label>
+										<select id="dc-{code.id}-kind" bind:value={code.kind}
 											class="w-full bg-[#1e293b] border border-white/10 rounded-lg px-3 py-2 text-white text-sm cursor-pointer focus:outline-none focus:border-amber-500">
 											<option value="percent">אחוז הנחה</option>
 											<option value="free">פטור מלא</option>
 										</select>
 									</div>
 									<div>
-										<label class="block text-xs text-gray-400 mb-1">אחוז (%)</label>
-										<input type="number" min="0" max="100" bind:value={code.percent}
+										<label for="dc-{code.id}-percent" class="block text-xs text-gray-400 mb-1">אחוז (%)</label>
+										<input id="dc-{code.id}-percent" type="number" min="0" max="100" bind:value={code.percent}
 											disabled={code.kind === 'free'}
 											class="w-full bg-[#1e293b] border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500 disabled:opacity-40" />
 									</div>
@@ -1103,8 +1105,8 @@
 								</div>
 
 								<div class="mt-3">
-									<label class="block text-xs text-gray-400 mb-1">הערה (פנימית)</label>
-									<input bind:value={code.note} placeholder="הערה לעצמך - לא מוצג למשתמש"
+									<label for="dc-{code.id}-note" class="block text-xs text-gray-400 mb-1">הערה (פנימית)</label>
+									<input id="dc-{code.id}-note" bind:value={code.note} placeholder="הערה לעצמך - לא מוצג למשתמש"
 										class="w-full bg-[#1e293b] border border-white/10 rounded-lg px-3 py-2 text-gray-300 text-sm focus:outline-none focus:border-amber-500" />
 								</div>
 							</div>
@@ -1134,15 +1136,19 @@
 
 <!-- מודל מינוי רכז -->
 {#if showCoordModal && coordModalUser}
+	<!-- סגירה בלחיצה על הרקע נבדקת לפי היעד עצמו, במקום stopPropagation על
+	     תיבת הדיאלוג - כך אין מאזין לחיצה על אלמנט לא-אינטראקטיבי -->
 	<div
 		class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center px-4"
-		onclick={() => (showCoordModal = false)}
+		onclick={(e) => { if (e.target === e.currentTarget) showCoordModal = false; }}
 		role="presentation"
 	>
 		<div
 			class="bg-[#0f172a] rounded-2xl border border-white/10 shadow-2xl w-full max-w-md p-6"
-			onclick={(e) => e.stopPropagation()}
 			role="dialog"
+			aria-modal="true"
+			aria-label="מינוי רכז שכונה"
+			tabindex="-1"
 		>
 			<h2 class="text-2xl font-bold mb-1">🏘️ מינוי רכז שכונה</h2>
 			<p class="text-gray-300 text-base mb-4">
@@ -1164,11 +1170,12 @@
 			}}>
 				<input type="hidden" name="userId" value={coordModalUser.id} />
 
-				<label class="block text-base font-medium text-gray-200 mb-1">
+				<label for="coord-neighborhoods" class="block text-base font-medium text-gray-200 mb-1">
 					שכונות שהוא רכז עליהן (שורה אחת לכל שכונה)
 				</label>
 				<p class="text-gray-400 text-sm mb-2">השאר ריק כדי להסיר את הרכזות מהמשתמש</p>
 				<textarea
+					id="coord-neighborhoods"
 					name="neighborhoods"
 					bind:value={coordNeighborhoods}
 					rows="4"

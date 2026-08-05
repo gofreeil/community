@@ -119,10 +119,13 @@
     <title>{data.option.icon} {data.option.text} | קהילה בשכונה</title>
 </svelte:head>
 
+<!-- לחיצה על הרקע חוזרת אחורה; Escape עושה את אותו הדבר במקלדת -->
 <div class="min-h-screen flex items-start justify-center pt-8 pb-16 px-4 cursor-pointer" dir="rtl"
     onclick={(e) => { if (e.target === e.currentTarget) history.back(); }}
+    onkeydown={(e) => { if (e.key === 'Escape') history.back(); }}
     role="button" tabindex="-1">
-    <div class="w-full max-w-lg cursor-default" onclick={(e) => e.stopPropagation()}>
+    <!-- מיכל התוכן; presentation כי הוא פריסה בלבד -->
+    <div class="w-full max-w-lg cursor-default" role="presentation" onclick={(e) => e.stopPropagation()}>
 
         <!-- Header -->
         <div class="text-center mb-8">

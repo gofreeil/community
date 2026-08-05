@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onMount } from "svelte";
+    import { onMount, untrack } from "svelte";
     import CameraCapture from "$lib/components/CameraCapture.svelte";
     import { browser } from "$app/environment";
     import { goto } from "$app/navigation";
@@ -167,10 +167,11 @@
     let landingImage    = $state<string>("");                   // separate hero image for landing page
     let landingAdvantages = $state<[string, string, string]>(["", "", ""]); // 3 product/service advantages
     let uniqueness      = $state<string>("");
-    let phone           = $state<string>(data?.layoutUser?.phone ?? "");
-    let whatsapp        = $state<string>(data?.layoutUser?.phone ?? "");
+    // untrack: ערך פתיחה מהפרופיל בלבד - רענון data לא ידרוס מה שהמפרסם הקליד
+    let phone           = $state<string>(untrack(() => data?.layoutUser?.phone) ?? "");
+    let whatsapp        = $state<string>(untrack(() => data?.layoutUser?.phone) ?? "");
     let website         = $state<string>("");
-    let email           = $state<string>(data?.layoutUser?.email ?? "");
+    let email           = $state<string>(untrack(() => data?.layoutUser?.email) ?? "");
     let address         = $state<string>("");
     let hours           = $state<string>("");
     let products        = $state<ProductRow[]>([]);
@@ -943,7 +944,16 @@
     <div class="builder-steps">
 
     <!-- =================== STEP 1: MAIN IMAGE =================== -->
-    <section bind:this={stepRefs.image} class="step-card" onclick={() => activeStep === "image" || (activeStep = "image")}>
+    <!-- לחיצה על הכרטיס היא קיצור עכבר בלבד; משתמש מקלדת מגיע לשלב ע"י Tab
+         לתוך הפקדים שבו, ולכן נוסף onfocusin שמדליק את אותו שלב -->
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <section
+        bind:this={stepRefs.image}
+        class="step-card"
+        onclick={() => activeStep === "image" || (activeStep = "image")}
+        onfocusin={() => activeStep === "image" || (activeStep = "image")}
+    >
         <div class="step-head" class:step-title-light={litFlags.image.title}>
             <span class="step-num" class:step-num-light={litFlags.image.num}>1</span>
             <h2>{$_('advertise.b_s1_title')}</h2>
@@ -1111,6 +1121,9 @@
                         <button type="button" class="crop-modal-x" onclick={cancelCrop} aria-label={$_('advertise.close')}>✕</button>
                     </div>
                     <p class="crop-help">{$_('advertise.b_crop_help')}</p>
+                    <!-- svelte-ignore a11y_no_static_element_interactions -->
+                    <!-- משטח גרירה לחיתוך. אין לו מקבילת מקלדת ישירה, אבל אותה
+                         פעולה זמינה בכפתורי הזום ＋/－ שמתחתיו -->
                     <div class="crop-stage"
                          onpointerdown={cropPointerDown}
                          onpointermove={cropPointerMove}
@@ -1295,11 +1308,15 @@
     </section>
 
     <!-- =================== STEP 6: HOVER TEXT =================== -->
+    <!-- כמו בשלב 1: קיצור עכבר, ומקבילה למקלדת דרך onfocusin -->
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
     <section bind:this={stepRefs.hover} class="step-card"
              onclick={(e) => {
                  if ((e.target as HTMLElement).closest('button, a, input, textarea')) return;
                  if (activeStep !== "hover") activeStep = "hover";
-             }}>
+             }}
+             onfocusin={() => { if (activeStep !== "hover") activeStep = "hover"; }}>
         <div class="step-head" class:step-title-light={litFlags.hover.title}>
             <span class="step-num" class:step-num-light={litFlags.hover.num}>6</span>
             <h2>{$_('advertise.b_s6_title')}</h2>

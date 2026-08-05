@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { untrack } from 'svelte';
     import type { PageData } from './$types';
     import { religiosityLabel } from '$lib/singlesMock';
     import type { Religiosity, Gender } from '$lib/singlesMock';
@@ -15,8 +16,9 @@
     };
 
     // מצב מקומי לצד "פנוי/ה" — מתעדכן אחרי החלטה בלי רענון.
-    let myResponse = $state(data.role === 'single' ? data.myResponse : 'pending');
-    let stage = $state(data.stage);
+    // untrack: מצב מקומי שמתעדכן אחרי החלטה, בלי שרענון data ידרוס אותו
+    let myResponse = $state(untrack(() => data.role === 'single' ? data.myResponse : 'pending'));
+    let stage = $state(untrack(() => data.stage));
     let submitting = $state<'interested' | 'declined' | null>(null);
     let errMsg = $state('');
 

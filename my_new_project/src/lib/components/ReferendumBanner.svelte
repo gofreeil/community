@@ -6,9 +6,12 @@
     import { _ } from "svelte-i18n";
 
     let container: HTMLElement;
-    let mouseX = 0;
-    let mouseY = 0;
-    let showTooltip = false;
+    // חייבים $state: הקומפוננטה במצב runes, ושלושת הערכים נקראים בתבנית
+    // (ה-tooltip והמיקום שלו). בלי זה השינוי בהם לא מרנדר מחדש - הטולטיפ
+    // פשוט לא היה מופיע.
+    let mouseX = $state(0);
+    let mouseY = $state(0);
+    let showTooltip = $state(false);
     let tooltipTimeout: ReturnType<typeof setTimeout>;
     let selectedOption = $state<'yes' | 'no' | 'maybe' | null>(null);
 
