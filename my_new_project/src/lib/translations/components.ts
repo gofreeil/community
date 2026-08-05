@@ -160,7 +160,7 @@ export const he = {
         mb_community_ads_aria: "פרסומות קהילתיות",
 
         // ===== AdsSidebar =====
-        as_ads_partners_aria: "פרסומות ושותפים",
+        as_ads_partners_aria: "אתרי יוצאים לחירות",
         as_header: "מתקדמים לחברה מתוקנת ועצמאית",
     },
 };
@@ -323,7 +323,7 @@ export const en = {
         mb_community_ads_aria: "Community ads",
 
         // ===== AdsSidebar =====
-        as_ads_partners_aria: "Ads & partners",
+        as_ads_partners_aria: "Yotzim LaHerut network sites",
         as_header: "Advancing toward a better, independent society",
     },
 };
@@ -486,7 +486,7 @@ export const ru = {
         mb_community_ads_aria: "Общинная реклама",
 
         // ===== AdsSidebar =====
-        as_ads_partners_aria: "Реклама и партнёры",
+        as_ads_partners_aria: "Сайты сети «Йоцим ла-Херут»",
         as_header: "Движемся к обновлённому и независимому обществу",
     },
 };
