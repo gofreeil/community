@@ -250,17 +250,17 @@
                              והמפרסם לא רואה את השם שלו על המסך אלא רק בריחוף
                              (ובנייד - אף פעם). -->
                         <div
-                            class="ad-diag bg-gradient-to-br {ad.gradient} transition-opacity duration-[1500ms] group-hover:opacity-0"
+                            class="promo-diag bg-gradient-to-br {ad.gradient} transition-opacity duration-[1500ms] group-hover:opacity-0"
                         ></div>
                         <div
-                            class="ad-title-top transition-opacity duration-[1500ms] group-hover:opacity-0"
+                            class="promo-title-top transition-opacity duration-[1500ms] group-hover:opacity-0"
                             class:has-corner-logo={ad.logo && !logoAtCta(ad.title)}
                         >
-                            <h3 class="ad-title">{ad.title}</h3>
+                            <h3 class="promo-title">{ad.title}</h3>
                         </div>
                         {#if ad.subtitle}
-                            <div class="ad-sub-wrap transition-opacity duration-[1500ms] group-hover:opacity-0">
-                                <p class="ad-sub">{ad.subtitle}</p>
+                            <div class="promo-sub-wrap transition-opacity duration-[1500ms] group-hover:opacity-0">
+                                <p class="promo-sub">{ad.subtitle}</p>
                             </div>
                         {/if}
                         {#if ad.logo}
@@ -269,7 +269,7 @@
                                 alt=""
                                 loading="lazy"
                                 decoding="async"
-                                class="ad-logo {logoAtCta(ad.title) ? 'ad-logo-cta' : 'ad-logo-right'}
+                                class="promo-logo {logoAtCta(ad.title) ? 'promo-logo-cta' : 'promo-logo-right'}
                                        transition-opacity duration-[1500ms] group-hover:opacity-0"
                             />
                         {/if}
@@ -366,9 +366,13 @@
         }
     }
 
-    /* כותרת ולוגו של פרסומת מאושרת — הערכים זהים ל-.pro-title-top/.pro-title/.ad-logo
+    /* שמות המחלקות מתחילים ב-promo ולא ב-ad בכוונה: EasyList מכילה כלל
+       קוסמטי גנרי `##.ad-title` שמסתיר כל אלמנט עם המחלקה הזאת בכל אתר.
+       עם השם הישן חוסמי פרסומות מחקו את כותרת המפרסם וְהשאירו פס שחור ריק,
+       בזמן שכל שאר הכרטיס - תמונה, לוגו, תת-כותרת ו-CTA - נשאר על המסך. */
+    /* כותרת ולוגו של פרסומת מאושרת — הערכים זהים ל-.pro-title-top/.pro-title/.promo-logo
        שבבילדר, כי מסגרת התצוגה החיה שם רחבה 140px והמשבצת כאן 144px. */
-    .ad-title-top {
+    .promo-title-top {
         position: absolute;
         inset-inline: 0;
         top: 0;
@@ -387,14 +391,14 @@
        הוא היה מכסה את המילה האחרונה - המשבצת רחבה 144px בלבד.
        padding-right פיזי ולא inset-inline-end: הדף כולו RTL, ושם הקצה
        הלוגי הוא שמאל - בדיוק הצד שבו הלוגו לא נמצא. */
-    .ad-title-top.has-corner-logo {
+    .promo-title-top.has-corner-logo {
         padding-right: 46px;
     }
 
     /* הרצועה האלכסונית שמתחת לתמונה - אותו clip-path של .pro-diag בבילדר.
        המשתנים --diag-top-* נקבעים רק בעמוד הבילדר; כאן נופלים לברירת
        המחדל, שהיא בדיוק מה שהמפרסם רואה כשהוא לא נוגע בגובה הרצועה. */
-    .ad-diag {
+    .promo-diag {
         position: absolute;
         inset: 0;
         clip-path: polygon(
@@ -407,7 +411,7 @@
         pointer-events: none;
     }
     /* פס הברק הלבן שחוצה את האלכסון */
-    .ad-diag::after {
+    .promo-diag::after {
         content: "";
         position: absolute;
         inset: 0;
@@ -419,7 +423,7 @@
         );
         pointer-events: none;
     }
-    .ad-sub-wrap {
+    .promo-sub-wrap {
         position: absolute;
         inset-inline: 0;
         bottom: 0;
@@ -428,7 +432,7 @@
         text-align: right;
         pointer-events: none;
     }
-    .ad-sub {
+    .promo-sub {
         margin: 0;
         color: rgba(255, 255, 255, 0.95);
         font-weight: 600;
@@ -437,14 +441,14 @@
         text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
     }
     /* משולש בלתי-נראה שגורם לשורה הראשונה להתקצר לפי שיפוע האלכסון */
-    .ad-sub::before {
+    .promo-sub::before {
         content: "";
         float: left;
         width: 28%;
         height: 1.35em;
         shape-outside: polygon(0 0, 100% 0, 0 100%);
     }
-    .ad-title {
+    .promo-title {
         margin: 0;
         color: white;
         font-weight: 900;
@@ -453,7 +457,7 @@
         letter-spacing: 0.005em;
         text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85), 0 1px 2px rgba(0, 0, 0, 0.95);
     }
-    .ad-logo {
+    .promo-logo {
         position: absolute;
         z-index: 6;
         width: 36px;
@@ -466,15 +470,15 @@
     }
     /* right/left פיזיים - כמו בבילדר. עם inset-inline-end הלוגו קפץ לצד
        שמאל, כי הדף RTL והקצה הלוגי שם הוא שמאל. */
-    .ad-logo-right {
+    .promo-logo-right {
         top: 6px;
         right: 6px;
         left: auto;
     }
     /* כותרת ארוכה: הלוגו יורד ורוכב על הפינה הימנית של הרצועה האלכסונית,
-       מרכזו על --diag-top-right (18px = חצי מגובה הלוגו) - כמו .ad-logo-cta
+       מרכזו על --diag-top-right (18px = חצי מגובה הלוגו) - כמו .promo-logo-cta
        בבילדר. */
-    .ad-logo-cta {
+    .promo-logo-cta {
         top: auto;
         bottom: calc(100% - var(--diag-top-right, 78%) - 18px);
         right: 6px;
