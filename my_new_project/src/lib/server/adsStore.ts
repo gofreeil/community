@@ -14,6 +14,18 @@ const TTL_ADS = 120_000;
 
 const ENDPOINT = '/api/submitted-ads';
 
+// האוסף הזה משותף עם אתרים אחרים ברשת (index) ואין בו עמודת אתר. הסימון
+// נשמר ב-landing._site, עמודת json שכבר נושאת מפתחות פנימיים, ולכן לא נדרש
+// שינוי סכמה. פרסומת בלי _site היא פרסומת ותיקה של האתר הזה - ממשיכה
+// להיות מוצגת כאן, ובאתרים האחרים היא מסוננת החוצה.
+const SITE_ID = 'community';
+
+/** האם הפרסומת שייכת לאתר הזה (כולל ותיקות בלי סימון). */
+function belongsToThisSite(s: { landing?: unknown }): boolean {
+    const site = (s?.landing as { _site?: unknown } | null | undefined)?._site;
+    return site === undefined || site === null || site === SITE_ID;
+}
+
 const DEFAULT_DURATION_DAYS = 30;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -147,7 +159,9 @@ async function listByStatus(status: AdStatus): Promise<SubmittedAd[]> {
             'filters[ad_status][$eq]': status,
             'sort':                    'submitted_at:desc',
         });
-        return data.map(fromStrapi);
+        // סינון לפי אתר: האוסף משותף, ובלי זה פרסומות של אתרים אחרים ברשת
+        // היו נכנסות לכאן. בקוד ולא ב-Strapi כי אין עמודה ייעודית.
+        return data.filter(belongsToThisSite).map(fromStrapi);
     } catch (e) {
         if (e instanceof StrapiContentTypeError) {
             console.warn('[adsStore] submitted-ad content type לא רשום ב-Strapi - מחזיר []');
@@ -207,7 +221,8 @@ export async function submitAd(payload: Omit<SubmittedAd, 'id' | 'status' | 'sub
             main_image:          payload.mainImage,
             // ה-fit נארז בתוך landing (json) — אין עמודה ייעודית בסכמה,
             // ומפתח לא-מוכר ברמת ה-attributes היה מפיל את הבקשה ב-400.
-            landing:             { ...payload.landing, mainImageFit: parseAdImageFit(payload.mainImageFit) },
+            // _site משייך את הפרסומת לאתר הזה באוסף המשותף
+            landing:             { ...payload.landing, mainImageFit: parseAdImageFit(payload.mainImageFit), _site: SITE_ID },
             submitted_by_id:     payload.submittedBy?.id ?? null,
             submitted_by_email:  payload.submittedBy?.email ?? null,
             submitted_by_name:   payload.submittedBy?.name ?? null,
