@@ -1,12 +1,12 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { getUserById, getUserByEmail, updateUserProfile, getItemsByUserId, upsertUser, getMessagesByUserId, createItem, updateItem, getAllSuperAdmins, getAllUsers, getItemsByCategory, getItemsByCategoryAndStatus, createNeighborhoodRequest } from '$lib/server/db';
+import { getUserById, getUserByEmail, updateUserProfile, getItemsByUserId, upsertUser, getMessagesByUserId, createItem, updateItem, getDbItemById, getAllSuperAdmins, getAllUsers, getItemsByCategory, getItemsByCategoryAndStatus, createNeighborhoodRequest } from '$lib/server/db';
 import { finalizeLocationDecision, undoLocationDecision, withdrawOpenLocationRequests } from '$lib/server/locationDecision';
 import { getCachedUserById, invalidateCachedUser } from '$lib/server/userCache';
 import { citiesData } from '$lib/neighborhoodsData';
 import { cityCenters } from '$lib/neighborhoodCoords';
 import { categoryConfig } from '$lib/categoryFields';
-import { countPending } from '$lib/server/adsStore';
+import { countPending, approveAd, rejectAd } from '$lib/server/adsStore';
 
 // קטגוריות פרסום אמיתיות (גמ"ח, למסירה, חוגים וכו') - לא קריאות שכונה
 const PUBLICATION_CATEGORIES = new Set(Object.keys(categoryConfig));
@@ -551,6 +551,10 @@ export const actions: Actions = {
     // דחיית בקשת מיקום מתוך כרטיס ההודעה (סופר-אדמין בלבד)
     rejectLocationRequest: (event) => handleLocationRequest(event, 'reject'),
 
+    // אישור/דחיית בקשת פרסום מתוך כרטיס ההתראה - בלי מעבר למסך אישור הפרסומות
+    approveAdSubmission: (event) => handleAdSubmission(event, 'approve'),
+    rejectAdSubmission:  (event) => handleAdSubmission(event, 'reject'),
+
     // ביטול החלטה על בקשת מיקום ("לחצתי אישור בטעות") - סופר-אדמין בלבד.
     // מחזיר את הבקשה לממתינות, מוחק את הודעת ההחלטה מהמבקש, ומחזיר את
     // הודעת האדמין למצב פעיל עם כפתורי אשר/דחה
@@ -584,6 +588,70 @@ export const actions: Actions = {
 };
 
 /** מוודא שהמשתמש המחובר הוא סופר-אדמין (כולל fallback לפי אימייל למיזוג OAuth+credentials) */
+/** אישור פרסומות פתוח לסופר-אדמין וגם לאדמין שמונה - אותה הרשאה של
+ *  מסך "אישור פרסומות", כי שניהם מקבלים את ההתראה על בקשת פרסום. */
+async function requireAdsAdminId(event: Parameters<NonNullable<Actions[string]>>[0]): Promise<string | null> {
+    let session = null;
+    try { session = await event.locals.auth(); } catch {}
+    if (!session?.user?.id) return null;
+    let role = session.user.role ?? '';
+    if (role !== 'super_admin' && role !== 'neighborhood_admin') {
+        try {
+            let dbUser = await getUserById(session.user.id);
+            if (!dbUser && session.user.email) dbUser = await getUserByEmail(session.user.email);
+            role = dbUser?.role ?? role;
+        } catch { /* ignore */ }
+    }
+    return role === 'super_admin' || role === 'neighborhood_admin' ? session.user.id : null;
+}
+
+/** אישור/דחייה של בקשת פרסום ישירות מכרטיס ההתראה באזור האישי.
+ *  אותה פעולה בדיוק של מסך "אישור פרסומות" - רק בלי לנווט אליו. */
+async function handleAdSubmission(event: Parameters<NonNullable<Actions[string]>>[0], decision: 'approve' | 'reject') {
+    const adminId = await requireAdsAdminId(event);
+    if (!adminId) return fail(403, { adError: 'נדרשת הרשאת ניהול' });
+
+    const form  = await event.request.formData();
+    const msgId = form.get('msgId')?.toString() ?? '';
+    const adId  = form.get('adId')?.toString() ?? '';
+    if (!adId) return fail(400, { adError: 'חסר מזהה הפרסומת' });
+
+    try {
+        const ad = decision === 'approve'
+            ? await approveAd(adId, adminId)
+            : await rejectAd(adId, adminId);
+        // הפרסומת נמחקה בינתיים ממסך הניהול - ההתראה כבר לא רלוונטית,
+        // ולכן מסמנים אותה כטופלה במקום להשאיר כפתורים שלא יעשו כלום.
+        if (!ad && decision === 'approve') {
+            await markAdMessageHandled(msgId, decision);
+            return fail(404, { adError: 'הפרסומת לא נמצאה - ייתכן שכבר טופלה' });
+        }
+        await markAdMessageHandled(msgId, decision);
+        return { adSuccess: decision, adTitle: ad?.title ?? '' };
+    } catch (e) {
+        console.warn('[profile] handleAdSubmission failed:', e);
+        return fail(500, { adError: 'שגיאה בטיפול בבקשה, נסה שוב' });
+    }
+}
+
+/** מסמן את התראת "בקשת פרסום חדשה" כטופלה - כך היא יורדת מההתראות
+ *  הפעילות ועוברת להיסטוריה, בכל המכשירים (המצב נשמר ב-extra_fields). */
+async function markAdMessageHandled(msgId: string, decision: 'approve' | 'reject'): Promise<void> {
+    if (!msgId) return;
+    try {
+        const item = await getDbItemById(msgId);
+        if (!item) return;
+        let ef: Record<string, unknown> = {};
+        try { ef = item.extra_fields ? JSON.parse(item.extra_fields) : {}; } catch { /* ריק */ }
+        await updateItem(msgId, {
+            status: 'handled',
+            extra_fields: { ...ef, handled: true, decision, handled_at: new Date().toISOString() },
+        });
+    } catch (e) {
+        console.warn('[profile] markAdMessageHandled failed:', e);
+    }
+}
+
 async function requireSuperAdminId(event: Parameters<NonNullable<Actions[string]>>[0]): Promise<string | null> {
     let session = null;
     try { session = await event.locals.auth(); } catch {}

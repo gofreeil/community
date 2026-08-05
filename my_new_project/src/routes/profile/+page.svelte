@@ -434,6 +434,7 @@
 							let efLink: string | undefined;
 							let efRequesterId = "";
 							let efHasPin = false;
+							let efAdId = "";
 							let ef: Record<string, unknown> = {};
 							try {
 								ef = JSON.parse(m.extra_fields || "{}") ?? {};
@@ -441,6 +442,8 @@
 								efLink = (ef?.link as string | undefined) ?? undefined;
 								efRequesterId = ef?.requested_by_id ? String(ef.requested_by_id) : "";
 								efHasPin = ef?.requested_lat != null;
+								// מזהה הפרסומת - מאפשר אשר/דחה ישירות מהכרטיס
+								efAdId = efType === "ad_submission" && ef?.ad_id ? String(ef.ad_id) : "";
 							} catch {}
 							// נתוני בקשת מיקום לכפתורי אשר/דחה על הכרטיס.
 							// הודעות ישנות לא שמרו city ב-extra_fields - נחלץ מטקסט ההודעה.
@@ -514,6 +517,9 @@
 								// משמש לגיזום ה-localStorage המיושן כדי שה-"החזרה" תסתנכרן חוצה-מכשירים.
 								srvActive:
 									("read" in ef || "dismissed" in ef) && !ef?.read && !ef?.dismissed,
+								// בקשת פרסום: אשר/דחה על הכרטיס עצמו, בלי מעבר למסך הניהול
+								adSubId: efAdId || undefined,
+								adTitle: efAdId ? String(ef?.ad_title ?? "") : undefined,
 								// לחיצה על כל הכרטיס פותחת את עמוד הניהול במקום הרלוונטי לטיפול בבקשה
 								link:
 									efLink ??
@@ -718,6 +724,47 @@
 			lrBusyId = "";
 		}
 	}
+	// אישור/דחיית בקשת פרסום מתוך כרטיס ההתראה. מצב הטעינה, אישור-הדחייה
+	// וההודעה חוזרים לאותם משתנים של בקשת מיקום: הודעה היא או בקשת מיקום
+	// או בקשת פרסום, אף פעם לא שתיהן, ולכן אין התנגשות ואין UI כפול.
+	type AdMsg = { id: string; dbId?: string; adSubId?: string; adTitle?: string };
+	async function decideAdSubmission(msg: AdMsg, decision: "approve" | "reject") {
+		if (!msg.adSubId || lrBusyId) return;
+		lrConfirmId = "";
+		lrBusyId = msg.id;
+		try {
+			const fd = new FormData();
+			fd.set("msgId", msg.dbId ?? "");
+			fd.set("adId", msg.adSubId);
+			const res = await fetch(
+				`?/${decision === "approve" ? "approveAdSubmission" : "rejectAdSubmission"}`,
+				{ method: "POST", body: fd, headers: { "x-sveltekit-action": "true" } },
+			);
+			const result = deserialize(await res.text());
+			if (result.type === "success") {
+				// ההתראה סומנה "טופל" בשרת - יורדת מהרשימה הפעילה לכאן ולכל מכשיר אחר
+				messages = messages.filter((m) => m.id !== msg.id);
+				const title = msg.adTitle ?? "";
+				showLrNotice(
+					"success",
+					decision === "approve"
+						? tFn("profile.ad_approved", { title })
+						: tFn("profile.ad_rejected", { title }),
+				);
+			} else {
+				const errMsg =
+					result.type === "failure"
+						? String((result.data as { adError?: string })?.adError ?? tFn("profile.ad_error"))
+						: tFn("profile.ad_error");
+				showLrNotice("error", errMsg);
+			}
+		} catch {
+			showLrNotice("error", tFn("profile.lr_network"));
+		} finally {
+			lrBusyId = "";
+		}
+	}
+
 	// ביטול החלטה שכבר התקבלה ("לחצתי אישור בטעות") - מהיסטוריית ההודעות שטופלו.
 	// השרת מחזיר את הבקשה לממתינות ומוחק את הודעת ההחלטה מהמבקש; כאן משקפים
 	// מקומית: ההודעה חוזרת לרשימה הפעילה עם כפתורי אשר/דחה.
@@ -2977,6 +3024,7 @@
 				{#each finalDisplayedMessages as msg}
 					{@const isDraft = (msg as { isDraft?: boolean }).isDraft}
 					{@const msgLr = (msg as LrMsg).lr ? (msg as LrMsg) : null}
+					{@const msgAd = (msg as AdMsg).adSubId ? (msg as AdMsg) : null}
 					{@const isSinglesMatch = msg.id === 'singles-match'}
 					{@const msgLink = (msg as { link?: string }).link}
 					{@const navTarget = isSinglesMatch ? '/singles' : msgLink}
@@ -3097,6 +3145,46 @@
 												title={tFn("profile.lr_reject_title")}
 											>
 												{tFn("profile.lr_reject")}
+											</button>
+										{/if}
+										<span class="flex-1"></span>
+									{:else if msgAd}
+										<!-- אשר/דחה בקשת פרסום - ישירות מההתראה, בלי לנווט למסך אישור הפרסומות -->
+										{#if lrConfirmId === msg.id}
+											<span class="text-xs font-bold text-red-200">{tFn("profile.ad_reject_confirm")}</span>
+											<button
+												type="button"
+												disabled={lrBusyId === msg.id}
+												onclick={(e) => { e.stopPropagation(); decideAdSubmission(msgAd, "reject"); }}
+												class="text-xs font-black bg-red-500/20 text-red-200 border border-red-500/50 hover:bg-red-500/30 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
+											>
+												{lrBusyId === msg.id ? tFn("profile.lr_processing") : tFn("profile.lr_yes_reject")}
+											</button>
+											<button
+												type="button"
+												onclick={(e) => { e.stopPropagation(); lrConfirmId = ""; }}
+												class="text-xs font-bold text-gray-300 border border-white/15 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+											>
+												{tFn("profile.cancel")}
+											</button>
+										{:else}
+											<button
+												type="button"
+												disabled={lrBusyId === msg.id}
+												onclick={(e) => { e.stopPropagation(); decideAdSubmission(msgAd, "approve"); }}
+												class="text-xs font-black bg-green-500/15 text-green-300 border border-green-500/40 hover:bg-green-500/25 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
+												title={tFn("profile.ad_approve_title")}
+											>
+												{lrBusyId === msg.id ? tFn("profile.lr_processing") : tFn("profile.ad_approve")}
+											</button>
+											<button
+												type="button"
+												disabled={lrBusyId === msg.id}
+												onclick={(e) => { e.stopPropagation(); lrConfirmId = msg.id; }}
+												class="text-xs font-black bg-red-500/10 text-red-300 border border-red-500/40 hover:bg-red-500/20 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
+												title={tFn("profile.ad_reject_title")}
+											>
+												{tFn("profile.ad_reject")}
 											</button>
 										{/if}
 										<span class="flex-1"></span>
