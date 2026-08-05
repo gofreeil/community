@@ -7,7 +7,7 @@ export interface Ad {
     image: string;
     color: string;
     imageHeight?: string;   // גובה מותאם לתמונה (ברירת מחדל: auto)
-    imageScale?: number;    // זום על התמונה (ברירת מחדל: 1)
+    imageScale?: number;    // זום יחסית ל-cover בתצוגות הנייד (1 = מילוי המשבצת; מעל 1 = תקריב; מתחת ל-1 = התרחקות)
     hover?: string;         // טקסט tooltip בריחוף מעל כפתור ה-CTA
 }
 

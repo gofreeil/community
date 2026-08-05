@@ -1,10 +1,12 @@
 <script lang="ts">
     import { adPopup, closeAdPopup } from '$lib/adPopupStore';
+    import { adImgFit } from '$lib/adImageFit';
+    import type { Ad } from '$lib/adsData';
     import { goto } from '$app/navigation';
     import { onDestroy } from 'svelte';
     import { _ } from 'svelte-i18n';
 
-    let popup = $state<{ ad: any; pendingHref?: string } | null>(null);
+    let popup = $state<{ ad: Ad; pendingHref?: string } | null>(null);
     let countdown = $state(5);
     let timer: ReturnType<typeof setInterval> | null = null;
 
@@ -68,11 +70,13 @@
         </button>
 
         <!-- Ad image -->
-        <div class="relative h-44 w-full">
+        <!-- overflow-hidden: בתקריב התמונה גדולה מהמשבצת ואסור שתגלוש על הטקסט -->
+        <div class="relative h-44 w-full overflow-hidden">
             <img
                 src={popup.ad.image}
                 alt={popup.ad.title}
                 class="w-full h-full object-cover"
+                use:adImgFit={{ x: 50, y: 50, z: popup.ad.imageScale ?? 1 }}
             />
             <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
         </div>

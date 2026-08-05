@@ -1,6 +1,7 @@
 <script lang="ts">
     import { fade, scale } from "svelte/transition";
     import type { Ad } from "$lib/adsData";
+    import { adImgFit } from "$lib/adImageFit";
     import { onMount } from "svelte";
     import { _ } from "svelte-i18n";
 
@@ -129,6 +130,7 @@
                 src={ad.image}
                 alt={ad.title}
                 class="w-full h-full object-cover"
+                use:adImgFit={{ x: 50, y: 50, z: ad.imageScale ?? 1 }}
             />
             <div
                 class="absolute inset-0 bg-gradient-to-t from-[#0f172a] to-transparent"

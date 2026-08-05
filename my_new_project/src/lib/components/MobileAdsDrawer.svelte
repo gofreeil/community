@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { ads } from '$lib/adsData';
+	import { adImgFit } from '$lib/adImageFit';
 	import { page } from '$app/state';
 	import { _ } from 'svelte-i18n';
 
@@ -357,12 +358,14 @@
 				onclick={closeAll}
 			>
 				<div class="benefit-img-wrap">
+					<!-- imageScale של הפרסומת מוחל כאן דרך אותו מנגנון זום של הבאנר הימני -->
 					<img
 						src={ad.image}
 						alt={ad.title}
 						class="benefit-img"
 						loading="lazy"
 						decoding="async"
+						use:adImgFit={{ x: 50, y: 50, z: ad.imageScale ?? 1 }}
 					/>
 				</div>
 				<div class="benefit-body">
