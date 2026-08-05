@@ -44,6 +44,10 @@
     // הרחוב נבחר מהרשימה הרשמית של העיר? כשלא (או כשאין מספר בניין) - מציעים מפה
     let streetInList = $state(false);
     let addressResolved = $derived(streetInList && buildingNum.trim() !== '');
+    // מיקום מדויק סומן על המפה. זו דרך חלופית מלאה לכתובת: מי שנעץ פין נתן
+    // בדיוק את מה שהמפה צריכה, ואין טעם לדרוש ממנו גם רחוב וגם מספר בניין
+    // (גמ"ח בלי מספר בית - בחנות, במוסד, בכניסה צדדית - זה מקרה נפוץ לגמרי).
+    let hasPin = $derived(pinLat != null && pinLng != null);
 
     // יישוב בלי רשימת רחובות ובלי שכונות (כמו כפר תפוח): אי אפשר לאמת כתובת ואין
     // שכונות מובחנות - הפין הופך לחובה, אחרת כל הגמ"חים נערמים על מרכז היישוב.
@@ -289,8 +293,12 @@
     function validate(): { field: string; message: string } | null {
         const t = get(_);
         if (!title.trim())        return { field: 'title',        message: t('extras.g_v_title') };
-        if (!street.trim())       return { field: 'street',       message: t('extras.g_v_street') };
-        if (!buildingNum.trim())  return { field: 'buildingNum',  message: t('extras.g_v_building') };
+        // כתובת או פין - אחד מהשניים מספיק (כמו ב-/add/[category]). מי שכבר
+        // סימן את המיקום המדויק על המפה לא ייחסם כאן על רחוב/מספר חסרים.
+        if (!hasPin) {
+            if (!street.trim())      return { field: 'street',      message: t('extras.g_v_street') };
+            if (!buildingNum.trim()) return { field: 'buildingNum', message: t('extras.g_v_building') };
+        }
         if (!city.trim())         return { field: 'city',         message: t('extras.g_v_city') };
         // מוצא "השכונה שלי לא ברשימה" פתוח אך לא מולא - בלי שם ובלי פין הגמ"ח
         // היה נשמר בשקט עם השכונה הקודמת ולא מופיע במקום הנכון על המפה
@@ -411,7 +419,9 @@
 </svelte:head>
 
 {#if clientError}
-    <div class="fixed top-4 inset-x-0 z-50 flex justify-center px-4 pointer-events-none" dir="rtl">
+    <!-- z-[9999] כמו שאר ההתראות באתר: ב-z-50 ההודעה נקברה מתחת להדר
+         הדביק (z-[1100]) ולא נראתה כלל - שגיאה שהוצגה ולא הייתה קיימת -->
+    <div class="fixed top-20 inset-x-0 z-[9999] flex justify-center px-4 pointer-events-none" dir="rtl">
         <div class="pointer-events-auto flex items-center gap-2 max-w-md w-full rounded-xl bg-red-950/95 border border-red-500/50 shadow-2xl px-4 py-3 text-red-100 text-sm font-medium backdrop-blur">
             <span class="text-lg">⚠️</span>
             <span class="flex-1">{clientError}</span>
@@ -547,7 +557,8 @@
                     </div>
                     <div>
                         <label for="buildingNum" class="text-white text-sm font-bold mb-1 block">{$_('extras.g_building_label')}</label>
-                        <input id="buildingNum" name="buildingNum" bind:value={buildingNum} required placeholder={$_('extras.g_building_ph')} class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
+                        <!-- required רק כשאין פין: פין על המפה הוא כתובת מלאה בפני עצמה -->
+                        <input id="buildingNum" name="buildingNum" bind:value={buildingNum} required={!hasPin} placeholder={$_('extras.g_building_ph')} class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
                     </div>
                 </div>
 
