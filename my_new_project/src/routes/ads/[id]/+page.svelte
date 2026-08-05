@@ -1,100 +1,429 @@
 <script lang="ts">
+    // דף הנחיתה של פרסומת מאושרת.
+    // עיצוב מינימליסטי: הלוגו, הכותרת, משפט הפתיחה, היתרונות ודרכי הקשר
+    // יושבים *ליד* התמונה ולא מתחתיה — כך כל העיקר נכנס למסך הראשון בלי גלילה.
     import type { PageData } from './$types';
     import { toExternalUrl, waHref } from '$lib/urlNormalize';
     let { data }: { data: PageData } = $props();
     // $derived: מעבר בין מודעות בניווט צד-לקוח משתמש באותה קומפוננטה
     const ad = $derived(data.ad);
     const lp = $derived(ad.landing);
+
+    const gradient = $derived(ad.gradient || 'from-amber-500 to-orange-600');
+    // תמונת דף הנחיתה קודמת לתמונת הכרטיס — היא הועלתה במיוחד לדף הזה
+    const heroImage = $derived(lp.image || ad.mainImage || '');
+    const advList = $derived((lp.advantages ?? []).filter((a) => a?.trim()));
+
+    const waUrl = $derived(lp.whatsapp ? waHref(lp.whatsapp) : '');
+    const siteUrl = $derived(lp.website ? toExternalUrl(lp.website) : '');
+
+    // היתרונות נכנסים לטור שליד התמונה רק כשמשפט הפתיחה קצר; אחרת הטור היה
+    // גבוה מהתמונה ונשבר האיזון, ואז הם יורדים לשורה רחבה אחת מתחת (עדיין
+    // בלי גלילה מיותרת). נמדד לפי האורך *המוצג* — כתובות ארוכות מתכווצות.
+    const pitchLength = $derived(
+        segments(lp.pitch).reduce((n, s) => n + s.text.length, 0)
+    );
+    const advInHero = $derived(Boolean(heroImage) && advList.length > 0 && pitchLength <= 300);
+
+    // כתובת שהמפרסם הדביק בתוך הטקסט הופכת לגלולה קצרה עם שם האתר, במקום
+    // שורת URL ארוכה שנשברת לכמה שורות ומנפחת את הדף.
+    type Seg = { text: string; url: string };
+    function segments(raw: string | null | undefined): Seg[] {
+        const text = String(raw ?? '');
+        const out: Seg[] = [];
+        let last = 0;
+        for (const m of text.matchAll(/https?:\/\/\S+/g)) {
+            const start = m.index ?? 0;
+            const url = m[0].replace(/[.,;:!?)\]]+$/, '');
+            if (start > last) out.push({ text: text.slice(last, start), url: '' });
+            out.push({ text: linkLabel(url), url });
+            last = start + url.length;
+        }
+        if (last < text.length) out.push({ text: text.slice(last), url: '' });
+        return out;
+    }
+    function linkLabel(url: string): string {
+        try {
+            return new URL(url).hostname.replace(/^www\./, '');
+        } catch {
+            return url;
+        }
+    }
 </script>
 
 <svelte:head>
     <title>{ad.title} - קהילה בשכונה</title>
 </svelte:head>
 
-<div class="min-h-screen bg-[#0b1220] text-white" dir="rtl">
-    <header class="relative bg-gradient-to-br {ad.gradient} px-4 py-12 md:py-20 text-center">
-        {#if ad.logo}
-            <img src={ad.logo} alt="" class="mx-auto mb-4 w-20 h-20 object-contain rounded-2xl bg-white/10 p-2" />
-        {/if}
-        <h1 class="text-3xl md:text-5xl font-black mb-2 drop-shadow">{lp.headline || ad.title}</h1>
-        {#if lp.pitch}
-            <p class="text-base md:text-xl max-w-2xl mx-auto opacity-95">{lp.pitch}</p>
-        {/if}
-        {#if ad.mainImage}
-            <img src={ad.mainImage} alt={ad.title}
-                 class="mx-auto mt-6 max-h-72 md:max-h-96 rounded-2xl shadow-2xl object-cover" />
-        {/if}
+{#snippet rich(raw: string)}{#each segments(raw) as s}{#if s.url}<a class="al-link" href={s.url} target="_blank" rel="noopener noreferrer">{s.text} ↗</a>{:else}{s.text}{/if}{/each}{/snippet}
+
+<div class="ad-landing" dir="rtl">
+    <!-- כותרת + פתיח + יתרונות + קשר — הכל ליד התמונה, במסך אחד -->
+    <header class="al-hero bg-gradient-to-br {gradient}">
+        <div class="al-hero-inner" class:has-media={!!heroImage}>
+            <div class="al-copy">
+                {#if ad.logo}
+                    <img src={ad.logo} alt="" class="al-logo" />
+                {/if}
+                <h1>{lp.headline || ad.title}</h1>
+                {#if lp.pitch}
+                    <p class="al-pitch">{@render rich(lp.pitch)}</p>
+                {/if}
+
+                {#if advInHero}
+                    <ul class="al-advantages on-hero">
+                        {#each advList as adv}
+                            <li><span class="al-check" aria-hidden="true">✓</span><span>{adv}</span></li>
+                        {/each}
+                    </ul>
+                {/if}
+
+                {#if lp.phone || waUrl || siteUrl}
+                    <div class="al-actions">
+                        {#if lp.phone}
+                            <a href={`tel:${lp.phone}`} class="al-btn light">📞 {lp.phone}</a>
+                        {/if}
+                        {#if waUrl}
+                            <a href={waUrl} target="_blank" rel="noopener noreferrer" class="al-btn wa">וואטסאפ</a>
+                        {:else if siteUrl}
+                            <a href={siteUrl} target="_blank" rel="noopener noreferrer" class="al-btn ghost">לאתר ←</a>
+                        {/if}
+                    </div>
+                {/if}
+            </div>
+
+            {#if heroImage}
+                <div class="al-media">
+                    <img src={heroImage} alt={ad.title} />
+                </div>
+            {/if}
+        </div>
     </header>
 
-    <main class="max-w-3xl mx-auto px-4 py-8 md:py-12 space-y-8">
-        {#if lp.advantages?.some(a => a?.trim())}
-            <section>
-                <ul class="grid gap-3 max-w-xl mx-auto">
-                    {#each lp.advantages as a}
-                        {#if a?.trim()}
-                            <li class="flex items-center gap-3 px-2 py-1">
-                                <span class="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br {ad.gradient} flex items-center justify-center font-black">✓</span>
-                                <span class="text-base">{a}</span>
-                            </li>
+    <!-- יתרונות — רק אם לא נכנסו ליד התמונה; שורה רחבה, לא רשימה גבוהה -->
+    {#if advList.length && !advInHero}
+        <section class="al-section">
+            <ul class="al-advantages strip">
+                {#each advList as adv}
+                    <li>
+                        <span class="al-check tinted bg-gradient-to-br {gradient}" aria-hidden="true">✓</span>
+                        <span>{adv}</span>
+                    </li>
+                {/each}
+            </ul>
+        </section>
+    {/if}
+
+    <!-- הסיפור והייחוד זה לצד זה, במקום שתי קומות נפרדות -->
+    {#if lp.extended || lp.uniqueness}
+        <section class="al-section al-about">
+            {#if lp.extended}
+                <article>
+                    <h2>הסיפור שלנו</h2>
+                    <p class="pre-line">{@render rich(lp.extended)}</p>
+                </article>
+            {/if}
+            {#if lp.uniqueness}
+                <article>
+                    <h2>מה מייחד אותנו</h2>
+                    <p class="pre-line">{@render rich(lp.uniqueness)}</p>
+                </article>
+            {/if}
+        </section>
+    {/if}
+
+    {#if lp.products?.length}
+        <section class="al-section">
+            <h2>מוצרים / שירותים</h2>
+            <div class="al-products">
+                {#each lp.products as p (p.id)}
+                    <article class="al-product">
+                        {#if p.image}
+                            <img src={p.image} alt={p.name} />
                         {/if}
-                    {/each}
-                </ul>
-            </section>
-        {/if}
-
-        {#if lp.extended}
-            <section>
-                <h2 class="text-xl font-black mb-2">הסיפור שלנו</h2>
-                <p class="whitespace-pre-line text-gray-200">{lp.extended}</p>
-            </section>
-        {/if}
-
-        {#if lp.products?.length}
-            <section>
-                <h2 class="text-xl font-black mb-3">מוצרים / שירותים</h2>
-                <div class="grid gap-3 sm:grid-cols-2">
-                    {#each lp.products as p (p.id)}
-                        <article class="rounded-xl border border-white/10 bg-white/5 p-3 flex gap-3">
-                            {#if p.image}
-                                <img src={p.image} alt={p.name} class="w-20 h-20 object-cover rounded-lg" />
-                            {/if}
-                            <div class="flex-1 min-w-0">
-                                <h3 class="font-bold">{p.name}</h3>
-                                {#if p.price}<div class="text-amber-300 font-black">{p.price} ₪</div>{/if}
-                                {#if p.description}<p class="text-xs text-gray-300 mt-1">{p.description}</p>{/if}
-                            </div>
-                        </article>
-                    {/each}
-                </div>
-            </section>
-        {/if}
-
-        {#if lp.uniqueness}
-            <section>
-                <h2 class="text-xl font-black mb-2">מה מייחד אותנו</h2>
-                <p class="whitespace-pre-line text-gray-200">{lp.uniqueness}</p>
-            </section>
-        {/if}
-
-        <section class="rounded-2xl border border-white/10 bg-white/5 p-4 md:p-6">
-            <h2 class="text-xl font-black mb-3">פרטי קשר</h2>
-            <div class="grid sm:grid-cols-2 gap-2 text-sm">
-                {#if lp.phone}<div>📞 <a href={`tel:${lp.phone}`} class="text-amber-300 hover:underline">{lp.phone}</a></div>{/if}
-                <!-- 05x מקומי חייב קידומת 972, אחרת wa.me מחזיר "המספר אינו קיים" -->
-                {#if lp.whatsapp}
-                    {@const wa = waHref(lp.whatsapp)}
-                    <div>💬 {#if wa}<a href={wa} target="_blank" rel="noopener noreferrer" class="text-emerald-300 hover:underline">{lp.whatsapp}</a>{:else}<span class="text-emerald-300">{lp.whatsapp}</span>{/if}</div>
-                {/if}
-                {#if lp.email}<div>✉️ <a href={`mailto:${lp.email}`} class="text-amber-300 hover:underline">{lp.email}</a></div>{/if}
-                <!-- כתובת בלי https:// היא יחסית: היא הייתה מובילה ל-/ads/<כתובת>
-                     על הדומיין שלנו במקום לאתר של המפרסם -->
-                {#if lp.website}
-                    {@const site = toExternalUrl(lp.website)}
-                    <div>🌐 {#if site}<a href={site} target="_blank" rel="noopener noreferrer" class="text-amber-300 hover:underline">{lp.website}</a>{:else}<span class="text-amber-300">{lp.website}</span>{/if}</div>
-                {/if}
-                {#if lp.address}<div>📍 {lp.address}</div>{/if}
-                {#if lp.hours}<div>🕒 {lp.hours}</div>{/if}
+                        <div class="al-product-info">
+                            <h3 class="al-product-name">{p.name}</h3>
+                            {#if p.description}<p class="al-product-desc">{p.description}</p>{/if}
+                            {#if p.price}<p class="al-product-price">{p.price} ₪</p>{/if}
+                        </div>
+                    </article>
+                {/each}
             </div>
         </section>
-    </main>
+    {/if}
+
+    <!-- פרטי קשר — שורת גלולות, לא רשימה מתמשכת -->
+    <section class="al-section al-contact">
+        <h2>פרטי קשר</h2>
+        <div class="al-pills">
+            {#if lp.phone}<a class="al-pill" href={`tel:${lp.phone}`}>📞 {lp.phone}</a>{/if}
+            <!-- 05x מקומי חייב קידומת 972, אחרת wa.me מחזיר "המספר אינו קיים" -->
+            {#if lp.whatsapp}
+                {#if waUrl}<a class="al-pill" href={waUrl} target="_blank" rel="noopener noreferrer">💬 {lp.whatsapp}</a>{:else}<span class="al-pill">💬 {lp.whatsapp}</span>{/if}
+            {/if}
+            {#if lp.email}<a class="al-pill" href={`mailto:${lp.email}`}>✉️ {lp.email}</a>{/if}
+            <!-- כתובת בלי https:// היא יחסית: היא הייתה מובילה ל-/ads/<כתובת>
+                 על הדומיין שלנו במקום לאתר של המפרסם -->
+            {#if lp.website}
+                {#if siteUrl}<a class="al-pill" href={siteUrl} target="_blank" rel="noopener noreferrer">🌐 {linkLabel(siteUrl)}</a>{:else}<span class="al-pill">🌐 {lp.website}</span>{/if}
+            {/if}
+        </div>
+        {#if lp.address || lp.hours}
+            <p class="al-meta">
+                {#if lp.address}📍 {lp.address}{/if}{#if lp.address && lp.hours} · {/if}{#if lp.hours}🕒 {lp.hours}{/if}
+            </p>
+        {/if}
+    </section>
 </div>
+
+<style>
+    .ad-landing {
+        max-width: 64rem;
+        margin: 0 auto;
+        background: #0f172a;
+        border-radius: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        overflow: hidden;
+    }
+
+    /* ===== כותרת+פתיח+יתרונות+קשר זה לצד זה ===== */
+    .al-hero { padding: 1.75rem 1.5rem; }
+    .al-hero-inner {
+        display: grid;
+        gap: 1.5rem;
+        align-items: center;
+        text-align: center;
+    }
+    @media (min-width: 860px) {
+        .al-hero { padding: 2.25rem 2rem; }
+        .al-hero-inner.has-media {
+            grid-template-columns: minmax(0, 1fr) minmax(0, 22rem);
+            text-align: right;
+        }
+    }
+    .al-copy { min-width: 0; }
+    .al-logo {
+        width: 64px;
+        height: 64px;
+        border-radius: 0.9rem;
+        background: white;
+        padding: 6px;
+        object-fit: contain;
+        margin-bottom: 0.7rem;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+    }
+    @media (min-width: 860px) {
+        .al-logo { width: 84px; height: 84px; border-radius: 1.1rem; padding: 7px; }
+    }
+    .al-hero h1 {
+        color: white;
+        font-size: 1.7rem;
+        font-weight: 900;
+        line-height: 1.25;
+        margin: 0 0 0.6rem;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    }
+    @media (min-width: 860px) {
+        .al-hero h1 { font-size: 2rem; }
+    }
+    .al-pitch {
+        color: rgba(255, 255, 255, 0.95);
+        font-size: 1rem;
+        line-height: 1.55;
+        margin: 0;
+        overflow-wrap: anywhere;
+        white-space: pre-line;
+    }
+    .al-link {
+        display: inline-block;
+        padding: 0.05rem 0.5rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.18);
+        color: #fff;
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+    .al-link:hover { background: rgba(255, 255, 255, 0.3); }
+
+    .al-media { min-width: 0; }
+    .al-media img {
+        display: block;
+        width: auto;
+        max-width: 100%;
+        max-height: 15rem;
+        margin-inline: auto;
+        border-radius: 0.9rem;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+    }
+    /* בדסקטופ התמונה גדלה עד לגובה טור הטקסט שלידה — פרופורציה מאוזנת */
+    @media (min-width: 860px) {
+        .al-media img { max-height: 26rem; border-radius: 1.1rem; }
+    }
+
+    .al-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        justify-content: center;
+        margin-top: 1rem;
+    }
+    @media (min-width: 860px) {
+        .has-media .al-actions { justify-content: flex-start; }
+    }
+    .al-btn {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.55rem 1.1rem;
+        border-radius: 999px;
+        font-weight: 800;
+        font-size: 0.95rem;
+        text-decoration: none;
+    }
+    .al-btn.light { background: #fff; color: #111827; }
+    .al-btn.wa { background: #16a34a; color: #fff; }
+    .al-btn.ghost {
+        background: rgba(255, 255, 255, 0.15);
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+    }
+
+    /* ===== יתרונות ===== */
+    .al-advantages {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        gap: 0.5rem;
+        text-align: right;
+    }
+    .al-advantages li {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-size: 0.95rem;
+        font-weight: 600;
+        line-height: 1.35;
+    }
+    .al-advantages.on-hero {
+        margin-top: 1rem;
+        color: rgba(255, 255, 255, 0.95);
+    }
+    .al-advantages.strip {
+        color: #e5e7eb;
+        grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+        gap: 0.6rem 1.25rem;
+    }
+    .al-check {
+        flex-shrink: 0;
+        width: 22px;
+        height: 22px;
+        border-radius: 999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(255, 255, 255, 0.92);
+        color: #111827;
+        font-size: 0.75rem;
+        font-weight: 900;
+        line-height: 1;
+    }
+    /* הגרדיאנט מגיע ממחלקות Tailwind על האלמנט - רק צבע הרקע מתבטל */
+    .al-check.tinted { background-color: transparent; color: #fff; }
+
+    /* ===== שאר הדף — צפוף ומינימלי ===== */
+    .al-section {
+        padding: 1.25rem 1.5rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .al-section h2 {
+        color: white;
+        font-size: 1.05rem;
+        font-weight: 900;
+        margin: 0 0 0.5rem;
+    }
+    .al-section p {
+        color: #d1d5db;
+        font-size: 0.925rem;
+        line-height: 1.6;
+        margin: 0;
+        overflow-wrap: anywhere;
+    }
+    .pre-line { white-space: pre-line; }
+
+    .al-about {
+        display: grid;
+        gap: 1.25rem;
+    }
+    @media (min-width: 860px) {
+        .al-about { grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); gap: 2rem; }
+    }
+
+    .al-products {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 0.75rem;
+    }
+    .al-product {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 0.75rem;
+        overflow: hidden;
+    }
+    .al-product img {
+        width: 100%;
+        height: 110px;
+        object-fit: cover;
+    }
+    .al-product-info { padding: 0.6rem 0.7rem; }
+    .al-product-name {
+        color: white;
+        font-weight: 700;
+        font-size: 0.9rem;
+        margin: 0 0 0.2rem;
+    }
+    .al-product-desc {
+        color: #9ca3af;
+        font-size: 0.78rem;
+        margin: 0 0 0.25rem;
+        line-height: 1.4;
+    }
+    .al-product-price {
+        color: #fbbf24;
+        font-weight: 900;
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    .al-contact { text-align: center; }
+    .al-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        justify-content: center;
+    }
+    .al-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.45rem 0.9rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #e5e7eb;
+        font-size: 0.875rem;
+        font-weight: 700;
+        text-decoration: none;
+    }
+    .al-pill:hover {
+        background: rgba(251, 191, 36, 0.12);
+        border-color: rgba(251, 191, 36, 0.45);
+        color: #fde68a;
+    }
+    .al-meta {
+        color: #9ca3af;
+        font-size: 0.825rem;
+        margin: 0.75rem 0 0;
+    }
+</style>
