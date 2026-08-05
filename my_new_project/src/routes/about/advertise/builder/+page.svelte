@@ -1433,7 +1433,7 @@
                         <div
                             role="button"
                             tabindex="0"
-                            class="clean-card desktop-ad pro-ad"
+                            class="clean-card promo-desktop pro-ad"
                             onmouseenter={() => hoverPreview = true}
                             onmouseleave={() => hoverPreview = false}
                             onfocus={() => hoverPreview = true}
@@ -1461,7 +1461,7 @@
                                          class="ad-logo {logoShape === 'circle' ? 'ad-logo-circle' : ''} {logoPosition === 'left' ? 'ad-logo-left' : logoPosition === 'cta' ? 'ad-logo-cta' : 'ad-logo-right'}" />
                                 {/if}
                             </div>
-                            <div class="ad-cta bg-gradient-to-r {gradient}">
+                            <div class="promo-cta bg-gradient-to-r {gradient}">
                                 <p>{cta}</p>
                             </div>
                         </div>
@@ -1557,7 +1557,7 @@
                         <p class="hover-text">{hoverText || $_('advertise.b_ph_hover')}</p>
                     </div>
                 </div>
-                <div class="ad-cta bg-gradient-to-r {gradient}">
+                <div class="promo-cta bg-gradient-to-r {gradient}">
                     <p>{cta}</p>
                 </div>
             </div>
@@ -2376,7 +2376,7 @@
        is derived naturally from the children (image-wrap with the real RightAdBanner
        aspect-ratio + the small CTA below it). This preserves authentic ad proportions -
        width and height stay locked together, never independently sized. */
-    :global(.site-shot-overlay.desktop-ad) {
+    :global(.site-shot-overlay.promo-desktop) {
         position: absolute;
         top: 18%;
         right: 3.5%;
@@ -2607,7 +2607,7 @@
         padding: 0.3rem; text-align: center;
         color: white; font-size: 0.6rem; font-weight: 700;
     }
-    :global(.desktop-ad) {
+    :global(.promo-desktop) {
         display: block; border-radius: 0.6rem; overflow: hidden;
         box-shadow: 0 4px 20px rgba(0,0,0,0.3); cursor: pointer;
     }
@@ -2644,8 +2644,8 @@
     }
     :global(.hover-title) { color: white; font-weight: 700; font-size: 0.95rem; margin: 0 0 0.4rem; }
     :global(.hover-text)  { color: rgb(229,231,235); font-size: 0.7rem; line-height: 1.4; margin: 0 0 0.4rem; font-weight: 700; }
-    :global(.ad-cta) { padding: 0.65rem; text-align: center; }
-    :global(.ad-cta p) { color: white; font-weight: 700; font-size: 0.72rem; line-height: 1.3; margin: 0; }
+    :global(.promo-cta) { padding: 0.65rem; text-align: center; }
+    :global(.promo-cta p) { color: white; font-weight: 700; font-size: 0.72rem; line-height: 1.3; margin: 0; }
 
     /* ============== LOGO CIRCULAR CROP MODAL ============== */
     :global(.crop-modal-bg) {
