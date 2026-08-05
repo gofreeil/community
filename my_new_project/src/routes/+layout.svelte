@@ -142,11 +142,13 @@
 	/>
 
 	<div class="layout-container flex-grow">
-		<RightAdBanner />
+		<!-- ב-RTL הילד הראשון הוא הצד הימני: הפרסומות בימין, אתרי הרשת בשמאל.
+		     approvedAds מגיע ל-RightAdBanner בלבד - אין פרסומות בטור השמאלי. -->
+		<RightAdBanner approvedAds={data.approvedAds ?? []} />
 		<main id="main-content" tabindex="-1" class="main-content">
 			{@render children()}
 		</main>
-		<AdsSidebar approvedAds={data.approvedAds ?? []} />
+		<AdsSidebar />
 	</div>
 
 	<Footer />

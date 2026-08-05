@@ -32,7 +32,8 @@ export const load: LayoutServerLoad = async (event) => {
         }
     }
 
-    // פרסומות מאושרות - לשתילה ב-AdsSidebar לצד הסטטיות
+    // פרסומות מאושרות - נשתלות ב-RightAdBanner (הטור הימני) בלבד.
+    // הטור השמאלי (AdsSidebar) הוא אתרי "יוצאים לחירות" ולא מקבל פרסומות.
     const approvedAds = adsRes.status === 'fulfilled'
         ? adsRes.value.map(a => ({
             id: a.id,

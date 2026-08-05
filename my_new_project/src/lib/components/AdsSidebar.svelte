@@ -1,51 +1,22 @@
 <script lang="ts">
-    import { ads, type Ad } from '$lib/adsData';
+    import { ads } from '$lib/adsData';
     import { _ } from 'svelte-i18n';
-    import { adImgFit, parseAdImageFit, type AdImageFit } from '$lib/adImageFit';
 
-    type ApprovedAd = {
-        id: string;
-        title: string;
-        subtitle: string;
-        cta: string;
-        hover: string;
-        gradient: string;
-        mainImage: string;
-        /** מיקום+זום מהבילדר; אופציונלי — מודעות ישנות נשמרו בלעדיו */
-        mainImageFit?: AdImageFit;
-    };
-
-    let { approvedAds = [] }: { approvedAds?: ApprovedAd[] } = $props();
-
-    // Build merged list. Approved (user-submitted) ads come first, then static partner ads.
-    let merged = $derived([
-        ...approvedAds.map(a => ({
-            id: a.id,
-            title: a.title,
-            description: a.subtitle,
-            cta: a.cta || a.title,
-            hover: a.hover || undefined,
-            href: `/ads/${a.id}`,
-            target: '_self' as const,
-            image: a.mainImage,
-            color: a.gradient,
-            imageHeight: undefined as string | undefined,
-            fit: a.mainImageFit as AdImageFit | undefined,
-        })),
-        ...ads.map(a => ({
-            id: String(a.id),
-            title: a.title,
-            description: a.description,
-            cta: a.cta,
-            hover: a.hover,
-            href: a.href,
-            target: '_blank' as const,
-            image: a.image,
-            color: a.color,
-            imageHeight: a.imageHeight,
-            fit: undefined as AdImageFit | undefined,
-        })),
-    ]);
+    // הטור השמאלי הוא טור אתרי הרשת של "יוצאים לחירות" בלבד.
+    // פרסומות של מפרסמים (submitted-ads שאושרו) אינן מוצגות כאן בשום מצב -
+    // מקומן הוא הטור הימני (RightAdBanner). אין כאן prop של approvedAds
+    // בכוונה, כדי שלא תיפתח שוב אפשרות לשתול פרסומת בצד שמאל.
+    let sites = $derived(ads.map(a => ({
+        id: String(a.id),
+        title: a.title,
+        description: a.description,
+        cta: a.cta,
+        hover: a.hover,
+        href: a.href,
+        image: a.image,
+        color: a.color,
+        imageHeight: a.imageHeight,
+    })));
 </script>
 
 <aside
@@ -56,42 +27,40 @@
         {$_('components.as_header')}
     </h4>
     <div class="space-y-4">
-        {#each merged as ad (ad.id)}
+        {#each sites as site (site.id)}
             <a
-                href={ad.href}
-                target={ad.target}
-                rel={ad.target === '_blank' ? 'noopener noreferrer' : undefined}
-                aria-label="{ad.title} – {ad.description}{ad.target === '_blank' ? $_('components.opens_new_window_suffix') : ''}"
+                href={site.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="{site.title} – {site.description}{$_('components.opens_new_window_suffix')}"
                 class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105 group relative"
             >
-                <div class="relative overflow-hidden" style="height: {ad.imageHeight ?? '160px'}">
+                <div class="relative overflow-hidden" style="height: {site.imageHeight ?? '160px'}">
                     <div class="absolute inset-0 overflow-hidden">
-                        <!-- המיקום/זום שנבחרו בבילדר מוחלים גם כאן — הדמו הוא מה שרואים -->
                         <img
-                            src={ad.image}
-                            alt={ad.title}
+                            src={site.image}
+                            alt={site.title}
                             loading="lazy"
                             decoding="async"
                             class="w-full h-full object-cover transition-opacity duration-[1500ms] group-hover:opacity-0"
-                            use:adImgFit={parseAdImageFit(ad.fit)}
                         />
                     </div>
                     <div
                         class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-[1500ms] flex items-center justify-center bg-black/60 backdrop-blur-sm"
                     >
                         <div class="relative z-10 text-center px-4">
-                            <h3 class="text-white font-bold text-base mb-1">{ad.title}</h3>
-                            <p class="text-gray-200 text-xs">{ad.description}</p>
+                            <h3 class="text-white font-bold text-base mb-1">{site.title}</h3>
+                            <p class="text-gray-200 text-xs">{site.description}</p>
                         </div>
                     </div>
                 </div>
-                <div class="relative group/cta bg-gradient-to-r {ad.color} p-3 text-center">
-                    <p class="text-white font-bold text-xs leading-tight">{ad.cta}</p>
-                    {#if ad.hover}
+                <div class="relative group/cta bg-gradient-to-r {site.color} p-3 text-center">
+                    <p class="text-white font-bold text-xs leading-tight">{site.cta}</p>
+                    {#if site.hover}
                         <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/cta:block
                                      bg-gray-900 text-white text-xs font-bold rounded-lg px-3 py-1.5
                                      whitespace-nowrap border border-white/10 shadow-xl pointer-events-none z-50">
-                            {ad.hover}
+                            {site.hover}
                         </span>
                     {/if}
                 </div>

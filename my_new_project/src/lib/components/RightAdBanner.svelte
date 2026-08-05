@@ -1,6 +1,30 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { _ } from "svelte-i18n";
+    import { adImgFit, parseAdImageFit, type AdImageFit } from "$lib/adImageFit";
+
+    // פרסומות של מפרסמים שאושרו - הטור הימני הוא המקום היחיד שלהן באתר.
+    type ApprovedAd = {
+        id: string;
+        title: string;
+        subtitle: string;
+        cta: string;
+        hover: string;
+        gradient: string;
+        mainImage: string;
+        /** מיקום+זום מהבילדר; אופציונלי — מודעות ישנות נשמרו בלעדיו */
+        mainImageFit?: AdImageFit;
+    };
+
+    let { approvedAds = [] }: { approvedAds?: ApprovedAd[] } = $props();
+
+    // הפרסומות המשולמות קבועות בראש הטור ולא משתתפות בסבב המשבצות הפנויות -
+    // מפרסם ששילם לא אמור להיעלם מהמסך אחרי 14 שניות.
+    let paidAds = $derived(approvedAds.filter(a => a.mainImage));
+
+    // עד xl הטור הימני מוסתר. כשיש פרסומת אמיתית זה היה מעלים אותה ממסכי lg,
+    // ולכן במקרה כזה הטור נפתח כבר מ-lg (כמו טור אתרי הרשת שממול).
+    let visibilityClass = $derived(paidAds.length > 0 ? "hidden lg:block" : "hidden xl:block");
 
     let currentGroup = $state(0);
     let totalSwaps = $state(0);
@@ -177,13 +201,64 @@
 <!-- RightAdBanner.svelte -->
 <aside
     aria-label={$_('components.rb_ads_aria')}
-    class="hidden xl:block w-36 flex-shrink-0 sticky top-4 h-fit pb-8 text-center"
+    class="{visibilityClass} w-36 flex-shrink-0 sticky top-4 h-fit pb-8 text-center"
 >
     <h4
         class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-2 px-2"
     >
         {$_('components.rb_marketing_content')}
     </h4>
+
+    <!-- פרסומות מאושרות: קבועות, מעל סבב המשבצות הפנויות.
+         הקישור תמיד לדף הנחיתה הפנימי /ads/<id> ובאותה לשונית. -->
+    {#if paidAds.length > 0}
+        <div class="space-y-3 mb-3">
+            {#each paidAds as ad (ad.id)}
+                <a
+                    href="/ads/{ad.id}"
+                    aria-label="{ad.title} – {ad.subtitle}"
+                    class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105 group relative"
+                >
+                    <!-- aspect-[144/450] = בדיוק היחס שהבילדר מציג בתצוגה החיה
+                         (live-demo-img-wrap). המפרסם מכוון שם מיקום וזום על מסגרת
+                         צרה וגבוהה, ולכן חייבים לשמור את אותו יחס - אחרת החיתוך
+                         שהוא בחר נשבר. -->
+                    <div class="relative overflow-hidden w-full aspect-[144/450]">
+                        <div class="absolute inset-0 overflow-hidden">
+                            <!-- המיקום/זום שנבחרו בבילדר מוחלים גם כאן — הדמו הוא מה שרואים -->
+                            <img
+                                src={ad.mainImage}
+                                alt={ad.title}
+                                loading="lazy"
+                                decoding="async"
+                                class="w-full h-full object-cover transition-opacity duration-[1500ms] group-hover:opacity-0"
+                                use:adImgFit={parseAdImageFit(ad.mainImageFit)}
+                            />
+                        </div>
+                        <div
+                            class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-[1500ms] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+                        >
+                            <div class="relative z-10 text-center px-3">
+                                <h3 class="text-white font-bold text-sm mb-1">{ad.title}</h3>
+                                <p class="text-gray-200 text-xs">{ad.subtitle}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="relative group/cta bg-gradient-to-r {ad.gradient} p-2.5 text-center">
+                        <p class="text-white font-bold text-xs leading-tight">{ad.cta || ad.title}</p>
+                        {#if ad.hover}
+                            <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/cta:block
+                                         bg-gray-900 text-white text-xs font-bold rounded-lg px-3 py-1.5
+                                         whitespace-nowrap border border-white/10 shadow-xl pointer-events-none z-50">
+                                {ad.hover}
+                            </span>
+                        {/if}
+                    </div>
+                </a>
+            {/each}
+        </div>
+    {/if}
+
     <div class="space-y-3 ads-track" class:fading>
         {#each displayedAds as ad, index}
             <a

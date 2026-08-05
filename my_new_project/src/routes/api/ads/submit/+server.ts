@@ -1,7 +1,52 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { submitAd } from '$lib/server/adsStore';
+import { submitAd, type SubmittedAd } from '$lib/server/adsStore';
+import { getAllSuperAdmins, createItem } from '$lib/server/db';
 import { parseAdImageFit } from '$lib/adImageFit';
+
+/**
+ * שולח הודעה אישית (category 'message') לכל סופר־אדמין על בקשת פרסום חדשה,
+ * כדי שהיא תופיע מיד בתיבת ההודעות ותיספר בבאדג' ההודעות שלא נקראו.
+ * זהו אותו דפוס שבו מתריעות בקשת רכז ובקשת עזרה בעיצוב - best-effort:
+ * כשל בהתראה לעולם לא מבטל את השליחה עצמה.
+ */
+async function notifySuperAdminsInApp(ad: SubmittedAd) {
+    // שרשרת הזיהוי חייבת לרדת עד לפרטי הקשר שבדף הנחיתה: פרסומת אפשר לשלוח
+    // גם בלי להתחבר, ואז submittedBy ריק לגמרי. בלי הנפילה הזו האדמין היה מקבל
+    // "בקשת פרסום חדשה: מפרסם" בלי שום דרך לדעת מי שלח.
+    const contactEmail = ad.submittedBy?.email || ad.landing?.email || '';
+    const advertiser =
+        ad.submittedBy?.name || ad.companyName || contactEmail || ad.landing?.phone || ad.title || 'מפרסם';
+    const admins = await getAllSuperAdmins();
+    await Promise.all(admins.map(admin => createItem({
+        category:    'message',
+        label:       `📢 בקשת פרסום חדשה: ${advertiser}`,
+        description:
+            `${advertiser} שלח/ה פרסומת חדשה לאישור.\n\n` +
+            `כותרת: ${ad.title}\n` +
+            (ad.subtitle ? `תת-כותרת: ${ad.subtitle}\n` : '') +
+            (contactEmail ? `אימייל: ${contactEmail}\n` : '') +
+            (ad.landing?.phone ? `טלפון: ${ad.landing.phone}\n` : '') +
+            (ad.landing?.website ? `אתר: ${ad.landing.website}\n` : '') +
+            `\nהיכנס/י לעמוד "אישור פרסומות" בפאנל הניהול כדי לאשר או לדחות.\n` +
+            `קישור: /admin/ads-review`,
+        icon:        '📢',
+        color:       'amber',
+        user_id:     admin.id,
+        extra_fields: {
+            type:              'ad_submission',
+            ad_id:             ad.id,
+            ad_title:          ad.title,
+            submitted_by_id:   ad.submittedBy?.id ?? '',
+            submitted_by_name: ad.submittedBy?.name ?? '',
+            submitted_by_email: contactEmail,
+            advertiser_phone:  ad.landing?.phone ?? '',
+            review_link:       '/admin/ads-review',
+            submitted_at:      ad.submittedAt,
+            read:              false,
+        },
+    })));
+}
 
 export const POST: RequestHandler = async (event) => {
     const session = await event.locals.auth().catch(() => null);
@@ -65,6 +110,14 @@ export const POST: RequestHandler = async (event) => {
             throw error(413, 'התמונות כבדות מדי — הקטינו תמונה ונסו שוב');
         }
         throw error(502, 'השליחה נכשלה — נסו שוב בעוד רגע');
+    }
+
+    // התראה לאדמין - best-effort. בלי זה בקשת פרסום נשמרה בשקט
+    // ואיש לא ידע עליה עד שמישהו נכנס במקרה ל"אישור פרסומות".
+    try {
+        await notifySuperAdminsInApp(ad);
+    } catch (e) {
+        console.warn('[ads/submit] notify super_admins failed:', e instanceof Error ? e.message : e);
     }
 
     return json({ ok: true, id: ad.id, status: ad.status });
