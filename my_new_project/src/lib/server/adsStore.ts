@@ -11,6 +11,10 @@ import { parseAdImageFit, type AdImageFit } from '../adImageFit.js';
 
 // פרסומות מאושרות נטענות בכל ניווט (ב-+layout.server) — cache קצר חוסך round-trip
 const TTL_ADS = 120_000;
+// ממתינות/נדחו משתנות תוך כדי עבודה של המנהל, ולכן TTL קצר. המטרה העיקרית
+// כאן היא dedup: טעינה אחת של /admin/ads-review קוראת לאותן רשימות חמש פעמים
+// (רשימות, סטטיסטיקות, תזמון, מפרסמים, תזכורות).
+const TTL_REVIEW = 15_000;
 
 const ENDPOINT = '/api/submitted-ads';
 
@@ -47,6 +51,9 @@ export interface SubmittedAd {
     companyName?: string;
     paymentAmount?: number;
     remindersSent?: ReminderStage[];
+
+    /** מיקום התצוגה באתר (0 = ראשונה). undefined = לא נקבע מיקום ידני */
+    order?: number;
 
     // Card fields
     title: string;
@@ -88,9 +95,9 @@ interface StrapiAdAttrs {
     gradient: string | null;
     logo: string | null;
     main_image: string | null;
-    // ה-fit חי בתוך ה-JSON של landing — לסכמת submitted-ad ב-Strapi אין
-    // עמודה ייעודית, ושדה json מקבל מפתחות נוספים בלי שינוי סכמה.
-    landing: (SubmittedAd['landing'] & { mainImageFit?: unknown }) | null;
+    // ה-fit ומיקום התצוגה חיים בתוך ה-JSON של landing — לסכמת submitted-ad
+    // ב-Strapi אין עמודות ייעודיות, ושדה json מקבל מפתחות נוספים בלי שינוי סכמה.
+    landing: (SubmittedAd['landing'] & { mainImageFit?: unknown; _order?: unknown }) | null;
     submitted_by_id: string | null;
     submitted_by_email: string | null;
     submitted_by_name: string | null;
@@ -141,6 +148,7 @@ function fromStrapi(s: StrapiAd): SubmittedAd {
         companyName: s.company_name ?? undefined,
         paymentAmount: s.payment_amount != null ? Number(s.payment_amount) : undefined,
         remindersSent: Array.isArray(s.reminders_sent) ? s.reminders_sent : [],
+        order: typeof s.landing?._order === 'number' ? s.landing._order : undefined,
         title: s.title ?? '',
         subtitle: s.subtitle ?? '',
         hoverText: s.hover_text ?? '',
@@ -153,7 +161,7 @@ function fromStrapi(s: StrapiAd): SubmittedAd {
     };
 }
 
-async function listByStatus(status: AdStatus): Promise<SubmittedAd[]> {
+async function fetchByStatus(status: AdStatus): Promise<SubmittedAd[]> {
     try {
         const data = await strapiGetAll<StrapiAd>(ENDPOINT, {
             'filters[ad_status][$eq]': status,
@@ -169,6 +177,31 @@ async function listByStatus(status: AdStatus): Promise<SubmittedAd[]> {
         }
         throw e;
     }
+}
+
+/**
+ * רשימה לפי סטטוס - דרך ה-cache, עם dedup לקריאות מקבילות.
+ *
+ * חובה: התמונות שמורות כ-base64 בתוך הרשומה, ולכן כל פרסומת שוקלת ~700KB
+ * וכל שליפה של הרשימה היא מטען כבד. טעינה אחת של /admin/ads-review קוראת
+ * לרשימת המאושרות חמש פעמים במקביל; בלי ה-dedup הזה השרת נחנק, כל בקשה
+ * חצתה את ה-timeout של 6 שניות והדף נפתח ריק ("הבאקאנד לא זמין") - בלי
+ * הפרסומת הממתינה ובלי כפתורי אשר/דחה.
+ */
+function listByStatus(status: AdStatus): Promise<SubmittedAd[]> {
+    return cached(
+        `ads:by-status:${status}`,
+        status === 'approved' ? TTL_ADS : TTL_REVIEW,
+        () => fetchByStatus(status),
+    );
+}
+
+/** סדר התצוגה באתר: קודם מי שקיבל מיקום ידני, אחריהם החדשות ביותר. */
+function byDisplayOrder(a: SubmittedAd, b: SubmittedAd): number {
+    const ao = a.order ?? Number.MAX_SAFE_INTEGER;
+    const bo = b.order ?? Number.MAX_SAFE_INTEGER;
+    if (ao !== bo) return ao - bo;
+    return new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime();
 }
 
 async function findByDocumentId(id: string): Promise<StrapiAd | null> {
@@ -199,7 +232,8 @@ export async function listPending(): Promise<SubmittedAd[]> {
 }
 
 export async function listApproved(): Promise<SubmittedAd[]> {
-    return cached('ads:approved', TTL_ADS, () => listByStatus('approved'));
+    // עותק לפני מיון - המערך עצמו יושב ב-cache ומשותף לכל הקוראים
+    return [...await listByStatus('approved')].sort(byDisplayOrder);
 }
 
 export async function getAd(id: string): Promise<SubmittedAd | null> {
@@ -308,6 +342,51 @@ export async function removeAd(id: string): Promise<boolean> {
     } catch {
         return false;
     }
+}
+
+// ----- מיקום התצוגה באתר -----
+
+export type MoveDirection = 'up' | 'down';
+
+/**
+ * כותב מיקום תצוגה לפרסומת. הסדר נשמר ב-landing._order, אותה עמודת json
+ * שכבר נושאת מפתחות פנימיים (_site, mainImageFit) - כדי לא לשנות סכמה
+ * ב-Strapi. שולחים את כל אובייקט ה-landing כי Strapi מחליף עמודת json
+ * במלואה, ומפתח חסר היה נמחק.
+ */
+async function writeOrder(ad: SubmittedAd, order: number): Promise<void> {
+    await strapiPut(`${ENDPOINT}/${ad.id}`, {
+        data: { landing: { ...(ad.landing as unknown as Record<string, unknown>), _order: order } },
+    });
+}
+
+/**
+ * מזיז פרסומת מאושרת מקום אחד למעלה/למטה בסדר התצוגה באתר.
+ * מחזיר null אם הפרסומת לא נמצאה או שהיא כבר בקצה הרשימה.
+ */
+export async function moveApprovedAd(
+    id: string,
+    direction: MoveDirection,
+): Promise<{ title: string; position: number; total: number } | null> {
+    const list = await listApproved();
+    const from = list.findIndex(a => a.id === id);
+    if (from === -1) return null;
+    const to = direction === 'up' ? from - 1 : from + 1;
+    if (to < 0 || to >= list.length) return null;
+
+    const reordered = [...list];
+    [reordered[from], reordered[to]] = [reordered[to], reordered[from]];
+
+    // כותבים רק את מי שהמיקום שלו באמת השתנה: בפעם הראשונה זו כל הרשימה
+    // (לאף פרסומת אין עדיין _order), ומכאן והלאה שתי הפרסומות שהוחלפו בלבד.
+    await Promise.all(
+        reordered
+            .map((ad, i) => ({ ad, i }))
+            .filter(({ ad, i }) => ad.order !== i)
+            .map(({ ad, i }) => writeOrder(ad, i)),
+    );
+    invalidate('ads:');
+    return { title: reordered[to].title, position: to + 1, total: reordered.length };
 }
 
 type EditableFields = Partial<Pick<SubmittedAd, 'title' | 'subtitle' | 'cta' | 'hoverText'>>;

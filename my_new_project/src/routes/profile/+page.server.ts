@@ -157,6 +157,9 @@ export const load: PageServerLoad = async (event) => {
         if (adsRes.status === 'fulfilled') pendingAdsCount = adsRes.value;
         if (usersRes.status === 'fulfilled') registeredUsersCount = usersRes.value.length;
         if (singlesPendRes.status === 'fulfilled') pendingSinglesCount = singlesPendRes.value.length;
+    } else if (resolvedUser?.role === 'neighborhood_admin') {
+        // אדמין שמונה מאשר פרסומות גם הוא - הבאדג' חייב להופיע גם אצלו
+        pendingAdsCount = await countPending().catch(() => 0);
     }
 
     // ספירת פנויים/פנויות במגדר הנגדי + קבוצת הגיל של המשתמש

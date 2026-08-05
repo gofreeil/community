@@ -14,24 +14,42 @@ import {
     listSchedules,
     listAdvertisers,
     processExpiryReminders,
+    moveApprovedAd,
 } from '$lib/server/adsStore';
 
-async function ensureSuperAdmin(event: any) {
+/** התפקיד האמיתי של המשתמש - מה-session, ובנפילה לאחור מה-DB (session ישן) */
+async function resolveRole(event: any): Promise<string> {
     const session = await event.locals.auth();
-    let isSA = session?.user?.role === 'super_admin';
-    if (!isSA && session?.user?.id) {
+    let role = session?.user?.role ?? '';
+    if (role !== 'super_admin' && role !== 'neighborhood_admin' && session?.user?.id) {
         try {
             let dbUser = await getUserById(session.user.id);
             if (!dbUser && session.user.email) dbUser = await getUserByEmail(session.user.email);
-            isSA = dbUser?.role === 'super_admin';
+            role = dbUser?.role ?? role;
         } catch { /* ignore */ }
     }
-    if (!isSA) throw error(403, 'נדרשת הרשאת מנהל ראשי');
+    return role;
+}
+
+/** אישור פרסומות פתוח לסופר-אדמין וגם לאדמין שמונה - שניהם מקבלים את ההתראה */
+async function ensureAdsAdmin(event: any) {
+    const session = await event.locals.auth();
+    const role = await resolveRole(event);
+    if (role !== 'super_admin' && role !== 'neighborhood_admin') {
+        throw error(403, 'נדרשת הרשאת ניהול');
+    }
+    return { session, role };
+}
+
+/** מחיקה לצמיתות שמורה לסופר-אדמין; אדמין שמונה מוריד מהאתר ולא מוחק */
+async function ensureSuperAdmin(event: any) {
+    const { session, role } = await ensureAdsAdmin(event);
+    if (role !== 'super_admin') throw error(403, 'נדרשת הרשאת מנהל ראשי');
     return session;
 }
 
 export const load: PageServerLoad = async (event) => {
-    await ensureSuperAdmin(event);
+    const { role } = await ensureAdsAdmin(event);
     // Lazy cron: בכל טעינה של הדף - בודק אם יש פרסומות שצריך לשלוח עליהן תזכורת.
     // אידימפוטנטי, שולח רק פעם אחת לכל שלב (30/7/1 ימים לפני פקיעה).
     const reminderRun = await processExpiryReminders().catch(() => ({ sent: 0, checked: 0 }));
@@ -59,7 +77,7 @@ export const load: PageServerLoad = async (event) => {
     }
     const backendUnavailable = failures.length > 0;
 
-    return { pending, approved, stats, schedules, advertisers, reminderRun, backendUnavailable };
+    return { pending, approved, stats, schedules, advertisers, reminderRun, backendUnavailable, role };
 };
 
 function parseIds(formData: FormData): string[] {
@@ -72,7 +90,7 @@ function parseIds(formData: FormData): string[] {
 
 export const actions: Actions = {
     approve: async (event) => {
-        const session = await ensureSuperAdmin(event);
+        const { session } = await ensureAdsAdmin(event);
         const formData = await event.request.formData();
         const id = formData.get('id') as string;
         if (!id) return fail(400, { error: 'חסר מזהה' });
@@ -82,7 +100,7 @@ export const actions: Actions = {
     },
 
     reject: async (event) => {
-        const session = await ensureSuperAdmin(event);
+        const { session } = await ensureAdsAdmin(event);
         const formData = await event.request.formData();
         const id = formData.get('id') as string;
         const reason = (formData.get('reason') as string) || undefined;
@@ -93,7 +111,7 @@ export const actions: Actions = {
     },
 
     bulkApprove: async (event) => {
-        const session = await ensureSuperAdmin(event);
+        const { session } = await ensureAdsAdmin(event);
         const ids = parseIds(await event.request.formData());
         if (ids.length === 0) return fail(400, { error: 'לא נבחרו פרסומות' });
         let ok = 0;
@@ -105,7 +123,7 @@ export const actions: Actions = {
     },
 
     bulkReject: async (event) => {
-        const session = await ensureSuperAdmin(event);
+        const { session } = await ensureAdsAdmin(event);
         const formData = await event.request.formData();
         const ids = parseIds(formData);
         const reason = (formData.get('reason') as string) || undefined;
@@ -119,7 +137,7 @@ export const actions: Actions = {
     },
 
     unreject: async (event) => {
-        await ensureSuperAdmin(event);
+        await ensureAdsAdmin(event);
         const formData = await event.request.formData();
         const id = formData.get('id') as string;
         if (!id) return fail(400, { error: 'חסר מזהה' });
@@ -129,13 +147,31 @@ export const actions: Actions = {
     },
 
     unapprove: async (event) => {
-        await ensureSuperAdmin(event);
+        await ensureAdsAdmin(event);
         const formData = await event.request.formData();
         const id = formData.get('id') as string;
         if (!id) return fail(400, { error: 'חסר מזהה' });
         const r = await unapproveAd(id);
         if (!r) return fail(404, { error: 'הפרסומת לא נמצאה' });
         return { success: true, message: `הורדה מהאתר: ${r.title}` };
+    },
+
+    // החלפת מקום בסדר התצוגה באתר - סופר-אדמין ואדמין שמונה
+    move: async (event) => {
+        await ensureAdsAdmin(event);
+        const formData = await event.request.formData();
+        const id = formData.get('id') as string;
+        const dir = formData.get('dir') === 'down' ? 'down' : 'up';
+        if (!id) return fail(400, { error: 'חסר מזהה' });
+        let r;
+        try {
+            r = await moveApprovedAd(id, dir);
+        } catch (e) {
+            console.warn('[admin/ads-review] move failed:', e instanceof Error ? e.message : e);
+            return fail(502, { error: 'החלפת המקום נכשלה - נסה שוב בעוד רגע' });
+        }
+        if (!r) return fail(400, { error: 'הפרסומת כבר בקצה הרשימה' });
+        return { success: true, message: `${r.title} - מקום ${r.position} מתוך ${r.total}` };
     },
 
     remove: async (event) => {
@@ -149,7 +185,7 @@ export const actions: Actions = {
     },
 
     update: async (event) => {
-        await ensureSuperAdmin(event);
+        await ensureAdsAdmin(event);
         const formData = await event.request.formData();
         const id = formData.get('id') as string;
         if (!id) return fail(400, { error: 'חסר מזהה' });

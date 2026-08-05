@@ -11,7 +11,11 @@
     type Tab = 'pending' | 'approved' | 'rejected';
     let activeTab = $state<Tab>('pending');
     let searchQuery = $state('');
-    let sortOrder = $state<'newest' | 'oldest'>('newest');
+    // 'display' = הסדר שבו הפרסומות מוצגות באתר (כפי שהשרת מחזיר אותן).
+    // רק במיון הזה אפשר להחליף מקום - אחרת החצים היו מזיזים ביחס לתצוגה אחרת.
+    let sortOrder = $state<'display' | 'newest' | 'oldest'>('display');
+    let canDelete = $derived(data.role === 'super_admin');
+    let canReorder = $derived(sortOrder === 'display' && !searchQuery.trim());
 
     // בחירה רב-פריטית
     let selected = $state<Set<string>>(new Set());
@@ -63,6 +67,8 @@
             ? list.filter(a =>
                 heMatches(q, a.title, a.subtitle, a.submittedBy?.email, a.submittedBy?.name))
             : list;
+        // הסדר מהשרת = סדר התצוגה באתר (מיקום ידני, ואחריו החדשות ביותר)
+        if (sortOrder === 'display') return [...filtered];
         return [...filtered].sort((x, y) => {
             const xt = new Date(x.submittedAt).getTime();
             const yt = new Date(y.submittedAt).getTime();
@@ -191,6 +197,7 @@
                class="flex-1 min-w-[200px] px-3 py-2 rounded-xl bg-black/30 border border-white/10 text-white text-sm placeholder:text-gray-500 focus:outline-none focus:border-amber-400/50" />
         <select bind:value={sortOrder}
                 class="px-3 py-2 rounded-xl bg-black/30 border border-white/10 text-white text-sm focus:outline-none focus:border-amber-400/50">
+            <option value="display" style="background:#fff;color:#111">סדר התצוגה באתר</option>
             <option value="newest" style="background:#fff;color:#111">חדש לישן</option>
             <option value="oldest" style="background:#fff;color:#111">ישן לחדש</option>
         </select>
@@ -242,8 +249,45 @@
         </div>
     {:else}
         <div class="grid gap-3 md:gap-4">
-            {#each visibleList as ad (ad.id)}
+            {#each visibleList as ad, adIndex (ad.id)}
                 <article class="rounded-2xl border border-white/10 bg-white/5 p-3 md:p-5">
+                    {#if activeTab === 'approved'}
+                        <!-- מיקום הפרסומת בטור הפרסומות באתר + החלפת מקום -->
+                        <div class="flex items-center gap-2 mb-3 pb-3 border-b border-white/10 flex-wrap">
+                            <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-200 font-black text-sm">
+                                {adIndex + 1}
+                            </span>
+                            <span class="text-[11px] md:text-xs text-gray-400 font-bold">
+                                מקום {adIndex + 1} מתוך {visibleList.length} בטור הפרסומות
+                            </span>
+                            {#if canReorder}
+                                <div class="flex items-center gap-1.5 mr-auto">
+                                    <form method="POST" action="?/move" use:enhance>
+                                        <input type="hidden" name="id" value={ad.id} />
+                                        <input type="hidden" name="dir" value="up" />
+                                        <button type="submit" disabled={adIndex === 0}
+                                                class="px-3 py-1.5 rounded-lg bg-white/10 border border-white/15 text-gray-200 font-black text-xs hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed"
+                                                title="העלה מקום אחד למעלה">
+                                            ▲ למעלה
+                                        </button>
+                                    </form>
+                                    <form method="POST" action="?/move" use:enhance>
+                                        <input type="hidden" name="id" value={ad.id} />
+                                        <input type="hidden" name="dir" value="down" />
+                                        <button type="submit" disabled={adIndex === visibleList.length - 1}
+                                                class="px-3 py-1.5 rounded-lg bg-white/10 border border-white/15 text-gray-200 font-black text-xs hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed"
+                                                title="הורד מקום אחד למטה">
+                                            ▼ למטה
+                                        </button>
+                                    </form>
+                                </div>
+                            {:else}
+                                <span class="text-[10px] text-gray-500 mr-auto">
+                                    כדי להחליף מקום - בחר מיון "סדר התצוגה באתר" ונקה את החיפוש
+                                </span>
+                            {/if}
+                        </div>
+                    {/if}
                     <div class="flex flex-col md:flex-row gap-3 md:gap-4">
                         {#if activeTab === 'pending'}
                             <label class="flex-shrink-0 inline-flex items-start pt-1 cursor-pointer">
@@ -371,14 +415,16 @@
                                         ⏸ הורד מהאתר
                                     </button>
                                 </form>
-                                <form method="POST" action="?/remove" use:enhance>
-                                    <input type="hidden" name="id" value={ad.id} />
-                                    <button type="submit"
-                                            class="px-4 py-2 rounded-xl bg-red-600/20 border border-red-500/40 text-red-300 font-black text-sm hover:bg-red-600/30"
-                                            onclick={(e) => { if (!confirm('למחוק את הפרסומת לצמיתות?')) e.preventDefault(); }}>
-                                        🗑 מחק
-                                    </button>
-                                </form>
+                                {#if canDelete}
+                                    <form method="POST" action="?/remove" use:enhance>
+                                        <input type="hidden" name="id" value={ad.id} />
+                                        <button type="submit"
+                                                class="px-4 py-2 rounded-xl bg-red-600/20 border border-red-500/40 text-red-300 font-black text-sm hover:bg-red-600/30"
+                                                onclick={(e) => { if (!confirm('למחוק את הפרסומת לצמיתות?')) e.preventDefault(); }}>
+                                            🗑 מחק
+                                        </button>
+                                    </form>
+                                {/if}
                             {:else}
                                 <form method="POST" action="?/unreject" use:enhance>
                                     <input type="hidden" name="id" value={ad.id} />
@@ -387,14 +433,16 @@
                                         ↩️ החזר לממתינות
                                     </button>
                                 </form>
-                                <form method="POST" action="?/remove" use:enhance>
-                                    <input type="hidden" name="id" value={ad.id} />
-                                    <button type="submit"
-                                            class="px-4 py-2 rounded-xl bg-red-600/20 border border-red-500/40 text-red-300 font-black text-sm hover:bg-red-600/30"
-                                            onclick={(e) => { if (!confirm('למחוק את הפרסומת לצמיתות?')) e.preventDefault(); }}>
-                                        🗑 מחק
-                                    </button>
-                                </form>
+                                {#if canDelete}
+                                    <form method="POST" action="?/remove" use:enhance>
+                                        <input type="hidden" name="id" value={ad.id} />
+                                        <button type="submit"
+                                                class="px-4 py-2 rounded-xl bg-red-600/20 border border-red-500/40 text-red-300 font-black text-sm hover:bg-red-600/30"
+                                                onclick={(e) => { if (!confirm('למחוק את הפרסומת לצמיתות?')) e.preventDefault(); }}>
+                                            🗑 מחק
+                                        </button>
+                                    </form>
+                                {/if}
                             {/if}
                         </div>
                     {/if}

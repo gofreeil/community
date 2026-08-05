@@ -405,6 +405,9 @@
 		location_request: "/admin#pending-neighborhoods",
 		neighborhood_request: "/admin#pending-neighborhoods",
 		singles_review: "/admin/singles-review",
+		// בלי זה הודעת "בקשת פרסום חדשה" הציגה את הנתיב כטקסט בלבד בתוך גוף
+		// ההודעה, והכרטיס לא היה לחיץ - אי אפשר היה להגיע לאשר/לדחות
+		ad_submission: "/admin/ads-review",
 	};
 
 	// הודעת התאמה לדף פנויים/פנויות - לפי קבוצת הגיל והמגדר של המשתמש.
@@ -2843,7 +2846,7 @@
 				{/if}
 			</div>
 		</div>
-	{:else if ((data.user as any)?.coordinator_of?.length ?? 0) > 0}
+	{:else if isUserAdmin || ((data.user as any)?.coordinator_of?.length ?? 0) > 0}
 		<div class="bg-gradient-to-br from-emerald-500/10 to-blue-500/10 rounded-2xl border border-emerald-500/30 p-3 md:p-4 mb-2 {mobileTab !== 'main' ? 'hidden md:block' : ''}">
 			<div class="flex items-center justify-between gap-2 mb-3 flex-wrap">
 				<h3 class="text-white font-bold text-sm flex items-center gap-2">
@@ -2851,13 +2854,33 @@
 					{tFn("profile.coord_area")}
 				</h3>
 			</div>
-			<a
-				href="/coordinator"
-				class="block text-center text-xs md:text-sm font-bold text-emerald-300 hover:text-emerald-200 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-emerald-500/10 border border-emerald-500/30 hover:border-emerald-400/50"
-				title={tFn("profile.coord_area_title")}
-			>
-				{tFn("profile.coord_enter")}
-			</a>
+			<div class="flex flex-wrap gap-2">
+				{#if ((data.user as any)?.coordinator_of?.length ?? 0) > 0}
+					<a
+						href="/coordinator"
+						class="flex-1 min-w-[160px] text-center text-xs md:text-sm font-bold text-emerald-300 hover:text-emerald-200 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-emerald-500/10 border border-emerald-500/30 hover:border-emerald-400/50"
+						title={tFn("profile.coord_area_title")}
+					>
+						{tFn("profile.coord_enter")}
+					</a>
+				{/if}
+				{#if isUserAdmin}
+					<!-- אדמין שמונה מקבל את ההתראה על בקשת פרסום חדשה, ולכן צריך גם
+					     דרך קבועה להיכנס לאשר/לדחות ולנהל את הפרסומות שכבר באתר -->
+					<a
+						href="/admin/ads-review"
+						class="relative flex-1 min-w-[160px] text-center text-xs md:text-sm font-bold text-amber-300 hover:text-amber-200 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-amber-500/10 border border-amber-500/30 hover:border-amber-400/50 flex items-center justify-center gap-1.5"
+						title={tFn("profile.manage_content_title")}
+					>
+						{tFn("profile.manage_content")}
+						{#if (data.pendingAdsCount ?? 0) > 0}
+							<span class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-amber-500 text-black text-[11px] font-black shadow-lg animate-pulse">
+								{data.pendingAdsCount}
+							</span>
+						{/if}
+					</a>
+				{/if}
+			</div>
 		</div>
 	{/if}
 
