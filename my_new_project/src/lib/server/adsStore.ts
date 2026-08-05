@@ -54,6 +54,10 @@ export interface SubmittedAd {
 
     /** מיקום התצוגה באתר (0 = ראשונה). undefined = לא נקבע מיקום ידני */
     order?: number;
+    /** מושהית: יורדת מהאתר אבל שומרת את הימים שנותרו לה */
+    paused?: boolean;
+    /** כמה ימים נותרו לה ברגע ההשהיה - מהם היא ממשיכה כשמפעילים מחדש */
+    pausedDaysLeft?: number;
 
     // Card fields
     title: string;
@@ -97,7 +101,14 @@ interface StrapiAdAttrs {
     main_image: string | null;
     // ה-fit ומיקום התצוגה חיים בתוך ה-JSON של landing — לסכמת submitted-ad
     // ב-Strapi אין עמודות ייעודיות, ושדה json מקבל מפתחות נוספים בלי שינוי סכמה.
-    landing: (SubmittedAd['landing'] & { mainImageFit?: unknown; _order?: unknown }) | null;
+    landing:
+        | (SubmittedAd['landing'] & {
+              mainImageFit?: unknown;
+              _order?: unknown;
+              _paused?: unknown;
+              _pausedDaysLeft?: unknown;
+          })
+        | null;
     submitted_by_id: string | null;
     submitted_by_email: string | null;
     submitted_by_name: string | null;
@@ -149,6 +160,8 @@ function fromStrapi(s: StrapiAd): SubmittedAd {
         paymentAmount: s.payment_amount != null ? Number(s.payment_amount) : undefined,
         remindersSent: Array.isArray(s.reminders_sent) ? s.reminders_sent : [],
         order: typeof s.landing?._order === 'number' ? s.landing._order : undefined,
+        paused: s.landing?._paused === true,
+        pausedDaysLeft: typeof s.landing?._pausedDaysLeft === 'number' ? s.landing._pausedDaysLeft : undefined,
         title: s.title ?? '',
         subtitle: s.subtitle ?? '',
         hoverText: s.hover_text ?? '',
@@ -231,9 +244,28 @@ export async function listPending(): Promise<SubmittedAd[]> {
     return [...pending, ...rejected];
 }
 
+/** כל המאושרות - כולל מושהות ופגות תוקף. לתצוגת הניהול בלבד. */
 export async function listApproved(): Promise<SubmittedAd[]> {
     // עותק לפני מיון - המערך עצמו יושב ב-cache ומשותף לכל הקוראים
     return [...await listByStatus('approved')].sort(byDisplayOrder);
+}
+
+/** האם הפרסומת אמורה להיות מוצגת לגולש עכשיו */
+function isLiveNow(ad: SubmittedAd, now = Date.now()): boolean {
+    if (ad.paused) return false;
+    if (!ad.expiresAt) return true;
+    const t = new Date(ad.expiresAt).getTime();
+    return !Number.isFinite(t) || t > now;
+}
+
+/**
+ * מה שהאתר עצמו מציג: מאושרות שאינן מושהות ושתוקפן לא פג.
+ * בלי הסינון הזה תאריך הפקיעה היה מספר בלבד - פרסומת "פגה" המשיכה
+ * להופיע בטור, וקיצוב תקופה במסך הניהול לא היה משפיע על מה שרואים.
+ */
+export async function listApprovedLive(): Promise<SubmittedAd[]> {
+    const now = Date.now();
+    return (await listApproved()).filter(a => isLiveNow(a, now));
 }
 
 export async function getAd(id: string): Promise<SubmittedAd | null> {
@@ -389,6 +421,91 @@ export async function moveApprovedAd(
     return { title: reordered[to].title, position: to + 1, total: reordered.length };
 }
 
+// ----- ניהול תקופת הפרסום: קציבה, השהיה, המשך -----
+
+const MIN_DURATION_DAYS = 1;
+const MAX_DURATION_DAYS = 730;
+
+/** מנרמל קלט ימים מהטופס לטווח שפוי */
+export function normalizeDurationDays(raw: unknown): number {
+    const n = Math.round(Number(raw));
+    if (!Number.isFinite(n)) return DEFAULT_DURATION_DAYS;
+    return Math.min(MAX_DURATION_DAYS, Math.max(MIN_DURATION_DAYS, n));
+}
+
+/**
+ * קוצב לפרסומת תקופה חדשה. התקופה נספרת מיום הפרסום, ולכן קציבה ל-7 ימים
+ * לפרסומת שכבר רצה 10 ימים מורידה אותה מהאתר מיד - וזו בדיוק המשמעות של
+ * "לקצוב". התזכורות מתאפסות כדי שהמפרסם יקבל התראה לפי התאריך החדש.
+ */
+export async function setAdDuration(id: string, days: number): Promise<{ title: string; expiresAt: string; daysLeft: number } | null> {
+    const existing = await findByDocumentId(id);
+    if (!existing) return null;
+    const from = existing.decided_at ?? existing.submitted_at ?? existing.createdAt ?? new Date().toISOString();
+    const expires = new Date(new Date(from).getTime() + days * DAY_MS);
+    const res = await strapiPut<{ data: StrapiAd }>(`${ENDPOINT}/${id}`, {
+        data: {
+            duration_days:  days,
+            expires_at:     expires.toISOString(),
+            reminders_sent: [],
+        },
+    });
+    invalidate('ads:');
+    const ad = fromStrapi(res.data);
+    return {
+        title: ad.title,
+        expiresAt: expires.toISOString(),
+        daysLeft: Math.ceil((expires.getTime() - Date.now()) / DAY_MS),
+    };
+}
+
+/**
+ * השהיה: הפרסומת יורדת מהאתר אבל שומרת את הימים שנותרו לה, וממשיכה
+ * מאותה נקודה כשמפעילים אותה מחדש. בשונה מ"הורד מהאתר" - המפרסם לא
+ * מפסיד ימים ששילם עליהם, והפרסומת לא חוזרת לתור האישורים.
+ */
+export async function pauseAd(id: string): Promise<{ title: string; daysLeft: number } | null> {
+    const existing = await findByDocumentId(id);
+    if (!existing) return null;
+    const ad = fromStrapi(existing);
+    if (ad.paused) return { title: ad.title, daysLeft: ad.pausedDaysLeft ?? 0 };
+    const daysLeft = ad.expiresAt
+        ? Math.max(0, Math.ceil((new Date(ad.expiresAt).getTime() - Date.now()) / DAY_MS))
+        : (ad.durationDays ?? DEFAULT_DURATION_DAYS);
+    await strapiPut(`${ENDPOINT}/${id}`, {
+        data: {
+            landing: {
+                ...(ad.landing as unknown as Record<string, unknown>),
+                _paused: true,
+                _pausedDaysLeft: daysLeft,
+            },
+        },
+    });
+    invalidate('ads:');
+    return { title: ad.title, daysLeft };
+}
+
+/** המשך אחרי השהיה: הימים שנשמרו נספרים מחדש מהיום. */
+export async function resumeAd(id: string): Promise<{ title: string; expiresAt: string; daysLeft: number } | null> {
+    const existing = await findByDocumentId(id);
+    if (!existing) return null;
+    const ad = fromStrapi(existing);
+    const daysLeft = ad.pausedDaysLeft ?? ad.durationDays ?? DEFAULT_DURATION_DAYS;
+    const expires = new Date(Date.now() + daysLeft * DAY_MS);
+    const landing = { ...(ad.landing as unknown as Record<string, unknown>) };
+    delete landing._paused;
+    delete landing._pausedDaysLeft;
+    await strapiPut(`${ENDPOINT}/${id}`, {
+        data: {
+            landing,
+            expires_at:     expires.toISOString(),
+            reminders_sent: [],
+        },
+    });
+    invalidate('ads:');
+    return { title: ad.title, expiresAt: expires.toISOString(), daysLeft };
+}
+
 type EditableFields = Partial<Pick<SubmittedAd, 'title' | 'subtitle' | 'cta' | 'hoverText'>>;
 
 export async function updateAdFields(id: string, fields: EditableFields): Promise<SubmittedAd | null> {
@@ -456,7 +573,7 @@ export interface AdSchedule {
     expiresAt: string;
     durationDays: number;
     daysLeft: number;
-    state: 'expired' | 'ending' | 'active';   // ending = ≤7 ימים
+    state: 'expired' | 'ending' | 'active' | 'paused';   // ending = ≤7 ימים
     paymentAmount: number;
 }
 
@@ -465,8 +582,14 @@ export function computeSchedule(ad: SubmittedAd): AdSchedule | null {
     const days = ad.durationDays ?? DEFAULT_DURATION_DAYS;
     const publishedAt = ad.decidedAt;
     const expiresAt = ad.expiresAt ?? new Date(new Date(publishedAt).getTime() + days * DAY_MS).toISOString();
-    const daysLeft = Math.ceil((new Date(expiresAt).getTime() - Date.now()) / DAY_MS);
-    const state: AdSchedule['state'] = daysLeft < 0 ? 'expired' : daysLeft <= 7 ? 'ending' : 'active';
+    // מושהית: הזמן לא רץ. הימים שנותרו הם אלה שנשמרו ברגע ההשהיה.
+    const daysLeft = ad.paused
+        ? (ad.pausedDaysLeft ?? days)
+        : Math.ceil((new Date(expiresAt).getTime() - Date.now()) / DAY_MS);
+    const state: AdSchedule['state'] = ad.paused ? 'paused'
+        : daysLeft < 0 ? 'expired'
+        : daysLeft <= 7 ? 'ending'
+        : 'active';
     return {
         id: ad.id,
         title: ad.title,
@@ -503,7 +626,8 @@ const REMINDER_RULES: ReminderRule[] = [
 
 function nextReminderForAd(ad: SubmittedAd): ReminderRule | null {
     const sched = computeSchedule(ad);
-    if (!sched || sched.state === 'expired') return null;
+    // מושהית: הזמן עצר, ואין טעם להתריע על פקיעה שלא מתקרבת
+    if (!sched || sched.state === 'expired' || sched.state === 'paused') return null;
     const sent = new Set(ad.remindersSent ?? []);
     for (const rule of REMINDER_RULES) {
         if (sent.has(rule.stage)) continue;
@@ -608,7 +732,9 @@ export async function listAdvertisers(): Promise<AdvertiserSummary[]> {
     for (const ad of all) {
         const key = ad.submittedBy?.email || ad.submittedBy?.id || ad.id;
         const existing = map.get(key);
-        const isActiveNow = ad.status === 'approved' && (computeSchedule(ad)?.state !== 'expired');
+        // "פעילה עכשיו" = באמת על האתר: לא פגה ולא מושהית
+        const schedState = computeSchedule(ad)?.state;
+        const isActiveNow = ad.status === 'approved' && schedState !== 'expired' && schedState !== 'paused';
         if (!existing) {
             map.set(key, {
                 key,

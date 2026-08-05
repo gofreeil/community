@@ -15,6 +15,8 @@
     // רק במיון הזה אפשר להחליף מקום - אחרת החצים היו מזיזים ביחס לתצוגה אחרת.
     let sortOrder = $state<'display' | 'newest' | 'oldest'>('display');
     let canDelete = $derived(data.role === 'super_admin');
+    // תקופות הפרסום שאפשר לקצוב מהטבלה (התקופה נספרת מיום הפרסום)
+    const DURATION_OPTIONS = [7, 14, 30, 60, 90, 180, 365];
     let canReorder = $derived(sortOrder === 'display' && !searchQuery.trim());
 
     // בחירה רב-פריטית
@@ -465,6 +467,7 @@
                 <span class="inline-flex items-center gap-1 text-emerald-300"><span class="w-2 h-2 rounded-full bg-emerald-400"></span>פעילה</span>
                 <span class="inline-flex items-center gap-1 text-amber-300"><span class="w-2 h-2 rounded-full bg-amber-400"></span>≤ 7 ימים</span>
                 <span class="inline-flex items-center gap-1 text-red-300"><span class="w-2 h-2 rounded-full bg-red-400"></span>פגה</span>
+                <span class="inline-flex items-center gap-1 text-blue-300"><span class="w-2 h-2 rounded-full bg-blue-400"></span>מושהית</span>
             </div>
         </div>
 
@@ -484,18 +487,28 @@
                             <th class="text-right font-bold px-3 py-2.5">משך</th>
                             <th class="text-right font-bold px-3 py-2.5">ימים שנותרו</th>
                             <th class="text-right font-bold px-3 py-2.5">סטטוס</th>
+                            <th class="text-right font-bold px-3 py-2.5">ניהול</th>
                         </tr>
                     </thead>
                     <tbody>
                         {#each data.schedules as s (s.id)}
-                            {@const stateColor = s.state === 'expired' ? 'bg-red-500/15 text-red-300 border-red-500/40'
+                            {@const stateColor = s.state === 'paused' ? 'bg-blue-500/15 text-blue-300 border-blue-500/40'
+                                : s.state === 'expired' ? 'bg-red-500/15 text-red-300 border-red-500/40'
                                 : s.state === 'ending' ? 'bg-amber-500/15 text-amber-300 border-amber-500/40'
                                 : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40'}
-                            {@const stateLabel = s.state === 'expired' ? 'פגה' : s.state === 'ending' ? 'פגה בקרוב' : 'פעילה'}
-                            {@const daysColor = s.daysLeft < 0 ? 'text-red-300'
+                            {@const stateLabel = s.state === 'paused' ? 'מושהית'
+                                : s.state === 'expired' ? 'פגה'
+                                : s.state === 'ending' ? 'פגה בקרוב'
+                                : 'פעילה'}
+                            {@const daysColor = s.state === 'paused' ? 'text-blue-300'
+                                : s.daysLeft < 0 ? 'text-red-300'
                                 : s.daysLeft <= 7 ? 'text-amber-300'
                                 : 'text-emerald-300'}
                             {@const progress = Math.min(100, Math.max(0, ((s.durationDays - Math.max(0, s.daysLeft)) / s.durationDays) * 100))}
+                            <!-- תקופה נוכחית שאינה ברשימה (למשל 45 יום) מתווספת לבורר, כדי שלא תיעלם -->
+                            {@const durOptions = DURATION_OPTIONS.includes(s.durationDays)
+                                ? DURATION_OPTIONS
+                                : [...DURATION_OPTIONS, s.durationDays].sort((a, b) => a - b)}
                             <tr class="border-t border-white/10 hover:bg-white/5">
                                 <td class="px-3 py-2 font-bold text-white truncate max-w-[180px]">{s.title}</td>
                                 <td class="px-3 py-2 text-gray-300 hidden md:table-cell">
@@ -514,6 +527,67 @@
                                 </td>
                                 <td class="px-3 py-2">
                                     <span class="text-[11px] font-black border px-2 py-0.5 rounded-full whitespace-nowrap {stateColor}">{stateLabel}</span>
+                                </td>
+                                <!-- ניהול הפרסומת ישירות מהשורה: קציבת תקופה, השהיה, הורדה, מחיקה -->
+                                <td class="px-3 py-2">
+                                    <div class="flex flex-wrap items-center gap-1.5">
+                                        <form method="POST" action="?/setDuration" use:enhance class="flex items-center gap-1">
+                                            <input type="hidden" name="id" value={s.id} />
+                                            <select name="days"
+                                                    class="px-2 py-1 rounded-lg bg-black/40 border border-white/15 text-white text-[11px] focus:outline-none focus:border-amber-400/50">
+                                                {#each durOptions as d (d)}
+                                                    <option value={d} selected={d === s.durationDays} style="background:#fff;color:#111">{d} ימים</option>
+                                                {/each}
+                                            </select>
+                                            <button type="submit"
+                                                    class="px-2.5 py-1 rounded-lg bg-blue-500/20 border border-blue-500/40 text-blue-200 text-[11px] font-black hover:bg-blue-500/30 whitespace-nowrap"
+                                                    title="התקופה נספרת מיום הפרסום">
+                                                ⏱ קצוב
+                                            </button>
+                                        </form>
+
+                                        {#if s.state === 'paused'}
+                                            <form method="POST" action="?/resume" use:enhance>
+                                                <input type="hidden" name="id" value={s.id} />
+                                                <button type="submit"
+                                                        class="px-2.5 py-1 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-200 text-[11px] font-black hover:bg-emerald-500/30 whitespace-nowrap"
+                                                        title="הימים השמורים נספרים מהיום">
+                                                    ▶ המשך
+                                                </button>
+                                            </form>
+                                        {:else}
+                                            <form method="POST" action="?/pause" use:enhance>
+                                                <input type="hidden" name="id" value={s.id} />
+                                                <button type="submit"
+                                                        class="px-2.5 py-1 rounded-lg bg-white/10 border border-white/20 text-gray-200 text-[11px] font-black hover:bg-white/20 whitespace-nowrap"
+                                                        title="יורדת מהאתר ושומרת את הימים שנותרו"
+                                                        onclick={(e) => { if (!confirm('להשהות את הפרסומת? היא תרד מהאתר והימים שנותרו יישמרו לה.')) e.preventDefault(); }}>
+                                                    ⏸ השהה
+                                                </button>
+                                            </form>
+                                        {/if}
+
+                                        <form method="POST" action="?/unapprove" use:enhance>
+                                            <input type="hidden" name="id" value={s.id} />
+                                            <button type="submit"
+                                                    class="px-2.5 py-1 rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-200 text-[11px] font-black hover:bg-amber-500/25 whitespace-nowrap"
+                                                    title="חוזרת לתור האישורים"
+                                                    onclick={(e) => { if (!confirm('להוריד את הפרסומת מהאתר ולהחזיר אותה לממתינות?')) e.preventDefault(); }}>
+                                                ⤴ הורד
+                                            </button>
+                                        </form>
+
+                                        {#if canDelete}
+                                            <form method="POST" action="?/remove" use:enhance>
+                                                <input type="hidden" name="id" value={s.id} />
+                                                <button type="submit"
+                                                        class="px-2.5 py-1 rounded-lg bg-red-600/20 border border-red-500/40 text-red-300 text-[11px] font-black hover:bg-red-600/30 whitespace-nowrap"
+                                                        onclick={(e) => { if (!confirm(`למחוק לצמיתות את "${s.title}"?`)) e.preventDefault(); }}>
+                                                    🗑 מחק
+                                                </button>
+                                            </form>
+                                        {/if}
+                                    </div>
                                 </td>
                             </tr>
                         {/each}

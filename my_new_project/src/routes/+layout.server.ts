@@ -1,6 +1,6 @@
 import type { LayoutServerLoad } from './$types';
 import { getUserById, getNeighborhoods, maybeSendTierUpgradeMessage } from '$lib/server/db';
-import { listApproved } from '$lib/server/adsStore';
+import { listApprovedLive } from '$lib/server/adsStore';
 
 export const load: LayoutServerLoad = async (event) => {
     let session = null;
@@ -15,7 +15,7 @@ export const load: LayoutServerLoad = async (event) => {
     const jwt = event.cookies.get('strapi_jwt');
     const [userRes, adsRes, neighborhoodsRes] = await Promise.allSettled([
         session?.user?.id ? getUserById(session.user.id as string, jwt) : Promise.resolve(null),
-        listApproved(),
+        listApprovedLive(),
         getNeighborhoods('approved'),
     ]);
 

@@ -15,7 +15,14 @@ import {
     listAdvertisers,
     processExpiryReminders,
     moveApprovedAd,
+    setAdDuration,
+    normalizeDurationDays,
+    pauseAd,
+    resumeAd,
 } from '$lib/server/adsStore';
+
+const fmtDay = (iso: string) =>
+    new Date(iso).toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
 /** התפקיד האמיתי של המשתמש - מה-session, ובנפילה לאחור מה-DB (session ישן) */
 async function resolveRole(event: any): Promise<string> {
@@ -154,6 +161,59 @@ export const actions: Actions = {
         const r = await unapproveAd(id);
         if (!r) return fail(404, { error: 'הפרסומת לא נמצאה' });
         return { success: true, message: `הורדה מהאתר: ${r.title}` };
+    },
+
+    // קציבת תקופת פרסום - התקופה נספרת מיום הפרסום
+    setDuration: async (event) => {
+        await ensureAdsAdmin(event);
+        const formData = await event.request.formData();
+        const id = formData.get('id') as string;
+        if (!id) return fail(400, { error: 'חסר מזהה' });
+        const days = normalizeDurationDays(formData.get('days'));
+        let r;
+        try {
+            r = await setAdDuration(id, days);
+        } catch (e) {
+            console.warn('[admin/ads-review] setDuration failed:', e instanceof Error ? e.message : e);
+            return fail(502, { error: 'קציבת התקופה נכשלה - נסה שוב בעוד רגע' });
+        }
+        if (!r) return fail(404, { error: 'הפרסומת לא נמצאה' });
+        const suffix = r.daysLeft < 0 ? ' - התקופה כבר חלפה, הפרסומת ירדה מהאתר' : '';
+        return { success: true, message: `${r.title}: ${days} ימים, עד ${fmtDay(r.expiresAt)}${suffix}` };
+    },
+
+    // השהיה - יורדת מהאתר ושומרת את הימים שנותרו
+    pause: async (event) => {
+        await ensureAdsAdmin(event);
+        const formData = await event.request.formData();
+        const id = formData.get('id') as string;
+        if (!id) return fail(400, { error: 'חסר מזהה' });
+        let r;
+        try {
+            r = await pauseAd(id);
+        } catch (e) {
+            console.warn('[admin/ads-review] pause failed:', e instanceof Error ? e.message : e);
+            return fail(502, { error: 'ההשהיה נכשלה - נסה שוב בעוד רגע' });
+        }
+        if (!r) return fail(404, { error: 'הפרסומת לא נמצאה' });
+        return { success: true, message: `${r.title} הושהתה - ${r.daysLeft} ימים שמורים לה` };
+    },
+
+    // המשך אחרי השהיה - הימים השמורים נספרים מהיום
+    resume: async (event) => {
+        await ensureAdsAdmin(event);
+        const formData = await event.request.formData();
+        const id = formData.get('id') as string;
+        if (!id) return fail(400, { error: 'חסר מזהה' });
+        let r;
+        try {
+            r = await resumeAd(id);
+        } catch (e) {
+            console.warn('[admin/ads-review] resume failed:', e instanceof Error ? e.message : e);
+            return fail(502, { error: 'ההפעלה מחדש נכשלה - נסה שוב בעוד רגע' });
+        }
+        if (!r) return fail(404, { error: 'הפרסומת לא נמצאה' });
+        return { success: true, message: `${r.title} חזרה לאוויר - ${r.daysLeft} ימים, עד ${fmtDay(r.expiresAt)}` };
     },
 
     // החלפת מקום בסדר התצוגה באתר - סופר-אדמין ואדמין שמונה
