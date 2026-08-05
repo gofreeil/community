@@ -670,9 +670,13 @@
                                 <div class="landing-actions">
                                     {#if phone}
                                         <a href="tel:{phone}" class="landing-cta">📞 {phone}</a>
+                                    {/if}
+                                    {#if whatsapp}
+                                        <a href="https://wa.me/{whatsapp.replace(/\D/g,'')}" class="landing-cta wa">{$_("advertise.l_wa_label", { values: { phone: whatsapp } })}</a>
                                     {:else if website}
-                                        <a href={website} class="landing-cta">{$_("advertise.l_to_site")}</a>
-                                    {:else}
+                                        <a href={website} class="landing-cta ghost">{$_("advertise.l_to_site")}</a>
+                                    {/if}
+                                    {#if !phone && !whatsapp && !website}
                                         <span class="landing-cta opacity-60">{$_("advertise.l_complete_contact")}</span>
                                     {/if}
                                 </div>
@@ -738,20 +742,23 @@
                         </section>
                     {/if}
 
-                    <section class="landing-section landing-contact">
-                        <h2>{$_("advertise.l_contact")}</h2>
-                        <div class="contact-pills">
-                            {#if phone}<a class="contact-pill" href="tel:{phone}">📞 {phone}</a>{/if}
-                            {#if whatsapp}<a class="contact-pill" href="https://wa.me/{whatsapp.replace(/\D/g,'')}">💬 {$_("advertise.l_wa_label", { values: { phone: whatsapp } })}</a>{/if}
-                            {#if email}<a class="contact-pill" href="mailto:{email}">✉️ {email}</a>{/if}
-                            {#if website}<a class="contact-pill" href={website} target="_blank" rel="noopener">🌐 {website}</a>{/if}
-                        </div>
-                        {#if address || hours}
-                            <p class="contact-meta">
-                                {#if address}📍 {address}{/if}{#if address && hours} · {/if}{#if hours}🕒 {hours}{/if}
-                            </p>
-                        {/if}
-                    </section>
+                    <!-- רק מה שלא כבר מופיע ככפתור בהדר — כל פרט קשר פעם אחת -->
+                    {#if email || (website && whatsapp) || address || hours}
+                        <section class="landing-section landing-contact">
+                            <h2>{$_("advertise.l_contact")}</h2>
+                            {#if email || (website && whatsapp)}
+                                <div class="contact-pills">
+                                    {#if email}<a class="contact-pill" href="mailto:{email}">✉️ {email}</a>{/if}
+                                    {#if website && whatsapp}<a class="contact-pill" href={website} target="_blank" rel="noopener">🌐 {website}</a>{/if}
+                                </div>
+                            {/if}
+                            {#if address || hours}
+                                <p class="contact-meta">
+                                    {#if address}📍 {address}{/if}{#if address && hours} · {/if}{#if hours}🕒 {hours}{/if}
+                                </p>
+                            {/if}
+                        </section>
+                    {/if}
                 </div>
             </div>
         </section>
@@ -1032,6 +1039,11 @@
         background: white; color: black; font-weight: 800; font-size: 0.95rem;
         text-decoration: none; box-shadow: 0 8px 25px rgba(0,0,0,0.25);
     }
+    :global(.landing-cta.wa) { background: #16a34a; color: #fff; }
+    :global(.landing-cta.ghost) {
+        background: rgba(255,255,255,0.15); color: #fff;
+        border: 1px solid rgba(255,255,255,0.35);
+    }
     :global(.landing-section) {
         padding: 1.1rem 1.4rem; border-top: 1px solid rgba(255,255,255,0.05);
     }
@@ -1055,10 +1067,18 @@
     :global(.product-name)  { color: white; font-weight: 700; font-size: 0.85rem; margin: 0 0 0.2rem; }
     :global(.product-desc)  { color: rgb(156,163,175); font-size: 0.72rem; margin: 0 0 0.3rem; line-height: 1.3; }
     :global(.product-price) { color: #fbbf24; font-weight: 900; font-size: 0.95rem; margin: 0; }
-    :global(.landing-contact ul) { list-style: none; padding: 0; max-width: 360px; margin: 0 auto; }
-    :global(.landing-contact li) { padding: 0.4rem 0; color: rgb(229,231,235); font-size: 0.9rem; }
-    :global(.landing-contact a)  { color: #fbbf24; text-decoration: none; }
-    :global(.landing-contact a:hover) { text-decoration: underline; }
+    :global(.landing-contact) { text-align: center; }
+    :global(.contact-pills) { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; }
+    :global(.contact-pill) {
+        display: inline-flex; align-items: center; gap: 0.35rem;
+        padding: 0.45rem 0.9rem; border-radius: 9999px;
+        background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+        color: rgb(229,231,235); font-size: 0.875rem; font-weight: 700; text-decoration: none;
+    }
+    :global(.contact-pill:hover) {
+        background: rgba(251,191,36,0.12); border-color: rgba(251,191,36,0.45); color: #fde68a;
+    }
+    :global(.contact-meta) { color: rgb(156,163,175); font-size: 0.825rem; margin: 0.75rem 0 0; }
 
     :global(.img-placeholder) {
         width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;

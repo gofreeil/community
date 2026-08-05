@@ -17,6 +17,16 @@
     const waUrl = $derived(lp.whatsapp ? waHref(lp.whatsapp) : '');
     const siteUrl = $derived(lp.website ? toExternalUrl(lp.website) : '');
 
+    // כל דרך קשר מופיעה *פעם אחת*: מה שכבר יושב ככפתור בהדר לא חוזר שוב
+    // בגלולות של "פרטי קשר". האתר יורד לפרטי הקשר כשהוואטסאפ תפס את
+    // מקומו בהדר, ומספר/כתובת שלא ניתן לייצר מהם קישור מוצגים כטקסט.
+    const siteInHero = $derived(!waUrl && Boolean(siteUrl));
+    const contactWhatsapp = $derived(Boolean(lp.whatsapp) && !waUrl);
+    const contactWebsite = $derived(Boolean(lp.website) && !siteInHero);
+    const hasContactDetails = $derived(
+        Boolean(lp.email) || contactWhatsapp || contactWebsite || Boolean(lp.address) || Boolean(lp.hours)
+    );
+
     // היתרונות נכנסים לטור שליד התמונה רק כשמשפט הפתיחה קצר; אחרת הטור היה
     // גבוה מהתמונה ונשבר האיזון, ואז הם יורדים לשורה רחבה אחת מתחת (עדיין
     // בלי גלילה מיותרת). נמדד לפי האורך *המוצג* — כתובות ארוכות מתכווצות.
@@ -152,28 +162,29 @@
         </section>
     {/if}
 
-    <!-- פרטי קשר — שורת גלולות, לא רשימה מתמשכת -->
-    <section class="al-section al-contact">
-        <h2>פרטי קשר</h2>
-        <div class="al-pills">
-            {#if lp.phone}<a class="al-pill" href={`tel:${lp.phone}`}>📞 {lp.phone}</a>{/if}
-            <!-- 05x מקומי חייב קידומת 972, אחרת wa.me מחזיר "המספר אינו קיים" -->
-            {#if lp.whatsapp}
-                {#if waUrl}<a class="al-pill" href={waUrl} target="_blank" rel="noopener noreferrer">💬 {lp.whatsapp}</a>{:else}<span class="al-pill">💬 {lp.whatsapp}</span>{/if}
+    <!-- פרטי קשר — רק מה שלא כבר מופיע ככפתור בהדר, כדי לא לחזור פעמיים -->
+    {#if hasContactDetails}
+        <section class="al-section al-contact">
+            <h2>פרטי קשר</h2>
+            {#if contactWhatsapp || lp.email || contactWebsite}
+                <div class="al-pills">
+                    <!-- 05x מקומי חייב קידומת 972, אחרת wa.me מחזיר "המספר אינו קיים" -->
+                    {#if contactWhatsapp}<span class="al-pill">💬 {lp.whatsapp}</span>{/if}
+                    {#if lp.email}<a class="al-pill" href={`mailto:${lp.email}`}>✉️ {lp.email}</a>{/if}
+                    <!-- כתובת בלי https:// היא יחסית: היא הייתה מובילה ל-/ads/<כתובת>
+                         על הדומיין שלנו במקום לאתר של המפרסם -->
+                    {#if contactWebsite}
+                        {#if siteUrl}<a class="al-pill" href={siteUrl} target="_blank" rel="noopener noreferrer">🌐 {linkLabel(siteUrl)}</a>{:else}<span class="al-pill">🌐 {lp.website}</span>{/if}
+                    {/if}
+                </div>
             {/if}
-            {#if lp.email}<a class="al-pill" href={`mailto:${lp.email}`}>✉️ {lp.email}</a>{/if}
-            <!-- כתובת בלי https:// היא יחסית: היא הייתה מובילה ל-/ads/<כתובת>
-                 על הדומיין שלנו במקום לאתר של המפרסם -->
-            {#if lp.website}
-                {#if siteUrl}<a class="al-pill" href={siteUrl} target="_blank" rel="noopener noreferrer">🌐 {linkLabel(siteUrl)}</a>{:else}<span class="al-pill">🌐 {lp.website}</span>{/if}
+            {#if lp.address || lp.hours}
+                <p class="al-meta">
+                    {#if lp.address}📍 {lp.address}{/if}{#if lp.address && lp.hours} · {/if}{#if lp.hours}🕒 {lp.hours}{/if}
+                </p>
             {/if}
-        </div>
-        {#if lp.address || lp.hours}
-            <p class="al-meta">
-                {#if lp.address}📍 {lp.address}{/if}{#if lp.address && lp.hours} · {/if}{#if lp.hours}🕒 {lp.hours}{/if}
-            </p>
-        {/if}
-    </section>
+        </section>
+    {/if}
 </div>
 
 <style>
