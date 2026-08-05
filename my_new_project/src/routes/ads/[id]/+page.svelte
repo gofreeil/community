@@ -1,5 +1,6 @@
 <script lang="ts">
     import type { PageData } from './$types';
+    import { toExternalUrl, waHref } from '$lib/urlNormalize';
     let { data }: { data: PageData } = $props();
     // $derived: מעבר בין מודעות בניווט צד-לקוח משתמש באותה קומפוננטה
     const ad = $derived(data.ad);
@@ -79,9 +80,18 @@
             <h2 class="text-xl font-black mb-3">פרטי קשר</h2>
             <div class="grid sm:grid-cols-2 gap-2 text-sm">
                 {#if lp.phone}<div>📞 <a href={`tel:${lp.phone}`} class="text-amber-300 hover:underline">{lp.phone}</a></div>{/if}
-                {#if lp.whatsapp}<div>💬 <a href={`https://wa.me/${lp.whatsapp.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener" class="text-emerald-300 hover:underline">{lp.whatsapp}</a></div>{/if}
+                <!-- 05x מקומי חייב קידומת 972, אחרת wa.me מחזיר "המספר אינו קיים" -->
+                {#if lp.whatsapp}
+                    {@const wa = waHref(lp.whatsapp)}
+                    <div>💬 {#if wa}<a href={wa} target="_blank" rel="noopener noreferrer" class="text-emerald-300 hover:underline">{lp.whatsapp}</a>{:else}<span class="text-emerald-300">{lp.whatsapp}</span>{/if}</div>
+                {/if}
                 {#if lp.email}<div>✉️ <a href={`mailto:${lp.email}`} class="text-amber-300 hover:underline">{lp.email}</a></div>{/if}
-                {#if lp.website}<div>🌐 <a href={lp.website} target="_blank" rel="noopener" class="text-amber-300 hover:underline">{lp.website}</a></div>{/if}
+                <!-- כתובת בלי https:// היא יחסית: היא הייתה מובילה ל-/ads/<כתובת>
+                     על הדומיין שלנו במקום לאתר של המפרסם -->
+                {#if lp.website}
+                    {@const site = toExternalUrl(lp.website)}
+                    <div>🌐 {#if site}<a href={site} target="_blank" rel="noopener noreferrer" class="text-amber-300 hover:underline">{lp.website}</a>{:else}<span class="text-amber-300">{lp.website}</span>{/if}</div>
+                {/if}
                 {#if lp.address}<div>📍 {lp.address}</div>{/if}
                 {#if lp.hours}<div>🕒 {lp.hours}</div>{/if}
             </div>

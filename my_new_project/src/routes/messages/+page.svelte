@@ -120,6 +120,18 @@
         catch { return false; }
     }
 
+    // הודעת "בקשת פרסום חדשה" נושאת יעד פעולה ב-extra_fields.review_link.
+    // בלי הכפתור הזה הנתיב מופיע בגוף ההודעה כטקסט בלבד ואי אפשר ללחוץ עליו.
+    // מאשרים רק נתיב פנימי (מתחיל ב-"/") כדי שלא ייווצר יעד חיצוני מהדאטה.
+    function adsReviewLink(extraFields: string): string {
+        try {
+            const f = JSON.parse(extraFields);
+            if (f?.type !== 'ad_submission') return '';
+            const l = typeof f.review_link === 'string' ? f.review_link : '';
+            return l.startsWith('/') ? l : '/admin/ads-review';
+        } catch { return ''; }
+    }
+
     function formatDate(iso: string): string {
         if (!iso) return '';
         const diff = Date.now() - new Date(iso).getTime();
@@ -254,6 +266,14 @@
                         <a href="/profile"
                             class="block text-center py-2 rounded-xl mb-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:opacity-90 text-white text-sm font-bold transition-all">
                             {$_('extras.m_complete_profile')}
+                        </a>
+                    {/if}
+
+                    <!-- קיצור לעמוד אישור הפרסומות בהודעה על בקשת פרסום חדשה -->
+                    {#if adsReviewLink(msg.extra_fields)}
+                        <a href={adsReviewLink(msg.extra_fields)}
+                            class="block text-center py-2 rounded-xl mb-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-black text-sm font-black transition-all">
+                            {$_('extras.m_open_ads_review')}
                         </a>
                     {/if}
 

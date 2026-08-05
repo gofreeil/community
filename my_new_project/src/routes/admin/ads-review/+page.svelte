@@ -322,7 +322,9 @@
                                         {/each}
                                     </ul>
                                 {/if}
-                                <a href={`/ads/${ad.id}`} target="_blank" rel="noopener"
+                                <!-- preview=1: הכרטיס הזה מוצג גם ב"ממתינות" ו"נדחו",
+                                     ושם /ads/<id> חסום לציבור. השרת פותח אותו לסופר-אדמין בלבד. -->
+                                <a href={`/ads/${ad.id}?preview=1`} target="_blank" rel="noopener noreferrer"
                                    class="inline-block mt-2 px-3 py-1.5 rounded-lg bg-white/10 text-amber-300 font-bold hover:bg-white/15">
                                     פתח את דף הנחיתה המלא →
                                 </a>

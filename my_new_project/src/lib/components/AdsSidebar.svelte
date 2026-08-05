@@ -6,6 +6,10 @@
     // פרסומות של מפרסמים (submitted-ads שאושרו) אינן מוצגות כאן בשום מצב -
     // מקומן הוא הטור הימני (RightAdBanner). אין כאן prop של approvedAds
     // בכוונה, כדי שלא תיפתח שוב אפשרות לשתול פרסומת בצד שמאל.
+    // נעילה מכוונת: הרכיב לא מקבל שום prop. אם מישהו ינסה שוב להעביר לכאן
+    // approvedAds - npm run check ייכשל במקום להתעלם בשקט.
+    let {}: { approvedAds?: never } = $props();
+
     let sites = $derived(ads.map(a => ({
         id: String(a.id),
         title: a.title,

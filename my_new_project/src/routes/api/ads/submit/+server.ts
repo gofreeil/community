@@ -3,6 +3,7 @@ import type { RequestHandler } from './$types';
 import { submitAd, type SubmittedAd } from '$lib/server/adsStore';
 import { getAllSuperAdmins, createItem } from '$lib/server/db';
 import { parseAdImageFit } from '$lib/adImageFit';
+import { toExternalUrl } from '$lib/urlNormalize';
 
 /**
  * שולח הודעה אישית (category 'message') לכל סופר־אדמין על בקשת פרסום חדשה,
@@ -96,7 +97,9 @@ export const POST: RequestHandler = async (event) => {
             uniqueness: payload.landing.uniqueness ?? '',
             phone: payload.landing.phone ?? '',
             whatsapp: payload.landing.whatsapp ?? '',
-            website: payload.landing.website ?? '',
+            // נשמר מנורמל (https:// מלא) כדי שהקישור לא ייפול לנתיב יחסי על
+            // הדומיין שלנו. ערך שאי אפשר לנרמל נשמר כמו שהוא ולא נזרק.
+            website: toExternalUrl(payload.landing.website ?? '') || (payload.landing.website ?? ''),
             email: payload.landing.email ?? '',
             address: payload.landing.address ?? '',
             hours: payload.landing.hours ?? '',
