@@ -13,6 +13,11 @@ export const he = {
         try_again: "נסה שוב",
         back_home: "חזרה לדף הבית",
         ref_prefix: "מזהה תקלה",
+        // משוב על שדה שחוסם שליחת טופס (ראו $lib/formGuard.ts)
+        field_required: "יש למלא את השדה \"{field}\" כדי להמשיך",
+        field_choose: "יש לבחור \"{field}\" כדי להמשיך",
+        field_invalid: "הערך בשדה \"{field}\" אינו תקין - נא לתקן",
+        field_required_generic: "יש למלא את השדה המסומן באדום כדי להמשיך",
     },
 };
 
@@ -28,6 +33,10 @@ export const en = {
         try_again: "Try again",
         back_home: "Back to home",
         ref_prefix: "Reference",
+        field_required: "Please fill in \"{field}\" to continue",
+        field_choose: "Please choose \"{field}\" to continue",
+        field_invalid: "The value in \"{field}\" isn't valid - please fix it",
+        field_required_generic: "Please fill in the field highlighted in red to continue",
     },
 };
 
@@ -43,5 +52,9 @@ export const ru = {
         try_again: "Попробовать снова",
         back_home: "На главную",
         ref_prefix: "Идентификатор",
+        field_required: "Заполните поле «{field}», чтобы продолжить",
+        field_choose: "Выберите «{field}», чтобы продолжить",
+        field_invalid: "Значение в поле «{field}» некорректно - исправьте его",
+        field_required_generic: "Заполните поле, выделенное красным, чтобы продолжить",
     },
 };

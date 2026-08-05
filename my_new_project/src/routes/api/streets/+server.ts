@@ -26,6 +26,15 @@ const CITY_ALIASES: Record<string, string[]> = {
 
 const collator = new Intl.Collator('he');
 
+// תוצאת פנייה למאגר: reachable=false פירושו "לא הצלחנו לברר" (תקלת רשת /
+// timeout / תשובה לא תקינה) - להבדיל מ"בירינו, ולישוב הזה אין רחובות במאגר".
+// ההבחנה קריטית: הטפסים הופכים את הפין על המפה לחובה כשאין רשימת רחובות,
+// ותקלה רגעית שנחשבת בטעות ל"אין רחובות" חוסמת פרסום ליישוב שלם.
+interface StreetsResult {
+    streets: string[];
+    reachable: boolean;
+}
+
 async function govFetchStreets(officialCity: string): Promise<string[] | null> {
     const url = new URL(GOV_API);
     url.searchParams.set('resource_id', RESOURCE_ID);
@@ -42,7 +51,7 @@ async function govFetchStreets(officialCity: string): Promise<string[] | null> {
             result?: { records?: Array<Record<string, unknown>> };
         };
         const records = data?.result?.records;
-        if (!data?.success || !Array.isArray(records) || records.length === 0) return null;
+        if (!data?.success || !Array.isArray(records)) return null;
 
         const seen = new Set<string>();
         for (const r of records) {
@@ -51,6 +60,7 @@ async function govFetchStreets(officialCity: string): Promise<string[] | null> {
             if (!name || name === officialCity.trim()) continue;
             seen.add(name);
         }
+        // מערך (גם ריק) = המאגר ענה. null = לא הצלחנו לברר.
         return [...seen].sort(collator.compare);
     } catch {
         return null;
@@ -59,30 +69,43 @@ async function govFetchStreets(officialCity: string): Promise<string[] | null> {
     }
 }
 
-async function fetchStreetsFor(city: string): Promise<string[]> {
+async function fetchStreetsFor(city: string): Promise<StreetsResult> {
     // כל וריאנט נבדק עם רווח נגרר (הפורמט של המאגר) ואז בלעדיו - ליתר ביטחון
     const variants = [city, ...(CITY_ALIASES[city] ?? [])];
+    let reachable = false;
     for (const v of variants) {
         for (const candidate of [`${v} `, v]) {
             const streets = await govFetchStreets(candidate);
-            if (streets && streets.length > 0) return streets;
+            if (streets === null) continue;
+            reachable = true;
+            if (streets.length > 0) return { streets, reachable: true };
         }
     }
-    return [];
+    return { streets: [], reachable };
 }
+
+const DAY_MS  = 24 * 60 * 60 * 1000;
+const FAIL_MS = 5 * 60 * 1000;
 
 export const GET: RequestHandler = async ({ url, setHeaders }) => {
     const city = (url.searchParams.get('city') ?? '').trim();
-    if (!city) return json({ streets: [] });
+    if (!city) return json({ streets: [], unavailable: false });
 
-    // רשימת רחובות של עיר כמעט לא משתנה - cache נדיב בזיכרון + בדפדפן/CDN
-    let streets: string[] = [];
+    // רשימת רחובות של עיר כמעט לא משתנה - cache נדיב בזיכרון + בדפדפן/CDN.
+    // תשובת-כשל נשמרת ל-5 דקות בלבד: אחרת בליפ יחיד של data.gov.il היה
+    // מסמן יישוב שלם כ"בלי רשימת רחובות" ליממה שלמה.
+    let result: StreetsResult = { streets: [], reachable: false };
     try {
-        streets = await cached(`streets:${city}`, 24 * 60 * 60 * 1000, () => fetchStreetsFor(city));
+        result = await cached(
+            `streets:${city}`,
+            DAY_MS,
+            () => fetchStreetsFor(city),
+            (r) => (r.reachable ? DAY_MS : FAIL_MS),
+        );
     } catch {
-        streets = [];
+        result = { streets: [], reachable: false };
     }
 
-    setHeaders({ 'cache-control': 'public, max-age=86400' });
-    return json({ streets });
+    setHeaders({ 'cache-control': result.reachable ? 'public, max-age=86400' : 'no-store' });
+    return json({ streets: result.streets, unavailable: !result.reachable });
 };

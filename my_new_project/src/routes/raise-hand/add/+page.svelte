@@ -216,7 +216,7 @@
                             placeholder={fields.locationPlaceholder}
                             onValueChange={(v) => (location = v)}
                             onResolvedChange={(v) => (locationResolved = v)}
-                            onStreetListChange={(info) => { cityHasStreetList = info.hasList; streetListLoading = info.loading; }}
+                            onStreetListChange={(info) => { cityHasStreetList = info.hasList || info.unavailable; streetListLoading = info.loading; }}
                         />
 
                         <!-- סימון מדויק על המפה - מוצע כשהמיקום לא מזוהה, וחובה ביישוב בלי רחובות -->

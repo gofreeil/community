@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onMount, untrack } from 'svelte';
+    import { onMount, tick, untrack } from 'svelte';
     import CameraCapture from '$lib/components/CameraCapture.svelte';
     import NeighborhoodSelect from '$lib/components/NeighborhoodSelect.svelte';
     import { get } from 'svelte/store';
@@ -16,6 +16,7 @@
     import NeighborhoodPicker from '$lib/components/NeighborhoodPicker.svelte';
     import NeighborhoodFallback from '$lib/components/NeighborhoodFallback.svelte';
     import { submitNeighborhoodRequest } from '$lib/neighborhoodRequest';
+    import { revealFieldError } from '$lib/formGuard';
     import type { PageData } from './$types';
 
     let { data }: { data: PageData } = $props();
@@ -302,20 +303,11 @@
         if (!neighborhood.trim()) return { field: 'neighborhood', message: t('extras.g_v_neighborhood') };
         if (forceMapPin && !(pinLat != null && pinLng != null)) {
             showMap = true;
-            return { field: 'street', message: t('extras.g_v_map_required') };
+            // מפנים אל המפה עצמה ולא אל שדה הרחוב - מה שחסר הוא הפין
+            return { field: 'gmach-map', message: t('extras.g_v_map_required') };
         }
         if (!phone.trim())        return { field: 'phone',        message: t('extras.g_v_phone') };
         return null;
-    }
-
-    function focusField(field: string) {
-        if (!browser) return;
-        const el = document.getElementById(field) as HTMLElement | null;
-        if (!el) return;
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        el.classList.add('field-error-flash');
-        setTimeout(() => el.classList.remove('field-error-flash'), 1800);
-        setTimeout(() => el.focus({ preventScroll: true }), 300);
     }
 
     let draftBaseline = ''; // מצב הטופס אחרי השחזור - טופס שלא השתנה ממנו לא נשמר
@@ -348,7 +340,10 @@
         e.preventDefault();
         clientError = '';
         const err = validate();
-        if (err) { clientError = err.message; focusField(err.field); return; }
+        // שגיאת ולידציה מוצגת ליד הכפתור (שם העיניים ברגע הלחיצה) ובמקביל
+        // גוללת ומבליטה את השדה החוסם. tick: showMap עשוי להיפתח כרגע בוולידציה,
+        // והמפה צריכה להיות ב-DOM לפני שגוללים אליה.
+        if (err) { await tick(); revealFieldError(err.field, err.message); return; }
 
         // אם לא מחובר - שמור טיוטה והפנה להרשמה
         if (!data.userId) {
@@ -548,7 +543,7 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label for="street" class="text-white text-sm font-bold mb-1 block">{$_('extras.g_street_label')}</label>
-                        <StreetPicker {city} value={street} withHouseNumber={false} onValueChange={(v) => (street = v)} onResolvedChange={(v) => (streetInList = v)} onStreetListChange={(info) => { cityHasStreetList = info.hasList; streetListLoading = info.loading; }} />
+                        <StreetPicker id="street" {city} value={street} withHouseNumber={false} onValueChange={(v) => (street = v)} onResolvedChange={(v) => (streetInList = v)} onStreetListChange={(info) => { cityHasStreetList = info.hasList || info.unavailable; streetListLoading = info.loading; }} />
                     </div>
                     <div>
                         <label for="buildingNum" class="text-white text-sm font-bold mb-1 block">{$_('extras.g_building_label')}</label>
@@ -558,7 +553,7 @@
 
                 <!-- סימון על המפה - מוצג כשהכתובת לא נפתרה, וחובה ביישוב בלי רחובות/שכונות -->
                 {#if !addressResolved || forceMapPin}
-                    <div>
+                    <div id="gmach-map" class="rounded-xl">
                         {#if forceMapPin}
                             <p class="mb-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs font-bold text-amber-200 leading-relaxed">
                                 {$_('extras.g_map_forced_note')}
@@ -644,14 +639,7 @@
 {/if}
 
 <style>
-    /* הבהוב אדום קצר על השדה החסר כדי להדגיש בדיוק מה צריך למלא */
-    :global(.field-error-flash) {
-        animation: field-error-flash 1.8s ease-out;
-    }
-    @keyframes field-error-flash {
-        0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); border-color: rgba(255, 255, 255, 0.1); }
-        15%      { box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.35); border-color: rgba(239, 68, 68, 0.9); }
-    }
+    /* ההבהוב האדום על השדה החוסם מוגדר גלובלית ב-app.css (ראו $lib/formGuard.ts) */
 
     /* ═══ רקע מטושטש של הדף הקודם ═══ */
     /* בסיס: גם כשאין iframe (דף חוצה-מקור) נשאר טשטוש כהה מעוצב עם הילות צבע רכות */

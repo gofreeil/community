@@ -1528,7 +1528,7 @@
                             placeholder={trOr($_, cfFieldKey(categoryId, field, 'ph'), field.placeholder ?? 'שם הרחוב')}
                             onValueChange={(v) => setFieldValue(field.key, v)}
                             onResolvedChange={(v) => (addressResolved = v)}
-                            onStreetListChange={(info) => { cityHasStreetList = info.hasList; streetListLoading = info.loading; }}
+                            onStreetListChange={(info) => { cityHasStreetList = info.hasList || info.unavailable; streetListLoading = info.loading; }}
                         />
 
                     {:else if field.type === 'map_pin'}

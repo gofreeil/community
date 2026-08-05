@@ -296,13 +296,14 @@
                     </label>
                     <!-- הצעות מרשימת הרחובות של עיר המשתמש; מקומות חופשיים ("גן סאקר") עדיין אפשריים -->
                     <StreetPicker
+                        id="laf-location"
                         city={data.userCity ?? ''}
                         value={location}
                         withHouseNumber={false}
                         placeholder={$_('listings.lafadd_location_ph')}
                         onValueChange={(v) => (location = v)}
                         onResolvedChange={(v) => (locationResolved = v)}
-                        onStreetListChange={(info) => { cityHasStreetList = info.hasList; streetListLoading = info.loading; }}
+                        onStreetListChange={(info) => { cityHasStreetList = info.hasList || info.unavailable; streetListLoading = info.loading; }}
                     />
                     <input type="hidden" name="location" value={location} />
 

@@ -6,6 +6,7 @@
     // (/api/streets) והמשתמש בוחר מתוכם במקום להקליד - כך אין עשרה איותים
     // שונים לאותו רחוב. הקלדה חופשית עדיין אפשרית (רחוב חדש/חסר ברשימה).
     let {
+        id,
         city = '',
         value = '',
         placeholder = '',
@@ -14,6 +15,9 @@
         onResolvedChange,
         onStreetListChange,
     }: {
+        /** מזהה שדה הרחוב. חובה כשיש <label for="..."> בטופס המארח - בלעדיו
+         *  התווית לא מקושרת לשדה, וגם הפניית-שגיאה אל השדה נופלת בשקט. */
+        id?: string;
         city?: string;
         value?: string;
         placeholder?: string;
@@ -29,8 +33,12 @@
         /**
          * מדווח האם לעיר הנבחרת יש בכלל רשימת רחובות רשמית. כשאין (יישוב קטן כמו
          * כפר תפוח) - אי אפשר לאמת כתובת, והטופס המארח הופך את סימון המפה לחובה.
+         *
+         * unavailable = לא הצלחנו לברר (תקלה זמנית במאגר הממשלתי). הטופס המארח
+         * חייב להתייחס לזה כמו "יש רשימה" (hasList || unavailable) - fail-open:
+         * תקלת רשת רגעית לא תהפוך את הפין לחובה ותחסום פרסום ליישוב שלם.
          */
-        onStreetListChange?: (info: { hasList: boolean; loading: boolean }) => void;
+        onStreetListChange?: (info: { hasList: boolean; loading: boolean; unavailable: boolean }) => void;
     } = $props();
 
     // פירוק ערך קיים (טיוטא/עריכה) של "רחוב מספר" לשני השדות.
@@ -42,6 +50,7 @@
     let houseNum = $state(initialMatch ? initialMatch[2] : '');
 
     let streets       = $state<string[]>([]);
+    let unavailable   = $state(false);
     let loading       = $state(false);
     let dropdownOpen  = $state(false);
     let loadedForCity = $state('');
@@ -69,14 +78,18 @@
         loadedForCity = c;
         loading = true;
         streets = [];
+        unavailable = false;
         fetch(`/api/streets?city=${encodeURIComponent(c)}`)
             .then((r) => r.json())
             .then((data) => {
                 // עיר התחלפה שוב בזמן הטעינה - התשובה הזו כבר לא רלוונטית
                 if (loadedForCity !== c) return;
                 streets = Array.isArray(data?.streets) ? data.streets : [];
+                unavailable = data?.unavailable === true;
             })
-            .catch(() => { /* אין רשימה - נשארים בהקלדה חופשית */ })
+            // כשל רשת מוחלט: לא ידוע אם יש רשימה - נשארים בהקלדה חופשית,
+            // ומסמנים "לא בירינו" כדי שלא ייחסם פרסום בגלל תקלה זמנית
+            .catch(() => { if (loadedForCity === c) unavailable = true; })
             .finally(() => { if (loadedForCity === c) loading = false; });
     });
 
@@ -96,7 +109,7 @@
 
     // דיווח זמינות רשימת הרחובות לעיר (אחרי סיום הטעינה) - הטופס המארח מחליט לפי זה
     // אם להפוך את המפה לחובה.
-    $effect(() => { onStreetListChange?.({ hasList: streets.length > 0, loading }); });
+    $effect(() => { onStreetListChange?.({ hasList: streets.length > 0, loading, unavailable }); });
 
     function pickStreet(s: string) {
         street = s;
@@ -126,6 +139,7 @@
         <!-- שם הרחוב + תפריט השלמה -->
         <div class="relative flex-1 min-w-0">
             <input
+                {id}
                 type="text"
                 value={street}
                 oninput={onStreetInput}

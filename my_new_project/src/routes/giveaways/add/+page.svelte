@@ -632,7 +632,7 @@
                         <div>
                             <label for="street" class="text-white text-sm font-bold mb-1 block">{$_('listings.gvadd_street')}</label>
                             <!-- בחירה מרשימת הרחובות הרשמית של העיר - איות אחיד; הקלדה חופשית עדיין אפשרית -->
-                            <StreetPicker {city} value={street} withHouseNumber={false} onValueChange={(v) => (street = v)} onResolvedChange={(v) => (streetInList = v)} onStreetListChange={(info) => { cityHasStreetList = info.hasList; streetListLoading = info.loading; }} />
+                            <StreetPicker id="street" {city} value={street} withHouseNumber={false} onValueChange={(v) => (street = v)} onResolvedChange={(v) => (streetInList = v)} onStreetListChange={(info) => { cityHasStreetList = info.hasList || info.unavailable; streetListLoading = info.loading; }} />
                         </div>
                         <div>
                             <label for="buildingNum" class="text-white text-sm font-bold mb-1 block">{$_('listings.gvadd_building')}</label>

@@ -19,9 +19,15 @@
 	import { closeAdPopup } from "$lib/adPopupStore";
 	import { registerDynamicNeighborhoods, MY_PIN_LS_KEY } from "$lib/neighborhoodCoords";
 	import { neighborhoodState } from "$lib/neighborhoodState.svelte";
+	import { installFormGuard } from "$lib/formGuard";
 	import { browser } from "$app/environment";
 
 	let { children, data } = $props();
+
+	// הגנה גלובלית מפני "לחצתי ושום דבר לא קרה": כשהדפדפן חוסם שליחת טופס
+	// בגלל שדה חובה, גוללים אל השדה, מבליטים אותו ומסבירים מה חסר. בלי זה
+	// הבועה הנטיבית נעלמת (ובנייד לרוב לא מוצגת כלל) והכפתור נראה מקולקל.
+	$effect(() => installFormGuard());
 
 	// מקור אמת יחיד למצב ההתחברות של מצב-השכונה: הסשן מה-layout, בכל עמוד.
 	// אורח → init תמיד יפתח בברירת המחדל, ובחירת שכונה תציג נדנוד להרשמה.

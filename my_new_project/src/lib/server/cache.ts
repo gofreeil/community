@@ -23,9 +23,18 @@ const inflight = new Map<string, Promise<unknown>>();
  * - טרי  → מוחזר מיד מהזיכרון.
  * - ישן  → מוחזר מיד מהזיכרון + רענון יחיד ברקע.
  * - חסר  → ממתין לטעינה (עם dedup לבקשות מקבילות).
+ *
+ * ttlFor (אופציונלי) קובע TTL לפי הערך שהתקבל. נועד לתשובות "חלקיות" -
+ * למשל תקלה זמנית במקור חיצוני, שאסור שתישמר לכל אורך ה-TTL הרגיל.
  */
-export async function cached<T>(key: string, ttlMs: number, fn: () => Promise<T>): Promise<T> {
+export async function cached<T>(
+    key: string,
+    ttlMs: number,
+    fn: () => Promise<T>,
+    ttlFor?: (value: T) => number,
+): Promise<T> {
     const now = Date.now();
+    const ttlOf = (v: T) => (ttlFor ? ttlFor(v) : ttlMs);
     const entry = store.get(key) as Entry<T> | undefined;
 
     if (entry) {
@@ -39,7 +48,7 @@ export async function cached<T>(key: string, ttlMs: number, fn: () => Promise<T>
                     // אם בינתיים המפתח בוטל (invalidate אחרי כתיבה) או הוחלף -
                     // אסור להחיות ערך שנשלף לפני הכתיבה
                     if (store.get(key) === entry) {
-                        store.set(key, { value: v, freshUntil: Date.now() + ttlMs, refreshing: false });
+                        store.set(key, { value: v, freshUntil: Date.now() + ttlOf(v), refreshing: false });
                     }
                 })
                 .catch(() => { entry.refreshing = false; /* נשמור את הערך הישן, ננסה שוב בפעם הבאה */ });
@@ -53,7 +62,7 @@ export async function cached<T>(key: string, ttlMs: number, fn: () => Promise<T>
 
     const p = fn()
         .then((v) => {
-            store.set(key, { value: v, freshUntil: Date.now() + ttlMs, refreshing: false });
+            store.set(key, { value: v, freshUntil: Date.now() + ttlOf(v), refreshing: false });
             inflight.delete(key);
             return v;
         })
