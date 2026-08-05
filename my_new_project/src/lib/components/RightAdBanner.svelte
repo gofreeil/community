@@ -245,15 +245,24 @@
                                 use:adImgFit={parseAdImageFit(ad.mainImageFit)}
                             />
                         </div>
-                        <!-- כותרת ולוגו גלויים תמיד - בדיוק כמו בתצוגה החיה של הבילדר.
-                             בלעדיהם הכרטיס היה תמונה חשופה, והמפרסם לא רואה את השם
-                             שלו על המסך אלא רק בריחוף (ובנייד - אף פעם). -->
+                        <!-- כותרת, רצועה אלכסונית, תת-כותרת ולוגו - אותן שכבות בדיוק
+                             של התצוגה החיה בבילדר. בלעדיהן הכרטיס היה תמונה חשופה,
+                             והמפרסם לא רואה את השם שלו על המסך אלא רק בריחוף
+                             (ובנייד - אף פעם). -->
+                        <div
+                            class="ad-diag bg-gradient-to-br {ad.gradient} transition-opacity duration-[1500ms] group-hover:opacity-0"
+                        ></div>
                         <div
                             class="ad-title-top transition-opacity duration-[1500ms] group-hover:opacity-0"
                             class:has-corner-logo={ad.logo && !logoAtCta(ad.title)}
                         >
                             <h3 class="ad-title">{ad.title}</h3>
                         </div>
+                        {#if ad.subtitle}
+                            <div class="ad-sub-wrap transition-opacity duration-[1500ms] group-hover:opacity-0">
+                                <p class="ad-sub">{ad.subtitle}</p>
+                            </div>
+                        {/if}
                         {#if ad.logo}
                             <img
                                 src={ad.logo}
@@ -375,9 +384,65 @@
         pointer-events: none;
     }
     /* לוגו בפינה העליונה יושב באותו גובה של הכותרת. בלי שמירת המקום הזאת
-       הוא היה מכסה את המילה האחרונה - המשבצת רחבה 144px בלבד. */
+       הוא היה מכסה את המילה האחרונה - המשבצת רחבה 144px בלבד.
+       padding-right פיזי ולא inset-inline-end: הדף כולו RTL, ושם הקצה
+       הלוגי הוא שמאל - בדיוק הצד שבו הלוגו לא נמצא. */
     .ad-title-top.has-corner-logo {
-        padding-inline-end: 46px;
+        padding-right: 46px;
+    }
+
+    /* הרצועה האלכסונית שמתחת לתמונה - אותו clip-path של .pro-diag בבילדר.
+       המשתנים --diag-top-* נקבעים רק בעמוד הבילדר; כאן נופלים לברירת
+       המחדל, שהיא בדיוק מה שהמפרסם רואה כשהוא לא נוגע בגובה הרצועה. */
+    .ad-diag {
+        position: absolute;
+        inset: 0;
+        clip-path: polygon(
+            0 var(--diag-top-left, 88%),
+            100% var(--diag-top-right, 78%),
+            100% 100%,
+            0 100%
+        );
+        opacity: 0.96;
+        pointer-events: none;
+    }
+    /* פס הברק הלבן שחוצה את האלכסון */
+    .ad-diag::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+            125deg,
+            transparent 30%,
+            rgba(255, 255, 255, 0.18) 45%,
+            transparent 60%
+        );
+        pointer-events: none;
+    }
+    .ad-sub-wrap {
+        position: absolute;
+        inset-inline: 0;
+        bottom: 0;
+        z-index: 4;
+        padding: 0.55rem 0.7rem 1.1rem;
+        text-align: right;
+        pointer-events: none;
+    }
+    .ad-sub {
+        margin: 0;
+        color: rgba(255, 255, 255, 0.95);
+        font-weight: 600;
+        font-size: 0.88rem;
+        line-height: 1.3;
+        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+    }
+    /* משולש בלתי-נראה שגורם לשורה הראשונה להתקצר לפי שיפוע האלכסון */
+    .ad-sub::before {
+        content: "";
+        float: left;
+        width: 28%;
+        height: 1.35em;
+        shape-outside: polygon(0 0, 100% 0, 0 100%);
     }
     .ad-title {
         margin: 0;
@@ -399,13 +464,20 @@
         object-fit: contain;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
     }
+    /* right/left פיזיים - כמו בבילדר. עם inset-inline-end הלוגו קפץ לצד
+       שמאל, כי הדף RTL והקצה הלוגי שם הוא שמאל. */
     .ad-logo-right {
         top: 6px;
-        inset-inline-end: 6px;
+        right: 6px;
+        left: auto;
     }
-    /* כותרת ארוכה: הלוגו יורד לפינה התחתונה, מעל רצועת ה-CTA */
+    /* כותרת ארוכה: הלוגו יורד ורוכב על הפינה הימנית של הרצועה האלכסונית,
+       מרכזו על --diag-top-right (18px = חצי מגובה הלוגו) - כמו .ad-logo-cta
+       בבילדר. */
     .ad-logo-cta {
-        bottom: 6px;
-        inset-inline-end: 6px;
+        top: auto;
+        bottom: calc(100% - var(--diag-top-right, 78%) - 18px);
+        right: 6px;
+        left: auto;
     }
 </style>
