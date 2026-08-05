@@ -69,6 +69,105 @@
     // While false, position auto-switches to "cta" when the title is long, "right" otherwise.
     let logoPositionExplicit = $state<boolean>(false);
 
+    // ===== Free logo placement =====
+    // Center of the logo as % of the ad image box. null on both axes = the logo still
+    // sits on its default anchor (logoPosition). The moment the user drags it - or nudges
+    // it with the arrow keys - these hold the exact spot they released it at.
+    let logoFreeX = $state<number | null>(null);
+    let logoFreeY = $state<number | null>(null);
+    let logoFree  = $derived(logoFreeX !== null && logoFreeY !== null);
+    let logoDragging = $state(false);
+
+    // Anchor class used while the logo is still on its default spot
+    let logoAnchorClass = $derived(
+        logoPosition === "left" ? "ad-logo-left" : logoPosition === "cta" ? "ad-logo-cta" : "ad-logo-right"
+    );
+    // Inline placement, applied only once the user moved the logo themselves
+    let logoFreeStyle = $derived(
+        logoFree
+            ? `left:${logoFreeX}%; top:${logoFreeY}%; right:auto; bottom:auto; transform:translate(-50%,-50%);`
+            : ""
+    );
+
+    // Drag metrics, measured on pointer-down against whichever preview the logo lives in
+    // (live demo sidebar / step 7 desktop card) so the same code works in both.
+    let dragWrapW = 0, dragWrapH = 0;
+    let dragHalfW = 0, dragHalfH = 0;
+    let dragStartX = 0, dragStartY = 0;
+    let dragBaseCX = 0, dragBaseCY = 0;
+
+    /** Measure the logo and its preview box; returns the logo center in px inside the box. */
+    function measureLogo(el: HTMLElement): { cx: number; cy: number } | null {
+        const wrap = el.parentElement;
+        if (!wrap) return null;
+        const wr = wrap.getBoundingClientRect();
+        const lr = el.getBoundingClientRect();
+        if (!wr.width || !wr.height || !lr.width || !lr.height) return null;
+        dragWrapW = wr.width; dragWrapH = wr.height;
+        dragHalfW = lr.width / 2; dragHalfH = lr.height / 2;
+        return { cx: lr.left - wr.left + dragHalfW, cy: lr.top - wr.top + dragHalfH };
+    }
+
+    /** Store a logo center (px inside the preview box), clamped so it never leaves the ad. */
+    function commitLogoCenter(cx: number, cy: number) {
+        const x = Math.min(Math.max(cx, dragHalfW), dragWrapW - dragHalfW);
+        const y = Math.min(Math.max(cy, dragHalfH), dragWrapH - dragHalfH);
+        logoFreeX = Math.round((x / dragWrapW) * 1000) / 10;
+        logoFreeY = Math.round((y / dragWrapH) * 1000) / 10;
+        logoPositionExplicit = true;   // stops the automatic right/cta switching
+    }
+
+    function logoPointerDown(e: PointerEvent) {
+        const el = e.currentTarget as HTMLElement;
+        const center = measureLogo(el);
+        if (!center) return;
+        e.preventDefault();
+        e.stopPropagation();
+        dragBaseCX = center.cx; dragBaseCY = center.cy;
+        dragStartX = e.clientX; dragStartY = e.clientY;
+        logoDragging = true;
+        try { el.setPointerCapture(e.pointerId); } catch {}
+    }
+    function logoPointerMove(e: PointerEvent) {
+        if (!logoDragging) return;
+        commitLogoCenter(dragBaseCX + (e.clientX - dragStartX), dragBaseCY + (e.clientY - dragStartY));
+    }
+    function logoPointerUp(e: PointerEvent) {
+        if (!logoDragging) return;
+        logoDragging = false;
+        try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
+    }
+    /** Keyboard parity for the drag: arrows nudge by 1% of the ad box, Shift+arrow by 5%. */
+    function logoKeyDown(e: KeyboardEvent) {
+        const keys: Record<string, [number, number]> = {
+            ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1]
+        };
+        const dir = keys[e.key];
+        if (!dir) return;
+        const el = e.currentTarget as HTMLElement;
+        const center = measureLogo(el);
+        if (!center) return;
+        e.preventDefault();
+        const stepPct = e.shiftKey ? 5 : 1;
+        commitLogoCenter(
+            center.cx + dir[0] * (dragWrapW * stepPct / 100),
+            center.cy + dir[1] * (dragWrapH * stepPct / 100)
+        );
+    }
+    /** Back to the automatic default spot. */
+    function resetLogoPosition() {
+        logoFreeX = null;
+        logoFreeY = null;
+        logoPositionExplicit = false;
+    }
+    /** Preset anchors stay available as one-click shortcuts - they drop any free placement. */
+    function setLogoAnchor(pos: "right" | "left" | "cta") {
+        logoFreeX = null;
+        logoFreeY = null;
+        logoPosition = pos;
+        logoPositionExplicit = true;
+    }
+
     // ===== Logo circular crop modal =====
     const CROP_STAGE = 320;
     let cropOpen     = $state(false);
@@ -603,6 +702,8 @@
                 hasCircleCrop   = Boolean(d.hasCircleCrop);
                 logoPosition    = d.logoPosition ?? "right";
                 logoPositionExplicit = Boolean(d.logoPositionExplicit);
+                logoFreeX       = typeof d.logoFreeX === 'number' ? d.logoFreeX : null;
+                logoFreeY       = typeof d.logoFreeY === 'number' ? d.logoFreeY : null;
                 mainImage       = d.mainImage ?? "";
                 mainImageObjectX = typeof d.mainImageObjectX === 'number' ? d.mainImageObjectX : 50;
                 mainImageObjectY = typeof d.mainImageObjectY === 'number' ? d.mainImageObjectY : 50;
@@ -663,7 +764,7 @@
     $effect(() => {
         if (!browser) return;
         const snapshot = {
-            logo, logoOriginal, hasCircleCrop, logoShape, logoPosition, logoPositionExplicit, mainImage, mainImageObjectX, mainImageObjectY, mainImageZoom, title, titleOffsetY, subtitle, hoverText, cta, gradient, diagHeight,
+            logo, logoOriginal, hasCircleCrop, logoShape, logoPosition, logoPositionExplicit, logoFreeX, logoFreeY, mainImage, mainImageObjectX, mainImageObjectY, mainImageZoom, title, titleOffsetY, subtitle, hoverText, cta, gradient, diagHeight,
             landingHeadline, landingPitch, landingExtended, landingImage, landingAdvantages, uniqueness, phone, whatsapp, website,
             email, address, hours, products,
         };
@@ -1081,23 +1182,42 @@
                     <div>
                         <p class="text-xs font-bold text-gray-400 mb-1">{$_('advertise.b_logo_pos')}</p>
                         <div class="inline-flex rounded-lg border border-white/10 bg-black/20 p-1">
-                            <button type="button" onclick={() => { logoPosition = "right"; logoPositionExplicit = true; }}
+                            <button type="button" onclick={() => setLogoAnchor("right")}
                                 class="px-2.5 py-1 rounded-md text-xs font-bold transition-colors
-                                       {logoPosition === 'right' ? 'bg-amber-500 text-black' : 'text-gray-300 hover:text-white'}">
+                                       {!logoFree && logoPosition === 'right' ? 'bg-amber-500 text-black' : 'text-gray-300 hover:text-white'}">
                                 {$_('advertise.b_pos_right')}
                             </button>
-                            <button type="button" onclick={() => { logoPosition = "left"; logoPositionExplicit = true; }}
+                            <button type="button" onclick={() => setLogoAnchor("left")}
                                 class="px-2.5 py-1 rounded-md text-xs font-bold transition-colors
-                                       {logoPosition === 'left' ? 'bg-amber-500 text-black' : 'text-gray-300 hover:text-white'}">
+                                       {!logoFree && logoPosition === 'left' ? 'bg-amber-500 text-black' : 'text-gray-300 hover:text-white'}">
                                 {$_('advertise.b_pos_left')}
                             </button>
-                            <button type="button" onclick={() => { logoPosition = "cta"; logoPositionExplicit = true; }}
+                            <button type="button" onclick={() => setLogoAnchor("cta")}
                                 class="px-2.5 py-1 rounded-md text-xs font-bold transition-colors
-                                       {logoPosition === 'cta' ? 'bg-amber-500 text-black' : 'text-gray-300 hover:text-white'}">
+                                       {!logoFree && logoPosition === 'cta' ? 'bg-amber-500 text-black' : 'text-gray-300 hover:text-white'}">
                                 {$_('advertise.b_pos_bottom')}
                             </button>
                         </div>
                     </div>
+                </div>
+
+                <!-- Free placement: drag the logo on the live preview to any spot -->
+                <div class="w-full flex items-center justify-between gap-2 flex-wrap mt-1">
+                    <p class="text-[11px] font-bold text-amber-300/90 flex items-center gap-1">
+                        <span aria-hidden="true">🖐️</span>
+                        <span>{$_('advertise.b_logo_drag_hint')}</span>
+                    </p>
+                    {#if logoFree}
+                        <span class="text-[11px] font-bold text-gray-400 flex items-center gap-2">
+                            <span class="rounded-md bg-black/30 border border-white/10 px-2 py-0.5 tabular-nums">
+                                {logoFreeX}% · {logoFreeY}%
+                            </span>
+                            <button type="button" onclick={resetLogoPosition}
+                                class="rounded-md border border-white/15 px-2 py-0.5 text-amber-300 hover:text-amber-200 hover:border-amber-400/60 transition-colors">
+                                {$_('advertise.b_logo_pos_reset')}
+                            </button>
+                        </span>
+                    {/if}
                 </div>
             {/if}
 
@@ -1457,8 +1577,20 @@
                                     <p class="hover-text">{hoverText || $_('advertise.b_ph_hover')}</p>
                                 </div>
                                 {#if logo}
+                                    <!-- svelte-ignore a11y_no_noninteractive_element_to_interactive_role -->
+                                    <!-- הלוגו עצמו הוא ידית הגרירה. role=button + tabindex נותנים לו
+                                         מקבילת מקלדת מלאה (חיצים מזיזים אותו) ולכן זה תקין נגישותית -->
                                     <img src={logo} alt={$_('advertise.b_logo_alt')}
-                                         class="ad-logo {logoShape === 'circle' ? 'ad-logo-circle' : ''} {logoPosition === 'left' ? 'ad-logo-left' : logoPosition === 'cta' ? 'ad-logo-cta' : 'ad-logo-right'}" />
+                                         class="ad-logo ad-logo-draggable {logoShape === 'circle' ? 'ad-logo-circle' : ''} {logoFree ? 'ad-logo-free' : logoAnchorClass} {logoDragging ? 'ad-logo-dragging' : ''}"
+                                         style={logoFreeStyle}
+                                         draggable="false"
+                                         role="button" tabindex="0"
+                                         aria-label={$_('advertise.b_logo_drag_aria')}
+                                         onpointerdown={logoPointerDown}
+                                         onpointermove={logoPointerMove}
+                                         onpointerup={logoPointerUp}
+                                         onpointercancel={logoPointerUp}
+                                         onkeydown={logoKeyDown} />
                                 {/if}
                             </div>
                             <div class="promo-cta bg-gradient-to-r {gradient}">
@@ -1546,9 +1678,18 @@
                         {/if}
                     </div>
                     {#if logo}
+                        <!-- svelte-ignore a11y_no_noninteractive_element_to_interactive_role -->
                         <img src={logo} alt={$_('advertise.b_logo_alt')}
-                             class="ad-logo {logoShape === 'circle' ? 'ad-logo-circle' : ''} {logoPosition === 'left' ? 'ad-logo-left' : logoPosition === 'cta' ? 'ad-logo-cta' : 'ad-logo-right'}"
-                             style:opacity={activeStep === "hover" ? 0 : 1} />
+                             class="ad-logo ad-logo-draggable {logoShape === 'circle' ? 'ad-logo-circle' : ''} {logoFree ? 'ad-logo-free' : logoAnchorClass} {logoDragging ? 'ad-logo-dragging' : ''}"
+                             style="{logoFreeStyle} opacity:{activeStep === 'hover' ? 0 : 1};"
+                             draggable="false"
+                             role="button" tabindex="0"
+                             aria-label={$_('advertise.b_logo_drag_aria')}
+                             onpointerdown={logoPointerDown}
+                             onpointermove={logoPointerMove}
+                             onpointerup={logoPointerUp}
+                             onpointercancel={logoPointerUp}
+                             onkeydown={logoKeyDown} />
                     {:else}
                         <div class="placeholder-dashed placeholder-logo {logoPosition === 'left' ? 'logo-pos-left' : logoPosition === 'cta' ? 'logo-pos-cta' : 'logo-pos-right'}" style:opacity={activeStep === "hover" ? 0 : 1}>{$_('advertise.b_logo_alt')}<br/>{$_('advertise.b_step_n', { values: { n: 2 } })}</div>
                     {/if}
@@ -2633,6 +2774,30 @@
         bottom: calc(100% - var(--diag-top-right, 78%) - 18px);
         right: 6px;
         left: auto;
+    }
+    /* Free placement - the exact spot comes from an inline left/top the drag writes */
+    :global(.ad-logo-free) { top: auto; bottom: auto; right: auto; left: auto; }
+    /* Draggable affordance: grab cursor + dashed ring on hover/focus.
+       touch-action:none is what lets a finger drag it instead of scrolling the page. */
+    :global(.ad-logo-draggable) {
+        cursor: grab;
+        touch-action: none;
+        user-select: none;
+        -webkit-user-drag: none;
+    }
+    :global(.ad-logo-draggable:hover) {
+        outline: 2px dashed rgba(251, 191, 36, 0.9);
+        outline-offset: 2px;
+    }
+    :global(.ad-logo-draggable:focus-visible) {
+        outline: 2px solid #fbbf24;
+        outline-offset: 2px;
+    }
+    :global(.ad-logo-dragging) {
+        cursor: grabbing;
+        outline: 2px solid #fbbf24;
+        outline-offset: 2px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.55);
     }
     :global(.hover-overlay) {
         position: absolute; inset: 0;
