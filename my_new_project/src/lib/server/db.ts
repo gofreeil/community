@@ -1311,6 +1311,25 @@ export async function getAllSuperAdmins(): Promise<DbUser[]> {
     }
 }
 
+/** נמעני התראות ניהול: הסופר-אדמינים *וגם* כל אדמין שמונה (neighborhood_admin).
+ *  התראה על בקשת פרסום חייבת להגיע לכל מי שמוסמך לטפל בה, לא רק לבעלים. */
+export async function getAllAdminRecipients(): Promise<DbUser[]> {
+    try {
+        const arr = await findStrapiUpUsers({
+            'filters[app_role][$in][0]': 'super_admin',
+            'filters[app_role][$in][1]': 'neighborhood_admin',
+            'pagination[limit]':         '100',
+        });
+        const mapped = (arr as StrapiUpUser[]).map(mapUpUser);
+        // חוסר-הרשאה מחזיר [] מ-findStrapiUpUsers; נופלים לסופר-אדמינים כדי
+        // שלעולם לא נישאר בלי נמען בכלל.
+        return mapped.length > 0 ? mapped : await getAllSuperAdmins();
+    } catch (e) {
+        console.warn('[db] getAllAdminRecipients failed:', e);
+        return getAllSuperAdmins();
+    }
+}
+
 /** מציאת רכז שכונה - אם אין, מחזיר סופר אדמין */
 export async function findAdminForNeighborhood(neighborhood: string): Promise<DbUser | undefined> {
     // קודם מחפש neighborhood_admin של השכונה הספציפית

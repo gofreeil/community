@@ -1,24 +1,25 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { submitAd, type SubmittedAd } from '$lib/server/adsStore';
-import { getAllSuperAdmins, createItem } from '$lib/server/db';
+import { getAllAdminRecipients, createItem } from '$lib/server/db';
 import { parseAdImageFit } from '$lib/adImageFit';
 import { toExternalUrl } from '$lib/urlNormalize';
 
 /**
- * שולח הודעה אישית (category 'message') לכל סופר־אדמין על בקשת פרסום חדשה,
+ * שולח הודעה אישית (category 'message') לכל אדמין - סופר-אדמין וגם אדמין שמונה - על בקשת פרסום חדשה,
  * כדי שהיא תופיע מיד בתיבת ההודעות ותיספר בבאדג' ההודעות שלא נקראו.
  * זהו אותו דפוס שבו מתריעות בקשת רכז ובקשת עזרה בעיצוב - best-effort:
  * כשל בהתראה לעולם לא מבטל את השליחה עצמה.
  */
-async function notifySuperAdminsInApp(ad: SubmittedAd) {
+async function notifyAdminsInApp(ad: SubmittedAd) {
     // שרשרת הזיהוי חייבת לרדת עד לפרטי הקשר שבדף הנחיתה: פרסומת אפשר לשלוח
     // גם בלי להתחבר, ואז submittedBy ריק לגמרי. בלי הנפילה הזו האדמין היה מקבל
     // "בקשת פרסום חדשה: מפרסם" בלי שום דרך לדעת מי שלח.
     const contactEmail = ad.submittedBy?.email || ad.landing?.email || '';
     const advertiser =
         ad.submittedBy?.name || ad.companyName || contactEmail || ad.landing?.phone || ad.title || 'מפרסם';
-    const admins = await getAllSuperAdmins();
+    // הסופר-אדמין וגם כל אדמין שמונה - כולם צריכים לראות בקשת פרסום חדשה
+    const admins = await getAllAdminRecipients();
     await Promise.all(admins.map(admin => createItem({
         category:    'message',
         label:       `📢 בקשת פרסום חדשה: ${advertiser}`,
@@ -118,9 +119,9 @@ export const POST: RequestHandler = async (event) => {
     // התראה לאדמין - best-effort. בלי זה בקשת פרסום נשמרה בשקט
     // ואיש לא ידע עליה עד שמישהו נכנס במקרה ל"אישור פרסומות".
     try {
-        await notifySuperAdminsInApp(ad);
+        await notifyAdminsInApp(ad);
     } catch (e) {
-        console.warn('[ads/submit] notify super_admins failed:', e instanceof Error ? e.message : e);
+        console.warn('[ads/submit] notify admins failed:', e instanceof Error ? e.message : e);
     }
 
     return json({ ok: true, id: ad.id, status: ad.status });
