@@ -398,6 +398,62 @@ export async function getAd(id: string): Promise<SubmittedAd | null> {
     return s ? fromStrapi(s) : null;
 }
 
+function toAdStatus(raw: unknown): AdStatus | null {
+    return raw === 'pending' || raw === 'approved' || raw === 'rejected' ? raw : null;
+}
+
+/** בירור סטטוס של פרסומת אחת. null = לא הצלחנו לברר (תקלה) - שונה מ-'missing' */
+async function fetchAdStatusOne(id: string): Promise<AdStatus | 'missing' | null> {
+    try {
+        const res = await strapiGet<{ data: { ad_status?: string } | null }>(
+            `${ENDPOINT}/${id}`,
+            { 'fields[0]': 'ad_status' },
+        );
+        if (!res?.data) return 'missing';
+        return toAdStatus(res.data.ad_status);
+    } catch (e) {
+        if (e instanceof StrapiContentTypeError) return null;
+        const msg = e instanceof Error ? e.message : String(e);
+        return msg.includes('404') ? 'missing' : null;
+    }
+}
+
+/**
+ * הסטטוס הנוכחי של פרסומות לפי מזהה - בשליפת ad_status בלבד. הרשומה המלאה
+ * נושאת תמונות base64 של ~700KB, ואי אפשר למשוך אותה בכל טעינת עמוד רק כדי
+ * לדעת אם הבקשה עדיין ממתינה להחלטה.
+ *
+ * 'missing' = הרשומה כבר לא קיימת (נמחקה). מזהה שלא הצלחנו לברר עליו כלום
+ * פשוט לא נכנס למפה - כדי שהקורא לא יסיק ממנו בטעות שהבקשה טופלה.
+ */
+export async function getAdStatuses(ids: string[]): Promise<Map<string, AdStatus | 'missing'>> {
+    const out = new Map<string, AdStatus | 'missing'>();
+    const unique = [...new Set(ids.filter(Boolean))];
+    if (unique.length === 0) return out;
+
+    const params: Record<string, string> = {
+        'fields[0]':         'ad_status',
+        'pagination[limit]': String(unique.length),
+    };
+    unique.forEach((id, i) => { params[`filters[documentId][$in][${i}]`] = id; });
+    try {
+        const res = await strapiGet<{ data: Array<{ documentId?: string; ad_status?: string }> }>(ENDPOINT, params);
+        for (const row of res?.data ?? []) {
+            const st = toAdStatus(row?.ad_status);
+            if (row?.documentId && st) out.set(row.documentId, st);
+        }
+    } catch (e) {
+        console.warn('[adsStore] getAdStatuses failed:', e instanceof Error ? e.message : e);
+    }
+    // מה שלא חזר בשליפה הקבוצתית - בדיקה פרטנית, כי "לא חזר" יכול להיות גם
+    // רשומה שנמחקה וגם תקלה בשליפה, ורק 404 ודאי מצדיק לסמן בקשה כטופלה.
+    await Promise.all(unique.filter(id => !out.has(id)).map(async (id) => {
+        const st = await fetchAdStatusOne(id);
+        if (st) out.set(id, st);
+    }));
+    return out;
+}
+
 export async function submitAd(payload: Omit<SubmittedAd, 'id' | 'status' | 'submittedAt'>): Promise<SubmittedAd> {
     const now = new Date().toISOString();
     // מפרסם חוזר: מחפשים לפני היצירה, כדי שהרשומה החדשה עצמה לא תופיע ברשימה

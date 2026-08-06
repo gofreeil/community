@@ -7,7 +7,7 @@ import { citiesData } from '$lib/neighborhoodsData';
 import { cityCenters } from '$lib/neighborhoodCoords';
 import { categoryConfig } from '$lib/categoryFields';
 import { countPending, approveAd, rejectAd } from '$lib/server/adsStore';
-import { markAdMessagesHandled } from '$lib/server/adNotifications';
+import { markAdMessagesHandled, reconcileAdMessages } from '$lib/server/adNotifications';
 
 // קטגוריות פרסום אמיתיות (גמ"ח, למסירה, חוגים וכו') - לא קריאות שכונה
 const PUBLICATION_CATEGORIES = new Set(Object.keys(categoryConfig));
@@ -81,6 +81,11 @@ export const load: PageServerLoad = async (event) => {
     else console.warn('[profile] getItemsByUserId failed:', itemsRes.reason);
     if (messagesRes.status === 'fulfilled') messages = messagesRes.value;
     else console.warn('[profile] getMessagesByUserId failed:', messagesRes.reason);
+
+    // התראת "בקשת פרסום" מיושרת מול המצב האמיתי של הפרסומת: בקשה שכבר אושרה,
+    // נדחתה או נמחקה לא תחזור להיראות כבקשה פתוחה בכל רענון. no-op כשאין כאלה.
+    try { messages = await reconcileAdMessages(messages); }
+    catch (e) { console.warn('[profile] reconcileAdMessages failed:', e); }
 
     // אם המשתמש לא נמצא לפי ID - נסה לפי אימייל (מיזוג OAuth+credentials)
     if (!user && session.user?.email) {

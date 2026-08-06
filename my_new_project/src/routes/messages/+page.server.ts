@@ -1,5 +1,6 @@
 import { redirect, fail } from '@sveltejs/kit';
 import { getMessagesByUserId, getDbItemById, deleteItem, updateItem } from '$lib/server/db';
+import { reconcileAdMessages } from '$lib/server/adNotifications';
 import type { PageServerLoad, Actions } from './$types';
 
 export const load: PageServerLoad = async (event) => {
@@ -11,7 +12,10 @@ export const load: PageServerLoad = async (event) => {
     }
 
     try {
-        const messages = await getMessagesByUserId(session.user.id);
+        let messages = await getMessagesByUserId(session.user.id);
+        // בקשת פרסום שכבר הוכרעה מסומנת כטופלה גם כאן, ולא מוצגת כבקשה פתוחה
+        try { messages = await reconcileAdMessages(messages); }
+        catch (e) { console.warn('[messages] reconcileAdMessages failed:', e); }
         return { messages };
     } catch (e) {
         console.warn('[messages] load failed:', e instanceof Error ? e.message : e);
