@@ -1,7 +1,8 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { submitAd, type SubmittedAd } from '$lib/server/adsStore';
-import { getAllAdminRecipients, createItem, getMessagesByUserId, updateItem } from '$lib/server/db';
+import { getAllAdminRecipients, createItem } from '$lib/server/db';
+import { markAdMessagesHandled } from '$lib/server/adNotifications';
 import { parseAdImageFit } from '$lib/adImageFit';
 import { parseAdStyle } from '$lib/adStyle';
 import { toExternalUrl } from '$lib/urlNormalize';
@@ -24,6 +25,13 @@ async function notifyAdminsInApp(ad: SubmittedAd) {
     const advertiser =
         ad.submittedBy?.name || ad.companyName || contactEmail || ad.landing?.phone || ad.title || 'מפרסם';
     const isUpdate = !!ad.replacesAdId;
+    // רק גרסה קודמת שנמצאת באמת על האתר תרד עם האישור. קודמת שנדחתה או
+    // שעדיין ממתינה - אין מה להוריד, ואסור להבטיח למנהל החלפה שלא תקרה.
+    const replacesLive = ad.replacesStatus === 'approved';
+    const prevLine = ad.replacesTitle
+        ? `הגרסה הקודמת: ${ad.replacesTitle}` +
+          (ad.replacesStatus === 'rejected' ? ' (נדחתה)' : ad.replacesStatus === 'pending' ? ' (ממתינה)' : '') + '\n'
+        : '';
     const details =
         `כותרת: ${ad.title}\n` +
         (ad.subtitle ? `תת-כותרת: ${ad.subtitle}\n` : '') +
@@ -39,9 +47,11 @@ async function notifyAdminsInApp(ad: SubmittedAd) {
             : `📢 בקשת פרסום חדשה: ${advertiser}`,
         description: isUpdate
             ? `${advertiser} שידרג/ה את הפרסומת הקיימת ושלח/ה גרסה מעודכנת לאישור. זו לא פרסומת נוספת.\n\n` +
-              (ad.replacesTitle ? `הגרסה הקודמת: ${ad.replacesTitle}\n` : '') +
+              prevLine +
               details +
-              `\nעם האישור הגרסה החדשה תיכנס במקום הישנה - הישנה תרד מהאתר אוטומטית, באותו מקום בטור ועם אותו תאריך סיום.\n` +
+              (replacesLive
+                  ? `\nעם האישור הגרסה החדשה תיכנס במקום הישנה - הישנה תרד מהאתר אוטומטית, באותו מקום בטור ועם אותו תאריך סיום.\n`
+                  : `\nלמפרסם הזה אין כרגע פרסומת פעילה על האתר, ולכן האישור פשוט יפרסם את הגרסה הזו.\n`) +
               `היכנס/י לעמוד "אישור פרסומות" בפאנל הניהול כדי לאשר או לדחות.\n` +
               `קישור: /admin/ads-review`
             : `${advertiser} שלח/ה פרסומת חדשה לאישור.\n\n` +
@@ -58,6 +68,7 @@ async function notifyAdminsInApp(ad: SubmittedAd) {
             is_update:         isUpdate,
             replaces_ad_id:    ad.replacesAdId ?? '',
             replaces_title:    ad.replacesTitle ?? '',
+            replaces_status:   ad.replacesStatus ?? '',
             submitted_by_id:   ad.submittedBy?.id ?? '',
             submitted_by_name: ad.submittedBy?.name ?? '',
             submitted_by_email: contactEmail,
@@ -67,40 +78,6 @@ async function notifyAdminsInApp(ad: SubmittedAd) {
             read:              false,
         },
     })));
-}
-
-/**
- * מוריד מההתראות הפעילות את ההודעות על בקשות ממתינות שהוחלפו כרגע.
- * בלי זה המנהל היה נשאר עם כרטיס "אשר ופרסם" שמצביע על גרסה מיושנת -
- * לחיצה עליו הייתה מפרסמת את הגרסה שהמפרסם כבר החליף.
- */
-async function retireSupersededMessages(retiredIds: string[], newAd: SubmittedAd) {
-    if (retiredIds.length === 0) return;
-    const retired = new Set(retiredIds);
-    const admins = await getAllAdminRecipients();
-    const inboxes = await Promise.all(admins.map(a => getMessagesByUserId(a.id).catch(() => [])));
-    const now = new Date().toISOString();
-    await Promise.all(inboxes.flat().map(async (msg) => {
-        let ef: Record<string, unknown> = {};
-        try { ef = msg.extra_fields ? JSON.parse(msg.extra_fields) : {}; } catch { return; }
-        if (ef.type !== 'ad_submission' || ef.handled) return;
-        if (!retired.has(String(ef.ad_id ?? ''))) return;
-        try {
-            await updateItem(msg.id, {
-                label:  `🔄 הוחלפה בגרסה מעודכנת · ${msg.label ?? ''}`.trim(),
-                status: 'handled',
-                extra_fields: {
-                    ...ef,
-                    handled:        true,
-                    decision:       'superseded',
-                    handled_at:     now,
-                    superseded_by:  newAd.id,
-                },
-            });
-        } catch (e) {
-            console.warn('[ads/submit] retire superseded message failed:', e instanceof Error ? e.message : e);
-        }
-    }));
 }
 
 export const POST: RequestHandler = async (event) => {
@@ -178,7 +155,7 @@ export const POST: RequestHandler = async (event) => {
         await notifyAdminsInApp(ad);
         // בקשות ממתינות של אותו מפרסם שירדו מהתור - גם ההתראות עליהן יורדות,
         // אחרת נשארים כרטיסי אישור כפולים על גרסאות מיושנות
-        await retireSupersededMessages(ad.retiredPendingIds ?? [], ad);
+        await markAdMessagesHandled(ad.retiredPendingIds ?? [], 'superseded', { superseded_by: ad.id });
     } catch (e) {
         console.warn('[ads/submit] notify admins failed:', e instanceof Error ? e.message : e);
     }

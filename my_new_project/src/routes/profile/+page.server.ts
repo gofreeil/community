@@ -7,6 +7,7 @@ import { citiesData } from '$lib/neighborhoodsData';
 import { cityCenters } from '$lib/neighborhoodCoords';
 import { categoryConfig } from '$lib/categoryFields';
 import { countPending, approveAd, rejectAd } from '$lib/server/adsStore';
+import { markAdMessagesHandled } from '$lib/server/adNotifications';
 
 // קטגוריות פרסום אמיתיות (גמ"ח, למסירה, חוגים וכו') - לא קריאות שכונה
 const PUBLICATION_CATEGORIES = new Set(Object.keys(categoryConfig));
@@ -627,6 +628,9 @@ async function handleAdSubmission(event: Parameters<NonNullable<Actions[string]>
             return fail(404, { adError: 'הפרסומת לא נמצאה - ייתכן שכבר טופלה' });
         }
         await markAdMessageHandled(msgId, decision);
+        // אותה בקשה נשלחה כהתראה נפרדת לכל אדמין - כולן יורדות מהתיבה,
+        // אחרת אצל האחרים נשאר כרטיס "אשר ופרסם" על בקשה שכבר טופלה
+        await markAdMessagesHandled([adId], decision);
         // גרסה מעודכנת של מפרסם קיים: הישנה ירדה מהאתר ברגע האישור -
         // המנהל צריך לראות את זה בהודעת ההצלחה ולא לנחש
         return { adSuccess: decision, adTitle: ad?.title ?? '', adReplacedTitle: ad?.replacedNowTitle ?? '' };

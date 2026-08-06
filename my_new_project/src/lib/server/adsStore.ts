@@ -65,6 +65,8 @@ export interface SubmittedAd {
     replacesAdId?: string;
     /** כותרת אותה גרסה קודמת - כדי שהמנהל יראה מה בדיוק מוחלף */
     replacesTitle?: string;
+    /** הסטטוס של הגרסה הקודמת בזמן השליחה. רק 'approved' באמת יורדת מהאתר באישור */
+    replacesStatus?: AdStatus;
     /** מי החליפה אותה. פרסומת מסומנת כך היא היסטוריה - לא באה בחשבון להחלפה נוספת */
     supersededBy?: string;
 
@@ -298,10 +300,15 @@ const byNewest = (a: SubmittedAd, b: SubmittedAd) =>
 
 /**
  * מה כבר יש למפרסם הזה במערכת:
- *  target       - הפרסומת שהשליחה החדשה באה להחליף. מאושרת קודמת לממתינה,
- *                 כי היא זו שנמצאת בפועל על האתר וצריכה לרדת כשהחדשה תאושר.
+ *  target       - הפרסומת שהשליחה החדשה היא גרסה מעודכנת שלה. סדר העדיפות
+ *                 מאושרת → ממתינה → נדחתה: המאושרת היא זו שנמצאת בפועל על
+ *                 האתר וצריכה לרדת כשהחדשה תאושר.
  *  stalePending - כל הבקשות הממתינות שלו. השליחה החדשה מייתרת את כולן,
  *                 והן יורדות מהתור כדי שהמנהל יראה בקשה אחת לכל מפרסם.
+ *
+ * גם נדחתה נחשבת: "נדחה, תיקן ושלח שוב" הוא המסלול הנפוץ ביותר של מפרסם
+ * חוזר, ובלעדיו ההתראה הייתה מנוסחת כבקשה חדשה לגמרי. מנדחתה אין מה
+ * להוריד מהאתר - הקישור שם נועד לניסוח ולהקשר בלבד.
  * שגיאה כאן לעולם לא מפילה שליחה - מפרסם חוזר שלא זוהה מתנהג כמפרסם חדש.
  */
 async function findPredecessors(
@@ -309,11 +316,12 @@ async function findPredecessors(
 ): Promise<{ target: SubmittedAd | null; stalePending: SubmittedAd[] }> {
     let candidates: SubmittedAd[];
     try {
-        const [approved, pending] = await Promise.all([
+        const [approved, pending, rejected] = await Promise.all([
             listByStatus('approved'),
             listByStatus('pending'),
+            listByStatus('rejected'),
         ]);
-        candidates = [...approved, ...pending];
+        candidates = [...approved, ...pending, ...rejected];
     } catch (e) {
         console.warn('[adsStore] findPredecessors failed:', e instanceof Error ? e.message : e);
         return { target: null, stalePending: [] };
@@ -321,7 +329,8 @@ async function findPredecessors(
     const mine = candidates.filter(a => !a.supersededBy && sameAdvertiser(a, identity));
     const live = mine.filter(a => a.status === 'approved').sort(byNewest);
     const stalePending = mine.filter(a => a.status === 'pending').sort(byNewest);
-    return { target: live[0] ?? stalePending[0] ?? null, stalePending };
+    const past = mine.filter(a => a.status === 'rejected').sort(byNewest);
+    return { target: live[0] ?? stalePending[0] ?? past[0] ?? null, stalePending };
 }
 
 /**
@@ -430,8 +439,9 @@ export async function submitAd(payload: Omit<SubmittedAd, 'id' | 'status' | 'sub
     // לא נשענים על מה ש-Strapi מחזיר בתשובת ה-POST: אם עמודת ה-json לא
     // הוחזרה, ההתראה למנהל הייתה מנוסחת בטעות כבקשה חדשה במקום כעדכון
     if (predecessor) {
-        ad.replacesAdId  = predecessor.id;
-        ad.replacesTitle = predecessor.title;
+        ad.replacesAdId   = predecessor.id;
+        ad.replacesTitle  = predecessor.title;
+        ad.replacesStatus = predecessor.status;
     }
 
     // בקשות קודמות שעדיין ממתינות לאישור לא צריכות להישאר בתור: המנהל אמור

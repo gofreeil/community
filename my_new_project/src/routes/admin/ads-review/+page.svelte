@@ -337,12 +337,15 @@
                                 <!-- מפרסם חוזר ששיפר את הפרסומת שלו: לא בקשה חדשה אלא גרסה
                                      מעודכנת, והאישור מחליף את הישנה במקום להוסיף פרסומת שנייה -->
                                 {#if ad.replacesAdId && ad.status === 'pending'}
+                                    {@const prevLive = data.approved.some(a => a.id === ad.replacesAdId)}
                                     <div class="mb-2 rounded-lg border border-blue-400/40 bg-blue-500/10 px-2.5 py-1.5">
                                         <p class="text-[11px] md:text-xs font-black text-blue-200 m-0">
-                                            🔄 עדכון לפרסומת קיימת{ad.replacesTitle ? ` - מחליפה את "${ad.replacesTitle}"` : ''}
+                                            🔄 עדכון לפרסומת קיימת{ad.replacesTitle ? ` - גרסה קודמת: "${ad.replacesTitle}"` : ''}
                                         </p>
                                         <p class="text-[10px] md:text-[11px] text-blue-100/70 m-0 mt-0.5">
-                                            עם האישור הגרסה הזו נכנסת במקום הישנה, באותו מקום בטור ועם אותו תאריך סיום - הישנה יורדת מהאתר.
+                                            {prevLive
+                                                ? 'עם האישור הגרסה הזו נכנסת במקום הישנה, באותו מקום בטור ועם אותו תאריך סיום - הישנה יורדת מהאתר.'
+                                                : 'למפרסם אין כרגע פרסומת פעילה על האתר - האישור פשוט יפרסם את הגרסה הזו.'}
                                         </p>
                                     </div>
                                 {:else if ad.supersededBy}
@@ -398,15 +401,16 @@
                         <!-- פעולות לפי טאב -->
                         <div class="mt-4 flex flex-wrap gap-2">
                             {#if activeTab === 'pending'}
+                                {@const replacesLive = !!ad.replacesAdId && data.approved.some(a => a.id === ad.replacesAdId)}
                                 <form method="POST" action="?/approve" use:enhance>
                                     <input type="hidden" name="id" value={ad.id} />
                                     <button type="submit"
                                             class="px-4 py-2 rounded-xl bg-emerald-500 text-black font-black text-sm hover:bg-emerald-400"
-                                            title={ad.replacesAdId ? 'אשר את הגרסה החדשה במקום הישנה' : 'אשר ופרסם בטור הפרסומות'}>
-                                        {ad.replacesAdId ? '✅ אשר והחלף את הישנה' : '✅ אשר ופרסם'}
+                                            title={replacesLive ? 'אשר את הגרסה החדשה במקום הישנה' : 'אשר ופרסם בטור הפרסומות'}>
+                                        {replacesLive ? '✅ אשר והחלף את הישנה' : '✅ אשר ופרסם'}
                                     </button>
                                 </form>
-                                {#if ad.replacesAdId}
+                                {#if replacesLive}
                                     <!-- מפרסם שבאמת רוצה שתי פרסומות במקביל, ולא שדרג את הקיימת -->
                                     <form method="POST" action="?/approve" use:enhance>
                                         <input type="hidden" name="id" value={ad.id} />

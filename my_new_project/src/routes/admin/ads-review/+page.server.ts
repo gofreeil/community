@@ -20,6 +20,7 @@ import {
     pauseAd,
     resumeAd,
 } from '$lib/server/adsStore';
+import { markAdMessagesHandled } from '$lib/server/adNotifications';
 
 const fmtDay = (iso: string) =>
     new Date(iso).toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -106,6 +107,10 @@ export const actions: Actions = {
         const keepPrevious = formData.get('keepPrevious') === '1';
         const result = await approveAd(id, session?.user?.id ?? 'super_admin', undefined, { keepPrevious });
         if (!result) return fail(404, { error: 'הפרסומת לא נמצאה' });
+        // ההתראה על הבקשה יורדת מהתיבה של *כל* האדמינים. בלי זה היא נשארה
+        // שם עם כפתורי אשר/דחה על בקשה שכבר טופלה - וזה מה שנראה ככפילות
+        // מול ההתראה על השליחה הבאה של אותו מפרסם.
+        await markAdMessagesHandled([id], 'approve');
         // גרסה מעודכנת של מפרסם קיים - המנהל צריך לראות שהישנה ירדה, ולא
         // להישאר בספק אם נוספה פרסומת שנייה לאותו מפרסם
         return {
@@ -124,6 +129,7 @@ export const actions: Actions = {
         if (!id) return fail(400, { error: 'חסר מזהה' });
         const result = await rejectAd(id, session?.user?.id ?? 'super_admin', reason);
         if (!result) return fail(404, { error: 'הפרסומת לא נמצאה' });
+        await markAdMessagesHandled([id], 'reject');
         return { success: true, message: `נדחתה: ${result.title}` };
     },
 
@@ -138,6 +144,7 @@ export const actions: Actions = {
             if (r) ok++;
             if (r?.replacedNowTitle) replaced++;
         }
+        await markAdMessagesHandled(ids, 'approve');
         return {
             success: true,
             message: `אושרו ופורסמו ${ok} פרסומות` +
@@ -156,6 +163,7 @@ export const actions: Actions = {
             const r = await rejectAd(id, session?.user?.id ?? 'super_admin', reason);
             if (r) ok++;
         }
+        await markAdMessagesHandled(ids, 'reject');
         return { success: true, message: `נדחו ${ok} פרסומות` };
     },
 
