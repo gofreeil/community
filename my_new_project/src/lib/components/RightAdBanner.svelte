@@ -183,6 +183,15 @@
 
     const VIEW_MS = 14000;   // כמה זמן כל קבוצה נשארת על המסך (החלפה איטית)
     const FADE_MS = 900;     // אורך הדעיכה בין קבוצה לקבוצה — חייב להתאים ל-CSS
+    const PER_GROUP = 4;     // כמה משבצות פנויות נראות בו-זמנית
+
+    // פרסומת מאושרת *תופסת* משבצת מתוך ה-12 - היא לא מתווספת מעליהן.
+    // בלי זה אישור פרסומת אחת הפך את הטור ל-13 כרטיסים: הפרסומת מעל,
+    // ומתחתיה משבצת שעדיין מספרה 1 - כאילו נוספה מודעה שלא אושרה.
+    let freeSlots = $derived(ads.slice(paidAds.length));
+    // מספר המשבצת הראשונה הפנויה: המאושרות תפסו את 1..N
+    let firstFreeNumber = $derived(paidAds.length + 1);
+    let groupCount = $derived(Math.max(1, Math.ceil(freeSlots.length / PER_GROUP)));
 
     let fading = $state(false);
 
@@ -194,7 +203,7 @@
             if (totalSwaps < MAX_SWAPS) {
                 fading = true;
                 fadeTimer = setTimeout(() => {
-                    currentGroup = (currentGroup + 1) % 3;
+                    currentGroup = (currentGroup + 1) % groupCount;
                     totalSwaps++;
                     fading = false;
                 }, FADE_MS);
@@ -209,8 +218,12 @@
         };
     });
 
+    // אישור פרסומת נוספת מקטין את מספר הקבוצות תוך כדי סבב, ובלי הכיפוף הזה
+    // הטור היה נשאר ריק עד לסיבוב הבא
+    let safeGroup = $derived(currentGroup % groupCount);
+
     let displayedAds = $derived(
-        ads.slice(currentGroup * 4, (currentGroup + 1) * 4),
+        freeSlots.slice(safeGroup * PER_GROUP, (safeGroup + 1) * PER_GROUP),
     );
 </script>
 
@@ -320,7 +333,7 @@
                 <div
                     class="absolute top-3 right-3 text-sm font-black text-white/60 bg-white/10 px-3 py-1 rounded-full border border-white/5 backdrop-blur-sm shadow-sm"
                 >
-                    {currentGroup * 4 + index + 1}
+                    {firstFreeNumber + safeGroup * PER_GROUP + index}
                 </div>
 
                 <div
