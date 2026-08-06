@@ -3,6 +3,7 @@ import type { RequestHandler } from './$types';
 import { submitAd, type SubmittedAd } from '$lib/server/adsStore';
 import { getAllAdminRecipients, createItem } from '$lib/server/db';
 import { parseAdImageFit } from '$lib/adImageFit';
+import { parseAdStyle } from '$lib/adStyle';
 import { toExternalUrl } from '$lib/urlNormalize';
 
 /**
@@ -85,6 +86,9 @@ export const POST: RequestHandler = async (event) => {
         mainImage: payload.mainImage,
         // מיקום+זום שנבחרו בבילדר — מנורמלים כאן, קלט דפדפן הוא לא-אמין
         mainImageFit: parseAdImageFit(payload.mainImageFit),
+        // מיקום/צורת הלוגו, גובה הרצועה וצבע הכותרת — אותו עיצוב שהמפרסם
+        // ראה בתצוגה החיה. חסר (מודעה ותיקה) נשמר כ-null.
+        adStyle: parseAdStyle(payload.adStyle),
         landing: {
             headline: payload.landing.headline ?? '',
             pitch: payload.landing.pitch ?? '',

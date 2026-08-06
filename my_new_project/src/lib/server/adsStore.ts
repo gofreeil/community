@@ -8,6 +8,7 @@ import { strapiGet, strapiGetAll, strapiPost, strapiPut, strapiDelete, StrapiCon
 import { createItem } from './db.js';
 import { cached, invalidate } from './cache.js';
 import { parseAdImageFit, type AdImageFit } from '../adImageFit.js';
+import { parseAdStyle, type AdStyle } from '../adStyle.js';
 
 // פרסומות מאושרות נטענות בכל ניווט (ב-+layout.server) — cache קצר חוסך round-trip
 const TTL_ADS = 120_000;
@@ -69,6 +70,8 @@ export interface SubmittedAd {
     mainImage: string;
     /** מיקום+זום של התמונה הראשית במשבצת (מהבילדר) */
     mainImageFit: AdImageFit;
+    /** העיצוב שנקבע בבילדר (לוגו, רצועה, כותרת). null = מודעה ותיקה */
+    adStyle: AdStyle | null;
 
     // Landing
     landing: {
@@ -104,6 +107,7 @@ interface StrapiAdAttrs {
     landing:
         | (SubmittedAd['landing'] & {
               mainImageFit?: unknown;
+              adStyle?: unknown;
               _order?: unknown;
               _paused?: unknown;
               _pausedDaysLeft?: unknown;
@@ -170,6 +174,8 @@ function fromStrapi(s: StrapiAd): SubmittedAd {
         logo: s.logo ?? '',
         mainImage: s.main_image ?? '',
         mainImageFit: parseAdImageFit(s.landing?.mainImageFit),
+        // null במודעות שנשלחו לפני שהעיצוב נשמר — הצרכן נופל ל-legacyAdStyle
+        adStyle: parseAdStyle(s.landing?.adStyle),
         landing: s.landing ?? emptyLanding(),
     };
 }
@@ -285,10 +291,17 @@ export async function submitAd(payload: Omit<SubmittedAd, 'id' | 'status' | 'sub
             gradient:            payload.gradient,
             logo:                payload.logo,
             main_image:          payload.mainImage,
-            // ה-fit נארז בתוך landing (json) — אין עמודה ייעודית בסכמה,
+            // ה-fit והעיצוב נארזים בתוך landing (json) — אין עמודה ייעודית בסכמה,
             // ומפתח לא-מוכר ברמת ה-attributes היה מפיל את הבקשה ב-400.
             // _site משייך את הפרסומת לאתר הזה באוסף המשותף
-            landing:             { ...payload.landing, mainImageFit: parseAdImageFit(payload.mainImageFit), _site: SITE_ID },
+            landing:             {
+                ...payload.landing,
+                mainImageFit: parseAdImageFit(payload.mainImageFit),
+                // העיצוב שהמפרסם קבע בבילדר — בלעדיו המודעה מתפרסמת עם
+                // ברירות המחדל של האתר ולא עם מה שהוא ראה על המסך
+                adStyle: parseAdStyle(payload.adStyle),
+                _site: SITE_ID,
+            },
             submitted_by_id:     payload.submittedBy?.id ?? null,
             submitted_by_email:  payload.submittedBy?.email ?? null,
             submitted_by_name:   payload.submittedBy?.name ?? null,

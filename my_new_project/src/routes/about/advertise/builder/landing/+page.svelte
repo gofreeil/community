@@ -4,6 +4,7 @@
     import { _ } from "svelte-i18n";
     import { browser } from "$app/environment";
     import { goto } from "$app/navigation";
+    import { DEFAULT_AD_STYLE, parseAdStyle, type AdStyle } from "$lib/adStyle";
 
     let { data } = $props<{
         data: {
@@ -52,6 +53,10 @@
     let logo        = $state<string>("");
     let logoShape   = $state<"square" | "circle">("square");
     let gradient    = $state<string>("from-amber-500 to-orange-600");
+    // העיצוב שנקבע בשלבים הקודמים - עובר כמו-שהוא אל המודעה בשליחה.
+    // בלעדיו הפרסומת מתפרסמת עם ברירות המחדל של האתר: הלוגו קופץ ממקום
+    // שהמפרסם גרר אליו, הרצועה משנה גובה והכותרת מאבדת צבע ומיקום.
+    let adStyleFromDraft = $state<AdStyle>({ ...DEFAULT_AD_STYLE });
 
     // ===== Drag state =====
     let isDraggingLandingImage = $state(false);
@@ -253,6 +258,17 @@
                 logo      = d.logo      ?? "";
                 logoShape = d.logoShape ?? "square";
                 gradient  = d.gradient  ?? gradient;
+                // הטיוטה שומרת את השדות בשמות של הבילדר; כאן הם נארזים
+                // לאובייקט העיצוב שנשלח עם המודעה
+                adStyleFromDraft = parseAdStyle({
+                    logoShape:    d.logoShape,
+                    logoAnchor:   d.logoPosition,
+                    logoX:        d.logoFreeX,
+                    logoY:        d.logoFreeY,
+                    bandHeight:   d.diagHeight,
+                    titleOffsetY: d.titleOffsetY,
+                    titleColor:   d.titleColor,
+                }) ?? { ...DEFAULT_AD_STYLE };
             }
         } catch {}
 
@@ -385,6 +401,7 @@
             const payload: SubmitPayload = {
                 title, subtitle, hoverText, cta, gradient,
                 logo, mainImage, mainImageFit,
+                adStyle: adStyleFromDraft,
                 landing: {
                     headline: landingHeadline, pitch: landingPitch, extended: landingExtended, image: landingImage, advantages: landingAdvantages, uniqueness, phone, whatsapp, website, email, address, hours,
                     // עותק עמוק — כיווץ תמונות מוצר לא ישנה את המצב שעל המסך

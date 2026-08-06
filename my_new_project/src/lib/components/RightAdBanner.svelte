@@ -2,6 +2,10 @@
     import { onMount } from "svelte";
     import { _ } from "svelte-i18n";
     import { adImgFit, parseAdImageFit, type AdImageFit } from "$lib/adImageFit";
+    import {
+        parseAdStyle, legacyAdStyle, adStyleVars, logoAnchorClass, logoFreeStyle, logoCornerSide,
+        type AdStyle,
+    } from "$lib/adStyle";
 
     // פרסומות של מפרסמים שאושרו - הטור הימני הוא המקום היחיד שלהן באתר.
     type ApprovedAd = {
@@ -16,16 +20,18 @@
         mainImage: string;
         /** מיקום+זום מהבילדר; אופציונלי — מודעות ישנות נשמרו בלעדיו */
         mainImageFit?: AdImageFit;
+        /** העיצוב מהבילדר; חסר/null במודעות שנשלחו לפני שהוא נשמר */
+        adStyle?: AdStyle | null;
     };
 
     let { approvedAds = [] }: { approvedAds?: ApprovedAd[] } = $props();
 
-    // אותו כלל בדיוק כמו ברירת המחדל בבילדר (builder/+page.svelte): כותרת ארוכה
-    // לא משאירה מקום ללוגו בפינה שלידה, ולכן הוא יורד לפינה שמעל רצועת ה-CTA.
-    // מיקום הלוגו לא נשמר בשרת, ולכן הכלל מחושב כאן מחדש - כך שמה שהמפרסם
-    // ראה בתצוגה החיה הוא מה שמוצג בפועל.
-    function logoAtCta(title: string): boolean {
-        return (title ?? '').trim().length > 20;
+    // העיצוב שהמפרסם קבע בבילדר הוא מה שמוצג כאן - אותו מודול משותף
+    // (adStyle.ts) מנרמל אותו בשני הצדדים. מודעה שנשלחה לפני שהעיצוב
+    // נשמר מקבלת את הכלל הישן (כותרת ארוכה ← לוגו מעל רצועת ה-CTA),
+    // כדי שמודעות שכבר רצות על האתר לא ישנו את מראן.
+    function styleOf(ad: ApprovedAd): AdStyle {
+        return parseAdStyle(ad.adStyle) ?? legacyAdStyle(ad.title);
     }
 
     // הפרסומות המשולמות קבועות בראש הטור ולא משתתפות בסבב המשבצות הפנויות -
@@ -224,10 +230,13 @@
     {#if paidAds.length > 0}
         <div class="space-y-3 mb-3">
             {#each paidAds as ad (ad.id)}
+                {@const st = styleOf(ad)}
+                {@const cornerSide = logoCornerSide(st, Boolean(ad.logo))}
                 <a
                     href="/ads/{ad.id}"
                     aria-label="{ad.title} – {ad.subtitle}"
                     class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105 group relative"
+                    style={adStyleVars(st)}
                 >
                     <!-- aspect-[144/450] = בדיוק היחס שהבילדר מציג בתצוגה החיה
                          (live-demo-img-wrap). המפרסם מכוון שם מיקום וזום על מסגרת
@@ -254,9 +263,11 @@
                         ></div>
                         <div
                             class="promo-title-top transition-opacity duration-[1500ms] group-hover:opacity-0"
-                            class:has-corner-logo={ad.logo && !logoAtCta(ad.title)}
+                            class:has-corner-logo-right={cornerSide === 'right'}
+                            class:has-corner-logo-left={cornerSide === 'left'}
+                            style="transform: translateY({st.titleOffsetY}px);"
                         >
-                            <h3 class="promo-title">{ad.title}</h3>
+                            <h3 class="promo-title" style="color: {st.titleColor};">{ad.title}</h3>
                         </div>
                         {#if ad.subtitle}
                             <div class="promo-sub-wrap transition-opacity duration-[1500ms] group-hover:opacity-0">
@@ -269,8 +280,9 @@
                                 alt=""
                                 loading="lazy"
                                 decoding="async"
-                                class="promo-logo {logoAtCta(ad.title) ? 'promo-logo-cta' : 'promo-logo-right'}
+                                class="promo-logo {logoAnchorClass(st, 'promo')} {st.logoShape === 'circle' ? 'promo-logo-circle' : ''}
                                        transition-opacity duration-[1500ms] group-hover:opacity-0"
+                                style={logoFreeStyle(st)}
                             />
                         {/if}
                         <div
@@ -389,10 +401,13 @@
     }
     /* לוגו בפינה העליונה יושב באותו גובה של הכותרת. בלי שמירת המקום הזאת
        הוא היה מכסה את המילה האחרונה - המשבצת רחבה 144px בלבד.
-       padding-right פיזי ולא inset-inline-end: הדף כולו RTL, ושם הקצה
-       הלוגי הוא שמאל - בדיוק הצד שבו הלוגו לא נמצא. */
-    .promo-title-top.has-corner-logo {
+       padding פיזי ולא inset-inline: הדף כולו RTL, והקצה הלוגי הפוך
+       לצד שבו הלוגו באמת נמצא. אותם כללים בדיוק קיימים בבילדר. */
+    .promo-title-top.has-corner-logo-right {
         padding-right: 46px;
+    }
+    .promo-title-top.has-corner-logo-left {
+        padding-left: 46px;
     }
 
     /* הרצועה האלכסונית שמתחת לתמונה - אותו clip-path של .pro-diag בבילדר.
@@ -475,13 +490,28 @@
         right: 6px;
         left: auto;
     }
-    /* כותרת ארוכה: הלוגו יורד ורוכב על הפינה הימנית של הרצועה האלכסונית,
-       מרכזו על --diag-top-right (18px = חצי מגובה הלוגו) - כמו .promo-logo-cta
+    .promo-logo-left {
+        top: 6px;
+        left: 6px;
+        right: auto;
+    }
+    /* עוגן "מעל ה-CTA": הלוגו רוכב על הפינה הימנית של הרצועה האלכסונית,
+       מרכזו על --diag-top-right (18px = חצי מגובה הלוגו) - כמו .ad-logo-cta
        בבילדר. */
     .promo-logo-cta {
         top: auto;
         bottom: calc(100% - var(--diag-top-right, 78%) - 18px);
         right: 6px;
         left: auto;
+    }
+    /* מיקום חופשי שהמפרסם גרר: הנקודה המדויקת מגיעה ב-style inline */
+    .promo-logo-free {
+        top: auto;
+        bottom: auto;
+        right: auto;
+        left: auto;
+    }
+    .promo-logo-circle {
+        border-radius: 50%;
     }
 </style>

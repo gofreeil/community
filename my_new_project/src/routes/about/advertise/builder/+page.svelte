@@ -5,6 +5,7 @@
     import { goto } from "$app/navigation";
     import { _ } from "svelte-i18n";
     import { adImgFit, AD_ZOOM_MIN, AD_ZOOM_MAX } from "$lib/adImageFit";
+    import { bandCorners, logoCornerSide, type AdStyle } from "$lib/adStyle";
 
     // ===== Page payload (logged-in user prefill + admin status) =====
     let { data } = $props<{
@@ -347,14 +348,34 @@
         return () => window.removeEventListener('resize', onResize);
     });
 
-    // Apply diagHeight as CSS variables on root → all .pro-diag clip-paths update reactively
+    // Apply diagHeight as CSS variables on root → all .pro-diag clip-paths update reactively.
+    // bandCorners is the same helper the live site uses (adStyle.ts), so the band the
+    // advertiser adjusts here is pixel-for-pixel the band that gets published.
     $effect(() => {
         if (!browser) return;
-        const topLeft = Math.max(0, Math.min(100, 100 - diagHeight));
-        const topRight = Math.max(0, topLeft - 10);  // 10pp slope
-        document.documentElement.style.setProperty('--diag-top-left', `${topLeft}%`);
-        document.documentElement.style.setProperty('--diag-top-right', `${topRight}%`);
+        const { left, right } = bandCorners(diagHeight);
+        document.documentElement.style.setProperty('--diag-top-left', `${left}%`);
+        document.documentElement.style.setProperty('--diag-top-right', `${right}%`);
     });
+
+    // ===== The design that travels with the ad =====
+    // Everything the advertiser decides about the card - logo shape/spot, band
+    // height, title offset and color - is packed here, saved into the draft and
+    // sent with the submission. Without it the published ad fell back to the
+    // site defaults and looked nothing like the live preview.
+    let adStyle = $derived<AdStyle>({
+        logoShape,
+        logoAnchor: logoPosition,
+        logoX: logoFreeX,
+        logoY: logoFreeY,
+        bandHeight: diagHeight,
+        titleOffsetY,
+        titleColor,
+    });
+
+    // Reserve room for a corner logo next to the title - same shared helper the
+    // site uses, so the title wraps the same way in the preview and in the column.
+    let titleCornerSide = $derived(logoCornerSide(adStyle, Boolean(logo)));
 
     function slowScrollTo(el: HTMLElement | null, duration = 1400) {
         if (!el) return;
@@ -709,6 +730,7 @@
                 mainImageObjectY = typeof d.mainImageObjectY === 'number' ? d.mainImageObjectY : 50;
                 mainImageZoom    = typeof d.mainImageZoom === 'number' ? d.mainImageZoom : 1;
                 title           = d.title ?? "";
+                titleColor      = typeof d.titleColor === 'string' ? d.titleColor : "#ffffff";
                 titleOffsetY    = typeof d.titleOffsetY === 'number' ? d.titleOffsetY : 0;
                 subtitle        = d.subtitle ?? "";
                 hoverText       = d.hoverText ?? "";
@@ -764,7 +786,7 @@
     $effect(() => {
         if (!browser) return;
         const snapshot = {
-            logo, logoOriginal, hasCircleCrop, logoShape, logoPosition, logoPositionExplicit, logoFreeX, logoFreeY, mainImage, mainImageObjectX, mainImageObjectY, mainImageZoom, title, titleOffsetY, subtitle, hoverText, cta, gradient, diagHeight,
+            logo, logoOriginal, hasCircleCrop, logoShape, logoPosition, logoPositionExplicit, logoFreeX, logoFreeY, mainImage, mainImageObjectX, mainImageObjectY, mainImageZoom, title, titleColor, titleOffsetY, subtitle, hoverText, cta, gradient, diagHeight,
             landingHeadline, landingPitch, landingExtended, landingImage, landingAdvantages, uniqueness, phone, whatsapp, website,
             email, address, hours, products,
         };
@@ -1566,7 +1588,10 @@
                                     <div class="img-placeholder">{$_('advertise.b_img_placeholder')}</div>
                                 {/if}
                                 <div class="pro-diag bg-gradient-to-br {gradient}" style:opacity={showHover ? 0 : 1}></div>
-                                <div class="pro-title-top" style:opacity={showHover ? 0 : 1} style:transform="translateY({titleOffsetY}px)">
+                                <div class="pro-title-top"
+                                     class:has-corner-logo-right={titleCornerSide === 'right'}
+                                     class:has-corner-logo-left={titleCornerSide === 'left'}
+                                     style:opacity={showHover ? 0 : 1} style:transform="translateY({titleOffsetY}px)">
                                     <h3 class="pro-title" style:color={titleColor}>{title || $_('advertise.b_s3_title')}</h3>
                                 </div>
                                 <div class="pro-title-wrap" style:opacity={showHover ? 0 : 1}>
@@ -1663,7 +1688,10 @@
                         </div>
                     {/if}
                     <div class="pro-diag bg-gradient-to-br {gradient}" style:opacity={activeStep === "hover" ? 0 : 1}></div>
-                    <div class="pro-title-top" style:transform="translateY({titleOffsetY}px)" style:opacity={activeStep === "hover" ? 0 : 1}>
+                    <div class="pro-title-top"
+                         class:has-corner-logo-right={titleCornerSide === 'right'}
+                         class:has-corner-logo-left={titleCornerSide === 'left'}
+                         style:transform="translateY({titleOffsetY}px)" style:opacity={activeStep === "hover" ? 0 : 1}>
                         {#if title}
                             <h3 class="pro-title" style:color={titleColor}>{title}</h3>
                         {:else}
@@ -1850,8 +1878,8 @@
         position: absolute;
         top: 0.5rem;
         bottom: 0.5rem;
-        left: -156px;
-        width: 140px;
+        left: -186px;
+        width: 170px;
         border: 2px dashed rgba(251,191,36,0.22);
         border-radius: 0.85rem;
         background: rgba(251,191,36,0.025);
@@ -2259,16 +2287,18 @@
     /* The demo is absolutely positioned - its top is computed dynamically to align with
        the active step. As activeStep changes, the demo "jumps" smoothly via CSS transition
        and stays parked at that step (no sticky scrolling that competes with the page header). */
+    /* רוחב הטור: 144px (רוחב המשבצת האמיתי בטור הימני) + 11.2px ריפוד
+       ו-1px מסגרת בכל צד של הכרטיס = 168.4px, מעוגל ל-170px. */
     :global(.builder-cols) {
         position: relative;
-        padding-left: 156px;       /* reserve 140px demo + 16px gap on the visual LEFT */
+        padding-left: 186px;       /* reserve 170px demo + 16px gap on the visual LEFT */
     }
     :global(.builder-steps) { width: 100%; }
     :global(.builder-demo) {
         position: absolute;
         top: 0;
         left: 0;
-        width: 140px;
+        width: 170px;
         transition: top 700ms cubic-bezier(0.4, 0, 0.2, 1);
     }
     @media (max-width: 768px) {
@@ -2276,7 +2306,9 @@
         :global(.builder-demo) {
             position: static;
             width: 100%;
-            max-width: 240px;
+            /* גם בנייד התצוגה נשארת ברוחב האמיתי - משבצת רחבה יותר הייתה
+               מראה שבירת שורות אחרת לגמרי ממה שיתפרסם */
+            max-width: 170px;
             margin: 0 auto 1rem;
         }
     }
@@ -2301,8 +2333,12 @@
         text-align: center;
         margin: 0.5rem 0 0;
     }
+    /* 144px בדיוק - רוחב המשבצת בטור הימני (w-36). כשהתצוגה הייתה צרה
+       יותר הטקסט נשבר לשורות אחרות והמפרסם ראה מודעה שאינה זו שתתפרסם. */
     :global(.live-demo-frame) {
-        width: 100%;
+        width: 144px;
+        max-width: 100%;
+        margin-inline: auto;
         border-radius: 0.55rem;
         overflow: hidden;
         background: #0f172a;
@@ -2441,7 +2477,7 @@
         display: flex; justify-content: center;
     }
     :global(.clean-card) {
-        width: 140px;
+        width: 144px;   /* רוחב המשבצת האמיתי בטור הימני */
         border-radius: 0.6rem;
         overflow: hidden;
         background: #0f172a;
@@ -2809,8 +2845,10 @@
     }
     :global(.hover-title) { color: white; font-weight: 700; font-size: 0.95rem; margin: 0 0 0.4rem; }
     :global(.hover-text)  { color: rgb(229,231,235); font-size: 0.7rem; line-height: 1.4; margin: 0 0 0.4rem; font-weight: 700; }
-    :global(.promo-cta) { padding: 0.65rem; text-align: center; }
-    :global(.promo-cta p) { color: white; font-weight: 700; font-size: 0.72rem; line-height: 1.3; margin: 0; }
+    /* אותם מספרים של רצועת ה-CTA בטור הימני (p-2.5 / text-xs / leading-tight),
+       כדי שטקסט ארוך יישבר שם בדיוק כמו כאן */
+    :global(.promo-cta) { padding: 0.625rem; text-align: center; }
+    :global(.promo-cta p) { color: white; font-weight: 700; font-size: 0.75rem; line-height: 1.25; margin: 0; }
 
     /* ============== LOGO CIRCULAR CROP MODAL ============== */
     :global(.crop-modal-bg) {
@@ -3070,6 +3108,11 @@
     :global(.pro-title-top.mobile) {
         padding: 0.2rem 0.9rem 1.15rem;
     }
+    /* לוגו בפינה העליונה יושב בגובה הכותרת, ולכן הכותרת שומרת לו מקום -
+       אחרת הוא מכסה את המילה האחרונה במשבצת של 144px. אותם כללים בדיוק
+       ב-RightAdBanner, כך שהכותרת נשברת אותו דבר בתצוגה ובאתר. */
+    :global(.pro-title-top.has-corner-logo-right) { padding-right: 46px; }
+    :global(.pro-title-top.has-corner-logo-left)  { padding-left: 46px; }
     :global(.pro-title) {
         color: white; font-weight: 900;
         font-size: 1.15rem; line-height: 1.15;

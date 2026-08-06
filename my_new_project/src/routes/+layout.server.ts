@@ -45,6 +45,8 @@ export const load: LayoutServerLoad = async (event) => {
             logo: a.logo,
             mainImage: a.mainImage,
             mainImageFit: a.mainImageFit,
+            // העיצוב מהבילדר — בלעדיו הכרטיס נבנה מברירות המחדל של האתר
+            adStyle: a.adStyle,
         }))
         : [];
 

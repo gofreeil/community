@@ -10,6 +10,9 @@
     const lp = $derived(ad.landing);
 
     const gradient = $derived(ad.gradient || 'from-amber-500 to-orange-600');
+    // לוגו שנחתך לעיגול בבילדר נשאר עגול גם כאן — ריבוע היה מחזיר לו
+    // פינות לבנות שהמפרסם דווקא הסיר
+    const logoCircle = $derived(ad.adStyle?.logoShape === 'circle');
     // תמונת דף הנחיתה קודמת לתמונת הכרטיס — היא הועלתה במיוחד לדף הזה
     const heroImage = $derived(lp.image || ad.mainImage || '');
     const advList = $derived((lp.advantages ?? []).filter((a) => a?.trim()));
@@ -73,7 +76,7 @@
         <div class="al-hero-inner" class:has-media={!!heroImage}>
             <div class="al-copy">
                 {#if ad.logo}
-                    <img src={ad.logo} alt="" class="al-logo" />
+                    <img src={ad.logo} alt="" class="al-logo" class:is-circle={logoCircle} />
                 {/if}
                 <h1>{lp.headline || ad.title}</h1>
                 {#if lp.pitch}
@@ -223,8 +226,10 @@
         margin-bottom: 0.7rem;
         box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
     }
+    .al-logo.is-circle { border-radius: 9999px; }
     @media (min-width: 860px) {
         .al-logo { width: 84px; height: 84px; border-radius: 1.1rem; padding: 7px; }
+        .al-logo.is-circle { border-radius: 9999px; }
     }
     .al-hero h1 {
         color: white;
