@@ -60,6 +60,20 @@ export interface SubmittedAd {
     /** כמה ימים נותרו לה ברגע ההשהיה - מהם היא ממשיכה כשמפעילים מחדש */
     pausedDaysLeft?: number;
 
+    // ----- מפרסם חוזר: גרסה מעודכנת שמחליפה את הפרסומת הקיימת שלו -----
+    /** הפרסומת הקודמת של אותו מפרסם שהגרסה הזו באה להחליף (נשמר ב-landing._replacesAdId) */
+    replacesAdId?: string;
+    /** כותרת אותה גרסה קודמת - כדי שהמנהל יראה מה בדיוק מוחלף */
+    replacesTitle?: string;
+    /** מי החליפה אותה. פרסומת מסומנת כך היא היסטוריה - לא באה בחשבון להחלפה נוספת */
+    supersededBy?: string;
+
+    // ----- שדות רגעיים: מה קרה בפעולה הנוכחית, לא נשמרים ב-Strapi -----
+    /** submitAd: בקשות ממתינות קודמות של אותו מפרסם שהוסרו כרגע מתור האישורים */
+    retiredPendingIds?: string[];
+    /** approveAd: כותרת הפרסומת שירדה מהאתר כי הגרסה הזו נכנסה במקומה */
+    replacedNowTitle?: string;
+
     // Card fields
     title: string;
     subtitle: string;
@@ -111,6 +125,9 @@ interface StrapiAdAttrs {
               _order?: unknown;
               _paused?: unknown;
               _pausedDaysLeft?: unknown;
+              _replacesAdId?: unknown;
+              _replacesTitle?: unknown;
+              _supersededBy?: unknown;
           })
         | null;
     submitted_by_id: string | null;
@@ -166,6 +183,9 @@ function fromStrapi(s: StrapiAd): SubmittedAd {
         order: typeof s.landing?._order === 'number' ? s.landing._order : undefined,
         paused: s.landing?._paused === true,
         pausedDaysLeft: typeof s.landing?._pausedDaysLeft === 'number' ? s.landing._pausedDaysLeft : undefined,
+        replacesAdId: typeof s.landing?._replacesAdId === 'string' ? s.landing._replacesAdId : undefined,
+        replacesTitle: typeof s.landing?._replacesTitle === 'string' ? s.landing._replacesTitle : undefined,
+        supersededBy: typeof s.landing?._supersededBy === 'string' ? s.landing._supersededBy : undefined,
         title: s.title ?? '',
         subtitle: s.subtitle ?? '',
         hoverText: s.hover_text ?? '',
@@ -237,6 +257,96 @@ async function findByDocumentId(id: string): Promise<StrapiAd | null> {
 }
 
 // ============================================================
+// מפרסם חוזר: זיהוי גרסה מעודכנת של פרסומת קיימת
+// ------------------------------------------------------------
+// מפרסם ששב לשפר את הפרסומת שלו שולח רשומה חדשה לגמרי - אין בבילדר
+// "עריכה" של רשומה קיימת. בלי הקישור שכאן המנהל היה מקבל התראה שנייה
+// שנראית כמו בקשה חדשה, ואישור שלה היה מוסיף פרסומת שנייה ליד הישנה
+// במקום להחליף אותה.
+// ============================================================
+
+/** טלפון ישראלי מנורמל להשוואה: ספרות בלבד, 972 → 0 */
+function normPhone(raw: string | undefined | null): string {
+    const digits = (raw ?? '').replace(/\D/g, '').replace(/^972/, '0');
+    return digits.length >= 9 ? digits : '';
+}
+
+type AdvertiserIdentity = Pick<SubmittedAd, 'submittedBy'> & { landing?: { email?: string; phone?: string } };
+
+/**
+ * מפתחות הזהות של מפרסם. יותר ממפתח אחד בכוונה: אפשר לשלוח פרסומת גם
+ * בלי להתחבר, ואז אין submittedBy כלל והזיהוי היחיד הוא פרטי הקשר שבדף
+ * הנחיתה. שתי פרסומות הן של אותו מפרסם אם הן חולקות ולו מפתח אחד.
+ */
+function identityKeys(ad: AdvertiserIdentity): string[] {
+    const keys: string[] = [];
+    if (ad.submittedBy?.id) keys.push(`id:${ad.submittedBy.id}`);
+    const email = (ad.submittedBy?.email || ad.landing?.email || '').trim().toLowerCase();
+    if (email) keys.push(`email:${email}`);
+    const phone = normPhone(ad.landing?.phone);
+    if (phone) keys.push(`phone:${phone}`);
+    return keys;
+}
+
+function sameAdvertiser(a: AdvertiserIdentity, b: AdvertiserIdentity): boolean {
+    const keysB = new Set(identityKeys(b));
+    return identityKeys(a).some(k => keysB.has(k));
+}
+
+const byNewest = (a: SubmittedAd, b: SubmittedAd) =>
+    new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime();
+
+/**
+ * מה כבר יש למפרסם הזה במערכת:
+ *  target       - הפרסומת שהשליחה החדשה באה להחליף. מאושרת קודמת לממתינה,
+ *                 כי היא זו שנמצאת בפועל על האתר וצריכה לרדת כשהחדשה תאושר.
+ *  stalePending - כל הבקשות הממתינות שלו. השליחה החדשה מייתרת את כולן,
+ *                 והן יורדות מהתור כדי שהמנהל יראה בקשה אחת לכל מפרסם.
+ * שגיאה כאן לעולם לא מפילה שליחה - מפרסם חוזר שלא זוהה מתנהג כמפרסם חדש.
+ */
+async function findPredecessors(
+    identity: AdvertiserIdentity,
+): Promise<{ target: SubmittedAd | null; stalePending: SubmittedAd[] }> {
+    let candidates: SubmittedAd[];
+    try {
+        const [approved, pending] = await Promise.all([
+            listByStatus('approved'),
+            listByStatus('pending'),
+        ]);
+        candidates = [...approved, ...pending];
+    } catch (e) {
+        console.warn('[adsStore] findPredecessors failed:', e instanceof Error ? e.message : e);
+        return { target: null, stalePending: [] };
+    }
+    const mine = candidates.filter(a => !a.supersededBy && sameAdvertiser(a, identity));
+    const live = mine.filter(a => a.status === 'approved').sort(byNewest);
+    const stalePending = mine.filter(a => a.status === 'pending').sort(byNewest);
+    return { target: live[0] ?? stalePending[0] ?? null, stalePending };
+}
+
+/**
+ * מוציא גרסה ישנה מהמחזור אחרי שגרסה מעודכנת נכנסה במקומה.
+ * הסטטוס 'rejected' הוא הארכיון היחיד שיש בסכמה - הפרסומת יורדת מהאתר
+ * ומהתור, אבל נשארת בטאב "נדחו" עם הסיבה, כך שאפשר להחזיר אותה אם
+ * ההחלפה הייתה בטעות. שום דבר לא נמחק.
+ */
+async function supersedeAd(old: SubmittedAd, newAdId: string, decidedBy: string, reason: string): Promise<void> {
+    await strapiPut(`${ENDPOINT}/${old.id}`, {
+        data: {
+            ad_status:        'rejected',
+            decided_at:       new Date().toISOString(),
+            decided_by:       decidedBy,
+            rejection_reason: reason,
+            landing: {
+                ...(old.landing as unknown as Record<string, unknown>),
+                _supersededBy: newAdId,
+            },
+        },
+    });
+    invalidate('ads:');
+}
+
+// ============================================================
 // API ציבורי
 // ============================================================
 
@@ -281,6 +391,8 @@ export async function getAd(id: string): Promise<SubmittedAd | null> {
 
 export async function submitAd(payload: Omit<SubmittedAd, 'id' | 'status' | 'submittedAt'>): Promise<SubmittedAd> {
     const now = new Date().toISOString();
+    // מפרסם חוזר: מחפשים לפני היצירה, כדי שהרשומה החדשה עצמה לא תופיע ברשימה
+    const { target: predecessor, stalePending } = await findPredecessors(payload);
     const res = await strapiPost<{ data: StrapiAd }>(ENDPOINT, {
         data: {
             ad_status:           'pending',
@@ -294,6 +406,8 @@ export async function submitAd(payload: Omit<SubmittedAd, 'id' | 'status' | 'sub
             // ה-fit והעיצוב נארזים בתוך landing (json) — אין עמודה ייעודית בסכמה,
             // ומפתח לא-מוכר ברמת ה-attributes היה מפיל את הבקשה ב-400.
             // _site משייך את הפרסומת לאתר הזה באוסף המשותף
+            // _replacesAdId מקשר לגרסה הקודמת של אותו מפרסם: ההתראה למנהל
+            // מדברת על עדכון, והאישור מחליף את הישנה במקום להוסיף לידה.
             landing:             {
                 ...payload.landing,
                 mainImageFit: parseAdImageFit(payload.mainImageFit),
@@ -301,6 +415,7 @@ export async function submitAd(payload: Omit<SubmittedAd, 'id' | 'status' | 'sub
                 // ברירות המחדל של האתר ולא עם מה שהוא ראה על המסך
                 adStyle: parseAdStyle(payload.adStyle),
                 _site: SITE_ID,
+                ...(predecessor ? { _replacesAdId: predecessor.id, _replacesTitle: predecessor.title } : {}),
             },
             submitted_by_id:     payload.submittedBy?.id ?? null,
             submitted_by_email:  payload.submittedBy?.email ?? null,
@@ -308,28 +423,102 @@ export async function submitAd(payload: Omit<SubmittedAd, 'id' | 'status' | 'sub
             submitted_at:        now,
         },
     });
-    return fromStrapi(res.data);
+    // בלי זה הבקשה החדשה לא נראית במסך הניהול עד שה-cache פג, וגם שליחה
+    // נוספת בתוך אותו חלון לא הייתה מזהה אותה כקודמת שלה
+    invalidate('ads:');
+    const ad = fromStrapi(res.data);
+    // לא נשענים על מה ש-Strapi מחזיר בתשובת ה-POST: אם עמודת ה-json לא
+    // הוחזרה, ההתראה למנהל הייתה מנוסחת בטעות כבקשה חדשה במקום כעדכון
+    if (predecessor) {
+        ad.replacesAdId  = predecessor.id;
+        ad.replacesTitle = predecessor.title;
+    }
+
+    // בקשות קודמות שעדיין ממתינות לאישור לא צריכות להישאר בתור: המנהל אמור
+    // לראות בקשה אחת לכל מפרסם - האחרונה - ולא שתי בקשות שנראות כפולות.
+    // מאושרת קודמת נשארת חיה עד שהחדשה תאושר, אחרת האתר היה נשאר בלי פרסומת.
+    const retired: string[] = [];
+    for (const stale of stalePending) {
+        try {
+            await supersedeAd(stale, ad.id, 'system', 'הוחלפה בגרסה מעודכנת שהמפרסם שלח');
+            retired.push(stale.id);
+        } catch (e) {
+            console.warn('[adsStore] retire pending predecessor failed:', e instanceof Error ? e.message : e);
+        }
+    }
+    if (retired.length > 0) ad.retiredPendingIds = retired;
+    return ad;
 }
 
-export async function approveAd(id: string, decidedBy: string, durationDays?: number): Promise<SubmittedAd | null> {
+export interface ApproveOptions {
+    /** אשר כפרסומת נוספת ואל תוריד את הקודמת - למפרסם שבאמת רוצה שתיים במקביל */
+    keepPrevious?: boolean;
+}
+
+export async function approveAd(
+    id: string,
+    decidedBy: string,
+    durationDays?: number,
+    opts: ApproveOptions = {},
+): Promise<SubmittedAd | null> {
     const existing = await findByDocumentId(id);
     if (!existing) return null;
-    const days = durationDays ?? existing.duration_days ?? DEFAULT_DURATION_DAYS;
+    const current = fromStrapi(existing);
+
+    // גרסה מעודכנת של מפרסם קיים: נכנסת *במקום* הישנה - אותו מקום בטור
+    // ואותו תאריך סיום - ומיד אחרי האישור הישנה יורדת מהאתר. בלי זה
+    // האישור היה מוסיף פרסומת שנייה לאותו מפרסם, ליד הישנה.
+    const predecessor = current.replacesAdId && !opts.keepPrevious
+        ? await getAd(current.replacesAdId).catch(() => null)
+        : null;
+    // כבר הוחלפה (בקשה ממתינה שירדה מהתור בזמן השליחה) - אין מה להוריד שוב
+    const replacing = predecessor && predecessor.status === 'approved' && !predecessor.supersededBy
+        ? predecessor
+        : null;
+
     const now = new Date();
-    const expires = new Date(now.getTime() + days * DAY_MS);
-    const res = await strapiPut<{ data: StrapiAd }>(`${ENDPOINT}/${id}`, {
-        data: {
-            ad_status:        'approved',
-            decided_at:       now.toISOString(),
-            decided_by:       decidedBy,
-            rejection_reason: null,
-            duration_days:    days,
-            expires_at:       expires.toISOString(),
-            reminders_sent:   [],
-        },
-    });
+    // התקופה שהמפרסם כבר שילם עליה ממשיכה כרגיל: אותו תאריך פקיעה, לא
+    // ספירה חדשה. שדרוג הפרסומת לא מאריך ולא מקצר את הזמן שנותר לה.
+    const inheritedExpiry = replacing && !replacing.paused && replacing.expiresAt
+        && new Date(replacing.expiresAt).getTime() > now.getTime()
+        ? replacing.expiresAt
+        : null;
+    const days = durationDays ?? existing.duration_days
+        ?? (inheritedExpiry ? (replacing?.durationDays ?? DEFAULT_DURATION_DAYS) : DEFAULT_DURATION_DAYS);
+    const expires = inheritedExpiry ?? new Date(now.getTime() + days * DAY_MS).toISOString();
+
+    const data: Record<string, unknown> = {
+        ad_status:        'approved',
+        decided_at:       now.toISOString(),
+        decided_by:       decidedBy,
+        rejection_reason: null,
+        duration_days:    days,
+        expires_at:       expires,
+        reminders_sent:   [],
+    };
+    // מקום התצוגה בטור עובר לגרסה החדשה, אחרת היא הייתה קופצת לסוף הרשימה
+    if (replacing && typeof replacing.order === 'number' && replacing.order !== current.order) {
+        data.landing = { ...(current.landing as unknown as Record<string, unknown>), _order: replacing.order };
+    }
+    if (replacing?.companyName && !current.companyName)     data.company_name   = replacing.companyName;
+    if (replacing?.paymentAmount && !current.paymentAmount) data.payment_amount = replacing.paymentAmount;
+
+    const res = await strapiPut<{ data: StrapiAd }>(`${ENDPOINT}/${id}`, { data });
     invalidate('ads:');
-    return fromStrapi(res.data);
+    const approved = fromStrapi(res.data);
+
+    // סדר הפעולות מכוון: קודם החדשה עולה, רק אחר-כך הישנה יורדת. כשל כאן
+    // משאיר את שתיהן באוויר (מצב שהמנהל רואה ויכול לתקן) - עדיף מלהוריד
+    // את הישנה ואז להיכשל בהעלאת החדשה ולהשאיר את המפרסם בלי פרסומת.
+    if (replacing) {
+        try {
+            await supersedeAd(replacing, id, decidedBy, 'הוחלפה בגרסה מעודכנת שאישרת');
+            approved.replacedNowTitle = replacing.title;
+        } catch (e) {
+            console.warn('[adsStore] supersede on approve failed:', e instanceof Error ? e.message : e);
+        }
+    }
+    return approved;
 }
 
 export async function rejectAd(id: string, decidedBy: string, reason?: string): Promise<SubmittedAd | null> {
@@ -350,14 +539,20 @@ export async function rejectAd(id: string, decidedBy: string, reason?: string): 
 export async function unrejectAd(id: string): Promise<SubmittedAd | null> {
     const existing = await findByDocumentId(id);
     if (!existing) return null;
-    const res = await strapiPut<{ data: StrapiAd }>(`${ENDPOINT}/${id}`, {
-        data: {
-            ad_status:        'pending',
-            decided_at:       null,
-            decided_by:       null,
-            rejection_reason: null,
-        },
-    });
+    const data: Record<string, unknown> = {
+        ad_status:        'pending',
+        decided_at:       null,
+        decided_by:       null,
+        rejection_reason: null,
+    };
+    // פרסומת שירדה כי גרסה מעודכנת נכנסה במקומה, והמנהל מחזיר אותה בכוונה:
+    // מסירים את סימון ההחלפה כדי שתתנהג שוב כבקשה ממתינה רגילה
+    if (existing.landing?._supersededBy != null) {
+        const landing = { ...(existing.landing as unknown as Record<string, unknown>) };
+        delete landing._supersededBy;
+        data.landing = landing;
+    }
+    const res = await strapiPut<{ data: StrapiAd }>(`${ENDPOINT}/${id}`, { data });
     invalidate('ads:');
     return fromStrapi(res.data);
 }
@@ -740,7 +935,9 @@ export async function listAdvertisers(): Promise<AdvertiserSummary[]> {
         listByStatus('approved'),
         listByStatus('rejected'),
     ]);
-    const all = [...pending, ...approved, ...rejectedAll];
+    // גרסאות שהוחלפו הן אותה פרסומת בגלגול קודם - ספירה שלהן הייתה מציגה
+    // "3 פרסומות" למפרסם שפשוט שיפר פעמיים את הפרסומת האחת שלו
+    const all = [...pending, ...approved, ...rejectedAll].filter(a => !a.supersededBy);
     const map = new Map<string, AdvertiserSummary>();
     for (const ad of all) {
         const key = ad.submittedBy?.email || ad.submittedBy?.id || ad.id;

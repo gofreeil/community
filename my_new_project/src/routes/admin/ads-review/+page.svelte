@@ -334,6 +334,24 @@
                                     </div>
                                 </form>
                             {:else}
+                                <!-- מפרסם חוזר ששיפר את הפרסומת שלו: לא בקשה חדשה אלא גרסה
+                                     מעודכנת, והאישור מחליף את הישנה במקום להוסיף פרסומת שנייה -->
+                                {#if ad.replacesAdId && ad.status === 'pending'}
+                                    <div class="mb-2 rounded-lg border border-blue-400/40 bg-blue-500/10 px-2.5 py-1.5">
+                                        <p class="text-[11px] md:text-xs font-black text-blue-200 m-0">
+                                            🔄 עדכון לפרסומת קיימת{ad.replacesTitle ? ` - מחליפה את "${ad.replacesTitle}"` : ''}
+                                        </p>
+                                        <p class="text-[10px] md:text-[11px] text-blue-100/70 m-0 mt-0.5">
+                                            עם האישור הגרסה הזו נכנסת במקום הישנה, באותו מקום בטור ועם אותו תאריך סיום - הישנה יורדת מהאתר.
+                                        </p>
+                                    </div>
+                                {:else if ad.supersededBy}
+                                    <div class="mb-2 rounded-lg border border-gray-500/40 bg-white/5 px-2.5 py-1.5">
+                                        <p class="text-[11px] md:text-xs font-black text-gray-300 m-0">
+                                            🔄 גרסה ישנה - הוחלפה בגרסה מעודכנת של המפרסם
+                                        </p>
+                                    </div>
+                                {/if}
                                 <h3 class="text-base md:text-lg font-black text-white mb-1">{ad.title}</h3>
                                 <p class="text-xs md:text-sm text-gray-300 mb-1">{ad.subtitle}</p>
                                 {#if ad.cta}
@@ -383,10 +401,23 @@
                                 <form method="POST" action="?/approve" use:enhance>
                                     <input type="hidden" name="id" value={ad.id} />
                                     <button type="submit"
-                                            class="px-4 py-2 rounded-xl bg-emerald-500 text-black font-black text-sm hover:bg-emerald-400">
-                                        ✅ אשר ופרסם
+                                            class="px-4 py-2 rounded-xl bg-emerald-500 text-black font-black text-sm hover:bg-emerald-400"
+                                            title={ad.replacesAdId ? 'אשר את הגרסה החדשה במקום הישנה' : 'אשר ופרסם בטור הפרסומות'}>
+                                        {ad.replacesAdId ? '✅ אשר והחלף את הישנה' : '✅ אשר ופרסם'}
                                     </button>
                                 </form>
+                                {#if ad.replacesAdId}
+                                    <!-- מפרסם שבאמת רוצה שתי פרסומות במקביל, ולא שדרג את הקיימת -->
+                                    <form method="POST" action="?/approve" use:enhance>
+                                        <input type="hidden" name="id" value={ad.id} />
+                                        <input type="hidden" name="keepPrevious" value="1" />
+                                        <button type="submit"
+                                                class="px-4 py-2 rounded-xl bg-white/5 border border-white/15 text-gray-300 font-black text-sm hover:bg-white/10"
+                                                title="הישנה תישאר על האתר וזו תתווסף לידה">
+                                            ➕ אשר כפרסומת נוספת
+                                        </button>
+                                    </form>
+                                {/if}
                                 <button type="button" onclick={() => startEdit(ad)}
                                         class="px-4 py-2 rounded-xl bg-blue-500/20 border border-blue-500/40 text-blue-200 font-black text-sm hover:bg-blue-500/30">
                                     ✏️ ערוך לפני אישור

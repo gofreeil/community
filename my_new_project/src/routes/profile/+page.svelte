@@ -745,10 +745,16 @@
 				// ההתראה סומנה "טופל" בשרת - יורדת מהרשימה הפעילה לכאן ולכל מכשיר אחר
 				messages = messages.filter((m) => m.id !== msg.id);
 				const title = msg.adTitle ?? "";
+				// שדרוג של פרסומת קיימת: השרת מחזיר את כותרת הישנה שירדה מהאתר
+				const old = String(
+					(result.data as { adReplacedTitle?: string })?.adReplacedTitle ?? "",
+				);
 				showLrNotice(
 					"success",
 					decision === "approve"
-						? tFn("profile.ad_approved", { title })
+						? old
+							? tFn("profile.ad_approved_replaced", { title, old })
+							: tFn("profile.ad_approved", { title })
 						: tFn("profile.ad_rejected", { title }),
 				);
 			} else {

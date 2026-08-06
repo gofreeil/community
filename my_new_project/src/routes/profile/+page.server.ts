@@ -627,7 +627,9 @@ async function handleAdSubmission(event: Parameters<NonNullable<Actions[string]>
             return fail(404, { adError: 'הפרסומת לא נמצאה - ייתכן שכבר טופלה' });
         }
         await markAdMessageHandled(msgId, decision);
-        return { adSuccess: decision, adTitle: ad?.title ?? '' };
+        // גרסה מעודכנת של מפרסם קיים: הישנה ירדה מהאתר ברגע האישור -
+        // המנהל צריך לראות את זה בהודעת ההצלחה ולא לנחש
+        return { adSuccess: decision, adTitle: ad?.title ?? '', adReplacedTitle: ad?.replacedNowTitle ?? '' };
     } catch (e) {
         console.warn('[profile] handleAdSubmission failed:', e);
         return fail(500, { adError: 'שגיאה בטיפול בבקשה, נסה שוב' });

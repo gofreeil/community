@@ -101,9 +101,19 @@ export const actions: Actions = {
         const formData = await event.request.formData();
         const id = formData.get('id') as string;
         if (!id) return fail(400, { error: 'חסר מזהה' });
-        const result = await approveAd(id, session?.user?.id ?? 'super_admin');
+        // ברירת המחדל לגרסה מעודכנת היא החלפה. keepPrevious הוא המקרה ההפוך:
+        // מפרסם שבאמת רוצה שתי פרסומות במקביל ולא שדרג את הקיימת.
+        const keepPrevious = formData.get('keepPrevious') === '1';
+        const result = await approveAd(id, session?.user?.id ?? 'super_admin', undefined, { keepPrevious });
         if (!result) return fail(404, { error: 'הפרסומת לא נמצאה' });
-        return { success: true, message: `אושרה ופורסמה: ${result.title}` };
+        // גרסה מעודכנת של מפרסם קיים - המנהל צריך לראות שהישנה ירדה, ולא
+        // להישאר בספק אם נוספה פרסומת שנייה לאותו מפרסם
+        return {
+            success: true,
+            message: result.replacedNowTitle
+                ? `אושרה ופורסמה: ${result.title} - נכנסה במקום "${result.replacedNowTitle}", שירדה מהאתר`
+                : `אושרה ופורסמה: ${result.title}`,
+        };
     },
 
     reject: async (event) => {
@@ -122,11 +132,17 @@ export const actions: Actions = {
         const ids = parseIds(await event.request.formData());
         if (ids.length === 0) return fail(400, { error: 'לא נבחרו פרסומות' });
         let ok = 0;
+        let replaced = 0;
         for (const id of ids) {
             const r = await approveAd(id, session?.user?.id ?? 'super_admin');
             if (r) ok++;
+            if (r?.replacedNowTitle) replaced++;
         }
-        return { success: true, message: `אושרו ופורסמו ${ok} פרסומות` };
+        return {
+            success: true,
+            message: `אושרו ופורסמו ${ok} פרסומות` +
+                (replaced > 0 ? ` (${replaced} החליפו גרסה קודמת שירדה מהאתר)` : ''),
+        };
     },
 
     bulkReject: async (event) => {

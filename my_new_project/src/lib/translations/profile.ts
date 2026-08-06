@@ -120,6 +120,8 @@ export const he = {
         lr_reject_title: "דחה את הבקשה ועדכן את המבקש",
         // אשר/דחה בקשת פרסום ישירות מכרטיס ההתראה
         ad_approved: '✅ הפרסומת "{title}" אושרה ועלתה לאתר. המפרסם יראה אותה בטור.',
+        // גרסה מעודכנת של מפרסם קיים - נכנסה במקום הישנה ולא נוספה לידה
+        ad_approved_replaced: '✅ הפרסומת "{title}" אושרה ונכנסה במקום "{old}", שירדה מהאתר.',
         ad_rejected: '✖️ הפרסומת "{title}" נדחתה ולא תוצג באתר.',
         ad_error: "שגיאה בטיפול בבקשת הפרסום",
         ad_reject_confirm: "לדחות את בקשת הפרסום?",
@@ -541,6 +543,7 @@ export const en = {
         lr_reject_title: "Reject the request and notify the requester",
         // Approve/reject an ad request straight from the notification card
         ad_approved: '✅ The ad "{title}" was approved and is now live on the site.',
+        ad_approved_replaced: '✅ The ad "{title}" was approved and took the place of "{old}", which was taken down.',
         ad_rejected: '✖️ The ad "{title}" was rejected and will not be shown.',
         ad_error: "Error handling the ad request",
         ad_reject_confirm: "Reject this ad request?",
@@ -961,6 +964,7 @@ export const ru = {
         lr_reject_title: "Отклонить запрос и уведомить заявителя",
         // Одобрить/отклонить заявку на рекламу прямо из карточки уведомления
         ad_approved: '✅ Реклама "{title}" одобрена и опубликована на сайте.',
+        ad_approved_replaced: '✅ Реклама "{title}" одобрена и заменила "{old}", которая снята с сайта.',
         ad_rejected: '✖️ Реклама "{title}" отклонена и не будет показана.',
         ad_error: "Ошибка при обработке заявки на рекламу",
         ad_reject_confirm: "Отклонить заявку на рекламу?",
