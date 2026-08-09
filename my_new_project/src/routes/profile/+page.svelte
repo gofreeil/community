@@ -520,6 +520,16 @@
 								// בקשת פרסום: אשר/דחה על הכרטיס עצמו, בלי מעבר למסך הניהול
 								adSubId: efAdId || undefined,
 								adTitle: efAdId ? String(ef?.ad_title ?? "") : undefined,
+								// נמען לתשובה מהירה מתוך הכרטיס: השולח בצ'אט הפנימי,
+								// או מי שיזם את הבקשה בהתראת ניהול. הודעת מערכת בלי
+								// שולח אנושי (ברוך הבא, אישור פנייה) לא מקבלת כפתור.
+								replyTo: String(ef?.sender_id ?? "") || efRequesterId || "",
+								replyName:
+									String(ef?.sender_name ?? "") ||
+									String(ef?.requested_by_name ?? ""),
+								replyPhone:
+									String(ef?.sender_phone ?? "") ||
+									String(ef?.requested_by_phone ?? ""),
 								// לחיצה על כל הכרטיס פותחת את עמוד הניהול במקום הרלוונטי לטיפול בבקשה
 								link:
 									efLink ??
@@ -659,6 +669,71 @@
 		// "אם הוא קרא - מחוק את ההתראות מהפרופיל שלו"
 		deleteMsg(id);
 		persistMsgState(id, { read: true });
+	}
+
+	// === תשובה מהירה מתוך כרטיס ההודעה ===
+	// התשובה נשלחת לתיבת ההודעות של השולח (אותו שרשור של הצ'אט הפנימי), כדי
+	// שאפשר לענות בלי לצאת מהאזור האישי. רק כרטיס אחד פתוח בכל רגע.
+	type ReplyMsg = {
+		id: string;
+		from?: string;
+		replyTo?: string;
+		replyName?: string;
+		replyPhone?: string;
+	};
+	let replyOpenId = $state("");
+	let replyText = $state("");
+	let replyBusy = $state(false);
+	function toggleReply(msg: ReplyMsg) {
+		if (replyOpenId === msg.id) {
+			replyOpenId = "";
+			replyText = "";
+			return;
+		}
+		replyOpenId = msg.id;
+		replyText = "";
+	}
+	// קישור וואטסאפ לשולח - אותו דפוס המרה כמו ב-RequesterChatButtons
+	function replyWaHref(phone: string): string {
+		const digits = phone.replace(/\D/g, "").replace(/^0/, "972");
+		return `https://wa.me/${digits}`;
+	}
+	async function sendReply(msg: ReplyMsg) {
+		const text = replyText.trim();
+		if (!text || !msg.replyTo || replyBusy) return;
+		replyBusy = true;
+		try {
+			const fd = new FormData();
+			fd.set("to", msg.replyTo);
+			fd.set("text", text);
+			fd.set("about", msg.from ?? "");
+			const res = await fetch("?/replyToMessage", {
+				method: "POST",
+				body: fd,
+				headers: { "x-sveltekit-action": "true" },
+			});
+			const result = deserialize(await res.text());
+			if (result.type === "success") {
+				replyOpenId = "";
+				replyText = "";
+				showLrNotice(
+					"success",
+					tFn("profile.reply_sent", {
+						name: msg.replyName || tFn("profile.reply_recipient_fallback"),
+					}),
+				);
+			} else {
+				const errMsg =
+					result.type === "failure"
+						? String((result.data as { replyError?: string })?.replyError ?? tFn("profile.reply_error"))
+						: tFn("profile.reply_error");
+				showLrNotice("error", errMsg);
+			}
+		} catch {
+			showLrNotice("error", tFn("profile.lr_network"));
+		} finally {
+			replyBusy = false;
+		}
 	}
 
 	// === אישור/דחיית בקשת מיקום ישירות מכרטיס ההודעה (סופר-אדמין) ===
@@ -3195,6 +3270,18 @@
 										{/if}
 										<span class="flex-1"></span>
 									{/if}
+									{#if (msg as ReplyMsg).replyTo}
+										<button
+											type="button"
+											onclick={(e) => { e.stopPropagation(); toggleReply(msg as ReplyMsg); }}
+											class="text-[11px] font-bold transition-colors px-2 py-1 rounded-lg {replyOpenId === msg.id
+												? 'text-purple-200 bg-purple-500/20'
+												: 'text-purple-300 hover:text-purple-200 hover:bg-purple-500/10'}"
+											title={tFn("profile.reply_title")}
+										>
+											{tFn("profile.reply")}
+										</button>
+									{/if}
 									<button
 										type="button"
 										onclick={(e) => { e.stopPropagation(); markRead(msg.id); }}
@@ -3228,6 +3315,59 @@
 										{tFn("profile.delete")}
 									</button>
 								</div>
+
+								<!-- תיבת התשובה - נפתחת בתוך הכרטיס, בלי לעזוב את האזור האישי -->
+								{#if replyOpenId === msg.id}
+									<div
+										class="mt-2 rounded-xl border border-purple-500/30 bg-purple-500/5 p-2.5"
+										onclick={(e) => e.stopPropagation()}
+										onkeydown={(e) => e.stopPropagation()}
+										role="presentation"
+									>
+										<!-- svelte-ignore a11y_autofocus -->
+										<textarea
+											bind:value={replyText}
+											autofocus
+											rows="2"
+											maxlength="4000"
+											disabled={replyBusy}
+											placeholder={tFn("profile.reply_placeholder", {
+												name: (msg as ReplyMsg).replyName || tFn("profile.reply_recipient_fallback"),
+											})}
+											class="w-full resize-y rounded-lg bg-[#0b1220] border border-white/10 focus:border-purple-400/60 focus:outline-none text-white text-xs leading-relaxed px-3 py-2 placeholder:text-gray-500 disabled:opacity-50"
+										></textarea>
+										<div class="flex items-center gap-1.5 flex-wrap mt-2">
+											<button
+												type="button"
+												disabled={replyBusy || !replyText.trim()}
+												onclick={() => sendReply(msg as ReplyMsg)}
+												class="text-[11px] font-black bg-purple-500/20 text-purple-200 border border-purple-500/50 hover:bg-purple-500/30 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+											>
+												{replyBusy ? tFn("profile.reply_sending") : tFn("profile.reply_send")}
+											</button>
+											<button
+												type="button"
+												disabled={replyBusy}
+												onclick={() => { replyOpenId = ""; replyText = ""; }}
+												class="text-[11px] font-bold text-gray-300 border border-white/15 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-40"
+											>
+												{tFn("profile.cancel")}
+											</button>
+											{#if (msg as ReplyMsg).replyPhone}
+												<a
+													href={replyWaHref((msg as ReplyMsg).replyPhone ?? "")}
+													target="_blank"
+													rel="noopener noreferrer"
+													class="text-[11px] font-bold bg-emerald-500/10 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/20 px-3 py-1.5 rounded-lg transition-colors ms-auto"
+													title={tFn("profile.reply_wa_title")}
+												>
+													{tFn("profile.reply_wa")}
+												</a>
+											{/if}
+										</div>
+										<p class="text-[10px] text-gray-500 mt-1.5">{tFn("profile.reply_hint")}</p>
+									</div>
+								{/if}
 							{/if}
 						</div>
 					</div>

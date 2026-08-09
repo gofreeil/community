@@ -105,6 +105,19 @@ export const he = {
         handled_hint: "התראות שכל הממתינים בהן כבר טופלו",
         handled_badge: "✓ טופלה",
 
+        // תשובה מהירה מתוך כרטיס ההודעה
+        reply: "↩️ תשובה",
+        reply_title: "השב לשולח - התשובה תגיע לתיבת ההודעות שלו באתר",
+        reply_placeholder: "כתוב/כתבי תשובה ל{name}...",
+        reply_recipient_fallback: "השולח",
+        reply_send: "📨 שלח תשובה",
+        reply_sending: "⏳ שולח...",
+        reply_sent: "✅ התשובה נשלחה ל{name} ותופיע בתיבת ההודעות שלו/ה באתר.",
+        reply_error: "שגיאה בשליחת התשובה",
+        reply_hint: "התשובה נשלחת כהודעה אישית באתר, ישירות לשולח.",
+        reply_wa: "🟢 וואטסאפ",
+        reply_wa_title: "פתח שיחת וואטסאפ עם השולח",
+
         // בקשות מיקום (סופר-אדמין)
         lr_approved: '✅ "{location}" אושר ונוסף לרשימת השכונות. המבקש קיבל הודעה.',
         lr_rejected: '✖️ הבקשה להוספת "{location}" נדחתה והמבקש קיבל הודעה.',
@@ -528,6 +541,19 @@ export const en = {
         handled_hint: "Notifications whose pending items were all handled",
         handled_badge: "✓ Handled",
 
+        // Quick reply from the message card
+        reply: "↩️ Reply",
+        reply_title: "Reply to the sender - it lands in their message inbox on the site",
+        reply_placeholder: "Write a reply to {name}...",
+        reply_recipient_fallback: "the sender",
+        reply_send: "📨 Send reply",
+        reply_sending: "⏳ Sending...",
+        reply_sent: "✅ Your reply was sent to {name} and will appear in their inbox on the site.",
+        reply_error: "Error sending the reply",
+        reply_hint: "The reply is sent as a personal message on the site, straight to the sender.",
+        reply_wa: "🟢 WhatsApp",
+        reply_wa_title: "Open a WhatsApp chat with the sender",
+
         // Location requests (super admin)
         lr_approved: '✅ "{location}" was approved and added to the neighborhood list. The requester was notified.',
         lr_rejected: '✖️ The request to add "{location}" was rejected and the requester was notified.',
@@ -948,6 +974,19 @@ export const ru = {
         handled_list: "✅ Обработанные сообщения",
         handled_hint: "Уведомления, все ожидающие пункты которых уже обработаны",
         handled_badge: "✓ Обработано",
+
+        // Быстрый ответ прямо из карточки сообщения
+        reply: "↩️ Ответить",
+        reply_title: "Ответить отправителю - ответ придёт в его почтовый ящик на сайте",
+        reply_placeholder: "Напишите ответ для {name}...",
+        reply_recipient_fallback: "отправителю",
+        reply_send: "📨 Отправить ответ",
+        reply_sending: "⏳ Отправка...",
+        reply_sent: "✅ Ответ отправлен: {name}. Он появится в личных сообщениях на сайте.",
+        reply_error: "Ошибка при отправке ответа",
+        reply_hint: "Ответ отправляется как личное сообщение на сайте, прямо отправителю.",
+        reply_wa: "🟢 WhatsApp",
+        reply_wa_title: "Открыть чат WhatsApp с отправителем",
 
         // Запросы местоположения (супер-админ)
         lr_approved: '✅ «{location}» одобрено и добавлено в список районов. Заявитель получил уведомление.',

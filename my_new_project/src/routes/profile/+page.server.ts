@@ -1,6 +1,6 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { getUserById, getUserByEmail, updateUserProfile, getItemsByUserId, upsertUser, getMessagesByUserId, createItem, updateItem, getDbItemById, getAllSuperAdmins, getAllUsers, getItemsByCategory, getItemsByCategoryAndStatus, createNeighborhoodRequest } from '$lib/server/db';
+import { getUserById, getUserByEmail, getUserByAnyId, updateUserProfile, getItemsByUserId, upsertUser, getMessagesByUserId, createItem, updateItem, getDbItemById, getAllSuperAdmins, getAllUsers, getItemsByCategory, getItemsByCategoryAndStatus, createNeighborhoodRequest } from '$lib/server/db';
 import { finalizeLocationDecision, undoLocationDecision, withdrawOpenLocationRequests } from '$lib/server/locationDecision';
 import { getCachedUserById, invalidateCachedUser } from '$lib/server/userCache';
 import { citiesData } from '$lib/neighborhoodsData';
@@ -547,6 +547,57 @@ export const actions: Actions = {
             return { feedbackSuccess: true };
         } catch {
             return fail(500, { feedbackError: 'שגיאה בשליחת הפנייה, נסה שוב' });
+        }
+    },
+
+    // תשובה מהירה מתוך כרטיס ההודעה: נשלחת לתיבת ההודעות של השולח כהודעה
+    // אישית - בדיוק אותו מנגנון של הצ'אט הפנימי ב-/admin/users/[id] (chat:true
+    // + sender_id), כך שהשרשור נשאר אחד בשני הכיוונים.
+    replyToMessage: async (event) => {
+        let session = null;
+        try { session = await event.locals.auth(); } catch {}
+        if (!session?.user?.id) return fail(401, { replyError: 'צריך להתחבר כדי לשלוח תשובה' });
+
+        const form  = await event.request.formData();
+        const toId  = form.get('to')?.toString().trim()    ?? '';
+        const text  = form.get('text')?.toString().trim()  ?? '';
+        const about = form.get('about')?.toString().trim() ?? '';
+
+        if (!toId) return fail(400, { replyError: 'אין נמען לתשובה הזו' });
+        if (!text) return fail(400, { replyError: 'אי אפשר לשלוח תשובה ריקה' });
+        if (text.length > 4000) return fail(400, { replyError: 'התשובה ארוכה מדי' });
+
+        try {
+            const target = await getUserByAnyId(toId);
+            if (!target) return fail(404, { replyError: 'לא נמצא הנמען לתשובה' });
+
+            // שם וטלפון המשיב - כדי שהנמען יוכל לחזור אליו מתיבת ההודעות שלו
+            let me = null;
+            try { me = await getUserById(session.user.id); } catch { /* ignore */ }
+            const myName = me?.name || session.user.name || 'משתמש באתר';
+
+            await createItem({
+                category:    'message',
+                label:       `💬 תשובה מ${myName}`,
+                description: text,
+                icon:        '💬',
+                color:       'purple',
+                user_id:     target.id,
+                extra_fields: {
+                    chat:         true,
+                    sender_id:    session.user.id,
+                    sender_name:  myName,
+                    sender_phone: me?.phone || '',
+                    // כותרת ההודעה המקורית - נותנת הקשר לנמען ולשרשור בעמוד הניהול
+                    reply_to:     about,
+                    sent_at:      new Date().toISOString(),
+                    read:         false,
+                },
+            });
+            return { replySuccess: true, replyToName: target.name ?? '' };
+        } catch (e) {
+            console.warn('[profile] replyToMessage failed:', e);
+            return fail(500, { replyError: 'שגיאה בשליחת התשובה, נסה שוב' });
         }
     },
 
