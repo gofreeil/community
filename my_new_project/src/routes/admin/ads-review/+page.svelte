@@ -16,6 +16,13 @@
     // רק במיון הזה אפשר להחליף מקום - אחרת החצים היו מזיזים ביחס לתצוגה אחרת.
     let sortOrder = $state<'display' | 'newest' | 'oldest'>('display');
     let canDelete = $derived(data.role === 'super_admin');
+    // הפיצ'ר של הסופר-אדמין: פרסום הפרסומת בכל אתרי הרשת בלחיצה אחת
+    let isSuperAdmin = $derived(data.role === 'super_admin');
+    /** מתי הפרסומת פורסמה לאחרונה בכל אתרי הרשת (חותמת שנשמרת על המקור) */
+    function syndicatedAt(ad: unknown): string {
+        const at = (ad as { landing?: { _syndicatedAt?: unknown } } | null)?.landing?._syndicatedAt;
+        return typeof at === 'string' ? at : '';
+    }
     // תקופות הפרסום שאפשר לקצוב מהטבלה (התקופה נספרת מיום הפרסום)
     const DURATION_OPTIONS = [7, 14, 30, 60, 90, 180, 365];
     // 12 המקומות הממוספרים בטור הפרסומות - בורר המקום בטבלת התזמון
@@ -399,6 +406,7 @@
                                     {#if ad.landing?.website}<div>🌐 {ad.landing.website}</div>{/if}
                                     {#if ad.landing?.address}<div>📍 {ad.landing.address}</div>{/if}
                                     {#if ad.rejectionReason}<div class="text-red-300">❌ סיבת דחייה: {ad.rejectionReason}</div>{/if}
+                                    {#if syndicatedAt(ad)}<div class="text-sky-300">🌐 פורסמה בכל אתרי הרשת: {fmtDate(syndicatedAt(ad))}</div>{/if}
                                 </div>
                             {/if}
                         </div>
@@ -468,6 +476,24 @@
                                    class="px-4 py-2 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-200 font-black text-sm hover:bg-amber-500/25">
                                     פתח דף נחיתה
                                 </a>
+                                {#if isSuperAdmin}
+                                    <!-- הפיצ'ר של הסופר-אדמין: עותק מאושר בכל אתרי הרשת בלחיצה
+                                         אחת; לחיצה חוזרת מרעננת את העותקים לפי הגרסה הנוכחית -->
+                                    {@const syncedAt = syndicatedAt(ad)}
+                                    <form method="POST" action="?/publishEverywhere" use:enhance>
+                                        <input type="hidden" name="id" value={ad.id} />
+                                        <button type="submit"
+                                                class="px-4 py-2 rounded-xl bg-sky-500/20 border border-sky-500/40 text-sky-200 font-black text-sm hover:bg-sky-500/30"
+                                                title={syncedAt
+                                                    ? `פורסמה בכל האתרים ב-${fmtDate(syncedAt)} - לחיצה מעדכנת את העותקים לפי הגרסה הנוכחית`
+                                                    : 'יצירת עותק מאושר בטור הפרסומות של כל אתרי הרשת: אינדקס העסקים, קבוצות רכישה והגמח הארצי'}
+                                                onclick={(e) => { if (!confirm(syncedAt
+                                                    ? `לעדכן את "${ad.title}" בכל האתרים לפי הגרסה הנוכחית?`
+                                                    : `לפרסם את "${ad.title}" בכל האתרים שלך (אינדקס העסקים, קבוצות רכישה, הגמח הארצי)?`)) e.preventDefault(); }}>
+                                            {syncedAt ? '🌐 עדכן בכל האתרים' : '🌐 פרסם בכל האתרים'}
+                                        </button>
+                                    </form>
+                                {/if}
                                 <button type="button" onclick={() => startEdit(ad)}
                                         class="px-4 py-2 rounded-xl bg-blue-500/20 border border-blue-500/40 text-blue-200 font-black text-sm hover:bg-blue-500/30">
                                     ✏️ ערוך

@@ -23,6 +23,7 @@ import {
     resumeAd,
 } from '$lib/server/adsStore';
 import { markAdMessagesHandled } from '$lib/server/adNotifications';
+import { publishAdEverywhere } from '$lib/server/adsSyndication';
 
 const fmtDay = (iso: string) =>
     new Date(iso).toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -288,6 +289,31 @@ export const actions: Actions = {
                 ? `"${r.title}" עברה למקום ${r.slot}, ו"${r.swappedTitle}" עברה למקום ${r.swappedSlot}`
                 : `"${r.title}" עברה למקום ${r.slot}`,
         };
+    },
+
+    // פרסום הפרסומת בכל אתרי הרשת (אינדקס, קבוצות רכישה, הגמח הארצי) -
+    // לחיצה חוזרת מעדכנת את העותקים הקיימים. סופר-אדמין בלבד.
+    publishEverywhere: async (event) => {
+        const session = await ensureSuperAdmin(event);
+        const formData = await event.request.formData();
+        const id = formData.get('id') as string;
+        if (!id) return fail(400, { error: 'חסר מזהה' });
+        let r;
+        try {
+            r = await publishAdEverywhere(id, session?.user?.id ?? 'super_admin');
+        } catch (e) {
+            console.warn('[admin/ads-review] publishEverywhere failed:', e instanceof Error ? e.message : e);
+            return fail(502, { error: 'הפרסום בכל האתרים נכשל - נסה שוב בעוד רגע' });
+        }
+        if (!r) return fail(404, { error: 'הפרסומת לא נמצאה או שאינה מאושרת' });
+        const ok = r.results.filter(x => x.ok);
+        const failed = r.results.filter(x => !x.ok);
+        if (ok.length === 0) {
+            return fail(502, { error: `הפרסום בכל האתרים נכשל: ${failed.map(f => f.label).join(', ')}` });
+        }
+        const okText = ok.map(x => `${x.label}${x.action === 'updated' ? ' (עודכן)' : ''}`).join(', ');
+        const failText = failed.length > 0 ? ` | נכשל: ${failed.map(f => f.label).join(', ')}` : '';
+        return { success: true, message: `🌐 "${r.title}" פורסמה ברשת: ${okText}${failText}` };
     },
 
     remove: async (event) => {
