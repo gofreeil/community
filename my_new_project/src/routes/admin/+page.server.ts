@@ -2,6 +2,7 @@ import { redirect, fail, error } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { requireSuperAdmin, requireAdmin } from '$lib/server/auth';
 import { getAllUsers, banUser, unbanUser, deleteUserAccounts, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByAnyId, getUserByEmail, createItem, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, getNeighborhoodById, approveNeighborhood, rejectNeighborhood, createNeighborhoodRequest, getDiscountCodes, saveDiscountCodes, getItemsByCategoryAndStatus, getUserTotpSecret, coordinatorCovers, closeFulfilledCoordinatorRequests, updateItem, getDbItemByIdFresh, getAllSuperAdmins, getMessagesByUserId, type DbItem } from '$lib/server/db';
+import { markCoordinatorMessagesHandled } from '$lib/server/coordinatorNotifications';
 import { finalizeLocationDecision } from '$lib/server/locationDecision';
 import { cityCenters } from '$lib/neighborhoodCoords';
 import { DEFAULT_DISCOUNT_CODES, type DiscountCode } from '$lib/discountCodes';
@@ -373,6 +374,12 @@ export const actions: Actions = {
                     session?.user?.id ?? 'admin',
                 );
                 closedRequests = closed.map((r) => r.neighborhoods.join(', ') || r.name || r.id);
+                // ההתראה על בקשה שהמינוי הידני מימש יורדת יחד עם סגירתה - אחרת
+                // היא נשארת בתיבה כבקשה שלא נקראה על מישהו שכבר מונה. best-effort.
+                if (closed.length > 0) {
+                    try { await markCoordinatorMessagesHandled(closed, 'approve'); }
+                    catch (e) { console.warn('[admin/setCoordinator] mark messages failed:', e instanceof Error ? e.message : e); }
+                }
             } catch (e) {
                 console.warn('[admin/setCoordinator] close fulfilled requests failed:', e instanceof Error ? e.message : e);
             }
@@ -424,7 +431,11 @@ export const actions: Actions = {
         if (!requestId) return fail(400, { error: 'חסר מזהה בקשה' });
 
         try {
-            await approveCoordinatorRequest(requestId, session?.user?.id ?? 'admin');
+            const req = await approveCoordinatorRequest(requestId, session?.user?.id ?? 'admin');
+            // ההתראה "🙋 בקשת רכז חדשה" בתיבות המנהלים יורדת יחד עם ההחלטה -
+            // אחרת היא נשארת כהודעה שלא נקראה על בקשה שכבר טופלה. best-effort.
+            try { await markCoordinatorMessagesHandled([req], 'approve'); }
+            catch (e) { console.warn('[admin/approveCoordRequest] mark messages failed:', e instanceof Error ? e.message : e); }
             return { success: true, message: 'הבקשה אושרה - המשתמש מונה לרכז' };
         } catch (e) {
             return fail(500, { error: `שגיאה באישור: ${e instanceof Error ? e.message : e}` });
@@ -441,7 +452,12 @@ export const actions: Actions = {
         if (!requestId) return fail(400, { error: 'חסר מזהה בקשה' });
 
         try {
-            await rejectCoordinatorRequest(requestId, session?.user?.id ?? 'admin', reason);
+            const req = await rejectCoordinatorRequest(requestId, session?.user?.id ?? 'admin', reason);
+            // גם דחייה מורידה את ההתראה מהתיבה - הבקשה הוכרעה. best-effort.
+            if (req) {
+                try { await markCoordinatorMessagesHandled([req], 'reject'); }
+                catch (e) { console.warn('[admin/rejectCoordRequest] mark messages failed:', e instanceof Error ? e.message : e); }
+            }
             return { success: true, message: 'הבקשה נדחתה' };
         } catch (e) {
             return fail(500, { error: `שגיאה בדחייה: ${e instanceof Error ? e.message : e}` });

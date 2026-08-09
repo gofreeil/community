@@ -1,6 +1,7 @@
 import { redirect, fail } from '@sveltejs/kit';
 import { getMessagesByUserId, getDbItemById, deleteItem, updateItem } from '$lib/server/db';
 import { reconcileAdMessages } from '$lib/server/adNotifications';
+import { reconcileCoordinatorMessages } from '$lib/server/coordinatorNotifications';
 import type { PageServerLoad, Actions } from './$types';
 
 export const load: PageServerLoad = async (event) => {
@@ -16,6 +17,9 @@ export const load: PageServerLoad = async (event) => {
         // בקשת פרסום שכבר הוכרעה מסומנת כטופלה גם כאן, ולא מוצגת כבקשה פתוחה
         try { messages = await reconcileAdMessages(messages); }
         catch (e) { console.warn('[messages] reconcileAdMessages failed:', e); }
+        // בקשת רכז שכבר הוכרעה מסומנת כטופלה גם כאן
+        try { messages = await reconcileCoordinatorMessages(messages); }
+        catch (e) { console.warn('[messages] reconcileCoordinatorMessages failed:', e); }
         return { messages };
     } catch (e) {
         console.warn('[messages] load failed:', e instanceof Error ? e.message : e);

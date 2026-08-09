@@ -8,6 +8,7 @@ import { cityCenters } from '$lib/neighborhoodCoords';
 import { categoryConfig } from '$lib/categoryFields';
 import { countPending, approveAd, rejectAd } from '$lib/server/adsStore';
 import { markAdMessagesHandled, reconcileAdMessages } from '$lib/server/adNotifications';
+import { reconcileCoordinatorMessages } from '$lib/server/coordinatorNotifications';
 
 // קטגוריות פרסום אמיתיות (גמ"ח, למסירה, חוגים וכו') - לא קריאות שכונה
 const PUBLICATION_CATEGORIES = new Set(Object.keys(categoryConfig));
@@ -86,6 +87,11 @@ export const load: PageServerLoad = async (event) => {
     // נדחתה או נמחקה לא תחזור להיראות כבקשה פתוחה בכל רענון. no-op כשאין כאלה.
     try { messages = await reconcileAdMessages(messages); }
     catch (e) { console.warn('[profile] reconcileAdMessages failed:', e); }
+
+    // אותו יישור להתראת "בקשת רכז חדשה": מי שכבר אושר/נדחה (או מונה ידנית)
+    // לא ממשיך להופיע כבקשה פתוחה שלא נקראה. no-op כשאין התראות כאלה.
+    try { messages = await reconcileCoordinatorMessages(messages); }
+    catch (e) { console.warn('[profile] reconcileCoordinatorMessages failed:', e); }
 
     // אם המשתמש לא נמצא לפי ID - נסה לפי אימייל (מיזוג OAuth+credentials)
     if (!user && session.user?.email) {

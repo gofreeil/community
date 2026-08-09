@@ -948,6 +948,22 @@ export async function getCoordinatorRequests(status: CoordinatorRequestStatus = 
     }
 }
 
+/**
+ * כל בקשות הרכזות בכל הסטטוסים - לבירור מצבה בפועל של התראת "בקשת רכז חדשה"
+ * בתיבת המנהל (ראו coordinatorNotifications.reconcileCoordinatorMessages).
+ */
+export async function getAllCoordinatorRequests(): Promise<DbCoordinatorRequest[]> {
+    try {
+        const data = await strapiGetAll<StrapiCoordinatorRequest>('/api/coordinator-requests', {
+            'sort': 'createdAt:desc',
+        });
+        return data.map(mapCoordinatorRequest);
+    } catch (e) {
+        if (e instanceof StrapiContentTypeError) return [];
+        throw e;
+    }
+}
+
 async function getCoordinatorRequestById(documentId: string): Promise<DbCoordinatorRequest | undefined> {
     const res = await strapiGet<{ data: StrapiCoordinatorRequest | null }>(`/api/coordinator-requests/${documentId}`, {});
     return res.data ? mapCoordinatorRequest(res.data) : undefined;
@@ -1029,8 +1045,10 @@ export async function closeFulfilledCoordinatorRequests(
  * אישור בקשת רכזות: ממנה את המשתמש לרכז של השכונות שביקש (במיזוג עם הקיימות)
  * ומסמן את הבקשה כ-approved כדי שתעלם מרשימת הממתינים.
  * מדיניות "רכז אחד לשכונה": המינוי מסיר אוטומטית כל רכז קיים מאותן שכונות.
+ * מחזיר את רשומת הבקשה, כדי שהקורא יוכל להוריד את התראת "בקשת רכז חדשה"
+ * מתיבות המנהלים (markCoordinatorMessagesHandled).
  */
-export async function approveCoordinatorRequest(documentId: string, decidedBy: string): Promise<void> {
+export async function approveCoordinatorRequest(documentId: string, decidedBy: string): Promise<DbCoordinatorRequest> {
     const req = await getCoordinatorRequestById(documentId);
     if (!req) throw new Error('בקשה לא נמצאה');
 
@@ -1132,13 +1150,20 @@ export async function approveCoordinatorRequest(documentId: string, decidedBy: s
     } catch (e) {
         console.warn('[approveCoordinatorRequest] notify failed:', e instanceof Error ? e.message : e);
     }
+
+    return req;
 }
 
-/** דחיית בקשת רכזות */
-export async function rejectCoordinatorRequest(documentId: string, decidedBy: string, reason = ''): Promise<void> {
+/**
+ * דחיית בקשת רכזות. מחזיר את רשומת הבקשה (best-effort) כדי שהקורא יוכל להוריד
+ * את התראת "בקשת רכז חדשה" מתיבות המנהלים - כמו במסלול האישור.
+ */
+export async function rejectCoordinatorRequest(documentId: string, decidedBy: string, reason = ''): Promise<DbCoordinatorRequest | undefined> {
+    const req = await getCoordinatorRequestById(documentId).catch(() => undefined);
     await strapiPut(`/api/coordinator-requests/${documentId}`, {
         data: { status: 'rejected', decided_at: new Date().toISOString(), decided_by: decidedBy, rejection_reason: reason },
     });
+    return req;
 }
 
 // ============================================================

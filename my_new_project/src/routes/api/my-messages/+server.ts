@@ -1,6 +1,7 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { getMessagesByUserId, getItemsByCategoryAndStatus } from '$lib/server/db';
 import { reconcileAdMessages } from '$lib/server/adNotifications';
+import { reconcileCoordinatorMessages } from '$lib/server/coordinatorNotifications';
 
 // מחזיר את ההודעות החיות (items category='message') של המשתמש המחובר.
 // משמש את הבאדג' ב-Header לספירת הודעות שלא טופלו - אותה מערכת כמו תיבת ההודעות בפרופיל
@@ -14,6 +15,10 @@ export const GET: RequestHandler = async ({ locals }) => {
         // אותו יישור בדיוק שנעשה בתיבה עצמה, כדי שהמספר והתיבה לא יסתרו זה את זה
         try { msgs = await reconcileAdMessages(msgs); }
         catch (e) { console.warn('[my-messages] reconcileAdMessages failed:', e); }
+        // ובאותה מידה בקשת רכז שכבר אושרה/נדחתה - שהבאדג' לא יראה מספר
+        // שהתיבה עצמה כבר לא מציגה
+        try { msgs = await reconcileCoordinatorMessages(msgs); }
+        catch (e) { console.warn('[my-messages] reconcileCoordinatorMessages failed:', e); }
 
         // התראות "כרטיס פנויים ממתין לאישור" נחשבות טופלו ברגע שאין כרטיסים ממתינים -
         // אז הן לא נספרות בבאדג' (עוברות להיסטוריה בדף הפרופיל עם וי ירוק).
