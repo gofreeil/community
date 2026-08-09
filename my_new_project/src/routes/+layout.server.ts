@@ -1,6 +1,6 @@
 import type { LayoutServerLoad } from './$types';
 import { getUserById, getNeighborhoods, maybeSendTierUpgradeMessage } from '$lib/server/db';
-import { listApprovedLive } from '$lib/server/adsStore';
+import { listApprovedLive, computeAdSlots } from '$lib/server/adsStore';
 
 export const load: LayoutServerLoad = async (event) => {
     let session = null;
@@ -34,6 +34,9 @@ export const load: LayoutServerLoad = async (event) => {
 
     // פרסומות מאושרות - נשתלות ב-RightAdBanner (הטור הימני) בלבד.
     // הטור השמאלי (AdsSidebar) הוא אתרי "יוצאים לחירות" ולא מקבל פרסומות.
+    // מספר המקום (1..12) קובע גם את סדר הפרסומות וגם אילו משבצות פנויות
+    // מוצגות סביבן - נקבע במסך הניהול ומחושב כאן פעם אחת לכל הרשימה.
+    const liveSlots = computeAdSlots(adsRes.status === 'fulfilled' ? adsRes.value : []);
     const approvedAds = adsRes.status === 'fulfilled'
         ? adsRes.value.map(a => ({
             id: a.id,
@@ -50,6 +53,8 @@ export const load: LayoutServerLoad = async (event) => {
             mobileImageFit: a.mobileImageFit,
             // העיצוב מהבילדר — בלעדיו הכרטיס נבנה מברירות המחדל של האתר
             adStyle: a.adStyle,
+            // מספר המקום בטור (1..12) - נקבע במסך הניהול
+            slot: liveSlots.get(a.id),
         }))
         : [];
 

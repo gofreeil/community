@@ -9,6 +9,7 @@ import { createItem } from './db.js';
 import { cached, invalidate } from './cache.js';
 import { parseAdImageFit, type AdImageFit } from '../adImageFit.js';
 import { parseAdStyle, type AdStyle } from '../adStyle.js';
+import { AD_SLOT_COUNT } from '../adSlots.js';
 
 // פרסומות מאושרות נטענות בכל ניווט (ב-+layout.server) — cache קצר חוסך round-trip
 const TTL_ADS = 120_000;
@@ -53,7 +54,12 @@ export interface SubmittedAd {
     paymentAmount?: number;
     remindersSent?: ReminderStage[];
 
-    /** מיקום התצוגה באתר (0 = ראשונה). undefined = לא נקבע מיקום ידני */
+    /**
+     * מספר המקום בטור הפרסומות, 0-based (0 = מקום 1). המספר קבוע לפרסומת:
+     * הוא לא זז כשמאשרים פרסומות אחרות, ונשמר לה גם דרך השהיה ופקיעה.
+     * undefined = פרסומת ותיקה שטרם הוקצה לה מספר (מקבלת אחד בפעולת
+     * הניהול/האישור הבאה, לפי מקומה הנוכחי על האתר).
+     */
     order?: number;
     /** מושהית: יורדת מהאתר אבל שומרת את הימים שנותרו לה */
     paused?: boolean;
@@ -644,6 +650,30 @@ export async function approveAd(
         ?? (inheritedExpiry ? (replacing?.durationDays ?? DEFAULT_DURATION_DAYS) : DEFAULT_DURATION_DAYS);
     const expires = inheritedExpiry ?? new Date(now.getTime() + days * DAY_MS).toISOString();
 
+    // ----- מספר המקום בטור (1..12) -----
+    // ברירת המחדל: פרסומת חדשה תופסת את המספר הפנוי הנמוך ביותר ואף אחת
+    // לא זזה ממקומה. גרסה מחליפה יורשת את המספר של הישנה; פרסומת שהורדה
+    // ואושרה מחדש חוזרת למקומה הקודם אם הוא עדיין פנוי.
+    let slot: number | undefined;
+    try {
+        const approvedNow = (await listByStatus('approved')).filter(a => a.id !== id);
+        const slots = await ensureSlotsPersisted(approvedNow);
+        const taken = new Set(slots.values());
+        const inherited = replacing ? slots.get(replacing.id) : undefined;
+        if (inherited !== undefined) {
+            slot = inherited;
+        } else if (typeof current.order === 'number' && current.order >= 0 && !taken.has(current.order)) {
+            slot = current.order;
+        } else {
+            slot = 0;
+            while (taken.has(slot)) slot++;
+        }
+    } catch (e) {
+        // כשל בהקצאה לא מפיל אישור - הפרסומת תקבל מספר בפעולת הניהול הבאה
+        console.warn('[adsStore] slot assignment failed:', e instanceof Error ? e.message : e);
+        slot = typeof current.order === 'number' && current.order >= 0 ? current.order : undefined;
+    }
+
     const data: Record<string, unknown> = {
         ad_status:        'approved',
         decided_at:       now.toISOString(),
@@ -653,9 +683,8 @@ export async function approveAd(
         expires_at:       expires,
         reminders_sent:   [],
     };
-    // מקום התצוגה בטור עובר לגרסה החדשה, אחרת היא הייתה קופצת לסוף הרשימה
-    if (replacing && typeof replacing.order === 'number' && replacing.order !== current.order) {
-        data.landing = { ...(current.landing as unknown as Record<string, unknown>), _order: replacing.order };
+    if (slot !== undefined) {
+        data.landing = { ...(current.landing as unknown as Record<string, unknown>), _order: slot };
     }
     if (replacing?.companyName && !current.companyName)     data.company_name   = replacing.companyName;
     if (replacing?.paymentAmount && !current.paymentAmount) data.payment_amount = replacing.paymentAmount;
@@ -749,12 +778,12 @@ export async function removeAd(id: string): Promise<boolean> {
     }
 }
 
-// ----- מיקום התצוגה באתר -----
+// ----- מקומות ממוספרים בטור הפרסומות (1..12) -----
 
 export type MoveDirection = 'up' | 'down';
 
 /**
- * כותב מיקום תצוגה לפרסומת. הסדר נשמר ב-landing._order, אותה עמודת json
+ * כותב מספר מקום לפרסומת. המספר נשמר ב-landing._order, אותה עמודת json
  * שכבר נושאת מפתחות פנימיים (_site, mainImageFit) - כדי לא לשנות סכמה
  * ב-Strapi. שולחים את כל אובייקט ה-landing כי Strapi מחליף עמודת json
  * במלואה, ומפתח חסר היה נמחק.
@@ -766,7 +795,54 @@ async function writeOrder(ad: SubmittedAd, order: number): Promise<void> {
 }
 
 /**
- * מזיז פרסומת מאושרת מקום אחד למעלה/למטה בסדר התצוגה באתר.
+ * המספר האפקטיבי של כל פרסומת ברשימה (0-based). מי שכבר נקבע לה מספר -
+ * שומרת עליו (בהתנגשות, הראשונה בסדר התצוגה גוברת); מי שאין לה מקבלת את
+ * המספר הפנוי הנמוך ביותר, לפי סדר התצוגה הנוכחי. כך פרסומות ותיקות בלי
+ * מספר מקבלות בדיוק את מקומן של היום - ההקצאה הראשונה לא מזיזה כלום.
+ */
+function computeSlots(list: SubmittedAd[]): Map<string, number> {
+    const bySlot = new Map<string, number>();
+    const taken = new Set<number>();
+    const display = [...list].sort(byDisplayOrder);
+    for (const ad of display) {
+        if (typeof ad.order === 'number' && ad.order >= 0 && !taken.has(ad.order)) {
+            bySlot.set(ad.id, ad.order);
+            taken.add(ad.order);
+        }
+    }
+    let next = 0;
+    for (const ad of display) {
+        if (bySlot.has(ad.id)) continue;
+        while (taken.has(next)) next++;
+        bySlot.set(ad.id, next);
+        taken.add(next);
+    }
+    return bySlot;
+}
+
+/** מספרי המקומות לתצוגה (1-based) - לדפי שרת שמציגים "מקום N מתוך 12" */
+export function computeAdSlots(list: SubmittedAd[]): Map<string, number> {
+    return new Map([...computeSlots(list)].map(([id, s]) => [id, s + 1]));
+}
+
+/**
+ * מקבע ב-Strapi מספר מקום לכל פרסומת ברשימה שעדיין אין לה (או שהמספר
+ * השמור מתנגש). כותב רק את מי שהשתנה - בהקצאה הראשונה זו כל הרשימה,
+ * ומכאן והלאה כלום. רץ בפעולות ניהול בלבד, לא בנתיבי קריאה.
+ */
+async function ensureSlotsPersisted(list: SubmittedAd[]): Promise<Map<string, number>> {
+    const slots = computeSlots(list);
+    const dirty = list.filter(ad => ad.order !== slots.get(ad.id));
+    if (dirty.length > 0) {
+        await Promise.all(dirty.map(ad => writeOrder(ad, slots.get(ad.id)!)));
+        invalidate('ads:');
+    }
+    return slots;
+}
+
+/**
+ * מזיז פרסומת מאושרת מקום אחד למעלה/למטה: מחליפה מספרים עם השכנה
+ * בסדר התצוגה. שאר הפרסומות לא זזות.
  * מחזיר null אם הפרסומת לא נמצאה או שהיא כבר בקצה הרשימה.
  */
 export async function moveApprovedAd(
@@ -774,24 +850,53 @@ export async function moveApprovedAd(
     direction: MoveDirection,
 ): Promise<{ title: string; position: number; total: number } | null> {
     const list = await listApproved();
-    const from = list.findIndex(a => a.id === id);
+    const slots = await ensureSlotsPersisted(list);
+    const sorted = [...list].sort((a, b) => (slots.get(a.id) ?? 0) - (slots.get(b.id) ?? 0));
+    const from = sorted.findIndex(a => a.id === id);
     if (from === -1) return null;
     const to = direction === 'up' ? from - 1 : from + 1;
-    if (to < 0 || to >= list.length) return null;
+    if (to < 0 || to >= sorted.length) return null;
 
-    const reordered = [...list];
-    [reordered[from], reordered[to]] = [reordered[to], reordered[from]];
-
-    // כותבים רק את מי שהמיקום שלו באמת השתנה: בפעם הראשונה זו כל הרשימה
-    // (לאף פרסומת אין עדיין _order), ומכאן והלאה שתי הפרסומות שהוחלפו בלבד.
-    await Promise.all(
-        reordered
-            .map((ad, i) => ({ ad, i }))
-            .filter(({ ad, i }) => ad.order !== i)
-            .map(({ ad, i }) => writeOrder(ad, i)),
-    );
+    const moved = sorted[from];
+    const other = sorted[to];
+    const movedSlot = slots.get(moved.id)!;
+    const otherSlot = slots.get(other.id)!;
+    await Promise.all([writeOrder(moved, otherSlot), writeOrder(other, movedSlot)]);
     invalidate('ads:');
-    return { title: reordered[to].title, position: to + 1, total: reordered.length };
+    return { title: moved.title, position: otherSlot + 1, total: AD_SLOT_COUNT };
+}
+
+/**
+ * מציב פרסומת מאושרת במקום מספרי מסוים בטור (1..12). מקום תפוס - השתיים
+ * מתחלפות זו בזו; שאר הפרסומות לא זזות. המספר נשאר קבוע לפרסומת גם דרך
+ * השהיה ופקיעה - כשהיא חוזרת לאוויר היא חוזרת לאותו מקום.
+ */
+export async function setAdSlot(
+    id: string,
+    requested: number,
+): Promise<{ title: string; slot: number; swappedTitle?: string; swappedSlot?: number } | null> {
+    const n = Math.round(Number(requested));
+    if (!Number.isFinite(n)) return null;
+    const target = Math.min(AD_SLOT_COUNT, Math.max(1, n)) - 1;
+
+    const list = await listApproved();
+    const ad = list.find(a => a.id === id);
+    if (!ad) return null;
+    const slots = await ensureSlotsPersisted(list);
+    const cur = slots.get(id) ?? 0;
+    if (cur === target) return { title: ad.title, slot: target + 1 };
+
+    const occupant = list.find(a => a.id !== id && slots.get(a.id) === target) ?? null;
+    await Promise.all([
+        writeOrder(ad, target),
+        ...(occupant ? [writeOrder(occupant, cur)] : []),
+    ]);
+    invalidate('ads:');
+    return {
+        title: ad.title,
+        slot: target + 1,
+        ...(occupant ? { swappedTitle: occupant.title, swappedSlot: cur + 1 } : {}),
+    };
 }
 
 // ----- ניהול תקופת הפרסום: קציבה, השהיה, המשך -----
@@ -948,6 +1053,8 @@ export interface AdSchedule {
     daysLeft: number;
     state: 'expired' | 'ending' | 'active' | 'paused';   // ending = ≤7 ימים
     paymentAmount: number;
+    /** מספר המקום בטור הפרסומות (1..12) - מוזן ב-listSchedules */
+    slot?: number;
 }
 
 export function computeSchedule(ad: SubmittedAd): AdSchedule | null {
@@ -979,7 +1086,16 @@ export function computeSchedule(ad: SubmittedAd): AdSchedule | null {
 
 export async function listSchedules(): Promise<AdSchedule[]> {
     const approved = await listByStatus('approved');
-    return approved.map(computeSchedule).filter((s): s is AdSchedule => s !== null);
+    // המספר האפקטיבי מחושב בזיכרון בלבד - נתיב קריאה לא כותב ל-Strapi
+    const slots = computeSlots(approved);
+    return approved
+        .map(ad => {
+            const s = computeSchedule(ad);
+            if (s) s.slot = (slots.get(ad.id) ?? 0) + 1;
+            return s;
+        })
+        .filter((s): s is AdSchedule => s !== null)
+        .sort((a, b) => (a.slot ?? 0) - (b.slot ?? 0));
 }
 
 // ----- תזכורות אוטומטיות לאזור האישי של המפרסמים -----

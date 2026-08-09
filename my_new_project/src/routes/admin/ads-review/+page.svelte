@@ -5,6 +5,7 @@
     import { onMount, onDestroy } from 'svelte';
     import { heMatches } from '$lib/search';
     import { adImgFit, parseAdImageFit } from '$lib/adImageFit';
+    import { AD_SLOT_COUNT } from '$lib/adSlots';
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
 
@@ -17,7 +18,15 @@
     let canDelete = $derived(data.role === 'super_admin');
     // תקופות הפרסום שאפשר לקצוב מהטבלה (התקופה נספרת מיום הפרסום)
     const DURATION_OPTIONS = [7, 14, 30, 60, 90, 180, 365];
+    // 12 המקומות הממוספרים בטור הפרסומות - בורר המקום בטבלת התזמון
+    const SLOT_NUMBERS = Array.from({ length: AD_SLOT_COUNT }, (_, i) => i + 1);
     let canReorder = $derived(sortOrder === 'display' && !searchQuery.trim());
+
+    /** מספר המקום של פרסומת מאושרת; לממתינות/נדחות אין מקום */
+    function slotOf(ad: unknown, fallback: number): number {
+        const s = (ad as { slot?: unknown } | null)?.slot;
+        return typeof s === 'number' ? s : fallback;
+    }
 
     // בחירה רב-פריטית
     let selected = $state<Set<string>>(new Set());
@@ -257,10 +266,10 @@
                         <!-- מיקום הפרסומת בטור הפרסומות באתר + החלפת מקום -->
                         <div class="flex items-center gap-2 mb-3 pb-3 border-b border-white/10 flex-wrap">
                             <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-200 font-black text-sm">
-                                {adIndex + 1}
+                                {slotOf(ad, adIndex + 1)}
                             </span>
                             <span class="text-[11px] md:text-xs text-gray-400 font-bold">
-                                מקום {adIndex + 1} מתוך {visibleList.length} בטור הפרסומות
+                                מקום {slotOf(ad, adIndex + 1)} מתוך {AD_SLOT_COUNT} בטור הפרסומות
                             </span>
                             {#if canReorder}
                                 <div class="flex items-center gap-1.5 mr-auto">
@@ -517,6 +526,7 @@
                 <table class="w-full text-sm" dir="rtl">
                     <thead class="bg-white/5">
                         <tr class="text-[11px] md:text-xs text-gray-400 uppercase tracking-wide">
+                            <th class="text-right font-bold px-3 py-2.5">מקום</th>
                             <th class="text-right font-bold px-3 py-2.5">פרסומת</th>
                             <th class="text-right font-bold px-3 py-2.5 hidden md:table-cell">מפרסם</th>
                             <th class="text-right font-bold px-3 py-2.5">פורסם</th>
@@ -546,7 +556,33 @@
                             {@const durOptions = DURATION_OPTIONS.includes(s.durationDays)
                                 ? DURATION_OPTIONS
                                 : [...DURATION_OPTIONS, s.durationDays].sort((a, b) => a - b)}
+                            <!-- מקום מעל 12 (גלישה) מתווסף לבורר כדי שלא ייעלם -->
+                            {@const slotOptions = s.slot && !SLOT_NUMBERS.includes(s.slot)
+                                ? [...SLOT_NUMBERS, s.slot].sort((a, b) => a - b)
+                                : SLOT_NUMBERS}
                             <tr class="border-t border-white/10 hover:bg-white/5">
+                                <!-- מספר המקום בטור + העברה ישירה למקום אחר (מקום תפוס - מתחלפות) -->
+                                <td class="px-3 py-2">
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <span class="inline-flex items-center justify-center min-w-7 h-7 px-1.5 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-200 font-black text-sm">
+                                            {s.slot ?? '-'}
+                                        </span>
+                                        <form method="POST" action="?/setSlot" use:enhance class="flex items-center gap-1">
+                                            <input type="hidden" name="id" value={s.id} />
+                                            <select name="slot"
+                                                    class="px-2 py-1 rounded-lg bg-black/40 border border-white/15 text-white text-[11px] focus:outline-none focus:border-amber-400/50">
+                                                {#each slotOptions as n (n)}
+                                                    <option value={n} selected={n === s.slot} style="background:#fff;color:#111">{n}</option>
+                                                {/each}
+                                            </select>
+                                            <button type="submit"
+                                                    class="px-2.5 py-1 rounded-lg bg-purple-500/20 border border-purple-500/40 text-purple-200 text-[11px] font-black hover:bg-purple-500/30 whitespace-nowrap"
+                                                    title="העבר למקום שנבחר; אם המקום תפוס - שתי הפרסומות מתחלפות">
+                                                ⇄ העבר
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
                                 <td class="px-3 py-2 font-bold text-white truncate max-w-[180px]">{s.title}</td>
                                 <td class="px-3 py-2 text-gray-300 hidden md:table-cell">
                                     <div class="truncate max-w-[160px]">{s.advertiserName || '-'}</div>

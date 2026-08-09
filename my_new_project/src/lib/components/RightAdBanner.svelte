@@ -6,6 +6,7 @@
         parseAdStyle, legacyAdStyle, adStyleVars, logoAnchorClass, logoFreeStyle, logoCornerSide,
         type AdStyle,
     } from "$lib/adStyle";
+    import { AD_SLOT_COUNT } from "$lib/adSlots";
 
     // פרסומות של מפרסמים שאושרו - הטור הימני הוא המקום היחיד שלהן באתר.
     type ApprovedAd = {
@@ -22,6 +23,8 @@
         mainImageFit?: AdImageFit;
         /** העיצוב מהבילדר; חסר/null במודעות שנשלחו לפני שהוא נשמר */
         adStyle?: AdStyle | null;
+        /** מספר המקום בטור (1..12) - נקבע במסך הניהול; חסר במודעות ותיקות */
+        slot?: number;
     };
 
     let { approvedAds = [] }: { approvedAds?: ApprovedAd[] } = $props();
@@ -185,12 +188,37 @@
     const FADE_MS = 900;     // אורך הדעיכה בין קבוצה לקבוצה — חייב להתאים ל-CSS
     const PER_GROUP = 4;     // כמה משבצות פנויות נראות בו-זמנית
 
-    // פרסומת מאושרת *תופסת* משבצת מתוך ה-12 - היא לא מתווספת מעליהן.
-    // בלי זה אישור פרסומת אחת הפך את הטור ל-13 כרטיסים: הפרסומת מעל,
-    // ומתחתיה משבצת שעדיין מספרה 1 - כאילו נוספה מודעה שלא אושרה.
-    let freeSlots = $derived(ads.slice(paidAds.length));
-    // מספר המשבצת הראשונה הפנויה: המאושרות תפסו את 1..N
-    let firstFreeNumber = $derived(paidAds.length + 1);
+    // פרסומת מאושרת *תופסת* מספר מתוך ה-12 - היא לא מתווספת מעליהן.
+    // המספר מגיע מהשרת (נקבע במסך הניהול); מודעה ותיקה בלי מספר ממלאת
+    // את המספר הפנוי הנמוך ביותר. המשבצות הפנויות מציגות בדיוק את
+    // המספרים שנותרו - גם כשהמנהל השאיר "חורים" (למשל פרסומת במקום 5
+    // כשמקומות 2-4 פנויים).
+    let slotted = $derived.by(() => {
+        const taken = new Set<number>();
+        for (const a of paidAds) {
+            if (typeof a.slot === "number" && a.slot >= 1) taken.add(a.slot);
+        }
+        let nextFree = 1;
+        const numbered = paidAds.map(a => {
+            let num = typeof a.slot === "number" && a.slot >= 1 ? a.slot : 0;
+            if (num === 0) {
+                while (taken.has(nextFree)) nextFree++;
+                num = nextFree;
+                taken.add(num);
+            }
+            return { ad: a, num };
+        });
+        numbered.sort((x, y) => x.num - y.num);
+        // תבניות הצבע קבועות למספר: משבצת 7 שומרת על הצבעים שלה גם
+        // כשמקומות לפניה נתפסים
+        const free: Array<{ num: number; tpl: (typeof ads)[number] }> = [];
+        for (let n = 1; n <= AD_SLOT_COUNT; n++) {
+            if (!taken.has(n)) free.push({ num: n, tpl: ads[(n - 1) % ads.length] });
+        }
+        return { numbered, free };
+    });
+    let orderedPaidAds = $derived(slotted.numbered.map(x => x.ad));
+    let freeSlots = $derived(slotted.free);
     let groupCount = $derived(Math.max(1, Math.ceil(freeSlots.length / PER_GROUP)));
 
     let fading = $state(false);
@@ -242,7 +270,7 @@
          הקישור תמיד לדף הנחיתה הפנימי /ads/<id> ובאותה לשונית. -->
     {#if paidAds.length > 0}
         <div class="space-y-3 mb-3">
-            {#each paidAds as ad (ad.id)}
+            {#each orderedPaidAds as ad (ad.id)}
                 {@const st = styleOf(ad)}
                 {@const cornerSide = logoCornerSide(st, Boolean(ad.logo))}
                 <a
@@ -326,17 +354,18 @@
     {/if}
 
     <div class="space-y-3 ads-track" class:fading>
-        {#each displayedAds as ad, index}
+        {#each displayedAds as spot (spot.num)}
+            {@const ad = spot.tpl}
             <a
                 href="/about/advertise"
                 aria-label="מקום פרסום פנוי — לחצו לפרטים על פרסום באתר"
                 class="h-[490px] flex flex-col items-center justify-center rounded-2xl border-2 border-dashed {ad.borderColor} {ad.bgColor} p-3 text-center transition-all {ad.hoverBorder} {ad.hoverBg} group duration-700 relative overflow-hidden"
             >
-                <!-- Ad Numbering -->
+                <!-- מספר המקום הפנוי - בדיוק המספרים שלא נתפסו ע"י פרסומות -->
                 <div
                     class="absolute top-3 right-3 text-sm font-black text-white/60 bg-white/10 px-3 py-1 rounded-full border border-white/5 backdrop-blur-sm shadow-sm"
                 >
-                    {firstFreeNumber + safeGroup * PER_GROUP + index}
+                    {spot.num}
                 </div>
 
                 <div

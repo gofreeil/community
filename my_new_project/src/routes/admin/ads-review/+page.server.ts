@@ -15,6 +15,8 @@ import {
     listAdvertisers,
     processExpiryReminders,
     moveApprovedAd,
+    setAdSlot,
+    computeAdSlots,
     setAdDuration,
     normalizeDurationDays,
     pauseAd,
@@ -71,7 +73,10 @@ export const load: PageServerLoad = async (event) => {
 
     const emptyStats = { pending: 0, rejected: 0, approved: 0, approvedThisWeek: 0, submittedThisWeek: 0, total: 0 };
     const pending     = pendingRes.status     === 'fulfilled' ? pendingRes.value     : [];
-    const approved    = approvedRes.status    === 'fulfilled' ? approvedRes.value    : [];
+    const approvedRaw = approvedRes.status    === 'fulfilled' ? approvedRes.value    : [];
+    // מספר המקום של כל מאושרת בטור (1..12) - לכותרת הכרטיס בטאב "פורסמו"
+    const slotMap  = computeAdSlots(approvedRaw);
+    const approved = approvedRaw.map(a => ({ ...a, slot: slotMap.get(a.id) }));
     const stats       = statsRes.status       === 'fulfilled' ? statsRes.value       : emptyStats;
     const schedules   = schedulesRes.status   === 'fulfilled' ? schedulesRes.value   : [];
     const advertisers = advertisersRes.status === 'fulfilled' ? advertisersRes.value : [];
@@ -261,6 +266,28 @@ export const actions: Actions = {
         }
         if (!r) return fail(400, { error: 'הפרסומת כבר בקצה הרשימה' });
         return { success: true, message: `${r.title} - מקום ${r.position} מתוך ${r.total}` };
+    },
+
+    // הצבת פרסומת במקום מספרי בטור (1..12); מקום תפוס - השתיים מתחלפות
+    setSlot: async (event) => {
+        await ensureAdsAdmin(event);
+        const formData = await event.request.formData();
+        const id = formData.get('id') as string;
+        if (!id) return fail(400, { error: 'חסר מזהה' });
+        let r;
+        try {
+            r = await setAdSlot(id, Number(formData.get('slot')));
+        } catch (e) {
+            console.warn('[admin/ads-review] setSlot failed:', e instanceof Error ? e.message : e);
+            return fail(502, { error: 'העברת המקום נכשלה - נסה שוב בעוד רגע' });
+        }
+        if (!r) return fail(404, { error: 'הפרסומת לא נמצאה' });
+        return {
+            success: true,
+            message: r.swappedTitle
+                ? `"${r.title}" עברה למקום ${r.slot}, ו"${r.swappedTitle}" עברה למקום ${r.swappedSlot}`
+                : `"${r.title}" עברה למקום ${r.slot}`,
+        };
     },
 
     remove: async (event) => {
