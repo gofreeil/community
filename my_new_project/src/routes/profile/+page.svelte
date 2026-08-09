@@ -389,6 +389,11 @@
 	let adDraft = $state<AdDraft | null>(null);
 	// הטיוטה כבר נשלחה לאישור ולא נערכה מאז - אין מה לבקש מהמפרסם "לסיים"
 	let adDraftSubmitted = $state(false);
+	// מצב הפרסומת בפועל בשרת. "טיוטה" זו רק המצב שלפני השליחה הראשונה -
+	// מי שכבר מפרסם צריך לראות שהוא מפרסם, ושמכאן זו עריכה של פרסומת חיה.
+	let myAd = $derived((data as any).myAd as { status: string; title: string; id: string } | null);
+	let adIsLive     = $derived(myAd?.status === 'approved');
+	let adIsPending  = $derived(myAd?.status === 'pending' || (!myAd && adDraftSubmitted));
 	let adDraftProgress = $derived.by(() => {
 		if (!adDraft) return 0;
 		const fields = [adDraft.mainImage, adDraft.title, adDraft.subtitle, adDraft.logo, adDraft.phone, adDraft.address];
@@ -3714,12 +3719,18 @@
 									<div class="w-14 h-14 md:w-16 md:h-16 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center flex-shrink-0 text-2xl">🎨</div>
 								{/if}
 								<div class="flex-1 min-w-0">
+									<!-- שלושה מצבים אמיתיים: מפורסמת באתר / ממתינה לאישור / טיוטה.
+									     "טיוטה" נכון רק לפני השליחה הראשונה. -->
 									<div class="flex items-center gap-2 mb-1 flex-wrap">
-										<span class="text-purple-300 font-black text-sm md:text-base">{tFn("profile.ad_editing")}</span>
-										{#if adDraftSubmitted}
+										{#if adIsLive}
+											<span class="text-green-300 font-black text-sm md:text-base">{tFn("profile.ad_live")}</span>
+											<span class="text-[10px] px-2 py-0.5 rounded-full bg-green-500/20 text-green-300 border border-green-500/40 font-bold">{tFn("profile.ad_live_badge")}</span>
+										{:else if adIsPending}
+											<span class="text-purple-300 font-black text-sm md:text-base">{tFn("profile.ad_editing")}</span>
 											<!-- כבר אצל המנהל: אחוז ההשלמה כאן מטעה, כי הוא סופר גם שדות רשות -->
 											<span class="text-[10px] px-2 py-0.5 rounded-full bg-green-500/20 text-green-300 border border-green-500/40 font-bold">{tFn("profile.ad_draft_sent")}</span>
 										{:else}
+											<span class="text-purple-300 font-black text-sm md:text-base">{tFn("profile.ad_editing")}</span>
 											<span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 font-bold">{tFn("profile.pct_completed", { n: adDraftProgress })}</span>
 										{/if}
 									</div>
@@ -3729,11 +3740,13 @@
 									<div class="flex items-center gap-2 flex-wrap">
 										<a href="/about/advertise/builder"
 										   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-black text-xs transition-colors">
-											{tFn("profile.continue_edit")}
+											{adIsLive ? tFn("profile.ad_edit_live") : tFn("profile.continue_edit")}
 										</a>
+										<!-- הכפתור מוחק את העותק המקומי בלבד. כשהפרסומת כבר על האתר
+										     "מחק טיוטה" נשמע כאילו הוא מוריד אותה משם - ולכן ניסוח אחר. -->
 										<button type="button" onclick={dismissAdDraft}
 										   class="text-[11px] text-gray-400 hover:text-red-400 underline underline-offset-2 font-bold">
-											{tFn("profile.delete_draft")}
+											{adIsLive ? tFn("profile.ad_clear_local") : tFn("profile.delete_draft")}
 										</button>
 									</div>
 								</div>

@@ -405,6 +405,32 @@ export async function listApprovedLive(): Promise<SubmittedAd[]> {
     return (await listApproved()).filter(a => isLiveNow(a, now));
 }
 
+/**
+ * מצב הפרסומת האחרונה של משתמש - לכרטיס "הנכסים שלי" באזור האישי.
+ * בלי זה האזור האישי הכיר רק את הטיוטה שב-localStorage, ולכן קרא
+ * "פרסומת בעריכה · מחק טיוטה" גם למי שהפרסומת שלו כבר מזמן על האתר.
+ * מאושרת קודמת לממתינה קודמת לנדחתה - זה מה שמעניין את המפרסם לראות.
+ */
+export async function getMyLatestAdStatus(
+    identity: { id?: string; email?: string },
+): Promise<{ status: AdStatus; title: string; id: string } | null> {
+    if (!identity.id && !identity.email) return null;
+    try {
+        const all = await Promise.all([
+            listByStatus('approved'), listByStatus('pending'), listByStatus('rejected'),
+        ]);
+        const mine = all.flat().filter(a => !a.supersededBy && sameAdvertiser(a, {
+            submittedBy: { id: identity.id, email: identity.email },
+        }));
+        const pick = (s: AdStatus) => mine.filter(a => a.status === s).sort(byNewest)[0];
+        const ad = pick('approved') ?? pick('pending') ?? pick('rejected');
+        return ad ? { status: ad.status, title: ad.title, id: ad.id } : null;
+    } catch (e) {
+        console.warn('[adsStore] getMyLatestAdStatus failed:', e instanceof Error ? e.message : e);
+        return null;
+    }
+}
+
 export async function getAd(id: string): Promise<SubmittedAd | null> {
     const s = await findByDocumentId(id);
     return s ? fromStrapi(s) : null;

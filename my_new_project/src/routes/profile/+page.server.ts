@@ -6,7 +6,7 @@ import { getCachedUserById, invalidateCachedUser } from '$lib/server/userCache';
 import { citiesData } from '$lib/neighborhoodsData';
 import { cityCenters } from '$lib/neighborhoodCoords';
 import { categoryConfig } from '$lib/categoryFields';
-import { countPending, approveAd, rejectAd } from '$lib/server/adsStore';
+import { countPending, approveAd, rejectAd, getMyLatestAdStatus } from '$lib/server/adsStore';
 import { markAdMessagesHandled, reconcileAdMessages } from '$lib/server/adNotifications';
 import { reconcileCoordinatorMessages } from '$lib/server/coordinatorNotifications';
 
@@ -153,6 +153,12 @@ export const load: PageServerLoad = async (event) => {
     // קריאות קהילתיות - יוצגו בהודעות
     const communityRequests = (items ?? []).filter(i => COMMUNITY_CALL_CATEGORIES.has(i.category));
 
+    // הפרסומת של המשתמש עצמו (אם יש) - כשל כאן משאיר את הכרטיס במצב טיוטה
+    const myAd = await getMyLatestAdStatus({
+        id: session.user?.id as string | undefined,
+        email: resolvedUser?.email ?? session.user?.email ?? undefined,
+    }).catch(() => null);
+
     // ספירת פרסומות ממתינות לאישור - לבאדג' של סופר־אדמין בכותרת לוח הבקרה
     let pendingAdsCount = 0;
     let registeredUsersCount = 0;
@@ -232,6 +238,9 @@ export const load: PageServerLoad = async (event) => {
         citiesData,
         oauth_image: session.user?.image ?? null,
         pendingAdsCount,
+        // מצב הפרסומת של המשתמש עצמו - כדי שהכרטיס באזור האישי לא יקרא
+        // "טיוטה" למי שכבר מפרסם בפועל
+        myAd,
         registeredUsersCount,
         pendingSinglesCount,
         strapiAvailable,

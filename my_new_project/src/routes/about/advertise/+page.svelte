@@ -54,8 +54,11 @@
 
     // ---- City selection (price × number of active neighborhoods in city) ----
     const defaultCity = citiesData.find(c => c.neighborhoods.includes(DEFAULT_NEIGHBORHOOD))?.city ?? citiesData[0].city;
-    let selectedCities = $state<Set<string>>(new Set([defaultCity]));
-    let isNational = $state(false);
+    // ברירת המחדל היא "כל הארץ": מפרסם שנוחת כאן רואה קודם את ההיצע המלא,
+    // ומצמצם לעיר אחת רק אם הוא באמת רוצה. עיר יחידה כברירת מחדל הציגה
+    // מחיר נמוך יותר ממה שהוא בפועל קונה ברוב המקרים.
+    let selectedCities = $state<Set<string>>(new Set());
+    let isNational = $state(true);
     let showPicker = $state(false);
     let citySearchQuery = $state('');
     let showAllCities = $state(false);
@@ -166,17 +169,9 @@
     onMount(() => {
         if (!browser) return;
 
-        // Read last neighborhood chosen on the home page - map to its city
-        const saved = localStorage.getItem(LS_KEY);
-        if (saved) {
-            try {
-                const { neighborhood } = JSON.parse(saved);
-                if (neighborhood) {
-                    const found = citiesData.find(c => c.neighborhoods.includes(neighborhood));
-                    if (found) selectedCities = new Set([found.city]);
-                }
-            } catch {}
-        }
+        // ברירת המחדל היא "כל הארץ" ונשארת כזו. קודם השכונה שנבחרה בדף הבית
+        // צמצמה את הבחירה בשקט לעיר אחת, כך שהמפרסם ראה מחיר של עיר בודדת
+        // בלי שביקש זאת. מי שרוצה עיר אחת בוחר אותה בעצמו בבורר שלמטה.
 
         // Auto-select pricing row from /add/[category] redirect
         try {
