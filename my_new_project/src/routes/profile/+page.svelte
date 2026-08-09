@@ -17,6 +17,7 @@
 	import { neighborhoodState } from "$lib/neighborhoodState.svelte";
 	import { imageDrop } from "$lib/imageDrop";
 	import { registerDynamicNeighborhoods, hasPreciseCoords, MY_PIN_LS_KEY } from "$lib/neighborhoodCoords";
+	import { AD_DRAFT_KEY, isAdSubmitted, clearAdSubmitted } from "$lib/adDraft";
 	import { findWhatsAppGroups } from "$lib/data/whatsapp-groups";
 	import { getLikedItems, removeLike, type LikedItem } from "$lib/likedItems";
 	import { restoreDaysLeft } from "$lib/placeStatus";
@@ -386,6 +387,8 @@
 	// === Ad-builder draft (resume from /about/advertise/builder) ===
 	type AdDraft = { title?: string; subtitle?: string; mainImage?: string; logo?: string; phone?: string; products?: unknown[]; address?: string };
 	let adDraft = $state<AdDraft | null>(null);
+	// הטיוטה כבר נשלחה לאישור ולא נערכה מאז - אין מה לבקש מהמפרסם "לסיים"
+	let adDraftSubmitted = $state(false);
 	let adDraftProgress = $derived.by(() => {
 		if (!adDraft) return 0;
 		const fields = [adDraft.mainImage, adDraft.title, adDraft.subtitle, adDraft.logo, adDraft.phone, adDraft.address];
@@ -395,8 +398,10 @@
 
 	function dismissAdDraft() {
 		if (!confirm(tFn('profile.ad_draft_delete_confirm'))) return;
-		try { localStorage.removeItem("ad_builder_draft_v1"); } catch {}
+		try { localStorage.removeItem(AD_DRAFT_KEY); } catch {}
+		clearAdSubmitted();
 		adDraft = null;
+		adDraftSubmitted = false;
 	}
 
 	// מיפוי סוג הודעת ניהול → מקום הטיפול בעמוד הניהול (כל הכרטיס נעשה קישור)
@@ -957,6 +962,10 @@
 		// אם המשתמש סיים את העריכה (100%) - לא צריך להציג nag "סיים את עריכתו".
 		// הוא יראה את כרטיס "פרסומת בעריכה" למטה אם ירצה להמשיך לפרסום.
 		if (adDraftProgress >= 100) return base;
+		// הפרסומת כבר נשלחה לאישור. הטיוטה נשארת כדי שאפשר יהיה לערוך
+		// אותה בהמשך, אבל אחוז ההשלמה סופר גם שדות רשות (לוגו, כתובת),
+		// ולכן פרסומת שנשלחה במלואה הציגה "50% הושלמו" ונדנדה בלי סיבה.
+		if (adDraftSubmitted) return base;
 		// מכבד את אותן פעולות (מחיקה/ארכיון/הזכר) כמו הודעות רגילות
 		if (deletedMsgs.has("draft")) return base;
 		if (archivedMsgs.has("draft")) return base;
@@ -1734,7 +1743,7 @@
 				viewerTipDismissed = true;
 		} catch {}
 		try {
-			const raw = localStorage.getItem("ad_builder_draft_v1");
+			const raw = localStorage.getItem(AD_DRAFT_KEY);
 			if (raw) {
 				const d = JSON.parse(raw);
 				if (d && (d.title || d.mainImage || d.subtitle)) {
@@ -1742,6 +1751,7 @@
 				}
 			}
 		} catch {}
+		adDraftSubmitted = isAdSubmitted();
 	});
 
 	// שמור טיוטה ב-localStorage בכל שינוי
@@ -3706,7 +3716,12 @@
 								<div class="flex-1 min-w-0">
 									<div class="flex items-center gap-2 mb-1 flex-wrap">
 										<span class="text-purple-300 font-black text-sm md:text-base">{tFn("profile.ad_editing")}</span>
-										<span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 font-bold">{tFn("profile.pct_completed", { n: adDraftProgress })}</span>
+										{#if adDraftSubmitted}
+											<!-- כבר אצל המנהל: אחוז ההשלמה כאן מטעה, כי הוא סופר גם שדות רשות -->
+											<span class="text-[10px] px-2 py-0.5 rounded-full bg-green-500/20 text-green-300 border border-green-500/40 font-bold">{tFn("profile.ad_draft_sent")}</span>
+										{:else}
+											<span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 font-bold">{tFn("profile.pct_completed", { n: adDraftProgress })}</span>
+										{/if}
 									</div>
 									<p class="text-white font-bold text-xs md:text-sm leading-tight mb-2 truncate">
 										{adDraft.title || tFn("profile.untitled")}{adDraft.subtitle ? " - " + adDraft.subtitle : ""}

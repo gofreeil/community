@@ -5,6 +5,7 @@
     import { browser } from "$app/environment";
     import { goto } from "$app/navigation";
     import { DEFAULT_AD_STYLE, parseAdStyle, type AdStyle } from "$lib/adStyle";
+    import { AD_DRAFT_KEY, markAdSubmitted, clearAdSubmitted } from "$lib/adDraft";
 
     let { data } = $props<{
         data: {
@@ -14,7 +15,7 @@
     }>();
 
     // ===== Persistence - same key as the main builder so state shares freely =====
-    const LS_KEY = "ad_builder_draft_v1";
+    const LS_KEY = AD_DRAFT_KEY;
     const PAID_KEY = "ad_paid";
 
     // ===== Access gate (same logic as the main builder) =====
@@ -293,6 +294,9 @@
     });
 
     // ===== Persist all editable fields back to the same draft =====
+    // הריצה הראשונה היא טעינת הטיוטה ולא עריכה, ולכן היא לא מבטלת את
+    // סימון "נשלחה לאישור" - אחרת עצם הכניסה לעמוד הייתה מחזירה את הנדנוד
+    let persistRanOnce = false;
     $effect(() => {
         if (!browser) return;
         try {
@@ -306,6 +310,7 @@
             };
             localStorage.setItem(LS_KEY, JSON.stringify(merged));
         } catch {}
+        if (persistRanOnce) clearAdSubmitted(); else persistRanOnce = true;
     });
 
     // ===== Preview helpers (same rules as the real landing page) =====
@@ -437,6 +442,8 @@
                 throw new Error(await extractServerError(res));
             }
             submitted = true;
+            // מכאן הטיוטה כבר אצל המנהל - האזור האישי מפסיק לנדנד "סיים את עריכתו"
+            markAdSubmitted();
         } catch (e) {
             // fetch rejects with a TypeError ("Failed to fetch") on a network
             // failure - show a Hebrew connectivity message instead of English.

@@ -10,6 +10,7 @@
         DEFAULT_SUB_FONT_SIZE, SUB_FONT_SIZE_MIN, SUB_FONT_SIZE_MAX,
         DEFAULT_SUB_LINE_HEIGHT, SUB_LINE_HEIGHT_MIN, SUB_LINE_HEIGHT_MAX,
     } from "$lib/adStyle";
+    import { AD_DRAFT_KEY, clearAdSubmitted } from "$lib/adDraft";
 
     // ===== Page payload (logged-in user prefill + admin status) =====
     let { data } = $props<{
@@ -20,7 +21,7 @@
     }>();
 
     // ===== Persistence =====
-    const LS_KEY = "ad_builder_draft_v1";
+    const LS_KEY = AD_DRAFT_KEY;
     const PAID_KEY = "ad_paid";
     const PAID_AT_KEY = "ad_paid_at";   // ISO timestamp of payment - used to compute free-edit window
 
@@ -843,6 +844,8 @@
         try { localStorage.setItem(LS_KEY, JSON.stringify(snapshot)); } catch {}
         if (autosaveRanOnce) {
             formDirty = true;
+            // עריכה אמיתית אחרי שליחה - יש שוב מה לסיים, והתזכורת חוזרת
+            clearAdSubmitted();
         } else {
             autosaveRanOnce = true;
         }
@@ -882,6 +885,7 @@
     function resetDraft() {
         if (!confirm($_('advertise.b_reset_confirm'))) return;
         try { localStorage.removeItem(LS_KEY); } catch {}
+        clearAdSubmitted();
         location.reload();
     }
 
