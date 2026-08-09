@@ -16,7 +16,7 @@
 	import { signOut } from "@auth/sveltekit/client";
 	import { goto, beforeNavigate } from "$app/navigation";
 	import { page } from "$app/state";
-	import { closeAdPopup } from "$lib/adPopupStore";
+	import { closeAdPopup, registerPaidAds } from "$lib/adPopupStore";
 	import { registerDynamicNeighborhoods, MY_PIN_LS_KEY } from "$lib/neighborhoodCoords";
 	import { neighborhoodState } from "$lib/neighborhoodState.svelte";
 	import { installFormGuard } from "$lib/formGuard";
@@ -41,6 +41,29 @@
 		if (data.approvedNeighborhoods?.length) {
 			registerDynamicNeighborhoods(data.approvedNeighborhoods);
 		}
+	});
+
+	// פרסומות משולמות → הפופ-אפ בנייד. הטור הימני הוא דסקטופ בלבד, ולכן
+	// בלי זה מי ששילם לא הופיע בנייד כלל - למרות שהבילדר מבטיח לו בשלב 7
+	// "כך הפרסומת תיפתח בנייד". התמונה הייעודית לנייד (אם הועלתה) מועדפת.
+	$effect(() => {
+		registerPaidAds(
+			(data.approvedAds ?? [])
+				.filter((a) => a.mainImage)
+				.map((a) => ({
+					id:             a.id,
+					title:          a.title,
+					description:    a.subtitle,
+					cta:            a.cta || a.title,
+					href:           `/ads/${a.id}`,
+					internal:       true,
+					image:          a.mainImage,
+					mobileImage:    a.mobileImage || undefined,
+					mobileImageFit: a.mobileImage ? a.mobileImageFit : undefined,
+					color:          a.gradient,
+					hover:          a.hover,
+				})),
+		);
 	});
 
 	// מיקום אישי שהמשתמש סימן בעצמו (לפני אישור אדמין) - תיקון מיידי למפה שלו

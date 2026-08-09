@@ -1,5 +1,6 @@
 export interface Ad {
-    id: number;
+    /** פרסומות הרשת ממוספרות; פרסומת של מפרסם משולם נושאת את מזהה Strapi */
+    id: number | string;
     title: string;
     description: string;
     cta: string;
@@ -13,6 +14,8 @@ export interface Ad {
     imageHeight?: string;   // גובה מותאם לתמונה (ברירת מחדל: auto)
     imageScale?: number;    // זום יחסית ל-cover בתצוגות הנייד (1 = מילוי המשבצת; מעל 1 = תקריב; מתחת ל-1 = התרחקות)
     hover?: string;         // טקסט tooltip בריחוף מעל כפתור ה-CTA
+    /** יעד פנימי באתר (דף נחיתה של מפרסם) - נפתח באותה לשונית ובלי noopener */
+    internal?: boolean;
 }
 
 export const ads: Ad[] = [

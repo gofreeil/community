@@ -91,11 +91,14 @@
                 {popup.ad.title}
             </h3>
             <p class="text-gray-300 text-sm mb-3 leading-snug">{popup.ad.description}</p>
+            <!-- דף נחיתה של מפרסם משולם הוא יעד פנימי (/ads/<id>) ונפתח באותה
+                 לשונית, בדיוק כמו בטור הימני בדסקטופ. אתרי הרשת ממשיכים
+                 להיפתח בלשונית חדשה. -->
             <a
                 href={popup.ad.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="{popup.ad.cta} – {popup.ad.title}{$_('components.opens_new_window_suffix')}"
+                target={popup.ad.internal ? undefined : "_blank"}
+                rel={popup.ad.internal ? undefined : "noopener noreferrer"}
+                aria-label="{popup.ad.cta} – {popup.ad.title}{popup.ad.internal ? '' : $_('components.opens_new_window_suffix')}"
                 onclick={() => closeAdPopup()}
                 class="block w-full text-center py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-bold hover:from-purple-500 hover:to-indigo-500 transition-all"
             >
