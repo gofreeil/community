@@ -923,7 +923,7 @@ export const citiesData: CityEntry[] = [
     // ============== ר ==============
     { city: "ראש העין", neighborhoods: ["מרכז", "נוות אפק", "כפר אברהם"] },
     { city: "ראש פינה", neighborhoods: DEFAULT_NB },
-    { city: "ראשון לציון", neighborhoods: ["נווה דקלים", "רמת אליהו", "שיכון ותיקים", "מרכז", "נחלת יהודה", "עולי ציון", "צור שלום"] },
+    { city: "ראשון לציון", neighborhoods: ["נווה דקלים", "רמת אליהו", "שיכון ותיקים", "מרכז", "נחלת יהודה", "עולי ציון", "צור שלום", "אזור תעשייה ישן מזרח", "אזור תעשייה חדש מערב"] },
     { city: "רבדים", neighborhoods: DEFAULT_NB },
     { city: "רביבים", neighborhoods: DEFAULT_NB },
     { city: "רביד", neighborhoods: DEFAULT_NB },
