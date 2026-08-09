@@ -462,6 +462,25 @@
         return stepOrder[Math.max(i - 1, 0)];
     }
 
+    /**
+     * תיבת טקסט שגדלה לפי התוכן. 90 תווים עם ירידות שורה מגיעים בקלות
+     * לארבע-חמש שורות, ותיבה בגובה קבוע חתכה אותן: המפרסם ראה גלילה
+     * פנימית ולא את סוף המשפט שכתב. הפרמטר הוא הערך עצמו, כדי שגם
+     * טעינת הטיוטה (ולא רק הקלדה) תתאים את הגובה.
+     */
+    function autoGrow(node: HTMLTextAreaElement, _value: string) {
+        const fit = () => {
+            node.style.height = 'auto';
+            node.style.height = `${node.scrollHeight}px`;
+        };
+        fit();
+        node.addEventListener('input', fit);
+        return {
+            update: () => fit(),
+            destroy: () => node.removeEventListener('input', fit),
+        };
+    }
+
     // ===== Drag-and-drop state (visual highlight per zone) =====
     let isDraggingMain = $state(false);
     let isDraggingMobile = $state(false);
@@ -1607,9 +1626,11 @@
             <strong class="text-amber-300">{$_('advertise.b_s6_help_strong')}</strong> {$_('advertise.b_s6_help2')}
         </p>
 
-        <!-- rows=3 - 90 תווים בשתי שורות + שורה שלישית פנויה, כדי שאפשר יהיה לרדת
-             שורה ולראות את סוף המשפט בלי גלילה בתוך התיבה -->
+        <!-- התיבה גדלה לפי התוכן (autoGrow): גובה קבוע חתך את השורות
+             האחרונות והמפרסם לא ראה את סוף המשפט שכתב -->
         <textarea bind:value={hoverText} maxlength="90" rows="3"
+                  use:autoGrow={hoverText}
+                  class:hover-textarea={true}
                   onfocus={() => activeStep === "hover" || (activeStep = "hover")}
                   onblur={() => hoverText.trim() && commitField("hover")}
                   placeholder={$_('advertise.b_s6_ph')}
@@ -2158,6 +2179,8 @@
         font-family: inherit;
     }
     :global(.text-input.small) { padding: 0.55rem 0.75rem; font-size: 0.85rem; }
+    /* גדלה לפי התוכן ולכן אין בה גלילה פנימית שמסתירה שורות */
+    :global(.hover-textarea) { overflow-y: hidden; resize: none; min-height: 4.5rem; }
     :global(.text-input::placeholder) { color: rgb(107, 114, 128); }
     :global(.text-input:focus) {
         border-color: rgba(245, 158, 11, 0.6);
