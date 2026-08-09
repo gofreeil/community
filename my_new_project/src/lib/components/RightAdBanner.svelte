@@ -217,7 +217,6 @@
         }
         return { numbered, free };
     });
-    let orderedPaidAds = $derived(slotted.numbered.map(x => x.ad));
     let freeSlots = $derived(slotted.free);
     let groupCount = $derived(Math.max(1, Math.ceil(freeSlots.length / PER_GROUP)));
 
@@ -266,18 +265,21 @@
         {$_('components.rb_marketing_content')}
     </h4>
 
-    <!-- פרסומות מאושרות: קבועות, מעל סבב המשבצות הפנויות.
-         הקישור תמיד לדף הנחיתה הפנימי /ads/<id> ובאותה לשונית. -->
-    {#if paidAds.length > 0}
-        <div class="space-y-3 mb-3">
-            {#each orderedPaidAds as ad (ad.id)}
+    <!-- לוח 12 המקומות: פרסומות ומשבצות פנויות שזורות יחד לפי המספר.
+         CSS order מציב כל כרטיס במקומו המספרי - פרסומת שנקבעה למקום 5
+         באמת יושבת בין 4 ל-6, וסך הכרטיסים הוא 12 בדיוק, לא יותר.
+         הפרסומות המשולמות תמיד על המסך ולא דועכות; רק המשבצות הפנויות
+         מתחלפות בסבב. הקישור תמיד לדף הנחיתה הפנימי /ads/<id>. -->
+    <div class="flex flex-col gap-3">
+        {#each slotted.numbered as item (item.ad.id)}
+                {@const ad = item.ad}
                 {@const st = styleOf(ad)}
                 {@const cornerSide = logoCornerSide(st, Boolean(ad.logo))}
                 <a
                     href="/ads/{ad.id}"
                     aria-label="{ad.title} – {ad.subtitle}"
                     class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105 group relative"
-                    style={adStyleVars(st)}
+                    style="order: {item.num}; {adStyleVars(st)}"
                 >
                     <!-- aspect-[144/450] = בדיוק היחס שהבילדר מציג בתצוגה החיה
                          (live-demo-img-wrap). המפרסם מכוון שם מיקום וזום על מסגרת
@@ -349,17 +351,16 @@
                         {/if}
                     </div>
                 </a>
-            {/each}
-        </div>
-    {/if}
+        {/each}
 
-    <div class="space-y-3 ads-track" class:fading>
         {#each displayedAds as spot (spot.num)}
             {@const ad = spot.tpl}
             <a
                 href="/about/advertise"
                 aria-label="מקום פרסום פנוי — לחצו לפרטים על פרסום באתר"
-                class="h-[490px] flex flex-col items-center justify-center rounded-2xl border-2 border-dashed {ad.borderColor} {ad.bgColor} p-3 text-center transition-all {ad.hoverBorder} {ad.hoverBg} group duration-700 relative overflow-hidden"
+                style="order: {spot.num};"
+                class="free-fade h-[490px] flex flex-col items-center justify-center rounded-2xl border-2 border-dashed {ad.borderColor} {ad.bgColor} p-3 text-center transition-all {ad.hoverBorder} {ad.hoverBg} group duration-700 relative overflow-hidden"
+                class:fading
             >
                 <!-- מספר המקום הפנוי - בדיוק המספרים שלא נתפסו ע"י פרסומות -->
                 <div
@@ -408,17 +409,20 @@
 </aside>
 
 <style>
-    /* דעיכה רכה בין קבוצות המודעות — במקום החלקה קופצנית של כל כרטיס.
-       הערך חייב להתאים ל-FADE_MS שבסקריפט. */
-    .ads-track {
+    /* דעיכה רכה בין קבוצות המשבצות הפנויות — במקום החלקה קופצנית.
+       על כל משבצת בנפרד (ולא על עוטף), כי הפרסומות המשולמות שזורות
+       ביניהן באותו קונטיינר ואסור שיהבהבו. חייב להתאים ל-FADE_MS. */
+    .free-fade {
         opacity: 1;
-        transition: opacity 900ms ease-in-out;
+        /* גם border/background: ה-transition כאן דורס את transition-all של
+           Tailwind על הכרטיס, ובלי זה אפקט ה-hover היה קופץ בלי אנימציה */
+        transition: opacity 900ms ease-in-out, border-color 700ms, background-color 700ms;
     }
-    .ads-track.fading {
+    .free-fade.fading {
         opacity: 0;
     }
     @media (prefers-reduced-motion: reduce) {
-        .ads-track {
+        .free-fade {
             transition-duration: 1ms;
         }
     }

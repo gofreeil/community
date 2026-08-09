@@ -684,7 +684,12 @@ export async function approveAd(
         reminders_sent:   [],
     };
     if (slot !== undefined) {
-        data.landing = { ...(current.landing as unknown as Record<string, unknown>), _order: slot };
+        const landing: Record<string, unknown> = { ...(current.landing as unknown as Record<string, unknown>), _order: slot };
+        // פרסומת שמאושרת עכשיו היא בהגדרה לא "גרסה ישנה שהוחלפה". דגל
+        // _supersededBy שנשאר מגלגול קודם גרם לפרסומת חיה להיראות מוחלפת:
+        // גרסה מעודכנת של המפרסם לא זיהתה אותה ולא הורידה אותה באישור.
+        delete landing._supersededBy;
+        data.landing = landing;
     }
     if (replacing?.companyName && !current.companyName)     data.company_name   = replacing.companyName;
     if (replacing?.paymentAmount && !current.paymentAmount) data.payment_amount = replacing.paymentAmount;
