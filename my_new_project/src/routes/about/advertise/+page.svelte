@@ -346,7 +346,7 @@
                     totalMonthly,
                     discountLabel:     discountValue > 0 ? discountLabelText : '',
                     discountValue,
-                    mapImageAddon,
+                    mapImageAddon: mapImageActive,
                     mapImageAddonPrice,
                 }),
             });
@@ -460,6 +460,10 @@
     // table price regardless of the number of neighborhoods or city
     const PER_NEIGHBORHOOD_NUMS = new Set([1]);
 
+    // סוגי הפרסום שמופיעים על המפה (details_map_list). פרסומת ארוכה היא באנר, ודרושים/פנויים
+    // מופיעים רק ברשימה - להם אין מה להציע תמונה או לוגו על המפה
+    const ON_MAP_NUMS = new Set([2, 3, 4, 7, 8, 9, 10]);
+
     let selectedItems = $derived(
         rows
             .filter(r => planMap.has(r.num))
@@ -479,7 +483,11 @@
     // מוצג על המפה במקום האימוג'י של הקטגוריה. הבחירה של איזו תמונה בפועל
     // נעשית בדף הכרטיס עצמו; כאן זו רק תוספת התשלום.
     let mapImageAddon = $state(false);
-    let mapImageAddonPrice = $derived(mapImageAddon ? MAP_IMAGE_PRICE_YEARLY : 0);
+    // התוספת נשאלת רק אם נבחר סוג פרסום אחד לפחות שבאמת עולה על המפה
+    let mapImageEligible = $derived(selectedItems.some(r => ON_MAP_NUMS.has(r.num)));
+    // אם המתג נדלק ואז הבחירה שונתה לסוג שלא על המפה - הוא לא נספר ולא מוצג
+    let mapImageActive = $derived(mapImageAddon && mapImageEligible);
+    let mapImageAddonPrice = $derived(mapImageActive ? MAP_IMAGE_PRICE_YEARLY : 0);
 
     // Totals: per-item price × per-item multiplier (flat rows use 1) + תוספת המפה
     let totalPayment = $derived(
@@ -1230,7 +1238,7 @@
                             <span class="{item.plan === 'half' ? 'text-amber-300' : 'text-blue-300'} font-black">₪{fmt(item.eTotal * item.multiplier)}</span>
                         </p>
                     {/each}
-                    {#if mapImageAddon}
+                    {#if mapImageActive}
                         <p class="text-purple-200 text-base md:text-lg font-bold leading-snug">
                             <span class="text-purple-300">🗺️ {$_('advertise.map_image_addon')}:</span>
                             <span class="text-white">₪{fmt(MAP_IMAGE_PRICE_YEARLY)}</span>
@@ -1239,7 +1247,8 @@
                     {/if}
                 </div>
 
-                <!-- תוספת: תמונה/לוגו על המפה - 50 ₪ לשנה -->
+                <!-- תוספת: תמונה/לוגו על המפה - 50 ₪ לשנה. מוצג רק לסוגי פרסום שעולים על המפה -->
+                {#if mapImageEligible}
                 <button type="button" onclick={() => (mapImageAddon = !mapImageAddon)}
                     class="text-right rounded-xl border p-3 transition-all {mapImageAddon ? 'border-purple-400/60 bg-purple-500/15' : 'border-white/15 bg-white/5 hover:bg-white/10'}">
                     <div class="flex items-center gap-2.5">
@@ -1253,6 +1262,7 @@
                         </span>
                     </div>
                 </button>
+                {/if}
 
                 <div class="flex items-center justify-start flex-wrap gap-x-3 gap-y-1">
                     {#if discountValue > 0}
