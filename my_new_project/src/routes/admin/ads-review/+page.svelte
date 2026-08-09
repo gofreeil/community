@@ -105,6 +105,17 @@
         if (!s) return '';
         return new Date(s).toLocaleString('he-IL', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
     }
+
+    // תאריך ושעה בשתי שורות נפרדות בטבלת התזמון - חוסך רוחב כדי שכל
+    // הטבלה תיכנס ברוחב המסך בלי גלילה אופקית
+    function fmtDay(s?: string) {
+        if (!s) return '';
+        return new Date(s).toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: '2-digit' });
+    }
+    function fmtTime(s?: string) {
+        if (!s) return '';
+        return new Date(s).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+    }
 </script>
 
 <svelte:head>
@@ -526,15 +537,15 @@
                 <table class="w-full text-sm" dir="rtl">
                     <thead class="bg-white/5">
                         <tr class="text-[11px] md:text-xs text-gray-400 uppercase tracking-wide">
-                            <th class="text-right font-bold px-3 py-2.5">מקום</th>
-                            <th class="text-right font-bold px-3 py-2.5">פרסומת</th>
-                            <th class="text-right font-bold px-3 py-2.5 hidden md:table-cell">מפרסם</th>
-                            <th class="text-right font-bold px-3 py-2.5">פורסם</th>
-                            <th class="text-right font-bold px-3 py-2.5">פג בתאריך</th>
-                            <th class="text-right font-bold px-3 py-2.5">משך</th>
-                            <th class="text-right font-bold px-3 py-2.5">ימים שנותרו</th>
-                            <th class="text-right font-bold px-3 py-2.5">סטטוס</th>
-                            <th class="text-right font-bold px-3 py-2.5">ניהול</th>
+                            <th class="text-right font-bold px-2 py-2.5">מקום</th>
+                            <th class="text-right font-bold px-2 py-2.5">פרסומת</th>
+                            <th class="text-right font-bold px-2 py-2.5 hidden md:table-cell">מפרסם</th>
+                            <th class="text-right font-bold px-2 py-2.5">פורסם</th>
+                            <th class="text-right font-bold px-2 py-2.5">פג בתאריך</th>
+                            <th class="text-right font-bold px-2 py-2.5">משך</th>
+                            <th class="text-right font-bold px-2 py-2.5">ימים שנותרו</th>
+                            <th class="text-right font-bold px-2 py-2.5">סטטוס</th>
+                            <th class="text-right font-bold px-2 py-2.5">ניהול</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -561,48 +572,59 @@
                                 ? [...SLOT_NUMBERS, s.slot].sort((a, b) => a - b)
                                 : SLOT_NUMBERS}
                             <tr class="border-t border-white/10 hover:bg-white/5">
-                                <!-- מספר המקום בטור + העברה ישירה למקום אחר (מקום תפוס - מתחלפות) -->
-                                <td class="px-3 py-2">
-                                    <div class="flex items-center gap-1.5 flex-wrap">
-                                        <span class="inline-flex items-center justify-center min-w-7 h-7 px-1.5 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-200 font-black text-sm">
-                                            {s.slot ?? '-'}
-                                        </span>
-                                        <form method="POST" action="?/setSlot" use:enhance class="flex items-center gap-1">
-                                            <input type="hidden" name="id" value={s.id} />
+                                <!-- מספר המקום בטור + העברה ישירה למקום אחר (מקום תפוס - מתחלפות).
+                                     פריסה אנכית צרה - כדי שכל הטבלה תיכנס ברוחב המסך בלי גלילה -->
+                                <td class="px-2 py-2">
+                                    <form method="POST" action="?/setSlot" use:enhance class="flex flex-col items-start gap-1">
+                                        <input type="hidden" name="id" value={s.id} />
+                                        <div class="flex items-center gap-1">
+                                            <span class="inline-flex items-center justify-center min-w-6 h-6 px-1 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-200 font-black text-xs">
+                                                {s.slot ?? '-'}
+                                            </span>
                                             <select name="slot"
-                                                    class="px-2 py-1 rounded-lg bg-black/40 border border-white/15 text-white text-[11px] focus:outline-none focus:border-amber-400/50">
+                                                    class="px-1.5 py-1 rounded-lg bg-black/40 border border-white/15 text-white text-[11px] focus:outline-none focus:border-amber-400/50">
                                                 {#each slotOptions as n (n)}
                                                     <option value={n} selected={n === s.slot} style="background:#fff;color:#111">{n}</option>
                                                 {/each}
                                             </select>
-                                            <button type="submit"
-                                                    class="px-2.5 py-1 rounded-lg bg-purple-500/20 border border-purple-500/40 text-purple-200 text-[11px] font-black hover:bg-purple-500/30 whitespace-nowrap"
-                                                    title="העבר למקום שנבחר; אם המקום תפוס - שתי הפרסומות מתחלפות">
-                                                ⇄ העבר
-                                            </button>
-                                        </form>
-                                    </div>
+                                        </div>
+                                        <button type="submit"
+                                                class="px-2 py-1 rounded-lg bg-purple-500/20 border border-purple-500/40 text-purple-200 text-[11px] font-black hover:bg-purple-500/30 whitespace-nowrap"
+                                                title="העבר למקום שנבחר; אם המקום תפוס - שתי הפרסומות מתחלפות">
+                                            ⇄ העבר
+                                        </button>
+                                    </form>
                                 </td>
-                                <td class="px-3 py-2 font-bold text-white truncate max-w-[180px]">{s.title}</td>
-                                <td class="px-3 py-2 text-gray-300 hidden md:table-cell">
-                                    <div class="truncate max-w-[160px]">{s.advertiserName || '-'}</div>
-                                    <div class="text-[10px] text-gray-500 truncate max-w-[160px]">{s.advertiserEmail}</div>
+                                <!-- הכותרת בשתי שורות במקום שורה אחת חתוכה - רואים יותר וחוסכים רוחב -->
+                                <td class="px-2 py-2 font-bold text-white">
+                                    <div class="line-clamp-2 break-words max-w-[130px] leading-snug">{s.title}</div>
                                 </td>
-                                <td class="px-3 py-2 text-gray-300 whitespace-nowrap">{fmtDate(s.publishedAt)}</td>
-                                <td class="px-3 py-2 text-gray-300 whitespace-nowrap">{fmtDate(s.expiresAt)}</td>
-                                <td class="px-3 py-2 text-gray-300">{s.durationDays} ימים</td>
-                                <td class="px-3 py-2 font-black {daysColor} whitespace-nowrap">
+                                <td class="px-2 py-2 text-gray-300 hidden md:table-cell">
+                                    <div class="truncate max-w-[120px]">{s.advertiserName || '-'}</div>
+                                    <div class="text-[10px] text-gray-500 truncate max-w-[120px]">{s.advertiserEmail}</div>
+                                </td>
+                                <!-- תאריך ושעה בשתי שורות - העמודה צרה בחצי -->
+                                <td class="px-2 py-2 text-gray-300 text-xs leading-snug whitespace-nowrap">
+                                    <div>{fmtDay(s.publishedAt)}</div>
+                                    <div class="text-[10px] text-gray-500">{fmtTime(s.publishedAt)}</div>
+                                </td>
+                                <td class="px-2 py-2 text-gray-300 text-xs leading-snug whitespace-nowrap">
+                                    <div>{fmtDay(s.expiresAt)}</div>
+                                    <div class="text-[10px] text-gray-500">{fmtTime(s.expiresAt)}</div>
+                                </td>
+                                <td class="px-2 py-2 text-gray-300 text-xs">{s.durationDays} ימים</td>
+                                <td class="px-2 py-2 font-black {daysColor} text-xs whitespace-nowrap">
                                     {s.daysLeft < 0 ? `${-s.daysLeft}- ימים` : `${s.daysLeft} ימים`}
-                                    <div class="mt-1 h-1.5 w-24 rounded-full bg-white/10 overflow-hidden">
+                                    <div class="mt-1 h-1.5 w-16 rounded-full bg-white/10 overflow-hidden">
                                         <div class="h-full {s.state === 'expired' ? 'bg-red-400' : s.state === 'ending' ? 'bg-amber-400' : 'bg-emerald-400'}"
                                              style="width: {progress}%"></div>
                                     </div>
                                 </td>
-                                <td class="px-3 py-2">
+                                <td class="px-2 py-2">
                                     <span class="text-[11px] font-black border px-2 py-0.5 rounded-full whitespace-nowrap {stateColor}">{stateLabel}</span>
                                 </td>
                                 <!-- ניהול הפרסומת ישירות מהשורה: קציבת תקופה, השהיה, הורדה, מחיקה -->
-                                <td class="px-3 py-2">
+                                <td class="px-2 py-2">
                                     <div class="flex flex-wrap items-center gap-1.5">
                                         <form method="POST" action="?/setDuration" use:enhance class="flex items-center gap-1">
                                             <input type="hidden" name="id" value={s.id} />
