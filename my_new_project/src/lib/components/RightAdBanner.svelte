@@ -37,8 +37,6 @@
         return parseAdStyle(ad.adStyle) ?? legacyAdStyle(ad.title);
     }
 
-    // הפרסומות המשולמות קבועות בראש הטור ולא משתתפות בסבב המשבצות הפנויות -
-    // מפרסם ששילם לא אמור להיעלם מהמסך אחרי 14 שניות.
     let paidAds = $derived(approvedAds.filter(a => a.mainImage));
 
     // עד xl הטור הימני מוסתר. כשיש פרסומת אמיתית זה היה מעלים אותה ממסכי lg,
@@ -46,8 +44,6 @@
     let visibilityClass = $derived(paidAds.length > 0 ? "hidden lg:block" : "hidden xl:block");
 
     let currentGroup = $state(0);
-    let totalSwaps = $state(0);
-    const MAX_SWAPS = 8; // 3 full cycles of 3 groups (original + 8 swaps = 9 steps)
 
     const ads = [
         {
@@ -186,57 +182,60 @@
 
     const VIEW_MS = 14000;   // כמה זמן כל קבוצה נשארת על המסך (החלפה איטית)
     const FADE_MS = 900;     // אורך הדעיכה בין קבוצה לקבוצה — חייב להתאים ל-CSS
-    const PER_GROUP = 4;     // כמה משבצות פנויות נראות בו-זמנית
+    const PER_GROUP = 4;     // כמה מקומות (פרסומות ופנויים) נראים בו-זמנית
 
-    // פרסומת מאושרת *תופסת* מספר מתוך ה-12 - היא לא מתווספת מעליהן.
-    // המספר מגיע מהשרת (נקבע במסך הניהול); מודעה ותיקה בלי מספר ממלאת
-    // את המספר הפנוי הנמוך ביותר. המשבצות הפנויות מציגות בדיוק את
-    // המספרים שנותרו - גם כשהמנהל השאיר "חורים" (למשל פרסומת במקום 5
-    // כשמקומות 2-4 פנויים).
-    let slotted = $derived.by(() => {
+    type BoardCell = { num: number; ad?: ApprovedAd; tpl?: (typeof ads)[number] };
+
+    // לוח 12 המקומות בסדר מספרי: מקום שנתפס מציג את הפרסומת, מקום פנוי
+    // מציג משבצת "יכול להיות שלך". פרסומת מאושרת *תופסת* מקום - סך
+    // הכרטיסים הוא תמיד 12 בדיוק. המספר מגיע מהשרת (נקבע במסך הניהול);
+    // מודעה ותיקה בלי מספר ממלאת את המספר הפנוי הנמוך ביותר.
+    let board = $derived.by(() => {
         const taken = new Set<number>();
         for (const a of paidAds) {
             if (typeof a.slot === "number" && a.slot >= 1) taken.add(a.slot);
         }
         let nextFree = 1;
-        const numbered = paidAds.map(a => {
+        const byNum = new Map<number, ApprovedAd>();
+        const overflow: BoardCell[] = [];
+        for (const a of paidAds) {
             let num = typeof a.slot === "number" && a.slot >= 1 ? a.slot : 0;
-            if (num === 0) {
+            // בלי מספר, או בהתנגשות נדירה - המספר הפנוי הנמוך ביותר
+            if (num === 0 || byNum.has(num)) {
                 while (taken.has(nextFree)) nextFree++;
                 num = nextFree;
                 taken.add(num);
             }
-            return { ad: a, num };
-        });
-        numbered.sort((x, y) => x.num - y.num);
-        // תבניות הצבע קבועות למספר: משבצת 7 שומרת על הצבעים שלה גם
-        // כשמקומות לפניה נתפסים
-        const free: Array<{ num: number; tpl: (typeof ads)[number] }> = [];
-        for (let n = 1; n <= AD_SLOT_COUNT; n++) {
-            if (!taken.has(n)) free.push({ num: n, tpl: ads[(n - 1) % ads.length] });
+            if (num <= AD_SLOT_COUNT) byNum.set(num, a);
+            else overflow.push({ num, ad: a });
         }
-        return { numbered, free };
+        const cells: BoardCell[] = [];
+        for (let n = 1; n <= AD_SLOT_COUNT; n++) {
+            const ad = byNum.get(n);
+            // תבניות הצבע קבועות למספר: משבצת 7 שומרת על הצבעים שלה
+            // גם כשמקומות לפניה נתפסים
+            cells.push(ad ? { num: n, ad } : { num: n, tpl: ads[(n - 1) % ads.length] });
+        }
+        // מעבר ל-12 (גלישה) - בסוף הלוח, כדי שפרסומת לא תיעלם
+        return [...cells, ...overflow];
     });
-    let freeSlots = $derived(slotted.free);
-    let groupCount = $derived(Math.max(1, Math.ceil(freeSlots.length / PER_GROUP)));
+    let groupCount = $derived(Math.max(1, Math.ceil(board.length / PER_GROUP)));
 
     let fading = $state(false);
 
     onMount(() => {
         let fadeTimer: ReturnType<typeof setTimeout> | undefined;
         // דעיכה החוצה → החלפת הקבוצה בזמן שהטור שקוף → דעיכה פנימה.
-        // כך אין קפיצה: המשבצות לא מתחלפות מול העין אלא מתוך שקיפות מלאה.
+        // כך אין קפיצה: הכרטיסים לא מתחלפים מול העין אלא מתוך שקיפות מלאה.
+        // הסבב רץ כל עוד הדף פתוח: גם הפרסומות המשולמות מתחלפות בו, ולכן
+        // עצירה הייתה מקבעת קבוצה אחת ומסתירה לצמיתות את הפרסומות שבאחרות.
         const interval = setInterval(() => {
-            if (totalSwaps < MAX_SWAPS) {
-                fading = true;
-                fadeTimer = setTimeout(() => {
-                    currentGroup = (currentGroup + 1) % groupCount;
-                    totalSwaps++;
-                    fading = false;
-                }, FADE_MS);
-            } else {
-                clearInterval(interval);
-            }
+            if (groupCount <= 1) return;
+            fading = true;
+            fadeTimer = setTimeout(() => {
+                currentGroup = (currentGroup + 1) % groupCount;
+                fading = false;
+            }, FADE_MS);
         }, VIEW_MS);
 
         return () => {
@@ -245,12 +244,13 @@
         };
     });
 
-    // אישור פרסומת נוספת מקטין את מספר הקבוצות תוך כדי סבב, ובלי הכיפוף הזה
-    // הטור היה נשאר ריק עד לסיבוב הבא
+    // שינוי במספר הקבוצות תוך כדי סבב (למשל אישור פרסומת) לא משאיר את
+    // הטור ריק עד לסיבוב הבא
     let safeGroup = $derived(currentGroup % groupCount);
 
-    let displayedAds = $derived(
-        freeSlots.slice(safeGroup * PER_GROUP, (safeGroup + 1) * PER_GROUP),
+    // הקבוצה המוצגת כרגע: 4 מקומות עוקבים לפי הסדר המספרי (1-4, 5-8, 9-12)
+    let displayed = $derived(
+        board.slice(safeGroup * PER_GROUP, (safeGroup + 1) * PER_GROUP),
     );
 </script>
 
@@ -265,21 +265,21 @@
         {$_('components.rb_marketing_content')}
     </h4>
 
-    <!-- לוח 12 המקומות: פרסומות ומשבצות פנויות שזורות יחד לפי המספר.
-         CSS order מציב כל כרטיס במקומו המספרי - פרסומת שנקבעה למקום 5
-         באמת יושבת בין 4 ל-6, וסך הכרטיסים הוא 12 בדיוק, לא יותר.
-         הפרסומות המשולמות תמיד על המסך ולא דועכות; רק המשבצות הפנויות
-         מתחלפות בסבב. הקישור תמיד לדף הנחיתה הפנימי /ads/<id>. -->
-    <div class="flex flex-col gap-3">
-        {#each slotted.numbered as item (item.ad.id)}
-                {@const ad = item.ad}
+    <!-- לוח 12 המקומות בסדר מספרי, בקבוצות של 4 (1-4, 5-8, 9-12).
+         כל הכרטיסים מתחלפים בסבב כרגיל - פרסומות ומשבצות פנויות יחד:
+         פרסומת שנקבעה למקום 5 מופיעה עם קבוצת 5-8, בין 6 ל-8, וסך
+         המקומות הוא 12 בדיוק. הקישור תמיד לדף הנחיתה הפנימי /ads/<id>. -->
+    <div class="space-y-3 ads-track" class:fading>
+        {#each displayed as cell (cell.num)}
+            {#if cell.ad}
+                {@const ad = cell.ad}
                 {@const st = styleOf(ad)}
                 {@const cornerSide = logoCornerSide(st, Boolean(ad.logo))}
                 <a
                     href="/ads/{ad.id}"
                     aria-label="{ad.title} – {ad.subtitle}"
                     class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105 group relative"
-                    style="order: {item.num}; {adStyleVars(st)}"
+                    style={adStyleVars(st)}
                 >
                     <!-- aspect-[144/450] = בדיוק היחס שהבילדר מציג בתצוגה החיה
                          (live-demo-img-wrap). המפרסם מכוון שם מיקום וזום על מסגרת
@@ -351,22 +351,18 @@
                         {/if}
                     </div>
                 </a>
-        {/each}
-
-        {#each displayedAds as spot (spot.num)}
-            {@const ad = spot.tpl}
-            <a
-                href="/about/advertise"
-                aria-label="מקום פרסום פנוי — לחצו לפרטים על פרסום באתר"
-                style="order: {spot.num};"
-                class="free-fade h-[490px] flex flex-col items-center justify-center rounded-2xl border-2 border-dashed {ad.borderColor} {ad.bgColor} p-3 text-center transition-all {ad.hoverBorder} {ad.hoverBg} group duration-700 relative overflow-hidden"
-                class:fading
-            >
+            {:else if cell.tpl}
+                {@const ad = cell.tpl}
+                <a
+                    href="/about/advertise"
+                    aria-label="מקום פרסום פנוי — לחצו לפרטים על פרסום באתר"
+                    class="h-[490px] flex flex-col items-center justify-center rounded-2xl border-2 border-dashed {ad.borderColor} {ad.bgColor} p-3 text-center transition-all {ad.hoverBorder} {ad.hoverBg} group duration-700 relative overflow-hidden"
+                >
                 <!-- מספר המקום הפנוי - בדיוק המספרים שלא נתפסו ע"י פרסומות -->
                 <div
                     class="absolute top-3 right-3 text-sm font-black text-white/60 bg-white/10 px-3 py-1 rounded-full border border-white/5 backdrop-blur-sm shadow-sm"
                 >
-                    {spot.num}
+                    {cell.num}
                 </div>
 
                 <div
@@ -403,26 +399,24 @@
                         {$_('components.rb_details')}
                     </span>
                 </div>
-            </a>
+                </a>
+            {/if}
         {/each}
     </div>
 </aside>
 
 <style>
-    /* דעיכה רכה בין קבוצות המשבצות הפנויות — במקום החלקה קופצנית.
-       על כל משבצת בנפרד (ולא על עוטף), כי הפרסומות המשולמות שזורות
-       ביניהן באותו קונטיינר ואסור שיהבהבו. חייב להתאים ל-FADE_MS. */
-    .free-fade {
+    /* דעיכה רכה בין קבוצות הלוח — כל הקבוצה (פרסומות ומשבצות פנויות)
+       דועכת ומתחלפת יחד. הערך חייב להתאים ל-FADE_MS שבסקריפט. */
+    .ads-track {
         opacity: 1;
-        /* גם border/background: ה-transition כאן דורס את transition-all של
-           Tailwind על הכרטיס, ובלי זה אפקט ה-hover היה קופץ בלי אנימציה */
-        transition: opacity 900ms ease-in-out, border-color 700ms, background-color 700ms;
+        transition: opacity 900ms ease-in-out;
     }
-    .free-fade.fading {
+    .ads-track.fading {
         opacity: 0;
     }
     @media (prefers-reduced-motion: reduce) {
-        .free-fade {
+        .ads-track {
             transition-duration: 1ms;
         }
     }
