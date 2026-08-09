@@ -77,6 +77,8 @@ export interface SubmittedAd {
     replacedNowTitle?: string;
     /** approveAd: המזהה שלה - כדי שגם ההתראה עליה תרד מתיבת המנהלים */
     replacedNowId?: string;
+    /** approveAd: כל מי שירדה עכשיו (מפרסם שנתקע עם יותר מאחת באוויר) */
+    replacedNowIds?: string[];
 
     // Card fields
     title: string;
@@ -533,20 +535,18 @@ export async function submitAd(payload: Omit<SubmittedAd, 'id' | 'status' | 'sub
 }
 
 /**
- * הפרסומת המאושרת שכבר חיה על האתר לאותו מפרסם - חוץ מזו שמאשרים כרגע.
- * מפרסם מקבל משבצת אחת; שתי מודעות זהות זו לצידה זו הן תמיד תקלה, ולא
- * בחירה - מי שבאמת רוצה שתיים מאשר עם keepPrevious.
- * שגיאה כאן לא מפילה את האישור: במקרה הגרוע הישנה תישאר ותרד ידנית.
+ * כל הפרסומות המאושרות שחיות כרגע על האתר לאותו מפרסם - חוץ מזו
+ * שמאשרים עכשיו. מפרסם מקבל משבצת אחת; שתי מודעות שלו זו לצד זו הן
+ * תמיד תקלה ולא בחירה - מי שבאמת רוצה שתיים מאשר עם keepPrevious.
+ * שגיאה כאן לא מפילה את האישור: במקרה הגרוע הישנות יישארו וירדו ידנית.
  */
-async function findLiveSiblingAd(current: SubmittedAd): Promise<SubmittedAd | null> {
+async function findLiveAdsOfAdvertiser(current: SubmittedAd): Promise<SubmittedAd[]> {
     try {
         const approved = await listByStatus('approved');
-        return approved
-            .filter(a => a.id !== current.id && !a.supersededBy && sameAdvertiser(a, current))
-            .sort(byNewest)[0] ?? null;
+        return approved.filter(a => a.id !== current.id && !a.supersededBy && sameAdvertiser(a, current));
     } catch (e) {
-        console.warn('[adsStore] findLiveSiblingAd failed:', e instanceof Error ? e.message : e);
-        return null;
+        console.warn('[adsStore] findLiveAdsOfAdvertiser failed:', e instanceof Error ? e.message : e);
+        return [];
     }
 }
 
@@ -571,26 +571,28 @@ export async function approveAd(
     const predecessor = current.replacesAdId && !opts.keepPrevious
         ? await getAd(current.replacesAdId).catch(() => null)
         : null;
-    // כבר הוחלפה (בקשה ממתינה שירדה מהתור בזמן השליחה) - אין מה להוריד שוב
-    let replacing = predecessor && predecessor.status === 'approved' && !predecessor.supersededBy
-        ? predecessor
-        : null;
-
-    // רשת ביטחון: _replacesAdId מצביע על הגרסה שהייתה חיה *בזמן השליחה*.
-    // כשהמפרסם שלח שני שדרוגים והמנהל אישר את שניהם, השני הצביע על מודעה
-    // שכבר הוחלפה - ואז שום דבר לא ירד, ואותה פרסומת הופיעה פעמיים בטור.
-    // לכן מחפשים כאן את מה שבאמת חי עכשיו לאותו מפרסם.
-    if (!replacing && !opts.keepPrevious) {
-        replacing = await findLiveSiblingAd(current);
-    }
+    // כל מה שחי כרגע על האתר לאותו מפרסם: הגרסה שנרשמה בשליחה (אם היא
+    // עדיין באוויר) וגם כל השאר. _replacesAdId מצביע על מה שהיה חי *בזמן
+    // השליחה* בלבד - וזה בדיוק מה ששבר: כששתי גרסאות היו באוויר, האישור
+    // הוריד את הישנה, השאיר את השנייה ודחף אותה למטה. מפרסם מקבל משבצת
+    // אחת, ולכן ברירת המחדל היא שהחדשה מכסה את *כולן*.
+    const liveBefore = opts.keepPrevious ? [] : await findLiveAdsOfAdvertiser(current);
+    const replacingAll = predecessor && predecessor.status === 'approved' && !predecessor.supersededBy
+        && !liveBefore.some(a => a.id === predecessor.id)
+        ? [predecessor, ...liveBefore]
+        : liveBefore;
+    // הכי חדשה מביניהן היא זו שהחדשה יורשת ממנה את המשבצת בטור
+    const replacing = [...replacingAll].sort(byNewest)[0] ?? null;
 
     const now = new Date();
     // התקופה שהמפרסם כבר שילם עליה ממשיכה כרגיל: אותו תאריך פקיעה, לא
     // ספירה חדשה. שדרוג הפרסומת לא מאריך ולא מקצר את הזמן שנותר לה.
-    const inheritedExpiry = replacing && !replacing.paused && replacing.expiresAt
-        && new Date(replacing.expiresAt).getTime() > now.getTime()
-        ? replacing.expiresAt
-        : null;
+    // מבין כמה גרסאות שיורדות - הרחוקה ביותר, שלא לגזול זמן ששולם עליו.
+    const inheritedExpiry = replacingAll
+        .filter(a => !a.paused && a.expiresAt && new Date(a.expiresAt).getTime() > now.getTime())
+        .map(a => a.expiresAt as string)
+        .sort()
+        .pop() ?? null;
     const days = durationDays ?? existing.duration_days
         ?? (inheritedExpiry ? (replacing?.durationDays ?? DEFAULT_DURATION_DAYS) : DEFAULT_DURATION_DAYS);
     const expires = inheritedExpiry ?? new Date(now.getTime() + days * DAY_MS).toISOString();
@@ -615,17 +617,24 @@ export async function approveAd(
     invalidate('ads:');
     const approved = fromStrapi(res.data);
 
-    // סדר הפעולות מכוון: קודם החדשה עולה, רק אחר-כך הישנה יורדת. כשל כאן
-    // משאיר את שתיהן באוויר (מצב שהמנהל רואה ויכול לתקן) - עדיף מלהוריד
+    // סדר הפעולות מכוון: קודם החדשה עולה, רק אחר-כך הישנות יורדות. כשל
+    // כאן משאיר אותן באוויר (מצב שהמנהל רואה ויכול לתקן) - עדיף מלהוריד
     // את הישנה ואז להיכשל בהעלאת החדשה ולהשאיר את המפרסם בלי פרסומת.
-    if (replacing) {
+    const retiredNow: string[] = [];
+    const retiredTitles: string[] = [];
+    for (const old of replacingAll) {
         try {
-            await supersedeAd(replacing, id, decidedBy, 'הוחלפה בגרסה מעודכנת שאישרת');
-            approved.replacedNowTitle = replacing.title;
-            approved.replacedNowId = replacing.id;
+            await supersedeAd(old, id, decidedBy, 'הוחלפה בגרסה מעודכנת שאישרת');
+            retiredNow.push(old.id);
+            retiredTitles.push(old.title);
         } catch (e) {
             console.warn('[adsStore] supersede on approve failed:', e instanceof Error ? e.message : e);
         }
+    }
+    if (retiredNow.length > 0) {
+        approved.replacedNowTitle = retiredTitles.join('", "');
+        approved.replacedNowId    = retiredNow[0];
+        approved.replacedNowIds   = retiredNow;
     }
     return approved;
 }

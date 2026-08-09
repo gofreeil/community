@@ -113,8 +113,8 @@ export const actions: Actions = {
         await markAdMessagesHandled([id], 'approve');
         // גם ההתראה על הגרסה שירדה מהאתר יורדת מהתיבה - אחרת נשאר כרטיס
         // פתוח על פרסומת שכבר הוחלפה, ואישור שלו מחזיר אותה לאוויר ליד החדשה
-        if (result.replacedNowId) {
-            await markAdMessagesHandled([result.replacedNowId], 'superseded', { superseded_by: id });
+        if (result.replacedNowIds?.length) {
+            await markAdMessagesHandled(result.replacedNowIds, 'superseded', { superseded_by: id });
         }
         // גרסה מעודכנת של מפרסם קיים - המנהל צריך לראות שהישנה ירדה, ולא
         // להישאר בספק אם נוספה פרסומת שנייה לאותו מפרסם
