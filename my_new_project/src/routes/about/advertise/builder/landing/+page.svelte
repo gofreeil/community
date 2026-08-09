@@ -339,6 +339,52 @@
 
     let submitError = $state<string>("");
 
+    // ===== גלילה איטית אל הודעת ההצלחה =====
+    // אחרי השליחה הטופס הארוך מתקפל והגולש נשאר גלול עמוק למטה מול רקע ריק.
+    // גוללים לאט למעלה אל ההודעה כדי שיראה את המשוב - בלי קפיצה חדה.
+    let successEl = $state<HTMLElement | null>(null);
+
+    function slowScrollTo(el: HTMLElement) {
+        // 8rem = scroll-margin-top של הכרטיסים בעמוד - מפצה על הכותרת הקבועה
+        const targetY = Math.max(0, el.getBoundingClientRect().top + window.scrollY - 128);
+        if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+            window.scrollTo(0, targetY);
+            return;
+        }
+        const startY = window.scrollY;
+        const delta = targetY - startY;
+        if (Math.abs(delta) < 8) return;
+        // איטי מאוד בכוונה, אך מוגבל כדי שמסע קצר לא ייגרר וארוך לא יימשך נצח
+        const duration = Math.min(4000, Math.max(2200, Math.abs(delta) * 1.5));
+        let cancelled = false;
+        const cancel = () => { cancelled = true; };
+        // הגולש שגולל בעצמו משתלט על ההגה - לא נלחמים בו
+        window.addEventListener("wheel", cancel, { once: true, passive: true });
+        window.addEventListener("touchstart", cancel, { once: true, passive: true });
+        const ease = (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t);
+        let t0: number | null = null;
+        const step = (ts: number) => {
+            if (cancelled) return;
+            if (t0 === null) t0 = ts;
+            const p = Math.min(1, (ts - t0) / duration);
+            window.scrollTo(0, startY + delta * ease(p));
+            if (p < 1) requestAnimationFrame(step);
+            else {
+                window.removeEventListener("wheel", cancel);
+                window.removeEventListener("touchstart", cancel);
+            }
+        };
+        requestAnimationFrame(step);
+    }
+
+    $effect(() => {
+        if (submitted && successEl) {
+            const el = successEl;
+            // מחכים לפריים אחרי שהעמוד התקצר, כדי למדוד מיקום ונקודת מוצא נכונים
+            requestAnimationFrame(() => slowScrollTo(el));
+        }
+    });
+
     // Extract a user-facing message from a failed server response. Server errors
     // in this project are Hebrew strings inside a JSON body ({ message } from
     // SvelteKit error(), sometimes { error }). Anything else - raw JSON, English
@@ -503,7 +549,8 @@
             </div>
         {/if}
 
-        <!-- ===== Page header ===== -->
+        <!-- ===== Page header - מוסתר אחרי השליחה: אין להציג "שלב הבא - עריכה" כשהעריכה כבר הסתיימה ===== -->
+        {#if !submitted}
         <header class="text-center mb-8">
             <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 mb-4">
                 <span class="text-amber-300 text-xs font-bold tracking-wider">{$_("advertise.l_badge")}</span>
@@ -519,6 +566,7 @@
                 </button>
             </div>
         </header>
+        {/if}
 
         {#if !submitted}
 
@@ -853,7 +901,7 @@
 
         {:else}
             <!-- =================== DONE =================== -->
-            <section class="step-card success-card">
+            <section class="step-card success-card" bind:this={successEl}>
                 <div class="text-center py-6">
                     <div class="text-6xl mb-3">🎉</div>
                     <h2 class="text-2xl md:text-3xl font-black text-green-300 mb-2">{$_("advertise.l_done_title")}</h2>
