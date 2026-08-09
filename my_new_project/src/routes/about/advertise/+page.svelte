@@ -1546,14 +1546,16 @@
 
         {#if isFreeExempt}
             <!-- ===== Free exemption flow - upload publication at no cost ===== -->
-            <div class="rounded-xl border-2 border-green-500/50 bg-green-900/15 p-6 text-center">
-                <div class="text-3xl mb-3">🎉</div>
-                <h3 class="text-green-300 font-black text-lg mb-1">{discountLabelText || $_('advertise.free_exempt')}</h3>
-                <p class="text-gray-300 text-sm mb-5">{$_('advertise.code_accepted')}</p>
+            <div class="rounded-xl border border-green-500/40 bg-green-900/15 px-4 py-3 md:px-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-right">
+                <span class="text-2xl shrink-0">🎉</span>
+                <div class="flex-1 min-w-[14rem]">
+                    <h3 class="text-green-300 font-black text-sm md:text-base leading-snug">{discountLabelText || $_('advertise.free_exempt')}</h3>
+                    <p class="text-gray-300 text-xs md:text-sm leading-snug">{$_('advertise.code_accepted')}</p>
+                </div>
                 <button
                     type="button"
                     onclick={uploadFree}
-                    class="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-black px-7 py-3.5 rounded-xl text-base transition-all hover:scale-105 shadow-lg shadow-green-500/20">
+                    class="shrink-0 inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-black px-5 py-2.5 rounded-xl text-sm transition-all hover:scale-105 shadow-lg shadow-green-500/20">
                     {$_('advertise.upload_free_btn')}
                 </button>
             </div>
