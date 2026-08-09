@@ -20,6 +20,12 @@
     const DURATION_OPTIONS = [7, 14, 30, 60, 90, 180, 365];
     // 12 המקומות הממוספרים בטור הפרסומות - בורר המקום בטבלת התזמון
     const SLOT_NUMBERS = Array.from({ length: AD_SLOT_COUNT }, (_, i) => i + 1);
+    // רקע לאפשרויות בורר המקום: 1,5,9 בתכלת ו-2,6,10 בירוק בהיר (רקע בהיר בלבד - כהה נשבר בהדגשת המערכת)
+    function slotOptionBg(n: number): string {
+        if ([1, 5, 9].includes(n)) return '#dbeafe';
+        if ([2, 6, 10].includes(n)) return '#dcfce7';
+        return '#fff';
+    }
     let canReorder = $derived(sortOrder === 'display' && !searchQuery.trim());
 
     /** מספר המקום של פרסומת מאושרת; לממתינות/נדחות אין מקום */
@@ -584,7 +590,7 @@
                                             <select name="slot"
                                                     class="px-1.5 py-1 rounded-lg bg-black/40 border border-white/15 text-white text-[11px] focus:outline-none focus:border-amber-400/50">
                                                 {#each slotOptions as n (n)}
-                                                    <option value={n} selected={n === s.slot} style="background:#fff;color:#111">{n}</option>
+                                                    <option value={n} selected={n === s.slot} style="background:{slotOptionBg(n)};color:#111">{n}</option>
                                                 {/each}
                                             </select>
                                         </div>
