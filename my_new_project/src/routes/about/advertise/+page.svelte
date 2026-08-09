@@ -8,6 +8,7 @@
     import { evaluateDiscount, discountAmount, type DiscountCode } from "$lib/discountCodes";
     import { FREE_PROMO, FREE_PROMO_PUBLIC, FREE_PROMO_CODE_TEXT, FREE_PROMO_DISCOUNT } from "$lib/freePromo";
     import { MAP_IMAGE_PRICE_YEARLY } from "$lib/mapImage";
+    import { setAdIntent } from "$lib/adDraft";
     import { heRank } from "$lib/search";
 
     // Page data - layoutUser provides the logged-in user's profile (email, phone)
@@ -530,6 +531,10 @@
             const months = selectedItems.some(r => r.plan === 'half') ? 6 : 1;
             localStorage.setItem('ad_plan_months', String(months));
         } catch { /* ignore */ }
+        // הגעה דרך המחירון = רכישת פרסומת *נוספת*, לא עריכה של הקיימת.
+        // בלי הסימון הזה השרת זיהה "מפרסם חוזר" לפי זהות בלבד, והשליחה
+        // הייתה מורידה מהאתר את הפרסומת שכבר רצה.
+        setAdIntent('new');
         goto('/about/advertise/builder');
     }
 
@@ -1583,7 +1588,8 @@
                    class="inline-flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-500 text-white font-black px-6 py-3 rounded-xl text-sm transition-all hover:scale-105">
                     {$_('advertise.grow_btn')}
                 </a>
-                <a href="/about/advertise/builder"
+                <!-- גם כאן: מי שמגיע לבילדר מהמחירון קנה משבצת נוספת -->
+                <a href="/about/advertise/builder" onclick={() => setAdIntent('new')}
                    class="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-black px-6 py-3 rounded-xl text-sm transition-all hover:scale-105">
                     {$_('advertise.already_paid_btn')}
                 </a>

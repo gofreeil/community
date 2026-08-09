@@ -10,7 +10,7 @@
         DEFAULT_SUB_FONT_SIZE, SUB_FONT_SIZE_MIN, SUB_FONT_SIZE_MAX,
         DEFAULT_SUB_LINE_HEIGHT, SUB_LINE_HEIGHT_MIN, SUB_LINE_HEIGHT_MAX,
     } from "$lib/adStyle";
-    import { AD_DRAFT_KEY, clearAdSubmitted } from "$lib/adDraft";
+    import { AD_DRAFT_KEY, clearAdSubmitted, getAdIntent, type AdIntent } from "$lib/adDraft";
 
     // ===== Page payload (logged-in user prefill + admin status) =====
     let { data } = $props<{
@@ -277,6 +277,8 @@
     let subLineHeight   = $state<number>(DEFAULT_SUB_LINE_HEIGHT);
     let subAlign        = $state<SubAlign>("right");
     let hoverText       = $state<string>("");
+    // 'new' = נכנס מהמחירון לקנות משבצת נוספת; 'edit' = עריכת הקיימת
+    let adIntent        = $state<AdIntent>("edit");
     let cta             = $state<string>("הקלק לפרטים והזמנות");
     let gradient        = $state<string>("from-amber-500 to-orange-600");
     let diagHeight      = $state<number>(12);   // % of image - height of the diagonal color band (range 5..50)
@@ -462,6 +464,7 @@
 
     // ===== Drag-and-drop state (visual highlight per zone) =====
     let isDraggingMain = $state(false);
+    let isDraggingMobile = $state(false);
     let isDraggingLogo = $state(false);
     let isDraggingLandingImage = $state(false);
     let draggingProductId = $state<number | null>(null);
@@ -630,7 +633,7 @@
         e.stopPropagation();
         setActive(false);
     }
-    async function handleDrop(e: DragEvent, target: "main" | "logo" | "landingImage" | { kind: "product"; id: number }, setActive: (v: boolean) => void) {
+    async function handleDrop(e: DragEvent, target: "main" | "mobile" | "logo" | "landingImage" | { kind: "product"; id: number }, setActive: (v: boolean) => void) {
         e.preventDefault();
         e.stopPropagation();
         setActive(false);
@@ -730,6 +733,7 @@
         // two real plans are accepted - anything else falls back to a month.
         const storedMonths = Number(localStorage.getItem(PLAN_MONTHS_KEY));
         if (storedMonths === 6) planMonths = 6;
+        adIntent = getAdIntent();
 
         // Tick every minute to update the free-edit countdown.
         const tickId = window.setInterval(() => { now = new Date(); }, 60_000);
@@ -1088,6 +1092,29 @@
                         <p class="text-gray-200 text-xs md:text-sm leading-relaxed">
                             {$_('advertise.b_exp_body')}
                         </p>
+                    </div>
+                </div>
+            </div>
+        {/if}
+
+        <!-- משבצת נוספת: המפרסם הגיע מהמחירון וקנה עוד פרסומת, אבל הטיוטה
+             שעל המסך היא זו של הפרסומת הקודמת שלו. בלי האזהרה הזו הוא היה
+             שולח שוב את אותה פרסומת בדיוק - ומקבל שתיים זהות על האתר. -->
+        {#if adIntent === 'new' && (title || mainImage)}
+            <div class="mt-3 mx-auto max-w-2xl rounded-2xl border border-amber-500/50 bg-amber-500/10 px-4 py-3 md:px-5 md:py-4 text-right">
+                <div class="flex items-start gap-3">
+                    <span class="text-2xl flex-shrink-0">➕</span>
+                    <div class="flex-1 min-w-0">
+                        <p class="font-black text-amber-300 text-sm md:text-base mb-1">
+                            {$_('advertise.b_extra_slot_title')}
+                        </p>
+                        <p class="text-gray-200 text-xs md:text-sm leading-relaxed mb-2">
+                            {$_('advertise.b_extra_slot_body')}
+                        </p>
+                        <button type="button" onclick={resetDraft}
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-black text-xs transition-colors">
+                            {$_('advertise.b_extra_slot_clear')}
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1677,8 +1704,13 @@
                 <div class="mobile-image-swap">
                     <p class="mobile-image-swap-title">{$_('advertise.b_mobile_img_title')}</p>
                     <p class="mobile-image-swap-help">{$_('advertise.b_mobile_img_help')}</p>
+                    <!-- svelte-ignore a11y_no_static_element_interactions -->
                     {#if mobileImage}
-                        <div class="mobile-image-swap-frame">
+                        <div class="mobile-image-swap-frame"
+                             class:dragging={isDraggingMobile}
+                             ondragover={(e) => dragOver(e, v => isDraggingMobile = v)}
+                             ondragleave={(e) => dragLeave(e, v => isDraggingMobile = v)}
+                             ondrop={(e) => handleDrop(e, "mobile", v => isDraggingMobile = v)}>
                             <img src={mobileImage} alt={$_('advertise.b_mobile_img_title')} use:adImgFit={mobileImageFit} />
                             <button type="button" class="remove-x" onclick={() => clearImage("mobile")} aria-label={$_('advertise.b_remove_image')}>✕</button>
                             <button type="button" class="crop-arrow crop-arrow-up"    onclick={() => nudgeMainImage("up", "mobile")}    aria-label={$_('advertise.b_nudge_up')}>▲</button>
@@ -1691,9 +1723,18 @@
                         </div>
                         <p class="mobile-image-swap-note">{$_('advertise.b_mobile_img_active')}</p>
                     {:else}
-                        <label class="mobile-image-swap-btn">
-                            <span aria-hidden="true">📱</span>
-                            {$_('advertise.b_mobile_img_upload')}
+                        <!-- אזור שחרור מלא, לא רק כפתור בחירה: גרירת קובץ לכאן
+                             עובדת בדיוק כמו באזור התמונה הראשית -->
+                        <label class="mobile-image-swap-drop"
+                               class:dragging={isDraggingMobile}
+                               ondragover={(e) => dragOver(e, v => isDraggingMobile = v)}
+                               ondragleave={(e) => dragLeave(e, v => isDraggingMobile = v)}
+                               ondrop={(e) => handleDrop(e, "mobile", v => isDraggingMobile = v)}>
+                            <span class="text-2xl" aria-hidden="true">{isDraggingMobile ? "✨" : "📱"}</span>
+                            <span class="mobile-image-swap-drop-main">
+                                {isDraggingMobile ? $_('advertise.b_drop_here') : $_('advertise.b_mobile_img_upload')}
+                            </span>
+                            <span class="mobile-image-swap-drop-sub">{$_('advertise.b_click_or_drag')}</span>
                             <input type="file" accept="image/*" onchange={(e) => handleImage(e, "mobile")} class="hidden" />
                         </label>
                     {/if}
@@ -3123,15 +3164,29 @@
     :global(.mobile-image-swap-help) {
         margin: 0.2rem 0 0.6rem; color: rgb(156,163,175); font-size: 0.72rem; line-height: 1.35;
     }
-    :global(.mobile-image-swap-btn) {
-        display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
-        padding: 0.5rem 0.9rem; border-radius: 0.7rem; cursor: pointer;
-        border: 1px solid rgba(245,158,11,0.45); background: rgba(245,158,11,0.10);
-        color: rgb(253,230,138); font-weight: 700; font-size: 0.8rem;
-        transition: background 0.15s, border-color 0.15s;
+    /* אזור שחרור: גרירה או לחיצה, שניהם מעלים את התמונה */
+    :global(.mobile-image-swap-drop) {
+        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.15rem;
+        width: 100%; max-width: 320px; margin: 0 auto;
+        padding: 1rem 0.9rem; border-radius: 0.8rem; cursor: pointer;
+        border: 2px dashed rgba(245,158,11,0.45); background: rgba(245,158,11,0.06);
+        color: rgb(253,230,138);
+        transition: background 0.15s, border-color 0.15s, transform 0.15s;
     }
-    :global(.mobile-image-swap-btn:hover) {
-        background: rgba(245,158,11,0.18); border-color: rgba(245,158,11,0.75);
+    :global(.mobile-image-swap-drop:hover) {
+        background: rgba(245,158,11,0.14); border-color: rgba(245,158,11,0.8);
+    }
+    :global(.mobile-image-swap-drop.dragging) {
+        border-color: rgb(34,197,94); background: rgba(34,197,94,0.12);
+        box-shadow: 0 0 0 4px rgba(34,197,94,0.18);
+        transform: scale(1.01);
+    }
+    :global(.mobile-image-swap-drop-main) { font-weight: 800; font-size: 0.82rem; }
+    :global(.mobile-image-swap-drop-sub) { color: rgb(156,163,175); font-size: 0.68rem; }
+    /* גם כשכבר יש תמונה - גרירה מעליה מחליפה אותה */
+    :global(.mobile-image-swap-frame.dragging) {
+        border-color: rgb(34,197,94);
+        box-shadow: 0 0 0 4px rgba(34,197,94,0.2);
     }
     /* אותו יחס בדיוק של משבצת התמונה בנייד, כדי שהחיתוך שנבחר כאן
        יהיה החיתוך שרואים שם */

@@ -17,7 +17,7 @@
 	import { neighborhoodState } from "$lib/neighborhoodState.svelte";
 	import { imageDrop } from "$lib/imageDrop";
 	import { registerDynamicNeighborhoods, hasPreciseCoords, MY_PIN_LS_KEY } from "$lib/neighborhoodCoords";
-	import { AD_DRAFT_KEY, isAdSubmitted, clearAdSubmitted } from "$lib/adDraft";
+	import { AD_DRAFT_KEY, isAdSubmitted, clearAdSubmitted, setAdIntent } from "$lib/adDraft";
 	import { findWhatsAppGroups } from "$lib/data/whatsapp-groups";
 	import { getLikedItems, removeLike, type LikedItem } from "$lib/likedItems";
 	import { restoreDaysLeft } from "$lib/placeStatus";
@@ -3165,7 +3165,7 @@
 							<p class="text-gray-300 text-xs leading-relaxed">{msg.text}</p>
 							{#if isDraft}
 								<div class="flex items-center gap-1.5 justify-between mt-2 flex-wrap">
-									<a href="/about/advertise/builder"
+									<a href="/about/advertise/builder" onclick={() => setAdIntent('edit')}
 									   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-black text-xs transition-colors">
 										{tFn("profile.finish_edit")}
 									</a>
@@ -3738,7 +3738,9 @@
 										{adDraft.title || tFn("profile.untitled")}{adDraft.subtitle ? " - " + adDraft.subtitle : ""}
 									</p>
 									<div class="flex items-center gap-2 flex-wrap">
-										<a href="/about/advertise/builder"
+										<!-- הגעה מכאן = עריכה של הפרסומת הקיימת, ולכן השליחה
+										     תחליף אותה ולא תוסיף שנייה לצידה -->
+										<a href="/about/advertise/builder" onclick={() => setAdIntent('edit')}
 										   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-black text-xs transition-colors">
 											{adIsLive ? tFn("profile.ad_edit_live") : tFn("profile.continue_edit")}
 										</a>

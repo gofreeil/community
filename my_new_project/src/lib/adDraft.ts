@@ -14,6 +14,32 @@ export const AD_DRAFT_KEY = 'ad_builder_draft_v1';
 /** חותמת ISO של הרגע שבו הפרסומת נשלחה לאישור מהטיוטה הזו */
 export const AD_SUBMITTED_KEY = 'ad_builder_submitted_v1';
 
+/**
+ * לשם מה נכנסו לסטודיו:
+ *  'edit' - עריכה של הפרסומת הקיימת (הגעה מ"עריכת הפרסומת" באזור האישי).
+ *           השליחה מחליפה את מה שרץ על האתר.
+ *  'new'  - רכישת פרסומת *נוספת* (הגעה מהמחירון אחרי בחירת מסלול).
+ *           השליחה לא נוגעת בפרסומת הקיימת ושתיהן רצות במקביל.
+ *
+ * בלי ההבחנה הזו השרת זיהה "מפרסם חוזר" לפי זהות בלבד, וכל רכישה שנייה
+ * הרגה את הראשונה - גם כשהמפרסם שילם בכוונה על שתיים.
+ */
+export const AD_INTENT_KEY = 'ad_builder_intent_v1';
+export type AdIntent = 'edit' | 'new';
+
+export function setAdIntent(intent: AdIntent): void {
+    try { localStorage.setItem(AD_INTENT_KEY, intent); } catch { /* ignore */ }
+}
+
+/** ברירת המחדל היא 'edit' - ההתנהגות שהייתה לפני שהדגל הזה נוסף */
+export function getAdIntent(): AdIntent {
+    try { return localStorage.getItem(AD_INTENT_KEY) === 'new' ? 'new' : 'edit'; } catch { return 'edit'; }
+}
+
+export function clearAdIntent(): void {
+    try { localStorage.removeItem(AD_INTENT_KEY); } catch { /* ignore */ }
+}
+
 /** נקרא אחרי שליחה מוצלחת: מכאן והלאה אין מה לנדנד למפרסם */
 export function markAdSubmitted(): void {
     try { localStorage.setItem(AD_SUBMITTED_KEY, new Date().toISOString()); } catch { /* ignore */ }

@@ -90,6 +90,11 @@ export interface SubmittedAd {
     mainImage: string;
     /** מיקום+זום של התמונה הראשית במשבצת (מהבילדר) */
     mainImageFit: AdImageFit;
+    /**
+     * פרסומת *נוספת* שנקנתה בכוונה (המפרסם נכנס לסטודיו דרך המחירון ולא
+     * דרך "עריכת הפרסומת"). לא מתקשרת לקודמת ולא מורידה אותה באישור.
+     */
+    standalone?: boolean;
     /** תמונה ייעודית לגרסת הנייד; ריק = הנייד מציג את התמונה הראשית */
     mobileImage: string;
     /** מיקום+זום של תמונת הנייד */
@@ -131,6 +136,7 @@ interface StrapiAdAttrs {
     landing:
         | (SubmittedAd['landing'] & {
               mainImageFit?: unknown;
+              _standalone?: unknown;
               mobileImage?: unknown;
               mobileImageFit?: unknown;
               adStyle?: unknown;
@@ -206,6 +212,7 @@ function fromStrapi(s: StrapiAd): SubmittedAd {
         logo: s.logo ?? '',
         mainImage: s.main_image ?? '',
         mainImageFit: parseAdImageFit(s.landing?.mainImageFit),
+        standalone: s.landing?._standalone === true,
         mobileImage: typeof s.landing?.mobileImage === 'string' ? s.landing.mobileImage : '',
         mobileImageFit: parseAdImageFit(s.landing?.mobileImageFit),
         // null במודעות שנשלחו לפני שהעיצוב נשמר — הצרכן נופל ל-legacyAdStyle
@@ -494,8 +501,13 @@ export async function getAdStatuses(ids: string[]): Promise<Map<string, AdStatus
 
 export async function submitAd(payload: Omit<SubmittedAd, 'id' | 'status' | 'submittedAt'>): Promise<SubmittedAd> {
     const now = new Date().toISOString();
-    // מפרסם חוזר: מחפשים לפני היצירה, כדי שהרשומה החדשה עצמה לא תופיע ברשימה
-    const { target: predecessor, stalePending } = await findPredecessors(payload);
+    // מפרסם חוזר: מחפשים לפני היצירה, כדי שהרשומה החדשה עצמה לא תופיע ברשימה.
+    // פרסומת נוספת שנקנתה בכוונה (הגעה דרך המחירון) לא מחפשת קודמת בכלל -
+    // היא לא באה במקום שום דבר, וזיהוי "מפרסם חוזר" לפי זהות היה הורג את
+    // הפרסומת שהוא כבר משלם עליה.
+    const { target: predecessor, stalePending } = payload.standalone
+        ? { target: null, stalePending: [] as SubmittedAd[] }
+        : await findPredecessors(payload);
     const res = await strapiPost<{ data: StrapiAd }>(ENDPOINT, {
         data: {
             ad_status:           'pending',
@@ -517,6 +529,8 @@ export async function submitAd(payload: Omit<SubmittedAd, 'id' | 'status' | 'sub
                 // תמונת הנייד נוסעת גם היא בתוך landing — אין לה עמודה בסכמה
                 mobileImage: payload.mobileImage ?? '',
                 mobileImageFit: parseAdImageFit(payload.mobileImageFit),
+                // נשמר עם המודעה: גם באישור, שבא אחר-כך, אסור להוריד את הקיימת
+                ...(payload.standalone ? { _standalone: true } : {}),
                 // העיצוב שהמפרסם קבע בבילדר — בלעדיו המודעה מתפרסמת עם
                 // ברירות המחדל של האתר ולא עם מה שהוא ראה על המסך
                 adStyle: parseAdStyle(payload.adStyle),
@@ -543,6 +557,9 @@ export async function submitAd(payload: Omit<SubmittedAd, 'id' | 'status' | 'sub
         ad.replacesTitle  = predecessor.title;
         ad.replacesStatus = predecessor.status;
     }
+    // כמו replacesAdId: לא נשענים על מה שחזר ב-POST, כדי שההתראה למנהל
+    // תדע בוודאות שמדובר במשבצת נוספת ולא בעדכון
+    if (payload.standalone) ad.standalone = true;
 
     // בקשות קודמות שעדיין ממתינות לאישור לא צריכות להישאר בתור: המנהל אמור
     // לראות בקשה אחת לכל מפרסם - האחרונה - ולא שתי בקשות שנראות כפולות.
@@ -591,10 +608,14 @@ export async function approveAd(
     if (!existing) return null;
     const current = fromStrapi(existing);
 
+    // פרסומת נוספת שנקנתה בכוונה מתנהגת בדיוק כמו keepPrevious: היא לא
+    // באה במקום כלום, והמפרסם משלם על שתי המשבצות.
+    const keepPrevious = opts.keepPrevious || current.standalone === true;
+
     // גרסה מעודכנת של מפרסם קיים: נכנסת *במקום* הישנה - אותו מקום בטור
     // ואותו תאריך סיום - ומיד אחרי האישור הישנה יורדת מהאתר. בלי זה
     // האישור היה מוסיף פרסומת שנייה לאותו מפרסם, ליד הישנה.
-    const predecessor = current.replacesAdId && !opts.keepPrevious
+    const predecessor = current.replacesAdId && !keepPrevious
         ? await getAd(current.replacesAdId).catch(() => null)
         : null;
     // כל מה שחי כרגע על האתר לאותו מפרסם: הגרסה שנרשמה בשליחה (אם היא
@@ -602,7 +623,7 @@ export async function approveAd(
     // השליחה* בלבד - וזה בדיוק מה ששבר: כששתי גרסאות היו באוויר, האישור
     // הוריד את הישנה, השאיר את השנייה ודחף אותה למטה. מפרסם מקבל משבצת
     // אחת, ולכן ברירת המחדל היא שהחדשה מכסה את *כולן*.
-    const liveBefore = opts.keepPrevious ? [] : await findLiveAdsOfAdvertiser(current);
+    const liveBefore = keepPrevious ? [] : await findLiveAdsOfAdvertiser(current);
     const replacingAll = predecessor && predecessor.status === 'approved' && !predecessor.supersededBy
         && !liveBefore.some(a => a.id === predecessor.id)
         ? [predecessor, ...liveBefore]

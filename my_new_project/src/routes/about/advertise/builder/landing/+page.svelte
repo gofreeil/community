@@ -5,7 +5,7 @@
     import { browser } from "$app/environment";
     import { goto } from "$app/navigation";
     import { DEFAULT_AD_STYLE, parseAdStyle, type AdStyle } from "$lib/adStyle";
-    import { AD_DRAFT_KEY, markAdSubmitted, clearAdSubmitted } from "$lib/adDraft";
+    import { AD_DRAFT_KEY, markAdSubmitted, clearAdSubmitted, clearAdIntent, getAdIntent, type AdIntent } from "$lib/adDraft";
 
     let { data } = $props<{
         data: {
@@ -21,6 +21,8 @@
     // המסלול שנרכש בדף המחירים (1 = חודש, 6 = חצי שנה). נשלח עם המודעה,
     // אחרת השרת לא יודע עליו כלום ומי ששילם על חצי שנה קיבל חודש.
     let planMonths = $state<number>(1);
+    // 'new' = הגיע מהמחירון וקנה משבצת נוספת; 'edit' = עריכה של הקיימת
+    let adIntent = $state<AdIntent>('edit');
 
     // ===== Access gate (same logic as the main builder) =====
     let accessGranted = $state(false);
@@ -266,6 +268,7 @@
                 };
                 mobileImage = d.mobileImage ?? "";
                 if (Number(localStorage.getItem(PLAN_MONTHS_KEY)) === 6) planMonths = 6;
+                adIntent = getAdIntent();
                 mobileImageFit = {
                     x: typeof d.mobileImageObjectX === "number" ? d.mobileImageObjectX : 50,
                     y: typeof d.mobileImageObjectY === "number" ? d.mobileImageObjectY : 50,
@@ -430,6 +433,8 @@
                 mobileImage, mobileImageFit,
                 // המסלול שנרכש - השרת גוזר ממנו את תאריך הפקיעה
                 planMonths,
+                // 'new' = משבצת נוספת שנקנתה, ואסור שתפיל את הפרסומת הקיימת
+                intent: adIntent,
                 adStyle: adStyleFromDraft,
                 landing: {
                     headline: landingHeadline, pitch: landingPitch, extended: landingExtended, image: landingImage, advantages: landingAdvantages, uniqueness, phone, whatsapp, website, email, address, hours,
@@ -451,6 +456,9 @@
             submitted = true;
             // מכאן הטיוטה כבר אצל המנהל - האזור האישי מפסיק לנדנד "סיים את עריכתו"
             markAdSubmitted();
+            // הכוונה נצרכה. הכניסה הבאה לסטודיו תיקבע לפי הדלת שדרכה נכנסים,
+            // ולא תגרור בטעות "פרסומת נוספת" מרכישה קודמת.
+            clearAdIntent();
         } catch (e) {
             // fetch rejects with a TypeError ("Failed to fetch") on a network
             // failure - show a Hebrew connectivity message instead of English.
