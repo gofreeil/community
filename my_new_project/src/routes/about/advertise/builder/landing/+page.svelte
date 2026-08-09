@@ -17,6 +17,10 @@
     // ===== Persistence - same key as the main builder so state shares freely =====
     const LS_KEY = AD_DRAFT_KEY;
     const PAID_KEY = "ad_paid";
+    const PLAN_MONTHS_KEY = "ad_plan_months";
+    // המסלול שנרכש בדף המחירים (1 = חודש, 6 = חצי שנה). נשלח עם המודעה,
+    // אחרת השרת לא יודע עליו כלום ומי ששילם על חצי שנה קיבל חודש.
+    let planMonths = $state<number>(1);
 
     // ===== Access gate (same logic as the main builder) =====
     let accessGranted = $state(false);
@@ -261,6 +265,7 @@
                     z: typeof d.mainImageZoom === "number" ? d.mainImageZoom : 1,
                 };
                 mobileImage = d.mobileImage ?? "";
+                if (Number(localStorage.getItem(PLAN_MONTHS_KEY)) === 6) planMonths = 6;
                 mobileImageFit = {
                     x: typeof d.mobileImageObjectX === "number" ? d.mobileImageObjectX : 50,
                     y: typeof d.mobileImageObjectY === "number" ? d.mobileImageObjectY : 50,
@@ -423,6 +428,8 @@
                 logo, mainImage, mainImageFit,
                 // ריקים כשהמפרסם לא העלה תמונה ייעודית לנייד
                 mobileImage, mobileImageFit,
+                // המסלול שנרכש - השרת גוזר ממנו את תאריך הפקיעה
+                planMonths,
                 adStyle: adStyleFromDraft,
                 landing: {
                     headline: landingHeadline, pitch: landingPitch, extended: landingExtended, image: landingImage, advantages: landingAdvantages, uniqueness, phone, whatsapp, website, email, address, hours,

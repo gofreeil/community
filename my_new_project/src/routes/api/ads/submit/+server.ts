@@ -80,6 +80,15 @@ async function notifyAdminsInApp(ad: SubmittedAd) {
     })));
 }
 
+/**
+ * מסלול התשלום שנבחר בדף המחירים → מספר הימים שהפרסומת תרוץ.
+ * רק שני המסלולים האמיתיים מתקבלים; כל ערך אחר נופל לחודש, וכך גם
+ * מודעה שנשלחה בלי המידע הזה (טיוטה ישנה) מתנהגת כמו קודם.
+ */
+function parsePlanDays(raw: unknown): number {
+    return Number(raw) === 6 ? 180 : 30;
+}
+
 export const POST: RequestHandler = async (event) => {
     const session = await event.locals.auth().catch(() => null);
 
@@ -118,6 +127,9 @@ export const POST: RequestHandler = async (event) => {
         // תמונה ייעודית לנייד; ריק = הנייד משתמש בתמונה הראשית
         mobileImage: typeof payload.mobileImage === 'string' ? payload.mobileImage : '',
         mobileImageFit: parseAdImageFit(payload.mobileImageFit),
+        // התקופה שנקנתה בדף המחירים. קלט דפדפן - מקבלים רק את שני המסלולים
+        // הקיימים, כדי שאי אפשר יהיה לבקש שנה בחינם דרך ה-API.
+        durationDays: parsePlanDays(payload.planMonths),
         // מיקום/צורת הלוגו, גובה הרצועה וצבע הכותרת — אותו עיצוב שהמפרסם
         // ראה בתצוגה החיה. חסר (מודעה ותיקה) נשמר כ-null.
         adStyle: parseAdStyle(payload.adStyle),

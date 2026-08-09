@@ -111,6 +111,11 @@ export const actions: Actions = {
         // שם עם כפתורי אשר/דחה על בקשה שכבר טופלה - וזה מה שנראה ככפילות
         // מול ההתראה על השליחה הבאה של אותו מפרסם.
         await markAdMessagesHandled([id], 'approve');
+        // גם ההתראה על הגרסה שירדה מהאתר יורדת מהתיבה - אחרת נשאר כרטיס
+        // פתוח על פרסומת שכבר הוחלפה, ואישור שלו מחזיר אותה לאוויר ליד החדשה
+        if (result.replacedNowId) {
+            await markAdMessagesHandled([result.replacedNowId], 'superseded', { superseded_by: id });
+        }
         // גרסה מעודכנת של מפרסם קיים - המנהל צריך לראות שהישנה ירדה, ולא
         // להישאר בספק אם נוספה פרסומת שנייה לאותו מפרסם
         return {

@@ -75,6 +75,8 @@ export interface SubmittedAd {
     retiredPendingIds?: string[];
     /** approveAd: כותרת הפרסומת שירדה מהאתר כי הגרסה הזו נכנסה במקומה */
     replacedNowTitle?: string;
+    /** approveAd: המזהה שלה - כדי שגם ההתראה עליה תרד מתיבת המנהלים */
+    replacedNowId?: string;
 
     // Card fields
     title: string;
@@ -497,6 +499,9 @@ export async function submitAd(payload: Omit<SubmittedAd, 'id' | 'status' | 'sub
             submitted_by_email:  payload.submittedBy?.email ?? null,
             submitted_by_name:   payload.submittedBy?.name ?? null,
             submitted_at:        now,
+            // התקופה שהמפרסם קנה (חודש / חצי שנה). בלי זה approveAd נפל
+            // תמיד ל-30 יום, ומי ששילם על חצי שנה קיבל חודש.
+            duration_days:       payload.durationDays ?? null,
         },
     });
     // בלי זה הבקשה החדשה לא נראית במסך הניהול עד שה-cache פג, וגם שליחה
@@ -527,6 +532,24 @@ export async function submitAd(payload: Omit<SubmittedAd, 'id' | 'status' | 'sub
     return ad;
 }
 
+/**
+ * הפרסומת המאושרת שכבר חיה על האתר לאותו מפרסם - חוץ מזו שמאשרים כרגע.
+ * מפרסם מקבל משבצת אחת; שתי מודעות זהות זו לצידה זו הן תמיד תקלה, ולא
+ * בחירה - מי שבאמת רוצה שתיים מאשר עם keepPrevious.
+ * שגיאה כאן לא מפילה את האישור: במקרה הגרוע הישנה תישאר ותרד ידנית.
+ */
+async function findLiveSiblingAd(current: SubmittedAd): Promise<SubmittedAd | null> {
+    try {
+        const approved = await listByStatus('approved');
+        return approved
+            .filter(a => a.id !== current.id && !a.supersededBy && sameAdvertiser(a, current))
+            .sort(byNewest)[0] ?? null;
+    } catch (e) {
+        console.warn('[adsStore] findLiveSiblingAd failed:', e instanceof Error ? e.message : e);
+        return null;
+    }
+}
+
 export interface ApproveOptions {
     /** אשר כפרסומת נוספת ואל תוריד את הקודמת - למפרסם שבאמת רוצה שתיים במקביל */
     keepPrevious?: boolean;
@@ -549,9 +572,17 @@ export async function approveAd(
         ? await getAd(current.replacesAdId).catch(() => null)
         : null;
     // כבר הוחלפה (בקשה ממתינה שירדה מהתור בזמן השליחה) - אין מה להוריד שוב
-    const replacing = predecessor && predecessor.status === 'approved' && !predecessor.supersededBy
+    let replacing = predecessor && predecessor.status === 'approved' && !predecessor.supersededBy
         ? predecessor
         : null;
+
+    // רשת ביטחון: _replacesAdId מצביע על הגרסה שהייתה חיה *בזמן השליחה*.
+    // כשהמפרסם שלח שני שדרוגים והמנהל אישר את שניהם, השני הצביע על מודעה
+    // שכבר הוחלפה - ואז שום דבר לא ירד, ואותה פרסומת הופיעה פעמיים בטור.
+    // לכן מחפשים כאן את מה שבאמת חי עכשיו לאותו מפרסם.
+    if (!replacing && !opts.keepPrevious) {
+        replacing = await findLiveSiblingAd(current);
+    }
 
     const now = new Date();
     // התקופה שהמפרסם כבר שילם עליה ממשיכה כרגיל: אותו תאריך פקיעה, לא
@@ -591,6 +622,7 @@ export async function approveAd(
         try {
             await supersedeAd(replacing, id, decidedBy, 'הוחלפה בגרסה מעודכנת שאישרת');
             approved.replacedNowTitle = replacing.title;
+            approved.replacedNowId = replacing.id;
         } catch (e) {
             console.warn('[adsStore] supersede on approve failed:', e instanceof Error ? e.message : e);
         }
@@ -958,18 +990,40 @@ async function sendReminderMessage(ad: SubmittedAd, rule: ReminderRule): Promise
     }
 }
 
-async function markReminderSent(ad: SubmittedAd, stage: ReminderStage): Promise<void> {
+/**
+ * רושם ב-Strapi שהשלב הזה כבר נשלח. מחזיר האם הרישום הצליח.
+ *
+ * ה-invalidate כאן הוא לב העניין: רשימת המאושרות יושבת ב-cache, וה-PUT
+ * לבדו לא נגע בו. לכן כל טעינה נוספת של דף הניהול בתוך חלון ה-cache קראה
+ * רשימה ישנה שבה reminders_sent עדיין ריק - ושלחה למפרסם את אותה תזכורת
+ * שוב ושוב. כך נערמו ארבע הודעות "הפרסומת שלך תפוג בעוד 30 ימים".
+ */
+async function markReminderSent(ad: SubmittedAd, stage: ReminderStage): Promise<boolean> {
     const next = Array.from(new Set([...(ad.remindersSent ?? []), stage]));
     try {
         await strapiPut(`${ENDPOINT}/${ad.id}`, { data: { reminders_sent: next } });
+        ad.remindersSent = next;   // הרשומה שבזיכרון, למקרה שהיא עוד בשימוש בסבב הזה
+        invalidate('ads:');
+        return true;
     } catch (e) {
         console.warn('[adsStore] markReminderSent failed:', e);
+        return false;
     }
 }
+
+// שתי טעינות של דף הניהול באותו רגע היו מריצות את הלולאה במקביל ושולחות
+// כפול, כי שתיהן קראו את הרשימה לפני שהראשונה הספיקה לסמן
+let remindersInFlight: Promise<{ sent: number; checked: number }> | null = null;
 
 // אידימפוטנטי: רץ ככל שצריך, שולח תזכורת רק אחת לכל שלב.
 // קוראים לזה בכל טעינה של דף ה-admin (lazy cron).
 export async function processExpiryReminders(): Promise<{ sent: number; checked: number }> {
+    if (remindersInFlight) return remindersInFlight;
+    remindersInFlight = runExpiryReminders().finally(() => { remindersInFlight = null; });
+    return remindersInFlight;
+}
+
+async function runExpiryReminders(): Promise<{ sent: number; checked: number }> {
     let approved: SubmittedAd[];
     try {
         approved = await listByStatus('approved');
@@ -980,8 +1034,10 @@ export async function processExpiryReminders(): Promise<{ sent: number; checked:
     for (const ad of approved) {
         const rule = nextReminderForAd(ad);
         if (!rule) continue;
+        // מסמנים לפני ששולחים: אם הסימון נכשל עדיף לוותר על התזכורת הזו
+        // מאשר לשלוח אותה שוב בכל טעינת עמוד
+        if (!(await markReminderSent(ad, rule.stage))) continue;
         await sendReminderMessage(ad, rule);
-        await markReminderSent(ad, rule.stage);
         sent++;
     }
     return { sent, checked: approved.length };
