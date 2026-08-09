@@ -45,6 +45,9 @@ export const load: LayoutServerLoad = async (event) => {
             logo: a.logo,
             mainImage: a.mainImage,
             mainImageFit: a.mainImageFit,
+            // תמונת הנייד (אם הועלתה) — הצרכן נופל לתמונה הראשית כשהיא ריקה
+            mobileImage: a.mobileImage,
+            mobileImageFit: a.mobileImageFit,
             // העיצוב מהבילדר — בלעדיו הכרטיס נבנה מברירות המחדל של האתר
             adStyle: a.adStyle,
         }))

@@ -5,7 +5,11 @@
     import { goto } from "$app/navigation";
     import { _ } from "svelte-i18n";
     import { adImgFit, AD_ZOOM_MIN, AD_ZOOM_MAX } from "$lib/adImageFit";
-    import { bandCorners, logoCornerSide, type AdStyle } from "$lib/adStyle";
+    import {
+        bandCorners, logoCornerSide, type AdStyle, type SubAlign,
+        DEFAULT_SUB_FONT_SIZE, SUB_FONT_SIZE_MIN, SUB_FONT_SIZE_MAX,
+        DEFAULT_SUB_LINE_HEIGHT, SUB_LINE_HEIGHT_MIN, SUB_LINE_HEIGHT_MAX,
+    } from "$lib/adStyle";
 
     // ===== Page payload (logged-in user prefill + admin status) =====
     let { data } = $props<{
@@ -253,10 +257,24 @@
     let mainImageZoom    = $state<number>(1);                   // 1 = cover; >1 תקריב, <1 התרחקות
     // ה-fit המאוחד שמוזרם לכל התצוגות (וגם נשמר עם המודעה בשליחה)
     let mainImageFit = $derived({ x: mainImageObjectX, y: mainImageObjectY, z: mainImageZoom });
+    // תמונה נפרדת לגרסת הנייד. המשבצת בנייד רחבה ונמוכה ובדסקטופ צרה וגבוהה,
+    // ולכן אותה תמונה נחתכת אחרת לגמרי. ריק = הנייד ממשיך להשתמש בתמונה הראשית.
+    let mobileImage        = $state<string>("");
+    let mobileImageObjectX = $state<number>(50);
+    let mobileImageObjectY = $state<number>(50);
+    let mobileImageZoom    = $state<number>(1);
+    let mobileImageFit = $derived({ x: mobileImageObjectX, y: mobileImageObjectY, z: mobileImageZoom });
+    // מה שמוצג בפועל בתצוגת הנייד - התמונה הייעודית אם הועלתה, אחרת הראשית
+    let previewMobileImage = $derived(mobileImage || mainImage);
+    let previewMobileFit   = $derived(mobileImage ? mobileImageFit : mainImageFit);
     let title           = $state<string>("");
     let titleColor      = $state<string>("#ffffff");
     let titleOffsetY    = $state<number>(0);                    // vertical offset for title on banner (-20..+60 px)
     let subtitle        = $state<string>("");
+    // טיפוגרפיית תת-הכותרת (שלב 5) - גודל, רווח בין שורות ויישור
+    let subFontSize     = $state<number>(DEFAULT_SUB_FONT_SIZE);
+    let subLineHeight   = $state<number>(DEFAULT_SUB_LINE_HEIGHT);
+    let subAlign        = $state<SubAlign>("right");
     let hoverText       = $state<string>("");
     let cta             = $state<string>("הקלק לפרטים והזמנות");
     let gradient        = $state<string>("from-amber-500 to-orange-600");
@@ -356,6 +374,11 @@
         const { left, right } = bandCorners(diagHeight);
         document.documentElement.style.setProperty('--diag-top-left', `${left}%`);
         document.documentElement.style.setProperty('--diag-top-right', `${right}%`);
+        // אותם משתנים שהאתר מקבל מ-adStyleVars — כאן הם על ה-root כדי שכל
+        // התצוגות בבילדר (דסקטופ, נייד, צילום-המסך הקטן) יתעדכנו יחד
+        document.documentElement.style.setProperty('--sub-size', `${subFontSize}rem`);
+        document.documentElement.style.setProperty('--sub-lh', String(subLineHeight));
+        document.documentElement.style.setProperty('--sub-align', subAlign);
     });
 
     // ===== The design that travels with the ad =====
@@ -371,6 +394,9 @@
         bandHeight: diagHeight,
         titleOffsetY,
         titleColor,
+        subFontSize,
+        subLineHeight,
+        subAlign,
     });
 
     // Reserve room for a corner logo next to the title - same shared helper the
@@ -510,7 +536,7 @@
         compressNotice = { ...compressNotice, visible: false };
     }
 
-    async function processImageFile(file: File | null | undefined, target: "main" | "logo" | "landingImage" | { kind: "product"; id: number }) {
+    async function processImageFile(file: File | null | undefined, target: "main" | "mobile" | "logo" | "landingImage" | { kind: "product"; id: number }) {
         if (!file) return;
         if (!file.type.startsWith("image/")) {
             alert($_('advertise.b_upload_image_file'));
@@ -529,6 +555,11 @@
             mainImageZoom = 1;
             // Don't auto-advance - let the user crop/position the image with the arrows
             // and click the explicit "next step" button when ready.
+        } else if (target === "mobile") {
+            mobileImage = url;
+            mobileImageObjectX = 50;
+            mobileImageObjectY = 50;
+            mobileImageZoom = 1;
         } else if (target === "logo") {
             logoOriginal = url;
             logo = url;
@@ -547,28 +578,38 @@
         }
     }
 
-    async function handleImage(e: Event, target: "main" | "logo" | "landingImage") {
+    async function handleImage(e: Event, target: "main" | "mobile" | "logo" | "landingImage") {
         const f = (e.target as HTMLInputElement).files?.[0];
         await processImageFile(f, target);
     }
 
-    function clearImage(target: "main" | "logo" | "landingImage") {
+    function clearImage(target: "main" | "mobile" | "logo" | "landingImage") {
         if (target === "main") { mainImage = ""; mainImageObjectX = 50; mainImageObjectY = 50; mainImageZoom = 1; }
+        else if (target === "mobile") { mobileImage = ""; mobileImageObjectX = 50; mobileImageObjectY = 50; mobileImageZoom = 1; }
         else if (target === "landingImage") landingImage = "";
         else { logo = ""; logoOriginal = ""; hasCircleCrop = false; }
     }
-    function nudgeMainImage(dir: "up" | "down" | "left" | "right") {
+    // אותם כלי מיקום/זום משרתים את התמונה הראשית ואת התמונה של הנייד
+    function nudgeMainImage(dir: "up" | "down" | "left" | "right", which: "main" | "mobile" = "main") {
         const STEP = 8;
-        if (dir === "up")    mainImageObjectY = Math.max(0, mainImageObjectY - STEP);
-        if (dir === "down")  mainImageObjectY = Math.min(100, mainImageObjectY + STEP);
-        if (dir === "left")  mainImageObjectX = Math.max(0, mainImageObjectX - STEP);
-        if (dir === "right") mainImageObjectX = Math.min(100, mainImageObjectX + STEP);
+        const dy = dir === "up" ? -STEP : dir === "down" ? STEP : 0;
+        const dx = dir === "left" ? -STEP : dir === "right" ? STEP : 0;
+        const clamp = (v: number) => Math.min(100, Math.max(0, v));
+        if (which === "main") {
+            mainImageObjectY = clamp(mainImageObjectY + dy);
+            mainImageObjectX = clamp(mainImageObjectX + dx);
+        } else {
+            mobileImageObjectY = clamp(mobileImageObjectY + dy);
+            mobileImageObjectX = clamp(mobileImageObjectX + dx);
+        }
     }
     /** זום פנימה/החוצה בצעדים יחסיים; 1 = מילוי המשבצת (cover) */
-    function zoomMainImage(dir: "in" | "out") {
+    function zoomMainImage(dir: "in" | "out", which: "main" | "mobile" = "main") {
         const FACTOR = 1.15;
-        const next = dir === "in" ? mainImageZoom * FACTOR : mainImageZoom / FACTOR;
-        mainImageZoom = Math.round(Math.min(AD_ZOOM_MAX, Math.max(AD_ZOOM_MIN, next)) * 100) / 100;
+        const cur = which === "main" ? mainImageZoom : mobileImageZoom;
+        const next = dir === "in" ? cur * FACTOR : cur / FACTOR;
+        const clamped = Math.round(Math.min(AD_ZOOM_MAX, Math.max(AD_ZOOM_MIN, next)) * 100) / 100;
+        if (which === "main") mainImageZoom = clamped; else mobileImageZoom = clamped;
     }
 
     async function handleProductImage(e: Event, id: number) {
@@ -729,10 +770,17 @@
                 mainImageObjectX = typeof d.mainImageObjectX === 'number' ? d.mainImageObjectX : 50;
                 mainImageObjectY = typeof d.mainImageObjectY === 'number' ? d.mainImageObjectY : 50;
                 mainImageZoom    = typeof d.mainImageZoom === 'number' ? d.mainImageZoom : 1;
+                mobileImage        = d.mobileImage ?? "";
+                mobileImageObjectX = typeof d.mobileImageObjectX === 'number' ? d.mobileImageObjectX : 50;
+                mobileImageObjectY = typeof d.mobileImageObjectY === 'number' ? d.mobileImageObjectY : 50;
+                mobileImageZoom    = typeof d.mobileImageZoom === 'number' ? d.mobileImageZoom : 1;
                 title           = d.title ?? "";
                 titleColor      = typeof d.titleColor === 'string' ? d.titleColor : "#ffffff";
                 titleOffsetY    = typeof d.titleOffsetY === 'number' ? d.titleOffsetY : 0;
                 subtitle        = d.subtitle ?? "";
+                subFontSize     = typeof d.subFontSize === 'number' ? d.subFontSize : DEFAULT_SUB_FONT_SIZE;
+                subLineHeight   = typeof d.subLineHeight === 'number' ? d.subLineHeight : DEFAULT_SUB_LINE_HEIGHT;
+                subAlign        = (d.subAlign === 'center' || d.subAlign === 'left' || d.subAlign === 'justify') ? d.subAlign : 'right';
                 hoverText       = d.hoverText ?? "";
                 cta             = (d.cta && d.cta !== "לפרטים נוספים") ? d.cta : "הקלק לפרטים והזמנות";
                 gradient        = d.gradient ?? gradient;
@@ -786,7 +834,9 @@
     $effect(() => {
         if (!browser) return;
         const snapshot = {
-            logo, logoOriginal, hasCircleCrop, logoShape, logoPosition, logoPositionExplicit, logoFreeX, logoFreeY, mainImage, mainImageObjectX, mainImageObjectY, mainImageZoom, title, titleColor, titleOffsetY, subtitle, hoverText, cta, gradient, diagHeight,
+            logo, logoOriginal, hasCircleCrop, logoShape, logoPosition, logoPositionExplicit, logoFreeX, logoFreeY, mainImage, mainImageObjectX, mainImageObjectY, mainImageZoom,
+            mobileImage, mobileImageObjectX, mobileImageObjectY, mobileImageZoom, title, titleColor, titleOffsetY,
+            subtitle, subFontSize, subLineHeight, subAlign, hoverText, cta, gradient, diagHeight,
             landingHeadline, landingPitch, landingExtended, landingImage, landingAdvantages, uniqueness, phone, whatsapp, website,
             email, address, hours, products,
         };
@@ -843,6 +893,10 @@
     async function goToLandingEditor() {
         if (movingToLanding) return;
         movingToLanding = true;
+        // מעבר מכוון לעורך דף הנחיתה - לא "יציאה מהאתר". הטיוטה כבר נשמרה
+        // ב-localStorage והעורך הבא קורא בדיוק אותה, ולכן אזהרת beforeunload
+        // כאן הייתה התראת שווא שהבהילה מפרסמים באמצע התהליך.
+        formDirty = false;
         // Fire-and-forget: notify the personal area. We don't block navigation
         // on success - even if the message fails to deliver, the user proceeds.
         try {
@@ -1437,6 +1491,56 @@
                class="text-input" />
         <div class="text-xs text-gray-500 mt-2 text-end">{subtitle.length}/70</div>
 
+        <!-- טיפוגרפיה של תת-הכותרת: גודל, רווח בין שורות ויישור. הערכים
+             נוסעים עם המודעה דרך adStyle, ולכן מה שנראה כאן הוא מה שיתפרסם. -->
+        <div class="sub-type-panel">
+            <p class="sub-type-title">{$_('advertise.b_s5_type_title')}</p>
+
+            <div class="sub-type-row">
+                <span class="sub-type-label">{$_('advertise.b_s5_size')}</span>
+                <input type="range" class="sub-type-range"
+                       min={SUB_FONT_SIZE_MIN} max={SUB_FONT_SIZE_MAX} step="0.02"
+                       bind:value={subFontSize}
+                       oninput={() => activeStep === "subtitle" || (activeStep = "subtitle")} />
+                <span class="sub-type-value">{subFontSize.toFixed(2)}</span>
+            </div>
+
+            <div class="sub-type-row">
+                <span class="sub-type-label">{$_('advertise.b_s5_line_height')}</span>
+                <input type="range" class="sub-type-range"
+                       min={SUB_LINE_HEIGHT_MIN} max={SUB_LINE_HEIGHT_MAX} step="0.05"
+                       bind:value={subLineHeight}
+                       oninput={() => activeStep === "subtitle" || (activeStep = "subtitle")} />
+                <span class="sub-type-value">{subLineHeight.toFixed(2)}</span>
+            </div>
+
+            <div class="sub-type-row">
+                <span class="sub-type-label">{$_('advertise.b_s5_align')}</span>
+                <div class="sub-type-aligns">
+                    {#each [
+                        { id: "right",   labelKey: "b_s5_align_right",   icon: "➡" },
+                        { id: "center",  labelKey: "b_s5_align_center",  icon: "↔" },
+                        { id: "left",    labelKey: "b_s5_align_left",    icon: "⬅" },
+                        { id: "justify", labelKey: "b_s5_align_justify", icon: "☰" }
+                    ] as opt}
+                        <button type="button"
+                                onclick={() => (subAlign = opt.id as SubAlign)}
+                                title={$_(`advertise.${opt.labelKey}`)}
+                                aria-pressed={subAlign === opt.id}
+                                class="sub-type-align-btn {subAlign === opt.id ? 'is-active' : ''}">
+                            <span aria-hidden="true">{opt.icon}</span>
+                            <span class="sub-type-align-text">{$_(`advertise.${opt.labelKey}`)}</span>
+                        </button>
+                    {/each}
+                </div>
+            </div>
+
+            <button type="button" class="sub-type-reset"
+                    onclick={() => { subFontSize = DEFAULT_SUB_FONT_SIZE; subLineHeight = DEFAULT_SUB_LINE_HEIGHT; subAlign = "right"; }}>
+                {$_('advertise.b_s5_type_reset')}
+            </button>
+        </div>
+
         <div class="step-nav-row">
             <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("subtitle"))}>
                 {$_('advertise.b_prev_step')}
@@ -1472,7 +1576,9 @@
             <strong class="text-amber-300">{$_('advertise.b_s6_help_strong')}</strong> {$_('advertise.b_s6_help2')}
         </p>
 
-        <textarea bind:value={hoverText} maxlength="90" rows="2"
+        <!-- rows=3 - 90 תווים בשתי שורות + שורה שלישית פנויה, כדי שאפשר יהיה לרדת
+             שורה ולראות את סוף המשפט בלי גלילה בתוך התיבה -->
+        <textarea bind:value={hoverText} maxlength="90" rows="3"
                   onfocus={() => activeStep === "hover" || (activeStep = "hover")}
                   onblur={() => hoverText.trim() && commitField("hover")}
                   placeholder={$_('advertise.b_s6_ph')}
@@ -1537,8 +1643,8 @@
                                 <h3 class="popup-title-above" style:color={titleColor}>{title || $_('advertise.b_s3_title')}</h3>
                             </div>
                             <div class="popup-img pro-img-wrap">
-                                {#if mainImage}
-                                    <img src={mainImage} alt={title} use:adImgFit={mainImageFit} />
+                                {#if previewMobileImage}
+                                    <img src={previewMobileImage} alt={title} use:adImgFit={previewMobileFit} />
                                 {:else}
                                     <div class="img-placeholder">{$_('advertise.b_main_image_alt')}</div>
                                 {/if}
@@ -1559,6 +1665,34 @@
                     </div>
                     </div>
                     <p class="preview-caption preview-caption-side">{$_('advertise.b_mobile_caption')}</p>
+                </div>
+
+                <!-- תמונה ייעודית לנייד: המשבצת בנייד רחבה ונמוכה, ולכן תמונה
+                     שנראית מצוין בדסקטופ יכולה להיחתך רע כאן. הכלי יושב מתחת
+                     לתצוגת הנייד - בדיוק במקום שבו המפרסם רואה את הבעיה. -->
+                <div class="mobile-image-swap">
+                    <p class="mobile-image-swap-title">{$_('advertise.b_mobile_img_title')}</p>
+                    <p class="mobile-image-swap-help">{$_('advertise.b_mobile_img_help')}</p>
+                    {#if mobileImage}
+                        <div class="mobile-image-swap-frame">
+                            <img src={mobileImage} alt={$_('advertise.b_mobile_img_title')} use:adImgFit={mobileImageFit} />
+                            <button type="button" class="remove-x" onclick={() => clearImage("mobile")} aria-label={$_('advertise.b_remove_image')}>✕</button>
+                            <button type="button" class="crop-arrow crop-arrow-up"    onclick={() => nudgeMainImage("up", "mobile")}    aria-label={$_('advertise.b_nudge_up')}>▲</button>
+                            <button type="button" class="crop-arrow crop-arrow-down"  onclick={() => nudgeMainImage("down", "mobile")}  aria-label={$_('advertise.b_nudge_down')}>▼</button>
+                            <button type="button" class="crop-arrow crop-arrow-left"  onclick={() => nudgeMainImage("left", "mobile")}  aria-label={$_('advertise.b_nudge_left')}>◀</button>
+                            <button type="button" class="crop-arrow crop-arrow-right" onclick={() => nudgeMainImage("right", "mobile")} aria-label={$_('advertise.b_nudge_right')}>▶</button>
+                            <button type="button" class="crop-reset" onclick={() => { mobileImageObjectX = 50; mobileImageObjectY = 50; mobileImageZoom = 1; }} aria-label={$_('advertise.b_reset_pos')}>⊙</button>
+                            <button type="button" class="crop-zoom zoom-in"  onclick={() => zoomMainImage("in", "mobile")}  aria-label={$_('advertise.b_zoom_in')}>＋</button>
+                            <button type="button" class="crop-zoom zoom-out" onclick={() => zoomMainImage("out", "mobile")} aria-label={$_('advertise.b_zoom_out')}>－</button>
+                        </div>
+                        <p class="mobile-image-swap-note">{$_('advertise.b_mobile_img_active')}</p>
+                    {:else}
+                        <label class="mobile-image-swap-btn">
+                            <span aria-hidden="true">📱</span>
+                            {$_('advertise.b_mobile_img_upload')}
+                            <input type="file" accept="image/*" onchange={(e) => handleImage(e, "mobile")} class="hidden" />
+                        </label>
+                    {/if}
                 </div>
             </div>
         {/if}
@@ -2241,7 +2375,10 @@
         box-shadow: 0 2px 6px rgba(0,0,0,0.35);
     }
     :global(.popup-logo-above-circle) { border-radius: 50%; }
-    :global(.popup-img) { position: relative; height: 130px; }
+    /* 384/176 = היחס האמיתי של משבצת התמונה בפופ-אפ הנייד (MobileAdPopup:
+       רוחב עד max-w-sm וגובה h-44). גובה קבוע של 130px הראה חיתוך אחר ממה
+       שהגולש מקבל בפועל, ולכן היחס - ולא פיקסלים - הוא מה שקובע כאן. */
+    :global(.popup-img) { position: relative; aspect-ratio: 384 / 176; }
     :global(.popup-img > img:not(.popup-logo)) { width: 100%; height: 100%; object-fit: cover; }
     :global(.popup-img-fade) {
         position: absolute; inset: 0;
@@ -2844,7 +2981,9 @@
         z-index: 4; /* must sit above the decorative diagonal line on .pro-img-wrap::before (z-index:3) */
     }
     :global(.hover-title) { color: white; font-weight: 700; font-size: 0.95rem; margin: 0 0 0.4rem; }
-    :global(.hover-text)  { color: rgb(229,231,235); font-size: 0.7rem; line-height: 1.4; margin: 0 0 0.4rem; font-weight: 700; }
+    /* pre-line - ירידות שורה שהמפרסם הקליד בשלב 6 נשמרות בתצוגה המקדימה
+       (בלי זה HTML מכווץ כל \n לרווח והמשפט נשפך לשורה אחת) */
+    :global(.hover-text)  { color: rgb(229,231,235); font-size: 0.7rem; line-height: 1.4; margin: 0 0 0.4rem; font-weight: 700; white-space: pre-line; }
     /* אותם מספרים של רצועת ה-CTA בטור הימני (p-2.5 / text-xs / leading-tight),
        כדי שטקסט ארוך יישבר שם בדיוק כמו כאן */
     :global(.promo-cta) { padding: 0.625rem; text-align: center; }
@@ -2964,6 +3103,96 @@
         flex: 1 1 auto;
         min-width: 0;
     }
+
+    /* ============== תמונה ייעודית לנייד (שלב 7) ============== */
+    :global(.mobile-image-swap) {
+        margin-top: 0.9rem;
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 0.9rem;
+        background: rgba(255,255,255,0.04);
+        padding: 0.75rem 0.85rem;
+        text-align: center;
+    }
+    :global(.mobile-image-swap-title) {
+        margin: 0; color: white; font-weight: 900; font-size: 0.9rem;
+    }
+    :global(.mobile-image-swap-help) {
+        margin: 0.2rem 0 0.6rem; color: rgb(156,163,175); font-size: 0.72rem; line-height: 1.35;
+    }
+    :global(.mobile-image-swap-btn) {
+        display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+        padding: 0.5rem 0.9rem; border-radius: 0.7rem; cursor: pointer;
+        border: 1px solid rgba(245,158,11,0.45); background: rgba(245,158,11,0.10);
+        color: rgb(253,230,138); font-weight: 700; font-size: 0.8rem;
+        transition: background 0.15s, border-color 0.15s;
+    }
+    :global(.mobile-image-swap-btn:hover) {
+        background: rgba(245,158,11,0.18); border-color: rgba(245,158,11,0.75);
+    }
+    /* אותו יחס בדיוק של משבצת התמונה בנייד, כדי שהחיתוך שנבחר כאן
+       יהיה החיתוך שרואים שם */
+    :global(.mobile-image-swap-frame) {
+        position: relative; width: 100%; max-width: 320px; margin: 0 auto;
+        aspect-ratio: 384 / 176; border-radius: 0.7rem; overflow: hidden;
+        border: 2px solid rgba(245,158,11,0.45);
+    }
+    :global(.mobile-image-swap-frame img) {
+        width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    :global(.mobile-image-swap-note) {
+        margin: 0.45rem 0 0; color: rgb(134,239,172); font-size: 0.7rem; font-weight: 700;
+    }
+
+    /* ============== טיפוגרפיית תת-הכותרת (שלב 5) ============== */
+    :global(.sub-type-panel) {
+        margin-top: 0.85rem;
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 0.9rem;
+        background: rgba(255,255,255,0.04);
+        padding: 0.75rem 0.9rem;
+        display: flex; flex-direction: column; gap: 0.6rem;
+    }
+    :global(.sub-type-title) {
+        margin: 0; color: rgb(253,230,138); font-weight: 900; font-size: 0.85rem;
+    }
+    :global(.sub-type-row) {
+        display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+    }
+    :global(.sub-type-label) {
+        color: rgb(209,213,219); font-weight: 700; font-size: 0.78rem;
+        min-width: 6.5rem;
+    }
+    :global(.sub-type-range) {
+        flex: 1 1 8rem; min-width: 7rem; accent-color: rgb(245,158,11);
+    }
+    :global(.sub-type-value) {
+        color: white; font-weight: 700; font-size: 0.75rem;
+        min-width: 2.6rem; text-align: center;
+        font-variant-numeric: tabular-nums;
+    }
+    :global(.sub-type-aligns) {
+        display: flex; gap: 0.35rem; flex-wrap: wrap; flex: 1 1 auto;
+    }
+    :global(.sub-type-align-btn) {
+        display: inline-flex; align-items: center; gap: 0.3rem;
+        padding: 0.35rem 0.6rem; border-radius: 0.6rem; cursor: pointer;
+        border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05);
+        color: rgb(209,213,219); font-size: 0.72rem; font-weight: 700;
+        transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+    :global(.sub-type-align-btn:hover) { color: white; background: rgba(255,255,255,0.10); }
+    :global(.sub-type-align-btn.is-active) {
+        background: rgb(245,158,11); border-color: rgb(245,158,11); color: black;
+    }
+    /* במסך צר נשארים האייקונים בלבד, כדי שארבע האפשרויות ייכנסו בשורה */
+    @media (max-width: 480px) {
+        :global(.sub-type-align-text) { display: none; }
+    }
+    :global(.sub-type-reset) {
+        align-self: flex-start; background: none; border: none; cursor: pointer;
+        color: rgb(252,211,77); font-size: 0.72rem; font-weight: 700;
+        text-decoration: underline; text-underline-offset: 2px; padding: 0;
+    }
     /* Horizontal color picker - wide strip, two short rows */
     :global(.color-rail) {
         display: grid;
@@ -3074,7 +3303,7 @@
         position: absolute; left: 0; right: 0; bottom: 0;
         padding: 0.55rem 0.7rem 1.1rem;
         z-index: 4;
-        text-align: right;
+        text-align: var(--sub-align, right);
         transition: opacity 1500ms ease;
     }
     :global(.pro-title-wrap.mobile) {
@@ -3132,13 +3361,16 @@
     :global(.pro-title-top.mobile .pro-title) {
         font-size: 1.55rem;
     }
+    /* גודל/רווח/יישור מגיעים מהמשתנים ש-adStyleVars מייצר (שלב 5), עם
+       ה-fallback הישן - בדיוק אותו כלל שרץ ב-RightAdBanner באתר */
     :global(.pro-sub) {
         color: rgba(255,255,255,0.95); font-weight: 600;
-        font-size: 0.88rem; line-height: 1.3; margin: 0;
+        font-size: var(--sub-size, 0.88rem); line-height: var(--sub-lh, 1.3); margin: 0;
         text-shadow: 0 1px 4px rgba(0,0,0,0.6);
     }
+    /* בנייד המשבצת רחבה יותר, ולכן הטיפוגרפיה מוגדלת ביחס קבוע לבחירת המפרסם */
     :global(.pro-title-wrap.mobile .pro-sub) {
-        font-size: 1rem;
+        font-size: calc(var(--sub-size, 0.88rem) * 1.14);
     }
 
     /* ============== LANDING MOCK ============== */

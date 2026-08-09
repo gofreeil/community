@@ -50,6 +50,10 @@
     let mainImage   = $state<string>("");
     // מיקום+זום שנבחרו בבילדר — עוברים כמו-שהם אל המודעה בשליחה
     let mainImageFit = $state<{ x: number; y: number; z: number }>({ x: 50, y: 50, z: 1 });
+    // תמונה ייעודית לנייד (אופציונלית) + החיתוך שנבחר לה. ריק = הנייד
+    // ממשיך עם התמונה הראשית, בדיוק כמו לפני התוספת.
+    let mobileImage    = $state<string>("");
+    let mobileImageFit = $state<{ x: number; y: number; z: number }>({ x: 50, y: 50, z: 1 });
     let logo        = $state<string>("");
     let logoShape   = $state<"square" | "circle">("square");
     let gradient    = $state<string>("from-amber-500 to-orange-600");
@@ -255,6 +259,12 @@
                     y: typeof d.mainImageObjectY === "number" ? d.mainImageObjectY : 50,
                     z: typeof d.mainImageZoom === "number" ? d.mainImageZoom : 1,
                 };
+                mobileImage = d.mobileImage ?? "";
+                mobileImageFit = {
+                    x: typeof d.mobileImageObjectX === "number" ? d.mobileImageObjectX : 50,
+                    y: typeof d.mobileImageObjectY === "number" ? d.mobileImageObjectY : 50,
+                    z: typeof d.mobileImageZoom === "number" ? d.mobileImageZoom : 1,
+                };
                 logo      = d.logo      ?? "";
                 logoShape = d.logoShape ?? "square";
                 gradient  = d.gradient  ?? gradient;
@@ -268,6 +278,10 @@
                     bandHeight:   d.diagHeight,
                     titleOffsetY: d.titleOffsetY,
                     titleColor:   d.titleColor,
+                    // טיפוגרפיית תת-הכותרת משלב 5
+                    subFontSize:   d.subFontSize,
+                    subLineHeight: d.subLineHeight,
+                    subAlign:      d.subAlign,
                 }) ?? { ...DEFAULT_AD_STYLE };
             }
         } catch {}
@@ -383,6 +397,7 @@
                 if (typeof cur === "string" && cur.startsWith("data:image/")) imgs.push({ cur, apply });
             };
             push(payload.mainImage, (v) => { payload.mainImage = v; });
+            push(payload.mobileImage as string, (v) => { payload.mobileImage = v; });
             push(payload.landing?.image, (v) => { payload.landing.image = v; });
             for (const p of payload.landing?.products ?? []) push(p.image, (v) => { p.image = v; });
             imgs.sort((a, b) => b.cur.length - a.cur.length);
@@ -401,6 +416,8 @@
             const payload: SubmitPayload = {
                 title, subtitle, hoverText, cta, gradient,
                 logo, mainImage, mainImageFit,
+                // ריקים כשהמפרסם לא העלה תמונה ייעודית לנייד
+                mobileImage, mobileImageFit,
                 adStyle: adStyleFromDraft,
                 landing: {
                     headline: landingHeadline, pitch: landingPitch, extended: landingExtended, image: landingImage, advantages: landingAdvantages, uniqueness, phone, whatsapp, website, email, address, hours,

@@ -320,8 +320,10 @@
                                            class="w-full px-3 py-1.5 rounded-lg bg-black/40 border border-white/10 text-white text-sm" />
                                     <input type="text" name="cta" bind:value={editCta} placeholder="טקסט CTA"
                                            class="w-full px-3 py-1.5 rounded-lg bg-black/40 border border-white/10 text-white text-xs" />
-                                    <input type="text" name="hoverText" bind:value={editHover} placeholder="טקסט hover"
-                                           class="w-full px-3 py-1.5 rounded-lg bg-black/40 border border-white/10 text-white text-xs" />
+                                    <!-- textarea ולא input: המפרסם יכול לרדת שורה בטקסט ה-hover,
+                                         ו-input היה משטח את ירידות השורה בכל שמירה של האדמין -->
+                                    <textarea name="hoverText" bind:value={editHover} placeholder="טקסט hover" rows="2"
+                                              class="w-full px-3 py-1.5 rounded-lg bg-black/40 border border-white/10 text-white text-xs resize-y"></textarea>
                                     <div class="flex gap-2">
                                         <button type="submit"
                                                 class="px-3 py-1.5 rounded-lg bg-amber-500 text-black font-black text-xs">

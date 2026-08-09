@@ -115,6 +115,9 @@ export const POST: RequestHandler = async (event) => {
         mainImage: payload.mainImage,
         // מיקום+זום שנבחרו בבילדר — מנורמלים כאן, קלט דפדפן הוא לא-אמין
         mainImageFit: parseAdImageFit(payload.mainImageFit),
+        // תמונה ייעודית לנייד; ריק = הנייד משתמש בתמונה הראשית
+        mobileImage: typeof payload.mobileImage === 'string' ? payload.mobileImage : '',
+        mobileImageFit: parseAdImageFit(payload.mobileImageFit),
         // מיקום/צורת הלוגו, גובה הרצועה וצבע הכותרת — אותו עיצוב שהמפרסם
         // ראה בתצוגה החיה. חסר (מודעה ותיקה) נשמר כ-null.
         adStyle: parseAdStyle(payload.adStyle),

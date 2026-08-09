@@ -72,11 +72,15 @@
         <!-- Ad image -->
         <!-- overflow-hidden: בתקריב התמונה גדולה מהמשבצת ואסור שתגלוש על הטקסט -->
         <div class="relative h-44 w-full overflow-hidden">
+            <!-- תמונה ייעודית לנייד אם המפרסם העלה אחת - המשבצת כאן רחבה
+                 ונמוכה, והתמונה של הדסקטופ נחתכת בה אחרת לגמרי -->
             <img
-                src={popup.ad.image}
+                src={popup.ad.mobileImage || popup.ad.image}
                 alt={popup.ad.title}
                 class="w-full h-full object-cover"
-                use:adImgFit={{ x: 50, y: 50, z: popup.ad.imageScale ?? 1 }}
+                use:adImgFit={popup.ad.mobileImage && popup.ad.mobileImageFit
+                    ? popup.ad.mobileImageFit
+                    : { x: 50, y: 50, z: popup.ad.imageScale ?? 1 }}
             />
             <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
         </div>

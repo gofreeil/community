@@ -5,6 +5,10 @@ export interface Ad {
     cta: string;
     href: string;
     image: string;
+    /** תמונה ייעודית לגרסת הנייד; ריק/חסר = משתמשים ב-image */
+    mobileImage?: string;
+    /** מיקום+זום של תמונת הנייד, כפי שנבחרו בבילדר */
+    mobileImageFit?: { x: number; y: number; z: number };
     color: string;
     imageHeight?: string;   // גובה מותאם לתמונה (ברירת מחדל: auto)
     imageScale?: number;    // זום יחסית ל-cover בתצוגות הנייד (1 = מילוי המשבצת; מעל 1 = תקריב; מתחת ל-1 = התרחקות)

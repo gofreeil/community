@@ -310,9 +310,12 @@
                     <div class="relative group/cta bg-gradient-to-r {ad.gradient} p-2.5 text-center">
                         <p class="text-white font-bold text-xs leading-tight">{ad.cta || ad.title}</p>
                         {#if ad.hover}
+                            <!-- pre-line + w-max: משפט בשורה אחת נשאר בשורה אחת, אבל ירידות שורה
+                                 שהמפרסם הקליד נשמרות, וטקסט ארוך נגמר ב-max-w במקום לגלוש -->
                             <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/cta:block
                                          bg-gray-900 text-white text-xs font-bold rounded-lg px-3 py-1.5
-                                         whitespace-nowrap border border-white/10 shadow-xl pointer-events-none z-50">
+                                         whitespace-pre-line w-max max-w-[15rem] text-center
+                                         border border-white/10 shadow-xl pointer-events-none z-50">
                                 {ad.hover}
                             </span>
                         {/if}
@@ -451,21 +454,23 @@
         );
         pointer-events: none;
     }
+    /* גודל/רווח/יישור מגיעים מ-adStyleVars — מה שהמפרסם כיוון בשלב 5.
+       ה-fallback הוא הערך שהיה קבוע כאן, כדי שמודעות ותיקות לא ישתנו. */
     .promo-sub-wrap {
         position: absolute;
         inset-inline: 0;
         bottom: 0;
         z-index: 4;
         padding: 0.55rem 0.7rem 1.1rem;
-        text-align: right;
+        text-align: var(--sub-align, right);
         pointer-events: none;
     }
     .promo-sub {
         margin: 0;
         color: rgba(255, 255, 255, 0.95);
         font-weight: 600;
-        font-size: 0.88rem;
-        line-height: 1.3;
+        font-size: var(--sub-size, 0.88rem);
+        line-height: var(--sub-lh, 1.3);
         text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
     }
     /* משולש בלתי-נראה שגורם לשורה הראשונה להתקצר לפי שיפוע האלכסון */

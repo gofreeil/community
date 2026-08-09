@@ -16,6 +16,8 @@ export const GET: RequestHandler = async () => {
         logo: a.logo,
         mainImage: a.mainImage,
         mainImageFit: a.mainImageFit,
+        mobileImage: a.mobileImage,
+        mobileImageFit: a.mobileImageFit,
         adStyle: a.adStyle,
     }));
     return json(slim);

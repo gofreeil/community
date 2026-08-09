@@ -86,6 +86,10 @@ export interface SubmittedAd {
     mainImage: string;
     /** מיקום+זום של התמונה הראשית במשבצת (מהבילדר) */
     mainImageFit: AdImageFit;
+    /** תמונה ייעודית לגרסת הנייד; ריק = הנייד מציג את התמונה הראשית */
+    mobileImage: string;
+    /** מיקום+זום של תמונת הנייד */
+    mobileImageFit: AdImageFit;
     /** העיצוב שנקבע בבילדר (לוגו, רצועה, כותרת). null = מודעה ותיקה */
     adStyle: AdStyle | null;
 
@@ -123,6 +127,8 @@ interface StrapiAdAttrs {
     landing:
         | (SubmittedAd['landing'] & {
               mainImageFit?: unknown;
+              mobileImage?: unknown;
+              mobileImageFit?: unknown;
               adStyle?: unknown;
               _order?: unknown;
               _paused?: unknown;
@@ -196,6 +202,8 @@ function fromStrapi(s: StrapiAd): SubmittedAd {
         logo: s.logo ?? '',
         mainImage: s.main_image ?? '',
         mainImageFit: parseAdImageFit(s.landing?.mainImageFit),
+        mobileImage: typeof s.landing?.mobileImage === 'string' ? s.landing.mobileImage : '',
+        mobileImageFit: parseAdImageFit(s.landing?.mobileImageFit),
         // null במודעות שנשלחו לפני שהעיצוב נשמר — הצרכן נופל ל-legacyAdStyle
         adStyle: parseAdStyle(s.landing?.adStyle),
         landing: s.landing ?? emptyLanding(),
@@ -476,6 +484,9 @@ export async function submitAd(payload: Omit<SubmittedAd, 'id' | 'status' | 'sub
             landing:             {
                 ...payload.landing,
                 mainImageFit: parseAdImageFit(payload.mainImageFit),
+                // תמונת הנייד נוסעת גם היא בתוך landing — אין לה עמודה בסכמה
+                mobileImage: payload.mobileImage ?? '',
+                mobileImageFit: parseAdImageFit(payload.mobileImageFit),
                 // העיצוב שהמפרסם קבע בבילדר — בלעדיו המודעה מתפרסמת עם
                 // ברירות המחדל של האתר ולא עם מה שהוא ראה על המסך
                 adStyle: parseAdStyle(payload.adStyle),
