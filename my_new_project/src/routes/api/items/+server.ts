@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { createItem, getAllItems, getDbItemByIdFresh, incrementItemViewCount, getItemsByCategory, getItemsByUserId, updateItem, getAllSuperAdmins, getUserById } from '$lib/server/db';
+import { createItem, getAllItems, getDbItemByIdFresh, incrementItemViewCount, getItemsByCategory, getItemsByUserId, updateItem, getAllSuperAdmins, getUserById, getMessagesByUserId, deleteItem } from '$lib/server/db';
 import { categoryConfig, getCategoryIcon, getCategoryColor } from '$lib/categoryFields';
 import { isPrivateCategory } from '$lib/itemCategories';
 import { categoryTier, tierMet } from '$lib/tiers';
@@ -96,14 +96,30 @@ async function notifyIndexInvite(userId: string, bizLabel: string) {
 const MODERATED_CATEGORIES = new Set(['singles']);
 
 // שולח לכל סופר-אדמין הודעה פנימית שכרטיס פנויים חדש ממתין לאישור (בדיקת תמונות).
-async function notifySinglesReview(itemLabel: string, ef: Record<string, unknown>) {
+// עדכון חוזר של כרטיס שטרם אושר מחליף את ההודעה הקודמת עליו במקום להוסיף עוד אחת,
+// כדי שלא יצטברו אצל האדמין כמה הודעות סרק על אותו כרטיס.
+async function notifySinglesReview(cardId: string, itemLabel: string, ef: Record<string, unknown>) {
     const admins = await getAllSuperAdmins();
     const imgCount = Array.isArray(ef.images) ? ef.images.length : 0;
     await Promise.all(
         admins
             .filter((a) => a.id)
-            .map((a) =>
-                createItem({
+            .map(async (a) => {
+                // מחיקת הודעות קודמות על אותו כרטיס. הודעות ישנות (מלפני שנשמר item_id)
+                // מזוהות לפי שם הכרטיס בתוך הטקסט - כך גם הכפילויות הקיימות מתנקות.
+                try {
+                    const stale = (await getMessagesByUserId(a.id)).filter((m) => {
+                        let mef: Record<string, unknown> = {};
+                        try { mef = m.extra_fields ? JSON.parse(String(m.extra_fields)) : {}; } catch { mef = {}; }
+                        if (mef.type !== 'singles_review') return false;
+                        return mef.item_id ? mef.item_id === cardId : String(m.description).includes(`"${itemLabel}"`);
+                    });
+                    await Promise.all(stale.map((m) => deleteItem(m.id)));
+                } catch (e) {
+                    // כשל בניקוי לא מונע את ההודעה החדשה - במקרה הגרוע תהיה כפילות זמנית
+                    console.warn('[api/items] stale singles review message cleanup failed:', e);
+                }
+                await createItem({
                     category: 'message',
                     label: '🔞 כרטיס פנויים חדש ממתין לאישור',
                     description: `כרטיס "${itemLabel}" (${imgCount} תמונות) ממתין לבדיקת צניעות ואישור. היכנס לדף האישור: /admin/singles-review`,
@@ -111,9 +127,9 @@ async function notifySinglesReview(itemLabel: string, ef: Record<string, unknown
                     user_id: a.id,
                     icon: '💑',
                     color: 'pink',
-                    extra_fields: { type: 'singles_review', read: false, link: '/admin/singles-review' },
-                }),
-            ),
+                    extra_fields: { type: 'singles_review', item_id: cardId, read: false, link: '/admin/singles-review' },
+                });
+            }),
     );
 }
 
@@ -214,8 +230,13 @@ export const POST: RequestHandler = async (event) => {
                 ...(isModerated ? { status: 'pending' } : {}),
             });
             if (isModerated) {
-                notifySinglesReview(String(label), (extra_fields ?? {}) as Record<string, unknown>)
-                    .catch((e) => console.warn('[api/items] singles review notify failed:', e));
+                // await חובה: ב-Vercel עבודה לא-מוחכה אחרי ה-return מתה - ההודעה
+                // הישנה הייתה נמחקת בלי שהחדשה נכתבת (או לא נכתבת בכלל)
+                try {
+                    await notifySinglesReview(editId, String(label), (extra_fields ?? {}) as Record<string, unknown>);
+                } catch (e) {
+                    console.warn('[api/items] singles review notify failed:', e);
+                }
             }
             return json({ success: true, id: editId, updated: true, pending: isModerated });
         } catch (e) {
@@ -248,7 +269,7 @@ export const POST: RequestHandler = async (event) => {
                     // await חובה: ב-Vercel כל עבודה לא-מוחכה אחרי ה-return מתה, וכאן
                     // ה-return מיד אחריו - בלי await ההתראה לסופר-אדמין לא נכתבת כלל.
                     try {
-                        await notifySinglesReview(String(label), (extra_fields ?? {}) as Record<string, unknown>);
+                        await notifySinglesReview(existing.id, String(label), (extra_fields ?? {}) as Record<string, unknown>);
                     } catch (e) {
                         console.warn('[api/items] singles review notify failed:', e);
                     }
@@ -316,7 +337,7 @@ export const POST: RequestHandler = async (event) => {
     // await חובה כדי שההודעה תיכתב ל-Strapi לפני שה-lambda ב-Vercel נסגר.
     if (MODERATED_CATEGORIES.has(category)) {
         try {
-            await notifySinglesReview(String(label), (extra_fields ?? {}) as Record<string, unknown>);
+            await notifySinglesReview(item.id, String(label), (extra_fields ?? {}) as Record<string, unknown>);
         } catch (e) {
             console.warn('[api/items] singles review notify failed:', e);
         }
