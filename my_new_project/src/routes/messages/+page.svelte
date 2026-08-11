@@ -257,7 +257,7 @@
                     </div>
 
                     <!-- Message body -->
-                    <p class="text-gray-300 text-sm leading-relaxed bg-white/5 rounded-xl px-4 py-3 mb-3">
+                    <p class="text-gray-300 text-sm leading-relaxed bg-white/5 rounded-xl px-4 py-3 mb-3 whitespace-pre-line break-words">
                         {msg.description}
                     </p>
 
