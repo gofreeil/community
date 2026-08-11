@@ -75,7 +75,7 @@ export const load: PageServerLoad = async (event) => {
     const emptyStats = { pending: 0, rejected: 0, approved: 0, approvedThisWeek: 0, submittedThisWeek: 0, total: 0 };
     const pending     = pendingRes.status     === 'fulfilled' ? pendingRes.value     : [];
     const approvedRaw = approvedRes.status    === 'fulfilled' ? approvedRes.value    : [];
-    // מספר המקום של כל מאושרת בטור (1..12) - לכותרת הכרטיס בטאב "פורסמו"
+    // מספר המקום של כל מאושרת בטור (1..16) - לכותרת הכרטיס בטאב "פורסמו"
     const slotMap  = computeAdSlots(approvedRaw);
     const approved = approvedRaw.map(a => ({ ...a, slot: slotMap.get(a.id) }));
     const stats       = statsRes.status       === 'fulfilled' ? statsRes.value       : emptyStats;
@@ -269,7 +269,7 @@ export const actions: Actions = {
         return { success: true, message: `${r.title} - מקום ${r.position} מתוך ${r.total}` };
     },
 
-    // הצבת פרסומת במקום מספרי בטור (1..12); מקום תפוס - השתיים מתחלפות
+    // הצבת פרסומת במקום מספרי בטור (1..16); מקום תפוס - השתיים מתחלפות
     setSlot: async (event) => {
         await ensureAdsAdmin(event);
         const formData = await event.request.formData();

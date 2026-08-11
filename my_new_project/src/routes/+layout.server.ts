@@ -34,7 +34,7 @@ export const load: LayoutServerLoad = async (event) => {
 
     // פרסומות מאושרות - נשתלות ב-RightAdBanner (הטור הימני) בלבד.
     // הטור השמאלי (AdsSidebar) הוא אתרי "יוצאים לחירות" ולא מקבל פרסומות.
-    // מספר המקום (1..12) קובע גם את סדר הפרסומות וגם אילו משבצות פנויות
+    // מספר המקום (1..16) קובע גם את סדר הפרסומות וגם אילו משבצות פנויות
     // מוצגות סביבן - נקבע במסך הניהול ומחושב כאן פעם אחת לכל הרשימה.
     const liveSlots = computeAdSlots(adsRes.status === 'fulfilled' ? adsRes.value : []);
     const approvedAds = adsRes.status === 'fulfilled'
@@ -53,7 +53,7 @@ export const load: LayoutServerLoad = async (event) => {
             mobileImageFit: a.mobileImageFit,
             // העיצוב מהבילדר — בלעדיו הכרטיס נבנה מברירות המחדל של האתר
             adStyle: a.adStyle,
-            // מספר המקום בטור (1..12) - נקבע במסך הניהול
+            // מספר המקום בטור (1..16) - נקבע במסך הניהול
             slot: liveSlots.get(a.id),
         }))
         : [];

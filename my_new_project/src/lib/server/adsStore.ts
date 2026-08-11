@@ -650,7 +650,7 @@ export async function approveAd(
         ?? (inheritedExpiry ? (replacing?.durationDays ?? DEFAULT_DURATION_DAYS) : DEFAULT_DURATION_DAYS);
     const expires = inheritedExpiry ?? new Date(now.getTime() + days * DAY_MS).toISOString();
 
-    // ----- מספר המקום בטור (1..12) -----
+    // ----- מספר המקום בטור (1..16) -----
     // ברירת המחדל: פרסומת חדשה תופסת את המספר הפנוי הנמוך ביותר ואף אחת
     // לא זזה ממקומה. גרסה מחליפה יורשת את המספר של הישנה; פרסומת שהורדה
     // ואושרה מחדש חוזרת למקומה הקודם אם הוא עדיין פנוי.
@@ -783,7 +783,7 @@ export async function removeAd(id: string): Promise<boolean> {
     }
 }
 
-// ----- מקומות ממוספרים בטור הפרסומות (1..12) -----
+// ----- מקומות ממוספרים בטור הפרסומות (1..16) -----
 
 export type MoveDirection = 'up' | 'down';
 
@@ -825,7 +825,7 @@ function computeSlots(list: SubmittedAd[]): Map<string, number> {
     return bySlot;
 }
 
-/** מספרי המקומות לתצוגה (1-based) - לדפי שרת שמציגים "מקום N מתוך 12" */
+/** מספרי המקומות לתצוגה (1-based) - לדפי שרת שמציגים "מקום N מתוך 16" */
 export function computeAdSlots(list: SubmittedAd[]): Map<string, number> {
     return new Map([...computeSlots(list)].map(([id, s]) => [id, s + 1]));
 }
@@ -872,7 +872,7 @@ export async function moveApprovedAd(
 }
 
 /**
- * מציב פרסומת מאושרת במקום מספרי מסוים בטור (1..12). מקום תפוס - השתיים
+ * מציב פרסומת מאושרת במקום מספרי מסוים בטור (1..16). מקום תפוס - השתיים
  * מתחלפות זו בזו; שאר הפרסומות לא זזות. המספר נשאר קבוע לפרסומת גם דרך
  * השהיה ופקיעה - כשהיא חוזרת לאוויר היא חוזרת לאותו מקום.
  */
@@ -1058,7 +1058,7 @@ export interface AdSchedule {
     daysLeft: number;
     state: 'expired' | 'ending' | 'active' | 'paused';   // ending = ≤7 ימים
     paymentAmount: number;
-    /** מספר המקום בטור הפרסומות (1..12) - מוזן ב-listSchedules */
+    /** מספר המקום בטור הפרסומות (1..16) - מוזן ב-listSchedules */
     slot?: number;
 }
 

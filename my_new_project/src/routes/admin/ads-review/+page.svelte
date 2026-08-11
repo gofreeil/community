@@ -25,12 +25,13 @@
     }
     // תקופות הפרסום שאפשר לקצוב מהטבלה (התקופה נספרת מיום הפרסום)
     const DURATION_OPTIONS = [7, 14, 30, 60, 90, 180, 365];
-    // 12 המקומות הממוספרים בטור הפרסומות - בורר המקום בטבלת התזמון
+    // 16 המקומות הממוספרים בטור הפרסומות - בורר המקום בטבלת התזמון
     const SLOT_NUMBERS = Array.from({ length: AD_SLOT_COUNT }, (_, i) => i + 1);
-    // רקע לאפשרויות בורר המקום: 1,5,9 בתכלת ו-2,6,10 בירוק בהיר (רקע בהיר בלבד - כהה נשבר בהדגשת המערכת)
+    // רקע לאפשרויות בורר המקום: הראשון בכל רביעייה (1,5,9,13) בתכלת והשני
+    // (2,6,10,14) בירוק בהיר (רקע בהיר בלבד - כהה נשבר בהדגשת המערכת)
     function slotOptionBg(n: number): string {
-        if ([1, 5, 9].includes(n)) return '#dbeafe';
-        if ([2, 6, 10].includes(n)) return '#dcfce7';
+        if (n % 4 === 1) return '#dbeafe';
+        if (n % 4 === 2) return '#dcfce7';
         return '#fff';
     }
     let canReorder = $derived(sortOrder === 'display' && !searchQuery.trim());
