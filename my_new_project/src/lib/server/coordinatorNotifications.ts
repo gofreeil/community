@@ -124,6 +124,50 @@ export async function markCoordinatorMessagesHandled(
 }
 
 /**
+ * הגשה חוזרת של אותה בקשה (אותו מבקש, אותם אזורים) - מרעננת את כרטיסי ההתראה
+ * *הפתוחים* בתיבות המנהלים במקום להוסיף כרטיס נוסף על אותה בקשה. הכרטיס חוזר
+ * להיות "לא נקרא", כי הפרטים שבו השתנו והמנהל צריך לראות אותם.
+ *
+ * מחזיר כמה כרטיסים עודכנו. 0 פירושו שאין כרטיס פתוח בשום תיבה (נמחק/הוסתר/סומן
+ * טופל) - ואז על הקורא ליצור התראה חדשה, כדי שבקשה ממתינה לא תישאר בלי כרטיס.
+ * best-effort: כשל כאן לא מכשיל את עדכון הבקשה עצמה.
+ */
+export async function refreshCoordinatorRequestMessages(
+    req: { user_id?: string | null; phone?: string | null; neighborhoods: string[] },
+    fields: { label: string; description: string },
+): Promise<number> {
+    let admins;
+    try {
+        admins = await getAllAdminRecipients();
+    } catch (e) {
+        console.warn('[coordinatorNotifications] admin list failed:', e instanceof Error ? e.message : e);
+        return 0;
+    }
+    const inboxes = await Promise.all(admins.map(a => getMessagesByUserId(a.id).catch(() => [])));
+    let refreshed = 0;
+
+    await Promise.all(inboxes.flat().map(async (msg) => {
+        const ef = parseEf(msg.extra_fields);
+        // רק כרטיס פתוח: לא טופל, לא הוסתר, לא בארכיון. אחרת עדיף כרטיס חדש.
+        if (!ef || ef.type !== 'coordinator_request' || ef.handled || ef.dismissed) return;
+        if (msg.status === 'archived') return;
+        if (!messageMatchesRequest(ef, req)) return;
+        try {
+            const extra_fields = {
+                ...ef,
+                read:           false,
+                resubmitted_at: new Date().toISOString(),
+            };
+            await updateItem(msg.id, { label: fields.label, description: fields.description, extra_fields });
+            refreshed++;
+        } catch (e) {
+            console.warn('[coordinatorNotifications] refresh failed:', e instanceof Error ? e.message : e);
+        }
+    }));
+    return refreshed;
+}
+
+/**
  * מיישר התראות "בקשת רכז חדשה" מול המצב האמיתי של הבקשה, בזמן קריאת התיבה.
  *
  * שני מקורות להכרעה, שניהם בכיוון אחד בלבד - להוריד התראה שכבר טופלה:

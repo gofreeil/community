@@ -989,6 +989,59 @@ export function coordinatorCovers(coordinatorOf: string[] | null | undefined, re
 }
 
 /**
+ * בקשת רכזות *ממתינה* של אותו מבקש לאותם אזורים בדיוק - לזיהוי הגשה חוזרת של
+ * אותו טופס (למשל: שלח, חזר והוסיף ניסיון/מוטיבציה, ושלח שוב). בלי זה נוצרות שתי
+ * רשומות ושני כרטיסי התראה על אותה בקשה.
+ *
+ * המבקש מזוהה לפי מזהה / "credentials_<email>" / טלפון מנורמל - אותה סובלנות כמו
+ * ב-closeFulfilledCoordinatorRequests. האזורים חייבים להיות זהים דו-כיוונית: בקשה
+ * לאזור אחר היא בקשה חדשה לגיטימית ולא כפילות.
+ *
+ * best-effort: כשל בשליפה מחזיר undefined - עדיף בקשה כפולה על בקשה שנבלעה בשקט.
+ */
+export async function findPendingCoordinatorRequest(
+    requester: { id?: string | null; phone?: string | null; email?: string | null },
+    areas: string[],
+): Promise<DbCoordinatorRequest | undefined> {
+    if (!areas.length) return undefined;
+
+    const idKey    = String(requester.id ?? '').trim().toLowerCase();
+    const phoneKey = normPhone(requester.phone);
+    const emailKey = (requester.email ?? '').trim().toLowerCase();
+    if (!idKey && !phoneKey && !emailKey) return undefined;
+
+    let pending: DbCoordinatorRequest[];
+    try {
+        pending = await getCoordinatorRequests('pending');
+    } catch (e) {
+        console.warn('[findPendingCoordinatorRequest] fetch failed:', e instanceof Error ? e.message : e);
+        return undefined;
+    }
+
+    return pending.find((r) => {
+        const rid = String(r.user_id ?? '').trim().toLowerCase();
+        const sameUser =
+            (!!idKey && rid === idKey) ||
+            (!!emailKey && rid === `credentials_${emailKey}`) ||
+            (!!phoneKey && normPhone(r.phone) === phoneKey);
+        if (!sameUser) return false;
+        // חפיפה דו-כיוונית = בדיוק אותם אזורים (לא תת-קבוצה)
+        return coordinatorCovers(r.neighborhoods, areas) && coordinatorCovers(areas, r.neighborhoods);
+    });
+}
+
+/**
+ * עדכון פרטי בקשת רכזות ממתינה, במקום יצירת רשומה כפולה בהגשה חוזרת.
+ * הסטטוס לא נגע - הבקשה נשארת pending וההחלטה נשארת ידנית בלבד.
+ */
+export async function updateCoordinatorRequestDetails(
+    documentId: string,
+    data: { name?: string; phone?: string; experience?: string; motivation?: string },
+): Promise<void> {
+    await strapiPut(`/api/coordinator-requests/${documentId}`, { data });
+}
+
+/**
  * סימון בקשת רכזות כ-approved בלי למנות מחדש - לניקוי רשומות שנתקעו pending אף
  * שהמבקש כבר רכז (למשל אם שלב סימון ה-approved נכשל בעת האישור). best-effort/idempotent.
  */

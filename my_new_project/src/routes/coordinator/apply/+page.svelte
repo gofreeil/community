@@ -58,6 +58,17 @@
     // המבקש כבר רכז של האזור שביקש → אין בקשה חוזרת; מציגים הודעה כנה (לא "נשלח בהצלחה")
     let alreadyCoordinator = $state(false);
     let alreadyArea = $state('');
+    // בקשה זהה כבר ממתינה לאישור → השרת עדכן אותה במקום ליצור כפילות.
+    // גם כאן הודעה כנה: "כבר נשלחה", לא "נשלחה בהצלחה" בפעם השנייה.
+    let alreadyPending = $state(false);
+    let alreadyPendingAt = $state('');
+
+    /** תאריך הגשה קריא בעברית; מחרוזת ריקה אם התאריך חסר או לא תקין */
+    function formatSentAt(raw: unknown): string {
+        const d = new Date(String(raw ?? ''));
+        if (!raw || Number.isNaN(d.getTime())) return '';
+        return d.toLocaleString('he-IL', { day: 'numeric', month: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
 
     // הפרופיל חסר עיר/שכונה? אחרי הגשה מוצלחת מציעים להעתיק את הפרטים מהטופס
     // לפרופיל (ההצעה נבנית מהערכים שהוגשו - נשמרים בצד כי הטופס מתאפס אחרי שליחה)
@@ -165,6 +176,7 @@
         error = null;
         authError = false;
         alreadyCoordinator = false;
+        alreadyPending = false;
         isLoading = true;
 
         try {
@@ -205,6 +217,15 @@
             if (result?.alreadyCoordinator) {
                 alreadyArea = area.label;
                 alreadyCoordinator = true;
+                return;
+            }
+
+            // בקשה זהה כבר ממתינה לאישור → השרת עדכן את הקיימת ולא יצר חדשה.
+            // חשוב שהמשתמש יידע שזו אותה בקשה, ולא יחשוב שהגיש שתיים.
+            if (result?.alreadyPending) {
+                alreadyArea = area.label;
+                alreadyPendingAt = formatSentAt(result.sentAt);
+                alreadyPending = true;
                 return;
             }
 
@@ -276,6 +297,16 @@
                     {/if}
                 </div>
             {/if}
+        {:else if alreadyPending}
+            <!-- בקשה זהה כבר ממתינה → עודכנה במקום להישלח שוב; לא "נשלחה בהצלחה" -->
+            <div class="bg-amber-900/25 border border-amber-500/40 rounded-lg p-6 mb-6">
+                <p class="text-amber-100 text-center">{$_('coordinator_already_pending', { values: { area: alreadyArea } })}</p>
+                {#if alreadyPendingAt}
+                    <p class="text-amber-300/80 text-sm text-center mt-2">
+                        {$_('coordinator_already_pending_when', { values: { when: alreadyPendingAt } })}
+                    </p>
+                {/if}
+            </div>
         {:else if alreadyCoordinator}
             <!-- כבר רכז של האזור המבוקש → הודעה כנה, לא "נשלח בהצלחה" -->
             <div class="bg-blue-900/30 border border-blue-500/40 rounded-lg p-6 mb-6">
