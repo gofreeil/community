@@ -3,11 +3,45 @@
     // עיצוב מינימליסטי: הלוגו, הכותרת, משפט הפתיחה, היתרונות ודרכי הקשר
     // יושבים *ליד* התמונה ולא מתחתיה — כך כל העיקר נכנס למסך הראשון בלי גלילה.
     import type { PageData } from './$types';
+    import type { SubmitFunction } from '@sveltejs/kit';
+    import { enhance } from '$app/forms';
     import { toExternalUrl, waHref } from '$lib/urlNormalize';
     let { data }: { data: PageData } = $props();
     // $derived: מעבר בין מודעות בניווט צד-לקוח משתמש באותה קומפוננטה
     const ad = $derived(data.ad);
     const lp = $derived(ad.landing);
+
+    // כפתור הסופר-אדמין "פרסם בכל האתרים" - שולח לאותו action של עמוד אישור
+    // הפרסומות (cross-route), כך שכל הלוגיקה וההרשאות נשארות במקום אחד.
+    let syndicating = $state(false);
+    let syncedLocally = $state(false);
+    let syndicateMsg = $state('');
+    let syndicateOk = $state(false);
+    const synced = $derived(syncedLocally ||
+        typeof (ad.landing as unknown as { _syndicatedAt?: unknown })?._syndicatedAt === 'string');
+    const syndicate: SubmitFunction = ({ cancel }) => {
+        if (!confirm(synced
+            ? `לעדכן את "${ad.title}" בכל האתרים לפי הגרסה הנוכחית?`
+            : `לפרסם את "${ad.title}" בכל האתרים שלך (אינדקס העסקים, קבוצות רכישה, הגמח הארצי)?`)) {
+            cancel();
+            return;
+        }
+        syndicating = true;
+        return async ({ result }) => {
+            syndicating = false;
+            if (result.type === 'success') {
+                syndicateOk = true;
+                syncedLocally = true;
+                syndicateMsg = (result.data as { message?: string } | undefined)?.message ?? 'פורסמה בכל האתרים';
+            } else if (result.type === 'failure') {
+                syndicateOk = false;
+                syndicateMsg = (result.data as { error?: string } | undefined)?.error ?? 'הפרסום בכל האתרים נכשל';
+            } else {
+                syndicateOk = false;
+                syndicateMsg = 'הפרסום בכל האתרים נכשל - נסה שוב';
+            }
+        };
+    };
 
     const gradient = $derived(ad.gradient || 'from-amber-500 to-orange-600');
     // לוגו שנחתך לעיגול בבילדר נשאר עגול גם כאן — ריבוע היה מחזיר לו
@@ -71,6 +105,29 @@
 {#snippet rich(raw: string)}{#each segments(raw) as s}{#if s.url}<a class="al-link" href={s.url} target="_blank" rel="noopener noreferrer">{s.text} ↗</a>{:else}{s.text}{/if}{/each}{/snippet}
 
 <div class="ad-landing" dir="rtl">
+    <!-- פס סופר-אדמין: סנדיקציה לכל אתרי הרשת ישירות מדף הנחיתה. לגולש
+         רגיל הפס לא נשלח בכלל - isSuperAdmin נקבע צד-שרת בלבד. -->
+    {#if data.isSuperAdmin && ad.status === 'approved'}
+        <div class="al-syndbar">
+            {#if synced}
+                <!-- חיווי מצב בולט: הפרסומת כבר חיה בכל אתרי הרשת -->
+                <span class="al-syndbadge">✅ מפורסם בכל האתרים</span>
+            {/if}
+            <form method="POST" action="/admin/ads-review?/publishEverywhere" use:enhance={syndicate}>
+                <input type="hidden" name="id" value={ad.id} />
+                <button type="submit" class="al-syndbtn" disabled={syndicating}
+                        title={synced
+                            ? 'לחיצה מעדכנת את העותקים בכל האתרים לפי הגרסה הנוכחית'
+                            : 'יצירת עותק מאושר בטור הפרסומות של כל אתרי הרשת: אינדקס העסקים, קבוצות רכישה והגמח הארצי'}>
+                    {syndicating ? '⏳ מפרסם...' : synced ? '🌐 עדכן בכל האתרים' : '🌐 פרסם בכל האתרים'}
+                </button>
+            </form>
+            {#if syndicateMsg}
+                <p class="al-syndmsg" class:ok={syndicateOk}>{syndicateMsg}</p>
+            {/if}
+        </div>
+    {/if}
+
     <!-- כותרת + פתיח + יתרונות + קשר — הכל ליד התמונה, במסך אחד -->
     <header class="al-hero bg-gradient-to-br {gradient}">
         <div class="al-hero-inner" class:has-media={!!heroImage}>
@@ -199,6 +256,42 @@
         border: 1px solid rgba(255, 255, 255, 0.08);
         overflow: hidden;
     }
+
+    /* ===== פס סופר-אדמין (סנדיקציה) - שמות בלי קידומת ad-, ראו EasyList ===== */
+    .al-syndbar {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+        padding: 0.5rem 1rem;
+        background: rgba(14, 165, 233, 0.07);
+        border-bottom: 1px solid rgba(14, 165, 233, 0.22);
+    }
+    .al-syndbtn {
+        padding: 0.4rem 0.9rem;
+        border-radius: 999px;
+        background: rgba(14, 165, 233, 0.18);
+        border: 1px solid rgba(14, 165, 233, 0.4);
+        color: #bae6fd;
+        font-weight: 800;
+        font-size: 0.8rem;
+        font-family: inherit;
+        cursor: pointer;
+    }
+    .al-syndbtn:hover { background: rgba(14, 165, 233, 0.3); }
+    .al-syndbtn:disabled { opacity: 0.6; cursor: wait; }
+    .al-syndbadge {
+        padding: 0.3rem 0.75rem;
+        border-radius: 999px;
+        background: rgba(34, 197, 94, 0.12);
+        border: 1px solid rgba(34, 197, 94, 0.4);
+        color: #86efac;
+        font-weight: 800;
+        font-size: 0.8rem;
+        white-space: nowrap;
+    }
+    .al-syndmsg { color: #fca5a5; font-size: 0.8rem; font-weight: 700; margin: 0; }
+    .al-syndmsg.ok { color: #86efac; }
 
     /* ===== כותרת+פתיח+יתרונות+קשר זה לצד זה ===== */
     .al-hero { padding: 1.75rem 1.5rem; }

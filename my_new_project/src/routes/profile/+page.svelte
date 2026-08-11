@@ -1956,6 +1956,52 @@
 	// קישור פרטי שלי בלבד - גישה ישירה ל-DB של Strapi
 	let isPrimaryAdmin = $derived((data.user as any)?.email === "yahavanter@gmail.com");
 
+	// ---- כפתור 🌐 של הסופר-אדמין ברשימת "הפרסומות שלי": סנדיקציה לכל אתרי
+	// הרשת ישירות מהפרופיל. שולח לאותו action של עמוד אישור הפרסומות
+	// (cross-route) כדי שהלוגיקה וההרשאות יישארו במקום אחד. ----
+	let syndicatingAdId = $state("");
+	let syndicatedIds = $state<string[]>([]);
+	let myAdsSyndMsg = $state("");
+	let myAdsSyndOk = $state(false);
+	function syndicateFromProfile(row: {
+		id: string;
+		title: string;
+		syndicatedAt?: string;
+	}): import("@sveltejs/kit").SubmitFunction {
+		return ({ cancel }) => {
+			const already = Boolean(row.syndicatedAt) || syndicatedIds.includes(row.id);
+			if (
+				!confirm(
+					already
+						? `לעדכן את "${row.title}" בכל האתרים לפי הגרסה הנוכחית?`
+						: `לפרסם את "${row.title}" בכל האתרים שלך (אינדקס העסקים, קבוצות רכישה, הגמח הארצי)?`,
+				)
+			) {
+				cancel();
+				return;
+			}
+			syndicatingAdId = row.id;
+			return async ({ result }) => {
+				syndicatingAdId = "";
+				if (result.type === "success") {
+					myAdsSyndOk = true;
+					if (!syndicatedIds.includes(row.id)) syndicatedIds = [...syndicatedIds, row.id];
+					myAdsSyndMsg =
+						(result.data as { message?: string } | undefined)?.message ??
+						`🌐 "${row.title}" פורסמה בכל האתרים`;
+				} else if (result.type === "failure") {
+					myAdsSyndOk = false;
+					myAdsSyndMsg =
+						(result.data as { error?: string } | undefined)?.error ??
+						"הפרסום בכל האתרים נכשל";
+				} else {
+					myAdsSyndOk = false;
+					myAdsSyndMsg = "הפרסום בכל האתרים נכשל - נסה שוב";
+				}
+			};
+		};
+	}
+
 	// דרגה 3 - רכז שכונה: מי שיש לו coordinator_of או role=neighborhood_admin (לא super_admin)
 	let isCoordOrNbhAdmin = $derived(
 		((data.user as any)?.coordinator_of?.length ?? 0) > 0 ||
@@ -3800,9 +3846,36 @@
 										   class="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-black text-[11px] transition-colors">
 											{tFn("profile.my_ad_edit")}
 										</a>
+										{#if isSuperAdmin && myAdRow.status === 'approved'}
+											<!-- סופר-אדמין בלבד: סנדיקציה לכל אתרי הרשת בלי לעבור דרך עמוד האישורים -->
+											{@const adSynced = Boolean(myAdRow.syndicatedAt) || syndicatedIds.includes(myAdRow.id)}
+											{#if adSynced}
+												<!-- חיווי מצב בולט: הפרסומת כבר חיה בכל אתרי הרשת -->
+												<span class="text-[10px] px-2 py-0.5 rounded-full font-bold flex-shrink-0 whitespace-nowrap bg-green-500/15 text-green-300 border border-green-500/40"
+												      title={myAdRow.syndicatedAt
+												          ? `פורסמה בכל האתרים ב-${new Date(myAdRow.syndicatedAt).toLocaleDateString("he-IL", { day: "2-digit", month: "2-digit", year: "numeric" })}`
+												          : 'פורסמה בכל האתרים'}>
+													✅ מפורסם בכל האתרים
+												</span>
+											{/if}
+											<form method="POST" action="/admin/ads-review?/publishEverywhere"
+											      use:enhance={syndicateFromProfile(myAdRow)} class="flex-shrink-0">
+												<input type="hidden" name="id" value={myAdRow.id} />
+												<button type="submit" disabled={syndicatingAdId === myAdRow.id}
+												        title={adSynced
+												            ? 'עדכן בכל האתרים - לחיצה מעדכנת את העותקים לפי הגרסה הנוכחית'
+												            : 'פרסם בכל האתרים - אינדקס העסקים, קבוצות רכישה והגמח הארצי'}
+												        class="px-2.5 py-1.5 rounded-lg bg-sky-500/20 border border-sky-500/40 text-sky-200 font-black text-[11px] hover:bg-sky-500/30 transition-colors disabled:opacity-60 disabled:cursor-wait">
+													{syndicatingAdId === myAdRow.id ? '⏳' : '🌐'}
+												</button>
+											</form>
+										{/if}
 									</div>
 								{/each}
 							</div>
+							{#if myAdsSyndMsg}
+								<p class="mt-2 text-[11px] font-bold m-0 {myAdsSyndOk ? 'text-green-300' : 'text-red-300'}">{myAdsSyndMsg}</p>
+							{/if}
 						</div>
 					{/if}
 

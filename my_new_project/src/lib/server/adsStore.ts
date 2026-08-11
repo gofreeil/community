@@ -493,6 +493,8 @@ export interface MyAdSummary {
     /** מוצגת בפועל על האתר עכשיו (מאושרת, לא מושהית ולא פגה) */
     live: boolean;
     rejectionReason?: string;
+    /** מתי פורסמה לאחרונה בכל אתרי הרשת (סנדיקציה) - לכפתור הסופר-אדמין */
+    syndicatedAt?: string;
 }
 
 /**
@@ -513,17 +515,22 @@ export async function getMyAds(identity: { id?: string; email?: string }): Promi
         const statusRank: Record<AdStatus, number> = { approved: 0, pending: 1, rejected: 2 };
         return [...approved, ...pending, ...rejected]
             .filter(a => !a.supersededBy && sameAdvertiser(a, me))
-            .map(a => ({
-                id: a.id,
-                title: a.title,
-                subtitle: a.subtitle,
-                status: a.status,
-                slot: a.status === 'approved' ? (slots.get(a.id) ?? 0) + 1 : undefined,
-                expiresAt: a.expiresAt,
-                paused: a.paused === true,
-                live: a.status === 'approved' && isLiveNow(a, now),
-                rejectionReason: a.rejectionReason,
-            }))
+            .map(a => {
+                // חותמת הסנדיקציה חיה בתוך ה-JSON של landing (אין עמודה בסכמה)
+                const syncAt = (a.landing as unknown as { _syndicatedAt?: unknown } | null)?._syndicatedAt;
+                return {
+                    id: a.id,
+                    title: a.title,
+                    subtitle: a.subtitle,
+                    status: a.status,
+                    slot: a.status === 'approved' ? (slots.get(a.id) ?? 0) + 1 : undefined,
+                    expiresAt: a.expiresAt,
+                    paused: a.paused === true,
+                    live: a.status === 'approved' && isLiveNow(a, now),
+                    rejectionReason: a.rejectionReason,
+                    syndicatedAt: typeof syncAt === 'string' ? syncAt : undefined,
+                };
+            })
             .sort((a, b) => statusRank[a.status] - statusRank[b.status] || (a.slot ?? 99) - (b.slot ?? 99));
     } catch (e) {
         console.warn('[adsStore] getMyAds failed:', e instanceof Error ? e.message : e);

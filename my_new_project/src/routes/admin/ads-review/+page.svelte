@@ -481,6 +481,13 @@
                                     <!-- הפיצ'ר של הסופר-אדמין: עותק מאושר בכל אתרי הרשת בלחיצה
                                          אחת; לחיצה חוזרת מרעננת את העותקים לפי הגרסה הנוכחית -->
                                     {@const syncedAt = syndicatedAt(ad)}
+                                    {#if syncedAt}
+                                        <!-- חיווי מצב בולט: הפרסומת כבר חיה בכל אתרי הרשת -->
+                                        <span class="px-3 py-2 rounded-xl bg-green-500/10 border border-green-500/40 text-green-300 font-black text-sm whitespace-nowrap"
+                                              title={`פורסמה בכל האתרים ב-${fmtDate(syncedAt)}`}>
+                                            ✅ מפורסם בכל האתרים
+                                        </span>
+                                    {/if}
                                     <form method="POST" action="?/publishEverywhere" use:enhance>
                                         <input type="hidden" name="id" value={ad.id} />
                                         <button type="submit"
