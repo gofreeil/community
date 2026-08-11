@@ -6,7 +6,7 @@ import { getCachedUserById, invalidateCachedUser } from '$lib/server/userCache';
 import { citiesData } from '$lib/neighborhoodsData';
 import { cityCenters } from '$lib/neighborhoodCoords';
 import { categoryConfig } from '$lib/categoryFields';
-import { countPending, approveAd, rejectAd, getMyLatestAdStatus } from '$lib/server/adsStore';
+import { countPending, approveAd, rejectAd, getMyAds } from '$lib/server/adsStore';
 import { markAdMessagesHandled, reconcileAdMessages } from '$lib/server/adNotifications';
 import { reconcileCoordinatorMessages } from '$lib/server/coordinatorNotifications';
 
@@ -153,11 +153,16 @@ export const load: PageServerLoad = async (event) => {
     // קריאות קהילתיות - יוצגו בהודעות
     const communityRequests = (items ?? []).filter(i => COMMUNITY_CALL_CATEGORIES.has(i.category));
 
-    // הפרסומת של המשתמש עצמו (אם יש) - כשל כאן משאיר את הכרטיס במצב טיוטה
-    const myAd = await getMyLatestAdStatus({
+    // כל הפרסומות של המשתמש - לרשימה עם כפתור עריכה פר-פרסומת. כשל כאן
+    // משאיר את הכרטיס במצב טיוטה. myAd (האחת ה"עיקרית", לפי מאושרת →
+    // ממתינה → נדחתה) ממשיך להזין את כרטיס הטיוטה הקיים.
+    const myAds = await getMyAds({
         id: session.user?.id as string | undefined,
         email: resolvedUser?.email ?? session.user?.email ?? undefined,
-    }).catch(() => null);
+    }).catch(() => [] as Awaited<ReturnType<typeof getMyAds>>);
+    const myAd = myAds.length > 0
+        ? { status: myAds[0].status, title: myAds[0].title, id: myAds[0].id }
+        : null;
 
     // ספירת פרסומות ממתינות לאישור - לבאדג' של סופר־אדמין בכותרת לוח הבקרה
     let pendingAdsCount = 0;
@@ -241,6 +246,8 @@ export const load: PageServerLoad = async (event) => {
         // מצב הפרסומת של המשתמש עצמו - כדי שהכרטיס באזור האישי לא יקרא
         // "טיוטה" למי שכבר מפרסם בפועל
         myAd,
+        // כל הפרסומות שלו - רשימת "הפרסומות שלי" עם עריכה פר-פרסומת
+        myAds,
         registeredUsersCount,
         pendingSinglesCount,
         strapiAvailable,

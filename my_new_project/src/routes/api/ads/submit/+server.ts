@@ -1,6 +1,6 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { submitAd, type SubmittedAd } from '$lib/server/adsStore';
+import { submitAd, listApproved, computeAdSlots, type SubmittedAd } from '$lib/server/adsStore';
 import { getAllAdminRecipients, createItem } from '$lib/server/db';
 import { markAdMessagesHandled } from '$lib/server/adNotifications';
 import { parseAdImageFit } from '$lib/adImageFit';
@@ -28,6 +28,14 @@ async function notifyAdminsInApp(ad: SubmittedAd) {
     // רק גרסה קודמת שנמצאת באמת על האתר תרד עם האישור. קודמת שנדחתה או
     // שעדיין ממתינה - אין מה להוריד, ואסור להבטיח למנהל החלפה שלא תקרה.
     const replacesLive = ad.replacesStatus === 'approved';
+    // מספר המקום של הפרסומת שתוחלף - כדי שהמנהל ידע בדיוק איזו משבצת
+    // מתעדכנת, במיוחד אצל מפרסם שמחזיק כמה משבצות במקביל. best-effort.
+    let replacesSlot: number | undefined;
+    if (isUpdate && replacesLive && ad.replacesAdId) {
+        try {
+            replacesSlot = computeAdSlots(await listApproved()).get(ad.replacesAdId);
+        } catch { /* אין מספר - ההתראה פשוט לא תנקוב מקום */ }
+    }
     const prevLine = ad.replacesTitle
         ? `הגרסה הקודמת: ${ad.replacesTitle}` +
           (ad.replacesStatus === 'rejected' ? ' (נדחתה)' : ad.replacesStatus === 'pending' ? ' (ממתינה)' : '') + '\n'
@@ -50,7 +58,7 @@ async function notifyAdminsInApp(ad: SubmittedAd) {
               prevLine +
               details +
               (replacesLive
-                  ? `\nעם האישור הגרסה החדשה תיכנס במקום הישנה - הישנה תרד מהאתר אוטומטית, באותו מקום בטור ועם אותו תאריך סיום.\n`
+                  ? `\nעם האישור הגרסה החדשה תיכנס במקום הישנה${replacesSlot ? ` (מקום ${replacesSlot} בטור)` : ''} - רק הפרסומת הזו תרד מהאתר, באותו מקום בטור ועם אותו תאריך סיום. פרסומות אחרות של המפרסם לא יושפעו.\n`
                   : `\nלמפרסם הזה אין כרגע פרסומת פעילה על האתר, ולכן האישור פשוט יפרסם את הגרסה הזו.\n`) +
               `היכנס/י לעמוד "אישור פרסומות" בפאנל הניהול כדי לאשר או לדחות.\n` +
               `קישור: /admin/ads-review`
@@ -138,6 +146,11 @@ export const POST: RequestHandler = async (event) => {
         // 'new' = המפרסם הגיע דרך המחירון וקנה משבצת נוספת. השליחה הזו לא
         // מתקשרת לפרסומת הקיימת ולא מורידה אותה כשהיא מאושרת.
         standalone: payload.intent === 'new',
+        // עריכה ממוקדת: המזהה של הפרסומת הספציפית ש"ערוך" נלחץ עליה
+        // בנכסים. השרת מקשר את הגרסה החדשה אליה בלבד (אחרי אימות בעלות).
+        editOfAdId: typeof payload.editOfAdId === 'string' && payload.editOfAdId.trim()
+            ? payload.editOfAdId.trim()
+            : undefined,
         // מיקום/צורת הלוגו, גובה הרצועה וצבע הכותרת — אותו עיצוב שהמפרסם
         // ראה בתצוגה החיה. חסר (מודעה ותיקה) נשמר כ-null.
         adStyle: parseAdStyle(payload.adStyle),

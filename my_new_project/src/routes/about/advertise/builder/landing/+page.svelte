@@ -5,7 +5,7 @@
     import { browser } from "$app/environment";
     import { goto } from "$app/navigation";
     import { DEFAULT_AD_STYLE, parseAdStyle, type AdStyle } from "$lib/adStyle";
-    import { AD_DRAFT_KEY, markAdSubmitted, clearAdSubmitted, clearAdIntent, getAdIntent, type AdIntent } from "$lib/adDraft";
+    import { AD_DRAFT_KEY, markAdSubmitted, clearAdSubmitted, clearAdIntent, getAdIntent, getAdEditTarget, clearAdEditTarget, type AdIntent } from "$lib/adDraft";
 
     let { data } = $props<{
         data: {
@@ -481,6 +481,9 @@
                 planMonths,
                 // 'new' = משבצת נוספת שנקנתה, ואסור שתפיל את הפרסומת הקיימת
                 intent: adIntent,
+                // עריכה ממוקדת: המזהה של הפרסומת הספציפית שנערכת. השרת מקשר
+                // את הגרסה החדשה אליה בלבד, והאישור מחליף בדיוק אותה.
+                editOfAdId: adIntent === "edit" ? (getAdEditTarget() ?? undefined) : undefined,
                 adStyle: adStyleFromDraft,
                 landing: {
                     headline: landingHeadline, pitch: landingPitch, extended: landingExtended, image: landingImage, advantages: landingAdvantages, uniqueness, phone, whatsapp, website, email, address, hours,
@@ -505,6 +508,8 @@
             // הכוונה נצרכה. הכניסה הבאה לסטודיו תיקבע לפי הדלת שדרכה נכנסים,
             // ולא תגרור בטעות "פרסומת נוספת" מרכישה קודמת.
             clearAdIntent();
+            // גם יעד העריכה נצרך - שליחה עתידית לא תתקשר בטעות לפרסומת הזו
+            clearAdEditTarget();
         } catch (e) {
             // fetch rejects with a TypeError ("Failed to fetch") on a network
             // failure - show a Hebrew connectivity message instead of English.

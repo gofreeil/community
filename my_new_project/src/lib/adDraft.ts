@@ -27,6 +27,26 @@ export const AD_SUBMITTED_KEY = 'ad_builder_submitted_v1';
 export const AD_INTENT_KEY = 'ad_builder_intent_v1';
 export type AdIntent = 'edit' | 'new';
 
+/**
+ * המזהה של הפרסומת הספציפית שנערכת עכשיו (הגעה מ"ערוך" על פרסומת
+ * מסוימת בנכסים). זה מה שהופך את העריכה למדויקת: השליחה נושאת את
+ * המזהה, והאישור מחליף את הפרסומת הזו בלבד - לא את כל הפרסומות של
+ * המפרסם. בלי מזהה (כניסה ישנה/כללית) השרת נופל לזיהוי לפי מפרסם.
+ */
+export const AD_EDIT_TARGET_KEY = 'ad_builder_edit_target_v1';
+
+export function setAdEditTarget(id: string): void {
+    try { localStorage.setItem(AD_EDIT_TARGET_KEY, id); } catch { /* ignore */ }
+}
+
+export function getAdEditTarget(): string | null {
+    try { return localStorage.getItem(AD_EDIT_TARGET_KEY) || null; } catch { return null; }
+}
+
+export function clearAdEditTarget(): void {
+    try { localStorage.removeItem(AD_EDIT_TARGET_KEY); } catch { /* ignore */ }
+}
+
 export function setAdIntent(intent: AdIntent): void {
     try { localStorage.setItem(AD_INTENT_KEY, intent); } catch { /* ignore */ }
 }

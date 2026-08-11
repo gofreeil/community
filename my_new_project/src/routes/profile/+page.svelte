@@ -3756,6 +3756,51 @@
 						</div>
 					{/if}
 
+					<!-- ===== הפרסומות שלי: שורה לכל פרסומת, עריכה ממוקדת לכל אחת =====
+					     "ערוך" כאן פותח את הבילדר עם התוכן של אותה פרסומת בדיוק,
+					     והשליחה תעדכן רק אותה - שאר הפרסומות לא מושפעות. -->
+					{#if (data.myAds ?? []).length > 0}
+						<div class="mb-3 rounded-2xl border border-white/10 bg-black/20 p-3">
+							<p class="text-white font-bold text-xs mb-2 flex items-center gap-1.5">
+								<span class="text-amber-400">📢</span>
+								{tFn("profile.my_ads_list")}
+								<span class="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full font-bold">{(data.myAds ?? []).length}</span>
+							</p>
+							<div class="space-y-1.5">
+								{#each data.myAds ?? [] as myAdRow (myAdRow.id)}
+									{@const st = myAdRow.status === 'approved' ? (myAdRow.paused ? 'paused' : myAdRow.live ? 'live' : 'expired') : myAdRow.status}
+									<div class="flex items-center gap-2 rounded-xl bg-white/5 border border-white/10 px-2.5 py-2">
+										<span class="text-[10px] px-2 py-0.5 rounded-full font-bold flex-shrink-0
+											{st === 'live' ? 'bg-green-500/20 text-green-300 border border-green-500/40'
+											: st === 'paused' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+											: st === 'expired' ? 'bg-gray-500/20 text-gray-300 border border-gray-500/40'
+											: st === 'pending' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40'
+											: 'bg-red-500/20 text-red-300 border border-red-500/40'}">
+											{st === 'live' ? tFn("profile.my_ad_status_live")
+											: st === 'paused' ? tFn("profile.my_ad_status_paused")
+											: st === 'expired' ? tFn("profile.my_ad_status_expired")
+											: st === 'pending' ? tFn("profile.my_ad_status_pending")
+											: tFn("profile.my_ad_status_rejected")}
+										</span>
+										<div class="flex-1 min-w-0">
+											<p class="text-white text-xs font-bold truncate m-0">{myAdRow.title || tFn("profile.untitled")}</p>
+											<p class="text-gray-400 text-[10px] m-0 truncate">
+												{#if myAdRow.slot}{tFn("profile.my_ad_slot", { n: myAdRow.slot })}{/if}
+												{#if myAdRow.slot && myAdRow.expiresAt}<span aria-hidden="true"> · </span>{/if}
+												{#if myAdRow.expiresAt}{tFn("profile.my_ad_until", { date: new Date(myAdRow.expiresAt).toLocaleDateString("he-IL", { day: "2-digit", month: "2-digit", year: "numeric" }) })}{/if}
+											</p>
+										</div>
+										<a href={`/about/advertise/builder?edit=${myAdRow.id}`} onclick={() => setAdIntent('edit')}
+										   title={tFn("profile.my_ad_edit_title")}
+										   class="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-black text-[11px] transition-colors">
+											{tFn("profile.my_ad_edit")}
+										</a>
+									</div>
+								{/each}
+							</div>
+						</div>
+					{/if}
+
 					{#if giveawayDrafts.length > 0}
 						<a
 							href="/giveaways/my?tab=drafts"

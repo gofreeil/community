@@ -10,7 +10,7 @@
         DEFAULT_SUB_FONT_SIZE, SUB_FONT_SIZE_MIN, SUB_FONT_SIZE_MAX,
         DEFAULT_SUB_LINE_HEIGHT, SUB_LINE_HEIGHT_MIN, SUB_LINE_HEIGHT_MAX,
     } from "$lib/adStyle";
-    import { AD_DRAFT_KEY, clearAdSubmitted, getAdIntent, type AdIntent } from "$lib/adDraft";
+    import { AD_DRAFT_KEY, clearAdSubmitted, getAdIntent, setAdIntent, getAdEditTarget, setAdEditTarget, clearAdEditTarget, type AdIntent } from "$lib/adDraft";
 
     // ===== Page payload (logged-in user prefill + admin status) =====
     let { data } = $props<{
@@ -832,6 +832,20 @@
             }
         } catch {}
 
+        // ===== עריכה ממוקדת: ?edit=<id> - "ערוך" שנלחץ על פרסומת מסוימת בנכסים =====
+        // התוכן של אותה פרסומת נטען מהשרת ודורס את הטיוטה, כדי שהמפרסם יערוך את
+        // מה שבאמת רץ על האתר - לא טיוטה ישנה. אם הטיוטה כבר שייכת לאותה פרסומת
+        // (עריכה שנקטעה באמצע) ממשיכים ממנה בלי לדרוס את מה שכבר שונה.
+        // המזהה נשמר ונוסע עם השליחה, וכך האישור מחליף בדיוק את הפרסומת הזו.
+        const editId = new URLSearchParams(location.search).get("edit");
+        if (editId) {
+            setAdIntent("edit");
+            adIntent = "edit";
+            const continuingSameAd = getAdEditTarget() === editId;
+            setAdEditTarget(editId);
+            if (!continuingSameAd) void loadAdForEdit(editId);
+        }
+
         return () => {
             window.removeEventListener("dragover", blockOutsideDrop);
             window.removeEventListener("drop", blockOutsideDrop);
@@ -905,10 +919,87 @@
         }
     }
 
+    // ===== טעינת פרסומת קיימת לעריכה (הגעה עם ?edit=<id>) =====
+    // 'loading' עד שהשרת עונה; 'failed' משאיר את הטיוטה הקיימת ומציג אזהרה,
+    // כדי שהמפרסם לא יערוך בטעות תוכן ישן בחושבו שזו הפרסומת החיה.
+    let editLoadState = $state<"idle" | "loading" | "failed">("idle");
+    let editingAdTitle = $state<string>("");
+
+    async function loadAdForEdit(id: string) {
+        editLoadState = "loading";
+        try {
+            const res = await fetch(`/api/ads/mine?id=${encodeURIComponent(id)}`);
+            if (!res.ok) throw new Error(String(res.status));
+            const ad = await res.json();
+
+            logo             = ad.logo ?? "";
+            logoOriginal     = ad.logo ?? "";
+            mainImage        = ad.mainImage ?? "";
+            mainImageObjectX = typeof ad.mainImageFit?.x === "number" ? ad.mainImageFit.x : 50;
+            mainImageObjectY = typeof ad.mainImageFit?.y === "number" ? ad.mainImageFit.y : 50;
+            mainImageZoom    = typeof ad.mainImageFit?.z === "number" ? ad.mainImageFit.z : 1;
+            mobileImage        = ad.mobileImage ?? "";
+            mobileImageObjectX = typeof ad.mobileImageFit?.x === "number" ? ad.mobileImageFit.x : 50;
+            mobileImageObjectY = typeof ad.mobileImageFit?.y === "number" ? ad.mobileImageFit.y : 50;
+            mobileImageZoom    = typeof ad.mobileImageFit?.z === "number" ? ad.mobileImageFit.z : 1;
+            title    = ad.title ?? "";
+            subtitle = ad.subtitle ?? "";
+            hoverText = ad.hoverText ?? "";
+            cta      = ad.cta || "הקלק לפרטים והזמנות";
+            gradient = ad.gradient || gradient;
+
+            // העיצוב שנשמר עם המודעה; מודעה ותיקה (null) נשארת על כללי ברירת
+            // המחדל של הבילדר - אותם כללים שמעצבים אותה גם על האתר.
+            const st = ad.adStyle;
+            if (st) {
+                logoShape            = st.logoShape === "circle" ? "circle" : "square";
+                hasCircleCrop        = st.logoShape === "circle";
+                logoPosition         = st.logoAnchor ?? "right";
+                logoPositionExplicit = true;
+                logoFreeX            = typeof st.logoX === "number" ? st.logoX : null;
+                logoFreeY            = typeof st.logoY === "number" ? st.logoY : null;
+                diagHeight           = typeof st.bandHeight === "number" ? st.bandHeight : diagHeight;
+                titleOffsetY         = typeof st.titleOffsetY === "number" ? st.titleOffsetY : 0;
+                titleColor           = typeof st.titleColor === "string" ? st.titleColor : "#ffffff";
+                subFontSize          = typeof st.subFontSize === "number" ? st.subFontSize : DEFAULT_SUB_FONT_SIZE;
+                subLineHeight        = typeof st.subLineHeight === "number" ? st.subLineHeight : DEFAULT_SUB_LINE_HEIGHT;
+                subAlign             = (st.subAlign === "center" || st.subAlign === "left" || st.subAlign === "justify") ? st.subAlign : "right";
+            }
+
+            landingHeadline = ad.landing?.headline ?? "";
+            landingPitch    = ad.landing?.pitch ?? "";
+            landingExtended = ad.landing?.extended ?? "";
+            landingImage    = ad.landing?.image ?? "";
+            landingAdvantages = [
+                ad.landing?.advantages?.[0] ?? "",
+                ad.landing?.advantages?.[1] ?? "",
+                ad.landing?.advantages?.[2] ?? "",
+            ];
+            uniqueness = ad.landing?.uniqueness ?? "";
+            phone      = ad.landing?.phone ?? phone;
+            whatsapp   = ad.landing?.whatsapp ?? whatsapp;
+            website    = ad.landing?.website ?? "";
+            email      = ad.landing?.email ?? email;
+            address    = ad.landing?.address ?? "";
+            hours      = ad.landing?.hours ?? "";
+            products   = Array.isArray(ad.landing?.products) ? ad.landing.products : [];
+            nextProductId = (products.reduce((m, p) => Math.max(m, p.id), 0) || 0) + 1;
+
+            editingAdTitle = ad.title ?? "";
+            editLoadState = "idle";
+        } catch (e) {
+            console.warn("[builder] loadAdForEdit failed:", e);
+            editLoadState = "failed";
+        }
+    }
+
     function resetDraft() {
         if (!confirm($_('advertise.b_reset_confirm'))) return;
         try { localStorage.removeItem(LS_KEY); } catch {}
         clearAdSubmitted();
+        // עריכה ממוקדת: איפוס = התחלה מחדש מהתוכן החי של הפרסומת. ניקוי
+        // היעד גורם לטעינה מחדש מהשרת אחרי הרענון (ה-URL עדיין נושא ?edit).
+        clearAdEditTarget();
         location.reload();
     }
 
@@ -1082,6 +1173,17 @@
             {$_('advertise.b_hero_1')}
             <br/>{$_('advertise.b_hero_2')}
         </p>
+
+        <!-- עריכה ממוקדת: מציין איזו פרסומת נערכת עכשיו / כשל בטעינת התוכן שלה -->
+        {#if editLoadState === "failed"}
+            <div class="mt-5 mx-auto max-w-2xl rounded-2xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-right">
+                <p class="text-red-300 font-bold text-sm m-0">⚠️ {$_('advertise.b_edit_load_failed')}</p>
+            </div>
+        {:else if editingAdTitle}
+            <div class="mt-5 mx-auto max-w-2xl rounded-2xl border border-blue-500/40 bg-blue-500/10 px-4 py-3 text-right">
+                <p class="text-blue-200 font-bold text-sm m-0">✏️ {$_('advertise.b_editing_ad', { values: { title: editingAdTitle } })}</p>
+            </div>
+        {/if}
 
         <!-- Free-edit countdown banner - only when paidAt is known and not expired yet -->
         {#if paidAt && !freeEditExpired && freeEditUntil}

@@ -216,6 +216,18 @@ export const he = {
         delete_draft: "מחק טיוטה",
         ad_draft_alt: "טיוטת הפרסומת",
 
+        // ===== הפרסומות שלי - עריכה פר-פרסומת =====
+        my_ads_list: "הפרסומות שלי",
+        my_ad_slot: "מקום {n} בטור",
+        my_ad_until: "עד {date}",
+        my_ad_status_live: "פעילה באתר",
+        my_ad_status_paused: "מושהית",
+        my_ad_status_expired: "פגה",
+        my_ad_status_pending: "ממתינה לאישור",
+        my_ad_status_rejected: "נדחתה",
+        my_ad_edit: "✏️ ערוך",
+        my_ad_edit_title: "עריכת הפרסומת הזו בלבד - שאר הפרסומות שלך לא יושפעו",
+
         // ===== הנכסים שלי =====
         my_assets: "הנכסים שלי",
         gatherings_title: "ערבי מפגש וסעודות קהילתיות",
@@ -656,6 +668,18 @@ export const en = {
         delete_draft: "Delete draft",
         ad_draft_alt: "Ad draft",
 
+        // ===== My ads - per-ad editing =====
+        my_ads_list: "My ads",
+        my_ad_slot: "Slot {n} in the column",
+        my_ad_until: "until {date}",
+        my_ad_status_live: "Live on the site",
+        my_ad_status_paused: "Paused",
+        my_ad_status_expired: "Expired",
+        my_ad_status_pending: "Awaiting approval",
+        my_ad_status_rejected: "Rejected",
+        my_ad_edit: "✏️ Edit",
+        my_ad_edit_title: "Edits only this ad - your other ads are not affected",
+
         // ===== My assets =====
         my_assets: "My assets",
         gatherings_title: "Community gatherings and shared meals",
@@ -1094,6 +1118,18 @@ export const ru = {
         continue_edit: "🚀 Продолжить редактирование",
         delete_draft: "Удалить черновик",
         ad_draft_alt: "Черновик объявления",
+
+        // ===== Мои объявления - редактирование по одному =====
+        my_ads_list: "Мои объявления",
+        my_ad_slot: "Место {n} в колонке",
+        my_ad_until: "до {date}",
+        my_ad_status_live: "Активна на сайте",
+        my_ad_status_paused: "Приостановлена",
+        my_ad_status_expired: "Истекла",
+        my_ad_status_pending: "Ожидает одобрения",
+        my_ad_status_rejected: "Отклонена",
+        my_ad_edit: "✏️ Редактировать",
+        my_ad_edit_title: "Редактируется только это объявление - остальные не затрагиваются",
 
         // ===== Мои активы =====
         my_assets: "Мои активы",
