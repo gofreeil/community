@@ -4,10 +4,8 @@ import { mockSingles } from '$lib/singlesMock';
 import { dbItemToProfile } from '$lib/singlesMap';
 import { getSinglesAccessStatus } from '$lib/server/singlesAccess';
 import { isSuperAdmin } from '$lib/server/auth';
+import { BOT_UA_RX } from '$lib/server/botUa';
 import type { PageServerLoad } from './$types';
-
-// בוטים של רשתות חברתיות וסקרפרים שצריכים לראות תגי OG בלי לוגין
-const BOT_UA_RX = /(WhatsApp|TelegramBot|facebookexternalhit|facebookcatalog|Twitterbot|LinkedInBot|Slackbot|Discordbot|Pinterest|redditbot|Googlebot|bingbot|YandexBot|DuckDuckBot|Applebot|baiduspider|Embedly|ia_archiver|vkShare|W3C_Validator|Snapchat|Bytespider|TikTokBot)/i;
 
 export const load: PageServerLoad = async (event) => {
     const ua = event.request.headers.get('user-agent') ?? '';

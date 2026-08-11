@@ -1212,13 +1212,21 @@
         return `${displayLabel} | קהילה בשכונה`;
     });
 
-    // ה-OG description לא כולל את המשפטים החופשיים (description / looking_for) -
-    // רק קריאה לפעולה גנרית. מה שצריך כבר נמצא בכותרת.
+    // ה-OG description: בפנויים בכוונה בלי הטקסטים החופשיים (פרטיות) - רק קריאה
+    // לפעולה; בשאר הקטגוריות עיקרי הפרטים - תחילת התיאור + שכונה/עיר.
     const ogDescription = $derived.by(() => {
-        if (!item) return 'קהילה בשכונה - כל יתרונות הקהילה תחת קורת גג אחת';
+        const fallback = 'קהילה בשכונה - כל יתרונות הקהילה תחת קורת גג אחת';
+        if (!item) return fallback;
         if (isSingles) return 'לפרופיל המלא והתחלת שיחה — לדף המלא:';
-        // תת-הכותרת של האתר - מופיעה מתחת לכותרת בקדימוני השיתוף ברשתות
-        return 'קהילה בשכונה - כל יתרונות הקהילה תחת קורת גג אחת';
+        const bits: string[] = [];
+        const desc = String(item.description ?? '').replace(/\s+/g, ' ').trim();
+        if (desc) bits.push(desc.length > 160 ? desc.slice(0, 157).trimEnd() + '…' : desc);
+        const place = [
+            (item as { neighborhood?: string }).neighborhood,
+            (item as { city?: string }).city,
+        ].filter((v, i, a) => !!v && a.indexOf(v) === i).join(', ');
+        if (place) bits.push(place);
+        return bits.join(' · ') || fallback;
     });
 
     const ogImage = $derived.by(() => {
@@ -1227,7 +1235,9 @@
             || galleryImages[0]
             || (typeof (item as { image?: string } | null)?.image === 'string' ? (item as { image: string }).image : '')
             || '';
-        if (!candidate || !item) return '';
+        if (!item) return '';
+        // אין תמונה מועלית - ה-endpoint מייצר כרטיס ממותג (שם/קטגוריה/שכונה)
+        if (!candidate) return `${origin}/api/items/${item.id}/og.jpg`;
         // data URLs לא נתמכים ע"י סקרפרים - נשלח דרך endpoint שמפענח ומגיש כתמונה
         // סיומת .jpg חשובה - חלק מהסקרפרים (כולל טלגרם) בודקים סיומת בנוסף ל-Content-Type
         if (candidate.startsWith('data:')) return `${origin}/api/items/${item.id}/og.jpg`;

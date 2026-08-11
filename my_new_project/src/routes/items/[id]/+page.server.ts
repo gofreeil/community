@@ -2,6 +2,7 @@ import { redirect, error } from '@sveltejs/kit';
 import { getDbItemById, getItemsByCategory, getUserByAnyId } from '$lib/server/db';
 import { isSuperAdmin, isCoordinatorOfArea } from '$lib/server/auth';
 import { getSinglesAccessStatus } from '$lib/server/singlesAccess';
+import { BOT_UA_RX } from '$lib/server/botUa';
 import { getItemById as getStaticItemById } from '$lib/itemsData';
 import { isPrivateCategory } from '$lib/itemCategories';
 import { getDemoItemById } from '$lib/demoUserItems';
@@ -25,6 +26,9 @@ export const load: PageServerLoad = async (event) => {
     const demoOwnerId = session?.user?.id ?? 'demo-user';
     const viewerId = session?.user?.id as string | undefined;
     const origin = event.url.origin;
+    // סקרפרים של רשתות (וואטסאפ/טלגרם/פייסבוק...) צריכים את תגי ה-OG לקדימון
+    const isBot = BOT_UA_RX.test(event.request.headers.get('user-agent') ?? '');
+    let botOgPreview = false;
 
     // נסה קודם ב-DB (פריטים שהמשתמשים הוסיפו), ואחר-כך פריטי דמו
     const dbItem = (await getDbItemById(params.id)) ?? getDemoItemById(params.id, demoOwnerId);
@@ -47,14 +51,20 @@ export const load: PageServerLoad = async (event) => {
 
             // שער גישה: כרטיס פנויים נגיש רק לבעלים / סופר-אדמין / מי שאושרה לו גישה ללוח.
             // גולש שאין לו גישה מנותב לשער ב-/singles (או להתחברות אם אינו מחובר).
+            // בוטים של שיתוף עוברים את השער ומקבלים תצוגת-קדימון מצומצמת (בלי
+            // טלפון וטקסטים חופשיים) — אחרת וואטסאפ רואה רק את דף ההתחברות.
             if (!isOwner && !isSuperAdmin(session)) {
-                const access = await getSinglesAccessStatus(viewerId, false);
-                // תקלת Strapi זמנית ≠ אין גישה: לא זורקים משתמש מאושר מהלוח
-                if (access === 'unavailable') {
-                    throw error(503, 'תקלה זמנית בטעינת ההרשאות - נסה שוב בעוד רגע');
-                }
-                if (access !== 'granted') {
-                    throw redirect(302, viewerId ? '/singles' : '/login?redirect=' + encodeURIComponent('/singles'));
+                if (isBot) {
+                    botOgPreview = true;
+                } else {
+                    const access = await getSinglesAccessStatus(viewerId, false);
+                    // תקלת Strapi זמנית ≠ אין גישה: לא זורקים משתמש מאושר מהלוח
+                    if (access === 'unavailable') {
+                        throw error(503, 'תקלה זמנית בטעינת ההרשאות - נסה שוב בעוד רגע');
+                    }
+                    if (access !== 'granted') {
+                        throw redirect(302, viewerId ? '/singles' : '/login?redirect=' + encodeURIComponent('/singles'));
+                    }
                 }
             }
 
@@ -131,37 +141,53 @@ export const load: PageServerLoad = async (event) => {
             return { origin, item: null };
         }
 
-        return {
-            origin,
-            isLoggedIn: !!viewerId,
-            viewerId,
-            item: {
-                id:          dbItem.id,
-                label:       dbItem.label,
-                category:    dbItem.category,
-                description: dbItem.description,
-                contact:     dbItem.contact,
-                phone,
-                address:     dbItem.address,
-                lat:         dbItem.lat ?? null,
-                lng:         dbItem.lng ?? null,
-                icon:        dbItem.icon,
-                color:       dbItem.color,
-                image:       galleryImages[0],
-                images:      galleryImages,
-                neighborhood: dbItem.neighborhood,
-                city:        dbItem.city,
-                status:      dbItem.status,
-                extraFields,
-                isUserSubmitted: true,
-                isOwner,
-                canEditActivities,
-                canEditPage,
-                viewCount:   dbItem.view_count,
-                singlesStatus,
-                incomingRequests,
-            },
+        const item = {
+            id:          dbItem.id,
+            label:       dbItem.label,
+            category:    dbItem.category,
+            description: dbItem.description,
+            contact:     dbItem.contact,
+            phone,
+            address:     dbItem.address,
+            lat:         dbItem.lat ?? null,
+            lng:         dbItem.lng ?? null,
+            icon:        dbItem.icon,
+            color:       dbItem.color,
+            image:       galleryImages[0],
+            images:      galleryImages,
+            neighborhood: dbItem.neighborhood,
+            city:        dbItem.city,
+            status:      dbItem.status,
+            extraFields,
+            isUserSubmitted: true,
+            isOwner,
+            canEditActivities,
+            canEditPage,
+            viewCount:   dbItem.view_count,
+            singlesStatus,
+            incomingRequests,
         };
+
+        if (botOgPreview) {
+            // תצוגת-קדימון לבוט: רק מה שתגי ה-OG צריכים (כינוי/גיל/מגדר/תמונה
+            // ראשית/עיר). הטקסטים החופשיים, הכתובת ופרטי הקשר לא נחשפים.
+            const efBot: Record<string, unknown> = {};
+            for (const k of ['nickname', 'age', 'gender', 'avatar'] as const) {
+                if (extraFields?.[k] !== undefined) efBot[k] = extraFields[k];
+            }
+            Object.assign(item, {
+                description: '',
+                contact:     '',
+                address:     '',
+                lat:         null,
+                lng:         null,
+                extraFields: efBot,
+                image:       galleryImages[0],
+                images:      galleryImages.slice(0, 1),
+            });
+        }
+
+        return { origin, isLoggedIn: !!viewerId, viewerId, item };
     }
 
     // Fallback ל-static data הקיים

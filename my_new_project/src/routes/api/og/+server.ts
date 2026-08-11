@@ -1,18 +1,10 @@
 import { ImageResponse } from '@vercel/og';
 import type { RequestHandler } from './$types';
-import { readFileSync } from 'fs';
-import { join } from 'path';
+import { satoriRtl, loadLogoBase64 } from '$lib/server/ogCard';
 
 export const GET: RequestHandler = async () => {
     // קרא את הלוגו כ-base64
-    let logoBase64 = '';
-    try {
-        const logoPath = join(process.cwd(), 'static', 'images', 'community-logo1.png');
-        const logoBuffer = readFileSync(logoPath);
-        logoBase64 = `data:image/png;base64,${logoBuffer.toString('base64')}`;
-    } catch {
-        logoBase64 = 'https://community.gofreeil.com/images/community-logo1.png';
-    }
+    const logoBase64 = loadLogoBase64();
 
     return new ImageResponse(
         {
@@ -49,7 +41,8 @@ export const GET: RequestHandler = async () => {
                                 textAlign: 'center',
                                 direction: 'rtl',
                             },
-                            children: 'קהילה בשכונה'
+                            // satori לא תומך RTL - satoriRtl הופך ידנית כדי שהעברית תצא נכון
+                            children: satoriRtl('קהילה בשכונה')
                         }
                     },
                     {
@@ -63,7 +56,7 @@ export const GET: RequestHandler = async () => {
                                 direction: 'rtl',
                                 maxWidth: '900px',
                             },
-                            children: 'כל יתרונות השכונה תחת קורת גג אחת'
+                            children: satoriRtl('כל יתרונות השכונה תחת קורת גג אחת')
                         }
                     }
                 ]
