@@ -727,8 +727,9 @@ async function markAdMessageHandled(msgId: string, decision: 'approve' | 'reject
         if (!item) return;
         let ef: Record<string, unknown> = {};
         try { ef = item.extra_fields ? JSON.parse(item.extra_fields) : {}; } catch { /* ריק */ }
+        // בלי status: הסכמה של Strapi לא מכירה 'handled' וכתיבתו מפילה את
+        // כל העדכון ב-400. ההיסטוריה נשענת על extra_fields.handled בלבד.
         await updateItem(msgId, {
-            status: 'handled',
             extra_fields: { ...ef, handled: true, decision, handled_at: new Date().toISOString() },
         });
     } catch (e) {

@@ -5,6 +5,21 @@ function normalizeLoc(s: string): string {
     return s.trim().replace(/\s+/g, ' ').replace(/^(שכונת|שכונה)\s+/, '').toLowerCase();
 }
 
+/**
+ * בקשת מיקום שכבר נסגרה. הסגירה נרשמת ב-extra_fields (handled/withdrawn)
+ * ולא ב-status: הסכמה של items ב-Strapi מקבלת רק active/inactive/deleted/
+ * resolved/pending/rejected/frozen, וכתיבת 'handled' ל-status נדחתה ב-400
+ * והפילה את כל העדכון - כך בקשות נשארו "פתוחות" לנצח וחסמו בקשה עתידית.
+ * בדיקת ה-status נשארת לאחור, לרשומות שאולי כן סומנו כך בעבר.
+ */
+function isClosedRequest(it: { status?: string | null; extra_fields?: string | null }): boolean {
+    if ((it.status ?? '') === 'handled') return true;
+    try {
+        const ef = JSON.parse(it.extra_fields || '{}') ?? {};
+        return ef?.handled === true || ef?.withdrawn === true;
+    } catch { return false; }
+}
+
 export interface LocationDecisionInput {
     decision: 'approve' | 'reject';
     location: string;
@@ -68,9 +83,15 @@ export async function finalizeLocationDecision(input: LocationDecisionInput): Pr
             const reqItems = await getItemsByUserId(requesterId);
             const open = (reqItems ?? []).filter(it =>
                 it.category === 'location_request' &&
-                (it.status ?? 'pending') !== 'handled' &&
+                !isClosedRequest(it) &&
                 normalizeLoc(it.label ?? '').includes(normalized));
-            await Promise.all(open.map(it => updateItem(it.id, { status: 'handled' })));
+            await Promise.all(open.map(it => {
+                let ef: Record<string, unknown> = {};
+                try { ef = JSON.parse(it.extra_fields || '{}') ?? {}; } catch { /* ריק */ }
+                return updateItem(it.id, {
+                    extra_fields: { ...ef, handled: true, handled_at: new Date().toISOString() },
+                });
+            }));
         } catch (e) {
             console.warn('[locationDecision] close request items failed:', e);
         }
@@ -258,12 +279,12 @@ export async function withdrawOpenLocationRequests(
     // שמות (מנורמלים) של הבקשות שנסגרו - כדי לדחות *רק* את רשומת הפין התואמת
     const withdrawnNorms = new Set<string>();
 
-    // 1. סגירת פריטי הבקשה של המשתמש (מסיר את החסימה - הבדיקה מתעלמת מ-handled)
+    // 1. סגירת פריטי הבקשה של המשתמש (מסיר את החסימה - הבדיקה מתעלמת מסגורות)
     try {
         const items = await getItemsByUserId(userId);
         const open = (items ?? []).filter(it =>
             it.category === 'location_request' &&
-            (it.status ?? 'pending') !== 'handled');
+            !isClosedRequest(it));
         for (const it of open) {
             const label = (it.label ?? '').replace(/^בקשה להוספת מיקום:\s*/, '').trim();
             if (label) {
@@ -275,7 +296,6 @@ export async function withdrawOpenLocationRequests(
             let ef: Record<string, unknown> = {};
             try { ef = JSON.parse(it.extra_fields || '{}') ?? {}; } catch {}
             return updateItem(it.id, {
-                status: 'handled',
                 extra_fields: { ...ef, withdrawn: true, withdrawn_reason: reason, withdrawn_at: new Date().toISOString() },
             });
         }));

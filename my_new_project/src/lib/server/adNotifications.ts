@@ -36,8 +36,12 @@ function parseEf(raw: string | null | undefined): Record<string, unknown> | null
 /**
  * כותב את הסימון "טופלה" על התראה אחת.
  * - הקידומת נכתבת פעם אחת בלבד, כדי שטיפול חוזר לא יערים כותרות.
- * - הודעה שהאדמין העביר לארכיון נשארת בארכיון: status הוא גם דגל הארכיון,
- *   ודריסתו ב-'handled' הייתה מחזירה אותה לתיבה.
+ * - חשוב: לא כותבים status. הסכמה של items ב-Strapi מקבלת רק
+ *   active/inactive/deleted/resolved/pending/rejected/frozen - הערך
+ *   'handled' נדחה ב-400 והפיל את *כל* העדכון, כולל extra_fields. זו
+ *   הסיבה שהתראות נשארו "פתוחות" לנצח עם כפתורי אשר/דחה למרות שהבקשה
+ *   הוכרעה. מצב "טופלה" חי ממילא ב-extra_fields.handled - וזה מה שכל
+ *   מסכי ההודעות בודקים.
  * מחזיר את הרשומה המעודכנת, או null אם הכתיבה נכשלה.
  */
 async function writeHandled(
@@ -49,11 +53,10 @@ async function writeHandled(
     const label = (msg.label ?? '').startsWith(LABEL_PREFIX[outcome])
         ? msg.label ?? ''
         : `${LABEL_PREFIX[outcome]}${msg.label ?? ''}`;
-    const status = msg.status === 'archived' ? 'archived' : 'handled';
     const extra_fields = { ...ef, ...extra, handled: true, decision: outcome, handled_at: new Date().toISOString() };
     try {
-        await updateItem(msg.id, { label, status, extra_fields });
-        return { ...msg, label, status, extra_fields: JSON.stringify(extra_fields) };
+        await updateItem(msg.id, { label, extra_fields });
+        return { ...msg, label, extra_fields: JSON.stringify(extra_fields) };
     } catch (e) {
         console.warn('[adNotifications] mark handled failed:', e instanceof Error ? e.message : e);
         return null;

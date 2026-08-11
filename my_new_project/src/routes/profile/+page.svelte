@@ -1858,10 +1858,15 @@
 	// יש בקשת "הוסף שכונה" ממתינה (או שהמשתמש ממלא אחת עכשיו) → נחשיב את שדה השכונה כמולא
 	// כדי שהאחוז יעלה ולא ייראה "לא הושלם", מה שגרם למשתמשים לשלוח שוב ושוב.
 	// נשען על data.communityRequests כדי שהמצב יישמר גם אחרי טעינה מחדש.
+	// הסגירה נרשמת ב-extra_fields (handled/withdrawn) - הסכמה של Strapi לא
+	// מקבלת status 'handled', ולכן בדיקת ה-status לבדה השאירה בקשות "פתוחות".
 	let hasPendingLocationRequest = $derived(
 		!!customLocation.trim() ||
 			(data.communityRequests ?? []).some(
-				(r) => r.category === "location_request" && r.status !== "handled",
+				(r) =>
+					r.category === "location_request" &&
+					r.status !== "handled" &&
+					!/"(handled|withdrawn)"\s*:\s*true/.test(r.extra_fields ?? ""),
 			),
 	);
 
