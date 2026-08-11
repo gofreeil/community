@@ -156,7 +156,7 @@
     <title>הודעות אישיות | קהילה בשכונה</title>
 </svelte:head>
 
-<div class="max-w-2xl mx-auto px-4 py-8" dir="rtl">
+<div class="dense-zone max-w-2xl mx-auto px-4 py-8" dir="rtl">
 
     <!-- Header -->
     <div class="mb-4">

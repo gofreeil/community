@@ -215,3 +215,78 @@ select option:checked {
     from { opacity: 0; transform: translate(-50%, 0.75rem); }
     to   { opacity: 1; transform: translate(-50%, 0); }
 }
+
+/* ===== מצב צפוף (dense-zone) - דפי הפרופיל וההודעות בלבד =====
+   פונטים גדולים יותר + רווחים/ריפודים מצומצמים, בלי לגעת בשאר האתר.
+   הפונטים דרך משתני ה-theme של Tailwind 4 (חלים אוטומטית גם על וריאנטים
+   ריספונסיביים כמו sm:text-sm); הריווח דרך דריסת המחלקות שבשימוש בשני הדפים. */
+.dense-zone {
+    --text-xs: 0.8125rem;   /* 12px → 13px */
+    --text-sm: 1rem;        /* 14px → 16px */
+    --text-base: 1.0625rem; /* 16px → 17px */
+    --text-lg: 1.1875rem;   /* 18px → 19px */
+    --text-xl: 1.3125rem;   /* 20px → 21px */
+    --text-2xl: 1.625rem;   /* 24px → 26px */
+    --leading-relaxed: 1.5; /* פסקאות מרובות-שורות צמודות יותר */
+}
+
+/* גדלי פונט שרירותיים (text-[Npx]) - אין להם משתנה theme, נדרסים ישירות */
+.dense-zone .text-\[9px\]  { font-size: 11px; }
+.dense-zone .text-\[10px\] { font-size: 12px; }
+.dense-zone .text-\[11px\] { font-size: 13px; }
+.dense-zone .text-\[13px\] { font-size: 15px; }
+
+/* ריפוד פנימי של כרטיסים ומסגרות */
+.dense-zone .p-2\.5 { padding: 0.5rem; }
+.dense-zone .p-3    { padding: 0.5625rem; }
+.dense-zone .p-4    { padding: 0.625rem; }
+.dense-zone .p-5    { padding: 0.75rem; }
+.dense-zone .p-6    { padding: 0.875rem; }
+.dense-zone .px-4   { padding-inline: 0.75rem; }
+.dense-zone .px-5   { padding-inline: 0.875rem; }
+.dense-zone .px-6   { padding-inline: 1rem; }
+.dense-zone .px-8   { padding-inline: 1.25rem; }
+.dense-zone .py-2\.5 { padding-block: 0.5rem; }
+.dense-zone .py-3    { padding-block: 0.5rem; }
+.dense-zone .py-3\.5 { padding-block: 0.625rem; }
+.dense-zone .py-6    { padding-block: 0.875rem; }
+.dense-zone .py-8    { padding-block: 1rem; }
+.dense-zone .py-16   { padding-block: 2rem; }
+.dense-zone .pt-2\.5 { padding-top: 0.5rem; }
+.dense-zone .pt-3    { padding-top: 0.5rem; }
+.dense-zone .pt-4    { padding-top: 0.625rem; }
+.dense-zone .pb-3    { padding-bottom: 0.5rem; }
+.dense-zone .pb-4    { padding-bottom: 0.625rem; }
+.dense-zone .pb-8    { padding-bottom: 1rem; }
+/* העטיפה הראשית נושאת את המחלקה בעצמה - דריסה עצמית לריפוד שלה */
+.dense-zone.px-4 { padding-inline: 0.75rem; }
+.dense-zone.py-8 { padding-block: 1rem; }
+.dense-zone.pb-8 { padding-bottom: 1rem; }
+
+/* רווחים אנכיים בין פסקאות, מקטעים ומסגרות */
+.dense-zone .mb-2 { margin-bottom: 0.3125rem; }
+.dense-zone .mb-3 { margin-bottom: 0.4375rem; }
+.dense-zone .mb-4 { margin-bottom: 0.5625rem; }
+.dense-zone .mb-5 { margin-bottom: 0.6875rem; }
+.dense-zone .mt-2 { margin-top: 0.3125rem; }
+.dense-zone .mt-3 { margin-top: 0.4375rem; }
+.dense-zone .mt-4 { margin-top: 0.5625rem; }
+.dense-zone .mt-6 { margin-top: 0.75rem; }
+.dense-zone .gap-2\.5 { gap: 0.5rem; }
+.dense-zone .gap-3 { gap: 0.5625rem; }
+.dense-zone .gap-4 { gap: 0.625rem; }
+.dense-zone .gap-5 { gap: 0.75rem; }
+.dense-zone .space-y-2 > :not(:last-child) { margin-block-end: 0.3125rem; }
+.dense-zone .space-y-3 > :not(:last-child) { margin-block-end: 0.5rem; }
+
+/* וריאנטים ריספונסיביים (md:) - באותו breakpoint של Tailwind (48rem),
+   ואחרי הכללים הבסיסיים כדי שינצחו בקומבינציות כמו p-4 md:p-6 */
+@media (min-width: 48rem) {
+    .dense-zone .md\:gap-6 { gap: 0.875rem; }
+    .dense-zone .md\:p-4   { padding: 0.625rem; }
+    .dense-zone .md\:p-6   { padding: 0.875rem; }
+    .dense-zone .md\:pt-4  { padding-top: 0.625rem; }
+    .dense-zone .md\:px-5  { padding-inline: 0.875rem; }
+    .dense-zone .md\:px-6  { padding-inline: 1rem; }
+    .dense-zone .md\:py-4  { padding-block: 0.625rem; }
+}

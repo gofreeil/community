@@ -2428,7 +2428,7 @@
 	</div>
 {/snippet}
 
-<div class="max-w-3xl mx-auto px-4 py-8 overflow-x-hidden" dir="rtl">
+<div class="dense-zone max-w-3xl mx-auto px-4 py-8 overflow-x-hidden" dir="rtl">
 	<!-- כפתור התחברות/הרשמה לאורחים בלבד -->
 	{#if !data.user}
 		<div class="mb-4 p-4 bg-[#0f172a] rounded-2xl border border-white/10">
@@ -5787,7 +5787,7 @@
 </div>
 
 <!-- חזרה לראש העמוד -->
-<div class="px-4 pb-8 text-right">
+<div class="dense-zone px-4 pb-8 text-right">
 	<button
 		type="button"
 		onclick={() => typeof window !== 'undefined' && window.scrollTo({ top: 0, behavior: 'smooth' })}
