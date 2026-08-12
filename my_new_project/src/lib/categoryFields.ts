@@ -511,6 +511,42 @@ export const categoryConfig: Record<string, CategoryConfig> = {
             { key: 'phone',        label: 'טלפון',                  type: 'tel',      required: true,  placeholder: '05X-XXXXXXX' },
         ],
     },
+
+    // גיל הזהב — מועדונים, חוגים ופעילות לוותיקי השכונה, וכן שירותי ליווי וסיוע.
+    // הכרטיס יכול להיות מקום (מועדון/מרכז יום) או שירות אישי, ולכן הכתובת אינה חובה.
+    'golden-age': {
+        label: 'גיל הזהב',
+        icon: '🧓',
+        color: 'amber',
+        priceRow: 2,
+        addPageTitle: 'הוספת פעילות או שירות לגיל הזהב',
+        fields: [
+            { key: 'label',        label: 'שם הפעילות / השירות',   type: 'text',     required: true,  placeholder: 'מועדון גיל הזהב, חוג התעמלות לוותיקים...' },
+            { key: 'service_type', label: 'סוג',                    type: 'multi_select', required: true, options: [
+                'מועדון / מרכז יום',
+                'חוגים והרצאות',
+                'התעמלות ובריאות',
+                'טיולים ופעילות פנאי',
+                'ליווי וסיוע בבית',
+                'הסעות וליווי לרופא',
+                'סיוע בהתנדבות',
+                'ייעוץ למיצוי זכויות',
+            ], hint: 'אפשר לבחור כמה' },
+            { key: 'audience',     label: 'קהל יעד',                type: 'multi_select', required: false, options: ['נשים', 'גברים', 'מעורב', 'ניצולי שואה', 'עולים חדשים', 'מוגבלי ניידות'] },
+            { key: 'schedule',     label: 'ימים ושעות',             type: 'text',     required: false, placeholder: 'ימים א׳-ד׳, 10:00-13:00' },
+            { key: 'price_month',  label: 'עלות חודשית (₪)',        type: 'number',   required: false, placeholder: '80', half: true },
+            { key: 'free',         label: 'ללא תשלום / בהתנדבות',   type: 'checkbox', required: false, half: true },
+            { key: 'accessible',   label: 'נגיש לכיסא גלגלים',      type: 'checkbox', required: false, half: true },
+            { key: 'transport',    label: 'הסעה מאורגנת',           type: 'checkbox', required: false, half: true },
+            { key: 'address',      label: 'כתובת',                  type: 'address',  required: false, placeholder: 'שם הרחוב' },
+            { key: 'location',     label: 'סימון על המפה',          type: 'map_pin',  required: false },
+            { key: 'description',  label: 'תיאור',                  type: 'textarea', required: true,  placeholder: 'ספרו על הפעילות, על המקום ועל מי שמתאים לה...' },
+            { key: 'images',       label: 'תמונות (עד 5)',          type: 'images',   required: false },
+            { key: 'website',      label: 'אתר אינטרנט',            type: 'text',     required: false, placeholder: 'https://example.com', hint: 'יוצג רק בדף המורחב' },
+            { key: 'contact',      label: 'שם איש קשר',             type: 'text',     required: false, placeholder: 'שם מלא' },
+            { key: 'phone',        label: 'טלפון',                  type: 'tel',      required: true,  placeholder: '05X-XXXXXXX' },
+        ],
+    },
 };
 
 // ============================================================

@@ -222,6 +222,16 @@
                 { id: "couples-workshop", label: "סדנת זוגיות" },
             ],
         },
+        {
+            id: "golden-age",
+            label: "גיל הזהב",
+            icon: "🧓",
+            items: [
+                { id: "golden-club", label: "מועדון גיל הזהב" },
+                { id: "golden-activity", label: "חוגים ופעילות לוותיקים" },
+                { id: "golden-care", label: "ליווי וסיוע לקשישים" },
+            ],
+        },
         // בעלי מקצוע — מאתר האינדקס הארצי (index.gofreeil.com), כולם חתומים על
         // אמנת המוסר ומעניקים הנחה בלעדית לחברי התנועה. מסונכרנים אוטומטית
         // (src/lib/server/indexBusinesses.ts) ולכן אין כאן items סטטיים.
@@ -306,15 +316,16 @@
     // הכפתור האחרון בסרגל אינו קטגוריה אלא "עוד" — פותח תפריט עם הקטגוריות שאינן
     // בסרגל הגלוי (ברירת מחדל: מרחב מוגן, מטפלי בריאות טבעיים; אפשר להוסיף עוד בהמשך).
     // המשתמש יכול להעביר קטגוריה מהתפריט אל הסרגל הגלוי ולהיפך — ההעדפה נשמרת מקומית.
-    const DEFAULT_MORE_IDS = ['safe-space', 'natural-health', 'business-owners', 'couples-therapy'];
-    const MORE_STORAGE_KEY = 'map_more_cats_v3';
+    const DEFAULT_MORE_IDS = ['safe-space', 'natural-health', 'business-owners', 'couples-therapy', 'golden-age'];
+    const MORE_STORAGE_KEY = 'map_more_cats_v4';
     // מפתחות קודמים (מהחדש לישן) + הקטגוריות שנוספו לתפריט "עוד" אחרי כל אחד מהם.
     // משתמש ששמר העדפה בגרסה קודמת מקבל אותה בחזרה, בתוספת הקטגוריות החדשות
     // בתפריט "עוד" (הן לא היו קיימות כששמר, ולכן העדרן מהרשימה השמורה אינו
     // "בחירה" שלו להצמיד אותן לסרגל).
     const LEGACY_MORE_KEYS: { key: string; added: string[] }[] = [
-        { key: 'map_more_cats_v2', added: ['couples-therapy'] },
-        { key: 'map_more_cats_v1', added: ['business-owners', 'couples-therapy'] },
+        { key: 'map_more_cats_v3', added: ['golden-age'] },
+        { key: 'map_more_cats_v2', added: ['couples-therapy', 'golden-age'] },
+        { key: 'map_more_cats_v1', added: ['business-owners', 'couples-therapy', 'golden-age'] },
     ];
 
     let moreIds = $state<string[]>([...DEFAULT_MORE_IDS]);
@@ -399,6 +410,7 @@
         'safe-space':  'map.tip_safe_space',
         'natural-health': 'map.tip_natural_health',
         'couples-therapy': 'map.tip_couples_therapy',
+        'golden-age': 'map.tip_golden_age',
         'business-owners': 'map.tip_business_owners',
     };
 
