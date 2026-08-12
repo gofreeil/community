@@ -8,7 +8,8 @@ import { cityCenters } from '$lib/neighborhoodCoords';
 import { categoryConfig } from '$lib/categoryFields';
 import { countPending, approveAd, rejectAd, getMyAds } from '$lib/server/adsStore';
 import { markAdMessagesHandled, reconcileAdMessages } from '$lib/server/adNotifications';
-import { reconcileCoordinatorMessages } from '$lib/server/coordinatorNotifications';
+import { reconcileCoordinatorMessages, markCoordinatorMessagesHandled } from '$lib/server/coordinatorNotifications';
+import { approveCoordinatorRequest, rejectCoordinatorRequest, findPendingCoordinatorRequest } from '$lib/server/db';
 
 // קטגוריות פרסום אמיתיות (גמ"ח, למסירה, חוגים וכו') - לא קריאות שכונה
 const PUBLICATION_CATEGORIES = new Set(Object.keys(categoryConfig));
@@ -150,8 +151,11 @@ export const load: PageServerLoad = async (event) => {
 
     // פרסומים אמיתיים - רק קטגוריות מ-categoryConfig
     const publicationItems = (items ?? []).filter(i => PUBLICATION_CATEGORIES.has(i.category));
-    // קריאות קהילתיות - יוצגו בהודעות
-    const communityRequests = (items ?? []).filter(i => COMMUNITY_CALL_CATEGORIES.has(i.category));
+    // קריאות קהילתיות - יוצגו בהודעות. התראה שהמשתמש כבר סימן כנקראה
+    // (dismissCommunityAlert) יורדת מהרשימה בכל המכשירים, לא רק במכשיר שלחץ.
+    const communityRequests = (items ?? []).filter(
+        i => COMMUNITY_CALL_CATEGORIES.has(i.category) && !/"dismissed"\s*:\s*true/.test(i.extra_fields ?? ''),
+    );
 
     // כל הפרסומות של המשתמש - לרשימה עם כפתור עריכה פר-פרסומת. כשל כאן
     // משאיר את הכרטיס במצב טיוטה. myAd (האחת ה"עיקרית", לפי מאושרת →
@@ -634,6 +638,40 @@ export const actions: Actions = {
     approveAdSubmission: (event) => handleAdSubmission(event, 'approve'),
     rejectAdSubmission:  (event) => handleAdSubmission(event, 'reject'),
 
+    // אישור/דחיית בקשת רכז מתוך כרטיס ההתראה - בלי מעבר לעמוד הניהול
+    approveCoordRequest: (event) => handleCoordinatorRequest(event, 'approve'),
+    rejectCoordRequest:  (event) => handleCoordinatorRequest(event, 'reject'),
+
+    // סימון התראת מערכת ("קריאות שכונה שפרסמתי") כנקראה - הכרטיס נעלם מהרשימה
+    dismissCommunityAlert: async (event) => {
+        let session = null;
+        try { session = await event.locals.auth(); } catch {}
+        if (!session?.user?.id) return fail(403, { alertError: 'נדרשת התחברות' });
+
+        const form = await event.request.formData();
+        const id = form.get('id')?.toString() ?? '';
+        if (!id) return fail(400, { alertError: 'חסר מזהה ההתראה' });
+
+        try {
+            const item = await getDbItemById(id);
+            // רק הבעלים של ההתראה מסתיר אותה מהרשימה שלו
+            if (!item || item.user_id !== session.user.id) {
+                return fail(403, { alertError: 'אין הרשאה' });
+            }
+            let ef: Record<string, unknown> = {};
+            try { ef = item.extra_fields ? JSON.parse(item.extra_fields) : {}; } catch { /* ריק */ }
+            // בלי status: 'handled'/'archived' אינם ב-enum של Strapi ומפילים את
+            // כל ה-PUT ב-400. ההסתרה חיה ב-extra_fields וחלה בכל המכשירים.
+            await updateItem(id, {
+                extra_fields: { ...ef, dismissed: true, read: true, dismissed_at: new Date().toISOString() },
+            });
+            return { alertDismissed: id };
+        } catch (e) {
+            console.warn('[profile] dismissCommunityAlert failed:', e);
+            return fail(500, { alertError: 'שגיאה בסימון ההתראה, נסה שוב' });
+        }
+    },
+
     // ביטול החלטה על בקשת מיקום ("לחצתי אישור בטעות") - סופר-אדמין בלבד.
     // מחזיר את הבקשה לממתינות, מוחק את הודעת ההחלטה מהמבקש, ומחזיר את
     // הודעת האדמין למצב פעיל עם כפתורי אשר/דחה
@@ -715,6 +753,80 @@ async function handleAdSubmission(event: Parameters<NonNullable<Actions[string]>
     } catch (e) {
         console.warn('[profile] handleAdSubmission failed:', e);
         return fail(500, { adError: 'שגיאה בטיפול בבקשה, נסה שוב' });
+    }
+}
+
+/**
+ * אישור/דחיית בקשת רכז ישירות מכרטיס ההתראה - אותה פעולה בדיוק של
+ * "בקשות להיות רכז" בעמוד הניהול, רק בלי לנווט אליו.
+ *
+ * זיהוי הבקשה: request_id מהכרטיס כשקיים; כרטיסים שנוצרו לפני שהשדה הזה
+ * נשמר נפתרים לפי מבקש + אזורים (אותה התאמה של הגשה חוזרת).
+ */
+async function handleCoordinatorRequest(
+    event: Parameters<NonNullable<Actions[string]>>[0],
+    decision: 'approve' | 'reject',
+) {
+    const adminId = await requireSuperAdminId(event);
+    if (!adminId) return fail(403, { coordError: 'נדרשת הרשאת מנהל ראשי' });
+
+    const form        = await event.request.formData();
+    const msgId       = form.get('msgId')?.toString() ?? '';
+    const requesterId = form.get('requesterId')?.toString() ?? '';
+    const phone       = form.get('phone')?.toString() ?? '';
+    const areas       = (form.get('areas')?.toString() ?? '')
+        .split(',').map((a) => a.trim()).filter(Boolean);
+    let requestId     = form.get('requestId')?.toString() ?? '';
+
+    try {
+        if (!requestId) {
+            const pending = await findPendingCoordinatorRequest({ id: requesterId, phone }, areas);
+            requestId = pending?.id ?? '';
+        }
+        // הבקשה כבר הוכרעה/נמחקה - ההתראה כבר לא רלוונטית, ולכן מורידים אותה
+        // מהתיבה במקום להשאיר כפתורים שלא יעשו כלום
+        if (!requestId) {
+            await markCoordinatorMessageHandled(msgId, decision);
+            return fail(404, { coordError: 'הבקשה לא נמצאה - ייתכן שכבר טופלה' });
+        }
+
+        const req = decision === 'approve'
+            ? await approveCoordinatorRequest(requestId, adminId)
+            : await rejectCoordinatorRequest(requestId, adminId, '');
+
+        // אותה בקשה נשלחה כהתראה נפרדת לכל סופר-אדמין - כולן יורדות מהתיבה
+        if (req) {
+            try { await markCoordinatorMessagesHandled([req], decision); }
+            catch (e) { console.warn('[profile] markCoordinatorMessagesHandled failed:', e); }
+        }
+        await markCoordinatorMessageHandled(msgId, decision);
+
+        return {
+            coordSuccess: decision,
+            coordName:  req?.name ?? '',
+            coordAreas: (req?.neighborhoods ?? areas).join(', '),
+        };
+    } catch (e) {
+        console.warn('[profile] handleCoordinatorRequest failed:', e);
+        return fail(500, { coordError: 'שגיאה בטיפול בבקשת הרכז, נסה שוב' });
+    }
+}
+
+/** גיבוי לכרטיס שההתאמה הכללית לא תפסה (למשל בלי אזורים ב-extra_fields):
+ *  מסמן את ההתראה הזו עצמה כטופלה, כדי שלא תישאר פתוחה על בקשה שהוכרעה. */
+async function markCoordinatorMessageHandled(msgId: string, decision: 'approve' | 'reject'): Promise<void> {
+    if (!msgId) return;
+    try {
+        const item = await getDbItemById(msgId);
+        if (!item) return;
+        let ef: Record<string, unknown> = {};
+        try { ef = item.extra_fields ? JSON.parse(item.extra_fields) : {}; } catch { /* ריק */ }
+        if (ef.handled) return;
+        await updateItem(msgId, {
+            extra_fields: { ...ef, handled: true, read: true, decision, handled_at: new Date().toISOString() },
+        });
+    } catch (e) {
+        console.warn('[profile] markCoordinatorMessageHandled failed:', e);
     }
 }
 

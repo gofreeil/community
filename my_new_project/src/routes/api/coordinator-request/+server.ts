@@ -75,7 +75,7 @@ async function notifyAdminEmail(data: CoordRequestInfo, resubmitted = false) {
  * שולח הודעה אישית (category 'message') לכל סופר־אדמין כדי שהבקשה תופיע מיד
  * בתיבת ההודעות בפרופיל ותיספר בבאדג' ההודעות שלא נקראו - best-effort.
  */
-async function notifySuperAdminsInApp(data: CoordRequestInfo, resubmitted = false) {
+async function notifySuperAdminsInApp(data: CoordRequestInfo, resubmitted = false, requestId = '') {
     const admins = await getAllSuperAdmins();
     const areas = data.neighborhoods.join(', ');
     const { label, description } = messageContent(data, resubmitted);
@@ -92,6 +92,9 @@ async function notifySuperAdminsInApp(data: CoordRequestInfo, resubmitted = fals
             requested_by_phone: data.phone,
             neighborhoods:      areas,
             requested_by_id:    data.user_id,
+            // מזהה רשומת הבקשה - מאפשר אשר/דחה ישירות מכרטיס ההתראה בלי לחפש
+            // אותה מחדש. כרטיסים ישנים בלי השדה נפתרים לפי מבקש+אזורים.
+            request_id:         requestId,
             requested_at:       new Date().toISOString(),
             read:               false,
         },
@@ -154,9 +157,9 @@ export const POST: RequestHandler = async ({ request, locals }) => {
                 const { label, description } = messageContent(info, true);
                 const refreshed = await refreshCoordinatorRequestMessages(
                     { user_id: pending.user_id, phone: pending.phone || phone, neighborhoods: pending.neighborhoods },
-                    { label, description },
+                    { label, description, requestId: pending.id },
                 );
-                if (refreshed === 0) await notifySuperAdminsInApp(info, true);
+                if (refreshed === 0) await notifySuperAdminsInApp(info, true, pending.id);
             } catch (e) {
                 console.warn('[coordinator-request] refresh notify failed:', e);
             }
@@ -169,8 +172,9 @@ export const POST: RequestHandler = async ({ request, locals }) => {
             return json({ success: true, alreadyPending: true, sentAt: pending.created_at });
         }
 
-        // שמור בקשה ב-Strapi
-        await strapiPost('/api/coordinator-requests', {
+        // שמור בקשה ב-Strapi. שומרים את המזהה שנוצר כדי לשתול אותו בכרטיס
+        // ההתראה - משם האדמין מאשר/דוחה ישירות, בלי לחפש את הבקשה בעמוד הניהול.
+        const created = await strapiPost<{ data?: { documentId?: string } }>('/api/coordinator-requests', {
             data: {
                 user_id: session.user.id,
                 name,
@@ -182,10 +186,11 @@ export const POST: RequestHandler = async ({ request, locals }) => {
                 publishedAt: new Date().toISOString(),
             },
         });
+        const requestId = created?.data?.documentId ?? '';
 
         // התראות לאדמין - כל אחת best-effort בנפרד, לא מכשילות את הבקשה
         try {
-            await notifySuperAdminsInApp(info);
+            await notifySuperAdminsInApp(info, false, requestId);
         } catch (e) {
             console.warn('[coordinator-request] in-app notify failed:', e);
         }

@@ -476,6 +476,19 @@
 								: undefined;
 							// בקשה שכבר טופלה (handled) נשארת בהיסטוריה - בלי כפתורי אשר/דחה
 							const lr = lrData && !ef?.handled ? lrData : undefined;
+							// בקשת רכז: אשר/דחה ישירות מהכרטיס, בלי לנווט לעמוד הניהול.
+							// request_id קיים בכרטיסים חדשים; בישנים השרת מאתר את
+							// הבקשה לפי המבקש והאזורים.
+							const coordReq =
+								efType === "coordinator_request" && !ef?.handled
+									? {
+											requestId: String(ef?.request_id ?? ""),
+											requesterId: efRequesterId,
+											phone: String(ef?.requested_by_phone ?? ""),
+											name: String(ef?.requested_by_name ?? ""),
+											areas: String(ef?.neighborhoods ?? ""),
+										}
+									: undefined;
 							// החלטת מנהל שאפשר לבטל ("לחצתי אישור בטעות") - רק אישור/דחייה,
 							// לא בקשה שהמבקש משך בעצמו (withdrawn)
 							const efDecision = String(ef?.decision ?? "");
@@ -530,6 +543,8 @@
 								// בקשת פרסום: אשר/דחה על הכרטיס עצמו, בלי מעבר למסך הניהול
 								adSubId: efAdId || undefined,
 								adTitle: efAdId ? String(ef?.ad_title ?? "") : undefined,
+								// בקשת רכז: אשר/דחה על הכרטיס עצמו
+								coordReq,
 								// נמען לתשובה מהירה מתוך הכרטיס: השולח בצ'אט הפנימי,
 								// או מי שיזם את הבקשה בהתראת ניהול. הודעת מערכת בלי
 								// שולח אנושי (ברוך הבא, אישור פנייה) לא מקבלת כפתור.
@@ -853,6 +868,95 @@
 			showLrNotice("error", tFn("profile.lr_network"));
 		} finally {
 			lrBusyId = "";
+		}
+	}
+
+	// אישור/דחיית בקשת רכז מתוך כרטיס ההתראה - אותה פעולה של "בקשות להיות רכז"
+	// בעמוד הניהול, בלי לנווט אליו. משתמש באותם מצב-טעינה/אישור-דחייה/משוב.
+	type CoordReq = {
+		requestId: string;
+		requesterId: string;
+		phone: string;
+		name: string;
+		areas: string;
+	};
+	type CoordMsg = { id: string; dbId?: string; coordReq?: CoordReq };
+	async function decideCoordinatorRequest(msg: CoordMsg, decision: "approve" | "reject") {
+		if (!msg.coordReq || lrBusyId) return;
+		const { requestId, requesterId, phone, areas, name } = msg.coordReq;
+		lrConfirmId = "";
+		lrBusyId = msg.id;
+		try {
+			const fd = new FormData();
+			fd.set("msgId", msg.dbId ?? "");
+			fd.set("requestId", requestId);
+			fd.set("requesterId", requesterId);
+			fd.set("phone", phone);
+			fd.set("areas", areas);
+			const res = await fetch(
+				`?/${decision === "approve" ? "approveCoordRequest" : "rejectCoordRequest"}`,
+				{ method: "POST", body: fd, headers: { "x-sveltekit-action": "true" } },
+			);
+			const result = deserialize(await res.text());
+			if (result.type === "success") {
+				// ההתראה סומנה כטופלה ונקראה בשרת - יורדת מהרשימה כאן ובכל מכשיר אחר
+				messages = messages.filter((m) => m.id !== msg.id);
+				const who = String((result.data as { coordName?: string })?.coordName ?? "") || name;
+				const where = String((result.data as { coordAreas?: string })?.coordAreas ?? "") || areas;
+				showLrNotice(
+					"success",
+					decision === "approve"
+						? tFn("profile.coord_approved", { name: who, areas: where })
+						: tFn("profile.coord_rejected", { name: who }),
+				);
+			} else {
+				const errMsg =
+					result.type === "failure"
+						? String((result.data as { coordError?: string })?.coordError ?? tFn("profile.coord_error"))
+						: tFn("profile.coord_error");
+				// בקשה שכבר הוכרעה: ההתראה כבר סומנה בשרת, ולכן יורדת גם כאן
+				if (result.type === "failure" && result.status === 404) {
+					messages = messages.filter((m) => m.id !== msg.id);
+				}
+				showLrNotice("error", errMsg);
+			}
+		} catch {
+			showLrNotice("error", tFn("profile.lr_network"));
+		} finally {
+			lrBusyId = "";
+		}
+	}
+
+	// ===== סימון התראת מערכת ב"קריאות שכונה שפרסמתי" כנקראה =====
+	// הכרטיס נעלם מהרשימה, והסימון נשמר בשרת כדי שלא יחזור ברענון או במכשיר אחר.
+	let communityReqs = $state(untrack(() => (data.communityRequests ?? []).slice()));
+	let alertBusyId = $state("");
+	async function dismissCommunityAlert(id: string) {
+		if (alertBusyId) return;
+		alertBusyId = id;
+		try {
+			const fd = new FormData();
+			fd.set("id", id);
+			const res = await fetch("?/dismissCommunityAlert", {
+				method: "POST",
+				body: fd,
+				headers: { "x-sveltekit-action": "true" },
+			});
+			const result = deserialize(await res.text());
+			if (result.type === "success") {
+				communityReqs = communityReqs.filter((r) => r.id !== id);
+				showLrNotice("success", tFn("profile.alert_dismissed"));
+			} else {
+				const errMsg =
+					result.type === "failure"
+						? String((result.data as { alertError?: string })?.alertError ?? tFn("profile.alert_error"))
+						: tFn("profile.alert_error");
+				showLrNotice("error", errMsg);
+			}
+		} catch {
+			showLrNotice("error", tFn("profile.lr_network"));
+		} finally {
+			alertBusyId = "";
 		}
 	}
 
@@ -3241,6 +3345,7 @@
 					{@const isDraft = (msg as { isDraft?: boolean }).isDraft}
 					{@const msgLr = (msg as LrMsg).lr ? (msg as LrMsg) : null}
 					{@const msgAd = (msg as AdMsg).adSubId ? (msg as AdMsg) : null}
+					{@const msgCoord = (msg as CoordMsg).coordReq ? (msg as CoordMsg) : null}
 					{@const isSinglesMatch = msg.id === 'singles-match'}
 					{@const msgLink = (msg as { link?: string }).link}
 					{@const navTarget = isSinglesMatch ? '/singles' : msgLink}
@@ -3401,6 +3506,46 @@
 												title={tFn("profile.ad_reject_title")}
 											>
 												{tFn("profile.ad_reject")}
+											</button>
+										{/if}
+										<span class="flex-1"></span>
+									{:else if msgCoord}
+										<!-- אשר/דחה בקשת רכז - ישירות מההתראה, בלי לנווט לעמוד הניהול -->
+										{#if lrConfirmId === msg.id}
+											<span class="text-xs font-bold text-red-200">{tFn("profile.coord_reject_confirm")}</span>
+											<button
+												type="button"
+												disabled={lrBusyId === msg.id}
+												onclick={(e) => { e.stopPropagation(); decideCoordinatorRequest(msgCoord, "reject"); }}
+												class="text-xs font-black bg-red-500/20 text-red-200 border border-red-500/50 hover:bg-red-500/30 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
+											>
+												{lrBusyId === msg.id ? tFn("profile.lr_processing") : tFn("profile.lr_yes_reject")}
+											</button>
+											<button
+												type="button"
+												onclick={(e) => { e.stopPropagation(); lrConfirmId = ""; }}
+												class="text-xs font-bold text-gray-300 border border-white/15 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+											>
+												{tFn("profile.cancel")}
+											</button>
+										{:else}
+											<button
+												type="button"
+												disabled={lrBusyId === msg.id}
+												onclick={(e) => { e.stopPropagation(); decideCoordinatorRequest(msgCoord, "approve"); }}
+												class="text-xs font-black bg-green-500/15 text-green-300 border border-green-500/40 hover:bg-green-500/25 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
+												title={tFn("profile.coord_approve_title")}
+											>
+												{lrBusyId === msg.id ? tFn("profile.lr_processing") : tFn("profile.coord_approve")}
+											</button>
+											<button
+												type="button"
+												disabled={lrBusyId === msg.id}
+												onclick={(e) => { e.stopPropagation(); lrConfirmId = msg.id; }}
+												class="text-xs font-black bg-red-500/10 text-red-300 border border-red-500/40 hover:bg-red-500/20 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
+												title={tFn("profile.coord_reject_title")}
+											>
+												{tFn("profile.coord_reject")}
 											</button>
 										{/if}
 										<span class="flex-1"></span>
@@ -3652,11 +3797,11 @@
 				{/if}
 
 				<!-- קריאות שכונה שפרסמתי -->
-				{#if (data.communityRequests ?? []).length > 0}
+				{#if communityReqs.length > 0}
 					<div class="mt-2 mb-1">
 						<p class="text-xs font-black text-orange-400 mb-2 px-1">{tFn("profile.community_requests")}</p>
 						<div class="flex flex-col gap-2">
-							{#each data.communityRequests as req}
+							{#each communityReqs as req (req.id)}
 								{@const actor = alertActor(req.extra_fields)}
 								<div class="flex items-start gap-3 bg-orange-500/5 rounded-2xl border border-orange-500/20 px-4 py-3">
 									<span class="text-xl flex-shrink-0">{req.icon ?? '🆘'}</span>
@@ -3685,6 +3830,22 @@
 												>
 													✍️ כתוב {actor.actor_id ? 'לגולש' : 'מייל'}
 												</a>
+											{/if}
+											<!-- התראת מערכת (תקלה/פנייה): סימון כנקראה מוריד את הכרטיס
+											     מהרשימה לתמיד, גם ברענון ובכל מכשיר. קריאות קהילתיות
+											     אמיתיות (קריאת עזרה, אבידה) נשארות כמות שהן. -->
+											{#if req.category === 'admin_alert' || req.category === 'user_feedback'}
+												<button
+													type="button"
+													disabled={alertBusyId === req.id}
+													onclick={() => dismissCommunityAlert(req.id)}
+													class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full
+													       bg-green-500/15 text-green-300 border border-green-500/40 hover:bg-green-500/30
+													       transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
+													title={tFn("profile.alert_dismiss_title")}
+												>
+													{alertBusyId === req.id ? tFn("profile.lr_processing") : tFn("profile.alert_dismiss")}
+												</button>
 											{/if}
 										</div>
 									</div>

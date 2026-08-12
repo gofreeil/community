@@ -69,7 +69,13 @@ function messageMatchesRequest(ef: Record<string, unknown>, req: { user_id?: str
 /**
  * כותב את הסימון "טופלה" על התראה אחת.
  * - הקידומת נכתבת פעם אחת בלבד, כדי שטיפול חוזר לא יערים כותרות.
- * - הודעה שהמנהל העביר לארכיון נשארת בארכיון: status הוא גם דגל הארכיון.
+ * - read: true - ההחלטה כבר התקבלה, ולכן הכרטיס גם יורד ממונה "שלא נקראו"
+ *   בכל המכשירים, ולא רק עובר להיסטוריה.
+ * - חשוב: לא כותבים status. הסכמה של items ב-Strapi מקבלת רק
+ *   active/inactive/deleted/resolved/pending/rejected/frozen - הערכים
+ *   'handled'/'archived' נדחים ב-400 והפילו את *כל* העדכון, כולל
+ *   extra_fields. זו הסיבה שהתראות "בקשת רכז חדשה" נשארו פתוחות ולא-נקראו
+ *   גם אחרי שהמבקש כבר אושר כרכז. מצב "טופלה" חי ב-extra_fields.handled.
  * מחזיר את הרשומה המעודכנת, או null אם הכתיבה נכשלה.
  */
 async function writeHandled(
@@ -81,11 +87,13 @@ async function writeHandled(
     const label = (msg.label ?? '').startsWith(LABEL_PREFIX[outcome])
         ? msg.label ?? ''
         : `${LABEL_PREFIX[outcome]}${msg.label ?? ''}`;
-    const status = msg.status === 'archived' ? 'archived' : 'handled';
-    const extra_fields = { ...ef, ...extra, handled: true, decision: outcome, handled_at: new Date().toISOString() };
+    const extra_fields = {
+        ...ef, ...extra,
+        handled: true, read: true, decision: outcome, handled_at: new Date().toISOString(),
+    };
     try {
-        await updateItem(msg.id, { label, status, extra_fields });
-        return { ...msg, label, status, extra_fields: JSON.stringify(extra_fields) };
+        await updateItem(msg.id, { label, extra_fields });
+        return { ...msg, label, extra_fields: JSON.stringify(extra_fields) };
     } catch (e) {
         console.warn('[coordinatorNotifications] mark handled failed:', e instanceof Error ? e.message : e);
         return null;
@@ -134,7 +142,7 @@ export async function markCoordinatorMessagesHandled(
  */
 export async function refreshCoordinatorRequestMessages(
     req: { user_id?: string | null; phone?: string | null; neighborhoods: string[] },
-    fields: { label: string; description: string },
+    fields: { label: string; description: string; requestId?: string },
 ): Promise<number> {
     let admins;
     try {
@@ -155,6 +163,9 @@ export async function refreshCoordinatorRequestMessages(
         try {
             const extra_fields = {
                 ...ef,
+                // כרטיס ישן שנוצר לפני שהמזהה נשמר - ההגשה החוזרת משתילה אותו,
+                // וכך גם הוא מקבל כפתורי אשר/דחה שפועלים ישירות על הבקשה
+                ...(fields.requestId ? { request_id: fields.requestId } : {}),
                 read:           false,
                 resubmitted_at: new Date().toISOString(),
             };
