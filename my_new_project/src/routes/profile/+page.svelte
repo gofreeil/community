@@ -1870,6 +1870,75 @@
 			),
 	);
 
+	// ===== קיצור "כתוב לגולש" בכרטיסי תקלה =====
+	// כרטיס תקלה (server_error / order_failed) נושא ב-extra_fields את זהות הגולש
+	// שנפל עליו הדף. הכפתור פותח את הצ'אט הפנימי עם טיוטת התנצלות מוכנה
+	// (?draft=) - ניתנת לעריכה לפני שליחה, לא נשלחת מעצמה.
+	type AlertActor = {
+		type: string;
+		ref: string;
+		actor_id: string;
+		actor_name: string;
+		actor_email: string;
+		actor_gender: string;
+	};
+
+	function alertActor(raw: string | undefined): AlertActor | null {
+		try {
+			const ef = JSON.parse(raw || "{}") ?? {};
+			if (ef.type !== "server_error" && ef.type !== "order_failed") return null;
+			if (!ef.actor_id && !ef.actor_email) return null;
+			return {
+				type: String(ef.type),
+				ref: String(ef.ref ?? ""),
+				actor_id: String(ef.actor_id ?? ""),
+				actor_name: String(ef.actor_name ?? ""),
+				actor_email: String(ef.actor_email ?? ""),
+				actor_gender: String(ef.actor_gender ?? ""),
+			};
+		} catch {
+			return null;
+		}
+	}
+
+	/** טיוטת ההתנצלות, בלשון המתאימה למגדר הגולש (ניטרלי כשלא ידוע). */
+	function apologyDraft(a: AlertActor): string {
+		const greeting = a.actor_name
+			? `${a.actor_name} יקר${a.actor_gender === "female" ? "ה" : ""},`
+			: a.actor_gender === "female"
+				? "גולשת יקרה,"
+				: a.actor_gender === "male"
+					? "גולש יקר,"
+					: "שלום,";
+		// "ניסית" זהה בזכר ובנקבה; רק פניית ההזמנה משתנה, ובלי מגדר ידוע - לשון רבים.
+		const invited =
+			a.actor_gender === "female"
+				? "את מוזמנת"
+				: a.actor_gender === "male"
+					? "אתה מוזמן"
+					: "אתם מוזמנים";
+		const what = a.type === "order_failed" ? "שניסית לשלוח בקשת פרסום" : "שניסית להשתמש באתר";
+
+		return (
+			`${greeting}\n\n` +
+			`שמתי לב שנתקלת בתקלה באתר בזמן ${what} — ואני מתנצל על אי-הנוחות.\n\n` +
+			`חשוב לי למסור לך שהתקלה אותרה ותוקנה, והמערכת חזרה לפעול כרגיל. ` +
+			`${invited} לנסות שוב, ואם משהו עדיין לא עובד — אני כאן.\n\n` +
+			`תודה על הסבלנות, ובעיקר תודה שבחרת בנו.\n\n` +
+			`יהב אנטר\nקהילה בשכונה`
+		);
+	}
+
+	/** צ'אט פנימי כשיש מזהה משתמש, אחרת mailto - בשניהם הטיוטה כבר בפנים. */
+	function apologyHref(a: AlertActor): string {
+		const draft = apologyDraft(a);
+		if (a.actor_id) {
+			return `/admin/users/${a.actor_id}?draft=${encodeURIComponent(draft)}#chat`;
+		}
+		const subject = "קהילה בשכונה — התקלה שנתקלת בה תוקנה";
+		return `mailto:${a.actor_email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(draft)}`;
+	}
+
 	let avatarLetter = $derived(
 		(data.user?.name ?? data.user?.email ?? "U").charAt(0).toUpperCase(),
 	);
@@ -3588,6 +3657,7 @@
 						<p class="text-xs font-black text-orange-400 mb-2 px-1">{tFn("profile.community_requests")}</p>
 						<div class="flex flex-col gap-2">
 							{#each data.communityRequests as req}
+								{@const actor = alertActor(req.extra_fields)}
 								<div class="flex items-start gap-3 bg-orange-500/5 rounded-2xl border border-orange-500/20 px-4 py-3">
 									<span class="text-xl flex-shrink-0">{req.icon ?? '🆘'}</span>
 									<div class="min-w-0 flex-1">
@@ -3598,10 +3668,25 @@
 										{#if req.description}
 											<p class="text-gray-400 text-xs line-clamp-2">{req.description}</p>
 										{/if}
-										<span class="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full font-bold
-											{req.status === 'active' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-gray-500/20 text-gray-400 border border-gray-500/30'}">
-											{req.status === 'active' ? tFn('profile.active') : req.status}
-										</span>
+										<div class="flex items-center gap-2 flex-wrap mt-1">
+											<span class="inline-block text-[10px] px-2 py-0.5 rounded-full font-bold
+												{req.status === 'active' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-gray-500/20 text-gray-400 border border-gray-500/30'}">
+												{req.status === 'active' ? tFn('profile.active') : req.status}
+											</span>
+											<!-- כרטיס תקלה עם זהות גולש: פותח צ'אט/מייל עם טיוטה מוכנה לעריכה -->
+											{#if actor}
+												<a
+													href={apologyHref(actor)}
+													class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full
+													       bg-purple-500/15 text-purple-200 border border-purple-500/40 hover:bg-purple-500/30 transition-colors"
+													title={actor.actor_id
+														? `פתח צ'אט פנימי עם ${actor.actor_name || actor.actor_email || 'הגולש'} עם טיוטת התנצלות מוכנה`
+														: `שלח מייל ל-${actor.actor_email} עם טיוטת התנצלות מוכנה`}
+												>
+													✍️ כתוב {actor.actor_id ? 'לגולש' : 'מייל'}
+												</a>
+											{/if}
+										</div>
 									</div>
 								</div>
 							{/each}

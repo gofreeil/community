@@ -6,7 +6,7 @@ import {
     TRUST_COOKIE_NAME,
     COORD_TRUST_COOKIE_NAME,
 } from '$lib/server/totp';
-import { getUserTotpSecret, getAllSuperAdmins, createItem } from '$lib/server/db';
+import { getUserTotpSecret, getAllSuperAdmins, createItem, getUserById } from '$lib/server/db';
 
 /**
  * לוכד כל שגיאה לא-מטופלת בצד השרת (load/render/actions) *לפני* ש-SvelteKit
@@ -32,6 +32,39 @@ const ERROR_ALERT_MAX_PER_INSTANCE = 8;
 const errorAlertLastSent = new Map<string, number>();
 let errorAlertsSent = 0;
 
+/**
+ * מי היה הגולש שנפל עליו הדף. בלי זה ההתראה אומרת "משהו נפל" אבל לא *למי* —
+ * ואי-אפשר לפנות אליו ולהתנצל. שולפים מהסשן, ואם יש מזהה גם את הרשומה המלאה
+ * (שם/מגדר/טלפון) כדי שכפתור "כתוב לגולש" בכרטיס ייצור טיוטה בלשון הנכונה.
+ * best-effort לחלוטין: כל כשל כאן משאיר את ההתראה בלי זהות, לא מפיל אותה.
+ */
+type ErrorActor = { id: string; name: string; email: string; gender: string; phone: string };
+
+async function resolveActor(event: RequestEvent): Promise<ErrorActor | null> {
+    try {
+        const session = await event.locals.auth?.();
+        const id = session?.user?.id;
+        if (!id) return null;
+        const actor: ErrorActor = {
+            id,
+            name:  session.user?.name  ?? '',
+            email: session.user?.email ?? '',
+            gender: '',
+            phone:  '',
+        };
+        const full = await getUserById(id).catch(() => undefined);
+        if (full) {
+            actor.name   = full.name  ?? actor.name;
+            actor.email  = full.email ?? actor.email;
+            actor.gender = full.gender ?? '';
+            actor.phone  = full.phone  ?? '';
+        }
+        return actor;
+    } catch {
+        return null;
+    }
+}
+
 async function notifySuperAdminsOfError(ref: string, status: number, event: RequestEvent, err: unknown): Promise<void> {
     try {
         const routeId = event.route?.id ?? event.url.pathname;
@@ -47,6 +80,10 @@ async function notifySuperAdminsOfError(ref: string, status: number, event: Requ
             ? err.stack.split('\n').slice(0, 8).join('\n').slice(0, 1200)
             : '';
         const url = `${event.request.method} ${event.url.pathname}${event.url.search}`;
+        const actor = await resolveActor(event);
+        const actorLine = actor
+            ? `הגולש: ${actor.name || 'ללא שם'}${actor.email ? ` (${actor.email})` : ''}${actor.phone ? ` · ${actor.phone}` : ''}`
+            : `הגולש: אנונימי - לא היה מחובר בזמן התקלה`;
         const admins = await getAllSuperAdmins();
         await Promise.allSettled(admins.map((a) => createItem({
             category:    'admin_alert',
@@ -54,6 +91,7 @@ async function notifySuperAdminsOfError(ref: string, status: number, event: Requ
             description:
                 `תקלה לא-מטופלת הפילה עמוד באתר, והגולש קיבל את עמוד השגיאה.\n\n` +
                 `מזהה תקלה: ${ref} (מוצג לגולש בתחתית עמוד השגיאה)\n` +
+                `${actorLine}\n` +
                 `כתובת: ${url}\n` +
                 `שגיאה: ${errMsg.slice(0, 300)}\n` +
                 (stackHead ? `\nתחילת ה-stack:\n${stackHead}\n` : '') +
@@ -68,6 +106,12 @@ async function notifySuperAdminsOfError(ref: string, status: number, event: Requ
                 url:           event.url.pathname + event.url.search,
                 method:        event.request.method,
                 error_message: errMsg.slice(0, 300),
+                // זהות הגולש - מזינה את כפתור "כתוב לגולש" בכרטיס ההתראה
+                actor_id:     actor?.id     ?? '',
+                actor_name:   actor?.name   ?? '',
+                actor_email:  actor?.email  ?? '',
+                actor_gender: actor?.gender ?? '',
+                actor_phone:  actor?.phone  ?? '',
             },
         })));
     } catch (e) {

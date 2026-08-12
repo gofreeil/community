@@ -1,8 +1,8 @@
 import { json } from '@sveltejs/kit';
 import { Resend } from 'resend';
 import { env } from '$env/dynamic/private';
-import { addFundContribution, getFundTotal } from '$lib/server/db';
-import type { RequestHandler } from './$types';
+import { addFundContribution, getFundTotal, getAllSuperAdmins, createItem, getUserById } from '$lib/server/db';
+import type { RequestHandler, RequestEvent } from './$types';
 
 // המייל לא מחשב מחירים - הוא מציג את מה שהמחשבון בדף כבר חישב.
 // הלקוח שולח שורות מוכנות: שם מתורגם + הסכום הסופי של אותה שורה.
@@ -188,7 +188,69 @@ function buildEmailHtml(payload: OrderPayload): string {
 </html>`;
 }
 
-export const POST: RequestHandler = async ({ request }) => {
+/**
+ * הזמנה שנכשלה היא לקוח שנעלם: הוא ראה שגיאה, המייל לא יצא, ואף אחד לא ידע
+ * שהוא בכלל היה כאן. לכן כל כשל שולח התראה לסופר-אדמינים עם האימייל שהוא הקליד
+ * ועם סכום ההזמנה - כדי שאפשר יהיה לחזור אליו ידנית.
+ *
+ * זהות: אם הוא היה מחובר שומרים גם actor_id/gender - מזין את כפתור "כתוב לגולש"
+ * בכרטיס ההתראה. אם לא, ה-actor_email לבדו מספיק לכפתור המייל.
+ * best-effort: כשל בהתראה עצמה לעולם לא משנה את התשובה ללקוח.
+ */
+async function notifyAdminsOrderFailed(event: RequestEvent, payload: OrderPayload, reason: string): Promise<void> {
+    try {
+        let actorId = '', actorName = '', actorGender = '', actorPhone = '';
+        try {
+            const session = await event.locals.auth?.();
+            if (session?.user?.id) {
+                actorId   = session.user.id;
+                actorName = session.user.name ?? '';
+                const full = await getUserById(actorId).catch(() => undefined);
+                if (full) {
+                    actorName   = full.name ?? actorName;
+                    actorGender = full.gender ?? '';
+                    actorPhone  = full.phone  ?? '';
+                }
+            }
+        } catch { /* ignore - זהות היא בונוס, האימייל הוא העיקר */ }
+
+        const lines = (payload.selectedItems ?? [])
+            .map(i => `• ${i.type} (${i.plan === 'half' ? 'חצי שנה' : 'חודש בודד'}) - ₪${i.price}`)
+            .join('\n');
+        const admins = await getAllSuperAdmins();
+        await Promise.allSettled(admins.map(a => createItem({
+            category:    'admin_alert',
+            label:       `💸 הזמנת פרסום נכשלה - ${payload.email}`,
+            description:
+                `גולש מילא את מחשבון הפרסום ולחץ לשלוח, אבל מייל האישור לא יצא - ` +
+                `ההזמנה לא הגיעה לאף אחד והוא ראה הודעת שגיאה.\n\n` +
+                `אימייל שהוקלד: ${payload.email}\n` +
+                (actorName ? `שם: ${actorName}${actorPhone ? ` · ${actorPhone}` : ''}\n` : '') +
+                `שכונות: ${payload.neighborhoodLabel} (×${payload.neighborhoodCount})\n` +
+                `סה"כ: ₪${payload.totalPayment}\n` +
+                (lines ? `\n${lines}\n` : '') +
+                `\nסיבת הכשל: ${reason}`,
+            icon:        '💸',
+            color:       'red',
+            user_id:     a.id,
+            extra_fields: {
+                type:         'order_failed',
+                reason,
+                actor_id:     actorId,
+                actor_name:   actorName,
+                actor_email:  payload.email,
+                actor_gender: actorGender,
+                actor_phone:  actorPhone,
+                total:        payload.totalPayment,
+            },
+        })));
+    } catch (e) {
+        console.warn('[send-order-email] admin alert failed:', e instanceof Error ? e.message : e);
+    }
+}
+
+export const POST: RequestHandler = async (event) => {
+    const { request } = event;
     let payload: OrderPayload;
 
     try {
@@ -217,6 +279,7 @@ export const POST: RequestHandler = async ({ request }) => {
     const apiKey = env.RESEND_API_KEY || process.env.RESEND_API_KEY;
     if (!apiKey) {
         console.error('[send-order-email] RESEND_API_KEY missing - הזמנה התקבלה אך לא נשלח מייל:', email);
+        await notifyAdminsOrderFailed(event, payload, 'RESEND_API_KEY חסר בסביבת הייצור');
         return json(
             { success: false, message: 'שירות המייל אינו זמין כרגע. הבקשה לא נשלחה - נסו שוב או פנו ל-ads@shchuna.co.il' },
             { status: 503 },
@@ -236,6 +299,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
         if (error) {
             console.error('Resend error:', error);
+            await notifyAdminsOrderFailed(event, payload, `Resend: ${error.message ?? String(error)}`);
             return json({ success: false, message: 'שגיאה בשליחת המייל' }, { status: 500 });
         }
 
@@ -252,6 +316,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
     } catch (err) {
         console.error('Unexpected error sending email:', err);
+        await notifyAdminsOrderFailed(event, payload, err instanceof Error ? err.message : String(err));
         return json({ success: false, message: 'שגיאה לא צפויה' }, { status: 500 });
     }
 };
