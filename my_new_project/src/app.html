@@ -8,11 +8,8 @@
 		<link rel="shortcut icon" href="/favicon.ico" />
 		<!-- פתיחת חיבור מוקדמת לשרת אריחי המפה (OSM) - חוסך DNS/TLS בטעינת האריח הראשון -->
 		<link rel="preconnect" href="https://tile.openstreetmap.org" crossorigin />
-		<!-- פונט Assistant נטען כאן (ולא ב-@import בתוך app.css) כדי לשבור את
-		     שרשרת החסימה HTML→CSS→פונט: הדפדפן מגלה את הפונט מיד עם ה-HTML -->
-		<link rel="preconnect" href="https://fonts.googleapis.com" />
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-		<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&display=swap" />
+		<!-- גופן האתר (Heebo) מתארח אצלנו ומוגדר ב-@font-face שב-app.css.
+		     אין link/preconnect לגוגל: אין בקשה חוסמת-רינדור לשרת חיצוני -->
 		<!-- תגי Open Graph + title נקבעים פר-דף ב-<svelte:head> כדי שלא יתנגשו עם תוכן דינמי -->
 		%sveltekit.head%
 	</head>

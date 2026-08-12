@@ -47,7 +47,7 @@
 		}
 		(window as any).Chart.register((window as any).ChartDataLabels);
 		const Chart = (window as any).Chart;
-		Chart.defaults.font.family = 'Assistant, sans-serif';
+		Chart.defaults.font.family = 'Heebo, sans-serif';
 		Chart.defaults.color = '#cbd5e1';
 
 		const anim = { animateRotate: true, animateScale: true, duration: 1100, easing: 'easeOutQuart' as const };
