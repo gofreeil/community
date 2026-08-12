@@ -1,5 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { Resend } from 'resend';
+import { env } from '$env/dynamic/private';
 import { addFundContribution, getFundTotal } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
@@ -206,8 +207,24 @@ export const POST: RequestHandler = async ({ request }) => {
         return json({ success: false, message: 'לא נבחרו פרסומות' }, { status: 400 });
     }
 
-    const resend = new Resend(process.env.RESEND_API_KEY);
-    const fromEmail = process.env.FROM_EMAIL || 'onboarding@resend.dev';
+    // המפתח נקרא דרך $env/dynamic/private (עובד גם ב-Vercel וגם ב-adapter-node),
+    // עם נפילה חזרה ל-process.env לסביבות שמזריקות אותו ישירות.
+    //
+    // הבדיקה המפורשת קריטית: `new Resend(undefined)` *זורק* ("Missing API key"),
+    // והבנייה הזאת ישבה מחוץ ל-try — כך שסביבה בלי RESEND_API_KEY הפילה את כל
+    // ה-endpoint ל-500, הגולש קיבל את עמוד השגיאה הכללי, וכל סופר-אדמין קיבל
+    // התראת "תקלת שרת". עכשיו: תשובת JSON מסודרת שהדף יודע להציג, בלי קריסה.
+    const apiKey = env.RESEND_API_KEY || process.env.RESEND_API_KEY;
+    if (!apiKey) {
+        console.error('[send-order-email] RESEND_API_KEY missing - הזמנה התקבלה אך לא נשלח מייל:', email);
+        return json(
+            { success: false, message: 'שירות המייל אינו זמין כרגע. הבקשה לא נשלחה - נסו שוב או פנו ל-ads@shchuna.co.il' },
+            { status: 503 },
+        );
+    }
+
+    const resend = new Resend(apiKey);
+    const fromEmail = env.FROM_EMAIL || process.env.FROM_EMAIL || 'onboarding@resend.dev';
 
     try {
         const { error } = await resend.emails.send({

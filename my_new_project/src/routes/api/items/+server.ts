@@ -5,6 +5,7 @@ import { isPrivateCategory } from '$lib/itemCategories';
 import { categoryTier, tierMet } from '$lib/tiers';
 import { resolveItemCoords } from '$lib/server/geocode';
 import { Resend } from 'resend';
+import { env } from '$env/dynamic/private';
 import type { RequestHandler } from './$types';
 
 const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
@@ -365,8 +366,10 @@ export const POST: RequestHandler = async (event) => {
 
     // ---- שלח מייל לאדמין ----
     try {
-        const resend  = new Resend(process.env.RESEND_API_KEY);
-        const fromAddr = process.env.FROM_EMAIL || 'onboarding@resend.dev';
+        const apiKey = env.RESEND_API_KEY || process.env.RESEND_API_KEY;
+        if (!apiKey) throw new Error('RESEND_API_KEY missing - מייל לאדמין על פריט חדש לא נשלח');
+        const resend  = new Resend(apiKey);
+        const fromAddr = env.FROM_EMAIL || process.env.FROM_EMAIL || 'onboarding@resend.dev';
         const catLabel = categoryConfig[category]?.label ?? category;
         const ef = (extra_fields ?? {}) as Record<string, unknown>;
         const isModerated = MODERATED_CATEGORIES.has(category);

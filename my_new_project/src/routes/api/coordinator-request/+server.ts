@@ -10,6 +10,7 @@ import {
 } from '$lib/server/db';
 import { refreshCoordinatorRequestMessages } from '$lib/server/coordinatorNotifications';
 import { Resend } from 'resend';
+import { env } from '$env/dynamic/private';
 
 interface CoordRequestInfo {
     name: string;
@@ -39,8 +40,15 @@ function messageContent(data: CoordRequestInfo, resubmitted: boolean) {
 
 /** שולח מייל לאדמין על בקשת רכז חדשה - best-effort, לא מכשיל את הבקשה */
 async function notifyAdminEmail(data: CoordRequestInfo, resubmitted = false) {
-    const resend   = new Resend(process.env.RESEND_API_KEY);
-    const fromAddr = process.env.FROM_EMAIL || 'onboarding@resend.dev';
+    // בלי מפתח `new Resend(undefined)` זורק; כאן זה נבלע ע"י ה-try של הקורא
+    // ונראה כמו "שליחה נכשלה" סתמית. שורת לוג מפורשת חוסכת את החיפוש.
+    const apiKey = env.RESEND_API_KEY || process.env.RESEND_API_KEY;
+    if (!apiKey) {
+        console.warn('[coordinator-request] RESEND_API_KEY missing - מייל לאדמין לא נשלח');
+        return;
+    }
+    const resend   = new Resend(apiKey);
+    const fromAddr = env.FROM_EMAIL || process.env.FROM_EMAIL || 'onboarding@resend.dev';
     await resend.emails.send({
         from: `קהילה בשכונה <${fromAddr}>`,
         to:   ['ads@shchuna.co.il'],
