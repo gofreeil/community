@@ -2,6 +2,36 @@ import type { LayoutServerLoad } from './$types';
 import { getUserById, getNeighborhoods, maybeSendTierUpgradeMessage } from '$lib/server/db';
 import { listApprovedLive, computeAdSlots } from '$lib/server/adsStore';
 
+/**
+ * תקציב זמן קשיח לשליפה בשכבת ה-layout.
+ *
+ * ה-layout רץ בכל ניווט בכל עמוד, ולכן כל שנייה שהוא ממתין היא שנייה שבה
+ * המסך של המשתמש קפוא לגמרי. strapiClient נותן לכל קריאה 3 ניסיונות × 6 שניות
+ * עם backoff - כמעט 20 שניות עד ש-allSettled נפתר כש-Strapi מהבהב. משתמש
+ * שלוחץ "כניסה לאזור האישי" ומחכה 20 שניות בלי שום שינוי על המסך מדווח
+ * (בצדק) "לחצתי ולא קרה כלום".
+ *
+ * לכן: מי שלא ענה בתוך התקציב נחשב ככשל, בדיוק כמו כשל רשת - השדה נופל
+ * לברירת המחדל הריקה שכבר קיימת כאן ממילא, והדף עולה. הקריאה עצמה לא
+ * מבוטלת; היא רק מפסיקה לעכב את הניווט, וה-cache של adsStore יקלוט אותה
+ * לבקשה הבאה.
+ */
+const LAYOUT_BUDGET_MS = 4000;
+
+function withBudget<T>(p: Promise<T>, fallback: T, label: string): Promise<T> {
+    let timer: ReturnType<typeof setTimeout>;
+    const budget = new Promise<T>((resolve) => {
+        timer = setTimeout(() => {
+            console.warn(`[layout] ${label} חרג מ-${LAYOUT_BUDGET_MS}ms - נטען בלעדיו`);
+            resolve(fallback);
+        }, LAYOUT_BUDGET_MS);
+    });
+    // clearTimeout בכל מסלול: בלי זה כל טעינת layout משאירה טיימר תלוי של 4 שניות
+    return Promise.race([p, budget])
+        .catch(() => fallback)
+        .finally(() => clearTimeout(timer));
+}
+
 export const load: LayoutServerLoad = async (event) => {
     let session = null;
     try {
@@ -11,12 +41,15 @@ export const load: LayoutServerLoad = async (event) => {
     }
 
     // שלוש השליפות בלתי-תלויות זו בזו → רצות במקביל (לא בטור) כדי לחסוך
-    // round-trips סדרתיים ל-Strapi בכל ניווט.
+    // round-trips סדרתיים ל-Strapi בכל ניווט. כל אחת חסומה בתקציב זמן
+    // כדי ש-Strapi איטי יוריד תוכן מהדף - ולא יקפיא את הניווט כולו.
     const jwt = event.cookies.get('strapi_jwt');
     const [userRes, adsRes, neighborhoodsRes] = await Promise.allSettled([
-        session?.user?.id ? getUserById(session.user.id as string, jwt) : Promise.resolve(null),
-        listApprovedLive(),
-        getNeighborhoods('approved'),
+        session?.user?.id
+            ? withBudget(getUserById(session.user.id as string, jwt), null, 'getUserById')
+            : Promise.resolve(null),
+        withBudget(listApprovedLive(), [], 'listApprovedLive'),
+        withBudget(getNeighborhoods('approved'), [], 'getNeighborhoods'),
     ]);
 
     // פרטי משתמש מלאים לתצוגה בדרואר

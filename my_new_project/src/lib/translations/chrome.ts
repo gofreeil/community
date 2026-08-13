@@ -28,6 +28,7 @@ export const he = {
         // Layout
         skip_to_content: "דלג לתוכן הראשי",
         close: "סגירה",
+        navigating: "טוען את העמוד…",
         register_nudge_text: "כדי שהפלטפורמה תזכור את השכונה שבחרת בפעם הבאה — כדאי להירשם.",
         register_nudge_cta: "הרשמה מהירה",
     },
@@ -60,6 +61,7 @@ export const en = {
         // Layout
         skip_to_content: "Skip to main content",
         close: "Close",
+        navigating: "Loading the page…",
         register_nudge_text: "Sign up so the platform remembers the neighborhood you chose next time.",
         register_nudge_cta: "Quick sign-up",
     },
@@ -92,6 +94,7 @@ export const ru = {
         // Layout
         skip_to_content: "Перейти к основному содержанию",
         close: "Закрыть",
+        navigating: "Загрузка страницы…",
         register_nudge_text: "Чтобы платформа запомнила выбранный вами район, стоит зарегистрироваться.",
         register_nudge_cta: "Быстрая регистрация",
     },

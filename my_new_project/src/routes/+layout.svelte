@@ -15,7 +15,7 @@
 	import WelcomeScreen from "$lib/components/WelcomeScreen.svelte";
 	import { signOut } from "@auth/sveltekit/client";
 	import { goto, beforeNavigate } from "$app/navigation";
-	import { page } from "$app/state";
+	import { page, navigating } from "$app/state";
 	import { closeAdPopup, registerPaidAds } from "$lib/adPopupStore";
 	import { registerDynamicNeighborhoods, MY_PIN_LS_KEY } from "$lib/neighborhoodCoords";
 	import { neighborhoodState } from "$lib/neighborhoodState.svelte";
@@ -148,6 +148,15 @@
 </svelte:head>
 
 <a href="#main-content" class="skip-link">{$_('chrome.skip_to_content')}</a>
+
+<!-- חיווי ניווט. אותו עיקרון של installFormGuard למעלה, רק לניווט: לחיצה על
+     לינק חייבת לייצר שינוי מסך *מיידי*. SvelteKit מוריד את נתוני העמוד הבא
+     לפני שהוא מצייר משהו, וכשהמטען כבד (הפרסומות ב-+layout.server.ts) הדף
+     נשאר זהה לחלוטין למשך שניות - והמשתמש חווה "לחצתי ולא קרה כלום". -->
+{#if navigating.to}
+	<div class="nav-progress" role="status" aria-label={$_('chrome.navigating')}></div>
+{/if}
+
 <CoinAnimation />
 <ImageCropper />
 
@@ -200,6 +209,36 @@
 {/if}
 
 <style>
+	/* פס התקדמות הניווט - נצמד לראש החלון מעל ההדר (z-index שלו 1100).
+	   pointer-events:none כדי שלא יבלע אף לחיצה. הרוחב זוחל ל-90% ונעצר שם:
+	   אי אפשר לדעת כמה נותר, והשלמה ל-100% קורית מעצמה כשהאלמנט מוסר. */
+	.nav-progress {
+		position: fixed;
+		top: 0;
+		inset-inline: 0;
+		height: 3px;
+		z-index: 1300;
+		pointer-events: none;
+		background: linear-gradient(90deg, #2563eb, #7c3aed, #db2777);
+		box-shadow: 0 0 10px rgba(124, 58, 237, 0.7);
+		transform-origin: right center; /* RTL - מתקדם מימין לשמאל */
+		animation: nav-progress-grow 12s cubic-bezier(0.15, 0.85, 0.25, 1) forwards;
+	}
+
+	@keyframes nav-progress-grow {
+		from { transform: scaleX(0.02); }
+		to   { transform: scaleX(0.9); }
+	}
+
+	/* מכבדים העדפת "פחות תנועה": הפס עדיין מופיע, רק בלי אנימציית זחילה */
+	@media (prefers-reduced-motion: reduce) {
+		.nav-progress {
+			animation: none;
+			transform: scaleX(1);
+			opacity: 0.85;
+		}
+	}
+
 	/* נדנוד הרשמה לאורחים */
 	.register-nudge {
 		position: fixed;
