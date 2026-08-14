@@ -1477,7 +1477,13 @@
                 showNeighborhoodsMenu = false;
                 selectedCity = "";
             }
-            if (showMorePanel && !target.closest(".more-cats-container")) {
+            // בנייד תפריט "עוד" חי בתוך חלונית הקטגוריות (.jmap-cat-sheet) ולא ב-more-cats-container;
+            // בלי הסייג הזה אותה הקשה שפותחת אותו סוגרת אותו מיד והכפתור נראה "מת".
+            if (
+                showMorePanel &&
+                !target.closest(".more-cats-container") &&
+                !target.closest(".jmap-cat-sheet")
+            ) {
                 showMorePanel = false;
                 editingBar = false;
             }
@@ -1845,7 +1851,7 @@
                     ></div>
                     <!-- Sheet -->
                     <div
-                        class="md:hidden fixed top-1/2 left-3 right-3 z-[10001] bg-[#0f172a] border-2 border-purple-500 rounded-2xl shadow-2xl max-h-[80vh] flex flex-col"
+                        class="jmap-cat-sheet md:hidden fixed top-1/2 left-3 right-3 z-[10001] bg-[#0f172a] border-2 border-purple-500 rounded-2xl shadow-2xl max-h-[80vh] flex flex-col"
                         style="animation: sheetFadeIn 0.25s ease-out; transform: translateY(calc(-50% + {sheetDragY}px)); transition: {sheetDragging ? 'none' : 'transform 0.2s ease-out'};"
                         role="dialog"
                         aria-label={$t('map.category_filter')}
