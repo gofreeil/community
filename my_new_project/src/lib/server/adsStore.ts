@@ -194,6 +194,14 @@ function fromStrapi(s: StrapiAd): SubmittedAd {
     const logo = s.logo ?? '';
     const mainImage = s.main_image ?? '';
     const mobileImage = typeof s.landing?.mobileImage === 'string' ? s.landing.mobileImage : '';
+    // גם תמונות דף הנחיתה נכנסות לחותם: כולן מוגשות מאותה כתובת עם אותו ?v=,
+    // ולכן החלפת אחת מהן חייבת להחליף אותו - אחרת קאש ה-immutable יחזיק ישנה.
+    const landingImages: string[] = [
+        typeof s.landing?.image === 'string' ? s.landing.image : '',
+        ...(Array.isArray(s.landing?.products)
+            ? s.landing.products.map((p: { image?: string }) => p?.image ?? '')
+            : []),
+    ];
     return {
         id: s.documentId,
         status: s.ad_status,
@@ -230,7 +238,7 @@ function fromStrapi(s: StrapiAd): SubmittedAd {
         standalone: s.landing?._standalone === true,
         mobileImage,
         mobileImageFit: parseAdImageFit(s.landing?.mobileImageFit),
-        imgVersion: imageStamp(logo, mainImage, mobileImage),
+        imgVersion: imageStamp(logo, mainImage, mobileImage, ...landingImages),
         // null במודעות שנשלחו לפני שהעיצוב נשמר — הצרכן נופל ל-legacyAdStyle
         adStyle: parseAdStyle(s.landing?.adStyle),
         landing: s.landing ?? emptyLanding(),
@@ -473,16 +481,27 @@ export async function listApprovedLive(): Promise<SubmittedAd[]> {
 // פעם אחת ונשמרת בקאש של הדפדפן ושל הקצה - כך היא לא נספרת שוב בכל צפייה.
 // ============================================================
 
-export type AdImageKind = 'logo' | 'main' | 'mobile';
+/**
+ * שלוש הראשונות הן תמונות הכרטיס בטור. `landing` ו-`product-<n>` הן של דף
+ * הנחיתה (/ads/<id>) - הדף שאליו מגיעה כל לחיצה על פרסומת, ולכן גם הוא
+ * חייב להגיש תמונות מכתובת ולא מוטבעות (הוא שקל 1.2-2MB לצפייה).
+ */
+export type AdImageKind = 'logo' | 'main' | 'mobile' | 'landing' | `product-${number}`;
+
+const FIXED_KINDS = ['logo', 'main', 'mobile', 'landing'];
 
 export function isAdImageKind(v: string | undefined): v is AdImageKind {
-    return v === 'logo' || v === 'main' || v === 'mobile';
+    if (!v) return false;
+    return FIXED_KINDS.includes(v) || /^product-\d+$/.test(v);
 }
 
 function pickImage(ad: SubmittedAd, kind: AdImageKind): string {
     if (kind === 'logo') return ad.logo;
     if (kind === 'main') return ad.mainImage;
-    return ad.mobileImage;
+    if (kind === 'mobile') return ad.mobileImage;
+    if (kind === 'landing') return ad.landing?.image ?? '';
+    const idx = Number(kind.slice('product-'.length));
+    return ad.landing?.products?.[idx]?.image ?? '';
 }
 
 /**
@@ -495,6 +514,37 @@ export function adImageUrl(ad: SubmittedAd, kind: AdImageKind): string {
     if (!raw) return '';
     if (!raw.startsWith('data:')) return raw;
     return `/api/ad-image/${ad.id}/${kind}?v=${ad.imgVersion}`;
+}
+
+/**
+ * אותה רשומה, כשכל שדות התמונה שבה הוחלפו בכתובות - לדף הנחיתה /ads/<id>,
+ * שמחזיר את הפרסומת המלאה ולכן סחב את כל התמונות המוטבעות (1.2-2MB לצפייה,
+ * 94-98% מהדף). הדף הזה הוא היעד של כל לחיצה על פרסומת, כלומר בדיוק המסך
+ * של מי שכבר התעניין - ושם המשקל הכי כואב.
+ *
+ * חל רק על פרסומת מאושרת: התצוגה המקדימה של המנהל (?preview=1) מציגה גם
+ * ממתינות/נדחות, ולהן הנתיב לא מגיש תמונות בכוונה - שם התמונות נשארות
+ * מוטבעות, וזה בסדר כי זה מסך ניהול נדיר.
+ */
+export function withAdImageUrls(ad: SubmittedAd): SubmittedAd {
+    if (ad.status !== 'approved') return ad;
+    const products = Array.isArray(ad.landing?.products)
+        ? ad.landing.products.map((p, i) => ({
+            ...p,
+            image: p?.image ? adImageUrl(ad, `product-${i}`) : '',
+        }))
+        : [];
+    return {
+        ...ad,
+        logo: adImageUrl(ad, 'logo'),
+        mainImage: adImageUrl(ad, 'main'),
+        mobileImage: adImageUrl(ad, 'mobile'),
+        landing: {
+            ...ad.landing,
+            image: adImageUrl(ad, 'landing'),
+            products,
+        },
+    };
 }
 
 /**

@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { getAd } from '$lib/server/adsStore';
+import { getAd, withAdImageUrls } from '$lib/server/adsStore';
 import { getUserById, getUserByEmail } from '$lib/server/db';
 
 export const load: PageServerLoad = async (event) => {
@@ -36,5 +36,7 @@ export const load: PageServerLoad = async (event) => {
     if (!ad || !allowed) {
         throw error(404, 'הפרסומת לא נמצאה');
     }
-    return { ad, preview, isSuperAdmin };
+    // התמונות ככתובת ולא מוטבעות - ראה withAdImageUrls. בתצוגה מקדימה של
+    // פרסומת שטרם אושרה הן נשארות מוטבעות, כי הנתיב מגיש מאושרות בלבד.
+    return { ad: withAdImageUrls(ad), preview, isSuperAdmin };
 };
