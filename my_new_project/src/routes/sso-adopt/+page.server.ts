@@ -21,7 +21,15 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
     const redirectTo = /^\/(?![/\\])/.test(raw) ? raw : '/';
 
     const jwt = cookies.get('gofreeil-auth');
-    if (!jwt) throw redirect(302, redirectTo);
+    if (!jwt) {
+        // חזרה מגשר ה-SSO של האתר הראשי עם כישלון (error=not_registered) —
+        // מדביקים sso_error ליעד כדי שדף הפרופיל יציג את העצה, לא נחיתה שקטה
+        if (url.searchParams.get('error')) {
+            const sep = redirectTo.includes('?') ? '&' : '?';
+            throw redirect(302, `${redirectTo}${sep}sso_error=1`);
+        }
+        throw redirect(302, redirectTo);
+    }
 
     const { user, definitive } = await getStrapiMeVerdict(jwt);
     if (!user?.email) {

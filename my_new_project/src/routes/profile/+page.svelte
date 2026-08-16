@@ -76,7 +76,19 @@
 	async function loginWithGofreeil() {
 		ssoError = null;
 		const advice = tFn('profile.sso_advice');
-		if (!data.hasSharedSso) { ssoError = advice; return; }
+		if (!data.hasSharedSso) {
+			// אין עוגייה בדפדפן הזה (למשל נמחקה בהתנתקות) — אולי המשתמש עדיין מחובר
+			// באתר הראשי: קופצים דרך גשר ה-SSO של gofreeil.com. מוצלח → חוזר ל-
+			// /sso-adopt עם עוגייה טרייה שמקים סשן; כושל → חוזר עם error= והפרופיל
+			// מציג את העצה (sso_error). בפיתוח (localhost) אין גשר — עצה כמו קודם.
+			if (window.location.hostname.endsWith('gofreeil.com')) {
+				ssoLoading = true;
+				const cb = `${window.location.origin}/sso-adopt?redirect=${encodeURIComponent('/profile')}`;
+				window.location.href = `https://gofreeil.com/sso?callback=${encodeURIComponent(cb)}`;
+				return;
+			}
+			ssoError = advice; return;
+		}
 		ssoLoading = true;
 		try {
 			const res = await fetch('/auth/callback/gofreeil-sso', {
@@ -1842,6 +1854,15 @@
 				setTimeout(() => {
 					document.getElementById(secId)?.scrollIntoView({ behavior: "smooth", block: "start" });
 				}, 150);
+			}
+		} catch {}
+		try {
+			// חזרה מגשר ה-SSO של האתר הראשי בלי זיהוי (sso_error) — פותחים את
+			// אזור ההתחברות ומציגים את העצה במקום נחיתה שקטה, ומנקים את הפרמטר
+			if (page.url.searchParams.get("sso_error")) {
+				showLoginOptions = true;
+				ssoError = tFn("profile.sso_advice");
+				history.replaceState(null, "", "/profile");
 			}
 		} catch {}
 		try {
