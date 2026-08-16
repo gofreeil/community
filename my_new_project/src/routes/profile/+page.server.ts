@@ -55,6 +55,15 @@ export const load: PageServerLoad = async (event) => {
         redirect(303, `/profile?${params.toString()}`);
     }
 
+    // מצטרף חדש אמיתי (welcome=1 ואינו isExisting) → מסדרון ההשלמה בן 3 השלבים.
+    // אחרי סיום/דילוג האשף מנווט ל-/profile ללא welcome, ולכן לא חוזרים לכאן.
+    if (
+        event.url.searchParams.get('welcome') === '1' &&
+        !(session.user as { isExisting?: boolean }).isExisting
+    ) {
+        redirect(303, '/onboarding/1');
+    }
+
     let user: Awaited<ReturnType<typeof getUserById>>;
     let items: Awaited<ReturnType<typeof getItemsByUserId>> = [];
     let messages: Awaited<ReturnType<typeof getMessagesByUserId>> = [];
