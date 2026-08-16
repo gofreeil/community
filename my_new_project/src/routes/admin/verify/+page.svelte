@@ -50,7 +50,7 @@
 				<button
 					type="submit"
 					disabled={loading}
-					class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-amber-500 to-pink-600 hover:from-amber-400 hover:to-pink-500
+					class="w-full py-3.5 px-6 rounded-2xl login-grad hover:brightness-110
 					       text-white font-bold shadow-lg transition-all hover:-translate-y-0.5 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
 				>
 					{#if loading}מאמת…{:else}אמת והמשך{/if}

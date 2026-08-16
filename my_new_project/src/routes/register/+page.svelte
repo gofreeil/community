@@ -386,8 +386,8 @@
 						</p>
 						<a
 							href="/login"
-							class="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-amber-500 to-pink-600
-							       hover:from-amber-400 hover:to-pink-500 text-white font-bold py-3.5 px-6 rounded-2xl shadow-lg
+							class="w-full flex items-center justify-center gap-3 login-grad
+							       hover:brightness-110 text-white font-bold py-3.5 px-6 rounded-2xl shadow-lg
 							       transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl cursor-pointer no-underline"
 						>
 							<img src="/images/yotzim-lecherut.webp" alt="יוצאים לחירות" class="h-6 w-6 rounded-full object-cover bg-white flex-shrink-0" />
