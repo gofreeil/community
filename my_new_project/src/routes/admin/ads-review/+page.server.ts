@@ -1,6 +1,6 @@
 import { error, fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
-import { getUserById, getUserByEmail } from '$lib/server/db';
+import { ensureAdsAdmin, resolveRole } from '$lib/server/adsAdmin';
 import {
     listPending,
     listApproved,
@@ -27,30 +27,6 @@ import { publishAdEverywhere } from '$lib/server/adsSyndication';
 
 const fmtDay = (iso: string) =>
     new Date(iso).toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
-
-/** התפקיד האמיתי של המשתמש - מה-session, ובנפילה לאחור מה-DB (session ישן) */
-async function resolveRole(event: any): Promise<string> {
-    const session = await event.locals.auth();
-    let role = session?.user?.role ?? '';
-    if (role !== 'super_admin' && role !== 'neighborhood_admin' && session?.user?.id) {
-        try {
-            let dbUser = await getUserById(session.user.id);
-            if (!dbUser && session.user.email) dbUser = await getUserByEmail(session.user.email);
-            role = dbUser?.role ?? role;
-        } catch { /* ignore */ }
-    }
-    return role;
-}
-
-/** אישור פרסומות פתוח לסופר-אדמין וגם לאדמין שמונה - שניהם מקבלים את ההתראה */
-async function ensureAdsAdmin(event: any) {
-    const session = await event.locals.auth();
-    const role = await resolveRole(event);
-    if (role !== 'super_admin' && role !== 'neighborhood_admin') {
-        throw error(403, 'נדרשת הרשאת ניהול');
-    }
-    return { session, role };
-}
 
 /** מחיקה לצמיתות שמורה לסופר-אדמין; אדמין שמונה מוריד מהאתר ולא מוחק */
 async function ensureSuperAdmin(event: any) {

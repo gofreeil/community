@@ -71,16 +71,31 @@
     }
     function cancelEdit() { editingId = null; }
 
-    // רענון אוטומטי כל 30 שניות (כדי לראות פרסומות חדשות שנכנסות)
+    // רענון אוטומטי כל 30 שניות (כדי לראות פרסומות חדשות שנכנסות).
+    //
+    // הבדיקה עוברת דרך /admin/ads-review/signal - חתימה של עשרות בייטים -
+    // ו-invalidateAll() (שמושך מחדש את כל הפרסומות על התמונות שבהן) רץ רק
+    // כשהחתימה השתנתה. קודם הוא רץ בכל פעימה, וטאב אדמין שנשאר פתוח שרף כך
+    // מגה-בייטים כל חצי דקה.
     let autoRefresh = $state(true);
     let refreshTimer: ReturnType<typeof setInterval> | null = null;
     let lastRefresh = $state(Date.now());
+    let lastSig: string | null = null;
     onMount(() => {
-        refreshTimer = setInterval(() => {
-            if (autoRefresh && document.visibilityState === 'visible') {
-                invalidateAll();
-                lastRefresh = Date.now();
-            }
+        refreshTimer = setInterval(async () => {
+            if (!autoRefresh || document.visibilityState !== 'visible') return;
+            try {
+                const res = await fetch('/admin/ads-review/signal');
+                if (!res.ok) return;
+                const { sig } = (await res.json()) as { sig?: string };
+                if (typeof sig !== 'string') return;
+                // הפעימה הראשונה רק לומדת את המצב הנוכחי - הדף הרגע נטען
+                if (lastSig !== null && sig !== lastSig) {
+                    await invalidateAll();
+                    lastRefresh = Date.now();
+                }
+                lastSig = sig;
+            } catch { /* תקלת רשת זמנית - ננסה בפעימה הבאה */ }
         }, 30000);
     });
     onDestroy(() => { if (refreshTimer) clearInterval(refreshTimer); });
