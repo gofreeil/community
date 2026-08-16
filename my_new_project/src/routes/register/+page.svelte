@@ -73,8 +73,12 @@
 				<!-- לוגו + כותרת -->
 				<div class="text-center mb-5">
 					<div class="flex justify-center mb-3">
-						<div class="h-14 w-14 rounded-2xl bg-gradient-to-br from-green-600 to-blue-700 flex items-center justify-center shadow-xl">
-							<span class="text-2xl">🏘️</span>
+						<div class="h-14 w-14 rounded-2xl overflow-hidden bg-white shadow-xl flex items-center justify-center">
+							<img
+								src="/images/community-logo1.webp"
+								alt="קהילה בשכונה"
+								class="w-full h-full object-cover scale-[1.2]"
+							/>
 						</div>
 					</div>
 					<h1 class="text-3xl font-black text-white mb-1">{tFn("join_community")}</h1>
@@ -232,8 +236,8 @@
 						};
 					}}
 				>
-					<div class="mb-3">
-						<label for="username" class="block text-base font-medium text-gray-400 mb-2">{tFn("username_label")}</label>
+					<div class="mb-3 flex items-center gap-3">
+						<label for="username" class="w-28 shrink-0 text-base font-medium text-gray-400">{tFn("username_label")}</label>
 						<input
 							id="username"
 							name="username"
@@ -241,15 +245,15 @@
 							required
 							autocomplete="username"
 							value={form?.username ?? ''}
-							class="w-full bg-[#1e293b] border border-white/10 rounded-xl px-4 py-3
+							class="flex-1 min-w-0 bg-[#1e293b] border border-white/10 rounded-xl px-4 py-3
 							       text-white placeholder-gray-500 focus:outline-none focus:border-purple-500
 							       focus:ring-1 focus:ring-purple-500 transition-colors"
 							placeholder={tFn("username_placeholder")}
 						/>
 					</div>
 
-					<div class="mb-3">
-						<label for="email" class="block text-base font-medium text-gray-400 mb-2">{tFn("email")}</label>
+					<div class="mb-3 flex items-center gap-3">
+						<label for="email" class="w-28 shrink-0 text-base font-medium text-gray-400">{tFn("email")}</label>
 						<input
 							id="email"
 							name="email"
@@ -257,16 +261,16 @@
 							required
 							autocomplete="email"
 							value={form?.email ?? ''}
-							class="w-full bg-[#1e293b] border border-white/10 rounded-xl px-4 py-3
+							class="flex-1 min-w-0 bg-[#1e293b] border border-white/10 rounded-xl px-4 py-3
 							       text-white placeholder-gray-500 focus:outline-none focus:border-purple-500
 							       focus:ring-1 focus:ring-purple-500 transition-colors"
 							placeholder="your@email.com"
 						/>
 					</div>
 
-					<div class="mb-3">
-						<label for="password" class="block text-base font-medium text-gray-400 mb-2">{tFn("password_label")}</label>
-						<div class="relative">
+					<div class="mb-3 flex items-center gap-3">
+						<label for="password" class="w-28 shrink-0 text-base font-medium text-gray-400">{tFn("password_label")}</label>
+						<div class="relative flex-1 min-w-0">
 							<input
 								id="password"
 								name="password"
@@ -301,9 +305,9 @@
 						</div>
 					</div>
 
-					<div class="mb-4">
-						<label for="confirmPassword" class="block text-base font-medium text-gray-400 mb-2">{tFn("confirm_password_label")}</label>
-						<div class="relative">
+					<div class="mb-4 flex items-center gap-3">
+						<label for="confirmPassword" class="w-28 shrink-0 text-base font-medium text-gray-400">{tFn("confirm_password_label")}</label>
+						<div class="relative flex-1 min-w-0">
 							<input
 								id="confirmPassword"
 								name="confirmPassword"
@@ -374,6 +378,22 @@
 						{tFn("login_here")}
 					</a>
 				</p>
+
+					<!-- כבר רשום/ה ברשת "יוצאים לחירות"? — אחרון -->
+					<div class="mt-4 pt-4 border-t border-white/10">
+						<p class="text-center text-sm text-gray-400 mb-3 leading-relaxed">
+							כבר נרשמת לאחד מאתרי <b class="text-amber-300">"יוצאים לחירות"</b>? רק לחץ כאן להמשך:
+						</p>
+						<a
+							href="/login"
+							class="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-amber-500 to-pink-600
+							       hover:from-amber-400 hover:to-pink-500 text-white font-bold py-3.5 px-6 rounded-2xl shadow-lg
+							       transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl cursor-pointer no-underline"
+						>
+							<img src="/images/yotzim-lecherut.webp" alt="יוצאים לחירות" class="h-6 w-6 rounded-full object-cover bg-white flex-shrink-0" />
+							<span>המשך דרך "יוצאים לחירות"</span>
+						</a>
+					</div>
 
 				{/if}
 
