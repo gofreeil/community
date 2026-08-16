@@ -342,11 +342,16 @@ const setStrApiCookie: Handle = async ({ event, resolve }) => {
  * @auth/sveltekit עלול לזרוק - ואז כל הדפים מקבלים 500.
  * הפתרון: אם handle זורק, נמשיך ב-resolve רגיל (משתמש אנונימי).
  */
+/**
+ * נתיבי תמונה ציבוריים לחלוטין: תמונת הקדימון (OG) של פריט, ותמונות
+ * הפרסומות. שניהם לא תלויי-משתמש, ולכן עוקפים את ה-auth - אחרת @auth/sveltekit
+ * מוסיף Set-Cookie לתשובה, ו-Vercel לעולם לא שומר בקאש תשובה עם עוגייה.
+ * בלי העקיפה הזו ה-CDN מחזיר MISS בכל בקשה והתמונה יוצאת מהשרת מחדש בכל פעם.
+ */
+const PUBLIC_IMAGE_PATH = /^\/api\/(?:items\/[^/]+\/og\.jpg|ad-image\/[^/]+\/[^/]+)$/;
+
 export const handle: Handle = async ({ event, resolve }) => {
-    // נתיב תמונת הקדימון (OG) ציבורי לחלוטין - עוקפים את ה-auth כדי שלא
-    // ייווסף Set-Cookie (שמונע cache ב-CDN). כך סקרפרים של רשתות חברתיות
-    // (טלגרם/וואטסאפ/פייסבוק) מקבלים את התמונה מהר ומה-edge cache.
-    if (/^\/api\/items\/[^/]+\/og\.jpg$/.test(event.url.pathname)) {
+    if (PUBLIC_IMAGE_PATH.test(event.url.pathname)) {
         (event.locals as unknown as Record<string, unknown>).auth = async () => null;
         return await resolve(event);
     }
