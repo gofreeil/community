@@ -1,6 +1,6 @@
 import type { LayoutServerLoad } from './$types';
 import { getUserById, getNeighborhoods, maybeSendTierUpgradeMessage } from '$lib/server/db';
-import { listApprovedLive, computeAdSlots } from '$lib/server/adsStore';
+import { listApprovedLive, computeAdSlots, adImageUrl } from '$lib/server/adsStore';
 
 /**
  * תקציב זמן קשיח לשליפה בשכבת ה-layout.
@@ -69,6 +69,10 @@ export const load: LayoutServerLoad = async (event) => {
     // הטור השמאלי (AdsSidebar) הוא אתרי "יוצאים לחירות" ולא מקבל פרסומות.
     // מספר המקום (1..16) קובע גם את סדר הפרסומות וגם אילו משבצות פנויות
     // מוצגות סביבן - נקבע במסך הניהול ומחושב כאן פעם אחת לכל הרשימה.
+    //
+    // התמונות עוברות ככתובת ולא כ-base64: ה-layout הזה רץ בכל ניווט בכל עמוד,
+    // ולכן הטבעת התמונות כאן שלחה אותן מחדש בכל צפייה (4.07MB מתוך 4.44MB של
+    // דף הבית, כל אחת פעמיים - ב-HTML ובנתוני ההידרציה). ראה adImageUrl.
     const liveSlots = computeAdSlots(adsRes.status === 'fulfilled' ? adsRes.value : []);
     const approvedAds = adsRes.status === 'fulfilled'
         ? adsRes.value.map(a => ({
@@ -78,11 +82,11 @@ export const load: LayoutServerLoad = async (event) => {
             cta: a.cta,
             hover: a.hoverText,
             gradient: a.gradient,
-            logo: a.logo,
-            mainImage: a.mainImage,
+            logo: adImageUrl(a, 'logo'),
+            mainImage: adImageUrl(a, 'main'),
             mainImageFit: a.mainImageFit,
             // תמונת הנייד (אם הועלתה) — הצרכן נופל לתמונה הראשית כשהיא ריקה
-            mobileImage: a.mobileImage,
+            mobileImage: adImageUrl(a, 'mobile'),
             mobileImageFit: a.mobileImageFit,
             // העיצוב מהבילדר — בלעדיו הכרטיס נבנה מברירות המחדל של האתר
             adStyle: a.adStyle,

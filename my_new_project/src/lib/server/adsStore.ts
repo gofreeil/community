@@ -105,6 +105,11 @@ export interface SubmittedAd {
     mobileImage: string;
     /** מיקום+זום של תמונת הנייד */
     mobileImageFit: AdImageFit;
+    /**
+     * חותם התוכן של שלוש התמונות - משמש כ-?v= בכתובת שמגישה אותן, כדי
+     * שקאש "לנצח" בדפדפן ובקצה יתחלף ברגע שהתמונה מוחלפת. ראה imageStamp.
+     */
+    imgVersion: string;
     /** העיצוב שנקבע בבילדר (לוגו, רצועה, כותרת). null = מודעה ותיקה */
     adStyle: AdStyle | null;
 
@@ -184,7 +189,26 @@ function emptyLanding(): SubmittedAd['landing'] {
     };
 }
 
+/**
+ * חותם קצר לתמונות הפרסומת. זול בכוונה - אורך + ראש ה-base64 (שמקודד את
+ * כותרת הקובץ ואת הפיקסלים הראשונים), בלי לגבב מגה-בייטים בכל מילוי cache.
+ * מספיק בהחלט: תמונה מוחלפת משנה גם אורך וגם כותרת.
+ */
+function imageStamp(...images: string[]): string {
+    let h = 0;
+    for (const img of images) {
+        const probe = `${img.length}:${img.slice(28, 60)}`;
+        for (let i = 0; i < probe.length; i++) {
+            h = (Math.imul(h, 31) + probe.charCodeAt(i)) | 0;
+        }
+    }
+    return (h >>> 0).toString(36);
+}
+
 function fromStrapi(s: StrapiAd): SubmittedAd {
+    const logo = s.logo ?? '';
+    const mainImage = s.main_image ?? '';
+    const mobileImage = typeof s.landing?.mobileImage === 'string' ? s.landing.mobileImage : '';
     return {
         id: s.documentId,
         status: s.ad_status,
@@ -215,12 +239,13 @@ function fromStrapi(s: StrapiAd): SubmittedAd {
         hoverText: s.hover_text ?? '',
         cta: s.cta ?? '',
         gradient: s.gradient ?? '',
-        logo: s.logo ?? '',
-        mainImage: s.main_image ?? '',
+        logo,
+        mainImage,
         mainImageFit: parseAdImageFit(s.landing?.mainImageFit),
         standalone: s.landing?._standalone === true,
-        mobileImage: typeof s.landing?.mobileImage === 'string' ? s.landing.mobileImage : '',
+        mobileImage,
         mobileImageFit: parseAdImageFit(s.landing?.mobileImageFit),
+        imgVersion: imageStamp(logo, mainImage, mobileImage),
         // null במודעות שנשלחו לפני שהעיצוב נשמר — הצרכן נופל ל-legacyAdStyle
         adStyle: parseAdStyle(s.landing?.adStyle),
         landing: s.landing ?? emptyLanding(),
@@ -450,6 +475,68 @@ export async function listApprovedLive(): Promise<SubmittedAd[]> {
     return (await listApproved()).filter(a => isLiveNow(a, now));
 }
 
+// ============================================================
+// הגשת תמונות הפרסומת ככתובת, לא כ-base64 בתוך הדף
+// ------------------------------------------------------------
+// התמונות שמורות ב-Strapi כ-data:image/...;base64 בתוך הרשומה. כשה-layout
+// החזיר אותן כמות שהן, כל טעינת דף *באתר כולו* סחבה אותן שוב: דף הבית שקל
+// 4.44MB, מתוכם 4.07MB תמונות (וכל תמונה נשלחה פעמיים - פעם ב-HTML ופעם
+// בנתוני ההידרציה). זה שרף את מכסת ה-Fast Origin Transfer של Vercel תוך
+// ~2,300 צפיות, ומשם התחיל throttling ו-503 אקראיים.
+//
+// במקום זה ה-layout מחזיר כתובת ל-/api/ad-image/<id>/<kind>, והתמונה נשלפת
+// פעם אחת ונשמרת בקאש של הדפדפן ושל הקצה - כך היא לא נספרת שוב בכל צפייה.
+// ============================================================
+
+export type AdImageKind = 'logo' | 'main' | 'mobile';
+
+export function isAdImageKind(v: string | undefined): v is AdImageKind {
+    return v === 'logo' || v === 'main' || v === 'mobile';
+}
+
+function pickImage(ad: SubmittedAd, kind: AdImageKind): string {
+    if (kind === 'logo') return ad.logo;
+    if (kind === 'main') return ad.mainImage;
+    return ad.mobileImage;
+}
+
+/**
+ * הכתובת שבה הצרכן (RightAdBanner / הפופ-אפ בנייד) ימשוך את התמונה.
+ * ריק נשאר ריק (הצרכן בודק אמת/שקר), וערך שאינו data: - למשל כתובת חיצונית
+ * במודעה ותיקה - עובר כמות שהוא.
+ */
+export function adImageUrl(ad: SubmittedAd, kind: AdImageKind): string {
+    const raw = pickImage(ad, kind);
+    if (!raw) return '';
+    if (!raw.startsWith('data:')) return raw;
+    return `/api/ad-image/${ad.id}/${kind}?v=${ad.imgVersion}`;
+}
+
+/**
+ * הבייטים עצמם, לנתיב שמגיש אותם. נשלף מרשימת המאושרות שב-cache: בלי
+ * round-trip ל-Strapi, וגם כשומר סף - תמונות של פרסומת שלא אושרה לא נחשפות.
+ */
+export async function getApprovedAdImage(
+    id: string,
+    kind: AdImageKind,
+): Promise<{ mime: string; bytes: ArrayBuffer } | null> {
+    const ad = (await listByStatus('approved')).find(a => a.id === id);
+    if (!ad) return null;
+    const m = /^data:([\w/+.-]+);base64,(.*)$/s.exec(pickImage(ad, kind));
+    if (!m) return null;
+    try {
+        const buf = Buffer.from(m[2], 'base64');
+        // slice ולא buf.buffer עצמו: Buffer יושב על מאגר משותף של Node, והחזרתו
+        // כמות שהוא הייתה חושפת בייטים של הקצאות אחרות שסביבו
+        return {
+            mime: m[1],
+            bytes: buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer,
+        };
+    } catch {
+        return null;
+    }
+}
+
 /**
  * מצב הפרסומת האחרונה של משתמש - לכרטיס "הנכסים שלי" באזור האישי.
  * בלי זה האזור האישי הכיר רק את הטיוטה שב-localStorage, ולכן קרא
@@ -612,7 +699,8 @@ export async function getAdStatuses(ids: string[]): Promise<Map<string, AdStatus
 }
 
 export async function submitAd(
-    payload: Omit<SubmittedAd, 'id' | 'status' | 'submittedAt'> & {
+    // imgVersion נגזר מהתמונות עצמן בקריאה מ-Strapi (fromStrapi) ולא נשלח פנימה
+    payload: Omit<SubmittedAd, 'id' | 'status' | 'submittedAt' | 'imgVersion'> & {
         /** עריכה ממוקדת: מזהה הפרסומת הספציפית ש"ערוך" נלחץ עליה בנכסים */
         editOfAdId?: string;
     },
