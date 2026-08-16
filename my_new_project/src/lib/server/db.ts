@@ -68,6 +68,8 @@ export interface DbUser {
     phone: string;
     neighborhood: string;
     city: string;
+    street: string;
+    address: string;
     avatar_url: string | null;
     provider: string | null;
     nickname: string;
@@ -112,6 +114,8 @@ export interface UpdateProfileData {
     phone?: string;
     neighborhood?: string;
     city?: string;
+    street?: string;
+    address?: string;
     nickname?: string;
     business?: string;
     notifications?: number;
@@ -171,6 +175,8 @@ interface StrapiUpUser {
     external_id: string | null;
     city: string | null;
     neighborhood: string | null;
+    street: string | null;
+    address: string | null;
     phone: string | null;
     nickname: string | null;
     business: string | null;
@@ -231,6 +237,8 @@ function mapUpUser(u: StrapiUpUser): DbUser {
         phone:         u.phone         ?? '',
         neighborhood:  u.neighborhood  ?? '',
         city:          u.city          ?? '',
+        street:        u.street        ?? '',
+        address:       u.address       ?? '',
         avatar_url:    u.avatar_url    ?? null,
         provider:      u.provider      ?? null,
         nickname:      u.nickname      ?? '',
@@ -1885,6 +1893,8 @@ export async function updateUserProfile(id: string, data: UpdateProfileData, _jw
     if (data.phone         !== undefined) updates.phone         = data.phone;
     if (data.neighborhood  !== undefined) updates.neighborhood  = data.neighborhood;
     if (data.city          !== undefined) updates.city          = data.city;
+    if (data.street        !== undefined) updates.street        = data.street;
+    if (data.address       !== undefined) updates.address       = data.address;
     if (data.nickname      !== undefined) updates.nickname      = data.nickname;
     if (data.business      !== undefined) updates.business      = data.business;
     if (data.notifications !== undefined) updates.notifications = data.notifications === 1;

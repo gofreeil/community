@@ -25,6 +25,8 @@ export const POST: RequestHandler = async (event) => {
     // שלב 1 — כתובת + בסיס
     if (typeof body.city === 'string')         updates.city         = str(body.city);
     if (typeof body.neighborhood === 'string') updates.neighborhood = str(body.neighborhood);
+    if (typeof body.street === 'string')       updates.street       = str(body.street);
+    if (typeof body.address === 'string')      updates.address      = str(body.address);
     if (typeof body.status === 'string')       updates.status       = str(body.status);
     if (typeof body.phone === 'string') {
         const p = str(body.phone);

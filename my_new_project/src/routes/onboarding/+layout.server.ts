@@ -20,6 +20,8 @@ export const load: LayoutServerLoad = async (event) => {
         profile: {
             city: user?.city ?? '',
             neighborhood: user?.neighborhood ?? '',
+            street: user?.street ?? '',
+            address: user?.address ?? '',
             phone: user?.phone ?? '',
             status: user?.status ?? '',
             family_status: user?.family_status ?? '',

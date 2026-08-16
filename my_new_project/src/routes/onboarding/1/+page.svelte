@@ -17,7 +17,9 @@
 
 	// ערכי פתיחה מהפרופיל הקיים (רובם ריקים למשתמש חדש); untrack — מכאן בשליטת הגולש
 	let city = $state(untrack(() => data.profile.city) ?? '');
+	let street = $state(untrack(() => data.profile.street) ?? '');
 	let neighborhood = $state(untrack(() => data.profile.neighborhood) ?? '');
+	let address = $state(untrack(() => data.profile.address) ?? '');
 	let phone = $state(untrack(() => data.profile.phone) ?? '');
 	let status = $state(untrack(() => (data.profile.status && data.profile.status !== 'active' ? data.profile.status : '')));
 	let avatarPreview = $state<string | null>(untrack(() => data.avatar));
@@ -36,6 +38,9 @@
 	$effect(() => {
 		if (city && neighborhood && !hoods.includes(neighborhood)) neighborhood = '';
 	});
+
+	// דרגה: כתובת מלאה (עיר + רחוב + שכונה + כתובת) מעלה מ"צופה" ל"משתמש"
+	const isUser = $derived(!!(city.trim() && street.trim() && neighborhood.trim() && address.trim()));
 
 	// העלאת תמונה: הקטנה ל-256×256 (cover) → dataURL, בלי ספרייה חיצונית
 	async function onFile(e: Event) {
@@ -70,7 +75,9 @@
 	function buildPayload() {
 		const p: Record<string, unknown> = {};
 		if (city.trim()) p.city = city.trim();
+		if (street.trim()) p.street = street.trim();
 		if (neighborhood.trim()) p.neighborhood = neighborhood.trim();
+		if (address.trim()) p.address = address.trim();
 		if (phone.trim()) p.phone = phone.trim();
 		if (status.trim()) p.status = status.trim();
 		if (avatarDataUrl) p.avatar_url = avatarDataUrl;
@@ -103,7 +110,22 @@
 <div>
 	<h2 class="text-white font-bold text-xl mb-1">{tFn('onboarding.s1_title')}</h2>
 	<p class="text-gray-400 text-sm mb-1 leading-relaxed">{tFn('onboarding.s1_intro')}</p>
-	<p class="text-white/40 text-xs mb-5">{tFn('onboarding.optional_hint')}</p>
+	<p class="text-white/40 text-xs mb-4">{tFn('onboarding.optional_hint')}</p>
+
+	<!-- דרגה נוכחית: צופה → משתמש אחרי כתובת מלאה -->
+	<div class="rounded-2xl border p-3 mb-2 flex items-center gap-3 transition-colors {isUser ? 'border-green-500/40 bg-green-500/10' : 'border-white/10 bg-white/5'}">
+		<span class="text-2xl flex-shrink-0">{isUser ? '🏘️' : '👀'}</span>
+		<div class="flex-1 min-w-0">
+			<p class="text-[11px] text-white/45">{tFn('onboarding.level_label')}</p>
+			<p class="font-bold leading-tight {isUser ? 'text-green-300' : 'text-white'}">{tFn(isUser ? 'onboarding.level_user' : 'onboarding.level_viewer')}</p>
+			<p class="text-[11px] text-white/45">{tFn(isUser ? 'onboarding.level_user_desc' : 'onboarding.level_viewer_desc')}</p>
+		</div>
+	</div>
+	{#if isUser}
+		<p class="text-green-300 text-sm font-semibold bg-green-500/10 border border-green-500/25 rounded-xl px-3 py-2 mb-5">{tFn('onboarding.level_up_msg')}</p>
+	{:else}
+		<p class="text-white/45 text-xs mb-5">{tFn('onboarding.level_hint_viewer')}</p>
+	{/if}
 
 	<!-- תמונת פרופיל -->
 	<div class="flex items-center gap-4 mb-4">
@@ -133,6 +155,13 @@
 		</select>
 	</div>
 
+	<!-- רחוב -->
+	<div class="mb-3">
+		<label for="ob-street" class="block text-sm font-medium text-gray-300 mb-1">{tFn('onboarding.street')}</label>
+		<input id="ob-street" type="text" bind:value={street} placeholder={tFn('onboarding.street_ph')}
+			class="w-full bg-[#1e293b] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition" />
+	</div>
+
 	<!-- שכונה -->
 	<div class="mb-3">
 		<label for="ob-hood" class="block text-sm font-medium text-gray-300 mb-1">{tFn('onboarding.neighborhood')}</label>
@@ -143,6 +172,13 @@
 			disabled={!city}
 			buttonClass="w-full text-right bg-[#1e293b] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 transition disabled:opacity-50 flex items-center justify-between gap-2 cursor-pointer"
 		/>
+	</div>
+
+	<!-- כתובת (מספר בית) -->
+	<div class="mb-3">
+		<label for="ob-address" class="block text-sm font-medium text-gray-300 mb-1">{tFn('onboarding.address')}</label>
+		<input id="ob-address" type="text" bind:value={address} placeholder={tFn('onboarding.address_ph')}
+			class="w-full bg-[#1e293b] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition" />
 	</div>
 
 	<!-- טלפון -->
