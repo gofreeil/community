@@ -1,7 +1,12 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { listApprovedLive } from '$lib/server/adsStore';
+import { listApprovedLive, adImageUrl } from '$lib/server/adsStore';
 
+/**
+ * הזנת הפרסומות שעל האוויר. התמונות ככתובת ולא כ-base64: נמדד שהנתיב
+ * החזיר 1,867KB שכמעט כולם תמונות מוטבעות, וכל פנייה אליו יצאה מהשרת
+ * במלואה. הכתובות יחסיות בכוונה - הן נועדו לצריכה מהאתר הזה עצמו.
+ */
 export const GET: RequestHandler = async () => {
     // רק מה שבאמת על האתר: בלי מושהות ובלי פרסומות שתוקפן פג
     const approved = await listApprovedLive();
@@ -13,10 +18,10 @@ export const GET: RequestHandler = async () => {
         cta: a.cta,
         hover: a.hoverText,
         gradient: a.gradient,
-        logo: a.logo,
-        mainImage: a.mainImage,
+        logo: adImageUrl(a, 'logo'),
+        mainImage: adImageUrl(a, 'main'),
         mainImageFit: a.mainImageFit,
-        mobileImage: a.mobileImage,
+        mobileImage: adImageUrl(a, 'mobile'),
         mobileImageFit: a.mobileImageFit,
         adStyle: a.adStyle,
     }));
