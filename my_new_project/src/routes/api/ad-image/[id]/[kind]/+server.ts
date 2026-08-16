@@ -1,5 +1,6 @@
 import type { RequestHandler } from './$types';
 import { getApprovedAdImage, isAdImageKind } from '$lib/server/adsStore';
+import { immutableImageResponse } from '$lib/server/inlineImage';
 
 /**
  * תמונות הפרסומות - במקום base64 מוטבע בכל דף.
@@ -22,11 +23,5 @@ export const GET: RequestHandler = async ({ params }) => {
         return new Response(null, { status: 404 });
     }
 
-    return new Response(img.bytes, {
-        headers: {
-            'content-type': img.mime,
-            'content-length': String(img.bytes.byteLength),
-            'cache-control': 'public, max-age=31536000, s-maxage=31536000, immutable',
-        },
-    });
+    return immutableImageResponse(img);
 };

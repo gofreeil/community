@@ -343,12 +343,14 @@ const setStrApiCookie: Handle = async ({ event, resolve }) => {
  * הפתרון: אם handle זורק, נמשיך ב-resolve רגיל (משתמש אנונימי).
  */
 /**
- * נתיבי תמונה ציבוריים לחלוטין: תמונת הקדימון (OG) של פריט, ותמונות
- * הפרסומות. שניהם לא תלויי-משתמש, ולכן עוקפים את ה-auth - אחרת @auth/sveltekit
- * מוסיף Set-Cookie לתשובה, ו-Vercel לעולם לא שומר בקאש תשובה עם עוגייה.
- * בלי העקיפה הזו ה-CDN מחזיר MISS בכל בקשה והתמונה יוצאת מהשרת מחדש בכל פעם.
+ * נתיבי תמונה ציבוריים לחלוטין: תמונת הקדימון (OG) של פריט, תמונות
+ * הפרסומות, והתמונה שעל הפין במפה. כולם לא תלויי-משתמש, ולכן עוקפים את
+ * ה-auth - אחרת @auth/sveltekit מוסיף Set-Cookie לתשובה, ו-Vercel לעולם
+ * לא שומר בקאש תשובה עם עוגייה. בלי העקיפה ה-CDN מחזיר MISS בכל בקשה
+ * והתמונה יוצאת מהשרת מחדש בכל פעם.
  */
-const PUBLIC_IMAGE_PATH = /^\/api\/(?:items\/[^/]+\/og\.jpg|ad-image\/[^/]+\/[^/]+)$/;
+const PUBLIC_IMAGE_PATH =
+    /^\/api\/(?:items\/[^/]+\/og\.jpg|ad-image\/[^/]+\/[^/]+|item-image\/[^/]+\/map)$/;
 
 export const handle: Handle = async ({ event, resolve }) => {
     if (PUBLIC_IMAGE_PATH.test(event.url.pathname)) {

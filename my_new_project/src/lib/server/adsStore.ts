@@ -9,6 +9,7 @@ import { createItem } from './db.js';
 import { cached, invalidate } from './cache.js';
 import { parseAdImageFit, type AdImageFit } from '../adImageFit.js';
 import { parseAdStyle, type AdStyle } from '../adStyle.js';
+import { imageStamp, decodeDataImage } from './inlineImage.js';
 import { AD_SLOT_COUNT } from '../adSlots.js';
 
 // פרסומות מאושרות נטענות בכל ניווט (ב-+layout.server) — cache קצר חוסך round-trip
@@ -187,22 +188,6 @@ function emptyLanding(): SubmittedAd['landing'] {
         uniqueness: '', phone: '', whatsapp: '', website: '', email: '',
         address: '', hours: '', products: [],
     };
-}
-
-/**
- * חותם קצר לתמונות הפרסומת. זול בכוונה - אורך + ראש ה-base64 (שמקודד את
- * כותרת הקובץ ואת הפיקסלים הראשונים), בלי לגבב מגה-בייטים בכל מילוי cache.
- * מספיק בהחלט: תמונה מוחלפת משנה גם אורך וגם כותרת.
- */
-function imageStamp(...images: string[]): string {
-    let h = 0;
-    for (const img of images) {
-        const probe = `${img.length}:${img.slice(28, 60)}`;
-        for (let i = 0; i < probe.length; i++) {
-            h = (Math.imul(h, 31) + probe.charCodeAt(i)) | 0;
-        }
-    }
-    return (h >>> 0).toString(36);
 }
 
 function fromStrapi(s: StrapiAd): SubmittedAd {
@@ -522,19 +507,7 @@ export async function getApprovedAdImage(
 ): Promise<{ mime: string; bytes: ArrayBuffer } | null> {
     const ad = (await listByStatus('approved')).find(a => a.id === id);
     if (!ad) return null;
-    const m = /^data:([\w/+.-]+);base64,(.*)$/s.exec(pickImage(ad, kind));
-    if (!m) return null;
-    try {
-        const buf = Buffer.from(m[2], 'base64');
-        // slice ולא buf.buffer עצמו: Buffer יושב על מאגר משותף של Node, והחזרתו
-        // כמות שהוא הייתה חושפת בייטים של הקצאות אחרות שסביבו
-        return {
-            mime: m[1],
-            bytes: buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer,
-        };
-    } catch {
-        return null;
-    }
+    return decodeDataImage(pickImage(ad, kind));
 }
 
 /**

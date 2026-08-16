@@ -1,6 +1,8 @@
 import { getAllItems, getUserById, getEvents, type DbItem } from '$lib/server/db';
 import { getIndexBusinesses } from '$lib/server/indexBusinesses';
 import { isPrivateCategory } from '$lib/itemCategories';
+import { getMapImage } from '$lib/mapImage';
+import { imageStamp } from '$lib/server/inlineImage';
 import { isAdmin } from '$lib/server/auth';
 import type { PageServerLoad } from './$types';
 
@@ -15,6 +17,13 @@ function slimForHome(i: DbItem): DbItem {
     try { extra = JSON.parse(i.extra_fields); } catch { return { ...i, extra_fields: '{}' }; }
     const slim: Record<string, unknown> = {};
     for (const k of HOME_EXTRA_KEYS) if (extra[k] !== undefined) slim[k] = extra[k];
+    // הפין על המפה עובר ככתובת ולא כ-base64: גם אחרי הדילול נשארו כאן
+    // 730KB של תמונות מוטבעות שיצאו מהשרת בכל צפייה בדף הבית. הצרכן
+    // (JerusalemMap דרך isDisplayableImage) מקבל נתיב בדיוק כמו data URI.
+    const mapImage = getMapImage(slim);
+    if (mapImage.startsWith('data:')) {
+        slim.map_image = `/api/item-image/${i.id}/map?v=${imageStamp(mapImage)}`;
+    }
     return { ...i, extra_fields: JSON.stringify(slim) };
 }
 
