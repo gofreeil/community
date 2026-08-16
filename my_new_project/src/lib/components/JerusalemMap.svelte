@@ -22,6 +22,7 @@
     import { logoForService, serviceColor } from "$lib/serviceTypes";
     import { heMatches } from "$lib/search";
     import { isFamilyItem } from "$lib/itemCategories";
+    import { createClickOutside } from "$lib/actions/clickOutside";
     import CameraCapture from "$lib/components/CameraCapture.svelte";
     import type { DbItem } from "$lib/server/db";
     import 'leaflet/dist/leaflet.css';
@@ -331,6 +332,15 @@
     let moreIds = $state<string[]>([...DEFAULT_MORE_IDS]);
     let showMorePanel = $state(false);
     let editingBar = $state(false);
+
+    // סגירת תפריט "עוד" בלחיצה בחוץ - האזורים (כפתור הדסקטופ, חלונית הנייד)
+    // מסמנים את עצמם עם use:moreCatsOutside, כך שכל וריאנט breakpoint מכוסה מעצם קיומו
+    const moreCatsOutside = createClickOutside(() => {
+        if (showMorePanel) {
+            showMorePanel = false;
+            editingBar = false;
+        }
+    });
 
     let barCats = $derived(otherCats.filter((c) => !moreIds.includes(c.id)));
     let moreCats = $derived(otherCats.filter((c) => moreIds.includes(c.id)));
@@ -1467,29 +1477,8 @@
             }
         }, 8000); // 8 שניות
 
-        // סגירת תפריט כשלוחצים מחוץ לו
-        const handleClickOutside = (event: MouseEvent) => {
-            const target = event.target as HTMLElement;
-            if (
-                showNeighborhoodsMenu &&
-                !target.closest(".neighborhoods-menu-container")
-            ) {
-                showNeighborhoodsMenu = false;
-                selectedCity = "";
-            }
-            // בנייד תפריט "עוד" חי בתוך חלונית הקטגוריות (.jmap-cat-sheet) ולא ב-more-cats-container;
-            // בלי הסייג הזה אותה הקשה שפותחת אותו סוגרת אותו מיד והכפתור נראה "מת".
-            if (
-                showMorePanel &&
-                !target.closest(".more-cats-container") &&
-                !target.closest(".jmap-cat-sheet")
-            ) {
-                showMorePanel = false;
-                editingBar = false;
-            }
-        };
-
-        document.addEventListener("click", handleClickOutside);
+        // סגירת תפריט "עוד" בלחיצה בחוץ עברה ל-createClickOutside (use:moreCatsOutside על האזורים);
+        // סגירת תפריט השכונות מטופלת ב-+page.svelte, שם חיים הקונטיינר וה-backdrop שלו.
 
         // Mobile scroll indicators logic - simplified
         const setupScrollIndicators = () => {
@@ -1508,7 +1497,6 @@
             if (listAnimationTimeout) {
                 clearTimeout(listAnimationTimeout);
             }
-            document.removeEventListener("click", handleClickOutside);
         };
     });
 
@@ -1851,7 +1839,8 @@
                     ></div>
                     <!-- Sheet -->
                     <div
-                        class="jmap-cat-sheet md:hidden fixed top-1/2 left-3 right-3 z-[10001] bg-[#0f172a] border-2 border-purple-500 rounded-2xl shadow-2xl max-h-[80vh] flex flex-col"
+                        use:moreCatsOutside
+                        class="md:hidden fixed top-1/2 left-3 right-3 z-[10001] bg-[#0f172a] border-2 border-purple-500 rounded-2xl shadow-2xl max-h-[80vh] flex flex-col"
                         style="animation: sheetFadeIn 0.25s ease-out; transform: translateY(calc(-50% + {sheetDragY}px)); transition: {sheetDragging ? 'none' : 'transform 0.2s ease-out'};"
                         role="dialog"
                         aria-label={$t('map.category_filter')}
@@ -1997,7 +1986,7 @@
                     {/each}
 
                     <!-- הכפתור האחרון: "עוד" - תפריט קטגוריות נוספות + התאמה אישית של הסרגל -->
-                    <div class="relative flex-1 min-w-[15%] flex more-cats-container">
+                    <div use:moreCatsOutside class="relative flex-1 min-w-[15%] flex">
                         <button
                             type="button"
                             onclick={() => (showMorePanel = !showMorePanel)}

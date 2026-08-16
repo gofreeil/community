@@ -13,6 +13,7 @@
     import JsonLd from "$lib/components/JsonLd.svelte";
     import { websiteSchema, organizationSchema, faqSchema, SITE_URL } from "$lib/seo";
     import { heMatch } from "$lib/search";
+    import { createClickOutside } from "$lib/actions/clickOutside";
 
     // Structured data לדף הבית - WebSite+חיפוש, Organization, ושאלות נפוצות.
     // עונה ישירות על "מה זה קהילה בשכונה" עבור Google ו-AI.
@@ -259,6 +260,12 @@
         if (hintTimer) clearTimeout(hintTimer);
     }
 
+    // רשת ביטחון ל"לחיצה בחוץ": ה-backdrop של התפריט תופס כמעט הכול, אבל אלמנטים
+    // שמעל ה-z-index שלו (למשל ההדר) עוקפים אותו - האזור מסומן עם use: על הקונטיינר
+    const neighborhoodsMenuOutside = createClickOutside(() => {
+        if (showNeighborhoodsMenu) closeMenu();
+    });
+
     // --- Calendar sync (ICS + Google Calendar) ---
     interface CalEvent {
         title: string;
@@ -463,7 +470,7 @@
     <h1 class="sr-only">קהילה בשכונה — יד שנייה ולמסירה, דירות ואירוח לשבת, שידוכים, חוגים, גמ״חים, בייבי סיטר, טרמפים ואבדות ומציאות בשכונה ובכל יישוב בישראל</h1>
     <!-- Title Section - centered across full width -->
     <section class="max-w-7xl mx-auto px-4">
-        <div class="text-center mb-3 md:mb-8 relative neighborhoods-menu-container">
+        <div use:neighborhoodsMenuOutside class="text-center mb-3 md:mb-8 relative neighborhoods-menu-container">
             <!-- Mobile: title with button on left side -->
             <div class="md:hidden mb-2">
                 <div class="relative group text-center mb-0 w-full">
