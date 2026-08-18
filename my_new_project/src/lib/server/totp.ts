@@ -163,3 +163,62 @@ export function verifyTrustToken(
     const b = Buffer.from(expected);
     return a.length === b.length && timingSafeEqual(a, b);
 }
+
+// ============================================================
+// ---- קוד חילוץ חד-פעמי למייל (כשאין גישה לאפליקציית האימות) ----
+//
+// אתגר חתום (nonce + תפוגה) יושב בעוגייה קצרת-חיים בדפדפן שביקש אותו,
+// והקוד שנגזר ממנו נשלח למייל של המנהל. אין שום מצב בשרת: האימות בודק
+// חתימה + תוקף + התאמת קוד בלבד, והצלחה מוחקת את העוגייה — חד-פעמיות בפועל.
+// הגזירה קשורה גם לסוד ה-TOTP, כך שאיפוס הסוד מבטל מיד כל קוד שכבר נשלח.
+// ============================================================
+
+const RESCUE_COOKIE = 'admin_rescue';
+const RESCUE_MAX_AGE = 60 * 10; // 10 דקות
+const RESCUE_DIGITS = 8;
+
+export const RESCUE_COOKIE_NAME = RESCUE_COOKIE;
+export const RESCUE_COOKIE_MAX_AGE = RESCUE_MAX_AGE;
+
+function rescueSig(identity: string, payload: string): string {
+    return createHmac('sha256', `${AUTH_SECRET}:rescue-cookie`)
+        .update(`${identity.trim().toLowerCase()}:${payload}`)
+        .digest('hex');
+}
+
+function rescueCode(identity: string, secret: string, payload: string): string {
+    const mac = createHmac('sha256', `${AUTH_SECRET}:${secret}:rescue-code`)
+        .update(`${identity.trim().toLowerCase()}:${payload}`)
+        .digest();
+    return (mac.readBigUInt64BE(0) % BigInt(10 ** RESCUE_DIGITS)).toString().padStart(RESCUE_DIGITS, '0');
+}
+
+/** אתגר חילוץ חדש: ערך עוגייה חתום + הקוד שיישלח למייל (לא נשמר בשום מקום) */
+export function makeRescueChallenge(identity: string, secret: string): { cookie: string; code: string } {
+    const payload = `${randomBytes(16).toString('hex')}.${Math.floor(Date.now() / 1000) + RESCUE_MAX_AGE}`;
+    return { cookie: `${payload}.${rescueSig(identity, payload)}`, code: rescueCode(identity, secret, payload) };
+}
+
+/** אימות קוד חילוץ מול עוגיית האתגר: חתימה, תוקף, והשוואת קוד בזמן-קבוע */
+export function verifyRescueChallenge(
+    cookieValue: string | undefined,
+    identity: string | null | undefined,
+    secret: string,
+    code: string,
+): boolean {
+    if (!cookieValue || !identity) return false;
+    const parts = cookieValue.split('.');
+    if (parts.length !== 3) return false;
+
+    const payload = `${parts[0]}.${parts[1]}`;
+    const expectedSig = Buffer.from(rescueSig(identity, payload));
+    const actualSig = Buffer.from(parts[2]);
+    if (expectedSig.length !== actualSig.length || !timingSafeEqual(expectedSig, actualSig)) return false;
+    if (!/^\d+$/.test(parts[1]) || Number(parts[1]) < Math.floor(Date.now() / 1000)) return false;
+
+    const cleaned = (code ?? '').replace(/\s+/g, '');
+    if (!new RegExp(`^\\d{${RESCUE_DIGITS}}$`).test(cleaned)) return false;
+    const expectedCode = Buffer.from(rescueCode(identity, secret, payload));
+    const actualCode = Buffer.from(cleaned);
+    return expectedCode.length === actualCode.length && timingSafeEqual(expectedCode, actualCode);
+}

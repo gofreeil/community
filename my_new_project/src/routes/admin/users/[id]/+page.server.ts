@@ -8,6 +8,8 @@ import {
     getItemsByUserId,
     getMessagesByUserId,
     createItem,
+    setUserTotpSecret,
+    getAllSuperAdmins,
 } from '$lib/server/db';
 import { categoryConfig } from '$lib/categoryFields';
 
@@ -96,7 +98,12 @@ export const load: PageServerLoad = async (event) => {
     const userId = event.params.id;
     // כרטיס מאוחד - כמו ברשימת /admin. בלי זה, שדות שיושבים על חשבון-אח
     // (טלפון/עיר/שכונה) לא היו מוצגים כאן כלל.
-    const user = await getMergedUserByAnyId(userId);
+    // לצידו גם החשבון המדויק: מצב ה-2FA יושב על החשבון הספציפי (לא על האיחוד),
+    // וכפתור האיפוס חייב לשקף את החשבון שהשער בודק בפועל.
+    const [user, exactUser] = await Promise.all([
+        getMergedUserByAnyId(userId),
+        getUserByAnyId(userId).catch(() => undefined),
+    ]);
     if (!user) throw error(404, 'המשתמש לא נמצא');
 
     // שתי השליפות במקביל - סדרתי מסתכן ב-timeout של הדף כולו
@@ -119,7 +126,14 @@ export const load: PageServerLoad = async (event) => {
     // כדי שהאדמין ייכנס לשיחה עם משפט פתיחה מוכן על הבקשה הספציפית.
     const draft = event.url.searchParams.get('draft') ?? '';
 
-    return { profileUser: user, items, thread, adminId: admin.id, draft };
+    return {
+        profileUser: user,
+        items,
+        thread,
+        adminId: admin.id,
+        draft,
+        totpEnabled: exactUser?.totp_enabled ?? false,
+    };
 };
 
 export const actions: Actions = {
@@ -162,5 +176,84 @@ export const actions: Actions = {
             console.warn('[admin/users] sendMessage failed:', e);
             return fail(500, { chatError: 'שגיאה בשליחת ההודעה, נסה שוב' });
         }
+    },
+
+    // איפוס אימות דו-שלבי של משתמש אחר - מסלול החילוץ כשמנהל איבד את הטלפון:
+    // מנהל ראשי אחר (מאומת במכשיר מהימן - השער ב-hooks חוסם POST לא-מאומת) מאפס,
+    // הנעול נכנס בלי שער ומגדיר 2FA מחדש ב-/admin/2fa-setup.
+    resetTotp: async (event) => {
+        const admin = await requireSuperAdmin(event);
+
+        const target = await getUserByAnyId(event.params.id);
+        if (!target) return fail(404, { totpError: 'המשתמש לא נמצא' });
+        // את ה-2FA של עצמך מבטלים בדף ההגדרה - שם נדרש קוד תקף, וזה בכוונה
+        if (target.id === admin.id) {
+            return fail(400, { totpError: 'את האימות של עצמך מבטלים בדף הגדרת האימות הדו-שלבי (נדרש קוד תקף).' });
+        }
+        if (!target.totp_enabled) return fail(400, { totpError: 'לחשבון זה אין אימות דו-שלבי פעיל.' });
+
+        try {
+            await setUserTotpSecret(target.id, null);
+        } catch (e) {
+            console.warn('[admin/users] resetTotp failed:', e);
+            return fail(500, { totpError: 'האיפוס נכשל, נסה שוב.' });
+        }
+
+        // שקיפות (best-effort): המשתמש שאופס מקבל הודעה, ושאר המנהלים הראשיים
+        // התראה - כך איפוס זדוני לא יכול לעבור בשקט.
+        let adminName = admin.name || 'מנהל ראשי';
+        try { adminName = (await getUserById(admin.id))?.name || adminName; } catch { /* ignore */ }
+        const targetName = target.name || target.email || target.id;
+
+        try {
+            await createItem({
+                category: 'message',
+                label: '🔐 האימות הדו-שלבי שלך אופס',
+                description:
+                    `${adminName} איפס את האימות הדו-שלבי של חשבונך כדי לאפשר לך להתחבר מחדש.\n` +
+                    `בכניסה הבאה לאזור הניהול היכנס לדף הגדרת האימות הדו-שלבי והגדר אותו מחדש.\n` +
+                    `אם לא ביקשת את האיפוס - פנה מיד למנהל הראשי.`,
+                icon: '🔐',
+                color: 'amber',
+                user_id: target.id,
+                extra_fields: {
+                    type: 'totp_reset',
+                    sender_id: admin.id,
+                    sender_name: adminName,
+                    sent_at: new Date().toISOString(),
+                    read: false,
+                },
+            });
+        } catch (e) {
+            console.warn('[admin/users] resetTotp notify target failed:', e);
+        }
+
+        try {
+            const supers = await getAllSuperAdmins();
+            await Promise.allSettled(
+                supers
+                    .filter((s) => s.id !== admin.id && s.id !== target.id)
+                    .map((s) => createItem({
+                        category: 'admin_alert',
+                        label: `🔐 אופס אימות דו-שלבי - ${targetName}`,
+                        description:
+                            `${adminName} איפס את האימות הדו-שלבי של ${targetName}.\n` +
+                            `אם הפעולה לא מוכרת לכם - בדקו מיד.`,
+                        icon: '🔐',
+                        color: 'amber',
+                        user_id: s.id,
+                        extra_fields: {
+                            type: 'totp_reset',
+                            actor_id: admin.id,
+                            actor_name: adminName,
+                            target_id: target.id,
+                        },
+                    })),
+            );
+        } catch (e) {
+            console.warn('[admin/users] resetTotp notify supers failed:', e);
+        }
+
+        return { totpReset: true };
     },
 };

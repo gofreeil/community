@@ -11,6 +11,7 @@
 	// untrack: תמונת-מצב חד-פעמית - רענון data לא ידרוס טיוטה שהאדמין כותב.
 	let chatText = $state(untrack(() => data.draft) ?? '');
 	let sending = $state(false);
+	let resettingTotp = $state(false);
 	let scrollBox = $state<HTMLDivElement | null>(null);
 
 	async function scrollToBottom() {
@@ -164,6 +165,52 @@
 				{/each}
 			</div>
 		</div>
+
+		<!-- אבטחה: איפוס 2FA למשתמש שאיבד את הטלפון (מסלול החילוץ) -->
+		{#if form?.totpReset}
+			<div class="mb-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 px-4 py-3 text-emerald-300 text-sm font-bold">
+				✅ האימות הדו-שלבי אופס. המשתמש קיבל הודעה ויוכל להתחבר ולהגדיר אותו מחדש.
+			</div>
+		{:else if form?.totpError}
+			<div class="mb-6 rounded-2xl bg-red-500/10 border border-red-500/30 px-4 py-3 text-red-300 text-sm font-bold">
+				{form.totpError}
+			</div>
+		{/if}
+		{#if data.totpEnabled}
+			<div class="bg-[#0f172a] rounded-2xl border border-white/10 p-4 mb-6">
+				<div class="flex items-center justify-between gap-3 flex-wrap">
+					<div class="min-w-0">
+						<h2 class="text-lg font-black text-purple-300">אבטחה</h2>
+						<p class="text-sm text-gray-300 mt-0.5">🔐 אימות דו-שלבי (2FA): <span class="text-emerald-400 font-bold">פעיל</span></p>
+						<p class="text-xs text-gray-500 mt-1">איבד גישה לטלפון? איפוס יאפשר לו להיכנס בלי קוד ולהגדיר אימות מחדש.</p>
+					</div>
+					<form
+						method="POST"
+						action="?/resetTotp"
+						use:enhance={({ cancel }) => {
+							if (!confirm('לאפס את האימות הדו-שלבי של המשתמש הזה? הוא יוכל להיכנס לאזור הניהול בלי קוד עד שיגדיר אימות מחדש.')) {
+								cancel();
+								return;
+							}
+							resettingTotp = true;
+							return async ({ update }) => {
+								await update();
+								resettingTotp = false;
+							};
+						}}
+					>
+						<button
+							type="submit"
+							disabled={resettingTotp}
+							class="px-4 py-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 text-sm font-bold
+							       transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed whitespace-nowrap"
+						>
+							{#if resettingTotp}מאפס…{:else}אפס אימות דו-שלבי{/if}
+						</button>
+					</form>
+				</div>
+			</div>
+		{/if}
 
 		<!-- צ'אט בסגנון וואטסאפ/טלגרם -->
 		<div id="chat" class="rounded-2xl border border-white/10 overflow-hidden mb-6 shadow-lg scroll-mt-8">
