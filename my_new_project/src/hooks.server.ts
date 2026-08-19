@@ -352,20 +352,34 @@ const setStrApiCookie: Handle = async ({ event, resolve }) => {
 const PUBLIC_IMAGE_PATH =
     /^\/api\/(?:items\/[^/]+\/og\.jpg|ad-image\/[^/]+\/[^/]+|item-image\/[^/]+\/map)$/;
 
+/**
+ * כותרות אבטחה (הגנת-עומק) על כל תשובה. בכוונה *בלי* Content-Security-Policy:
+ * CSP מחמיר עלול לחסום מפה (Leaflet), Google Analytics ותגובות פייסבוק. אם נרצה
+ * CSP - נוסיף בנפרד וקודם ב-Report-Only. שלוש הכותרות כאן לא נוגעות בטעינת משאבים.
+ */
+function withSecurityHeaders(res: Response): Response {
+    res.headers.set('X-Content-Type-Options', 'nosniff');
+    res.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+    // הגנת clickjacking דרך frame-ancestors בלבד (לא CSP מלא!): מתירה לכל האתרים
+    // שלך (*.gofreeil.com) להטמיע ב-iframe, חוסמת זרים. לא נוגעת בסקריפטים/מפה/פייסבוק.
+    res.headers.set('Content-Security-Policy', "frame-ancestors 'self' https://*.gofreeil.com");
+    return res;
+}
+
 export const handle: Handle = async ({ event, resolve }) => {
     if (PUBLIC_IMAGE_PATH.test(event.url.pathname)) {
         (event.locals as unknown as Record<string, unknown>).auth = async () => null;
-        return await resolve(event);
+        return withSecurityHeaders(await resolve(event));
     }
 
     try {
-        return await sequence(authHandle, memoizeAuth, ssoAutoAdopt, adminGate, coordinatorGate, checkBanned, setStrApiCookie)({ event, resolve });
+        return withSecurityHeaders(await sequence(authHandle, memoizeAuth, ssoAutoAdopt, adminGate, coordinatorGate, checkBanned, setStrApiCookie)({ event, resolve }));
     } catch (err) {
         console.warn('[hooks] auth handle threw - continuing anonymously:', err);
         // fallback: מגדיר auth בטוח כדי שקוד downstream לא יזרוק TypeError
         if (!event.locals.auth) {
             (event.locals as unknown as Record<string, unknown>).auth = async () => null;
         }
-        return await resolve(event);
+        return withSecurityHeaders(await resolve(event));
     }
 };
