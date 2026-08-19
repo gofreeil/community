@@ -39,7 +39,7 @@ export interface SyndicationResult {
 
 const SITE_LABELS: Record<SyndicationSite, string> = {
     index: 'אינדקס העסקים',
-    pg:    'קבוצות רכישה',
+    pg:    'רכישות קבוצתיות',
     ng:    'הגמח הארצי',
 };
 
