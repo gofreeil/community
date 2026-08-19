@@ -1,5 +1,6 @@
 import { redirect, fail } from '@sveltejs/kit';
 import { createItem, getUserById, getAllUsersRaw } from '$lib/server/db';
+import { extraContactsPatch } from '$lib/extraContacts';
 import type { PageServerLoad, Actions } from './$types';
 
 const OPTIONS: Record<string, { text: string; icon: string }> = {
@@ -101,6 +102,7 @@ export const actions: Actions = {
                     helpers:   [],
                     ...(image_b64 ? { image: image_b64 } : {}),
                     ...(lastSeen ? { last_seen: lastSeen } : {}),
+                    ...extraContactsPatch(fd.get('extra_contacts')),
                 },
             });
         } catch (e) {

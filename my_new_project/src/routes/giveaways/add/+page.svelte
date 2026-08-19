@@ -19,6 +19,7 @@
     import NeighborhoodFallback from '$lib/components/NeighborhoodFallback.svelte';
     import { submitNeighborhoodRequest } from '$lib/neighborhoodRequest';
     import { saveDraftBackup, loadDraftBackup, clearDraftBackup } from '$lib/draftBackup';
+    import ExtraContactsField from '$lib/components/ExtraContactsField.svelte';
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
 
@@ -107,6 +108,8 @@
     // הערכים ההתחלתיים נטענים פעם אחת מ-data.defaults; המשתמש יכול לערוך
     // (untrack מסמן במפורש שזו קריאה חד-פעמית ולא מעקב)
     const { name: defName, phone: defPhone, neighborhood: defNeighborhood, city: defCity } = untrack(() => data.defaults);
+    // אנשי קשר נוספים (כפתור "+") - מחרוזת JSON שנשלחת ב-hidden input
+    let extraContacts = $state('');
     let city         = $state(defCity);
     // תמיד מסומן מראש: שכונת הפרופיל, או "מרכז" ביישוב חד-שכונתי שבו יש עיר אך אין שכונה
     let neighborhood = $state(defNeighborhood || (defCity ? 'מרכז' : ''));
@@ -233,6 +236,7 @@
             }
             if (d.contact)      contact   = d.contact;
             if (d.phone)        phone     = d.phone;
+            if (d.extraContacts) extraContacts = d.extraContacts;
             if (Array.isArray(d.images) && d.images.length) images = d.images;
         } catch {}
 
@@ -249,7 +253,7 @@
     // ---- שמירת טיוטא עמידה: מלא → בלי תמונות → גיבוי-עוגייה ----
     let draftBaseline = ''; // מצב הטופס אחרי השחזור - טופס שלא השתנה ממנו לא נשמר
     function draftPayload() {
-        return { label, description, category, condition, priceMode, price, city, neighborhood, contact, phone, images };
+        return { label, description, category, condition, priceMode, price, city, neighborhood, contact, phone, extraContacts, images };
     }
     function persistDraft() {
         if (!browser || !draftRestored) return;
@@ -275,7 +279,7 @@
     $effect(() => {
         if (!browser) return;
         void label; void description; void category; void condition; void priceMode;
-        void price; void city; void neighborhood; void contact; void phone; void images;
+        void price; void city; void neighborhood; void contact; void phone; void extraContacts; void images;
         if (!draftRestored) return;
         persistDraft();
     });
@@ -744,6 +748,7 @@
                             />
                         </div>
                     </div>
+                    <ExtraContactsField bind:value={extraContacts} name="extra_contacts" idPrefix="gv-extra-contact" compact />
                 </div>
 
                 {#if form?.error}

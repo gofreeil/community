@@ -7,6 +7,7 @@
     import { imageDrop } from '$lib/imageDrop';
     import StreetPicker from '$lib/components/StreetPicker.svelte';
     import NeighborhoodPicker from '$lib/components/NeighborhoodPicker.svelte';
+    import ExtraContactsField from '$lib/components/ExtraContactsField.svelte';
     import type { ActionData, PageData } from './$types';
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -361,6 +362,9 @@
                             placeholder={$_('listings.ph_phone')}
                             class="w-full bg-white/5 border border-white/10 focus:border-blue-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none transition-colors placeholder:text-gray-600"
                         />
+                    </div>
+                    <div class="col-span-2">
+                        <ExtraContactsField name="extra_contacts" idPrefix="laf-extra-contact" compact />
                     </div>
                 </div>
 

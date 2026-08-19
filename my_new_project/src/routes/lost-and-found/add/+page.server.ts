@@ -1,6 +1,7 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { createItem, getUserById } from '$lib/server/db';
+import { extraContactsPatch } from '$lib/extraContacts';
 
 export const load: PageServerLoad = async (event) => {
     let session = null;
@@ -75,7 +76,7 @@ export const actions: Actions = {
                 neighborhood: userNeighborhood,
                 city:         userCity,
                 ...(lat != null && lng != null ? { lat, lng } : {}),
-                extra_fields: { type, location, ...(tags.length ? { tags } : {}), ...(image_base64 ? { image: image_base64 } : {}) },
+                extra_fields: { type, location, ...(tags.length ? { tags } : {}), ...(image_base64 ? { image: image_base64 } : {}), ...extraContactsPatch(fd.get('extra_contacts')) },
                 user_id:     session.user.id,
             });
         } catch (e) {

@@ -4,6 +4,7 @@ import { createItem } from '$lib/server/db';
 import { getUserByIdRetry, effectiveUserLocation } from '$lib/server/userLocation';
 import { categoryConfig } from '$lib/categoryFields';
 import { loadTierGate } from '$lib/server/tierGate';
+import { extraContactsPatch } from '$lib/extraContacts';
 
 export const load: PageServerLoad = async (event) => {
     let session = null;
@@ -105,6 +106,7 @@ export const actions: Actions = {
                     tags: tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : [],
                     ...(images.length > 0 ? { image: images[0], images } : {}),
                     ...(price > 0 ? { price } : {}),
+                    ...extraContactsPatch(fd.get('extra_contacts')),
                 },
                 user_id:      session.user.id,
                 status:       isDraft ? 'draft' : 'active',

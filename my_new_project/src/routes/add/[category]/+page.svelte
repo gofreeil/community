@@ -28,6 +28,8 @@
     import { mapStepFields, cfCatKey, cfAddTitleKey, cfFieldKey, cfOptKey, trOr } from '$lib/categoryFields';
     import { MAP_IMAGE_PRICE_YEARLY } from '$lib/mapImage';
     import { imageDrop } from '$lib/imageDrop';
+    import ExtraContactsField from '$lib/components/ExtraContactsField.svelte';
+    import { EXTRA_CONTACTS_KEY, serializeExtraContacts, parseExtraContacts } from '$lib/extraContacts';
     import { openCropper } from '$lib/imageCropper.svelte';
     import type { PageData } from './$types';
 
@@ -44,6 +46,9 @@
     // שדות "מידע לשדכנים" (group=matchmakers) מרוכזים בתא נפרד בתחתית הטופס
     // ואינם חלק מהזרימה הרגילה של השדות.
     const inlineFields = activeFields.filter(f => !f.group);
+    // "אנשי קשר נוספים" נתלה מתחת לשדה הטלפון האחרון בטופס - כך הוא מופיע בכל
+    // הקטגוריות, גם כאלה שבהן שדה הטלפון נקרא 'contact' (מרחב מוגן).
+    const extraContactsAnchor = [...inlineFields].reverse().find(f => f.type === 'tel')?.key ?? '';
     const matchmakerFields = activeFields.filter(f => f.group === 'matchmakers');
 
     // ---- לוגו/תמונה שתופיע על המפה (רק בקטגוריות mapFirst) ----
@@ -320,9 +325,14 @@
     }
 
     // ---- Form state - מתמלא מיד מהפרופיל ללא המתנה ל-onMount ----
-    let formValues = $state<Record<string, string>>(
-        Object.fromEntries(config.fields.map(f => [f.key, profileDefault(f.key, f.type, f.options, f.default)]))
-    );
+    let formValues = $state<Record<string, string>>({
+        ...Object.fromEntries(config.fields.map(f => [f.key, profileDefault(f.key, f.type, f.options, f.default)])),
+        // אנשי קשר נוספים - שדה-על שאינו ב-config.fields אך מתנהג כמו כל שדה:
+        // נשמר בטיוטה, משוחזר בעריכה, ונשלח כמו שהוא ל-extra_fields.
+        [EXTRA_CONTACTS_KEY]: serializeExtraContacts(
+            parseExtraContacts((editItem?.extra_fields as Record<string, unknown> | undefined)?.[EXTRA_CONTACTS_KEY])
+        ),
+    });
 
     // ---- תמחור מסעדות - מסעדה 45 ₪, מזון מהיר 30 ₪ (תלוי בבחירת המשתמש) ----
     const RESTAURANT_PRICING: Record<string, { row: number; price: number }> = {
@@ -859,7 +869,7 @@
         for (const [k, v] of Object.entries(formValues)) {
             // mapFirst: שולחים רק שדות שלב-המפה. שאר הפרטים נשמרים בדף הפריט,
             // וחשוב לא לשלוח אותם כאן כדי לא לדרוס ערכים שנערכו שם (מיזוג בשרת).
-            if (config.mapFirst && !activeKeys.has(k)) continue;
+            if (config.mapFirst && !activeKeys.has(k) && k !== EXTRA_CONTACTS_KEY) continue;
             if (mapPinKeys.has(k)) {
                 continue;
             } else if (topLevelKeys.includes(k)) {
@@ -870,6 +880,13 @@
                 extra[k] = v;
             }
         }
+
+        // אנשי קשר נוספים נשמרים כמערך (בטופס הם מחרוזת JSON), כמו בשאר הטפסים.
+        // בעריכה שולחים גם רשימה ריקה - אחרת מיזוג ה-extra_fields בשרת היה מחזיר
+        // אנשי קשר שהמשתמש הרגע מחק.
+        const extraContacts = parseExtraContacts(extra[EXTRA_CONTACTS_KEY]);
+        if (extraContacts.length || isEditMode) extra[EXTRA_CONTACTS_KEY] = extraContacts;
+        else delete extra[EXTRA_CONTACTS_KEY];
 
         // לוגו/תמונה שתופיע על המפה (mapFirst) - נשמר ב-extra_fields.map_image
         if (config.mapFirst) {
@@ -1588,6 +1605,14 @@
 
                     {#if field.hint && field.type !== 'toggle'}
                         <p class="text-gray-400 text-xs md:text-sm mt-0.5 md:mt-1">{trOr($_, cfFieldKey(categoryId, field, 'hint'), field.hint)}</p>
+                    {/if}
+
+                    <!-- אנשי קשר נוספים: כפתור "+" מתחת לשדה הטלפון, בכל הקטגוריות -->
+                    {#if extraContactsAnchor && field.key === extraContactsAnchor}
+                        <ExtraContactsField
+                            bind:value={formValues[EXTRA_CONTACTS_KEY]}
+                            idPrefix="add-{categoryId}-extra-contact"
+                        />
                     {/if}
 
                     {#if field.key === 'club_discount' && categoryId === 'restaurants'}

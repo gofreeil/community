@@ -17,6 +17,8 @@
     import NeighborhoodFallback from '$lib/components/NeighborhoodFallback.svelte';
     import { submitNeighborhoodRequest } from '$lib/neighborhoodRequest';
     import { revealFieldError } from '$lib/formGuard';
+    import ExtraContactsField from '$lib/components/ExtraContactsField.svelte';
+    import { extraContactsPatch } from '$lib/extraContacts';
     import type { PageData } from './$types';
 
     let { data }: { data: PageData } = $props();
@@ -31,6 +33,8 @@
     let buildingNum = $state('');
     // untrack: ערכי פתיחה מהפרופיל - הטופס בשליטת המשתמש מכאן
     let phone       = $state(untrack(() => data.userPhone) || '');
+    // אנשי קשר נוספים (כפתור "+") - מחרוזת JSON, נשלחת ל-extra_fields
+    let extraContacts = $state('');
     let gmachTypes  = $state<string[]>([]);
     let city        = $state(untrack(() => data.userCity) || 'ירושלים');
     // עיר בפרופיל בלי שכונה (יישוב חד-שכונתי) → "מרכז", לא ברירת המחדל הגלובלית
@@ -171,6 +175,7 @@
             if (d.street)       street       = d.street;
             if (d.buildingNum)  buildingNum  = d.buildingNum;
             if (d.phone)        phone        = d.phone;
+            if (d.extraContacts) extraContacts = d.extraContacts;
             if (Array.isArray(d.gmachTypes)) gmachTypes = d.gmachTypes;
             else if (d.gmachType)            gmachTypes = [d.gmachType];
             // מיקום מהטיוטה משוחזר רק אם נבחר במפורש (locationTouched), או בטיוטת
@@ -202,7 +207,7 @@
     // בלעדיה הטיוטה נשמרה רק לפני מעבר להתחברות - ויציאה מהעמוד באמצע מילוי איבדה הכל.
     $effect(() => {
         if (!browser) return;
-        void title; void street; void buildingNum; void phone; void gmachTypes;
+        void title; void street; void buildingNum; void phone; void extraContacts; void gmachTypes;
         void city; void neighborhood; void pinLat; void pinLng; void logoBase64;
         void locationTouched;
         if (!draftRestored) return;
@@ -320,7 +325,7 @@
 
     let draftBaseline = ''; // מצב הטופס אחרי השחזור - טופס שלא השתנה ממנו לא נשמר
     function draftPayload() {
-        return { title, street, buildingNum, phone, gmachTypes, city, neighborhood, pinLat, pinLng, locationTouched };
+        return { title, street, buildingNum, phone, extraContacts, gmachTypes, city, neighborhood, pinLat, pinLng, locationTouched };
     }
     function saveDraft() {
         if (!browser || !draftRestored) return;
@@ -369,6 +374,7 @@
         if (primary)            extra.gmach_type  = primary;
         if (gmachTypes.length)  extra.gmach_types = gmachTypes;
         if (logoBase64)         extra.map_image   = logoBase64;
+        Object.assign(extra, extraContactsPatch(extraContacts));
 
         const address = [street, buildingNum].filter(Boolean).join(' ')
             || [neighborhood, city].filter(Boolean).join(', ');
@@ -608,6 +614,7 @@
                     <div class="flex-1 min-w-[160px]">
                         <label for="phone" class="text-white text-sm font-bold mb-1 block">{$_('extras.g_phone_label')}</label>
                         <input id="phone" name="phone" bind:value={phone} type="tel" required placeholder="05X-XXXXXXX" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
+                        <ExtraContactsField bind:value={extraContacts} idPrefix="gm-extra-contact" compact />
                     </div>
                     <div>
                         <p class="text-white text-sm font-bold mb-1">{$_('extras.g_logo_label')}</p>

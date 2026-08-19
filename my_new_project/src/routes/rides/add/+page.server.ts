@@ -2,6 +2,7 @@ import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { createItem } from '$lib/server/db';
 import { loadTierGate } from '$lib/server/tierGate';
+import { extraContactsPatch } from '$lib/extraContacts';
 
 export const load: PageServerLoad = async (event) => {
     let session = null;
@@ -42,7 +43,7 @@ export const actions: Actions = {
                 address:     from,
                 icon:        direction === 'driver' ? '🚙' : '🙋',
                 color:       direction === 'driver' ? 'green' : 'orange',
-                extra_fields: { direction, from, to, date, time, seats },
+                extra_fields: { direction, from, to, date, time, seats, ...extraContactsPatch(fd.get('extra_contacts')) },
                 user_id:     session.user.id,
             });
         } catch (e) {

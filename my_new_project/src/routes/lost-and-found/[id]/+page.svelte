@@ -1,5 +1,6 @@
 <script lang="ts">
     import { enhance } from '$app/forms';
+    import { extraContactsOf } from '$lib/extraContacts';
     import type { PageData, ActionData } from './$types';
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -8,6 +9,9 @@
     const item = $derived(data.item);
 
     const isOwner = $derived(!!data.currentUserId && item.user_id === data.currentUserId);
+
+    // אנשי קשר נוספים שהמפרסם הוסיף בכפתור "+" בטופס
+    const extraContacts = $derived(extraContactsOf(item.extra_fields));
 
     // מודל הורדת מודעה (בעלים) + מחיקת מנהל (סופר-אדמין)
     let resolveOpen  = $state(false);
@@ -116,6 +120,20 @@
                         class="px-5 py-3 rounded-xl bg-green-600 hover:bg-green-500 text-white font-black text-sm transition-all shadow-lg">
                         💬
                     </a>
+                </div>
+            {/if}
+
+            {#if extraContacts.length}
+                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1">
+                    {#each extraContacts as c, ci (ci)}
+                        <p class="text-sm text-gray-300 flex items-center gap-1.5">
+                            <span class="text-green-400">📞</span>
+                            {#if c.name}<span class="text-gray-400">{c.name}</span>{/if}
+                            {#if c.phone}
+                                <a href="tel:{c.phone}" dir="ltr" class="hover:text-white">{c.phone}</a>
+                            {/if}
+                        </p>
+                    {/each}
                 </div>
             {/if}
 

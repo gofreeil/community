@@ -20,6 +20,8 @@
     import { goto } from "$app/navigation";
     import { PLACE_STATUSES, placeStatusInfo } from "$lib/placeStatus";
     import { logoForService, serviceLabel } from "$lib/serviceTypes";
+    import { extraContactsOf, serializeExtraContacts, parseExtraContacts, EXTRA_CONTACTS_KEY } from "$lib/extraContacts";
+    import ExtraContactsField from "$lib/components/ExtraContactsField.svelte";
 
     let { data }: { data: PageData } = $props();
     const item = $derived(data.item);
@@ -531,6 +533,14 @@
     // חשוב: כפתורי החיוג/וואטסאפ ("יצירת קשר עם המפרסם") עובדים תמיד עם displayPhone -
     // "אל תציג" מסתיר רק את המספר עצמו כטקסט, לא את הכפתורים.
     const canSeePhone = $derived(phonePublic || builderMode);
+
+    // אנשי קשר נוספים שהמפרסם הוסיף בטופס ההוספה (כפתור "+").
+    // מוצגים באותם תנאים כמו הטלפון הראשי - כדי שכרטיס שהמספר בו מוסתר
+    // (וכן כרטיס פנויים/פנויות לפני אישור) לא ידלוף דרך הרשימה הזו.
+    const extraContacts = $derived(
+        extraContactsOf((item as { extraFields?: Record<string, unknown> } | null)?.extraFields)
+    );
+
 
     async function setPhonePublic(v: boolean) {
         if (v === phonePublic) return;
@@ -1063,6 +1073,34 @@
         const s = (item as unknown as { singlesStatus?: { state: string } })?.singlesStatus?.state;
         if (s) singlesState = s;
     });
+    // אנשי קשר נוספים מתנהגים כמו הטלפון הראשי: הלחיצה לחיוג פתוחה לכולם, והמספר
+    // עצמו מוצג כטקסט רק כש"הצג" מסומן. בכרטיס פנויים/פנויות הכל חסום עד אישור אישי.
+    const canSeeExtraContacts = $derived(
+        item?.category !== 'singles' || singlesState === 'approved'
+    );
+
+    // ---- עריכת אנשי הקשר הנוספים במצב בנייה ----
+    // בקטגוריות "מקום" (מסעדות, חנויות, מניינים...) הטלפון עצמו נערך כאן ולא בטופס
+    // ההוספה, ולכן זה גם המקום שבו מוסיפים אנשי קשר נוספים.
+    let editingExtraContacts = $state(false);
+    let extraContactsDraft   = $state('');
+    let extraContactsOverride = $state<string | null>(null);
+    const shownExtraContacts = $derived(
+        extraContactsOverride !== null ? parseExtraContacts(extraContactsOverride) : extraContacts
+    );
+
+    function startEditExtraContacts() {
+        extraContactsDraft = serializeExtraContacts(shownExtraContacts);
+        editingExtraContacts = true;
+    }
+    async function saveExtraContacts() {
+        const list = parseExtraContacts(extraContactsDraft);
+        const ok = await saveFields({ [EXTRA_CONTACTS_KEY]: list }, EXTRA_CONTACTS_KEY);
+        if (!ok) return;
+        extraContactsOverride = serializeExtraContacts(list);
+        editingExtraContacts = false;
+    }
+
     let singlesError = $state('');
     let singlesSending = $state(false);
 
@@ -2040,6 +2078,48 @@
                             <span>✅</span>
                             <a href="tel:{item.phone}" class="hover:text-white">{item.phone}</a>
                         </p>
+                    {/if}
+
+                    <!-- אנשי קשר נוספים (נוספו בכפתור "+" בטופס ההוספה או כאן) -->
+                    {#if builderMode && editingExtraContacts}
+                        <div class="basis-full space-y-1.5">
+                            {@render tip('אנשי קשר נוספים - מספרים לתיאום מלבד הטלפון הראשי')}
+                            <ExtraContactsField bind:value={extraContactsDraft} idPrefix="item-extra-contact" compact />
+                            <div class="flex gap-2">
+                                <button type="button" onclick={saveExtraContacts} disabled={savingTag === EXTRA_CONTACTS_KEY}
+                                    class="text-xs font-bold text-white bg-amber-500 hover:bg-amber-400 disabled:opacity-50 rounded-lg px-3 py-1.5">💾 שמור</button>
+                                <button type="button" onclick={() => (editingExtraContacts = false)}
+                                    class="text-xs font-bold text-gray-300 hover:text-white px-2 py-1.5">ביטול</button>
+                            </div>
+                        </div>
+                    {:else if shownExtraContacts.length && canSeeExtraContacts}
+                        <div class="basis-full flex flex-wrap items-center gap-x-4 gap-y-1">
+                            {#each shownExtraContacts as c, ci (ci)}
+                                {@const label = c.name || 'איש קשר נוסף'}
+                                {#if c.phone}
+                                    <a href="tel:{c.phone}" aria-label="התקשר ל{label}"
+                                        class="text-sm text-gray-300 hover:text-white flex items-center gap-1.5 transition-colors">
+                                        <span class="text-green-400">📞</span>
+                                        <span>{label}</span>
+                                        {#if canSeePhone}<span dir="ltr" class="text-gray-400">{c.phone}</span>{/if}
+                                    </a>
+                                {:else}
+                                    <span class="text-sm text-gray-400 flex items-center gap-1.5">
+                                        <span class="text-green-400">📞</span>{label}
+                                    </span>
+                                {/if}
+                            {/each}
+                            {#if builderMode}
+                                <button type="button" onclick={startEditExtraContacts}
+                                    aria-label="ערוך אנשי קשר נוספים" title="ערוך אנשי קשר נוספים"
+                                    class="text-sm bg-amber-500/15 hover:bg-amber-500/30 border border-amber-500/40 rounded-lg px-1.5 py-0.5 transition-all">✏️</button>
+                            {/if}
+                        </div>
+                    {:else if builderMode}
+                        <button type="button" onclick={startEditExtraContacts}
+                            class="basis-full text-right border-2 border-dashed border-amber-400/40 hover:border-amber-400/70 bg-amber-500/5 hover:bg-amber-500/10 rounded-xl px-3 py-2 text-amber-200 text-sm font-bold transition-all">
+                            ＋ הוסיפו איש קשר נוסף
+                        </button>
                     {/if}
                     </div>
 

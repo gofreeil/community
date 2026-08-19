@@ -4,6 +4,7 @@ import { getDbItemByIdFresh, updateItem, deleteItem, getUserByAnyId, getUserByEm
 import { isSuperAdmin, isCoordinatorOfArea } from '$lib/server/auth';
 import { PLACE_STATUS_VALUES, DELETE_RESTORE_DAYS } from '$lib/placeStatus';
 import { categoryConfig, getCategoryIcon, getCategoryColor } from '$lib/categoryFields';
+import { EXTRA_CONTACTS_KEY, parseExtraContacts } from '$lib/extraContacts';
 
 /** קישורי רשתות חברתיות + אתר - מותר לערוך אותם מדף הפריט לכל קטגוריה (הופכים לכפתורים מותגים) */
 const SOCIAL_LINK_KEYS = new Set(['website', 'whatsapp', 'telegram', 'facebook', 'instagram', 'youtube', 'tiktok']);
@@ -188,6 +189,13 @@ export const PATCH: RequestHandler = async (event) => {
                 extra = extra ?? loadExtra();
                 const chosen = typeof raw === 'string' ? raw.trim() : '';
                 extra.map_image = chosen && isSafeImage(chosen) ? chosen : '';
+                continue;
+            }
+            // אנשי קשר נוספים (כפתור "+" בטופס ההוספה / בדף הפריט). מותר תמיד -
+            // זה לא שדה של קטגוריה מסוימת אלא תוספת רוחבית לכל הפריטים.
+            if (key === EXTRA_CONTACTS_KEY) {
+                extra = extra ?? loadExtra();
+                extra[EXTRA_CONTACTS_KEY] = parseExtraContacts(raw);
                 continue;
             }
             // העדפת חשיפת מספר הטלפון לציבור (ברירת מחדל: מוסתר). נשמר כבוליאני.

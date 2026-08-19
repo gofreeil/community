@@ -8,6 +8,7 @@
     import GpsLocateButton from '$lib/components/GpsLocateButton.svelte';
     import { imageDrop } from '$lib/imageDrop';
     import CameraCapture from '$lib/components/CameraCapture.svelte';
+    import ExtraContactsField from '$lib/components/ExtraContactsField.svelte';
     import type { PageData, ActionData } from './$types';
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -331,6 +332,9 @@
                         </label>
                         <input id="rh-phone" name="phone" type="tel" required placeholder={$_('listings.ph_phone')}
                             class="w-full bg-white/5 border border-white/10 focus:border-red-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none transition-colors placeholder:text-gray-600" />
+                    </div>
+                    <div class="col-span-2">
+                        <ExtraContactsField name="extra_contacts" idPrefix="rh-extra-contact" compact />
                     </div>
                 </div>
 

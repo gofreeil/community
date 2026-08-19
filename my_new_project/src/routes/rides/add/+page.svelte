@@ -4,6 +4,7 @@
     import { invalidateAll } from '$app/navigation';
     import LevelUpCard from '$lib/components/LevelUpCard.svelte';
     import { formMemory } from '$lib/formMemory';
+    import ExtraContactsField from '$lib/components/ExtraContactsField.svelte';
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
     let direction = $state<'driver' | 'passenger'>('driver');
@@ -96,6 +97,9 @@
                     <div>
                         <label for="phone" class="text-white text-sm font-bold mb-1 block">{$_('listings.phone_req')}</label>
                         <input id="phone" name="phone" type="tel" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500" />
+                    </div>
+                    <div class="col-span-2">
+                        <ExtraContactsField name="extra_contacts" idPrefix="rides-extra-contact" compact />
                     </div>
                 </div>
 
