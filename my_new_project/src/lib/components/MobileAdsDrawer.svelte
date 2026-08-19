@@ -57,6 +57,26 @@
 	let open = $state(false);
 	let collapsed = $state(false);
 
+	// ---- נפילת תמונות ----
+	// כשבקשת תמונה בודדת נופלת (רשת ניידת, חוסם תוכן, פרוקסי) הדפדפן מצייר
+	// אייקון "תמונה שבורה" עם ה-alt בתוך המשבצת — וכל רשימת ההטבות נראית הרוסה.
+	// במקום זה: ניסיון חוזר אחד, ואם גם הוא נופל — משבצת בצבע המותג של הפרסומת.
+	let imgFailed = $state<Record<string, boolean>>({});
+	const imgRetried = new Set<string>();
+	let walletFailed = $state(false);
+
+	function onImgError(e: Event, id: string | number) {
+		const el = e.currentTarget as HTMLImageElement;
+		const key = String(id);
+		if (!imgRetried.has(key)) {
+			imgRetried.add(key);
+			const base = el.src.split("?")[0];
+			setTimeout(() => { el.src = base + "?retry=1"; }, 400);
+			return;
+		}
+		imgFailed = { ...imgFailed, [key]: true };
+	}
+
 	function closeAll() {
 		open = false;
 		collapsed = false;
@@ -307,7 +327,12 @@
 
 					<!-- יתרה -->
 					<div class="flex-shrink-0 flex flex-col items-center gap-1 mr-auto">
-						<img src="/images/wallet.webp" alt={$_('components.mad_wallet_alt')} class="w-10 h-10 object-contain" />
+						{#if walletFailed}
+							<div class="w-10 h-10 rounded-lg bg-emerald-500/15 border border-emerald-400/25"></div>
+						{:else}
+							<img src="/images/wallet.webp" alt={$_('components.mad_wallet_alt')} class="w-10 h-10 object-contain"
+								onerror={() => (walletFailed = true)} />
+						{/if}
 						<span class="text-green-400 text-xs font-black">{layoutUser.balance ?? 0}₪</span>
 					</div>
 
@@ -358,15 +383,22 @@
 				onclick={closeAll}
 			>
 				<div class="benefit-img-wrap">
-					<!-- imageScale של הפרסומת מוחל כאן דרך אותו מנגנון זום של הבאנר הימני -->
-					<img
-						src={ad.image}
-						alt={ad.title}
-						class="benefit-img"
-						loading="lazy"
-						decoding="async"
-						use:adImgFit={{ x: 50, y: 50, z: ad.imageScale ?? 1 }}
-					/>
+					{#if imgFailed[String(ad.id)]}
+						<span class="benefit-img-fallback bg-gradient-to-br {ad.color}"></span>
+					{:else}
+						<!-- imageScale של הפרסומת מוחל כאן דרך אותו מנגנון זום של הבאנר הימני -->
+						<!-- בפתיחת המגירה עוברים ל-eager: התמונות יושבות בקונטיינר fixed
+						     מחוץ למסך, ושם lazy נשאר מושהה בחלק מהדפדפנים -->
+						<img
+							src={ad.image}
+							alt={ad.title}
+							class="benefit-img"
+							loading={open ? 'eager' : 'lazy'}
+							decoding="async"
+							onerror={(e) => onImgError(e, ad.id)}
+							use:adImgFit={{ x: 50, y: 50, z: ad.imageScale ?? 1 }}
+						/>
+					{/if}
 				</div>
 				<div class="benefit-body">
 					<p class="benefit-title">{ad.title}</p>
@@ -661,6 +693,13 @@
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
+	}
+
+	/* משבצת חלופית כשהתמונה לא נטענה — צבע המותג של אותה פרסומת */
+	.benefit-img-fallback {
+		position: absolute;
+		inset: 0;
+		display: block;
 	}
 
 .benefit-body {
