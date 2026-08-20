@@ -363,6 +363,8 @@ function withSecurityHeaders(res: Response): Response {
     // הגנת clickjacking דרך frame-ancestors בלבד (לא CSP מלא!): מתירה לכל האתרים
     // שלך (*.gofreeil.com) להטמיע ב-iframe, חוסמת זרים. לא נוגעת בסקריפטים/מפה/פייסבוק.
     res.headers.set('Content-Security-Policy', "frame-ancestors 'self' https://*.gofreeil.com");
+    // HSTS: כופה HTTPS. בלי includeSubDomains/preload בכוונה - לא לכפות על סאב-דומיינים אחרים (footgun שקשה לבטל).
+    res.headers.set('Strict-Transport-Security', 'max-age=31536000');
     return res;
 }
 
