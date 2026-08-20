@@ -3,20 +3,20 @@ import { strapiPost, StrapiContentTypeError } from '$lib/server/strapiClient';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-const FALLBACK_FILE = path.resolve('data', 'charter-signatures.json');
+// fallback רק כשה-Strapi לא זמין. append-only (JSONL) במקום read-modify-write של כל
+// המערך: O(1) לכל כתיבה במקום O(n²), ובלי לקרוא קובץ ענק לזיכרון. גבול קשיח על גודל
+// הקובץ מונע מילוי דיסק תחת הצפה (הגנה על השרת).
+const FALLBACK_FILE = path.resolve('data', 'charter-signatures.jsonl');
+const MAX_FALLBACK_BYTES = 20 * 1024 * 1024; // 20MB
 
 async function appendToFile(entry: Record<string, unknown>) {
 	await fs.mkdir(path.dirname(FALLBACK_FILE), { recursive: true });
-	let arr: unknown[] = [];
-	try {
-		const raw = await fs.readFile(FALLBACK_FILE, 'utf-8');
-		arr = JSON.parse(raw);
-		if (!Array.isArray(arr)) arr = [];
-	} catch {
-		arr = [];
+	const st = await fs.stat(FALLBACK_FILE).catch(() => null);
+	if (st && st.size > MAX_FALLBACK_BYTES) {
+		console.error('[charter-signature] fallback file at size cap - dropping entry');
+		return;
 	}
-	arr.push(entry);
-	await fs.writeFile(FALLBACK_FILE, JSON.stringify(arr, null, 2), 'utf-8');
+	await fs.appendFile(FALLBACK_FILE, JSON.stringify(entry) + '\n', 'utf-8');
 }
 
 export const POST: RequestHandler = async ({ request }) => {
@@ -28,12 +28,18 @@ export const POST: RequestHandler = async ({ request }) => {
 			return json({ success: false, message: 'חסרים שדות חובה' }, { status: 400 });
 		}
 
+		// חתימה = data URL מצוירת (בד"כ < 100KB). דוחים ענק כדי לא לנפח אחסון/DB.
+		if (String(signature).length > 800_000) {
+			return json({ success: false, message: 'החתימה גדולה מדי' }, { status: 413 });
+		}
+
+		// תקרות אורך על שדות הטקסט - חוסמות payload מנופח
 		const entry = {
-			fullName: String(fullName).trim(),
-			idNumber: String(idNumber).trim(),
-			birthDate: String(birthDate),
+			fullName: String(fullName).trim().slice(0, 120),
+			idNumber: String(idNumber).trim().slice(0, 32),
+			birthDate: String(birthDate).slice(0, 40),
 			signature: String(signature).trim(),
-			signedAt: signedAt || new Date().toISOString()
+			signedAt: (typeof signedAt === 'string' ? signedAt : '').slice(0, 40) || new Date().toISOString()
 		};
 
 		try {

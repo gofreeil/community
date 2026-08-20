@@ -18,7 +18,14 @@ interface SendBody {
  *
  * Live mode is intentionally a TODO - wire it once the Meta account is ready.
  */
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, locals }) => {
+    // אימות חובה: אין קוראים אנונימיים, ובמצב חי זו שליחת WhatsApp אמיתית -
+    // בלי אימות זו נקודת ספאם פתוחה. חוסמים לפני כל עיבוד.
+    const session = await locals.auth();
+    if (!session?.user?.id) {
+        return json({ ok: false, mocked: false, error: 'unauthorized' }, { status: 401 });
+    }
+
     let body: SendBody;
     try {
         body = (await request.json()) as SendBody;
