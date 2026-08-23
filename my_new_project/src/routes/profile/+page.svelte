@@ -1996,7 +1996,7 @@
 	);
 
 	// ===== קיצור "כתוב לגולש" בכרטיסי תקלה =====
-	// כרטיס תקלה (server_error / order_failed) נושא ב-extra_fields את זהות הגולש
+	// כרטיס תקלה (server_error / client_error / order_failed) נושא ב-extra_fields את זהות הגולש
 	// שנפל עליו הדף. הכפתור פותח את הצ'אט הפנימי עם טיוטת התנצלות מוכנה
 	// (?draft=) - ניתנת לעריכה לפני שליחה, לא נשלחת מעצמה.
 	type AlertActor = {
@@ -2011,7 +2011,8 @@
 	function alertActor(raw: string | undefined): AlertActor | null {
 		try {
 			const ef = JSON.parse(raw || "{}") ?? {};
-			if (ef.type !== "server_error" && ef.type !== "order_failed") return null;
+			if (ef.type !== "server_error" && ef.type !== "client_error" && ef.type !== "order_failed")
+				return null;
 			if (!ef.actor_id && !ef.actor_email) return null;
 			return {
 				type: String(ef.type),

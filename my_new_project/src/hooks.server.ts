@@ -1,12 +1,13 @@
 import { handle as authHandle } from './auth';
 import { sequence } from '@sveltejs/kit/hooks';
-import type { Handle, HandleServerError, RequestEvent } from '@sveltejs/kit';
+import type { Handle, HandleServerError } from '@sveltejs/kit';
 import {
     verifyTrustToken,
     TRUST_COOKIE_NAME,
     COORD_TRUST_COOKIE_NAME,
 } from '$lib/server/totp';
-import { getUserTotpSecret, getAllSuperAdmins, createItem, getUserById } from '$lib/server/db';
+import { getUserTotpSecret } from '$lib/server/db';
+import { newErrorRef, resolveActor, notifySuperAdminsOfError } from '$lib/server/errorAlert';
 
 /**
  * לוכד כל שגיאה לא-מטופלת בצד השרת (load/render/actions) *לפני* ש-SvelteKit
@@ -17,112 +18,11 @@ import { getUserTotpSecret, getAllSuperAdmins, createItem, getUserById } from '$
  * (2) מחזירים למשתמש הודעה גנרית (בלי לדלוף פרטים פנימיים) + מזהה תקלה קצר
  * שמוצג גם ב-+error.svelte, כך שתלונת משתמש ניתנת לשיוך מול השורה בלוג.
  */
-/**
- * התראת תקלה לסופר-אדמינים ("הצוות שלנו קיבל על כך התראה" בעמוד השגיאה — באמת):
- * כל שגיאת שרת לא-מטופלת שולחת admin_alert לתיבת ההודעות של כל סופר-אדמין, עם
- * מזהה התקלה שהמשתמש רואה — כך תלונה ("קיבלתי 9R8B08") ניתנת לשיוך מיידי.
- *
- * ריסון: פעם ב-15 דק' לכל חתימת (סטטוס+מסלול+שגיאה) ולכל היותר 8 התראות
- * לאינסטנס — כדי שבאג בדף פופולרי לא יציף את התיבה בעשרות הודעות זהות.
- * fire-and-forget: כשל בשליחה (למשל Strapi עצמו נפל) לעולם לא מפיל את עמוד
- * השגיאה עצמו; הלוג עם ה-ref נשאר תמיד כגיבוי.
- */
-const ERROR_ALERT_COOLDOWN_MS = 15 * 60 * 1000;
-const ERROR_ALERT_MAX_PER_INSTANCE = 8;
-const errorAlertLastSent = new Map<string, number>();
-let errorAlertsSent = 0;
-
-/**
- * מי היה הגולש שנפל עליו הדף. בלי זה ההתראה אומרת "משהו נפל" אבל לא *למי* —
- * ואי-אפשר לפנות אליו ולהתנצל. שולפים מהסשן, ואם יש מזהה גם את הרשומה המלאה
- * (שם/מגדר/טלפון) כדי שכפתור "כתוב לגולש" בכרטיס ייצור טיוטה בלשון הנכונה.
- * best-effort לחלוטין: כל כשל כאן משאיר את ההתראה בלי זהות, לא מפיל אותה.
- */
-type ErrorActor = { id: string; name: string; email: string; gender: string; phone: string };
-
-async function resolveActor(event: RequestEvent): Promise<ErrorActor | null> {
-    try {
-        const session = await event.locals.auth?.();
-        const id = session?.user?.id;
-        if (!id) return null;
-        const actor: ErrorActor = {
-            id,
-            name:  session.user?.name  ?? '',
-            email: session.user?.email ?? '',
-            gender: '',
-            phone:  '',
-        };
-        const full = await getUserById(id).catch(() => undefined);
-        if (full) {
-            actor.name   = full.name  ?? actor.name;
-            actor.email  = full.email ?? actor.email;
-            actor.gender = full.gender ?? '';
-            actor.phone  = full.phone  ?? '';
-        }
-        return actor;
-    } catch {
-        return null;
-    }
-}
-
-async function notifySuperAdminsOfError(ref: string, status: number, event: RequestEvent, err: unknown): Promise<void> {
-    try {
-        const routeId = event.route?.id ?? event.url.pathname;
-        const errMsg = err instanceof Error ? err.message : String(err);
-        const sig = `${status}:${routeId}:${errMsg.slice(0, 80)}`;
-        const now = Date.now();
-        if (now - (errorAlertLastSent.get(sig) ?? 0) < ERROR_ALERT_COOLDOWN_MS) return;
-        if (errorAlertsSent >= ERROR_ALERT_MAX_PER_INSTANCE) return;
-        errorAlertLastSent.set(sig, now);
-        errorAlertsSent++;
-
-        const stackHead = err instanceof Error && err.stack
-            ? err.stack.split('\n').slice(0, 8).join('\n').slice(0, 1200)
-            : '';
-        const url = `${event.request.method} ${event.url.pathname}${event.url.search}`;
-        const actor = await resolveActor(event);
-        const actorLine = actor
-            ? `הגולש: ${actor.name || 'ללא שם'}${actor.email ? ` (${actor.email})` : ''}${actor.phone ? ` · ${actor.phone}` : ''}`
-            : `הגולש: אנונימי - לא היה מחובר בזמן התקלה`;
-        const admins = await getAllSuperAdmins();
-        await Promise.allSettled(admins.map((a) => createItem({
-            category:    'admin_alert',
-            label:       `🌩️ תקלת שרת ${status} - ${routeId}`,
-            description:
-                `תקלה לא-מטופלת הפילה עמוד באתר, והגולש קיבל את עמוד השגיאה.\n\n` +
-                `מזהה תקלה: ${ref} (מוצג לגולש בתחתית עמוד השגיאה)\n` +
-                `${actorLine}\n` +
-                `כתובת: ${url}\n` +
-                `שגיאה: ${errMsg.slice(0, 300)}\n` +
-                (stackHead ? `\nתחילת ה-stack:\n${stackHead}\n` : '') +
-                `\nהפרטים המלאים בלוג השרת תחת [error ${ref}].`,
-            icon:        '🌩️',
-            color:       'red',
-            user_id:     a.id,
-            extra_fields: {
-                type:          'server_error',
-                ref,
-                status,
-                url:           event.url.pathname + event.url.search,
-                method:        event.request.method,
-                error_message: errMsg.slice(0, 300),
-                // זהות הגולש - מזינה את כפתור "כתוב לגולש" בכרטיס ההתראה
-                actor_id:     actor?.id     ?? '',
-                actor_name:   actor?.name   ?? '',
-                actor_email:  actor?.email  ?? '',
-                actor_gender: actor?.gender ?? '',
-                actor_phone:  actor?.phone  ?? '',
-            },
-        })));
-    } catch (e) {
-        console.warn('[hooks] error alert to admins failed:', e instanceof Error ? e.message : e);
-    }
-}
-
 export const handleError: HandleServerError = async ({ error, event, status, message }) => {
-    const ref = Math.random().toString(36).slice(2, 8).toUpperCase();
+    const ref = newErrorRef();
     // 404 אינו תקלת-אמת — לא מרעישים את הלוג בשבילו
     if (status !== 404) {
+        const errMsg = error instanceof Error ? error.message : String(error);
         console.error(
             `[error ${ref}] ${status} "${message}" @ ${event.request.method} ${event.url.pathname}${event.url.search}`,
         );
@@ -132,7 +32,20 @@ export const handleError: HandleServerError = async ({ error, event, status, mes
         // ועבודה תלויה באוויר עלולה להיקטע. תקרת 2.5ש כדי לא לתקוע את עמוד השגיאה.
         if (process.env.NODE_ENV === 'production') {
             await Promise.race([
-                notifySuperAdminsOfError(ref, status, event, error),
+                notifySuperAdminsOfError({
+                    ref,
+                    status,
+                    routeId:   event.route?.id ?? event.url.pathname,
+                    url:       `${event.request.method} ${event.url.pathname}${event.url.search}`,
+                    path:      event.url.pathname + event.url.search,
+                    method:    event.request.method,
+                    errMsg,
+                    stackHead: error instanceof Error && error.stack
+                        ? error.stack.split('\n').slice(0, 8).join('\n').slice(0, 1200)
+                        : '',
+                    origin:    'server',
+                    getActor:  () => resolveActor(event),
+                }),
                 new Promise<void>((resolve) => setTimeout(resolve, 2500)),
             ]);
         }
