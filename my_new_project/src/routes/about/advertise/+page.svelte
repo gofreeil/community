@@ -643,7 +643,7 @@
         <button type="button" onclick={onOpen}
                 class="w-full mb-4 flex items-center gap-3 rounded-xl border border-green-500/30 bg-green-900/10 hover:bg-green-900/20 hover:border-green-500/50 px-4 py-3 text-right transition-colors cursor-pointer"
                 style="animation: slideDown 0.25s ease-out;">
-            <span class="w-7 h-7 rounded-full bg-green-500/15 border border-green-500/50 text-green-400 text-xs font-black flex items-center justify-center flex-shrink-0">{num}</span>
+            <span class="w-10 h-10 md:w-11 md:h-11 rounded-full bg-green-500/15 border border-green-500/50 text-green-400 text-base md:text-lg font-black flex items-center justify-center flex-shrink-0">{num}</span>
             <span class="text-green-400 font-black flex-shrink-0" aria-hidden="true">✓</span>
             <span class="flex-1 min-w-0 text-sm md:text-base font-bold text-gray-200 truncate">{text}</span>
             <span class="text-xs text-amber-300 font-bold flex-shrink-0 underline underline-offset-2">{$_('advertise.fold_change')}</span>
@@ -712,17 +712,20 @@
         <!-- שלב 1 מקופל - סיכום הבחירה בלבד -->
         {@render foldedStrip('1', `${neighborhoodLabel} · ${$_('advertise.total_n_neighborhoods', { values: { n: fmt(neighborhoodCount) } })}`, () => { cityFolded = false; showPicker = true; })}
     {:else}
-    <p class="text-gray-300 text-base font-bold text-center mb-3 flex items-center justify-center gap-2 relative"
-       class:step-title-light={step1TitleLight}>
-        <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+    <!-- מספר השלב - גדול וממורכז מעל הכותרת -->
+    <div class="mb-3 flex flex-col items-center gap-2 relative">
+        <span class="w-12 h-12 md:w-14 md:h-14 rounded-full text-black text-2xl md:text-3xl font-black flex items-center justify-center flex-shrink-0"
               class:step-num-light={step1NumLight}
-              style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">1</span>
-        {$_('advertise.step1_label')}
-        {#if tutorialStep === 'pick-city' && !showPicker}
-            <span class="tutorial-finger pointer-events-none select-none text-base md:text-lg drop-shadow-[0_0_5px_rgba(245,158,11,0.45)]"
-                  aria-hidden="true">👇</span>
-        {/if}
-    </p>
+              style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.9">1</span>
+        <p class="text-gray-300 text-base font-bold text-center flex items-center justify-center gap-2"
+           class:step-title-light={step1TitleLight}>
+            {$_('advertise.step1_label')}
+            {#if tutorialStep === 'pick-city' && !showPicker}
+                <span class="tutorial-finger pointer-events-none select-none text-base md:text-lg drop-shadow-[0_0_5px_rgba(245,158,11,0.45)]"
+                      aria-hidden="true">👇</span>
+            {/if}
+        </p>
+    </div>
     <div class="relative">
     <button
         type="button"
@@ -937,32 +940,36 @@
         <!-- שלבים 2-3 מקופלים - סוגי הפרסום שנבחרו בלבד -->
         {@render foldedStrip('2-3', selectedItems.map(r => $_(`advertise.${r.typeKey}`)).join(', '), () => tableFolded = false)}
     {:else}
-    <div class="flex flex-row justify-between items-center gap-3 mb-6 px-1">
-        <!-- Step 2 - right in RTL (first child) -->
-        <p class="text-gray-200 text-sm md:text-base font-bold leading-snug flex items-center gap-2 rounded-xl px-2 py-1 opacity-90"
-           class:step-title-light={step2TitleLight}>
-            <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+    <div class="flex flex-row justify-between items-start gap-3 mb-6 px-1">
+        <!-- Step 2 - right in RTL (first child). מספר גדול וממורכז מעל הכותרת -->
+        <div class="flex flex-col items-center gap-1.5 rounded-xl px-2 py-1 opacity-90 text-center">
+            <span class="w-12 h-12 md:w-14 md:h-14 rounded-full text-black text-2xl md:text-3xl font-black flex items-center justify-center flex-shrink-0"
                   class:step-num-light={step2NumLight}
-                  style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">2</span>
-            {$_('advertise.step2_label')}
-            {#if tutorialStep === 'pick-row'}
-                <span class="tutorial-finger pointer-events-none select-none text-base md:text-lg drop-shadow-[0_0_5px_rgba(245,158,11,0.45)]"
-                      aria-hidden="true">👇</span>
-            {/if}
-        </p>
-        <!-- Step 3 - left in RTL (last child) -->
-        <p class="text-gray-200 text-sm md:text-base font-bold leading-snug flex items-center gap-2 rounded-xl px-2 py-1 transition-opacity
-                  {tutorialStep === 'pick-row' ? 'opacity-50' : 'opacity-90'}"
-           class:step-title-light={step3TitleLight}>
-            <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+                  style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.9">2</span>
+            <p class="text-gray-200 text-sm md:text-base font-bold leading-snug flex items-center justify-center gap-2"
+               class:step-title-light={step2TitleLight}>
+                {$_('advertise.step2_label')}
+                {#if tutorialStep === 'pick-row'}
+                    <span class="tutorial-finger pointer-events-none select-none text-base md:text-lg drop-shadow-[0_0_5px_rgba(245,158,11,0.45)]"
+                          aria-hidden="true">👇</span>
+                {/if}
+            </p>
+        </div>
+        <!-- Step 3 - left in RTL (last child). מספר גדול וממורכז מעל הכותרת -->
+        <div class="flex flex-col items-center gap-1.5 rounded-xl px-2 py-1 text-center transition-opacity
+                  {tutorialStep === 'pick-row' ? 'opacity-50' : 'opacity-90'}">
+            <span class="w-12 h-12 md:w-14 md:h-14 rounded-full text-black text-2xl md:text-3xl font-black flex items-center justify-center flex-shrink-0"
                   class:step-num-light={step3NumLight}
-                  style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">3</span>
-            {$_('advertise.step3_label')}
-            {#if tutorialStep === 'pick-plan'}
-                <span class="tutorial-finger pointer-events-none select-none text-base md:text-lg drop-shadow-[0_0_5px_rgba(245,158,11,0.45)]"
-                      aria-hidden="true">👇</span>
-            {/if}
-        </p>
+                  style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.9">3</span>
+            <p class="text-gray-200 text-sm md:text-base font-bold leading-snug flex items-center justify-center gap-2"
+               class:step-title-light={step3TitleLight}>
+                {$_('advertise.step3_label')}
+                {#if tutorialStep === 'pick-plan'}
+                    <span class="tutorial-finger pointer-events-none select-none text-base md:text-lg drop-shadow-[0_0_5px_rgba(245,158,11,0.45)]"
+                          aria-hidden="true">👇</span>
+                {/if}
+            </p>
+        </div>
     </div>
 
     <!-- Mobile cards (visible only on small screens) -->
@@ -1366,13 +1373,16 @@
                 <!-- Email + WhatsApp input - now inside the merged box, no border/rounded of its own -->
                 <div class="p-5 flex flex-col justify-center"
                      style="animation: slideDown 0.25s ease-out;">
-                    <p class="text-gray-300 text-sm font-bold mb-3 text-center flex items-center justify-center gap-2"
-                       class:step-title-light={step4TitleLight}>
-                        <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+                    <!-- מספר השלב - גדול וממורכז מעל הכותרת -->
+                    <div class="mb-3 flex flex-col items-center gap-2">
+                        <span class="w-12 h-12 md:w-14 md:h-14 rounded-full text-black text-2xl md:text-3xl font-black flex items-center justify-center flex-shrink-0"
                               class:step-num-light={step4NumLight}
-                              style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">4</span>
-                        {$_('advertise.step4_label')}
-                    </p>
+                              style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.9">4</span>
+                        <p class="text-gray-300 text-sm font-bold text-center flex items-center justify-center gap-2"
+                           class:step-title-light={step4TitleLight}>
+                            {$_('advertise.step4_label')}
+                        </p>
+                    </div>
                     <div class="flex flex-col gap-2">
                         <!-- Row 1: phone + WhatsApp - equal columns (50/50) so all inputs/buttons align -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -1477,11 +1487,14 @@
         {@render foldedStrip('5', `${$_('advertise.confirm_period')} · ₪${fmt(effectiveTotal)}`, () => periodFolded = false)}
     {:else}
     <div bind:this={step5El} class="mt-8 rounded-2xl bg-gradient-to-br from-purple-900/20 to-indigo-900/15 border-2 border-purple-500/40 p-5 md:p-7" dir="rtl">
-        <h2 class="text-xl md:text-2xl font-black text-white mb-3 text-center flex items-center justify-center gap-2">
-            <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
-                  style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.85">5</span>
-            {$_('advertise.step5_title')}
-        </h2>
+        <!-- מספר השלב - גדול וממורכז מעל הכותרת -->
+        <div class="mb-3 flex flex-col items-center gap-2">
+            <span class="w-12 h-12 md:w-14 md:h-14 rounded-full text-black text-2xl md:text-3xl font-black flex items-center justify-center flex-shrink-0"
+                  style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.9">5</span>
+            <h2 class="text-xl md:text-2xl font-black text-white text-center">
+                {$_('advertise.step5_title')}
+            </h2>
+        </div>
 
         <!-- Explainer -->
         <div class="rounded-xl bg-white/3 border border-white/10 p-4 md:p-5 mb-5">
@@ -1557,13 +1570,16 @@
     <div bind:this={paymentEl} class="mt-8 rounded-2xl bg-white/3 border border-white/10 p-6 md:p-8" dir="rtl"
          class:opacity-50={hasSelection && !confirmedPeriod}
          class:pointer-events-none={hasSelection && !confirmedPeriod}>
-        <h2 class="text-xl md:text-2xl font-black text-white mb-2 text-center flex items-center justify-center gap-2"
-            class:step-title-light={step5TitleLight}>
-            <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
+        <!-- מספר השלב - גדול וממורכז מעל הכותרת -->
+        <div class="mb-2 flex flex-col items-center gap-2">
+            <span class="w-12 h-12 md:w-14 md:h-14 rounded-full text-black text-2xl md:text-3xl font-black flex items-center justify-center flex-shrink-0"
                   class:step-num-light={step5NumLight}
-                  style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.75">6</span>
-            {$_('advertise.step6_title')}
-        </h2>
+                  style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.9">6</span>
+            <h2 class="text-xl md:text-2xl font-black text-white text-center"
+                class:step-title-light={step5TitleLight}>
+                {$_('advertise.step6_title')}
+            </h2>
+        </div>
         {#if hasSelection && !confirmedPeriod}
             <p class="text-amber-300 text-sm font-bold text-center mb-3 -mt-1">
                 {$_('advertise.check_step5_first')}
