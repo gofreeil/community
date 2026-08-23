@@ -72,6 +72,8 @@ export const he = {
         coord_area_title: "אישור אירועים שכונתיים",
         strapi_title: "גישה ישירה ל-Strapi (פרטי - רק לך)",
         coord_enter: "כניסה לאישור אירועים",
+        coord_guide: "📘 מדריך הרכז",
+        coord_guide_title: "המדריך המלא לרכז השכונה - מסלול ההקמה וערכת גיוס העסקים",
 
         // ===== הודעות אישיות =====
         messages_title: "הודעות אישיות",
@@ -539,6 +541,8 @@ export const en = {
         coord_area_title: "Approve neighborhood events",
         strapi_title: "Direct Strapi access (private - only for you)",
         coord_enter: "Enter to approve events",
+        coord_guide: "📘 Coordinator's guide",
+        coord_guide_title: "The complete neighborhood coordinator guide - setup path and business outreach kit",
 
         // ===== Personal messages =====
         messages_title: "Personal messages",
@@ -1004,6 +1008,8 @@ export const ru = {
         coord_area_title: "Утверждение районных мероприятий",
         strapi_title: "Прямой доступ к Strapi (личный - только для вас)",
         coord_enter: "Вход для утверждения мероприятий",
+        coord_guide: "📘 Руководство координатора",
+        coord_guide_title: "Полное руководство координатора района - этапы запуска и набор для привлечения бизнеса",
 
         // ===== Личные сообщения =====
         messages_title: "Личные сообщения",
