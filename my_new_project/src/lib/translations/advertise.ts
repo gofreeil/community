@@ -131,7 +131,7 @@ export const he = {
         email_sent: "המייל נשלח בהצלחה!",
         email_sent_to: "שלחנו אישור הזמנה לכתובת",
         we_will_contact: "ניצור איתך קשר בהקדם לתיאום הסופי",
-        step4_label: "📧 קבל אישור הזמנה - מייל / וואטסאפ",
+        step4_label: "📧 שלח לעצמך את סיכום ההזמנה - במייל או בוואטסאפ",
         wa_send_aria: "שלח הזמנת פרסום בוואטסאפ (נפתח בחלון חדש)",
         wa_send: "💬 שלח בוואטסאפ",
         sending: "שולח…",
@@ -148,7 +148,7 @@ export const he = {
         wa_msg: "שלום, אני מעוניין לפרסם: {types}. סה״כ ₪{n}.",
         wa_my_phone: "הטלפון שלי: {phone}",
 
-        // ===== שלב 5 - תקופת פרסום =====
+        // ===== שלב 4 המאוחד - אישור הכל: תקופה, סכום ופרטי קשר =====
         step5_title: "📅 תקופת הפרסום ותאריך התפוגה",
         gift_title: "יום העריכה - חינם על חשבון המערכת",
         gift_li1_pre: "היום,",
@@ -176,9 +176,9 @@ export const he = {
         // פס שלב מקופל - שלב שהושלם מוצג כשורת סיכום
         fold_change: "שינוי",
 
-        // ===== שלב 6 - תשלום =====
+        // ===== שלב 5 - תשלום =====
         step6_title: "🔒 תשלום מאובטח",
-        check_step5_first: "⬆️ סמן/י תחילה את התיבה למעלה (שלב 5) כדי לפתוח את התשלום",
+        check_step5_first: "⬆️ סמן/י תחילה את תיבת האישור למעלה (שלב 4) כדי לפתוח את התשלום",
         secure_note: "התשלום מתבצע בצורה מאובטחת דרך חברת הסליקה - פרטי האשראי שלך לא מגיעים אלינו",
         discount_code: "🎟️ קוד הנחה",
         promo_type_here: '🎉 בתקופה הראשונית: רשמו כאן "{code}" והעלאת הפרסום חינם - ללא תשלום.',
@@ -667,7 +667,7 @@ export const en = {
         email_sent: "The email was sent successfully!",
         email_sent_to: "We sent an order confirmation to",
         we_will_contact: "We'll contact you shortly for final coordination",
-        step4_label: "📧 Get an order confirmation - email / WhatsApp",
+        step4_label: "📧 Send yourself the order summary - by email or WhatsApp",
         wa_send_aria: "Send the ad order via WhatsApp (opens in a new window)",
         wa_send: "💬 Send via WhatsApp",
         sending: "Sending…",
@@ -684,7 +684,7 @@ export const en = {
         wa_msg: "Hello, I'd like to advertise: {types}. Total ₪{n}.",
         wa_my_phone: "My phone: {phone}",
 
-        // ===== Step 5 - ad period =====
+        // ===== Merged step 4 - confirm everything: period, amount, contact =====
         step5_title: "📅 Ad period and expiration date",
         gift_title: "Editing day - free, on the house",
         gift_li1_pre: "Today,",
@@ -712,9 +712,9 @@ export const en = {
         // Folded step strip - a completed step shown as a one-line summary
         fold_change: "Change",
 
-        // ===== Step 6 - payment =====
+        // ===== Step 5 - payment =====
         step6_title: "🔒 Secure payment",
-        check_step5_first: "⬆️ First check the box above (step 5) to unlock payment",
+        check_step5_first: "⬆️ First check the confirmation box above (step 4) to unlock payment",
         secure_note: "Payment is processed securely through the payment processor - your card details never reach us",
         discount_code: "🎟️ Discount code",
         promo_type_here: '🎉 During the launch period: type "{code}" here and upload your ad for free - no payment.',
@@ -1203,7 +1203,7 @@ export const ru = {
         email_sent: "Письмо успешно отправлено!",
         email_sent_to: "Мы отправили подтверждение заказа на адрес",
         we_will_contact: "Мы свяжемся с вами в ближайшее время для финального согласования",
-        step4_label: "📧 Получите подтверждение заказа - email / WhatsApp",
+        step4_label: "📧 Отправьте себе сводку заказа - по email или в WhatsApp",
         wa_send_aria: "Отправить заказ рекламы в WhatsApp (откроется в новом окне)",
         wa_send: "💬 Отправить в WhatsApp",
         sending: "Отправка…",
@@ -1220,7 +1220,7 @@ export const ru = {
         wa_msg: "Здравствуйте, я хочу разместить рекламу: {types}. Итого ₪{n}.",
         wa_my_phone: "Мой телефон: {phone}",
 
-        // ===== Шаг 5 - период рекламы =====
+        // ===== Объединённый шаг 4 - подтверждение всего: период, сумма, контакты =====
         step5_title: "📅 Период рекламы и дата окончания",
         gift_title: "День редактирования - бесплатно за счёт системы",
         gift_li1_pre: "Сегодня,",
@@ -1248,9 +1248,9 @@ export const ru = {
         // Свёрнутый шаг - завершённый шаг показан одной строкой
         fold_change: "Изменить",
 
-        // ===== Шаг 6 - оплата =====
+        // ===== Шаг 5 - оплата =====
         step6_title: "🔒 Безопасная оплата",
-        check_step5_first: "⬆️ Сначала отметьте галочку выше (шаг 5), чтобы открыть оплату",
+        check_step5_first: "⬆️ Сначала отметьте галочку выше (шаг 4), чтобы открыть оплату",
         secure_note: "Оплата проходит безопасно через платёжную компанию - данные вашей карты к нам не попадают",
         discount_code: "🎟️ Код скидки",
         promo_type_here: '🎉 В начальный период: введите здесь "{code}" и загрузите рекламу бесплатно - без оплаты.',

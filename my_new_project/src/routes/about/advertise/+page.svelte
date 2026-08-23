@@ -77,9 +77,8 @@
     // לחיצה על פס מקופל פותחת את השלב מחדש לעריכה.
     let cityFolded   = $state(false);  // שלב 1 (כולל מקטע החבילות)
     let tableFolded  = $state(false);  // שלבים 2-3 (טבלת סוגי הפרסום)
-    let calcFolded   = $state(false);  // שלב 4 (מחשבון + שליחת סיכום)
-    let periodFolded = $state(false);  // שלב 5 (אישור תקופה, תפוגה וסכום)
-    let step5El: HTMLDivElement | null = $state(null);
+    let calcFolded   = $state(false);  // המחשבון (סיכום המחיר - לא שלב ממוספר)
+    let periodFolded = $state(false);  // שלב 4 המאוחד (אישור תקופה, סכום ופרטי קשר)
     let paymentEl: HTMLDivElement | null = $state(null);
     let showCheckmark = $state(false);
     let highlightedRow = $state<number | null>(null);
@@ -118,9 +117,9 @@
         return () => { for (const t of timers) clearTimeout(t); };
     });
 
-    // Step 5 (payment) lights up after the user sends the email confirmation
+    // שלב 5 (תשלום) מהבהב אחרי שהמשתמש מאשר הכל בשלב 4 המאוחד
     $effect(() => {
-        if (!emailSent) return;
+        if (!confirmedPeriod) return;
         const timers: number[] = [];
         flashStep(timers, v => step5NumLight = v, v => step5TitleLight = v);
         return () => { for (const t of timers) clearTimeout(t); };
@@ -449,17 +448,7 @@
         if (planMap.size === 0) { tableFolded = false; calcFolded = false; periodFolded = false; }
     });
 
-    // סוף שלב 4 (הסיכום נשלח) - המחשבון מתקפל אחרי שהודעת ההצלחה נראתה, וגוללים לשלב 5
-    $effect(() => {
-        if (!emailSent) return;
-        const t = setTimeout(() => {
-            calcFolded = true;
-            requestAnimationFrame(() => slowScrollTo(step5El, 1500));
-        }, 4000);
-        return () => clearTimeout(t);
-    });
-
-    // סוף שלב 5 (אישור התקופה והסכום) - שלבים 4+5 מתקפלים וגוללים לתשלום
+    // סוף שלב 4 המאוחד (אישר הכל: תקופה, סכום ופרטי קשר) - התיבה והמחשבון מתקפלים וגוללים לתשלום
     $effect(() => {
         if (!confirmedPeriod) return;
         const t = setTimeout(() => {
@@ -1197,8 +1186,8 @@
     <!-- ===== Calculator Banner ===== -->
     {#if hasSelection}
         {#if calcFolded}
-            <!-- שלב 4 מקופל - הסכום הכולל בלבד -->
-            {@render foldedStrip('4', $_('advertise.mail_total', { values: { n: fmt(effectiveTotal) } }), () => calcFolded = false)}
+            <!-- המחשבון מקופל - הסכום הכולל בלבד (לא שלב ממוספר) -->
+            {@render foldedStrip('🧮', $_('advertise.mail_total', { values: { n: fmt(effectiveTotal) } }), () => calcFolded = false)}
         {:else}
         <div bind:this={calculatorEl}
              class="mb-12 rounded-2xl border-2 border-white/20 bg-gradient-to-br from-gray-900 to-gray-950 p-6 md:p-8 shadow-2xl scroll-mt-4"
@@ -1278,12 +1267,11 @@
                 </ul>
             </div>
 
-            <!-- Total + Email - single merged box with a divider line between them -->
+            <!-- Total box - שליחת סיכום ההזמנה עברה לשלב 4 המאוחד (אישור הכל) -->
             <div class="rounded-2xl border-2 border-white/20 bg-white/5 mb-6 overflow-hidden">
-            <div class="grid grid-cols-1 md:grid-cols-2 items-stretch">
 
-            <!-- Total - right side in RTL (DOM-first), with right-aligned content -->
-            <div class="px-6 py-5 text-right flex flex-col justify-center gap-3 border-b md:border-b-0 md:border-l border-white/15">
+            <!-- Total - right-aligned content -->
+            <div class="px-6 py-5 text-right flex flex-col justify-center gap-3">
                 <!-- Per-item math breakdown - rate × neighborhoods × months -->
                 <div class="space-y-1.5">
                     {#each selectedItems as item}
@@ -1356,100 +1344,8 @@
                 </div>
             </div>
 
-            <!-- ===== Email confirmation section ===== -->
-            {#if emailSent}
-                <!-- Success state - inside the merged box, accent green tint as background -->
-                <div class="bg-green-900/15 p-5 text-center"
-                     style="animation: slideDown 0.3s ease-out;">
-                    <div class="text-3xl mb-2">✅</div>
-                    <p class="text-green-300 font-black text-base mb-1">{$_('advertise.email_sent')}</p>
-                    <p class="text-gray-400 text-sm">
-                        {$_('advertise.email_sent_to')}
-                        <span class="text-green-400 font-bold">{userEmail}</span>
-                    </p>
-                    <p class="text-gray-500 text-xs mt-2">{$_('advertise.we_will_contact')}</p>
-                </div>
-            {:else}
-                <!-- Email + WhatsApp input - now inside the merged box, no border/rounded of its own -->
-                <div class="p-5 flex flex-col justify-center"
-                     style="animation: slideDown 0.25s ease-out;">
-                    <!-- מספר השלב - גדול וממורכז מעל הכותרת -->
-                    <div class="mb-3 flex flex-col items-center gap-2">
-                        <span class="w-12 h-12 md:w-14 md:h-14 rounded-full text-black text-2xl md:text-3xl font-black flex items-center justify-center flex-shrink-0"
-                              class:step-num-light={step4NumLight}
-                              style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.9">4</span>
-                        <p class="text-gray-300 text-sm font-bold text-center flex items-center justify-center gap-2"
-                           class:step-title-light={step4TitleLight}>
-                            {$_('advertise.step4_label')}
-                        </p>
-                    </div>
-                    <div class="flex flex-col gap-2">
-                        <!-- Row 1: phone + WhatsApp - equal columns (50/50) so all inputs/buttons align -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            <input
-                                type="tel"
-                                bind:value={userPhone}
-                                placeholder="050-1234567"
-                                dir="ltr"
-                                class="rounded-xl border border-white/15 bg-white/5 px-4 py-3
-                                       text-white placeholder:text-gray-600 text-sm
-                                       focus:outline-none focus:border-green-500/60 focus:bg-green-900/10
-                                       transition-all"
-                            />
-                            <a
-                                href={whatsappHref}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                aria-label={$_('advertise.wa_send_aria')}
-                                class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3
-                                       font-black text-sm transition-all shadow-lg
-                                       bg-green-600 hover:bg-green-500 text-white hover:scale-105 shadow-green-500/20"
-                            >
-                                {$_('advertise.wa_send')}
-                            </a>
-                        </div>
-                        <!-- Row 2: email + send-email - same equal columns -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            <input
-                                type="email"
-                                bind:value={userEmail}
-                                placeholder="your@email.com"
-                                dir="ltr"
-                                class="rounded-xl border border-white/15 bg-white/5 px-4 py-3
-                                       text-white placeholder:text-gray-600 text-sm
-                                       focus:outline-none focus:border-amber-500/60 focus:bg-amber-900/10
-                                       transition-all"
-                                onkeydown={(e) => { if (e.key === 'Enter') sendOrderEmail(); }}
-                            />
-                            <button
-                                type="button"
-                                onclick={sendOrderEmail}
-                                disabled={emailSending}
-                                class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3
-                                       font-black text-sm transition-all shadow-lg
-                                       {emailSending
-                                           ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                                           : 'bg-amber-500 hover:bg-amber-400 text-black hover:scale-105 shadow-amber-500/20'}"
-                            >
-                                {#if emailSending}
-                                    <span class="inline-block w-4 h-4 border-2 border-gray-500 border-t-amber-400 rounded-full"
-                                          style="animation: spin 0.7s linear infinite;"></span>
-                                    {$_('advertise.sending')}
-                                {:else}
-                                    {$_('advertise.send_doc', { values: { n: fmt(effectiveTotal) } })}
-                                {/if}
-                            </button>
-                        </div>
-                    </div>
-                    {#if emailError}
-                        <p class="text-red-400 text-xs mt-2 text-center font-bold">{emailError}</p>
-                    {/if}
-                </div>
-            {/if}
-
             </div>
-            </div>
-            <!-- /Total + Email merged box -->
+            <!-- /Total box -->
 
             <!-- Breakdown cards (only if both plan types selected) -->
             {#if halfItems.length > 0 && singleItems.length > 0}
@@ -1480,18 +1376,20 @@
         </div>
     {/if}
 
-    <!-- ===== STEP 5: Period confirmation (FREE editing day + expiration) ===== -->
+    <!-- ===== STEP 4 (מאוחד): אישור הכל - תקופה, סכום ופרטי קשר ===== -->
     {#if hasSelection}
     {#if periodFolded}
-        <!-- שלב 5 מקופל - האישור והסכום בשורה אחת -->
-        {@render foldedStrip('5', `${$_('advertise.confirm_period')} · ₪${fmt(effectiveTotal)}`, () => periodFolded = false)}
+        <!-- שלב 4 מקופל - האישור והסכום בשורה אחת -->
+        {@render foldedStrip('4', `${$_('advertise.confirm_period')} · ₪${fmt(effectiveTotal)}`, () => periodFolded = false)}
     {:else}
-    <div bind:this={step5El} class="mt-8 rounded-2xl bg-gradient-to-br from-purple-900/20 to-indigo-900/15 border-2 border-purple-500/40 p-5 md:p-7" dir="rtl">
+    <div class="mt-8 rounded-2xl bg-gradient-to-br from-purple-900/20 to-indigo-900/15 border-2 border-purple-500/40 p-5 md:p-7" dir="rtl">
         <!-- מספר השלב - גדול וממורכז מעל הכותרת -->
         <div class="mb-3 flex flex-col items-center gap-2">
             <span class="w-12 h-12 md:w-14 md:h-14 rounded-full text-black text-2xl md:text-3xl font-black flex items-center justify-center flex-shrink-0"
-                  style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.9">5</span>
-            <h2 class="text-xl md:text-2xl font-black text-white text-center">
+                  class:step-num-light={step4NumLight}
+                  style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.9">4</span>
+            <h2 class="text-xl md:text-2xl font-black text-white text-center"
+                class:step-title-light={step4TitleLight}>
                 {$_('advertise.step5_title')}
             </h2>
         </div>
@@ -1545,6 +1443,86 @@
             <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-red-500"></span> {$_('advertise.legend_expiry')}</span>
         </div>
 
+        <!-- שליחת סיכום ההזמנה במייל/וואטסאפ - חלק מהאישור הכולל, לא שלב נפרד -->
+        <div class="rounded-xl bg-white/3 border border-white/10 p-4 md:p-5 mb-5">
+            {#if emailSent}
+                <div class="text-center" style="animation: slideDown 0.3s ease-out;">
+                    <div class="text-3xl mb-2">✅</div>
+                    <p class="text-green-300 font-black text-base mb-1">{$_('advertise.email_sent')}</p>
+                    <p class="text-gray-400 text-sm">
+                        {$_('advertise.email_sent_to')}
+                        <span class="text-green-400 font-bold">{userEmail}</span>
+                    </p>
+                    <p class="text-gray-500 text-xs mt-2">{$_('advertise.we_will_contact')}</p>
+                </div>
+            {:else}
+                <p class="text-amber-300 font-black text-sm md:text-base mb-3 text-center">
+                    {$_('advertise.step4_label')}
+                </p>
+                <div class="flex flex-col gap-2">
+                    <!-- Row 1: phone + WhatsApp - equal columns (50/50) so all inputs/buttons align -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <input
+                            type="tel"
+                            bind:value={userPhone}
+                            placeholder="050-1234567"
+                            dir="ltr"
+                            class="rounded-xl border border-white/15 bg-white/5 px-4 py-3
+                                   text-white placeholder:text-gray-600 text-sm
+                                   focus:outline-none focus:border-green-500/60 focus:bg-green-900/10
+                                   transition-all"
+                        />
+                        <a
+                            href={whatsappHref}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label={$_('advertise.wa_send_aria')}
+                            class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3
+                                   font-black text-sm transition-all shadow-lg
+                                   bg-green-600 hover:bg-green-500 text-white hover:scale-105 shadow-green-500/20"
+                        >
+                            {$_('advertise.wa_send')}
+                        </a>
+                    </div>
+                    <!-- Row 2: email + send-email - same equal columns -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <input
+                            type="email"
+                            bind:value={userEmail}
+                            placeholder="your@email.com"
+                            dir="ltr"
+                            class="rounded-xl border border-white/15 bg-white/5 px-4 py-3
+                                   text-white placeholder:text-gray-600 text-sm
+                                   focus:outline-none focus:border-amber-500/60 focus:bg-amber-900/10
+                                   transition-all"
+                            onkeydown={(e) => { if (e.key === 'Enter') sendOrderEmail(); }}
+                        />
+                        <button
+                            type="button"
+                            onclick={sendOrderEmail}
+                            disabled={emailSending}
+                            class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3
+                                   font-black text-sm transition-all shadow-lg
+                                   {emailSending
+                                       ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                                       : 'bg-amber-500 hover:bg-amber-400 text-black hover:scale-105 shadow-amber-500/20'}"
+                        >
+                            {#if emailSending}
+                                <span class="inline-block w-4 h-4 border-2 border-gray-500 border-t-amber-400 rounded-full"
+                                      style="animation: spin 0.7s linear infinite;"></span>
+                                {$_('advertise.sending')}
+                            {:else}
+                                {$_('advertise.send_doc', { values: { n: fmt(effectiveTotal) } })}
+                            {/if}
+                        </button>
+                    </div>
+                </div>
+                {#if emailError}
+                    <p class="text-red-400 text-xs mt-2 text-center font-bold">{emailError}</p>
+                {/if}
+            {/if}
+        </div>
+
         <!-- Confirmation checkbox -->
         <label class="flex items-start gap-3 cursor-pointer rounded-xl bg-white/5 hover:bg-white/8 border border-white/10 hover:border-amber-500/40 p-4 transition-colors">
             <input type="checkbox" bind:checked={confirmedPeriod}
@@ -1566,7 +1544,7 @@
     {/if}
     {/if}
 
-    <!-- ===== STEP 6: Secure Payment ===== -->
+    <!-- ===== STEP 5: Secure Payment ===== -->
     <div bind:this={paymentEl} class="mt-8 rounded-2xl bg-white/3 border border-white/10 p-6 md:p-8" dir="rtl"
          class:opacity-50={hasSelection && !confirmedPeriod}
          class:pointer-events-none={hasSelection && !confirmedPeriod}>
@@ -1574,7 +1552,7 @@
         <div class="mb-2 flex flex-col items-center gap-2">
             <span class="w-12 h-12 md:w-14 md:h-14 rounded-full text-black text-2xl md:text-3xl font-black flex items-center justify-center flex-shrink-0"
                   class:step-num-light={step5NumLight}
-                  style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.9">6</span>
+                  style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.9">5</span>
             <h2 class="text-xl md:text-2xl font-black text-white text-center"
                 class:step-title-light={step5TitleLight}>
                 {$_('advertise.step6_title')}
