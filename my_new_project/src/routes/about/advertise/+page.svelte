@@ -72,6 +72,15 @@
     // ---- Guided tutorial pointer ----
     type TutorialStep = 'pick-city' | 'pick-row' | 'pick-plan' | 'done';
     let tutorialStep = $state<TutorialStep>('pick-city');
+
+    // ---- אקורדיון שלבים: שלב שהושלם מתקפל לפס סיכום, רק השלב הנוכחי נשאר פתוח ----
+    // לחיצה על פס מקופל פותחת את השלב מחדש לעריכה.
+    let cityFolded   = $state(false);  // שלב 1 (כולל מקטע החבילות)
+    let tableFolded  = $state(false);  // שלבים 2-3 (טבלת סוגי הפרסום)
+    let calcFolded   = $state(false);  // שלב 4 (מחשבון + שליחת סיכום)
+    let periodFolded = $state(false);  // שלב 5 (אישור תקופה, תפוגה וסכום)
+    let step5El: HTMLDivElement | null = $state(null);
+    let paymentEl: HTMLDivElement | null = $state(null);
     let showCheckmark = $state(false);
     let highlightedRow = $state<number | null>(null);
     let confirmingRow = $state<number | null>(null);
@@ -123,8 +132,9 @@
         if (tutorialStep === 'pick-city') tutorialStep = 'pick-row';
         setTimeout(() => {
             showCheckmark = false;
-            // Slow scroll to the publication-type table (~3s easeInOutCubic)
-            slowScrollTo(pricingHeadingEl, 3000);
+            // שלב 1 הושלם - מתקפל לפס סיכום; יעד הגלילה מחושב רק אחרי שהפריסה התייצבה
+            cityFolded = true;
+            requestAnimationFrame(() => slowScrollTo(pricingHeadingEl, 3000));
         }, 900);
     }
 
@@ -399,7 +409,10 @@
         confirmingRow = num;
         setTimeout(() => {
             confirmingRow = null;
-            slowScrollTo(calculatorEl, 3000);
+            // שלבים 1-3 הושלמו - מתקפלים לפסי סיכום; הגלילה מחושבת אחרי שהפריסה התייצבה
+            cityFolded  = true;
+            tableFolded = true;
+            requestAnimationFrame(() => slowScrollTo(calculatorEl, 3000));
             // When the scroll lands on the calculator, briefly flash the total amount
             setTimeout(() => {
                 flashTotal = true;
@@ -430,6 +443,32 @@
         }
         requestAnimationFrame(step);
     }
+
+    // ביטול כל הבחירות מחזיר את השלבים המאוחרים למצב פתוח
+    $effect(() => {
+        if (planMap.size === 0) { tableFolded = false; calcFolded = false; periodFolded = false; }
+    });
+
+    // סוף שלב 4 (הסיכום נשלח) - המחשבון מתקפל אחרי שהודעת ההצלחה נראתה, וגוללים לשלב 5
+    $effect(() => {
+        if (!emailSent) return;
+        const t = setTimeout(() => {
+            calcFolded = true;
+            requestAnimationFrame(() => slowScrollTo(step5El, 1500));
+        }, 4000);
+        return () => clearTimeout(t);
+    });
+
+    // סוף שלב 5 (אישור התקופה והסכום) - שלבים 4+5 מתקפלים וגוללים לתשלום
+    $effect(() => {
+        if (!confirmedPeriod) return;
+        const t = setTimeout(() => {
+            periodFolded = true;
+            calcFolded   = true;
+            requestAnimationFrame(() => slowScrollTo(paymentEl, 1500));
+        }, 450);
+        return () => clearTimeout(t);
+    });
 
     // מספר השכונות בעיר = הרשימה הסטטית + שכונות שאושרו ע"י אדמין. כך שכונה מאושרת
     // חדשה מעלה מיד את המחיר של אותה עיר (המחיר מוכפל במספר השכונות).
@@ -599,6 +638,18 @@
 
 <div class="max-w-4xl mx-auto px-4 py-8 md:py-12" dir="rtl">
 
+    <!-- פס שלב מקופל: שלב שהושלם מוצג כשורת סיכום אחת, לחיצה פותחת אותו מחדש -->
+    {#snippet foldedStrip(num: string, text: string, onOpen: () => void)}
+        <button type="button" onclick={onOpen}
+                class="w-full mb-4 flex items-center gap-3 rounded-xl border border-green-500/30 bg-green-900/10 hover:bg-green-900/20 hover:border-green-500/50 px-4 py-3 text-right transition-colors cursor-pointer"
+                style="animation: slideDown 0.25s ease-out;">
+            <span class="w-7 h-7 rounded-full bg-green-500/15 border border-green-500/50 text-green-400 text-xs font-black flex items-center justify-center flex-shrink-0">{num}</span>
+            <span class="text-green-400 font-black flex-shrink-0" aria-hidden="true">✓</span>
+            <span class="flex-1 min-w-0 text-sm md:text-base font-bold text-gray-200 truncate">{text}</span>
+            <span class="text-xs text-amber-300 font-bold flex-shrink-0 underline underline-offset-2">{$_('advertise.fold_change')}</span>
+        </button>
+    {/snippet}
+
     <!-- Success banner from /add/[category] flow -->
     {#if pendingItemLabel}
         <div class="mb-8 rounded-2xl border-2 border-green-500/40 bg-green-900/20 p-5 text-center"
@@ -625,7 +676,8 @@
         </p>
     </div>
 
-    <!-- Packages -->
+    <!-- Packages - מידע פתיחה, מתקפל יחד עם שלב 1 ברגע שהעיר אושרה -->
+    {#if !cityFolded}
     <h2 class="text-xl md:text-2xl font-black text-white mb-4 text-center">{$_('advertise.packages_title')}</h2>
     <div class="grid grid-cols-3 gap-2 md:gap-4 mb-12">
         {#each packages as pkg}
@@ -650,11 +702,16 @@
             </div>
         {/each}
     </div>
+    {/if}
 
     <!-- Pricing Table heading -->
     <h2 bind:this={pricingHeadingEl} class="text-xl md:text-4xl font-black text-white mb-6 md:mb-8 text-center scroll-mt-4">{$_('advertise.pricing_title')}</h2>
 
     <!-- Neighborhood picker trigger -->
+    {#if cityFolded}
+        <!-- שלב 1 מקופל - סיכום הבחירה בלבד -->
+        {@render foldedStrip('1', `${neighborhoodLabel} · ${$_('advertise.total_n_neighborhoods', { values: { n: fmt(neighborhoodCount) } })}`, () => { cityFolded = false; showPicker = true; })}
+    {:else}
     <p class="text-gray-300 text-base font-bold text-center mb-3 flex items-center justify-center gap-2 relative"
        class:step-title-light={step1TitleLight}>
         <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
@@ -873,8 +930,13 @@
             </div>
         </div>
     {/if}
+    {/if}
 
     <!-- Pricing Table - step 2 (right in RTL) + step 3 (left in RTL) -->
+    {#if tableFolded && planMap.size > 0}
+        <!-- שלבים 2-3 מקופלים - סוגי הפרסום שנבחרו בלבד -->
+        {@render foldedStrip('2-3', selectedItems.map(r => $_(`advertise.${r.typeKey}`)).join(', '), () => tableFolded = false)}
+    {:else}
     <div class="flex flex-row justify-between items-center gap-3 mb-6 px-1">
         <!-- Step 2 - right in RTL (first child) -->
         <p class="text-gray-200 text-sm md:text-base font-bold leading-snug flex items-center gap-2 rounded-xl px-2 py-1 opacity-90"
@@ -1123,9 +1185,14 @@
             </tbody>
         </table>
     </div>
+    {/if}
 
     <!-- ===== Calculator Banner ===== -->
     {#if hasSelection}
+        {#if calcFolded}
+            <!-- שלב 4 מקופל - הסכום הכולל בלבד -->
+            {@render foldedStrip('4', $_('advertise.mail_total', { values: { n: fmt(effectiveTotal) } }), () => calcFolded = false)}
+        {:else}
         <div bind:this={calculatorEl}
              class="mb-12 rounded-2xl border-2 border-white/20 bg-gradient-to-br from-gray-900 to-gray-950 p-6 md:p-8 shadow-2xl scroll-mt-4"
              style="animation: slideDown 0.3s ease-out;">
@@ -1391,6 +1458,7 @@
             {/if}
 
         </div>
+        {/if}
 
     {:else}
         <!-- Empty state -->
@@ -1404,7 +1472,11 @@
 
     <!-- ===== STEP 5: Period confirmation (FREE editing day + expiration) ===== -->
     {#if hasSelection}
-    <div class="mt-8 rounded-2xl bg-gradient-to-br from-purple-900/20 to-indigo-900/15 border-2 border-purple-500/40 p-5 md:p-7" dir="rtl">
+    {#if periodFolded}
+        <!-- שלב 5 מקופל - האישור והסכום בשורה אחת -->
+        {@render foldedStrip('5', `${$_('advertise.confirm_period')} · ₪${fmt(effectiveTotal)}`, () => periodFolded = false)}
+    {:else}
+    <div bind:this={step5El} class="mt-8 rounded-2xl bg-gradient-to-br from-purple-900/20 to-indigo-900/15 border-2 border-purple-500/40 p-5 md:p-7" dir="rtl">
         <h2 class="text-xl md:text-2xl font-black text-white mb-3 text-center flex items-center justify-center gap-2">
             <span class="w-7 h-7 rounded-full text-black text-sm font-black flex items-center justify-center flex-shrink-0"
                   style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.85">5</span>
@@ -1472,14 +1544,17 @@
                     {$_('advertise.confirm_period_sub1', { values: { date: fmtDate(today) } })}
                     {$_('advertise.confirm_period_sub2')}
                     {#each expirationInfos as info, i}{#if i > 0} · {/if}<span class="text-amber-300 font-bold">{fmtDate(info.date)} {$_('advertise.incl')}</span>{#if expirationInfos.length > 1}&nbsp;({$_(`advertise.${info.labelKey}`)}){/if}{/each}.
+                    {$_('advertise.confirm_period_sub3')}
+                    <span class="text-amber-300 font-bold">₪{fmt(effectiveTotal)}</span>.
                 </p>
             </div>
         </label>
     </div>
     {/if}
+    {/if}
 
     <!-- ===== STEP 6: Secure Payment ===== -->
-    <div class="mt-8 rounded-2xl bg-white/3 border border-white/10 p-6 md:p-8" dir="rtl"
+    <div bind:this={paymentEl} class="mt-8 rounded-2xl bg-white/3 border border-white/10 p-6 md:p-8" dir="rtl"
          class:opacity-50={hasSelection && !confirmedPeriod}
          class:pointer-events-none={hasSelection && !confirmedPeriod}>
         <h2 class="text-xl md:text-2xl font-black text-white mb-2 text-center flex items-center justify-center gap-2"
@@ -1676,7 +1751,7 @@
                 <p class="text-gray-400 text-xs mt-0.5">{$_('advertise.toast_more_q')}</p>
                 <button
                     type="button"
-                    onclick={() => { toastVisible = false; showPicker = true; window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                    onclick={() => { toastVisible = false; cityFolded = false; showPicker = true; window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                     class="text-amber-400 text-xs hover:text-amber-300 transition-colors mt-1 underline underline-offset-2 font-bold"
                 >{$_('advertise.toast_change')}</button>
             </div>

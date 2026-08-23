@@ -169,9 +169,12 @@ export const he = {
         dow_sat: "ש",
         legend_today: "היום - יום עריכה חינם",
         legend_expiry: "תאריך תפוגת הפרסומת",
-        confirm_period: "הבנתי את אורך התקופה ואת תאריך התפוגה",
+        confirm_period: "הבנתי את אורך התקופה, את תאריך התפוגה ואת סכום התשלום",
         confirm_period_sub1: "היום ({date}) - יום עריכה חינם.",
         confirm_period_sub2: "הפרסומת שלי תפעל עד",
+        confirm_period_sub3: "סכום התשלום:",
+        // פס שלב מקופל - שלב שהושלם מוצג כשורת סיכום
+        fold_change: "שינוי",
 
         // ===== שלב 6 - תשלום =====
         step6_title: "🔒 תשלום מאובטח",
@@ -702,9 +705,12 @@ export const en = {
         dow_sat: "S",
         legend_today: "Today - free editing day",
         legend_expiry: "Ad expiration date",
-        confirm_period: "I understand the period length and expiration date",
+        confirm_period: "I understand the period length, the expiration date and the payment amount",
         confirm_period_sub1: "Today ({date}) - free editing day.",
         confirm_period_sub2: "My ad will run until",
+        confirm_period_sub3: "The payment amount:",
+        // Folded step strip - a completed step shown as a one-line summary
+        fold_change: "Change",
 
         // ===== Step 6 - payment =====
         step6_title: "🔒 Secure payment",
@@ -1235,9 +1241,12 @@ export const ru = {
         dow_sat: "Сб",
         legend_today: "Сегодня - бесплатный день редактирования",
         legend_expiry: "Дата окончания рекламы",
-        confirm_period: "Я понимаю длительность периода и дату окончания",
+        confirm_period: "Я понимаю длительность периода, дату окончания и сумму оплаты",
         confirm_period_sub1: "Сегодня ({date}) - бесплатный день редактирования.",
         confirm_period_sub2: "Моя реклама будет работать до",
+        confirm_period_sub3: "Сумма оплаты:",
+        // Свёрнутый шаг - завершённый шаг показан одной строкой
+        fold_change: "Изменить",
 
         // ===== Шаг 6 - оплата =====
         step6_title: "🔒 Безопасная оплата",
