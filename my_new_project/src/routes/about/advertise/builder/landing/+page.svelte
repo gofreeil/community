@@ -511,6 +511,9 @@
                 planMonths,
                 // 'new' = משבצת נוספת שנקנתה, ואסור שתפיל את הפרסומת הקיימת
                 intent: adIntent,
+                // הגישה נפתחה בהצהרת "כבר שילמתי" במחירון - האדמין יראה
+                // "⚠️ טרם אומת תשלום" ויוודא לפני שהוא מאשר
+                paidUnverified: adIntent === "new" && localStorage.getItem("ad_paid_unverified") === "1",
                 // עריכה ממוקדת: המזהה של הפרסומת הספציפית שנערכת. השרת מקשר
                 // את הגרסה החדשה אליה בלבד, והאישור מחליף בדיוק אותה.
                 editOfAdId: adIntent === "edit" ? (getAdEditTarget() ?? undefined) : undefined,

@@ -102,6 +102,11 @@ export interface SubmittedAd {
      * דרך "עריכת הפרסומת"). לא מתקשרת לקודמת ולא מורידה אותה באישור.
      */
     standalone?: boolean;
+    /**
+     * הגישה לבילדר נפתחה בהצהרת "כבר שילמתי" במחירון, בלי שהתשלום אומת.
+     * האדמין מוודא שהתשלום אכן התקבל לפני שהוא מאשר את הפרסומת.
+     */
+    paymentUnverified?: boolean;
     /** תמונה ייעודית לגרסת הנייד; ריק = הנייד מציג את התמונה הראשית */
     mobileImage: string;
     /** מיקום+זום של תמונת הנייד */
@@ -149,6 +154,7 @@ interface StrapiAdAttrs {
         | (SubmittedAd['landing'] & {
               mainImageFit?: unknown;
               _standalone?: unknown;
+              _paymentUnverified?: unknown;
               mobileImage?: unknown;
               mobileImageFit?: unknown;
               adStyle?: unknown;
@@ -236,6 +242,7 @@ function fromStrapi(s: StrapiAd): SubmittedAd {
         mainImage,
         mainImageFit: parseAdImageFit(s.landing?.mainImageFit),
         standalone: s.landing?._standalone === true,
+        paymentUnverified: s.landing?._paymentUnverified === true,
         mobileImage,
         mobileImageFit: parseAdImageFit(s.landing?.mobileImageFit),
         imgVersion: imageStamp(logo, mainImage, mobileImage, ...landingImages),
@@ -769,6 +776,8 @@ export async function submitAd(
                 mobileImageFit: parseAdImageFit(payload.mobileImageFit),
                 // נשמר עם המודעה: גם באישור, שבא אחר-כך, אסור להוריד את הקיימת
                 ...(payload.standalone ? { _standalone: true } : {}),
+                // הצהרת "כבר שילמתי" שלא אומתה - האדמין רואה אזהרה לפני האישור
+                ...(payload.paymentUnverified ? { _paymentUnverified: true } : {}),
                 // העיצוב שהמפרסם קבע בבילדר — בלעדיו המודעה מתפרסמת עם
                 // ברירות המחדל של האתר ולא עם מה שהוא ראה על המסך
                 adStyle: parseAdStyle(payload.adStyle),
@@ -798,6 +807,7 @@ export async function submitAd(
     // כמו replacesAdId: לא נשענים על מה שחזר ב-POST, כדי שההתראה למנהל
     // תדע בוודאות שמדובר במשבצת נוספת ולא בעדכון
     if (payload.standalone) ad.standalone = true;
+    if (payload.paymentUnverified) ad.paymentUnverified = true;
 
     // בקשות קודמות שעדיין ממתינות לאישור לא צריכות להישאר בתור: המנהל אמור
     // לראות בקשה אחת לכל מפרסם - האחרונה - ולא שתי בקשות שנראות כפולות.

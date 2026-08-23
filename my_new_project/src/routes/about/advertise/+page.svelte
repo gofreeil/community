@@ -558,12 +558,32 @@
             // המסלול שנרכש - הבילדר קורא את זה כדי להציג "תרוץ עד" נכון
             const months = selectedItems.some(r => r.plan === 'half') ? 6 : 1;
             localStorage.setItem('ad_plan_months', String(months));
+            // פטור מלא = אין תשלום לוודא - דגל "לא אומת" מרכישה קודמת יורד
+            localStorage.removeItem('ad_paid_unverified');
         } catch { /* ignore */ }
         // הגעה דרך המחירון = רכישת פרסומת *נוספת*, לא עריכה של הקיימת.
         // בלי הסימון הזה השרת זיהה "מפרסם חוזר" לפי זהות בלבד, והשליחה
         // הייתה מורידה מהאתר את הפרסומת שכבר רצה.
         setAdIntent('new');
         goto('/about/advertise/builder');
+    }
+
+    // "כבר שילמתי" - פותח את הבילדר מיד על סמך ההצהרה. הסליקה עדיין לא
+    // מחוברת והתשלום ידני (וואטסאפ/ביט), כך שאין דרך לאמת אותו כאן; בלעדי
+    // זה מי ששילם באמת נתקע מול מסך נעילה בלי שום דרך להמשיך. הבקרה
+    // האמיתית נשארת אצל האדמין: הפרסומת מסומנת "⚠️ טרם אומת תשלום"
+    // בהודעה ובמסך האישור, ולא עולה לאתר בלי אישורו.
+    function enterBuilderPaidClaim() {
+        if (!browser) return;
+        try {
+            localStorage.setItem('ad_paid', '1');
+            localStorage.setItem('ad_paid_at', new Date().toISOString());
+            const months = selectedItems.some(r => r.plan === 'half') ? 6 : 1;
+            localStorage.setItem('ad_plan_months', String(months));
+            localStorage.setItem('ad_paid_unverified', '1');
+        } catch { /* ignore */ }
+        // גם כאן: הגעה דרך המחירון = רכישת פרסומת *נוספת*, לא עריכה
+        setAdIntent('new');
     }
 
     // תמונת רקע לכל שכונה - מוצגת בכפתור הבחירה כשבוחרים שכונה בודדת
@@ -1659,8 +1679,9 @@
                    class="inline-flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-500 text-white font-black px-6 py-3 rounded-xl text-sm transition-all hover:scale-105">
                     {$_('advertise.grow_btn')}
                 </a>
-                <!-- גם כאן: מי שמגיע לבילדר מהמחירון קנה משבצת נוספת -->
-                <a href="/about/advertise/builder" onclick={() => setAdIntent('new')}
+                <!-- הצהרת "כבר שילמתי" פותחת את הגישה לבילדר; הפרסומת תסומן
+                     לאדמין "טרם אומת תשלום" והוא מוודא לפני האישור -->
+                <a href="/about/advertise/builder" onclick={enterBuilderPaidClaim}
                    class="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-black px-6 py-3 rounded-xl text-sm transition-all hover:scale-105">
                     {$_('advertise.already_paid_btn')}
                 </a>
@@ -1677,7 +1698,7 @@
                     <span>{$_('advertise.after_pay_title')}</span>
                 </p>
                 <ul class="text-gray-200 text-xs md:text-sm leading-relaxed space-y-1 pr-6 list-disc list-outside">
-                    <li>{$_('advertise.after_li1_pre')}<a href="/about/advertise/builder" class="text-amber-300 hover:text-amber-200 font-bold underline">{$_('advertise.builder_link')}</a> {$_('advertise.after_li1_post')}</li>
+                    <li>{$_('advertise.after_li1_pre')}<a href="/about/advertise/builder" onclick={enterBuilderPaidClaim} class="text-amber-300 hover:text-amber-200 font-bold underline">{$_('advertise.builder_link')}</a> {$_('advertise.after_li1_post')}</li>
                     <li>{$_('advertise.after_li2_pre')} <strong class="text-green-300">{$_('advertise.autosaved_always')}</strong> {$_('advertise.after_li2_post')}</li>
                     <li>{$_('advertise.after_li3_pre')}<a href="/profile" class="text-amber-300 hover:text-amber-200 font-bold underline">{$_('advertise.your_profile')}</a> {$_('advertise.after_li3_post')}</li>
                 </ul>

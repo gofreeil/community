@@ -46,6 +46,12 @@ async function notifyAdminsInApp(ad: SubmittedAd) {
         (contactEmail ? `אימייל: ${contactEmail}\n` : '') +
         (ad.landing?.phone ? `טלפון: ${ad.landing.phone}\n` : '') +
         (ad.landing?.website ? `אתר: ${ad.landing.website}\n` : '');
+    // הצהרת תשלום שלא אומתה - האדמין חייב לראות את זה לפני שהוא מאשר.
+    // הדגל קיים רק ברכישה חדשה מהמחירון (intent 'new'), לכן מופיע רק
+    // בענף "בקשת פרסום חדשה" ולא בענף העדכון.
+    const paymentLine = ad.paymentUnverified
+        ? `\n⚠️ טרם אומת תשלום - המפרסם נכנס לבילדר דרך "כבר שילמתי" במחירון. מומלץ לוודא שהתשלום התקבל לפני האישור.\n`
+        : '';
     // הסופר-אדמין וגם כל אדמין שמונה - כולם צריכים לראות בקשת פרסום
     const admins = await getAllAdminRecipients();
     await Promise.all(admins.map(admin => createItem({
@@ -69,6 +75,7 @@ async function notifyAdminsInApp(ad: SubmittedAd) {
               (ad.standalone
                   ? `\nזו פרסומת נוספת שנרכשה במחירון - היא מתווספת לפרסומת שכבר רצה למפרסם הזה, ולא באה במקומה.\n`
                   : '') +
+              paymentLine +
               `\nהיכנס/י לעמוד "אישור פרסומות" בפאנל הניהול כדי לאשר או לדחות.\n` +
               `קישור: /admin/ads-review`,
         icon:        isUpdate ? '🔄' : '📢',
@@ -88,6 +95,7 @@ async function notifyAdminsInApp(ad: SubmittedAd) {
             advertiser_phone:  ad.landing?.phone ?? '',
             review_link:       '/admin/ads-review',
             submitted_at:      ad.submittedAt,
+            payment_unverified: !!ad.paymentUnverified,
             read:              false,
         },
     })));
@@ -146,6 +154,9 @@ export const POST: RequestHandler = async (event) => {
         // 'new' = המפרסם הגיע דרך המחירון וקנה משבצת נוספת. השליחה הזו לא
         // מתקשרת לפרסומת הקיימת ולא מורידה אותה כשהיא מאושרת.
         standalone: payload.intent === 'new',
+        // הצהרת "כבר שילמתי" מהמחירון - תשלום שטרם אומת. רלוונטי רק לרכישה
+        // חדשה; בעריכה של פרסומת קיימת אין תשלום חדש לוודא.
+        paymentUnverified: payload.intent === 'new' && payload.paidUnverified === true,
         // עריכה ממוקדת: המזהה של הפרסומת הספציפית ש"ערוך" נלחץ עליה
         // בנכסים. השרת מקשר את הגרסה החדשה אליה בלבד (אחרי אימות בעלות).
         editOfAdId: typeof payload.editOfAdId === 'string' && payload.editOfAdId.trim()

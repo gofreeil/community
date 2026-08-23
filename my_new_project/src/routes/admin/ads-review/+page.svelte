@@ -385,6 +385,18 @@
                                     </div>
                                 </form>
                             {:else}
+                                <!-- הגישה לבילדר נפתחה בהצהרת "כבר שילמתי" בלי אימות -
+                                     האזהרה מוצגת עד שהאדמין מחליט, כדי שיוודא תשלום לפני אישור -->
+                                {#if ad.paymentUnverified && ad.status === 'pending'}
+                                    <div class="mb-2 rounded-lg border border-amber-400/50 bg-amber-500/10 px-2.5 py-1.5">
+                                        <p class="text-[11px] md:text-xs font-black text-amber-200 m-0">
+                                            ⚠️ טרם אומת תשלום - המפרסם נכנס דרך "כבר שילמתי" במחירון
+                                        </p>
+                                        <p class="text-[10px] md:text-[11px] text-amber-100/70 m-0 mt-0.5">
+                                            מומלץ לוודא שהתשלום התקבל לפני האישור.
+                                        </p>
+                                    </div>
+                                {/if}
                                 <!-- מפרסם חוזר ששיפר את הפרסומת שלו: לא בקשה חדשה אלא גרסה
                                      מעודכנת, והאישור מחליף את הישנה במקום להוסיף פרסומת שנייה -->
                                 {#if ad.replacesAdId && ad.status === 'pending'}
