@@ -3222,13 +3222,6 @@
 				>
 					🏘️ {tFn("profile.coord_area")}
 				</a>
-				<a
-					href="/coordinator/guide"
-					class="flex-1 min-w-[160px] text-xs md:text-sm font-bold text-sky-300 hover:text-sky-200 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-sky-500/10 border border-sky-500/30 hover:border-sky-400/50 flex items-center justify-center gap-1.5"
-					title={tFn("profile.coord_guide_title")}
-				>
-					{tFn("profile.coord_guide")}
-				</a>
 				{#if isPrimaryAdmin}
 					<a
 						href="https://api.gofreeil.com/admin"
@@ -3258,14 +3251,6 @@
 						title={tFn("profile.coord_area_title")}
 					>
 						{tFn("profile.coord_enter")}
-					</a>
-					<!-- מדריך הרכז - רק למי שכבר רכז מאושר -->
-					<a
-						href="/coordinator/guide"
-						class="flex-1 min-w-[160px] text-center text-xs md:text-sm font-bold text-sky-300 hover:text-sky-200 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-sky-500/10 border border-sky-500/30 hover:border-sky-400/50"
-						title={tFn("profile.coord_guide_title")}
-					>
-						{tFn("profile.coord_guide")}
 					</a>
 				{/if}
 				{#if isUserAdmin}
