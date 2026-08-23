@@ -263,6 +263,8 @@ export const he = {
         b_reset: "איפוס טיוטה והתחלה מחדש",
         b_reset_confirm: "לאפס את כל השדות ולהתחיל מחדש?",
         b_upload_image_file: "נא להעלות קובץ תמונה",
+        b_err_image_read: "לא הצלחנו לקרוא את התמונה שנבחרה. ייתכן שהפורמט לא נתמך (למשל HEIC מאייפון) — שמרו אותה כ-JPG או בחרו תמונה אחרת.",
+        b_err_draft_save: "הטיוטה גדולה מדי ולא נשמרת במכשיר — העבודה עלולה ללכת לאיבוד במעבר עמוד. הקטינו או הסירו תמונות (למשל תמונות מוצרים) עד שההודעה תיעלם.",
 
         // ===== builder — שלב 1: תמונה =====
         b_s1_title: "העלה תמונה ראשית לפרסומת",
@@ -799,6 +801,8 @@ export const en = {
         b_reset: "Reset draft and start over",
         b_reset_confirm: "Reset all fields and start over?",
         b_upload_image_file: "Please upload an image file",
+        b_err_image_read: "We couldn't read the selected image. The format may be unsupported (e.g. iPhone HEIC) — save it as JPG or pick another image.",
+        b_err_draft_save: "The draft is too large and can't be saved on this device — your work may be lost when leaving the page. Reduce or remove images (e.g. product photos) until this message disappears.",
 
         // ===== builder — step 1: image =====
         b_s1_title: "Upload a main image for the ad",
@@ -1335,6 +1339,8 @@ export const ru = {
         b_reset: "Сбросить черновик и начать заново",
         b_reset_confirm: "Сбросить все поля и начать заново?",
         b_upload_image_file: "Пожалуйста, загрузите файл изображения",
+        b_err_image_read: "Не удалось прочитать выбранное изображение. Возможно, формат не поддерживается (например, HEIC с iPhone) — сохраните его как JPG или выберите другое изображение.",
+        b_err_draft_save: "Черновик слишком большой и не сохраняется на устройстве — работа может потеряться при переходе со страницы. Уменьшите или удалите изображения (например, фото товаров), пока это сообщение не исчезнет.",
 
         // ===== builder — шаг 1: изображение =====
         b_s1_title: "Загрузите главное изображение рекламы",

@@ -89,14 +89,16 @@
     }
     async function compressImageToFit(file: File, maxBytes: number): Promise<{ dataUrl: string; wasCompressed: boolean; originalMB: number; finalMB: number }> {
         const originalMB = file.size / (1024 * 1024);
-        if (file.size <= maxBytes) {
-            const dataUrl = await fileToDataUrl(file);
-            return { dataUrl, wasCompressed: false, originalMB, finalMB: originalMB };
-        }
         const srcUrl = await fileToDataUrl(file);
+        // גם תמונה שקטנה מהתקרה נטענת פעם אחת ל-Image: קובץ שהדפדפן לא יודע
+        // לפענח (HEIC מאייפון, קובץ פגום) חייב להיזרק כאן - אחרת הוא נשמר
+        // כמו-שהוא ומוצג בהמשך כתמונה שבורה בלי שום הסבר.
         const img = new Image();
         img.src = srcUrl;
         await new Promise<void>((resolve, reject) => { img.onload = () => resolve(); img.onerror = () => reject(new Error("image load failed")); });
+        if (file.size <= maxBytes) {
+            return { dataUrl: srcUrl, wasCompressed: false, originalMB, finalMB: originalMB };
+        }
         let w = img.naturalWidth, h = img.naturalHeight;
         const MAX_EDGE = 2400;
         const longest = Math.max(w, h);
@@ -139,13 +141,34 @@
         compressNotice = { ...compressNotice, visible: false };
     }
 
+    // כשל בקריאת תמונה (פורמט לא נתמך, קובץ פגום) חייב משוב נראה - בלעדיו
+    // ההעלאה נכשלת בשקט והמפרסם בטוח שהאתר שבור (קרה בפועל, 23.8.2026).
+    let uploadErrorVisible = $state(false);
+    let uploadErrorTimer: number | null = null;
+    function showUploadError() {
+        if (uploadErrorTimer) { clearTimeout(uploadErrorTimer); uploadErrorTimer = null; }
+        uploadErrorVisible = true;
+        uploadErrorTimer = window.setTimeout(() => { uploadErrorVisible = false; uploadErrorTimer = null; }, 12000);
+    }
+    function dismissUploadError() {
+        if (uploadErrorTimer) { clearTimeout(uploadErrorTimer); uploadErrorTimer = null; }
+        uploadErrorVisible = false;
+    }
+
     async function processImageFile(file: File | null | undefined, target: "landing" | { kind: "product"; id: number }) {
         if (!file) return;
         if (!file.type.startsWith("image/")) { alert($_("advertise.b_upload_image_file")); return; }
         // תקרת הבקשה ל-Strapi היא ~1MB לכל המודעה יחד — תמונת נחיתה/מוצר
         // חייבת להישאר קטנה בהרבה (היה 5MB, והשליחה נפלה על 413)
         const MAX_BYTES = 300 * 1024;
-        const { dataUrl, wasCompressed, originalMB, finalMB } = await compressImageToFit(file, MAX_BYTES);
+        let result: Awaited<ReturnType<typeof compressImageToFit>>;
+        try {
+            result = await compressImageToFit(file, MAX_BYTES);
+        } catch {
+            showUploadError();
+            return;
+        }
+        const { dataUrl, wasCompressed, originalMB, finalMB } = result;
         if (wasCompressed) showCompressNotice(originalMB, finalMB);
         if (target === "landing") {
             landingImage = dataUrl;
@@ -305,6 +328,10 @@
     // הריצה הראשונה היא טעינת הטיוטה ולא עריכה, ולכן היא לא מבטלת את
     // סימון "נשלחה לאישור" - אחרת עצם הכניסה לעמוד הייתה מחזירה את הנדנוד
     let persistRanOnce = false;
+    // הטיוטה (כולל כל התמונות כ-base64) יכולה לחצות את מכסת ה-localStorage;
+    // אז setItem נזרק, שום דבר לא נשמר, והעבודה נעלמת ברענון/מעבר עמוד.
+    // הדגל מציג אזהרה קבועה עד שהטיוטה מצטמקת ונשמרת שוב בהצלחה.
+    let draftSaveFailed = $state(false);
     $effect(() => {
         if (!browser) return;
         try {
@@ -317,7 +344,10 @@
                 products, uniqueness, address, hours,
             };
             localStorage.setItem(LS_KEY, JSON.stringify(merged));
-        } catch {}
+            draftSaveFailed = false;
+        } catch {
+            draftSaveFailed = true;
+        }
         if (persistRanOnce) clearAdSubmitted(); else persistRanOnce = true;
     });
 
@@ -550,6 +580,23 @@
                 <button type="button" class="compress-toast-close" onclick={dismissCompressNotice} aria-label={$_("advertise.close")}>✕</button>
                 <p class="text-sm text-amber-100 font-bold m-0">
                     {$_("advertise.l_ct_compressed", { values: { a: compressNotice.originalMB.toFixed(1), b: compressNotice.finalMB.toFixed(1) } })}
+                </p>
+            </div>
+        {/if}
+
+        {#if uploadErrorVisible}
+            <div class="compress-toast error-toast" role="alert">
+                <button type="button" class="compress-toast-close" onclick={dismissUploadError} aria-label={$_("advertise.close")}>✕</button>
+                <p class="text-sm text-red-100 font-bold m-0">
+                    {$_("advertise.b_err_image_read")}
+                </p>
+            </div>
+        {/if}
+
+        {#if draftSaveFailed}
+            <div class="compress-toast error-toast draft-warn" role="alert">
+                <p class="text-sm text-red-100 font-bold m-0">
+                    {$_("advertise.b_err_draft_save")}
                 </p>
             </div>
         {/if}
@@ -958,6 +1005,17 @@
         cursor: pointer;
     }
     :global(.compress-toast-close:hover) { background: rgba(220, 38, 38, 0.85); }
+    /* גרסת שגיאה של אותו toast - אדום במקום ענבר */
+    :global(.compress-toast.error-toast) {
+        border-color: rgba(248, 113, 113, 0.6);
+        background: linear-gradient(135deg, rgba(127, 29, 29, 0.94), rgba(153, 27, 27, 0.9));
+        box-shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(248, 113, 113, 0.18) inset;
+    }
+    /* אזהרת "הטיוטה לא נשמרת" יושבת בתחתית - קבועה, ולא מתנגשת עם toast עליון */
+    :global(.compress-toast.draft-warn) {
+        top: auto;
+        bottom: 1rem;
+    }
 
     /* ============== Step Card ============== */
     :global(.step-card) {

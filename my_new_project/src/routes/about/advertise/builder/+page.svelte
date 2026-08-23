@@ -507,14 +507,16 @@
     }
     async function compressImageToFit(file: File, maxBytes: number): Promise<{ dataUrl: string; wasCompressed: boolean; originalMB: number; finalMB: number }> {
         const originalMB = file.size / (1024 * 1024);
-        if (file.size <= maxBytes) {
-            const dataUrl = await fileToDataUrl(file);
-            return { dataUrl, wasCompressed: false, originalMB, finalMB: originalMB };
-        }
         const srcUrl = await fileToDataUrl(file);
+        // גם תמונה שקטנה מהתקרה נטענת פעם אחת ל-Image: קובץ שהדפדפן לא יודע
+        // לפענח (HEIC מאייפון, קובץ פגום) חייב להיזרק כאן - אחרת הוא נשמר
+        // כמו-שהוא ומוצג בהמשך כתמונה שבורה בלי שום הסבר.
         const img = new Image();
         img.src = srcUrl;
         await new Promise<void>((resolve, reject) => { img.onload = () => resolve(); img.onerror = () => reject(new Error("image load failed")); });
+        if (file.size <= maxBytes) {
+            return { dataUrl: srcUrl, wasCompressed: false, originalMB, finalMB: originalMB };
+        }
 
         let w = img.naturalWidth, h = img.naturalHeight;
         const MAX_EDGE = 2400;
@@ -559,6 +561,21 @@
         compressNotice = { ...compressNotice, visible: false };
     }
 
+    // ===== Upload error (toast) =====
+    // כשל בקריאת תמונה (פורמט לא נתמך, קובץ פגום) חייב משוב נראה - בלעדיו
+    // ההעלאה נכשלת בשקט והמפרסם בטוח שהאתר שבור (קרה בפועל, 23.8.2026).
+    let uploadErrorVisible = $state(false);
+    let uploadErrorTimer: number | null = null;
+    function showUploadError() {
+        if (uploadErrorTimer) { clearTimeout(uploadErrorTimer); uploadErrorTimer = null; }
+        uploadErrorVisible = true;
+        uploadErrorTimer = window.setTimeout(() => { uploadErrorVisible = false; uploadErrorTimer = null; }, 12000);
+    }
+    function dismissUploadError() {
+        if (uploadErrorTimer) { clearTimeout(uploadErrorTimer); uploadErrorTimer = null; }
+        uploadErrorVisible = false;
+    }
+
     async function processImageFile(file: File | null | undefined, target: "main" | "mobile" | "logo" | "landingImage" | { kind: "product"; id: number }) {
         if (!file) return;
         if (!file.type.startsWith("image/")) {
@@ -569,7 +586,14 @@
         // שמוגבלת ל-~1MB (koa-body) — לכן כל תמונה מכווצת כבר כאן להרבה
         // פחות מזה, ולא ל-5MB כפי שהיה (מה שהפיל את השליחה ב-413).
         const MAX_BYTES = 450 * 1024;
-        const { dataUrl: url, wasCompressed, originalMB, finalMB } = await compressImageToFit(file, MAX_BYTES);
+        let result: Awaited<ReturnType<typeof compressImageToFit>>;
+        try {
+            result = await compressImageToFit(file, MAX_BYTES);
+        } catch {
+            showUploadError();
+            return;
+        }
+        const { dataUrl: url, wasCompressed, originalMB, finalMB } = result;
         if (wasCompressed) showCompressNotice(originalMB, finalMB);
         if (target === "main") {
             mainImage = url;
@@ -868,6 +892,10 @@
     // of the draft (not an edit), so it is skipped via autosaveRanOnce.
     let formDirty = $state(false);
     let autosaveRanOnce = false;
+    // הטיוטה (כולל כל התמונות כ-base64) יכולה לחצות את מכסת ה-localStorage;
+    // אז setItem נזרק, שום דבר לא נשמר, והעבודה נעלמת במעבר לעמוד הנחיתה.
+    // הדגל מציג אזהרה קבועה עד שהטיוטה מצטמקת ונשמרת שוב בהצלחה.
+    let draftSaveFailed = $state(false);
 
     $effect(() => {
         if (!browser) return;
@@ -878,7 +906,12 @@
             landingHeadline, landingPitch, landingExtended, landingImage, landingAdvantages, uniqueness, phone, whatsapp, website,
             email, address, hours, products,
         };
-        try { localStorage.setItem(LS_KEY, JSON.stringify(snapshot)); } catch {}
+        try {
+            localStorage.setItem(LS_KEY, JSON.stringify(snapshot));
+            draftSaveFailed = false;
+        } catch {
+            draftSaveFailed = true;
+        }
         if (autosaveRanOnce) {
             formDirty = true;
             // עריכה אמיתית אחרי שליחה - יש שוב מה לסיים, והתזכורת חוזרת
@@ -1159,6 +1192,31 @@
                         {$_('advertise.b_ct_p4')}
                     </p>
                 </div>
+            </div>
+        </div>
+    {/if}
+
+    <!-- Floating toast: image could not be read (unsupported format / corrupt file) -->
+    {#if uploadErrorVisible}
+        <div class="compress-toast error-toast" role="alert">
+            <button type="button" class="compress-toast-close" onclick={dismissUploadError} aria-label={$_('advertise.b_close_notice')}>✕</button>
+            <div class="flex items-start gap-3">
+                <span class="text-3xl flex-shrink-0">❌</span>
+                <p class="flex-1 min-w-0 text-right text-red-100 text-sm md:text-base font-bold leading-relaxed m-0">
+                    {$_('advertise.b_err_image_read')}
+                </p>
+            </div>
+        </div>
+    {/if}
+
+    <!-- Persistent warning: draft exceeds localStorage quota and is NOT being saved -->
+    {#if draftSaveFailed}
+        <div class="compress-toast error-toast draft-warn" role="alert">
+            <div class="flex items-start gap-3">
+                <span class="text-3xl flex-shrink-0">⚠️</span>
+                <p class="flex-1 min-w-0 text-right text-red-100 text-sm md:text-base font-bold leading-relaxed m-0">
+                    {$_('advertise.b_err_draft_save')}
+                </p>
             </div>
         </div>
     {/if}
@@ -2160,6 +2218,17 @@
     @keyframes compressToastIn {
         from { opacity: 0; transform: translate(-50%, -8px); }
         to   { opacity: 1; transform: translate(-50%, 0); }
+    }
+    /* גרסת שגיאה של אותו toast - אדום במקום ענבר */
+    :global(.compress-toast.error-toast) {
+        border-color: rgba(248, 113, 113, 0.6);
+        background: linear-gradient(135deg, rgba(127, 29, 29, 0.94), rgba(153, 27, 27, 0.9));
+        box-shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(248, 113, 113, 0.18) inset;
+    }
+    /* אזהרת "הטיוטה לא נשמרת" יושבת בתחתית - קבועה, ולא מתנגשת עם toast עליון */
+    :global(.compress-toast.draft-warn) {
+        top: auto;
+        bottom: 1rem;
     }
 
     /* ============== Step Card ============== */
