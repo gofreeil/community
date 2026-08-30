@@ -18,6 +18,7 @@ import {
     setAdSlot,
     computeAdSlots,
     setAdDuration,
+    setAdExpiry,
     normalizeDurationDays,
     pauseAd,
     resumeAd,
@@ -174,9 +175,9 @@ export const actions: Actions = {
         return { success: true, message: `הורדה מהאתר: ${r.title}` };
     },
 
-    // קציבת תקופת פרסום - התקופה נספרת מיום הפרסום
+    // קציבת תקופת פרסום - התקופה נספרת מיום הפרסום. שמורה לסופר-אדמין
     setDuration: async (event) => {
-        await ensureAdsAdmin(event);
+        await ensureSuperAdmin(event);
         const formData = await event.request.formData();
         const id = formData.get('id') as string;
         if (!id) return fail(400, { error: 'חסר מזהה' });
@@ -191,6 +192,27 @@ export const actions: Actions = {
         if (!r) return fail(404, { error: 'הפרסומת לא נמצאה' });
         const suffix = r.daysLeft < 0 ? ' - התקופה כבר חלפה, הפרסומת ירדה מהאתר' : '';
         return { success: true, message: `${r.title}: ${days} ימים, עד ${fmtDay(r.expiresAt)}${suffix}` };
+    },
+
+    // תאריך תפוגה שרירותי מחלון הקציבה - הפרסומת יורדת בסוף היום שנבחר. שמור לסופר-אדמין
+    setExpiry: async (event) => {
+        await ensureSuperAdmin(event);
+        const formData = await event.request.formData();
+        const id = formData.get('id') as string;
+        const expires = formData.get('expires') as string;
+        if (!id || !expires) return fail(400, { error: 'חסר תאריך תפוגה' });
+        const d = new Date(`${expires}T23:59:59`);
+        if (isNaN(d.getTime())) return fail(400, { error: 'תאריך לא תקין' });
+        let r;
+        try {
+            r = await setAdExpiry(id, d.toISOString());
+        } catch (e) {
+            console.warn('[admin/ads-review] setExpiry failed:', e instanceof Error ? e.message : e);
+            return fail(502, { error: 'קביעת התאריך נכשלה - נסה שוב בעוד רגע' });
+        }
+        if (!r) return fail(404, { error: 'הפרסומת לא נמצאה' });
+        const suffix = r.daysLeft < 0 ? ' - התאריך שנקבע כבר עבר, הפרסומת ירדה מהאתר' : '';
+        return { success: true, message: `${r.title}: תפוגה נקבעה ל-${fmtDay(r.expiresAt)}${suffix}` };
     },
 
     // השהיה - יורדת מהאתר ושומרת את הימים שנותרו

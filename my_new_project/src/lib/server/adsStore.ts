@@ -1164,6 +1164,34 @@ export async function setAdDuration(id: string, days: number): Promise<{ title: 
 }
 
 /**
+ * קובע תאריך תפוגה שרירותי (מחלון הקציבה). המשך (duration_days) נגזר
+ * ממנו ביחס ליום הפרסום, כדי שהטבלה תמשיך להציג "X מתוך Y" עקבי.
+ * התזכורות מתאפסות כדי שהמפרסם יקבל התראה לפי התאריך החדש.
+ */
+export async function setAdExpiry(id: string, expiresIso: string): Promise<{ title: string; expiresAt: string; daysLeft: number } | null> {
+    const existing = await findByDocumentId(id);
+    if (!existing) return null;
+    const expires = new Date(expiresIso);
+    if (isNaN(expires.getTime())) return null;
+    const from = existing.decided_at ?? existing.submitted_at ?? existing.createdAt ?? new Date().toISOString();
+    const days = Math.max(0, Math.ceil((expires.getTime() - new Date(from).getTime()) / DAY_MS));
+    const res = await strapiPut<{ data: StrapiAd }>(`${ENDPOINT}/${id}`, {
+        data: {
+            duration_days:  days,
+            expires_at:     expires.toISOString(),
+            reminders_sent: [],
+        },
+    });
+    invalidate('ads:');
+    const ad = fromStrapi(res.data);
+    return {
+        title: ad.title,
+        expiresAt: expires.toISOString(),
+        daysLeft: Math.ceil((expires.getTime() - Date.now()) / DAY_MS),
+    };
+}
+
+/**
  * השהיה: הפרסומת יורדת מהאתר אבל שומרת את הימים שנותרו לה, וממשיכה
  * מאותה נקודה כשמפעילים אותה מחדש. בשונה מ"הורד מהאתר" - המפרסם לא
  * מפסיד ימים ששילם עליהם, והפרסומת לא חוזרת לתור האישורים.
@@ -1281,6 +1309,10 @@ export interface AdSchedule {
     paymentAmount: number;
     /** מספר המקום בטור הפרסומות (1..16) - מוזן ב-listSchedules */
     slot?: number;
+    /** מתי המפרסם הגיש - מוצג בחלון הקציבה */
+    submittedAt: string;
+    /** המפרסם הצהיר "כבר שילמתי" והתשלום טרם אומת ידנית */
+    paymentUnverified: boolean;
 }
 
 export function computeSchedule(ad: SubmittedAd): AdSchedule | null {
@@ -1307,6 +1339,8 @@ export function computeSchedule(ad: SubmittedAd): AdSchedule | null {
         daysLeft,
         state,
         paymentAmount: ad.paymentAmount ?? 0,
+        submittedAt: ad.submittedAt ?? '',
+        paymentUnverified: ad.paymentUnverified === true,
     };
 }
 
