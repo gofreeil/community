@@ -9,6 +9,15 @@
 
     let contactMenuOpen = $state(false);
     let selectedContact: 'request' | 'exchange' | 'message' | null = $state(null);
+
+    // צפייה חופשית לכולם; אינטראקציה מחייבת התחברות - מפנים להרשמה עם חזרה לכרטיס
+    function openContact(kind: 'request' | 'exchange' | 'message') {
+        if (!data.isLoggedIn) {
+            window.location.href = '/login?redirect=' + encodeURIComponent(`/singles/${s.id}`);
+            return;
+        }
+        selectedContact = kind;
+    }
     let contactLoading = $state(false);
     let contactMessage = $state('');
     let contactError = $state('');
@@ -320,21 +329,21 @@
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         <button
                             type="button"
-                            onclick={() => { selectedContact = 'request'; }}
+                            onclick={() => openContact('request')}
                             class="flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-xl transition-colors text-sm shadow-lg shadow-purple-900/30"
                         >
                             📞 שלח בקשה
                         </button>
                         <button
                             type="button"
-                            onclick={() => { selectedContact = 'exchange'; }}
+                            onclick={() => openContact('exchange')}
                             class="flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-500 text-white font-bold py-3 rounded-xl transition-colors text-sm shadow-lg shadow-orange-900/30"
                         >
                             🔄 החלף כרטיסים
                         </button>
                         <button
                             type="button"
-                            onclick={() => { selectedContact = 'message'; }}
+                            onclick={() => openContact('message')}
                             class="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition-colors text-sm shadow-lg shadow-indigo-900/30"
                         >
                             💬 שלח הודעה
