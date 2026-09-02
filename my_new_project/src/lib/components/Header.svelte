@@ -24,7 +24,8 @@
     ];
 
     let showLangDropdown = $state(false);
-    let onlineUsers = $state(1);
+    // ערך פתיחה עד לתשובת ה-ping הראשונה: הגולש עצמו + היסט התצוגה (+2) שמוחל ב-/api/ping
+    let onlineUsers = $state(3);
 
     // מספר הודעות שלא נקראו - להצגת עיגול התראה על תמונת הפרופיל (כמו בדף הפרופיל)
     let unreadMessages = $state(0);

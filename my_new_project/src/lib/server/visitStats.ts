@@ -17,11 +17,6 @@ export interface VisitStat {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-// היסט תצוגה: הספירה המוצגת באתר גבוהה תמיד ב-2 מהספירה האמיתית שנשמרת ב-Strapi
-// (בקשת המשתמש, 1.9.2026 - "עד הודעה חדשה"). לביטול: להחזיר ל-0.
-// ההיסט מוחל רק בקריאה לתצוגה - הנתונים השמורים נשארים אמיתיים.
-const DISPLAY_OFFSET = 2;
-
 interface StrapiListResponse {
     data?: Array<{ month?: string; count?: number }>;
 }
@@ -33,7 +28,7 @@ export async function trackVisit(): Promise<void> {
 
 /** כל היסטוריית הכניסות החודשית, ממוינת מהחדש לישן. מתרענן פעם ביממה. */
 export async function getVisitStats(): Promise<VisitStat[]> {
-    const raw = await cached('visitStats:all', DAY_MS, async () => {
+    return cached('visitStats:all', DAY_MS, async () => {
         const res = await strapiGet<StrapiListResponse>('/api/visit-stats', {
             'sort': 'month:desc',
             'pagination[pageSize]': '500',
@@ -42,13 +37,11 @@ export async function getVisitStats(): Promise<VisitStat[]> {
             .filter((s) => typeof s.month === 'string')
             .map((s) => ({ month: s.month as string, count: s.count ?? 0 }));
     });
-    // ה-cache שומר את המספרים האמיתיים; ההיסט מוחל על עותק חדש בכל קריאה
-    return raw.map((s) => ({ ...s, count: s.count + DISPLAY_OFFSET }));
 }
 
-/** מספר הכניסות בחודש הנוכחי (לפי שעון ישראל). גם בלי רשומה עדיין מוחל ההיסט. */
+/** מספר הכניסות בחודש הנוכחי (לפי שעון ישראל). 0 אם עוד אין רשומה. */
 export async function getVisitsThisMonth(): Promise<number> {
     const month = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jerusalem' }).slice(0, 7);
     const stats = await getVisitStats();
-    return stats.find((s) => s.month === month)?.count ?? DISPLAY_OFFSET;
+    return stats.find((s) => s.month === month)?.count ?? 0;
 }

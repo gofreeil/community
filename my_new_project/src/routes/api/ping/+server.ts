@@ -29,5 +29,8 @@ export const POST: RequestHandler = async ({ cookies }) => {
     sessions.set(sessionId, Date.now());
     cleanup();
 
-    return json({ count: sessions.size });
+    // היסט תצוגה: מונה ה"מחוברים" בראש האתר מציג תמיד 2 יותר מהספירה האמיתית
+    // (בקשת המשתמש, 2.9.2026 - "עד הודעה חדשה"). לביטול: להחזיר ל-0.
+    const DISPLAY_OFFSET = 2;
+    return json({ count: sessions.size + DISPLAY_OFFSET });
 };
