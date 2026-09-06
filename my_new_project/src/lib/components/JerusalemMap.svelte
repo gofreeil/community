@@ -1053,7 +1053,7 @@
     // פיקסלים שווה קילומטרים בשטח, והפין היה נוחת בשכונה אחרת.
     function spreadRadiusPx(n: number, z: number): number {
         if (z < ICONS_MIN_ZOOM) return 9;    // זום ארצי - נקודות צבעוניות בלבד
-        if (z < LABELS_MIN_ZOOM) return 26;  // זום עיר - אימוג'ים בלי שמות
+        if (z < labelsMinZoom) return 26;    // זום פתיחה/עיר - אימוג'ים בלי שמות
         // מספיק לזוג פינים (גובה פין ≈ 60px), וגדל כשיש יותר פריטים על הטבעת
         return Math.max(42, (n * 54) / (2 * Math.PI)) * pinScaleFor(z);
     }
@@ -1142,11 +1142,16 @@
     //
     // בנוסף - תצוגה מדורגת לפי מרחק (מחלקות על מיכל המפה, ה-CSS עושה את השאר):
     //   זום 18-19 (מקסימלי)    - רמת הדגשה: הכיתוב גדל מעט והלוגו מובלט מעט
-    //   זום 13-17 (שכונה)      - אימוג'י + שם מלא
-    //   זום 10-12 (עיר)        - אימוג'י בלבד, השמות נעלמים
+    //   מעל זום הפתיחה        - אימוג'י + שם מלא
+    //   זום פתיחה ומטה (עיר)  - אימוג'י/לוגו בלבד, השמות נעלמים
     //   זום 8-9 (רמה ארצית)    - נקודות צבעוניות בלבד במקום האימוג'ים
     // קריאות עזרה מוחרגות - תמיד מוצגות במלואן.
-    const LABELS_MIN_ZOOM = 13;   // מתחת לזה השמות נעלמים
+    //
+    // בפתיחה הראשונה רואים רק לוגו/אימוג'י על המפה; השמות נחשפים רק כשמתקרבים
+    // צעד אחד מעבר לזום שבו המפה נפתחה. לכן סף השמות אינו קבוע: fitToMarkers
+    // מעדכן אותו לזום-הפתיחה+1 (ולעולם לא פחות מ-LABELS_MIN_ZOOM).
+    const LABELS_MIN_ZOOM = 13;   // רצפה: מתחת לזה השמות נעלמים תמיד
+    let labelsMinZoom = LABELS_MIN_ZOOM;
     const ICONS_MIN_ZOOM = 10;    // מתחת לזה גם האימוג'ים מתחלפים בנקודות
     const MAX_EMPHASIS_ZOOM = 18; // מכאן ומעלה (זום מקסימלי) - רמת ההדגשה
     // עד זום 14 (תצוגת שכונה) - גודל מלא לקריאוּת;
@@ -1162,7 +1167,7 @@
         if (!leafletMap || !mapEl) return;
         const z = leafletMap.getZoom();
         mapEl.style.setProperty('--jmap-pin-scale', String(pinScaleFor(z)));
-        mapEl.classList.toggle('jmap-zoom-icons', z < LABELS_MIN_ZOOM && z >= ICONS_MIN_ZOOM);
+        mapEl.classList.toggle('jmap-zoom-icons', z < labelsMinZoom && z >= ICONS_MIN_ZOOM);
         mapEl.classList.toggle('jmap-zoom-dots', z < ICONS_MIN_ZOOM);
         mapEl.classList.toggle('jmap-zoom-max', z >= MAX_EMPHASIS_ZOOM);
         // הפיזור מחושב בפיקסלים ותלוי גם בזום וגם בגודל הפין - לעדכן יחד
@@ -1203,7 +1208,15 @@
         const fitPts = [...(core.length ? core : pts), ...helpPts];
 
         const bounds = leafletL.latLngBounds(fitPts);
-        leafletMap.fitBounds(bounds, { padding: [30, 30], maxZoom: 17, animate });
+        const FIT_MAX_ZOOM = 17;
+        const padding = [30, 30];
+        // זום הפתיחה מחושב מראש (ולא נקרא אחרי fitBounds) כי באנימציה getZoom
+        // מחזיר את הערך הישן עד סוף המעבר. השמות נחשפים רק צעד אחד מעבר לזום זה.
+        const openingZoom = Math.min(FIT_MAX_ZOOM, leafletMap.getBoundsZoom(bounds, false, padding));
+        labelsMinZoom = Math.max(LABELS_MIN_ZOOM, openingZoom + 1);
+        leafletMap.fitBounds(bounds, { padding, maxZoom: FIT_MAX_ZOOM, animate });
+        // אם הזום לא השתנה (זהה לקודם) zoomend לא יורה - לרענן את המחלקות ידנית
+        applyPinScale();
         return true;
     }
 
@@ -3228,7 +3241,7 @@
         display: inline-block;
     }
     /* ----- תצוגה תלוית-זום (המחלקות מוחלפות ב-applyPinScale) -----
-       jmap-zoom-icons (זום עיר): רק אימוג'ים, בלי שמות.
+       jmap-zoom-icons (זום פתיחה/עיר): רק אימוג'ים/לוגו, בלי שמות.
        jmap-zoom-dots (זום ארצי): נקודות צבעוניות במקום האימוג'ים.
        מוחרגים - תמיד מוצגים במלואם: קריאות עזרה (--help)
        ופריט שהודגש בלחיצה בודדת (--active). */
