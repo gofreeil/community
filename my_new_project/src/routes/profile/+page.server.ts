@@ -3,6 +3,7 @@ import type { Actions, PageServerLoad } from './$types';
 import { getUserById, getUserByEmail, getUserByAnyId, updateUserProfile, getItemsByUserId, upsertUser, getMessagesByUserId, createItem, updateItem, getDbItemById, getAllSuperAdmins, getAllUsers, getItemsByCategory, getItemsByCategoryAndStatus, createNeighborhoodRequest } from '$lib/server/db';
 import { finalizeLocationDecision, undoLocationDecision, withdrawOpenLocationRequests } from '$lib/server/locationDecision';
 import { getCachedUserById, invalidateCachedUser } from '$lib/server/userCache';
+import { normalizeSmsPrefs } from '$lib/smsPrefs';
 import { citiesData } from '$lib/neighborhoodsData';
 import { cityCenters } from '$lib/neighborhoodCoords';
 import { categoryConfig } from '$lib/categoryFields';
@@ -544,6 +545,27 @@ export const actions: Actions = {
             return { success: true };
         } catch {
             return fail(500, { error: 'שגיאה בעדכון סטטוס' });
+        }
+    },
+
+    /** העדפות SMS לנייד (מנהלים/רכזים): כיבוי כללי + בחירת קבוצות. ראה $lib/smsPrefs */
+    saveSmsPrefs: async (event) => {
+        let session = null;
+        try { session = await event.locals.auth(); } catch {}
+        if (!session?.user?.id) return fail(401, { error: 'לא מחובר' });
+
+        const formData = await event.request.formData();
+        const enabled  = formData.get('sms_enabled') === 'true';
+        const groups   = formData.getAll('sms_groups').map(String);
+        const prefs    = normalizeSmsPrefs({ enabled, groups });
+
+        try {
+            await updateUserProfile(session.user.id, { sms_prefs: prefs });
+            invalidateCachedUser(session.user.id);
+            return { smsPrefsSaved: true };
+        } catch (e) {
+            console.warn('[profile] saveSmsPrefs failed:', e instanceof Error ? e.message : e);
+            return fail(500, { error: 'שגיאה בשמירת העדפות ההתראות' });
         }
     },
 

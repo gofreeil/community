@@ -393,6 +393,23 @@ export const he = {
         notif_agree: "✅ מסכים לקבל התראות מחברי השכונה בשעת צרה",
         notif_disagree: "❌ לא מסכים לקבל התראות",
 
+        // ===== התראות SMS לנייד (מנהלים ורכזים) =====
+        sms_title: "📱 התראות לנייד (SMS)",
+        sms_intro: "כמנהל/ת או רכז/ת, כל התראת ניהול חדשה נשלחת גם ב-SMS לנייד שבפרופיל. כאן בוחרים אילו סוגים לקבל, או מכבים לגמרי. השינוי נשמר מיד.",
+        sms_master_on: "התראות SMS פעילות",
+        sms_master_off: "התראות SMS כבויות",
+        sms_no_phone: "⚠️ אין מספר נייד בפרופיל - בלי נייד לא יישלחו הודעות.",
+        sms_groups_label: "אילו התראות לקבל לנייד:",
+        sms_group_ads: "בקשות פרסום ועדכוני פרסומות (מכל אתרי הרשת)",
+        sms_group_coordinators: "בקשות להיות רכז/ת שכונה",
+        sms_group_locations: "בקשות לשכונה או למיקום חדשים",
+        sms_group_content: "תוכן ממתין לאישור: אירועים, משאלות, לוח פנויים",
+        sms_group_errors: "תקלות באתר ואבטחה",
+        sms_group_other: "הודעות אחרות מתושבים ומהמערכת",
+        sms_none_selected: "לא נבחרה אף קבוצה - לא יישלחו הודעות לנייד.",
+        sms_saved: "✅ ההעדפות נשמרו",
+        sms_save_error: "❌ השמירה נכשלה - נסה/י שוב",
+
         // תנאים + ולידציה
         terms_link: "תנאי השימוש ומדיניות הפרטיות",
         terms_error: "עליך לאשר את תנאי השימוש כדי לשמור",
@@ -858,6 +875,23 @@ export const en = {
         notif_agree: "✅ I agree to receive alerts from neighborhood members in times of need",
         notif_disagree: "❌ I do not agree to receive alerts",
 
+        // ===== SMS alerts to mobile (admins and coordinators) =====
+        sms_title: "📱 Mobile alerts (SMS)",
+        sms_intro: "As an admin or coordinator, every new management alert is also sent by SMS to the mobile number in your profile. Choose which kinds to receive, or turn them off entirely. Changes are saved immediately.",
+        sms_master_on: "SMS alerts are on",
+        sms_master_off: "SMS alerts are off",
+        sms_no_phone: "⚠️ No mobile number in your profile - nothing can be sent without one.",
+        sms_groups_label: "Which alerts to receive on your mobile:",
+        sms_group_ads: "Ad requests and ad updates (from all network sites)",
+        sms_group_coordinators: "Requests to become a neighborhood coordinator",
+        sms_group_locations: "Requests for new neighborhoods or locations",
+        sms_group_content: "Content awaiting approval: events, wishes, singles board",
+        sms_group_errors: "Site errors and security",
+        sms_group_other: "Other messages from residents and the system",
+        sms_none_selected: "No group selected - no SMS will be sent.",
+        sms_saved: "✅ Preferences saved",
+        sms_save_error: "❌ Saving failed - please try again",
+
         // Terms + validation
         terms_link: "Terms of use and privacy policy",
         terms_error: "You must accept the terms of use to save",
@@ -1322,6 +1356,23 @@ export const ru = {
         // Уведомления
         notif_agree: "✅ Согласен получать уведомления от соседей в трудную минуту",
         notif_disagree: "❌ Не согласен получать уведомления",
+
+        // ===== SMS-уведомления на мобильный (администраторы и координаторы) =====
+        sms_title: "📱 Уведомления на мобильный (SMS)",
+        sms_intro: "Как администратор или координатор вы получаете каждое новое управленческое уведомление также по SMS на номер из профиля. Здесь можно выбрать, какие виды получать, или полностью отключить. Изменения сохраняются сразу.",
+        sms_master_on: "SMS-уведомления включены",
+        sms_master_off: "SMS-уведомления выключены",
+        sms_no_phone: "⚠️ В профиле нет номера мобильного - без него сообщения не отправляются.",
+        sms_groups_label: "Какие уведомления получать на мобильный:",
+        sms_group_ads: "Заявки на рекламу и обновления объявлений (со всех сайтов сети)",
+        sms_group_coordinators: "Заявки на роль координатора района",
+        sms_group_locations: "Заявки на новые районы или места",
+        sms_group_content: "Контент на утверждении: события, желания, доска знакомств",
+        sms_group_errors: "Ошибки сайта и безопасность",
+        sms_group_other: "Другие сообщения от жителей и системы",
+        sms_none_selected: "Не выбрана ни одна группа - SMS отправляться не будут.",
+        sms_saved: "✅ Настройки сохранены",
+        sms_save_error: "❌ Не удалось сохранить - попробуйте ещё раз",
 
         // Условия + валидация
         terms_link: "Условия использования и политику конфиденциальности",

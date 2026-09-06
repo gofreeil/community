@@ -8,6 +8,7 @@ import { strapiGet, strapiGetAll, strapiPost, strapiPut, strapiDelete, StrapiCon
 import { DEFAULT_DISCOUNT_CODES, type DiscountCode } from '$lib/discountCodes';
 import { isPrivateCategory } from '$lib/itemCategories';
 import { userTier } from '$lib/tiers';
+import { normalizeSmsPrefs, type SmsPrefs } from '$lib/smsPrefs';
 import { cached, invalidate } from './cache.js';
 
 // TTL לערכי ה-cache (במילישניות). קצר מספיק שעדכונים נראים מהר,
@@ -94,6 +95,8 @@ export interface DbUser {
     tier_prompted: number[];
     /** האם לרכז/מנהל מוגדר אימות דו-שלבי (TOTP) — בוליאני בלבד, הסוד עצמו לא נחשף */
     totp_enabled: boolean;
+    /** העדפות SMS לנייד (רלוונטי למנהלים/רכזים) — תמיד מנורמל; ברירת מחדל = הכל */
+    sms_prefs: SmsPrefs;
     /** כל מזהי החשבונות האמיתיים שאוחדו לכרטיס זה (כולל ה-id הראשי) */
     merged_ids?: string[];
     /** מספר החשבונות שאוחדו (1 = חשבון יחיד) */
@@ -129,6 +132,8 @@ export interface UpdateProfileData {
     security_answer_2?: string;
     status?: string;
     coordinator_of?: string[];
+    /** העדפות SMS לנייד (מנהלים/רכזים) — ראה $lib/smsPrefs */
+    sms_prefs?: SmsPrefs;
 }
 
 // ============================================================
@@ -196,6 +201,8 @@ interface StrapiUpUser {
     totp_secret: string | null;
     /** דרגות-יעד שכבר נשלחה עליהן הודעת השלמת-פרופיל (למניעת שליחה חוזרת) */
     tier_prompted: number[] | null;
+    /** העדפות SMS לנייד של מנהל/רכז (json חופשי; null = הכל) */
+    sms_prefs?: unknown;
     createdAt: string;
 }
 
@@ -261,6 +268,7 @@ function mapUpUser(u: StrapiUpUser): DbUser {
         tier_prompted:  Array.isArray(u.tier_prompted)  ? u.tier_prompted  : [],
         // חושפים רק בוליאני — הסוד עצמו (u.totp_secret) לעולם לא יוצא ל-DbUser/דפים
         totp_enabled: !!(u.totp_secret && u.totp_secret.trim()),
+        sms_prefs:    normalizeSmsPrefs(u.sms_prefs),
     };
 }
 
@@ -1908,6 +1916,7 @@ export async function updateUserProfile(id: string, data: UpdateProfileData, _jw
     if (data.security_answer_2   !== undefined) updates.security_answer_2   = data.security_answer_2;
     if (data.status              !== undefined) updates.status              = data.status;
     if (data.coordinator_of    !== undefined) updates.coordinator_of    = data.coordinator_of;
+    if (data.sms_prefs         !== undefined) updates.sms_prefs         = data.sms_prefs;
 
     if (Object.keys(updates).length === 0) return mapUpUser(user);
 

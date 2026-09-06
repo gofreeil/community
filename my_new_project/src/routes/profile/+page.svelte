@@ -22,6 +22,7 @@
 	import { getLikedItems, removeLike, type LikedItem } from "$lib/likedItems";
 	import { restoreDaysLeft } from "$lib/placeStatus";
 	import { statusLabel, type UserStatus } from "$lib/singlesMock";
+	import { SMS_GROUPS, normalizeSmsPrefs, type SmsGroup } from "$lib/smsPrefs";
 	import NeighborhoodPicker from "$lib/components/NeighborhoodPicker.svelte";
 	import { heRank, normalizeHe, loosenHe } from "$lib/search";
 
@@ -1155,6 +1156,49 @@
 			clearTimeout(statusSaveErrTimer);
 			statusSaveErrTimer = setTimeout(() => (statusSaveError = false), 5000);
 		}
+	}
+	// ===== התראות SMS לנייד (מנהלים ורכזים) =====
+	// ה-SMS יוצא מהבאקאנד על כל התראת ניהול; כאן רק ההעדפות: כיבוי כללי +
+	// בחירת קבוצות. נשמר מיד בכל שינוי (כמו הסטטוס), עם משוב נראה.
+	const _smsInit = normalizeSmsPrefs((_ud as any)?.sms_prefs);
+	let smsEnabled = $state(_smsInit.enabled);
+	let smsGroups = $state<SmsGroup[]>([..._smsInit.groups]);
+	let smsSaveState = $state<"idle" | "saving" | "saved" | "error">("idle");
+	let smsSaveTimer: ReturnType<typeof setTimeout> | undefined;
+	const isCoordinatorUser = $derived(
+		((data.user as any)?.coordinator_of?.length ?? 0) > 0,
+	);
+	const hasMobileForSms = $derived(
+		/^0?5\d{8}$/.test(
+			String((data.user as any)?.phone ?? "")
+				.replace(/\D/g, "")
+				.replace(/^972/, "0"),
+		),
+	);
+
+	async function saveSmsPrefs() {
+		smsSaveState = "saving";
+		clearTimeout(smsSaveTimer);
+		try {
+			const fd = new FormData();
+			fd.set("sms_enabled", smsEnabled ? "true" : "false");
+			for (const g of smsGroups) fd.append("sms_groups", g);
+			const res = await fetch("?/saveSmsPrefs", { method: "POST", body: fd });
+			if (!res.ok) throw new Error("save failed");
+			const result = deserialize(await res.text());
+			if (result.type !== "success") throw new Error("save failed");
+			smsSaveState = "saved";
+		} catch {
+			smsSaveState = "error";
+		}
+		smsSaveTimer = setTimeout(() => (smsSaveState = "idle"), 4000);
+	}
+
+	function toggleSmsGroup(g: SmsGroup, on: boolean) {
+		smsGroups = on
+			? Array.from(new Set([...smsGroups, g]))
+			: smsGroups.filter((x) => x !== g);
+		saveSmsPrefs();
 	}
 	let secTipX = $state(0);
 	let secTipY = $state(0);
@@ -6079,6 +6123,95 @@
 		{#if hasSinglesCard}
 			<div class="mt-4">
 				{@render singlesStatusCard('profile')}
+			</div>
+		{/if}
+
+		<!-- התראות SMS לנייד - רק למנהלים ולרכזי שכונות (רק להם הבאקאנד שולח) -->
+		{#if isUserAdmin || isCoordinatorUser}
+			<div
+				class="mt-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4 md:p-5"
+				dir="rtl"
+			>
+				<div class="flex items-center justify-between gap-3 flex-wrap">
+					<h3 class="text-base font-black text-white">
+						{tFn("profile.sms_title")}
+					</h3>
+					<label class="flex items-center gap-3 cursor-pointer">
+						<div class="relative" dir="ltr">
+							<input
+								type="checkbox"
+								role="switch"
+								class="sr-only peer"
+								aria-checked={smsEnabled}
+								checked={smsEnabled}
+								onchange={(e) => {
+									smsEnabled = (e.target as HTMLInputElement).checked;
+									saveSmsPrefs();
+								}}
+							/>
+							<div
+								class="w-12 h-7 bg-gray-700 rounded-full peer-checked:bg-green-500
+								transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5
+								after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all
+								peer-checked:after:translate-x-5 shadow-inner"
+							></div>
+						</div>
+						<span
+							class="text-sm {smsEnabled
+								? 'text-green-400 font-bold'
+								: 'text-gray-500'}"
+						>
+							{smsEnabled ? tFn("profile.sms_master_on") : tFn("profile.sms_master_off")}
+						</span>
+					</label>
+				</div>
+
+				<p class="text-gray-400 text-sm mt-2">{tFn("profile.sms_intro")}</p>
+
+				{#if !hasMobileForSms}
+					<p class="text-amber-300 text-sm mt-2 font-bold">
+						{tFn("profile.sms_no_phone")}
+					</p>
+				{/if}
+
+				{#if smsEnabled}
+					<p class="text-xs text-gray-400 font-bold uppercase tracking-wider mt-4 mb-2">
+						{tFn("profile.sms_groups_label")}
+					</p>
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+						{#each SMS_GROUPS as g (g)}
+							<label
+								class="flex items-center gap-2 cursor-pointer rounded-xl px-3 py-2 border transition-colors {smsGroups.includes(g)
+									? 'border-green-500/40 bg-green-500/10 text-white'
+									: 'border-white/10 text-gray-400 hover:bg-white/5'}"
+							>
+								<input
+									type="checkbox"
+									class="accent-green-500 w-4 h-4 flex-shrink-0"
+									checked={smsGroups.includes(g)}
+									onchange={(e) =>
+										toggleSmsGroup(g, (e.target as HTMLInputElement).checked)}
+								/>
+								<span class="text-sm">{tFn(`profile.sms_group_${g}`)}</span>
+							</label>
+						{/each}
+					</div>
+					{#if smsGroups.length === 0}
+						<p class="text-amber-300 text-sm mt-2">
+							{tFn("profile.sms_none_selected")}
+						</p>
+					{/if}
+				{/if}
+
+				<div class="min-h-6 mt-3 text-sm font-bold" aria-live="polite">
+					{#if smsSaveState === "saving"}
+						<span class="text-gray-400">…</span>
+					{:else if smsSaveState === "saved"}
+						<span class="text-emerald-400">{tFn("profile.sms_saved")}</span>
+					{:else if smsSaveState === "error"}
+						<span class="text-red-400">{tFn("profile.sms_save_error")}</span>
+					{/if}
+				</div>
 			</div>
 		{/if}
 	</div>
