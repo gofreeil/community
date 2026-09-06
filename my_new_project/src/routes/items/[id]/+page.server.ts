@@ -134,6 +134,14 @@ export const load: PageServerLoad = async (event) => {
         // מצב בניית הדף (עריכה במקום): אותה הרשאה, אבל לא לפנויים - שם יש טופס ייעודי
         const canEditPage = canEditActivities && dbItem.category !== 'singles';
 
+        const hideAddress = (extraFields?.hide_address === true || extraFields?.hide_address === 'true') && !canEditActivities;
+        if (hideAddress) {
+            // קומה/דירה/הוראות הגעה חושפות את הכתובת בעקיפין - נמחקות יחד איתה
+            delete extraFields.floor;
+            delete extraFields.apartment;
+            delete extraFields.arrival_notes;
+        }
+
         // נכס שנמחק (מחיקה רכה) גלוי רק לבעלים/רכז/סופר-אדמין - כדי לשחזר. לגולש רגיל = לא נמצא.
         // רשומות פרטיות (הודעות, משוב, בקשות, משאלות) לעולם אינן דף פריט ציבורי -
         // דף הפריט היה חושף label/description/extra_fields/user_id לכל גולש שמנחש id.
@@ -148,7 +156,9 @@ export const load: PageServerLoad = async (event) => {
             description: dbItem.description,
             contact:     dbItem.contact,
             phone,
-            address:     dbItem.address,
+            // הבעלים ביקש (בגמ"ח הארצי, extra_fields.hide_address) לא לפרסם את הכתובת
+            // המדויקת: בציבור נשארים רק שכונה/עיר. בעלים/רכז/סופר-אדמין רואים הכל.
+            address:     hideAddress ? "" : dbItem.address,
             lat:         dbItem.lat ?? null,
             lng:         dbItem.lng ?? null,
             icon:        dbItem.icon,
