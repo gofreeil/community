@@ -74,6 +74,9 @@ export type ErrorAlert = {
     errMsg: string;
     stackHead?: string;
     origin?: ErrorOrigin;
+    /** סיווג תקלה חולפת (ניתוק רשת / chunk חסר) — שדה לסינון + שורת הסבר בגוף ההתראה */
+    transient?: string;
+    note?: string;
     /** thunk ולא ערך: לא משלמים על שליפת הגולש כשההתראה ממילא מרוסנת */
     getActor: () => Promise<ErrorActor | null>;
 };
@@ -109,6 +112,7 @@ export async function notifySuperAdminsOfError(alert: ErrorAlert): Promise<void>
                 `${actorLine}\n` +
                 `כתובת: ${alert.url}\n` +
                 `שגיאה: ${alert.errMsg.slice(0, 300)}\n` +
+                (alert.note ? `${alert.note}\n` : '') +
                 (alert.stackHead ? `\nתחילת ה-stack:\n${alert.stackHead}\n` : '') +
                 `\nהפרטים המלאים בלוג השרת תחת [${logTag} ${alert.ref}].`,
             icon:        '🌩️',
@@ -122,6 +126,7 @@ export async function notifySuperAdminsOfError(alert: ErrorAlert): Promise<void>
                 url:           alert.path,
                 method:        alert.method,
                 error_message: alert.errMsg.slice(0, 300),
+                transient:     alert.transient ?? '',
                 // זהות הגולש - מזינה את כפתור "כתוב לגולש" בכרטיס ההתראה
                 actor_id:     actor?.id     ?? '',
                 actor_name:   actor?.name   ?? '',

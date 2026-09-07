@@ -7,6 +7,9 @@ declare global {
             message: string;
             // מזהה תקלה קצר שמוצג למשתמש בדף השגיאה וגם נרשם בלוג — לשיוך תלונה מול הסטאק
             ref?: string;
+            // תקלת ניווט חולפת (chunk ישן אחרי דיפלוי / ניתוק רשת): +error.svelte טוען את
+            // היעד מחדש מהשרת במקום להציג "אופס" — ראו hooks.client.ts
+            recover?: 'reload';
         }
         interface Locals {
             auth: () => Promise<import('@auth/sveltekit').Session | null>;

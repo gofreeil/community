@@ -2,6 +2,7 @@
 	// דף השגיאה המותאם של האתר — מוצג בתוך ה-layout (Header/Footer/פרסומות נשארים)
 	// במקום עמוד "500 Internal Error" הגולמי של SvelteKit. תומך עברית/אנגלית/רוסית.
 	import { page } from "$app/state";
+	import { browser } from "$app/environment";
 	import { _ } from "svelte-i18n";
 
 	// 404 = עמוד לא נמצא, 403 = אין הרשאה, כל השאר = תקלת שרת (500)
@@ -14,6 +15,24 @@
 	function reload() {
 		if (typeof location !== "undefined") location.reload();
 	}
+
+	// התאוששות אוטומטית מתקלת ניווט חולפת (chunk ישן אחרי דיפלוי / ניתוק רשת):
+	// hooks.client.ts מסמן recover:'reload', וכאן טוענים את היעד מחדש מהשרת - פעם אחת
+	// בדקה לכל נתיב, כדי שתקלה עקבית תציג את העמוד הזה כרגיל ולא תיכנס ללולאת רענונים.
+	// preload שנכשל לעולם לא מגיע לכאן (SvelteKit זורק את תוצאתו), ולכן ריחוף על קישור
+	// לא יגרור טעינה מחדש - רק ניווט אמיתי שנפל.
+	$effect(() => {
+		if (!browser || page.error?.recover !== "reload") return;
+		try {
+			const key = `auto_recover:${page.url.pathname}`;
+			const last = Number(sessionStorage.getItem(key) ?? 0);
+			if (Date.now() - last < 60_000) return;
+			sessionStorage.setItem(key, String(Date.now()));
+		} catch {
+			return; // בלי מונה אין הגנה מלולאה - נשארים בעמוד השגיאה עם "נסה שוב"
+		}
+		location.replace(page.url.href);
+	});
 </script>
 
 <svelte:head>

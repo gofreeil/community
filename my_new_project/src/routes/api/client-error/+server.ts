@@ -70,10 +70,24 @@ export const POST: RequestHandler = async (event) => {
     const errMsg  = oneLine(body.message, 300) || 'Unknown client error';
     const stackHead = String(body.stack ?? '').split('\n').slice(0, 8).join('\n').slice(0, 1200);
 
-    console.error(`[client-error ${ref}] ${status} "${errMsg}" @ CLIENT ${path} (ip ${ip})`);
+    // סיווג מ-hooks.client.ts (ראו שם): תקלה חולפת שהדפדפן כבר מתאושש ממנה בעצמו.
+    // stale_build שאומת מול version.json = דיפלוי החליף גרסה מתחת לדף פתוח - לא באג,
+    // לוג בלבד בלי להטריד את האדמינים. השאר מדווחים כרגיל עם שורת סיווג בגוף ההתראה.
+    const kindRaw = oneLine(body.kind, 20);
+    const transient = kindRaw === 'stale_build' || kindRaw === 'network' ? kindRaw : '';
+    const staleConfirmed = transient === 'stale_build' && body.stale === true;
+    const note =
+        transient === 'network'
+            ? 'סיווג: ניתוק רשת בצד הגולש בזמן הניווט (Failed to fetch / Load failed) - לא באג בקוד. הדף נטען מחדש מהשרת אוטומטית.'
+            : transient === 'stale_build'
+              ? 'סיווג: קובץ JS של הדף לא נטען, אך הגרסה בשרת זהה לזו שאצל הגולש - כלומר ה-chunk חסר מהבנייה הנוכחית (לא סתם דיפלוי חדש). הדף נטען מחדש אוטומטית.'
+              : '';
+
+    const tag = transient ? ` [${transient}${staleConfirmed ? ' confirmed' : ''}]` : '';
+    console.error(`[client-error ${ref}] ${status} "${errMsg}" @ CLIENT ${path} (ip ${ip})${tag}`);
     if (stackHead) console.error(stackHead);
 
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === 'production' && !staleConfirmed) {
         await Promise.race([
             notifySuperAdminsOfError({
                 ref,
@@ -85,6 +99,8 @@ export const POST: RequestHandler = async (event) => {
                 errMsg,
                 stackHead,
                 origin: 'client',
+                transient: transient || undefined,
+                note: note || undefined,
                 getActor: () => resolveActor(event),
             }),
             new Promise<void>((resolve) => setTimeout(resolve, 2500)),

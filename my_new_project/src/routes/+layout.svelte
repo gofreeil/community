@@ -15,7 +15,7 @@
 	import WelcomeScreen from "$lib/components/WelcomeScreen.svelte";
 	import { signOut } from "@auth/sveltekit/client";
 	import { goto, beforeNavigate } from "$app/navigation";
-	import { page, navigating } from "$app/state";
+	import { page, navigating, updated } from "$app/state";
 	import { closeAdPopup, registerPaidAds } from "$lib/adPopupStore";
 	import { registerDynamicNeighborhoods, MY_PIN_LS_KEY } from "$lib/neighborhoodCoords";
 	import { neighborhoodState } from "$lib/neighborhoodState.svelte";
@@ -113,8 +113,14 @@
 		goto(`/login?redirect=${encodeURIComponent(page.url.pathname)}`);
 	}
 
-	beforeNavigate(() => {
+	beforeNavigate(({ to, willUnload, cancel }) => {
 		closeAdPopup();
+		// עלתה גרסה חדשה בזמן שהדף פתוח (version.pollInterval ב-svelte.config.js): ניווט SPA
+		// ימשוך chunks שכבר לא קיימים על השרת וייפול. במקום זה - טעינה מלאה של היעד מהשרת.
+		if (updated.current && !willUnload && to?.url) {
+			cancel();
+			location.href = to.url.href;
+		}
 	});
 
 	// ספירת כניסות: beacon יחיד לכל session של הדפדפן (לסטטיסטיקה בלוח הניהול)
