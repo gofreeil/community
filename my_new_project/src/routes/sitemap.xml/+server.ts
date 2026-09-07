@@ -17,6 +17,7 @@ const STATIC_PAGES: Array<{ path: string; priority: number; changefreq: string }
     { path: '/farm-direct',     priority: 0.7, changefreq: 'weekly' },  // חקלאות ישירה
     { path: '/club-discounts',  priority: 0.7, changefreq: 'weekly' },  // הנחות מועדון
     { path: '/national/jobs',   priority: 0.7, changefreq: 'daily' },   // דרושים
+    { path: '/about',           priority: 0.5, changefreq: 'monthly' },  // אודותינו + שאלות ותשובות
     { path: '/about/charter',   priority: 0.4, changefreq: 'monthly' },
     { path: '/about/advertise', priority: 0.4, changefreq: 'monthly' },
     { path: '/about/legal',     priority: 0.3, changefreq: 'yearly' },

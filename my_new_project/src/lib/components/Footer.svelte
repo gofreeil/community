@@ -86,6 +86,8 @@
                 aria-label={tFn("chrome.footer_nav_aria")}
                 class="flex items-center gap-4 text-base md:text-lg text-gray-300 font-bold flex-wrap justify-center"
             >
+                <a href="/about" class="hover:text-white transition-colors">{tFn("about_us")}</a>
+                <span class="text-gray-600 font-black" aria-hidden="true">|</span>
                 <a href="/about/legal" class="hover:text-white transition-colors">
                     <span class="md:hidden block">{tFn("chrome.legal_links_l1")}<br />{tFn("chrome.legal_links_l2")}</span>
                     <span class="hidden md:inline-block whitespace-nowrap">{tFn("chrome.legal_links")}</span>

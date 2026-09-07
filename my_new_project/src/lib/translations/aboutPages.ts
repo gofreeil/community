@@ -325,6 +325,18 @@ export const he = {
 		ch_sig_ph: `הקלד/י את שמך המלא לחתימה`,
 		ch_sending: `שולח חתימה...`,
 		ch_submit: `חתום על האמנה`,
+
+		// ===== דף /about: אודותינו + שאלות ותשובות =====
+		about_title: `אודותינו`,
+		about_meta_desc: `מה זה קהילה בשכונה, למי האתר מיועד, מה אפשר לעשות בו ואיך מצטרפים - שאלות ותשובות על הפלטפורמה השכונתית של רשת "יוצאים לחירות".`,
+		about_intro_p1: `קהילה בשכונה היא פלטפורמה שכונתית שמרכזת במקום אחד את כל יתרונות השכונה: יד שנייה ולמסירה, דירות ואירוח לשבת, שידוכים, חוגים, גמ"חים, בייבי סיטר, טרמפים, אבדות ומציאות והטבות מקומיות - לכל שכונה ויישוב בישראל.`,
+		about_intro_p2: `האתר הוא חלק מרשת האתרים של התנועה החברתית "יוצאים לחירות", והשימוש בו לתושבים חינם. כאן ריכזנו את השאלות הנפוצות על האתר ועל הדרך שבה הוא עובד.`,
+		faq_title: `שאלות ותשובות`,
+		about_more_title: `עוד על האתר`,
+		about_link_revenue: `מודל ההכנסות וחלוקתן`,
+		about_link_charter: `אמנת יוצאים לחירות`,
+		about_link_advertise: `פרסם אצלנו`,
+		about_link_legal: `מסמכים משפטיים ונגישות`,
 	},
 };
 
@@ -648,6 +660,18 @@ export const en = {
 		ch_sig_ph: `Type your full name to sign`,
 		ch_sending: `Sending signature...`,
 		ch_submit: `Sign the Charter`,
+
+		// ===== /about page: About us + FAQ =====
+		about_title: `About us`,
+		about_meta_desc: `What Community in the Neighborhood is, who it is for, what you can do on it and how to join - questions and answers about the neighborhood platform of the "Going Out to Freedom" network.`,
+		about_intro_p1: `Community in the Neighborhood is a neighborhood platform that gathers all the advantages of the neighborhood in one place: second-hand and giveaways, apartments and Shabbat hospitality, matchmaking, classes, gemachim, babysitters, rides, lost & found and local discounts - for every neighborhood and town in Israel.`,
+		about_intro_p2: `The site is part of the network of sites of the "Going Out to Freedom" social movement, and it is free for residents to use. Here we have gathered the frequently asked questions about the site and how it works.`,
+		faq_title: `Questions & answers`,
+		about_more_title: `More about the site`,
+		about_link_revenue: `Revenue model and distribution`,
+		about_link_charter: `The Out to Freedom Charter`,
+		about_link_advertise: `Advertise with us`,
+		about_link_legal: `Legal documents & accessibility`,
 	},
 };
 
@@ -971,5 +995,17 @@ export const ru = {
 		ch_sig_ph: `Введите своё полное имя для подписи`,
 		ch_sending: `Отправка подписи...`,
 		ch_submit: `Подписать хартию`,
+
+		// ===== Страница /about: О нас + вопросы и ответы =====
+		about_title: `О нас`,
+		about_meta_desc: `Что такое «Община в районе», для кого сайт, что на нём можно делать и как присоединиться - вопросы и ответы о районной платформе сети «Выходим на свободу».`,
+		about_intro_p1: `«Община в районе» - это районная платформа, которая собирает в одном месте все преимущества района: б/у и вещи в дар, квартиры и гостеприимство на шаббат, знакомства, кружки, гмахи, няни, попутки, бюро находок и местные скидки - для каждого района и населённого пункта Израиля.`,
+		about_intro_p2: `Сайт входит в сеть сайтов общественного движения «Выходим на свободу», и для жителей его использование бесплатно. Здесь мы собрали часто задаваемые вопросы о сайте и о том, как он работает.`,
+		faq_title: `Вопросы и ответы`,
+		about_more_title: `Ещё о сайте`,
+		about_link_revenue: `Модель доходов и их распределение`,
+		about_link_charter: `Хартия «Навстречу свободе»`,
+		about_link_advertise: `Разместить рекламу у нас`,
+		about_link_legal: `Юридические документы и доступность`,
 	},
 };
