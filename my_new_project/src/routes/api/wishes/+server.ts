@@ -96,6 +96,7 @@ export const POST: RequestHandler = async (event) => {
                 user_id:     admin.id,
                 extra_fields: {
                     type:            'wish_request',
+                    link:            '/admin#pending-wishes',
                     wish_item_id:    created.id,
                     wish_text:       text,
                     requester_name:  requesterName,

@@ -132,6 +132,17 @@
         } catch { return ''; }
     }
 
+    // הודעת "משאלה חדשה ממתינה לאישור" - קיצור לאגף המשאלות בעמוד הניהול.
+    // הודעות ישנות לא נשאו link ב-extra_fields, לכן נגזר מהסוג ולא רק מהשדה.
+    function wishReviewLink(extraFields: string): string {
+        try {
+            const f = JSON.parse(extraFields);
+            if (f?.type !== 'wish_request') return '';
+            const l = typeof f.link === 'string' ? f.link : '';
+            return l.startsWith('/') ? l : '/admin#pending-wishes';
+        } catch { return ''; }
+    }
+
     function formatDate(iso: string): string {
         if (!iso) return '';
         const diff = Date.now() - new Date(iso).getTime();
@@ -274,6 +285,14 @@
                         <a href={adsReviewLink(msg.extra_fields)}
                             class="block text-center py-2 rounded-xl mb-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-black text-sm font-black transition-all">
                             {$_('extras.m_open_ads_review')}
+                        </a>
+                    {/if}
+
+                    <!-- קיצור לאישור המשאלה בכותל המשאלות -->
+                    {#if wishReviewLink(msg.extra_fields)}
+                        <a href={wishReviewLink(msg.extra_fields)}
+                            class="block text-center py-2 rounded-xl mb-3 bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:opacity-90 text-white text-sm font-black transition-all">
+                            {$_('extras.m_open_wish_review')}
                         </a>
                     {/if}
 
