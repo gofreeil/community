@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onMount } from "svelte";
+    import { onMount, onDestroy, untrack } from "svelte";
     import { t } from "svelte-i18n";
     import { createEventDispatcher } from "svelte";
     import { slide } from "svelte/transition";
@@ -16,6 +16,7 @@
     } from "$lib/neighborhoodsData";
     import { page } from "$app/state";
     import { neighborhoodState } from "$lib/neighborhoodState.svelte";
+    import { mapSearchState } from "$lib/mapSearchState.svelte";
     import { getCoordsFor, jitterCoord, areaForPin } from "$lib/neighborhoodCoords";
     import { canUseMapImage, getMapImage, isDisplayableImage } from "$lib/mapImage";
     import { isOpenNow } from "$lib/openingHours";
@@ -246,6 +247,43 @@
     ];
 
     let viewMode = $state<"map" | "list" | "search">("map");
+
+    // ---- כפתור "חיפוש" בהדר (דסקטופ) ----
+    // הכפתור הועבר מהפינה שמעל המפה להדר (שחי ב-layout), והתקשורת עוברת
+    // דרך mapSearchState: ההדר מבקש, כאן מגיבים ומדווחים חזרה על המצב.
+    let rootEl = $state<HTMLDivElement | null>(null);
+    let lastSearchRequest = 0;
+
+    onMount(() => {
+        mapSearchState.mounted = true;
+        lastSearchRequest = mapSearchState.request;
+    });
+    onDestroy(() => {
+        mapSearchState.mounted = false;
+        mapSearchState.open = false;
+    });
+
+    // דיווח: האם מצב החיפוש פתוח (כדי שהכפתור בהדר ייראה "דלוק")
+    $effect(() => {
+        mapSearchState.open = viewMode === 'search';
+    });
+
+    // תגובה לבקשה מההדר: אותה התנהגות שהייתה לכפתור המקומי (חיפוש <-> רשימה),
+    // ובפתיחה גם גלילה אל המפה - כי ההדר דביק והמשתמש עשוי להיות רחוק ממנה.
+    $effect(() => {
+        const req = mapSearchState.request;
+        if (req === lastSearchRequest) return;
+        lastSearchRequest = req;
+        untrack(() => {
+            viewMode = viewMode === 'search' ? 'list' : 'search';
+            searchQuery = '';
+            if (viewMode === 'search' && rootEl && !isFullscreen) {
+                const headerH = (document.querySelector('header') as HTMLElement | null)?.offsetHeight ?? 0;
+                const top = rootEl.getBoundingClientRect().top + window.scrollY - headerH - 12;
+                window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+            }
+        });
+    });
     let showAddMenu = $state(false);
     let isFlipping = $state(false);
     let expandedCategories = $state(new Set<string>());
@@ -1794,6 +1832,7 @@
 {/if}
 
 <div
+    bind:this={rootEl}
     class={isFullscreen
         ? 'jmap-fullscreen fixed inset-2 md:inset-4 z-[1200] flex flex-col gap-2 bg-[#070b14] rounded-2xl shadow-2xl shadow-purple-500/30 overflow-hidden p-3'
         : 'flex flex-col gap-4'}
@@ -2617,20 +2656,8 @@
         {/if}
 
 
-        <!-- כפתור חיפוש - פינה ימנית עליונה (דסקטופ בלבד; בנייד יש שדה חיפוש בשורת הכפתורים) -->
-        <div class="hidden md:block absolute right-4 z-50" style="top: -14px;">
-            <button
-                onclick={() => { viewMode = viewMode === 'search' ? 'list' : 'search'; searchQuery = ''; }}
-                title={$t('map.search')}
-                class="flex items-center gap-1.5 bg-[#0f172a] border-2 {viewMode === 'search' ? 'border-purple-500 text-purple-300' : 'border-white/20 text-white/70'} hover:border-purple-500/70 hover:text-white px-3 py-1.5 rounded-lg font-bold text-sm shadow-xl transition-all hover:scale-105"
-            >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                    <circle cx="11" cy="11" r="7"/>
-                    <path d="m21 21-4.35-4.35"/>
-                </svg>
-                <span class="text-xs hidden md:inline">{$t('map.search')}</span>
-            </button>
-        </div>
+        <!-- כפתור החיפוש (דסקטופ) הועבר להדר - ראו Header.svelte + mapSearchState.svelte.ts.
+             בנייד שדה החיפוש נשאר בשורת הכפתורים למעלה. -->
 
         <!-- כפתור הוסף יתרון - בחלק העליון (שוחזר; מירכוז ב-translateX מפורש כי -translate-x-1/2 שבור ב-v4) -->
         <div

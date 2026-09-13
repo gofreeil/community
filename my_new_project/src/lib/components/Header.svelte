@@ -4,6 +4,7 @@
     import { goto, beforeNavigate, afterNavigate } from "$app/navigation";
     import { onMount } from "svelte";
     import { page } from '$app/state';
+    import { mapSearchState } from "$lib/mapSearchState.svelte";
 
     interface Props {
         currentUser?: any;
@@ -142,6 +143,13 @@
     function handleSearchKey(e: KeyboardEvent) {
         if (e.key === 'Enter') doSearch();
         if (e.key === 'Escape') { showMobileSearch = false; searchQuery = ''; }
+    }
+
+    // כפתור "חיפוש" בהדר (דסקטופ): בדף הבית פותח/סוגר את מצב החיפוש של המפה;
+    // בכל דף אחר (אין מפה מורכבת) מנווט לדף החיפוש הכללי.
+    function onHeaderSearchClick() {
+        if (mapSearchState.mounted) mapSearchState.toggle();
+        else goto('/search');
     }
 
     function changeLang(language: { name: string; code: string }) {
@@ -549,6 +557,20 @@
                         </div>
                     {/if}
                 </div>
+                <!-- כפתור חיפוש (דסקטופ) - הועבר לכאן מהפינה שמעל המפה.
+                     בנייד שדה החיפוש נשאר בשורת הכפתורים של המפה. -->
+                <button
+                    onclick={onHeaderSearchClick}
+                    title={tFn("map.search")}
+                    aria-pressed={mapSearchState.open}
+                    class="hidden md:flex items-center gap-1.5 rounded-lg border-2 {mapSearchState.open ? 'border-purple-500 text-purple-300 bg-purple-500/10' : 'border-white/20 text-white/80 bg-white/10'} hover:border-purple-500/70 hover:text-white px-3 py-1.5 text-sm font-bold transition-all hover:scale-105"
+                >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="11" cy="11" r="7"/>
+                        <path d="m21 21-4.35-4.35"/>
+                    </svg>
+                    <span class="text-xs">{tFn("map.search")}</span>
+                </button>
             </div>
             {#if true}
                 <div class="flex items-center gap-4">
