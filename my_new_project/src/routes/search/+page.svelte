@@ -56,9 +56,40 @@
                 </button>
             </div>
             {#if data.query}
+                <!-- המונה מתייחס לשאילתה שהתוצאות באמת שייכות לה (המתוקנת כשהתיקון הופעל) -->
                 <p class="text-gray-400 text-sm mt-3 text-right">
-                    {$_('jobs.search_found')} <span class="text-white font-bold">{totalResults}</span> {$_('jobs.search_results_for')} "<span class="text-purple-300">{data.query}</span>"
+                    {$_('jobs.search_found')} <span class="text-white font-bold">{totalResults}</span> {$_('jobs.search_results_for')} "<span class="text-purple-300">{data.effectiveQuery}</span>"
                 </p>
+
+                {#if data.usedCorrection && data.correctedQuery}
+                    <!-- לא היו תוצאות מדויקות - מוצגות תוצאות התיקון; exact=1 מכריח את השאילתה המילולית בלי תיקון חוזר -->
+                    <div dir="rtl" class="search-hint border-purple-500/30">
+                        <span>
+                            {$_('search.showing_results_for')}
+                            <b class="text-white">{data.correctedQuery}</b>.
+                        </span>
+                        <span>
+                            {$_('search.search_instead_for')}
+                            <a href="/search?q={encodeURIComponent(data.query)}&exact=1"
+                               class="text-purple-300 hover:text-purple-200 font-bold underline underline-offset-2 transition-colors">{data.query}</a>
+                        </span>
+                        {#if data.wrongLayout}
+                            <span class="text-gray-500 text-xs">({$_('search.wrong_layout_hint')})</span>
+                        {/if}
+                    </div>
+                {:else if data.correctedQuery}
+                    <!-- יש תוצאות לשאילתה המקורית, אבל התיקון היה מניב יותר - רק מציעים אותו -->
+                    <div dir="rtl" class="search-hint border-white/10">
+                        <span>
+                            {$_('search.did_you_mean')}
+                            <a href="/search?q={encodeURIComponent(data.correctedQuery)}"
+                               class="text-purple-300 hover:text-purple-200 font-bold underline underline-offset-2 transition-colors">{data.correctedQuery}</a>
+                        </span>
+                        {#if data.wrongLayout}
+                            <span class="text-gray-500 text-xs">({$_('search.wrong_layout_hint')})</span>
+                        {/if}
+                    </div>
+                {/if}
             {/if}
         </div>
 
@@ -212,5 +243,22 @@
     :global(.result-card:hover) {
         background: rgba(255,255,255,0.06);
         transform: translateY(-1px);
+    }
+    /* שורת "מציג תוצאות עבור" / "האם התכוונת ל" - מתחת למונה התוצאות, באותו סגנון כהה של הדף */
+    .search-hint {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.25rem 0.5rem;
+        margin-top: 0.75rem;
+        background: #0f172a;
+        border-width: 1px;
+        border-style: solid;
+        border-radius: 1rem;
+        padding: 0.625rem 1rem;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        color: #d1d5db;
+        text-align: right;
     }
 </style>

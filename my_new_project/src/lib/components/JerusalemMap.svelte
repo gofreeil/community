@@ -21,7 +21,8 @@
     import { canUseMapImage, getMapImage, isDisplayableImage } from "$lib/mapImage";
     import { isOpenNow } from "$lib/openingHours";
     import { logoForService, serviceColor } from "$lib/serviceTypes";
-    import { heMatches } from "$lib/search";
+    import { heSearch, looksLatin, buildVocabulary, mergeVocabularies } from "$lib/search";
+    import { itemSearchFields } from "$lib/searchFields";
     import { isFamilyItem } from "$lib/itemCategories";
     import { createClickOutside } from "$lib/actions/clickOutside";
     import CameraCapture from "$lib/components/CameraCapture.svelte";
@@ -582,21 +583,61 @@
 
     // מצב חיפוש
     let searchQuery   = $state('');
-    let searchResults = $derived(() => {
+    // "לחפש במקום זאת את «המקורי»": המשתמש דחה את התיקון האוטומטי של heSearch.
+    // זוכרים באיזו שאילתה זה קרה - כל עוד השאילתה לא השתנתה מחפשים אותה כפי
+    // שהוקלדה, בלי אוצר מילים (ולכן בלי "האם התכוונת"); הקלדה חדשה מאפסת.
+    let exactSearchQuery = $state<string | null>(null);
+    const exactSearch = $derived(exactSearchQuery !== null && exactSearchQuery === searchQuery);
+    const EMPTY_VOCAB = new Map<string, number>();
+    // אוצר המילים ל"האם התכוונת" נבנה פעם אחת לכל רשימת פריטים (ולא בכל הקלדה,
+    // כפי ש-heSearch היה עושה בלי vocabulary): הכותרת במשקל 3 ושאר שדות החיפוש
+    // במשקל 1 - בדיוק ברירת המחדל של heSearch, רק שמור בין הקשות.
+    const itemsVocab = $derived(
+        mergeVocabularies(
+            buildVocabulary(dbItems.map((i) => i.label), 3),
+            buildVocabulary(dbItems.flatMap((i) => itemSearchFields(i).slice(1)), 1),
+        ),
+    );
+    // ריצה אחת של heSearch לכל הקלדה - גם רשימת התוצאות וגם המטא (תיקון/הצעה)
+    // נגזרים ממנה, כדי לא לחפש פעמיים באותה שאילתה.
+    const searchResult = $derived.by(() => {
         const q = searchQuery.trim().toLowerCase();
-        if (!q) return [];
-        return dbItems.filter(item =>
-            heMatches(q, item.label, item.description, item.category)
-        ).sort((a, b) => {
+        if (!q) return null;
+        return heSearch(q, dbItems, itemSearchFields, { vocabulary: exactSearch ? EMPTY_VOCAB : itemsVocab });
+    });
+    let searchResults = $derived(() => {
+        const res = searchResult;
+        if (!res) return [];
+        // הסדר הראשי נשאר כמו שהיה (השכונה שלך → העיר שלך); בתוך אותה עדיפות
+        // נשמר דירוג הרלוונטיות של heSearch - האינדקס ב-hits הוא שובר השוויון,
+        // כדי שהמיון לא ימחק את הדירוג (מדויק לפני fuzzy).
+        return res.hits.map((item, i) => ({ item, i })).sort((a, b) => {
             // השכונה שלך - ראשון
-            const aNeigh = a.neighborhood === neighborhoodState.neighborhood ? 0 : 1;
-            const bNeigh = b.neighborhood === neighborhoodState.neighborhood ? 0 : 1;
+            const aNeigh = a.item.neighborhood === neighborhoodState.neighborhood ? 0 : 1;
+            const bNeigh = b.item.neighborhood === neighborhoodState.neighborhood ? 0 : 1;
             if (aNeigh !== bNeigh) return aNeigh - bNeigh;
             // אחר כך העיר
-            const aCity = a.city === neighborhoodState.city ? 0 : 1;
-            const bCity = b.city === neighborhoodState.city ? 0 : 1;
-            return aCity - bCity;
-        });
+            const aCity = a.item.city === neighborhoodState.city ? 0 : 1;
+            const bCity = b.item.city === neighborhoodState.city ? 0 : 1;
+            if (aCity !== bCity) return aCity - bCity;
+            // ואז לפי הרלוונטיות
+            return a.i - b.i;
+        }).map((x) => x.item);
+    });
+    // מטא-נתוני החיפוש לתצוגת "האם התכוונת" / "מציג תוצאות עבור" (ראו SearchResult)
+    const searchMeta = $derived({
+        correctedQuery: searchResult?.correctedQuery ?? null,
+        usedCorrection: searchResult?.usedCorrection ?? false,
+        suggestion: searchResult?.suggestion ?? null,
+    });
+    // רמז "הוקלד בפריסה אנגלית": השאילתה לטינית והתוצאות הגיעו דרך שכבת המקלדת -
+    // אין אף תוצאה מדויקת לשאילתה כפי שהוקלדה (הראשונה כבר ברמה 4+), או שיש
+    // תוצאה ברמה 4 (המרת פריסה), או שהתיקון האוטומטי החליף אותה לעברית.
+    const wrongLayoutHint = $derived.by(() => {
+        const res = searchResult;
+        if (!res || res.hits.length === 0 || !looksLatin(searchQuery)) return false;
+        if (res.usedCorrection) return !looksLatin(res.correctedQuery ?? '');
+        return res.scores[0] >= 4 || res.scores.includes(4);
     });
 
     const approvedNbs = $derived(
@@ -2623,6 +2664,30 @@
                 {:else}
                 <!-- תוצאות -->
                 <div class="flex-1 overflow-y-auto space-y-2 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-transparent">
+                    <!-- תיקון שאילתה ("האם התכוונת" / "מציג תוצאות עבור") - בראש פאנל התוצאות
+                         המשותף, כך שמופיע גם מתחת לשדה הדסקטופ וגם בנייד (שם הקלט בשורת הכפתורים) -->
+                    {#if searchMeta.correctedQuery}
+                        <p class="text-xs text-purple-300 mb-2 leading-relaxed" dir="rtl">
+                            {#if searchMeta.usedCorrection}
+                                {$t('search.showing_results_for')} «{searchMeta.correctedQuery}».
+                                {$t('search.search_instead_for')}
+                                <button
+                                    type="button"
+                                    onclick={() => (exactSearchQuery = searchQuery)}
+                                    class="underline underline-offset-2 hover:text-white transition-colors cursor-pointer"
+                                >«{searchQuery.trim()}»</button>
+                            {:else}
+                                <button
+                                    type="button"
+                                    onclick={() => { if (searchMeta.correctedQuery) searchQuery = searchMeta.correctedQuery; }}
+                                    class="underline underline-offset-2 hover:text-white transition-colors cursor-pointer"
+                                >{$t('search.did_you_mean')} {searchMeta.correctedQuery}</button>
+                            {/if}
+                        </p>
+                    {/if}
+                    {#if wrongLayoutHint}
+                        <p class="text-[11px] text-gray-500 mb-2" dir="rtl">{$t('search.wrong_layout_hint')}</p>
+                    {/if}
                     {#if searchResults().length === 0}
                         <div class="text-center py-12 text-gray-500">
                             <div class="text-4xl mb-3">😕</div>

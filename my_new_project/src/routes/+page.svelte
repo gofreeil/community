@@ -12,7 +12,7 @@
     import { communityHelpCount } from "$lib/communityHelpStore";
     import JsonLd from "$lib/components/JsonLd.svelte";
     import { websiteSchema, organizationSchema, faqSchema, SITE_URL } from "$lib/seo";
-    import { heMatch } from "$lib/search";
+    import { heMatch, buildVocabulary, suggestQuery } from "$lib/search";
     import { createClickOutside } from "$lib/actions/clickOutside";
 
     // Structured data לדף הבית - WebSite+חיפוש, Organization, ושאלות נפוצות.
@@ -150,27 +150,45 @@
     // חיפוש ערים ושכונות לפי query
     // אם ה-query תואם שם עיר - מציגים את כל השכונות שלה.
     // אם ה-query תואם שמות שכונות בתוך עיר (אבל לא את העיר עצמה) - מציגים רק את השכונות התואמות.
+    // ערים/שכונות שמתאימות לשאילתה (משותף לסינון ולאימות ההצעה של "האם התכוונת")
+    function matchCitiesFor(query: string): [string, string[]][] {
+        const out: [string, string[]][] = [];
+        for (const [city, ns] of allCitiesMerged) {
+            if (heMatch(query, city)) {
+                out.push([city, ns]);
+            } else {
+                const matching = ns.filter(n => heMatch(query, n));
+                if (matching.length > 0) out.push([city, matching]);
+            }
+        }
+        return out;
+    }
     const filteredCities = $derived.by(() => {
         const q = searchQuery.trim().toLowerCase();
         if (!q) return allCitiesMerged;
-        const matchFor = (query: string): [string, string[]][] => {
-            const out: [string, string[]][] = [];
-            for (const [city, ns] of allCitiesMerged) {
-                if (heMatch(query, city)) {
-                    out.push([city, ns]);
-                } else {
-                    const matching = ns.filter(n => heMatch(query, n));
-                    if (matching.length > 0) out.push([city, matching]);
-                }
-            }
-            return out;
-        };
+        const matchFor = matchCitiesFor;
         const out = matchFor(q);
         if (out.length > 0) return out;
         // אין תוצאות והשאילתה מתחילה ב"שכונת"? מנסים בלעדיה ("שכונת פת" → "פת") -
         // אנשים מקלידים את השם עם הקידומת אבל ברשימה הוא שמור נקי. זהה לפרופיל.
         const stripped = q.replace(/^שכונת\s+/, '');
         return stripped !== q ? matchFor(stripped) : out;
+    });
+
+    // אוצר המילים של הבורר - כל שמות הערים והשכונות. נבנה פעם אחת (ומחדש רק
+    // כשהרשימה משתנה, למשל אחרי אישור שכונה), ומשמש ל"האם התכוונת ל..." כשהחיפוש
+    // הסלחני של heMatch לא מצא כלום.
+    const citiesVocab = $derived(
+        buildVocabulary(allCitiesMerged.flatMap(([city, ns]) => [city, ...ns])),
+    );
+    // הצעת תיקון רק כשאין תוצאות - אם יש, אין מה להציע. וגם רק אם ההצעה עצמה
+    // מוצאת משהו: suggestQuery מתקן כל מילה בנפרד, ובשאילתה של שתי מילים משתי
+    // ערים שונות ("ירושלם בית") התיקון היה מוביל לרשימה ריקה בלי הצעה נוספת.
+    const citySuggestion = $derived.by(() => {
+        const q = searchQuery.trim();
+        if (!q || filteredCities.length > 0) return null;
+        const s = suggestQuery(q, citiesVocab);
+        return s && matchCitiesFor(s).length > 0 ? s : null;
     });
 
     // ספירת ערים ושכונות לתצוגה ב-placeholder.
@@ -609,6 +627,17 @@
                     {:else if filteredCities.length === 0}
                         <div class="text-center text-gray-400 py-6 text-sm">
                             {$t('home.no_matches', { values: { query: searchQuery } })}
+                            {#if citySuggestion}
+                                <!-- "האם התכוונת ל..." - תיקון מול אוצר המילים של הערים והשכונות; לחיצה מחפשת את ההצעה -->
+                                <p class="mt-2 text-purple-300">
+                                    {$t('search.did_you_mean')}
+                                    <button
+                                        type="button"
+                                        onclick={() => { if (citySuggestion) searchQuery = citySuggestion; }}
+                                        class="font-bold underline underline-offset-2 hover:text-white transition-colors"
+                                    >{citySuggestion}</button>
+                                </p>
+                            {/if}
                         </div>
                     {:else}
                         <div class="cities-masonry">

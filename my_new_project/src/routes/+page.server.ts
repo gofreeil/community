@@ -15,6 +15,9 @@ function slimForHome(i: DbItem): DbItem {
     if (!i.extra_fields || i.extra_fields === '{}') return i;
     let extra: Record<string, unknown> = {};
     try { extra = JSON.parse(i.extra_fields); } catch { return { ...i, extra_fields: '{}' }; }
+    // הבעלים ביקש (hide_address) לא לפרסם את הכתובת - כמו בדף הפריט, היא לא
+    // יוצאת לדפדפן בכלל: חיפוש המפה (itemSearchFields) לא יחפש בה ולא יציג אותה.
+    if (extra.hide_address === true || extra.hide_address === 'true') i = { ...i, address: '' };
     const slim: Record<string, unknown> = {};
     for (const k of HOME_EXTRA_KEYS) if (extra[k] !== undefined) slim[k] = extra[k];
     // הפין על המפה עובר ככתובת ולא כ-base64: גם אחרי הדילול נשארו כאן
