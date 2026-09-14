@@ -10,6 +10,7 @@ import {
     adminDeleteItem,
 } from '$lib/server/db';
 import { dbItemToProfile } from '$lib/singlesMap';
+import { withSinglesImageUrls } from '$lib/server/singlesImages';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function ensureSuperAdmin(event: any) {
@@ -37,8 +38,9 @@ export const load: PageServerLoad = async (event) => {
     ]);
 
     // ממפה לפרופיל (שם, גיל, עיר, מגדר, תמונות) ומשאיר את התמונות הגולמיות לבדיקה
-    const pending = pendingItems.map((it) => ({ ...dbItemToProfile(it), createdAt: it.created_at }));
-    const active = activeItems.map((it) => ({ ...dbItemToProfile(it), createdAt: it.created_at }));
+    // תמונות ככתובות (singlesImages.ts) ולא base64 - 2MB/7 שניות → עשרות KB
+    const pending = pendingItems.map((it) => ({ ...withSinglesImageUrls(dbItemToProfile(it)), createdAt: it.created_at }));
+    const active = activeItems.map((it) => ({ ...withSinglesImageUrls(dbItemToProfile(it)), createdAt: it.created_at }));
 
     // בקשות גישה לצפייה בלוח (הורים/שדכנים) שממתינות לאישור
     const accessRequests = accessItems

@@ -55,6 +55,23 @@ export function withSinglesImageUrls<T extends Pick<SingleProfile, 'id' | 'image
 }
 
 /**
+ * גרסת DbItem שבה מערך התמונות ב-extra_fields מוחלף בכתובות לנתיב המגיש -
+ * לדפים שקוראים את הרשומה הגולמית (למשל רשימת הפרסומים בפרופיל).
+ */
+export function withSinglesItemImageUrls(item: DbItem): DbItem {
+    if (item.category !== 'singles' || !item.extra_fields) return item;
+    try {
+        const ef = JSON.parse(item.extra_fields) as Record<string, unknown>;
+        if (!Array.isArray(ef.images)) return item;
+        const images = (ef.images as unknown[]).map((img, i) =>
+            typeof img === 'string' && isDataUri(img) ? singlesImageUrl(item.id, i, img) : img);
+        return { ...item, extra_fields: JSON.stringify({ ...ef, images }) };
+    } catch {
+        return item;
+    }
+}
+
+/**
  * גרסת DbItem בלי תמונות ה-base64 ב-extra_fields - לדפים שמחזירים את הרשומה
  * הגולמית לצד הפרופיל (הרשומה נשארת לתאימות, התמונות כבר בפרופיל ככתובות).
  */

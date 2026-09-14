@@ -263,7 +263,7 @@ const setStrApiCookie: Handle = async ({ event, resolve }) => {
  * והתמונה יוצאת מהשרת מחדש בכל פעם.
  */
 const PUBLIC_IMAGE_PATH =
-    /^\/api\/(?:items\/[^/]+\/og\.jpg|ad-image\/[^/]+\/[^/]+|item-image\/[^/]+\/map|singles-image\/[^/]+\/\d+)$/;
+    /^\/api\/(?:items\/[^/]+\/og\.jpg|ad-image\/[^/]+\/[^/]+|item-image\/[^/]+\/map|singles-image\/[^/]+\/\d+|user-avatar\/[^/]+)$/;
 
 /**
  * כותרות אבטחה (הגנת-עומק) על כל תשובה. בכוונה *בלי* Content-Security-Policy:

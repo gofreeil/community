@@ -1,6 +1,7 @@
 import { redirect, fail, error } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { requireSuperAdmin, requireAdmin } from '$lib/server/auth';
+import { withUserAvatarUrl } from '$lib/server/userAvatar';
 import { getAllUsers, banUser, unbanUser, deleteUserAccounts, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByAnyId, getUserByEmail, createItem, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, getNeighborhoodById, approveNeighborhood, rejectNeighborhood, createNeighborhoodRequest, getDiscountCodes, saveDiscountCodes, getItemsByCategoryAndStatus, getUserTotpSecret, coordinatorCovers, closeFulfilledCoordinatorRequests, updateItem, getDbItemByIdFresh, getAllSuperAdmins, getMessagesByUserId, type DbItem } from '$lib/server/db';
 import { markCoordinatorMessagesHandled } from '$lib/server/coordinatorNotifications';
 import { finalizeLocationDecision } from '$lib/server/locationDecision';
@@ -194,8 +195,11 @@ export const load: PageServerLoad = async (event) => {
         await Promise.all([pendingAdsPromise, pendingSinglesPromise, discountCodesPromise, totpPromise, serverHealthPromise, statsPromise]);
 
     return {
-        users,
-        items,
+        // תמונות פרופיל מוטבעות → כתובות עם קאש (userAvatar.ts); extra_fields של
+        // הפריטים (גלריות פנויים, לוגואים על המפה...) לא נקראים בעמוד הזה בכלל -
+        // הסיכומים חושבו כבר כאן בשרת. יחד: 6.8MB/12 שניות → מאות KB.
+        users: users.map(withUserAvatarUrl),
+        items: items.map((i) => (i.extra_fields && i.extra_fields !== '{}' ? { ...i, extra_fields: '{}' } : i)),
         coordinatorRequests: coordinatorRequestsWithContext,
         pendingNeighborhoods: pendingNeighborhoodsWithRequester,
         pendingWishes,
