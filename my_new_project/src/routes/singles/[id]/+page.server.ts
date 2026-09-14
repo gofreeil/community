@@ -2,6 +2,7 @@ import { error } from '@sveltejs/kit';
 import { getDbItemById } from '$lib/server/db';
 import { mockSingles } from '$lib/singlesMock';
 import { dbItemToProfile } from '$lib/singlesMap';
+import { withSinglesImageUrls, stripSinglesItemImages } from '$lib/server/singlesImages';
 import { BOT_UA_RX } from '$lib/server/botUa';
 import type { PageServerLoad } from './$types';
 
@@ -22,7 +23,8 @@ export const load: PageServerLoad = async (event) => {
 
     if (dbItem && dbItem.category === 'singles') {
         // ממפים את הפריט האמיתי למבנה single שהדף יודע להציג
-        return { single: dbItemToProfile(dbItem), dbItem, isBot, origin, isLoggedIn };
+        // תמונות ככתובות ולא base64 בנתוני הדף - ראה singlesImages.ts
+        return { single: withSinglesImageUrls(dbItemToProfile(dbItem)), dbItem: stripSinglesItemImages(dbItem), isBot, origin, isLoggedIn };
     }
 
     const single = mockSingles.find((s) => s.id === id);

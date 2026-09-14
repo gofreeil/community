@@ -1,6 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 import { getItemsByCategory, getUserById, getUserByEmail } from '$lib/server/db';
 import { dbItemToProfile } from '$lib/singlesMap';
+import { withSinglesImageUrls } from '$lib/server/singlesImages';
 import { getMatchmakerStatus, AGE_MATCH_THRESHOLD } from '$lib/server/matchmaker';
 import type { PageServerLoad } from './$types';
 
@@ -47,7 +48,7 @@ export const load: PageServerLoad = async (event) => {
     }
 
     // כל הכרטיסים הפעילים — שדכן רואה גם כרטיסים "רק לשדכנים שלנו"
-    const profiles = (await getItemsByCategory('singles').catch(() => [])).map(dbItemToProfile);
+    const profiles = (await getItemsByCategory('singles').catch(() => [])).map(dbItemToProfile).map(withSinglesImageUrls);
 
     const toMini = (p: ReturnType<typeof dbItemToProfile>): MiniCard | null => {
         const age = parseInt(p.age, 10);

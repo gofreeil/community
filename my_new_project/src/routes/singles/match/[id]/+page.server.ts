@@ -1,6 +1,7 @@
 import { redirect, error } from '@sveltejs/kit';
 import { getDbItemByIdFresh, getDbItemById, getUserById, getUserByEmail } from '$lib/server/db';
 import { dbItemToProfile } from '$lib/singlesMap';
+import { withSinglesImageUrls } from '$lib/server/singlesImages';
 import { parseMatch, sideOf, type MatchData } from '$lib/server/singlesMatch';
 import { getMatchmakerStatus } from '$lib/server/matchmaker';
 import type { PageServerLoad } from './$types';
@@ -8,7 +9,7 @@ import type { PageServerLoad } from './$types';
 // כרטיס "פרטים ראשונים" שמוצג לצד השני — בלי טלפון ובלי פרטי השדכן.
 function limitedCard(item: Awaited<ReturnType<typeof getDbItemById>>) {
     if (!item) return null;
-    const p = dbItemToProfile(item);
+    const p = withSinglesImageUrls(dbItemToProfile(item));
     return {
         id: p.id,
         nickname: p.nickname,

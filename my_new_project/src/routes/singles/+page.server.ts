@@ -3,6 +3,7 @@ import { getItemsByCategory, getUserById, getUserByEmail, getItemsByUserId } fro
 import { dbItemToProfile } from '$lib/singlesMap';
 import { getSinglesAccessStatus } from '$lib/server/singlesAccess';
 import { getMatchmakerStatus } from '$lib/server/matchmaker';
+import { withSinglesImageUrls, stripSinglesItemImages } from '$lib/server/singlesImages';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
@@ -54,7 +55,8 @@ export const load: PageServerLoad = async (event) => {
             const ownItem = (await getItemsByUserId(String(session.user.id)))
                 .find((i) => i.category === 'singles' && i.status !== 'deleted');
             if (ownItem) {
-                selfProfile = dbItemToProfile(ownItem);
+                // תמונות ככתובות ולא base64 - ראה singlesImages.ts
+                selfProfile = withSinglesImageUrls(dbItemToProfile(ownItem));
                 selfStatus = ownItem.status;
             }
         } catch (e) {
@@ -90,8 +92,13 @@ export const load: PageServerLoad = async (event) => {
         // כל הכרטיסים הפעילים מוצגים - כולל כאלה שלא שילמו.
         // כרטיסים שסומנו "רק לשדכנים שלנו" לא מופיעים בלוח הפומבי (רק צוות
         // השדכנים רואה אותם בדף /admin/singles-review ומפנה אותם בדיסקרטיות).
-        const profiles = items.map(dbItemToProfile).filter((p) => p.visibility !== 'matchmakers');
-        return { ...base, gated: false, accessStatus: 'granted' as const, items, profiles };
+        // התמונות יוצאות ככתובות לנתיב מוגן-קאש ולא כ-base64 בתוך נתוני הדף:
+        // כך היה הדף שוקל ~4MB ולוקח ~18 שניות למשתמש מחובר (singlesImages.ts).
+        const profiles = items
+            .map(dbItemToProfile)
+            .filter((p) => p.visibility !== 'matchmakers')
+            .map(withSinglesImageUrls);
+        return { ...base, gated: false, accessStatus: 'granted' as const, items: items.map(stripSinglesItemImages), profiles };
     } catch (e) {
         console.warn('[singles] load failed:', e instanceof Error ? e.message : e);
         return { ...base, gated: false, accessStatus: 'granted' as const, items: [], profiles: [] };
