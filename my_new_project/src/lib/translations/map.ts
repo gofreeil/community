@@ -172,6 +172,7 @@ export const he = {
         // ----- לוחות ארציים / מונים -----
         to_national_board: "← ללוח הארצי",
         national_board_title: "עבור ללוח הארצי",
+        singles_city_click: "לחצו למעבר ללוח הפנויים/פנויות הארצי",
         national_board_giveaway_title: "עבור ללוח הארצי של פריטים למסירה",
         to_national_list: "← לרשימה הארצית",
         to_shabbat_board: "← ללוח שבת שלום",
@@ -432,6 +433,7 @@ export const en = {
 
         to_national_board: "← To the national board",
         national_board_title: "Go to the national board",
+        singles_city_click: "Click to open the national singles board",
         national_board_giveaway_title: "Go to the national giveaway board",
         to_national_list: "← To the national list",
         to_shabbat_board: "← To the Shabbat hosting board",
@@ -686,6 +688,7 @@ export const ru = {
 
         to_national_board: "← На всеизраильскую доску",
         national_board_title: "Перейти на всеизраильскую доску",
+        singles_city_click: "Нажмите, чтобы открыть всеизраильскую доску знакомств",
         national_board_giveaway_title: "Перейти на всеизраильскую доску «Отдам даром»",
         to_national_list: "← К всеизраильскому списку",
         to_shabbat_board: "← К доске гостеприимства на шаббат",

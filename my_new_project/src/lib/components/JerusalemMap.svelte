@@ -17,7 +17,8 @@
     import { page } from "$app/state";
     import { neighborhoodState } from "$lib/neighborhoodState.svelte";
     import { mapSearchState } from "$lib/mapSearchState.svelte";
-    import { getCoordsFor, jitterCoord, areaForPin } from "$lib/neighborhoodCoords";
+    import { getCoordsFor, jitterCoord, areaForPin, cityCenters } from "$lib/neighborhoodCoords";
+    import { canonicalCity } from "$lib/neighborhoodsData";
     import { canUseMapImage, getMapImage, isDisplayableImage } from "$lib/mapImage";
     import { isOpenNow } from "$lib/openingHours";
     import { logoForService, serviceColor } from "$lib/serviceTypes";
@@ -174,9 +175,10 @@
                 { id: "job-teen", label: "עבודה לנוער בחופש" },
             ],
         },
-        // פנויים/פנויות: אריח קיים בסרגל — אך אנשים אינם "מקום" ולעולם לא ננעצים על
-        // המפה (ראו dynamicMarkers). לכן לחיצה על האריח פותחת ישירות את לוח הרשימה
-        // המגודר (/singles) במקום לסנן את המפה — ראו handleCategoryClick / handleMobileCategoryTap.
+        // פנויים/פנויות: אנשים אינם "מקום" ולעולם לא ננעצים על המפה כפריטים
+        // (ראו dynamicMarkers). לחיצה על האריח מרחיקה את המפה לתצוגה ארצית ומציגה
+        // בכל עיר רק את *מספר* הפנויים/פנויות בה (singlesCityMarkers), עם הכפתור
+        // הכתום שמוביל ללוח הארצי (/singles). לחיצה על עיר פותחת את הלוח.
         {
             id: "singles",
             label: "פנויים/פנויות",
@@ -307,9 +309,9 @@
     const MOBILE_TOOLTIP_MS = 3000;
 
     function handleMobileCategoryTap(categoryId: string) {
-        // פנויים/פנויות — קפיצה ישירה ללוח הרשימה המגודר (/singles), בלי טולטיפ־המתנה
-        // ובלי סינון מפה, כי הכרטיסים לעולם לא ננעצים על המפה.
-        if (categoryId === 'singles') { cancelMobileTooltip(); showCategorySheet = false; goto('/singles'); return; }
+        // פנויים/פנויות — בלי טולטיפ-המתנה: המפה יוצאת מיד לתצוגה ארצית עם
+        // מספר הפנויים בכל עיר (ראו handleCategoryClick).
+        if (categoryId === 'singles') { cancelMobileTooltip(); showCategorySheet = false; handleCategoryClick('singles'); return; }
         // בטל תזמון קודם אם המשתמש לחץ שוב לפני שנגמרה הספירה
         if (mobileTooltipTimer) clearTimeout(mobileTooltipTimer);
         mobileTooltipFor = categoryId;
@@ -869,6 +871,23 @@
         { suffix: 'sport-pool',   category: 'sport',       icon: '🏊', label: 'map.mock_pool',         color: 'sky' },
     ];
 
+    // מספר הפנויים/פנויות בכל עיר - לתצוגה הארצית של קטגוריית "פנויים/פנויות".
+    // דף הבית שולח לכרטיסי הפנויים רק קטגוריה+עיר (ראו redactSinglesForHome
+    // ב-+page.server.ts) - לא שם, לא טלפון ולא תמונה - ולכן כאן אפשר רק לספור.
+    // עיר שאין לה נקודת מרכז ידועה לא מוצגת (אחרת הייתה נופלת על ירושלים).
+    let singlesCityMarkers = $derived.by(() => {
+        const counts = new Map<string, number>();
+        for (const d of dbItems) {
+            if (d.category !== 'singles') continue;
+            const city = canonicalCity(d.city);
+            if (!city || !cityCenters[city]) continue;
+            counts.set(city, (counts.get(city) ?? 0) + 1);
+        }
+        return [...counts.entries()]
+            .map(([city, count]) => ({ city, count, lat: cityCenters[city][0], lng: cityCenters[city][1] }))
+            .sort((a, b) => b.count - a.count);
+    });
+
     let dynamicMarkers = $derived.by(() => {
         // קריאות עזרה מטופלות בשכבה נפרדת (helpCallMarkers) - לא נכללות כאן,
         // כדי שלא ידכאו את מרקרי הדמו ולא יוגבלו ע"י MAX_MARKERS / סינון קטגוריה.
@@ -1156,10 +1175,45 @@
         for (const s of spreadMarkers) s.marker.setLatLng(spreadLatLng(s.anchor, s.i, s.n));
     }
 
+    // תצוגה ארצית של "פנויים/פנויות": תג לכל עיר עם מספר הפנויים בה. לחיצה
+    // פותחת את הלוח הארצי. המחלקות שונות מ-jmap-pin בכוונה - כדי שהכללים של
+    // "זום ארצי → נקודות" לא יכווצו את התג למקום שבו המספר לא נקרא.
+    function makeSinglesCityMarker(c: { city: string; count: number; lat: number; lng: number }): any {
+        const safeCity = c.city.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const html = `
+            <div class="jmap-city-count" title="${$t('map.singles_city_click')}">
+                <div class="jmap-city-count-n">❤️ ${c.count}</div>
+                <div class="jmap-city-count-city">${safeCity}</div>
+            </div>
+        `;
+        const divIcon = leafletL.divIcon({
+            className: 'jmap-city-count-wrap',
+            html,
+            iconSize:   [110, 54],
+            iconAnchor: [55, 27],
+        });
+        const marker = leafletL.marker([c.lat, c.lng], { icon: divIcon, riseOnHover: true, zIndexOffset: 500 });
+        marker.on('click', () => goto('/singles'));
+        return marker;
+    }
+
+    // התאמת המפה לכל הערים שיש בהן פנויים - תצוגה ארצית, בלי סינון חריגים
+    // (בניגוד ל-fitToMarkers, שמשמיט נקודות רחוקות; כאן כל עיר רחוקה היא המטרה).
+    function fitToSinglesCities(animate = true): boolean {
+        if (!leafletL || !leafletMap || singlesCityMarkers.length === 0) return false;
+        const bounds = leafletL.latLngBounds(singlesCityMarkers.map((c) => [c.lat, c.lng]));
+        leafletMap.fitBounds(bounds, { padding: [70, 70], maxZoom: 9, animate });
+        return true;
+    }
+
     function rebuildMarkers() {
         if (!leafletL || !leafletMap || !mapMarkerLayer) return;
         spreadMarkers = [];
         mapMarkerLayer.clearLayers();
+        if (selectedCategory === 'singles') {
+            for (const c of singlesCityMarkers) mapMarkerLayer.addLayer(makeSinglesCityMarker(c));
+            return;
+        }
         // מרקרים מוצגים בדיוק במיקומם. פריט עם פין שהמשתמש סימן = מיקום אמיתי, ואסור
         // להזיז אותו (זה נראה כמו באג "הפין קפץ ממקומו"). פיזור קל למניעת חפיפה קורה רק
         // לפריטים בלי פין שנופלים למרכז היישוב - וזה כבר מטופל ב-jitterCoord בבניית
@@ -1257,6 +1311,7 @@
     // כך שרואים את הפרטים. המשתמש יכול להתקרב/להתרחק יותר ידנית.
     function fitToMarkers(animate = true): boolean {
         if (!leafletL || !leafletMap || !mapMarkerLayer) return false;
+        if (selectedCategory === 'singles') return fitToSinglesCities(animate);
         // deep-link focus (?item=): להשאיר את הפין המבוקש במרכז עד שהמשתמש יזיז את המפה
         if (focusPending) {
             leafletMap.setView(focusPending, 17, { animate });
@@ -1399,12 +1454,22 @@
     });
 
     // ריאקטיב: כש-dynamicMarkers משתנה (פריטים חדשים, החלפת קטגוריה) - לבנות מחדש
+    let prevMarkerCategory = 'benefits';
     $effect(() => {
         // תלות מפורשת
         void dynamicMarkers;
         void helpCallMarkers;
+        void singlesCityMarkers;
         void selectedCategory;
         rebuildMarkers();
+        // כניסה ל"פנויים/פנויות": המפה יוצאת מיד לתצוגה ארצית עם המספר בכל עיר.
+        // יציאה ממנה: חזרה לזום של השכונה, אחרת המשתמש נשאר על מפת ישראל.
+        if (selectedCategory === 'singles' && prevMarkerCategory !== 'singles') {
+            fitToSinglesCities();
+        } else if (selectedCategory !== 'singles' && prevMarkerCategory === 'singles') {
+            fitToMarkers();
+        }
+        prevMarkerCategory = selectedCategory;
     });
 
     // ריאקטיב: כשהמשתמש מחליף שכונה - למרכז את המפה מחדש
@@ -1425,9 +1490,8 @@
     let categoryButtonsWrapperRef: HTMLElement;
 
     function handleCategoryClick(categoryId: string) {
-        // פנויים/פנויות אינם ננעצים על המפה (צנעת הפרט) — הכפתור פותח ישירות את
-        // לוח הרשימה המגודר במקום לסנן את המפה לתצוגה ריקה.
-        if (categoryId === 'singles') { goto('/singles'); return; }
+        // פנויים/פנויות אינם ננעצים על המפה (צנעת הפרט): הבחירה מציגה תצוגה
+        // ארצית עם מספר הפנויים בכל עיר (rebuildMarkers → singlesCityMarkers).
         selectedCategory = categoryId;
         // בתצוגת רשימה - פתח אוטומטית את הקטגוריה הנבחרת
         if (categoryId !== "benefits") {
@@ -3220,6 +3284,46 @@
     }
 
     /* ----- מרקרי מפה (Leaflet) ----- */
+    /* תג "מספר פנויים בעיר" בתצוגה הארצית של קטגוריית פנויים/פנויות */
+    :global(.jmap-city-count-wrap) {
+        background: transparent !important;
+        border: 0 !important;
+    }
+    :global(.jmap-city-count) {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        cursor: pointer;
+        direction: rtl;
+        filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.5));
+        transition: transform 0.15s ease;
+    }
+    :global(.jmap-city-count:hover) {
+        transform: scale(1.08);
+    }
+    :global(.jmap-city-count-n) {
+        background: linear-gradient(135deg, #ec4899, #f43f5e);
+        color: #fff;
+        font-weight: 900;
+        font-size: 15px;
+        line-height: 1;
+        padding: 7px 12px;
+        border-radius: 999px;
+        border: 2px solid #fff;
+        white-space: nowrap;
+    }
+    :global(.jmap-city-count-city) {
+        background: rgba(15, 23, 42, 0.92);
+        color: #fce7f3;
+        font-weight: 700;
+        font-size: 11px;
+        line-height: 1;
+        padding: 3px 8px;
+        border-radius: 8px;
+        white-space: nowrap;
+    }
+
     :global(.jmap-pin-wrap) {
         background: transparent !important;
         border: 0 !important;

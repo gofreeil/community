@@ -153,8 +153,10 @@ async function notifySinglesReview(cardId: string, itemLabel: string, ef: Record
 export const GET: RequestHandler = async () => {
     // endpoint ציבורי - מסננים רשומות פרטיות (הודעות, משוב, בקשות, משאלות),
     // אחרת כל גולש היה מקבל אותן עם extra_fields מלא
+    // כרטיסי פנויים/פנויות (טלפון, תיאור אישי) שייכים ללוח הסגור בלבד - לא
+    // ל-endpoint ציבורי שכל אחד יכול לקרוא.
     const items = await getAllItems();
-    return json(items.filter((i) => !isPrivateCategory(i.category)));
+    return json(items.filter((i) => !isPrivateCategory(i.category) && i.category !== 'singles'));
 };
 
 // ---- POST: create a new item ----

@@ -30,6 +30,18 @@ function slimForHome(i: DbItem): DbItem {
     return { ...i, extra_fields: JSON.stringify(slim) };
 }
 
+// כרטיסי פנויים/פנויות: הלוח (/singles) סגור למי שלא אושר, אבל דף הבית שלח את
+// הכרטיסים כמות שהם - שם, תיאור, טלפון וכתובת - לכל גולש, גם אנונימי (נמצא
+// 14.9.2026). המפה צריכה מהם רק קטגוריה + עיר (ספירת פנויים לכל עיר בתצוגה
+// הארצית), ולכן כל שאר השדות מרוקנים כאן לפני שהרשומה יוצאת לדפדפן.
+function redactSinglesForHome(i: DbItem): DbItem {
+    return {
+        ...i,
+        label: '', description: '', contact: '', phone: '', address: '',
+        neighborhood: '', lat: null, lng: null, extra_fields: '{}', user_id: null,
+    };
+}
+
 export const load: PageServerLoad = async (event) => {
     const session = await event.locals.auth();
 
@@ -80,7 +92,12 @@ export const load: PageServerLoad = async (event) => {
         // רשומות פרטיות (הודעות, משוב, בקשות, משאלות) מוחרגות: שליחתן לדפדפן
         // הייתה חושפת טקסטים פרטיים ו-user_id לכל גולש. raise_hand/emergency_team/
         // vaad_member נשארים - דף הבית והמפה משתמשים בהם.
-        dbItems: [...dbItems.filter((i) => !isPrivateCategory(i.category)).map(slimForHome), ...indexItems],
+        dbItems: [
+            ...dbItems
+                .filter((i) => !isPrivateCategory(i.category))
+                .map((i) => (i.category === 'singles' ? redactSinglesForHome(i) : slimForHome(i))),
+            ...indexItems,
+        ],
         events,
         userNeighborhood,
         userCity,
