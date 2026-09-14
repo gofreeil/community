@@ -71,20 +71,23 @@ export const POST: RequestHandler = async (event) => {
     const stackHead = String(body.stack ?? '').split('\n').slice(0, 8).join('\n').slice(0, 1200);
 
     // סיווג מ-hooks.client.ts (ראו שם): תקלה חולפת שהדפדפן כבר מתאושש ממנה בעצמו
-    // (+error.svelte טוען את היעד מחדש). לוג בלבד, בלי התראה לאדמינים:
-    //   • stale_build שאומת מול version.json - דיפלוי החליף גרסה מתחת לדף פתוח.
-    //   • network - Failed to fetch / Load failed: ניתוק, מעבר רשת, חיבור שנרדם ברקע.
-    //     בהגדרה לא באג בקוד, ואין בו שום דבר שמנהל יכול לעשות; ההתראות האלה הן
-    //     שהציפו את התיבה ("תקלת דפדפן 500 - /profile: Load failed").
-    // stale_build שלא אומת (הגרסה זהה וה-chunk בכל זאת חסר) הוא תקלה אמיתית - מתריעים.
+    // (+error.svelte טוען את היעד מחדש).
+    //   • stale_build שאומת מול version.json - דיפלוי החליף גרסה מתחת לדף פתוח: לא באג,
+    //     לוג בלבד בלי להטריד את האדמינים.
+    //   • network - Failed to fetch / Load failed (ניתוק, מעבר רשת, חיבור שנרדם ברקע):
+    //     מתריעים עם שורת סיווג בגוף ההתראה - לא באג בקוד, אבל המשתמש ביקש לראות גם
+    //     את אלה בתיבה (14.9.2026).
+    //   • stale_build שלא אומת (הגרסה זהה וה-chunk בכל זאת חסר) - תקלה אמיתית, מתריעים.
     const kindRaw = oneLine(body.kind, 20);
     const transient = kindRaw === 'stale_build' || kindRaw === 'network' ? kindRaw : '';
     const staleConfirmed = transient === 'stale_build' && body.stale === true;
-    const logOnly = transient === 'network' || staleConfirmed;
+    const logOnly = staleConfirmed;
     const note =
-        transient === 'stale_build'
-            ? 'סיווג: קובץ JS של הדף לא נטען, אך הגרסה בשרת זהה לזו שאצל הגולש - כלומר ה-chunk חסר מהבנייה הנוכחית (לא סתם דיפלוי חדש). הדף נטען מחדש אוטומטית.'
-            : '';
+        transient === 'network'
+            ? 'סיווג: ניתוק רשת בצד הגולש בזמן הניווט (Failed to fetch / Load failed) - לא באג בקוד. הדף נטען מחדש מהשרת אוטומטית.'
+            : transient === 'stale_build'
+              ? 'סיווג: קובץ JS של הדף לא נטען, אך הגרסה בשרת זהה לזו שאצל הגולש - כלומר ה-chunk חסר מהבנייה הנוכחית (לא סתם דיפלוי חדש). הדף נטען מחדש אוטומטית.'
+              : '';
 
     const tag = transient ? ` [${transient}${staleConfirmed ? ' confirmed' : ''}${logOnly ? ', log only' : ''}]` : '';
     console.error(`[client-error ${ref}] ${status} "${errMsg}" @ CLIENT ${path} (ip ${ip})${tag}`);
