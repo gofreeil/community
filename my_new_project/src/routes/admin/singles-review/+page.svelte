@@ -29,6 +29,12 @@
         ).length,
     );
 
+    // המונה כולל גם בקשות גישה ובקשות שדכנות (המקטעים שמעל הטאבים) - בלי זה
+    // מנהל שהגיע מהתראה ראה "ממתינים לאישור (0)" למרות שיש בקשה פתוחה
+    let pendingTotal = $derived(
+        data.pending.length + (data.accessRequests?.length ?? 0) + (data.matchmakerRequests?.length ?? 0),
+    );
+
     function genderLabel(g: string): string {
         return g === 'male' ? '👨 גבר' : '👩 אישה';
     }
@@ -156,7 +162,7 @@
                 onclick={() => (tab = 'pending')}
                 class="px-5 py-2.5 rounded-xl font-bold transition-all cursor-pointer {tab === 'pending' ? 'bg-gradient-to-r from-pink-600 to-rose-600 text-white shadow-lg' : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'}"
             >
-                ⏳ ממתינים לאישור ({data.pending.length})
+                ⏳ ממתינים לאישור ({pendingTotal})
             </button>
             <button
                 onclick={() => (tab = 'active')}

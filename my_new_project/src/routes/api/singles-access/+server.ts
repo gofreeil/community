@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { createItem, getUserById, getAllSuperAdmins } from '$lib/server/db';
-import { getSinglesAccessStatus, SINGLES_ACCESS_ROLES, type SinglesAccessRole } from '$lib/server/singlesAccess';
+import { getSinglesAccessStatus, findOpenSinglesAccessRequest, SINGLES_ACCESS_ROLES, type SinglesAccessRole } from '$lib/server/singlesAccess';
 import type { RequestHandler } from './$types';
 
 const ROLE_LABEL: Record<SinglesAccessRole, string> = {
@@ -39,8 +39,13 @@ export const POST: RequestHandler = async (event) => {
         const existing = await getSinglesAccessStatus(requesterId, false);
         if (existing === 'granted') return json({ success: true, already: 'granted' });
         if (existing === 'pending') return json({ success: true, already: 'pending' });
+        // בדיקה טרייה עוקפת-cache: שליחה חוזרת בתוך 30 שניות (או ממופע שרת אחר
+        // ב-Vercel) עברה את הבדיקה הקודמת ויצרה בקשה כפולה + התראה כפולה למנהל.
+        const fresh = await findOpenSinglesAccessRequest(requesterId).catch(() => null);
+        if (fresh === 'granted') return json({ success: true, already: 'granted' });
+        if (fresh === 'pending') return json({ success: true, already: 'pending' });
 
-        await createItem({
+        const request = await createItem({
             category: 'singles_access',
             label: 'בקשת גישה ללוח פנויים',
             user_id: requesterId,
@@ -79,7 +84,16 @@ export const POST: RequestHandler = async (event) => {
                             user_id: a.id,
                             icon: '🔑',
                             color: 'pink',
-                            extra_fields: { type: 'singles_access', read: false, link: '/admin/singles-review' },
+                            // request_id + פרטי המבקש: מאפשרים אשר/דחה ישירות מכרטיס ההתראה בפרופיל
+                            extra_fields: {
+                                type: 'singles_access',
+                                read: false,
+                                link: '/admin/singles-review',
+                                request_id: request.id,
+                                requested_by_id: requesterId,
+                                requested_by_name: requester?.nickname || requester?.name || '',
+                                requested_by_phone: requester?.phone || '',
+                            },
                         }),
                     ),
             );

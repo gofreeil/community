@@ -13,6 +13,9 @@ import { countPending, approveAd, rejectAd, getMyAds } from '$lib/server/adsStor
 import { markAdMessagesHandled, reconcileAdMessages } from '$lib/server/adNotifications';
 import { reconcileCoordinatorMessages, markCoordinatorMessagesHandled } from '$lib/server/coordinatorNotifications';
 import { approveCoordinatorRequest, rejectCoordinatorRequest, findPendingCoordinatorRequest } from '$lib/server/db';
+import { decideSinglesAccess } from '$lib/server/singlesAccess';
+import { decideMatchmakerRequest, MATCHMAKER_REQUEST_CATEGORY } from '$lib/server/matchmaker';
+import { markSinglesRequestMessageHandled } from '$lib/server/singlesRequestNotifications';
 
 // קטגוריות פרסום אמיתיות (גמ"ח, למסירה, חוגים וכו') - לא קריאות שכונה
 const PUBLICATION_CATEGORIES = new Set(Object.keys(categoryConfig));
@@ -185,17 +188,30 @@ export const load: PageServerLoad = async (event) => {
     let registeredUsersCount = 0;
     // כרטיסי פנויים שממתינים לאישור - אם 0, התראות "כרטיס פנויים ממתין" מסומנות כטופלו ועוברות להיסטוריה
     let pendingSinglesCount = 0;
+    // בקשות גישה ללוח / בקשות שדכנות שממתינות - התראה ישנה (בלי request_id) שלא סומנה
+    // כטופלה יורדת להיסטוריה ברגע שאין בקשה ממתינה מסוגה, במקום להישאר עם כפתורים מתים
+    let pendingAccessCount = 0;
+    let pendingMatchmakerCount = 0;
     if (resolvedUser?.role === 'super_admin') {
-        // שלוש ספירות סופר-אדמין בלתי-תלויות → במקביל (allSettled), כדי לא להוסיף
-        // עוד שלושה round-trips סדרתיים לזמן הטעינה. כישלון בכל אחת → נשאר 0 (שקט).
-        const [adsRes, usersRes, singlesPendRes] = await Promise.allSettled([
+        // ספירות סופר-אדמין בלתי-תלויות → במקביל (allSettled), כדי לא להוסיף
+        // round-trips סדרתיים לזמן הטעינה. כישלון בכל אחת → נשאר 0 (שקט).
+        const countPendingReq = (items: { extra_fields?: string | null }[]) =>
+            items.filter((r) => {
+                try { return String(JSON.parse(r.extra_fields || '{}').status ?? 'pending') === 'pending'; }
+                catch { return false; }
+            }).length;
+        const [adsRes, usersRes, singlesPendRes, accessRes, mmRes] = await Promise.allSettled([
             countPending(),
             getAllUsers(),
             getItemsByCategoryAndStatus('singles', 'pending'),
+            getItemsByCategory('singles_access'),
+            getItemsByCategory(MATCHMAKER_REQUEST_CATEGORY),
         ]);
         if (adsRes.status === 'fulfilled') pendingAdsCount = adsRes.value;
         if (usersRes.status === 'fulfilled') registeredUsersCount = usersRes.value.length;
         if (singlesPendRes.status === 'fulfilled') pendingSinglesCount = singlesPendRes.value.length;
+        if (accessRes.status === 'fulfilled') pendingAccessCount = countPendingReq(accessRes.value);
+        if (mmRes.status === 'fulfilled') pendingMatchmakerCount = countPendingReq(mmRes.value);
     } else if (resolvedUser?.role === 'neighborhood_admin') {
         // אדמין שמונה מאשר פרסומות גם הוא - הבאדג' חייב להופיע גם אצלו
         pendingAdsCount = await countPending().catch(() => 0);
@@ -267,6 +283,8 @@ export const load: PageServerLoad = async (event) => {
         myAds,
         registeredUsersCount,
         pendingSinglesCount,
+        pendingAccessCount,
+        pendingMatchmakerCount,
         strapiAvailable,
         userFromStaleCache,
         singlesMatchInfo,
@@ -676,6 +694,13 @@ export const actions: Actions = {
     approveCoordRequest: (event) => handleCoordinatorRequest(event, 'approve'),
     rejectCoordRequest:  (event) => handleCoordinatorRequest(event, 'reject'),
 
+    // אישור/דחיית בקשת גישה ללוח פנויים / בקשת שדכן מערכת מתוך כרטיס ההתראה -
+    // אותה פעולה בדיוק כמו בדף /admin/singles-review, בלי לנווט אליו
+    approveSinglesAccess:     (event) => handleSinglesRequest(event, 'singles_access', 'approved'),
+    rejectSinglesAccess:      (event) => handleSinglesRequest(event, 'singles_access', 'rejected'),
+    approveMatchmakerRequest: (event) => handleSinglesRequest(event, 'matchmaker_request', 'approved'),
+    rejectMatchmakerRequest:  (event) => handleSinglesRequest(event, 'matchmaker_request', 'rejected'),
+
     // סימון התראת מערכת ("קריאות שכונה שפרסמתי") כנקראה - הכרטיס נעלם מהרשימה
     dismissCommunityAlert: async (event) => {
         let session = null;
@@ -843,6 +868,61 @@ async function handleCoordinatorRequest(
     } catch (e) {
         console.warn('[profile] handleCoordinatorRequest failed:', e);
         return fail(500, { coordError: 'שגיאה בטיפול בבקשת הרכז, נסה שוב' });
+    }
+}
+
+/** אישור/דחיית בקשת גישה ללוח פנויים או בקשת שדכן מערכת מכרטיס ההתראה בפרופיל.
+ *  ההתראות החדשות נושאות request_id; בהתראה ישנה בלי מזהה מאתרים בקשה ממתינה
+ *  שהכינוי שלה מופיע בגוף ההתראה. אין בקשה ממתינה = כבר טופלה במקום אחר -
+ *  ההתראה מסומנת כטופלה ויורדת מהתיבה במקום להשאיר כפתורים שלא עושים כלום. */
+async function handleSinglesRequest(
+    event: Parameters<NonNullable<Actions[string]>>[0],
+    kind: 'singles_access' | 'matchmaker_request',
+    decision: 'approved' | 'rejected',
+) {
+    const adminId = await requireSuperAdminId(event);
+    if (!adminId) return fail(403, { singlesReqError: 'נדרשת הרשאת מנהל ראשי' });
+
+    const form   = await event.request.formData();
+    const msgId  = form.get('msgId')?.toString() ?? '';
+    let requestId = form.get('requestId')?.toString() ?? '';
+
+    try {
+        const msg = msgId ? await getDbItemById(msgId) : undefined;
+        if (!requestId) {
+            const category = kind === 'singles_access' ? 'singles_access' : MATCHMAKER_REQUEST_CATEGORY;
+            const pending = (await getItemsByCategory(category)).filter((r) => {
+                try { return String(JSON.parse(r.extra_fields || '{}').status ?? 'pending') === 'pending'; }
+                catch { return false; }
+            });
+            const text = String(msg?.description ?? '');
+            const match = pending.find((r) => {
+                let nick = '';
+                try { nick = String(JSON.parse(r.extra_fields || '{}').requester_snapshot?.nickname ?? ''); } catch { /* ריק */ }
+                nick = nick || String(r.contact ?? '');
+                return !!nick && text.includes(nick);
+            });
+            requestId = match?.id ?? '';
+        }
+        if (!requestId) {
+            if (msg) { try { await markSinglesRequestMessageHandled(msg, decision); } catch { /* ריק */ } }
+            return fail(404, { singlesReqError: 'הבקשה לא נמצאה - ייתכן שכבר טופלה' });
+        }
+
+        const res = kind === 'singles_access'
+            ? await decideSinglesAccess(requestId, decision)
+            : await decideMatchmakerRequest(requestId, decision);
+        if (!res.ok) {
+            if (msg) { try { await markSinglesRequestMessageHandled(msg, decision); } catch { /* ריק */ } }
+            return fail(404, { singlesReqError: 'הבקשה לא נמצאה - ייתכן שכבר טופלה' });
+        }
+        // ההתראה שנלחצה מסומנת גם ישירות - גיבוי למקרה שההתאמה הכללית (לפי request_id/כינוי) פספסה
+        if (msg) { try { await markSinglesRequestMessageHandled(msg, decision); } catch { /* ריק */ } }
+
+        return { singlesReqSuccess: decision, singlesReqName: res.nickname };
+    } catch (e) {
+        console.warn('[profile] handleSinglesRequest failed:', e);
+        return fail(500, { singlesReqError: 'שגיאה בטיפול בבקשה, נסה שוב' });
     }
 }
 

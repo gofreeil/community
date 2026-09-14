@@ -505,6 +505,17 @@
 											areas: String(ef?.neighborhoods ?? ""),
 										}
 									: undefined;
+							// בקשת גישה ללוח פנויים / בקשת שדכן מערכת: אשר/דחה ישירות מהכרטיס,
+							// כמו בדף /admin/singles-review. request_id קיים בהתראות חדשות; בישנות
+							// השרת מאתר את הבקשה הממתינה לפי כינוי המבקש/ת בגוף ההתראה.
+							const singlesReq =
+								(efType === "singles_access" || efType === "matchmaker_request") && !ef?.handled
+									? {
+											kind: efType as "singles_access" | "matchmaker_request",
+											requestId: String(ef?.request_id ?? ""),
+											name: String(ef?.requested_by_name ?? ""),
+										}
+									: undefined;
 							// החלטת מנהל שאפשר לבטל ("לחצתי אישור בטעות") - רק אישור/דחייה,
 							// לא בקשה שהמבקש משך בעצמו (withdrawn)
 							const efDecision = String(ef?.decision ?? "");
@@ -561,6 +572,8 @@
 								adTitle: efAdId ? String(ef?.ad_title ?? "") : undefined,
 								// בקשת רכז: אשר/דחה על הכרטיס עצמו
 								coordReq,
+								// בקשת גישה ללוח פנויים / שדכן: אשר/דחה על הכרטיס עצמו
+								singlesReq,
 								// נמען לתשובה מהירה מתוך הכרטיס: השולח בצ'אט הפנימי,
 								// או מי שיזם את הבקשה בהתראת ניהול. הודעת מערכת בלי
 								// שולח אנושי (ברוך הבא, אישור פנייה) לא מקבלת כפתור.
@@ -931,6 +944,62 @@
 		}
 	}
 
+	// אישור/דחיית בקשת גישה ללוח פנויים / בקשת שדכן מערכת מתוך כרטיס ההתראה -
+	// אותה פעולה של דף /admin/singles-review, בלי לנווט אליו. משתמש באותם
+	// מצב-טעינה/אישור-דחייה/משוב של שאר הבקשות.
+	type SinglesReq = { kind: "singles_access" | "matchmaker_request"; requestId: string; name: string };
+	type SinglesReqMsg = { id: string; dbId?: string; singlesReq?: SinglesReq };
+	async function decideSinglesRequest(msg: SinglesReqMsg, decision: "approve" | "reject") {
+		if (!msg.singlesReq || lrBusyId) return;
+		const { kind, requestId, name } = msg.singlesReq;
+		const isAccess = kind === "singles_access";
+		lrConfirmId = "";
+		lrBusyId = msg.id;
+		try {
+			const fd = new FormData();
+			fd.set("msgId", msg.dbId ?? "");
+			fd.set("requestId", requestId);
+			const action = isAccess
+				? decision === "approve" ? "approveSinglesAccess" : "rejectSinglesAccess"
+				: decision === "approve" ? "approveMatchmakerRequest" : "rejectMatchmakerRequest";
+			const res = await fetch(`?/${action}`, {
+				method: "POST",
+				body: fd,
+				headers: { "x-sveltekit-action": "true" },
+			});
+			const result = deserialize(await res.text());
+			if (result.type === "success") {
+				// ההתראה סומנה כטופלה בשרת (אצל כל המנהלים) - יורדת מהרשימה כאן ובכל מכשיר
+				messages = messages.filter((m) => m.id !== msg.id);
+				const who = String((result.data as { singlesReqName?: string })?.singlesReqName ?? "") || name;
+				showLrNotice(
+					"success",
+					isAccess
+						? decision === "approve"
+							? tFn("profile.access_approved", { name: who })
+							: tFn("profile.access_rejected", { name: who })
+						: decision === "approve"
+							? tFn("profile.mm_approved", { name: who })
+							: tFn("profile.mm_rejected", { name: who }),
+				);
+			} else {
+				const errMsg =
+					result.type === "failure"
+						? String((result.data as { singlesReqError?: string })?.singlesReqError ?? tFn("profile.access_error"))
+						: tFn("profile.access_error");
+				// בקשה שכבר הוכרעה: ההתראה כבר סומנה בשרת, ולכן יורדת גם כאן
+				if (result.type === "failure" && result.status === 404) {
+					messages = messages.filter((m) => m.id !== msg.id);
+				}
+				showLrNotice("error", errMsg);
+			}
+		} catch {
+			showLrNotice("error", tFn("profile.lr_network"));
+		} finally {
+			lrBusyId = "";
+		}
+	}
+
 	// ===== סימון התראת מערכת ב"קריאות שכונה שפרסמתי" כנקראה =====
 	// הכרטיס נעלם מהרשימה, והסימון נשמר בשרת כדי שלא יחזור ברענון או במכשיר אחר.
 	let communityReqs = $state(untrack(() => (data.communityRequests ?? []).slice()));
@@ -1029,11 +1098,17 @@
 	// התראות "כרטיס פנויים ממתין לאישור" נחשבות טופלו ברגע שאין יותר כרטיסים ממתינים.
 	// אז הן יורדות מההתראות הפעילות (ומספירת שלא-נקראו) ועוברות להיסטוריית ההודעות עם וי ירוק.
 	let pendingSinglesCount = $derived(data.pendingSinglesCount ?? 0);
+	let pendingAccessCount = $derived((data as { pendingAccessCount?: number }).pendingAccessCount ?? 0);
+	let pendingMatchmakerCount = $derived((data as { pendingMatchmakerCount?: number }).pendingMatchmakerCount ?? 0);
 	function isHandledMsg(m: { id: string; kind?: string; handled?: boolean }): boolean {
 		// בקשת מיקום/שכונה שכבר אושרה/נדחתה (extra_fields.handled) - יורדת מההתראות
 		// הפעילות (ומספירת "שלא נקראו") ועוברת להיסטוריית ההודעות שטופלו
 		if (m.handled) return true;
-		return m.kind === "singles_review" && pendingSinglesCount === 0;
+		if (m.kind === "singles_review") return pendingSinglesCount === 0;
+		// התראה ישנה על בקשת גישה/שדכנות שכבר הוכרעה בדף האישור לפני שהסימון היה קיים
+		if (m.kind === "singles_access") return pendingAccessCount === 0;
+		if (m.kind === "matchmaker_request") return pendingMatchmakerCount === 0;
+		return false;
 	}
 
 	let visibleMessages = $derived.by(() => {
@@ -3403,6 +3478,8 @@
 					{@const msgLr = (msg as LrMsg).lr ? (msg as LrMsg) : null}
 					{@const msgAd = (msg as AdMsg).adSubId ? (msg as AdMsg) : null}
 					{@const msgCoord = (msg as CoordMsg).coordReq ? (msg as CoordMsg) : null}
+					{@const msgSingles = (msg as SinglesReqMsg).singlesReq ? (msg as SinglesReqMsg) : null}
+					{@const isSinglesReview = (msg as { kind?: string }).kind === 'singles_review' && !(msg as { handled?: boolean }).handled}
 					{@const isSinglesMatch = msg.id === 'singles-match'}
 					{@const msgLink = (msg as { link?: string }).link}
 					{@const navTarget = isSinglesMatch ? '/singles' : msgLink}
@@ -3605,6 +3682,59 @@
 												{tFn("profile.coord_reject")}
 											</button>
 										{/if}
+										<span class="flex-1"></span>
+									{:else if msgSingles}
+										<!-- אשר/דחה בקשת גישה ללוח פנויים / בקשת שדכן - ישירות מההתראה, בלי לנווט לדף האישור -->
+										{@const isAccessReq = msgSingles.singlesReq?.kind === 'singles_access'}
+										{#if lrConfirmId === msg.id}
+											<span class="text-xs font-bold text-red-200">{tFn(isAccessReq ? "profile.access_reject_confirm" : "profile.mm_reject_confirm")}</span>
+											<button
+												type="button"
+												disabled={lrBusyId === msg.id}
+												onclick={(e) => { e.stopPropagation(); decideSinglesRequest(msgSingles, "reject"); }}
+												class="text-xs font-black bg-red-500/20 text-red-200 border border-red-500/50 hover:bg-red-500/30 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
+											>
+												{lrBusyId === msg.id ? tFn("profile.lr_processing") : tFn("profile.lr_yes_reject")}
+											</button>
+											<button
+												type="button"
+												onclick={(e) => { e.stopPropagation(); lrConfirmId = ""; }}
+												class="text-xs font-bold text-gray-300 border border-white/15 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+											>
+												{tFn("profile.cancel")}
+											</button>
+										{:else}
+											<button
+												type="button"
+												disabled={lrBusyId === msg.id}
+												onclick={(e) => { e.stopPropagation(); decideSinglesRequest(msgSingles, "approve"); }}
+												class="text-xs font-black bg-green-500/15 text-green-300 border border-green-500/40 hover:bg-green-500/25 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
+												title={tFn(isAccessReq ? "profile.access_approve_title" : "profile.mm_approve_title")}
+											>
+												{lrBusyId === msg.id ? tFn("profile.lr_processing") : tFn(isAccessReq ? "profile.access_approve" : "profile.mm_approve")}
+											</button>
+											<button
+												type="button"
+												disabled={lrBusyId === msg.id}
+												onclick={(e) => { e.stopPropagation(); lrConfirmId = msg.id; }}
+												class="text-xs font-black bg-red-500/10 text-red-300 border border-red-500/40 hover:bg-red-500/20 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
+												title={tFn(isAccessReq ? "profile.access_reject_title" : "profile.mm_reject_title")}
+											>
+												{tFn("profile.coord_reject")}
+											</button>
+										{/if}
+										<span class="flex-1"></span>
+									{:else if isSinglesReview && msgLink}
+										<!-- כרטיס פנויים ממתין לבדיקת צניעות: האישור דורש לראות את התמונות, לכן
+										     כפתור מפורש שפותח את דף האישור (בלי לנחש שכל הכרטיס לחיץ) -->
+										<button
+											type="button"
+											onclick={(e) => { e.stopPropagation(); goto(msgLink); }}
+											class="text-xs font-black bg-pink-500/15 text-pink-200 border border-pink-500/40 hover:bg-pink-500/25 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+											title={tFn("profile.singles_review_open_title")}
+										>
+											{tFn("profile.singles_review_open")}
+										</button>
 										<span class="flex-1"></span>
 									{/if}
 									{#if (msg as ReplyMsg).replyTo}

@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { createItem, getUserById, getAllSuperAdmins } from '$lib/server/db';
-import { getMatchmakerStatus, MATCHMAKER_REQUEST_CATEGORY } from '$lib/server/matchmaker';
+import { getMatchmakerStatus, findOpenMatchmakerRequest, MATCHMAKER_REQUEST_CATEGORY } from '$lib/server/matchmaker';
 import type { RequestHandler } from './$types';
 
 // בקשה להיות "שדכן מערכת": משתמש (גבר או אישה) מבקש הרשאת שדכנות.
@@ -28,7 +28,12 @@ export const POST: RequestHandler = async (event) => {
 
         const requesterName = requester?.nickname || requester?.name || 'משתמש';
 
-        await createItem({
+        // בדיקה טרייה עוקפת-cache (מונעת בקשה כפולה בשליחה חוזרת מהירה)
+        const fresh = await findOpenMatchmakerRequest(requesterId).catch(() => null);
+        if (fresh === 'approved') return json({ success: true, already: 'approved' });
+        if (fresh === 'pending') return json({ success: true, already: 'pending' });
+
+        const request = await createItem({
             category: MATCHMAKER_REQUEST_CATEGORY,
             label: 'בקשה להיות שדכן מערכת',
             user_id: requesterId,
@@ -64,7 +69,16 @@ export const POST: RequestHandler = async (event) => {
                             user_id: a.id,
                             icon: '💘',
                             color: 'pink',
-                            extra_fields: { type: 'matchmaker_request', read: false, link: '/admin/singles-review' },
+                            // request_id + פרטי המבקש: מאפשרים אשר/דחה ישירות מכרטיס ההתראה בפרופיל
+                            extra_fields: {
+                                type: 'matchmaker_request',
+                                read: false,
+                                link: '/admin/singles-review',
+                                request_id: request.id,
+                                requested_by_id: requesterId,
+                                requested_by_name: requesterName,
+                                requested_by_phone: requester?.phone || '',
+                            },
                         }),
                     ),
             );
