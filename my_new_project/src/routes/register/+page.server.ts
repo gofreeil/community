@@ -1,6 +1,7 @@
 import { redirect, fail } from '@sveltejs/kit';
 import { registerWithCredentials } from '$lib/server/db';
 import { strapiRegister, resendConfirmation, StrapiAuthError } from '$lib/server/strapiClient';
+import { notifyAdminsNewUser } from '$lib/server/userNotifications';
 import { setHandoffCookies } from '$lib/server/authHandoff';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -62,6 +63,9 @@ export const actions: Actions = {
         } catch {
             // לא קריטי - external_id יוגדר בכניסה הראשונה
         }
+
+        // 2ב. התראה למנהלים על ההרשמה החדשה (best-effort, לא חוסם את ההרשמה)
+        void notifyAdminsNewUser({ id: `credentials_${email}`, name: username, email, provider: 'local' });
 
         // 3א. יש JWT (אישור מייל כבוי) → שותלים בעוגייה ומחברים אוטומטית:
         // הקליינט יקרא signIn('credentials') שמרים סשן מהעוגייה (handoff)

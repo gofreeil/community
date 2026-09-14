@@ -579,22 +579,10 @@
 							};
 						},
 					)
-				: [
-						{
-							id: "mock-welcome",
-							from: tFn("profile.from_system"),
-							text: tFn("profile.mock_welcome"),
-							time: tFn("profile.days_ago_2"),
-							read: false,
-						},
-						{
-							id: "mock-approved",
-							from: tFn("profile.from_admin"),
-							text: tFn("profile.mock_approved"),
-							time: tFn("profile.days_ago_5"),
-							read: false,
-						},
-					]),
+				// אין הודעות אמיתיות → רשימה ריקה (מצב ריק מוצג למטה). בעבר הוצגו כאן
+				// שתי הודעות דמה קבועות ("ברוך הבא" / "הצטרפות אושרה", "לפני 2/5 ימים")
+				// שהטעו נרשמים חדשים: אף מנהל לא אישר אותם והתאריכים היו מומצאים.
+				: []),
 		]),
 	);
 

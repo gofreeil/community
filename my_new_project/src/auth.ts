@@ -6,6 +6,7 @@ import type { Handle } from '@sveltejs/kit';
 import { upsertUser, getUserByEmail, getUserById } from '$lib/server/db';
 import { strapiLogin, getStrapiMe } from '$lib/server/strapiClient';
 import { getOrCreateStrapiJwt } from '$lib/server/strapiJwt';
+import { notifyAdminsNewUser } from '$lib/server/userNotifications';
 
 /** קריאת ערך עוגייה מתוך כותרת Cookie גולמית (authorize מקבל Request, לא event.cookies) */
 function readCookie(cookieHeader: string | null | undefined, name: string): string | null {
@@ -209,10 +210,14 @@ export const { handle, signIn, signOut } = !AUTH_SECRET
             const tempId = `${account.provider}_${account.providerAccountId}`;
             let strapiJwt: string | null = null;
             let stableId = tempId;
+            // diag.step2_register === 'ok' ⇔ האימייל לא היה קיים ב-Strapi ונרשם עכשיו
+            // לראשונה. זה הסימן היחיד האמין ל"משתמש חדש" במסלול OAuth (isExisting
+            // לא מתאים: getUserByEmail מוצא גם את מי שנרשם לפני רגע בשלב הזה).
+            const jwtDiag: Record<string, unknown> = {};
 
             try {
                 // 1. קודם JWT
-                strapiJwt = await getOrCreateStrapiJwt(user.email, tempId);
+                strapiJwt = await getOrCreateStrapiJwt(user.email, tempId, jwtDiag);
                 if (strapiJwt) (user as { strapiJwt?: string }).strapiJwt = strapiJwt;
             } catch (e) {
                 console.warn('[auth] getOrCreateStrapiJwt failed:', e);
@@ -231,7 +236,12 @@ export const { handle, signIn, signOut } = !AUTH_SECRET
                         // ולא "ברוכים המצטרפים" גם כשהגיע דרך דף ההרשמה
                         (user as { isExisting?: boolean }).isExisting = true;
                         console.log('[auth] merged OAuth → credentials user:', credentialsId);
-                    } else {
+                    } else if (jwtDiag.step2_register !== 'ok') {
+                        // רק כשהאימייל *לא* נרשם הרגע בשלב 2. אחרת החיפוש לפי אימייל
+                        // מוצא את המשתמש שנוצר לפני רגע, וכל נרשם/ת חדש/ה דרך Google/
+                        // Facebook סומן/ה בטעות כ"קיים/ת": קיבל/ה "ברוכים השבים" במקום
+                        // ברכת מצטרף, דילג/ה על אשף ההרשמה, וה-external_id נקבע למספר
+                        // הפנימי של Strapi במקום ל-google_<id>.
                         const existingByEmail = await getUserByEmail(user.email, strapiJwt ?? undefined).catch(() => null);
                         if (existingByEmail) {
                             stableId = existingByEmail.id;
@@ -261,6 +271,13 @@ export const { handle, signIn, signOut } = !AUTH_SECRET
             }
 
             user.id = stableId;
+
+            // 4. משתמש חדש לגמרי (נרשם עכשיו ב-Strapi) → התראה למנהלים. best-effort.
+            if (jwtDiag.step2_register === 'ok') {
+                void notifyAdminsNewUser({
+                    id: stableId, name: user.name, email: user.email, provider: account.provider,
+                });
+            }
             return true;
         },
 
