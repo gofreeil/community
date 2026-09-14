@@ -102,6 +102,17 @@ const MODERATED_CATEGORIES = new Set(['singles']);
 async function notifySinglesReview(cardId: string, itemLabel: string, ef: Record<string, unknown>) {
     const admins = await getAllSuperAdmins();
     const imgCount = Array.isArray(ef.images) ? ef.images.length : 0;
+    // מי נרשם/ה: שם, מגדר, גיל ועיר - כדי שהמנהל ידע מההודעה עצמה מי הפנוי/ה
+    // החדש/ה, בלי להיכנס לדף האישור רק כדי לגלות.
+    const who = String(ef.nickname ?? '').trim() || itemLabel;
+    const gender = String(ef.gender ?? '').trim();
+    const isFemale = gender.includes('אישה') || gender.includes('נקבה') || gender === 'female';
+    const age = ef.birth_date
+        ? String(Math.floor((Date.now() - new Date(String(ef.birth_date)).getTime()) / 31557600000))
+        : String(ef.age ?? '').trim();
+    const city = String(ef.city ?? '').trim();
+    const details = [gender, age ? `גיל ${age}` : '', city].filter(Boolean).join(', ');
+    const label = `💑 ${isFemale ? 'פנויה חדשה' : 'פנוי חדש'}: ${who}${details ? ` (${details})` : ''}`;
     await Promise.all(
         admins
             .filter((a) => a.id)
@@ -122,8 +133,12 @@ async function notifySinglesReview(cardId: string, itemLabel: string, ef: Record
                 }
                 await createItem({
                     category: 'message',
-                    label: '🔞 כרטיס פנויים חדש ממתין לאישור',
-                    description: `כרטיס "${itemLabel}" (${imgCount} תמונות) ממתין לבדיקת צניעות ואישור. היכנס לדף האישור: /admin/singles-review`,
+                    label,
+                    description:
+                        `${who}${details ? ` (${details})` : ''} ${isFemale ? 'נרשמה' : 'נרשם'} ללוח הפנויים/פנויות. ` +
+                        `הכרטיס "${itemLabel}" (${imgCount} תמונות) ממתין לבדיקת צניעות ואישור.
+` +
+                        `לחיצה על הכרטיס פותחת את דף האישור: /admin/singles-review`,
                     contact: '',
                     user_id: a.id,
                     icon: '💑',

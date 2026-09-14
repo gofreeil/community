@@ -78,10 +78,6 @@ export const he = {
         unread_count: "{n} הודעות שלא נקראו",
         from_system: "מערכת",
         from_admin: "מנהל",
-        mock_welcome: "ברוך הבא לקהילה! השלם את הפרופיל שלך.",
-        mock_approved: "הצטרפות שלך אושרה. כעת תוכל לפרסם תוכן.",
-        days_ago_2: "לפני 2 ימים",
-        days_ago_5: "לפני 5 ימים",
         now: "עכשיו",
         singles_match_from: "💑 פנויים/פנויות",
         singles_match_text:
@@ -562,10 +558,6 @@ export const en = {
         unread_count: "{n} unread messages",
         from_system: "System",
         from_admin: "Admin",
-        mock_welcome: "Welcome to the community! Complete your profile.",
-        mock_approved: "Your membership was approved. You can now publish content.",
-        days_ago_2: "2 days ago",
-        days_ago_5: "5 days ago",
         now: "Now",
         singles_match_from: "💑 Singles",
         singles_match_text:
@@ -1044,10 +1036,6 @@ export const ru = {
         unread_count: "Непрочитанных сообщений: {n}",
         from_system: "Система",
         from_admin: "Администратор",
-        mock_welcome: "Добро пожаловать в сообщество! Заполните свой профиль.",
-        mock_approved: "Ваше вступление одобрено. Теперь вы можете публиковать контент.",
-        days_ago_2: "2 дня назад",
-        days_ago_5: "5 дней назад",
         now: "Сейчас",
         singles_match_from: "💑 Знакомства",
         singles_match_text:
