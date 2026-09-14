@@ -7,6 +7,7 @@ import {
     COORD_TRUST_COOKIE_NAME,
 } from '$lib/server/totp';
 import { getUserTotpSecret } from '$lib/server/db';
+import { invalidateBefore } from '$lib/server/cache';
 import { newErrorRef, resolveActor, notifySuperAdminsOfError } from '$lib/server/errorAlert';
 
 /**
@@ -281,6 +282,42 @@ function withSecurityHeaders(res: Response): Response {
     return res;
 }
 
+/**
+ * קריאה-אחרי-כתיבה חוצת-מופעים (read-your-writes).
+ *
+ * ה-cache של השרת (cache.ts) יושב בזיכרון של כל מופע Vercel בנפרד, ו-invalidate
+ * אחרי כתיבה מנקה רק את המופע שכתב. הבקשה הבאה של אותו משתמש נוחתת לא פעם
+ * במופע אחר - ומקבלת ממנו ערך שנשלף לפני הכתיבה (עד שתי דקות של "השינוי לא
+ * נקלט": קציבת תקופה לפרסומת נשמרה ב-Strapi והדף המשיך להציג את הישן).
+ *
+ * הפתרון: כל תשובה לכתיבה (form action בכל דף, או כל בקשה משנה תחת /admin)
+ * מקבלת עוגייה עם חותמת הזמן של סיום הכתיבה. בכל בקשה נכנסת עם העוגייה,
+ * המופע שקיבל אותה לומד שכל מה שנשלף לפני החותמת מיושן ושולף מחדש.
+ * זול: שליפה חוזרת אחת לכל מפתח לכל מופע, ורק בעקבות כתיבה אמיתית.
+ */
+const RW_COOKIE = 'rw_since';
+const RW_MAX_AGE_SEC = 10 * 60; // ארוך מכל TTL בשכבת ה-cache (המקסימום כיום 2 דקות)
+const MUTATING = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
+const readYourWrites: Handle = async ({ event, resolve }) => {
+    const seen = Number(event.cookies.get(RW_COOKIE));
+    if (Number.isFinite(seen) && seen > 0) invalidateBefore('', seen);
+
+    const res = await resolve(event);
+
+    const isWrite = MUTATING.has(event.request.method)
+        && (event.url.search.startsWith('?/') || event.url.pathname.startsWith('/admin'));
+    if (isWrite) {
+        // אחרי resolve בכוונה - החותמת חייבת להיות מאוחרת מסיום הכתיבה עצמה.
+        // cookies.set לא נכנס לתשובה בשלב הזה, ולכן הכותרת נכתבת ישירות.
+        res.headers.append('set-cookie', event.cookies.serialize(RW_COOKIE, String(Date.now()), {
+            path: '/', httpOnly: true, sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: RW_MAX_AGE_SEC,
+        }));
+    }
+    return res;
+};
+
 export const handle: Handle = async ({ event, resolve }) => {
     if (PUBLIC_IMAGE_PATH.test(event.url.pathname)) {
         (event.locals as unknown as Record<string, unknown>).auth = async () => null;
@@ -288,7 +325,7 @@ export const handle: Handle = async ({ event, resolve }) => {
     }
 
     try {
-        return withSecurityHeaders(await sequence(authHandle, memoizeAuth, ssoAutoAdopt, adminGate, coordinatorGate, checkBanned, setStrApiCookie)({ event, resolve }));
+        return withSecurityHeaders(await sequence(readYourWrites, authHandle, memoizeAuth, ssoAutoAdopt, adminGate, coordinatorGate, checkBanned, setStrApiCookie)({ event, resolve }));
     } catch (err) {
         console.warn('[hooks] auth handle threw - continuing anonymously:', err);
         // fallback: מגדיר auth בטוח כדי שקוד downstream לא יזרוק TypeError
