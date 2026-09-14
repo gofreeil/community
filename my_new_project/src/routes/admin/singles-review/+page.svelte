@@ -44,10 +44,18 @@
                 <h1 class="text-3xl font-black flex items-center gap-2">💑 אישור כרטיסי פנויים</h1>
                 <p class="text-gray-400 mt-1">בדוק שאין תמונות לא צנועות לפני אישור. כרטיס מאושר עולה ללוח; כרטיס שנדחה לא מוצג.</p>
             </div>
-            <button
-                onclick={() => goto('/admin')}
-                class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
-            >← לוח הניהול</button>
+            <div class="flex items-center gap-2 flex-wrap">
+                <a
+                    href="/singles"
+                    target="_blank"
+                    rel="noopener"
+                    class="px-4 py-2 rounded-xl bg-pink-500/15 border border-pink-500/40 text-pink-200 hover:text-white hover:bg-pink-500/30 transition-all cursor-pointer"
+                >💑 לדף הפנויים/פנויות המלא ↗</a>
+                <button
+                    onclick={() => goto('/admin')}
+                    class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+                >← לוח הניהול</button>
+            </div>
         </div>
 
         <!-- הודעת תוצאה -->
