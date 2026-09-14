@@ -888,6 +888,9 @@
             .sort((a, b) => b.count - a.count);
     });
 
+    // המספר הארצי לתג הכתום בתצוגת פנויים/פנויות - כל הכרטיסים, גם מעיר בלי נקודה על המפה
+    let singlesNationalCount = $derived(dbItems.filter((d) => d.category === 'singles').length);
+
     let dynamicMarkers = $derived.by(() => {
         // קריאות עזרה מטופלות בשכבה נפרדת (helpCallMarkers) - לא נכללות כאן,
         // כדי שלא ידכאו את מרקרי הדמו ולא יוגבלו ע"י MAX_MARKERS / סינון קטגוריה.
@@ -2411,14 +2414,17 @@
 
                 <!-- מספר הפריטים בשכונה - תג צר בן 2 שורות, צמוד לשוליים הימניים ונמוך יותר -->
                 <!-- כדי לא להסתיר את מרכז המפה ולא להתנגש בכפתורי הזום שבפינה הימנית-תחתונה -->
-                {#if showCountBadge && neighborhoodDbItems.length > 0}
+                <!-- פנויים/פנויות: התצוגה ארצית, ולכן התג מציג את המספר הארצי (סכום כל הערים) ולא "פריטים בשכונה" -->
+                {#if showCountBadge && (selectedCategory === 'singles' ? singlesNationalCount > 0 : neighborhoodDbItems.length > 0)}
                     <div
                         class="neighborhood-count-fade absolute top-28 right-2 z-20 flex flex-col items-center text-center leading-none bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 text-white font-black px-3.5 py-2 rounded-xl shadow-lg border border-orange-300/60"
                         onanimationend={() => (showCountBadge = false)}
                     >
-                        <span class="text-2xl leading-none">{neighborhoodDbItems.length}</span>
+                        <span class="text-2xl leading-none">{selectedCategory === 'singles' ? singlesNationalCount : neighborhoodDbItems.length}</span>
                         <span class="text-xs font-bold mt-0.5 whitespace-nowrap">
-                            {selectedCategory === 'giveaway'
+                            {selectedCategory === 'singles'
+                                ? $t('map.singles_national_label')
+                                : selectedCategory === 'giveaway'
                                 ? $t('map.giveaways_in_hood_label')
                                 : $t('map.items_in_hood_label')}
                         </span>
