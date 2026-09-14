@@ -61,6 +61,37 @@ async function buildChanged(): Promise<boolean> {
     }
 }
 
+/**
+ * צומת שגיאה של השרת שהגיע לכאן כמו שהוא — `{ type:'error', status, error:{message, ref} }`.
+ *
+ * זה מה שה-load של השרת מחזיר ב-__data.json כשהוא זרק (גם `error(403)` מכוון וגם
+ * קריסה אמיתית). בניווט אמיתי SvelteKit מזהה את הצומת ולא קורא ל-handleError
+ * ("כבר טופל בשרת") — אבל בנתיב ה-**preload** (ריחוף/נגיעה בקישור) הוא מעביר את
+ * האובייקט הגולמי ישירות לכאן. התוצאה הייתה התראה "500 [object Object]" על
+ * /admin לכל מנהל-שכונה שריחף על הקישור וקיבל 403 - לא באג, ולא 500.
+ * השרת כבר רשם ללוג והתריע (אם היה 5xx) עם ה-ref שלו; כאן רק מעבירים אותו הלאה.
+ */
+type ServerErrorNode = { type: 'error'; status?: number; error?: { message?: string; ref?: string } | null };
+
+function asServerErrorNode(error: unknown): ServerErrorNode | null {
+    if (!error || typeof error !== 'object' || error instanceof Error) return null;
+    const n = error as Partial<ServerErrorNode>;
+    return n.type === 'error' && 'error' in n ? (n as ServerErrorNode) : null;
+}
+
+/** טקסט שגיאה קריא לכל ערך שנזרק - לא "[object Object]" על אובייקט שאינו Error. */
+function errorText(error: unknown): string {
+    if (error instanceof Error) return error.message;
+    if (error && typeof error === 'object') {
+        const m = (error as { message?: unknown }).message;
+        if (typeof m === 'string' && m) return m;
+        try {
+            return JSON.stringify(error).slice(0, 300);
+        } catch { /* circular etc. */ }
+    }
+    return String(error);
+}
+
 /** דיווח best-effort. כל כשל כאן נבלע: תקלה בדיווח לא תיצור תקלה נוספת. */
 function report(body: Record<string, unknown>): void {
     try {
@@ -78,9 +109,23 @@ export const handleError: HandleClientError = async ({ error, event, status, mes
     // 404 אינו תקלת-אמת — לא מרעישים את הלוג בשבילו (זהה לצד השרת)
     if (status === 404) return { message: message ?? 'Not Found' };
 
-    const ref = newRef();
-    const errMsg = error instanceof Error ? error.message : String(error);
     const path = event.url.pathname + event.url.search;
+
+    // שגיאה שהשרת כבר טיפל בה (ראו asServerErrorNode): לא מדווחים פעמיים ולא מציגים
+    // "500" על 403. ה-ref של השרת נשאר כדי שהגולש והלוג ידברו על אותו מזהה.
+    const node = asServerErrorNode(error);
+    if (node) {
+        const nodeStatus = node.status ?? status;
+        console.warn(`[client-error] ${nodeStatus} server error node during preload @ ${path}` +
+            (node.error?.ref ? ` (server ref ${node.error.ref})` : ''));
+        return {
+            message: node.error?.message ?? message ?? 'Internal Error',
+            ref: node.error?.ref,
+        };
+    }
+
+    const ref = newRef();
+    const errMsg = errorText(error);
 
     const kind = classify(error);
     const stale = kind === 'stale_build' && (await buildChanged());
@@ -98,7 +143,8 @@ export const handleError: HandleClientError = async ({ error, event, status, mes
             routeId: event.route?.id ?? event.url.pathname,
             path,
             message: errMsg,
-            stack: error instanceof Error ? (error.stack ?? '') : '',
+            // חתוך: /api/client-error דוחה גוף מעל 8KB, ו-stack ארוך היה מאבד את הדיווח כולו
+            stack: error instanceof Error ? (error.stack ?? '').slice(0, 2000) : '',
             kind: kind ?? undefined,
             stale,
         });
