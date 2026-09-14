@@ -1,4 +1,5 @@
 import { withSinglesItemImageUrls } from '$lib/server/singlesImages';
+import { stripInlineImages } from '$lib/server/inlineImage';
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { getUserById, getUserByEmail, getUserByAnyId, updateUserProfile, getItemsByUserId, upsertUser, getMessagesByUserId, createItem, updateItem, getDbItemById, getAllSuperAdmins, getAllUsers, getItemsByCategory, getItemsByCategoryAndStatus, createNeighborhoodRequest } from '$lib/server/db';
@@ -253,7 +254,7 @@ export const load: PageServerLoad = async (event) => {
     return {
         user: resolvedUser,
         // כרטיס הפנויים של המשתמש: התמונות ככתובות ולא base64 (singlesImages.ts)
-        items: publicationItems.map(withSinglesItemImageUrls),
+        items: publicationItems.map(withSinglesItemImageUrls).map(stripInlineImages),
         communityRequests,
         messages,
         citiesData,

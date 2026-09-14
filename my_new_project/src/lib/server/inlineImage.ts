@@ -70,3 +70,23 @@ export function immutableImageResponse(img: { mime: string; bytes: ArrayBuffer }
         },
     });
 }
+
+/**
+ * מרוקן תמונות מוטבעות (ערכי data: ברמה העליונה של extra_fields) מרשומת פריט -
+ * לדפים שמציגים את הפריט ברשימה בלי התמונות (למשל "הפרסומים שלי" בפרופיל,
+ * שקורא מ-extra_fields רק את deleted_at). נמדד: 460KB של map_image/logo
+ * בכל טעינת פרופיל בלי שום שימוש.
+ */
+export function stripInlineImages<T extends { extra_fields: string | null }>(item: T): T {
+    if (!item.extra_fields || !item.extra_fields.includes('data:')) return item;
+    try {
+        const ef = JSON.parse(item.extra_fields) as Record<string, unknown>;
+        let changed = false;
+        for (const k of Object.keys(ef)) {
+            if (typeof ef[k] === 'string' && (ef[k] as string).startsWith('data:')) { ef[k] = ''; changed = true; }
+        }
+        return changed ? { ...item, extra_fields: JSON.stringify(ef) } : item;
+    } catch {
+        return item;
+    }
+}
