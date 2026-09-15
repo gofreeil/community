@@ -51,6 +51,7 @@ export const load: PageServerLoad = async (event) => {
             const snap = (ef.requester_snapshot ?? {}) as Record<string, unknown>;
             return {
                 id: it.id,
+                userId: it.user_id ?? '',
                 status: String(ef.status ?? 'pending'),
                 role: String(ef.role ?? ''),
                 roleLabel: String(ef.role_label ?? ''),
@@ -74,6 +75,7 @@ export const load: PageServerLoad = async (event) => {
             const gender = String(snap.gender ?? '');
             return {
                 id: it.id,
+                userId: it.user_id ?? '',
                 status: String(ef.status ?? 'pending'),
                 nickname: String(snap.nickname ?? it.contact ?? ''),
                 gender,

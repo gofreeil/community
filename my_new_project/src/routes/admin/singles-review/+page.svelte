@@ -90,13 +90,20 @@
                             <div class="min-w-0">
                                 <p class="text-white font-bold text-sm">
                                     <span class="inline-block bg-pink-500/15 text-pink-200 px-2 py-0.5 rounded-full text-[12px] font-bold ring-1 ring-pink-400/40">{r.roleLabel || r.role}</span>
-                                    <span class="mr-2">{r.nickname || '—'}</span>
+                                    {#if r.userId}
+                                        <a href="/admin/users/{r.userId}" title="צפה בכרטיס המשתמש המלא" class="mr-2 underline decoration-white/30 hover:decoration-pink-300 hover:text-pink-200 transition-colors">{r.nickname || '—'}</a>
+                                    {:else}
+                                        <span class="mr-2">{r.nickname || '—'}</span>
+                                    {/if}
                                 </p>
                                 <p class="text-gray-400 text-xs mt-1">
                                     {#if r.city}📍 {r.city}{#if r.neighborhood} · {r.neighborhood}{/if} · {/if}
                                     {#if r.phone}📞 {r.phone} · {/if}
                                     {#if r.email}✉️ {r.email}{/if}
                                 </p>
+                                {#if r.userId}
+                                    <a href="/admin/users/{r.userId}" class="inline-block text-[12px] text-blue-300/80 hover:text-blue-200 underline mt-1">🔗 לכרטיס המשתמש המלא (פרופיל + היסטוריית צ'אט)</a>
+                                {/if}
                             </div>
                             <div class="flex gap-2 flex-shrink-0">
                                 <form method="POST" action="?/accessDecision" use:enhance>
@@ -130,13 +137,20 @@
                             <div class="min-w-0">
                                 <p class="text-white font-bold text-sm">
                                     {#if r.genderLabel}<span class="inline-block bg-rose-500/15 text-rose-200 px-2 py-0.5 rounded-full text-[12px] font-bold ring-1 ring-rose-400/40">{r.genderLabel}</span>{/if}
-                                    <span class="mr-2">{r.nickname || '—'}</span>
+                                    {#if r.userId}
+                                        <a href="/admin/users/{r.userId}" title="צפה בכרטיס המשתמש המלא" class="mr-2 underline decoration-white/30 hover:decoration-rose-300 hover:text-rose-200 transition-colors">{r.nickname || '—'}</a>
+                                    {:else}
+                                        <span class="mr-2">{r.nickname || '—'}</span>
+                                    {/if}
                                 </p>
                                 <p class="text-gray-400 text-xs mt-1">
                                     {#if r.city}📍 {r.city}{#if r.neighborhood} · {r.neighborhood}{/if} · {/if}
                                     {#if r.phone}📞 {r.phone} · {/if}
                                     {#if r.email}✉️ {r.email}{/if}
                                 </p>
+                                {#if r.userId}
+                                    <a href="/admin/users/{r.userId}" class="inline-block text-[12px] text-blue-300/80 hover:text-blue-200 underline mt-1">🔗 לכרטיס המשתמש המלא (פרופיל + היסטוריית צ'אט)</a>
+                                {/if}
                             </div>
                             <div class="flex gap-2 flex-shrink-0">
                                 <form method="POST" action="?/matchmakerDecision" use:enhance>
