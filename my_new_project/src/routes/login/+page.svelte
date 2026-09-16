@@ -103,6 +103,17 @@
 					<p class="text-gray-400 text-sm">{tFn("login_subtitle")}</p>
 				</div>
 
+				<!-- הגיעו מאתר אחות דרך גשר ה-SSO: מסבירים שההתחברות/ההצטרפות כאן
+				     מחזירה אותם לשם אוטומטית, ושחברות בווצאפ אינה חשבון -->
+				{#if data.via}
+					<div role="status" class="mb-6 rounded-xl bg-purple-500/10 border border-purple-400/30 px-4 py-3 text-center">
+						<p class="text-purple-100 text-sm font-bold mb-1">
+							🕊️ {tFn('account.sso_via_title')} {data.via}
+						</p>
+						<p class="text-gray-300 text-xs leading-relaxed">{tFn('account.sso_via_hint')}</p>
+					</div>
+				{/if}
+
 				<!-- הודעות שגיאה / הצלחה -->
 				{#if form?.unconfirmed}
 					<div id="login-error" role="alert" class="mb-6 rounded-xl bg-amber-500/10 border border-amber-500/30 px-4 py-3 text-center">

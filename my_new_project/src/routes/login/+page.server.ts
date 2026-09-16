@@ -13,6 +13,14 @@ function safeRedirect(raw: string | null): string {
     return '/profile';
 }
 
+/** האתר שממנו הגיעו דרך גשר ה-SSO (/sso) - רק תת-דומיין של gofreeil.com, לתצוגה בלבד */
+function safeVia(raw: string | null): string | null {
+    if (!raw) return null;
+    const host = raw.trim().toLowerCase();
+    if (host === 'gofreeil.com' || (host.endsWith('.gofreeil.com') && /^[a-z0-9.-]+$/.test(host))) return host;
+    return null;
+}
+
 export const load: PageServerLoad = async (event) => {
     let session = null;
     try { session = await event.locals.auth(); } catch { /* עוגייה פגומה - מציגים לוגין */ }
@@ -23,6 +31,7 @@ export const load: PageServerLoad = async (event) => {
 
     return {
         redirectTo:  safeRedirect(event.url.searchParams.get('redirect')),
+        via:         safeVia(event.url.searchParams.get('via')),
         error:       event.url.searchParams.get('error') ?? null,
         registered:  event.url.searchParams.get('registered') === '1',
     };

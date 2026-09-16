@@ -10,7 +10,11 @@ import { getStrapiMe } from '$lib/server/strapiClient';
  * - אם המשתמש מחובר בקהילה → קובעים את העוגייה המשותפת `gofreeil-auth`
  *   על `.gofreeil.com` (אותו JWT של Strapi המשותף) ומחזירים ל-callback.
  *   כל אתר תחת הדומיין יזהה אותו מיד.
- * - אם אינו מחובר/רשום → מחזירים ל-callback עם ?error=not_registered.
+ * - אם אינו מחובר בקהילה כלל → מפנים ל-/login עם redirect חזרה לגשר. שם הוא נכנס
+ *   או מצטרף בלחיצה (Google/Facebook), חוזר לכאן עם סשן חי, ומקבל את העוגייה.
+ *   כך הכפתור "התחבר דרך יוצאים לחירות" באתרי האחות לעולם לא נכשל למי שאין לו
+ *   חשבון (חברי קבוצות הווצאפ שאינם רשומים באתר).
+ * - מחובר אך אי אפשר להנפיק JWT → מחזירים ל-callback עם ?error=not_registered.
  *
  * ה-callback חייב להיות תת-דומיין של gofreeil.com (הגנה מ-open-redirect).
  *
@@ -108,6 +112,16 @@ export const GET: RequestHandler = async ({ locals, url, cookies, request }) => 
 
 	// כאן debug=false, ולכן (מהבדיקה בראש) callback מובטח קיים
 	if (!callback) throw error(400, 'callback לא חוקי');
+
+	// אין סשן קהילה בכלל → מסך הכניסה שלנו, עם חזרה אוטומטית לגשר אחרי ההתחברות.
+	// אין לולאה: /login מפנה ל-redirect רק כשיש סשן, ואז user.email קיים.
+	if (!jwt && !user?.email) {
+		const back = `/sso?callback=${encodeURIComponent(callback.toString())}`;
+		throw redirect(
+			302,
+			`/login?redirect=${encodeURIComponent(back)}&via=${encodeURIComponent(callback.hostname)}`
+		);
+	}
 
 	if (jwt) {
 		// אותן אפשרויות בדיוק כמו authCookieOptions של רכישות קבוצתיות

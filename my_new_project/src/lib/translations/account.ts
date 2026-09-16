@@ -103,6 +103,10 @@ export const he = {
 
         // בורר חשבונות גוגל לפי דרישה (ברירת המחדל: חיבור אוטומטי לחשבון היחיד)
         google_other_account: "להתחבר עם חשבון גוגל אחר",
+
+        // הגיעו מאתר אחות דרך גשר ה-SSO (/login?via=<host>)
+        sso_via_title: "כניסה לאתר",
+        sso_via_hint: "אחרי ההתחברות תוחזרו לשם אוטומטית. אין לכם עדיין חשבון? חברות בקבוצות הווצאפ אינה חשבון באתר, אבל כניסה עם Google או Facebook יוצרת אחד בלחיצה.",
     },
 };
 
@@ -207,6 +211,10 @@ export const en = {
 
         // Google account chooser on demand (default: auto-connect the single account)
         google_other_account: "Use another Google account",
+
+        // arrived from a sister site via the SSO bridge (/login?via=<host>)
+        sso_via_title: "Signing in to",
+        sso_via_hint: "After signing in you'll be sent back there automatically. No account yet? Being in the WhatsApp groups isn't a site account, but Google or Facebook creates one in a single click.",
     },
 };
 
@@ -311,5 +319,9 @@ export const ru = {
 
         // выбор аккаунта Google по запросу (по умолчанию: автоматический вход)
         google_other_account: "Войти с другим аккаунтом Google",
+
+        // пришли с дочернего сайта через SSO-мост (/login?via=<host>)
+        sso_via_title: "Вход на сайт",
+        sso_via_hint: "После входа вы автоматически вернётесь туда. Ещё нет аккаунта? Участие в группах WhatsApp — это не аккаунт на сайте, но вход через Google или Facebook создаёт его в один клик.",
     },
 };
