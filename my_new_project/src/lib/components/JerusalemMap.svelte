@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onMount, onDestroy, untrack } from "svelte";
+    import { onMount, onDestroy, untrack, tick } from "svelte";
     import { t } from "svelte-i18n";
     import { createEventDispatcher } from "svelte";
     import { slide } from "svelte/transition";
@@ -585,6 +585,15 @@
 
     // מצב חיפוש
     let searchQuery   = $state('');
+    let mobileSearchInputEl = $state<HTMLInputElement | null>(null);
+    // שורת החיפוש שבראש תצוגת הרשימה: מעבר לתצוגת החיפוש, ובנייד גם העברת הפוקוס
+    // לשדה שבשורת הכפתורים (אותו searchQuery) כדי שהמקלדת לא תיסגר כשהרשימה נעלמת.
+    // בדסקטופ שדה החיפוש של תצוגת החיפוש מקבל autofocus בעצמו.
+    async function openSearchFromList() {
+        viewMode = 'search';
+        await tick();
+        if (mobileSearchInputEl && mobileSearchInputEl.offsetParent) mobileSearchInputEl.focus();
+    }
     // "לחפש במקום זאת את «המקורי»": המשתמש דחה את התיקון האוטומטי של heSearch.
     // זוכרים באיזו שאילתה זה קרה - כל עוד השאילתה לא השתנתה מחפשים אותה כפי
     // שהוקלדה, בלי אוצר מילים (ולכן בלי "האם התכוונת"); הקלדה חדשה מאפסת.
@@ -1969,6 +1978,7 @@
                             <path d="m21 21-4.35-4.35"/>
                         </svg>
                         <input
+                            bind:this={mobileSearchInputEl}
                             bind:value={searchQuery}
                             onfocus={() => (viewMode = 'search')}
                             oninput={() => (viewMode = 'search')}
@@ -2449,6 +2459,23 @@
             >
                 <!-- הכרטיס הראשון מקבל ריפוד שמאלי כדי שתוכנו לא ייכנס מתחת למשולש "עבור לתצוגת מפה" בפינה -->
                 <div class="space-y-2 md:space-y-3 [&>*:first-child]:pl-10 md:[&>*:first-child]:pl-20">
+                    <!-- שורה ראשונה: שדה החיפוש הקיים (אותו searchQuery) - נגיעה/הקלדה פותחת את תצוגת החיפוש -->
+                    <div class="flex items-center gap-2 bg-gradient-to-br from-purple-600 to-blue-600 rounded-full px-3 py-2 shadow-lg border border-purple-400">
+                        <svg class="w-4 h-4 shrink-0 text-white/90" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <circle cx="11" cy="11" r="7"/>
+                            <path d="m21 21-4.35-4.35"/>
+                        </svg>
+                        <input
+                            bind:value={searchQuery}
+                            onfocus={openSearchFromList}
+                            oninput={openSearchFromList}
+                            type="text"
+                            placeholder={$t('map.search_placeholder')}
+                            class="flex-1 min-w-0 bg-transparent text-white placeholder:text-white/60 text-sm font-bold focus:outline-none"
+                            dir="rtl"
+                            aria-label={$t('map.search')}
+                        />
+                    </div>
                     {#if selectedCategory === 'singles'}
                         <!-- פנויים/פנויות: אין רשימה שכונתית (צנעת הפרט) - כרטיס אחד עם המספר הארצי וכפתור ללוח הארצי -->
                         <div class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-500/30 rounded-lg md:rounded-xl p-3 md:p-4 flex flex-wrap items-center justify-between gap-3">
