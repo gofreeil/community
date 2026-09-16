@@ -106,7 +106,31 @@ export const he = {
 
         // הגיעו מאתר אחות דרך גשר ה-SSO (/login?via=<host>)
         sso_via_title: "כניסה לאתר",
-        sso_via_hint: "אחרי ההתחברות תוחזרו לשם אוטומטית. אין לכם עדיין חשבון? חברות בקבוצות הווצאפ אינה חשבון באתר, אבל כניסה עם Google או Facebook יוצרת אחד בלחיצה.",
+        sso_via_hint: "אחרי ההתחברות תוחזרו לשם אוטומטית. אין לכם עדיין חשבון? חברות בקבוצות הווצאפ אינה חשבון באתר, אבל כניסה עם Google, Facebook או קוד ב-SMS יוצרת אחד בלחיצה.",
+
+        // כניסה בקוד SMS (OTP)
+        phone_login_btn: "כניסה עם קוד ב-SMS",
+        phone_login_hint: "בלי סיסמה: מקלידים נייד, מקבלים קוד, נכנסים. אין חשבון? הוא נוצר אוטומטית.",
+        phone_label: "מספר נייד",
+        phone_placeholder: "050-000-0000",
+        phone_send: "שלחו לי קוד",
+        phone_sending: "שולח...",
+        phone_sent_to: "שלחנו קוד ל-",
+        phone_code_label: "הקוד שקיבלתם (6 ספרות)",
+        phone_verify: "אימות וכניסה",
+        phone_verifying: "מאמת...",
+        phone_resend: "לא הגיע? שליחה חוזרת",
+        phone_change: "מספר אחר",
+        phone_err_unavailable: "כניסה ב-SMS אינה זמינה כרגע - נסו Google, Facebook או אימייל.",
+        phone_err_invalid_phone: "המספר לא נראה כמו נייד ישראלי תקין (05xxxxxxxx).",
+        phone_err_too_soon: "קוד כבר נשלח - המתינו דקה לפני שליחה חוזרת.",
+        phone_err_too_many: "יותר מדי ניסיונות - המתינו כשעה ונסו שוב.",
+        phone_err_sms_failed: "שליחת הקוד נכשלה - נסו שוב בעוד רגע.",
+        phone_err_no_code: "לא נשלח קוד למספר הזה - שלחו קוד חדש.",
+        phone_err_expired: "תוקף הקוד פג - שלחו קוד חדש.",
+        phone_err_wrong_code: "קוד שגוי - בדקו ונסו שוב.",
+        phone_err_blocked: "החשבון הזה מושעה. פנו לתמיכה.",
+        phone_err_server: "תקלה זמנית - נסו שוב בעוד רגע.",
     },
 };
 
@@ -214,7 +238,31 @@ export const en = {
 
         // arrived from a sister site via the SSO bridge (/login?via=<host>)
         sso_via_title: "Signing in to",
-        sso_via_hint: "After signing in you'll be sent back there automatically. No account yet? Being in the WhatsApp groups isn't a site account, but Google or Facebook creates one in a single click.",
+        sso_via_hint: "After signing in you'll be sent back there automatically. No account yet? Being in the WhatsApp groups isn't a site account, but Google, Facebook or an SMS code creates one in a single click.",
+
+        // SMS code sign-in (OTP)
+        phone_login_btn: "Sign in with an SMS code",
+        phone_login_hint: "No password: enter your mobile number, get a code, you're in. No account? It's created automatically.",
+        phone_label: "Mobile number",
+        phone_placeholder: "050-000-0000",
+        phone_send: "Send me a code",
+        phone_sending: "Sending...",
+        phone_sent_to: "We sent a code to",
+        phone_code_label: "The code you received (6 digits)",
+        phone_verify: "Verify and sign in",
+        phone_verifying: "Verifying...",
+        phone_resend: "Didn't arrive? Resend",
+        phone_change: "Another number",
+        phone_err_unavailable: "SMS sign-in isn't available right now - try Google, Facebook or email.",
+        phone_err_invalid_phone: "That doesn't look like a valid Israeli mobile number (05xxxxxxxx).",
+        phone_err_too_soon: "A code was already sent - wait a minute before resending.",
+        phone_err_too_many: "Too many attempts - wait about an hour and try again.",
+        phone_err_sms_failed: "Sending the code failed - try again in a moment.",
+        phone_err_no_code: "No code was sent to this number - request a new one.",
+        phone_err_expired: "The code has expired - request a new one.",
+        phone_err_wrong_code: "Wrong code - check and try again.",
+        phone_err_blocked: "This account is suspended. Contact support.",
+        phone_err_server: "Temporary issue - try again in a moment.",
     },
 };
 
@@ -322,6 +370,30 @@ export const ru = {
 
         // пришли с дочернего сайта через SSO-мост (/login?via=<host>)
         sso_via_title: "Вход на сайт",
-        sso_via_hint: "После входа вы автоматически вернётесь туда. Ещё нет аккаунта? Участие в группах WhatsApp — это не аккаунт на сайте, но вход через Google или Facebook создаёт его в один клик.",
+        sso_via_hint: "После входа вы автоматически вернётесь туда. Ещё нет аккаунта? Участие в группах WhatsApp — это не аккаунт на сайте, но вход через Google, Facebook или SMS-код создаёт его в один клик.",
+
+        // вход по SMS-коду (OTP)
+        phone_login_btn: "Войти по SMS-коду",
+        phone_login_hint: "Без пароля: введите номер мобильного, получите код — и вы вошли. Нет аккаунта? Он создаётся автоматически.",
+        phone_label: "Номер мобильного",
+        phone_placeholder: "050-000-0000",
+        phone_send: "Отправить мне код",
+        phone_sending: "Отправка...",
+        phone_sent_to: "Мы отправили код на",
+        phone_code_label: "Полученный код (6 цифр)",
+        phone_verify: "Подтвердить и войти",
+        phone_verifying: "Проверка...",
+        phone_resend: "Не пришёл? Отправить ещё раз",
+        phone_change: "Другой номер",
+        phone_err_unavailable: "Вход по SMS сейчас недоступен — попробуйте Google, Facebook или email.",
+        phone_err_invalid_phone: "Это не похоже на действительный израильский мобильный номер (05xxxxxxxx).",
+        phone_err_too_soon: "Код уже отправлен — подождите минуту перед повторной отправкой.",
+        phone_err_too_many: "Слишком много попыток — подождите около часа и попробуйте снова.",
+        phone_err_sms_failed: "Не удалось отправить код — попробуйте ещё раз через минуту.",
+        phone_err_no_code: "На этот номер код не отправлялся — запросите новый.",
+        phone_err_expired: "Срок действия кода истёк — запросите новый.",
+        phone_err_wrong_code: "Неверный код — проверьте и попробуйте снова.",
+        phone_err_blocked: "Этот аккаунт приостановлен. Обратитесь в поддержку.",
+        phone_err_server: "Временная ошибка — попробуйте ещё раз через минуту.",
     },
 };

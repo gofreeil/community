@@ -1,5 +1,8 @@
 import { redirect, fail } from '@sveltejs/kit';
-import { strapiLogin, resendConfirmation, StrapiAuthError } from '$lib/server/strapiClient';
+import {
+    strapiLogin, resendConfirmation, StrapiAuthError,
+    phoneOtpEnabled, requestPhoneOtp, verifyPhoneOtp,
+} from '$lib/server/strapiClient';
 import { setHandoffCookies } from '$lib/server/authHandoff';
 import type { PageServerLoad, Actions } from './$types';
 
@@ -29,15 +32,61 @@ export const load: PageServerLoad = async (event) => {
         throw redirect(302, safeRedirect(event.url.searchParams.get('redirect')));
     }
 
+    // כניסה בקוד SMS מוצגת רק כשהבאקאנד מדווח שספק SMS מוגדר (מטמון 5 דק')
+    let phoneLogin = false;
+    try { phoneLogin = await phoneOtpEnabled(); } catch { /* לא זמין */ }
+
     return {
         redirectTo:  safeRedirect(event.url.searchParams.get('redirect')),
         via:         safeVia(event.url.searchParams.get('via')),
+        phoneLogin,
         error:       event.url.searchParams.get('error') ?? null,
         registered:  event.url.searchParams.get('registered') === '1',
     };
 };
 
+/** מיפוי קוד שגיאה של כניסה ב-SMS (מהבאקאנד) → מפתח תרגום + סטטוס HTTP */
+const PHONE_ERR_STATUS: Record<string, number> = {
+    unavailable: 503, invalid_phone: 400, too_soon: 429, too_many: 429, sms_failed: 502,
+    no_code: 400, expired: 400, wrong_code: 400, blocked: 403, server: 503,
+};
+function phoneFail(error: string, extra: Record<string, unknown>) {
+    return fail(PHONE_ERR_STATUS[error] ?? 400, { phoneError: `account.phone_err_${error}`, ...extra });
+}
+
 export const actions: Actions = {
+    /**
+     * כניסה בקוד SMS, שלב 1: שליחת קוד לנייד. הבאקאנד מרסן (דקה בין שליחות,
+     * 5 בשעה לנייד) ומחזיר קוד-שגיאה מובחן שמתורגם כאן למפתח i18n.
+     */
+    phoneRequest: async ({ request }) => {
+        const formData = await request.formData();
+        const phone = String(formData.get('phone') ?? '').trim();
+        if (!phone) return phoneFail('invalid_phone', { phoneValue: phone });
+        const r = await requestPhoneOtp(phone);
+        if (!r.ok) return phoneFail(r.error, { phoneValue: phone });
+        return { phoneSent: true, phoneValue: phone, phoneMasked: r.masked };
+    },
+
+    /**
+     * שלב 2: אימות הקוד. בהצלחה הבאקאנד מזהה את המשתמש לפי הנייד (או יוצר
+     * חדש) ומנפיק JWT; שותלים אותו ב-handoff והקליינט קורא signIn('credentials')
+     * בלי פרטים — בדיוק כמו כניסה באימייל/סיסמה.
+     */
+    phoneVerify: async ({ request, cookies }) => {
+        const formData = await request.formData();
+        const phone = String(formData.get('phone') ?? '').trim();
+        const code  = String(formData.get('code')  ?? '').trim();
+        const r = await verifyPhoneOtp(phone, code);
+        if (!r.ok) {
+            // קוד שפג/נצרך/יותר מדי ניסיונות → חוזרים לשלב הנייד לשליחה חדשה
+            const backToPhone = r.error === 'expired' || r.error === 'no_code' || r.error === 'too_many';
+            return phoneFail(r.error, { phoneValue: phone, phoneSent: !backToPhone });
+        }
+        setHandoffCookies(cookies, r.jwt);
+        return { success: true, phoneCreated: r.created };
+    },
+
     /**
      * שלב 1: בדיקת אימייל+סיסמה בשרת - פעם אחת בלבד.
      * בהצלחה שותלים strapi_jwt בעוגייה ומחזירים { success } - ואז הקליינט

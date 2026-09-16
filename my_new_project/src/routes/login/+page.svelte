@@ -9,15 +9,37 @@
 	let { data, form } = $props();
 
 	let isLoading       = $state(false);
-	let loadingProvider = $state<'google' | 'facebook' | 'credentials' | null>(null);
+	let loadingProvider = $state<'google' | 'facebook' | 'credentials' | 'phone' | null>(null);
 	let showPassword    = $state(false);
 	let credError       = $state<string | null>(null);
 	let emailValue      = $state('');
 	let passwordValue   = $state('');
 	let emailInput      = $state<HTMLInputElement | null>(null);
 
+	// כניסה בקוד SMS: מי שהגיע מאתר-אח דרך גשר ה-SSO (via) הוא לרוב חבר ווצאפ
+	// בלי חשבון — בשבילו הטופס פתוח מראש. שלב הקוד נגזר מתשובת השרת (phoneSent).
+	// svelte-ignore state_referenced_locally -- ערך התחלתי בכוונה; אחר כך המשתמש שולט
+	let phoneOpen  = $state(!!data.via);
+	let phoneValue = $state('');
+	const phoneSent = $derived(!!form?.phoneSent);
+
 	// פוקוס אוטומטי על שדה האימייל - פחות קליקים, פחות בלבול
-	onMount(() => emailInput?.focus());
+	onMount(() => { if (!phoneOpen) emailInput?.focus(); });
+
+	// אחרי אימות קוד מוצלח: ה-JWT כבר ב-handoff → signIn בלי פרטים (כמו אימייל/סיסמה).
+	// משתמש שנוצר עכשיו מקבל מסך "ברוכים המצטרפים".
+	async function finishPhoneLogin(created: boolean) {
+		try {
+			const u = new URL(data.redirectTo || '/profile', window.location.origin);
+			u.searchParams.set('welcome', created ? 'new' : 'back');
+			await signIn('credentials', { callbackUrl: `${u.pathname}${u.search}${u.hash}` });
+			setTimeout(() => { isLoading = false; loadingProvider = null; }, 4000);
+		} catch {
+			credError = tFn('account.err_signin_finalize');
+			isLoading = false;
+			loadingProvider = null;
+		}
+	}
 
 	// מצמיד סימון "ברוכים השבים" ליעד הנחיתה, יהיה אשר יהיה — כדי שמסך הפתיחה
 	// יופיע בכל התחברות ולא רק כשנוחתים על /profile.
@@ -75,6 +97,8 @@
 		?? (form?.error as string | undefined)
 		?? (data.error ? errorMessage(data.error) : null)
 	);
+	// שגיאות של כניסה ב-SMS מוצגות בתוך הטופס שלהן, לא בבאנר הכללי
+	const phoneError = $derived(form?.phoneError ? tFn(form.phoneError as string) : null);
 </script>
 
 <svelte:head>
@@ -260,6 +284,151 @@
 					<span class="text-xs text-gray-500">{tFn("or")}</span>
 					<div class="flex-1 h-px bg-white/10"></div>
 				</div>
+
+				<!-- 1ב. כניסה בקוד SMS — בלי סיסמה, וגם הרשמה בלחיצה למי שאין לו חשבון.
+				     מוצג רק כשהבאקאנד מדווח שספק SMS מוגדר. -->
+				{#if data.phoneLogin}
+					{#if !phoneOpen}
+						<button
+							type="button"
+							onclick={() => (phoneOpen = true)}
+							disabled={isLoading}
+							class="w-full flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#1ebe5b] active:bg-[#1aa851]
+							       text-white font-bold py-3.5 px-6 rounded-2xl shadow-lg transition-all duration-200
+							       hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed mb-2
+							       cursor-pointer"
+						>
+							<span class="text-xl">📱</span>
+							<span>{tFn('account.phone_login_btn')}</span>
+						</button>
+						<p class="text-center text-xs text-gray-500 mb-6 leading-relaxed">{tFn('account.phone_login_hint')}</p>
+					{:else}
+						<div class="rounded-2xl border border-[#25D366]/40 bg-[#25D366]/10 p-4 mb-6">
+							<p class="text-white text-sm font-bold mb-1">📱 {tFn('account.phone_login_btn')}</p>
+							<p class="text-gray-300 text-xs leading-relaxed mb-4">{tFn('account.phone_login_hint')}</p>
+
+							{#if phoneError}
+								<div role="alert" class="mb-3 rounded-xl bg-red-500/10 border border-red-500/30 px-3 py-2 text-center">
+									<p class="text-red-300 text-xs font-medium">{phoneError}</p>
+								</div>
+							{/if}
+
+							{#if !phoneSent}
+								<!-- שלב 1: נייד → שליחת קוד -->
+								<form method="POST" action="?/phoneRequest" use:enhance={() => {
+									isLoading = true;
+									loadingProvider = 'phone';
+									return async ({ update }) => {
+										isLoading = false;
+										loadingProvider = null;
+										await update({ reset: false });
+									};
+								}}>
+									<label for="phone" class="block text-sm font-medium text-gray-400 mb-2">{tFn('account.phone_label')}</label>
+									<input
+										id="phone"
+										name="phone"
+										type="tel"
+										inputmode="tel"
+										autocomplete="tel"
+										required
+										bind:value={phoneValue}
+										placeholder={tFn('account.phone_placeholder')}
+										dir="ltr"
+										class="w-full bg-[#1e293b] border border-white/10 rounded-xl px-4 py-3 mb-3 text-center tracking-wider
+										       text-white placeholder-gray-500 focus:outline-none focus:border-[#25D366]
+										       focus:ring-1 focus:ring-[#25D366] transition-colors"
+									/>
+									<button
+										type="submit"
+										disabled={isLoading}
+										class="w-full py-3 px-6 rounded-xl bg-[#25D366] hover:bg-[#1ebe5b] text-white font-bold shadow
+										       transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+									>
+										{#if loadingProvider === 'phone'}
+											<span class="inline-flex items-center gap-2 justify-center">
+												<span class="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>
+												{tFn('account.phone_sending')}
+											</span>
+										{:else}
+											{tFn('account.phone_send')}
+										{/if}
+									</button>
+								</form>
+							{:else}
+								<!-- שלב 2: קוד → אימות וכניסה -->
+								<form method="POST" action="?/phoneVerify" use:enhance={() => {
+									isLoading = true;
+									loadingProvider = 'phone';
+									credError = null;
+									return async ({ result, update }) => {
+										if (result.type === 'success') {
+											await finishPhoneLogin(!!(result.data as { phoneCreated?: boolean })?.phoneCreated);
+										} else {
+											isLoading = false;
+											loadingProvider = null;
+											await update({ reset: false });
+										}
+									};
+								}}>
+									<input type="hidden" name="phone" value={form?.phoneValue ?? phoneValue} />
+									<p class="text-green-300 text-xs font-medium mb-3 text-center">
+										✓ {tFn('account.phone_sent_to')} <span dir="ltr">{form?.phoneMasked ?? ''}</span>
+									</p>
+									<label for="code" class="block text-sm font-medium text-gray-400 mb-2">{tFn('account.phone_code_label')}</label>
+									<!-- svelte-ignore a11y_autofocus -->
+									<input
+										id="code"
+										name="code"
+										type="text"
+										inputmode="numeric"
+										autocomplete="one-time-code"
+										pattern="[0-9]*"
+										maxlength="6"
+										required
+										autofocus
+										placeholder="••••••"
+										dir="ltr"
+										class="w-full bg-[#1e293b] border border-white/10 rounded-xl px-4 py-3 mb-3 text-center text-2xl tracking-[0.5em]
+										       text-white placeholder-gray-500 focus:outline-none focus:border-[#25D366]
+										       focus:ring-1 focus:ring-[#25D366] transition-colors"
+									/>
+									<button
+										type="submit"
+										disabled={isLoading}
+										class="w-full py-3 px-6 rounded-xl bg-[#25D366] hover:bg-[#1ebe5b] text-white font-bold shadow
+										       transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed mb-3"
+									>
+										{#if loadingProvider === 'phone'}
+											<span class="inline-flex items-center gap-2 justify-center">
+												<span class="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>
+												{tFn('account.phone_verifying')}
+											</span>
+										{:else}
+											{tFn('account.phone_verify')}
+										{/if}
+									</button>
+								</form>
+								<!-- שליחה חוזרת / החלפת מספר -->
+								<div class="flex items-center justify-center gap-4 text-xs">
+									<form method="POST" action="?/phoneRequest" use:enhance={() => {
+										isLoading = true;
+										return async ({ update }) => { isLoading = false; await update({ reset: false }); };
+									}}>
+										<input type="hidden" name="phone" value={form?.phoneValue ?? phoneValue} />
+										<button type="submit" disabled={isLoading} class="text-gray-400 hover:text-gray-200 underline cursor-pointer disabled:opacity-60">
+											{tFn('account.phone_resend')}
+										</button>
+									</form>
+									<a href={data.via ? `/login?redirect=${encodeURIComponent(data.redirectTo)}&via=${encodeURIComponent(data.via)}` : '/login'}
+									   class="text-gray-400 hover:text-gray-200 underline">
+										{tFn('account.phone_change')}
+									</a>
+								</div>
+							{/if}
+						</div>
+					{/if}
+				{/if}
 
 				<!-- אזהרה כשהדף נפתח בתוך אפליקציה (WebView) - גוגל חוסמת שם OAuth -->
 				<InAppBrowserNotice />

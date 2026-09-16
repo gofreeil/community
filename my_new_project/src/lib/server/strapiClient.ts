@@ -335,6 +335,61 @@ export async function issueSsoJwtViaBackend(email: string): Promise<string | nul
     }
 }
 
+// ============================================================
+// כניסה בקוד SMS (OTP) — נקודות הקצה /api/sso/phone/* בבאקאנד המשותף
+// (מאומתות ב-STRAPI_TOKEN). הבאקאנד שולח את ה-SMS (הספקים מוגדרים שם),
+// שומר את הקוד, מזהה/יוצר את המשתמש לפי הנייד ומנפיק JWT — כמו issue-jwt.
+// ============================================================
+export type PhoneOtpError =
+    | 'unavailable' | 'invalid_phone' | 'too_soon' | 'too_many' | 'sms_failed'
+    | 'no_code' | 'expired' | 'wrong_code' | 'blocked' | 'server';
+
+let phoneOtpStatusCache: { at: number; enabled: boolean } | null = null;
+const PHONE_OTP_STATUS_TTL = 5 * 60_000;
+
+/** האם כניסה בקוד SMS זמינה (ספק SMS מוגדר בבאקאנד). מטמון 5 דק'; כשל = לא זמין */
+export async function phoneOtpEnabled(): Promise<boolean> {
+    if (phoneOtpStatusCache && Date.now() - phoneOtpStatusCache.at < PHONE_OTP_STATUS_TTL) {
+        return phoneOtpStatusCache.enabled;
+    }
+    let enabled = false;
+    try {
+        const res = await fetch(STRAPI_URL + '/api/sso/phone/status', {
+            headers: getHeaders(),
+            signal:  AbortSignal.timeout(FETCH_TIMEOUT_MS),
+        });
+        if (res.ok) enabled = !!((await res.json()) as { enabled?: boolean })?.enabled;
+    } catch { /* לא זמין */ }
+    phoneOtpStatusCache = { at: Date.now(), enabled };
+    return enabled;
+}
+
+async function phoneOtpCall<T extends { ok: boolean }>(path: string, body: Record<string, string>): Promise<T | { ok: false; error: PhoneOtpError }> {
+    try {
+        const res = await fetch(STRAPI_URL + path, {
+            method:  'POST',
+            headers: getHeaders(),
+            body:    JSON.stringify(body),
+            signal:  AbortSignal.timeout(FETCH_TIMEOUT_MS),
+        });
+        const data = (await res.json().catch(() => null)) as (T | { ok: false; error: PhoneOtpError }) | null;
+        if (data && typeof data.ok === 'boolean') return data;
+        return { ok: false, error: res.status === 403 || res.status === 404 ? 'unavailable' : 'server' };
+    } catch {
+        return { ok: false, error: 'server' };
+    }
+}
+
+/** שליחת קוד לנייד */
+export function requestPhoneOtp(phone: string) {
+    return phoneOtpCall<{ ok: true; masked: string }>('/api/sso/phone/request', { phone });
+}
+
+/** אימות הקוד → JWT חי (והאם נוצר משתמש חדש) */
+export function verifyPhoneOtp(phone: string, code: string) {
+    return phoneOtpCall<{ ok: true; jwt: string; created: boolean }>('/api/sso/phone/verify', { phone, code });
+}
+
 /** לוגין עם אימייל + סיסמה. זורק StrapiAuthError מובחן (סיסמה/לא-מאומת/rate-limit/שרת) */
 export async function strapiLogin(identifier: string, password: string): Promise<StrapiAuthResponse> {
     let res: Response;
