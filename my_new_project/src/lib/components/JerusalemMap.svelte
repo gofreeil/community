@@ -2389,7 +2389,7 @@
                     <button
                         type="button"
                         onclick={(e) => { e.stopPropagation(); goto('/giveaways'); }}
-                        class="absolute bottom-4 left-4 z-20 bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 hover:from-amber-300 hover:via-orange-400 hover:to-red-400 text-white font-black px-6 py-3 rounded-2xl shadow-lg border border-orange-300/60 transition-all hover:scale-105 hover:opacity-100 flex flex-col items-center gap-1.5 text-center leading-tight opacity-25"
+                        class="absolute bottom-4 left-4 z-20 bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 hover:from-amber-300 hover:via-orange-400 hover:to-red-400 text-white font-black px-6 py-3 rounded-2xl shadow-lg border border-orange-300/60 transition-all hover:scale-105 flex flex-col items-center gap-1.5 text-center leading-tight"
                         title={$t('map.national_board_giveaway_title')}
                     >
                         <span class="text-lg">{$t('map.to_national_board')}</span>
