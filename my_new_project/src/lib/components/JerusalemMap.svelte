@@ -2447,10 +2447,11 @@
                     : 'w-full h-[350px] md:h-[450px] overflow-y-auto px-3 md:px-6 pt-10 pb-3 md:pb-6 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900/20'}
                 style="border-radius: 20px;"
             >
-                <div class="space-y-2 md:space-y-3">
+                <!-- הכרטיס הראשון מקבל ריפוד שמאלי כדי שתוכנו לא ייכנס מתחת למשולש "עבור לתצוגת מפה" בפינה -->
+                <div class="space-y-2 md:space-y-3 [&>*:first-child]:pl-10 md:[&>*:first-child]:pl-20">
                     {#if selectedCategory === 'singles'}
                         <!-- פנויים/פנויות: אין רשימה שכונתית (צנעת הפרט) - כרטיס אחד עם המספר הארצי וכפתור ללוח הארצי -->
-                        <div class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-500/30 rounded-lg md:rounded-xl p-3 md:p-4 flex items-center justify-between gap-3">
+                        <div class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-500/30 rounded-lg md:rounded-xl p-3 md:p-4 flex flex-wrap items-center justify-between gap-3">
                             <div class="flex items-center gap-2 md:gap-3 min-w-0">
                                 <span class="text-2xl md:text-3xl">❤️</span>
                                 <div class="min-w-0">
@@ -3610,6 +3611,14 @@
         top: 0 !important;
         left: 0 !important;
         z-index: 30 !important;
+    }
+
+    /* המשולש אינו מלבן: טבעת הפוקוס הגלובלית (מסגרת כחולה) נראית כמו באג - במקומה זוהר סביב הצורה */
+    .page-corner:focus-visible {
+        outline: none !important;
+    }
+    .page-corner:focus-visible > svg {
+        filter: drop-shadow(0 0 5px #fff);
     }
 
     .page-corner.menu-open {
