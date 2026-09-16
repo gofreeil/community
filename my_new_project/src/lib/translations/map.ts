@@ -194,7 +194,7 @@ export const he = {
         // ----- חיפוש -----
         search: "חיפוש",
         search_action: "חפש",
-        search_placeholder: 'חפש חוג, גמ"ח, שמרטפ, מניין...',
+        search_placeholder: 'חפש חוג, גמ"ח, שמרטפ, מסעדה...',
         search_type_hint: "הקלד מה אתה מחפש",
         no_results: "לא נמצאו תוצאות",
         n_results: "{n} תוצאות",
@@ -455,7 +455,7 @@ export const en = {
 
         search: "Search",
         search_action: "Search",
-        search_placeholder: "Search for a class, gemach, babysitter, minyan...",
+        search_placeholder: "Search for a class, gemach, babysitter, restaurant...",
         search_type_hint: "Type what you're looking for",
         no_results: "No results found",
         n_results: "{n} results",
@@ -711,7 +711,7 @@ export const ru = {
 
         search: "Поиск",
         search_action: "Искать",
-        search_placeholder: "Ищите кружок, гмах, няню, миньян...",
+        search_placeholder: "Ищите кружок, гмах, няню, ресторан...",
         search_type_hint: "Введите, что вы ищете",
         no_results: "Ничего не найдено",
         n_results: "Результатов: {n}",
