@@ -2444,10 +2444,28 @@
             <div
                 class={isFullscreen
                     ? 'jmap-list-fullscreen w-full flex-1 min-h-0 overflow-y-auto px-3 md:px-6 pb-4 md:pb-6 pt-24 md:pt-24 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900/20'
-                    : 'w-full h-[350px] md:h-[450px] overflow-y-auto p-3 md:p-6 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900/20'}
+                    : 'w-full h-[350px] md:h-[450px] overflow-y-auto px-3 md:px-6 pt-10 pb-3 md:pb-6 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900/20'}
                 style="border-radius: 20px;"
             >
                 <div class="space-y-2 md:space-y-3">
+                    {#if selectedCategory === 'singles'}
+                        <!-- פנויים/פנויות: אין רשימה שכונתית (צנעת הפרט) - כרטיס אחד עם המספר הארצי וכפתור ללוח הארצי -->
+                        <div class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-500/30 rounded-lg md:rounded-xl p-3 md:p-4 flex items-center justify-between gap-3">
+                            <div class="flex items-center gap-2 md:gap-3 min-w-0">
+                                <span class="text-2xl md:text-3xl">❤️</span>
+                                <div class="min-w-0">
+                                    <span class="text-white font-bold text-base md:text-lg block">{$t(catKey('singles'))}</span>
+                                    <span class="text-purple-400 text-xs md:text-sm block">{singlesNationalCount} {$t('map.singles_national_label')}</span>
+                                </div>
+                            </div>
+                            <a
+                                href="/singles"
+                                onclick={(e) => e.stopPropagation()}
+                                class="shrink-0 bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 hover:from-amber-300 hover:via-orange-400 hover:to-red-400 text-white text-sm md:text-base font-black px-3 md:px-4 py-2 rounded-xl shadow-lg border border-orange-300/60 transition-all hover:scale-105 whitespace-nowrap"
+                                title={$t('map.singles_city_click')}
+                            >{$t('map.to_national_board')}</a>
+                        </div>
+                    {/if}
                     {#each categories.filter((cat) => cat.id !== "benefits" && cat.id !== "singles" && (selectedCategory === "benefits" || cat.id === selectedCategory)) as category}
                         <!-- עסקי האינדקס ארציים — מוצגים בכל עיר, לא רק בשכונה הנבחרת -->
                         {@const categoryDbItems = dbItems.filter(d =>
