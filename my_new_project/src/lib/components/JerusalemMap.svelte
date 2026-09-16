@@ -2457,8 +2457,8 @@
                     : 'w-full h-[350px] md:h-[450px] overflow-y-auto px-3 md:px-6 pt-10 pb-3 md:pb-6 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900/20'}
                 style="border-radius: 20px;"
             >
-                <!-- הכרטיס הראשון מקבל ריפוד שמאלי כדי שתוכנו לא ייכנס מתחת למשולש "עבור לתצוגת מפה" בפינה -->
-                <div class="space-y-2 md:space-y-3 [&>*:first-child]:pl-10 md:[&>*:first-child]:pl-20">
+                <!-- השורה הראשונה מתקצרת משמאל (שוליים, לא ריפוד) כך שהיא מסתיימת לפני המשולש "עבור לתצוגת מפה" ושום דבר לא מוסתר מאחוריו -->
+                <div class="space-y-2 md:space-y-3 [&>*:first-child]:ml-11 md:[&>*:first-child]:ml-24 md:[&>*:nth-child(2)]:ml-2">
                     <!-- שורה ראשונה: שדה החיפוש הקיים (אותו searchQuery) - נגיעה/הקלדה פותחת את תצוגת החיפוש -->
                     <div class="flex items-center gap-2 bg-gradient-to-br from-purple-600 to-blue-600 rounded-full px-3 py-2 shadow-lg border border-purple-400">
                         <svg class="w-4 h-4 shrink-0 text-white/90" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
