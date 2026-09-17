@@ -303,7 +303,8 @@ const ERROR_PAGE_NAMES: Array<[RegExp, string]> = [
     [/^\/$/, 'דף הבית'],
 ];
 
-function errorAutoReplyText(a: { name: string; gender: string; path: string; type: string; adminName: string }): string {
+// החתימה קבועה - "יהב אנטר" (כמו בטיוטת "כתוב לגולש"), לא שם האדמין שלחץ
+function errorAutoReplyText(a: { name: string; gender: string; path: string; type: string }): string {
     const f = a.gender === 'female';
     const greeting = a.name
         ? `${a.name} יקר${f ? 'ה' : ''},`
@@ -322,7 +323,7 @@ function errorAutoReplyText(a: { name: string; gender: string; path: string; typ
         `ראינו שניסית ${where}, אבל נתקלת בתקלה ולא הצלחת להמשיך.\n\n` +
         `התקלה טופלה כעת והכל חזר לפעול כרגיל.\n\n` +
         `האם הגעת למבוקשך? אם משהו עדיין לא עובד, אפשר פשוט להשיב להודעה הזו ונשמח לעזור.\n\n` +
-        `תודה על הסבלנות,\n${a.adminName}\nקהילה בשכונה`
+        `תודה על הסבלנות,\nיהב אנטר\nקהילה בשכונה`
     );
 }
 
@@ -809,7 +810,6 @@ export const actions: Actions = {
                 gender: String(ef.actor_gender ?? target.gender ?? ''),
                 path:   String(ef.url ?? ''),
                 type,
-                adminName,
             });
 
             await createItem({
