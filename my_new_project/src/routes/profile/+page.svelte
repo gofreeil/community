@@ -1033,6 +1033,52 @@
 		}
 	}
 
+	// ===== מענה אוטומטי לגולש מכרטיס תקלה =====
+	// בניגוד ל"כתוב לגולש" (טיוטה לעריכה), כאן ההודעה המוכנה נשלחת מיד לצ'אט הפנימי
+	// של הגולש (הנוסח נבנה בשרת - action errorAutoReply). אחרי הצלחה הכרטיס מציג
+	// "נשלח מענה" והכפתור נעלם - הסימון נשמר בשרת, כך שגם במכשיר אחר לא ישלחו פעמיים.
+	let autoReplyBusyId = $state("");
+	function autoRepliedAt(raw: string | undefined): string {
+		try {
+			return String(JSON.parse(raw || "{}")?.auto_replied_at ?? "");
+		} catch {
+			return "";
+		}
+	}
+	async function errorAutoReply(req: { id: string; extra_fields?: string }, actorName: string) {
+		if (autoReplyBusyId) return;
+		if (!confirm(`לשלוח עכשיו ל${actorName || "גולש"} הודעה מוכנה שהתקלה טופלה?`)) return;
+		autoReplyBusyId = req.id;
+		try {
+			const fd = new FormData();
+			fd.set("id", req.id);
+			const res = await fetch("?/errorAutoReply", {
+				method: "POST",
+				body: fd,
+				headers: { "x-sveltekit-action": "true" },
+			});
+			const result = deserialize(await res.text());
+			if (result.type === "success") {
+				const d = result.data as { auto_replied_at?: string; message?: string } | undefined;
+				let ef: Record<string, unknown> = {};
+				try { ef = JSON.parse(req.extra_fields || "{}") ?? {}; } catch { /* ריק */ }
+				const extra_fields = JSON.stringify({ ...ef, auto_replied_at: d?.auto_replied_at ?? new Date().toISOString() });
+				communityReqs = communityReqs.map((r) => (r.id === req.id ? { ...r, extra_fields } : r));
+				showLrNotice("success", d?.message ?? "✅ המענה נשלח לגולש");
+			} else {
+				const errMsg =
+					result.type === "failure"
+						? String((result.data as { alertError?: string })?.alertError ?? "שגיאה בשליחת המענה")
+						: "שגיאה בשליחת המענה";
+				showLrNotice("error", errMsg);
+			}
+		} catch {
+			showLrNotice("error", tFn("profile.lr_network"));
+		} finally {
+			autoReplyBusyId = "";
+		}
+	}
+
 	// ביטול החלטה שכבר התקבלה ("לחצתי אישור בטעות") - מהיסטוריית ההודעות שטופלו.
 	// השרת מחזיר את הבקשה לממתינות ומוחק את הודעת ההחלטה מהמבקש; כאן משקפים
 	// מקומית: ההודעה חוזרת לרשימה הפעילה עם כפתורי אשר/דחה.
@@ -4017,6 +4063,32 @@
 												>
 													✍️ כתוב {actor.actor_id ? 'לגולש' : 'מייל'}
 												</a>
+											{/if}
+											<!-- מענה אוטומטי: שולח מיד לצ'אט הפנימי הודעה מוכנה "התקלה טופלה, האם הגעת למבוקשך?"
+											     (רק כשהגולש היה מחובר - יש למי לשלוח). אחרי שליחה מוצג "נשלח מענה" במקום הכפתור. -->
+											{#if actor?.actor_id}
+												{@const repliedAt = autoRepliedAt(req.extra_fields)}
+												{#if repliedAt}
+													<span
+														class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full
+														       bg-sky-500/10 text-sky-300/80 border border-sky-500/30"
+														title={`מענה אוטומטי נשלח לגולש ב-${new Date(repliedAt).toLocaleString('he-IL')}`}
+													>
+														🤖 נשלח מענה
+													</span>
+												{:else}
+													<button
+														type="button"
+														disabled={autoReplyBusyId === req.id}
+														onclick={() => errorAutoReply(req, actor.actor_name)}
+														class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full
+														       bg-sky-500/15 text-sky-200 border border-sky-500/40 hover:bg-sky-500/30
+														       transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
+														title={`שלח עכשיו ל${actor.actor_name || 'גולש'} הודעה מוכנה: התקלה טופלה - האם הגעת למבוקשך?`}
+													>
+														{autoReplyBusyId === req.id ? tFn("profile.lr_processing") : "🤖 מענה אוטומטי"}
+													</button>
+												{/if}
 											{/if}
 											<!-- התראת מערכת (תקלה/פנייה): סימון כנקראה מוריד את הכרטיס
 											     מהרשימה לתמיד, גם ברענון ובכל מכשיר. קריאות קהילתיות

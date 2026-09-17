@@ -291,6 +291,41 @@ export const load: PageServerLoad = async (event) => {
     };
 };
 
+// ===== נוסח המענה האוטומטי לגולש שנפל עליו הדף (action errorAutoReply) =====
+// שם עברי לעמוד שנפל, כדי שהגולש יבין על מה מדובר בלי לראות נתיב טכני.
+const ERROR_PAGE_NAMES: Array<[RegExp, string]> = [
+    [/^\/about\/advertise/, 'פרסום באתר'],
+    [/^\/community-fund/, 'כותל המשאלות'],
+    [/^\/singles/, 'לוח הפנויים'],
+    [/^\/profile/, 'הפרופיל האישי'],
+    [/^\/items\//, 'דף פריט'],
+    [/^\/login/, 'הכניסה לאתר'],
+    [/^\/$/, 'דף הבית'],
+];
+
+function errorAutoReplyText(a: { name: string; gender: string; path: string; type: string; adminName: string }): string {
+    const f = a.gender === 'female';
+    const greeting = a.name
+        ? `${a.name} יקר${f ? 'ה' : ''},`
+        : f ? 'גולשת יקרה,' : a.gender === 'male' ? 'גולש יקר,' : 'משתמש יקר,';
+    const pageName = ERROR_PAGE_NAMES.find(([re]) => re.test(a.path))?.[1];
+    const where = a.type === 'order_failed'
+        ? 'לשלוח בקשת פרסום'
+        : pageName
+            ? `להיכנס לעמוד "${pageName}"`
+            : a.path
+                ? `להיכנס לעמוד ${a.path}`
+                : 'להשתמש באתר';
+    // "ניסית"/"נתקלת"/"הגעת" זהים בזכר ובנקבה
+    return (
+        `${greeting}\n\n` +
+        `ראינו שניסית ${where}, אבל נתקלת בתקלה ולא הצלחת להמשיך.\n\n` +
+        `התקלה טופלה כעת והכל חזר לפעול כרגיל.\n\n` +
+        `האם הגעת למבוקשך? אם משהו עדיין לא עובד, אפשר פשוט להשיב להודעה הזו ונשמח לעזור.\n\n` +
+        `תודה על הסבלנות,\n${a.adminName}\nקהילה בשכונה`
+    );
+}
+
 export const actions: Actions = {
     updateProfile: async (event) => {
         let session = null;
@@ -728,6 +763,84 @@ export const actions: Actions = {
         } catch (e) {
             console.warn('[profile] dismissCommunityAlert failed:', e);
             return fail(500, { alertError: 'שגיאה בסימון ההתראה, נסה שוב' });
+        }
+    },
+
+    // מענה אוטומטי לגולש שנפל עליו הדף - בלחיצה אחת מכרטיס התקלה ב"קריאות שכונה שפרסמתי".
+    // בניגוד ל"כתוב לגולש" (טיוטה לעריכה), כאן ההודעה המוכנה נשלחת מיד לצ'אט הפנימי של
+    // הגולש, בלשון המתאימה למגדרו ועם שם העמוד שנפל. הנוסח נבנה בשרת (לא מגיע מהלקוח),
+    // והשליחה נרשמת ב-extra_fields של ההתראה - כדי שהכפתור יראה "נשלח" בכל מכשיר ולא
+    // ישלח פעמיים.
+    errorAutoReply: async (event) => {
+        let session = null;
+        try { session = await event.locals.auth(); } catch {}
+        if (!session?.user?.id) return fail(403, { alertError: 'נדרשת התחברות' });
+
+        const form = await event.request.formData();
+        const id = form.get('id')?.toString() ?? '';
+        if (!id) return fail(400, { alertError: 'חסר מזהה ההתראה' });
+
+        try {
+            const item = await getDbItemById(id);
+            // רק מי שקיבל את ההתראה (סופר-אדמין) עונה ממנה
+            if (!item || item.user_id !== session.user.id) {
+                return fail(403, { alertError: 'אין הרשאה' });
+            }
+            let ef: Record<string, unknown> = {};
+            try { ef = item.extra_fields ? JSON.parse(item.extra_fields) : {}; } catch { /* ריק */ }
+            const type = String(ef.type ?? '');
+            if (type !== 'server_error' && type !== 'client_error' && type !== 'order_failed') {
+                return fail(400, { alertError: 'זו לא התראת תקלה' });
+            }
+            if (ef.auto_replied_at) {
+                return fail(409, { alertError: 'כבר נשלח מענה אוטומטי לגולש הזה' });
+            }
+            const actorId = String(ef.actor_id ?? '');
+            if (!actorId) return fail(400, { alertError: 'הגולש לא היה מחובר - אין למי לשלוח בצ\'אט' });
+            const target = await getUserByAnyId(actorId);
+            if (!target) return fail(404, { alertError: 'הגולש לא נמצא במערכת' });
+
+            let adminProfile = null;
+            try { adminProfile = await getUserById(session.user.id); } catch { /* ignore */ }
+            const adminName = adminProfile?.name || session.user.name || 'הנהלת הקהילה';
+
+            const text = errorAutoReplyText({
+                name:   String(ef.actor_name ?? target.name ?? ''),
+                gender: String(ef.actor_gender ?? target.gender ?? ''),
+                path:   String(ef.url ?? ''),
+                type,
+                adminName,
+            });
+
+            await createItem({
+                category: 'message',
+                label: `💬 הודעה מ${adminName}`,
+                description: text,
+                icon: '💬',
+                color: 'purple',
+                user_id: target.id,
+                extra_fields: {
+                    chat: true,
+                    sender_id: session.user.id,
+                    sender_name: adminName,
+                    sender_phone: adminProfile?.phone || '',
+                    sent_at: new Date().toISOString(),
+                    read: false,
+                    auto_reply_for: String(ef.ref ?? ''),
+                },
+            });
+
+            const auto_replied_at = new Date().toISOString();
+            // הסימון על ההתראה הוא best-effort: ההודעה כבר אצל הגולש גם אם העדכון נכשל
+            try {
+                await updateItem(id, { extra_fields: { ...ef, auto_replied_at, read: true } });
+            } catch (e) {
+                console.warn('[profile] errorAutoReply mark failed:', e);
+            }
+            return { autoReplied: id, auto_replied_at, message: `✅ נשלח מענה אוטומטי ל${target.name || 'גולש'}` };
+        } catch (e) {
+            console.warn('[profile] errorAutoReply failed:', e);
+            return fail(500, { alertError: 'שגיאה בשליחת המענה, נסה שוב' });
         }
     },
 
