@@ -346,8 +346,10 @@ export const he = {
         custom_loc_placeholder: "לדוגמה: רמת השרון, שכונת הצפון...",
         // מסלול "לא מצאתי את השכונה שלי" - העיר כבר נבחרה, נותר רק שם השכונה + מפה
         nb_custom_q: "לא מצאת את השכונה שלך ברשימה?",
-        nb_custom_hint: "כתוב כאן את שם השכונה שלך וסמן אותה על מפת העיר - הבקשה תישלח למנהל האתר ותתווסף לרשימה.",
+        nb_custom_hint: "סמן על מפת העיר את המקום שבו אתה גר ולחץ \"אישור המיקום\" - נזהה את שם השכונה ותוכל לאשר או לתקן אותו. הבקשה תישלח למנהל האתר ותתווסף לרשימה.",
         nb_custom_placeholder: "שם השכונה שלך...",
+        nb_custom_name_label: "שם השכונה לפי המפה - אשר או תקן:",
+        nb_custom_looks_address: "זה נראה כמו כתובת רחוב. כתוב את שם השכונה, לא את הרחוב והמספר.",
         pin_mark_title: "🗺️ סמן את מיקום השכונה המדויק על המפה",
         pin_mark_hint:
             "לא חובה, אבל עוזר לנו למקם את השכונה בדיוק. אם יש לך קואורדינטות — אפשר להקליד אותן.",
@@ -840,8 +842,10 @@ export const en = {
         custom_loc_hint: "Write your city and neighborhood here - the request is sent straight to the site admin and will be added to the list.",
         custom_loc_placeholder: "For example: Ramat Hasharon, North neighborhood...",
         nb_custom_q: "Couldn't find your neighborhood in the list?",
-        nb_custom_hint: "Write your neighborhood name here and mark it on your city's map - the request is sent to the site admin and will be added to the list.",
+        nb_custom_hint: "Mark where you live on your city's map and press \"Confirm location\" - we'll detect the neighborhood name and you can confirm or correct it. The request is sent to the site admin and will be added to the list.",
         nb_custom_placeholder: "Your neighborhood name...",
+        nb_custom_name_label: "Neighborhood name from the map - confirm or correct:",
+        nb_custom_looks_address: "This looks like a street address. Write the neighborhood name, not the street and number.",
         pin_mark_title: "🗺️ Mark the neighborhood's exact location on the map",
         pin_mark_hint:
             "Not mandatory, but it helps us place the neighborhood precisely. If you have coordinates — you can type them in.",
@@ -1334,8 +1338,10 @@ export const ru = {
         custom_loc_hint: "Напишите здесь свой город и район - запрос сразу отправится администратору сайта и будет добавлен в список.",
         custom_loc_placeholder: "Например: Рамат-ха-Шарон, северный район...",
         nb_custom_q: "Не нашли свой район в списке?",
-        nb_custom_hint: "Напишите название своего района и отметьте его на карте города - запрос отправится администратору сайта и будет добавлен в список.",
+        nb_custom_hint: "Отметьте на карте города место, где вы живёте, и нажмите \"Подтвердить расположение\" - мы определим название района, а вы сможете подтвердить или исправить его. Запрос отправится администратору сайта и будет добавлен в список.",
         nb_custom_placeholder: "Название вашего района...",
+        nb_custom_name_label: "Название района по карте - подтвердите или исправьте:",
+        nb_custom_looks_address: "Похоже на адрес улицы. Напишите название района, а не улицу и номер дома.",
         pin_mark_title: "🗺️ Отметьте точное расположение района на карте",
         pin_mark_hint:
             "Необязательно, но помогает нам точно разместить район. Если у вас есть координаты — можно ввести их.",

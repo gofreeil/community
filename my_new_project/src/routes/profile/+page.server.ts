@@ -4,6 +4,7 @@ import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { getUserById, getUserByEmail, getUserByAnyId, updateUserProfile, getItemsByUserId, upsertUser, getMessagesByUserId, createItem, updateItem, getDbItemById, getAllSuperAdmins, getAllUsers, getItemsByCategory, getItemsByCategoryAndStatus, createNeighborhoodRequest } from '$lib/server/db';
 import { finalizeLocationDecision, undoLocationDecision, withdrawOpenLocationRequests } from '$lib/server/locationDecision';
+import { reverseGeocodeParts } from '$lib/server/geocode';
 import { getCachedUserById, invalidateCachedUser } from '$lib/server/userCache';
 import { normalizeSmsPrefs } from '$lib/smsPrefs';
 import { citiesData } from '$lib/neighborhoodsData';
@@ -527,6 +528,21 @@ export const actions: Actions = {
                     console.warn('[profile] location_request createItem failed:', e);
                 }
 
+                // שם השכונה לפי המפה (reverse geocoding של הפין) - מוצג לאדמין ליד מה שהוקלד,
+                // כדי שפער כמו "אליהו קראוזה 45" (כתובת) מול "רסקו א'" (השכונה) ייראה מיד.
+                // best-effort: כישלון/timeout → פשוט בלי השורה.
+                let mapNeighborhood = '';
+                if (hasPin) {
+                    try {
+                        mapNeighborhood = (await reverseGeocodeParts(customLat, customLng)).neighborhood.trim();
+                    } catch { /* בלי שורת "לפי המפה" */ }
+                }
+                const mapNbLine = mapNeighborhood
+                    ? (normalizeLoc(mapNeighborhood) === normalizedNew
+                        ? `🗺️ לפי המפה: ${mapNeighborhood} (תואם למה שהוקלד)\n`
+                        : `🗺️ לפי המפה: ${mapNeighborhood} - שונה ממה שהוקלד! ייתכן שהוקלדה כתובת ולא שם שכונה.\n`)
+                    : '';
+
                 // שלח הודעה אישית לכל סופר־אדמין כדי שהבקשה תופיע מיד בתיבת ההודעות שלו.
                 // דדופ פר-אדמין: אם לאדמין כבר יש הודעת בקשת מיקום פתוחה (לא "טופל") לאותו
                 // מיקום מאותו מבקש - לא שולחים כפילות. "אל תשלח לי משהו כפול".
@@ -552,7 +568,7 @@ export const actions: Actions = {
                                 `המשתמש ${requesterName} (${requesterEmail}) ביקש להוסיף מיקום שאינו מופיע ברשימה:\n\n` +
                                 `"${customLocation}"${city ? ` (עיר: ${city})` : ''}\n\n` +
                                 (hasPin
-                                    ? `📍 המיקום סומן על המפה: ${customLat}, ${customLng}\nhttps://www.google.com/maps?q=${customLat},${customLng}\n\nאשר/דחה בעמוד הניהול תחת "שכונות ממתינות".`
+                                    ? `📍 המיקום סומן על המפה: ${customLat}, ${customLng}\nhttps://www.google.com/maps?q=${customLat},${customLng}\n${mapNbLine}\nאשר/דחה בעמוד הניהול תחת "שכונות ממתינות".`
                                     : `יש לבחון אם להוסיף לרשימת הערים/השכונות.`),
                             icon:        '📍',
                             color:       'yellow',
@@ -563,6 +579,7 @@ export const actions: Actions = {
                                 requested_city:     city || '',
                                 requested_lat:      hasPin ? customLat : null,
                                 requested_lng:      hasPin ? customLng : null,
+                                map_neighborhood:   mapNeighborhood || null,
                                 requested_by_name:  name  || '',
                                 requested_by_email: requesterEmail,
                                 requested_by_id:    session.user.id,

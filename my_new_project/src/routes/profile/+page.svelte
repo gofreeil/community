@@ -1432,6 +1432,7 @@
 		// עיר חדשה נבחרה → אפס את מסלול "לא מצאתי שכונה" ואת הטקסט/פין הישן שלו,
 		// והתחל geocoding של העיר ברקע כדי שהמפה (אם תיפתח) תמורכז עליה ולא על ירושלים.
 		nbNotFound = false;
+		nbPinConfirmed = false;
 		nbMapCenter = null;
 		customLocation = "";
 		customLat = null;
@@ -1474,9 +1475,9 @@
 		showNbSuggestions = false;
 		locationInteracted = true;
 		nbNotFound = true;
+		nbPinConfirmed = false;
 		// ודא שיש מרכז מפה לעיר הזו (אם ה-geocoding מבחירת העיר עדיין לא חזר/לא רץ)
 		if (!nbMapCenter && city && !hasPreciseCoords(undefined, city)) geocodeCityCenter(city);
-		setTimeout(() => document.getElementById("p-custom-location")?.focus(), 50);
 	}
 
 	function onCityInputKey(e: KeyboardEvent) {
@@ -1513,6 +1514,15 @@
 	let locationInteracted = $state(false);
 	// המשתמש לחץ במפורש "לא מצאתי את השכונה שלי" → חושפים תיבת שם שכונה + מפה ממורכזת על עירו
 	let nbNotFound = $state(false);
+	// במסלול "לא מצאתי שכונה" המפה באה ראשונה ותיבת השם נחשפת רק אחרי "אישור המיקום" -
+	// כך המילוי האוטומטי של שם השכונה מהמפה רץ לפני שהמשתמש מקליד משהו בעצמו
+	// (משתמש שהקליד קודם כתב את כתובת הרחוב שלו במקום שם שכונה, 17.9.2026).
+	let nbPinConfirmed = $state(false);
+	// הטקסט שהוקלד נראה כמו כתובת רחוב (מסתיים במספר בית / מתחיל ב"רחוב") ולא כשם שכונה
+	const looksLikeAddress = $derived.by(() => {
+		const s = customLocation.trim();
+		return /\d+\s*[א-ת]?$/.test(s) || /^(רח'|רח\.|רחוב|שד'|שדרות|סמטת)\s/.test(s);
+	});
 	// מרכז חלופי לעיר שאין לה קואורדינטה מובנית (נגזר ב-geocoding), כדי שהמפה
 	// תיפתח על העיר הנבחרת ולא על ירושלים כברירת מחדל.
 	let nbMapCenter = $state<[number, number] | null>(null);
@@ -1547,6 +1557,8 @@
 				}
 			} catch { /* best effort - נשאיר למשתמש להקליד */ }
 		}
+		// במסלול "לא מצאתי שכונה" תיבת השם נחשפת רק עכשיו - ממולאת מהמפה, לאישור או תיקון
+		nbPinConfirmed = true;
 		// גלילה עדינה קדימה כדי לחשוף את שדות ההמשך
 		setTimeout(() => slowScrollTo(window.scrollY + 320, 700), 150);
 	}
@@ -5718,22 +5730,50 @@
 								<p class="text-gray-500 text-xs mb-2 leading-relaxed">
 									{nbNotFound ? tFn('profile.nb_custom_hint') : tFn('profile.custom_loc_hint')}
 								</p>
-								<input
-									id="p-custom-location"
-									name="custom_location"
-									type="text"
-									bind:value={customLocation}
-									placeholder={nbNotFound ? tFn('profile.nb_custom_placeholder') : tFn('profile.custom_loc_placeholder')}
-									class="w-full bg-[#070b14] border rounded-xl px-4 py-3 text-white text-sm
-							       transition-all duration-500 outline-none placeholder:text-white/20
-							       focus:border-yellow-500/70 focus:shadow-[0_0_18px_2px_rgba(250,204,21,0.25)]
-							       {locationInteracted ? 'border-yellow-500/40 custom-loc-glow' : 'border-white/10'}"
-								/>
 
-								<!-- סימון מיקום מדויק על המפה - מאפשר למנהל להציב את השכונה במקום הנכון.
-								     במסלול "לא מצאתי שכונה" המפה נפתחת מיד וממורכזת על העיר הנבחרת
-								     (fallbackCenter מ-geocoding); אחרת רק אחרי שהוקלד טקסט. -->
-								{#if nbNotFound || customLocation.trim()}
+								<!-- במסלול "לא מצאתי שכונה" המפה באה ראשונה: המשתמש מסמן את ביתו ולוחץ
+								     "אישור המיקום", ורק אז נחשפת תיבת השם - ממולאת משם השכונה שחזר מהמפה
+								     (reverse geocoding), לאישור או תיקון. הקלדה לפני המפה גרמה למשתמשים
+								     לכתוב את כתובת הרחוב שלהם במקום שם שכונה. -->
+								{#if nbNotFound}
+									<div class="mb-3">
+										<p class="text-yellow-300 text-xs font-bold mb-1.5">
+											{tFn("profile.pin_mark_title")}
+										</p>
+										<p class="text-gray-500 text-xs mb-2 leading-relaxed">
+											{tFn("profile.pin_mark_hint")}
+										</p>
+										<NeighborhoodPicker {city} fallbackCenter={nbMapCenter} onConfirm={handleNbConfirm} bind:lat={customLat} bind:lng={customLng} />
+									</div>
+								{/if}
+
+								{#if !nbNotFound || nbPinConfirmed}
+									{#if nbNotFound}
+										<p class="text-yellow-300 text-xs font-bold mb-1.5">
+											{tFn("profile.nb_custom_name_label")}
+										</p>
+									{/if}
+									<input
+										id="p-custom-location"
+										name="custom_location"
+										type="text"
+										bind:value={customLocation}
+										placeholder={nbNotFound ? tFn('profile.nb_custom_placeholder') : tFn('profile.custom_loc_placeholder')}
+										class="w-full bg-[#070b14] border rounded-xl px-4 py-3 text-white text-sm
+								       transition-all duration-500 outline-none placeholder:text-white/20
+								       focus:border-yellow-500/70 focus:shadow-[0_0_18px_2px_rgba(250,204,21,0.25)]
+								       {locationInteracted ? 'border-yellow-500/40 custom-loc-glow' : 'border-white/10'}"
+									/>
+									<!-- הוקלדה כתובת רחוב (מספר בית / "רחוב") במקום שם שכונה - הערה, לא חסימה -->
+									{#if looksLikeAddress}
+										<p class="mt-1.5 text-orange-300 text-xs leading-relaxed" role="status">
+											⚠️ {tFn("profile.nb_custom_looks_address")}
+										</p>
+									{/if}
+								{/if}
+
+								<!-- מסלול "לא מצאתי עיר": המפה נפתחת אחרי שהוקלד טקסט (אין עיר למרכז עליה קודם) -->
+								{#if !nbNotFound && customLocation.trim()}
 									<div class="mt-3">
 										<p class="text-yellow-300 text-xs font-bold mb-1.5">
 											{tFn("profile.pin_mark_title")}
