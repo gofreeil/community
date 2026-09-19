@@ -5,6 +5,12 @@
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
 
+    // ניסוח בגוף שלישי לשתי השאלות הוותיקות (כמו שהיה); שאר השאלות - תווית הטופס כמו שהיא
+    const MATCHMAKER_ADMIN_LABELS: Record<string, string> = {
+        match_partner_character: 'מהו אופי בן הזוג שהוא/היא מחפש/ת',
+        match_self_advantage:    'היתרון שהוא/היא מביא/ה אל הזוגיות',
+    };
+
     type Card = PageData['pending'][number];
 
     // טאב: ממתינים / מאושרים (כדי לבחון מחדש את לוח הגברים והנשים)
@@ -257,21 +263,17 @@
                             {/if}
 
                             <!-- מידע לשדכנים בלבד (נאסף בטופס, לא מוצג בלוח הפומבי) -->
-                            {#if c.matchPartnerCharacter || c.matchSelfAdvantage}
+                            {#if c.matchmakerAnswers?.length}
                                 <div class="mb-3 rounded-xl border border-purple-500/30 bg-purple-500/10 p-3">
                                     <p class="text-[11px] font-bold text-purple-200 mb-2 flex items-center gap-1.5">🔒 מידע לשדכנים · לא בלוח הפומבי</p>
-                                    {#if c.matchPartnerCharacter}
-                                        <div class="mb-2">
-                                            <p class="text-purple-300/80 text-[11px] font-bold">מהו אופי בן הזוג שהוא/היא מחפש/ת</p>
-                                            <p class="text-gray-200 text-sm leading-relaxed">{c.matchPartnerCharacter}</p>
-                                        </div>
-                                    {/if}
-                                    {#if c.matchSelfAdvantage}
-                                        <div>
-                                            <p class="text-purple-300/80 text-[11px] font-bold">היתרון שהוא/היא מביא/ה אל הזוגיות</p>
-                                            <p class="text-gray-200 text-sm leading-relaxed">{c.matchSelfAdvantage}</p>
-                                        </div>
-                                    {/if}
+                                    <div class="space-y-2">
+                                        {#each c.matchmakerAnswers as a (a.key)}
+                                            <div>
+                                                <p class="text-purple-300/80 text-[11px] font-bold">{MATCHMAKER_ADMIN_LABELS[a.key] ?? a.label}</p>
+                                                <p class="text-gray-200 text-sm leading-relaxed whitespace-pre-line">{a.value}</p>
+                                            </div>
+                                        {/each}
+                                    </div>
                                 </div>
                             {/if}
 

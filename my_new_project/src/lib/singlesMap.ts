@@ -5,6 +5,11 @@
 import type { DbItem } from './server/db';
 import type { SingleProfile, Religiosity, Gender } from './singlesMock';
 import { avatarUrl } from './singlesMock';
+import { categoryConfig } from './categoryFields';
+
+// שדות "מידע לשדכנים" לפי הגדרת הטופס - כך שאלה שנוספת לטופס מגיעה אוטומטית
+// לעמוד סקירת השדכנים בלי לגעת במיפוי.
+const MATCHMAKER_FIELDS = (categoryConfig.singles?.fields ?? []).filter(f => f.group === 'matchmakers');
 
 function calcAge(birth: string): string {
     if (!birth) return '';
@@ -101,6 +106,9 @@ export function dbItemToProfile(item: DbItem): SingleProfile {
         // מידע לשדכנים בלבד - לא מוצג בכרטיס/בדף הפומבי, רק בעמוד סקירת השדכנים
         matchPartnerCharacter: String(ef.match_partner_character ?? '').trim(),
         matchSelfAdvantage: String(ef.match_self_advantage ?? '').trim(),
+        matchmakerAnswers: MATCHMAKER_FIELDS
+            .map(f => ({ key: f.key, label: f.label, value: String(ef[f.key] ?? '').trim() }))
+            .filter(a => a.value !== ''),
         unvaccinated,
     };
 }

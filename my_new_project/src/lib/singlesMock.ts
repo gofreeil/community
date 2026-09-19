@@ -30,6 +30,8 @@ export interface SingleProfile {
     /** מידע לשדכנים בלבד - נאסף בטופס ולא מוצג בכרטיס/בדף הפומבי */
     matchPartnerCharacter?: string;
     matchSelfAdvantage?: string;
+    /** כל תשובות "מידע לשדכנים" שמולאו, בסדר הטופס (label = תווית השאלה בעברית) */
+    matchmakerAnswers?: { key: string; label: string; value: string }[];
     /** תווית "לא מחוסן" - מוצגת על הכרטיס רק אם המפרסם סימן אותה במפורש */
     unvaccinated?: boolean;
 }
