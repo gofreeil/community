@@ -22,7 +22,7 @@
 </script>
 
 <svelte:head>
-	<title>ארנק ותגמולים | קהילה בשכונה</title>
+	<title>ארנק ותגמולים | קהילה בשכונה | יוצאים לחירות</title>
 </svelte:head>
 
 <div class="min-h-screen bg-[#080f1e] text-white px-4 py-8 max-w-2xl mx-auto" dir="rtl">

@@ -3,6 +3,6 @@
 </script>
 
 <svelte:head>
-    <title>פרסום כרטיס פנויים/פנויות | קהילה בשכונה</title>
+    <title>פרסום כרטיס פנויים/פנויות | קהילה בשכונה | יוצאים לחירות</title>
     <meta name="robots" content="noindex, follow" />
 </svelte:head>

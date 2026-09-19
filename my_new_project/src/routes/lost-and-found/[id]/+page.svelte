@@ -52,7 +52,7 @@
 </script>
 
 <svelte:head>
-    <title>{item.label} | אבדות ומציאות</title>
+    <title>{item.label} | אבדות ומציאות | יוצאים לחירות</title>
 </svelte:head>
 
 <div class="max-w-lg mx-auto px-4 py-8" dir="rtl">

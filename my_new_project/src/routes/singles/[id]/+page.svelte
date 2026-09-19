@@ -171,7 +171,7 @@
 </script>
 
 <svelte:head>
-    <title>{s.nickname} - {s.label} | פנויים ופנויות</title>
+    <title>{s.nickname} - {s.label} | פנויים ופנויות | יוצאים לחירות</title>
     <meta name="description" content={ogDescription} />
     <link rel="canonical" href={canonicalUrl} />
 

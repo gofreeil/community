@@ -1002,7 +1002,7 @@
 </script>
 
 <svelte:head>
-    <title>{pageTitle} | קהילה בשכונה</title>
+    <title>{pageTitle} | קהילה בשכונה | יוצאים לחירות</title>
 </svelte:head>
 
 <div class="max-w-2xl mx-auto px-4 py-4 md:py-6" dir="rtl">

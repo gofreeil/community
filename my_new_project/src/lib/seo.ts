@@ -9,6 +9,11 @@
 export const SITE_URL = 'https://community.gofreeil.com';
 export const SITE_NAME = 'קהילה בשכונה';
 export const SITE_TAGLINE = 'כל יתרונות השכונה במקום אחד';
+/** שם התנועה-האם. מצורף לכל <title>, לתיאור ולסכימות — כדי שחיפוש
+ *  "יוצאים לחירות קהילה בשכונה" יגיע לכאן ולא לאתרים זרים בשם דומה. */
+export const PARENT_BRAND = 'יוצאים לחירות';
+export const SITE_DESCRIPTION =
+    'קהילה בשכונה של תנועת יוצאים לחירות — כל יתרונות השכונה במקום אחד: יד שנייה ולמסירה, דירות ואירוח לשבת, שידוכים, חוגים, גמ״חים, בייבי סיטר, טרמפים, אבדות ומציאות והטבות מקומיות. חינם, לכל שכונה ויישוב בישראל.';
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/images/community-logo1.png`;
 
 /** בונה URL מוחלט קנוני מנתיב יחסי. */
@@ -113,8 +118,15 @@ export function websiteSchema() {
         '@type': 'WebSite',
         '@id': `${SITE_URL}/#website`,
         name: SITE_NAME,
-        alternateName: ['קהילה בשכונה', 'יוצאים לחירות', 'gofreeil'],
+        alternateName: [
+            'קהילה בשכונה',
+            'קהילה בשכונה של יוצאים לחירות',
+            'יוצאים לחירות קהילה בשכונה',
+            'יוצאים לחירות',
+            'gofreeil',
+        ],
         url: SITE_URL,
+        description: SITE_DESCRIPTION,
         inLanguage: 'he-IL',
         publisher: { '@id': `${SITE_URL}/#organization` },
         relatedLink: OTHER_NETWORK_SITES.map((s) => s.url),
@@ -136,10 +148,11 @@ export function organizationSchema() {
         '@type': 'Organization',
         '@id': `${SITE_URL}/#organization`,
         name: SITE_NAME,
+        alternateName: ['קהילה בשכונה של יוצאים לחירות', 'קהילה בשכונה — יוצאים לחירות'],
         url: SITE_URL,
         logo: DEFAULT_OG_IMAGE,
         description:
-            'פלטפורמת קהילה שכונתית המרכזת במקום אחד יד שנייה, דירות, שידוכים, חוגים, גמ"חים, בייבי סיטר, טרמפים, אבדות ומציאות, אירוח לשבת ועוד — לכל שכונה ויישוב בישראל.',
+            'פלטפורמת הקהילה השכונתית של תנועת יוצאים לחירות, המרכזת במקום אחד יד שנייה, דירות, שידוכים, חוגים, גמ"חים, בייבי סיטר, טרמפים, אבדות ומציאות, אירוח לשבת ועוד — לכל שכונה ויישוב בישראל.',
         areaServed: { '@type': 'Country', name: 'Israel' },
         inLanguage: 'he-IL',
         parentOrganization: {

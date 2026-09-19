@@ -2788,7 +2788,7 @@
 </script>
 
 <svelte:head>
-	<title>{tFn("profile_title")}</title>
+	<title>{tFn("profile_title")} | יוצאים לחירות</title>
 </svelte:head>
 
 <!-- בורר "הסטטוס שלי בלוח פנויים" - כפתור קומפקטי עם תפריט נפתח (משובץ גם בפרופיל וגם בנכסים שלי) -->

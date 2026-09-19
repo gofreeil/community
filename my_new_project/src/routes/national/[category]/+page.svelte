@@ -303,7 +303,7 @@
 </script>
 
 <svelte:head>
-	<title>{data.meta.title} | קהילה בשכונה</title>
+	<title>{data.meta.title} | קהילה בשכונה | יוצאים לחירות</title>
 </svelte:head>
 
 <div class="min-h-screen" dir="rtl">

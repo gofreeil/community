@@ -122,7 +122,7 @@
 </script>
 
 <svelte:head>
-    <title>פינת האבדות — לוח אבדות ומציאות ארצי | קהילה בשכונה</title>
+    <title>פינת האבדות — לוח אבדות ומציאות ארצי | קהילה בשכונה | יוצאים לחירות</title>
     <meta name="description" content="פינת האבדות — לוח אבדות ומציאות ארצי. דיווח על פריט שאבד או נמצא בכל הארץ, חיפוש לפי תיאור, תגיות ומיקום, והחזרת אבדות לבעליהן." />
     <link rel="canonical" href={canonical('/lost-and-found')} />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />

@@ -102,7 +102,7 @@
 </script>
 
 <svelte:head>
-    <title>ערבי מפגש וסעודות קהילתיות | קהילה בשכונה</title>
+    <title>ערבי מפגש וסעודות קהילתיות | קהילה בשכונה | יוצאים לחירות</title>
     <meta name="description" content="לוח ערבי מפגש וסעודות שכונתיות — הקימו סעודה, חלקו את רשימת המאכלים בין המשתתפים וראו מי מגיע. נגיש לחברי הקהילה." />
     <link rel="canonical" href={canonical('/gatherings')} />
 </svelte:head>

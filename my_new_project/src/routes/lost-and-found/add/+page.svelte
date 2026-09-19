@@ -93,7 +93,7 @@
 </script>
 
 <svelte:head>
-    <title>הוסף אבדה או מציאה | קהילה בשכונה</title>
+    <title>הוסף אבדה או מציאה | קהילה בשכונה | יוצאים לחירות</title>
 </svelte:head>
 
 <div class="min-h-screen flex items-start justify-center pt-8 pb-16 px-4" dir="rtl">

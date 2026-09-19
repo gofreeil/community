@@ -3,7 +3,7 @@
 </script>
 
 <svelte:head>
-    <title>הצהרת נגישות | קהילה בשכונה</title>
+    <title>הצהרת נגישות | קהילה בשכונה | יוצאים לחירות</title>
 </svelte:head>
 
 <div class="min-h-screen py-12 px-4">

@@ -27,7 +27,7 @@
 </script>
 
 <svelte:head>
-    <title>חיפוש: {data.query}</title>
+    <title>חיפוש: {data.query} | יוצאים לחירות</title>
 </svelte:head>
 
 <div class="min-h-screen" style="background: #070b14;">

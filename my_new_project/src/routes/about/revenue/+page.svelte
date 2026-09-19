@@ -136,7 +136,7 @@
 </script>
 
 <svelte:head>
-	<title>אודות קהילה בשכונה | כל יתרונות השכונה במקום אחד</title>
+	<title>אודות קהילה בשכונה | כל יתרונות השכונה במקום אחד | יוצאים לחירות</title>
 	<meta name="description" content="קהילה בשכונה — הפלטפורמה הקהילתית הראשונה בישראל המחברת את התושבים לכל השירותים, היתרונות והמשאבים של השכונה. הכירו את התנועה, שיטת התגמול והרכזים, והצטרפו אלינו." />
 	<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
 	<link rel="canonical" href="https://community.gofreeil.com/about/revenue" />

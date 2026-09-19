@@ -9,7 +9,7 @@
 </script>
 
 <svelte:head>
-    <title>חוגים — לוח חוגים ארצי לכל הגילאים | קהילה בשכונה</title>
+    <title>חוגים — לוח חוגים ארצי לכל הגילאים | קהילה בשכונה | יוצאים לחירות</title>
     <meta name="description" content="לוח חוגים ארצי: ספורט, מוזיקה, אומנות, ריקוד, רובוטיקה, בישול ועוד. סננו לפי גיל, קטגוריה, מחיר ומיקום. שיעור ניסיון חינם — בקהילה בשכונה." />
     <link rel="canonical" href={canonical('/chugim')} />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />

@@ -249,7 +249,7 @@
 </script>
 
 <svelte:head>
-    <title>שידוכים — פנויים ופנויות בשכונה | קהילה בשכונה</title>
+    <title>שידוכים — פנויים ופנויות בשכונה | קהילה בשכונה | יוצאים לחירות</title>
     <meta name="description" content="לוח שידוכים והיכרויות קהילתי — פנויים ופנויות, סינון לפי גיל, מגזר ומיקום. מצאו שידוך בשכונה ובכל הארץ, בקהילה בשכונה." />
     <link rel="canonical" href={canonical('/singles')} />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />

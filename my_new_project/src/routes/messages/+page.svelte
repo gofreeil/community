@@ -164,7 +164,7 @@
 </script>
 
 <svelte:head>
-    <title>הודעות אישיות | קהילה בשכונה</title>
+    <title>הודעות אישיות | קהילה בשכונה | יוצאים לחירות</title>
 </svelte:head>
 
 <div class="dense-zone max-w-2xl mx-auto px-4 py-8" dir="rtl">

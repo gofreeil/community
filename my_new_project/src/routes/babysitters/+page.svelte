@@ -9,7 +9,7 @@
 </script>
 
 <svelte:head>
-    <title>בייבי סיטר ושמרטפים בשכונה | קהילה בשכונה</title>
+    <title>בייבי סיטר ושמרטפים בשכונה | קהילה בשכונה | יוצאים לחירות</title>
     <meta name="description" content="לוח בייבי סיטר ושמרטפים בשכונה — מצאו שמרטף זמין ואמין קרוב לבית, בקהילה בשכונה." />
     <link rel="canonical" href={canonical('/babysitters')} />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />

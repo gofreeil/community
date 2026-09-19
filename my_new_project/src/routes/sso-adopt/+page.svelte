@@ -30,7 +30,7 @@
 </script>
 
 <svelte:head>
-	<title>מתחבר…</title>
+	<title>מתחבר… | יוצאים לחירות</title>
 	<meta name="robots" content="noindex" />
 </svelte:head>
 

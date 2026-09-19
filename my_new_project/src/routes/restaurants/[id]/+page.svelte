@@ -61,7 +61,7 @@
 </script>
 
 <svelte:head>
-    <title>{item.label} | מזון ומסעדות - קהילה בשכונה</title>
+    <title>{item.label} | מזון ומסעדות - קהילה בשכונה | יוצאים לחירות</title>
     <meta name="description" content={item.description || `${item.label} - ${foodType}`} />
 </svelte:head>
 

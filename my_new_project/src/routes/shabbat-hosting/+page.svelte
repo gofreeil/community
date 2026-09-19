@@ -9,7 +9,7 @@
 </script>
 
 <svelte:head>
-    <title>אירוח לשבת, צימרים ודירות | קהילה בשכונה</title>
+    <title>אירוח לשבת, צימרים ודירות | קהילה בשכונה | יוצאים לחירות</title>
     <meta name="description" content="לוח אירוח לשבת, צימרים ודירות לאירוח — מצאו מקום לשבת או אירוח קצר בשכונה ובכל הארץ, בקהילה בשכונה." />
     <link rel="canonical" href={canonical('/shabbat-hosting')} />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />

@@ -422,7 +422,7 @@
 </script>
 
 <svelte:head>
-    <title>{$_('extras.g_title')} | קהילה בשכונה</title>
+    <title>{$_('extras.g_title')} | קהילה בשכונה | יוצאים לחירות</title>
 </svelte:head>
 
 {#if clientError}

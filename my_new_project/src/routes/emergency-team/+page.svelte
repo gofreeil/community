@@ -16,7 +16,7 @@
 </script>
 
 <svelte:head>
-    <title>כיתת כוננות{data.currentNeighborhood ? ` - ${data.currentNeighborhood}` : ''} | קהילה בשכונה</title>
+    <title>כיתת כוננות{data.currentNeighborhood ? ` - ${data.currentNeighborhood}` : ''} | קהילה בשכונה | יוצאים לחירות</title>
 </svelte:head>
 
 <div class="min-h-screen bg-[#070b14] pt-6 pb-20 px-4" dir="rtl">

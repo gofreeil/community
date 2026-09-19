@@ -11,7 +11,7 @@
     import { ads } from "$lib/adsData";
     import { communityHelpCount } from "$lib/communityHelpStore";
     import JsonLd from "$lib/components/JsonLd.svelte";
-    import { websiteSchema, organizationSchema, faqSchema, SITE_URL } from "$lib/seo";
+    import { websiteSchema, organizationSchema, faqSchema, SITE_URL, SITE_DESCRIPTION, PARENT_SITE } from "$lib/seo";
     import { heMatch, buildVocabulary, suggestQuery } from "$lib/search";
     import { createClickOutside } from "$lib/actions/clickOutside";
 
@@ -401,14 +401,15 @@
 </script>
 
 <svelte:head>
-    <title>קהילה בשכונה — יד שנייה, דירות, שידוכים, חוגים וכל יתרונות השכונה</title>
-    <meta name="description" content="קהילה בשכונה — כל יתרונות השכונה במקום אחד: יד שנייה ולמסירה, דירות ואירוח לשבת, שידוכים, חוגים, גמ״חים, בייבי סיטר, טרמפים, אבדות ומציאות והטבות מקומיות. חינם, לכל שכונה ויישוב בישראל." />
-    <meta name="keywords" content="קהילה בשכונה, יד 2, יד שנייה, דירות, שידוכים, חוגים, גמח, בייבי סיטר, טרמפים, אבדות ומציאות, אירוח לשבת, אירועים, שכונה" />
+    <!-- כל כותרת מסתיימת ב"| יוצאים לחירות" — כמו בשאר אתרי הרשת, כדי שגוגל יקשר בין התנועה לאתר -->
+    <title>קהילה בשכונה — יד שנייה, דירות, שידוכים, חוגים ועוד | יוצאים לחירות</title>
+    <meta name="description" content={SITE_DESCRIPTION} />
+    <meta name="keywords" content="יוצאים לחירות, קהילה בשכונה יוצאים לחירות, קהילה בשכונה, יד 2, יד שנייה, דירות, שידוכים, חוגים, גמח, בייבי סיטר, טרמפים, אבדות ומציאות, אירוח לשבת, אירועים, שכונה" />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
     <link rel="canonical" href={SITE_URL} />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="קהילה בשכונה" />
-    <meta property="og:title" content="קהילה בשכונה - מתלכדים לעולם יותר סולידרי ואחראי" />
+    <meta property="og:title" content="קהילה בשכונה - מתלכדים לעולם יותר סולידרי ואחראי | יוצאים לחירות" />
     <meta property="og:description" content="כל יתרונות השכונה תחת קורת גג אחת" />
     <meta property="og:image" content="https://community.gofreeil.com/images/community-advantages-share.jpg" />
     <meta property="og:image:type" content="image/jpeg" />
@@ -418,7 +419,7 @@
     <meta property="og:url" content="https://community.gofreeil.com" />
     <meta property="og:locale" content="he_IL" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="קהילה בשכונה - מתלכדים לעולם יותר סולידרי ואחראי" />
+    <meta name="twitter:title" content="קהילה בשכונה - מתלכדים לעולם יותר סולידרי ואחראי | יוצאים לחירות" />
     <meta name="twitter:description" content="כל יתרונות השכונה תחת קורת גג אחת" />
     <meta name="twitter:image" content="https://community.gofreeil.com/images/community-advantages-share.jpg" />
 </svelte:head>
@@ -485,7 +486,20 @@
         </div>
     {/if}
     <!-- כותרת SEO ראשית (נסרקת ע"י גוגל/AI, מוסתרת ויזואלית) -->
-    <h1 class="sr-only">קהילה בשכונה — יד שנייה ולמסירה, דירות ואירוח לשבת, שידוכים, חוגים, גמ״חים, בייבי סיטר, טרמפים ואבדות ומציאות בשכונה ובכל יישוב בישראל</h1>
+    <h1 class="sr-only">קהילה בשכונה של יוצאים לחירות — יד שנייה ולמסירה, דירות ואירוח לשבת, שידוכים, חוגים, גמ״חים, בייבי סיטר, טרמפים ואבדות ומציאות בשכונה ובכל יישוב בישראל</h1>
+    <!-- שיוך גלוי לתנועה-האם: טקסט אמיתי מעל הקפל (לא רק בפוטר) כדי שגוגל יקשר
+         "יוצאים לחירות" לאתר. גלולה כהה — לא טקסט אפור על רקע בהיר. -->
+    <p class="text-center mb-3">
+        <a
+            href={PARENT_SITE.url}
+            target="_blank"
+            rel="noopener"
+            class="inline-flex items-center gap-1.5 rounded-full border border-[#3b5794] bg-[#1c2f5a] px-4 py-1.5 text-xs md:text-sm font-semibold text-gray-200 shadow-md hover:bg-[#2a4379] hover:text-white transition-colors"
+        >
+            <span aria-hidden="true">👉</span>
+            מיזם של התנועה החברתית יוצאים לחירות
+        </a>
+    </p>
     <!-- Title Section - centered across full width -->
     <section class="max-w-7xl mx-auto px-4">
         <div use:neighborhoodsMenuOutside class="text-center mb-3 md:mb-8 relative neighborhoods-menu-container">

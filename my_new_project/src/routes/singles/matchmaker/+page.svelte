@@ -85,7 +85,7 @@
 </script>
 
 <svelte:head>
-    <title>כלים לשדכן — המלצות התאמה | קהילה בשכונה</title>
+    <title>כלים לשדכן — המלצות התאמה | קהילה בשכונה | יוצאים לחירות</title>
     <meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 

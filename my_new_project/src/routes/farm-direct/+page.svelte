@@ -71,7 +71,7 @@
 </script>
 
 <svelte:head>
-    <title>חקלאות ישירה - קהילה בשכונה</title>
+    <title>חקלאות ישירה - קהילה בשכונה | יוצאים לחירות</title>
     <meta name="description" content="חקלאות ישירה - הזמינו פעם בשבוע תוצרת טרייה ישירות מהחקלאים לשכונה שלכם." />
 </svelte:head>
 

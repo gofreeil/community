@@ -3,7 +3,7 @@
 </script>
 
 <svelte:head>
-    <title>חשבון מושעה | קהילה בשכונה</title>
+    <title>חשבון מושעה | קהילה בשכונה | יוצאים לחירות</title>
 </svelte:head>
 
 <div class="min-h-screen bg-[#070b14] flex items-center justify-center px-4" dir="rtl">

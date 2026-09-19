@@ -11,7 +11,7 @@
 </script>
 
 <svelte:head>
-    <title>שחזור סיסמה | קהילה בשכונה</title>
+    <title>שחזור סיסמה | קהילה בשכונה | יוצאים לחירות</title>
     <meta name="robots" content="noindex, follow" />
 </svelte:head>
 

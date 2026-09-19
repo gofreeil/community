@@ -4,11 +4,11 @@
     // כך שמנועי החיפוש ומנועי ה-AI קוראים בדיוק את הטקסט שהגולש רואה.
     import { _, locale } from 'svelte-i18n';
     import JsonLd from '$lib/components/JsonLd.svelte';
-    import { faqSchema, breadcrumbSchema, canonical, SITE_NAME, SITE_URL, DEFAULT_OG_IMAGE } from '$lib/seo';
+    import { faqSchema, breadcrumbSchema, canonical, SITE_NAME, SITE_URL, DEFAULT_OG_IMAGE, PARENT_BRAND } from '$lib/seo';
     import { aboutFaq } from '$lib/aboutFaq';
 
     const faq = $derived(aboutFaq($locale));
-    const pageTitle = $derived(`${$_('aboutPages.about_title')} | ${SITE_NAME}`);
+    const pageTitle = $derived(`${$_('aboutPages.about_title')} | ${SITE_NAME} | ${PARENT_BRAND}`);
     const schemas = $derived([
         {
             '@context': 'https://schema.org',

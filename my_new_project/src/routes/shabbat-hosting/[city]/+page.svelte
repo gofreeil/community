@@ -6,7 +6,7 @@
 </script>
 
 <svelte:head>
-    <title>אירוח לשבת ב{data.city} - קהילה בשכונה</title>
+    <title>אירוח לשבת ב{data.city} - קהילה בשכונה | יוצאים לחירות</title>
     <meta name="description" content="לוח אירוח לשבת ב{data.city} - מציעים לארח ומחפשים להתארח" />
 </svelte:head>
 

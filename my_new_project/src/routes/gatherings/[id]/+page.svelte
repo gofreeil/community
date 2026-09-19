@@ -143,7 +143,7 @@
 </script>
 
 <svelte:head>
-    <title>{g.title} | סעודה קהילתית</title>
+    <title>{g.title} | סעודה קהילתית | יוצאים לחירות</title>
     <meta name="description" content={`${g.title} — ${formatFullDate(g.date)}${g.location ? ', ' + g.location : ''}. הצטרפו, שבצו מה אתם מביאים וראו מי מגיע.`} />
     <link rel="canonical" href={canonical(`/gatherings/${g.id}`)} />
     <meta name="robots" content="noindex" />

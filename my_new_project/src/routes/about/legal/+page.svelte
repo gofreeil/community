@@ -51,7 +51,7 @@
 </script>
 
 <svelte:head>
-	<title>תנאי שימוש ומדיניות – קהילה בשכונה</title>
+	<title>תנאי שימוש ומדיניות – קהילה בשכונה | יוצאים לחירות</title>
 </svelte:head>
 
 <div class="min-h-screen py-10 px-4 page-bg" dir="rtl">

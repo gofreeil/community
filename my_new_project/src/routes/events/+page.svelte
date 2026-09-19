@@ -167,7 +167,7 @@
 </script>
 
 <svelte:head>
-    <title>אירועים קהילתיים בשכונה | קהילה בשכונה</title>
+    <title>אירועים קהילתיים בשכונה | קהילה בשכונה | יוצאים לחירות</title>
     <meta name="description" content="לוח אירועים קהילתיים בשכונה — הרצאות, חוגים, מפגשים, אירועי ילדים ועוד. גלו מה קורה בשכונה שלכם, בקהילה בשכונה." />
     <link rel="canonical" href={canonical('/events')} />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />

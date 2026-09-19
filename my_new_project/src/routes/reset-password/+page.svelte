@@ -24,7 +24,7 @@
 </script>
 
 <svelte:head>
-    <title>איפוס סיסמה | קהילה בשכונה</title>
+    <title>איפוס סיסמה | קהילה בשכונה | יוצאים לחירות</title>
     <meta name="robots" content="noindex, follow" />
 </svelte:head>
 

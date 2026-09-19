@@ -12,7 +12,7 @@
 </script>
 
 <svelte:head>
-    <title>פרסום טרמפ חדש | קהילה בשכונה</title>
+    <title>פרסום טרמפ חדש | קהילה בשכונה | יוצאים לחירות</title>
 </svelte:head>
 
 {#if data.needsUpgrade && data.tierUser}

@@ -275,7 +275,7 @@
 </script>
 
 <svelte:head>
-    <title>יד שנייה ולמסירה בשכונה — פריטים בחינם | קהילה בשכונה</title>
+    <title>יד שנייה ולמסירה בשכונה — פריטים בחינם | קהילה בשכונה | יוצאים לחירות</title>
     <meta name="description" content="לוח יד שנייה ולמסירה בשכונה: רהיטים, מוצרי חשמל, בגדים, צעצועים ופריטים בחינם מהשכנים. מצאו ומסרו יד 2 בשכונה שלכם — בקהילה בשכונה." />
     <link rel="canonical" href={canonical('/giveaways')} />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />

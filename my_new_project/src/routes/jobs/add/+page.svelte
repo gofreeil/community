@@ -12,7 +12,7 @@
 </script>
 
 <svelte:head>
-    <title>פרסום מודעת עבודה | קהילה בשכונה</title>
+    <title>פרסום מודעת עבודה | קהילה בשכונה | יוצאים לחירות</title>
 </svelte:head>
 
 {#if data.needsUpgrade && data.tierUser}

@@ -286,7 +286,7 @@
 </script>
 
 <svelte:head>
-    <title>פרסום פריט למסירה | קהילה בשכונה</title>
+    <title>פרסום פריט למסירה | קהילה בשכונה | יוצאים לחירות</title>
 </svelte:head>
 
 {#if data.needsUpgrade && data.tierUser}

@@ -562,7 +562,7 @@
 </script>
 
 <svelte:head>
-    <title>עריכת דף נחיתה - בונה הפרסומות</title>
+    <title>עריכת דף נחיתה - בונה הפרסומות | יוצאים לחירות</title>
 </svelte:head>
 
 <div class="ad-builder max-w-5xl mx-auto px-4 py-8 md:py-12" dir="rtl">

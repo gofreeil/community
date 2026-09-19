@@ -36,7 +36,7 @@
 </script>
 
 <svelte:head>
-	<title>{status} | קהילה בשכונה</title>
+	<title>{status} | קהילה בשכונה | יוצאים לחירות</title>
 </svelte:head>
 
 <div class="min-h-[60vh] flex flex-col items-center justify-center text-center px-6 py-16">

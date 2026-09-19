@@ -77,7 +77,7 @@
 </script>
 
 <svelte:head>
-    <title>טרמפים ונסיעות משותפות בשכונה | קהילה בשכונה</title>
+    <title>טרמפים ונסיעות משותפות בשכונה | קהילה בשכונה | יוצאים לחירות</title>
     <meta name="description" content="לוח טרמפים ונסיעות משותפות — מצאו או הציעו טרמפ בין שכנים, חסכו בנסיעות, בקהילה בשכונה." />
     <link rel="canonical" href={canonical('/rides')} />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />

@@ -102,7 +102,7 @@
 </script>
 
 <svelte:head>
-	<title>{tFn("login_title")}</title>
+	<title>{tFn("login_title")} | יוצאים לחירות</title>
 </svelte:head>
 
 <div class="min-h-[80vh] flex items-center justify-center px-4 py-12" dir="rtl">

@@ -1138,7 +1138,7 @@
 </script>
 
 <svelte:head>
-    <title>בניית הפרסומת שלי | קהילה בשכונה</title>
+    <title>בניית הפרסומת שלי | קהילה בשכונה | יוצאים לחירות</title>
 </svelte:head>
 
 {#if accessChecked && !accessGranted}

@@ -1310,7 +1310,7 @@
 </script>
 
 <svelte:head>
-    <title>{item ? displayLabel : tFn("item_not_found")} | קהילה בשכונה</title>
+    <title>{item ? displayLabel : tFn("item_not_found")} | קהילה בשכונה | יוצאים לחירות</title>
     {#if item}
         <meta name="description" content={ogDescription} />
         <link rel="canonical" href={canonicalUrl} />

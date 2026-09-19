@@ -642,7 +642,7 @@
 </script>
 
 <svelte:head>
-    <title>פרסום באתר | קהילה בשכונה</title>
+    <title>פרסום באתר | קהילה בשכונה | יוצאים לחירות</title>
 </svelte:head>
 
 <div class="max-w-4xl mx-auto px-4 py-8 md:py-12" dir="rtl">

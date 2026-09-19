@@ -54,7 +54,7 @@
 </script>
 
 <svelte:head>
-    <title>המלצת שידוך | קהילה בשכונה</title>
+    <title>המלצת שידוך | קהילה בשכונה | יוצאים לחירות</title>
     <meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 

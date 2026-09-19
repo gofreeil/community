@@ -99,7 +99,7 @@
 </script>
 
 <svelte:head>
-    <title>{ad.title} - קהילה בשכונה</title>
+    <title>{ad.title} - קהילה בשכונה | יוצאים לחירות</title>
 </svelte:head>
 
 {#snippet rich(raw: string)}{#each segments(raw) as s}{#if s.url}<a class="al-link" href={s.url} target="_blank" rel="noopener noreferrer">{s.text} ↗</a>{:else}{s.text}{/if}{/each}{/snippet}

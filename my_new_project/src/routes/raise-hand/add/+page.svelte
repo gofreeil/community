@@ -117,7 +117,7 @@
 </script>
 
 <svelte:head>
-    <title>{data.option.icon} {data.option.text} | קהילה בשכונה</title>
+    <title>{data.option.icon} {data.option.text} | קהילה בשכונה | יוצאים לחירות</title>
 </svelte:head>
 
 <!-- לחיצה על הרקע חוזרת אחורה; Escape עושה את אותו הדבר במקלדת -->

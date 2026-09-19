@@ -33,7 +33,7 @@
 </script>
 
 <svelte:head>
-    <title>אישור כתובת אימייל | קהילה בשכונה</title>
+    <title>אישור כתובת אימייל | קהילה בשכונה | יוצאים לחירות</title>
     <meta name="robots" content="noindex, follow" />
 </svelte:head>
 

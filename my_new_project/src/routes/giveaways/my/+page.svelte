@@ -37,7 +37,7 @@
 </script>
 
 <svelte:head>
-    <title>הפריטים שלי | למסירה</title>
+    <title>הפריטים שלי | למסירה | יוצאים לחירות</title>
 </svelte:head>
 
 <div class="min-h-screen bg-[#070b14] pt-6 pb-20 px-4" dir="rtl">

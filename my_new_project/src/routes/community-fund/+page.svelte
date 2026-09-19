@@ -94,7 +94,7 @@
 </script>
 
 <svelte:head>
-	<title>קופת השכונה — עזרה הדדית קהילתית | קהילה בשכונה</title>
+	<title>קופת השכונה — עזרה הדדית קהילתית | קהילה בשכונה | יוצאים לחירות</title>
 	<meta name="description" content="קופת השכונה של קהילה בשכונה — עזרה הדדית, תרומות והגשמת משאלות למשפחות בשכונה." />
 	<link rel="canonical" href="https://community.gofreeil.com/community-fund" />
 </svelte:head>
