@@ -189,10 +189,11 @@ export const load: PageServerLoad = async (event) => {
 
         if (botOgPreview) {
             // תצוגת-קדימון לבוט: רק מה שתגי ה-OG צריכים (כינוי/גיל/מגדר/עיר).
+            // הגיל נגזר בדף מ-birth_date כשאין שדה age - בלעדיו הכותרת יצאה בלי "גיל".
             // הטקסטים החופשיים, הכתובת, פרטי הקשר והתמונה עצמה (base64) לא
             // נחשפים - הבוט מקבל רק את כתובת התמונה דרך share.
             const efBot: Record<string, unknown> = {};
-            for (const k of ['nickname', 'age', 'gender'] as const) {
+            for (const k of ['nickname', 'age', 'birth_date', 'gender'] as const) {
                 if (extraFields?.[k] !== undefined) efBot[k] = extraFields[k];
             }
             Object.assign(item, {

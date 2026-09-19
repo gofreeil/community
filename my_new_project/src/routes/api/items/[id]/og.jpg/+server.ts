@@ -79,9 +79,22 @@ export const GET: RequestHandler = async (event) => {
             const n = Number(raw.trim());
             if (n > 0 && n < 130) return n;
         }
+        // הטופס שומר birth_date ולא age - אותה גזירה כמו בדף הפריט
+        const bd = extraFields.birth_date;
+        if (typeof bd === 'string' && bd.trim()) {
+            const d = new Date(bd);
+            if (!isNaN(d.getTime())) {
+                const now = new Date();
+                let a = now.getFullYear() - d.getFullYear();
+                const m = now.getMonth() - d.getMonth();
+                if (m < 0 || (m === 0 && now.getDate() < d.getDate())) a--;
+                if (a > 0 && a < 130) return a;
+            }
+        }
         return null;
     })();
-    const isFemale = extraFields.gender === 'female';
+    // הטופס שומר 'אישה' (עברית); כרטיסי דמו - 'female'
+    const isFemale = extraFields.gender === 'female' || extraFields.gender === 'אישה' || extraFields.gender === 'נקבה';
 
     const fullTitle = isSingles ? (nickname || cleanLabel) : cleanLabel;
     // satori לא עוטף שורות אצלנו (ההיפוך הידני שובר עטיפה) - שורה אחת עם קיצוץ

@@ -1231,10 +1231,11 @@
     }
 
     const isSingles = $derived(item?.category === 'singles');
-    const isFemale = $derived(
-        typeof (item as { extraFields?: { gender?: unknown } } | null)?.extraFields?.gender === 'string'
-            && (item as { extraFields: { gender: string } }).extraFields.gender === 'female'
-    );
+    // הטופס שומר 'אישה' (עברית); כרטיסי דמו - 'female'. בלי זה נשים קיבלו "פנוי" בקדימון.
+    const isFemale = $derived.by(() => {
+        const g = (item as { extraFields?: { gender?: unknown } } | null)?.extraFields?.gender;
+        return typeof g === 'string' && (g === 'female' || g === 'אישה' || g === 'נקבה');
+    });
 
     const ogTitle = $derived.by(() => {
         if (!item) return 'קהילה בשכונה';
