@@ -7,6 +7,8 @@ import {
     getItemsByCategoryAndStatus,
     updateItem,
     adminDeleteItem,
+    getDbItemById,
+    createItem,
 } from '$lib/server/db';
 import { dbItemToProfile } from '$lib/singlesMap';
 import { withSinglesImageUrls } from '$lib/server/singlesImages';
@@ -93,6 +95,37 @@ export const load: PageServerLoad = async (event) => {
     return { pending, active, accessRequests, matchmakerRequests };
 };
 
+// הודעה לאזור האישי של בעל/ת הכרטיס על תוצאת בדיקת הצניעות. best-effort:
+// כשל כאן לא מפיל את האישור/הדחייה עצמם (הטופס הבטיח למשתמש הודעה כזו).
+async function notifyCardOwner(cardId: string, decision: 'approved' | 'rejected') {
+    try {
+        const card = await getDbItemById(cardId);
+        if (!card?.user_id) return;
+        await createItem({
+            category: 'message',
+            label: decision === 'approved'
+                ? '✅ הכרטיס שלך נבדק ואושר'
+                : '✏️ הכרטיס שלך נבדק - נדרש תיקון',
+            description: decision === 'approved'
+                ? 'הכרטיס שלך בלוח הפנויים/פנויות עבר את בדיקת הצניעות ואושר. הוא מופיע עכשיו ברשימה הארצית, והשדכניות והשדכנים של המערכת יכולים לחפש עבורך התאמות. לצפייה בכרטיס: /singles/' + cardId
+                : 'הכרטיס שלך בלוח הפנויים/פנויות נבדק ולא אושר במתכונתו הנוכחית (לרוב בגלל תמונה או ניסוח שאינם עומדים בכללי הצניעות של הלוח). אפשר לערוך את הכרטיס ולשלוח שוב לבדיקה: /add/singles?edit=' + cardId,
+            contact: '',
+            user_id: card.user_id,
+            icon: decision === 'approved' ? '✅' : '✏️',
+            color: 'pink',
+            extra_fields: {
+                type: 'singles_card_review',
+                decision,
+                card_id: cardId,
+                read: false,
+                link: decision === 'approved' ? '/singles/' + cardId : '/add/singles?edit=' + cardId,
+            },
+        });
+    } catch (e) {
+        console.warn('[singles-review] notify card owner failed:', e instanceof Error ? e.message : e);
+    }
+}
+
 export const actions: Actions = {
     approve: async (event) => {
         await ensureSuperAdmin(event);
@@ -100,6 +133,7 @@ export const actions: Actions = {
         if (!id) return fail(400, { error: 'חסר מזהה' });
         try {
             await updateItem(id, { status: 'active' });
+            await notifyCardOwner(id, 'approved');
             return { success: true, message: 'הכרטיס אושר ופורסם בלוח ✅' };
         } catch (e) {
             return fail(500, { error: `שגיאה באישור: ${e instanceof Error ? e.message : e}` });
@@ -113,6 +147,7 @@ export const actions: Actions = {
         try {
             // החזרה ל-rejected: לא מוצג בלוח, אך לא נמחק (המשתמש יכול לערוך ולשלוח שוב)
             await updateItem(id, { status: 'rejected' });
+            await notifyCardOwner(id, 'rejected');
             return { success: true, message: 'הכרטיס נדחה - לא יוצג בלוח 🚫' };
         } catch (e) {
             return fail(500, { error: `שגיאה בדחייה: ${e instanceof Error ? e.message : e}` });
