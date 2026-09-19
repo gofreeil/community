@@ -63,6 +63,20 @@ export const POST: RequestHandler = async (event) => {
             if (!requesterPhone) requesterPhone = u?.phone ?? '';
         } catch { /* לא חוסם את הבקשה */ }
     }
+    // שם שהוא בעצם מספר טלפון (המבקש הקליד את הטלפון גם בשדה השם - קרה בפועל):
+    // עובר לשדה הטלפון אם הוא ריק, והשם נלקח מהפרופיל אם יש.
+    const isPhoneLike = (s: string) => /^[\d\s\-+()]{7,}$/.test(s) && s.replace(/\D/g, '').length >= 7;
+    if (isPhoneLike(requesterName)) {
+        if (!requesterPhone) requesterPhone = requesterName;
+        requesterName = '';
+        if (session?.user?.id) {
+            try {
+                const u = await getUserById(session.user.id);
+                const pn = (u?.name ?? u?.nickname ?? '').trim();
+                if (pn && !isPhoneLike(pn)) requesterName = pn;
+            } catch { /* לא חוסם */ }
+        }
+    }
     // פורמט אחיד לטלפון - בין אם הגיע מהטופס (מקומי) ובין אם מהפרופיל (בינלאומי)
     requesterPhone = normalizePhone(requesterPhone);
 

@@ -1,4 +1,5 @@
 import { createItem, updateItem, deleteItem, getItemsByUserId, getMessagesByUserId, getAllSuperAdmins, getNeighborhoods, approveNeighborhood, rejectNeighborhood, reopenNeighborhood } from './db';
+import { isKnownNeighborhood } from '$lib/neighborhoodsData';
 
 /** נרמול שם מיקום לזיהוי התאמה - מסיר "שכונת"/"שכונה" מובילה ורווחים כפולים */
 function normalizeLoc(s: string): string {
@@ -55,14 +56,21 @@ export async function finalizeLocationDecision(input: LocationDecisionInput): Pr
                 } catch { return false; }
             });
             if (!alreadyNotified) {
+                // דחייה של שכונה שכבר קיימת ברשימת העיר (קרה: "עין גנים" בפתח תקווה) -
+                // אומרים למבקש במפורש שהיא קיימת ושיבחר אותה, במקום "החליט שלא להוסיף".
+                const existsAlready = decision === 'reject' && !!city && isKnownNeighborhood(city, location);
                 await createItem({
                     category:    'message',
                     label:       decision === 'approve'
                         ? `✅ בקשתך אושרה: "${location}" נוסף לרשימה`
-                        : `❌ בקשתך להוספת "${location}" לא אושרה`,
+                        : existsAlready
+                            ? `ℹ️ "${location}" כבר קיימת ברשימת השכונות של ${city}`
+                            : `❌ בקשתך להוספת "${location}" לא אושרה`,
                     description: decision === 'approve'
                         ? `המנהל אישר את בקשתך — "${location}"${city ? ` (${city})` : ''} נוסף לרשימת השכונות וכעת ניתן לבחור בו בפרופיל ובפרסום.`
-                        : `המנהל בחן את בקשתך להוסיף את "${location}" והחליט שלא להוסיף אותו כרגע. אפשר לבחור שכונה קיימת או לפנות אלינו דרך "כתוב למערכת" בפרופיל.`,
+                        : existsAlready
+                            ? `השכונה "${location}" כבר נמצאת ברשימת השכונות של ${city}, ולכן אין צורך להוסיף אותה. פשוט בחרו אותה מהרשימה בפרופיל (או בטופס הפרסום) ותוכלו להמשיך.`
+                            : `המנהל בחן את בקשתך להוסיף את "${location}" והחליט שלא להוסיף אותו כרגע. אפשר לבחור שכונה קיימת או לפנות אלינו דרך "כתוב למערכת" בפרופיל.`,
                     icon:        decision === 'approve' ? '✅' : '❌',
                     color:       decision === 'approve' ? 'green' : 'red',
                     user_id:     requesterId,

@@ -2,7 +2,7 @@
     import { untrack } from 'svelte';
     import { _ } from 'svelte-i18n';
     import { goto } from '$app/navigation';
-    import { citiesAndNeighborhoods, effectiveNeighborhoods } from '$lib/neighborhoodsData';
+    import { citiesAndNeighborhoods, effectiveNeighborhoods, normalizeNeighborhoodName } from '$lib/neighborhoodsData';
     import NeighborhoodPicker from '$lib/components/NeighborhoodPicker.svelte';
     import NeighborhoodSelect from '$lib/components/NeighborhoodSelect.svelte';
 
@@ -118,6 +118,18 @@
     let pinLat = $state<number | null>(null);
     let pinLng = $state<number | null>(null);
 
+    // "שכונה חדשה" שהוקלדה אבל כבר קיימת ברשימת העיר (למשל "עין גנים" בפתח תקווה) →
+    // השם הקיים ברשימה. אין מה לבקש מהאדמין - הבקשה תהיה על השכונה הקיימת עצמה.
+    const typedExistingNb = $derived.by(() => {
+        const key = normalizeNeighborhoodName(newNbName);
+        if (!key) return '';
+        return cityNeighborhoods.find((n) => normalizeNeighborhoodName(n) === key) ?? '';
+    });
+
+    // שם שהוא בעצם מספר טלפון (קרה בפועל: המבקש הקליד את הטלפון גם בשדה השם)
+    const looksLikePhone = (s: string) => /^[\d\s\-+()]{7,}$/.test(s.trim()) && s.replace(/\D/g, '').length >= 7;
+    const nameIsPhone = $derived(looksLikePhone(name));
+
     // אם העיר השתנתה והשכונה הישנה כבר לא ברשימה — מאפסים
     $effect(() => {
         if (neighborhood && !cityNeighborhoods.includes(neighborhood)) {
@@ -140,6 +152,9 @@
             if (nbNotListed) {
                 const nm = newNbName.trim();
                 if (!nm) return null;
+                if (typedExistingNb) {
+                    return { label: `${typedExistingNb} (${c})`, key: areaMatchKey(typedExistingNb, c), roleLabel: $_('coordinator_area_neighborhood') };
+                }
                 return {
                     label: `${nm} (${c})`,
                     key: areaMatchKey(nm, c),
@@ -171,6 +186,10 @@
         e.preventDefault();
         if (!area) {
             error = $_('coordinator_need_area');
+            return;
+        }
+        if (nameIsPhone) {
+            error = $_('coordinator_name_is_phone');
             return;
         }
         error = null;
@@ -232,7 +251,7 @@
             // לפני איפוס הטופס: אם הפרופיל חסר - שומרים את הפרטים שהוגשו להצעת ההעתקה
             if (profileIncomplete) {
                 syncCity  = city.trim();
-                syncNb    = nbNotListed ? newNbName.trim() : (neighborhood || 'מרכז');
+                syncNb    = nbNotListed ? (typedExistingNb || newNbName.trim()) : (neighborhood || 'מרכז');
                 syncPhone = !data.user?.phone && phone.trim() ? phone.trim() : '';
                 showProfileSync = true;
             }
@@ -352,8 +371,11 @@
                         type="text"
                         bind:value={name}
                         required
-                        class="w-full bg-slate-900 border border-slate-600 rounded px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+                        class="w-full bg-slate-900 border rounded px-4 py-2 text-white focus:outline-none focus:border-blue-500 {nameIsPhone ? 'border-red-500/70' : 'border-slate-600'}"
                     />
+                    {#if nameIsPhone}
+                        <p class="text-xs text-red-300 mt-1.5">{$_('coordinator_name_is_phone')}</p>
+                    {/if}
                 </div>
 
                 <!-- Phone -->
@@ -417,9 +439,14 @@
                                 placeholder={$_('coordinator_new_nb_name')}
                                 class="w-full bg-slate-900 border border-slate-600 rounded px-4 py-2 mt-3 text-white focus:outline-none focus:border-blue-500"
                             />
-                            <p class="text-sm text-amber-300 mt-3 mb-1.5">{$_('coordinator_verify_location')}</p>
-                            <p class="text-xs text-slate-400 mb-2">{$_('coordinator_verify_optional')}</p>
-                            <NeighborhoodPicker {city} bind:lat={pinLat} bind:lng={pinLng} />
+                            {#if typedExistingNb}
+                                <!-- השם שהוקלד כבר ברשימה - הבקשה תהיה על השכונה הקיימת, בלי פין ובלי בקשת שכונה חדשה -->
+                                <p class="text-sm text-emerald-300 mt-2">{$_('coordinator_nb_exists', { values: { name: typedExistingNb } })}</p>
+                            {:else}
+                                <p class="text-sm text-amber-300 mt-3 mb-1.5">{$_('coordinator_verify_location')}</p>
+                                <p class="text-xs text-slate-400 mb-2">{$_('coordinator_verify_optional')}</p>
+                                <NeighborhoodPicker {city} bind:lat={pinLat} bind:lng={pinLng} />
+                            {/if}
                         {/if}
                     </div>
                 {:else if city && !cityHasNeighborhoods}
