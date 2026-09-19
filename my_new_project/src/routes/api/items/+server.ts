@@ -4,6 +4,7 @@ import { categoryConfig, getCategoryIcon, getCategoryColor } from '$lib/category
 import { isPrivateCategory } from '$lib/itemCategories';
 import { categoryTier, tierMet } from '$lib/tiers';
 import { resolveItemCoords } from '$lib/server/geocode';
+import { singlesImageToken, singlesImageTokenMatches } from '$lib/server/singlesImages';
 import { Resend } from 'resend';
 import { env } from '$env/dynamic/private';
 import type { RequestHandler } from './$types';
@@ -232,6 +233,23 @@ export const POST: RequestHandler = async (event) => {
         const prevExtra: Record<string, unknown> = (() => {
             try { return existing.extra_fields ? JSON.parse(existing.extra_fields) : {}; } catch { return {}; }
         })();
+        // טופס העריכה מקבל את תמונות הפנויים ככתובות חתומות (לא base64 בנתוני
+        // הדף). כתובת כזו שחזרה - היא התמונה השמורה במקום ה-n; ממירים חזרה לפני
+        // השמירה, אחרת הכתובת עצמה הייתה נשמרת במקום התמונה. תמונה חדשה (data:)
+        // עוברת כמות שהיא; כתובת שלא ניתן לאמת - נשמטת.
+        const submittedExtra = { ...((extra_fields ?? {}) as Record<string, unknown>) };
+        if (Array.isArray(submittedExtra.images)) {
+            const prevImages = Array.isArray(prevExtra.images) ? (prevExtra.images as unknown[]) : [];
+            submittedExtra.images = (submittedExtra.images as unknown[]).flatMap((img) => {
+                if (typeof img !== 'string') return [];
+                if (!img.startsWith('/api/singles-image/')) return [img];
+                const m = img.match(/^\/api\/singles-image\/([^/]+)\/(\d+)\?v=([A-Za-z0-9_-]+)$/);
+                if (!m || decodeURIComponent(m[1]) !== editId) return [];
+                const prev = prevImages[Number(m[2])];
+                if (typeof prev !== 'string') return [];
+                return singlesImageTokenMatches(singlesImageToken(editId, Number(m[2]), prev), m[3]) ? [prev] : [];
+            });
+        }
         try {
             await updateItem(editId, {
                 label:        String(label),
@@ -244,14 +262,14 @@ export const POST: RequestHandler = async (event) => {
                 city:         String(city ?? ''),
                 lat:          coords.lat,
                 lng:          coords.lng,
-                extra_fields: { ...prevExtra, ...((extra_fields ?? {}) as Record<string, unknown>) },
+                extra_fields: { ...prevExtra, ...submittedExtra },
                 ...(isModerated ? { status: 'pending' } : {}),
             });
             if (isModerated) {
                 // await חובה: ב-Vercel עבודה לא-מוחכה אחרי ה-return מתה - ההודעה
                 // הישנה הייתה נמחקת בלי שהחדשה נכתבת (או לא נכתבת בכלל)
                 try {
-                    await notifySinglesReview(editId, String(label), (extra_fields ?? {}) as Record<string, unknown>);
+                    await notifySinglesReview(editId, String(label), submittedExtra);
                 } catch (e) {
                     console.warn('[api/items] singles review notify failed:', e);
                 }

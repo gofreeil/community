@@ -1,6 +1,7 @@
 import { error, redirect } from '@sveltejs/kit';
 import { categoryConfig } from '$lib/categoryFields';
 import { getDbItemById, getItemsByUserId } from '$lib/server/db';
+import { withSinglesItemImageUrls } from '$lib/server/singlesImages';
 import { getUserByIdRetry, effectiveUserLocation } from '$lib/server/userLocation';
 import { categoryTier, tierMet, type TierUserFields } from '$lib/tiers';
 import type { PageServerLoad } from './$types';
@@ -91,7 +92,9 @@ export const load: PageServerLoad = async (event) => {
         try {
             const dbItem = await getDbItemById(editId);
             if (dbItem && dbItem.user_id === session.user.id) {
-                editItem = toEditItem(dbItem);
+                // תמונות פנויים: כתובות חתומות במקום base64 (ראה singlesImages.ts);
+                // api/items ממיר אותן חזרה לתמונות השמורות בעת העדכון.
+                editItem = toEditItem(withSinglesItemImageUrls(dbItem));
             }
         } catch { /* פריט לא נמצא או שגיאה - נמשיך כיצירת פריט חדש */ }
     }
@@ -103,7 +106,7 @@ export const load: PageServerLoad = async (event) => {
         try {
             const existing = (await getItemsByUserId(session.user.id as string))
                 .find(it => it.category === event.params.category);
-            if (existing) editItem = toEditItem(existing);
+            if (existing) editItem = toEditItem(withSinglesItemImageUrls(existing));
         } catch { /* אם הטעינה נכשלה - נמשיך כיצירת כרטיס חדש */ }
     }
 

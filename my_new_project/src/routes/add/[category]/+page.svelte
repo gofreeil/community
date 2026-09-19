@@ -293,6 +293,9 @@
             })();
             if (direct !== undefined && direct !== '') return String(direct);
             const fromExtra = ef[key];
+            // מערכים (תמונות) חייבים לחזור כ-JSON: String([...]) מפיק "a,b" שאינו
+            // JSON תקין, הטופס היה מציג 0 תמונות ובשמירה שולח [] - והתמונות נמחקו.
+            if (Array.isArray(fromExtra)) return JSON.stringify(fromExtra);
             if (fromExtra != null && fromExtra !== '') return String(fromExtra);
             // נשאר לא ממולא - נופלים ל-default רגיל
         }
