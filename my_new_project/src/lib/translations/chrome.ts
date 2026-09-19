@@ -31,6 +31,8 @@ export const he = {
         navigating: "טוען את העמוד…",
         register_nudge_text: "כדי שהפלטפורמה תזכור את השכונה שבחרת בפעם הבאה — כדאי להירשם.",
         register_nudge_cta: "הרשמה מהירה",
+        profile_nb_saved_text: "השכונה \"{neighborhood}\" ({city}) נשמרה בפרופיל שלך. אפשר לשנות בכל עת.",
+        profile_nb_saved_cta: "לפרופיל",
     },
 };
 
@@ -64,6 +66,8 @@ export const en = {
         navigating: "Loading the page…",
         register_nudge_text: "Sign up so the platform remembers the neighborhood you chose next time.",
         register_nudge_cta: "Quick sign-up",
+        profile_nb_saved_text: "The neighborhood \"{neighborhood}\" ({city}) was saved to your profile. You can change it anytime.",
+        profile_nb_saved_cta: "Profile",
     },
 };
 
@@ -97,5 +101,7 @@ export const ru = {
         navigating: "Загрузка страницы…",
         register_nudge_text: "Чтобы платформа запомнила выбранный вами район, стоит зарегистрироваться.",
         register_nudge_cta: "Быстрая регистрация",
+        profile_nb_saved_text: "Район «{neighborhood}» ({city}) сохранён в вашем профиле. Его можно изменить в любое время.",
+        profile_nb_saved_cta: "В профиль",
     },
 };

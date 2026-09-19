@@ -33,6 +33,8 @@
 	// אורח → init תמיד יפתח בברירת המחדל, ובחירת שכונה תציג נדנוד להרשמה.
 	$effect(() => {
 		neighborhoodState.setLoggedIn(!!data.session?.user);
+		// האם לפרופיל כבר יש עיר: כל עוד אין, בחירת שכונה באתר נשמרת גם לפרופיל
+		neighborhoodState.setProfileCity(data.session?.user ? data.layoutUser?.city : 'guest');
 	});
 
 	// רישום שכונות מאושרות (פין מדויק) למנגנון הקואורדינטות - כך שהמפה
@@ -211,6 +213,28 @@
 				goto(`/register?redirect=${encodeURIComponent(page.url.pathname)}`);
 			}}
 		>{$_('chrome.register_nudge_cta')}</button>
+	</div>
+{/if}
+
+<!-- הבחירה נשמרה לפרופיל (משתמש מחובר שלא הייתה לו עיר) - משוב נראה, לא פעולה שקטה -->
+{#if neighborhoodState.savedToProfile && data.session?.user}
+	<div class="register-nudge" dir="rtl" role="status">
+		<button
+			class="nudge-close"
+			aria-label={$_('chrome.close')}
+			onclick={() => neighborhoodState.dismissSavedNotice()}
+		>×</button>
+		<div class="nudge-text">
+			<span class="nudge-emoji">📍</span>
+			{$_('chrome.profile_nb_saved_text', { values: { neighborhood: neighborhoodState.savedToProfile.neighborhood, city: neighborhoodState.savedToProfile.city } })}
+		</div>
+		<button
+			class="nudge-cta"
+			onclick={() => {
+				neighborhoodState.dismissSavedNotice();
+				goto('/profile');
+			}}
+		>{$_('chrome.profile_nb_saved_cta')}</button>
 	</div>
 {/if}
 

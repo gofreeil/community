@@ -2,7 +2,7 @@ import { redirect, fail, error } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { requireSuperAdmin, requireAdmin } from '$lib/server/auth';
 import { withUserAvatarUrl } from '$lib/server/userAvatar';
-import { getAllUsers, banUser, unbanUser, deleteUserAccounts, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByAnyId, getUserByEmail, createItem, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, getNeighborhoodById, approveNeighborhood, rejectNeighborhood, createNeighborhoodRequest, getDiscountCodes, saveDiscountCodes, getItemsByCategoryAndStatus, getUserTotpSecret, coordinatorCovers, closeFulfilledCoordinatorRequests, updateItem, getDbItemByIdFresh, getAllSuperAdmins, getMessagesByUserId, type DbItem } from '$lib/server/db';
+import { getAllUsers, banUser, unbanUser, deleteUserAccounts, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByAnyId, getUserByEmail, createItem, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, getNeighborhoodById, approveNeighborhood, rejectNeighborhood, createNeighborhoodRequest, getDiscountCodes, saveDiscountCodes, getItemsByCategoryAndStatus, getUserTotpSecret, coordinatorCovers, closeFulfilledCoordinatorRequests, updateItem, getDbItemByIdFresh, getAllSuperAdmins, getMessagesByUserId, getAllUsersRaw, updateUserProfile, type DbItem } from '$lib/server/db';
 import { markCoordinatorMessagesHandled } from '$lib/server/coordinatorNotifications';
 import { finalizeLocationDecision } from '$lib/server/locationDecision';
 import { cityCenters } from '$lib/neighborhoodCoords';
@@ -286,6 +286,64 @@ async function finalizeWishDecision(wish: DbItem | undefined, decision: 'approve
 }
 
 export const actions: Actions = {
+    /**
+     * השלמה רטרואקטיבית של עיר/שכונה למשתמשים שנרשמו בלי (רוב המשתמשים): לוקחים
+     * את העיר השכיחה ביותר מהפריטים שהמשתמש עצמו פרסם, ואת השכונה השכיחה באותה עיר.
+     * לא נוגע במי שכבר יש לו עיר. הודעות/בקשות פנימיות לא נחשבות "מיקום".
+     */
+    backfillUserLocations: async (event) => {
+        const session = await event.locals.auth();
+        requireSuperAdmin(session);
+
+        const SKIP_CATEGORIES = new Set(['message', 'location_request', 'coordinator_request', 'wish']);
+        try {
+            const [users, items] = await Promise.all([getAllUsersRaw(), getAllItems()]);
+
+            // פריטים עם מיקום, מקובצים לפי המפרסם
+            const byUser = new Map<string, { city: string; neighborhood: string }[]>();
+            for (const it of items) {
+                if (!it.user_id || !it.city?.trim() || SKIP_CATEGORIES.has(it.category)) continue;
+                const list = byUser.get(it.user_id) ?? [];
+                list.push({ city: it.city.trim(), neighborhood: (it.neighborhood ?? '').trim() });
+                byUser.set(it.user_id, list);
+            }
+            const mostCommon = (vals: string[]): string => {
+                const counts = new Map<string, number>();
+                for (const v of vals) if (v) counts.set(v, (counts.get(v) ?? 0) + 1);
+                let best = '', n = 0;
+                for (const [v, c] of counts) if (c > n) { best = v; n = c; }
+                return best;
+            };
+
+            let filled = 0, candidates = 0;
+            for (const u of users) {
+                if (u.city?.trim()) continue;
+                const locs = byUser.get(u.id);
+                if (!locs?.length) continue;
+                candidates++;
+                const city = mostCommon(locs.map((l) => l.city));
+                if (!city) continue;
+                // שכונה: השכיחה בין הפריטים של אותה עיר; "מרכז" רק אם אין אחרת
+                const inCity = locs.filter((l) => l.city === city).map((l) => l.neighborhood);
+                const neighborhood = mostCommon(inCity.filter((n) => n && n !== 'מרכז')) || mostCommon(inCity);
+                try {
+                    await updateUserProfile(u.id, { city, ...(neighborhood ? { neighborhood } : {}) });
+                    filled++;
+                } catch (e) {
+                    console.warn('[admin] backfill user location failed:', u.id, e instanceof Error ? e.message : e);
+                }
+            }
+            const noCity = users.filter((u) => !u.city?.trim()).length;
+            return {
+                success: true,
+                message: `הושלמו עיר/שכונה ל-${filled} משתמשים מתוך ${candidates} שיש להם פרסומים עם מיקום. ` +
+                         `${Math.max(0, noCity - filled)} משתמשים נשארו בלי עיר (אין להם פרסומים - יתמלאו כשיבחרו שכונה באתר).`,
+            };
+        } catch (e) {
+            return fail(500, { error: `שגיאה בהשלמת מיקומים: ${e instanceof Error ? e.message : e}` });
+        }
+    },
+
     ban: async (event) => {
         const session = await event.locals.auth();
         requireAdmin(session);

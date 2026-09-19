@@ -882,6 +882,21 @@
 				<span class="ms-auto text-gray-400 text-sm transition-transform {usersListOpen || searchQuery ? 'rotate-180' : ''}">▼</span>
 			</button>
 
+			<!-- השלמה רטרואקטיבית של עיר/שכונה מהפרסומים של המשתמש (למי שנרשם בלי) -->
+			<form method="POST" action="?/backfillUserLocations" use:enhance class="mb-3 flex items-center gap-2 flex-wrap">
+				<button
+					type="submit"
+					class="px-3 py-1.5 text-sm rounded-lg bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/20 transition-all cursor-pointer"
+					onclick={(e) => { if (!confirm('להשלים עיר/שכונה לכל המשתמשים שאין להם - לפי הפרסומים שלהם? לא נוגע במי שכבר יש לו עיר.')) e.preventDefault(); }}
+					title="למשתמשים בלי עיר: העיר והשכונה השכיחות מהפריטים שפרסמו"
+				>
+					📍 השלם עיר/שכונה מהפרסומים
+				</button>
+				<span class="text-xs text-gray-500">
+					{(data.users ?? []).filter((u) => !(u as any).city?.trim()).length} משתמשים בלי עיר
+				</span>
+			</form>
+
 			{#if usersListOpen || searchQuery}
 			<div class="space-y-1.5 md:space-y-2">
 				{#each filteredUsers() as user (user.id)}
