@@ -251,6 +251,11 @@
                                 <p class="text-gray-300 text-sm leading-relaxed mb-3">{c.description}</p>
                             {/if}
 
+                            <!-- שם + טלפון פנימיים (לא מוצגים בלוח הפומבי) - לצוות בלבד -->
+                            {#if c.contact || c.phone}
+                                <p class="text-gray-400 text-xs mb-3" dir="rtl">🔒 קשר פנימי: {c.contact}{c.contact && c.phone ? ' · ' : ''}<span dir="ltr">{c.phone}</span></p>
+                            {/if}
+
                             <!-- מידע לשדכנים בלבד (נאסף בטופס, לא מוצג בלוח הפומבי) -->
                             {#if c.matchPartnerCharacter || c.matchSelfAdvantage}
                                 <div class="mb-3 rounded-xl border border-purple-500/30 bg-purple-500/10 p-3">

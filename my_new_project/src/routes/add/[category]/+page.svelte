@@ -1198,7 +1198,7 @@
                             value={getFieldValue(field.key)}
                             oninput={(e) => setFieldValue(field.key, (e.target as HTMLTextAreaElement).value)}
                             placeholder={trOr($_, cfFieldKey(categoryId, field, 'ph'), field.placeholder ?? '')}
-                            rows={field.maxLength ? 1 : 3}
+                            rows={field.maxLength && field.maxLength <= 150 ? 1 : 3}
                             maxlength={field.maxLength ?? undefined}
                             class="{inputClass} resize-none"
                             required={field.required}
@@ -1609,7 +1609,7 @@
                     {/if}
 
                     <!-- אנשי קשר נוספים: כפתור "+" מתחת לשדה הטלפון, בכל הקטגוריות -->
-                    {#if extraContactsAnchor && field.key === extraContactsAnchor}
+                    {#if extraContactsAnchor && field.key === extraContactsAnchor && !field.half}
                         <ExtraContactsField
                             bind:value={formValues[EXTRA_CONTACTS_KEY]}
                             idPrefix="add-{categoryId}-extra-contact"
@@ -1627,6 +1627,15 @@
                         </a>
                     {/if}
                 </div>
+                <!-- כשהטלפון הוא שדה חצי-רוחב (ליד השם), "אנשי קשר נוספים" יורד לשורה מלאה משלו -->
+                {#if extraContactsAnchor && field.key === extraContactsAnchor && field.half}
+                    <div class="col-span-2">
+                        <ExtraContactsField
+                            bind:value={formValues[EXTRA_CONTACTS_KEY]}
+                            idPrefix="add-{categoryId}-extra-contact"
+                        />
+                    </div>
+                {/if}
                 {/if}
             {/each}
 
