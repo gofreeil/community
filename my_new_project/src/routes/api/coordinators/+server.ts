@@ -62,6 +62,8 @@ export const GET: RequestHandler = async () => {
                     neighborhoods:  (u.coordinator_of ?? []).map(stripCity),
                     residentsCount: residentIds.size,
                     itemsOnMap,
+                    // מועד ההצטרפות (יצירת המשתמש) — למיון "ראשון/אחרון" באתר ועדי השכונות
+                    createdAt:      u.created_at || '',
                 };
             })
             .sort((a, b) => b.residentsCount - a.residentsCount);
