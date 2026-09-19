@@ -943,6 +943,7 @@
             if (nbNotFound && customNb.trim()) {
                 await submitNeighborhoodRequest({
                     name: customNb, city, lat: customLat ?? pinLat, lng: customLng ?? pinLng,
+                    requesterName: getFieldValue('contact'), requesterPhone: getFieldValue('phone'),
                 });
             }
 

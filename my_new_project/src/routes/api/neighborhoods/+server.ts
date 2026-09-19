@@ -1,5 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { getNeighborhoods, createNeighborhoodRequest, createItem, getUserById, getAllSuperAdmins, getMessagesByUserId } from '$lib/server/db';
+import { isKnownNeighborhood } from '$lib/neighborhoodsData';
 import type { RequestHandler } from './$types';
 
 // נרמול שם מיקום לזיהוי כפילויות - זהה ל-normalizeLoc שבשאר המערכת (locationDecision).
@@ -44,6 +45,11 @@ export const POST: RequestHandler = async (event) => {
     }
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
         return json({ success: false, message: 'נא לסמן את מיקום השכונה על המפה' }, { status: 400 });
+    }
+    // שכונה מובנית של העיר (למשל "מרכז" ברמלה) - כבר קיימת בבוררים ובמפה, אין מה לאשר.
+    // מונע בקשות-סרק לאדמין על שמות שהוקלדו ידנית במסלול "לא מצאתי את השכונה שלי".
+    if (isKnownNeighborhood(city, name)) {
+        return json({ success: true, alreadyApproved: true });
     }
 
     // פרטי קשר של המבקש - כדי שהאדמין יוכל לפתוח איתו צ'אט ישירות מהפאנל.

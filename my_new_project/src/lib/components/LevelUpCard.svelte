@@ -147,6 +147,7 @@
                 if (nbNotFound && customNb.trim()) {
                     await submitNeighborhoodRequest({
                         name: customNb, city: city.trim(), lat: customLat, lng: customLng,
+                        requesterName: user.name ?? '', requesterPhone: phone,
                     });
                 }
                 onDone();
